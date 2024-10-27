@@ -23,9 +23,46 @@ int main()
 	::gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
 	SSD1306 oled(i2c_default);
 	oled.Initialize();
-	//oled.Clear();
-	//oled.Refresh();
-	//::sleep_ms(1000);
+	for (int i = 0; i < oled.GetHeight(); i++) {
+		oled.Clear();
+		oled.DrawLine(0, 0, oled.GetWidth() - 1, i);
+		oled.Refresh();
+		::sleep_ms(100);
+	}
+	for (int i = oled.GetWidth() - 1; i >= 0; i--) {
+		oled.Clear();
+		oled.DrawLine(0, 0, i, oled.GetHeight() - 1);
+		oled.Refresh();
+		::sleep_ms(100);
+	}
+	for (;;) ;
+#if 0
+	for (int i = 0; i < oled.GetHeight(); i++) {
+		oled.Clear();
+		oled.DrawRect(0, 0, i * 2, i);
+		oled.Refresh();
+		::sleep_ms(100);
+	}
+	for (int i = 0; i < oled.GetHeight(); i++) {
+		oled.Clear();
+		oled.DrawRect(oled.GetWidth() - 1, oled.GetHeight() - 1, -i * 2, -i);
+		oled.Refresh();
+		::sleep_ms(100);
+	}
+	for (int i = 0; i < oled.GetHeight(); i++) {
+		oled.Clear();
+		oled.DrawRectFill(0, 0, i * 2, i);
+		oled.Refresh();
+		::sleep_ms(100);
+	}
+	for (int i = 0; i < oled.GetHeight(); i++) {
+		oled.Clear();
+		oled.DrawRectFill(oled.GetWidth() - 1, oled.GetHeight() - 1, -i * 2, -i);
+		oled.Refresh();
+		::sleep_ms(100);
+	}
+#endif
+#if 0
 	oled.SetFontScale(1, 1);
 	oled.Clear();
 	const char* str = "本日は晴天なりああ";
@@ -36,6 +73,7 @@ int main()
 	oled.SetFont(Font::shinonome18);
 	oled.DrawString(0, 32, str);
 	oled.Refresh();
+#endif
 #if 0
 #if 1
 	for (int i = 0; i < 2; i++) {
@@ -139,21 +177,6 @@ int main()
 			oled.Refresh();
 		}
 		::sleep_ms(1000);
-	}
-#endif
-#if 0
-	// SSD1306::DrawRectFill()
-	for (int i = 0; i < oled.GetHeight(); i++) {
-		oled.Clear();
-		oled.DrawRectFill(0, 0, i * 2, i);
-		oled.Refresh();
-		::sleep_ms(100);
-	}
-	for (int i = 0; i < oled.GetHeight(); i++) {
-		oled.Clear();
-		oled.DrawRectFill(oled.GetWidth() - 1, oled.GetHeight() - 1, -i * 2, -i);
-		oled.Refresh();
-		::sleep_ms(100);
 	}
 #endif
 #endif

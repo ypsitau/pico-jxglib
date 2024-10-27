@@ -126,7 +126,15 @@ template<class Logic> void SSD1306::DrawLineT(int x0, int y0, int x1, int y1)
 
 template<class Logic> void SSD1306::DrawRectT(int x, int y, int width, int height)
 {
-	int xLeft = x, xRight = x + width -1;
+	if (width < 0) {
+		x += width + 1;
+		width = -width;
+	}
+	if (height < 0) {
+		y += height + 1;
+		height = -height;
+	}
+	int xLeft = x, xRight = x + width - 1;
 	int yTop = y, yBottom = y + height - 1;
 	int xLeftAdjust = xLeft, widthAdjust = width;
 	int yTopAdjust = yTop, heightAdjust = height;
