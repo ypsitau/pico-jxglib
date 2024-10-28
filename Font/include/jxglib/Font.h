@@ -5,6 +5,8 @@
 #define PICO_JXGLIB_FONT_H
 #include "pico/stdlib.h"
 
+namespace jxglib {
+
 //------------------------------------------------------------------------------
 // FontEntry
 //------------------------------------------------------------------------------
@@ -26,5 +28,7 @@ struct FontSet {
 	int nFontEntries_Extra;
 	const FontEntry* pFontEntries_Extra[];
 };
+
+}
 
 #endif

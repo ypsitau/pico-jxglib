@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include "jxglib/Button.h"
 
+namespace jxglib {
+
 //------------------------------------------------------------------------------
 // Button
 //------------------------------------------------------------------------------
@@ -49,4 +51,6 @@ bool Button::Callback(struct repeating_timer* pRepeatingTimer)
 Button::Event* Button::ReadEvent()
 {
 	return eventBuff_.HasData()? eventBuff_.ReadData() : nullptr;
+}
+
 }

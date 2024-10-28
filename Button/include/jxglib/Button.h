@@ -8,6 +8,8 @@
 #include "pico/stdlib.h"
 #include "jxglib/FIFOBuff.h"
 
+namespace jxglib {
+
 //------------------------------------------------------------------------------
 // Button
 //------------------------------------------------------------------------------
@@ -48,5 +50,7 @@ public:
 private:
 	static bool Callback(struct repeating_timer* pRepeatingTimer);
 };
+
+}
 
 #endif

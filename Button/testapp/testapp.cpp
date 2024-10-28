@@ -2,6 +2,8 @@
 #include <hardware/clocks.h>
 #include "jxglib/Button.h"
 
+using namespace jxglib;
+
 Button buttonLeft("Left", 10), buttonUp("Up", 11), buttonDown("Down", 12), buttonRight("Right", 13);
 Button buttonA("A", 14), buttonB("B", 15);
 

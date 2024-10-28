@@ -4,10 +4,15 @@
 #ifndef PICO_JXGLIB_POINT_h
 #define PICO_JXGLIB_POINT_H
 
+namespace jxglib {
+
 //------------------------------------------------------------------------------
 // Point
 //------------------------------------------------------------------------------
 struct Point {
 	int x, y;
 };
+
+}
+
 #endif

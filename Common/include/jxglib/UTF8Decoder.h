@@ -5,6 +5,8 @@
 #define PICO_JXGLIB_UTF8DECODER_H
 #include "pico/stdlib.h"
 
+namespace jxglib {
+
 //------------------------------------------------------------------------------
 // UTF8Decoder
 //------------------------------------------------------------------------------
@@ -16,5 +18,7 @@ public:
 	UTF8Decoder() : nFollowers_(0), codeUTF32_(0) {}
 	bool FeedChar(char ch, uint32_t* pCodeUTF32);
 };
+
+}
 
 #endif

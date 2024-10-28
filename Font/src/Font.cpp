@@ -3,6 +3,8 @@
 //==============================================================================
 #include "jxglib/Font.h"
 
+namespace jxglib {
+
 //------------------------------------------------------------------------------
 // FontSet
 //------------------------------------------------------------------------------
@@ -15,4 +17,6 @@ const FontEntry* FontSet::GetFontEntry(uint32_t code) const
 		if (pFontEntry->code == code) return pFontEntry;
 	}
 	return pFontEntry_Invalid;
+}
+
 }
