@@ -13,6 +13,8 @@
 #include "jxglib/Common.h"
 #include "jxglib/Font.h"
 
+namespace jxglib {
+
 //------------------------------------------------------------------------------
 // SSD1306
 //------------------------------------------------------------------------------
@@ -312,5 +314,7 @@ private:
 	static bool CheckCoord(int v, int vLimit) { return 0 <= v && v < vLimit; }
 	static bool AdjustCoord(int* pV, int* pDist, int vLimit);
 };
+
+}
 
 #endif

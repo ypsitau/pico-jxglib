@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include "jxglib/SSD1306.h"
 
+namespace jxglib {
+
 //------------------------------------------------------------------------------
 // SSD1306
 //------------------------------------------------------------------------------
@@ -357,4 +359,6 @@ bool SSD1306::AdjustCoord(int* pV, int* pDist, int vLimit)
 		dist = vLimit - v;
 	}
 	return true;
+}
+
 }

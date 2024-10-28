@@ -1,11 +1,13 @@
 // To generate font files:
-//   gurax ../../Font/script/GenerateFont.gura -o Font shinonome12,shinonome14,shinonome16 *.cpp
+//   gurax ../../Font/script/GenerateFont.gura -o Font shinonome12,shinonome14,shinonome16,shinonome18 *.cpp
 #include <stdio.h>
 #include <jxglib/SSD1306.h>
 #include "Font/shinonome12.h"
 #include "Font/shinonome14.h"
 #include "Font/shinonome16.h"
 #include "jxglib/Font/shinonome18.h"
+
+using namespace jxglib;
 
 #define ArrayNumberOf(x) (sizeof(x) / sizeof(x[0]))
 
