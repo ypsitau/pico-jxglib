@@ -4,6 +4,8 @@
 #include "jxglib/StepMotor.h"
 #include "RotateOut4Bits.pio.h"
 
+namespace jxglib {
+
 //------------------------------------------------------------------------------
 // StepMotor
 //------------------------------------------------------------------------------
@@ -40,4 +42,6 @@ void StepMotor::Stop()
 	posCur_ += (direction_ == Direction::A)? nPulsesDone : -nPulsesDone;
 	nPulsesToSet_ = 0;
 	status_ = Status::Stop;
+}
+
 }

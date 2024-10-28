@@ -8,6 +8,8 @@
 #include "hardware/pio.h"
 #include "hardware/clocks.h"
 
+namespace jxglib {
+
 //------------------------------------------------------------------------------
 // StepMotor
 //------------------------------------------------------------------------------
@@ -45,5 +47,7 @@ public:
 	void Stop();
 	int GetPosCur() const { return posCur_; }
 };
+
+}
 
 #endif

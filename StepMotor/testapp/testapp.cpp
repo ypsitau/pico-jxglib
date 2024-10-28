@@ -4,6 +4,8 @@
 #include <hardware/clocks.h>
 #include <jxglib/StepMotor.h>
 
+using StepMotor = jxglib::StepMotor;
+
 int main()
 {
 	stdio_init_all();

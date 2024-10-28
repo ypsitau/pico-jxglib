@@ -194,10 +194,7 @@ GenerateFont(fontName as String, dirNameOut as String, codeUTF32Tbl_Extra[] as N
 		#define PICO_JXGLIB_FONT_${fontName.Upper()}_H
 		#include "jxglib/Font.h"
 
-		namespace jxglib {
-
-		namespace Font {
-
+		namespace jxglib { namespace Font {
 		namespace NS_${fontName} {
 
 		''')
@@ -229,9 +226,7 @@ GenerateFont(fontName as String, dirNameOut as String, codeUTF32Tbl_Extra[] as N
 		fout.Print(R'''
 		} };
 
-		}
-
-		}
+		} }
 
 		#endif
 		''')

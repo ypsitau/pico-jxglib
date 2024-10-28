@@ -3,10 +3,7 @@
 #define PICO_JXGLIB_FONT_SHINONOME14_H
 #include "jxglib/Font.h"
 
-namespace jxglib {
-
-namespace Font {
-
+namespace jxglib { namespace Font {
 namespace NS_shinonome14 {
 
 const FontEntry f_Invalid = { 0x0000, 7, 14, 7, {
@@ -584,8 +581,6 @@ const FontSet shinonome14 = { &NS_shinonome14::f_Invalid, {
 	&NS_shinonome14::f_9d8f,
 } };
 
-}
-
-}
+} }
 
 #endif
