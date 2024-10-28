@@ -174,16 +174,15 @@ template<class Logic> void SSD1306::DrawRectFillT(int x, int y, int width, int h
 	}
 }
 
-template<class Logic> void SSD1306::DrawCharT(int x, int y, const FontEntry* pFontEntry)
+template<class Logic> void SSD1306::DrawCharT(int x, int y, const FontEntry& fontEntry)
 {
-	if (!pFontEntry) return;
-	int wdFont = pFontEntry->width;
-	int htFont = pFontEntry->height;
+	int wdFont = fontEntry.width;
+	int htFont = fontEntry.height;
 	int bytesPerLine = (wdFont + 7) / 8;
 	int width = wdFont * fontScaleX_;
 	int height = htFont * fontScaleY_;
 	if (!AdjustCoord(&x, &width, GetWidth()) || !AdjustCoord(&y, &height, GetHeight())) return;
-	const uint8_t* pDataBottom = pFontEntry->data + bytesPerLine * htFont;
+	const uint8_t* pDataBottom = fontEntry.data + bytesPerLine * htFont;
 	int pageTop;
 	uint8_t* pTop = raw.GetPointer(x, y, &pageTop);
 	int bitOffset = y - pageTop * 8;
@@ -211,128 +210,93 @@ template<class Logic> void SSD1306::DrawCharT(int x, int y, const FontEntry* pFo
 	}
 }
 
-template<class Logic> void SSD1306::DrawCharT(int x, int y, uint32_t code)
+void SSD1306::DrawPixel(int x, int y)
 {
-	const FontEntry* pFontEntry = pFontSetCur_->GetFontEntry(code);
-	DrawCharT<Logic>(x, y, pFontEntry);
-}
-
-template<class Logic> void SSD1306::DrawStringT(int x, int y, const char* str)
-{
-	uint32_t code;
-	UTF8Decoder decoder;
-	for (const char* p = str; *p; p++) {
-		if (decoder.FeedChar(*p, &code)) {
-			const FontEntry* pFontEntry = pFontSetCur_->GetFontEntry(code);
-			DrawCharT<Logic>(x, y, pFontEntry);
-			x += pFontEntry->width * fontScaleX_;
-		}
+	switch (drawMode_) {
+	case DrawMode::Set:		DrawPixelT<Logic_Set>(x, y); break;
+	case DrawMode::Clear:	DrawPixelT<Logic_Clear>(x, y); break;
+	case DrawMode::Invert:	DrawPixelT<Logic_Invert>(x, y); break;
+	default: break;
 	}
 }
 
 void SSD1306::DrawHLine(int x, int y, int width)
 {
-	DrawHLineT<Logic_Draw>(x, y, width);
+	switch (drawMode_) {
+	case DrawMode::Set:		DrawHLineT<Logic_Set>(x, y, width); break;
+	case DrawMode::Clear:	DrawHLineT<Logic_Clear>(x, y, width); break;
+	case DrawMode::Invert:	DrawHLineT<Logic_Invert>(x, y, width); break;
+	default: break;
+	}
 }
 
 void SSD1306::DrawVLine(int x, int y, int width)
 {
-	DrawVLineT<Logic_Draw>(x, y, width);
+	switch (drawMode_) {
+	case DrawMode::Set:		DrawVLineT<Logic_Set>(x, y, width); break;
+	case DrawMode::Clear:	DrawVLineT<Logic_Clear>(x, y, width); break;
+	case DrawMode::Invert:	DrawVLineT<Logic_Invert>(x, y, width); break;
+	default: break;
+	}
 }
 
 void SSD1306::DrawLine(int x0, int y0, int x1, int y1)
 {
-	DrawLineT<Logic_Draw>(x0, y0, x1, y1);
+	switch (drawMode_) {
+	case DrawMode::Set:		DrawLineT<Logic_Set>(x0, y0, x1, y1); break;
+	case DrawMode::Clear:	DrawLineT<Logic_Clear>(x0, y0, x1, y1); break;
+	case DrawMode::Invert:	DrawLineT<Logic_Invert>(x0, y0, x1, y1); break;
+	default: break;
+	}
 }
 
 void SSD1306::DrawRect(int x, int y, int width, int height)
 {
-	DrawRectT<Logic_Draw>(x, y, width, height);
+	switch (drawMode_) {
+	case DrawMode::Set:		DrawRectT<Logic_Set>(x, y, width, height); break;
+	case DrawMode::Clear:	DrawRectT<Logic_Clear>(x, y, width, height); break;
+	case DrawMode::Invert:	DrawRectT<Logic_Invert>(x, y, width, height); break;
+	default: break;
+	}
 }
 
 void SSD1306::DrawRectFill(int x, int y, int width, int height)
 {
-	DrawRectFillT<Logic_Draw>(x, y, width, height);
+	switch (drawMode_) {
+	case DrawMode::Set:		DrawRectFillT<Logic_Set>(x, y, width, height); break;
+	case DrawMode::Clear:	DrawRectFillT<Logic_Clear>(x, y, width, height); break;
+	case DrawMode::Invert:	DrawRectFillT<Logic_Invert>(x, y, width, height); break;
+	default: break;
+	}
+}
+
+void SSD1306::DrawChar(int x, int y, const FontEntry& fontEntry)
+{
+	switch (drawMode_) {
+	case DrawMode::Set:		DrawCharT<Logic_Set>(x, y, fontEntry); break;
+	case DrawMode::Clear:	DrawCharT<Logic_Clear>(x, y, fontEntry); break;
+	case DrawMode::Invert:	DrawCharT<Logic_Invert>(x, y, fontEntry); break;
+	default: break;
+	}
 }
 
 void SSD1306::DrawChar(int x, int y, uint32_t code)
 {
-	DrawCharT<Logic_Draw>(x, y, code);
+	const FontEntry& fontEntry = pFontSetCur_->GetFontEntry(code);
+	DrawChar(x, y, fontEntry);
 }
 
 void SSD1306::DrawString(int x, int y, const char* str)
 {
-	DrawStringT<Logic_Draw>(x, y, str);
-}
-
-void SSD1306::EraseHLine(int x, int y, int width)
-{
-	DrawHLineT<Logic_Erase>(x, y, width);
-}
-
-void SSD1306::EraseVLine(int x, int y, int height)
-{
-	DrawVLineT<Logic_Erase>(x, y, height);
-}
-
-void SSD1306::EraseLine(int x0, int y0, int x1, int y1)
-{
-	DrawLineT<Logic_Erase>(x0, y0, x1, y1);
-}
-
-void SSD1306::EraseRect(int x, int y, int width, int height)
-{
-	DrawRectT<Logic_Erase>(x, y, width, height);
-}
-
-void SSD1306::EraseRectFill(int x, int y, int width, int height)
-{
-	DrawRectFillT<Logic_Erase>(x, y, width, height);
-}
-
-void SSD1306::EraseChar(int x, int y, uint32_t code)
-{
-	DrawCharT<Logic_Erase>(x, y, code);
-}
-
-void SSD1306::EraseString(int x, int y, const char* str)
-{
-	DrawStringT<Logic_Erase>(x, y, str);
-}
-
-void SSD1306::InvertHLine(int x, int y, int width)
-{
-	DrawHLineT<Logic_Invert>(x, y, width);
-}
-
-void SSD1306::InvertVLine(int x, int y, int height)
-{
-	DrawVLineT<Logic_Invert>(x, y, height);
-}
-
-void SSD1306::InvertLine(int x0, int y0, int x1, int y1)
-{
-	DrawLineT<Logic_Invert>(x0, y0, x1, y1);
-}
-
-void SSD1306::InvertRect(int x, int y, int width, int height)
-{
-	DrawRectT<Logic_Invert>(x, y, width, height);
-}
-
-void SSD1306::InvertRectFill(int x, int y, int width, int height)
-{
-	DrawRectFillT<Logic_Invert>(x, y, width, height);
-}
-
-void SSD1306::InvertChar(int x, int y, uint32_t code)
-{
-	DrawCharT<Logic_Invert>(x, y, code);
-}
-
-void SSD1306::InvertString(int x, int y, const char* str)
-{
-	DrawStringT<Logic_Invert>(x, y, str);
+	uint32_t code;
+	UTF8Decoder decoder;
+	for (const char* p = str; *p; p++) {
+		if (decoder.FeedChar(*p, &code)) {
+			const FontEntry& fontEntry = pFontSetCur_->GetFontEntry(code);
+			DrawChar(x, y, fontEntry);
+			x += fontEntry.width * fontScaleX_;
+		}
+	}
 }
 
 void SSD1306::SortPair(int v1, int v2, int* pMin, int* pMax)

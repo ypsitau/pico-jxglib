@@ -9,7 +9,9 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // DrawMode
 //------------------------------------------------------------------------------
-enum class DrawMode { Set, Clear, Invert };
+enum class DrawMode {
+	Set, Clear, Invert
+};
 
 }
 
