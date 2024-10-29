@@ -101,6 +101,7 @@ void Test_DrawLine(SSD1306& oled)
 	int yBottom = oled.GetHeight() - 1;
 	for (int i = 0; i < 3; i++) {
 		DrawMode drawMode = static_cast<DrawMode>(i);
+		oled.SetDrawMode(drawMode);
 		for (int y = 0; y < oled.GetHeight(); y++) {
 			SetupScreen(oled, drawMode);
 			oled.DrawLine(xMid, yMid, xRight, y);
@@ -232,9 +233,9 @@ int main()
 		//Test_DrawPixel(oled);
 		//Test_DrawHLine(oled);
 		//Test_DrawVLine(oled);
-		//Test_DrawLine(oled);
+		Test_DrawLine(oled);
 		//Test_DrawRect(oled);
 		//Test_DrawRectFill(oled);
-		Test_DrawString(oled);
+		//Test_DrawString(oled);
 	}
 }

@@ -248,22 +248,23 @@ public:
 private:
 	// Draw* Method Template
 	template<class Logic> void DrawPixelT(int x, int y) {
-		uint8_t* p = raw.GetPointer(x, y);
-		*p = Logic()(*p, 1 << (y & 0b111));
+		uint8_t* pDst = raw.GetPointer(x, y);
+		*pDst = Logic()(*pDst, 1 << (y & 0b111));
 	}
-	template<class Logic> void DrawHLineT_NoAdjust(int x, int y, int width);
-	template<class Logic> void DrawVLineT_NoAdjust(int x, int y, int height);
+	template<class Logic> void DrawHLineT_NoAdj(int x, int y, int width);
+	template<class Logic> void DrawVLineT_NoAdj(int x, int y, int height);
 	template<class Logic> void DrawHLineT(int x, int y, int width);
 	template<class Logic> void DrawVLineT(int x, int y, int width);
-	template<class Logic> void DrawLineT(int x0, int y0, int x1, int y1);
-	template<class Logic> void DrawRectT(int x, int y, int width, int height);
+	template<class Logic> void DrawLineT(int x0, int y0, int x1, int y1, int dx, int dy, int sx, int sy);
 	template<class Logic> void DrawRectFillT(int x, int y, int width, int height);
-	template<class Logic> void DrawBitmapT(int x, int y, const void* src, int width, int height);
+	template<class Logic> void DrawBitmapT(int x, int y, const void* src, int width, int height, int scaleX, int scaleY);
 	template<class Logic> void DrawCharT(int x, int y, const FontEntry& fontEntry);
 public:
 	// Draw* Method
 	void DrawPixel(int x, int y);
 	void DrawPixel(const Point& pt) { DrawPixel(pt.x, pt.y); }
+	void DrawHLine_NoAdj(int x, int y, int width);
+	void DrawVLine_NoAdj(int x, int y, int height);
 	void DrawHLine(int x, int y, int width);
 	void DrawHLine(const Point& pt, int width) { DrawHLine(pt.x, pt.y, width); }
 	void DrawVLine(int x, int y, int height);
@@ -274,7 +275,7 @@ public:
 	void DrawRect(const Rect& rc) { DrawRect(rc.x, rc.y, rc.width, rc.height); }
 	void DrawRectFill(int x, int y, int width, int height);
 	void DrawRectFill(const Rect& rc) { DrawRect(rc.x, rc.y, rc.width, rc.height); }
-	void DrawBitmap(int x, int y, const void* src, int width, int height);
+	void DrawBitmap(int x, int y, const void* src, int width, int height, int scaleX = 1, int scaleY = 1);
 	void DrawChar(int x, int y, const FontEntry& fontEntry);
 	void DrawChar(const Point& pt, const FontEntry& fontEntry) { DrawChar(pt.x, pt.y, fontEntry); }
 	void DrawChar(int x, int y, uint32_t code);
@@ -282,7 +283,6 @@ public:
 	void DrawString(int x, int y, const char* str);
 	void DrawString(const Point& pt, const char* str) { DrawString(pt.x, pt.y, str); }
 private:
-	static void SortPair(int v1, int v2, int* pMin, int* pMax);
 	static bool CheckCoord(int v, int vLimit) { return 0 <= v && v < vLimit; }
 	static bool AdjustCoord(int* pV, int* pDist, int vLimit);
 };

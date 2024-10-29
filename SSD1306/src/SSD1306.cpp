@@ -48,112 +48,55 @@ void SSD1306::Refresh()
 	raw.WriteBuffer();
 }
 
-template<class Logic> void SSD1306::DrawHLineT_NoAdjust(int x, int y, int width)
+template<class Logic> void SSD1306::DrawHLineT_NoAdj(int x, int y, int width)
 {
 	uint8_t data = 0b00000001 << (y & 0b111);
-	uint8_t* p = raw.GetPointer(x, y);
-	for (int i = 0; i < width; i++, p++) {
-		assert(raw.EnsureSafePointer(p));
-		*p = Logic()(*p, data);
+	uint8_t* pDst = raw.GetPointer(x, y);
+	for (int i = 0; i < width; i++, pDst++) {
+		assert(raw.EnsureSafePointer(pDst));
+		*pDst = Logic()(*pDst, data);
 	}
 }
 
-template<class Logic> void SSD1306::DrawVLineT_NoAdjust(int x, int y, int height)
+template<class Logic> void SSD1306::DrawVLineT_NoAdj(int x, int y, int height)
 {
 	uint64_t bits = (-1LL << y) & ~(-1LL << (y + height));
 	int page;
-	uint8_t* pTop = raw.GetPointer(x, y, &page);
+	uint8_t* pDstTop = raw.GetPointer(x, y, &page);
 	bits >>= page * 8;
-	for (uint8_t* p = pTop; page < GetNumPages() && bits; page++, p += GetWidth(), bits >>= 8) {
-		assert(raw.EnsureSafePointer(p));
-		*p = Logic()(*p, static_cast<uint8_t>(bits & 0b11111111));
+	for (uint8_t* pDst = pDstTop; page < GetNumPages() && bits; page++, pDst += GetWidth(), bits >>= 8) {
+		assert(raw.EnsureSafePointer(pDst));
+		*pDst = Logic()(*pDst, static_cast<uint8_t>(bits & 0b11111111));
 	}
 }
 
 template<class Logic> void SSD1306::DrawHLineT(int x, int y, int width)
 {
 	if (!CheckCoord(y, GetHeight()) || !AdjustCoord(&x, &width, GetWidth())) return;
-	DrawHLineT_NoAdjust<Logic>(x, y, width);
+	DrawHLineT_NoAdj<Logic>(x, y, width);
 }
 
 template<class Logic> void SSD1306::DrawVLineT(int x, int y, int height)
 {
 	if (!CheckCoord(x, GetWidth()) || !AdjustCoord(&y, &height, GetHeight())) return;
-	DrawVLineT_NoAdjust<Logic>(x, y, height);
+	DrawVLineT_NoAdj<Logic>(x, y, height);
 }
 
-template<class Logic> void SSD1306::DrawLineT(int x0, int y0, int x1, int y1)
+template<class Logic> void SSD1306::DrawLineT(int x0, int y0, int x1, int y1, int dx, int dy, int sx, int sy)
 {
-	if (x0 == x1) {
-		DrawVLineT<Logic>(x0, y0, y1 - y0);
-	} else if (y0 == y1) {
-		DrawHLineT<Logic>(x0, y0, x1 - x0);
-	} else {
-		//int dx = abs(x1 - x0);
-		//int sx = (x0 < x1)? 1 : -1;
-		//int dy = -abs(y1 - y0);
-		//int sy = (y0 < y1)? 1 : -1;
-		int dx, dy, sx, sy;
-		if (x0 < x1) {
-			dx = x1 - x0;
-			sx = +1;
-		} else {
-			dx = x0 - x1;
-			sx = -1;
+	int err = dx + dy;
+	int x = x0, y = y0;
+	for (;;) {
+		DrawPixelT<Logic>(x, y);
+		if (x == x1 && y == y1) break;
+		int err2 = 2 * err;
+		if (err2 >= dy) {
+			err += dy;
+			x += sx;
 		}
-		if (y0 < y1) {
-			dy = y0 - y1;
-			sy = +1;
-		} else {
-			dy = y1 - y0;
-			sy = -1;
-		}
-		int err = dx + dy;
-		int x = x0, y = y0;
-		for (;;) {
-			DrawPixelT<Logic>(x, y);
-			if (x == x1 && y == y1) break;
-			int err2 = 2 * err;
-			if (err2 >= dy) {
-				err += dy;
-				x += sx;
-			}
-			if (err2 <= dx) {
-				err += dx;
-				y += sy;
-			}
-		}
-	}
-}
-
-template<class Logic> void SSD1306::DrawRectT(int x, int y, int width, int height)
-{
-	if (width < 0) {
-		x += width + 1;
-		width = -width;
-	}
-	if (height < 0) {
-		y += height + 1;
-		height = -height;
-	}
-	int xLeft = x, xRight = x + width - 1;
-	int yTop = y, yBottom = y + height - 1;
-	int xLeftAdjust = xLeft, widthAdjust = width;
-	int yTopAdjust = yTop, heightAdjust = height;
-	if (AdjustCoord(&xLeftAdjust, &widthAdjust, GetWidth())) {
-		if (CheckCoord(yTop, GetHeight())) {
-			DrawHLineT_NoAdjust<Logic>(xLeftAdjust, yTop, widthAdjust);
-		}
-		if (CheckCoord(yBottom, GetHeight())) {
-			DrawHLineT_NoAdjust<Logic>(xLeftAdjust, yBottom, widthAdjust);
-		}
-	}
-	if (AdjustCoord(&yTopAdjust, &heightAdjust, GetHeight())) {
-		if (CheckCoord(xLeft, GetWidth())) {
-			DrawVLineT_NoAdjust<Logic>(xLeft, yTopAdjust, heightAdjust);
-		}
-		if (CheckCoord(xRight, GetWidth())) {
-			DrawVLineT_NoAdjust<Logic>(xRight, yTopAdjust, heightAdjust);
+		if (err2 <= dx) {
+			err += dx;
+			y += sy;
 		}
 	}
 }
@@ -163,55 +106,54 @@ template<class Logic> void SSD1306::DrawRectFillT(int x, int y, int width, int h
 	if (!AdjustCoord(&x, &width, GetWidth()) || !AdjustCoord(&y, &height, GetHeight())) return;
 	uint64_t bits = (-1LL << y) & ~(-1LL << (y + height));
 	int page;
-	uint8_t* pTop = raw.GetPointer(x, y, &page);
+	uint8_t* pDstTop = raw.GetPointer(x, y, &page);
 	bits >>= page * 8;
-	for ( ; page < GetNumPages() && bits; page++, pTop += GetWidth(), bits >>= 8) {
-		uint8_t* p = pTop;
-		for (int i = 0; i < width; i++, p++) {
-			assert(raw.EnsureSafePointer(p));
-			*p = Logic()(*p, static_cast<uint8_t>(bits & 0b11111111));
+	for ( ; page < GetNumPages() && bits; page++, pDstTop += GetWidth(), bits >>= 8) {
+		uint8_t* pDst = pDstTop;
+		for (int i = 0; i < width; i++, pDst++) {
+			assert(raw.EnsureSafePointer(pDst));
+			*pDst = Logic()(*pDst, static_cast<uint8_t>(bits & 0b11111111));
 		}
 	}
 }
 
-template<class Logic> void DrawBitmapT(int x, int y, const void* src, int width, int height)
+template<class Logic> void SSD1306::DrawBitmapT(int x, int y, const void* src, int width, int height, int scaleX, int scaleY)
 {
-}
-
-template<class Logic> void SSD1306::DrawCharT(int x, int y, const FontEntry& fontEntry)
-{
-	int wdFont = fontEntry.width;
-	int htFont = fontEntry.height;
-	int bytesPerLine = (wdFont + 7) / 8;
-	int width = wdFont * fontScaleX_;
-	int height = htFont * fontScaleY_;
-	if (!AdjustCoord(&x, &width, GetWidth()) || !AdjustCoord(&y, &height, GetHeight())) return;
-	const uint8_t* pDataBottom = fontEntry.data + bytesPerLine * htFont;
+	int bytesPerLine = (width + 7) / 8;
+	int wdScaled = width * scaleX;
+	int htScaled = height * scaleY;
+	if (!AdjustCoord(&x, &wdScaled, GetWidth()) || !AdjustCoord(&y, &htScaled, GetHeight())) return;
+	const uint8_t* pSrcBottom = reinterpret_cast<const uint8_t*>(src) + bytesPerLine * height;
 	int pageTop;
-	uint8_t* pTop = raw.GetPointer(x, y, &pageTop);
+	uint8_t* pDstTop = raw.GetPointer(x, y, &pageTop);
 	int bitOffset = y - pageTop * 8;
 	int xCur = x;
-	uint32_t bitsDot = (1 << fontScaleY_) - 1;
-	for (int i = 0; i < bytesPerLine; i++, pDataBottom++) {
-		for (uint8_t bitMask = 0x80; bitMask; bitMask >>= 1, pTop += fontScaleX_, xCur += fontScaleX_) {
+	uint32_t bitsDot = (1 << scaleY) - 1;
+	for (int i = 0; i < bytesPerLine; i++, pSrcBottom++) {
+		for (uint8_t bitMask = 0x80; bitMask; bitMask >>= 1, pDstTop += scaleX, xCur += scaleX) {
 			uint64_t bits = 0;
-			const uint8_t* pData = pDataBottom;
-			for (int j = 0; j < htFont; j++) {
-				pData -= bytesPerLine;
-				bits = (bits << fontScaleY_) | ((*pData & bitMask)? bitsDot : 0);
+			const uint8_t* pSrc = pSrcBottom;
+			for (int j = 0; j < height; j++) {
+				pSrc -= bytesPerLine;
+				bits = (bits << scaleY) | ((*pSrc & bitMask)? bitsDot : 0);
 			}
 			bits <<= bitOffset;
-			uint8_t* pLeft = pTop;
-			for (int page = pageTop; page < GetNumPages() && bits; page++, pLeft += GetWidth(), bits >>= 8) {
-				uint8_t* p = pLeft;
+			uint8_t* pDstLeft = pDstTop;
+			for (int page = pageTop; page < GetNumPages() && bits; page++, pDstLeft += GetWidth(), bits >>= 8) {
+				uint8_t* pDst = pDstLeft;
 				uint8_t data = static_cast<uint8_t>(bits & 0b11111111);
-				for (int j = 0; j < fontScaleX_ && xCur + j < GetWidth(); j++, p++) {
-					assert(raw.EnsureSafePointer(p));
-					*p = Logic()(*p, data);
+				for (int j = 0; j < scaleX && xCur + j < GetWidth(); j++, pDst++) {
+					assert(raw.EnsureSafePointer(pDst));
+					*pDst = Logic()(*pDst, data);
 				}
 			}
 		}
 	}
+}
+
+template<class Logic> void SSD1306::DrawCharT(int x, int y, const FontEntry& fontEntry)
+{
+	DrawBitmapT<Logic>(x, y, fontEntry.data, fontEntry.width, fontEntry.height, fontScaleX_, fontScaleY_);
 }
 
 void SSD1306::DrawPixel(int x, int y)
@@ -220,6 +162,26 @@ void SSD1306::DrawPixel(int x, int y)
 	case DrawMode::Set:		DrawPixelT<Logic_Set>(x, y); break;
 	case DrawMode::Clear:	DrawPixelT<Logic_Clear>(x, y); break;
 	case DrawMode::Invert:	DrawPixelT<Logic_Invert>(x, y); break;
+	default: break;
+	}
+}
+
+void SSD1306::DrawHLine_NoAdj(int x, int y, int width)
+{
+	switch (drawMode_) {
+	case DrawMode::Set:		DrawHLineT_NoAdj<Logic_Set>(x, y, width); break;
+	case DrawMode::Clear:	DrawHLineT_NoAdj<Logic_Clear>(x, y, width); break;
+	case DrawMode::Invert:	DrawHLineT_NoAdj<Logic_Invert>(x, y, width); break;
+	default: break;
+	}
+}
+
+void SSD1306::DrawVLine_NoAdj(int x, int y, int width)
+{
+	switch (drawMode_) {
+	case DrawMode::Set:		DrawVLineT_NoAdj<Logic_Set>(x, y, width); break;
+	case DrawMode::Clear:	DrawVLineT_NoAdj<Logic_Clear>(x, y, width); break;
+	case DrawMode::Invert:	DrawVLineT_NoAdj<Logic_Invert>(x, y, width); break;
 	default: break;
 	}
 }
@@ -246,21 +208,65 @@ void SSD1306::DrawVLine(int x, int y, int width)
 
 void SSD1306::DrawLine(int x0, int y0, int x1, int y1)
 {
+	if (x0 == x1) {
+		DrawVLine(x0, y0, y1 - y0);
+		return;
+	} else if (y0 == y1) {
+		DrawHLine(x0, y0, x1 - x0);
+		return;
+	}
+	int dx, dy, sx, sy;
+	if (x0 < x1) {
+		dx = x1 - x0;
+		sx = +1;
+	} else {
+		dx = x0 - x1;
+		sx = -1;
+	}
+	if (y0 < y1) {
+		dy = y0 - y1;
+		sy = +1;
+	} else {
+		dy = y1 - y0;
+		sy = -1;
+	}
 	switch (drawMode_) {
-	case DrawMode::Set:		DrawLineT<Logic_Set>(x0, y0, x1, y1); break;
-	case DrawMode::Clear:	DrawLineT<Logic_Clear>(x0, y0, x1, y1); break;
-	case DrawMode::Invert:	DrawLineT<Logic_Invert>(x0, y0, x1, y1); break;
+	case DrawMode::Set:		DrawLineT<Logic_Set>(x0, y0, x1, y1, dx, dy, sx, sy); break;
+	case DrawMode::Clear:	DrawLineT<Logic_Clear>(x0, y0, x1, y1, dx, dy, sx, sy); break;
+	case DrawMode::Invert:	DrawLineT<Logic_Invert>(x0, y0, x1, y1, dx, dy, sx, sy); break;
 	default: break;
 	}
 }
 
 void SSD1306::DrawRect(int x, int y, int width, int height)
 {
-	switch (drawMode_) {
-	case DrawMode::Set:		DrawRectT<Logic_Set>(x, y, width, height); break;
-	case DrawMode::Clear:	DrawRectT<Logic_Clear>(x, y, width, height); break;
-	case DrawMode::Invert:	DrawRectT<Logic_Invert>(x, y, width, height); break;
-	default: break;
+	if (width < 0) {
+		x += width + 1;
+		width = -width;
+	}
+	if (height < 0) {
+		y += height + 1;
+		height = -height;
+	}
+	int xLeft = x, xRight = x + width - 1;
+	int yTop = y, yBottom = y + height - 1;
+	int xLeftAdjust = xLeft, widthAdjust = width;
+	int yTopAdjust = yTop, heightAdjust = height;
+	if (AdjustCoord(&xLeftAdjust, &widthAdjust, GetWidth())) {
+		if (CheckCoord(yTop, GetHeight())) {
+			DrawHLine_NoAdj(xLeftAdjust, yTop, widthAdjust);
+		}
+		if (CheckCoord(yBottom, GetHeight())) {
+			DrawHLine_NoAdj(xLeftAdjust, yBottom, widthAdjust);
+		}
+	}
+	if (AdjustCoord(&yTopAdjust, &heightAdjust, GetHeight())) {
+		if (CheckCoord(xLeft, GetWidth())) {
+			DrawVLine_NoAdj(xLeft, yTopAdjust, heightAdjust);
+		}
+		if (CheckCoord(xRight, GetWidth())) {
+			DrawVLine_NoAdj(xRight, yTopAdjust, heightAdjust);
+		}
 	}
 }
 
@@ -274,12 +280,13 @@ void SSD1306::DrawRectFill(int x, int y, int width, int height)
 	}
 }
 
-void SSD1306::DrawBitmap(int x, int y, const void* src, int width, int height)
+void SSD1306::DrawBitmap(int x, int y, const void* src, int width, int height, int scaleX, int scaleY)
 {
+	DrawRectFillT<Logic_Clear>(x, y, width, height);
 	switch (drawMode_) {
-	case DrawMode::Set:		DrawBitmapT<Logic_Set>(x, y, src, width, height); break;
-	case DrawMode::Clear:	DrawBitmapT<Logic_Clear>(x, y, src, width, height); break;
-	case DrawMode::Invert:	DrawBitmapT<Logic_Invert>(x, y, src, width, height); break;
+	case DrawMode::Set:		DrawBitmapT<Logic_Set>(x, y, src, width, height, scaleX, scaleY); break;
+	case DrawMode::Clear:	DrawBitmapT<Logic_Clear>(x, y, src, width, height, scaleX, scaleY); break;
+	case DrawMode::Invert:	DrawBitmapT<Logic_Invert>(x, y, src, width, height, scaleX, scaleY); break;
 	default: break;
 	}
 }
@@ -310,15 +317,6 @@ void SSD1306::DrawString(int x, int y, const char* str)
 			DrawChar(x, y, fontEntry);
 			x += fontEntry.width * fontScaleX_;
 		}
-	}
-}
-
-void SSD1306::SortPair(int v1, int v2, int* pMin, int* pMax)
-{
-	if (v1 < v2) {
-		*pMin = v1, *pMax = v2;
-	} else {
-		*pMin = v2, *pMax = v1;
 	}
 }
 
