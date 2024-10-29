@@ -315,7 +315,7 @@ void SSD1306::DrawString(int x, int y, const char* str)
 		if (decoder.FeedChar(*p, &code)) {
 			const FontEntry& fontEntry = pFontSetCur_->GetFontEntry(code);
 			DrawChar(x, y, fontEntry);
-			x += fontEntry.width * fontScaleX_;
+			x += fontEntry.xAdvance * fontScaleX_;
 		}
 	}
 }
