@@ -258,6 +258,7 @@ private:
 	template<class Logic> void DrawLineT(int x0, int y0, int x1, int y1);
 	template<class Logic> void DrawRectT(int x, int y, int width, int height);
 	template<class Logic> void DrawRectFillT(int x, int y, int width, int height);
+	template<class Logic> void DrawBitmapT(int x, int y, const void* src, int width, int height);
 	template<class Logic> void DrawCharT(int x, int y, const FontEntry& fontEntry);
 public:
 	// Draw* Method
@@ -273,6 +274,7 @@ public:
 	void DrawRect(const Rect& rc) { DrawRect(rc.x, rc.y, rc.width, rc.height); }
 	void DrawRectFill(int x, int y, int width, int height);
 	void DrawRectFill(const Rect& rc) { DrawRect(rc.x, rc.y, rc.width, rc.height); }
+	void DrawBitmap(int x, int y, const void* src, int width, int height);
 	void DrawChar(int x, int y, const FontEntry& fontEntry);
 	void DrawChar(const Point& pt, const FontEntry& fontEntry) { DrawChar(pt.x, pt.y, fontEntry); }
 	void DrawChar(int x, int y, uint32_t code);

@@ -3,6 +3,7 @@
 //==============================================================================
 #ifndef PICO_JXGLIB_POINT_h
 #define PICO_JXGLIB_POINT_H
+#include "pico/stdlib.h"
 
 namespace jxglib {
 
@@ -11,6 +12,8 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 struct Point {
 	int x, y;
+public:
+	static const Point Zero;
 };
 
 }

@@ -1,20 +1,19 @@
 //==============================================================================
-// jxglib/Rect.h
+// jxglib/Size.h
 //==============================================================================
-#ifndef PICO_JXGLIB_RECT_H
-#define PICO_JXGLIB_RECT_H
+#ifndef PICO_JXGLIB_SIZE_h
+#define PICO_JXGLIB_SIZE_H
 #include "pico/stdlib.h"
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// Rect
+// Size
 //------------------------------------------------------------------------------
-struct Rect {
-	int x, y;
+struct Size {
 	int width, height;
 public:
-	static const Rect Zero;
+	static const Size Zero;
 };
 
 }

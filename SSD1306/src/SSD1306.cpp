@@ -174,6 +174,10 @@ template<class Logic> void SSD1306::DrawRectFillT(int x, int y, int width, int h
 	}
 }
 
+template<class Logic> void DrawBitmapT(int x, int y, const void* src, int width, int height)
+{
+}
+
 template<class Logic> void SSD1306::DrawCharT(int x, int y, const FontEntry& fontEntry)
 {
 	int wdFont = fontEntry.width;
@@ -266,6 +270,16 @@ void SSD1306::DrawRectFill(int x, int y, int width, int height)
 	case DrawMode::Set:		DrawRectFillT<Logic_Set>(x, y, width, height); break;
 	case DrawMode::Clear:	DrawRectFillT<Logic_Clear>(x, y, width, height); break;
 	case DrawMode::Invert:	DrawRectFillT<Logic_Invert>(x, y, width, height); break;
+	default: break;
+	}
+}
+
+void SSD1306::DrawBitmap(int x, int y, const void* src, int width, int height)
+{
+	switch (drawMode_) {
+	case DrawMode::Set:		DrawBitmapT<Logic_Set>(x, y, src, width, height); break;
+	case DrawMode::Clear:	DrawBitmapT<Logic_Clear>(x, y, src, width, height); break;
+	case DrawMode::Invert:	DrawBitmapT<Logic_Invert>(x, y, src, width, height); break;
 	default: break;
 	}
 }
