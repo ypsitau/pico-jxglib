@@ -4,7 +4,6 @@
 #ifndef PICO_JXGLIB_COMMON_H
 #define PICO_JXGLIB_COMMON_H
 #include "Color.h"
-#include "DrawMode.h"
 #include "FIFOBuff.h"
 #include "Point.h"
 #include "Rect.h"

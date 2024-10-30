@@ -20,6 +20,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class SSD1306 {
 public:
+	enum class DrawMode { Set, Clear, Invert };
 	class Logic_Set {
 	public:
 		uint8_t operator()(uint8_t v1, uint8_t v2) { return v1 | v2; }

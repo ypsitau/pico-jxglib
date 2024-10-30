@@ -12,16 +12,16 @@ using namespace jxglib;
 
 #define ArrayNumberOf(x) (sizeof(x) / sizeof(x[0]))
 
-void SetupScreen(SSD1306& oled, DrawMode drawMode)
+void SetupScreen(SSD1306& oled, SSD1306::DrawMode drawMode)
 {
 	switch (drawMode) {
-	case DrawMode::Set:
+	case SSD1306::DrawMode::Set:
 		oled.Clear();
 		break;
-	case DrawMode::Clear:
+	case SSD1306::DrawMode::Clear:
 		oled.Clear(0xff);
 		break;
-	case DrawMode::Invert:
+	case SSD1306::DrawMode::Invert:
 		oled.Clear();
 		oled.DrawRectFill(16, 16, 96, 32);
 		break;
@@ -43,7 +43,7 @@ void Test_Flash(SSD1306& oled)
 void Test_DrawPixel(SSD1306& oled)
 {
 	for (int i = 0; i < 3; i++) {
-		DrawMode drawMode = static_cast<DrawMode>(i);
+		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
 		oled.SetDrawMode(drawMode);
 		SetupScreen(oled, drawMode);
 		int x = 40, y = 16;
@@ -64,7 +64,7 @@ void Test_DrawPixel(SSD1306& oled)
 void Test_DrawHLine(SSD1306& oled)
 {
 	for (int i = 0; i < 3; i++) {
-		DrawMode drawMode = static_cast<DrawMode>(i);
+		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
 		oled.SetDrawMode(drawMode);
 		for (int x = -64; x < oled.GetWidth(); x++) {
 			SetupScreen(oled, drawMode);
@@ -80,7 +80,7 @@ void Test_DrawHLine(SSD1306& oled)
 void Test_DrawVLine(SSD1306& oled)
 {
 	for (int i = 0; i < 3; i++) {
-		DrawMode drawMode = static_cast<DrawMode>(i);
+		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
 		oled.SetDrawMode(drawMode);
 		for (int y = -64; y < oled.GetHeight(); y++) {
 			SetupScreen(oled, drawMode);
@@ -101,7 +101,7 @@ void Test_DrawLine(SSD1306& oled)
 	int xRight = oled.GetWidth() - 1;
 	int yBottom = oled.GetHeight() - 1;
 	for (int i = 0; i < 3; i++) {
-		DrawMode drawMode = static_cast<DrawMode>(i);
+		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
 		oled.SetDrawMode(drawMode);
 		for (int y = 0; y < oled.GetHeight(); y++) {
 			SetupScreen(oled, drawMode);
@@ -135,7 +135,7 @@ void Test_DrawRect(SSD1306& oled)
 	int xRight = oled.GetWidth() - 1;
 	int yBottom = oled.GetHeight() - 1;
 	for (int i = 0; i < 3; i++) {
-		DrawMode drawMode = static_cast<DrawMode>(i);
+		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
 		oled.SetDrawMode(drawMode);
 		for (int i = 0; i < oled.GetHeight(); i++) {
 			SetupScreen(oled, drawMode);
@@ -157,7 +157,7 @@ void Test_DrawRectFill(SSD1306& oled)
 	int xRight = oled.GetWidth() - 1;
 	int yBottom = oled.GetHeight() - 1;
 	for (int i = 0; i < 3; i++) {
-		DrawMode drawMode = static_cast<DrawMode>(i);
+		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
 		oled.SetDrawMode(drawMode);
 		for (int i = 0; i < oled.GetHeight(); i++) {
 			SetupScreen(oled, drawMode);
@@ -256,7 +256,7 @@ void Test_DrawString(SSD1306& oled)
 		//&Font::sisd24x30,
 	};
 	for (int i = 0; i < 3; i++) {
-		DrawMode drawMode = static_cast<DrawMode>(i);
+		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
 		oled.SetDrawMode(drawMode);
 		for (int iStrTop = 0; iStrTop < ArrayNumberOf(strTbl); iStrTop += 4) {
 		//for (int iStrTop = 0; iStrTop < ArrayNumberOf(strTbl); iStrTop += 2) {
