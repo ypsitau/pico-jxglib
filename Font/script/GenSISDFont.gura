@@ -1,13 +1,106 @@
 #/usr/bin/env gurax
 
+//${Format('0x%02x,', fontInfo.bitmap).Fold(bytesPerLine * 8):*Join() + '\n'}
+
+tmplFontFile = tR'''
+// 16-Segment Display Font
+#ifndef PICO_JXGLIB_FONT_${fontName.Upper()}_H
+#define PICO_JXGLIB_FONT_${fontName.Upper()}_H
+#include "jxglib/Font.h"
+
+namespace jxglib { namespace Font {
+namespace NS_${fontName} {
+
+const FontEntry f_Invalid = { 0x0000, 0, 0, ${xAdvance}, {
+} };
+
+${fontInfoTbl.Each {|fontInfo|}}
+const FontEntry f_${Format('%04x', fontInfo.code)} = { 0x${Format('%04x', fontInfo.code)}, ${width}, ${height}, ${xAdvance}, {
+${Format('0b%08b,', fontInfo.bitmap).Fold(bytesPerLine):*Join() + '\n'}
+} };
+${end}
+
+}
+
+const FontSet ${fontName} = { &NS_${fontName}::f_Invalid, {
+	${Range(0x20, 0x7f) {|code|}}
+	&NS_${fontName}::f_${Format('%04x', code)},
+	${end}
+}, 0, {
+} };
+
+} }
+
+#endif
+'''
+
+main() = {
+	fontName = 'SISD32'
+	width = 20, height = 32, xAdvance = 24, bytesPerLine = Int((width + 7) / 8)
+	fontInfoTbl = FontInfo(0x20.., patternTbl, segmentInfo_24x30)
+	tmplFontFile.Render(sys.cout)
+}
+
 SegmentInfo = struct { width as Number, height as Number, bitmapSrcDict as Dict }
 
-segmentInfo_20x28 = SegmentInfo(
-24, 29, %{
+FontInfo = class {
+	code as Number
+	width as Number
+	height as Number
+	bitmap[] as Number = []
+	__init__(code as Number, pattern as String, segmentInfo as SegmentInfo):map = {
+		this.code = code
+		this.width = segmentInfo.width
+		this.height = segmentInfo.height
+		this.bitmap = Dim(Int((this.width + 7) / 8) * this.height) { 0 }
+		lines = pattern.EachLine():chop:*Align(5, `left)[]
+		if (lines.len != 5) {
+			sys.cerr.Println('invalid number of lines')
+			sys.cerr.Println(pattern)
+			sys.Exit()
+		}
+		(lines[0][1] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['a1'])
+		(lines[0][3] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['a2'])
+		(lines[1][0] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['f'])
+		(lines[1][1] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['h'])
+		(lines[1][2] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['i'])
+		(lines[1][3] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['j'])
+		(lines[1][4] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['b'])
+		(lines[2][1] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['g1'])
+		(lines[2][3] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['g2'])
+		(lines[3][0] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['e'])
+		(lines[3][1] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['k'])
+		(lines[3][2] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['l'])
+		(lines[3][3] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['m'])
+		(lines[3][4] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['c'])
+		(lines[4][1] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['d1'])
+		(lines[4][3] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['d2'])
+		(lines[4][4] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['dp'])
+	}
+	PutSegment(bitmapSrc as String) = {
+		iLine = 0
+		bitmapSrc.ToReader().ReadLines():chop {|line|
+			('0b' + line.Fold(8)):*Align(8, `left, '.'):*Replace('#', '1'):*Replace('.', '0'):*ToNumber().Each {|data|
+				this.bitmap[iLine] |= data
+				iLine += 1
+			}
+		}
+	}
+	GenerateCCode(fout as Stream) = {
+		bytesPerLine = Int((this.width + 7) / 8)
+		this.bitmap.Fold(bytesPerLine) {|bitmapPerLine|
+			fout.Println(Format('%08b', bitmapPerLine).Join())
+		}
+	}
+}
+
+segmentInfo_24x30 = SegmentInfo(
+24, 30, %{
 'a1' => R'''
 ...#######..............
 ..########..............
 ...#######..............
+........................
 ........................
 ........................
 ........................
@@ -65,6 +158,7 @@ segmentInfo_20x28 = SegmentInfo(
 ........................
 ........................
 ........................
+........................
 '''
 'b' => R'''
 ........................
@@ -81,6 +175,7 @@ segmentInfo_20x28 = SegmentInfo(
 ..................###...
 ..................###...
 ...................#....
+........................
 ........................
 ........................
 ........................
@@ -127,6 +222,7 @@ segmentInfo_20x28 = SegmentInfo(
 ...................#....
 ........................
 ........................
+........................
 '''
 'd1' => R'''
 ........................
@@ -158,6 +254,7 @@ segmentInfo_20x28 = SegmentInfo(
 ...#######..............
 ..########..............
 ...#######..............
+........................
 '''
 'd2' => R'''
 ........................
@@ -189,6 +286,7 @@ segmentInfo_20x28 = SegmentInfo(
 ...........#######......
 ...........########.....
 ...........#######......
+........................
 '''
 'e' => R'''
 ........................
@@ -220,6 +318,7 @@ segmentInfo_20x28 = SegmentInfo(
 .#......................
 ........................
 ........................
+........................
 '''
 'f' => R'''
 ........................
@@ -236,6 +335,7 @@ segmentInfo_20x28 = SegmentInfo(
 ###.....................
 ###.....................
 .#......................
+........................
 ........................
 ........................
 ........................
@@ -282,6 +382,7 @@ segmentInfo_20x28 = SegmentInfo(
 ........................
 ........................
 ........................
+........................
 '''
 'g2' => R'''
 ........................
@@ -313,6 +414,7 @@ segmentInfo_20x28 = SegmentInfo(
 ........................
 ........................
 ........................
+........................
 '''
 'h' => R'''
 ........................
@@ -328,6 +430,7 @@ segmentInfo_20x28 = SegmentInfo(
 ......###...............
 ......###...............
 ......###...............
+........................
 ........................
 ........................
 ........................
@@ -375,6 +478,7 @@ segmentInfo_20x28 = SegmentInfo(
 ........................
 ........................
 ........................
+........................
 '''
 'j' => R'''
 ........................
@@ -390,6 +494,7 @@ segmentInfo_20x28 = SegmentInfo(
 ............###.........
 ............###.........
 ............###.........
+........................
 ........................
 ........................
 ........................
@@ -437,6 +542,7 @@ segmentInfo_20x28 = SegmentInfo(
 ........................
 ........................
 ........................
+........................
 '''
 'l' => R'''
 ........................
@@ -465,6 +571,7 @@ segmentInfo_20x28 = SegmentInfo(
 .........###............
 .........###............
 .........###............
+........................
 ........................
 ........................
 ........................
@@ -499,8 +606,10 @@ segmentInfo_20x28 = SegmentInfo(
 ........................
 ........................
 ........................
+........................
 '''
 'dp' => R'''
+........................
 ........................
 ........................
 ........................
@@ -533,99 +642,14 @@ segmentInfo_20x28 = SegmentInfo(
 '''
 })
 
-tmpl = tR'''
-// 16-Segment Display Font
-#ifndef PICO_JXGLIB_FONT_${fontName.Upper()}_H
-#define PICO_JXGLIB_FONT_${fontName.Upper()}_H
-#include "jxglib/Font.h"
-
-namespace jxglib { namespace Font {
-namespace NS_${fontName} {
-
-const FontEntry f_Invalid = { 0x0000, 0, 0, ${xAdvance}, {
-} };
-
-${fontInfoTbl.Each {|fontInfo|}}
-const FontEntry f_${Format('%04x', fontInfo.code)} = { 0x${Format('%04x', fontInfo.code)}, ${width}, ${height}, ${xAdvance}, {
-${Format('0x%02x,', fontInfo.bitmap).Fold(24):*Join() + '\n'}
-} };
-${end}
-
-}
-
-const FontSet ${fontName} = { &NS_${fontName}::f_Invalid, {
-	${Range(0x20, 0x7f) {|code|}}
-	&NS_${fontName}::f_${Format('%04x', code)},
-	${end}
-}, 0, {
-} };
-
-} }
-
-#endif
-'''
-
-FontInfo = class {
-	code as Number
-	width as Number
-	height as Number
-	bitmap[] as Number = []
-	__init__(code as Number, pattern as String, segmentInfo as SegmentInfo) = {
-		this.code = code
-		this.width = segmentInfo.width
-		this.height = segmentInfo.height
-		this.bitmap = Dim(Int((this.width + 7) / 8) * this.height) { 0 }
-		lines = pattern.EachLine():chop:*Align(5, `left)[]
-		if (lines.len != 5) {
-			sys.cerr.Println('invalid number of lines')
-			sys.cerr.Println(pattern)
-			sys.Exit()
-		}
-		(lines[0][1] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['a1'])
-		(lines[0][3] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['a2'])
-		(lines[1][0] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['f'])
-		(lines[1][1] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['h'])
-		(lines[1][2] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['i'])
-		(lines[1][3] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['j'])
-		(lines[1][4] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['b'])
-		(lines[2][1] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['g1'])
-		(lines[2][3] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['g2'])
-		(lines[3][0] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['e'])
-		(lines[3][1] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['k'])
-		(lines[3][2] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['l'])
-		(lines[3][3] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['m'])
-		(lines[3][4] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['c'])
-		(lines[4][1] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['d1'])
-		(lines[4][3] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['d2'])
-		(lines[4][4] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['dp'])
-	}
-	PutSegment(bitmapSrc as String) = {
-		iLine = 0
-		bitmapSrc.ToReader().ReadLines():chop {|line|
-			('0b' + line.Fold(8)):*Align(8, `left, '.'):*Replace('#', '1'):*Replace('.', '0'):*ToNumber().Each {|data|
-				this.bitmap[iLine] |= data
-				iLine += 1
-			}
-		}
-	}
-	GenerateCCode(fout as Stream) = {
-		bytesPerLine = Int((this.width + 7) / 8)
-		this.bitmap.Fold(bytesPerLine) {|bitmapPerLine|
-			fout.Println(Format('%08b', bitmapPerLine).Join())
-		}
-	}
-}
-
-fontInfoTbl = []
-
-R'''
- - -
-|\|/|
- - -
-|/|\|
- - -
-'''
 patternTbl = [
+R'''
+
+
+
+
+
+'''
 R'''
 
     |
@@ -1236,7 +1260,7 @@ R'''
 
 '''
 R'''
- - -
+
  \ /
 
  / \
@@ -1286,13 +1310,4 @@ R'''
 '''
 ]
 
-fontName = 'SISD32'
-width = 20, height = 32, xAdvance = 24
-
-//tmpl.Render(sys.cout)
-
-patternTbl.Each {|pattern|
-	fontInfo = FontInfo(0, pattern, segmentInfo_20x28)
-	fontInfo.GenerateCCode(sys.cout)
-	Println()
-}
+main()
