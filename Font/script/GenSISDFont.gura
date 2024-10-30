@@ -2,6 +2,7 @@
 
 //${Format('0x%02x,', fontInfo.bitmap).Fold(bytesPerLine * 8):*Join() + '\n'}
 
+//******************************************************************************
 tmplFontFile = tR'''
 // 16-Segment Display Font
 #ifndef PICO_JXGLIB_FONT_${fontName.Upper()}_H
@@ -33,6 +34,7 @@ const FontSet ${fontName} = { &NS_${fontName}::f_Invalid, {
 
 #endif
 '''
+//******************************************************************************
 
 main() = {
 	fontName = 'SISD32'
