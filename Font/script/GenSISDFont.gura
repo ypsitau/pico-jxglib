@@ -1,6 +1,5 @@
 #/usr/bin/env gurax
 
-//${Format('0x%02x,', fontInfo.bitmap).Fold(bytesPerLine * 8):*Join() + '\n'}
 
 //******************************************************************************
 tmplFontFile = tR'''
@@ -17,7 +16,9 @@ const FontEntry f_Invalid = { 0x0000, 0, 0, ${xAdvance}, {
 
 ${fontInfoTbl.Each {|fontInfo|}}
 const FontEntry f_${Format('%04x', fontInfo.code)} = { 0x${Format('%04x', fontInfo.code)}, ${width}, ${height}, ${xAdvance}, {
-${Format('0b%08b,', fontInfo.bitmap).Fold(bytesPerLine):*Join() + '\n'}
+${cond(readableFlag,
+	Format('0b%08b,', fontInfo.bitmap).Fold(bytesPerLine),
+	Format('0x%02x,', fontInfo.bitmap).Fold(nColsPerLine)):*Join() + '\n'}
 } };
 ${end}
 
@@ -37,10 +38,14 @@ const FontSet ${fontName} = { &NS_${fontName}::f_Invalid, {
 //******************************************************************************
 
 main() = {
-	fontName = 'SISD32'
+	fontName = 'sisd24x30'
+	fileNameOut = fontName + '.h'
 	width = 20, height = 32, xAdvance = 24, bytesPerLine = Int((width + 7) / 8)
-	fontInfoTbl = FontInfo(0x20.., patternTbl, segmentInfo_24x30)
-	tmplFontFile.Render(sys.cout)
+	readableFlag = true
+	nColsPerLine = 24
+	fontInfoTbl = FontInfo(0x20.., patternTbl, segmentInfoDict[fontName])
+	tmplFontFile.Render(fileNameOut)
+	sys.cerr.Printf('Generated: %s\n', fileNameOut)
 }
 
 SegmentInfo = struct { width as Number, height as Number, bitmapSrcDict as Dict }
@@ -88,15 +93,10 @@ FontInfo = class {
 			}
 		}
 	}
-	GenerateCCode(fout as Stream) = {
-		bytesPerLine = Int((this.width + 7) / 8)
-		this.bitmap.Fold(bytesPerLine) {|bitmapPerLine|
-			fout.Println(Format('%08b', bitmapPerLine).Join())
-		}
-	}
 }
 
-segmentInfo_24x30 = SegmentInfo(
+segmentInfoDict = %{
+'sisd24x30' => SegmentInfo(
 24, 30, %{
 'a1' => R'''
 ...#######..............
@@ -643,6 +643,7 @@ segmentInfo_24x30 = SegmentInfo(
 .....................###
 '''
 })
+}
 
 patternTbl = [
 R'''

@@ -20,8 +20,8 @@ formatter = nil
 
 Formatter_Hex = class {
 	iCol_ as Number = 0
-	nCols_ as Number
-	__init__(nCols as Number) = { this.nCols_ = nCols }
+	nColsPerLine_ as Number
+	__init__(nColsPerLine as Number) = { this.nColsPerLine_ = nColsPerLine }
 	Begin(fout as Stream) = { this.iCol_ = 0 }
 	End(fout as Stream) = { (this.iCol_ > 0) && fout.Print('\n') }
 	PutData(fout as Stream, nBits as Number, data as Number):void:map = {
@@ -32,7 +32,7 @@ Formatter_Hex = class {
 			nBits -= 8
 		}
 		buff.Reverse {|num|
-			if (this.iCol_ == this.nCols_) { fout.Printf('\n'), this.iCol_ = 0 }
+			if (this.iCol_ == this.nColsPerLine_) { fout.Printf('\n'), this.iCol_ = 0 }
 			fout.Printf('0x%02x,', num)
 			this.iCol_ += 1
 		}
@@ -128,12 +128,12 @@ main() = {
 		}
 	}
 	try {
-		nCols = Int(opt['cols'] || '24')
+		nColsPerLine = Int(opt['cols'] || '24')
 	} catch {
 		sys.cerr.Println('cols should take a number')
 		sys.Exit(1)
 	}
-	formatter:extern = cond(opt['readable'], Formatter_Binary(), Formatter_Hex(nCols))
+	formatter:extern = cond(opt['readable'], Formatter_Binary(), Formatter_Hex(nColsPerLine))
 	if (argv.len < 1) {
 		sys.cerr.Println('specify a font name to generate')
 		sys.cerr.Printf('available fonts: %s\n', dictEmbeddedFileContent.EachKey().Sort().Join(', '))
