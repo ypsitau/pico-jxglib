@@ -1,6 +1,9 @@
 #/usr/bin/env gurax
 
-segmentTbl = %{
+SegmentInfo = struct { width as Number, height as Number, bitmapSrcDict as Dict }
+
+segmentInfo_20x28 = SegmentInfo(
+20, 29, %{
 'a1' => R'''
 ...#######..............
 ..########..............
@@ -497,7 +500,7 @@ segmentTbl = %{
 ........................
 ........................
 '''
-}
+})
 
 tmpl = tR'''
 // 16-Segment Display Font
@@ -536,46 +539,45 @@ FontInfo = class {
 	width as Number
 	height as Number
 	bitmap[] as Number = []
-	__init__(code as Number, width as Number, height as Number, pattern as String) = {
+	__init__(code as Number, pattern as String, segmentInfo as SegmentInfo) = {
 		this.code = code
-		this.width = width
-		this.height = height
-		bytesPerLine = Int(this.width + 7) / 8
-		this.bitmap = Dim(bytesPerLine * this.height) { 0 }
+		this.width = segmentInfo.width
+		this.height = segmentInfo.height
+		this.bitmap = Dim(Int((this.width + 7) / 8) * this.height) { 0 }
 		lines = pattern.EachLine():chop:*Align(5, `left)[]
 		if (lines.len != 5) {
 			sys.cerr.Println('invalid number of lines')
 			sys.cerr.Println(pattern)
 			sys.Exit()
 		}
-		(lines[0][1] != ' ') && this.PutSegment(segmentTbl['a1'])
-		(lines[0][3] != ' ') && this.PutSegment(segmentTbl['a2'])
-		(lines[1][0] != ' ') && this.PutSegment(segmentTbl['f'])
-		(lines[1][1] != ' ') && this.PutSegment(segmentTbl['h'])
-		(lines[1][2] != ' ') && this.PutSegment(segmentTbl['i'])
-		(lines[1][3] != ' ') && this.PutSegment(segmentTbl['j'])
-		(lines[1][4] != ' ') && this.PutSegment(segmentTbl['b'])
-		(lines[2][1] != ' ') && this.PutSegment(segmentTbl['g1'])
-		(lines[2][3] != ' ') && this.PutSegment(segmentTbl['g2'])
-		(lines[3][0] != ' ') && this.PutSegment(segmentTbl['e'])
-		(lines[3][1] != ' ') && this.PutSegment(segmentTbl['k'])
-		(lines[3][2] != ' ') && this.PutSegment(segmentTbl['l'])
-		(lines[3][3] != ' ') && this.PutSegment(segmentTbl['m'])
-		(lines[3][4] != ' ') && this.PutSegment(segmentTbl['c'])
-		(lines[4][1] != ' ') && this.PutSegment(segmentTbl['d1'])
-		(lines[4][3] != ' ') && this.PutSegment(segmentTbl['d2'])
+		(lines[0][1] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['a1'])
+		(lines[0][3] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['a2'])
+		(lines[1][0] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['f'])
+		(lines[1][1] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['h'])
+		(lines[1][2] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['i'])
+		(lines[1][3] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['j'])
+		(lines[1][4] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['b'])
+		(lines[2][1] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['g1'])
+		(lines[2][3] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['g2'])
+		(lines[3][0] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['e'])
+		(lines[3][1] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['k'])
+		(lines[3][2] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['l'])
+		(lines[3][3] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['m'])
+		(lines[3][4] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['c'])
+		(lines[4][1] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['d1'])
+		(lines[4][3] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['d2'])
 	}
-	PutSegment(pattern as String) = {
-		i = 0
-		pattern.ToReader().ReadLines():chop {|line|
+	PutSegment(bitmapSrc as String) = {
+		iLine = 0
+		bitmapSrc.ToReader().ReadLines():chop {|line|
 			('0b' + line.Fold(8)):*Align(8, `left, '.'):*Replace('#', '1'):*Replace('.', '0'):*ToNumber().Each {|data|
-				this.bitmap[i] |= data
-				i += 1
+				this.bitmap[iLine] |= data
+				iLine += 1
 			}
 		}
 	}
 	GenerateCCode(fout as Stream) = {
-		bytesPerLine = Int(this.width + 7) / 8
+		bytesPerLine = Int((this.width + 7) / 8)
 		this.bitmap.Fold(bytesPerLine) {|bitmapPerLine|
 			fout.Println(Format('%08b', bitmapPerLine).Join())
 		}
@@ -733,7 +735,7 @@ width = 20, height = 32, xAdvance = 24
 //tmpl.Render(sys.cout)
 
 patternTbl.Each {|pattern|
-	fontInfo = FontInfo(0, width, height, pattern)
+	fontInfo = FontInfo(0, pattern, segmentInfo_20x28)
 	fontInfo.GenerateCCode(sys.cout)
 	Println()
 }
