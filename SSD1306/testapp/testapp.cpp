@@ -263,10 +263,15 @@ void Test_DrawString(SSD1306& oled)
 
 void Test_DrawStringSISD(SSD1306& oled)
 {
-	oled.Clear();
 	oled.SetFont(Font::sisd24x32);
-	oled.DrawString(0, 0, "1");
-	oled.Refresh();
+	for (int i = 0; i < 100; i++) {
+		char str[16];
+		::sprintf(str, "%5d", 12345 + i);
+		oled.Clear();
+		oled.DrawString(0, 0, str);
+		oled.Refresh();
+		::sleep_ms(300);
+	}
 }
 
 int main()

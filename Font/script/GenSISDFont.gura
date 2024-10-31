@@ -5,7 +5,7 @@ tmplFontFile = tR'''
 // ${description}
 #ifndef PICO_JXGLIB_FONT_${fontName.Upper()}_H
 #define PICO_JXGLIB_FONT_${fontName.Upper()}_H
-#include "jxglib/Font h"
+#include "jxglib/Font.h"
 
 namespace jxglib { namespace Font {
 namespace NS_${fontName} {
