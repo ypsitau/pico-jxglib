@@ -6,7 +6,7 @@
 #include "Font/shinonome14.h"
 #include "Font/shinonome16.h"
 #include "jxglib/Font/shinonome18.h"
-#include "Font/sisd24x30.h"
+#include "Font/sisd24x32.h"
 
 using namespace jxglib;
 
@@ -219,16 +219,6 @@ void Test_DrawBitmap(SSD1306& oled)
 void Test_DrawString(SSD1306& oled)
 {
 	const char* strTbl[] = {
-#if 0
-		" !\"#$",
-		"%&'()",
-		"*+,-.",
-		"/0123",
-		"45678",
-		"9:;<=",
-		">?",
-#endif
-#if 1
 		" !\"#$%&'()*+,-./",
 		"0123456789:;<=>?",
 		"",
@@ -249,23 +239,19 @@ void Test_DrawString(SSD1306& oled)
 		"小供の時から",
 		"損ばかりしている",
 		"",
-#endif
 	};
 	const FontSet* fontSetTbl[] = {
 		&Font::shinonome12, &Font::shinonome14, &Font::shinonome16,
-		//&Font::sisd24x30,
 	};
 	for (int i = 0; i < 3; i++) {
 		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
 		oled.SetDrawMode(drawMode);
 		for (int iStrTop = 0; iStrTop < ArrayNumberOf(strTbl); iStrTop += 4) {
-		//for (int iStrTop = 0; iStrTop < ArrayNumberOf(strTbl); iStrTop += 2) {
 			for (int iFont = 0; iFont < ArrayNumberOf(fontSetTbl); iFont++) {
 				oled.SetFont(*fontSetTbl[iFont]);
 				SetupScreen(oled, drawMode);
 				int y = 0;
 				for (int iStr = iStrTop; iStr < iStrTop + 4 && iStr < ArrayNumberOf(strTbl); iStr++, y += 16) {
-				//for (int iStr = iStrTop; iStr < iStrTop + 2 && iStr < ArrayNumberOf(strTbl); iStr++, y += 32) {
 					oled.DrawString(0, y, strTbl[iStr]);
 				}
 				oled.Refresh();
@@ -273,6 +259,14 @@ void Test_DrawString(SSD1306& oled)
 			}
 		}
 	}
+}
+
+void Test_DrawStringSISD(SSD1306& oled)
+{
+	oled.Clear();
+	oled.SetFont(Font::sisd24x32);
+	oled.DrawString(0, 0, "1");
+	oled.Refresh();
 }
 
 int main()
@@ -294,6 +288,7 @@ int main()
 		//Test_DrawRect(oled);
 		//Test_DrawRectFill(oled);
 		//Test_DrawBitmap(oled);
-		Test_DrawString(oled);
+		//Test_DrawString(oled);
+		Test_DrawStringSISD(oled);
 	}
 }
