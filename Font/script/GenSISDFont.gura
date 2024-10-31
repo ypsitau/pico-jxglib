@@ -10,6 +10,14 @@ tmplFontFile = tR'''
 namespace jxglib { namespace Font {
 namespace NS_${fontName} {
 
+FontInfo = struct {
+	code as Number
+	width as Number
+	height as Number
+	xAdvance as Number
+	bitmap[] as Number = []
+}
+
 const FontEntry f_Invalid = { 0x${Format('%04x', fontInfo_Invalid.code)}, ${fontInfo_Invalid.width}, ${fontInfo_Invalid.height}, ${fontInfo_Invalid.xAdvance}, {
 ${cond(!fontInfo_Invalid.bitmap.IsEmpty(), cond(readableFlag,
 	Format('0b%08b,', fontInfo_Invalid.bitmap).Fold(Int((fontInfo_Invalid.width + 7) / 8)),
@@ -108,14 +116,6 @@ SegmentFontGenerator = struct {
 			}
 		}
 	}
-}
-
-FontInfo = struct {
-	code as Number
-	width as Number
-	height as Number
-	xAdvance as Number
-	bitmap[] as Number = []
 }
 
 segmentElemInfoDict = %{
