@@ -392,7 +392,7 @@ const FontEntry f_007e = { 0x007e, 6, 12, 6, {
 
 }
 
-const FontSet shinonome12 = { &NS_shinonome12::f_Invalid, {
+const FontSet shinonome12 = { 12, &NS_shinonome12::f_Invalid, {
 	&NS_shinonome12::f_0020,
 	&NS_shinonome12::f_0021,
 	&NS_shinonome12::f_0022,

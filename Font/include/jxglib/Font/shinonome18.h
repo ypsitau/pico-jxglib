@@ -488,7 +488,7 @@ const FontEntry f_007e = { 0x007e, 9, 18, 9, {
 
 }
 
-const FontSet shinonome18 = { &NS_shinonome18::f_Invalid, {
+const FontSet shinonome18 = { 18, &NS_shinonome18::f_Invalid, {
 	&NS_shinonome18::f_0020,
 	&NS_shinonome18::f_0021,
 	&NS_shinonome18::f_0022,
