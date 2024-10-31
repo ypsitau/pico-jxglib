@@ -47,10 +47,10 @@ main() = {
 	fileNameOut = fontName + '.h'
 	readableFlag = true
 	nColsPerLine = 24
-	segmentElemInfo = segmentElemInfoDict[fontName]
-	yAdvance = segmentElemInfo.height
-	fontInfo_Invalid = FontInfo(0, 0, 0, 0, [])
-	fontInfoTbl_Basic = FontInfo.CreateSegmentFont(0x20.., segmentPatternTbl, segmentElemInfo)
+	segmentFontGenerator = segmentElemInfoDict[fontName]
+	yAdvance = segmentFontGenerator.height
+	fontInfo_Invalid = FontInfo(0x0000, 0, 0, 0, [])
+	fontInfoTbl_Basic = segmentFontGenerator.CreateFont()
 	fontInfoTbl_Extra = []
 	description = '16-Segment Display Font'
 	codeUTF32Tbl_Extra = []
@@ -58,10 +58,56 @@ main() = {
 	sys.cerr.Printf('Generated: %s\n', fileNameOut)
 }
 
-SegmentElemInfo = struct {
+SegmentFontGenerator = struct {
 	width as Number
 	height as Number
 	bitmapSrcDict as Dict
+	CreateFont() = {
+		fontInfoTbl = []
+		code = 0x20
+		segmentPatternTbl.Each {|segmentPattern|
+			fontInfo = FontInfo()
+			fontInfo.code = code
+			code += 1
+			fontInfo.width = this.width
+			fontInfo.height = this.height
+			fontInfo.xAdvance = fontInfo.width
+			fontInfo.bitmap = Dim(Int((fontInfo.width + 7) / 8) * fontInfo.height) { 0 }
+			lines = segmentPattern.EachLine():chop:*Replace('.', ' '):*Align(5, `left)[]
+			if (lines.len != 5) {
+				sys.cerr.Println('invalid number of lines')
+				sys.cerr.Println(segmentPattern)
+				sys.Exit()
+			}
+			(lines[0][1] != ' ') && this.PutSegmentElem(fontInfo, this.bitmapSrcDict['a1'])
+			(lines[0][3] != ' ') && this.PutSegmentElem(fontInfo, this.bitmapSrcDict['a2'])
+			(lines[1][0] != ' ') && this.PutSegmentElem(fontInfo, this.bitmapSrcDict['f'])
+			(lines[1][1] != ' ') && this.PutSegmentElem(fontInfo, this.bitmapSrcDict['h'])
+			(lines[1][2] != ' ') && this.PutSegmentElem(fontInfo, this.bitmapSrcDict['i'])
+			(lines[1][3] != ' ') && this.PutSegmentElem(fontInfo, this.bitmapSrcDict['j'])
+			(lines[1][4] != ' ') && this.PutSegmentElem(fontInfo, this.bitmapSrcDict['b'])
+			(lines[2][1] != ' ') && this.PutSegmentElem(fontInfo, this.bitmapSrcDict['g1'])
+			(lines[2][3] != ' ') && this.PutSegmentElem(fontInfo, this.bitmapSrcDict['g2'])
+			(lines[3][0] != ' ') && this.PutSegmentElem(fontInfo, this.bitmapSrcDict['e'])
+			(lines[3][1] != ' ') && this.PutSegmentElem(fontInfo, this.bitmapSrcDict['k'])
+			(lines[3][2] != ' ') && this.PutSegmentElem(fontInfo, this.bitmapSrcDict['l'])
+			(lines[3][3] != ' ') && this.PutSegmentElem(fontInfo, this.bitmapSrcDict['m'])
+			(lines[3][4] != ' ') && this.PutSegmentElem(fontInfo, this.bitmapSrcDict['c'])
+			(lines[4][1] != ' ') && this.PutSegmentElem(fontInfo, this.bitmapSrcDict['d1'])
+			(lines[4][3] != ' ') && this.PutSegmentElem(fontInfo, this.bitmapSrcDict['d2'])
+			(lines[4][4] != ' ') && this.PutSegmentElem(fontInfo, this.bitmapSrcDict['dp'])
+			fontInfoTbl.Add(fontInfo)
+		}
+	}
+	PutSegmentElem(fontInfo as FontInfo, bitmapSrc as String) = {
+		iLine = 0
+		bitmapSrc.ToReader().ReadLines():chop {|line|
+			('0b' + line.Fold(8)):*Align(8, `left, '.'):*Replace('#', '1'):*Replace('.', '0'):*ToNumber().Each {|data|
+				fontInfo.bitmap[iLine] |= data
+				iLine += 1
+			}
+		}
+	}
 }
 
 FontInfo = struct {
@@ -70,51 +116,10 @@ FontInfo = struct {
 	height as Number
 	xAdvance as Number
 	bitmap[] as Number = []
-	CreateSegmentFont(code as Number, segmentPattern as String, segmentElemInfo as SegmentElemInfo):map:static = {
-		fontInfo = FontInfo()
-		fontInfo.code = code
-		fontInfo.width = segmentElemInfo.width
-		fontInfo.height = segmentElemInfo.height
-		fontInfo.xAdvance = fontInfo.width
-		fontInfo.bitmap = Dim(Int((fontInfo.width + 7) / 8) * fontInfo.height) { 0 }
-		lines = segmentPattern.EachLine():chop:*Replace('.', ' '):*Align(5, `left)[]
-		if (lines.len != 5) {
-			sys.cerr.Println('invalid number of lines')
-			sys.cerr.Println(segmentPattern)
-			sys.Exit()
-		}
-		(lines[0][1] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['a1'])
-		(lines[0][3] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['a2'])
-		(lines[1][0] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['f'])
-		(lines[1][1] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['h'])
-		(lines[1][2] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['i'])
-		(lines[1][3] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['j'])
-		(lines[1][4] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['b'])
-		(lines[2][1] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['g1'])
-		(lines[2][3] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['g2'])
-		(lines[3][0] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['e'])
-		(lines[3][1] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['k'])
-		(lines[3][2] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['l'])
-		(lines[3][3] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['m'])
-		(lines[3][4] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['c'])
-		(lines[4][1] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['d1'])
-		(lines[4][3] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['d2'])
-		(lines[4][4] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['dp'])
-		fontInfo
-	}
-	PutSegmentElem(bitmapSrc as String) = {
-		iLine = 0
-		bitmapSrc.ToReader().ReadLines():chop {|line|
-			('0b' + line.Fold(8)):*Align(8, `left, '.'):*Replace('#', '1'):*Replace('.', '0'):*ToNumber().Each {|data|
-				this.bitmap[iLine] |= data
-				iLine += 1
-			}
-		}
-	}
 }
 
 segmentElemInfoDict = %{
-'sisd24x32' => SegmentElemInfo(
+'sisd24x32' => SegmentFontGenerator(
 24, 32, %{
 'a1' => R'''
 ...#######..............
@@ -708,11 +713,11 @@ R'''
 segmentPatternTbl = [
 // (space)
 R'''
-
-
-
-
-
+.....
+.....
+.....
+.....
+.....
 '''
 // !
 R'''
