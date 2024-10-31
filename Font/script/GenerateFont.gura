@@ -191,6 +191,7 @@ GenerateFont(fontName as String, dirNameOut as String, codeUTF32Tbl_Extra[] as N
 		bdfBasic = font.bdf.Context(fileContentBasic.Reader().Reader@base64().Reader@bzip2())
 		bdfExtra = cond(fileContentExtra, font.bdf.Context(fileContentExtra.Reader().Reader@base64().Reader@bzip2()), nil)
 	}
+	yAdvance = bdfBasic.FONTBOUNDINGBOX.h
 	fileNameOut = path.Join(dirNameOut, Format('%s.h', fontName))
 	Stream(fileNameOut, 'w') {|fout|
 		fout.Print(eR'''
@@ -222,7 +223,7 @@ GenerateFont(fontName as String, dirNameOut as String, codeUTF32Tbl_Extra[] as N
 		fout.Println()
 		fout.Println('}')
 		fout.Println()
-		fout.Printf('const FontSet %s = { &NS_%s::f_Invalid, {\n', fontName, fontName)
+		fout.Printf('const FontSet %s = { %d, &NS_%s::f_Invalid, {\n', fontName, yAdvance, fontName)
 		fout.Printf('\t&NS_%s::f_%04x,\n', fontName, 32..126)
 		fout.Print(eR'''
 		}, ${codeUTF32Tbl_Extra.len}, {

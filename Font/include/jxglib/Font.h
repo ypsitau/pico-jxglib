@@ -22,11 +22,12 @@ struct FontEntry {
 // FontSet
 //------------------------------------------------------------------------------
 struct FontSet {
-	const FontEntry& GetFontEntry(uint32_t code) const;
+	int yAdvance;
 	const FontEntry* pFontEntry_Invalid;
 	const FontEntry* pFontEntryTbl_Basic[96];
 	int nFontEntries_Extra;
 	const FontEntry* pFontEntries_Extra[];
+	const FontEntry& GetFontEntry(uint32_t code) const;
 };
 
 }

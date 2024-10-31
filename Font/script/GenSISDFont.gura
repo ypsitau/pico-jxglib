@@ -1,9 +1,8 @@
 #/usr/bin/env gurax
 
-
 //******************************************************************************
 tmplFontFile = tR'''
-// 16-Segment Display Font
+// ${description}
 #ifndef PICO_JXGLIB_FONT_${fontName.Upper()}_H
 #define PICO_JXGLIB_FONT_${fontName.Upper()}_H
 #include "jxglib/Font h"
@@ -11,24 +10,30 @@ tmplFontFile = tR'''
 namespace jxglib { namespace Font {
 namespace NS_${fontName} {
 
-const FontEntry f_Invalid = { 0x0000, 0, 0, ${xAdvance}, {
+const FontEntry f_Invalid = { 0x${Format('%04x', fontInfo_Invalid.code)}, ${fontInfo_Invalid.width}, ${fontInfo_Invalid.height}, ${fontInfo_Invalid.xAdvance}, {
+${cond(!fontInfo_Invalid.bitmap.IsEmpty(), cond(readableFlag,
+	Format('0b%08b,', fontInfo_Invalid.bitmap).Fold(Int((fontInfo_Invalid.width + 7) / 8)),
+	Format('0x%02x,', fontInfo_Invalid.bitmap).Fold(nColsPerLine)):*Join() + '\n')}
 } };
 
-${fontInfoTbl.Each {|fontInfo|}}
-const FontEntry f_${Format('%04x', fontInfo.code)} = { 0x${Format('%04x', fontInfo.code)}, ${width}, ${height}, ${xAdvance}, {
+${(fontInfoTbl_Basic |+| fontInfoTbl_Extra).Each {|fontInfo|}}
+const FontEntry f_${Format('%04x', fontInfo.code)} = { 0x${Format('%04x', fontInfo.code)}, ${fontInfo.width}, ${fontInfo.height}, ${fontInfo.xAdvance}, {
 ${cond(readableFlag,
-	Format('0b%08b,', fontInfo.bitmap).Fold(bytesPerLine),
+	Format('0b%08b,', fontInfo.bitmap).Fold(Int((fontInfo.width + 7) / 8)),
 	Format('0x%02x,', fontInfo.bitmap).Fold(nColsPerLine)):*Join() + '\n'}
 } };
 ${end}
 
 }
 
-const FontSet ${fontName} = { &NS_${fontName}::f_Invalid, {
+const FontSet ${fontName} = { ${yAdvance}, &NS_${fontName}::f_Invalid, {
 	${Range(0x20, 0x7f) {|code|}}
 	&NS_${fontName}::f_${Format('%04x', code)},
 	${end}
-}, 0, {
+}, ${codeUTF32Tbl_Extra.len}, {
+	${codeUTF32Tbl_Extra.Each {|code|}}
+	&NS_${fontName}::f_${Format('%04x', code)},
+	${end}
 } };
 
 } }
@@ -40,51 +45,64 @@ const FontSet ${fontName} = { &NS_${fontName}::f_Invalid, {
 main() = {
 	fontName = 'sisd24x32'
 	fileNameOut = fontName + '.h'
-	width = 20, height = 32, xAdvance = 24, bytesPerLine = Int((width + 7) / 8)
 	readableFlag = true
 	nColsPerLine = 24
-	fontInfoTbl = FontInfo(0x20.., patternTbl, segmentInfoDict[fontName])
+	segmentElemInfo = segmentElemInfoDict[fontName]
+	yAdvance = segmentElemInfo.height
+	fontInfo_Invalid = FontInfo(0, 0, 0, 0, [])
+	fontInfoTbl_Basic = FontInfo.CreateSegmentFont(0x20.., segmentPatternTbl, segmentElemInfo)
+	fontInfoTbl_Extra = []
+	description = '16-Segment Display Font'
+	codeUTF32Tbl_Extra = []
 	tmplFontFile.Render(fileNameOut)
 	sys.cerr.Printf('Generated: %s\n', fileNameOut)
 }
 
-SegmentInfo = struct { width as Number, height as Number, bitmapSrcDict as Dict }
+SegmentElemInfo = struct {
+	width as Number
+	height as Number
+	bitmapSrcDict as Dict
+}
 
-FontInfo = class {
+FontInfo = struct {
 	code as Number
 	width as Number
 	height as Number
+	xAdvance as Number
 	bitmap[] as Number = []
-	__init__(code as Number, pattern as String, segmentInfo as SegmentInfo):map = {
-		this.code = code
-		this.width = segmentInfo.width
-		this.height = segmentInfo.height
-		this.bitmap = Dim(Int((this.width + 7) / 8) * this.height) { 0 }
-		lines = pattern.EachLine():chop:*Replace('.', ' '):*Align(5, `left)[]
+	CreateSegmentFont(code as Number, segmentPattern as String, segmentElemInfo as SegmentElemInfo):map:static = {
+		fontInfo = FontInfo()
+		fontInfo.code = code
+		fontInfo.width = segmentElemInfo.width
+		fontInfo.height = segmentElemInfo.height
+		fontInfo.xAdvance = fontInfo.width
+		fontInfo.bitmap = Dim(Int((fontInfo.width + 7) / 8) * fontInfo.height) { 0 }
+		lines = segmentPattern.EachLine():chop:*Replace('.', ' '):*Align(5, `left)[]
 		if (lines.len != 5) {
 			sys.cerr.Println('invalid number of lines')
-			sys.cerr.Println(pattern)
+			sys.cerr.Println(segmentPattern)
 			sys.Exit()
 		}
-		(lines[0][1] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['a1'])
-		(lines[0][3] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['a2'])
-		(lines[1][0] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['f'])
-		(lines[1][1] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['h'])
-		(lines[1][2] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['i'])
-		(lines[1][3] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['j'])
-		(lines[1][4] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['b'])
-		(lines[2][1] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['g1'])
-		(lines[2][3] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['g2'])
-		(lines[3][0] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['e'])
-		(lines[3][1] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['k'])
-		(lines[3][2] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['l'])
-		(lines[3][3] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['m'])
-		(lines[3][4] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['c'])
-		(lines[4][1] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['d1'])
-		(lines[4][3] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['d2'])
-		(lines[4][4] != ' ') && this.PutSegment(segmentInfo.bitmapSrcDict['dp'])
+		(lines[0][1] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['a1'])
+		(lines[0][3] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['a2'])
+		(lines[1][0] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['f'])
+		(lines[1][1] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['h'])
+		(lines[1][2] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['i'])
+		(lines[1][3] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['j'])
+		(lines[1][4] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['b'])
+		(lines[2][1] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['g1'])
+		(lines[2][3] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['g2'])
+		(lines[3][0] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['e'])
+		(lines[3][1] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['k'])
+		(lines[3][2] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['l'])
+		(lines[3][3] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['m'])
+		(lines[3][4] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['c'])
+		(lines[4][1] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['d1'])
+		(lines[4][3] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['d2'])
+		(lines[4][4] != ' ') && fontInfo.PutSegmentElem(segmentElemInfo.bitmapSrcDict['dp'])
+		fontInfo
 	}
-	PutSegment(bitmapSrc as String) = {
+	PutSegmentElem(bitmapSrc as String) = {
 		iLine = 0
 		bitmapSrc.ToReader().ReadLines():chop {|line|
 			('0b' + line.Fold(8)):*Align(8, `left, '.'):*Replace('#', '1'):*Replace('.', '0'):*ToNumber().Each {|data|
@@ -95,8 +113,8 @@ FontInfo = class {
 	}
 }
 
-segmentInfoDict = %{
-'sisd24x32' => SegmentInfo(
+segmentElemInfoDict = %{
+'sisd24x32' => SegmentElemInfo(
 24, 32, %{
 'a1' => R'''
 ...#######..............
@@ -687,7 +705,7 @@ R'''
 .-.-#
 '''
 
-patternTbl = [
+segmentPatternTbl = [
 // (space)
 R'''
 
