@@ -26,7 +26,7 @@ struct FontSet {
 	const FontEntry* pFontEntry_Invalid;
 	const FontEntry* pFontEntryTbl_Basic[96];
 	int nFontEntries_Extra;
-	const FontEntry* pFontEntries_Extra[];
+	const FontEntry* pFontEntryTbl_Extra[];
 	const FontEntry& GetFontEntry(uint32_t code) const;
 };
 
