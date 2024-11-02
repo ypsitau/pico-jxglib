@@ -9,7 +9,9 @@ import(argopt)
 //------------------------------------------------------------------------------
 tmplFontFile = tR'''
 //==============================================================================
-// ${fontSet.description}
+${fontSet.description.Split('\n') {|line|}}
+// ${line}
+${end}
 //==============================================================================
 #ifndef PICO_JXGLIB_FONT_${fontSet.fontName.Upper()}_H
 #define PICO_JXGLIB_FONT_${fontSet.fontName.Upper()}_H
@@ -96,6 +98,23 @@ main() = {
 			!fontNames.Contains(fontName) && fontNames.Add(fontName)
 		}
 	}
+	codeUTF32Tbl_Extra = []
+	argv.Offset(1) {|arg|
+		path.Glob(arg) {|fileName|
+			sys.cerr.Printf('Scanning: %s\n', fileName)
+			ReadLines(fileName) {|line|
+				line.Each():utf32 {|code|
+					if (code >= 0x100 && !codeUTF32Tbl_Extra.Contains(code)) {
+						codeUTF32Tbl_Extra.Add(code)
+					}
+				}
+			}
+		}
+	}
+	codeUTF32Tbl_Extra = codeUTF32Tbl_Extra.Sort()
+	if (codeUTF32Tbl_Extra.len > 0) {
+		sys.cerr.Printf('Extra codes (%dchars): %s\n', codeUTF32Tbl_Extra.len, Format('%04x', codeUTF32Tbl_Extra).Join(' '))
+	}
 	try {
 		nColsPerLine = Int(opt['cols'] || '24')
 	} catch {
@@ -103,7 +122,6 @@ main() = {
 		sys.Exit(1)
 	}
 	readableFlag = opt['readable']
-	//fontName = 'sisd24x32'
 	fontNames.Each {|fontName|
 		fontGenerator = fontGeneratorDict.Get(fontName)
 		if (!fontGenerator) {
@@ -111,7 +129,7 @@ main() = {
 			sys.cerr.Printf('available fonts: %s\n', fontGeneratorDict.EachKey().Sort().Join(', '))
 			sys.Exit(1)
 		}
-		fontSet = fontGenerator.GenerateFontSet()
+		fontSet = fontGenerator.GenerateFontSet(codeUTF32Tbl_Extra)
 		fileNameOut = fontName + '.h'
 		tmplFontFile.Render(fileNameOut)
 		sys.cerr.Printf('Generated: %s\n', fileNameOut)
@@ -149,19 +167,20 @@ FontGenerator_FromBDF = struct {
 	description as String
 	bdfSourceBasic as Any
 	bdfSourceExtra as Any
-	GenerateFontSet() = {
+	GenerateFontSet(codeUTF32Tbl_Extra[] as Number) = {
 		bdfBasic = this.CreateStream(this.bdfSourceBasic)
 		bdfExtra = this.CreateStream(this.bdfSourceExtra)
-		
 		fontEntryTbl_Basic = this.CreateFontEntryTbl(bdfBasic, [32..126])
-		fontEntryTbl_Extra = this.CreateFontEntryTbl(bdfExtra, [])
+		fontEntryTbl_Extra = this.CreateFontEntryTbl(bdfExtra, codeUTF32Tbl_Extra)
+		description = bdfBasic.XLogicalFontDescription
+		if (bdfExtra) { description += '\n' + bdfExtra.XLogicalFontDescription }
 		FontSet(
 			fontName = this.fontName
-			description = bdfBasic.XLogicalFontDescription
+			description = description
 			yAdvance = bdfBasic.FONTBOUNDINGBOX.h
 			fontEntry_Invalid = FontEntry(0x0000, 0, 0, 0, [])
 			fontEntryTbl_Basic = fontEntryTbl_Basic
-			fontEntryTbl_Extra = []
+			fontEntryTbl_Extra = fontEntryTbl_Extra
 		)
 	}
 	CreateStream(bdfSource as Any) = {
@@ -173,11 +192,11 @@ FontGenerator_FromBDF = struct {
 			nil
 		}
 	}
-	CreateFontEntryTbl(bdf:nil as font.bdf.Context, codesToExtract[] as Number) = {
+	CreateFontEntryTbl(bdf:nil as font.bdf.Context, codeUTF32Tbl[] as Number) = {
 		!bdf && return([])
 		fontEntryTbl = []
 		bdf.charEntryTbl.Each {|charEntry|
-			!(charEntry.codeUTF32 in codesToExtract) && continue
+			!(charEntry.codeUTF32 in codeUTF32Tbl) && continue
 			code = charEntry.codeUTF32
 			width = charEntry.BBX.w
 			height = bdf.FONTBOUNDINGBOX.h
@@ -204,7 +223,7 @@ FontGenerator_Segment = struct {
 	width as Number
 	height as Number
 	segmentBitmapDict as Dict
-	GenerateFontSet() = {
+	GenerateFontSet(codeUTF32Tbl_Extra[] as Number) = {
 		fontEntryTbl_Basic = []
 		code = 0x20
 		segmentPatternTbl.Each {|segmentPattern|
