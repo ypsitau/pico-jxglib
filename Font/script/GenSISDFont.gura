@@ -145,6 +145,17 @@ FontEntry = struct {
 	height as Number
 	xAdvance as Number
 	bitmap[] as Number = []
+	AddData(data as Number, bytesPerData as Number):map:void = {
+		dataSplit = []
+		repeat (bytesPerData) { dataSplit.Add(data & 0xff), data >>= 8 }
+		this.bitmap.Append(dataSplit.Reverse())
+	}
+	CreateInvalid(code as Number, wdFontBBox as Number, htFontBBox as Number, xAdvance as Number):static = {
+		bytesPerLine = Int((wdFontBBox + 7) / 8)
+		nBits = bytesPerLine * 8
+		dataTop = dataBottom = ((1 << (wdFontBBox - 1)) - 1) << (nBits - wdFontBBox + 1)
+		dataMid = (1 << (nBits - 1)) | (1 << (nBits - wdFontBBox + 1))
+	}
 }
 
 //------------------------------------------------------------------------------
@@ -197,18 +208,14 @@ FontGenerator_FromBDF = struct {
 		fontEntryTbl = []
 		bdf.charEntryTbl.Each {|charEntry|
 			!(charEntry.codeUTF32 in codeUTF32Tbl) && continue
-			code = charEntry.codeUTF32
-			width = charEntry.BBX.w
-			height = bdf.FONTBOUNDINGBOX.h
-			xAdvance = charEntry.DWIDTH[0]
-			bytesPerData = Int((width + 7) / 8)
-			bitmap = []
-			charEntry.BITMAP.Each {|data|
-				dataSplit = []
-				repeat (bytesPerData) { dataSplit.Add(data & 0xff), data >>= 8 }
-				bitmap.Append(dataSplit.Reverse())
-			}
-			fontEntryTbl.Add(FontEntry(code, width, height, xAdvance, bitmap))
+			bytesPerData = Int((charEntry.BBX.w + 7) / 8)
+			fontEntry = FontEntry(
+				code = charEntry.codeUTF32
+				width = charEntry.BBX.w
+				height = bdf.FONTBOUNDINGBOX.h
+				xAdvance = charEntry.DWIDTH[0])
+			fontEntry.AddData(charEntry.BITMAP.Each(), bytesPerData)
+			fontEntryTbl.Add(fontEntry)
 		}
 		fontEntryTbl
 	}
