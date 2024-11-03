@@ -307,17 +307,40 @@ void SSD1306::DrawChar(int x, int y, uint32_t code)
 	DrawChar(x, y, fontEntry);
 }
 
-void SSD1306::DrawString(int x, int y, const char* str)
+void SSD1306::DrawString(int x, int y, const char* str, const char* strEnd)
 {
 	uint32_t code;
 	UTF8Decoder decoder;
-	for (const char* p = str; *p; p++) {
-		if (decoder.FeedChar(*p, &code)) {
-			const FontEntry& fontEntry = pFontSetCur_->GetFontEntry(code);
-			DrawChar(x, y, fontEntry);
-			x += fontEntry.xAdvance * fontScaleX_;
-		}
+	for (const char* p = str; *p && p != strEnd; p++) {
+		if (!decoder.FeedChar(*p, &code)) continue;
+		const FontEntry& fontEntry = pFontSetCur_->GetFontEntry(code);
+		DrawChar(x, y, fontEntry);
+		x += fontEntry.xAdvance * fontScaleX_;
 	}
+}
+
+const char* SSD1306::DrawStringBBox(int x, int y, int width, int height, const char* str, int htLine)
+{
+	uint32_t code;
+	UTF8Decoder decoder;
+	int xStart = x;
+	int xEnd = (width >= 0)? x + width : GetWidth();
+	int yEnd = (height >= 0)? y + height : GetHeight();
+	int yAdvance = (htLine >= 0)? htLine : pFontSetCur_->yAdvance * fontScaleY_;
+	const char* pDone = str;
+	for (const char* p = str; *p; p++) {
+		if (!decoder.FeedChar(*p, &code)) continue;
+		const FontEntry& fontEntry = pFontSetCur_->GetFontEntry(code);
+		int xAdvance = fontEntry.xAdvance * fontScaleX_;
+		if (x + fontEntry.width * fontScaleX_ > xEnd) {
+			x = xStart, y += yAdvance;
+			if (y + yAdvance > yEnd) break;
+		}
+		DrawChar(x, y, fontEntry);
+		x += xAdvance;
+		pDone = p + 1;
+	}
+	return pDone;
 }
 
 bool SSD1306::AdjustCoord(int* pV, int* pDist, int vLimit)

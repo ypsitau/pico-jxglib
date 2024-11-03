@@ -281,8 +281,20 @@ public:
 	void DrawChar(const Point& pt, const FontEntry& fontEntry) { DrawChar(pt.x, pt.y, fontEntry); }
 	void DrawChar(int x, int y, uint32_t code);
 	void DrawChar(const Point& pt, uint32_t code) { DrawChar(pt.x, pt.y, code); }
-	void DrawString(int x, int y, const char* str);
-	void DrawString(const Point& pt, const char* str) { DrawString(pt.x, pt.y, str); }
+	void DrawString(int x, int y, const char* str, const char* strEnd = nullptr);
+	void DrawString(const Point& pt, const char* str, const char* strEnd = nullptr) {
+		DrawString(pt.x, pt.y, str, strEnd);
+	}
+	const char* DrawStringBBox(int x, int y, int width, int height, const char* str, int htLine = -1);
+	const char* DrawStringBBox(int x, int y, const char* str, int htLine = -1) {
+		return DrawStringBBox(x, y, -1, -1, str, htLine);
+	}
+	const char* DrawStringBBox(const Point& pt, const char* str, int htLine = -1) {
+		return DrawStringBBox(pt.x, pt.y, str, htLine);
+	}
+	const char* DrawStringBBox(const Rect& rcBBox, const char* str, int htLine = -1) {
+		return DrawStringBBox(rcBBox.x, rcBBox.y, rcBBox.width, rcBBox.height, str, htLine);
+	}
 private:
 	static bool CheckCoord(int v, int vLimit) { return 0 <= v && v < vLimit; }
 	static bool AdjustCoord(int* pV, int* pDist, int vLimit);

@@ -15,6 +15,11 @@ struct Rect {
 	int width, height;
 public:
 	static const Rect Zero;
+public:
+	int GetLeft() const { return x; }
+	int GetRight() const { return x + width; }
+	int GetTop() const { return y; }
+	int GetBottom() const { return y + height; }
 };
 
 }

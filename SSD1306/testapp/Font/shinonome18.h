@@ -1,4 +1,6 @@
+//==============================================================================
 // -Shinonome-Gothic-Medium-R-Normal--18-170-75-75-C-90-JISX0201.1976-0
+//==============================================================================
 #ifndef PICO_JXGLIB_FONT_SHINONOME18_H
 #define PICO_JXGLIB_FONT_SHINONOME18_H
 #include "jxglib/Font.h"
