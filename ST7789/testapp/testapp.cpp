@@ -186,7 +186,7 @@ void st7789_ramwr()
     sleep_us(1);
 }
 
-void st7789_write(const void* data, size_t len)
+void st7789_put(uint16_t pixel)
 {
     if (!st7789_data_mode) {
         st7789_ramwr();
@@ -200,12 +200,7 @@ void st7789_write(const void* data, size_t len)
         st7789_data_mode = true;
     }
 
-    spi_write16_blocking(st7789_cfg.spi, (const uint16_t*)data, len / 2);
-}
-
-void st7789_put(uint16_t pixel)
-{
-    st7789_write(&pixel, sizeof(pixel));
+    spi_write16_blocking(st7789_cfg.spi, &pixel, 1);
 }
 
 void st7789_fill(uint16_t pixel)
