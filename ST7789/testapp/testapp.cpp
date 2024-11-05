@@ -236,34 +236,30 @@ void st7789_vertical_scroll(uint16_t row)
     st7789_cmd(0x37, data, sizeof(data));
 }
 
-// lcd configuration
-const struct st7789_config lcd_config = {
-    .spi      = spi0,
-    .gpio_din = PICO_DEFAULT_SPI_TX_PIN,
-    .gpio_clk = PICO_DEFAULT_SPI_SCK_PIN,
-    .gpio_cs  = -1, // PICO_DEFAULT_SPI_CSN_PIN,
-    .gpio_dc  = 20,
-    .gpio_rst = 21,
-    .gpio_bl  = 22,
-};
-
 //------------------------------------------------------------------------------
-const int LCD_WIDTH = 240;
-const int LCD_HEIGHT = 240;
-
 int main()
 {
+    // lcd configuration
+    static const struct st7789_config lcd_config = {
+        .spi      = spi0,
+        .gpio_din = PICO_DEFAULT_SPI_TX_PIN,
+        .gpio_clk = PICO_DEFAULT_SPI_SCK_PIN,
+        .gpio_cs  = -1, // PICO_DEFAULT_SPI_CSN_PIN,
+        .gpio_dc  = 20,
+        .gpio_rst = 21,
+        .gpio_bl  = 22,
+    };
     stdio_init_all();
     // initialize the lcd
-    st7789_init(&lcd_config, LCD_WIDTH, LCD_HEIGHT);
+    st7789_init(&lcd_config, 240, 240);
 
     // make screen black
     st7789_fill(0x0000);
 
     while (1) {
         // create a random x, y, and color value
-        int rand_x = rand() % LCD_WIDTH;
-        int rand_y = rand() % LCD_HEIGHT;
+        int rand_x = rand() % 240;
+        int rand_y = rand() % 240;
         uint16_t rand_color = rand() % 0xffff;
         
         // move the cursor to the random x and y position

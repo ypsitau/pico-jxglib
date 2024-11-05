@@ -87,7 +87,7 @@ public:
 		void WriteBuffer() const {
 			::i2c_write_blocking(i2c_, addr_, buffWhole_, bufferLen_ + 1, false);
 		}
-public:
+	public:
 		// 10.1 Fundamental Command
 		// 10.1.1 Set Lower Column Start Address for Page Addressing Mode (00h-0Fh)
 		// 10.1.2 Set Higher Column Start Address for Page Addressing Mode (10h-1Fh)
