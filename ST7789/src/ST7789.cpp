@@ -19,9 +19,9 @@ void ST7789::Initialize()
 void ST7789::Raw::Initialize()
 {
 	if (UsesCS()) {
-		spi_set_format(spi_, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
+		::spi_set_format(spi_, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
 	} else {
-		spi_set_format(spi_, 8, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
+		::spi_set_format(spi_, 8, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
 	}
 
 
@@ -40,25 +40,25 @@ void ST7789::Raw::Initialize()
 	gpio_set_dir(gpio_BL_, GPIO_OUT);
 
 	if (UsesCS()) {
-		gpio_put(gpio_CS_, 1);
+		::gpio_put(gpio_CS_, 1);
 	}
-	gpio_put(gpio_DC_, 1);
-	gpio_put(gpio_RST_, 1);
-	sleep_ms(100);
+	::gpio_put(gpio_DC_, 1);
+	::gpio_put(gpio_RST_, 1);
+	::sleep_ms(100);
 	
 	// SWRESET (01h): Software Reset
 	SendCmd(0x01);
-	sleep_ms(150);
+	::sleep_ms(150);
 
 	// SLPOUT (11h): Sleep Out
 	SendCmd(0x11);
-	sleep_ms(50);
+	::sleep_ms(50);
 
 	// COLMOD (3Ah): Interface Pixel Format
 	// - RGB interface color format     = 65K of RGB interface
 	// - Control interface color format = 16bit/pixel
 	SendCmd(0x3a, 0x55);
-	sleep_ms(10);
+	::sleep_ms(10);
 
 	// MADCTL (36h): Memory Data Access Control
 	// - Page Address Order            = Top to Bottom
@@ -73,81 +73,81 @@ void ST7789::Raw::Initialize()
 
 	// INVON (21h): Display Inversion On
 	SendCmd(0x21);
-	sleep_ms(10);
+	::sleep_ms(10);
 
 	// NORON (13h): Normal Display Mode On
 	SendCmd(0x13);
-	sleep_ms(10);
+	::sleep_ms(10);
 
 	// DISPON (29h): Display On
 	SendCmd(0x29);
-	sleep_ms(10);
+	::sleep_ms(10);
 
-	gpio_put(gpio_BL_, 1);
+	::gpio_put(gpio_BL_, 1);
 }
 
 void ST7789::Raw::SendCmd(uint8_t cmd, const void* data, int len)
 {
 	if (UsesCS()) {
-		spi_set_format(spi_, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
+		::spi_set_format(spi_, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
 	} else {
-		spi_set_format(spi_, 8, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
+		::spi_set_format(spi_, 8, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
 	}
-	st7789_data_mode = false;
+	dataModeFlag_ = false;
 
-	sleep_us(1);
+	::sleep_us(1);
 	if (UsesCS()) {
-		gpio_put(gpio_CS_, 0);
+		::gpio_put(gpio_CS_, 0);
 	}
-	gpio_put(gpio_DC_, 0);
-	sleep_us(1);
+	::gpio_put(gpio_DC_, 0);
+	::sleep_us(1);
 	
-	spi_write_blocking(spi_, &cmd, sizeof(cmd));
+	::spi_write_blocking(spi_, &cmd, sizeof(cmd));
 	
 	if (len) {
-		sleep_us(1);
-		gpio_put(gpio_DC_, 1);
-		sleep_us(1);
+		::sleep_us(1);
+		::gpio_put(gpio_DC_, 1);
+		::sleep_us(1);
 		
-		spi_write_blocking(spi_, reinterpret_cast<const uint8_t*>(data), len);
+		::spi_write_blocking(spi_, reinterpret_cast<const uint8_t*>(data), len);
 	}
 
-	sleep_us(1);
+	::sleep_us(1);
 	if (UsesCS()) {
-		gpio_put(gpio_CS_, 1);
+		::gpio_put(gpio_CS_, 1);
 	}
-	gpio_put(gpio_DC_, 1);
-	sleep_us(1);
+	::gpio_put(gpio_DC_, 1);
+	::sleep_us(1);
 }
 
 void ST7789::Raw::PutPixel(uint16_t pixel)
 {
-	if (!st7789_data_mode) {
-		sleep_us(1);
-		if (gpio_CS_ > -1) {
-			gpio_put(gpio_CS_, 0);
+	if (!dataModeFlag_) {
+		::sleep_us(1);
+		if (UsesCS()) {
+			::gpio_put(gpio_CS_, 0);
 		}
-		gpio_put(gpio_DC_, 0);
-		sleep_us(1);
+		::gpio_put(gpio_DC_, 0);
+		::sleep_us(1);
 
 		// RAMWR (2Ch): Memory Write
 		uint8_t cmd = 0x2c;
-		spi_write_blocking(spi_, &cmd, sizeof(cmd));
+		::spi_write_blocking(spi_, &cmd, sizeof(cmd));
 
-		sleep_us(1);
-		if (gpio_CS_ > -1) {
-			gpio_put(gpio_CS_, 0);
+		::sleep_us(1);
+		if (UsesCS()) {
+			::gpio_put(gpio_CS_, 0);
 		}
-		gpio_put(gpio_DC_, 1);
-		sleep_us(1);
+		::gpio_put(gpio_DC_, 1);
+		::sleep_us(1);
 
-		if (gpio_CS_ > -1) {
-			spi_set_format(spi_, 16, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
+		if (UsesCS()) {
+			::spi_set_format(spi_, 16, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
 		} else {
-			spi_set_format(spi_, 16, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
+			::spi_set_format(spi_, 16, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
 		}
 
-		st7789_data_mode = true;
+		dataModeFlag_ = true;
 	}
 
 	spi_write16_blocking(spi_, &pixel, 1);
