@@ -2,6 +2,25 @@
 #include "jxglib/ST7789.h"
 
 using namespace jxglib;
+
+int main()
+{
+	ST7789 tft(spi0, 240, 240, 20, 21, 22);
+	::stdio_init_all();
+	::spi_init(spi0, 125 * 1000 * 1000);
+	::gpio_set_function(PICO_DEFAULT_SPI_TX_PIN, GPIO_FUNC_SPI);
+	::gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
+	tft.Initialize();
+	tft.raw.Fill(0x0000);
+	for (;;) {
+		tft.raw.Fill(0x0000);
+		::sleep_ms(1000);
+		tft.raw.Fill(0xffff);
+		::sleep_ms(1000);
+	}
+}
+
+#if 0
 struct st7789_config {
 	spi_inst_t* spi;
 	uint gpio_dc;
@@ -215,25 +234,6 @@ void st7789_Fill(uint16_t pixel)
 	}
 }
 
-//------------------------------------------------------------------------------
-int main()
-{
-	ST7789 tft(spi0, 240, 240, 20, 21, 22);
-	::stdio_init_all();
-	::spi_init(spi0, 125 * 1000 * 1000);
-	::gpio_set_function(PICO_DEFAULT_SPI_TX_PIN, GPIO_FUNC_SPI);
-	::gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
-	tft.Initialize();
-	tft.raw.Fill(0x0000);
-	for (;;) {
-		tft.raw.Fill(0x0000);
-		::sleep_ms(1000);
-		tft.raw.Fill(0xffff);
-		::sleep_ms(1000);
-	}
-}
-
-#if 0
 int main()
 {
 	static const struct st7789_config lcd_config = {
