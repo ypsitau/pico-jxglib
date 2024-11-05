@@ -60,10 +60,10 @@ static void st7789_cmd(uint8_t cmd, const uint8_t* data, size_t len)
 void st7789_caset(uint16_t xs, uint16_t xe)
 {
     uint8_t data[] = {
-        xs >> 8,
-        xs & 0xff,
-        xe >> 8,
-        xe & 0xff,
+        static_cast<uint8_t>(xs >> 8),
+        static_cast<uint8_t>(xs & 0xff),
+        static_cast<uint8_t>(xe >> 8),
+        static_cast<uint8_t>(xe & 0xff),
     };
 
     // CASET (2Ah): Column Address Set
@@ -73,10 +73,10 @@ void st7789_caset(uint16_t xs, uint16_t xe)
 void st7789_raset(uint16_t ys, uint16_t ye)
 {
     uint8_t data[] = {
-        ys >> 8,
-        ys & 0xff,
-        ye >> 8,
-        ye & 0xff,
+        static_cast<uint8_t>(ys >> 8),
+        static_cast<uint8_t>(ys & 0xff),
+        static_cast<uint8_t>(ye >> 8),
+        static_cast<uint8_t>(ye & 0xff),
     };
 
     // RASET (2Bh): Row Address Set
@@ -228,8 +228,8 @@ void st7789_set_cursor(uint16_t x, uint16_t y)
 void st7789_vertical_scroll(uint16_t row)
 {
     uint8_t data[] = {
-        (row >> 8) & 0xff,
-        row & 0x00ff
+        static_cast<uint8_t>((row >> 8) & 0xff),
+        static_cast<uint8_t>(row & 0x00ff)
     };
 
     // VSCSAD (37h): Vertical Scroll Start Address of RAM 
