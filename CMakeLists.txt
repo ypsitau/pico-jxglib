@@ -7,6 +7,7 @@ add_subdirectory(Common)
 add_subdirectory(Font)
 add_subdirectory(SSD1306)
 add_subdirectory(StepMotor)
+add_subdirectory(ST7789)
 
 add_library(pico_jxglib INTERFACE)
 
