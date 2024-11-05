@@ -11,19 +11,12 @@ struct st7789_config {
     uint gpio_bl;
 };
 
-void st7789_init(const struct st7789_config* config, uint16_t width, uint16_t height);
-void st7789_write(const void* data, size_t len);
-void st7789_put(uint16_t pixel);
-void st7789_fill(uint16_t pixel);
-void st7789_set_cursor(uint16_t x, uint16_t y);
-void st7789_vertical_scroll(uint16_t row);
-
 static struct st7789_config st7789_cfg;
 static uint16_t st7789_width;
 static uint16_t st7789_height;
 static bool st7789_data_mode = false;
 
-static void st7789_cmd(uint8_t cmd, const uint8_t* data, size_t len)
+static void st7789_SendCmd(uint8_t cmd, const uint8_t* data, size_t len)
 {
     if (st7789_cfg.gpio_cs > -1) {
         spi_set_format(st7789_cfg.spi, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
@@ -57,7 +50,7 @@ static void st7789_cmd(uint8_t cmd, const uint8_t* data, size_t len)
     sleep_us(1);
 }
 
-void st7789_caset(uint16_t xs, uint16_t xe)
+void st7789_ColumnAddressSet(uint16_t xs, uint16_t xe)
 {
     uint8_t data[] = {
         static_cast<uint8_t>(xs >> 8),
@@ -67,10 +60,10 @@ void st7789_caset(uint16_t xs, uint16_t xe)
     };
 
     // CASET (2Ah): Column Address Set
-    st7789_cmd(0x2a, data, sizeof(data));
+    st7789_SendCmd(0x2a, data, sizeof(data));
 }
 
-void st7789_raset(uint16_t ys, uint16_t ye)
+void st7789_RowAddressSet(uint16_t ys, uint16_t ye)
 {
     uint8_t data[] = {
         static_cast<uint8_t>(ys >> 8),
@@ -80,10 +73,10 @@ void st7789_raset(uint16_t ys, uint16_t ye)
     };
 
     // RASET (2Bh): Row Address Set
-    st7789_cmd(0x2b, data, sizeof(data));
+    st7789_SendCmd(0x2b, data, sizeof(data));
 }
 
-void st7789_init(const struct st7789_config* config, uint16_t width, uint16_t height)
+void st7789_Initialize(const struct st7789_config* config, uint16_t width, uint16_t height)
 {
     memcpy(&st7789_cfg, config, sizeof(st7789_cfg));
     st7789_width = width;
@@ -121,19 +114,19 @@ void st7789_init(const struct st7789_config* config, uint16_t width, uint16_t he
     sleep_ms(100);
     
     // SWRESET (01h): Software Reset
-    st7789_cmd(0x01, NULL, 0);
+    st7789_SendCmd(0x01, NULL, 0);
     sleep_ms(150);
 
     // SLPOUT (11h): Sleep Out
-    st7789_cmd(0x11, NULL, 0);
+    st7789_SendCmd(0x11, NULL, 0);
     sleep_ms(50);
 
     // COLMOD (3Ah): Interface Pixel Format
     // - RGB interface color format     = 65K of RGB interface
     // - Control interface color format = 16bit/pixel
     uint8_t tmp1[] = { 0x55 };
-    //st7789_cmd(0x3a, (uint8_t[]){ 0x55 }, 1);
-    st7789_cmd(0x3a, tmp1, 1);
+    //st7789_SendCmd(0x3a, (uint8_t[]){ 0x55 }, 1);
+    st7789_SendCmd(0x3a, tmp1, 1);
     sleep_ms(10);
 
     // MADCTL (36h): Memory Data Access Control
@@ -144,52 +137,47 @@ void st7789_init(const struct st7789_config* config, uint16_t width, uint16_t he
     // - RGB/BGR Order                 = RGB
     // - Display Data Latch Data Order = LCD Refresh Left to Right
     uint8_t tmp2[] = { 0x00 };
-    //st7789_cmd(0x36, (uint8_t[]){ 0x00 }, 1);
-    st7789_cmd(0x36, tmp2, 1);
+    //st7789_SendCmd(0x36, (uint8_t[]){ 0x00 }, 1);
+    st7789_SendCmd(0x36, tmp2, 1);
    
-    st7789_caset(0, width);
-    st7789_raset(0, height);
+    st7789_ColumnAddressSet(0, width);
+    st7789_RowAddressSet(0, height);
 
     // INVON (21h): Display Inversion On
-    st7789_cmd(0x21, NULL, 0);
+    st7789_SendCmd(0x21, NULL, 0);
     sleep_ms(10);
 
     // NORON (13h): Normal Display Mode On
-    st7789_cmd(0x13, NULL, 0);
+    st7789_SendCmd(0x13, NULL, 0);
     sleep_ms(10);
 
     // DISPON (29h): Display On
-    st7789_cmd(0x29, NULL, 0);
+    st7789_SendCmd(0x29, NULL, 0);
     sleep_ms(10);
 
     gpio_put(st7789_cfg.gpio_bl, 1);
 }
 
-void st7789_ramwr()
-{
-    sleep_us(1);
-    if (st7789_cfg.gpio_cs > -1) {
-        gpio_put(st7789_cfg.gpio_cs, 0);
-    }
-    gpio_put(st7789_cfg.gpio_dc, 0);
-    sleep_us(1);
-
-    // RAMWR (2Ch): Memory Write
-    uint8_t cmd = 0x2c;
-    spi_write_blocking(st7789_cfg.spi, &cmd, sizeof(cmd));
-
-    sleep_us(1);
-    if (st7789_cfg.gpio_cs > -1) {
-        gpio_put(st7789_cfg.gpio_cs, 0);
-    }
-    gpio_put(st7789_cfg.gpio_dc, 1);
-    sleep_us(1);
-}
-
-void st7789_put(uint16_t pixel)
+void st7789_PutPixel(uint16_t pixel)
 {
     if (!st7789_data_mode) {
-        st7789_ramwr();
+        sleep_us(1);
+        if (st7789_cfg.gpio_cs > -1) {
+            gpio_put(st7789_cfg.gpio_cs, 0);
+        }
+        gpio_put(st7789_cfg.gpio_dc, 0);
+        sleep_us(1);
+
+        // RAMWR (2Ch): Memory Write
+        uint8_t cmd = 0x2c;
+        spi_write_blocking(st7789_cfg.spi, &cmd, sizeof(cmd));
+
+        sleep_us(1);
+        if (st7789_cfg.gpio_cs > -1) {
+            gpio_put(st7789_cfg.gpio_cs, 0);
+        }
+        gpio_put(st7789_cfg.gpio_dc, 1);
+        sleep_us(1);
 
         if (st7789_cfg.gpio_cs > -1) {
             spi_set_format(st7789_cfg.spi, 16, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
@@ -203,24 +191,13 @@ void st7789_put(uint16_t pixel)
     spi_write16_blocking(st7789_cfg.spi, &pixel, 1);
 }
 
-void st7789_fill(uint16_t pixel)
+void st7789_SetCursor(uint16_t x, uint16_t y)
 {
-    int num_pixels = st7789_width * st7789_height;
-
-    st7789_set_cursor(0, 0);
-
-    for (int i = 0; i < num_pixels; i++) {
-        st7789_put(pixel);
-    }
+    st7789_ColumnAddressSet(x, st7789_width);
+    st7789_RowAddressSet(y, st7789_height);
 }
 
-void st7789_set_cursor(uint16_t x, uint16_t y)
-{
-    st7789_caset(x, st7789_width);
-    st7789_raset(y, st7789_height);
-}
-
-void st7789_vertical_scroll(uint16_t row)
+void st7789_ScrollVertical(uint16_t row)
 {
     uint8_t data[] = {
         static_cast<uint8_t>((row >> 8) & 0xff),
@@ -228,7 +205,18 @@ void st7789_vertical_scroll(uint16_t row)
     };
 
     // VSCSAD (37h): Vertical Scroll Start Address of RAM 
-    st7789_cmd(0x37, data, sizeof(data));
+    st7789_SendCmd(0x37, data, sizeof(data));
+}
+
+void st7789_Fill(uint16_t pixel)
+{
+    int num_pixels = st7789_width * st7789_height;
+
+    st7789_SetCursor(0, 0);
+
+    for (int i = 0; i < num_pixels; i++) {
+        st7789_PutPixel(pixel);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -246,10 +234,10 @@ int main()
     };
     stdio_init_all();
     // initialize the lcd
-    st7789_init(&lcd_config, 240, 240);
+    st7789_Initialize(&lcd_config, 240, 240);
 
     // make screen black
-    st7789_fill(0x0000);
+    st7789_Fill(0x0000);
 
     while (1) {
         // create a random x, y, and color value
@@ -258,9 +246,9 @@ int main()
         uint16_t rand_color = rand() % 0xffff;
         
         // move the cursor to the random x and y position
-        st7789_set_cursor(rand_x, rand_y);
+        st7789_SetCursor(rand_x, rand_y);
 
         // put the random color as the pixel value
-        st7789_put(rand_color);
+        st7789_PutPixel(rand_color);
     }
 }
