@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "jxglib/ST7789.h"
 
+using namespace jxglib;
 struct st7789_config {
 	spi_inst_t* spi;
 	uint gpio_dc;
@@ -80,7 +81,6 @@ void st7789_Initialize(const struct st7789_config* config, uint16_t width, uint1
 	st7789_width = width;
 	st7789_height = height;
 
-	spi_init(st7789_cfg.spi, 125 * 1000 * 1000);
 	if (st7789_cfg.gpio_cs > -1) {
 		spi_set_format(st7789_cfg.spi, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
 	} else {
@@ -218,6 +218,24 @@ void st7789_Fill(uint16_t pixel)
 //------------------------------------------------------------------------------
 int main()
 {
+	ST7789 tft(spi0, 240, 240, 20, 21, 22);
+	::stdio_init_all();
+	::spi_init(spi0, 125 * 1000 * 1000);
+	::gpio_set_function(PICO_DEFAULT_SPI_TX_PIN, GPIO_FUNC_SPI);
+	::gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
+	tft.Initialize();
+	tft.raw.Fill(0x0000);
+	for (;;) {
+		tft.raw.Fill(0x0000);
+		::sleep_ms(1000);
+		tft.raw.Fill(0xffff);
+		::sleep_ms(1000);
+	}
+}
+
+#if 0
+int main()
+{
 	static const struct st7789_config lcd_config = {
 		.spi      = spi0,
 		.gpio_dc  = 20,
@@ -226,6 +244,7 @@ int main()
 		.gpio_cs  = -1, // PICO_DEFAULT_SPI_CSN_PIN,
 	};
 	stdio_init_all();
+	::spi_init(spi0, 125 * 1000 * 1000);
 	::gpio_set_function(PICO_DEFAULT_SPI_TX_PIN, GPIO_FUNC_SPI);
 	::gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
 	st7789_Initialize(&lcd_config, 240, 240);
@@ -252,4 +271,6 @@ int main()
 		st7789_PutPixel(rand_color);
 	}
 #endif
+
 }
+#endif
