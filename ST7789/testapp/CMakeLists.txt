@@ -1,15 +1,15 @@
 # == DO NEVER EDIT THE NEXT LINES for Raspberry Pi Pico VS Code Extension to work ==
 if(WIN32)
-    set(USERHOME $ENV{USERPROFILE})
+	set(USERHOME $ENV{USERPROFILE})
 else()
-    set(USERHOME $ENV{HOME})
+	set(USERHOME $ENV{HOME})
 endif()
 set(sdkVersion 2.0.0)
 set(toolchainVersion 13_2_Rel1)
 set(picotoolVersion 2.0.0)
 set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
 if (EXISTS ${picoVscode})
-    include(${picoVscode})
+	include(${picoVscode})
 endif()
 # ====================================================================================
 # Generated Cmake Pico project file
@@ -25,16 +25,16 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # == DO NEVER EDIT THE NEXT LINES for Raspberry Pi Pico VS Code Extension to work ==
 if(WIN32)
-    set(USERHOME $ENV{USERPROFILE})
+	set(USERHOME $ENV{USERPROFILE})
 else()
-    set(USERHOME $ENV{HOME})
+	set(USERHOME $ENV{HOME})
 endif()
 set(sdkVersion 2.0.0)
 set(toolchainVersion 13_2_Rel1)
 set(picotoolVersion 2.0.0)
 set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
 if (EXISTS ${picoVscode})
-    include(${picoVscode})
+	include(${picoVscode})
 endif()
 # ====================================================================================
 set(PICO_BOARD pico CACHE STRING "Board type")
@@ -51,7 +51,7 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico_jxglib)
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(testapp testapp.c )
+add_executable(testapp testapp.cpp)
 
 pico_set_program_name(testapp "testapp")
 pico_set_program_version(testapp "0.1")
@@ -62,13 +62,12 @@ pico_enable_stdio_usb(testapp 0)
 
 # Add the standard library to the build
 target_link_libraries(testapp
-        pico_stdlib pico_jxglib_ST7789)
+	pico_stdlib pico_jxglib_ST7789)
 
 # Add the standard include files to the build
 target_include_directories(testapp PRIVATE
-  ${CMAKE_CURRENT_LIST_DIR}
-  ${CMAKE_CURRENT_LIST_DIR}/.. # for our common lwipopts or any other standard includes, if required
+	${CMAKE_CURRENT_LIST_DIR}
+	${CMAKE_CURRENT_LIST_DIR}/.. # for our common lwipopts or any other standard includes, if required
 )
 
 pico_add_extra_outputs(testapp)
-
