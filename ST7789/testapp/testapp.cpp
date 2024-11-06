@@ -5,6 +5,7 @@ using namespace jxglib;
 
 int main()
 {
+	uint16_t* buff = reinterpret_cast<uint16_t*>(::malloc(240 * 240 * 2));
 	ST7789 tft(spi0, 240, 240, 20, 21, 22);
 	::stdio_init_all();
 	::spi_init(spi0, 125 * 1000 * 1000);
@@ -12,11 +13,17 @@ int main()
 	::gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
 	tft.Initialize();
 	tft.raw.Fill(0x0000);
+	tft.raw.ColumnAddressSet(0, 240);
+	tft.raw.RowAddressSet(0, 240);
 	for (;;) {
-		tft.raw.Fill(0x0000);
-		::sleep_ms(1000);
-		tft.raw.Fill(0xffff);
-		::sleep_ms(1000);
+		::memset(buff, 0x00, 240 * 240 * 2);		
+		tft.raw.MemoryWriteBy16Bit(buff, 240 * 240);
+		//tft.raw.Fill(0x0000);
+		::sleep_ms(100);
+		//tft.raw.Fill(0xffff);
+		::memset(buff, 0xff, 240 * 240 * 2);		
+		tft.raw.MemoryWriteBy16Bit(buff, 240 * 240);
+		::sleep_ms(100);
 	}
 }
 

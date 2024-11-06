@@ -35,7 +35,11 @@ public:
 			gpio_DC_(gpio_DC), gpio_RST_(gpio_RST), gpio_BL_(gpio_BL), gpio_CS_(gpio_CS),
 			dataModeFlag_(false) {}
 	public:
-		void SendCmd(uint8_t cmd, const void* data, int len);
+		int GetWidth() const { return width_; }
+		int GetHeight() const { return height_; }
+	public:
+		void SendCmd(uint8_t cmd, const uint8_t* data, int len);
+		void SendCmdBy16Bit(uint8_t cmd, const uint16_t* data, int len);
 		void SendCmd(uint8_t cmd) { SendCmd(cmd, nullptr, 0); }
 		void SendCmd(uint8_t cmd, uint8_t data) { SendCmd(cmd, &data, 1); }
 		void SendCmd(uint8_t cmd, uint8_t data1, uint8_t data2) {
@@ -59,8 +63,6 @@ public:
 			SendCmd(cmd, buff, sizeof(buff));
 		}
 		bool UsesCS() const { return gpio_CS_ != static_cast<uint>(-1); }
-	public:
-		void Initialize();
 	public:
 		// 9.1 System Function Command
 		// 9.1.1 NOP (00h): No Operation
@@ -126,8 +128,11 @@ public:
 				static_cast<uint8_t>(ye >> 8), static_cast<uint8_t>(ye & 0xff));
 		}
 		// 9.1.22 RAMWR (2Ch): Memory Write
-		void MemoryWrite(const void* data, int len) {
+		void MemoryWrite(const uint8_t* data, int len) {
 			SendCmd(0x2c, data, len);
+		}
+		void MemoryWriteBy16Bit(const uint16_t* data, int len) {
+			SendCmdBy16Bit(0x2c, data, len);
 		}
 		// 9.1.23 RAMRD (2Dh): Memory Read
 		// 9.1.24 PTLAR (30h): Partial Area
@@ -172,8 +177,11 @@ public:
 			SendCmd(0x3a, (rgbInterfaceColorFormat << 4) | controlInterfaceColorFormat);
 		}
 		// 9.1.33 WRMEMC (3Ch): Write Memory Continue
-		void WriteMemoryContinue(const void* data, int len) {
+		void WriteMemoryContinue(const uint8_t* data, int len) {
 			SendCmd(0x3c, data, len);
+		}
+		void WriteMemoryContinueBy16Bit(const uint16_t* data, int len) {
+			SendCmdBy16Bit(0x3c, data, len);
 		}
 		// 9.1.34 RDMEMC (3Eh): Read Memory Continue
 		// 9.1.35 STE (44h): Set Tear Scanline
@@ -207,9 +215,11 @@ public:
 		// 9.1.48 RDID3 (DCh): Read ID3
 		// 9.2 System Function Command
 	public:
+		void SetGPIO_BL(bool value) { ::gpio_put(gpio_BL_, value); }
+	public:
+		void Initialize();
+		void InitGPIO();
 		void PutPixel(uint16_t pixel);
-		void SetCursor(uint16_t x, uint16_t y);
-		void ScrollVertical(uint16_t row);
 		void Fill(uint16_t pixel);
 	};
 public:
@@ -220,6 +230,9 @@ public:
 	ST7789(spi_inst_t* spi, int width, int height, uint gpio_DC, uint gpio_RST, uint gpio_BL) :
 		raw(spi, width, height, gpio_DC, gpio_RST, gpio_BL, static_cast<uint>(-1)) {}
 	void Initialize();
+	bool UsesCS() { return raw.UsesCS(); }
+	int GetWidth() { return raw.GetWidth(); }
+	int GetHeight() { return raw.GetHeight(); }
 };
 
 }
