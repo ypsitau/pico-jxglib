@@ -109,6 +109,7 @@ void ST7789::Raw::SendCmdBy16Bit(uint8_t cmd, const uint16_t* data, int len)
 	::sleep_us(1);
 }
 
+#if 0
 void ST7789::Raw::PutPixel(uint16_t pixel)
 {
 	if (!dataModeFlag_) {
@@ -143,7 +144,6 @@ void ST7789::Raw::Fill(uint16_t pixel)
 	}
 }
 
-#if 0
 void ST7789::Raw::Initialize()
 {
 	if (UsesCS()) {

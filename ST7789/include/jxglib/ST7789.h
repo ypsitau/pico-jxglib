@@ -215,11 +215,8 @@ public:
 		// 9.1.48 RDID3 (DCh): Read ID3
 		// 9.2 System Function Command
 	public:
-		void SetGPIO_BL(bool value) { ::gpio_put(gpio_BL_, value); }
-	public:
 		void InitGPIO();
-		void PutPixel(uint16_t pixel);
-		void Fill(uint16_t pixel);
+		void SetGPIO_BL(bool value) { ::gpio_put(gpio_BL_, value); }
 	};
 public:
 	Raw raw;

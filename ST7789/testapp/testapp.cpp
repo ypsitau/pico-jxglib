@@ -12,15 +12,12 @@ int main()
 	::gpio_set_function(PICO_DEFAULT_SPI_TX_PIN, GPIO_FUNC_SPI);
 	::gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
 	tft.Initialize();
-	tft.raw.Fill(0x0000);
 	tft.raw.ColumnAddressSet(0, 240);
 	tft.raw.RowAddressSet(0, 240);
 	for (;;) {
 		::memset(buff, 0x00, 240 * 240 * 2);		
 		tft.raw.MemoryWriteBy16Bit(buff, 240 * 240);
-		//tft.raw.Fill(0x0000);
 		::sleep_ms(10);
-		//tft.raw.Fill(0xffff);
 		::memset(buff, 0xff, 240 * 240 * 2);		
 		tft.raw.MemoryWriteBy16Bit(buff, 240 * 240);
 		::sleep_ms(10);
