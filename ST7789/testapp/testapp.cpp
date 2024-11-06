@@ -14,6 +14,13 @@ int main()
 	tft.Initialize();
 	tft.raw.ColumnAddressSet(0, 240);
 	tft.raw.RowAddressSet(0, 240);
+	::memset(buff, 0x00, 240 * 240 * 2);		
+	tft.raw.MemoryWriteBy16Bit(buff, 240 * 240);
+	::memset(buff, 0xff, 240 * 240 * 2);		
+	tft.raw.ColumnAddressSet(30, 100);
+	tft.raw.RowAddressSet(30, 60);
+	tft.raw.MemoryWriteBy16Bit(buff, 50 * 30);
+#if 0
 	for (;;) {
 		::memset(buff, 0x00, 240 * 240 * 2);		
 		tft.raw.MemoryWriteBy16Bit(buff, 240 * 240);
@@ -22,6 +29,7 @@ int main()
 		tft.raw.MemoryWriteBy16Bit(buff, 240 * 240);
 		::sleep_ms(10);
 	}
+#endif
 }
 
 #if 0
