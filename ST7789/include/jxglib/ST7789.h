@@ -24,19 +24,20 @@ public:
 		spi_inst_t* spi_;
 		int width_;
 		int height_;
-		uint gpio_DC_;		// Data/Command
 		uint gpio_RST_;		// Reset
+		uint gpio_DC_;		// Data/Command
 		uint gpio_BL_;		// Backlight
 		uint gpio_CS_;		// Chip Select
-		bool dataModeFlag_;
 	public:
-		Raw(spi_inst_t* spi, int width, int height, uint gpio_DC, uint gpio_RST, uint gpio_BL, uint gpio_CS) :
+		Raw(spi_inst_t* spi, int width, int height, uint gpio_RST, uint gpio_DC, uint gpio_BL, uint gpio_CS) :
 			spi_(spi), width_(width), height_(height),
-			gpio_DC_(gpio_DC), gpio_RST_(gpio_RST), gpio_BL_(gpio_BL), gpio_CS_(gpio_CS),
-			dataModeFlag_(false) {}
+			gpio_RST_(gpio_RST), gpio_DC_(gpio_DC), gpio_BL_(gpio_BL), gpio_CS_(gpio_CS) {}
 	public:
+		bool UsesCS() const { return gpio_CS_ != static_cast<uint>(-1); }
 		int GetWidth() const { return width_; }
 		int GetHeight() const { return height_; }
+		void InitGPIO();
+		void SetGPIO_BL(bool value) { ::gpio_put(gpio_BL_, value); }
 	public:
 		void SendCmd(uint8_t cmd, const uint8_t* data, int len);
 		void SendCmdBy16Bit(uint8_t cmd, const uint16_t* data, int len);
@@ -62,7 +63,6 @@ public:
 			uint8_t buff[] = { data1, data2, data3, data4, data5, data6 };
 			SendCmd(cmd, buff, sizeof(buff));
 		}
-		bool UsesCS() const { return gpio_CS_ != static_cast<uint>(-1); }
 	public:
 		// 9.1 System Function Command
 		// 9.1.1 NOP (00h): No Operation
@@ -214,21 +214,24 @@ public:
 		// 9.1.47 RDID2 (DBh): Read ID2
 		// 9.1.48 RDID3 (DCh): Read ID3
 		// 9.2 System Function Command
-	public:
-		void InitGPIO();
-		void SetGPIO_BL(bool value) { ::gpio_put(gpio_BL_, value); }
 	};
 public:
 	Raw raw;
+private:
+	uint16_t colorCur_;
 public:
-	ST7789(spi_inst_t* spi, int width, int height, uint gpio_DC, uint gpio_RST, uint gpio_BL, uint gpio_CS) :
-		raw(spi, width, height, gpio_DC, gpio_RST, gpio_BL, gpio_CS) {}
-	ST7789(spi_inst_t* spi, int width, int height, uint gpio_DC, uint gpio_RST, uint gpio_BL) :
-		raw(spi, width, height, gpio_DC, gpio_RST, gpio_BL, static_cast<uint>(-1)) {}
+	ST7789(spi_inst_t* spi, int width, int height, uint gpio_RST, uint gpio_DC, uint gpio_BL, uint gpio_CS) :
+		raw(spi, width, height, gpio_RST, gpio_DC, gpio_BL, gpio_CS), colorCur_(Color::RGB565(0, 0, 0)) {}
+	ST7789(spi_inst_t* spi, int width, int height, uint gpio_RST, uint gpio_DC, uint gpio_BL) :
+		ST7789(spi, width, height, gpio_RST, gpio_DC, gpio_BL, static_cast<uint>(-1)) {}
+public:
 	void Initialize();
 	bool UsesCS() { return raw.UsesCS(); }
 	int GetWidth() { return raw.GetWidth(); }
 	int GetHeight() { return raw.GetHeight(); }
+public:
+	void SetColor(uint16_t color) { colorCur_ = color; }
+
 };
 
 }

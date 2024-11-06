@@ -21,7 +21,7 @@ public:
 	static const Color Blue;
 	static const Color White;
 public:
-	static uint16_t RGB565(uint8_t r, uint8_t g, uint8_t b) { return
+	constexpr static uint16_t RGB565(uint8_t r, uint8_t g, uint8_t b) { return
 		((static_cast<uint16_t>(r) & 0xf8) << 8) |
 		((static_cast<uint16_t>(g) & 0xfc) << 3) |
 		((static_cast<uint16_t>(b) >> 3)); }
