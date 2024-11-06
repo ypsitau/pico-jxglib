@@ -14,7 +14,14 @@ int main()
 	tft.Initialize();
 	tft.raw.ColumnAddressSet(0, 240);
 	tft.raw.RowAddressSet(0, 240);
-	::memset(buff, 0x00, 240 * 240 * 2);		
+	uint16_t* p = buff;
+	for (int i = 0; i < 240; i++) {
+		for (int j = 0; j < 240; j++, p++) {
+			//*p = static_cast<uint16_t>((0x3f << 11) | (0x1f << 6) | (0x3f << 0));
+			*p = Color::RGB565(i, i, i);
+		}
+	}
+	//::memset(buff, 0x00, 240 * 240 * 2);		
 	tft.raw.MemoryWriteBy16Bit(buff, 240 * 240);
 	::memset(buff, 0xff, 240 * 240 * 2);		
 	tft.raw.ColumnAddressSet(30, 100);
