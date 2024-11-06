@@ -19,11 +19,11 @@ int main()
 		::memset(buff, 0x00, 240 * 240 * 2);		
 		tft.raw.MemoryWriteBy16Bit(buff, 240 * 240);
 		//tft.raw.Fill(0x0000);
-		::sleep_ms(100);
+		::sleep_ms(10);
 		//tft.raw.Fill(0xffff);
 		::memset(buff, 0xff, 240 * 240 * 2);		
 		tft.raw.MemoryWriteBy16Bit(buff, 240 * 240);
-		::sleep_ms(100);
+		::sleep_ms(10);
 	}
 }
 

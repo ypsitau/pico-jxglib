@@ -217,7 +217,6 @@ public:
 	public:
 		void SetGPIO_BL(bool value) { ::gpio_put(gpio_BL_, value); }
 	public:
-		void Initialize();
 		void InitGPIO();
 		void PutPixel(uint16_t pixel);
 		void Fill(uint16_t pixel);
