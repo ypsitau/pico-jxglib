@@ -21,9 +21,21 @@ int main()
 	tft.SetFont(Font::shinonome16);
 	tft.SetFontScale(2, 2);
 	tft.SetColor(Color::white.RGB565());
-	tft.DrawString(0, 0, "Hello World");
-	//tft.SetFontScale(1, 1);
-	tft.DrawString(0, 32, "こんにちは");
+	for (int i = 0; ; i++) {
+		tft.DrawString(0, 0, "Hello World");
+		//tft.SetFontScale(1, 1);
+		char str[32];
+		::sprintf(str, "こんにちは:%d", i);
+		tft.DrawString(0, 32, str);
+		::sprintf(str, "こんにちは:%d", i + 1);
+		tft.DrawString(0, 32 * 2, str);
+		::sprintf(str, "こんにちは:%d", i + 2);
+		tft.DrawString(0, 32 * 3, str);
+		::sprintf(str, "こんにちは:%d", i + 3);
+		tft.DrawString(0, 32 * 4, str);
+		::sprintf(str, "こんにちは:%d", i + 4);
+		tft.DrawString(0, 32 * 5, str);
+	}
 #if 0
 	for (;;) {
 		tft.SetColor(Color::RGB565(255, 255, 255));
