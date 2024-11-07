@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "jxglib/ST7789.h"
-#include "jxglib/Font/shinonome16.h"
+#include "Font/shinonome16.h"
 
 using namespace jxglib;
 
@@ -19,8 +19,11 @@ int main()
 	tft.SetColor(Color::black.RGB565());
 	tft.Fill();
 	tft.SetFont(Font::shinonome16);
+	tft.SetFontScale(2, 2);
 	tft.SetColor(Color::white.RGB565());
 	tft.DrawString(0, 0, "Hello World");
+	//tft.SetFontScale(1, 1);
+	tft.DrawString(0, 32, "こんにちは");
 #if 0
 	for (;;) {
 		tft.SetColor(Color::RGB565(255, 255, 255));

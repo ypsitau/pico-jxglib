@@ -78,22 +78,28 @@ void ST7789::DrawChar(int x, int y, const FontEntry& fontEntry)
 {
 	int nDots = fontEntry.width * fontEntry.height;
 	int bytes = (fontEntry.width + 7) / 8 * fontEntry.height;
-	const uint8_t* pSrc = fontEntry.data;
-	//uint16_t* pDst = buff;
-	int iCol = 0;
-	raw.ColumnAddressSet(x, x + fontEntry.width - 1);
-	raw.RowAddressSet(y, y + fontEntry.height - 1);
+	const uint8_t* pSrcLeft = fontEntry.data;
+	raw.ColumnAddressSet(x, x + fontEntry.width * context_.fontScaleX - 1);
+	raw.RowAddressSet(y, y + fontEntry.height * context_.fontScaleY - 1);
 	raw.MemoryWrite_Begin(16);
-	for (int iByte = 0; iByte < bytes; iByte++, pSrc++) {
-		uint8_t bits = *pSrc;
-		for (int iBit = 0; iBit < 8 && iCol < fontEntry.width; iBit++, iCol++, bits <<= 1) {
-			raw.MemoryWrite_Data16((bits & 0x80)? context_.colorFg : context_.colorBg);
+	for (int iRow = 0; iRow < fontEntry.height; iRow++) {
+		const uint8_t* pSrc;
+		for (int scaleY = 0; scaleY < context_.fontScaleY; scaleY++) {
+			pSrc = pSrcLeft;
+			int iBit = 0;
+			uint8_t bits = *pSrc++;
+			for (int iCol = 0; iCol < fontEntry.width; iCol++, iBit++, bits <<= 1) {
+				if (iBit == 8) {
+					iBit = 0;
+					bits = *pSrc++;
+				}
+				uint16_t color = (bits & 0x80)? context_.colorFg : context_.colorBg;
+				for (int scaleX = 0; scaleX < context_.fontScaleX; scaleX++) raw.MemoryWrite_Data16(color);
+			}
 		}
-		if (iCol == fontEntry.width) iCol = 0;
+		pSrcLeft = pSrc;
 	}
 	raw.MemoryWrite_End();
-	//raw.MemoryWrite16(buff, nDots);
-	//::free(buff);
 }
 
 void ST7789::DrawChar(int x, int y, uint32_t code)
@@ -173,34 +179,5 @@ void ST7789::Raw::SendCmdAndData16(uint8_t cmd, const uint16_t* data, int len)
 	::spi_write16_blocking(spi_, data, len);
 	DisableCS();
 }
-
-#if 0
-//------------------------------------------------------------------------------
-// spi_write16_blocking_const
-// This code is based on the source of spi_write16_blocking() in
-// pico-sdk/src/rp2_common/hardware_spi/spi.c
-//------------------------------------------------------------------------------
-int spi_write16_blocking_const(spi_inst_t *spi, uint16_t data, size_t len) {
-    // Deliberately overflow FIFO, then clean up afterward, to minimise amount
-    // of APB polling required per halfword
-    for (size_t i = 0; i < len; ++i) {
-        while (!spi_is_writable(spi))
-            tight_loop_contents();
-        spi_get_hw(spi)->dr = (uint32_t)data;
-    }
-
-    while (spi_is_readable(spi))
-        (void)spi_get_hw(spi)->dr;
-    while (spi_get_hw(spi)->sr & SPI_SSPSR_BSY_BITS)
-        tight_loop_contents();
-    while (spi_is_readable(spi))
-        (void)spi_get_hw(spi)->dr;
-
-    // Don't leave overrun flag set
-    spi_get_hw(spi)->icr = SPI_SSPICR_RORIC_BITS;
-
-    return (int)len;
-}
-#endif
 
 }
