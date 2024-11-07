@@ -77,23 +77,23 @@ void ST7789::DrawRectFill(int x, int y, int width, int height)
 void ST7789::DrawChar(int x, int y, const FontEntry& fontEntry)
 {
 	int nDots = fontEntry.width * fontEntry.height;
-	uint16_t* buff = reinterpret_cast<uint16_t*>(::malloc(nDots * sizeof(uint16_t)));
-	if (!buff) return;
 	int bytes = (fontEntry.width + 7) / 8 * fontEntry.height;
 	const uint8_t* pSrc = fontEntry.data;
-	uint16_t* pDst = buff;
+	//uint16_t* pDst = buff;
 	int iCol = 0;
 	raw.ColumnAddressSet(x, x + fontEntry.width - 1);
 	raw.RowAddressSet(y, y + fontEntry.height - 1);
+	raw.MemoryWrite_Begin(16);
 	for (int iByte = 0; iByte < bytes; iByte++, pSrc++) {
 		uint8_t bits = *pSrc;
-		for (int iBit = 0; iBit < 8 && iCol < fontEntry.width; iBit++, iCol++, pDst++, bits <<= 1) {
-			*pDst = (bits & 0x80)? context_.colorFg : context_.colorBg; 
+		for (int iBit = 0; iBit < 8 && iCol < fontEntry.width; iBit++, iCol++, bits <<= 1) {
+			raw.MemoryWrite_Data16((bits & 0x80)? context_.colorFg : context_.colorBg);
 		}
 		if (iCol == fontEntry.width) iCol = 0;
 	}
-	raw.MemoryWrite16(buff, nDots);
-	::free(buff);
+	raw.MemoryWrite_End();
+	//raw.MemoryWrite16(buff, nDots);
+	//::free(buff);
 }
 
 void ST7789::DrawChar(int x, int y, uint32_t code)
@@ -171,18 +171,6 @@ void ST7789::Raw::SendCmdAndData16(uint8_t cmd, const uint16_t* data, int len)
 	::sleep_us(1);
 	SetSPIDataBits(16);
 	::spi_write16_blocking(spi_, data, len);
-	DisableCS();
-}
-
-void ST7789::Raw::SendCmdAndConst16(uint8_t cmd, uint16_t data, int len)
-{
-	EnableCS();
-	WriteCmd(cmd);
-	::sleep_us(1);
-	SetSPIDataBits(16);
-	//spi_write16_blocking_const(spi_, data, len);
-	while (len-- > 0) SendData16(data);
-	DumpResponse();
 	DisableCS();
 }
 

@@ -49,22 +49,28 @@ public:
 		void EnableCS() { if (UsesCS()) ::gpio_put(gpio_CS_, 0); }
 		void DisableCS() { if (UsesCS()) ::gpio_put(gpio_CS_, 1); }
 	public:
-		void SendData16(uint16_t data) {
-			while (!spi_is_writable(spi_)) tight_loop_contents();
-			spi_get_hw(spi_)->dr = (uint32_t)data;
+		void MemoryWrite_Begin(uint data_bits) {
+			EnableCS();
+			WriteCmd(0x2c);	// 9.1.22 RAMWR (2Ch): Memory Write
+			::sleep_us(1);
+			SetSPIDataBits(data_bits);
 		}
-		void DumpResponse() {
-			while (spi_is_readable(spi_)) (void)spi_get_hw(spi_)->dr;
+		void MemoryWrite_Data16(uint16_t data) {
+			while (!::spi_is_writable(spi_)) tight_loop_contents();
+			spi_get_hw(spi_)->dr = static_cast<uint32_t>(data);
+		}
+		void MemoryWrite_End() {
+			while (::spi_is_readable(spi_)) (void)spi_get_hw(spi_)->dr;
 			while (spi_get_hw(spi_)->sr & SPI_SSPSR_BSY_BITS) tight_loop_contents();
-			while (spi_is_readable(spi_)) (void)spi_get_hw(spi_)->dr;
+			while (::spi_is_readable(spi_)) (void)spi_get_hw(spi_)->dr;
 			spi_get_hw(spi_)->icr = SPI_SSPICR_RORIC_BITS;
+			DisableCS();
 		}
 	public:
 		void WriteCmd(uint8_t cmd);
 		void SendCmd(uint8_t cmd);
 		void SendCmdAndData8(uint8_t cmd, const uint8_t* data, int len);
 		void SendCmdAndData16(uint8_t cmd, const uint16_t* data, int len);
-		void SendCmdAndConst16(uint8_t cmd, uint16_t data, int len);
 		void SendCmd(uint8_t cmd, uint8_t data) { SendCmdAndData8(cmd, &data, 1); }
 		void SendCmd(uint8_t cmd, uint8_t data1, uint8_t data2) {
 			uint8_t buff[] = { data1, data2 };
@@ -158,7 +164,9 @@ public:
 			SendCmdAndData16(0x2c, data, len);
 		}
 		void MemoryWriteConst16(uint16_t data, int len) {
-			SendCmdAndConst16(0x2c, data, len);
+			MemoryWrite_Begin(16);
+			while (len-- > 0) MemoryWrite_Data16(data);
+			MemoryWrite_End();
 		}
 		// 9.1.23 RAMRD (2Dh): Memory Read
 		// 9.1.24 PTLAR (30h): Partial Area
