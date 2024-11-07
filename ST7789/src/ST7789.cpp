@@ -5,7 +5,7 @@
 
 namespace jxglib {
 
-int spi_write16_blocking_const(spi_inst_t *spi, uint16_t data, size_t len);
+//int spi_write16_blocking_const(spi_inst_t *spi, uint16_t data, size_t len);
 
 //------------------------------------------------------------------------------
 // ST7789
@@ -83,6 +83,8 @@ void ST7789::DrawChar(int x, int y, const FontEntry& fontEntry)
 	const uint8_t* pSrc = fontEntry.data;
 	uint16_t* pDst = buff;
 	int iCol = 0;
+	raw.ColumnAddressSet(x, x + fontEntry.width - 1);
+	raw.RowAddressSet(y, y + fontEntry.height - 1);
 	for (int iByte = 0; iByte < bytes; iByte++, pSrc++) {
 		uint8_t bits = *pSrc;
 		for (int iBit = 0; iBit < 8 && iCol < fontEntry.width; iBit++, iCol++, pDst++, bits <<= 1) {
@@ -90,8 +92,6 @@ void ST7789::DrawChar(int x, int y, const FontEntry& fontEntry)
 		}
 		if (iCol == fontEntry.width) iCol = 0;
 	}
-	raw.ColumnAddressSet(x, x + fontEntry.width);
-	raw.RowAddressSet(y, y + fontEntry.height);
 	raw.MemoryWrite16(buff, nDots);
 	::free(buff);
 }
@@ -180,10 +180,13 @@ void ST7789::Raw::SendCmdAndConst16(uint8_t cmd, uint16_t data, int len)
 	WriteCmd(cmd);
 	::sleep_us(1);
 	SetSPIDataBits(16);
-	spi_write16_blocking_const(spi_, data, len);
+	//spi_write16_blocking_const(spi_, data, len);
+	while (len-- > 0) SendData16(data);
+	DumpResponse();
 	DisableCS();
 }
 
+#if 0
 //------------------------------------------------------------------------------
 // spi_write16_blocking_const
 // This code is based on the source of spi_write16_blocking() in
@@ -210,5 +213,6 @@ int spi_write16_blocking_const(spi_inst_t *spi, uint16_t data, size_t len) {
 
     return (int)len;
 }
+#endif
 
 }

@@ -49,6 +49,17 @@ public:
 		void EnableCS() { if (UsesCS()) ::gpio_put(gpio_CS_, 0); }
 		void DisableCS() { if (UsesCS()) ::gpio_put(gpio_CS_, 1); }
 	public:
+		void SendData16(uint16_t data) {
+			while (!spi_is_writable(spi_)) tight_loop_contents();
+			spi_get_hw(spi_)->dr = (uint32_t)data;
+		}
+		void DumpResponse() {
+			while (spi_is_readable(spi_)) (void)spi_get_hw(spi_)->dr;
+			while (spi_get_hw(spi_)->sr & SPI_SSPSR_BSY_BITS) tight_loop_contents();
+			while (spi_is_readable(spi_)) (void)spi_get_hw(spi_)->dr;
+			spi_get_hw(spi_)->icr = SPI_SSPICR_RORIC_BITS;
+		}
+	public:
 		void WriteCmd(uint8_t cmd);
 		void SendCmd(uint8_t cmd);
 		void SendCmdAndData8(uint8_t cmd, const uint8_t* data, int len);
