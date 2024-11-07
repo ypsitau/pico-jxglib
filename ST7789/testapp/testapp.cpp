@@ -12,26 +12,47 @@ int main()
 	::gpio_set_function(PICO_DEFAULT_SPI_TX_PIN, GPIO_FUNC_SPI);
 	::gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
 	tft.Initialize();
-	tft.raw.ColumnAddressSet(0, 240);
-	tft.raw.RowAddressSet(0, 240);
-	uint16_t* p = buff;
-	for (int i = 0; i < 240; i++) {
-		for (int j = 0; j < 80; j++, p++) *p = Color::RGB565(i, 0, 0);
-		for (int j = 0; j < 80; j++, p++) *p = Color::RGB565(0, i, 0);
-		for (int j = 0; j < 80; j++, p++) *p = Color::RGB565(0, 0, i);
+	int x = 10, y = 10;
+	int xDir = 1, yDir = 1;
+	int wdBall = 50, htBall = 30;
+	tft.SetColor(Color::black.RGB565());
+	tft.Fill();
+	for (;;) {
+		tft.SetColor(Color::RGB565(255, 255, 255));
+		tft.DrawRectFill(x, y, wdBall, htBall);
+		if (x + xDir < 0) xDir = 1;
+		if (x + xDir + wdBall > tft.GetWidth()) xDir = -1;
+		if (y + yDir < 0) yDir = 1;
+		if (y + yDir + htBall > tft.GetHeight()) yDir = -1;
+		::sleep_ms(1);
+		tft.SetColor(Color::RGB565(0, 0, 0));
+		tft.DrawRectFill(x, y, wdBall, htBall);
+		x += xDir, y += yDir;
 	}
-	tft.raw.MemoryWriteBy16Bit(buff, 240 * 240);
-	::memset(buff, 0xff, 240 * 240 * 2);		
-	tft.raw.ColumnAddressSet(30, 100);
-	tft.raw.RowAddressSet(30, 60);
-	tft.raw.MemoryWriteBy16Bit(buff, 50 * 30);
+#if 0
+	uint8_t offset = 0;
+	for ( ; ; offset++) {
+		uint16_t* p = buff;
+		for (int i = 0; i < 240; i++) {
+			for (int j = 0; j < 80; j++, p++) *p = Color::RGB565(i + offset, 0, 0);
+			for (int j = 0; j < 80; j++, p++) *p = Color::RGB565(0, i + offset, 0);
+			for (int j = 0; j < 80; j++, p++) *p = Color::RGB565(0, 0, i + offset);
+		}
+		tft.Transfer(0, 0, 240, 240, buff);
+		tft.DrawRectFill(x, y, 30, 30);
+	}
+#endif
+	//::memset(buff, 0xff, 240 * 240 * 2);		
+	//tft.raw.ColumnAddressSet(30, 100);
+	//tft.raw.RowAddressSet(30, 60);
+	//tft.raw.MemoryWrite16(buff, 50 * 30);
 #if 0
 	for (;;) {
 		::memset(buff, 0x00, 240 * 240 * 2);		
-		tft.raw.MemoryWriteBy16Bit(buff, 240 * 240);
+		tft.raw.MemoryWrite16(buff, 240 * 240);
 		::sleep_ms(10);
 		::memset(buff, 0xff, 240 * 240 * 2);		
-		tft.raw.MemoryWriteBy16Bit(buff, 240 * 240);
+		tft.raw.MemoryWrite16(buff, 240 * 240);
 		::sleep_ms(10);
 	}
 #endif

@@ -5,6 +5,8 @@
 
 namespace jxglib {
 
+int spi_write16_blocking_const(spi_inst_t *spi, uint16_t data, size_t len);
+
 //------------------------------------------------------------------------------
 // ST7789
 //------------------------------------------------------------------------------
@@ -37,6 +39,81 @@ void ST7789::Initialize()
 	raw.SetGPIO_BL(true);
 }
 
+void ST7789::Transfer(int x, int y, int width, int height, const uint16_t* buff)
+{
+	raw.ColumnAddressSet(x, x + width);
+	raw.RowAddressSet(y, y + height);
+	raw.MemoryWrite16(buff, width * height);
+}
+
+void ST7789::Fill()
+{
+	raw.ColumnAddressSet(0, GetWidth());
+	raw.RowAddressSet(0, GetHeight());
+	raw.MemoryWriteConst16(context_.colorFg, GetWidth() * GetHeight());
+}
+
+void ST7789::DrawHLine(int x, int y, int width)
+{
+	raw.ColumnAddressSet(x, x + width);
+	raw.RowAddressSet(y, y + 1);
+	raw.MemoryWriteConst16(context_.colorFg, width);
+}
+
+void ST7789::DrawVLine(int x, int y, int height)
+{
+	raw.ColumnAddressSet(x, x + 1);
+	raw.RowAddressSet(y, y + height);
+	raw.MemoryWriteConst16(context_.colorFg, height);
+}
+
+void ST7789::DrawRectFill(int x, int y, int width, int height)
+{
+	raw.ColumnAddressSet(x, x + width);
+	raw.RowAddressSet(y, y + height);
+	raw.MemoryWriteConst16(context_.colorFg, width * height);
+}
+
+void ST7789::DrawChar(int x, int y, const FontEntry& fontEntry)
+{
+	int nDots = fontEntry.width * fontEntry.height;
+	uint16_t* buff = reinterpret_cast<uint16_t*>(::malloc(nDots * sizeof(uint16_t)));
+	if (!buff) return;
+	int bytes = (fontEntry.width + 7) / 8 * fontEntry.height;
+	const uint8_t* pSrc = fontEntry.data;
+	uint16_t* pDst = buff;
+	for (int iByte = 0; iByte < bytes; iByte++, pSrc++) {
+		uint8_t bits = *pSrc;
+		for (int iBit = 0; iBit < 8; iBit++, pDst++, bits <<= 1) {
+			*pDst = (bits & 0x80)? context_.colorFg : context_.colorBg; 
+		}
+	}
+	raw.ColumnAddressSet(x, x + fontEntry.width);
+	raw.RowAddressSet(y, y + fontEntry.height);
+	raw.MemoryWrite16(buff, nDots);
+	::free(buff);
+}
+
+void ST7789::DrawChar(int x, int y, uint32_t code)
+{
+	if (!context_.pFontSet) return;
+	const FontEntry& fontEntry = context_.pFontSet->GetFontEntry(code);
+	DrawChar(x, y, fontEntry);
+}
+
+void ST7789::DrawString(int x, int y, const char* str, const char* strEnd)
+{
+	if (!context_.pFontSet) return;
+	uint32_t code;
+	UTF8Decoder decoder;
+	for (const char* p = str; *p && p != strEnd; p++) {
+		if (!decoder.FeedChar(*p, &code)) continue;
+		const FontEntry& fontEntry = context_.pFontSet->GetFontEntry(code);
+		DrawChar(x, y, fontEntry);
+		x += fontEntry.xAdvance * context_.fontScaleX;
+	}
+}
+
 //------------------------------------------------------------------------------
 // ST7789::Raw
 //------------------------------------------------------------------------------
@@ -57,54 +134,79 @@ void ST7789::Raw::InitGPIO()
 		::gpio_put(gpio_CS_, 1);
 	}
 	::sleep_ms(100);
+	SetSPIDataBits(8);
 }
 
-void ST7789::Raw::SendCmd(uint8_t cmd, const uint8_t* data, int len)
+void ST7789::Raw::WriteCmd(uint8_t cmd)
 {
-	if (UsesCS()) {
-		::spi_set_format(spi_, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
-	} else {
-		::spi_set_format(spi_, 8, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
-	}
-	::sleep_us(1);
-	if (UsesCS()) ::gpio_put(gpio_CS_, 0);
 	::gpio_put(gpio_DC_, 0);
 	::sleep_us(1);
+	SetSPIDataBits(8);
 	::spi_write_blocking(spi_, &cmd, sizeof(cmd));
-	if (len) {
-		::sleep_us(1);
-		::gpio_put(gpio_DC_, 1);
-		::sleep_us(1);
-		::spi_write_blocking(spi_, data, len);
-	}
-	::sleep_us(1);
-	if (UsesCS()) ::gpio_put(gpio_CS_, 1);
 	::gpio_put(gpio_DC_, 1);
-	::sleep_us(1);
 }
 
-void ST7789::Raw::SendCmdBy16Bit(uint8_t cmd, const uint16_t* data, int len)
+void ST7789::Raw::SendCmd(uint8_t cmd)
 {
-	if (UsesCS()) {
-		::spi_set_format(spi_, 16, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);	// Mode 0
-	} else {
-		::spi_set_format(spi_, 16, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);	// Mode 3
-	}
+	EnableCS();
+	WriteCmd(cmd);
+	DisableCS();
+}
+
+void ST7789::Raw::SendCmdAndData8(uint8_t cmd, const uint8_t* data, int len)
+{
+	EnableCS();
+	WriteCmd(cmd);
 	::sleep_us(1);
-	if (UsesCS()) ::gpio_put(gpio_CS_, 0);
-	::gpio_put(gpio_DC_, 0);
+	::spi_write_blocking(spi_, data, len);
+	DisableCS();
+}
+
+void ST7789::Raw::SendCmdAndData16(uint8_t cmd, const uint16_t* data, int len)
+{
+	EnableCS();
+	WriteCmd(cmd);
 	::sleep_us(1);
-	::spi_write_blocking(spi_, &cmd, sizeof(cmd));
-	if (len) {
-		::sleep_us(1);
-		::gpio_put(gpio_DC_, 1);
-		::sleep_us(1);
-		::spi_write16_blocking(spi_, data, len);
-	}
+	SetSPIDataBits(16);
+	::spi_write16_blocking(spi_, data, len);
+	DisableCS();
+}
+
+void ST7789::Raw::SendCmdAndConst16(uint8_t cmd, uint16_t data, int len)
+{
+	EnableCS();
+	WriteCmd(cmd);
 	::sleep_us(1);
-	if (UsesCS()) ::gpio_put(gpio_CS_, 1);
-	::gpio_put(gpio_DC_, 1);
-	::sleep_us(1);
+	SetSPIDataBits(16);
+	spi_write16_blocking_const(spi_, data, len);
+	DisableCS();
+}
+
+//------------------------------------------------------------------------------
+// spi_write16_blocking_const
+// This code is based on the source of spi_write16_blocking() in
+// pico-sdk/src/rp2_common/hardware_spi/spi.c
+//------------------------------------------------------------------------------
+int spi_write16_blocking_const(spi_inst_t *spi, uint16_t data, size_t len) {
+    // Deliberately overflow FIFO, then clean up afterward, to minimise amount
+    // of APB polling required per halfword
+    for (size_t i = 0; i < len; ++i) {
+        while (!spi_is_writable(spi))
+            tight_loop_contents();
+        spi_get_hw(spi)->dr = (uint32_t)data;
+    }
+
+    while (spi_is_readable(spi))
+        (void)spi_get_hw(spi)->dr;
+    while (spi_get_hw(spi)->sr & SPI_SSPSR_BSY_BITS)
+        tight_loop_contents();
+    while (spi_is_readable(spi))
+        (void)spi_get_hw(spi)->dr;
+
+    // Don't leave overrun flag set
+    spi_get_hw(spi)->icr = SPI_SSPICR_RORIC_BITS;
+
+    return (int)len;
 }
 
 }

@@ -219,17 +219,21 @@ public:
 			WriteCtrl(0x10 | (enableChargePump << 2));
 		}
 	};
+	struct Context {
+		const FontSet* pFontSet;
+		int fontScaleX, fontScaleY;
+		DrawMode drawMode;
+	public:
+		Context() : pFontSet(nullptr), fontScaleX(1), fontScaleY(1), drawMode(DrawMode::Set) {}
+	};
 public:
 	static const uint8_t DefaultAddr = 0x3c;
 	Raw raw;
-public:
-	const FontSet* pFontSetCur_;
-	int fontScaleX_, fontScaleY_;
-	DrawMode drawMode_;
+private:
+	Context context_;
 public:
 	SSD1306(i2c_inst_t* i2c, uint8_t addr = DefaultAddr, bool highResoFlag = true) :
-			raw(i2c, addr, highResoFlag? 64 : 32), pFontSetCur_(nullptr), fontScaleX_(1), fontScaleY_(1),
-			drawMode_(DrawMode::Set) {}
+			raw(i2c, addr, highResoFlag? 64 : 32) {}
 public:
 	uint8_t GetAddr() const { return raw.GetAddr(); }
 	int GetWidth() const { return raw.GetWidth(); }
@@ -242,10 +246,10 @@ public:
 	void Refresh();
 	void Flash(bool flashFlag) { raw.EntireDisplayOn(static_cast<uint8_t>(flashFlag)); }
 	void Clear(uint8_t data = 0x00) { raw.FillBuffer(data); }
-	void SetFont(const FontSet& fontSet) { pFontSetCur_ = &fontSet, fontScaleX_ = fontScaleY_ = 1; }
-	void SetFontScale(int fontScale) { fontScaleX_ = fontScaleY_ = fontScale; }
-	void SetFontScale(int fontScaleX, int fontScaleY) { fontScaleX_ = fontScaleX, fontScaleY_ = fontScaleY; }
-	void SetDrawMode(DrawMode drawMode) { drawMode_ = drawMode; }
+	void SetFont(const FontSet& fontSet) { context_.pFontSet = &fontSet, context_.fontScaleX = context_.fontScaleY = 1; }
+	void SetFontScale(int fontScale) { context_.fontScaleX = context_.fontScaleY = fontScale; }
+	void SetFontScale(int fontScaleX, int fontScaleY) { context_.fontScaleX = fontScaleX, context_.fontScaleY = fontScaleY; }
+	void SetDrawMode(DrawMode drawMode) { context_.drawMode = drawMode; }
 private:
 	// Draw* Method Template
 	template<class Logic> void DrawPixelT(int x, int y) {

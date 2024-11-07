@@ -28,40 +28,52 @@ public:
 		uint gpio_DC_;		// Data/Command
 		uint gpio_BL_;		// Backlight
 		uint gpio_CS_;		// Chip Select
+		spi_cpol_t cpol_;
+		spi_cpha_t cpha_;
 	public:
 		Raw(spi_inst_t* spi, int width, int height, uint gpio_RST, uint gpio_DC, uint gpio_BL, uint gpio_CS) :
-			spi_(spi), width_(width), height_(height),
-			gpio_RST_(gpio_RST), gpio_DC_(gpio_DC), gpio_BL_(gpio_BL), gpio_CS_(gpio_CS) {}
+				spi_(spi), width_(width), height_(height),
+				gpio_RST_(gpio_RST), gpio_DC_(gpio_DC), gpio_BL_(gpio_BL), gpio_CS_(gpio_CS),
+				cpol_(SPI_CPOL_0), cpha_(SPI_CPHA_0) {}
+		Raw(spi_inst_t* spi, int width, int height, uint gpio_RST, uint gpio_DC, uint gpio_BL) :
+				spi_(spi), width_(width), height_(height),
+				gpio_RST_(gpio_RST), gpio_DC_(gpio_DC), gpio_BL_(gpio_BL), gpio_CS_(static_cast<uint>(-1)),
+				cpol_(SPI_CPOL_1), cpha_(SPI_CPHA_1) {}
 	public:
 		bool UsesCS() const { return gpio_CS_ != static_cast<uint>(-1); }
 		int GetWidth() const { return width_; }
 		int GetHeight() const { return height_; }
 		void InitGPIO();
 		void SetGPIO_BL(bool value) { ::gpio_put(gpio_BL_, value); }
+		void SetSPIDataBits(uint data_bits) { ::spi_set_format(spi_, data_bits, cpol_, cpha_, SPI_MSB_FIRST); }
+		void EnableCS() { if (UsesCS()) ::gpio_put(gpio_CS_, 0); }
+		void DisableCS() { if (UsesCS()) ::gpio_put(gpio_CS_, 1); }
 	public:
-		void SendCmd(uint8_t cmd, const uint8_t* data, int len);
-		void SendCmdBy16Bit(uint8_t cmd, const uint16_t* data, int len);
-		void SendCmd(uint8_t cmd) { SendCmd(cmd, nullptr, 0); }
-		void SendCmd(uint8_t cmd, uint8_t data) { SendCmd(cmd, &data, 1); }
+		void WriteCmd(uint8_t cmd);
+		void SendCmd(uint8_t cmd);
+		void SendCmdAndData8(uint8_t cmd, const uint8_t* data, int len);
+		void SendCmdAndData16(uint8_t cmd, const uint16_t* data, int len);
+		void SendCmdAndConst16(uint8_t cmd, uint16_t data, int len);
+		void SendCmd(uint8_t cmd, uint8_t data) { SendCmdAndData8(cmd, &data, 1); }
 		void SendCmd(uint8_t cmd, uint8_t data1, uint8_t data2) {
 			uint8_t buff[] = { data1, data2 };
-			SendCmd(cmd, buff, sizeof(buff));
+			SendCmdAndData8(cmd, buff, sizeof(buff));
 		}
 		void SendCmd(uint8_t cmd, uint8_t data1, uint8_t data2, uint8_t data3) {
 			uint8_t buff[] = { data1, data2, data3 };
-			SendCmd(cmd, buff, sizeof(buff));
+			SendCmdAndData8(cmd, buff, sizeof(buff));
 		}
 		void SendCmd(uint8_t cmd, uint8_t data1, uint8_t data2, uint8_t data3, uint8_t data4) {
 			uint8_t buff[] = { data1, data2, data3, data4 };
-			SendCmd(cmd, buff, sizeof(buff));
+			SendCmdAndData8(cmd, buff, sizeof(buff));
 		}
 		void SendCmd(uint8_t cmd, uint8_t data1, uint8_t data2, uint8_t data3, uint8_t data4, uint8_t data5) {
 			uint8_t buff[] = { data1, data2, data3, data4, data5 };
-			SendCmd(cmd, buff, sizeof(buff));
+			SendCmdAndData8(cmd, buff, sizeof(buff));
 		}
 		void SendCmd(uint8_t cmd, uint8_t data1, uint8_t data2, uint8_t data3, uint8_t data4, uint8_t data5, uint8_t data6) {
 			uint8_t buff[] = { data1, data2, data3, data4, data5, data6 };
-			SendCmd(cmd, buff, sizeof(buff));
+			SendCmdAndData8(cmd, buff, sizeof(buff));
 		}
 	public:
 		// 9.1 System Function Command
@@ -129,10 +141,13 @@ public:
 		}
 		// 9.1.22 RAMWR (2Ch): Memory Write
 		void MemoryWrite(const uint8_t* data, int len) {
-			SendCmd(0x2c, data, len);
+			SendCmdAndData8(0x2c, data, len);
 		}
-		void MemoryWriteBy16Bit(const uint16_t* data, int len) {
-			SendCmdBy16Bit(0x2c, data, len);
+		void MemoryWrite16(const uint16_t* data, int len) {
+			SendCmdAndData16(0x2c, data, len);
+		}
+		void MemoryWriteConst16(uint16_t data, int len) {
+			SendCmdAndConst16(0x2c, data, len);
 		}
 		// 9.1.23 RAMRD (2Dh): Memory Read
 		// 9.1.24 PTLAR (30h): Partial Area
@@ -178,10 +193,10 @@ public:
 		}
 		// 9.1.33 WRMEMC (3Ch): Write Memory Continue
 		void WriteMemoryContinue(const uint8_t* data, int len) {
-			SendCmd(0x3c, data, len);
+			SendCmdAndData8(0x3c, data, len);
 		}
 		void WriteMemoryContinueBy16Bit(const uint16_t* data, int len) {
-			SendCmdBy16Bit(0x3c, data, len);
+			SendCmdAndData16(0x3c, data, len);
 		}
 		// 9.1.34 RDMEMC (3Eh): Read Memory Continue
 		// 9.1.35 STE (44h): Set Tear Scanline
@@ -215,23 +230,48 @@ public:
 		// 9.1.48 RDID3 (DCh): Read ID3
 		// 9.2 System Function Command
 	};
+	struct Context {
+		int wdLine;
+		uint16_t colorFg;
+		uint16_t colorBg;
+		const FontSet* pFontSet;
+		int fontScaleX, fontScaleY;
+	public:
+		Context() : wdLine(1), colorFg(Color::RGB565(255, 255, 255)), colorBg(Color::RGB565(0, 0, 0)),
+		pFontSet(nullptr), fontScaleX(1), fontScaleY(1) {}
+	};
 public:
 	Raw raw;
 private:
-	uint16_t colorCur_;
+	Context context_;
 public:
 	ST7789(spi_inst_t* spi, int width, int height, uint gpio_RST, uint gpio_DC, uint gpio_BL, uint gpio_CS) :
-		raw(spi, width, height, gpio_RST, gpio_DC, gpio_BL, gpio_CS), colorCur_(Color::RGB565(0, 0, 0)) {}
+		raw(spi, width, height, gpio_RST, gpio_DC, gpio_BL, gpio_CS) {}
 	ST7789(spi_inst_t* spi, int width, int height, uint gpio_RST, uint gpio_DC, uint gpio_BL) :
-		ST7789(spi, width, height, gpio_RST, gpio_DC, gpio_BL, static_cast<uint>(-1)) {}
+		raw(spi, width, height, gpio_RST, gpio_DC, gpio_BL) {}
 public:
 	void Initialize();
 	bool UsesCS() { return raw.UsesCS(); }
 	int GetWidth() { return raw.GetWidth(); }
 	int GetHeight() { return raw.GetHeight(); }
 public:
-	void SetColor(uint16_t color) { colorCur_ = color; }
-
+	void SetColor(uint16_t color) { context_.colorFg = color; }
+	void SetColorBackground(uint16_t color) { context_.colorBg = color; }
+	void SetFont(const FontSet& fontSet) {
+		context_.pFontSet = &fontSet; context_.fontScaleX = context_.fontScaleY = 1;
+	}
+	void SetFontScale(int fontScale) { context_.fontScaleX = context_.fontScaleY = fontScale; }
+	void SetFontScale(int fontScaleX, int fontScaleY) {
+		context_.fontScaleX = fontScaleX, context_.fontScaleY = fontScaleY;
+	}
+	void Transfer(int x, int y, int width, int height, const uint16_t* buff);
+	void Fill();
+	void DrawHLine(int x, int y, int width);
+	void DrawVLine(int x, int y, int height);
+	void DrawRectFill(int x, int y, int width, int height);
+	void DrawChar(int x, int y, const FontEntry& fontEntry);
+	void DrawChar(int x, int y, uint32_t code);
+	void DrawString(int x, int y, const char* str, const char* strEnd = nullptr);
 };
 
 }
