@@ -82,11 +82,13 @@ void ST7789::DrawChar(int x, int y, const FontEntry& fontEntry)
 	int bytes = (fontEntry.width + 7) / 8 * fontEntry.height;
 	const uint8_t* pSrc = fontEntry.data;
 	uint16_t* pDst = buff;
+	int iCol = 0;
 	for (int iByte = 0; iByte < bytes; iByte++, pSrc++) {
 		uint8_t bits = *pSrc;
-		for (int iBit = 0; iBit < 8; iBit++, pDst++, bits <<= 1) {
+		for (int iBit = 0; iBit < 8 && iCol < fontEntry.width; iBit++, iCol++, pDst++, bits <<= 1) {
 			*pDst = (bits & 0x80)? context_.colorFg : context_.colorBg; 
 		}
+		if (iCol == fontEntry.width) iCol = 0;
 	}
 	raw.ColumnAddressSet(x, x + fontEntry.width);
 	raw.RowAddressSet(y, y + fontEntry.height);

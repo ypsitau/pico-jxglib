@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "jxglib/ST7789.h"
+#include "jxglib/Font/shinonome16.h"
 
 using namespace jxglib;
 
@@ -17,6 +18,10 @@ int main()
 	int wdBall = 50, htBall = 30;
 	tft.SetColor(Color::black.RGB565());
 	tft.Fill();
+	tft.SetFont(Font::shinonome16);
+	tft.SetColor(Color::white.RGB565());
+	tft.DrawString(0, 0, "Hello World");
+#if 0
 	for (;;) {
 		tft.SetColor(Color::RGB565(255, 255, 255));
 		tft.DrawRectFill(x, y, wdBall, htBall);
@@ -29,6 +34,7 @@ int main()
 		tft.DrawRectFill(x, y, wdBall, htBall);
 		x += xDir, y += yDir;
 	}
+#endif
 #if 0
 	uint8_t offset = 0;
 	for ( ; ; offset++) {
