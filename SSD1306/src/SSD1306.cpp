@@ -72,13 +72,15 @@ template<class Logic> void SSD1306::DrawVLineT_NoAdj(int x, int y, int height)
 
 template<class Logic> void SSD1306::DrawHLineT(int x, int y, int width)
 {
-	if (!CheckRange(y, 0, GetScreenHeight()) || !AdjustRange(&x, &width, 0, GetScreenWidth())) return;
+	if (!AdjustRange(&x, &width, 0, GetScreenWidth())) return;
+	if (!CheckRange(y, 0, GetScreenHeight())) return;
 	DrawHLineT_NoAdj<Logic>(x, y, width);
 }
 
 template<class Logic> void SSD1306::DrawVLineT(int x, int y, int height)
 {
-	if (!CheckRange(x, 0, GetScreenWidth()) || !AdjustRange(&y, &height, 0, GetScreenHeight())) return;
+	if (!CheckRange(x, 0, GetScreenWidth())) return;
+	if (!AdjustRange(&y, &height, 0, GetScreenHeight())) return;
 	DrawVLineT_NoAdj<Logic>(x, y, height);
 }
 
@@ -103,7 +105,8 @@ template<class Logic> void SSD1306::DrawLineT(int x0, int y0, int x1, int y1, in
 
 template<class Logic> void SSD1306::DrawRectFillT(int x, int y, int width, int height)
 {
-	if (!AdjustRange(&x, &width, 0, GetScreenWidth()) || !AdjustRange(&y, &height, 0, GetScreenHeight())) return;
+	if (!AdjustRange(&x, &width, 0, GetScreenWidth())) return;
+	if (!AdjustRange(&y, &height, 0, GetScreenHeight())) return;
 	uint64_t bits = (-1LL << y) & ~(-1LL << (y + height));
 	int page;
 	uint8_t* pDstTop = raw.GetPointer(x, y, &page);
@@ -327,17 +330,17 @@ const char* SSD1306::DrawStringBBox(int x, int y, int width, int height, const c
 	uint32_t code;
 	UTF8Decoder decoder;
 	int xStart = x;
-	int xEnd = (width >= 0)? x + width : GetScreenWidth();
-	int yEnd = (height >= 0)? y + height : GetScreenHeight();
+	int xExceed = (width >= 0)? x + width : GetScreenWidth();
+	int yExceed = (height >= 0)? y + height : GetScreenHeight();
 	int yAdvance = (htLine >= 0)? htLine : context_.pFontSet->yAdvance * context_.fontScaleY;
 	const char* pDone = str;
 	for (const char* p = str; *p; p++) {
 		if (!decoder.FeedChar(*p, &code)) continue;
 		const FontEntry& fontEntry = context_.pFontSet->GetFontEntry(code);
 		int xAdvance = fontEntry.xAdvance * context_.fontScaleX;
-		if (x + fontEntry.width * context_.fontScaleX > xEnd) {
+		if (x + fontEntry.width * context_.fontScaleX > xExceed) {
 			x = xStart, y += yAdvance;
-			if (y + yAdvance > yEnd) break;
+			if (y + yAdvance > yExceed) break;
 		}
 		DrawChar(x, y, fontEntry);
 		x += xAdvance;

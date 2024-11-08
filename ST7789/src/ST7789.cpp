@@ -28,8 +28,8 @@ void ST7789::Initialize()
 			// Line Address Order            = LCD Refresh Top to Bottom
 			// RGB/BGR Order                 = RGB
 			// Display Data Latch Data Order = LCD Refresh Left to Right
-	raw.ColumnAddressSet(0, GetWidth());
-	raw.RowAddressSet(0, GetHeight());
+	raw.ColumnAddressSet(0, GetScreenWidth());
+	raw.RowAddressSet(0, GetScreenHeight());
 	raw.DisplayInversionOn();
 	::sleep_ms(10);
 	raw.NormalDisplayModeOn();
@@ -39,7 +39,7 @@ void ST7789::Initialize()
 	raw.SetGPIO_BL(true);
 }
 
-void ST7789::Transfer(int x, int y, int width, int height, const uint16_t* buff)
+void ST7789::WriteBuffer(int x, int y, int width, int height, const uint16_t* buff)
 {
 	raw.ColumnAddressSet(x, x + width);
 	raw.RowAddressSet(y, y + height);
@@ -48,63 +48,118 @@ void ST7789::Transfer(int x, int y, int width, int height, const uint16_t* buff)
 
 void ST7789::Clear()
 {
+	raw.ColumnAddressSet(0, GetScreenWidth() - 1);
+	raw.RowAddressSet(0, GetScreenHeight() - 1);
+	raw.MemoryWriteConst16(context_.colorBg, GetScreenWidth() * GetScreenHeight());
 }
 
 void ST7789::Fill()
 {
-	raw.ColumnAddressSet(0, GetWidth());
-	raw.RowAddressSet(0, GetHeight());
-	raw.MemoryWriteConst16(context_.colorFg, GetWidth() * GetHeight());
+	raw.ColumnAddressSet(0, GetScreenWidth() - 1);
+	raw.RowAddressSet(0, GetScreenHeight() - 1);
+	raw.MemoryWriteConst16(context_.colorFg, GetScreenWidth() * GetScreenHeight());
+}
+
+void ST7789::DrawHLine_NoAdj(int x, int y, int width)
+{
+	raw.ColumnAddressSet(x, x + width - 1);
+	raw.RowAddressSet(y, y);
+	raw.MemoryWriteConst16(context_.colorFg, width);
+}
+
+void ST7789::DrawVLine_NoAdj(int x, int y, int height)
+{
+	raw.ColumnAddressSet(x, x);
+	raw.RowAddressSet(y, y + height - 1);
+	raw.MemoryWriteConst16(context_.colorFg, height);
 }
 
 void ST7789::DrawHLine(int x, int y, int width)
 {
-	//if (width <= 0) return;
-	raw.ColumnAddressSet(x, x + width - 1);
-	raw.RowAddressSet(y, y + 1);
-	raw.MemoryWriteConst16(context_.colorFg, width);
+	if (!AdjustRange(&x, &width, 0, GetScreenWidth())) return;
+	if (!CheckRange(y, 0, GetScreenHeight())) return;
+	DrawHLine_NoAdj(x, y, width);
 }
 
 void ST7789::DrawVLine(int x, int y, int height)
 {
-	raw.ColumnAddressSet(x, x + 1);
-	raw.RowAddressSet(y, y + height);
-	raw.MemoryWriteConst16(context_.colorFg, height);
+	if (!CheckRange(x, 0, GetScreenWidth())) return;
+	if (!AdjustRange(&y, &height, 0, GetScreenHeight())) return;
+	DrawVLine_NoAdj(x, y, height);
+}
+
+void ST7789::DrawRect(int x, int y, int width, int height)
+{
+	if (width < 0) {
+		x += width + 1;
+		width = -width;
+	}
+	if (height < 0) {
+		y += height + 1;
+		height = -height;
+	}
+	int xLeft = x, xRight = x + width - 1;
+	int yTop = y, yBottom = y + height - 1;
+	int xLeftAdjust = xLeft, widthAdjust = width;
+	int yTopAdjust = yTop, heightAdjust = height;
+	if (AdjustRange(&xLeftAdjust, &widthAdjust, 0, GetScreenWidth())) {
+		if (CheckRange(yTop, 0, GetScreenHeight())) {
+			DrawHLine_NoAdj(xLeftAdjust, yTop, widthAdjust);
+		}
+		if (CheckRange(yBottom, 0, GetScreenHeight())) {
+			DrawHLine_NoAdj(xLeftAdjust, yBottom, widthAdjust);
+		}
+	}
+	if (AdjustRange(&yTopAdjust, &heightAdjust, 0, GetScreenHeight())) {
+		if (CheckRange(xLeft, 0, GetScreenWidth())) {
+			DrawVLine_NoAdj(xLeft, yTopAdjust, heightAdjust);
+		}
+		if (CheckRange(xRight, 0, GetScreenWidth())) {
+			DrawVLine_NoAdj(xRight, yTopAdjust, heightAdjust);
+		}
+	}
 }
 
 void ST7789::DrawRectFill(int x, int y, int width, int height)
 {
+	if (!AdjustRange(&x, &width, 0, GetScreenWidth())) return;
+	if (!AdjustRange(&y, &height, 0, GetScreenHeight())) return;
 	raw.ColumnAddressSet(x, x + width);
 	raw.RowAddressSet(y, y + height);
 	raw.MemoryWriteConst16(context_.colorFg, width * height);
 }
 
-void ST7789::DrawChar(int x, int y, const FontEntry& fontEntry)
+void ST7789::DrawBitmap(int x, int y, const void* data, int width, int height, int scaleX, int scaleY)
 {
-	int nDots = fontEntry.width * fontEntry.height;
-	int bytes = (fontEntry.width + 7) / 8 * fontEntry.height;
-	const uint8_t* pSrcLeft = fontEntry.data;
-	raw.ColumnAddressSet(x, x + fontEntry.width * context_.fontScaleX - 1);
-	raw.RowAddressSet(y, y + fontEntry.height * context_.fontScaleY - 1);
+	int nDots = width * height;
+	int bytes = (width + 7) / 8 * height;
+	const uint8_t* pSrcLeft = reinterpret_cast<const uint8_t*>(data);
+	raw.ColumnAddressSet(x, x + width * scaleX - 1);
+	raw.RowAddressSet(y, y + height * scaleY - 1);
 	raw.MemoryWrite_Begin(16);
-	for (int iRow = 0; iRow < fontEntry.height; iRow++) {
+	for (int iRow = 0; iRow < height; iRow++) {
 		const uint8_t* pSrc;
-		for (int scaleY = 0; scaleY < context_.fontScaleY; scaleY++) {
+		for (int iScaleY = 0; iScaleY < scaleY; iScaleY++) {
 			pSrc = pSrcLeft;
 			int iBit = 0;
 			uint8_t bits = *pSrc++;
-			for (int iCol = 0; iCol < fontEntry.width; iCol++, iBit++, bits <<= 1) {
+			for (int iCol = 0; iCol < width; iCol++, iBit++, bits <<= 1) {
 				if (iBit == 8) {
 					iBit = 0;
 					bits = *pSrc++;
 				}
 				uint16_t color = (bits & 0x80)? context_.colorFg : context_.colorBg;
-				for (int scaleX = 0; scaleX < context_.fontScaleX; scaleX++) raw.MemoryWrite_Data16(color);
+				for (int iScaleX = 0; iScaleX < scaleX; iScaleX++) raw.MemoryWrite_Data16(color);
 			}
 		}
 		pSrcLeft = pSrc;
 	}
 	raw.MemoryWrite_End();
+}
+
+void ST7789::DrawChar(int x, int y, const FontEntry& fontEntry)
+{
+	DrawBitmap(x, y, fontEntry.data, fontEntry.width, fontEntry.height, context_.fontScaleX, context_.fontScaleY);
 }
 
 void ST7789::DrawChar(int x, int y, uint32_t code)
@@ -125,6 +180,31 @@ void ST7789::DrawString(int x, int y, const char* str, const char* strEnd)
 		DrawChar(x, y, fontEntry);
 		x += fontEntry.xAdvance * context_.fontScaleX;
 	}
+}
+
+const char* ST7789::DrawStringBBox(int x, int y, int width, int height, const char* str, int htLine)
+{
+	if (!context_.pFontSet) return str;
+	uint32_t code;
+	UTF8Decoder decoder;
+	int xStart = x;
+	int xExceed = (width >= 0)? x + width : GetScreenWidth();
+	int yExceed = (height >= 0)? y + height : GetScreenHeight();
+	int yAdvance = (htLine >= 0)? htLine : context_.pFontSet->yAdvance * context_.fontScaleY;
+	const char* pDone = str;
+	for (const char* p = str; *p; p++) {
+		if (!decoder.FeedChar(*p, &code)) continue;
+		const FontEntry& fontEntry = context_.pFontSet->GetFontEntry(code);
+		int xAdvance = fontEntry.xAdvance * context_.fontScaleX;
+		if (x + fontEntry.width * context_.fontScaleX > xExceed) {
+			x = xStart, y += yAdvance;
+			if (y + yAdvance > yExceed) break;
+		}
+		DrawChar(x, y, fontEntry);
+		x += xAdvance;
+		pDone = p + 1;
+	}
+	return pDone;
 }
 
 //------------------------------------------------------------------------------

@@ -43,8 +43,8 @@ public:
 				cpol_(SPI_CPOL_1), cpha_(SPI_CPHA_1) {}
 	public:
 		bool UsesCS() const { return gpio_CS_ != static_cast<uint>(-1); }
-		int GetWidth() const { return width_; }
-		int GetHeight() const { return height_; }
+		int GetScreenWidth() const { return width_; }
+		int GetScreenHeight() const { return height_; }
 		void InitGPIO();
 		void SetGPIO_BL(bool value) { ::gpio_put(gpio_BL_, value); }
 		void SetSPIDataBits(uint data_bits) { ::spi_set_format(spi_, data_bits, cpol_, cpha_, SPI_MSB_FIRST); }
@@ -273,10 +273,8 @@ public:
 public:
 	void Initialize();
 	bool UsesCS() { return raw.UsesCS(); }
-	int GetWidth() { return raw.GetWidth(); }
-	int GetHeight() { return raw.GetHeight(); }
-public:
-	void Transfer(int x, int y, int width, int height, const uint16_t* buff);
+	int GetScreenWidth() { return raw.GetScreenWidth(); }
+	int GetScreenHeight() { return raw.GetScreenHeight(); }
 public:
 	void SetColor(uint16_t color) { context_.colorFg = color; }
 	void SetColorBackground(uint16_t color) { context_.colorBg = color; }
@@ -288,15 +286,29 @@ public:
 		context_.fontScaleX = fontScaleX, context_.fontScaleY = fontScaleY;
 	}
 public:
+	void WriteBuffer(int x, int y, int width, int height, const uint16_t* buff);
 	void Clear();
 	void Fill();
+	void DrawHLine_NoAdj(int x, int y, int width);
+	void DrawVLine_NoAdj(int x, int y, int height);
 	void DrawHLine(int x, int y, int width);
 	void DrawVLine(int x, int y, int height);
 	void DrawRect(int x, int y, int width, int height);
 	void DrawRectFill(int x, int y, int width, int height);
+	void DrawBitmap(int x, int y, const void* data, int width, int height, int scaleX, int scaleY);
 	void DrawChar(int x, int y, const FontEntry& fontEntry);
 	void DrawChar(int x, int y, uint32_t code);
 	void DrawString(int x, int y, const char* str, const char* strEnd = nullptr);
+	const char* DrawStringBBox(int x, int y, int width, int height, const char* str, int htLine = -1);
+	const char* DrawStringBBox(int x, int y, const char* str, int htLine = -1) {
+		return DrawStringBBox(x, y, -1, -1, str, htLine);
+	}
+	const char* DrawStringBBox(const Point& pt, const char* str, int htLine = -1) {
+		return DrawStringBBox(pt.x, pt.y, str, htLine);
+	}
+	const char* DrawStringBBox(const Rect& rcBBox, const char* str, int htLine = -1) {
+		return DrawStringBBox(rcBBox.x, rcBBox.y, rcBBox.width, rcBBox.height, str, htLine);
+	}
 };
 
 }
