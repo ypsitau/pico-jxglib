@@ -93,11 +93,9 @@ void Test_DrawStringWrap(ST7789& screen)
 			p = strTbl[iStr++];
 		}
 		screen.SetFont(*fontSetTbl[iFont], 2);
-		screen.raw.IdleModeOn();
 		screen.Clear();
 		p = screen.DrawStringWrap(0, 0, p);
-		screen.raw.IdleModeOff();
-		::sleep_ms(200);
+		::sleep_ms(100);
 	}
 }
 
