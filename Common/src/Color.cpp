@@ -8,6 +8,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // Color
 //------------------------------------------------------------------------------
+// These Color names come from: https://www.w3.org/TR/css-color-3/
 const Color Color::zero		{   0,   0,   0 };
 const Color Color::black	{   0,   0,   0 };
 const Color Color::silver	{ 192, 192, 192 };
