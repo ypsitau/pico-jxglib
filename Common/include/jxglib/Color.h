@@ -32,11 +32,17 @@ public:
 	static const Color teal;
 	static const Color aqua;
 public:
+	Color(uint8_t r, uint8_t g, uint8_t b) : r{r}, g{g}, b{b} {}
 	constexpr static uint16_t RGB565(uint8_t r, uint8_t g, uint8_t b) { return
-		((static_cast<uint16_t>(r) & 0xf8) << (11 - 3)) |
+		((static_cast<uint16_t>(r) & 0xf8) << (5 + 6 - 3)) |
 		((static_cast<uint16_t>(g) & 0xfc) << (5 - 2)) |
 		((static_cast<uint16_t>(b) >> 3)); }
+	constexpr static uint16_t RGB555(uint8_t r, uint8_t g, uint8_t b) { return
+		((static_cast<uint16_t>(r) & 0xf8) << (5 + 5 - 3)) |
+		((static_cast<uint16_t>(g) & 0xf8) << (5 - 3)) |
+		((static_cast<uint16_t>(b) >> 3)); }
 	uint16_t RGB565() const { return RGB565(r, g, b); }
+	uint16_t RGB555() const { return RGB555(r, g, b); }
 };
 
 }

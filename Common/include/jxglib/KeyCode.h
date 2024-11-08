@@ -2,7 +2,7 @@
 // jxglib/KeyCode.h
 // https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
 //==============================================================================
-#ifndef PICO_JXGLIB_KEYCODE_h
+#ifndef PICO_JXGLIB_KEYCODE_H
 #define PICO_JXGLIB_KEYCODE_H
 
 namespace jxglib {

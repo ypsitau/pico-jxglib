@@ -1,7 +1,7 @@
 //==============================================================================
 // jxglib/Util.h
 //==============================================================================
-#ifndef PICO_JXGLIB_UTIL_h
+#ifndef PICO_JXGLIB_UTIL_H
 #define PICO_JXGLIB_UTIL_H
 #include "pico/stdlib.h"
 
