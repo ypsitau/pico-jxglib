@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "jxglib/ST7789.h"
 #include "Font/shinonome16.h"
+#include "ImageData.h"
 
 #define ArrayNumberOf(x) (sizeof(x) / sizeof(x[0]))
 
@@ -99,6 +100,11 @@ void Test_DrawStringWrap(ST7789& screen)
 	}
 }
 
+void Test_DrawRGB565(ST7789& screen)
+{
+	screen.DrawRGB565(0, 0, data, 240, 240);
+}
+
 int main()
 {
 	ST7789 screen(spi0, 240, 240, 20, 21, 22);
@@ -108,5 +114,6 @@ int main()
 	::gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
 	screen.Initialize();
 	//Test_DrawString(screen);
-	Test_DrawStringWrap(screen);
+	//Test_DrawStringWrap(screen);
+	Test_DrawRGB565(screen);
 }
