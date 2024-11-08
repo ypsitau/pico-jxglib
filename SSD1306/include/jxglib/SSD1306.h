@@ -291,10 +291,6 @@ public:
 	void DrawBitmap(const Point& pt, const void* data, int width, int height, int scaleX = 1, int scaleY = 1) {
 		DrawBitmap(pt.x, pt.y, data, width, height, scaleX, scaleY);
 	}
-	void DrawRGB565(int x, int y, const void* data, int width, int height, int scaleX = 1, int scaleY = 1);
-	void DrawRGB565(const Point& pt, const void* data, int width, int height, int scaleX = 1, int scaleY = 1) {
-		DrawRGB565(pt.x, pt.y, data, width, height, scaleX, scaleY);
-	}
 	void DrawChar(int x, int y, const FontEntry& fontEntry);
 	void DrawChar(const Point& pt, const FontEntry& fontEntry) { DrawChar(pt.x, pt.y, fontEntry); }
 	void DrawChar(int x, int y, uint32_t code);

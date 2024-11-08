@@ -157,6 +157,27 @@ void ST7789::DrawBitmap(int x, int y, const void* data, int width, int height, i
 	raw.MemoryWrite_End();
 }
 
+void ST7789::DrawRGB565(int x, int y, const void* data, int width, int height, int scaleX, int scaleY)
+{
+	int nDots = width * height;
+	const uint16_t* pSrcLeft = reinterpret_cast<const uint16_t*>(data);
+	raw.ColumnAddressSet(x, x + width * scaleX - 1);
+	raw.RowAddressSet(y, y + height * scaleY - 1);
+	raw.MemoryWrite_Begin(16);
+	for (int iRow = 0; iRow < height; iRow++) {
+		const uint16_t* pSrc;
+		for (int iScaleY = 0; iScaleY < scaleY; iScaleY++) {
+			pSrc = pSrcLeft;
+			for (int iCol = 0; iCol < width; iCol++) {
+				uint16_t color = *pSrc++;
+				for (int iScaleX = 0; iScaleX < scaleX; iScaleX++) raw.MemoryWrite_Data16(color);
+			}
+		}
+		pSrcLeft = pSrc;
+	}
+	raw.MemoryWrite_End();
+}
+
 void ST7789::DrawChar(int x, int y, const FontEntry& fontEntry)
 {
 	DrawBitmap(x, y, fontEntry.data, fontEntry.width, fontEntry.height, context_.fontScaleX, context_.fontScaleY);
