@@ -4,8 +4,8 @@
 #ifndef PICO_JXGLIB_DRAWABLE_H
 #define PICO_JXGLIB_DRAWABLE_H
 #include "pico/stdlib.h"
-#include "jxglib/Point.h"
-#include "jxglib/Size.h"
+#include "jxglib/Rect.h"
+#include "jxglib/Font.h"
 
 namespace jxglib {
 
@@ -13,10 +13,13 @@ namespace jxglib {
 // Drawable
 //------------------------------------------------------------------------------
 class Drawable {
-private:
+protected:
 	int width_, height_;
+	const FontSet* pFontSet_;
+	int fontScaleX_, fontScaleY_;
 public:
-	Drawable(int width, int height) : width_{width}, height_{height} {}
+	Drawable(int width, int height) : width_{width}, height_{height},
+						pFontSet_{nullptr}, fontScaleX_{1}, fontScaleY_{1} {}
 public:
 	virtual void DrawPixel(int x, int y) = 0;
 	virtual void DrawHLine(int x, int y, int width) = 0;
