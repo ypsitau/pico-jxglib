@@ -9,173 +9,173 @@
 #include "jxglib/Font/sisd8x16.h"
 #include "jxglib/Font/sisd24x32.h"
 
-using namespace jxglib;
-
 #define ArrayNumberOf(x) (sizeof(x) / sizeof(x[0]))
 
-void SetupScreen(SSD1306& oled, SSD1306::DrawMode drawMode)
+using namespace jxglib;
+
+void SetupScreen(SSD1306& screen, SSD1306::DrawMode drawMode)
 {
 	switch (drawMode) {
 	case SSD1306::DrawMode::Set:
-		oled.Clear();
+		screen.Clear();
 		break;
 	case SSD1306::DrawMode::Clear:
-		oled.Clear(0xff);
+		screen.Clear(0xff);
 		break;
 	case SSD1306::DrawMode::Invert:
-		oled.Clear();
-		oled.DrawRectFill(16, 16, 96, 32);
+		screen.Clear();
+		screen.DrawRectFill(16, 16, 96, 32);
 		break;
 	default:
 		break;
 	}
 }
 
-void Test_Flash(SSD1306& oled)
+void Test_Flash(SSD1306& screen)
 {
 	for (int i = 0; i < 3; i++) {
-		oled.Flash(true);
+		screen.Flash(true);
 		::sleep_ms(500);
-		oled.Flash(false);
+		screen.Flash(false);
 		::sleep_ms(500);
 	}
 }
 
-void Test_DrawPixel(SSD1306& oled)
+void Test_DrawPixel(SSD1306& screen)
 {
 	for (int i = 0; i < 3; i++) {
 		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
-		oled.SetDrawMode(drawMode);
-		SetupScreen(oled, drawMode);
+		screen.SetDrawMode(drawMode);
+		SetupScreen(screen, drawMode);
 		int x = 40, y = 16;
 		int xDir = +1, yDir = +1;
 		for (int i = 0; i < 1000; i++) {
-			oled.DrawPixel(x, y);
+			screen.DrawPixel(x, y);
 			if (x + xDir < 0) xDir = +1;
-			if (x + xDir >= oled.GetScreenWidth()) xDir = -1;
+			if (x + xDir >= screen.GetScreenWidth()) xDir = -1;
 			if (y + yDir < 0) yDir = +1;
-			if (y + yDir >= oled.GetScreenHeight()) yDir = -1;
+			if (y + yDir >= screen.GetScreenHeight()) yDir = -1;
 			x += xDir, y += yDir;
-			if (i % 10 == 0) oled.Refresh();
+			if (i % 10 == 0) screen.Refresh();
 		}
 		::sleep_ms(1000);
 	}
 }
 
-void Test_DrawHLine(SSD1306& oled)
+void Test_DrawHLine(SSD1306& screen)
 {
 	for (int i = 0; i < 3; i++) {
 		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
-		oled.SetDrawMode(drawMode);
-		for (int x = -64; x <= oled.GetScreenWidth(); x++) {
-			SetupScreen(oled, drawMode);
-			for (int i = 0; i < oled.GetScreenHeight(); i++) {
-				oled.DrawHLine(x, i, i);
+		screen.SetDrawMode(drawMode);
+		for (int x = -64; x <= screen.GetScreenWidth(); x++) {
+			SetupScreen(screen, drawMode);
+			for (int i = 0; i < screen.GetScreenHeight(); i++) {
+				screen.DrawHLine(x, i, i);
 			}
-			oled.Refresh();
+			screen.Refresh();
 		}
 		::sleep_ms(1000);
 	}
 }
 
-void Test_DrawVLine(SSD1306& oled)
+void Test_DrawVLine(SSD1306& screen)
 {
 	for (int i = 0; i < 3; i++) {
 		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
-		oled.SetDrawMode(drawMode);
-		for (int y = -64; y <= oled.GetScreenHeight(); y++) {
-			SetupScreen(oled, drawMode);
-			for (int i = 0; i < oled.GetScreenHeight(); i++) {
-				oled.DrawVLine(i, y, i);
-				oled.DrawVLine(i + oled.GetScreenHeight() * 1, oled.GetScreenHeight() - y - 1, -i);
+		screen.SetDrawMode(drawMode);
+		for (int y = -64; y <= screen.GetScreenHeight(); y++) {
+			SetupScreen(screen, drawMode);
+			for (int i = 0; i < screen.GetScreenHeight(); i++) {
+				screen.DrawVLine(i, y, i);
+				screen.DrawVLine(i + screen.GetScreenHeight() * 1, screen.GetScreenHeight() - y - 1, -i);
 			}
-			oled.Refresh();
+			screen.Refresh();
 		}
 		::sleep_ms(1000);
 	}
 }
 
-void Test_DrawLine(SSD1306& oled)
+void Test_DrawLine(SSD1306& screen)
 {
-	int xMid = oled.GetScreenWidth() / 2;
-	int yMid = oled.GetScreenHeight() / 2;
-	int xRight = oled.GetScreenWidth() - 1;
-	int yBottom = oled.GetScreenHeight() - 1;
+	int xMid = screen.GetScreenWidth() / 2;
+	int yMid = screen.GetScreenHeight() / 2;
+	int xRight = screen.GetScreenWidth() - 1;
+	int yBottom = screen.GetScreenHeight() - 1;
 	for (int i = 0; i < 3; i++) {
 		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
-		oled.SetDrawMode(drawMode);
-		for (int y = 0; y < oled.GetScreenHeight(); y++) {
-			SetupScreen(oled, drawMode);
-			oled.DrawLine(xMid, yMid, xRight, y);
-			oled.Refresh();
+		screen.SetDrawMode(drawMode);
+		for (int y = 0; y < screen.GetScreenHeight(); y++) {
+			SetupScreen(screen, drawMode);
+			screen.DrawLine(xMid, yMid, xRight, y);
+			screen.Refresh();
 			::sleep_ms(10);
 		}
 		for (int x = xRight; x >= 0; x--) {
-			SetupScreen(oled, drawMode);
-			oled.DrawLine(xMid, yMid, x, yBottom);
-			oled.Refresh();
+			SetupScreen(screen, drawMode);
+			screen.DrawLine(xMid, yMid, x, yBottom);
+			screen.Refresh();
 			::sleep_ms(10);
 		}
 		for (int y = yBottom; y >= 0; y--) {
-			SetupScreen(oled, drawMode);
-			oled.DrawLine(xMid, yMid, 0, y);
-			oled.Refresh();
+			SetupScreen(screen, drawMode);
+			screen.DrawLine(xMid, yMid, 0, y);
+			screen.Refresh();
 			::sleep_ms(10);
 		}
 		for (int x = 0; x <= xRight; x++) {
-			SetupScreen(oled, drawMode);
-			oled.DrawLine(xMid, yMid, x, 0);
-			oled.Refresh();
+			SetupScreen(screen, drawMode);
+			screen.DrawLine(xMid, yMid, x, 0);
+			screen.Refresh();
 			::sleep_ms(10);
 		}
 	}
 }
 
-void Test_DrawRect(SSD1306& oled)
+void Test_DrawRect(SSD1306& screen)
 {
-	int xRight = oled.GetScreenWidth() - 1;
-	int yBottom = oled.GetScreenHeight() - 1;
+	int xRight = screen.GetScreenWidth() - 1;
+	int yBottom = screen.GetScreenHeight() - 1;
 	for (int i = 0; i < 3; i++) {
 		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
-		oled.SetDrawMode(drawMode);
-		for (int i = 0; i < oled.GetScreenHeight(); i++) {
-			SetupScreen(oled, drawMode);
-			oled.DrawRect(0, 0, i * 2, i);
-			oled.Refresh();
+		screen.SetDrawMode(drawMode);
+		for (int i = 0; i < screen.GetScreenHeight(); i++) {
+			SetupScreen(screen, drawMode);
+			screen.DrawRect(0, 0, i * 2, i);
+			screen.Refresh();
 			::sleep_ms(100);
 		}
-		for (int i = 0; i < oled.GetScreenHeight(); i++) {
-			SetupScreen(oled, drawMode);
-			oled.DrawRect(xRight, yBottom, -i * 2, -i);
-			oled.Refresh();
+		for (int i = 0; i < screen.GetScreenHeight(); i++) {
+			SetupScreen(screen, drawMode);
+			screen.DrawRect(xRight, yBottom, -i * 2, -i);
+			screen.Refresh();
 			::sleep_ms(100);
 		}
 	}
 }
 
-void Test_DrawRectFill(SSD1306& oled)
+void Test_DrawRectFill(SSD1306& screen)
 {
-	int xRight = oled.GetScreenWidth() - 1;
-	int yBottom = oled.GetScreenHeight() - 1;
+	int xRight = screen.GetScreenWidth() - 1;
+	int yBottom = screen.GetScreenHeight() - 1;
 	for (int i = 0; i < 3; i++) {
 		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
-		oled.SetDrawMode(drawMode);
-		for (int i = 0; i < oled.GetScreenHeight(); i++) {
-			SetupScreen(oled, drawMode);
-			oled.DrawRectFill(0, 0, i * 2, i);
-			oled.Refresh();
+		screen.SetDrawMode(drawMode);
+		for (int i = 0; i < screen.GetScreenHeight(); i++) {
+			SetupScreen(screen, drawMode);
+			screen.DrawRectFill(0, 0, i * 2, i);
+			screen.Refresh();
 			::sleep_ms(100);
 		}
-		for (int i = 0; i < oled.GetScreenHeight(); i++) {
-			SetupScreen(oled, drawMode);
-			oled.DrawRectFill(xRight, oled.GetScreenHeight() - 1, -i * 2, -i);
-			oled.Refresh();
+		for (int i = 0; i < screen.GetScreenHeight(); i++) {
+			SetupScreen(screen, drawMode);
+			screen.DrawRectFill(xRight, screen.GetScreenHeight() - 1, -i * 2, -i);
+			screen.Refresh();
 			::sleep_ms(100);
 		}
 	}
 }
 
-void Test_DrawBitmap(SSD1306& oled)
+void Test_DrawBitmap(SSD1306& screen)
 {
 	const uint8_t bmp[] = {
 		0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,
@@ -243,12 +243,12 @@ void Test_DrawBitmap(SSD1306& oled)
 		0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,
 		0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,
 	};
-	oled.DrawBitmap(0, 0, bmp, 80, 64);
-	oled.Refresh();
+	screen.DrawBitmap(0, 0, bmp, 80, 64);
+	screen.Refresh();
 	::sleep_ms(2000);
 }
 
-void Test_DrawStringBBox(SSD1306& oled)
+void Test_DrawStringWrap(SSD1306& screen)
 {
 	const char* strTbl[] = {
 		" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxy{|}~",
@@ -282,11 +282,11 @@ void Test_DrawStringBBox(SSD1306& oled)
 			p = strTbl[iStr++];
 		}
 		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(iDrawMode);
-		oled.SetDrawMode(drawMode);
-		oled.SetFont(*fontSetTbl[iFont]);
-		SetupScreen(oled, drawMode);
-		p = oled.DrawStringBBox(0, 0, p);
-		oled.Refresh();
+		screen.SetDrawMode(drawMode);
+		screen.SetFont(*fontSetTbl[iFont]);
+		SetupScreen(screen, drawMode);
+		p = screen.DrawStringWrap(0, 0, p);
+		screen.Refresh();
 		::sleep_ms(200);
 	}
 }
@@ -299,17 +299,17 @@ int main()
 	::gpio_set_function(PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
 	::gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
 	::gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
-	SSD1306 oled(i2c_default);
-	oled.Initialize();
+	SSD1306 screen(i2c_default);
+	screen.Initialize();
 	for (;;) {
-		Test_Flash(oled);
-		Test_DrawPixel(oled);
-		Test_DrawHLine(oled);
-		Test_DrawVLine(oled);
-		Test_DrawLine(oled);
-		Test_DrawRect(oled);
-		Test_DrawRectFill(oled);
-		Test_DrawBitmap(oled);
-		Test_DrawStringBBox(oled);
+		Test_Flash(screen);
+		Test_DrawPixel(screen);
+		Test_DrawHLine(screen);
+		Test_DrawVLine(screen);
+		Test_DrawLine(screen);
+		Test_DrawRect(screen);
+		Test_DrawRectFill(screen);
+		Test_DrawBitmap(screen);
+		Test_DrawStringWrap(screen);
 	}
 }

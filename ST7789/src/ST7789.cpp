@@ -182,7 +182,7 @@ void ST7789::DrawString(int x, int y, const char* str, const char* strEnd)
 	}
 }
 
-const char* ST7789::DrawStringBBox(int x, int y, int width, int height, const char* str, int htLine)
+const char* ST7789::DrawStringWrap(int x, int y, int width, int height, const char* str, int htLine)
 {
 	if (!context_.pFontSet) return str;
 	uint32_t code;

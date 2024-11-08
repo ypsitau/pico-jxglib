@@ -120,13 +120,13 @@ template<class Logic> void SSD1306::DrawRectFillT(int x, int y, int width, int h
 	}
 }
 
-template<class Logic> void SSD1306::DrawBitmapT(int x, int y, const void* src, int width, int height, int scaleX, int scaleY)
+template<class Logic> void SSD1306::DrawBitmapT(int x, int y, const void* data, int width, int height, int scaleX, int scaleY)
 {
 	int bytesPerLine = (width + 7) / 8;
 	int wdScaled = width * scaleX;
 	int htScaled = height * scaleY;
 	if (!AdjustRange(&x, &wdScaled, 0, GetScreenWidth()) || !AdjustRange(&y, &htScaled, 0, GetScreenHeight())) return;
-	const uint8_t* pSrcBottom = reinterpret_cast<const uint8_t*>(src) + bytesPerLine * height;
+	const uint8_t* pSrcBottom = reinterpret_cast<const uint8_t*>(data) + bytesPerLine * height;
 	int pageTop;
 	uint8_t* pDstTop = raw.GetPointer(x, y, &pageTop);
 	int bitOffset = y - pageTop * 8;
@@ -283,13 +283,13 @@ void SSD1306::DrawRectFill(int x, int y, int width, int height)
 	}
 }
 
-void SSD1306::DrawBitmap(int x, int y, const void* src, int width, int height, int scaleX, int scaleY)
+void SSD1306::DrawBitmap(int x, int y, const void* data, int width, int height, int scaleX, int scaleY)
 {
 	DrawRectFillT<Logic_Clear>(x, y, width, height);
 	switch (context_.drawMode) {
-	case DrawMode::Set:		DrawBitmapT<Logic_Set>(x, y, src, width, height, scaleX, scaleY); break;
-	case DrawMode::Clear:	DrawBitmapT<Logic_Clear>(x, y, src, width, height, scaleX, scaleY); break;
-	case DrawMode::Invert:	DrawBitmapT<Logic_Invert>(x, y, src, width, height, scaleX, scaleY); break;
+	case DrawMode::Set:		DrawBitmapT<Logic_Set>(x, y, data, width, height, scaleX, scaleY); break;
+	case DrawMode::Clear:	DrawBitmapT<Logic_Clear>(x, y, data, width, height, scaleX, scaleY); break;
+	case DrawMode::Invert:	DrawBitmapT<Logic_Invert>(x, y, data, width, height, scaleX, scaleY); break;
 	default: break;
 	}
 }
@@ -324,7 +324,7 @@ void SSD1306::DrawString(int x, int y, const char* str, const char* strEnd)
 	}
 }
 
-const char* SSD1306::DrawStringBBox(int x, int y, int width, int height, const char* str, int htLine)
+const char* SSD1306::DrawStringWrap(int x, int y, int width, int height, const char* str, int htLine)
 {
 	if (!context_.pFontSet) return str;
 	uint32_t code;

@@ -246,7 +246,12 @@ public:
 	void Refresh();
 	void Flash(bool flashFlag) { raw.EntireDisplayOn(static_cast<uint8_t>(flashFlag)); }
 	void Clear(uint8_t data = 0x00) { raw.FillBuffer(data); }
-	void SetFont(const FontSet& fontSet) { context_.pFontSet = &fontSet, context_.fontScaleX = context_.fontScaleY = 1; }
+	void SetFont(const FontSet& fontSet, int fontScale = 1) {
+		context_.pFontSet = &fontSet; context_.fontScaleX = context_.fontScaleY = fontScale;
+	}
+	void SetFont(const FontSet& fontSet, int fontScaleX, int fontScaleY) {
+		context_.pFontSet = &fontSet; context_.fontScaleX = fontScaleX, context_.fontScaleY = fontScaleY;
+	}
 	void SetFontScale(int fontScale) { context_.fontScaleX = context_.fontScaleY = fontScale; }
 	void SetFontScale(int fontScaleX, int fontScaleY) { context_.fontScaleX = fontScaleX, context_.fontScaleY = fontScaleY; }
 	void SetDrawMode(DrawMode drawMode) { context_.drawMode = drawMode; }
@@ -262,7 +267,7 @@ private:
 	template<class Logic> void DrawVLineT(int x, int y, int width);
 	template<class Logic> void DrawLineT(int x0, int y0, int x1, int y1, int dx, int dy, int sx, int sy);
 	template<class Logic> void DrawRectFillT(int x, int y, int width, int height);
-	template<class Logic> void DrawBitmapT(int x, int y, const void* src, int width, int height, int scaleX, int scaleY);
+	template<class Logic> void DrawBitmapT(int x, int y, const void* data, int width, int height, int scaleX, int scaleY);
 	template<class Logic> void DrawCharT(int x, int y, const FontEntry& fontEntry);
 public:
 	// Draw* Method
@@ -277,10 +282,19 @@ public:
 	void DrawLine(int x0, int y0, int x1, int y1);
 	void DrawLine(const Point& pt1, const Point& pt2) { DrawLine(pt1.x, pt1.y, pt2.x, pt2.y); }
 	void DrawRect(int x, int y, int width, int height);
+	void DrawRect(const Point& pt, const Size& size) { DrawRect(pt.x, pt.y, size.width, size.height); }
 	void DrawRect(const Rect& rc) { DrawRect(rc.x, rc.y, rc.width, rc.height); }
 	void DrawRectFill(int x, int y, int width, int height);
+	void DrawRectFill(const Point& pt, const Size& size) { DrawRectFill(pt.x, pt.y, size.width, size.height); }
 	void DrawRectFill(const Rect& rc) { DrawRect(rc.x, rc.y, rc.width, rc.height); }
-	void DrawBitmap(int x, int y, const void* src, int width, int height, int scaleX = 1, int scaleY = 1);
+	void DrawBitmap(int x, int y, const void* data, int width, int height, int scaleX = 1, int scaleY = 1);
+	void DrawBitmap(const Point& pt, const void* data, int width, int height, int scaleX = 1, int scaleY = 1) {
+		DrawBitmap(pt.x, pt.y, data, width, height, scaleX, scaleY);
+	}
+	void DrawRGB565(int x, int y, const void* data, int width, int height, int scaleX = 1, int scaleY = 1);
+	void DrawRGB565(const Point& pt, const void* data, int width, int height, int scaleX = 1, int scaleY = 1) {
+		DrawRGB565(pt.x, pt.y, data, width, height, scaleX, scaleY);
+	}
 	void DrawChar(int x, int y, const FontEntry& fontEntry);
 	void DrawChar(const Point& pt, const FontEntry& fontEntry) { DrawChar(pt.x, pt.y, fontEntry); }
 	void DrawChar(int x, int y, uint32_t code);
@@ -289,15 +303,15 @@ public:
 	void DrawString(const Point& pt, const char* str, const char* strEnd = nullptr) {
 		DrawString(pt.x, pt.y, str, strEnd);
 	}
-	const char* DrawStringBBox(int x, int y, int width, int height, const char* str, int htLine = -1);
-	const char* DrawStringBBox(int x, int y, const char* str, int htLine = -1) {
-		return DrawStringBBox(x, y, -1, -1, str, htLine);
+	const char* DrawStringWrap(int x, int y, int width, int height, const char* str, int htLine = -1);
+	const char* DrawStringWrap(int x, int y, const char* str, int htLine = -1) {
+		return DrawStringWrap(x, y, -1, -1, str, htLine);
 	}
-	const char* DrawStringBBox(const Point& pt, const char* str, int htLine = -1) {
-		return DrawStringBBox(pt.x, pt.y, str, htLine);
+	const char* DrawStringWrap(const Point& pt, const char* str, int htLine = -1) {
+		return DrawStringWrap(pt.x, pt.y, str, htLine);
 	}
-	const char* DrawStringBBox(const Rect& rcBBox, const char* str, int htLine = -1) {
-		return DrawStringBBox(rcBBox.x, rcBBox.y, rcBBox.width, rcBBox.height, str, htLine);
+	const char* DrawStringWrap(const Rect& rcBBox, const char* str, int htLine = -1) {
+		return DrawStringWrap(rcBBox.x, rcBBox.y, rcBBox.width, rcBBox.height, str, htLine);
 	}
 };
 
