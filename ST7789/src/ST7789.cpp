@@ -46,6 +46,10 @@ void ST7789::Transfer(int x, int y, int width, int height, const uint16_t* buff)
 	raw.MemoryWrite16(buff, width * height);
 }
 
+void ST7789::Clear()
+{
+}
+
 void ST7789::Fill()
 {
 	raw.ColumnAddressSet(0, GetWidth());
@@ -55,7 +59,8 @@ void ST7789::Fill()
 
 void ST7789::DrawHLine(int x, int y, int width)
 {
-	raw.ColumnAddressSet(x, x + width);
+	//if (width <= 0) return;
+	raw.ColumnAddressSet(x, x + width - 1);
 	raw.RowAddressSet(y, y + 1);
 	raw.MemoryWriteConst16(context_.colorFg, width);
 }

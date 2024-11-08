@@ -4,5 +4,4 @@
 #include "jxglib/Util.h"
 
 namespace jxglib {
-
 }

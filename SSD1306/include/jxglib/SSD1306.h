@@ -56,9 +56,9 @@ public:
 		}
 	public:
 		uint8_t GetAddr() const { return addr_; }
-		int GetWidth() const { return width_; }
-		int GetHeight() const { return height_; }
-		int GetHeightPerPage() const { return heightPerPage_; }
+		int GetScreenWidth() const { return width_; }
+		int GetScreenHeight() const { return height_; }
+		int GetScreenHeightPerPage() const { return heightPerPage_; }
 		int GetNumPages() const { return numPages_; }
 		int GetBufferLen() const { return bufferLen_; }
 	public:
@@ -236,9 +236,9 @@ public:
 			raw(i2c, addr, highResoFlag? 64 : 32) {}
 public:
 	uint8_t GetAddr() const { return raw.GetAddr(); }
-	int GetWidth() const { return raw.GetWidth(); }
-	int GetHeight() const { return raw.GetHeight(); }
-	int GetHeightPerPage() const { return raw.GetHeightPerPage(); }
+	int GetScreenWidth() const { return raw.GetScreenWidth(); }
+	int GetScreenHeight() const { return raw.GetScreenHeight(); }
+	int GetScreenHeightPerPage() const { return raw.GetScreenHeightPerPage(); }
 	int GetNumPages() const { return raw.GetNumPages(); }
 	int GetBufferLen() const { return raw.GetBufferLen(); }
 public:
@@ -299,9 +299,6 @@ public:
 	const char* DrawStringBBox(const Rect& rcBBox, const char* str, int htLine = -1) {
 		return DrawStringBBox(rcBBox.x, rcBBox.y, rcBBox.width, rcBBox.height, str, htLine);
 	}
-private:
-	static bool CheckCoord(int v, int vLimit) { return 0 <= v && v < vLimit; }
-	static bool AdjustCoord(int* pV, int* pDist, int vLimit);
 };
 
 }

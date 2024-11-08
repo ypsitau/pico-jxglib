@@ -11,6 +11,8 @@
 #include "hardware/spi.h"
 #include "jxglib/Common.h"
 #include "jxglib/Font.h"
+#include "jxglib/Image.h"
+#include "jxglib/Canvas.h"
 
 namespace jxglib {
 
@@ -256,8 +258,8 @@ public:
 		const FontSet* pFontSet;
 		int fontScaleX, fontScaleY;
 	public:
-		Context() : wdLine(1), colorFg(Color::RGB565(255, 255, 255)), colorBg(Color::RGB565(0, 0, 0)),
-		pFontSet(nullptr), fontScaleX(1), fontScaleY(1) {}
+		Context() : wdLine{1}, colorFg{Color::RGB565(255, 255, 255)}, colorBg{Color::RGB565(0, 0, 0)},
+			pFontSet{nullptr}, fontScaleX{1}, fontScaleY{1} {}
 	};
 public:
 	Raw raw;
@@ -274,6 +276,8 @@ public:
 	int GetWidth() { return raw.GetWidth(); }
 	int GetHeight() { return raw.GetHeight(); }
 public:
+	void Transfer(int x, int y, int width, int height, const uint16_t* buff);
+public:
 	void SetColor(uint16_t color) { context_.colorFg = color; }
 	void SetColorBackground(uint16_t color) { context_.colorBg = color; }
 	void SetFont(const FontSet& fontSet) {
@@ -283,10 +287,12 @@ public:
 	void SetFontScale(int fontScaleX, int fontScaleY) {
 		context_.fontScaleX = fontScaleX, context_.fontScaleY = fontScaleY;
 	}
-	void Transfer(int x, int y, int width, int height, const uint16_t* buff);
+public:
+	void Clear();
 	void Fill();
 	void DrawHLine(int x, int y, int width);
 	void DrawVLine(int x, int y, int height);
+	void DrawRect(int x, int y, int width, int height);
 	void DrawRectFill(int x, int y, int width, int height);
 	void DrawChar(int x, int y, const FontEntry& fontEntry);
 	void DrawChar(int x, int y, uint32_t code);

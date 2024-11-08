@@ -32,7 +32,9 @@ public:
 	static const Color teal;
 	static const Color aqua;
 public:
+	Color(const Color& color) : r{color.r}, g{color.g}, b{color.b} {}
 	Color(uint8_t r, uint8_t g, uint8_t b) : r{r}, g{g}, b{b} {}
+public:
 	constexpr static uint16_t RGB565(uint8_t r, uint8_t g, uint8_t b) { return
 		((static_cast<uint16_t>(r) & 0xf8) << (5 + 6 - 3)) |
 		((static_cast<uint16_t>(g) & 0xfc) << (5 - 2)) |

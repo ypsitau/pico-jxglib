@@ -17,10 +17,10 @@ void SSD1306::Initialize()
 	raw.SetMemoryAddressingMode(0);					// Set Memory Addressing Mode = 0: Horizontal Addressing Mode
 	raw.SetDisplayStartLine(0);						// Set Display Start Line = 0
 	raw.SetSegmentRemap(1);							// Set Segment Re-map = 1: column address 127 is mapped to SEG0
-	raw.SetMultiplexRatio(GetHeight() - 1);	// Set Multiplex Ratio = GetHeight() - 1
+	raw.SetMultiplexRatio(GetScreenHeight() - 1);	// Set Multiplex Ratio = GetScreenHeight() - 1
 	raw.SetCOMOutputScanDirection(1);				// Set COM Output Scan Direction = 1: remapped mode. Scan from COM[N-1] to COM0
 	raw.SetDisplayOffset(0);						// Set Display Offset = 0
-	raw.SetCOMPinsHardwareConfiguration((GetHeight() == 64)? 1 : 0, 0);
+	raw.SetCOMPinsHardwareConfiguration((GetScreenHeight() == 64)? 1 : 0, 0);
 													// Set COM Pins Hardware Configuration
 													//   A[4] = 0: Sequential COM pin configuration
 													//          1: Alternative COM pin configuration
@@ -43,7 +43,7 @@ void SSD1306::Initialize()
 
 void SSD1306::Refresh()
 {
-	raw.SetColumnAddress(0, GetWidth() - 1);
+	raw.SetColumnAddress(0, GetScreenWidth() - 1);
 	raw.SetPageAddress(0, GetNumPages() - 1);
 	raw.WriteBuffer();
 }
@@ -64,7 +64,7 @@ template<class Logic> void SSD1306::DrawVLineT_NoAdj(int x, int y, int height)
 	int page;
 	uint8_t* pDstTop = raw.GetPointer(x, y, &page);
 	bits >>= page * 8;
-	for (uint8_t* pDst = pDstTop; page < GetNumPages() && bits; page++, pDst += GetWidth(), bits >>= 8) {
+	for (uint8_t* pDst = pDstTop; page < GetNumPages() && bits; page++, pDst += GetScreenWidth(), bits >>= 8) {
 		assert(raw.EnsureSafePointer(pDst));
 		*pDst = Logic()(*pDst, static_cast<uint8_t>(bits & 0b11111111));
 	}
@@ -72,13 +72,13 @@ template<class Logic> void SSD1306::DrawVLineT_NoAdj(int x, int y, int height)
 
 template<class Logic> void SSD1306::DrawHLineT(int x, int y, int width)
 {
-	if (!CheckCoord(y, GetHeight()) || !AdjustCoord(&x, &width, GetWidth())) return;
+	if (!CheckRange(y, 0, GetScreenHeight()) || !AdjustRange(&x, &width, 0, GetScreenWidth())) return;
 	DrawHLineT_NoAdj<Logic>(x, y, width);
 }
 
 template<class Logic> void SSD1306::DrawVLineT(int x, int y, int height)
 {
-	if (!CheckCoord(x, GetWidth()) || !AdjustCoord(&y, &height, GetHeight())) return;
+	if (!CheckRange(x, 0, GetScreenWidth()) || !AdjustRange(&y, &height, 0, GetScreenHeight())) return;
 	DrawVLineT_NoAdj<Logic>(x, y, height);
 }
 
@@ -103,12 +103,12 @@ template<class Logic> void SSD1306::DrawLineT(int x0, int y0, int x1, int y1, in
 
 template<class Logic> void SSD1306::DrawRectFillT(int x, int y, int width, int height)
 {
-	if (!AdjustCoord(&x, &width, GetWidth()) || !AdjustCoord(&y, &height, GetHeight())) return;
+	if (!AdjustRange(&x, &width, 0, GetScreenWidth()) || !AdjustRange(&y, &height, 0, GetScreenHeight())) return;
 	uint64_t bits = (-1LL << y) & ~(-1LL << (y + height));
 	int page;
 	uint8_t* pDstTop = raw.GetPointer(x, y, &page);
 	bits >>= page * 8;
-	for ( ; page < GetNumPages() && bits; page++, pDstTop += GetWidth(), bits >>= 8) {
+	for ( ; page < GetNumPages() && bits; page++, pDstTop += GetScreenWidth(), bits >>= 8) {
 		uint8_t* pDst = pDstTop;
 		for (int i = 0; i < width; i++, pDst++) {
 			assert(raw.EnsureSafePointer(pDst));
@@ -122,7 +122,7 @@ template<class Logic> void SSD1306::DrawBitmapT(int x, int y, const void* src, i
 	int bytesPerLine = (width + 7) / 8;
 	int wdScaled = width * scaleX;
 	int htScaled = height * scaleY;
-	if (!AdjustCoord(&x, &wdScaled, GetWidth()) || !AdjustCoord(&y, &htScaled, GetHeight())) return;
+	if (!AdjustRange(&x, &wdScaled, 0, GetScreenWidth()) || !AdjustRange(&y, &htScaled, 0, GetScreenHeight())) return;
 	const uint8_t* pSrcBottom = reinterpret_cast<const uint8_t*>(src) + bytesPerLine * height;
 	int pageTop;
 	uint8_t* pDstTop = raw.GetPointer(x, y, &pageTop);
@@ -139,10 +139,10 @@ template<class Logic> void SSD1306::DrawBitmapT(int x, int y, const void* src, i
 			}
 			bits <<= bitOffset;
 			uint8_t* pDstLeft = pDstTop;
-			for (int page = pageTop; page < GetNumPages() && bits; page++, pDstLeft += GetWidth(), bits >>= 8) {
+			for (int page = pageTop; page < GetNumPages() && bits; page++, pDstLeft += GetScreenWidth(), bits >>= 8) {
 				uint8_t* pDst = pDstLeft;
 				uint8_t data = static_cast<uint8_t>(bits & 0b11111111);
-				for (int j = 0; j < scaleX && xCur + j < GetWidth(); j++, pDst++) {
+				for (int j = 0; j < scaleX && xCur + j < GetScreenWidth(); j++, pDst++) {
 					assert(raw.EnsureSafePointer(pDst));
 					*pDst = Logic()(*pDst, data);
 				}
@@ -252,19 +252,19 @@ void SSD1306::DrawRect(int x, int y, int width, int height)
 	int yTop = y, yBottom = y + height - 1;
 	int xLeftAdjust = xLeft, widthAdjust = width;
 	int yTopAdjust = yTop, heightAdjust = height;
-	if (AdjustCoord(&xLeftAdjust, &widthAdjust, GetWidth())) {
-		if (CheckCoord(yTop, GetHeight())) {
+	if (AdjustRange(&xLeftAdjust, &widthAdjust, 0, GetScreenWidth())) {
+		if (CheckRange(yTop, 0, GetScreenHeight())) {
 			DrawHLine_NoAdj(xLeftAdjust, yTop, widthAdjust);
 		}
-		if (CheckCoord(yBottom, GetHeight())) {
+		if (CheckRange(yBottom, 0, GetScreenHeight())) {
 			DrawHLine_NoAdj(xLeftAdjust, yBottom, widthAdjust);
 		}
 	}
-	if (AdjustCoord(&yTopAdjust, &heightAdjust, GetHeight())) {
-		if (CheckCoord(xLeft, GetWidth())) {
+	if (AdjustRange(&yTopAdjust, &heightAdjust, 0, GetScreenHeight())) {
+		if (CheckRange(xLeft, 0, GetScreenWidth())) {
 			DrawVLine_NoAdj(xLeft, yTopAdjust, heightAdjust);
 		}
-		if (CheckCoord(xRight, GetWidth())) {
+		if (CheckRange(xRight, 0, GetScreenWidth())) {
 			DrawVLine_NoAdj(xRight, yTopAdjust, heightAdjust);
 		}
 	}
@@ -327,8 +327,8 @@ const char* SSD1306::DrawStringBBox(int x, int y, int width, int height, const c
 	uint32_t code;
 	UTF8Decoder decoder;
 	int xStart = x;
-	int xEnd = (width >= 0)? x + width : GetWidth();
-	int yEnd = (height >= 0)? y + height : GetHeight();
+	int xEnd = (width >= 0)? x + width : GetScreenWidth();
+	int yEnd = (height >= 0)? y + height : GetScreenHeight();
 	int yAdvance = (htLine >= 0)? htLine : context_.pFontSet->yAdvance * context_.fontScaleY;
 	const char* pDone = str;
 	for (const char* p = str; *p; p++) {
@@ -344,23 +344,6 @@ const char* SSD1306::DrawStringBBox(int x, int y, int width, int height, const c
 		pDone = p + 1;
 	}
 	return pDone;
-}
-
-bool SSD1306::AdjustCoord(int* pV, int* pDist, int vLimit)
-{
-	int& v = *pV, &dist = *pDist;
-	if (dist == 0) return false;
-	if (dist < 0) {
-		v += dist + 1, dist = -dist;
-	}
-	if (v < 0) {
-		dist += v, v = 0;
-	}
-	if (v >= vLimit) return false;
-	if (v + dist > vLimit) {
-		dist = vLimit - v;
-	}
-	return true;
 }
 
 }

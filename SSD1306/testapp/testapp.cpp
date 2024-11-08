@@ -52,9 +52,9 @@ void Test_DrawPixel(SSD1306& oled)
 		for (int i = 0; i < 1000; i++) {
 			oled.DrawPixel(x, y);
 			if (x + xDir < 0) xDir = +1;
-			if (x + xDir >= oled.GetWidth()) xDir = -1;
+			if (x + xDir >= oled.GetScreenWidth()) xDir = -1;
 			if (y + yDir < 0) yDir = +1;
-			if (y + yDir >= oled.GetHeight()) yDir = -1;
+			if (y + yDir >= oled.GetScreenHeight()) yDir = -1;
 			x += xDir, y += yDir;
 			if (i % 10 == 0) oled.Refresh();
 		}
@@ -67,9 +67,9 @@ void Test_DrawHLine(SSD1306& oled)
 	for (int i = 0; i < 3; i++) {
 		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
 		oled.SetDrawMode(drawMode);
-		for (int x = -64; x < oled.GetWidth(); x++) {
+		for (int x = -64; x <= oled.GetScreenWidth(); x++) {
 			SetupScreen(oled, drawMode);
-			for (int i = 0; i < oled.GetHeight(); i++) {
+			for (int i = 0; i < oled.GetScreenHeight(); i++) {
 				oled.DrawHLine(x, i, i);
 			}
 			oled.Refresh();
@@ -83,11 +83,11 @@ void Test_DrawVLine(SSD1306& oled)
 	for (int i = 0; i < 3; i++) {
 		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
 		oled.SetDrawMode(drawMode);
-		for (int y = -64; y < oled.GetHeight(); y++) {
+		for (int y = -64; y <= oled.GetScreenHeight(); y++) {
 			SetupScreen(oled, drawMode);
-			for (int i = 0; i < oled.GetHeight(); i++) {
+			for (int i = 0; i < oled.GetScreenHeight(); i++) {
 				oled.DrawVLine(i, y, i);
-				oled.DrawVLine(i + oled.GetHeight() * 1, oled.GetHeight() - y - 1, -i);
+				oled.DrawVLine(i + oled.GetScreenHeight() * 1, oled.GetScreenHeight() - y - 1, -i);
 			}
 			oled.Refresh();
 		}
@@ -97,14 +97,14 @@ void Test_DrawVLine(SSD1306& oled)
 
 void Test_DrawLine(SSD1306& oled)
 {
-	int xMid = oled.GetWidth() / 2;
-	int yMid = oled.GetHeight() / 2;
-	int xRight = oled.GetWidth() - 1;
-	int yBottom = oled.GetHeight() - 1;
+	int xMid = oled.GetScreenWidth() / 2;
+	int yMid = oled.GetScreenHeight() / 2;
+	int xRight = oled.GetScreenWidth() - 1;
+	int yBottom = oled.GetScreenHeight() - 1;
 	for (int i = 0; i < 3; i++) {
 		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
 		oled.SetDrawMode(drawMode);
-		for (int y = 0; y < oled.GetHeight(); y++) {
+		for (int y = 0; y < oled.GetScreenHeight(); y++) {
 			SetupScreen(oled, drawMode);
 			oled.DrawLine(xMid, yMid, xRight, y);
 			oled.Refresh();
@@ -133,18 +133,18 @@ void Test_DrawLine(SSD1306& oled)
 
 void Test_DrawRect(SSD1306& oled)
 {
-	int xRight = oled.GetWidth() - 1;
-	int yBottom = oled.GetHeight() - 1;
+	int xRight = oled.GetScreenWidth() - 1;
+	int yBottom = oled.GetScreenHeight() - 1;
 	for (int i = 0; i < 3; i++) {
 		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
 		oled.SetDrawMode(drawMode);
-		for (int i = 0; i < oled.GetHeight(); i++) {
+		for (int i = 0; i < oled.GetScreenHeight(); i++) {
 			SetupScreen(oled, drawMode);
 			oled.DrawRect(0, 0, i * 2, i);
 			oled.Refresh();
 			::sleep_ms(100);
 		}
-		for (int i = 0; i < oled.GetHeight(); i++) {
+		for (int i = 0; i < oled.GetScreenHeight(); i++) {
 			SetupScreen(oled, drawMode);
 			oled.DrawRect(xRight, yBottom, -i * 2, -i);
 			oled.Refresh();
@@ -155,20 +155,20 @@ void Test_DrawRect(SSD1306& oled)
 
 void Test_DrawRectFill(SSD1306& oled)
 {
-	int xRight = oled.GetWidth() - 1;
-	int yBottom = oled.GetHeight() - 1;
+	int xRight = oled.GetScreenWidth() - 1;
+	int yBottom = oled.GetScreenHeight() - 1;
 	for (int i = 0; i < 3; i++) {
 		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
 		oled.SetDrawMode(drawMode);
-		for (int i = 0; i < oled.GetHeight(); i++) {
+		for (int i = 0; i < oled.GetScreenHeight(); i++) {
 			SetupScreen(oled, drawMode);
 			oled.DrawRectFill(0, 0, i * 2, i);
 			oled.Refresh();
 			::sleep_ms(100);
 		}
-		for (int i = 0; i < oled.GetHeight(); i++) {
+		for (int i = 0; i < oled.GetScreenHeight(); i++) {
 			SetupScreen(oled, drawMode);
-			oled.DrawRectFill(xRight, oled.GetHeight() - 1, -i * 2, -i);
+			oled.DrawRectFill(xRight, oled.GetScreenHeight() - 1, -i * 2, -i);
 			oled.Refresh();
 			::sleep_ms(100);
 		}
