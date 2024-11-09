@@ -242,8 +242,6 @@ private:
 		uint8_t* pDst = GetPointer(x, y);
 		*pDst = Logic()(*pDst, 1 << (y & 0b111));
 	}
-	template<class Logic> void DrawHLineT_NoAdj(int x, int y, int width);
-	template<class Logic> void DrawVLineT_NoAdj(int x, int y, int height);
 	template<class Logic> void DrawHLineT(int x, int y, int width);
 	template<class Logic> void DrawVLineT(int x, int y, int width);
 	template<class Logic> void DrawRectFillT(int x, int y, int width, int height);
@@ -253,13 +251,9 @@ public:
 	virtual void DrawPixel(int x, int y) override;
 	virtual void DrawHLine(int x, int y, int width) override;
 	virtual void DrawVLine(int x, int y, int height) override;
-	virtual void DrawRect(int x, int y, int width, int height) override;
 	virtual void DrawRectFill(int x, int y, int width, int height) override;
 	virtual void DrawBitmap(int x, int y, const void* data, int width, int height, int scaleX = 1, int scaleY = 1) override;
 	virtual void DrawChar(int x, int y, const FontEntry& fontEntry) override;
-public:
-	void DrawHLine_NoAdj(int x, int y, int width);
-	void DrawVLine_NoAdj(int x, int y, int height);
 };
 
 }

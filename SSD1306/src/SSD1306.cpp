@@ -48,8 +48,10 @@ void SSD1306::Refresh()
 	WriteBuffer();
 }
 
-template<class Logic> void SSD1306::DrawHLineT_NoAdj(int x, int y, int width)
+template<class Logic> void SSD1306::DrawHLineT(int x, int y, int width)
 {
+	if (!AdjustRange(&x, &width, 0, GetScreenWidth())) return;
+	if (!CheckRange(y, 0, GetScreenHeight())) return;
 	uint8_t data = 0b00000001 << (y & 0b111);
 	uint8_t* pDst = GetPointer(x, y);
 	for (int i = 0; i < width; i++, pDst++) {
@@ -58,8 +60,10 @@ template<class Logic> void SSD1306::DrawHLineT_NoAdj(int x, int y, int width)
 	}
 }
 
-template<class Logic> void SSD1306::DrawVLineT_NoAdj(int x, int y, int height)
+template<class Logic> void SSD1306::DrawVLineT(int x, int y, int height)
 {
+	if (!CheckRange(x, 0, GetScreenWidth())) return;
+	if (!AdjustRange(&y, &height, 0, GetScreenHeight())) return;
 	uint64_t bits = (-1LL << y) & ~(-1LL << (y + height));
 	int page;
 	uint8_t* pDstTop = GetPointer(x, y, &page);
@@ -68,20 +72,6 @@ template<class Logic> void SSD1306::DrawVLineT_NoAdj(int x, int y, int height)
 		assert(EnsureSafePointer(pDst));
 		*pDst = Logic()(*pDst, static_cast<uint8_t>(bits & 0b11111111));
 	}
-}
-
-template<class Logic> void SSD1306::DrawHLineT(int x, int y, int width)
-{
-	if (!AdjustRange(&x, &width, 0, GetScreenWidth())) return;
-	if (!CheckRange(y, 0, GetScreenHeight())) return;
-	DrawHLineT_NoAdj<Logic>(x, y, width);
-}
-
-template<class Logic> void SSD1306::DrawVLineT(int x, int y, int height)
-{
-	if (!CheckRange(x, 0, GetScreenWidth())) return;
-	if (!AdjustRange(&y, &height, 0, GetScreenHeight())) return;
-	DrawVLineT_NoAdj<Logic>(x, y, height);
 }
 
 template<class Logic> void SSD1306::DrawRectFillT(int x, int y, int width, int height)
@@ -150,26 +140,6 @@ void SSD1306::DrawPixel(int x, int y)
 	}
 }
 
-void SSD1306::DrawHLine_NoAdj(int x, int y, int width)
-{
-	switch (drawMode_) {
-	case DrawMode::Set:		DrawHLineT_NoAdj<Logic_Set>(x, y, width); break;
-	case DrawMode::Clear:	DrawHLineT_NoAdj<Logic_Clear>(x, y, width); break;
-	case DrawMode::Invert:	DrawHLineT_NoAdj<Logic_Invert>(x, y, width); break;
-	default: break;
-	}
-}
-
-void SSD1306::DrawVLine_NoAdj(int x, int y, int width)
-{
-	switch (drawMode_) {
-	case DrawMode::Set:		DrawVLineT_NoAdj<Logic_Set>(x, y, width); break;
-	case DrawMode::Clear:	DrawVLineT_NoAdj<Logic_Clear>(x, y, width); break;
-	case DrawMode::Invert:	DrawVLineT_NoAdj<Logic_Invert>(x, y, width); break;
-	default: break;
-	}
-}
-
 void SSD1306::DrawHLine(int x, int y, int width)
 {
 	switch (drawMode_) {
@@ -187,38 +157,6 @@ void SSD1306::DrawVLine(int x, int y, int width)
 	case DrawMode::Clear:	DrawVLineT<Logic_Clear>(x, y, width); break;
 	case DrawMode::Invert:	DrawVLineT<Logic_Invert>(x, y, width); break;
 	default: break;
-	}
-}
-
-void SSD1306::DrawRect(int x, int y, int width, int height)
-{
-	if (width < 0) {
-		x += width + 1;
-		width = -width;
-	}
-	if (height < 0) {
-		y += height + 1;
-		height = -height;
-	}
-	int xLeft = x, xRight = x + width - 1;
-	int yTop = y, yBottom = y + height - 1;
-	int xLeftAdjust = xLeft, widthAdjust = width;
-	int yTopAdjust = yTop, heightAdjust = height;
-	if (AdjustRange(&xLeftAdjust, &widthAdjust, 0, GetScreenWidth())) {
-		if (CheckRange(yTop, 0, GetScreenHeight())) {
-			DrawHLine_NoAdj(xLeftAdjust, yTop, widthAdjust);
-		}
-		if (CheckRange(yBottom, 0, GetScreenHeight())) {
-			DrawHLine_NoAdj(xLeftAdjust, yBottom, widthAdjust);
-		}
-	}
-	if (AdjustRange(&yTopAdjust, &heightAdjust, 0, GetScreenHeight())) {
-		if (CheckRange(xLeft, 0, GetScreenWidth())) {
-			DrawVLine_NoAdj(xLeft, yTopAdjust, heightAdjust);
-		}
-		if (CheckRange(xRight, 0, GetScreenWidth())) {
-			DrawVLine_NoAdj(xRight, yTopAdjust, heightAdjust);
-		}
 	}
 }
 

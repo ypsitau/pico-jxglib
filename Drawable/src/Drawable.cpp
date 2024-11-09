@@ -49,6 +49,22 @@ void Drawable::DrawLine(int x0, int y0, int x1, int y1)
 	}
 }
 
+void Drawable::DrawRect(int x, int y, int width, int height)
+{
+	if (width < 0) {
+		x += width + 1;
+		width = -width;
+	}
+	if (height < 0) {
+		y += height + 1;
+		height = -height;
+	}
+	DrawRectFill(x, y, width, 1);
+	DrawRectFill(x, y + height - 1, width, 1);
+	DrawRectFill(x, y, 1, height);
+	DrawRectFill(x + width - 1, y, 1, height);
+}
+
 void Drawable::DrawChar(int x, int y, uint32_t code)
 {
 	if (!context_.pFontSet) return;
