@@ -100,9 +100,10 @@ void Test_DrawStringWrap(ST7789& screen)
 	}
 }
 
-void Test_DrawRGB565(ST7789& screen)
+void Test_DrawImage(ST7789& screen)
 {
-	screen.DrawRGB565(0, 0, data, 240, 240);
+	Image image(Image::Format::RGB565, 240, 240, data);
+	screen.DrawImage(0, 0, image);
 }
 
 int main()
@@ -113,9 +114,9 @@ int main()
 	::gpio_set_function(PICO_DEFAULT_SPI_TX_PIN, GPIO_FUNC_SPI);
 	::gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
 	screen.Initialize();
-	Test_BouncingBall(screen);
+	//Test_BouncingBall(screen);
 	//Test_WriteBuffer(screen);
 	//Test_DrawString(screen);
 	//Test_DrawStringWrap(screen);
-	//Test_DrawRGB565(screen);
+	Test_DrawImage(screen);
 }

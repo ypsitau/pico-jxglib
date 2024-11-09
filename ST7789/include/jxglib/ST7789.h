@@ -246,12 +246,6 @@ public:
 		// 9.1.48 RDID3 (DCh): Read ID3
 		// 9.2 System Function Command
 	};
-	//struct Context {
-	//	const FontSet* pFontSet;
-	//	int fontScaleX, fontScaleY;
-	//public:
-	//	Context() : pFontSet{nullptr}, fontScaleX{1}, fontScaleY{1} {}
-	//};
 public:
 	Raw raw;
 	Color colorFg_;
@@ -278,56 +272,17 @@ public:
 		context_.fontScaleX = fontScaleX, context_.fontScaleY = fontScaleY;
 	}
 public:
-	void DrawRGB565(int x, int y, const void* data, int width, int height, int scaleX = 1, int scaleY = 1);
-	void DrawRGB565(const Point& pt, const void* data, int width, int height, int scaleX = 1, int scaleY = 1) {
-		DrawRGB565(pt.x, pt.y, data, width, height, scaleX, scaleY);
-	}
+	void DrawImage(int x, int y, const Image& image);
 public:
 	void WriteBuffer(int x, int y, int width, int height, const uint16_t* buff);
 	void Clear();
 	void Fill();
-
+public:
 	virtual void DrawPixel(int x, int y) override { DrawRectFill(x, y, 1, 1); }
 	virtual void DrawHLine(int x, int y, int width) override;
 	virtual void DrawVLine(int x, int y, int height) override;
 	virtual void DrawRectFill(int x, int y, int width, int height) override;
 	virtual void DrawBitmap(int x, int y, const void* data, int width, int height, bool transparentBgFlag, int scaleX = 1, int scaleY = 1) override;
-#if 0
-	void DrawPixel(int x, int y) { DrawRectFill(x, y, 1, 1); }
-	void DrawPixel(const Point& pt) { DrawPixel(pt.x, pt.y); }
-	void DrawHLine(int x, int y, int width);
-	void DrawHLine(const Point& pt, int width) { DrawHLine(pt.x, pt.y, width); }
-	void DrawVLine(int x, int y, int height);
-	void DrawVLine(const Point& pt, int height) { DrawVLine(pt.x, pt.y, height); }
-	void DrawRect(int x, int y, int width, int height);
-	void DrawRect(const Point& pt, const Size& size) { DrawRect(pt.x, pt.y, size.width, size.height); }
-	void DrawRect(const Rect& rc) { DrawRect(rc.x, rc.y, rc.width, rc.height); }
-	void DrawRectFill(int x, int y, int width, int height);
-	void DrawRectFill(const Point& pt, const Size& size) { DrawRectFill(pt.x, pt.y, size.width, size.height); }
-	void DrawRectFill(const Rect& rc) { DrawRect(rc.x, rc.y, rc.width, rc.height); }
-	void DrawBitmap(int x, int y, const void* data, int width, int height, bool transparentBgFlag, int scaleX, int scaleY);
-	void DrawBitmap(const Point& pt, const void* data, int width, int height, bool transparentBgFlag, int scaleX = 1, int scaleY = 1) {
-		DrawBitmap(pt.x, pt.y, data, width, height, transparentBgFlag, scaleX, scaleY);
-	}
-	void DrawChar(int x, int y, const FontEntry& fontEntry);
-	void DrawChar(const Point& pt, const FontEntry& fontEntry) { DrawChar(pt.x, pt.y, fontEntry); }
-	void DrawChar(int x, int y, uint32_t code);
-	void DrawChar(const Point& pt, uint32_t code) { DrawChar(pt.x, pt.y, code); }
-	void DrawString(int x, int y, const char* str, const char* strEnd = nullptr);
-	void DrawString(const Point& pt, const char* str, const char* strEnd = nullptr) {
-		DrawString(pt.x, pt.y, str, strEnd);
-	}
-	const char* DrawStringWrap(int x, int y, int width, int height, const char* str, int htLine = -1);
-	const char* DrawStringWrap(int x, int y, const char* str, int htLine = -1) {
-		return DrawStringWrap(x, y, -1, -1, str, htLine);
-	}
-	const char* DrawStringWrap(const Point& pt, const char* str, int htLine = -1) {
-		return DrawStringWrap(pt.x, pt.y, str, htLine);
-	}
-	const char* DrawStringWrap(const Rect& rcBBox, const char* str, int htLine = -1) {
-		return DrawStringWrap(rcBBox.x, rcBBox.y, rcBBox.width, rcBBox.height, str, htLine);
-	}
-#endif
 };
 
 }

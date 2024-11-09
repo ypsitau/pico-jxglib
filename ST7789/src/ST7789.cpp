@@ -37,23 +37,55 @@ void ST7789::Initialize()
 	raw.SetGPIO_BL(true);
 }
 
-void ST7789::DrawRGB565(int x, int y, const void* data, int width, int height, int scaleX, int scaleY)
+void ST7789::DrawImage(int x, int y, const Image& image)
 {
-	int nDots = width * height;
-	const uint16_t* pSrcLeft = reinterpret_cast<const uint16_t*>(data);
-	raw.ColumnAddressSet(x, x + width * scaleX - 1);
-	raw.RowAddressSet(y, y + height * scaleY - 1);
+	if (image.GetFormat() == Image::Format::Bitmap) {
+		DrawBitmap(x, y, image.GetData(), image.GetWidth(), image.GetHeight(), false);
+		return;
+	}
+	int nDots = image.GetWidth() * image.GetHeight();
+	raw.ColumnAddressSet(x, x + image.GetWidth() - 1);
+	raw.RowAddressSet(y, y + image.GetHeight() - 1);
 	raw.MemoryWrite_Begin(16);
-	for (int iRow = 0; iRow < height; iRow++) {
-		const uint16_t* pSrc;
-		for (int iScaleY = 0; iScaleY < scaleY; iScaleY++) {
-			pSrc = pSrcLeft;
-			for (int iCol = 0; iCol < width; iCol++) {
-				uint16_t color = *pSrc++;
-				for (int iScaleX = 0; iScaleX < scaleX; iScaleX++) raw.MemoryWrite_Data16(color);
-			}
+	const uint8_t* pSrc = image.GetData();
+	switch (image.GetFormat()) {
+	case Image::Format::Gray: {
+		for (int iDot = 0; iDot < nDots; iDot++, pSrc += 1) {
+			raw.MemoryWrite_Data16(Color::RGB565(pSrc[0], pSrc[0], pSrc[0]));
 		}
-		pSrcLeft = pSrc;
+		break;
+	}
+	case Image::Format::RGB: {
+		for (int iDot = 0; iDot < nDots; iDot++, pSrc += 3) {
+			raw.MemoryWrite_Data16(Color::RGB565(pSrc[0], pSrc[1], pSrc[2]));
+		}
+		break;
+	}
+	case Image::Format::BGR: {
+		for (int iDot = 0; iDot < nDots; iDot++, pSrc += 3) {
+			raw.MemoryWrite_Data16(Color::RGB565(pSrc[2], pSrc[1], pSrc[0]));
+		}
+		break;
+	}
+	case Image::Format::RGBA: {
+		for (int iDot = 0; iDot < nDots; iDot++, pSrc += 4) {
+			raw.MemoryWrite_Data16(Color::RGB565(pSrc[0], pSrc[1], pSrc[2]));
+		}
+		break;
+	}
+	case Image::Format::BGRA: {
+		for (int iDot = 0; iDot < nDots; iDot++, pSrc += 4) {
+			raw.MemoryWrite_Data16(Color::RGB565(pSrc[2], pSrc[1], pSrc[0]));
+		}
+		break;
+	}
+	case Image::Format::RGB565: {
+		for (int iDot = 0; iDot < nDots; iDot++, pSrc += sizeof(uint16_t)) {
+			raw.MemoryWrite_Data16(*reinterpret_cast<const uint16_t*>(pSrc));
+		}
+		break;
+	}
+	default: break;
 	}
 	raw.MemoryWrite_End();
 }
@@ -97,24 +129,6 @@ void ST7789::DrawVLine(int x, int y, int height)
 	raw.MemoryWriteConst16(colorFg_.RGB565(), height);
 }
 
-#if 0
-void ST7789::DrawRect(int x, int y, int width, int height)
-{
-	if (width < 0) {
-		x += width + 1;
-		width = -width;
-	}
-	if (height < 0) {
-		y += height + 1;
-		height = -height;
-	}
-	DrawRectFill(x, y, width, 1);
-	DrawRectFill(x, y + height - 1, width, 1);
-	DrawRectFill(x, y, 1, height);
-	DrawRectFill(x + width - 1, y, 1, height);
-}
-#endif
-
 void ST7789::DrawRectFill(int x, int y, int width, int height)
 {
 	if (!AdjustRange(&x, &width, 0, GetWidth())) return;
@@ -153,58 +167,6 @@ void ST7789::DrawBitmap(int x, int y, const void* data, int width, int height, b
 	}
 	raw.MemoryWrite_End();
 }
-
-#if 0
-void ST7789::DrawChar(int x, int y, const FontEntry& fontEntry)
-{
-	DrawBitmap(x, y, fontEntry.data, fontEntry.width, fontEntry.height, context_.fontScaleX, true, context_.fontScaleY);
-}
-
-void ST7789::DrawChar(int x, int y, uint32_t code)
-{
-	if (!context_.pFontSet) return;
-	const FontEntry& fontEntry = context_.pFontSet->GetFontEntry(code);
-	DrawChar(x, y, fontEntry);
-}
-
-void ST7789::DrawString(int x, int y, const char* str, const char* strEnd)
-{
-	if (!context_.pFontSet) return;
-	uint32_t code;
-	UTF8Decoder decoder;
-	for (const char* p = str; *p && p != strEnd; p++) {
-		if (!decoder.FeedChar(*p, &code)) continue;
-		const FontEntry& fontEntry = context_.pFontSet->GetFontEntry(code);
-		DrawChar(x, y, fontEntry);
-		x += fontEntry.xAdvance * context_.fontScaleX;
-	}
-}
-
-const char* ST7789::DrawStringWrap(int x, int y, int width, int height, const char* str, int htLine)
-{
-	if (!context_.pFontSet) return str;
-	uint32_t code;
-	UTF8Decoder decoder;
-	int xStart = x;
-	int xExceed = (width >= 0)? x + width : GetWidth();
-	int yExceed = (height >= 0)? y + height : GetHeight();
-	int yAdvance = (htLine >= 0)? htLine : context_.pFontSet->yAdvance * context_.fontScaleY;
-	const char* pDone = str;
-	for (const char* p = str; *p; p++) {
-		if (!decoder.FeedChar(*p, &code)) continue;
-		const FontEntry& fontEntry = context_.pFontSet->GetFontEntry(code);
-		int xAdvance = fontEntry.xAdvance * context_.fontScaleX;
-		if (x + fontEntry.width * context_.fontScaleX > xExceed) {
-			x = xStart, y += yAdvance;
-			if (y + yAdvance > yExceed) break;
-		}
-		DrawChar(x, y, fontEntry);
-		x += xAdvance;
-		pDone = p + 1;
-	}
-	return pDone;
-}
-#endif
 
 //------------------------------------------------------------------------------
 // ST7789::Raw
