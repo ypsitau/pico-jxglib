@@ -36,41 +36,14 @@ public:
 	};
 	class Raw {
 	private:
-		static const int width_ = 128;
-		int height_;
-		static const int heightPerPage_ = 8;
-		int numPages_;
-		int bufferLen_;
 	private:
 		i2c_inst_t* i2c_;
 		uint8_t addr_;
-		uint8_t* buffWhole_;
-		uint8_t* buff_;
 	public:
-		Raw(i2c_inst_t* i2c, uint8_t addr, int height) :
-				i2c_(i2c), addr_(addr), buffWhole_(nullptr), buff_(nullptr), height_(height) {
-			numPages_ = height_ / heightPerPage_;
-			bufferLen_ = numPages_ * width_;
-		}
-		~Raw() {
-			::free(buffWhole_);
-		}
+		Raw(i2c_inst_t* i2c, uint8_t addr) : i2c_(i2c), addr_(addr) {}
 	public:
 		uint8_t GetAddr() const { return addr_; }
-		int GetScreenWidth() const { return width_; }
-		int GetScreenHeight() const { return height_; }
-		int GetScreenHeightPerPage() const { return heightPerPage_; }
-		int GetNumPages() const { return numPages_; }
-		int GetBufferLen() const { return bufferLen_; }
 	public:
-		void AllocBuffer() {
-			buffWhole_ = reinterpret_cast<uint8_t*>(::malloc(bufferLen_ + 1));
-			buffWhole_[0] = 
-				(0b0 << 7) |	// Co = 0
-				(0b1 << 6);		// D/C# = 1
-			buff_ = buffWhole_ + 1;
-			FillBuffer(0x00);
-		}
 		void WriteCtrl(uint8_t ctrl) const {
 			uint8_t buff[2];
 			buff[0] =
@@ -79,14 +52,8 @@ public:
 			buff[1] = ctrl;
 			::i2c_write_blocking(i2c_, addr_, buff, sizeof(buff), false);
 		}
-		uint8_t* GetPointer() { return buff_; }
-		uint8_t* GetPointer(int x) { return buff_ + x; }
-		uint8_t* GetPointer(int x, int y) { return buff_ + (y / 8) * width_ + x; }
-		uint8_t* GetPointer(int x, int y, int* pPage) { *pPage = y / 8; return buff_ + *pPage * width_ + x; }
-		bool EnsureSafePointer(const uint8_t* p) { return buff_ <= p && p < buff_ + bufferLen_; }
-		void FillBuffer(uint8_t data) { ::memset(buff_, data, bufferLen_); }
-		void WriteBuffer() const {
-			::i2c_write_blocking(i2c_, addr_, buffWhole_, bufferLen_ + 1, false);
+		void WriteBuffer(const uint8_t* buff, int len) const {
+			::i2c_write_blocking(i2c_, addr_, buff, len, false);
 		}
 	public:
 		// 10.1 Fundamental Command
@@ -230,23 +197,52 @@ public:
 public:
 	static const uint8_t DefaultAddr = 0x3c;
 	Raw raw;
+	static const int width_ = 128;
+	int height_;
+	static const int heightPerPage_ = 8;
+	int numPages_;
+	int bufferLen_;
+	uint8_t* buffWhole_;
+	uint8_t* buff_;
 private:
 	Context context_;
 public:
 	SSD1306(i2c_inst_t* i2c, uint8_t addr = DefaultAddr, bool highResoFlag = true) :
-			raw(i2c, addr, highResoFlag? 64 : 32) {}
+			raw(i2c, addr), height_{highResoFlag? 64 : 32}, buffWhole_(nullptr), buff_(nullptr) {
+		numPages_ = height_ / heightPerPage_;
+		bufferLen_ = numPages_ * width_;
+	}
+	~SSD1306() {
+		::free(buffWhole_);
+	}
 public:
 	uint8_t GetAddr() const { return raw.GetAddr(); }
-	int GetScreenWidth() const { return raw.GetScreenWidth(); }
-	int GetScreenHeight() const { return raw.GetScreenHeight(); }
-	int GetScreenHeightPerPage() const { return raw.GetScreenHeightPerPage(); }
-	int GetNumPages() const { return raw.GetNumPages(); }
-	int GetBufferLen() const { return raw.GetBufferLen(); }
+	int GetScreenWidth() const { return width_; }
+	int GetScreenHeight() const { return height_; }
+	int GetScreenHeightPerPage() const { return heightPerPage_; }
+	int GetNumPages() const { return numPages_; }
+	int GetBufferLen() const { return bufferLen_; }
+public:
+	void AllocBuffer() {
+		buffWhole_ = reinterpret_cast<uint8_t*>(::malloc(bufferLen_ + 1));
+		buffWhole_[0] = 
+			(0b0 << 7) |	// Co = 0
+			(0b1 << 6);		// D/C# = 1
+		buff_ = buffWhole_ + 1;
+		FillBuffer(0x00);
+	}
+	uint8_t* GetPointer() { return buff_; }
+	uint8_t* GetPointer(int x) { return buff_ + x; }
+	uint8_t* GetPointer(int x, int y) { return buff_ + (y / 8) * width_ + x; }
+	uint8_t* GetPointer(int x, int y, int* pPage) { *pPage = y / 8; return buff_ + *pPage * width_ + x; }
+	bool EnsureSafePointer(const uint8_t* p) { return buff_ <= p && p < buff_ + bufferLen_; }
+	void FillBuffer(uint8_t data) { ::memset(buff_, data, bufferLen_); }
+	void WriteBuffer() const { raw.WriteBuffer(buffWhole_, bufferLen_ + 1); }
 public:
 	void Initialize();
 	void Refresh();
 	void Flash(bool flashFlag) { raw.EntireDisplayOn(static_cast<uint8_t>(flashFlag)); }
-	void Clear(uint8_t data = 0x00) { raw.FillBuffer(data); }
+	void Clear(uint8_t data = 0x00) { FillBuffer(data); }
 	void SetFont(const FontSet& fontSet, int fontScale = 1) {
 		context_.pFontSet = &fontSet; context_.fontScaleX = context_.fontScaleY = fontScale;
 	}
@@ -259,7 +255,7 @@ public:
 private:
 	// Draw* Method Template
 	template<class Logic> void DrawPixelT(int x, int y) {
-		uint8_t* pDst = raw.GetPointer(x, y);
+		uint8_t* pDst = GetPointer(x, y);
 		*pDst = Logic()(*pDst, 1 << (y & 0b111));
 	}
 	template<class Logic> void DrawHLineT_NoAdj(int x, int y, int width);

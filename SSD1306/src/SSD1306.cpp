@@ -12,7 +12,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 void SSD1306::Initialize()
 {
-	raw.AllocBuffer();
+	AllocBuffer();
 	raw.SetDisplayOnOff(0);							// Set Display ON/OFF = 0: OFF
 	raw.SetMemoryAddressingMode(0);					// Set Memory Addressing Mode = 0: Horizontal Addressing Mode
 	raw.SetDisplayStartLine(0);						// Set Display Start Line = 0
@@ -45,15 +45,15 @@ void SSD1306::Refresh()
 {
 	raw.SetColumnAddress(0, GetScreenWidth() - 1);
 	raw.SetPageAddress(0, GetNumPages() - 1);
-	raw.WriteBuffer();
+	WriteBuffer();
 }
 
 template<class Logic> void SSD1306::DrawHLineT_NoAdj(int x, int y, int width)
 {
 	uint8_t data = 0b00000001 << (y & 0b111);
-	uint8_t* pDst = raw.GetPointer(x, y);
+	uint8_t* pDst = GetPointer(x, y);
 	for (int i = 0; i < width; i++, pDst++) {
-		assert(raw.EnsureSafePointer(pDst));
+		assert(EnsureSafePointer(pDst));
 		*pDst = Logic()(*pDst, data);
 	}
 }
@@ -62,10 +62,10 @@ template<class Logic> void SSD1306::DrawVLineT_NoAdj(int x, int y, int height)
 {
 	uint64_t bits = (-1LL << y) & ~(-1LL << (y + height));
 	int page;
-	uint8_t* pDstTop = raw.GetPointer(x, y, &page);
+	uint8_t* pDstTop = GetPointer(x, y, &page);
 	bits >>= page * 8;
 	for (uint8_t* pDst = pDstTop; page < GetNumPages() && bits; page++, pDst += GetScreenWidth(), bits >>= 8) {
-		assert(raw.EnsureSafePointer(pDst));
+		assert(EnsureSafePointer(pDst));
 		*pDst = Logic()(*pDst, static_cast<uint8_t>(bits & 0b11111111));
 	}
 }
@@ -109,12 +109,12 @@ template<class Logic> void SSD1306::DrawRectFillT(int x, int y, int width, int h
 	if (!AdjustRange(&y, &height, 0, GetScreenHeight())) return;
 	uint64_t bits = (-1LL << y) & ~(-1LL << (y + height));
 	int page;
-	uint8_t* pDstTop = raw.GetPointer(x, y, &page);
+	uint8_t* pDstTop = GetPointer(x, y, &page);
 	bits >>= page * 8;
 	for ( ; page < GetNumPages() && bits; page++, pDstTop += GetScreenWidth(), bits >>= 8) {
 		uint8_t* pDst = pDstTop;
 		for (int i = 0; i < width; i++, pDst++) {
-			assert(raw.EnsureSafePointer(pDst));
+			assert(EnsureSafePointer(pDst));
 			*pDst = Logic()(*pDst, static_cast<uint8_t>(bits & 0b11111111));
 		}
 	}
@@ -128,7 +128,7 @@ template<class Logic> void SSD1306::DrawBitmapT(int x, int y, const void* data, 
 	if (!AdjustRange(&x, &wdScaled, 0, GetScreenWidth()) || !AdjustRange(&y, &htScaled, 0, GetScreenHeight())) return;
 	const uint8_t* pSrcBottom = reinterpret_cast<const uint8_t*>(data) + bytesPerLine * height;
 	int pageTop;
-	uint8_t* pDstTop = raw.GetPointer(x, y, &pageTop);
+	uint8_t* pDstTop = GetPointer(x, y, &pageTop);
 	int bitOffset = y - pageTop * 8;
 	int xCur = x;
 	uint32_t bitsDot = (1 << scaleY) - 1;
@@ -146,7 +146,7 @@ template<class Logic> void SSD1306::DrawBitmapT(int x, int y, const void* data, 
 				uint8_t* pDst = pDstLeft;
 				uint8_t data = static_cast<uint8_t>(bits & 0b11111111);
 				for (int j = 0; j < scaleX && xCur + j < GetScreenWidth(); j++, pDst++) {
-					assert(raw.EnsureSafePointer(pDst));
+					assert(EnsureSafePointer(pDst));
 					*pDst = Logic()(*pDst, data);
 				}
 			}
