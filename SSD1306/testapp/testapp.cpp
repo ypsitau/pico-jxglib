@@ -304,12 +304,12 @@ int main()
 	for (;;) {
 		//Test_Flash(screen);
 		//Test_DrawPixel(screen);
-		Test_DrawHLine(screen);
-		Test_DrawVLine(screen);
+		//Test_DrawHLine(screen);
+		//Test_DrawVLine(screen);
 		//Test_DrawLine(screen);
-		Test_DrawRect(screen);
-		Test_DrawRectFill(screen);
-		Test_DrawBitmap(screen);
+		//Test_DrawRect(screen);
+		//Test_DrawRectFill(screen);
+		//Test_DrawBitmap(screen);
 		Test_DrawStringWrap(screen);
 	}
 }

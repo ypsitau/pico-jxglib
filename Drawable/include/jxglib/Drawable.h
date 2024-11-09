@@ -51,6 +51,7 @@ public:
 	void DrawBitmap(const Point& pt, const void* data, int width, int height, int scaleX = 1, int scaleY = 1) {
 		DrawBitmap(pt.x, pt.y, data, width, height, scaleX, scaleY);
 	}
+	void DrawChar(int x, int y, const FontEntry& fontEntry);
 	void DrawChar(const Point& pt, const FontEntry& fontEntry) { DrawChar(pt.x, pt.y, fontEntry); }
 	void DrawChar(int x, int y, uint32_t code);
 	void DrawChar(const Point& pt, uint32_t code) { DrawChar(pt.x, pt.y, code); }
@@ -74,7 +75,6 @@ public:
 	virtual void DrawVLine(int x, int y, int height) = 0;
 	virtual void DrawRectFill(int x, int y, int width, int height) = 0;
 	virtual void DrawBitmap(int x, int y, const void* data, int width, int height, int scaleX = 1, int scaleY = 1) = 0;
-	virtual void DrawChar(int x, int y, const FontEntry& fontEntry) = 0;
 };
 
 }

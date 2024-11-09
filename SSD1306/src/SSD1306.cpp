@@ -96,7 +96,8 @@ template<class Logic> void SSD1306::DrawBitmapT(int x, int y, const void* data, 
 	int bytesPerLine = (width + 7) / 8;
 	int wdScaled = width * scaleX;
 	int htScaled = height * scaleY;
-	if (!AdjustRange(&x, &wdScaled, 0, GetScreenWidth()) || !AdjustRange(&y, &htScaled, 0, GetScreenHeight())) return;
+	if (!AdjustRange(&x, &wdScaled, 0, GetScreenWidth())) return;
+	if (!AdjustRange(&y, &htScaled, 0, GetScreenHeight())) return;
 	const uint8_t* pSrcBottom = reinterpret_cast<const uint8_t*>(data) + bytesPerLine * height;
 	int pageTop;
 	uint8_t* pDstTop = GetPointer(x, y, &pageTop);
@@ -125,17 +126,14 @@ template<class Logic> void SSD1306::DrawBitmapT(int x, int y, const void* data, 
 	}
 }
 
-template<class Logic> void SSD1306::DrawCharT(int x, int y, const FontEntry& fontEntry)
-{
-	DrawBitmapT<Logic>(x, y, fontEntry.data, fontEntry.width, fontEntry.height, context_.fontScaleX, context_.fontScaleY);
-}
-
 void SSD1306::DrawPixel(int x, int y)
 {
+	uint8_t* pDst = GetPointer(x, y);
+	int bits = 1 << (y & 0b111);
 	switch (drawMode_) {
-	case DrawMode::Set:		DrawPixelT<Logic_Set>(x, y); break;
-	case DrawMode::Clear:	DrawPixelT<Logic_Clear>(x, y); break;
-	case DrawMode::Invert:	DrawPixelT<Logic_Invert>(x, y); break;
+	case DrawMode::Set:		*pDst = Logic_Set()(*pDst, bits); break;
+	case DrawMode::Clear:	*pDst = Logic_Clear()(*pDst, bits); break;
+	case DrawMode::Invert:	*pDst = Logic_Invert()(*pDst, bits); break;
 	default: break;
 	}
 }
@@ -177,16 +175,6 @@ void SSD1306::DrawBitmap(int x, int y, const void* data, int width, int height, 
 	case DrawMode::Set:		DrawBitmapT<Logic_Set>(x, y, data, width, height, scaleX, scaleY); break;
 	case DrawMode::Clear:	DrawBitmapT<Logic_Clear>(x, y, data, width, height, scaleX, scaleY); break;
 	case DrawMode::Invert:	DrawBitmapT<Logic_Invert>(x, y, data, width, height, scaleX, scaleY); break;
-	default: break;
-	}
-}
-
-void SSD1306::DrawChar(int x, int y, const FontEntry& fontEntry)
-{
-	switch (drawMode_) {
-	case DrawMode::Set:		DrawCharT<Logic_Set>(x, y, fontEntry); break;
-	case DrawMode::Clear:	DrawCharT<Logic_Clear>(x, y, fontEntry); break;
-	case DrawMode::Invert:	DrawCharT<Logic_Invert>(x, y, fontEntry); break;
 	default: break;
 	}
 }

@@ -237,23 +237,16 @@ public:
 	void Clear(uint8_t data = 0x00) { FillBuffer(data); }
 	void SetDrawMode(DrawMode drawMode) { drawMode_ = drawMode; }
 private:
-	// Draw* Method Template
-	template<class Logic> void DrawPixelT(int x, int y) {
-		uint8_t* pDst = GetPointer(x, y);
-		*pDst = Logic()(*pDst, 1 << (y & 0b111));
-	}
 	template<class Logic> void DrawHLineT(int x, int y, int width);
 	template<class Logic> void DrawVLineT(int x, int y, int width);
 	template<class Logic> void DrawRectFillT(int x, int y, int width, int height);
 	template<class Logic> void DrawBitmapT(int x, int y, const void* data, int width, int height, int scaleX, int scaleY);
-	template<class Logic> void DrawCharT(int x, int y, const FontEntry& fontEntry);
 public:
 	virtual void DrawPixel(int x, int y) override;
 	virtual void DrawHLine(int x, int y, int width) override;
 	virtual void DrawVLine(int x, int y, int height) override;
 	virtual void DrawRectFill(int x, int y, int width, int height) override;
 	virtual void DrawBitmap(int x, int y, const void* data, int width, int height, int scaleX = 1, int scaleY = 1) override;
-	virtual void DrawChar(int x, int y, const FontEntry& fontEntry) override;
 };
 
 }

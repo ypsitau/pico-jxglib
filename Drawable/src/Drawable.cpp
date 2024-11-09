@@ -65,6 +65,11 @@ void Drawable::DrawRect(int x, int y, int width, int height)
 	DrawRectFill(x + width - 1, y, 1, height);
 }
 
+void Drawable::DrawChar(int x, int y, const FontEntry& fontEntry)
+{
+	DrawBitmap(x, y, fontEntry.data, fontEntry.width, fontEntry.height, context_.fontScaleX, context_.fontScaleY);
+}
+
 void Drawable::DrawChar(int x, int y, uint32_t code)
 {
 	if (!context_.pFontSet) return;
