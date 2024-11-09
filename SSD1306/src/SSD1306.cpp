@@ -48,40 +48,25 @@ void SSD1306::Refresh()
 	WriteBuffer();
 }
 
-template<class Logic> void SSD1306::DrawHLineT(int x, int y, int width)
+template<class Logic> void SSD1306::DrawHLineT(int x, int y, int width, uint8_t* pDst, uint8_t bits)
 {
-	if (!AdjustRange(&x, &width, 0, GetScreenWidth())) return;
-	if (!CheckRange(y, 0, GetScreenHeight())) return;
-	uint8_t data = 0b00000001 << (y & 0b111);
-	uint8_t* pDst = GetPointer(x, y);
 	for (int i = 0; i < width; i++, pDst++) {
 		assert(EnsureSafePointer(pDst));
-		*pDst = Logic()(*pDst, data);
+		*pDst = Logic()(*pDst, bits);
 	}
 }
 
-template<class Logic> void SSD1306::DrawVLineT(int x, int y, int height)
+template<class Logic> void SSD1306::DrawVLineT(int x, int y, int height, uint8_t* pDst, int page, uint64_t bits)
 {
-	if (!CheckRange(x, 0, GetScreenWidth())) return;
-	if (!AdjustRange(&y, &height, 0, GetScreenHeight())) return;
-	uint64_t bits = (-1LL << y) & ~(-1LL << (y + height));
-	int page;
-	uint8_t* pDstTop = GetPointer(x, y, &page);
-	bits >>= page * 8;
-	for (uint8_t* pDst = pDstTop; page < GetNumPages() && bits; page++, pDst += GetScreenWidth(), bits >>= 8) {
+	for ( ; page < GetNumPages() && bits; page++, pDst += GetScreenWidth(), bits >>= 8) {
 		assert(EnsureSafePointer(pDst));
 		*pDst = Logic()(*pDst, static_cast<uint8_t>(bits & 0b11111111));
 	}
 }
 
-template<class Logic> void SSD1306::DrawRectFillT(int x, int y, int width, int height)
+template<class Logic> void SSD1306::DrawRectFillT(int x, int y, int width, int height, uint8_t* pDst, int page, uint64_t bits)
 {
-	if (!AdjustRange(&x, &width, 0, GetScreenWidth())) return;
-	if (!AdjustRange(&y, &height, 0, GetScreenHeight())) return;
-	uint64_t bits = (-1LL << y) & ~(-1LL << (y + height));
-	int page;
-	uint8_t* pDstTop = GetPointer(x, y, &page);
-	bits >>= page * 8;
+	uint8_t* pDstTop = pDst;
 	for ( ; page < GetNumPages() && bits; page++, pDstTop += GetScreenWidth(), bits >>= 8) {
 		uint8_t* pDst = pDstTop;
 		for (int i = 0; i < width; i++, pDst++) {
@@ -140,37 +125,53 @@ void SSD1306::DrawPixel(int x, int y)
 
 void SSD1306::DrawHLine(int x, int y, int width)
 {
+	if (!AdjustRange(&x, &width, 0, GetScreenWidth())) return;
+	if (!CheckRange(y, 0, GetScreenHeight())) return;
+	uint8_t* pDst = GetPointer(x, y);
+	uint8_t bits = 0b00000001 << (y & 0b111);
 	switch (drawMode_) {
-	case DrawMode::Set:		DrawHLineT<Logic_Set>(x, y, width); break;
-	case DrawMode::Clear:	DrawHLineT<Logic_Clear>(x, y, width); break;
-	case DrawMode::Invert:	DrawHLineT<Logic_Invert>(x, y, width); break;
+	case DrawMode::Set:		DrawHLineT<Logic_Set>(x, y, width, pDst, bits); break;
+	case DrawMode::Clear:	DrawHLineT<Logic_Clear>(x, y, width, pDst, bits); break;
+	case DrawMode::Invert:	DrawHLineT<Logic_Invert>(x, y, width, pDst, bits); break;
 	default: break;
 	}
 }
 
-void SSD1306::DrawVLine(int x, int y, int width)
+void SSD1306::DrawVLine(int x, int y, int height)
 {
+	if (!CheckRange(x, 0, GetScreenWidth())) return;
+	if (!AdjustRange(&y, &height, 0, GetScreenHeight())) return;
+	uint64_t bits = (-1LL << y) & ~(-1LL << (y + height));
+	int page;
+	uint8_t* pDst = GetPointer(x, y, &page);
+	bits >>= page * 8;
 	switch (drawMode_) {
-	case DrawMode::Set:		DrawVLineT<Logic_Set>(x, y, width); break;
-	case DrawMode::Clear:	DrawVLineT<Logic_Clear>(x, y, width); break;
-	case DrawMode::Invert:	DrawVLineT<Logic_Invert>(x, y, width); break;
+	case DrawMode::Set:		DrawVLineT<Logic_Set>(x, y, height, pDst, page, bits); break;
+	case DrawMode::Clear:	DrawVLineT<Logic_Clear>(x, y, height, pDst, page, bits); break;
+	case DrawMode::Invert:	DrawVLineT<Logic_Invert>(x, y, height, pDst, page, bits); break;
 	default: break;
 	}
 }
 
-void SSD1306::DrawRectFill(int x, int y, int width, int height)
+void SSD1306::DrawRectFill(int x, int y, int width, int height, DrawMode drawMode)
 {
-	switch (drawMode_) {
-	case DrawMode::Set:		DrawRectFillT<Logic_Set>(x, y, width, height); break;
-	case DrawMode::Clear:	DrawRectFillT<Logic_Clear>(x, y, width, height); break;
-	case DrawMode::Invert:	DrawRectFillT<Logic_Invert>(x, y, width, height); break;
+	if (!AdjustRange(&x, &width, 0, GetScreenWidth())) return;
+	if (!AdjustRange(&y, &height, 0, GetScreenHeight())) return;
+	uint64_t bits = (-1LL << y) & ~(-1LL << (y + height));
+	int page;
+	uint8_t* pDst = GetPointer(x, y, &page);
+	bits >>= page * 8;
+	switch (drawMode) {
+	case DrawMode::Set:		DrawRectFillT<Logic_Set>(x, y, width, height, pDst, page, bits); break;
+	case DrawMode::Clear:	DrawRectFillT<Logic_Clear>(x, y, width, height, pDst, page, bits); break;
+	case DrawMode::Invert:	DrawRectFillT<Logic_Invert>(x, y, width, height, pDst, page, bits); break;
 	default: break;
 	}
 }
 
 void SSD1306::DrawBitmap(int x, int y, const void* data, int width, int height, int scaleX, int scaleY)
 {
-	DrawRectFillT<Logic_Clear>(x, y, width, height);
+	DrawRectFill(x, y, width, height, DrawMode::Clear);
 	switch (drawMode_) {
 	case DrawMode::Set:		DrawBitmapT<Logic_Set>(x, y, data, width, height, scaleX, scaleY); break;
 	case DrawMode::Clear:	DrawBitmapT<Logic_Clear>(x, y, data, width, height, scaleX, scaleY); break;
