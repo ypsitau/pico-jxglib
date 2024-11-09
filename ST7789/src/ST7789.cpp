@@ -26,8 +26,8 @@ void ST7789::Initialize()
 			// Line Address Order            = LCD Refresh Top to Bottom
 			// RGB/BGR Order                 = RGB
 			// Display Data Latch Data Order = LCD Refresh Left to Right
-	raw.ColumnAddressSet(0, GetScreenWidth());
-	raw.RowAddressSet(0, GetScreenHeight());
+	raw.ColumnAddressSet(0, GetWidth());
+	raw.RowAddressSet(0, GetHeight());
 	raw.DisplayInversionOn();
 	::sleep_ms(10);
 	raw.NormalDisplayModeOn();
@@ -67,22 +67,22 @@ void ST7789::WriteBuffer(int x, int y, int width, int height, const uint16_t* bu
 
 void ST7789::Clear()
 {
-	raw.ColumnAddressSet(0, GetScreenWidth() - 1);
-	raw.RowAddressSet(0, GetScreenHeight() - 1);
-	raw.MemoryWriteConst16(colorBg_.RGB565(), GetScreenWidth() * GetScreenHeight());
+	raw.ColumnAddressSet(0, GetWidth() - 1);
+	raw.RowAddressSet(0, GetHeight() - 1);
+	raw.MemoryWriteConst16(colorBg_.RGB565(), GetWidth() * GetHeight());
 }
 
 void ST7789::Fill()
 {
-	raw.ColumnAddressSet(0, GetScreenWidth() - 1);
-	raw.RowAddressSet(0, GetScreenHeight() - 1);
-	raw.MemoryWriteConst16(colorFg_.RGB565(), GetScreenWidth() * GetScreenHeight());
+	raw.ColumnAddressSet(0, GetWidth() - 1);
+	raw.RowAddressSet(0, GetHeight() - 1);
+	raw.MemoryWriteConst16(colorFg_.RGB565(), GetWidth() * GetHeight());
 }
 
 void ST7789::DrawHLine(int x, int y, int width)
 {
-	if (!AdjustRange(&x, &width, 0, GetScreenWidth())) return;
-	if (!CheckRange(y, 0, GetScreenHeight())) return;
+	if (!AdjustRange(&x, &width, 0, GetWidth())) return;
+	if (!CheckRange(y, 0, GetHeight())) return;
 	raw.ColumnAddressSet(x, x + width - 1);
 	raw.RowAddressSet(y, y);
 	raw.MemoryWriteConst16(colorFg_.RGB565(), width);
@@ -90,8 +90,8 @@ void ST7789::DrawHLine(int x, int y, int width)
 
 void ST7789::DrawVLine(int x, int y, int height)
 {
-	if (!CheckRange(x, 0, GetScreenWidth())) return;
-	if (!AdjustRange(&y, &height, 0, GetScreenHeight())) return;
+	if (!CheckRange(x, 0, GetWidth())) return;
+	if (!AdjustRange(&y, &height, 0, GetHeight())) return;
 	raw.ColumnAddressSet(x, x);
 	raw.RowAddressSet(y, y + height - 1);
 	raw.MemoryWriteConst16(colorFg_.RGB565(), height);
@@ -117,8 +117,8 @@ void ST7789::DrawRect(int x, int y, int width, int height)
 
 void ST7789::DrawRectFill(int x, int y, int width, int height)
 {
-	if (!AdjustRange(&x, &width, 0, GetScreenWidth())) return;
-	if (!AdjustRange(&y, &height, 0, GetScreenHeight())) return;
+	if (!AdjustRange(&x, &width, 0, GetWidth())) return;
+	if (!AdjustRange(&y, &height, 0, GetHeight())) return;
 	raw.ColumnAddressSet(x, x + width);
 	raw.RowAddressSet(y, y + height);
 	raw.MemoryWriteConst16(colorFg_.RGB565(), width * height);
@@ -186,8 +186,8 @@ const char* ST7789::DrawStringWrap(int x, int y, int width, int height, const ch
 	uint32_t code;
 	UTF8Decoder decoder;
 	int xStart = x;
-	int xExceed = (width >= 0)? x + width : GetScreenWidth();
-	int yExceed = (height >= 0)? y + height : GetScreenHeight();
+	int xExceed = (width >= 0)? x + width : GetWidth();
+	int yExceed = (height >= 0)? y + height : GetHeight();
 	int yAdvance = (htLine >= 0)? htLine : context_.pFontSet->yAdvance * context_.fontScaleY;
 	const char* pDone = str;
 	for (const char* p = str; *p; p++) {

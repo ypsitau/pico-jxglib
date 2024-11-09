@@ -33,9 +33,9 @@ void Test_BouncingBall(ST7789& screen)
 		screen.SetColor(Color::white);
 		screen.DrawRectFill(x, y, wdBall, htBall);
 		if (x + xDir < 0) xDir = 1;
-		if (x + xDir + wdBall > screen.GetScreenWidth()) xDir = -1;
+		if (x + xDir + wdBall > screen.GetWidth()) xDir = -1;
 		if (y + yDir < 0) yDir = 1;
-		if (y + yDir + htBall > screen.GetScreenHeight()) yDir = -1;
+		if (y + yDir + htBall > screen.GetHeight()) yDir = -1;
 		::sleep_ms(1);
 		screen.SetColor(Color::black);
 		screen.DrawRectFill(x, y, wdBall, htBall);
@@ -113,7 +113,8 @@ int main()
 	::gpio_set_function(PICO_DEFAULT_SPI_TX_PIN, GPIO_FUNC_SPI);
 	::gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
 	screen.Initialize();
-	Test_WriteBuffer(screen);
+	Test_BouncingBall(screen);
+	//Test_WriteBuffer(screen);
 	//Test_DrawString(screen);
 	//Test_DrawStringWrap(screen);
 	//Test_DrawRGB565(screen);

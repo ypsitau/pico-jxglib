@@ -254,12 +254,8 @@ public:
 	//};
 public:
 	Raw raw;
-	int width_;
-	int height_;
 	Color colorFg_;
 	Color colorBg_;
-private:
-	Context context_;
 public:
 	ST7789(spi_inst_t* spi, int width, int height, uint gpio_RST, uint gpio_DC, uint gpio_BL, uint gpio_CS) :
 		Drawable(width, height), raw(spi, gpio_RST, gpio_DC, gpio_BL, gpio_CS), colorFg_{Color::white}, colorBg_{Color::black} {}
@@ -268,8 +264,6 @@ public:
 public:
 	void Initialize();
 	bool UsesCS() { return raw.UsesCS(); }
-	int GetScreenWidth() const { return width_; }
-	int GetScreenHeight() const { return height_; }
 public:
 	void SetColor(const Color& color) { colorFg_ = color; }
 	void SetColorBg(const Color& color) { colorBg_ = color; }
