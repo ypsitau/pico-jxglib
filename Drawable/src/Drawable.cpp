@@ -8,6 +8,47 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // Drawable
 //------------------------------------------------------------------------------
+void Drawable::DrawLine(int x0, int y0, int x1, int y1)
+{
+	if (x0 == x1) {
+		DrawVLine(x0, y0, y1 - y0);
+		return;
+	} else if (y0 == y1) {
+		DrawHLine(x0, y0, x1 - x0);
+		return;
+	}
+	int dx, dy, sx, sy;
+	if (x0 < x1) {
+		dx = x1 - x0;
+		sx = +1;
+	} else {
+		dx = x0 - x1;
+		sx = -1;
+	}
+	if (y0 < y1) {
+		dy = y0 - y1;
+		sy = +1;
+	} else {
+		dy = y1 - y0;
+		sy = -1;
+	}
+	int err = dx + dy;
+	int x = x0, y = y0;
+	for (;;) {
+		DrawPixel(x, y);
+		if (x == x1 && y == y1) break;
+		int err2 = 2 * err;
+		if (err2 >= dy) {
+			err += dy;
+			x += sx;
+		}
+		if (err2 <= dx) {
+			err += dx;
+			y += sy;
+		}
+	}
+}
+
 void Drawable::DrawChar(int x, int y, uint32_t code)
 {
 	if (!context_.pFontSet) return;

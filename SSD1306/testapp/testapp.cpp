@@ -302,10 +302,10 @@ int main()
 	SSD1306 screen(i2c_default);
 	screen.Initialize();
 	for (;;) {
-		Test_Flash(screen);
-		Test_DrawPixel(screen);
-		Test_DrawHLine(screen);
-		Test_DrawVLine(screen);
+		//Test_Flash(screen);
+		//Test_DrawPixel(screen);
+		//Test_DrawHLine(screen);
+		//Test_DrawVLine(screen);
 		Test_DrawLine(screen);
 		Test_DrawRect(screen);
 		Test_DrawRectFill(screen);

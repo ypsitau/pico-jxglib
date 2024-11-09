@@ -41,6 +41,7 @@ public:
 	void DrawPixel(const Point& pt) { DrawPixel(pt.x, pt.y); }
 	void DrawHLine(const Point& pt, int width) { DrawHLine(pt.x, pt.y, width); }
 	void DrawVLine(const Point& pt, int height) { DrawVLine(pt.x, pt.y, height); }
+	void DrawLine(int x0, int y0, int x1, int y1);
 	void DrawLine(const Point& pt1, const Point& pt2) { DrawLine(pt1.x, pt1.y, pt2.x, pt2.y); }
 	void DrawRect(const Point& pt, const Size& size) { DrawRect(pt.x, pt.y, size.width, size.height); }
 	void DrawRect(const Rect& rc) { DrawRect(rc.x, rc.y, rc.width, rc.height); }
@@ -70,7 +71,6 @@ public:
 	virtual void DrawPixel(int x, int y) = 0;
 	virtual void DrawHLine(int x, int y, int width) = 0;
 	virtual void DrawVLine(int x, int y, int height) = 0;
-	virtual void DrawLine(int x0, int y0, int x1, int y1) = 0;
 	virtual void DrawRect(int x, int y, int width, int height) = 0;
 	virtual void DrawRectFill(int x, int y, int width, int height) = 0;
 	virtual void DrawBitmap(int x, int y, const void* data, int width, int height, int scaleX = 1, int scaleY = 1) = 0;

@@ -246,7 +246,6 @@ private:
 	template<class Logic> void DrawVLineT_NoAdj(int x, int y, int height);
 	template<class Logic> void DrawHLineT(int x, int y, int width);
 	template<class Logic> void DrawVLineT(int x, int y, int width);
-	template<class Logic> void DrawLineT(int x0, int y0, int x1, int y1, int dx, int dy, int sx, int sy);
 	template<class Logic> void DrawRectFillT(int x, int y, int width, int height);
 	template<class Logic> void DrawBitmapT(int x, int y, const void* data, int width, int height, int scaleX, int scaleY);
 	template<class Logic> void DrawCharT(int x, int y, const FontEntry& fontEntry);
@@ -254,7 +253,6 @@ public:
 	virtual void DrawPixel(int x, int y) override;
 	virtual void DrawHLine(int x, int y, int width) override;
 	virtual void DrawVLine(int x, int y, int height) override;
-	virtual void DrawLine(int x0, int y0, int x1, int y1) override;
 	virtual void DrawRect(int x, int y, int width, int height) override;
 	virtual void DrawRectFill(int x, int y, int width, int height) override;
 	virtual void DrawBitmap(int x, int y, const void* data, int width, int height, int scaleX = 1, int scaleY = 1) override;
@@ -262,37 +260,6 @@ public:
 public:
 	void DrawHLine_NoAdj(int x, int y, int width);
 	void DrawVLine_NoAdj(int x, int y, int height);
-public:
-#if 0
-	void DrawPixel(const Point& pt) { DrawPixel(pt.x, pt.y); }
-	void DrawHLine(const Point& pt, int width) { DrawHLine(pt.x, pt.y, width); }
-	void DrawVLine(const Point& pt, int height) { DrawVLine(pt.x, pt.y, height); }
-	void DrawLine(const Point& pt1, const Point& pt2) { DrawLine(pt1.x, pt1.y, pt2.x, pt2.y); }
-	void DrawRect(const Point& pt, const Size& size) { DrawRect(pt.x, pt.y, size.width, size.height); }
-	void DrawRect(const Rect& rc) { DrawRect(rc.x, rc.y, rc.width, rc.height); }
-	void DrawRectFill(const Point& pt, const Size& size) { DrawRectFill(pt.x, pt.y, size.width, size.height); }
-	void DrawRectFill(const Rect& rc) { DrawRect(rc.x, rc.y, rc.width, rc.height); }
-	void DrawBitmap(const Point& pt, const void* data, int width, int height, int scaleX = 1, int scaleY = 1) {
-		DrawBitmap(pt.x, pt.y, data, width, height, scaleX, scaleY);
-	}
-	void DrawChar(const Point& pt, const FontEntry& fontEntry) { DrawChar(pt.x, pt.y, fontEntry); }
-	void DrawChar(int x, int y, uint32_t code);
-	void DrawChar(const Point& pt, uint32_t code) { DrawChar(pt.x, pt.y, code); }
-	void DrawString(int x, int y, const char* str, const char* strEnd = nullptr);
-	void DrawString(const Point& pt, const char* str, const char* strEnd = nullptr) {
-		DrawString(pt.x, pt.y, str, strEnd);
-	}
-	const char* DrawStringWrap(int x, int y, int width, int height, const char* str, int htLine = -1);
-	const char* DrawStringWrap(int x, int y, const char* str, int htLine = -1) {
-		return DrawStringWrap(x, y, -1, -1, str, htLine);
-	}
-	const char* DrawStringWrap(const Point& pt, const char* str, int htLine = -1) {
-		return DrawStringWrap(pt.x, pt.y, str, htLine);
-	}
-	const char* DrawStringWrap(const Rect& rcBBox, const char* str, int htLine = -1) {
-		return DrawStringWrap(rcBBox.x, rcBBox.y, rcBBox.width, rcBBox.height, str, htLine);
-	}
-#endif
 };
 
 }

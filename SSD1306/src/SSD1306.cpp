@@ -84,25 +84,6 @@ template<class Logic> void SSD1306::DrawVLineT(int x, int y, int height)
 	DrawVLineT_NoAdj<Logic>(x, y, height);
 }
 
-template<class Logic> void SSD1306::DrawLineT(int x0, int y0, int x1, int y1, int dx, int dy, int sx, int sy)
-{
-	int err = dx + dy;
-	int x = x0, y = y0;
-	for (;;) {
-		DrawPixelT<Logic>(x, y);
-		if (x == x1 && y == y1) break;
-		int err2 = 2 * err;
-		if (err2 >= dy) {
-			err += dy;
-			x += sx;
-		}
-		if (err2 <= dx) {
-			err += dx;
-			y += sy;
-		}
-	}
-}
-
 template<class Logic> void SSD1306::DrawRectFillT(int x, int y, int width, int height)
 {
 	if (!AdjustRange(&x, &width, 0, GetScreenWidth())) return;
@@ -209,38 +190,6 @@ void SSD1306::DrawVLine(int x, int y, int width)
 	}
 }
 
-void SSD1306::DrawLine(int x0, int y0, int x1, int y1)
-{
-	if (x0 == x1) {
-		DrawVLine(x0, y0, y1 - y0);
-		return;
-	} else if (y0 == y1) {
-		DrawHLine(x0, y0, x1 - x0);
-		return;
-	}
-	int dx, dy, sx, sy;
-	if (x0 < x1) {
-		dx = x1 - x0;
-		sx = +1;
-	} else {
-		dx = x0 - x1;
-		sx = -1;
-	}
-	if (y0 < y1) {
-		dy = y0 - y1;
-		sy = +1;
-	} else {
-		dy = y1 - y0;
-		sy = -1;
-	}
-	switch (drawMode_) {
-	case DrawMode::Set:		DrawLineT<Logic_Set>(x0, y0, x1, y1, dx, dy, sx, sy); break;
-	case DrawMode::Clear:	DrawLineT<Logic_Clear>(x0, y0, x1, y1, dx, dy, sx, sy); break;
-	case DrawMode::Invert:	DrawLineT<Logic_Invert>(x0, y0, x1, y1, dx, dy, sx, sy); break;
-	default: break;
-	}
-}
-
 void SSD1306::DrawRect(int x, int y, int width, int height)
 {
 	if (width < 0) {
@@ -303,53 +252,5 @@ void SSD1306::DrawChar(int x, int y, const FontEntry& fontEntry)
 	default: break;
 	}
 }
-
-#if 0
-void SSD1306::DrawChar(int x, int y, uint32_t code)
-{
-	if (!context_.pFontSet) return;
-	const FontEntry& fontEntry = context_.pFontSet->GetFontEntry(code);
-	DrawChar(x, y, fontEntry);
-}
-
-void SSD1306::DrawString(int x, int y, const char* str, const char* strEnd)
-{
-	if (!context_.pFontSet) return;
-	uint32_t code;
-	UTF8Decoder decoder;
-	for (const char* p = str; *p && p != strEnd; p++) {
-		if (!decoder.FeedChar(*p, &code)) continue;
-		const FontEntry& fontEntry = context_.pFontSet->GetFontEntry(code);
-		DrawChar(x, y, fontEntry);
-		x += fontEntry.xAdvance * context_.fontScaleX;
-	}
-}
-
-const char* SSD1306::DrawStringWrap(int x, int y, int width, int height, const char* str, int htLine)
-{
-	if (!context_.pFontSet) return str;
-	uint32_t code;
-	UTF8Decoder decoder;
-	int xStart = x;
-	int xExceed = (width >= 0)? x + width : GetScreenWidth();
-	int yExceed = (height >= 0)? y + height : GetScreenHeight();
-	int yAdvance = (htLine >= 0)? htLine : context_.pFontSet->yAdvance * context_.fontScaleY;
-	const char* pDone = str;
-	for (const char* p = str; *p; p++) {
-		if (!decoder.FeedChar(*p, &code)) continue;
-		const FontEntry& fontEntry = context_.pFontSet->GetFontEntry(code);
-		int xAdvance = fontEntry.xAdvance * context_.fontScaleX;
-		if (x + fontEntry.width * context_.fontScaleX > xExceed) {
-			x = xStart, y += yAdvance;
-			if (y + yAdvance > yExceed) break;
-		}
-		DrawChar(x, y, fontEntry);
-		x += xAdvance;
-		pDone = p + 1;
-	}
-	return pDone;
-}
-
-#endif
 
 }
