@@ -48,8 +48,8 @@ public:
 	void DrawRect(const Rect& rc) { DrawRect(rc.x, rc.y, rc.width, rc.height); }
 	void DrawRectFill(const Point& pt, const Size& size) { DrawRectFill(pt.x, pt.y, size.width, size.height); }
 	void DrawRectFill(const Rect& rc) { DrawRect(rc.x, rc.y, rc.width, rc.height); }
-	void DrawBitmap(const Point& pt, const void* data, int width, int height, int scaleX = 1, int scaleY = 1) {
-		DrawBitmap(pt.x, pt.y, data, width, height, scaleX, scaleY);
+	void DrawBitmap(const Point& pt, const void* data, int width, int height, bool transparentBgFlag = false, int scaleX = 1, int scaleY = 1) {
+		DrawBitmap(pt.x, pt.y, data, width, height, transparentBgFlag, scaleX, scaleY);
 	}
 	void DrawChar(int x, int y, const FontEntry& fontEntry);
 	void DrawChar(const Point& pt, const FontEntry& fontEntry) { DrawChar(pt.x, pt.y, fontEntry); }

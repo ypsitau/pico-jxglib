@@ -10,6 +10,7 @@
 #include "pico/time.h"
 #include "hardware/spi.h"
 #include "jxglib/Common.h"
+#include "jxglib/Drawable.h"
 #include "jxglib/Font.h"
 #include "jxglib/Image.h"
 #include "jxglib/Canvas.h"
@@ -246,33 +247,32 @@ public:
 		// 9.2 System Function Command
 	};
 	struct Context {
-		Color colorFg;
-		Color colorBg;
 		const FontSet* pFontSet;
 		int fontScaleX, fontScaleY;
 	public:
-		Context() : colorFg{Color::white}, colorBg{Color::black},
-			pFontSet{nullptr}, fontScaleX{1}, fontScaleY{1} {}
+		Context() : pFontSet{nullptr}, fontScaleX{1}, fontScaleY{1} {}
 	};
 public:
 	Raw raw;
 	int width_;
 	int height_;
+	Color colorFg_;
+	Color colorBg_;
 private:
 	Context context_;
 public:
 	ST7789(spi_inst_t* spi, int width, int height, uint gpio_RST, uint gpio_DC, uint gpio_BL, uint gpio_CS) :
-		raw(spi, gpio_RST, gpio_DC, gpio_BL, gpio_CS), width_{width}, height_{height} {}
+		raw(spi, gpio_RST, gpio_DC, gpio_BL, gpio_CS), width_{width}, height_{height}, colorFg_{Color::white}, colorBg_{Color::black} {}
 	ST7789(spi_inst_t* spi, int width, int height, uint gpio_RST, uint gpio_DC, uint gpio_BL) :
-		raw(spi, gpio_RST, gpio_DC, gpio_BL), width_{width}, height_{height} {}
+		raw(spi, gpio_RST, gpio_DC, gpio_BL), width_{width}, height_{height}, colorFg_{Color::white}, colorBg_{Color::black} {}
 public:
 	void Initialize();
 	bool UsesCS() { return raw.UsesCS(); }
 	int GetScreenWidth() const { return width_; }
 	int GetScreenHeight() const { return height_; }
 public:
-	void SetColor(const Color& color) { context_.colorFg = color; }
-	void SetColorBg(const Color& color) { context_.colorBg = color; }
+	void SetColor(const Color& color) { colorFg_ = color; }
+	void SetColorBg(const Color& color) { colorBg_ = color; }
 	void SetFont(const FontSet& fontSet, int fontScale = 1) {
 		context_.pFontSet = &fontSet; context_.fontScaleX = context_.fontScaleY = fontScale;
 	}
@@ -282,6 +282,11 @@ public:
 	void SetFontScale(int fontScale) { context_.fontScaleX = context_.fontScaleY = fontScale; }
 	void SetFontScale(int fontScaleX, int fontScaleY) {
 		context_.fontScaleX = fontScaleX, context_.fontScaleY = fontScaleY;
+	}
+public:
+	void DrawRGB565(int x, int y, const void* data, int width, int height, int scaleX = 1, int scaleY = 1);
+	void DrawRGB565(const Point& pt, const void* data, int width, int height, int scaleX = 1, int scaleY = 1) {
+		DrawRGB565(pt.x, pt.y, data, width, height, scaleX, scaleY);
 	}
 public:
 	void WriteBuffer(int x, int y, int width, int height, const uint16_t* buff);
@@ -299,13 +304,9 @@ public:
 	void DrawRectFill(int x, int y, int width, int height);
 	void DrawRectFill(const Point& pt, const Size& size) { DrawRectFill(pt.x, pt.y, size.width, size.height); }
 	void DrawRectFill(const Rect& rc) { DrawRect(rc.x, rc.y, rc.width, rc.height); }
-	void DrawBitmap(int x, int y, const void* data, int width, int height, int scaleX, int scaleY);
-	void DrawBitmap(const Point& pt, const void* data, int width, int height, int scaleX = 1, int scaleY = 1) {
-		DrawBitmap(pt.x, pt.y, data, width, height, scaleX, scaleY);
-	}
-	void DrawRGB565(int x, int y, const void* data, int width, int height, int scaleX = 1, int scaleY = 1);
-	void DrawRGB565(const Point& pt, const void* data, int width, int height, int scaleX = 1, int scaleY = 1) {
-		DrawRGB565(pt.x, pt.y, data, width, height, scaleX, scaleY);
+	void DrawBitmap(int x, int y, const void* data, int width, int height, bool transparentBgFlag, int scaleX, int scaleY);
+	void DrawBitmap(const Point& pt, const void* data, int width, int height, bool transparentBgFlag, int scaleX = 1, int scaleY = 1) {
+		DrawBitmap(pt.x, pt.y, data, width, height, transparentBgFlag, scaleX, scaleY);
 	}
 	void DrawChar(int x, int y, const FontEntry& fontEntry);
 	void DrawChar(const Point& pt, const FontEntry& fontEntry) { DrawChar(pt.x, pt.y, fontEntry); }

@@ -6,6 +6,7 @@ target_include_directories(pico_jxglib_ST7789 INTERFACE
 target_link_libraries(pico_jxglib_ST7789 INTERFACE
 	hardware_spi
 	pico_jxglib_Common
+	pico_jxglib_Drawable
 	pico_jxglib_Font
 	pico_jxglib_Image
 	pico_jxglib_Canvas)
