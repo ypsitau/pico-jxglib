@@ -24,8 +24,6 @@ public:
 	class Raw {
 	private:
 		spi_inst_t* spi_;
-		int width_;
-		int height_;
 		uint gpio_RST_;		// Reset
 		uint gpio_DC_;		// Data/Command
 		uint gpio_BL_;		// Backlight
@@ -33,18 +31,14 @@ public:
 		spi_cpol_t cpol_;
 		spi_cpha_t cpha_;
 	public:
-		Raw(spi_inst_t* spi, int width, int height, uint gpio_RST, uint gpio_DC, uint gpio_BL, uint gpio_CS) :
-				spi_(spi), width_(width), height_(height),
-				gpio_RST_(gpio_RST), gpio_DC_(gpio_DC), gpio_BL_(gpio_BL), gpio_CS_(gpio_CS),
+		Raw(spi_inst_t* spi, uint gpio_RST, uint gpio_DC, uint gpio_BL, uint gpio_CS) :
+				spi_(spi), gpio_RST_(gpio_RST), gpio_DC_(gpio_DC), gpio_BL_(gpio_BL), gpio_CS_(gpio_CS),
 				cpol_(SPI_CPOL_0), cpha_(SPI_CPHA_0) {}
-		Raw(spi_inst_t* spi, int width, int height, uint gpio_RST, uint gpio_DC, uint gpio_BL) :
-				spi_(spi), width_(width), height_(height),
-				gpio_RST_(gpio_RST), gpio_DC_(gpio_DC), gpio_BL_(gpio_BL), gpio_CS_(static_cast<uint>(-1)),
+		Raw(spi_inst_t* spi, uint gpio_RST, uint gpio_DC, uint gpio_BL) :
+				spi_(spi), gpio_RST_(gpio_RST), gpio_DC_(gpio_DC), gpio_BL_(gpio_BL), gpio_CS_(static_cast<uint>(-1)),
 				cpol_(SPI_CPOL_1), cpha_(SPI_CPHA_1) {}
 	public:
 		bool UsesCS() const { return gpio_CS_ != static_cast<uint>(-1); }
-		int GetScreenWidth() const { return width_; }
-		int GetScreenHeight() const { return height_; }
 		void InitGPIO();
 		void SetGPIO_BL(bool value) { ::gpio_put(gpio_BL_, value); }
 		void SetSPIDataBits(uint data_bits) { ::spi_set_format(spi_, data_bits, cpol_, cpha_, SPI_MSB_FIRST); }
@@ -252,32 +246,33 @@ public:
 		// 9.2 System Function Command
 	};
 	struct Context {
-		int wdLine;
-		uint16_t colorFg;
-		uint16_t colorBg;
+		Color colorFg;
+		Color colorBg;
 		const FontSet* pFontSet;
 		int fontScaleX, fontScaleY;
 	public:
-		Context() : wdLine{1}, colorFg{Color::RGB565(255, 255, 255)}, colorBg{Color::RGB565(0, 0, 0)},
+		Context() : colorFg{Color::white}, colorBg{Color::black},
 			pFontSet{nullptr}, fontScaleX{1}, fontScaleY{1} {}
 	};
 public:
 	Raw raw;
+	int width_;
+	int height_;
 private:
 	Context context_;
 public:
 	ST7789(spi_inst_t* spi, int width, int height, uint gpio_RST, uint gpio_DC, uint gpio_BL, uint gpio_CS) :
-		raw(spi, width, height, gpio_RST, gpio_DC, gpio_BL, gpio_CS) {}
+		raw(spi, gpio_RST, gpio_DC, gpio_BL, gpio_CS), width_{width}, height_{height} {}
 	ST7789(spi_inst_t* spi, int width, int height, uint gpio_RST, uint gpio_DC, uint gpio_BL) :
-		raw(spi, width, height, gpio_RST, gpio_DC, gpio_BL) {}
+		raw(spi, gpio_RST, gpio_DC, gpio_BL), width_{width}, height_{height} {}
 public:
 	void Initialize();
 	bool UsesCS() { return raw.UsesCS(); }
-	int GetScreenWidth() { return raw.GetScreenWidth(); }
-	int GetScreenHeight() { return raw.GetScreenHeight(); }
+	int GetScreenWidth() const { return width_; }
+	int GetScreenHeight() const { return height_; }
 public:
-	void SetColor(uint16_t color) { context_.colorFg = color; }
-	void SetColorBg(uint16_t color) { context_.colorBg = color; }
+	void SetColor(const Color& color) { context_.colorFg = color; }
+	void SetColorBg(const Color& color) { context_.colorBg = color; }
 	void SetFont(const FontSet& fontSet, int fontScale = 1) {
 		context_.pFontSet = &fontSet; context_.fontScaleX = context_.fontScaleY = fontScale;
 	}

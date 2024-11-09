@@ -50,28 +50,28 @@ void ST7789::Clear()
 {
 	raw.ColumnAddressSet(0, GetScreenWidth() - 1);
 	raw.RowAddressSet(0, GetScreenHeight() - 1);
-	raw.MemoryWriteConst16(context_.colorBg, GetScreenWidth() * GetScreenHeight());
+	raw.MemoryWriteConst16(context_.colorBg.RGB565(), GetScreenWidth() * GetScreenHeight());
 }
 
 void ST7789::Fill()
 {
 	raw.ColumnAddressSet(0, GetScreenWidth() - 1);
 	raw.RowAddressSet(0, GetScreenHeight() - 1);
-	raw.MemoryWriteConst16(context_.colorFg, GetScreenWidth() * GetScreenHeight());
+	raw.MemoryWriteConst16(context_.colorFg.RGB565(), GetScreenWidth() * GetScreenHeight());
 }
 
 void ST7789::DrawHLine_NoAdj(int x, int y, int width)
 {
 	raw.ColumnAddressSet(x, x + width - 1);
 	raw.RowAddressSet(y, y);
-	raw.MemoryWriteConst16(context_.colorFg, width);
+	raw.MemoryWriteConst16(context_.colorFg.RGB565(), width);
 }
 
 void ST7789::DrawVLine_NoAdj(int x, int y, int height)
 {
 	raw.ColumnAddressSet(x, x);
 	raw.RowAddressSet(y, y + height - 1);
-	raw.MemoryWriteConst16(context_.colorFg, height);
+	raw.MemoryWriteConst16(context_.colorFg.RGB565(), height);
 }
 
 void ST7789::DrawHLine(int x, int y, int width)
@@ -126,7 +126,7 @@ void ST7789::DrawRectFill(int x, int y, int width, int height)
 	if (!AdjustRange(&y, &height, 0, GetScreenHeight())) return;
 	raw.ColumnAddressSet(x, x + width);
 	raw.RowAddressSet(y, y + height);
-	raw.MemoryWriteConst16(context_.colorFg, width * height);
+	raw.MemoryWriteConst16(context_.colorFg.RGB565(), width * height);
 }
 
 void ST7789::DrawBitmap(int x, int y, const void* data, int width, int height, int scaleX, int scaleY)
@@ -137,6 +137,8 @@ void ST7789::DrawBitmap(int x, int y, const void* data, int width, int height, i
 	raw.ColumnAddressSet(x, x + width * scaleX - 1);
 	raw.RowAddressSet(y, y + height * scaleY - 1);
 	raw.MemoryWrite_Begin(16);
+	uint16_t colorFg = context_.colorFg.RGB565();
+	uint16_t colorBg = context_.colorBg.RGB565();
 	for (int iRow = 0; iRow < height; iRow++) {
 		const uint8_t* pSrc;
 		for (int iScaleY = 0; iScaleY < scaleY; iScaleY++) {
@@ -148,7 +150,7 @@ void ST7789::DrawBitmap(int x, int y, const void* data, int width, int height, i
 					iBit = 0;
 					bits = *pSrc++;
 				}
-				uint16_t color = (bits & 0x80)? context_.colorFg : context_.colorBg;
+				uint16_t color = (bits & 0x80)? colorFg : colorBg;
 				for (int iScaleX = 0; iScaleX < scaleX; iScaleX++) raw.MemoryWrite_Data16(color);
 			}
 		}
