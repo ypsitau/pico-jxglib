@@ -74,7 +74,7 @@ public:
 	virtual void DrawHLine(int x, int y, int width) = 0;
 	virtual void DrawVLine(int x, int y, int height) = 0;
 	virtual void DrawRectFill(int x, int y, int width, int height) = 0;
-	virtual void DrawBitmap(int x, int y, const void* data, int width, int height, int scaleX = 1, int scaleY = 1) = 0;
+	virtual void DrawBitmap(int x, int y, const void* data, int width, int height, bool transparentBgFlag, int scaleX = 1, int scaleY = 1) = 0;
 };
 
 }

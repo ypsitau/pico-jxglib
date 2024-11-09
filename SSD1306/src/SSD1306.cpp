@@ -178,9 +178,9 @@ void SSD1306::DrawRectFill(int x, int y, int width, int height, DrawMode drawMod
 	}
 }
 
-void SSD1306::DrawBitmap(int x, int y, const void* data, int width, int height, int scaleX, int scaleY)
+void SSD1306::DrawBitmap(int x, int y, const void* data, int width, int height, bool transparentBgFlag, int scaleX, int scaleY)
 {
-	DrawRectFill(x, y, width, height, DrawMode::Clear);
+	if (!transparentBgFlag) DrawRectFill(x, y, width, height, DrawMode::Clear);
 	switch (drawMode_) {
 	case DrawMode::Set:
 		DrawBitmapT<Logic_Set>(x, y, data, width, height, scaleX, scaleY); break;
