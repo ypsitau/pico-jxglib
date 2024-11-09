@@ -5,8 +5,6 @@
 
 namespace jxglib {
 
-//int spi_write16_blocking_const(spi_inst_t *spi, uint16_t data, size_t len);
-
 //------------------------------------------------------------------------------
 // ST7789
 //------------------------------------------------------------------------------
@@ -99,6 +97,7 @@ void ST7789::DrawVLine(int x, int y, int height)
 	raw.MemoryWriteConst16(colorFg_.RGB565(), height);
 }
 
+#if 0
 void ST7789::DrawRect(int x, int y, int width, int height)
 {
 	if (width < 0) {
@@ -114,6 +113,7 @@ void ST7789::DrawRect(int x, int y, int width, int height)
 	DrawRectFill(x, y, 1, height);
 	DrawRectFill(x + width - 1, y, 1, height);
 }
+#endif
 
 void ST7789::DrawRectFill(int x, int y, int width, int height)
 {
@@ -154,6 +154,7 @@ void ST7789::DrawBitmap(int x, int y, const void* data, int width, int height, b
 	raw.MemoryWrite_End();
 }
 
+#if 0
 void ST7789::DrawChar(int x, int y, const FontEntry& fontEntry)
 {
 	DrawBitmap(x, y, fontEntry.data, fontEntry.width, fontEntry.height, context_.fontScaleX, true, context_.fontScaleY);
@@ -203,6 +204,7 @@ const char* ST7789::DrawStringWrap(int x, int y, int width, int height, const ch
 	}
 	return pDone;
 }
+#endif
 
 //------------------------------------------------------------------------------
 // ST7789::Raw

@@ -20,7 +20,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // ST7789
 //------------------------------------------------------------------------------
-class ST7789 {
+class ST7789 : public Drawable {
 public:
 	class Raw {
 	private:
@@ -246,12 +246,12 @@ public:
 		// 9.1.48 RDID3 (DCh): Read ID3
 		// 9.2 System Function Command
 	};
-	struct Context {
-		const FontSet* pFontSet;
-		int fontScaleX, fontScaleY;
-	public:
-		Context() : pFontSet{nullptr}, fontScaleX{1}, fontScaleY{1} {}
-	};
+	//struct Context {
+	//	const FontSet* pFontSet;
+	//	int fontScaleX, fontScaleY;
+	//public:
+	//	Context() : pFontSet{nullptr}, fontScaleX{1}, fontScaleY{1} {}
+	//};
 public:
 	Raw raw;
 	int width_;
@@ -262,9 +262,9 @@ private:
 	Context context_;
 public:
 	ST7789(spi_inst_t* spi, int width, int height, uint gpio_RST, uint gpio_DC, uint gpio_BL, uint gpio_CS) :
-		raw(spi, gpio_RST, gpio_DC, gpio_BL, gpio_CS), width_{width}, height_{height}, colorFg_{Color::white}, colorBg_{Color::black} {}
+		Drawable(width, height), raw(spi, gpio_RST, gpio_DC, gpio_BL, gpio_CS), colorFg_{Color::white}, colorBg_{Color::black} {}
 	ST7789(spi_inst_t* spi, int width, int height, uint gpio_RST, uint gpio_DC, uint gpio_BL) :
-		raw(spi, gpio_RST, gpio_DC, gpio_BL), width_{width}, height_{height}, colorFg_{Color::white}, colorBg_{Color::black} {}
+		Drawable(width, height), raw(spi, gpio_RST, gpio_DC, gpio_BL), colorFg_{Color::white}, colorBg_{Color::black} {}
 public:
 	void Initialize();
 	bool UsesCS() { return raw.UsesCS(); }
@@ -292,6 +292,13 @@ public:
 	void WriteBuffer(int x, int y, int width, int height, const uint16_t* buff);
 	void Clear();
 	void Fill();
+
+	virtual void DrawPixel(int x, int y) override { DrawRectFill(x, y, 1, 1); }
+	virtual void DrawHLine(int x, int y, int width) override;
+	virtual void DrawVLine(int x, int y, int height) override;
+	virtual void DrawRectFill(int x, int y, int width, int height) override;
+	virtual void DrawBitmap(int x, int y, const void* data, int width, int height, bool transparentBgFlag, int scaleX = 1, int scaleY = 1) override;
+#if 0
 	void DrawPixel(int x, int y) { DrawRectFill(x, y, 1, 1); }
 	void DrawPixel(const Point& pt) { DrawPixel(pt.x, pt.y); }
 	void DrawHLine(int x, int y, int width);
@@ -326,6 +333,7 @@ public:
 	const char* DrawStringWrap(const Rect& rcBBox, const char* str, int htLine = -1) {
 		return DrawStringWrap(rcBBox.x, rcBBox.y, rcBBox.width, rcBBox.height, str, htLine);
 	}
+#endif
 };
 
 }
