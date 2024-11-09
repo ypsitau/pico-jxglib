@@ -26,8 +26,8 @@ protected:
 public:
 	Drawable(int width, int height) : width_{width}, height_{height} {}
 public:
-	int GetScreenWidth() const { return width_; }
-	int GetScreenHeight() const { return height_; }
+	int GetWidth() const { return width_; }
+	int GetHeight() const { return height_; }
 public:
 	void SetFont(const FontSet& fontSet, int fontScale = 1) {
 		context_.pFontSet = &fontSet; context_.fontScaleX = context_.fontScaleY = fontScale;

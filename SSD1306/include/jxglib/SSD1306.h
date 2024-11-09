@@ -211,7 +211,7 @@ public:
 	}
 public:
 	uint8_t GetAddr() const { return raw.GetAddr(); }
-	int GetScreenHeightPerPage() const { return heightPerPage_; }
+	int GetHeightPerPage() const { return heightPerPage_; }
 	int GetNumPages() const { return numPages_; }
 	int GetBufferLen() const { return bufferLen_; }
 public:

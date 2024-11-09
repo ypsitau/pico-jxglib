@@ -52,9 +52,9 @@ void Test_DrawPixel(SSD1306& screen)
 		for (int i = 0; i < 1000; i++) {
 			screen.DrawPixel(x, y);
 			if (x + xDir < 0) xDir = +1;
-			if (x + xDir >= screen.GetScreenWidth()) xDir = -1;
+			if (x + xDir >= screen.GetWidth()) xDir = -1;
 			if (y + yDir < 0) yDir = +1;
-			if (y + yDir >= screen.GetScreenHeight()) yDir = -1;
+			if (y + yDir >= screen.GetHeight()) yDir = -1;
 			x += xDir, y += yDir;
 			if (i % 10 == 0) screen.Refresh();
 		}
@@ -67,9 +67,9 @@ void Test_DrawHLine(SSD1306& screen)
 	for (int i = 0; i < 3; i++) {
 		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
 		screen.SetDrawMode(drawMode);
-		for (int x = -64; x <= screen.GetScreenWidth(); x++) {
+		for (int x = -64; x <= screen.GetWidth(); x++) {
 			SetupScreen(screen, drawMode);
-			for (int i = 0; i < screen.GetScreenHeight(); i++) {
+			for (int i = 0; i < screen.GetHeight(); i++) {
 				screen.DrawHLine(x, i, i);
 			}
 			screen.Refresh();
@@ -83,11 +83,11 @@ void Test_DrawVLine(SSD1306& screen)
 	for (int i = 0; i < 3; i++) {
 		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
 		screen.SetDrawMode(drawMode);
-		for (int y = -64; y <= screen.GetScreenHeight(); y++) {
+		for (int y = -64; y <= screen.GetHeight(); y++) {
 			SetupScreen(screen, drawMode);
-			for (int i = 0; i < screen.GetScreenHeight(); i++) {
+			for (int i = 0; i < screen.GetHeight(); i++) {
 				screen.DrawVLine(i, y, i);
-				screen.DrawVLine(i + screen.GetScreenHeight() * 1, screen.GetScreenHeight() - y - 1, -i);
+				screen.DrawVLine(i + screen.GetHeight() * 1, screen.GetHeight() - y - 1, -i);
 			}
 			screen.Refresh();
 		}
@@ -97,14 +97,14 @@ void Test_DrawVLine(SSD1306& screen)
 
 void Test_DrawLine(SSD1306& screen)
 {
-	int xMid = screen.GetScreenWidth() / 2;
-	int yMid = screen.GetScreenHeight() / 2;
-	int xRight = screen.GetScreenWidth() - 1;
-	int yBottom = screen.GetScreenHeight() - 1;
+	int xMid = screen.GetWidth() / 2;
+	int yMid = screen.GetHeight() / 2;
+	int xRight = screen.GetWidth() - 1;
+	int yBottom = screen.GetHeight() - 1;
 	for (int i = 0; i < 3; i++) {
 		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
 		screen.SetDrawMode(drawMode);
-		for (int y = 0; y < screen.GetScreenHeight(); y++) {
+		for (int y = 0; y < screen.GetHeight(); y++) {
 			SetupScreen(screen, drawMode);
 			screen.DrawLine(xMid, yMid, xRight, y);
 			screen.Refresh();
@@ -133,18 +133,18 @@ void Test_DrawLine(SSD1306& screen)
 
 void Test_DrawRect(SSD1306& screen)
 {
-	int xRight = screen.GetScreenWidth() - 1;
-	int yBottom = screen.GetScreenHeight() - 1;
+	int xRight = screen.GetWidth() - 1;
+	int yBottom = screen.GetHeight() - 1;
 	for (int i = 0; i < 3; i++) {
 		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
 		screen.SetDrawMode(drawMode);
-		for (int i = 0; i < screen.GetScreenHeight(); i++) {
+		for (int i = 0; i < screen.GetHeight(); i++) {
 			SetupScreen(screen, drawMode);
 			screen.DrawRect(0, 0, i * 2, i);
 			screen.Refresh();
 			::sleep_ms(100);
 		}
-		for (int i = 0; i < screen.GetScreenHeight(); i++) {
+		for (int i = 0; i < screen.GetHeight(); i++) {
 			SetupScreen(screen, drawMode);
 			screen.DrawRect(xRight, yBottom, -i * 2, -i);
 			screen.Refresh();
@@ -155,20 +155,20 @@ void Test_DrawRect(SSD1306& screen)
 
 void Test_DrawRectFill(SSD1306& screen)
 {
-	int xRight = screen.GetScreenWidth() - 1;
-	int yBottom = screen.GetScreenHeight() - 1;
+	int xRight = screen.GetWidth() - 1;
+	int yBottom = screen.GetHeight() - 1;
 	for (int i = 0; i < 3; i++) {
 		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
 		screen.SetDrawMode(drawMode);
-		for (int i = 0; i < screen.GetScreenHeight(); i++) {
+		for (int i = 0; i < screen.GetHeight(); i++) {
 			SetupScreen(screen, drawMode);
 			screen.DrawRectFill(0, 0, i * 2, i);
 			screen.Refresh();
 			::sleep_ms(100);
 		}
-		for (int i = 0; i < screen.GetScreenHeight(); i++) {
+		for (int i = 0; i < screen.GetHeight(); i++) {
 			SetupScreen(screen, drawMode);
-			screen.DrawRectFill(xRight, screen.GetScreenHeight() - 1, -i * 2, -i);
+			screen.DrawRectFill(xRight, screen.GetHeight() - 1, -i * 2, -i);
 			screen.Refresh();
 			::sleep_ms(100);
 		}
