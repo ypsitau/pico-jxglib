@@ -13,22 +13,30 @@ namespace jxglib {
 // Drawable
 //------------------------------------------------------------------------------
 class Drawable {
+public:
+	struct Context {
+		const FontSet* pFontSet;
+		int fontScaleX, fontScaleY;
+	public:
+		Context() : pFontSet{nullptr}, fontScaleX{1}, fontScaleY{1} {}
+	};
 protected:
 	int width_, height_;
-	const FontSet* pFontSet_;
-	int fontScaleX_, fontScaleY_;
+	Context context_;
 public:
-	Drawable(int width, int height) : width_{width}, height_{height},
-						pFontSet_{nullptr}, fontScaleX_{1}, fontScaleY_{1} {}
+	Drawable(int width, int height) : width_{width}, height_{height} {}
 public:
-	virtual void DrawPixel(int x, int y) = 0;
-	virtual void DrawHLine(int x, int y, int width) = 0;
-	virtual void DrawVLine(int x, int y, int height) = 0;
-	virtual void DrawLine(int x0, int y0, int x1, int y1) = 0;
-	virtual void DrawRect(int x, int y, int width, int height) = 0;
-	virtual void DrawRectFill(int x, int y, int width, int height) = 0;
-	virtual void DrawBitmap(int x, int y, const void* data, int width, int height, int scaleX = 1, int scaleY = 1) = 0;
-	virtual void DrawChar(int x, int y, const FontEntry& fontEntry) = 0;
+	int GetScreenWidth() const { return width_; }
+	int GetScreenHeight() const { return height_; }
+public:
+	void SetFont(const FontSet& fontSet, int fontScale = 1) {
+		context_.pFontSet = &fontSet; context_.fontScaleX = context_.fontScaleY = fontScale;
+	}
+	void SetFont(const FontSet& fontSet, int fontScaleX, int fontScaleY) {
+		context_.pFontSet = &fontSet; context_.fontScaleX = fontScaleX, context_.fontScaleY = fontScaleY;
+	}
+	void SetFontScale(int fontScale) { context_.fontScaleX = context_.fontScaleY = fontScale; }
+	void SetFontScale(int fontScaleX, int fontScaleY) { context_.fontScaleX = fontScaleX, context_.fontScaleY = fontScaleY; }
 public:
 	void DrawPixel(const Point& pt) { DrawPixel(pt.x, pt.y); }
 	void DrawHLine(const Point& pt, int width) { DrawHLine(pt.x, pt.y, width); }
@@ -58,6 +66,15 @@ public:
 	const char* DrawStringWrap(const Rect& rcBBox, const char* str, int htLine = -1) {
 		return DrawStringWrap(rcBBox.x, rcBBox.y, rcBBox.width, rcBBox.height, str, htLine);
 	}
+public:
+	virtual void DrawPixel(int x, int y) = 0;
+	virtual void DrawHLine(int x, int y, int width) = 0;
+	virtual void DrawVLine(int x, int y, int height) = 0;
+	virtual void DrawLine(int x0, int y0, int x1, int y1) = 0;
+	virtual void DrawRect(int x, int y, int width, int height) = 0;
+	virtual void DrawRectFill(int x, int y, int width, int height) = 0;
+	virtual void DrawBitmap(int x, int y, const void* data, int width, int height, int scaleX = 1, int scaleY = 1) = 0;
+	virtual void DrawChar(int x, int y, const FontEntry& fontEntry) = 0;
 };
 
 }

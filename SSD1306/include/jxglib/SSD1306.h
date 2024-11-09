@@ -19,7 +19,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // SSD1306
 //------------------------------------------------------------------------------
-class SSD1306 {
+class SSD1306 : public Drawable {
 public:
 	enum class DrawMode { Set, Clear, Invert };
 	class Logic_Set {
@@ -187,28 +187,22 @@ public:
 			WriteCtrl(0x10 | (enableChargePump << 2));
 		}
 	};
-	struct Context {
-		const FontSet* pFontSet;
-		int fontScaleX, fontScaleY;
-		DrawMode drawMode;
-	public:
-		Context() : pFontSet(nullptr), fontScaleX(1), fontScaleY(1), drawMode(DrawMode::Set) {}
-	};
 public:
 	static const uint8_t DefaultAddr = 0x3c;
 	Raw raw;
-	static const int width_ = 128;
-	int height_;
+private:
 	static const int heightPerPage_ = 8;
 	int numPages_;
 	int bufferLen_;
 	uint8_t* buffWhole_;
 	uint8_t* buff_;
+	DrawMode drawMode_;
 private:
 	Context context_;
 public:
 	SSD1306(i2c_inst_t* i2c, uint8_t addr = DefaultAddr, bool highResoFlag = true) :
-			raw(i2c, addr), height_{highResoFlag? 64 : 32}, buffWhole_(nullptr), buff_(nullptr) {
+			Drawable(128, highResoFlag? 64 : 32), raw(i2c, addr), buffWhole_(nullptr), buff_(nullptr),
+			drawMode_(DrawMode::Set) {
 		numPages_ = height_ / heightPerPage_;
 		bufferLen_ = numPages_ * width_;
 	}
@@ -217,8 +211,6 @@ public:
 	}
 public:
 	uint8_t GetAddr() const { return raw.GetAddr(); }
-	int GetScreenWidth() const { return width_; }
-	int GetScreenHeight() const { return height_; }
 	int GetScreenHeightPerPage() const { return heightPerPage_; }
 	int GetNumPages() const { return numPages_; }
 	int GetBufferLen() const { return bufferLen_; }
@@ -243,15 +235,7 @@ public:
 	void Refresh();
 	void Flash(bool flashFlag) { raw.EntireDisplayOn(static_cast<uint8_t>(flashFlag)); }
 	void Clear(uint8_t data = 0x00) { FillBuffer(data); }
-	void SetFont(const FontSet& fontSet, int fontScale = 1) {
-		context_.pFontSet = &fontSet; context_.fontScaleX = context_.fontScaleY = fontScale;
-	}
-	void SetFont(const FontSet& fontSet, int fontScaleX, int fontScaleY) {
-		context_.pFontSet = &fontSet; context_.fontScaleX = fontScaleX, context_.fontScaleY = fontScaleY;
-	}
-	void SetFontScale(int fontScale) { context_.fontScaleX = context_.fontScaleY = fontScale; }
-	void SetFontScale(int fontScaleX, int fontScaleY) { context_.fontScaleX = fontScaleX, context_.fontScaleY = fontScaleY; }
-	void SetDrawMode(DrawMode drawMode) { context_.drawMode = drawMode; }
+	void SetDrawMode(DrawMode drawMode) { drawMode_ = drawMode; }
 private:
 	// Draw* Method Template
 	template<class Logic> void DrawPixelT(int x, int y) {
@@ -267,18 +251,20 @@ private:
 	template<class Logic> void DrawBitmapT(int x, int y, const void* data, int width, int height, int scaleX, int scaleY);
 	template<class Logic> void DrawCharT(int x, int y, const FontEntry& fontEntry);
 public:
-	virtual void DrawPixel(int x, int y);
-	virtual void DrawHLine(int x, int y, int width);
-	virtual void DrawVLine(int x, int y, int height);
-	virtual void DrawLine(int x0, int y0, int x1, int y1);
-	virtual void DrawRect(int x, int y, int width, int height);
-	virtual void DrawRectFill(int x, int y, int width, int height);
-	virtual void DrawBitmap(int x, int y, const void* data, int width, int height, int scaleX = 1, int scaleY = 1);
-	virtual void DrawChar(int x, int y, const FontEntry& fontEntry);
+	virtual void DrawPixel(int x, int y) override;
+	virtual void DrawHLine(int x, int y, int width) override;
+	virtual void DrawVLine(int x, int y, int height) override;
+	virtual void DrawLine(int x0, int y0, int x1, int y1) override;
+	virtual void DrawRect(int x, int y, int width, int height) override;
+	virtual void DrawRectFill(int x, int y, int width, int height) override;
+	virtual void DrawBitmap(int x, int y, const void* data, int width, int height, int scaleX = 1, int scaleY = 1) override;
+	virtual void DrawChar(int x, int y, const FontEntry& fontEntry) override;
 public:
-	void DrawPixel(const Point& pt) { DrawPixel(pt.x, pt.y); }
 	void DrawHLine_NoAdj(int x, int y, int width);
 	void DrawVLine_NoAdj(int x, int y, int height);
+public:
+#if 0
+	void DrawPixel(const Point& pt) { DrawPixel(pt.x, pt.y); }
 	void DrawHLine(const Point& pt, int width) { DrawHLine(pt.x, pt.y, width); }
 	void DrawVLine(const Point& pt, int height) { DrawVLine(pt.x, pt.y, height); }
 	void DrawLine(const Point& pt1, const Point& pt2) { DrawLine(pt1.x, pt1.y, pt2.x, pt2.y); }
@@ -306,6 +292,7 @@ public:
 	const char* DrawStringWrap(const Rect& rcBBox, const char* str, int htLine = -1) {
 		return DrawStringWrap(rcBBox.x, rcBBox.y, rcBBox.width, rcBBox.height, str, htLine);
 	}
+#endif
 };
 
 }

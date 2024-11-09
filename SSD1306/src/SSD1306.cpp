@@ -161,7 +161,7 @@ template<class Logic> void SSD1306::DrawCharT(int x, int y, const FontEntry& fon
 
 void SSD1306::DrawPixel(int x, int y)
 {
-	switch (context_.drawMode) {
+	switch (drawMode_) {
 	case DrawMode::Set:		DrawPixelT<Logic_Set>(x, y); break;
 	case DrawMode::Clear:	DrawPixelT<Logic_Clear>(x, y); break;
 	case DrawMode::Invert:	DrawPixelT<Logic_Invert>(x, y); break;
@@ -171,7 +171,7 @@ void SSD1306::DrawPixel(int x, int y)
 
 void SSD1306::DrawHLine_NoAdj(int x, int y, int width)
 {
-	switch (context_.drawMode) {
+	switch (drawMode_) {
 	case DrawMode::Set:		DrawHLineT_NoAdj<Logic_Set>(x, y, width); break;
 	case DrawMode::Clear:	DrawHLineT_NoAdj<Logic_Clear>(x, y, width); break;
 	case DrawMode::Invert:	DrawHLineT_NoAdj<Logic_Invert>(x, y, width); break;
@@ -181,7 +181,7 @@ void SSD1306::DrawHLine_NoAdj(int x, int y, int width)
 
 void SSD1306::DrawVLine_NoAdj(int x, int y, int width)
 {
-	switch (context_.drawMode) {
+	switch (drawMode_) {
 	case DrawMode::Set:		DrawVLineT_NoAdj<Logic_Set>(x, y, width); break;
 	case DrawMode::Clear:	DrawVLineT_NoAdj<Logic_Clear>(x, y, width); break;
 	case DrawMode::Invert:	DrawVLineT_NoAdj<Logic_Invert>(x, y, width); break;
@@ -191,7 +191,7 @@ void SSD1306::DrawVLine_NoAdj(int x, int y, int width)
 
 void SSD1306::DrawHLine(int x, int y, int width)
 {
-	switch (context_.drawMode) {
+	switch (drawMode_) {
 	case DrawMode::Set:		DrawHLineT<Logic_Set>(x, y, width); break;
 	case DrawMode::Clear:	DrawHLineT<Logic_Clear>(x, y, width); break;
 	case DrawMode::Invert:	DrawHLineT<Logic_Invert>(x, y, width); break;
@@ -201,7 +201,7 @@ void SSD1306::DrawHLine(int x, int y, int width)
 
 void SSD1306::DrawVLine(int x, int y, int width)
 {
-	switch (context_.drawMode) {
+	switch (drawMode_) {
 	case DrawMode::Set:		DrawVLineT<Logic_Set>(x, y, width); break;
 	case DrawMode::Clear:	DrawVLineT<Logic_Clear>(x, y, width); break;
 	case DrawMode::Invert:	DrawVLineT<Logic_Invert>(x, y, width); break;
@@ -233,7 +233,7 @@ void SSD1306::DrawLine(int x0, int y0, int x1, int y1)
 		dy = y1 - y0;
 		sy = -1;
 	}
-	switch (context_.drawMode) {
+	switch (drawMode_) {
 	case DrawMode::Set:		DrawLineT<Logic_Set>(x0, y0, x1, y1, dx, dy, sx, sy); break;
 	case DrawMode::Clear:	DrawLineT<Logic_Clear>(x0, y0, x1, y1, dx, dy, sx, sy); break;
 	case DrawMode::Invert:	DrawLineT<Logic_Invert>(x0, y0, x1, y1, dx, dy, sx, sy); break;
@@ -275,7 +275,7 @@ void SSD1306::DrawRect(int x, int y, int width, int height)
 
 void SSD1306::DrawRectFill(int x, int y, int width, int height)
 {
-	switch (context_.drawMode) {
+	switch (drawMode_) {
 	case DrawMode::Set:		DrawRectFillT<Logic_Set>(x, y, width, height); break;
 	case DrawMode::Clear:	DrawRectFillT<Logic_Clear>(x, y, width, height); break;
 	case DrawMode::Invert:	DrawRectFillT<Logic_Invert>(x, y, width, height); break;
@@ -286,7 +286,7 @@ void SSD1306::DrawRectFill(int x, int y, int width, int height)
 void SSD1306::DrawBitmap(int x, int y, const void* data, int width, int height, int scaleX, int scaleY)
 {
 	DrawRectFillT<Logic_Clear>(x, y, width, height);
-	switch (context_.drawMode) {
+	switch (drawMode_) {
 	case DrawMode::Set:		DrawBitmapT<Logic_Set>(x, y, data, width, height, scaleX, scaleY); break;
 	case DrawMode::Clear:	DrawBitmapT<Logic_Clear>(x, y, data, width, height, scaleX, scaleY); break;
 	case DrawMode::Invert:	DrawBitmapT<Logic_Invert>(x, y, data, width, height, scaleX, scaleY); break;
@@ -296,7 +296,7 @@ void SSD1306::DrawBitmap(int x, int y, const void* data, int width, int height, 
 
 void SSD1306::DrawChar(int x, int y, const FontEntry& fontEntry)
 {
-	switch (context_.drawMode) {
+	switch (drawMode_) {
 	case DrawMode::Set:		DrawCharT<Logic_Set>(x, y, fontEntry); break;
 	case DrawMode::Clear:	DrawCharT<Logic_Clear>(x, y, fontEntry); break;
 	case DrawMode::Invert:	DrawCharT<Logic_Invert>(x, y, fontEntry); break;
@@ -304,6 +304,7 @@ void SSD1306::DrawChar(int x, int y, const FontEntry& fontEntry)
 	}
 }
 
+#if 0
 void SSD1306::DrawChar(int x, int y, uint32_t code)
 {
 	if (!context_.pFontSet) return;
@@ -348,5 +349,7 @@ const char* SSD1306::DrawStringWrap(int x, int y, int width, int height, const c
 	}
 	return pDone;
 }
+
+#endif
 
 }
