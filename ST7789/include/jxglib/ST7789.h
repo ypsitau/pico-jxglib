@@ -289,8 +289,6 @@ public:
 	void Fill();
 	void DrawPixel(int x, int y) { DrawRectFill(x, y, 1, 1); }
 	void DrawPixel(const Point& pt) { DrawPixel(pt.x, pt.y); }
-	void DrawHLine_NoAdj(int x, int y, int width);
-	void DrawVLine_NoAdj(int x, int y, int height);
 	void DrawHLine(int x, int y, int width);
 	void DrawHLine(const Point& pt, int width) { DrawHLine(pt.x, pt.y, width); }
 	void DrawVLine(int x, int y, int height);

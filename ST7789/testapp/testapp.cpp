@@ -113,7 +113,8 @@ int main()
 	::gpio_set_function(PICO_DEFAULT_SPI_TX_PIN, GPIO_FUNC_SPI);
 	::gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
 	screen.Initialize();
+	Test_WriteBuffer(screen);
 	//Test_DrawString(screen);
-	Test_DrawStringWrap(screen);
+	//Test_DrawStringWrap(screen);
 	//Test_DrawRGB565(screen);
 }

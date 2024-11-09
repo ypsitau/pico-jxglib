@@ -41,8 +41,8 @@ void ST7789::Initialize()
 
 void ST7789::WriteBuffer(int x, int y, int width, int height, const uint16_t* buff)
 {
-	raw.ColumnAddressSet(x, x + width);
-	raw.RowAddressSet(y, y + height);
+	raw.ColumnAddressSet(x, x + width - 1);
+	raw.RowAddressSet(y, y + height - 1);
 	raw.MemoryWrite16(buff, width * height);
 }
 
@@ -60,32 +60,22 @@ void ST7789::Fill()
 	raw.MemoryWriteConst16(context_.colorFg.RGB565(), GetScreenWidth() * GetScreenHeight());
 }
 
-void ST7789::DrawHLine_NoAdj(int x, int y, int width)
-{
-	raw.ColumnAddressSet(x, x + width - 1);
-	raw.RowAddressSet(y, y);
-	raw.MemoryWriteConst16(context_.colorFg.RGB565(), width);
-}
-
-void ST7789::DrawVLine_NoAdj(int x, int y, int height)
-{
-	raw.ColumnAddressSet(x, x);
-	raw.RowAddressSet(y, y + height - 1);
-	raw.MemoryWriteConst16(context_.colorFg.RGB565(), height);
-}
-
 void ST7789::DrawHLine(int x, int y, int width)
 {
 	if (!AdjustRange(&x, &width, 0, GetScreenWidth())) return;
 	if (!CheckRange(y, 0, GetScreenHeight())) return;
-	DrawHLine_NoAdj(x, y, width);
+	raw.ColumnAddressSet(x, x + width - 1);
+	raw.RowAddressSet(y, y);
+	raw.MemoryWriteConst16(context_.colorFg.RGB565(), width);
 }
 
 void ST7789::DrawVLine(int x, int y, int height)
 {
 	if (!CheckRange(x, 0, GetScreenWidth())) return;
 	if (!AdjustRange(&y, &height, 0, GetScreenHeight())) return;
-	DrawVLine_NoAdj(x, y, height);
+	raw.ColumnAddressSet(x, x);
+	raw.RowAddressSet(y, y + height - 1);
+	raw.MemoryWriteConst16(context_.colorFg.RGB565(), height);
 }
 
 void ST7789::DrawRect(int x, int y, int width, int height)
@@ -98,26 +88,10 @@ void ST7789::DrawRect(int x, int y, int width, int height)
 		y += height + 1;
 		height = -height;
 	}
-	int xLeft = x, xRight = x + width - 1;
-	int yTop = y, yBottom = y + height - 1;
-	int xLeftAdjust = xLeft, widthAdjust = width;
-	int yTopAdjust = yTop, heightAdjust = height;
-	if (AdjustRange(&xLeftAdjust, &widthAdjust, 0, GetScreenWidth())) {
-		if (CheckRange(yTop, 0, GetScreenHeight())) {
-			DrawHLine_NoAdj(xLeftAdjust, yTop, widthAdjust);
-		}
-		if (CheckRange(yBottom, 0, GetScreenHeight())) {
-			DrawHLine_NoAdj(xLeftAdjust, yBottom, widthAdjust);
-		}
-	}
-	if (AdjustRange(&yTopAdjust, &heightAdjust, 0, GetScreenHeight())) {
-		if (CheckRange(xLeft, 0, GetScreenWidth())) {
-			DrawVLine_NoAdj(xLeft, yTopAdjust, heightAdjust);
-		}
-		if (CheckRange(xRight, 0, GetScreenWidth())) {
-			DrawVLine_NoAdj(xRight, yTopAdjust, heightAdjust);
-		}
-	}
+	DrawRectFill(x, y, width, 1);
+	DrawRectFill(x, y + height - 1, width, 1);
+	DrawRectFill(x, y, 1, height);
+	DrawRectFill(x + width - 1, y, 1, height);
 }
 
 void ST7789::DrawRectFill(int x, int y, int width, int height)
