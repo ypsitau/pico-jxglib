@@ -103,7 +103,7 @@ void Test_DrawStringWrap(ST7789& screen)
 void Test_DrawImage(ST7789& screen)
 {
 	screen.Clear();
-	screen.DrawImage(-50, -100, image);
+	screen.DrawImage(0, 0, image);
 }
 
 int main()

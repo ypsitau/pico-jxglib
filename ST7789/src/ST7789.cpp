@@ -126,9 +126,12 @@ void ST7789::DrawImage(int x, int y, const Image& image)
 	raw.MemoryWrite_Begin(16);
 	const uint8_t* pSrc = image.GetPointer(xSkip, ySkip);
 	if (image.IsFormatRGB565()) {
-		Scanner scanner(Scanner<GetterRGB565_SrcRGB565>::HorzNW(pSrc, width, height,
-									image.GetBytesPerPixel(), image.GetBytesPerLine()));
-		while (!scanner.HasDone()) raw.MemoryWrite_Data16(scanner.ScanForward());
+		using Reader = Image::Reader<Image::ReadRGB565_SrcRGB565>;
+		//Image::Reader reader(Reader::HorzFromNW(image, xSkip, ySkip, width, height));
+		//Image::Reader reader(Reader::HorzFromSE(image, xSkip, ySkip, width, height));
+		//Image::Reader reader(Reader::VertFromSW(image, xSkip, ySkip, width, height));
+		Image::Reader reader(Reader::VertFromNE(image, xSkip, ySkip, width, height));
+		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 	}
 	raw.MemoryWrite_End();
 }

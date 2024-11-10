@@ -4,6 +4,7 @@
 #ifndef PICO_JXGLIB_IMAGE_H
 #define PICO_JXGLIB_IMAGE_H
 #include "pico/stdlib.h"
+#include "jxglib/Color.h"
 
 namespace jxglib {
 
@@ -11,6 +12,91 @@ namespace jxglib {
 // Image
 //------------------------------------------------------------------------------
 class Image {
+public:
+	class ReadColor_SrcRGB {
+	public:
+		using Type = Color;
+	public:
+		Type operator()(const uint8_t* p) { return Color(p[0], p[1], p[2]); }
+	};
+	class ReadRGB565_SrcRGB {
+	public:
+		using Type = uint16_t;
+	public:
+		Type operator()(const uint8_t* p) { return Color::RGB565(p[0], p[1], p[2]); }
+	};
+	class ReadRGB565_SrcRGB565 {
+	public:
+		using Type = uint16_t;
+	public:
+		Type operator()(const uint8_t* p) { return *reinterpret_cast<const Type*>(p); }
+	};
+	class WriteRGB565_SrcRGB565 {
+	public:
+		using Type = uint16_t;
+	public:
+		void operator()(uint8_t* p, uint16_t data) { *reinterpret_cast<uint16_t*>(p) = data; }
+	};
+	class Sequencer {
+	protected:
+		int nCols_, nRows_;
+		int advancePerCol_, advancePerRow_;
+		uint8_t* p_;
+		uint8_t* pRow_;
+		int iCol_, iRow_;
+	public:
+		Sequencer(void* p, int nCols, int nRows, int advancePerCol, int advancePerRow) :
+			p_{reinterpret_cast<uint8_t*>(p)}, pRow_{p_}, nCols_{nCols}, nRows_{nRows},
+			advancePerCol_{advancePerCol}, advancePerRow_{advancePerRow},
+			iCol_{0}, iRow_{0} {}
+		void MoveForward() {
+			iCol_++;
+			p_ += advancePerCol_;
+			if (iCol_ == nCols_) {
+				iCol_ = 0;
+				iRow_++;
+				pRow_ += advancePerRow_;
+				p_ = pRow_;
+			}
+		}
+		bool HasDone() const { return iRow_ >= nRows_; }
+	};
+	template<typename T_Read> class Reader : public Sequencer {
+	public:
+		static Reader HorzFromNW(const Image& image, int x, int y, int width, int height) {
+			return Reader(image.GetPointer(x, y), width, height, image.GetBytesPerPixel(), image.GetBytesPerLine());
+		}
+		static Reader HorzFromSE(const Image& image, int x, int y, int width, int height) {
+			return Reader(image.GetPointer(x + width - 1, y + height - 1), width, height, -image.GetBytesPerPixel(), -image.GetBytesPerLine());
+		}
+		static Reader VertFromSW(const Image& image, int x, int y, int width, int height) {
+			return Reader(image.GetPointer(x, y + height - 1), width, height, -image.GetBytesPerLine(), image.GetBytesPerPixel());
+		}
+		static Reader VertFromNE(const Image& image, int x, int y, int width, int height) {
+			return Reader(image.GetPointer(x + width - 1, y), width, height, image.GetBytesPerLine(), -image.GetBytesPerPixel());
+		}
+	public:
+		Reader(const void* p, int nCols, int nRows, int advancePerCol, int advancePerRow) :
+				Sequencer(const_cast<void*>(p), nCols, nRows, advancePerCol, advancePerRow) {}
+		typename T_Read::Type ReadForward() {
+			auto rtn  = T_Read()(p_);
+			MoveForward();
+			return rtn;
+		}
+	};
+	template<typename T_Write> class Writer : public Sequencer {
+	public:
+		static Writer HorzFromNW(const Image& image, int x, int y, int width, int height) {
+			return Writer(image.GetPointer(x, y), width, height, image.GetBytesPerPixel(), image.GetBytesPerLine());
+		}
+	public:
+		Writer(void* p, int nCols, int nRows, int advancePerCol, int advancePerRow) :
+				Sequencer(p, nCols, nRows, advancePerCol, advancePerRow) {}
+		void WriteForward(const typename T_Write::Type& data) {
+			auto rtn  = T_Write()(p_, data);
+			MoveForward();
+		}
+	};
 public:
 	enum class Format { Gray, RGB565 };
 private:
