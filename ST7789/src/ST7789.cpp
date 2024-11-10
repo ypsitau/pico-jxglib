@@ -33,15 +33,9 @@ void ST7789::Initialize()
 	raw.NormalDisplayModeOn();
 	::sleep_ms(10);
 	raw.DisplayOn();
+	Clear();
 	::sleep_ms(10);
 	raw.SetGPIO_BL(true);
-}
-
-void ST7789::WriteBuffer(int x, int y, int width, int height, const uint16_t* buff)
-{
-	raw.ColumnAddressSet(x, x + width - 1);
-	raw.RowAddressSet(y, y + height - 1);
-	raw.MemoryWrite16(buff, width * height);
 }
 
 void ST7789::Clear()

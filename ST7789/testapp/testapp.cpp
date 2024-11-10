@@ -7,23 +7,6 @@
 
 using namespace jxglib;
 
-void Test_WriteBuffer(ST7789& screen)
-{
-	uint16_t* buff = reinterpret_cast<uint16_t*>(::malloc(240 * 240 * 2));
-	uint8_t offset = 0;
-	for ( ; ; offset++) {
-		uint16_t* p = buff;
-		for (int i = 0; i < 240; i++) {
-			for (int j = 0; j < 80; j++, p++) *p = Color::RGB565(i + offset, 0, 0);
-			for (int j = 0; j < 80; j++, p++) *p = Color::RGB565(0, i + offset, 0);
-			for (int j = 0; j < 80; j++, p++) *p = Color::RGB565(0, 0, i + offset);
-		}
-		screen.WriteBuffer(0, 0, 240, 240, buff);
-		screen.DrawRectFill(100, 100, 30, 30);
-	}
-	::free(buff);
-}
-
 void Test_BouncingBall(ST7789& screen)
 {
 	int x = 10, y = 10;
@@ -108,11 +91,11 @@ void Test_DrawImage(ST7789& screen)
 
 int main()
 {
-	ST7789 screen(spi0, 240, 240, 20, 21, 22);
 	::stdio_init_all();
 	::spi_init(spi0, 125 * 1000 * 1000);
 	::gpio_set_function(PICO_DEFAULT_SPI_TX_PIN, GPIO_FUNC_SPI);
 	::gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
+	ST7789 screen(spi0, 240, 240, 20, 21, 22);
 	screen.Initialize();
 	//Test_BouncingBall(screen);
 	//Test_WriteBuffer(screen);

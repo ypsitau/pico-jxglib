@@ -273,7 +273,6 @@ public:
 		context_.fontScaleX = fontScaleX, context_.fontScaleY = fontScaleY;
 	}
 public:
-	void WriteBuffer(int x, int y, int width, int height, const uint16_t* buff);
 	void Clear();
 	void Fill();
 public:
