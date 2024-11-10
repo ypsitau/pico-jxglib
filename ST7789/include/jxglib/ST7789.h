@@ -259,6 +259,8 @@ public:
 	void Initialize();
 	bool UsesCS() { return raw.UsesCS(); }
 public:
+	int GetBytesPerLine() const { return GetWidth() * 2; }
+public:
 	void SetColor(const Color& color) { colorFg_ = color; }
 	void SetColorBg(const Color& color) { colorBg_ = color; }
 	void SetFont(const FontSet& fontSet, int fontScale = 1) {
@@ -272,8 +274,6 @@ public:
 		context_.fontScaleX = fontScaleX, context_.fontScaleY = fontScaleY;
 	}
 public:
-	void DrawImage(int x, int y, const Image& image);
-public:
 	void WriteBuffer(int x, int y, int width, int height, const uint16_t* buff);
 	void Clear();
 	void Fill();
@@ -283,6 +283,7 @@ public:
 	virtual void DrawVLine(int x, int y, int height) override;
 	virtual void DrawRectFill(int x, int y, int width, int height) override;
 	virtual void DrawBitmap(int x, int y, const void* data, int width, int height, bool transparentBgFlag, int scaleX = 1, int scaleY = 1) override;
+	virtual void DrawImage(int x, int y, const Image& image) override;
 };
 
 }

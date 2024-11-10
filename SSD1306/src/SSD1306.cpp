@@ -192,4 +192,8 @@ void SSD1306::DrawBitmap(int x, int y, const void* data, int width, int height, 
 	}
 }
 
+void SSD1306::DrawImage(int x, int y, const Image& image)
+{
+}
+
 }

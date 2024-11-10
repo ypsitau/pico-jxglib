@@ -37,59 +37,6 @@ void ST7789::Initialize()
 	raw.SetGPIO_BL(true);
 }
 
-void ST7789::DrawImage(int x, int y, const Image& image)
-{
-	if (image.GetFormat() == Image::Format::Bitmap) {
-		DrawBitmap(x, y, image.GetData(), image.GetWidth(), image.GetHeight(), false);
-		return;
-	}
-	int nDots = image.GetWidth() * image.GetHeight();
-	raw.ColumnAddressSet(x, x + image.GetWidth() - 1);
-	raw.RowAddressSet(y, y + image.GetHeight() - 1);
-	raw.MemoryWrite_Begin(16);
-	const uint8_t* pSrc = image.GetData();
-	switch (image.GetFormat()) {
-	case Image::Format::Gray: {
-		for (int iDot = 0; iDot < nDots; iDot++, pSrc += 1) {
-			raw.MemoryWrite_Data16(Color::RGB565(pSrc[0], pSrc[0], pSrc[0]));
-		}
-		break;
-	}
-	case Image::Format::RGB: {
-		for (int iDot = 0; iDot < nDots; iDot++, pSrc += 3) {
-			raw.MemoryWrite_Data16(Color::RGB565(pSrc[0], pSrc[1], pSrc[2]));
-		}
-		break;
-	}
-	case Image::Format::BGR: {
-		for (int iDot = 0; iDot < nDots; iDot++, pSrc += 3) {
-			raw.MemoryWrite_Data16(Color::RGB565(pSrc[2], pSrc[1], pSrc[0]));
-		}
-		break;
-	}
-	case Image::Format::RGBA: {
-		for (int iDot = 0; iDot < nDots; iDot++, pSrc += 4) {
-			raw.MemoryWrite_Data16(Color::RGB565(pSrc[0], pSrc[1], pSrc[2]));
-		}
-		break;
-	}
-	case Image::Format::BGRA: {
-		for (int iDot = 0; iDot < nDots; iDot++, pSrc += 4) {
-			raw.MemoryWrite_Data16(Color::RGB565(pSrc[2], pSrc[1], pSrc[0]));
-		}
-		break;
-	}
-	case Image::Format::RGB565: {
-		for (int iDot = 0; iDot < nDots; iDot++, pSrc += sizeof(uint16_t)) {
-			raw.MemoryWrite_Data16(*reinterpret_cast<const uint16_t*>(pSrc));
-		}
-		break;
-	}
-	default: break;
-	}
-	raw.MemoryWrite_End();
-}
-
 void ST7789::WriteBuffer(int x, int y, int width, int height, const uint16_t* buff)
 {
 	raw.ColumnAddressSet(x, x + width - 1);
@@ -164,6 +111,28 @@ void ST7789::DrawBitmap(int x, int y, const void* data, int width, int height, b
 			}
 		}
 		pSrcLeft = pSrc;
+	}
+	raw.MemoryWrite_End();
+}
+
+void ST7789::DrawImage(int x, int y, const Image& image)
+{
+	int xSkip = 0, ySkip = 0;
+	int width = image.GetWidth(), height = image.GetHeight();
+	//if (!AdjustRange(&x, &width, 0, GetWidth(), &xSkip)) return;
+	//if (!AdjustRange(&y, &height, 0, GetHeight(), &ySkip)) return;
+	raw.ColumnAddressSet(x, x + width - 1);
+	raw.RowAddressSet(y, y + height - 1);
+	raw.MemoryWrite_Begin(16);
+	//const uint8_t* pSrc = image.GetPointer(xSkip, ySkip);
+	const uint8_t* pSrc = image.GetPointer();
+	if (image.IsFormatRGB565()) {
+		//Scanner scanner(Scanner<GetterRGB565_SrcRGB565>::HorzNW(pSrc, width, height, image.GetBytesPerLine(), sizeof(uint16_t)));
+		//while (!scanner.HasDone()) raw.MemoryWrite_Data16(scanner.ScanForward());
+		for (int i = 0; i < width * height; i++) {
+			raw.MemoryWrite_Data16(*reinterpret_cast<const uint16_t*>(pSrc));
+			pSrc += sizeof(uint16_t);
+		}
 	}
 	raw.MemoryWrite_End();
 }

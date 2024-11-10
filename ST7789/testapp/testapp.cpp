@@ -102,7 +102,7 @@ void Test_DrawStringWrap(ST7789& screen)
 
 void Test_DrawImage(ST7789& screen)
 {
-	Image image(Image::Format::RGB565, 240, 240, data);
+	screen.Clear();
 	screen.DrawImage(0, 0, image);
 }
 

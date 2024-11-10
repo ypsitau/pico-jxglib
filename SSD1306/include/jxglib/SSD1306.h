@@ -251,6 +251,7 @@ public:
 		DrawRectFill(x, y, width, height, drawMode_);
 	}
 	virtual void DrawBitmap(int x, int y, const void* data, int width, int height, bool transparentBgFlag, int scaleX = 1, int scaleY = 1) override;
+	virtual void DrawImage(int x, int y, const Image& image) override;
 };
 
 }

@@ -4,8 +4,10 @@
 #ifndef PICO_JXGLIB_DRAWABLE_H
 #define PICO_JXGLIB_DRAWABLE_H
 #include "pico/stdlib.h"
+#include "jxglib/Color.h"
 #include "jxglib/Rect.h"
 #include "jxglib/Font.h"
+#include "jxglib/Image.h"
 
 namespace jxglib {
 
@@ -13,6 +15,83 @@ namespace jxglib {
 // Drawable
 //------------------------------------------------------------------------------
 class Drawable {
+public:
+	class GetterColor_SrcRGB {
+	public:
+		using Type = Color;
+	public:
+		Type operator()(const uint8_t* p) { return Color(p[0], p[1], p[2]); }
+	};
+	class GetterRGB565_SrcRGB {
+	public:
+		using Type = uint16_t;
+	public:
+		Type operator()(const uint8_t* p) { return Color::RGB565(p[0], p[1], p[2]); }
+	};
+	class GetterRGB565_SrcRGB565 {
+	public:
+		using Type = uint16_t;
+	public:
+		Type operator()(const uint8_t* p) { return *reinterpret_cast<const Type*>(p); }
+	};
+	class SetterRGB565_SrcRGB565 {
+	public:
+		using Type = uint16_t;
+	public:
+		void operator()(uint8_t* p, uint16_t data) { *reinterpret_cast<uint16_t*>(p) = data; }
+	};
+	class ScannerBase {
+	protected:
+		int nCols_, nRows_;
+		int bytesPerCol_, bytesPerRow_;
+		uint8_t* p_;
+		uint8_t* pRow_;
+		int iCol_, iRow_;
+	public:
+		ScannerBase(void* p, int nCols, int nRows, int bytesPerCol, int bytesPerRow) :
+			p_{reinterpret_cast<uint8_t*>(p)}, pRow_{p_}, nCols_{nCols}, nRows_{nRows},
+			bytesPerCol_{bytesPerCol}, bytesPerRow_{bytesPerRow},
+			iCol_{0}, iRow_{0} {}
+		void MoveForward() {
+			if (iCol_ < nCols_) {
+				p_ += bytesPerCol_;
+				iCol_++;
+			} else {
+				iCol_ = 0;
+				iRow_++;
+				pRow_ += bytesPerRow_;
+				p_ = pRow_;
+			}
+		}
+		bool HasDone() const { return iRow_ >= nRows_; }
+	};
+	template<typename T_Getter> class Scanner : public ScannerBase {
+	public:
+		static Scanner HorzNW(const void* p, int width, int height, int bytesPerPixel, int bytesPerLine) {
+			return Scanner(p, width, height, bytesPerPixel, bytesPerLine);
+		}
+	public:
+		Scanner(const void* p, int nCols, int nRows, int bytesPerCol, int bytesPerRow) :
+				ScannerBase(const_cast<void*>(p), nCols, nRows, bytesPerCol, bytesPerRow) {}
+		typename T_Getter::Type ScanForward() {
+			auto rtn  = T_Getter()(p_);
+			MoveForward();
+			return rtn;
+		}
+	};
+	template<typename T_Setter> class Drawer : public ScannerBase {
+	public:
+		Drawer HorzNW(void* p, int width, int height, int bytesPerPixel, int bytesPerLine) {
+			return Drawer(p, width, height, bytesPerPixel, bytesPerLine);
+		}
+	public:
+		Drawer(void* p, int nCols, int nRows, int bytesPerCol, int bytesPerRow) :
+				ScannerBase(p, nCols, nRows, bytesPerCol, bytesPerRow) {}
+		void DrawForward(const typename T_Setter::Type& data) {
+			auto rtn  = T_Setter()(p_, data);
+			MoveForward();
+		}
+	};
 public:
 	struct Context {
 		const FontSet* pFontSet;
@@ -75,6 +154,7 @@ public:
 	virtual void DrawVLine(int x, int y, int height) = 0;
 	virtual void DrawRectFill(int x, int y, int width, int height) = 0;
 	virtual void DrawBitmap(int x, int y, const void* data, int width, int height, bool transparentBgFlag, int scaleX = 1, int scaleY = 1) = 0;
+	virtual void DrawImage(int x, int y, const Image& image) = 0;
 };
 
 }
