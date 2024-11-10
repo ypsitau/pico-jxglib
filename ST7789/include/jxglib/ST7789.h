@@ -13,7 +13,6 @@
 #include "jxglib/Drawable.h"
 #include "jxglib/Font.h"
 #include "jxglib/Image.h"
-#include "jxglib/Canvas.h"
 
 namespace jxglib {
 
