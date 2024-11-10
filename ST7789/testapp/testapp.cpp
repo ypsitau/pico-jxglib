@@ -14,17 +14,14 @@ void Test_BouncingBall(ST7789& display)
 	int xDir = 1, yDir = 1;
 	int wdBall = 50, htBall = 30;
 	for (;;) {
-		//display.SetColor(Color::white);
-		//display.DrawRectFill(x, y, wdBall, htBall, Color::white);
-		//display.DrawRectFill(Rect(x, y, wdBall, htBall));
-		display.DrawRect(Rect(x, y, wdBall, htBall));
+		display.SetColor(Color::white);
+		display.DrawRectFill(x, y, wdBall, htBall);
 		if (x + xDir < 0) xDir = 1;
 		if (x + xDir + wdBall > display.GetWidth()) xDir = -1;
 		if (y + yDir < 0) yDir = 1;
 		if (y + yDir + htBall > display.GetHeight()) yDir = -1;
 		::sleep_ms(1);
-		//display.SetColor(Color::black);
-		//display.DrawRectFill(Rect(x, y, wdBall, htBall));
+		display.SetColor(Color::black);
 		display.DrawRectFill(x, y, wdBall, htBall);
 		x += xDir, y += yDir;
 	}
