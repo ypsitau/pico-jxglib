@@ -247,39 +247,25 @@ public:
 	};
 public:
 	Raw raw;
-	Color colorFg_;
-	Color colorBg_;
 public:
 	ST7789(spi_inst_t* spi, int width, int height, uint gpio_RST, uint gpio_DC, uint gpio_BL, uint gpio_CS) :
-		Drawable(width, height), raw(spi, gpio_RST, gpio_DC, gpio_BL, gpio_CS), colorFg_{Color::white}, colorBg_{Color::black} {}
+		Drawable(width, height), raw(spi, gpio_RST, gpio_DC, gpio_BL, gpio_CS) {}
 	ST7789(spi_inst_t* spi, int width, int height, uint gpio_RST, uint gpio_DC, uint gpio_BL) :
-		Drawable(width, height), raw(spi, gpio_RST, gpio_DC, gpio_BL), colorFg_{Color::white}, colorBg_{Color::black} {}
+		Drawable(width, height), raw(spi, gpio_RST, gpio_DC, gpio_BL) {}
 public:
 	void Initialize();
 	bool UsesCS() { return raw.UsesCS(); }
 public:
 	int GetBytesPerLine() const { return GetWidth() * 2; }
 public:
-	void SetColor(const Color& color) { colorFg_ = color; }
-	void SetColorBg(const Color& color) { colorBg_ = color; }
-	void SetFont(const FontSet& fontSet, int fontScale = 1) {
-		context_.pFontSet = &fontSet; context_.fontScaleX = context_.fontScaleY = fontScale;
-	}
-	void SetFont(const FontSet& fontSet, int fontScaleX, int fontScaleY) {
-		context_.pFontSet = &fontSet; context_.fontScaleX = fontScaleX, context_.fontScaleY = fontScaleY;
-	}
-	void SetFontScale(int fontScale) { context_.fontScaleX = context_.fontScaleY = fontScale; }
-	void SetFontScale(int fontScaleX, int fontScaleY) {
-		context_.fontScaleX = fontScaleX, context_.fontScaleY = fontScaleY;
-	}
-public:
 	void Clear();
 	void Fill();
 public:
-	virtual void DrawPixel(int x, int y) override;
-	virtual void DrawRectFill(int x, int y, int width, int height) override;
-	virtual void DrawBitmap(int x, int y, const void* data, int width, int height, bool transparentBgFlag, int scaleX = 1, int scaleY = 1) override;
-	virtual void DrawImage(int x, int y, const Image& image) override;
+	virtual void DrawPixel_(int x, int y, const Color& color) override;
+	virtual void DrawRectFill_(int x, int y, int width, int height, const Color& color) override;
+	virtual void DrawBitmap_(int x, int y, const void* data, int width, int height,
+		const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override;
+	virtual void DrawImage_(int x, int y, const Image& image) override;
 };
 
 }

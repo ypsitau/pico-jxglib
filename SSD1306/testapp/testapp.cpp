@@ -13,22 +13,10 @@
 
 using namespace jxglib;
 
-void SetupScreen(SSD1306& screen, SSD1306::DrawMode drawMode)
+#if 0
+void SetupScreen(SSD1306& screen, bool blackDrawFlag)
 {
-	switch (drawMode) {
-	case SSD1306::DrawMode::Set:
-		screen.Clear();
-		break;
-	case SSD1306::DrawMode::Clear:
-		screen.Clear(0xff);
-		break;
-	case SSD1306::DrawMode::Invert:
-		screen.Clear();
-		screen.DrawRectFill(16, 16, 96, 32);
-		break;
-	default:
-		break;
-	}
+	screen.Clear(blackDrawFlag? 0xff : 0x00);
 }
 
 void Test_Flash(SSD1306& screen)
@@ -45,7 +33,6 @@ void Test_DrawPixel(SSD1306& screen)
 {
 	for (int i = 0; i < 3; i++) {
 		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
-		screen.SetDrawMode(drawMode);
 		SetupScreen(screen, drawMode);
 		int x = 40, y = 16;
 		int xDir = +1, yDir = +1;
@@ -312,4 +299,9 @@ int main()
 		//Test_DrawBitmap(screen);
 		//Test_DrawStringWrap(screen);
 	}
+}
+#endif
+
+int main()
+{
 }

@@ -95,19 +95,14 @@ template<class Logic> void SSD1306::DrawBitmapT(int x, int y, const void* data, 
 	}
 }
 
-void SSD1306::DrawPixel(int x, int y)
+void SSD1306::DrawPixel_(int x, int y, const Color& color)
 {
 	uint8_t* pDst = GetPointer(x, y);
 	int bits = 1 << (y & 0b111);
-	switch (drawMode_) {
-	case DrawMode::Set:		*pDst = Logic_Set()(*pDst, bits); break;
-	case DrawMode::Clear:	*pDst = Logic_Clear()(*pDst, bits); break;
-	case DrawMode::Invert:	*pDst = Logic_Invert()(*pDst, bits); break;
-	default: break;
-	}
+	*pDst = color.IsBlack()? Logic_Clear()(*pDst, bits) : Logic_Set()(*pDst, bits);
 }
 
-void SSD1306::DrawRectFill(int x, int y, int width, int height, DrawMode drawMode)
+void SSD1306::DrawRectFill_(int x, int y, int width, int height, const Color& color)
 {
 	if (!AdjustRange(&x, &width, 0, GetWidth())) return;
 	if (!AdjustRange(&y, &height, 0, GetHeight())) return;
@@ -115,32 +110,25 @@ void SSD1306::DrawRectFill(int x, int y, int width, int height, DrawMode drawMod
 	int page;
 	uint8_t* pDst = GetPointer(x, y, &page);
 	bits >>= page * 8;
-	switch (drawMode) {
-	case DrawMode::Set:
-		DrawRectFillT<Logic_Set>(x, y, width, height, pDst, page, bits); break;
-	case DrawMode::Clear:
-		DrawRectFillT<Logic_Clear>(x, y, width, height, pDst, page, bits); break;
-	case DrawMode::Invert:
-		DrawRectFillT<Logic_Invert>(x, y, width, height, pDst, page, bits); break;
-	default: break;
+	if (color.IsBlack()) {
+		DrawRectFillT<Logic_Clear>(x, y, width, height, pDst, page, bits);
+	} else {
+		DrawRectFillT<Logic_Set>(x, y, width, height, pDst, page, bits);
 	}
 }
 
-void SSD1306::DrawBitmap(int x, int y, const void* data, int width, int height, bool transparentBgFlag, int scaleX, int scaleY)
+void SSD1306::DrawBitmap_(int x, int y, const void* data, int width, int height,
+			const Color& color, const Color* pColorBg, int scaleX, int scaleY)
 {
-	if (!transparentBgFlag) DrawRectFill(x, y, width, height, DrawMode::Clear);
-	switch (drawMode_) {
-	case DrawMode::Set:
-		DrawBitmapT<Logic_Set>(x, y, data, width, height, scaleX, scaleY); break;
-	case DrawMode::Clear:
-		DrawBitmapT<Logic_Clear>(x, y, data, width, height, scaleX, scaleY); break;
-	case DrawMode::Invert:
-		DrawBitmapT<Logic_Invert>(x, y, data, width, height, scaleX, scaleY); break;
-	default: break;
+	if (pColorBg) DrawRectFill(x, y, width, height, *pColorBg);
+	if (color.IsBlack()) {
+		DrawBitmapT<Logic_Clear>(x, y, data, width, height, scaleX, scaleY);
+	} else {
+		DrawBitmapT<Logic_Set>(x, y, data, width, height, scaleX, scaleY);
 	}
 }
 
-void SSD1306::DrawImage(int x, int y, const Image& image)
+void SSD1306::DrawImage_(int x, int y, const Image& image)
 {
 }
 

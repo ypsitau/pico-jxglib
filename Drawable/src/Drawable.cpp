@@ -67,7 +67,8 @@ void Drawable::DrawRect(int x, int y, int width, int height)
 
 void Drawable::DrawChar(int x, int y, const FontEntry& fontEntry)
 {
-	DrawBitmap(x, y, fontEntry.data, fontEntry.width, fontEntry.height, true, context_.fontScaleX, context_.fontScaleY);
+	DrawBitmap(x, y, fontEntry.data, fontEntry.width, fontEntry.height,
+					true, context_.fontScaleX, context_.fontScaleY);
 }
 
 void Drawable::DrawChar(int x, int y, uint32_t code)

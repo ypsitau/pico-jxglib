@@ -18,10 +18,13 @@ namespace jxglib {
 class Drawable {
 public:
 	struct Context {
+		Color colorFg;
+		Color colorBg;
 		const FontSet* pFontSet;
 		int fontScaleX, fontScaleY;
 	public:
-		Context() : pFontSet{nullptr}, fontScaleX{1}, fontScaleY{1} {}
+		Context() : colorFg{Color::white}, colorBg{Color::black},
+							pFontSet{nullptr}, fontScaleX{1}, fontScaleY{1} {}
 	};
 protected:
 	int width_, height_;
@@ -32,6 +35,8 @@ public:
 	int GetWidth() const { return width_; }
 	int GetHeight() const { return height_; }
 public:
+	void SetColor(const Color& color) { context_.colorFg = color; }
+	void SetColorBg(const Color& color) { context_.colorBg = color; }
 	void SetFont(const FontSet& fontSet, int fontScale = 1) {
 		context_.pFontSet = &fontSet; context_.fontScaleX = context_.fontScaleY = fontScale;
 	}
@@ -41,6 +46,15 @@ public:
 	void SetFontScale(int fontScale) { context_.fontScaleX = context_.fontScaleY = fontScale; }
 	void SetFontScale(int fontScaleX, int fontScaleY) { context_.fontScaleX = fontScaleX, context_.fontScaleY = fontScaleY; }
 public:
+	void DrawPixel(int x, int y, const Color& color) { DrawPixel_(x, y, color); }
+	void DrawRectFill(int x, int y, int width, int height, const Color& color) { DrawRectFill_(x, y, width, height, color); }
+	void DrawBitmap(int x, int y, const void* data, int width, int height,
+				const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) {
+		DrawBitmap_(x, y, data, width, height, color, pColorBg, scaleX, scaleY);
+	}
+	void DrawImage(int x, int y, const Image& image) { DrawImage_(x, y, image); }
+public:
+	void DrawPixel(int x, int y) { DrawPixel(x, y, context_.colorFg); }
 	void DrawPixel(const Point& pt) { DrawPixel(pt.x, pt.y); }
 	void DrawHLine(int x, int y, int width) { DrawRectFill(x, y, width, 1); }
 	void DrawHLine(const Point& pt, int width) { DrawHLine(pt.x, pt.y, width); }
@@ -51,8 +65,12 @@ public:
 	void DrawRect(int x, int y, int width, int height);
 	void DrawRect(const Point& pt, const Size& size) { DrawRect(pt.x, pt.y, size.width, size.height); }
 	void DrawRect(const Rect& rc) { DrawRect(rc.x, rc.y, rc.width, rc.height); }
+	void DrawRectFill(int x, int y, int width, int height) { DrawRectFill(x, y, width, height, context_.colorFg); }
 	void DrawRectFill(const Point& pt, const Size& size) { DrawRectFill(pt.x, pt.y, size.width, size.height); }
 	void DrawRectFill(const Rect& rc) { DrawRect(rc.x, rc.y, rc.width, rc.height); }
+	void DrawBitmap(int x, int y, const void* data, int width, int height, bool transparentBgFlag = false, int scaleX = 1, int scaleY = 1) {
+		DrawBitmap(x, y, data, width, height, context_.colorFg, transparentBgFlag? nullptr : &context_.colorBg, scaleX, scaleY);
+	}
 	void DrawBitmap(const Point& pt, const void* data, int width, int height, bool transparentBgFlag = false, int scaleX = 1, int scaleY = 1) {
 		DrawBitmap(pt.x, pt.y, data, width, height, transparentBgFlag, scaleX, scaleY);
 	}
@@ -75,10 +93,11 @@ public:
 		return DrawStringWrap(rcBBox.x, rcBBox.y, rcBBox.width, rcBBox.height, str, htLine);
 	}
 public:
-	virtual void DrawPixel(int x, int y) = 0;
-	virtual void DrawRectFill(int x, int y, int width, int height) = 0;
-	virtual void DrawBitmap(int x, int y, const void* data, int width, int height, bool transparentBgFlag, int scaleX = 1, int scaleY = 1) = 0;
-	virtual void DrawImage(int x, int y, const Image& image) = 0;
+	virtual void DrawPixel_(int x, int y, const Color& color) = 0;
+	virtual void DrawRectFill_(int x, int y, int width, int height, const Color& color) = 0;
+	virtual void DrawBitmap_(int x, int y, const void* data, int width, int height,
+		const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) = 0;
+	virtual void DrawImage_(int x, int y, const Image& image) = 0;
 };
 
 }

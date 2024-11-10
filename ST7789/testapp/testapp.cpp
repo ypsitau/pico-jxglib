@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "jxglib/ST7789.h"
+#include "jxglib/Rect.h"
 #include "Font/shinonome16.h"
 #include "ImageData.h"
 
@@ -7,48 +8,51 @@
 
 using namespace jxglib;
 
-void Test_BouncingBall(ST7789& screen)
+void Test_BouncingBall(ST7789& display)
 {
 	int x = 10, y = 10;
 	int xDir = 1, yDir = 1;
 	int wdBall = 50, htBall = 30;
 	for (;;) {
-		screen.SetColor(Color::white);
-		screen.DrawRectFill(x, y, wdBall, htBall);
+		//display.SetColor(Color::white);
+		//display.DrawRectFill(x, y, wdBall, htBall, Color::white);
+		//display.DrawRectFill(Rect(x, y, wdBall, htBall));
+		display.DrawRect(Rect(x, y, wdBall, htBall));
 		if (x + xDir < 0) xDir = 1;
-		if (x + xDir + wdBall > screen.GetWidth()) xDir = -1;
+		if (x + xDir + wdBall > display.GetWidth()) xDir = -1;
 		if (y + yDir < 0) yDir = 1;
-		if (y + yDir + htBall > screen.GetHeight()) yDir = -1;
+		if (y + yDir + htBall > display.GetHeight()) yDir = -1;
 		::sleep_ms(1);
-		screen.SetColor(Color::black);
-		screen.DrawRectFill(x, y, wdBall, htBall);
+		//display.SetColor(Color::black);
+		//display.DrawRectFill(Rect(x, y, wdBall, htBall));
+		display.DrawRectFill(x, y, wdBall, htBall);
 		x += xDir, y += yDir;
 	}
 }
 
-void Test_DrawString(ST7789& screen)
+void Test_DrawString(ST7789& display)
 {
-	screen.Clear();
-	screen.SetFont(Font::shinonome16);
-	screen.SetFontScale(2, 2);
+	display.Clear();
+	display.SetFont(Font::shinonome16);
+	display.SetFontScale(2, 2);
 	for (int i = 0; ; i++) {
-		screen.DrawString(0, 0, "Hello World");
-		//screen.SetFontScale(1, 1);
+		display.DrawString(0, 0, "Hello World");
+		//display.SetFontScale(1, 1);
 		char str[32];
 		::sprintf(str, "こんにちは:%d", i);
-		screen.DrawString(0, 32, str);
+		display.DrawString(0, 32, str);
 		::sprintf(str, "こんにちは:%d", i + 1);
-		screen.DrawString(0, 32 * 2, str);
+		display.DrawString(0, 32 * 2, str);
 		::sprintf(str, "こんにちは:%d", i + 2);
-		screen.DrawString(0, 32 * 3, str);
+		display.DrawString(0, 32 * 3, str);
 		::sprintf(str, "こんにちは:%d", i + 3);
-		screen.DrawString(0, 32 * 4, str);
+		display.DrawString(0, 32 * 4, str);
 		::sprintf(str, "こんにちは:%d", i + 4);
-		screen.DrawString(0, 32 * 5, str);
+		display.DrawString(0, 32 * 5, str);
 	}
 }
 
-void Test_DrawStringWrap(ST7789& screen)
+void Test_DrawStringWrap(ST7789& display)
 {
 	const char* strTbl[] = {
 		" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxy{|}~",
@@ -76,17 +80,17 @@ void Test_DrawStringWrap(ST7789& screen)
 			}
 			p = strTbl[iStr++];
 		}
-		screen.SetFont(*fontSetTbl[iFont], 2);
-		screen.Clear();
-		p = screen.DrawStringWrap(0, 0, p);
+		display.SetFont(*fontSetTbl[iFont], 2);
+		display.Clear();
+		p = display.DrawStringWrap(0, 0, p);
 		::sleep_ms(100);
 	}
 }
 
-void Test_DrawImage(ST7789& screen)
+void Test_DrawImage(ST7789& display)
 {
-	screen.Clear();
-	screen.DrawImage(0, 0, image);
+	display.Clear();
+	display.DrawImage(0, 0, image);
 }
 
 int main()
@@ -95,11 +99,11 @@ int main()
 	::spi_init(spi0, 125 * 1000 * 1000);
 	::gpio_set_function(PICO_DEFAULT_SPI_TX_PIN, GPIO_FUNC_SPI);
 	::gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
-	ST7789 screen(spi0, 240, 240, 20, 21, 22);
-	screen.Initialize();
-	//Test_BouncingBall(screen);
-	//Test_WriteBuffer(screen);
-	//Test_DrawString(screen);
-	//Test_DrawStringWrap(screen);
-	Test_DrawImage(screen);
+	ST7789 display(spi0, 240, 240, 20, 21, 22);
+	display.Initialize();
+	//Test_BouncingBall(display);
+	//Test_WriteBuffer(display);
+	//Test_DrawString(display);
+	//Test_DrawStringWrap(display);
+	Test_DrawImage(display);
 }

@@ -42,33 +42,34 @@ void ST7789::Clear()
 {
 	raw.ColumnAddressSet(0, GetWidth() - 1);
 	raw.RowAddressSet(0, GetHeight() - 1);
-	raw.MemoryWriteConst16(colorBg_.RGB565(), GetWidth() * GetHeight());
+	raw.MemoryWriteConst16(context_.colorBg.RGB565(), GetWidth() * GetHeight());
 }
 
 void ST7789::Fill()
 {
 	raw.ColumnAddressSet(0, GetWidth() - 1);
 	raw.RowAddressSet(0, GetHeight() - 1);
-	raw.MemoryWriteConst16(colorFg_.RGB565(), GetWidth() * GetHeight());
+	raw.MemoryWriteConst16(context_.colorFg.RGB565(), GetWidth() * GetHeight());
 }
 
-void ST7789::DrawPixel(int x, int y)
+void ST7789::DrawPixel_(int x, int y, const Color& color)
 {
 	raw.ColumnAddressSet(x, x);
 	raw.RowAddressSet(y, y);
-	raw.MemoryWriteConst16(colorFg_.RGB565(), 1);
+	raw.MemoryWriteConst16(color.RGB565(), 1);
 }
 
-void ST7789::DrawRectFill(int x, int y, int width, int height)
+void ST7789::DrawRectFill_(int x, int y, int width, int height, const Color& color)
 {
 	if (!AdjustRange(&x, &width, 0, GetWidth())) return;
 	if (!AdjustRange(&y, &height, 0, GetHeight())) return;
 	raw.ColumnAddressSet(x, x + width - 1);
 	raw.RowAddressSet(y, y + height - 1);
-	raw.MemoryWriteConst16(colorFg_.RGB565(), width * height);
+	raw.MemoryWriteConst16(color.RGB565(), width * height);
 }
 
-void ST7789::DrawBitmap(int x, int y, const void* data, int width, int height, bool transparentBgFlag, int scaleX, int scaleY)
+void ST7789::DrawBitmap_(int x, int y, const void* data, int width, int height,
+					const Color& color, const Color* pColorBg, int scaleX, int scaleY)
 {
 	int nDots = width * height;
 	int bytes = (width + 7) / 8 * height;
@@ -76,8 +77,8 @@ void ST7789::DrawBitmap(int x, int y, const void* data, int width, int height, b
 	raw.ColumnAddressSet(x, x + width * scaleX - 1);
 	raw.RowAddressSet(y, y + height * scaleY - 1);
 	raw.MemoryWrite_Begin(16);
-	uint16_t colorFg = colorFg_.RGB565();
-	uint16_t colorBg = colorBg_.RGB565();
+	uint16_t colorFg = color.RGB565();
+	uint16_t colorBg = pColorBg? pColorBg->RGB565() : 0;
 	for (int iRow = 0; iRow < height; iRow++) {
 		const uint8_t* pSrc;
 		for (int iScaleY = 0; iScaleY < scaleY; iScaleY++) {
@@ -98,7 +99,7 @@ void ST7789::DrawBitmap(int x, int y, const void* data, int width, int height, b
 	raw.MemoryWrite_End();
 }
 
-void ST7789::DrawImage(int x, int y, const Image& image)
+void ST7789::DrawImage_(int x, int y, const Image& image)
 {
 	int xSkip = 0, ySkip = 0;
 	int width = image.GetWidth(), height = image.GetHeight();

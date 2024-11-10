@@ -32,6 +32,7 @@ public:
 	static const Color teal;
 	static const Color aqua;
 public:
+	Color() : r(0), g(0), b(0) {}
 	Color(const Color& color) : r{color.r}, g{color.g}, b{color.b} {}
 	Color(uint8_t r, uint8_t g, uint8_t b) : r{r}, g{g}, b{b} {}
 public:
@@ -45,6 +46,8 @@ public:
 		((static_cast<uint16_t>(b) >> 3)); }
 	uint16_t RGB565() const { return RGB565(r, g, b); }
 	uint16_t RGB555() const { return RGB555(r, g, b); }
+	bool IsBlack() const { return r == 0 && g == 0 && b == 0; }
+	bool IsWhite() const { return r == 255 && g == 255 && b == 255; }
 };
 
 }

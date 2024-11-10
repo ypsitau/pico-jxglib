@@ -21,7 +21,6 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class SSD1306 : public Drawable {
 public:
-	enum class DrawMode { Set, Clear, Invert };
 	class Logic_Set {
 	public:
 		uint8_t operator()(uint8_t v1, uint8_t v2) { return v1 | v2; }
@@ -29,10 +28,6 @@ public:
 	class Logic_Clear {
 	public:
 		uint8_t operator()(uint8_t v1, uint8_t v2) { return v1 & ~v2; }
-	};
-	class Logic_Invert {
-	public:
-		uint8_t operator()(uint8_t v1, uint8_t v2) { return v1 ^ v2; }
 	};
 	class Raw {
 	private:
@@ -196,13 +191,11 @@ private:
 	int bufferLen_;
 	uint8_t* buffWhole_;
 	uint8_t* buff_;
-	DrawMode drawMode_;
 private:
 	Context context_;
 public:
 	SSD1306(i2c_inst_t* i2c, uint8_t addr = DefaultAddr, bool highResoFlag = true) :
-			Drawable(128, highResoFlag? 64 : 32), raw(i2c, addr), buffWhole_(nullptr), buff_(nullptr),
-			drawMode_(DrawMode::Set) {
+			Drawable(128, highResoFlag? 64 : 32), raw(i2c, addr), buffWhole_(nullptr), buff_(nullptr) {
 		numPages_ = height_ / heightPerPage_;
 		bufferLen_ = numPages_ * width_;
 	}
@@ -235,19 +228,15 @@ public:
 	void Refresh();
 	void Flash(bool flashFlag) { raw.EntireDisplayOn(static_cast<uint8_t>(flashFlag)); }
 	void Clear(uint8_t data = 0x00) { FillBuffer(data); }
-	void SetDrawMode(DrawMode drawMode) { drawMode_ = drawMode; }
 private:
 	template<class Logic> void DrawRectFillT(int x, int y, int width, int height, uint8_t* pDst, int page, uint64_t bits);
 	template<class Logic> void DrawBitmapT(int x, int y, const void* data, int width, int height, int scaleX, int scaleY);
 public:
-	void DrawRectFill(int x, int y, int width, int height, DrawMode drawMode);
-public:
-	virtual void DrawPixel(int x, int y) override;
-	virtual void DrawRectFill(int x, int y, int width, int height) override {
-		DrawRectFill(x, y, width, height, drawMode_);
-	}
-	virtual void DrawBitmap(int x, int y, const void* data, int width, int height, bool transparentBgFlag, int scaleX = 1, int scaleY = 1) override;
-	virtual void DrawImage(int x, int y, const Image& image) override;
+	virtual void DrawPixel_(int x, int y, const Color& color) override;
+	virtual void DrawRectFill_(int x, int y, int width, int height, const Color& color) override;
+	virtual void DrawBitmap_(int x, int y, const void* data, int width, int height,
+			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override;
+	virtual void DrawImage_(int x, int y, const Image& image) override;
 };
 
 }
