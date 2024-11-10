@@ -48,22 +48,6 @@ void SSD1306::Refresh()
 	WriteBuffer();
 }
 
-template<class Logic> void SSD1306::DrawHLineT(int x, int y, int width, uint8_t* pDst, uint8_t bits)
-{
-	for (int i = 0; i < width; i++, pDst++) {
-		assert(EnsureSafePointer(pDst));
-		*pDst = Logic()(*pDst, bits);
-	}
-}
-
-template<class Logic> void SSD1306::DrawVLineT(int x, int y, int height, uint8_t* pDst, int page, uint64_t bits)
-{
-	for ( ; page < GetNumPages() && bits; page++, pDst += GetWidth(), bits >>= 8) {
-		assert(EnsureSafePointer(pDst));
-		*pDst = Logic()(*pDst, static_cast<uint8_t>(bits & 0b11111111));
-	}
-}
-
 template<class Logic> void SSD1306::DrawRectFillT(int x, int y, int width, int height, uint8_t* pDst, int page, uint64_t bits)
 {
 	uint8_t* pDstTop = pDst;
@@ -119,42 +103,6 @@ void SSD1306::DrawPixel(int x, int y)
 	case DrawMode::Set:		*pDst = Logic_Set()(*pDst, bits); break;
 	case DrawMode::Clear:	*pDst = Logic_Clear()(*pDst, bits); break;
 	case DrawMode::Invert:	*pDst = Logic_Invert()(*pDst, bits); break;
-	default: break;
-	}
-}
-
-void SSD1306::DrawHLine(int x, int y, int width)
-{
-	if (!AdjustRange(&x, &width, 0, GetWidth())) return;
-	if (!CheckRange(y, 0, GetHeight())) return;
-	uint8_t* pDst = GetPointer(x, y);
-	uint8_t bits = 0b00000001 << (y & 0b111);
-	switch (drawMode_) {
-	case DrawMode::Set:
-		DrawHLineT<Logic_Set>(x, y, width, pDst, bits); break;
-	case DrawMode::Clear:
-		DrawHLineT<Logic_Clear>(x, y, width, pDst, bits); break;
-	case DrawMode::Invert:
-		DrawHLineT<Logic_Invert>(x, y, width, pDst, bits); break;
-	default: break;
-	}
-}
-
-void SSD1306::DrawVLine(int x, int y, int height)
-{
-	if (!CheckRange(x, 0, GetWidth())) return;
-	if (!AdjustRange(&y, &height, 0, GetHeight())) return;
-	uint64_t bits = (-1LL << y) & ~(-1LL << (y + height));
-	int page;
-	uint8_t* pDst = GetPointer(x, y, &page);
-	bits >>= page * 8;
-	switch (drawMode_) {
-	case DrawMode::Set:
-		DrawVLineT<Logic_Set>(x, y, height, pDst, page, bits); break;
-	case DrawMode::Clear:
-		DrawVLineT<Logic_Clear>(x, y, height, pDst, page, bits); break;
-	case DrawMode::Invert:
-		DrawVLineT<Logic_Invert>(x, y, height, pDst, page, bits); break;
 	default: break;
 	}
 }
