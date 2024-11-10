@@ -42,7 +42,9 @@ public:
 	void SetFontScale(int fontScaleX, int fontScaleY) { context_.fontScaleX = fontScaleX, context_.fontScaleY = fontScaleY; }
 public:
 	void DrawPixel(const Point& pt) { DrawPixel(pt.x, pt.y); }
+	void DrawHLine(int x, int y, int width) { DrawRectFill(x, y, width, 1); }
 	void DrawHLine(const Point& pt, int width) { DrawHLine(pt.x, pt.y, width); }
+	void DrawVLine(int x, int y, int height) { DrawRectFill(x, y, 1, height); }
 	void DrawVLine(const Point& pt, int height) { DrawVLine(pt.x, pt.y, height); }
 	void DrawLine(int x0, int y0, int x1, int y1);
 	void DrawLine(const Point& pt1, const Point& pt2) { DrawLine(pt1.x, pt1.y, pt2.x, pt2.y); }
@@ -74,8 +76,6 @@ public:
 	}
 public:
 	virtual void DrawPixel(int x, int y) = 0;
-	virtual void DrawHLine(int x, int y, int width) = 0;
-	virtual void DrawVLine(int x, int y, int height) = 0;
 	virtual void DrawRectFill(int x, int y, int width, int height) = 0;
 	virtual void DrawBitmap(int x, int y, const void* data, int width, int height, bool transparentBgFlag, int scaleX = 1, int scaleY = 1) = 0;
 	virtual void DrawImage(int x, int y, const Image& image) = 0;

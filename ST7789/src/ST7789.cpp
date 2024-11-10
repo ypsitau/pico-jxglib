@@ -52,30 +52,19 @@ void ST7789::Fill()
 	raw.MemoryWriteConst16(colorFg_.RGB565(), GetWidth() * GetHeight());
 }
 
-void ST7789::DrawHLine(int x, int y, int width)
+void ST7789::DrawPixel(int x, int y)
 {
-	if (!AdjustRange(&x, &width, 0, GetWidth())) return;
-	if (!CheckRange(y, 0, GetHeight())) return;
-	raw.ColumnAddressSet(x, x + width - 1);
-	raw.RowAddressSet(y, y);
-	raw.MemoryWriteConst16(colorFg_.RGB565(), width);
-}
-
-void ST7789::DrawVLine(int x, int y, int height)
-{
-	if (!CheckRange(x, 0, GetWidth())) return;
-	if (!AdjustRange(&y, &height, 0, GetHeight())) return;
 	raw.ColumnAddressSet(x, x);
-	raw.RowAddressSet(y, y + height - 1);
-	raw.MemoryWriteConst16(colorFg_.RGB565(), height);
+	raw.RowAddressSet(y, y);
+	raw.MemoryWriteConst16(colorFg_.RGB565(), 1);
 }
 
 void ST7789::DrawRectFill(int x, int y, int width, int height)
 {
 	if (!AdjustRange(&x, &width, 0, GetWidth())) return;
 	if (!AdjustRange(&y, &height, 0, GetHeight())) return;
-	raw.ColumnAddressSet(x, x + width);
-	raw.RowAddressSet(y, y + height);
+	raw.ColumnAddressSet(x, x + width - 1);
+	raw.RowAddressSet(y, y + height - 1);
 	raw.MemoryWriteConst16(colorFg_.RGB565(), width * height);
 }
 

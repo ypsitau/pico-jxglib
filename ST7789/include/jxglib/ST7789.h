@@ -276,9 +276,7 @@ public:
 	void Clear();
 	void Fill();
 public:
-	virtual void DrawPixel(int x, int y) override { DrawRectFill(x, y, 1, 1); }
-	virtual void DrawHLine(int x, int y, int width) override;
-	virtual void DrawVLine(int x, int y, int height) override;
+	virtual void DrawPixel(int x, int y) override;
 	virtual void DrawRectFill(int x, int y, int width, int height) override;
 	virtual void DrawBitmap(int x, int y, const void* data, int width, int height, bool transparentBgFlag, int scaleX = 1, int scaleY = 1) override;
 	virtual void DrawImage(int x, int y, const Image& image) override;
