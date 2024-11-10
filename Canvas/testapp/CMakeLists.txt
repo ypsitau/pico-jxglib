@@ -33,7 +33,7 @@ project(testapp C CXX ASM)
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
-add_subdirectory(../.. jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. jxglib)
 
 # Add executable. Default name is the project name, version 0.1
 
