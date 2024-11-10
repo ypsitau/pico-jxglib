@@ -4,6 +4,7 @@
 #ifndef PICO_JXGLIB_DRAWABLE_H
 #define PICO_JXGLIB_DRAWABLE_H
 #include "pico/stdlib.h"
+#include "stdio.h"
 #include "jxglib/Color.h"
 #include "jxglib/Rect.h"
 #include "jxglib/Font.h"
@@ -53,10 +54,9 @@ public:
 			bytesPerCol_{bytesPerCol}, bytesPerRow_{bytesPerRow},
 			iCol_{0}, iRow_{0} {}
 		void MoveForward() {
-			if (iCol_ < nCols_) {
-				p_ += bytesPerCol_;
-				iCol_++;
-			} else {
+			iCol_++;
+			p_ += bytesPerCol_;
+			if (iCol_ == nCols_) {
 				iCol_ = 0;
 				iRow_++;
 				pRow_ += bytesPerRow_;

@@ -124,15 +124,11 @@ void ST7789::DrawImage(int x, int y, const Image& image)
 	raw.ColumnAddressSet(x, x + width - 1);
 	raw.RowAddressSet(y, y + height - 1);
 	raw.MemoryWrite_Begin(16);
-	//const uint8_t* pSrc = image.GetPointer(xSkip, ySkip);
-	const uint8_t* pSrc = image.GetPointer();
+	const uint8_t* pSrc = image.GetPointer(xSkip, ySkip);
 	if (image.IsFormatRGB565()) {
-		//Scanner scanner(Scanner<GetterRGB565_SrcRGB565>::HorzNW(pSrc, width, height, image.GetBytesPerLine(), sizeof(uint16_t)));
-		//while (!scanner.HasDone()) raw.MemoryWrite_Data16(scanner.ScanForward());
-		for (int i = 0; i < width * height; i++) {
-			raw.MemoryWrite_Data16(*reinterpret_cast<const uint16_t*>(pSrc));
-			pSrc += sizeof(uint16_t);
-		}
+		Scanner scanner(Scanner<GetterRGB565_SrcRGB565>::HorzNW(pSrc, width, height,
+									image.GetBytesPerPixel(), image.GetBytesPerLine()));
+		while (!scanner.HasDone()) raw.MemoryWrite_Data16(scanner.ScanForward());
 	}
 	raw.MemoryWrite_End();
 }
