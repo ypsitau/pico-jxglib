@@ -119,8 +119,8 @@ void ST7789::DrawImage(int x, int y, const Image& image)
 {
 	int xSkip = 0, ySkip = 0;
 	int width = image.GetWidth(), height = image.GetHeight();
-	//if (!AdjustRange(&x, &width, 0, GetWidth(), &xSkip)) return;
-	//if (!AdjustRange(&y, &height, 0, GetHeight(), &ySkip)) return;
+	if (!AdjustRange(&x, &width, 0, GetWidth(), &xSkip)) return;
+	if (!AdjustRange(&y, &height, 0, GetHeight(), &ySkip)) return;
 	raw.ColumnAddressSet(x, x + width - 1);
 	raw.RowAddressSet(y, y + height - 1);
 	raw.MemoryWrite_Begin(16);
