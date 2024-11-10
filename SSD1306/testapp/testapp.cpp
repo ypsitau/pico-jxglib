@@ -13,156 +13,151 @@
 
 using namespace jxglib;
 
-#if 0
-void SetupScreen(SSD1306& screen, bool blackDrawFlag)
-{
-	screen.Clear(blackDrawFlag? 0xff : 0x00);
-}
-
-void Test_Flash(SSD1306& screen)
+void Test_Flash(SSD1306& display)
 {
 	for (int i = 0; i < 3; i++) {
-		screen.Flash(true);
+		display.Flash(true);
 		::sleep_ms(500);
-		screen.Flash(false);
+		display.Flash(false);
 		::sleep_ms(500);
 	}
 }
 
-void Test_DrawPixel(SSD1306& screen)
+void Test_DrawPixel(SSD1306& display)
 {
-	for (int i = 0; i < 3; i++) {
-		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
-		SetupScreen(screen, drawMode);
+	bool blackDrawFlag = false;
+	for (int i = 0; i < 2; i++, blackDrawFlag = !blackDrawFlag) {
+		display.Clear(blackDrawFlag? 0xff : 0x00);
+		display.SetColor(blackDrawFlag? Color::black : Color::white);
 		int x = 40, y = 16;
 		int xDir = +1, yDir = +1;
 		for (int i = 0; i < 1000; i++) {
-			screen.DrawPixel(x, y);
+			display.DrawPixel(x, y);
 			if (x + xDir < 0) xDir = +1;
-			if (x + xDir >= screen.GetWidth()) xDir = -1;
+			if (x + xDir >= display.GetWidth()) xDir = -1;
 			if (y + yDir < 0) yDir = +1;
-			if (y + yDir >= screen.GetHeight()) yDir = -1;
+			if (y + yDir >= display.GetHeight()) yDir = -1;
 			x += xDir, y += yDir;
-			if (i % 10 == 0) screen.Refresh();
+			if (i % 10 == 0) display.Refresh();
 		}
 		::sleep_ms(1000);
 	}
 }
 
-void Test_DrawHLine(SSD1306& screen)
+void Test_DrawHLine(SSD1306& display)
 {
-	for (int i = 0; i < 3; i++) {
-		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
-		screen.SetDrawMode(drawMode);
-		for (int x = -64; x <= screen.GetWidth(); x++) {
-			SetupScreen(screen, drawMode);
-			for (int i = 0; i < screen.GetHeight(); i++) {
-				screen.DrawHLine(x, i, i);
+	bool blackDrawFlag = false;
+	for (int i = 0; i < 2; i++, blackDrawFlag = !blackDrawFlag) {
+		display.SetColor(blackDrawFlag? Color::black : Color::white);
+		for (int x = -64; x <= display.GetWidth(); x++) {
+			display.Clear(blackDrawFlag? 0xff : 0x00);
+			for (int i = 0; i < display.GetHeight(); i++) {
+				display.DrawHLine(x, i, i);
 			}
-			screen.Refresh();
+			display.Refresh();
 		}
 		::sleep_ms(1000);
 	}
 }
 
-void Test_DrawVLine(SSD1306& screen)
+void Test_DrawVLine(SSD1306& display)
 {
-	for (int i = 0; i < 3; i++) {
-		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
-		screen.SetDrawMode(drawMode);
-		for (int y = -64; y <= screen.GetHeight(); y++) {
-			SetupScreen(screen, drawMode);
-			for (int i = 0; i < screen.GetHeight(); i++) {
-				screen.DrawVLine(i, y, i);
-				screen.DrawVLine(i + screen.GetHeight() * 1, screen.GetHeight() - y - 1, -i);
+	bool blackDrawFlag = false;
+	for (int i = 0; i < 2; i++, blackDrawFlag = !blackDrawFlag) {
+		display.SetColor(blackDrawFlag? Color::black : Color::white);
+		for (int y = -64; y <= display.GetHeight(); y++) {
+			display.Clear(blackDrawFlag? 0xff : 0x00);
+			for (int i = 0; i < display.GetHeight(); i++) {
+				display.DrawVLine(i, y, i);
+				display.DrawVLine(i + display.GetHeight() * 1, display.GetHeight() - y - 1, -i);
 			}
-			screen.Refresh();
+			display.Refresh();
 		}
 		::sleep_ms(1000);
 	}
 }
 
-void Test_DrawLine(SSD1306& screen)
+void Test_DrawLine(SSD1306& display)
 {
-	int xMid = screen.GetWidth() / 2;
-	int yMid = screen.GetHeight() / 2;
-	int xRight = screen.GetWidth() - 1;
-	int yBottom = screen.GetHeight() - 1;
-	for (int i = 0; i < 3; i++) {
-		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
-		screen.SetDrawMode(drawMode);
-		for (int y = 0; y < screen.GetHeight(); y++) {
-			SetupScreen(screen, drawMode);
-			screen.DrawLine(xMid, yMid, xRight, y);
-			screen.Refresh();
+	int xMid = display.GetWidth() / 2;
+	int yMid = display.GetHeight() / 2;
+	int xRight = display.GetWidth() - 1;
+	int yBottom = display.GetHeight() - 1;
+	bool blackDrawFlag = false;
+	for (int i = 0; i < 2; i++, blackDrawFlag = !blackDrawFlag) {
+		display.SetColor(blackDrawFlag? Color::black : Color::white);
+		for (int y = 0; y < display.GetHeight(); y++) {
+			display.Clear(blackDrawFlag? 0xff : 0x00);
+			display.DrawLine(xMid, yMid, xRight, y);
+			display.Refresh();
 			::sleep_ms(10);
 		}
 		for (int x = xRight; x >= 0; x--) {
-			SetupScreen(screen, drawMode);
-			screen.DrawLine(xMid, yMid, x, yBottom);
-			screen.Refresh();
+			display.Clear(blackDrawFlag? 0xff : 0x00);
+			display.DrawLine(xMid, yMid, x, yBottom);
+			display.Refresh();
 			::sleep_ms(10);
 		}
 		for (int y = yBottom; y >= 0; y--) {
-			SetupScreen(screen, drawMode);
-			screen.DrawLine(xMid, yMid, 0, y);
-			screen.Refresh();
+			display.Clear(blackDrawFlag? 0xff : 0x00);
+			display.DrawLine(xMid, yMid, 0, y);
+			display.Refresh();
 			::sleep_ms(10);
 		}
 		for (int x = 0; x <= xRight; x++) {
-			SetupScreen(screen, drawMode);
-			screen.DrawLine(xMid, yMid, x, 0);
-			screen.Refresh();
+			display.Clear(blackDrawFlag? 0xff : 0x00);
+			display.DrawLine(xMid, yMid, x, 0);
+			display.Refresh();
 			::sleep_ms(10);
 		}
 	}
 }
 
-void Test_DrawRect(SSD1306& screen)
+void Test_DrawRect(SSD1306& display)
 {
-	int xRight = screen.GetWidth() - 1;
-	int yBottom = screen.GetHeight() - 1;
-	for (int i = 0; i < 3; i++) {
-		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
-		screen.SetDrawMode(drawMode);
-		for (int i = 0; i < screen.GetHeight(); i++) {
-			SetupScreen(screen, drawMode);
-			screen.DrawRect(0, 0, i * 2, i);
-			screen.Refresh();
+	int xRight = display.GetWidth() - 1;
+	int yBottom = display.GetHeight() - 1;
+	bool blackDrawFlag = false;
+	for (int i = 0; i < 2; i++, blackDrawFlag = !blackDrawFlag) {
+		display.SetColor(blackDrawFlag? Color::black : Color::white);
+		for (int i = 0; i < display.GetHeight(); i++) {
+			display.Clear(blackDrawFlag? 0xff : 0x00);
+			display.DrawRect(0, 0, i * 2, i);
+			display.Refresh();
 			::sleep_ms(100);
 		}
-		for (int i = 0; i < screen.GetHeight(); i++) {
-			SetupScreen(screen, drawMode);
-			screen.DrawRect(xRight, yBottom, -i * 2, -i);
-			screen.Refresh();
+		for (int i = 0; i < display.GetHeight(); i++) {
+			display.Clear(blackDrawFlag? 0xff : 0x00);
+			display.DrawRect(xRight, yBottom, -i * 2, -i);
+			display.Refresh();
 			::sleep_ms(100);
 		}
 	}
 }
 
-void Test_DrawRectFill(SSD1306& screen)
+void Test_DrawRectFill(SSD1306& display)
 {
-	int xRight = screen.GetWidth() - 1;
-	int yBottom = screen.GetHeight() - 1;
-	for (int i = 0; i < 3; i++) {
-		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(i);
-		screen.SetDrawMode(drawMode);
-		for (int i = 0; i < screen.GetHeight(); i++) {
-			SetupScreen(screen, drawMode);
-			screen.DrawRectFill(0, 0, i * 2, i);
-			screen.Refresh();
+	int xRight = display.GetWidth() - 1;
+	int yBottom = display.GetHeight() - 1;
+	bool blackDrawFlag = false;
+	for (int i = 0; i < 2; i++, blackDrawFlag = !blackDrawFlag) {
+		display.SetColor(blackDrawFlag? Color::black : Color::white);
+		for (int i = 0; i < display.GetHeight(); i++) {
+			display.Clear(blackDrawFlag? 0xff : 0x00);
+			display.DrawRectFill(0, 0, i * 2, i);
+			display.Refresh();
 			::sleep_ms(100);
 		}
-		for (int i = 0; i < screen.GetHeight(); i++) {
-			SetupScreen(screen, drawMode);
-			screen.DrawRectFill(xRight, screen.GetHeight() - 1, -i * 2, -i);
-			screen.Refresh();
+		for (int i = 0; i < display.GetHeight(); i++) {
+			display.Clear(blackDrawFlag? 0xff : 0x00);
+			display.DrawRectFill(xRight, display.GetHeight() - 1, -i * 2, -i);
+			display.Refresh();
 			::sleep_ms(100);
 		}
 	}
 }
 
-void Test_DrawBitmap(SSD1306& screen)
+void Test_DrawBitmap(SSD1306& display)
 {
 	const uint8_t bmp[] = {
 		0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,
@@ -230,12 +225,12 @@ void Test_DrawBitmap(SSD1306& screen)
 		0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,
 		0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,
 	};
-	screen.DrawBitmap(0, 0, bmp, 80, 64, false);
-	screen.Refresh();
+	display.DrawBitmap(0, 0, bmp, 80, 64, false);
+	display.Refresh();
 	::sleep_ms(2000);
 }
 
-void Test_DrawStringWrap(SSD1306& screen)
+void Test_DrawStringWrap(SSD1306& display)
 {
 	const char* strTbl[] = {
 		" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxy{|}~",
@@ -249,10 +244,11 @@ void Test_DrawStringWrap(SSD1306& screen)
 		&Font::shinonome12, &Font::shinonome14, &Font::shinonome16, &Font::shinonome18,
 		&Font::sisd8x16, &Font::sisd24x32,
 	};
-	int iDrawMode = 0;
 	int iFont = 0;
 	int iStr = 0;
 	const char* p = strTbl[iStr++];
+	display.SetColor(Color::white);
+	display.SetColorBg(Color::black);
 	for (;;) {
 		if (!*p) {
 			if (iStr >= ArrayNumberOf(strTbl) || ((*strTbl[iStr] & 0x80 != 0) && !fontSetTbl[iFont]->HasExtraFont())) {
@@ -260,20 +256,14 @@ void Test_DrawStringWrap(SSD1306& screen)
 				iFont++;
 				if (iFont >= ArrayNumberOf(fontSetTbl)) {
 					iFont = 0;
-					iDrawMode++;
-					if (iDrawMode > static_cast<int>(SSD1306::DrawMode::Invert)) {
-						return;
-					}
 				}
 			}
 			p = strTbl[iStr++];
 		}
-		SSD1306::DrawMode drawMode = static_cast<SSD1306::DrawMode>(iDrawMode);
-		screen.SetDrawMode(drawMode);
-		screen.SetFont(*fontSetTbl[iFont]);
-		SetupScreen(screen, drawMode);
-		p = screen.DrawStringWrap(0, 0, p);
-		screen.Refresh();
+		display.SetFont(*fontSetTbl[iFont]);
+		display.Clear();
+		p = display.DrawStringWrap(0, 0, p);
+		display.Refresh();
 		::sleep_ms(200);
 	}
 }
@@ -286,22 +276,17 @@ int main()
 	::gpio_set_function(PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
 	::gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
 	::gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
-	SSD1306 screen(i2c_default);
-	screen.Initialize();
+	SSD1306 display(i2c_default);
+	display.Initialize();
 	for (;;) {
-		//Test_Flash(screen);
-		//Test_DrawPixel(screen);
-		Test_DrawHLine(screen);
-		//Test_DrawVLine(screen);
-		//Test_DrawLine(screen);
-		//Test_DrawRect(screen);
-		//Test_DrawRectFill(screen);
-		//Test_DrawBitmap(screen);
-		//Test_DrawStringWrap(screen);
+		Test_Flash(display);
+		Test_DrawPixel(display);
+		Test_DrawHLine(display);
+		Test_DrawVLine(display);
+		Test_DrawLine(display);
+		Test_DrawRect(display);
+		Test_DrawRectFill(display);
+		//Test_DrawBitmap(display);
+		Test_DrawStringWrap(display);
 	}
-}
-#endif
-
-int main()
-{
 }
