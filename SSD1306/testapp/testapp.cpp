@@ -271,12 +271,10 @@ void Test_DrawStringWrap(SSD1306& display)
 int main()
 {
 	::stdio_init_all();
-	::i2c_init(i2c_default, 400000);
-	::gpio_set_function(PICO_DEFAULT_I2C_SDA_PIN, GPIO_FUNC_I2C);
-	::gpio_set_function(PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
-	::gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
-	::gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
-	SSD1306 display(i2c_default);
+	::i2c_init(i2c1, 400000);
+	GPIO10.set_function_I2C1_SDA().pull_up();
+	GPIO11.set_function_I2C1_SCL().pull_up();
+	SSD1306 display(i2c1);
 	display.Initialize();
 	for (;;) {
 		Test_Flash(display);
