@@ -7,6 +7,7 @@
 #include "pico/stdlib.h"
 #include "hardware/pio.h"
 #include "hardware/clocks.h"
+#include "jxglib/GPIO.h"
 
 namespace jxglib {
 

@@ -4,15 +4,15 @@
 #include <hardware/clocks.h>
 #include <jxglib/StepMotor.h>
 
-using StepMotor = jxglib::StepMotor;
+using namespace jxglib;
 
 int main()
 {
 	stdio_init_all();
 	printf("System Frequency: %dHz\n", clock_get_hz(clk_sys));
 	StepMotor::AddPIOProgram(pio0);
-	StepMotor stepMotorL(6, 400);
-	StepMotor stepMotorR(10, 400);
+	StepMotor stepMotorL(GPIO6, 400);
+	StepMotor stepMotorR(GPIO10, 400);
 	stepMotorL.RunPIOSm(::pio_claim_unused_sm(pio0, true));
 	stepMotorR.RunPIOSm(::pio_claim_unused_sm(pio0, true));
 	::printf("Left Right\n");

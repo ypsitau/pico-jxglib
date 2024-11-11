@@ -29,7 +29,7 @@ loopDelay:
 
 % c-sdk {
 
-static void RotateOut4Bits_program_init(PIO pio, uint idxSm, uint offsetProgram, int gpioFirst)
+static void RotateOut4Bits_program_init(PIO pio, uint idxSm, uint offsetProgram, uint gpioFirst)
 {
 	uint nPins = 4;
 	for (int i = 0; i < nPins; i++) pio_gpio_init(pio, gpioFirst + i);

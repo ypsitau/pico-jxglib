@@ -7,7 +7,8 @@ target_include_directories(pico_jxglib_StepMotor INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/include)
 
 target_link_libraries(pico_jxglib_StepMotor INTERFACE
-	hardware_pio)
+	hardware_pio
+	pico_jxglib_Common)
 
 target_sources(pico_jxglib_StepMotor INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/StepMotor.cpp)
