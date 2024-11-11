@@ -49,10 +49,13 @@ private:
 	static EventBuff eventBuff_;
 	static bool enableEventBuff_;
 public:
+	static const Button None;
+public:
 	static void Initialize(int32_t msecPolling, bool enableEventBuff);
 	static Event ReadEvent();
 	static Event WaitEvent();
 public:
+	Button();
 	Button(GPIO gpio, const char* name = "");
 public:
 	GPIO GetGPIO() const { return gpio_; }

@@ -14,6 +14,7 @@ Button* Button::pButtonTbl_[32];
 struct repeating_timer Button::repeatingTimer_;
 Button::EventBuff Button::eventBuff_;
 bool Button::enableEventBuff_ = false;
+const Button Button::None;
 
 void Button::Initialize(int32_t msecPolling, bool enableEventBuff)
 {
@@ -28,7 +29,11 @@ void Button::Initialize(int32_t msecPolling, bool enableEventBuff)
 	::add_repeating_timer_ms(msecPolling, Callback, nullptr, &repeatingTimer_);
 }
 
-Button::Button(GPIO gpio, const char* name) : gpio_{gpio}, name_{name}, status_{Status::None}
+Button::Button() : gpio_{0}, name_{"none"}, status_{Status::None}
+{
+}
+
+Button::Button(GPIO gpio, const char* name) : gpio_{gpio}, name_{name}, status_{Status::Released}
 {
 	pButtonTbl_[nButtons_++] = this;
 }
@@ -62,6 +67,6 @@ Button::Event Button::WaitEvent()
 //------------------------------------------------------------------------------
 // Button::Event
 //------------------------------------------------------------------------------
-const Button::Event Button::Event::None {Status::None, nullptr};
+const Button::Event Button::Event::None {Status::None, &Button::None};
 
 }
