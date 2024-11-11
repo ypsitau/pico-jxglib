@@ -18,9 +18,10 @@ private:
 	volatile T_Size posRead_;
 	volatile T_Size posRewind_;
 	volatile T_Size posWrite_;
-	volatile T_Elem buff_[buffSize];
+	T_Elem buff_[buffSize];
 public:
 	FIFOBuff() : posRead_{0}, posRewind_{0}, posWrite_{0} {}
+public:
 	void Clear() { posRead_ = posRewind_ = posWrite_ = 0; }
 	bool IsEmpty() const { return posRead_ == posWrite_; }
 	bool HasData() const { return posRead_ != posWrite_; }
@@ -43,7 +44,6 @@ public:
 		posWrite_ = posWriteNext;
 	}
 	T_Elem ReadData() {
-		//if (posRead_ == posWrite_) return 0;
 		T_Elem data = buff_[posRead_];
 		posRead_ = (posRead_ == sizeMinusOne)? 0 : posRead_ + 1;
 		return data;

@@ -1,28 +1,26 @@
 #include <stdio.h>
-#include <hardware/clocks.h>
 #include "jxglib/Button.h"
 
 using namespace jxglib;
 
-Button buttonLeft("Left", 10), buttonUp("Up", 11), buttonDown("Down", 12), buttonRight("Right", 13);
-Button buttonA("A", 14), buttonB("B", 15);
+Button buttonLeft(GPIO10, "Left"), buttonUp(GPIO11, "Up");
+Button buttonDown(GPIO12, "Down"), buttonRight(GPIO13, "Right");
+Button buttonA(GPIO14, "A"), buttonB(GPIO15, "B");
 
 int main()
 {
 	::stdio_init_all();
-	Button::Initialize(50);
+	Button::Initialize(50, true);	// polling time: 50msec
 	int n = 0;
 	for (;;) {
-		for (;;) {
-			std::unique_ptr<Button::Event> pEvent(Button::ReadEvent());
-			if (!pEvent) break;
-			//printf("%-8s %s\n", pEvent->IsPressed()? "Pressed" : "Released", pEvent->GetName());
-			if (pEvent->IsPressed()) printf("%s\n", pEvent->GetName());
-			//if (pEvent->IsPressed(buttonLeft)) {
-			//	n++;
-			//	printf("count: %d\n", n);
-			//}
+		Button::Event event = Button::ReadEvent();
+		if (!event.IsNone()) {
+			printf("%-8s %s\n", event.IsPressed()? "Pressed" : "Released", event.GetName());
+			if (event.IsPressed()) printf("%s\n", event.GetName());
+			if (event.IsPressed(buttonLeft)) {
+				n++;
+				printf("count: %d\n", n);
+			}
 		}
-		sleep_ms(100);
 	}
 }
