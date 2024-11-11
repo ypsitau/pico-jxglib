@@ -20,6 +20,7 @@ public:
 	operator uint() const { return pin_; }
 	const char* GetName() const { return name_; }
 public:
+	void set_function_XIP() { ::gpio_set_function(pin_, GPIO_FUNC_XIP); }
 	void set_function_SIO() { ::gpio_set_function(pin_, GPIO_FUNC_SIO); }
 	void set_function_PIO0() { ::gpio_set_function(pin_, GPIO_FUNC_PIO0); }
 	void set_function_PIO1() { ::gpio_set_function(pin_, GPIO_FUNC_PIO1); }
@@ -128,60 +129,60 @@ public:
 class GPIO10_T : public GPIO {
 public:
 	GPIO10_T() : GPIO(10, "GPIO10") {}
-	void set_function_SPI0_RX()			{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
-	void set_function_UART0_TX()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
-	void set_function_I2C0_SDA()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
-	void set_function_PWM0_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
-	void set_function_USB_OVCUR_DET()	{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
+	void set_function_SPI1_SCK()		{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
+	void set_function_UART1_CTS()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
+	void set_function_I2C1_SDA()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
+	void set_function_PWM5_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
+	void set_function_USB_VBUS_DET()	{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
 };
 
 class GPIO11_T : public GPIO {
 public:
 	GPIO11_T() : GPIO(11, "GPIO11") {}
-	void set_function_SPI0_RX()			{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
-	void set_function_UART0_TX()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
-	void set_function_I2C0_SDA()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
-	void set_function_PWM0_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
-	void set_function_USB_OVCUR_DET()	{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
+	void set_function_SPI1_TX()			{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
+	void set_function_UART1_RTS()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
+	void set_function_I2C1_SCL()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
+	void set_function_PWM5_B()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
+	void set_function_USB_VBUS_EN()		{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
 };
 
 class GPIO12_T : public GPIO {
 public:
 	GPIO12_T() : GPIO(12, "GPIO12") {}
-	void set_function_SPI0_RX()			{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
+	void set_function_SPI1_RX()			{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
 	void set_function_UART0_TX()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
 	void set_function_I2C0_SDA()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
-	void set_function_PWM0_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
+	void set_function_PWM6_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
 	void set_function_USB_OVCUR_DET()	{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
 };
 
 class GPIO13_T : public GPIO {
 public:
 	GPIO13_T() : GPIO(13, "GPIO13") {}
-	void set_function_SPI0_RX()			{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
-	void set_function_UART0_TX()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
-	void set_function_I2C0_SDA()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
-	void set_function_PWM0_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
-	void set_function_USB_OVCUR_DET()	{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
+	void set_function_SPI1_CSn()		{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
+	void set_function_UART0_RX()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
+	void set_function_I2C0_SCL()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
+	void set_function_PWM6_B()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
+	void set_function_USB_VBUS_DET()	{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
 };
 
 class GPIO14_T : public GPIO {
 public:
 	GPIO14_T() : GPIO(14, "GPIO14") {}
-	void set_function_SPI0_RX()			{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
-	void set_function_UART0_TX()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
-	void set_function_I2C0_SDA()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
-	void set_function_PWM0_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
-	void set_function_USB_OVCUR_DET()	{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
+	void set_function_SPI1_SCK()		{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
+	void set_function_UART0_CTS()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
+	void set_function_I2C1_SDA()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
+	void set_function_PWM7_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
+	void set_function_USB_VBUS_EN()		{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
 };
 
 class GPIO15_T : public GPIO {
 public:
 	GPIO15_T() : GPIO(15, "GPIO15") {}
-	void set_function_SPI0_RX()			{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
-	void set_function_UART0_TX()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
-	void set_function_I2C0_SDA()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
-	void set_function_PWM0_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
+	void set_function_SPI1_TX()			{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
+	void set_function_UART0_RTS()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
+	void set_function_I2C1_SCL()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
+	void set_function_PWM7_B()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
 	void set_function_USB_OVCUR_DET()	{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
 };
 
@@ -192,139 +193,144 @@ public:
 	void set_function_UART0_TX()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
 	void set_function_I2C0_SDA()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
 	void set_function_PWM0_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
-	void set_function_USB_OVCUR_DET()	{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
+	void set_function_USB_VBUS_DET()	{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
 };
 
 class GPIO17_T : public GPIO {
 public:
 	GPIO17_T() : GPIO(17, "GPIO17") {}
-	void set_function_SPI0_RX()			{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
-	void set_function_UART0_TX()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
-	void set_function_I2C0_SDA()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
-	void set_function_PWM0_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
-	void set_function_USB_OVCUR_DET()	{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
+	void set_function_SPI0_CSn()		{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
+	void set_function_UART0_RX()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
+	void set_function_I2C0_SCL()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
+	void set_function_PWM0_B()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
+	void set_function_USB_VBUS_EN()		{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
 };
 
 class GPIO18_T : public GPIO {
 public:
 	GPIO18_T() : GPIO(18, "GPIO18") {}
-	void set_function_SPI0_RX()			{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
-	void set_function_UART0_TX()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
-	void set_function_I2C0_SDA()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
-	void set_function_PWM0_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
+	void set_function_SPI0_SCK()			{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
+	void set_function_UART0_CTS()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
+	void set_function_I2C1_SDA()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
+	void set_function_PWM1_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
 	void set_function_USB_OVCUR_DET()	{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
 };
 
 class GPIO19_T : public GPIO {
 public:
 	GPIO19_T() : GPIO(19, "GPIO19") {}
-	void set_function_SPI0_RX()			{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
-	void set_function_UART0_TX()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
-	void set_function_I2C0_SDA()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
-	void set_function_PWM0_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
-	void set_function_USB_OVCUR_DET()	{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
+	void set_function_SPI0_TX()			{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
+	void set_function_UART0_RTS()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
+	void set_function_I2C0_SCL()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
+	void set_function_PWM1_B()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
+	void set_function_USB_VBUS_DET()	{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
 };
 
 class GPIO20_T : public GPIO {
 public:
 	GPIO20_T() : GPIO(20, "GPIO20") {}
 	void set_function_SPI0_RX()			{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
-	void set_function_UART0_TX()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
+	void set_function_UART1_TX()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
 	void set_function_I2C0_SDA()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
-	void set_function_PWM0_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
-	void set_function_USB_OVCUR_DET()	{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
+	void set_function_PWM2_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
+	void set_function_CLOCK_GPIN0()		{ ::gpio_set_function(pin_, GPIO_FUNC_GPCK); }
+	void set_function_USB_VBUS_DET()	{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
 };
 
 class GPIO21_T : public GPIO {
 public:
 	GPIO21_T() : GPIO(21, "GPIO21") {}
-	void set_function_SPI0_RX()			{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
-	void set_function_UART0_TX()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
-	void set_function_I2C0_SDA()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
-	void set_function_PWM0_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
+	void set_function_SPI0_CSn()		{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
+	void set_function_UART1_RX()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
+	void set_function_I2C0_SCL()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
+	void set_function_PWM2_B()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
+	void set_function_CLOCK_GPOUT0()	{ ::gpio_set_function(pin_, GPIO_FUNC_GPCK); }
 	void set_function_USB_OVCUR_DET()	{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
 };
 
 class GPIO22_T : public GPIO {
 public:
 	GPIO22_T() : GPIO(22, "GPIO22") {}
-	void set_function_SPI0_RX()			{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
-	void set_function_UART0_TX()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
-	void set_function_I2C0_SDA()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
-	void set_function_PWM0_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
-	void set_function_USB_OVCUR_DET()	{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
+	void set_function_SPI0_SCK()		{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
+	void set_function_UART1_CTS()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
+	void set_function_I2C1_SDA()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
+	void set_function_PWM3_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
+	void set_function_CLOCK_GPIN1()		{ ::gpio_set_function(pin_, GPIO_FUNC_GPCK); }
+	void set_function_USB_VBUS_DET()	{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
 };
 
 class GPIO23_T : public GPIO {
 public:
 	GPIO23_T() : GPIO(23, "GPIO23") {}
-	void set_function_SPI0_RX()			{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
-	void set_function_UART0_TX()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
-	void set_function_I2C0_SDA()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
-	void set_function_PWM0_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
-	void set_function_USB_OVCUR_DET()	{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
+	void set_function_SPI0_TX()			{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
+	void set_function_UART1_RTS()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
+	void set_function_I2C1_SCL()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
+	void set_function_PWM3_B()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
+	void set_function_CLOCK_GPOUT1()	{ ::gpio_set_function(pin_, GPIO_FUNC_GPCK); }
+	void set_function_USB_VBUS_EN()		{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
 };
 
 class GPIO24_T : public GPIO {
 public:
 	GPIO24_T() : GPIO(24, "GPIO24") {}
-	void set_function_SPI0_RX()			{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
-	void set_function_UART0_TX()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
-	void set_function_I2C0_SDA()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
-	void set_function_PWM0_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
+	void set_function_SPI1_RX()			{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
+	void set_function_UART1_TX()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
+	void set_function_I2C1_SDA()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
+	void set_function_PWM4_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
+	void set_function_CLOCK_GPOUT2()	{ ::gpio_set_function(pin_, GPIO_FUNC_GPCK); }
 	void set_function_USB_OVCUR_DET()	{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
 };
 
 class GPIO25_T : public GPIO {
 public:
 	GPIO25_T() : GPIO(25, "GPIO25") {}
-	void set_function_SPI0_RX()			{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
-	void set_function_UART0_TX()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
-	void set_function_I2C0_SDA()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
-	void set_function_PWM0_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
-	void set_function_USB_OVCUR_DET()	{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
+	void set_function_SPI1_CSn()		{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
+	void set_function_UART1_RX()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
+	void set_function_I2C0_SCL()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
+	void set_function_PWM4_B()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
+	void set_function_CLOCK_GPOUT3()	{ ::gpio_set_function(pin_, GPIO_FUNC_GPCK); }
+	void set_function_USB_VBUS_DET()	{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
 };
 
 class GPIO26_T : public GPIO {
 public:
 	GPIO26_T() : GPIO(26, "GPIO26") {}
-	void set_function_SPI0_RX()			{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
-	void set_function_UART0_TX()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
-	void set_function_I2C0_SDA()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
-	void set_function_PWM0_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
-	void set_function_USB_OVCUR_DET()	{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
+	void set_function_SPI1_SCK()		{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
+	void set_function_UART0_CTS()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
+	void set_function_I2C1_SDA()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
+	void set_function_PWM5_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
+	void set_function_USB_VBUS_EN()		{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
 };
 
 class GPIO27_T : public GPIO {
 public:
 	GPIO27_T() : GPIO(27, "GPIO27") {}
-	void set_function_SPI0_RX()			{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
-	void set_function_UART0_TX()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
-	void set_function_I2C0_SDA()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
-	void set_function_PWM0_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
+	void set_function_SPI1_TX()			{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
+	void set_function_UART1_RTS()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
+	void set_function_I2C1_SCL()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
+	void set_function_PWM5_B()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
 	void set_function_USB_OVCUR_DET()	{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
 };
 
 class GPIO28_T : public GPIO {
 public:
 	GPIO28_T() : GPIO(28, "GPIO28") {}
-	void set_function_SPI0_RX()			{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
+	void set_function_SPI1_RX()			{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
 	void set_function_UART0_TX()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
 	void set_function_I2C0_SDA()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
-	void set_function_PWM0_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
-	void set_function_USB_OVCUR_DET()	{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
+	void set_function_PWM6_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
+	void set_function_USB_VBUS_DET()	{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
 };
 
 class GPIO29_T : public GPIO {
 public:
 	GPIO29_T() : GPIO(29, "GPIO29") {}
-	void set_function_SPI0_RX()			{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
-	void set_function_UART0_TX()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
-	void set_function_I2C0_SDA()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
-	void set_function_PWM0_A()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
-	void set_function_USB_OVCUR_DET()	{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
+	void set_function_SPI1_CSn()		{ ::gpio_set_function(pin_, GPIO_FUNC_SPI); }
+	void set_function_UART0_RX()		{ ::gpio_set_function(pin_, GPIO_FUNC_UART); }
+	void set_function_I2C0_SCL()		{ ::gpio_set_function(pin_, GPIO_FUNC_I2C); }
+	void set_function_PWM6_B()			{ ::gpio_set_function(pin_, GPIO_FUNC_PWM); }
+	void set_function_USB_VBUS_EN()		{ ::gpio_set_function(pin_, GPIO_FUNC_USB); }
 };
-
 
 extern const GPIO0_T GPIO0;
 extern const GPIO1_T GPIO1;
