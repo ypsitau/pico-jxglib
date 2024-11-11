@@ -8,35 +8,35 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // GPIO
 //------------------------------------------------------------------------------
-const GPIO GPIO0 {0, "GPIO0"};
-const GPIO GPIO1 {1, "GPIO1"};
-const GPIO GPIO2 {2, "GPIO2"};
-const GPIO GPIO3 {3, "GPIO3"};
-const GPIO GPIO4 {4, "GPIO4"};
-const GPIO GPIO5 {5, "GPIO5"};
-const GPIO GPIO6 {6, "GPIO6"};
-const GPIO GPIO7 {7, "GPIO7"};
-const GPIO GPIO8 {8, "GPIO8"};
-const GPIO GPIO9 {9, "GPIO9"};
-const GPIO GPIO10 {10, "GPIO10"};
-const GPIO GPIO11 {11, "GPIO11"};
-const GPIO GPIO12 {12, "GPIO12"};
-const GPIO GPIO13 {13, "GPIO13"};
-const GPIO GPIO14 {14, "GPIO14"};
-const GPIO GPIO15 {15, "GPIO15"};
-const GPIO GPIO16 {16, "GPIO16"};
-const GPIO GPIO17 {17, "GPIO17"};
-const GPIO GPIO18 {18, "GPIO18"};
-const GPIO GPIO19 {19, "GPIO19"};
-const GPIO GPIO20 {20, "GPIO20"};
-const GPIO GPIO21 {21, "GPIO21"};
-const GPIO GPIO22 {22, "GPIO22"};
-const GPIO GPIO23 {23, "GPIO23"};
-const GPIO GPIO24 {24, "GPIO24"};
-const GPIO GPIO25 {25, "GPIO25"};
-const GPIO GPIO26 {26, "GPIO26"};
-const GPIO GPIO27 {27, "GPIO27"};
-const GPIO GPIO28 {28, "GPIO28"};
-const GPIO GPIO29 {29, "GPIO29"};
+const GPIO0_T GPIO0;
+const GPIO1_T GPIO1;
+const GPIO2_T GPIO2;
+const GPIO3_T GPIO3;
+const GPIO4_T GPIO4;
+const GPIO5_T GPIO5;
+const GPIO6_T GPIO6;
+const GPIO7_T GPIO7;
+const GPIO8_T GPIO8;
+const GPIO9_T GPIO9;
+const GPIO10_T GPIO10;
+const GPIO11_T GPIO11;
+const GPIO12_T GPIO12;
+const GPIO13_T GPIO13;
+const GPIO14_T GPIO14;
+const GPIO15_T GPIO15;
+const GPIO16_T GPIO16;
+const GPIO17_T GPIO17;
+const GPIO18_T GPIO18;
+const GPIO19_T GPIO19;
+const GPIO20_T GPIO20;
+const GPIO21_T GPIO21;
+const GPIO22_T GPIO22;
+const GPIO23_T GPIO23;
+const GPIO24_T GPIO24;
+const GPIO25_T GPIO25;
+const GPIO26_T GPIO26;
+const GPIO27_T GPIO27;
+const GPIO28_T GPIO28;
+const GPIO29_T GPIO29;
 
 }
