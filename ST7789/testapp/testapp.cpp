@@ -94,9 +94,11 @@ int main()
 {
 	::stdio_init_all();
 	::spi_init(spi0, 125 * 1000 * 1000);
-	::gpio_set_function(PICO_DEFAULT_SPI_TX_PIN, GPIO_FUNC_SPI);
-	::gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
-	ST7789 display(spi0, 240, 240, 20, 21, 22);
+	GPIO18.set_function_SPI0_SCK();
+	GPIO19.set_function_SPI0_TX();
+	//::gpio_set_function(PICO_DEFAULT_SPI_TX_PIN, GPIO_FUNC_SPI);
+	//::gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
+	ST7789 display(spi0, 240, 240, GPIO20, GPIO21, GPIO22);
 	display.Initialize();
 	//Test_BouncingBall(display);
 	//Test_WriteBuffer(display);
