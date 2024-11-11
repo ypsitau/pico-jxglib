@@ -20,18 +20,18 @@ public:
 	bool IsValid() const { return pin != static_cast<uint>(-1); }
 	bool IsInvalid() const { return pin == static_cast<uint>(-1); }
 public:
-	const GPIO& set_function_XIP() const			{ ::gpio_set_function(pin, GPIO_FUNC_XIP); return *this; }
-	const GPIO& set_function_SPI() const			{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART() const			{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C() const			{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_SIO() const			{ ::gpio_set_function(pin, GPIO_FUNC_SIO); return *this; }
-	const GPIO& set_function_PIO0() const			{ ::gpio_set_function(pin, GPIO_FUNC_PIO0); return *this; }
-	const GPIO& set_function_PIO1() const			{ ::gpio_set_function(pin, GPIO_FUNC_PIO1); return *this; }
-	const GPIO& set_function_USB() const			{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_XIP() const					{ ::gpio_set_function(pin, GPIO_FUNC_XIP); return *this; }
+	const GPIO& set_function_SPI() const					{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
+	const GPIO& set_function_UART() const					{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
+	const GPIO& set_function_I2C() const					{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
+	const GPIO& set_function_PWM() const					{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
+	const GPIO& set_function_SIO() const					{ ::gpio_set_function(pin, GPIO_FUNC_SIO); return *this; }
+	const GPIO& set_function_PIO0() const					{ ::gpio_set_function(pin, GPIO_FUNC_PIO0); return *this; }
+	const GPIO& set_function_PIO1() const					{ ::gpio_set_function(pin, GPIO_FUNC_PIO1); return *this; }
+	const GPIO& set_function_USB() const					{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
 public:
-	//const GPIO& set_function(enum gpio_function fn) const	{ ::gpio_set_function(pin, fn); return *this; }
-	//enum gpio_function get_function() const 				{ return ::gpio_get_function(pin); }
+	const GPIO& set_function(gpio_function_t fn) const		{ ::gpio_set_function(pin, fn); return *this; }
+	gpio_function_t get_function() const 					{ return ::gpio_get_function(pin); }
 	const GPIO& set_pulls(bool up, bool down) const			{ ::gpio_set_pulls(pin, up, down); return *this; }
 	const GPIO& pull_up() const								{ ::gpio_pull_up(pin); return *this; }
 	bool is_pulled_up() const								{ return ::gpio_is_pulled_up(pin); }
