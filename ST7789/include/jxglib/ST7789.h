@@ -24,21 +24,21 @@ public:
 	class Raw {
 	private:
 		spi_inst_t* spi_;
-		uint gpio_RST_;		// Reset
-		uint gpio_DC_;		// Data/Command
-		uint gpio_BL_;		// Backlight
-		uint gpio_CS_;		// Chip Select
+		GPIO gpio_RST_;		// Reset
+		GPIO gpio_DC_;		// Data/Command
+		GPIO gpio_BL_;		// Backlight
+		GPIO gpio_CS_;		// Chip Select
 		spi_cpol_t cpol_;
 		spi_cpha_t cpha_;
 	public:
-		Raw(spi_inst_t* spi, uint gpio_RST, uint gpio_DC, uint gpio_BL, uint gpio_CS) :
+		Raw(spi_inst_t* spi, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_BL, GPIO gpio_CS) :
 				spi_(spi), gpio_RST_(gpio_RST), gpio_DC_(gpio_DC), gpio_BL_(gpio_BL), gpio_CS_(gpio_CS),
 				cpol_(SPI_CPOL_0), cpha_(SPI_CPHA_0) {}
-		Raw(spi_inst_t* spi, uint gpio_RST, uint gpio_DC, uint gpio_BL) :
-				spi_(spi), gpio_RST_(gpio_RST), gpio_DC_(gpio_DC), gpio_BL_(gpio_BL), gpio_CS_(static_cast<uint>(-1)),
+		Raw(spi_inst_t* spi, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_BL) :
+				spi_(spi), gpio_RST_(gpio_RST), gpio_DC_(gpio_DC), gpio_BL_(gpio_BL), gpio_CS_(GPIO_Invalid),
 				cpol_(SPI_CPOL_1), cpha_(SPI_CPHA_1) {}
 	public:
-		bool UsesCS() const { return gpio_CS_ != static_cast<uint>(-1); }
+		bool UsesCS() const { return gpio_CS_.IsValid(); }
 		void InitGPIO();
 		void SetGPIO_BL(bool value) { ::gpio_put(gpio_BL_, value); }
 		void SetSPIDataBits(uint data_bits) { ::spi_set_format(spi_, data_bits, cpol_, cpha_, SPI_MSB_FIRST); }
@@ -248,9 +248,9 @@ public:
 public:
 	Raw raw;
 public:
-	ST7789(spi_inst_t* spi, int width, int height, uint gpio_RST, uint gpio_DC, uint gpio_BL, uint gpio_CS) :
+	ST7789(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_BL, GPIO gpio_CS) :
 		Drawable(width, height), raw(spi, gpio_RST, gpio_DC, gpio_BL, gpio_CS) {}
-	ST7789(spi_inst_t* spi, int width, int height, uint gpio_RST, uint gpio_DC, uint gpio_BL) :
+	ST7789(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_BL) :
 		Drawable(width, height), raw(spi, gpio_RST, gpio_DC, gpio_BL) {}
 public:
 	void Initialize();

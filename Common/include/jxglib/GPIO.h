@@ -17,6 +17,8 @@ public:
 	GPIO(uint pin) : pin{pin} {}
 	GPIO(const GPIO& gpio) : pin{gpio.pin} {}
 	operator uint() const { return pin; }
+	bool IsValid() const { return pin != static_cast<uint>(-1); }
+	bool IsInvalid() const { return pin == static_cast<uint>(-1); }
 public:
 	void set_function_XIP() const			{ ::gpio_set_function(pin, GPIO_FUNC_XIP); }
 	void set_function_SPI() const			{ ::gpio_set_function(pin, GPIO_FUNC_SPI); }
@@ -27,6 +29,11 @@ public:
 	void set_function_PIO0() const			{ ::gpio_set_function(pin, GPIO_FUNC_PIO0); }
 	void set_function_PIO1() const			{ ::gpio_set_function(pin, GPIO_FUNC_PIO1); }
 	void set_function_USB() const			{ ::gpio_set_function(pin, GPIO_FUNC_USB); }
+};
+
+class GPIO_Invalid_T : public GPIO {
+public:
+	GPIO_Invalid_T() : GPIO(static_cast<uint>(-1)) {}
 };
 
 class GPIO0_T : public GPIO {
@@ -335,6 +342,7 @@ public:
 	void set_function_USB_VBUS_EN() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); }
 };
 
+extern const GPIO_Invalid_T GPIO_Invalid;
 extern const GPIO0_T GPIO0;
 extern const GPIO1_T GPIO1;
 extern const GPIO2_T GPIO2;
