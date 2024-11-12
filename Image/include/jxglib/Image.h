@@ -38,7 +38,10 @@ public:
 		void operator()(uint8_t* p, uint16_t data) { *reinterpret_cast<uint16_t*>(p) = data; }
 	};
 public:
-	enum class SequencerDir { HorzFromNW, HorzFromSE, VertFromSW, VertFromNE };
+	enum class SequencerDir {
+		HorzFromNW, HorzFromNE, HorzFromSW, HorzFromSE,
+		VertFromNW, VertFromNE, VertFromSW, VertFromSE,
+	};
 	using ReaderDir = SequencerDir;
 	using WriterDir = SequencerDir;
 	class Sequencer {
@@ -67,21 +70,37 @@ public:
 		static Reader HorzFromNW(const Image& image, int x, int y, int width, int height) {
 			return Reader(image.GetPointer(x, y), width, height, image.GetBytesPerPixel(), image.GetBytesPerLine());
 		}
+		static Reader HorzFromNE(const Image& image, int x, int y, int width, int height) {
+			return Reader(image.GetPointer(x + width - 1, y), width, height, -image.GetBytesPerPixel(), image.GetBytesPerLine());
+		}
+		static Reader HorzFromSW(const Image& image, int x, int y, int width, int height) {
+			return Reader(image.GetPointer(x, y + height - 1), width, height, image.GetBytesPerPixel(), -image.GetBytesPerLine());
+		}
 		static Reader HorzFromSE(const Image& image, int x, int y, int width, int height) {
 			return Reader(image.GetPointer(x + width - 1, y + height - 1), width, height, -image.GetBytesPerPixel(), -image.GetBytesPerLine());
 		}
-		static Reader VertFromSW(const Image& image, int x, int y, int width, int height) {
-			return Reader(image.GetPointer(x, y + height - 1), width, height, -image.GetBytesPerLine(), image.GetBytesPerPixel());
+		static Reader VertFromNW(const Image& image, int x, int y, int width, int height) {
+			return Reader(image.GetPointer(x, y), width, height, image.GetBytesPerLine(), image.GetBytesPerPixel());
 		}
 		static Reader VertFromNE(const Image& image, int x, int y, int width, int height) {
 			return Reader(image.GetPointer(x + width - 1, y), width, height, image.GetBytesPerLine(), -image.GetBytesPerPixel());
 		}
+		static Reader VertFromSW(const Image& image, int x, int y, int width, int height) {
+			return Reader(image.GetPointer(x, y + height - 1), width, height, -image.GetBytesPerLine(), image.GetBytesPerPixel());
+		}
+		static Reader VertFromSE(const Image& image, int x, int y, int width, int height) {
+			return Reader(image.GetPointer(x + width - 1, y + height - 1), width, height, -image.GetBytesPerLine(), -image.GetBytesPerPixel());
+		}
 		static Reader Create(const Image& image, int x, int y, int width, int height, ReaderDir dir) {
 			switch (dir) {
 			case ReaderDir::HorzFromNW: return HorzFromNW(image, x, y, width, height);
+			case ReaderDir::HorzFromNE: return HorzFromNE(image, x, y, width, height);
+			case ReaderDir::HorzFromSW: return HorzFromSW(image, x, y, width, height);
 			case ReaderDir::HorzFromSE: return HorzFromSE(image, x, y, width, height);
-			case ReaderDir::VertFromSW: return VertFromSW(image, x, y, width, height);
+			case ReaderDir::VertFromNW: return VertFromNW(image, x, y, width, height);
 			case ReaderDir::VertFromNE: return VertFromNE(image, x, y, width, height);
+			case ReaderDir::VertFromSW: return VertFromSW(image, x, y, width, height);
+			case ReaderDir::VertFromSE: return VertFromSE(image, x, y, width, height);
 			default: break;
 			}
 			return Reader(nullptr, 0, 0, 0, 0);
@@ -96,9 +115,43 @@ public:
 		}
 	};
 	template<typename T_Write> class Writer : public Sequencer {
-	public:
 		static Writer HorzFromNW(const Image& image, int x, int y, int width, int height) {
 			return Writer(image.GetPointer(x, y), width, height, image.GetBytesPerPixel(), image.GetBytesPerLine());
+		}
+		static Writer HorzFromNE(const Image& image, int x, int y, int width, int height) {
+			return Writer(image.GetPointer(x + width - 1, y), width, height, -image.GetBytesPerPixel(), image.GetBytesPerLine());
+		}
+		static Writer HorzFromSW(const Image& image, int x, int y, int width, int height) {
+			return Writer(image.GetPointer(x, y + height - 1), width, height, image.GetBytesPerPixel(), -image.GetBytesPerLine());
+		}
+		static Writer HorzFromSE(const Image& image, int x, int y, int width, int height) {
+			return Writer(image.GetPointer(x + width - 1, y + height - 1), width, height, -image.GetBytesPerPixel(), -image.GetBytesPerLine());
+		}
+		static Writer VertFromNW(const Image& image, int x, int y, int width, int height) {
+			return Writer(image.GetPointer(x, y), width, height, image.GetBytesPerLine(), image.GetBytesPerPixel());
+		}
+		static Writer VertFromNE(const Image& image, int x, int y, int width, int height) {
+			return Writer(image.GetPointer(x + width - 1, y), width, height, image.GetBytesPerLine(), -image.GetBytesPerPixel());
+		}
+		static Writer VertFromSW(const Image& image, int x, int y, int width, int height) {
+			return Writer(image.GetPointer(x, y + height - 1), width, height, -image.GetBytesPerLine(), image.GetBytesPerPixel());
+		}
+		static Writer VertFromSE(const Image& image, int x, int y, int width, int height) {
+			return Writer(image.GetPointer(x + width - 1, y + height - 1), width, height, -image.GetBytesPerLine(), -image.GetBytesPerPixel());
+		}
+		static Writer Create(const Image& image, int x, int y, int width, int height, WriterDir dir) {
+			switch (dir) {
+			case WriterDir::HorzFromNW: return HorzFromNW(image, x, y, width, height);
+			case WriterDir::HorzFromNE: return HorzFromNE(image, x, y, width, height);
+			case WriterDir::HorzFromSW: return HorzFromSW(image, x, y, width, height);
+			case WriterDir::HorzFromSE: return HorzFromSE(image, x, y, width, height);
+			case WriterDir::VertFromNW: return VertFromNW(image, x, y, width, height);
+			case WriterDir::VertFromNE: return VertFromNE(image, x, y, width, height);
+			case WriterDir::VertFromSW: return VertFromSW(image, x, y, width, height);
+			case WriterDir::VertFromSE: return VertFromSE(image, x, y, width, height);
+			default: break;
+			}
+			return Writer(nullptr, 0, 0, 0, 0);
 		}
 	public:
 		Writer(void* p, int nCols, int nRows, int advancePerCol, int advancePerRow) :
