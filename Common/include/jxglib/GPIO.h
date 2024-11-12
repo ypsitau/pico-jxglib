@@ -4,6 +4,8 @@
 #ifndef PICO_JXGLIB_GPIO_H
 #define PICO_JXGLIB_GPIO_H
 #include "pico/stdlib.h"
+#include "hardware/pwm.h"
+#include "hardware/adc.h"
 
 namespace jxglib {
 
@@ -88,6 +90,30 @@ public:
 	const GPIO& set_dir(bool out) const						{ ::gpio_set_dir(pin, out); return *this; }
 	bool is_dir_out() const									{ return ::gpio_is_dir_out(pin); }
 	uint get_dir() const									{ return ::gpio_get_dir(pin); }
+public:
+	uint pwm_slice_num() const								{ return ::pwm_gpio_to_slice_num(pin); }
+	uint pwm_channel() const								{ return ::pwm_gpio_to_channel(pin); }
+	const GPIO& pwm_set_wrap_slice(uint16_t wrap) const		{ ::pwm_set_wrap(pwm_slice_num(), wrap); return *this; }
+	const GPIO& pwm_set_level(uint16_t level) const			{ ::pwm_set_gpio_level(pin, level); return *this; }
+	uint16_t pwm_slice_get_counter() const					{ return ::pwm_get_counter(pwm_slice_num()); }
+	const GPIO& pwm_set_counter_slice(uint16_t c) const		{ ::pwm_set_counter(pwm_slice_num(), c); return *this; }
+	const GPIO& pwm_advance_count_slice() const				{ ::pwm_advance_count(pwm_slice_num()); return *this; }
+	const GPIO& pwm_retard_count_slice() const				{ ::pwm_retard_count(pwm_slice_num()); return *this; }
+	const GPIO& pwm_set_clkdiv_int_frac_slice(uint8_t integer, uint8_t fract) const
+															{ ::pwm_set_clkdiv_int_frac(pwm_slice_num(), integer, fract); return *this; }
+	const GPIO& pwm_set_clkdiv_slice(float divider) const	{ ::pwm_set_clkdiv(pwm_slice_num(), divider); return *this; }
+	const GPIO& pwm_set_output_polarity_slice(bool a, bool b) const
+															{ ::pwm_set_output_polarity(pwm_slice_num(), a, b); return *this; }
+	const GPIO& pwm_set_clkdiv_mode_slice(enum pwm_clkdiv_mode mode) const
+															{ ::pwm_set_clkdiv_mode(pwm_slice_num(), mode); return *this; }
+	const GPIO& pwm_set_phase_correct_slice(bool phase_correct) const
+															{ ::pwm_set_phase_correct(pwm_slice_num(), phase_correct); return *this; }
+	const GPIO& pwm_set_enabled_slice(bool enabled) const	{ ::pwm_set_enabled(pwm_slice_num(), enabled); return *this; }
+	const GPIO& pwm_set_irq_enabled_slice(bool enabled) const
+															{ ::pwm_set_irq_enabled(pwm_slice_num(), enabled); return *this; }
+	const GPIO& pwm_clear_irq_slice() const					{ ::pwm_clear_irq(pwm_slice_num()); return *this; }
+	const GPIO& pwm_force_irq_slice() const					{ ::pwm_force_irq(pwm_slice_num()); return *this; }
+	uint pwm_get_dreq_slice() const							{ return ::pwm_get_dreq(pwm_slice_num()); }
 };
 
 //------------------------------------------------------------------------------
@@ -372,6 +398,9 @@ public:
 	const GPIO& set_function_I2C1_SDA() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
 	const GPIO& set_function_PWM5_A() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
 	const GPIO& set_function_USB_VBUS_EN() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+public:
+	const GPIO& adc_gpio_init() const				{ ::adc_gpio_init(pin); return *this; }
+	const GPIO& adc_select_input() const			{ ::adc_select_input(0); return *this; }
 };
 
 class GPIO27_T : public GPIO {
@@ -382,6 +411,9 @@ public:
 	const GPIO& set_function_I2C1_SCL() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
 	const GPIO& set_function_PWM5_B() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
 	const GPIO& set_function_USB_OVCUR_DET() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+public:
+	const GPIO& adc_gpio_init() const				{ ::adc_gpio_init(pin); return *this; }
+	const GPIO& adc_select_input() const			{ ::adc_select_input(1); return *this; }
 };
 
 class GPIO28_T : public GPIO {
@@ -392,6 +424,9 @@ public:
 	const GPIO& set_function_I2C0_SDA() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
 	const GPIO& set_function_PWM6_A() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
 	const GPIO& set_function_USB_VBUS_DET() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+public:
+	const GPIO& adc_gpio_init() const				{ ::adc_gpio_init(pin); return *this; }
+	const GPIO& adc_select_input() const			{ ::adc_select_input(2); return *this; }
 };
 
 class GPIO29_T : public GPIO {
@@ -402,6 +437,9 @@ public:
 	const GPIO& set_function_I2C0_SCL() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
 	const GPIO& set_function_PWM6_B() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
 	const GPIO& set_function_USB_VBUS_EN() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+public:
+	const GPIO& adc_gpio_init() const				{ ::adc_gpio_init(pin); return *this; }
+	const GPIO& adc_select_input() const			{ ::adc_select_input(3); return *this; }
 };
 
 extern const GPIO_Invalid_T GPIO_Invalid;

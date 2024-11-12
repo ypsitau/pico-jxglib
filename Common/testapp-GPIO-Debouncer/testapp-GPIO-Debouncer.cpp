@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "jxglib/GPIO.h"
+#include "jxglib/Common.h"
 
 using namespace jxglib;
 

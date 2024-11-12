@@ -1,11 +1,13 @@
-add_library(pico_jxglib_Common INTERFACE)
+add_library(jxglib_Common INTERFACE)
 
-target_include_directories(pico_jxglib_Common INTERFACE
+target_include_directories(jxglib_Common INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/include)
 
-target_link_libraries(pico_jxglib_Common INTERFACE)
+target_link_libraries(jxglib_Common INTERFACE
+	hardware_adc
+	hardware_pwm)
 
-target_sources(pico_jxglib_Common INTERFACE
+target_sources(jxglib_Common INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/Color.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/GPIO.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/KeyCode.cpp

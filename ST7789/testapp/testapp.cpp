@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "jxglib/ST7789.h"
-#include "jxglib/Rect.h"
+#include "jxglib/Common.h"
 #include "Font/shinonome16.h"
 #include "ImageData.h"
 

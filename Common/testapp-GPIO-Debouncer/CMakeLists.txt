@@ -49,7 +49,7 @@ pico_enable_stdio_usb(testapp-GPIO-Debouncer 0)
 # Add the standard library to the build
 target_link_libraries(testapp-GPIO-Debouncer
 	pico_stdlib
-	pico_jxglib_Common)
+	jxglib_Common)
 
 # Add the standard include files to the build
 target_include_directories(testapp-GPIO-Debouncer PRIVATE

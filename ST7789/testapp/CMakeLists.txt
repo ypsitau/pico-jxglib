@@ -47,7 +47,7 @@ project(testapp C CXX ASM)
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico_jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. jxglib)
 
 # Add executable. Default name is the project name, version 0.1
 
@@ -62,7 +62,7 @@ pico_enable_stdio_usb(testapp 0)
 
 # Add the standard library to the build
 target_link_libraries(testapp
-	pico_stdlib pico_jxglib_ST7789)
+	pico_stdlib jxglib_ST7789)
 
 # Add the standard include files to the build
 target_include_directories(testapp PRIVATE

@@ -1,14 +1,14 @@
-add_library(pico_jxglib_StepMotor INTERFACE)
+add_library(jxglib_StepMotor INTERFACE)
 
-pico_generate_pio_header(pico_jxglib_StepMotor
+pico_generate_pio_header(jxglib_StepMotor
 	${CMAKE_CURRENT_LIST_DIR}/src/RotateOut4Bits.pio)
 
-target_include_directories(pico_jxglib_StepMotor INTERFACE
+target_include_directories(jxglib_StepMotor INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/include)
 
-target_link_libraries(pico_jxglib_StepMotor INTERFACE
+target_link_libraries(jxglib_StepMotor INTERFACE
 	hardware_pio
-	pico_jxglib_Common)
+	jxglib_Common)
 
-target_sources(pico_jxglib_StepMotor INTERFACE
+target_sources(jxglib_StepMotor INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/StepMotor.cpp)
