@@ -52,26 +52,26 @@ public:
 	enum gpio_drive_strength gpio_get_drive_strength() const{ return ::gpio_get_drive_strength(pin); }
 	const GPIO& set_irq_enabled(uint32_t event_mask, bool enabled) const
 															{ ::gpio_set_irq_enabled(pin, event_mask, enabled); return *this; }
-	void set_irq_callback(gpio_irq_callback_t callback)		{ ::gpio_set_irq_callback(callback); }
+	static void set_irq_callback(gpio_irq_callback_t callback) { ::gpio_set_irq_callback(callback); }
 	const GPIO& set_irq_enabled_with_callback(uint32_t event_mask, bool enabled, gpio_irq_callback_t callback) const
 															{ ::gpio_set_irq_enabled_with_callback(pin, event_mask, enabled, callback); return *this; }
 	const GPIO& set_dormant_irq_enabled(uint32_t event_mask, bool enabled) const
 															{ ::gpio_set_dormant_irq_enabled(pin, event_mask, enabled); return *this; }
 	uint32_t gpio_get_irq_event_mask() const				{ return ::gpio_get_irq_event_mask(pin); }
 	const GPIO& acknowledge_irq(uint32_t event_mask) const	{ ::gpio_acknowledge_irq(pin, event_mask); return *this; }
-	const GPIO& add_raw_irq_handler_with_order_priority_masked(uint32_t gpio_mask, irq_handler_t handler, uint8_t order_priority) const
-															{ ::gpio_add_raw_irq_handler_with_order_priority_masked(gpio_mask, handler, order_priority); return *this; }
+	static void add_raw_irq_handler_with_order_priority_masked(uint32_t gpio_mask, irq_handler_t handler, uint8_t order_priority)
+															{ ::gpio_add_raw_irq_handler_with_order_priority_masked(gpio_mask, handler, order_priority); }
 	const GPIO& add_raw_irq_handler_with_order_priority(irq_handler_t handler, uint8_t order_priority) const
 															{ ::gpio_add_raw_irq_handler_with_order_priority(pin, handler, order_priority); return *this; }
 	static void add_raw_irq_handler_masked(uint32_t gpio_mask, irq_handler_t handler)
 															{ add_raw_irq_handler_masked(gpio_mask, handler); }
 	const GPIO& add_raw_irq_handler(irq_handler_t handler) const { ::gpio_add_raw_irq_handler(pin, handler); return *this; }
-	const GPIO& remove_raw_irq_handler_masked(uint32_t gpio_mask, irq_handler_t handler)
-															{ ::gpio_remove_raw_irq_handler_masked(gpio_mask, handler); return *this; }
+	static void remove_raw_irq_handler_masked(uint32_t gpio_mask, irq_handler_t handler)
+															{ ::gpio_remove_raw_irq_handler_masked(gpio_mask, handler); }
 	const GPIO& remove_raw_irq_handler(irq_handler_t handler) const { ::gpio_remove_raw_irq_handler(pin, handler); return *this; }
 	const GPIO& init() const								{ ::gpio_init(pin); return *this; }
 	const GPIO& deinit() const								{ ::gpio_deinit(pin); return *this; }
-	void init_mask(uint32_t gpio_mask)						{ ::gpio_init_mask(gpio_mask); }
+	static void init_mask(uint32_t gpio_mask)				{ ::gpio_init_mask(gpio_mask); }
 	bool get() const										{ return ::gpio_get(pin); }
 	static uint32_t get_all()								{ return ::gpio_get_all(); }
 	static void set_mask(uint32_t mask)						{ ::gpio_set_mask(mask); }
@@ -80,16 +80,19 @@ public:
 	static void put_masked(uint32_t mask, uint32_t value)	{ ::gpio_put_masked(mask, value); }
 	static void put_all(uint32_t value)						{ ::gpio_put_all(value); }
 	const GPIO& put(bool value) const						{ ::gpio_put(pin, value); return *this; }
-	bool gpio_get_out_level() const							{ return ::gpio_get_out_level(pin); }
+	bool get_out_level() const								{ return ::gpio_get_out_level(pin); }
 	static void set_dir_out_masked(uint32_t mask)			{ ::gpio_set_dir_out_masked(mask); }
-	static void gpio_set_dir_in_masked(uint32_t mask)		{ ::gpio_set_dir_in_masked(mask); }
-	static void gpio_set_dir_masked(uint32_t mask, uint32_t value) { ::gpio_set_dir_masked(mask, value); }
-	void gpio_set_dir_all_bits(uint32_t values)				{ ::gpio_set_dir_all_bits(values); }
+	static void set_dir_in_masked(uint32_t mask)			{ ::gpio_set_dir_in_masked(mask); }
+	static void set_dir_masked(uint32_t mask, uint32_t value) { ::gpio_set_dir_masked(mask, value); }
+	static void set_dir_all_bits(uint32_t values)			{ ::gpio_set_dir_all_bits(values); }
 	const GPIO& set_dir(bool out) const						{ ::gpio_set_dir(pin, out); return *this; }
-	bool gpio_is_dir_out() const							{ return ::gpio_is_dir_out(pin); }
-	uint gpio_get_dir() const								{ return ::gpio_get_dir(pin); }
+	bool is_dir_out() const									{ return ::gpio_is_dir_out(pin); }
+	uint get_dir() const									{ return ::gpio_get_dir(pin); }
 };
 
+//------------------------------------------------------------------------------
+// GPIO derivations for each port
+//------------------------------------------------------------------------------
 class GPIO_Invalid_T : public GPIO {
 public:
 	GPIO_Invalid_T() : GPIO(static_cast<uint>(-1)) {}
