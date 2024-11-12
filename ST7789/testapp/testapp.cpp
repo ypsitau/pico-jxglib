@@ -101,6 +101,6 @@ int main()
 	//Test_BouncingBall(display);
 	//Test_WriteBuffer(display);
 	//Test_DrawString(display);
-	Test_DrawStringWrap(display);
-	//Test_DrawImage(display);
+	//Test_DrawStringWrap(display);
+	Test_DrawImage(display);
 }

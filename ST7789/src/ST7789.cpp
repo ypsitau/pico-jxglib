@@ -111,7 +111,6 @@ void ST7789::DrawImage_(int x, int y, const Image& image)
 	if (image.IsFormatRGB565()) {
 		using Reader = Image::Reader<Image::ReadRGB565_SrcRGB565>;
 		Image::Reader reader(Reader::HorzFromNW(image, xSkip, ySkip, width, height));
-		//Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, Image::ReaderDir::HorzFromNW));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 	}
 	raw.MemoryWrite_End();
