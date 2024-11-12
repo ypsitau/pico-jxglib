@@ -114,6 +114,15 @@ public:
 	const GPIO& pwm_clear_irq_slice() const					{ ::pwm_clear_irq(pwm_slice_num()); return *this; }
 	const GPIO& pwm_force_irq_slice() const					{ ::pwm_force_irq(pwm_slice_num()); return *this; }
 	uint pwm_get_dreq_slice() const							{ return ::pwm_get_dreq(pwm_slice_num()); }
+public:
+	static void adc_set_round_robin(const GPIO& gpio1, bool tempSensor = false)
+		{ ::adc_set_round_robin((1 << gpio1.pin) | (tempSensor? (1 << 4) : 0)); }
+	static void adc_set_round_robin(const GPIO& gpio1, const GPIO& gpio2, bool tempSensor = false)
+		{ ::adc_set_round_robin((1 << gpio1.pin) | (1 << gpio2.pin) | (tempSensor? (1 << 4) : 0)); }
+	static void adc_set_round_robin(const GPIO& gpio1, const GPIO& gpio2, const GPIO& gpio3, bool tempSensor = false)
+		{ ::adc_set_round_robin((1 << gpio1.pin) | (1 << gpio2.pin) | (1 << gpio3.pin) | (tempSensor? (1 << 4) : 0)); }
+	static void adc_set_round_robin(const GPIO& gpio1, const GPIO& gpio2, const GPIO& gpio3, const GPIO& gpio4, bool tempSensor = false)
+		{ ::adc_set_round_robin((1 << gpio1.pin) | (1 << gpio2.pin) | (1 << gpio3.pin) | (1 << gpio4.pin) | (tempSensor? (1 << 4) : 0)); }
 };
 
 //------------------------------------------------------------------------------

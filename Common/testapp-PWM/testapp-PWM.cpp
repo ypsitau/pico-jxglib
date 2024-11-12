@@ -34,4 +34,5 @@ int main()
     GPIO27.adc_select_input();
     GPIO28.adc_select_input();
     GPIO29.adc_select_input();
+    GPIO::adc_set_round_robin(GPIO26, GPIO27, GPIO28, GPIO29, true);
 }
