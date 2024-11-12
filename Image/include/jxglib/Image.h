@@ -37,6 +37,10 @@ public:
 	public:
 		void operator()(uint8_t* p, uint16_t data) { *reinterpret_cast<uint16_t*>(p) = data; }
 	};
+public:
+	enum class SequencerDir { HorzFromNW, HorzFromSE, VertFromSW, VertFromNE };
+	using ReaderDir = SequencerDir;
+	using WriterDir = SequencerDir;
 	class Sequencer {
 	protected:
 		int nCols_, nRows_;
@@ -47,16 +51,13 @@ public:
 	public:
 		Sequencer(void* p, int nCols, int nRows, int advancePerCol, int advancePerRow) :
 			p_{reinterpret_cast<uint8_t*>(p)}, pRow_{p_}, nCols_{nCols}, nRows_{nRows},
-			advancePerCol_{advancePerCol}, advancePerRow_{advancePerRow},
-			iCol_{0}, iRow_{0} {}
+			advancePerCol_{advancePerCol}, advancePerRow_{advancePerRow}, iCol_{0}, iRow_{0} {}
 		void MoveForward() {
 			iCol_++;
 			p_ += advancePerCol_;
 			if (iCol_ == nCols_) {
-				iCol_ = 0;
-				iRow_++;
-				pRow_ += advancePerRow_;
-				p_ = pRow_;
+				iCol_ = 0, iRow_++;
+				pRow_ += advancePerRow_, p_ = pRow_;
 			}
 		}
 		bool HasDone() const { return iRow_ >= nRows_; }
@@ -74,6 +75,16 @@ public:
 		}
 		static Reader VertFromNE(const Image& image, int x, int y, int width, int height) {
 			return Reader(image.GetPointer(x + width - 1, y), width, height, image.GetBytesPerLine(), -image.GetBytesPerPixel());
+		}
+		static Reader Create(const Image& image, int x, int y, int width, int height, ReaderDir dir) {
+			switch (dir) {
+			case ReaderDir::HorzFromNW: return HorzFromNW(image, x, y, width, height);
+			case ReaderDir::HorzFromSE: return HorzFromSE(image, x, y, width, height);
+			case ReaderDir::VertFromSW: return VertFromSW(image, x, y, width, height);
+			case ReaderDir::VertFromNE: return VertFromNE(image, x, y, width, height);
+			default: break;
+			}
+			return Reader(nullptr, 0, 0, 0, 0);
 		}
 	public:
 		Reader(const void* p, int nCols, int nRows, int advancePerCol, int advancePerRow) :
