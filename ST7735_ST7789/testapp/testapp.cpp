@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "jxglib/ST7735.h"
+#include "jxglib/ST7789.h"
 #include "jxglib/Common.h"
 #include "Font/shinonome16.h"
 #include "ImageData.h"
@@ -94,15 +95,21 @@ int main()
 {
 	::stdio_init_all();
 	::spi_init(spi0, 125 * 1000 * 1000);
+	::spi_init(spi1, 125 * 1000 * 1000);
 	GPIO18.set_function_SPI0_SCK();
 	GPIO19.set_function_SPI0_TX();
+	GPIO10.set_function_SPI1_SCK();
+	GPIO11.set_function_SPI1_TX();
 	//ST7789 display(spi0, 240, 240, GPIO20, GPIO21, GPIO22);
-	//ST7789 display(spi0, 240, 320, GPIO20, GPIO21, GPIO22, GPIO23);
-	ST7735 display(spi0, 120, 160, GPIO20, GPIO21, GPIO22, GPIO23);
-	display.Initialize();
+	ST7735 display1(spi0, 120, 160, GPIO20, GPIO21, GPIO22, GPIO23);
+	ST7789 display2(spi1, 240, 320, GPIO12, GPIO13, GPIO14, GPIO15);
+	
+	display1.Initialize();
+	display2.Initialize();
 	//Test_BouncingBall(display);
 	//Test_WriteBuffer(display);
 	//Test_DrawString(display);
 	//Test_DrawStringWrap(display);
-	Test_DrawImage(display);
+	Test_DrawImage(display1);
+	Test_DrawImage(display2);
 }
