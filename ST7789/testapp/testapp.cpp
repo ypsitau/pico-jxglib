@@ -96,11 +96,12 @@ int main()
 	::spi_init(spi0, 125 * 1000 * 1000);
 	GPIO18.set_function_SPI0_SCK();
 	GPIO19.set_function_SPI0_TX();
-	ST7789 display(spi0, 240, 240, GPIO20, GPIO21, GPIO22);
+	//ST7789 display(spi0, 240, 240, GPIO20, GPIO21, GPIO22);
+	ST7789 display(spi0, 240, 320, GPIO20, GPIO21, GPIO22, GPIO23);
 	display.Initialize();
 	//Test_BouncingBall(display);
 	//Test_WriteBuffer(display);
 	//Test_DrawString(display);
-	//Test_DrawStringWrap(display);
-	Test_DrawImage(display);
+	Test_DrawStringWrap(display);
+	//Test_DrawImage(display);
 }
