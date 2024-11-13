@@ -28,7 +28,7 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(testapp-GPIO-Debouncer C CXX ASM)
+project(test-GPIO-EdgeDetector C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
@@ -37,25 +37,25 @@ add_subdirectory(../.. jxglib)
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(testapp-GPIO-Debouncer testapp-GPIO-Debouncer.cpp )
+add_executable(test-GPIO-EdgeDetector test-GPIO-EdgeDetector.cpp )
 
-pico_set_program_name(testapp-GPIO-Debouncer "testapp-GPIO-Debouncer")
-pico_set_program_version(testapp-GPIO-Debouncer "0.1")
+pico_set_program_name(test-GPIO-EdgeDetector "test-GPIO-EdgeDetector")
+pico_set_program_version(test-GPIO-EdgeDetector "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(testapp-GPIO-Debouncer 1)
-pico_enable_stdio_usb(testapp-GPIO-Debouncer 0)
+pico_enable_stdio_uart(test-GPIO-EdgeDetector 1)
+pico_enable_stdio_usb(test-GPIO-EdgeDetector 0)
 
 # Add the standard library to the build
-target_link_libraries(testapp-GPIO-Debouncer
+target_link_libraries(test-GPIO-EdgeDetector
 	pico_stdlib
 	jxglib_Common)
 
 # Add the standard include files to the build
-target_include_directories(testapp-GPIO-Debouncer PRIVATE
+target_include_directories(test-GPIO-EdgeDetector PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}
 	${CMAKE_CURRENT_LIST_DIR}/.. # for our common lwipopts or any other standard includes, if required
 )
 
-pico_add_extra_outputs(testapp-GPIO-Debouncer)
+pico_add_extra_outputs(test-GPIO-EdgeDetector)
 
