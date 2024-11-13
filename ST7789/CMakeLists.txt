@@ -11,4 +11,4 @@ target_link_libraries(jxglib_ST7789 INTERFACE
 	jxglib_Image)
 
 target_sources(jxglib_ST7789 INTERFACE
-	${CMAKE_CURRENT_LIST_DIR}/src/ST7789.cpp)
+	${CMAKE_CURRENT_LIST_DIR}/src/ST7735_ST7789.cpp)

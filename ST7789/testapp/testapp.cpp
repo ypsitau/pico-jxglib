@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "jxglib/ST7789.h"
+#include "jxglib/ST7735.h"
 #include "jxglib/Common.h"
 #include "Font/shinonome16.h"
 #include "ImageData.h"
@@ -8,7 +8,7 @@
 
 using namespace jxglib;
 
-void Test_BouncingBall(ST7789_ST7735& display)
+void Test_BouncingBall(ST7735_ST7789& display)
 {
 	int x = 10, y = 10;
 	int xDir = 1, yDir = 1;
@@ -27,7 +27,7 @@ void Test_BouncingBall(ST7789_ST7735& display)
 	}
 }
 
-void Test_DrawString(ST7789_ST7735& display)
+void Test_DrawString(ST7735_ST7789& display)
 {
 	display.Clear();
 	display.SetFont(Font::shinonome16);
@@ -49,7 +49,7 @@ void Test_DrawString(ST7789_ST7735& display)
 	}
 }
 
-void Test_DrawStringWrap(ST7789_ST7735& display)
+void Test_DrawStringWrap(ST7735_ST7789& display)
 {
 	const char* strTbl[] = {
 		" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxy{|}~",
@@ -84,7 +84,7 @@ void Test_DrawStringWrap(ST7789_ST7735& display)
 	}
 }
 
-void Test_DrawImage(ST7789_ST7735& display)
+void Test_DrawImage(ST7735_ST7789& display)
 {
 	display.Clear();
 	display.DrawImage(0, 0, image);
