@@ -8,7 +8,7 @@
 
 using namespace jxglib;
 
-void Test_BouncingBall(ST7789& display)
+void Test_BouncingBall(ST7789_ST7735& display)
 {
 	int x = 10, y = 10;
 	int xDir = 1, yDir = 1;
@@ -27,7 +27,7 @@ void Test_BouncingBall(ST7789& display)
 	}
 }
 
-void Test_DrawString(ST7789& display)
+void Test_DrawString(ST7789_ST7735& display)
 {
 	display.Clear();
 	display.SetFont(Font::shinonome16);
@@ -49,7 +49,7 @@ void Test_DrawString(ST7789& display)
 	}
 }
 
-void Test_DrawStringWrap(ST7789& display)
+void Test_DrawStringWrap(ST7789_ST7735& display)
 {
 	const char* strTbl[] = {
 		" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxy{|}~",
@@ -84,7 +84,7 @@ void Test_DrawStringWrap(ST7789& display)
 	}
 }
 
-void Test_DrawImage(ST7789& display)
+void Test_DrawImage(ST7789_ST7735& display)
 {
 	display.Clear();
 	display.DrawImage(0, 0, image);
@@ -97,11 +97,12 @@ int main()
 	GPIO18.set_function_SPI0_SCK();
 	GPIO19.set_function_SPI0_TX();
 	//ST7789 display(spi0, 240, 240, GPIO20, GPIO21, GPIO22);
-	ST7789 display(spi0, 240, 320, GPIO20, GPIO21, GPIO22, GPIO23);
+	//ST7789 display(spi0, 240, 320, GPIO20, GPIO21, GPIO22, GPIO23);
+	ST7735 display(spi0, 120, 160, GPIO20, GPIO21, GPIO22, GPIO23);
 	display.Initialize();
 	//Test_BouncingBall(display);
 	//Test_WriteBuffer(display);
 	//Test_DrawString(display);
-	Test_DrawStringWrap(display);
-	//Test_DrawImage(display);
+	//Test_DrawStringWrap(display);
+	Test_DrawImage(display);
 }

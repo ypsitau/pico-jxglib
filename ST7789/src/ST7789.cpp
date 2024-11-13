@@ -6,9 +6,9 @@
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// ST7789
+// ST7789_ST7735
 //------------------------------------------------------------------------------
-void ST7789::Initialize()
+void ST7789_ST7735::Initialize()
 {
 	raw.InitGPIO();
 	raw.SoftwareReset();
@@ -16,19 +16,17 @@ void ST7789::Initialize()
 	raw.SleepOut();
 	::sleep_ms(50);
 	raw.InterfacePixelFormat(5, 5);
-			// RGB interface color format     = 65K of RGB interface
+			// RGB interface color format     = 65K of RGB interface. No effect on ST7735.
 			// Control interface color format = 16bit/pixel
 	::sleep_ms(10);
-	raw.MemoryDataAccessControl(0, 0, 0, 0, 0, 0);
+	raw.MemoryDataAccessControl(0, 0, 0, 0, rgbBgrOrder_, 0);
 			// Page Address Order            = Top to Bottom
 			// Column Address Order          = Left to Right
 			// Page/Column Order             = Normal Mode
 			// Line Address Order            = LCD Refresh Top to Bottom
 			// RGB/BGR Order                 = RGB
 			// Display Data Latch Data Order = LCD Refresh Left to Right
-	raw.ColumnAddressSet(0, GetWidth());
-	raw.RowAddressSet(0, GetHeight());
-	raw.DisplayInversionOn();
+	if (displayInversionOnFlag_) raw.DisplayInversionOn();
 	::sleep_ms(10);
 	raw.NormalDisplayModeOn();
 	::sleep_ms(10);
@@ -38,28 +36,28 @@ void ST7789::Initialize()
 	raw.SetGPIO_BL(true);
 }
 
-void ST7789::Clear()
+void ST7789_ST7735::Clear()
 {
 	raw.ColumnAddressSet(0, GetWidth() - 1);
 	raw.RowAddressSet(0, GetHeight() - 1);
 	raw.MemoryWriteConst16(context_.colorBg.RGB565(), GetWidth() * GetHeight());
 }
 
-void ST7789::Fill()
+void ST7789_ST7735::Fill()
 {
 	raw.ColumnAddressSet(0, GetWidth() - 1);
 	raw.RowAddressSet(0, GetHeight() - 1);
 	raw.MemoryWriteConst16(context_.colorFg.RGB565(), GetWidth() * GetHeight());
 }
 
-void ST7789::DrawPixel_(int x, int y, const Color& color)
+void ST7789_ST7735::DrawPixel_(int x, int y, const Color& color)
 {
 	raw.ColumnAddressSet(x, x);
 	raw.RowAddressSet(y, y);
 	raw.MemoryWriteConst16(color.RGB565(), 1);
 }
 
-void ST7789::DrawRectFill_(int x, int y, int width, int height, const Color& color)
+void ST7789_ST7735::DrawRectFill_(int x, int y, int width, int height, const Color& color)
 {
 	if (!AdjustRange(&x, &width, 0, GetWidth())) return;
 	if (!AdjustRange(&y, &height, 0, GetHeight())) return;
@@ -68,7 +66,7 @@ void ST7789::DrawRectFill_(int x, int y, int width, int height, const Color& col
 	raw.MemoryWriteConst16(color.RGB565(), width * height);
 }
 
-void ST7789::DrawBitmap_(int x, int y, const void* data, int width, int height,
+void ST7789_ST7735::DrawBitmap_(int x, int y, const void* data, int width, int height,
 					const Color& color, const Color* pColorBg, int scaleX, int scaleY)
 {
 	int nDots = width * height;
@@ -99,7 +97,7 @@ void ST7789::DrawBitmap_(int x, int y, const void* data, int width, int height,
 	raw.MemoryWrite_End();
 }
 
-void ST7789::DrawImage_(int x, int y, const Image& image)
+void ST7789_ST7735::DrawImage_(int x, int y, const Image& image)
 {
 	int xSkip = 0, ySkip = 0;
 	int width = image.GetWidth(), height = image.GetHeight();
@@ -117,9 +115,9 @@ void ST7789::DrawImage_(int x, int y, const Image& image)
 }
 
 //------------------------------------------------------------------------------
-// ST7789::Raw
+// ST7789_ST7735::Raw
 //------------------------------------------------------------------------------
-void ST7789::Raw::InitGPIO()
+void ST7789_ST7735::Raw::InitGPIO()
 {
 	::gpio_init(gpio_DC_);
 	::gpio_init(gpio_RST_);
@@ -139,7 +137,7 @@ void ST7789::Raw::InitGPIO()
 	SetSPIDataBits(8);
 }
 
-void ST7789::Raw::WriteCmd(uint8_t cmd)
+void ST7789_ST7735::Raw::WriteCmd(uint8_t cmd)
 {
 	::gpio_put(gpio_DC_, 0);
 	::sleep_us(1);
@@ -148,14 +146,14 @@ void ST7789::Raw::WriteCmd(uint8_t cmd)
 	::gpio_put(gpio_DC_, 1);
 }
 
-void ST7789::Raw::SendCmd(uint8_t cmd)
+void ST7789_ST7735::Raw::SendCmd(uint8_t cmd)
 {
 	EnableCS();
 	WriteCmd(cmd);
 	DisableCS();
 }
 
-void ST7789::Raw::SendCmdAndData8(uint8_t cmd, const uint8_t* data, int len)
+void ST7789_ST7735::Raw::SendCmdAndData8(uint8_t cmd, const uint8_t* data, int len)
 {
 	EnableCS();
 	WriteCmd(cmd);
@@ -164,7 +162,7 @@ void ST7789::Raw::SendCmdAndData8(uint8_t cmd, const uint8_t* data, int len)
 	DisableCS();
 }
 
-void ST7789::Raw::SendCmdAndData16(uint8_t cmd, const uint16_t* data, int len)
+void ST7789_ST7735::Raw::SendCmdAndData16(uint8_t cmd, const uint16_t* data, int len)
 {
 	EnableCS();
 	WriteCmd(cmd);

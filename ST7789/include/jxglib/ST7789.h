@@ -17,9 +17,9 @@
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// ST7789
+// ST7789_ST7735
 //------------------------------------------------------------------------------
-class ST7789 : public Drawable {
+class ST7789_ST7735 : public Drawable {
 public:
 	class Raw {
 	private:
@@ -247,11 +247,18 @@ public:
 	};
 public:
 	Raw raw;
+protected:
+	uint8_t rgbBgrOrder_;
+	bool displayInversionOnFlag_;
 public:
-	ST7789(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_BL, GPIO gpio_CS) :
-		Drawable(width, height), raw(spi, gpio_RST, gpio_DC, gpio_BL, gpio_CS) {}
-	ST7789(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_BL) :
-		Drawable(width, height), raw(spi, gpio_RST, gpio_DC, gpio_BL) {}
+	ST7789_ST7735(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_CS, GPIO gpio_BL,
+									uint8_t rgbBgrOrder, bool displayInversionOnFlag) :
+		Drawable(width, height), raw(spi, gpio_RST, gpio_DC, gpio_CS, gpio_BL),
+		rgbBgrOrder_{rgbBgrOrder}, displayInversionOnFlag_{displayInversionOnFlag} {}
+	ST7789_ST7735(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_BL,
+									uint8_t rgbBgrOrder, bool displayInversionOnFlag) :
+		Drawable(width, height), raw(spi, gpio_RST, gpio_DC, gpio_BL),
+		rgbBgrOrder_{rgbBgrOrder}, displayInversionOnFlag_{displayInversionOnFlag} {}
 public:
 	void Initialize();
 	bool UsesCS() { return raw.UsesCS(); }
@@ -266,6 +273,28 @@ public:
 	virtual void DrawBitmap_(int x, int y, const void* data, int width, int height,
 		const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override;
 	virtual void DrawImage_(int x, int y, const Image& image) override;
+};
+
+//------------------------------------------------------------------------------
+// ST7789
+//------------------------------------------------------------------------------
+class ST7789 : public ST7789_ST7735 {
+public:
+	ST7789(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_CS, GPIO gpio_BL) :
+			ST7789_ST7735(spi, width, height, gpio_RST, gpio_DC, gpio_CS, gpio_BL, 0, true) {}
+	ST7789(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_BL) :
+			ST7789_ST7735(spi, width, height, gpio_RST, gpio_DC, gpio_BL, 0, true) {}
+};
+
+//------------------------------------------------------------------------------
+// ST7735
+//------------------------------------------------------------------------------
+class ST7735 : public ST7789_ST7735 {
+public:
+	ST7735(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_CS, GPIO gpio_BL) :
+			ST7789_ST7735(spi, width, height, gpio_RST, gpio_DC, gpio_CS, gpio_BL, 1, false) {}
+	ST7735(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_BL) :
+			ST7789_ST7735(spi, width, height, gpio_RST, gpio_DC, gpio_BL, 1, false) {}
 };
 
 }
