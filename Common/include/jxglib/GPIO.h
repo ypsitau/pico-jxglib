@@ -9,6 +9,8 @@
 
 namespace jxglib {
 
+class GPIO_ADC;
+
 //------------------------------------------------------------------------------
 // GPIO
 //------------------------------------------------------------------------------
@@ -16,7 +18,7 @@ class GPIO {
 public:
 	uint pin;
 public:
-	GPIO(uint pin) : pin{pin} {}
+	explicit GPIO(uint pin) : pin{pin} {}
 	GPIO(const GPIO& gpio) : pin{gpio.pin} {}
 	operator uint() const { return pin; }
 	bool IsValid() const { return pin != static_cast<uint>(-1); }
@@ -115,15 +117,42 @@ public:
 	const GPIO& pwm_force_irq_slice() const					{ ::pwm_force_irq(pwm_slice_num()); return *this; }
 	uint pwm_get_dreq_slice() const							{ return ::pwm_get_dreq(pwm_slice_num()); }
 public:
-	static void adc_set_round_robin(const GPIO& gpio1, bool tempSensor = false)
-		{ ::adc_set_round_robin((1 << gpio1.pin) | (tempSensor? (1 << 4) : 0)); }
-	static void adc_set_round_robin(const GPIO& gpio1, const GPIO& gpio2, bool tempSensor = false)
-		{ ::adc_set_round_robin((1 << gpio1.pin) | (1 << gpio2.pin) | (tempSensor? (1 << 4) : 0)); }
-	static void adc_set_round_robin(const GPIO& gpio1, const GPIO& gpio2, const GPIO& gpio3, bool tempSensor = false)
-		{ ::adc_set_round_robin((1 << gpio1.pin) | (1 << gpio2.pin) | (1 << gpio3.pin) | (tempSensor? (1 << 4) : 0)); }
-	static void adc_set_round_robin(const GPIO& gpio1, const GPIO& gpio2, const GPIO& gpio3, const GPIO& gpio4, bool tempSensor = false)
-		{ ::adc_set_round_robin((1 << gpio1.pin) | (1 << gpio2.pin) | (1 << gpio3.pin) | (1 << gpio4.pin) | (tempSensor? (1 << 4) : 0)); }
+	static inline void adc_set_round_robin(const GPIO_ADC& gpio1, bool tempSensor = false);
+	static inline void adc_set_round_robin(const GPIO_ADC& gpio1, const GPIO_ADC& gpio2, bool tempSensor = false);
+	static inline void adc_set_round_robin(const GPIO_ADC& gpio1, const GPIO_ADC& gpio2, const GPIO_ADC& gpio3, bool tempSensor = false);
+	static inline void adc_set_round_robin(const GPIO_ADC& gpio1, const GPIO_ADC& gpio2, const GPIO_ADC& gpio3, const GPIO_ADC& gpio4, bool tempSensor = false);
 };
+
+class GPIO_ADC : public GPIO {
+public:
+	GPIO_ADC(uint pin) : GPIO(pin) {}
+public:
+	uint adc_input() const { return pin - 26; }
+public:
+	const GPIO& adc_init() const			{ ::adc_gpio_init(pin); return *this; }
+	const GPIO& adc_select_input() const	{ ::adc_select_input(adc_input()); return *this; }
+	uint16_t adc_read() const				{ adc_select_input(); return ::adc_read(); }
+};
+
+inline void GPIO::adc_set_round_robin(const GPIO_ADC& gpio1, bool tempSensor)
+{
+	::adc_set_round_robin((1 << gpio1.adc_input()) | (tempSensor? (1 << 4) : 0));
+}
+
+inline void GPIO::adc_set_round_robin(const GPIO_ADC& gpio1, const GPIO_ADC& gpio2, bool tempSensor)
+{
+	::adc_set_round_robin((1 << gpio1.adc_input()) | (1 << gpio2.adc_input()) | (tempSensor? (1 << 4) : 0));
+}
+
+inline void GPIO::adc_set_round_robin(const GPIO_ADC& gpio1, const GPIO_ADC& gpio2, const GPIO_ADC& gpio3, bool tempSensor)
+{
+	::adc_set_round_robin((1 << gpio1.adc_input()) | (1 << gpio2.adc_input()) | (1 << gpio3.adc_input()) | (tempSensor? (1 << 4) : 0));
+}
+
+inline void GPIO::adc_set_round_robin(const GPIO_ADC& gpio1, const GPIO_ADC& gpio2, const GPIO_ADC& gpio3, const GPIO_ADC& gpio4, bool tempSensor)
+{
+	::adc_set_round_robin((1 << gpio1.adc_input()) | (1 << gpio2.adc_input()) | (1 << gpio3.adc_input()) | (1 << gpio4.adc_input()) | (tempSensor? (1 << 4) : 0));
+}
 
 //------------------------------------------------------------------------------
 // GPIO derivations for each port
@@ -399,56 +428,44 @@ public:
 	const GPIO& set_function_USB_VBUS_DET() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
 };
 
-class GPIO26_T : public GPIO {
+class GPIO26_T : public GPIO_ADC {
 public:
-	GPIO26_T() : GPIO(26) {}
+	GPIO26_T() : GPIO_ADC(26) {}
 	const GPIO& set_function_SPI1_SCK() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
 	const GPIO& set_function_UART0_CTS() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
 	const GPIO& set_function_I2C1_SDA() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
 	const GPIO& set_function_PWM5_A() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
 	const GPIO& set_function_USB_VBUS_EN() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
-public:
-	const GPIO& adc_gpio_init() const				{ ::adc_gpio_init(pin); return *this; }
-	const GPIO& adc_select_input() const			{ ::adc_select_input(0); return *this; }
 };
 
-class GPIO27_T : public GPIO {
+class GPIO27_T : public GPIO_ADC {
 public:
-	GPIO27_T() : GPIO(27) {}
+	GPIO27_T() : GPIO_ADC(27) {}
 	const GPIO& set_function_SPI1_TX() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
 	const GPIO& set_function_UART1_RTS() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
 	const GPIO& set_function_I2C1_SCL() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
 	const GPIO& set_function_PWM5_B() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
 	const GPIO& set_function_USB_OVCUR_DET() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
-public:
-	const GPIO& adc_gpio_init() const				{ ::adc_gpio_init(pin); return *this; }
-	const GPIO& adc_select_input() const			{ ::adc_select_input(1); return *this; }
 };
 
-class GPIO28_T : public GPIO {
+class GPIO28_T : public GPIO_ADC {
 public:
-	GPIO28_T() : GPIO(28) {}
+	GPIO28_T() : GPIO_ADC(28) {}
 	const GPIO& set_function_SPI1_RX() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
 	const GPIO& set_function_UART0_TX() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
 	const GPIO& set_function_I2C0_SDA() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
 	const GPIO& set_function_PWM6_A() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
 	const GPIO& set_function_USB_VBUS_DET() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
-public:
-	const GPIO& adc_gpio_init() const				{ ::adc_gpio_init(pin); return *this; }
-	const GPIO& adc_select_input() const			{ ::adc_select_input(2); return *this; }
 };
 
-class GPIO29_T : public GPIO {
+class GPIO29_T : public GPIO_ADC {
 public:
-	GPIO29_T() : GPIO(29) {}
+	GPIO29_T() : GPIO_ADC(29) {}
 	const GPIO& set_function_SPI1_CSn() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
 	const GPIO& set_function_UART0_RX() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
 	const GPIO& set_function_I2C0_SCL() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
 	const GPIO& set_function_PWM6_B() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
 	const GPIO& set_function_USB_VBUS_EN() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
-public:
-	const GPIO& adc_gpio_init() const				{ ::adc_gpio_init(pin); return *this; }
-	const GPIO& adc_select_input() const			{ ::adc_select_input(3); return *this; }
 };
 
 extern const GPIO_Invalid_T GPIO_Invalid;

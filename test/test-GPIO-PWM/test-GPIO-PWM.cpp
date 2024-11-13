@@ -24,15 +24,4 @@ int main()
     GPIO13.set_function_PWM6_B();
     GPIO14.set_function_PWM7_A();
     GPIO15.set_function_PWM7_B();
-
-    ::adc_init();
-    GPIO26.adc_gpio_init();
-    GPIO27.adc_gpio_init();
-    GPIO28.adc_gpio_init();
-    GPIO29.adc_gpio_init();
-    GPIO26.adc_select_input();
-    GPIO27.adc_select_input();
-    GPIO28.adc_select_input();
-    GPIO29.adc_select_input();
-    GPIO::adc_set_round_robin(GPIO26, GPIO27, GPIO28, GPIO29, true);
 }

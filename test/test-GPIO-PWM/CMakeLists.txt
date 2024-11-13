@@ -28,7 +28,7 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(testapp-PWM C CXX ASM)
+project(test-GPIO-PWM C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
@@ -37,25 +37,25 @@ add_subdirectory(../.. jxglib)
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(testapp-PWM testapp-PWM.cpp )
+add_executable(test-GPIO-PWM test-GPIO-PWM.cpp )
 
-pico_set_program_name(testapp-PWM "testapp-PWM")
-pico_set_program_version(testapp-PWM "0.1")
+pico_set_program_name(test-GPIO-PWM "test-GPIO-PWM")
+pico_set_program_version(test-GPIO-PWM "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(testapp-PWM 1)
-pico_enable_stdio_usb(testapp-PWM 0)
+pico_enable_stdio_uart(test-GPIO-PWM 1)
+pico_enable_stdio_usb(test-GPIO-PWM 0)
 
 # Add the standard library to the build
-target_link_libraries(testapp-PWM
+target_link_libraries(test-GPIO-PWM
 	pico_stdlib
 	jxglib_Common)
 
 # Add the standard include files to the build
-target_include_directories(testapp-PWM PRIVATE
+target_include_directories(test-GPIO-PWM PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}
 	${CMAKE_CURRENT_LIST_DIR}/.. # for our common lwipopts or any other standard includes, if required
 )
 
-pico_add_extra_outputs(testapp-PWM)
+pico_add_extra_outputs(test-GPIO-PWM)
 
