@@ -101,7 +101,7 @@ int main()
 	GPIO10.set_function_SPI1_SCK();
 	GPIO11.set_function_SPI1_TX();
 	//ST7789 display(spi0, 240, 240, GPIO20, GPIO21, GPIO22);
-	ST7735 display1(spi0, 120, 160, GPIO20, GPIO21, GPIO22, GPIO23);
+	ST7735 display1(spi0, 128, 160, GPIO20, GPIO21, GPIO22, GPIO23);
 	ST7789 display2(spi1, 240, 320, GPIO12, GPIO13, GPIO14, GPIO15);
 	
 	display1.Initialize();

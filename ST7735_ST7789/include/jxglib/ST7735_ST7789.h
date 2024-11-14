@@ -244,20 +244,13 @@ public:
 	};
 public:
 	Raw raw;
-protected:
-	uint8_t rgbBgrOrder_;
-	bool displayInversionOnFlag_;
 public:
-	ST7735_ST7789(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_CS, GPIO gpio_BL,
-									uint8_t rgbBgrOrder, bool displayInversionOnFlag) :
-		Display(width, height), raw(spi, gpio_RST, gpio_DC, gpio_CS, gpio_BL),
-		rgbBgrOrder_{rgbBgrOrder}, displayInversionOnFlag_{displayInversionOnFlag} {}
-	ST7735_ST7789(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_BL,
-									uint8_t rgbBgrOrder, bool displayInversionOnFlag) :
-		Display(width, height), raw(spi, gpio_RST, gpio_DC, gpio_BL),
-		rgbBgrOrder_{rgbBgrOrder}, displayInversionOnFlag_{displayInversionOnFlag} {}
+	ST7735_ST7789(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_CS, GPIO gpio_BL) :
+		Display(width, height), raw(spi, gpio_RST, gpio_DC, gpio_CS, gpio_BL) {}
+	ST7735_ST7789(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_BL) :
+		Display(width, height), raw(spi, gpio_RST, gpio_DC, gpio_BL) {}
 public:
-	void Initialize();
+	void Initialize(uint8_t rgbBgrOrder, bool displayInversionOnFlag);
 	bool UsesCS() { return raw.UsesCS(); }
 public:
 	int GetBytesPerLine() const { return GetWidth() * 2; }
