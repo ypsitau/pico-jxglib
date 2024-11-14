@@ -56,7 +56,7 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-ST7736_ST7739 C CXX ASM)
+project(test-ST7735_ST7789 C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
@@ -65,23 +65,23 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. jxglib)
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-ST7736_ST7739 test-ST7736_ST7739.cpp)
+add_executable(test-ST7735_ST7789 test-ST7735_ST7789.cpp)
 
-pico_set_program_name(test-ST7736_ST7739 "test-ST7736_ST7739")
-pico_set_program_version(test-ST7736_ST7739 "0.1")
+pico_set_program_name(test-ST7735_ST7789 "test-ST7735_ST7789")
+pico_set_program_version(test-ST7735_ST7789 "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-ST7736_ST7739 1)
-pico_enable_stdio_usb(test-ST7736_ST7739 0)
+pico_enable_stdio_uart(test-ST7735_ST7789 1)
+pico_enable_stdio_usb(test-ST7735_ST7789 0)
 
 # Add the standard library to the build
-target_link_libraries(test-ST7736_ST7739
+target_link_libraries(test-ST7735_ST7789
 	pico_stdlib jxglib_ST7789)
 
 # Add the standard include files to the build
-target_include_directories(test-ST7736_ST7739 PRIVATE
+target_include_directories(test-ST7735_ST7789 PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}
 	${CMAKE_CURRENT_LIST_DIR}/.. # for our common lwipopts or any other standard includes, if required
 )
 
-pico_add_extra_outputs(test-ST7736_ST7739)
+pico_add_extra_outputs(test-ST7735_ST7789)
