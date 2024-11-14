@@ -9,7 +9,7 @@
 #include "Font/shinonome18.h"
 #include "Font/sisd8x16.h"
 #include "Font/sisd24x32.h"
-#include "image/image_cat_128x160.h"
+#include "image/image_cat_128x170.h"
 #include "image/image_cat_240x320.h"
 
 #define ArrayNumberOf(x) (sizeof(x) / sizeof(x[0]))
@@ -191,7 +191,8 @@ void Test_DrawString(Display& display)
 	}
 }
 
-void Test_DrawStringWrap(Display& display, int fontScale)
+//void Test_DrawStringWrap(Display& display, int fontScale)
+void Test_DrawStringWrap(Display* displayTbl[], int nDisplays, int fontScale)
 {
 	const char* strTbl[] = {
 		" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxy{|}~",
@@ -208,23 +209,31 @@ void Test_DrawStringWrap(Display& display, int fontScale)
 	int iFont = 0;
 	int iStr = 0;
 	const char* p = strTbl[iStr++];
-	display.SetColor(Color::white);
-	display.SetColorBg(Color::black);
+	for (int iDisplay = 0; iDisplay < nDisplays; iDisplay++) {
+		Display& display = *displayTbl[iDisplay];
+		display.SetColor(Color::white);
+		display.SetColorBg(Color::black);
+	}
 	for (;;) {
-		if (!*p) {
-			if (iStr >= ArrayNumberOf(strTbl) || ((*strTbl[iStr] & 0x80 != 0) && !fontSetTbl[iFont]->HasExtraFont())) {
-				iStr = 0;
-				iFont++;
-				if (iFont >= ArrayNumberOf(fontSetTbl)) {
-					iFont = 0;
-				}
-			}
-			p = strTbl[iStr++];
+		//if (!*p) {
+		//	if (iStr >= ArrayNumberOf(strTbl) || ((*strTbl[iStr] & 0x80 != 0) && !fontSetTbl[iFont]->HasExtraFont())) {
+		//		iStr = 0;
+		//		iFont++;
+		//		if (iFont >= ArrayNumberOf(fontSetTbl)) {
+		//			iFont = 0;
+		//		}
+		//	}
+		//	p = strTbl[iStr++];
+		//}
+		p = strTbl[iStr++];
+		if (iStr >= ArrayNumberOf(strTbl)) iStr = 0;
+		for (int iDisplay = 0; iDisplay < nDisplays; iDisplay++) {
+			Display& display = *displayTbl[iDisplay];
+			display.SetFont(*fontSetTbl[iFont], fontScale);
+			display.Clear();
+			display.DrawStringWrap(0, 0, p);
+			display.Refresh();
 		}
-		display.SetFont(*fontSetTbl[iFont], fontScale);
-		display.Clear();
-		p = display.DrawStringWrap(0, 0, p);
-		display.Refresh();
 		::sleep_ms(200);
 	}
 }
@@ -242,6 +251,7 @@ int main()
 	ST7789 display1(spi0, 240, 320, GPIO20, GPIO21, GPIO22, GPIO23);
 	ST7735::TypeB display2(spi0, 130, 161, GPIO4, GPIO5, GPIO6, GPIO7);
 	ILI9341 display3(spi1, 240, 320, GPIO12, GPIO13, GPIO14, GPIO15);
+	Display* displayTbl[] = { &display1, &display2, &display3 };
 	//ST7789::TypeA display2(spi1, 240, 320, GPIO12, GPIO13, GPIO14, GPIO15);
 	display1.Initialize();
 	display2.Initialize();
@@ -250,9 +260,9 @@ int main()
 	//Test_WriteBuffer(display);
 	//Test_DrawString(display);
 	//Test_DrawStringWrap(display);
-	display1.Clear().DrawImage(0, 0, image_cat_240x320);
-	display2.Clear().DrawImage(0, 0, image_cat_128x160);
-	display3.Clear().DrawImage(0, 0, image_cat_240x320);
+	//display1.Clear().DrawImage(0, 0, image_cat_240x320);
+	//display2.Clear().DrawImage(0, 0, image_cat_128x170);
+	//display3.Clear().DrawImage(0, 0, image_cat_240x320);
 	//Test_DrawLine(display2);
-	//Test_DrawStringWrap(display2, 2);
+	Test_DrawStringWrap(displayTbl, 3, 1);
 }

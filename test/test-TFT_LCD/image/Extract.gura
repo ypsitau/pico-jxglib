@@ -4,14 +4,13 @@ main() = {
 	fileNameSrc = 'cat.jpg'
 	imageSrc = Image(fileNameSrc).Rotate(90)
 	baseNameSrc = path.BaseName(fileNameSrc)
-	WriteImageHeaderFile('image_' + baseNameSrc + '_240x320',
-							imageSrc.Resize(240, nil).Crop(0, 30, 240, 320))
-	WriteImageHeaderFile('image_' + baseNameSrc + '_128x160',
-							imageSrc.Resize(128, nil).Crop(0, 20, 128, 160))
+	WriteImageHeaderFile(baseNameSrc, imageSrc.Resize(240, nil))
+	WriteImageHeaderFile(baseNameSrc, imageSrc.Resize(128, nil))
 }
 
-WriteImageHeaderFile(varName as String, image as Image) = {
+WriteImageHeaderFile(baseNameSrc as String, image as Image) = {
 	iCol = 0
+	varName = Format('image_%s_%dx%d', baseNameSrc, image.width, image.height)
 	Open(varName + '.h', 'w') {|fout|
 		fout.Println(e'const jxglib::Image ${varName} { jxglib::Image::Format::RGB565, ${image.width}, ${image.height},')
 		image.Scan():pixel {|pixel|
