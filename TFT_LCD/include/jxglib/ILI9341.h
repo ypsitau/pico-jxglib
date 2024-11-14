@@ -5,14 +5,14 @@
 #define PICO_JXGLIB_ILI9341_H
 #include "jxglib/TFT_LCD.h"
 
-namespace jxglib {
+namespace jxglib { namespace ILI9341 {
 
 //------------------------------------------------------------------------------
-// ILI9341
+// ILI9341::TypeA
 //------------------------------------------------------------------------------
-class ILI9341 : public TFT_LCD {
+class TypeA : public TFT_LCD {
 public:
-	ILI9341(spi_inst_t* spi, int width, int height, GPIO gpio_DC, GPIO gpio_RST, GPIO gpio_CS, GPIO gpio_BL) :
+	TypeA(spi_inst_t* spi, int width, int height, GPIO gpio_DC, GPIO gpio_RST, GPIO gpio_CS, GPIO gpio_BL) :
 			TFT_LCD(spi, width, height, gpio_RST, gpio_DC, gpio_CS, gpio_BL) { SetConfigData(); }
 private:
 	void SetConfigData() {
@@ -23,9 +23,10 @@ private:
 		configData.rgbBgrOrder				= RGBBGROrder::BGR;
 		configData.displayDataLatchOrder	= DisplayDataLatchOrder::LeftToRight;
 		configData.displayInversionOnFlag	= false;
+		configData.gammaCurve				= 0x01;
 	}
 };
 
-}
+} }
 
 #endif

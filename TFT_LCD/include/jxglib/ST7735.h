@@ -25,6 +25,7 @@ private:
 		configData.rgbBgrOrder				= RGBBGROrder::BGR;
 		configData.displayDataLatchOrder	= DisplayDataLatchOrder::LeftToRight;
 		configData.displayInversionOnFlag	= false;
+		configData.gammaCurve				= 0x01;
 	}
 };
 
@@ -46,6 +47,7 @@ private:
 		configData.rgbBgrOrder				= RGBBGROrder::RGB;
 		configData.displayDataLatchOrder	= DisplayDataLatchOrder::LeftToRight;
 		configData.displayInversionOnFlag	= false;
+		configData.gammaCurve				= 0x02;
 	}
 };
 

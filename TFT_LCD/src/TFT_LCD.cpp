@@ -26,6 +26,8 @@ void TFT_LCD::Initialize()
 	::sleep_ms(10);
 	raw.NormalDisplayModeOn();
 	::sleep_ms(10);
+	raw.GammaSet(configData.gammaCurve);
+	::sleep_ms(10);
 	raw.DisplayOn();
 	Clear();
 	::sleep_ms(10);

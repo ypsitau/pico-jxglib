@@ -5,16 +5,16 @@
 #define PICO_JXGLIB_ST7789_H
 #include "jxglib/TFT_LCD.h"
 
-namespace jxglib {
+namespace jxglib { namespace ST7789 {
 
 //------------------------------------------------------------------------------
-// ST7789
+// ST7789::TypeA
 //------------------------------------------------------------------------------
-class ST7789 : public TFT_LCD {
+class TypeA : public TFT_LCD {
 public:
-	ST7789(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_CS, GPIO gpio_BL) :
+	TypeA(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_CS, GPIO gpio_BL) :
 			TFT_LCD(spi, width, height, gpio_RST, gpio_DC, gpio_CS, gpio_BL) { SetConfigData(); }
-	ST7789(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_BL) :
+	TypeA(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_BL) :
 			TFT_LCD(spi, width, height, gpio_RST, gpio_DC, gpio_BL) { SetConfigData(); }
 private:
 	void SetConfigData() {
@@ -25,9 +25,10 @@ private:
 		configData.rgbBgrOrder				= RGBBGROrder::RGB;
 		configData.displayDataLatchOrder	= DisplayDataLatchOrder::LeftToRight;
 		configData.displayInversionOnFlag	= true;
+		configData.gammaCurve				= 0x01;
 	}
 };
 
-}
+} }
 
 #endif

@@ -50,6 +50,17 @@ public:
 		RGBBGROrder rgbBgrOrder;
 		DisplayDataLatchOrder displayDataLatchOrder;
 		bool displayInversionOnFlag;
+		uint8_t gammaCurve;
+	public:
+		ConfigData() :
+			pageAddressOrder		{PageAddressOrder::TopToBottom},
+			columnAddressOrder		{ColumnAddressOrder::LeftToRight},
+			pageColumnOrder			{PageColumnOrder::NormalMode},
+			lineAddressOrder		{LineAddressOrder::TopToBottom},
+			rgbBgrOrder				{RGBBGROrder::RGB},
+			displayDataLatchOrder	{DisplayDataLatchOrder::LeftToRight},
+			displayInversionOnFlag	{false},
+			gammaCurve				{0x01} {}
 	};
 	class Raw {
 	private:
