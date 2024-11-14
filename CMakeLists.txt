@@ -11,7 +11,7 @@ add_subdirectory(Font)
 add_subdirectory(Image)
 add_subdirectory(SSD1306)
 add_subdirectory(StepMotor)
-add_subdirectory(ST7735_ST7789)
+add_subdirectory(TFT_LCD)
 
 add_library(jxglib INTERFACE)
 
@@ -25,4 +25,4 @@ target_link_libraries(jxglib INTERFACE
 	jxglib_Image
 	jxglib_SSD1306
 	jxglib_StepMotor
-	jxglib_ST7735_ST7789)
+	jxglib_TFT_LCD)

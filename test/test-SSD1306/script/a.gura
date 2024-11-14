@@ -1,0 +1,26 @@
+import(png)
+
+//img = Image('C:/Users/ypsit/Downloads/skateboarding_16dp_FFFFFF.png')
+//img = Image('C:/Users/ypsit/Downloads/k0909_1.png')
+//img = Image('C:/Users/ypsit/Downloads/k0889_0.png')
+//img = Image('C:/Users/ypsit/Downloads/ifn1219.png')
+img = Image('C:/Users/ypsit/Downloads/ifn0963.png')
+img = img.Resize(nil, 64)
+Printf('%dx%d\n', img.width, img.height)
+//sys.Exit()
+data = 0
+nBits = 0
+img.Scan():pixel {|p|
+	data = (data << 1) | cond(p.color.a < 0x80, 0, 1)
+	nBits += 1
+	if (p.x == img.width - 1) {
+		data <<= 8 - nBits
+		Printf('0b%08b,\n', data)
+		data = 0
+		nBits = 0
+	} elsif (nBits == 8) {
+		Printf('0b%08b,', data)
+		data = 0
+		nBits = 0
+	}
+}
