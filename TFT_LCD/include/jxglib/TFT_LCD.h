@@ -51,16 +51,6 @@ public:
 		DisplayDataLatchOrder displayDataLatchOrder;
 		bool displayInversionOnFlag;
 		uint8_t gammaCurve;
-	public:
-		ConfigData() :
-			pageAddressOrder		{PageAddressOrder::TopToBottom},
-			columnAddressOrder		{ColumnAddressOrder::LeftToRight},
-			pageColumnOrder			{PageColumnOrder::NormalMode},
-			lineAddressOrder		{LineAddressOrder::TopToBottom},
-			rgbBgrOrder				{RGBBGROrder::RGB},
-			displayDataLatchOrder	{DisplayDataLatchOrder::LeftToRight},
-			displayInversionOnFlag	{false},
-			gammaCurve				{0x01} {}
 	};
 	class Raw {
 	private:
@@ -294,16 +284,14 @@ public:
 	};
 public:
 	Raw raw;
-	ConfigData configData;
 public:
 	TFT_LCD(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_CS, GPIO gpio_BL) :
 		Display(width, height), raw(spi, gpio_RST, gpio_DC, gpio_CS, gpio_BL) {}
 	TFT_LCD(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_BL) :
 		Display(width, height), raw(spi, gpio_RST, gpio_DC, gpio_BL) {}
 public:
-	void Initialize();
+	void Initialize(const ConfigData& cfg);
 	bool UsesCS() { return raw.UsesCS(); }
-public:
 	int GetBytesPerLine() const { return GetWidth() * 2; }
 public:
 	virtual void Refresh_() override;

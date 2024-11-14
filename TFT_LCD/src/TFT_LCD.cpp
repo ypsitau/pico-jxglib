@@ -8,7 +8,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // TFT_LCD
 //------------------------------------------------------------------------------
-void TFT_LCD::Initialize()
+void TFT_LCD::Initialize(const ConfigData& cfg)
 {
 	raw.InitGPIO();
 	raw.SoftwareReset();
@@ -19,14 +19,14 @@ void TFT_LCD::Initialize()
 			// RGB interface color format     = 65K of RGB interface. No effect on ST7735.
 			// Control interface color format = 16bit/pixel
 	::sleep_ms(10);
-	raw.MemoryDataAccessControl(configData.pageAddressOrder, configData.columnAddressOrder,
-			configData.pageColumnOrder, configData.lineAddressOrder,
-			configData.rgbBgrOrder, configData.displayDataLatchOrder);
-	if (configData.displayInversionOnFlag) raw.DisplayInversionOn();
+	raw.MemoryDataAccessControl(cfg.pageAddressOrder, cfg.columnAddressOrder,
+			cfg.pageColumnOrder, cfg.lineAddressOrder,
+			cfg.rgbBgrOrder, cfg.displayDataLatchOrder);
+	if (cfg.displayInversionOnFlag) raw.DisplayInversionOn();
 	::sleep_ms(10);
 	raw.NormalDisplayModeOn();
 	::sleep_ms(10);
-	raw.GammaSet(configData.gammaCurve);
+	raw.GammaSet(cfg.gammaCurve);
 	::sleep_ms(10);
 	raw.DisplayOn();
 	Clear();
