@@ -8,7 +8,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // ST7735_ST7789
 //------------------------------------------------------------------------------
-void ST7735_ST7789::Initialize(uint8_t rgbBgrOrder, bool displayInversionOnFlag)
+void ST7735_ST7789::Initialize()
 {
 	raw.InitGPIO();
 	raw.SoftwareReset();
@@ -19,14 +19,10 @@ void ST7735_ST7789::Initialize(uint8_t rgbBgrOrder, bool displayInversionOnFlag)
 			// RGB interface color format     = 65K of RGB interface. No effect on ST7735.
 			// Control interface color format = 16bit/pixel
 	::sleep_ms(10);
-	raw.MemoryDataAccessControl(0, 0, 0, 0, rgbBgrOrder, 0);
-			// Page Address Order            = Top to Bottom
-			// Column Address Order          = Left to Right
-			// Page/Column Order             = Normal Mode
-			// Line Address Order            = LCD Refresh Top to Bottom
-			// RGB/BGR Order                 = RGB
-			// Display Data Latch Data Order = LCD Refresh Left to Right
-	if (displayInversionOnFlag) raw.DisplayInversionOn();
+	raw.MemoryDataAccessControl(configData.pageAddressOrder, configData.columnAddressOrder,
+			configData.pageColumnOrder, configData.lineAddressOrder,
+			configData.rgbBgrOrder, configData.displayDataLatchOrder);
+	if (configData.displayInversionOnFlag) raw.DisplayInversionOn();
 	::sleep_ms(10);
 	raw.NormalDisplayModeOn();
 	::sleep_ms(10);

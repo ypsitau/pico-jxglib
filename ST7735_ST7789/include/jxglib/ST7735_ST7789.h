@@ -18,6 +18,39 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class ST7735_ST7789 : public Display {
 public:
+	enum class PageAddressOrder {
+		TopToBottom = 0,
+		BottomToTop = 1,
+	};
+	enum class ColumnAddressOrder {
+		LeftToRight = 0,
+		RightToLeft = 1,
+	};
+	enum class PageColumnOrder {
+		NormalMode = 0,
+		ReverseMode = 1,
+	};
+	enum class LineAddressOrder {
+		TopToBottom = 0,
+		BottomToTop = 1,
+	};
+	enum class RGBBGROrder {
+		RGB = 0,
+		BGR = 1,
+	};
+	enum class DisplayDataLatchOrder {
+		LeftToRight = 0,
+		RightToLeft = 1,
+	};
+	struct ConfigData {
+		PageAddressOrder pageAddressOrder;
+		ColumnAddressOrder columnAddressOrder;
+		PageColumnOrder pageColumnOrder;
+		LineAddressOrder lineAddressOrder;
+		RGBBGROrder rgbBgrOrder;
+		DisplayDataLatchOrder displayDataLatchOrder;
+		bool displayInversionOnFlag;
+	};
 	class Raw {
 	private:
 		spi_inst_t* spi_;
@@ -182,10 +215,16 @@ public:
 			SendCmd(0x35);
 		}
 		// 9.1.28 MADCTL (36h): Memory Data Access Control
-		void MemoryDataAccessControl(uint8_t pageAddressOrder, uint8_t columnAddressOrder, uint8_t pageColumnOrder,
-									uint8_t lineAddressOrder, uint8_t rgbBgrOrder, uint8_t displayDataLatchOrer) {
-			SendCmd(0x36, (pageAddressOrder << 7) | (columnAddressOrder << 6) | (pageColumnOrder << 5) |
-						(lineAddressOrder << 4) | (rgbBgrOrder << 3) | (displayDataLatchOrer << 2));
+		void MemoryDataAccessControl(PageAddressOrder pageAddressOrder, ColumnAddressOrder columnAddressOrder,
+				PageColumnOrder pageColumnOrder, LineAddressOrder lineAddressOrder,
+				RGBBGROrder rgbBgrOrder, DisplayDataLatchOrder displayDataLatchOrder) {
+			SendCmd(0x36,
+				(static_cast<uint8_t>(pageAddressOrder) << 7) |
+				(static_cast<uint8_t>(columnAddressOrder) << 6) |
+				(static_cast<uint8_t>(pageColumnOrder) << 5) |
+				(static_cast<uint8_t>(lineAddressOrder) << 4) |
+				(static_cast<uint8_t>(rgbBgrOrder) << 3) |
+				(static_cast<uint8_t>(displayDataLatchOrder) << 2));
 		}
 		// 9.1.29 VSCSAD (37h): Vertical Scroll Start Address to RAM
 		void VerticalScrollStartAddressToRAM(uint16_t vsp) {
@@ -244,13 +283,14 @@ public:
 	};
 public:
 	Raw raw;
+	ConfigData configData;
 public:
 	ST7735_ST7789(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_CS, GPIO gpio_BL) :
 		Display(width, height), raw(spi, gpio_RST, gpio_DC, gpio_CS, gpio_BL) {}
 	ST7735_ST7789(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_BL) :
 		Display(width, height), raw(spi, gpio_RST, gpio_DC, gpio_BL) {}
 public:
-	void Initialize(uint8_t rgbBgrOrder, bool displayInversionOnFlag);
+	void Initialize();
 	bool UsesCS() { return raw.UsesCS(); }
 public:
 	int GetBytesPerLine() const { return GetWidth() * 2; }
