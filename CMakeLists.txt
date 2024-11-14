@@ -5,6 +5,7 @@ project(jxglib C CXX ASM)
 add_subdirectory(Button)
 add_subdirectory(Canvas)
 add_subdirectory(Common)
+add_subdirectory(Display)
 add_subdirectory(Drawable)
 add_subdirectory(Font)
 add_subdirectory(Image)
@@ -18,6 +19,7 @@ target_link_libraries(jxglib INTERFACE
 	jxglib_Button
 	jxglib_Canvas
 	jxglib_Common
+	jxglib_Display
 	jxglib_Drawable
 	jxglib_Font
 	jxglib_Image

@@ -12,14 +12,14 @@
 #include "hardware/i2c.h"
 #include "jxglib/Common.h"
 #include "jxglib/Font.h"
-#include "jxglib/Drawable.h"
+#include "jxglib/Display.h"
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
 // SSD1306
 //------------------------------------------------------------------------------
-class SSD1306 : public Drawable {
+class SSD1306 : public Display {
 public:
 	class Logic_Set {
 	public:
@@ -195,7 +195,7 @@ private:
 	Context context_;
 public:
 	SSD1306(i2c_inst_t* i2c, uint8_t addr = DefaultAddr, bool highResoFlag = true) :
-			Drawable(128, highResoFlag? 64 : 32), raw(i2c, addr), buffWhole_(nullptr), buff_(nullptr) {
+			Display(128, highResoFlag? 64 : 32), raw(i2c, addr), buffWhole_(nullptr), buff_(nullptr) {
 		numPages_ = height_ / heightPerPage_;
 		bufferLen_ = numPages_ * width_;
 	}
