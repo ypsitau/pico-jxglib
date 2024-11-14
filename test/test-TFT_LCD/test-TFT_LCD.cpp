@@ -244,8 +244,8 @@ int main()
 	GPIO8.set_function_SPI1_RX();
 	GPIO10.set_function_SPI1_SCK();
 	GPIO11.set_function_SPI1_TX();
-	ST7789 display1(spi0, 240, 320, GPIO20, GPIO21, GPIO22, GPIO23);
-	//ST7735 display1(spi0, 128, 160, GPIO20, GPIO21, GPIO22, GPIO23);
+	//ST7789 display1(spi0, 240, 320, GPIO20, GPIO21, GPIO22, GPIO23);
+	ST7735::TypeB display1(spi0, 128, 160, GPIO20, GPIO21, GPIO22, GPIO23);
 	//ST7789 display2(spi1, 240, 320, GPIO12, GPIO13, GPIO14, GPIO15);
 	ILI9341 display2(spi1, 240, 320, GPIO12, GPIO13, GPIO14, GPIO15);
 	display1.Initialize();
