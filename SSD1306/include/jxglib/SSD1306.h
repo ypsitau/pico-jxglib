@@ -225,12 +225,12 @@ public:
 	void WriteBuffer() const { raw.WriteBuffer(buffWhole_, bufferLen_ + 1); }
 public:
 	void Initialize();
-	void Refresh();
 	void Flash(bool flashFlag) { raw.EntireDisplayOn(static_cast<uint8_t>(flashFlag)); }
 private:
 	template<class Logic> void DrawRectFillT(int x, int y, int width, int height, uint8_t* pDst, int page, uint64_t bits);
 	template<class Logic> void DrawBitmapT(int x, int y, const void* data, int width, int height, int scaleX, int scaleY);
 public:
+	virtual void Refresh_() override;
 	virtual void Fill_(const Color& color) override;
 	virtual void DrawPixel_(int x, int y, const Color& color) override;
 	virtual void DrawRectFill_(int x, int y, int width, int height, const Color& color) override;

@@ -23,7 +23,7 @@ void Test_Flash(SSD1306& display)
 	}
 }
 
-void Test_DrawPixel(SSD1306& display)
+void Test_DrawPixel(Display& display)
 {
 	bool blackDrawFlag = false;
 	for (int i = 0; i < 2; i++, blackDrawFlag = !blackDrawFlag) {
@@ -44,7 +44,7 @@ void Test_DrawPixel(SSD1306& display)
 	}
 }
 
-void Test_DrawHLine(SSD1306& display)
+void Test_DrawHLine(Display& display)
 {
 	bool blackDrawFlag = false;
 	for (int i = 0; i < 2; i++, blackDrawFlag = !blackDrawFlag) {
@@ -60,7 +60,7 @@ void Test_DrawHLine(SSD1306& display)
 	}
 }
 
-void Test_DrawVLine(SSD1306& display)
+void Test_DrawVLine(Display& display)
 {
 	bool blackDrawFlag = false;
 	for (int i = 0; i < 2; i++, blackDrawFlag = !blackDrawFlag) {
@@ -77,7 +77,7 @@ void Test_DrawVLine(SSD1306& display)
 	}
 }
 
-void Test_DrawLine(SSD1306& display)
+void Test_DrawLine(Display& display)
 {
 	int xMid = display.GetWidth() / 2;
 	int yMid = display.GetHeight() / 2;
@@ -113,7 +113,7 @@ void Test_DrawLine(SSD1306& display)
 	}
 }
 
-void Test_DrawRect(SSD1306& display)
+void Test_DrawRect(Display& display)
 {
 	int xRight = display.GetWidth() - 1;
 	int yBottom = display.GetHeight() - 1;
@@ -135,7 +135,7 @@ void Test_DrawRect(SSD1306& display)
 	}
 }
 
-void Test_DrawRectFill(SSD1306& display)
+void Test_DrawRectFill(Display& display)
 {
 	int xRight = display.GetWidth() - 1;
 	int yBottom = display.GetHeight() - 1;
@@ -157,7 +157,7 @@ void Test_DrawRectFill(SSD1306& display)
 	}
 }
 
-void Test_DrawBitmap(SSD1306& display)
+void Test_DrawBitmap(Display& display)
 {
 	const uint8_t bmp[] = {
 		0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,
@@ -230,7 +230,7 @@ void Test_DrawBitmap(SSD1306& display)
 	::sleep_ms(2000);
 }
 
-void Test_DrawStringWrap(SSD1306& display)
+void Test_DrawStringWrap(Display& display)
 {
 	const char* strTbl[] = {
 		" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxy{|}~",

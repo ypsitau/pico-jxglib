@@ -41,13 +41,6 @@ void SSD1306::Initialize()
 	raw.SetDisplayOnOff(1);							// Set Display ON/OFF = 1: ON
 }
 
-void SSD1306::Refresh()
-{
-	raw.SetColumnAddress(0, GetWidth() - 1);
-	raw.SetPageAddress(0, GetNumPages() - 1);
-	WriteBuffer();
-}
-
 template<class Logic> void SSD1306::DrawRectFillT(int x, int y, int width, int height, uint8_t* pDst, int page, uint64_t bits)
 {
 	uint8_t* pDstTop = pDst;
@@ -93,6 +86,13 @@ template<class Logic> void SSD1306::DrawBitmapT(int x, int y, const void* data, 
 			}
 		}
 	}
+}
+
+void SSD1306::Refresh_()
+{
+	raw.SetColumnAddress(0, GetWidth() - 1);
+	raw.SetPageAddress(0, GetNumPages() - 1);
+	WriteBuffer();
 }
 
 void SSD1306::Fill_(const Color& color)

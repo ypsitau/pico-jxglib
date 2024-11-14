@@ -45,6 +45,7 @@ public:
 	void SetFontScale(int fontScale) { context_.fontScaleX = context_.fontScaleY = fontScale; }
 	void SetFontScale(int fontScaleX, int fontScaleY) { context_.fontScaleX = fontScaleX, context_.fontScaleY = fontScaleY; }
 public:
+	void Refresh() { Refresh_(); }
 	void Clear() { Fill(context_.colorBg); }
 	void Fill(const Color& color) { Fill_(color); }
 public:
@@ -95,6 +96,7 @@ public:
 		return DrawStringWrap(rcBBox.x, rcBBox.y, rcBBox.width, rcBBox.height, str, htLine);
 	}
 public:
+	virtual void Refresh_() = 0;
 	virtual void Fill_(const Color& color) = 0;
 	virtual void DrawPixel_(int x, int y, const Color& color) = 0;
 	virtual void DrawRectFill_(int x, int y, int width, int height, const Color& color) = 0;

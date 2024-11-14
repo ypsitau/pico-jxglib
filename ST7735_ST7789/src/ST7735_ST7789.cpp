@@ -32,6 +32,11 @@ void ST7735_ST7789::Initialize()
 	raw.SetGPIO_BL(true);
 }
 
+void ST7735_ST7789::Refresh_()
+{
+	// do nothing
+}
+
 void ST7735_ST7789::Fill_(const Color& color)
 {
 	raw.ColumnAddressSet(0, GetWidth() - 1);
