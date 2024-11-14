@@ -5,10 +5,7 @@ target_include_directories(jxglib_ST7735_ST7789 INTERFACE
 
 target_link_libraries(jxglib_ST7735_ST7789 INTERFACE
 	hardware_spi
-	jxglib_Common
-	jxglib_Drawable
-	jxglib_Font
-	jxglib_Image)
+	jxglib_Display)
 
 target_sources(jxglib_ST7735_ST7789 INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/ST7735_ST7789.cpp)

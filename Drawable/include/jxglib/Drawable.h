@@ -5,8 +5,7 @@
 #define PICO_JXGLIB_DRAWABLE_H
 #include "pico/stdlib.h"
 #include "stdio.h"
-#include "jxglib/Color.h"
-#include "jxglib/Rect.h"
+#include "jxglib/Common.h"
 #include "jxglib/Font.h"
 #include "jxglib/Image.h"
 

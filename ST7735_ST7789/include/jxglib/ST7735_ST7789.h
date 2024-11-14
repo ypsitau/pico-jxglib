@@ -9,17 +9,14 @@
 #include "pico/stdlib.h"
 #include "pico/time.h"
 #include "hardware/spi.h"
-#include "jxglib/Common.h"
-#include "jxglib/Drawable.h"
-#include "jxglib/Font.h"
-#include "jxglib/Image.h"
+#include "jxglib/Display.h"
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
 // ST7735_ST7789
 //------------------------------------------------------------------------------
-class ST7735_ST7789 : public Drawable {
+class ST7735_ST7789 : public Display {
 public:
 	class Raw {
 	private:
@@ -253,11 +250,11 @@ protected:
 public:
 	ST7735_ST7789(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_CS, GPIO gpio_BL,
 									uint8_t rgbBgrOrder, bool displayInversionOnFlag) :
-		Drawable(width, height), raw(spi, gpio_RST, gpio_DC, gpio_CS, gpio_BL),
+		Display(width, height), raw(spi, gpio_RST, gpio_DC, gpio_CS, gpio_BL),
 		rgbBgrOrder_{rgbBgrOrder}, displayInversionOnFlag_{displayInversionOnFlag} {}
 	ST7735_ST7789(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_BL,
 									uint8_t rgbBgrOrder, bool displayInversionOnFlag) :
-		Drawable(width, height), raw(spi, gpio_RST, gpio_DC, gpio_BL),
+		Display(width, height), raw(spi, gpio_RST, gpio_DC, gpio_BL),
 		rgbBgrOrder_{rgbBgrOrder}, displayInversionOnFlag_{displayInversionOnFlag} {}
 public:
 	void Initialize();
