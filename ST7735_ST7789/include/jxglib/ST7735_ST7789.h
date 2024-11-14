@@ -295,9 +295,7 @@ public:
 public:
 	int GetBytesPerLine() const { return GetWidth() * 2; }
 public:
-	void Clear();
-	void Fill();
-public:
+	virtual void Fill_(const Color& color) override;
 	virtual void DrawPixel_(int x, int y, const Color& color) override;
 	virtual void DrawRectFill_(int x, int y, int width, int height, const Color& color) override;
 	virtual void DrawBitmap_(int x, int y, const void* data, int width, int height,

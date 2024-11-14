@@ -45,6 +45,9 @@ public:
 	void SetFontScale(int fontScale) { context_.fontScaleX = context_.fontScaleY = fontScale; }
 	void SetFontScale(int fontScaleX, int fontScaleY) { context_.fontScaleX = fontScaleX, context_.fontScaleY = fontScaleY; }
 public:
+	void Clear() { Fill(context_.colorBg); }
+	void Fill(const Color& color) { Fill_(color); }
+public:
 	void DrawPixel(int x, int y, const Color& color) { DrawPixel_(x, y, color); }
 	void DrawRectFill(int x, int y, int width, int height, const Color& color) { DrawRectFill_(x, y, width, height, color); }
 	void DrawBitmap(int x, int y, const void* data, int width, int height,
@@ -92,6 +95,7 @@ public:
 		return DrawStringWrap(rcBBox.x, rcBBox.y, rcBBox.width, rcBBox.height, str, htLine);
 	}
 public:
+	virtual void Fill_(const Color& color) = 0;
 	virtual void DrawPixel_(int x, int y, const Color& color) = 0;
 	virtual void DrawRectFill_(int x, int y, int width, int height, const Color& color) = 0;
 	virtual void DrawBitmap_(int x, int y, const void* data, int width, int height,

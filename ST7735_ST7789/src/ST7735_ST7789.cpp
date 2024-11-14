@@ -32,18 +32,11 @@ void ST7735_ST7789::Initialize()
 	raw.SetGPIO_BL(true);
 }
 
-void ST7735_ST7789::Clear()
+void ST7735_ST7789::Fill_(const Color& color)
 {
 	raw.ColumnAddressSet(0, GetWidth() - 1);
 	raw.RowAddressSet(0, GetHeight() - 1);
-	raw.MemoryWriteConst16(context_.colorBg.RGB565(), GetWidth() * GetHeight());
-}
-
-void ST7735_ST7789::Fill()
-{
-	raw.ColumnAddressSet(0, GetWidth() - 1);
-	raw.RowAddressSet(0, GetHeight() - 1);
-	raw.MemoryWriteConst16(context_.colorFg.RGB565(), GetWidth() * GetHeight());
+	raw.MemoryWriteConst16(color.RGB565(), GetWidth() * GetHeight());
 }
 
 void ST7735_ST7789::DrawPixel_(int x, int y, const Color& color)

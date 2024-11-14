@@ -27,7 +27,7 @@ void Test_DrawPixel(SSD1306& display)
 {
 	bool blackDrawFlag = false;
 	for (int i = 0; i < 2; i++, blackDrawFlag = !blackDrawFlag) {
-		display.Clear(blackDrawFlag? 0xff : 0x00);
+		display.Fill(blackDrawFlag? Color::white : Color::black);
 		display.SetColor(blackDrawFlag? Color::black : Color::white);
 		int x = 40, y = 16;
 		int xDir = +1, yDir = +1;
@@ -50,7 +50,7 @@ void Test_DrawHLine(SSD1306& display)
 	for (int i = 0; i < 2; i++, blackDrawFlag = !blackDrawFlag) {
 		display.SetColor(blackDrawFlag? Color::black : Color::white);
 		for (int x = -64; x <= display.GetWidth(); x++) {
-			display.Clear(blackDrawFlag? 0xff : 0x00);
+			display.Fill(blackDrawFlag? Color::white : Color::black);
 			for (int i = 0; i < display.GetHeight(); i++) {
 				display.DrawHLine(x, i, i);
 			}
@@ -66,7 +66,7 @@ void Test_DrawVLine(SSD1306& display)
 	for (int i = 0; i < 2; i++, blackDrawFlag = !blackDrawFlag) {
 		display.SetColor(blackDrawFlag? Color::black : Color::white);
 		for (int y = -64; y <= display.GetHeight(); y++) {
-			display.Clear(blackDrawFlag? 0xff : 0x00);
+			display.Fill(blackDrawFlag? Color::white : Color::black);
 			for (int i = 0; i < display.GetHeight(); i++) {
 				display.DrawVLine(i, y, i);
 				display.DrawVLine(i + display.GetHeight() * 1, display.GetHeight() - y - 1, -i);
@@ -87,25 +87,25 @@ void Test_DrawLine(SSD1306& display)
 	for (int i = 0; i < 2; i++, blackDrawFlag = !blackDrawFlag) {
 		display.SetColor(blackDrawFlag? Color::black : Color::white);
 		for (int y = 0; y < display.GetHeight(); y++) {
-			display.Clear(blackDrawFlag? 0xff : 0x00);
+			display.Fill(blackDrawFlag? Color::white : Color::black);
 			display.DrawLine(xMid, yMid, xRight, y);
 			display.Refresh();
 			::sleep_ms(10);
 		}
 		for (int x = xRight; x >= 0; x--) {
-			display.Clear(blackDrawFlag? 0xff : 0x00);
+			display.Fill(blackDrawFlag? Color::white : Color::black);
 			display.DrawLine(xMid, yMid, x, yBottom);
 			display.Refresh();
 			::sleep_ms(10);
 		}
 		for (int y = yBottom; y >= 0; y--) {
-			display.Clear(blackDrawFlag? 0xff : 0x00);
+			display.Fill(blackDrawFlag? Color::white : Color::black);
 			display.DrawLine(xMid, yMid, 0, y);
 			display.Refresh();
 			::sleep_ms(10);
 		}
 		for (int x = 0; x <= xRight; x++) {
-			display.Clear(blackDrawFlag? 0xff : 0x00);
+			display.Fill(blackDrawFlag? Color::white : Color::black);
 			display.DrawLine(xMid, yMid, x, 0);
 			display.Refresh();
 			::sleep_ms(10);
@@ -121,13 +121,13 @@ void Test_DrawRect(SSD1306& display)
 	for (int i = 0; i < 2; i++, blackDrawFlag = !blackDrawFlag) {
 		display.SetColor(blackDrawFlag? Color::black : Color::white);
 		for (int i = 0; i < display.GetHeight(); i++) {
-			display.Clear(blackDrawFlag? 0xff : 0x00);
+			display.Fill(blackDrawFlag? Color::white : Color::black);
 			display.DrawRect(0, 0, i * 2, i);
 			display.Refresh();
 			::sleep_ms(100);
 		}
 		for (int i = 0; i < display.GetHeight(); i++) {
-			display.Clear(blackDrawFlag? 0xff : 0x00);
+			display.Fill(blackDrawFlag? Color::white : Color::black);
 			display.DrawRect(xRight, yBottom, -i * 2, -i);
 			display.Refresh();
 			::sleep_ms(100);
@@ -143,13 +143,13 @@ void Test_DrawRectFill(SSD1306& display)
 	for (int i = 0; i < 2; i++, blackDrawFlag = !blackDrawFlag) {
 		display.SetColor(blackDrawFlag? Color::black : Color::white);
 		for (int i = 0; i < display.GetHeight(); i++) {
-			display.Clear(blackDrawFlag? 0xff : 0x00);
+			display.Fill(blackDrawFlag? Color::white : Color::black);
 			display.DrawRectFill(0, 0, i * 2, i);
 			display.Refresh();
 			::sleep_ms(100);
 		}
 		for (int i = 0; i < display.GetHeight(); i++) {
-			display.Clear(blackDrawFlag? 0xff : 0x00);
+			display.Fill(blackDrawFlag? Color::white : Color::black);
 			display.DrawRectFill(xRight, display.GetHeight() - 1, -i * 2, -i);
 			display.Refresh();
 			::sleep_ms(100);

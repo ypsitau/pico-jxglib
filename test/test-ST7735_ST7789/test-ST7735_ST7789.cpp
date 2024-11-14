@@ -9,7 +9,7 @@
 
 using namespace jxglib;
 
-void Test_BouncingBall(ST7735_ST7789& display)
+void Test_BouncingBall(Display& display)
 {
 	int x = 10, y = 10;
 	int xDir = 1, yDir = 1;
@@ -28,7 +28,7 @@ void Test_BouncingBall(ST7735_ST7789& display)
 	}
 }
 
-void Test_DrawString(ST7735_ST7789& display)
+void Test_DrawString(Display& display)
 {
 	display.Clear();
 	display.SetFont(Font::shinonome16);
@@ -50,7 +50,7 @@ void Test_DrawString(ST7735_ST7789& display)
 	}
 }
 
-void Test_DrawStringWrap(ST7735_ST7789& display)
+void Test_DrawStringWrap(Display& display)
 {
 	const char* strTbl[] = {
 		" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxy{|}~",
@@ -85,7 +85,7 @@ void Test_DrawStringWrap(ST7735_ST7789& display)
 	}
 }
 
-void Test_DrawImage(ST7735_ST7789& display)
+void Test_DrawImage(Display& display)
 {
 	display.Clear();
 	display.DrawImage(0, 0, image);

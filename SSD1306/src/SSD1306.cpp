@@ -95,6 +95,11 @@ template<class Logic> void SSD1306::DrawBitmapT(int x, int y, const void* data, 
 	}
 }
 
+void SSD1306::Fill_(const Color& color)
+{
+	FillBuffer(color.IsBlack()? 0x00 : 0xff);
+}
+
 void SSD1306::DrawPixel_(int x, int y, const Color& color)
 {
 	uint8_t* pDst = GetPointer(x, y);
