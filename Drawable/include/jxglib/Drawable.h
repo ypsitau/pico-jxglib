@@ -34,56 +34,71 @@ public:
 	int GetWidth() const { return width_; }
 	int GetHeight() const { return height_; }
 public:
-	void SetColor(const Color& color) { context_.colorFg = color; }
-	void SetColorBg(const Color& color) { context_.colorBg = color; }
-	void SetFont(const FontSet& fontSet, int fontScale = 1) {
+	Drawable& SetColor(const Color& color) { context_.colorFg = color; return *this; }
+	Drawable& SetColorBg(const Color& color) { context_.colorBg = color; return *this; }
+	Drawable& SetFont(const FontSet& fontSet, int fontScale = 1) {
 		context_.pFontSet = &fontSet; context_.fontScaleX = context_.fontScaleY = fontScale;
+		return *this;
 	}
-	void SetFont(const FontSet& fontSet, int fontScaleX, int fontScaleY) {
+	Drawable& SetFont(const FontSet& fontSet, int fontScaleX, int fontScaleY) {
 		context_.pFontSet = &fontSet; context_.fontScaleX = fontScaleX, context_.fontScaleY = fontScaleY;
+		return *this;
 	}
-	void SetFontScale(int fontScale) { context_.fontScaleX = context_.fontScaleY = fontScale; }
-	void SetFontScale(int fontScaleX, int fontScaleY) { context_.fontScaleX = fontScaleX, context_.fontScaleY = fontScaleY; }
+	Drawable& SetFontScale(int fontScale) {
+		context_.fontScaleX = context_.fontScaleY = fontScale;
+		return *this;
+	}
+	Drawable& SetFontScale(int fontScaleX, int fontScaleY) {
+		context_.fontScaleX = fontScaleX, context_.fontScaleY = fontScaleY;
+		return *this;
+	}
 public:
-	void Refresh() { Refresh_(); }
-	void Clear() { Fill(context_.colorBg); }
-	void Fill(const Color& color) { Fill_(color); }
+	Drawable& Refresh() { Refresh_(); return *this; }
+	Drawable& Clear() { Fill(context_.colorBg); return *this; }
+	Drawable& Fill(const Color& color) { Fill_(color); return *this; }
 public:
-	void DrawPixel(int x, int y, const Color& color) { DrawPixel_(x, y, color); }
-	void DrawRectFill(int x, int y, int width, int height, const Color& color) { DrawRectFill_(x, y, width, height, color); }
-	void DrawBitmap(int x, int y, const void* data, int width, int height,
+	Drawable& DrawPixel(int x, int y, const Color& color) { DrawPixel_(x, y, color); return *this; }
+	Drawable& DrawRectFill(int x, int y, int width, int height, const Color& color) {
+		DrawRectFill_(x, y, width, height, color);
+		return *this;
+	}
+	Drawable& DrawBitmap(int x, int y, const void* data, int width, int height,
 				const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) {
 		DrawBitmap_(x, y, data, width, height, color, pColorBg, scaleX, scaleY);
+		return *this;
 	}
-	void DrawImage(int x, int y, const Image& image) { DrawImage_(x, y, image); }
+	Drawable& DrawImage(int x, int y, const Image& image) { DrawImage_(x, y, image); return *this; }
 public:
-	void DrawPixel(int x, int y) { DrawPixel(x, y, context_.colorFg); }
-	void DrawPixel(const Point& pt) { DrawPixel(pt.x, pt.y); }
-	void DrawHLine(int x, int y, int width) { DrawRectFill(x, y, width, 1); }
-	void DrawHLine(const Point& pt, int width) { DrawHLine(pt.x, pt.y, width); }
-	void DrawVLine(int x, int y, int height) { DrawRectFill(x, y, 1, height); }
-	void DrawVLine(const Point& pt, int height) { DrawVLine(pt.x, pt.y, height); }
-	void DrawLine(int x0, int y0, int x1, int y1);
-	void DrawLine(const Point& pt1, const Point& pt2) { DrawLine(pt1.x, pt1.y, pt2.x, pt2.y); }
-	void DrawRect(int x, int y, int width, int height);
-	void DrawRect(const Point& pt, const Size& size) { DrawRect(pt.x, pt.y, size.width, size.height); }
-	void DrawRect(const Rect& rc) { DrawRect(rc.x, rc.y, rc.width, rc.height); }
-	void DrawRectFill(int x, int y, int width, int height) { DrawRectFill(x, y, width, height, context_.colorFg); }
-	void DrawRectFill(const Point& pt, const Size& size) { DrawRectFill(pt.x, pt.y, size.width, size.height); }
-	void DrawRectFill(const Rect& rc) { DrawRect(rc.x, rc.y, rc.width, rc.height); }
-	void DrawBitmap(int x, int y, const void* data, int width, int height, bool transparentBgFlag = false, int scaleX = 1, int scaleY = 1) {
+	Drawable& DrawPixel(int x, int y) { DrawPixel(x, y, context_.colorFg); return *this; }
+	Drawable& DrawPixel(const Point& pt) { DrawPixel(pt.x, pt.y); return *this; }
+	Drawable& DrawHLine(int x, int y, int width) { DrawRectFill(x, y, width, 1); return *this; }
+	Drawable& DrawHLine(const Point& pt, int width) { DrawHLine(pt.x, pt.y, width); return *this; }
+	Drawable& DrawVLine(int x, int y, int height) { DrawRectFill(x, y, 1, height); return *this; }
+	Drawable& DrawVLine(const Point& pt, int height) { DrawVLine(pt.x, pt.y, height); return *this; }
+	Drawable& DrawLine(int x0, int y0, int x1, int y1);
+	Drawable& DrawLine(const Point& pt1, const Point& pt2) { DrawLine(pt1.x, pt1.y, pt2.x, pt2.y); return *this; }
+	Drawable& DrawRect(int x, int y, int width, int height);
+	Drawable& DrawRect(const Point& pt, const Size& size) { DrawRect(pt.x, pt.y, size.width, size.height); return *this; }
+	Drawable& DrawRect(const Rect& rc) { DrawRect(rc.x, rc.y, rc.width, rc.height); return *this; }
+	Drawable& DrawRectFill(int x, int y, int width, int height) { DrawRectFill(x, y, width, height, context_.colorFg); return *this; }
+	Drawable& DrawRectFill(const Point& pt, const Size& size) { DrawRectFill(pt.x, pt.y, size.width, size.height); return *this; }
+	Drawable& DrawRectFill(const Rect& rc) { DrawRect(rc.x, rc.y, rc.width, rc.height); return *this; }
+	Drawable& DrawBitmap(int x, int y, const void* data, int width, int height, bool transparentBgFlag = false, int scaleX = 1, int scaleY = 1) {
 		DrawBitmap(x, y, data, width, height, context_.colorFg, transparentBgFlag? nullptr : &context_.colorBg, scaleX, scaleY);
+		return *this;
 	}
-	void DrawBitmap(const Point& pt, const void* data, int width, int height, bool transparentBgFlag = false, int scaleX = 1, int scaleY = 1) {
+	Drawable& DrawBitmap(const Point& pt, const void* data, int width, int height, bool transparentBgFlag = false, int scaleX = 1, int scaleY = 1) {
 		DrawBitmap(pt.x, pt.y, data, width, height, transparentBgFlag, scaleX, scaleY);
+		return *this;
 	}
-	void DrawChar(int x, int y, const FontEntry& fontEntry);
-	void DrawChar(const Point& pt, const FontEntry& fontEntry) { DrawChar(pt.x, pt.y, fontEntry); }
-	void DrawChar(int x, int y, uint32_t code);
-	void DrawChar(const Point& pt, uint32_t code) { DrawChar(pt.x, pt.y, code); }
-	void DrawString(int x, int y, const char* str, const char* strEnd = nullptr);
-	void DrawString(const Point& pt, const char* str, const char* strEnd = nullptr) {
+	Drawable& DrawChar(int x, int y, const FontEntry& fontEntry);
+	Drawable& DrawChar(const Point& pt, const FontEntry& fontEntry) { DrawChar(pt.x, pt.y, fontEntry); return *this; }
+	Drawable& DrawChar(int x, int y, uint32_t code);
+	Drawable& DrawChar(const Point& pt, uint32_t code) { DrawChar(pt.x, pt.y, code); return *this; }
+	Drawable& DrawString(int x, int y, const char* str, const char* strEnd = nullptr);
+	Drawable& DrawString(const Point& pt, const char* str, const char* strEnd = nullptr) {
 		DrawString(pt.x, pt.y, str, strEnd);
+		return *this;
 	}
 	const char* DrawStringWrap(int x, int y, int width, int height, const char* str, int htLine = -1);
 	const char* DrawStringWrap(int x, int y, const char* str, int htLine = -1) {

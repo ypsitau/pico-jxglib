@@ -1,0 +1,32 @@
+import(jpeg)
+
+main() = {
+	fileNameSrc = 'cat.jpg'
+	imageSrc = Image(fileNameSrc).Rotate(90)
+	baseNameSrc = path.BaseName(fileNameSrc)
+	WriteImageHeaderFile('image_' + baseNameSrc + '_240x320',
+							imageSrc.Resize(240, nil).Crop(0, 30, 240, 320))
+	WriteImageHeaderFile('image_' + baseNameSrc + '_128x160',
+							imageSrc.Resize(128, nil).Crop(0, 20, 128, 160))
+}
+
+WriteImageHeaderFile(varName as String, image as Image) = {
+	iCol = 0
+	Open(varName + '.h', 'w') {|fout|
+		fout.Println(e'const jxglib::Image ${varName} { jxglib::Image::Format::RGB565, ${image.width}, ${image.height},')
+		image.Scan():pixel {|pixel|
+			(iCol == 0) && fout.Printf('"')
+			rgb565 = pixel.color.rgb565
+			fout.Printf('\\x%02x\\x%02x', rgb565 & 0xff, rgb565 >> 8)
+			iCol += 1
+			if (iCol == 16) {
+				fout.Printf('"\n')
+				iCol = 0
+			}
+		}
+		(iCol > 0) && fout.Printf('"\n')
+		fout.Printf('};\n')
+	}
+}
+
+main()

@@ -8,14 +8,14 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // Drawable
 //------------------------------------------------------------------------------
-void Drawable::DrawLine(int x0, int y0, int x1, int y1)
+Drawable& Drawable::DrawLine(int x0, int y0, int x1, int y1)
 {
 	if (x0 == x1) {
 		DrawVLine(x0, y0, y1 - y0);
-		return;
+		return *this;
 	} else if (y0 == y1) {
 		DrawHLine(x0, y0, x1 - x0);
-		return;
+		return *this;
 	}
 	int dx, dy, sx, sy;
 	if (x0 < x1) {
@@ -47,9 +47,10 @@ void Drawable::DrawLine(int x0, int y0, int x1, int y1)
 			y += sy;
 		}
 	}
+	return *this;
 }
 
-void Drawable::DrawRect(int x, int y, int width, int height)
+Drawable& Drawable::DrawRect(int x, int y, int width, int height)
 {
 	if (width < 0) {
 		x += width + 1;
@@ -63,24 +64,27 @@ void Drawable::DrawRect(int x, int y, int width, int height)
 	DrawRectFill(x, y + height - 1, width, 1);
 	DrawRectFill(x, y, 1, height);
 	DrawRectFill(x + width - 1, y, 1, height);
+	return *this;
 }
 
-void Drawable::DrawChar(int x, int y, const FontEntry& fontEntry)
+Drawable& Drawable::DrawChar(int x, int y, const FontEntry& fontEntry)
 {
 	DrawBitmap(x, y, fontEntry.data, fontEntry.width, fontEntry.height,
 					true, context_.fontScaleX, context_.fontScaleY);
+	return *this;
 }
 
-void Drawable::DrawChar(int x, int y, uint32_t code)
+Drawable& Drawable::DrawChar(int x, int y, uint32_t code)
 {
-	if (!context_.pFontSet) return;
+	if (!context_.pFontSet) return *this;
 	const FontEntry& fontEntry = context_.pFontSet->GetFontEntry(code);
 	DrawChar(x, y, fontEntry);
+	return *this;
 }
 
-void Drawable::DrawString(int x, int y, const char* str, const char* strEnd)
+Drawable& Drawable::DrawString(int x, int y, const char* str, const char* strEnd)
 {
-	if (!context_.pFontSet) return;
+	if (!context_.pFontSet) return *this;
 	uint32_t code;
 	UTF8Decoder decoder;
 	for (const char* p = str; *p && p != strEnd; p++) {
@@ -89,6 +93,7 @@ void Drawable::DrawString(int x, int y, const char* str, const char* strEnd)
 		DrawChar(x, y, fontEntry);
 		x += fontEntry.xAdvance * context_.fontScaleX;
 	}
+	return *this;
 }
 
 const char* Drawable::DrawStringWrap(int x, int y, int width, int height, const char* str, int htLine)
