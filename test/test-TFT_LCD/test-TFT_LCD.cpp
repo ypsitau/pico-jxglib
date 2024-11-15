@@ -251,7 +251,7 @@ int main()
 	ST7789 display2(spi1, 240, 320, GPIO10, GPIO11, GPIO12, GPIO13);
 	ILI9341 display3(spi1, 240, 320, GPIO16, GPIO17, GPIO18, GPIO19);
 	ST7735 display4(spi1, 128, 160, GPIO24, GPIO25, GPIO26, GPIO27);
-	ST7735::TypeB display5(spi1, 128, 160, GPIO20, GPIO21, GPIO22, GPIO23);
+	ST7735::TypeB display5(spi1, 130, 161, GPIO20, GPIO21, GPIO22, GPIO23);
 	Display* displayTbl[] = { &display1, &display2, &display3, &display4, &display5 };
 	display1.Initialize();
 	display2.Initialize();
@@ -262,10 +262,10 @@ int main()
 	//Test_WriteBuffer(display);
 	//Test_DrawString(display);
 	//Test_DrawStringWrap(display);
-	//display1.Clear().DrawImage(0, 0, image_cat_240x320);
-	//display2.Clear().DrawImage(0, 0, image_cat_240x320);
-	//display3.Clear().DrawImage(0, 0, image_cat_240x320);
-	//display4.Clear().DrawImage(0, 0, image_cat_128x170);
+	display1.Clear().DrawImage(0, 0, image_cat_240x320);
+	display2.Clear().DrawImage(0, 0, image_cat_240x320);
+	display3.Clear().DrawImage(0, 0, image_cat_240x320);
+	display4.Clear().DrawImage(0, 0, image_cat_128x170);
 	display5.Clear().DrawImage(0, 0, image_cat_128x170);
 	//Test_DrawLine(display2);
 	//Test_DrawStringWrap(displayTbl, ArrayNumberOf(displayTbl), 1);
