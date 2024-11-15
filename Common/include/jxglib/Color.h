@@ -7,6 +7,11 @@
 
 namespace jxglib {
 
+class ColorRGB565;
+class ColorBGR565;
+class ColorRGB555;
+class ColorBGR555;
+
 //------------------------------------------------------------------------------
 // Color
 //------------------------------------------------------------------------------
@@ -34,6 +39,10 @@ public:
 	Color() : r(0), g(0), b(0) {}
 	Color(const Color& color) : r{color.r}, g{color.g}, b{color.b} {}
 	Color(uint8_t r, uint8_t g, uint8_t b) : r{r}, g{g}, b{b} {}
+	Color(const ColorRGB565& colorRGB565);
+	Color(const ColorBGR565& colorBGR565);
+	Color(const ColorRGB555& colorRGB555);
+	Color(const ColorBGR555& colorBGR555);
 public:
 	bool IsBlack() const { return r == 0 && g == 0 && b == 0; }
 	bool IsWhite() const { return r == 255 && g == 255 && b == 255; }
@@ -112,6 +121,18 @@ public:
 	ColorBGR565(const Color& color) : ColorBGR565(color.r, color.g, color.b) {}
 public:
 	operator uint16_t () { return value; }
+	uint8_t GetR() const {
+		uint8_t elem = static_cast<uint8_t>((value << 3) & 0xf8);
+		return elem? (elem | 0x07) : elem;
+	}
+	uint8_t GetG() const {
+		uint8_t elem = static_cast<uint8_t>((value >> (5 - 2)) & 0xfc);
+		return elem? (elem | 0x03) : elem;
+	}
+	uint8_t GetB() const {
+		uint8_t elem = static_cast<uint8_t>((value >> (6 + 5 - 3)) & 0xf8);
+		return elem? (elem | 0x07) : elem;
+	}
 };
 
 //------------------------------------------------------------------------------
@@ -128,6 +149,18 @@ public:
 	ColorRGB555(const Color& color) : ColorRGB555(color.r, color.g, color.b) {}
 public:
 	operator uint16_t () { return value; }
+	uint8_t GetR() const {
+		uint8_t elem = static_cast<uint8_t>((value >> (5 + 5 - 3)) & 0xf8);
+		return elem? (elem | 0x07) : elem;
+	}
+	uint8_t GetG() const {
+		uint8_t elem = static_cast<uint8_t>((value >> (5 - 2)) & 0xf8);
+		return elem? (elem | 0x07) : elem;
+	}
+	uint8_t GetB() const {
+		uint8_t elem = static_cast<uint8_t>((value << 3) & 0xf8);
+		return elem? (elem | 0x07) : elem;
+	}
 };
 
 //------------------------------------------------------------------------------
@@ -144,7 +177,31 @@ public:
 	ColorBGR555(const Color& color) : ColorBGR555(color.r, color.g, color.b) {}
 public:
 	operator uint16_t () { return value; }
+	uint8_t GetR() const {
+		uint8_t elem = static_cast<uint8_t>((value << 3) & 0xf8);
+		return elem? (elem | 0x07) : elem;
+	}
+	uint8_t GetG() const {
+		uint8_t elem = static_cast<uint8_t>((value >> (5 - 2)) & 0xf8);
+		return elem? (elem | 0x07) : elem;
+	}
+	uint8_t GetB() const {
+		uint8_t elem = static_cast<uint8_t>((value >> (5 + 5 - 3)) & 0xf8);
+		return elem? (elem | 0x07) : elem;
+	}
 };
+
+inline Color::Color(const ColorRGB565& colorRGB565) :
+		r{colorRGB565.GetR()}, g{colorRGB565.GetG()}, b{colorRGB565.GetB()} {}
+
+inline Color::Color(const ColorBGR565& colorBGR565) :
+		r{colorBGR565.GetR()}, g{colorBGR565.GetG()}, b{colorBGR565.GetB()} {}
+
+inline Color::Color(const ColorRGB555& colorRGB555) :
+		r{colorRGB555.GetR()}, g{colorRGB555.GetG()}, b{colorRGB555.GetB()} {}
+
+inline Color::Color(const ColorBGR555& colorBGR555) :
+		r{colorBGR555.GetR()}, g{colorBGR555.GetG()}, b{colorBGR555.GetB()} {}
 
 }
 
