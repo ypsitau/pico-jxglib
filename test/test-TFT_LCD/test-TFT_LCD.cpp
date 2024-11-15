@@ -264,10 +264,10 @@ int main()
 	//Test_DrawString(display);
 	//Test_DrawStringWrap(display);
 	display1.Clear().DrawImage(0, 0, image_cat_240x320);
-	display2.Clear().DrawImageMirrorHorz(0, 0, image_cat_240x320);
-	display3.Clear().DrawImageMirrorVert(0, 0, image_cat_240x320);
-	display4.Clear().DrawImage(0, 0, image_cat_160x213, Image::ReaderDir::VertFromSW);
-	display5.Clear().DrawImageRot270(0, 0, image_cat_128x170);
+	display2.Clear().DrawImage(0, 0, image_cat_240x320, Image::Draw::Rotate90);
+	display3.Clear().DrawImage(0, 0, image_cat_240x320);
+	display4.Clear().DrawImage(0, 0, image_cat_160x213, Image::Draw::Rotate90);
+	display5.Clear().DrawImage(0, 0, image_cat_128x170, Image::Draw::Rotate180);
 	//Test_DrawLine(display2);
 	//Test_DrawStringWrap(displayTbl, ArrayNumberOf(displayTbl));
 }

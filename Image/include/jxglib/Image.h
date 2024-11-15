@@ -77,6 +77,15 @@ public:
 	};
 	using ReaderDir = SequencerDir;
 	using WriterDir = SequencerDir;
+	struct Draw {
+		static const ReaderDir Normal = ReaderDir::HorzFromNW;
+		static const ReaderDir Rotate0 = ReaderDir::HorzFromNW;
+		static const ReaderDir Rotate90 = ReaderDir::VertFromSW;
+		static const ReaderDir Rotate180 = ReaderDir::HorzFromSE;
+		static const ReaderDir Rotate270 = ReaderDir::VertFromNE;
+		static const ReaderDir MirrorHorz = ReaderDir::HorzFromNE;
+		static const ReaderDir MirrorVert = ReaderDir::HorzFromSW;
+	};
 	class Sequencer {
 	protected:
 		int nCols_, nRows_;
