@@ -93,7 +93,7 @@ void TFT_LCD::DrawBitmap_(int x, int y, const void* data, int width, int height,
 	raw.MemoryWrite_End();
 }
 
-void TFT_LCD::DrawImage_(int x, int y, const Image& image, Image::ReaderDir readerDir)
+void TFT_LCD::DrawImage_(int x, int y, const Image& image, const Rect* pRectClip, Image::ReaderDir readerDir)
 {
 	int xSkip = 0, ySkip = 0;
 	int width, height;
