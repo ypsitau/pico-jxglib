@@ -82,30 +82,47 @@ Drawable& Drawable::DrawChar(int x, int y, uint32_t code)
 	return *this;
 }
 
-Drawable& Drawable::DrawString(int x, int y, const char* str, const char* strEnd)
+Drawable& Drawable::DrawString(int x, int y, const char* str, const char* strEnd, StringCont* pStringCont)
 {
-	if (!context_.pFontSet) return *this;
+	if (!context_.pFontSet) {
+		if (pStringCont) {
+			pStringCont->x = x, pStringCont->y = y;
+			pStringCont->str = str;
+		}
+		return *this;
+	}
 	uint32_t code;
 	UTF8Decoder decoder;
-	for (const char* p = str; *p && p != strEnd; p++) {
+	const char* p = str;
+	for ( ; *p && p != strEnd; p++) {
 		if (!decoder.FeedChar(*p, &code)) continue;
 		const FontEntry& fontEntry = context_.pFontSet->GetFontEntry(code);
 		DrawChar(x, y, fontEntry);
 		x += fontEntry.xAdvance * context_.fontScaleX;
 	}
+	if (pStringCont) {
+		pStringCont->x = x, pStringCont->y = y;
+		pStringCont->str = p;
+	}
 	return *this;
 }
 
-const char* Drawable::DrawStringWrap(int x, int y, int width, int height, const char* str, int htLine)
+Drawable& Drawable::DrawStringWrap(int x, int y, int width, int height, const char* str, int htLine, StringCont* pStringCont)
 {
-	if (!context_.pFontSet) return str;
+	const char* strDone = str;
+	if (!context_.pFontSet) {
+		if (pStringCont) {
+			pStringCont->x = x, pStringCont->y = y;
+			pStringCont->str = strDone;
+		}
+		return *this;
+	}
 	uint32_t code;
 	UTF8Decoder decoder;
 	int xStart = x;
 	int xExceed = (width >= 0)? x + width : width_;
 	int yExceed = (height >= 0)? y + height : height_;
 	int yAdvance = (htLine >= 0)? htLine : context_.pFontSet->yAdvance * context_.fontScaleY;
-	const char* pDone = str;
 	for (const char* p = str; *p; p++) {
 		if (!decoder.FeedChar(*p, &code)) continue;
 		const FontEntry& fontEntry = context_.pFontSet->GetFontEntry(code);
@@ -116,9 +133,13 @@ const char* Drawable::DrawStringWrap(int x, int y, int width, int height, const 
 		}
 		DrawChar(x, y, fontEntry);
 		x += xAdvance;
-		pDone = p + 1;
+		strDone = p + 1;
 	}
-	return pDone;
+	if (pStringCont) {
+		pStringCont->x = x, pStringCont->y = y;
+		pStringCont->str = strDone;
+	}
+	return *this;
 }
 
 }

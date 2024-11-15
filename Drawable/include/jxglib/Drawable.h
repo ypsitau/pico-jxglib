@@ -25,6 +25,10 @@ public:
 		Context() : colorFg{Color::white}, colorBg{Color::black},
 							pFontSet{nullptr}, fontScaleX{1}, fontScaleY{1} {}
 	};
+	struct StringCont {
+		int x, y;
+		const char* str;
+	};
 protected:
 	int width_, height_;
 	Context context_;
@@ -98,20 +102,20 @@ public:
 	Drawable& DrawChar(const Point& pt, const FontEntry& fontEntry) { DrawChar(pt.x, pt.y, fontEntry); return *this; }
 	Drawable& DrawChar(int x, int y, uint32_t code);
 	Drawable& DrawChar(const Point& pt, uint32_t code) { DrawChar(pt.x, pt.y, code); return *this; }
-	Drawable& DrawString(int x, int y, const char* str, const char* strEnd = nullptr);
-	Drawable& DrawString(const Point& pt, const char* str, const char* strEnd = nullptr) {
-		DrawString(pt.x, pt.y, str, strEnd);
+	Drawable& DrawString(int x, int y, const char* str, const char* strEnd = nullptr, StringCont* pStringCont = nullptr);
+	Drawable& DrawString(const Point& pt, const char* str, const char* strEnd = nullptr, StringCont* pStringCont = nullptr) {
+		DrawString(pt.x, pt.y, str, strEnd, pStringCont);
 		return *this;
 	}
-	const char* DrawStringWrap(int x, int y, int width, int height, const char* str, int htLine = -1);
-	const char* DrawStringWrap(int x, int y, const char* str, int htLine = -1) {
-		return DrawStringWrap(x, y, -1, -1, str, htLine);
+	Drawable& DrawStringWrap(int x, int y, int width, int height, const char* str, int htLine = -1, StringCont* pStringCont = nullptr);
+	Drawable& DrawStringWrap(int x, int y, const char* str, int htLine = -1, StringCont* pStringCont = nullptr) {
+		return DrawStringWrap(x, y, -1, -1, str, htLine, pStringCont);
 	}
-	const char* DrawStringWrap(const Point& pt, const char* str, int htLine = -1) {
-		return DrawStringWrap(pt.x, pt.y, str, htLine);
+	Drawable& DrawStringWrap(const Point& pt, const char* str, int htLine = -1, StringCont* pStringCont = nullptr) {
+		return DrawStringWrap(pt.x, pt.y, str, htLine, pStringCont);
 	}
-	const char* DrawStringWrap(const Rect& rcBBox, const char* str, int htLine = -1) {
-		return DrawStringWrap(rcBBox.x, rcBBox.y, rcBBox.width, rcBBox.height, str, htLine);
+	Drawable& DrawStringWrap(const Rect& rcBBox, const char* str, int htLine = -1, StringCont* pStringCont = nullptr) {
+		return DrawStringWrap(rcBBox.x, rcBBox.y, rcBBox.width, rcBBox.height, str, htLine, pStringCont);
 	}
 public:
 	virtual void Refresh_() = 0;
