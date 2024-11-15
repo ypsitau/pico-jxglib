@@ -7,6 +7,7 @@
 
 namespace jxglib {
 
+class ColorGray;
 class ColorRGB565;
 class ColorBGR565;
 class ColorRGB555;
@@ -39,6 +40,7 @@ public:
 	Color() : r(0), g(0), b(0) {}
 	Color(const Color& color) : r{color.r}, g{color.g}, b{color.b} {}
 	Color(uint8_t r, uint8_t g, uint8_t b) : r{r}, g{g}, b{b} {}
+	Color(const ColorGray& colorGray);
 	Color(const ColorRGB565& colorRGB565);
 	Color(const ColorBGR565& colorBGR565);
 	Color(const ColorRGB555& colorRGB555);
@@ -86,6 +88,27 @@ public:
 	ColorA& operator=(const ColorA& colorA) { r = colorA.r; g = colorA.g; b = colorA.b; a = colorA.a; return *this; }
 public:
 	uint8_t GetA() const { return a; }
+};
+
+//------------------------------------------------------------------------------
+// ColorGray
+//------------------------------------------------------------------------------
+struct ColorGray {
+	uint8_t value;
+public:
+	ColorGray(const ColorGray& colorGray) : value{colorGray.value} {}
+	explicit ColorGray(uint8_t value) : value{value} {}
+	//constexpr ColorGray(uint8_t r, uint8_t g, uint8_t b) {}
+	//ColorGray(const Color& color) : ColorGray(color.r, color.g, color.b) {}
+public:
+	ColorGray& operator=(const ColorGray& colorGray) { value = colorGray.value; return *this; }
+public:
+	operator uint8_t () { return value; }
+	uint8_t GetR() const { return value; }
+	uint8_t GetG() const { return value; }
+	uint8_t GetB() const { return value; }
+	bool IsBlack() const { return value == 0x00; }
+	bool IsWhite() const { return value == 0xff; }
 };
 
 //------------------------------------------------------------------------------
@@ -291,6 +314,9 @@ public:
 	bool IsBlack() const { return value == 0x0000; }
 	bool IsWhite() const { return value == 0xffff; }
 };
+
+inline Color::Color(const ColorGray& colorGray) :
+		r{colorGray.GetR()}, g{colorGray.GetG()}, b{colorGray.GetB()} {}
 
 inline Color::Color(const ColorRGB565& colorRGB565) :
 		r{colorRGB565.GetR()}, g{colorRGB565.GetG()}, b{colorRGB565.GetB()} {}
