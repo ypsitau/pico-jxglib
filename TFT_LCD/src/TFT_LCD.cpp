@@ -43,14 +43,14 @@ void TFT_LCD::Fill_(const Color& color)
 {
 	raw.ColumnAddressSet(0, GetWidth() - 1);
 	raw.RowAddressSet(0, GetHeight() - 1);
-	raw.MemoryWriteConst16(color.RGB565(), GetWidth() * GetHeight());
+	raw.MemoryWriteConst16(ColorRGB565(color).value, GetWidth() * GetHeight());
 }
 
 void TFT_LCD::DrawPixel_(int x, int y, const Color& color)
 {
 	raw.ColumnAddressSet(x, x);
 	raw.RowAddressSet(y, y);
-	raw.MemoryWriteConst16(color.RGB565(), 1);
+	raw.MemoryWriteConst16(ColorRGB565(color).value, 1);
 }
 
 void TFT_LCD::DrawRectFill_(int x, int y, int width, int height, const Color& color)
@@ -59,7 +59,7 @@ void TFT_LCD::DrawRectFill_(int x, int y, int width, int height, const Color& co
 	if (!AdjustRange(&y, &height, 0, GetHeight())) return;
 	raw.ColumnAddressSet(x, x + width - 1);
 	raw.RowAddressSet(y, y + height - 1);
-	raw.MemoryWriteConst16(color.RGB565(), width * height);
+	raw.MemoryWriteConst16(ColorRGB565(color).value, width * height);
 }
 
 void TFT_LCD::DrawBitmap_(int x, int y, const void* data, int width, int height,
@@ -71,8 +71,8 @@ void TFT_LCD::DrawBitmap_(int x, int y, const void* data, int width, int height,
 	raw.ColumnAddressSet(x, x + width * scaleX - 1);
 	raw.RowAddressSet(y, y + height * scaleY - 1);
 	raw.MemoryWrite_Begin(16);
-	uint16_t colorFg = color.RGB565();
-	uint16_t colorBg = pColorBg? pColorBg->RGB565() : 0;
+	uint16_t colorFg = ColorRGB565(color).value;
+	uint16_t colorBg = pColorBg? ColorRGB565(*pColorBg).value : 0;
 	for (int iRow = 0; iRow < height; iRow++) {
 		const uint8_t* pSrc;
 		for (int iScaleY = 0; iScaleY < scaleY; iScaleY++) {
@@ -103,7 +103,7 @@ void TFT_LCD::DrawImage_(int x, int y, const Image& image)
 	raw.RowAddressSet(y, y + height - 1);
 	raw.MemoryWrite_Begin(16);
 	if (image.IsFormatRGB565()) {
-		using Reader = Image::Reader<Image::ReadRGB565_SrcRGB565>;
+		using Reader = Image::Reader<Image::GetColorRGB565_SrcRGB565>;
 		Image::Reader reader(Reader::HorzFromNW(image, xSkip, ySkip, width, height));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 	}

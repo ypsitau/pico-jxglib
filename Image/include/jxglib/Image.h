@@ -13,29 +13,29 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class Image {
 public:
-	class ReadColor_SrcRGB {
+	class GetColor_SrcRGB {
 	public:
 		using Type = Color;
 	public:
 		Type operator()(const uint8_t* p) { return Color(p[0], p[1], p[2]); }
 	};
-	class ReadRGB565_SrcRGB {
+	class GetColorRGB565_SrcRGB {
 	public:
-		using Type = uint16_t;
+		using Type = ColorRGB565;
 	public:
-		Type operator()(const uint8_t* p) { return Color::RGB565(p[0], p[1], p[2]); }
+		Type operator()(const uint8_t* p) { return ColorRGB565(p[0], p[1], p[2]); }
 	};
-	class ReadRGB565_SrcRGB565 {
+	class GetColorRGB565_SrcRGB565 {
 	public:
-		using Type = uint16_t;
+		using Type = ColorRGB565;
 	public:
-		Type operator()(const uint8_t* p) { return *reinterpret_cast<const Type*>(p); }
+		Type operator()(const uint8_t* p) { return Type(*reinterpret_cast<const uint16_t*>(p)); }
 	};
-	class WriteRGB565_SrcRGB565 {
+	class PutColorRGB565_DstRGB565 {
 	public:
-		using Type = uint16_t;
+		using Type = ColorRGB565;
 	public:
-		void operator()(uint8_t* p, uint16_t data) { *reinterpret_cast<uint16_t*>(p) = data; }
+		void operator()(uint8_t* p, const Type& data) { *reinterpret_cast<uint16_t*>(p) = data.value; }
 	};
 public:
 	enum class SequencerDir {

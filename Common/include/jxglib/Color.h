@@ -113,6 +113,7 @@ public:
 	static const ColorRGB565 aqua;
 public:
 	ColorRGB565(const ColorRGB565& colorRGB565) : value{colorRGB565.value} {}
+	explicit ColorRGB565(uint16_t value) : value{value} {}
 	constexpr ColorRGB565(uint8_t r, uint8_t g, uint8_t b) : value{static_cast<uint16_t>(
 			(static_cast<uint32_t>(r & 0xf8) << (6 + 5 - 3)) |
 			(static_cast<uint32_t>(g & 0xfc) << (5 - 2)) |
@@ -163,6 +164,7 @@ public:
 	static const ColorBGR565 aqua;
 public:
 	ColorBGR565(const ColorBGR565& colorBGR565) : value{colorBGR565.value} {}
+	explicit ColorBGR565(uint16_t value) : value{value} {}
 	constexpr ColorBGR565(uint8_t r, uint8_t g, uint8_t b) : value{static_cast<uint16_t>(
 			(static_cast<uint32_t>(b & 0xf8) << (6 + 5 - 3)) |
 			(static_cast<uint32_t>(g & 0xfc) << (5 - 2)) |
@@ -213,6 +215,7 @@ public:
 	static const ColorRGB555 aqua;
 public:
 	ColorRGB555(const ColorRGB555& colorRGB555) : value{colorRGB555.value} {}
+	explicit ColorRGB555(uint16_t value) : value{value} {}
 	constexpr ColorRGB555(uint8_t r, uint8_t g, uint8_t b) : value{static_cast<uint16_t>(
 			(static_cast<uint32_t>(r & 0xf8) << (5 + 5 - 3)) |
 			(static_cast<uint32_t>(g & 0xfc) << (5 - 2)) |
@@ -263,6 +266,7 @@ public:
 	static const ColorBGR555 aqua;
 public:
 	ColorBGR555(const ColorBGR555& colorBGR555) : value{colorBGR555.value} {}
+	explicit ColorBGR555(uint16_t value) : value{value} {}
 	constexpr ColorBGR555(uint8_t r, uint8_t g, uint8_t b) : value{static_cast<uint16_t>(
 			(static_cast<uint32_t>(b & 0xf8) << (5 + 5 - 3)) |
 			(static_cast<uint32_t>(g & 0xfc) << (5 - 2)) |
