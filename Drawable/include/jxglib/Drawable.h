@@ -67,8 +67,24 @@ public:
 		DrawBitmap_(x, y, data, width, height, color, pColorBg, scaleX, scaleY);
 		return *this;
 	}
-	Drawable& DrawImage(int x, int y, const Image& image, Image::ReaderDir readerDir = Image::ReaderDir::HorzFromNW) {
+	Drawable& DrawImage(int x, int y, const Image& image,
+						Image::ReaderDir readerDir = Image::ReaderDir::HorzFromNW) {
 		DrawImage_(x, y, image, readerDir); return *this;
+	}
+	Drawable& DrawImageRot90(int x, int y, const Image& image) {
+		return DrawImage(x, y, image, Image::ReaderDir::VertFromSW);
+	}
+	Drawable& DrawImageRot180(int x, int y, const Image& image) {
+		return DrawImage(x, y, image, Image::ReaderDir::HorzFromSE);
+	}
+	Drawable& DrawImageRot270(int x, int y, const Image& image) {
+		return DrawImage(x, y, image, Image::ReaderDir::VertFromNE);
+	}
+	Drawable& DrawImageMirrorHorz(int x, int y, const Image& image) {
+		return DrawImage(x, y, image, Image::ReaderDir::HorzFromNE);
+	}
+	Drawable& DrawImageMirrorVert(int x, int y, const Image& image) {
+		return DrawImage(x, y, image, Image::ReaderDir::HorzFromSW);
 	}
 public:
 	Drawable& DrawPixel(int x, int y) { DrawPixel(x, y, context_.colorFg); return *this; }

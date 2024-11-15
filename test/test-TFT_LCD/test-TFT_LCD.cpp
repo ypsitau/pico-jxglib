@@ -192,8 +192,7 @@ void Test_DrawString(Display& display)
 	}
 }
 
-//void Test_DrawStringWrap(Display& display, int fontScale)
-void Test_DrawStringWrap(Display* displayTbl[], int nDisplays, int fontScale)
+void Test_DrawStringWrap(Display* displayTbl[], int nDisplays)
 {
 	const char* strTbl[] = {
 		" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxy{|}~",
@@ -230,6 +229,7 @@ void Test_DrawStringWrap(Display* displayTbl[], int nDisplays, int fontScale)
 		if (iStr >= ArrayNumberOf(strTbl)) iStr = 0;
 		for (int iDisplay = 0; iDisplay < nDisplays; iDisplay++) {
 			Display& display = *displayTbl[iDisplay];
+			int fontScale = (display.GetWidth() >= 240)? 2 : 1;
 			display.SetFont(*fontSetTbl[iFont], fontScale);
 			display.Clear();
 			display.DrawStringWrap(0, 0, p);
@@ -264,10 +264,10 @@ int main()
 	//Test_DrawString(display);
 	//Test_DrawStringWrap(display);
 	display1.Clear().DrawImage(0, 0, image_cat_240x320);
-	display2.Clear().DrawImage(0, 0, image_cat_240x320);
-	display3.Clear().DrawImage(0, 0, image_cat_240x320);
+	display2.Clear().DrawImageMirrorHorz(0, 0, image_cat_240x320);
+	display3.Clear().DrawImageMirrorVert(0, 0, image_cat_240x320);
 	display4.Clear().DrawImage(0, 0, image_cat_160x213, Image::ReaderDir::VertFromSW);
-	display5.Clear().DrawImage(0, 0, image_cat_128x170);
+	display5.Clear().DrawImageRot270(0, 0, image_cat_128x170);
 	//Test_DrawLine(display2);
-	//Test_DrawStringWrap(displayTbl, ArrayNumberOf(displayTbl), 1);
+	//Test_DrawStringWrap(displayTbl, ArrayNumberOf(displayTbl));
 }
