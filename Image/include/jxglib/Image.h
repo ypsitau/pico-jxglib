@@ -19,7 +19,31 @@ public:
 	public:
 		Type operator()(const uint8_t* p) { return Color(p[0], p[1], p[2]); }
 	};
+	class GetColor_SrcRGB565 {
+	public:
+		using Type = Color;
+	public:
+		Type operator()(const uint8_t* p) {  return Type(ColorRGB565(*reinterpret_cast<const uint16_t*>(p))); }
+	};
+	class GetColorA_SrcRGB565 {
+	public:
+		using Type = ColorRGB565;
+	public:
+		Type operator()(const uint8_t* p) { return Type(*reinterpret_cast<const uint16_t*>(p)); }
+	};
+	class GetColorRGB565_SrcGray {
+	public:
+		using Type = ColorRGB565;
+	public:
+		Type operator()(const uint8_t* p) { return ColorRGB565(p[0], p[0], p[0]); }
+	};
 	class GetColorRGB565_SrcRGB {
+	public:
+		using Type = ColorRGB565;
+	public:
+		Type operator()(const uint8_t* p) { return ColorRGB565(p[0], p[1], p[2]); }
+	};
+	class GetColorRGB565_SrcRGBA {
 	public:
 		using Type = ColorRGB565;
 	public:
@@ -29,8 +53,9 @@ public:
 	public:
 		using Type = ColorRGB565;
 	public:
-		Type operator()(const uint8_t* p) { return Type(*reinterpret_cast<const uint16_t*>(p)); }
+		Type operator()(const uint8_t* p) { return ColorRGB565(*reinterpret_cast<const uint16_t*>(p)); }
 	};
+public:
 	class PutColorRGB565_DstRGB565 {
 	public:
 		using Type = ColorRGB565;
@@ -39,8 +64,16 @@ public:
 	};
 public:
 	enum class SequencerDir {
-		HorzFromNW, HorzFromNE, HorzFromSW, HorzFromSE,
-		VertFromNW, VertFromNE, VertFromSW, VertFromSE,
+		Horz,
+		HorzFromNW = Horz,
+		HorzFromNE,
+		HorzFromSW,
+		HorzFromSE,
+		Vert,
+		VertFromNW = Vert,
+		VertFromNE,
+		VertFromSW,
+		VertFromSE,
 	};
 	using ReaderDir = SequencerDir;
 	using WriterDir = SequencerDir;
@@ -166,6 +199,8 @@ public:
 		int bytesPerPixel;
 	public:
 		static const Format Gray;
+		static const Format RGB;
+		static const Format RGBA;
 		static const Format RGB565;
 	public:
 		bool IsIdentical(const Format& format) const { return this == &format; }
@@ -183,6 +218,8 @@ public:
 			bytesPerLine_{width * format_.bytesPerPixel},
 			data_{reinterpret_cast<uint8_t*>(const_cast<void*>(data))}, writableFlag_{false} {}
 	bool IsFormatGray() const { return format_.IsIdentical(Format::Gray); }
+	bool IsFormatRGB() const { return format_.IsIdentical(Format::RGB); }
+	bool IsFormatRGBA() const { return format_.IsIdentical(Format::RGBA); }
 	bool IsFormatRGB565() const { return format_.IsIdentical(Format::RGB565); }
 	int GetWidth() const { return width_; }
 	int GetHeight() const { return height_; }
@@ -194,6 +231,8 @@ public:
 		return data_ + GetBytesPerPixel() * x + GetBytesPerLine() * y;
 	}
 	bool IsWritable() const { return writableFlag_; }
+	static bool IsDirHorz(SequencerDir dir) { return dir < SequencerDir::Vert; }
+	static bool IsDirVert(SequencerDir dir) { return dir >= SequencerDir::Vert; }
 };
 
 }

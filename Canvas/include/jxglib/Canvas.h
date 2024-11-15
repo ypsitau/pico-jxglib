@@ -27,7 +27,7 @@ public:
 	virtual void DrawRectFill_(int x, int y, int width, int height, const Color& color) override;
 	virtual void DrawBitmap_(int x, int y, const void* data, int width, int height,
 		const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override;
-	virtual void DrawImage_(int x, int y, const Image& image) override;
+	virtual void DrawImage_(int x, int y, const Image& image, Image::ReaderDir readerDir) override;
 };
 
 }
