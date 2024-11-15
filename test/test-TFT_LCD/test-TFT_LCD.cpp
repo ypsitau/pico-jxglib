@@ -10,6 +10,7 @@
 #include "Font/sisd8x16.h"
 #include "Font/sisd24x32.h"
 #include "image/image_cat_128x170.h"
+#include "image/image_cat_160x213.h"
 #include "image/image_cat_240x320.h"
 
 #define ArrayNumberOf(x) (sizeof(x) / sizeof(x[0]))
@@ -265,7 +266,7 @@ int main()
 	display1.Clear().DrawImage(0, 0, image_cat_240x320);
 	display2.Clear().DrawImage(0, 0, image_cat_240x320);
 	display3.Clear().DrawImage(0, 0, image_cat_240x320);
-	display4.Clear().DrawImage(0, 0, image_cat_128x170);
+	display4.Clear().DrawImage(0, 0, image_cat_160x213, Image::ReaderDir::VertFromSW);
 	display5.Clear().DrawImage(0, 0, image_cat_128x170);
 	//Test_DrawLine(display2);
 	//Test_DrawStringWrap(displayTbl, ArrayNumberOf(displayTbl), 1);

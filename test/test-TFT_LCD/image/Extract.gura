@@ -4,8 +4,9 @@ main() = {
 	fileNameSrc = 'cat.jpg'
 	imageSrc = Image(fileNameSrc).Rotate(90)
 	baseNameSrc = path.BaseName(fileNameSrc)
-	WriteImageHeaderFile(baseNameSrc, imageSrc.Resize(240, nil))
 	WriteImageHeaderFile(baseNameSrc, imageSrc.Resize(128, nil))
+	WriteImageHeaderFile(baseNameSrc, imageSrc.Resize(160, nil))
+	WriteImageHeaderFile(baseNameSrc, imageSrc.Resize(240, nil))
 }
 
 WriteImageHeaderFile(baseNameSrc as String, image as Image) = {
