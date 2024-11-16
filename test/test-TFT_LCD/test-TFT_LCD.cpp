@@ -213,6 +213,7 @@ void Test_DrawStringWrap(Display* displayTbl[], int nDisplays)
 		Display& display = *displayTbl[iDisplay];
 		display.SetColor(Color::white);
 		display.SetColorBg(Color::black);
+		display.SetAdvanceProp(1.0, 1.5);
 	}
 	for (;;) {
 		//if (!*p) {
@@ -269,5 +270,5 @@ int main()
 	display4.Clear().DrawImage(0, 0, image_cat_160x213, nullptr, Image::Draw::Rotate90);
 	display5.Clear().DrawImage(0, 0, image_cat_128x170, nullptr, Image::Draw::Rotate180);
 	//Test_DrawLine(display2);
-	//Test_DrawStringWrap(displayTbl, ArrayNumberOf(displayTbl));
+	Test_DrawStringWrap(displayTbl, ArrayNumberOf(displayTbl));
 }

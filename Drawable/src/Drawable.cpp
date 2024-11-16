@@ -107,7 +107,7 @@ Drawable& Drawable::DrawString(int x, int y, const char* str, const char* strEnd
 	return *this;
 }
 
-Drawable& Drawable::DrawStringWrap(int x, int y, int width, int height, const char* str, int htLine, StringCont* pStringCont)
+Drawable& Drawable::DrawStringWrap(int x, int y, int width, int height, const char* str, StringCont* pStringCont)
 {
 	const char* strDone = str;
 	if (!context_.pFontSet) {
@@ -122,11 +122,11 @@ Drawable& Drawable::DrawStringWrap(int x, int y, int width, int height, const ch
 	int xStart = x;
 	int xExceed = (width >= 0)? x + width : width_;
 	int yExceed = (height >= 0)? y + height : height_;
-	int yAdvance = (htLine >= 0)? htLine : context_.pFontSet->yAdvance * context_.fontScaleY;
+	int yAdvance = static_cast<int>(context_.pFontSet->yAdvance * context_.fontScaleY * context_.yAdvanceProp);
 	for (const char* p = str; *p; p++) {
 		if (!decoder.FeedChar(*p, &code)) continue;
 		const FontEntry& fontEntry = context_.pFontSet->GetFontEntry(code);
-		int xAdvance = fontEntry.xAdvance * context_.fontScaleX;
+		int xAdvance = static_cast<int>(fontEntry.xAdvance * context_.fontScaleX * context_.xAdvanceProp);
 		if (x + fontEntry.width * context_.fontScaleX > xExceed) {
 			x = xStart, y += yAdvance;
 			if (y + yAdvance > yExceed) break;
