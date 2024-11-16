@@ -9,6 +9,8 @@ add_subdirectory(Display)
 add_subdirectory(Drawable)
 add_subdirectory(Font)
 add_subdirectory(Image)
+
+add_subdirectory(LCD1602)
 add_subdirectory(SSD1306)
 add_subdirectory(StepMotor)
 add_subdirectory(TextBox)
@@ -24,7 +26,12 @@ target_link_libraries(jxglib INTERFACE
 	jxglib_Drawable
 	jxglib_Font
 	jxglib_Image
+	jxglib_TextBox)
+
+add_library(jxglib_device INTERFACE)
+	
+target_link_libraries(jxglib_device INTERFACE
+	jxglib_LCD1602
 	jxglib_SSD1306
 	jxglib_StepMotor
-	jxglib_TextBox
 	jxglib_TFT_LCD)
