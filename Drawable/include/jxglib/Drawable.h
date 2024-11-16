@@ -37,6 +37,7 @@ public:
 		const char* GetString() const { return str_; }
 		void Update(const Point& pos, const char* str) { pos_ = pos; str_ = str; }
 	};
+	using ImageDir = Image::SequencerDir;
 protected:
 	int width_, height_;
 	Context context_;
@@ -83,9 +84,9 @@ public:
 		DrawBitmap_(x, y, data, width, height, color, pColorBg, scaleX, scaleY);
 		return *this;
 	}
-	Drawable& DrawImage(int x, int y, const Image& image, const Rect* pRectClip = nullptr,
-						Image::ReaderDir readerDir = Image::ReaderDir::HorzFromNW) {
-		DrawImage_(x, y, image, pRectClip, readerDir); return *this;
+	Drawable& DrawImage(int x, int y, const Image& image, const Rect* pRectClip = nullptr, ImageDir imageDir = ImageDir::Normal) {
+		DrawImage_(x, y, image, pRectClip, imageDir);
+		return *this;
 	}
 public:
 	Drawable& DrawPixel(int x, int y) { DrawPixel(x, y, context_.colorFg); return *this; }
@@ -140,7 +141,7 @@ public:
 	virtual void DrawRectFill_(int x, int y, int width, int height, const Color& color) = 0;
 	virtual void DrawBitmap_(int x, int y, const void* data, int width, int height,
 		const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) = 0;
-	virtual void DrawImage_(int x, int y, const Image& image, const Rect* pRectClip, Image::ReaderDir readerDir) = 0;
+	virtual void DrawImage_(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) = 0;
 };
 
 }

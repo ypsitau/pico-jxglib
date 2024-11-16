@@ -21,7 +21,7 @@ void DrawBitmap_(int x, int y, const void* data, int width, int height,
 {
 }
 
-void DrawImage_(int x, int y, const Image& image, Image::ReaderDir readerDir)
+void DrawImage_(int x, int y, const Image& image, ImageDir imageDir)
 {
 }
 

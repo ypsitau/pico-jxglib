@@ -192,6 +192,26 @@ void Test_DrawString(Display& display)
 	}
 }
 
+void Test_DrawImage(Display* displayTbl[], int nDisplays)
+{
+	static const Display::ImageDir imageDirTbl[] = {
+		Display::ImageDir::Rotate0, Display::ImageDir::Rotate90,
+		Display::ImageDir::Rotate180, Display::ImageDir::Rotate270,
+	};
+	for (;;) {
+		for (int iDir = 0; iDir < ArrayNumberOf(imageDirTbl); iDir++) {
+			Display::ImageDir imageDir = imageDirTbl[iDir];
+			for (int iDisplay = 0; iDisplay < nDisplays; iDisplay++) {
+				Display& display = *displayTbl[iDisplay];
+				int width = display.GetWidth();
+				const Image& image = (width <= 128)? image_cat_128x170 : (width <= 160)? image_cat_160x213 : image_cat_240x320;
+				display.Clear().DrawImage(0, 0, image, nullptr, imageDir);
+			}
+			::sleep_ms(500);
+		}
+	}
+}
+
 void Test_DrawStringWrap(Display* displayTbl[], int nDisplays)
 {
 	const char* strTbl[] = {
@@ -199,8 +219,12 @@ void Test_DrawStringWrap(Display* displayTbl[], int nDisplays)
 		"The quick brown fox jumps over the lazy dog",
 		"あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん",
 		"アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン",
-		"親譲りの無鉄砲で小供の時から損ばかりしている。小学校に居る時分学校の"
-		"二階から飛び降りて一週間ほど腰を抜かした事がある。"
+		"親譲りの無鉄砲で子供のときから損ばかりしている。小学校の時分学校の二階から飛び降りて一週間腰を"
+		"抜かしたことがある。なぜそんなむやみなことをしたかと聞く人があるかもしれない。"
+		"別段深い理由でもない。新築の二階から首を出していたら同級生の一人が冗談に幾ら威張っても、"
+		"そこから飛び降りることはできまい。弱虫やーい。とはやしたからである。"
+		"小使いに負ぶさって帰ってきたとき、親父が大きな眼をして二階から飛び降りて腰を抜かすやつが"
+		"あるかといったから、この次は抜かさずに飛んでみせますと答えた。"
 	};
 	const FontSet* fontSetTbl[] = {
 		&Font::shinonome12, &Font::shinonome14, &Font::shinonome16, &Font::shinonome18,
@@ -230,13 +254,14 @@ void Test_DrawStringWrap(Display* displayTbl[], int nDisplays)
 		if (iStr >= ArrayNumberOf(strTbl)) iStr = 0;
 		for (int iDisplay = 0; iDisplay < nDisplays; iDisplay++) {
 			Display& display = *displayTbl[iDisplay];
-			int fontScale = (display.GetWidth() >= 240)? 2 : 1;
+			//int fontScale = (display.GetWidth() >= 240)? 2 : 1;
+			int fontScale = 1;
 			display.SetFont(*fontSetTbl[iFont], fontScale);
 			display.Clear();
 			display.DrawStringWrap(0, 0, p);
 			display.Refresh();
 		}
-		::sleep_ms(200);
+		::sleep_ms(1000);
 	}
 }
 
@@ -264,11 +289,7 @@ int main()
 	//Test_WriteBuffer(display);
 	//Test_DrawString(display);
 	//Test_DrawStringWrap(display);
-	display1.Clear().DrawImage(0, 0, image_cat_240x320);
-	display2.Clear().DrawImage(0, 0, image_cat_240x320, nullptr, Image::Draw::Rotate90);
-	display3.Clear().DrawImage(0, 0, image_cat_240x320);
-	display4.Clear().DrawImage(0, 0, image_cat_160x213, nullptr, Image::Draw::Rotate90);
-	display5.Clear().DrawImage(0, 0, image_cat_128x170, nullptr, Image::Draw::Rotate180);
+	Test_DrawImage(displayTbl, ArrayNumberOf(displayTbl));
 	//Test_DrawLine(display2);
 	Test_DrawStringWrap(displayTbl, ArrayNumberOf(displayTbl));
 }

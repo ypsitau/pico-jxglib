@@ -93,11 +93,11 @@ void TFT_LCD::DrawBitmap_(int x, int y, const void* data, int width, int height,
 	raw.MemoryWrite_End();
 }
 
-void TFT_LCD::DrawImage_(int x, int y, const Image& image, const Rect* pRectClip, Image::ReaderDir readerDir)
+void TFT_LCD::DrawImage_(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir)
 {
 	int xSkip = 0, ySkip = 0;
 	int width, height;
-	if (Image::IsDirHorz(readerDir)) {
+	if (Image::IsDirHorz(imageDir)) {
 		width = image.GetWidth(), height = image.GetHeight();
 	} else {
 		width = image.GetHeight(), height = image.GetWidth();
@@ -109,19 +109,19 @@ void TFT_LCD::DrawImage_(int x, int y, const Image& image, const Rect* pRectClip
 	raw.MemoryWrite_Begin(16);
 	if (image.IsFormatGray()) {
 		using Reader = Image::Reader<Image::GetColorRGB565_SrcGray>;
-		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, readerDir));
+		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 	} else if (image.IsFormatRGB()) {
 		using Reader = Image::Reader<Image::GetColorRGB565_SrcRGB>;
-		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, readerDir));
+		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 	} else if (image.IsFormatRGBA()) {
 		using Reader = Image::Reader<Image::GetColorRGB565_SrcRGBA>;
-		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, readerDir));
+		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 	} else if (image.IsFormatRGB565()) {
 		using Reader = Image::Reader<Image::GetColorRGB565_SrcRGB565>;
-		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, readerDir));
+		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 	}
 	raw.MemoryWrite_End();

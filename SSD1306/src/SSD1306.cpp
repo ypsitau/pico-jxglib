@@ -133,7 +133,7 @@ void SSD1306::DrawBitmap_(int x, int y, const void* data, int width, int height,
 	}
 }
 
-void SSD1306::DrawImage_(int x, int y, const Image& image, const Rect* pRectClip, Image::ReaderDir readerDir)
+void SSD1306::DrawImage_(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir)
 {
 }
 
