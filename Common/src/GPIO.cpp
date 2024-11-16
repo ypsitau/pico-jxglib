@@ -8,7 +8,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // GPIO
 //------------------------------------------------------------------------------
-const GPIO_Invalid_T GPIO_Invalid;
+const GPIO GPIO::None(-1);
 const GPIO0_T GPIO0;
 const GPIO1_T GPIO1;
 const GPIO2_T GPIO2;

@@ -66,7 +66,7 @@ public:
 				spi_(spi), gpio_RST_(gpio_RST), gpio_DC_(gpio_DC), gpio_BL_(gpio_BL), gpio_CS_(gpio_CS),
 				cpol_(SPI_CPOL_0), cpha_(SPI_CPHA_0) {}
 		Raw(spi_inst_t* spi, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_BL) :
-				spi_(spi), gpio_RST_(gpio_RST), gpio_DC_(gpio_DC), gpio_CS_(GPIO_Invalid), gpio_BL_(gpio_BL),
+				spi_(spi), gpio_RST_(gpio_RST), gpio_DC_(gpio_DC), gpio_CS_(GPIO::None), gpio_BL_(gpio_BL),
 				cpol_(SPI_CPOL_1), cpha_(SPI_CPHA_1) {}
 	public:
 		bool UsesCS() const { return gpio_CS_.IsValid(); }

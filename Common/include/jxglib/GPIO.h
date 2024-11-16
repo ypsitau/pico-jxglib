@@ -18,6 +18,8 @@ class GPIO {
 public:
 	uint pin;
 public:
+	static const GPIO None;
+public:
 	explicit GPIO(uint pin) : pin{pin} {}
 	GPIO(const GPIO& gpio) : pin{gpio.pin} {}
 	operator uint() const { return pin; }
@@ -157,11 +159,6 @@ inline void GPIO::adc_set_round_robin(const GPIO_ADC& gpio1, const GPIO_ADC& gpi
 //------------------------------------------------------------------------------
 // GPIO derivations for each port
 //------------------------------------------------------------------------------
-class GPIO_Invalid_T : public GPIO {
-public:
-	GPIO_Invalid_T() : GPIO(static_cast<uint>(-1)) {}
-};
-
 class GPIO0_T : public GPIO {
 public:
 	GPIO0_T() : GPIO(0) {}
@@ -468,7 +465,6 @@ public:
 	const GPIO& set_function_USB_VBUS_EN() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
 };
 
-extern const GPIO_Invalid_T GPIO_Invalid;
 extern const GPIO0_T GPIO0;
 extern const GPIO1_T GPIO1;
 extern const GPIO2_T GPIO2;
