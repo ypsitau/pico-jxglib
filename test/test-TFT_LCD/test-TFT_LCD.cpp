@@ -198,8 +198,9 @@ void Test_DrawImage(Display* displayTbl[], int nDisplays)
 		Display::ImageDir::Rotate0, Display::ImageDir::Rotate90,
 		Display::ImageDir::Rotate180, Display::ImageDir::Rotate270,
 	};
-	for (;;) {
-		for (int iDir = 0; iDir < ArrayNumberOf(imageDirTbl); iDir++) {
+	int iDir = 0;
+	//for (;;) {
+	//	for (int iDir = 0; iDir < ArrayNumberOf(imageDirTbl); iDir++) {
 			Display::ImageDir imageDir = imageDirTbl[iDir];
 			for (int iDisplay = 0; iDisplay < nDisplays; iDisplay++) {
 				Display& display = *displayTbl[iDisplay];
@@ -207,9 +208,9 @@ void Test_DrawImage(Display* displayTbl[], int nDisplays)
 				const Image& image = (width <= 128)? image_cat_128x170 : (width <= 160)? image_cat_160x213 : image_cat_240x320;
 				display.Clear().DrawImage(0, 0, image, nullptr, imageDir);
 			}
-			::sleep_ms(500);
-		}
-	}
+	//		::sleep_ms(500);
+	//	}
+	//}
 }
 
 void Test_DrawStringWrap(Display* displayTbl[], int nDisplays)
@@ -291,5 +292,13 @@ int main()
 	//Test_DrawStringWrap(display);
 	Test_DrawImage(displayTbl, ArrayNumberOf(displayTbl));
 	//Test_DrawLine(display2);
-	Test_DrawStringWrap(displayTbl, ArrayNumberOf(displayTbl));
+	//Test_DrawStringWrap(displayTbl, ArrayNumberOf(displayTbl));
+	display2.raw.VerticalScrollingDefinition(0, 320, 0);
+	display2.raw.VerticalScrollStartAddressToRAM(100);
+	display2.SetFont(Font::shinonome16, 3);
+	display2.DrawString(0, 0, "Hello");
+	//for (int i = 0; i < 320; i++) {
+	//	display2.raw.VerticalScrollStartAddressToRAM(i);
+	//	::sleep_ms(100);
+	//}
 }

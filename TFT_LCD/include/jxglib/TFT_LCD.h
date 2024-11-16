@@ -202,10 +202,10 @@ public:
 				static_cast<uint8_t>(pel >> 8), static_cast<uint8_t>(pel & 0xff));
 		}
 		// 9.1.25 VSCRDEF (33h): Vertical Scrolling Definition
-		void VerticalScrollingDefinition(uint16_t tfa, uint16_t vsa, uint16_t bfa) {
-			SendCmd(0x33, static_cast<uint8_t>(tfa >> 8), static_cast<uint8_t>(tfa & 0xff),
-				static_cast<uint8_t>(vsa >> 8), static_cast<uint8_t>(vsa & 0xff),
-				static_cast<uint8_t>(bfa >> 8), static_cast<uint8_t>(bfa & 0xff));
+		void VerticalScrollingDefinition(uint16_t topFixedArea, uint16_t verticalScrollArea, uint16_t bottomFixedArea) {
+			SendCmd(0x33, static_cast<uint8_t>(topFixedArea >> 8), static_cast<uint8_t>(topFixedArea & 0xff),
+				static_cast<uint8_t>(verticalScrollArea >> 8), static_cast<uint8_t>(verticalScrollArea & 0xff),
+				static_cast<uint8_t>(bottomFixedArea >> 8), static_cast<uint8_t>(bottomFixedArea & 0xff));
 		}
 		// 9.1.26 TEOFF (34h): Tearing Effect Line Off
 		void TearingEffectLineOff() {
@@ -229,7 +229,7 @@ public:
 		}
 		// 9.1.29 VSCSAD (37h): Vertical Scroll Start Address to RAM
 		void VerticalScrollStartAddressToRAM(uint16_t vsp) {
-			SendCmd(0x30, static_cast<uint8_t>(vsp >> 8), static_cast<uint8_t>(vsp & 0xff));
+			SendCmd(0x37, static_cast<uint8_t>(vsp >> 8), static_cast<uint8_t>(vsp & 0xff));
 		}
 		// 9.1.30 IDMOFF (38h): Idle Mode Off
 		void IdleModeOff() {
