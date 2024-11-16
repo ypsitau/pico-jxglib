@@ -4,6 +4,7 @@
 #ifndef PICO_JXGLIB_COMMON_H
 #define PICO_JXGLIB_COMMON_H
 #include "Color.h"
+#include "Dir.h"
 #include "FIFOBuff.h"
 #include "GPIO.h"
 #include "KeyCode.h"
