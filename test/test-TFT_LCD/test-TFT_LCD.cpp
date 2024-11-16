@@ -213,7 +213,7 @@ void Test_DrawStringWrap(Display* displayTbl[], int nDisplays)
 		Display& display = *displayTbl[iDisplay];
 		display.SetColor(Color::white);
 		display.SetColorBg(Color::black);
-		display.SetAdvanceProp(1.0, 1.5);
+		display.SetSpacingRatio(1.0, 1.2);
 	}
 	for (;;) {
 		//if (!*p) {

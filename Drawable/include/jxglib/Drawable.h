@@ -20,15 +20,22 @@ public:
 		Color colorFg;
 		Color colorBg;
 		const FontSet* pFontSet;
-		int fontScaleX, fontScaleY;
-		float xAdvanceProp, yAdvanceProp;
+		int fontScaleWidth, fontScaleHeight;
+		float charWidthRatio, lineHeightRatio;
 	public:
 		Context() : colorFg{Color::white}, colorBg{Color::black},
-			pFontSet{nullptr}, fontScaleX{1}, fontScaleY{1}, xAdvanceProp(1.0), yAdvanceProp(1.0) {}
+			pFontSet{nullptr}, fontScaleWidth{1}, fontScaleHeight{1},
+			charWidthRatio(1.0), lineHeightRatio(1.0) {}
 	};
-	struct StringCont {
-		int x, y;
-		const char* str;
+	class StringCont {
+	private:
+		Point pos_;
+		const char* str_;
+	public:
+		StringCont(const Point& pos, const char* str) : pos_{pos}, str_{str} {}
+		const Point& GetPosition() const { return pos_; }
+		const char* GetString() const { return str_; }
+		void Update(const Point& pos, const char* str) { pos_ = pos; str_ = str; }
 	};
 protected:
 	int width_, height_;
@@ -42,23 +49,23 @@ public:
 	Drawable& SetColor(const Color& color) { context_.colorFg = color; return *this; }
 	Drawable& SetColorBg(const Color& color) { context_.colorBg = color; return *this; }
 	Drawable& SetFont(const FontSet& fontSet, int fontScale = 1) {
-		context_.pFontSet = &fontSet; context_.fontScaleX = context_.fontScaleY = fontScale;
+		context_.pFontSet = &fontSet; context_.fontScaleWidth = context_.fontScaleHeight = fontScale;
 		return *this;
 	}
-	Drawable& SetFont(const FontSet& fontSet, int fontScaleX, int fontScaleY) {
-		context_.pFontSet = &fontSet; context_.fontScaleX = fontScaleX, context_.fontScaleY = fontScaleY;
+	Drawable& SetFont(const FontSet& fontSet, int fontScaleWidth, int fontScaleHeight) {
+		context_.pFontSet = &fontSet; context_.fontScaleWidth = fontScaleWidth, context_.fontScaleHeight = fontScaleHeight;
 		return *this;
 	}
 	Drawable& SetFontScale(int fontScale) {
-		context_.fontScaleX = context_.fontScaleY = fontScale;
+		context_.fontScaleWidth = context_.fontScaleHeight = fontScale;
 		return *this;
 	}
-	Drawable& SetFontScale(int fontScaleX, int fontScaleY) {
-		context_.fontScaleX = fontScaleX, context_.fontScaleY = fontScaleY;
+	Drawable& SetFontScale(int fontScaleWidth, int fontScaleHeight) {
+		context_.fontScaleWidth = fontScaleWidth, context_.fontScaleHeight = fontScaleHeight;
 		return *this;
 	}
-	Drawable& SetAdvanceProp(float xAdvanceProp, float yAdvanceProp) {
-		context_.xAdvanceProp = xAdvanceProp, context_.yAdvanceProp = yAdvanceProp;
+	Drawable& SetSpacingRatio(float charWidthRatio, float lineHeightRatio) {
+		context_.charWidthRatio = charWidthRatio, context_.lineHeightRatio = lineHeightRatio;
 		return *this;
 	}
 public:
@@ -110,6 +117,10 @@ public:
 	Drawable& DrawString(int x, int y, const char* str, const char* strEnd = nullptr, StringCont* pStringCont = nullptr);
 	Drawable& DrawString(const Point& pt, const char* str, const char* strEnd = nullptr, StringCont* pStringCont = nullptr) {
 		DrawString(pt.x, pt.y, str, strEnd, pStringCont);
+		return *this;
+	}
+	Drawable& DrawString(StringCont& stringCont, const char* strEnd = nullptr) {
+		DrawString(stringCont.GetPosition(), stringCont.GetString(), strEnd);
 		return *this;
 	}
 	Drawable& DrawStringWrap(int x, int y, int width, int height, const char* str, StringCont* pStringCont = nullptr);

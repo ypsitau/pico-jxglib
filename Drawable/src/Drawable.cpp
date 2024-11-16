@@ -70,7 +70,7 @@ Drawable& Drawable::DrawRect(int x, int y, int width, int height)
 Drawable& Drawable::DrawChar(int x, int y, const FontEntry& fontEntry)
 {
 	DrawBitmap(x, y, fontEntry.data, fontEntry.width, fontEntry.height,
-					true, context_.fontScaleX, context_.fontScaleY);
+					true, context_.fontScaleWidth, context_.fontScaleHeight);
 	return *this;
 }
 
@@ -85,10 +85,7 @@ Drawable& Drawable::DrawChar(int x, int y, uint32_t code)
 Drawable& Drawable::DrawString(int x, int y, const char* str, const char* strEnd, StringCont* pStringCont)
 {
 	if (!context_.pFontSet) {
-		if (pStringCont) {
-			pStringCont->x = x, pStringCont->y = y;
-			pStringCont->str = str;
-		}
+		if (pStringCont) pStringCont->Update({x, y}, str);
 		return *this;
 	}
 	uint32_t code;
@@ -98,12 +95,9 @@ Drawable& Drawable::DrawString(int x, int y, const char* str, const char* strEnd
 		if (!decoder.FeedChar(*p, &code)) continue;
 		const FontEntry& fontEntry = context_.pFontSet->GetFontEntry(code);
 		DrawChar(x, y, fontEntry);
-		x += fontEntry.xAdvance * context_.fontScaleX;
+		x += fontEntry.xAdvance * context_.fontScaleWidth;
 	}
-	if (pStringCont) {
-		pStringCont->x = x, pStringCont->y = y;
-		pStringCont->str = p;
-	}
+	if (pStringCont) pStringCont->Update({x, y}, p);
 	return *this;
 }
 
@@ -111,10 +105,7 @@ Drawable& Drawable::DrawStringWrap(int x, int y, int width, int height, const ch
 {
 	const char* strDone = str;
 	if (!context_.pFontSet) {
-		if (pStringCont) {
-			pStringCont->x = x, pStringCont->y = y;
-			pStringCont->str = strDone;
-		}
+		if (pStringCont) pStringCont->Update({x, y}, strDone);
 		return *this;
 	}
 	uint32_t code;
@@ -122,23 +113,20 @@ Drawable& Drawable::DrawStringWrap(int x, int y, int width, int height, const ch
 	int xStart = x;
 	int xExceed = (width >= 0)? x + width : width_;
 	int yExceed = (height >= 0)? y + height : height_;
-	int yAdvance = static_cast<int>(context_.pFontSet->yAdvance * context_.fontScaleY * context_.yAdvanceProp);
+	int lineHeight = static_cast<int>(context_.pFontSet->yAdvance * context_.fontScaleHeight * context_.lineHeightRatio);
 	for (const char* p = str; *p; p++) {
 		if (!decoder.FeedChar(*p, &code)) continue;
 		const FontEntry& fontEntry = context_.pFontSet->GetFontEntry(code);
-		int xAdvance = static_cast<int>(fontEntry.xAdvance * context_.fontScaleX * context_.xAdvanceProp);
-		if (x + fontEntry.width * context_.fontScaleX > xExceed) {
-			x = xStart, y += yAdvance;
-			if (y + yAdvance > yExceed) break;
+		int xAdvance = static_cast<int>(fontEntry.xAdvance * context_.fontScaleWidth * context_.charWidthRatio);
+		if (x + fontEntry.width * context_.fontScaleWidth > xExceed) {
+			x = xStart, y += lineHeight;
+			if (y + lineHeight > yExceed) break;
 		}
 		DrawChar(x, y, fontEntry);
 		x += xAdvance;
 		strDone = p + 1;
 	}
-	if (pStringCont) {
-		pStringCont->x = x, pStringCont->y = y;
-		pStringCont->str = strDone;
-	}
+	if (pStringCont) pStringCont->Update({x, y}, strDone);
 	return *this;
 }
 
