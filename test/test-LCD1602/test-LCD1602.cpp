@@ -13,5 +13,6 @@ int main()
 	LCD1602 lcd(i2c0);
 	lcd.Initialize();
 	lcd.Print("Hello World");
+	lcd.SetPosition(0, 1);
 	lcd.Print("Hello World");
 }
