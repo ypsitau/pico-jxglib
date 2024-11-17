@@ -5,6 +5,7 @@
 #define PICO_JXGLIB_LCD1602_H
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
+#include "jxglib/Common.h"
 
 namespace jxglib {
 
@@ -34,23 +35,62 @@ public:
 			SendRawByte(value | (0 << 2));
 			::sleep_us(usecDelay);
 		}
-		// bit3: Backlight
-		// bit2: Clock
-		// bit1: R/W (1: Read, 0: Write)
-		// bit0: RS (1: Data, 0: Instruction)
 		void SendByte(uint8_t value, uint8_t mode) {
+			// mode bit3: Backlight
+			//      bit2: Clock
+			//      bit1: R/W (1: Read, 0: Write)
+			//      bit0: RS (1: Data, 0: Instruction)
 			mode |= (1 << 3);	// Backlight
 			SendNibble((value & 0xf0) | mode);
 			SendNibble((value << 4) | mode);
 		}
-		void SendInst(uint8_t inst) { SendByte(inst, 0); }
-		void SendData(uint8_t data) { SendByte(data, 1); }
+		void SendInstruction(uint8_t inst) { SendByte(inst, 0); }
+	public:
+		void ClearDisplay() {
+			SendInstruction(0x01);
+		}
+		void ReturnHome(uint8_t dummy = 0) {
+			SendInstruction(0x02 | dummy);
+		}
+		void EntryModeSet(uint8_t shiftDir, uint8_t shiftEnable) {
+			SendInstruction(0x04 | (shiftDir << 1) | (shiftEnable << 0));
+		}
+		void DisplayOnOffControl(uint8_t displayEnable, uint8_t cursorEnable, uint8_t blinkEnable) {
+			SendInstruction(0x08 | (displayEnable << 2) | (cursorEnable << 1) | (blinkEnable << 0));
+		}
+		void CursorOrDisplayShift(uint8_t shiftDir, uint8_t displayShiftEnable) {
+			SendInstruction(0x10 | (shiftDir << 3) | (displayShiftEnable << 2));
+		}
+		void FunctionSet(uint8_t dataLength, uint8_t twoLineEnable, uint8_t largeFont) {
+			SendInstruction(0x20 | (dataLength << 4) | (twoLineEnable << 3) | (largeFont << 2));
+		}
+		void SetCharacterGeneratorRAMAddress(uint8_t addr) {
+			SendInstruction(0x40 | addr);
+		}
+		void SetDisplayDataRAMAddress(uint8_t addr) {
+			SendInstruction(0x80 | addr);
+		}
+		void WriteData(uint8_t data) {
+			SendByte(data, 1);
+		}
 	};
 public:
 	static const uint8_t DefaultAddr = 0x27;
 	Raw raw;
 public:
 	LCD1602(i2c_inst_t* i2c, uint8_t addr = DefaultAddr) : raw(i2c, addr) {}
+public:
+	void Initialize();
+	LCD1602& SetPosition(uint8_t x, uint8_t y) {
+		raw.SetDisplayDataRAMAddress((y << 6) | x); return *this;
+	}
+	LCD1602& PutChar(char ch) {
+		raw.WriteData(static_cast<uint8_t>(ch)); return *this;
+	}
+	LCD1602& Print(const char* str) {
+		for (const char* p = str; *p; p++) PutChar(*p);
+		return *this;
+	}
 };
 
 }
