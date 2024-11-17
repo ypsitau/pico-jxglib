@@ -39,7 +39,7 @@ public:
 	public:
 		uint8_t GetAddr() const { return addr_; }
 	public:
-		void WriteCtrl(uint8_t ctrl) const {
+		void SendCtrl(uint8_t ctrl) const {
 			uint8_t buff[2];
 			buff[0] =
 				(0b1 << 7) |	// Co = 1
@@ -47,7 +47,7 @@ public:
 			buff[1] = ctrl;
 			::i2c_write_blocking(i2c_, addr_, buff, sizeof(buff), false);
 		}
-		void WriteBuffer(const uint8_t* buff, int len) const {
+		void SendBuffer(const uint8_t* buff, int len) const {
 			::i2c_write_blocking(i2c_, addr_, buff, len, false);
 		}
 	public:
@@ -55,131 +55,131 @@ public:
 		// 10.1.1 Set Lower Column Start Address for Page Addressing Mode (00h-0Fh)
 		// 10.1.2 Set Higher Column Start Address for Page Addressing Mode (10h-1Fh)
 		void SetColumnStartAddressForPageAddressingMode(uint8_t columnStartAddr) const {
-			WriteCtrl(0x00 | (columnStartAddr & 0x0f));
-			WriteCtrl(0x10 | (columnStartAddr >> 4));
+			SendCtrl(0x00 | (columnStartAddr & 0x0f));
+			SendCtrl(0x10 | (columnStartAddr >> 4));
 		}
 		// 10.1.3 Set Memory Addressing Mode (20h)
 		void SetMemoryAddressingMode(uint8_t mode) const {
-			WriteCtrl(0x20);
-			WriteCtrl(mode);
+			SendCtrl(0x20);
+			SendCtrl(mode);
 		}
 		// 10.1.4 Set Column Address (21h)
 		void SetColumnAddress(uint8_t columnStartAddr, uint8_t columnEndAddr) const {
-			WriteCtrl(0x21);
-			WriteCtrl(columnStartAddr);
-			WriteCtrl(columnEndAddr);
+			SendCtrl(0x21);
+			SendCtrl(columnStartAddr);
+			SendCtrl(columnEndAddr);
 		}
 		// 10.1.5 Set Page Address (22h)
 		void SetPageAddress(uint8_t pageStartAddr, uint8_t pageEndAddr) const {
-			WriteCtrl(0x22);
-			WriteCtrl(pageStartAddr);
-			WriteCtrl(pageEndAddr);
+			SendCtrl(0x22);
+			SendCtrl(pageStartAddr);
+			SendCtrl(pageEndAddr);
 		}
 		// 10.1.6 Set Display Start Line (40h-7Fh)
 		void SetDisplayStartLine(uint8_t startLine) const {
-			WriteCtrl(0x40 | startLine);
+			SendCtrl(0x40 | startLine);
 		}
 		// 10.1.7 Set Contrast Control for BANK0 (81h)
 		void SetContrastControl(uint8_t contrast) const {
-			WriteCtrl(0x81);
-			WriteCtrl(contrast);
+			SendCtrl(0x81);
+			SendCtrl(contrast);
 		}
 		// 10.1.8 SetSegmentRe-map (A0h/A1h)
 		void SetSegmentRemap(uint8_t flag) const {
-			WriteCtrl(0xa0 | flag);
+			SendCtrl(0xa0 | flag);
 		}
 		// 10.1.9 Entire Display ON (A4h/A5h)
 		void EntireDisplayOn(uint8_t allOnFlag) const {
-			WriteCtrl(0xa4 | allOnFlag);
+			SendCtrl(0xa4 | allOnFlag);
 		}
 		// 10.1.10 Set Normal/Inverse Display (A6h/A7h)
 		void SetNormalInverseDisplay(uint8_t inverse) const {
-			WriteCtrl(0xa6 | inverse);
+			SendCtrl(0xa6 | inverse);
 		}
 		// 10.1.11 Set Multiplex Ratio (A8h)
 		void SetMultiplexRatio(uint8_t ratio) const {
-			WriteCtrl(0xa8);
-			WriteCtrl(ratio);
+			SendCtrl(0xa8);
+			SendCtrl(ratio);
 		}
 		// 10.1.12 Set Display ON/OFF (AEh/AFh)
 		void SetDisplayOnOff(uint8_t on) const {
-			WriteCtrl(0xae | on);
+			SendCtrl(0xae | on);
 		}
 		// 10.1.13 Set Page Start Address for Page Addressing Mode (B0h-B7h)
 		void SetPageStartAddressForPageAddressingMode(uint8_t pageStartAddrGDDRAM) const {
-			WriteCtrl(0xb0 | pageStartAddrGDDRAM);
+			SendCtrl(0xb0 | pageStartAddrGDDRAM);
 		}
 		// 10.1.14 Set COM Output Scan Direction (C0h/C8h)
 		void SetCOMOutputScanDirection(uint8_t scanDir) const {
-			WriteCtrl(0xc0 | (scanDir << 3));
+			SendCtrl(0xc0 | (scanDir << 3));
 		}
 		// 10.1.15 Set Display Offset (D3h)
 		void SetDisplayOffset(uint8_t offset) const {
-			WriteCtrl(0xd3);
-			WriteCtrl(offset);
+			SendCtrl(0xd3);
+			SendCtrl(offset);
 		}
 		// 10.1.16 Set Display Clock Divide Ratio / Oscillator Frequency (D5h)
 		void SetDisplayClockDivideRatioOscillatorFrequency(uint8_t divideRatio, uint8_t oscillatorFreq) const {
-			WriteCtrl(0xd5);
-			WriteCtrl((oscillatorFreq << 4) | divideRatio);
+			SendCtrl(0xd5);
+			SendCtrl((oscillatorFreq << 4) | divideRatio);
 		}
 		// 10.1.17 Set Pre-charge Period (D9h)
 		void SetPrechargePeriod(uint8_t clocksPhase1, uint8_t clocksPhase2) const {
-			WriteCtrl(0xd9);
-			WriteCtrl((clocksPhase2 << 4) | clocksPhase1);
+			SendCtrl(0xd9);
+			SendCtrl((clocksPhase2 << 4) | clocksPhase1);
 		}
 		// 10.1.18 Set COM Pins Hardware Configuration (DAh)
 		void SetCOMPinsHardwareConfiguration(uint8_t pinConfig, uint8_t enableRemap) const {
-			WriteCtrl(0xda);
-			WriteCtrl(0x02 | (enableRemap << 5) | (pinConfig << 4));
+			SendCtrl(0xda);
+			SendCtrl(0x02 | (enableRemap << 5) | (pinConfig << 4));
 		}
 		// 10.1.19 Set Vcomh Detect Level (DBh)
 		void SetVcomhDeselectLevel(uint8_t level) const {
-			WriteCtrl(0xdb);
-			WriteCtrl(level << 4);
+			SendCtrl(0xdb);
+			SendCtrl(level << 4);
 		}
 		// 10.1.20 NOP (E3h)
 		void NOP() const {
-			WriteCtrl(0xe3);
+			SendCtrl(0xe3);
 		}
 		// 10.2 Graphic Acceleration Command
 		// 10.2.1 Horizontal Scroll Setup (26h/27h)
 		void HorizontalScrollSetup(uint8_t left, uint8_t startPageAddr, uint8_t endPageAddr, uint8_t framesInterval) const {
-			WriteCtrl(0x26 | left);
-			WriteCtrl(0x00);				// Dummy byte
-			WriteCtrl(startPageAddr);
-			WriteCtrl(framesInterval);
-			WriteCtrl(endPageAddr);
-			WriteCtrl(0x00);				// Dummy byte
-			WriteCtrl(0xff);				// Dummy byte
+			SendCtrl(0x26 | left);
+			SendCtrl(0x00);				// Dummy byte
+			SendCtrl(startPageAddr);
+			SendCtrl(framesInterval);
+			SendCtrl(endPageAddr);
+			SendCtrl(0x00);				// Dummy byte
+			SendCtrl(0xff);				// Dummy byte
 		}
 		// 10.2.2 Continuous Vertical and Horizontal Scroll Setup (29h/2Ah)
 		void ContinuousVerticalAndHorizontalScrollSetup(uint8_t left, uint8_t startPageAddr, uint8_t endPageAddr, uint8_t framesInterval, uint8_t verticalScrollingOffset) const {
-			WriteCtrl(0x29 + left);
-			WriteCtrl(0x00);				// Dummy byte
-			WriteCtrl(startPageAddr);
-			WriteCtrl(framesInterval);
-			WriteCtrl(endPageAddr);
-			WriteCtrl(verticalScrollingOffset);
+			SendCtrl(0x29 + left);
+			SendCtrl(0x00);				// Dummy byte
+			SendCtrl(startPageAddr);
+			SendCtrl(framesInterval);
+			SendCtrl(endPageAddr);
+			SendCtrl(verticalScrollingOffset);
 		}
 		// 10.2.3 Deactivate Scroll (2Eh)
 		void DeactivateScroll() const {
-			WriteCtrl(0x2e);
+			SendCtrl(0x2e);
 		}
 		// 10.2.4 Activate Scroll (2Fh)
 		void ActivateScroll() const {
-			WriteCtrl(0x2f);
+			SendCtrl(0x2f);
 		}
 		// 10.2.5 Set Vertical Scroll Area (A3h)
 		void SetVerticalScrollArea(uint8_t rowsFixedArea, uint8_t rowsScrollArea) const {
-			WriteCtrl(0xa3);
-			WriteCtrl(rowsFixedArea);
-			WriteCtrl(rowsScrollArea);
+			SendCtrl(0xa3);
+			SendCtrl(rowsFixedArea);
+			SendCtrl(rowsScrollArea);
 		}
 		// Charge Pump Regulator
 		void ChargePumpSetting(uint8_t enableChargePump) const {
-			WriteCtrl(0x8d);
-			WriteCtrl(0x10 | (enableChargePump << 2));
+			SendCtrl(0x8d);
+			SendCtrl(0x10 | (enableChargePump << 2));
 		}
 	};
 public:
@@ -222,7 +222,7 @@ public:
 	uint8_t* GetPointer(int x, int y, int* pPage) { *pPage = y / 8; return buff_ + *pPage * width_ + x; }
 	bool EnsureSafePointer(const uint8_t* p) { return buff_ <= p && p < buff_ + bufferLen_; }
 	void FillBuffer(uint8_t data) { ::memset(buff_, data, bufferLen_); }
-	void WriteBuffer() const { raw.WriteBuffer(buffWhole_, bufferLen_ + 1); }
+	void SendBuffer() const { raw.SendBuffer(buffWhole_, bufferLen_ + 1); }
 public:
 	void Initialize();
 	void Flash(bool flashFlag) { raw.EntireDisplayOn(static_cast<uint8_t>(flashFlag)); }

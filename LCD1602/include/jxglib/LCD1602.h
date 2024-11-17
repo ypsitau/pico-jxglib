@@ -22,25 +22,29 @@ public:
 	public:
 		uint8_t GetAddr() const { return addr_; }
 	public:
-		void WriteByte(uint8_t value) const {
+		void SendRawByte(uint8_t value) const {
 			::i2c_write_blocking(i2c_, addr_, &value, 1, false);
 		}
 		void SendNibble(uint8_t value) {
 			const uint64_t usecDelay = 600;
-			WriteByte(value);
+			SendRawByte(value | (0 << 2));
 			::sleep_us(usecDelay);
-			WriteByte(value | 0x04);
+			SendRawByte(value | (1 << 2));
 			::sleep_us(usecDelay);
-			WriteByte(value);
+			SendRawByte(value | (0 << 2));
 			::sleep_us(usecDelay);
 		}
-		// bit3: backlight
-		// bit0: character/command
+		// bit3: Backlight
+		// bit2: Clock
+		// bit1: R/W (1: Read, 0: Write)
+		// bit0: RS (1: Data, 0: Instruction)
 		void SendByte(uint8_t value, uint8_t mode) {
+			mode |= (1 << 3);	// Backlight
 			SendNibble((value & 0xf0) | mode);
 			SendNibble((value << 4) | mode);
 		}
-		
+		void SendInst(uint8_t inst) { SendByte(inst, 0); }
+		void SendData(uint8_t data) { SendByte(data, 1); }
 	};
 public:
 	static const uint8_t DefaultAddr = 0x27;

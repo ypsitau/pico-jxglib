@@ -32,10 +32,12 @@ public:
 		Point pos_;
 		const char* str_;
 	public:
+		StringCont() : str_{nullptr} {}
 		StringCont(const Point& pos, const char* str) : pos_{pos}, str_{str} {}
 		const Point& GetPosition() const { return pos_; }
 		const char* GetString() const { return str_; }
 		void Update(const Point& pos, const char* str) { pos_ = pos; str_ = str; }
+		bool IsDone() const { return !*str_; }
 	};
 	using ImageDir = Image::SequencerDir;
 protected:

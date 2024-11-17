@@ -249,6 +249,7 @@ void Test_DrawStringWrap(Display& display)
 	const char* p = strTbl[iStr++];
 	display.SetColor(Color::white);
 	display.SetColorBg(Color::black);
+	//display.SetSpacingRatio(1.0, 1.5);
 	for (;;) {
 		if (!*p) {
 			if (iStr >= ArrayNumberOf(strTbl) || ((*strTbl[iStr] & 0x80 != 0) && !fontSetTbl[iFont]->HasExtraFont())) {
@@ -263,8 +264,8 @@ void Test_DrawStringWrap(Display& display)
 		display.SetFont(*fontSetTbl[iFont]);
 		display.Clear();
 		Display::StringCont stringCont;
-		display.DrawStringWrap(0, 0, p, -1, &stringCont);
-		p = stringCont.str;
+		display.DrawStringWrap(0, 0, p, &stringCont);
+		p = stringCont.GetString();
 		display.Refresh();
 		::sleep_ms(200);
 	}

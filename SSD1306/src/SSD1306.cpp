@@ -92,7 +92,7 @@ void SSD1306::Refresh_()
 {
 	raw.SetColumnAddress(0, GetWidth() - 1);
 	raw.SetPageAddress(0, GetNumPages() - 1);
-	WriteBuffer();
+	SendBuffer();
 }
 
 void SSD1306::Fill_(const Color& color)
