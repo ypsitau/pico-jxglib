@@ -77,20 +77,18 @@ public:
 public:
 	static const uint8_t DefaultAddr = 0x27;
 	Raw raw;
+private:
+	uint8_t x_, y_;
+	uint8_t vram_[16 * 2];
 public:
-	LCD1602(i2c_inst_t* i2c, uint8_t addr = DefaultAddr) : raw(i2c, addr) {}
+	LCD1602(i2c_inst_t* i2c, uint8_t addr = DefaultAddr) : raw(i2c, addr), x_{0}, y_{0} {}
 public:
 	void Initialize();
-	LCD1602& SetPosition(uint8_t x, uint8_t y) {
-		raw.SetDisplayDataRAMAddress((y << 6) | x); return *this;
-	}
-	LCD1602& PutChar(char ch) {
-		raw.WriteData(static_cast<uint8_t>(ch)); return *this;
-	}
-	LCD1602& Print(const char* str) {
-		for (const char* p = str; *p; p++) PutChar(*p);
-		return *this;
-	}
+	LCD1602& SetPosition(uint8_t x, uint8_t y);
+	LCD1602& PutChar(char ch);
+	LCD1602& Print(const char* str, const char* strEnd = nullptr);
+public:
+	static uint8_t CalcAddr(uint8_t x, uint8_t y) { return (y << 6) | x; }
 };
 
 }
