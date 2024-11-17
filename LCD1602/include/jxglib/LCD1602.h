@@ -84,9 +84,12 @@ public:
 	LCD1602(i2c_inst_t* i2c, uint8_t addr = DefaultAddr) : raw(i2c, addr), x_{0}, y_{0} {}
 public:
 	void Initialize();
+	LCD1602& ClearDisplay();
+	LCD1602& ReturnHome();
 	LCD1602& SetPosition(uint8_t x, uint8_t y);
 	LCD1602& PutChar(char ch);
 	LCD1602& Print(const char* str, const char* strEnd = nullptr);
+	LCD1602& FlushVRAM();
 public:
 	static uint8_t CalcAddr(uint8_t x, uint8_t y) { return (y << 6) | x; }
 };
