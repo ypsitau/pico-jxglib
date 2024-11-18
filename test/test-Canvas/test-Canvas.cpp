@@ -29,7 +29,8 @@ int main()
 		"小使いに負ぶさって帰ってきたとき、親父が大きな眼をして二階から飛び降りて腰を抜かすやつが"
 		"あるかといったから、この次は抜かさずに飛んでみせますと答えた。";
 	canvas.SetFont(Font::shinonome16);
-	//canvas.DrawImage(0, 0, image_cat_240x320, nullptr, Canvas::ImageDir::Rotate0);
+	canvas.SetSpacingRatio(1.0, 1.2);
+	canvas.DrawImage(0, 0, image_cat_240x320, nullptr, Canvas::ImageDir::Rotate0);
 	canvas.SetColor(Color::white);
 	canvas.DrawStringWrap(0, 0, str);
 	canvas.Refresh();

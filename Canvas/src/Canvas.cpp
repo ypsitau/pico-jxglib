@@ -80,8 +80,13 @@ void Canvas::DispatcherRGB565::DrawBitmap_(Image& imageOwn, int x, int y, const 
 					iBit = 0;
 					bits = *pSrc++;
 				}
-				const ColorRGB565& color = (bits & 0x80)? colorFg : colorBg;
-				for (int iScaleX = 0; iScaleX < scaleX; iScaleX++) writer.WriteForward(color);
+				uint8_t bit = bits & 0x80;
+				if (bit || pColorBg) {
+					const ColorRGB565& color = bit? colorFg : colorBg;
+					for (int iScaleX = 0; iScaleX < scaleX; iScaleX++) writer.WriteForward(color);
+				} else {
+					writer.MoveForward(scaleX);
+				}
 			}
 		}
 		pSrcLeft = pSrc;

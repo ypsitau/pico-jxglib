@@ -116,10 +116,10 @@ public:
 		Sequencer(void* p, int nCols, int nRows, int advancePerCol, int advancePerRow) :
 			p_{reinterpret_cast<uint8_t*>(p)}, pRow_{p_}, nCols_{nCols}, nRows_{nRows},
 			advancePerCol_{advancePerCol}, advancePerRow_{advancePerRow}, iCol_{0}, iRow_{0} {}
-		void MoveForward() {
-			iCol_++;
+		void MoveForward(int nColsForward = 1) {
+			iCol_ += nColsForward;
 			p_ += advancePerCol_;
-			if (iCol_ == nCols_) {
+			if (iCol_ >= nCols_) {
 				iCol_ = 0, iRow_++;
 				pRow_ += advancePerRow_, p_ = pRow_;
 			}
