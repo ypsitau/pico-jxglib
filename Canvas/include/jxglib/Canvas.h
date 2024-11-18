@@ -55,13 +55,18 @@ private:
 	Drawable* pDrawableOut_;
 	Image imageOwn_;
 	const Dispatcher* pDispatcher_;
+	struct Output {
+		Rect rect;
+		ImageDir imageDir;
+	} output_;
 private:
 	static const DispatcherNone dispatcherNone;
 	static const DispatcherRGB565 dispatcherRGB565;
 public:
 	Canvas() : pDrawableOut_{nullptr}, pDispatcher_{&dispatcherNone} {}
 public:
-	bool AttachOutput(Drawable& drawable);
+	bool AttachOutput(Drawable& drawable, const Rect* pRect = nullptr, ImageDir imageDir = ImageDir::Normal);
+	bool AttachOutput(Drawable& drawable, ImageDir imageDir) { return AttachOutput(drawable, nullptr, imageDir); }
 public:
 	virtual void Refresh_() override;
 	virtual void Fill_(const Color& color) override {

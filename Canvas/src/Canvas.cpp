@@ -5,18 +5,32 @@
 
 namespace jxglib {
 
+template<typename T> void Swap(T* a, T* b) {
+	T tmp = *a;
+	*a = *b, *b = tmp;
+}
+
 //------------------------------------------------------------------------------
 // Canvas
 //------------------------------------------------------------------------------
 const Canvas::DispatcherNone Canvas::dispatcherNone;
 const Canvas::DispatcherRGB565 Canvas::dispatcherRGB565;
 
-bool Canvas::AttachOutput(Drawable& drawableOut)
+bool Canvas::AttachOutput(Drawable& drawableOut, const Rect* pRect, ImageDir imageDir)
 {
 	const Format& format = drawableOut.GetFormat();
-	SetCapacity(format, drawableOut.GetWidth(), drawableOut.GetHeight());
+	int width, height;
+	if (pRect) {
+		width = pRect->width, height = pRect->height;
+	} else {
+		width = drawableOut.GetWidth(), height = drawableOut.GetHeight();
+	}
+	if (imageDir == ImageDir::Rotate90 || imageDir == ImageDir::Rotate270) Swap(&width, &height);
+	SetCapacity(format, width, height);
+	output_.rect = pRect? *pRect : Rect(0, 0, width, height);
+	output_.imageDir = imageDir;
 	pDrawableOut_ = &drawableOut;
-	imageOwn_.Alloc(format, drawableOut.GetWidth(), drawableOut.GetHeight());
+	imageOwn_.Alloc(format, width, height);
 	imageOwn_.FillZero();
 	if (format.IsBitmap()) {
 	} else if (format.IsGray()) {
@@ -31,7 +45,7 @@ bool Canvas::AttachOutput(Drawable& drawableOut)
 void Canvas::Refresh_()
 {
 	if (!pDrawableOut_) return;
-	pDrawableOut_->DrawImage(0, 0, imageOwn_, nullptr, ImageDir::HorzFromNW);
+	pDrawableOut_->DrawImage(0, 0, imageOwn_, &output_.rect, output_.imageDir);
 	pDrawableOut_->Refresh();
 }
 

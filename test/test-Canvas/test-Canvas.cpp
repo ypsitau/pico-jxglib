@@ -18,6 +18,7 @@ int main()
 	ST7789 display(spi1, 240, 320, GPIO10, GPIO11, GPIO12, GPIO13);
 	display.Initialize();
 	canvas.AttachOutput(display);
+	//canvas.AttachOutput(display, Canvas::ImageDir::Rotate90);
 	//isplay.DrawRectFill(0, 0, 100, 100);
 	int x = 0, y = 0;
 	//canvas.Clear();
@@ -30,8 +31,8 @@ int main()
 		"あるかといったから、この次は抜かさずに飛んでみせますと答えた。";
 	canvas.SetFont(Font::shinonome16);
 	canvas.SetSpacingRatio(1.0, 1.2);
-	canvas.DrawImage(0, 0, image_cat_240x320, nullptr, Canvas::ImageDir::Rotate0);
-	canvas.SetColor({0, 128, 0});
+	//canvas.DrawImage(0, 0, image_cat_240x320, nullptr, Canvas::ImageDir::Rotate0);
+	//canvas.SetColor({0, 128, 0});
 	canvas.DrawStringWrap(0, 0, str);
 	canvas.Refresh();
 #if 0
