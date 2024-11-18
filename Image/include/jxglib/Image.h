@@ -4,6 +4,7 @@
 #ifndef PICO_JXGLIB_IMAGE_H
 #define PICO_JXGLIB_IMAGE_H
 #include <stdlib.h>
+#include <memory.h>
 #include "pico/stdlib.h"
 #include "jxglib/Color.h"
 
@@ -25,6 +26,12 @@ public:
 		static const Format RGB565;
 	public:
 		bool IsIdentical(const Format& format) const { return this == &format; }
+		bool IsNone() const { return IsIdentical(None); }
+		bool IsBitmap() const { return IsIdentical(Bitmap); }
+		bool IsGray() const { return IsIdentical(Gray); }
+		bool IsRGB() const { return IsIdentical(RGB); }
+		bool IsRGBA() const { return IsIdentical(RGBA); }
+		bool IsRGB565() const { return IsIdentical(RGB565); }
 	};
 public:
 	class GetColor_SrcRGB {
@@ -119,7 +126,7 @@ public:
 		}
 		bool HasDone() const { return iRow_ >= nRows_; }
 	};
-	template<typename T_Read> class Reader : public Sequencer {
+	template<typename T_GetColor> class Reader : public Sequencer {
 	public:
 		static Reader HorzFromNW(const Image& image, int x, int y, int width, int height) {
 			return Reader(image.GetPointer(x, y), width, height, image.GetBytesPerPixel(), image.GetBytesPerLine());
@@ -162,13 +169,13 @@ public:
 	public:
 		Reader(const void* p, int nCols, int nRows, int advancePerCol, int advancePerRow) :
 				Sequencer(const_cast<void*>(p), nCols, nRows, advancePerCol, advancePerRow) {}
-		typename T_Read::Type ReadForward() {
-			auto rtn  = T_Read()(p_);
+		typename T_GetColor::Type ReadForward() {
+			auto rtn  = T_GetColor()(p_);
 			MoveForward();
 			return rtn;
 		}
 	};
-	template<typename T_Write> class Writer : public Sequencer {
+	template<typename T_PutColor> class Writer : public Sequencer {
 	public:
 		static Writer HorzFromNW(Image& image, int x, int y, int width, int height) {
 			return Writer(image.GetPointer(x, y), width, height, image.GetBytesPerPixel(), image.GetBytesPerLine());
@@ -211,8 +218,8 @@ public:
 	public:
 		Writer(void* p, int nCols, int nRows, int advancePerCol, int advancePerRow) :
 				Sequencer(p, nCols, nRows, advancePerCol, advancePerRow) {}
-		void WriteForward(const typename T_Write::Type& data) {
-			auto rtn  = T_Write()(p_, data);
+		void WriteForward(const typename T_PutColor::Type& data) {
+			T_PutColor()(p_, data);
 			MoveForward();
 		}
 	};
@@ -232,12 +239,8 @@ public:
 			data_{reinterpret_cast<uint8_t*>(const_cast<void*>(data))}, allocatedFlag_{false} {}
 	~Image();
 	bool Alloc(const Format& format, int width, int height);
-	bool IsFormatNone() const { return pFormat_->IsIdentical(Format::None); }
-	bool IsFormatBitmap() const { return pFormat_->IsIdentical(Format::Bitmap); }
-	bool IsFormatGray() const { return pFormat_->IsIdentical(Format::Gray); }
-	bool IsFormatRGB() const { return pFormat_->IsIdentical(Format::RGB); }
-	bool IsFormatRGBA() const { return pFormat_->IsIdentical(Format::RGBA); }
-	bool IsFormatRGB565() const { return pFormat_->IsIdentical(Format::RGB565); }
+	void FillZero();
+	const Format& GetFormat() const { return *pFormat_; }
 	int GetWidth() const { return width_; }
 	int GetHeight() const { return height_; }
 	int GetBytesPerPixel() const { return pFormat_->bytesPerPixel; }

@@ -25,6 +25,11 @@ bool Image::Alloc(const Format& format, int width, int height)
 	return !data_;
 }
 
+void Image::FillZero()
+{
+	::memset(data_, 0x00, GetBytesBuff());
+}
+
 Image::~Image()
 {
 	if (allocatedFlag_) ::free(data_);

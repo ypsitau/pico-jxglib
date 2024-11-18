@@ -16,5 +16,11 @@ int main()
 	ST7789 display(spi1, 240, 320, GPIO10, GPIO11, GPIO12, GPIO13);
 	display.Initialize();
 	canvas.AttachOutput(display);
-	display.DrawRectFill(0, 0, 100, 100);
+	//isplay.DrawRectFill(0, 0, 100, 100);
+	canvas.Fill(Color::red);
+	int x = 0, y = 0;
+	canvas.Clear();
+	canvas.DrawRectFill(x, y, 100, 100, Color::white);
+	canvas.Refresh();
+
 }

@@ -107,19 +107,19 @@ void TFT_LCD::DrawImage_(int x, int y, const Image& image, const Rect* pRectClip
 	raw.ColumnAddressSet(x, x + width - 1);
 	raw.RowAddressSet(y, y + height - 1);
 	raw.MemoryWrite_Begin(16);
-	if (image.IsFormatGray()) {
+	if (image.GetFormat().IsGray()) {
 		using Reader = Image::Reader<Image::GetColorRGB565_SrcGray>;
 		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
-	} else if (image.IsFormatRGB()) {
+	} else if (image.GetFormat().IsRGB()) {
 		using Reader = Image::Reader<Image::GetColorRGB565_SrcRGB>;
 		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
-	} else if (image.IsFormatRGBA()) {
+	} else if (image.GetFormat().IsRGBA()) {
 		using Reader = Image::Reader<Image::GetColorRGB565_SrcRGBA>;
 		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
-	} else if (image.IsFormatRGB565()) {
+	} else if (image.GetFormat().IsRGB565()) {
 		using Reader = Image::Reader<Image::GetColorRGB565_SrcRGB565>;
 		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());

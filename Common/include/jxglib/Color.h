@@ -96,6 +96,7 @@ public:
 struct ColorGray {
 	uint8_t value;
 public:
+	ColorGray() : value{0} {}
 	ColorGray(const ColorGray& colorGray) : value{colorGray.value} {}
 	explicit ColorGray(uint8_t value) : value{value} {}
 	//constexpr ColorGray(uint8_t r, uint8_t g, uint8_t b) {}
@@ -135,6 +136,7 @@ public:
 	static const ColorRGB565 teal;
 	static const ColorRGB565 aqua;
 public:
+	ColorRGB565() : value{0} {}
 	ColorRGB565(const ColorRGB565& colorRGB565) : value{colorRGB565.value} {}
 	explicit ColorRGB565(uint16_t value) : value{value} {}
 	constexpr ColorRGB565(uint8_t r, uint8_t g, uint8_t b) : value{static_cast<uint16_t>(
@@ -186,6 +188,7 @@ public:
 	static const ColorBGR565 teal;
 	static const ColorBGR565 aqua;
 public:
+	ColorBGR565() : value{0} {}
 	ColorBGR565(const ColorBGR565& colorBGR565) : value{colorBGR565.value} {}
 	explicit ColorBGR565(uint16_t value) : value{value} {}
 	constexpr ColorBGR565(uint8_t r, uint8_t g, uint8_t b) : value{static_cast<uint16_t>(
@@ -237,6 +240,7 @@ public:
 	static const ColorRGB555 teal;
 	static const ColorRGB555 aqua;
 public:
+	ColorRGB555() : value{0} {}
 	ColorRGB555(const ColorRGB555& colorRGB555) : value{colorRGB555.value} {}
 	explicit ColorRGB555(uint16_t value) : value{value} {}
 	constexpr ColorRGB555(uint8_t r, uint8_t g, uint8_t b) : value{static_cast<uint16_t>(
@@ -288,6 +292,7 @@ public:
 	static const ColorBGR555 teal;
 	static const ColorBGR555 aqua;
 public:
+	ColorBGR555() : value{0} {}
 	ColorBGR555(const ColorBGR555& colorBGR555) : value{colorBGR555.value} {}
 	explicit ColorBGR555(uint16_t value) : value{value} {}
 	constexpr ColorBGR555(uint8_t r, uint8_t g, uint8_t b) : value{static_cast<uint16_t>(

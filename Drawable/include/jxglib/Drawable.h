@@ -56,6 +56,13 @@ public:
 	int GetWidth() const { return width_; }
 	int GetHeight() const { return height_; }
 public:
+	bool IsFormatNone() const { return pFormat_->IsIdentical(Format::None); }
+	bool IsFormatBitmap() const { return pFormat_->IsIdentical(Format::Bitmap); }
+	bool IsFormatGray() const { return pFormat_->IsIdentical(Format::Gray); }
+	bool IsFormatRGB() const { return pFormat_->IsIdentical(Format::RGB); }
+	bool IsFormatRGBA() const { return pFormat_->IsIdentical(Format::RGBA); }
+	bool IsFormatRGB565() const { return pFormat_->IsIdentical(Format::RGB565); }
+public:
 	Drawable& SetColor(const Color& color) { context_.colorFg = color; return *this; }
 	Drawable& SetColorBg(const Color& color) { context_.colorBg = color; return *this; }
 	Drawable& SetFont(const FontSet& fontSet, int fontScale = 1) {
