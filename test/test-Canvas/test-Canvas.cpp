@@ -31,7 +31,7 @@ int main()
 	canvas.SetFont(Font::shinonome16);
 	canvas.SetSpacingRatio(1.0, 1.2);
 	canvas.DrawImage(0, 0, image_cat_240x320, nullptr, Canvas::ImageDir::Rotate0);
-	canvas.SetColor(Color::white);
+	canvas.SetColor({0, 128, 0});
 	canvas.DrawStringWrap(0, 0, str);
 	canvas.Refresh();
 #if 0
