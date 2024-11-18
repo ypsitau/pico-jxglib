@@ -9,6 +9,7 @@
 #include "jxglib/Font.h"
 #include "jxglib/Image.h"
 #include "jxglib/UTF8Decoder.h"
+#include "jxglib/Util.h"
 
 namespace jxglib {
 
@@ -17,69 +18,67 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class Canvas : public Drawable {
 public:
-	class Core {
-	protected:
-		Image& image_;
+	class Dispatcher {
 	public:
-		Core(Image& image) : image_(image) {}
+		Dispatcher() {}
 	public:
-		virtual void Fill_(const Color& color) = 0;
-		virtual void DrawPixel_(int x, int y, const Color& color) = 0;
-		virtual void DrawRectFill_(int x, int y, int width, int height, const Color& color) = 0;
-		virtual void DrawBitmap_(int x, int y, const void* data, int width, int height,
-			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) = 0;
-		virtual void DrawImage_(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) = 0;
+		virtual void Fill_(Image& imageOwn, const Color& color) const = 0;
+		virtual void DrawPixel_(Image& imageOwn, int x, int y, const Color& color) const = 0;
+		virtual void DrawRectFill_(Image& imageOwn, int x, int y, int width, int height, const Color& color) const = 0;
+		virtual void DrawBitmap_(Image& imageOwn, int x, int y, const void* data, int width, int height,
+			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) const = 0;
+		virtual void DrawImage_(Image& imageOwn, int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) const = 0;
 	};
-	class CoreNone : public Core {
+	class DispatcherNone : public Dispatcher {
 	public:
-		CoreNone(Image& image) : Core(image) {}
+		DispatcherNone() {}
 	public:
-		virtual void Fill_(const Color& color) override {}
-		virtual void DrawPixel_(int x, int y, const Color& color) override {}
-		virtual void DrawRectFill_(int x, int y, int width, int height, const Color& color) override {}
-		virtual void DrawBitmap_(int x, int y, const void* data, int width, int height,
-			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override {}
-		virtual void DrawImage_(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) override {}
+		virtual void Fill_(Image& imageOwn, const Color& color) const override {}
+		virtual void DrawPixel_(Image& imageOwn, int x, int y, const Color& color) const override {}
+		virtual void DrawRectFill_(Image& imageOwn, int x, int y, int width, int height, const Color& color) const override {}
+		virtual void DrawBitmap_(Image& imageOwn, int x, int y, const void* data, int width, int height,
+			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) const override {}
+		virtual void DrawImage_(Image& imageOwn, int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) const override {}
 	};
-	class CoreRGB565 : public Core {
+	class DispatcherRGB565 : public Dispatcher {
 	public:
-		CoreRGB565(Image& image) : Core(image) {}
+		DispatcherRGB565() {}
 	public:
-		virtual void Fill_(const Color& color) override;
-		virtual void DrawPixel_(int x, int y, const Color& color) override;
-		virtual void DrawRectFill_(int x, int y, int width, int height, const Color& color) override;
-		virtual void DrawBitmap_(int x, int y, const void* data, int width, int height,
-			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override;
-		virtual void DrawImage_(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) override;
+		virtual void Fill_(Image& imageOwn, const Color& color) const override;
+		virtual void DrawPixel_(Image& imageOwn, int x, int y, const Color& color) const override;
+		virtual void DrawRectFill_(Image& imageOwn, int x, int y, int width, int height, const Color& color) const override;
+		virtual void DrawBitmap_(Image& imageOwn, int x, int y, const void* data, int width, int height,
+			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) const override;
+		virtual void DrawImage_(Image& imageOwn, int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) const override;
 	};
 private:
 	Drawable* pDrawableOut_;
-	Image image_;
-	Core* pCore_;
+	Image imageOwn_;
+	const Dispatcher* pDispatcher_;
 private:
-	CoreNone coreNone_;
-	CoreRGB565 coreRGB565_;
+	static const DispatcherNone dispatcherNone;
+	static const DispatcherRGB565 dispatcherRGB565;
 public:
-	Canvas() : pDrawableOut_{nullptr}, pCore_{&coreNone_}, coreNone_(image_), coreRGB565_(image_) {}
+	Canvas() : pDrawableOut_{nullptr}, pDispatcher_{&dispatcherNone} {}
 public:
 	bool AttachOutput(Drawable& drawable);
 public:
 	virtual void Refresh_() override;
 	virtual void Fill_(const Color& color) override {
-		pCore_->Fill_(color);
+		pDispatcher_->Fill_(imageOwn_, color);
 	}
 	virtual void DrawPixel_(int x, int y, const Color& color) override {
-		pCore_->DrawPixel_(x, y, color);
+		pDispatcher_->DrawPixel_(imageOwn_, x, y, color);
 	}
 	virtual void DrawRectFill_(int x, int y, int width, int height, const Color& color) override {
-		pCore_->DrawRectFill_(x, y, width, height, color);
+		pDispatcher_->DrawRectFill_(imageOwn_, x, y, width, height, color);
 	}
 	virtual void DrawBitmap_(int x, int y, const void* data, int width, int height,
 			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override {
-		pCore_->DrawBitmap_(x, y, data, width, height, color, pColorBg, scaleX, scaleY);
+		pDispatcher_->DrawBitmap_(imageOwn_, x, y, data, width, height, color, pColorBg, scaleX, scaleY);
 	}
 	virtual void DrawImage_(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) override {
-		pCore_->DrawImage_(x, y, image, pRectClip, imageDir);
+		pDispatcher_->DrawImage_(imageOwn_, x, y, image, pRectClip, imageDir);
 	}
 };
 

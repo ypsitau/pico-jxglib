@@ -2,6 +2,7 @@
 #include "pico/stdlib.h"
 #include "jxglib/Canvas.h"
 #include "jxglib/ST7789.h"
+#include "image/image_cat_240x320.h"
 
 using namespace jxglib;
 
@@ -17,10 +18,16 @@ int main()
 	display.Initialize();
 	canvas.AttachOutput(display);
 	//isplay.DrawRectFill(0, 0, 100, 100);
-	canvas.Fill(Color::red);
 	int x = 0, y = 0;
-	canvas.Clear();
-	canvas.DrawRectFill(x, y, 100, 100, Color::white);
-	canvas.Refresh();
-
+	//canvas.Clear();
+	for (;;) {
+		canvas.DrawImage(0, 0, image_cat_240x320, nullptr, Canvas::ImageDir::Rotate0);
+		canvas.Refresh();
+		canvas.DrawImage(0, 0, image_cat_240x320, nullptr, Canvas::ImageDir::Rotate90);
+		canvas.Refresh();
+		canvas.DrawImage(0, 0, image_cat_240x320, nullptr, Canvas::ImageDir::Rotate180);
+		canvas.Refresh();
+		canvas.DrawImage(0, 0, image_cat_240x320, nullptr, Canvas::ImageDir::Rotate270);
+		canvas.Refresh();
+	}
 }
