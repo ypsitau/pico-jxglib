@@ -195,7 +195,8 @@ private:
 	Context context_;
 public:
 	SSD1306(i2c_inst_t* i2c, uint8_t addr = DefaultAddr, bool highResoFlag = true) :
-			Display(128, highResoFlag? 64 : 32), raw(i2c, addr), buffWhole_(nullptr), buff_(nullptr) {
+			Display(Format::Bitmap, 128, highResoFlag? 64 : 32), raw(i2c, addr),
+			buffWhole_(nullptr), buff_(nullptr) {
 		numPages_ = height_ / heightPerPage_;
 		bufferLen_ = numPages_ * width_;
 	}

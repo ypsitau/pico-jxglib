@@ -286,9 +286,9 @@ public:
 	Raw raw;
 public:
 	TFT_LCD(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_CS, GPIO gpio_BL) :
-		Display(width, height), raw(spi, gpio_RST, gpio_DC, gpio_CS, gpio_BL) {}
+		Display(Format::RGB565, width, height), raw(spi, gpio_RST, gpio_DC, gpio_CS, gpio_BL) {}
 	TFT_LCD(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_BL) :
-		Display(width, height), raw(spi, gpio_RST, gpio_DC, gpio_BL) {}
+		Display(Format::RGB565, width, height), raw(spi, gpio_RST, gpio_DC, gpio_BL) {}
 public:
 	void Initialize(const ConfigData& cfg);
 	bool UsesCS() { return raw.UsesCS(); }

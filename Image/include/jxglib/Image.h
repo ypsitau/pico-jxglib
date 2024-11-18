@@ -3,6 +3,7 @@
 //==============================================================================
 #ifndef PICO_JXGLIB_IMAGE_H
 #define PICO_JXGLIB_IMAGE_H
+#include <stdlib.h>
 #include "pico/stdlib.h"
 #include "jxglib/Color.h"
 
@@ -12,6 +13,19 @@ namespace jxglib {
 // Image
 //------------------------------------------------------------------------------
 class Image {
+public:
+	struct Format {
+		int bytesPerPixel;
+	public:
+		static const Format None;
+		static const Format Bitmap;
+		static const Format Gray;
+		static const Format RGB;
+		static const Format RGBA;
+		static const Format RGB565;
+	public:
+		bool IsIdentical(const Format& format) const { return this == &format; }
+	};
 public:
 	class GetColor_SrcRGB {
 	public:
@@ -155,31 +169,32 @@ public:
 		}
 	};
 	template<typename T_Write> class Writer : public Sequencer {
-		static Writer HorzFromNW(const Image& image, int x, int y, int width, int height) {
+	public:
+		static Writer HorzFromNW(Image& image, int x, int y, int width, int height) {
 			return Writer(image.GetPointer(x, y), width, height, image.GetBytesPerPixel(), image.GetBytesPerLine());
 		}
-		static Writer HorzFromNE(const Image& image, int x, int y, int width, int height) {
+		static Writer HorzFromNE(Image& image, int x, int y, int width, int height) {
 			return Writer(image.GetPointer(x + width - 1, y), width, height, -image.GetBytesPerPixel(), image.GetBytesPerLine());
 		}
-		static Writer HorzFromSW(const Image& image, int x, int y, int width, int height) {
+		static Writer HorzFromSW(Image& image, int x, int y, int width, int height) {
 			return Writer(image.GetPointer(x, y + height - 1), width, height, image.GetBytesPerPixel(), -image.GetBytesPerLine());
 		}
-		static Writer HorzFromSE(const Image& image, int x, int y, int width, int height) {
+		static Writer HorzFromSE(Image& image, int x, int y, int width, int height) {
 			return Writer(image.GetPointer(x + width - 1, y + height - 1), width, height, -image.GetBytesPerPixel(), -image.GetBytesPerLine());
 		}
-		static Writer VertFromNW(const Image& image, int x, int y, int width, int height) {
+		static Writer VertFromNW(Image& image, int x, int y, int width, int height) {
 			return Writer(image.GetPointer(x, y), width, height, image.GetBytesPerLine(), image.GetBytesPerPixel());
 		}
-		static Writer VertFromNE(const Image& image, int x, int y, int width, int height) {
+		static Writer VertFromNE(Image& image, int x, int y, int width, int height) {
 			return Writer(image.GetPointer(x + width - 1, y), width, height, image.GetBytesPerLine(), -image.GetBytesPerPixel());
 		}
-		static Writer VertFromSW(const Image& image, int x, int y, int width, int height) {
+		static Writer VertFromSW(Image& image, int x, int y, int width, int height) {
 			return Writer(image.GetPointer(x, y + height - 1), width, height, -image.GetBytesPerLine(), image.GetBytesPerPixel());
 		}
-		static Writer VertFromSE(const Image& image, int x, int y, int width, int height) {
+		static Writer VertFromSE(Image& image, int x, int y, int width, int height) {
 			return Writer(image.GetPointer(x + width - 1, y + height - 1), width, height, -image.GetBytesPerLine(), -image.GetBytesPerPixel());
 		}
-		static Writer Create(const Image& image, int x, int y, int width, int height, WriterDir dir) {
+		static Writer Create(Image& image, int x, int y, int width, int height, WriterDir dir) {
 			switch (dir) {
 			case WriterDir::HorzFromNW: return HorzFromNW(image, x, y, width, height);
 			case WriterDir::HorzFromNE: return HorzFromNE(image, x, y, width, height);
@@ -201,43 +216,42 @@ public:
 			MoveForward();
 		}
 	};
-public:
-	struct Format {
-		int bytesPerPixel;
-	public:
-		static const Format Gray;
-		static const Format RGB;
-		static const Format RGBA;
-		static const Format RGB565;
-	public:
-		bool IsIdentical(const Format& format) const { return this == &format; }
-	};
 private:
-	const Format& format_;
+	const Format* pFormat_;
 	int width_;
 	int height_;
 	int bytesPerLine_;
 	uint8_t* data_;
-	bool writableFlag_;
+	bool allocatedFlag_;
 public:
+	Image() : pFormat_{&Format::None}, width_{0}, height_{0}, bytesPerLine_{0},
+			data_{nullptr}, allocatedFlag_{false} {}
 	Image(const Format& format, int width, int height, const void* data = nullptr) :
-			format_{format}, width_{width}, height_{height},
-			bytesPerLine_{width * format_.bytesPerPixel},
-			data_{reinterpret_cast<uint8_t*>(const_cast<void*>(data))}, writableFlag_{false} {}
-	bool IsFormatGray() const { return format_.IsIdentical(Format::Gray); }
-	bool IsFormatRGB() const { return format_.IsIdentical(Format::RGB); }
-	bool IsFormatRGBA() const { return format_.IsIdentical(Format::RGBA); }
-	bool IsFormatRGB565() const { return format_.IsIdentical(Format::RGB565); }
+			pFormat_{&format}, width_{width}, height_{height},
+			bytesPerLine_{width * pFormat_->bytesPerPixel},
+			data_{reinterpret_cast<uint8_t*>(const_cast<void*>(data))}, allocatedFlag_{false} {}
+	~Image();
+	bool Alloc(const Format& format, int width, int height);
+	bool IsFormatNone() const { return pFormat_->IsIdentical(Format::None); }
+	bool IsFormatBitmap() const { return pFormat_->IsIdentical(Format::Bitmap); }
+	bool IsFormatGray() const { return pFormat_->IsIdentical(Format::Gray); }
+	bool IsFormatRGB() const { return pFormat_->IsIdentical(Format::RGB); }
+	bool IsFormatRGBA() const { return pFormat_->IsIdentical(Format::RGBA); }
+	bool IsFormatRGB565() const { return pFormat_->IsIdentical(Format::RGB565); }
 	int GetWidth() const { return width_; }
 	int GetHeight() const { return height_; }
-	int GetBytesPerPixel() const { return format_.bytesPerPixel; }
+	int GetBytesPerPixel() const { return pFormat_->bytesPerPixel; }
 	int GetBytesPerLine() const { return bytesPerLine_; }
+	int GetBytesBuff() const { return GetBytesPerLine() * GetHeight(); }
 	uint8_t* GetPointer() { return data_; }
 	const uint8_t* GetPointer() const { return data_; }
+	uint8_t* GetPointer(int x, int y) {
+		return data_ + GetBytesPerPixel() * x + GetBytesPerLine() * y;
+	}
 	const uint8_t* GetPointer(int x, int y) const {
 		return data_ + GetBytesPerPixel() * x + GetBytesPerLine() * y;
 	}
-	bool IsWritable() const { return writableFlag_; }
+	bool IsWritable() const { return allocatedFlag_; }
 	static bool IsDirHorz(SequencerDir dir) { return dir < SequencerDir::Vert; }
 	static bool IsDirVert(SequencerDir dir) { return dir >= SequencerDir::Vert; }
 };

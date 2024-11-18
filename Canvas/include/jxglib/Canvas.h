@@ -4,7 +4,7 @@
 #ifndef PICO_JXGLIB_CANVAS_H
 #define PICO_JXGLIB_CANVAS_H
 #include "pico/stdlib.h"
-#include "jxglib/Color.h"
+#include "jxglib/Common.h"
 #include "jxglib/Drawable.h"
 #include "jxglib/Font.h"
 #include "jxglib/Image.h"
@@ -17,12 +17,15 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class Canvas : public Drawable {
 private:
-	Image& image_;
+	Drawable* pDrawableOut_;
+	Image image_;
 public:
-	Canvas(Image& image) : Drawable(image.GetWidth(), image.GetHeight()), image_{image} {}
+	Canvas() : pDrawableOut_{nullptr} {}
 public:
-	void Clear();
-	void Fill();
+	bool AttachOutput(Drawable& drawable);
+public:
+	virtual void Refresh_() override;
+	virtual void Fill_(const Color& color) override;
 	virtual void DrawPixel_(int x, int y, const Color& color) override;
 	virtual void DrawRectFill_(int x, int y, int width, int height, const Color& color) override;
 	virtual void DrawBitmap_(int x, int y, const void* data, int width, int height,

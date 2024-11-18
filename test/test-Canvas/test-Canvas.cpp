@@ -7,12 +7,14 @@ using namespace jxglib;
 
 int main()
 {
+	Canvas canvas;
 	stdio_init_all();
 	::stdio_init_all();
-	::spi_init(spi0, 125 * 1000 * 1000);
-	::gpio_set_function(PICO_DEFAULT_SPI_TX_PIN, GPIO_FUNC_SPI);
-	::gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
-	ST7789 screen(spi0, 240, 240, 20, 21, 22);
-	screen.Initialize();
-	screen.DrawRectFill(0, 0, 100, 100);
+	::spi_init(spi1, 125 * 1000 * 1000);
+	GPIO14.set_function_SPI1_SCK();
+	GPIO15.set_function_SPI1_TX();
+	ST7789 display(spi1, 240, 320, GPIO10, GPIO11, GPIO12, GPIO13);
+	display.Initialize();
+	canvas.AttachOutput(display);
+	display.DrawRectFill(0, 0, 100, 100);
 }

@@ -39,13 +39,20 @@ public:
 		void Update(const Point& pos, const char* str) { pos_ = pos; str_ = str; }
 		bool IsDone() const { return !*str_; }
 	};
+	using Format = Image::Format;
 	using ImageDir = Image::SequencerDir;
 protected:
+	const Format* pFormat_;
 	int width_, height_;
 	Context context_;
 public:
-	Drawable(int width, int height) : width_{width}, height_{height} {}
+	Drawable() : pFormat_{&Format::None}, width_{0}, height_{0} {}
+	Drawable(const Format& format, int width, int height) : pFormat_{&format}, width_{width}, height_{height} {}
 public:
+	void SetCapacity(const Format format, int width, int height) {
+		pFormat_ = &format, width_ = width, height_ = height;
+	}
+	const Format& GetFormat() const { return *pFormat_; }
 	int GetWidth() const { return width_; }
 	int GetHeight() const { return height_; }
 public:
