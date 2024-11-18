@@ -15,6 +15,10 @@ const Image::Format Image::Format::RGB {3};
 const Image::Format Image::Format::RGBA {4};
 const Image::Format Image::Format::RGB565 {2};
 
+Image::~Image()
+{
+	if (allocatedFlag_) ::free(data_);
+}
 bool Image::Alloc(const Format& format, int width, int height)
 {
 	pFormat_ = &format;
@@ -30,9 +34,9 @@ void Image::FillZero()
 	::memset(data_, 0x00, GetBytesBuff());
 }
 
-Image::~Image()
+void Image::CopyRegion(int xDst, int yDst, int xSrc, int ySrc, int width, int height)
 {
-	if (allocatedFlag_) ::free(data_);
+	
 }
 
 }

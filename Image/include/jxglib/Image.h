@@ -255,6 +255,7 @@ public:
 		return data_ + GetBytesPerPixel() * x + GetBytesPerLine() * y;
 	}
 	bool IsWritable() const { return allocatedFlag_; }
+	void CopyRegion(int xDst, int yDst, int xSrc, int ySrc, int width, int height);
 	static bool IsDirHorz(SequencerDir dir) { return dir < SequencerDir::Vert; }
 	static bool IsDirVert(SequencerDir dir) { return dir >= SequencerDir::Vert; }
 };
