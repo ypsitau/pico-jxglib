@@ -195,7 +195,8 @@ private:
 	Context context_;
 public:
 	SSD1306(i2c_inst_t* i2c, uint8_t addr = DefaultAddr, bool highResoFlag = true) :
-			Display(Format::Bitmap, 128, highResoFlag? 64 : 32), raw(i2c, addr),
+			Display(Capability::Device | Capability::ScrollHorz | Capability::ScrollVert,
+					Format::Bitmap, 128, highResoFlag? 64 : 32), raw(i2c, addr),
 			buffWhole_(nullptr), buff_(nullptr) {
 		numPages_ = height_ / heightPerPage_;
 		bufferLen_ = numPages_ * width_;
@@ -238,6 +239,8 @@ public:
 	virtual void DrawBitmap_(int x, int y, const void* data, int width, int height,
 			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override;
 	virtual void DrawImage_(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) override;
+	virtual void ScrollHorz_(DirHorz dirHorz, int width, const Rect* pRect) override;
+	virtual void ScrollVert_(DirVert dirVert, int height, const Rect* pRect) override;
 };
 
 }

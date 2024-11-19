@@ -52,8 +52,9 @@ void Canvas::Refresh_()
 //------------------------------------------------------------------------------
 // Canvas::DispatcherRGB565
 //------------------------------------------------------------------------------
-void Canvas::DispatcherRGB565::Fill_(Image& imageOwn, const Color& color) const
+void Canvas::DispatcherRGB565::Fill_(Canvas& canvas, const Color& color) const
 {
+	Image& imageOwn = canvas.GetImageOwn();
 	using Writer = Image::Writer<Image::PutColorRGB565_DstRGB565>;
 	Writer writer(Writer::HorzFromNW(imageOwn, 0, 0, imageOwn.GetWidth(), imageOwn.GetHeight()));
 	ColorRGB565 colorDst(color);
@@ -61,21 +62,23 @@ void Canvas::DispatcherRGB565::Fill_(Image& imageOwn, const Color& color) const
 }
 
 
-void Canvas::DispatcherRGB565::DrawPixel_(Image& imageOwn, int x, int y, const Color& color) const
+void Canvas::DispatcherRGB565::DrawPixel_(Canvas& canvas, int x, int y, const Color& color) const
 {
 }
 
-void Canvas::DispatcherRGB565::DrawRectFill_(Image& imageOwn, int x, int y, int width, int height, const Color& color) const
+void Canvas::DispatcherRGB565::DrawRectFill_(Canvas& canvas, int x, int y, int width, int height, const Color& color) const
 {
+	Image& imageOwn = canvas.GetImageOwn();
 	using Writer = Image::Writer<Image::PutColorRGB565_DstRGB565>;
 	Writer writer(Writer::HorzFromNW(imageOwn, x, y, width, height));
 	ColorRGB565 colorDst(color);
 	while (!writer.HasDone()) writer.WriteForward(colorDst);
 }
 
-void Canvas::DispatcherRGB565::DrawBitmap_(Image& imageOwn, int x, int y, const void* data, int width, int height,
+void Canvas::DispatcherRGB565::DrawBitmap_(Canvas& canvas, int x, int y, const void* data, int width, int height,
 	const Color& color, const Color* pColorBg, int scaleX, int scaleY) const
 {
+	Image& imageOwn = canvas.GetImageOwn();
 	int nDots = width * height;
 	int bytes = (width + 7) / 8 * height;
 	const uint8_t* pSrcLeft = reinterpret_cast<const uint8_t*>(data);
@@ -107,8 +110,9 @@ void Canvas::DispatcherRGB565::DrawBitmap_(Image& imageOwn, int x, int y, const 
 	}
 }
 
-void Canvas::DispatcherRGB565::DrawImage_(Image& imageOwn, int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) const
+void Canvas::DispatcherRGB565::DrawImage_(Canvas& canvas, int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) const
 {
+	Image& imageOwn = canvas.GetImageOwn();
 	int xSkip = 0, ySkip = 0;
 	int width, height;
 	if (Image::IsDirHorz(imageDir)) {
@@ -136,6 +140,28 @@ void Canvas::DispatcherRGB565::DrawImage_(Image& imageOwn, int x, int y, const I
 		using Reader = Image::Reader<Image::GetColorRGB565_SrcRGB565>;
 		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
 		while (!reader.HasDone()) writer.WriteForward(reader.ReadForward());
+	}
+}
+
+void Canvas::DispatcherRGB565::ScrollHorz_(Canvas& canvas, DirHorz dirHorz, int width, const Rect* pRect) const
+{
+	Image& imageOwn = canvas.GetImageOwn();
+	Rect rect = pRect? *pRect : Rect(0, 0, imageOwn.GetWidth(), imageOwn.GetHeight());
+	if (dirHorz == DirHorz::Left) {
+		imageOwn.CopyRegion(rect.x, rect.y, rect.x + width, rect.y, rect.width - width, rect.height);
+	} else if (dirHorz == DirHorz::Right) {
+		imageOwn.CopyRegion(rect.x + width, rect.y, rect.x, rect.y, rect.width - width, rect.height);
+	}
+}
+
+void Canvas::DispatcherRGB565::ScrollVert_(Canvas& canvas, DirVert dirVert, int height, const Rect* pRect) const
+{
+	Image& imageOwn = canvas.GetImageOwn();
+	Rect rect = pRect? *pRect : Rect(0, 0, imageOwn.GetWidth(), imageOwn.GetHeight());
+	if (dirVert == DirVert::Up) {
+		imageOwn.CopyRegion(rect.x, rect.y, rect.x, rect.y + height, rect.width, rect.height - height);
+	} else if (dirVert == DirVert::Down) {
+		imageOwn.CopyRegion(rect.x, rect.y + height, rect.x, rect.y, rect.width, rect.height - height);
 	}
 }
 

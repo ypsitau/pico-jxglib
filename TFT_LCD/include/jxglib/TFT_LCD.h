@@ -286,9 +286,11 @@ public:
 	Raw raw;
 public:
 	TFT_LCD(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_CS, GPIO gpio_BL) :
-		Display(Format::RGB565, width, height), raw(spi, gpio_RST, gpio_DC, gpio_CS, gpio_BL) {}
+			Display(Capability::Device | Capability::DrawImage, Format::RGB565, width, height),
+			raw(spi, gpio_RST, gpio_DC, gpio_CS, gpio_BL) {}
 	TFT_LCD(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_BL) :
-		Display(Format::RGB565, width, height), raw(spi, gpio_RST, gpio_DC, gpio_BL) {}
+			Display(Capability::Device | Capability::DrawImage, Format::RGB565, width, height),
+			raw(spi, gpio_RST, gpio_DC, gpio_BL) {}
 public:
 	void Initialize(const ConfigData& cfg);
 	bool UsesCS() { return raw.UsesCS(); }
@@ -301,6 +303,8 @@ public:
 	virtual void DrawBitmap_(int x, int y, const void* data, int width, int height,
 		const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override;
 	virtual void DrawImage_(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) override;
+	virtual void ScrollHorz_(DirHorz dirHorz, int width, const Rect* pRect) override;
+	virtual void ScrollVert_(DirVert dirVert, int height, const Rect* pRect) override;
 };
 
 }

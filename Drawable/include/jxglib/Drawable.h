@@ -16,6 +16,12 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class Drawable {
 public:
+	struct Capability {
+		static const uint32_t Device		= (1 << 0);
+		static const uint32_t DrawImage		= (1 << 1);
+		static const uint32_t ScrollVert	= (1 << 2);
+		static const uint32_t ScrollHorz	= (1 << 3);
+	};
 	struct Context {
 		Color colorFg;
 		Color colorBg;
@@ -42,16 +48,22 @@ public:
 	using Format = Image::Format;
 	using ImageDir = Image::SequencerDir;
 protected:
+	uint32_t capabilities_;
 	const Format* pFormat_;
 	int width_, height_;
 	Context context_;
 public:
-	Drawable() : pFormat_{&Format::None}, width_{0}, height_{0} {}
-	Drawable(const Format& format, int width, int height) : pFormat_{&format}, width_{width}, height_{height} {}
+	Drawable(uint32_t capabilities) : capabilities_{capabilities}, pFormat_{&Format::None}, width_{0}, height_{0} {}
+	Drawable(uint32_t capabilities, const Format& format, int width, int height) :
+		capabilities_{capabilities}, pFormat_{&format}, width_{width}, height_{height} {}
 public:
 	void SetCapacity(const Format format, int width, int height) {
 		pFormat_ = &format, width_ = width, height_ = height;
 	}
+	bool IsDevice() const { return !!(capabilities_ & Capability::Device); }
+	bool CanDrawImage() const { return !!(capabilities_ & Capability::DrawImage); }
+	bool CanScrollHorz() const { return !!(capabilities_ & Capability::ScrollHorz); }
+	bool CanScrollVert() const { return !!(capabilities_ & Capability::ScrollVert); }
 	const Format& GetFormat() const { return *pFormat_; }
 	int GetWidth() const { return width_; }
 	int GetHeight() const { return height_; }
@@ -102,6 +114,14 @@ public:
 	}
 	Drawable& DrawImage(int x, int y, const Image& image, const Rect* pRectClip = nullptr, ImageDir imageDir = ImageDir::Normal) {
 		DrawImage_(x, y, image, pRectClip, imageDir);
+		return *this;
+	}
+	Drawable& ScrollHorz(DirHorz dirHorz, int width, const Rect* pRect = nullptr) {
+		ScrollHorz_(dirHorz, width, pRect);
+		return *this;
+	}
+	Drawable& ScrollVert(DirVert dirVert, int height, const Rect* pRect = nullptr) {
+		ScrollVert_(dirVert, height, pRect);
 		return *this;
 	}
 public:
@@ -158,6 +178,8 @@ public:
 	virtual void DrawBitmap_(int x, int y, const void* data, int width, int height,
 		const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) = 0;
 	virtual void DrawImage_(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) = 0;
+	virtual void ScrollHorz_(DirHorz dirHorz, int width, const Rect* pRect) = 0;
+	virtual void ScrollVert_(DirVert dirVert, int height, const Rect* pRect) = 0;
 };
 
 }

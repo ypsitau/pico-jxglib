@@ -13,7 +13,8 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 struct Display : public Drawable {
 public:
-	Display(const Format& format, int width, int height) : Drawable(format, width, height) {}
+	Display(uint32_t capabilities, const Format& format, int width, int height) :
+			Drawable(capabilities, format, width, height) {}
 };
 
 }
