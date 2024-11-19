@@ -682,7 +682,7 @@ const FontEntry f_007e = { 0x007e, 24, 32, 24, {
 
 }
 
-const FontSet sisd24x32 = { 32, &NS_sisd24x32::f_Invalid, {
+const FontSet sisd24x32 = { FontSet::Format::Bitmap, 32, &NS_sisd24x32::f_Invalid, {
 	&NS_sisd24x32::f_0020,
 	&NS_sisd24x32::f_0021,
 	&NS_sisd24x32::f_0022,

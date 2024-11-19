@@ -395,7 +395,7 @@ const FontEntry f_007e = { 0x007e, 7, 14, 7, {
 
 }
 
-const FontSet shinonome14 = { 14, &NS_shinonome14::f_Invalid, {
+const FontSet shinonome14 = { FontSet::Format::Bitmap, 14, &NS_shinonome14::f_Invalid, {
 	&NS_shinonome14::f_0020,
 	&NS_shinonome14::f_0021,
 	&NS_shinonome14::f_0022,

@@ -24,12 +24,18 @@ struct FontEntry {
 // FontSet
 //------------------------------------------------------------------------------
 struct FontSet {
+public:
+	enum class Format { Bitmap, Gray };
+public:
+	Format format;
 	int yAdvance;
 	const FontEntry* pFontEntry_Invalid;
 	const FontEntry* pFontEntryTbl_Basic[96];
 	int nFontEntries_Extra;
 	const FontEntry* pFontEntryTbl_Extra[];
 public:
+	bool IsBitmap() const { return format == Format::Bitmap; }
+	bool IsGray() const { return format == Format::Gray; }
 	bool HasExtraFont() const { return nFontEntries_Extra > 0; }
 	const FontEntry& GetFontEntry(uint32_t code) const;
 	int CalcStringWidth(const char* str) const;

@@ -36,7 +36,7 @@ ${end}
 
 }
 
-const FontSet ${fontSet.fontName} = { ${fontSet.yAdvance}, &NS_${fontSet.fontName}::f_Invalid, {
+const FontSet ${fontSet.fontName} = { FontSet::Format::Bitmap, ${fontSet.yAdvance}, &NS_${fontSet.fontName}::f_Invalid, {
 	${Range(0x20, 0x7f) {|code|}}
 	&NS_${fontSet.fontName}::f_${Format('%04x', code)},
 	${end}

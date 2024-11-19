@@ -1000,7 +1000,7 @@ const FontEntry f_7121 = { 0x7121, 16, 16, 16, {
 
 }
 
-const FontSet shinonome16 = { 16, &NS_shinonome16::f_Invalid, {
+const FontSet shinonome16 = { FontSet::Format::Bitmap, 16, &NS_shinonome16::f_Invalid, {
 	&NS_shinonome16::f_0020,
 	&NS_shinonome16::f_0021,
 	&NS_shinonome16::f_0022,

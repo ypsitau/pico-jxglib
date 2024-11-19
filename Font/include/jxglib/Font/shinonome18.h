@@ -1,4 +1,6 @@
+//==============================================================================
 // -Shinonome-Gothic-Medium-R-Normal--18-170-75-75-C-90-JISX0201.1976-0
+//==============================================================================
 #ifndef PICO_JXGLIB_FONT_SHINONOME18_H
 #define PICO_JXGLIB_FONT_SHINONOME18_H
 #include "jxglib/Font.h"
@@ -488,7 +490,7 @@ const FontEntry f_007e = { 0x007e, 9, 18, 9, {
 
 }
 
-const FontSet shinonome18 = { 18, &NS_shinonome18::f_Invalid, {
+const FontSet shinonome18 = { FontSet::Format::Bitmap, 18, &NS_shinonome18::f_Invalid, {
 	&NS_shinonome18::f_0020,
 	&NS_shinonome18::f_0021,
 	&NS_shinonome18::f_0022,
