@@ -34,6 +34,18 @@ public:
 		bool IsRGB565() const { return IsIdentical(RGB565); }
 	};
 public:
+	template<typename ColorVar_T, typename ColorMem_T> class Getter_T {
+	public:
+		using Type = ColorVar_T;
+	public:
+		ColorVar_T Get(const uint8_t* p) { return ColorVar_T::zero; }
+	};
+	template<typename ColorMem_T, typename ColorVar_T> class Setter_T {
+	public:
+		using Type = ColorVar_T;
+	public:
+		void Set(uint8_t* p, const ColorVar_T& color) {}
+	};
 	class GetColor_SrcRGB {
 	public:
 		using Type = Color;
@@ -258,6 +270,65 @@ public:
 	void CopyRegion(int xDst, int yDst, int xSrc, int ySrc, int width, int height);
 	static bool IsDirHorz(SequencerDir dir) { return dir < SequencerDir::Vert; }
 	static bool IsDirVert(SequencerDir dir) { return dir >= SequencerDir::Vert; }
+};
+
+template<> class Image::Getter_T<Color, Color> {
+public:
+	Color Get(const uint8_t* p) { return Color(p[0], p[1], p[2]); }
+};
+
+template<> class Image::Getter_T<Color, ColorRGB565> {
+public:
+	Color Get(const uint8_t* p) { return Color(ColorRGB565(*reinterpret_cast<const uint16_t*>(p))); }
+};
+
+template<> class Image::Getter_T<ColorA, Color> {
+public:
+	ColorA Get(const uint8_t* p) { return ColorA(p[0], p[1], p[2], 255); }
+};
+
+template<> class Image::Getter_T<ColorA, ColorRGB565> {
+public:
+	ColorA Get(const uint8_t* p) { return ColorA(ColorRGB565(*reinterpret_cast<const uint16_t*>(p))); }
+};
+
+template<> class Image::Getter_T<ColorRGB565, Color> {
+public:
+	ColorRGB565 Get(const uint8_t* p) { return ColorRGB565(p[0], p[1], p[2]); }
+};
+
+template<> class Image::Getter_T<ColorRGB565, ColorRGB565> {
+public:
+	ColorRGB565 Get(const uint8_t* p) { return ColorRGB565(*reinterpret_cast<const uint16_t*>(p)); }
+};
+
+template<> class Image::Setter_T<Color, Color> {
+public:
+	void Set(uint8_t* p, const Color& color) {
+		p[0] = color.r, p[1] = color.g, p[2] = color.b;
+	}
+};
+
+template<> class Image::Setter_T<Color, ColorRGB565> {
+public:
+	void Set(uint8_t* p, const ColorRGB565& colorRGB565) {
+		Color color(colorRGB565);
+		p[0] = color.r, p[1] = color.g, p[2] = color.b;
+	}
+};
+
+template<> class Image::Setter_T<ColorRGB565, Color> {
+public:
+	void Set(uint8_t* p, const Color& color) {
+		*reinterpret_cast<uint16_t*>(p) = ColorRGB565(color).value;
+	}
+};
+
+template<> class Image::Setter_T<ColorRGB565, ColorRGB565> {
+public:
+	void Set(uint8_t* p, const ColorRGB565& colorRGB565) {
+		*reinterpret_cast<uint16_t*>(p) = colorRGB565.value;
+	}
 };
 
 }
