@@ -1,21 +1,12 @@
 //==============================================================================
-// jxglib/TextBox.h
+// Terminal.cpp
 //==============================================================================
-#ifndef PICO_JXGLIB_TEXTBOX_H
-#define PICO_JXGLIB_TEXTBOX_H
-#include "pico/stdlib.h"
-#include "jxglib/Drawable.h"
+#include "jxglib/Terminal.h"
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// TextBox
+// Terminal
 //------------------------------------------------------------------------------
-struct TextBox {
-public:
-	TextBox() {}
-};
 
 }
-
-#endif

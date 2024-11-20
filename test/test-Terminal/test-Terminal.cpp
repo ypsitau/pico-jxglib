@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "jxglib/TextBox.h"
+#include "jxglib/Terminal.h"
 
 int main()
 {
