@@ -55,17 +55,17 @@ public:
 	class Raw {
 	private:
 		spi_inst_t* spi_;
-		GPIO gpio_RST_;		// Reset
-		GPIO gpio_DC_;		// Data/Command
-		GPIO gpio_CS_;		// Chip Select
-		GPIO gpio_BL_;		// Backlight (maybe Invalid)
+		const GPIO& gpio_RST_;		// Reset
+		const GPIO& gpio_DC_;		// Data/Command
+		const GPIO& gpio_CS_;		// Chip Select
+		const GPIO& gpio_BL_;		// Backlight (maybe Invalid)
 		spi_cpol_t cpol_;
 		spi_cpha_t cpha_;
 	public:
-		Raw(spi_inst_t* spi, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_CS, GPIO gpio_BL) :
+		Raw(spi_inst_t* spi, const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_CS, const GPIO& gpio_BL) :
 				spi_(spi), gpio_RST_(gpio_RST), gpio_DC_(gpio_DC), gpio_BL_(gpio_BL), gpio_CS_(gpio_CS),
 				cpol_(SPI_CPOL_0), cpha_(SPI_CPHA_0) {}
-		Raw(spi_inst_t* spi, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_BL) :
+		Raw(spi_inst_t* spi, const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_BL) :
 				spi_(spi), gpio_RST_(gpio_RST), gpio_DC_(gpio_DC), gpio_CS_(GPIO::None), gpio_BL_(gpio_BL),
 				cpol_(SPI_CPOL_1), cpha_(SPI_CPHA_1) {}
 	public:
@@ -285,10 +285,10 @@ public:
 public:
 	Raw raw;
 public:
-	TFT_LCD(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_CS, GPIO gpio_BL) :
+	TFT_LCD(spi_inst_t* spi, int width, int height, const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_CS, const GPIO& gpio_BL) :
 			Display(Capability::Device | Capability::DrawImage, Format::RGB565, width, height),
 			raw(spi, gpio_RST, gpio_DC, gpio_CS, gpio_BL) {}
-	TFT_LCD(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_BL) :
+	TFT_LCD(spi_inst_t* spi, int width, int height, const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_BL) :
 			Display(Capability::Device | Capability::DrawImage, Format::RGB565, width, height),
 			raw(spi, gpio_RST, gpio_DC, gpio_BL) {}
 public:

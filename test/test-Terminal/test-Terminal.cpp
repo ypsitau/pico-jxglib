@@ -20,8 +20,4 @@ int main()
 	for (int i = 0; i < 1000; i++) {
 		terminal.printf("hoge %d\n", i);
 	}
-	//while (true) {
-	//	printf("Hello, world!\n");
-	//	sleep_ms(1000);
-	//}
 }

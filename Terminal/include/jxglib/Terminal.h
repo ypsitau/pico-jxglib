@@ -26,6 +26,14 @@ public:
 		pDrawable_->SetFont(fontSet, fontScale);
 		return *this;
 	}
+	Terminal& SetFont(const FontSet& fontSet, int fontScaleWidth, int fontScaleHeight) {
+		pDrawable_->SetFont(fontSet, fontScaleWidth, fontScaleHeight);
+		return *this;
+	}
+	void SetFontScale(int fontScale) { pDrawable_->SetFontScale(fontScale); }
+	void SetFontScale(int fontScaleWidth, int fontScaleHeight) {
+		pDrawable_->SetFontScale(fontScaleWidth, fontScaleHeight);
+	}
 	Terminal& puts(const char* str);
 	Terminal& vprintf(const char* format, va_list args);
 	Terminal& printf(const char* format, ...);
