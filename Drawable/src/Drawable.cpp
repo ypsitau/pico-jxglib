@@ -8,13 +8,13 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // Drawable
 //------------------------------------------------------------------------------
-Drawable& Drawable::DrawLine(int x0, int y0, int x1, int y1)
+Drawable& Drawable::DrawLine(int x0, int y0, int x1, int y1, const Color& color)
 {
 	if (x0 == x1) {
-		DrawVLine(x0, y0, y1 - y0);
+		DrawVLine(x0, y0, y1 - y0, color);
 		return *this;
 	} else if (y0 == y1) {
-		DrawHLine(x0, y0, x1 - x0);
+		DrawHLine(x0, y0, x1 - x0, color);
 		return *this;
 	}
 	int dx, dy, sx, sy;
@@ -35,7 +35,7 @@ Drawable& Drawable::DrawLine(int x0, int y0, int x1, int y1)
 	int err = dx + dy;
 	int x = x0, y = y0;
 	for (;;) {
-		DrawPixel(x, y);
+		DrawPixel(x, y, color);
 		if (x == x1 && y == y1) break;
 		int err2 = 2 * err;
 		if (err2 >= dy) {
@@ -50,7 +50,7 @@ Drawable& Drawable::DrawLine(int x0, int y0, int x1, int y1)
 	return *this;
 }
 
-Drawable& Drawable::DrawRect(int x, int y, int width, int height)
+Drawable& Drawable::DrawRect(int x, int y, int width, int height, const Color& color)
 {
 	if (width < 0) {
 		x += width + 1;
@@ -60,10 +60,10 @@ Drawable& Drawable::DrawRect(int x, int y, int width, int height)
 		y += height + 1;
 		height = -height;
 	}
-	DrawRectFill(x, y, width, 1);
-	DrawRectFill(x, y + height - 1, width, 1);
-	DrawRectFill(x, y, 1, height);
-	DrawRectFill(x + width - 1, y, 1, height);
+	DrawRectFill(x, y, width, 1, color);
+	DrawRectFill(x, y + height - 1, width, 1, color);
+	DrawRectFill(x, y, 1, height, color);
+	DrawRectFill(x + width - 1, y, 1, height, color);
 	return *this;
 }
 
@@ -117,7 +117,7 @@ Drawable& Drawable::DrawStringWrap(int x, int y, int width, int height, const ch
 	for (const char* p = str; *p; p++) {
 		if (!decoder.FeedChar(*p, &code)) continue;
 		const FontEntry& fontEntry = context_.pFontSet->GetFontEntry(code);
-		int xAdvance = static_cast<int>(fontEntry.xAdvance * context_.fontScaleWidth * context_.charWidthRatio);
+		int xAdvance = CalcAdvanceX(fontEntry);
 		if (x + fontEntry.width * context_.fontScaleWidth > xExceed) {
 			x = xStart, y += lineHeight;
 			if (y + lineHeight > yExceed) break;

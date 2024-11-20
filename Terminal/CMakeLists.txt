@@ -4,7 +4,7 @@ target_include_directories(jxglib_Terminal INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/include)
 
 target_link_libraries(jxglib_Terminal INTERFACE
-	jxglib_Drawable)
+	jxglib_Canvas)
 
 target_sources(jxglib_Terminal INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/Terminal.cpp)
