@@ -85,7 +85,7 @@ void Canvas::DispatcherRGB565::DrawBitmap_(Canvas& canvas, int x, int y, const v
 	const ColorRGB565 colorFg(color);
 	const ColorRGB565 colorBg(pColorBg? ColorRGB565(*pColorBg) : ColorRGB565::black);
 	using Writer = Image::Writer<Image::PutColorRGB565_DstRGB565>;
-	Image::Writer writer(Writer::HorzFromNW(imageOwn, x, y, width, height));
+	Image::Writer writer(Writer::HorzFromNW(imageOwn, x, y, width * scaleX, height * scaleY));
 	for (int iRow = 0; iRow < height; iRow++) {
 		const uint8_t* pSrc;
 		for (int iScaleY = 0; iScaleY < scaleY; iScaleY++) {

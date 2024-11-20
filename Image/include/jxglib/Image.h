@@ -130,7 +130,7 @@ public:
 			advancePerCol_{advancePerCol}, advancePerRow_{advancePerRow}, iCol_{0}, iRow_{0} {}
 		void MoveForward(int nColsForward = 1) {
 			iCol_ += nColsForward;
-			p_ += advancePerCol_;
+			p_ += advancePerCol_ * nColsForward;
 			if (iCol_ >= nCols_) {
 				iCol_ = 0, iRow_++;
 				pRow_ += advancePerRow_, p_ = pRow_;

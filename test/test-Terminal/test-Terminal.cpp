@@ -3,6 +3,7 @@
 #include "jxglib/ST7789.h"
 #include "jxglib/Terminal.h"
 #include "jxglib/Font/shinonome16.h"
+#include "jxglib/Font/sisd24x32.h"
 
 using namespace jxglib;
 
@@ -16,7 +17,8 @@ int main()
 	display.Initialize();
 	Terminal terminal;
 	terminal.AttachOutput(display);
-	terminal.SetFont(Font::shinonome16);
+	//terminal.SetFont(Font::shinonome16, 2);
+	terminal.SetFont(Font::sisd24x32);
 	for (int i = 0; i < 1000; i++) {
 		terminal.printf("hoge %d\n", i);
 	}
