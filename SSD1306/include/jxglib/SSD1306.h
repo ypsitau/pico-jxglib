@@ -231,7 +231,7 @@ public:
 private:
 	template<class Logic> void DrawRectFillT(int x, int y, int width, int height, uint8_t* pDst, int page, uint64_t bits);
 	template<class Logic> void DrawBitmapT(int x, int y, const void* data, int width, int height, int scaleX, int scaleY);
-public:
+protected:
 	virtual void Refresh_() override;
 	virtual void Fill_(const Color& color) override;
 	virtual void DrawPixel_(int x, int y, const Color& color) override;
@@ -239,8 +239,8 @@ public:
 	virtual void DrawBitmap_(int x, int y, const void* data, int width, int height,
 			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override;
 	virtual void DrawImage_(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) override;
-	virtual void ScrollHorz_(DirHorz dirHorz, int width, const Rect* pRect) override;
-	virtual void ScrollVert_(DirVert dirVert, int height, const Rect* pRect) override;
+	virtual void ScrollHorz_(DirHorz dirHorz, int wdScroll, const Rect* pRect) override;
+	virtual void ScrollVert_(DirVert dirVert, int htScroll, const Rect* pRect) override;
 };
 
 }

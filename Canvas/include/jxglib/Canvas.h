@@ -28,8 +28,8 @@ public:
 		virtual void DrawBitmap_(Canvas& canvas, int x, int y, const void* data, int width, int height,
 			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) const = 0;
 		virtual void DrawImage_(Canvas& canvas, int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) const = 0;
-		virtual void ScrollHorz_(Canvas& canvas, DirHorz dirHorz, int width, const Rect* pRect) const = 0;
-		virtual void ScrollVert_(Canvas& canvas, DirVert dirVert, int height, const Rect* pRect) const = 0;
+		virtual void ScrollHorz_(Canvas& canvas, DirHorz dirHorz, int wdScroll, const Rect* pRect) const = 0;
+		virtual void ScrollVert_(Canvas& canvas, DirVert dirVert, int htScroll, const Rect* pRect) const = 0;
 	};
 	class DispatcherNone : public Dispatcher {
 	public:
@@ -75,7 +75,7 @@ public:
 	Image& GetImageOwn() { return imageOwn_; }
 	bool AttachOutput(Drawable& drawable, const Rect* pRect = nullptr, ImageDir imageDir = ImageDir::Normal);
 	bool AttachOutput(Drawable& drawable, ImageDir imageDir) { return AttachOutput(drawable, nullptr, imageDir); }
-public:
+protected:
 	virtual void Refresh_() override;
 	virtual void Fill_(const Color& color) override {
 		pDispatcher_->Fill_(*this, color);
@@ -93,11 +93,11 @@ public:
 	virtual void DrawImage_(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) override {
 		pDispatcher_->DrawImage_(*this, x, y, image, pRectClip, imageDir);
 	}
-	virtual void ScrollHorz_(DirHorz dirHorz, int width, const Rect* pRect) override {
-		pDispatcher_->ScrollHorz_(*this, dirHorz, width, pRect);
+	virtual void ScrollHorz_(DirHorz dirHorz, int wdScroll, const Rect* pRect) override {
+		pDispatcher_->ScrollHorz_(*this, dirHorz, wdScroll, pRect);
 	}
-	virtual void ScrollVert_(DirVert dirVert, int height, const Rect* pRect) override {
-		pDispatcher_->ScrollVert_(*this, dirVert, height, pRect);
+	virtual void ScrollVert_(DirVert dirVert, int htScroll, const Rect* pRect) override {
+		pDispatcher_->ScrollVert_(*this, dirVert, htScroll, pRect);
 	}
 };
 

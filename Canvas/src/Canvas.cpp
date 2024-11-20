@@ -143,25 +143,67 @@ void Canvas::DispatcherRGB565::DrawImage_(Canvas& canvas, int x, int y, const Im
 	}
 }
 
-void Canvas::DispatcherRGB565::ScrollHorz_(Canvas& canvas, DirHorz dirHorz, int width, const Rect* pRect) const
+void Canvas::DispatcherRGB565::ScrollHorz_(Canvas& canvas, DirHorz dirHorz, int wdScroll, const Rect* pRect) const
 {
 	Image& imageOwn = canvas.GetImageOwn();
 	Rect rect = pRect? *pRect : Rect(0, 0, imageOwn.GetWidth(), imageOwn.GetHeight());
+	if (rect.width <= wdScroll) return;
+	uint16_t* pDstPixel;
+	const uint16_t* pSrcPixel;
+	int advancePerPixel;
+	int advancePerLine = imageOwn.GetWidth();
 	if (dirHorz == DirHorz::Left) {
-		imageOwn.CopyRegion(rect.x, rect.y, rect.x + width, rect.y, rect.width - width, rect.height);
+		pDstPixel = reinterpret_cast<uint16_t*>(imageOwn.GetPointer(rect.x, rect.y));
+		pSrcPixel = reinterpret_cast<const uint16_t*>(imageOwn.GetPointer(rect.x + wdScroll, rect.y));
+		advancePerPixel = 1;
 	} else if (dirHorz == DirHorz::Right) {
-		imageOwn.CopyRegion(rect.x + width, rect.y, rect.x, rect.y, rect.width - width, rect.height);
+		pDstPixel = reinterpret_cast<uint16_t*>(imageOwn.GetPointer(rect.x + rect.width - 1, rect.y));
+		pSrcPixel = reinterpret_cast<const uint16_t*>(imageOwn.GetPointer(rect.x + rect.width - 1 - wdScroll, rect.y));
+		advancePerPixel = -1;
+	} else {
+		return;
+	}
+	for (int nPixels = rect.width - wdScroll - 1; nPixels > 0; nPixels--) {
+		uint16_t* pDstLine = pDstPixel;
+		const uint16_t* pSrcLine = pSrcPixel;
+		for (int nLines = rect.height; nLines > 0; nLines--) {
+			*pDstLine = *pSrcLine;
+			pDstLine += advancePerLine, pSrcLine += advancePerLine;
+		}
+		pDstPixel += advancePerPixel;
+		pSrcPixel += advancePerPixel;
 	}
 }
 
-void Canvas::DispatcherRGB565::ScrollVert_(Canvas& canvas, DirVert dirVert, int height, const Rect* pRect) const
+void Canvas::DispatcherRGB565::ScrollVert_(Canvas& canvas, DirVert dirVert, int htScroll, const Rect* pRect) const
 {
 	Image& imageOwn = canvas.GetImageOwn();
 	Rect rect = pRect? *pRect : Rect(0, 0, imageOwn.GetWidth(), imageOwn.GetHeight());
+	if (rect.height <= htScroll) return;
+	uint16_t* pDstLine;
+	const uint16_t* pSrcLine;
+	int advancePerLine;
+	const int advancePerPixel = 1;
 	if (dirVert == DirVert::Up) {
-		imageOwn.CopyRegion(rect.x, rect.y, rect.x, rect.y + height, rect.width, rect.height - height);
+		pDstLine = reinterpret_cast<uint16_t*>(imageOwn.GetPointer(rect.x, rect.y));
+		pSrcLine = reinterpret_cast<const uint16_t*>(imageOwn.GetPointer(rect.x, rect.y + htScroll));
+		advancePerLine = imageOwn.GetWidth();
 	} else if (dirVert == DirVert::Down) {
-		imageOwn.CopyRegion(rect.x, rect.y + height, rect.x, rect.y, rect.width, rect.height - height);
+		pDstLine = reinterpret_cast<uint16_t*>(imageOwn.GetPointer(rect.x, rect.y + rect.height - 1));
+		pSrcLine = reinterpret_cast<const uint16_t*>(imageOwn.GetPointer(rect.x, rect.y + rect.height - 1 - htScroll));
+		advancePerLine = -imageOwn.GetWidth();
+	} else {
+		return;
+	}
+	for (int nLines = rect.height - htScroll - 1; nLines > 0; nLines--) {
+		uint16_t* pDstPixel = pDstLine;
+		const uint16_t* pSrcPixel = pSrcLine;
+		for (int nPixels = rect.width; nPixels > 0; nPixels--) {
+			*pDstPixel = *pSrcPixel;
+			pDstPixel += advancePerPixel, pSrcPixel += advancePerPixel;
+		}
+		pDstLine += advancePerLine;
+		pSrcLine += advancePerLine;
 	}
 }
 

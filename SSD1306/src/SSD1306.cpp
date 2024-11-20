@@ -138,11 +138,11 @@ void SSD1306::DrawImage_(int x, int y, const Image& image, const Rect* pRectClip
 	// do nothing
 }
 
-void SSD1306::ScrollHorz_(DirHorz dirHorz, int width, const Rect* pRect)
+void SSD1306::ScrollHorz_(DirHorz dirHorz, int wdScroll, const Rect* pRect)
 {
 }
 
-void SSD1306::ScrollVert_(DirVert dirVert, int height, const Rect* pRect)
+void SSD1306::ScrollVert_(DirVert dirVert, int htScroll, const Rect* pRect)
 {
 }
 

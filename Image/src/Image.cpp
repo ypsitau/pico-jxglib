@@ -34,20 +34,4 @@ void Image::FillZero()
 	::memset(data_, 0x00, GetBytesBuff());
 }
 
-void Image::CopyRegion(int xDst, int yDst, int xSrc, int ySrc, int width, int height)
-{
-	using Reader = Image::Reader<Image::GetColorRGB565_SrcRGB565>;
-	using Writer = Image::Writer<Image::PutColorRGB565_DstRGB565>;
-	if (yDst < ySrc) {
-		
-	} else if (yDst > ySrc) {
-
-	} else if (xDst < xSrc) {
-
-	} else if (xDst > xSrc) {
-	} else { // yDst == ySrc && xDst == xSrc
-		// do nothing
-	}
-}
-
 }

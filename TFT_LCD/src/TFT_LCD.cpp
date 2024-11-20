@@ -127,12 +127,12 @@ void TFT_LCD::DrawImage_(int x, int y, const Image& image, const Rect* pRectClip
 	raw.MemoryWrite_End();
 }
 
-void TFT_LCD::ScrollHorz_(DirHorz dirHorz, int width, const Rect* pRect)
+void TFT_LCD::ScrollHorz_(DirHorz dirHorz, int wdScroll, const Rect* pRect)
 {
 	// do nothing
 }
 
-void TFT_LCD::ScrollVert_(DirVert dirVert, int height, const Rect* pRect)
+void TFT_LCD::ScrollVert_(DirVert dirVert, int htScroll, const Rect* pRect)
 {
 	// do nothing
 }

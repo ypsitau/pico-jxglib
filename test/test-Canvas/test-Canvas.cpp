@@ -35,6 +35,10 @@ int main()
 	//canvas.SetColor({0, 128, 0});
 	canvas.DrawStringWrap(0, 0, str);
 	canvas.Refresh();
+	for (;;) {
+		canvas.ScrollHorz(DirHorz::Right, 1);
+		canvas.Refresh();
+	}
 #if 0
 	for (;;) {
 		canvas.DrawImage(0, 0, image_cat_240x320, nullptr, Canvas::ImageDir::Rotate0);

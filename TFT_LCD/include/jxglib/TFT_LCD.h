@@ -295,7 +295,7 @@ public:
 	void Initialize(const ConfigData& cfg);
 	bool UsesCS() { return raw.UsesCS(); }
 	int GetBytesPerLine() const { return GetWidth() * 2; }
-public:
+protected:
 	virtual void Refresh_() override;
 	virtual void Fill_(const Color& color) override;
 	virtual void DrawPixel_(int x, int y, const Color& color) override;
@@ -303,8 +303,8 @@ public:
 	virtual void DrawBitmap_(int x, int y, const void* data, int width, int height,
 		const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override;
 	virtual void DrawImage_(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) override;
-	virtual void ScrollHorz_(DirHorz dirHorz, int width, const Rect* pRect) override;
-	virtual void ScrollVert_(DirVert dirVert, int height, const Rect* pRect) override;
+	virtual void ScrollHorz_(DirHorz dirHorz, int wdScroll, const Rect* pRect) override;
+	virtual void ScrollVert_(DirVert dirVert, int htScroll, const Rect* pRect) override;
 };
 
 }

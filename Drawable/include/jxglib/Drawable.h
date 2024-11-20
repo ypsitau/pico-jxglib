@@ -116,12 +116,12 @@ public:
 		DrawImage_(x, y, image, pRectClip, imageDir);
 		return *this;
 	}
-	Drawable& ScrollHorz(DirHorz dirHorz, int width, const Rect* pRect = nullptr) {
-		ScrollHorz_(dirHorz, width, pRect);
+	Drawable& ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect* pRect = nullptr) {
+		ScrollHorz_(dirHorz, wdScroll, pRect);
 		return *this;
 	}
-	Drawable& ScrollVert(DirVert dirVert, int height, const Rect* pRect = nullptr) {
-		ScrollVert_(dirVert, height, pRect);
+	Drawable& ScrollVert(DirVert dirVert, int htScroll, const Rect* pRect = nullptr) {
+		ScrollVert_(dirVert, htScroll, pRect);
 		return *this;
 	}
 public:
@@ -170,7 +170,7 @@ public:
 	Drawable& DrawStringWrap(const Rect& rcBBox, const char* str, StringCont* pStringCont = nullptr) {
 		return DrawStringWrap(rcBBox.x, rcBBox.y, rcBBox.width, rcBBox.height, str, pStringCont);
 	}
-public:
+protected:
 	virtual void Refresh_() = 0;
 	virtual void Fill_(const Color& color) = 0;
 	virtual void DrawPixel_(int x, int y, const Color& color) = 0;
@@ -178,8 +178,8 @@ public:
 	virtual void DrawBitmap_(int x, int y, const void* data, int width, int height,
 		const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) = 0;
 	virtual void DrawImage_(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) = 0;
-	virtual void ScrollHorz_(DirHorz dirHorz, int width, const Rect* pRect) = 0;
-	virtual void ScrollVert_(DirVert dirVert, int height, const Rect* pRect) = 0;
+	virtual void ScrollHorz_(DirHorz dirHorz, int wdScroll, const Rect* pRect) = 0;
+	virtual void ScrollVert_(DirVert dirVert, int htScroll, const Rect* pRect) = 0;
 };
 
 }
