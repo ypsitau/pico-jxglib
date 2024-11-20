@@ -57,13 +57,14 @@ public:
 		virtual void ScrollHorz_(Canvas& canvas, DirHorz dirHorz, int width, const Rect* pRect) const override;
 		virtual void ScrollVert_(Canvas& canvas, DirVert dirVert, int height, const Rect* pRect) const override;
 	};
+	using AttachDir = ImageDir;
 private:
 	Drawable* pDrawableOut_;
 	Image imageOwn_;
 	const Dispatcher* pDispatcher_;
 	struct Output {
 		Rect rect;
-		ImageDir imageDir;
+		AttachDir attachDir;
 	} output_;
 private:
 	static const DispatcherNone dispatcherNone;
@@ -73,8 +74,8 @@ public:
 			pDrawableOut_{nullptr}, pDispatcher_{&dispatcherNone} {}
 public:
 	Image& GetImageOwn() { return imageOwn_; }
-	bool AttachOutput(Drawable& drawable, const Rect* pRect = nullptr, ImageDir imageDir = ImageDir::Normal);
-	bool AttachOutput(Drawable& drawable, ImageDir imageDir) { return AttachOutput(drawable, nullptr, imageDir); }
+	bool AttachOutput(Drawable& drawable, const Rect* pRect = nullptr, AttachDir attachDir = AttachDir::Normal);
+	bool AttachOutput(Drawable& drawable, AttachDir attachDir) { return AttachOutput(drawable, nullptr, attachDir); }
 protected:
 	virtual void Refresh_() override;
 	virtual void Fill_(const Color& color) override {

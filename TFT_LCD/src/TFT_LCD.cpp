@@ -96,32 +96,38 @@ void TFT_LCD::DrawBitmap_(int x, int y, const void* data, int width, int height,
 void TFT_LCD::DrawImage_(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir)
 {
 	int xSkip = 0, ySkip = 0;
-	int width, height;
+	int wdSrc = image.GetWidth(), htSrc = image.GetHeight();
+	int wdDst, htDst;
 	if (Image::IsDirHorz(imageDir)) {
-		width = image.GetWidth(), height = image.GetHeight();
+		wdDst = wdSrc, htDst = htSrc;
 	} else {
-		width = image.GetHeight(), height = image.GetWidth();
+		wdDst = htSrc, htDst = wdSrc;
 	}
-	if (!AdjustRange(&x, &width, 0, GetWidth(), &xSkip)) return;
-	if (!AdjustRange(&y, &height, 0, GetHeight(), &ySkip)) return;
-	raw.ColumnAddressSet(x, x + width - 1);
-	raw.RowAddressSet(y, y + height - 1);
+	if (!AdjustRange(&x, &wdDst, 0, GetWidth(), &xSkip)) return;
+	if (!AdjustRange(&y, &htDst, 0, GetHeight(), &ySkip)) return;
+	if (Image::IsDirHorz(imageDir)) {
+		wdSrc = wdDst, htSrc = htDst;
+	} else {
+		wdSrc = htDst, htSrc = wdDst;
+	}
+	raw.ColumnAddressSet(x, x + wdDst - 1);
+	raw.RowAddressSet(y, y + htDst - 1);
 	raw.MemoryWrite_Begin(16);
 	if (image.GetFormat().IsGray()) {
 		using Reader = Image::Reader<Image::GetColorRGB565_SrcGray>;
-		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
+		Image::Reader reader(Reader::Create(image, xSkip, ySkip, wdSrc, htSrc, imageDir, true));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 	} else if (image.GetFormat().IsRGB()) {
 		using Reader = Image::Reader<Image::GetColorRGB565_SrcRGB>;
-		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
+		Image::Reader reader(Reader::Create(image, xSkip, ySkip, wdSrc, htSrc, imageDir, true));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 	} else if (image.GetFormat().IsRGBA()) {
 		using Reader = Image::Reader<Image::GetColorRGB565_SrcRGBA>;
-		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
+		Image::Reader reader(Reader::Create(image, xSkip, ySkip, wdSrc, htSrc, imageDir, true));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 	} else if (image.GetFormat().IsRGB565()) {
 		using Reader = Image::Reader<Image::GetColorRGB565_SrcRGB565>;
-		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
+		Image::Reader reader(Reader::Create(image, xSkip, ySkip, wdSrc, htSrc, imageDir, true));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 	}
 	raw.MemoryWrite_End();
