@@ -279,6 +279,7 @@ int main()
 	GPIO5.set_function_I2C0_SCL().pull_up();
 	SSD1306 display(i2c0);
 	display.Initialize();
+#if 0
 	for (;;) {
 		//Test_Flash(display);
 		//Test_DrawPixel(display);
@@ -290,4 +291,11 @@ int main()
 		//Test_DrawBitmap(display);
 		Test_DrawStringWrap(display);
 	}
+#endif
+	const char* str =
+		"親譲りの無鉄砲で子供のときから損ばかりしている。小学校の時分学校の二階から飛び降りて一週間腰を"
+		"抜かしたことがある。なぜそんなむやみなことをしたかと聞く人があるかもしれない。";
+	display.SetFont(Font::shinonome16);
+	display.DrawStringWrap(0, 0, str);
+	display.Refresh();
 }
