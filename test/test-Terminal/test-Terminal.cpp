@@ -37,7 +37,7 @@ int main()
 	display.Initialize();
 	Terminal terminal;
 	terminal.AttachOutput(display);
-	terminal.SetFont(Font::shinonome12);
+	terminal.SetFont(Font::shinonome16);
 	//terminal.SetFont(Font::shinonome16, 2);
 	//terminal.SetFont(Font::sisd24x32);
 	for (int i = 0; i < 1000; i++) {
