@@ -34,37 +34,44 @@ void TFT_LCD::Initialize(const ConfigData& cfg)
 	raw.SetGPIO_BL(true);
 }
 
-void TFT_LCD::Refresh_()
+//------------------------------------------------------------------------------
+// TFT_LCD::DispatcherEx
+//------------------------------------------------------------------------------
+void TFT_LCD::DispatcherEx::Refresh()
 {
 	// do nothing
 }
 
-void TFT_LCD::Fill_(const Color& color)
+void TFT_LCD::DispatcherEx::Fill(const Color& color)
 {
-	raw.ColumnAddressSet(0, GetWidth() - 1);
-	raw.RowAddressSet(0, GetHeight() - 1);
-	raw.MemoryWriteConst16(ColorRGB565(color).value, GetWidth() * GetHeight());
+	Raw& raw = display_.raw;
+	raw.ColumnAddressSet(0, display_.GetWidth() - 1);
+	raw.RowAddressSet(0, display_.GetHeight() - 1);
+	raw.MemoryWriteConst16(ColorRGB565(color).value, display_.GetWidth() * display_.GetHeight());
 }
 
-void TFT_LCD::DrawPixel_(int x, int y, const Color& color)
+void TFT_LCD::DispatcherEx::DrawPixel(int x, int y, const Color& color)
 {
+	Raw& raw = display_.raw;
 	raw.ColumnAddressSet(x, x);
 	raw.RowAddressSet(y, y);
 	raw.MemoryWriteConst16(ColorRGB565(color).value, 1);
 }
 
-void TFT_LCD::DrawRectFill_(int x, int y, int width, int height, const Color& color)
+void TFT_LCD::DispatcherEx::DrawRectFill(int x, int y, int width, int height, const Color& color)
 {
-	if (!AdjustRange(&x, &width, 0, GetWidth())) return;
-	if (!AdjustRange(&y, &height, 0, GetHeight())) return;
+	Raw& raw = display_.raw;
+	if (!AdjustRange(&x, &width, 0, display_.GetWidth())) return;
+	if (!AdjustRange(&y, &height, 0, display_.GetHeight())) return;
 	raw.ColumnAddressSet(x, x + width - 1);
 	raw.RowAddressSet(y, y + height - 1);
 	raw.MemoryWriteConst16(ColorRGB565(color).value, width * height);
 }
 
-void TFT_LCD::DrawBitmap_(int x, int y, const void* data, int width, int height,
+void TFT_LCD::DispatcherEx::DrawBitmap(int x, int y, const void* data, int width, int height,
 					const Color& color, const Color* pColorBg, int scaleX, int scaleY)
 {
+	Raw& raw = display_.raw;
 	int nDots = width * height;
 	int bytes = (width + 7) / 8 * height;
 	const uint8_t* pSrcLeft = reinterpret_cast<const uint8_t*>(data);
@@ -93,8 +100,9 @@ void TFT_LCD::DrawBitmap_(int x, int y, const void* data, int width, int height,
 	raw.MemoryWrite_End();
 }
 
-void TFT_LCD::DrawImage_(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir)
+void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir)
 {
+	Raw& raw = display_.raw;
 	int xSkip = 0, ySkip = 0;
 	int wdSrc = image.GetWidth(), htSrc = image.GetHeight();
 	int wdDst, htDst;
@@ -103,8 +111,8 @@ void TFT_LCD::DrawImage_(int x, int y, const Image& image, const Rect* pRectClip
 	} else {
 		wdDst = htSrc, htDst = wdSrc;
 	}
-	if (!AdjustRange(&x, &wdDst, 0, GetWidth(), &xSkip)) return;
-	if (!AdjustRange(&y, &htDst, 0, GetHeight(), &ySkip)) return;
+	if (!AdjustRange(&x, &wdDst, 0, display_.GetWidth(), &xSkip)) return;
+	if (!AdjustRange(&y, &htDst, 0, display_.GetHeight(), &ySkip)) return;
 	if (Image::IsDirHorz(imageDir)) {
 		wdSrc = wdDst, htSrc = htDst;
 	} else {
@@ -133,12 +141,12 @@ void TFT_LCD::DrawImage_(int x, int y, const Image& image, const Rect* pRectClip
 	raw.MemoryWrite_End();
 }
 
-void TFT_LCD::ScrollHorz_(DirHorz dirHorz, int wdScroll, const Rect* pRect)
+void TFT_LCD::DispatcherEx::ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect* pRect)
 {
 	// do nothing
 }
 
-void TFT_LCD::ScrollVert_(DirVert dirVert, int htScroll, const Rect* pRect)
+void TFT_LCD::DispatcherEx::ScrollVert(DirVert dirVert, int htScroll, const Rect* pRect)
 {
 	// do nothing
 }

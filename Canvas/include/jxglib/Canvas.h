@@ -24,6 +24,7 @@ public:
 	public:
 		DispatcherRGB565(Canvas& canvas) : canvas_{canvas} {}
 	public:
+		virtual void Refresh() override;
 		virtual void Fill(const Color& color) override;
 		virtual void DrawPixel(int x, int y, const Color& color) override;
 		virtual void DrawRectFill(int x, int y, int width, int height, const Color& color) override;
@@ -45,33 +46,35 @@ public:
 	Canvas() : Drawable(Capability::DrawImage | Capability::ScrollHorz | Capability::ScrollVert),
 			pDrawableOut_{nullptr} {}
 public:
+	Drawable* GetDrawableOut() { return pDrawableOut_; }
 	Image& GetImageOwn() { return imageOwn_; }
+	const Output& GetOutput() const { return output_; }
 	bool AttachOutput(Drawable& drawable, const Rect* pRect = nullptr, AttachDir attachDir = AttachDir::Normal);
 	bool AttachOutput(Drawable& drawable, AttachDir attachDir) { return AttachOutput(drawable, nullptr, attachDir); }
 protected:
-	virtual void Refresh_() override;
-	virtual void Fill_(const Color& color) override {
-		pDispatcher_->Fill(color);
-	}
-	virtual void DrawPixel_(int x, int y, const Color& color) override {
-		pDispatcher_->DrawPixel(x, y, color);
-	}
-	virtual void DrawRectFill_(int x, int y, int width, int height, const Color& color) override {
-		pDispatcher_->DrawRectFill(x, y, width, height, color);
-	}
-	virtual void DrawBitmap_(int x, int y, const void* data, int width, int height,
-			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override {
-		pDispatcher_->DrawBitmap(x, y, data, width, height, color, pColorBg, scaleX, scaleY);
-	}
-	virtual void DrawImage_(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) override {
-		pDispatcher_->DrawImage(x, y, image, pRectClip, imageDir);
-	}
-	virtual void ScrollHorz_(DirHorz dirHorz, int wdScroll, const Rect* pRect) override {
-		pDispatcher_->ScrollHorz(dirHorz, wdScroll, pRect);
-	}
-	virtual void ScrollVert_(DirVert dirVert, int htScroll, const Rect* pRect) override {
-		pDispatcher_->ScrollVert(dirVert, htScroll, pRect);
-	}
+	//virtual void Refresh_() override;
+	//virtual void Fill_(const Color& color) override {
+	//	pDispatcher_->Fill(color);
+	//}
+	//virtual void DrawPixel_(int x, int y, const Color& color) override {
+	//	pDispatcher_->DrawPixel(x, y, color);
+	//}
+	//virtual void DrawRectFill_(int x, int y, int width, int height, const Color& color) override {
+	//	pDispatcher_->DrawRectFill(x, y, width, height, color);
+	//}
+	//virtual void DrawBitmap_(int x, int y, const void* data, int width, int height,
+	//		const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override {
+	//	pDispatcher_->DrawBitmap(x, y, data, width, height, color, pColorBg, scaleX, scaleY);
+	//}
+	//virtual void DrawImage_(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) override {
+	//	pDispatcher_->DrawImage(x, y, image, pRectClip, imageDir);
+	//}
+	//virtual void ScrollHorz_(DirHorz dirHorz, int wdScroll, const Rect* pRect) override {
+	//	pDispatcher_->ScrollHorz(dirHorz, wdScroll, pRect);
+	//}
+	//virtual void ScrollVert_(DirVert dirVert, int htScroll, const Rect* pRect) override {
+	//	pDispatcher_->ScrollVert(dirVert, htScroll, pRect);
+	//}
 };
 
 }

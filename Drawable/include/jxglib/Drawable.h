@@ -29,6 +29,7 @@ public:
 	public:
 		Dispatcher() {}
 	public:
+		virtual void Refresh() = 0;
 		virtual void Fill(const Color& color) = 0;
 		virtual void DrawPixel(int x, int y, const Color& color) = 0;
 		virtual void DrawRectFill(int x, int y, int width, int height, const Color& color) = 0;
@@ -42,6 +43,7 @@ public:
 	public:
 		DispatcherNone() {}
 	public:
+		virtual void Refresh() override {}
 		virtual void Fill(const Color& color) override {}
 		virtual void DrawPixel(int x, int y, const Color& color) override {}
 		virtual void DrawRectFill(int x, int y, int width, int height, const Color& color) override {}
@@ -139,9 +141,9 @@ public:
 		return static_cast<int>(context_.pFontSet->yAdvance * context_.fontScaleHeight * context_.lineHeightRatio);
 	}
 public:
-	Drawable& Refresh() { Refresh_(); return *this; }
+	Drawable& Refresh() { pDispatcher_->Refresh(); return *this; }
 	Drawable& Clear() { Fill(context_.colorBg); return *this; }
-	Drawable& Fill(const Color& color) { Fill_(color); return *this; }
+	Drawable& Fill(const Color& color) { pDispatcher_->Fill(color); return *this; }
 public:
 	Drawable& DrawPixel(int x, int y, const Color& color) { pDispatcher_->DrawPixel(x, y, color); return *this; }
 	Drawable& DrawPixel(int x, int y) { return DrawPixel(x, y, context_.colorFg); }
@@ -166,7 +168,7 @@ public:
 	Drawable& DrawRect(const Rect& rc, const Color& color) { return DrawRect(rc.x, rc.y, rc.width, rc.height, color); }
 	Drawable& DrawRect(const Rect& rc) { return DrawRect(rc, context_.colorFg); }
 	Drawable& DrawRectFill(int x, int y, int width, int height, const Color& color) {
-		DrawRectFill_(x, y, width, height, color);
+		pDispatcher_->DrawRectFill(x, y, width, height, color);
 		return *this;
 	}
 	Drawable& DrawRectFill(int x, int y, int width, int height) { return DrawRectFill(x, y, width, height, context_.colorFg); }
@@ -176,7 +178,7 @@ public:
 	Drawable& DrawRectFill(const Rect& rc) { return DrawRect(rc, context_.colorFg); }
 	Drawable& DrawBitmap(int x, int y, const void* data, int width, int height,
 				const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) {
-		DrawBitmap_(x, y, data, width, height, color, pColorBg, scaleX, scaleY);
+		pDispatcher_->DrawBitmap(x, y, data, width, height, color, pColorBg, scaleX, scaleY);
 		return *this;
 	}
 	Drawable& DrawBitmap(int x, int y, const void* data, int width, int height, bool transparentBgFlag = false, int scaleX = 1, int scaleY = 1) {
@@ -188,15 +190,15 @@ public:
 		return *this;
 	}
 	Drawable& DrawImage(int x, int y, const Image& image, const Rect* pRectClip = nullptr, ImageDir imageDir = ImageDir::Normal) {
-		DrawImage_(x, y, image, pRectClip, imageDir);
+		pDispatcher_->DrawImage(x, y, image, pRectClip, imageDir);
 		return *this;
 	}
 	Drawable& ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect* pRect = nullptr) {
-		ScrollHorz_(dirHorz, wdScroll, pRect);
+		pDispatcher_->ScrollHorz(dirHorz, wdScroll, pRect);
 		return *this;
 	}
 	Drawable& ScrollVert(DirVert dirVert, int htScroll, const Rect* pRect = nullptr) {
-		ScrollVert_(dirVert, htScroll, pRect);
+		pDispatcher_->ScrollVert(dirVert, htScroll, pRect);
 		return *this;
 	}
 	Drawable& DrawChar(int x, int y, const FontEntry& fontEntry);
@@ -223,15 +225,15 @@ public:
 		return DrawStringWrap(rcBBox.x, rcBBox.y, rcBBox.width, rcBBox.height, str, pStringCont);
 	}
 protected:
-	virtual void Refresh_() = 0;
-	virtual void Fill_(const Color& color) = 0;
-	virtual void DrawPixel_(int x, int y, const Color& color) = 0;
-	virtual void DrawRectFill_(int x, int y, int width, int height, const Color& color) = 0;
-	virtual void DrawBitmap_(int x, int y, const void* data, int width, int height,
-		const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) = 0;
-	virtual void DrawImage_(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) = 0;
-	virtual void ScrollHorz_(DirHorz dirHorz, int wdScroll, const Rect* pRect) = 0;
-	virtual void ScrollVert_(DirVert dirVert, int htScroll, const Rect* pRect) = 0;
+	//virtual void Refresh_() = 0;
+	//virtual void Fill_(const Color& color) = 0;
+	//virtual void DrawPixel_(int x, int y, const Color& color) = 0;
+	//virtual void DrawRectFill_(int x, int y, int width, int height, const Color& color) = 0;
+	//virtual void DrawBitmap_(int x, int y, const void* data, int width, int height,
+	//	const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) = 0;
+	//virtual void DrawImage_(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) = 0;
+	//virtual void ScrollHorz_(DirHorz dirHorz, int wdScroll, const Rect* pRect) = 0;
+	//virtual void ScrollVert_(DirVert dirVert, int htScroll, const Rect* pRect) = 0;
 };
 
 }

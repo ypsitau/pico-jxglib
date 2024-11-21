@@ -39,16 +39,19 @@ bool Canvas::AttachOutput(Drawable& drawableOut, const Rect* pRect, AttachDir at
 	return true;
 }
 
-void Canvas::Refresh_()
-{
-	if (!pDrawableOut_) return;
-	pDrawableOut_->DrawImage(0, 0, imageOwn_, &output_.rect, output_.attachDir);
-	pDrawableOut_->Refresh();
-}
-
 //------------------------------------------------------------------------------
 // Canvas::DispatcherRGB565
 //------------------------------------------------------------------------------
+void Canvas::DispatcherRGB565::Refresh()
+{
+	Drawable* pDrawableOut = canvas_.GetDrawableOut();
+	Image& imageOwn = canvas_.GetImageOwn();
+	const Output& output = canvas_.GetOutput();
+	if (!pDrawableOut) return;
+	pDrawableOut->DrawImage(0, 0, imageOwn, &output.rect, output.attachDir);
+	pDrawableOut->Refresh();
+}
+
 void Canvas::DispatcherRGB565::Fill(const Color& color)
 {
 	Image& imageOwn = canvas_.GetImageOwn();

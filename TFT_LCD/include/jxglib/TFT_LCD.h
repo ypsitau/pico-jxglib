@@ -52,6 +52,22 @@ public:
 		bool displayInversionOnFlag;
 		uint8_t gammaCurve;
 	};
+	class DispatcherEx : public Dispatcher {
+	private:
+		TFT_LCD& display_;
+	public:
+		DispatcherEx(TFT_LCD& display) : display_{display} {}
+	public:
+		virtual void Refresh() override;
+		virtual void Fill(const Color& color) override;
+		virtual void DrawPixel(int x, int y, const Color& color) override;
+		virtual void DrawRectFill(int x, int y, int width, int height, const Color& color) override;
+		virtual void DrawBitmap(int x, int y, const void* data, int width, int height,
+			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override;
+		virtual void DrawImage(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) override;
+		virtual void ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect* pRect) override;
+		virtual void ScrollVert(DirVert dirVert, int htScroll, const Rect* pRect) override;
+	};
 	class Raw {
 	private:
 		spi_inst_t* spi_;
@@ -287,24 +303,19 @@ public:
 public:
 	TFT_LCD(spi_inst_t* spi, int width, int height, const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_CS, const GPIO& gpio_BL) :
 			Display(Capability::Device | Capability::DrawImage, Format::RGB565, width, height),
-			raw(spi, gpio_RST, gpio_DC, gpio_CS, gpio_BL) {}
+			raw(spi, gpio_RST, gpio_DC, gpio_CS, gpio_BL) {
+		pDispatcher_.reset(new DispatcherEx(*this));
+	}
 	TFT_LCD(spi_inst_t* spi, int width, int height, const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_BL) :
 			Display(Capability::Device | Capability::DrawImage, Format::RGB565, width, height),
-			raw(spi, gpio_RST, gpio_DC, gpio_BL) {}
+			raw(spi, gpio_RST, gpio_DC, gpio_BL) {
+		pDispatcher_.reset(new DispatcherEx(*this));
+	}
 public:
 	void Initialize(const ConfigData& cfg);
 	bool UsesCS() { return raw.UsesCS(); }
 	int GetBytesPerLine() const { return GetWidth() * 2; }
 protected:
-	virtual void Refresh_() override;
-	virtual void Fill_(const Color& color) override;
-	virtual void DrawPixel_(int x, int y, const Color& color) override;
-	virtual void DrawRectFill_(int x, int y, int width, int height, const Color& color) override;
-	virtual void DrawBitmap_(int x, int y, const void* data, int width, int height,
-		const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override;
-	virtual void DrawImage_(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) override;
-	virtual void ScrollHorz_(DirHorz dirHorz, int wdScroll, const Rect* pRect) override;
-	virtual void ScrollVert_(DirVert dirVert, int htScroll, const Rect* pRect) override;
 };
 
 }
