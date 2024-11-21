@@ -42,6 +42,11 @@ bool Canvas::AttachOutput(Drawable& drawableOut, const Rect* pRect, AttachDir at
 //------------------------------------------------------------------------------
 // Canvas::DispatcherEx
 //------------------------------------------------------------------------------
+void Canvas::DispatcherEx::Initialize()
+{
+	// do nothing
+}
+
 void Canvas::DispatcherEx::Refresh()
 {
 	Drawable* pDrawableOut = canvas_.GetDrawableOut();
