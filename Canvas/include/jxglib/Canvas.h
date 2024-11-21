@@ -18,13 +18,18 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class Canvas : public Drawable {
 public:
-	class DispatcherRGB565 : public Dispatcher {
-	private:
+	class DispatcherEx : public Dispatcher {
+	protected:
 		Canvas& canvas_;
 	public:
-		DispatcherRGB565(Canvas& canvas) : canvas_{canvas} {}
+		DispatcherEx(Canvas& canvas) : canvas_{canvas} {}
 	public:
 		virtual void Refresh() override;
+	};
+	class DispatcherRGB565 : public DispatcherEx {
+	public:
+		DispatcherRGB565(Canvas& canvas) : DispatcherEx(canvas) {}
+	public:
 		virtual void Fill(const Color& color) override;
 		virtual void DrawPixel(int x, int y, const Color& color) override;
 		virtual void DrawRectFill(int x, int y, int width, int height, const Color& color) override;
