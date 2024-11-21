@@ -153,6 +153,27 @@ void SSD1306::DispatcherEx::ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect
 
 void SSD1306::DispatcherEx::ScrollVert(DirVert dirVert, int htScroll, const Rect* pRect)
 {
+	Rect rect = pRect? *pRect : Rect(0, 0, display_.GetWidth(), display_.GetHeight());
+	int bytesPerPage = display_.GetWidth();
+	uint64_t bits = 0;
+	uint8_t* pBottom = buff_ + numPages_ * bytesPerPage + rect.x;
+	for (int i = 0; i < rect.width; i++, pBottom++) {
+		uint8_t* p = pBottom;
+		for (int iPage = 0; iPage < 8; iPage++) {
+			p -= bytesPerPage;
+			bits = (bits << 8) | *p;
+		}
+		if (dirVert == DirVert::Up) {
+			bits >>= htScroll;
+		} else if (dirVert == DirVert::Down) {
+			bits <<= htScroll;
+		}
+		for (int iPage = 0; iPage < 8; iPage++) {
+			*p = static_cast<uint8_t>(bits & 0xff);
+			p += bytesPerPage;
+			bits >>= 8;
+		}
+	}
 }
 
 }

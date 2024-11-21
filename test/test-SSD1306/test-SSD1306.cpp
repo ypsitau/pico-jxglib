@@ -299,4 +299,8 @@ int main()
 	display.SetFont(Font::shinonome16);
 	display.DrawStringWrap(0, 0, str);
 	display.Refresh();
+	for (;;) {
+		display.ScrollVert(DirVert::Down, 1);
+		display.Refresh();
+	}
 }
