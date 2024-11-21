@@ -128,19 +128,19 @@ void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 	raw.MemoryWrite_Begin(16);
 	if (image.GetFormat().IsGray()) {
 		using Reader = Image::Reader<Image::GetColorRGB565_SrcGray>;
-		Image::Reader reader(Reader::Create(image, xSkip, ySkip, wdSrc, htSrc, imageDir, true));
+		Image::Reader reader(Reader::Create(image, xSkip, ySkip, wdSrc, htSrc, imageDir));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 	} else if (image.GetFormat().IsRGB()) {
 		using Reader = Image::Reader<Image::GetColorRGB565_SrcRGB>;
-		Image::Reader reader(Reader::Create(image, xSkip, ySkip, wdSrc, htSrc, imageDir, true));
+		Image::Reader reader(Reader::Create(image, xSkip, ySkip, wdSrc, htSrc, imageDir));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 	} else if (image.GetFormat().IsRGBA()) {
 		using Reader = Image::Reader<Image::GetColorRGB565_SrcRGBA>;
-		Image::Reader reader(Reader::Create(image, xSkip, ySkip, wdSrc, htSrc, imageDir, true));
+		Image::Reader reader(Reader::Create(image, xSkip, ySkip, wdSrc, htSrc, imageDir));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 	} else if (image.GetFormat().IsRGB565()) {
 		using Reader = Image::Reader<Image::GetColorRGB565_SrcRGB565>;
-		Image::Reader reader(Reader::Create(image, xSkip, ySkip, wdSrc, htSrc, imageDir, true));
+		Image::Reader reader(Reader::Create(image, xSkip, ySkip, wdSrc, htSrc, imageDir));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 	}
 	raw.MemoryWrite_End();
