@@ -35,6 +35,7 @@ public:
 		pDrawable_->SetFontScale(fontScaleWidth, fontScaleHeight);
 	}
 public:
+	Terminal& flush();
 	Terminal& puts(const char* str);
 	Terminal& vprintf(const char* format, va_list args);
 	Terminal& printf(const char* format, ...);

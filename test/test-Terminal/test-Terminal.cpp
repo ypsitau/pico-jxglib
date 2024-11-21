@@ -42,6 +42,9 @@ int main()
 	//terminal.SetFont(Font::sisd24x32);
 	for (int i = 0; i < 1000; i++) {
 		terminal.printf("hoge %d\n", i);
-		::sleep_ms(1000);
+		//terminal.printf("A\n");
+		//::sleep_ms(1000);
 	}
+	//display.DrawChar({0, 48}, 'A');
+	//display.Refresh();
 }

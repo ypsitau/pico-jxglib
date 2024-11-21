@@ -18,6 +18,12 @@ void Terminal::AttachOutput(Drawable& drawable)
 	}
 }
 
+Terminal& Terminal::flush()
+{
+	pDrawable_->Refresh();
+	return *this;
+}
+
 Terminal& Terminal::puts(const char* str)
 {
 	Drawable& drawable = *pDrawable_;
@@ -31,20 +37,20 @@ Terminal& Terminal::puts(const char* str)
 		const FontEntry& fontEntry = fontSet.GetFontEntry(code);
 		int xAdvance = drawable.CalcAdvanceX(fontEntry);
 		if (code == '\n' || pt_.x + xAdvance > drawable.GetWidth()) {
+			if (code == '\n') drawable.Refresh();
 			pt_.x = 0;
 			pt_.y += yAdvance;
-		}
-		if (pt_.y + yAdvance > drawable.GetHeight()) {
-			pt_.y -= yAdvance;
-			drawable.ScrollVert(DirVert::Up, yAdvance);
-			drawable.DrawRectFill(0, pt_.y, drawable.GetWidth(), drawable.GetHeight() - pt_.y, drawable.GetColorBg());
+			if (pt_.y + yAdvance > drawable.GetHeight()) {
+				pt_.y -= yAdvance;
+				drawable.ScrollVert(DirVert::Up, yAdvance);
+				drawable.DrawRectFill(0, pt_.y, drawable.GetWidth(), drawable.GetHeight() - pt_.y, drawable.GetColorBg());
+			}
 		}
 		if (code != '\n') {
 			drawable.DrawChar(pt_, fontEntry);
 			pt_.x += xAdvance;
 		}
 	}
-	drawable.Refresh();
 	return *this;
 }
 
