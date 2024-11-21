@@ -8,6 +8,8 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // Drawable
 //------------------------------------------------------------------------------
+const Drawable::DispatcherNone dispacherNone;
+
 Drawable& Drawable::DrawLine(int x0, int y0, int x1, int y1, const Color& color)
 {
 	if (x0 == x1) {

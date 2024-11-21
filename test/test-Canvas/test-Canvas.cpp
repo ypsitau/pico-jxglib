@@ -45,7 +45,7 @@ int main()
 		canvas.Refresh();
 	}
 #endif
-#if 1
+#if 0
 	canvas.SetFont(Font::shinonome16);
 	canvas.SetSpacingRatio(1.0, 1.2);
 	canvas.DrawStringWrap(0, 0, str);
@@ -55,7 +55,7 @@ int main()
 		canvas.Refresh();
 	}
 #endif
-#if 0
+#if 1
 	for (;;) {
 		canvas.DrawImage(0, 0, image_cat_240x320, nullptr, Canvas::ImageDir::Rotate0);
 		canvas.Refresh();

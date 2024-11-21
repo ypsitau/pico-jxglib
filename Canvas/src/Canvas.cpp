@@ -13,9 +13,6 @@ template<typename T> void Swap(T* a, T* b) {
 //------------------------------------------------------------------------------
 // Canvas
 //------------------------------------------------------------------------------
-const Canvas::DispatcherNone Canvas::dispatcherNone;
-const Canvas::DispatcherRGB565 Canvas::dispatcherRGB565;
-
 bool Canvas::AttachOutput(Drawable& drawableOut, const Rect* pRect, AttachDir attachDir)
 {
 	const Format& format = drawableOut.GetFormat();
@@ -37,7 +34,7 @@ bool Canvas::AttachOutput(Drawable& drawableOut, const Rect* pRect, AttachDir at
 	} else if (format.IsRGB()) {
 	} else if (format.IsRGBA()) {
 	} else if (format.IsRGB565()) {
-		pDispatcher_ = &dispatcherRGB565;
+		pDispatcher_.reset(new DispatcherRGB565(*this));
 	}
 	return true;
 }
@@ -52,9 +49,9 @@ void Canvas::Refresh_()
 //------------------------------------------------------------------------------
 // Canvas::DispatcherRGB565
 //------------------------------------------------------------------------------
-void Canvas::DispatcherRGB565::Fill_(Canvas& canvas, const Color& color) const
+void Canvas::DispatcherRGB565::Fill(const Color& color)
 {
-	Image& imageOwn = canvas.GetImageOwn();
+	Image& imageOwn = canvas_.GetImageOwn();
 	using Writer = Image::Writer<Image::PutColorRGB565_DstRGB565>;
 	Writer writer(Writer::HorzFromNW(imageOwn, 0, 0, imageOwn.GetWidth(), imageOwn.GetHeight()));
 	ColorRGB565 colorDst(color);
@@ -62,23 +59,23 @@ void Canvas::DispatcherRGB565::Fill_(Canvas& canvas, const Color& color) const
 }
 
 
-void Canvas::DispatcherRGB565::DrawPixel_(Canvas& canvas, int x, int y, const Color& color) const
+void Canvas::DispatcherRGB565::DrawPixel(int x, int y, const Color& color)
 {
 }
 
-void Canvas::DispatcherRGB565::DrawRectFill_(Canvas& canvas, int x, int y, int width, int height, const Color& color) const
+void Canvas::DispatcherRGB565::DrawRectFill(int x, int y, int width, int height, const Color& color)
 {
-	Image& imageOwn = canvas.GetImageOwn();
+	Image& imageOwn = canvas_.GetImageOwn();
 	using Writer = Image::Writer<Image::PutColorRGB565_DstRGB565>;
 	Writer writer(Writer::HorzFromNW(imageOwn, x, y, width, height));
 	ColorRGB565 colorDst(color);
 	while (!writer.HasDone()) writer.WriteForward(colorDst);
 }
 
-void Canvas::DispatcherRGB565::DrawBitmap_(Canvas& canvas, int x, int y, const void* data, int width, int height,
-	const Color& color, const Color* pColorBg, int scaleX, int scaleY) const
+void Canvas::DispatcherRGB565::DrawBitmap(int x, int y, const void* data, int width, int height,
+	const Color& color, const Color* pColorBg, int scaleX, int scaleY)
 {
-	Image& imageOwn = canvas.GetImageOwn();
+	Image& imageOwn = canvas_.GetImageOwn();
 	int nDots = width * height;
 	int bytes = (width + 7) / 8 * height;
 	const uint8_t* pSrcLeft = reinterpret_cast<const uint8_t*>(data);
@@ -110,9 +107,9 @@ void Canvas::DispatcherRGB565::DrawBitmap_(Canvas& canvas, int x, int y, const v
 	}
 }
 
-void Canvas::DispatcherRGB565::DrawImage_(Canvas& canvas, int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) const
+void Canvas::DispatcherRGB565::DrawImage(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir)
 {
-	Image& imageOwn = canvas.GetImageOwn();
+	Image& imageOwn = canvas_.GetImageOwn();
 	int xSkip = 0, ySkip = 0;
 	int width, height;
 	if (Image::IsDirHorz(imageDir)) {
@@ -143,9 +140,9 @@ void Canvas::DispatcherRGB565::DrawImage_(Canvas& canvas, int x, int y, const Im
 	}
 }
 
-void Canvas::DispatcherRGB565::ScrollHorz_(Canvas& canvas, DirHorz dirHorz, int wdScroll, const Rect* pRect) const
+void Canvas::DispatcherRGB565::ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect* pRect)
 {
-	Image& imageOwn = canvas.GetImageOwn();
+	Image& imageOwn = canvas_.GetImageOwn();
 	Rect rect = pRect? *pRect : Rect(0, 0, imageOwn.GetWidth(), imageOwn.GetHeight());
 	if (rect.width <= wdScroll) return;
 	uint16_t* pDstPixel;
@@ -175,9 +172,9 @@ void Canvas::DispatcherRGB565::ScrollHorz_(Canvas& canvas, DirHorz dirHorz, int 
 	}
 }
 
-void Canvas::DispatcherRGB565::ScrollVert_(Canvas& canvas, DirVert dirVert, int htScroll, const Rect* pRect) const
+void Canvas::DispatcherRGB565::ScrollVert(DirVert dirVert, int htScroll, const Rect* pRect)
 {
-	Image& imageOwn = canvas.GetImageOwn();
+	Image& imageOwn = canvas_.GetImageOwn();
 	Rect rect = pRect? *pRect : Rect(0, 0, imageOwn.GetWidth(), imageOwn.GetHeight());
 	if (rect.height <= htScroll) return;
 	uint16_t* pDstLine;

@@ -3,8 +3,9 @@
 //==============================================================================
 #ifndef PICO_JXGLIB_DRAWABLE_H
 #define PICO_JXGLIB_DRAWABLE_H
+#include <stdio.h>
+#include <memory>
 #include "pico/stdlib.h"
-#include "stdio.h"
 #include "jxglib/Common.h"
 #include "jxglib/Font.h"
 #include "jxglib/Image.h"
@@ -16,11 +17,39 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class Drawable {
 public:
+	using Format = Image::Format;
+	using ImageDir = Image::SequencerDir;
 	struct Capability {
 		static const uint32_t Device		= (1 << 0);
 		static const uint32_t DrawImage		= (1 << 1);
 		static const uint32_t ScrollVert	= (1 << 2);
 		static const uint32_t ScrollHorz	= (1 << 3);
+	};
+	class Dispatcher {
+	public:
+		Dispatcher() {}
+	public:
+		virtual void Fill(const Color& color) = 0;
+		virtual void DrawPixel(int x, int y, const Color& color) = 0;
+		virtual void DrawRectFill(int x, int y, int width, int height, const Color& color) = 0;
+		virtual void DrawBitmap(int x, int y, const void* data, int width, int height,
+			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) = 0;
+		virtual void DrawImage(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) = 0;
+		virtual void ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect* pRect) = 0;
+		virtual void ScrollVert(DirVert dirVert, int htScroll, const Rect* pRect) = 0;
+	};
+	class DispatcherNone : public Dispatcher {
+	public:
+		DispatcherNone() {}
+	public:
+		virtual void Fill(const Color& color) override {}
+		virtual void DrawPixel(int x, int y, const Color& color) override {}
+		virtual void DrawRectFill(int x, int y, int width, int height, const Color& color) override {}
+		virtual void DrawBitmap(int x, int y, const void* data, int width, int height,
+			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override {}
+		virtual void DrawImage(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) override {}
+		virtual void ScrollHorz(DirHorz dirHorz, int width, const Rect* pRect) override {};
+		virtual void ScrollVert(DirVert dirVert, int height, const Rect* pRect) override {};
 	};
 	struct Context {
 		Color colorFg;
@@ -45,17 +74,19 @@ public:
 		void Update(const Point& pos, const char* str) { pos_ = pos; str_ = str; }
 		bool IsDone() const { return !*str_; }
 	};
-	using Format = Image::Format;
-	using ImageDir = Image::SequencerDir;
 protected:
 	uint32_t capabilities_;
 	const Format* pFormat_;
 	int width_, height_;
 	Context context_;
+	std::unique_ptr<Dispatcher> pDispatcher_;
 public:
-	Drawable(uint32_t capabilities) : capabilities_{capabilities}, pFormat_{&Format::None}, width_{0}, height_{0} {}
+	Drawable(uint32_t capabilities) :
+			capabilities_{capabilities}, pFormat_{&Format::None},
+			width_{0}, height_{0}, pDispatcher_{new DispatcherNone()} {}
 	Drawable(uint32_t capabilities, const Format& format, int width, int height) :
-		capabilities_{capabilities}, pFormat_{&format}, width_{width}, height_{height} {}
+			capabilities_{capabilities}, pFormat_{&format},
+			width_{width}, height_{height}, pDispatcher_{new DispatcherNone()} {}
 public:
 	void SetCapacity(const Format format, int width, int height) {
 		pFormat_ = &format, width_ = width, height_ = height;
@@ -112,7 +143,7 @@ public:
 	Drawable& Clear() { Fill(context_.colorBg); return *this; }
 	Drawable& Fill(const Color& color) { Fill_(color); return *this; }
 public:
-	Drawable& DrawPixel(int x, int y, const Color& color) { DrawPixel_(x, y, color); return *this; }
+	Drawable& DrawPixel(int x, int y, const Color& color) { pDispatcher_->DrawPixel(x, y, color); return *this; }
 	Drawable& DrawPixel(int x, int y) { return DrawPixel(x, y, context_.colorFg); }
 	Drawable& DrawPixel(const Point& pt, const Color& color) { return DrawPixel(pt.x, pt.y, color); }
 	Drawable& DrawPixel(const Point& pt) { return DrawPixel(pt, context_.colorFg); }
