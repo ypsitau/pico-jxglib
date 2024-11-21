@@ -13,15 +13,15 @@
 
 using namespace jxglib;
 
-void Test_Flash(SSD1306& display)
-{
-	for (int i = 0; i < 3; i++) {
-		display.Flash(true);
-		::sleep_ms(500);
-		display.Flash(false);
-		::sleep_ms(500);
-	}
-}
+//void Test_Flash(SSD1306& display)
+//{
+//	for (int i = 0; i < 3; i++) {
+//		display.Flash(true);
+//		::sleep_ms(500);
+//		display.Flash(false);
+//		::sleep_ms(500);
+//	}
+//}
 
 void Test_DrawPixel(Display& display)
 {
@@ -279,6 +279,7 @@ int main()
 	GPIO5.set_function_I2C0_SCL().pull_up();
 	SSD1306 display(i2c0);
 	display.Initialize();
+	//Test_DrawRectFill(display);
 #if 0
 	for (;;) {
 		//Test_Flash(display);

@@ -58,6 +58,7 @@ public:
 	public:
 		DispatcherEx(TFT_LCD& display) : display_{display} {}
 	public:
+		virtual void Initialize() override;
 		virtual void Refresh() override;
 		virtual void Fill(const Color& color) override;
 		virtual void DrawPixel(int x, int y, const Color& color) override;

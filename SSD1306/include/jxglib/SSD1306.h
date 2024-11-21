@@ -31,7 +31,6 @@ public:
 	};
 	class Raw {
 	private:
-	private:
 		i2c_inst_t* i2c_;
 		uint8_t addr_;
 	public:
@@ -182,65 +181,68 @@ public:
 			SendCtrl(0x10 | (enableChargePump << 2));
 		}
 	};
+	class DispatcherEx : public Dispatcher {
+	private:
+		SSD1306& display_;
+		Raw raw;
+		static const int heightPerPage_ = 8;
+		int numPages_;
+		int bufferLen_;
+		uint8_t* buffWhole_;
+		uint8_t* buff_;
+	public:
+		DispatcherEx(SSD1306& display, i2c_inst_t* i2c, uint8_t addr) :
+				display_{display}, raw(i2c, addr), buffWhole_(nullptr), buff_(nullptr) {
+			numPages_ = display.GetHeight() / heightPerPage_;
+			bufferLen_ = numPages_ * display.GetWidth();
+		}
+		~DispatcherEx() {
+			::free(buffWhole_);
+		}
+	public:
+		uint8_t GetAddr() const { return raw.GetAddr(); }
+		int GetHeightPerPage() const { return heightPerPage_; }
+		int GetNumPages() const { return numPages_; }
+		int GetBufferLen() const { return bufferLen_; }
+		void AllocBuffer() {
+			buffWhole_ = reinterpret_cast<uint8_t*>(::malloc(bufferLen_ + 1));
+			buffWhole_[0] = 
+				(0b0 << 7) |	// Co = 0
+				(0b1 << 6);		// D/C# = 1
+			buff_ = buffWhole_ + 1;
+			FillBuffer(0x00);
+		}
+		uint8_t* GetPointer() { return buff_; }
+		uint8_t* GetPointer(int x) { return buff_ + x; }
+		uint8_t* GetPointer(int x, int y) { return buff_ + (y / 8) * display_.GetWidth() + x; }
+		uint8_t* GetPointer(int x, int y, int* pPage) { *pPage = y / 8; return buff_ + *pPage * display_.GetWidth() + x; }
+		bool EnsureSafePointer(const uint8_t* p) { return buff_ <= p && p < buff_ + bufferLen_; }
+		void FillBuffer(uint8_t data) { ::memset(buff_, data, bufferLen_); }
+		void SendBuffer() const { raw.SendBuffer(buffWhole_, bufferLen_ + 1); }
+	public:
+		virtual void Initialize() override;
+		virtual void Refresh() override;
+		virtual void Fill(const Color& color) override;
+		virtual void DrawPixel(int x, int y, const Color& color) override;
+		virtual void DrawRectFill(int x, int y, int width, int height, const Color& color) override;
+		virtual void DrawBitmap(int x, int y, const void* data, int width, int height,
+				const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override;
+		virtual void DrawImage(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) override;
+		virtual void ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect* pRect) override;
+		virtual void ScrollVert(DirVert dirVert, int htScroll, const Rect* pRect) override;
+	};
 public:
 	static const uint8_t DefaultAddr = 0x3c;
-	Raw raw;
-private:
-	static const int heightPerPage_ = 8;
-	int numPages_;
-	int bufferLen_;
-	uint8_t* buffWhole_;
-	uint8_t* buff_;
 private:
 	Context context_;
 public:
 	SSD1306(i2c_inst_t* i2c, uint8_t addr = DefaultAddr, bool highResoFlag = true) :
 			Display(Capability::Device | Capability::ScrollHorz | Capability::ScrollVert,
-					Format::Bitmap, 128, highResoFlag? 64 : 32), raw(i2c, addr),
-			buffWhole_(nullptr), buff_(nullptr) {
-		numPages_ = height_ / heightPerPage_;
-		bufferLen_ = numPages_ * width_;
-	}
-	~SSD1306() {
-		::free(buffWhole_);
+					Format::Bitmap, 128, highResoFlag? 64 : 32) {
+		pDispatcher_.reset(new DispatcherEx(*this, i2c, addr));
 	}
 public:
-	uint8_t GetAddr() const { return raw.GetAddr(); }
-	int GetHeightPerPage() const { return heightPerPage_; }
-	int GetNumPages() const { return numPages_; }
-	int GetBufferLen() const { return bufferLen_; }
-public:
-	void AllocBuffer() {
-		buffWhole_ = reinterpret_cast<uint8_t*>(::malloc(bufferLen_ + 1));
-		buffWhole_[0] = 
-			(0b0 << 7) |	// Co = 0
-			(0b1 << 6);		// D/C# = 1
-		buff_ = buffWhole_ + 1;
-		FillBuffer(0x00);
-	}
-	uint8_t* GetPointer() { return buff_; }
-	uint8_t* GetPointer(int x) { return buff_ + x; }
-	uint8_t* GetPointer(int x, int y) { return buff_ + (y / 8) * width_ + x; }
-	uint8_t* GetPointer(int x, int y, int* pPage) { *pPage = y / 8; return buff_ + *pPage * width_ + x; }
-	bool EnsureSafePointer(const uint8_t* p) { return buff_ <= p && p < buff_ + bufferLen_; }
-	void FillBuffer(uint8_t data) { ::memset(buff_, data, bufferLen_); }
-	void SendBuffer() const { raw.SendBuffer(buffWhole_, bufferLen_ + 1); }
-public:
-	void Initialize();
-	void Flash(bool flashFlag) { raw.EntireDisplayOn(static_cast<uint8_t>(flashFlag)); }
-private:
-	template<class Logic> void DrawRectFillT(int x, int y, int width, int height, uint8_t* pDst, int page, uint64_t bits);
-	template<class Logic> void DrawBitmapT(int x, int y, const void* data, int width, int height, int scaleX, int scaleY);
-protected:
-	virtual void Refresh_() override;
-	virtual void Fill_(const Color& color) override;
-	virtual void DrawPixel_(int x, int y, const Color& color) override;
-	virtual void DrawRectFill_(int x, int y, int width, int height, const Color& color) override;
-	virtual void DrawBitmap_(int x, int y, const void* data, int width, int height,
-			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override;
-	virtual void DrawImage_(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) override;
-	virtual void ScrollHorz_(DirHorz dirHorz, int wdScroll, const Rect* pRect) override;
-	virtual void ScrollVert_(DirVert dirVert, int htScroll, const Rect* pRect) override;
+	void Initialize() { pDispatcher_->Initialize(); }
 };
 
 }

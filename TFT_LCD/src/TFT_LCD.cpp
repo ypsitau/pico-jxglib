@@ -37,6 +37,11 @@ void TFT_LCD::Initialize(const ConfigData& cfg)
 //------------------------------------------------------------------------------
 // TFT_LCD::DispatcherEx
 //------------------------------------------------------------------------------
+void TFT_LCD::DispatcherEx::Initialize()
+{
+	// do nothing
+}
+
 void TFT_LCD::DispatcherEx::Refresh()
 {
 	// do nothing
