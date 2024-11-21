@@ -273,8 +273,10 @@ int main()
 	::spi_init(spi1, 125 * 1000 * 1000);
 	GPIO2.set_function_SPI0_SCK();
 	GPIO3.set_function_SPI0_TX();
-	GPIO14.set_function_SPI1_SCK().set_drive_strength(GPIO_DRIVE_STRENGTH_12MA);
-	GPIO15.set_function_SPI1_TX().set_drive_strength(GPIO_DRIVE_STRENGTH_12MA);
+	//GPIO14.set_function_SPI1_SCK().set_drive_strength(GPIO_DRIVE_STRENGTH_12MA);
+	//GPIO15.set_function_SPI1_TX().set_drive_strength(GPIO_DRIVE_STRENGTH_12MA);
+	GPIO14.set_function_SPI1_SCK();
+	GPIO15.set_function_SPI1_TX();
 	ST7789 display1(spi0, 240, 240, GPIO4, GPIO5, GPIO6);
 	ST7789 display2(spi1, 240, 320, GPIO10, GPIO11, GPIO12, GPIO13);
 	ILI9341 display3(spi1, 240, 320, GPIO16, GPIO17, GPIO18, GPIO19);
@@ -286,17 +288,22 @@ int main()
 	display3.Initialize();
 	display4.Initialize();
 	display5.Initialize();
+	display2.SetFont(Font::shinonome16, 3);
+	display2.DrawString(0, 0, "Hello");
+	
+	//display1.Clear().DrawImage(0, 0, image_cat_128x170, nullptr, Display::ImageDir::Rotate0).Refresh();
+	//image_cat_128x170 : (width <= 160)? image_cat_160x213 : image_cat_240x320;
 	//Test_BouncingBall(display);
 	//Test_WriteBuffer(display);
 	//Test_DrawString(display);
 	//Test_DrawStringWrap(display);
-	Test_DrawImage(displayTbl, ArrayNumberOf(displayTbl));
+	//Test_DrawImage(displayTbl, ArrayNumberOf(displayTbl));
 	//Test_DrawLine(display2);
 	//Test_DrawStringWrap(displayTbl, ArrayNumberOf(displayTbl));
-	display2.raw.VerticalScrollingDefinition(0, 320, 0);
-	display2.raw.VerticalScrollStartAddressToRAM(100);
-	display2.SetFont(Font::shinonome16, 3);
-	display2.DrawString(0, 0, "Hello");
+	//display2.raw.VerticalScrollingDefinition(0, 320, 0);
+	//display2.raw.VerticalScrollStartAddressToRAM(100);
+	//display2.SetFont(Font::shinonome16, 3);
+	//display2.DrawString(0, 0, "Hello");
 	//for (int i = 0; i < 320; i++) {
 	//	display2.raw.VerticalScrollStartAddressToRAM(i);
 	//	::sleep_ms(100);

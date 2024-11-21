@@ -30,11 +30,18 @@ void Test_ST7789()
 int main()
 {
 	::stdio_init_all();
+	::spi_init(spi1, 125 * 1000 * 1000);
+	GPIO14.set_function_SPI1_SCK();
+	GPIO15.set_function_SPI1_TX();
+	ST7789 display(spi1, 240, 320, GPIO10, GPIO11, GPIO12, GPIO13);
+	display.Initialize();
+#if 0
 	::i2c_init(i2c0, 400000);
 	GPIO4.set_function_I2C0_SDA().pull_up();
 	GPIO5.set_function_I2C0_SCL().pull_up();
 	SSD1306 display(i2c0);
 	display.Initialize();
+#endif
 	Terminal terminal;
 	terminal.AttachOutput(display);
 	terminal.SetFont(Font::shinonome12);
@@ -42,8 +49,6 @@ int main()
 	//terminal.SetFont(Font::sisd24x32);
 	for (int i = 0; i < 1000; i++) {
 		terminal.printf("hoge %d\n", i);
-		//terminal.printf("A\n");
-		//::sleep_ms(1000);
 	}
 	//display.DrawChar({0, 48}, 'A');
 	//display.Refresh();
