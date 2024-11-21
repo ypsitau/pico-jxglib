@@ -186,21 +186,17 @@ void SSD1306::DispatcherEx::ScrollVert(DirVert dirVert, int htScroll, const Rect
 	uint64_t bitsMask = (-1LL << rect.y) & ~(-1LL << (rect.y + rect.height));
 	uint64_t bitsMaskNot = ~bitsMask;
 	uint8_t* pBottom = buff_ + numPages_ * bytesPerPage + rect.x;
-	int nShifts;
-	if (dirVert == DirVert::Up) {
-		nShifts = -htScroll;
-	} else if (dirVert == DirVert::Down) {
-		nShifts = htScroll;
-	} else {
-		return;
-	}
 	for (int i = 0; i < rect.width; i++, pBottom++) {
 		uint8_t* p = pBottom;
 		for (int iPage = 0; iPage < numPages_; iPage++) {
 			p -= bytesPerPage;
 			bits = (bits << 8) | *p;
 		}
-		bits = (bits & bitsMaskNot) | ((bits << nShifts) & bitsMask);
+		if (dirVert == DirVert::Up) {
+			bits = (bits & bitsMaskNot) | ((bits >> htScroll) & bitsMask);
+		} else if (dirVert == DirVert::Down) {
+			bits = (bits & bitsMaskNot) | ((bits << htScroll) & bitsMask);
+		}
 		for (int iPage = 0; iPage < numPages_; iPage++) {
 			*p = static_cast<uint8_t>(bits & 0xff);
 			p += bytesPerPage;

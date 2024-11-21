@@ -49,6 +49,7 @@ pico_enable_stdio_usb(test-Terminal 0)
 # Add the standard library to the build
 target_link_libraries(test-Terminal
 	pico_stdlib
+	jxglib_SSD1306
 	jxglib_ST7789
 	jxglib_Terminal)
 
