@@ -300,7 +300,8 @@ int main()
 	display.DrawStringWrap(0, 0, str);
 	display.Refresh();
 	for (;;) {
-		display.ScrollVert(DirVert::Down, 1);
+		//display.ScrollVert(DirVert::Up, 1);
+		display.ScrollHorz(DirHorz::Right, 1);
 		display.Refresh();
 	}
 }

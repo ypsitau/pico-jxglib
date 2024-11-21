@@ -195,12 +195,20 @@ public:
 		pDispatcher_->DrawImage(x, y, image, pRectClip, imageDir);
 		return *this;
 	}
-	Drawable& ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect* pRect = nullptr) {
-		pDispatcher_->ScrollHorz(dirHorz, wdScroll, pRect);
+	Drawable& ScrollHorz(DirHorz dirHorz, int wdScroll) {
+		pDispatcher_->ScrollHorz(dirHorz, wdScroll, nullptr);
 		return *this;
 	}
-	Drawable& ScrollVert(DirVert dirVert, int htScroll, const Rect* pRect = nullptr) {
-		pDispatcher_->ScrollVert(dirVert, htScroll, pRect);
+	Drawable& ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rect) {
+		pDispatcher_->ScrollHorz(dirHorz, wdScroll, &rect);
+		return *this;
+	}
+	Drawable& ScrollVert(DirVert dirVert, int htScroll) {
+		pDispatcher_->ScrollVert(dirVert, htScroll, nullptr);
+		return *this;
+	}
+	Drawable& ScrollVert(DirVert dirVert, int htScroll, const Rect& rect) {
+		pDispatcher_->ScrollVert(dirVert, htScroll, &rect);
 		return *this;
 	}
 	Drawable& DrawChar(int x, int y, const FontEntry& fontEntry);
@@ -226,16 +234,6 @@ public:
 	Drawable& DrawStringWrap(const Rect& rcBBox, const char* str, StringCont* pStringCont = nullptr) {
 		return DrawStringWrap(rcBBox.x, rcBBox.y, rcBBox.width, rcBBox.height, str, pStringCont);
 	}
-protected:
-	//virtual void Refresh_() = 0;
-	//virtual void Fill_(const Color& color) = 0;
-	//virtual void DrawPixel_(int x, int y, const Color& color) = 0;
-	//virtual void DrawRectFill_(int x, int y, int width, int height, const Color& color) = 0;
-	//virtual void DrawBitmap_(int x, int y, const void* data, int width, int height,
-	//	const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) = 0;
-	//virtual void DrawImage_(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) = 0;
-	//virtual void ScrollHorz_(DirHorz dirHorz, int wdScroll, const Rect* pRect) = 0;
-	//virtual void ScrollVert_(DirVert dirVert, int htScroll, const Rect* pRect) = 0;
 };
 
 }

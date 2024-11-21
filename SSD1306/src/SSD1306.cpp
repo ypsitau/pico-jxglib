@@ -149,26 +149,59 @@ void SSD1306::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 
 void SSD1306::DispatcherEx::ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect* pRect)
 {
+	Rect rect = pRect? *pRect : Rect(0, 0, display_.GetWidth(), display_.GetHeight());
+	if (rect.width <= wdScroll) return;
+	int bytesPerPage = display_.GetWidth();
+	uint8_t* pSrcTop;
+	uint8_t* pDstTop;
+	int advance;
+	if (dirHorz == DirHorz::Left) {
+		pDstTop = buff_ + rect.x;
+		pSrcTop = buff_ + rect.x + wdScroll;
+		advance = 1;
+	} else if (dirHorz == DirHorz::Right) {
+		pDstTop = buff_ + rect.x + rect.width - 1;
+		pSrcTop = buff_ + rect.x + rect.width - 1 - wdScroll;
+		advance = -1;
+	} else {
+		return;
+	}
+	for (int nPixels = rect.width - 1; nPixels > 0; nPixels--, pDstTop += advance, pSrcTop += advance) {
+		uint8_t* pDst = pDstTop;
+		uint8_t* pSrc = pSrcTop;
+		for (int iPage = 0; iPage < numPages_; iPage++) {
+			*pDst = *pSrc;
+			pDst += bytesPerPage;
+			pSrc += bytesPerPage;
+		}
+	}
 }
 
 void SSD1306::DispatcherEx::ScrollVert(DirVert dirVert, int htScroll, const Rect* pRect)
 {
 	Rect rect = pRect? *pRect : Rect(0, 0, display_.GetWidth(), display_.GetHeight());
+	if (rect.height <= htScroll) return;
 	int bytesPerPage = display_.GetWidth();
 	uint64_t bits = 0;
+	uint64_t bitsMask = (-1LL << rect.y) & ~(-1LL << (rect.y + rect.height));
+	uint64_t bitsMaskNot = ~bitsMask;
 	uint8_t* pBottom = buff_ + numPages_ * bytesPerPage + rect.x;
+	int nShifts;
+	if (dirVert == DirVert::Up) {
+		nShifts = -htScroll;
+	} else if (dirVert == DirVert::Down) {
+		nShifts = htScroll;
+	} else {
+		return;
+	}
 	for (int i = 0; i < rect.width; i++, pBottom++) {
 		uint8_t* p = pBottom;
-		for (int iPage = 0; iPage < 8; iPage++) {
+		for (int iPage = 0; iPage < numPages_; iPage++) {
 			p -= bytesPerPage;
 			bits = (bits << 8) | *p;
 		}
-		if (dirVert == DirVert::Up) {
-			bits >>= htScroll;
-		} else if (dirVert == DirVert::Down) {
-			bits <<= htScroll;
-		}
-		for (int iPage = 0; iPage < 8; iPage++) {
+		bits = (bits & bitsMaskNot) | ((bits << nShifts) & bitsMask);
+		for (int iPage = 0; iPage < numPages_; iPage++) {
 			*p = static_cast<uint8_t>(bits & 0xff);
 			p += bytesPerPage;
 			bits >>= 8;
