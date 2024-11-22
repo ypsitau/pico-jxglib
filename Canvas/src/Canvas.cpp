@@ -164,14 +164,17 @@ void Canvas::DispatcherRGB565::ScrollHorz(DirHorz dirHorz, int wdScroll, const R
 	const uint16_t* pSrcPixel;
 	int advancePerPixel;
 	int advancePerLine = imageOwn.GetWidth();
+	Rect rectErase;
 	if (dirHorz == DirHorz::Left) {
 		pDstPixel = reinterpret_cast<uint16_t*>(imageOwn.GetPointer(rect.x, rect.y));
 		pSrcPixel = reinterpret_cast<const uint16_t*>(imageOwn.GetPointer(rect.x + wdScroll, rect.y));
 		advancePerPixel = 1;
+		rectErase = Rect(rect.x + rect.width - wdScroll, rect.y, wdScroll, rect.height);
 	} else if (dirHorz == DirHorz::Right) {
 		pDstPixel = reinterpret_cast<uint16_t*>(imageOwn.GetPointer(rect.x + rect.width - 1, rect.y));
 		pSrcPixel = reinterpret_cast<const uint16_t*>(imageOwn.GetPointer(rect.x + rect.width - 1 - wdScroll, rect.y));
 		advancePerPixel = -1;
+		rectErase = Rect(rect.x, rect.y, wdScroll, rect.height);
 	} else {
 		return;
 	}
@@ -185,6 +188,7 @@ void Canvas::DispatcherRGB565::ScrollHorz(DirHorz dirHorz, int wdScroll, const R
 		pDstPixel += advancePerPixel;
 		pSrcPixel += advancePerPixel;
 	}
+	canvas_.DrawRectFill(rectErase, canvas_.GetColorBg());
 }
 
 void Canvas::DispatcherRGB565::ScrollVert(DirVert dirVert, int htScroll, const Rect* pRect)
@@ -196,14 +200,17 @@ void Canvas::DispatcherRGB565::ScrollVert(DirVert dirVert, int htScroll, const R
 	const uint16_t* pSrcLine;
 	int advancePerLine;
 	const int advancePerPixel = 1;
+	Rect rectErase;
 	if (dirVert == DirVert::Up) {
 		pDstLine = reinterpret_cast<uint16_t*>(imageOwn.GetPointer(rect.x, rect.y));
 		pSrcLine = reinterpret_cast<const uint16_t*>(imageOwn.GetPointer(rect.x, rect.y + htScroll));
 		advancePerLine = imageOwn.GetWidth();
+		rectErase = Rect(rect.x, rect.y + rect.height - htScroll, rect.width, htScroll);
 	} else if (dirVert == DirVert::Down) {
 		pDstLine = reinterpret_cast<uint16_t*>(imageOwn.GetPointer(rect.x, rect.y + rect.height - 1));
 		pSrcLine = reinterpret_cast<const uint16_t*>(imageOwn.GetPointer(rect.x, rect.y + rect.height - 1 - htScroll));
 		advancePerLine = -imageOwn.GetWidth();
+		rectErase = Rect(rect.x, rect.y, rect.width, htScroll);
 	} else {
 		return;
 	}
@@ -217,6 +224,7 @@ void Canvas::DispatcherRGB565::ScrollVert(DirVert dirVert, int htScroll, const R
 		pDstLine += advancePerLine;
 		pSrcLine += advancePerLine;
 	}
+	canvas_.DrawRectFill(rectErase, canvas_.GetColorBg());
 }
 
 }

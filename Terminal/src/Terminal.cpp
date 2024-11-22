@@ -44,7 +44,7 @@ Terminal& Terminal::puts(const char* str)
 			if (pt_.y + yAdvance > drawable.GetHeight()) {
 				pt_.y -= yAdvance;
 				drawable.ScrollVert(DirVert::Up, yAdvance);
-				drawable.DrawRectFill(0, pt_.y, drawable.GetWidth(), drawable.GetHeight() - pt_.y, drawable.GetColorBg());
+				//drawable.DrawRectFill(0, pt_.y, drawable.GetWidth(), drawable.GetHeight() - pt_.y, drawable.GetColorBg());
 			}
 		}
 		if (code != '\n') {

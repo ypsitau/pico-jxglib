@@ -176,8 +176,8 @@ public:
 	Drawable& DrawRectFill(int x, int y, int width, int height) { return DrawRectFill(x, y, width, height, context_.colorFg); }
 	Drawable& DrawRectFill(const Point& pt, const Size& size, const Color& color) { return DrawRectFill(pt.x, pt.y, size.width, size.height, color); }
 	Drawable& DrawRectFill(const Point& pt, const Size& size) { return DrawRectFill(pt, size, context_.colorFg); }
-	Drawable& DrawRectFill(const Rect& rc, const Color& color) { return DrawRect(rc.x, rc.y, rc.width, rc.height, color); }
-	Drawable& DrawRectFill(const Rect& rc) { return DrawRect(rc, context_.colorFg); }
+	Drawable& DrawRectFill(const Rect& rc, const Color& color) { return DrawRectFill(rc.x, rc.y, rc.width, rc.height, color); }
+	Drawable& DrawRectFill(const Rect& rc) { return DrawRectFill(rc, context_.colorFg); }
 	Drawable& DrawBitmap(int x, int y, const void* data, int width, int height,
 				const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) {
 		pDispatcher_->DrawBitmap(x, y, data, width, height, color, pColorBg, scaleX, scaleY);
