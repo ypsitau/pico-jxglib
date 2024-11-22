@@ -9,6 +9,8 @@ add_subdirectory(Display)
 add_subdirectory(Drawable)
 add_subdirectory(Font)
 add_subdirectory(Image)
+add_subdirectory(Printable)
+add_subdirectory(Stream)
 add_subdirectory(Terminal)
 # Device driver
 add_subdirectory(LCD1602)
