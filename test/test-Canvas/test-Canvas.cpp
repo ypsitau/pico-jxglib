@@ -24,7 +24,7 @@ int main()
 	ST7789 display(spi1, 240, 320, GPIO10, GPIO11, GPIO12, GPIO13);
 	display.Initialize();
 	Canvas canvas;
-	canvas.AttachOutput(display, Canvas::AttachDir::VertFromNW);
+	canvas.AttachOutput(display, Canvas::AttachDir::Rotate90);
 #if 0
 	canvas.AttachOutput(display, Canvas::ImageDir::Rotate0);
 	canvas.SetFont(Font::shinonome16);
@@ -50,10 +50,10 @@ int main()
 	canvas.SetSpacingRatio(1.0, 1.2);
 	canvas.DrawStringWrap(0, 0, str);
 	canvas.Refresh();
-	//for (;;) {
-	//	canvas.ScrollHorz(DirHorz::Right, 1);
-	//	canvas.Refresh();
-	//}
+	for (;;) {
+		canvas.ScrollVert(DirVert::Up, 1);
+		canvas.Refresh();
+	}
 #endif
 #if 0
 	for (;;) {
