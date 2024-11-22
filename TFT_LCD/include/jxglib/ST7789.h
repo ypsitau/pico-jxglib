@@ -12,9 +12,9 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class ST7789 : public TFT_LCD {
 public:
-	ST7789(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_CS, GPIO gpio_BL) :
+	ST7789(spi_inst_t* spi, int width, int height, const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_CS, const GPIO& gpio_BL) :
 			TFT_LCD(spi, width, height, gpio_RST, gpio_DC, gpio_CS, gpio_BL) {}
-	ST7789(spi_inst_t* spi, int width, int height, GPIO gpio_RST, GPIO gpio_DC, GPIO gpio_BL) :
+	ST7789(spi_inst_t* spi, int width, int height, const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_BL) :
 			TFT_LCD(spi, width, height, gpio_RST, gpio_DC, gpio_BL) {}
 	inline void Initialize();
 public:
