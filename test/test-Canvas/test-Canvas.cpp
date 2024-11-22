@@ -50,10 +50,10 @@ int main()
 	canvas.SetSpacingRatio(1.0, 1.2);
 	canvas.DrawStringWrap(0, 0, str);
 	canvas.Refresh();
-	for (;;) {
-		canvas.ScrollHorz(DirHorz::Right, 1);
-		canvas.Refresh();
-	}
+	//for (;;) {
+	//	canvas.ScrollHorz(DirHorz::Right, 1);
+	//	canvas.Refresh();
+	//}
 #endif
 #if 0
 	for (;;) {

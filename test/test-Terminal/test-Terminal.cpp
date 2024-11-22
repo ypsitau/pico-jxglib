@@ -30,22 +30,25 @@ void Test_ST7789()
 int main()
 {
 	::stdio_init_all();
+	::i2c_init(i2c0, 400000);
+	::spi_init(spi0, 125 * 1000 * 1000);
 	::spi_init(spi1, 125 * 1000 * 1000);
+	GPIO2.set_function_SPI0_SCK();
+	GPIO3.set_function_SPI0_TX();
+	GPIO8.set_function_I2C0_SDA().pull_up();
+	GPIO9.set_function_I2C0_SCL().pull_up();
 	GPIO14.set_function_SPI1_SCK();
 	GPIO15.set_function_SPI1_TX();
-	ST7789 display(spi1, 240, 320, GPIO10, GPIO11, GPIO12, GPIO13);
-	display.Initialize();
-#if 0
-	::i2c_init(i2c0, 400000);
-	GPIO4.set_function_I2C0_SDA().pull_up();
-	GPIO5.set_function_I2C0_SCL().pull_up();
-	SSD1306 display(i2c0);
-	display.Initialize();
-#endif
+	SSD1306 display0(i2c0);
+	ST7789 display1(spi0, 240, 240, GPIO4, GPIO5, GPIO6);
+	ST7789 display2(spi1, 240, 320, GPIO10, GPIO11, GPIO12, GPIO13);
+	display0.Initialize();
+	display1.Initialize();
+	display2.Initialize();
 	Terminal terminal;
-	terminal.AttachOutput(display);
-	terminal.SetFont(Font::shinonome12);
-	//terminal.SetFont(Font::shinonome16, 2);
+	terminal.AttachOutput(display2, Terminal::AttachDir::Rotate90);
+	//terminal.SetFont(Font::shinonome12);
+	terminal.SetFont(Font::shinonome16);
 	//terminal.SetFont(Font::sisd24x32);
 	for (int i = 0; i < 1000; i++) {
 		terminal.printf("hoge %d\n", i);

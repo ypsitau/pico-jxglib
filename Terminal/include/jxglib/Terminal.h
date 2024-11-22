@@ -13,6 +13,8 @@ namespace jxglib {
 // Terminal
 //------------------------------------------------------------------------------
 struct Terminal {
+public:
+	using AttachDir = Canvas::AttachDir;
 private:
 	Drawable* pDrawable_;
 	Canvas canvas_;
@@ -20,7 +22,7 @@ private:
 public:
 	Terminal() : pDrawable_{nullptr} {}
 public:
-	void AttachOutput(Drawable& drawable);
+	void AttachOutput(Drawable& drawable, AttachDir attachDir = AttachDir::Normal);
 public:
 	Terminal& SetFont(const FontSet& fontSet, int fontScale = 1) {
 		pDrawable_->SetFont(fontSet, fontScale);
