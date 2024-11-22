@@ -24,7 +24,7 @@ int main()
 	ST7789 display(spi1, 240, 320, GPIO10, GPIO11, GPIO12, GPIO13);
 	display.Initialize();
 	Canvas canvas;
-	canvas.AttachOutput(display);
+	canvas.AttachOutput(display, Canvas::AttachDir::VertFromNW);
 #if 0
 	canvas.AttachOutput(display, Canvas::ImageDir::Rotate0);
 	canvas.SetFont(Font::shinonome16);

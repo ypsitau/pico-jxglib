@@ -19,12 +19,16 @@ bool Canvas::AttachOutput(Drawable& drawableOut, const Rect* pRect, AttachDir at
 	int width, height;
 	if (pRect) {
 		width = pRect->width, height = pRect->height;
+		output_.rect = *pRect;
 	} else {
-		width = drawableOut.GetWidth(), height = drawableOut.GetHeight();
+		if (Image::IsDirHorz(attachDir)) {
+			width = drawableOut.GetWidth(), height = drawableOut.GetHeight();
+		} else {
+			width = drawableOut.GetHeight(), height = drawableOut.GetWidth();
+		}
+		output_.rect = Rect(0, 0, drawableOut.GetWidth(), drawableOut.GetHeight());
 	}
-	if (attachDir == AttachDir::Rotate90 || attachDir == AttachDir::Rotate270) Swap(&width, &height);
 	SetCapacity(format, width, height);
-	output_.rect = pRect? *pRect : Rect(0, 0, width, height);
 	output_.attachDir = attachDir;
 	pDrawableOut_ = &drawableOut;
 	imageOwn_.Alloc(format, width, height);

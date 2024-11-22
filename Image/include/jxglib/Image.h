@@ -156,32 +156,32 @@ public:
 			return Reader(image.GetPointer(nCols - 1 - colOffset, nRows - 1 - rowOffset),
 					nCols, nRows, -image.GetBytesPerPixel(), -image.GetBytesPerLine());
 		}
-		static Reader VertFromNW(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+		static Reader VertFromNW(const Image& image, int rowOffset, int colOffset, int nRows, int nCols) {
 			return Reader(image.GetPointer(rowOffset, colOffset),
 					nCols, nRows, image.GetBytesPerLine(), image.GetBytesPerPixel());
 		}
-		static Reader VertFromNE(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
-			return Reader(image.GetPointer(rowOffset, nCols - 1 - colOffset),
+		static Reader VertFromNE(const Image& image, int rowOffset, int colOffset, int nRows, int nCols) {
+			return Reader(image.GetPointer(nRows - 1 - rowOffset, colOffset),
 					nCols, nRows, image.GetBytesPerLine(), -image.GetBytesPerPixel());
 		}
-		static Reader VertFromSW(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
-			return Reader(image.GetPointer(nRows - 1 - rowOffset, nCols),
+		static Reader VertFromSW(const Image& image, int rowOffset, int colOffset, int nRows, int nCols) {
+			return Reader(image.GetPointer(rowOffset, nCols - 1 - colOffset),
 					nCols, nRows, -image.GetBytesPerLine(), image.GetBytesPerPixel());
 		}
-		static Reader VertFromSE(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+		static Reader VertFromSE(const Image& image, int rowOffset, int colOffset, int nRows, int nCols) {
 			return Reader(image.GetPointer(nRows - 1 - rowOffset, nCols - 1 - colOffset),
 					nCols, nRows, -image.GetBytesPerLine(), -image.GetBytesPerPixel());
 		}
-		static Reader Create(const Image& image, int colOffset, int rowOffset, int nCols, int nRows, ReaderDir dir) {
+		static Reader Create(const Image& image, int xOffset, int yOffset, int width, int height, ReaderDir dir) {
 			switch (dir) {
-			case ReaderDir::HorzFromNW: return HorzFromNW(image, colOffset, rowOffset, nCols, nRows);
-			case ReaderDir::HorzFromNE: return HorzFromNE(image, colOffset, rowOffset, nCols, nRows);
-			case ReaderDir::HorzFromSW: return HorzFromSW(image, colOffset, rowOffset, nCols, nRows);
-			case ReaderDir::HorzFromSE: return HorzFromSE(image, colOffset, rowOffset, nCols, nRows);
-			case ReaderDir::VertFromNW: return VertFromNW(image, colOffset, rowOffset, nCols, nRows);
-			case ReaderDir::VertFromNE: return VertFromNE(image, colOffset, rowOffset, nCols, nRows);
-			case ReaderDir::VertFromSW: return VertFromSW(image, colOffset, rowOffset, nCols, nRows);
-			case ReaderDir::VertFromSE: return VertFromSE(image, colOffset, rowOffset, nCols, nRows);
+			case ReaderDir::HorzFromNW: return HorzFromNW(image, xOffset, yOffset, width, height);
+			case ReaderDir::HorzFromNE: return HorzFromNE(image, xOffset, yOffset, width, height);
+			case ReaderDir::HorzFromSW: return HorzFromSW(image, xOffset, yOffset, width, height);
+			case ReaderDir::HorzFromSE: return HorzFromSE(image, xOffset, yOffset, width, height);
+			case ReaderDir::VertFromNW: return VertFromNW(image, xOffset, yOffset, width, height);
+			case ReaderDir::VertFromNE: return VertFromNE(image, xOffset, yOffset, width, height);
+			case ReaderDir::VertFromSW: return VertFromSW(image, xOffset, yOffset, width, height);
+			case ReaderDir::VertFromSE: return VertFromSE(image, xOffset, yOffset, width, height);
 			default: break;
 			}
 			return Reader(nullptr, 0, 0, 0, 0);
