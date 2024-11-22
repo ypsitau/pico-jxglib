@@ -8,14 +8,15 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // Terminal
 //------------------------------------------------------------------------------
-void Terminal::AttachOutput(Drawable& drawable, AttachDir attachDir)
+bool Terminal::AttachOutput(Drawable& drawable, const Rect* pRect, AttachDir attachDir)
 {
 	if (drawable.CanScrollVert()) {
 		pDrawable_ = &drawable;
 	} else {
-		canvas_.AttachOutput(drawable, attachDir);
+		if (!canvas_.AttachOutput(drawable, pRect, attachDir)) return false;
 		pDrawable_ = &canvas_;
 	}
+	return true;
 }
 
 Terminal& Terminal::flush()

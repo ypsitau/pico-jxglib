@@ -316,7 +316,6 @@ public:
 	void Initialize(const ConfigData& cfg);
 	bool UsesCS() { return raw.UsesCS(); }
 	int GetBytesPerLine() const { return GetWidth() * 2; }
-protected:
 };
 
 }
