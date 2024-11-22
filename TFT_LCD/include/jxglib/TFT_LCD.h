@@ -82,9 +82,6 @@ public:
 		Raw(spi_inst_t* spi, const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_CS, const GPIO& gpio_BL) :
 				spi_(spi), gpio_RST_(gpio_RST), gpio_DC_(gpio_DC), gpio_BL_(gpio_BL), gpio_CS_(gpio_CS),
 				cpol_(SPI_CPOL_0), cpha_(SPI_CPHA_0) {}
-		//Raw(spi_inst_t* spi, const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_BL) :
-		//		spi_(spi), gpio_RST_(gpio_RST), gpio_DC_(gpio_DC), gpio_CS_(GPIO::None), gpio_BL_(gpio_BL),
-		//		cpol_(SPI_CPOL_1), cpha_(SPI_CPHA_1) {}
 		Raw(spi_inst_t* spi, const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_BL) :
 				spi_(spi), gpio_RST_(gpio_RST), gpio_DC_(gpio_DC), gpio_CS_(GPIO::None), gpio_BL_(gpio_BL),
 				cpol_(SPI_CPOL_1), cpha_(SPI_CPHA_1) {}

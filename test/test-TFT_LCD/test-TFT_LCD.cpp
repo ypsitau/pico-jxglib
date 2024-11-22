@@ -279,24 +279,23 @@ int main()
 	GPIO15.set_function_SPI1_TX();
 	ST7789 display1(spi0, 240, 240, GPIO4, GPIO5, GPIO6);
 	ST7789 display2(spi1, 240, 320, GPIO10, GPIO11, GPIO12, GPIO13);
-	//ILI9341 display3(spi1, 240, 320, GPIO16, GPIO17, GPIO18, GPIO19);
-	//ST7735 display4(spi1, 128, 160, GPIO24, GPIO25, GPIO26, GPIO27);
-	//ST7735::TypeB display5(spi1, 130, 161, GPIO20, GPIO21, GPIO22, GPIO23);
-	Display* displayTbl[] = { &display1, &display2 }; //, &display3, &display4, &display5 };
+	ILI9341 display3(spi1, 240, 320, GPIO16, GPIO17, GPIO18, GPIO19);
+	ST7735 display4(spi1, 128, 160, GPIO20, GPIO21, GPIO22, GPIO23);
+	ST7735::TypeB display5(spi1, 130, 161, GPIO24, GPIO25, GPIO26, GPIO27);
+	Display* displayTbl[] = { &display1, &display2, &display3, &display4, &display5 };
 	display1.Initialize();
 	display2.Initialize();
-	display1.DrawImage(0, 0, image_cat_128x170, nullptr, Display::ImageDir::Rotate0).Refresh();
-	display2.DrawImage(0, 0, image_cat_128x170, nullptr, Display::ImageDir::Rotate0).Refresh();
-	//display3.Initialize();
-	//display4.Initialize();
-	//display5.Initialize();
+	display3.Initialize();
+	display4.Initialize();
+	display5.Initialize();
 	//display1.SetFont(Font::shinonome16).DrawString(0, 0, "Hello World");
-	//for (int i = 0; i < ArrayNumberOf(displayTbl); i++) {
-	//	Display& display = *displayTbl[i];
-	//	//display.SetFont(Font::shinonome16).DrawString(0, 0, "Hello World");
-	//	display.Clear().DrawImage(0, 0, image_cat_128x170, nullptr, Display::ImageDir::Rotate0).Refresh();
-	//}
-	//image_cat_128x170 : (width <= 160)? image_cat_160x213 : image_cat_240x320;
+	for (int i = 0; i < ArrayNumberOf(displayTbl); i++) {
+		Display& display = *displayTbl[i];
+		int width = display.GetWidth();
+		const Image& image = (width <= 128)? image_cat_128x170 :
+						(width <= 160)? image_cat_160x213 : image_cat_240x320;
+		display.Clear().DrawImage(0, 0, image, nullptr, Display::ImageDir::Rotate0).Refresh();
+	}
 	//Test_BouncingBall(display);
 	//Test_WriteBuffer(display);
 	//Test_DrawString(display);
