@@ -19,13 +19,12 @@ bool Terminal::AttachOutput(Drawable& drawable, const Rect* pRect, AttachDir att
 	return true;
 }
 
-Terminal& Terminal::flush()
+void Terminal::flush()
 {
 	pDrawable_->Refresh();
-	return *this;
 }
 
-Terminal& Terminal::puts(const char* str)
+void Terminal::puts(const char* str)
 {
 	Drawable& drawable = *pDrawable_;
 	uint32_t code;
@@ -37,38 +36,30 @@ Terminal& Terminal::puts(const char* str)
 		if (!decoder.FeedChar(*p, &code)) continue;
 		const FontEntry& fontEntry = fontSet.GetFontEntry(code);
 		int xAdvance = drawable.CalcAdvanceX(fontEntry);
-		if (code == '\n' || pt_.x + xAdvance > drawable.GetWidth()) {
-			if (code == '\n') drawable.Refresh();
+		if (code == '\n') {
+			drawable.Refresh();
 			pt_.x = 0;
-			pt_.y += yAdvance;
-			if (pt_.y + yAdvance > drawable.GetHeight()) {
-				pt_.y -= yAdvance;
+			if (pt_.y + yAdvance * 2 <= drawable.GetHeight()) {
+				pt_.y += yAdvance;
+			} else {
 				drawable.ScrollVert(DirVert::Up, yAdvance);
-				//drawable.DrawRectFill(0, pt_.y, drawable.GetWidth(), drawable.GetHeight() - pt_.y, drawable.GetColorBg());
 			}
-		}
-		if (code != '\n') {
+		} else if (code == '\r') {
+			drawable.Refresh();
+			pt_.x = 0;
+		} else {
+			if (pt_.x + xAdvance > drawable.GetWidth()) {
+				pt_.x = 0;
+				if (pt_.y + yAdvance * 2 <= drawable.GetHeight()) {
+					pt_.y += yAdvance;
+				} else {
+					drawable.ScrollVert(DirVert::Up, yAdvance);
+				}
+			}
 			drawable.DrawChar(pt_, fontEntry);
 			pt_.x += xAdvance;
 		}
 	}
-	return *this;
-}
-
-Terminal& Terminal::vprintf(const char* format, va_list args)
-{
-	char buff[256];
-	::vsnprintf(buff, sizeof(buff), format, args);
-	return puts(buff);
-}
-
-Terminal& Terminal::printf(const char* format, ...)
-{
-	va_list args;
-	va_start(args, format);
-	vprintf(format, args);
-	va_end(args);
-	return *this;
 }
 
 }

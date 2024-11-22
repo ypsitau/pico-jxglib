@@ -6,13 +6,14 @@
 #include "pico/stdlib.h"
 #include "jxglib/Font.h"
 #include "jxglib/Canvas.h"
+#include "jxglib/Printable.h"
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
 // Terminal
 //------------------------------------------------------------------------------
-struct Terminal {
+struct Terminal : public Printable {
 public:
 	using AttachDir = Canvas::AttachDir;
 private:
@@ -44,10 +45,9 @@ public:
 		return *this;
 	}
 public:
-	Terminal& flush();
-	Terminal& puts(const char* str);
-	Terminal& vprintf(const char* format, va_list args);
-	Terminal& printf(const char* format, ...);
+	// Virtual functions of Printable
+	virtual void flush() override;
+	virtual void puts(const char* str) override;
 };
 
 }
