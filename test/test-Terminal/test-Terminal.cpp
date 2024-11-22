@@ -54,14 +54,16 @@ int main()
 	display4.Initialize();
 	display5.Initialize();
 	Terminal terminal;
-	//terminal.AttachOutput(display2, Terminal::AttachDir::Rotate90);
-	terminal.AttachOutput(display5);
-	//terminal.SetFont(Font::shinonome12);
-	terminal.SetFont(Font::shinonome16);
+	terminal.AttachOutput(display2, Terminal::AttachDir::Rotate90);
+	//terminal.AttachOutput(display2);
+	terminal.SetFont(Font::shinonome12);
+	//terminal.SetFont(Font::shinonome16);
+	terminal.dumpAttr.Cols(16).DigitsAddr(4);
+	terminal.dump(reinterpret_cast<const void*>(0), 1000);
 	//terminal.SetFont(Font::sisd24x32);
-	for (int i = 0; i < 1000; i++) {
-		terminal.printf("hoge %d\n", i);
-	}
+	//for (int i = 0; i < 1000; i++) {
+	//	terminal.printf("hoge %d\n", i);
+	//}
 	//display.DrawChar({0, 48}, 'A');
 	//display.Refresh();
 }
