@@ -178,7 +178,8 @@ void Canvas::DispatcherRGB565::ScrollHorz(DirHorz dirHorz, int wdScroll, const R
 	} else {
 		return;
 	}
-	for (int nPixels = rect.width - wdScroll - 1; nPixels > 0; nPixels--) {
+	int nPixels = rect.width - wdScroll;
+	for (int iPixel = 0; iPixel < nPixels; iPixel++) {
 		uint16_t* pDstLine = pDstPixel;
 		const uint16_t* pSrcLine = pSrcPixel;
 		for (int nLines = rect.height; nLines > 0; nLines--) {
