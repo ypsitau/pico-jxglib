@@ -8,42 +8,77 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // TFT_LCD
 //------------------------------------------------------------------------------
-void TFT_LCD::Initialize(DisplayDir displayDir, const ConfigData& cfg)
+using PA = TFT_LCD::PageAddressOrder;
+using CA = TFT_LCD::ColumnAddressOrder;
+using PC = TFT_LCD::PageColumnOrder;
+
+const TFT_LCD::RotateData TFT_LCD::rotateDataTbl_Case1[] =
 {
-	using PA = PageAddressOrder;
-	using CA = ColumnAddressOrder;
-	using PC = PageColumnOrder;
-	static const struct RotateInfo {
-		PageAddressOrder pageAddressOrder;
-		ColumnAddressOrder columnAddressOrder;
-		PageColumnOrder pageColumnOrder;
-	} rotateInfoTbl[] = {
-		{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// HorzFromNW
-		{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// HorzFromNE
-		{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// HorzFromSW
-		{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// HorzFromSE
-		{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// VertFromNW
-		{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// VertFromNE
-		{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// VertFromSW
-		{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// VertFromSE
-	};
+	{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// HorzFromNW
+	{ PA::TopToBottom, CA::RightToLeft, PC::NormalMode },	// HorzFromNE
+	{ PA::BottomToTop, CA::LeftToRight, PC::NormalMode },	// HorzFromSW
+	{ PA::BottomToTop, CA::RightToLeft, PC::NormalMode },	// HorzFromSE
+	{ PA::TopToBottom, CA::LeftToRight, PC::ReverseMode },	// VertFromNW
+	{ PA::TopToBottom, CA::RightToLeft, PC::ReverseMode },	// VertFromNE
+	{ PA::BottomToTop, CA::LeftToRight, PC::ReverseMode },	// VertFromSW
+	{ PA::BottomToTop, CA::RightToLeft, PC::ReverseMode },	// VertFromSE
+};
+
+const TFT_LCD::RotateData TFT_LCD::rotateDataTbl_Case2[] =
+{
+	{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// HorzFromNW
+	{ PA::TopToBottom, CA::RightToLeft, PC::NormalMode },	// HorzFromNE
+	{ PA::BottomToTop, CA::LeftToRight, PC::NormalMode },	// HorzFromSW
+	{ PA::BottomToTop, CA::RightToLeft, PC::NormalMode },	// HorzFromSE
+	{ PA::TopToBottom, CA::LeftToRight, PC::ReverseMode },	// VertFromNW
+	{ PA::TopToBottom, CA::RightToLeft, PC::ReverseMode },	// VertFromNE
+	{ PA::BottomToTop, CA::LeftToRight, PC::ReverseMode },	// VertFromSW
+	{ PA::BottomToTop, CA::RightToLeft, PC::ReverseMode },	// VertFromSE
+};
+
+const TFT_LCD::RotateData TFT_LCD::rotateDataTbl_Case3[] =
+{
+	{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// HorzFromNW
+	{ PA::TopToBottom, CA::RightToLeft, PC::NormalMode },	// HorzFromNE
+	{ PA::BottomToTop, CA::LeftToRight, PC::NormalMode },	// HorzFromSW
+	{ PA::BottomToTop, CA::RightToLeft, PC::NormalMode },	// HorzFromSE
+	{ PA::TopToBottom, CA::LeftToRight, PC::ReverseMode },	// VertFromNW
+	{ PA::TopToBottom, CA::RightToLeft, PC::ReverseMode },	// VertFromNE
+	{ PA::BottomToTop, CA::LeftToRight, PC::ReverseMode },	// VertFromSW
+	{ PA::BottomToTop, CA::RightToLeft, PC::ReverseMode },	// VertFromSE
+};
+
+const TFT_LCD::RotateData TFT_LCD::rotateDataTbl_Case4[] =
+{
+	{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// HorzFromNW
+	{ PA::TopToBottom, CA::RightToLeft, PC::NormalMode },	// HorzFromNE
+	{ PA::BottomToTop, CA::LeftToRight, PC::NormalMode },	// HorzFromSW
+	{ PA::BottomToTop, CA::RightToLeft, PC::NormalMode },	// HorzFromSE
+	{ PA::TopToBottom, CA::LeftToRight, PC::ReverseMode },	// VertFromNW
+	{ PA::TopToBottom, CA::RightToLeft, PC::ReverseMode },	// VertFromNE
+	{ PA::BottomToTop, CA::LeftToRight, PC::ReverseMode },	// VertFromSW
+	{ PA::BottomToTop, CA::RightToLeft, PC::ReverseMode },	// VertFromSE
+};
+
+void TFT_LCD::Initialize(const RotateData& rotateData, const ConfigData& configData)
+{
 	raw.InitGPIO();
 	raw.SoftwareReset();
 	::sleep_ms(150);
 	raw.SleepOut();
 	::sleep_ms(50);
 	raw.InterfacePixelFormat(5, 5);
-			// RGB interface color format     = 65K of RGB interface. No effect on ST7735.
-			// Control interface color format = 16bit/pixel
+		// RGB interface color format     = 65K of RGB interface. No effect on ST7735.
+		// Control interface color format = 16bit/pixel
 	::sleep_ms(10);
-	raw.MemoryDataAccessControl(cfg.pageAddressOrder, cfg.columnAddressOrder,
-			cfg.pageColumnOrder, cfg.lineAddressOrder,
-			cfg.rgbBgrOrder, cfg.displayDataLatchOrder);
-	if (cfg.displayInversionOnFlag) raw.DisplayInversionOn();
+	raw.MemoryDataAccessControl(
+		rotateData.pageAddressOrder, rotateData.columnAddressOrder, rotateData.pageColumnOrder,
+		configData.lineAddressOrder, configData.rgbBgrOrder, configData.displayDataLatchOrder);
+	if (configData.displayInversionOnFlag) raw.DisplayInversionOn();
 	::sleep_ms(10);
 	raw.NormalDisplayModeOn();
 	::sleep_ms(10);
-	raw.GammaSet(cfg.gammaCurve);
+	raw.GammaSet(configData.gammaCurve);
 	::sleep_ms(10);
 	raw.DisplayOn();
 	Clear();

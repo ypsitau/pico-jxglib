@@ -25,13 +25,14 @@ public:
 				TFT_LCD(spi, width, height, gpio_RST, gpio_DC, gpio_CS, gpio_BL) {}
 		TypeB(spi_inst_t* spi, int width, int height, const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_BL) :
 				TFT_LCD(spi, width, height, gpio_RST, gpio_DC, gpio_BL) {}
-		inline void Initialize(DisplayDir displayDir = DisplayDir::Rotate180);
+		inline void Initialize(DisplayDir displayDir = DisplayDir::Normal);
 	};
 };
 
 inline void ST7735::Initialize(DisplayDir displayDir)
 {
-	static const ConfigData cfg = {
+	const RotateData& rotateData = rotateDataTbl_Case3[static_cast<int>(displayDir)];
+	static const ConfigData configData = {
 		.pageAddressOrder		= PageAddressOrder::TopToBottom,
 		.columnAddressOrder		= ColumnAddressOrder::LeftToRight,
 		.pageColumnOrder		= PageColumnOrder::NormalMode,
@@ -41,12 +42,13 @@ inline void ST7735::Initialize(DisplayDir displayDir)
 		.displayInversionOnFlag	= false,
 		.gammaCurve				= 0x01,
 	};
-	TFT_LCD::Initialize(displayDir, cfg);
+	TFT_LCD::Initialize(rotateData, configData);
 }
 
 inline void ST7735::TypeB::Initialize(DisplayDir displayDir)
 {
-	static const ConfigData cfg = {
+	const RotateData& rotateData = rotateDataTbl_Case4[static_cast<int>(displayDir)];
+	static const ConfigData configData = {
 		.pageAddressOrder		= PageAddressOrder::BottomToTop,
 		.columnAddressOrder		= ColumnAddressOrder::RightToLeft,
 		.pageColumnOrder		= PageColumnOrder::NormalMode,
@@ -56,7 +58,7 @@ inline void ST7735::TypeB::Initialize(DisplayDir displayDir)
 		.displayInversionOnFlag	= false,
 		.gammaCurve				= 0x02,
 	};
-	TFT_LCD::Initialize(displayDir, cfg);
+	TFT_LCD::Initialize(rotateData, configData);
 }
 
 }

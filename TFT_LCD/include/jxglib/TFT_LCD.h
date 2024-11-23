@@ -43,6 +43,11 @@ public:
 		RightToLeft = 1,
 	};
 
+	struct RotateData {
+		PageAddressOrder pageAddressOrder;
+		ColumnAddressOrder columnAddressOrder;
+		PageColumnOrder pageColumnOrder;
+	};
 	struct ConfigData {
 		PageAddressOrder pageAddressOrder;
 		ColumnAddressOrder columnAddressOrder;
@@ -303,6 +308,11 @@ public:
 public:
 	Raw raw;
 public:
+	static const RotateData rotateDataTbl_Case1[];
+	static const RotateData rotateDataTbl_Case2[];
+	static const RotateData rotateDataTbl_Case3[];
+	static const RotateData rotateDataTbl_Case4[];
+public:
 	TFT_LCD(spi_inst_t* spi, int width, int height, const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_CS, const GPIO& gpio_BL) :
 			Display(Capability::Device | Capability::DrawImage, Format::RGB565, width, height),
 			raw(spi, gpio_RST, gpio_DC, gpio_CS, gpio_BL) {
@@ -314,7 +324,7 @@ public:
 		pDispatcher_.reset(new DispatcherEx(*this));
 	}
 public:
-	void Initialize(DisplayDir displayDir, const ConfigData& cfg);
+	void Initialize(const RotateData& rotateData, const ConfigData& configData);
 	bool UsesCS() { return raw.UsesCS(); }
 	int GetBytesPerLine() const { return GetWidth() * 2; }
 };

@@ -23,7 +23,8 @@ public:
 
 inline void ST7789::Initialize(DisplayDir displayDir)
 {
-	static const ConfigData cfg = {
+	const RotateData& rotateData = rotateDataTbl_Case1[static_cast<int>(displayDir)];
+	static const ConfigData configData = {
 		.pageAddressOrder		= PageAddressOrder::TopToBottom,
 		.columnAddressOrder		= ColumnAddressOrder::LeftToRight,
 		.pageColumnOrder		= PageColumnOrder::NormalMode,
@@ -33,7 +34,7 @@ inline void ST7789::Initialize(DisplayDir displayDir)
 		.displayInversionOnFlag	= true,
 		.gammaCurve				= 0x01,
 	};
-	TFT_LCD::Initialize(displayDir, cfg);
+	TFT_LCD::Initialize(rotateData, configData);
 }
 
 }
