@@ -14,49 +14,52 @@ using PC = TFT_LCD::PageColumnOrder;
 
 const TFT_LCD::RotateData TFT_LCD::rotateDataTbl_Case1[] =
 {
-	{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// HorzFromNW
-	{ PA::TopToBottom, CA::RightToLeft, PC::NormalMode },	// HorzFromNE
-	{ PA::BottomToTop, CA::LeftToRight, PC::NormalMode },	// HorzFromSW
-	{ PA::BottomToTop, CA::RightToLeft, PC::NormalMode },	// HorzFromSE
+	{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// HorzFromNW (Rotate0)
+	{ PA::TopToBottom, CA::RightToLeft, PC::NormalMode },	// HorzFromNE (MirrorHorz)
+	{ PA::BottomToTop, CA::LeftToRight, PC::NormalMode },	// HorzFromSW (MirrorVert)
+	{ PA::BottomToTop, CA::RightToLeft, PC::NormalMode },	// HorzFromSE (Rotate180)
 	{ PA::TopToBottom, CA::LeftToRight, PC::ReverseMode },	// VertFromNW
-	{ PA::TopToBottom, CA::RightToLeft, PC::ReverseMode },	// VertFromNE
-	{ PA::BottomToTop, CA::LeftToRight, PC::ReverseMode },	// VertFromSW
+	{ PA::TopToBottom, CA::RightToLeft, PC::ReverseMode },	// VertFromNE (Rotate270)
+	{ PA::BottomToTop, CA::LeftToRight, PC::ReverseMode },	// VertFromSW (Rotate90)
 	{ PA::BottomToTop, CA::RightToLeft, PC::ReverseMode },	// VertFromSE
 };
 
 const TFT_LCD::RotateData TFT_LCD::rotateDataTbl_Case2[] =
 {
-	{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// HorzFromNW
-	{ PA::TopToBottom, CA::RightToLeft, PC::NormalMode },	// HorzFromNE
-	{ PA::BottomToTop, CA::LeftToRight, PC::NormalMode },	// HorzFromSW
-	{ PA::BottomToTop, CA::RightToLeft, PC::NormalMode },	// HorzFromSE
+	{ PA::BottomToTop, CA::LeftToRight, PC::NormalMode },	// HorzFromNW (Rotate0)
+	
+	{ PA::TopToBottom, CA::RightToLeft, PC::NormalMode },	// HorzFromNE (MirrorHorz)
+	{ PA::BottomToTop, CA::LeftToRight, PC::NormalMode },	// HorzFromSW (MirrorVert)
+	{ PA::BottomToTop, CA::RightToLeft, PC::NormalMode },	// HorzFromSE (Rotate180)
 	{ PA::TopToBottom, CA::LeftToRight, PC::ReverseMode },	// VertFromNW
-	{ PA::TopToBottom, CA::RightToLeft, PC::ReverseMode },	// VertFromNE
-	{ PA::BottomToTop, CA::LeftToRight, PC::ReverseMode },	// VertFromSW
+	{ PA::TopToBottom, CA::RightToLeft, PC::ReverseMode },	// VertFromNE (Rotate270)
+	{ PA::BottomToTop, CA::LeftToRight, PC::ReverseMode },	// VertFromSW (Rotate90)
 	{ PA::BottomToTop, CA::RightToLeft, PC::ReverseMode },	// VertFromSE
 };
 
 const TFT_LCD::RotateData TFT_LCD::rotateDataTbl_Case3[] =
 {
-	{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// HorzFromNW
-	{ PA::TopToBottom, CA::RightToLeft, PC::NormalMode },	// HorzFromNE
-	{ PA::BottomToTop, CA::LeftToRight, PC::NormalMode },	// HorzFromSW
-	{ PA::BottomToTop, CA::RightToLeft, PC::NormalMode },	// HorzFromSE
+	{ PA::TopToBottom, CA::RightToLeft, PC::ReverseMode },	// HorzFromNW (Rotate0)
+	
+	{ PA::TopToBottom, CA::RightToLeft, PC::NormalMode },	// HorzFromNE (MirrorHorz)
+	{ PA::BottomToTop, CA::LeftToRight, PC::NormalMode },	// HorzFromSW (MirrorVert)
+	{ PA::BottomToTop, CA::RightToLeft, PC::NormalMode },	// HorzFromSE (Rotate180)
 	{ PA::TopToBottom, CA::LeftToRight, PC::ReverseMode },	// VertFromNW
-	{ PA::TopToBottom, CA::RightToLeft, PC::ReverseMode },	// VertFromNE
-	{ PA::BottomToTop, CA::LeftToRight, PC::ReverseMode },	// VertFromSW
+	{ PA::TopToBottom, CA::RightToLeft, PC::ReverseMode },	// VertFromNE (Rotate270)
+	{ PA::BottomToTop, CA::LeftToRight, PC::ReverseMode },	// VertFromSW (Rotate90)
 	{ PA::BottomToTop, CA::RightToLeft, PC::ReverseMode },	// VertFromSE
 };
 
 const TFT_LCD::RotateData TFT_LCD::rotateDataTbl_Case4[] =
 {
-	{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// HorzFromNW
-	{ PA::TopToBottom, CA::RightToLeft, PC::NormalMode },	// HorzFromNE
-	{ PA::BottomToTop, CA::LeftToRight, PC::NormalMode },	// HorzFromSW
-	{ PA::BottomToTop, CA::RightToLeft, PC::NormalMode },	// HorzFromSE
+	{ PA::BottomToTop, CA::RightToLeft, PC::NormalMode },	// HorzFromNW (Rotate0)
+	
+	{ PA::TopToBottom, CA::RightToLeft, PC::NormalMode },	// HorzFromNE (MirrorHorz)
+	{ PA::BottomToTop, CA::LeftToRight, PC::NormalMode },	// HorzFromSW (MirrorVert)
+	{ PA::BottomToTop, CA::RightToLeft, PC::NormalMode },	// HorzFromSE (Rotate180)
 	{ PA::TopToBottom, CA::LeftToRight, PC::ReverseMode },	// VertFromNW
-	{ PA::TopToBottom, CA::RightToLeft, PC::ReverseMode },	// VertFromNE
-	{ PA::BottomToTop, CA::LeftToRight, PC::ReverseMode },	// VertFromSW
+	{ PA::TopToBottom, CA::RightToLeft, PC::ReverseMode },	// VertFromNE (Rotate270)
+	{ PA::BottomToTop, CA::LeftToRight, PC::ReverseMode },	// VertFromSW (Rotate90)
 	{ PA::BottomToTop, CA::RightToLeft, PC::ReverseMode },	// VertFromSE
 };
 
