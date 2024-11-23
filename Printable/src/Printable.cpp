@@ -10,18 +10,18 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // Printable
 //------------------------------------------------------------------------------
-void Printable::vprintf(const char* format, va_list args)
+void Printable::VPrintf(const char* format, va_list args)
 {
 	char buff[256];
 	::vsnprintf(buff, sizeof(buff), format, args);
-	puts(buff);
+	Puts(buff);
 }
 
-void Printable::printf(const char* format, ...)
+void Printable::Printf(const char* format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	vprintf(format, args);
+	VPrintf(format, args);
 	va_end(args);
 }
 
@@ -39,15 +39,15 @@ void Printable::Dump(const void* buff, int bytes)
 	const uint8_t* p = reinterpret_cast<const uint8_t*>(buff);
 	int iCol = 0;
 	for (int i = 0; i < bytes; i++, p++) {
-		if (iCol == 0) printf(formatAddr, dumpAttr.nDigitsAddr, i);
-		printf(formatData, *p);
+		if (iCol == 0) Printf(formatAddr, dumpAttr.nDigitsAddr, i);
+		Printf(formatData, *p);
 		iCol++;
 		if (iCol == dumpAttr.nCols) {
-			puts("\n");
+			Puts("\n");
 			iCol = 0;
 		}
 	}
-	if (iCol > 0) puts("\n");
+	if (iCol > 0) Puts("\n");
 }
 
 }

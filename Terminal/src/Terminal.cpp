@@ -19,14 +19,19 @@ bool Terminal::AttachOutput(Drawable& drawable, const Rect* pRect, AttachDir att
 	return true;
 }
 
-void Terminal::flush()
+void Terminal::Clear()
 {
-	pDrawable_->Refresh();
+	GetDrawable().Clear();
 }
 
-void Terminal::puts(const char* str)
+void Terminal::Flush()
 {
-	Drawable& drawable = *pDrawable_;
+	GetDrawable().Refresh();
+}
+
+void Terminal::Puts(const char* str)
+{
+	Drawable& drawable = GetDrawable();
 	uint32_t code;
 	UTF8Decoder decoder;
 	const char* p = str;

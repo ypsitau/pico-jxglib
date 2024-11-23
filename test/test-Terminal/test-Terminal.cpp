@@ -55,11 +55,14 @@ int main()
 	display5.Initialize();
 	Terminal terminal;
 	//terminal.AttachOutput(display2, Terminal::AttachDir::Rotate90);
-	terminal.AttachOutput(display2);
+	terminal.AttachOutput(display3);
 	terminal.SetFont(Font::shinonome12);
+	terminal.SetColorBg(Color::green);
+	terminal.Clear();
 	//terminal.SetFont(Font::shinonome16);
 	terminal.dumpAttr.Cols(8);
-	terminal.Dump(reinterpret_cast<const void*>(0), 8 * 30);
+	terminal.Dump(reinterpret_cast<const void*>(0), 8 * 26);
+	terminal.Printf("\n");
 	//terminal.SetFont(Font::sisd24x32);
 	//for (int i = 0; i < 1000; i++) {
 	//	terminal.printf("hoge %d\n", i);

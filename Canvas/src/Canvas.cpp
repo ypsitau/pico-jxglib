@@ -214,7 +214,8 @@ void Canvas::DispatcherRGB565::ScrollVert(DirVert dirVert, int htScroll, const R
 	} else {
 		return;
 	}
-	for (int nLines = rect.height - htScroll - 1; nLines > 0; nLines--) {
+	int nLines = rect.height - htScroll;
+	for (int iLine = 0; iLine < nLines; iLine++) {
 		uint16_t* pDstPixel = pDstLine;
 		const uint16_t* pSrcPixel = pSrcLine;
 		for (int nPixels = rect.width; nPixels > 0; nPixels--) {

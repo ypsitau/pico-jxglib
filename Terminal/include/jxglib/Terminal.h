@@ -31,6 +31,8 @@ public:
 		return AttachOutput(drawable, nullptr, attachDir);
 	}
 public:
+	Drawable& GetDrawable() { return *pDrawable_; }
+public:
 	Terminal& SetFont(const FontSet& fontSet, int fontScale = 1) {
 		pDrawable_->SetFont(fontSet, fontScale);
 		return *this;
@@ -44,10 +46,13 @@ public:
 		pDrawable_->SetFontScale(fontScaleWidth, fontScaleHeight);
 		return *this;
 	}
+	Terminal& SetColor(const Color& color) { pDrawable_->SetColor(color); return *this; }
+	Terminal& SetColorBg(const Color& colorBg) { pDrawable_->SetColorBg(colorBg); return *this; }
 public:
 	// Virtual functions of Printable
-	virtual void flush() override;
-	virtual void puts(const char* str) override;
+	virtual void Clear() override;
+	virtual void Flush() override;
+	virtual void Puts(const char* str) override;
 };
 
 }
