@@ -6,11 +6,20 @@
 namespace jxglib {
 
 //------------------------------------------------------------------------------
+// FontEntry
+//------------------------------------------------------------------------------
+const FontEntry FontEntry::Invalid8x8 = { 0x0000, 8, 8, 8, {
+0xfe,0x82,0x82,0x82,0x82,0x82,0xfe, 0x00,
+} };
+
+//------------------------------------------------------------------------------
 // FontSet
 //------------------------------------------------------------------------------
+const FontSet FontSet::None = { FontSet::Format::None, 8, &FontEntry::Invalid8x8, {}, 0, {} };
+
 const FontEntry& FontSet::GetFontEntry(uint32_t code) const
 {
-	if (code < 32) return *pFontEntry_Invalid;
+	if (IsNone() || code < 32) return *pFontEntry_Invalid;
 	if (code <= 126) return *pFontEntryTbl_Basic[code - 32];
 	for (int i = 0; i < nFontEntries_Extra; i++) {
 		const FontEntry* pFontEntry = pFontEntryTbl_Extra[i];

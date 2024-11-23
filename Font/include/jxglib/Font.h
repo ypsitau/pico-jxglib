@@ -18,6 +18,8 @@ struct FontEntry {
 	int height;
 	int xAdvance;
 	uint8_t data[];
+public:
+	static const FontEntry Invalid8x8;
 };
 
 //------------------------------------------------------------------------------
@@ -25,7 +27,7 @@ struct FontEntry {
 //------------------------------------------------------------------------------
 struct FontSet {
 public:
-	enum class Format { Bitmap, Gray };
+	enum class Format { None, Bitmap, Gray };
 public:
 	Format format;
 	int yAdvance;
@@ -34,6 +36,9 @@ public:
 	int nFontEntries_Extra;
 	const FontEntry* pFontEntryTbl_Extra[];
 public:
+	static const FontSet None;
+public:
+	bool IsNone() const { return format == Format::None; }
 	bool IsBitmap() const { return format == Format::Bitmap; }
 	bool IsGray() const { return format == Format::Gray; }
 	bool HasExtraFont() const { return nFontEntries_Extra > 0; }

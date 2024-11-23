@@ -59,7 +59,7 @@ int main()
 	terminal.SetFont(Font::shinonome12);
 	//terminal.SetFont(Font::shinonome16);
 	terminal.dumpAttr.Cols(8);
-	terminal.dump(reinterpret_cast<const void*>(0), 8 * 30);
+	terminal.Dump(reinterpret_cast<const void*>(0), 8 * 30);
 	//terminal.SetFont(Font::sisd24x32);
 	//for (int i = 0; i < 1000; i++) {
 	//	terminal.printf("hoge %d\n", i);

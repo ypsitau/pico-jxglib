@@ -63,7 +63,7 @@ public:
 		float charWidthRatio, lineHeightRatio;
 	public:
 		Context() : colorFg{Color::white}, colorBg{Color::black},
-			pFontSet{nullptr}, fontScaleWidth{1}, fontScaleHeight{1},
+			pFontSet{&FontSet::None}, fontScaleWidth{1}, fontScaleHeight{1},
 			charWidthRatio(1.0), lineHeightRatio(1.0) {}
 	};
 	class StringCont {

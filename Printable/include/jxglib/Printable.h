@@ -32,7 +32,7 @@ public:
 	virtual void puts(const char* str) = 0;
 	virtual void vprintf(const char* format, va_list args);
 	void printf(const char* format, ...);
-	void dump(const void* buff, int bytes);
+	void Dump(const void* buff, int bytes);
 };
 
 }

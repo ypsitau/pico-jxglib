@@ -25,7 +25,7 @@ void Printable::printf(const char* format, ...)
 	va_end(args);
 }
 
-void Printable::dump(const void* buff, int bytes)
+void Printable::Dump(const void* buff, int bytes)
 {
 	const char* formatAddr;
 	const char* formatData;

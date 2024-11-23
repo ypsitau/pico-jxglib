@@ -110,20 +110,6 @@ void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 	Raw& raw = display_.raw;
 	Rect rect = pRectClip? *pRectClip : Rect(0, 0, display_.GetWidth(), display_.GetHeight());
 	int xSkip = 0, ySkip = 0;
-#if 0
-	int wdSrc = image.GetWidth();
-	int htSrc = image.GetHeight();
-	int wdDst, htDst;
-	if (Image::IsDirHorz(imageDir)) {
-		wdDst = wdSrc, htDst = htSrc;
-	} else {
-		wdDst = htSrc, htDst = wdSrc;
-	}
-	if (!AdjustRange(&x, &wdDst, rect.x, rect.width, &xSkip)) return;
-	if (!AdjustRange(&y, &htDst, rect.y, rect.height, &ySkip)) return;
-	raw.ColumnAddressSet(x, x + wdDst - 1);
-	raw.RowAddressSet(y, y + htDst - 1);
-#else
 	int wdSrc = image.GetWidth(), htSrc = image.GetHeight();
 	int* pwdDst;
 	int* phtDst;
@@ -136,7 +122,6 @@ void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 	if (!AdjustRange(&y, phtDst, rect.y, rect.height, &ySkip)) return;
 	raw.ColumnAddressSet(x, x + *pwdDst - 1);
 	raw.RowAddressSet(y, y + *phtDst - 1);
-#endif
 	raw.MemoryWrite_Begin(16);
 	if (image.GetFormat().IsGray()) {
 		using Reader = Image::Reader<Image::GetColorRGB565_SrcGray>;
