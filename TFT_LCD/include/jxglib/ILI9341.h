@@ -23,9 +23,6 @@ inline void ILI9341::Initialize(DisplayDir displayDir)
 {
 	const RotateData& rotateData = rotateDataTbl_Case2[static_cast<int>(displayDir)];
 	static const ConfigData configData = {
-		.pageAddressOrder		= PageAddressOrder::BottomToTop,
-		.columnAddressOrder		= ColumnAddressOrder::LeftToRight,
-		.pageColumnOrder		= PageColumnOrder::NormalMode,
 		.lineAddressOrder		= LineAddressOrder::TopToBottom,
 		.rgbBgrOrder			= RGBBGROrder::BGR,
 		.displayDataLatchOrder	= DisplayDataLatchOrder::LeftToRight,

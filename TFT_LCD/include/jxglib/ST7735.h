@@ -31,11 +31,8 @@ public:
 
 inline void ST7735::Initialize(DisplayDir displayDir)
 {
-	const RotateData& rotateData = rotateDataTbl_Case3[static_cast<int>(displayDir)];
+	const RotateData& rotateData = rotateDataTbl_Case1[static_cast<int>(displayDir)];
 	static const ConfigData configData = {
-		.pageAddressOrder		= PageAddressOrder::TopToBottom,
-		.columnAddressOrder		= ColumnAddressOrder::LeftToRight,
-		.pageColumnOrder		= PageColumnOrder::NormalMode,
 		.lineAddressOrder		= LineAddressOrder::TopToBottom,
 		.rgbBgrOrder			= RGBBGROrder::BGR,
 		.displayDataLatchOrder	= DisplayDataLatchOrder::LeftToRight,
@@ -49,9 +46,6 @@ inline void ST7735::TypeB::Initialize(DisplayDir displayDir)
 {
 	const RotateData& rotateData = rotateDataTbl_Case4[static_cast<int>(displayDir)];
 	static const ConfigData configData = {
-		.pageAddressOrder		= PageAddressOrder::BottomToTop,
-		.columnAddressOrder		= ColumnAddressOrder::RightToLeft,
-		.pageColumnOrder		= PageColumnOrder::NormalMode,
 		.lineAddressOrder		= LineAddressOrder::TopToBottom,
 		.rgbBgrOrder			= RGBBGROrder::RGB,
 		.displayDataLatchOrder	= DisplayDataLatchOrder::LeftToRight,

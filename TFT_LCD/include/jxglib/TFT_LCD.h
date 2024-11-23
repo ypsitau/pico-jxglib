@@ -49,9 +49,6 @@ public:
 		PageColumnOrder pageColumnOrder;
 	};
 	struct ConfigData {
-		PageAddressOrder pageAddressOrder;
-		ColumnAddressOrder columnAddressOrder;
-		PageColumnOrder pageColumnOrder;
 		LineAddressOrder lineAddressOrder;
 		RGBBGROrder rgbBgrOrder;
 		DisplayDataLatchOrder displayDataLatchOrder;

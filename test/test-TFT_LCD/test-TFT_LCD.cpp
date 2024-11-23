@@ -283,11 +283,14 @@ int main()
 	ST7735 display4(spi1, 128, 160, GPIO20, GPIO21, GPIO22, GPIO23);
 	ST7735::TypeB display5(spi1, 130, 161, GPIO24, GPIO25, GPIO26, GPIO27);
 	Display* displayTbl[] = { &display1, &display2, &display3, &display4, &display5 };
-	display1.Initialize();
-	display2.Initialize();
-	display3.Initialize();
-	display4.Initialize();
-	display5.Initialize();
+	Display::DisplayDir displayDir = Display::DisplayDir::Normal;
+	//Display::DisplayDir displayDir = Display::DisplayDir::HorzFromNE;
+	//Display::DisplayDir displayDir = Display::DisplayDir::Rotate90;
+	display1.Initialize(displayDir);
+	display2.Initialize(displayDir);
+	display3.Initialize(displayDir);
+	display4.Initialize(displayDir);
+	display5.Initialize(displayDir);
 	//display1.SetFont(Font::shinonome16).DrawString(0, 0, "Hello World");
 	for (int i = 0; i < ArrayNumberOf(displayTbl); i++) {
 		Display& display = *displayTbl[i];
