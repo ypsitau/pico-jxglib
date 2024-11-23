@@ -97,14 +97,17 @@ void TFT_LCD::DispatcherEx::Refresh()
 void TFT_LCD::DispatcherEx::Fill(const Color& color)
 {
 	Raw& raw = display_.raw;
-	raw.ColumnAddressSet(0, display_.GetWidth() - 1);
-	raw.RowAddressSet(0, display_.GetHeight() - 1);
+	int xAdjust = display_.GetXAdjust(), yAdjust = display_.GetYAdjust();
+	raw.ColumnAddressSet(xAdjust, xAdjust + display_.GetWidth() - 1);
+	raw.RowAddressSet(yAdjust, yAdjust + display_.GetHeight() - 1);
 	raw.MemoryWriteConst16(ColorRGB565(color).value, display_.GetWidth() * display_.GetHeight());
 }
 
 void TFT_LCD::DispatcherEx::DrawPixel(int x, int y, const Color& color)
 {
 	Raw& raw = display_.raw;
+	int xAdjust = display_.GetXAdjust(), yAdjust = display_.GetYAdjust();
+	x += xAdjust, y += yAdjust;
 	raw.ColumnAddressSet(x, x);
 	raw.RowAddressSet(y, y);
 	raw.MemoryWriteConst16(ColorRGB565(color).value, 1);
@@ -113,8 +116,10 @@ void TFT_LCD::DispatcherEx::DrawPixel(int x, int y, const Color& color)
 void TFT_LCD::DispatcherEx::DrawRectFill(int x, int y, int width, int height, const Color& color)
 {
 	Raw& raw = display_.raw;
+	int xAdjust = display_.GetXAdjust(), yAdjust = display_.GetYAdjust();
 	if (!AdjustRange(&x, &width, 0, display_.GetWidth())) return;
 	if (!AdjustRange(&y, &height, 0, display_.GetHeight())) return;
+	x += xAdjust, y += yAdjust;
 	raw.ColumnAddressSet(x, x + width - 1);
 	raw.RowAddressSet(y, y + height - 1);
 	raw.MemoryWriteConst16(ColorRGB565(color).value, width * height);
@@ -124,9 +129,11 @@ void TFT_LCD::DispatcherEx::DrawBitmap(int x, int y, const void* data, int width
 					const Color& color, const Color* pColorBg, int scaleX, int scaleY)
 {
 	Raw& raw = display_.raw;
+	int xAdjust = display_.GetXAdjust(), yAdjust = display_.GetYAdjust();
 	int nDots = width * height;
 	int bytes = (width + 7) / 8 * height;
 	const uint8_t* pSrcLeft = reinterpret_cast<const uint8_t*>(data);
+	x += xAdjust, y += yAdjust;
 	raw.ColumnAddressSet(x, x + width * scaleX - 1);
 	raw.RowAddressSet(y, y + height * scaleY - 1);
 	raw.MemoryWrite_Begin(16);
@@ -155,6 +162,7 @@ void TFT_LCD::DispatcherEx::DrawBitmap(int x, int y, const void* data, int width
 void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir)
 {
 	Raw& raw = display_.raw;
+	int xAdjust = display_.GetXAdjust(), yAdjust = display_.GetYAdjust();
 	Rect rect = pRectClip? *pRectClip : Rect(0, 0, display_.GetWidth(), display_.GetHeight());
 	int xSkip = 0, ySkip = 0;
 	int wdSrc = image.GetWidth(), htSrc = image.GetHeight();
@@ -167,6 +175,7 @@ void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 	}
 	if (!AdjustRange(&x, pwdDst, rect.x, rect.width, &xSkip)) return;
 	if (!AdjustRange(&y, phtDst, rect.y, rect.height, &ySkip)) return;
+	x += xAdjust, y += yAdjust;
 	raw.ColumnAddressSet(x, x + *pwdDst - 1);
 	raw.RowAddressSet(y, y + *phtDst - 1);
 	raw.MemoryWrite_Begin(16);

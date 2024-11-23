@@ -48,9 +48,10 @@ private:
 		Rect rect;
 		AttachDir attachDir;
 	} output_;
+	DispatcherRGB565 dispatcherRGB565_;
 public:
 	Canvas() : Drawable(Capability::DrawImage | Capability::ScrollHorz | Capability::ScrollVert),
-			pDrawableOut_{nullptr} {}
+			pDrawableOut_{nullptr}, dispatcherRGB565_(*this) {}
 public:
 	Drawable* GetDrawableOut() { return pDrawableOut_; }
 	Image& GetImageOwn() { return imageOwn_; }

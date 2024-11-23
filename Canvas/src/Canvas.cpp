@@ -38,7 +38,7 @@ bool Canvas::AttachOutput(Drawable& drawableOut, const Rect* pRect, AttachDir at
 	} else if (format.IsRGB()) {
 	} else if (format.IsRGBA()) {
 	} else if (format.IsRGB565()) {
-		pDispatcher_.reset(new DispatcherRGB565(*this));
+		pDispatcher_ = &dispatcherRGB565_;
 	}
 	return true;
 }

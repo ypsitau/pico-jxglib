@@ -235,11 +235,12 @@ public:
 	static const uint8_t DefaultAddr = 0x3c;
 private:
 	Context context_;
+	DispatcherEx dispatcherEx_;
 public:
 	SSD1306(i2c_inst_t* i2c, uint8_t addr = DefaultAddr, bool highResoFlag = true) :
 			Display(Capability::Device | Capability::ScrollHorz | Capability::ScrollVert,
-					Format::Bitmap, 128, highResoFlag? 64 : 32) {
-		pDispatcher_.reset(new DispatcherEx(*this, i2c, addr));
+					Format::Bitmap, 128, highResoFlag? 64 : 32), dispatcherEx_(*this, i2c, addr) {
+		pDispatcher_ = &dispatcherEx_;
 	}
 public:
 	void Initialize() { pDispatcher_->Initialize(); }

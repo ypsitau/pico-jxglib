@@ -4,7 +4,6 @@
 #ifndef PICO_JXGLIB_DRAWABLE_H
 #define PICO_JXGLIB_DRAWABLE_H
 #include <stdio.h>
-#include <memory>
 #include "pico/stdlib.h"
 #include "jxglib/Common.h"
 #include "jxglib/Font.h"
@@ -83,7 +82,7 @@ protected:
 	const Format* pFormat_;
 	int width_, height_;
 	Context context_;
-	std::unique_ptr<Dispatcher> pDispatcher_;
+	Dispatcher* pDispatcher_;
 public:
 	Drawable(uint32_t capabilities) :
 			capabilities_{capabilities}, pFormat_{&Format::None},
