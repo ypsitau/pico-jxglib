@@ -42,6 +42,7 @@ public:
 		LeftToRight = 0,
 		RightToLeft = 1,
 	};
+
 	struct ConfigData {
 		PageAddressOrder pageAddressOrder;
 		ColumnAddressOrder columnAddressOrder;
@@ -313,7 +314,7 @@ public:
 		pDispatcher_.reset(new DispatcherEx(*this));
 	}
 public:
-	void Initialize(const ConfigData& cfg);
+	void Initialize(DisplayDir displayDir, const ConfigData& cfg);
 	bool UsesCS() { return raw.UsesCS(); }
 	int GetBytesPerLine() const { return GetWidth() * 2; }
 };

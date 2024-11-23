@@ -8,8 +8,25 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // TFT_LCD
 //------------------------------------------------------------------------------
-void TFT_LCD::Initialize(const ConfigData& cfg)
+void TFT_LCD::Initialize(DisplayDir displayDir, const ConfigData& cfg)
 {
+	using PA = PageAddressOrder;
+	using CA = ColumnAddressOrder;
+	using PC = PageColumnOrder;
+	static const struct RotateInfo {
+		PageAddressOrder pageAddressOrder;
+		ColumnAddressOrder columnAddressOrder;
+		PageColumnOrder pageColumnOrder;
+	} rotateInfoTbl[] = {
+		{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// HorzFromNW
+		{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// HorzFromNE
+		{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// HorzFromSW
+		{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// HorzFromSE
+		{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// VertFromNW
+		{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// VertFromNE
+		{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// VertFromSW
+		{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// VertFromSE
+	};
 	raw.InitGPIO();
 	raw.SoftwareReset();
 	::sleep_ms(150);
