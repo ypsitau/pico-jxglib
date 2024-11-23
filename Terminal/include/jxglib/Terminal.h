@@ -32,6 +32,7 @@ public:
 	}
 public:
 	Drawable& GetDrawable() { return *pDrawable_; }
+	const Drawable& GetDrawable() const { return *pDrawable_; }
 public:
 	Terminal& SetFont(const FontSet& fontSet, int fontScale = 1) {
 		pDrawable_->SetFont(fontSet, fontScale);
@@ -48,6 +49,8 @@ public:
 	}
 	Terminal& SetColor(const Color& color) { pDrawable_->SetColor(color); return *this; }
 	Terminal& SetColorBg(const Color& colorBg) { pDrawable_->SetColorBg(colorBg); return *this; }
+	int GetColNum() const;
+	int GetRowNum() const;
 public:
 	// Virtual functions of Printable
 	virtual Printable& Clear() override;

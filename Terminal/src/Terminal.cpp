@@ -19,6 +19,20 @@ bool Terminal::AttachOutput(Drawable& drawable, const Rect* pRect, AttachDir att
 	return true;
 }
 
+int Terminal::GetColNum() const
+{
+	const Drawable& drawable = GetDrawable();
+	const FontEntry& fontEntry = drawable.GetFont().GetFontEntry('M');
+	return drawable.GetWidth() / fontEntry.xAdvance;
+}
+
+int Terminal::GetRowNum() const
+{
+	const Drawable& drawable = GetDrawable();
+	const FontSet& fontSet = drawable.GetFont();
+	return drawable.GetHeight() / fontSet.yAdvance;
+}
+
 Printable& Terminal::Clear()
 {
 	GetDrawable().Clear();
@@ -34,8 +48,7 @@ Printable& Terminal::Flush()
 Printable& Terminal::Locate(int col, int row)
 {
 	Drawable& drawable = GetDrawable();
-	const FontSet& fontSet = drawable.GetFont();
-	const FontEntry& fontEntry = fontSet.GetFontEntry('M');
+	const FontEntry& fontEntry = drawable.GetFont().GetFontEntry('M');
 	ptCursor_ = Point(drawable.CalcAdvanceX(fontEntry) * col, drawable.CalcAdvanceY() * row);
 	return *this;
 }

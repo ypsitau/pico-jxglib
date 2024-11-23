@@ -45,7 +45,7 @@ int main()
 	ST7789 display1(spi0, 240, 240, GPIO4, GPIO5, GPIO6);
 	ST7789 display2(spi1, 240, 320, GPIO10, GPIO11, GPIO12, GPIO13);
 	ILI9341 display3(spi1, 240, 320, GPIO16, GPIO17, GPIO18, GPIO19);
-	ST7735 display4(spi1, 128, 160, GPIO20, GPIO21, GPIO22, GPIO23);
+	ST7735 display4(spi1, 80, 160, GPIO20, GPIO21, GPIO22, GPIO23);
 	ST7735::TypeB display5(spi1, 130, 161, GPIO24, GPIO25, GPIO26, GPIO27);
 	display0.Initialize();
 	display1.Initialize();
@@ -54,16 +54,17 @@ int main()
 	display4.Initialize();
 	display5.Initialize();
 	Terminal terminal;
-	//terminal.AttachOutput(display2, Terminal::AttachDir::Rotate90);
-	terminal.AttachOutput(display3);
+	terminal.AttachOutput(display2, Terminal::AttachDir::Rotate90);
+	//terminal.AttachOutput(display3);
+	//terminal.AttachOutput(display4, Terminal::AttachDir::Rotate90);
 	terminal.SetFont(Font::shinonome12);
 	//terminal.SetFont(Font::shinonome16);
 	//terminal.SetFont(Font::sisd24x32);
 	//terminal.SetColorBg(Color::green);
 	terminal.Clear();
 	//terminal.SetFont(Font::shinonome16);
-#if 0
-	terminal.dumpAttr.Cols(8);
+#if 1
+	terminal.dumpAttr.DigitsAddr(4).Cols((terminal.GetColNum() - 4 - 1) / 3);
 	terminal.Dump(reinterpret_cast<const void*>(0), 8 * 40);
 #endif
 #if 0
@@ -71,8 +72,8 @@ int main()
 		terminal.Locate(i, i).Puts("Hi").Flush();
 	}
 #endif
-#if 1
-	terminal.Locate(0, 20);
+#if 0
+	//terminal.Locate(0, 20);
 	for (int i = 0; ; i++) {
 		terminal.Printf("Count: %d\r", i);
 		::sleep_ms(500);
