@@ -280,7 +280,7 @@ int main()
 	ST7789 display1(spi0, 240, 240, GPIO4, GPIO5, GPIO6);
 	ST7789 display2(spi1, 240, 320, GPIO10, GPIO11, GPIO12, GPIO13);
 	ILI9341 display3(spi1, 240, 320, GPIO16, GPIO17, GPIO18, GPIO19);
-	ST7735 display4(spi1, 128, 160, GPIO20, GPIO21, GPIO22, GPIO23);
+	ST7735 display4(spi1, 80, 160, GPIO20, GPIO21, GPIO22, GPIO23);
 	ST7735::TypeB display5(spi1, 130, 161, GPIO24, GPIO25, GPIO26, GPIO27);
 	Display* displayTbl[] = { &display1, &display2, &display3, &display4, &display5 };
 	Display::DisplayDir displayDir = Display::DisplayDir::Normal;

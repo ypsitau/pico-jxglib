@@ -57,6 +57,7 @@ void TFT_LCD::Initialize(const RotateData& rotateData, const ConfigData& configD
 	} else {
 		width_ = heightSet_, height_ = widthSet_;
 	}
+	if (widthSet_ < 128) xAdjust_ = (128 - widthSet_) / 2;
 	raw.InitGPIO();
 	raw.SoftwareReset();
 	::sleep_ms(150);
