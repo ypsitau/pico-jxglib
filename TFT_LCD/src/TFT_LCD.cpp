@@ -52,6 +52,11 @@ const TFT_LCD::RotateData TFT_LCD::rotateDataTbl_Case3[] =
 
 void TFT_LCD::Initialize(const RotateData& rotateData, const ConfigData& configData)
 {
+	if (rotateData.pageColumnOrder == PC::NormalMode) {
+		width_ = widthSet_, height_ = heightSet_;
+	} else {
+		width_ = heightSet_, height_ = widthSet_;
+	}
 	raw.InitGPIO();
 	raw.SoftwareReset();
 	::sleep_ms(150);

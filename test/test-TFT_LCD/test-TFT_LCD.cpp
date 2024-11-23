@@ -285,7 +285,7 @@ int main()
 	Display* displayTbl[] = { &display1, &display2, &display3, &display4, &display5 };
 	Display::DisplayDir displayDir = Display::DisplayDir::Normal;
 	//Display::DisplayDir displayDir = Display::DisplayDir::HorzFromNE;
-	//Display::DisplayDir displayDir = Display::DisplayDir::Rotate90;
+	//Display::DisplayDir displayDir = Display::DisplayDir::Rotate180;
 	display1.Initialize(displayDir);
 	display2.Initialize(displayDir);
 	display3.Initialize(displayDir);

@@ -304,6 +304,7 @@ public:
 	};
 public:
 	Raw raw;
+	int widthSet_, heightSet_;
 public:
 	static const RotateData rotateDataTbl_Case1[];
 	static const RotateData rotateDataTbl_Case2[];
@@ -311,12 +312,12 @@ public:
 public:
 	TFT_LCD(spi_inst_t* spi, int width, int height, const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_CS, const GPIO& gpio_BL) :
 			Display(Capability::Device | Capability::DrawImage, Format::RGB565, width, height),
-			raw(spi, gpio_RST, gpio_DC, gpio_CS, gpio_BL) {
+			raw(spi, gpio_RST, gpio_DC, gpio_CS, gpio_BL), widthSet_{width}, heightSet_{height} {
 		pDispatcher_.reset(new DispatcherEx(*this));
 	}
 	TFT_LCD(spi_inst_t* spi, int width, int height, const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_BL) :
 			Display(Capability::Device | Capability::DrawImage, Format::RGB565, width, height),
-			raw(spi, gpio_RST, gpio_DC, gpio_BL) {
+			raw(spi, gpio_RST, gpio_DC, gpio_BL), widthSet_{width}, heightSet_{height} {
 		pDispatcher_.reset(new DispatcherEx(*this));
 	}
 public:
