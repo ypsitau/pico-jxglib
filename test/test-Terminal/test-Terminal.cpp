@@ -57,11 +57,27 @@ int main()
 	//terminal.AttachOutput(display2, Terminal::AttachDir::Rotate90);
 	terminal.AttachOutput(display3);
 	terminal.SetFont(Font::shinonome12);
-	terminal.SetColorBg(Color::green);
+	//terminal.SetFont(Font::shinonome16);
+	//terminal.SetFont(Font::sisd24x32);
+	//terminal.SetColorBg(Color::green);
 	terminal.Clear();
 	//terminal.SetFont(Font::shinonome16);
+#if 0
 	terminal.dumpAttr.Cols(8);
 	terminal.Dump(reinterpret_cast<const void*>(0), 8 * 40);
+#endif
+#if 0
+	for (int i = 0; i < 40; i++) {
+		terminal.Locate(i, i).Puts("Hi").Flush();
+	}
+#endif
+#if 1
+	terminal.Locate(0, 20);
+	for (int i = 0; ; i++) {
+		terminal.Printf("Count: %d\r", i);
+		::sleep_ms(500);
+	}
+#endif
 	//terminal.SetFont(Font::sisd24x32);
 	//for (int i = 0; i < 1000; i++) {
 	//	terminal.printf("hoge %d\n", i);

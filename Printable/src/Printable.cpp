@@ -10,22 +10,24 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // Printable
 //------------------------------------------------------------------------------
-void Printable::VPrintf(const char* format, va_list args)
+Printable& Printable::VPrintf(const char* format, va_list args)
 {
 	char buff[256];
 	::vsnprintf(buff, sizeof(buff), format, args);
 	Puts(buff);
+	return *this;
 }
 
-void Printable::Printf(const char* format, ...)
+Printable& Printable::Printf(const char* format, ...)
 {
 	va_list args;
 	va_start(args, format);
 	VPrintf(format, args);
 	va_end(args);
+	return *this;
 }
 
-void Printable::Dump(const void* buff, int bytes)
+Printable& Printable::Dump(const void* buff, int bytes)
 {
 	const char* formatAddr;
 	const char* formatData;
@@ -48,6 +50,7 @@ void Printable::Dump(const void* buff, int bytes)
 		}
 	}
 	if (iCol > 0) Puts("\n");
+	return *this;
 }
 
 }

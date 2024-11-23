@@ -28,12 +28,13 @@ public:
 public:
 	DumpAttr dumpAttr;
 public:
-	virtual void Clear() = 0;
-	virtual void Flush() = 0;
-	virtual void Puts(const char* str) = 0;
-	virtual void VPrintf(const char* format, va_list args);
-	void Printf(const char* format, ...);
-	void Dump(const void* buff, int bytes);
+	virtual Printable& Clear() = 0;
+	virtual Printable& Flush() = 0;
+	virtual Printable& Locate(int col, int row) = 0;
+	virtual Printable& Puts(const char* str) = 0;
+	virtual Printable& VPrintf(const char* format, va_list args);
+	Printable& Printf(const char* format, ...);
+	Printable& Dump(const void* buff, int bytes);
 };
 
 }

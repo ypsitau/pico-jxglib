@@ -19,23 +19,34 @@ bool Terminal::AttachOutput(Drawable& drawable, const Rect* pRect, AttachDir att
 	return true;
 }
 
-void Terminal::Clear()
+Printable& Terminal::Clear()
 {
 	GetDrawable().Clear();
+	return *this;
 }
 
-void Terminal::Flush()
+Printable& Terminal::Flush()
 {
 	GetDrawable().Refresh();
+	return *this;
 }
 
-void Terminal::Puts(const char* str)
+Printable& Terminal::Locate(int col, int row)
 {
 	Drawable& drawable = GetDrawable();
+	const FontSet& fontSet = drawable.GetFont();
+	const FontEntry& fontEntry = fontSet.GetFontEntry('M');
+	ptCursor_ = Point(drawable.CalcAdvanceX(fontEntry) * col, drawable.CalcAdvanceY() * row);
+	return *this;
+}
+
+Printable& Terminal::Puts(const char* str)
+{
+	Drawable& drawable = GetDrawable();
+	const FontSet& fontSet = drawable.GetFont();
 	uint32_t code;
 	UTF8Decoder decoder;
 	const char* p = str;
-	const FontSet& fontSet = drawable.GetFont();
 	int yAdvance = drawable.CalcAdvanceY();
 	for ( ; *p; p++) {
 		if (!decoder.FeedChar(*p, &code)) continue;
@@ -43,28 +54,30 @@ void Terminal::Puts(const char* str)
 		int xAdvance = drawable.CalcAdvanceX(fontEntry);
 		if (code == '\n') {
 			drawable.Refresh();
-			pt_.x = 0;
-			if (pt_.y + yAdvance * 2 <= drawable.GetHeight()) {
-				pt_.y += yAdvance;
+			ptCursor_.x = 0;
+			if (ptCursor_.y + yAdvance * 2 <= drawable.GetHeight()) {
+				ptCursor_.y += yAdvance;
 			} else {
 				drawable.ScrollVert(DirVert::Up, yAdvance);
 			}
 		} else if (code == '\r') {
 			drawable.Refresh();
-			pt_.x = 0;
+			ptCursor_.x = 0;
+			drawable.DrawRectFill(0, ptCursor_.y, drawable.GetWidth(), yAdvance, drawable.GetColorBg());
 		} else {
-			if (pt_.x + xAdvance > drawable.GetWidth()) {
-				pt_.x = 0;
-				if (pt_.y + yAdvance * 2 <= drawable.GetHeight()) {
-					pt_.y += yAdvance;
+			if (ptCursor_.x + xAdvance > drawable.GetWidth()) {
+				ptCursor_.x = 0;
+				if (ptCursor_.y + yAdvance * 2 <= drawable.GetHeight()) {
+					ptCursor_.y += yAdvance;
 				} else {
 					drawable.ScrollVert(DirVert::Up, yAdvance);
 				}
 			}
-			drawable.DrawChar(pt_, fontEntry);
-			pt_.x += xAdvance;
+			drawable.DrawChar(ptCursor_, fontEntry);
+			ptCursor_.x += xAdvance;
 		}
 	}
+	return *this;
 }
 
 }

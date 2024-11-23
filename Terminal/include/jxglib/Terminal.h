@@ -19,7 +19,7 @@ public:
 private:
 	Drawable* pDrawable_;
 	Canvas canvas_;
-	Point pt_;
+	Point ptCursor_;
 public:
 	Terminal() : pDrawable_{nullptr} {}
 public:
@@ -50,9 +50,10 @@ public:
 	Terminal& SetColorBg(const Color& colorBg) { pDrawable_->SetColorBg(colorBg); return *this; }
 public:
 	// Virtual functions of Printable
-	virtual void Clear() override;
-	virtual void Flush() override;
-	virtual void Puts(const char* str) override;
+	virtual Printable& Clear() override;
+	virtual Printable& Locate(int col, int row) override;
+	virtual Printable& Flush() override;
+	virtual Printable& Puts(const char* str) override;
 };
 
 }
