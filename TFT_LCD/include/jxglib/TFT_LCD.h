@@ -308,7 +308,6 @@ public:
 	static const RotateData rotateDataTbl_Case1[];
 	static const RotateData rotateDataTbl_Case2[];
 	static const RotateData rotateDataTbl_Case3[];
-	static const RotateData rotateDataTbl_Case4[];
 public:
 	TFT_LCD(spi_inst_t* spi, int width, int height, const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_CS, const GPIO& gpio_BL) :
 			Display(Capability::Device | Capability::DrawImage, Format::RGB565, width, height),
