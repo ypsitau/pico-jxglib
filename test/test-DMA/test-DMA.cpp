@@ -11,6 +11,7 @@ public:
 		dma_channel_config config_;
 	public:
 		ChannelConfig(const dma_channel_config& config) : config_{config} {}
+		ChannelConfig(const ChannelConfig& channelConfig) : config_{channelConfig.config_} {}
 	public:
 		dma_channel_config& GetEntity() { return config_; }
 		const dma_channel_config& GetEntity() const { return config_; }
@@ -34,57 +35,66 @@ public:
 	private:
 		uint channel_;
 	public:
-		void claim() { ::dma_channel_claim(channel_); }
-		void unclaim() { ::dma_channel_unclaim(channel_); }
-		bool is_claimed() { return ::dma_channel_is_claimed(channel_); }
-		void set_config(const ChannelConfig& channelConfig, bool trigger) {
+		Channel(uint channel) : channel_{channel} {}
+		Channel(const Channel& channel) : channel_{channel.channel_} {}
+	public:
+		void claim() const { ::dma_channel_claim(channel_); }
+		void unclaim() const { ::dma_channel_unclaim(channel_); }
+		bool is_claimed() const { return ::dma_channel_is_claimed(channel_); }
+		void set_config(const ChannelConfig& channelConfig, bool trigger) const {
 			::dma_channel_set_config(channel_, channelConfig.GetEntityPtr(), trigger);
 		}
-		void set_read_addr(const volatile void *read_addr, bool trigger) {
+		void set_read_addr(const volatile void *read_addr, bool trigger) const {
 			::dma_channel_set_read_addr(channel_, read_addr, trigger);
 		}
-		void set_write_addr(volatile void *write_addr, bool trigger) {
+		void set_write_addr(volatile void *write_addr, bool trigger) const {
 			::dma_channel_set_write_addr(channel_, write_addr, trigger);
 		}
-		void set_trans_count(uint32_t trans_count, bool trigger) {
+		void set_trans_count(uint32_t trans_count, bool trigger) const {
 			::dma_channel_set_trans_count(channel_, trans_count, trigger);
 		}
-		void configure(const ChannelConfig& channelConfig, volatile void *write_addr, const volatile void *read_addr, uint transfer_count, bool trigger) {
+		void configure(const ChannelConfig& channelConfig, volatile void *write_addr, const volatile void *read_addr, uint transfer_count, bool trigger) const {
 			::dma_channel_configure(channel_, channelConfig.GetEntityPtr(), write_addr, read_addr, transfer_count, trigger);
 		}
-		void transfer_from_buffer_now(const volatile void *read_addr, uint32_t transfer_count) {
+		void transfer_from_buffer_now(const volatile void *read_addr, uint32_t transfer_count) const {
 			::dma_channel_transfer_from_buffer_now(channel_, read_addr, transfer_count);
 		}
-		void transfer_to_buffer_now(volatile void *write_addr, uint32_t transfer_count) {
+		void transfer_to_buffer_now(volatile void *write_addr, uint32_t transfer_count) const {
 			::dma_channel_transfer_to_buffer_now(channel_, write_addr, transfer_count);
 		}
-		void start() { ::dma_channel_start(channel_); }
-		void abort() { ::dma_channel_abort(channel_); }
-		void set_irq0_enabled(bool enabled) { ::dma_channel_set_irq0_enabled(channel_, enabled); }
-		void set_irq1_enabled(bool enabled) { ::dma_channel_set_irq1_enabled(channel_, enabled); }
-		bool get_irq0_status() { return ::dma_channel_get_irq0_status(channel_); }
-		bool get_irq1_status() { return ::dma_channel_get_irq1_status(channel_); }
-		void acknowledge_irq0() { ::dma_channel_acknowledge_irq0(channel_); }
-		void acknowledge_irq1() { ::dma_channel_acknowledge_irq1(channel_); }
-		bool is_busy() { return ::dma_channel_is_busy(channel_); }
-		void wait_for_finish_blocking() { ::dma_channel_wait_for_finish_blocking(channel_); }
-		void cleanup() { ::dma_channel_cleanup(channel_); }
-		ChannelConfig get_default_config() { return ChannelConfig(::dma_channel_get_default_config(channel_)); }
-		ChannelConfig get_config() { return ChannelConfig(::dma_get_channel_config(channel_)); }
+		void start() const { ::dma_channel_start(channel_); }
+		void abort() const { ::dma_channel_abort(channel_); }
+		void set_irq0_enabled(bool enabled) const { ::dma_channel_set_irq0_enabled(channel_, enabled); }
+		void set_irq1_enabled(bool enabled) const { ::dma_channel_set_irq1_enabled(channel_, enabled); }
+		bool get_irq0_status() const { return ::dma_channel_get_irq0_status(channel_); }
+		bool get_irq1_status() const { return ::dma_channel_get_irq1_status(channel_); }
+		void acknowledge_irq0() const { ::dma_channel_acknowledge_irq0(channel_); }
+		void acknowledge_irq1() const { ::dma_channel_acknowledge_irq1(channel_); }
+		bool is_busy() const { return ::dma_channel_is_busy(channel_); }
+		void wait_for_finish_blocking() const { ::dma_channel_wait_for_finish_blocking(channel_); }
+		void cleanup() const { ::dma_channel_cleanup(channel_); }
+		ChannelConfig get_default_config() const { return ChannelConfig(::dma_channel_get_default_config(channel_)); }
+		ChannelConfig get_config() const { return ChannelConfig(::dma_get_channel_config(channel_)); }
 	};
-
+	class Timer {
+	private:
+		uint timer_;
+	public:
+		Timer(uint timer) : timer_{timer} {}
+		Timer(const Timer& timer) : timer_{timer.timer_} {}
+	public:
+		void claim() const { ::dma_timer_claim(timer_); }
+		void unclaim() const { ::dma_timer_unclaim(timer_); }
+		bool is_claimed() const { return ::dma_timer_is_claimed(timer_); }
+		void set_fraction(uint16_t numerator, uint16_t denominator) const { ::dma_timer_set_fraction(timer_, numerator, denominator); }
+	};
 #if 0
-void dma_irqn_set_channel_enabled(uint irq_index, uint channel, bool enabled)
-void dma_irqn_set_channel_mask_enabled(uint irq_index, uint32_t channel_mask, bool enabled)
-bool dma_irqn_get_channel_status(uint irq_index, uint channel)
-void dma_irqn_acknowledge_channel(uint irq_index, uint channel)
+	void dma_irqn_set_channel_enabled(uint irq_index, uint channel, bool enabled)
+	void dma_irqn_set_channel_mask_enabled(uint irq_index, uint32_t channel_mask, bool enabled)
+	bool dma_irqn_get_channel_status(uint irq_index, uint channel)
+	void dma_irqn_acknowledge_channel(uint irq_index, uint channel)
 
-void dma_timer_claim(uint timer)
-void dma_timer_unclaim(uint timer)
-bool dma_timer_is_claimed(uint timer)
-void dma_timer_set_fraction(uint timer, uint16_t numerator, uint16_t denominator)
 #endif
-
 	static void claim_mask(uint32_t channel_mask) { ::dma_claim_mask(channel_mask); }
 	static void unclaim_mask(uint32_t channel_mask) { ::dma_unclaim_mask(channel_mask); }
 	static int claim_unused_channel(bool required) { return ::dma_claim_unused_channel(required); }
@@ -98,7 +108,7 @@ void dma_timer_set_fraction(uint timer, uint16_t numerator, uint16_t denominator
 	static void sniffer_disable(void) { ::dma_sniffer_disable(); }
 	static void sniffer_set_data_accumulator(uint32_t seed_value) { ::dma_sniffer_set_data_accumulator(seed_value); }
 	static uint32_t sniffer_get_data_accumulator(void) { return ::dma_sniffer_get_data_accumulator(); }
-	static int claim_unused_timer(bool required) { return ::dma_claim_unused_timer(required); }
+	static Timer claim_unused_timer(bool required) { return Timer(::dma_claim_unused_timer(required)); }
 	static uint get_timer_dreq(uint timer_num) { return ::dma_get_timer_dreq(timer_num); }
 };
 
