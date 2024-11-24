@@ -10,6 +10,8 @@ public:
 	private:
 		dma_channel_config config_;
 	public:
+		ChannelConfig(const dma_channel_config& config) : config_{config} {}
+	public:
 		dma_channel_config& GetEntity() { return config_; }
 		const dma_channel_config& GetEntity() const { return config_; }
 		dma_channel_config* GetEntityPtr() { return &config_; }
@@ -35,13 +37,27 @@ public:
 		void claim() { ::dma_channel_claim(channel_); }
 		void unclaim() { ::dma_channel_unclaim(channel_); }
 		bool is_claimed() { return ::dma_channel_is_claimed(channel_); }
-		void set_config(const ChannelConfig& channelConfig, bool trigger) { ::dma_channel_set_config(channel_, channelConfig.GetEntityPtr(), trigger); }
-		void set_read_addr(const volatile void *read_addr, bool trigger) { ::dma_channel_set_read_addr(channel_, read_addr, trigger); }
-		void set_write_addr(volatile void *write_addr, bool trigger) { ::dma_channel_set_write_addr(channel_, write_addr, trigger); }
-		void set_trans_count(uint32_t trans_count, bool trigger) { ::dma_channel_set_trans_count(channel_, trans_count, trigger); }
-		void configure(const ChannelConfig& channelConfig, volatile void *write_addr, const volatile void *read_addr, uint transfer_count, bool trigger) { ::dma_channel_configure(channel_, channelConfig.GetEntityPtr(), write_addr, read_addr, transfer_count, trigger); }
-		void transfer_from_buffer_now(const volatile void *read_addr, uint32_t transfer_count) { ::dma_channel_transfer_from_buffer_now(channel_, read_addr, transfer_count); }
-		void transfer_to_buffer_now(volatile void *write_addr, uint32_t transfer_count) { ::dma_channel_transfer_to_buffer_now(channel_, write_addr, transfer_count); }
+		void set_config(const ChannelConfig& channelConfig, bool trigger) {
+			::dma_channel_set_config(channel_, channelConfig.GetEntityPtr(), trigger);
+		}
+		void set_read_addr(const volatile void *read_addr, bool trigger) {
+			::dma_channel_set_read_addr(channel_, read_addr, trigger);
+		}
+		void set_write_addr(volatile void *write_addr, bool trigger) {
+			::dma_channel_set_write_addr(channel_, write_addr, trigger);
+		}
+		void set_trans_count(uint32_t trans_count, bool trigger) {
+			::dma_channel_set_trans_count(channel_, trans_count, trigger);
+		}
+		void configure(const ChannelConfig& channelConfig, volatile void *write_addr, const volatile void *read_addr, uint transfer_count, bool trigger) {
+			::dma_channel_configure(channel_, channelConfig.GetEntityPtr(), write_addr, read_addr, transfer_count, trigger);
+		}
+		void transfer_from_buffer_now(const volatile void *read_addr, uint32_t transfer_count) {
+			::dma_channel_transfer_from_buffer_now(channel_, read_addr, transfer_count);
+		}
+		void transfer_to_buffer_now(volatile void *write_addr, uint32_t transfer_count) {
+			::dma_channel_transfer_to_buffer_now(channel_, write_addr, transfer_count);
+		}
 		void start() { ::dma_channel_start(channel_); }
 		void abort() { ::dma_channel_abort(channel_); }
 		void set_irq0_enabled(bool enabled) { ::dma_channel_set_irq0_enabled(channel_, enabled); }
@@ -53,44 +69,37 @@ public:
 		bool is_busy() { return ::dma_channel_is_busy(channel_); }
 		void wait_for_finish_blocking() { ::dma_channel_wait_for_finish_blocking(channel_); }
 		void cleanup() { ::dma_channel_cleanup(channel_); }
-		dma_channel_config get_default_config() { return ::dma_channel_get_default_config(channel_); }
-		dma_channel_config get_config() { return ::dma_get_channel_config(channel_); }
+		ChannelConfig get_default_config() { return ChannelConfig(::dma_channel_get_default_config(channel_)); }
+		ChannelConfig get_config() { return ChannelConfig(::dma_get_channel_config(channel_)); }
 	};
 
 #if 0
-
-void dma_claim_mask(uint32_t channel_mask)
-void dma_unclaim_mask(uint32_t channel_mask)
-int dma_claim_unused_channel(bool required)
-void dma_start_channel_mask(uint32_t chan_mask)
-
-void dma_set_irq0_channel_mask_enabled(uint32_t channel_mask, bool enabled)
-void dma_set_irq1_channel_mask_enabled(uint32_t channel_mask, bool enabled)
-
 void dma_irqn_set_channel_enabled(uint irq_index, uint channel, bool enabled)
 void dma_irqn_set_channel_mask_enabled(uint irq_index, uint32_t channel_mask, bool enabled)
 bool dma_irqn_get_channel_status(uint irq_index, uint channel)
 void dma_irqn_acknowledge_channel(uint irq_index, uint channel)
 
-void dma_sniffer_enable(uint channel, uint mode, bool force_channel_enable)
-void dma_sniffer_set_byte_swap_enabled(bool swap)
-void dma_sniffer_set_output_invert_enabled(bool invert)
-void dma_sniffer_set_output_reverse_enabled(bool reverse)
-void dma_sniffer_disable(void)
-void dma_sniffer_set_data_accumulator(uint32_t seed_value)
-uint32_t dma_sniffer_get_data_accumulator(void)
-
 void dma_timer_claim(uint timer)
 void dma_timer_unclaim(uint timer)
-int dma_claim_unused_timer(bool required)
 bool dma_timer_is_claimed(uint timer)
 void dma_timer_set_fraction(uint timer, uint16_t numerator, uint16_t denominator)
-uint dma_get_timer_dreq(uint timer_num)
 #endif
 
-#if 0
-#endif
-
+	static void claim_mask(uint32_t channel_mask) { ::dma_claim_mask(channel_mask); }
+	static void unclaim_mask(uint32_t channel_mask) { ::dma_unclaim_mask(channel_mask); }
+	static int claim_unused_channel(bool required) { return ::dma_claim_unused_channel(required); }
+	static void start_channel_mask(uint32_t chan_mask) { ::dma_start_channel_mask(chan_mask); }
+	static void set_irq0_channel_mask_enabled(uint32_t channel_mask, bool enabled) { ::dma_set_irq0_channel_mask_enabled(channel_mask, enabled); }
+	static void set_irq1_channel_mask_enabled(uint32_t channel_mask, bool enabled) { ::dma_set_irq1_channel_mask_enabled(channel_mask, enabled); }
+	static void sniffer_enable(uint channel, uint mode, bool force_channel_enable) { ::dma_sniffer_enable(channel, mode, force_channel_enable); }
+	static void sniffer_set_byte_swap_enabled(bool swap) { ::dma_sniffer_set_byte_swap_enabled(swap); }
+	static void sniffer_set_output_invert_enabled(bool invert) { ::dma_sniffer_set_output_invert_enabled(invert); }
+	static void sniffer_set_output_reverse_enabled(bool reverse) { ::dma_sniffer_set_output_reverse_enabled(reverse); }
+	static void sniffer_disable(void) { ::dma_sniffer_disable(); }
+	static void sniffer_set_data_accumulator(uint32_t seed_value) { ::dma_sniffer_set_data_accumulator(seed_value); }
+	static uint32_t sniffer_get_data_accumulator(void) { return ::dma_sniffer_get_data_accumulator(); }
+	static int claim_unused_timer(bool required) { return ::dma_claim_unused_timer(required); }
+	static uint get_timer_dreq(uint timer_num) { return ::dma_get_timer_dreq(timer_num); }
 };
 
 }
