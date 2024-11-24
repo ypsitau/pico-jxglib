@@ -13,8 +13,6 @@
 #include "image/image_cat_160x213.h"
 #include "image/image_cat_240x320.h"
 
-#define ArrayNumberOf(x) (sizeof(x) / sizeof(x[0]))
-
 using namespace jxglib;
 
 void Test_DrawPixel(Display& display)
@@ -200,7 +198,7 @@ void Test_DrawImage(Display* displayTbl[], int nDisplays)
 	};
 	int iDir = 0;
 	//for (;;) {
-	//	for (int iDir = 0; iDir < ArrayNumberOf(imageDirTbl); iDir++) {
+	//	for (int iDir = 0; iDir < count_of(imageDirTbl); iDir++) {
 			Display::ImageDir imageDir = imageDirTbl[iDir];
 			for (int iDisplay = 0; iDisplay < nDisplays; iDisplay++) {
 				Display& display = *displayTbl[iDisplay];
@@ -242,17 +240,17 @@ void Test_DrawStringWrap(Display* displayTbl[], int nDisplays)
 	}
 	for (;;) {
 		//if (!*p) {
-		//	if (iStr >= ArrayNumberOf(strTbl) || ((*strTbl[iStr] & 0x80 != 0) && !fontSetTbl[iFont]->HasExtraFont())) {
+		//	if (iStr >= count_of(strTbl) || ((*strTbl[iStr] & 0x80 != 0) && !fontSetTbl[iFont]->HasExtraFont())) {
 		//		iStr = 0;
 		//		iFont++;
-		//		if (iFont >= ArrayNumberOf(fontSetTbl)) {
+		//		if (iFont >= count_of(fontSetTbl)) {
 		//			iFont = 0;
 		//		}
 		//	}
 		//	p = strTbl[iStr++];
 		//}
 		p = strTbl[iStr++];
-		if (iStr >= ArrayNumberOf(strTbl)) iStr = 0;
+		if (iStr >= count_of(strTbl)) iStr = 0;
 		for (int iDisplay = 0; iDisplay < nDisplays; iDisplay++) {
 			Display& display = *displayTbl[iDisplay];
 			//int fontScale = (display.GetWidth() >= 240)? 2 : 1;
@@ -292,7 +290,7 @@ int main()
 	display4.Initialize(displayDir);
 	display5.Initialize(displayDir);
 	//display1.SetFont(Font::shinonome16).DrawString(0, 0, "Hello World");
-	for (int i = 0; i < ArrayNumberOf(displayTbl); i++) {
+	for (int i = 0; i < count_of(displayTbl); i++) {
 		Display& display = *displayTbl[i];
 		int width = display.GetWidth();
 		const Image& image = (width <= 128)? image_cat_128x170 :
@@ -303,9 +301,9 @@ int main()
 	//Test_WriteBuffer(display);
 	//Test_DrawString(display);
 	//Test_DrawStringWrap(display);
-	//Test_DrawImage(displayTbl, ArrayNumberOf(displayTbl));
+	//Test_DrawImage(displayTbl, count_of(displayTbl));
 	//Test_DrawLine(display2);
-	//Test_DrawStringWrap(displayTbl, ArrayNumberOf(displayTbl));
+	//Test_DrawStringWrap(displayTbl, count_of(displayTbl));
 	//display2.raw.VerticalScrollingDefinition(0, 320, 0);
 	//display2.raw.VerticalScrollStartAddressToRAM(100);
 	//display2.SetFont(Font::shinonome16, 3);

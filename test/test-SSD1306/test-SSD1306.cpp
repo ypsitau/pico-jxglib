@@ -9,8 +9,6 @@
 #include "jxglib/Font/sisd8x16.h"
 #include "jxglib/Font/sisd24x32.h"
 
-#define ArrayNumberOf(x) (sizeof(x) / sizeof(x[0]))
-
 using namespace jxglib;
 
 //void Test_Flash(SSD1306& display)
@@ -252,10 +250,10 @@ void Test_DrawStringWrap(Display& display)
 	//display.SetSpacingRatio(1.0, 1.5);
 	for (;;) {
 		if (!*p) {
-			if (iStr >= ArrayNumberOf(strTbl) || ((*strTbl[iStr] & 0x80 != 0) && !fontSetTbl[iFont]->HasExtraFont())) {
+			if (iStr >= count_of(strTbl) || ((*strTbl[iStr] & 0x80 != 0) && !fontSetTbl[iFont]->HasExtraFont())) {
 				iStr = 0;
 				iFont++;
-				if (iFont >= ArrayNumberOf(fontSetTbl)) {
+				if (iFont >= count_of(fontSetTbl)) {
 					iFont = 0;
 				}
 			}

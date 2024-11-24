@@ -2,8 +2,6 @@
 #include "pico/stdlib.h"
 #include "jxglib/LCD1602.h"
 
-#define ArrayNumberOf(x) (sizeof(x) / sizeof(x[0]))
-
 using namespace jxglib;
 
 int main()
@@ -30,7 +28,7 @@ int main()
 		"\xf0\xf1\xf2\xf3\xf4\xf5\xf6\xf7\xf8\xf9\xfa\xfb\xfc\xfd\xfe\xff",
 	};
 	for (;;) {
-		for (int i = 0; i < ArrayNumberOf(strTbl); i++) {
+		for (int i = 0; i < count_of(strTbl); i++) {
 			lcd.ClearDisplay();
 			lcd.Print(strTbl[i]);
 			::sleep_ms(1000);

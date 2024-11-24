@@ -4,8 +4,6 @@
 
 using namespace jxglib;
 
-#define ArrayNumberOf(x) (sizeof(x) / sizeof(x[0]))
-
 template<typename Color_T> void PrintRGB()
 {
 	struct Entry { const char* name; const Color_T* pColor; };
@@ -28,7 +26,7 @@ template<typename Color_T> void PrintRGB()
 		{ "teal",		&Color_T::teal },
 		{ "aqua",		&Color_T::aqua },
 	};
-	for (int i = 0; i < ArrayNumberOf(entryTbl); i++) {
+	for (int i = 0; i < count_of(entryTbl); i++) {
 		const Entry& entry = entryTbl[i];
 		const Color_T& color = *entry.pColor;
 		::printf("%-8s %02x, %02x, %02x\n", entry.name, color.GetR(), color.GetG(), color.GetB());
