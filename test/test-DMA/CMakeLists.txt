@@ -43,7 +43,7 @@ pico_set_program_name(test-DMA "test-DMA")
 pico_set_program_version(test-DMA "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-DMA 0)
+pico_enable_stdio_uart(test-DMA 1)
 pico_enable_stdio_usb(test-DMA 0)
 
 # Add the standard library to the build
@@ -58,4 +58,3 @@ target_include_directories(test-DMA PRIVATE
 )
 
 pico_add_extra_outputs(test-DMA)
-

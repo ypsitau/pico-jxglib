@@ -14,6 +14,7 @@ public:
 	private:
 		dma_channel_config config_;
 	public:
+		ChannelConfig() : config_{0} {}
 		ChannelConfig(const dma_channel_config& config) : config_{config} {}
 		ChannelConfig(const ChannelConfig& channelConfig) : config_{channelConfig.config_} {}
 	public:
@@ -73,27 +74,59 @@ public:
 			::dma_channel_set_config(channel_, channelConfig.GetEntityPtr(), trigger);
 			return *this;
 		}
-		const Channel& set_read_addr(const volatile void *read_addr, bool trigger) const {
+		const Channel& set_config(const ChannelConfig& channelConfig) const {
+			::dma_channel_hw_addr(channel_)->al1_ctrl = channelConfig.get_ctrl_value();
+			return *this;
+		}
+		const Channel& set_config_trig(const ChannelConfig& channelConfig) const {
+			::dma_channel_hw_addr(channel_)->ctrl_trig = channelConfig.get_ctrl_value();
+			return *this;
+		}
+		const Channel& set_read_addr(const volatile void* read_addr, bool trigger) const {
 			::dma_channel_set_read_addr(channel_, read_addr, trigger);
 			return *this;
 		}
-		const Channel& set_write_addr(volatile void *write_addr, bool trigger) const {
+		const Channel& set_read_addr(const volatile void* read_addr) const {
+			::dma_channel_hw_addr(channel_)->read_addr = reinterpret_cast<uintptr_t>(read_addr);
+			return *this;
+		}
+		const Channel& set_read_addr_trig(const volatile void* read_addr) const {
+			::dma_channel_hw_addr(channel_)->al3_read_addr_trig = reinterpret_cast<uintptr_t>(read_addr);
+			return *this;
+		}
+		const Channel& set_write_addr(volatile void* write_addr, bool trigger) const {
 			::dma_channel_set_write_addr(channel_, write_addr, trigger);
+			return *this;
+		}
+		const Channel& set_write_addr(volatile void* write_addr) const {
+			::dma_channel_hw_addr(channel_)->write_addr = reinterpret_cast<uintptr_t>(write_addr);
+			return *this;
+		}
+		const Channel& set_write_addr_trig(volatile void* write_addr) const {
+			::dma_channel_hw_addr(channel_)->al2_write_addr_trig = reinterpret_cast<uintptr_t>(write_addr);
 			return *this;
 		}
 		const Channel& set_trans_count(uint32_t trans_count, bool trigger) const {
 			::dma_channel_set_trans_count(channel_, trans_count, trigger);
 			return *this;
 		}
-		const Channel& configure(const ChannelConfig& channelConfig, volatile void *write_addr, const volatile void *read_addr, uint transfer_count, bool trigger) const {
+		const Channel& set_trans_count(uint32_t trans_count) const {
+			::dma_channel_hw_addr(channel_)->transfer_count = trans_count;
+			return *this;
+		}
+		const Channel& set_trans_count_trig(uint32_t trans_count) const {
+			::dma_channel_hw_addr(channel_)->al1_transfer_count_trig = trans_count;
+			return *this;
+		}
+		const Channel& configure(const ChannelConfig& channelConfig, volatile void* write_addr, const volatile void* read_addr, uint transfer_count, bool trigger) const {
 			::dma_channel_configure(channel_, channelConfig.GetEntityPtr(), write_addr, read_addr, transfer_count, trigger);
 			return *this;
 		}
-		const Channel& transfer_from_buffer_now(const volatile void *read_addr, uint32_t transfer_count) const {
+		const Channel& transfer_from_buffer_now(const volatile void* read_addr, uint32_t transfer_count) const {
 			::dma_channel_transfer_from_buffer_now(channel_, read_addr, transfer_count);
 			return *this;
 		}
-		const Channel& transfer_to_buffer_now(volatile void *write_addr, uint32_t transfer_count) const {
+		const Channel& transfer_to_buffer_now(volatile void* write_addr, uint32_t transfer_count) const {
 			::dma_channel_transfer_to_buffer_now(channel_, write_addr, transfer_count);
 			return *this;
 		}
@@ -118,6 +151,8 @@ public:
 		Timer(uint timer) : timer_{timer} {}
 		Timer(const Timer& timer) : timer_{timer.timer_} {}
 	public:
+		operator uint() const { return timer_; }
+	public:
 		const Timer& claim() const { ::dma_timer_claim(timer_); return *this; }
 		const Timer& unclaim() const { ::dma_timer_unclaim(timer_); return *this; }
 		bool is_claimed() const { return ::dma_timer_is_claimed(timer_); }
@@ -126,13 +161,31 @@ public:
 			return *this;
 		}
 	};
-#if 0
-	void dma_irqn_set_channel_enabled(uint irq_index, uint channel, bool enabled)
-	void dma_irqn_set_channel_mask_enabled(uint irq_index, uint32_t channel_mask, bool enabled)
-	bool dma_irqn_get_channel_status(uint irq_index, uint channel)
-	void dma_irqn_acknowledge_channel(uint irq_index, uint channel)
-
-#endif
+	class IRQ_n {
+	private:
+		uint irq_index_;
+	public:
+		IRQ_n(uint irq_index) : irq_index_{irq_index} {}
+		IRQ_n(const IRQ_n& irqn) : irq_index_{irqn.irq_index_} {}
+	public:
+		operator uint() const { return irq_index_; }
+	public:
+		const IRQ_n& set_channel_enabled(uint channel, bool enabled) const {
+			::dma_irqn_set_channel_enabled(irq_index_, channel, enabled);
+			return *this;
+		}
+		const IRQ_n& set_channel_mask_enabled(uint32_t channel_mask, bool enabled) const {
+			::dma_irqn_set_channel_mask_enabled(irq_index_, channel_mask, enabled);
+			return *this;
+		}
+		bool get_channel_status(uint channel) const {
+			return ::dma_irqn_get_channel_status(irq_index_, channel);
+		}
+		const IRQ_n& acknowledge_channel(uint channel) const {
+			::dma_irqn_acknowledge_channel(irq_index_, channel);
+			return *this;
+		}
+	};
 public:
 	static const Channel Channel0;
 	static const Channel Channel1;
@@ -150,6 +203,8 @@ public:
 	static const Timer Timer1;
 	static const Timer Timer2;
 	static const Timer Timer3;
+	static const IRQ_n IRQ_0;
+	static const IRQ_n IRQ_1;
 public:
 	static void claim_mask(uint32_t channel_mask) { ::dma_claim_mask(channel_mask); }
 	static void unclaim_mask(uint32_t channel_mask) { ::dma_unclaim_mask(channel_mask); }
