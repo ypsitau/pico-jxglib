@@ -41,6 +41,12 @@ public:
 		ChannelConfig& set_ring(bool write, uint size_bits) {
 			::channel_config_set_ring(&config_, write, size_bits); return *this;
 		}
+		ChannelConfig& set_ring_to_read(uint size_bits) {
+			::channel_config_set_ring(&config_, false, size_bits); return *this;
+		}
+		ChannelConfig& set_ring_to_write(uint size_bits) {
+			::channel_config_set_ring(&config_, true, size_bits); return *this;
+		}
 		ChannelConfig& set_bswap(bool bswap) {
 			::channel_config_set_bswap(&config_, bswap); return *this;
 		}
