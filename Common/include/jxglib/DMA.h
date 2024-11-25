@@ -170,6 +170,7 @@ public:
 			::dma_timer_set_fraction(timer_, numerator, denominator);
 			return *this;
 		}
+		uint get_dreq() const { return ::dma_get_timer_dreq(timer_); }
 	};
 	class IRQ_n {
 	private:
@@ -218,18 +219,20 @@ public:
 public:
 	static void claim_mask(uint32_t channel_mask) { ::dma_claim_mask(channel_mask); }
 	static void unclaim_mask(uint32_t channel_mask) { ::dma_unclaim_mask(channel_mask); }
-	static int claim_unused_channel(bool required) { return ::dma_claim_unused_channel(required); }
-	static void start_channel_mask(uint32_t chan_mask) { ::dma_start_channel_mask(chan_mask); }
+	static void start_channel_mask(uint32_t channel_mask) { ::dma_start_channel_mask(channel_mask); }
 	static void set_irq0_channel_mask_enabled(uint32_t channel_mask, bool enabled) { ::dma_set_irq0_channel_mask_enabled(channel_mask, enabled); }
 	static void set_irq1_channel_mask_enabled(uint32_t channel_mask, bool enabled) { ::dma_set_irq1_channel_mask_enabled(channel_mask, enabled); }
+	
+	static Channel claim_unused_channel(bool required) { return Channel(::dma_claim_unused_channel(required)); }
+	static Timer claim_unused_timer(bool required) { return Timer(::dma_claim_unused_timer(required)); }
+	
 	static void sniffer_set_byte_swap_enabled(bool swap) { ::dma_sniffer_set_byte_swap_enabled(swap); }
 	static void sniffer_set_output_invert_enabled(bool invert) { ::dma_sniffer_set_output_invert_enabled(invert); }
 	static void sniffer_set_output_reverse_enabled(bool reverse) { ::dma_sniffer_set_output_reverse_enabled(reverse); }
 	static void sniffer_disable(void) { ::dma_sniffer_disable(); }
 	static void sniffer_set_data_accumulator(uint32_t seed_value) { ::dma_sniffer_set_data_accumulator(seed_value); }
 	static uint32_t sniffer_get_data_accumulator(void) { return ::dma_sniffer_get_data_accumulator(); }
-	static Timer claim_unused_timer(bool required) { return Timer(::dma_claim_unused_timer(required)); }
-	static uint get_timer_dreq(uint timer_num) { return ::dma_get_timer_dreq(timer_num); }
+	
 };
 
 }
