@@ -72,7 +72,7 @@ void test_MemoryToPeripheral_Chain()
 		{ count_of(word3) - 1, word3 },
 		{ count_of(word4) - 1, word4 },
 		{ count_of(word5) - 1, word5 },
-		{ 0, NULL}
+		{ 0, NULL }
 	};
 	DMA::Channel channelCtrl(DMA::claim_unused_channel(true));
 	DMA::Channel channelData(DMA::claim_unused_channel(true));
@@ -84,7 +84,7 @@ void test_MemoryToPeripheral_Chain()
 			.set_write_increment(true)
 			.set_dreq(DREQ_FORCE)
 			.set_chain_to(channelCtrl)
-			.set_ring_to_write(3) // (1 << 3) bytes
+			.set_ring_to_write(3) // Wrap round by 8 (= 1 << 3) bytes
 			.set_bswap(false)
 			.set_irq_quiet(false)
 			.set_sniff_enable(false)
@@ -102,18 +102,18 @@ void test_MemoryToPeripheral_Chain()
 			.set_write_increment(false)
 			.set_dreq(::uart_get_dreq(uart_default, true))
 			.set_chain_to(channelCtrl)
-			.set_ring_to_write(3) // Wrap round by 8 (= 1 << 3) bytes
+			.set_ring_to_read(0)
 			.set_bswap(false)
-			.set_irq_quiet(true) // Raise the IRQ flag when 0 is written to a trigger register (end of chain)
+			// In QUIET mode, the channel does not generate IRQs at the end of every transfer block.
+			// Instead, an IRQ is raised when NULL is written to a trigger register, indicating the
+			// end of a control block chain.
+			.set_irq_quiet(true)
 			.set_sniff_enable(false)
 			.set_high_priority(false);
 		channelData.set_config(config)
 			.set_write_addr(&uart_get_hw(uart_default)->dr);
 	} while (0);
 	channelCtrl.start();
-	// The data channel will assert its IRQ flag when it gets a null trigger,
-	// indicating the end of the control block list. We're just going to wait
-	// for the IRQ flag instead of setting up an interrupt handler.
 	while (!(dma_hw->intr & (1u << channelData))) tight_loop_contents();
 	channelData.acknowledge_irq0();
 	channelCtrl.unclaim();
