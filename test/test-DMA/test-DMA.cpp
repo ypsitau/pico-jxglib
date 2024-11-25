@@ -28,7 +28,7 @@ void test_MemoryToMemory()
 		.set_read_increment(true)
 		.set_write_increment(true)
 		.set_dreq(DREQ_FORCE) // see RP2040 Datasheet 2.5.3.1 System DREQ Table
-		.set_chain_to(channel)
+		.set_chain_to(channel) // disable by setting chain_to to itself
 		.set_ring_to_read(0)
 		.set_bswap(false)
 		.set_irq_quiet(false)
@@ -53,7 +53,7 @@ void test_MemoryToPeripheral()
 		.set_read_increment(true)
 		.set_write_increment(false)
 		.set_dreq(::uart_get_dreq(uart_default, true)) // set DREQ of uart_default's tx
-		.set_chain_to(channel)
+		.set_chain_to(channel) // disable by setting chain_to to itself
 		.set_ring_to_read(0)
 		.set_bswap(false)
 		.set_irq_quiet(false)
@@ -80,7 +80,7 @@ void test_MemoryToMemory_SniffCRC()
 		.set_read_increment(true)
 		.set_write_increment(true)
 		.set_dreq(DREQ_FORCE) // see RP2040 Datasheet 2.5.3.1 System DREQ Table
-		.set_chain_to(channel)
+		.set_chain_to(channel) // disable by setting chain_to to itself
 		.set_ring_to_read(0)
 		.set_bswap(false)
 		.set_irq_quiet(false)
@@ -110,7 +110,7 @@ void test_MemoryToPeripheral_SniffCRC()
 		.set_read_increment(true)
 		.set_write_increment(false)
 		.set_dreq(::uart_get_dreq(uart_default, true)) // set DREQ of uart_default's tx
-		.set_chain_to(channel)
+		.set_chain_to(channel) // disable by setting chain_to to itself
 		.set_ring_to_read(0)
 		.set_bswap(false)
 		.set_irq_quiet(false)
@@ -156,7 +156,7 @@ void test_MemoryToPeripheral_Chain()
 			.set_read_increment(true)
 			.set_write_increment(true)
 			.set_dreq(DREQ_FORCE)
-			.set_chain_to(channelCtrl)
+			.set_chain_to(channelCtrl) // disable by setting chain_to to itself
 			.set_ring_to_write(3) // Wrap round by 8 (= 1 << 3) bytes
 			.set_bswap(false)
 			.set_irq_quiet(false)
