@@ -72,7 +72,7 @@ void test_MemoryToPeripheral_Chain()
 		{ count_of(word3) - 1, word3 },
 		{ count_of(word4) - 1, word4 },
 		{ count_of(word5) - 1, word5 },
-		{ 0, NULL }
+		{ 0, nullptr }
 	};
 	DMA::Channel channelCtrl(DMA::claim_unused_channel(true));
 	DMA::Channel channelData(DMA::claim_unused_channel(true));
