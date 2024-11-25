@@ -4,6 +4,19 @@
 
 using namespace jxglib;
 
+uint32_t CalcCRC32(const void* buff, uint32_t length, uint32_t crc)
+{
+	const uint8_t* buffp = reinterpret_cast<const uint8_t*>(buff); 
+	while (length--) {
+		uint32_t byte32 = static_cast<uint32_t>(*buffp);
+		buffp++;
+		for (uint8_t bit = 8; bit; bit--, byte32 >>= 1) {
+			crc = (crc >> 1) ^ (((crc ^ byte32) & 1ul) ? 0xEDB88320ul : 0ul);
+		}
+	}
+	return crc;
+}
+
 void test_MemoryToMemory()
 {
 	const char src[] = "DMA: Memory to Memory";
@@ -51,6 +64,35 @@ void test_MemoryToPeripheral()
 		.set_write_addr(&::uart_get_hw(uart_default)->dr)
 		.set_trans_count_trig(count_of(src));
 	channel.wait_for_finish_blocking();
+	channel.unclaim();
+}
+
+void test_MemoryToPeripheral_SniffCRC()
+{
+	const char src[] = "Memory to Peripheral (UART)\r\n";
+	DMA::Channel channel(DMA::claim_unused_channel(true));
+	DMA::ChannelConfig config;
+	config.set_enable(true)
+		.set_transfer_data_size(DMA_SIZE_8)
+		.set_read_increment(true)
+		.set_write_increment(false)
+		.set_dreq(::uart_get_dreq(uart_default, true)) // set DREQ of uart_default's tx
+		.set_chain_to(channel)
+		.set_ring_to_read(0)
+		.set_bswap(false)
+		.set_irq_quiet(false)
+		.set_sniff_enable(true) // enable CRC calculation
+		.set_high_priority(false);
+	DMA::sniffer_set_data_accumulator(static_cast<uint32_t>(-1));
+	DMA::sniffer_set_output_reverse_enabled(true);
+	channel.sniffer_enable(DMA_SNIFF_CTRL_CALC_VALUE_CRC32R, true);
+	channel.set_config(config)
+		.set_read_addr(src)
+		.set_write_addr(&::uart_get_hw(uart_default)->dr)
+		.set_trans_count_trig(count_of(src));
+	channel.wait_for_finish_blocking();
+	uint32_t crc = DMA::sniffer_get_data_accumulator();
+	::printf("CRC: %08x %08x\n", crc, CalcCRC32(src, count_of(src), static_cast<uint32_t>(-1)));
 	channel.unclaim();
 }
 
@@ -125,5 +167,6 @@ int main()
 	::stdio_init_all();
 	//test_MemoryToMemory();
 	//test_MemoryToPeripheral();
-	test_MemoryToPeripheral_Chain();
+	//test_MemoryToPeripheral_Chain();
+	test_MemoryToPeripheral_SniffCRC();
 }

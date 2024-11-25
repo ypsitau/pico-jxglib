@@ -149,6 +149,10 @@ public:
 		const Channel& cleanup() const { ::dma_channel_cleanup(channel_); return *this; }
 		ChannelConfig get_default_config() const { return ChannelConfig(::dma_channel_get_default_config(channel_)); }
 		ChannelConfig get_config() const { return ChannelConfig(::dma_get_channel_config(channel_)); }
+		const Channel& sniffer_enable(uint mode, bool force_channel_enabled) const {
+			::dma_sniffer_enable(channel_, mode, force_channel_enabled);
+			return *this;
+		}
 	};
 	class Timer {
 	private:
@@ -218,7 +222,6 @@ public:
 	static void start_channel_mask(uint32_t chan_mask) { ::dma_start_channel_mask(chan_mask); }
 	static void set_irq0_channel_mask_enabled(uint32_t channel_mask, bool enabled) { ::dma_set_irq0_channel_mask_enabled(channel_mask, enabled); }
 	static void set_irq1_channel_mask_enabled(uint32_t channel_mask, bool enabled) { ::dma_set_irq1_channel_mask_enabled(channel_mask, enabled); }
-	static void sniffer_enable(uint channel, uint mode, bool force_channel_enable) { ::dma_sniffer_enable(channel, mode, force_channel_enable); }
 	static void sniffer_set_byte_swap_enabled(bool swap) { ::dma_sniffer_set_byte_swap_enabled(swap); }
 	static void sniffer_set_output_invert_enabled(bool invert) { ::dma_sniffer_set_output_invert_enabled(invert); }
 	static void sniffer_set_output_reverse_enabled(bool reverse) { ::dma_sniffer_set_output_reverse_enabled(reverse); }
