@@ -76,6 +76,7 @@ public:
 		const Channel& claim() const { ::dma_channel_claim(channel_); return *this; }
 		const Channel& unclaim() const { ::dma_channel_unclaim(channel_); return *this; }
 		bool is_claimed() const { return ::dma_channel_is_claimed(channel_); }
+		dma_channel_hw_t* get_hw() { return ::dma_channel_hw_addr(channel_); }
 		const Channel& set_config(const ChannelConfig& channelConfig, bool trigger) const {
 			::dma_channel_set_config(channel_, channelConfig.GetEntityPtr(), trigger);
 			return *this;
@@ -149,10 +150,29 @@ public:
 		const Channel& cleanup() const { ::dma_channel_cleanup(channel_); return *this; }
 		ChannelConfig get_default_config() const { return ChannelConfig(::dma_channel_get_default_config(channel_)); }
 		ChannelConfig get_config() const { return ChannelConfig(::dma_get_channel_config(channel_)); }
-		const Channel& sniffer_enable(uint mode, bool force_channel_enabled) const {
+		const Channel& sniffer_enable(uint mode, bool force_channel_enabled = true) const {
 			::dma_sniffer_enable(channel_, mode, force_channel_enabled);
 			return *this;
 		}
+		const Channel& sniffer_enable_CALC_VALUE_CRC32(bool force_channel_enabled = true) const {
+			return sniffer_enable(DMA_SNIFF_CTRL_CALC_VALUE_CRC32, force_channel_enabled);	// 0x0
+		}
+		const Channel& sniffer_enable_CALC_VALUE_CRC32R(bool force_channel_enabled = true) const {
+			return sniffer_enable(DMA_SNIFF_CTRL_CALC_VALUE_CRC32R, force_channel_enabled);	// 0x1
+		}
+		const Channel& sniffer_enable_CALC_VALUE_CRC16(bool force_channel_enabled = true) const {
+			return sniffer_enable(DMA_SNIFF_CTRL_CALC_VALUE_CRC16, force_channel_enabled);	// 0x2
+		}
+		const Channel& sniffer_enable_CALC_VALUE_CRC16R(bool force_channel_enabled = true) const {
+			return sniffer_enable(DMA_SNIFF_CTRL_CALC_VALUE_CRC16R, force_channel_enabled);	// 0x3
+		}
+		const Channel& sniffer_enable_CALC_VALUE_EVEN(bool force_channel_enabled = true) const {
+			return sniffer_enable(DMA_SNIFF_CTRL_CALC_VALUE_EVEN, force_channel_enabled);	// 0xe
+		}
+		const Channel& sniffer_enable_CALC_VALUE_SUM(bool force_channel_enabled = true) const {
+			return sniffer_enable(DMA_SNIFF_CTRL_CALC_VALUE_SUM, force_channel_enabled);	// 0xf
+		}
+		bool get_raw_interrupt_status() const { return !!(dma_hw->intr & (1u << channel_)); }
 	};
 	class Timer {
 	private:
@@ -197,6 +217,15 @@ public:
 			return *this;
 		}
 	};
+	class Sniffer {
+	public:
+		static void set_byte_swap_enabled(bool swap) { ::dma_sniffer_set_byte_swap_enabled(swap); }
+		static void set_output_invert_enabled(bool invert) { ::dma_sniffer_set_output_invert_enabled(invert); }
+		static void set_output_reverse_enabled(bool reverse) { ::dma_sniffer_set_output_reverse_enabled(reverse); }
+		static void disable(void) { ::dma_sniffer_disable(); }
+		static void set_data_accumulator(uint32_t seed_value) { ::dma_sniffer_set_data_accumulator(seed_value); }
+		static uint32_t get_data_accumulator(void) { return ::dma_sniffer_get_data_accumulator(); }
+	};
 public:
 	static const Channel Channel0;
 	static const Channel Channel1;
@@ -217,22 +246,14 @@ public:
 	static const IRQ_n IRQ_0;
 	static const IRQ_n IRQ_1;
 public:
+	static Channel claim_unused_channel(bool required) { return Channel(::dma_claim_unused_channel(required)); }
+	static Timer claim_unused_timer(bool required) { return Timer(::dma_claim_unused_timer(required)); }
+public:
 	static void claim_mask(uint32_t channel_mask) { ::dma_claim_mask(channel_mask); }
 	static void unclaim_mask(uint32_t channel_mask) { ::dma_unclaim_mask(channel_mask); }
 	static void start_channel_mask(uint32_t channel_mask) { ::dma_start_channel_mask(channel_mask); }
 	static void set_irq0_channel_mask_enabled(uint32_t channel_mask, bool enabled) { ::dma_set_irq0_channel_mask_enabled(channel_mask, enabled); }
 	static void set_irq1_channel_mask_enabled(uint32_t channel_mask, bool enabled) { ::dma_set_irq1_channel_mask_enabled(channel_mask, enabled); }
-	
-	static Channel claim_unused_channel(bool required) { return Channel(::dma_claim_unused_channel(required)); }
-	static Timer claim_unused_timer(bool required) { return Timer(::dma_claim_unused_timer(required)); }
-	
-	static void sniffer_set_byte_swap_enabled(bool swap) { ::dma_sniffer_set_byte_swap_enabled(swap); }
-	static void sniffer_set_output_invert_enabled(bool invert) { ::dma_sniffer_set_output_invert_enabled(invert); }
-	static void sniffer_set_output_reverse_enabled(bool reverse) { ::dma_sniffer_set_output_reverse_enabled(reverse); }
-	static void sniffer_disable(void) { ::dma_sniffer_disable(); }
-	static void sniffer_set_data_accumulator(uint32_t seed_value) { ::dma_sniffer_set_data_accumulator(seed_value); }
-	static uint32_t sniffer_get_data_accumulator(void) { return ::dma_sniffer_get_data_accumulator(); }
-	
 };
 
 }
