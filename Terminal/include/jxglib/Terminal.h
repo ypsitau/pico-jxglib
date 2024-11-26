@@ -56,7 +56,7 @@ public:
 	virtual Printable& Clear() override;
 	virtual Printable& Locate(int col, int row) override;
 	virtual Printable& Flush() override;
-	virtual Printable& Puts(const char* str) override;
+	virtual Printable& Print(const char* str) override;
 };
 
 }

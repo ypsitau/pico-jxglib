@@ -53,7 +53,7 @@ Printable& Terminal::Locate(int col, int row)
 	return *this;
 }
 
-Printable& Terminal::Puts(const char* str)
+Printable& Terminal::Print(const char* str)
 {
 	Drawable& drawable = GetDrawable();
 	const FontSet& fontSet = drawable.GetFont();

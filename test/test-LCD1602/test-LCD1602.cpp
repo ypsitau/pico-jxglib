@@ -4,15 +4,8 @@
 
 using namespace jxglib;
 
-int main()
+void test_PrintAllChars(LCD1602& lcd)
 {
-	::stdio_init_all();
-	::i2c_init(i2c0, 400000);
-	GPIO4.set_function_I2C0_SDA().pull_up();
-	GPIO5.set_function_I2C0_SCL().pull_up();
-	LCD1602 lcd(i2c0);
-	lcd.Initialize();
-	//lcd.raw.FunctionSet(0, 0, 1);
 	const char* strTbl[] = {
 		" !\"#$%&'()*+,-./"
 		"0123456789:;<=>?",
@@ -29,9 +22,31 @@ int main()
 	};
 	for (;;) {
 		for (int i = 0; i < count_of(strTbl); i++) {
-			lcd.ClearDisplay();
+			lcd.Clear();
 			lcd.Print(strTbl[i]);
 			::sleep_ms(1000);
 		}
 	}
+}
+
+void test_Scroll(LCD1602& lcd)
+{
+	lcd.Clear();
+	for (int i = 0; i < 100; i++) {
+		lcd.Printf("Hello %d\n", i);
+		::sleep_ms(100);
+	}
+}
+
+int main()
+{
+	::stdio_init_all();
+	::i2c_init(i2c0, 400000);
+	GPIO4.set_function_I2C0_SDA().pull_up();
+	GPIO5.set_function_I2C0_SCL().pull_up();
+	LCD1602 lcd(i2c0);
+	lcd.Initialize();
+	//lcd.raw.FunctionSet(0, 0, 1);
+	//test_PrintAllChars(lcd);
+	test_Scroll(lcd);
 }

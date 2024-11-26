@@ -6,13 +6,14 @@
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
 #include "jxglib/Common.h"
+#include "jxglib/Printable.h"
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
 // LCD1602
 //------------------------------------------------------------------------------
-struct LCD1602 {
+struct LCD1602 : public Printable {
 public:
 	class Raw {
 	private:
@@ -76,22 +77,26 @@ public:
 	};
 public:
 	static const uint8_t DefaultAddr = 0x27;
+	static const int nCols = 16;
+	static const int nRows = 2;
+public:
 	Raw raw;
 private:
-	uint8_t x_, y_;
-	uint8_t vram_[16 * 2];
+	int x_, y_;
+	char chPrev_;
+	uint8_t vram_[nCols * nRows];
 public:
-	LCD1602(i2c_inst_t* i2c, uint8_t addr = DefaultAddr) : raw(i2c, addr), x_{0}, y_{0} {}
+	LCD1602(i2c_inst_t* i2c, uint8_t addr = DefaultAddr) : raw(i2c, addr), x_{0}, y_{0}, chPrev_{'\0'} {}
 public:
 	void Initialize();
-	LCD1602& ClearDisplay();
-	LCD1602& ReturnHome();
-	LCD1602& SetPosition(uint8_t x, uint8_t y);
-	LCD1602& PutChar(char ch);
-	LCD1602& Print(const char* str, const char* strEnd = nullptr);
-	LCD1602& FlushVRAM();
 public:
-	static uint8_t CalcAddr(uint8_t x, uint8_t y) { return (y << 6) | x; }
+	// Virtual functions of Printable
+	Printable& Clear() override;
+	Printable& Flush() override;
+	Printable& Locate(int x, int y) override;
+	Printable& Print(const char* str) override;
+public:
+	static uint8_t CalcAddr(int x, int y) { return static_cast<uint8_t>((y << 6) | x); }
 };
 
 }

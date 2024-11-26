@@ -31,7 +31,8 @@ public:
 	virtual Printable& Clear() = 0;
 	virtual Printable& Flush() = 0;
 	virtual Printable& Locate(int col, int row) = 0;
-	virtual Printable& Puts(const char* str) = 0;
+	virtual Printable& Print(const char* str) = 0;
+	virtual Printable& Println(const char* str = "");
 	virtual Printable& VPrintf(const char* format, va_list args);
 	Printable& Printf(const char* format, ...);
 	Printable& Dump(const void* buff, int bytes);

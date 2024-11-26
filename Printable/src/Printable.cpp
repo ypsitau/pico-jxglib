@@ -14,7 +14,14 @@ Printable& Printable::VPrintf(const char* format, va_list args)
 {
 	char buff[256];
 	::vsnprintf(buff, sizeof(buff), format, args);
-	Puts(buff);
+	Print(buff);
+	return *this;
+}
+
+Printable& Printable::Println(const char* str)
+{
+	Print(str);
+	Print("\n");
 	return *this;
 }
 
@@ -45,11 +52,11 @@ Printable& Printable::Dump(const void* buff, int bytes)
 		Printf(formatData, *p);
 		iCol++;
 		if (iCol == dumpAttr.nCols) {
-			Puts("\n");
+			Println();
 			iCol = 0;
 		}
 	}
-	if (iCol > 0) Puts("\n");
+	if (iCol > 0) Println();
 	return *this;
 }
 

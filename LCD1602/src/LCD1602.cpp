@@ -19,54 +19,55 @@ void LCD1602::Initialize()
 	raw.FunctionSet(0, 1, 0);
 	raw.DisplayOnOffControl(1, 0, 0);
 	raw.ClearDisplay();
-	::memset(vram_, 0x00, sizeof(vram_));
+	::memset(vram_, ' ', sizeof(vram_));
 }
 
-LCD1602& LCD1602::ReturnHome()
+Printable& LCD1602::Clear()
 {
 	x_ = 0, y_ = 0;
-	raw.ReturnHome();
-	return *this;
-}
-
-LCD1602& LCD1602::ClearDisplay()
-{
-	x_ = 0, y_ = 0;
+	chPrev_ = '\0';
 	raw.ClearDisplay();
+	::memset(vram_, ' ', sizeof(vram_));
 	return *this;
 }
 
-LCD1602& LCD1602::SetPosition(uint8_t x, uint8_t y)
+Printable& LCD1602::Flush()
+{
+	raw.SetDisplayDataRAMAddress(CalcAddr(0, 0));
+	const uint8_t* p = vram_;
+	for (int i = 0; i < sizeof(vram_); i++, p++) raw.WriteData(*p);
+	return *this;
+}
+
+Printable& LCD1602::Locate(int x, int y)
 {
 	x_ = x, y_ = y;
+	chPrev_ = '\0';
 	raw.SetDisplayDataRAMAddress(CalcAddr(x_, y_));
 	return *this;
 }
 
-LCD1602& LCD1602::PutChar(char ch)
+Printable& LCD1602::Print(const char* str)
 {
-	if (y_ < 2) {
-		vram_[x_ + y_ * 16] = static_cast<uint8_t>(ch);
-		raw.WriteData(static_cast<uint8_t>(ch));
-		x_++;
+	for (const char* p = str; *p; p++) {
+		char ch = *p;
+		if (chPrev_ == '\n' || x_ >= nCols) {
+			x_ = 0, y_++;
+			if (y_ >= nRows) {
+				::memcpy(vram_, vram_ + nCols, sizeof(vram_) - nCols);
+				::memset(vram_ + sizeof(vram_) - nCols, ' ', nCols);
+				Flush();
+				y_ = nRows - 1;
+			}
+			raw.SetDisplayDataRAMAddress(CalcAddr(x_, y_));
+		}
+		if (ch != '\n') {
+			vram_[x_ + y_ * nCols] = static_cast<uint8_t>(ch);
+			raw.WriteData(static_cast<uint8_t>(ch));
+			x_++;
+		}
+		chPrev_ = ch;
 	}
-	if (x_ >= 16) {
-		x_ = 0, y_++;
-		if (y_ < 2) raw.SetDisplayDataRAMAddress(CalcAddr(x_, y_));
-	}
-	return *this;
-}
-
-LCD1602& LCD1602::Print(const char* str, const char* strEnd)
-{
-	for (const char* p = str; *p && p != strEnd; p++) PutChar(*p);
-	return *this;
-}
-
-LCD1602& LCD1602::FlushVRAM()
-{
-	const uint8_t* p = vram_;
-	for (int i = 0; i < sizeof(vram_); i++, p++) raw.WriteData(*p);
 	return *this;
 }
 
