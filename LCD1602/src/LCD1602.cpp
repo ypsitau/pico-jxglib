@@ -60,8 +60,15 @@ Printable& LCD1602::Print(const char* str)
 				y_ = nRows - 1;
 			}
 			raw.SetDisplayDataRAMAddress(CalcAddr(x_, y_));
+		//} else if (chPrev_ == '\r') {
+		//	x_ = 0;
+		//	uint8_t* p = vram_ + y_ * nCols;
+		//	::memset(p, ' ', nCols);
+		//	raw.SetDisplayDataRAMAddress(CalcAddr(x_, y_));
+		//	for (int i = 0; i < nCols; i++, p++) raw.WriteData(*p);
+		//	raw.SetDisplayDataRAMAddress(CalcAddr(x_, y_));
 		}
-		if (ch != '\n') {
+		if (ch != '\n' && ch != '\r') {
 			vram_[x_ + y_ * nCols] = static_cast<uint8_t>(ch);
 			raw.WriteData(static_cast<uint8_t>(ch));
 			x_++;

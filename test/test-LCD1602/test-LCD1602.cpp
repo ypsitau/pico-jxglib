@@ -38,6 +38,15 @@ void test_Scroll(LCD1602& lcd)
 	}
 }
 
+void test_Indicator(LCD1602& lcd)
+{
+	lcd.Clear();
+	for (int i = 0; i <= 16; i++) {
+		lcd.Printf("%d\n", 16 - i);
+		::sleep_ms(100);
+	}
+}
+
 int main()
 {
 	::stdio_init_all();
@@ -48,5 +57,6 @@ int main()
 	lcd.Initialize();
 	//lcd.raw.FunctionSet(0, 0, 1);
 	//test_PrintAllChars(lcd);
-	test_Scroll(lcd);
+	//test_Scroll(lcd);
+	test_Indicator(lcd);
 }
