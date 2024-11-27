@@ -1,7 +1,14 @@
 #include <stdio.h>
+#include <malloc.h>
 #include <memory.h>
 #include "pico/stdlib.h"
 #include "jxglib/DMA.h"
+
+#if defined(NDEBUG)
+static const char* compileVariant = "Release";
+#else
+static const char* compileVariant = "Debug";
+#endif
 
 using namespace jxglib;
 
@@ -31,6 +38,7 @@ void test_MemoryToMemory()
 	char dst[count_of(src)];
 	DMA::Channel channel(DMA::claim_unused_channel(true));
 	DMA::ChannelConfig config;
+	absolute_time_t absTimeStart = ::get_absolute_time();
 	config.set_enable(true)
 		.set_transfer_data_size(DMA_SIZE_8)
 		.set_read_increment(true)
@@ -47,7 +55,8 @@ void test_MemoryToMemory()
 		.set_write_addr(dst)
 		.set_trans_count_trig(count_of(src))
 		.wait_for_finish_blocking();
-	::printf("Transferred by DMA#%d: %s\n", static_cast<uint>(channel), dst);
+	int64_t timeUSec = ::absolute_time_diff_us(absTimeStart, ::get_absolute_time());
+	::printf("Transferred by DMA#%d %lldusec: %s\n", static_cast<uint>(channel), timeUSec, dst);
 	channel.unclaim();
 }
 
@@ -244,13 +253,233 @@ void test_MemoryToPeripheral_SnifferCalcCRC()
 	channel.unclaim();
 }
 
+void test_Benchmark()
+{
+	::printf("\ntest_Benchmark\n");
+	uint8_t* srcRAM = reinterpret_cast<uint8_t*>(::malloc(65536));
+	const uint8_t* srcFlash = reinterpret_cast<const uint8_t*>(0x10000000);
+	uint8_t* dst = reinterpret_cast<uint8_t*>(::malloc(65536));
+	int64_t timeUSec_DMA8Bit, timeUSec_DMA8BitPreConfig;
+	int64_t timeUSec_DMA16Bit, timeUSec_DMA16BitPreConfig;
+	int64_t timeUSec_DMA32Bit, timeUSec_DMA32BitPreConfig;
+	int64_t timeUSec_CPU8Bit, timeUSec_CPU16Bit, timeUSec_CPU32Bit;
+	int64_t timeUSec_memcpy;
+	struct TestCase {
+		const char* name;
+		const uint8_t* src;
+		int bytesToTrans;
+	} testCaseTbl[] = {
+		{ "RAM to RAM", srcRAM, 64 },
+		{ "Flash to RAM", srcFlash, 64 },
+		{ "RAM to RAM", srcRAM, 256 },
+		{ "Flash to RAM", srcFlash, 256 },
+		{ "RAM to RAM", srcRAM, 1024 },
+		{ "Flash to RAM", srcFlash, 1024 },
+		{ "RAM to RAM", srcRAM, 4096 },
+		{ "Flash to RAM", srcFlash, 4096 },
+		{ "RAM to RAM", srcRAM, 16384 },
+		{ "Flash to RAM", srcFlash, 16384 },
+		{ "RAM to RAM", srcRAM, 65536 },
+		{ "Flash to RAM", srcFlash, 65536 },
+	};
+	::memcpy(srcRAM, srcFlash, 65536);
+	for (int iTestCase = 0; iTestCase < count_of(testCaseTbl); iTestCase++) {
+		const TestCase& testCase = testCaseTbl[iTestCase];
+		const uint8_t* src = testCase.src;
+		int bytesToTrans = testCase.bytesToTrans;
+		do {	
+			absolute_time_t absTimeStart = ::get_absolute_time();
+			DMA::Channel channel(DMA::claim_unused_channel(true));
+			DMA::ChannelConfig config;
+			config.set_enable(true)
+				.set_transfer_data_size(DMA_SIZE_8)
+				.set_read_increment(true)
+				.set_write_increment(true)
+				.set_dreq(DREQ_FORCE) // see RP2040 Datasheet 2.5.3.1 System DREQ Table
+				.set_chain_to(channel) // disable by setting chain_to to itself
+				.set_ring_to_read(0)
+				.set_bswap(false)
+				.set_irq_quiet(false)
+				.set_sniff_enable(false)
+				.set_high_priority(false);
+			channel.set_config(config);
+			channel.set_read_addr(src)
+				.set_write_addr(dst)
+				.set_trans_count_trig(bytesToTrans)
+				.wait_for_finish_blocking();
+			channel.unclaim();
+			timeUSec_DMA8Bit = ::absolute_time_diff_us(absTimeStart, ::get_absolute_time());
+		} while (0);
+		do {	
+			DMA::Channel channel(DMA::claim_unused_channel(true));
+			DMA::ChannelConfig config;
+			config.set_enable(true)
+				.set_transfer_data_size(DMA_SIZE_8)
+				.set_read_increment(true)
+				.set_write_increment(true)
+				.set_dreq(DREQ_FORCE) // see RP2040 Datasheet 2.5.3.1 System DREQ Table
+				.set_chain_to(channel) // disable by setting chain_to to itself
+				.set_ring_to_read(0)
+				.set_bswap(false)
+				.set_irq_quiet(false)
+				.set_sniff_enable(false)
+				.set_high_priority(false);
+			channel.set_config(config);
+			absolute_time_t absTimeStart = ::get_absolute_time();
+			channel.set_read_addr(src)
+				.set_write_addr(dst)
+				.set_trans_count_trig(bytesToTrans)
+				.wait_for_finish_blocking();
+			timeUSec_DMA8BitPreConfig = ::absolute_time_diff_us(absTimeStart, ::get_absolute_time());
+			channel.unclaim();
+		} while (0);
+		do {	
+			absolute_time_t absTimeStart = ::get_absolute_time();
+			DMA::Channel channel(DMA::claim_unused_channel(true));
+			DMA::ChannelConfig config;
+			config.set_enable(true)
+				.set_transfer_data_size(DMA_SIZE_16)
+				.set_read_increment(true)
+				.set_write_increment(true)
+				.set_dreq(DREQ_FORCE) // see RP2040 Datasheet 2.5.3.1 System DREQ Table
+				.set_chain_to(channel) // disable by setting chain_to to itself
+				.set_ring_to_read(0)
+				.set_bswap(false)
+				.set_irq_quiet(false)
+				.set_sniff_enable(false)
+				.set_high_priority(false);
+			channel.set_config(config);
+			channel.set_read_addr(src)
+				.set_write_addr(dst)
+				.set_trans_count_trig(bytesToTrans / sizeof(uint16_t))
+				.wait_for_finish_blocking();
+			channel.unclaim();
+			timeUSec_DMA16Bit = ::absolute_time_diff_us(absTimeStart, ::get_absolute_time());
+		} while (0);
+		do {	
+			DMA::Channel channel(DMA::claim_unused_channel(true));
+			DMA::ChannelConfig config;
+			config.set_enable(true)
+				.set_transfer_data_size(DMA_SIZE_16)
+				.set_read_increment(true)
+				.set_write_increment(true)
+				.set_dreq(DREQ_FORCE) // see RP2040 Datasheet 2.5.3.1 System DREQ Table
+				.set_chain_to(channel) // disable by setting chain_to to itself
+				.set_ring_to_read(0)
+				.set_bswap(false)
+				.set_irq_quiet(false)
+				.set_sniff_enable(false)
+				.set_high_priority(false);
+			channel.set_config(config);
+			absolute_time_t absTimeStart = ::get_absolute_time();
+			channel.set_read_addr(src)
+				.set_write_addr(dst)
+				.set_trans_count_trig(bytesToTrans / sizeof(uint16_t))
+				.wait_for_finish_blocking();
+			timeUSec_DMA16BitPreConfig = ::absolute_time_diff_us(absTimeStart, ::get_absolute_time());
+			channel.unclaim();
+		} while (0);
+		do {	
+			absolute_time_t absTimeStart = ::get_absolute_time();
+			DMA::Channel channel(DMA::claim_unused_channel(true));
+			DMA::ChannelConfig config;
+			config.set_enable(true)
+				.set_transfer_data_size(DMA_SIZE_32)
+				.set_read_increment(true)
+				.set_write_increment(true)
+				.set_dreq(DREQ_FORCE) // see RP2040 Datasheet 2.5.3.1 System DREQ Table
+				.set_chain_to(channel) // disable by setting chain_to to itself
+				.set_ring_to_read(0)
+				.set_bswap(false)
+				.set_irq_quiet(false)
+				.set_sniff_enable(false)
+				.set_high_priority(false);
+			channel.set_config(config);
+			channel.set_read_addr(src)
+				.set_write_addr(dst)
+				.set_trans_count_trig(bytesToTrans / sizeof(uint32_t))
+				.wait_for_finish_blocking();
+			channel.unclaim();
+			timeUSec_DMA32Bit = ::absolute_time_diff_us(absTimeStart, ::get_absolute_time());
+		} while (0);
+		do {	
+			DMA::Channel channel(DMA::claim_unused_channel(true));
+			DMA::ChannelConfig config;
+			config.set_enable(true)
+				.set_transfer_data_size(DMA_SIZE_32)
+				.set_read_increment(true)
+				.set_write_increment(true)
+				.set_dreq(DREQ_FORCE) // see RP2040 Datasheet 2.5.3.1 System DREQ Table
+				.set_chain_to(channel) // disable by setting chain_to to itself
+				.set_ring_to_read(0)
+				.set_bswap(false)
+				.set_irq_quiet(false)
+				.set_sniff_enable(false)
+				.set_high_priority(false);
+			channel.set_config(config);
+			absolute_time_t absTimeStart = ::get_absolute_time();
+			channel.set_read_addr(src)
+				.set_write_addr(dst)
+				.set_trans_count_trig(bytesToTrans / sizeof(uint32_t))
+				.wait_for_finish_blocking();
+			timeUSec_DMA32BitPreConfig = ::absolute_time_diff_us(absTimeStart, ::get_absolute_time());
+			channel.unclaim();
+		} while (0);
+		do {
+			absolute_time_t absTimeStart = ::get_absolute_time();
+			const uint8_t* pSrc = src;
+			uint8_t* pDst = dst;
+			for (int i = bytesToTrans; i > 0; i--) *pDst++ = *pSrc++;
+			timeUSec_CPU8Bit = ::absolute_time_diff_us(absTimeStart, ::get_absolute_time());
+		} while (0);
+		do {
+			absolute_time_t absTimeStart = ::get_absolute_time();
+			const uint16_t* pSrc = reinterpret_cast<const uint16_t*>(src);
+			uint16_t* pDst = reinterpret_cast<uint16_t*>(dst);
+			for (int i = bytesToTrans / sizeof(uint16_t); i > 0; i--) *pDst++ = *pSrc++;
+			timeUSec_CPU16Bit = ::absolute_time_diff_us(absTimeStart, ::get_absolute_time());
+		} while (0);
+		do {
+			absolute_time_t absTimeStart = ::get_absolute_time();
+			const uint32_t* pSrc = reinterpret_cast<const uint32_t*>(src);
+			uint32_t* pDst = reinterpret_cast<uint32_t*>(dst);
+			for (int i = bytesToTrans / sizeof(uint32_t); i > 0; i--) *pDst++ = *pSrc++;
+			timeUSec_CPU32Bit = ::absolute_time_diff_us(absTimeStart, ::get_absolute_time());
+		} while (0);
+		do {
+			absolute_time_t absTimeStart = ::get_absolute_time();
+			::memcpy(dst, src, bytesToTrans);
+			timeUSec_memcpy = ::absolute_time_diff_us(absTimeStart, ::get_absolute_time());
+		} while (0);
+		::printf("%s %d bytes [%s]\n"
+				"  DMA(8bit)              %lld usec\n"
+				"  DMA(8bit, pre-config)  %lld usec\n"
+				"  DMA(16bit)             %lld usec\n"
+				"  DMA(16bit, pre-config) %lld usec\n"
+				"  DMA(32bit)             %lld usec\n"
+				"  DMA(32bit, pre-config) %lld usec\n"
+				"  CPU(8bit)              %lld usec\n"
+				"  CPU(16bit)             %lld usec\n"
+				"  CPU(32bit)             %lld usec\n"
+				"  memcpy                 %lld usec\n",
+			testCase.name, bytesToTrans, compileVariant,
+			timeUSec_DMA8Bit, timeUSec_DMA8BitPreConfig,
+			timeUSec_DMA16Bit, timeUSec_DMA16BitPreConfig,
+			timeUSec_DMA32Bit, timeUSec_DMA32BitPreConfig,
+			timeUSec_CPU8Bit, timeUSec_CPU16Bit, timeUSec_CPU32Bit, timeUSec_memcpy);
+	}
+	::free(srcRAM);
+	::free(dst);
+}
+
 int main()
 {
 	::stdio_init_all();
 	::printf("----\n");
-	test_MemoryToMemory();
-	test_MemoryToPeripheral();
-	test_MemoryToPeripheral_Chain();
-	test_MemoryToMemory_SnifferCalcCRC();
-	test_MemoryToPeripheral_SnifferCalcCRC();
+	//test_MemoryToMemory();
+	//test_MemoryToPeripheral();
+	//test_MemoryToPeripheral_Chain();
+	//test_MemoryToMemory_SnifferCalcCRC();
+	//test_MemoryToPeripheral_SnifferCalcCRC();
+	test_Benchmark();
 }
