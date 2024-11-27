@@ -12,6 +12,7 @@ add_subdirectory(Image)
 add_subdirectory(Printable)
 add_subdirectory(Stream)
 add_subdirectory(Terminal)
+add_subdirectory(UART)
 # Device driver
 add_subdirectory(LCD1602)
 add_subdirectory(SSD1306)
@@ -28,7 +29,8 @@ target_link_libraries(jxglib INTERFACE
 	jxglib_Drawable
 	jxglib_Font
 	jxglib_Image
-	jxglib_Terminal)
+	jxglib_Terminal
+	jxglib_UART)
 
 add_library(jxglib_device INTERFACE)
 	
