@@ -54,7 +54,8 @@ int main()
 	display4.Initialize();
 	display5.Initialize();
 	Terminal terminal;
-	terminal.AttachOutput(display2, Terminal::AttachDir::Rotate90);
+	terminal.AttachOutput(display2);
+	//terminal.AttachOutput(display2, Terminal::AttachDir::Rotate90);
 	//terminal.AttachOutput(display3);
 	//terminal.AttachOutput(display4, Terminal::AttachDir::Rotate90);
 	terminal.SetFont(Font::shinonome12);
@@ -64,7 +65,7 @@ int main()
 	terminal.Clear();
 	//terminal.SetFont(Font::shinonome16);
 #if 1
-	terminal.dumpAttr.DigitsAddr(4).Cols((terminal.GetColNum() - 4 - 1) / 3);
+	terminal.dumpStyle.DigitsAddr(4).Cols((terminal.GetColNum() - 4 - 1) / 3);
 	terminal.Dump(reinterpret_cast<const void*>(0), 8 * 40);
 #endif
 #if 0

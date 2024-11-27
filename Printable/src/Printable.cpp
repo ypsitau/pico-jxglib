@@ -38,7 +38,7 @@ Printable& Printable::Dump(const void* buff, int bytes)
 {
 	const char* formatAddr;
 	const char* formatData;
-	if (dumpAttr.upperCaseFlag) {
+	if (dumpStyle.upperCaseFlag) {
 		formatAddr = "%0*X ";
 		formatData = " %02X";
 	} else {
@@ -48,10 +48,10 @@ Printable& Printable::Dump(const void* buff, int bytes)
 	const uint8_t* p = reinterpret_cast<const uint8_t*>(buff);
 	int iCol = 0;
 	for (int i = 0; i < bytes; i++, p++) {
-		if (iCol == 0) Printf(formatAddr, dumpAttr.nDigitsAddr, i);
+		if (iCol == 0) Printf(formatAddr, dumpStyle.nDigitsAddr, i);
 		Printf(formatData, *p);
 		iCol++;
-		if (iCol == dumpAttr.nCols) {
+		if (iCol == dumpStyle.nCols) {
 			Println();
 			iCol = 0;
 		}

@@ -12,21 +12,21 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class Printable {
 public:
-	class DumpAttr {
+	class DumpStyle {
 	public:
 		bool upperCaseFlag;
 		int nDigitsAddr;
 		int nCols;
 	public:
-		DumpAttr() : upperCaseFlag{true}, nDigitsAddr{4}, nCols{8} {}
+		DumpStyle() : upperCaseFlag{true}, nDigitsAddr{4}, nCols{8} {}
 	public:
-		DumpAttr& UpperCase() { upperCaseFlag = true; return *this; }
-		DumpAttr& LowerCase() { upperCaseFlag = false; return *this; }
-		DumpAttr& DigitsAddr(int nDigitsAddr) { this->nDigitsAddr = nDigitsAddr; return *this; }
-		DumpAttr& Cols(int nCols) { this->nCols = nCols; return *this; }
+		DumpStyle& UpperCase() { upperCaseFlag = true; return *this; }
+		DumpStyle& LowerCase() { upperCaseFlag = false; return *this; }
+		DumpStyle& DigitsAddr(int nDigitsAddr) { this->nDigitsAddr = nDigitsAddr; return *this; }
+		DumpStyle& Cols(int nCols) { this->nCols = nCols; return *this; }
 	};
 public:
-	DumpAttr dumpAttr;
+	DumpStyle dumpStyle;
 public:
 	virtual Printable& Clear() = 0;
 	virtual Printable& Flush() = 0;
