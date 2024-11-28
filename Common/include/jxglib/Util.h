@@ -10,6 +10,8 @@ namespace jxglib {
 template<typename T> T ChooseMin(T a, T b) { return (a < b)? a : b; }
 template<typename T> T ChooseMax(T a, T b) { return (a > b)? a : b; }
 
+template<typename T> void Swap(T* a, T* b) { T tmp = *a; *a = *b, *b = tmp; }
+
 template<typename T>
 void SortPair(T value1, T value2, T* pValueMin, T* pValueMax)
 {
