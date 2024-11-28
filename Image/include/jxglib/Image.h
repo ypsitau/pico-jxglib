@@ -154,35 +154,35 @@ public:
 	template<typename T_Setter> class Writer : public Sequencer {
 	public:
 		static Writer HorzFromNW(Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
-			return Writer(image.GetPointer(colOffset, rowOffset),
+			return Writer(image.GetPointerNW(colOffset, rowOffset),
 					nCols, nRows, image.GetBytesPerPixel(), image.GetBytesPerLine());
 		}
 		static Writer HorzFromNE(Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
-			return Writer(image.GetPointer(nCols - 1 - colOffset, rowOffset),
+			return Writer(image.GetPointerNE(colOffset, rowOffset),
 					nCols, nRows, -image.GetBytesPerPixel(), image.GetBytesPerLine());
 		}
 		static Writer HorzFromSW(Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
-			return Writer(image.GetPointer(colOffset, nRows - 1 - rowOffset),
+			return Writer(image.GetPointerSW(colOffset, rowOffset),
 					nCols, nRows, image.GetBytesPerPixel(), -image.GetBytesPerLine());
 		}
 		static Writer HorzFromSE(Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
-			return Writer(image.GetPointer(nCols - 1 - colOffset, nRows - 1 - rowOffset),
+			return Writer(image.GetPointerSE(colOffset, rowOffset),
 					nCols, nRows, -image.GetBytesPerPixel(), -image.GetBytesPerLine());
 		}
 		static Writer VertFromNW(Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
-			return Writer(image.GetPointer(rowOffset, colOffset),
+			return Writer(image.GetPointerNW(colOffset, rowOffset),
 					nCols, nRows, image.GetBytesPerLine(), image.GetBytesPerPixel());
 		}
 		static Writer VertFromNE(Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
-			return Writer(image.GetPointer(rowOffset, nCols - 1 - colOffset),
+			return Writer(image.GetPointerNE(colOffset, rowOffset),
 					nCols, nRows, image.GetBytesPerLine(), -image.GetBytesPerPixel());
 		}
 		static Writer VertFromSW(Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
-			return Writer(image.GetPointer(nRows - 1 - rowOffset, nCols),
+			return Writer(image.GetPointerSW(colOffset, rowOffset),
 					nCols, nRows, -image.GetBytesPerLine(), image.GetBytesPerPixel());
 		}
 		static Writer VertFromSE(Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
-			return Writer(image.GetPointer(nRows - 1 - rowOffset, nCols - 1 - colOffset),
+			return Writer(image.GetPointerSE(colOffset, rowOffset),
 					nCols, nRows, -image.GetBytesPerLine(), -image.GetBytesPerPixel());
 		}
 		static Writer Create(Image& image, int colOffset, int rowOffset, int nCols, int nRows, WriterDir dir) {
@@ -232,16 +232,20 @@ public:
 	int GetBytesBuff() const { return GetBytesPerLine() * GetHeight(); }
 	uint8_t* GetPointer() { return data_; }
 	const uint8_t* GetPointer() const { return data_; }
-	const uint8_t* GetPointerNW(int xOffset, int yOffset) const { return GetPointer(xOffset, yOffset); }
-	const uint8_t* GetPointerNE(int xOffset, int yOffset) const { return GetPointer(GetWidth() - 1 - xOffset, yOffset); }
-	const uint8_t* GetPointerSW(int xOffset, int yOffset) const { return GetPointer(xOffset, GetHeight() - 1 - yOffset); }
-	const uint8_t* GetPointerSE(int xOffset, int yOffset) const { return GetPointer(GetWidth() - 1 - xOffset, GetHeight() - 1 - yOffset); }
 	uint8_t* GetPointer(int x, int y) {
 		return data_ + GetBytesPerPixel() * x + GetBytesPerLine() * y;
 	}
 	const uint8_t* GetPointer(int x, int y) const {
 		return data_ + GetBytesPerPixel() * x + GetBytesPerLine() * y;
 	}
+	uint8_t* GetPointerNW(int xOffset, int yOffset) { return GetPointer(xOffset, yOffset); }
+	uint8_t* GetPointerNE(int xOffset, int yOffset) { return GetPointer(GetWidth() - 1 - xOffset, yOffset); }
+	uint8_t* GetPointerSW(int xOffset, int yOffset) { return GetPointer(xOffset, GetHeight() - 1 - yOffset); }
+	uint8_t* GetPointerSE(int xOffset, int yOffset) { return GetPointer(GetWidth() - 1 - xOffset, GetHeight() - 1 - yOffset); }
+	const uint8_t* GetPointerNW(int xOffset, int yOffset) const { return GetPointer(xOffset, yOffset); }
+	const uint8_t* GetPointerNE(int xOffset, int yOffset) const { return GetPointer(GetWidth() - 1 - xOffset, yOffset); }
+	const uint8_t* GetPointerSW(int xOffset, int yOffset) const { return GetPointer(xOffset, GetHeight() - 1 - yOffset); }
+	const uint8_t* GetPointerSE(int xOffset, int yOffset) const { return GetPointer(GetWidth() - 1 - xOffset, GetHeight() - 1 - yOffset); }
 	bool IsWritable() const { return allocatedFlag_; }
 	static bool IsDirHorz(SequencerDir dir) { return dir < SequencerDir::Vert; }
 	static bool IsDirVert(SequencerDir dir) { return dir >= SequencerDir::Vert; }
