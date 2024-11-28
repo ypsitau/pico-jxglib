@@ -24,16 +24,15 @@ int main()
 	ST7789 display(spi1, 240, 320, GPIO10, GPIO11, GPIO12, GPIO13);
 	display.Initialize();
 	Canvas canvas;
-	canvas.AttachOutput(display);
 #if 0
-	canvas.AttachOutput(display, Canvas::ImageDir::Rotate0);
+	canvas.AttachOutput(display, Canvas::ImageDir::Rotate270);
 	canvas.SetFont(Font::shinonome16);
 	canvas.SetSpacingRatio(1.0, 1.2);
 	canvas.DrawStringWrap(0, 0, str);
 	canvas.Refresh();
-	//canvas.Clear();
 #endif
-#if 1
+#if 0
+	canvas.AttachOutput(display);
 	static const Canvas::ImageDir imageDirTbl[] = {
 		Canvas::ImageDir::Rotate0, Canvas::ImageDir::Rotate90, Canvas::ImageDir::Rotate180, Canvas::ImageDir::Rotate270,
 	};
@@ -44,25 +43,14 @@ int main()
 		::sleep_ms(1000);
 	}
 #endif
-#if 0
+#if 1
+	canvas.AttachOutput(display, Canvas::ImageDir::Rotate270);
 	canvas.SetFont(Font::shinonome16);
 	canvas.SetSpacingRatio(1.0, 1.2);
 	canvas.DrawStringWrap(0, 0, str);
 	canvas.Refresh();
 	for (;;) {
 		canvas.ScrollVert(DirVert::Up, 1);
-		canvas.Refresh();
-	}
-#endif
-#if 0
-	for (;;) {
-		canvas.DrawImage(0, 0, image_cat_240x320, nullptr, Canvas::ImageDir::Rotate0);
-		canvas.Refresh();
-		canvas.DrawImage(0, 0, image_cat_240x320, nullptr, Canvas::ImageDir::Rotate90);
-		canvas.Refresh();
-		canvas.DrawImage(0, 0, image_cat_240x320, nullptr, Canvas::ImageDir::Rotate180);
-		canvas.Refresh();
-		canvas.DrawImage(0, 0, image_cat_240x320, nullptr, Canvas::ImageDir::Rotate270);
 		canvas.Refresh();
 	}
 #endif

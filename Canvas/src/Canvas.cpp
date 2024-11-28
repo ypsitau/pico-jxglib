@@ -235,7 +235,8 @@ void Canvas::DispatcherEx::Refresh()
 	Image& imageOwn = canvas_.GetImageOwn();
 	const Output& output = canvas_.GetOutput();
 	if (!pDrawableOut) return;
-	pDrawableOut->DrawImage(0, 0, imageOwn, &output.rect, output.attachDir);
+	//pDrawableOut->DrawImage(0, 0, imageOwn, &output.rect, output.attachDir);
+	pDrawableOut->DrawImage(0, 0, imageOwn, nullptr, output.attachDir);
 	pDrawableOut->Refresh();
 }
 
