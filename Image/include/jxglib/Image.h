@@ -3,6 +3,7 @@
 //==============================================================================
 #ifndef PICO_JXGLIB_IMAGE_H
 #define PICO_JXGLIB_IMAGE_H
+#include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
 #include "pico/stdlib.h"
@@ -96,35 +97,35 @@ public:
 	template<typename T_Getter> class Reader : public Sequencer {
 	public:
 		static Reader HorzFromNW(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
-			return Reader(image.GetPointer(colOffset, rowOffset),
+			return Reader(image.GetPointerNW(colOffset, rowOffset),
 					nCols, nRows, image.GetBytesPerPixel(), image.GetBytesPerLine());
 		}
 		static Reader HorzFromNE(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
-			return Reader(image.GetPointer(nCols - 1 - colOffset, rowOffset),
+			return Reader(image.GetPointerNE(colOffset, rowOffset),
 					nCols, nRows, -image.GetBytesPerPixel(), image.GetBytesPerLine());
 		}
 		static Reader HorzFromSW(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
-			return Reader(image.GetPointer(colOffset, nRows - 1 - rowOffset),
+			return Reader(image.GetPointerSW(colOffset, rowOffset),
 					nCols, nRows, image.GetBytesPerPixel(), -image.GetBytesPerLine());
 		}
 		static Reader HorzFromSE(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
-			return Reader(image.GetPointer(nCols - 1 - colOffset, nRows - 1 - rowOffset),
+			return Reader(image.GetPointerSE(colOffset, rowOffset),
 					nCols, nRows, -image.GetBytesPerPixel(), -image.GetBytesPerLine());
 		}
 		static Reader VertFromNW(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
-			return Reader(image.GetPointer(colOffset, rowOffset),
+			return Reader(image.GetPointerNW(colOffset, rowOffset),
 					nCols, nRows, image.GetBytesPerLine(), image.GetBytesPerPixel());
 		}
 		static Reader VertFromNE(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
-			return Reader(image.GetPointer(nCols - 1 - colOffset, rowOffset),
+			return Reader(image.GetPointerNE(colOffset, rowOffset),
 					nCols, nRows, image.GetBytesPerLine(), -image.GetBytesPerPixel());
 		}
 		static Reader VertFromSW(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
-			return Reader(image.GetPointer(colOffset, nRows - 1 - rowOffset),
+			return Reader(image.GetPointerSW(colOffset, rowOffset),
 					nCols, nRows, -image.GetBytesPerLine(), image.GetBytesPerPixel());
 		}
 		static Reader VertFromSE(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
-			return Reader(image.GetPointer(nCols - 1 - colOffset, nRows - 1 - rowOffset),
+			return Reader(image.GetPointerSE(colOffset, rowOffset),
 					nCols, nRows, -image.GetBytesPerLine(), -image.GetBytesPerPixel());
 		}
 		static Reader Create(const Image& image, int colOffset, int rowOffset, int nCols, int nRows, ReaderDir dir) {
@@ -231,6 +232,10 @@ public:
 	int GetBytesBuff() const { return GetBytesPerLine() * GetHeight(); }
 	uint8_t* GetPointer() { return data_; }
 	const uint8_t* GetPointer() const { return data_; }
+	const uint8_t* GetPointerNW(int xOffset, int yOffset) const { return GetPointer(xOffset, yOffset); }
+	const uint8_t* GetPointerNE(int xOffset, int yOffset) const { return GetPointer(GetWidth() - 1 - xOffset, yOffset); }
+	const uint8_t* GetPointerSW(int xOffset, int yOffset) const { return GetPointer(xOffset, GetHeight() - 1 - yOffset); }
+	const uint8_t* GetPointerSE(int xOffset, int yOffset) const { return GetPointer(GetWidth() - 1 - xOffset, GetHeight() - 1 - yOffset); }
 	uint8_t* GetPointer(int x, int y) {
 		return data_ + GetBytesPerPixel() * x + GetBytesPerLine() * y;
 	}
