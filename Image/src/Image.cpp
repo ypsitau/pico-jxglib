@@ -26,7 +26,7 @@ bool Image::Alloc(const Format& format, int width, int height)
 	bytesPerLine_ = width * pFormat_->bytesPerPixel,
 	data_ = reinterpret_cast<uint8_t*>(::malloc(GetBytesBuff()));
 	allocatedFlag_ = true;
-	return !data_;
+	return !!data_;
 }
 
 void Image::FillZero()

@@ -6,92 +6,44 @@
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// Canvas
+// Canvas::Dispatcher_T
 //------------------------------------------------------------------------------
-bool Canvas::AttachOutput(Drawable& drawableOut, const Rect* pRect, AttachDir attachDir)
-{
-	const Format& format = drawableOut.GetFormat();
-	int width, height;
-	if (pRect) {
-		width = pRect->width, height = pRect->height;
-		output_.rect = *pRect;
-	} else {
-		if (Image::IsDirHorz(attachDir)) {
-			width = drawableOut.GetWidth(), height = drawableOut.GetHeight();
-		} else {
-			width = drawableOut.GetHeight(), height = drawableOut.GetWidth();
-		}
-		output_.rect = Rect(0, 0, drawableOut.GetWidth(), drawableOut.GetHeight());
-	}
-	SetCapacity(format, width, height);
-	output_.attachDir = attachDir;
-	pDrawableOut_ = &drawableOut;
-	imageOwn_.Alloc(format, width, height);
-	imageOwn_.FillZero();
-	if (format.IsBitmap()) {
-	} else if (format.IsGray()) {
-	} else if (format.IsRGB()) {
-	} else if (format.IsRGBA()) {
-	} else if (format.IsRGB565()) {
-		pDispatcher_ = &dispatcherRGB565_;
-	}
-	return true;
-}
-
-//------------------------------------------------------------------------------
-// Canvas::DispatcherEx
-//------------------------------------------------------------------------------
-void Canvas::DispatcherEx::Initialize()
-{
-	// do nothing
-}
-
-void Canvas::DispatcherEx::Refresh()
-{
-	Drawable* pDrawableOut = canvas_.GetDrawableOut();
-	Image& imageOwn = canvas_.GetImageOwn();
-	const Output& output = canvas_.GetOutput();
-	if (!pDrawableOut) return;
-	pDrawableOut->DrawImage(0, 0, imageOwn, &output.rect, output.attachDir);
-	pDrawableOut->Refresh();
-}
-
-//------------------------------------------------------------------------------
-// Canvas::DispatcherRGB565
-//------------------------------------------------------------------------------
-void Canvas::DispatcherRGB565::Fill(const Color& color)
+template<typename T_Color>
+void Canvas::Dispatcher_T<T_Color>::Fill(const Color& color)
 {
 	Image& imageOwn = canvas_.GetImageOwn();
-	using Writer = Image::Writer<Image::Setter_T<ColorRGB565, ColorRGB565> >;
+	using Writer = Image::Writer<Image::Setter_T<T_Color, T_Color> >;
 	Writer writer(Writer::HorzFromNW(imageOwn, 0, 0, imageOwn.GetWidth(), imageOwn.GetHeight()));
-	ColorRGB565 colorDst(color);
+	T_Color colorDst(color);
 	while (!writer.HasDone()) writer.WriteForward(colorDst);
 }
 
-
-void Canvas::DispatcherRGB565::DrawPixel(int x, int y, const Color& color)
+template<typename T_Color>
+void Canvas::Dispatcher_T<T_Color>::DrawPixel(int x, int y, const Color& color)
 {
 }
 
-void Canvas::DispatcherRGB565::DrawRectFill(int x, int y, int width, int height, const Color& color)
+template<typename T_Color>
+void Canvas::Dispatcher_T<T_Color>::DrawRectFill(int x, int y, int width, int height, const Color& color)
 {
 	Image& imageOwn = canvas_.GetImageOwn();
-	using Writer = Image::Writer<Image::Setter_T<ColorRGB565, ColorRGB565> >;
+	using Writer = Image::Writer<Image::Setter_T<T_Color, T_Color> >;
 	Writer writer(Writer::HorzFromNW(imageOwn, x, y, width, height));
-	ColorRGB565 colorDst(color);
+	T_Color colorDst(color);
 	while (!writer.HasDone()) writer.WriteForward(colorDst);
 }
 
-void Canvas::DispatcherRGB565::DrawBitmap(int x, int y, const void* data, int width, int height,
+template<typename T_Color>
+void Canvas::Dispatcher_T<T_Color>::DrawBitmap(int x, int y, const void* data, int width, int height,
 	const Color& color, const Color* pColorBg, int scaleX, int scaleY)
 {
 	Image& imageOwn = canvas_.GetImageOwn();
 	int nDots = width * height;
 	int bytes = (width + 7) / 8 * height;
 	const uint8_t* pSrcLeft = reinterpret_cast<const uint8_t*>(data);
-	const ColorRGB565 colorFg(color);
-	const ColorRGB565 colorBg(pColorBg? ColorRGB565(*pColorBg) : ColorRGB565::black);
-	using Writer = Image::Writer<Image::Setter_T<ColorRGB565, ColorRGB565> >;
+	const T_Color colorFg(color);
+	const T_Color colorBg(pColorBg? T_Color(*pColorBg) : T_Color::black);
+	using Writer = Image::Writer<Image::Setter_T<T_Color, T_Color> >;
 	Image::Writer writer(Writer::HorzFromNW(imageOwn, x, y, width * scaleX, height * scaleY));
 	for (int iRow = 0; iRow < height; iRow++) {
 		const uint8_t* pSrc;
@@ -106,7 +58,7 @@ void Canvas::DispatcherRGB565::DrawBitmap(int x, int y, const void* data, int wi
 				}
 				uint8_t bit = bits & 0x80;
 				if (bit || pColorBg) {
-					const ColorRGB565& color = bit? colorFg : colorBg;
+					const T_Color& color = bit? colorFg : colorBg;
 					for (int iScaleX = 0; iScaleX < scaleX; iScaleX++) writer.WriteForward(color);
 				} else {
 					writer.MoveForward(scaleX);
@@ -117,7 +69,8 @@ void Canvas::DispatcherRGB565::DrawBitmap(int x, int y, const void* data, int wi
 	}
 }
 
-void Canvas::DispatcherRGB565::DrawImage(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir)
+template<typename T_Color>
+void Canvas::Dispatcher_T<T_Color>::DrawImage(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir)
 {
 	Image& imageOwn = canvas_.GetImageOwn();
 	int xSkip = 0, ySkip = 0;
@@ -129,28 +82,29 @@ void Canvas::DispatcherRGB565::DrawImage(int x, int y, const Image& image, const
 	}
 	if (!AdjustRange(&x, &width, 0, imageOwn.GetWidth(), &xSkip)) return;
 	if (!AdjustRange(&y, &height, 0, imageOwn.GetHeight(), &ySkip)) return;
-	using Writer = Image::Writer<Image::Setter_T<ColorRGB565, ColorRGB565> >;
+	using Writer = Image::Writer<Image::Setter_T<T_Color, T_Color> >;
 	Image::Writer writer(Writer::HorzFromNW(imageOwn, x, y, width, height));
 	if (image.GetFormat().IsGray()) {
-		using Reader = Image::Reader<Image::Getter_T<ColorRGB565, ColorGray> >;
+		using Reader = Image::Reader<Image::Getter_T<T_Color, ColorGray> >;
 		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
 		while (!reader.HasDone()) writer.WriteForward(reader.ReadForward());
 	} else if (image.GetFormat().IsRGB()) {
-		using Reader = Image::Reader<Image::Getter_T<ColorRGB565, Color> >;
+		using Reader = Image::Reader<Image::Getter_T<T_Color, Color> >;
 		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
 		while (!reader.HasDone()) writer.WriteForward(reader.ReadForward());
 	} else if (image.GetFormat().IsRGBA()) {
-		using Reader = Image::Reader<Image::Getter_T<ColorRGB565, ColorA> >;
+		using Reader = Image::Reader<Image::Getter_T<T_Color, ColorA> >;
 		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
 		while (!reader.HasDone()) writer.WriteForward(reader.ReadForward());
 	} else if (image.GetFormat().IsRGB565()) {
-		using Reader = Image::Reader<Image::Getter_T<ColorRGB565, ColorRGB565> >;
+		using Reader = Image::Reader<Image::Getter_T<T_Color, ColorRGB565> >;
 		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
 		while (!reader.HasDone()) writer.WriteForward(reader.ReadForward());
 	}
 }
 
-void Canvas::DispatcherRGB565::ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect* pRect)
+template<typename T_Color>
+void Canvas::Dispatcher_T<T_Color>::ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect* pRect)
 {
 	Image& imageOwn = canvas_.GetImageOwn();
 	Rect rect = pRect? *pRect : Rect(0, 0, imageOwn.GetWidth(), imageOwn.GetHeight());
@@ -187,7 +141,8 @@ void Canvas::DispatcherRGB565::ScrollHorz(DirHorz dirHorz, int wdScroll, const R
 	canvas_.DrawRectFill(rectErase, canvas_.GetColorBg());
 }
 
-void Canvas::DispatcherRGB565::ScrollVert(DirVert dirVert, int htScroll, const Rect* pRect)
+template<typename T_Color>
+void Canvas::Dispatcher_T<T_Color>::ScrollVert(DirVert dirVert, int htScroll, const Rect* pRect)
 {
 	Image& imageOwn = canvas_.GetImageOwn();
 	Rect rect = pRect? *pRect : Rect(0, 0, imageOwn.GetWidth(), imageOwn.GetHeight());
@@ -222,6 +177,66 @@ void Canvas::DispatcherRGB565::ScrollVert(DirVert dirVert, int htScroll, const R
 		pSrcLine += advancePerLine;
 	}
 	canvas_.DrawRectFill(rectErase, canvas_.GetColorBg());
+}
+
+//------------------------------------------------------------------------------
+// Canvas
+//------------------------------------------------------------------------------
+bool Canvas::AttachOutput(Drawable& drawableOut, const Rect* pRect, AttachDir attachDir)
+{
+	const Format& formatOut = drawableOut.GetFormat();
+	int width, height;
+	if (pRect) {
+		width = pRect->width, height = pRect->height;
+		output_.rect = *pRect;
+	} else {
+		if (Image::IsDirHorz(attachDir)) {
+			width = drawableOut.GetWidth(), height = drawableOut.GetHeight();
+		} else {
+			width = drawableOut.GetHeight(), height = drawableOut.GetWidth();
+		}
+		output_.rect = Rect(0, 0, drawableOut.GetWidth(), drawableOut.GetHeight());
+	}
+	SetCapacity(formatOut, width, height);
+	output_.attachDir = attachDir;
+	pDrawableOut_ = &drawableOut;
+	if (!imageOwn_.Alloc(formatOut, width, height)) return false;
+	imageOwn_.FillZero();
+	if (formatOut.IsBitmap()) {
+		return false;
+	} else if (formatOut.IsGray()) {
+		//pDispatcherEx_.reset(new Dispatcher_T<ColorGray>(*this));
+		return false;
+	} else if (formatOut.IsRGB()) {
+		pDispatcherEx_.reset(new Dispatcher_T<Color>(*this));
+	} else if (formatOut.IsRGBA()) {
+		//pDispatcherEx_.reset(new Dispatcher_T<ColorA>(*this));
+		return false;
+	} else if (formatOut.IsRGB565()) {
+		pDispatcherEx_.reset(new Dispatcher_T<ColorRGB565>(*this));
+	} else {
+		return false;
+	}
+	SetDispatcher(*pDispatcherEx_);
+	return true;
+}
+
+//------------------------------------------------------------------------------
+// Canvas::DispatcherEx
+//------------------------------------------------------------------------------
+void Canvas::DispatcherEx::Initialize()
+{
+	// do nothing
+}
+
+void Canvas::DispatcherEx::Refresh()
+{
+	Drawable* pDrawableOut = canvas_.GetDrawableOut();
+	Image& imageOwn = canvas_.GetImageOwn();
+	const Output& output = canvas_.GetOutput();
+	if (!pDrawableOut) return;
+	pDrawableOut->DrawImage(0, 0, imageOwn, &output.rect, output.attachDir);
+	pDrawableOut->Refresh();
 }
 
 }

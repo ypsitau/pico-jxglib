@@ -3,6 +3,7 @@
 //==============================================================================
 #ifndef PICO_JXGLIB_CANVAS_H
 #define PICO_JXGLIB_CANVAS_H
+#include <memory>
 #include "pico/stdlib.h"
 #include "jxglib/Common.h"
 #include "jxglib/Drawable.h"
@@ -27,9 +28,9 @@ public:
 		virtual void Initialize() override;
 		virtual void Refresh() override;
 	};
-	class DispatcherRGB565 : public DispatcherEx {
+	template<typename T_Color> class Dispatcher_T : public DispatcherEx {
 	public:
-		DispatcherRGB565(Canvas& canvas) : DispatcherEx(canvas) {}
+		Dispatcher_T(Canvas& canvas) : DispatcherEx(canvas) {}
 	public:
 		virtual void Fill(const Color& color) override;
 		virtual void DrawPixel(int x, int y, const Color& color) override;
@@ -48,10 +49,9 @@ private:
 		Rect rect;
 		AttachDir attachDir;
 	} output_;
-	DispatcherRGB565 dispatcherRGB565_;
+	std::unique_ptr<DispatcherEx> pDispatcherEx_;
 public:
-	Canvas() : Drawable(Capability::DrawImage | Capability::ScrollHorz | Capability::ScrollVert),
-			pDrawableOut_{nullptr}, dispatcherRGB565_(*this) {}
+	Canvas() : Drawable(Capability::DrawImage | Capability::ScrollHorz | Capability::ScrollVert), pDrawableOut_{nullptr} {}
 public:
 	Drawable* GetDrawableOut() { return pDrawableOut_; }
 	Image& GetImageOwn() { return imageOwn_; }

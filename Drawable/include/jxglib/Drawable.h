@@ -82,6 +82,7 @@ protected:
 	const Format* pFormat_;
 	int width_, height_;
 	Context context_;
+private:
 	Dispatcher* pDispatcher_;
 public:
 	Drawable(uint32_t capabilities) :
@@ -94,6 +95,7 @@ public:
 	void SetCapacity(const Format format, int width, int height) {
 		pFormat_ = &format, width_ = width, height_ = height;
 	}
+	void SetDispatcher(Dispatcher& dispatcher) { pDispatcher_ = &dispatcher; }
 	bool IsDevice() const { return !!(capabilities_ & Capability::Device); }
 	bool CanDrawImage() const { return !!(capabilities_ & Capability::DrawImage); }
 	bool CanScrollHorz() const { return !!(capabilities_ & Capability::ScrollHorz); }

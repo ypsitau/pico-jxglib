@@ -316,13 +316,13 @@ public:
 			Display(Capability::Device | Capability::DrawImage, Format::RGB565, width, height),
 			raw(spi, gpio_RST, gpio_DC, gpio_CS, gpio_BL), dispatcherEx_(*this),
 			widthSet_{width}, heightSet_{height}, xAdjust_{0}, yAdjust_{0} {
-		pDispatcher_ = &dispatcherEx_;
+		SetDispatcher(dispatcherEx_);
 	}
 	TFT_LCD(spi_inst_t* spi, int width, int height, const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_BL) :
 			Display(Capability::Device | Capability::DrawImage, Format::RGB565, width, height),
 			raw(spi, gpio_RST, gpio_DC, gpio_BL), dispatcherEx_(*this),
 			widthSet_{width}, heightSet_{height}, xAdjust_{0}, yAdjust_{0} {
-		pDispatcher_ = &dispatcherEx_;
+		SetDispatcher(dispatcherEx_);
 	}
 public:
 	void Initialize(const RotateData& rotateData, const ConfigData& configData);
