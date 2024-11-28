@@ -34,66 +34,13 @@ public:
 		bool IsRGB565() const { return IsIdentical(RGB565); }
 	};
 public:
-	template<typename ColorVar_T, typename ColorMem_T> class Getter_T {
+	template<typename T_ColorVar, typename T_ColorMem> class Getter_T {
 	public:
-		using Type = ColorVar_T;
-	public:
-		ColorVar_T Get(const uint8_t* p) { return ColorVar_T::zero; }
+		T_ColorVar Get(const uint8_t* p) { return T_ColorVar::zero; }
 	};
-	template<typename ColorMem_T, typename ColorVar_T> class Setter_T {
+	template<typename T_ColorMem, typename T_ColorVar> class Setter_T {
 	public:
-		using Type = ColorVar_T;
-	public:
-		void Set(uint8_t* p, const ColorVar_T& color) {}
-	};
-	class GetColor_SrcRGB {
-	public:
-		using Type = Color;
-	public:
-		Type operator()(const uint8_t* p) { return Color(p[0], p[1], p[2]); }
-	};
-	class GetColor_SrcRGB565 {
-	public:
-		using Type = Color;
-	public:
-		Type operator()(const uint8_t* p) {  return Type(ColorRGB565(*reinterpret_cast<const uint16_t*>(p))); }
-	};
-	class GetColorA_SrcRGB565 {
-	public:
-		using Type = ColorRGB565;
-	public:
-		Type operator()(const uint8_t* p) { return Type(*reinterpret_cast<const uint16_t*>(p)); }
-	};
-	class GetColorRGB565_SrcGray {
-	public:
-		using Type = ColorRGB565;
-	public:
-		Type operator()(const uint8_t* p) { return ColorRGB565(p[0], p[0], p[0]); }
-	};
-	class GetColorRGB565_SrcRGB {
-	public:
-		using Type = ColorRGB565;
-	public:
-		Type operator()(const uint8_t* p) { return ColorRGB565(p[0], p[1], p[2]); }
-	};
-	class GetColorRGB565_SrcRGBA {
-	public:
-		using Type = ColorRGB565;
-	public:
-		Type operator()(const uint8_t* p) { return ColorRGB565(p[0], p[1], p[2]); }
-	};
-	class GetColorRGB565_SrcRGB565 {
-	public:
-		using Type = ColorRGB565;
-	public:
-		Type operator()(const uint8_t* p) { return ColorRGB565(*reinterpret_cast<const uint16_t*>(p)); }
-	};
-public:
-	class PutColorRGB565_DstRGB565 {
-	public:
-		using Type = ColorRGB565;
-	public:
-		void operator()(uint8_t* p, const Type& data) { *reinterpret_cast<uint16_t*>(p) = data.value; }
+		void Set(uint8_t* p, const T_ColorVar& color) {}
 	};
 public:
 	enum class SequencerDir {
@@ -128,7 +75,15 @@ public:
 		Sequencer(void* p, int nCols, int nRows, int advancePerCol, int advancePerRow) :
 			p_{reinterpret_cast<uint8_t*>(p)}, pRow_{p_}, nCols_{nCols}, nRows_{nRows},
 			advancePerCol_{advancePerCol}, advancePerRow_{advancePerRow}, iCol_{0}, iRow_{0} {}
-		void MoveForward(int nColsForward = 1) {
+		void MoveForward() {
+			iCol_++;
+			p_ += advancePerCol_;
+			if (iCol_ >= nCols_) {
+				iCol_ = 0, iRow_++;
+				pRow_ += advancePerRow_, p_ = pRow_;
+			}
+		}
+		void MoveForward(int nColsForward) {
 			iCol_ += nColsForward;
 			p_ += advancePerCol_ * nColsForward;
 			if (iCol_ >= nCols_) {
@@ -138,66 +93,7 @@ public:
 		}
 		bool HasDone() const { return iRow_ >= nRows_; }
 	};
-#if 0
-	template<typename T_GetColor> class Reader : public Sequencer {
-	public:
-		static Reader HorzFromNW(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
-			return Reader(image.GetPointer(colOffset, rowOffset),
-					nCols, nRows, image.GetBytesPerPixel(), image.GetBytesPerLine());
-		}
-		static Reader HorzFromNE(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
-			return Reader(image.GetPointer(nCols - 1 - colOffset, rowOffset),
-					nCols, nRows, -image.GetBytesPerPixel(), image.GetBytesPerLine());
-		}
-		static Reader HorzFromSW(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
-			return Reader(image.GetPointer(colOffset, nRows - 1 - rowOffset),
-					nCols, nRows, image.GetBytesPerPixel(), -image.GetBytesPerLine());
-		}
-		static Reader HorzFromSE(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
-			return Reader(image.GetPointer(nCols - 1 - colOffset, nRows - 1 - rowOffset),
-					nCols, nRows, -image.GetBytesPerPixel(), -image.GetBytesPerLine());
-		}
-		static Reader VertFromNW(const Image& image, int rowOffset, int colOffset, int nRows, int nCols) {
-			return Reader(image.GetPointer(rowOffset, colOffset),
-					nCols, nRows, image.GetBytesPerLine(), image.GetBytesPerPixel());
-		}
-		static Reader VertFromNE(const Image& image, int rowOffset, int colOffset, int nRows, int nCols) {
-			return Reader(image.GetPointer(nRows - 1 - rowOffset, colOffset),
-					nCols, nRows, image.GetBytesPerLine(), -image.GetBytesPerPixel());
-		}
-		static Reader VertFromSW(const Image& image, int rowOffset, int colOffset, int nRows, int nCols) {
-			return Reader(image.GetPointer(rowOffset, nCols - 1 - colOffset),
-					nCols, nRows, -image.GetBytesPerLine(), image.GetBytesPerPixel());
-		}
-		static Reader VertFromSE(const Image& image, int rowOffset, int colOffset, int nRows, int nCols) {
-			return Reader(image.GetPointer(nRows - 1 - rowOffset, nCols - 1 - colOffset),
-					nCols, nRows, -image.GetBytesPerLine(), -image.GetBytesPerPixel());
-		}
-		static Reader Create(const Image& image, int xOffset, int yOffset, int width, int height, ReaderDir dir) {
-			switch (dir) {
-			case ReaderDir::HorzFromNW: return HorzFromNW(image, xOffset, yOffset, width, height);
-			case ReaderDir::HorzFromNE: return HorzFromNE(image, xOffset, yOffset, width, height);
-			case ReaderDir::HorzFromSW: return HorzFromSW(image, xOffset, yOffset, width, height);
-			case ReaderDir::HorzFromSE: return HorzFromSE(image, xOffset, yOffset, width, height);
-			case ReaderDir::VertFromNW: return VertFromNW(image, xOffset, yOffset, width, height);
-			case ReaderDir::VertFromNE: return VertFromNE(image, xOffset, yOffset, width, height);
-			case ReaderDir::VertFromSW: return VertFromSW(image, xOffset, yOffset, width, height);
-			case ReaderDir::VertFromSE: return VertFromSE(image, xOffset, yOffset, width, height);
-			default: break;
-			}
-			return Reader(nullptr, 0, 0, 0, 0);
-		}
-	public:
-		Reader(const void* p, int nCols, int nRows, int advancePerCol, int advancePerRow) :
-				Sequencer(const_cast<void*>(p), nCols, nRows, advancePerCol, advancePerRow) {}
-		typename T_GetColor::Type ReadForward() {
-			auto rtn  = T_GetColor()(p_);
-			MoveForward();
-			return rtn;
-		}
-	};
-#endif
-	template<typename T_GetColor> class Reader : public Sequencer {
+	template<typename T_Getter> class Reader : public Sequencer {
 	public:
 		static Reader HorzFromNW(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
 			return Reader(image.GetPointer(colOffset, rowOffset),
@@ -248,13 +144,13 @@ public:
 	public:
 		Reader(const void* p, int nCols, int nRows, int advancePerCol, int advancePerRow) :
 				Sequencer(const_cast<void*>(p), nCols, nRows, advancePerCol, advancePerRow) {}
-		typename T_GetColor::Type ReadForward() {
-			auto rtn  = T_GetColor()(p_);
+		typename T_Getter::T_ColorVar ReadForward() {
+			auto rtn  = T_Getter().Get(p_);
 			MoveForward();
 			return rtn;
 		}
 	};
-	template<typename T_PutColor> class Writer : public Sequencer {
+	template<typename T_Setter> class Writer : public Sequencer {
 	public:
 		static Writer HorzFromNW(Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
 			return Writer(image.GetPointer(colOffset, rowOffset),
@@ -305,8 +201,8 @@ public:
 	public:
 		Writer(void* p, int nCols, int nRows, int advancePerCol, int advancePerRow) :
 				Sequencer(p, nCols, nRows, advancePerCol, advancePerRow) {}
-		void WriteForward(const typename T_PutColor::Type& data) {
-			T_PutColor()(p_, data);
+		void WriteForward(const typename T_Setter::T_ColorVar& data) {
+			T_Setter().Set(p_, data);
 			MoveForward();
 		}
 	};
@@ -348,65 +244,91 @@ public:
 
 template<> class Image::Getter_T<Color, Color> {
 public:
+	using T_ColorVar = Color;
+public:
 	Color Get(const uint8_t* p) { return Color(p[0], p[1], p[2]); }
 };
 
 template<> class Image::Getter_T<Color, ColorA> {
+public:
+	using T_ColorVar = Color;
 public:
 	Color Get(const uint8_t* p) { return Color(p[0], p[1], p[2]); }
 };
 
 template<> class Image::Getter_T<Color, ColorGray> {
 public:
+	using T_ColorVar = Color;
+public:
 	Color Get(const uint8_t* p) { return Color(p[0], p[0], p[0]); }
 };
 
 template<> class Image::Getter_T<Color, ColorRGB565> {
+public:
+	using T_ColorVar = Color;
 public:
 	Color Get(const uint8_t* p) { return Color(ColorRGB565(*reinterpret_cast<const uint16_t*>(p))); }
 };
 
 template<> class Image::Getter_T<ColorA, Color> {
 public:
+	using T_ColorVar = ColorA;
+public:
 	ColorA Get(const uint8_t* p) { return ColorA(p[0], p[1], p[2], 255); }
 };
 
 template<> class Image::Getter_T<ColorA, ColorA> {
+public:
+	using T_ColorVar = ColorA;
 public:
 	ColorA Get(const uint8_t* p) { return ColorA(p[0], p[1], p[2], p[3]); }
 };
 
 template<> class Image::Getter_T<ColorA, ColorGray> {
 public:
+	using T_ColorVar = ColorA;
+public:
 	ColorA Get(const uint8_t* p) { return ColorA(p[0], p[1], p[2], 255); }
 };
 
 template<> class Image::Getter_T<ColorA, ColorRGB565> {
+public:
+	using T_ColorVar = ColorA;
 public:
 	ColorA Get(const uint8_t* p) { return ColorA(ColorRGB565(*reinterpret_cast<const uint16_t*>(p))); }
 };
 
 template<> class Image::Getter_T<ColorRGB565, Color> {
 public:
+	using T_ColorVar = ColorRGB565;
+public:
 	ColorRGB565 Get(const uint8_t* p) { return ColorRGB565(p[0], p[1], p[2]); }
 };
 
 template<> class Image::Getter_T<ColorRGB565, ColorA> {
+public:
+	using T_ColorVar = ColorRGB565;
 public:
 	ColorRGB565 Get(const uint8_t* p) { return ColorRGB565(p[0], p[1], p[2]); }
 };
 
 template<> class Image::Getter_T<ColorRGB565, ColorRGB565> {
 public:
+	using T_ColorVar = ColorRGB565;
+public:
 	ColorRGB565 Get(const uint8_t* p) { return ColorRGB565(*reinterpret_cast<const uint16_t*>(p)); }
 };
 
 template<> class Image::Getter_T<ColorRGB565, ColorGray> {
 public:
+	using T_ColorVar = ColorRGB565;
+public:
 	ColorRGB565 Get(const uint8_t* p) { return ColorRGB565(p[0], p[0], p[0]); }
 };
 
 template<> class Image::Setter_T<Color, Color> {
+public:
+	using T_ColorVar = Color;
 public:
 	void Set(uint8_t* p, const Color& color) {
 		p[0] = color.r, p[1] = color.g, p[2] = color.b;
@@ -415,12 +337,16 @@ public:
 
 template<> class Image::Setter_T<Color, ColorA> {
 public:
+	using T_ColorVar = ColorA;
+public:
 	void Set(uint8_t* p, const Color& colorA) {
 		p[0] = colorA.r, p[1] = colorA.g, p[2] = colorA.b;
 	}
 };
 
 template<> class Image::Setter_T<Color, ColorRGB565> {
+public:
+	using T_ColorVar = ColorRGB565;
 public:
 	void Set(uint8_t* p, const ColorRGB565& colorRGB565) {
 		Color color(colorRGB565);
@@ -430,12 +356,16 @@ public:
 
 template<> class Image::Setter_T<Color, ColorGray> {
 public:
+	using T_ColorVar = ColorGray;
+public:
 	void Set(uint8_t* p, const ColorGray& colorGray) {
 		p[0] = colorGray.value, p[1] = colorGray.value, p[2] = colorGray.value;
 	}
 };
 
 template<> class Image::Setter_T<ColorRGB565, Color> {
+public:
+	using T_ColorVar = Color;
 public:
 	void Set(uint8_t* p, const Color& color) {
 		*reinterpret_cast<uint16_t*>(p) = ColorRGB565(color).value;
@@ -444,12 +374,16 @@ public:
 
 template<> class Image::Setter_T<ColorRGB565, ColorA> {
 public:
+	using T_ColorVar = ColorA;
+public:
 	void Set(uint8_t* p, const ColorA& colorA) {
 		*reinterpret_cast<uint16_t*>(p) = ColorRGB565(colorA).value;
 	}
 };
 
 template<> class Image::Setter_T<ColorRGB565, ColorRGB565> {
+public:
+	using T_ColorVar = ColorRGB565;
 public:
 	void Set(uint8_t* p, const ColorRGB565& colorRGB565) {
 		*reinterpret_cast<uint16_t*>(p) = colorRGB565.value;
@@ -458,9 +392,10 @@ public:
 
 template<> class Image::Setter_T<ColorRGB565, ColorGray> {
 public:
+	using T_ColorVar = ColorGray;
+public:
 	void Set(uint8_t* p, const ColorGray& colorGray) {
-		*reinterpret_cast<uint16_t*>(p) = ColorRGB565(
-					colorGray.value, colorGray.value, colorGray.value);
+		*reinterpret_cast<uint16_t*>(p) = ColorRGB565(colorGray.value, colorGray.value, colorGray.value).value;
 	}
 };
 

@@ -35,14 +35,14 @@ int main()
 #endif
 #if 1
 	static const Canvas::ImageDir imageDirTbl[] = {
-		//Canvas::ImageDir::Rotate0, Canvas::ImageDir::Rotate90, Canvas::ImageDir::Rotate180, Canvas::ImageDir::Rotate270,
-		Canvas::ImageDir::Rotate270,
+		Canvas::ImageDir::Rotate0, Canvas::ImageDir::Rotate90, Canvas::ImageDir::Rotate180, Canvas::ImageDir::Rotate270,
+		//Canvas::ImageDir::Rotate270,
 	};
 	for (int i = 0; ; i++) {
 		if (i >= count_of(imageDirTbl)) i = 0;
 		canvas.DrawImage(0, 0, image_cat_240x320, nullptr, imageDirTbl[i]);
 		canvas.Refresh();
-		::sleep_ms(100);
+		//::sleep_ms(100);
 	}
 #endif
 #if 0

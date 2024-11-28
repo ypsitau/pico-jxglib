@@ -62,7 +62,7 @@ void Canvas::DispatcherEx::Refresh()
 void Canvas::DispatcherRGB565::Fill(const Color& color)
 {
 	Image& imageOwn = canvas_.GetImageOwn();
-	using Writer = Image::Writer<Image::PutColorRGB565_DstRGB565>;
+	using Writer = Image::Writer<Image::Setter_T<ColorRGB565, ColorRGB565> >;
 	Writer writer(Writer::HorzFromNW(imageOwn, 0, 0, imageOwn.GetWidth(), imageOwn.GetHeight()));
 	ColorRGB565 colorDst(color);
 	while (!writer.HasDone()) writer.WriteForward(colorDst);
@@ -76,7 +76,7 @@ void Canvas::DispatcherRGB565::DrawPixel(int x, int y, const Color& color)
 void Canvas::DispatcherRGB565::DrawRectFill(int x, int y, int width, int height, const Color& color)
 {
 	Image& imageOwn = canvas_.GetImageOwn();
-	using Writer = Image::Writer<Image::PutColorRGB565_DstRGB565>;
+	using Writer = Image::Writer<Image::Setter_T<ColorRGB565, ColorRGB565> >;
 	Writer writer(Writer::HorzFromNW(imageOwn, x, y, width, height));
 	ColorRGB565 colorDst(color);
 	while (!writer.HasDone()) writer.WriteForward(colorDst);
@@ -91,7 +91,7 @@ void Canvas::DispatcherRGB565::DrawBitmap(int x, int y, const void* data, int wi
 	const uint8_t* pSrcLeft = reinterpret_cast<const uint8_t*>(data);
 	const ColorRGB565 colorFg(color);
 	const ColorRGB565 colorBg(pColorBg? ColorRGB565(*pColorBg) : ColorRGB565::black);
-	using Writer = Image::Writer<Image::PutColorRGB565_DstRGB565>;
+	using Writer = Image::Writer<Image::Setter_T<ColorRGB565, ColorRGB565> >;
 	Image::Writer writer(Writer::HorzFromNW(imageOwn, x, y, width * scaleX, height * scaleY));
 	for (int iRow = 0; iRow < height; iRow++) {
 		const uint8_t* pSrc;
@@ -129,22 +129,22 @@ void Canvas::DispatcherRGB565::DrawImage(int x, int y, const Image& image, const
 	}
 	if (!AdjustRange(&x, &width, 0, imageOwn.GetWidth(), &xSkip)) return;
 	if (!AdjustRange(&y, &height, 0, imageOwn.GetHeight(), &ySkip)) return;
-	using Writer = Image::Writer<Image::PutColorRGB565_DstRGB565>;
+	using Writer = Image::Writer<Image::Setter_T<ColorRGB565, ColorRGB565> >;
 	Image::Writer writer(Writer::HorzFromNW(imageOwn, x, y, width, height));
 	if (image.GetFormat().IsGray()) {
-		using Reader = Image::Reader<Image::GetColorRGB565_SrcGray>;
+		using Reader = Image::Reader<Image::Getter_T<ColorRGB565, ColorGray> >;
 		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
 		while (!reader.HasDone()) writer.WriteForward(reader.ReadForward());
 	} else if (image.GetFormat().IsRGB()) {
-		using Reader = Image::Reader<Image::GetColorRGB565_SrcRGB>;
+		using Reader = Image::Reader<Image::Getter_T<ColorRGB565, Color> >;
 		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
 		while (!reader.HasDone()) writer.WriteForward(reader.ReadForward());
 	} else if (image.GetFormat().IsRGBA()) {
-		using Reader = Image::Reader<Image::GetColorRGB565_SrcRGBA>;
+		using Reader = Image::Reader<Image::Getter_T<ColorRGB565, ColorA> >;
 		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
 		while (!reader.HasDone()) writer.WriteForward(reader.ReadForward());
 	} else if (image.GetFormat().IsRGB565()) {
-		using Reader = Image::Reader<Image::GetColorRGB565_SrcRGB565>;
+		using Reader = Image::Reader<Image::Getter_T<ColorRGB565, ColorRGB565> >;
 		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
 		while (!reader.HasDone()) writer.WriteForward(reader.ReadForward());
 	}
