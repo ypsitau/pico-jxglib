@@ -138,6 +138,7 @@ public:
 		}
 		bool HasDone() const { return iRow_ >= nRows_; }
 	};
+#if 0
 	template<typename T_GetColor> class Reader : public Sequencer {
 	public:
 		static Reader HorzFromNW(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
@@ -182,6 +183,64 @@ public:
 			case ReaderDir::VertFromNE: return VertFromNE(image, xOffset, yOffset, width, height);
 			case ReaderDir::VertFromSW: return VertFromSW(image, xOffset, yOffset, width, height);
 			case ReaderDir::VertFromSE: return VertFromSE(image, xOffset, yOffset, width, height);
+			default: break;
+			}
+			return Reader(nullptr, 0, 0, 0, 0);
+		}
+	public:
+		Reader(const void* p, int nCols, int nRows, int advancePerCol, int advancePerRow) :
+				Sequencer(const_cast<void*>(p), nCols, nRows, advancePerCol, advancePerRow) {}
+		typename T_GetColor::Type ReadForward() {
+			auto rtn  = T_GetColor()(p_);
+			MoveForward();
+			return rtn;
+		}
+	};
+#endif
+	template<typename T_GetColor> class Reader : public Sequencer {
+	public:
+		static Reader HorzFromNW(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+			return Reader(image.GetPointer(colOffset, rowOffset),
+					nCols, nRows, image.GetBytesPerPixel(), image.GetBytesPerLine());
+		}
+		static Reader HorzFromNE(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+			return Reader(image.GetPointer(nCols - 1 - colOffset, rowOffset),
+					nCols, nRows, -image.GetBytesPerPixel(), image.GetBytesPerLine());
+		}
+		static Reader HorzFromSW(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+			return Reader(image.GetPointer(colOffset, nRows - 1 - rowOffset),
+					nCols, nRows, image.GetBytesPerPixel(), -image.GetBytesPerLine());
+		}
+		static Reader HorzFromSE(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+			return Reader(image.GetPointer(nCols - 1 - colOffset, nRows - 1 - rowOffset),
+					nCols, nRows, -image.GetBytesPerPixel(), -image.GetBytesPerLine());
+		}
+		static Reader VertFromNW(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+			return Reader(image.GetPointer(colOffset, rowOffset),
+					nCols, nRows, image.GetBytesPerLine(), image.GetBytesPerPixel());
+		}
+		static Reader VertFromNE(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+			return Reader(image.GetPointer(nCols - 1 - colOffset, rowOffset),
+					nCols, nRows, image.GetBytesPerLine(), -image.GetBytesPerPixel());
+		}
+		static Reader VertFromSW(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+			return Reader(image.GetPointer(colOffset, nRows - 1 - rowOffset),
+					nCols, nRows, -image.GetBytesPerLine(), image.GetBytesPerPixel());
+		}
+		static Reader VertFromSE(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+			return Reader(image.GetPointer(nCols - 1 - colOffset, nRows - 1 - rowOffset),
+					nCols, nRows, -image.GetBytesPerLine(), -image.GetBytesPerPixel());
+		}
+		static Reader Create(const Image& image, int colOffset, int rowOffset, int nCols, int nRows, ReaderDir dir) {
+			switch (dir) {
+			case ReaderDir::HorzFromNW: return HorzFromNW(image, colOffset, rowOffset, nCols, nRows);
+			case ReaderDir::HorzFromNE: return HorzFromNE(image, colOffset, rowOffset, nCols, nRows);
+			case ReaderDir::HorzFromSW: return HorzFromSW(image, colOffset, rowOffset, nCols, nRows);
+			case ReaderDir::HorzFromSE: return HorzFromSE(image, colOffset, rowOffset, nCols, nRows);
+			case ReaderDir::VertFromNW: return VertFromNW(image, colOffset, rowOffset, nCols, nRows);
+			case ReaderDir::VertFromNE: return VertFromNE(image, colOffset, rowOffset, nCols, nRows);
+			case ReaderDir::VertFromSW: return VertFromSW(image, colOffset, rowOffset, nCols, nRows);
+			case ReaderDir::VertFromSE: return VertFromSE(image, colOffset, rowOffset, nCols, nRows);
 			default: break;
 			}
 			return Reader(nullptr, 0, 0, 0, 0);

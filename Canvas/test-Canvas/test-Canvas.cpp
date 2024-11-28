@@ -2,7 +2,7 @@
 #include "pico/stdlib.h"
 #include "jxglib/Canvas.h"
 #include "jxglib/ST7789.h"
-#include "image/image_cat_240x240.h"
+#include "image/image_cat_240x320.h"
 #include "Font/shinonome16.h"
 
 using namespace jxglib;
@@ -24,7 +24,7 @@ int main()
 	ST7789 display(spi1, 240, 320, GPIO10, GPIO11, GPIO12, GPIO13);
 	display.Initialize();
 	Canvas canvas;
-	canvas.AttachOutput(display, Canvas::AttachDir::Rotate90);
+	canvas.AttachOutput(display);
 #if 0
 	canvas.AttachOutput(display, Canvas::ImageDir::Rotate0);
 	canvas.SetFont(Font::shinonome16);
