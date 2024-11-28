@@ -66,7 +66,7 @@ int main()
 	//terminal.SetFont(Font::shinonome16);
 #if 1
 	terminal.dumpStyle.DigitsAddr(4).Cols((terminal.GetColNum() - 4 - 1) / 3);
-	terminal.Dump(reinterpret_cast<const void*>(0), 8 * 40);
+	terminal.Dump(reinterpret_cast<const void*>(0), 8 * 2000);
 #endif
 #if 0
 	for (int i = 0; i < 40; i++) {

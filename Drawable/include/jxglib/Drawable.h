@@ -96,6 +96,7 @@ public:
 		pFormat_ = &format, width_ = width, height_ = height;
 	}
 	void SetDispatcher(Dispatcher& dispatcher) { pDispatcher_ = &dispatcher; }
+	Dispatcher& GetDispatcher() { return *pDispatcher_; }
 	bool IsDevice() const { return !!(capabilities_ & Capability::Device); }
 	bool CanDrawImage() const { return !!(capabilities_ & Capability::DrawImage); }
 	bool CanScrollHorz() const { return !!(capabilities_ & Capability::ScrollHorz); }

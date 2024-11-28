@@ -243,7 +243,7 @@ public:
 		SetDispatcher(dispatcherEx_);
 	}
 public:
-	void Initialize() { pDispatcher_->Initialize(); }
+	void Initialize() { GetDispatcher().Initialize(); }
 };
 
 }
