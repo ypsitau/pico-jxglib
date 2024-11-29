@@ -12,6 +12,7 @@
 #include "image/image_cat_128x170.h"
 #include "image/image_cat_160x213.h"
 #include "image/image_cat_240x320.h"
+#include "image/image_cat_240x240.h"
 
 using namespace jxglib;
 
@@ -282,7 +283,7 @@ int main()
 	ST7735::TypeB display5(spi1, 130, 161, GPIO24, GPIO25, GPIO26, GPIO27);
 	Display* displayTbl[] = { &display1, &display2, &display3, &display4, &display5 };
 	Display::DisplayDir displayDir = Display::DisplayDir::Normal;
-	//Display::DisplayDir displayDir = Display::DisplayDir::HorzFromNE;
+	//Display::DisplayDir displayDir = Display::DisplayDir::Rotate90;
 	//Display::DisplayDir displayDir = Display::DisplayDir::Rotate180;
 	display1.Initialize(displayDir);
 	display2.Initialize(displayDir);
@@ -294,7 +295,7 @@ int main()
 		Display& display = *displayTbl[i];
 		int width = display.GetWidth();
 		const Image& image = (width <= 128)? image_cat_128x170 :
-						(width <= 160)? image_cat_160x213 : image_cat_240x320;
+						(width <= 160)? image_cat_160x213 : image_cat_240x240;
 		display.Clear().DrawImage(0, 0, image, nullptr, Display::ImageDir::Rotate0).Refresh();
 	}
 	//Test_BouncingBall(display);

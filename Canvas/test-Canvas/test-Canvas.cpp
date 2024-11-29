@@ -51,7 +51,9 @@ int main()
 	canvas.Refresh();
 	for (;;) {
 		canvas.ScrollVert(DirVert::Up, 1);
+		absolute_time_t absTimeStart = ::get_absolute_time();
 		canvas.Refresh();
+		::printf("%d usec\n", 
 	}
 #endif
 }
