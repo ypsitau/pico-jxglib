@@ -2,6 +2,7 @@
 // TFT_LCD.cpp
 //==============================================================================
 #include "jxglib/TFT_LCD.h"
+#include "jxglib/DMA.h"
 
 namespace jxglib {
 
@@ -191,9 +192,32 @@ void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 	} else if (image.GetFormat().IsRGB565()) {
+#if 1
 		using Reader = Image::Reader<Image::Getter_T<ColorRGB565, ColorRGB565> >;
 		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
+#else
+		spi_inst_t* spi = raw.GetSPI();
+		DMA::Channel channel(DMA::claim_unused_channel(true));
+		DMA::ChannelConfig config;
+		config.set_enable(true)
+			.set_transfer_data_size(DMA_SIZE_16)
+			.set_read_increment(true)
+			.set_write_increment(false)
+			.set_dreq(::spi_get_dreq(spi, true))	// see RP2040 Datasheet 2.5.3.1 System DREQ Table
+			.set_chain_to(channel)					// disable by setting chain_to to itself
+			.set_ring_to_read(0)
+			.set_bswap(false)
+			.set_irq_quiet(false)
+			.set_sniff_enable(false)
+			.set_high_priority(false);
+		channel.set_config(config);
+		channel.set_read_addr(image.GetPointer())
+			.set_write_addr(&::spi_get_hw(spi)->dr)
+			.set_trans_count_trig(240 * 320)
+			.wait_for_finish_blocking();
+		channel.unclaim();
+#endif
 	}
 	raw.MemoryWrite_End();
 }

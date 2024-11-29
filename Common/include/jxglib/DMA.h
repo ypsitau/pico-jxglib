@@ -32,6 +32,47 @@ public:
 		ChannelConfig& set_dreq(uint dreq) {
 			::channel_config_set_dreq(&config_, dreq); return *this;
 		}
+		ChannelConfig& set_dreq_FORCE() { return set_dreq(DREQ_FORCE); }
+		ChannelConfig& set_dreq_PIO0_TX0() { return set_dreq(DREQ_PIO0_TX0); }
+		ChannelConfig& set_dreq_PIO0_TX1() { return set_dreq(DREQ_PIO0_TX1); }
+		ChannelConfig& set_dreq_PIO0_TX2() { return set_dreq(DREQ_PIO0_TX2); }
+		ChannelConfig& set_dreq_PIO0_TX3() { return set_dreq(DREQ_PIO0_TX3); }
+		ChannelConfig& set_dreq_PIO0_RX0() { return set_dreq(DREQ_PIO0_RX0); }
+		ChannelConfig& set_dreq_PIO0_RX1() { return set_dreq(DREQ_PIO0_RX1); }
+		ChannelConfig& set_dreq_PIO0_RX2() { return set_dreq(DREQ_PIO0_RX2); }
+		ChannelConfig& set_dreq_PIO0_RX3() { return set_dreq(DREQ_PIO0_RX3); }
+		ChannelConfig& set_dreq_PIO1_TX0() { return set_dreq(DREQ_PIO1_TX0); }
+		ChannelConfig& set_dreq_PIO1_TX1() { return set_dreq(DREQ_PIO1_TX1); }
+		ChannelConfig& set_dreq_PIO1_TX2() { return set_dreq(DREQ_PIO1_TX2); }
+		ChannelConfig& set_dreq_PIO1_TX3() { return set_dreq(DREQ_PIO1_TX3); }
+		ChannelConfig& set_dreq_PIO1_RX0() { return set_dreq(DREQ_PIO1_RX0); }
+		ChannelConfig& set_dreq_PIO1_RX1() { return set_dreq(DREQ_PIO1_RX1); }
+		ChannelConfig& set_dreq_PIO1_RX2() { return set_dreq(DREQ_PIO1_RX2); }
+		ChannelConfig& set_dreq_PIO1_RX3() { return set_dreq(DREQ_PIO1_RX3); }
+		ChannelConfig& set_dreq_SPI0_TX() { return set_dreq(DREQ_SPI0_TX); }
+		ChannelConfig& set_dreq_SPI0_RX() { return set_dreq(DREQ_SPI0_RX); }
+		ChannelConfig& set_dreq_SPI1_TX() { return set_dreq(DREQ_SPI1_TX); }
+		ChannelConfig& set_dreq_SPI1_RX() { return set_dreq(DREQ_SPI1_RX); }
+		ChannelConfig& set_dreq_UART0_TX() { return set_dreq(DREQ_UART0_TX); }
+		ChannelConfig& set_dreq_UART0_RX() { return set_dreq(DREQ_UART0_RX); }
+		ChannelConfig& set_dreq_UART1_TX() { return set_dreq(DREQ_UART1_TX); }
+		ChannelConfig& set_dreq_UART1_RX() { return set_dreq(DREQ_UART1_RX); }
+		ChannelConfig& set_dreq_PWM_WRAP0() { return set_dreq(DREQ_PWM_WRAP0); }
+		ChannelConfig& set_dreq_PWM_WRAP1() { return set_dreq(DREQ_PWM_WRAP1); }
+		ChannelConfig& set_dreq_PWM_WRAP2() { return set_dreq(DREQ_PWM_WRAP2); }
+		ChannelConfig& set_dreq_PWM_WRAP3() { return set_dreq(DREQ_PWM_WRAP3); }
+		ChannelConfig& set_dreq_PWM_WRAP4() { return set_dreq(DREQ_PWM_WRAP4); }
+		ChannelConfig& set_dreq_PWM_WRAP5() { return set_dreq(DREQ_PWM_WRAP5); }
+		ChannelConfig& set_dreq_PWM_WRAP6() { return set_dreq(DREQ_PWM_WRAP6); }
+		ChannelConfig& set_dreq_PWM_WRAP7() { return set_dreq(DREQ_PWM_WRAP7); }
+		ChannelConfig& set_dreq_I2C0_TX() { return set_dreq(DREQ_I2C0_TX); }
+		ChannelConfig& set_dreq_I2C0_RX() { return set_dreq(DREQ_I2C0_RX); }
+		ChannelConfig& set_dreq_I2C1_TX() { return set_dreq(DREQ_I2C1_TX); }
+		ChannelConfig& set_dreq_I2C1_RX() { return set_dreq(DREQ_I2C1_RX); }
+		ChannelConfig& set_dreq_ADC() { return set_dreq(DREQ_ADC); }
+		ChannelConfig& set_dreq_XIP_STREAM() { return set_dreq(DREQ_XIP_STREAM); }
+		ChannelConfig& set_dreq_XIP_SSITX() { return set_dreq(DREQ_XIP_SSITX); }
+		ChannelConfig& set_dreq_XIP_SSIRX() { return set_dreq(DREQ_XIP_SSIRX); }
 		ChannelConfig& set_chain_to(uint chain_to) {
 			::channel_config_set_chain_to(&config_, chain_to); return *this;
 		}

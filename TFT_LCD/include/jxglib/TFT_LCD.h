@@ -89,6 +89,7 @@ public:
 				spi_(spi), gpio_RST_(gpio_RST), gpio_DC_(gpio_DC), gpio_CS_(GPIO::None), gpio_BL_(gpio_BL),
 				cpol_(SPI_CPOL_1), cpha_(SPI_CPHA_1) {}
 	public:
+		spi_inst_t* GetSPI() { return spi_; }
 		bool UsesCS() const { return gpio_CS_.IsValid(); }
 		void InitGPIO();
 		void SetGPIO_BL(bool value) { if (gpio_BL_.IsValid()) gpio_BL_.put(value); }

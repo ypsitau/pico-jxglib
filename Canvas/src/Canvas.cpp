@@ -188,22 +188,26 @@ void Canvas::Dispatcher_T<T_Color>::ScrollVert(DirVert dirVert, int htScroll, co
 bool Canvas::AttachOutput(Drawable& drawableOut, const Rect* pRect, AttachDir attachDir)
 {
 	const Format& formatOut = drawableOut.GetFormat();
-	int width, height;
+	int wdImage, htImage;
 	if (pRect) {
-		width = pRect->width, height = pRect->height;
+		if (Image::IsDirHorz(attachDir)) {
+			wdImage = pRect->width, htImage = pRect->height;
+		} else {
+			wdImage = pRect->height, htImage = pRect->width;
+		}
 		output_.rect = *pRect;
 	} else {
 		if (Image::IsDirHorz(attachDir)) {
-			width = drawableOut.GetWidth(), height = drawableOut.GetHeight();
+			wdImage = drawableOut.GetWidth(), htImage = drawableOut.GetHeight();
 		} else {
-			width = drawableOut.GetHeight(), height = drawableOut.GetWidth();
+			wdImage = drawableOut.GetHeight(), htImage = drawableOut.GetWidth();
 		}
 		output_.rect = Rect(0, 0, drawableOut.GetWidth(), drawableOut.GetHeight());
 	}
-	SetCapacity(formatOut, width, height);
+	SetCapacity(formatOut, wdImage, htImage);
 	output_.attachDir = attachDir;
 	pDrawableOut_ = &drawableOut;
-	if (!imageOwn_.Alloc(formatOut, width, height)) return false;
+	if (!imageOwn_.Alloc(formatOut, wdImage, htImage)) return false;
 	imageOwn_.FillZero();
 	if (formatOut.IsBitmap()) {
 		return false;
@@ -239,7 +243,7 @@ void Canvas::DispatcherEx::Refresh()
 	const Output& output = canvas_.GetOutput();
 	if (!pDrawableOut) return;
 	//pDrawableOut->DrawImage(0, 0, imageOwn, &output.rect, output.attachDir);
-	pDrawableOut->DrawImage(0, 0, imageOwn, nullptr, output.attachDir);
+	pDrawableOut->DrawImage(output.rect.x, output.rect.y, imageOwn, nullptr, output.attachDir);
 	pDrawableOut->Refresh();
 }
 

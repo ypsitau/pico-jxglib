@@ -45,7 +45,7 @@ int main()
 	}
 #endif
 #if 1
-	canvas.AttachOutput(display, Canvas::ImageDir::Rotate0);
+	canvas.AttachOutput(display, Rect(40, 40, 100, 150), Canvas::ImageDir::Rotate90);
 	canvas.SetFont(Font::shinonome16);
 	canvas.SetSpacingRatio(1.0, 1.2);
 	canvas.DrawStringWrap(0, 0, str);
