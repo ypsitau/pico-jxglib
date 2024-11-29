@@ -34,22 +34,35 @@ Printable& Printable::Printf(const char* format, ...)
 	return *this;
 }
 
-Printable& Printable::Dump(const void* buff, int bytes)
+Printable& Printable::Dump(const void* buff, int cnt)
 {
 	const char* formatAddr;
-	const char* formatData;
+	char formatData[32];
+	const char* formatDataMeta;
 	if (dumpStyle.upperCaseFlag) {
 		formatAddr = "%0*X ";
-		formatData = " %02X";
+		formatDataMeta = " %%0%dX";
 	} else {
 		formatAddr = "%0*x ";
-		formatData = " %02x";
+		formatDataMeta = " %%0%dx";
 	}
+	::snprintf(formatData, sizeof(formatData), formatDataMeta, dumpStyle.bytesPerElem * 2);
 	const uint8_t* p = reinterpret_cast<const uint8_t*>(buff);
 	int iCol = 0;
-	for (int i = 0; i < bytes; i++, p++) {
-		if (iCol == 0) Printf(formatAddr, dumpStyle.nDigitsAddr, i);
+	int nDigitsAddr = 0;
+	if (dumpStyle.nDigitsAddr > 0) {
+		nDigitsAddr = dumpStyle.nDigitsAddr;
+	} else {
+		uint32_t addrEnd = dumpStyle.addrStart + ((cnt - 1) / dumpStyle.nCols) * dumpStyle.nCols * dumpStyle.bytesPerElem;
+		for ( ; addrEnd; addrEnd >>= 4, nDigitsAddr++) ;
+		if (nDigitsAddr == 0) nDigitsAddr = 1;
+	}
+	uint32_t addr = dumpStyle.addrStart;
+	for (int i = 0; i < cnt; i++, p += dumpStyle.bytesPerElem) {
+		if (iCol == 0) Printf(formatAddr, nDigitsAddr, addr + i * dumpStyle.bytesPerElem);
+		
 		Printf(formatData, *p);
+		
 		iCol++;
 		if (iCol == dumpStyle.nCols) {
 			Println();

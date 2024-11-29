@@ -55,6 +55,7 @@ int main()
 	display5.Initialize();
 	Terminal terminal1;
 	Terminal terminal2;
+	terminal1.dumpStyle.DigitsAddr_Auto();
 	terminal1.AttachOutput(display2, {0, 0, 240, 100}, Terminal::AttachDir::Rotate0);
 	terminal2.AttachOutput(display2, {0, 120, 240, 200}, Terminal::AttachDir::Rotate90);
 	terminal1.SetFont(Font::shinonome12);
