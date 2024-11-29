@@ -9,6 +9,7 @@ using namespace jxglib;
 
 int main()
 {
+	Image image;
 	const char* str =
 		"親譲りの無鉄砲で子供のときから損ばかりしている。小学校の時分学校の二階から飛び降りて一週間腰を"
 		"抜かしたことがある。なぜそんなむやみなことをしたかと聞く人があるかもしれない。"
@@ -44,16 +45,13 @@ int main()
 	}
 #endif
 #if 1
-	canvas.AttachOutput(display, Canvas::ImageDir::Rotate270);
+	canvas.AttachOutput(display, Canvas::ImageDir::Rotate0);
 	canvas.SetFont(Font::shinonome16);
 	canvas.SetSpacingRatio(1.0, 1.2);
 	canvas.DrawStringWrap(0, 0, str);
+	//canvas.Refresh();
+	absolute_time_t absTimeStart = ::get_absolute_time();
 	canvas.Refresh();
-	for (;;) {
-		canvas.ScrollVert(DirVert::Up, 1);
-		absolute_time_t absTimeStart = ::get_absolute_time();
-		canvas.Refresh();
-		::printf("%d usec\n", 
-	}
+	::printf("%lld usec\n", ::absolute_time_diff_us(absTimeStart, ::get_absolute_time()));
 #endif
 }

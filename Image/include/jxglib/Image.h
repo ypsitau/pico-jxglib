@@ -67,15 +67,19 @@ public:
 	using WriterDir = SequencerDir;
 	class Sequencer {
 	protected:
-		int nCols_, nRows_;
-		int advancePerCol_, advancePerRow_;
 		uint8_t* p_;
 		uint8_t* pRow_;
+		int nCols_, nRows_;
+		int advancePerCol_, advancePerRow_;
 		int iCol_, iRow_;
 	public:
 		Sequencer(void* p, int nCols, int nRows, int advancePerCol, int advancePerRow) :
 			p_{reinterpret_cast<uint8_t*>(p)}, pRow_{p_}, nCols_{nCols}, nRows_{nRows},
 			advancePerCol_{advancePerCol}, advancePerRow_{advancePerRow}, iCol_{0}, iRow_{0} {}
+		Sequencer(const Sequencer& sequencer) :
+			p_{sequencer.p_}, pRow_{sequencer.pRow_}, nCols_{sequencer.nCols_}, nRows_{sequencer.nRows_},
+			advancePerCol_{sequencer.advancePerCol_}, advancePerRow_{sequencer.advancePerRow_}, iCol_{sequencer.iCol_}, iRow_{sequencer.iRow_} {}
+
 		void MoveForward() {
 			iCol_++;
 			p_ += advancePerCol_;
@@ -145,6 +149,7 @@ public:
 	public:
 		Reader(const void* p, int nCols, int nRows, int advancePerCol, int advancePerRow) :
 				Sequencer(const_cast<void*>(p), nCols, nRows, advancePerCol, advancePerRow) {}
+		Reader(const Reader& reader) : Sequencer(reader) {}
 		typename T_Getter::T_ColorVar ReadForward() {
 			auto rtn  = T_Getter().Get(p_);
 			MoveForward();
@@ -202,6 +207,8 @@ public:
 	public:
 		Writer(void* p, int nCols, int nRows, int advancePerCol, int advancePerRow) :
 				Sequencer(p, nCols, nRows, advancePerCol, advancePerRow) {}
+		Writer(const Writer& writer) : Sequencer(writer) {}
+	public:
 		void WriteForward(const typename T_Setter::T_ColorVar& data) {
 			T_Setter().Set(p_, data);
 			MoveForward();

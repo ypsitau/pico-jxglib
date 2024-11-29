@@ -21,6 +21,9 @@ void Canvas::Dispatcher_T<T_Color>::Fill(const Color& color)
 template<typename T_Color>
 void Canvas::Dispatcher_T<T_Color>::DrawPixel(int x, int y, const Color& color)
 {
+	Image& imageOwn = canvas_.GetImageOwn();
+	T_Color colorDst(color);
+	Image::Setter_T<T_Color, T_Color>().Set(imageOwn.GetPointer(x, y), colorDst);
 }
 
 template<typename T_Color>
