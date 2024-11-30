@@ -60,7 +60,7 @@ Printable::DumpStyle& Printable::DumpStyle::operator()(const void* buff, int cnt
 	}
 	::snprintf(formatAddr, sizeof(formatAddr), "%%0%d%c ", nDigitsAddr, upperCaseFlag_? 'X' : 'x');
 	::snprintf(formatData, sizeof(formatData), " %%0%d%s%c", bytesPerElem_ * 2,
-						(bytesPerElem_ < 8)? "" : "ll", upperCaseFlag_? 'X' : 'x');
+		(bytesPerElem_ < 4)? "" : (bytesPerElem_ < 8)? "l" : "ll", upperCaseFlag_? 'X' : 'x');
 	uint32_t addr = addrStart_;
 	for (int i = 0; i < cnt; i++, p += bytesPerElem_) {
 		if (iCol == 0) printable.Printf(formatAddr, addr + i * bytesPerElem_);

@@ -81,6 +81,7 @@ inline Printable& ClearScreen() { return Printable::GetStandardOutput().ClearScr
 inline Printable& FlushScreen() { return Printable::GetStandardOutput().FlushScreen(); }
 inline Printable& Locate(int col, int row) { return Printable::GetStandardOutput().Locate(col, row); }
 inline Printable& Print(const char* str) { return Printable::GetStandardOutput().Print(str); }
+inline Printable& Println(const char* str = "") { return Printable::GetStandardOutput().Println(str); }
 inline Printable& VPrintf(const char* format, va_list args) { return Printable::GetStandardOutput().VPrintf(format, args); }
 Printable& Printf(const char* format, ...);
 
