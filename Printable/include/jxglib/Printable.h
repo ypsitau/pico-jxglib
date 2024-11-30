@@ -22,8 +22,7 @@ public:
 		int bytesPerElem_;
 		bool bigEndianFlag_;
 	public:
-		DumpStyle(Printable* pPrintable) : pPrintable_(pPrintable),
-			upperCaseFlag_{true}, nDigitsAddr_{0}, nCols_{8}, addrStart_{0}, bytesPerElem_{1} {}
+		DumpStyle(Printable* pPrintable);
 	public:
 		DumpStyle& UpperCase() { upperCaseFlag_ = true; return *this; }
 		DumpStyle& LowerCase() { upperCaseFlag_ = false; return *this; }
