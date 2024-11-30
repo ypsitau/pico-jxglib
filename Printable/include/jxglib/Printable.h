@@ -14,7 +14,7 @@ class Printable {
 public:
 	class DumpStyle {
 	private:
-		Printable& printable_;
+		Printable* pPrintable_;	// maybe nullptr
 		bool upperCaseFlag_;
 		int nDigitsAddr_;
 		int nCols_;
@@ -22,7 +22,7 @@ public:
 		int bytesPerElem_;
 		bool bigEndianFlag_;
 	public:
-		DumpStyle(Printable& printable) : printable_(printable),
+		DumpStyle(Printable* pPrintable) : pPrintable_(pPrintable),
 			upperCaseFlag_{true}, nDigitsAddr_{0}, nCols_{8}, addrStart_{0}, bytesPerElem_{1} {}
 	public:
 		DumpStyle& UpperCase() { upperCaseFlag_ = true; return *this; }
@@ -46,7 +46,7 @@ public:
 private:
 	static Printable* pStandardOutput_;
 public:
-	Printable() : Dump(*this) {}
+	Printable() : Dump(this) {}
 public:
 	virtual Printable& ClearScreen() = 0;
 	virtual Printable& FlushScreen() = 0;
@@ -55,7 +55,6 @@ public:
 	virtual Printable& Println(const char* str = "");
 	virtual Printable& VPrintf(const char* format, va_list args);
 	Printable& Printf(const char* format, ...);
-	//Printable& Dump(const void* buff, int bytes);
 public:
 	static void SetStandardOutput(Printable& printable) { pStandardOutput_ = &printable; }
 	static Printable& GetStandardOutput() { return *pStandardOutput_; }
@@ -77,13 +76,14 @@ public:
 //------------------------------------------------------------------------------
 // Functions that expose methods provided by Printable class.
 //------------------------------------------------------------------------------
+extern Printable::DumpStyle Dump;
+
 inline Printable& ClearScreen() { return Printable::GetStandardOutput().ClearScreen(); }
 inline Printable& FlushScreen() { return Printable::GetStandardOutput().FlushScreen(); }
 inline Printable& Locate(int col, int row) { return Printable::GetStandardOutput().Locate(col, row); }
 inline Printable& Print(const char* str) { return Printable::GetStandardOutput().Print(str); }
 inline Printable& VPrintf(const char* format, va_list args) { return Printable::GetStandardOutput().VPrintf(format, args); }
 Printable& Printf(const char* format, ...);
-//inline Printable& Dump(const void* buff, int bytes) { return Printable::GetStandardOutput().Dump(buff, bytes); }
 
 }
 

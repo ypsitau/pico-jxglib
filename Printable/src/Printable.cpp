@@ -38,6 +38,7 @@ Printable& Printable::Printf(const char* format, ...)
 
 Printable::DumpStyle& Printable::DumpStyle::operator()(const void* buff, int cnt)
 {
+	Printable& printable = pPrintable_? *pPrintable_ : *pStandardOutput_;
 	const char* formatAddr;
 	char formatData[32];
 	const char* formatDataMeta;
@@ -61,17 +62,17 @@ Printable::DumpStyle& Printable::DumpStyle::operator()(const void* buff, int cnt
 	}
 	uint32_t addr = addrStart_;
 	for (int i = 0; i < cnt; i++, p += bytesPerElem_) {
-		if (iCol == 0) printable_.Printf(formatAddr, nDigitsAddr, addr + i * bytesPerElem_);
+		if (iCol == 0) printable.Printf(formatAddr, nDigitsAddr, addr + i * bytesPerElem_);
 		
-		printable_.Printf(formatData, *p);
+		printable.Printf(formatData, *p);
 		
 		iCol++;
 		if (iCol == nCols_) {
-			printable_.Println();
+			printable.Println();
 			iCol = 0;
 		}
 	}
-	if (iCol > 0) printable_.Println();
+	if (iCol > 0) printable.Println();
 	return *this;
 }
 
@@ -83,6 +84,8 @@ PrintableDumb PrintableDumb::Instance;
 //------------------------------------------------------------------------------
 // Functions that expose methods provided by Printable class.
 //------------------------------------------------------------------------------
+Printable::DumpStyle Dump(nullptr);
+
 Printable& Printf(const char* format, ...)
 {
 	va_list args;
