@@ -33,13 +33,13 @@ int Terminal::GetRowNum() const
 	return drawable.GetHeight() / fontSet.yAdvance;
 }
 
-Printable& Terminal::Clear()
+Printable& Terminal::ClearScreen()
 {
 	GetDrawable().Clear();
 	return *this;
 }
 
-Printable& Terminal::Flush()
+Printable& Terminal::FlushScreen()
 {
 	GetDrawable().Refresh();
 	return *this;

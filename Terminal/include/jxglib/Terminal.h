@@ -53,9 +53,9 @@ public:
 	int GetRowNum() const;
 public:
 	// Virtual functions of Printable
-	virtual Printable& Clear() override;
+	virtual Printable& ClearScreen() override;
+	virtual Printable& FlushScreen() override;
 	virtual Printable& Locate(int col, int row) override;
-	virtual Printable& Flush() override;
 	virtual Printable& Print(const char* str) override;
 };
 

@@ -7,9 +7,8 @@ using namespace jxglib;
 int main()
 {
 	::stdio_init_all();
-	//UART uart(uart_default);
 	while (true) {
-		printf("Hello, world!\n");
+		UART::Default.Printf("Hello, world!\n");
 		sleep_ms(1000);
 	}
 }

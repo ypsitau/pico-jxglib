@@ -40,8 +40,8 @@ public:
 public:
 	DumpStyle dumpStyle;
 public:
-	virtual Printable& Clear() = 0;
-	virtual Printable& Flush() = 0;
+	virtual Printable& ClearScreen() = 0;
+	virtual Printable& FlushScreen() = 0;
 	virtual Printable& Locate(int col, int row) = 0;
 	virtual Printable& Print(const char* str) = 0;
 	virtual Printable& Println(const char* str = "");
