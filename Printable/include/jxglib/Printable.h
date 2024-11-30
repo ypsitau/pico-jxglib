@@ -13,6 +13,8 @@ namespace jxglib {
 class Printable {
 public:
 	class DumpStyle {
+	public:
+		static const int bytesPerLineInit = 16;
 	private:
 		Printable* pPrintable_;	// maybe nullptr
 		bool upperCaseFlag_;
@@ -30,13 +32,13 @@ public:
 		DumpStyle& DigitsAddr_Auto() { nDigitsAddr_ = 0; return *this; }
 		DumpStyle& Cols(int nCols) { nCols_ = nCols; return *this; }
 		DumpStyle& AddrStart(uint32_t addrStart) { addrStart_ = addrStart; return *this; }
-		DumpStyle& Data8Bit() { bytesPerElem_ = 1; bigEndianFlag_ = false; return *this; } 
-		DumpStyle& Data16Bit() { bytesPerElem_ = 2; bigEndianFlag_ = false; return *this; } 
-		DumpStyle& Data32Bit() { bytesPerElem_ = 4; bigEndianFlag_ = false; return *this; } 
-		DumpStyle& Data64Bit() { bytesPerElem_ = 8; bigEndianFlag_ = false; return *this; } 
-		DumpStyle& Data16BitBE() { bytesPerElem_ = 2; bigEndianFlag_ = true; return *this; } 
-		DumpStyle& Data32BitBE() { bytesPerElem_ = 4; bigEndianFlag_ = true; return *this; } 
-		DumpStyle& Data64BitBE() { bytesPerElem_ = 8; bigEndianFlag_ = true; return *this; } 
+		DumpStyle& Data8Bit(int nCols = 16) { bytesPerElem_ = 1; nCols_ = nCols; bigEndianFlag_ = false; return *this; } 
+		DumpStyle& Data16Bit(int nCols = 8) { bytesPerElem_ = 2; nCols_ = nCols; bigEndianFlag_ = false; return *this; } 
+		DumpStyle& Data32Bit(int nCols = 4) { bytesPerElem_ = 4; nCols_ = nCols; bigEndianFlag_ = false; return *this; } 
+		DumpStyle& Data64Bit(int nCols = 2) { bytesPerElem_ = 8; nCols_ = nCols; bigEndianFlag_ = false; return *this; } 
+		DumpStyle& Data16BitBE(int nCols = 8) { bytesPerElem_ = 2; nCols_ = nCols; bigEndianFlag_ = true; return *this; } 
+		DumpStyle& Data32BitBE(int nCols = 4) { bytesPerElem_ = 4; nCols_ = nCols; bigEndianFlag_ = true; return *this; } 
+		DumpStyle& Data64BitBE(int nCols = 2) { bytesPerElem_ = 8; nCols_ = nCols; bigEndianFlag_ = true; return *this; } 
 	public:
 		DumpStyle& operator()(const void* buff, int bytes);
 	};
