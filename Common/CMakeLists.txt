@@ -6,6 +6,7 @@ target_include_directories(jxglib_Common INTERFACE
 target_link_libraries(jxglib_Common INTERFACE
 	hardware_adc
 	hardware_dma
+	hardware_pio
 	hardware_pwm)
 
 target_sources(jxglib_Common INTERFACE

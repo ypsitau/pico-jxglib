@@ -6,6 +6,7 @@
 #include "pico/stdlib.h"
 #include "hardware/pwm.h"
 #include "hardware/adc.h"
+#include "hardware/pio.h"
 
 namespace jxglib {
 
@@ -119,6 +120,8 @@ public:
 	const GPIO& pwm_force_irq_slice() const					{ ::pwm_force_irq(pwm_slice_num()); return *this; }
 	uint pwm_get_dreq_slice() const							{ return ::pwm_get_dreq(pwm_slice_num()); }
 public:
+	const GPIO& pio_init(PIO pio) const						{ ::pio_gpio_init(pio, pin); return *this; }
+public:
 	static inline void adc_set_round_robin(const GPIO_ADC& gpio1, bool tempSensor = false);
 	static inline void adc_set_round_robin(const GPIO_ADC& gpio1, const GPIO_ADC& gpio2, bool tempSensor = false);
 	static inline void adc_set_round_robin(const GPIO_ADC& gpio1, const GPIO_ADC& gpio2, const GPIO_ADC& gpio3, bool tempSensor = false);
@@ -131,9 +134,9 @@ public:
 public:
 	uint adc_input() const { return pin - 26; }
 public:
-	const GPIO& adc_init() const			{ ::adc_gpio_init(pin); return *this; }
-	const GPIO& adc_select_input() const	{ ::adc_select_input(adc_input()); return *this; }
-	uint16_t adc_read() const				{ adc_select_input(); return ::adc_read(); }
+	const GPIO_ADC& adc_init() const			{ ::adc_gpio_init(pin); return *this; }
+	const GPIO_ADC& adc_select_input() const	{ ::adc_select_input(adc_input()); return *this; }
+	uint16_t adc_read() const					{ adc_select_input(); return ::adc_read(); }
 };
 
 inline void GPIO::adc_set_round_robin(const GPIO_ADC& gpio1, bool tempSensor)
