@@ -6,17 +6,36 @@
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// PIOx
+// PIOIf
 //------------------------------------------------------------------------------
-PIOx PIO0(pio0);
-PIOx PIO1(pio1);
+PIOIf PIO0(pio0);
+PIOIf PIO1(pio1);
 
-PIOx::PIOx(PIO pio) : pio_{pio}, SMInvalid(pio, -1), SM0(pio, 0), SM1(pio, 1), SM2(pio, 2), SM3(pio, 3)
+//------------------------------------------------------------------------------
+// PIOContext
+//------------------------------------------------------------------------------
+bool PIOContext::ClaimResource()
 {
-	smTbl_[0] = &SM0;
-	smTbl_[1] = &SM1;
-	smTbl_[2] = &SM2;
-	smTbl_[3] = &SM3;
+	PIO pio;
+	uint sm;
+	if (!PIOIf::claim_free_sm_and_add_program(program_, &pio, &sm, &offset_)) return false;
+	stateMachine_.SetResource(pio, sm);
+	return true;
+}
+
+bool PIOContext::ClaimResource(uint gpio_base, uint gpio_count, bool set_gpio_base)
+{
+	PIO pio;
+	uint sm;
+	if (!PIOIf::claim_free_sm_and_add_program_for_gpio_range(program_, &pio, &sm, &offset_, gpio_base, gpio_count, set_gpio_base)) return false;
+	stateMachine_.SetResource(pio, sm);
+	return true;
+}
+
+void PIOContext::UnclaimResource()
+{
+	PIOIf::remove_program_and_unclaim_sm(program_, stateMachine_.Get_pio(), stateMachine_.Get_sm(), offset_);
+	stateMachine_.Invalidate();
 }
 
 }
