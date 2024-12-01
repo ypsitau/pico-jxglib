@@ -11,12 +11,12 @@ namespace jxglib {
 PIOx PIO0(pio0);
 PIOx PIO1(pio1);
 
-PIOx::PIOx(PIO pio) : pio_{pio}, SM0(pio, 0), SM1(pio, 1), SM2(pio, 2), SM3(pio, 3)
+PIOx::PIOx(PIO pio) : pio_{pio}, SMInvalid(pio, -1), SM0(pio, 0), SM1(pio, 1), SM2(pio, 2), SM3(pio, 3)
 {
-	stateMachineTbl_[0] = &SM0;
-	stateMachineTbl_[1] = &SM1;
-	stateMachineTbl_[2] = &SM2;
-	stateMachineTbl_[3] = &SM3;
+	smTbl_[0] = &SM0;
+	smTbl_[1] = &SM1;
+	smTbl_[2] = &SM2;
+	smTbl_[3] = &SM3;
 }
 
 }
