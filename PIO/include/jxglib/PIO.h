@@ -5,6 +5,7 @@
 #define PICO_JXGLIB_PIO_H
 #include "pico/stdlib.h"
 #include "hardware/pio.h"
+#include "jxglib/GPIO.h"
 
 namespace jxglib {
 
@@ -18,22 +19,22 @@ public:
 		PIO pio_;
 		uint sm_;
 	public:
-		StateMachine() : pio_{nullptr}, sm_{static_cast<uint>(-1)} {}
-		StateMachine(PIO pio, uint sm) : pio_{pio}, sm_{sm} {}
-		StateMachine(const StateMachine& stateMachine) : StateMachine(stateMachine.pio_, stateMachine.sm_) {}
+		StateMachine() : pio_(nullptr), sm_{static_cast<uint>(-1)} {}
+		StateMachine(const StateMachine& stateMachine) : pio_(stateMachine.pio_), sm_{stateMachine.sm_} {}
 	public:
 		operator uint() { return sm_; }
 	public:
 		void SetResource(PIO pio, uint sm) { pio_ = pio, sm_ = sm; }
 		void Invalidate() { pio_ = nullptr, sm_ = static_cast<uint>(-1); }	
 		bool IsValid() const { return !!pio_ && sm_ != static_cast<uint>(-1); }
-		PIO Get_pio() const { return pio_; }
-		uint Get_sm() const { return sm_; }
+		PIO GetPIO() const { return pio_; }
+		uint GetSM() const { return sm_; }
 	public:
 		uint get_dreq(bool is_tx) const { return ::pio_get_dreq(pio_, sm_, is_tx); }
 		uint get_dreq_tx() const { return ::pio_get_dreq(pio_, sm_, true); }
 		uint get_dreq_rx() const { return ::pio_get_dreq(pio_, sm_, false); }
 		int set_config(const pio_sm_config *config) const { return ::pio_sm_set_config(pio_, sm_, config); }
+		int init(uint initial_pc, const pio_sm_config* config) { return ::pio_sm_init(pio_, sm_, initial_pc, config); }
 		const StateMachine& set_enabled(bool enabled) const { ::pio_sm_set_enabled(pio_, sm_, enabled); return *this; }
 		const StateMachine& restart() const { ::pio_sm_restart(pio_, sm_); return *this; }
 		const StateMachine& clkdiv_restart() const { ::pio_sm_clkdiv_restart(pio_, sm_); return *this; }
@@ -65,37 +66,41 @@ public:
 		const StateMachine& set_pins_with_mask(uint32_t pin_values, uint32_t pin_mask) const { ::pio_sm_set_pins_with_mask(pio_, sm_, pin_values, pin_mask); return *this; }
 		const StateMachine& set_pindirs_with_mask(uint32_t pin_dirs, uint32_t pin_mask) const { ::pio_sm_set_pindirs_with_mask(pio_, sm_, pin_dirs, pin_mask); return *this; }
 		int set_consecutive_pindirs(uint pins_base, uint pin_count, bool is_out) const { return ::pio_sm_set_consecutive_pindirs(pio_, sm_, pins_base, pin_count, is_out); }
+		int set_consecutive_pindirs_out(uint pins_base, uint pin_count) const { return ::pio_sm_set_consecutive_pindirs(pio_, sm_, pins_base, pin_count, true); }
+		int set_consecutive_pindirs_in(uint pins_base, uint pin_count) const { return ::pio_sm_set_consecutive_pindirs(pio_, sm_, pins_base, pin_count, false); }
 		const StateMachine& claim() const { ::pio_sm_claim(pio_, sm_); return *this; }
 		const StateMachine& unclaim() const { ::pio_sm_unclaim(pio_, sm_); return *this; }
 		bool is_claimed() const { return ::pio_sm_is_claimed(pio_, sm_); }
 	};
-	class StateMachineConfig {
+	class Config {
 	private:
 		pio_sm_config c_;
 	public:
-		StateMachineConfig() : c_{::pio_get_default_sm_config()} {}
-		StateMachineConfig(const pio_sm_config& c) : c_{c} {}
+		Config() : c_{::pio_get_default_sm_config()} {}
+		Config(const pio_sm_config& c) : c_{c} {}
 	public:
-		StateMachineConfig& set_out_pin_base(uint out_base) { ::sm_config_set_out_pin_base(&c_, out_base); return *this; }
-		StateMachineConfig& set_out_pin_count(uint out_count) { ::sm_config_set_out_pin_count(&c_, out_count); return *this; }
-		StateMachineConfig& set_out_pins(uint out_base, uint out_count) { ::sm_config_set_out_pins(&c_, out_base, out_count); return *this; }
-		StateMachineConfig& set_set_pin_base(uint set_base) { ::sm_config_set_set_pin_base(&c_, set_base); return *this; }
-		StateMachineConfig& set_set_pin_count(uint set_count) { ::sm_config_set_set_pin_count(&c_, set_count); return *this; }
-		StateMachineConfig& set_set_pins(uint set_base, uint set_count) { ::sm_config_set_set_pins(&c_, set_base, set_count); return *this; }
-		StateMachineConfig& set_in_pin_base(uint in_base) { ::sm_config_set_in_pin_base(&c_, in_base); return *this; }
-		StateMachineConfig& set_in_pins(uint in_base) { ::sm_config_set_in_pins(&c_, in_base); return *this; }
-		StateMachineConfig& set_sideset_pin_base(uint sideset_base) { ::sm_config_set_sideset_pin_base(&c_, sideset_base); return *this; }
-		StateMachineConfig& set_sideset_pins(uint sideset_base) { ::sm_config_set_sideset_pins(&c_, sideset_base); return *this; }
-		StateMachineConfig& set_sideset(uint bit_count, bool optional, bool pindirs) { ::sm_config_set_sideset(&c_, bit_count, optional, pindirs); return *this; }
-		StateMachineConfig& set_clkdiv_int_frac(uint16_t div_int, uint8_t div_frac) { ::sm_config_set_clkdiv_int_frac(&c_, div_int, div_frac); return *this; }
-		StateMachineConfig& set_clkdiv(float div) { ::sm_config_set_clkdiv(&c_, div); return *this; }
-		StateMachineConfig& set_wrap(uint wrap_target, uint wrap) { ::sm_config_set_wrap(&c_, wrap_target, wrap); return *this; }
-		StateMachineConfig& set_jmp_pin(uint pin) { ::sm_config_set_jmp_pin(&c_, pin); return *this; }
-		StateMachineConfig& set_in_shift(bool shift_right, bool autopush, uint push_threshold) { ::sm_config_set_in_shift(&c_, shift_right, autopush, push_threshold); return *this; }
-		StateMachineConfig& set_out_shift(bool shift_right, bool autopull, uint pull_threshold) { ::sm_config_set_out_shift(&c_, shift_right, autopull, pull_threshold); return *this; }
-		StateMachineConfig& set_fifo_join(enum pio_fifo_join join) { ::sm_config_set_fifo_join(&c_, join); return *this; }
-		StateMachineConfig& set_out_special(bool sticky, bool has_enable_pin, uint enable_pin_index) { ::sm_config_set_out_special(&c_, sticky, has_enable_pin, enable_pin_index); return *this; }
-		StateMachineConfig& set_mov_status(enum pio_mov_status_type status_sel, uint status_n) { ::sm_config_set_mov_status(&c_, status_sel, status_n); return *this; }
+		operator const pio_sm_config*() const { return &c_; }
+	public:
+		Config& set_out_pin_base(uint out_base) { ::sm_config_set_out_pin_base(&c_, out_base); return *this; }
+		Config& set_out_pin_count(uint out_count) { ::sm_config_set_out_pin_count(&c_, out_count); return *this; }
+		Config& set_out_pins(uint out_base, uint out_count) { ::sm_config_set_out_pins(&c_, out_base, out_count); return *this; }
+		Config& set_set_pin_base(uint set_base) { ::sm_config_set_set_pin_base(&c_, set_base); return *this; }
+		Config& set_set_pin_count(uint set_count) { ::sm_config_set_set_pin_count(&c_, set_count); return *this; }
+		Config& set_set_pins(uint set_base, uint set_count) { ::sm_config_set_set_pins(&c_, set_base, set_count); return *this; }
+		Config& set_in_pin_base(uint in_base) { ::sm_config_set_in_pin_base(&c_, in_base); return *this; }
+		Config& set_in_pins(uint in_base) { ::sm_config_set_in_pins(&c_, in_base); return *this; }
+		Config& set_sideset_pin_base(uint sideset_base) { ::sm_config_set_sideset_pin_base(&c_, sideset_base); return *this; }
+		Config& set_sideset_pins(uint sideset_base) { ::sm_config_set_sideset_pins(&c_, sideset_base); return *this; }
+		Config& set_sideset(uint bit_count, bool optional, bool pindirs) { ::sm_config_set_sideset(&c_, bit_count, optional, pindirs); return *this; }
+		Config& set_clkdiv_int_frac(uint16_t div_int, uint8_t div_frac) { ::sm_config_set_clkdiv_int_frac(&c_, div_int, div_frac); return *this; }
+		Config& set_clkdiv(float div) { ::sm_config_set_clkdiv(&c_, div); return *this; }
+		Config& set_wrap(uint wrap_target, uint wrap) { ::sm_config_set_wrap(&c_, wrap_target, wrap); return *this; }
+		Config& set_jmp_pin(uint pin) { ::sm_config_set_jmp_pin(&c_, pin); return *this; }
+		Config& set_in_shift(bool shift_right, bool autopush, uint push_threshold) { ::sm_config_set_in_shift(&c_, shift_right, autopush, push_threshold); return *this; }
+		Config& set_out_shift(bool shift_right, bool autopull, uint pull_threshold) { ::sm_config_set_out_shift(&c_, shift_right, autopull, pull_threshold); return *this; }
+		Config& set_fifo_join(enum pio_fifo_join join) { ::sm_config_set_fifo_join(&c_, join); return *this; }
+		Config& set_out_special(bool sticky, bool has_enable_pin, uint enable_pin_index) { ::sm_config_set_out_special(&c_, sticky, has_enable_pin, enable_pin_index); return *this; }
+		Config& set_mov_status(enum pio_mov_status_type status_sel, uint status_n) { ::sm_config_set_mov_status(&c_, status_sel, status_n); return *this; }
 	};
 private:
 	PIO pio_;
@@ -106,6 +111,8 @@ public:
 public:
 	operator PIO() const { return pio_; }
 public:
+	void SetInst(PIO pio) { pio_ = pio; }
+	void Invalidate() { pio_ = nullptr; }
 	bool IsValid() const { return !!pio_; }
 public:
 	uint get_gpio_base() const { return ::pio_get_gpio_base(pio_); }
@@ -149,19 +156,50 @@ public:
 	static pio_interrupt_source_t get_rx_fifo_not_empty_interrupt_source(uint sm) { return ::pio_get_rx_fifo_not_empty_interrupt_source(sm); }
 };
 
+struct PIOEncode {
+public:
+	static uint delay(uint cycles) { return ::pio_encode_delay(cycles); }
+	static uint sideset(uint sideset_bit_count, uint value) { return ::pio_encode_sideset(sideset_bit_count, value); }
+	static uint sideset_opt(uint sideset_bit_count, uint value) { return ::pio_encode_sideset_opt(sideset_bit_count, value); }
+	static uint jmp(uint addr) { return ::pio_encode_jmp(addr); }
+	static uint jmp_not_x(uint addr) { return ::pio_encode_jmp_not_x(addr); }
+	static uint jmp_x_dec(uint addr) { return ::pio_encode_jmp_x_dec(addr); }
+	static uint jmp_not_y(uint addr) { return ::pio_encode_jmp_not_y(addr); }
+	static uint jmp_y_dec(uint addr) { return ::pio_encode_jmp_y_dec(addr); }
+	static uint jmp_x_ne_y(uint addr) { return ::pio_encode_jmp_x_ne_y(addr); }
+	static uint jmp_pin(uint addr) { return ::pio_encode_jmp_pin(addr); }
+	static uint jmp_not_osre(uint addr) { return ::pio_encode_jmp_not_osre(addr); }
+	static uint wait_gpio(bool polarity, uint gpio) { return ::pio_encode_wait_gpio(polarity, gpio); }
+	static uint wait_pin(bool polarity, uint pin) { return ::pio_encode_wait_pin(polarity, pin); }
+	static uint wait_irq(bool polarity, bool relative, uint irq) { return ::pio_encode_wait_irq(polarity, relative, irq); }
+	static uint in(enum pio_src_dest src, uint count) { return ::pio_encode_in(src, count); }
+	static uint out(enum pio_src_dest dest, uint count) { return ::pio_encode_out(dest, count); }
+	static uint push(bool if_full, bool block) { return ::pio_encode_push(if_full, block); }
+	static uint pull(bool if_empty, bool block) { return ::pio_encode_pull(if_empty, block); }
+	static uint mov(enum pio_src_dest dest, enum pio_src_dest src) { return ::pio_encode_mov(dest, src); }
+	static uint mov_not(enum pio_src_dest dest, enum pio_src_dest src) { return ::pio_encode_mov_not(dest, src); }
+	static uint mov_reverse(enum pio_src_dest dest, enum pio_src_dest src) { return ::pio_encode_mov_reverse(dest, src); }
+	static uint irq_set(bool relative, uint irq) { return ::pio_encode_irq_set(relative, irq); }
+	static uint irq_wait(bool relative, uint irq) { return ::pio_encode_irq_wait(relative, irq); }
+	static uint irq_clear(bool relative, uint irq) { return ::pio_encode_irq_clear(relative, irq); }
+	static uint set(enum pio_src_dest dest, uint value) { return ::pio_encode_set(dest, value); }
+	static uint nop(void) { return ::pio_encode_nop(); }
+};
+
 class PIOContext {
-private:
-	const pio_program_t* program_;
-	PIOIf::StateMachine stateMachine_;
-	uint offset_;
 public:
-	PIOContext(const pio_program_t* program) : program_{program}, offset_{static_cast<uint>(-1)} {}
-	~PIOContext() { UnclaimResource(); }
+	const pio_program_t* program;
+	PIOIf::StateMachine sm;
+	PIOIf pio;
+	uint offset;
 public:
-	bool IsValid() { return stateMachine_.IsValid(); }
+	PIOContext(const pio_program_t& program) : program{&program}, offset{static_cast<uint>(-1)} {}
+public:
+	bool IsValid() { return sm.IsValid(); }
 	bool ClaimResource();
 	bool ClaimResource(uint gpio_base, uint gpio_count, bool set_gpio_base);
 	void UnclaimResource();
+	int Init(const PIOIf::Config& cfg);
 };
 
 extern PIOIf PIO0;
