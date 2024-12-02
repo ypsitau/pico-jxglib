@@ -5,51 +5,51 @@
 
 namespace jxglib {
 
-#if 0
-void Tek_Graph(int vector_no)
+void Tek_Graph(Printable& printable, int vector_no)
 {
-spi_putc(0x1D); //GS
-spi_putc(0x1B); //ESC
-spi_putc(vector_no|0x60); //線種を選ぶ
+	printable.PutChar(0x1D); //GS
+	printable.PutChar(0x1B); //ESC
+	printable.PutChar(vector_no|0x60); //線種を選ぶ
 }
 
-void Tek_Line(int xs,int ys,int xg,int yg,int line_no)
+#if 1
+void Tek_Line(Printable& printable, int xs,int ys,int xg,int yg,int line_no)
 {
-unsigned char x0,y0,x1,y1;
-Tek_Graph(line_no); //グラフィックモードに移行(線種を指定)
+	unsigned char x0,y0,x1,y1;
+	Tek_Graph(printable, line_no); //グラフィックモードに移行(線種を指定)
 
-x0=(unsigned char)(xs&0x1F); //下位5byteを取り出す
-x0=x0|0x40; //Tag-Bitをセット
-y0=(unsigned char)(ys&0x1F); //下位5byteを取り出す
-y0=y0|0x60; //Tag-Bitをセット
+	x0=(unsigned char)(xs&0x1F); //下位5byteを取り出す
+	x0=x0|0x40; //Tag-Bitをセット
+	y0=(unsigned char)(ys&0x1F); //下位5byteを取り出す
+	y0=y0|0x60; //Tag-Bitをセット
 
-x1=(unsigned char)((xs>>5)&0x1F); //上位byteを5個右シフトしたあと下位5byteを取り出す
-x1=x1|0x20; //Tag-Bitをセット
-y1=(unsigned char)((ys>>5)&0x1F); //上位byteを5個右シフトしたあと下位5byteを取り出す
-y1=y1|0x20; //Tag-Bitをセット
+	x1=(unsigned char)((xs>>5)&0x1F); //上位byteを5個右シフトしたあと下位5byteを取り出す
+	x1=x1|0x20; //Tag-Bitをセット
+	y1=(unsigned char)((ys>>5)&0x1F); //上位byteを5個右シフトしたあと下位5byteを取り出す
+	y1=y1|0x20; //Tag-Bitをセット
 
-spi_putc(y1); //座標送信
-spi_putc(y0); //座標送信
-spi_putc(x1); //座標送信
-spi_putc(x0); //座標送信
+	printable.PutChar(y1); //座標送信
+	printable.PutChar(y0); //座標送信
+	printable.PutChar(x1); //座標送信
+	printable.PutChar(x0); //座標送信
 
 
-x0=(unsigned char)(xg&0x1F); //下位5byteを取り出す
-x0=x0|0x40; //Tag-Bitをセット
-y0=(unsigned char)(yg&0x1F); //下位5byteを取り出す
-y0=y0|0x60; //Tag-Bitをセット
+	x0=(unsigned char)(xg&0x1F); //下位5byteを取り出す
+	x0=x0|0x40; //Tag-Bitをセット
+	y0=(unsigned char)(yg&0x1F); //下位5byteを取り出す
+	y0=y0|0x60; //Tag-Bitをセット
 
-x1=(unsigned char)((xg>>5)&0x1F); //上位byteを5個右シフトしたあと下位5byteを取り出す
-x1=x1|0x20; //Tag-Bitをセット
-y1=(unsigned char)((yg>>5)&0x1F); //上位byteを5個右シフトしたあと下位5byteを取り出す
-y1=y1|0x20; //Tag-Bitをセット
+	x1=(unsigned char)((xg>>5)&0x1F); //上位byteを5個右シフトしたあと下位5byteを取り出す
+	x1=x1|0x20; //Tag-Bitをセット
+	y1=(unsigned char)((yg>>5)&0x1F); //上位byteを5個右シフトしたあと下位5byteを取り出す
+	y1=y1|0x20; //Tag-Bitをセット
 
-spi_putc(y1); //座標送信
-spi_putc(y0); //座標送信
-spi_putc(x1); //座標送信
-spi_putc(x0); //座標送信
+	printable.PutChar(y1); //座標送信
+	printable.PutChar(y0); //座標送信
+	printable.PutChar(x1); //座標送信
+	printable.PutChar(x0); //座標送信
 
-Tek_Alpha(); //キャラクタモードに戻す
+	//Tek_Alpha(); //キャラクタモードに戻す
 }
 #endif
 
@@ -68,6 +68,9 @@ void TEK4010::Test()
 		printable_.Printf("hello\n");
 	}
 #endif
+	for (int i = 0; i < 480; i += 5) {
+		Tek_Line(printable_, 0, 240, 600, i, i);
+	}
 
 }
 
