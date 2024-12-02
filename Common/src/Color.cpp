@@ -132,4 +132,46 @@ const ColorBGR555 ColorBGR555::blue			{   0,   0, 255 };
 const ColorBGR555 ColorBGR555::teal			{   0, 128, 128 };
 const ColorBGR555 ColorBGR555::aqua			{   0, 255, 255 };
 
+//------------------------------------------------------------------------------
+// ColorRGB111
+//------------------------------------------------------------------------------
+const ColorRGB111 ColorRGB111::zero			{   0,   0,   0 };
+const ColorRGB111 ColorRGB111::black		{   0,   0,   0 };
+const ColorRGB111 ColorRGB111::silver		{ 192, 192, 192 };
+const ColorRGB111 ColorRGB111::gray			{ 128, 128, 128 };
+const ColorRGB111 ColorRGB111::white		{ 255, 255, 255 };
+const ColorRGB111 ColorRGB111::maroon		{ 128,   0,   0 };
+const ColorRGB111 ColorRGB111::red			{ 255,   0,   0 };
+const ColorRGB111 ColorRGB111::purple		{ 128,   0, 128 };
+const ColorRGB111 ColorRGB111::fuchsia		{ 255,   0, 255 };
+const ColorRGB111 ColorRGB111::green		{   0, 128,   0 };
+const ColorRGB111 ColorRGB111::lime			{   0, 255,   0 };
+const ColorRGB111 ColorRGB111::olive		{ 128, 128,   0 };
+const ColorRGB111 ColorRGB111::yellow		{ 255, 255,   0 };
+const ColorRGB111 ColorRGB111::navy			{   0,   0, 128 };
+const ColorRGB111 ColorRGB111::blue			{   0,   0, 255 };
+const ColorRGB111 ColorRGB111::teal			{   0, 128, 128 };
+const ColorRGB111 ColorRGB111::aqua			{   0, 255, 255 };
+
+//------------------------------------------------------------------------------
+// ColorBGR111
+//------------------------------------------------------------------------------
+const ColorBGR111 ColorBGR111::zero			{   0,   0,   0 };
+const ColorBGR111 ColorBGR111::black		{   0,   0,   0 };
+const ColorBGR111 ColorBGR111::silver		{ 192, 192, 192 };
+const ColorBGR111 ColorBGR111::gray			{ 128, 128, 128 };
+const ColorBGR111 ColorBGR111::white		{ 255, 255, 255 };
+const ColorBGR111 ColorBGR111::maroon		{ 128,   0,   0 };
+const ColorBGR111 ColorBGR111::red			{ 255,   0,   0 };
+const ColorBGR111 ColorBGR111::purple		{ 128,   0, 128 };
+const ColorBGR111 ColorBGR111::fuchsia		{ 255,   0, 255 };
+const ColorBGR111 ColorBGR111::green		{   0, 128,   0 };
+const ColorBGR111 ColorBGR111::lime			{   0, 255,   0 };
+const ColorBGR111 ColorBGR111::olive		{ 128, 128,   0 };
+const ColorBGR111 ColorBGR111::yellow		{ 255, 255,   0 };
+const ColorBGR111 ColorBGR111::navy			{   0,   0, 128 };
+const ColorBGR111 ColorBGR111::blue			{   0,   0, 255 };
+const ColorBGR111 ColorBGR111::teal			{   0, 128, 128 };
+const ColorBGR111 ColorBGR111::aqua			{   0, 255, 255 };
+
 }

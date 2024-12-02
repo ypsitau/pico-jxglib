@@ -12,6 +12,8 @@ class ColorRGB565;
 class ColorBGR565;
 class ColorRGB555;
 class ColorBGR555;
+class ColorRGB111;
+class ColorBGR111;
 
 //------------------------------------------------------------------------------
 // Color
@@ -45,6 +47,8 @@ public:
 	Color(const ColorBGR565& colorBGR565);
 	Color(const ColorRGB555& colorRGB555);
 	Color(const ColorBGR555& colorBGR555);
+	Color(const ColorRGB111& colorRGB111);
+	Color(const ColorBGR111& colorBGR111);
 public:
 	Color& operator=(const Color& color) { r = color.r; g = color.g; b = color.b; return *this; }
 public:
@@ -320,6 +324,88 @@ public:
 	bool IsWhite() const { return value == 0xffff; }
 };
 
+//------------------------------------------------------------------------------
+// ColorRGB111
+//------------------------------------------------------------------------------
+struct ColorRGB111 {
+	uint8_t value;
+public:
+	static const ColorRGB111 zero;
+	static const ColorRGB111 black;
+	static const ColorRGB111 silver;
+	static const ColorRGB111 gray;
+	static const ColorRGB111 white;
+	static const ColorRGB111 maroon;
+	static const ColorRGB111 red;
+	static const ColorRGB111 purple;
+	static const ColorRGB111 fuchsia;
+	static const ColorRGB111 green;
+	static const ColorRGB111 lime;
+	static const ColorRGB111 olive;
+	static const ColorRGB111 yellow;
+	static const ColorRGB111 navy;
+	static const ColorRGB111 blue;
+	static const ColorRGB111 teal;
+	static const ColorRGB111 aqua;
+public:
+	ColorRGB111() : value{0} {}
+	ColorRGB111(const ColorRGB111& colorRGB111) : value{colorRGB111.value} {}
+	explicit ColorRGB111(uint16_t value) : value{value} {}
+	constexpr ColorRGB111(uint8_t r, uint8_t g, uint8_t b) : value{
+			(r? (1 << 2) : 0) | (g? (1 << 1) : 0) | (b? (1 << 0) : 0)} {}
+	ColorRGB111(const Color& color) : ColorRGB111(color.r, color.g, color.b) {}
+public:
+	ColorRGB111& operator=(const ColorRGB111& colorRGB111) { value = colorRGB111.value; return *this; }
+public:
+	operator uint8_t () { return value; }
+	uint8_t GetR() const { return (value >> 2) & 0x01; }
+	uint8_t GetG() const { return (value >> 1) & 0x01; }
+	uint8_t GetB() const { return (value >> 0) & 0x01; }
+	bool IsBlack() const { return value == 0x00; }
+	bool IsWhite() const { return value == 0x07; }
+};
+
+//------------------------------------------------------------------------------
+// ColorBGR111
+//------------------------------------------------------------------------------
+struct ColorBGR111 {
+	uint8_t value;
+public:
+	static const ColorBGR111 zero;
+	static const ColorBGR111 black;
+	static const ColorBGR111 silver;
+	static const ColorBGR111 gray;
+	static const ColorBGR111 white;
+	static const ColorBGR111 maroon;
+	static const ColorBGR111 red;
+	static const ColorBGR111 purple;
+	static const ColorBGR111 fuchsia;
+	static const ColorBGR111 green;
+	static const ColorBGR111 lime;
+	static const ColorBGR111 olive;
+	static const ColorBGR111 yellow;
+	static const ColorBGR111 navy;
+	static const ColorBGR111 blue;
+	static const ColorBGR111 teal;
+	static const ColorBGR111 aqua;
+public:
+	ColorBGR111() : value{0} {}
+	ColorBGR111(const ColorBGR111& colorBGR111) : value{colorBGR111.value} {}
+	explicit ColorBGR111(uint16_t value) : value{value} {}
+	constexpr ColorBGR111(uint8_t r, uint8_t g, uint8_t b) : value{
+			(b? (1 << 2) : 0) | (g? (1 << 1) : 0) | (r? (1 << 0) : 0)} {}
+	ColorBGR111(const Color& color) : ColorBGR111(color.r, color.g, color.b) {}
+public:
+	ColorBGR111& operator=(const ColorBGR111& colorBGR111) { value = colorBGR111.value; return *this; }
+public:
+	operator uint8_t () { return value; }
+	uint8_t GetR() const { return (value >> 0) & 0x01; }
+	uint8_t GetG() const { return (value >> 1) & 0x01; }
+	uint8_t GetB() const { return (value >> 2) & 0x01; }
+	bool IsBlack() const { return value == 0x00; }
+	bool IsWhite() const { return value == 0x07; }
+};
+
 inline Color::Color(const ColorGray& colorGray) :
 		r{colorGray.GetR()}, g{colorGray.GetG()}, b{colorGray.GetB()} {}
 
@@ -334,6 +420,12 @@ inline Color::Color(const ColorRGB555& colorRGB555) :
 
 inline Color::Color(const ColorBGR555& colorBGR555) :
 		r{colorBGR555.GetR()}, g{colorBGR555.GetG()}, b{colorBGR555.GetB()} {}
+
+inline Color::Color(const ColorRGB111& colorRGB111) :
+		r{colorRGB111.GetR()}, g{colorRGB111.GetG()}, b{colorRGB111.GetB()} {}
+
+inline Color::Color(const ColorBGR111& colorBGR111) :
+		r{colorBGR111.GetR()}, g{colorBGR111.GetG()}, b{colorBGR111.GetB()} {}
 
 }
 
