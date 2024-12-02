@@ -35,18 +35,18 @@ Printable& UART::FlushScreen()
 	return Stream::FlushScreen();
 }
 
-Printable& UART::Print(const char* str)
+Printable& UART::PutChar(char ch)
 {
-	for (const char* p = str; *p; p++) {
-		char ch = *p;
-		if (chPrev_ != '\r' && ch == '\n') {
-			while (!raw.is_writable()) ::tight_loop_contents();
-			raw.get_hw()->dr = '\r';
-		}
-		while (!raw.is_writable()) ::tight_loop_contents();
-		raw.get_hw()->dr = ch;
-		chPrev_ = ch;
-	}
+	if (addCrFlag_ && chPrev_ != '\r' && ch == '\n') PutCharRaw('\r');
+	PutCharRaw(ch);
+	chPrev_ = ch;
+	return *this;
+}
+
+Printable& UART::PutCharRaw(char ch)
+{
+	while (!raw.is_writable()) ::tight_loop_contents();
+	raw.get_hw()->dr = ch;
 	return *this;
 }
 

@@ -46,10 +46,13 @@ public:
 	} raw;
 private:
 	char chPrev_;
+	bool addCrFlag_;
 public:
 	static UART Default;
 public:
-	UART(uart_inst_t* uart) : raw(uart), chPrev_('\0') {}
+	UART(uart_inst_t* uart) : raw(uart), chPrev_('\0'), addCrFlag_{true} {}
+public:
+	UART& AddCr(bool addCrFlag) { addCrFlag_ = addCrFlag; return* this; }
 public:
 	// virtual functions of Stream
 	virtual bool Read(void* buff, int bytesBuff, int* pBytesRead) override;
@@ -57,7 +60,8 @@ public:
 	// virtual functions of Printable
 	virtual Printable& ClearScreen() override;
 	virtual Printable& FlushScreen() override;
-	virtual Printable& Print(const char* str) override;
+	virtual Printable& PutChar(char ch) override;
+	virtual Printable& PutCharRaw(char ch) override;
 };
 
 extern UART UART0;

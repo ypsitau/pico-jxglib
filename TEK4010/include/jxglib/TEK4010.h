@@ -13,9 +13,11 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 struct TEK4010 {
 private:
-	UART& uart_;
+	Printable& printable_;
 public:
-	TEK4010(UART& uart) : uart_{uart} {}
+	TEK4010(Printable& printable) : printable_{printable} {}
+public:
+	void Test();
 };
 
 }

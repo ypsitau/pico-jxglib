@@ -52,10 +52,16 @@ public:
 	virtual Printable& ClearScreen() = 0;
 	virtual Printable& FlushScreen() = 0;
 	virtual Printable& Locate(int col, int row) = 0;
-	virtual Printable& Print(const char* str) = 0;
+	virtual Printable& PutChar(char ch) = 0;
+	virtual Printable& PutCharRaw(char ch) { return PutChar(ch); }
+	virtual Printable& Print(const char* str);
+	virtual Printable& PrintRaw(const char* str);
 	virtual Printable& Println(const char* str = "");
+	virtual Printable& PrintlnRaw(const char* str = "");
 	virtual Printable& VPrintf(const char* format, va_list args);
+	virtual Printable& VPrintfRaw(const char* format, va_list args);
 	Printable& Printf(const char* format, ...);
+	Printable& PrintfRaw(const char* format, ...);
 public:
 	static void SetStandardOutput(Printable& printable) { pStandardOutput_ = &printable; }
 	static Printable& GetStandardOutput() { return *pStandardOutput_; }
@@ -71,7 +77,7 @@ public:
 	virtual Printable& ClearScreen() override { return *this; }
 	virtual Printable& FlushScreen() override { return *this; }
 	virtual Printable& Locate(int col, int row) override { return *this; }
-	virtual Printable& Print(const char* str) override { return *this; }
+	virtual Printable& PutChar(char ch) override { return *this; }
 };
 
 //------------------------------------------------------------------------------
@@ -82,10 +88,16 @@ extern Printable::DumpStyle Dump;
 inline Printable& ClearScreen() { return Printable::GetStandardOutput().ClearScreen(); }
 inline Printable& FlushScreen() { return Printable::GetStandardOutput().FlushScreen(); }
 inline Printable& Locate(int col, int row) { return Printable::GetStandardOutput().Locate(col, row); }
+inline Printable& PutChar(char ch) { return Printable::GetStandardOutput().PutChar(ch); }
+inline Printable& PutCharRaw(char ch) { return Printable::GetStandardOutput().PutCharRaw(ch); }
 inline Printable& Print(const char* str) { return Printable::GetStandardOutput().Print(str); }
+inline Printable& PrintRaw(const char* str) { return Printable::GetStandardOutput().PrintRaw(str); }
 inline Printable& Println(const char* str = "") { return Printable::GetStandardOutput().Println(str); }
+inline Printable& PrintlnRaw(const char* str = "") { return Printable::GetStandardOutput().PrintlnRaw(str); }
 inline Printable& VPrintf(const char* format, va_list args) { return Printable::GetStandardOutput().VPrintf(format, args); }
+inline Printable& VPrintfRaw(const char* format, va_list args) { return Printable::GetStandardOutput().VPrintfRaw(format, args); }
 Printable& Printf(const char* format, ...);
+Printable& PrintfRaw(const char* format, ...);
 
 }
 

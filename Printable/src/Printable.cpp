@@ -12,11 +12,31 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 Printable* Printable::pStandardOutput_ = &PrintableDumb::Instance;
 
+Printable& Printable::Print(const char* str)
+{
+	for (const char* p = str; *p; p++) PutChar(*p);
+	return *this;
+}
+
+Printable& Printable::PrintRaw(const char* str)
+{
+	for (const char* p = str; *p; p++) PutCharRaw(*p);
+	return *this;
+}
+
 Printable& Printable::VPrintf(const char* format, va_list args)
 {
 	char buff[256];
 	::vsnprintf(buff, sizeof(buff), format, args);
 	Print(buff);
+	return *this;
+}
+
+Printable& Printable::VPrintfRaw(const char* format, va_list args)
+{
+	char buff[256];
+	::vsnprintf(buff, sizeof(buff), format, args);
+	PrintRaw(buff);
 	return *this;
 }
 
@@ -27,11 +47,27 @@ Printable& Printable::Println(const char* str)
 	return *this;
 }
 
+Printable& Printable::PrintlnRaw(const char* str)
+{
+	PrintRaw(str);
+	PrintRaw("\n");
+	return *this;
+}
+
 Printable& Printable::Printf(const char* format, ...)
 {
 	va_list args;
 	va_start(args, format);
 	VPrintf(format, args);
+	va_end(args);
+	return *this;
+}
+
+Printable& Printable::PrintfRaw(const char* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	VPrintfRaw(format, args);
 	va_end(args);
 	return *this;
 }
@@ -116,6 +152,15 @@ Printable& Printf(const char* format, ...)
 	va_list args;
 	va_start(args, format);
 	Printable::GetStandardOutput().VPrintf(format, args);
+	va_end(args);
+	return Printable::GetStandardOutput();
+}
+
+Printable& PrintfRaw(const char* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	Printable::GetStandardOutput().VPrintfRaw(format, args);
 	va_end(args);
 	return Printable::GetStandardOutput();
 }
