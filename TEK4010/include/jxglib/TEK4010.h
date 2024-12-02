@@ -1,22 +1,21 @@
 //==============================================================================
-// jxglib/Display.h
+// jxglib/TEK4010.h
 //==============================================================================
-#ifndef PICO_JXGLIB_DISPLAY_H
-#define PICO_JXGLIB_DISPLAY_H
+#ifndef PICO_JXGLIB_TEK4010_H
+#define PICO_JXGLIB_TEK4010_H
 #include "pico/stdlib.h"
-#include "jxglib/Drawable.h"
+#include "jxglib/UART.h"
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// Display
+// TEK4010
 //------------------------------------------------------------------------------
-struct Display : public Drawable {
+struct TEK4010 {
+private:
+	UART& uart_;
 public:
-	using DisplayDir = Image::SequencerDir;
-public:
-	Display(uint32_t capabilities, const Format& format, int width, int height) :
-			Drawable(capabilities, format, width, height) {}
+	TEK4010(UART& uart) : uart_{uart} {}
 };
 
 }
