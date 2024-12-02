@@ -20,7 +20,6 @@ public:
 	virtual Printable& ClearScreen() override;
 	virtual Printable& FlushScreen() override;
 	virtual Printable& Locate(int col, int row) override;
-	virtual Printable& Print(const char* str) override;
 };
 
 }

@@ -27,10 +27,4 @@ Printable& Stream::Locate(int col, int row)
 	return *this;
 }
 
-Printable& Stream::Print(const char* str)
-{
-	Write(str, ::strlen(str));
-	return *this;
-}
-
 }

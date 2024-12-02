@@ -350,9 +350,9 @@ public:
 public:
 	ColorRGB111() : value{0} {}
 	ColorRGB111(const ColorRGB111& colorRGB111) : value{colorRGB111.value} {}
-	explicit ColorRGB111(uint16_t value) : value{value} {}
-	constexpr ColorRGB111(uint8_t r, uint8_t g, uint8_t b) : value{
-			(r? (1 << 2) : 0) | (g? (1 << 1) : 0) | (b? (1 << 0) : 0)} {}
+	explicit ColorRGB111(uint8_t value) : value{value} {}
+	constexpr ColorRGB111(uint8_t r, uint8_t g, uint8_t b) :
+		value{static_cast<uint8_t>((r? (1 << 2) : 0) | (g? (1 << 1) : 0) | (b? (1 << 0) : 0))} {}
 	ColorRGB111(const Color& color) : ColorRGB111(color.r, color.g, color.b) {}
 public:
 	ColorRGB111& operator=(const ColorRGB111& colorRGB111) { value = colorRGB111.value; return *this; }
@@ -391,9 +391,9 @@ public:
 public:
 	ColorBGR111() : value{0} {}
 	ColorBGR111(const ColorBGR111& colorBGR111) : value{colorBGR111.value} {}
-	explicit ColorBGR111(uint16_t value) : value{value} {}
-	constexpr ColorBGR111(uint8_t r, uint8_t g, uint8_t b) : value{
-			(b? (1 << 2) : 0) | (g? (1 << 1) : 0) | (r? (1 << 0) : 0)} {}
+	explicit ColorBGR111(uint8_t value) : value{value} {}
+	constexpr ColorBGR111(uint8_t r, uint8_t g, uint8_t b) :
+		value{static_cast<uint8_t>((b? (1 << 2) : 0) | (g? (1 << 1) : 0) | (r? (1 << 0) : 0))} {}
 	ColorBGR111(const Color& color) : ColorBGR111(color.r, color.g, color.b) {}
 public:
 	ColorBGR111& operator=(const ColorBGR111& colorBGR111) { value = colorBGR111.value; return *this; }
