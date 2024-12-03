@@ -40,27 +40,32 @@ TEK4010& TEK4010::SetColorBg(const Color& color)
 
 TEK4010& TEK4010::ClearScreen()
 {
-	printable_.PrintfRaw("\x1b\x0c\r\n");
+	SendESC();
+	SendCtrl('L');
 	return *this;
 }
 
 TEK4010& TEK4010::MoveTo(uint16_t x, uint16_t y)
 {
-	EnterGraphMode();
-	PutCoordY(y);
-	PutCoordX(x);
+	SendChar(',');
+	SendCoord(x, y);
 	return *this;
 }
 
-TEK4010& TEK4010::DrawLine(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, int lineStyle)
+TEK4010& TEK4010::LineTo(uint16_t x, uint16_t y, LineStyle lineStyle)
 {
-	EnterGraphMode();
-	printable_.PutCharRaw(0x1b);
-	printable_.PutCharRaw('`' + lineStyle);
-	PutCoordY(y1);
-	PutCoordX(x1);
-	PutCoordY(y2);
-	PutCoordX(x2);
+	SendESC();
+	SendChar('`' + static_cast<int>(lineStyle));
+	SendCoord(x, y);
+	return *this;
+}
+
+TEK4010& TEK4010::Line(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, LineStyle lineStyle)
+{
+	SendESC();
+	SendChar('`' + static_cast<int>(lineStyle));
+	SendCoord(x1, y1);
+	SendCoord(x2, y2);
 	return *this;
 }
 
@@ -73,16 +78,12 @@ TEK4010& TEK4010::Printf(const char* format, ...)
 	return *this;
 }
 
-void TEK4010::PutCoordX(uint16_t x)
+void TEK4010::SendCoord(uint16_t x, uint16_t y)
 {
-	printable_.PutCharRaw(' ' + static_cast<char>((x >> 5) & 0x1f));
-	printable_.PutCharRaw('@' + static_cast<char>(x & 0x1f));
-}
-
-void TEK4010::PutCoordY(uint16_t y)
-{
-	printable_.PutCharRaw(' ' + static_cast<char>((y >> 5) & 0x1f));
-	printable_.PutCharRaw('`' + static_cast<char>(y & 0x1f));
+	SendChar(' ' + static_cast<char>((y >> 5) & 0x1f));
+	SendChar('`' + static_cast<char>(y & 0x1f));
+	SendChar(' ' + static_cast<char>((x >> 5) & 0x1f));
+	SendChar('@' + static_cast<char>(x & 0x1f));
 }
 
 }
