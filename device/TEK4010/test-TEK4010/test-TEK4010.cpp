@@ -10,6 +10,7 @@ int main()
 	TEK4010 tek(UART::Default);
 	tek.OpenWindow();
 	tek.ClearScreen();
+#if 0
 	tek.SetColor(Color::red);
 	//tek.SetColorBg(Color::red);
 	tek.MoveTo(100, 100);
@@ -21,6 +22,9 @@ int main()
 	tek.SetLineStyle(tek.LineStyle::LongDashed);
 	tek.DrawLineTo(0, 500);
 	tek.Print("Hello");
+#endif
+	tek.DrawRect(10, 10, 100, 100);
+	tek.DrawRect(10, 10, 1000, 1000);
 #if 0
 	tek.SetColor(Color::red);
 	for (int i = 0; i < 8; i++) {
