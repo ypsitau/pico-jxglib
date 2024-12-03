@@ -72,6 +72,15 @@ TEK4010& TEK4010::DrawLine(int x1, int y1, int x2, int y2)
 	return *this;
 }
 
+TEK4010& TEK4010::DrawRect(int x, int y, int width, int height)
+{
+	DrawLine(x, y, x + width, y);
+	DrawLine(x + width, y, x + width, y + height);
+	DrawLine(x + width, y + height, x, y + height);
+	DrawLine(x, y + height, x, y);
+	return *this;
+}
+
 TEK4010& TEK4010::Printf(const char* format, ...)
 {
 	va_list args;

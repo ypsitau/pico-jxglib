@@ -10,6 +10,8 @@ int main()
 	TEK4010 tek(UART::Default);
 	tek.OpenWindow();
 	tek.ClearScreen();
+	tek.SetColor(Color::red);
+	//tek.SetColorBg(Color::red);
 	tek.MoveTo(100, 100);
 	tek.DrawLineTo(130, 120);
 	tek.DrawLineTo(130, 200);

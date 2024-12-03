@@ -6,6 +6,7 @@
 #include "pico/stdlib.h"
 #include "jxglib/Color.h"
 #include "jxglib/Point.h"
+#include "jxglib/Rect.h"
 #include "jxglib/Size.h"
 #include "jxglib/UART.h"
 
@@ -44,6 +45,7 @@ public:
 	TEK4010& DrawLine(const Point& pt1, const Point& pt2) { return DrawLine(pt1.x, pt1.y, pt2.x, pt2.y); }
 	TEK4010& DrawRect(int x, int y, int width, int height);
 	TEK4010& DrawRect(const Point& pt, const Size& size) { return DrawRect(pt.x, pt.y, size.width, size.height); }
+	TEK4010& DrawRect(const Rect& rect) { return DrawRect(rect.x, rect.y, rect.width, rect.height); }
 public:
 	TEK4010& PrintRaw(const char* str) { printable_.PrintRaw(str); return *this; }
 	TEK4010& PutChar(char ch) { SendCtrlShift('O'); printable_.PutChar(ch); return *this; }
