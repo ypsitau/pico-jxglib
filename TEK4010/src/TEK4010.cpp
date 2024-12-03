@@ -45,27 +45,30 @@ TEK4010& TEK4010::ClearScreen()
 	return *this;
 }
 
-TEK4010& TEK4010::MoveTo(uint16_t x, uint16_t y)
+TEK4010& TEK4010::SetLineStyle(LineStyle lineStyle)
 {
-	SendChar(',');
+	SendESC();
+	SendChar('`' + static_cast<int>(lineStyle));
+	return *this;
+}
+
+TEK4010& TEK4010::MoveTo(int x, int y)
+{
+	SendCtrlShift('M');
 	SendCoord(x, y);
 	return *this;
 }
 
-TEK4010& TEK4010::LineTo(uint16_t x, uint16_t y, LineStyle lineStyle)
+TEK4010& TEK4010::LineTo(int x, int y)
 {
-	SendESC();
-	SendChar('`' + static_cast<int>(lineStyle));
 	SendCoord(x, y);
 	return *this;
 }
 
-TEK4010& TEK4010::Line(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, LineStyle lineStyle)
+TEK4010& TEK4010::Line(int x1, int y1, int x2, int y2)
 {
-	SendESC();
-	SendChar('`' + static_cast<int>(lineStyle));
-	SendCoord(x1, y1);
-	SendCoord(x2, y2);
+	MoveTo(x1, y1);
+	LineTo(x2, y2);
 	return *this;
 }
 
@@ -78,7 +81,7 @@ TEK4010& TEK4010::Printf(const char* format, ...)
 	return *this;
 }
 
-void TEK4010::SendCoord(uint16_t x, uint16_t y)
+void TEK4010::SendCoord(int x, int y)
 {
 	SendChar(' ' + static_cast<char>((y >> 5) & 0x1f));
 	SendChar('`' + static_cast<char>(y & 0x1f));

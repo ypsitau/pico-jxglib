@@ -5,6 +5,7 @@
 #define PICO_JXGLIB_TEK4010_H
 #include "pico/stdlib.h"
 #include "jxglib/Color.h"
+#include "jxglib/Point.h"
 #include "jxglib/UART.h"
 
 namespace jxglib {
@@ -30,18 +31,18 @@ public:
 	TEK4010& OpenWindow();
 	TEK4010& CloseWindow();
 public:
-	TEK4010& SetLineStyle(LineStyle lineStyle) { lineStyleCur_ = lineStyle; return *this; }
+	//TEK4010& SetLineStyle(LineStyle lineStyle) { lineStyleCur_ = lineStyle; return *this; }
 	TEK4010& Beep();
 	TEK4010& SetColor(const Color& color);
 	TEK4010& SetColorBg(const Color& color);
 	TEK4010& ClearScreen();
-	TEK4010& MoveTo(uint16_t x, uint16_t y);
-	TEK4010& LineTo(uint16_t x, uint16_t y, LineStyle lineStyle);
-	TEK4010& LineTo(uint16_t x, uint16_t y) { return LineTo(x, y, lineStyleCur_); }
-	TEK4010& Line(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, LineStyle lineStyle);
-	TEK4010& Line(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) {
-		return Line(x1, y1, x2, y2, lineStyleCur_);
-	}
+	TEK4010& SetLineStyle(LineStyle lineStyle);
+	TEK4010& MoveTo(int x, int y);
+	TEK4010& MoveTo(const Point& pt) { return MoveTo(pt.x, pt.y); }
+	TEK4010& LineTo(int x, int y);
+	TEK4010& LineTo(const Point& pt) { return LineTo(pt.x, pt.y); }
+	TEK4010& Line(int x1, int y1, int x2, int y2);
+	TEK4010& Line(const Point& pt1, const Point& pt2) { return Line(pt1.x, pt1.y, pt2.x, pt2.y); }
 	TEK4010& PrintRaw(const char* str) { printable_.PrintRaw(str); return *this; }
 	TEK4010& PutChar(char ch) { EnterAlphaMode(); printable_.PutChar(ch); return *this; }
 	TEK4010& Print(const char* str) { EnterAlphaMode(); printable_.Print(str); return *this; }
@@ -54,7 +55,7 @@ public:
 	void SendCtrlShift(char ch) { printable_.PutCharRaw(ch - 0x30); }	// superscript C and S
 	void SendChar(char ch) { printable_.PutCharRaw(ch); }
 	void SendString(const char* str) { printable_.PrintRaw(str); }
-	void SendCoord(uint16_t x, uint16_t y);
+	void SendCoord(int x, int y);
 
 	void EnterMarkerMode()	{ SendCtrlShift('L'); }	// Control: FS
 	void EnterGraphMode()	{ SendCtrlShift('M'); }	// Control: GS
