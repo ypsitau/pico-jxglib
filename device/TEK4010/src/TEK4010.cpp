@@ -59,16 +59,16 @@ TEK4010& TEK4010::MoveTo(int x, int y)
 	return *this;
 }
 
-TEK4010& TEK4010::LineTo(int x, int y)
+TEK4010& TEK4010::DrawLineTo(int x, int y)
 {
 	SendCoord(x, y);
 	return *this;
 }
 
-TEK4010& TEK4010::Line(int x1, int y1, int x2, int y2)
+TEK4010& TEK4010::DrawLine(int x1, int y1, int x2, int y2)
 {
 	MoveTo(x1, y1);
-	LineTo(x2, y2);
+	DrawLineTo(x2, y2);
 	return *this;
 }
 

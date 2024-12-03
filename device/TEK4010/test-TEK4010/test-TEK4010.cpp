@@ -11,13 +11,13 @@ int main()
 	tek.OpenWindow();
 	tek.ClearScreen();
 	tek.MoveTo(100, 100);
-	tek.LineTo(130, 120);
-	tek.LineTo(130, 200);
+	tek.DrawLineTo(130, 120);
+	tek.DrawLineTo(130, 200);
 	tek.SetLineStyle(tek.LineStyle::Dotted);
-	tek.LineTo(200, 0);
-	tek.LineTo(300, 500);
+	tek.DrawLineTo(200, 0);
+	tek.DrawLineTo(300, 500);
 	tek.SetLineStyle(tek.LineStyle::LongDashed);
-	tek.LineTo(0, 500);
+	tek.DrawLineTo(0, 500);
 	tek.Print("Hello");
 #if 0
 	tek.SetColor(Color::red);
