@@ -186,14 +186,14 @@ public:
 	static uint nop(void) { return ::pio_encode_nop(); }
 };
 
-class PIOContext {
+class PIOBox {
 public:
 	const pio_program_t* program;
 	PIOIf::StateMachine sm;
 	PIOIf pio;
 	uint offset;
 public:
-	PIOContext(const pio_program_t& program) : program{&program}, offset{static_cast<uint>(-1)} {}
+	PIOBox(const pio_program_t& program) : program{&program}, offset{static_cast<uint>(-1)} {}
 public:
 	bool IsValid() { return sm.IsValid(); }
 	bool ClaimResource();

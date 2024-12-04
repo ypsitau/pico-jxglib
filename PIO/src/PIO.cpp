@@ -12,9 +12,9 @@ PIOIf PIO0(pio0);
 PIOIf PIO1(pio1);
 
 //------------------------------------------------------------------------------
-// PIOContext
+// PIOBox
 //------------------------------------------------------------------------------
-bool PIOContext::ClaimResource()
+bool PIOBox::ClaimResource()
 {
 	PIO pio;
 	uint sm;
@@ -23,7 +23,7 @@ bool PIOContext::ClaimResource()
 	return true;
 }
 
-bool PIOContext::ClaimResource(uint gpio_base, uint gpio_count, bool set_gpio_base)
+bool PIOBox::ClaimResource(uint gpio_base, uint gpio_count, bool set_gpio_base)
 {
 	PIO pio;
 	uint sm;
@@ -32,13 +32,13 @@ bool PIOContext::ClaimResource(uint gpio_base, uint gpio_count, bool set_gpio_ba
 	return true;
 }
 
-void PIOContext::UnclaimResource()
+void PIOBox::UnclaimResource()
 {
 	PIOIf::remove_program_and_unclaim_sm(program, sm.GetPIO(), sm.GetSM(), offset);
 	sm.Invalidate();
 }
 
-int PIOContext::Init(const PIOIf::Config& cfg)
+int PIOBox::Init(const PIOIf::Config& cfg)
 {
 	return sm.init(offset, cfg);
 }
