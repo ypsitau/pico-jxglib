@@ -7,6 +7,13 @@
 #include "hardware/pio.h"
 #include "jxglib/GPIO.h"
 
+#define PIOVAR_wrap_target(progName) 			progName##_wrap_target
+#define PIOVAR_wrap(progName)					progName##_wrap
+#define PIOVAR_pio_version(progName)			progName##_pio_version 0
+#define PIOVAR_offset(progName, label)			progName##_offset_##label
+#define PIOVAR_program(progName)				progName##_program
+#define PIOVAR_get_default_config(progName)		progName##_program_get_default_config
+
 namespace jxglib {
 
 //------------------------------------------------------------------------------
@@ -188,18 +195,43 @@ public:
 
 class PIOBox {
 public:
+	using T_get_default_config = pio_sm_config (*)(uint offset);
+	struct GPIOInfo {
+		const GPIO* pGPIO;
+		int cnt;
+	};
+public:
 	const pio_program_t* program;
+	T_get_default_config get_default_config;
 	PIOIf::StateMachine sm;
 	PIOIf pio;
 	uint offset;
+	PIOIf::Config cfg;
+private:
+	GPIOInfo gpioInfo_out;
+	GPIOInfo gpioInfo_in;
+	GPIOInfo gpioInfo_set;
+	GPIOInfo gpioInfo_sideset;
 public:
-	PIOBox(const pio_program_t& program) : program{&program}, offset{static_cast<uint>(-1)} {}
+	PIOBox(const pio_program_t& program, T_get_default_config get_default_config) :
+			program{&program}, get_default_config{get_default_config}, offset{static_cast<uint>(-1)} {}
 public:
 	bool IsValid() { return sm.IsValid(); }
+	PIOBox& SetGPIO_out(const GPIO& gpio, int cnt = 1) {
+		gpioInfo_out.pGPIO = &gpio, gpioInfo_out.cnt = cnt; return *this;
+	};
+	PIOBox& SetGPIO_in(const GPIO& gpio, int cnt = 1) {
+		gpioInfo_out.pGPIO = &gpio, gpioInfo_out.cnt = cnt; return *this;
+	};
+	PIOBox& SetGPIO_set(const GPIO& gpio, int cnt = 1) {
+		gpioInfo_out.pGPIO = &gpio, gpioInfo_out.cnt = cnt; return *this;
+	};
+	PIOBox& SetGPIO_sideset(const GPIO& gpio, int cnt = 1) {
+		gpioInfo_out.pGPIO = &gpio, gpioInfo_out.cnt = cnt; return *this;
+	};
 	bool ClaimResource();
-	bool ClaimResource(uint gpio_base, uint gpio_count, bool set_gpio_base);
 	void UnclaimResource();
-	int Init(const PIOIf::Config& cfg);
+	int Init();
 };
 
 extern PIOIf PIO0;

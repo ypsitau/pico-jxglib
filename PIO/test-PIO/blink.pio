@@ -15,6 +15,7 @@ loop2:
 public entry_point:
 
 % c-sdk {
+#if 0
 void blink_program_init(PIO pio, uint idxSm, uint offsetProgram, uint pin)
 {
 	pio_gpio_init(pio, pin);
@@ -30,5 +31,5 @@ void blink_start(PIO pio, uint idxSm, uint32_t freq)
 	pio_sm_set_enabled(pio, idxSm, true);
 	pio_sm_put_blocking(pio, idxSm, (clock_get_hz(clk_sys) / (2 * freq)) - 3);
 }
-
+#endif
 %}

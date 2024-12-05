@@ -16,19 +16,17 @@ PIOIf PIO1(pio1);
 //------------------------------------------------------------------------------
 bool PIOBox::ClaimResource()
 {
-	PIO pio;
-	uint sm;
-	if (!PIOIf::claim_free_sm_and_add_program(program, &pio, &sm, &offset)) return false;
-	this->sm.SetResource(pio, sm);
-	return true;
-}
-
-bool PIOBox::ClaimResource(uint gpio_base, uint gpio_count, bool set_gpio_base)
-{
-	PIO pio;
-	uint sm;
-	if (!PIOIf::claim_free_sm_and_add_program_for_gpio_range(program, &pio, &sm, &offset, gpio_base, gpio_count, set_gpio_base)) return false;
-	this->sm.SetResource(pio, sm);
+	PIO pio_;
+	uint sm_;
+	if (!PIOIf::claim_free_sm_and_add_program(program, &pio_, &sm_, &offset)) return false;
+	pio = PIOIf(pio_);
+	sm.SetResource(pio_, sm_);
+	cfg = get_default_config(offset);
+	uint pin = 0;
+	pio.gpio_init(pin);
+	sm.set_consecutive_pindirs_in(pin, 1);
+	sm.set_consecutive_pindirs_out(pin, 1);
+	cfg.set_set_pins(pin, 1);
 	return true;
 }
 
@@ -38,7 +36,7 @@ void PIOBox::UnclaimResource()
 	sm.Invalidate();
 }
 
-int PIOBox::Init(const PIOIf::Config& cfg)
+int PIOBox::Init()
 {
 	return sm.init(offset, cfg);
 }
