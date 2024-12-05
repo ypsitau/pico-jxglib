@@ -14,7 +14,7 @@ int main()
 	pioBox.SetGPIO_set(GPIO5);
 	pioBox.SetGPIO_sideset(GPIO6);
 	pioBox.ClaimResource();
-	pioBox.Init();
+	pioBox.InitSM();
 	pioBox.sm.put(0);
 	pioBox.sm.get();
 	pioBox.sm.is_rx_fifo_empty();

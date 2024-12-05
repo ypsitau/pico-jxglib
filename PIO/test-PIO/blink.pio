@@ -1,5 +1,5 @@
 .program blink
-;.side_set 3 opt
+.side_set 3 opt
 	pull block
 	out y, 32
 .wrap_target

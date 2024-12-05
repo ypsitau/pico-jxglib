@@ -36,7 +36,7 @@ void PIOBox::UnclaimResource()
 	sm.Invalidate();
 }
 
-int PIOBox::Init()
+int PIOBox::InitSM()
 {
 	return sm.init(offset, cfg);
 }

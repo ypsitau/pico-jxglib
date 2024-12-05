@@ -231,7 +231,7 @@ public:
 	};
 	bool ClaimResource();
 	void UnclaimResource();
-	int Init();
+	int InitSM();
 };
 
 extern PIOIf PIO0;
