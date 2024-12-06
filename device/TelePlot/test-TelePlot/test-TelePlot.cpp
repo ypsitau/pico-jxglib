@@ -9,7 +9,7 @@ int main()
 {
 	::stdio_init_all();
 	TelePlot telePlot(UART::Default);
-	auto t = telePlot.Add("hoge");
+	TelePlot::Telemetry t = telePlot.Add("hoge");
 	for (int i = 0; i < 10; i++) {
 		t.Plot((float)i * i);
 		::sleep_ms(1);
