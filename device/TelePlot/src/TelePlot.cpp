@@ -111,7 +111,7 @@ int64_t TelePlot::Telemetry::GetTimeStamp()
 		absTimeStart_ = ::get_absolute_time();
 		firstFlag_ = false;
 	} else {
-		timeStamp = ::absolute_time_diff_us(absTimeStart_, ::get_absolute_time());
+		timeStamp = ::absolute_time_diff_us(absTimeStart_, ::get_absolute_time()) / 1000;
 	}
 	return timeStamp;
 }

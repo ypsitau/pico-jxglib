@@ -27,7 +27,9 @@ public:
 	bool IsValid() const { return pin != static_cast<uint>(-1); }
 	bool IsInvalid() const { return pin == static_cast<uint>(-1); }
 public:
+#if defined(GPIO_FUNC_XIP)
 	const GPIO& set_function_XIP() const					{ ::gpio_set_function(pin, GPIO_FUNC_XIP); return *this; }
+#endif
 	const GPIO& set_function_SPI() const					{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
 	const GPIO& set_function_UART() const					{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
 	const GPIO& set_function_I2C() const					{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
