@@ -9,11 +9,24 @@ int main()
 {
 	::stdio_init_all();
 	TelePlot telePlot(UART::Default);
-	TelePlot::Telemetry t = telePlot.Add("hoge");
-	for (int i = 0; i < 10; i++) {
-		t.Plot((float)i * i);
-		::sleep_ms(1);
-	}
+	do {
+		TelePlot::Telemetry t = telePlot.Add("Sequnce", TelePlot::Timestamp::Sequence);
+		for (int i = 0; i < 10; i++) {
+			t.Plot((float)i * i);
+		}
+	} while (0);
+	do {
+		TelePlot::Telemetry t = telePlot.Add("DeviceTime", TelePlot::Timestamp::DeviceTime);
+		for (int i = 0; i < 10; i++) {
+			t.Plot((float)i * i);
+		}
+	} while (0);
+	do {
+		TelePlot::Telemetry t = telePlot.Add("ReceptionTime", TelePlot::Timestamp::ReceptionTime);
+		for (int i = 0; i < 10; i++) {
+			t.Plot((float)i * i);
+		}
+	} while (0);
 	//t.PlotXY(3, 3);
 	//t.PlotXY(2, 1);
 	//t.PlotXY(10, 4);

@@ -14,14 +14,21 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class TelePlot {
 public:
+	enum class Timestamp {
+		ReceptionTime,
+		DeviceTime,
+		Sequence,
+	};
 	class Telemetry {
 	private:
 		TelePlot& telePlot_;
 		char name_[32];
-		bool firstFlag_;
-		absolute_time_t absTimeStart_;
+		Timestamp timestamp_;
+		int cnt_;
+		absolute_time_t absTimeStart_;	// used for Timestamp::Device
+		int sequenceStep_;				// used for Timestamp::Sequence
 	public:
-		Telemetry(TelePlot& telePlot, const char* name);
+		Telemetry(TelePlot& telePlot, const char* name, Timestamp timestamp, int sequenceStep);
 	public:
 		Printable& GetPrintable() { return telePlot_.GetPrintable(); }
 		Telemetry& Plot(int value);
@@ -39,7 +46,8 @@ public:
 		Telemetry& PlotXY(const PointFloat& pt, int timeStamp);
 		Telemetry& Text(int timeStamp, const char* str);
 	public:
-		int64_t GetTimeStamp();
+		void PrintLineHeader();	
+		int GetTimeStamp();
 	};
 private:
 	Printable& printable_;
@@ -47,7 +55,9 @@ public:
 	TelePlot(Printable& printable) : printable_{printable} {}
 public:
 	Printable& GetPrintable() { return printable_; }
-	Telemetry Add(const char* name) { return Telemetry(*this, name); }
+	Telemetry Add(const char* name, Timestamp timestamp = Timestamp::DeviceTime, int sequenceStep = 1) {
+		return Telemetry(*this, name, timestamp, sequenceStep);
+	}
 };
 
 }
