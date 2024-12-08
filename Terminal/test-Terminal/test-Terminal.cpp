@@ -11,24 +11,6 @@
 
 using namespace jxglib;
 
-void Test_SSD1306()
-{
-	::i2c_init(i2c0, 400000);
-	GPIO4.set_function_I2C0_SDA().pull_up();
-	GPIO5.set_function_I2C0_SCL().pull_up();
-	SSD1306 display(i2c0);
-	display.Initialize();
-}
-
-void Test_ST7789()
-{
-	::spi_init(spi1, 125 * 1000 * 1000);
-	GPIO14.set_function_SPI1_SCK();
-	GPIO15.set_function_SPI1_TX();
-	ST7789 display(spi1, 240, 320, GPIO10, GPIO11, GPIO12, GPIO13);
-	display.Initialize();
-}
-
 int main()
 {
 	::stdio_init_all();
@@ -56,6 +38,7 @@ int main()
 	Terminal terminal1;
 	Terminal terminal2;
 	terminal1.Dump.DigitsAddr_Auto();
+	terminal1.Dump.Cols(8);
 	terminal1.AttachOutput(display2, {0, 0, 240, 100}, Terminal::AttachDir::Rotate0);
 	terminal2.AttachOutput(display2, {0, 120, 240, 200}, Terminal::AttachDir::Rotate90);
 	terminal1.SetFont(Font::shinonome12);

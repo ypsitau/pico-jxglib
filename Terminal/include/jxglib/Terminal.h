@@ -20,6 +20,7 @@ private:
 	Drawable* pDrawable_;
 	Canvas canvas_;
 	Point ptCursor_;
+	UTF8Decoder decoder_;
 public:
 	Terminal() : pDrawable_{nullptr} {}
 public:
@@ -56,7 +57,7 @@ public:
 	virtual Printable& ClearScreen() override;
 	virtual Printable& FlushScreen() override;
 	virtual Printable& Locate(int col, int row) override;
-	virtual Printable& Print(const char* str) override;
+	virtual Printable& PutChar(char ch) override;
 };
 
 }
