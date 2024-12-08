@@ -1,6 +1,7 @@
 //==============================================================================
 // TelePlot.cpp
 //==============================================================================
+#include <stdio.h>
 #include <string.h>
 #include "jxglib/TelePlot.h"
 
@@ -13,8 +14,11 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // TelePlot::Telemetry
 //------------------------------------------------------------------------------
-TelePlot::Telemetry::Telemetry(TelePlot& telePlot, const char* name, Timestamp timestamp, int sequenceStep) :
-	telePlot_{telePlot}, timestamp_{timestamp}, cnt_{0}, sequenceStep_{sequenceStep}
+TelePlot::Telemetry::Telemetry() : Telemetry(PrintableDumb::Instance, "", Timestamp::DeviceTime, 1)
+{}
+
+TelePlot::Telemetry::Telemetry(Printable& printable, const char* name, Timestamp timestamp, int sequenceStep) :
+	printable_{printable}, timestamp_{timestamp}, cnt_{0}, sequenceStep_{sequenceStep}
 {
 	::strncpy(name_, name, sizeof(name_));
 }
@@ -22,41 +26,31 @@ TelePlot::Telemetry::Telemetry(TelePlot& telePlot, const char* name, Timestamp t
 
 TelePlot::Telemetry& TelePlot::Telemetry::Plot(int value)
 {
-	PrintLineHeader();
-	GetPrintable().Printf("%d\n", value);
+	char buff[64];
+	GetPrintable().Printf(">%s%s:%d\n", name_, MakeTimeStamp(buff, sizeof(buff)), value);
 	cnt_++;
 	return *this;
 }
 
 TelePlot::Telemetry& TelePlot::Telemetry::Plot(float value)
 {
-	PrintLineHeader();
-	GetPrintable().Printf("%g\n", value);
+	char buff[64];
+	GetPrintable().Printf(">%s%s:%g\n", name_, MakeTimeStamp(buff, sizeof(buff)), value);
 	cnt_++;
 	return *this;
 }
 
 TelePlot::Telemetry& TelePlot::Telemetry::PlotXY(int x, int y)
 {
-	GetPrintable().Printf(">%s:%d:%d|xy\n", name_, x, y);
+	char buff[64];
+	GetPrintable().Printf(">%s:%d:%d%s|xy\n", name_, x, y, MakeTimeStamp(buff, sizeof(buff)));
 	return *this;
 }
 
 TelePlot::Telemetry& TelePlot::Telemetry::PlotXY(float x, float y)
 {
-	GetPrintable().Printf(">%s:%g:%g|xy\n", name_, x, y);
-	return *this;
-}
-
-TelePlot::Telemetry& TelePlot::Telemetry::PlotXY(const Point& pt)
-{
-	GetPrintable().Printf(">%s:%d:%d|xy\n", name_, pt.x, pt.y);
-	return *this;
-}
-
-TelePlot::Telemetry& TelePlot::Telemetry::PlotXY(const PointFloat& pt)
-{
-	GetPrintable().Printf(">%s:%g:%g|xy\n", name_, pt.x, pt.y);
+	char buff[64];
+	GetPrintable().Printf(">%s:%g:%g%s|xy\n", name_, x, y, MakeTimeStamp(buff, sizeof(buff)));
 	return *this;
 }
 
@@ -66,72 +60,61 @@ TelePlot::Telemetry& TelePlot::Telemetry::Text(const char* str)
 	return *this;
 }
 
-TelePlot::Telemetry& TelePlot::Telemetry::Plot(int timeStamp, int value)
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(int time, int value)
 {
-	GetPrintable().Printf(">%s:%d:%d\n", name_, timeStamp, value);
+	GetPrintable().Printf(">%s:%d:%d\n", name_, time, value);
 	return *this;
 }
 
-TelePlot::Telemetry& TelePlot::Telemetry::Plot(int timeStamp, float value)
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(int time, float value)
 {
-	GetPrintable().Printf(">%s:%d:%g\n", name_, timeStamp, value);
+	GetPrintable().Printf(">%s:%d:%g\n", name_, time, value);
 	return *this;
 }
 
-TelePlot::Telemetry& TelePlot::Telemetry::PlotXY(int x, int y, int timeStamp)
+TelePlot::Telemetry& TelePlot::Telemetry::PlotXY(int x, int y, int time)
 {
-	GetPrintable().Printf(">%s:%d:%d:%d|xy\n", name_, x, y, timeStamp);
+	GetPrintable().Printf(">%s:%d:%d:%d|xy\n", name_, x, y, time);
 	return *this;
 }
 
-TelePlot::Telemetry& TelePlot::Telemetry::PlotXY(float x, float y, int timeStamp)
+TelePlot::Telemetry& TelePlot::Telemetry::PlotXY(float x, float y, int time)
 {
-	GetPrintable().Printf(">%s:%g:%g:%d|xy\n", name_, x, y, timeStamp);
+	GetPrintable().Printf(">%s:%g:%g:%d|xy\n", name_, x, y, time);
 	return *this;
 }
 
-TelePlot::Telemetry& TelePlot::Telemetry::PlotXY(const Point& pt, int timeStamp)
+TelePlot::Telemetry& TelePlot::Telemetry::Text(int time, const char* str)
 {
-	GetPrintable().Printf(">%s:%d:%d:%d|xy\n", name_, pt.x, pt.y, timeStamp);
+	GetPrintable().Printf(">%s:%d:%s|t\n", name_, time, str);
 	return *this;
 }
 
-TelePlot::Telemetry& TelePlot::Telemetry::PlotXY(const PointFloat& pt, int timeStamp)
-{
-	GetPrintable().Printf(">%s:%g:%g:%d|xy\n", name_, pt.x, pt.y, timeStamp);
-	return *this;
-}
-
-TelePlot::Telemetry& TelePlot::Telemetry::Text(int timeStamp, const char* str)
-{
-	GetPrintable().Printf(">%s:%d:%s|t\n", name_, timeStamp, str);
-	return *this;
-}
-
-void TelePlot::Telemetry::PrintLineHeader()
+const char* TelePlot::Telemetry::MakeTimeStamp(char* buff, int len)
 {
 	switch (timestamp_) {
 	case Timestamp::ReceptionTime:
-		GetPrintable().Printf(">%s:", name_);
+		buff[0] = '\0';
 		break;
 	case Timestamp::DeviceTime:
-		GetPrintable().Printf(">%s:%d:", name_, GetTimeStamp());
+		::snprintf(buff, len, ":%d", GetTimeStamp());
 		break;
 	case Timestamp::Sequence:
-		GetPrintable().Printf(">%s:%d:", name_, cnt_ * sequenceStep_);
+		::snprintf(buff, len, ":%d", cnt_ * sequenceStep_);
 		break;
 	}
+	return buff;
 }
 
 int TelePlot::Telemetry::GetTimeStamp()
 {
-	int timeStamp = 0;
+	int time = 0;
 	if (cnt_ == 0) {
 		absTimeStart_ = ::get_absolute_time();
 	} else {
-		timeStamp = static_cast<int>(::absolute_time_diff_us(absTimeStart_, ::get_absolute_time()) / 1000);
+		time = static_cast<int>(::absolute_time_diff_us(absTimeStart_, ::get_absolute_time()) / 1000);
 	}
-	return timeStamp;
+	return time;
 }
 
 }
