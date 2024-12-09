@@ -1,6 +1,0 @@
-import(jpeg)
-
-img = Image('cat-1800x2400.jpg')
-img.Resize(240, 340).Write('cat-240x340.jpg')
-img.Resize(128, 160).Write('cat-128x160.jpg')
-img.Resize(240, 340).Crop(0, 0, 240, 240).Write('cat-240x240.jpg')

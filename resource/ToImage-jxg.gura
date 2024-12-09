@@ -1,0 +1,29 @@
+#!/usr/bin/env gurax
+import(jpeg)
+import(argopt)
+
+tmpl = tR'''
+#include "jxglib/Image.h"
+
+Image image = { Image::Format::RGB565, ${img.width}, ${img.height},
+${'"' + (img.Scan():iter {|color|
+	rgb565 = color.rgb565, Format('\\x%02x\\x%02x', rgb565 & 0xff, rgb565 >> 8)
+}).Fold(8):*Join() + '"\n'}
+};
+'''
+
+argopt.Parser {|p|
+	//p.OptString('param1', 'p', 'help for param1')
+	//p.OptString('param2', 'q', 'help for param2')
+	//p.OptBool('flag1', 'f', 'help for flag1')
+	try {[argv, opt] = p.Parse(sys.argv)} catch {|e|
+		sys.cerr.Println(e.text)
+		sys.Exit(1)
+	}
+}
+argv.Each {|arg|
+	path.Glob(arg).Each {|fileName|
+		img = Image(fileName)
+		tmpl.Render('>' + path.BaseName(fileName) + '.h')
+	}
+}

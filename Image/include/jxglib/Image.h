@@ -215,27 +215,25 @@ public:
 		}
 	};
 private:
+	bool allocatedFlag_;
 	const Format* pFormat_;
 	int width_;
 	int height_;
-	int bytesPerLine_;
 	uint8_t* data_;
-	bool allocatedFlag_;
 public:
-	Image() : pFormat_{&Format::None}, width_{0}, height_{0}, bytesPerLine_{0},
-			data_{nullptr}, allocatedFlag_{false} {}
+	Image() : allocatedFlag_{false}, pFormat_{&Format::None}, width_{0}, height_{0}, data_{nullptr} {}
 	Image(const Format& format, int width, int height, const void* data = nullptr) :
-			pFormat_{&format}, width_{width}, height_{height},
-			bytesPerLine_{width * pFormat_->bytesPerPixel},
-			data_{reinterpret_cast<uint8_t*>(const_cast<void*>(data))}, allocatedFlag_{false} {}
+			allocatedFlag_{false}, pFormat_{&format}, width_{width}, height_{height},
+			data_{reinterpret_cast<uint8_t*>(const_cast<void*>(data))} {}
 	~Image();
 	bool Alloc(const Format& format, int width, int height);
+	void Free();
 	void FillZero();
 	const Format& GetFormat() const { return *pFormat_; }
 	int GetWidth() const { return width_; }
 	int GetHeight() const { return height_; }
 	int GetBytesPerPixel() const { return pFormat_->bytesPerPixel; }
-	int GetBytesPerLine() const { return bytesPerLine_; }
+	int GetBytesPerLine() const { return GetWidth() * GetBytesPerPixel(); }
 	int GetBytesBuff() const { return GetBytesPerLine() * GetHeight(); }
 	uint8_t* GetPointer() { return data_; }
 	const uint8_t* GetPointer() const { return data_; }

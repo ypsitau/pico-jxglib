@@ -21,12 +21,22 @@ Image::~Image()
 }
 bool Image::Alloc(const Format& format, int width, int height)
 {
+	if (allocatedFlag_) ::free(data_);
+	allocatedFlag_ = true;
 	pFormat_ = &format;
 	width_ = width, height_ = height;
-	bytesPerLine_ = width * pFormat_->bytesPerPixel,
 	data_ = reinterpret_cast<uint8_t*>(::malloc(GetBytesBuff()));
-	allocatedFlag_ = true;
 	return !!data_;
+}
+
+void Image::Free()
+{
+	if (!allocatedFlag_) return;
+	allocatedFlag_ = false;
+	pFormat_ = &Format::None;
+	width_ = height_ = 0;
+	::free(data_);
+	data_ = nullptr;
 }
 
 void Image::FillZero()
