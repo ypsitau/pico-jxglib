@@ -2,7 +2,7 @@
 #include "pico/stdlib.h"
 #include "jxglib/Canvas.h"
 #include "jxglib/ST7789.h"
-#include "image/image_cat_240x320.h"
+#include "jxglib/sample/cat-240x320.h"
 #include "Font/shinonome16.h"
 
 using namespace jxglib;
