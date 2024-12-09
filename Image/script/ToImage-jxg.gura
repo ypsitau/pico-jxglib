@@ -1,16 +1,19 @@
 #!/usr/bin/env gurax
+import(re)
 import(jpeg)
 import(argopt)
 
 tmpl = tR'''
 #include "jxglib/Image.h"
 
-Image image = { Image::Format::RGB565, ${img.width}, ${img.height},
+static const jxglib::Image ${varName} = { jxglib::Image::Format::RGB565, ${img.width}, ${img.height},
 ${'"' + (img.Scan():iter {|color|
 	rgb565 = color.rgb565, Format('\\x%02x\\x%02x', rgb565 & 0xff, rgb565 >> 8)
-}).Fold(8):*Join() + '"\n'}
+}).Fold(16):*Join() + '"\n'}
 };
 '''
+
+MakeVarNameFromFileName(fileName as String) = fileName.Sub("[$%'@{}~`!#\(\)\.-]", '_')
 
 argopt.Parser {|p|
 	//p.OptString('param1', 'p', 'help for param1')
@@ -23,7 +26,10 @@ argopt.Parser {|p|
 }
 argv.Each {|arg|
 	path.Glob(arg).Each {|fileName|
+		baseName = path.BaseName(fileName)
+		fileNameOut = baseName + '.h'
+		varName = 'image_' + MakeVarNameFromFileName(baseName)
 		img = Image(fileName)
-		tmpl.Render('>' + path.BaseName(fileName) + '.h')
+		tmpl.Render('>' + fileNameOut)
 	}
 }
