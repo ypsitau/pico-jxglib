@@ -19,7 +19,7 @@ int main()
 		for (int i = 0; i < nPoints; i++) t.Plot(::sin(2 * pi * nCycles * i / nPoints));
 	} while (0);
 	do {
-		TelePlot::Telemetry t = telePlot.Add("DeviceTime", TelePlot::Timestamp::DeviceTime);
+		TelePlot::Telemetry t = telePlot.Add("ProgramTime", TelePlot::Timestamp::ProgramTime);
 		for (int i = 0; i < nPoints; i++) t.Plot(::sin(2 * pi * nCycles * i / nPoints));
 	} while (0);
 	do {

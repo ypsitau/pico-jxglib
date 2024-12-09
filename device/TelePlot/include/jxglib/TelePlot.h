@@ -16,7 +16,7 @@ class TelePlot {
 public:
 	enum class Timestamp {
 		Sequence,
-		DeviceTime,
+		ProgramTime,
 		ReceptionTime,
 	};
 	class Telemetry {
@@ -34,6 +34,14 @@ public:
 		Printable& GetPrintable() { return printable_; }
 		Telemetry& Plot(int value);
 		Telemetry& Plot(float value);
+		Telemetry& Plot(const int8_t* values, int len);
+		Telemetry& Plot(const uint8_t* values, int len);
+		Telemetry& Plot(const int16_t* values, int len);
+		Telemetry& Plot(const uint16_t* values, int len);
+		Telemetry& Plot(const int32_t* values, int len);
+		Telemetry& Plot(const uint32_t* values, int len);
+		Telemetry& Plot(const float* values, int len);
+		Telemetry& Plot(const double* values, int len);
 		Telemetry& PlotXY(int x, int y);
 		Telemetry& PlotXY(float x, float y);
 		Telemetry& PlotXY(const Point& pt) { return PlotXY(pt.x, pt.y); }
@@ -48,6 +56,7 @@ public:
 		Telemetry& Text(int time, const char* str);
 	public:
 		const char* MakeTimeStamp(char* buff, int len);
+		const char* MakeTimeStampForMultiple(char* buff, int len);
 		int GetTimeStamp();
 	};
 private:

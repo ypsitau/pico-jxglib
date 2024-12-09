@@ -14,7 +14,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // TelePlot::Telemetry
 //------------------------------------------------------------------------------
-TelePlot::Telemetry::Telemetry() : Telemetry(PrintableDumb::Instance, "", Timestamp::DeviceTime, 1)
+TelePlot::Telemetry::Telemetry() : Telemetry(PrintableDumb::Instance, "", Timestamp::ProgramTime, 1)
 {}
 
 TelePlot::Telemetry::Telemetry(Printable& printable, const char* name, Timestamp timestamp, int sequenceStep) :
@@ -39,6 +39,103 @@ TelePlot::Telemetry& TelePlot::Telemetry::Plot(float value)
 	cnt_++;
 	return *this;
 }
+
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(const int8_t* values, int len)
+{
+	char buff[64];
+	GetPrintable().Printf(">%s:", name_);
+	for (int i = 0; i < len; i++) {
+		GetPrintable().Printf("%s%s:%d", (i == 0)? "" : ",",
+				MakeTimeStampForMultiple(buff, sizeof(buff)), values[i]);
+		cnt_++;
+	}
+	return *this;
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(const uint8_t* values, int len)
+{
+	char buff[64];
+	GetPrintable().Printf(">%s:", name_);
+	for (int i = 0; i < len; i++) {
+		GetPrintable().Printf("%s%s:%u", (i == 0)? "" : ",",
+				MakeTimeStampForMultiple(buff, sizeof(buff)), values[i]);
+		cnt_++;
+	}
+	return *this;
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(const int16_t* values, int len)
+{
+	char buff[64];
+	GetPrintable().Printf(">%s:", name_);
+	for (int i = 0; i < len; i++) {
+		GetPrintable().Printf("%s%s:%d", (i == 0)? "" : ",",
+				MakeTimeStampForMultiple(buff, sizeof(buff)), values[i]);
+		cnt_++;
+	}
+	return *this;
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(const uint16_t* values, int len)
+{
+	char buff[64];
+	GetPrintable().Printf(">%s:", name_);
+	for (int i = 0; i < len; i++) {
+		GetPrintable().Printf("%s%s:%u", (i == 0)? "" : ",",
+				MakeTimeStampForMultiple(buff, sizeof(buff)), values[i]);
+		cnt_++;
+	}
+	return *this;
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(const int32_t* values, int len)
+{
+	char buff[64];
+	GetPrintable().Printf(">%s:", name_);
+	for (int i = 0; i < len; i++) {
+		GetPrintable().Printf("%s%s:%d", (i == 0)? "" : ",",
+				MakeTimeStampForMultiple(buff, sizeof(buff)), values[i]);
+		cnt_++;
+	}
+	return *this;
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(const uint32_t* values, int len)
+{
+	char buff[64];
+	GetPrintable().Printf(">%s:", name_);
+	for (int i = 0; i < len; i++) {
+		GetPrintable().Printf("%s%s:%u", (i == 0)? "" : ",",
+				MakeTimeStampForMultiple(buff, sizeof(buff)), values[i]);
+		cnt_++;
+	}
+	return *this;
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(const float* values, int len)
+{
+	char buff[64];
+	GetPrintable().Printf(">%s:", name_);
+	for (int i = 0; i < len; i++) {
+		GetPrintable().Printf("%s%s:%g", (i == 0)? "" : ",",
+				MakeTimeStampForMultiple(buff, sizeof(buff)), values[i]);
+		cnt_++;
+	}
+	return *this;
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(const double* values, int len)
+{
+	char buff[64];
+	GetPrintable().Printf(">%s:", name_);
+	for (int i = 0; i < len; i++) {
+		GetPrintable().Printf("%s%s:%g", (i == 0)? "" : ",",
+				MakeTimeStampForMultiple(buff, sizeof(buff)), values[i]);
+		cnt_++;
+	}
+	return *this;
+}
+
 
 TelePlot::Telemetry& TelePlot::Telemetry::PlotXY(int x, int y)
 {
@@ -93,14 +190,36 @@ TelePlot::Telemetry& TelePlot::Telemetry::Text(int time, const char* str)
 const char* TelePlot::Telemetry::MakeTimeStamp(char* buff, int len)
 {
 	switch (timestamp_) {
+	case Timestamp::Sequence:
+		::snprintf(buff, len, ":%d", cnt_ * sequenceStep_);
+		break;
+	case Timestamp::ProgramTime:
+		::snprintf(buff, len, ":%d", GetTimeStamp());
+		break;
 	case Timestamp::ReceptionTime:
 		buff[0] = '\0';
 		break;
-	case Timestamp::DeviceTime:
-		::snprintf(buff, len, ":%d", GetTimeStamp());
+	default:
+		buff[0] = '\0';
 		break;
+	}
+	return buff;
+}
+
+const char* TelePlot::Telemetry::MakeTimeStampForMultiple(char* buff, int len)
+{
+	switch (timestamp_) {
 	case Timestamp::Sequence:
-		::snprintf(buff, len, ":%d", cnt_ * sequenceStep_);
+		::snprintf(buff, len, "%d", cnt_ * sequenceStep_);
+		break;
+	case Timestamp::ProgramTime:
+		::snprintf(buff, len, "%d", GetTimeStamp());
+		break;
+	case Timestamp::ReceptionTime:
+		::snprintf(buff, len, "%d", cnt_);
+		break;
+	default:
+		buff[0] = '\0';
 		break;
 	}
 	return buff;

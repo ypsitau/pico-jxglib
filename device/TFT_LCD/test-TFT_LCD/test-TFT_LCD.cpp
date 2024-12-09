@@ -9,10 +9,9 @@
 #include "Font/shinonome18.h"
 #include "Font/sisd8x16.h"
 #include "Font/sisd24x32.h"
-#include "image/image_cat_128x170.h"
-#include "image/image_cat_160x213.h"
-#include "image/image_cat_240x320.h"
-#include "image/image_cat_240x240.h"
+#include "jxglib/sample/cat-128x160.h"
+#include "jxglib/sample/cat-240x320.h"
+#include "jxglib/sample/cat-240x240.h"
 
 using namespace jxglib;
 
@@ -204,7 +203,7 @@ void Test_DrawImage(Display* displayTbl[], int nDisplays)
 			for (int iDisplay = 0; iDisplay < nDisplays; iDisplay++) {
 				Display& display = *displayTbl[iDisplay];
 				int width = display.GetWidth();
-				const Image& image = (width <= 128)? image_cat_128x170 : (width <= 160)? image_cat_160x213 : image_cat_240x320;
+				const Image& image = (width <= 128)? image_cat_128x160 : image_cat_240x320;
 				display.Clear().DrawImage(0, 0, image, nullptr, imageDir);
 			}
 	//		::sleep_ms(500);
@@ -294,8 +293,7 @@ int main()
 	for (int i = 0; i < count_of(displayTbl); i++) {
 		Display& display = *displayTbl[i];
 		int width = display.GetWidth();
-		const Image& image = (width <= 128)? image_cat_128x170 :
-						(width <= 160)? image_cat_160x213 : image_cat_240x240;
+		const Image& image = (width <= 128)? image_cat_128x160 : image_cat_240x320;
 		display.Clear().DrawImage(0, 0, image, nullptr, Display::ImageDir::Rotate0).Refresh();
 	}
 	//Test_BouncingBall(display);
