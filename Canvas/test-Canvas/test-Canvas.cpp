@@ -39,7 +39,7 @@ int main()
 #endif
 #if 1
 	canvas1.AttachOutput(display1);
-	canvas2.AttachOutput(display2);
+	//canvas2.AttachOutput(display2);
 	static const Canvas::ImageDir imageDirTbl[] = {
 		Canvas::ImageDir::Rotate0, Canvas::ImageDir::Rotate90, Canvas::ImageDir::Rotate180, Canvas::ImageDir::Rotate270,
 	};
@@ -47,20 +47,25 @@ int main()
 		if (i >= count_of(imageDirTbl)) i = 0;
 		canvas1.DrawImage(0, 0, image_cat_240x240, nullptr, imageDirTbl[i]);
 		canvas1.Refresh();
-		canvas2.DrawImage(0, 0, image_cat_240x320, nullptr, imageDirTbl[i]);
-		canvas2.Refresh();
+		//canvas2.DrawImage(0, 0, image_cat_240x320, nullptr, imageDirTbl[i]);
+		//canvas2.Refresh();
 		::sleep_ms(1000);
 	}
 #endif
 #if 0
 	//canvas.AttachOutput(display, Rect(40, 40, 100, 150), Canvas::ImageDir::Rotate90);
-	canvas.AttachOutput(display);
-	canvas.SetFont(Font::shinonome16);
-	canvas.SetSpacingRatio(1.0, 1.2);
-	canvas.DrawStringWrap(0, 0, str);
+	canvas1.AttachOutput(display1);
+	canvas2.AttachOutput(display2);
+	canvas1.SetFont(Font::shinonome16);
+	canvas2.SetFont(Font::shinonome16);
+	canvas1.SetSpacingRatio(1.0, 1.2);
+	canvas2.SetSpacingRatio(1.0, 1.2);
+	canvas1.DrawStringWrap(0, 0, str);
+	canvas2.DrawStringWrap(0, 0, str);
 	//canvas.Refresh();
-	absolute_time_t absTimeStart = ::get_absolute_time();
-	canvas.Refresh();
-	::printf("%lld usec\n", ::absolute_time_diff_us(absTimeStart, ::get_absolute_time()));
+	//absolute_time_t absTimeStart = ::get_absolute_time();
+	canvas1.Refresh();
+	canvas2.Refresh();
+	//::printf("%lld usec\n", ::absolute_time_diff_us(absTimeStart, ::get_absolute_time()));
 #endif
 }
