@@ -32,7 +32,7 @@ int main()
 	canvas.DrawStringWrap(0, 0, str);
 	canvas.Refresh();
 #endif
-#if 0
+#if 1
 	canvas.AttachOutput(display);
 	static const Canvas::ImageDir imageDirTbl[] = {
 		Canvas::ImageDir::Rotate0, Canvas::ImageDir::Rotate90, Canvas::ImageDir::Rotate180, Canvas::ImageDir::Rotate270,
@@ -44,7 +44,7 @@ int main()
 		::sleep_ms(1000);
 	}
 #endif
-#if 1
+#if 0
 	//canvas.AttachOutput(display, Rect(40, 40, 100, 150), Canvas::ImageDir::Rotate90);
 	canvas.AttachOutput(display);
 	canvas.SetFont(Font::shinonome16);
