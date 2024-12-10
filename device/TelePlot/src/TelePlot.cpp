@@ -14,141 +14,163 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // TelePlot::Telemetry
 //------------------------------------------------------------------------------
-TelePlot::Telemetry::Telemetry() : Telemetry(PrintableDumb::Instance, "", Timestamp::ProgramTime, 1)
+TelePlot::Telemetry::Telemetry() : Telemetry(PrintableDumb::Instance, "", HorzAxis::ProgramTime, 1)
 {}
 
-TelePlot::Telemetry::Telemetry(Printable& printable, const char* name, Timestamp timestamp, int sequenceStep) :
-	printable_{printable}, timestamp_{timestamp}, cnt_{0}, sequenceStep_{sequenceStep}
+TelePlot::Telemetry::Telemetry(Printable& printable, const char* name, HorzAxis timestamp, int sequenceStep) :
+	printable_{printable}, horzAxis_{timestamp}, cnt_{0}, sequenceStep_{sequenceStep}
 {
 	::strncpy(name_, name, sizeof(name_));
 }
 
 
-TelePlot::Telemetry& TelePlot::Telemetry::Plot(int value)
+template<typename T> TelePlot::Telemetry& TelePlot::Telemetry::Plot_T(const char* format, T value)
 {
 	char buff[64];
-	GetPrintable().Printf(">%s%s:%d\n", name_, MakeTimeStamp(buff, sizeof(buff)), value);
+	GetPrintable().Printf(">%s%s:", name_, MakeValueHorzAxis(buff, sizeof(buff)));
+	GetPrintable().Printf(format, value);
+	GetPrintable().Printf("\n");
 	cnt_++;
 	return *this;
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(int value)
+{
+	return Plot_T("%d", value);
 }
 
 TelePlot::Telemetry& TelePlot::Telemetry::Plot(float value)
 {
+	return Plot_T("%g", value);
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(double value)
+{
+	return Plot_T("%g", value);
+}
+
+#if 0
+template<typename T> TelePlot::Telemetry& TelePlot::Telemetry::Plot_T(const char* format, const T* values, int nValues)
+{
+	int iCol = 0;
+	const int nCols = 32;
 	char buff[64];
-	GetPrintable().Printf(">%s%s:%g\n", name_, MakeTimeStamp(buff, sizeof(buff)), value);
-	cnt_++;
+	for (int i = 0; i < nValues; i++) {
+		if (iCol == 0) {
+			GetPrintable().Printf(">%s:", name_);
+		} else {
+			GetPrintable().Printf(";");
+		}
+		GetPrintable().Printf("%s:", MakeValueHorzAxisForMultiple(buff, sizeof(buff)));
+		GetPrintable().Printf(format, values[i]);
+		cnt_++;
+		iCol++;
+		if (iCol == nCols) {
+			GetPrintable().Printf("\n");
+			iCol = 0;
+		}
+	}
+	if (iCol > 0) GetPrintable().Printf("\n");
+	return *this;
+}
+#endif
+
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(ValueFormatter& valueFormatter, int nValues)
+{
+	int iCol = 0;
+	const int nCols = 32;
+	char buff[64];
+	for (int i = 0; i < nValues; i++) {
+		if (iCol == 0) {
+			GetPrintable().Printf(">%s:", name_);
+		} else {
+			GetPrintable().Printf(";");
+		}
+		GetPrintable().Printf("%s:", MakeValueHorzAxisForMultiple(buff, sizeof(buff)));
+		GetPrintable().Print(valueFormatter.Next(buff, sizeof(buff)));
+		cnt_++;
+		iCol++;
+		if (iCol == nCols) {
+			GetPrintable().Printf("\n");
+			iCol = 0;
+		}
+	}
+	if (iCol > 0) GetPrintable().Printf("\n");
 	return *this;
 }
 
-TelePlot::Telemetry& TelePlot::Telemetry::Plot(const int8_t* values, int len)
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(const int8_t* values, int nValues)
+{
+	ValueFormatter_T<int8_t> valueFormatter("%d", values);
+	return Plot(valueFormatter, nValues);
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(const uint8_t* values, int nValues)
+{
+	ValueFormatter_T<uint8_t> valueFormatter("%u", values);
+	return Plot(valueFormatter, nValues);
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(const int16_t* values, int nValues)
+{
+	ValueFormatter_T<int16_t> valueFormatter("%d", values);
+	return Plot(valueFormatter, nValues);
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(const uint16_t* values, int nValues)
+{
+	ValueFormatter_T<uint16_t> valueFormatter("%u", values);
+	return Plot(valueFormatter, nValues);
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(const int32_t* values, int nValues)
+{
+	ValueFormatter_T<int32_t> valueFormatter("%d", values);
+	return Plot(valueFormatter, nValues);
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(const uint32_t* values, int nValues)
+{
+	ValueFormatter_T<uint32_t> valueFormatter("%u", values);
+	return Plot(valueFormatter, nValues);
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(const float* values, int nValues)
+{
+	ValueFormatter_T<float> valueFormatter("%g", values);
+	return Plot(valueFormatter, nValues);
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(const double* values, int nValues)
+{
+	ValueFormatter_T<double> valueFormatter("%g", values);
+	return Plot(valueFormatter, nValues);
+}
+
+
+template<typename T> TelePlot::Telemetry& TelePlot::Telemetry::PlotXY_T(const char* format, T x, T y)
 {
 	char buff[64];
-	GetPrintable().Printf(">%s:", name_);
-	for (int i = 0; i < len; i++) {
-		GetPrintable().Printf("%s%s:%d", (i == 0)? "" : ",",
-				MakeTimeStampForMultiple(buff, sizeof(buff)), values[i]);
-		cnt_++;
-	}
+	GetPrintable().Printf(">%s", name_);
+	GetPrintable().Printf(format, x);
+	GetPrintable().Printf(format, y);
+	GetPrintable().Printf("%s|xy\n", MakeValueHorzAxis(buff, sizeof(buff)));
 	return *this;
 }
-
-TelePlot::Telemetry& TelePlot::Telemetry::Plot(const uint8_t* values, int len)
-{
-	char buff[64];
-	GetPrintable().Printf(">%s:", name_);
-	for (int i = 0; i < len; i++) {
-		GetPrintable().Printf("%s%s:%u", (i == 0)? "" : ",",
-				MakeTimeStampForMultiple(buff, sizeof(buff)), values[i]);
-		cnt_++;
-	}
-	return *this;
-}
-
-TelePlot::Telemetry& TelePlot::Telemetry::Plot(const int16_t* values, int len)
-{
-	char buff[64];
-	GetPrintable().Printf(">%s:", name_);
-	for (int i = 0; i < len; i++) {
-		GetPrintable().Printf("%s%s:%d", (i == 0)? "" : ",",
-				MakeTimeStampForMultiple(buff, sizeof(buff)), values[i]);
-		cnt_++;
-	}
-	return *this;
-}
-
-TelePlot::Telemetry& TelePlot::Telemetry::Plot(const uint16_t* values, int len)
-{
-	char buff[64];
-	GetPrintable().Printf(">%s:", name_);
-	for (int i = 0; i < len; i++) {
-		GetPrintable().Printf("%s%s:%u", (i == 0)? "" : ",",
-				MakeTimeStampForMultiple(buff, sizeof(buff)), values[i]);
-		cnt_++;
-	}
-	return *this;
-}
-
-TelePlot::Telemetry& TelePlot::Telemetry::Plot(const int32_t* values, int len)
-{
-	char buff[64];
-	GetPrintable().Printf(">%s:", name_);
-	for (int i = 0; i < len; i++) {
-		GetPrintable().Printf("%s%s:%d", (i == 0)? "" : ",",
-				MakeTimeStampForMultiple(buff, sizeof(buff)), values[i]);
-		cnt_++;
-	}
-	return *this;
-}
-
-TelePlot::Telemetry& TelePlot::Telemetry::Plot(const uint32_t* values, int len)
-{
-	char buff[64];
-	GetPrintable().Printf(">%s:", name_);
-	for (int i = 0; i < len; i++) {
-		GetPrintable().Printf("%s%s:%u", (i == 0)? "" : ",",
-				MakeTimeStampForMultiple(buff, sizeof(buff)), values[i]);
-		cnt_++;
-	}
-	return *this;
-}
-
-TelePlot::Telemetry& TelePlot::Telemetry::Plot(const float* values, int len)
-{
-	char buff[64];
-	GetPrintable().Printf(">%s:", name_);
-	for (int i = 0; i < len; i++) {
-		GetPrintable().Printf("%s%s:%g", (i == 0)? "" : ",",
-				MakeTimeStampForMultiple(buff, sizeof(buff)), values[i]);
-		cnt_++;
-	}
-	return *this;
-}
-
-TelePlot::Telemetry& TelePlot::Telemetry::Plot(const double* values, int len)
-{
-	char buff[64];
-	GetPrintable().Printf(">%s:", name_);
-	for (int i = 0; i < len; i++) {
-		GetPrintable().Printf("%s%s:%g", (i == 0)? "" : ",",
-				MakeTimeStampForMultiple(buff, sizeof(buff)), values[i]);
-		cnt_++;
-	}
-	return *this;
-}
-
 
 TelePlot::Telemetry& TelePlot::Telemetry::PlotXY(int x, int y)
 {
-	char buff[64];
-	GetPrintable().Printf(">%s:%d:%d%s|xy\n", name_, x, y, MakeTimeStamp(buff, sizeof(buff)));
-	return *this;
+	return PlotXY_T(":%d", x, y);
 }
 
 TelePlot::Telemetry& TelePlot::Telemetry::PlotXY(float x, float y)
 {
-	char buff[64];
-	GetPrintable().Printf(">%s:%g:%g%s|xy\n", name_, x, y, MakeTimeStamp(buff, sizeof(buff)));
-	return *this;
+	return PlotXY_T(":%g", x, y);
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::PlotXY(double x, double y)
+{
+	return PlotXY_T(":%g", x, y);
 }
 
 TelePlot::Telemetry& TelePlot::Telemetry::Text(const char* str)
@@ -157,46 +179,69 @@ TelePlot::Telemetry& TelePlot::Telemetry::Text(const char* str)
 	return *this;
 }
 
-TelePlot::Telemetry& TelePlot::Telemetry::Plot(int time, int value)
+template<typename T> TelePlot::Telemetry& TelePlot::Telemetry::Plot_T(const char* format, int valueHorzAxis, T value)
 {
-	GetPrintable().Printf(">%s:%d:%d\n", name_, time, value);
+	GetPrintable().Printf(">%s:%d:", name_, valueHorzAxis);
+	GetPrintable().Printf(format, value);
+	GetPrintable().Printf("\n");
 	return *this;
 }
 
-TelePlot::Telemetry& TelePlot::Telemetry::Plot(int time, float value)
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(int valueHorzAxis, int value)
 {
-	GetPrintable().Printf(">%s:%d:%g\n", name_, time, value);
+	return Plot_T("%g", valueHorzAxis, value);
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(int valueHorzAxis, float value)
+{
+	return Plot_T("%g", valueHorzAxis, value);
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(int valueHorzAxis, double value)
+{
+	return Plot_T("%g", valueHorzAxis, value);
+}
+
+template<typename T> TelePlot::Telemetry& TelePlot::Telemetry::PlotXY_T(const char* format, T x, T y, int valueHorzAxis)
+{
+	GetPrintable().Printf(">%s", name_);
+	GetPrintable().Printf(format, x);
+	GetPrintable().Printf(format, y);
+	GetPrintable().Printf(":%d|xy\n", valueHorzAxis);
 	return *this;
 }
 
-TelePlot::Telemetry& TelePlot::Telemetry::PlotXY(int x, int y, int time)
+TelePlot::Telemetry& TelePlot::Telemetry::PlotXY(int x, int y, int valueHorzAxis)
 {
-	GetPrintable().Printf(">%s:%d:%d:%d|xy\n", name_, x, y, time);
+	return PlotXY_T(":%d", x, y, valueHorzAxis);
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::PlotXY(float x, float y, int valueHorzAxis)
+{
+	return PlotXY_T(":%g", x, y, valueHorzAxis);
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::PlotXY(double x, double y, int valueHorzAxis)
+{
+	return PlotXY_T(":%g", x, y, valueHorzAxis);
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::Text(int valueHorzAxis, const char* str)
+{
+	GetPrintable().Printf(">%s:%d:%s|t\n", name_, valueHorzAxis, str);
 	return *this;
 }
 
-TelePlot::Telemetry& TelePlot::Telemetry::PlotXY(float x, float y, int time)
+const char* TelePlot::Telemetry::MakeValueHorzAxis(char* buff, int len)
 {
-	GetPrintable().Printf(">%s:%g:%g:%d|xy\n", name_, x, y, time);
-	return *this;
-}
-
-TelePlot::Telemetry& TelePlot::Telemetry::Text(int time, const char* str)
-{
-	GetPrintable().Printf(">%s:%d:%s|t\n", name_, time, str);
-	return *this;
-}
-
-const char* TelePlot::Telemetry::MakeTimeStamp(char* buff, int len)
-{
-	switch (timestamp_) {
-	case Timestamp::Sequence:
+	switch (horzAxis_) {
+	case HorzAxis::Sequence:
 		::snprintf(buff, len, ":%d", cnt_ * sequenceStep_);
 		break;
-	case Timestamp::ProgramTime:
-		::snprintf(buff, len, ":%d", GetTimeStamp());
+	case HorzAxis::ProgramTime:
+		::snprintf(buff, len, ":%d", GetTimestamp());
 		break;
-	case Timestamp::ReceptionTime:
+	case HorzAxis::ReceptionTime:
 		buff[0] = '\0';
 		break;
 	default:
@@ -206,16 +251,14 @@ const char* TelePlot::Telemetry::MakeTimeStamp(char* buff, int len)
 	return buff;
 }
 
-const char* TelePlot::Telemetry::MakeTimeStampForMultiple(char* buff, int len)
+const char* TelePlot::Telemetry::MakeValueHorzAxisForMultiple(char* buff, int len)
 {
-	switch (timestamp_) {
-	case Timestamp::Sequence:
+	switch (horzAxis_) {
+	case HorzAxis::Sequence:
 		::snprintf(buff, len, "%d", cnt_ * sequenceStep_);
 		break;
-	case Timestamp::ProgramTime:
-		::snprintf(buff, len, "%d", GetTimeStamp());
-		break;
-	case Timestamp::ReceptionTime:
+	case HorzAxis::ProgramTime:
+	case HorzAxis::ReceptionTime:
 		::snprintf(buff, len, "%d", cnt_);
 		break;
 	default:
@@ -225,15 +268,15 @@ const char* TelePlot::Telemetry::MakeTimeStampForMultiple(char* buff, int len)
 	return buff;
 }
 
-int TelePlot::Telemetry::GetTimeStamp()
+int TelePlot::Telemetry::GetTimestamp()
 {
-	int time = 0;
+	int timeStampMSec = 0;
 	if (cnt_ == 0) {
 		absTimeStart_ = ::get_absolute_time();
 	} else {
-		time = static_cast<int>(::absolute_time_diff_us(absTimeStart_, ::get_absolute_time()) / 1000);
+		timeStampMSec = static_cast<int>(::absolute_time_diff_us(absTimeStart_, ::get_absolute_time()) / 1000);
 	}
-	return time;
+	return timeStampMSec;
 }
 
 }
