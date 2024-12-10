@@ -147,6 +147,53 @@ TelePlot::Telemetry& TelePlot::Telemetry::Plot(const double* values, int nValues
 	return Plot(valueFormatter, nValues);
 }
 
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(const int8_t* values, int nValues, double scale)
+{
+	ValueFormatterScaled_T<int8_t> valueFormatter(values, scale);
+	return Plot(valueFormatter, nValues);
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(const uint8_t* values, int nValues, double scale)
+{
+	ValueFormatterScaled_T<uint8_t> valueFormatter(values, scale);
+	return Plot(valueFormatter, nValues);
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(const int16_t* values, int nValues, double scale)
+{
+	ValueFormatterScaled_T<int16_t> valueFormatter(values, scale);
+	return Plot(valueFormatter, nValues);
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(const uint16_t* values, int nValues, double scale)
+{
+	ValueFormatterScaled_T<uint16_t> valueFormatter(values, scale);
+	return Plot(valueFormatter, nValues);
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(const int32_t* values, int nValues, double scale)
+{
+	ValueFormatterScaled_T<int32_t> valueFormatter(values, scale);
+	return Plot(valueFormatter, nValues);
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(const uint32_t* values, int nValues, double scale)
+{
+	ValueFormatterScaled_T<uint32_t> valueFormatter(values, scale);
+	return Plot(valueFormatter, nValues);
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(const float* values, int nValues, double scale)
+{
+	ValueFormatterScaled_T<float> valueFormatter(values, scale);
+	return Plot(valueFormatter, nValues);
+}
+
+TelePlot::Telemetry& TelePlot::Telemetry::Plot(const double* values, int nValues, double scale)
+{
+	ValueFormatterScaled_T<double> valueFormatter(values, scale);
+	return Plot(valueFormatter, nValues);
+}
 
 template<typename T> TelePlot::Telemetry& TelePlot::Telemetry::PlotXY_T(const char* format, T x, T y)
 {

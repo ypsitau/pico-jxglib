@@ -36,6 +36,19 @@ public:
 			return buff;
 		}
 	};
+	template<typename T> class ValueFormatterScaled_T : public ValueFormatter {
+	private:
+		const T* pValue_;
+		double scale_;
+	public:
+		ValueFormatterScaled_T(const T* pValue, double scale) : pValue_{pValue}, scale_{scale} {}
+	public:
+		virtual const char* Next(char* buff, int len) override {
+			::snprintf(buff, len, "%g", scale_ * *pValue_);
+			pValue_++;
+			return buff;
+		}
+	};
 	class Telemetry {
 	private:
 		Printable& printable_;
@@ -65,6 +78,14 @@ public:
 		Telemetry& Plot(const uint32_t* values, int nValues);
 		Telemetry& Plot(const float* values, int nValues);
 		Telemetry& Plot(const double* values, int nValues);
+		Telemetry& Plot(const int8_t* values, int nValues, double scale);
+		Telemetry& Plot(const uint8_t* values, int nValues, double scale);
+		Telemetry& Plot(const int16_t* values, int nValues, double scale);
+		Telemetry& Plot(const uint16_t* values, int nValues, double scale);
+		Telemetry& Plot(const int32_t* values, int nValues, double scale);
+		Telemetry& Plot(const uint32_t* values, int nValues, double scale);
+		Telemetry& Plot(const float* values, int nValues, double scale);
+		Telemetry& Plot(const double* values, int nValues, double scale);
 		template<typename T> Telemetry& PlotXY_T(const char* format, T x, T y);
 		Telemetry& PlotXY(int x, int y);
 		Telemetry& PlotXY(float x, float y);
