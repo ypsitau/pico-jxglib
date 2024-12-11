@@ -295,7 +295,8 @@ int main()
 	for (int i = 0; i < count_of(displayTbl); i++) {
 		Display& display = *displayTbl[i];
 		int width = display.GetWidth();
-		const Image& image = (width <= 128)? image_cat_128x160 : image_cat_240x320;
+		//const Image& image = (width <= 128)? image_cat_128x160 : image_cat_240x320;
+		const Image& image = image_cat_240x240;
 		display.Clear().DrawImage(0, 0, image, nullptr, Display::ImageDir::Rotate0).Refresh();
 	}
 	//Test_BouncingBall(display);

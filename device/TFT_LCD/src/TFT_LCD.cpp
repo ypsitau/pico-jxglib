@@ -28,27 +28,25 @@ const TFT_LCD::RotateData TFT_LCD::rotateDataTbl_Case1[] =
 const TFT_LCD::RotateData TFT_LCD::rotateDataTbl_Case2[] =
 {
 	{ PA::BottomToTop, CA::LeftToRight, PC::NormalMode },	// HorzFromNW (Rotate0)
-	
-	{ PA::TopToBottom, CA::RightToLeft, PC::NormalMode },	// HorzFromNE (MirrorHorz)
-	{ PA::BottomToTop, CA::LeftToRight, PC::NormalMode },	// HorzFromSW (MirrorVert)
-	{ PA::BottomToTop, CA::RightToLeft, PC::NormalMode },	// HorzFromSE (Rotate180)
-	{ PA::TopToBottom, CA::LeftToRight, PC::ReverseMode },	// VertFromNW
-	{ PA::TopToBottom, CA::RightToLeft, PC::ReverseMode },	// VertFromNE (Rotate270)
-	{ PA::BottomToTop, CA::LeftToRight, PC::ReverseMode },	// VertFromSW (Rotate90)
-	{ PA::BottomToTop, CA::RightToLeft, PC::ReverseMode },	// VertFromSE
+	{ PA::BottomToTop, CA::RightToLeft, PC::NormalMode },	// HorzFromNE (MirrorHorz)
+	{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// HorzFromSW (MirrorVert)
+	{ PA::TopToBottom, CA::RightToLeft, PC::NormalMode },	// HorzFromSE (Rotate180)
+	{ PA::BottomToTop, CA::LeftToRight, PC::ReverseMode },	// VertFromNW
+	{ PA::BottomToTop, CA::RightToLeft, PC::ReverseMode },	// VertFromNE (Rotate270)
+	{ PA::TopToBottom, CA::LeftToRight, PC::ReverseMode },	// VertFromSW (Rotate90)
+	{ PA::TopToBottom, CA::RightToLeft, PC::ReverseMode },	// VertFromSE
 };
 
 const TFT_LCD::RotateData TFT_LCD::rotateDataTbl_Case3[] =
 {
 	{ PA::BottomToTop, CA::RightToLeft, PC::NormalMode },	// HorzFromNW (Rotate0)
-	
-	{ PA::TopToBottom, CA::RightToLeft, PC::NormalMode },	// HorzFromNE (MirrorHorz)
-	{ PA::BottomToTop, CA::LeftToRight, PC::NormalMode },	// HorzFromSW (MirrorVert)
-	{ PA::BottomToTop, CA::RightToLeft, PC::NormalMode },	// HorzFromSE (Rotate180)
-	{ PA::TopToBottom, CA::LeftToRight, PC::ReverseMode },	// VertFromNW
-	{ PA::TopToBottom, CA::RightToLeft, PC::ReverseMode },	// VertFromNE (Rotate270)
-	{ PA::BottomToTop, CA::LeftToRight, PC::ReverseMode },	// VertFromSW (Rotate90)
-	{ PA::BottomToTop, CA::RightToLeft, PC::ReverseMode },	// VertFromSE
+	{ PA::BottomToTop, CA::LeftToRight, PC::NormalMode },	// HorzFromNE (MirrorHorz)
+	{ PA::TopToBottom, CA::RightToLeft, PC::NormalMode },	// HorzFromSW (MirrorVert)
+	{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// HorzFromSE (Rotate180)
+	{ PA::BottomToTop, CA::RightToLeft, PC::ReverseMode },	// VertFromNW
+	{ PA::BottomToTop, CA::LeftToRight, PC::ReverseMode },	// VertFromNE (Rotate270)
+	{ PA::TopToBottom, CA::RightToLeft, PC::ReverseMode },	// VertFromSW (Rotate90)
+	{ PA::TopToBottom, CA::LeftToRight, PC::ReverseMode },	// VertFromSE
 };
 
 void TFT_LCD::Initialize(const RotateData& rotateData, const ConfigData& configData)
@@ -176,6 +174,13 @@ void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 	if (!AdjustRange(&x, &width, rect.x, rect.width, &xSkip)) return;
 	if (!AdjustRange(&y, &height, rect.y, rect.height, &ySkip)) return;
 	x += xAdjust, y += yAdjust;
+#if 0	
+	raw.MemoryDataAccessControl(
+		//PA::BottomToTop, CA::LeftToRight, PC::ReverseMode,
+		PA::TopToBottom, CA::RightToLeft, PC::ReverseMode,
+		LineAddressOrder::TopToBottom, RGBBGROrder::RGB, DisplayDataLatchOrder::LeftToRight);
+#endif
+	//raw.ColumnAddressSet(x + 80, x + width - 1 + 80);
 	raw.ColumnAddressSet(x, x + width - 1);
 	raw.RowAddressSet(y, y + height - 1);
 	raw.MemoryWrite_Begin(16);
