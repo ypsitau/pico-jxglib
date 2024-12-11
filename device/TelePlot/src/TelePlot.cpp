@@ -18,7 +18,7 @@ TelePlot::Telemetry::Telemetry() : Telemetry(PrintableDumb::Instance, "", HorzAx
 {}
 
 TelePlot::Telemetry::Telemetry(Printable& printable, const char* name, HorzAxis timestamp, int sequenceStep) :
-	printable_{printable}, horzAxis_{timestamp}, cnt_{0}, sequenceStep_{sequenceStep}
+	printable_{printable}, horzAxis_{timestamp}, cnt_{0}, sequenceStep_{sequenceStep}, clearFlag_(false)
 {
 	::strncpy(name_, name, sizeof(name_));
 }
@@ -29,7 +29,7 @@ template<typename T> TelePlot::Telemetry& TelePlot::Telemetry::Plot_T(const char
 	char buff[64];
 	GetPrintable().Printf(">%s%s:", name_, MakeValueHorzAxis(buff, sizeof(buff)));
 	GetPrintable().Printf(format, value);
-	GetPrintable().Printf("\n");
+	PutEndOfLine();
 	cnt_++;
 	return *this;
 }
@@ -49,36 +49,10 @@ TelePlot::Telemetry& TelePlot::Telemetry::Plot(double value)
 	return Plot_T("%g", value);
 }
 
-#if 0
-template<typename T> TelePlot::Telemetry& TelePlot::Telemetry::Plot_T(const char* format, const T* values, int nValues)
-{
-	int iCol = 0;
-	const int nCols = 32;
-	char buff[64];
-	for (int i = 0; i < nValues; i++) {
-		if (iCol == 0) {
-			GetPrintable().Printf(">%s:", name_);
-		} else {
-			GetPrintable().Printf(";");
-		}
-		GetPrintable().Printf("%s:", MakeValueHorzAxisForMultiple(buff, sizeof(buff)));
-		GetPrintable().Printf(format, values[i]);
-		cnt_++;
-		iCol++;
-		if (iCol == nCols) {
-			GetPrintable().Printf("\n");
-			iCol = 0;
-		}
-	}
-	if (iCol > 0) GetPrintable().Printf("\n");
-	return *this;
-}
-#endif
-
 TelePlot::Telemetry& TelePlot::Telemetry::Plot(ValueFormatter& valueFormatter, int nValues)
 {
 	int iCol = 0;
-	const int nCols = 32;
+	const int nCols = 200;
 	char buff[64];
 	for (int i = 0; i < nValues; i++) {
 		if (iCol == 0) {
@@ -91,11 +65,11 @@ TelePlot::Telemetry& TelePlot::Telemetry::Plot(ValueFormatter& valueFormatter, i
 		cnt_++;
 		iCol++;
 		if (iCol == nCols) {
-			GetPrintable().Printf("\n");
+			PutEndOfLine();
 			iCol = 0;
 		}
 	}
-	if (iCol > 0) GetPrintable().Printf("\n");
+	if (iCol > 0) PutEndOfLine();
 	return *this;
 }
 
@@ -201,7 +175,9 @@ template<typename T> TelePlot::Telemetry& TelePlot::Telemetry::PlotXY_T(const ch
 	GetPrintable().Printf(">%s", name_);
 	GetPrintable().Printf(format, x);
 	GetPrintable().Printf(format, y);
-	GetPrintable().Printf("%s|xy\n", MakeValueHorzAxis(buff, sizeof(buff)));
+	GetPrintable().Printf("%s|xy", MakeValueHorzAxis(buff, sizeof(buff)));
+	PutEndOfLine();
+	cnt_++;
 	return *this;
 }
 
@@ -230,7 +206,7 @@ template<typename T> TelePlot::Telemetry& TelePlot::Telemetry::Plot_T(const char
 {
 	GetPrintable().Printf(">%s:%d:", name_, valueHorzAxis);
 	GetPrintable().Printf(format, value);
-	GetPrintable().Printf("\n");
+	PutEndOfLine();
 	return *this;
 }
 
@@ -254,7 +230,8 @@ template<typename T> TelePlot::Telemetry& TelePlot::Telemetry::PlotXY_T(const ch
 	GetPrintable().Printf(">%s", name_);
 	GetPrintable().Printf(format, x);
 	GetPrintable().Printf(format, y);
-	GetPrintable().Printf(":%d|xy\n", valueHorzAxis);
+	GetPrintable().Printf(":%d|xy", valueHorzAxis);
+	PutEndOfLine();
 	return *this;
 }
 
@@ -277,6 +254,16 @@ TelePlot::Telemetry& TelePlot::Telemetry::Text(int valueHorzAxis, const char* st
 {
 	GetPrintable().Printf(">%s:%d:%s|t\n", name_, valueHorzAxis, str);
 	return *this;
+}
+
+void TelePlot::Telemetry::PutEndOfLine()
+{
+	if (clearFlag_) {
+		GetPrintable().Printf("|clr\n");
+		clearFlag_ = false;
+	} else {
+		GetPrintable().Printf("\n");
+	}
 }
 
 const char* TelePlot::Telemetry::MakeValueHorzAxis(char* buff, int len)

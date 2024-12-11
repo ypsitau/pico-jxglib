@@ -57,11 +57,13 @@ public:
 		int cnt_;
 		absolute_time_t absTimeStart_;	// used for HorzAxis::Device
 		int sequenceStep_;				// used for HorzAxis::Sequence
+		bool clearFlag_;
 	public:
 		Telemetry();
 		Telemetry(Printable& printable, const char* name, HorzAxis horzAxis, int sequenceStep);
 	public:
 		Telemetry& Reset() { cnt_ = 0; return *this; }
+		Telemetry& Clear() { cnt_ = 0; clearFlag_ = true; return *this; }
 	public:
 		Printable& GetPrintable() { return printable_; }
 		template<typename T> Telemetry& Plot_T(const char* format, T value);
@@ -105,6 +107,7 @@ public:
 		Telemetry& PlotXY(const PointFloat& pt, int valueHorzAxis) { return PlotXY(pt.x, pt.y, valueHorzAxis); }
 		Telemetry& Text(int valueHorzAxis, const char* str);
 	public:
+		void PutEndOfLine();
 		const char* MakeValueHorzAxis(char* buff, int len);
 		const char* MakeValueHorzAxisForMultiple(char* buff, int len);
 		int GetTimestamp();
