@@ -4,13 +4,14 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include "jxglib/Printable.h"
+#include "jxglib/UART.h"
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
 // Printable
 //------------------------------------------------------------------------------
-Printable* Printable::pStandardOutput_ = &PrintableDumb::Instance;
+Printable* Printable::pStandardOutput_ = &UART::Default;
 
 Printable& Printable::Print(const char* str)
 {

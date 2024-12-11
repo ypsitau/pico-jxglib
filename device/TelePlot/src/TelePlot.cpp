@@ -18,7 +18,7 @@ TelePlot::Telemetry::Telemetry() : Telemetry(PrintableDumb::Instance, "", HorzAx
 {}
 
 TelePlot::Telemetry::Telemetry(Printable& printable, const char* name, HorzAxis timestamp, int sequenceStep) :
-	printable_{printable}, horzAxis_{timestamp}, cnt_{0}, sequenceStep_{sequenceStep}, clearFlag_(false)
+	printable_{printable}, horzAxis_{timestamp}, cnt_{0}, sequenceStep_{sequenceStep}, clearDataFlag_(false)
 {
 	::strncpy(name_, name, sizeof(name_));
 }
@@ -258,9 +258,9 @@ TelePlot::Telemetry& TelePlot::Telemetry::Text(int valueHorzAxis, const char* st
 
 void TelePlot::Telemetry::PutEndOfLine()
 {
-	if (clearFlag_) {
+	if (clearDataFlag_) {
 		GetPrintable().Printf("|clr\n");
-		clearFlag_ = false;
+		clearDataFlag_ = false;
 	} else {
 		GetPrintable().Printf("\n");
 	}
