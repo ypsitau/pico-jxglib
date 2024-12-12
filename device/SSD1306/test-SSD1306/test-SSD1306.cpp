@@ -273,8 +273,8 @@ int main()
 {
 	::stdio_init_all();
 	::i2c_init(i2c0, 400000);
-	GPIO8.set_function_I2C0_SDA().pull_up();
-	GPIO9.set_function_I2C0_SCL().pull_up();
+	GPIO16.set_function_I2C0_SDA().pull_up();
+	GPIO17.set_function_I2C0_SCL().pull_up();
 	SSD1306 display(i2c0);
 	display.Initialize();
 	//Test_DrawRectFill(display);
@@ -294,12 +294,12 @@ int main()
 	const char* str =
 		"親譲りの無鉄砲で子供のときから損ばかりしている。小学校の時分学校の二階から飛び降りて一週間腰を"
 		"抜かしたことがある。なぜそんなむやみなことをしたかと聞く人があるかもしれない。";
-	display.SetFont(Font::shinonome16);
+	display.SetFont(Font::shinonome12);
 	display.DrawStringWrap(0, 0, str);
 	display.Refresh();
-	for (;;) {
-		display.ScrollVert(DirVert::Up, 1);
-		//display.ScrollHorz(DirHorz::Right, 1);
-		display.Refresh();
-	}
+	//for (;;) {
+	//	display.ScrollVert(DirVert::Up, 1);
+	//	//display.ScrollHorz(DirHorz::Right, 1);
+	//	display.Refresh();
+	//}
 }
