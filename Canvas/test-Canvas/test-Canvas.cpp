@@ -40,17 +40,19 @@ int main()
 #if 1
 	//canvas1.AttachOutput(display1);
 	canvas2.AttachOutput(display2);
-	static const Canvas::DrawDir drawDirTbl[] = {
-		Canvas::DrawDir::Rotate0, Canvas::DrawDir::Rotate90, Canvas::DrawDir::Rotate180, Canvas::DrawDir::Rotate270,
-	};
-	for (int i = 0; ; i++) {
-		if (i >= count_of(drawDirTbl)) i = 0;
-		//canvas1.DrawImage(0, 0, image_cat_240x240, nullptr, drawDirTbl[i]);
-		//canvas1.Refresh();
-		canvas2.DrawImage(0, 0, image_cat_240x320, nullptr, drawDirTbl[i]);
-		canvas2.Refresh();
-		::sleep_ms(1000);
-	}
+	//static const Canvas::DrawDir* drawDirTbl[] = {
+	//	&Canvas::DrawDir::Rotate0, &Canvas::DrawDir::Rotate90, &Canvas::DrawDir::Rotate180, &Canvas::DrawDir::Rotate270,
+	//};
+	//for (int i = 0; ; i++) {
+	//	if (i >= count_of(drawDirTbl)) i = 0;
+	//	//canvas1.DrawImage(0, 0, image_cat_240x240, nullptr, drawDirTbl[i]);
+	//	//canvas1.Refresh();
+	//	canvas2.DrawImage(0, 0, image_cat_240x320, nullptr, *drawDirTbl[i]);
+	//	canvas2.Refresh();
+	//	::sleep_ms(1000);
+	//}
+	canvas2.DrawImage(0, 0, image_cat_240x320, nullptr, Canvas::DrawDir::Rotate0);
+	canvas2.Refresh();
 #endif
 #if 0
 	//canvas.AttachOutput(display, Rect(40, 40, 100, 150), Canvas::DrawDir::Rotate90);
