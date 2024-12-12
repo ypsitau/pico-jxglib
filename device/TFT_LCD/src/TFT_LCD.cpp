@@ -13,11 +13,13 @@ void TFT_LCD::Initialize(Dir displayDir, const ConfigData& configData)
 {
 	if (displayDir.IsHorz()) {
 		width_ = widthSet_, height_ = heightSet_;
+		xAdjust_ = (widthTypical_ - widthSet_) / 2;
+		if (displayDir.IsBottomToTop()) yAdjust_ = heightTypical_ - heightSet_;
 	} else {
 		width_ = heightSet_, height_ = widthSet_;
+		if (displayDir.IsBottomToTop()) xAdjust_ = heightTypical_ - heightSet_;
+		yAdjust_ = (widthTypical_ - widthSet_) / 2;
 	}
-	xAdjust_ = (widthTypical_ - widthSet_) / 2;
-	if (displayDir.IsBottomToTop()) yAdjust_ = heightTypical_ - heightSet_;
 	raw.InitGPIO();
 	raw.SoftwareReset();
 	::sleep_ms(150);
