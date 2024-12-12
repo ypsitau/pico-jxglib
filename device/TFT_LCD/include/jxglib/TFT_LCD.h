@@ -249,10 +249,10 @@ public:
 				(static_cast<uint8_t>(rgbBgrOrder) << 3) |
 				(static_cast<uint8_t>(displayDataLatchOrder) << 2));
 		}
-		void MemoryDataAccessControl(Image::SequencerDir sequencerDir, LineAddressOrder lineAddressOrder,
+		void MemoryDataAccessControl(DisplayDir displayDir, LineAddressOrder lineAddressOrder,
 				RGBBGROrder rgbBgrOrder, DisplayDataLatchOrder displayDataLatchOrder) {
 			SendCmd(0x36,
-				(static_cast<uint8_t>(sequencerDir) << 5) |
+				(static_cast<uint8_t>(displayDir) << 5) |
 				(static_cast<uint8_t>(lineAddressOrder) << 4) |
 				(static_cast<uint8_t>(rgbBgrOrder) << 3) |
 				(static_cast<uint8_t>(displayDataLatchOrder) << 2));
@@ -315,18 +315,23 @@ public:
 public:
 	Raw raw;
 	DispatcherEx dispatcherEx_;
+	int widthTypical_, heightTypical_;
 	int widthSet_, heightSet_;
 	int xAdjust_, yAdjust_;
 public:
-	TFT_LCD(spi_inst_t* spi, int width, int height, const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_CS, const GPIO& gpio_BL) :
+	TFT_LCD(spi_inst_t* spi, int widthTypical, int heightTypical, int width, int height,
+				const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_CS, const GPIO& gpio_BL) :
 			Display(Capability::Device | Capability::DrawImage, Format::RGB565, width, height),
 			raw(spi, gpio_RST, gpio_DC, gpio_CS, gpio_BL), dispatcherEx_(*this),
+			widthTypical_{widthTypical}, heightTypical_{heightTypical},
 			widthSet_{width}, heightSet_{height}, xAdjust_{0}, yAdjust_{0} {
 		SetDispatcher(dispatcherEx_);
 	}
-	TFT_LCD(spi_inst_t* spi, int width, int height, const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_BL) :
+	TFT_LCD(spi_inst_t* spi, int widthTypical, int heightTypical, int width, int height,
+				const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_BL) :
 			Display(Capability::Device | Capability::DrawImage, Format::RGB565, width, height),
 			raw(spi, gpio_RST, gpio_DC, gpio_BL), dispatcherEx_(*this),
+			widthTypical_{widthTypical}, heightTypical_{heightTypical},
 			widthSet_{width}, heightSet_{height}, xAdjust_{0}, yAdjust_{0} {
 		SetDispatcher(dispatcherEx_);
 	}

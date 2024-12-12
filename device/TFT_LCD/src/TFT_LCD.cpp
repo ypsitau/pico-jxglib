@@ -26,9 +26,7 @@ void TFT_LCD::Initialize(DisplayDir displayDir, const ConfigData& configData)
 		// RGB interface color format     = 65K of RGB interface. No effect on ST7735.
 		// Control interface color format = 16bit/pixel
 	::sleep_ms(10);
-	raw.MemoryDataAccessControl(
-		//rotateData.pageAddressOrder, rotateData.columnAddressOrder, rotateData.pageColumnOrder,
-		displayDir,
+	raw.MemoryDataAccessControl(displayDir,
 		configData.lineAddressOrder, configData.rgbBgrOrder, configData.displayDataLatchOrder);
 	if (configData.displayInversionOnFlag) raw.DisplayInversionOn();
 	::sleep_ms(10);

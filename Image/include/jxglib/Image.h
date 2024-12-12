@@ -58,9 +58,9 @@ public:
 		VertFromSE	= (1 << 2) | (1 << 1) | (1 << 0),
 		Normal		= HorzFromNW,
 		Rotate0		= HorzFromNW,
-		Rotate90	= VertFromSW,
+		Rotate90	= VertFromNE,
 		Rotate180	= HorzFromSE,
-		Rotate270	= VertFromNE,
+		Rotate270	= VertFromSW,
 		MirrorHorz	= HorzFromNE,
 		MirrorVert	= HorzFromSW,
 	};
