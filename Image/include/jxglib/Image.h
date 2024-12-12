@@ -45,16 +45,17 @@ public:
 	};
 public:
 	enum class SequencerDir {
-		HorzFromNW	= 0,
-		HorzFromNE	= 1,
-		HorzFromSW	= 2,
-		HorzFromSE	= 3,
-		VertFromNW	= 4,
-		VertFromNE	= 5,
-		VertFromSW	= 6,
-		VertFromSE	= 7,
-		Horz		= 0,
-		Vert		= 4,
+		// bit2: Vertical direction (0: Top to bottom, 1: Bottom to top)
+		// bit1: Horizontal direction (0: Left to right, 1: Right to left)
+		// bit0: Sequence dominance (0: Horizontal, 1: Vertical)
+		HorzFromNW	= (0 << 2) | (0 << 1) | (0 << 0),
+		HorzFromSW	= (1 << 2) | (0 << 1) | (0 << 0),
+		HorzFromNE	= (0 << 2) | (1 << 1) | (0 << 0),
+		HorzFromSE	= (1 << 2) | (1 << 1) | (0 << 0),
+		VertFromNW	= (0 << 2) | (0 << 1) | (1 << 0),
+		VertFromSW	= (1 << 2) | (0 << 1) | (1 << 0),
+		VertFromNE	= (0 << 2) | (1 << 1) | (1 << 0),
+		VertFromSE	= (1 << 2) | (1 << 1) | (1 << 0),
 		Normal		= HorzFromNW,
 		Rotate0		= HorzFromNW,
 		Rotate90	= VertFromSW,
@@ -252,8 +253,8 @@ public:
 	const uint8_t* GetPointerSW(int xOffset, int yOffset) const { return GetPointer(xOffset, GetHeight() - 1 - yOffset); }
 	const uint8_t* GetPointerSE(int xOffset, int yOffset) const { return GetPointer(GetWidth() - 1 - xOffset, GetHeight() - 1 - yOffset); }
 	bool IsWritable() const { return allocatedFlag_; }
-	static bool IsDirHorz(SequencerDir dir) { return dir < SequencerDir::Vert; }
-	static bool IsDirVert(SequencerDir dir) { return dir >= SequencerDir::Vert; }
+	static bool IsDirHorz(SequencerDir dir) { return !(static_cast<int>(dir) & (1 << 0)); }
+	static bool IsDirVert(SequencerDir dir) { return !!(static_cast<int>(dir) & (1 << 0)); }
 };
 
 template<> class Image::Getter_T<Color, Color> {

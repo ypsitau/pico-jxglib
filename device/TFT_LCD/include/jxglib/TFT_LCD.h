@@ -10,6 +10,7 @@
 #include "pico/time.h"
 #include "hardware/spi.h"
 #include "jxglib/Display.h"
+#include "jxglib/Image.h"
 
 namespace jxglib {
 
@@ -244,6 +245,14 @@ public:
 				(static_cast<uint8_t>(pageAddressOrder) << 7) |
 				(static_cast<uint8_t>(columnAddressOrder) << 6) |
 				(static_cast<uint8_t>(pageColumnOrder) << 5) |
+				(static_cast<uint8_t>(lineAddressOrder) << 4) |
+				(static_cast<uint8_t>(rgbBgrOrder) << 3) |
+				(static_cast<uint8_t>(displayDataLatchOrder) << 2));
+		}
+		void MemoryDataAccessControl(Image::SequencerDir sequencerDir, LineAddressOrder lineAddressOrder,
+				RGBBGROrder rgbBgrOrder, DisplayDataLatchOrder displayDataLatchOrder) {
+			SendCmd(0x36,
+				(static_cast<uint8_t>(sequencerDir) << 5) |
 				(static_cast<uint8_t>(lineAddressOrder) << 4) |
 				(static_cast<uint8_t>(rgbBgrOrder) << 3) |
 				(static_cast<uint8_t>(displayDataLatchOrder) << 2));
