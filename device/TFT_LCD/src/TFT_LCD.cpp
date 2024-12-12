@@ -16,7 +16,8 @@ void TFT_LCD::Initialize(Dir displayDir, const ConfigData& configData)
 	} else {
 		width_ = heightSet_, height_ = widthSet_;
 	}
-	if (widthSet_ < 128) xAdjust_ = (128 - widthSet_) / 2;
+	xAdjust_ = (widthTypical_ - widthSet_) / 2;
+	if (displayDir.IsBottomToTop()) yAdjust_ = heightTypical_ - heightSet_;
 	raw.InitGPIO();
 	raw.SoftwareReset();
 	::sleep_ms(150);
