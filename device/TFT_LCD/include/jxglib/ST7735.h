@@ -31,7 +31,7 @@ public:
 
 inline void ST7735::Initialize(DisplayDir displayDir)
 {
-	const RotateData& rotateData = rotateDataTbl_Case1[static_cast<int>(displayDir)];
+	//const RotateData& rotateData = rotateDataTbl_Case1[static_cast<int>(displayDir)];
 	static const ConfigData configData = {
 		.lineAddressOrder		= LineAddressOrder::TopToBottom,
 		.rgbBgrOrder			= RGBBGROrder::BGR,
@@ -39,12 +39,12 @@ inline void ST7735::Initialize(DisplayDir displayDir)
 		.displayInversionOnFlag	= false,
 		.gammaCurve				= 0x01,
 	};
-	TFT_LCD::Initialize(rotateData, configData);
+	TFT_LCD::Initialize(displayDir, configData);
 }
 
 inline void ST7735::TypeB::Initialize(DisplayDir displayDir)
 {
-	const RotateData& rotateData = rotateDataTbl_Case3[static_cast<int>(displayDir)];
+	//const RotateData& rotateData = rotateDataTbl_Case3[static_cast<int>(displayDir)];
 	static const ConfigData configData = {
 		.lineAddressOrder		= LineAddressOrder::TopToBottom,
 		.rgbBgrOrder			= RGBBGROrder::RGB,
@@ -52,7 +52,7 @@ inline void ST7735::TypeB::Initialize(DisplayDir displayDir)
 		.displayInversionOnFlag	= false,
 		.gammaCurve				= 0x02,
 	};
-	TFT_LCD::Initialize(rotateData, configData);
+	TFT_LCD::Initialize(displayDir, configData);
 }
 
 }

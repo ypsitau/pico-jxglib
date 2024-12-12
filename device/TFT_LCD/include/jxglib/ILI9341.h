@@ -21,7 +21,7 @@ public:
 
 inline void ILI9341::Initialize(DisplayDir displayDir)
 {
-	const RotateData& rotateData = rotateDataTbl_Case2[static_cast<int>(displayDir)];
+	//const RotateData& rotateData = rotateDataTbl_Case2[static_cast<int>(displayDir)];
 	static const ConfigData configData = {
 		.lineAddressOrder		= LineAddressOrder::TopToBottom,
 		.rgbBgrOrder			= RGBBGROrder::BGR,
@@ -29,7 +29,7 @@ inline void ILI9341::Initialize(DisplayDir displayDir)
 		.displayInversionOnFlag	= false,
 		.gammaCurve				= 0x01,
 	};
-	TFT_LCD::Initialize(rotateData, configData);
+	TFT_LCD::Initialize(displayDir, configData);
 }
 
 }

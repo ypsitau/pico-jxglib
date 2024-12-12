@@ -9,49 +9,9 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // TFT_LCD
 //------------------------------------------------------------------------------
-using PA = TFT_LCD::PageAddressOrder;
-using CA = TFT_LCD::ColumnAddressOrder;
-using PC = TFT_LCD::PageColumnOrder;
-
-const TFT_LCD::RotateData TFT_LCD::rotateDataTbl_Case1[] =
+void TFT_LCD::Initialize(DisplayDir displayDir, const ConfigData& configData)
 {
-	{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// HorzFromNW (Rotate0)
-	{ PA::TopToBottom, CA::RightToLeft, PC::NormalMode },	// HorzFromNE (MirrorHorz)
-	{ PA::BottomToTop, CA::LeftToRight, PC::NormalMode },	// HorzFromSW (MirrorVert)
-	{ PA::BottomToTop, CA::RightToLeft, PC::NormalMode },	// HorzFromSE (Rotate180)
-	{ PA::TopToBottom, CA::LeftToRight, PC::ReverseMode },	// VertFromNW
-	{ PA::TopToBottom, CA::RightToLeft, PC::ReverseMode },	// VertFromNE (Rotate270)
-	{ PA::BottomToTop, CA::LeftToRight, PC::ReverseMode },	// VertFromSW (Rotate90)
-	{ PA::BottomToTop, CA::RightToLeft, PC::ReverseMode },	// VertFromSE
-};
-
-const TFT_LCD::RotateData TFT_LCD::rotateDataTbl_Case2[] =
-{
-	{ PA::BottomToTop, CA::LeftToRight, PC::NormalMode },	// HorzFromNW (Rotate0)
-	{ PA::BottomToTop, CA::RightToLeft, PC::NormalMode },	// HorzFromNE (MirrorHorz)
-	{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// HorzFromSW (MirrorVert)
-	{ PA::TopToBottom, CA::RightToLeft, PC::NormalMode },	// HorzFromSE (Rotate180)
-	{ PA::BottomToTop, CA::LeftToRight, PC::ReverseMode },	// VertFromNW
-	{ PA::BottomToTop, CA::RightToLeft, PC::ReverseMode },	// VertFromNE (Rotate270)
-	{ PA::TopToBottom, CA::LeftToRight, PC::ReverseMode },	// VertFromSW (Rotate90)
-	{ PA::TopToBottom, CA::RightToLeft, PC::ReverseMode },	// VertFromSE
-};
-
-const TFT_LCD::RotateData TFT_LCD::rotateDataTbl_Case3[] =
-{
-	{ PA::BottomToTop, CA::RightToLeft, PC::NormalMode },	// HorzFromNW (Rotate0)
-	{ PA::BottomToTop, CA::LeftToRight, PC::NormalMode },	// HorzFromNE (MirrorHorz)
-	{ PA::TopToBottom, CA::RightToLeft, PC::NormalMode },	// HorzFromSW (MirrorVert)
-	{ PA::TopToBottom, CA::LeftToRight, PC::NormalMode },	// HorzFromSE (Rotate180)
-	{ PA::BottomToTop, CA::RightToLeft, PC::ReverseMode },	// VertFromNW
-	{ PA::BottomToTop, CA::LeftToRight, PC::ReverseMode },	// VertFromNE (Rotate270)
-	{ PA::TopToBottom, CA::RightToLeft, PC::ReverseMode },	// VertFromSW (Rotate90)
-	{ PA::TopToBottom, CA::LeftToRight, PC::ReverseMode },	// VertFromSE
-};
-
-void TFT_LCD::Initialize(const RotateData& rotateData, const ConfigData& configData)
-{
-	if (rotateData.pageColumnOrder == PC::NormalMode) {
+	if (Image::IsDirHorz(displayDir)) {
 		width_ = widthSet_, height_ = heightSet_;
 	} else {
 		width_ = heightSet_, height_ = widthSet_;
@@ -67,7 +27,8 @@ void TFT_LCD::Initialize(const RotateData& rotateData, const ConfigData& configD
 		// Control interface color format = 16bit/pixel
 	::sleep_ms(10);
 	raw.MemoryDataAccessControl(
-		rotateData.pageAddressOrder, rotateData.columnAddressOrder, rotateData.pageColumnOrder,
+		//rotateData.pageAddressOrder, rotateData.columnAddressOrder, rotateData.pageColumnOrder,
+		displayDir,
 		configData.lineAddressOrder, configData.rgbBgrOrder, configData.displayDataLatchOrder);
 	if (configData.displayInversionOnFlag) raw.DisplayInversionOn();
 	::sleep_ms(10);
@@ -161,6 +122,9 @@ void TFT_LCD::DispatcherEx::DrawBitmap(int x, int y, const void* data, int width
 
 void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir)
 {
+	using PA = PageAddressOrder;
+	using CA = ColumnAddressOrder;
+	using PC = PageColumnOrder;
 	Raw& raw = display_.raw;
 	int xAdjust = display_.GetXAdjust(), yAdjust = display_.GetYAdjust();
 	Rect rect = pRectClip? *pRectClip : Rect(0, 0, display_.GetWidth(), display_.GetHeight());

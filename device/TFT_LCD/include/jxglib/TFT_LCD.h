@@ -318,10 +318,6 @@ public:
 	int widthSet_, heightSet_;
 	int xAdjust_, yAdjust_;
 public:
-	static const RotateData rotateDataTbl_Case1[];
-	static const RotateData rotateDataTbl_Case2[];
-	static const RotateData rotateDataTbl_Case3[];
-public:
 	TFT_LCD(spi_inst_t* spi, int width, int height, const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_CS, const GPIO& gpio_BL) :
 			Display(Capability::Device | Capability::DrawImage, Format::RGB565, width, height),
 			raw(spi, gpio_RST, gpio_DC, gpio_CS, gpio_BL), dispatcherEx_(*this),
@@ -335,7 +331,7 @@ public:
 		SetDispatcher(dispatcherEx_);
 	}
 public:
-	void Initialize(const RotateData& rotateData, const ConfigData& configData);
+	void Initialize(DisplayDir displayDir, const ConfigData& configData);
 	bool UsesCS() { return raw.UsesCS(); }
 	int GetBytesPerLine() const { return GetWidth() * 2; }
 	int GetXAdjust() const { return xAdjust_; }
