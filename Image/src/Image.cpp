@@ -29,11 +29,11 @@ const Image::SequencerDir Image::SequencerDir::MirrorVert	{HorzFromSW};
 const Image::SequencerDir Image::SequencerDir::Rotate0		{HorzFromNW};
 const Image::SequencerDir Image::SequencerDir::Rotate180	{HorzFromSE};
 
-const Image::SequencerDir Image::ReaderDir::Rotate90		{VertFromNE};
-const Image::SequencerDir Image::ReaderDir::Rotate270		{VertFromSW};
+const Image::SequencerDir Image::ReaderDir::Rotate90		{VertFromSW};
+const Image::SequencerDir Image::ReaderDir::Rotate270		{VertFromNE};
 
-const Image::SequencerDir Image::WriterDir::Rotate90		{VertFromSW};
-const Image::SequencerDir Image::WriterDir::Rotate270		{VertFromNE};
+const Image::SequencerDir Image::WriterDir::Rotate90		{VertFromNE};
+const Image::SequencerDir Image::WriterDir::Rotate270		{VertFromSW};
 
 Image::~Image()
 {

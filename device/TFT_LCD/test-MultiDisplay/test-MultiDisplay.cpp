@@ -55,8 +55,8 @@ int main()
 	ILI9341 display3(spi1, 240, 320, GPIO10, GPIO11, GPIO12, GPIO::None);
 	ST7735 display4(spi1, 80, 160, GPIO18, GPIO19, GPIO20, GPIO::None);
 	ST7735::TypeB display5(spi1, 128, 160, GPIO21, GPIO22, GPIO23, GPIO::None);
-	Display::Dir displayDir = Display::Dir::Normal;
-	//Display::Dir displayDir = Display::Dir::Rotate90;
+	//Display::Dir displayDir = Display::Dir::Normal;
+	Display::Dir displayDir = Display::Dir::Rotate90;
 	//Display::Dir displayDir = Display::Dir::Rotate180;
 	//Display::Dir displayDir = Display::Dir::Rotate270;
 	display1.Initialize(displayDir);
