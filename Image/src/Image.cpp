@@ -15,6 +15,26 @@ const Image::Format Image::Format::RGB {3};
 const Image::Format Image::Format::RGBA {4};
 const Image::Format Image::Format::RGB565 {2};
 
+const Image::SequencerDir Image::SequencerDir::HorzFromNW	{(0 << 2) | (0 << 1) | (0 << 0)};
+const Image::SequencerDir Image::SequencerDir::HorzFromSW	{(1 << 2) | (0 << 1) | (0 << 0)};
+const Image::SequencerDir Image::SequencerDir::HorzFromNE	{(0 << 2) | (1 << 1) | (0 << 0)};
+const Image::SequencerDir Image::SequencerDir::HorzFromSE	{(1 << 2) | (1 << 1) | (0 << 0)};
+const Image::SequencerDir Image::SequencerDir::VertFromNW	{(0 << 2) | (0 << 1) | (1 << 0)};
+const Image::SequencerDir Image::SequencerDir::VertFromSW	{(1 << 2) | (0 << 1) | (1 << 0)};
+const Image::SequencerDir Image::SequencerDir::VertFromNE	{(0 << 2) | (1 << 1) | (1 << 0)};
+const Image::SequencerDir Image::SequencerDir::VertFromSE	{(1 << 2) | (1 << 1) | (1 << 0)};
+const Image::SequencerDir Image::SequencerDir::Normal		{HorzFromNW};
+const Image::SequencerDir Image::SequencerDir::MirrorHorz	{HorzFromNE};
+const Image::SequencerDir Image::SequencerDir::MirrorVert	{HorzFromSW};
+const Image::SequencerDir Image::SequencerDir::Rotate0		{HorzFromNW};
+const Image::SequencerDir Image::SequencerDir::Rotate180	{HorzFromSE};
+
+const Image::SequencerDir Image::ReaderDir::Rotate90		{VertFromNE};
+const Image::SequencerDir Image::ReaderDir::Rotate270		{VertFromSW};
+
+const Image::SequencerDir Image::WriterDir::Rotate90		{VertFromSW};
+const Image::SequencerDir Image::WriterDir::Rotate270		{VertFromNE};
+
 Image::~Image()
 {
 	if (allocatedFlag_) ::free(data_);

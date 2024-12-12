@@ -16,7 +16,7 @@ public:
 			TFT_LCD(spi, 128, 160, width, height, gpio_RST, gpio_DC, gpio_CS, gpio_BL) {}
 	ST7735(spi_inst_t* spi, int width, int height, const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_BL) :
 			TFT_LCD(spi, 128, 160, width, height, gpio_RST, gpio_DC, gpio_BL) {}
-	inline void Initialize(DisplayDir displayDir = DisplayDir::Normal);
+	inline void Initialize(Dir displayDir = Dir::Normal);
 public:
 	using TypeA = ST7735;
 	class TypeB : public TFT_LCD {
@@ -25,11 +25,11 @@ public:
 				TFT_LCD(spi, 128, 160, width, height, gpio_RST, gpio_DC, gpio_CS, gpio_BL) {}
 		TypeB(spi_inst_t* spi, int width, int height, const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_BL) :
 				TFT_LCD(spi, 128, 160, width, height, gpio_RST, gpio_DC, gpio_BL) {}
-		inline void Initialize(DisplayDir displayDir = DisplayDir::Normal);
+		inline void Initialize(Dir displayDir = Dir::Normal);
 	};
 };
 
-inline void ST7735::Initialize(DisplayDir displayDir)
+inline void ST7735::Initialize(Dir displayDir)
 {
 	static const ConfigData configData = {
 		.lineAddressOrder		= LineAddressOrder::TopToBottom,
@@ -41,9 +41,9 @@ inline void ST7735::Initialize(DisplayDir displayDir)
 	TFT_LCD::Initialize(displayDir, configData);
 }
 
-inline void ST7735::TypeB::Initialize(DisplayDir displayDir)
+inline void ST7735::TypeB::Initialize(Dir displayDir)
 {
-	displayDir = Image::InvertDirHorz(Image::InvertDirVert(displayDir));
+	displayDir = displayDir.InvertHorz().InvertVert();
 	static const ConfigData configData = {
 		.lineAddressOrder		= LineAddressOrder::TopToBottom,
 		.rgbBgrOrder			= RGBBGROrder::RGB,

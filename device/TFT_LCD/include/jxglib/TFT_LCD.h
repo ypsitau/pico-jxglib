@@ -249,10 +249,10 @@ public:
 				(static_cast<uint8_t>(rgbBgrOrder) << 3) |
 				(static_cast<uint8_t>(displayDataLatchOrder) << 2));
 		}
-		void MemoryDataAccessControl(DisplayDir displayDir, LineAddressOrder lineAddressOrder,
+		void MemoryDataAccessControl(Dir displayDir, LineAddressOrder lineAddressOrder,
 				RGBBGROrder rgbBgrOrder, DisplayDataLatchOrder displayDataLatchOrder) {
 			SendCmd(0x36,
-				(static_cast<uint8_t>(displayDir) << 5) |
+				(displayDir.GetValue() << 5) |
 				(static_cast<uint8_t>(lineAddressOrder) << 4) |
 				(static_cast<uint8_t>(rgbBgrOrder) << 3) |
 				(static_cast<uint8_t>(displayDataLatchOrder) << 2));
@@ -336,7 +336,7 @@ public:
 		SetDispatcher(dispatcherEx_);
 	}
 public:
-	void Initialize(DisplayDir displayDir, const ConfigData& configData);
+	void Initialize(Dir displayDir, const ConfigData& configData);
 	bool UsesCS() { return raw.UsesCS(); }
 	int GetBytesPerLine() const { return GetWidth() * 2; }
 	int GetXAdjust() const { return xAdjust_; }

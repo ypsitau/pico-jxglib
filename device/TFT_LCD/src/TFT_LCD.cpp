@@ -9,9 +9,9 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // TFT_LCD
 //------------------------------------------------------------------------------
-void TFT_LCD::Initialize(DisplayDir displayDir, const ConfigData& configData)
+void TFT_LCD::Initialize(Dir displayDir, const ConfigData& configData)
 {
-	if (Image::IsDirHorz(displayDir)) {
+	if (displayDir.IsHorz()) {
 		width_ = widthSet_, height_ = heightSet_;
 	} else {
 		width_ = heightSet_, height_ = widthSet_;
@@ -128,7 +128,7 @@ void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 	Rect rect = pRectClip? *pRectClip : Rect(0, 0, display_.GetWidth(), display_.GetHeight());
 	int xSkip = 0, ySkip = 0;
 	int width, height;
-	if (Image::IsDirHorz(imageDir)) {
+	if (imageDir.IsHorz()) {
 		width = image.GetWidth(), height = image.GetHeight();
 	} else {
 		width = image.GetHeight(), height = image.GetWidth();

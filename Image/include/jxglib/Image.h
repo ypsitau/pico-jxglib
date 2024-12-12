@@ -44,32 +44,67 @@ public:
 		void Set(uint8_t* p, const T_ColorVar& color) {}
 	};
 public:
-	enum class SequencerDir {
+	class SequencerDir {
+	private:
+		uint8_t value_;
+	public:
+		SequencerDir(uint8_t value) : value_{value} {}
+		SequencerDir(const SequencerDir& dir) : value_{dir.value_} {}
+	public:
 		// bit2: Vertical direction (0: Top to bottom, 1: Bottom to top)
 		// bit1: Horizontal direction (0: Left to right, 1: Right to left)
 		// bit0: Sequence dominance (0: Horizontal, 1: Vertical)
-		HorzFromNW		= (0 << 2) | (0 << 1) | (0 << 0),
-		HorzFromSW		= (1 << 2) | (0 << 1) | (0 << 0),
-		HorzFromNE		= (0 << 2) | (1 << 1) | (0 << 0),
-		HorzFromSE		= (1 << 2) | (1 << 1) | (0 << 0),
-		VertFromNW		= (0 << 2) | (0 << 1) | (1 << 0),
-		VertFromSW		= (1 << 2) | (0 << 1) | (1 << 0),
-		VertFromNE		= (0 << 2) | (1 << 1) | (1 << 0),
-		VertFromSE		= (1 << 2) | (1 << 1) | (1 << 0),
-		Normal			= HorzFromNW,
-		MirrorHorz		= HorzFromNE,
-		MirrorVert		= HorzFromSW,
-		ReaderRot0		= HorzFromNW,
-		ReaderRot90		= VertFromSW,
-		ReaderRot180	= HorzFromSE,
-		ReaderRot270	= VertFromNE,
-		WriterRot0		= HorzFromNW,
-		WriterRot90		= VertFromNE,
-		WriterRot180	= HorzFromSE,
-		WriterRot270	= VertFromSW,
+		static const SequencerDir HorzFromNW;
+		static const SequencerDir HorzFromSW;
+		static const SequencerDir HorzFromNE;
+		static const SequencerDir HorzFromSE;
+		static const SequencerDir VertFromNW;
+		static const SequencerDir VertFromSW;
+		static const SequencerDir VertFromNE;
+		static const SequencerDir VertFromSE;
+		static const SequencerDir Normal;
+		static const SequencerDir Rotate0;
+		static const SequencerDir Rotate180;
+		static const SequencerDir MirrorHorz;
+		static const SequencerDir MirrorVert;
+	public:
+		uint8_t GetValue() const { return value_; }
+	public:
+		bool IsHorzFromNW() const { return value_ == HorzFromNW.value_; }
+		bool IsHorzFromSW() const { return value_ == HorzFromSW.value_; }
+		bool IsHorzFromNE() const { return value_ == HorzFromNE.value_; }
+		bool IsHorzFromSE() const { return value_ == HorzFromSE.value_; }
+		bool IsVertFromNW() const { return value_ == VertFromNW.value_; }
+		bool IsVertFromSW() const { return value_ == VertFromSW.value_; }
+		bool IsVertFromNE() const { return value_ == VertFromNE.value_; }
+		bool IsVertFromSE() const { return value_ == VertFromSE.value_; }
+		bool IsHorz() { return !(value_ & (1 << 0)); }
+		bool IsVert() { return !!(value_ & (1 << 0)); }
+		bool IsLeftToRight() { return !(value_ & (1 << 1)); }
+		bool IsRightToLeft() { return !!(value_ & (1 << 1)); }
+		bool IsTopToBottom() { return !(value_ & (1 << 2)); }
+		bool IsBottomToTop() { return !!(value_ & (1 << 2)); }
+		SequencerDir InvertHorz() { return SequencerDir(value_ ^ (1 << 1)); }
+		SequencerDir InvertVert() { return SequencerDir(value_ ^ (1 << 2)); }
 	};
-	using ReaderDir = SequencerDir;
-	using WriterDir = SequencerDir;
+	class ReaderDir : public SequencerDir {
+	public:
+		ReaderDir(uint8_t value) : SequencerDir{value} {}
+		ReaderDir(const SequencerDir& dir) : SequencerDir{dir} {}
+	public:
+		static const SequencerDir Rotate90;
+		static const SequencerDir Rotate270;
+
+	};
+	class WriterDir : public SequencerDir {
+	public:
+		WriterDir(uint8_t value) : SequencerDir{value} {}
+		WriterDir(const SequencerDir& dir) : SequencerDir{dir} {}
+	public:
+		static const SequencerDir Rotate90;
+		static const SequencerDir Rotate270;
+
+	};
 	class Sequencer {
 	protected:
 		uint8_t* p_;
@@ -137,18 +172,15 @@ public:
 			return Reader(image.GetPointerSE(colOffset, rowOffset),
 					nCols, nRows, -image.GetBytesPerLine(), -image.GetBytesPerPixel());
 		}
-		static Reader Create(const Image& image, int colOffset, int rowOffset, int nCols, int nRows, ReaderDir dir) {
-			switch (dir) {
-			case ReaderDir::HorzFromNW: return HorzFromNW(image, colOffset, rowOffset, nCols, nRows);
-			case ReaderDir::HorzFromNE: return HorzFromNE(image, colOffset, rowOffset, nCols, nRows);
-			case ReaderDir::HorzFromSW: return HorzFromSW(image, colOffset, rowOffset, nCols, nRows);
-			case ReaderDir::HorzFromSE: return HorzFromSE(image, colOffset, rowOffset, nCols, nRows);
-			case ReaderDir::VertFromNW: return VertFromNW(image, colOffset, rowOffset, nCols, nRows);
-			case ReaderDir::VertFromNE: return VertFromNE(image, colOffset, rowOffset, nCols, nRows);
-			case ReaderDir::VertFromSW: return VertFromSW(image, colOffset, rowOffset, nCols, nRows);
-			case ReaderDir::VertFromSE: return VertFromSE(image, colOffset, rowOffset, nCols, nRows);
-			default: break;
-			}
+		static Reader Create(const Image& image, int colOffset, int rowOffset, int nCols, int nRows, SequencerDir dir) {
+			if (dir.IsHorzFromNW()) return HorzFromNW(image, colOffset, rowOffset, nCols, nRows); else
+			if (dir.IsHorzFromNE()) return HorzFromNE(image, colOffset, rowOffset, nCols, nRows); else
+			if (dir.IsHorzFromSW()) return HorzFromSW(image, colOffset, rowOffset, nCols, nRows); else
+			if (dir.IsHorzFromSE()) return HorzFromSE(image, colOffset, rowOffset, nCols, nRows); else
+			if (dir.IsVertFromNW()) return VertFromNW(image, colOffset, rowOffset, nCols, nRows); else
+			if (dir.IsVertFromNE()) return VertFromNE(image, colOffset, rowOffset, nCols, nRows); else
+			if (dir.IsVertFromSW()) return VertFromSW(image, colOffset, rowOffset, nCols, nRows); else
+			if (dir.IsVertFromSE()) return VertFromSE(image, colOffset, rowOffset, nCols, nRows); else
 			return Reader(nullptr, 0, 0, 0, 0);
 		}
 	public:
@@ -195,18 +227,15 @@ public:
 			return Writer(image.GetPointerSE(colOffset, rowOffset),
 					nCols, nRows, -image.GetBytesPerLine(), -image.GetBytesPerPixel());
 		}
-		static Writer Create(Image& image, int colOffset, int rowOffset, int nCols, int nRows, WriterDir dir) {
-			switch (dir) {
-			case WriterDir::HorzFromNW: return HorzFromNW(image, colOffset, rowOffset, nCols, nRows);
-			case WriterDir::HorzFromNE: return HorzFromNE(image, colOffset, rowOffset, nCols, nRows);
-			case WriterDir::HorzFromSW: return HorzFromSW(image, colOffset, rowOffset, nCols, nRows);
-			case WriterDir::HorzFromSE: return HorzFromSE(image, colOffset, rowOffset, nCols, nRows);
-			case WriterDir::VertFromNW: return VertFromNW(image, colOffset, rowOffset, nCols, nRows);
-			case WriterDir::VertFromNE: return VertFromNE(image, colOffset, rowOffset, nCols, nRows);
-			case WriterDir::VertFromSW: return VertFromSW(image, colOffset, rowOffset, nCols, nRows);
-			case WriterDir::VertFromSE: return VertFromSE(image, colOffset, rowOffset, nCols, nRows);
-			default: break;
-			}
+		static Writer Create(Image& image, int colOffset, int rowOffset, int nCols, int nRows, SequencerDir dir) {
+			if (dir.IsHorzFromNW()) return HorzFromNW(image, colOffset, rowOffset, nCols, nRows); else
+			if (dir.IsHorzFromNE()) return HorzFromNE(image, colOffset, rowOffset, nCols, nRows); else
+			if (dir.IsHorzFromSW()) return HorzFromSW(image, colOffset, rowOffset, nCols, nRows); else
+			if (dir.IsHorzFromSE()) return HorzFromSE(image, colOffset, rowOffset, nCols, nRows); else
+			if (dir.IsVertFromNW()) return VertFromNW(image, colOffset, rowOffset, nCols, nRows); else
+			if (dir.IsVertFromNE()) return VertFromNE(image, colOffset, rowOffset, nCols, nRows); else
+			if (dir.IsVertFromSW()) return VertFromSW(image, colOffset, rowOffset, nCols, nRows); else
+			if (dir.IsVertFromSE()) return VertFromSE(image, colOffset, rowOffset, nCols, nRows); else
 			return Writer(nullptr, 0, 0, 0, 0);
 		}
 	public:
@@ -257,15 +286,6 @@ public:
 	const uint8_t* GetPointerSW(int xOffset, int yOffset) const { return GetPointer(xOffset, GetHeight() - 1 - yOffset); }
 	const uint8_t* GetPointerSE(int xOffset, int yOffset) const { return GetPointer(GetWidth() - 1 - xOffset, GetHeight() - 1 - yOffset); }
 	bool IsWritable() const { return allocatedFlag_; }
-public:
-	static bool IsDirHorz(SequencerDir dir) { return !(static_cast<uint8_t>(dir) & (1 << 0)); }
-	static bool IsDirVert(SequencerDir dir) { return !!(static_cast<uint8_t>(dir) & (1 << 0)); }
-	static bool IsDirLeftToRight(SequencerDir dir) { return !(static_cast<uint8_t>(dir) & (1 << 1)); }
-	static bool IsDirRightToLeft(SequencerDir dir) { return !!(static_cast<uint8_t>(dir) & (1 << 1)); }
-	static bool IsDirTopToBottom(SequencerDir dir) { return !(static_cast<uint8_t>(dir) & (1 << 2)); }
-	static bool IsDirBottomToTop(SequencerDir dir) { return !!(static_cast<uint8_t>(dir) & (1 << 2)); }
-	static SequencerDir InvertDirHorz(SequencerDir dir) { return static_cast<SequencerDir>(static_cast<uint8_t>(dir) ^ (1 << 1)); }
-	static SequencerDir InvertDirVert(SequencerDir dir) { return static_cast<SequencerDir>(static_cast<uint8_t>(dir) ^ (1 << 2)); }
 };
 
 template<> class Image::Getter_T<Color, Color> {

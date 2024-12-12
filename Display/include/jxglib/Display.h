@@ -13,7 +13,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 struct Display : public Drawable {
 public:
-	using DisplayDir = Image::SequencerDir;
+	using Dir = Image::WriterDir;
 public:
 	Display(uint32_t capabilities, const Format& format, int width, int height) :
 			Drawable(capabilities, format, width, height) {}
