@@ -295,6 +295,7 @@ int main()
 		"親譲りの無鉄砲で子供のときから損ばかりしている。小学校の時分学校の二階から飛び降りて一週間腰を"
 		"抜かしたことがある。なぜそんなむやみなことをしたかと聞く人があるかもしれない。";
 	display.SetFont(Font::shinonome12);
+	display.SetSpacingRatio(1, 1);
 	display.DrawStringWrap(0, 0, str);
 	display.Refresh();
 	//for (;;) {
