@@ -17,7 +17,7 @@ namespace jxglib {
 class Drawable {
 public:
 	using Format = Image::Format;
-	using ImageDir = Image::SequencerDir;
+	using DrawDir = Image::WriterDir;
 	struct Capability {
 		static const uint32_t Device		= (1 << 0);
 		static const uint32_t DrawImage		= (1 << 1);
@@ -35,7 +35,7 @@ public:
 		virtual void DrawRectFill(int x, int y, int width, int height, const Color& color) = 0;
 		virtual void DrawBitmap(int x, int y, const void* data, int width, int height,
 			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) = 0;
-		virtual void DrawImage(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) = 0;
+		virtual void DrawImage(int x, int y, const Image& image, const Rect* pRectClip, DrawDir drawDir) = 0;
 		virtual void ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect* pRect) = 0;
 		virtual void ScrollVert(DirVert dirVert, int htScroll, const Rect* pRect) = 0;
 	};
@@ -50,7 +50,7 @@ public:
 		virtual void DrawRectFill(int x, int y, int width, int height, const Color& color) override {}
 		virtual void DrawBitmap(int x, int y, const void* data, int width, int height,
 			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override {}
-		virtual void DrawImage(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) override {}
+		virtual void DrawImage(int x, int y, const Image& image, const Rect* pRectClip, DrawDir drawDir) override {}
 		virtual void ScrollHorz(DirHorz dirHorz, int width, const Rect* pRect) override {};
 		virtual void ScrollVert(DirVert dirVert, int height, const Rect* pRect) override {};
 	};
@@ -193,8 +193,8 @@ public:
 		DrawBitmap(pt.x, pt.y, data, width, height, transparentBgFlag, scaleX, scaleY);
 		return *this;
 	}
-	Drawable& DrawImage(int x, int y, const Image& image, const Rect* pRectClip = nullptr, ImageDir imageDir = ImageDir::Normal) {
-		pDispatcher_->DrawImage(x, y, image, pRectClip, imageDir);
+	Drawable& DrawImage(int x, int y, const Image& image, const Rect* pRectClip = nullptr, DrawDir drawDir = DrawDir::Normal) {
+		pDispatcher_->DrawImage(x, y, image, pRectClip, drawDir);
 		return *this;
 	}
 	Drawable& ScrollHorz(DirHorz dirHorz, int wdScroll) {

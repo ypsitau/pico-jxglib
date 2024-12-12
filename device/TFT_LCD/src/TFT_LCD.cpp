@@ -121,7 +121,7 @@ void TFT_LCD::DispatcherEx::DrawBitmap(int x, int y, const void* data, int width
 	raw.MemoryWrite_End();
 }
 
-void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir)
+void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Rect* pRectClip, DrawDir drawDir)
 {
 	using PA = PageAddressOrder;
 	using CA = ColumnAddressOrder;
@@ -131,7 +131,7 @@ void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 	Rect rect = pRectClip? *pRectClip : Rect(0, 0, display_.GetWidth(), display_.GetHeight());
 	int xSkip = 0, ySkip = 0;
 	int width, height;
-	if (imageDir.IsHorz()) {
+	if (drawDir.IsHorz()) {
 		width = image.GetWidth(), height = image.GetHeight();
 	} else {
 		width = image.GetHeight(), height = image.GetWidth();
@@ -151,20 +151,20 @@ void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 	raw.MemoryWrite_Begin(16);
 	if (image.GetFormat().IsGray()) {
 		using Reader = Image::Reader<Image::Getter_T<ColorRGB565, ColorGray> >;
-		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
+		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, drawDir));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 	} else if (image.GetFormat().IsRGB()) {
 		using Reader = Image::Reader<Image::Getter_T<ColorRGB565, Color> >;
-		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
+		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, drawDir));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 	} else if (image.GetFormat().IsRGBA()) {
 		using Reader = Image::Reader<Image::Getter_T<ColorRGB565, ColorA> >;
-		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
+		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, drawDir));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 	} else if (image.GetFormat().IsRGB565()) {
 #if 1
 		using Reader = Image::Reader<Image::Getter_T<ColorRGB565, ColorRGB565> >;
-		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
+		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, drawDir));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 #else
 		spi_inst_t* spi = raw.GetSPI();

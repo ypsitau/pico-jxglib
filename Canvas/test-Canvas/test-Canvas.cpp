@@ -24,36 +24,36 @@ int main()
 	GPIO3.set_function_SPI0_TX();
 	GPIO14.set_function_SPI1_SCK();
 	GPIO15.set_function_SPI1_TX();
-	ST7789 display1(spi0, 240, 240, GPIO7, GPIO8, GPIO9);
-	ST7789 display2(spi1, 240, 320, GPIO10, GPIO11, GPIO12, GPIO13);
+	ST7789 display1(spi0, 240, 240, GPIO4, GPIO5, GPIO6);
+	ST7789 display2(spi1, 240, 320, GPIO7, GPIO8, GPIO9, GPIO::None);
 	display1.Initialize();
 	display2.Initialize();
 	Canvas canvas1;
 	Canvas canvas2;
 #if 0
-	canvas.AttachOutput(display, Canvas::ImageDir::Rotate270);
+	canvas.AttachOutput(display, Canvas::DrawDir::Rotate270);
 	canvas.SetFont(Font::shinonome16);
 	canvas.SetSpacingRatio(1.0, 1.2);
 	canvas.DrawStringWrap(0, 0, str);
 	canvas.Refresh();
 #endif
 #if 1
-	canvas1.AttachOutput(display1);
+	canvas1.AttachOutput(display2);
 	//canvas2.AttachOutput(display2);
-	static const Canvas::ImageDir imageDirTbl[] = {
-		Canvas::ImageDir::Rotate0, Canvas::ImageDir::Rotate90, Canvas::ImageDir::Rotate180, Canvas::ImageDir::Rotate270,
+	static const Canvas::DrawDir drawDirTbl[] = {
+		Canvas::DrawDir::Rotate0, Canvas::DrawDir::Rotate90, Canvas::DrawDir::Rotate180, Canvas::DrawDir::Rotate270,
 	};
 	for (int i = 0; ; i++) {
-		if (i >= count_of(imageDirTbl)) i = 0;
-		canvas1.DrawImage(0, 0, image_cat_240x240, nullptr, imageDirTbl[i]);
+		if (i >= count_of(drawDirTbl)) i = 0;
+		canvas1.DrawImage(0, 0, image_cat_240x240, nullptr, drawDirTbl[i]);
 		canvas1.Refresh();
-		//canvas2.DrawImage(0, 0, image_cat_240x320, nullptr, imageDirTbl[i]);
+		//canvas2.DrawImage(0, 0, image_cat_240x320, nullptr, drawDirTbl[i]);
 		//canvas2.Refresh();
 		::sleep_ms(1000);
 	}
 #endif
 #if 0
-	//canvas.AttachOutput(display, Rect(40, 40, 100, 150), Canvas::ImageDir::Rotate90);
+	//canvas.AttachOutput(display, Rect(40, 40, 100, 150), Canvas::DrawDir::Rotate90);
 	canvas1.AttachOutput(display1);
 	canvas2.AttachOutput(display2);
 	canvas1.SetFont(Font::shinonome16);

@@ -73,12 +73,12 @@ void Canvas::Dispatcher_T<T_Color>::DrawBitmap(int x, int y, const void* data, i
 }
 
 template<typename T_Color>
-void Canvas::Dispatcher_T<T_Color>::DrawImage(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir)
+void Canvas::Dispatcher_T<T_Color>::DrawImage(int x, int y, const Image& image, const Rect* pRectClip, DrawDir drawDir)
 {
 	Image& imageOwn = canvas_.GetImageOwn();
 	int xSkip = 0, ySkip = 0;
 	int width, height;
-	if (Image::IsDirHorz(imageDir)) {
+	if (drawDir.IsHorz()) {
 		width = image.GetWidth(), height = image.GetHeight();
 	} else {
 		width = image.GetHeight(), height = image.GetWidth();
@@ -86,22 +86,22 @@ void Canvas::Dispatcher_T<T_Color>::DrawImage(int x, int y, const Image& image, 
 	if (!AdjustRange(&x, &width, 0, imageOwn.GetWidth(), &xSkip)) return;
 	if (!AdjustRange(&y, &height, 0, imageOwn.GetHeight(), &ySkip)) return;
 	using Writer = Image::Writer<Image::Setter_T<T_Color, T_Color> >;
-	Image::Writer writer(Writer::HorzFromNW(imageOwn, x, y, width, height));
+	Image::Writer writer(Writer::Create(imageOwn, x, y, width, height, drawDir));
 	if (image.GetFormat().IsGray()) {
 		using Reader = Image::Reader<Image::Getter_T<T_Color, ColorGray> >;
-		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
+		Image::Reader reader(Reader::HorzFromNW(image, xSkip, ySkip, width, height));
 		while (!reader.HasDone()) writer.WriteForward(reader.ReadForward());
 	} else if (image.GetFormat().IsRGB()) {
 		using Reader = Image::Reader<Image::Getter_T<T_Color, Color> >;
-		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
+		Image::Reader reader(Reader::HorzFromNW(image, xSkip, ySkip, width, height));
 		while (!reader.HasDone()) writer.WriteForward(reader.ReadForward());
 	} else if (image.GetFormat().IsRGBA()) {
 		using Reader = Image::Reader<Image::Getter_T<T_Color, ColorA> >;
-		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
+		Image::Reader reader(Reader::HorzFromNW(image, xSkip, ySkip, width, height));
 		while (!reader.HasDone()) writer.WriteForward(reader.ReadForward());
 	} else if (image.GetFormat().IsRGB565()) {
 		using Reader = Image::Reader<Image::Getter_T<T_Color, ColorRGB565> >;
-		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, imageDir));
+		Image::Reader reader(Reader::HorzFromNW(image, xSkip, ySkip, width, height));
 		while (!reader.HasDone()) writer.WriteForward(reader.ReadForward());
 	}
 }
@@ -190,14 +190,14 @@ bool Canvas::AttachOutput(Drawable& drawableOut, const Rect* pRect, AttachDir at
 	const Format& formatOut = drawableOut.GetFormat();
 	int wdImage, htImage;
 	if (pRect) {
-		if (Image::IsDirHorz(attachDir)) {
+		if (attachDir.IsHorz()) {
 			wdImage = pRect->width, htImage = pRect->height;
 		} else {
 			wdImage = pRect->height, htImage = pRect->width;
 		}
 		output_.rect = *pRect;
 	} else {
-		if (Image::IsDirHorz(attachDir)) {
+		if (attachDir.IsHorz()) {
 			wdImage = drawableOut.GetWidth(), htImage = drawableOut.GetHeight();
 		} else {
 			wdImage = drawableOut.GetHeight(), htImage = drawableOut.GetWidth();

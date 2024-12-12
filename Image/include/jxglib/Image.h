@@ -48,7 +48,7 @@ public:
 	private:
 		uint8_t value_;
 	public:
-		SequencerDir(uint8_t value) : value_{value} {}
+		SequencerDir(uint8_t value = 0) : value_{value} {}
 		SequencerDir(const SequencerDir& dir) : value_{dir.value_} {}
 	public:
 		// bit2: Vertical direction (0: Top to bottom, 1: Bottom to top)
@@ -89,7 +89,7 @@ public:
 	};
 	class ReaderDir : public SequencerDir {
 	public:
-		ReaderDir(uint8_t value) : SequencerDir{value} {}
+		ReaderDir(uint8_t value = 0) : SequencerDir{value} {}
 		ReaderDir(const SequencerDir& dir) : SequencerDir{dir} {}
 	public:
 		static const SequencerDir Rotate90;
@@ -98,7 +98,7 @@ public:
 	};
 	class WriterDir : public SequencerDir {
 	public:
-		WriterDir(uint8_t value) : SequencerDir{value} {}
+		WriterDir(uint8_t value = 0) : SequencerDir{value} {}
 		WriterDir(const SequencerDir& dir) : SequencerDir{dir} {}
 	public:
 		static const SequencerDir Rotate90;

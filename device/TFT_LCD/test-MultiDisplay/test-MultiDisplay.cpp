@@ -46,8 +46,8 @@ int main()
 	::spi_init(spi1, 125 * 1000 * 1000);
 	GPIO2.set_function_SPI0_SCK();
 	GPIO3.set_function_SPI0_TX();
-	GPIO14.set_function_SPI1_SCK().set_drive_strength(GPIO_DRIVE_STRENGTH_12MA);
-	GPIO15.set_function_SPI1_TX().set_drive_strength(GPIO_DRIVE_STRENGTH_12MA);
+	GPIO14.set_function_SPI1_SCK(); //.set_drive_strength(GPIO_DRIVE_STRENGTH_12MA);
+	GPIO15.set_function_SPI1_TX(); //.set_drive_strength(GPIO_DRIVE_STRENGTH_12MA);
 	GPIO16.set_function_I2C0_SDA();
 	GPIO17.set_function_I2C0_SCL();
 	ST7789 display1(spi0, 240, 240, GPIO4, GPIO5, GPIO6);
