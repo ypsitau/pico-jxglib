@@ -48,21 +48,25 @@ public:
 		// bit2: Vertical direction (0: Top to bottom, 1: Bottom to top)
 		// bit1: Horizontal direction (0: Left to right, 1: Right to left)
 		// bit0: Sequence dominance (0: Horizontal, 1: Vertical)
-		HorzFromNW	= (0 << 2) | (0 << 1) | (0 << 0),
-		HorzFromSW	= (1 << 2) | (0 << 1) | (0 << 0),
-		HorzFromNE	= (0 << 2) | (1 << 1) | (0 << 0),
-		HorzFromSE	= (1 << 2) | (1 << 1) | (0 << 0),
-		VertFromNW	= (0 << 2) | (0 << 1) | (1 << 0),
-		VertFromSW	= (1 << 2) | (0 << 1) | (1 << 0),
-		VertFromNE	= (0 << 2) | (1 << 1) | (1 << 0),
-		VertFromSE	= (1 << 2) | (1 << 1) | (1 << 0),
-		Normal		= HorzFromNW,
-		Rotate0		= HorzFromNW,
-		Rotate90	= VertFromNE,
-		Rotate180	= HorzFromSE,
-		Rotate270	= VertFromSW,
-		MirrorHorz	= HorzFromNE,
-		MirrorVert	= HorzFromSW,
+		HorzFromNW		= (0 << 2) | (0 << 1) | (0 << 0),
+		HorzFromSW		= (1 << 2) | (0 << 1) | (0 << 0),
+		HorzFromNE		= (0 << 2) | (1 << 1) | (0 << 0),
+		HorzFromSE		= (1 << 2) | (1 << 1) | (0 << 0),
+		VertFromNW		= (0 << 2) | (0 << 1) | (1 << 0),
+		VertFromSW		= (1 << 2) | (0 << 1) | (1 << 0),
+		VertFromNE		= (0 << 2) | (1 << 1) | (1 << 0),
+		VertFromSE		= (1 << 2) | (1 << 1) | (1 << 0),
+		Normal			= HorzFromNW,
+		MirrorHorz		= HorzFromNE,
+		MirrorVert		= HorzFromSW,
+		ReaderRot0		= HorzFromNW,
+		ReaderRot90		= VertFromSW,
+		ReaderRot180	= HorzFromSE,
+		ReaderRot270	= VertFromNE,
+		WriterRot0		= HorzFromNW,
+		WriterRot90		= VertFromNE,
+		WriterRot180	= HorzFromSE,
+		WriterRot270	= VertFromSW,
 	};
 	using ReaderDir = SequencerDir;
 	using WriterDir = SequencerDir;
@@ -253,8 +257,13 @@ public:
 	const uint8_t* GetPointerSW(int xOffset, int yOffset) const { return GetPointer(xOffset, GetHeight() - 1 - yOffset); }
 	const uint8_t* GetPointerSE(int xOffset, int yOffset) const { return GetPointer(GetWidth() - 1 - xOffset, GetHeight() - 1 - yOffset); }
 	bool IsWritable() const { return allocatedFlag_; }
+public:
 	static bool IsDirHorz(SequencerDir dir) { return !(static_cast<uint8_t>(dir) & (1 << 0)); }
 	static bool IsDirVert(SequencerDir dir) { return !!(static_cast<uint8_t>(dir) & (1 << 0)); }
+	static bool IsDirLeftToRight(SequencerDir dir) { return !(static_cast<uint8_t>(dir) & (1 << 1)); }
+	static bool IsDirRightToLeft(SequencerDir dir) { return !!(static_cast<uint8_t>(dir) & (1 << 1)); }
+	static bool IsDirTopToBottom(SequencerDir dir) { return !(static_cast<uint8_t>(dir) & (1 << 2)); }
+	static bool IsDirBottomToTop(SequencerDir dir) { return !!(static_cast<uint8_t>(dir) & (1 << 2)); }
 	static SequencerDir InvertDirHorz(SequencerDir dir) { return static_cast<SequencerDir>(static_cast<uint8_t>(dir) ^ (1 << 1)); }
 	static SequencerDir InvertDirVert(SequencerDir dir) { return static_cast<SequencerDir>(static_cast<uint8_t>(dir) ^ (1 << 2)); }
 };

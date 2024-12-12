@@ -17,7 +17,7 @@ void DrawImage(Display* displayTbl[], int nDisplays)
 	for (int iDisplay = 0; iDisplay < nDisplays; iDisplay++) {
 		Display& display = *displayTbl[iDisplay];
 		const Image& image = (display.GetWidth() < 240)? image_cat_128x160 : image_cat_240x240;
-		display.Clear().DrawImage(0, 0, image, nullptr, Display::ImageDir::Rotate0).Refresh();
+		display.Clear().DrawImage(0, 0, image, nullptr, Display::ImageDir::WriterRot0).Refresh();
 	}
 }
 
@@ -56,9 +56,9 @@ int main()
 	ST7735 display4(spi1, 80, 160, GPIO18, GPIO19, GPIO20, GPIO::None);
 	ST7735::TypeB display5(spi1, 128, 160, GPIO21, GPIO22, GPIO23, GPIO::None);
 	//Display::DisplayDir displayDir = Display::DisplayDir::Normal;
-	//Display::DisplayDir displayDir = Display::DisplayDir::Rotate90;
-	Display::DisplayDir displayDir = Display::DisplayDir::Rotate180;
-	//Display::DisplayDir displayDir = Display::DisplayDir::Rotate270;
+	//Display::DisplayDir displayDir = Display::DisplayDir::WriterRot90;
+	Display::DisplayDir displayDir = Display::DisplayDir::WriterRot180;
+	//Display::DisplayDir displayDir = Display::DisplayDir::WriterRot270;
 	display1.Initialize(displayDir);
 	display2.Initialize(displayDir);
 	display3.Initialize(displayDir);
