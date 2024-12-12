@@ -23,7 +23,6 @@ public:
 
 inline void ST7789::Initialize(DisplayDir displayDir)
 {
-	//const RotateData& rotateData = rotateDataTbl_Case1[static_cast<int>(displayDir)];
 	static const ConfigData configData = {
 		.lineAddressOrder		= LineAddressOrder::TopToBottom,
 		.rgbBgrOrder			= RGBBGROrder::RGB,

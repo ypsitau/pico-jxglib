@@ -44,7 +44,7 @@ inline void ST7735::Initialize(DisplayDir displayDir)
 
 inline void ST7735::TypeB::Initialize(DisplayDir displayDir)
 {
-	//const RotateData& rotateData = rotateDataTbl_Case3[static_cast<int>(displayDir)];
+	displayDir = Image::InvertDirHorz(Image::InvertDirVert(displayDir));
 	static const ConfigData configData = {
 		.lineAddressOrder		= LineAddressOrder::TopToBottom,
 		.rgbBgrOrder			= RGBBGROrder::RGB,

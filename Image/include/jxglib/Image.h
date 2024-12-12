@@ -253,8 +253,10 @@ public:
 	const uint8_t* GetPointerSW(int xOffset, int yOffset) const { return GetPointer(xOffset, GetHeight() - 1 - yOffset); }
 	const uint8_t* GetPointerSE(int xOffset, int yOffset) const { return GetPointer(GetWidth() - 1 - xOffset, GetHeight() - 1 - yOffset); }
 	bool IsWritable() const { return allocatedFlag_; }
-	static bool IsDirHorz(SequencerDir dir) { return !(static_cast<int>(dir) & (1 << 0)); }
-	static bool IsDirVert(SequencerDir dir) { return !!(static_cast<int>(dir) & (1 << 0)); }
+	static bool IsDirHorz(SequencerDir dir) { return !(static_cast<uint8_t>(dir) & (1 << 0)); }
+	static bool IsDirVert(SequencerDir dir) { return !!(static_cast<uint8_t>(dir) & (1 << 0)); }
+	static SequencerDir InvertDirHorz(SequencerDir dir) { return static_cast<SequencerDir>(static_cast<uint8_t>(dir) ^ (1 << 1)); }
+	static SequencerDir InvertDirVert(SequencerDir dir) { return static_cast<SequencerDir>(static_cast<uint8_t>(dir) ^ (1 << 2)); }
 };
 
 template<> class Image::Getter_T<Color, Color> {

@@ -21,7 +21,7 @@ public:
 
 inline void ILI9341::Initialize(DisplayDir displayDir)
 {
-	//const RotateData& rotateData = rotateDataTbl_Case2[static_cast<int>(displayDir)];
+	displayDir = Image::InvertDirVert(displayDir);
 	static const ConfigData configData = {
 		.lineAddressOrder		= LineAddressOrder::TopToBottom,
 		.rgbBgrOrder			= RGBBGROrder::BGR,
