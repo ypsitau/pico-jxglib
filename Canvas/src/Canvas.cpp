@@ -89,19 +89,19 @@ void Canvas::Dispatcher_T<T_Color>::DrawImage(int x, int y, const Image& image, 
 	Image::Writer writer(Writer::Create(imageOwn, x, y, width, height, drawDir));
 	if (image.GetFormat().IsGray()) {
 		using Reader = Image::Reader<Image::Getter_T<T_Color, ColorGray> >;
-		Image::Reader reader(Reader::HorzFromNW(image, xSkip, ySkip, width, height));
+		Image::Reader reader(Reader::Normal(image, xSkip, ySkip, width, height));
 		while (!reader.HasDone()) writer.WriteForward(reader.ReadForward());
 	} else if (image.GetFormat().IsRGB()) {
 		using Reader = Image::Reader<Image::Getter_T<T_Color, Color> >;
-		Image::Reader reader(Reader::HorzFromNW(image, xSkip, ySkip, width, height));
+		Image::Reader reader(Reader::Normal(image, xSkip, ySkip, width, height));
 		while (!reader.HasDone()) writer.WriteForward(reader.ReadForward());
 	} else if (image.GetFormat().IsRGBA()) {
 		using Reader = Image::Reader<Image::Getter_T<T_Color, ColorA> >;
-		Image::Reader reader(Reader::HorzFromNW(image, xSkip, ySkip, width, height));
+		Image::Reader reader(Reader::Normal(image, xSkip, ySkip, width, height));
 		while (!reader.HasDone()) writer.WriteForward(reader.ReadForward());
 	} else if (image.GetFormat().IsRGB565()) {
 		using Reader = Image::Reader<Image::Getter_T<T_Color, ColorRGB565> >;
-		Image::Reader reader(Reader::HorzFromNW(image, xSkip, ySkip, width, height));
+		Image::Reader reader(Reader::Normal(image, xSkip, ySkip, width, height));
 		while (!reader.HasDone()) writer.WriteForward(reader.ReadForward());
 	}
 }

@@ -35,6 +35,8 @@ inline void ST7735::Initialize(Dir displayDir)
 		.lineAddressOrder		= LineAddressOrder::TopToBottom,
 		.rgbBgrOrder			= RGBBGROrder::BGR,
 		.displayDataLatchOrder	= DisplayDataLatchOrder::LeftToRight,
+		.invertHorzFlag			= false,
+		.invertVertFlag			= false,
 		.displayInversionOnFlag	= false,
 		.gammaCurve				= 0x01,
 	};
@@ -43,11 +45,12 @@ inline void ST7735::Initialize(Dir displayDir)
 
 inline void ST7735::TypeB::Initialize(Dir displayDir)
 {
-	displayDir = displayDir.InvertHorz().InvertVert();
 	static const ConfigData configData = {
 		.lineAddressOrder		= LineAddressOrder::TopToBottom,
 		.rgbBgrOrder			= RGBBGROrder::RGB,
 		.displayDataLatchOrder	= DisplayDataLatchOrder::LeftToRight,
+		.invertHorzFlag			= true,
+		.invertVertFlag			= true,
 		.displayInversionOnFlag	= false,
 		.gammaCurve				= 0x02,
 	};

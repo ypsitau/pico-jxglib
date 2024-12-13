@@ -53,6 +53,8 @@ public:
 		LineAddressOrder lineAddressOrder;
 		RGBBGROrder rgbBgrOrder;
 		DisplayDataLatchOrder displayDataLatchOrder;
+		bool invertHorzFlag;
+		bool invertVertFlag;
 		bool displayInversionOnFlag;
 		uint8_t gammaCurve;
 	};
@@ -249,13 +251,14 @@ public:
 				(static_cast<uint8_t>(rgbBgrOrder) << 3) |
 				(static_cast<uint8_t>(displayDataLatchOrder) << 2));
 		}
-		void MemoryDataAccessControl(Dir displayDir, LineAddressOrder lineAddressOrder,
-				RGBBGROrder rgbBgrOrder, DisplayDataLatchOrder displayDataLatchOrder) {
+		void MemoryDataAccessControl(Dir displayDir, const ConfigData& configData) {
+			if (configData.invertHorzFlag) displayDir = displayDir.InvertHorz();
+			if (configData.invertVertFlag) displayDir = displayDir.InvertVert();
 			SendCmd(0x36,
 				(displayDir.GetValue() << 5) |
-				(static_cast<uint8_t>(lineAddressOrder) << 4) |
-				(static_cast<uint8_t>(rgbBgrOrder) << 3) |
-				(static_cast<uint8_t>(displayDataLatchOrder) << 2));
+				(static_cast<uint8_t>(configData.lineAddressOrder) << 4) |
+				(static_cast<uint8_t>(configData.rgbBgrOrder) << 3) |
+				(static_cast<uint8_t>(configData.displayDataLatchOrder) << 2));
 		}
 		// 9.1.29 VSCSAD (37h): Vertical Scroll Start Address to RAM
 		void VerticalScrollStartAddressToRAM(uint16_t vsp) {
@@ -318,6 +321,10 @@ public:
 	int widthTypical_, heightTypical_;
 	int widthSet_, heightSet_;
 	int xAdjust_, yAdjust_;
+	struct Saved {
+		Dir displayDir;
+		ConfigData configData;
+	} saved_;
 public:
 	TFT_LCD(spi_inst_t* spi, int widthTypical, int heightTypical, int width, int height,
 				const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_CS, const GPIO& gpio_BL) :
@@ -337,6 +344,7 @@ public:
 	}
 public:
 	void Initialize(Dir displayDir, const ConfigData& configData);
+	const Saved& GetSaved() const { return saved_; }
 	bool UsesCS() { return raw.UsesCS(); }
 	int GetBytesPerLine() const { return GetWidth() * 2; }
 	int GetXAdjust() const { return xAdjust_; }

@@ -11,6 +11,8 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 void TFT_LCD::Initialize(Dir displayDir, const ConfigData& configData)
 {
+	saved_.displayDir = displayDir;
+	saved_.configData = configData;
 	if (displayDir.IsHorz()) {
 		width_ = widthSet_, height_ = heightSet_;
 		xAdjust_ = (widthTypical_ - widthSet_) / 2;
@@ -29,8 +31,7 @@ void TFT_LCD::Initialize(Dir displayDir, const ConfigData& configData)
 		// RGB interface color format     = 65K of RGB interface. No effect on ST7735.
 		// Control interface color format = 16bit/pixel
 	::sleep_ms(10);
-	raw.MemoryDataAccessControl(displayDir,
-		configData.lineAddressOrder, configData.rgbBgrOrder, configData.displayDataLatchOrder);
+	raw.MemoryDataAccessControl(displayDir, configData);
 	if (configData.displayInversionOnFlag) raw.DisplayInversionOn();
 	::sleep_ms(10);
 	raw.NormalDisplayModeOn();
@@ -121,12 +122,28 @@ void TFT_LCD::DispatcherEx::DrawBitmap(int x, int y, const void* data, int width
 	raw.MemoryWrite_End();
 }
 
+
+
 void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Rect* pRectClip, DrawDir drawDir)
 {
 	using PA = PageAddressOrder;
 	using CA = ColumnAddressOrder;
 	using PC = PageColumnOrder;
+	static const uint8_t drawDirTbl90[] = {
+		Dir::Rotate90, Dir::Normal, Dir::Normal, Dir::Rotate180, Dir::Normal, Dir::Rotate0, Dir::Rotate270, Dir::Normal
+	};
+	static const uint8_t drawDirTbl180[] = {
+		Dir::Rotate180, Dir::Normal, Dir::Normal, Dir::Rotate270, Dir::Normal, Dir::Rotate90, Dir::Rotate0, Dir::Normal
+	};
+	static const uint8_t drawDirTbl270[] = {
+		Dir::Rotate270, Dir::Normal, Dir::Normal, Dir::Rotate0, Dir::Normal, Dir::Rotate180, Dir::Rotate90, Dir::Normal
+	};
 	Raw& raw = display_.raw;
+	const Saved& saved = display_.GetSaved();
+	Dir displayDir =
+		drawDir.IsRotate90()? drawDirTbl90[saved.displayDir.GetValue()] :
+		drawDir.IsRotate180()? drawDirTbl180[saved.displayDir.GetValue()] :
+		drawDir.IsRotate270()? drawDirTbl270[saved.displayDir.GetValue()] : Dir::Normal;
 	int xAdjust = display_.GetXAdjust(), yAdjust = display_.GetYAdjust();
 	Rect rect = pRectClip? *pRectClip : Rect(0, 0, display_.GetWidth(), display_.GetHeight());
 	int xSkip = 0, ySkip = 0;
@@ -139,32 +156,26 @@ void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 	if (!AdjustRange(&x, &width, rect.x, rect.width, &xSkip)) return;
 	if (!AdjustRange(&y, &height, rect.y, rect.height, &ySkip)) return;
 	x += xAdjust, y += yAdjust;
-#if 0	
-	raw.MemoryDataAccessControl(
-		//PA::BottomToTop, CA::LeftToRight, PC::ReverseMode,
-		PA::TopToBottom, CA::RightToLeft, PC::ReverseMode,
-		LineAddressOrder::TopToBottom, RGBBGROrder::RGB, DisplayDataLatchOrder::LeftToRight);
-#endif
-	//raw.ColumnAddressSet(x + 80, x + width - 1 + 80);
+	raw.MemoryDataAccessControl(drawDir, saved.configData);
 	raw.ColumnAddressSet(x, x + width - 1);
 	raw.RowAddressSet(y, y + height - 1);
 	raw.MemoryWrite_Begin(16);
 	if (image.GetFormat().IsGray()) {
 		using Reader = Image::Reader<Image::Getter_T<ColorRGB565, ColorGray> >;
-		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, drawDir));
+		Image::Reader reader(Reader::Normal(image, xSkip, ySkip, width, height));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 	} else if (image.GetFormat().IsRGB()) {
 		using Reader = Image::Reader<Image::Getter_T<ColorRGB565, Color> >;
-		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, drawDir));
+		Image::Reader reader(Reader::Normal(image, xSkip, ySkip, width, height));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 	} else if (image.GetFormat().IsRGBA()) {
 		using Reader = Image::Reader<Image::Getter_T<ColorRGB565, ColorA> >;
-		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, drawDir));
+		Image::Reader reader(Reader::Normal(image, xSkip, ySkip, width, height));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 	} else if (image.GetFormat().IsRGB565()) {
 #if 1
 		using Reader = Image::Reader<Image::Getter_T<ColorRGB565, ColorRGB565> >;
-		Image::Reader reader(Reader::Create(image, xSkip, ySkip, width, height, drawDir));
+		Image::Reader reader(Reader::Normal(image, xSkip, ySkip, width, height));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 #else
 		spi_inst_t* spi = raw.GetSPI();
@@ -190,6 +201,7 @@ void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 #endif
 	}
 	raw.MemoryWrite_End();
+	raw.MemoryDataAccessControl(saved.displayDir, saved.configData);
 }
 
 void TFT_LCD::DispatcherEx::ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect* pRect)

@@ -27,6 +27,8 @@ inline void ST7789::Initialize(Dir displayDir)
 		.lineAddressOrder		= LineAddressOrder::TopToBottom,
 		.rgbBgrOrder			= RGBBGROrder::RGB,
 		.displayDataLatchOrder	= DisplayDataLatchOrder::LeftToRight,
+		.invertHorzFlag			= false,
+		.invertVertFlag			= false,
 		.displayInversionOnFlag	= true,
 		.gammaCurve				= 0x01,
 	};

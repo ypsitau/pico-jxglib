@@ -54,38 +54,43 @@ public:
 		// bit2: Vertical direction (0: Top to bottom, 1: Bottom to top)
 		// bit1: Horizontal direction (0: Left to right, 1: Right to left)
 		// bit0: Sequence dominance (0: Horizontal, 1: Vertical)
-		static const uint8_t HorzFromNW	= (0 << 2) | (0 << 1) | (0 << 0);
-		static const uint8_t HorzFromSW	= (1 << 2) | (0 << 1) | (0 << 0);
-		static const uint8_t HorzFromNE	= (0 << 2) | (1 << 1) | (0 << 0);
-		static const uint8_t HorzFromSE	= (1 << 2) | (1 << 1) | (0 << 0);
-		static const uint8_t VertFromNW	= (0 << 2) | (0 << 1) | (1 << 0);
-		static const uint8_t VertFromSW	= (1 << 2) | (0 << 1) | (1 << 0);
-		static const uint8_t VertFromNE	= (0 << 2) | (1 << 1) | (1 << 0);
-		static const uint8_t VertFromSE	= (1 << 2) | (1 << 1) | (1 << 0);
+		static const uint8_t HorzFromNW	= (0 << 2) | (0 << 1) | (0 << 0);	// Rotate0
+		static const uint8_t VertFromNW	= (0 << 2) | (0 << 1) | (1 << 0);	// 
+		static const uint8_t HorzFromNE	= (0 << 2) | (1 << 1) | (0 << 0);	// MirrorHorz
+		static const uint8_t VertFromNE	= (0 << 2) | (1 << 1) | (1 << 0);	// Rotate90/270
+		static const uint8_t HorzFromSW	= (1 << 2) | (0 << 1) | (0 << 0);	// MirrorVert
+		static const uint8_t VertFromSW	= (1 << 2) | (0 << 1) | (1 << 0);	// Rotate270/90
+		static const uint8_t HorzFromSE	= (1 << 2) | (1 << 1) | (0 << 0);	// Rotate180
+		static const uint8_t VertFromSE	= (1 << 2) | (1 << 1) | (1 << 0);	// 
 		static const uint8_t Normal		= HorzFromNW;
-		static const uint8_t MirrorHorz	= HorzFromNE;
-		static const uint8_t MirrorVert	= HorzFromSW;
 		static const uint8_t Rotate0	= HorzFromNW;
 		static const uint8_t Rotate180	= HorzFromSE;
+		static const uint8_t MirrorHorz	= HorzFromNE;
+		static const uint8_t MirrorVert	= HorzFromSW;
 	public:
 		uint8_t GetValue() const { return value_; }
 	public:
-		bool IsHorzFromNW() const { return value_ == HorzFromNW; }
-		bool IsHorzFromSW() const { return value_ == HorzFromSW; }
-		bool IsHorzFromNE() const { return value_ == HorzFromNE; }
-		bool IsHorzFromSE() const { return value_ == HorzFromSE; }
-		bool IsVertFromNW() const { return value_ == VertFromNW; }
-		bool IsVertFromSW() const { return value_ == VertFromSW; }
-		bool IsVertFromNE() const { return value_ == VertFromNE; }
-		bool IsVertFromSE() const { return value_ == VertFromSE; }
-		bool IsHorz() { return !(value_ & (1 << 0)); }
-		bool IsVert() { return !!(value_ & (1 << 0)); }
-		bool IsLeftToRight() { return !(value_ & (1 << 1)); }
-		bool IsRightToLeft() { return !!(value_ & (1 << 1)); }
-		bool IsTopToBottom() { return !(value_ & (1 << 2)); }
-		bool IsBottomToTop() { return !!(value_ & (1 << 2)); }
-		SequencerDir InvertHorz() { return SequencerDir(value_ ^ (1 << 1)); }
-		SequencerDir InvertVert() { return SequencerDir(value_ ^ (1 << 2)); }
+		bool IsHorzFromNW() const	{ return value_ == HorzFromNW; }
+		bool IsHorzFromSW() const	{ return value_ == HorzFromSW; }
+		bool IsHorzFromNE() const	{ return value_ == HorzFromNE; }
+		bool IsHorzFromSE() const	{ return value_ == HorzFromSE; }
+		bool IsVertFromNW() const	{ return value_ == VertFromNW; }
+		bool IsVertFromSW() const	{ return value_ == VertFromSW; }
+		bool IsVertFromNE() const	{ return value_ == VertFromNE; }
+		bool IsVertFromSE() const	{ return value_ == VertFromSE; }
+		bool IsNormal() const		{ return IsHorzFromNW(); }
+		bool IsRotate0() const		{ return IsHorzFromNW(); }
+		bool IsRotate180() const	{ return IsHorzFromSE(); }
+		bool IsMirrorHorz() const	{ return IsHorzFromNE(); }
+		bool IsMirrorVert() const	{ return IsHorzFromSW(); }
+		bool IsHorz()				{ return !(value_ & (1 << 0)); }
+		bool IsVert()				{ return !!(value_ & (1 << 0)); }
+		bool IsLeftToRight()		{ return !(value_ & (1 << 1)); }
+		bool IsRightToLeft()		{ return !!(value_ & (1 << 1)); }
+		bool IsTopToBottom()		{ return !(value_ & (1 << 2)); }
+		bool IsBottomToTop()		{ return !!(value_ & (1 << 2)); }
+		SequencerDir InvertHorz()	{ return SequencerDir(value_ ^ (1 << 1)); }
+		SequencerDir InvertVert()	{ return SequencerDir(value_ ^ (1 << 2)); }
 	};
 	class ReaderDir : public SequencerDir {
 	public:
@@ -94,6 +99,9 @@ public:
 	public:
 		static const uint8_t Rotate90	= VertFromSW;
 		static const uint8_t Rotate270	= VertFromNE;
+	public:
+		bool IsRotate90() const		{ return IsVertFromSW(); }
+		bool IsRotate270() const	{ return IsVertFromNE(); }
 	};
 	class WriterDir : public SequencerDir {
 	public:
@@ -102,7 +110,9 @@ public:
 	public:
 		static const uint8_t Rotate90	= VertFromNE;
 		static const uint8_t Rotate270	= VertFromSW;
-
+	public:
+		bool IsRotate90() const		{ return IsVertFromNE(); }
+		bool IsRotate270() const	{ return IsVertFromSW(); }
 	};
 	class Sequencer {
 	protected:
@@ -171,6 +181,9 @@ public:
 			return Reader(image.GetPointerSE(colOffset, rowOffset),
 					nCols, nRows, -image.GetBytesPerLine(), -image.GetBytesPerPixel());
 		}
+		static Reader Normal(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+			return HorzFromNW(image, colOffset, rowOffset, nCols, nRows);
+		}
 		static Reader Create(const Image& image, int colOffset, int rowOffset, int nCols, int nRows, SequencerDir dir) {
 			if (dir.IsHorzFromNW()) return HorzFromNW(image, colOffset, rowOffset, nCols, nRows); else
 			if (dir.IsHorzFromNE()) return HorzFromNE(image, colOffset, rowOffset, nCols, nRows); else
@@ -225,6 +238,9 @@ public:
 		static Writer VertFromSE(Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
 			return Writer(image.GetPointerSE(colOffset, rowOffset),
 					nCols, nRows, -image.GetBytesPerLine(), -image.GetBytesPerPixel());
+		}
+		static Writer Normal(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+			return HorzFromNW(image, colOffset, rowOffset, nCols, nRows);
 		}
 		static Writer Create(Image& image, int colOffset, int rowOffset, int nCols, int nRows, SequencerDir dir) {
 			if (dir.IsHorzFromNW()) return HorzFromNW(image, colOffset, rowOffset, nCols, nRows); else

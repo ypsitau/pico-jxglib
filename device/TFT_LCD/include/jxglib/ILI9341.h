@@ -21,11 +21,12 @@ public:
 
 inline void ILI9341::Initialize(Dir displayDir)
 {
-	displayDir = displayDir.InvertVert();
 	static const ConfigData configData = {
 		.lineAddressOrder		= LineAddressOrder::TopToBottom,
 		.rgbBgrOrder			= RGBBGROrder::BGR,
 		.displayDataLatchOrder	= DisplayDataLatchOrder::LeftToRight,
+		.invertHorzFlag			= false,
+		.invertVertFlag			= true,
 		.displayInversionOnFlag	= false,
 		.gammaCurve				= 0x01,
 	};
