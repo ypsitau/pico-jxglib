@@ -227,7 +227,7 @@ public:
 		virtual void DrawRectFill(int x, int y, int width, int height, const Color& color) override;
 		virtual void DrawBitmap(int x, int y, const void* data, int width, int height,
 				const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override;
-		virtual void DrawImage(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir) override;
+		virtual void DrawImage(int x, int y, const Image& image, const Rect* pRectClip, DrawDir drawDir) override;
 		virtual void ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect* pRect) override;
 		virtual void ScrollVert(DirVert dirVert, int htScroll, const Rect* pRect) override;
 	};

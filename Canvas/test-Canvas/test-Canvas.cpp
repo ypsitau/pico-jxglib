@@ -2,6 +2,8 @@
 #include "pico/stdlib.h"
 #include "jxglib/Canvas.h"
 #include "jxglib/ST7789.h"
+#include "jxglib/ST7735.h"
+#include "jxglib/ILI9341.h"
 #include "jxglib/sample/cat-240x240.h"
 #include "jxglib/sample/cat-240x320.h"
 #include "Font/shinonome16.h"
@@ -17,19 +19,29 @@ int main()
 		"そこから飛び降りることはできまい。弱虫やーい。とはやしたからである。"
 		"小使いに負ぶさって帰ってきたとき、親父が大きな眼をして二階から飛び降りて腰を抜かすやつが"
 		"あるかといったから、この次は抜かさずに飛んでみせますと答えた。";
-	::stdio_init_all();
 	::spi_init(spi0, 125 * 1000 * 1000);
 	::spi_init(spi1, 125 * 1000 * 1000);
 	GPIO2.set_function_SPI0_SCK();
 	GPIO3.set_function_SPI0_TX();
-	GPIO14.set_function_SPI1_SCK();
-	GPIO15.set_function_SPI1_TX();
-	//ST7789 display1(spi0, 240, 240, GPIO4, GPIO5, GPIO6);
-	ST7789 display2(spi1, 240, 320, GPIO7, GPIO8, GPIO9, GPIO::None);
-	//display1.Initialize();
-	display2.Initialize();
-	//Canvas canvas1;
-	Canvas canvas2;
+	GPIO4.set_function_I2C0_SDA();
+	GPIO5.set_function_I2C0_SCL();
+	GPIO14.set_function_SPI1_SCK().set_drive_strength(GPIO_DRIVE_STRENGTH_12MA);
+	GPIO15.set_function_SPI1_TX().set_drive_strength(GPIO_DRIVE_STRENGTH_12MA);
+	ST7789 display1(spi0, 240, 240, GPIO6, GPIO7, GPIO::None);
+	ST7789 display2(spi1, 240, 320, GPIO8, GPIO9, GPIO10, GPIO::None);
+	ILI9341 display3(spi1, 240, 320, GPIO11, GPIO12, GPIO13, GPIO::None);
+	ST7735 display4(spi1, 80, 160, GPIO16, GPIO17, GPIO18, GPIO::None);
+	ST7735::TypeB display5(spi1, 128, 160, GPIO19, GPIO20, GPIO21, GPIO::None);
+	Display::Dir displayDir = Display::Dir::Rotate0;
+	//Display::Dir displayDir = Display::Dir::Rotate90;
+	//Display::Dir displayDir = Display::Dir::Rotate180;
+	//Display::Dir displayDir = Display::Dir::Rotate270;
+	display1.Initialize(displayDir);
+	display2.Initialize(displayDir);
+	display3.Initialize(displayDir);
+	display4.Initialize(displayDir);
+	display5.Initialize(displayDir);
+	Canvas canvas;
 #if 0
 	canvas.AttachOutput(display, Canvas::DrawDir::Rotate270);
 	canvas.SetFont(Font::shinonome16);
@@ -38,8 +50,11 @@ int main()
 	canvas.Refresh();
 #endif
 #if 1
-	//canvas1.AttachOutput(display1);
-	canvas2.AttachOutput(display2);
+	canvas.AttachOutput(display1);
+	//canvas.AttachOutput(display2);
+	//canvas.AttachOutput(display3);
+	//canvas.AttachOutput(display4);
+	//canvas.AttachOutput(display5);
 	//static const Canvas::DrawDir* drawDirTbl[] = {
 	//	&Canvas::DrawDir::Rotate0, &Canvas::DrawDir::Rotate90, &Canvas::DrawDir::Rotate180, &Canvas::DrawDir::Rotate270,
 	//};
@@ -47,27 +62,27 @@ int main()
 	//	if (i >= count_of(drawDirTbl)) i = 0;
 	//	//canvas1.DrawImage(0, 0, image_cat_240x240, nullptr, drawDirTbl[i]);
 	//	//canvas1.Refresh();
-	//	canvas2.DrawImage(0, 0, image_cat_240x320, nullptr, *drawDirTbl[i]);
-	//	canvas2.Refresh();
+	//	canvas.DrawImage(0, 0, image_cat_240x320, nullptr, *drawDirTbl[i]);
+	//	canvas.Refresh();
 	//	::sleep_ms(1000);
 	//}
-	canvas2.DrawImage(0, 0, image_cat_240x320, nullptr, Canvas::DrawDir::Rotate0);
-	canvas2.Refresh();
+	canvas.DrawImage(0, 0, image_cat_240x320, nullptr, Canvas::DrawDir::Rotate0);
+	canvas.Refresh();
 #endif
 #if 0
 	//canvas.AttachOutput(display, Rect(40, 40, 100, 150), Canvas::DrawDir::Rotate90);
 	canvas1.AttachOutput(display1);
-	canvas2.AttachOutput(display2);
+	canvas.AttachOutput(display2);
 	canvas1.SetFont(Font::shinonome16);
-	canvas2.SetFont(Font::shinonome16);
+	canvas.SetFont(Font::shinonome16);
 	canvas1.SetSpacingRatio(1.0, 1.2);
-	canvas2.SetSpacingRatio(1.0, 1.2);
+	canvas.SetSpacingRatio(1.0, 1.2);
 	canvas1.DrawStringWrap(0, 0, str);
-	canvas2.DrawStringWrap(0, 0, str);
+	canvas.DrawStringWrap(0, 0, str);
 	//canvas.Refresh();
 	//absolute_time_t absTimeStart = ::get_absolute_time();
 	canvas1.Refresh();
-	canvas2.Refresh();
+	canvas.Refresh();
 	//::printf("%lld usec\n", ::absolute_time_diff_us(absTimeStart, ::get_absolute_time()));
 #endif
 }

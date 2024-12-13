@@ -142,7 +142,7 @@ void SSD1306::DispatcherEx::DrawBitmap(int x, int y, const void* data, int width
 	}
 }
 
-void SSD1306::DispatcherEx::DrawImage(int x, int y, const Image& image, const Rect* pRectClip, ImageDir imageDir)
+void SSD1306::DispatcherEx::DrawImage(int x, int y, const Image& image, const Rect* pRectClip, DrawDir drawDir)
 {
 	// do nothing
 }
