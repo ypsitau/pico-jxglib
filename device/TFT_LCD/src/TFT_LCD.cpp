@@ -45,9 +45,9 @@ void TFT_LCD::CalcPosAdjust(Dir displayDir, int* pxAdjust, int* pyAdjust) const
 {
 	if (displayDir.IsHorz()) {
 		*pxAdjust = (widthTypical_ - widthPhysical_) / 2;
-		if (displayDir.IsBottomToTop()) *pyAdjust = heightTypical_ - heightPhysical_;
+		*pyAdjust = displayDir.IsBottomToTop()? heightTypical_ - heightPhysical_ : 0;
 	} else {
-		if (displayDir.IsBottomToTop()) *pxAdjust = heightTypical_ - heightPhysical_;
+		*pxAdjust = displayDir.IsBottomToTop()? heightTypical_ - heightPhysical_ : 0;
 		*pyAdjust = (widthTypical_ - widthPhysical_) / 2;
 	}
 }
@@ -152,7 +152,6 @@ void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 		drawDir.IsRotate90()? drawDirTbl90[saved.displayDir.GetValue()] :
 		drawDir.IsRotate180()? drawDirTbl180[saved.displayDir.GetValue()] :
 		drawDir.IsRotate270()? drawDirTbl270[saved.displayDir.GetValue()] : saved.displayDir;
-	//int xAdjust = display_.GetXAdjust(), yAdjust = display_.GetYAdjust();
 	int xAdjust, yAdjust;
 	display_.CalcPosAdjust(displayDir, &xAdjust, &yAdjust);
 	Rect rect = pRectClip? *pRectClip : Rect(0, 0, display_.GetWidthPhysical(), display_.GetHeightPhysical());
