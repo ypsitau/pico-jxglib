@@ -319,7 +319,7 @@ public:
 	Raw raw;
 	DispatcherEx dispatcherEx_;
 	int widthTypical_, heightTypical_;
-	int widthSet_, heightSet_;
+	int widthPhysical_, heightPhysical_;
 	int xAdjust_, yAdjust_;
 	struct Saved {
 		Dir displayDir;
@@ -331,7 +331,7 @@ public:
 			Display(Capability::Device | Capability::DrawImage, Format::RGB565, width, height),
 			raw(spi, gpio_RST, gpio_DC, gpio_CS, gpio_BL), dispatcherEx_(*this),
 			widthTypical_{widthTypical}, heightTypical_{heightTypical},
-			widthSet_{width}, heightSet_{height}, xAdjust_{0}, yAdjust_{0} {
+			widthPhysical_{width}, heightPhysical_{height}, xAdjust_{0}, yAdjust_{0} {
 		SetDispatcher(dispatcherEx_);
 	}
 	TFT_LCD(spi_inst_t* spi, int widthTypical, int heightTypical, int width, int height,
@@ -339,7 +339,7 @@ public:
 			Display(Capability::Device | Capability::DrawImage, Format::RGB565, width, height),
 			raw(spi, gpio_RST, gpio_DC, gpio_BL), dispatcherEx_(*this),
 			widthTypical_{widthTypical}, heightTypical_{heightTypical},
-			widthSet_{width}, heightSet_{height}, xAdjust_{0}, yAdjust_{0} {
+			widthPhysical_{width}, heightPhysical_{height}, xAdjust_{0}, yAdjust_{0} {
 		SetDispatcher(dispatcherEx_);
 	}
 public:
@@ -347,8 +347,11 @@ public:
 	const Saved& GetSaved() const { return saved_; }
 	bool UsesCS() { return raw.UsesCS(); }
 	int GetBytesPerLine() const { return GetWidth() * 2; }
+	int GetWidthPhysical() const { return widthPhysical_; }
+	int GetHeightPhysical() const { return heightPhysical_; }
 	int GetXAdjust() const { return xAdjust_; }
 	int GetYAdjust() const { return yAdjust_; }
+	void CalcPosAdjust(Dir displayDir, int* pxAdjust, int* pyAdjust) const;
 };
 
 }

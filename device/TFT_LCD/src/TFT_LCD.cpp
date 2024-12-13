@@ -14,14 +14,11 @@ void TFT_LCD::Initialize(Dir displayDir, const ConfigData& configData)
 	saved_.displayDir = displayDir;
 	saved_.configData = configData;
 	if (displayDir.IsHorz()) {
-		width_ = widthSet_, height_ = heightSet_;
-		xAdjust_ = (widthTypical_ - widthSet_) / 2;
-		if (displayDir.IsBottomToTop()) yAdjust_ = heightTypical_ - heightSet_;
+		width_ = widthPhysical_, height_ = heightPhysical_;
 	} else {
-		width_ = heightSet_, height_ = widthSet_;
-		if (displayDir.IsBottomToTop()) xAdjust_ = heightTypical_ - heightSet_;
-		yAdjust_ = (widthTypical_ - widthSet_) / 2;
+		width_ = heightPhysical_, height_ = widthPhysical_;
 	}
+	CalcPosAdjust(displayDir, &xAdjust_, &yAdjust_);
 	raw.InitGPIO();
 	raw.SoftwareReset();
 	::sleep_ms(150);
@@ -42,6 +39,17 @@ void TFT_LCD::Initialize(Dir displayDir, const ConfigData& configData)
 	Clear();
 	::sleep_ms(10);
 	raw.SetGPIO_BL(true);
+}
+
+void TFT_LCD::CalcPosAdjust(Dir displayDir, int* pxAdjust, int* pyAdjust) const
+{
+	if (displayDir.IsHorz()) {
+		*pxAdjust = (widthTypical_ - widthPhysical_) / 2;
+		if (displayDir.IsBottomToTop()) *pyAdjust = heightTypical_ - heightPhysical_;
+	} else {
+		if (displayDir.IsBottomToTop()) *pxAdjust = heightTypical_ - heightPhysical_;
+		*pyAdjust = (widthTypical_ - widthPhysical_) / 2;
+	}
 }
 
 //------------------------------------------------------------------------------
@@ -143,9 +151,11 @@ void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 	Dir displayDir =
 		drawDir.IsRotate90()? drawDirTbl90[saved.displayDir.GetValue()] :
 		drawDir.IsRotate180()? drawDirTbl180[saved.displayDir.GetValue()] :
-		drawDir.IsRotate270()? drawDirTbl270[saved.displayDir.GetValue()] : Dir::Normal;
-	int xAdjust = display_.GetXAdjust(), yAdjust = display_.GetYAdjust();
-	Rect rect = pRectClip? *pRectClip : Rect(0, 0, display_.GetWidth(), display_.GetHeight());
+		drawDir.IsRotate270()? drawDirTbl270[saved.displayDir.GetValue()] : saved.displayDir;
+	//int xAdjust = display_.GetXAdjust(), yAdjust = display_.GetYAdjust();
+	int xAdjust, yAdjust;
+	display_.CalcPosAdjust(displayDir, &xAdjust, &yAdjust);
+	Rect rect = pRectClip? *pRectClip : Rect(0, 0, display_.GetWidthPhysical(), display_.GetHeightPhysical());
 	int xSkip = 0, ySkip = 0;
 	int width, height;
 	if (drawDir.IsHorz()) {
@@ -156,7 +166,7 @@ void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 	if (!AdjustRange(&x, &width, rect.x, rect.width, &xSkip)) return;
 	if (!AdjustRange(&y, &height, rect.y, rect.height, &ySkip)) return;
 	x += xAdjust, y += yAdjust;
-	raw.MemoryDataAccessControl(drawDir, saved.configData);
+	raw.MemoryDataAccessControl(displayDir, saved.configData);
 	raw.ColumnAddressSet(x, x + width - 1);
 	raw.RowAddressSet(y, y + height - 1);
 	raw.MemoryWrite_Begin(16);
@@ -195,7 +205,7 @@ void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 		channel.set_config(config);
 		channel.set_read_addr(image.GetPointer())
 			.set_write_addr(&::spi_get_hw(spi)->dr)
-			.set_trans_count_trig(240 * 320)
+			.set_trans_count_trig(width * height)
 			.wait_for_finish_blocking();
 		channel.unclaim();
 #endif
