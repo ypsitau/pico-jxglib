@@ -14,10 +14,25 @@ using namespace jxglib;
 
 void DrawImage(Display* displayTbl[], int nDisplays)
 {
-	for (int iDisplay = 0; iDisplay < nDisplays; iDisplay++) {
-		Display& display = *displayTbl[iDisplay];
-		const Image& image = (display.GetWidth() < 240)? image_cat_128x160 : image_cat_240x240;
-		display.Clear().DrawImage(0, 0, image, nullptr, Display::Dir::Rotate270).Refresh();
+	struct TestCase {
+		const char* name;
+		Display::Dir dir;
+	} testCaseTbl[] = {
+		{ "Rotate 0", Display::Dir::Rotate0 },
+		{ "Rotate 90", Display::Dir::Rotate90 },
+		{ "Rotate 180", Display::Dir::Rotate180 },
+		{ "Rotate 270", Display::Dir::Rotate270 },
+	};
+	for (int iTestCase = 0; ; iTestCase++) {
+		if (iTestCase >= count_of(testCaseTbl)) iTestCase = 0;
+		TestCase& testCase = testCaseTbl[iTestCase];
+		::printf("%-20s Press Any Key\n", testCase.name);
+		for (int iDisplay = 0; iDisplay < nDisplays; iDisplay++) {
+			Display& display = *displayTbl[iDisplay];
+			const Image& image = (display.GetWidth() < 240)? image_cat_128x160 : image_cat_240x240;
+			display.Clear().DrawImage(0, 0, image, nullptr, testCase.dir).Refresh();
+		}
+		::getchar();
 	}
 }
 
@@ -64,6 +79,7 @@ int main()
 	display3.Initialize(displayDir);
 	display4.Initialize(displayDir);
 	display5.Initialize(displayDir);
+	//Display* displays[] = { &display4 };
 	Display* displays[] = { &display1, &display2, &display3, &display4, &display5 };
 	DrawImage(displays, count_of(displays));
 	//DrawText(displays, count_of(displays));
