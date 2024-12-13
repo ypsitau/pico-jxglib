@@ -58,6 +58,10 @@ public:
 	enum gpio_slew_rate gpio_get_slew_rate() const			{ return ::gpio_get_slew_rate(pin); }
 	const GPIO& set_drive_strength(enum gpio_drive_strength drive) const
 															{ ::gpio_set_drive_strength(pin, drive); return *this; }
+	const GPIO& set_drive_strength_2MA() const				{ return set_drive_strength(GPIO_DRIVE_STRENGTH_2MA); }
+	const GPIO& set_drive_strength_4MA() const				{ return set_drive_strength(GPIO_DRIVE_STRENGTH_4MA); }
+	const GPIO& set_drive_strength_8MA() const				{ return set_drive_strength(GPIO_DRIVE_STRENGTH_8MA); }
+	const GPIO& set_drive_strength_12MA() const				{ return set_drive_strength(GPIO_DRIVE_STRENGTH_12MA); }
 	enum gpio_drive_strength gpio_get_drive_strength() const{ return ::gpio_get_drive_strength(pin); }
 	const GPIO& set_irq_enabled(uint32_t event_mask, bool enabled) const
 															{ ::gpio_set_irq_enabled(pin, event_mask, enabled); return *this; }
