@@ -27,19 +27,18 @@ public:
 	bool IsValid() const { return pin != static_cast<uint>(-1); }
 	bool IsInvalid() const { return pin == static_cast<uint>(-1); }
 public:
-#if defined(GPIO_FUNC_XIP)
-	const GPIO& set_function_XIP() const					{ ::gpio_set_function(pin, GPIO_FUNC_XIP); return *this; }
-#endif
-	const GPIO& set_function_SPI() const					{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART() const					{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C() const					{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM() const					{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_SIO() const					{ ::gpio_set_function(pin, GPIO_FUNC_SIO); return *this; }
-	const GPIO& set_function_PIO0() const					{ ::gpio_set_function(pin, GPIO_FUNC_PIO0); return *this; }
-	const GPIO& set_function_PIO1() const					{ ::gpio_set_function(pin, GPIO_FUNC_PIO1); return *this; }
-	const GPIO& set_function_USB() const					{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
-public:
 	const GPIO& set_function(gpio_function_t fn) const		{ ::gpio_set_function(pin, fn); return *this; }
+#if defined(GPIO_FUNC_XIP)
+	const GPIO& set_function_XIP() const					{ return set_function(GPIO_FUNC_XIP); }
+#endif
+	const GPIO& set_function_SPI() const					{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART() const					{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C() const					{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM() const					{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_SIO() const					{ return set_function(GPIO_FUNC_SIO); }
+	const GPIO& set_function_PIO0() const					{ return set_function(GPIO_FUNC_PIO0); }
+	const GPIO& set_function_PIO1() const					{ return set_function(GPIO_FUNC_PIO1); }
+	const GPIO& set_function_USB() const					{ return set_function(GPIO_FUNC_USB); }
 	gpio_function_t get_function() const 					{ return ::gpio_get_function(pin); }
 	const GPIO& set_pulls(bool up, bool down) const			{ ::gpio_set_pulls(pin, up, down); return *this; }
 	const GPIO& pull_up() const								{ ::gpio_pull_up(pin); return *this; }
@@ -55,6 +54,8 @@ public:
 	const GPIO& set_input_hysteresis_enabled(bool enabled) const { ::gpio_set_input_hysteresis_enabled(pin, enabled); return *this; }
 	bool gpio_is_input_hysteresis_enabled() const			{ return ::gpio_is_input_hysteresis_enabled(pin); }
 	const GPIO& set_slew_rate(enum gpio_slew_rate slew) const { ::gpio_set_slew_rate(pin, slew); return *this; }
+	const GPIO& set_slew_rate_SLOW() const					{ return set_slew_rate(GPIO_SLEW_RATE_SLOW); }
+	const GPIO& set_slew_rate_FAST() const					{ return set_slew_rate(GPIO_SLEW_RATE_FAST); }
 	enum gpio_slew_rate gpio_get_slew_rate() const			{ return ::gpio_get_slew_rate(pin); }
 	const GPIO& set_drive_strength(enum gpio_drive_strength drive) const
 															{ ::gpio_set_drive_strength(pin, drive); return *this; }
@@ -99,6 +100,8 @@ public:
 	static void set_dir_masked(uint32_t mask, uint32_t value) { ::gpio_set_dir_masked(mask, value); }
 	static void set_dir_all_bits(uint32_t values)			{ ::gpio_set_dir_all_bits(values); }
 	const GPIO& set_dir(bool out) const						{ ::gpio_set_dir(pin, out); return *this; }
+	const GPIO& set_dir_OUT() const							{ return set_dir(GPIO_OUT); }
+	const GPIO& set_dir_IN() const							{ return set_dir(GPIO_IN); }
 	bool is_dir_out() const									{ return ::gpio_is_dir_out(pin); }
 	uint get_dir() const									{ return ::gpio_get_dir(pin); }
 public:
@@ -171,307 +174,307 @@ inline void GPIO::adc_set_round_robin(const GPIO_ADC& gpio1, const GPIO_ADC& gpi
 class GPIO0_T : public GPIO {
 public:
 	GPIO0_T() : GPIO(0) {}
-	const GPIO& set_function_SPI0_RX() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART0_TX() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C0_SDA() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM0_A() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_USB_OVCUR_DET() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI0_RX() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART0_TX() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C0_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM0_A() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_USB_OVCUR_DET() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO1_T : public GPIO {
 public:
 	GPIO1_T() : GPIO(1) {}
-	const GPIO& set_function_SPI0_CSn() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART0_RX() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C0_SCL() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM0_B() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_USB_VBUS_DET() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI0_CSn() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART0_RX() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C0_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM0_B() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_USB_VBUS_DET() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO2_T : public GPIO {
 public:
 	GPIO2_T() : GPIO(2) {}
-	const GPIO& set_function_SPI0_SCK() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART0_CTS() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C1_SDA() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM1_A() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_USB_VBUS_DET() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI0_SCK() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART0_CTS() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C1_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM1_A() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_USB_VBUS_DET() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO3_T : public GPIO {
 public:
 	GPIO3_T() : GPIO(3) {}
-	const GPIO& set_function_SPI0_TX() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART0_RTS() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C1_SCL() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM1_B() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_USB_OVCUR_DET() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI0_TX() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART0_RTS() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C1_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM1_B() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_USB_OVCUR_DET() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO4_T : public GPIO {
 public:
 	GPIO4_T() : GPIO(4) {}
-	const GPIO& set_function_SPI0_RX() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART1_TX() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C0_SDA() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM2_A() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_USB_VBUS_DET() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI0_RX() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART1_TX() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C0_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM2_A() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_USB_VBUS_DET() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO5_T : public GPIO {
 public:
 	GPIO5_T() : GPIO(5) {}
-	const GPIO& set_function_SPI0_CSn() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART1_RX() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C0_SCL() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM2_B() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_USB_VBUS_EN() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI0_CSn() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART1_RX() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C0_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM2_B() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_USB_VBUS_EN() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO6_T : public GPIO {
 public:
 	GPIO6_T() : GPIO(6) {}
-	const GPIO& set_function_SPI0_SCK() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART1_CTS() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C1_SDA() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM3_A() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_USB_OVCUR_DET() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI0_SCK() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART1_CTS() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C1_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM3_A() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_USB_OVCUR_DET() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO7_T : public GPIO {
 public:
 	GPIO7_T() : GPIO(7) {}
-	const GPIO& set_function_SPI0_TX() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART1_RTS() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C1_SCL() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM3_B() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_USB_VBUS_DET() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI0_TX() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART1_RTS() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C1_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM3_B() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_USB_VBUS_DET() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO8_T : public GPIO {
 public:
 	GPIO8_T() : GPIO(8) {}
-	const GPIO& set_function_SPI1_RX() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART1_TX() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C0_SDA() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM4_A() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_USB_VBUS_EN() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI1_RX() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART1_TX() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C0_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM4_A() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_USB_VBUS_EN() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO9_T : public GPIO {
 public:
 	GPIO9_T() : GPIO(9) {}
-	const GPIO& set_function_SPI1_CSn() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART1_RX() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C0_SCL() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM4_B() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_USB_OVCUR_DET() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI1_CSn() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART1_RX() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C0_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM4_B() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_USB_OVCUR_DET() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO10_T : public GPIO {
 public:
 	GPIO10_T() : GPIO(10) {}
-	const GPIO& set_function_SPI1_SCK() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART1_CTS() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C1_SDA() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM5_A() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_USB_VBUS_DET() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI1_SCK() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART1_CTS() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C1_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM5_A() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_USB_VBUS_DET() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO11_T : public GPIO {
 public:
 	GPIO11_T() : GPIO(11) {}
-	const GPIO& set_function_SPI1_TX() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART1_RTS() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C1_SCL() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM5_B() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_USB_VBUS_EN() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI1_TX() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART1_RTS() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C1_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM5_B() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_USB_VBUS_EN() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO12_T : public GPIO {
 public:
 	GPIO12_T() : GPIO(12) {}
-	const GPIO& set_function_SPI1_RX() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART0_TX() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C0_SDA() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM6_A() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_USB_OVCUR_DET() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI1_RX() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART0_TX() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C0_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM6_A() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_USB_OVCUR_DET() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO13_T : public GPIO {
 public:
 	GPIO13_T() : GPIO(13) {}
-	const GPIO& set_function_SPI1_CSn() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART0_RX() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C0_SCL() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM6_B() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_USB_VBUS_DET() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI1_CSn() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART0_RX() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C0_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM6_B() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_USB_VBUS_DET() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO14_T : public GPIO {
 public:
 	GPIO14_T() : GPIO(14) {}
-	const GPIO& set_function_SPI1_SCK() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART0_CTS() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C1_SDA() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM7_A() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_USB_VBUS_EN() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI1_SCK() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART0_CTS() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C1_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM7_A() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_USB_VBUS_EN() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO15_T : public GPIO {
 public:
 	GPIO15_T() : GPIO(15) {}
-	const GPIO& set_function_SPI1_TX() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART0_RTS() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C1_SCL() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM7_B() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_USB_OVCUR_DET() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI1_TX() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART0_RTS() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C1_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM7_B() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_USB_OVCUR_DET() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO16_T : public GPIO {
 public:
 	GPIO16_T() : GPIO(16) {}
-	const GPIO& set_function_SPI0_RX() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART0_TX() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C0_SDA() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM0_A() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_USB_VBUS_DET() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI0_RX() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART0_TX() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C0_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM0_A() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_USB_VBUS_DET() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO17_T : public GPIO {
 public:
 	GPIO17_T() : GPIO(17) {}
-	const GPIO& set_function_SPI0_CSn() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART0_RX() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C0_SCL() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM0_B() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_USB_VBUS_EN() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI0_CSn() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART0_RX() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C0_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM0_B() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_USB_VBUS_EN() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO18_T : public GPIO {
 public:
 	GPIO18_T() : GPIO(18) {}
-	const GPIO& set_function_SPI0_SCK() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART0_CTS() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C1_SDA() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM1_A() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_USB_OVCUR_DET() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI0_SCK() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART0_CTS() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C1_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM1_A() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_USB_OVCUR_DET() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO19_T : public GPIO {
 public:
 	GPIO19_T() : GPIO(19) {}
-	const GPIO& set_function_SPI0_TX() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART0_RTS() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C0_SCL() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM1_B() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_USB_VBUS_DET() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI0_TX() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART0_RTS() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C0_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM1_B() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_USB_VBUS_DET() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO20_T : public GPIO {
 public:
 	GPIO20_T() : GPIO(20) {}
-	const GPIO& set_function_SPI0_RX() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART1_TX() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C0_SDA() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM2_A() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_CLOCK_GPIN0() const	{ ::gpio_set_function(pin, GPIO_FUNC_GPCK); return *this; }
-	const GPIO& set_function_USB_VBUS_DET() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI0_RX() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART1_TX() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C0_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM2_A() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_CLOCK_GPIN0() const	{ return set_function(GPIO_FUNC_GPCK); }
+	const GPIO& set_function_USB_VBUS_DET() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO21_T : public GPIO {
 public:
 	GPIO21_T() : GPIO(21) {}
-	const GPIO& set_function_SPI0_CSn() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART1_RX() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C0_SCL() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM2_B() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_CLOCK_GPOUT0() const	{ ::gpio_set_function(pin, GPIO_FUNC_GPCK); return *this; }
-	const GPIO& set_function_USB_OVCUR_DET() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI0_CSn() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART1_RX() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C0_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM2_B() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_CLOCK_GPOUT0() const	{ return set_function(GPIO_FUNC_GPCK); }
+	const GPIO& set_function_USB_OVCUR_DET() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO22_T : public GPIO {
 public:
 	GPIO22_T() : GPIO(22) {}
-	const GPIO& set_function_SPI0_SCK() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART1_CTS() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C1_SDA() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM3_A() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_CLOCK_GPIN1() const	{ ::gpio_set_function(pin, GPIO_FUNC_GPCK); return *this; }
-	const GPIO& set_function_USB_VBUS_DET() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI0_SCK() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART1_CTS() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C1_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM3_A() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_CLOCK_GPIN1() const	{ return set_function(GPIO_FUNC_GPCK); }
+	const GPIO& set_function_USB_VBUS_DET() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO23_T : public GPIO {
 public:
 	GPIO23_T() : GPIO(23) {}
-	const GPIO& set_function_SPI0_TX() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART1_RTS() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C1_SCL() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM3_B() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_CLOCK_GPOUT1() const	{ ::gpio_set_function(pin, GPIO_FUNC_GPCK); return *this; }
-	const GPIO& set_function_USB_VBUS_EN() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI0_TX() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART1_RTS() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C1_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM3_B() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_CLOCK_GPOUT1() const	{ return set_function(GPIO_FUNC_GPCK); }
+	const GPIO& set_function_USB_VBUS_EN() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO24_T : public GPIO {
 public:
 	GPIO24_T() : GPIO(24) {}
-	const GPIO& set_function_SPI1_RX() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART1_TX() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C1_SDA() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM4_A() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_CLOCK_GPOUT2() const	{ ::gpio_set_function(pin, GPIO_FUNC_GPCK); return *this; }
-	const GPIO& set_function_USB_OVCUR_DET() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI1_RX() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART1_TX() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C1_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM4_A() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_CLOCK_GPOUT2() const	{ return set_function(GPIO_FUNC_GPCK); }
+	const GPIO& set_function_USB_OVCUR_DET() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO25_T : public GPIO {
 public:
 	GPIO25_T() : GPIO(25) {}
-	const GPIO& set_function_SPI1_CSn() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART1_RX() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C0_SCL() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM4_B() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_CLOCK_GPOUT3() const	{ ::gpio_set_function(pin, GPIO_FUNC_GPCK); return *this; }
-	const GPIO& set_function_USB_VBUS_DET() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI1_CSn() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART1_RX() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C0_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM4_B() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_CLOCK_GPOUT3() const	{ return set_function(GPIO_FUNC_GPCK); }
+	const GPIO& set_function_USB_VBUS_DET() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO26_T : public GPIO_ADC {
 public:
 	GPIO26_T() : GPIO_ADC(26) {}
-	const GPIO& set_function_SPI1_SCK() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART0_CTS() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C1_SDA() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM5_A() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_USB_VBUS_EN() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI1_SCK() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART0_CTS() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C1_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM5_A() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_USB_VBUS_EN() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO27_T : public GPIO_ADC {
 public:
 	GPIO27_T() : GPIO_ADC(27) {}
-	const GPIO& set_function_SPI1_TX() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART1_RTS() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C1_SCL() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM5_B() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_USB_OVCUR_DET() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI1_TX() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART1_RTS() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C1_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM5_B() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_USB_OVCUR_DET() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO28_T : public GPIO_ADC {
 public:
 	GPIO28_T() : GPIO_ADC(28) {}
-	const GPIO& set_function_SPI1_RX() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART0_TX() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C0_SDA() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM6_A() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_USB_VBUS_DET() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI1_RX() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART0_TX() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C0_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM6_A() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_USB_VBUS_DET() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 class GPIO29_T : public GPIO_ADC {
 public:
 	GPIO29_T() : GPIO_ADC(29) {}
-	const GPIO& set_function_SPI1_CSn() const		{ ::gpio_set_function(pin, GPIO_FUNC_SPI); return *this; }
-	const GPIO& set_function_UART0_RX() const		{ ::gpio_set_function(pin, GPIO_FUNC_UART); return *this; }
-	const GPIO& set_function_I2C0_SCL() const		{ ::gpio_set_function(pin, GPIO_FUNC_I2C); return *this; }
-	const GPIO& set_function_PWM6_B() const			{ ::gpio_set_function(pin, GPIO_FUNC_PWM); return *this; }
-	const GPIO& set_function_USB_VBUS_EN() const	{ ::gpio_set_function(pin, GPIO_FUNC_USB); return *this; }
+	const GPIO& set_function_SPI1_CSn() const		{ return set_function(GPIO_FUNC_SPI); }
+	const GPIO& set_function_UART0_RX() const		{ return set_function(GPIO_FUNC_UART); }
+	const GPIO& set_function_I2C0_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
+	const GPIO& set_function_PWM6_B() const			{ return set_function(GPIO_FUNC_PWM); }
+	const GPIO& set_function_USB_VBUS_EN() const	{ return set_function(GPIO_FUNC_USB); }
 };
 
 extern const GPIO0_T GPIO0;
