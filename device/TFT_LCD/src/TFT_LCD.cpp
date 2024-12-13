@@ -130,8 +130,6 @@ void TFT_LCD::DispatcherEx::DrawBitmap(int x, int y, const void* data, int width
 	raw.MemoryWrite_End();
 }
 
-
-
 void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Rect* pRectClip, DrawDir drawDir)
 {
 	using PA = PageAddressOrder;
