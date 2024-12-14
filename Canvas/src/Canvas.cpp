@@ -73,7 +73,7 @@ void Canvas::Dispatcher_T<T_Color>::DrawBitmap(int x, int y, const void* data, i
 }
 
 template<typename T_Color>
-void Canvas::Dispatcher_T<T_Color>::DrawImage(int x, int y, const Image& image, const Rect* pRectClip, DrawDir drawDir)
+void Canvas::Dispatcher_T<T_Color>::DrawImage(int x, int y, const Image& image, const Rect& rectClip, DrawDir drawDir)
 {
 	Image& imageOwn = canvas_.GetImageOwn();
 	int xSkip = 0, ySkip = 0;
@@ -107,10 +107,10 @@ void Canvas::Dispatcher_T<T_Color>::DrawImage(int x, int y, const Image& image, 
 }
 
 template<typename T_Color>
-void Canvas::Dispatcher_T<T_Color>::ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect* pRect)
+void Canvas::Dispatcher_T<T_Color>::ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip)
 {
 	Image& imageOwn = canvas_.GetImageOwn();
-	Rect rect = pRect? *pRect : Rect(0, 0, imageOwn.GetWidth(), imageOwn.GetHeight());
+	Rect rect = rectClip.IsEmpty()? Rect(0, 0, imageOwn.GetWidth(), imageOwn.GetHeight()) : rectClip;
 	if (rect.width <= wdScroll) return;
 	uint16_t* pDstPixel;
 	const uint16_t* pSrcPixel;
@@ -145,10 +145,10 @@ void Canvas::Dispatcher_T<T_Color>::ScrollHorz(DirHorz dirHorz, int wdScroll, co
 }
 
 template<typename T_Color>
-void Canvas::Dispatcher_T<T_Color>::ScrollVert(DirVert dirVert, int htScroll, const Rect* pRect)
+void Canvas::Dispatcher_T<T_Color>::ScrollVert(DirVert dirVert, int htScroll, const Rect& rectClip)
 {
 	Image& imageOwn = canvas_.GetImageOwn();
-	Rect rect = pRect? *pRect : Rect(0, 0, imageOwn.GetWidth(), imageOwn.GetHeight());
+	Rect rect = rect.IsEmpty()? Rect(0, 0, imageOwn.GetWidth(), imageOwn.GetHeight()) : rectClip;
 	if (rect.height <= htScroll) return;
 	uint16_t* pDstLine;
 	const uint16_t* pSrcLine;
@@ -185,24 +185,24 @@ void Canvas::Dispatcher_T<T_Color>::ScrollVert(DirVert dirVert, int htScroll, co
 //------------------------------------------------------------------------------
 // Canvas
 //------------------------------------------------------------------------------
-bool Canvas::AttachOutput(Drawable& drawableOut, const Rect* pRect, AttachDir attachDir)
+bool Canvas::AttachOutput(Drawable& drawableOut, const Rect& rect, AttachDir attachDir)
 {
 	const Format& formatOut = drawableOut.GetFormat();
 	int wdImage, htImage;
-	if (pRect) {
-		if (attachDir.IsHorz()) {
-			wdImage = pRect->width, htImage = pRect->height;
-		} else {
-			wdImage = pRect->height, htImage = pRect->width;
-		}
-		output_.rect = *pRect;
-	} else {
+	if (rect.IsEmpty()) {
 		if (attachDir.IsHorz()) {
 			wdImage = drawableOut.GetWidth(), htImage = drawableOut.GetHeight();
 		} else {
 			wdImage = drawableOut.GetHeight(), htImage = drawableOut.GetWidth();
 		}
 		output_.rect = Rect(0, 0, drawableOut.GetWidth(), drawableOut.GetHeight());
+	} else {
+		if (attachDir.IsHorz()) {
+			wdImage = rect.width, htImage = rect.height;
+		} else {
+			wdImage = rect.height, htImage = rect.width;
+		}
+		output_.rect = rect;
 	}
 	SetCapacity(formatOut, wdImage, htImage);
 	output_.attachDir = attachDir;
@@ -243,7 +243,7 @@ void Canvas::DispatcherEx::Refresh()
 	const Output& output = canvas_.GetOutput();
 	if (!pDrawableOut) return;
 	//pDrawableOut->DrawImage(0, 0, imageOwn, &output.rect, output.attachDir);
-	pDrawableOut->DrawImage(output.rect.x, output.rect.y, imageOwn, nullptr, output.attachDir);
+	pDrawableOut->DrawImage(output.rect.x, output.rect.y, imageOwn, Rect::Empty, output.attachDir);
 	pDrawableOut->Refresh();
 }
 

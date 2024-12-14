@@ -37,9 +37,9 @@ public:
 		virtual void DrawRectFill(int x, int y, int width, int height, const Color& color) override;
 		virtual void DrawBitmap(int x, int y, const void* data, int width, int height,
 			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override;
-		virtual void DrawImage(int x, int y, const Image& image, const Rect* pRectClip, DrawDir drawDir) override;
-		virtual void ScrollHorz(DirHorz dirHorz, int width, const Rect* pRect) override;
-		virtual void ScrollVert(DirVert dirVert, int height, const Rect* pRect) override;
+		virtual void DrawImage(int x, int y, const Image& image, const Rect& rectClip, DrawDir drawDir) override;
+		virtual void ScrollHorz(DirHorz dirHorz, int width, const Rect& rect) override;
+		virtual void ScrollVert(DirVert dirVert, int height, const Rect& rect) override;
 	};
 	using AttachDir = DrawDir;
 private:
@@ -56,12 +56,9 @@ public:
 	Drawable* GetDrawableOut() { return pDrawableOut_; }
 	Image& GetImageOwn() { return imageOwn_; }
 	const Output& GetOutput() const { return output_; }
-	bool AttachOutput(Drawable& drawable, const Rect* pRect = nullptr, AttachDir attachDir = AttachDir::Normal);
-	bool AttachOutput(Drawable& drawable, const Rect& rect, AttachDir attachDir = AttachDir::Normal) {
-		return AttachOutput(drawable, &rect, attachDir);
-	}
+	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, AttachDir attachDir = AttachDir::Normal);
 	bool AttachOutput(Drawable& drawable, AttachDir attachDir) {
-		return AttachOutput(drawable, nullptr, attachDir);
+		return AttachOutput(drawable, Rect::Empty, attachDir);
 	}
 };
 

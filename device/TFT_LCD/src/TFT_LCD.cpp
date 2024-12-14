@@ -130,7 +130,7 @@ void TFT_LCD::DispatcherEx::DrawBitmap(int x, int y, const void* data, int width
 	raw.MemoryWrite_End();
 }
 
-void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Rect* pRectClip, DrawDir drawDir)
+void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Rect& rectClip, DrawDir drawDir)
 {
 	using PA = PageAddressOrder;
 	using CA = ColumnAddressOrder;
@@ -152,7 +152,7 @@ void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 		drawDir.IsRotate270()? drawDirTbl270[saved.displayDir.GetValue()] : saved.displayDir;
 	int xAdjust, yAdjust;
 	display_.CalcPosAdjust(displayDir, &xAdjust, &yAdjust);
-	Rect rect = pRectClip? *pRectClip : Rect(0, 0, display_.GetWidthPhysical(), display_.GetHeightPhysical());
+	Rect rect = rectClip.IsEmpty()? Rect(0, 0, display_.GetWidthPhysical(), display_.GetHeightPhysical()) : rectClip;
 	int xSkip = 0, ySkip = 0;
 	int width, height;
 	if (drawDir.IsHorz()) {
@@ -211,12 +211,12 @@ void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 	raw.MemoryDataAccessControl(saved.displayDir, saved.configData);
 }
 
-void TFT_LCD::DispatcherEx::ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect* pRect)
+void TFT_LCD::DispatcherEx::ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip)
 {
 	// do nothing
 }
 
-void TFT_LCD::DispatcherEx::ScrollVert(DirVert dirVert, int htScroll, const Rect* pRect)
+void TFT_LCD::DispatcherEx::ScrollVert(DirVert dirVert, int htScroll, const Rect& rectClip)
 {
 	// do nothing
 }

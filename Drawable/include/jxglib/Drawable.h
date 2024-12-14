@@ -35,9 +35,9 @@ public:
 		virtual void DrawRectFill(int x, int y, int width, int height, const Color& color) = 0;
 		virtual void DrawBitmap(int x, int y, const void* data, int width, int height,
 			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) = 0;
-		virtual void DrawImage(int x, int y, const Image& image, const Rect* pRectClip, DrawDir drawDir) = 0;
-		virtual void ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect* pRect) = 0;
-		virtual void ScrollVert(DirVert dirVert, int htScroll, const Rect* pRect) = 0;
+		virtual void DrawImage(int x, int y, const Image& image, const Rect& rectClip, DrawDir drawDir) = 0;
+		virtual void ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip) = 0;
+		virtual void ScrollVert(DirVert dirVert, int htScroll, const Rect& rectClip) = 0;
 	};
 	class DispatcherNone : public Dispatcher {
 	public:
@@ -50,9 +50,9 @@ public:
 		virtual void DrawRectFill(int x, int y, int width, int height, const Color& color) override {}
 		virtual void DrawBitmap(int x, int y, const void* data, int width, int height,
 			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override {}
-		virtual void DrawImage(int x, int y, const Image& image, const Rect* pRectClip, DrawDir drawDir) override {}
-		virtual void ScrollHorz(DirHorz dirHorz, int width, const Rect* pRect) override {};
-		virtual void ScrollVert(DirVert dirVert, int height, const Rect* pRect) override {};
+		virtual void DrawImage(int x, int y, const Image& image, const Rect& rectClip, DrawDir drawDir) override {}
+		virtual void ScrollHorz(DirHorz dirHorz, int width, const Rect& rectClip) override {};
+		virtual void ScrollVert(DirVert dirVert, int height, const Rect& rectClip) override {};
 	};
 	struct Context {
 		Color colorFg;
@@ -193,24 +193,16 @@ public:
 		DrawBitmap(pt.x, pt.y, data, width, height, transparentBgFlag, scaleX, scaleY);
 		return *this;
 	}
-	Drawable& DrawImage(int x, int y, const Image& image, const Rect* pRectClip = nullptr, DrawDir drawDir = DrawDir::Normal) {
-		pDispatcher_->DrawImage(x, y, image, pRectClip, drawDir);
+	Drawable& DrawImage(int x, int y, const Image& image, const Rect& rectClip = Rect::Empty, DrawDir drawDir = DrawDir::Normal) {
+		pDispatcher_->DrawImage(x, y, image, rectClip, drawDir);
 		return *this;
 	}
-	Drawable& ScrollHorz(DirHorz dirHorz, int wdScroll) {
-		pDispatcher_->ScrollHorz(dirHorz, wdScroll, nullptr);
+	Drawable& ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip = Rect::Empty) {
+		pDispatcher_->ScrollHorz(dirHorz, wdScroll, rectClip);
 		return *this;
 	}
-	Drawable& ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rect) {
-		pDispatcher_->ScrollHorz(dirHorz, wdScroll, &rect);
-		return *this;
-	}
-	Drawable& ScrollVert(DirVert dirVert, int htScroll) {
-		pDispatcher_->ScrollVert(dirVert, htScroll, nullptr);
-		return *this;
-	}
-	Drawable& ScrollVert(DirVert dirVert, int htScroll, const Rect& rect) {
-		pDispatcher_->ScrollVert(dirVert, htScroll, &rect);
+	Drawable& ScrollVert(DirVert dirVert, int htScroll, const Rect& rectClip = Rect::Empty) {
+		pDispatcher_->ScrollVert(dirVert, htScroll, rectClip);
 		return *this;
 	}
 	Drawable& DrawChar(int x, int y, const FontEntry& fontEntry);

@@ -142,14 +142,14 @@ void SSD1306::DispatcherEx::DrawBitmap(int x, int y, const void* data, int width
 	}
 }
 
-void SSD1306::DispatcherEx::DrawImage(int x, int y, const Image& image, const Rect* pRectClip, DrawDir drawDir)
+void SSD1306::DispatcherEx::DrawImage(int x, int y, const Image& image, const Rect& rectClip, DrawDir drawDir)
 {
 	// do nothing
 }
 
-void SSD1306::DispatcherEx::ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect* pRect)
+void SSD1306::DispatcherEx::ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip)
 {
-	Rect rect = pRect? *pRect : Rect(0, 0, display_.GetWidth(), display_.GetHeight());
+	Rect rect = rectClip.IsEmpty()? Rect(0, 0, display_.GetWidth(), display_.GetHeight()) : rectClip;
 	if (rect.width <= wdScroll) return;
 	int bytesPerPage = display_.GetWidth();
 	uint8_t* pSrcTop;
@@ -177,9 +177,9 @@ void SSD1306::DispatcherEx::ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect
 	}
 }
 
-void SSD1306::DispatcherEx::ScrollVert(DirVert dirVert, int htScroll, const Rect* pRect)
+void SSD1306::DispatcherEx::ScrollVert(DirVert dirVert, int htScroll, const Rect& rectClip)
 {
-	Rect rect = pRect? *pRect : Rect(0, 0, display_.GetWidth(), display_.GetHeight());
+	Rect rect = rectClip.IsEmpty()? Rect(0, 0, display_.GetWidth(), display_.GetHeight()) : rectClip;
 	if (rect.height <= htScroll) return;
 	int bytesPerPage = display_.GetWidth();
 	uint64_t bits = 0;

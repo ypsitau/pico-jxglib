@@ -9,5 +9,6 @@ namespace jxglib {
 // Rect
 //------------------------------------------------------------------------------
 const Rect Rect::Zero { 0, 0, 0, 0 };
+const Rect Rect::Empty { 0, 0, 0, 0 };
 
 }

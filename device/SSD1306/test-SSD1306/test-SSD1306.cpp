@@ -273,8 +273,8 @@ int main()
 {
 	::stdio_init_all();
 	::i2c_init(i2c0, 400000);
-	GPIO16.set_function_I2C0_SDA().pull_up();
-	GPIO17.set_function_I2C0_SCL().pull_up();
+	GPIO4.set_function_I2C0_SDA().pull_up();
+	GPIO5.set_function_I2C0_SCL().pull_up();
 	SSD1306 display(i2c0);
 	display.Initialize();
 	//Test_DrawRectFill(display);
@@ -296,11 +296,20 @@ int main()
 		"抜かしたことがある。なぜそんなむやみなことをしたかと聞く人があるかもしれない。";
 	display.SetFont(Font::shinonome12);
 	display.SetSpacingRatio(1, 1);
-	display.DrawStringWrap(0, 0, str);
-	display.Refresh();
-	//for (;;) {
-	//	display.ScrollVert(DirVert::Up, 1);
-	//	//display.ScrollHorz(DirHorz::Right, 1);
-	//	display.Refresh();
-	//}
+	do {
+		display.DrawStringWrap(0, 0, str);
+		display.Refresh();
+		for (int i = 0; i < 64; i++) {
+			display.ScrollVert(DirVert::Up, 1);
+			display.Refresh();
+		}
+	} while (0);
+	do {
+		display.DrawStringWrap(0, 0, str);
+		display.Refresh();
+		for (int i = 0; i < 128; i++) {
+			display.ScrollHorz(DirHorz::Left, 1);
+			display.Refresh();
+		}
+	} while (0);
 }

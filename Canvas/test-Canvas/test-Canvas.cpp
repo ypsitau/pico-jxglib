@@ -6,6 +6,7 @@
 #include "jxglib/ILI9341.h"
 #include "jxglib/sample/cat-240x240.h"
 #include "jxglib/sample/cat-240x320.h"
+#include "jxglib/sample/cat-128x160.h"
 #include "Font/shinonome16.h"
 
 using namespace jxglib;
@@ -50,7 +51,7 @@ int main()
 	canvas.Refresh();
 #endif
 #if 1
-	canvas.AttachOutput(display1);
+	canvas.AttachOutput(display2);
 	//canvas.AttachOutput(display2);
 	//canvas.AttachOutput(display3);
 	//canvas.AttachOutput(display4);
@@ -66,7 +67,8 @@ int main()
 	//	canvas.Refresh();
 	//	::sleep_ms(1000);
 	//}
-	canvas.DrawImage(0, 0, image_cat_240x320, nullptr, Canvas::DrawDir::Rotate0);
+	//canvas.DrawImage(0, 0, image_cat_128x160, nullptr, Canvas::DrawDir::Rotate0);
+	canvas.DrawImage(100, 100, image_cat_128x160, Rect::Empty, Canvas::DrawDir::Rotate0);
 	canvas.Refresh();
 #endif
 #if 0
