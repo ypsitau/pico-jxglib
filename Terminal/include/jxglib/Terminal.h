@@ -18,6 +18,7 @@ public:
 	using AttachDir = Canvas::AttachDir;
 private:
 	Drawable* pDrawable_;
+	Rect rectDst_;
 	Canvas canvas_;
 	Point ptCursor_;
 	UTF8Decoder decoder_;
@@ -31,6 +32,7 @@ public:
 public:
 	Drawable& GetDrawable() { return *pDrawable_; }
 	const Drawable& GetDrawable() const { return *pDrawable_; }
+	const Rect& GetRectDst() const { return rectDst_; }
 public:
 	Terminal& SetFont(const FontSet& fontSet, int fontScale = 1) {
 		pDrawable_->SetFont(fontSet, fontScale);

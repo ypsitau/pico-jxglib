@@ -148,7 +148,7 @@ template<typename T_Color>
 void Canvas::Dispatcher_T<T_Color>::ScrollVert(DirVert dirVert, int htScroll, const Rect& rectClip)
 {
 	Image& imageOwn = canvas_.GetImageOwn();
-	Rect rect = rect.IsEmpty()? Rect(0, 0, imageOwn.GetWidth(), imageOwn.GetHeight()) : rectClip;
+	Rect rect = rectClip.IsEmpty()? Rect(0, 0, imageOwn.GetWidth(), imageOwn.GetHeight()) : rectClip;
 	if (rect.height <= htScroll) return;
 	uint16_t* pDstLine;
 	const uint16_t* pSrcLine;

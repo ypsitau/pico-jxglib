@@ -10,6 +10,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 bool Terminal::AttachOutput(Drawable& drawable, const Rect& rect, AttachDir attachDir)
 {
+	rectDst_ = rect.IsEmpty()? Rect(0, 0, drawable.GetWidth(), drawable.GetHeight()) : rect;
 	if (drawable.CanScrollVert()) {
 		pDrawable_ = &drawable;
 	} else {
@@ -56,6 +57,7 @@ Printable& Terminal::Locate(int col, int row)
 Printable& Terminal::PutChar(char ch)
 {
 	Drawable& drawable = GetDrawable();
+	const Rect& rectDst = GetRectDst();
 	int yAdvance = drawable.CalcAdvanceY();
 	const FontSet& fontSet = drawable.GetFont();
 	uint32_t code;
@@ -65,7 +67,7 @@ Printable& Terminal::PutChar(char ch)
 	if (code == '\n') {
 		drawable.Refresh();
 		ptCursor_.x = 0;
-		if (ptCursor_.y + yAdvance * 2 <= drawable.GetHeight()) {
+		if (ptCursor_.y + yAdvance * 2 <= rectDst.height) {
 			ptCursor_.y += yAdvance;
 		} else {
 			drawable.ScrollVert(DirVert::Up, yAdvance);
@@ -73,11 +75,11 @@ Printable& Terminal::PutChar(char ch)
 	} else if (code == '\r') {
 		drawable.Refresh();
 		ptCursor_.x = 0;
-		drawable.DrawRectFill(0, ptCursor_.y, drawable.GetWidth(), yAdvance, drawable.GetColorBg());
+		drawable.DrawRectFill(0, ptCursor_.y, rectDst.width, yAdvance, drawable.GetColorBg());
 	} else {
-		if (ptCursor_.x + xAdvance > drawable.GetWidth()) {
+		if (ptCursor_.x + xAdvance > rectDst.width) {
 			ptCursor_.x = 0;
-			if (ptCursor_.y + yAdvance * 2 <= drawable.GetHeight()) {
+			if (ptCursor_.y + yAdvance * 2 <= rectDst.height) {
 				ptCursor_.y += yAdvance;
 			} else {
 				drawable.ScrollVert(DirVert::Up, yAdvance);
