@@ -51,7 +51,7 @@ int main()
 	terminal0.SetFont(Font::shinonome12);
 	terminal1.SetFont(Font::shinonome12);
 	//terminal2.SetFont(Font::shinonome12);
-	//terminal0.Dump(reinterpret_cast<const void*>(0), 8 * 20);
+	terminal0.Dump(reinterpret_cast<const void*>(0), 8 * 20);
 	terminal1.Dump(reinterpret_cast<const void*>(0), 8 * 20);
 	//terminal2.Dump(reinterpret_cast<const void*>(0x1000), 8 * 20);
 #if 0
