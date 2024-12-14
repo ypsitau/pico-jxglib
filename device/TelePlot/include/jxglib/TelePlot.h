@@ -3,6 +3,7 @@
 //==============================================================================
 #ifndef PICO_JXGLIB_TELEPLOT_H
 #define PICO_JXGLIB_TELEPLOT_H
+#include <string.h>
 #include "pico/stdlib.h"
 #include "jxglib/Point.h"
 #include "jxglib/UART.h"
@@ -16,7 +17,8 @@ class TelePlot {
 public:
 	enum class HorzAxis {
 		Sequence,
-		ProgramTime,
+		ProgramTime_usec,
+		ProgramTime_msec,
 		ReceptionTime,
 	};
 	class ValueFormatter {
@@ -58,19 +60,23 @@ public:
 		absolute_time_t absTimeStart_;	// used for HorzAxis::Device
 		int sequenceStep_;				// used for HorzAxis::Sequence
 		bool clearDataFlag_;
+		bool noPlotFlag_;
+		char unit_[32];
+		bool unitFlag_;
 	public:
 		Telemetry();
 		Telemetry(Printable& printable, const char* name, HorzAxis horzAxis, int sequenceStep);
 	public:
 		Telemetry& Reset() { cnt_ = 0; return *this; }
 		Telemetry& ClearData() { cnt_ = 0; clearDataFlag_ = true; return *this; }
+		Telemetry& NoPlot() { noPlotFlag_ = true; return *this; }
+		Telemetry& Unit(const char* unit) { ::strncpy(unit_, unit, sizeof(unit_)); unitFlag_ = true; return *this; }
 	public:
 		Printable& GetPrintable() { return printable_; }
 		template<typename T> Telemetry& Plot_T(const char* format, T value);
 		Telemetry& Plot(int value);
 		Telemetry& Plot(float value);
 		Telemetry& Plot(double value);
-		//template<typename T> Telemetry& Plot_T(const char* format, const T* values, int nValues);
 		Telemetry& Plot(ValueFormatter& valueFormatter, int nValues);
 		Telemetry& Plot(const int8_t* values, int nValues);
 		Telemetry& Plot(const uint8_t* values, int nValues);
@@ -110,7 +116,8 @@ public:
 		void PutEndOfLine();
 		const char* MakeValueHorzAxis(char* buff, int len);
 		const char* MakeValueHorzAxisForMultiple(char* buff, int len);
-		int GetTimestamp();
+		int64_t GetProgramTime_usec();
+		int64_t GetProgramTime_msec();
 	};
 private:
 	Printable& printable_;

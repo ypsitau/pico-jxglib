@@ -46,8 +46,8 @@ int main()
 	terminal0.Dump.DigitsAddr_Auto().Cols(6);
 	terminal1.Dump.DigitsAddr_Auto().Cols(8);
 	terminal0.AttachOutput(display0);
-	terminal1.AttachOutput(display2);
-	//terminal1.AttachOutput(display2, {50, 120, 240, 100}, Terminal::AttachDir::Rotate0);
+	//terminal1.AttachOutput(display2);
+	terminal1.AttachOutput(display2, {50, 120, 240, 100}, Terminal::AttachDir::Rotate0);
 	//terminal2.AttachOutput(display2, {0, 120, 240, 200}, Terminal::AttachDir::Rotate90);
 	terminal0.SetFont(Font::shinonome12);
 	terminal1.SetFont(Font::shinonome16);

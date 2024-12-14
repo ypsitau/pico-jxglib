@@ -36,7 +36,11 @@ int main()
 		for (int i = 0; i < nPoints; i++) t.Plot(values_double[i]);
 	} while (0);
 	do {
-		TelePlot::Telemetry t = telePlot.Add("Program Time", TelePlot::HorzAxis::ProgramTime);
+		TelePlot::Telemetry t = telePlot.Add("Program Time usec", TelePlot::HorzAxis::ProgramTime_usec);
+		for (int i = 0; i < nPoints; i++) t.Plot(values_double[i]);
+	} while (0);
+	do {
+		TelePlot::Telemetry t = telePlot.Add("Program Time msec", TelePlot::HorzAxis::ProgramTime_msec);
 		for (int i = 0; i < nPoints; i++) t.Plot(values_double[i]);
 	} while (0);
 	do {

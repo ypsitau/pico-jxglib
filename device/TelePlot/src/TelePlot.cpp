@@ -14,13 +14,15 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // TelePlot::Telemetry
 //------------------------------------------------------------------------------
-TelePlot::Telemetry::Telemetry() : Telemetry(PrintableDumb::Instance, "", HorzAxis::ProgramTime, 1)
+TelePlot::Telemetry::Telemetry() : Telemetry(PrintableDumb::Instance, "", HorzAxis::Sequence, 1)
 {}
 
-TelePlot::Telemetry::Telemetry(Printable& printable, const char* name, HorzAxis timestamp, int sequenceStep) :
-	printable_{printable}, horzAxis_{timestamp}, cnt_{0}, sequenceStep_{sequenceStep}, clearDataFlag_(false)
+TelePlot::Telemetry::Telemetry(Printable& printable, const char* name, HorzAxis horzAxis, int sequenceStep) :
+	printable_{printable}, horzAxis_{horzAxis}, cnt_{0}, sequenceStep_{sequenceStep},
+	clearDataFlag_(false), noPlotFlag_(false), unitFlag_(false)
 {
 	::strncpy(name_, name, sizeof(name_));
+	unit_[0] = '\0';
 }
 
 
@@ -258,12 +260,22 @@ TelePlot::Telemetry& TelePlot::Telemetry::Text(int valueHorzAxis, const char* st
 
 void TelePlot::Telemetry::PutEndOfLine()
 {
-	if (clearDataFlag_) {
-		GetPrintable().Printf("|clr\n");
-		clearDataFlag_ = false;
-	} else {
-		GetPrintable().Printf("\n");
+	bool precededFlag = false;
+	if (unitFlag_) {
+		GetPrintable().Printf("§%s", unit_);
+		unitFlag_ = false;
 	}
+	if (clearDataFlag_) {
+		GetPrintable().Print("|clr");
+		clearDataFlag_ = false;
+		precededFlag = true;
+	}
+	if (noPlotFlag_) {
+		GetPrintable().Print(precededFlag? ",np" : "|np");
+		noPlotFlag_ = false;
+		//precededFlag = true;
+	}
+	GetPrintable().Println();
 }
 
 const char* TelePlot::Telemetry::MakeValueHorzAxis(char* buff, int len)
@@ -272,8 +284,11 @@ const char* TelePlot::Telemetry::MakeValueHorzAxis(char* buff, int len)
 	case HorzAxis::Sequence:
 		::snprintf(buff, len, ":%d", cnt_ * sequenceStep_);
 		break;
-	case HorzAxis::ProgramTime:
-		::snprintf(buff, len, ":%d", GetTimestamp());
+	case HorzAxis::ProgramTime_usec:
+		::snprintf(buff, len, ":%lld", GetProgramTime_usec());
+		break;
+	case HorzAxis::ProgramTime_msec:
+		::snprintf(buff, len, ":%lld", GetProgramTime_msec());
 		break;
 	case HorzAxis::ReceptionTime:
 		buff[0] = '\0';
@@ -291,7 +306,8 @@ const char* TelePlot::Telemetry::MakeValueHorzAxisForMultiple(char* buff, int le
 	case HorzAxis::Sequence:
 		::snprintf(buff, len, "%d", cnt_ * sequenceStep_);
 		break;
-	case HorzAxis::ProgramTime:
+	case HorzAxis::ProgramTime_usec:
+	case HorzAxis::ProgramTime_msec:
 	case HorzAxis::ReceptionTime:
 		::snprintf(buff, len, "%d", cnt_);
 		break;
@@ -302,15 +318,22 @@ const char* TelePlot::Telemetry::MakeValueHorzAxisForMultiple(char* buff, int le
 	return buff;
 }
 
-int TelePlot::Telemetry::GetTimestamp()
+int64_t TelePlot::Telemetry::GetProgramTime_usec()
 {
-	int timeStampMSec = 0;
 	if (cnt_ == 0) {
 		absTimeStart_ = ::get_absolute_time();
-	} else {
-		timeStampMSec = static_cast<int>(::absolute_time_diff_us(absTimeStart_, ::get_absolute_time()) / 1000);
+		return 0;
 	}
-	return timeStampMSec;
+	return ::absolute_time_diff_us(absTimeStart_, ::get_absolute_time());
+}
+
+int64_t TelePlot::Telemetry::GetProgramTime_msec()
+{
+	if (cnt_ == 0) {
+		absTimeStart_ = ::get_absolute_time();
+		return 0;
+	}
+	return ::absolute_time_diff_us(absTimeStart_, ::get_absolute_time()) / 1000;
 }
 
 }
