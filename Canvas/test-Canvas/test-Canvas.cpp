@@ -51,7 +51,7 @@ int main()
 	canvas.Refresh();
 #endif
 #if 1
-	canvas.AttachOutput(display2);
+	canvas.AttachOutput(display2, {50, 50, 100, 150}, Canvas::AttachDir::Rotate90);
 	//canvas.AttachOutput(display2);
 	//canvas.AttachOutput(display3);
 	//canvas.AttachOutput(display4);
@@ -68,7 +68,7 @@ int main()
 	//	::sleep_ms(1000);
 	//}
 	//canvas.DrawImage(0, 0, image_cat_128x160, nullptr, Canvas::DrawDir::Rotate0);
-	canvas.DrawImage(100, 100, image_cat_128x160, Rect::Empty, Canvas::DrawDir::Rotate0);
+	canvas.DrawImage(0, 0, image_cat_128x160, Rect::Empty, Canvas::DrawDir::Rotate0);
 	canvas.Refresh();
 #endif
 #if 0
