@@ -46,13 +46,13 @@ int main()
 	terminal0.Dump.DigitsAddr_Auto().Cols(6);
 	terminal1.Dump.DigitsAddr_Auto().Cols(8);
 	terminal0.AttachOutput(display0);
-	terminal1.AttachOutput(display2, {0, 0, 240, 100}, Terminal::AttachDir::Rotate0);
+	terminal1.AttachOutput(display2, {50, 120, 240, 100}, Terminal::AttachDir::Rotate0);
 	//terminal2.AttachOutput(display2, {0, 120, 240, 200}, Terminal::AttachDir::Rotate90);
 	terminal0.SetFont(Font::shinonome12);
 	terminal1.SetFont(Font::shinonome12);
 	//terminal2.SetFont(Font::shinonome12);
 	//terminal0.Dump(reinterpret_cast<const void*>(0), 8 * 20);
-	//terminal1.Dump(reinterpret_cast<const void*>(0), 8 * 20);
+	terminal1.Dump(reinterpret_cast<const void*>(0), 8 * 20);
 	//terminal2.Dump(reinterpret_cast<const void*>(0x1000), 8 * 20);
 #if 0
 	Terminal terminal;

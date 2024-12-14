@@ -24,12 +24,9 @@ private:
 public:
 	Terminal() : pDrawable_{nullptr} {}
 public:
-	bool AttachOutput(Drawable& drawable, const Rect* pRect = nullptr, AttachDir attachDir = AttachDir::Normal);
-	bool AttachOutput(Drawable& drawable, const Rect& rect, AttachDir attachDir = AttachDir::Normal) {
-		return AttachOutput(drawable, &rect, attachDir);
-	}
+	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, AttachDir attachDir = AttachDir::Normal);
 	bool AttachOutput(Drawable& drawable, AttachDir attachDir) {
-		return AttachOutput(drawable, nullptr, attachDir);
+		return AttachOutput(drawable, Rect::Empty, attachDir);
 	}
 public:
 	Drawable& GetDrawable() { return *pDrawable_; }
