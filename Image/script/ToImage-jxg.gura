@@ -31,5 +31,6 @@ argv.Each {|arg|
 		varName = 'image_' + MakeVarNameFromFileName(baseName)
 		img = Image(fileName)
 		tmpl.Render('>' + fileNameOut)
+		sys.cerr.Printf('%s was generated\n', fileNameOut)
 	}
 }
