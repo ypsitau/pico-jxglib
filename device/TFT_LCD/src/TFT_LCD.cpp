@@ -140,18 +140,12 @@ void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 	Dir displayDir = saved.displayDir.Transform(drawDir);
 	int xAdjust, yAdjust;
 	display_.CalcPosAdjust(displayDir, &xAdjust, &yAdjust);
-	//Rect rect = rectClip.IsEmpty()? Rect(0, 0, display_.GetWidthPhysical(), display_.GetHeightPhysical()) : rectClip;
 	int xSrc = 0, ySrc = 0;
 	int xSkip = 0, ySkip = 0;
 	int wdImage = image.GetWidth(), htImage = image.GetHeight();
-	if (rectClip.IsEmpty()) {
-		// do nothing
-	} else if (displayDir.IsHorz()) {
+	if (!rectClip.IsEmpty()) {
 		xSrc = rectClip.x, ySrc = rectClip.y;
 		wdImage = rectClip.width, htImage = rectClip.height;
-	} else {
-		xSrc = rectClip.y, ySrc = rectClip.x;
-		wdImage = rectClip.height, htImage = rectClip.width;
 	}
 
 	//if (!AdjustRange(&x, &wdImage, 0, display_.GetWidthPhysical(), &xSkip)) return;

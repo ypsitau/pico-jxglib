@@ -193,10 +193,7 @@ public:
 		DrawBitmap(pt.x, pt.y, data, width, height, transparentBgFlag, scaleX, scaleY);
 		return *this;
 	}
-	Drawable& DrawImage(int x, int y, const Image& image, const Rect& rectClip = Rect::Empty, DrawDir drawDir = DrawDir::Normal) {
-		pDispatcher_->DrawImage(x, y, image, rectClip, drawDir);
-		return *this;
-	}
+	Drawable& DrawImage(int x, int y, const Image& image, const Rect& rectClip = Rect::Empty, DrawDir drawDir = DrawDir::Normal);
 	Drawable& ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip = Rect::Empty) {
 		pDispatcher_->ScrollHorz(dirHorz, wdScroll, rectClip);
 		return *this;

@@ -69,6 +69,18 @@ Drawable& Drawable::DrawRect(int x, int y, int width, int height, const Color& c
 	return *this;
 }
 
+Drawable& Drawable::DrawImage(int x, int y, const Image& image, const Rect& rectClip, DrawDir drawDir)
+{
+	Rect rectClipAdj = rectClip;
+	if (!rectClipAdj.IsEmpty()) {
+		if (rectClipAdj.x + rectClipAdj.width > image.GetWidth()) rectClipAdj.width = image.GetWidth() - rectClipAdj.x;
+		if (rectClipAdj.y + rectClipAdj.height > image.GetHeight()) rectClipAdj.height = image.GetHeight() - rectClipAdj.y;
+		if (rectClipAdj.x < 0 || rectClipAdj.y < 0 || rectClipAdj.width <= 0 || rectClipAdj.height <= 0) return *this;
+	}
+	pDispatcher_->DrawImage(x, y, image, rectClipAdj, drawDir);
+	return *this;
+}
+
 Drawable& Drawable::DrawChar(int x, int y, const FontEntry& fontEntry)
 {
 	DrawBitmap(x, y, fontEntry.data, fontEntry.width, fontEntry.height,

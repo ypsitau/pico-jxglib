@@ -31,8 +31,10 @@ void DrawImage(Display* displayTbl[], int nDisplays)
 		for (int iDisplay = 0; iDisplay < nDisplays; iDisplay++) {
 			Display& display = *displayTbl[iDisplay];
 			//const Image& image = (display.GetWidth() < 240)? image_cat_128x160 : image_cat_240x240;
-			const Image& image = image_cat_60x80;
-			display.Clear().DrawImage(0, 0, image, Rect::Empty, testCase.dir).Refresh();
+			//const Image& image = image_cat_60x80;
+			const Image& image = image_cat_240x320;
+			//display.Clear().DrawImage(0, 0, image, Rect::Empty, testCase.dir).Refresh();
+			display.Clear().DrawImage(0, 0, image, {80, 100, 100, 200}, testCase.dir).Refresh();
 		}
 		::getchar();
 	}
