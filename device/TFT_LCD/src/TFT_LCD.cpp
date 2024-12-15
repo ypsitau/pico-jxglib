@@ -135,21 +135,9 @@ void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 	using PA = PageAddressOrder;
 	using CA = ColumnAddressOrder;
 	using PC = PageColumnOrder;
-	static const uint8_t drawDirTbl90[] = {
-		Dir::Rotate90, Dir::Normal, Dir::Normal, Dir::Rotate180, Dir::Normal, Dir::Rotate0, Dir::Rotate270, Dir::Normal
-	};
-	static const uint8_t drawDirTbl180[] = {
-		Dir::Rotate180, Dir::Normal, Dir::Normal, Dir::Rotate270, Dir::Normal, Dir::Rotate90, Dir::Rotate0, Dir::Normal
-	};
-	static const uint8_t drawDirTbl270[] = {
-		Dir::Rotate270, Dir::Normal, Dir::Normal, Dir::Rotate0, Dir::Normal, Dir::Rotate180, Dir::Rotate90, Dir::Normal
-	};
 	Raw& raw = display_.raw;
 	const Saved& saved = display_.GetSaved();
-	Dir displayDir =
-		drawDir.IsRotate90()? drawDirTbl90[saved.displayDir.GetValue()] :
-		drawDir.IsRotate180()? drawDirTbl180[saved.displayDir.GetValue()] :
-		drawDir.IsRotate270()? drawDirTbl270[saved.displayDir.GetValue()] : saved.displayDir;
+	Dir displayDir = saved.displayDir.Transform(drawDir);
 	int xAdjust, yAdjust;
 	display_.CalcPosAdjust(displayDir, &xAdjust, &yAdjust);
 	Rect rect = rectClip.IsEmpty()? Rect(0, 0, display_.GetWidthPhysical(), display_.GetHeightPhysical()) : rectClip;
@@ -160,8 +148,10 @@ void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 	} else {
 		width = image.GetHeight(), height = image.GetWidth();
 	}
-	if (!AdjustRange(&x, &width, rect.x, rect.width, &xSkip)) return;
-	if (!AdjustRange(&y, &height, rect.y, rect.height, &ySkip)) return;
+
+	//if (!AdjustRange(&x, &width, rect.x, rect.width, &xSkip)) return;
+	//if (!AdjustRange(&y, &height, rect.y, rect.height, &ySkip)) return;
+	
 	x += xAdjust, y += yAdjust;
 	raw.MemoryDataAccessControl(displayDir, saved.configData);
 	raw.ColumnAddressSet(x, x + width - 1);

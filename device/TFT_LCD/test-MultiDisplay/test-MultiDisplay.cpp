@@ -30,7 +30,7 @@ void DrawImage(Display* displayTbl[], int nDisplays)
 		for (int iDisplay = 0; iDisplay < nDisplays; iDisplay++) {
 			Display& display = *displayTbl[iDisplay];
 			const Image& image = (display.GetWidth() < 240)? image_cat_128x160 : image_cat_240x240;
-			display.Clear().DrawImage(0, 0, image, nullptr, testCase.dir).Refresh();
+			display.Clear().DrawImage(0, 0, image, Rect::Empty, testCase.dir).Refresh();
 		}
 		::getchar();
 	}
@@ -70,6 +70,7 @@ int main()
 	ILI9341 display3(spi1, 240, 320, GPIO11, GPIO12, GPIO13, GPIO::None);
 	ST7735 display4(spi1, 80, 160, GPIO16, GPIO17, GPIO18, GPIO::None);
 	ST7735::TypeB display5(spi1, 128, 160, GPIO19, GPIO20, GPIO21, GPIO::None);
+	//Display::Dir displayDir = Display::Dir::HorzFromSW;
 	Display::Dir displayDir = Display::Dir::Rotate0;
 	//Display::Dir displayDir = Display::Dir::Rotate90;
 	//Display::Dir displayDir = Display::Dir::Rotate180;

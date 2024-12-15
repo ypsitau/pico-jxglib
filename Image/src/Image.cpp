@@ -44,4 +44,22 @@ void Image::FillZero()
 	::memset(data_, 0x00, GetBytesBuff());
 }
 
+//------------------------------------------------------------------------------
+// Image::SequencerDir
+//------------------------------------------------------------------------------
+Image::SequencerDir Image::SequencerDir::Transform(const SequencerDir& dirTrans) const
+{
+	switch (dirTrans.GetValue()) {
+	case HorzFromNW: return SequencerDir(value_);
+	case VertFromNW: return SequencerDir(value_ ^ 0b001);
+	case HorzFromNE: return SequencerDir(SwapHV(value_) ^ 0b010);
+	case VertFromNE: return SequencerDir(SwapHV(value_) ^ 0b011);
+	case HorzFromSW: return SequencerDir(SwapHV(value_) ^ 0b100);
+	case VertFromSW: return SequencerDir(SwapHV(value_) ^ 0b101);
+	case HorzFromSE: return SequencerDir(value_ ^ 0b110);
+	case VertFromSE: return SequencerDir(value_ ^ 0b111);
+	default: return SequencerDir(value_);
+	}
+}
+
 }

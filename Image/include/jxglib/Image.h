@@ -91,6 +91,9 @@ public:
 		bool IsBottomToTop()		{ return !!(value_ & (1 << 2)); }
 		SequencerDir InvertHorz()	{ return SequencerDir(value_ ^ (1 << 1)); }
 		SequencerDir InvertVert()	{ return SequencerDir(value_ ^ (1 << 2)); }
+	public:
+		static uint8_t SwapHV(uint8_t dir) { return ((dir & 0b100) >> 1) | ((dir & 0b010) << 1) | (dir & 0b001); } 
+		SequencerDir Transform(const SequencerDir& dirTrans) const;
 	};
 	class ReaderDir : public SequencerDir {
 	public:
