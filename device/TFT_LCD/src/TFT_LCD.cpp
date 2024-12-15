@@ -140,39 +140,43 @@ void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 	Dir displayDir = saved.displayDir.Transform(drawDir);
 	int xAdjust, yAdjust;
 	display_.CalcPosAdjust(displayDir, &xAdjust, &yAdjust);
-	Rect rect = rectClip.IsEmpty()? Rect(0, 0, display_.GetWidthPhysical(), display_.GetHeightPhysical()) : rectClip;
+	//Rect rect = rectClip.IsEmpty()? Rect(0, 0, display_.GetWidthPhysical(), display_.GetHeightPhysical()) : rectClip;
+	int xSrc = 0, ySrc = 0;
 	int xSkip = 0, ySkip = 0;
-	int width, height;
-	if (drawDir.IsHorz()) {
-		width = image.GetWidth(), height = image.GetHeight();
+	int wdImage, htImage;
+	if (!rectClip.IsEmpty()) {
+		xSrc = rectClip.x, ySrc = rectClip.y;
+		wdImage = rectClip.width, htImage = rectClip.height;
+	} else if (drawDir.IsHorz()) {
+		wdImage = image.GetWidth(), htImage = image.GetHeight();
 	} else {
-		width = image.GetHeight(), height = image.GetWidth();
+		wdImage = image.GetHeight(), htImage = image.GetWidth();
 	}
 
-	//if (!AdjustRange(&x, &width, rect.x, rect.width, &xSkip)) return;
-	//if (!AdjustRange(&y, &height, rect.y, rect.height, &ySkip)) return;
+	//if (!AdjustRange(&x, &wdImage, 0, display_.GetWidthPhysical(), &xSkip)) return;
+	//if (!AdjustRange(&y, &htImage, 0, display_.GetHeightPhysical(), &ySkip)) return;
 	
 	x += xAdjust, y += yAdjust;
 	raw.MemoryDataAccessControl(displayDir, saved.configData);
-	raw.ColumnAddressSet(x, x + width - 1);
-	raw.RowAddressSet(y, y + height - 1);
+	raw.ColumnAddressSet(x, x + wdImage - 1);
+	raw.RowAddressSet(y, y + htImage - 1);
 	raw.MemoryWrite_Begin(16);
 	if (image.GetFormat().IsGray()) {
 		using Reader = Image::Reader<Image::Getter_T<ColorRGB565, ColorGray> >;
-		Image::Reader reader(Reader::Normal(image, xSkip, ySkip, width, height));
+		Image::Reader reader(Reader::Normal(image, xSrc + xSkip, ySrc + ySkip, wdImage, htImage));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 	} else if (image.GetFormat().IsRGB()) {
 		using Reader = Image::Reader<Image::Getter_T<ColorRGB565, Color> >;
-		Image::Reader reader(Reader::Normal(image, xSkip, ySkip, width, height));
+		Image::Reader reader(Reader::Normal(image, xSrc + xSkip, ySrc + ySkip, wdImage, htImage));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 	} else if (image.GetFormat().IsRGBA()) {
 		using Reader = Image::Reader<Image::Getter_T<ColorRGB565, ColorA> >;
-		Image::Reader reader(Reader::Normal(image, xSkip, ySkip, width, height));
+		Image::Reader reader(Reader::Normal(image, xSrc + xSkip, ySrc + ySkip, wdImage, htImage));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 	} else if (image.GetFormat().IsRGB565()) {
 #if 1
 		using Reader = Image::Reader<Image::Getter_T<ColorRGB565, ColorRGB565> >;
-		Image::Reader reader(Reader::Normal(image, xSkip, ySkip, width, height));
+		Image::Reader reader(Reader::Normal(image, xSrc + xSkip, ySrc + ySkip, wdImage, htImage));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 #else
 		spi_inst_t* spi = raw.GetSPI();
@@ -192,7 +196,7 @@ void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 		channel.set_config(config);
 		channel.set_read_addr(image.GetPointer())
 			.set_write_addr(&::spi_get_hw(spi)->dr)
-			.set_trans_count_trig(width * height)
+			.set_trans_count_trig(wdImage * htImage)
 			.wait_for_finish_blocking();
 		channel.unclaim();
 #endif
