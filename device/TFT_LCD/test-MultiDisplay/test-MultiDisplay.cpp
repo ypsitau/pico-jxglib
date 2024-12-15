@@ -4,6 +4,7 @@
 #include "jxglib/ST7735.h"
 #include "jxglib/ST7789.h"
 #include "jxglib/ILI9341.h"
+#include "jxglib/sample/cat-60x80.h"
 #include "jxglib/sample/cat-128x160.h"
 #include "jxglib/sample/cat-240x320.h"
 #include "jxglib/sample/cat-240x240.h"
@@ -29,7 +30,8 @@ void DrawImage(Display* displayTbl[], int nDisplays)
 		::printf("%-20s Press Any Key\n", testCase.name);
 		for (int iDisplay = 0; iDisplay < nDisplays; iDisplay++) {
 			Display& display = *displayTbl[iDisplay];
-			const Image& image = (display.GetWidth() < 240)? image_cat_128x160 : image_cat_240x240;
+			//const Image& image = (display.GetWidth() < 240)? image_cat_128x160 : image_cat_240x240;
+			const Image& image = image_cat_60x80;
 			display.Clear().DrawImage(0, 0, image, Rect::Empty, testCase.dir).Refresh();
 		}
 		::getchar();

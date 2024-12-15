@@ -143,14 +143,15 @@ void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 	//Rect rect = rectClip.IsEmpty()? Rect(0, 0, display_.GetWidthPhysical(), display_.GetHeightPhysical()) : rectClip;
 	int xSrc = 0, ySrc = 0;
 	int xSkip = 0, ySkip = 0;
-	int wdImage, htImage;
-	if (!rectClip.IsEmpty()) {
+	int wdImage = image.GetWidth(), htImage = image.GetHeight();
+	if (rectClip.IsEmpty()) {
+		// do nothing
+	} else if (displayDir.IsHorz()) {
 		xSrc = rectClip.x, ySrc = rectClip.y;
 		wdImage = rectClip.width, htImage = rectClip.height;
-	} else if (drawDir.IsHorz()) {
-		wdImage = image.GetWidth(), htImage = image.GetHeight();
 	} else {
-		wdImage = image.GetHeight(), htImage = image.GetWidth();
+		xSrc = rectClip.y, ySrc = rectClip.x;
+		wdImage = rectClip.height, htImage = rectClip.width;
 	}
 
 	//if (!AdjustRange(&x, &wdImage, 0, display_.GetWidthPhysical(), &xSkip)) return;
@@ -174,11 +175,10 @@ void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 		Image::Reader reader(Reader::Normal(image, xSrc + xSkip, ySrc + ySkip, wdImage, htImage));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
 	} else if (image.GetFormat().IsRGB565()) {
-#if 1
 		using Reader = Image::Reader<Image::Getter_T<ColorRGB565, ColorRGB565> >;
 		Image::Reader reader(Reader::Normal(image, xSrc + xSkip, ySrc + ySkip, wdImage, htImage));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
-#else
+#if 0
 		spi_inst_t* spi = raw.GetSPI();
 		DMA::Channel channel(DMA::claim_unused_channel(true));
 		DMA::ChannelConfig config;
