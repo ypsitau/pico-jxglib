@@ -34,7 +34,7 @@ void DrawImage(Display* displayTbl[], int nDisplays)
 			//const Image& image = image_cat_60x80;
 			const Image& image = image_cat_240x320;
 			//display.Clear().DrawImage(0, 0, image, Rect::Empty, testCase.dir).Refresh();
-			display.Clear().DrawImage(0, 0, image, {80, 100, 100, 200}, testCase.dir).Refresh();
+			display.Clear().DrawImage(0, 0, image, {80, 100, 500, 500}, testCase.dir).Refresh();
 		}
 		::getchar();
 	}
