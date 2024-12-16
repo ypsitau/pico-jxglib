@@ -84,19 +84,27 @@ Drawable& Drawable::DrawImage(int x, int y, const Image& image, const Rect& rect
 
 Drawable& Drawable::ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip)
 {
-	Rect rectClipAdj = rectClip;
-	if (rectClipAdj.Adjust({0, 0, GetWidth(), GetHeight()})) {
-		pDispatcher_->ScrollHorz(dirHorz, wdScroll, rectClipAdj);
+	Rect rectClipAdj;
+	if (rectClip.IsEmpty()) {
+		rectClipAdj = Rect(0, 0, GetWidth(), GetHeight());
+	} else {
+		rectClipAdj = rectClip;
+		if (!rectClipAdj.Adjust({0, 0, GetWidth(), GetHeight()})) return *this;
 	}
+	pDispatcher_->ScrollHorz(dirHorz, wdScroll, rectClipAdj);
 	return *this;
 }
 
 Drawable& Drawable::ScrollVert(DirVert dirVert, int htScroll, const Rect& rectClip)
 {
-	Rect rectClipAdj = rectClip;
-	if (rectClipAdj.Adjust({0, 0, GetWidth(), GetHeight()})) {
-		pDispatcher_->ScrollVert(dirVert, htScroll, rectClipAdj);
+	Rect rectClipAdj;
+	if (rectClip.IsEmpty()) {
+		rectClipAdj = Rect(0, 0, GetWidth(), GetHeight());
+	} else {
+		rectClipAdj = rectClip;
+		if (!rectClipAdj.Adjust({0, 0, GetWidth(), GetHeight()})) return *this;
 	}
+	pDispatcher_->ScrollVert(dirVert, htScroll, rectClipAdj);
 	return *this;
 }
 

@@ -114,7 +114,7 @@ template<typename T_Color>
 void Canvas::Dispatcher_T<T_Color>::ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip)
 {
 	Image& imageOwn = canvas_.GetImageOwn();
-	Rect rect = rectClip.IsEmpty()? Rect(0, 0, imageOwn.GetWidth(), imageOwn.GetHeight()) : rectClip;
+	Rect rect = rectClip;
 	if (rect.width <= wdScroll) return;
 	uint16_t* pDstPixel;
 	const uint16_t* pSrcPixel;
@@ -152,7 +152,7 @@ template<typename T_Color>
 void Canvas::Dispatcher_T<T_Color>::ScrollVert(DirVert dirVert, int htScroll, const Rect& rectClip)
 {
 	Image& imageOwn = canvas_.GetImageOwn();
-	Rect rect = rectClip.IsEmpty()? Rect(0, 0, imageOwn.GetWidth(), imageOwn.GetHeight()) : rectClip;
+	Rect rect = rectClip;
 	if (rect.height <= htScroll) return;
 	uint16_t* pDstLine;
 	const uint16_t* pSrcLine;
