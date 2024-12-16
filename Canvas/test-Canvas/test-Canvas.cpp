@@ -32,7 +32,7 @@ void DrawImage(Drawable* drawableTbl[], int nDisplays)
 			//const Image& image = image_cat_60x80;
 			const Image& image = image_cat_240x320;
 			//drawable.Clear().DrawImage(0, 0, image, Rect::Empty, testCase.dir).Refresh();
-			drawable.Clear().DrawImage(0, 0, image, {80, 100, 500, 500}, testCase.dir).Refresh();
+			drawable.Clear().DrawImage(40, 20, image, {80, 100, 500, 500}, testCase.dir).Refresh();
 		}
 		::getchar();
 	}

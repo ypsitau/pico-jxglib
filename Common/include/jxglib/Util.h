@@ -65,7 +65,7 @@ bool AdjustRange(T* pValue, T* pRange, T valueMin, T valueExceed, T* pValueSkip)
 	if (value + range > valueExceed) {
 		range = valueExceed - value;
 	}
-	*pValue = value, *pRange = range, pValueSkip = valueSkip;
+	*pValue = value, *pRange = range, *pValueSkip = valueSkip;
 	return true;
 }
 

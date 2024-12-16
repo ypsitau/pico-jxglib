@@ -81,8 +81,13 @@ void Canvas::Dispatcher_T<T_Color>::DrawImage(int x, int y, const Image& image, 
 	int wdImage = rectClip.width, htImage = rectClip.height;
 	int xSkip = 0, ySkip = 0;
 
-	//if (!AdjustRange(&x, &width, 0, imageOwn.GetWidth(), &xSkip)) return;
-	//if (!AdjustRange(&y, &height, 0, imageOwn.GetHeight(), &ySkip)) return;
+	if (drawDir.IsHorz()) {
+		if (!AdjustRange(&x, &wdImage, 0, imageOwn.GetWidth(), &xSkip)) return;
+		if (!AdjustRange(&y, &htImage, 0, imageOwn.GetHeight(), &ySkip)) return;
+	} else {
+		if (!AdjustRange(&x, &wdImage, 0, imageOwn.GetHeight(), &xSkip)) return;
+		if (!AdjustRange(&y, &htImage, 0, imageOwn.GetWidth(), &ySkip)) return;
+	}
 	
 	using Writer = Image::Writer<Image::Setter_T<T_Color, T_Color> >;
 	Image::Writer writer(Writer::Create(imageOwn, x, y, wdImage, htImage, drawDir));
