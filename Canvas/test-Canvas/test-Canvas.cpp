@@ -11,6 +11,67 @@
 
 using namespace jxglib;
 
+void DrawImage(Drawable* drawableTbl[], int nDisplays)
+{
+	struct TestCase {
+		const char* name;
+		Drawable::DrawDir dir;
+	} testCaseTbl[] = {
+		{ "Rotate 0", Drawable::DrawDir::Rotate0 },
+		{ "Rotate 90", Drawable::DrawDir::Rotate90 },
+		{ "Rotate 180", Drawable::DrawDir::Rotate180 },
+		{ "Rotate 270", Drawable::DrawDir::Rotate270 },
+	};
+	for (int iTestCase = 0; ; iTestCase++) {
+		if (iTestCase >= count_of(testCaseTbl)) iTestCase = 0;
+		TestCase& testCase = testCaseTbl[iTestCase];
+		::printf("%-20s Press Any Key\n", testCase.name);
+		for (int iDisplay = 0; iDisplay < nDisplays; iDisplay++) {
+			Drawable& drawable = *drawableTbl[iDisplay];
+			//const Image& image = (drawable.GetWidth() < 240)? image_cat_128x160 : image_cat_240x240;
+			//const Image& image = image_cat_60x80;
+			const Image& image = image_cat_240x320;
+			//drawable.Clear().DrawImage(0, 0, image, Rect::Empty, testCase.dir).Refresh();
+			drawable.Clear().DrawImage(0, 0, image, {80, 100, 500, 500}, testCase.dir).Refresh();
+		}
+		::getchar();
+	}
+}
+
+int main()
+{
+	::stdio_init_all();
+	::spi_init(spi1, 125 * 1000 * 1000);
+	GPIO14.set_function_SPI1_SCK().set_drive_strength(GPIO_DRIVE_STRENGTH_12MA);
+	GPIO15.set_function_SPI1_TX().set_drive_strength(GPIO_DRIVE_STRENGTH_12MA);
+	ILI9341 display(spi1, 240, 320, GPIO11, GPIO12, GPIO13, GPIO::None);
+	Display::Dir displayDir = Display::Dir::Rotate0;
+	display.Initialize(displayDir);
+	Canvas canvas;
+	canvas.AttachOutput(display, Canvas::DrawDir::Rotate0);
+	//canvas.AttachOutput(display, {50, 50, 100, 150}, Canvas::AttachDir::Rotate0);
+#if 0
+	const char* str =
+		"親譲りの無鉄砲で子供のときから損ばかりしている。小学校の時分学校の二階から飛び降りて一週間腰を"
+		"抜かしたことがある。なぜそんなむやみなことをしたかと聞く人があるかもしれない。"
+		"別段深い理由でもない。新築の二階から首を出していたら同級生の一人が冗談に幾ら威張っても、"
+		"そこから飛び降りることはできまい。弱虫やーい。とはやしたからである。"
+		"小使いに負ぶさって帰ってきたとき、親父が大きな眼をして二階から飛び降りて腰を抜かすやつが"
+		"あるかといったから、この次は抜かさずに飛んでみせますと答えた。";
+	canvas.SetFont(Font::shinonome16);
+	canvas.SetSpacingRatio(1.0, 1.2);
+	canvas.DrawStringWrap(0, 0, str);
+	canvas.Refresh();
+#endif
+#if 1
+	Drawable* drawableTbl[] = { &canvas };
+	DrawImage(drawableTbl, count_of(drawableTbl));
+	//canvas.DrawImage(0, 0, image_cat_128x160, {10, 10, 100, 60}, Canvas::DrawDir::Rotate0);
+	//canvas.Refresh();
+#endif
+}
+
+#if 0
 int main()
 {
 	const char* str =
@@ -51,7 +112,7 @@ int main()
 	canvas.Refresh();
 #endif
 #if 1
-	canvas.AttachOutput(display2, {50, 50, 100, 150}, Canvas::AttachDir::Rotate90);
+	canvas.AttachOutput(display3, {50, 50, 100, 150}, Canvas::AttachDir::Rotate0);
 	//canvas.AttachOutput(display2);
 	//canvas.AttachOutput(display3);
 	//canvas.AttachOutput(display4);
@@ -88,3 +149,4 @@ int main()
 	//::printf("%lld usec\n", ::absolute_time_diff_us(absTimeStart, ::get_absolute_time()));
 #endif
 }
+#endif

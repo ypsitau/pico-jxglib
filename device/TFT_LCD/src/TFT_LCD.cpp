@@ -141,8 +141,8 @@ void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 	int xAdjust, yAdjust;
 	display_.CalcPosAdjust(displayDir, &xAdjust, &yAdjust);
 	int xSrc = rectClip.x, ySrc = rectClip.y;
-	int xSkip = 0, ySkip = 0;
 	int wdImage = rectClip.width, htImage = rectClip.height;
+	int xSkip = 0, ySkip = 0;
 
 	//if (!AdjustRange(&x, &wdImage, 0, display_.GetWidthPhysical(), &xSkip)) return;
 	//if (!AdjustRange(&y, &htImage, 0, display_.GetHeightPhysical(), &ySkip)) return;
