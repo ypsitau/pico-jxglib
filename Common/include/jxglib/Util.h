@@ -28,7 +28,7 @@ bool CheckRange(T value, T valueMin, T valueExceed) { return valueMin <= value &
 template<typename T>
 bool AdjustRange(T* pValue, T* pRange, T valueMin, T valueExceed)
 {
-	T& value = *pValue, &range = *pRange;
+	T value = *pValue, range = *pRange;
 	if (range == 0) return false;
 	if (range < 0) {
 		value += range + 1, range = -range;
@@ -42,14 +42,16 @@ bool AdjustRange(T* pValue, T* pRange, T valueMin, T valueExceed)
 	if (value + range > valueExceed) {
 		range = valueExceed - value;
 	}
+	*pValue = value, *pRange = range;
 	return true;
 }
 
 template<typename T>
 bool AdjustRange(T* pValue, T* pRange, T valueMin, T valueExceed, T* pValueSkip)
 {
-	T& value = *pValue, &range = *pRange, &valueSkip = *pValueSkip;
-	valueSkip = 0;
+	T value = *pValue, range = *pRange;
+	int valueSkip = 0;
+	*pValueSkip = 0;
 	if (range == 0) return false;
 	if (range < 0) {
 		value += range + 1, range = -range;
@@ -63,6 +65,7 @@ bool AdjustRange(T* pValue, T* pRange, T valueMin, T valueExceed, T* pValueSkip)
 	if (value + range > valueExceed) {
 		range = valueExceed - value;
 	}
+	*pValue = value, *pRange = range, pValueSkip = valueSkip;
 	return true;
 }
 

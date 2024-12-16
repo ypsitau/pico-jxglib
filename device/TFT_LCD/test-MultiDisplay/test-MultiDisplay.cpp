@@ -84,8 +84,8 @@ int main()
 	display3.Initialize(displayDir);
 	display4.Initialize(displayDir);
 	display5.Initialize(displayDir);
-	//Display* displays[] = { &display4 };
-	Display* displays[] = { &display1, &display2, &display3, &display4, &display5 };
+	Display* displays[] = { &display3 };
+	//Display* displays[] = { &display1, &display2, &display3, &display4, &display5 };
 	DrawImage(displays, count_of(displays));
 	//DrawText(displays, count_of(displays));
 }

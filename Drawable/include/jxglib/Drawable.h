@@ -194,14 +194,8 @@ public:
 		return *this;
 	}
 	Drawable& DrawImage(int x, int y, const Image& image, const Rect& rectClip = Rect::Empty, DrawDir drawDir = DrawDir::Normal);
-	Drawable& ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip = Rect::Empty) {
-		pDispatcher_->ScrollHorz(dirHorz, wdScroll, rectClip);
-		return *this;
-	}
-	Drawable& ScrollVert(DirVert dirVert, int htScroll, const Rect& rectClip = Rect::Empty) {
-		pDispatcher_->ScrollVert(dirVert, htScroll, rectClip);
-		return *this;
-	}
+	Drawable& ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip = Rect::Empty);
+	Drawable& ScrollVert(DirVert dirVert, int htScroll, const Rect& rectClip = Rect::Empty);
 	Drawable& DrawChar(int x, int y, const FontEntry& fontEntry);
 	Drawable& DrawChar(const Point& pt, const FontEntry& fontEntry) { DrawChar(pt.x, pt.y, fontEntry); return *this; }
 	Drawable& DrawChar(int x, int y, uint32_t code);

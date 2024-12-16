@@ -132,21 +132,17 @@ void TFT_LCD::DispatcherEx::DrawBitmap(int x, int y, const void* data, int width
 
 void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Rect& rectClip, DrawDir drawDir)
 {
-	using PA = PageAddressOrder;
-	using CA = ColumnAddressOrder;
-	using PC = PageColumnOrder;
+	//using PA = PageAddressOrder;
+	//using CA = ColumnAddressOrder;
+	//using PC = PageColumnOrder;
 	Raw& raw = display_.raw;
 	const Saved& saved = display_.GetSaved();
 	Dir displayDir = saved.displayDir.Transform(drawDir);
 	int xAdjust, yAdjust;
 	display_.CalcPosAdjust(displayDir, &xAdjust, &yAdjust);
-	int xSrc = 0, ySrc = 0;
+	int xSrc = rectClip.x, ySrc = rectClip.y;
 	int xSkip = 0, ySkip = 0;
-	int wdImage = image.GetWidth(), htImage = image.GetHeight();
-	if (!rectClip.IsEmpty()) {
-		xSrc = rectClip.x, ySrc = rectClip.y;
-		wdImage = rectClip.width, htImage = rectClip.height;
-	}
+	int wdImage = rectClip.width, htImage = rectClip.height;
 
 	//if (!AdjustRange(&x, &wdImage, 0, display_.GetWidthPhysical(), &xSkip)) return;
 	//if (!AdjustRange(&y, &htImage, 0, display_.GetHeightPhysical(), &ySkip)) return;

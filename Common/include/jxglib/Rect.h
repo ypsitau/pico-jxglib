@@ -39,26 +39,9 @@ public:
 	Point GetPointSE() const { return Point(x + width - 1, y + height - 1); }
 	Point GetPointCenter() const { return Point(x + width / 2, y + height / 2); }
 	Size GetSize() const { return Size(width, height); }
-	Rect Inflate(int amount) const {
-		int xNew = x, yNew = y, widthNew = width, heightNew = height;
-		int amount2 = amount * 2;
-		if (widthNew + amount2 < 0) {
-			xNew += widthNew / 2;
-			widthNew = 0;
-		} else {
-			xNew -= amount;
-			widthNew += amount2;
-		}
-		if (heightNew + amount2 < 0) {
-			yNew += heightNew / 2;
-			heightNew = 0;
-		} else {
-			yNew -= amount;
-			heightNew += amount2; 
-		}
-		return Rect(xNew, yNew, widthNew, heightNew);
-	}
+	Rect Inflate(int amount) const;
 	Rect Deflate(int amount) { return Inflate(-amount); }
+	bool Adjust(const Rect& rectBound);
 };
 
 }

@@ -71,13 +71,32 @@ Drawable& Drawable::DrawRect(int x, int y, int width, int height, const Color& c
 
 Drawable& Drawable::DrawImage(int x, int y, const Image& image, const Rect& rectClip, DrawDir drawDir)
 {
-	Rect rectClipAdj = rectClip;
-	if (!rectClipAdj.IsEmpty()) {
-		if (rectClipAdj.x + rectClipAdj.width > image.GetWidth()) rectClipAdj.width = image.GetWidth() - rectClipAdj.x;
-		if (rectClipAdj.y + rectClipAdj.height > image.GetHeight()) rectClipAdj.height = image.GetHeight() - rectClipAdj.y;
-		if (rectClipAdj.x < 0 || rectClipAdj.y < 0 || rectClipAdj.width <= 0 || rectClipAdj.height <= 0) return *this;
+	Rect rectClipAdj;
+	if (rectClip.IsEmpty()) {
+		rectClipAdj = Rect(0, 0, image.GetWidth(), image.GetHeight());
+	} else {
+		rectClipAdj = rectClip;
+		if (!rectClipAdj.Adjust({0, 0, image.GetWidth(), image.GetHeight()})) return *this;
 	}
 	pDispatcher_->DrawImage(x, y, image, rectClipAdj, drawDir);
+	return *this;
+}
+
+Drawable& Drawable::ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip)
+{
+	Rect rectClipAdj = rectClip;
+	if (rectClipAdj.Adjust({0, 0, GetWidth(), GetHeight()})) {
+		pDispatcher_->ScrollHorz(dirHorz, wdScroll, rectClipAdj);
+	}
+	return *this;
+}
+
+Drawable& Drawable::ScrollVert(DirVert dirVert, int htScroll, const Rect& rectClip)
+{
+	Rect rectClipAdj = rectClip;
+	if (rectClipAdj.Adjust({0, 0, GetWidth(), GetHeight()})) {
+		pDispatcher_->ScrollVert(dirVert, htScroll, rectClipAdj);
+	}
 	return *this;
 }
 
