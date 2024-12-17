@@ -33,8 +33,8 @@ int main()
 	display3.Initialize(displayDir);
 	display4.Initialize(displayDir);
 	display5.Initialize(displayDir);
-	Drawable* drawables[] = { &display3 };
-	//Drawable* drawables[] = { &display1, &display2, &display3, &display4, &display5 };
+	//Drawable* drawables[] = { &display3 };
+	Drawable* drawables[] = { &display1, &display2, &display4, &display5 };
 	Drawable_TestCase::DrawString(drawables, count_of(drawables));
 	//Drawable_TestCase::RotateImage(drawables, count_of(drawables));
 }
