@@ -6,6 +6,7 @@
 #include "jxglib/ILI9341.h"
 #include "jxglib/Terminal.h"
 #include "jxglib/Font/shinonome12.h"
+#include "jxglib/Font/shinonome14.h"
 #include "jxglib/Font/shinonome16.h"
 #include "jxglib/Font/sisd24x32.h"
 
@@ -26,7 +27,7 @@ int main()
 	SSD1306 display0(i2c0);
 	//ST7789 display1(spi0, 240, 240, GPIO6, GPIO7, GPIO::None);
 	//ST7789 display1(spi1, 240, 320, GPIO8, GPIO9, GPIO10, GPIO::None);
-	ILI9341 display1(spi1, 240, 320, GPIO11, GPIO12, GPIO13, GPIO::None);
+	ILI9341 display1(spi1, 240, 320, GPIO12, GPIO11, GPIO13, GPIO::None);
 	//ST7735 display1(spi1, 80, 160, GPIO16, GPIO17, GPIO18, GPIO::None);
 	//ST7735::TypeB display1(spi1, 128, 160, GPIO19, GPIO20, GPIO21, GPIO::None);
 	Display::Dir displayDir = Display::Dir::Rotate0;
@@ -39,19 +40,20 @@ int main()
 	Terminal terminal0;
 	Terminal terminal1;
 	terminal0.Dump.DigitsAddr_Auto().Cols(6);
-	terminal1.Dump.DigitsAddr_Auto().Cols(8);
+	uint32_t addr = 0x10000000;
+	terminal1.Dump.DigitsAddr_Auto().AddrStart(addr).Cols(8);
 	terminal0.AttachOutput(display0);
 	terminal1.AttachOutput(display1, Terminal::AttachDir::Rotate0);
 	//terminal1.AttachOutput(display1, {50, 120, 240, 100}, Terminal::AttachDir::Rotate0);
 	terminal0.SetFont(Font::shinonome12);
-	terminal1.SetFont(Font::shinonome16);
+	terminal1.SetFont(Font::shinonome14);
 	//terminal2.SetFont(Font::shinonome12);
 	//terminal0.Dump(reinterpret_cast<const void*>(0), 8 * 20);
-	//terminal1.Dump(reinterpret_cast<const void*>(0), 8 * 120);
-	for (int i = 0; ; i++) {
-		terminal1.Printf("check #%d\n", i);
-		::sleep_ms(100);
-	}
+	terminal1.Dump(reinterpret_cast<const void*>(addr), 8 * 10000);
+	//for (int i = 0; ; i++) {
+	//	terminal1.Printf("check #%d\n", i);
+	//	//::sleep_ms(300);
+	//}
 #if 0
 	Terminal terminal;
 	terminal.AttachOutput(display2, Terminal::AttachDir::Rotate0);
