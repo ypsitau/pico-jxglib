@@ -20,5 +20,5 @@ target_link_libraries(jxglib_Drawable_TestCase INTERFACE
 	jxglib_Drawable)
 
 target_sources(jxglib_Drawable_TestCase INTERFACE
-	${CMAKE_CURRENT_LIST_DIR}/src/Drawable_TestCase.cpp)
+	${CMAKE_CURRENT_LIST_DIR}/TestCase/Drawable_TestCase.cpp)
 	

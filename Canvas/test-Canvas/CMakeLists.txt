@@ -50,6 +50,7 @@ pico_enable_stdio_usb(test-Canvas 0)
 # Add the standard library to the build
 target_link_libraries(test-Canvas
 	pico_stdlib
+	jxglib_Drawable_TestCase
 	jxglib_Canvas
 	jxglib_ST7789)
 
