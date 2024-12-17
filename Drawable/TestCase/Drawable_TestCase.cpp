@@ -8,9 +8,13 @@
 #include "jxglib/sample/cat-240x240.h"
 #include "jxglib/sample/cat-240x320.h"
 #include "jxglib/sample/cat-128x160.h"
+#include "Font/shinonome12.h"
+#include "Font/shinonome14.h"
 #include "Font/shinonome16.h"
 
 namespace jxglib {
+
+template<typename T> T LimitNum(T num, T numMin, T numMax) { return (num < numMin)? numMin : (num > numMax)? numMax : num; }
 
 //------------------------------------------------------------------------------
 // Drawable_TestCase
@@ -24,12 +28,40 @@ void Drawable_TestCase::DrawString(Drawable* drawableTbl[], int nDrawables)
 		"そこから飛び降りることはできまい。弱虫やーい。とはやしたからである。"
 		"小使いに負ぶさって帰ってきたとき、親父が大きな眼をして二階から飛び降りて腰を抜かすやつが"
 		"あるかといったから、この次は抜かさずに飛んでみせますと答えた。";
-	for (int iDrawable = 0; iDrawable < nDrawables; iDrawable++) {
-		Drawable& drawable = *drawableTbl[iDrawable];
-		drawable.SetFont(Font::shinonome16);
-		drawable.SetSpacingRatio(1.0, 1.2);
-		drawable.DrawStringWrap(0, 0, str);
-		drawable.Refresh();
+	const char* msg =
+		"[J], [K] .. change font\n"
+		"[U], [I] .. change font scale\n"
+		"[N], [M] .. change line height\n";
+		"[<], [>] .. change character width\n";
+	const FontSet* fontSetTbl[] = {
+		&Font::shinonome12, &Font::shinonome14, &Font::shinonome16
+	};
+	int iFont = 0;
+	int fontScale = 1;
+	float charWidthRatio = 1.0, lineHeightRatio = 1.2;
+	for (;;) {
+		const FontSet& fontSet = *fontSetTbl[iFont];
+		for (int iDrawable = 0; iDrawable < nDrawables; iDrawable++) {
+			Drawable& drawable = *drawableTbl[iDrawable];
+			drawable.Clear()
+				.SetFont(fontSet)
+				.SetFontScale(fontScale)
+				.SetSpacingRatio(charWidthRatio, lineHeightRatio)
+				.DrawStringWrap(0, 0, str)
+				.Refresh();
+		}
+		::printf(msg);
+		switch (::getchar()) {
+		case 'j': iFont = LimitNum(iFont - 1, 0, static_cast<int>(count_of(fontSetTbl)) - 1); break;
+		case 'k': iFont = LimitNum(iFont + 1, 0, static_cast<int>(count_of(fontSetTbl)) - 1); break;
+		case 'u': fontScale = LimitNum(fontScale - 1, 1, 3); break;
+		case 'i': fontScale = LimitNum(fontScale + 1, 1, 3); break;
+		case 'n': lineHeightRatio = LimitNum(lineHeightRatio - .1, 1., 3.); break;
+		case 'm': lineHeightRatio = LimitNum(lineHeightRatio + .1, 1., 3.); break;
+		case ',': charWidthRatio = LimitNum(charWidthRatio - .1, 1., 3.); break;
+		case '.': charWidthRatio = LimitNum(charWidthRatio + .1, 1., 3.); break;
+		default: break;
+		}
 	}
 }
 
