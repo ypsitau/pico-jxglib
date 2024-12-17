@@ -228,6 +228,7 @@ public:
 		virtual void DrawBitmap(int x, int y, const void* data, int width, int height,
 				const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override;
 		virtual void DrawImage(int x, int y, const Image& image, const Rect& rectClip, DrawDir drawDir) override;
+		virtual void DrawImageFast(int x, int y, const Image& image) override;
 		virtual void ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip) override;
 		virtual void ScrollVert(DirVert dirVert, int htScroll, const Rect& rectClip) override;
 	};

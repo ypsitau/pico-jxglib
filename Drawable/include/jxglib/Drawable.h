@@ -21,8 +21,9 @@ public:
 	struct Capability {
 		static const uint32_t Device		= (1 << 0);
 		static const uint32_t DrawImage		= (1 << 1);
-		static const uint32_t ScrollVert	= (1 << 2);
-		static const uint32_t ScrollHorz	= (1 << 3);
+		static const uint32_t DrawImageFast	= (1 << 2);
+		static const uint32_t ScrollVert	= (1 << 3);
+		static const uint32_t ScrollHorz	= (1 << 4);
 	};
 	class Dispatcher {
 	public:
@@ -36,6 +37,7 @@ public:
 		virtual void DrawBitmap(int x, int y, const void* data, int width, int height,
 			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) = 0;
 		virtual void DrawImage(int x, int y, const Image& image, const Rect& rectClip, DrawDir drawDir) = 0;
+		virtual void DrawImageFast(int x, int y, const Image& image) = 0;
 		virtual void ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip) = 0;
 		virtual void ScrollVert(DirVert dirVert, int htScroll, const Rect& rectClip) = 0;
 	};
@@ -51,6 +53,7 @@ public:
 		virtual void DrawBitmap(int x, int y, const void* data, int width, int height,
 			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override {}
 		virtual void DrawImage(int x, int y, const Image& image, const Rect& rectClip, DrawDir drawDir) override {}
+		virtual void DrawImageFast(int x, int y, const Image& image) override {}
 		virtual void ScrollHorz(DirHorz dirHorz, int width, const Rect& rectClip) override {};
 		virtual void ScrollVert(DirVert dirVert, int height, const Rect& rectClip) override {};
 	};
@@ -145,11 +148,12 @@ public:
 		return static_cast<int>(context_.pFontSet->yAdvance * context_.fontScaleHeight * context_.lineHeightRatio);
 	}
 public:
-	Drawable& Refresh() { pDispatcher_->Refresh(); return *this; }
+
+	Drawable& Refresh() { GetDispatcher().Refresh(); return *this; }
 	Drawable& Clear() { Fill(context_.colorBg); return *this; }
-	Drawable& Fill(const Color& color) { pDispatcher_->Fill(color); return *this; }
+	Drawable& Fill(const Color& color) { GetDispatcher().Fill(color); return *this; }
 public:
-	Drawable& DrawPixel(int x, int y, const Color& color) { pDispatcher_->DrawPixel(x, y, color); return *this; }
+	Drawable& DrawPixel(int x, int y, const Color& color) { GetDispatcher().DrawPixel(x, y, color); return *this; }
 	Drawable& DrawPixel(int x, int y) { return DrawPixel(x, y, context_.colorFg); }
 	Drawable& DrawPixel(const Point& pt, const Color& color) { return DrawPixel(pt.x, pt.y, color); }
 	Drawable& DrawPixel(const Point& pt) { return DrawPixel(pt, context_.colorFg); }
@@ -172,7 +176,7 @@ public:
 	Drawable& DrawRect(const Rect& rc, const Color& color) { return DrawRect(rc.x, rc.y, rc.width, rc.height, color); }
 	Drawable& DrawRect(const Rect& rc) { return DrawRect(rc, context_.colorFg); }
 	Drawable& DrawRectFill(int x, int y, int width, int height, const Color& color) {
-		pDispatcher_->DrawRectFill(x, y, width, height, color);
+		GetDispatcher().DrawRectFill(x, y, width, height, color);
 		return *this;
 	}
 	Drawable& DrawRectFill(int x, int y, int width, int height) { return DrawRectFill(x, y, width, height, context_.colorFg); }
@@ -182,7 +186,7 @@ public:
 	Drawable& DrawRectFill(const Rect& rc) { return DrawRectFill(rc, context_.colorFg); }
 	Drawable& DrawBitmap(int x, int y, const void* data, int width, int height,
 				const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) {
-		pDispatcher_->DrawBitmap(x, y, data, width, height, color, pColorBg, scaleX, scaleY);
+		GetDispatcher().DrawBitmap(x, y, data, width, height, color, pColorBg, scaleX, scaleY);
 		return *this;
 	}
 	Drawable& DrawBitmap(int x, int y, const void* data, int width, int height, bool transparentBgFlag = false, int scaleX = 1, int scaleY = 1) {
@@ -194,6 +198,7 @@ public:
 		return *this;
 	}
 	Drawable& DrawImage(int x, int y, const Image& image, const Rect& rectClip = Rect::Empty, DrawDir drawDir = DrawDir::Normal);
+	Drawable& DrawImageFast(int x, int y, const Image& image);
 	Drawable& ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip = Rect::Empty);
 	Drawable& ScrollVert(DirVert dirVert, int htScroll, const Rect& rectClip = Rect::Empty);
 	Drawable& DrawChar(int x, int y, const FontEntry& fontEntry);

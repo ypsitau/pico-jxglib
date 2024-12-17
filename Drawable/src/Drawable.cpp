@@ -78,7 +78,13 @@ Drawable& Drawable::DrawImage(int x, int y, const Image& image, const Rect& rect
 		rectClipAdj = rectClip;
 		if (!rectClipAdj.Adjust({0, 0, image.GetWidth(), image.GetHeight()})) return *this;
 	}
-	pDispatcher_->DrawImage(x, y, image, rectClipAdj, drawDir);
+	GetDispatcher().DrawImage(x, y, image, rectClipAdj, drawDir);
+	return *this;
+}
+
+Drawable& Drawable::DrawImageFast(int x, int y, const Image& image)
+{
+	GetDispatcher().DrawImageFast(x, y, image);
 	return *this;
 }
 
@@ -91,7 +97,7 @@ Drawable& Drawable::ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectCl
 		rectClipAdj = rectClip;
 		if (!rectClipAdj.Adjust({0, 0, GetWidth(), GetHeight()})) return *this;
 	}
-	pDispatcher_->ScrollHorz(dirHorz, wdScroll, rectClipAdj);
+	GetDispatcher().ScrollHorz(dirHorz, wdScroll, rectClipAdj);
 	return *this;
 }
 
@@ -104,7 +110,7 @@ Drawable& Drawable::ScrollVert(DirVert dirVert, int htScroll, const Rect& rectCl
 		rectClipAdj = rectClip;
 		if (!rectClipAdj.Adjust({0, 0, GetWidth(), GetHeight()})) return *this;
 	}
-	pDispatcher_->ScrollVert(dirVert, htScroll, rectClipAdj);
+	GetDispatcher().ScrollVert(dirVert, htScroll, rectClipAdj);
 	return *this;
 }
 

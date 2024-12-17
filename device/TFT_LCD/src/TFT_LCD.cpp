@@ -132,9 +132,6 @@ void TFT_LCD::DispatcherEx::DrawBitmap(int x, int y, const void* data, int width
 
 void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Rect& rectClip, DrawDir drawDir)
 {
-	//using PA = PageAddressOrder;
-	//using CA = ColumnAddressOrder;
-	//using PC = PageColumnOrder;
 	Raw& raw = display_.raw;
 	const Saved& saved = display_.GetSaved();
 	Dir displayDir = saved.displayDir.Transform(drawDir);
@@ -168,31 +165,41 @@ void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 		using Reader = Image::Reader<Image::Getter_T<ColorRGB565, ColorRGB565> >;
 		Image::Reader reader(Reader::Normal(image, xSrc + xSkip, ySrc + ySkip, wdImage, htImage));
 		while (!reader.HasDone()) raw.MemoryWrite_Data16(reader.ReadForward());
-#if 0
-		spi_inst_t* spi = raw.GetSPI();
-		DMA::Channel channel(DMA::claim_unused_channel(true));
-		DMA::ChannelConfig config;
-		config.set_enable(true)
-			.set_transfer_data_size(DMA_SIZE_16)
-			.set_read_increment(true)
-			.set_write_increment(false)
-			.set_dreq(::spi_get_dreq(spi, true))	// see RP2040 Datasheet 2.5.3.1 System DREQ Table
-			.set_chain_to(channel)					// disable by setting chain_to to itself
-			.set_ring_to_read(0)
-			.set_bswap(false)
-			.set_irq_quiet(false)
-			.set_sniff_enable(false)
-			.set_high_priority(false);
-		channel.set_config(config);
-		channel.set_read_addr(image.GetPointer())
-			.set_write_addr(&::spi_get_hw(spi)->dr)
-			.set_trans_count_trig(wdImage * htImage)
-			.wait_for_finish_blocking();
-		channel.unclaim();
-#endif
 	}
 	raw.MemoryWrite_End();
 	raw.MemoryDataAccessControl(saved.displayDir, saved.configData);
+}
+
+void TFT_LCD::DispatcherEx::DrawImageFast(int x, int y, const Image& image)
+{
+	Raw& raw = display_.raw;
+	spi_inst_t* spi = raw.GetSPI();
+	DMA::Channel channel(DMA::claim_unused_channel(true));
+	int xAdjust, yAdjust;
+	display_.CalcPosAdjust(Dir::Normal, &xAdjust, &yAdjust);
+	x += xAdjust, y += yAdjust;
+	raw.ColumnAddressSet(x, x + image.GetWidth() - 1);
+	raw.RowAddressSet(y, y + image.GetHeight() - 1);
+	raw.MemoryWrite_Begin(16);
+	DMA::ChannelConfig config;
+	config.set_enable(true)
+		.set_transfer_data_size(DMA_SIZE_16)
+		.set_read_increment(true)
+		.set_write_increment(false)
+		.set_dreq(::spi_get_dreq(spi, true))	// see RP2040 Datasheet 2.5.3.1 System DREQ Table
+		.set_chain_to(channel)					// disable chain_to by setting it to the own channel
+		.set_ring_to_read(0)
+		.set_bswap(false)
+		.set_irq_quiet(false)
+		.set_sniff_enable(false)
+		.set_high_priority(false);
+	channel.set_config(config);
+	channel.set_read_addr(image.GetPointer())
+		.set_write_addr(&::spi_get_hw(spi)->dr)
+		.set_trans_count_trig(image.GetWidth() * image.GetHeight())
+		.wait_for_finish_blocking();
+	channel.unclaim();
+	raw.MemoryWrite_End();
 }
 
 void TFT_LCD::DispatcherEx::ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip)

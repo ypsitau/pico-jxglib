@@ -147,6 +147,11 @@ void SSD1306::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 	// do nothing
 }
 
+void SSD1306::DispatcherEx::DrawImageFast(int x, int y, const Image& image)
+{
+	// do nothing
+}
+
 void SSD1306::DispatcherEx::ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip)
 {
 	Rect rect = rectClip.IsEmpty()? Rect(0, 0, display_.GetWidth(), display_.GetHeight()) : rectClip;

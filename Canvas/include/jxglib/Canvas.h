@@ -38,6 +38,7 @@ public:
 		virtual void DrawBitmap(int x, int y, const void* data, int width, int height,
 			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override;
 		virtual void DrawImage(int x, int y, const Image& image, const Rect& rectClip, DrawDir drawDir) override;
+		virtual void DrawImageFast(int x, int y, const Image& image) override;
 		virtual void ScrollHorz(DirHorz dirHorz, int width, const Rect& rect) override;
 		virtual void ScrollVert(DirVert dirVert, int height, const Rect& rect) override;
 	};
@@ -51,7 +52,7 @@ private:
 	} output_;
 	std::unique_ptr<DispatcherEx> pDispatcherEx_;
 public:
-	Canvas() : Drawable(Capability::DrawImage | Capability::ScrollHorz | Capability::ScrollVert), pDrawableOut_{nullptr} {}
+	Canvas() : Drawable(Capability::DrawImage | Capability::DrawImageFast | Capability::ScrollHorz | Capability::ScrollVert), pDrawableOut_{nullptr} {}
 public:
 	Drawable* GetDrawableOut() { return pDrawableOut_; }
 	Image& GetImageOwn() { return imageOwn_; }
