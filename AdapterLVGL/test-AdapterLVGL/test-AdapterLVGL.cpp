@@ -9,12 +9,6 @@ using namespace jxglib;
 void lv_example_button_1();
 static void event_handler(lv_event_t * e);
 
-void lcd_Flash_CB(lv_disp_t* disp, const lv_area_t* area, unsigned char* buf)
-{
-	//::printf("lcd_Flash_CB %d %d %d %d\n", area->x1, area->x2, area->y1, area->y2);
-	//Image image(Image::Format::RGB565, area->x2 - area->x1, area->y2 - area->y1, buf);
-}
-
 int main()
 {
 	::stdio_init_all();
@@ -23,20 +17,20 @@ int main()
 	GPIO::clr_mask(0xffffffff);
 	GPIO2.set_function_SPI0_SCK();
 	GPIO3.set_function_SPI0_TX();
-	GPIO14.set_function_SPI1_SCK().set_drive_strength(GPIO_DRIVE_STRENGTH_12MA);
-	GPIO15.set_function_SPI1_TX().set_drive_strength(GPIO_DRIVE_STRENGTH_12MA);
+	GPIO14.set_function_SPI1_SCK();
+	GPIO15.set_function_SPI1_TX();
 	//ST7789 display(spi0, 240, 240, GPIO6, GPIO7, GPIO::None);
 	//ST7789 display(spi1, 240, 320, GPIO8, GPIO9, GPIO10, GPIO::None);
 	ILI9341 display(spi1, 240, 320, GPIO12, GPIO11, GPIO13, GPIO::None);
 	display.Initialize(Display::Dir::Rotate0);
 	//Drawable* drawableTbl[] = { &display };
 	//Drawable_TestCase::DrawString(drawableTbl, count_of(drawableTbl));
-	AdapterLVGL::Instance.AttachOutput(display);
+	AdapterLVGL::AttachOutput(display);
+	
 	lv_indev_t *indev = ::lv_indev_create();
 	::lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
 	//lv_indev_set_read_cb(indev, xpt2046_read_cb);
-	::lv_screen_load(AdapterLVGL::GetScreen());
-	
+
 	lv_example_button_1();
 
 	while (1)
@@ -59,13 +53,12 @@ static void event_handler(lv_event_t * e)
 void lv_example_button_1(void)
 {
 	lv_obj_t* screen = AdapterLVGL::GetScreen();
-	lv_obj_t * label;
+	lv_obj_t* label;
 
-	lv_obj_t * btn1 = lv_button_create(screen);
+	lv_obj_t* btn1 = lv_button_create(screen);
 	lv_obj_add_event_cb(btn1, event_handler, LV_EVENT_ALL, NULL);
 	lv_obj_align(btn1, LV_ALIGN_CENTER, 0, -40);
 	lv_obj_remove_flag(btn1, LV_OBJ_FLAG_PRESS_LOCK);
-
 	label = lv_label_create(btn1);
 	lv_label_set_text(label, "Button");
 	lv_obj_center(label);
