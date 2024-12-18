@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/ILI9341.h"
-#include "jxglib/CanvasLVGL.h"
+#include "jxglib/AdapterLVGL.h"
 #include "jxglib/Drawable_TestCase.h"
 
 using namespace jxglib;
@@ -31,11 +31,11 @@ int main()
 	display.Initialize(Display::Dir::Rotate0);
 	//Drawable* drawableTbl[] = { &display };
 	//Drawable_TestCase::DrawString(drawableTbl, count_of(drawableTbl));
-	CanvasLVGL::Instance.AttachOutput(display);
+	AdapterLVGL::Instance.AttachOutput(display);
 	lv_indev_t *indev = ::lv_indev_create();
 	::lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
 	//lv_indev_set_read_cb(indev, xpt2046_read_cb);
-	::lv_screen_load(CanvasLVGL::GetScreen());
+	::lv_screen_load(AdapterLVGL::GetScreen());
 	
 	lv_example_button_1();
 
@@ -58,7 +58,7 @@ static void event_handler(lv_event_t * e)
 
 void lv_example_button_1(void)
 {
-	lv_obj_t* screen = CanvasLVGL::GetScreen();
+	lv_obj_t* screen = AdapterLVGL::GetScreen();
 	lv_obj_t * label;
 
 	lv_obj_t * btn1 = lv_button_create(screen);

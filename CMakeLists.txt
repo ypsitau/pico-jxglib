@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 3.12)
 
 project(jxglib C CXX ASM)
 
+add_subdirectory(AdapterLVGL)
 add_subdirectory(Button)
 add_subdirectory(Canvas)
-add_subdirectory(CanvasLVGL)
 add_subdirectory(Common)
 add_subdirectory(Display)
 add_subdirectory(Drawable)

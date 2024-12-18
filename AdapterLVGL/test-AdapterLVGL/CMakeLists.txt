@@ -28,34 +28,34 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-CanvasLVGL C CXX ASM)
+project(test-AdapterLVGL C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-CanvasLVGL test-CanvasLVGL.cpp )
+add_executable(test-AdapterLVGL test-AdapterLVGL.cpp )
 
-pico_set_program_name(test-CanvasLVGL "test-CanvasLVGL")
-pico_set_program_version(test-CanvasLVGL "0.1")
+pico_set_program_name(test-AdapterLVGL "test-AdapterLVGL")
+pico_set_program_version(test-AdapterLVGL "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-CanvasLVGL 1)
-pico_enable_stdio_usb(test-CanvasLVGL 0)
+pico_enable_stdio_uart(test-AdapterLVGL 1)
+pico_enable_stdio_usb(test-AdapterLVGL 0)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. jxglib)
 
 # Add the standard library to the build
-target_link_libraries(test-CanvasLVGL
+target_link_libraries(test-AdapterLVGL
 	pico_stdlib
 	jxglib_TFT_LCD
 	jxglib_Drawable_TestCase
-	jxglib_CanvasLVGL)
+	jxglib_AdapterLVGL)
 
 # Add the standard include files to the build
-target_include_directories(test-CanvasLVGL PRIVATE
+target_include_directories(test-AdapterLVGL PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-CanvasLVGL)
+pico_add_extra_outputs(test-AdapterLVGL)

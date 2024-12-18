@@ -1,8 +1,8 @@
 //==============================================================================
-// jxglib/CanvasLVGL.h
+// jxglib/AdapterLVGL.h
 //==============================================================================
-#ifndef PICO_JXGLIB_CANVASLVGL_H
-#define PICO_JXGLIB_CANVASLVGL_H
+#ifndef PICO_JXGLIB_AdapterLVGL_H
+#define PICO_JXGLIB_AdapterLVGL_H
 #include <lvgl.h>
 #include "pico/stdlib.h"
 #include "jxglib/Drawable.h"
@@ -10,18 +10,18 @@
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// CanvasLVGL
+// AdapterLVGL
 //------------------------------------------------------------------------------
-class CanvasLVGL {
+class AdapterLVGL {
 public:
 	using AttachDir = Image::WriterDir;
 private:
 	Drawable* pDrawableOut_;
 	lv_obj_t* screen_;
 public:
-	static CanvasLVGL Instance;
+	static AdapterLVGL Instance;
 public:
-	CanvasLVGL() : pDrawableOut_{nullptr} {}
+	AdapterLVGL() : pDrawableOut_{nullptr} {}
 public:
 	Drawable& GetDrawableOut() { return *pDrawableOut_; }
 	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, AttachDir attachDir = AttachDir::Normal);

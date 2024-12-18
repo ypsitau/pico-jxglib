@@ -1,16 +1,16 @@
 //==============================================================================
-// CanvasLVGL.cpp
+// AdapterLVGL.cpp
 //==============================================================================
-#include "jxglib/CanvasLVGL.h"
+#include "jxglib/AdapterLVGL.h"
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// CanvasLVGL
+// AdapterLVGL
 //------------------------------------------------------------------------------
-CanvasLVGL CanvasLVGL::Instance;
+AdapterLVGL AdapterLVGL::Instance;
 
-bool CanvasLVGL::AttachOutput(Drawable& drawable, const Rect& rect, AttachDir attachDir)
+bool AdapterLVGL::AttachOutput(Drawable& drawable, const Rect& rect, AttachDir attachDir)
 {
 	pDrawableOut_ = &drawable;
 	::lv_init();
@@ -25,14 +25,14 @@ bool CanvasLVGL::AttachOutput(Drawable& drawable, const Rect& rect, AttachDir at
 	return true;
 }
 
-void CanvasLVGL::DoFlush(lv_disp_t* disp, const lv_area_t* area, unsigned char* buf)
+void AdapterLVGL::DoFlush(lv_disp_t* disp, const lv_area_t* area, unsigned char* buf)
 {
 	Image image(Image::Format::RGB565, ::lv_area_get_width(area), ::lv_area_get_height(area), buf);
 	GetDrawableOut().DrawImageFast(area->x1, area->y1, image);
 	::lv_disp_flush_ready(disp);
 }
 
-void CanvasLVGL::Flush_CB(lv_disp_t* disp, const lv_area_t* area, unsigned char* buf)
+void AdapterLVGL::Flush_CB(lv_disp_t* disp, const lv_area_t* area, unsigned char* buf)
 {
 	Instance.DoFlush(disp, area, buf);
 }

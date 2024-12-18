@@ -1,8 +1,8 @@
-add_library(jxglib_CanvasLVGL INTERFACE)
+add_library(jxglib_AdapterLVGL INTERFACE)
 
 add_subdirectory(lvgl)
 
-target_include_directories(jxglib_CanvasLVGL INTERFACE
+target_include_directories(jxglib_AdapterLVGL INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/include)
 
 target_compile_definitions(lvgl PRIVATE
@@ -17,12 +17,12 @@ target_compile_definitions(lvgl_demos PRIVATE
 target_compile_definitions(lvgl_thorvg PRIVATE
 	LV_CONF_PATH="${CMAKE_CURRENT_LIST_DIR}/src/lv_conf.h")
 
-target_compile_definitions(jxglib_CanvasLVGL INTERFACE
+target_compile_definitions(jxglib_AdapterLVGL INTERFACE
 	LV_CONF_PATH="${CMAKE_CURRENT_LIST_DIR}/src/lv_conf.h")
 
-target_link_libraries(jxglib_CanvasLVGL INTERFACE
+target_link_libraries(jxglib_AdapterLVGL INTERFACE
 	jxglib_Common
 	lvgl)
 
-target_sources(jxglib_CanvasLVGL INTERFACE
-	${CMAKE_CURRENT_LIST_DIR}/src/CanvasLVGL.cpp)
+target_sources(jxglib_AdapterLVGL INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/src/AdapterLVGL.cpp)
