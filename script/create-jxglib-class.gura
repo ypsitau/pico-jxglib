@@ -1,0 +1,77 @@
+#!/usr/bin/env gurax
+import(argopt)
+
+tmpl_Help = tR'''
+usage: create-jxglib-class <class name>
+'''
+
+tmpl_CMakeLists = tR'''
+add_library(jxglib_${className} INTERFACE)
+
+target_include_directories(jxglib_${className} INTERFACE
+	$\{CMAKE_CURRENT_LIST_DIR}/include)
+
+target_link_libraries(jxglib_${className} INTERFACE
+	jxglib_Common)
+
+target_sources(jxglib_${className} INTERFACE
+	$\{CMAKE_CURRENT_LIST_DIR}/src/${className}.cpp)
+'''
+
+tmpl_Header = tR'''
+//==============================================================================
+// jxglib/${className}.h
+//==============================================================================
+#ifndef PICO_JXGLIB_${className.Upper()}_H
+#define PICO_JXGLIB_${className.Upper()}_H
+#include "pico/stdlib.h"
+#include "jxglib/Common.h"
+
+namespace jxglib {
+
+//------------------------------------------------------------------------------
+// ${className}
+//------------------------------------------------------------------------------
+class ${className} {
+public:
+	${className}() {}
+};
+
+}
+
+#endif
+'''
+
+tmpl_Source = tR'''
+//==============================================================================
+// ${className}.cpp
+//==============================================================================
+#include "jxglib/${className}.h"
+
+namespace jxglib {
+
+//------------------------------------------------------------------------------
+// ${className}
+//------------------------------------------------------------------------------
+
+}
+'''
+
+main() = {
+	argopt.Parser {|p|
+		opt = nil
+		try {[argv, opt] = p.Parse(sys.argv)} catch {}
+		if (!opt || argv.len < 1) {
+			tmpl_Help.Render(sys.cerr)
+			sys.Exit(1)
+		}
+		className = argv[0]
+	}
+	fs.CreateDir('src'):tree
+	fs.CreateDir('include/jxglib'):tree
+	tmpl_CMakeLists.Render('>CMakeLists.txt')
+	tmpl_Header.Render(e'>include/jxglib/${className}.h')
+	tmpl_Source.Render(e'>src/${className}.cpp')
+}
+
+main()
