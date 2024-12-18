@@ -49,6 +49,8 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. jxglib)
 # Add the standard library to the build
 target_link_libraries(test-CanvasLVGL
 	pico_stdlib
+	jxglib_TFT_LCD
+	jxglib_Drawable_TestCase
 	jxglib_CanvasLVGL)
 
 # Add the standard include files to the build
