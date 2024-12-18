@@ -1,19 +1,19 @@
 //==============================================================================
-// jxglib/LVGL.h
+// jxglib/CanvasLVGL.h
 //==============================================================================
-#ifndef PICO_JXGLIB_LVGL_H
-#define PICO_JXGLIB_LVGL_H
+#ifndef PICO_JXGLIB_CANVASLVGL_H
+#define PICO_JXGLIB_CANVASLVGL_H
 #include "pico/stdlib.h"
 #include "jxglib/Common.h"
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// LVGL
+// CanvasLVGL
 //------------------------------------------------------------------------------
-class LVGL {
+class CanvasLVGL {
 public:
-	LVGL() {}
+	CanvasLVGL() {}
 };
 
 }
