@@ -14,7 +14,7 @@ bool AdapterLVGL::AttachOutput(Drawable& drawable, const Rect& rect, AttachDir a
 {
 	instance_.pDrawableOut_ = &drawable;
 	::lv_init();
-	lv_display_t* disp = ::lv_display_create(240, 320);
+	lv_display_t* disp = ::lv_display_create(drawable.GetWidth(), drawable.GetHeight());
 	::lv_display_set_flush_cb(disp, Flush_CB);
 	lv_draw_buf_t* buf1 = ::lv_draw_buf_create(240, 32, LV_COLOR_FORMAT_RGB565, LV_STRIDE_AUTO);
 	lv_draw_buf_t* buf2 = ::lv_draw_buf_create(240, 32, LV_COLOR_FORMAT_RGB565, LV_STRIDE_AUTO);
