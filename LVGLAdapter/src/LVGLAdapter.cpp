@@ -8,27 +8,34 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // LVGLAdapter
 //------------------------------------------------------------------------------
-LVGLAdapter LVGLAdapter::Instance;
+LVGLAdapter::InputDumb LVGLAdapter::inputDumb_;
+
+LVGLAdapter::LVGLAdapter(bool doubleBuffFlag, int nPartial) :
+	doubleBuffFlag_{doubleBuffFlag}, nPartial_{nPartial}, pDrawableOut_{nullptr},
+	pInput_Pointer_{&inputDumb_}, pInput_Keypad_{&inputDumb_}, pInput_Button_{&inputDumb_}, pInput_Encoder_{&inputDumb_}
+{}
 
 bool LVGLAdapter::AttachOutput(Drawable& drawable, const Rect& rect)
 {
-	const int nPartial = 10;
 	pDrawableOut_ = &drawable;
 	::lv_init();
 	Rect rectAdj(rect);
 	Rect rectBound(0, 0, drawable.GetWidth(), drawable.GetHeight());
-	if (rectAdj.IsEmpty()) {
-		rectAdj = rectBound;
-	} else {
-		rectAdj.Adjust(rectBound);
-	}
+	if (rectAdj.IsEmpty()) { rectAdj = rectBound; } else if (!rectAdj.Adjust(rectBound)) return false;
 	rectOut_ = rectAdj;
 	lv_display_t* disp = ::lv_display_create(rectAdj.width, rectAdj.height);
 	::lv_display_set_flush_cb(disp, FlushCB);
-	uint32_t bufSize = rectAdj.width * rectAdj.height / nPartial * ::lv_color_format_get_size(::lv_display_get_color_format(disp));
-	void* buf1 = ::lv_malloc(bufSize);
-	void* buf2 = ::lv_malloc(bufSize);
-	::lv_display_set_buffers(disp, buf1, buf2, bufSize, LV_DISPLAY_RENDER_MODE_PARTIAL);
+	uint32_t buffSize = rectAdj.width * rectAdj.height / nPartial_ * ::lv_color_format_get_size(::lv_display_get_color_format(disp));
+	void* buff1 = ::lv_malloc(buffSize);
+	if (!buff1) return false;
+	void* buff2 = nullptr;
+	if (doubleBuffFlag_) {
+		buff2 = ::lv_malloc(buffSize);
+		if (!buff2) return false;
+	}
+	::lv_display_set_buffers(disp, buff1, buff2, buffSize,
+				(nPartial_ > 1)? LV_DISPLAY_RENDER_MODE_PARTIAL : LV_DISPLAY_RENDER_MODE_FULL);
+	::lv_display_set_user_data(disp, this);
 	return true;
 }
 
@@ -39,9 +46,66 @@ void LVGLAdapter::Flush(lv_disp_t* disp, const lv_area_t* area, unsigned char* b
 	::lv_disp_flush_ready(disp);
 }
 
+void LVGLAdapter::SetInput_Pointer(Input& input)
+{
+	pInput_Pointer_ = &input;
+	RegisterInput(LV_INDEV_TYPE_POINTER, IndevReadPointerCB);
+}
+
+void LVGLAdapter::SetInput_Keypad(Input& input)
+{
+	pInput_Keypad_ = &input;
+	RegisterInput(LV_INDEV_TYPE_KEYPAD, IndevReadKeypadCB);
+}
+
+void LVGLAdapter::SetInput_Button(Input& input)
+{
+	pInput_Button_ = &input;
+	RegisterInput(LV_INDEV_TYPE_BUTTON, IndevReadButtonCB);
+}
+
+void LVGLAdapter::SetInput_Encoder(Input& input)
+{
+	pInput_Encoder_ = &input;
+	RegisterInput(LV_INDEV_TYPE_ENCODER, IndevReadEncoderCB);
+}
+
+void LVGLAdapter::RegisterInput(lv_indev_type_t indev_type, lv_indev_read_cb_t cb)
+{
+	lv_indev_t* indev = ::lv_indev_create();
+	::lv_indev_set_type(indev, indev_type);
+	::lv_indev_set_read_cb(indev, cb);
+	::lv_indev_set_user_data(indev, this);
+}
+
 void LVGLAdapter::FlushCB(lv_disp_t* disp, const lv_area_t* area, unsigned char* buf)
 {
-	Instance.Flush(disp, area, buf);
+	LVGLAdapter* pSelf = reinterpret_cast<LVGLAdapter*>(::lv_display_get_user_data(disp));
+	pSelf->Flush(disp, area, buf);
+}
+
+void LVGLAdapter::IndevReadPointerCB(lv_indev_t* indev, lv_indev_data_t* data)
+{
+	LVGLAdapter* pSelf = reinterpret_cast<LVGLAdapter*>(::lv_indev_get_user_data(indev));
+	pSelf->pInput_Pointer_->Handle(indev, data);
+}
+
+void LVGLAdapter::IndevReadKeypadCB(lv_indev_t* indev, lv_indev_data_t* data)
+{
+	LVGLAdapter* pSelf = reinterpret_cast<LVGLAdapter*>(::lv_indev_get_user_data(indev));
+	pSelf->pInput_Keypad_->Handle(indev, data);
+}
+
+void LVGLAdapter::IndevReadButtonCB(lv_indev_t* indev, lv_indev_data_t* data)
+{
+	LVGLAdapter* pSelf = reinterpret_cast<LVGLAdapter*>(::lv_indev_get_user_data(indev));
+	pSelf->pInput_Button_->Handle(indev, data);
+}
+
+void LVGLAdapter::IndevReadEncoderCB(lv_indev_t* indev, lv_indev_data_t* data)
+{
+	LVGLAdapter* pSelf = reinterpret_cast<LVGLAdapter*>(::lv_indev_get_user_data(indev));
+	pSelf->pInput_Encoder_->Handle(indev, data);
 }
 
 }

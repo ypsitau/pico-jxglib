@@ -7,6 +7,57 @@
 
 using namespace jxglib;
 
+class InputPointer : public LVGLAdapter::Input {
+public:
+	virtual void Handle(lv_indev_t* indev_drv, lv_indev_data_t* data) override;
+};
+
+void InputPointer::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
+{
+	::printf("Pointer::Handle\n");
+	data->point.x = 0;
+	data->point.y = 0;
+	data->state = LV_INDEV_STATE_PRESSED;
+}
+
+class InputKeypad : public LVGLAdapter::Input {
+public:
+	virtual void Handle(lv_indev_t* indev_drv, lv_indev_data_t* data) override;
+};
+
+void InputKeypad::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
+{
+	::printf("Keypad::Handle\n");
+	data->point.x = 0;
+	data->point.y = 0;
+	data->state = LV_INDEV_STATE_PRESSED;
+	data->key = '1';
+}
+
+class InputButton : public LVGLAdapter::Input {
+public:
+	virtual void Handle(lv_indev_t* indev_drv, lv_indev_data_t* data) override;
+};
+
+void InputButton::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
+{
+	::printf("Button::Handle\n");
+	data->state = LV_INDEV_STATE_PRESSED;
+	data->btn_id = 0;
+}
+
+class InputEncoder : public LVGLAdapter::Input {
+public:
+	virtual void Handle(lv_indev_t* indev_drv, lv_indev_data_t* data) override;
+};
+
+void InputEncoder::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
+{
+	::printf("Encoder::Handle\n");
+	data->state = LV_INDEV_STATE_PRESSED;	
+	data->enc_diff = 0;
+}
+
 int main()
 {
 	::stdio_init_all();
@@ -15,12 +66,16 @@ int main()
 	GPIO15.set_function_SPI1_TX();
 	ILI9341 display(spi1, 240, 320, GPIO12, GPIO11, GPIO13, GPIO::None);
 	display.Initialize(Display::Dir::Rotate90);
-	LVGLAdapter::Instance.AttachOutput(display);
-	
-	lv_indev_t *indev = ::lv_indev_create();
-	::lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
-	//::lv_indev_set_read_cb(indev, xpt2046_read_cb);
-	
+	LVGLAdapter lvglAdapter;
+	lvglAdapter.AttachOutput(display);
+	InputPointer inputPointer;
+	InputKeypad inputKeypad;
+	InputButton inputButton;
+	InputEncoder inputEncoder;
+	//lvglAdapter.SetInput_Pointer(inputPointer);
+	lvglAdapter.SetInput_Keypad(inputKeypad);
+	//lvglAdapter.SetInput_Button(inputButton);
+	//lvglAdapter.SetInput_Encoder(inputEncoder);
 	//-----------------------------------------------
 	// examples/anim/lv_example_anim.h
 	//::lv_example_anim_1();
@@ -154,7 +209,7 @@ int main()
 	//::lv_example_buttonmatrix_3();
 	//::lv_example_calendar_1();
 	//::lv_example_calendar_2();
-	::lv_example_canvas_1();
+	//::lv_example_canvas_1();
 	//::lv_example_canvas_2();
 	//::lv_example_canvas_3();
 	//::lv_example_canvas_4();
