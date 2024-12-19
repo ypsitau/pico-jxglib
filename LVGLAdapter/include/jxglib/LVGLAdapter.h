@@ -28,6 +28,7 @@ private:
 	int nPartial_;
 	Drawable* pDrawableOut_;
 	Rect rectOut_;
+	lv_display_t* disp_;
 	Input* pInput_Pointer_;
 	Input* pInput_Keypad_;
 	Input* pInput_Button_;
@@ -40,6 +41,7 @@ public:
 	Drawable& GetDrawableOut() { return *pDrawableOut_; }
 	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty);
 	void Flush(lv_disp_t* disp, const lv_area_t* area, unsigned char* buf);
+	void SetDefault() { ::lv_disp_set_default(disp_); }
 	void SetInput_Pointer(Input& input);
 	void SetInput_Keypad(Input& input);
 	void SetInput_Button(Input& input);

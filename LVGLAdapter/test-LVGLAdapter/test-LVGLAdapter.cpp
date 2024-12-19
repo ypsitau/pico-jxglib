@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/ILI9341.h"
+#include "jxglib/ST7789.h"
 #include "jxglib/LVGLAdapter.h"
 #include <examples/lv_examples.h>
 //#include <demos/lv_demos.h>
@@ -61,19 +62,26 @@ void InputEncoder::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
 int main()
 {
 	::stdio_init_all();
+	::spi_init(spi0, 125 * 1000 * 1000);
 	::spi_init(spi1, 125 * 1000 * 1000);
+	GPIO2.set_function_SPI0_SCK();
+	GPIO3.set_function_SPI0_TX();
 	GPIO14.set_function_SPI1_SCK();
 	GPIO15.set_function_SPI1_TX();
-	ILI9341 display(spi1, 240, 320, GPIO12, GPIO11, GPIO13, GPIO::None);
-	display.Initialize(Display::Dir::Rotate90);
-	LVGLAdapter lvglAdapter;
-	lvglAdapter.AttachOutput(display);
+	ST7789 display1(spi1, 240, 320, GPIO18, GPIO19, GPIO20, GPIO21);
+	ILI9341 display2(spi0, 240, 320, GPIO12, GPIO11, GPIO13, GPIO::None);
+	display1.Initialize(Display::Dir::Rotate90);
+	display2.Initialize(Display::Dir::Rotate90);
+	LVGLAdapter lvglAdapter1;
+	LVGLAdapter lvglAdapter2;
+	lvglAdapter1.AttachOutput(display1);
+	lvglAdapter2.AttachOutput(display2);
 	InputPointer inputPointer;
 	InputKeypad inputKeypad;
 	InputButton inputButton;
 	InputEncoder inputEncoder;
 	//lvglAdapter.SetInput_Pointer(inputPointer);
-	lvglAdapter.SetInput_Keypad(inputKeypad);
+	lvglAdapter2.SetInput_Keypad(inputKeypad);
 	//lvglAdapter.SetInput_Button(inputButton);
 	//lvglAdapter.SetInput_Encoder(inputEncoder);
 	//-----------------------------------------------
@@ -285,11 +293,13 @@ int main()
 	//::lv_example_tabview_2();
 	//::lv_example_textarea_1();
 	//::lv_example_textarea_2();
+	lvglAdapter1.SetDefault();
+	::lv_example_textarea_2();
 	//::lv_example_textarea_3();
 	//::lv_example_tileview_1();
 	//::lv_example_win_1();
 	for (;;) {
-		sleep_ms(5);
+		::sleep_ms(5);
 		::lv_timer_handler();
 		::lv_tick_inc(5);
 	}

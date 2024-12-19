@@ -11,7 +11,7 @@ namespace jxglib {
 LVGLAdapter::InputDumb LVGLAdapter::inputDumb_;
 
 LVGLAdapter::LVGLAdapter(bool doubleBuffFlag, int nPartial) :
-	doubleBuffFlag_{doubleBuffFlag}, nPartial_{nPartial}, pDrawableOut_{nullptr},
+	doubleBuffFlag_{doubleBuffFlag}, nPartial_{nPartial}, pDrawableOut_{nullptr}, disp_{nullptr},
 	pInput_Pointer_{&inputDumb_}, pInput_Keypad_{&inputDumb_}, pInput_Button_{&inputDumb_}, pInput_Encoder_{&inputDumb_}
 {}
 
@@ -19,13 +19,13 @@ bool LVGLAdapter::AttachOutput(Drawable& drawable, const Rect& rect)
 {
 	pDrawableOut_ = &drawable;
 	::lv_init();
-	Rect rectAdj(rect);
+	rectOut_ = rect;
 	Rect rectBound(0, 0, drawable.GetWidth(), drawable.GetHeight());
-	if (rectAdj.IsEmpty()) { rectAdj = rectBound; } else if (!rectAdj.Adjust(rectBound)) return false;
-	rectOut_ = rectAdj;
-	lv_display_t* disp = ::lv_display_create(rectAdj.width, rectAdj.height);
-	::lv_display_set_flush_cb(disp, FlushCB);
-	uint32_t buffSize = rectAdj.width * rectAdj.height / nPartial_ * ::lv_color_format_get_size(::lv_display_get_color_format(disp));
+	if (rectOut_.IsEmpty()) { rectOut_ = rectBound; } else if (!rectOut_.Adjust(rectBound)) return false;
+	disp_ = ::lv_display_create(rectOut_.width, rectOut_.height);
+	::lv_display_set_flush_cb(disp_, FlushCB);
+	::lv_display_set_user_data(disp_, this);
+	uint32_t buffSize = rectOut_.width * rectOut_.height / nPartial_ * ::lv_color_format_get_size(::lv_display_get_color_format(disp_));
 	void* buff1 = ::lv_malloc(buffSize);
 	if (!buff1) return false;
 	void* buff2 = nullptr;
@@ -33,9 +33,8 @@ bool LVGLAdapter::AttachOutput(Drawable& drawable, const Rect& rect)
 		buff2 = ::lv_malloc(buffSize);
 		if (!buff2) return false;
 	}
-	::lv_display_set_buffers(disp, buff1, buff2, buffSize,
+	::lv_display_set_buffers(disp_, buff1, buff2, buffSize,
 				(nPartial_ > 1)? LV_DISPLAY_RENDER_MODE_PARTIAL : LV_DISPLAY_RENDER_MODE_FULL);
-	::lv_display_set_user_data(disp, this);
 	return true;
 }
 
@@ -76,6 +75,7 @@ void LVGLAdapter::RegisterInput(lv_indev_type_t indev_type, lv_indev_read_cb_t c
 	::lv_indev_set_type(indev, indev_type);
 	::lv_indev_set_read_cb(indev, cb);
 	::lv_indev_set_user_data(indev, this);
+	::lv_indev_set_display(indev, disp_);
 }
 
 void LVGLAdapter::FlushCB(lv_disp_t* disp, const lv_area_t* area, unsigned char* buf)
