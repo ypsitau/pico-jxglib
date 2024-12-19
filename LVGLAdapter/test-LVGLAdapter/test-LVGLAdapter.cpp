@@ -297,7 +297,9 @@ int main()
 	::lv_example_textarea_2();
 	//::lv_example_textarea_3();
 	//::lv_example_tileview_1();
-	//::lv_example_win_1();
+	lvglAdapter1.SetDefault();
+	::lv_example_textarea_2();
+	::lv_example_win_1();
 	for (;;) {
 		::sleep_ms(5);
 		::lv_timer_handler();
