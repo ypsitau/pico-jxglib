@@ -42,6 +42,8 @@ public:
 	Rect Inflate(int amount) const;
 	Rect Deflate(int amount) { return Inflate(-amount); }
 	bool Adjust(const Rect& rectBound);
+public:
+	Rect& operator=(const Rect& rect) { x = rect.x, y = rect.y, width = rect.width, height = rect.height; return *this; }
 };
 
 }

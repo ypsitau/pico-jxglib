@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/ILI9341.h"
-#include "jxglib/AdapterLVGL.h"
+#include "jxglib/LVGLAdapter.h"
 #include <examples/lv_examples.h>
 //#include <demos/lv_demos.h>
 
@@ -15,7 +15,7 @@ int main()
 	GPIO15.set_function_SPI1_TX();
 	ILI9341 display(spi1, 240, 320, GPIO12, GPIO11, GPIO13, GPIO::None);
 	display.Initialize(Display::Dir::Rotate90);
-	AdapterLVGL::AttachOutput(display);
+	LVGLAdapter::Instance.AttachOutput(display);
 	
 	lv_indev_t *indev = ::lv_indev_create();
 	::lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
