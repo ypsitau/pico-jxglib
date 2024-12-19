@@ -75,6 +75,7 @@ int main()
 	LVGLAdapter lvglAdapter1;
 	LVGLAdapter lvglAdapter2;
 	lvglAdapter1.AttachOutput(display1);
+	//lvglAdapter1.AttachOutput(display1, {0, 100, 320, 100});
 	lvglAdapter2.AttachOutput(display2);
 	InputPointer inputPointer;
 	InputKeypad inputKeypad;

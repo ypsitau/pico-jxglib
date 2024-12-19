@@ -41,7 +41,7 @@ public:
 	Drawable& GetDrawableOut() { return *pDrawableOut_; }
 	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty);
 	void Flush(lv_disp_t* disp, const lv_area_t* area, unsigned char* buf);
-	void SetDefault() { ::lv_disp_set_default(disp_); }
+	void SetDefault();
 	void SetInput_Pointer(Input& input);
 	void SetInput_Keypad(Input& input);
 	void SetInput_Button(Input& input);

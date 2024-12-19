@@ -38,6 +38,11 @@ bool LVGLAdapter::AttachOutput(Drawable& drawable, const Rect& rect)
 	return true;
 }
 
+void LVGLAdapter::SetDefault()
+{
+	::lv_disp_set_default(disp_);
+}
+
 void LVGLAdapter::Flush(lv_disp_t* disp, const lv_area_t* area, unsigned char* buf)
 {
 	Image image(Image::Format::RGB565, ::lv_area_get_width(area), ::lv_area_get_height(area), buf);
