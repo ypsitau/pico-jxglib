@@ -74,9 +74,9 @@ int main()
 	display2.Initialize(Display::Dir::Rotate90);
 	LVGLAdapter lvglAdapter1;
 	LVGLAdapter lvglAdapter2;
+	lvglAdapter2.AttachOutput(display2);
 	lvglAdapter1.AttachOutput(display1);
 	//lvglAdapter1.AttachOutput(display1, {0, 100, 320, 100});
-	lvglAdapter2.AttachOutput(display2);
 	InputPointer inputPointer;
 	InputKeypad inputKeypad;
 	InputButton inputButton;
@@ -296,10 +296,10 @@ int main()
 	//::lv_example_textarea_2();
 	lvglAdapter1.SetDefault();
 	::lv_example_textarea_2();
+	lvglAdapter2.SetDefault();
+	::lv_example_textarea_1();
 	//::lv_example_textarea_3();
 	//::lv_example_tileview_1();
-	lvglAdapter1.SetDefault();
-	::lv_example_textarea_2();
 	::lv_example_win_1();
 	for (;;) {
 		::sleep_ms(5);

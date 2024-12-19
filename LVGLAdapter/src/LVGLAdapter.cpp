@@ -40,7 +40,7 @@ bool LVGLAdapter::AttachOutput(Drawable& drawable, const Rect& rect)
 
 void LVGLAdapter::SetDefault()
 {
-	::lv_disp_set_default(disp_);
+	::lv_display_set_default(disp_);
 }
 
 void LVGLAdapter::Flush(lv_disp_t* disp, const lv_area_t* area, unsigned char* buf)
