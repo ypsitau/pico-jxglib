@@ -43,11 +43,11 @@ void LVGLAdapter::SetDefault()
 	::lv_display_set_default(disp_);
 }
 
-void LVGLAdapter::Flush(lv_disp_t* disp, const lv_area_t* area, unsigned char* buf)
+void LVGLAdapter::Flush(lv_display_t* disp, const lv_area_t* area, unsigned char* buf)
 {
 	Image image(Image::Format::RGB565, ::lv_area_get_width(area), ::lv_area_get_height(area), buf);
 	GetDrawableOut().DrawImageFast(rectOut_.x + area->x1, rectOut_.y + area->y1, image);
-	::lv_disp_flush_ready(disp);
+	::lv_display_flush_ready(disp);
 }
 
 void LVGLAdapter::SetInput_Pointer(Input& input)
@@ -83,7 +83,7 @@ void LVGLAdapter::RegisterInput(lv_indev_type_t indev_type, lv_indev_read_cb_t c
 	::lv_indev_set_display(indev, disp_);
 }
 
-void LVGLAdapter::FlushCB(lv_disp_t* disp, const lv_area_t* area, unsigned char* buf)
+void LVGLAdapter::FlushCB(lv_display_t* disp, const lv_area_t* area, unsigned char* buf)
 {
 	LVGLAdapter* pSelf = reinterpret_cast<LVGLAdapter*>(::lv_display_get_user_data(disp));
 	pSelf->Flush(disp, area, buf);

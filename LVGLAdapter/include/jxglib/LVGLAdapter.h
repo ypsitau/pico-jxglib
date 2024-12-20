@@ -39,8 +39,9 @@ public:
 	LVGLAdapter(bool doubleBuffFlag = true, int nPartial = 10);
 public:
 	Drawable& GetDrawableOut() { return *pDrawableOut_; }
+	lv_display_t* Get_lv_display() { return disp_; }
 	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty);
-	void Flush(lv_disp_t* disp, const lv_area_t* area, unsigned char* buf);
+	void Flush(lv_display_t* disp, const lv_area_t* area, unsigned char* buf);
 	void SetDefault();
 	void SetInput_Pointer(Input& input);
 	void SetInput_Keypad(Input& input);
@@ -49,7 +50,7 @@ public:
 private:
 	void RegisterInput(lv_indev_type_t indev_type, lv_indev_read_cb_t cb);
 private:
-	static void FlushCB(lv_disp_t* disp, const lv_area_t* area, unsigned char* buf);
+	static void FlushCB(lv_display_t* disp, const lv_area_t* area, unsigned char* buf);
 	static void IndevReadPointerCB(lv_indev_t* indev_drv, lv_indev_data_t* data);
 	static void IndevReadKeypadCB(lv_indev_t* indev_drv, lv_indev_data_t* data);
 	static void IndevReadButtonCB(lv_indev_t* indev_drv, lv_indev_data_t* data);

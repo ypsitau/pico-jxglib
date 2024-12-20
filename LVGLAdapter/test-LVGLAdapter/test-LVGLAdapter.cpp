@@ -15,7 +15,7 @@ public:
 
 void InputPointer::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
 {
-	::printf("Pointer::Handle\n");
+	//::printf("Pointer::Handle\n");
 	data->point.x = 0;
 	data->point.y = 0;
 	data->state = LV_INDEV_STATE_PRESSED;
@@ -28,7 +28,7 @@ public:
 
 void InputKeypad::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
 {
-	::printf("Keypad::Handle\n");
+	//::printf("Keypad::Handle\n");
 	data->point.x = 0;
 	data->point.y = 0;
 	data->state = LV_INDEV_STATE_PRESSED;
@@ -42,7 +42,7 @@ public:
 
 void InputButton::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
 {
-	::printf("Button::Handle\n");
+	//::printf("Button::Handle\n");
 	data->state = LV_INDEV_STATE_PRESSED;
 	data->btn_id = 0;
 }
@@ -54,7 +54,7 @@ public:
 
 void InputEncoder::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
 {
-	::printf("Encoder::Handle\n");
+	//::printf("Encoder::Handle\n");
 	data->state = LV_INDEV_STATE_PRESSED;	
 	data->enc_diff = 0;
 }
@@ -74,8 +74,8 @@ int main()
 	display2.Initialize(Display::Dir::Rotate90);
 	LVGLAdapter lvglAdapter1;
 	LVGLAdapter lvglAdapter2;
-	lvglAdapter2.AttachOutput(display2);
 	lvglAdapter1.AttachOutput(display1);
+	lvglAdapter2.AttachOutput(display2);
 	//lvglAdapter1.AttachOutput(display1, {0, 100, 320, 100});
 	InputPointer inputPointer;
 	InputKeypad inputKeypad;
@@ -294,13 +294,37 @@ int main()
 	//::lv_example_tabview_2();
 	//::lv_example_textarea_1();
 	//::lv_example_textarea_2();
-	lvglAdapter1.SetDefault();
-	::lv_example_textarea_2();
-	lvglAdapter2.SetDefault();
-	::lv_example_textarea_1();
+	//::lv_example_textarea_1();
+	//::lv_example_textarea_1();
 	//::lv_example_textarea_3();
 	//::lv_example_tileview_1();
-	::lv_example_win_1();
+	//::lv_example_win_1();
+	do {
+		lv_obj_t* button = lv_button_create(lv_screen_active());
+		//lv_obj_add_event_cb(button, event_handler, LV_EVENT_ALL, NULL);
+		lv_obj_align(button, LV_ALIGN_CENTER, 0, -40);
+		lv_obj_set_width(button, 200);
+		lv_obj_remove_flag(button, LV_OBJ_FLAG_PRESS_LOCK);
+		do {
+			lv_obj_t* label = lv_label_create(button);
+			lv_label_set_text(label, "Button");
+			lv_obj_center(label);
+		} while (0);
+	} while (0);
+	//do {
+	//	lvglAdapter2.SetDefault();
+	//	lv_obj_t* btn1 = lv_button_create(lv_screen_active());
+	//	//lv_obj_add_event_cb(btn1, event_handler, LV_EVENT_ALL, NULL);
+	//	lv_obj_align(btn1, LV_ALIGN_CENTER, 0, -40);
+	//	lv_obj_remove_flag(btn1, LV_OBJ_FLAG_PRESS_LOCK);
+	//	lv_obj_t* label = lv_label_create(btn1);
+	//	lv_label_set_text(label, "Button");
+	//	lv_obj_center(label);
+	//} while (0);
+	//::printf("----1\n");
+	//lv_refr_now(lvglAdapter1.Get_lv_display());
+	//::printf("----2\n");
+	//lv_refr_now(lvglAdapter2.Get_lv_display());
 	for (;;) {
 		::sleep_ms(5);
 		::lv_timer_handler();
