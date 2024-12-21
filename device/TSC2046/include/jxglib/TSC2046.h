@@ -22,11 +22,9 @@ public:
 public:
 	void Initialize();
 	bool IsTouched();
-	uint16_t ReadPosition(uint8_t adc);
-	uint16_t ReadX() { return ReadPosition(0b101); }
-	uint16_t ReadY() { return ReadPosition(0b001); }
-	uint16_t ReadZ1() { return ReadPosition(0b011); }
-	uint16_t ReadZ2() { return ReadPosition(0b100); }
+	void SendCmd(uint8_t cmd);
+	uint16_t ReadADC(uint8_t adc);
+	bool ReadPosition(uint16_t* px, uint16_t* py);
 private:
 	static uint8_t ComposeCmd(uint8_t adc, uint8_t mode, uint8_t ref, uint8_t powerDownMode) {
 		return static_cast<uint8_t>((0b1  << 7) | (adc  << 4) | (mode  << 3) | (ref  << 2) | (powerDownMode << 0));
