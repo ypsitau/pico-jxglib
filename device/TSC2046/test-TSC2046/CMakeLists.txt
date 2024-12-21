@@ -43,7 +43,7 @@ pico_set_program_name(test-TSC2046 "test-TSC2046")
 pico_set_program_version(test-TSC2046 "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-TSC2046 0)
+pico_enable_stdio_uart(test-TSC2046 1)
 pico_enable_stdio_usb(test-TSC2046 0)
 
 # Add the standard library to the build

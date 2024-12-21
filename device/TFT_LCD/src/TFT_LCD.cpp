@@ -215,6 +215,7 @@ void TFT_LCD::DispatcherEx::ScrollVert(DirVert dirVert, int htScroll, const Rect
 //------------------------------------------------------------------------------
 // TFT_LCD::Raw
 //------------------------------------------------------------------------------
+#if 0
 void TFT_LCD::Raw::InitGPIO()
 {
 	::gpio_init(gpio_DC_);
@@ -236,14 +237,26 @@ void TFT_LCD::Raw::InitGPIO()
 	::sleep_ms(100);
 	SetSPIDataBits(8);
 }
+#endif
+void TFT_LCD::Raw::InitGPIO()
+{
+	gpio_DC_.init().set_dir_OUT().put(1);
+	gpio_RST_.init().set_dir_OUT().put(1);
+	if (gpio_BL_.IsValid()) gpio_BL_.init().set_dir_OUT().put(1);
+	if (UsesCS()) gpio_CS_.init().set_dir_OUT().put(1);
+	::sleep_ms(100);
+	SetSPIDataBits(8);
+}
 
 void TFT_LCD::Raw::WriteCmd(uint8_t cmd)
 {
-	::gpio_put(gpio_DC_, 0);
+	//::gpio_put(gpio_DC_, 0);
+	gpio_DC_.put(0);
 	::sleep_us(1);
 	SetSPIDataBits(8);
 	::spi_write_blocking(spi_, &cmd, sizeof(cmd));
-	::gpio_put(gpio_DC_, 1);
+	//::gpio_put(gpio_DC_, 1);
+	gpio_DC_.put(1);
 }
 
 void TFT_LCD::Raw::SendCmd(uint8_t cmd)
