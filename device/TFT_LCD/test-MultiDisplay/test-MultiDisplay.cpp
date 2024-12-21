@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "jxglib/Common.h"
 #include "jxglib/Drawable_TestCase.h"
 #include "jxglib/ST7735.h"
 #include "jxglib/ST7789.h"
@@ -19,7 +18,7 @@ int main()
 	GPIO15.set_function_SPI1_TX().set_drive_strength(GPIO_DRIVE_STRENGTH_12MA);
 	ST7789 display1(spi0, 240, 240, GPIO6, GPIO7, GPIO::None);
 	ST7789 display2(spi1, 240, 320, GPIO8, GPIO9, GPIO10, GPIO::None);
-	ILI9341 display3(spi0, 240, 320, GPIO12, GPIO11, GPIO13, GPIO::None);
+	ILI9341 display3(spi1, 240, 320, GPIO12, GPIO11, GPIO13, GPIO::None);
 	ST7735 display4(spi1, 80, 160, GPIO16, GPIO17, GPIO18, GPIO::None);
 	ST7735::TypeB display5(spi1, 128, 160, GPIO19, GPIO20, GPIO21, GPIO::None);
 	Display::Dir displayDir = Display::Dir::Rotate0;

@@ -1,17 +1,3 @@
-# == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
-if(WIN32)
-    set(USERHOME $ENV{USERPROFILE})
-else()
-    set(USERHOME $ENV{HOME})
-endif()
-set(sdkVersion 2.1.0)
-set(toolchainVersion 13_3_Rel1)
-set(picotoolVersion 2.1.0)
-set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
-if (EXISTS ${picoVscode})
-    include(${picoVscode})
-endif()
-# ====================================================================================
 # Generated Cmake Pico project file
 
 cmake_minimum_required(VERSION 3.13)
@@ -42,36 +28,33 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-MultiDisplay C CXX ASM)
+project(test-ILI9341 C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../../.. jxglib)
-
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-MultiDisplay test-MultiDisplay.cpp)
+add_executable(test-ILI9341 test-ILI9341.cpp )
 
-pico_set_program_name(test-MultiDisplay "test-MultiDisplay")
-pico_set_program_version(test-MultiDisplay "0.1")
+pico_set_program_name(test-ILI9341 "test-ILI9341")
+pico_set_program_version(test-ILI9341 "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-MultiDisplay 1)
-pico_enable_stdio_usb(test-MultiDisplay 0)
+pico_enable_stdio_uart(test-ILI9341 1)
+pico_enable_stdio_usb(test-ILI9341 0)
 
 # Add the standard library to the build
-target_link_libraries(test-MultiDisplay
+target_link_libraries(test-ILI9341
 	pico_stdlib
 	jxglib_Drawable_TestCase
-	jxglib_ST7735
-	jxglib_ST7789
 	jxglib_ILI9341)
 
 # Add the standard include files to the build
-target_include_directories(test-MultiDisplay PRIVATE
+target_include_directories(test-ILI9341 PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}
-	${CMAKE_CURRENT_LIST_DIR}/.. # for our common lwipopts or any other standard includes, if required
 )
 
-pico_add_extra_outputs(test-MultiDisplay)
+pico_add_extra_outputs(test-ILI9341)
+
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../../.. jxglib)

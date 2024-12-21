@@ -4,6 +4,7 @@
 #ifndef PICO_JXGLIB_ILI9341_H
 #define PICO_JXGLIB_ILI9341_H
 #include "jxglib/TFT_LCD.h"
+#include "jxglib/TSC2046.h"
 
 namespace jxglib {
 
@@ -16,6 +17,7 @@ public:
 			TFT_LCD(spi, 240, 320, width, height, gpio_RST, gpio_DC, gpio_CS, gpio_BL) {}
 	inline void Initialize(Dir displayDir = Dir::Normal);
 public:
+	using TouchScreen = TSC2046;
 	using TypeA = ILI9341;
 };
 

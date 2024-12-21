@@ -177,4 +177,11 @@ Drawable& Drawable::DrawStringWrap(int x, int y, int width, int height, const ch
 	return *this;
 }
 
+Drawable& Drawable::DrawCross(int x, int y, int width, int height, int wdLine, int htLine)
+{
+	DrawRectFill(x - wdLine / 2, y - height / 2, wdLine, height);
+	DrawRectFill(x - width / 2, y - htLine / 2, width, htLine);
+	return *this;
+}
+
 }

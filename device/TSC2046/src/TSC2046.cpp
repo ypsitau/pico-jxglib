@@ -18,11 +18,6 @@ void TSC2046::Initialize()
 	SendCmd(ComposeCmd(0, 0, 0, 0));
 }
 
-bool TSC2046::IsTouched()
-{
-	return !gpio_IRQ_.get();
-}
-
 void TSC2046::SendCmd(uint8_t cmd)
 {
 	uint8_t buffSend[3] = { cmd, 0x00, 0x00 };
@@ -63,9 +58,9 @@ uint16_t TSC2046::ReadADC12Bit(uint8_t adc)
 	return (static_cast<uint16_t>(buffRecv[1]) << 4) | (buffRecv[2] >> 4);
 }
 
-bool TSC2046::ReadPosition(uint16_t* px, uint16_t* py, uint8_t* pz1, uint8_t* pz2)
+bool TSC2046::ReadPosition(int* px, int* py, int* pz1, int* pz2)
 {
-	uint8_t z1, z2;
+	int z1, z2;
 	gpio_CS_.put(0);
 	SPISetFormat();
 	*px = ReadADC12Bit(0b101);

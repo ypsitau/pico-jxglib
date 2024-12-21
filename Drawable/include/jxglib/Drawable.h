@@ -224,6 +224,8 @@ public:
 	Drawable& DrawStringWrap(const Rect& rcBBox, const char* str, StringCont* pStringCont = nullptr) {
 		return DrawStringWrap(rcBBox.x, rcBBox.y, rcBBox.width, rcBBox.height, str, pStringCont);
 	}
+public:
+	Drawable& DrawCross(int x, int y, int width, int height, int wdLine = 1, int htLine = 1);
 };
 
 }
