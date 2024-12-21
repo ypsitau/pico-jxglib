@@ -28,12 +28,27 @@ void TSC2046::SendCmd(uint8_t cmd)
 	uint8_t buffSend[3] = { cmd, 0x00, 0x00 };
 	uint8_t buffRecv[3];
 	gpio_CS_.put(0);
-	::spi_set_format(spi_, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
+	SPISetFormat();
 	::spi_write_read_blocking(spi_, buffSend, buffRecv, sizeof(buffSend));
 	gpio_CS_.put(1);
 }
 
-uint16_t TSC2046::ReadADC(uint8_t adc)
+uint8_t TSC2046::ReadADC8Bit(uint8_t adc)
+{
+	uint8_t buffSend[2] = {
+		ComposeCmd(
+			adc,	// ADC .. 0b001:Y, 0b011:Z1, 0b100:Z2, 0b101:X
+			0b1,	// Mode .. 8 bit
+			0b1,	// Reference .. Single-end
+			0b01), 	// Power Down Mode .. Reference Off, ADC On
+		0x00, 		// dummy data to squeeze receiving data
+	};
+	uint8_t buffRecv[2];
+	::spi_write_read_blocking(spi_, buffSend, buffRecv, sizeof(buffSend));
+	return buffRecv[1];
+}
+
+uint16_t TSC2046::ReadADC12Bit(uint8_t adc)
 {
 	uint8_t buffSend[3] = {
 		ComposeCmd(
@@ -48,16 +63,18 @@ uint16_t TSC2046::ReadADC(uint8_t adc)
 	return (static_cast<uint16_t>(buffRecv[1]) << 4) | (buffRecv[2] >> 4);
 }
 
-bool TSC2046::ReadPosition(uint16_t* px, uint16_t* py)
+bool TSC2046::ReadPosition(uint16_t* px, uint16_t* py, uint8_t* pz1, uint8_t* pz2)
 {
-	uint16_t z1, z2;
+	uint8_t z1, z2;
 	gpio_CS_.put(0);
-	::spi_set_format(spi_, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
-	*px = ReadADC(0b101);
-	*py = ReadADC(0b001);
-	z1 = ReadADC(0b011);
-	z2 = ReadADC(0b100);
+	SPISetFormat();
+	*px = ReadADC12Bit(0b101);
+	*py = ReadADC12Bit(0b001);
+	z1 = ReadADC8Bit(0b011);
+	z2 = ReadADC8Bit(0b100);
 	gpio_CS_.put(1);
+	if (pz1) *pz1 = z1;
+	if (pz2) *pz2 = z2;
 	return z1 > 0 && z2 > 0;
 }
 
