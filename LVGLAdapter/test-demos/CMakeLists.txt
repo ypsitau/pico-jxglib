@@ -11,16 +11,16 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
 if(WIN32)
-    set(USERHOME $ENV{USERPROFILE})
+	set(USERHOME $ENV{USERPROFILE})
 else()
-    set(USERHOME $ENV{HOME})
+	set(USERHOME $ENV{HOME})
 endif()
 set(sdkVersion 2.1.0)
 set(toolchainVersion 13_3_Rel1)
 set(picotoolVersion 2.1.0)
 set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
 if (EXISTS ${picoVscode})
-    include(${picoVscode})
+	include(${picoVscode})
 endif()
 # ====================================================================================
 set(PICO_BOARD pico CACHE STRING "Board type")
@@ -28,30 +28,34 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-demo C CXX ASM)
+project(test-demos C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-demo test-demo.cpp )
+add_executable(test-demos test-demos.cpp )
 
-pico_set_program_name(test-demo "test-demo")
-pico_set_program_version(test-demo "0.1")
+pico_set_program_name(test-demos "test-demos")
+pico_set_program_version(test-demos "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-demo 1)
-pico_enable_stdio_usb(test-demo 0)
+pico_enable_stdio_uart(test-demos 1)
+pico_enable_stdio_usb(test-demos 0)
 
 # Add the standard library to the build
-target_link_libraries(test-demo
-        pico_stdlib)
+target_link_libraries(test-demos
+	pico_stdlib
+	lvgl_demos
+	jxglib_ILI9341
+	jxglib_LVGLAdapter)
 
 # Add the standard include files to the build
-target_include_directories(test-demo PRIVATE
-  ${CMAKE_CURRENT_LIST_DIR}
+target_include_directories(test-demos PRIVATE
+	${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-demo)
+pico_add_extra_outputs(test-demos)
 
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. jxglib)

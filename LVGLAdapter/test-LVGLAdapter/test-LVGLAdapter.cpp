@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <examples/lv_examples.h>
-//#include <demos/lv_demos.h>
+#include <demos/lv_demos.h>
 #include "pico/stdlib.h"
 #include "jxglib/ST7789.h"
 #include "jxglib/ILI9341.h"
