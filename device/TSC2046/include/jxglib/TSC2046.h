@@ -35,10 +35,13 @@ private:
 	const GPIO& gpio_IRQ_;
 	Adjuster adjusterX_;
 	Adjuster adjusterY_;
+	bool hvFlippedFlag_;
+private:
+	static const int z1Threshold = 3;
 public:
 	TSC2046(spi_inst_t* spi, const GPIO& gpio_CS, const GPIO& gpio_IRQ);
 public:
-	void Initialize();
+	void Initialize(bool hvFlippedFlag);
 	bool Calibrate(Drawable& drawable);
 	bool ReadPositionRaw(int* px, int* py, int* pz1 = nullptr, int* pz2 = nullptr);
 	bool ReadPosition(int* px, int* py);

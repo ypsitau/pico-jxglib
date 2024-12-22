@@ -98,6 +98,7 @@ public:
 	void SetCapacity(const Format format, int width, int height) {
 		pFormat_ = &format, width_ = width, height_ = height;
 	}
+	virtual bool IsHVFlipped() const { return false; }
 	void SetDispatcher(Dispatcher& dispatcher) { pDispatcher_ = &dispatcher; }
 	Dispatcher& GetDispatcher() { return *pDispatcher_; }
 	bool IsDevice() const { return !!(capabilities_ & Capability::Device); }

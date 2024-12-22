@@ -346,6 +346,7 @@ public:
 public:
 	void Initialize(Dir displayDir, const ConfigData& configData);
 	const Saved& GetSaved() const { return saved_; }
+	virtual bool IsHVFlipped() const override { return saved_.displayDir.IsVert(); }
 	bool UsesCS() { return raw.UsesCS(); }
 	int GetBytesPerLine() const { return GetWidth() * 2; }
 	int GetWidthPhysical() const { return widthPhysical_; }

@@ -18,9 +18,14 @@ public:
 		TouchScreen(spi_inst_t* spi, const GPIO& gpio_CS, const GPIO& gpio_IRQ) : TSC2046(spi, gpio_CS, gpio_IRQ) {}
 	public:
 		void Initialize(Drawable& drawable) {
-			TSC2046::Initialize();
-			SetAdjusterX(Adjuster(drawable.GetWidth() - 1, -0.14, 257));
-			SetAdjusterY(Adjuster(drawable.GetHeight() - 1, 0.18, -35));
+			TSC2046::Initialize(drawable.IsHVFlipped());
+			if (drawable.IsHVFlipped()) {
+				SetAdjusterX(Adjuster(drawable.GetWidth() - 1, 0.18, -38));
+				SetAdjusterY(Adjuster(drawable.GetHeight() - 1, 0.14, -18));
+			} else {
+				SetAdjusterX(Adjuster(drawable.GetWidth() - 1, -0.14, 257));
+				SetAdjusterY(Adjuster(drawable.GetHeight() - 1, 0.18, -35));
+			}
 		}
 	};
 public:

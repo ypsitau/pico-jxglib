@@ -9,10 +9,11 @@ namespace jxglib {
 // TSC2046
 //------------------------------------------------------------------------------
 TSC2046::TSC2046(spi_inst_t* spi, const GPIO& gpio_CS, const GPIO& gpio_IRQ) :
-		spi_{spi}, gpio_CS_{gpio_CS}, gpio_IRQ_{gpio_IRQ} {}
+		spi_{spi}, gpio_CS_{gpio_CS}, gpio_IRQ_{gpio_IRQ}, hvFlippedFlag_{false} {}
 
-void TSC2046::Initialize()
+void TSC2046::Initialize(bool hvFlippedFlag)
 {
+	hvFlippedFlag_ = hvFlippedFlag;
 	gpio_CS_.init().set_dir_OUT().put(1);
 	gpio_IRQ_.init().set_dir_IN();
 }
@@ -25,39 +26,46 @@ bool TSC2046::Calibrate(Drawable& drawable)
 	Rect rectSense = drawable.GetRect().Deflate(drawable.GetWidth() * 10 / 100);	// 10% of the drawable's width
 	int wdCross = sizeCross * 10 / 100;
 	if (wdCross == 0) wdCross = 1;
-	Point ptTbl[2] = {rectSense.GetPointNW(), rectSense.GetPointSE()};
+	Point ptMarkerTbl[2] = {rectSense.GetPointNW(), rectSense.GetPointSE()};
 	Point adcTbl[2];
-	for (int i = 0; i < count_of(ptTbl); i++) {
-		drawable.Clear().DrawCross(ptTbl[i].x, ptTbl[i].y, sizeCross, sizeCross, wdCross, wdCross).Refresh();
-		int xSum = 0, ySum = 0;
-		int x, y;
+	for (int i = 0; i < count_of(ptMarkerTbl); i++) {
+		drawable.Clear().DrawCross(ptMarkerTbl[i].x, ptMarkerTbl[i].y, sizeCross, sizeCross, wdCross, wdCross).Refresh();
 		while (IsTouched()) ::sleep_ms(msecDelay);
+		Point ptSampleTbl[nSamples];
 		for (int iSample = 0; iSample < nSamples; iSample++) {
+			Point& ptSample = ptSampleTbl[iSample];
+			int x, y;
 			while (!ReadPositionRaw(&x, &y)) ::sleep_ms(msecDelay);
-			xSum += x, ySum += y;
+			if (hvFlippedFlag_) {
+				ptSample.x = y, ptSample.y = x;
+			} else {
+				ptSample.x = x, ptSample.y = y;
+			}
 			::sleep_ms(msecDelay);
+		}
+		int xSum = 0, ySum = 0;
+		for (int iSample = 0; iSample < nSamples; iSample++) {
+			Point& ptSample = ptSampleTbl[iSample];
+			xSum += ptSample.x, ySum += ptSample.y;
 		}
 		adcTbl[i].x = xSum / nSamples, adcTbl[i].y = ySum / nSamples;
 	}
 	drawable.Clear().Refresh();
 	if (adcTbl[0].x == adcTbl[1].x || adcTbl[0].y == adcTbl[1].y) return false;
 	if (adcTbl[0].x < adcTbl[1].x) {
-		float slope = static_cast<float>(ptTbl[1].x - ptTbl[0].x) / (adcTbl[1].x - adcTbl[0].x);
-		adjusterX_ = Adjuster(drawable.GetWidth() - 1, slope, ptTbl[0].x - static_cast<int>(slope * adcTbl[0].x));
+		float slope = static_cast<float>(ptMarkerTbl[1].x - ptMarkerTbl[0].x) / (adcTbl[1].x - adcTbl[0].x);
+		adjusterX_ = Adjuster(drawable.GetWidth() - 1, slope, ptMarkerTbl[0].x - static_cast<int>(slope * adcTbl[0].x));
 	} else {
-		float slope = static_cast<float>(ptTbl[0].x - ptTbl[1].x) / (adcTbl[0].x - adcTbl[1].x);
-		adjusterX_ = Adjuster(drawable.GetWidth() - 1, slope, ptTbl[1].x - static_cast<int>(slope * adcTbl[1].x));
+		float slope = static_cast<float>(ptMarkerTbl[0].x - ptMarkerTbl[1].x) / (adcTbl[0].x - adcTbl[1].x);
+		adjusterX_ = Adjuster(drawable.GetWidth() - 1, slope, ptMarkerTbl[1].x - static_cast<int>(slope * adcTbl[1].x));
 	}
 	if (adcTbl[0].y < adcTbl[1].y) {
-		float slope = static_cast<float>(ptTbl[1].y - ptTbl[0].y) / (adcTbl[1].y - adcTbl[0].y);
-		adjusterY_ = Adjuster(drawable.GetHeight() - 1, slope, ptTbl[0].y - static_cast<int>(slope * adcTbl[0].y));
+		float slope = static_cast<float>(ptMarkerTbl[1].y - ptMarkerTbl[0].y) / (adcTbl[1].y - adcTbl[0].y);
+		adjusterY_ = Adjuster(drawable.GetHeight() - 1, slope, ptMarkerTbl[0].y - static_cast<int>(slope * adcTbl[0].y));
 	} else {
-		float slope = static_cast<float>(ptTbl[0].y - ptTbl[1].y) / (adcTbl[0].y - adcTbl[1].y);
-		adjusterY_ = Adjuster(drawable.GetHeight() - 1, slope, ptTbl[1].y - static_cast<int>(slope * adcTbl[1].y));
+		float slope = static_cast<float>(ptMarkerTbl[0].y - ptMarkerTbl[1].y) / (adcTbl[0].y - adcTbl[1].y);
+		adjusterY_ = Adjuster(drawable.GetHeight() - 1, slope, ptMarkerTbl[1].y - static_cast<int>(slope * adcTbl[1].y));
 	}
-	//for (int i = 0; i < count_of(ptTbl); i++) {
-	//	::printf("%d, %d -> %d, %d\n", adcTbl[i].x, adcTbl[i].y, ptTbl[i].x, ptTbl[i].y);
-	//}
 	return true;
 }
 
@@ -72,7 +80,7 @@ bool TSC2046::ReadPositionRaw(int* px, int* py, int* pz1, int* pz2)
 	gpio_CS_.put(1);
 	if (pz1) *pz1 = z1;
 	if (pz2) *pz2 = z2;
-	return z1 > 0;
+	return z1 > z1Threshold;
 }
 
 bool TSC2046::ReadPosition(int* px, int* py)
@@ -85,8 +93,13 @@ bool TSC2046::ReadPosition(int* px, int* py)
 		//::sleep_ms(1);
 		xSum += x, ySum += y, z1Sum += z1;
 	}
-	int x = xSum / nSamples, y = ySum / nSamples;
-	if (z1Sum == 0) return false;
+	int x, y;
+	if (hvFlippedFlag_) {
+		x = ySum / nSamples, y = xSum / nSamples;
+	} else {
+		x = xSum / nSamples, y = ySum / nSamples;
+	}
+	if (z1Sum < z1Threshold * nSamples) return false;
 	*px = adjusterX_.Adjust(x);
 	*py = adjusterY_.Adjust(y);
 	return true;
@@ -98,7 +111,7 @@ bool TSC2046::IsTouched()
 	SPISetFormat();
 	int z1 = ReadADC8Bit(0b011);
 	gpio_CS_.put(1);
-	return z1 > 0;
+	return z1 > z1Threshold;
 }
 
 void TSC2046::SendCmd(uint8_t cmd)

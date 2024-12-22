@@ -72,27 +72,27 @@ public:
 	public:
 		uint8_t GetValue() const { return value_; }
 	public:
-		bool IsHorzFromNW() const	{ return value_ == HorzFromNW; }
-		bool IsHorzFromSW() const	{ return value_ == HorzFromSW; }
-		bool IsHorzFromNE() const	{ return value_ == HorzFromNE; }
-		bool IsHorzFromSE() const	{ return value_ == HorzFromSE; }
-		bool IsVertFromNW() const	{ return value_ == VertFromNW; }
-		bool IsVertFromSW() const	{ return value_ == VertFromSW; }
-		bool IsVertFromNE() const	{ return value_ == VertFromNE; }
-		bool IsVertFromSE() const	{ return value_ == VertFromSE; }
-		bool IsNormal() const		{ return IsHorzFromNW(); }
-		bool IsRotate0() const		{ return IsHorzFromNW(); }
-		bool IsRotate180() const	{ return IsHorzFromSE(); }
-		bool IsMirrorHorz() const	{ return IsHorzFromNE(); }
-		bool IsMirrorVert() const	{ return IsHorzFromSW(); }
-		bool IsHorz()				{ return !(value_ & (1 << 0)); }
-		bool IsVert()				{ return !!(value_ & (1 << 0)); }
-		bool IsLeftToRight()		{ return !(value_ & (1 << 1)); }
-		bool IsRightToLeft()		{ return !!(value_ & (1 << 1)); }
-		bool IsTopToBottom()		{ return !(value_ & (1 << 2)); }
-		bool IsBottomToTop()		{ return !!(value_ & (1 << 2)); }
-		SequencerDir InvertHorz()	{ return SequencerDir(value_ ^ (1 << 1)); }
-		SequencerDir InvertVert()	{ return SequencerDir(value_ ^ (1 << 2)); }
+		bool IsHorzFromNW() const		{ return value_ == HorzFromNW; }
+		bool IsHorzFromSW() const		{ return value_ == HorzFromSW; }
+		bool IsHorzFromNE() const		{ return value_ == HorzFromNE; }
+		bool IsHorzFromSE() const		{ return value_ == HorzFromSE; }
+		bool IsVertFromNW() const		{ return value_ == VertFromNW; }
+		bool IsVertFromSW() const		{ return value_ == VertFromSW; }
+		bool IsVertFromNE() const		{ return value_ == VertFromNE; }
+		bool IsVertFromSE() const		{ return value_ == VertFromSE; }
+		bool IsNormal() const			{ return IsHorzFromNW(); }
+		bool IsRotate0() const			{ return IsHorzFromNW(); }
+		bool IsRotate180() const		{ return IsHorzFromSE(); }
+		bool IsMirrorHorz() const		{ return IsHorzFromNE(); }
+		bool IsMirrorVert() const		{ return IsHorzFromSW(); }
+		bool IsHorz() const				{ return !(value_ & (1 << 0)); }
+		bool IsVert() const				{ return !!(value_ & (1 << 0)); }
+		bool IsLeftToRight() const		{ return !(value_ & (1 << 1)); }
+		bool IsRightToLeft() const		{ return !!(value_ & (1 << 1)); }
+		bool IsTopToBottom() const		{ return !(value_ & (1 << 2)); }
+		bool IsBottomToTop() const		{ return !!(value_ & (1 << 2)); }
+		SequencerDir InvertHorz() const	{ return SequencerDir(value_ ^ (1 << 1)); }
+		SequencerDir InvertVert() const	{ return SequencerDir(value_ ^ (1 << 2)); }
 	public:
 		static uint8_t SwapHV(uint8_t dir) { return ((dir & 0b100) >> 1) | ((dir & 0b010) << 1) | (dir & 0b001); } 
 		SequencerDir Transform(const SequencerDir& dirTrans) const;
