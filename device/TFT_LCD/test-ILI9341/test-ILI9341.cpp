@@ -17,17 +17,17 @@ int main()
 	GPIO14.set_function_SPI1_SCK();
 	GPIO15.set_function_SPI1_TX();
 	ILI9341 display(spi1, 240, 320, GPIO11, GPIO10, GPIO12, GPIO13);
-	ILI9341::TouchScreen touchScreen(spi0, GPIO6, GPIO7);
+	ILI9341::TouchPanel touchPanel(spi0, GPIO6, GPIO7);
 	display.Initialize(Display::Dir::Rotate90);
-	touchScreen.Initialize(display);
+	touchPanel.Initialize(display);
 	//Drawable_TestCase::DrawString(display);
 	//Drawable_TestCase::RotateImage(display);
-	//touchScreen.Calibrate(display);
+	//touchPanel.Calibrate(display);
 	::printf("----\n");
-	touchScreen.PrintCalibration();
+	touchPanel.PrintCalibration();
 	for (;;) {
 		int x, y;
-		if (touchScreen.ReadPosition(&x, &y)) {
+		if (touchPanel.ReadPosition(&x, &y)) {
 			display.DrawRectFill(x - 2, y - 2, 4, 4);
 		}
 		::sleep_ms(10);

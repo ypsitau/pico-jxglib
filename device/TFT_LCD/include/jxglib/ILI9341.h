@@ -13,9 +13,9 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class ILI9341 : public TFT_LCD {
 public:
-	class TouchScreen : public TSC2046 {
+	class TouchPanel : public TSC2046 {
 	public:
-		TouchScreen(spi_inst_t* spi, const GPIO& gpio_CS, const GPIO& gpio_IRQ) : TSC2046(spi, gpio_CS, gpio_IRQ) {}
+		TouchPanel(spi_inst_t* spi, const GPIO& gpio_CS, const GPIO& gpio_IRQ) : TSC2046(spi, gpio_CS, gpio_IRQ) {}
 	public:
 		void Initialize(Drawable& drawable) {
 			TSC2046::Initialize(drawable.IsHVFlipped());

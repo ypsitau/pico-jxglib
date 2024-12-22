@@ -10,7 +10,9 @@ using namespace jxglib;
 
 class InputPointer : public LVGLAdapter::Input {
 private:
-	
+	TouchPanel& touchPanel_;
+public:
+	InputPointer(TouchPanel& touchPanel) : touchPanel_{touchPanel} {}	
 public:
 	virtual void Handle(lv_indev_t* indev_drv, lv_indev_data_t* data) override;
 };
@@ -18,9 +20,10 @@ public:
 void InputPointer::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
 {
 	//::printf("Pointer::Handle\n");
-	data->point.x = 0;
-	data->point.y = 0;
-	data->state = LV_INDEV_STATE_PRESSED;
+	int x, y;
+	data->state = touchPanel_.ReadPosition(&x, &y)? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
+	data->point.x = x;
+	data->point.y = y;
 }
 
 class InputKeypad : public LVGLAdapter::Input {
@@ -64,27 +67,25 @@ void InputEncoder::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
 int main()
 {
 	::stdio_init_all();
-	::spi_init(spi0, 125 * 1000 * 1000);
+	::spi_init(spi0, 2 * 1000 * 1000);
 	::spi_init(spi1, 125 * 1000 * 1000);
 	GPIO2.set_function_SPI0_SCK();
 	GPIO3.set_function_SPI0_TX();
+	GPIO4.set_function_SPI0_RX();
 	GPIO14.set_function_SPI1_SCK();
 	GPIO15.set_function_SPI1_TX();
-	ST7789 display1(spi1, 240, 320, GPIO18, GPIO19, GPIO20, GPIO21);
-	ILI9341 display2(spi0, 240, 320, GPIO12, GPIO11, GPIO13, GPIO::None);
-	display1.Initialize(Display::Dir::Rotate90);
-	display2.Initialize(Display::Dir::Rotate90);
-	LVGLAdapter lvglAdapter1;
-	LVGLAdapter lvglAdapter2;
-	lvglAdapter1.AttachOutput(display1);
-	lvglAdapter2.AttachOutput(display2);
-	//lvglAdapter1.AttachOutput(display1, {0, 100, 320, 100});
-	InputPointer inputPointer;
+	ILI9341 display(spi1, 240, 320, GPIO11, GPIO10, GPIO12, GPIO13);
+	ILI9341::TouchPanel touchPanel(spi0, GPIO6, GPIO7);
+	display.Initialize(Display::Dir::Rotate90);
+	touchPanel.Initialize(display);
+	LVGLAdapter lvglAdapter;
+	lvglAdapter.AttachOutput(display);
+	InputPointer inputPointer(touchPanel);
 	InputKeypad inputKeypad;
 	InputButton inputButton;
 	InputEncoder inputEncoder;
-	//lvglAdapter.SetInput_Pointer(inputPointer);
-	lvglAdapter2.SetInput_Keypad(inputKeypad);
+	lvglAdapter.SetInput_Pointer(inputPointer);
+	//lvglAdapter.SetInput_Keypad(inputKeypad);
 	//lvglAdapter.SetInput_Button(inputButton);
 	//lvglAdapter.SetInput_Encoder(inputEncoder);
 	//-----------------------------------------------
@@ -286,7 +287,7 @@ int main()
 	//::lv_example_slider_3();
 	//::lv_example_slider_4();
 	//::lv_example_span_1();
-	//::lv_example_spinbox_1();
+	::lv_example_spinbox_1();
 	//::lv_example_spinner_1();
 	//::lv_example_switch_1();
 	//::lv_example_switch_2();
@@ -301,20 +302,20 @@ int main()
 	//::lv_example_textarea_3();
 	//::lv_example_tileview_1();
 	//::lv_example_win_1();
-	do {
-		lv_obj_t* button = lv_button_create(lv_screen_active());
-		//lv_obj_add_event_cb(button, event_handler, LV_EVENT_ALL, NULL);
-		lv_obj_align(button, LV_ALIGN_CENTER, 0, -40);
-		lv_obj_set_width(button, 200);
-		lv_obj_remove_flag(button, LV_OBJ_FLAG_PRESS_LOCK);
-		do {
-			lv_obj_t* label = lv_label_create(button);
-			lv_label_set_text(label, "Button");
-			lv_obj_center(label);
-		} while (0);
-	} while (0);
 	//do {
-	//	lvglAdapter2.SetDefault();
+	//	lv_obj_t* button = lv_button_create(lv_screen_active());
+	//	//lv_obj_add_event_cb(button, event_handler, LV_EVENT_ALL, NULL);
+	//	lv_obj_align(button, LV_ALIGN_CENTER, 0, -40);
+	//	lv_obj_set_width(button, 200);
+	//	lv_obj_remove_flag(button, LV_OBJ_FLAG_PRESS_LOCK);
+	//	do {
+	//		lv_obj_t* label = lv_label_create(button);
+	//		lv_label_set_text(label, "Button");
+	//		lv_obj_center(label);
+	//	} while (0);
+	//} while (0);
+	//do {
+	//	lvglAdapter.SetDefault();
 	//	lv_obj_t* btn1 = lv_button_create(lv_screen_active());
 	//	//lv_obj_add_event_cb(btn1, event_handler, LV_EVENT_ALL, NULL);
 	//	lv_obj_align(btn1, LV_ALIGN_CENTER, 0, -40);
@@ -324,9 +325,9 @@ int main()
 	//	lv_obj_center(label);
 	//} while (0);
 	//::printf("----1\n");
-	//lv_refr_now(lvglAdapter1.Get_lv_display());
+	//lv_refr_now(lvglAdapter.Get_lv_display());
 	//::printf("----2\n");
-	//lv_refr_now(lvglAdapter2.Get_lv_display());
+	//lv_refr_now(lvglAdapter.Get_lv_display());
 	for (;;) {
 		::sleep_ms(5);
 		::lv_timer_handler();
