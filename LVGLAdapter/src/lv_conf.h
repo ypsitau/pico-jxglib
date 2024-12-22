@@ -1046,7 +1046,7 @@
 #define LV_USE_FRAGMENT 0
 
 /** 1: Support using images as font in label or span widgets */
-#define LV_USE_IMGFONT 0
+#define LV_USE_IMGFONT 1
 
 /** 1: Enable an observer pattern implementation */
 #define LV_USE_OBSERVER 1
@@ -1247,11 +1247,11 @@
 /** Music player demo */
 #define LV_USE_DEMO_MUSIC 0
 #if LV_USE_DEMO_MUSIC
-    #define LV_DEMO_MUSIC_SQUARE    0
-    #define LV_DEMO_MUSIC_LANDSCAPE 0
-    #define LV_DEMO_MUSIC_ROUND     0
-    #define LV_DEMO_MUSIC_LARGE     0
-    #define LV_DEMO_MUSIC_AUTO_PLAY 0
+    #define LV_DEMO_MUSIC_SQUARE    1
+    #define LV_DEMO_MUSIC_LANDSCAPE 1
+    #define LV_DEMO_MUSIC_ROUND     1
+    #define LV_DEMO_MUSIC_LARGE     1
+    #define LV_DEMO_MUSIC_AUTO_PLAY 1
 #endif
 
 /** Flex layout demo */
@@ -1264,7 +1264,7 @@
 #define LV_USE_DEMO_TRANSFORM       0
 
 /** Demonstrate scroll settings */
-#define LV_USE_DEMO_SCROLL          0
+#define LV_USE_DEMO_SCROLL          1
 
 /** Vector graphic demo */
 #define LV_USE_DEMO_VECTOR_GRAPHIC  0

@@ -28,12 +28,15 @@ int main()
 	lvglAdapter.AttachInput(touchPanel);
 	Setup();
 	for (;;) {
-		::sleep_ms(5);
+		::sleep_ms(1);
 		::lv_timer_handler();
-		::lv_tick_inc(5);
+		::lv_tick_inc(1);
 	}
 }
 
 void Setup()
 {
+	//::lv_demo_music();
+	//::lv_demo_multilang();
+	::lv_demo_scroll();
 }
