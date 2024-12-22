@@ -7,6 +7,7 @@
 #include "pico/time.h"
 #include "hardware/spi.h"
 #include "jxglib/GPIO.h"
+#include "jxglib/TouchPanel.h"
 #include "jxglib/Drawable.h"
 
 namespace jxglib {
@@ -14,7 +15,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // TSC2046
 //------------------------------------------------------------------------------
-class TSC2046 {
+class TSC2046 : public TouchPanel {
 public:
 	class Adjuster {
 	private:
@@ -42,8 +43,8 @@ public:
 	TSC2046(spi_inst_t* spi, const GPIO& gpio_CS, const GPIO& gpio_IRQ);
 public:
 	void Initialize(bool hvFlippedFlag);
-	bool ReadPosition(int* px, int* py);
-	bool IsTouched();
+	virtual bool ReadPosition(int* px, int* py) override;
+	virtual bool IsTouched() override;
 public:
 	bool Calibrate(Drawable& drawable);
 	bool ReadPositionRaw(int* px, int* py, int* pz1 = nullptr, int* pz2 = nullptr);

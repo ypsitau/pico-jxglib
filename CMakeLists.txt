@@ -14,6 +14,7 @@ add_subdirectory(PIO)
 add_subdirectory(Printable)
 add_subdirectory(Stream)
 add_subdirectory(Terminal)
+add_subdirectory(TouchPanel)
 add_subdirectory(UART)
 
 add_subdirectory(device)

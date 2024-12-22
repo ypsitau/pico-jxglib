@@ -5,6 +5,7 @@ target_include_directories(jxglib_TSC2046 INTERFACE
 
 target_link_libraries(jxglib_TSC2046 INTERFACE
 	hardware_spi
+	jxglib_TouchPanel
 	jxglib_Drawable)
 
 target_sources(jxglib_TSC2046 INTERFACE
