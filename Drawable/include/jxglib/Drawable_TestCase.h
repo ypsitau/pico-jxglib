@@ -16,6 +16,8 @@ public:
 	static void DrawString(Drawable* drawableTbl[], int nDrawables);
 	static void DrawString(Drawable& drawable) { Drawable* drawableTbl[] = {&drawable}; DrawString(drawableTbl, 1); }
 	static void RotateImage(Drawable* drawableTbl[], int nDrawables);
+	static void RotateImage(Drawable& drawable) { Drawable* drawableTbl[] = {&drawable}; RotateImage(drawableTbl, 1); }
+	static void DrawLine(Drawable& drawable);
 };
 
 }

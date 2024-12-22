@@ -38,7 +38,7 @@ void TFT_LCD::Initialize(Dir displayDir, const ConfigData& configData)
 	raw.DisplayOn();
 	Clear();
 	::sleep_ms(10);
-	raw.SetGPIO_BL(true);
+	raw.SetGPIO_BL(1);
 }
 
 void TFT_LCD::CalcPosAdjust(Dir displayDir, int* pxAdjust, int* pyAdjust) const
@@ -140,10 +140,13 @@ void TFT_LCD::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 	int xSrc = rectClip.x, ySrc = rectClip.y;
 	int wdImage = rectClip.width, htImage = rectClip.height;
 	int xSkip = 0, ySkip = 0;
-
-	//if (!AdjustRange(&x, &wdImage, 0, display_.GetWidthPhysical(), &xSkip)) return;
-	//if (!AdjustRange(&y, &htImage, 0, display_.GetHeightPhysical(), &ySkip)) return;
-	
+	if (drawDir.IsHorz()) {
+		if (!AdjustRange(&x, &wdImage, 0, display_.GetWidth(), &xSkip)) return;
+		if (!AdjustRange(&y, &htImage, 0, display_.GetHeight(), &ySkip)) return;
+	} else {
+		if (!AdjustRange(&x, &htImage, 0, display_.GetWidth(), &xSkip)) return;
+		if (!AdjustRange(&y, &wdImage, 0, display_.GetHeight(), &ySkip)) return;
+	}
 	x += xAdjust, y += yAdjust;
 	raw.MemoryDataAccessControl(displayDir, saved.configData);
 	raw.ColumnAddressSet(x, x + wdImage - 1);

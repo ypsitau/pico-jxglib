@@ -11,16 +11,16 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
 if(WIN32)
-    set(USERHOME $ENV{USERPROFILE})
+	set(USERHOME $ENV{USERPROFILE})
 else()
-    set(USERHOME $ENV{HOME})
+	set(USERHOME $ENV{HOME})
 endif()
 set(sdkVersion 2.1.0)
 set(toolchainVersion 13_3_Rel1)
 set(picotoolVersion 2.1.0)
 set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
 if (EXISTS ${picoVscode})
-    include(${picoVscode})
+	include(${picoVscode})
 endif()
 # ====================================================================================
 set(PICO_BOARD pico CACHE STRING "Board type")
@@ -46,12 +46,15 @@ pico_enable_stdio_usb(test-ST7735 0)
 
 # Add the standard library to the build
 target_link_libraries(test-ST7735
-        pico_stdlib)
+	pico_stdlib
+	jxglib_Drawable_TestCase
+	jxglib_ST7735)
 
 # Add the standard include files to the build
 target_include_directories(test-ST7735 PRIVATE
-  ${CMAKE_CURRENT_LIST_DIR}
+	${CMAKE_CURRENT_LIST_DIR}
 )
 
 pico_add_extra_outputs(test-ST7735)
 
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../../../ jxglib)
