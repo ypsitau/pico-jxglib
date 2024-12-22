@@ -46,12 +46,16 @@ pico_enable_stdio_usb(test-example 0)
 
 # Add the standard library to the build
 target_link_libraries(test-example
-        pico_stdlib)
+    pico_stdlib
+    lvgl_examples
+    jxglib_ILI9341
+    jxglib_LVGLAdapter)
 
 # Add the standard include files to the build
 target_include_directories(test-example PRIVATE
-  ${CMAKE_CURRENT_LIST_DIR}
+    ${CMAKE_CURRENT_LIST_DIR}
 )
 
 pico_add_extra_outputs(test-example)
 
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. jxglib)
