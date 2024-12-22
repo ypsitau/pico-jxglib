@@ -18,7 +18,6 @@ LVGLAdapter::LVGLAdapter(bool doubleBuffFlag, int nPartial) :
 bool LVGLAdapter::AttachOutput(Drawable& drawable, const Rect& rect)
 {
 	pDrawableOut_ = &drawable;
-	::lv_init();
 	rectOut_ = rect;
 	Rect rectBound(0, 0, drawable.GetWidth(), drawable.GetHeight());
 	if (rectOut_.IsEmpty()) { rectOut_ = rectBound; } else if (!rectOut_.Adjust(rectBound)) return false;
