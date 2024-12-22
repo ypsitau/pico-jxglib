@@ -11,16 +11,16 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
 if(WIN32)
-	set(USERHOME $ENV{USERPROFILE})
+    set(USERHOME $ENV{USERPROFILE})
 else()
-	set(USERHOME $ENV{HOME})
+    set(USERHOME $ENV{HOME})
 endif()
 set(sdkVersion 2.1.0)
 set(toolchainVersion 13_3_Rel1)
 set(picotoolVersion 2.1.0)
 set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
 if (EXISTS ${picoVscode})
-	include(${picoVscode})
+    include(${picoVscode})
 endif()
 # ====================================================================================
 set(PICO_BOARD pico CACHE STRING "Board type")
@@ -28,36 +28,30 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-LVGLAdapter C CXX ASM)
+project(test-example C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-LVGLAdapter test-LVGLAdapter.cpp )
+add_executable(test-example test-example.cpp )
 
-pico_set_program_name(test-LVGLAdapter "test-LVGLAdapter")
-pico_set_program_version(test-LVGLAdapter "0.1")
+pico_set_program_name(test-example "test-example")
+pico_set_program_version(test-example "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-LVGLAdapter 1)
-pico_enable_stdio_usb(test-LVGLAdapter 0)
-
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. jxglib)
+pico_enable_stdio_uart(test-example 1)
+pico_enable_stdio_usb(test-example 0)
 
 # Add the standard library to the build
-target_link_libraries(test-LVGLAdapter
-	pico_stdlib
-	lvgl_examples
-	lvgl_demos
-	jxglib_ILI9341
-	jxglib_ST7789
-	jxglib_LVGLAdapter)
+target_link_libraries(test-example
+        pico_stdlib)
 
-	# Add the standard include files to the build
-target_include_directories(test-LVGLAdapter PRIVATE
-	${CMAKE_CURRENT_LIST_DIR}
+# Add the standard include files to the build
+target_include_directories(test-example PRIVATE
+  ${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-LVGLAdapter)
+pico_add_extra_outputs(test-example)
+

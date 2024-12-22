@@ -2,6 +2,7 @@
 #include <examples/lv_examples.h>
 //#include <demos/lv_demos.h>
 #include "pico/stdlib.h"
+#include "jxglib/ST7789.h"
 #include "jxglib/ILI9341.h"
 #include "jxglib/LVGLAdapter.h"
 
@@ -70,11 +71,15 @@ int main()
 	GPIO14.set_function_SPI1_SCK();
 	GPIO15.set_function_SPI1_TX();
 	ILI9341 display(spi1, 240, 320, GPIO11, GPIO10, GPIO12, GPIO13);
+	ST7789 display1(spi1, 240, 320, GPIO18, GPIO19, GPIO20, GPIO21);
 	ILI9341::TouchPanel touchPanel(spi0, GPIO6, GPIO7);
 	display.Initialize(Display::Dir::Rotate90);
+	display1.Initialize(Display::Dir::Rotate90);
 	touchPanel.Initialize(display);
-	LVGLAdapter lvglAdapter;
+	LVGLAdapter lvglAdapter(false, 10);
+	LVGLAdapter lvglAdapter1(false, 10);
 	lvglAdapter.AttachOutput(display);
+	lvglAdapter1.AttachOutput(display1);
 	lvglAdapter.AttachInput(touchPanel);
 	//InputPointer inputPointer;
 	//InputKeypad inputKeypad;
@@ -298,6 +303,10 @@ int main()
 	//::lv_example_textarea_3();
 	//::lv_example_tileview_1();
 	//::lv_example_win_1();
+	lvglAdapter.SetDefault();
+	::lv_example_textarea_1();
+	lvglAdapter1.SetDefault();
+	::lv_example_textarea_2();
 	//do {
 	//	lv_obj_t* button = lv_button_create(lv_screen_active());
 	//	//lv_obj_add_event_cb(button, event_handler, LV_EVENT_ALL, NULL);
@@ -323,7 +332,7 @@ int main()
 	//::printf("----1\n");
 	//lv_refr_now(lvglAdapter.Get_lv_display());
 	//::printf("----2\n");
-	//lv_refr_now(lvglAdapter.Get_lv_display());
+	//lv_refr_now(lvglAdapter1.Get_lv_display());
 	for (;;) {
 		::sleep_ms(5);
 		::lv_timer_handler();
