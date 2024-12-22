@@ -6,6 +6,7 @@
 #include <lvgl.h>
 #include "pico/stdlib.h"
 #include "jxglib/Drawable.h"
+#include "jxglib/TouchScreen.h"
 
 namespace jxglib {
 
@@ -23,6 +24,16 @@ public:
 	public:
 		virtual void Handle(lv_indev_t* indev_drv, lv_indev_data_t* data) override {};
 	};
+	class InputTouchScreen : public LVGLAdapter::Input {
+	private:
+		TouchScreen* pTouchScreen_;
+	public:
+		InputTouchScreen() {}
+	public:
+		void SetTouchScreen(TouchScreen& touchScreen) { pTouchScreen_ = &touchScreen; }
+	public:
+		virtual void Handle(lv_indev_t* indev_drv, lv_indev_data_t* data) override;
+	};
 private:
 	bool doubleBuffFlag_;
 	int nPartial_;
@@ -34,6 +45,7 @@ private:
 	Input* pInput_Button_;
 	Input* pInput_Encoder_;
 private:
+	InputTouchScreen inputTouchScreen_;
 	static InputDumb inputDumb_;
 public:
 	LVGLAdapter(bool doubleBuffFlag = true, int nPartial = 10);
@@ -47,6 +59,8 @@ public:
 	void SetInput_Keypad(Input& input);
 	void SetInput_Button(Input& input);
 	void SetInput_Encoder(Input& input);
+public:
+	void AttachInput(TouchScreen& touchScreen);
 private:
 	void RegisterInput(lv_indev_type_t indev_type, lv_indev_read_cb_t cb);
 private:

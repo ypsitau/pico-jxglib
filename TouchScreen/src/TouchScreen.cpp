@@ -1,24 +1,12 @@
 //==============================================================================
-// jxglib/TouchPanel.h
+// TouchScreen.cpp
 //==============================================================================
-#ifndef PICO_JXGLIB_TOUCHPANEL_H
-#define PICO_JXGLIB_TOUCHPANEL_H
-#include "pico/stdlib.h"
-#include "jxglib/Common.h"
+#include "jxglib/TouchScreen.h"
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// TouchPanel
+// TouchScreen
 //------------------------------------------------------------------------------
-class TouchPanel {
-public:
-	TouchPanel() {}
-public:
-	virtual bool ReadPosition(int* px, int* py) = 0;
-	virtual bool IsTouched() = 0;
-};
 
 }
-
-#endif

@@ -7,7 +7,7 @@
 #include "pico/time.h"
 #include "hardware/spi.h"
 #include "jxglib/GPIO.h"
-#include "jxglib/TouchPanel.h"
+#include "jxglib/TouchScreen.h"
 #include "jxglib/Drawable.h"
 
 namespace jxglib {
@@ -15,7 +15,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // TSC2046
 //------------------------------------------------------------------------------
-class TSC2046 : public TouchPanel {
+class TSC2046 : public TouchScreen {
 public:
 	class Adjuster {
 	private:

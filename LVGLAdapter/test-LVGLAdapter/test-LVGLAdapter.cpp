@@ -1,18 +1,13 @@
 #include <stdio.h>
-#include "pico/stdlib.h"
-#include "jxglib/ILI9341.h"
-#include "jxglib/ST7789.h"
-#include "jxglib/LVGLAdapter.h"
 #include <examples/lv_examples.h>
 //#include <demos/lv_demos.h>
+#include "pico/stdlib.h"
+#include "jxglib/ILI9341.h"
+#include "jxglib/LVGLAdapter.h"
 
 using namespace jxglib;
 
 class InputPointer : public LVGLAdapter::Input {
-private:
-	TouchPanel& touchPanel_;
-public:
-	InputPointer(TouchPanel& touchPanel) : touchPanel_{touchPanel} {}	
 public:
 	virtual void Handle(lv_indev_t* indev_drv, lv_indev_data_t* data) override;
 };
@@ -20,10 +15,9 @@ public:
 void InputPointer::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
 {
 	//::printf("Pointer::Handle\n");
-	int x, y;
-	data->state = touchPanel_.ReadPosition(&x, &y)? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
-	data->point.x = x;
-	data->point.y = y;
+	data->state = LV_INDEV_STATE_PRESSED;
+	data->point.x = 0;
+	data->point.y = 0;
 }
 
 class InputKeypad : public LVGLAdapter::Input {
@@ -80,11 +74,12 @@ int main()
 	touchPanel.Initialize(display);
 	LVGLAdapter lvglAdapter;
 	lvglAdapter.AttachOutput(display);
-	InputPointer inputPointer(touchPanel);
-	InputKeypad inputKeypad;
-	InputButton inputButton;
-	InputEncoder inputEncoder;
-	lvglAdapter.SetInput_Pointer(inputPointer);
+	lvglAdapter.AttachInput(touchPanel);
+	//InputPointer inputPointer;
+	//InputKeypad inputKeypad;
+	//InputButton inputButton;
+	//InputEncoder inputEncoder;
+	//lvglAdapter.SetInput_Pointer(inputPointer);
 	//lvglAdapter.SetInput_Keypad(inputKeypad);
 	//lvglAdapter.SetInput_Button(inputButton);
 	//lvglAdapter.SetInput_Encoder(inputEncoder);

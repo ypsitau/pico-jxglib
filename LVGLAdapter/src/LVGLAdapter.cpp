@@ -74,6 +74,12 @@ void LVGLAdapter::SetInput_Encoder(Input& input)
 	RegisterInput(LV_INDEV_TYPE_ENCODER, IndevReadEncoderCB);
 }
 
+void LVGLAdapter::AttachInput(TouchScreen& touchScreen)
+{
+	inputTouchScreen_.SetTouchScreen(touchScreen);
+	SetInput_Pointer(inputTouchScreen_);
+}
+
 void LVGLAdapter::RegisterInput(lv_indev_type_t indev_type, lv_indev_read_cb_t cb)
 {
 	lv_indev_t* indev = ::lv_indev_create();
@@ -111,6 +117,17 @@ void LVGLAdapter::IndevReadEncoderCB(lv_indev_t* indev, lv_indev_data_t* data)
 {
 	LVGLAdapter* pSelf = reinterpret_cast<LVGLAdapter*>(::lv_indev_get_user_data(indev));
 	pSelf->pInput_Encoder_->Handle(indev, data);
+}
+
+//------------------------------------------------------------------------------
+// LVGLAdapter::InputTouchScreen
+//------------------------------------------------------------------------------
+void LVGLAdapter::InputTouchScreen::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
+{
+	int x, y;
+	data->state = pTouchScreen_->ReadPosition(&x, &y)? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
+	data->point.x = x;
+	data->point.y = y;
 }
 
 }

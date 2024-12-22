@@ -21,7 +21,7 @@ target_compile_definitions(jxglib_LVGLAdapter INTERFACE
 	LV_CONF_PATH="${CMAKE_CURRENT_LIST_DIR}/src/lv_conf.h")
 
 target_link_libraries(jxglib_LVGLAdapter INTERFACE
-	jxglib_Common
+	jxglib_TouchScreen
 	lvgl)
 
 target_sources(jxglib_LVGLAdapter INTERFACE
