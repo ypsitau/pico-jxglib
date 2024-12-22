@@ -20,14 +20,14 @@ int main()
 	GPIO15.set_function_SPI1_TX();
 	ILI9341 display1(spi1, 240, 320, GPIO11, GPIO10, GPIO12, GPIO13);
 	ST7789 display2(spi1, 240, 320, GPIO18, GPIO19, GPIO20, GPIO21);
-	ILI9341::TouchPanel touchPanel(spi0, GPIO6, GPIO7);
+	ILI9341::TouchScreen touchScreen(spi0, GPIO6, GPIO7);
 	display1.Initialize(Display::Dir::Rotate90);
 	display2.Initialize(Display::Dir::Rotate90);
-	touchPanel.Initialize(display1);
+	touchScreen.Initialize(display1);
 	LVGLAdapter lvglAdapter1(false);
 	LVGLAdapter lvglAdapter2(false);
 	lvglAdapter1.AttachOutput(display1);
-	lvglAdapter1.AttachInput(touchPanel);
+	lvglAdapter1.AttachInput(touchScreen);
 	lvglAdapter2.AttachOutput(display2);
 	lvglAdapter1.SetDefault();
 	::lv_example_anim_3();
