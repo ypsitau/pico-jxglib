@@ -42,10 +42,11 @@ public:
 	TSC2046(spi_inst_t* spi, const GPIO& gpio_CS, const GPIO& gpio_IRQ);
 public:
 	void Initialize(bool hvFlippedFlag);
-	bool Calibrate(Drawable& drawable);
-	bool ReadPositionRaw(int* px, int* py, int* pz1 = nullptr, int* pz2 = nullptr);
 	bool ReadPosition(int* px, int* py);
 	bool IsTouched();
+public:
+	bool Calibrate(Drawable& drawable);
+	bool ReadPositionRaw(int* px, int* py, int* pz1 = nullptr, int* pz2 = nullptr);
 	void SetAdjusterX(const Adjuster& adjuster) { adjusterX_ = adjuster; }
 	void SetAdjusterY(const Adjuster& adjuster) { adjusterY_ = adjuster; }
 	const Adjuster& GetAdjusterX() const { return adjusterX_; }

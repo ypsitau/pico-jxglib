@@ -49,10 +49,10 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. jxglib)
 # Add the standard library to the build
 target_link_libraries(test-LVGLAdapter
 	pico_stdlib
-	jxglib_TFT_LCD
-	jxglib_LVGLAdapter
 	lvgl_examples
-	lvgl_demos)
+	lvgl_demos
+	jxglib_ILI9341
+	jxglib_LVGLAdapter)
 
 	# Add the standard include files to the build
 target_include_directories(test-LVGLAdapter PRIVATE

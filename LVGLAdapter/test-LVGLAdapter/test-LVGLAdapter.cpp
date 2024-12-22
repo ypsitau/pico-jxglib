@@ -9,6 +9,8 @@
 using namespace jxglib;
 
 class InputPointer : public LVGLAdapter::Input {
+private:
+	
 public:
 	virtual void Handle(lv_indev_t* indev_drv, lv_indev_data_t* data) override;
 };
