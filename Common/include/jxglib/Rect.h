@@ -19,9 +19,9 @@ public:
 	static const Rect Zero;
 	static const Rect Empty;
 public:
-	Rect() : x{0}, y{0}, width{0}, height{0} {}
-	Rect(int x, int y, int width, int height) : x{x}, y{y}, width{width}, height{height} {}
-	Rect(const Point& pt, const Size& size) : x{pt.x}, y{pt.y}, width{size.width}, height{size.height} {}
+	constexpr Rect() : x{0}, y{0}, width{0}, height{0} {}
+	constexpr Rect(int x, int y, int width, int height) : x{x}, y{y}, width{width}, height{height} {}
+	constexpr Rect(const Point& pt, const Size& size) : x{pt.x}, y{pt.y}, width{size.width}, height{size.height} {}
 	bool IsEmpty() const { return width == 0 || height == 0; }
 	int GetLeft() const { return x; }
 	int GetRight() const { return x + width - 1; }

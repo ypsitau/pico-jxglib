@@ -15,8 +15,8 @@ struct Point {
 public:
 	static const Point Zero;
 public:
-	Point() : x{0}, y{0} {}
-	Point(int x, int y) : x{x}, y{y} {}
+	constexpr Point() : x{0}, y{0} {}
+	constexpr Point(int x, int y) : x{x}, y{y} {}
 };
 
 //------------------------------------------------------------------------------
@@ -27,8 +27,8 @@ struct PointFloat {
 public:
 	static const PointFloat Zero;
 public:
-	PointFloat() : x{0.}, y{0.} {}
-	PointFloat(float x, float y) : x{x}, y{y} {}
+	constexpr PointFloat() : x{0.}, y{0.} {}
+	constexpr PointFloat(float x, float y) : x{x}, y{y} {}
 };
 
 //------------------------------------------------------------------------------
@@ -39,8 +39,8 @@ struct PointDouble {
 public:
 	static const PointDouble Zero;
 public:
-	PointDouble() : x{0.}, y{0.} {}
-	PointDouble(double x, double y) : x{x}, y{y} {}
+	constexpr PointDouble() : x{0.}, y{0.} {}
+	constexpr PointDouble(double x, double y) : x{x}, y{y} {}
 };
 
 }

@@ -30,7 +30,8 @@ Rect Rect::Inflate(int amount) const
 		yNew -= amount;
 		heightNew += amount2; 
 	}
-	return Rect(xNew, yNew, widthNew, heightNew);
+	Rect rect {xNew, yNew, widthNew, heightNew};
+	return rect;
 }
 
 bool Rect::Adjust(const Rect& rectBound)

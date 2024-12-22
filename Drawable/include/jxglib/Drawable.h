@@ -107,6 +107,8 @@ public:
 	const Format& GetFormat() const { return *pFormat_; }
 	int GetWidth() const { return width_; }
 	int GetHeight() const { return height_; }
+	Size GetSize() const { return Size(width_, height_); }
+	Rect GetRect() const { return Rect(0, 0, width_, height_); }
 public:
 	bool IsFormatNone() const { return pFormat_->IsIdentical(Format::None); }
 	bool IsFormatBitmap() const { return pFormat_->IsIdentical(Format::Bitmap); }

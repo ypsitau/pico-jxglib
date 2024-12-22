@@ -16,7 +16,7 @@ int main()
 	for (;;) {
 		int x, y;
 		int z1, z2;
-		bool touched = touchScreen.ReadPosition(&x, &y, &z1, &z2);
+		bool touched = touchScreen.ReadPositionRaw(&x, &y, &z1, &z2);
 		if (touched) ::printf("x:%-4x y:%-4x z1:%-2x z2:%-2x\n", x, y, z1, z2);
 		::sleep_ms(100);
 	}
