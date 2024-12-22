@@ -7,7 +7,7 @@ using namespace jxglib;
 int main()
 {
 	::stdio_init_all();
-	::spi_init(spi0, 1 * 1000 * 1000);
+	::spi_init(spi0, 2 * 1000 * 1000);	// 2MHz seems the max SPI frequency for TSC2046
 	GPIO2.set_function_SPI0_SCK();
 	GPIO3.set_function_SPI0_TX();
 	GPIO4.set_function_SPI0_RX();
@@ -17,7 +17,7 @@ int main()
 		int x, y;
 		int z1, z2;
 		bool touched = touchScreen.ReadPosition(&x, &y, &z1, &z2);
-		if (touched) ::printf("%4x %4x %2x %2x %d\n", x, y, z1, z2, (z2 / z1 - 1) * x * 100 / 4096);
+		if (touched) ::printf("x:%-4x y:%-4x z1:%-2x z2:%-2x\n", x, y, z1, z2);
 		::sleep_ms(100);
 	}
 }

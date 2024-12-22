@@ -15,7 +15,21 @@ void TSC2046::Initialize()
 {
 	gpio_CS_.init().set_dir_OUT().put(1);
 	gpio_IRQ_.init().set_dir_IN();
-	SendCmd(ComposeCmd(0, 0, 0, 0));
+}
+
+bool TSC2046::ReadPosition(int* px, int* py, int* pz1, int* pz2)
+{
+	int z1, z2;
+	gpio_CS_.put(0);
+	SPISetFormat();
+	*px = ReadADC12Bit(0b101);
+	*py = ReadADC12Bit(0b001);
+	z1 = ReadADC8Bit(0b011);
+	z2 = ReadADC8Bit(0b100);
+	gpio_CS_.put(1);
+	if (pz1) *pz1 = z1;
+	if (pz2) *pz2 = z2;
+	return z1 > 0 && z2 > 0;
 }
 
 void TSC2046::SendCmd(uint8_t cmd)
@@ -56,21 +70,6 @@ uint16_t TSC2046::ReadADC12Bit(uint8_t adc)
 	uint8_t buffRecv[3];
 	::spi_write_read_blocking(spi_, buffSend, buffRecv, sizeof(buffSend));
 	return (static_cast<uint16_t>(buffRecv[1]) << 4) | (buffRecv[2] >> 4);
-}
-
-bool TSC2046::ReadPosition(int* px, int* py, int* pz1, int* pz2)
-{
-	int z1, z2;
-	gpio_CS_.put(0);
-	SPISetFormat();
-	*px = ReadADC12Bit(0b101);
-	*py = ReadADC12Bit(0b001);
-	z1 = ReadADC8Bit(0b011);
-	z2 = ReadADC8Bit(0b100);
-	gpio_CS_.put(1);
-	if (pz1) *pz1 = z1;
-	if (pz2) *pz2 = z2;
-	return z1 > 0 && z2 > 0;
 }
 
 }

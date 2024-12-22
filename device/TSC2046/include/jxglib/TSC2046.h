@@ -21,11 +21,12 @@ public:
 	TSC2046(spi_inst_t* spi, const GPIO& gpio_CS, const GPIO& gpio_IRQ);
 public:
 	void Initialize();
+	bool ReadPosition(int* px, int* py, int* pz1 = nullptr, int* pz2 = nullptr);
+	bool IsPressed() { int x, y; return ReadPosition(&x, &y); }
+private:
 	void SendCmd(uint8_t cmd);
 	uint8_t ReadADC8Bit(uint8_t adc);
 	uint16_t ReadADC12Bit(uint8_t adc);
-	bool ReadPosition(int* px, int* py, int* pz1 = nullptr, int* pz2 = nullptr);
-	bool IsPressed() { int x, y; return ReadPosition(&x, &y); }
 private:
 	void SPISetFormat() {
 		::spi_set_format(spi_, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
