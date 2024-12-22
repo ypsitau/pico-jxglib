@@ -25,6 +25,7 @@ public:
 		Adjuster(int valueMax = 1, float slope = 1., int intercept = 0) : valueMax_{valueMax}, slope_{slope}, intercept_{intercept} {}
 	public:
 		int Adjust(int value) const;
+		int GetValueMax() const { return valueMax_; }
 		float GetSlope() const { return slope_; }
 		int GetIntercept() const { return intercept_; }
 	};
@@ -46,6 +47,7 @@ public:
 	void SetAdjusterY(const Adjuster& adjuster) { adjusterY_ = adjuster; }
 	const Adjuster& GetAdjusterX() const { return adjusterX_; }
 	const Adjuster& GetAdjusterY() const { return adjusterY_; }
+	void PrintCalibration() const;
 private:
 	void SendCmd(uint8_t cmd);
 	uint8_t ReadADC8Bit(uint8_t adc);

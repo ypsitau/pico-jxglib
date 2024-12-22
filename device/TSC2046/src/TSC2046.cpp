@@ -77,11 +77,19 @@ bool TSC2046::ReadPositionRaw(int* px, int* py, int* pz1, int* pz2)
 
 bool TSC2046::ReadPosition(int* px, int* py)
 {
-	int x, y;
-	bool rtn = ReadPositionRaw(&x, &y);
+	const int nSamples = 10;
+	int xSum = 0, ySum = 0, z1Sum = 0;
+	for (int iSample = 0; iSample < nSamples; iSample++) {
+		int x, y, z1;
+		ReadPositionRaw(&x, &y, &z1);
+		//::sleep_ms(1);
+		xSum += x, ySum += y, z1Sum += z1;
+	}
+	int x = xSum / nSamples, y = ySum / nSamples;
+	if (z1Sum == 0) return false;
 	*px = adjusterX_.Adjust(x);
 	*py = adjusterY_.Adjust(y);
-	return rtn;
+	return true;
 }
 
 bool TSC2046::IsTouched()
@@ -131,6 +139,12 @@ uint16_t TSC2046::ReadADC12Bit(uint8_t adc)
 	uint8_t buffRecv[3];
 	::spi_write_read_blocking(spi_, buffSend, buffRecv, sizeof(buffSend));
 	return (static_cast<uint16_t>(buffRecv[1]) << 4) | (buffRecv[2] >> 4);
+}
+
+void TSC2046::PrintCalibration() const
+{
+	::printf("X: valueMax=%d, slope=%f, intercept=%d\n", adjusterX_.GetValueMax(), adjusterX_.GetSlope(), adjusterX_.GetIntercept());
+	::printf("Y: valueMax=%d, slope=%f, intercept=%d\n", adjusterY_.GetValueMax(), adjusterY_.GetSlope(), adjusterY_.GetIntercept());
 }
 
 //------------------------------------------------------------------------------

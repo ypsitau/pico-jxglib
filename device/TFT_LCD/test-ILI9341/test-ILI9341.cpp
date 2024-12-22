@@ -23,19 +23,12 @@ int main()
 	//Drawable_TestCase::DrawString(display);
 	//Drawable_TestCase::RotateImage(display);
 	//touchScreen.Calibrate(display);
-	//do {
-	//	const ILI9341::TouchScreen::Adjuster& adjuster = touchScreen.GetAdjusterX();
-	//	::printf("X: slope=%f, intercept=%d\n", adjuster.GetSlope(), adjuster.GetIntercept());
-	//} while (0);
-	//do {
-	//	const ILI9341::TouchScreen::Adjuster& adjuster = touchScreen.GetAdjusterY();
-	//	::printf("Y: slope=%f, intercept=%d\n", adjuster.GetSlope(), adjuster.GetIntercept());
-	//} while (0);
+	touchScreen.PrintCalibration();
 	for (;;) {
 		int x, y;
 		if (touchScreen.ReadPosition(&x, &y)) {
 			display.DrawRectFill(x - 2, y - 2, 4, 4);
 		}
-		::sleep_ms(1);
+		//::sleep_ms(10);
 	}
 }
