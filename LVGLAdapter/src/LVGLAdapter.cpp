@@ -49,43 +49,44 @@ void LVGLAdapter::Flush(lv_display_t* disp, const lv_area_t* area, unsigned char
 	::lv_display_flush_ready(disp);
 }
 
-void LVGLAdapter::SetInput_Pointer(Input& input)
+lv_indev_t* LVGLAdapter::SetInput_Pointer(Input& input)
 {
 	pInput_Pointer_ = &input;
-	RegisterInput(LV_INDEV_TYPE_POINTER, IndevReadPointerCB);
+	return RegisterInput(LV_INDEV_TYPE_POINTER, IndevReadPointerCB);
 }
 
-void LVGLAdapter::SetInput_Keypad(Input& input)
+lv_indev_t* LVGLAdapter::SetInput_Keypad(Input& input)
 {
 	pInput_Keypad_ = &input;
-	RegisterInput(LV_INDEV_TYPE_KEYPAD, IndevReadKeypadCB);
+	return RegisterInput(LV_INDEV_TYPE_KEYPAD, IndevReadKeypadCB);
 }
 
-void LVGLAdapter::SetInput_Button(Input& input)
+lv_indev_t* LVGLAdapter::SetInput_Button(Input& input)
 {
 	pInput_Button_ = &input;
-	RegisterInput(LV_INDEV_TYPE_BUTTON, IndevReadButtonCB);
+	return RegisterInput(LV_INDEV_TYPE_BUTTON, IndevReadButtonCB);
 }
 
-void LVGLAdapter::SetInput_Encoder(Input& input)
+lv_indev_t* LVGLAdapter::SetInput_Encoder(Input& input)
 {
 	pInput_Encoder_ = &input;
-	RegisterInput(LV_INDEV_TYPE_ENCODER, IndevReadEncoderCB);
+	return RegisterInput(LV_INDEV_TYPE_ENCODER, IndevReadEncoderCB);
 }
 
-void LVGLAdapter::AttachInput(TouchScreen& touchScreen)
+lv_indev_t* LVGLAdapter::AttachInput(TouchScreen& touchScreen)
 {
 	inputTouchScreen_.SetTouchScreen(touchScreen);
-	SetInput_Pointer(inputTouchScreen_);
+	return SetInput_Pointer(inputTouchScreen_);
 }
 
-void LVGLAdapter::RegisterInput(lv_indev_type_t indev_type, lv_indev_read_cb_t cb)
+lv_indev_t* LVGLAdapter::RegisterInput(lv_indev_type_t indev_type, lv_indev_read_cb_t cb)
 {
 	lv_indev_t* indev = ::lv_indev_create();
 	::lv_indev_set_type(indev, indev_type);
 	::lv_indev_set_read_cb(indev, cb);
 	::lv_indev_set_user_data(indev, this);
 	::lv_indev_set_display(indev, disp_);
+	return indev;
 }
 
 void LVGLAdapter::FlushCB(lv_display_t* disp, const lv_area_t* area, unsigned char* buf)

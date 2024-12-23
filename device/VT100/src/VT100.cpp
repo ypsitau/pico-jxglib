@@ -15,15 +15,24 @@ VT100::Decoder::Decoder() : stat_{Stat::First}
 void VT100::Decoder::FeedChar(char ch)
 {
 	bool contFlag = false;
-	::printf("%02x %c\n", ch, (ch == 0x1b)? 'e' : ch);
+	//::printf("%02x %c\n", ch, (ch == 0x1b)? 'e' : ch);
 	do {
 		contFlag = false;
 		switch (stat_) {
 		case Stat::First: {
-			if (ch == 0x1b) {
+			switch (ch) {
+			case 0x1b: {
 				stat_ = Stat::Escape;
-			} else {
+				break;
+			}
+			case 0x7f: {
+				buff_.WriteData(VK_DELETE);
+				break;
+			}
+			default: {
 				buff_.WriteData(ch);
+				break;
+			}
 			}
 			break;
 		}
@@ -116,11 +125,11 @@ void VT100::Decoder::FeedChar(char ch)
 				break;
 			}
 			case 'C': {
-				buff_.WriteData(VK_LEFT);
+				buff_.WriteData(VK_RIGHT);
 				break;
 			}
 			case 'D': {
-				buff_.WriteData(VK_RIGHT);
+				buff_.WriteData(VK_LEFT);
 				break;
 			}
 			}

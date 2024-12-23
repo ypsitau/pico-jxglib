@@ -7,7 +7,7 @@ using namespace jxglib;
 
 VT100::Decoder decoder;
 
-void Handler(void)
+void UARTHandler(void)
 {
 	UART& uart = UART::Default;
 	while (uart.raw.is_readable()) decoder.FeedChar(uart.raw.getc());
@@ -16,11 +16,11 @@ void Handler(void)
 int main()
 {
 	::stdio_init_all();
-	UART::Default.irq_set_exclusive_handler(Handler).irq_set_enabled(true);
+	UART::Default.irq_set_exclusive_handler(UARTHandler).irq_set_enabled(true);
 	UART::Default.raw.set_irq_enables(true, false);
 	for (;;) {
 		if (decoder.HasKeyData()) {
-			//::printf("%d\n", UARTHandler::inst.GetKeyData());
+			::printf("0x%02x\n", decoder.GetKeyData());
 		}
 	}
 }

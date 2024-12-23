@@ -5,8 +5,19 @@
 #include "jxglib/ST7789.h"
 #include "jxglib/ILI9341.h"
 #include "jxglib/LVGLAdapter.h"
+#include "jxglib/UART.h"
+#include "jxglib/VT100.h"
+#include "jxglib/KeyCode.h"
 
 using namespace jxglib;
+
+VT100::Decoder decoder;
+
+void UARTHandler(void)
+{
+	UART& uart = UART::Default;
+	while (uart.raw.is_readable()) decoder.FeedChar(uart.raw.getc());
+}
 
 class InputPointer : public LVGLAdapter::Input {
 public:
@@ -29,10 +40,27 @@ public:
 void InputKeypad::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
 {
 	//::printf("Keypad::Handle\n");
-	data->point.x = 0;
-	data->point.y = 0;
-	data->state = LV_INDEV_STATE_PRESSED;
-	data->key = '1';
+	if (decoder.HasKeyData()) {
+		int keyCode = decoder.GetKeyData();
+		data->key =
+			(keyCode == VK_TAB)?	LV_KEY_NEXT :
+			//LV_KEY_PREV
+			(keyCode == VK_RETURN)?	LV_KEY_ENTER :
+			(keyCode == VK_UP)?		LV_KEY_UP :
+			(keyCode == VK_DOWN)?	LV_KEY_DOWN :
+			(keyCode == VK_LEFT)?	LV_KEY_LEFT :
+			(keyCode == VK_RIGHT)?	LV_KEY_RIGHT :
+			//LV_KEY_ESC
+			(keyCode == VK_DELETE)?	LV_KEY_DEL :
+			(keyCode == VK_BACK)?	LV_KEY_BACKSPACE :
+			//LV_KEY_HOME
+			//LV_KEY_END
+			keyCode;
+		data->state = LV_INDEV_STATE_PRESSED;
+		::printf("Key: %02x\n", data->key);
+	} else {
+		data->state = LV_INDEV_STATE_RELEASED;
+	}
 }
 
 class InputButton : public LVGLAdapter::Input {
@@ -77,16 +105,25 @@ int main()
 	LVGLAdapter lvglAdapter(false, 10);
 	lvglAdapter.AttachOutput(display);
 	lvglAdapter.AttachInput(touchScreen);
+	UART::Default.irq_set_exclusive_handler(UARTHandler).irq_set_enabled(true);
+	UART::Default.raw.set_irq_enables(true, false);
 	//InputPointer inputPointer;
-	//InputKeypad inputKeypad;
+	InputKeypad inputKeypad;
 	//InputButton inputButton;
 	//InputEncoder inputEncoder;
 	//lvglAdapter.SetInput_Pointer(inputPointer);
-	//lvglAdapter.SetInput_Keypad(inputKeypad);
+	do {
+		lv_indev_t* indev = lvglAdapter.SetInput_Keypad(inputKeypad);
+		lv_group_t* group = ::lv_group_create();
+		::lv_group_set_default(group);
+		::lv_indev_set_group(indev, group);
+	} while (0);
 	//lvglAdapter.SetInput_Button(inputButton);
 	//lvglAdapter.SetInput_Encoder(inputEncoder);
 	lvglAdapter.SetDefault();
-	::lv_example_textarea_1();
+	//::lv_example_textarea_1();
+	//::lv_example_textarea_2();
+	::lv_example_keyboard_1();
 	for (;;) {
 		::sleep_ms(5);
 		::lv_timer_handler();
