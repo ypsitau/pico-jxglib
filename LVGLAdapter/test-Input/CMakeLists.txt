@@ -28,26 +28,26 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-LVGLAdapter C CXX ASM)
+project(test-Input C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-LVGLAdapter test-LVGLAdapter.cpp )
+add_executable(test-Input test-Input.cpp )
 
-pico_set_program_name(test-LVGLAdapter "test-LVGLAdapter")
-pico_set_program_version(test-LVGLAdapter "0.1")
+pico_set_program_name(test-Input "test-Input")
+pico_set_program_version(test-Input "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-LVGLAdapter 1)
-pico_enable_stdio_usb(test-LVGLAdapter 0)
+pico_enable_stdio_uart(test-Input 1)
+pico_enable_stdio_usb(test-Input 0)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. jxglib)
 
 # Add the standard library to the build
-target_link_libraries(test-LVGLAdapter
+target_link_libraries(test-Input
 	pico_stdlib
 	lvgl_examples
 	lvgl_demos
@@ -58,8 +58,8 @@ target_link_libraries(test-LVGLAdapter
 	jxglib_VT100)
 
 	# Add the standard include files to the build
-target_include_directories(test-LVGLAdapter PRIVATE
+target_include_directories(test-Input PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-LVGLAdapter)
+pico_add_extra_outputs(test-Input)
