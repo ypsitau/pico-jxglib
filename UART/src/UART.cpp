@@ -12,6 +12,9 @@ UART UART0(uart0);
 UART UART1(uart1);
 UART UART::Default(uart_default);
 
+UART::UART(uart_inst_t* uart) : raw(uart), chPrev_{'\0'}, addCrFlag_{true}
+{}
+
 bool UART::Read(void* buff, int bytesBuff, int* pBytesRead)
 {
 	return true;

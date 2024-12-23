@@ -1,17 +1,3 @@
-# == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
-if(WIN32)
-    set(USERHOME $ENV{USERPROFILE})
-else()
-    set(USERHOME $ENV{HOME})
-endif()
-set(sdkVersion 2.1.0)
-set(toolchainVersion 13_3_Rel1)
-set(picotoolVersion 2.1.0)
-set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
-if (EXISTS ${picoVscode})
-    include(${picoVscode})
-endif()
-# ====================================================================================
 # Generated Cmake Pico project file
 
 cmake_minimum_required(VERSION 3.13)
@@ -42,32 +28,33 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-UART C CXX ASM)
+project(test-VT100 C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. jxglib)
-
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-UART test-UART.cpp )
+add_executable(test-VT100 test-VT100.cpp )
 
-pico_set_program_name(test-UART "test-UART")
-pico_set_program_version(test-UART "0.1")
+pico_set_program_name(test-VT100 "test-VT100")
+pico_set_program_version(test-VT100 "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-UART 1)
-pico_enable_stdio_usb(test-UART 0)
+pico_enable_stdio_uart(test-VT100 1)
+pico_enable_stdio_usb(test-VT100 0)
 
 # Add the standard library to the build
-target_link_libraries(test-UART
+target_link_libraries(test-VT100
 	pico_stdlib
-	jxglib_UART)
+	jxglib_UART
+	jxglib_VT100)
 
 # Add the standard include files to the build
-target_include_directories(test-UART PRIVATE
+target_include_directories(test-VT100 PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-UART)
+pico_add_extra_outputs(test-VT100)
+
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../../.. jxglib)

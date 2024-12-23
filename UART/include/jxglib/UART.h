@@ -47,10 +47,11 @@ public:
 private:
 	char chPrev_;
 	bool addCrFlag_;
+	void (*IRQHandler)();
 public:
 	static UART Default;
 public:
-	UART(uart_inst_t* uart) : raw(uart), chPrev_('\0'), addCrFlag_{true} {}
+	UART(uart_inst_t* uart);
 public:
 	UART& AddCr(bool addCrFlag) { addCrFlag_ = addCrFlag; return* this; }
 public:
@@ -62,6 +63,10 @@ public:
 	virtual Printable& FlushScreen() override;
 	virtual Printable& PutChar(char ch) override;
 	virtual Printable& PutCharRaw(char ch) override;
+public:
+	uint GetIRQ() const { return UART0_IRQ + raw.get_index(); }
+	UART& irq_set_exclusive_handler(irq_handler_t handler) { ::irq_set_exclusive_handler(GetIRQ(), handler); return *this; }
+	UART& irq_set_enabled(bool enabled) { ::irq_set_enabled(GetIRQ(), enabled); return *this; }
 };
 
 extern UART UART0;
