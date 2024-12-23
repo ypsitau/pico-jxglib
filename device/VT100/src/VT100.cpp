@@ -1,6 +1,7 @@
 //==============================================================================
 // VT100.cpp
 //==============================================================================
+#include <string.h>
 #include "jxglib/VT100.h"
 
 namespace jxglib {
@@ -21,6 +22,14 @@ void VT100::Decoder::FeedChar(char ch)
 		switch (stat_) {
 		case Stat::First: {
 			switch (ch) {
+			case 0x08: {
+				buff_.WriteData(VK_BACK);
+				break;
+			}
+			case 0x0d: {
+				buff_.WriteData(VK_RETURN);
+				break;
+			}
 			case 0x1b: {
 				stat_ = Stat::Escape;
 				break;
@@ -30,7 +39,7 @@ void VT100::Decoder::FeedChar(char ch)
 				break;
 			}
 			default: {
-				buff_.WriteData(ch);
+				buff_.WriteData(0x100 + ch);
 				break;
 			}
 			}
@@ -38,6 +47,11 @@ void VT100::Decoder::FeedChar(char ch)
 		}
 		case Stat::Escape: {
 			switch (ch) {
+			case 0x1b: {
+				buff_.WriteData(0x1b);
+				stat_ = Stat::First;
+				break;
+			}
 			case 'N': {
 				stat_ = Stat::SS2;
 				break;
@@ -51,6 +65,7 @@ void VT100::Decoder::FeedChar(char ch)
 				break;
 			}
 			case '[': {
+				iBuffParameter_ = iBuffIntermediate_ = 0;
 				stat_ = Stat::CSI_Parameter;
 				break;
 			}
@@ -100,7 +115,9 @@ void VT100::Decoder::FeedChar(char ch)
 		}
 		case Stat::CSI_Parameter: {
 			if (0x30 <= ch && ch <= 0x3f) {
+				if (iBuffParameter_ < count_of(buffParameter_) - 1) buffParameter_[iBuffParameter_++] = ch;
 			} else {
+				buffParameter_[iBuffParameter_] = '\0';
 				contFlag = true;
 				stat_ = Stat::CSI_Intermediate;
 			}
@@ -108,7 +125,9 @@ void VT100::Decoder::FeedChar(char ch)
 		}
 		case Stat::CSI_Intermediate: {
 			if (0x20 <= ch && ch <= 0x2f) {
+				if (iBuffIntermediate_ < count_of(buffIntermediate_) - 1) buffIntermediate_[iBuffIntermediate_++] = ch;
 			} else {
+				buffIntermediate_[iBuffIntermediate_] = '\0';
 				contFlag = true;
 				stat_ = Stat::CSI_Final;
 			}
@@ -130,6 +149,19 @@ void VT100::Decoder::FeedChar(char ch)
 			}
 			case 'D': {
 				buff_.WriteData(VK_LEFT);
+				break;
+			}
+			case '~': {
+				if (::strcmp(buffParameter_, "1") == 0) {
+					buff_.WriteData(VK_HOME);
+				} else if (::strcmp(buffParameter_, "4") == 0) {
+					buff_.WriteData(VK_END);
+				} else if (::strcmp(buffParameter_, "5") == 0) {
+					buff_.WriteData(VK_PRIOR);
+				} else if (::strcmp(buffParameter_, "6") == 0) {
+					buff_.WriteData(VK_NEXT);
+				} else {
+				}
 				break;
 			}
 			}

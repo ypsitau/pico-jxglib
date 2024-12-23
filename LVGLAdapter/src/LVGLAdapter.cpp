@@ -159,20 +159,22 @@ void LVGLAdapter::InputKeyUART::Handle(lv_indev_t* indev_drv, lv_indev_data_t* d
 	//::printf("Keypad::Handle\n");
 	if (vt100Decoder_.HasKeyData()) {
 		int keyCode = vt100Decoder_.GetKeyData();
+		//::printf("keyCode: %d\n", keyCode);
 		data->key =
 			(keyCode == VK_TAB)?	LV_KEY_NEXT :
-			//LV_KEY_PREV
+			(keyCode == VK_PRIOR)?	LV_KEY_PREV :
+			(keyCode == VK_NEXT)?	LV_KEY_NEXT :
 			(keyCode == VK_RETURN)?	LV_KEY_ENTER :
 			(keyCode == VK_UP)?		LV_KEY_UP :
 			(keyCode == VK_DOWN)?	LV_KEY_DOWN :
 			(keyCode == VK_LEFT)?	LV_KEY_LEFT :
 			(keyCode == VK_RIGHT)?	LV_KEY_RIGHT :
-			//LV_KEY_ESC
+			(keyCode == VK_ESCAPE)?	LV_KEY_ESC :
 			(keyCode == VK_DELETE)?	LV_KEY_DEL :
 			(keyCode == VK_BACK)?	LV_KEY_BACKSPACE :
-			//LV_KEY_HOME
-			//LV_KEY_END
-			keyCode;
+			(keyCode == VK_HOME)?	LV_KEY_HOME :
+			(keyCode == VK_END)?	LV_KEY_END :
+			(keyCode >= 0x100)?		keyCode - 0x100 : keyCode;
 		data->state = LV_INDEV_STATE_PRESSED;
 		//::printf("Key: %02x\n", data->key);
 	} else {

@@ -31,6 +31,10 @@ public:
 	private:
 		Stat stat_;
 		FIFOBuff<int, 32> buff_;
+		int iBuffParameter_;
+		int iBuffIntermediate_;
+		char buffParameter_[32];
+		char buffIntermediate_[32];
 	public:
 		Decoder();
 	public:
