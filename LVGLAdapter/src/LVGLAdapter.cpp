@@ -9,10 +9,12 @@ namespace jxglib {
 // LVGLAdapter
 //------------------------------------------------------------------------------
 LVGLAdapter::InputDumb LVGLAdapter::inputDumb_;
+VT100::Decoder LVGLAdapter::vt100Decoder;
 
 LVGLAdapter::LVGLAdapter(bool doubleBuffFlag, int nPartial) :
 	doubleBuffFlag_{doubleBuffFlag}, nPartial_{nPartial}, pDrawableOut_{nullptr}, disp_{nullptr},
-	pInput_Pointer_{&inputDumb_}, pInput_Keypad_{&inputDumb_}, pInput_Button_{&inputDumb_}, pInput_Encoder_{&inputDumb_}
+	pInput_Pointer_{&inputDumb_}, pInput_Keypad_{&inputDumb_}, pInput_Button_{&inputDumb_}, pInput_Encoder_{&inputDumb_},
+	inputKeyUART_(vt100Decoder)
 {}
 
 bool LVGLAdapter::AttachOutput(Drawable& drawable, const Rect& rect)
@@ -79,6 +81,13 @@ lv_indev_t* LVGLAdapter::AttachInput(TouchScreen& touchScreen)
 	return SetInput_Pointer(inputTouchScreen_);
 }
 
+lv_indev_t* LVGLAdapter::AttachInput(UART& uart)
+{
+	uart.irq_set_exclusive_handler((uart.raw.get_index() == 0)? HandlerUART0 : HandlerUART1).irq_set_enabled(true);
+	uart.raw.set_irq_enables(true, false);
+	return SetInput_Keypad(inputKeyUART_);
+}
+
 lv_indev_t* LVGLAdapter::RegisterInput(lv_indev_type_t indev_type, lv_indev_read_cb_t cb)
 {
 	lv_indev_t* indev = ::lv_indev_create();
@@ -119,6 +128,18 @@ void LVGLAdapter::IndevReadEncoderCB(lv_indev_t* indev, lv_indev_data_t* data)
 	pSelf->pInput_Encoder_->Handle(indev, data);
 }
 
+void LVGLAdapter::HandlerUART0(void)
+{
+	UART& uart = UART0;
+	while (uart.raw.is_readable()) vt100Decoder.FeedChar(uart.raw.getc());
+}
+
+void LVGLAdapter::HandlerUART1(void)
+{
+	UART& uart = UART1;
+	while (uart.raw.is_readable()) vt100Decoder.FeedChar(uart.raw.getc());
+}
+
 //------------------------------------------------------------------------------
 // LVGLAdapter::InputTouchScreen
 //------------------------------------------------------------------------------
@@ -128,6 +149,35 @@ void LVGLAdapter::InputTouchScreen::Handle(lv_indev_t* indev_drv, lv_indev_data_
 	data->state = pTouchScreen_->ReadPosition(&x, &y)? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
 	data->point.x = x;
 	data->point.y = y;
+}
+
+//------------------------------------------------------------------------------
+// LVGLAdapter::InputKeyUART
+//------------------------------------------------------------------------------
+void LVGLAdapter::InputKeyUART::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
+{
+	//::printf("Keypad::Handle\n");
+	if (vt100Decoder_.HasKeyData()) {
+		int keyCode = vt100Decoder_.GetKeyData();
+		data->key =
+			(keyCode == VK_TAB)?	LV_KEY_NEXT :
+			//LV_KEY_PREV
+			(keyCode == VK_RETURN)?	LV_KEY_ENTER :
+			(keyCode == VK_UP)?		LV_KEY_UP :
+			(keyCode == VK_DOWN)?	LV_KEY_DOWN :
+			(keyCode == VK_LEFT)?	LV_KEY_LEFT :
+			(keyCode == VK_RIGHT)?	LV_KEY_RIGHT :
+			//LV_KEY_ESC
+			(keyCode == VK_DELETE)?	LV_KEY_DEL :
+			(keyCode == VK_BACK)?	LV_KEY_BACKSPACE :
+			//LV_KEY_HOME
+			//LV_KEY_END
+			keyCode;
+		data->state = LV_INDEV_STATE_PRESSED;
+		//::printf("Key: %02x\n", data->key);
+	} else {
+		data->state = LV_INDEV_STATE_RELEASED;
+	}
 }
 
 }

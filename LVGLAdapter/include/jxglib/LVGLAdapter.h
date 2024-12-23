@@ -7,6 +7,8 @@
 #include "pico/stdlib.h"
 #include "jxglib/Drawable.h"
 #include "jxglib/TouchScreen.h"
+#include "jxglib/UART.h"
+#include "jxglib/VT100.h"
 
 namespace jxglib {
 
@@ -34,6 +36,14 @@ public:
 	public:
 		virtual void Handle(lv_indev_t* indev_drv, lv_indev_data_t* data) override;
 	};
+	class InputKeyUART : public LVGLAdapter::Input {
+	private:
+		VT100::Decoder& vt100Decoder_;
+	public:
+		InputKeyUART(VT100::Decoder& vt100Decoder) : vt100Decoder_{vt100Decoder} {}
+	public:
+		virtual void Handle(lv_indev_t* indev_drv, lv_indev_data_t* data) override;
+	};
 private:
 	bool doubleBuffFlag_;
 	int nPartial_;
@@ -46,7 +56,10 @@ private:
 	Input* pInput_Encoder_;
 private:
 	InputTouchScreen inputTouchScreen_;
+	InputKeyUART inputKeyUART_;
 	static InputDumb inputDumb_;
+public:
+	static VT100::Decoder vt100Decoder;
 public:
 	LVGLAdapter(bool doubleBuffFlag = true, int nPartial = 10);
 public:
@@ -61,6 +74,7 @@ public:
 	lv_indev_t* SetInput_Encoder(Input& input);
 public:
 	lv_indev_t* AttachInput(TouchScreen& touchScreen);
+	lv_indev_t* AttachInput(UART& uart);
 private:
 	lv_indev_t* RegisterInput(lv_indev_type_t indev_type, lv_indev_read_cb_t cb);
 private:
@@ -69,6 +83,8 @@ private:
 	static void IndevReadKeypadCB(lv_indev_t* indev_drv, lv_indev_data_t* data);
 	static void IndevReadButtonCB(lv_indev_t* indev_drv, lv_indev_data_t* data);
 	static void IndevReadEncoderCB(lv_indev_t* indev_drv, lv_indev_data_t* data);
+	static void HandlerUART0(void);
+	static void HandlerUART1(void);
 };
 
 }
