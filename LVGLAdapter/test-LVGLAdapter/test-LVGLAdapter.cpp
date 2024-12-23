@@ -88,8 +88,8 @@ int main()
 	//lvglAdapter.SetInput_Encoder(inputEncoder);
 	lvglAdapter.SetDefault();
 	//::lv_example_textarea_1();
-	//::lv_example_textarea_2();
-	::lv_example_keyboard_1();
+	::lv_example_textarea_2();
+	//::lv_example_keyboard_1();
 	for (;;) {
 		::sleep_ms(5);
 		::lv_timer_handler();
