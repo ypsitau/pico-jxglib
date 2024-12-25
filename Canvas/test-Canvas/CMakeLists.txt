@@ -52,6 +52,7 @@ target_link_libraries(test-Canvas
 	pico_stdlib
 	jxglib_Drawable_TestCase
 	jxglib_Canvas
+	jxglib_ILI9341
 	jxglib_ST7789)
 
 # Add the standard include files to the build
