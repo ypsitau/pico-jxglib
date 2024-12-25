@@ -280,7 +280,7 @@ void test_Interrupt()
 	channel_g = channel;
 
 	dma_channel_set_irq0_enabled(channel, true);
-	irq_set_exclusive_handler(DMA_IRQ_0, dma_handler);
+	irq_add_shared_handler(DMA_IRQ_0, dma_handler, PICO_SHARED_IRQ_HANDLER_DEFAULT_ORDER_PRIORITY);
 	irq_set_enabled(DMA_IRQ_0, true);
 
 	//IRQHandler irqHandler;
