@@ -125,6 +125,7 @@ public:
 	public:
 		operator uint() const { return channel_; }
 	public:
+		uint GetChannel() const {return channel_; }
 		const Channel& claim() const { ::dma_channel_claim(channel_); return *this; }
 		const Channel& unclaim() const { ::dma_channel_unclaim(channel_); return *this; }
 		bool is_claimed() const { return ::dma_channel_is_claimed(channel_); }
@@ -251,7 +252,7 @@ public:
 	template<uint channel> class Channel_T : public Channel {
 	private:
 		template<uint irq_index> static void IRQHandlerStub() {
-			Channel& channelInst = *DMA::ChannelTbl[channel];
+			Channel& channelInst = *DMA::ChannelTbl[channel + 1];
 			if (channelInst.get_irqn_status(irq_index) && channelInst.pIRQHandler) {
 				channelInst.pIRQHandler->DoHandle(channelInst, irq_index);
 			}
@@ -313,9 +314,10 @@ public:
 	static const Timer Timer1;
 	static const Timer Timer2;
 	static const Timer Timer3;
+	static const Timer* TimerTbl[];
 public:
-	static Channel& claim_unused_channel(bool required) { return *ChannelTbl[::dma_claim_unused_channel(required)]; }
-	static Timer claim_unused_timer(bool required) { return Timer(::dma_claim_unused_timer(required)); }
+	static Channel* claim_unused_channel(bool required = true) { return ChannelTbl[::dma_claim_unused_channel(required) + 1]; }
+	static const Timer* claim_unused_timer(bool required = true) { return TimerTbl[::dma_claim_unused_timer(required) + 1]; }
 public:
 	static void claim_mask(uint32_t channel_mask) { ::dma_claim_mask(channel_mask); }
 	static void unclaim_mask(uint32_t channel_mask) { ::dma_unclaim_mask(channel_mask); }

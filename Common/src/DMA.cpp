@@ -21,14 +21,17 @@ DMA::Channel_T<9> DMA::Channel9;
 DMA::Channel_T<10> DMA::Channel10;
 DMA::Channel_T<11> DMA::Channel11;
 
+DMA::Channel* DMA::ChannelTbl[] = {
+	nullptr,
+	&Channel0, &Channel1, &Channel2, &Channel3, &Channel4, &Channel5,
+	&Channel6, &Channel7, &Channel8, &Channel9, &Channel10, &Channel11,
+};
+
 const DMA::Timer DMA::Timer0(0);
 const DMA::Timer DMA::Timer1(1);
 const DMA::Timer DMA::Timer2(2);
 const DMA::Timer DMA::Timer3(3);
 
-DMA::Channel* DMA::ChannelTbl[] = {
-	&Channel0, &Channel1, &Channel2, &Channel3, &Channel4, &Channel5,
-	&Channel6, &Channel7, &Channel8, &Channel9, &Channel10, &Channel11,
-};
+const DMA::Timer* DMA::TimerTbl[] = { nullptr, &Timer0, &Timer1, &Timer2, &Timer3, };
 
 }
