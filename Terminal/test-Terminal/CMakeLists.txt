@@ -51,6 +51,8 @@ pico_enable_stdio_usb(test-Terminal 0)
 target_link_libraries(test-Terminal
 	pico_stdlib
 	jxglib_SSD1306
+	jxglib_ILI9341
+	jxglib_ST7735
 	jxglib_ST7789
 	jxglib_Terminal)
 

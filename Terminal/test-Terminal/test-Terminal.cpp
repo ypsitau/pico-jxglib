@@ -20,14 +20,15 @@ int main()
 	::spi_init(spi1, 125 * 1000 * 1000);
 	GPIO2.set_function_SPI0_SCK();
 	GPIO3.set_function_SPI0_TX();
-	GPIO4.set_function_I2C0_SDA().pull_up();
-	GPIO5.set_function_I2C0_SCL().pull_up();
+	GPIO4.set_function_SPI0_RX();
+	//GPIO4.set_function_I2C0_SDA().pull_up();
+	//GPIO5.set_function_I2C0_SCL().pull_up();
 	GPIO14.set_function_SPI1_SCK().set_drive_strength(GPIO_DRIVE_STRENGTH_12MA);
 	GPIO15.set_function_SPI1_TX().set_drive_strength(GPIO_DRIVE_STRENGTH_12MA);
 	SSD1306 display0(i2c0);
 	//ST7789 display1(spi0, 240, 240, GPIO6, GPIO7, GPIO::None);
 	//ST7789 display1(spi1, 240, 320, GPIO8, GPIO9, GPIO10, GPIO::None);
-	ILI9341 display1(spi1, 240, 320, GPIO12, GPIO11, GPIO13, GPIO::None);
+	ILI9341 display1(spi1, 240, 320, GPIO11, GPIO10, GPIO12, GPIO13);
 	//ST7735 display1(spi1, 80, 160, GPIO16, GPIO17, GPIO18, GPIO::None);
 	//ST7735::TypeB display1(spi1, 128, 160, GPIO19, GPIO20, GPIO21, GPIO::None);
 	Display::Dir displayDir = Display::Dir::Rotate0;

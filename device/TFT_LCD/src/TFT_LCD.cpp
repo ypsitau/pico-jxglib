@@ -177,7 +177,7 @@ void TFT_LCD::DispatcherEx::DrawImageFast(int x, int y, const Image& image)
 {
 	Raw& raw = display_.raw;
 	spi_inst_t* spi = raw.GetSPI();
-	DMA::Channel channel(DMA::claim_unused_channel(true));
+	DMA::Channel& channel = *DMA::claim_unused_channel(true);
 	int xAdjust, yAdjust;
 	display_.CalcPosAdjust(Dir::Normal, &xAdjust, &yAdjust);
 	x += xAdjust, y += yAdjust;
