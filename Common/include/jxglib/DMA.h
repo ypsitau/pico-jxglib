@@ -229,15 +229,21 @@ public:
 		}
 		bool get_raw_interrupt_status() const { return !!(dma_hw->intr & (1u << channel_)); }
 	public:
-		void SetSharedIRQHandler(uint irq_index, IRQHandler& irqHandler, uint8_t order_priority = PICO_SHARED_IRQ_HANDLER_DEFAULT_ORDER_PRIORITY) {
+		Channel& SetSharedIRQHandler(uint irq_index, IRQHandler& irqHandler, uint8_t order_priority = PICO_SHARED_IRQ_HANDLER_DEFAULT_ORDER_PRIORITY) {
 			pIRQHandler = &irqHandler;
 			RegisterSharedIRQHandlerStub(irq_index, order_priority);
+			return *this;
 		}
-		void SetIRQHandlerExclusive(uint irq_index, IRQHandler& irqHandler, uint8_t order_priority) {
+		Channel& SetIRQHandlerExclusive(uint irq_index, IRQHandler& irqHandler, uint8_t order_priority) {
 			pIRQHandler = &irqHandler;
 			RegisterExclusiveIRQHandlerStub(irq_index);
+			return *this;
 		}
-		void EnableIRQ(uint irq_index, bool enabled = true) { ::irq_set_enabled(DMA_IRQ_NUM(irq_index), enabled); }
+		Channel& EnableIRQ(uint irq_index, bool enabled = true) {
+			set_irqn_enabled(irq_index, enabled);
+			if (enabled) ::irq_set_enabled(DMA_IRQ_NUM(irq_index), true);
+			return *this;
+		}
 	private:
 		virtual void RegisterSharedIRQHandlerStub(uint irq_index, uint8_t order_priority) = 0;
 		virtual void RegisterExclusiveIRQHandlerStub(uint irq_index) = 0;

@@ -253,7 +253,7 @@ void test_MemoryToPeripheral_SnifferCalcCRC()
 	channel.unclaim();
 }
 
-class IRQHandler : public DMA::IRQHandler {
+class IRQHandlerDMA : public DMA::IRQHandler {
 public:
 	void DoHandle(DMA::Channel& channel, uint irq_index) {
 		::printf("finished\n");
@@ -268,10 +268,8 @@ void test_Interrupt()
 	DMA::Channel& channel = DMA::claim_unused_channel(true);
 	char dst[count_of(src)];
 	DMA::ChannelConfig config;
-	IRQHandler irqHandler;
-	channel.set_irqn_enabled(0, true);
-	channel.SetSharedIRQHandler(0, irqHandler);
-	channel.EnableIRQ(0);
+	IRQHandlerDMA irqHandlerDMA;
+	channel.SetSharedIRQHandler(0, irqHandlerDMA).EnableIRQ(0);
 	config.set_enable(true)
 		.set_transfer_data_size(DMA_SIZE_8)
 		.set_read_increment(true)
