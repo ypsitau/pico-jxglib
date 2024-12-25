@@ -10,6 +10,11 @@ namespace jxglib {
 
 class DMA {
 public:
+	class Channel;
+	class IRQHandler {
+	public:
+		virtual void DoHandle(uint irq_index, Channel& channel) = 0;
+	};
 	class ChannelConfig {
 	private:
 		dma_channel_config config_;
@@ -110,11 +115,13 @@ public:
 		uint32_t get_ctrl_value() const { return ::channel_config_get_ctrl_value(&config_); }
 	};
 	class Channel {
-	private:
+	protected:
 		uint channel_;
 	public:
-		Channel(uint channel) : channel_{channel} {}
-		Channel(const Channel& channel) : channel_{channel.channel_} {}
+		IRQHandler* pIRQHandler;
+	public:
+		Channel(uint channel) : channel_{channel}, pIRQHandler{nullptr} {}
+		Channel(const Channel& channel) : Channel(channel.channel_) {}
 	public:
 		operator uint() const { return channel_; }
 	public:
@@ -186,10 +193,13 @@ public:
 		const Channel& abort() const { ::dma_channel_abort(channel_); return *this; }
 		const Channel& set_irq0_enabled(bool enabled) const { ::dma_channel_set_irq0_enabled(channel_, enabled); return *this; }
 		const Channel& set_irq1_enabled(bool enabled) const { ::dma_channel_set_irq1_enabled(channel_, enabled); return *this; }
+		const Channel& set_irqn_enabled(uint irq_index, bool enabled) const { ::dma_irqn_set_channel_enabled(irq_index, channel_, enabled); return *this; }
 		bool get_irq0_status() const { return ::dma_channel_get_irq0_status(channel_); }
 		bool get_irq1_status() const { return ::dma_channel_get_irq1_status(channel_); }
+		bool get_irqn_status(uint irq_index) const { return ::dma_irqn_get_channel_status(irq_index, channel_); }
 		const Channel& acknowledge_irq0() const { ::dma_channel_acknowledge_irq0(channel_); return *this; }
 		const Channel& acknowledge_irq1() const { ::dma_channel_acknowledge_irq1(channel_); return *this; }
+		const Channel& acknowledge_irqn(uint irq_index) const { ::dma_irqn_acknowledge_channel(irq_index, channel_); return *this; }
 		bool is_busy() const { return ::dma_channel_is_busy(channel_); }
 		const Channel& wait_for_finish_blocking() const { ::dma_channel_wait_for_finish_blocking(channel_); return *this; }
 		const Channel& cleanup() const { ::dma_channel_cleanup(channel_); return *this; }
@@ -218,10 +228,39 @@ public:
 			return sniffer_enable(DMA_SNIFF_CTRL_CALC_VALUE_SUM, force_channel_enabled);	// 0xf
 		}
 		bool get_raw_interrupt_status() const { return !!(dma_hw->intr & (1u << channel_)); }
+	public:
+		void SetSharedIRQHandler(uint irq_index, IRQHandler& irqHandler, uint8_t order_priority = PICO_SHARED_IRQ_HANDLER_DEFAULT_ORDER_PRIORITY) {
+			pIRQHandler = &irqHandler;
+			RegisterSharedIRQHandlerStub(irq_index, order_priority);
+		}
+		void SetIRQHandlerExclusive(uint irq_index, IRQHandler& irqHandler, uint8_t order_priority) {
+			pIRQHandler = &irqHandler;
+			RegisterExclusiveIRQHandlerStub(irq_index);
+		}
+		void EnableIRQ(uint irq_index, bool enabled = true) { ::irq_set_enabled(DMA_IRQ_NUM(irq_index), enabled); }
+	private:
+		virtual void RegisterSharedIRQHandlerStub(uint irq_index, uint8_t order_priority) = 0;
+		virtual void RegisterExclusiveIRQHandlerStub(uint irq_index) = 0;
 	};
 	template<uint channel> class Channel_T : public Channel {
+	private:
+		template<uint irq_index> static void IRQHandlerStub() {
+			Channel& channelInst = *DMA::ChannelTbl[channel];
+			if (channelInst.get_irqn_status(irq_index) && channelInst.pIRQHandler) {
+				channelInst.pIRQHandler->DoHandle(irq_index, channelInst);
+			}
+		}
 	public:
 		Channel_T() : Channel(channel) {}
+	public:
+		virtual void RegisterSharedIRQHandlerStub(uint irq_index, uint8_t order_priority) {
+			::irq_add_shared_handler(DMA_IRQ_NUM(irq_index),
+				(irq_index == 0)? IRQHandlerStub<0> : IRQHandlerStub<1>, order_priority);
+		}
+		virtual void RegisterExclusiveIRQHandlerStub(uint irq_index) {
+			::irq_set_exclusive_handler(DMA_IRQ_NUM(irq_index),
+				(irq_index == 0)? IRQHandlerStub<0> : IRQHandlerStub<1>);
+		}
 	};
 	class Timer {
 	private:
@@ -240,31 +279,6 @@ public:
 			return *this;
 		}
 		uint get_dreq() const { return ::dma_get_timer_dreq(timer_); }
-	};
-	class IRQ_n {
-	private:
-		uint irq_index_;
-	public:
-		IRQ_n(uint irq_index) : irq_index_{irq_index} {}
-		IRQ_n(const IRQ_n& irqn) : irq_index_{irqn.irq_index_} {}
-	public:
-		operator uint() const { return irq_index_; }
-	public:
-		const IRQ_n& set_channel_enabled(uint channel, bool enabled) const {
-			::dma_irqn_set_channel_enabled(irq_index_, channel, enabled);
-			return *this;
-		}
-		const IRQ_n& set_channel_mask_enabled(uint32_t channel_mask, bool enabled) const {
-			::dma_irqn_set_channel_mask_enabled(irq_index_, channel_mask, enabled);
-			return *this;
-		}
-		bool get_channel_status(uint channel) const {
-			return ::dma_irqn_get_channel_status(irq_index_, channel);
-		}
-		const IRQ_n& acknowledge_channel(uint channel) const {
-			::dma_irqn_acknowledge_channel(irq_index_, channel);
-			return *this;
-		}
 	};
 	class Sniffer {
 	public:
@@ -288,16 +302,13 @@ public:
 	static Channel_T<9> Channel9;
 	static Channel_T<10> Channel10;
 	static Channel_T<11> Channel11;
+	static Channel* ChannelTbl[];
 	static const Timer Timer0;
 	static const Timer Timer1;
 	static const Timer Timer2;
 	static const Timer Timer3;
-	static const IRQ_n IRQ_0;
-	static const IRQ_n IRQ_1;
-private:
-	static Channel* channelTbl_[];
 public:
-	static Channel& claim_unused_channel(bool required);
+	static Channel& claim_unused_channel(bool required) { return *ChannelTbl[::dma_claim_unused_channel(required)]; }
 	static Timer claim_unused_timer(bool required) { return Timer(::dma_claim_unused_timer(required)); }
 public:
 	static void claim_mask(uint32_t channel_mask) { ::dma_claim_mask(channel_mask); }
@@ -305,6 +316,7 @@ public:
 	static void start_channel_mask(uint32_t channel_mask) { ::dma_start_channel_mask(channel_mask); }
 	static void set_irq0_channel_mask_enabled(uint32_t channel_mask, bool enabled) { ::dma_set_irq0_channel_mask_enabled(channel_mask, enabled); }
 	static void set_irq1_channel_mask_enabled(uint32_t channel_mask, bool enabled) { ::dma_set_irq1_channel_mask_enabled(channel_mask, enabled); }
+	static void set_irqn_channel_mask_enalbed(uint irq_index, uint32_t channel_mask, bool enabled) { ::dma_irqn_set_channel_mask_enabled(irq_index, channel_mask, enabled); }
 };
 
 }

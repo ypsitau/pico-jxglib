@@ -253,6 +253,59 @@ void test_MemoryToPeripheral_SnifferCalcCRC()
 	channel.unclaim();
 }
 
+class IRQHandler : public DMA::IRQHandler {
+public:
+	void DoHandle(uint irq_index, DMA::Channel& channel) {
+		::printf("finished\n");
+	}
+};
+
+uint channel_g;
+
+void dma_handler()
+{
+	::printf("finished\n");
+	::dma_channel_acknowledge_irq0(channel_g);
+}
+
+
+void test_Interrupt()
+{
+	::printf("\ntest_Interrupt\n");
+	const char src[] = "The quick brown fox jumps over the lazy dog.";
+	DMA::Channel& channel = DMA::claim_unused_channel(true);
+	char dst[count_of(src)];
+	DMA::ChannelConfig config;
+
+	channel_g = channel;
+
+	dma_channel_set_irq0_enabled(channel, true);
+	irq_set_exclusive_handler(DMA_IRQ_0, dma_handler);
+	irq_set_enabled(DMA_IRQ_0, true);
+
+	//IRQHandler irqHandler;
+	//channel.set_irqn_enabled(DMA_IRQ_0, true);
+	//channel.SetSharedIRQHandler(DMA_IRQ_0, irqHandler);
+	//channel.EnableIRQ(DMA_IRQ_0);
+	config.set_enable(true)
+		.set_transfer_data_size(DMA_SIZE_8)
+		.set_read_increment(true)
+		.set_write_increment(true)
+		.set_dreq(DREQ_FORCE) // see RP2040 Datasheet 2.5.3.1 System DREQ Table
+		.set_chain_to(channel) // disable by setting chain_to to itself
+		.set_ring_to_read(0)
+		.set_bswap(false)
+		.set_irq_quiet(false)
+		.set_sniff_enable(false)
+		.set_high_priority(false);
+	channel.set_config(config)
+		.set_read_addr(src)
+		.set_write_addr(dst)
+		.set_trans_count_trig(count_of(src));
+		//.wait_for_finish_blocking();
+	//channel.unclaim();
+}
+
 void test_Benchmark()
 {
 	::printf("\ntest_Benchmark\n");
@@ -481,5 +534,6 @@ int main()
 	//test_MemoryToPeripheral_Chain();
 	//test_MemoryToMemory_SnifferCalcCRC();
 	//test_MemoryToPeripheral_SnifferCalcCRC();
-	test_Benchmark();
+	test_Interrupt();
+	//test_Benchmark();
 }

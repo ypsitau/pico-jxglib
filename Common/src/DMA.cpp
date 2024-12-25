@@ -26,17 +26,9 @@ const DMA::Timer DMA::Timer1(1);
 const DMA::Timer DMA::Timer2(2);
 const DMA::Timer DMA::Timer3(3);
 
-const DMA::IRQ_n DMA::IRQ_0(0);
-const DMA::IRQ_n DMA::IRQ_1(1);
-
-DMA::Channel* DMA::channelTbl_[] = {
+DMA::Channel* DMA::ChannelTbl[] = {
 	&Channel0, &Channel1, &Channel2, &Channel3, &Channel4, &Channel5,
 	&Channel6, &Channel7, &Channel8, &Channel9, &Channel10, &Channel11,
 };
-
-DMA::Channel& DMA::claim_unused_channel(bool required)
-{
-	return *channelTbl_[::dma_claim_unused_channel(required)];
-}
 
 }
