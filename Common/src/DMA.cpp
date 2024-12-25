@@ -8,18 +8,18 @@
 //------------------------------------------------------------------------------
 namespace jxglib {
 
-DMA::Channel DMA::Channel0(0);
-DMA::Channel DMA::Channel1(1);
-DMA::Channel DMA::Channel2(2);
-DMA::Channel DMA::Channel3(3);
-DMA::Channel DMA::Channel4(4);
-DMA::Channel DMA::Channel5(5);
-DMA::Channel DMA::Channel6(6);
-DMA::Channel DMA::Channel7(7);
-DMA::Channel DMA::Channel8(8);
-DMA::Channel DMA::Channel9(9);
-DMA::Channel DMA::Channel10(10);
-DMA::Channel DMA::Channel11(11);
+DMA::Channel_T<0> DMA::Channel0;
+DMA::Channel_T<1> DMA::Channel1;
+DMA::Channel_T<2> DMA::Channel2;
+DMA::Channel_T<3> DMA::Channel3;
+DMA::Channel_T<4> DMA::Channel4;
+DMA::Channel_T<5> DMA::Channel5;
+DMA::Channel_T<6> DMA::Channel6;
+DMA::Channel_T<7> DMA::Channel7;
+DMA::Channel_T<8> DMA::Channel8;
+DMA::Channel_T<9> DMA::Channel9;
+DMA::Channel_T<10> DMA::Channel10;
+DMA::Channel_T<11> DMA::Channel11;
 
 const DMA::Timer DMA::Timer0(0);
 const DMA::Timer DMA::Timer1(1);

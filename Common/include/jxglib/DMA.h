@@ -220,6 +220,8 @@ public:
 		bool get_raw_interrupt_status() const { return !!(dma_hw->intr & (1u << channel_)); }
 	};
 	template<uint channel> class Channel_T : public Channel {
+	public:
+		Channel_T() : Channel(channel) {}
 	};
 	class Timer {
 	private:
@@ -274,18 +276,18 @@ public:
 		static uint32_t get_data_accumulator(void) { return ::dma_sniffer_get_data_accumulator(); }
 	};
 public:
-	static Channel Channel0;
-	static Channel Channel1;
-	static Channel Channel2;
-	static Channel Channel3;
-	static Channel Channel4;
-	static Channel Channel5;
-	static Channel Channel6;
-	static Channel Channel7;
-	static Channel Channel8;
-	static Channel Channel9;
-	static Channel Channel10;
-	static Channel Channel11;
+	static Channel_T<0> Channel0;
+	static Channel_T<1> Channel1;
+	static Channel_T<2> Channel2;
+	static Channel_T<3> Channel3;
+	static Channel_T<4> Channel4;
+	static Channel_T<5> Channel5;
+	static Channel_T<6> Channel6;
+	static Channel_T<7> Channel7;
+	static Channel_T<8> Channel8;
+	static Channel_T<9> Channel9;
+	static Channel_T<10> Channel10;
+	static Channel_T<11> Channel11;
 	static const Timer Timer0;
 	static const Timer Timer1;
 	static const Timer Timer2;
