@@ -13,7 +13,7 @@ public:
 	class Channel;
 	class IRQHandler {
 	public:
-		virtual void DoHandle(uint irq_index, Channel& channel) = 0;
+		virtual void DoHandle(Channel& channel, uint irq_index) = 0;
 	};
 	class ChannelConfig {
 	private:
@@ -247,7 +247,7 @@ public:
 		template<uint irq_index> static void IRQHandlerStub() {
 			Channel& channelInst = *DMA::ChannelTbl[channel];
 			if (channelInst.get_irqn_status(irq_index) && channelInst.pIRQHandler) {
-				channelInst.pIRQHandler->DoHandle(irq_index, channelInst);
+				channelInst.pIRQHandler->DoHandle(channelInst, irq_index);
 			}
 		}
 	public:

@@ -255,19 +255,11 @@ void test_MemoryToPeripheral_SnifferCalcCRC()
 
 class IRQHandler : public DMA::IRQHandler {
 public:
-	void DoHandle(uint irq_index, DMA::Channel& channel) {
+	void DoHandle(DMA::Channel& channel, uint irq_index) {
 		::printf("finished\n");
+		channel.acknowledge_irqn(irq_index);
 	}
 };
-
-uint channel_g;
-
-void dma_handler()
-{
-	::printf("finished\n");
-	::dma_channel_acknowledge_irq0(channel_g);
-}
-
 
 void test_Interrupt()
 {
@@ -276,17 +268,10 @@ void test_Interrupt()
 	DMA::Channel& channel = DMA::claim_unused_channel(true);
 	char dst[count_of(src)];
 	DMA::ChannelConfig config;
-
-	channel_g = channel;
-
-	dma_channel_set_irq0_enabled(channel, true);
-	irq_add_shared_handler(DMA_IRQ_0, dma_handler, PICO_SHARED_IRQ_HANDLER_DEFAULT_ORDER_PRIORITY);
-	irq_set_enabled(DMA_IRQ_0, true);
-
-	//IRQHandler irqHandler;
-	//channel.set_irqn_enabled(DMA_IRQ_0, true);
-	//channel.SetSharedIRQHandler(DMA_IRQ_0, irqHandler);
-	//channel.EnableIRQ(DMA_IRQ_0);
+	IRQHandler irqHandler;
+	channel.set_irqn_enabled(0, true);
+	channel.SetSharedIRQHandler(0, irqHandler);
+	channel.EnableIRQ(0);
 	config.set_enable(true)
 		.set_transfer_data_size(DMA_SIZE_8)
 		.set_read_increment(true)
@@ -304,6 +289,7 @@ void test_Interrupt()
 		.set_trans_count_trig(count_of(src));
 		//.wait_for_finish_blocking();
 	//channel.unclaim();
+	for (;;) ;
 }
 
 void test_Benchmark()
