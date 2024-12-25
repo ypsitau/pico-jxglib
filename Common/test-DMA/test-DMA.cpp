@@ -36,7 +36,7 @@ void test_MemoryToMemory()
 	::printf("\ntest_MemoryToMemory\n");
 	const char src[] = "The quick brown fox jumps over the lazy dog.";
 	char dst[count_of(src)];
-	DMA::Channel channel(DMA::claim_unused_channel(true));
+	DMA::Channel& channel = DMA::claim_unused_channel(true);
 	DMA::ChannelConfig config;
 	absolute_time_t absTimeStart = ::get_absolute_time();
 	config.set_enable(true)
@@ -64,7 +64,7 @@ void test_MemoryToPeripheral()
 {
 	::printf("\ntest_MemoryToPeripheral\n");
 	const char src[] = "The quick brown fox jumps over the lazy dog.";
-	DMA::Channel channel(DMA::claim_unused_channel(true));
+	DMA::Channel& channel = DMA::claim_unused_channel(true);
 	DMA::ChannelConfig config;
 	config.set_enable(true)
 		.set_transfer_data_size(DMA_SIZE_8)
@@ -115,8 +115,8 @@ void test_MemoryToPeripheral_Chain()
 		{ count_of(word8) - 1, word8 },
 		{ 0, nullptr }
 	};
-	DMA::Channel channelCtrl(DMA::claim_unused_channel(true));
-	DMA::Channel channelData(DMA::claim_unused_channel(true));
+	DMA::Channel& channelCtrl = DMA::claim_unused_channel(true);
+	DMA::Channel& channelData = DMA::claim_unused_channel(true);
 	do {
 		DMA::ChannelConfig config;
 		config.set_enable(true)
@@ -187,7 +187,7 @@ void test_MemoryToMemory_SnifferCalcCRC()
 	::printf("\ntest_MemoryToMemory_SnifferCalcCRC\n");
 	const char src[] = "The quick brown fox jumps over the lazy dog.";
 	char dst[count_of(src)];
-	DMA::Channel channel(DMA::claim_unused_channel(true));
+	DMA::Channel& channel = DMA::claim_unused_channel(true);
 	DMA::ChannelConfig config;
 	DMA::Sniffer::set_output_reverse_enabled(true);
 	config.set_enable(true)
@@ -222,7 +222,7 @@ void test_MemoryToPeripheral_SnifferCalcCRC()
 {
 	::printf("\ntest_MemoryToPeripheral_SnifferCalcCRC\n");
 	const char src[] = "The quick brown fox jumps over the lazy dog.";
-	DMA::Channel channel(DMA::claim_unused_channel(true));
+	DMA::Channel& channel = DMA::claim_unused_channel(true);
 	DMA::ChannelConfig config;
 	DMA::Sniffer::set_output_reverse_enabled(true);
 	config.set_enable(true)
@@ -289,7 +289,7 @@ void test_Benchmark()
 		int bytesToTrans = testCase.bytesToTrans;
 		do {	
 			absolute_time_t absTimeStart = ::get_absolute_time();
-			DMA::Channel channel(DMA::claim_unused_channel(true));
+			DMA::Channel& channel = DMA::claim_unused_channel(true);
 			DMA::ChannelConfig config;
 			config.set_enable(true)
 				.set_transfer_data_size(DMA_SIZE_8)
@@ -311,7 +311,7 @@ void test_Benchmark()
 			timeUSec_DMA8Bit = ::absolute_time_diff_us(absTimeStart, ::get_absolute_time());
 		} while (0);
 		do {	
-			DMA::Channel channel(DMA::claim_unused_channel(true));
+			DMA::Channel& channel = DMA::claim_unused_channel(true);
 			DMA::ChannelConfig config;
 			config.set_enable(true)
 				.set_transfer_data_size(DMA_SIZE_8)
@@ -335,7 +335,7 @@ void test_Benchmark()
 		} while (0);
 		do {	
 			absolute_time_t absTimeStart = ::get_absolute_time();
-			DMA::Channel channel(DMA::claim_unused_channel(true));
+			DMA::Channel& channel = DMA::claim_unused_channel(true);
 			DMA::ChannelConfig config;
 			config.set_enable(true)
 				.set_transfer_data_size(DMA_SIZE_16)
@@ -357,7 +357,7 @@ void test_Benchmark()
 			timeUSec_DMA16Bit = ::absolute_time_diff_us(absTimeStart, ::get_absolute_time());
 		} while (0);
 		do {	
-			DMA::Channel channel(DMA::claim_unused_channel(true));
+			DMA::Channel& channel = DMA::claim_unused_channel(true);
 			DMA::ChannelConfig config;
 			config.set_enable(true)
 				.set_transfer_data_size(DMA_SIZE_16)
@@ -381,7 +381,7 @@ void test_Benchmark()
 		} while (0);
 		do {	
 			absolute_time_t absTimeStart = ::get_absolute_time();
-			DMA::Channel channel(DMA::claim_unused_channel(true));
+			DMA::Channel& channel = DMA::claim_unused_channel(true);
 			DMA::ChannelConfig config;
 			config.set_enable(true)
 				.set_transfer_data_size(DMA_SIZE_32)
@@ -403,7 +403,7 @@ void test_Benchmark()
 			timeUSec_DMA32Bit = ::absolute_time_diff_us(absTimeStart, ::get_absolute_time());
 		} while (0);
 		do {	
-			DMA::Channel channel(DMA::claim_unused_channel(true));
+			DMA::Channel& channel = DMA::claim_unused_channel(true);
 			DMA::ChannelConfig config;
 			config.set_enable(true)
 				.set_transfer_data_size(DMA_SIZE_32)

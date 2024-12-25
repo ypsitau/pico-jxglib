@@ -219,6 +219,8 @@ public:
 		}
 		bool get_raw_interrupt_status() const { return !!(dma_hw->intr & (1u << channel_)); }
 	};
+	template<uint channel> class Channel_T : public Channel {
+	};
 	class Timer {
 	private:
 		uint timer_;
@@ -272,26 +274,28 @@ public:
 		static uint32_t get_data_accumulator(void) { return ::dma_sniffer_get_data_accumulator(); }
 	};
 public:
-	static const Channel Channel0;
-	static const Channel Channel1;
-	static const Channel Channel2;
-	static const Channel Channel3;
-	static const Channel Channel4;
-	static const Channel Channel5;
-	static const Channel Channel6;
-	static const Channel Channel7;
-	static const Channel Channel8;
-	static const Channel Channel9;
-	static const Channel Channel10;
-	static const Channel Channel11;
+	static Channel Channel0;
+	static Channel Channel1;
+	static Channel Channel2;
+	static Channel Channel3;
+	static Channel Channel4;
+	static Channel Channel5;
+	static Channel Channel6;
+	static Channel Channel7;
+	static Channel Channel8;
+	static Channel Channel9;
+	static Channel Channel10;
+	static Channel Channel11;
 	static const Timer Timer0;
 	static const Timer Timer1;
 	static const Timer Timer2;
 	static const Timer Timer3;
 	static const IRQ_n IRQ_0;
 	static const IRQ_n IRQ_1;
+private:
+	static Channel* channelTbl_[];
 public:
-	static Channel claim_unused_channel(bool required) { return Channel(::dma_claim_unused_channel(required)); }
+	static Channel& claim_unused_channel(bool required);
 	static Timer claim_unused_timer(bool required) { return Timer(::dma_claim_unused_timer(required)); }
 public:
 	static void claim_mask(uint32_t channel_mask) { ::dma_claim_mask(channel_mask); }
