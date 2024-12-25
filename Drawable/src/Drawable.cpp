@@ -129,7 +129,7 @@ Drawable& Drawable::DrawChar(int x, int y, uint32_t code)
 	return *this;
 }
 
-Drawable& Drawable::DrawString(int x, int y, const char* str, const char* strEnd, StringCont* pStringCont)
+Drawable& Drawable::DrawString(int x, int y, const char* str, StringCont* pStringCont)
 {
 	if (!context_.pFontSet) {
 		if (pStringCont) pStringCont->Update({x, y}, str);
@@ -138,7 +138,7 @@ Drawable& Drawable::DrawString(int x, int y, const char* str, const char* strEnd
 	uint32_t code;
 	UTF8Decoder decoder;
 	const char* p = str;
-	for ( ; *p && p != strEnd; p++) {
+	for ( ; *p; p++) {
 		if (!decoder.FeedChar(*p, &code)) continue;
 		const FontEntry& fontEntry = context_.pFontSet->GetFontEntry(code);
 		DrawChar(x, y, fontEntry);

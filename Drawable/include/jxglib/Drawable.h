@@ -208,13 +208,13 @@ public:
 	Drawable& DrawChar(const Point& pt, const FontEntry& fontEntry) { DrawChar(pt.x, pt.y, fontEntry); return *this; }
 	Drawable& DrawChar(int x, int y, uint32_t code);
 	Drawable& DrawChar(const Point& pt, uint32_t code) { DrawChar(pt.x, pt.y, code); return *this; }
-	Drawable& DrawString(int x, int y, const char* str, const char* strEnd = nullptr, StringCont* pStringCont = nullptr);
-	Drawable& DrawString(const Point& pt, const char* str, const char* strEnd = nullptr, StringCont* pStringCont = nullptr) {
-		DrawString(pt.x, pt.y, str, strEnd, pStringCont);
+	Drawable& DrawString(int x, int y, const char* str, StringCont* pStringCont = nullptr);
+	Drawable& DrawString(const Point& pt, const char* str, StringCont* pStringCont = nullptr) {
+		DrawString(pt.x, pt.y, str, pStringCont);
 		return *this;
 	}
-	Drawable& DrawString(StringCont& stringCont, const char* strEnd = nullptr) {
-		DrawString(stringCont.GetPosition(), stringCont.GetString(), strEnd);
+	Drawable& DrawString(StringCont& stringCont) {
+		DrawString(stringCont.GetPosition(), stringCont.GetString());
 		return *this;
 	}
 	Drawable& DrawStringWrap(int x, int y, int width, int height, const char* str, StringCont* pStringCont = nullptr);
