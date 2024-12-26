@@ -47,8 +47,6 @@ project(test-DMA C CXX ASM)
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. jxglib)
-
 # Add executable. Default name is the project name, version 0.1
 
 add_executable(test-DMA test-DMA.cpp )
@@ -63,7 +61,7 @@ pico_enable_stdio_usb(test-DMA 0)
 # Add the standard library to the build
 target_link_libraries(test-DMA
 	pico_stdlib
-	jxglib_Common)
+	jxglib_DMA)
 
 # Add the standard include files to the build
 target_include_directories(test-DMA PRIVATE
@@ -72,3 +70,5 @@ target_include_directories(test-DMA PRIVATE
 )
 
 pico_add_extra_outputs(test-DMA)
+
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. jxglib)
