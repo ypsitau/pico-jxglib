@@ -1,8 +1,8 @@
 //==============================================================================
 // jxglib/Interp.h
 //==============================================================================
-#ifndef PICO_JXGLIB_SIZE_H
-#define PICO_JXGLIB_SIZE_H
+#ifndef PICO_JXGLIB_INTERP_H
+#define PICO_JXGLIB_INTERP_H
 #include "pico/stdlib.h"
 #include "hardware/interp.h"
 
@@ -18,7 +18,7 @@ public:
 		interp_config config_;
 	public:
 		Config(const interp_config& config) : config_{config} {}
-	}
+	};
 private:
 	interp_hw_t* interp_;
 public:
