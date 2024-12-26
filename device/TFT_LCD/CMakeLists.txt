@@ -5,6 +5,7 @@ target_include_directories(jxglib_TFT_LCD INTERFACE
 
 target_link_libraries(jxglib_TFT_LCD INTERFACE
 	hardware_spi
+	jxglib_DMA
 	jxglib_Display)
 
 target_sources(jxglib_TFT_LCD INTERFACE

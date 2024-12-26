@@ -4,7 +4,7 @@ add_library(jxglib_LVGLAdapter INTERFACE)
 #set(LV_CONF_BUILD_DISABLE_EXAMPLES ON)
 #set(LV_CONF_BUILD_DISABLE_DEMOS ON)
 
-add_subdirectory(lvgl)
+add_subdirectory(lvgl EXCLUDE_FROM_ALL)
 
 target_include_directories(jxglib_LVGLAdapter INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/include)
