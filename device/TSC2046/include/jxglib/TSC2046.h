@@ -17,6 +17,10 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class TSC2046 : public TouchScreen {
 public:
+	struct PinAssign {
+		const GPIO& CS;
+		const GPIO& IRQ;
+	};
 	class Adjuster {
 	private:
 		int valueMax_;

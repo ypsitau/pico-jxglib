@@ -16,6 +16,7 @@ public:
 	class TouchScreen : public TSC2046 {
 	public:
 		TouchScreen(spi_inst_t* spi, const GPIO& gpio_CS, const GPIO& gpio_IRQ) : TSC2046(spi, gpio_CS, gpio_IRQ) {}
+		TouchScreen(spi_inst_t* spi, const PinAssign& pa) : TouchScreen(spi, pa.CS, pa.IRQ) {}
 	public:
 		void Initialize(Drawable& drawable) {
 			TSC2046::Initialize(drawable.IsHVFlipped());
@@ -31,6 +32,8 @@ public:
 public:
 	ILI9341(spi_inst_t* spi, int width, int height, const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_CS, const GPIO& gpio_BL) :
 			TFT_LCD(spi, 240, 320, width, height, gpio_RST, gpio_DC, gpio_CS, gpio_BL) {}
+	ILI9341(spi_inst_t* spi, int width, int height, const PinAssign& pa) :
+			ILI9341(spi, width, height, pa.RST, pa.DC, pa.CS, pa.BL) {}
 	inline void Initialize(Dir displayDir = Dir::Normal);
 public:
 	using TypeA = ILI9341;

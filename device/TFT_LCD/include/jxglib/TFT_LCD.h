@@ -19,6 +19,12 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class TFT_LCD : public Display {
 public:
+	struct PinAssign {
+		const GPIO& RST;
+		const GPIO& DC;
+		const GPIO& CS;
+		const GPIO& BL;
+	};
 	enum class PageAddressOrder {
 		TopToBottom = 0,
 		BottomToTop = 1,
