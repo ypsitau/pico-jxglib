@@ -10,8 +10,8 @@ using namespace jxglib;
 int main()
 {
 	::stdio_init_all();
-	::spi_init(spi0, 2 * 1000 * 1000);
-	::spi_init(spi1, 125 * 1000 * 1000);
+	::spi_init(spi0, 2 * 1000 * 1000);		// for touch screens
+	::spi_init(spi1, 125 * 1000 * 1000);	// for displays
 	::lv_init();
 	GPIO2.set_function_SPI0_SCK();
 	GPIO3.set_function_SPI0_TX();
