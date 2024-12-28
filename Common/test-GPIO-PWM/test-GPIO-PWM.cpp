@@ -24,4 +24,18 @@ int main()
     GPIO13.set_function_PWM6_B();
     GPIO14.set_function_PWM7_A();
     GPIO15.set_function_PWM7_B();
+    GPIO16.set_function_PWM0_A();
+    GPIO17.set_function_PWM0_B();
+    GPIO18.set_function_PWM1_A();
+    GPIO19.set_function_PWM1_B();
+    GPIO20.set_function_PWM2_A();
+    GPIO21.set_function_PWM2_B();
+    GPIO22.set_function_PWM3_A();
+    GPIO23.set_function_PWM3_B();
+    GPIO24.set_function_PWM4_A();
+    GPIO25.set_function_PWM4_B();
+    GPIO26.set_function_PWM5_A();
+    GPIO27.set_function_PWM5_B();
+    GPIO28.set_function_PWM6_A();
+    GPIO29.set_function_PWM6_B();
 }
