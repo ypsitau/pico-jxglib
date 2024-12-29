@@ -36,6 +36,7 @@ bool LVGLAdapter::AttachOutput(Drawable& drawable, const Rect& rect)
 	}
 	::lv_display_set_buffers(disp_, buff1, buff2, buffSize,
 				(nPartial_ > 1)? LV_DISPLAY_RENDER_MODE_PARTIAL : LV_DISPLAY_RENDER_MODE_FULL);
+	SetDefault();	// just for the convenience in the following process
 	return true;
 }
 
@@ -81,11 +82,17 @@ lv_indev_t* LVGLAdapter::AttachInput(TouchScreen& touchScreen)
 	return SetInput_Pointer(inputTouchScreen_);
 }
 
-lv_indev_t* LVGLAdapter::AttachInput(UART& uart)
+lv_indev_t* LVGLAdapter::AttachInput(UART& uart, bool setGroupFlag)
 {
-	uart.irq_set_exclusive_handler((uart.raw.get_index() == 0)? HandlerUART0 : HandlerUART1).irq_set_enabled(true);
+	uart.irq_add_shared_handler((uart.raw.get_index() == 0)? HandlerUART0 : HandlerUART1).irq_set_enabled(true);
 	uart.raw.set_irq_enables(true, false);
-	return SetInput_Keypad(inputKeyUART_);
+	lv_indev_t* indev = SetInput_Keypad(inputKeyUART_);
+	if (setGroupFlag) {
+		lv_group_t* group = ::lv_group_create();
+		::lv_group_set_default(group);
+		::lv_indev_set_group(indev, group);
+	}
+	return indev;
 }
 
 lv_indev_t* LVGLAdapter::RegisterInput(lv_indev_type_t indev_type, lv_indev_read_cb_t cb)
@@ -95,6 +102,7 @@ lv_indev_t* LVGLAdapter::RegisterInput(lv_indev_type_t indev_type, lv_indev_read
 	::lv_indev_set_read_cb(indev, cb);
 	::lv_indev_set_user_data(indev, this);
 	::lv_indev_set_display(indev, disp_);
+	SetDefault();	// just for the convenience in the following process
 	return indev;
 }
 
@@ -156,10 +164,8 @@ void LVGLAdapter::InputTouchScreen::Handle(lv_indev_t* indev_drv, lv_indev_data_
 //------------------------------------------------------------------------------
 void LVGLAdapter::InputKeyUART::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
 {
-	//::printf("Keypad::Handle\n");
 	if (vt100Decoder_.HasKeyData()) {
 		int keyCode = vt100Decoder_.GetKeyData();
-		//::printf("keyCode: %d\n", keyCode);
 		data->key =
 			(keyCode == VK_TAB)?	LV_KEY_NEXT :
 			(keyCode == VK_PRIOR)?	LV_KEY_PREV :
@@ -176,7 +182,6 @@ void LVGLAdapter::InputKeyUART::Handle(lv_indev_t* indev_drv, lv_indev_data_t* d
 			(keyCode == VK_END)?	LV_KEY_END :
 			(keyCode >= 0x100)?		keyCode - 0x100 : keyCode;
 		data->state = LV_INDEV_STATE_PRESSED;
-		//::printf("Key: %02x\n", data->key);
 	} else {
 		data->state = LV_INDEV_STATE_RELEASED;
 	}

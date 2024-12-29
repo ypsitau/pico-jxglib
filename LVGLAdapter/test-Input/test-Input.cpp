@@ -66,18 +66,13 @@ int main()
 	GPIO14.set_function_SPI1_SCK();
 	GPIO15.set_function_SPI1_TX();
 	ILI9341 display(spi1, 240, 320, {RST: GPIO11, DC: GPIO10, CS: GPIO12, BL: GPIO13});
-	ILI9341::TouchScreen touchScreen(spi0, GPIO6, GPIO7);
+	ILI9341::TouchScreen touchScreen(spi0, {CS: GPIO6, IRQ: GPIO7});
 	display.Initialize(Display::Dir::Rotate90);
 	touchScreen.Initialize(display);
 	LVGLAdapter lvglAdapter(false, 10);
 	lvglAdapter.AttachOutput(display);
 	lvglAdapter.AttachInput(touchScreen);
-	do {
-		lv_indev_t* indev = lvglAdapter.AttachInput(UART::Default);
-		lv_group_t* group = ::lv_group_create();
-		::lv_group_set_default(group);
-		::lv_indev_set_group(indev, group);
-	} while (0);
+	lvglAdapter.AttachInput(UART::Default);
 	//InputPointer inputPointer;
 	//InputKeypad inputKeypad;
 	//InputButton inputButton;

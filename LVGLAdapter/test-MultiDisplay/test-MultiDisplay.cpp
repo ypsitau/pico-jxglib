@@ -18,21 +18,26 @@ int main()
 	GPIO4.set_function_SPI0_RX();
 	GPIO14.set_function_SPI1_SCK();
 	GPIO15.set_function_SPI1_TX();
-	ILI9341 display1(spi1, 240, 320, {RST: GPIO11, DC: GPIO10, CS: GPIO12, BL: GPIO13});
-	ST7789 display2(spi1, 240, 320, GPIO18, GPIO19, GPIO20, GPIO21);
-	ILI9341::TouchScreen touchScreen(spi0, GPIO6, GPIO7);
+	ST7789 display1(spi1, 240, 320, {RST: GPIO18, DC: GPIO19, CS: GPIO20, BL: GPIO21});
+	ILI9341 display2(spi1, 240, 320, {RST: GPIO11, DC: GPIO10, CS: GPIO12, BL: GPIO13});
+	ILI9341::TouchScreen touchScreen(spi0, {CS: GPIO6, IRQ: GPIO7});
 	display1.Initialize(Display::Dir::Rotate90);
 	display2.Initialize(Display::Dir::Rotate90);
-	touchScreen.Initialize(display1);
+	touchScreen.Initialize(display2);
+	//-----------------------------------------
+	// Attach display1 to LVGL
 	LVGLAdapter lvglAdapter1(false);
-	LVGLAdapter lvglAdapter2(false);
 	lvglAdapter1.AttachOutput(display1);
-	lvglAdapter1.AttachInput(touchScreen);
+	lvglAdapter1.AttachInput(UART::Default);	// shared by all the displays
+	//::lv_example_anim_2();
+	::lv_example_textarea_1();
+	//-----------------------------------------
+	// Attach display2 to LVGL
+	LVGLAdapter lvglAdapter2(false);
 	lvglAdapter2.AttachOutput(display2);
-	lvglAdapter1.SetDefault();
-	::lv_example_anim_3();
-	lvglAdapter2.SetDefault();
-	::lv_example_anim_2();
+	lvglAdapter2.AttachInput(touchScreen);
+	//::lv_example_anim_3();
+	::lv_example_textarea_2();
 	for (;;) {
 		::sleep_ms(1);
 		::lv_timer_handler();

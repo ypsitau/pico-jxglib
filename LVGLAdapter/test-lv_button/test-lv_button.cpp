@@ -28,6 +28,7 @@ int main()
 	LVGLAdapter lvglAdapter;
 	lvglAdapter.AttachOutput(display);
 	lvglAdapter.AttachInput(touchScreen);
+	lvglAdapter.AttachInput(UART::Default);
 	Setup();
 	for (;;) {
 		::sleep_ms(5);

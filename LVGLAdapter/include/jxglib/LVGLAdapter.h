@@ -74,7 +74,7 @@ public:
 	lv_indev_t* SetInput_Encoder(Input& input);
 public:
 	lv_indev_t* AttachInput(TouchScreen& touchScreen);
-	lv_indev_t* AttachInput(UART& uart);
+	lv_indev_t* AttachInput(UART& uart, bool setGroupFlag = true);
 private:
 	lv_indev_t* RegisterInput(lv_indev_type_t indev_type, lv_indev_read_cb_t cb);
 private:

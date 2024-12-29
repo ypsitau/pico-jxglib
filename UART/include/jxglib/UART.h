@@ -66,6 +66,9 @@ public:
 public:
 	uint GetIRQ() const { return UART0_IRQ + raw.get_index(); }
 	UART& irq_set_exclusive_handler(irq_handler_t handler) { ::irq_set_exclusive_handler(GetIRQ(), handler); return *this; }
+	UART& irq_add_shared_handler(irq_handler_t handler, uint8_t order_priority = PICO_SHARED_IRQ_HANDLER_DEFAULT_ORDER_PRIORITY) {
+		::irq_add_shared_handler(GetIRQ(), handler, order_priority); return *this;
+	}
 	UART& irq_set_enabled(bool enabled) { ::irq_set_enabled(GetIRQ(), enabled); return *this; }
 };
 
