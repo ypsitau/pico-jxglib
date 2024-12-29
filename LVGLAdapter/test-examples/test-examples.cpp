@@ -2,6 +2,7 @@
 #include <examples/lv_examples.h>
 #include "pico/stdlib.h"
 #include "jxglib/ILI9341.h"
+#include "jxglib/ILI9488.h"
 #include "jxglib/LVGLAdapter.h"
 
 using namespace jxglib;
@@ -19,9 +20,10 @@ int main()
 	GPIO4.set_function_SPI0_RX();
 	GPIO14.set_function_SPI1_SCK();
 	GPIO15.set_function_SPI1_TX();
-	ILI9341 display(spi1, 240, 320, {RST: GPIO11, DC: GPIO10, CS: GPIO12, BL: GPIO13});
+	//ILI9341 display(spi1, 240, 320, {RST: GPIO11, DC: GPIO10, CS: GPIO12, BL: GPIO13});
+	ILI9488 display(spi1, 240, 320, {RST: GPIO11, DC: GPIO10, CS: GPIO12, BL: GPIO13});
 	ILI9341::TouchScreen touchScreen(spi0, {CS: GPIO6, IRQ: GPIO7});
-	display.Initialize(Display::Dir::Rotate90);
+	display.Initialize(Display::Dir::Rotate0);
 	touchScreen.Initialize(display);
 	LVGLAdapter lvglAdapter(false, 10);
 	lvglAdapter.AttachOutput(display);
@@ -39,7 +41,7 @@ void Setup()
 {
 	//-----------------------------------------------
 	// examples/anim/lv_example_anim.h
-	//::lv_example_anim_1();
+	::lv_example_anim_1();
 	//::lv_example_anim_2();
 	//::lv_example_anim_3();
 	//::lv_example_anim_timeline_1();
@@ -244,7 +246,7 @@ void Setup()
 	//::lv_example_table_2();
 	//::lv_example_tabview_1();
 	//::lv_example_tabview_2();
-	::lv_example_textarea_1();
+	//::lv_example_textarea_1();
 	//::lv_example_textarea_2();
 	//::lv_example_textarea_1();
 	//::lv_example_textarea_1();
