@@ -9,6 +9,7 @@ target_link_libraries(jxglib_Common INTERFACE
 	hardware_pwm)
 
 target_sources(jxglib_Common INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/src/CharFeeder.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Color.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/GPIO.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/KeyCode.cpp
