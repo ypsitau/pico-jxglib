@@ -108,6 +108,7 @@ lv_indev_t* LVGLAdapter::RegisterInput(lv_indev_type_t indev_type, lv_indev_read
 
 void LVGLAdapter::FlushCB(lv_display_t* disp, const lv_area_t* area, unsigned char* buf)
 {
+	//::printf("FlushCB(x1:%d, y1:%d, x2:%d, y2:%d)\n", area->x1, area->y1, area->x2, area->y2);
 	LVGLAdapter* pSelf = reinterpret_cast<LVGLAdapter*>(::lv_display_get_user_data(disp));
 	pSelf->Flush(disp, area, buf);
 }
