@@ -26,7 +26,7 @@ int main()
 	GPIO14.set_function_SPI1_SCK().set_drive_strength(GPIO_DRIVE_STRENGTH_12MA);
 	GPIO15.set_function_SPI1_TX().set_drive_strength(GPIO_DRIVE_STRENGTH_12MA);
 	//SSD1306 display0(i2c0);
-	ILI9341 display1(spi1, 240, 320, GPIO11, GPIO10, GPIO12, GPIO13);
+	ILI9341 display1(spi1, 240, 320, {RST: GPIO11, DC: GPIO10, CS: GPIO12, BL: GPIO13});
 	Display::Dir displayDir = Display::Dir::Rotate0;
 	//Display::Dir displayDir = Display::Dir::Rotate90;
 	//Display::Dir displayDir = Display::Dir::Rotate180;
