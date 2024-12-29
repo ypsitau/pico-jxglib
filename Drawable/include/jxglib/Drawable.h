@@ -17,6 +17,7 @@ namespace jxglib {
 class Drawable {
 public:
 	using Format = Image::Format;
+	using Dir = Image::WriterDir;
 	using DrawDir = Image::WriterDir;
 	struct Capability {
 		static const uint32_t Device		= (1 << 0);
@@ -98,7 +99,7 @@ public:
 	void SetCapacity(const Format format, int width, int height) {
 		pFormat_ = &format, width_ = width, height_ = height;
 	}
-	virtual bool IsHVFlipped() const { return false; }
+	virtual Dir GetDirection() const { return Dir::Normal; }
 	void SetDispatcher(Dispatcher& dispatcher) { pDispatcher_ = &dispatcher; }
 	Dispatcher& GetDispatcher() { return *pDispatcher_; }
 	bool IsDevice() const { return !!(capabilities_ & Capability::Device); }

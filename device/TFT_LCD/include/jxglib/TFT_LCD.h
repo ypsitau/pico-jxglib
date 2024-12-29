@@ -157,7 +157,7 @@ public:
 			while (!::spi_is_writable(spi_)) tight_loop_contents();
 			spi_get_hw(spi_)->dr = static_cast<uint32_t>(data);
 		}
-		void MemoryWrite_Color(const Color& color) {
+		void MemoryWrite_Color666(const Color& color) {
 			MemoryWrite_Data8(color.r);
 			MemoryWrite_Data8(color.g);
 			MemoryWrite_Data8(color.b);
@@ -271,9 +271,9 @@ public:
 			while (len-- > 0) MemoryWrite_Data16(data);
 			MemoryWrite_End();
 		}
-		void MemoryWriteConstColor(const Color& color, int len) {
-			MemoryWrite_Begin(16);
-			while (len-- > 0) MemoryWrite_Color(color);
+		void MemoryWriteConstColor666(const Color& color, int len) {
+			MemoryWrite_Begin(8);
+			while (len-- > 0) MemoryWrite_Color666(color);
 			MemoryWrite_End();
 		}
 		// 9.1.23 RAMRD (2Dh): Memory Read
@@ -409,7 +409,7 @@ public:
 public:
 	void Initialize(Dir displayDir, const ConfigData& configData);
 	const Saved& GetSaved() const { return saved_; }
-	virtual bool IsHVFlipped() const override { return saved_.displayDir.IsVert(); }
+	virtual Dir GetDirection() const override { return saved_.displayDir; }
 	bool UsesCS() { return raw.UsesCS(); }
 	int GetBytesPerLine() const { return GetWidth() * 2; }
 	int GetWidthPhysical() const { return widthPhysical_; }

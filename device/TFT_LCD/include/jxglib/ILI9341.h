@@ -18,13 +18,23 @@ public:
 		TouchScreen(spi_inst_t* spi, const PinAssign& pinAssign) : TSC2046(spi, pinAssign) {}
 	public:
 		void Initialize(Drawable& drawable) {
-			TSC2046::Initialize(drawable.IsHVFlipped());
-			if (drawable.IsHVFlipped()) {
-				SetAdjusterX(Adjuster(drawable.GetWidth() - 1, 0.18, -38));
-				SetAdjusterY(Adjuster(drawable.GetHeight() - 1, 0.14, -18));
+			Drawable::Dir dir = drawable.GetDirection();
+			TSC2046::Initialize(dir.IsVert());
+			if (dir.IsRotate0()) {
+				SetAdjusterX(Adjuster(drawable.GetWidth() - 1, 0.14, -20));
+				SetAdjusterY(Adjuster(drawable.GetHeight() - 1, -0.18, 350));
+			} else if (dir.IsRotate90()) {
+				SetAdjusterX(Adjuster(drawable.GetWidth() - 1, -0.18, 350));
+				SetAdjusterY(Adjuster(drawable.GetHeight() - 1, -0.14, 260));
+			} else if (dir.IsRotate180()) {
+				SetAdjusterX(Adjuster(drawable.GetWidth() - 1, -0.14, 260));
+				SetAdjusterY(Adjuster(drawable.GetHeight() - 1, 0.18, -30));
+			} else if (dir.IsRotate270()) {
+				SetAdjusterX(Adjuster(drawable.GetWidth() - 1, 0.18, -30));
+				SetAdjusterY(Adjuster(drawable.GetHeight() - 1, 0.14, -20));
 			} else {
-				SetAdjusterX(Adjuster(drawable.GetWidth() - 1, -0.14, 257));
-				SetAdjusterY(Adjuster(drawable.GetHeight() - 1, 0.18, -35));
+				SetAdjusterX(Adjuster(drawable.GetWidth() - 1, 0.14, -20));
+				SetAdjusterY(Adjuster(drawable.GetHeight() - 1, -0.18, 350));
 			}
 		}
 	};
@@ -44,8 +54,8 @@ inline void ILI9341::Initialize(Dir displayDir)
 		.lineAddressOrder		= LineAddressOrder::TopToBottom,
 		.rgbBgrOrder			= RGBBGROrder::BGR,
 		.displayDataLatchOrder	= DisplayDataLatchOrder::LeftToRight,
-		.invertHorzFlag			= false,
-		.invertVertFlag			= true,
+		.invertHorzFlag			= true,
+		.invertVertFlag			= false,
 		.displayInversionOnFlag	= false,
 		.gammaCurve				= 0x01,
 	};

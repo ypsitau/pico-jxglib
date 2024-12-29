@@ -21,7 +21,8 @@ int main()
 	touchScreen.Initialize(display);
 	//Drawable_TestCase::DrawString(display);
 	//Drawable_TestCase::RotateImage(display);
-	//touchScreen.Calibrate(display);
+	//for (;;) ;
+	touchScreen.Calibrate(display);
 	::printf("----\n");
 	touchScreen.PrintCalibration();
 	for (;;) {
