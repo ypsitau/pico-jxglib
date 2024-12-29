@@ -24,6 +24,8 @@ public:
 inline void ST7789::Initialize(Dir displayDir)
 {
 	static const ConfigData configData = {
+		.rgbInterfaceFormat		= RGBInterfaceFormat::BPP16,
+		.mcuInterfaceFormat		= MCUInterfaceFormat::BPP16,
 		.lineAddressOrder		= LineAddressOrder::TopToBottom,
 		.rgbBgrOrder			= RGBBGROrder::RGB,
 		.displayDataLatchOrder	= DisplayDataLatchOrder::LeftToRight,

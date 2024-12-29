@@ -7,6 +7,7 @@
 #include "jxglib/Font.h"
 #include "jxglib/Canvas.h"
 #include "jxglib/Printable.h"
+#include "jxglib/LineBuff.h"
 
 namespace jxglib {
 

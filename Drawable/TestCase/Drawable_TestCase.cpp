@@ -6,6 +6,7 @@
 #include "jxglib/sample/cat-128x160.h"
 #include "jxglib/sample/cat-240x240.h"
 #include "jxglib/sample/cat-240x320.h"
+#include "jxglib/sample/cat-320x480.h"
 #include "Font/shinonome12.h"
 #include "Font/shinonome14.h"
 #include "Font/shinonome16.h"
@@ -80,9 +81,11 @@ void Drawable_TestCase::RotateImage(Drawable* drawableTbl[], int nDrawables)
 		::printf("%-20s Press Any Key\n", testCase.name);
 		for (int iDrawable = 0; iDrawable < nDrawables; iDrawable++) {
 			Drawable& drawable = *drawableTbl[iDrawable];
-			const Image& image = (drawable.GetWidth() < 240)? image_cat_128x160 : image_cat_240x320;
+			const Image& image =
+				(drawable.GetWidth() < 240)? image_cat_128x160 :
+				(drawable.GetWidth() < 320)? image_cat_240x320 :
+				image_cat_320x480;
 			//const Image& image = image_cat_60x80;
-			//const Image& image = image_cat_240x320;
 			drawable.Clear().DrawImage(0, 0, image, Rect::Empty, testCase.dir).Refresh();
 			//drawable.Clear().DrawImage(40, 20, image, {80, 100, 500, 500}, testCase.dir).Refresh();
 		}

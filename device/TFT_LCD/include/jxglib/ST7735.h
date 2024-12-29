@@ -32,6 +32,8 @@ public:
 inline void ST7735::Initialize(Dir displayDir)
 {
 	static const ConfigData configData = {
+		.rgbInterfaceFormat		= RGBInterfaceFormat::BPP16,
+		.mcuInterfaceFormat		= MCUInterfaceFormat::BPP16,
 		.lineAddressOrder		= LineAddressOrder::TopToBottom,
 		.rgbBgrOrder			= RGBBGROrder::BGR,
 		.displayDataLatchOrder	= DisplayDataLatchOrder::LeftToRight,

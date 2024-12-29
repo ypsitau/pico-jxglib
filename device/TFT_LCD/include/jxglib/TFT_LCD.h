@@ -42,6 +42,17 @@ public:
 		NormalMode = 0,
 		ReverseMode = 1,
 	};
+	enum class RGBInterfaceFormat {
+		BPP16	= 5,
+		BPP18	= 6,
+		BPP24	= 7,
+	};
+	enum class MCUInterfaceFormat {
+		BPP3	= 1,
+		BPP16	= 5,
+		BPP18	= 6,
+		BPP24	= 7,
+	};
 	enum class LineAddressOrder {
 		TopToBottom = 0,
 		BottomToTop = 1,
@@ -61,6 +72,8 @@ public:
 		PageColumnOrder pageColumnOrder;
 	};
 	struct ConfigData {
+		RGBInterfaceFormat rgbInterfaceFormat;
+		MCUInterfaceFormat mcuInterfaceFormat;
 		LineAddressOrder lineAddressOrder;
 		RGBBGROrder rgbBgrOrder;
 		DisplayDataLatchOrder displayDataLatchOrder;
@@ -118,9 +131,18 @@ public:
 			::sleep_us(1);
 			SetSPIDataBits(data_bits);
 		}
+		void MemoryWrite_Data8(uint8_t data) {
+			while (!::spi_is_writable(spi_)) tight_loop_contents();
+			spi_get_hw(spi_)->dr = static_cast<uint32_t>(data);
+		}
 		void MemoryWrite_Data16(uint16_t data) {
 			while (!::spi_is_writable(spi_)) tight_loop_contents();
 			spi_get_hw(spi_)->dr = static_cast<uint32_t>(data);
+		}
+		void MemoryWrite_Color(const Color& color) {
+			MemoryWrite_Data8(color.r);
+			MemoryWrite_Data8(color.g);
+			MemoryWrite_Data8(color.b);
 		}
 		void MemoryWrite_End() {
 			while (::spi_is_readable(spi_)) (void)spi_get_hw(spi_)->dr;
@@ -231,6 +253,11 @@ public:
 			while (len-- > 0) MemoryWrite_Data16(data);
 			MemoryWrite_End();
 		}
+		void MemoryWriteConstColor(const Color& color, int len) {
+			MemoryWrite_Begin(16);
+			while (len-- > 0) MemoryWrite_Color(color);
+			MemoryWrite_End();
+		}
 		// 9.1.23 RAMRD (2Dh): Memory Read
 		// 9.1.24 PTLAR (30h): Partial Area
 		void PartialArea(uint16_t psl, uint16_t pel) {
@@ -285,8 +312,8 @@ public:
 			SendCmd(0x39);
 		}
 		// 9.1.32 COLMOD (3Ah): Interface Pixel Format
-		void InterfacePixelFormat(uint8_t rgbInterfaceColorFormat, uint8_t controlInterfaceColorFormat) {
-			SendCmd(0x3a, (rgbInterfaceColorFormat << 4) | controlInterfaceColorFormat);
+		void InterfacePixelFormat(RGBInterfaceFormat rgbInterfaceFormat, MCUInterfaceFormat mcuInterfaceFormat) {
+			SendCmd(0x3a, (static_cast<uint8_t>(rgbInterfaceFormat) << 4) | static_cast<uint8_t>(mcuInterfaceFormat));
 		}
 		// 9.1.33 WRMEMC (3Ch): Write Memory Continue
 		void WriteMemoryContinue(const uint8_t* data, int len) {

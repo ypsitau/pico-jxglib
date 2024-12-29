@@ -29,3 +29,10 @@ add_library(jxglib_ILI9341 INTERFACE)
 target_link_libraries(jxglib_ILI9341 INTERFACE
 	jxglib_TFT_LCD
 	jxglib_TSC2046)
+
+#------------------------------------------------------------------------------
+add_library(jxglib_ILI9488 INTERFACE)
+
+target_link_libraries(jxglib_ILI9488 INTERFACE
+	jxglib_TFT_LCD
+	jxglib_TSC2046)
