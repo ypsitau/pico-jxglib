@@ -16,11 +16,11 @@ int main()
 	GPIO3.set_function_SPI0_TX();
 	GPIO14.set_function_SPI1_SCK().set_drive_strength(GPIO_DRIVE_STRENGTH_12MA);
 	GPIO15.set_function_SPI1_TX().set_drive_strength(GPIO_DRIVE_STRENGTH_12MA);
-	ST7789 display1(spi0, 240, 240, GPIO6, GPIO7, GPIO::None);
-	ST7789 display2(spi1, 240, 320, GPIO8, GPIO9, GPIO10, GPIO::None);
-	ILI9341 display3(spi1, 240, 320, GPIO12, GPIO11, GPIO13, GPIO::None);
-	ST7735 display4(spi1, 80, 160, GPIO16, GPIO17, GPIO18, GPIO::None);
-	ST7735::TypeB display5(spi1, 128, 160, GPIO19, GPIO20, GPIO21, GPIO::None);
+	ST7789 display1(spi0, 240, 240, {RST: GPIO6, DC: GPIO7, BL: GPIO::None});
+	ST7789 display2(spi1, 240, 320, {RST: GPIO8, DC: GPIO9, CS: GPIO10, BL: GPIO::None});
+	ILI9341 display3(spi1, 240, 320, {RST: GPIO12, DC: GPIO11, CS: GPIO13, BL: GPIO::None});
+	ST7735 display4(spi1, 80, 160, {RST: GPIO16, DC: GPIO17, CS: GPIO18, BL: GPIO::None});
+	ST7735::TypeB display5(spi1, 128, 160, {RST: GPIO19, DC: GPIO20, CS: GPIO21, BL: GPIO::None});
 	Display::Dir displayDir = Display::Dir::Rotate0;
 	//Display::Dir displayDir = Display::Dir::Rotate90;
 	//Display::Dir displayDir = Display::Dir::Rotate180;
