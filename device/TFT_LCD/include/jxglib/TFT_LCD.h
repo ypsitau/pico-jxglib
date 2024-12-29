@@ -25,6 +25,11 @@ public:
 		const GPIO& CS;
 		const GPIO& BL;
 	};
+	struct PinAssignNoCS {
+		const GPIO& RST;
+		const GPIO& DC;
+		const GPIO& BL;
+	};
 	enum class PageAddressOrder {
 		TopToBottom = 0,
 		BottomToTop = 1,
@@ -333,18 +338,16 @@ public:
 		ConfigData configData;
 	} saved_;
 public:
-	TFT_LCD(spi_inst_t* spi, int widthTypical, int heightTypical, int width, int height,
-				const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_CS, const GPIO& gpio_BL) :
+	TFT_LCD(spi_inst_t* spi, int widthTypical, int heightTypical, int width, int height, const PinAssign& pinAssign) :
 			Display(Capability::Device | Capability::DrawImage | Capability::DrawImageFast, Format::RGB565, width, height),
-			raw(spi, gpio_RST, gpio_DC, gpio_CS, gpio_BL), dispatcherEx_(*this),
+			raw(spi, pinAssign.RST, pinAssign.DC, pinAssign.CS, pinAssign.BL), dispatcherEx_(*this),
 			widthTypical_{widthTypical}, heightTypical_{heightTypical},
 			widthPhysical_{width}, heightPhysical_{height}, xAdjust_{0}, yAdjust_{0} {
 		SetDispatcher(dispatcherEx_);
 	}
-	TFT_LCD(spi_inst_t* spi, int widthTypical, int heightTypical, int width, int height,
-				const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_BL) :
+	TFT_LCD(spi_inst_t* spi, int widthTypical, int heightTypical, int width, int height, const PinAssignNoCS& pinAssign) :
 			Display(Capability::Device | Capability::DrawImage, Format::RGB565, width, height),
-			raw(spi, gpio_RST, gpio_DC, gpio_BL), dispatcherEx_(*this),
+			raw(spi, pinAssign.RST, pinAssign.DC, pinAssign.BL), dispatcherEx_(*this),
 			widthTypical_{widthTypical}, heightTypical_{heightTypical},
 			widthPhysical_{width}, heightPhysical_{height}, xAdjust_{0}, yAdjust_{0} {
 		SetDispatcher(dispatcherEx_);

@@ -12,10 +12,10 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class ST7789 : public TFT_LCD {
 public:
-	ST7789(spi_inst_t* spi, int width, int height, const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_CS, const GPIO& gpio_BL) :
-			TFT_LCD(spi, 240, 320, width, height, gpio_RST, gpio_DC, gpio_CS, gpio_BL) {}
-	ST7789(spi_inst_t* spi, int width, int height, const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_BL) :
-			TFT_LCD(spi, 240, 320, width, height, gpio_RST, gpio_DC, gpio_BL) {}
+	ST7789(spi_inst_t* spi, int width, int height, const PinAssign& pinAssign) :
+			TFT_LCD(spi, 240, 320, width, height, pinAssign) {}
+	ST7789(spi_inst_t* spi, int width, int height, const PinAssignNoCS& pinAssign) :
+			TFT_LCD(spi, 240, 320, width, height, pinAssign) {}
 	inline void Initialize(Dir displayDir = Dir::Normal);
 public:
 	using TypeA = ST7789;
