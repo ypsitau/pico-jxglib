@@ -8,8 +8,8 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // TSC2046
 //------------------------------------------------------------------------------
-TSC2046::TSC2046(spi_inst_t* spi, const GPIO& gpio_CS, const GPIO& gpio_IRQ) :
-		spi_{spi}, gpio_CS_{gpio_CS}, gpio_IRQ_{gpio_IRQ}, hvFlippedFlag_{false} {}
+TSC2046::TSC2046(spi_inst_t* spi, const PinAssign& pinAssign) :
+		spi_{spi}, gpio_CS_{pinAssign.CS}, gpio_IRQ_{pinAssign.IRQ}, hvFlippedFlag_{false} {}
 
 void TSC2046::Initialize(bool hvFlippedFlag)
 {

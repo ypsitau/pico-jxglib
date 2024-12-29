@@ -44,9 +44,9 @@ private:
 private:
 	static const int z1Threshold = 3;
 public:
-	TSC2046(spi_inst_t* spi, const GPIO& gpio_CS, const GPIO& gpio_IRQ);
+	TSC2046(spi_inst_t* spi, const PinAssign& pinAssign);
 public:
-	void Initialize(bool hvFlippedFlag);
+	void Initialize(bool hvFlippedFlag = false);
 	virtual bool ReadPosition(int* px, int* py) override;
 	virtual bool IsTouched() override;
 public:
