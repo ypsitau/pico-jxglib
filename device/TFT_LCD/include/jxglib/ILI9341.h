@@ -20,21 +20,28 @@ public:
 		void Initialize(Drawable& drawable) {
 			Drawable::Dir dir = drawable.GetDirection();
 			TSC2046::Initialize(dir.IsVert());
-			if (dir.IsRotate0()) {
-				SetAdjusterX(Adjuster(drawable.GetWidth() - 1, 0.14, -20));
-				SetAdjusterY(Adjuster(drawable.GetHeight() - 1, -0.18, 350));
-			} else if (dir.IsRotate90()) {
-				SetAdjusterX(Adjuster(drawable.GetWidth() - 1, -0.18, 350));
-				SetAdjusterY(Adjuster(drawable.GetHeight() - 1, -0.14, 260));
-			} else if (dir.IsRotate180()) {
-				SetAdjusterX(Adjuster(drawable.GetWidth() - 1, -0.14, 260));
-				SetAdjusterY(Adjuster(drawable.GetHeight() - 1, 0.18, -30));
-			} else if (dir.IsRotate270()) {
-				SetAdjusterX(Adjuster(drawable.GetWidth() - 1, 0.18, -30));
-				SetAdjusterY(Adjuster(drawable.GetHeight() - 1, 0.14, -20));
+			if (dir.IsHorz()) {
+				if (dir.IsLeftToRight()) {
+					SetAdjusterX(Adjuster(drawable.GetWidth() - 1, 0.14, -20));
+				} else {
+					SetAdjusterX(Adjuster(drawable.GetWidth() - 1, -0.14, 260));
+				}
+				if (dir.IsTopToBottom()) {
+					SetAdjusterY(Adjuster(drawable.GetHeight() - 1, -0.18, 350));
+				} else {
+					SetAdjusterY(Adjuster(drawable.GetHeight() - 1, 0.18, -30));
+				}
 			} else {
-				SetAdjusterX(Adjuster(drawable.GetWidth() - 1, 0.14, -20));
-				SetAdjusterY(Adjuster(drawable.GetHeight() - 1, -0.18, 350));
+				if (dir.IsLeftToRight()) {
+					SetAdjusterX(Adjuster(drawable.GetWidth() - 1, 0.18, -30));
+				} else {
+					SetAdjusterX(Adjuster(drawable.GetWidth() - 1, -0.18, 350));
+				}
+				if (dir.IsTopToBottom()) {
+					SetAdjusterY(Adjuster(drawable.GetHeight() - 1, -0.14, 260));
+				} else {
+					SetAdjusterY(Adjuster(drawable.GetHeight() - 1, 0.14, -20));
+				}
 			}
 		}
 	};
