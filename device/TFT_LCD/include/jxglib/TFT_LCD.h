@@ -82,11 +82,29 @@ public:
 		bool displayInversionOnFlag;
 		uint8_t gammaCurve;
 	};
-	class DispatcherEx : public Dispatcher {
+	class DispatcherRGB565 : public Dispatcher {
 	private:
 		TFT_LCD& display_;
 	public:
-		DispatcherEx(TFT_LCD& display) : display_{display} {}
+		DispatcherRGB565(TFT_LCD& display) : display_{display} {}
+	public:
+		virtual void Initialize() override;
+		virtual void Refresh() override;
+		virtual void Fill(const Color& color) override;
+		virtual void DrawPixel(int x, int y, const Color& color) override;
+		virtual void DrawRectFill(int x, int y, int width, int height, const Color& color) override;
+		virtual void DrawBitmap(int x, int y, const void* data, int width, int height,
+			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override;
+		virtual void DrawImage(int x, int y, const Image& image, const Rect& rectClip, DrawDir drawDir) override;
+		virtual void DrawImageFast(int x, int y, const Image& image) override;
+		virtual void ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip) override;
+		virtual void ScrollVert(DirVert dirVert, int htScroll, const Rect& rectClip) override;
+	};
+	class DispatcherRGB666 : public Dispatcher {
+	private:
+		TFT_LCD& display_;
+	public:
+		DispatcherRGB666(TFT_LCD& display) : display_{display} {}
 	public:
 		virtual void Initialize() override;
 		virtual void Refresh() override;
@@ -356,7 +374,8 @@ public:
 	};
 public:
 	Raw raw;
-	DispatcherEx dispatcherEx_;
+	DispatcherRGB565 dispatcherRGB565_;
+	DispatcherRGB666 dispatcherRGB666_;
 	int widthTypical_, heightTypical_;
 	int widthPhysical_, heightPhysical_;
 	int xAdjust_, yAdjust_;
@@ -365,19 +384,27 @@ public:
 		ConfigData configData;
 	} saved_;
 public:
-	TFT_LCD(spi_inst_t* spi, int widthTypical, int heightTypical, int width, int height, const PinAssign& pinAssign) :
-			Display(Capability::Device | Capability::DrawImage | Capability::DrawImageFast, Format::RGB565, width, height),
-			raw(spi, pinAssign.RST, pinAssign.DC, pinAssign.CS, pinAssign.BL), dispatcherEx_(*this),
+	TFT_LCD(spi_inst_t* spi, const Format& format, int widthTypical, int heightTypical, int width, int height, const PinAssign& pinAssign) :
+			Display(Capability::Device | Capability::DrawImage | Capability::DrawImageFast, format, width, height),
+			raw(spi, pinAssign.RST, pinAssign.DC, pinAssign.CS, pinAssign.BL), dispatcherRGB565_(*this), dispatcherRGB666_(*this),
 			widthTypical_{widthTypical}, heightTypical_{heightTypical},
 			widthPhysical_{width}, heightPhysical_{height}, xAdjust_{0}, yAdjust_{0} {
-		SetDispatcher(dispatcherEx_);
+		if (format.IsRGB()) {
+			SetDispatcher(dispatcherRGB666_);
+		} else {
+			SetDispatcher(dispatcherRGB565_);
+		}
 	}
-	TFT_LCD(spi_inst_t* spi, int widthTypical, int heightTypical, int width, int height, const PinAssignNoCS& pinAssign) :
-			Display(Capability::Device | Capability::DrawImage, Format::RGB565, width, height),
-			raw(spi, pinAssign.RST, pinAssign.DC, pinAssign.BL), dispatcherEx_(*this),
+	TFT_LCD(spi_inst_t* spi, const Format& format, int widthTypical, int heightTypical, int width, int height, const PinAssignNoCS& pinAssign) :
+			Display(Capability::Device | Capability::DrawImage, format, width, height),
+			raw(spi, pinAssign.RST, pinAssign.DC, pinAssign.BL), dispatcherRGB565_(*this), dispatcherRGB666_(*this),
 			widthTypical_{widthTypical}, heightTypical_{heightTypical},
 			widthPhysical_{width}, heightPhysical_{height}, xAdjust_{0}, yAdjust_{0} {
-		SetDispatcher(dispatcherEx_);
+		if (format.IsRGB()) {
+			SetDispatcher(dispatcherRGB666_);
+		} else {
+			SetDispatcher(dispatcherRGB565_);
+		}
 	}
 public:
 	void Initialize(Dir displayDir, const ConfigData& configData);
