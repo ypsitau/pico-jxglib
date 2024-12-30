@@ -3,7 +3,6 @@
 #include "pico/stdlib.h"
 #include "jxglib/ILI9341.h"
 #include "jxglib/ILI9488.h"
-#include "jxglib/ST7789.h"
 #include "jxglib/LVGLAdapter.h"
 
 using namespace jxglib;
@@ -19,7 +18,6 @@ int main()
 	GPIO4.set_function_SPI0_RX();
 	GPIO14.set_function_SPI1_SCK();
 	GPIO15.set_function_SPI1_TX();
-	//ST7789 display1(spi1, 240, 320, {RST: GPIO18, DC: GPIO19, CS: GPIO20, BL: GPIO21});
 	ILI9341 display1(spi1, 240, 320, {RST: GPIO19, DC: GPIO18, CS: GPIO20, BL: GPIO21});
 	ILI9341::TouchScreen touchScreen1(spi0, {CS: GPIO8, IRQ: GPIO9});
 	ILI9488 display2(spi1, 320, 480, {RST: GPIO11, DC: GPIO10, CS: GPIO12, BL: GPIO13});
