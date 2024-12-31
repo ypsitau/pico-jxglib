@@ -42,14 +42,14 @@ int main()
 	terminal1.AttachOutput(display1, Terminal::AttachDir::Rotate0);
 	//terminal1.AttachOutput(display1, {50, 120, 240, 100}, Terminal::AttachDir::Rotate0);
 	//terminal0.SetFont(Font::shinonome12);
-	terminal1.SetFont(Font::shinonome14);
-	//terminal2.SetFont(Font::shinonome12);
+	//terminal1.SetFont(Font::shinonome14);
+	terminal1.SetFont(Font::shinonome12);
 	//terminal0.Dump(reinterpret_cast<const void*>(0), 8 * 20);
-	terminal1.Dump(reinterpret_cast<const void*>(addr), 8 * 10000);
-	//for (int i = 0; ; i++) {
-	//	terminal1.Printf("check #%d\n", i);
-	//	//::sleep_ms(300);
-	//}
+	//terminal1.Dump(reinterpret_cast<const void*>(addr), 8 * 10000);
+	for (int i = 0; ; i++) {
+		terminal1.Printf("check #%d\n", i);
+		::sleep_ms(300);
+	}
 #if 0
 	Terminal terminal;
 	terminal.AttachOutput(display2, Terminal::AttachDir::Rotate0);
