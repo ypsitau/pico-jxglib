@@ -61,8 +61,8 @@ public:
 	virtual Printable& Locate(int col, int row) override;
 	virtual Printable& PutChar(char ch) override;
 private:
-	void DrawLines(int x, int y, const char* lineTop, int nLines);
-	void DrawLine(int x, int y, CharFeederWrapped& charFeeder);
+	void DrawStrings(int x, int y, const char* lineTop, int nLines);
+	void DrawString(int x, int y, CharFeederWrapped& charFeeder);
 	void ScrollVert(DirVert dirVert);
 };
 

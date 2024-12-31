@@ -106,19 +106,19 @@ Printable& Terminal::PutChar(char ch)
 	return *this;
 }
 
-void Terminal::DrawLines(int x, int y, const char* lineTop, int nLines)
+void Terminal::DrawStrings(int x, int y, const char* lineTop, int nLines)
 {
 	Drawable& drawable = GetDrawable();
 	int yAdvance = drawable.CalcAdvanceY();
 	for (int iLine = 0; iLine < nLines; iLine++) {
 		CharFeederWrapped charFeeder(lineBuff_.MakeCharFeeder(lineTop));
-		DrawLine(x, y, charFeeder);
+		DrawString(x, y, charFeeder);
 		lineTop = lineBuff_.NextLine(lineTop);
 		y += yAdvance;
 	}
 }
 
-void Terminal::DrawLine(int x, int y, CharFeederWrapped& charFeeder)
+void Terminal::DrawString(int x, int y, CharFeederWrapped& charFeeder)
 {
 	Drawable& drawable = GetDrawable();
 	const FontSet& fontSet = drawable.GetFont();
@@ -138,9 +138,10 @@ void Terminal::DrawLine(int x, int y, CharFeederWrapped& charFeeder)
 
 void Terminal::ScrollVert(DirVert dirVert)
 {
-	Drawable& drawable = GetDrawable();
-	int yAdvance = drawable.CalcAdvanceY();
-	drawable.ScrollVert(dirVert, yAdvance, rectDst_);
+
+	//Drawable& drawable = GetDrawable();
+	//int yAdvance = drawable.CalcAdvanceY();
+	//drawable.ScrollVert(dirVert, yAdvance, rectDst_);
 }
 
 }
