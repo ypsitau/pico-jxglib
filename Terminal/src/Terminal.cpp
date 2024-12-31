@@ -76,7 +76,7 @@ Printable& Terminal::PutChar(char ch)
 		int xAdvance = drawable.CalcAdvanceX(fontEntry);
 		if (code == '\n') {
 			drawable.Refresh();
-			//lineBuff_.PutChar('\0').MarkLineCur().PlaceChar('\0');
+			lineBuff_.PutChar('\0').MarkLineCur().PlaceChar('\0');
 			ptCursor_.x = rectDst_.x;
 			if (ptCursor_.y + yAdvance * 2 <= rectDst.height) {
 				ptCursor_.y += yAdvance;
@@ -85,12 +85,12 @@ Printable& Terminal::PutChar(char ch)
 			}
 		} else if (code == '\r') {
 			drawable.Refresh();
-			//lineBuff_.PutChar('\0').MarkLineCur().PlaceChar('\0');
+			lineBuff_.PutChar('\0').MarkLineCur().PlaceChar('\0');
 			ptCursor_.x = rectDst_.x;
 			drawable.DrawRectFill(0, ptCursor_.y, rectDst.width, yAdvance, drawable.GetColorBg());
 		} else {
 			if (ptCursor_.x + xAdvance > rectDst.width) {
-				//lineBuff_.PutChar('\0').MarkLineCur();
+				lineBuff_.PutChar('\0').MarkLineCur();
 				ptCursor_.x = rectDst_.x;
 				if (ptCursor_.y + yAdvance * 2 <= rectDst.height) {
 					ptCursor_.y += yAdvance;
@@ -98,7 +98,7 @@ Printable& Terminal::PutChar(char ch)
 					ScrollVert(DirVert::Up);
 				}
 			}
-			//lineBuff_.PutString(decoder_.GetStringOrg());
+			lineBuff_.PutString(decoder_.GetStringOrg());
 			drawable.DrawChar(ptCursor_, fontEntry);
 			ptCursor_.x += xAdvance;
 		}
@@ -111,14 +111,14 @@ void Terminal::DrawLines(int x, int y, const char* lineTop, int nLines)
 	Drawable& drawable = GetDrawable();
 	int yAdvance = drawable.CalcAdvanceY();
 	for (int iLine = 0; iLine < nLines; iLine++) {
-		CharFeeder_Round charFeeder(lineBuff_.MakeCharFeeder(lineTop));
+		CharFeederWrapped charFeeder(lineBuff_.MakeCharFeeder(lineTop));
 		DrawLine(x, y, charFeeder);
 		lineTop = lineBuff_.NextLine(lineTop);
 		y += yAdvance;
 	}
 }
 
-void Terminal::DrawLine(int x, int y, CharFeeder& charFeeder)
+void Terminal::DrawLine(int x, int y, CharFeederWrapped& charFeeder)
 {
 	Drawable& drawable = GetDrawable();
 	const FontSet& fontSet = drawable.GetFont();

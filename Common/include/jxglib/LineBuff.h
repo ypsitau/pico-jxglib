@@ -29,11 +29,11 @@ public:
 	char* NextLine(char* p) const;
 	const char* NextLine(const char* p) const { return NextLine(const_cast<char*>(p)); }
 	const char* NextLine(const char* p, int nLines) const;
-	LineBuff& MarkLineCur() { pLineCur_ = pWrite_; return *this; } 
+	LineBuff& MarkLineCur();
 	LineBuff& PlaceChar(char ch) { *pWrite_ = ch; return *this; }
 	LineBuff& PutChar(char ch);
 	LineBuff& PutString(const char* str);
-	CharFeeder_Round MakeCharFeeder(const char* p) { return CharFeeder_Round(p, buffBegin_, buffEnd_); }
+	CharFeederWrapped MakeCharFeeder(const char* p) { return CharFeederWrapped(p, buffBegin_, buffEnd_); }
 };
 
 }

@@ -62,7 +62,7 @@ public:
 	virtual Printable& PutChar(char ch) override;
 private:
 	void DrawLines(int x, int y, const char* lineTop, int nLines);
-	void DrawLine(int x, int y, CharFeeder& charFeeder);
+	void DrawLine(int x, int y, CharFeederWrapped& charFeeder);
 	void ScrollVert(DirVert dirVert);
 };
 

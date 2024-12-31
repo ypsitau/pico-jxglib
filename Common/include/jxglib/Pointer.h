@@ -8,45 +8,32 @@
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// Pointer
+// PointerWrapped
 //------------------------------------------------------------------------------
-template<typename T> class Pointer {
-protected:
+template<typename T> class PointerWrapped {
+private:
 	T p_;
+	T pBegin_;
+	T pEnd_;
 public:
-	Pointer(T p) : p_{p} {}
+	PointerWrapped(T p, T pBegin, T pEnd) : p_{p}, pBegin_{pBegin}, pEnd_{pEnd} {}
 public:
 	char Get() const { return *p_; }
 	T GetPointer() const { return p_; }
-public:
-	virtual Pointer& Forward() { p_++; return *this; }
-	virtual Pointer& Backward() { p_--; return *this; }
+	PointerWrapped& Forward() {
+		p_ = (p_ + 1 == pEnd_)? pBegin_ : p_ + 1;
+		return *this;
+	}
+	PointerWrapped& Backward() {
+		p_ = (p_ == pBegin_)? pEnd_ - 1 : p_ - 1;
+		return *this;
+	}
 };
 
 //------------------------------------------------------------------------------
-// Pointer_Round
+// CharFeederWrapped
 //------------------------------------------------------------------------------
-template<typename T> class Pointer_Round : public Pointer<T> {
-private:
-	T pBegin_;
-	T pEnd_;
-	T p_;
-public:
-	Pointer_Round(T p, T pBegin, T pEnd) : Pointer<T>(p), pBegin_{pBegin}, pEnd_{pEnd} {}
-public:
-	virtual Pointer<T>& Forward() override { p_ = (p_ + 1 == pEnd_)? pBegin_ : p_ + 1; return *this; }
-	virtual Pointer<T>& Backward() override { p_ = (p_ == pBegin_)? pEnd_ - 1 : p_ - 1; return *this; }
-};
-
-//------------------------------------------------------------------------------
-// CharFeeder
-//------------------------------------------------------------------------------
-using CharFeeder = Pointer<const char*>;
-
-//------------------------------------------------------------------------------
-// CharFeeder_Round
-//------------------------------------------------------------------------------
-using CharFeeder_Round = Pointer_Round<const char*>;
+using CharFeederWrapped = PointerWrapped<const char*>;
 
 }
 

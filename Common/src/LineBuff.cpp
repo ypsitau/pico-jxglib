@@ -6,7 +6,7 @@
 
 namespace jxglib {
 
-LineBuff::LineBuff() : buffBegin_{nullptr}, buffEnd_{nullptr}, pWrite_{nullptr}
+LineBuff::LineBuff() : buffBegin_{nullptr}, buffEnd_{nullptr}, pWrite_{nullptr}, pLineTop_{nullptr}, pLineCur_{nullptr}
 {
 }
 
@@ -15,13 +15,13 @@ bool LineBuff::Allocate(int bytes)
 	buffBegin_ = reinterpret_cast<char*>(::malloc(bytes));
 	if (!buffBegin_) return false;
 	buffEnd_ = buffBegin_ + bytes;
-	pWrite_ = pLineTop_ = pLineCur_ = buffBegin_;
+	pWrite_ = buffBegin_;
 	return true;
 }
 
 char* LineBuff::PrevLine(char* p) const
 {
-	Pointer_Round<char*> pointer(p, buffBegin_, buffEnd_);
+	PointerWrapped<char*> pointer(p, buffBegin_, buffEnd_);
 	while (pointer.Get()) pointer.Backward();
 	pointer.Backward();
 	while (pointer.Get()) pointer.Backward();
@@ -36,7 +36,7 @@ const char* LineBuff::PrevLine(const char* p, int nLines) const
 
 char* LineBuff::NextLine(char* p) const
 {
-	Pointer_Round<char*> pointer(p, buffBegin_, buffEnd_);
+	PointerWrapped<char*> pointer(p, buffBegin_, buffEnd_);
 	while (pointer.Get()) pointer.Forward();
 	return pointer.Forward().GetPointer();
 }
@@ -47,9 +47,18 @@ const char* LineBuff::NextLine(const char* p, int nLines) const
 	return p;
 }
 
+LineBuff& LineBuff::MarkLineCur()
+{
+	pLineCur_ = pWrite_;
+	if (!pLineTop_) pLineTop_ = pLineCur_;
+	return *this;
+} 
+
 LineBuff& LineBuff::PutChar(char ch)
 {
-	if (pWrite_ != pLineTop_) {
+	if (!pLineTop_) {
+		pLineCur_ = pLineTop_ = buffBegin_;
+	} else if (pWrite_ != pLineTop_) {
 		// do nothing
 	} else if (pLineCur_ == pLineTop_) {
 		pLineCur_ = pLineTop_ = NextLine(pLineTop_);
@@ -57,7 +66,7 @@ LineBuff& LineBuff::PutChar(char ch)
 		pLineTop_ = NextLine(pLineTop_);
 	}
 	*pWrite_ = ch;
-	Pointer_Round<char*> pointer(pWrite_, buffBegin_, buffEnd_);
+	PointerWrapped<char*> pointer(pWrite_, buffBegin_, buffEnd_);
 	pWrite_ = pointer.Forward().GetPointer();
 	return *this;
 }
