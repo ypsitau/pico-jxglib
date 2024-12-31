@@ -54,6 +54,7 @@ public:
 	Terminal& SetColorBg(const Color& colorBg) { pDrawable_->SetColorBg(colorBg); return *this; }
 	int GetColNum() const;
 	int GetRowNum() const;
+	const LineBuff& GetLineBuff() const { return lineBuff_; }
 public:
 	// Virtual functions of Printable
 	virtual Printable& ClearScreen() override;

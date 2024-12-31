@@ -35,6 +35,8 @@ public:
 	LineBuff& PutChar(char ch);
 	LineBuff& PutString(const char* str);
 	CharFeederWrapped MakeCharFeeder(const char* p) { return CharFeederWrapped(p, buffBegin_, buffEnd_); }
+public:
+	void Print() const;
 };
 
 }

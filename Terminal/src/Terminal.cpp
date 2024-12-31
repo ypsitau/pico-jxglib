@@ -139,9 +139,9 @@ void Terminal::DrawString(int x, int y, CharFeederWrapped& charFeeder)
 void Terminal::ScrollVert(DirVert dirVert)
 {
 	int nLines = GetRowNum();
-	const char* lineTop = lineBuff_.PrevLine(lineBuff_.GetLineCur(), nLines);
+	const char* lineTop = lineBuff_.PrevLine(lineBuff_.GetLineCur(), nLines - 3);
 	//GetDrawable().Clear();
-	DrawStrings(rectDst_.x, rectDst_.y, lineTop, nLines - 1);
+	DrawStrings(rectDst_.x, rectDst_.y, lineTop, nLines - 2);
 	//Drawable& drawable = GetDrawable();
 	//int yAdvance = drawable.CalcAdvanceY();
 	//drawable.ScrollVert(dirVert, yAdvance, rectDst_);
