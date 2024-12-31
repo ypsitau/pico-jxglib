@@ -23,6 +23,7 @@ public:
 	LineBuff();
 public:
 	bool Allocate(int bytes);
+	const char* GetLineCur() const { return pLineCur_; }
 	char* PrevLine(char* p) const;
 	const char* PrevLine(const char* p) const { return PrevLine(const_cast<char*>(p)); }
 	const char* PrevLine(const char* p, int nLines) const;

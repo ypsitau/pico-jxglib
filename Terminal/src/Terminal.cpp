@@ -15,9 +15,9 @@ bool Terminal::Initialize(int bytes)
 
 bool Terminal::AttachOutput(Drawable& drawable, const Rect& rect, AttachDir attachDir)
 {
-	//rectDst_ = rect.IsEmpty()? Rect(0, 0, drawable.GetWidth(), drawable.GetHeight()) : rect;
-	//pDrawable_ = &drawable;
-#if 1
+	rectDst_ = rect.IsEmpty()? Rect(0, 0, drawable.GetWidth(), drawable.GetHeight()) : rect;
+	pDrawable_ = &drawable;
+#if 0
 	if (drawable.CanScrollVert()) {
 		rectDst_ = rect.IsEmpty()? Rect(0, 0, drawable.GetWidth(), drawable.GetHeight()) : rect;
 		pDrawable_ = &drawable;
@@ -138,7 +138,10 @@ void Terminal::DrawString(int x, int y, CharFeederWrapped& charFeeder)
 
 void Terminal::ScrollVert(DirVert dirVert)
 {
-
+	int nLines = GetRowNum() - 1;
+	const char* lineTop = lineBuff_.PrevLine(lineBuff_.GetLineCur(), nLines);
+	//GetDrawable().Clear();
+	DrawStrings(rectDst_.x, rectDst_.y, lineTop, nLines);
 	//Drawable& drawable = GetDrawable();
 	//int yAdvance = drawable.CalcAdvanceY();
 	//drawable.ScrollVert(dirVert, yAdvance, rectDst_);
