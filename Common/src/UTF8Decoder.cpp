@@ -10,9 +10,12 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 bool UTF8Decoder::FeedChar(char ch, uint32_t* pCodeUTF32)
 {
+	strOrg_[iStrOrg_++] = ch;
 	uint8_t chCasted = static_cast<uint8_t>(ch);
 	if ((chCasted & 0x80) == 0x00) {
 		*pCodeUTF32 = chCasted;
+		strOrg_[iStrOrg_] = '\0';
+		iStrOrg_ = 0;
 		return true;
 	} else if (nFollowers_ > 0) {
 		if ((chCasted & 0xc0) == 0x80) {
@@ -23,6 +26,8 @@ bool UTF8Decoder::FeedChar(char ch, uint32_t* pCodeUTF32)
 		nFollowers_--;
 		if (nFollowers_ == 0) {
 			*pCodeUTF32 = codeUTF32_;
+			strOrg_[iStrOrg_] = '\0';
+			iStrOrg_ = 0;
 			return true;
 		}
 	} else if ((chCasted & 0xe0) == 0xc0) {

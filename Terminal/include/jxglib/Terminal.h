@@ -23,9 +23,11 @@ private:
 	Canvas canvas_;
 	Point ptCursor_;
 	UTF8Decoder decoder_;
+	LineBuff lineBuff_;
 public:
 	Terminal() : pDrawable_{nullptr} {}
 public:
+	bool Initialize(int bytes = 1024);
 	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, AttachDir attachDir = AttachDir::Normal);
 	bool AttachOutput(Drawable& drawable, AttachDir attachDir) {
 		return AttachOutput(drawable, Rect::Empty, attachDir);
@@ -58,6 +60,10 @@ public:
 	virtual Printable& FlushScreen() override;
 	virtual Printable& Locate(int col, int row) override;
 	virtual Printable& PutChar(char ch) override;
+private:
+	void DrawLines(int x, int y, const char* lineTop, int nLines);
+	void DrawLine(int x, int y, CharFeeder& charFeeder);
+	void ScrollVert(DirVert dirVert);
 };
 
 }

@@ -8,15 +8,25 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // Terminal
 //------------------------------------------------------------------------------
+bool Terminal::Initialize(int bytes)
+{
+	return lineBuff_.Allocate(bytes);
+}
+
 bool Terminal::AttachOutput(Drawable& drawable, const Rect& rect, AttachDir attachDir)
 {
-	rectDst_ = rect.IsEmpty()? Rect(0, 0, drawable.GetWidth(), drawable.GetHeight()) : rect;
+	//rectDst_ = rect.IsEmpty()? Rect(0, 0, drawable.GetWidth(), drawable.GetHeight()) : rect;
+	//pDrawable_ = &drawable;
+#if 1
 	if (drawable.CanScrollVert()) {
+		rectDst_ = rect.IsEmpty()? Rect(0, 0, drawable.GetWidth(), drawable.GetHeight()) : rect;
 		pDrawable_ = &drawable;
 	} else {
+		rectDst_ = rect.IsEmpty()? Rect(0, 0, drawable.GetWidth(), drawable.GetHeight()) : Rect(0, 0, rect.width, rect.height);
 		if (!canvas_.AttachOutput(drawable, rect, attachDir)) return false;
 		pDrawable_ = &canvas_;
 	}
+#endif
 	return true;
 }
 
@@ -61,34 +71,76 @@ Printable& Terminal::PutChar(char ch)
 	int yAdvance = drawable.CalcAdvanceY();
 	const FontSet& fontSet = drawable.GetFont();
 	uint32_t code;
-	if (!decoder_.FeedChar(ch, &code)) return *this;
-	const FontEntry& fontEntry = fontSet.GetFontEntry(code);
-	int xAdvance = drawable.CalcAdvanceX(fontEntry);
-	if (code == '\n') {
-		drawable.Refresh();
-		ptCursor_.x = 0;
-		if (ptCursor_.y + yAdvance * 2 <= rectDst.height) {
-			ptCursor_.y += yAdvance;
-		} else {
-			drawable.ScrollVert(DirVert::Up, yAdvance);
-		}
-	} else if (code == '\r') {
-		drawable.Refresh();
-		ptCursor_.x = 0;
-		drawable.DrawRectFill(0, ptCursor_.y, rectDst.width, yAdvance, drawable.GetColorBg());
-	} else {
-		if (ptCursor_.x + xAdvance > rectDst.width) {
-			ptCursor_.x = 0;
+	if (decoder_.FeedChar(ch, &code)) {
+		const FontEntry& fontEntry = fontSet.GetFontEntry(code);
+		int xAdvance = drawable.CalcAdvanceX(fontEntry);
+		if (code == '\n') {
+			drawable.Refresh();
+			//lineBuff_.PutChar('\0').MarkLineCur().PlaceChar('\0');
+			ptCursor_.x = rectDst_.x;
 			if (ptCursor_.y + yAdvance * 2 <= rectDst.height) {
 				ptCursor_.y += yAdvance;
 			} else {
-				drawable.ScrollVert(DirVert::Up, yAdvance);
+				ScrollVert(DirVert::Up);
 			}
+		} else if (code == '\r') {
+			drawable.Refresh();
+			//lineBuff_.PutChar('\0').MarkLineCur().PlaceChar('\0');
+			ptCursor_.x = rectDst_.x;
+			drawable.DrawRectFill(0, ptCursor_.y, rectDst.width, yAdvance, drawable.GetColorBg());
+		} else {
+			if (ptCursor_.x + xAdvance > rectDst.width) {
+				//lineBuff_.PutChar('\0').MarkLineCur();
+				ptCursor_.x = rectDst_.x;
+				if (ptCursor_.y + yAdvance * 2 <= rectDst.height) {
+					ptCursor_.y += yAdvance;
+				} else {
+					ScrollVert(DirVert::Up);
+				}
+			}
+			//lineBuff_.PutString(decoder_.GetStringOrg());
+			drawable.DrawChar(ptCursor_, fontEntry);
+			ptCursor_.x += xAdvance;
 		}
-		drawable.DrawChar(ptCursor_, fontEntry);
-		ptCursor_.x += xAdvance;
 	}
 	return *this;
+}
+
+void Terminal::DrawLines(int x, int y, const char* lineTop, int nLines)
+{
+	Drawable& drawable = GetDrawable();
+	int yAdvance = drawable.CalcAdvanceY();
+	for (int iLine = 0; iLine < nLines; iLine++) {
+		CharFeeder_Round charFeeder(lineBuff_.MakeCharFeeder(lineTop));
+		DrawLine(x, y, charFeeder);
+		lineTop = lineBuff_.NextLine(lineTop);
+		y += yAdvance;
+	}
+}
+
+void Terminal::DrawLine(int x, int y, CharFeeder& charFeeder)
+{
+	Drawable& drawable = GetDrawable();
+	const FontSet& fontSet = drawable.GetFont();
+	uint32_t code;
+	for (;;) {
+		char ch = charFeeder.Get();
+		if (!ch) break;
+		charFeeder.Forward();
+		if (decoder_.FeedChar(ch, &code)) {
+			const FontEntry& fontEntry = fontSet.GetFontEntry(code);
+			int xAdvance = drawable.CalcAdvanceX(fontEntry);
+			drawable.DrawChar(x, y, fontEntry);
+			x += xAdvance;
+		}
+	}
+}
+
+void Terminal::ScrollVert(DirVert dirVert)
+{
+	Drawable& drawable = GetDrawable();
+	int yAdvance = drawable.CalcAdvanceY();
+	drawable.ScrollVert(dirVert, yAdvance, rectDst_);
 }
 
 }

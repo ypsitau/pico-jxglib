@@ -6,29 +6,66 @@
 
 namespace jxglib {
 
-LineBuff::LineBuff() : buffTop_{nullptr}, buffBottom_{nullptr}, pWrite_{nullptr}, pRead_{nullptr}
+LineBuff::LineBuff() : buffBegin_{nullptr}, buffEnd_{nullptr}, pWrite_{nullptr}
 {
 }
 
 bool LineBuff::Allocate(int bytes)
 {
-	buffTop_ = reinterpret_cast<char*>(::malloc(bytes));
-	if (!buffTop_) return false;
-	buffBottom_ = buffTop_ + bytes;
-	pWrite_ = pRead_ = pLineTop_ = pLineCur_ = buffTop_;
+	buffBegin_ = reinterpret_cast<char*>(::malloc(bytes));
+	if (!buffBegin_) return false;
+	buffEnd_ = buffBegin_ + bytes;
+	pWrite_ = pLineTop_ = pLineCur_ = buffBegin_;
 	return true;
 }
 
-const char* LineBuff::PrevLine(const char* p) const
+char* LineBuff::PrevLine(char* p) const
 {
-	for ( ; *p; p--) if (p == buffTop_) p = buffBottom_ - 1;
-	return (p == buffTop_)? buffBottom_ - 1 : p - 1;
+	Pointer_Round<char*> pointer(p, buffBegin_, buffEnd_);
+	while (pointer.Get()) pointer.Backward();
+	pointer.Backward();
+	while (pointer.Get()) pointer.Backward();
+	return pointer.Forward().GetPointer();
 }
 
-const char* LineBuff::NextLine(const char* p) const
+const char* LineBuff::PrevLine(const char* p, int nLines) const
 {
-	for ( ; *p; p++) if (p == buffBottom_) p = buffTop_;
-	return p + 1;
+	for (int iLine = 0; iLine < nLines; iLine++) p = PrevLine(p);
+	return p;
+}
+
+char* LineBuff::NextLine(char* p) const
+{
+	Pointer_Round<char*> pointer(p, buffBegin_, buffEnd_);
+	while (pointer.Get()) pointer.Forward();
+	return pointer.Forward().GetPointer();
+}
+
+const char* LineBuff::NextLine(const char* p, int nLines) const
+{
+	for (int iLine = 0; iLine < nLines; iLine++) p = NextLine(p);
+	return p;
+}
+
+LineBuff& LineBuff::PutChar(char ch)
+{
+	if (pWrite_ != pLineTop_) {
+		// do nothing
+	} else if (pLineCur_ == pLineTop_) {
+		pLineCur_ = pLineTop_ = NextLine(pLineTop_);
+	} else {
+		pLineTop_ = NextLine(pLineTop_);
+	}
+	*pWrite_ = ch;
+	Pointer_Round<char*> pointer(pWrite_, buffBegin_, buffEnd_);
+	pWrite_ = pointer.Forward().GetPointer();
+	return *this;
+}
+
+LineBuff& LineBuff::PutString(const char* str)
+{
+	for (const char* p = str; *p; p++) PutChar(*p);
+	return *this;
 }
 
 }

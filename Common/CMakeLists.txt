@@ -9,12 +9,12 @@ target_link_libraries(jxglib_Common INTERFACE
 	hardware_pwm)
 
 target_sources(jxglib_Common INTERFACE
-	${CMAKE_CURRENT_LIST_DIR}/src/CharFeeder.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Color.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/GPIO.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/KeyCode.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/LineBuff.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Point.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/Pointer.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Rect.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Size.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Util.cpp
