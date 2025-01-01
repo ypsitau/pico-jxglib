@@ -17,20 +17,21 @@ private:
 	char* buffBegin_;
 	char* buffEnd_;
 	char* pWrite_;
-	char* pLineTop_;
-	char* pLineCur_;
+	char* pLineFirst_;
+	char* pLineLast_;
 public:
 	LineBuff();
 public:
 	bool Allocate(int bytes);
-	const char* GetLineCur() const { return pLineCur_; }
+	const char* GetLineFirst() const { return pLineFirst_; }
+	const char* GetLineLast() const { return pLineLast_; }
 	char* PrevLine(char* p) const;
 	const char* PrevLine(const char* p) const { return PrevLine(const_cast<char*>(p)); }
 	const char* PrevLine(const char* p, int nLines) const;
 	char* NextLine(char* p) const;
 	const char* NextLine(const char* p) const { return NextLine(const_cast<char*>(p)); }
 	const char* NextLine(const char* p, int nLines) const;
-	LineBuff& MarkLineCur();
+	LineBuff& MarkLineLast();
 	LineBuff& PlaceChar(char ch) { *pWrite_ = ch; return *this; }
 	LineBuff& PutChar(char ch);
 	LineBuff& PutString(const char* str);

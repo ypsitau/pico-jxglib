@@ -28,6 +28,7 @@ public:
 		p_ = (p_ == pBegin_)? pEnd_ - 1 : p_ - 1;
 		return *this;
 	}
+	int GetOffset() const { return p_ - pBegin_; }
 };
 
 //------------------------------------------------------------------------------

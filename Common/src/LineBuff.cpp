@@ -8,7 +8,7 @@
 
 namespace jxglib {
 
-LineBuff::LineBuff() : buffBegin_{nullptr}, buffEnd_{nullptr}, pWrite_{nullptr}, pLineTop_{nullptr}, pLineCur_{nullptr}
+LineBuff::LineBuff() : buffBegin_{nullptr}, buffEnd_{nullptr}, pWrite_{nullptr}, pLineFirst_{nullptr}, pLineLast_{nullptr}
 {
 }
 
@@ -27,13 +27,16 @@ char* LineBuff::PrevLine(char* p) const
 	PointerWrapped<char*> pointer(p, buffBegin_, buffEnd_);
 	while (pointer.Get()) pointer.Backward();
 	pointer.Backward();
-	while (pointer.Get()) pointer.Backward();
+	while (pointer.Get()) {
+		if (pointer.GetPointer() == pLineFirst_) return pLineFirst_;
+		pointer.Backward();
+	}
 	return pointer.Forward().GetPointer();
 }
 
 const char* LineBuff::PrevLine(const char* p, int nLines) const
 {
-	for (int iLine = 0; iLine < nLines; iLine++) p = PrevLine(p);
+	for (int iLine = 0; iLine < nLines && p != pLineFirst_; iLine++) p = PrevLine(p);
 	return p;
 }
 
@@ -50,28 +53,23 @@ const char* LineBuff::NextLine(const char* p, int nLines) const
 	return p;
 }
 
-LineBuff& LineBuff::MarkLineCur()
+LineBuff& LineBuff::MarkLineLast()
 {
-	pLineCur_ = pWrite_;
+	pLineLast_ = pWrite_;
 	return *this;
 } 
 
 LineBuff& LineBuff::PutChar(char ch)
 {
-	if (!pLineTop_) {
-		pLineTop_ = buffBegin_;
-		if (!pLineCur_) pLineCur_ = pLineTop_;
-	} else if (pWrite_ != pLineTop_) {
-		// do nothing
-	} else if (pLineCur_ == pLineTop_) {
-		pLineCur_ = pLineTop_ = NextLine(pLineTop_);
-	} else {
-		pLineTop_ = NextLine(pLineTop_);
+	if (!pLineFirst_) {
+		pLineFirst_ = buffBegin_;
+		if (!pLineLast_) pLineLast_ = pLineFirst_;
+	} else if (pWrite_ == pLineFirst_) {
+		pLineFirst_ = NextLine(pLineFirst_);
 	}
 	*pWrite_ = ch;
 	PointerWrapped<char*> pointer(pWrite_, buffBegin_, buffEnd_);
 	pWrite_ = pointer.Forward().GetPointer();
-	*pWrite_ = '\0';
 	return *this;
 }
 
@@ -84,8 +82,8 @@ LineBuff& LineBuff::PutString(const char* str)
 void LineBuff::Print() const
 {
 	Dump(buffBegin_, buffEnd_ - buffBegin_);
-	Printf("buffEnd:%04x pWrite:%04x pLineTop:%04x pLineCur:%04x\n",
-		buffEnd_ - buffBegin_, pWrite_ - buffBegin_, pLineTop_ - buffBegin_, pLineCur_ - buffBegin_);
+	Printf("buffEnd:%04x pWrite:%04x pLineFirst:%04x pLineLast:%04x\n",
+		buffEnd_ - buffBegin_, pWrite_ - buffBegin_, pLineFirst_ - buffBegin_, pLineLast_ - buffBegin_);
 }
 
 }

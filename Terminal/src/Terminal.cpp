@@ -108,10 +108,12 @@ Printable& Terminal::PutChar(char ch)
 
 void Terminal::DrawStrings(int x, int y, const char* lineTop, int nLines)
 {
+	::printf("DrawStrings %dlines\n", nLines);
 	Drawable& drawable = GetDrawable();
 	int yAdvance = drawable.CalcAdvanceY();
 	for (int iLine = 0; iLine < nLines; iLine++) {
 		CharFeederWrapped charFeeder(lineBuff_.MakeCharFeeder(lineTop));
+		::printf("%2d %04x\n", iLine, charFeeder.GetOffset());
 		DrawString(x, y, charFeeder);
 		lineTop = lineBuff_.NextLine(lineTop);
 		y += yAdvance;
@@ -138,11 +140,11 @@ void Terminal::DrawString(int x, int y, CharFeederWrapped& charFeeder)
 
 void Terminal::ScrollVert(DirVert dirVert)
 {
-	int nLines = GetRowNum();
-	const char* lineTop = lineBuff_.PrevLine(lineBuff_.GetLineCur(), nLines - 1);
+	int nLines = GetRowNum() - 3;
+	const char* lineTop = lineBuff_.PrevLine(lineBuff_.GetLineCur(), nLines);
 	//GetDrawable().Clear();
-	DrawStrings(rectDst_.x, rectDst_.y, lineTop, nLines - 1);
-	EraseLine(nLines - 1);
+	DrawStrings(rectDst_.x, rectDst_.y, lineTop, nLines);
+	//EraseLine(nLines - 1);
 	//Drawable& drawable = GetDrawable();
 	//int yAdvance = drawable.CalcAdvanceY();
 	//drawable.ScrollVert(dirVert, yAdvance, rectDst_);
