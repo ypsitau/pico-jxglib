@@ -34,7 +34,7 @@ int main()
 	//display0.Clear().Refresh();
 	//Terminal terminal0;
 	Terminal terminal1;
-	terminal1.Initialize(256);
+	terminal1.Initialize(128);
 	//terminal0.Dump.DigitsAddr_Auto().Cols(6);
 	uint32_t addr = 0x10000000;
 	terminal1.Dump.DigitsAddr_Auto().AddrStart(addr).Cols(8);
@@ -47,10 +47,15 @@ int main()
 	//terminal0.Dump(reinterpret_cast<const void*>(0), 8 * 20);
 	//terminal1.Dump(reinterpret_cast<const void*>(addr), 8 * 10000);
 	int i = 0;
-	for ( ; i < 20; i++) {
+	for ( ; i < 15; i++) {
 		terminal1.Printf("%d\n", i);
 	}
 	terminal1.GetLineBuff().Print();
+	for ( ; ; i++) {
+		terminal1.Printf("%d\n", i);
+		terminal1.GetLineBuff().Print();
+		getchar();
+	}
 #if 0
 	Terminal terminal;
 	terminal.AttachOutput(display2, Terminal::AttachDir::Rotate0);

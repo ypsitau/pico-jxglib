@@ -139,12 +139,20 @@ void Terminal::DrawString(int x, int y, CharFeederWrapped& charFeeder)
 void Terminal::ScrollVert(DirVert dirVert)
 {
 	int nLines = GetRowNum();
-	const char* lineTop = lineBuff_.PrevLine(lineBuff_.GetLineCur(), nLines - 3);
+	const char* lineTop = lineBuff_.PrevLine(lineBuff_.GetLineCur(), nLines - 1);
 	//GetDrawable().Clear();
-	DrawStrings(rectDst_.x, rectDst_.y, lineTop, nLines - 2);
+	DrawStrings(rectDst_.x, rectDst_.y, lineTop, nLines - 1);
+	EraseLine(nLines - 1);
 	//Drawable& drawable = GetDrawable();
 	//int yAdvance = drawable.CalcAdvanceY();
 	//drawable.ScrollVert(dirVert, yAdvance, rectDst_);
+}
+
+void Terminal::EraseLine(int iLine, int nLines)
+{
+	Drawable& drawable = GetDrawable();
+	int yAdvance = drawable.CalcAdvanceY();
+	drawable.DrawRectFill(rectDst_.x, rectDst_.y + yAdvance * iLine, rectDst_.width, yAdvance * nLines, drawable.GetColorBg());
 }
 
 }

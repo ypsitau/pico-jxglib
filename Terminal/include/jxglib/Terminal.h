@@ -65,6 +65,7 @@ private:
 	void DrawStrings(int x, int y, const char* lineTop, int nLines);
 	void DrawString(int x, int y, CharFeederWrapped& charFeeder);
 	void ScrollVert(DirVert dirVert);
+	void EraseLine(int iLine, int nLines = 1);
 };
 
 }

@@ -15,7 +15,7 @@ LineBuff::LineBuff() : buffBegin_{nullptr}, buffEnd_{nullptr}, pWrite_{nullptr},
 bool LineBuff::Allocate(int bytes)
 {
 	buffBegin_ = reinterpret_cast<char*>(::malloc(bytes));
-	::memset(buffBegin_, 0x00, bytes);
+	::memset(buffBegin_, 0xcc, bytes);
 	if (!buffBegin_) return false;
 	buffEnd_ = buffBegin_ + bytes;
 	pWrite_ = buffBegin_;
@@ -53,14 +53,14 @@ const char* LineBuff::NextLine(const char* p, int nLines) const
 LineBuff& LineBuff::MarkLineCur()
 {
 	pLineCur_ = pWrite_;
-	if (!pLineTop_) pLineTop_ = pLineCur_;
 	return *this;
 } 
 
 LineBuff& LineBuff::PutChar(char ch)
 {
 	if (!pLineTop_) {
-		pLineCur_ = pLineTop_ = buffBegin_;
+		pLineTop_ = buffBegin_;
+		if (!pLineCur_) pLineCur_ = pLineTop_;
 	} else if (pWrite_ != pLineTop_) {
 		// do nothing
 	} else if (pLineCur_ == pLineTop_) {
@@ -71,6 +71,7 @@ LineBuff& LineBuff::PutChar(char ch)
 	*pWrite_ = ch;
 	PointerWrapped<char*> pointer(pWrite_, buffBegin_, buffEnd_);
 	pWrite_ = pointer.Forward().GetPointer();
+	*pWrite_ = '\0';
 	return *this;
 }
 
