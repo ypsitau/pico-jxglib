@@ -23,8 +23,13 @@ public:
 	LineBuff();
 public:
 	bool Allocate(int bytes);
+public:
+	const char* GetBuffBegin() const { return buffBegin_; }
+	const char* GetBuffEnd() const { return buffEnd_; }
+	const char* GetWrite() const { return pWrite_; }
 	const char* GetLineFirst() const { return pLineFirst_; }
 	const char* GetLineLast() const { return pLineLast_; }
+public:
 	char* PrevLine(char* p) const;
 	const char* PrevLine(const char* p) const { return PrevLine(const_cast<char*>(p)); }
 	const char* PrevLine(const char* p, int nLines) const;

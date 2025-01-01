@@ -76,7 +76,7 @@ Printable& Terminal::PutChar(char ch)
 		int xAdvance = drawable.CalcAdvanceX(fontEntry);
 		if (code == '\n') {
 			drawable.Refresh();
-			lineBuff_.PutChar('\0').MarkLineCur().PlaceChar('\0');
+			lineBuff_.PutChar('\0').MarkLineLast().PlaceChar('\0');
 			ptCursor_.x = rectDst_.x;
 			if (ptCursor_.y + yAdvance * 2 <= rectDst.height) {
 				ptCursor_.y += yAdvance;
@@ -85,12 +85,12 @@ Printable& Terminal::PutChar(char ch)
 			}
 		} else if (code == '\r') {
 			drawable.Refresh();
-			lineBuff_.PutChar('\0').MarkLineCur().PlaceChar('\0');
+			lineBuff_.PutChar('\0').MarkLineLast().PlaceChar('\0');
 			ptCursor_.x = rectDst_.x;
 			drawable.DrawRectFill(0, ptCursor_.y, rectDst.width, yAdvance, drawable.GetColorBg());
 		} else {
 			if (ptCursor_.x + xAdvance > rectDst.width) {
-				lineBuff_.PutChar('\0').MarkLineCur();
+				lineBuff_.PutChar('\0').MarkLineLast();
 				ptCursor_.x = rectDst_.x;
 				if (ptCursor_.y + yAdvance * 2 <= rectDst.height) {
 					ptCursor_.y += yAdvance;
@@ -140,10 +140,11 @@ void Terminal::DrawString(int x, int y, CharFeederWrapped& charFeeder)
 
 void Terminal::ScrollVert(DirVert dirVert)
 {
-	int nLines = GetRowNum() - 3;
-	const char* lineTop = lineBuff_.PrevLine(lineBuff_.GetLineCur(), nLines);
+	int nLines = GetRowNum();
+	const char* lineTop = lineBuff_.PrevLine(lineBuff_.GetLineLast(), nLines - 1);
+	//::printf("%04x\n", lineTop - lineBuff_.GetBuffBegin());
 	//GetDrawable().Clear();
-	DrawStrings(rectDst_.x, rectDst_.y, lineTop, nLines);
+	DrawStrings(rectDst_.x, rectDst_.y, lineTop, nLines - 1);
 	//EraseLine(nLines - 1);
 	//Drawable& drawable = GetDrawable();
 	//int yAdvance = drawable.CalcAdvanceY();

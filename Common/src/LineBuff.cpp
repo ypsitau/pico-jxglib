@@ -25,7 +25,11 @@ bool LineBuff::Allocate(int bytes)
 char* LineBuff::PrevLine(char* p) const
 {
 	PointerWrapped<char*> pointer(p, buffBegin_, buffEnd_);
-	while (pointer.Get()) pointer.Backward();
+	if (pointer.Get()) {
+		while (pointer.Get()) pointer.Backward();
+	} else {
+		pointer.Backward();
+	}
 	pointer.Backward();
 	while (pointer.Get()) {
 		if (pointer.GetPointer() == pLineFirst_) return pLineFirst_;
