@@ -95,13 +95,13 @@ Printable::DumpStyle& Printable::DumpStyle::operator()(const void* buff, int cnt
 		for ( ; addrEnd; addrEnd >>= 4, nDigitsAddr++) ;
 		if (nDigitsAddr == 0) nDigitsAddr = 1;
 	}
-	::snprintf(formatAddr, sizeof(formatAddr), "%%0%d%c ", nDigitsAddr, upperCaseFlag_? 'X' : 'x');
-	::snprintf(formatData, sizeof(formatData), " %%0%d%s%c", bytesPerElem_ * 2,
+	::snprintf(formatAddr, sizeof(formatAddr), "%%0%d%c", nDigitsAddr, upperCaseFlag_? 'X' : 'x');
+	::snprintf(formatData, sizeof(formatData), "%%0%d%s%c", bytesPerElem_ * 2,
 		(bytesPerElem_ < 4)? "" : (bytesPerElem_ < 8)? "l" : "ll", upperCaseFlag_? 'X' : 'x');
-	//printable.Printf("%s  %s\n", formatAddr, formatData);
 	uint32_t addr = addrStart_;
 	for (int i = 0; i < cnt; i++, p += bytesPerElem_) {
 		if (iCol == 0) printable.Printf(formatAddr, addr + i * bytesPerElem_);
+		printable.Print((iCol % 8 == 0)? "  " : " ");
 		if (bytesPerElem_ == 1) {	
 			printable.Printf(formatData, *p);
 		} else if (bytesPerElem_ == 2) {
