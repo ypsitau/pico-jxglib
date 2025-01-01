@@ -21,6 +21,7 @@ private:
 	char* pLineLast_;
 public:
 	LineBuff();
+	~LineBuff();
 public:
 	bool Allocate(int bytes);
 public:
@@ -30,12 +31,12 @@ public:
 	const char* GetLineFirst() const { return pLineFirst_; }
 	const char* GetLineLast() const { return pLineLast_; }
 public:
-	char* PrevLine(char* p) const;
-	const char* PrevLine(const char* p) const { return PrevLine(const_cast<char*>(p)); }
-	const char* PrevLine(const char* p, int nLines) const;
-	char* NextLine(char* p) const;
-	const char* NextLine(const char* p) const { return NextLine(const_cast<char*>(p)); }
-	const char* NextLine(const char* p, int nLines) const;
+	bool PrevLine(char** pp) const;
+	bool PrevLine(const char** pp) const { return PrevLine(const_cast<char**>(pp)); }
+	bool PrevLine(const char** pp, int nLines) const;
+	bool NextLine(char** pp) const;
+	bool NextLine(const char** pp) const { return NextLine(const_cast<char**>(pp)); }
+	bool NextLine(const char** pp, int nLines) const;
 	LineBuff& MarkLineLast();
 	LineBuff& PlaceChar(char ch) { *pWrite_ = ch; return *this; }
 	LineBuff& PutChar(char ch);

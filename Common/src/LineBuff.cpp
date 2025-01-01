@@ -12,6 +12,11 @@ LineBuff::LineBuff() : buffBegin_{nullptr}, buffEnd_{nullptr}, pWrite_{nullptr},
 {
 }
 
+LineBuff::~LineBuff()
+{
+	::free(buffBegin_);
+}
+
 bool LineBuff::Allocate(int bytes)
 {
 	buffBegin_ = reinterpret_cast<char*>(::malloc(bytes));
@@ -22,39 +27,51 @@ bool LineBuff::Allocate(int bytes)
 	return true;
 }
 
-char* LineBuff::PrevLine(char* p) const
+bool LineBuff::PrevLine(char** pp) const
 {
+	char* p = *pp;
+	if (p == pLineFirst_) return false;
 	PointerWrapped<char*> pointer(p, buffBegin_, buffEnd_);
 	if (pointer.Get()) {
-		while (pointer.Get()) pointer.Backward();
+		for ( ; pointer.Get(); pointer.Backward()) ;
 	} else {
 		pointer.Backward();
 	}
 	pointer.Backward();
-	while (pointer.Get()) {
-		if (pointer.GetPointer() == pLineFirst_) return pLineFirst_;
-		pointer.Backward();
+	for ( ; pointer.Get(); pointer.Backward()) {
+		if (pointer.GetPointer() == pLineFirst_) {
+			*pp = pLineFirst_;
+			return true;
+		}
 	}
-	return pointer.Forward().GetPointer();
+	*pp = pointer.Forward().GetPointer();
+	return true;
 }
 
-const char* LineBuff::PrevLine(const char* p, int nLines) const
+bool LineBuff::PrevLine(const char** pp, int nLines) const
 {
-	for (int iLine = 0; iLine < nLines && p != pLineFirst_; iLine++) p = PrevLine(p);
-	return p;
+	for (int iLine = 0; iLine < nLines; iLine++) {
+		if (!PrevLine(pp)) return false;
+	}
+	return true;
 }
 
-char* LineBuff::NextLine(char* p) const
+bool LineBuff::NextLine(char** pp) const
 {
+	char* p = *pp;
+	if (p == pLineLast_) return false;
 	PointerWrapped<char*> pointer(p, buffBegin_, buffEnd_);
-	while (pointer.Get()) pointer.Forward();
-	return pointer.Forward().GetPointer();
+	for ( ; pointer.Get(); pointer.Forward()) ;
+	*pp = pointer.Forward().GetPointer();
+	return true;
 }
 
-const char* LineBuff::NextLine(const char* p, int nLines) const
+bool LineBuff::NextLine(const char** pp, int nLines) const
 {
-	for (int iLine = 0; iLine < nLines; iLine++) p = NextLine(p);
-	return p;
+	for (int iLine = 0; iLine < nLines; iLine++) {
+		if (!NextLine(pp)) return false;
+	}
+	return true;
 }
 
 LineBuff& LineBuff::MarkLineLast()
@@ -69,7 +86,7 @@ LineBuff& LineBuff::PutChar(char ch)
 		pLineFirst_ = buffBegin_;
 		if (!pLineLast_) pLineLast_ = pLineFirst_;
 	} else if (pWrite_ == pLineFirst_) {
-		pLineFirst_ = NextLine(pLineFirst_);
+		NextLine(&pLineFirst_);
 	}
 	*pWrite_ = ch;
 	PointerWrapped<char*> pointer(pWrite_, buffBegin_, buffEnd_);
