@@ -17,6 +17,7 @@ namespace jxglib {
 struct Terminal : public Printable {
 public:
 	using AttachDir = Canvas::AttachDir;
+	using Stream = LineBuff::Stream;
 private:
 	Drawable* pDrawable_;
 	Rect rectDst_;
@@ -55,6 +56,7 @@ public:
 	int GetColNum() const;
 	int GetRowNum() const;
 	const LineBuff& GetLineBuff() const { return lineBuff_; }
+	Stream CreateStream() const { return GetLineBuff().CreateStream(); }
 public:
 	// Virtual functions of Printable
 	virtual Printable& ClearScreen() override;

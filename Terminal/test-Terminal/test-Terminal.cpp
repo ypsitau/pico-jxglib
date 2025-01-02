@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include "jxglib/UART.h"
 #include "jxglib/SSD1306.h"
 #include "jxglib/ST7735.h"
 #include "jxglib/ST7789.h"
@@ -34,7 +35,7 @@ int main()
 	//display0.Clear().Refresh();
 	//Terminal terminal0;
 	Terminal terminal1;
-	terminal1.Initialize(100 * 40);
+	terminal1.Initialize(800);
 	//terminal0.Dump.DigitsAddr_Auto().Cols(6);
 	uint32_t addr = 0x10000000;
 	terminal1.Dump.DigitsAddr_Auto().AddrStart(addr).Cols(8);
@@ -45,14 +46,21 @@ int main()
 	//terminal1.SetFont(Font::shinonome14);
 	terminal1.SetFont(Font::shinonome16);
 	//terminal0.Dump(reinterpret_cast<const void*>(0), 8 * 20);
-	//terminal1.Dump(reinterpret_cast<const void*>(addr), 8 * 10000);
+	//terminal1.Dump(reinterpret_cast<const void*>(addr), 8 * 100);
 	int i = 0;
 	for ( ; i < 6; i++) {
 		terminal1.Printf("%d: ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ\n", i);
 	}
 	for ( ; ; i++) {
-		terminal1.Printf("%d: ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ\n", i);
-		getchar();
+		Printf("press any key\n");
+		char ch = getchar();
+		if (ch == 'd') {
+			terminal1.GetLineBuff().Print();
+		} else if (ch == 's') {
+			UART::Default.PrintFrom(terminal1.CreateStream());
+		} else {
+			terminal1.Printf("%d: ABCDEFGHIJKLMNOPQRSTUVWXY*ABCDEFGHIJKLMNOPQRSTUVWXYz\n", i);
+		}
 	}
 #if 0
 	Terminal terminal;

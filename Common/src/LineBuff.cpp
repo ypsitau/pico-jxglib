@@ -9,6 +9,9 @@
 
 namespace jxglib {
 
+//------------------------------------------------------------------------------
+// LineBuff
+//------------------------------------------------------------------------------
 LineBuff::LineBuff() : buffBegin_{nullptr}, buffEnd_{nullptr}, pBuffLast_{nullptr}, pLineFirst_{nullptr}, pLineLast_{nullptr}
 {
 }
@@ -102,6 +105,12 @@ LineBuff& LineBuff::PutString(const char* str)
 	return *this;
 }
 
+LineBuff::Stream LineBuff::CreateStream() const
+{
+	const char* pLineFirst = pLineFirst_;
+	return Stream(pLineFirst, buffBegin_, buffEnd_, pBuffLast_);
+}
+
 void LineBuff::Print() const
 {
 	char buff[32];
@@ -113,11 +122,30 @@ void LineBuff::Print() const
 			return "(null)";
 		}
 	};
-	Printable::DumpT().DigitsAddr(4).PrintAscii()(buffBegin_, buffEnd_ - buffBegin_);
+	Printable::DumpT().DigitsAddr(4).Ascii()(buffBegin_, buffEnd_ - buffBegin_);
 	Printf("buffEnd:%s", ToString(buff, buffEnd_));
 	Printf(" pBuffLast:%s", ToString(buff, pBuffLast_));
 	Printf(" pLineFirst:%s", ToString(buff, pLineFirst_));
 	Printf(" pLineLast:%s\n", ToString(buff, pLineLast_));
+}
+
+//------------------------------------------------------------------------------
+// LineBuff::Stream
+//------------------------------------------------------------------------------
+bool LineBuff::Stream::Read(void* buff, int bytesBuff, int* pBytesRead)
+{
+	int bytesRead = 0;
+	char* pDst = reinterpret_cast<char*>(buff);
+	for ( ; bytesRead < bytesBuff; charFeeder_.Forward()) {
+		const char* p = charFeeder_.GetPointer();
+		if (p == pBuffLast_) break;
+		if (*p) {
+			bytesRead++;
+			*pDst++ = *p;
+		}
+	}
+	*pBytesRead = bytesRead;
+	return bytesRead > 0;
 }
 
 }

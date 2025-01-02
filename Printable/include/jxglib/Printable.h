@@ -23,7 +23,7 @@ public:
 		uint32_t addrStart_;
 		int bytesPerElem_;
 		bool bigEndianFlag_;
-		bool printAsciiFlag_;
+		bool asciiFlag_;
 	public:
 		DumpT(Printable* pPrintable = nullptr);
 	public:
@@ -40,7 +40,7 @@ public:
 		DumpT& Data16BitBE(int nCols = 8) { bytesPerElem_ = 2; nCols_ = nCols; bigEndianFlag_ = true; return *this; } 
 		DumpT& Data32BitBE(int nCols = 4) { bytesPerElem_ = 4; nCols_ = nCols; bigEndianFlag_ = true; return *this; } 
 		DumpT& Data64BitBE(int nCols = 2) { bytesPerElem_ = 8; nCols_ = nCols; bigEndianFlag_ = true; return *this; } 
-		DumpT& PrintAscii(bool printAsciiFlag = false) { printAsciiFlag_ = printAsciiFlag; return *this; }
+		DumpT& Ascii(bool asciiFlag = true) { asciiFlag_ = asciiFlag; return *this; }
 	public:
 		DumpT& operator()(const void* buff, int bytes);
 	private:

@@ -17,6 +17,8 @@ private:
 	T pEnd_;
 public:
 	WrappedPointer(T p, T pBegin, T pEnd) : p_{p}, pBegin_{pBegin}, pEnd_{pEnd} {}
+	WrappedPointer(const WrappedPointer& wrappedPointer) :
+		WrappedPointer(wrappedPointer.p_, wrappedPointer.pBegin_, wrappedPointer.pEnd_) {}
 public:
 	char Get() const { return *p_; }
 	T GetPointer() const { return p_; }

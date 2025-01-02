@@ -78,7 +78,7 @@ Printable& Printable::PrintfRaw(const char* format, ...)
 //------------------------------------------------------------------------------
 Printable::DumpT::DumpT(Printable* pPrintable) : pPrintable_(pPrintable),
 	upperCaseFlag_{true}, nDigitsAddr_{0}, nCols_{16}, addrStart_{0}, bytesPerElem_{1},
-	bigEndianFlag_{false}, printAsciiFlag_{false}
+	bigEndianFlag_{false}, asciiFlag_{false}
 {}
 
 Printable::DumpT& Printable::DumpT::operator()(const void* buff, int cnt)
@@ -137,13 +137,13 @@ Printable::DumpT& Printable::DumpT::operator()(const void* buff, int cnt)
 		for (int i = 0; i < bytesPerElem_; i++) *pAsciiBuff++ = pElem[i];
 		iCol++;
 		if (iCol == nCols_) {
-			if (printAsciiFlag_) PrintAscii(printable, asciiBuff, bytesPerElem_ * iCol);
+			if (asciiFlag_) PrintAscii(printable, asciiBuff, bytesPerElem_ * iCol);
 			printable.Println();
 			iCol = 0;
 		}
 	}
 	if (iCol > 0) {
-		if (printAsciiFlag_) {
+		if (asciiFlag_) {
 			for ( ; iCol < nCols_; iCol++) {
 				printable.Print((iCol % 8 == 0)? "  " : " ");
 				for (int i = 0; i < bytesPerElem_ * 2; i++) printable.PutChar(' ');
