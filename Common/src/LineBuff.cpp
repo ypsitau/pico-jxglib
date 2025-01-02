@@ -116,7 +116,7 @@ void LineBuff::Print() const
 	char buff[32];
 	auto ToString = [this](char* buff, const char* p) -> const char* {
 		if (p) {
-			::snprintf(buff, sizeof(buff), "%04x", p - buffBegin_);
+			::sprintf(buff, "%04x", p - buffBegin_);
 			return buff;
 		} else {
 			return "(null)";
