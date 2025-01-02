@@ -80,7 +80,7 @@ Printable& Terminal::PutChar(char ch)
 			drawable.DrawRectFill(rectDst.x, ptCursor_.y, rectDst.width, yAdvance, drawable.GetColorBg());
 		} else {
 			if (ptCursor_.x + xAdvance > rectDst.width) {
-				lineBuff_.PutChar('\0').MarkLineLast().PlaceChar('\0');
+				lineBuff_.PutChar('\0').MarkLineLast();
 				ptCursor_.x = rectDst_.x;
 				if (ptCursor_.y + yAdvance * 2 <= rectDst.height) {
 					ptCursor_.y += yAdvance;
@@ -115,11 +115,12 @@ void Terminal::DrawTextLine(WrappedCharFeeder& charFeeder, int y)
 	const FontSet& fontSet = drawable.GetFont();
 	int x = rectDst_.x;
 	uint32_t code;
+	UTF8Decoder decoder;
 	for (;;) {
 		char ch = charFeeder.Get();
 		if (!ch || ch == '\n' || ch == '\r') break;
 		charFeeder.Forward();
-		if (decoder_.FeedChar(ch, &code)) {
+		if (decoder.FeedChar(ch, &code)) {
 			const FontEntry& fontEntry = fontSet.GetFontEntry(code);
 			int xAdvance = drawable.CalcAdvanceX(fontEntry);
 			drawable.DrawChar(x, y, fontEntry);

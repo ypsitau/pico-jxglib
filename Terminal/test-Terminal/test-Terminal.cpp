@@ -48,18 +48,18 @@ int main()
 	//terminal0.Dump(reinterpret_cast<const void*>(0), 8 * 20);
 	//terminal1.Dump(reinterpret_cast<const void*>(addr), 8 * 100);
 	int i = 0;
-	for ( ; i < 6; i++) {
-		terminal1.Printf("%d: ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ\n", i);
+	for ( ; i < 3; i++) {
+		terminal1.Printf("%d: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\n", i);
 	}
 	for ( ; ; i++) {
 		Printf("press any key\n");
 		char ch = getchar();
 		if (ch == 'd') {
 			terminal1.GetLineBuff().Print();
-		} else if (ch == 's') {
+		} else if (ch == 'p') {
 			UART::Default.PrintFrom(terminal1.CreateStream());
 		} else {
-			terminal1.Printf("%d: ABCDEFGHIJKLMNOPQRSTUVWXY*ABCDEFGHIJKLMNOPQRSTUVWXYz\n", i);
+			terminal1.Printf("%d: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\n", i);
 		}
 	}
 #if 0
