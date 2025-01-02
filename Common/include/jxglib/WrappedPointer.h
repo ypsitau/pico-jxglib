@@ -1,30 +1,30 @@
 //==============================================================================
-// jxglib/Pointer.h
+// jxglib/WrappedPointer.h
 //==============================================================================
-#ifndef PICO_JXGLIB_POINTER_H
-#define PICO_JXGLIB_POINTER_H
+#ifndef PICO_JXGLIB_WRAPPEDPOINTER_H
+#define PICO_JXGLIB_WRAPPEDPOINTER_H
 #include "pico/stdlib.h"
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// PointerWrapped
+// WrappedPointer
 //------------------------------------------------------------------------------
-template<typename T> class PointerWrapped {
+template<typename T> class WrappedPointer {
 private:
 	T p_;
 	T pBegin_;
 	T pEnd_;
 public:
-	PointerWrapped(T p, T pBegin, T pEnd) : p_{p}, pBegin_{pBegin}, pEnd_{pEnd} {}
+	WrappedPointer(T p, T pBegin, T pEnd) : p_{p}, pBegin_{pBegin}, pEnd_{pEnd} {}
 public:
 	char Get() const { return *p_; }
 	T GetPointer() const { return p_; }
-	PointerWrapped& Forward() {
+	WrappedPointer& Forward() {
 		p_ = (p_ + 1 == pEnd_)? pBegin_ : p_ + 1;
 		return *this;
 	}
-	PointerWrapped& Backward() {
+	WrappedPointer& Backward() {
 		p_ = (p_ == pBegin_)? pEnd_ - 1 : p_ - 1;
 		return *this;
 	}
@@ -32,9 +32,9 @@ public:
 };
 
 //------------------------------------------------------------------------------
-// CharFeederWrapped
+// WrappedCharFeeder
 //------------------------------------------------------------------------------
-using CharFeederWrapped = PointerWrapped<const char*>;
+using WrappedCharFeeder = WrappedPointer<const char*>;
 
 }
 

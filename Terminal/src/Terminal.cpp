@@ -17,16 +17,6 @@ bool Terminal::AttachOutput(Drawable& drawable, const Rect& rect, AttachDir atta
 {
 	rectDst_ = rect.IsEmpty()? Rect(0, 0, drawable.GetWidth(), drawable.GetHeight()) : rect;
 	pDrawable_ = &drawable;
-#if 0
-	if (drawable.CanScrollVert()) {
-		rectDst_ = rect.IsEmpty()? Rect(0, 0, drawable.GetWidth(), drawable.GetHeight()) : rect;
-		pDrawable_ = &drawable;
-	} else {
-		rectDst_ = rect.IsEmpty()? Rect(0, 0, drawable.GetWidth(), drawable.GetHeight()) : Rect(0, 0, rect.width, rect.height);
-		if (!canvas_.AttachOutput(drawable, rect, attachDir)) return false;
-		pDrawable_ = &canvas_;
-	}
-#endif
 	return true;
 }
 
@@ -108,19 +98,17 @@ Printable& Terminal::PutChar(char ch)
 
 void Terminal::DrawStrings(int x, int y, const char* lineTop, int nLines)
 {
-	::printf("DrawStrings %dlines\n", nLines);
 	Drawable& drawable = GetDrawable();
 	int yAdvance = drawable.CalcAdvanceY();
 	for (int iLine = 0; iLine < nLines; iLine++) {
-		CharFeederWrapped charFeeder(lineBuff_.MakeCharFeeder(lineTop));
-		::printf("%2d %04x\n", iLine, charFeeder.GetOffset());
+		WrappedCharFeeder charFeeder(lineBuff_.MakeCharFeeder(lineTop));
 		DrawString(x, y, charFeeder);
 		if (!lineBuff_.NextLine(&lineTop)) break;
 		y += yAdvance;
 	}
 }
 
-void Terminal::DrawString(int x, int y, CharFeederWrapped& charFeeder)
+void Terminal::DrawString(int x, int y, WrappedCharFeeder& charFeeder)
 {
 	Drawable& drawable = GetDrawable();
 	const FontSet& fontSet = drawable.GetFont();
@@ -143,13 +131,8 @@ void Terminal::ScrollVert(DirVert dirVert)
 	int nLines = GetRowNum();
 	const char* lineTop = lineBuff_.GetLineLast();
 	lineBuff_.PrevLine(&lineTop, nLines);
-	//::printf("%04x\n", lineTop - lineBuff_.GetBuffBegin());
-	//GetDrawable().Clear();
 	DrawStrings(rectDst_.x, rectDst_.y, lineTop, nLines - 1);
-	//EraseLine(nLines - 1);
-	//Drawable& drawable = GetDrawable();
-	//int yAdvance = drawable.CalcAdvanceY();
-	//drawable.ScrollVert(dirVert, yAdvance, rectDst_);
+	EraseLine(nLines - 1);
 }
 
 void Terminal::EraseLine(int iLine, int nLines)

@@ -5,7 +5,8 @@
 #define PICO_JXGLIB_LINEBUFF_H
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "jxglib/Pointer.h"
+#include "jxglib/WrappedPointer.h"
+#include "jxglib/Stream.h"
 
 namespace jxglib {
 
@@ -13,6 +14,9 @@ namespace jxglib {
 // LineBuff
 //------------------------------------------------------------------------------
 class LineBuff {
+public:
+	class StreamEx : public Stream {
+	};
 private:
 	char* buffBegin_;
 	char* buffEnd_;
@@ -41,7 +45,7 @@ public:
 	LineBuff& PlaceChar(char ch) { *pBuffLast_ = ch; return *this; }
 	LineBuff& PutChar(char ch);
 	LineBuff& PutString(const char* str);
-	CharFeederWrapped MakeCharFeeder(const char* p) { return CharFeederWrapped(p, buffBegin_, buffEnd_); }
+	WrappedCharFeeder MakeCharFeeder(const char* p) { return WrappedCharFeeder(p, buffBegin_, buffEnd_); }
 public:
 	void Print() const;
 };

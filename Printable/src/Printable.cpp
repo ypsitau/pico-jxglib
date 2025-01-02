@@ -137,17 +137,19 @@ Printable::DumpT& Printable::DumpT::operator()(const void* buff, int cnt)
 		for (int i = 0; i < bytesPerElem_; i++) *pAsciiBuff++ = pElem[i];
 		iCol++;
 		if (iCol == nCols_) {
-			PrintAscii(printable, asciiBuff, bytesPerElem_ * iCol);
+			if (printAsciiFlag_) PrintAscii(printable, asciiBuff, bytesPerElem_ * iCol);
 			printable.Println();
 			iCol = 0;
 		}
 	}
 	if (iCol > 0) {
-		for ( ; iCol < nCols_; iCol++) {
-			printable.Print((iCol % 8 == 0)? "  " : " ");
-			for (int i = 0; i < bytesPerElem_ * 2; i++) printable.PutChar(' ');
+		if (printAsciiFlag_) {
+			for ( ; iCol < nCols_; iCol++) {
+				printable.Print((iCol % 8 == 0)? "  " : " ");
+				for (int i = 0; i < bytesPerElem_ * 2; i++) printable.PutChar(' ');
+			}
+			PrintAscii(printable, asciiBuff, bytesPerElem_ * iCol);
 		}
-		PrintAscii(printable, asciiBuff, bytesPerElem_ * iCol);
 		printable.Println();
 	}
 	return *this;

@@ -3,6 +3,7 @@
 //==============================================================================
 #include <malloc.h>
 #include <memory.h>
+#include "jxglib/WrappedPointer.h"
 #include "jxglib/Printable.h"
 #include "jxglib/LineBuff.h"
 
@@ -31,7 +32,7 @@ bool LineBuff::PrevLine(char** pp) const
 {
 	char* p = *pp;
 	if (p == pLineFirst_) return false;
-	PointerWrapped<char*> pointer(p, buffBegin_, buffEnd_);
+	WrappedPointer<char*> pointer(p, buffBegin_, buffEnd_);
 	if (pointer.Get()) {
 		for ( ; pointer.Get(); pointer.Backward()) ;
 	} else {
@@ -60,7 +61,7 @@ bool LineBuff::NextLine(char** pp) const
 {
 	char* p = *pp;
 	if (p == pLineLast_) return false;
-	PointerWrapped<char*> pointer(p, buffBegin_, buffEnd_);
+	WrappedPointer<char*> pointer(p, buffBegin_, buffEnd_);
 	if (!pointer.Get()) return pointer.Forward().GetPointer();
 	for ( ; pointer.Get(); pointer.Forward()) ;
 	*pp = pointer.Forward().GetPointer();
@@ -90,7 +91,7 @@ LineBuff& LineBuff::PutChar(char ch)
 		NextLine(&pLineFirst_);
 	}
 	*pBuffLast_ = ch;
-	PointerWrapped<char*> pointer(pBuffLast_, buffBegin_, buffEnd_);
+	WrappedPointer<char*> pointer(pBuffLast_, buffBegin_, buffEnd_);
 	pBuffLast_ = pointer.Forward().GetPointer();
 	return *this;
 }
