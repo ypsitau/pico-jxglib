@@ -88,14 +88,15 @@ LineBuff& LineBuff::MarkLineLast()
 
 LineBuff& LineBuff::PutChar(char ch)
 {
-	if (!pLineFirst_) {
-		pLineFirst_ = buffBegin_;
-	} else if (pBuffLast_ == pLineFirst_) {
-		NextLine(&pLineFirst_);
-	}
 	*pBuffLast_ = ch;
 	WrappedPointer<char*> pointer(pBuffLast_, buffBegin_, buffEnd_);
-	pBuffLast_ = pointer.Forward().GetPointer();
+	char* pBuffLastUpdate = pointer.Forward().GetPointer();
+	if (!pLineFirst_) {
+		pLineFirst_ = buffBegin_;
+	} else if (pBuffLastUpdate == pLineFirst_) {
+		NextLine(&pLineFirst_);
+	}
+	pBuffLast_ = pBuffLastUpdate;
 	return *this;
 }
 
@@ -107,8 +108,7 @@ LineBuff& LineBuff::PutString(const char* str)
 
 LineBuff::Stream LineBuff::CreateStream() const
 {
-	const char* pLineFirst = pLineFirst_;
-	return Stream(pLineFirst, buffBegin_, buffEnd_, pBuffLast_);
+	return Stream(pLineFirst_, buffBegin_, buffEnd_, pBuffLast_);
 }
 
 void LineBuff::Print() const

@@ -51,7 +51,7 @@ int main()
 	for ( ; i < 3; i++) {
 		terminal1.Printf("%d: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\n", i);
 	}
-	for ( ; ; i++) {
+	for (;;) {
 		Printf("press any key\n");
 		char ch = getchar();
 		if (ch == 'd') {
@@ -60,6 +60,7 @@ int main()
 			UART::Default.PrintFrom(terminal1.CreateStream());
 		} else {
 			terminal1.Printf("%d: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\n", i);
+			i++;
 		}
 	}
 #if 0
