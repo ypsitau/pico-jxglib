@@ -8,7 +8,7 @@
 
 namespace jxglib {
 
-LineBuff::LineBuff() : buffBegin_{nullptr}, buffEnd_{nullptr}, pWrite_{nullptr}, pLineFirst_{nullptr}, pLineLast_{nullptr}
+LineBuff::LineBuff() : buffBegin_{nullptr}, buffEnd_{nullptr}, pBuffLast_{nullptr}, pLineFirst_{nullptr}, pLineLast_{nullptr}
 {
 }
 
@@ -23,7 +23,7 @@ bool LineBuff::Allocate(int bytes)
 	::memset(buffBegin_, 0xcc, bytes);
 	if (!buffBegin_) return false;
 	buffEnd_ = buffBegin_ + bytes;
-	pWrite_ = buffBegin_;
+	pBuffLast_ = buffBegin_;
 	return true;
 }
 
@@ -77,8 +77,8 @@ bool LineBuff::NextLine(const char** pp, int nLines) const
 
 LineBuff& LineBuff::MarkLineLast()
 {
-	if (pLineFirst_ == pWrite_) NextLine(&pLineFirst_);
-	pLineLast_ = pWrite_;
+	if (pLineFirst_ == pBuffLast_) NextLine(&pLineFirst_);
+	pLineLast_ = pBuffLast_;
 	return *this;
 } 
 
@@ -86,12 +86,12 @@ LineBuff& LineBuff::PutChar(char ch)
 {
 	if (!pLineFirst_) {
 		pLineFirst_ = buffBegin_;
-	} else if (pWrite_ == pLineFirst_) {
+	} else if (pBuffLast_ == pLineFirst_) {
 		NextLine(&pLineFirst_);
 	}
-	*pWrite_ = ch;
-	PointerWrapped<char*> pointer(pWrite_, buffBegin_, buffEnd_);
-	pWrite_ = pointer.Forward().GetPointer();
+	*pBuffLast_ = ch;
+	PointerWrapped<char*> pointer(pBuffLast_, buffBegin_, buffEnd_);
+	pBuffLast_ = pointer.Forward().GetPointer();
 	return *this;
 }
 
@@ -114,7 +114,7 @@ void LineBuff::Print() const
 	};
 	Printable::DumpT().DigitsAddr(4).PrintAscii()(buffBegin_, buffEnd_ - buffBegin_);
 	Printf("buffEnd:%s", ToString(buff, buffEnd_));
-	Printf(" pWrite:%s", ToString(buff, pWrite_));
+	Printf(" pBuffLast:%s", ToString(buff, pBuffLast_));
 	Printf(" pLineFirst:%s", ToString(buff, pLineFirst_));
 	Printf(" pLineLast:%s\n", ToString(buff, pLineLast_));
 }

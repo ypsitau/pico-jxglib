@@ -16,7 +16,7 @@ class LineBuff {
 private:
 	char* buffBegin_;
 	char* buffEnd_;
-	char* pWrite_;
+	char* pBuffLast_;
 	char* pLineFirst_;
 	char* pLineLast_;
 public:
@@ -27,7 +27,7 @@ public:
 public:
 	const char* GetBuffBegin() const { return buffBegin_; }
 	const char* GetBuffEnd() const { return buffEnd_; }
-	const char* GetWrite() const { return pWrite_; }
+	const char* GetWrite() const { return pBuffLast_; }
 	const char* GetLineFirst() const { return pLineFirst_; }
 	const char* GetLineLast() const { return pLineLast_; }
 public:
@@ -38,7 +38,7 @@ public:
 	bool NextLine(const char** pp) const { return NextLine(const_cast<char**>(pp)); }
 	bool NextLine(const char** pp, int nLines) const;
 	LineBuff& MarkLineLast();
-	LineBuff& PlaceChar(char ch) { *pWrite_ = ch; return *this; }
+	LineBuff& PlaceChar(char ch) { *pBuffLast_ = ch; return *this; }
 	LineBuff& PutChar(char ch);
 	LineBuff& PutString(const char* str);
 	CharFeederWrapped MakeCharFeeder(const char* p) { return CharFeederWrapped(p, buffBegin_, buffEnd_); }
