@@ -34,7 +34,7 @@ int main()
 	//display0.Clear().Refresh();
 	//Terminal terminal0;
 	Terminal terminal1;
-	terminal1.Initialize(80 * 40);
+	terminal1.Initialize(100 * 40);
 	//terminal0.Dump.DigitsAddr_Auto().Cols(6);
 	uint32_t addr = 0x10000000;
 	terminal1.Dump.DigitsAddr_Auto().AddrStart(addr).Cols(8);
@@ -45,15 +45,13 @@ int main()
 	//terminal1.SetFont(Font::shinonome14);
 	terminal1.SetFont(Font::shinonome16);
 	//terminal0.Dump(reinterpret_cast<const void*>(0), 8 * 20);
-	terminal1.Dump(reinterpret_cast<const void*>(addr), 8 * 10000);
+	//terminal1.Dump(reinterpret_cast<const void*>(addr), 8 * 10000);
 	int i = 0;
-	for ( ; i < 44; i++) {
-		terminal1.Printf("%d\n", i);
+	for ( ; i < 6; i++) {
+		terminal1.Printf("%d: ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ\n", i);
 	}
-	terminal1.GetLineBuff().Print();
 	for ( ; ; i++) {
-		terminal1.Printf("%d\n", i);
-		terminal1.GetLineBuff().Print();
+		terminal1.Printf("%d: ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ\n", i);
 		getchar();
 	}
 #if 0

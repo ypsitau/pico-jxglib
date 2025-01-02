@@ -96,22 +96,24 @@ Printable& Terminal::PutChar(char ch)
 	return *this;
 }
 
-void Terminal::DrawStrings(int x, int y, const char* lineTop, int nLines)
+void Terminal::DrawTextLines(const char* lineTop, int nLines, int yTop)
 {
 	Drawable& drawable = GetDrawable();
 	int yAdvance = drawable.CalcAdvanceY();
+	int y = yTop;
 	for (int iLine = 0; iLine < nLines; iLine++) {
 		WrappedCharFeeder charFeeder(lineBuff_.MakeCharFeeder(lineTop));
-		DrawString(x, y, charFeeder);
+		DrawTextLine(charFeeder, y);
 		if (!lineBuff_.NextLine(&lineTop)) break;
 		y += yAdvance;
 	}
 }
 
-void Terminal::DrawString(int x, int y, WrappedCharFeeder& charFeeder)
+void Terminal::DrawTextLine(WrappedCharFeeder& charFeeder, int y)
 {
 	Drawable& drawable = GetDrawable();
 	const FontSet& fontSet = drawable.GetFont();
+	int x = rectDst_.x;
 	uint32_t code;
 	for (;;) {
 		char ch = charFeeder.Get();
@@ -124,6 +126,17 @@ void Terminal::DrawString(int x, int y, WrappedCharFeeder& charFeeder)
 			x += xAdvance;
 		}
 	}
+	if (x < rectDst_.x + rectDst_.width) {
+		int yAdvance = drawable.CalcAdvanceY();
+		drawable.DrawRectFill(x, y, rectDst_.x + rectDst_.width - x, yAdvance, drawable.GetColorBg());
+	}
+}
+
+void Terminal::EraseTextLine(int iLine, int nLines)
+{
+	Drawable& drawable = GetDrawable();
+	int yAdvance = drawable.CalcAdvanceY();
+	drawable.DrawRectFill(rectDst_.x, rectDst_.y + yAdvance * iLine, rectDst_.width, yAdvance * nLines, drawable.GetColorBg());
 }
 
 void Terminal::ScrollVert(DirVert dirVert)
@@ -131,15 +144,8 @@ void Terminal::ScrollVert(DirVert dirVert)
 	int nLines = GetRowNum();
 	const char* lineTop = lineBuff_.GetLineLast();
 	lineBuff_.PrevLine(&lineTop, nLines);
-	DrawStrings(rectDst_.x, rectDst_.y, lineTop, nLines - 1);
-	EraseLine(nLines - 1);
-}
-
-void Terminal::EraseLine(int iLine, int nLines)
-{
-	Drawable& drawable = GetDrawable();
-	int yAdvance = drawable.CalcAdvanceY();
-	drawable.DrawRectFill(rectDst_.x, rectDst_.y + yAdvance * iLine, rectDst_.width, yAdvance * nLines, drawable.GetColorBg());
+	DrawTextLines(lineTop, nLines - 1, rectDst_.y);
+	EraseTextLine(nLines - 1);
 }
 
 }
