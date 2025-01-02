@@ -40,7 +40,8 @@ int main()
 	uint32_t addr = 0x10000000;
 	terminal1.Dump.DigitsAddr_Auto().AddrStart(addr).Cols(8);
 	//terminal0.AttachOutput(display0);
-	terminal1.AttachOutput(display1, {0, 0, 240, 100}, Terminal::AttachDir::Rotate0);
+	terminal1.AttachOutput(display1, Terminal::AttachDir::Rotate0);
+	//terminal1.AttachOutput(display1, {0, 0, 240, 100}, Terminal::AttachDir::Rotate0);
 	//terminal1.AttachOutput(display1, {50, 120, 240, 100}, Terminal::AttachDir::Rotate0);
 	//terminal0.SetFont(Font::shinonome12);
 	//terminal1.SetFont(Font::shinonome14);
