@@ -61,6 +61,7 @@ bool LineBuff::NextLine(char** pp) const
 	char* p = *pp;
 	if (p == pLineLast_) return false;
 	PointerWrapped<char*> pointer(p, buffBegin_, buffEnd_);
+	if (!pointer.Get()) return pointer.Forward().GetPointer();
 	for ( ; pointer.Get(); pointer.Forward()) ;
 	*pp = pointer.Forward().GetPointer();
 	return true;
@@ -76,6 +77,7 @@ bool LineBuff::NextLine(const char** pp, int nLines) const
 
 LineBuff& LineBuff::MarkLineLast()
 {
+	if (pLineFirst_ == pWrite_) NextLine(&pLineFirst_);
 	pLineLast_ = pWrite_;
 	return *this;
 } 
@@ -84,7 +86,6 @@ LineBuff& LineBuff::PutChar(char ch)
 {
 	if (!pLineFirst_) {
 		pLineFirst_ = buffBegin_;
-		if (!pLineLast_) pLineLast_ = pLineFirst_;
 	} else if (pWrite_ == pLineFirst_) {
 		NextLine(&pLineFirst_);
 	}
@@ -102,9 +103,20 @@ LineBuff& LineBuff::PutString(const char* str)
 
 void LineBuff::Print() const
 {
-	Dump(buffBegin_, buffEnd_ - buffBegin_);
-	Printf("buffEnd:%04x pWrite:%04x pLineFirst:%04x pLineLast:%04x\n",
-		buffEnd_ - buffBegin_, pWrite_ - buffBegin_, pLineFirst_ - buffBegin_, pLineLast_ - buffBegin_);
+	char buff[32];
+	auto ToString = [this](char* buff, const char* p) -> const char* {
+		if (p) {
+			::sprintf(buff, "%04x", p - buffBegin_);
+			return buff;
+		} else {
+			return "(null)";
+		}
+	};
+	Printable::DumpT().DigitsAddr(4).PrintAscii()(buffBegin_, buffEnd_ - buffBegin_);
+	Printf("buffEnd:%s", ToString(buff, buffEnd_));
+	Printf(" pWrite:%s", ToString(buff, pWrite_));
+	Printf(" pLineFirst:%s", ToString(buff, pLineFirst_));
+	Printf(" pLineLast:%s\n", ToString(buff, pLineLast_));
 }
 
 }

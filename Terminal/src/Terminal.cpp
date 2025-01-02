@@ -115,7 +115,7 @@ void Terminal::DrawStrings(int x, int y, const char* lineTop, int nLines)
 		CharFeederWrapped charFeeder(lineBuff_.MakeCharFeeder(lineTop));
 		::printf("%2d %04x\n", iLine, charFeeder.GetOffset());
 		DrawString(x, y, charFeeder);
-		lineTop = lineBuff_.NextLine(lineTop);
+		if (!lineBuff_.NextLine(&lineTop)) break;
 		y += yAdvance;
 	}
 }
@@ -127,7 +127,7 @@ void Terminal::DrawString(int x, int y, CharFeederWrapped& charFeeder)
 	uint32_t code;
 	for (;;) {
 		char ch = charFeeder.Get();
-		if (!ch) break;
+		if (!ch || ch == '\n' || ch == '\r') break;
 		charFeeder.Forward();
 		if (decoder_.FeedChar(ch, &code)) {
 			const FontEntry& fontEntry = fontSet.GetFontEntry(code);
@@ -141,7 +141,8 @@ void Terminal::DrawString(int x, int y, CharFeederWrapped& charFeeder)
 void Terminal::ScrollVert(DirVert dirVert)
 {
 	int nLines = GetRowNum();
-	const char* lineTop = lineBuff_.PrevLine(lineBuff_.GetLineLast(), nLines - 1);
+	const char* lineTop = lineBuff_.GetLineLast();
+	lineBuff_.PrevLine(&lineTop, nLines);
 	//::printf("%04x\n", lineTop - lineBuff_.GetBuffBegin());
 	//GetDrawable().Clear();
 	DrawStrings(rectDst_.x, rectDst_.y, lineTop, nLines - 1);

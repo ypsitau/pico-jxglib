@@ -74,18 +74,19 @@ Printable& Printable::PrintfRaw(const char* format, ...)
 }
 
 //------------------------------------------------------------------------------
-// Printable::DumpStyle
+// Printable::DumpT
 //------------------------------------------------------------------------------
-Printable::DumpStyle::DumpStyle(Printable* pPrintable) : pPrintable_(pPrintable),
-	upperCaseFlag_{true}, nDigitsAddr_{0}, nCols_{16}, addrStart_{0}, bytesPerElem_{1}
+Printable::DumpT::DumpT(Printable* pPrintable) : pPrintable_(pPrintable),
+	upperCaseFlag_{true}, nDigitsAddr_{0}, nCols_{16}, addrStart_{0}, bytesPerElem_{1},
+	bigEndianFlag_{false}, printAsciiFlag_{false}
 {}
 
-Printable::DumpStyle& Printable::DumpStyle::operator()(const void* buff, int cnt)
+Printable::DumpT& Printable::DumpT::operator()(const void* buff, int cnt)
 {
 	Printable& printable = pPrintable_? *pPrintable_ : *pStandardOutput_;
-	char formatAddr[32];
-	char formatData[32];
-	const uint8_t* p = reinterpret_cast<const uint8_t*>(buff);
+	char formatAddr[8];
+	char formatData[16];
+	char asciiBuff[64];
 	int iCol = 0;
 	int nDigitsAddr = 0;
 	if (nDigitsAddr_ > 0) {
@@ -99,43 +100,66 @@ Printable::DumpStyle& Printable::DumpStyle::operator()(const void* buff, int cnt
 	::snprintf(formatData, sizeof(formatData), "%%0%d%s%c", bytesPerElem_ * 2,
 		(bytesPerElem_ < 4)? "" : (bytesPerElem_ < 8)? "l" : "ll", upperCaseFlag_? 'X' : 'x');
 	uint32_t addr = addrStart_;
-	for (int i = 0; i < cnt; i++, p += bytesPerElem_) {
-		if (iCol == 0) printable.Printf(formatAddr, addr + i * bytesPerElem_);
+	char* pAsciiBuff;
+	const uint8_t* pElem = reinterpret_cast<const uint8_t*>(buff);
+	for (int i = 0; i < cnt; i++, pElem += bytesPerElem_) {
+		if (iCol == 0) {
+			printable.Printf(formatAddr, addr + i * bytesPerElem_);
+			pAsciiBuff = asciiBuff;
+		}
 		printable.Print((iCol % 8 == 0)? "  " : " ");
 		if (bytesPerElem_ == 1) {	
-			printable.Printf(formatData, *p);
+			printable.Printf(formatData, *pElem);
 		} else if (bytesPerElem_ == 2) {
 			uint16_t num = bigEndianFlag_?
-				((static_cast<uint16_t>(p[0]) << 8) + static_cast<uint16_t>(p[1])) :
-				((static_cast<uint16_t>(p[1]) << 8) + static_cast<uint16_t>(p[0]));
+				((static_cast<uint16_t>(pElem[0]) << 8) + static_cast<uint16_t>(pElem[1])) :
+				((static_cast<uint16_t>(pElem[1]) << 8) + static_cast<uint16_t>(pElem[0]));
 			printable.Printf(formatData, num);
 		} else if (bytesPerElem_ == 4) {
 			uint32_t num = bigEndianFlag_?
-				((static_cast<uint32_t>(p[0]) << 24) + (static_cast<uint32_t>(p[1]) << 16) +
-				(static_cast<uint32_t>(p[2]) << 8) + static_cast<uint32_t>(p[3])) :
-				((static_cast<uint32_t>(p[3]) << 24) + (static_cast<uint32_t>(p[2]) << 16) +
-				(static_cast<uint32_t>(p[1]) << 8) + static_cast<uint32_t>(p[0]));
+				((static_cast<uint32_t>(pElem[0]) << 24) + (static_cast<uint32_t>(pElem[1]) << 16) +
+				(static_cast<uint32_t>(pElem[2]) << 8) + static_cast<uint32_t>(pElem[3])) :
+				((static_cast<uint32_t>(pElem[3]) << 24) + (static_cast<uint32_t>(pElem[2]) << 16) +
+				(static_cast<uint32_t>(pElem[1]) << 8) + static_cast<uint32_t>(pElem[0]));
 			printable.Printf(formatData, num);
 		} else if (bytesPerElem_ == 8) {
 			uint64_t num = bigEndianFlag_?
-				((static_cast<uint64_t>(p[0]) << 56) + (static_cast<uint64_t>(p[1]) << 48) +
-				(static_cast<uint64_t>(p[2]) << 40) + (static_cast<uint64_t>(p[3]) << 32) +
-				(static_cast<uint64_t>(p[4]) << 24) + (static_cast<uint64_t>(p[5]) << 16) +
-				(static_cast<uint64_t>(p[6]) << 8) + static_cast<uint64_t>(p[7])) :
-				(static_cast<uint64_t>(p[7]) << 56) + (static_cast<uint64_t>(p[6]) << 48) +
-				((static_cast<uint64_t>(p[5]) << 40) + (static_cast<uint64_t>(p[4]) << 32) +
-				(static_cast<uint64_t>(p[3]) << 24) + (static_cast<uint64_t>(p[2]) << 16) +
-				(static_cast<uint64_t>(p[1]) << 8) + static_cast<uint64_t>(p[0]));
+				((static_cast<uint64_t>(pElem[0]) << 56) + (static_cast<uint64_t>(pElem[1]) << 48) +
+				(static_cast<uint64_t>(pElem[2]) << 40) + (static_cast<uint64_t>(pElem[3]) << 32) +
+				(static_cast<uint64_t>(pElem[4]) << 24) + (static_cast<uint64_t>(pElem[5]) << 16) +
+				(static_cast<uint64_t>(pElem[6]) << 8) + static_cast<uint64_t>(pElem[7])) :
+				(static_cast<uint64_t>(pElem[7]) << 56) + (static_cast<uint64_t>(pElem[6]) << 48) +
+				((static_cast<uint64_t>(pElem[5]) << 40) + (static_cast<uint64_t>(pElem[4]) << 32) +
+				(static_cast<uint64_t>(pElem[3]) << 24) + (static_cast<uint64_t>(pElem[2]) << 16) +
+				(static_cast<uint64_t>(pElem[1]) << 8) + static_cast<uint64_t>(pElem[0]));
 			printable.Printf(formatData, num);
 		}
+		for (int i = 0; i < bytesPerElem_; i++) *pAsciiBuff++ = pElem[i];
 		iCol++;
 		if (iCol == nCols_) {
+			PrintAscii(printable, asciiBuff, bytesPerElem_ * iCol);
 			printable.Println();
 			iCol = 0;
 		}
 	}
-	if (iCol > 0) printable.Println();
+	if (iCol > 0) {
+		for ( ; iCol < nCols_; iCol++) {
+			printable.Print((iCol % 8 == 0)? "  " : " ");
+			for (int i = 0; i < bytesPerElem_ * 2; i++) printable.PutChar(' ');
+		}
+		PrintAscii(printable, asciiBuff, bytesPerElem_ * iCol);
+		printable.Println();
+	}
 	return *this;
+}
+
+void Printable::DumpT::PrintAscii(Printable& printable, const char* asciiBuff, int bytes)
+{
+	printable.Print("  ");
+	for (int i = 0; i < bytes; i++) {
+		char ch = asciiBuff[i];
+		printable.PutChar((0x20 <= ch && ch < 0x7f)? ch : '.');
+	}
 }
 
 //------------------------------------------------------------------------------
@@ -146,7 +170,7 @@ PrintableDumb PrintableDumb::Instance;
 //------------------------------------------------------------------------------
 // Functions that expose methods provided by Printable class.
 //------------------------------------------------------------------------------
-Printable::DumpStyle Dump(nullptr);
+Printable::DumpT Dump(nullptr);
 
 Printable& Printf(const char* format, ...)
 {

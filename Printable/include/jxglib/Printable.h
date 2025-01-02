@@ -12,7 +12,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class Printable {
 public:
-	class DumpStyle {
+	class DumpT {
 	public:
 		static const int bytesPerLineInit = 16;
 	private:
@@ -23,27 +23,31 @@ public:
 		uint32_t addrStart_;
 		int bytesPerElem_;
 		bool bigEndianFlag_;
+		bool printAsciiFlag_;
 	public:
-		DumpStyle(Printable* pPrintable);
+		DumpT(Printable* pPrintable = nullptr);
 	public:
-		DumpStyle& UpperCase() { upperCaseFlag_ = true; return *this; }
-		DumpStyle& LowerCase() { upperCaseFlag_ = false; return *this; }
-		DumpStyle& DigitsAddr(int nDigitsAddr) { nDigitsAddr_ = nDigitsAddr; return *this; }
-		DumpStyle& DigitsAddr_Auto() { nDigitsAddr_ = 0; return *this; }
-		DumpStyle& Cols(int nCols) { nCols_ = nCols; return *this; }
-		DumpStyle& AddrStart(uint32_t addrStart) { addrStart_ = addrStart; return *this; }
-		DumpStyle& Data8Bit(int nCols = 16) { bytesPerElem_ = 1; nCols_ = nCols; bigEndianFlag_ = false; return *this; } 
-		DumpStyle& Data16Bit(int nCols = 8) { bytesPerElem_ = 2; nCols_ = nCols; bigEndianFlag_ = false; return *this; } 
-		DumpStyle& Data32Bit(int nCols = 4) { bytesPerElem_ = 4; nCols_ = nCols; bigEndianFlag_ = false; return *this; } 
-		DumpStyle& Data64Bit(int nCols = 2) { bytesPerElem_ = 8; nCols_ = nCols; bigEndianFlag_ = false; return *this; } 
-		DumpStyle& Data16BitBE(int nCols = 8) { bytesPerElem_ = 2; nCols_ = nCols; bigEndianFlag_ = true; return *this; } 
-		DumpStyle& Data32BitBE(int nCols = 4) { bytesPerElem_ = 4; nCols_ = nCols; bigEndianFlag_ = true; return *this; } 
-		DumpStyle& Data64BitBE(int nCols = 2) { bytesPerElem_ = 8; nCols_ = nCols; bigEndianFlag_ = true; return *this; } 
+		DumpT& UpperCase() { upperCaseFlag_ = true; return *this; }
+		DumpT& LowerCase() { upperCaseFlag_ = false; return *this; }
+		DumpT& DigitsAddr(int nDigitsAddr) { nDigitsAddr_ = nDigitsAddr; return *this; }
+		DumpT& DigitsAddr_Auto() { nDigitsAddr_ = 0; return *this; }
+		DumpT& Cols(int nCols) { nCols_ = nCols; return *this; }
+		DumpT& AddrStart(uint32_t addrStart) { addrStart_ = addrStart; return *this; }
+		DumpT& Data8Bit(int nCols = 16) { bytesPerElem_ = 1; nCols_ = nCols; bigEndianFlag_ = false; return *this; } 
+		DumpT& Data16Bit(int nCols = 8) { bytesPerElem_ = 2; nCols_ = nCols; bigEndianFlag_ = false; return *this; } 
+		DumpT& Data32Bit(int nCols = 4) { bytesPerElem_ = 4; nCols_ = nCols; bigEndianFlag_ = false; return *this; } 
+		DumpT& Data64Bit(int nCols = 2) { bytesPerElem_ = 8; nCols_ = nCols; bigEndianFlag_ = false; return *this; } 
+		DumpT& Data16BitBE(int nCols = 8) { bytesPerElem_ = 2; nCols_ = nCols; bigEndianFlag_ = true; return *this; } 
+		DumpT& Data32BitBE(int nCols = 4) { bytesPerElem_ = 4; nCols_ = nCols; bigEndianFlag_ = true; return *this; } 
+		DumpT& Data64BitBE(int nCols = 2) { bytesPerElem_ = 8; nCols_ = nCols; bigEndianFlag_ = true; return *this; } 
+		DumpT& PrintAscii(bool printAsciiFlag = false) { printAsciiFlag_ = printAsciiFlag; return *this; }
 	public:
-		DumpStyle& operator()(const void* buff, int bytes);
+		DumpT& operator()(const void* buff, int bytes);
+	private:
+		void PrintAscii(Printable& printable, const char* asciiBuff, int bytes);
 	};
 public:
-	DumpStyle Dump;
+	DumpT Dump;
 private:
 	static Printable* pStandardOutput_;
 public:
@@ -83,7 +87,7 @@ public:
 //------------------------------------------------------------------------------
 // Functions that expose methods provided by Printable class.
 //------------------------------------------------------------------------------
-extern Printable::DumpStyle Dump;
+extern Printable::DumpT Dump;
 
 inline Printable& ClearScreen() { return Printable::GetStandardOutput().ClearScreen(); }
 inline Printable& FlushScreen() { return Printable::GetStandardOutput().FlushScreen(); }
