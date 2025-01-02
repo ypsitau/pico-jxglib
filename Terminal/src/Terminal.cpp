@@ -68,7 +68,7 @@ Printable& Terminal::PutChar(char ch)
 			drawable.Refresh();
 			lineBuff_.PutChar('\n').PutChar('\0').MarkLineLast().PlaceChar('\0');
 			ptCursor_.x = rectDst_.x;
-			if (ptCursor_.y + yAdvance * 2 <= rectDst.height) {
+			if (ptCursor_.y + yAdvance * 2 <= rectDst.y + rectDst.height) {
 				ptCursor_.y += yAdvance;
 			} else {
 				ScrollVert(DirVert::Up);
@@ -82,7 +82,7 @@ Printable& Terminal::PutChar(char ch)
 			if (ptCursor_.x + xAdvance > rectDst.width) {
 				lineBuff_.PutChar('\0').MarkLineLast();
 				ptCursor_.x = rectDst_.x;
-				if (ptCursor_.y + yAdvance * 2 <= rectDst.height) {
+				if (ptCursor_.y + yAdvance * 2 <= rectDst.y + rectDst.height) {
 					ptCursor_.y += yAdvance;
 				} else {
 					ScrollVert(DirVert::Up);
@@ -144,7 +144,7 @@ void Terminal::ScrollVert(DirVert dirVert)
 {
 	int nLines = GetRowNum();
 	const char* lineTop = lineBuff_.GetLineLast();
-	lineBuff_.PrevLine(&lineTop, nLines);
+	lineBuff_.PrevLine(&lineTop, nLines - 1);
 	DrawTextLines(lineTop, nLines - 1, rectDst_.y);
 	EraseTextLine(nLines - 1);
 }

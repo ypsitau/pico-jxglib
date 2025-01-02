@@ -46,10 +46,11 @@ int main()
 	//terminal0.SetFont(Font::shinonome12);
 	//terminal1.SetFont(Font::shinonome14);
 	terminal1.SetFont(Font::shinonome16);
+	terminal1.SetSpacingRatio(1., 1.);
 	//terminal0.Dump(reinterpret_cast<const void*>(0), 8 * 20);
 	//terminal1.Dump(reinterpret_cast<const void*>(addr), 8 * 100);
 	int i = 0;
-	for ( ; i < 3; i++) {
+	for ( ; i < 8; i++) {
 		terminal1.Printf("%d: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\n", i);
 	}
 	for (;;) {

@@ -42,6 +42,7 @@ public:
 		pDrawable_->SetFont(fontSet, fontScale);
 		return *this;
 	}
+	const FontSet& GetFont() const { return pDrawable_->GetFont(); }
 	Terminal& SetFont(const FontSet& fontSet, int fontScaleWidth, int fontScaleHeight) {
 		pDrawable_->SetFont(fontSet, fontScaleWidth, fontScaleHeight);
 		return *this;
@@ -49,6 +50,10 @@ public:
 	Terminal& SetFontScale(int fontScale) { pDrawable_->SetFontScale(fontScale); return *this; }
 	Terminal& SetFontScale(int fontScaleWidth, int fontScaleHeight) {
 		pDrawable_->SetFontScale(fontScaleWidth, fontScaleHeight);
+		return *this;
+	}
+	Terminal& SetSpacingRatio(float charWidthRatio, float lineHeightRatio) {
+		pDrawable_->SetSpacingRatio(charWidthRatio, lineHeightRatio);
 		return *this;
 	}
 	Terminal& SetColor(const Color& color) { pDrawable_->SetColor(color); return *this; }
