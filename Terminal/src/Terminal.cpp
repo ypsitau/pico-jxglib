@@ -24,14 +24,14 @@ int Terminal::GetColNum() const
 {
 	const Drawable& drawable = GetDrawable();
 	const FontEntry& fontEntry = drawable.GetFont().GetFontEntry('M');
-	return drawable.GetWidth() / fontEntry.xAdvance;
+	return rectDst_.width / fontEntry.xAdvance;
 }
 
 int Terminal::GetRowNum() const
 {
 	const Drawable& drawable = GetDrawable();
 	const FontSet& fontSet = drawable.GetFont();
-	return drawable.GetHeight() / fontSet.yAdvance;
+	return rectDst_.height / fontSet.yAdvance;
 }
 
 Printable& Terminal::ClearScreen()
