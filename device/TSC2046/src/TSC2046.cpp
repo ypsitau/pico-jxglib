@@ -147,7 +147,7 @@ uint16_t TSC2046::ReadADC12Bit(uint8_t adc)
 			0b0,	// Mode .. 12 bit
 			0b1,	// Reference .. Single-end
 			0b01), 	// Power Down Mode .. Reference Off, ADC On
-		0x00, 0x00,		// dummy data to squeeze receiving data
+		0x00, 0x00,	// dummy data to squeeze receiving data
 	};
 	uint8_t buffRecv[3];
 	::spi_write_read_blocking(spi_, buffSend, buffRecv, sizeof(buffSend));
