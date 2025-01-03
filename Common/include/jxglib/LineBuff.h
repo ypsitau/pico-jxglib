@@ -34,17 +34,25 @@ private:
 	char* pBuffLast_;
 	char* pLineFirst_;
 	char* pLineLast_;
+	char* pLineMark_;
 public:
 	LineBuff();
 	~LineBuff();
 public:
 	bool Allocate(int bytes);
 public:
+	char* GetBuffBegin() { return buffBegin_; }
+	char* GetBuffEnd() { return buffEnd_; }
+	char* GetWrite() { return pBuffLast_; }
+	char* GetLineFirst() { return pLineFirst_; }
+	char* GetLineLast() { return pLineLast_; }
+	char* GetLineMark() { return pLineMark_; }
 	const char* GetBuffBegin() const { return buffBegin_; }
 	const char* GetBuffEnd() const { return buffEnd_; }
 	const char* GetWrite() const { return pBuffLast_; }
 	const char* GetLineFirst() const { return pLineFirst_; }
 	const char* GetLineLast() const { return pLineLast_; }
+	const char* GetLineMark() const { return pLineMark_; }
 public:
 	bool PrevLine(char** pp) const;
 	bool PrevLine(const char** pp) const { return PrevLine(const_cast<char**>(pp)); }
@@ -52,7 +60,7 @@ public:
 	bool NextLine(char** pp) const;
 	bool NextLine(const char** pp) const { return NextLine(const_cast<char**>(pp)); }
 	bool NextLine(const char** pp, int nLines) const;
-	LineBuff& MarkLineLast();
+	LineBuff& MoveLineLastHere();
 	LineBuff& PlaceChar(char ch) { *pBuffLast_ = ch; return *this; }
 	LineBuff& PutChar(char ch);
 	LineBuff& PutString(const char* str);

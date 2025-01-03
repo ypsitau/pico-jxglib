@@ -79,9 +79,8 @@ bool LineBuff::NextLine(const char** pp, int nLines) const
 	return true;
 }
 
-LineBuff& LineBuff::MarkLineLast()
+LineBuff& LineBuff::MoveLineLastHere()
 {
-	if (pLineFirst_ == pBuffLast_) NextLine(&pLineFirst_);
 	pLineLast_ = pBuffLast_;
 	return *this;
 } 
@@ -90,13 +89,12 @@ LineBuff& LineBuff::PutChar(char ch)
 {
 	*pBuffLast_ = ch;
 	WrappedPointer<char*> pointer(pBuffLast_, buffBegin_, buffEnd_);
-	char* pBuffLastUpdate = pointer.Forward().GetPointer();
+	pBuffLast_ = pointer.Forward().GetPointer();
 	if (!pLineFirst_) {
 		pLineFirst_ = buffBegin_;
-	} else if (pBuffLastUpdate == pLineFirst_) {
+	} else if (pLineFirst_ == pBuffLast_) {
 		NextLine(&pLineFirst_);
 	}
-	pBuffLast_ = pBuffLastUpdate;
 	return *this;
 }
 

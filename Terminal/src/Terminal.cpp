@@ -66,7 +66,7 @@ Printable& Terminal::PutChar(char ch)
 		int xAdvance = drawable.CalcAdvanceX(fontEntry);
 		if (code == '\n') {
 			drawable.Refresh();
-			lineBuff_.PutChar('\n').PutChar('\0').MarkLineLast().PlaceChar('\0');
+			lineBuff_.PutChar('\n').PutChar('\0').MoveLineLastHere().PlaceChar('\0');
 			ptCursor_.x = rectDst_.x;
 			if (ptCursor_.y + yAdvance * 2 <= rectDst.y + rectDst.height) {
 				ptCursor_.y += yAdvance;
@@ -75,12 +75,12 @@ Printable& Terminal::PutChar(char ch)
 			}
 		} else if (code == '\r') {
 			drawable.Refresh();
-			lineBuff_.PutChar('\r').PutChar('\0').MarkLineLast().PlaceChar('\0');
+			lineBuff_.PutChar('\r').PutChar('\0').MoveLineLastHere().PlaceChar('\0');
 			ptCursor_.x = rectDst_.x;
 			drawable.DrawRectFill(rectDst.x, ptCursor_.y, rectDst.width, yAdvance, drawable.GetColorBg());
 		} else {
 			if (ptCursor_.x + xAdvance > rectDst.width) {
-				lineBuff_.PutChar('\0').MarkLineLast();
+				lineBuff_.PutChar('\0').MoveLineLastHere();
 				ptCursor_.x = rectDst_.x;
 				if (ptCursor_.y + yAdvance * 2 <= rectDst.y + rectDst.height) {
 					ptCursor_.y += yAdvance;
