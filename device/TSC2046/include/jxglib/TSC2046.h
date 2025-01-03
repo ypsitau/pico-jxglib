@@ -36,8 +36,7 @@ public:
 	};
 private:
 	spi_inst_t* spi_;
-	const GPIO& gpio_CS_;
-	const GPIO& gpio_IRQ_;
+	PinAssign pinAssign_;
 	Adjuster adjusterX_;
 	Adjuster adjusterY_;
 	bool hvFlippedFlag_;

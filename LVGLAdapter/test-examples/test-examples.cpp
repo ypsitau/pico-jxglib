@@ -21,11 +21,12 @@ int main()
 	GPIO14.set_function_SPI1_SCK();
 	GPIO15.set_function_SPI1_TX();
 	//ILI9341 display(spi1, 240, 320, {RST: GPIO11, DC: GPIO10, CS: GPIO12, BL: GPIO13});
-	ILI9488 display(spi1, 240, 320, {RST: GPIO11, DC: GPIO10, CS: GPIO12, BL: GPIO13});
-	ILI9341::TouchScreen touchScreen(spi0, {CS: GPIO6, IRQ: GPIO7});
-	display.Initialize(Display::Dir::Rotate0);
+	//ILI9341::TouchScreen touchScreen(spi0, {CS: GPIO6, IRQ: GPIO7});
+	ILI9488 display(spi1, 320, 480, {RST: GPIO11, DC: GPIO10, CS: GPIO12, BL: GPIO13});
+	ILI9488::TouchScreen touchScreen(spi0, {CS: GPIO6, IRQ: GPIO7});
+	display.Initialize(Display::Dir::Rotate270);
 	touchScreen.Initialize(display);
-	LVGLAdapter lvglAdapter(false, 10);
+	LVGLAdapter lvglAdapter(false);
 	lvglAdapter.AttachOutput(display);
 	lvglAdapter.AttachInput(touchScreen);
 	lvglAdapter.AttachInput(UART::Default);
@@ -41,7 +42,7 @@ void Setup()
 {
 	//-----------------------------------------------
 	// examples/anim/lv_example_anim.h
-	::lv_example_anim_1();
+	//::lv_example_anim_1();
 	//::lv_example_anim_2();
 	//::lv_example_anim_3();
 	//::lv_example_anim_timeline_1();
@@ -246,7 +247,7 @@ void Setup()
 	//::lv_example_table_2();
 	//::lv_example_tabview_1();
 	//::lv_example_tabview_2();
-	//::lv_example_textarea_1();
+	::lv_example_textarea_1();
 	//::lv_example_textarea_2();
 	//::lv_example_textarea_1();
 	//::lv_example_textarea_1();
