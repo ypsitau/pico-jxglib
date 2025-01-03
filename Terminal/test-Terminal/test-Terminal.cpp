@@ -45,6 +45,7 @@ int main()
 	//terminal1.AttachOutput(display1, {50, 120, 240, 100}, Terminal::AttachDir::Rotate0);
 	//terminal0.SetFont(Font::shinonome12);
 	//terminal1.SetFont(Font::shinonome14);
+	terminal1.SetColorBg(Color::blue);
 	terminal1.SetFont(Font::shinonome16);
 	terminal1.SetSpacingRatio(1., 1.);
 	//terminal0.Dump(reinterpret_cast<const void*>(0), 8 * 20);

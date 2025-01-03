@@ -116,7 +116,7 @@ void Terminal::DrawTextLine(WrappedCharFeeder& charFeeder, int y)
 		if (decoder.FeedChar(ch, &code)) {
 			const FontEntry& fontEntry = fontSet.GetFontEntry(code);
 			int xAdvance = context_.CalcAdvanceX(fontEntry);
-			GetDrawable().DrawChar(x, y, fontEntry);
+			GetDrawable().DrawChar(x, y, fontEntry, false, &context_);
 			x += xAdvance;
 		}
 	}
