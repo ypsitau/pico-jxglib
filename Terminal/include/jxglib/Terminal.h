@@ -29,7 +29,7 @@ public:
 	Terminal() : pDrawable_{nullptr} {}
 public:
 	bool Initialize(int bytes = 1024);
-	bool AttachOutput(Drawable& drawable, AttachDir attachDir = AttachDir::Normal, const Rect& rect = Rect::Empty);
+	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, AttachDir attachDir = AttachDir::Normal);
 public:
 	Drawable& GetDrawable() { return *pDrawable_; }
 	const Drawable& GetDrawable() const { return *pDrawable_; }

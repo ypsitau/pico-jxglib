@@ -218,7 +218,7 @@ void Canvas::Dispatcher_T<T_Color>::ScrollVert(DirVert dirVert, int htScroll, co
 //------------------------------------------------------------------------------
 // Canvas
 //------------------------------------------------------------------------------
-bool Canvas::AttachOutput(Drawable& drawableOut, AttachDir attachDir, const Rect& rect)
+bool Canvas::AttachOutput(Drawable& drawableOut, const Rect& rect, AttachDir attachDir)
 {
 	const Format& formatOut = drawableOut.GetFormat();
 	int wdImage, htImage;

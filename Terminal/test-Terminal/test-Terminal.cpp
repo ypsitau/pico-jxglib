@@ -20,27 +20,27 @@ int main()
 	::spi_init(spi1, 125 * 1000 * 1000);
 	GPIO14.set_function_SPI1_SCK();
 	GPIO15.set_function_SPI1_TX();
-	ST7789 display1(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
-	display1.Initialize(Display::Dir::Rotate0);
-	Terminal terminal1;
-	terminal1.Initialize(800);
-	terminal1.AttachOutput(display1, Terminal::AttachDir::Rotate0);
-	terminal1.SetColorBg(Color::blue).ClearScreen();
-	terminal1.SetFont(Font::shinonome16);
-	terminal1.SetSpacingRatio(1., 1.);
+	ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
+	display.Initialize(Display::Dir::Rotate0);
+	Terminal terminal;
+	terminal.Initialize(800);
+	terminal.AttachOutput(display);
+	terminal.SetColorBg(Color::blue).ClearScreen();
+	terminal.SetFont(Font::shinonome16);
+	terminal.SetSpacingRatio(1., 1.);
 	int i = 0;
 	for ( ; i < 8; i++) {
-		terminal1.Printf("%d: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\n", i);
+		terminal.Printf("%d: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\n", i);
 	}
 	for (;;) {
 		Printf("[D]Dump [H]History [A]Add Line\n");
 		char ch = getchar();
 		if (ch == 'd') {
-			terminal1.GetLineBuff().Print();
+			terminal.GetLineBuff().Print();
 		} else if (ch == 'h') {
-			UART::Default.PrintFrom(terminal1.CreateStream());
+			UART::Default.PrintFrom(terminal.CreateStream());
 		} else if (ch == 'a') {
-			terminal1.Printf("%d: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\n", i);
+			terminal.Printf("%d: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\n", i);
 			i++;
 		}
 	}

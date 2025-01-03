@@ -22,7 +22,7 @@ int main()
 	Display::Dir displayDir = Display::Dir::Rotate0;
 	display.Initialize(displayDir);
 	Canvas canvas;
-	canvas.AttachOutput(display, Canvas::DrawDir::Rotate0, {50, 50, 100, 150});
+	canvas.AttachOutput(display, {50, 50, 100, 150});
 	Drawable_TestCase::DrawString(canvas);
 	//Drawable_TestCase::RotateImage(canvas);
 }
