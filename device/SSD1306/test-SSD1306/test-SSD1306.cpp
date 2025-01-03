@@ -272,10 +272,10 @@ void Test_DrawStringWrap(Display& display)
 int main()
 {
 	::stdio_init_all();
-	::i2c_init(i2c0, 400000);
-	GPIO4.set_function_I2C0_SDA().pull_up();
-	GPIO5.set_function_I2C0_SCL().pull_up();
-	SSD1306 display(i2c0);
+	::i2c_init(i2c1, 400000);
+	GPIO26.set_function_I2C1_SDA().pull_up();
+	GPIO27.set_function_I2C1_SCL().pull_up();
+	SSD1306 display(i2c1);
 	display.Initialize();
 	//Test_DrawRectFill(display);
 #if 0
@@ -296,6 +296,9 @@ int main()
 		"抜かしたことがある。なぜそんなむやみなことをしたかと聞く人があるかもしれない。";
 	display.SetFont(Font::shinonome12);
 	display.SetSpacingRatio(1, 1);
+	display.DrawStringWrap(0, 0, str);
+	display.Refresh();
+	for (;;) ;
 	do {
 		display.DrawStringWrap(0, 0, str);
 		display.Refresh();
