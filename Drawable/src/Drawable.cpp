@@ -114,19 +114,19 @@ Drawable& Drawable::ScrollVert(DirVert dirVert, int htScroll, const Rect& rectCl
 	return *this;
 }
 
-Drawable& Drawable::DrawChar(int x, int y, const FontEntry& fontEntry)
+Drawable& Drawable::DrawChar(int x, int y, const FontEntry& fontEntry, bool transparentBgFlag, const Context* pContext)
 {
-	DrawBitmap(x, y, fontEntry.data, fontEntry.width, fontEntry.height,
-					true, context_.fontScaleWidth, context_.fontScaleHeight);
-	return *this;
+	if (!pContext) pContext = &context_;
+	return DrawBitmap(x, y, fontEntry.data, fontEntry.width, fontEntry.height, transparentBgFlag,
+			pContext->fontScaleWidth, pContext->fontScaleHeight, pContext);
 }
 
-Drawable& Drawable::DrawChar(int x, int y, uint32_t code)
+Drawable& Drawable::DrawChar(int x, int y, uint32_t code, bool transparentBgFlag, const Context* pContext)
 {
-	if (!context_.pFontSet) return *this;
-	const FontEntry& fontEntry = context_.pFontSet->GetFontEntry(code);
-	DrawChar(x, y, fontEntry);
-	return *this;
+	if (!pContext) pContext = &context_;
+	if (!pContext->pFontSet) return *this;
+	const FontEntry& fontEntry = pContext->pFontSet->GetFontEntry(code);
+	return DrawChar(x, y, fontEntry, transparentBgFlag, pContext);
 }
 
 Drawable& Drawable::DrawString(int x, int y, const char* str, StringCont* pStringCont)
@@ -164,7 +164,7 @@ Drawable& Drawable::DrawStringWrap(int x, int y, int width, int height, const ch
 	for (const char* p = str; *p; p++) {
 		if (!decoder.FeedChar(*p, &code)) continue;
 		const FontEntry& fontEntry = context_.pFontSet->GetFontEntry(code);
-		int xAdvance = CalcAdvanceX(fontEntry);
+		int xAdvance = context_.CalcAdvanceX(fontEntry);
 		if (x + fontEntry.width * context_.fontScaleWidth > xExceed) {
 			x = xStart, y += lineHeight;
 			if (y + lineHeight > yExceed) break;

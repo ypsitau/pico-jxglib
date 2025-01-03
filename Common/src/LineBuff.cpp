@@ -79,12 +79,6 @@ bool LineBuff::NextLine(const char** pp, int nLines) const
 	return true;
 }
 
-LineBuff& LineBuff::MoveLineLastHere()
-{
-	pLineLast_ = pBuffLast_;
-	return *this;
-} 
-
 LineBuff& LineBuff::PutChar(char ch)
 {
 	*pBuffLast_ = ch;
@@ -95,6 +89,7 @@ LineBuff& LineBuff::PutChar(char ch)
 	} else if (pLineFirst_ == pBuffLast_) {
 		NextLine(&pLineFirst_);
 	}
+	if (pLineMark_ == pBuffLast_) NextLine(&pLineMark_);
 	return *this;
 }
 

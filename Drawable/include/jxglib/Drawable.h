@@ -68,6 +68,13 @@ public:
 		Context() : colorFg{Color::white}, colorBg{Color::black},
 			pFontSet{&FontSet::None}, fontScaleWidth{1}, fontScaleHeight{1},
 			charWidthRatio(1.0), lineHeightRatio(1.0) {}
+	public:
+		int CalcAdvanceX(const FontEntry& fontEntry) const {
+			return static_cast<int>(fontEntry.xAdvance * fontScaleWidth * charWidthRatio);
+		}
+		int CalcAdvanceY() const {
+			return static_cast<int>(pFontSet->yAdvance * fontScaleHeight * lineHeightRatio);
+		}
 	};
 	class StringCont {
 	private:
@@ -145,14 +152,7 @@ public:
 		context_.charWidthRatio = charWidthRatio, context_.lineHeightRatio = lineHeightRatio;
 		return *this;
 	}
-	int CalcAdvanceX(const FontEntry& fontEntry) const {
-		return static_cast<int>(fontEntry.xAdvance * context_.fontScaleWidth * context_.charWidthRatio);
-	}
-	int CalcAdvanceY() const {
-		return static_cast<int>(context_.pFontSet->yAdvance * context_.fontScaleHeight * context_.lineHeightRatio);
-	}
 public:
-
 	Drawable& Refresh() { GetDispatcher().Refresh(); return *this; }
 	Drawable& Clear() { Fill(context_.colorBg); return *this; }
 	Drawable& Fill(const Color& color) { GetDispatcher().Fill(color); return *this; }
@@ -193,30 +193,33 @@ public:
 		GetDispatcher().DrawBitmap(x, y, data, width, height, color, pColorBg, scaleX, scaleY);
 		return *this;
 	}
-	Drawable& DrawBitmap(int x, int y, const void* data, int width, int height, bool transparentBgFlag = false, int scaleX = 1, int scaleY = 1) {
-		DrawBitmap(x, y, data, width, height, context_.colorFg, transparentBgFlag? nullptr : &context_.colorBg, scaleX, scaleY);
-		return *this;
+	Drawable& DrawBitmap(int x, int y, const void* data, int width, int height,
+			bool transparentBgFlag = false, int scaleX = 1, int scaleY = 1, const Context* pContext = nullptr) {
+		if (!pContext) pContext = &context_;
+		return DrawBitmap(x, y, data, width, height, pContext->colorFg, transparentBgFlag? nullptr : &pContext->colorBg, scaleX, scaleY);
 	}
-	Drawable& DrawBitmap(const Point& pt, const void* data, int width, int height, bool transparentBgFlag = false, int scaleX = 1, int scaleY = 1) {
-		DrawBitmap(pt.x, pt.y, data, width, height, transparentBgFlag, scaleX, scaleY);
-		return *this;
+	Drawable& DrawBitmap(const Point& pt, const void* data, int width, int height,
+			bool transparentBgFlag = false, int scaleX = 1, int scaleY = 1, const Context* pContext = nullptr) {
+		return DrawBitmap(pt.x, pt.y, data, width, height, transparentBgFlag, scaleX, scaleY, pContext);
 	}
 	Drawable& DrawImage(int x, int y, const Image& image, const Rect& rectClip = Rect::Empty, DrawDir drawDir = DrawDir::Normal);
 	Drawable& DrawImageFast(int x, int y, const Image& image);
 	Drawable& ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip = Rect::Empty);
 	Drawable& ScrollVert(DirVert dirVert, int htScroll, const Rect& rectClip = Rect::Empty);
-	Drawable& DrawChar(int x, int y, const FontEntry& fontEntry);
-	Drawable& DrawChar(const Point& pt, const FontEntry& fontEntry) { DrawChar(pt.x, pt.y, fontEntry); return *this; }
-	Drawable& DrawChar(int x, int y, uint32_t code);
-	Drawable& DrawChar(const Point& pt, uint32_t code) { DrawChar(pt.x, pt.y, code); return *this; }
+	Drawable& DrawChar(int x, int y, const FontEntry& fontEntry, bool transparentBgFlag = true, const Context* pContext = nullptr);
+	Drawable& DrawChar(const Point& pt, const FontEntry& fontEntry, bool transparentBgFlag = true, const Context* pContext = nullptr) {
+		return DrawChar(pt.x, pt.y, fontEntry, transparentBgFlag, pContext);
+	}
+	Drawable& DrawChar(int x, int y, uint32_t code, bool transparentBgFlag = true, const Context* pContext = nullptr);
+	Drawable& DrawChar(const Point& pt, uint32_t code, bool transparentBgFlag = true, const Context* pContext = nullptr) {
+		return DrawChar(pt.x, pt.y, code, transparentBgFlag, pContext);
+	}
 	Drawable& DrawString(int x, int y, const char* str, StringCont* pStringCont = nullptr);
 	Drawable& DrawString(const Point& pt, const char* str, StringCont* pStringCont = nullptr) {
-		DrawString(pt.x, pt.y, str, pStringCont);
-		return *this;
+		return DrawString(pt.x, pt.y, str, pStringCont);
 	}
 	Drawable& DrawString(StringCont& stringCont) {
-		DrawString(stringCont.GetPosition(), stringCont.GetString());
-		return *this;
+		return DrawString(stringCont.GetPosition(), stringCont.GetString());
 	}
 	Drawable& DrawStringWrap(int x, int y, int width, int height, const char* str, StringCont* pStringCont = nullptr);
 	Drawable& DrawStringWrap(int x, int y, const char* str, StringCont* pStringCont = nullptr) {

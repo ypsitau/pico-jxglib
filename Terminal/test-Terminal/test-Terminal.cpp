@@ -24,8 +24,8 @@ int main()
 	GPIO4.set_function_SPI0_RX();
 	//GPIO4.set_function_I2C0_SDA().pull_up();
 	//GPIO5.set_function_I2C0_SCL().pull_up();
-	GPIO14.set_function_SPI1_SCK().set_drive_strength(GPIO_DRIVE_STRENGTH_12MA);
-	GPIO15.set_function_SPI1_TX().set_drive_strength(GPIO_DRIVE_STRENGTH_12MA);
+	GPIO14.set_function_SPI1_SCK();
+	GPIO15.set_function_SPI1_TX();
 	//SSD1306 display0(i2c0);
 	ST7789 display1(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
 	display1.Initialize(Display::Dir::Rotate0);

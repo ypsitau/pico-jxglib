@@ -60,7 +60,8 @@ public:
 	bool NextLine(char** pp) const;
 	bool NextLine(const char** pp) const { return NextLine(const_cast<char**>(pp)); }
 	bool NextLine(const char** pp, int nLines) const;
-	LineBuff& MoveLineLastHere();
+	LineBuff& MoveLineLastHere() { pLineLast_ = pBuffLast_; return *this; }
+	LineBuff& SetLineMark(char* pLineMark) { pLineMark_ = pLineMark; return *this; }
 	LineBuff& PlaceChar(char ch) { *pBuffLast_ = ch; return *this; }
 	LineBuff& PutChar(char ch);
 	LineBuff& PutString(const char* str);
