@@ -32,10 +32,10 @@ Printable& UART::ClearScreen()
 	return Stream::ClearScreen();
 }
 
-Printable& UART::FlushScreen()
+Printable& UART::RefreshScreen()
 {
 	chPrev_ = '\0';
-	return Stream::FlushScreen();
+	return Stream::RefreshScreen();
 }
 
 Printable& UART::PutChar(char ch)

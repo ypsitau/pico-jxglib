@@ -57,10 +57,7 @@ public:
 	Drawable* GetDrawableOut() { return pDrawableOut_; }
 	Image& GetImageOwn() { return imageOwn_; }
 	const Output& GetOutput() const { return output_; }
-	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, AttachDir attachDir = AttachDir::Normal);
-	bool AttachOutput(Drawable& drawable, AttachDir attachDir) {
-		return AttachOutput(drawable, Rect::Empty, attachDir);
-	}
+	bool AttachOutput(Drawable& drawable, AttachDir attachDir = AttachDir::Normal, const Rect& rect = Rect::Empty);
 };
 
 }

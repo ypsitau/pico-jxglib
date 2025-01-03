@@ -54,7 +54,7 @@ public:
 	Printable() : Dump(this) {}
 public:
 	virtual Printable& ClearScreen() = 0;
-	virtual Printable& FlushScreen() = 0;
+	virtual Printable& RefreshScreen() = 0;
 	virtual Printable& Locate(int col, int row) = 0;
 	virtual Printable& PutChar(char ch) = 0;
 	virtual Printable& PutCharRaw(char ch) { return PutChar(ch); }
@@ -79,7 +79,7 @@ public:
 	static PrintableDumb Instance;
 public:
 	virtual Printable& ClearScreen() override { return *this; }
-	virtual Printable& FlushScreen() override { return *this; }
+	virtual Printable& RefreshScreen() override { return *this; }
 	virtual Printable& Locate(int col, int row) override { return *this; }
 	virtual Printable& PutChar(char ch) override { return *this; }
 };
@@ -90,7 +90,7 @@ public:
 extern Printable::DumpT Dump;
 
 inline Printable& ClearScreen() { return Printable::GetStandardOutput().ClearScreen(); }
-inline Printable& FlushScreen() { return Printable::GetStandardOutput().FlushScreen(); }
+inline Printable& RefreshScreen() { return Printable::GetStandardOutput().RefreshScreen(); }
 inline Printable& Locate(int col, int row) { return Printable::GetStandardOutput().Locate(col, row); }
 inline Printable& PutChar(char ch) { return Printable::GetStandardOutput().PutChar(ch); }
 inline Printable& PutCharRaw(char ch) { return Printable::GetStandardOutput().PutCharRaw(ch); }

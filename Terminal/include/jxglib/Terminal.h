@@ -29,10 +29,7 @@ public:
 	Terminal() : pDrawable_{nullptr} {}
 public:
 	bool Initialize(int bytes = 1024);
-	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, AttachDir attachDir = AttachDir::Normal);
-	bool AttachOutput(Drawable& drawable, AttachDir attachDir) {
-		return AttachOutput(drawable, Rect::Empty, attachDir);
-	}
+	bool AttachOutput(Drawable& drawable, AttachDir attachDir = AttachDir::Normal, const Rect& rect = Rect::Empty);
 public:
 	Drawable& GetDrawable() { return *pDrawable_; }
 	const Drawable& GetDrawable() const { return *pDrawable_; }
@@ -72,7 +69,7 @@ public:
 public:
 	// Virtual functions of Printable
 	virtual Printable& ClearScreen() override;
-	virtual Printable& FlushScreen() override;
+	virtual Printable& RefreshScreen() override;
 	virtual Printable& Locate(int col, int row) override;
 	virtual Printable& PutChar(char ch) override;
 private:

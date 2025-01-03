@@ -24,7 +24,7 @@ public:
 public:
 	// virtual functions of Printable
 	virtual Printable& ClearScreen() override { /* do noghint*/ return *this; }
-	virtual Printable& FlushScreen() override { /* do noghint*/ return *this; }
+	virtual Printable& RefreshScreen() override { /* do noghint*/ return *this; }
 	virtual Printable& Locate(int col, int row) override { /* do noghint*/ return *this; }
 	virtual Printable& PutChar(char ch) override { Write(&ch, sizeof(char)); return *this; }
 };
