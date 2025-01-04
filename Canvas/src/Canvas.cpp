@@ -77,7 +77,7 @@ template<typename T_Color>
 void Canvas::Dispatcher_T<T_Color>::DrawImage(int x, int y, const Image& image, const Rect& rectClip, DrawDir drawDir)
 {
 	Image& imageOwn = canvas_.GetImageOwn();
-	drawDir = canvas_.GetOutput().attachDir.Transform(drawDir);
+	drawDir = canvas_.GetOutput().dir.Transform(drawDir);
 	int xSrc = rectClip.x, ySrc = rectClip.y;
 	int wdImage = rectClip.width, htImage = rectClip.height;
 	int xSkip = 0, ySkip = 0;
@@ -218,19 +218,19 @@ void Canvas::Dispatcher_T<T_Color>::ScrollVert(DirVert dirVert, int htScroll, co
 //------------------------------------------------------------------------------
 // Canvas
 //------------------------------------------------------------------------------
-bool Canvas::AttachOutput(Drawable& drawableOut, const Rect& rect, AttachDir attachDir)
+bool Canvas::AttachOutput(Drawable& drawableOut, const Rect& rect, Dir dir)
 {
 	const Format& formatOut = drawableOut.GetFormat();
 	int wdImage, htImage;
 	if (rect.IsEmpty()) {
-		if (attachDir.IsHorz()) {
+		if (dir.IsHorz()) {
 			wdImage = drawableOut.GetWidth(), htImage = drawableOut.GetHeight();
 		} else {
 			wdImage = drawableOut.GetHeight(), htImage = drawableOut.GetWidth();
 		}
 		output_.rect = Rect(0, 0, drawableOut.GetWidth(), drawableOut.GetHeight());
 	} else {
-		if (attachDir.IsHorz()) {
+		if (dir.IsHorz()) {
 			wdImage = rect.width, htImage = rect.height;
 		} else {
 			wdImage = rect.height, htImage = rect.width;
@@ -238,9 +238,9 @@ bool Canvas::AttachOutput(Drawable& drawableOut, const Rect& rect, AttachDir att
 		output_.rect = rect;
 	}
 	SetCapacity(formatOut, wdImage, htImage);
-	output_.attachDir = attachDir;
+	output_.dir = dir;
 	pDrawableOut_ = &drawableOut;
-	if (!imageOwn_.Alloc(formatOut, wdImage, htImage)) return false;
+	if (!imageOwn_.Allocate(formatOut, wdImage, htImage)) return false;
 	imageOwn_.FillZero();
 	if (formatOut.IsBitmap()) {
 		return false;
@@ -275,8 +275,6 @@ void Canvas::DispatcherEx::Refresh()
 	if (!pDrawableOut) return;
 	Image& imageOwn = canvas_.GetImageOwn();
 	const Output& output = canvas_.GetOutput();
-	//pDrawableOut->DrawImage(0, 0, imageOwn, &output.rect, output.attachDir);
-	//pDrawableOut->DrawImage(output.rect.x, output.rect.y, imageOwn, Rect::Empty, output.attachDir);
 	pDrawableOut->DrawImageFast(output.rect.x, output.rect.y, imageOwn);
 	pDrawableOut->Refresh();
 }

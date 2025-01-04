@@ -17,7 +17,6 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class LVGLAdapter {
 public:
-	using AttachDir = Image::WriterDir;
 	class Input {
 	public:
 		virtual void Handle(lv_indev_t* indev_drv, lv_indev_data_t* data) = 0;

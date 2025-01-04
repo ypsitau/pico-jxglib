@@ -126,7 +126,7 @@ void Setup()
 	// examples/porting/osal/lv_example_osal.h
 	//-----------------------------------------------
 	// examples/scroll/lv_example_scroll.h
-	//::lv_example_scroll_1();
+	::lv_example_scroll_1();
 	//::lv_example_scroll_2();
 	//::lv_example_scroll_3();
 	//::lv_example_scroll_4();
@@ -247,7 +247,7 @@ void Setup()
 	//::lv_example_table_2();
 	//::lv_example_tabview_1();
 	//::lv_example_tabview_2();
-	::lv_example_textarea_1();
+	//::lv_example_textarea_1();
 	//::lv_example_textarea_2();
 	//::lv_example_textarea_1();
 	//::lv_example_textarea_1();

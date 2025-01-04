@@ -280,7 +280,7 @@ public:
 			allocatedFlag_{false}, pFormat_{&format}, width_{width}, height_{height},
 			data_{reinterpret_cast<uint8_t*>(const_cast<void*>(data))} {}
 	~Image();
-	bool Alloc(const Format& format, int width, int height);
+	bool Allocate(const Format& format, int width, int height);
 	void Free();
 	void FillZero();
 	const Format& GetFormat() const { return *pFormat_; }

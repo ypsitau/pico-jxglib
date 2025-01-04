@@ -13,7 +13,7 @@ bool Terminal::Initialize(int bytes)
 	return lineBuff_.Allocate(bytes);
 }
 
-bool Terminal::AttachOutput(Drawable& drawable, const Rect& rect, AttachDir attachDir)
+bool Terminal::AttachOutput(Drawable& drawable, const Rect& rect, Dir dir)
 {
 	rectDst_ = rect.IsEmpty()? Rect(0, 0, drawable.GetWidth(), drawable.GetHeight()) : rect;
 	pDrawable_ = &drawable;

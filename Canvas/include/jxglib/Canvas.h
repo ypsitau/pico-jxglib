@@ -42,13 +42,12 @@ public:
 		virtual void ScrollHorz(DirHorz dirHorz, int width, const Rect& rect) override;
 		virtual void ScrollVert(DirVert dirVert, int height, const Rect& rect) override;
 	};
-	using AttachDir = DrawDir;
 private:
 	Drawable* pDrawableOut_;
 	Image imageOwn_;
 	struct Output {
 		Rect rect;
-		AttachDir attachDir;
+		Dir dir;
 	} output_;
 	std::unique_ptr<DispatcherEx> pDispatcherEx_;
 public:
@@ -57,7 +56,7 @@ public:
 	Drawable* GetDrawableOut() { return pDrawableOut_; }
 	Image& GetImageOwn() { return imageOwn_; }
 	const Output& GetOutput() const { return output_; }
-	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, AttachDir attachDir = AttachDir::Normal);
+	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
 };
 
 }

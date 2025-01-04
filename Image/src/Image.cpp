@@ -20,7 +20,7 @@ Image::~Image()
 {
 	if (allocatedFlag_) ::free(data_);
 }
-bool Image::Alloc(const Format& format, int width, int height)
+bool Image::Allocate(const Format& format, int width, int height)
 {
 	if (allocatedFlag_) ::free(data_);
 	allocatedFlag_ = true;

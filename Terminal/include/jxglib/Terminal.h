@@ -16,7 +16,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 struct Terminal : public Printable {
 public:
-	using AttachDir = Drawable::Dir;
+	using Dir = Drawable::Dir;
 	using Stream = LineBuff::Stream;
 private:
 	Drawable* pDrawable_;
@@ -29,7 +29,7 @@ public:
 	Terminal() : pDrawable_{nullptr} {}
 public:
 	bool Initialize(int bytes = 1024);
-	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, AttachDir attachDir = AttachDir::Normal);
+	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
 public:
 	Drawable& GetDrawable() { return *pDrawable_; }
 	const Drawable& GetDrawable() const { return *pDrawable_; }
