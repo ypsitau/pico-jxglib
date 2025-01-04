@@ -16,6 +16,7 @@ bool Terminal::Initialize(int bytes)
 bool Terminal::AttachOutput(Drawable& drawable, const Rect& rect, Dir dir)
 {
 	rectDst_ = rect.IsEmpty()? Rect(0, 0, drawable.GetWidth(), drawable.GetHeight()) : rect;
+	ptCursor_ = Point(rectDst_.x, rectDst_.y);
 	pDrawable_ = &drawable;
 	return true;
 }
@@ -46,13 +47,14 @@ Printable& Terminal::RefreshScreen()
 Printable& Terminal::Locate(int col, int row)
 {
 	const FontEntry& fontEntry = GetFont().GetFontEntry('M');
-	ptCursor_ = Point(context_.CalcAdvanceX(fontEntry) * col, context_.CalcAdvanceY() * row);
+	ptCursor_ = Point(
+			rectDst_.x + context_.CalcAdvanceX(fontEntry) * col,
+			rectDst_.y + context_.CalcAdvanceY() * row);
 	return *this;
 }
 
 Printable& Terminal::PutChar(char ch)
 {
-	const Rect& rectDst = GetRectDst();
 	int yAdvance = context_.CalcAdvanceY();
 	const FontSet& fontSet = GetFont();
 	uint32_t code;
@@ -62,22 +64,23 @@ Printable& Terminal::PutChar(char ch)
 		if (code == '\n') {
 			lineBuff_.PutChar('\n').PutChar('\0').MoveLineLastHere().PlaceChar('\0');
 			ptCursor_.x = rectDst_.x;
-			if (ptCursor_.y + yAdvance * 2 <= rectDst.y + rectDst.height) {
+			if (pEventHandler_) pEventHandler_->OnNewLine(*this);
+			if (ptCursor_.y + yAdvance * 2 <= rectDst_.y + rectDst_.height) {
 				GetDrawable().Refresh();
 				ptCursor_.y += yAdvance;
 			} else {
 				ScrollVert(DirVert::Up);
 			}
-			if (pEventHandler_) pEventHandler_->OnLineFeed(*this);
 		} else if (code == '\r') {
 			lineBuff_.PutChar('\r').PutChar('\0').MoveLineLastHere().PlaceChar('\0');
 			ptCursor_.x = rectDst_.x;
-			GetDrawable().DrawRectFill(rectDst.x, ptCursor_.y, rectDst.width, yAdvance, context_.colorBg);
+			GetDrawable().DrawRectFill(rectDst_.x, ptCursor_.y, rectDst_.width, yAdvance, context_.colorBg);
 		} else {
-			if (ptCursor_.x + xAdvance > rectDst.width) {
+			if (ptCursor_.x + xAdvance > rectDst_.x + rectDst_.width) {
 				lineBuff_.PutChar('\0').MoveLineLastHere();
 				ptCursor_.x = rectDst_.x;
-				if (ptCursor_.y + yAdvance * 2 <= rectDst.y + rectDst.height) {
+				if (pEventHandler_) pEventHandler_->OnNewLine(*this);
+				if (ptCursor_.y + yAdvance * 2 <= rectDst_.y + rectDst_.height) {
 					ptCursor_.y += yAdvance;
 				} else {
 					ScrollVert(DirVert::Up);

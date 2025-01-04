@@ -18,7 +18,7 @@ struct Terminal : public Printable {
 public:
 	class EventHandler {
 	public:
-		virtual void OnLineFeed(Terminal& terminal) = 0;
+		virtual void OnNewLine(Terminal& terminal) = 0;
 	};
 public:
 	using Dir = Drawable::Dir;
