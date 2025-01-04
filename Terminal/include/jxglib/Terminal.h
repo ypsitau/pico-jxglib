@@ -16,17 +16,24 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 struct Terminal : public Printable {
 public:
+	class EventHandler {
+	public:
+		virtual void OnLineFeed(Terminal& terminal) = 0;
+	};
+public:
 	using Dir = Drawable::Dir;
 	using Stream = LineBuff::Stream;
 private:
 	Drawable* pDrawable_;
 	Rect rectDst_;
+	int nLinesWhole_;
 	Point ptCursor_;
 	UTF8Decoder decoder_;
 	LineBuff lineBuff_;
 	Drawable::Context context_;
+	EventHandler* pEventHandler_;
 public:
-	Terminal() : pDrawable_{nullptr} {}
+	Terminal() : pDrawable_{nullptr}, nLinesWhole_{0}, pEventHandler_{nullptr} {}
 public:
 	bool Initialize(int bytes = 1024);
 	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
@@ -35,6 +42,7 @@ public:
 	const Drawable& GetDrawable() const { return *pDrawable_; }
 	const Rect& GetRectDst() const { return rectDst_; }
 public:
+	void SetEventHandler(EventHandler* pEventHandler) { pEventHandler_ = pEventHandler; }
 	Terminal& SetColor(const Color& color) { context_.colorFg = color; return *this; }
 	const Color& GetColor() const { return context_.colorFg; }
 	Terminal& SetColorBg(const Color& color) { context_.colorBg = color; return *this; }
@@ -62,6 +70,7 @@ public:
 		return *this;
 	}
 public:
+	int GetLineIndex() const { return nLinesWhole_; }
 	int GetColNum() const;
 	int GetRowNum() const;
 	const LineBuff& GetLineBuff() const { return lineBuff_; }

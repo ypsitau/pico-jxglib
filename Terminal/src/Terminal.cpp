@@ -60,16 +60,16 @@ Printable& Terminal::PutChar(char ch)
 		const FontEntry& fontEntry = fontSet.GetFontEntry(code);
 		int xAdvance = context_.CalcAdvanceX(fontEntry);
 		if (code == '\n') {
-			GetDrawable().Refresh();
 			lineBuff_.PutChar('\n').PutChar('\0').MoveLineLastHere().PlaceChar('\0');
 			ptCursor_.x = rectDst_.x;
 			if (ptCursor_.y + yAdvance * 2 <= rectDst.y + rectDst.height) {
+				GetDrawable().Refresh();
 				ptCursor_.y += yAdvance;
 			} else {
 				ScrollVert(DirVert::Up);
 			}
+			if (pEventHandler_) pEventHandler_->OnLineFeed(*this);
 		} else if (code == '\r') {
-			GetDrawable().Refresh();
 			lineBuff_.PutChar('\r').PutChar('\0').MoveLineLastHere().PlaceChar('\0');
 			ptCursor_.x = rectDst_.x;
 			GetDrawable().DrawRectFill(rectDst.x, ptCursor_.y, rectDst.width, yAdvance, context_.colorBg);
@@ -139,6 +139,7 @@ void Terminal::ScrollVert(DirVert dirVert)
 	lineBuff_.PrevLine(&lineTop, nLines - 1);
 	DrawTextLines(lineTop, nLines - 1, rectDst_.y);
 	EraseTextLine(nLines - 1);
+	GetDrawable().Refresh();
 }
 
 }
