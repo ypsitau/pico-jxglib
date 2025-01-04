@@ -1,3 +1,4 @@
+
 namespace jxglib {
 
 static const char* Text_FarFarAway_700Words =
