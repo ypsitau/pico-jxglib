@@ -36,13 +36,13 @@ public:
 	Terminal() : pDrawable_{nullptr}, nLinesWhole_{0}, pEventHandler_{nullptr} {}
 public:
 	bool Initialize(int bytes = 4096);
-	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
+	Terminal& AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
 public:
 	Drawable& GetDrawable() { return *pDrawable_; }
 	const Drawable& GetDrawable() const { return *pDrawable_; }
 	const Rect& GetRectDst() const { return rectDst_; }
 public:
-	void SetEventHandler(EventHandler* pEventHandler) { pEventHandler_ = pEventHandler; }
+	Terminal& SetEventHandler(EventHandler& eventHandler) { pEventHandler_ = &eventHandler; return *this; }
 	Terminal& SetColor(const Color& color) { context_.colorFg = color; return *this; }
 	const Color& GetColor() const { return context_.colorFg; }
 	Terminal& SetColorBg(const Color& color) { context_.colorBg = color; return *this; }

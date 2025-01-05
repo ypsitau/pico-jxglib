@@ -13,12 +13,12 @@ bool Terminal::Initialize(int bytes)
 	return lineBuff_.Allocate(bytes);
 }
 
-bool Terminal::AttachOutput(Drawable& drawable, const Rect& rect, Dir dir)
+Terminal& Terminal::AttachOutput(Drawable& drawable, const Rect& rect, Dir dir)
 {
 	rectDst_ = rect.IsEmpty()? Rect(0, 0, drawable.GetWidth(), drawable.GetHeight()) : rect;
 	ptCursor_ = Point(rectDst_.x, rectDst_.y);
 	pDrawable_ = &drawable;
-	return true;
+	return *this;
 }
 
 int Terminal::GetColNum() const

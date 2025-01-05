@@ -18,7 +18,6 @@ public:
 
 int main()
 {
-	EventHandler eventHandler;
 	::stdio_init_all();
 	::spi_init(spi1, 125 * 1000 * 1000);
 	GPIO14.set_function_SPI1_SCK();
@@ -26,12 +25,13 @@ int main()
 	ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
 	display.Initialize(Display::Dir::Rotate0);
 	Terminal terminal;
+	EventHandler eventHandler;
 	terminal.Initialize();
-	terminal.AttachOutput(display);
-	terminal.SetEventHandler(&eventHandler);
-	terminal.SetFont(Font::shinonome16).SetSpacingRatio(1., 1.2);
-	//terminal.SetColor(Color::black).SetColorBg(Color::white);
-	terminal.ClearScreen();
-	//terminal.Print(Text_FarFarAway_700Words);
-	terminal.Print(Text_Botchan);
+	terminal.AttachOutput(display)
+		.SetEventHandler(eventHandler)
+		.SetFont(Font::shinonome16).SetSpacingRatio(1., 1.2)
+		//.SetColor(Color::black).SetColorBg(Color::white)
+		.ClearScreen()
+		//.Print(Text_FarFarAway_700Words)
+		.Print(Text_Botchan);
 }

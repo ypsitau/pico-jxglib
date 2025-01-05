@@ -18,7 +18,6 @@ public:
 
 int main()
 {
-	EventHandler eventHandler;
 	::stdio_init_all();
 	::i2c_init(i2c1, 400000);
 	GPIO26.set_function_I2C1_SDA().pull_up();
@@ -26,12 +25,13 @@ int main()
 	SSD1306 display(i2c1);
 	display.Initialize();
 	Terminal terminal;
+	EventHandler eventHandler;
 	terminal.Initialize();
-	terminal.AttachOutput(display);
-	terminal.SetEventHandler(&eventHandler);
-	terminal.SetFont(Font::shinonome12).SetSpacingRatio(1., 1.2);
-	//terminal.SetColor(Color::black).SetColorBg(Color::white);
-	terminal.ClearScreen();
-	//terminal.Print(Text_FarFarAway_700Words);
-	terminal.Print(Text_Botchan);
+	terminal.AttachOutput(display)
+		.SetEventHandler(eventHandler)
+		.SetFont(Font::shinonome12).SetSpacingRatio(1., 1.2)
+		//.SetColor(Color::black).SetColorBg(Color::white)
+		.ClearScreen()
+		//.Print(Text_FarFarAway_700Words)
+		.Print(Text_Botchan);
 }
