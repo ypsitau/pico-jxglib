@@ -79,6 +79,9 @@ main() = {
 		p.OptString('outdir', 'o', 'directory to output')
 		p.OptString('cols', 'c', 'number of columns')
 		p.OptBool('readable', 'r', 'output font data in a readable format')
+		p.OptBool('kana', 'k', 'generate kana characters')
+		p.OptBool('level1', '1', 'generate kanji characters of level1 and kana characters')
+		p.OptBool('level2', '2', 'generate kanji characters of level1 and level2 and kana characters')
 		p.OptBool('help', 'h', 'prints this help')
 		opt = nil
 		try {[argv, opt] = p.Parse(sys.argv)} catch {|e| sys.cerr.Println(e.text)}
@@ -102,7 +105,21 @@ main() = {
 			!fontNames.Contains(fontName) && fontNames.Add(fontName)
 		}
 	}
+	fileNameOutTail = ''
 	codeUTF32Tbl_Extra = []
+	if (opt['kana']) {
+		fileNameOutTail = '-kana'
+		codeUTF32Tbl_Extra.Append(GenerateKanjiCode(1, 8))
+	} elsif (opt['level1']) {
+		fileNameOutTail = '-level1'
+		codeUTF32Tbl_Extra.Append(GenerateKanjiCode(1, 8))
+		codeUTF32Tbl_Extra.Append(GenerateKanjiCode(16, 47))
+	} elsif (opt['level2']) {
+		fileNameOutTail = '-level2'
+		codeUTF32Tbl_Extra.Append(GenerateKanjiCode(1, 8))
+		codeUTF32Tbl_Extra.Append(GenerateKanjiCode(16, 47))
+		codeUTF32Tbl_Extra.Append(GenerateKanjiCode(48, 84))
+	}
 	argv.Offset(1) {|arg|
 		path.Glob(arg) {|fileName|
 			sys.cerr.Printf('Scanning: %s\n', fileName)
@@ -117,7 +134,11 @@ main() = {
 	}
 	codeUTF32Tbl_Extra = codeUTF32Tbl_Extra.Sort()
 	if (codeUTF32Tbl_Extra.len > 0) {
-		sys.cerr.Printf('Extra codes (%dchars): %s\n', codeUTF32Tbl_Extra.len, Format('%04x', codeUTF32Tbl_Extra).Join(' '))
+		if (codeUTF32Tbl_Extra.len < 300) {
+			sys.cerr.Printf('Extra codes (%dchars): %s\n', codeUTF32Tbl_Extra.len, Format('%04x', codeUTF32Tbl_Extra).Join(' '))
+		} else {
+			sys.cerr.Printf('Extra codes (%dchars)\n', codeUTF32Tbl_Extra.len)
+		}
 	}
 	try {
 		nColsPerLine = Int(opt['cols'] || '24')
@@ -135,10 +156,27 @@ main() = {
 			sys.Exit(1)
 		}
 		fontSet = fontGenerator.GenerateFontSet(codeUTF32Tbl_Extra)
-		fileNameOut = path.Join(dirNameOut, fontName + '.h')
+		fileNameOut = path.Join(dirNameOut, fontName + fileNameOutTail + '.h')
 		tmplFontFile.Render(fileNameOut)
 		sys.cerr.Printf('Generated: %s\n', fileNameOut)
 	}
+}
+
+//------------------------------------------------------------------------------
+// AddKanjiCode
+//------------------------------------------------------------------------------
+GenerateKanjiCode(rowStart as Number, rowEnd as Number) = {
+	codeUTF32Tbl = []
+	repeat (rowEnd - rowStart + 1) {|i|
+		high = i + 0x20 + rowStart
+		repeat (94) {|j|
+			low = j + 0x20 + 1
+			codeJIS = (high << 8) + low
+			codeUTF32 = codecs.japanese.ConvJISToUTF32(codeJIS)
+			(codeUTF32 != 0) && codeUTF32Tbl.Add(codeUTF32)
+		}
+	}
+	codeUTF32Tbl
 }
 
 //------------------------------------------------------------------------------
