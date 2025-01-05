@@ -7,9 +7,10 @@
 #include "jxglib/sample/cat-240x240.h"
 #include "jxglib/sample/cat-240x320.h"
 #include "jxglib/sample/cat-320x480.h"
-#include "Font/shinonome12.h"
-#include "Font/shinonome14.h"
-#include "Font/shinonome16.h"
+#include "jxglib/font/shinonome12-level1.h"
+#include "jxglib/font/shinonome14-level1.h"
+#include "jxglib/font/shinonome16-level1.h"
+#include "jxglib/sample/Text_Botchan.h"
 
 namespace jxglib {
 
@@ -20,21 +21,12 @@ template<typename T> T LimitNum(T num, T numMin, T numMax) { return (num < numMi
 //------------------------------------------------------------------------------
 void Drawable_TestCase::DrawString(Drawable* drawableTbl[], int nDrawables)
 {
-	const char* str =
-		"親譲りの無鉄砲で子供のときから損ばかりしている。小学校の時分学校の二階から飛び降りて一週間腰を"
-		"抜かしたことがある。なぜそんなむやみなことをしたかと聞く人があるかもしれない。"
-		"別段深い理由でもない。新築の二階から首を出していたら同級生の一人が冗談に幾ら威張っても、"
-		"そこから飛び降りることはできまい。弱虫やーい。とはやしたからである。"
-		"小使いに負ぶさって帰ってきたとき、親父が大きな眼をして二階から飛び降りて腰を抜かすやつが"
-		"あるかといったから、この次は抜かさずに飛んでみせますと答えた。";
 	const char* msg =
 		"[J], [K] .. change font\n"
 		"[U], [I] .. change font scale\n"
 		"[N], [M] .. change line height\n";
 		"[<], [>] .. change character width\n";
-	const FontSet* fontSetTbl[] = {
-		&Font::shinonome12, &Font::shinonome14, &Font::shinonome16
-	};
+	const FontSet* fontSetTbl[] = { &Font::shinonome12, &Font::shinonome14, &Font::shinonome16 };
 	int iFont = 2;
 	int fontScale = 1;
 	float charWidthRatio = 1.0, lineHeightRatio = 1.2;
@@ -46,7 +38,7 @@ void Drawable_TestCase::DrawString(Drawable* drawableTbl[], int nDrawables)
 				.SetFont(fontSet)
 				.SetFontScale(fontScale)
 				.SetSpacingRatio(charWidthRatio, lineHeightRatio)
-				.DrawStringWrap(0, 0, str)
+				.DrawStringWrap(0, 0, Text_Botchan)
 				.Refresh();
 		}
 		::printf(msg);

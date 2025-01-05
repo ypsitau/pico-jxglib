@@ -163,14 +163,19 @@ Drawable& Drawable::DrawStringWrap(int x, int y, int width, int height, const ch
 	int lineHeight = static_cast<int>(context_.pFontSet->yAdvance * context_.fontScaleHeight * context_.lineHeightRatio);
 	for (const char* p = str; *p; p++) {
 		if (!decoder.FeedChar(*p, &code)) continue;
-		const FontEntry& fontEntry = context_.pFontSet->GetFontEntry(code);
-		int xAdvance = context_.CalcAdvanceX(fontEntry);
-		if (x + fontEntry.width * context_.fontScaleWidth > xExceed) {
+		if (code == '\n') {
 			x = xStart, y += lineHeight;
 			if (y + lineHeight > yExceed) break;
+		} else {
+			const FontEntry& fontEntry = context_.pFontSet->GetFontEntry(code);
+			int xAdvance = context_.CalcAdvanceX(fontEntry);
+			if (x + fontEntry.width * context_.fontScaleWidth > xExceed) {
+				x = xStart, y += lineHeight;
+				if (y + lineHeight > yExceed) break;
+			}
+			DrawChar(x, y, fontEntry);
+			x += xAdvance;
 		}
-		DrawChar(x, y, fontEntry);
-		x += xAdvance;
 		strDone = p + 1;
 	}
 	if (pStringCont) pStringCont->Update({x, y}, strDone);

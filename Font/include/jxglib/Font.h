@@ -13,10 +13,10 @@ namespace jxglib {
 // FontEntry
 //------------------------------------------------------------------------------
 struct FontEntry {
-	uint32_t code;
-	int width;
-	int height;
-	int xAdvance;
+	uint16_t code;
+	uint8_t width;
+	uint8_t height;
+	uint8_t xAdvance;
 	uint8_t data[];
 public:
 	static const FontEntry Invalid8x8;
