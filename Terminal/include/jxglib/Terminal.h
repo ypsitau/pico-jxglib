@@ -35,7 +35,7 @@ private:
 public:
 	Terminal() : pDrawable_{nullptr}, nLinesWhole_{0}, pEventHandler_{nullptr} {}
 public:
-	bool Initialize(int bytes = 1024);
+	bool Initialize(int bytes = 4096);
 	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
 public:
 	Drawable& GetDrawable() { return *pDrawable_; }

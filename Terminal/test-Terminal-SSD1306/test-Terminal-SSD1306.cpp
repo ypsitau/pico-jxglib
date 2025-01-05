@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "jxglib/SSD1306.h"
 #include "jxglib/Terminal.h"
 #include "jxglib/Font/shinonome12-level2.h"
 #include "jxglib/sample/Text_FarFarAway_700Words.h"
 #include "jxglib/sample/Text_Botchan.h"
+#include "jxglib/SSD1306.h"
 
 using namespace jxglib;
 
@@ -27,11 +27,10 @@ int main()
 	display.Initialize();
 	Terminal terminal;
 	terminal.Initialize();
-	terminal.SetEventHandler(&eventHandler);
-	terminal.SetFont(Font::shinonome12);
-	terminal.SetSpacingRatio(1., 1.2);
-	//terminal.SetColor(Color::black).SetColorBg(Color::white);
 	terminal.AttachOutput(display);
+	terminal.SetEventHandler(&eventHandler);
+	terminal.SetFont(Font::shinonome12).SetSpacingRatio(1., 1.2);
+	//terminal.SetColor(Color::black).SetColorBg(Color::white);
 	terminal.ClearScreen();
 	//terminal.Print(Text_FarFarAway_700Words);
 	terminal.Print(Text_Botchan);

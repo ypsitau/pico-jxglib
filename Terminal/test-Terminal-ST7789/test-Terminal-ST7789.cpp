@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "jxglib/Font/shinonome16.h"
-#include "jxglib/ST7789.h"
 #include "jxglib/Terminal.h"
+#include "jxglib/Font/shinonome16-level2.h"
 #include "jxglib/sample/Text_FarFarAway_700Words.h"
+#include "jxglib/sample/Text_Botchan.h"
+#include "jxglib/ST7789.h"
 
 using namespace jxglib;
 
@@ -11,7 +12,7 @@ class EventHandler : public Terminal::EventHandler {
 public:
 	virtual void OnNewLine(Terminal& terminal) override {
 		terminal.RefreshScreen();
-		::sleep_ms(10);
+		::sleep_ms(400);
 	}
 };
 
@@ -26,10 +27,11 @@ int main()
 	display.Initialize(Display::Dir::Rotate0);
 	Terminal terminal;
 	terminal.Initialize();
-	terminal.SetEventHandler(&eventHandler);
-	terminal.SetFont(Font::shinonome16);
-	//terminal.SetColor(Color::black).SetColorBg(Color::white);
 	terminal.AttachOutput(display);
+	terminal.SetEventHandler(&eventHandler);
+	terminal.SetFont(Font::shinonome16).SetSpacingRatio(1., 1.2);
+	//terminal.SetColor(Color::black).SetColorBg(Color::white);
 	terminal.ClearScreen();
-	terminal.Print(Text_FarFarAway_700Words);
+	//terminal.Print(Text_FarFarAway_700Words);
+	terminal.Print(Text_Botchan);
 }
