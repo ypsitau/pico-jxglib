@@ -4,7 +4,7 @@
 	repeat (rowEnd - rowStart + 1) {|i|
 		high = i + 0x20 + rowStart
 		repeat (94) {|j|
-			low = j + 0x20
+			low = j + 0x20 + 1
 			codeJIS = (high << 8) + low
 			codeUTF32 = codecs.japanese.ConvJISToUTF32(codeJIS)
 			if (codeUTF32 == 0) {
