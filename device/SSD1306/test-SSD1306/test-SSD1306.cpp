@@ -2,9 +2,9 @@
 //   gurax ../../Font/script/GenerateFont.gura -o Font shinonome12,shinonome14,shinonome16,shinonome18 *.cpp
 #include <stdio.h>
 #include <jxglib/SSD1306.h>
-#include "Font/shinonome12.h"
-#include "Font/shinonome14.h"
-#include "Font/shinonome16.h"
+#include "jxglib/Font/shinonome12-level1.h"
+#include "jxglib/Font/shinonome14-level1.h"
+#include "jxglib/Font/shinonome16-level1.h"
 #include "jxglib/Font/shinonome18.h"
 #include "jxglib/Font/sisd8x16.h"
 #include "jxglib/Font/sisd24x32.h"
