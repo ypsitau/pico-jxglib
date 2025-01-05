@@ -15,7 +15,7 @@ const FontEntry FontEntry::Invalid8x8 = { 0x0000, 8, 8, 8, {
 //------------------------------------------------------------------------------
 // FontSet
 //------------------------------------------------------------------------------
-const FontSet FontSet::None = { FontSet::Format::None, 8, &FontEntry::Invalid8x8, {}, 0, {} };
+const FontSet FontSet::None = { "none", FontSet::Format::None, 8, &FontEntry::Invalid8x8, {}, 0, {} };
 
 const FontEntry& FontSet::GetFontEntry(uint32_t code) const
 {

@@ -7,9 +7,9 @@
 #include "jxglib/sample/cat-240x240.h"
 #include "jxglib/sample/cat-240x320.h"
 #include "jxglib/sample/cat-320x480.h"
-#include "jxglib/font/shinonome12-level1.h"
-#include "jxglib/font/shinonome14-level1.h"
-#include "jxglib/font/shinonome16-level1.h"
+#include "jxglib/Font/shinonome12-level1.h"
+#include "jxglib/Font/shinonome14-level1.h"
+#include "jxglib/Font/shinonome16-level1.h"
 #include "jxglib/sample/Text_Botchan.h"
 
 namespace jxglib {

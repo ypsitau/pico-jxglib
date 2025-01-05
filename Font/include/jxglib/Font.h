@@ -29,14 +29,16 @@ struct FontSet {
 public:
 	enum class Format { None, Bitmap, Gray };
 public:
+	static const int nFontEntries_Basic = 0x5f;
+	static const FontSet None;
+public:
+	const char* name;
 	Format format;
-	int yAdvance;
+	uint8_t yAdvance;
 	const FontEntry* pFontEntry_Invalid;
-	const FontEntry* pFontEntryTbl_Basic[96];
+	const FontEntry* pFontEntryTbl_Basic[nFontEntries_Basic];
 	int nFontEntries_Extra;
 	const FontEntry* pFontEntryTbl_Extra[];
-public:
-	static const FontSet None;
 public:
 	bool IsNone() const { return format == Format::None; }
 	bool IsBitmap() const { return format == Format::Bitmap; }

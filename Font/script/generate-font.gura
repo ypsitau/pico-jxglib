@@ -18,16 +18,16 @@ ${end}
 #include "jxglib/Font.h"
 
 namespace jxglib { namespace Font {
-namespace NS_${fontSet.fontName} {
+namespace ${fontSet.fontName}_FE {
 
-const FontEntry f_Invalid = { 0x${Format('%04x', fontSet.fontEntry_Invalid.code)}, ${fontSet.fontEntry_Invalid.width}, ${fontSet.fontEntry_Invalid.height}, ${fontSet.fontEntry_Invalid.xAdvance}, {
+const FontEntry Invalid = { 0x${Format('%04x', fontSet.fontEntry_Invalid.code)}, ${fontSet.fontEntry_Invalid.width}, ${fontSet.fontEntry_Invalid.height}, ${fontSet.fontEntry_Invalid.xAdvance}, {
 ${cond(!fontSet.fontEntry_Invalid.bitmap.IsEmpty(), cond(readableFlag,
 	Format('0b%08b,', fontSet.fontEntry_Invalid.bitmap).Fold(Int((fontSet.fontEntry_Invalid.width + 7) / 8)),
 	Format('0x%02x,', fontSet.fontEntry_Invalid.bitmap).Fold(nColsPerLine)):*Join() + '\n')}
 } };
 ${(fontSet.fontEntryTbl_Basic |+| fontSet.fontEntryTbl_Extra).Each {|fontEntry|}}
 // ${cond(fontEntry.code < 0x7f, Format("'%c'", fontEntry.code), Format('0x%04x', fontEntry.code))}
-const FontEntry f_${Format('%04x', fontEntry.code)} = { 0x${Format('%04x', fontEntry.code)}, ${fontEntry.width}, ${fontEntry.height}, ${fontEntry.xAdvance}, {
+const FontEntry F${Format('%04x', fontEntry.code)} = { 0x${Format('%04x', fontEntry.code)}, ${fontEntry.width}, ${fontEntry.height}, ${fontEntry.xAdvance}, {
 ${cond(readableFlag,
 	Format('0b%08b,', fontEntry.bitmap).Fold(Int((fontEntry.width + 7) / 8)),
 	Format('0x%02x,', fontEntry.bitmap).Fold(nColsPerLine)):*Join() + '\n'}
@@ -36,13 +36,13 @@ ${end}
 
 }
 
-const FontSet ${fontSet.fontName} = { FontSet::Format::Bitmap, ${fontSet.yAdvance}, &NS_${fontSet.fontName}::f_Invalid, {
+const FontSet ${fontSet.fontName} = { "${fontSet.fontName.Replace('"', '\"')}", FontSet::Format::Bitmap, ${fontSet.yAdvance}, &${fontSet.fontName}_FE::Invalid, {
 	${Range(0x20, 0x7f) {|code|}}
-	&NS_${fontSet.fontName}::f_${Format('%04x', code)},
+	&${fontSet.fontName}_FE::F${Format('%04x', code)},
 	${end}
 }, ${fontSet.fontEntryTbl_Extra.len}, {
 	${fontSet.fontEntryTbl_Extra:*code.Each {|code|}}
-	&NS_${fontSet.fontName}::f_${Format('%04x', code)},
+	&${fontSet.fontName}_FE::F${Format('%04x', code)},
 	${end}
 } };
 
