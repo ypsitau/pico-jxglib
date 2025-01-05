@@ -267,6 +267,7 @@ FontGenerator_FromBDF = struct {
 			fontEntry.AddData(charEntry.BITMAP.Each(), bytesPerData)
 			fontEntryTbl.Add(fontEntry)
 		}
+		fontEntryTbl = fontEntryTbl.Sort(keys = fontEntryTbl::code)
 		fontEntryTbl
 	}
 }
