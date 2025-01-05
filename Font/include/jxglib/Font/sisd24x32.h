@@ -1,5 +1,7 @@
 //==============================================================================
 // 16-Segment Display Font 24x32
+// Basic Font: 95 characters, 9880 bytes + 380 bytes
+// Total Memory: 10260 bytes + alpha
 //==============================================================================
 #ifndef PICO_JXGLIB_FONT_SISD24X32_H
 #define PICO_JXGLIB_FONT_SISD24X32_H

@@ -12,6 +12,12 @@ tmplFontFile = tR'''
 ${fontSet.description.Split('\n') {|line|}}
 // ${line}
 ${end}
+// Basic Font: ${fontSet.fontEntryTbl_Basic.len} characters, ${fontSet.fontEntryTbl_Basic:*CalcBytes().Sum()} bytes + ${fontSet.fontEntryTbl_Basic.len * 4} bytes
+${if (fontSet.fontEntryTbl_Extra.len > 0)}
+// Extra Font: ${fontSet.fontEntryTbl_Extra.len} characters, ${fontSet.fontEntryTbl_Extra:*CalcBytes().Sum()} bytes + ${fontSet.fontEntryTbl_Extra.len * 4} bytes
+${end}
+// Total Memory: ${fontSet.fontEntryTbl_Basic:*CalcBytes().Sum() + (fontSet.fontEntryTbl_Extra:*CalcBytes().Sum() || 0) + \
+		(fontSet.fontEntryTbl_Basic.len + fontSet.fontEntryTbl_Extra.len) * 4} bytes + alpha
 //==============================================================================
 #ifndef PICO_JXGLIB_FONT_${fontSet.fontName.Upper()}_H
 #define PICO_JXGLIB_FONT_${fontSet.fontName.Upper()}_H
@@ -135,9 +141,9 @@ main() = {
 	codeUTF32Tbl_Extra = codeUTF32Tbl_Extra.Sort()
 	if (codeUTF32Tbl_Extra.len > 0) {
 		if (codeUTF32Tbl_Extra.len < 300) {
-			sys.cerr.Printf('Extra codes (%dchars): %s\n', codeUTF32Tbl_Extra.len, Format('%04x', codeUTF32Tbl_Extra).Join(' '))
+			sys.cerr.Printf('Extra codes (%d characters): %s\n', codeUTF32Tbl_Extra.len, Format('%04x', codeUTF32Tbl_Extra).Join(' '))
 		} else {
-			sys.cerr.Printf('Extra codes (%dchars)\n', codeUTF32Tbl_Extra.len)
+			sys.cerr.Printf('Extra codes (%d characters)\n', codeUTF32Tbl_Extra.len)
 		}
 	}
 	try {
@@ -188,6 +194,7 @@ FontEntry = struct {
 	height as Number
 	xAdvance as Number
 	bitmap[] as Number = []
+	CalcBytes() = 8 + this.bitmap.len
 	AddData(data as Number, bytesPerData as Number):map:void = {
 		dataSplit = []
 		repeat (bytesPerData) { dataSplit.Add(data & 0xff), data >>= 8 }
