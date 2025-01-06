@@ -42,39 +42,35 @@ public:
 	const Drawable& GetDrawable() const { return *pDrawable_; }
 	const Rect& GetRectDst() const { return rectDst_; }
 public:
-	Terminal& SetEventHandler(EventHandler& eventHandler) { pEventHandler_ = &eventHandler; return *this; }
-	Terminal& SetColor(const Color& color) { context_.colorFg = color; return *this; }
-	const Color& GetColor() const { return context_.colorFg; }
-	Terminal& SetColorBg(const Color& color) { context_.colorBg = color; return *this; }
-	const Color& GetColorBg() const { return context_.colorBg; }
-	Terminal& SetFont(const FontSet& fontSet, int fontScale = 1) {
-		context_.pFontSet = &fontSet;
-		context_.fontScaleWidth = context_.fontScaleHeight = fontScale;
-		return *this;
-	}
-	const FontSet& GetFont() const { return *context_.pFontSet; }
+	Terminal& SetColor(const Color& color) { context_.SetColor(color); return *this; }
+	const Color& GetColor() const { return context_.GetColor(); }
+	Terminal& SetColorBg(const Color& color) { context_.SetColorBg(color); return *this; }
+	const Color& GetColorBg() const { return context_.GetColorBg(); }
+	Terminal& SetFont(const FontSet& fontSet, int fontScale = 1) { context_.SetFont(fontSet, fontScale); return *this; }
+	const FontSet& GetFont() const { return context_.GetFont(); }
 	Terminal& SetFont(const FontSet& fontSet, int fontScaleWidth, int fontScaleHeight) {
-		context_.pFontSet = &fontSet; context_.fontScaleWidth = fontScaleWidth, context_.fontScaleHeight = fontScaleHeight;
-		return *this;
+		context_.SetFont(fontSet, fontScaleWidth, fontScaleHeight); return *this;
 	}
-	Terminal& SetFontScale(int fontScale) {
-		context_.fontScaleWidth = context_.fontScaleHeight = fontScale;
-		return *this;
-	}
+	Terminal& SetFontScale(int fontScale) { context_.SetFontScale(fontScale); return *this; }
 	Terminal& SetFontScale(int fontScaleWidth, int fontScaleHeight) {
-		context_.fontScaleWidth = fontScaleWidth, context_.fontScaleHeight = fontScaleHeight;
-		return *this;
+		context_.SetFontScale(fontScaleWidth, fontScaleHeight); return *this;
 	}
 	Terminal& SetSpacingRatio(float charWidthRatio, float lineHeightRatio) {
-		context_.charWidthRatio = charWidthRatio, context_.lineHeightRatio = lineHeightRatio;
-		return *this;
+		context_.SetSpacingRatio(charWidthRatio, lineHeightRatio); return *this;
 	}
 public:
 	int GetLineIndex() const { return nLinesWhole_; }
 	int GetColNum() const;
 	int GetRowNum() const;
+	LineBuff& GetLineBuff() { return lineBuff_; }
 	const LineBuff& GetLineBuff() const { return lineBuff_; }
 	Stream CreateStream() const { return GetLineBuff().CreateStream(); }
+public:
+	bool IsRollingBack() const { return !!GetLineBuff().GetLineMark(); }
+	Terminal& BeginRollBack();
+	Terminal& EndRollBack();
+	Terminal& RollUp();
+	Terminal& RollDown();
 public:
 	// Virtual functions of Printable
 	virtual Printable& ClearScreen() override;
@@ -82,10 +78,10 @@ public:
 	virtual Printable& Locate(int col, int row) override;
 	virtual Printable& PutChar(char ch) override;
 private:
-	void DrawTextLines(const char* lineTop, int nLines, int yTop);
-	void DrawTextLine(WrappedCharFeeder& charFeeder, int y);
+	void DrawTextLines(int iLine, const char* pLineTop, int nLines);
+	void DrawTextLine(int iLine, const char* pLineTop);
 	void EraseTextLine(int iLine, int nLines = 1);
-	void ScrollVert(DirVert dirVert);
+	void ScrollUp();
 };
 
 }

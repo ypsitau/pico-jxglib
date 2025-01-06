@@ -12,7 +12,8 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // LineBuff
 //------------------------------------------------------------------------------
-LineBuff::LineBuff() : buffBegin_{nullptr}, buffEnd_{nullptr}, pBuffLast_{nullptr}, pLineFirst_{nullptr}, pLineLast_{nullptr}
+LineBuff::LineBuff() : buffBegin_{nullptr}, buffEnd_{nullptr}, pBuffLast_{nullptr},
+			pLineFirst_{nullptr}, pLineLast_{nullptr}, pLineMark_{nullptr}
 {
 }
 

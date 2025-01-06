@@ -69,6 +69,33 @@ public:
 			pFontSet{&FontSet::None}, fontScaleWidth{1}, fontScaleHeight{1},
 			charWidthRatio(1.0), lineHeightRatio(1.0) {}
 	public:
+		Context& SetColor(const Color& color) { this->colorFg = color; return *this; }
+		const Color& GetColor() const { return this->colorFg; }
+		Context& SetColorBg(const Color& color) { this->colorBg = color; return *this; }
+		const Color& GetColorBg() const { return this->colorBg; }
+		Context& SetFont(const FontSet& fontSet, int fontScale = 1) {
+			this->pFontSet = &fontSet;
+			this->fontScaleWidth = this->fontScaleHeight = fontScale;
+			return *this;
+		}
+		const FontSet& GetFont() const { return *this->pFontSet; }
+		Context& SetFont(const FontSet& fontSet, int fontScaleWidth, int fontScaleHeight) {
+			this->pFontSet = &fontSet; this->fontScaleWidth = fontScaleWidth, this->fontScaleHeight = fontScaleHeight;
+			return *this;
+		}
+		Context& SetFontScale(int fontScale) {
+			this->fontScaleWidth = this->fontScaleHeight = fontScale;
+			return *this;
+		}
+		Context& SetFontScale(int fontScaleWidth, int fontScaleHeight) {
+			this->fontScaleWidth = fontScaleWidth, this->fontScaleHeight = fontScaleHeight;
+			return *this;
+		}
+		Context& SetSpacingRatio(float charWidthRatio, float lineHeightRatio) {
+			this->charWidthRatio = charWidthRatio, this->lineHeightRatio = lineHeightRatio;
+			return *this;
+		}
+	public:
 		int CalcAdvanceX(const FontEntry& fontEntry) const {
 			return static_cast<int>(fontEntry.xAdvance * fontScaleWidth * charWidthRatio);
 		}
@@ -126,31 +153,21 @@ public:
 	bool IsFormatRGBA() const { return pFormat_->IsIdentical(Format::RGBA); }
 	bool IsFormatRGB565() const { return pFormat_->IsIdentical(Format::RGB565); }
 public:
-	Drawable& SetColor(const Color& color) { context_.colorFg = color; return *this; }
-	const Color& GetColor() const { return context_.colorFg; }
-	Drawable& SetColorBg(const Color& color) { context_.colorBg = color; return *this; }
-	const Color& GetColorBg() const { return context_.colorBg; }
-	Drawable& SetFont(const FontSet& fontSet, int fontScale = 1) {
-		context_.pFontSet = &fontSet;
-		context_.fontScaleWidth = context_.fontScaleHeight = fontScale;
-		return *this;
-	}
-	const FontSet& GetFont() const { return *context_.pFontSet; }
+	Drawable& SetColor(const Color& color) { context_.SetColor(color); return *this; }
+	const Color& GetColor() const { return context_.GetColor(); }
+	Drawable& SetColorBg(const Color& color) { context_.SetColorBg(color); return *this; }
+	const Color& GetColorBg() const { return context_.GetColorBg(); }
+	Drawable& SetFont(const FontSet& fontSet, int fontScale = 1) { context_.SetFont(fontSet, fontScale); return *this; }
+	const FontSet& GetFont() const { return context_.GetFont(); }
 	Drawable& SetFont(const FontSet& fontSet, int fontScaleWidth, int fontScaleHeight) {
-		context_.pFontSet = &fontSet; context_.fontScaleWidth = fontScaleWidth, context_.fontScaleHeight = fontScaleHeight;
-		return *this;
+		context_.SetFont(fontSet, fontScaleWidth, fontScaleHeight); return *this;
 	}
-	Drawable& SetFontScale(int fontScale) {
-		context_.fontScaleWidth = context_.fontScaleHeight = fontScale;
-		return *this;
-	}
+	Drawable& SetFontScale(int fontScale) { context_.SetFontScale(fontScale); return *this; }
 	Drawable& SetFontScale(int fontScaleWidth, int fontScaleHeight) {
-		context_.fontScaleWidth = fontScaleWidth, context_.fontScaleHeight = fontScaleHeight;
-		return *this;
+		context_.SetFontScale(fontScaleWidth, fontScaleHeight); return *this;
 	}
 	Drawable& SetSpacingRatio(float charWidthRatio, float lineHeightRatio) {
-		context_.charWidthRatio = charWidthRatio, context_.lineHeightRatio = lineHeightRatio;
-		return *this;
+		context_.SetSpacingRatio(charWidthRatio, lineHeightRatio); return *this;
 	}
 public:
 	Drawable& Refresh() { GetDispatcher().Refresh(); return *this; }
