@@ -1,6 +1,6 @@
 //==============================================================================
 // 16-Segment Display Font 8x16
-// Basic Font: 95 characters, 2280 bytes + 380 bytes
+// Basic Font: 95 characters, 2280 bytes (font data) + 380 bytes (pointer table)
 // Total Memory: 2660 bytes + alpha
 //==============================================================================
 #ifndef PICO_JXGLIB_FONT_SISD8X16_H

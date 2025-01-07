@@ -1,8 +1,8 @@
 //==============================================================================
 // -Shinonome-Gothic-Medium-R-Normal--12-110-75-75-C-60-JISX0201.1976-0
 // -Shinonome-Gothic-Medium-R-Normal--12-110-75-75-C-120-JISX0208.1990-0
-// Basic Font: 95 characters, 1900 bytes + 380 bytes
-// Extra Font: 3489 characters, 111648 bytes + 13956 bytes
+// Basic Font: 95 characters, 1900 bytes (font data) + 380 bytes (pointer table)
+// Extra Font: 3489 characters, 111648 bytes (font data) + 13956 bytes (pointer table)
 // Total Memory: 127884 bytes + alpha
 //==============================================================================
 #ifndef PICO_JXGLIB_FONT_SHINONOME12_H
