@@ -287,8 +287,7 @@ void TFT_LCD::DispatcherRGB565::DrawRectFill(int x, int y, int width, int height
 	raw.MemoryWriteConst16(ColorRGB565(color).value, width * height);
 }
 
-void TFT_LCD::DispatcherRGB565::DrawBitmap(int x, int y, const void* data, int width, int height,
-					const Color& color, const Color* pColorBg, int scaleX, int scaleY)
+void TFT_LCD::DispatcherRGB565::DrawBitmap(int x, int y, const void* data, int width, int height, const Color& color, int scaleX, int scaleY)
 {
 	Raw& raw = display_.raw;
 	int xAdjust = display_.GetXAdjust(), yAdjust = display_.GetYAdjust();
@@ -299,8 +298,7 @@ void TFT_LCD::DispatcherRGB565::DrawBitmap(int x, int y, const void* data, int w
 	raw.ColumnAddressSet(x, x + width * scaleX - 1);
 	raw.RowAddressSet(y, y + height * scaleY - 1);
 	raw.MemoryWrite_Begin(16);
-	uint16_t colorFg = ColorRGB565(color).value;
-	uint16_t colorBg = pColorBg? ColorRGB565(*pColorBg).value : 0;
+	uint16_t colorRGB565 = ColorRGB565(color).value;
 	for (int iRow = 0; iRow < height; iRow++) {
 		const uint8_t* pSrc;
 		for (int iScaleY = 0; iScaleY < scaleY; iScaleY++) {
@@ -312,8 +310,9 @@ void TFT_LCD::DispatcherRGB565::DrawBitmap(int x, int y, const void* data, int w
 					iBit = 0;
 					bits = *pSrc++;
 				}
-				uint16_t color = (bits & 0x80)? colorFg : colorBg;
-				for (int iScaleX = 0; iScaleX < scaleX; iScaleX++) raw.MemoryWrite_Data16(color);
+				if (bits & 0x80) {
+					for (int iScaleX = 0; iScaleX < scaleX; iScaleX++) raw.MemoryWrite_Data16(colorRGB565);
+				}
 			}
 		}
 		pSrcLeft = pSrc;
@@ -451,8 +450,7 @@ void TFT_LCD::DispatcherRGB666::DrawRectFill(int x, int y, int width, int height
 	raw.MemoryWriteConstColor666(color, width * height);
 }
 
-void TFT_LCD::DispatcherRGB666::DrawBitmap(int x, int y, const void* data, int width, int height,
-					const Color& color, const Color* pColorBg, int scaleX, int scaleY)
+void TFT_LCD::DispatcherRGB666::DrawBitmap(int x, int y, const void* data, int width, int height, const Color& color, int scaleX, int scaleY)
 {
 	Raw& raw = display_.raw;
 	int xAdjust = display_.GetXAdjust(), yAdjust = display_.GetYAdjust();
@@ -463,8 +461,6 @@ void TFT_LCD::DispatcherRGB666::DrawBitmap(int x, int y, const void* data, int w
 	raw.ColumnAddressSet(x, x + width * scaleX - 1);
 	raw.RowAddressSet(y, y + height * scaleY - 1);
 	raw.MemoryWrite_Begin(8);
-	Color colorFg = color;
-	Color colorBg = pColorBg? *pColorBg : Color::black;
 	for (int iRow = 0; iRow < height; iRow++) {
 		const uint8_t* pSrc;
 		for (int iScaleY = 0; iScaleY < scaleY; iScaleY++) {
@@ -476,8 +472,9 @@ void TFT_LCD::DispatcherRGB666::DrawBitmap(int x, int y, const void* data, int w
 					iBit = 0;
 					bits = *pSrc++;
 				}
-				const Color& color = (bits & 0x80)? colorFg : colorBg;
-				for (int iScaleX = 0; iScaleX < scaleX; iScaleX++) raw.MemoryWrite_Color666(color);
+				if (bits & 0x80) {
+					for (int iScaleX = 0; iScaleX < scaleX; iScaleX++) raw.MemoryWrite_Color666(color);
+				}
 			}
 		}
 		pSrcLeft = pSrc;
