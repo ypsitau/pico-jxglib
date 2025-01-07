@@ -451,6 +451,7 @@ void TFT_LCD::DispatcherRGB666::DrawRectFill(int x, int y, int width, int height
 	raw.MemoryWriteConstColor666(color, width * height);
 }
 
+
 void TFT_LCD::DispatcherRGB666::DrawBitmap(int x, int y, const void* data, int width, int height,
 					const Color& color, const Color* pColorBg, int scaleX, int scaleY)
 {
