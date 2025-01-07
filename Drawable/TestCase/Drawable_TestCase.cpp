@@ -7,9 +7,13 @@
 #include "jxglib/sample/cat-240x240.h"
 #include "jxglib/sample/cat-240x320.h"
 #include "jxglib/sample/cat-320x480.h"
+#include "jxglib/Font/misaki_gothic.h"
 #include "jxglib/Font/shinonome12-level1.h"
 #include "jxglib/Font/shinonome14-level1.h"
 #include "jxglib/Font/shinonome16-level1.h"
+#include "jxglib/Font/shinonome18.h"
+#include "jxglib/Font/unifont-level1.h"
+#include "jxglib/Font/sisd8x16.h"
 #include "jxglib/sample/Text_Botchan.h"
 
 namespace jxglib {
@@ -19,6 +23,33 @@ template<typename T> T LimitNum(T num, T numMin, T numMax) { return (num < numMi
 //------------------------------------------------------------------------------
 // Drawable_TestCase
 //------------------------------------------------------------------------------
+void Drawable_TestCase::DrawFonts(Drawable* drawableTbl[], int nDrawables)
+{
+	const FontSet* fontSetTbl[] = {
+		&Font::misaki_gothic, &Font::shinonome12, &Font::shinonome14, &Font::shinonome16, &Font::shinonome18, &Font::unifont, &Font::sisd8x16,
+	};
+	for (int iDrawable = 0; iDrawable < nDrawables; iDrawable++) {
+		Drawable& drawable = *drawableTbl[iDrawable];
+		drawable.Clear();
+		int y = 0;
+		for (int i = 0; i < count_of(fontSetTbl); i++) {
+			const FontSet& fontSet = *fontSetTbl[i];
+			drawable.SetFont(fontSet);
+			drawable.SetColor(Color::red);
+			drawable.DrawString(0, y, fontSet.name);
+			drawable.SetColor(Color::white);
+			const char* str = "0123456789!\"#$%";
+			drawable.DrawString(drawable.GetWidth() - fontSet.CalcStringWidth(str), y, str);
+			y += fontSet.yAdvance;
+			drawable.DrawString(0, y, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+			y += fontSet.yAdvance;
+			drawable.DrawString(0, y, "abcdefghijklmnopqrstuvwxyz");
+			y += fontSet.yAdvance;
+		}
+		drawable.Refresh();
+	}
+}
+
 void Drawable_TestCase::DrawString(Drawable* drawableTbl[], int nDrawables)
 {
 	const char* msg =
