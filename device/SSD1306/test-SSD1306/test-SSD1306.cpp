@@ -223,7 +223,7 @@ void Test_DrawBitmap(Display& display)
 		0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,
 		0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,
 	};
-	display.DrawBitmap(0, 0, bmp, 80, 64, Color::white);
+	display.DrawBitmap(0, 0, bmp, 80, 64, Color::white, nullptr);
 	display.Refresh();
 	::sleep_ms(2000);
 }

@@ -23,6 +23,6 @@ int main()
 	display.Initialize(displayDir);
 	Canvas canvas;
 	canvas.AttachOutput(display, {50, 50, 100, 150});
-	Drawable_TestCase::DrawString(canvas);
-	//Drawable_TestCase::RotateImage(canvas);
+	//Drawable_TestCase::DrawString(canvas);
+	Drawable_TestCase::RotateImage(canvas);
 }

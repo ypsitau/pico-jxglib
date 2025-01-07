@@ -38,13 +38,15 @@ void Canvas::Dispatcher_T<T_Color>::DrawRectFill(int x, int y, int width, int he
 }
 
 template<typename T_Color>
-void Canvas::Dispatcher_T<T_Color>::DrawBitmap(int x, int y, const void* data, int width, int height, const Color& color, int scaleX, int scaleY)
+void Canvas::Dispatcher_T<T_Color>::DrawBitmap(int x, int y, const void* data, int width, int height,
+	const Color& color, const Color* pColorBg, int scaleX, int scaleY)
 {
 	Image& imageOwn = canvas_.GetImageOwn();
 	int nDots = width * height;
 	int bytes = (width + 7) / 8 * height;
 	const uint8_t* pSrcLeft = reinterpret_cast<const uint8_t*>(data);
 	const T_Color colorFg(color);
+	const T_Color colorBg(pColorBg? T_Color(*pColorBg) : T_Color::black);
 	using Writer = Image::Writer<Image::Setter_T<T_Color, T_Color> >;
 	Image::Writer writer(Writer::HorzFromNW(imageOwn, x, y, width * scaleX, height * scaleY));
 	for (int iRow = 0; iRow < height; iRow++) {
@@ -59,8 +61,11 @@ void Canvas::Dispatcher_T<T_Color>::DrawBitmap(int x, int y, const void* data, i
 					bits = *pSrc++;
 				}
 				uint8_t bit = bits & 0x80;
-				if (bit) {
-					for (int iScaleX = 0; iScaleX < scaleX; iScaleX++) writer.WriteForward(colorFg);
+				if (bit || pColorBg) {
+					const T_Color& color = bit? colorFg : colorBg;
+					for (int iScaleX = 0; iScaleX < scaleX; iScaleX++) writer.WriteForward(color);
+				} else {
+					writer.MoveForward(scaleX);
 				}
 			}
 		}
