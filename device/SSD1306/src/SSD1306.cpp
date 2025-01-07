@@ -93,10 +93,8 @@ void SSD1306::DispatcherEx::DrawRectFill(int x, int y, int width, int height, co
 	}
 }
 
-void SSD1306::DispatcherEx::DrawBitmap(int x, int y, const void* data, int width, int height,
-			const Color& color, const Color* pColorBg, int scaleX, int scaleY)
+void SSD1306::DispatcherEx::DrawBitmap(int x, int y, const void* data, int width, int height, const Color& color, int scaleX, int scaleY)
 {
-	if (pColorBg) DrawRectFill(x, y, width, height, *pColorBg);
 	int bytesPerLine = (width + 7) / 8;
 	int wdScaled = width * scaleX;
 	int htScaled = height * scaleY;

@@ -35,8 +35,7 @@ public:
 		virtual void Fill(const Color& color) override;
 		virtual void DrawPixel(int x, int y, const Color& color) override;
 		virtual void DrawRectFill(int x, int y, int width, int height, const Color& color) override;
-		virtual void DrawBitmap(int x, int y, const void* data, int width, int height,
-			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override;
+		virtual void DrawBitmap(int x, int y, const void* data, int width, int height, const Color& color, int scaleX, int scaleY) override;
 		virtual void DrawImage(int x, int y, const Image& image, const Rect& rectClip, DrawDir drawDir) override;
 		virtual void DrawImageFast(int x, int y, const Image& image) override;
 		virtual void ScrollHorz(DirHorz dirHorz, int width, const Rect& rect) override;

@@ -117,8 +117,8 @@ Drawable& Drawable::ScrollVert(DirVert dirVert, int htScroll, const Rect& rectCl
 Drawable& Drawable::DrawChar(int x, int y, const FontEntry& fontEntry, bool transparentBgFlag, const Context* pContext)
 {
 	if (!pContext) pContext = &context_;
-	return DrawBitmap(x, y, fontEntry.data, fontEntry.width, fontEntry.height, transparentBgFlag,
-			pContext->fontScaleWidth, pContext->fontScaleHeight, pContext);
+	return DrawBitmap(x, y, fontEntry.data, fontEntry.width, fontEntry.height, pContext->colorFg,
+						pContext->fontScaleWidth, pContext->fontScaleHeight);
 }
 
 Drawable& Drawable::DrawChar(int x, int y, uint32_t code, bool transparentBgFlag, const Context* pContext)
