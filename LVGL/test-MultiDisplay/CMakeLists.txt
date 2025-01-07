@@ -48,7 +48,7 @@ pico_enable_stdio_usb(test-MultiDisplay 0)
 target_link_libraries(test-MultiDisplay
     pico_stdlib
 	lvgl_examples
-    jxglib_LVGLAdapter
+    jxglib_LVGL
     jxglib_ILI9341
     jxglib_ST7789)
 

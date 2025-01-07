@@ -53,7 +53,7 @@ target_link_libraries(test-Input
 	lvgl_demos
 	jxglib_ILI9341
 	jxglib_ST7789
-	jxglib_LVGLAdapter
+	jxglib_LVGL
 	jxglib_UART
 	jxglib_VT100)
 

@@ -49,7 +49,7 @@ target_link_libraries(test-demos
 	pico_stdlib
 	lvgl_demos
 	jxglib_ILI9341
-	jxglib_LVGLAdapter)
+	jxglib_LVGL)
 
 # Add the standard include files to the build
 target_include_directories(test-demos PRIVATE

@@ -48,7 +48,7 @@ pico_enable_stdio_usb(test-lv_button 0)
 target_link_libraries(test-lv_button
     pico_stdlib
     jxglib_ILI9341
-    jxglib_LVGLAdapter)
+    jxglib_LVGL)
 
 # Add the standard include files to the build
 target_include_directories(test-lv_button PRIVATE
