@@ -1,3 +1,3 @@
 [submodule "LVGLAdapter/lvgl"]
-	path = LVGLAdapter/lvgl
+	path = LVGL/lvgl
 	url = https://github.com/lvgl/lvgl

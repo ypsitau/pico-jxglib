@@ -3,7 +3,7 @@
 //==============================================================================
 #ifndef PICO_JXGLIB_LVGLAdapter_H
 #define PICO_JXGLIB_LVGLAdapter_H
-#include <lvgl.h>
+#include <lvgl/lvgl.h>
 #include "pico/stdlib.h"
 #include "jxglib/Drawable.h"
 #include "jxglib/TouchScreen.h"

@@ -3,7 +3,7 @@
 #include "pico/stdlib.h"
 #include "jxglib/ILI9341.h"
 #include "jxglib/ILI9488.h"
-#include "jxglib/LVGLAdapter.h"
+#include "jxglib/LVGL.h"
 
 using namespace jxglib;
 
