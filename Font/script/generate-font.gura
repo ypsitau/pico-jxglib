@@ -91,9 +91,9 @@ main() = {
 		p.OptString('outdir', 'o', 'directory to output')
 		p.OptString('cols', 'c', 'number of columns')
 		p.OptBool('readable', 'r', 'output font data in a readable format')
-		p.OptBool('kana', 'k', 'generate kana characters')
-		p.OptBool('level1', '1', 'generate kanji characters of level1 and kana characters')
-		p.OptBool('level2', '2', 'generate kanji characters of level1 and level2 and kana characters')
+		p.OptBool('japanese-kana', 'k', 'generate Japanese characters of kana')
+		p.OptBool('japanese-level1', '1', 'generate Japanese characters of kana and level1')
+		p.OptBool('japanese-level2', '2', 'generate Japanese characters of kana, level1, and level2')
 		p.OptBool('help', 'h', 'prints this help')
 		opt = nil
 		try {[argv, opt] = p.Parse(sys.argv)} catch {|e| sys.cerr.Println(e.text)}
@@ -119,15 +119,15 @@ main() = {
 	}
 	fileNameOutTail = ''
 	codeUTF32Tbl_Extra = []
-	if (opt['kana']) {
-		fileNameOutTail = '-kana'
+	if (opt['japanese-kana']) {
+		fileNameOutTail = '-japanese-kana'
 		codeUTF32Tbl_Extra.Append(GenerateKanjiCode(1, 8))
-	} elsif (opt['level1']) {
-		fileNameOutTail = '-level1'
+	} elsif (opt['japanese-level1']) {
+		fileNameOutTail = '-japanese-level1'
 		codeUTF32Tbl_Extra.Append(GenerateKanjiCode(1, 8))
 		codeUTF32Tbl_Extra.Append(GenerateKanjiCode(16, 47))
-	} elsif (opt['level2']) {
-		fileNameOutTail = '-level2'
+	} elsif (opt['japanese-level2']) {
+		fileNameOutTail = '-japanese-level2'
 		codeUTF32Tbl_Extra.Append(GenerateKanjiCode(1, 8))
 		codeUTF32Tbl_Extra.Append(GenerateKanjiCode(16, 47))
 		codeUTF32Tbl_Extra.Append(GenerateKanjiCode(48, 84))
