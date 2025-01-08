@@ -3,6 +3,8 @@
 #include "jxglib/Drawable_TestCase.h"
 #include "jxglib/ST7789.h"
 
+#include "jxglib/Font/misaki_gothic.h"
+
 using namespace jxglib;
 
 int main()
@@ -16,5 +18,9 @@ int main()
 	display.Initialize(Display::Dir::Rotate0);
 	//Drawable_TestCase::DrawString(display);
 	//Drawable_TestCase::RotateImage(display);
-	Drawable_TestCase::DrawFonts(display);
+	//Drawable_TestCase::DrawFonts(display);
+	display.SetFont(Font::misaki_gothic);
+	display.SetFontScale(4, 4);
+	display.SetColorBg(Color::red);
+	display.DrawString(0, 0, "Hello", true);
 }

@@ -25,6 +25,7 @@ public:
 		static const uint32_t DrawImageFast	= (1 << 2);
 		static const uint32_t ScrollVert	= (1 << 3);
 		static const uint32_t ScrollHorz	= (1 << 4);
+		static const uint32_t TransparentBg	= (1 << 5);
 	};
 	class Dispatcher {
 	public:
@@ -213,6 +214,7 @@ public:
 	Drawable& DrawBitmap(int x, int y, const void* data, int width, int height,
 			bool transparentBgFlag = false, int scaleX = 1, int scaleY = 1, const Context* pContext = nullptr) {
 		if (!pContext) pContext = &context_;
+		if (!(capabilities_ & Capability::TransparentBg)) transparentBgFlag = false;
 		return DrawBitmap(x, y, data, width, height, pContext->colorFg, transparentBgFlag? nullptr : &pContext->colorBg, scaleX, scaleY);
 	}
 	Drawable& DrawBitmap(const Point& pt, const void* data, int width, int height,
@@ -223,30 +225,21 @@ public:
 	Drawable& DrawImageFast(int x, int y, const Image& image);
 	Drawable& ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip = Rect::Empty);
 	Drawable& ScrollVert(DirVert dirVert, int htScroll, const Rect& rectClip = Rect::Empty);
-	Drawable& DrawChar(int x, int y, const FontEntry& fontEntry, bool transparentBgFlag = true, const Context* pContext = nullptr);
-	Drawable& DrawChar(const Point& pt, const FontEntry& fontEntry, bool transparentBgFlag = true, const Context* pContext = nullptr) {
+	Drawable& DrawChar(int x, int y, const FontEntry& fontEntry, bool transparentBgFlag = false, const Context* pContext = nullptr);
+	Drawable& DrawChar(const Point& pt, const FontEntry& fontEntry, bool transparentBgFlag = false, const Context* pContext = nullptr) {
 		return DrawChar(pt.x, pt.y, fontEntry, transparentBgFlag, pContext);
 	}
-	Drawable& DrawChar(int x, int y, uint32_t code, bool transparentBgFlag = true, const Context* pContext = nullptr);
-	Drawable& DrawChar(const Point& pt, uint32_t code, bool transparentBgFlag = true, const Context* pContext = nullptr) {
+	Drawable& DrawChar(int x, int y, uint32_t code, bool transparentBgFlag = false, const Context* pContext = nullptr);
+	Drawable& DrawChar(const Point& pt, uint32_t code, bool transparentBgFlag = false, const Context* pContext = nullptr) {
 		return DrawChar(pt.x, pt.y, code, transparentBgFlag, pContext);
 	}
-	Drawable& DrawString(int x, int y, const char* str, StringCont* pStringCont = nullptr);
-	Drawable& DrawString(const Point& pt, const char* str, StringCont* pStringCont = nullptr) {
-		return DrawString(pt.x, pt.y, str, pStringCont);
-	}
-	Drawable& DrawString(StringCont& stringCont) {
-		return DrawString(stringCont.GetPosition(), stringCont.GetString());
-	}
-	Drawable& DrawStringWrap(int x, int y, int width, int height, const char* str, StringCont* pStringCont = nullptr);
-	Drawable& DrawStringWrap(int x, int y, const char* str, StringCont* pStringCont = nullptr) {
-		return DrawStringWrap(x, y, -1, -1, str, pStringCont);
-	}
-	Drawable& DrawStringWrap(const Point& pt, const char* str, StringCont* pStringCont = nullptr) {
-		return DrawStringWrap(pt.x, pt.y, str, pStringCont);
-	}
-	Drawable& DrawStringWrap(const Rect& rcBBox, const char* str, StringCont* pStringCont = nullptr) {
-		return DrawStringWrap(rcBBox.x, rcBBox.y, rcBBox.width, rcBBox.height, str, pStringCont);
+	Drawable& DrawString(int x, int y, const char* str, bool transparentBgFlag = false);
+	Drawable& DrawString(const Point& pt, const char* str, bool transparentBgFlag = false) { return DrawString(pt.x, pt.y, str, transparentBgFlag); }
+	Drawable& DrawStringWrap(int x, int y, int width, int height, const char* str, bool transparentBgFlag = false);
+	Drawable& DrawStringWrap(int x, int y, const char* str, bool transparentBgFlag = false) { return DrawStringWrap(x, y, -1, -1, str, transparentBgFlag); }
+	Drawable& DrawStringWrap(const Point& pt, const char* str, bool transparentBgFlag = false) { return DrawStringWrap(pt.x, pt.y, str, transparentBgFlag); }
+	Drawable& DrawStringWrap(const Rect& rcBBox, const char* str, bool transparentBgFlag = false) {
+		return DrawStringWrap(rcBBox.x, rcBBox.y, rcBBox.width, rcBBox.height, str, transparentBgFlag);
 	}
 public:
 	Drawable& DrawCross(int x, int y, int width, int height, int wdLine = 1, int htLine = 1);

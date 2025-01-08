@@ -117,44 +117,45 @@ Drawable& Drawable::ScrollVert(DirVert dirVert, int htScroll, const Rect& rectCl
 Drawable& Drawable::DrawChar(int x, int y, const FontEntry& fontEntry, bool transparentBgFlag, const Context* pContext)
 {
 	if (!pContext) pContext = &context_;
-	return DrawBitmap(x, y, fontEntry.data, fontEntry.width, fontEntry.height, transparentBgFlag,
+	if (!(capabilities_ & Capability::TransparentBg)) transparentBgFlag = false;
+	DrawBitmap(x, y, fontEntry.data, fontEntry.width, fontEntry.height, transparentBgFlag,
 			pContext->fontScaleWidth, pContext->fontScaleHeight, pContext);
+	if (!transparentBgFlag && (fontEntry.width < fontEntry.xAdvance)) {
+		DrawRectFill(x + fontEntry.width * pContext->fontScaleWidth, y,
+			(fontEntry.xAdvance - fontEntry.width) * pContext->fontScaleWidth, fontEntry.height * pContext->fontScaleHeight,
+			pContext->colorBg);
+	}
+	return *this;
 }
 
 Drawable& Drawable::DrawChar(int x, int y, uint32_t code, bool transparentBgFlag, const Context* pContext)
 {
 	if (!pContext) pContext = &context_;
 	if (!pContext->pFontSet) return *this;
+	if (!(capabilities_ & Capability::TransparentBg)) transparentBgFlag = false;
 	const FontEntry& fontEntry = pContext->pFontSet->GetFontEntry(code);
 	return DrawChar(x, y, fontEntry, transparentBgFlag, pContext);
 }
 
-Drawable& Drawable::DrawString(int x, int y, const char* str, StringCont* pStringCont)
+Drawable& Drawable::DrawString(int x, int y, const char* str, bool transparentBgFlag)
 {
-	if (!context_.pFontSet) {
-		if (pStringCont) pStringCont->Update({x, y}, str);
-		return *this;
-	}
+	if (!context_.pFontSet) return *this;
 	uint32_t code;
 	UTF8Decoder decoder;
 	const char* p = str;
 	for ( ; *p; p++) {
 		if (!decoder.FeedChar(*p, &code)) continue;
 		const FontEntry& fontEntry = context_.pFontSet->GetFontEntry(code);
-		DrawChar(x, y, fontEntry);
+		DrawChar(x, y, fontEntry, transparentBgFlag);
 		x += fontEntry.xAdvance * context_.fontScaleWidth;
 	}
-	if (pStringCont) pStringCont->Update({x, y}, p);
 	return *this;
 }
 
-Drawable& Drawable::DrawStringWrap(int x, int y, int width, int height, const char* str, StringCont* pStringCont)
+Drawable& Drawable::DrawStringWrap(int x, int y, int width, int height, const char* str, bool transparentBgFlag)
 {
+	if (!context_.pFontSet) return *this;
 	const char* strDone = str;
-	if (!context_.pFontSet) {
-		if (pStringCont) pStringCont->Update({x, y}, strDone);
-		return *this;
-	}
 	uint32_t code;
 	UTF8Decoder decoder;
 	int xStart = x;
@@ -173,12 +174,11 @@ Drawable& Drawable::DrawStringWrap(int x, int y, int width, int height, const ch
 				x = xStart, y += lineHeight;
 				if (y + lineHeight > yExceed) break;
 			}
-			DrawChar(x, y, fontEntry);
+			DrawChar(x, y, fontEntry, transparentBgFlag);
 			x += xAdvance;
 		}
 		strDone = p + 1;
 	}
-	if (pStringCont) pStringCont->Update({x, y}, strDone);
 	return *this;
 }
 

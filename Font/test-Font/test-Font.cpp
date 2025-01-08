@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "jxglib/Font/misaki_gothic-level2.h"
-#include "jxglib/Font/shinonome12-level2.h"
-#include "jxglib/Font/shinonome14-level2.h"
-#include "jxglib/Font/shinonome16-level2.h"
+#include "jxglib/Font/misaki_gothic-japanese-level2.h"
+#include "jxglib/Font/shinonome12-japanese-level2.h"
+#include "jxglib/Font/shinonome14-japanese-level2.h"
+#include "jxglib/Font/shinonome16-japanese-level2.h"
 #include "jxglib/Font/shinonome18.h"
 #include "jxglib/Font/sisd24x32.h"
 #include "jxglib/Font/sisd8x16.h"
-#include "jxglib/Font/unifont-level2.h"
+#include "jxglib/Font/unifont-japanese-level2.h"
 
 using namespace jxglib;
 
