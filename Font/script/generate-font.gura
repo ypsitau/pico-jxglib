@@ -80,12 +80,12 @@ main() = {
 		fileContent_shnm8x16r_bdf_bz2, fileContent_shnmk16_bdf_bz2)
 	'shinonome18' => FontGenerator_FromBDF('shinonome18', 'Shinonome 18-dot Font',
 		fileContent_shnm9x18r_bdf_bz2, nil)
-	'unifont' => FontGenerator_FromBDF('unifont', 'GNU Unifont',
-		fileContent_unifont_bdf_bz2, fileContent_unifont_bdf_bz2)
 	'sisd8x16' => FontGenerator_Segment('sisd8x16', '16-Segment Display Font 8x16',
 		8, 16, segmentBitmapDict_sisd8x16)
 	'sisd24x32' => FontGenerator_Segment('sisd24x32', '16-Segment Display Font 24x32',
 		24, 32, segmentBitmapDict_sisd24x32)
+	'unifont' => FontGenerator_FromBDF('unifont', 'GNU Unifont',
+		fileContent_unifont_bdf_bz2, fileContent_unifont_bdf_bz2)
 	}
 	argopt.Parser {|p|
 		p.OptString('outdir', 'o', 'directory to output')
