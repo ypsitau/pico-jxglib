@@ -84,13 +84,15 @@ public:
 		bool displayInversionOnFlag;
 		uint8_t gammaCurve;
 	};
-	class DispatcherRGB565 : public Dispatcher {
+	class DispatcherRGB565 : public Dispatcher, public DMA::IRQHandler {
 	private:
 		TFT_LCD& display_;
 		DMA::Channel* pDMAChannel_;
+		volatile bool finishFlag_;
 	public:
-		DispatcherRGB565(TFT_LCD& display) : display_{display}, pDMAChannel_{nullptr} {}
+		DispatcherRGB565(TFT_LCD& display) : display_{display}, pDMAChannel_{nullptr}, finishFlag_{false} {}
 	public:
+		// virtual functions of Dispatcher
 		virtual bool Initialize() override;
 		virtual void Refresh() override;
 		virtual void Fill(const Color& color) override;
@@ -102,6 +104,8 @@ public:
 		virtual void DrawImageFast(int x, int y, const Image& image) override;
 		virtual void ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip) override;
 		virtual void ScrollVert(DirVert dirVert, int htScroll, const Rect& rectClip) override;
+		// virtual function of DMA::IRQHandler
+		virtual void OnDMAInterrupt(DMA::Channel& channel, uint irq_index);
 	};
 	class DispatcherRGB666 : public Dispatcher {
 	private:

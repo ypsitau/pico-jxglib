@@ -255,7 +255,7 @@ void test_MemoryToPeripheral_SnifferCalcCRC()
 
 class IRQHandlerDMA : public DMA::IRQHandler {
 public:
-	void DoHandle(DMA::Channel& channel, uint irq_index) {
+	virtual void OnDMAInterrupt(DMA::Channel& channel, uint irq_index) {
 		::printf("Channel#%d finished\n", channel.GetChannel());
 		channel.acknowledge_irqn(irq_index);
 	}

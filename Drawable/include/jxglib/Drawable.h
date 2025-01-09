@@ -27,6 +27,10 @@ public:
 		static const uint32_t ScrollHorz	= (1 << 4);
 		static const uint32_t TransparentBg	= (1 << 5);
 	};
+	class DrawImageFastHandler {
+	public:
+		virtual void OnDrawImageFastFinished() = 0;
+	};
 	class Dispatcher {
 	public:
 		Dispatcher() {}

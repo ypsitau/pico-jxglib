@@ -56,6 +56,7 @@ void TFT_LCD::CalcPosAdjust(Dir displayDir, int* pxAdjust, int* pyAdjust) const
 bool TFT_LCD::DispatcherRGB565::Initialize()
 {
 	pDMAChannel_ = DMA::claim_unused_channel(true);
+	pDMAChannel_->SetSharedIRQHandler(0, *this).EnableIRQ(0);
 	return true;
 }
 
@@ -174,7 +175,6 @@ void TFT_LCD::DispatcherRGB565::DrawImage(int x, int y, const Image& image, cons
 
 void TFT_LCD::DispatcherRGB565::DrawImageFast(int x, int y, const Image& image)
 {
-
 	Raw& raw = display_.raw;
 	spi_inst_t* spi = raw.GetSPI();
 	int xAdjust, yAdjust;
@@ -200,8 +200,9 @@ void TFT_LCD::DispatcherRGB565::DrawImageFast(int x, int y, const Image& image)
 		.set_read_addr(image.GetPointer())
 		.set_write_addr(&::spi_get_hw(spi)->dr)
 		.set_trans_count_trig(image.GetWidth() * image.GetHeight());
-	channel.wait_for_finish_blocking();
-	raw.MemoryWrite_End();
+	//channel.wait_for_finish_blocking();
+	finishFlag_ = false;
+	while (!finishFlag_) ::tight_loop_contents();
 }
 
 void TFT_LCD::DispatcherRGB565::ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip)
@@ -212,6 +213,14 @@ void TFT_LCD::DispatcherRGB565::ScrollHorz(DirHorz dirHorz, int wdScroll, const 
 void TFT_LCD::DispatcherRGB565::ScrollVert(DirVert dirVert, int htScroll, const Rect& rectClip)
 {
 	// do nothing
+}
+
+void TFT_LCD::DispatcherRGB565::OnDMAInterrupt(DMA::Channel& channel, uint irq_index)
+{
+	Raw& raw = display_.raw;
+	raw.MemoryWrite_End();
+	channel.acknowledge_irqn(irq_index);
+	finishFlag_ = true;
 }
 
 //------------------------------------------------------------------------------
