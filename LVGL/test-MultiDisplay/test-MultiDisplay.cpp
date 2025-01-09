@@ -18,10 +18,10 @@ int main()
 	GPIO4.set_function_SPI0_RX();
 	GPIO14.set_function_SPI1_SCK();
 	GPIO15.set_function_SPI1_TX();
-	ILI9488 display1(spi1, 320, 480, {RST: GPIO11, DC: GPIO10, CS: GPIO12, BL: GPIO13});
-	ILI9341 display2(spi1, 240, 320, {RST: GPIO19, DC: GPIO18, CS: GPIO20, BL: GPIO21});
-	ILI9488::TouchScreen touchScreen1(spi0, {CS: GPIO6, IRQ: GPIO7});
-	ILI9341::TouchScreen touchScreen2(spi0, {CS: GPIO8, IRQ: GPIO9});
+	ILI9341 display1(spi1, 240, 320, {RST: GPIO11, DC: GPIO10, CS: GPIO12, BL: GPIO13});
+	ILI9488 display2(spi1, 320, 480, {RST: GPIO19, DC: GPIO18, CS: GPIO20, BL: GPIO21});
+	ILI9341::TouchScreen touchScreen1(spi0, {CS: GPIO6, IRQ: GPIO7});
+	ILI9488::TouchScreen touchScreen2(spi0, {CS: GPIO8, IRQ: GPIO9});
 	display1.Initialize(Display::Dir::Rotate270);
 	display2.Initialize(Display::Dir::Rotate90);
 	touchScreen1.Initialize(display1);
