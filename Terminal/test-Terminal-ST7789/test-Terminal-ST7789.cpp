@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/Terminal.h"
-#include "jxglib/Font/shinonome16-level2.h"
+#include "jxglib/Font/misaki_gothic-japanese-level2.h"
+#include "jxglib/Font/shinonome16-japanese-level2.h"
 #include "jxglib/sample/Text_Botchan.h"
 #include "jxglib/sample/Text_FarFarAway_700Words.h"
 #include "jxglib/ST7789.h"
@@ -19,9 +20,13 @@ int main()
 	Terminal terminal;
 	terminal.Initialize();
 	terminal.AttachOutput(display)
-		.SetFont(Font::shinonome16).SetSpacingRatio(1., 1.2)
-		.ClearScreen()
-		.Print(Text_Botchan); // Text_FarFarAway_700Words
+		.SetColorBg({0, 0, 64})
+		.SetFont(Font::shinonome16)
+		//.SetFont(Font::misaki_gothic)
+		.SetSpacingRatio(1, 1.5)
+		.ClearScreen();
+	terminal.Print(Text_Botchan);
+		//.Print(Text_FarFarAway_700Words);
 	for (;;) {
 		int ch = ::getchar();
 		if (ch == 'j') { terminal.RollUp(); } else if (ch == 'k') { terminal.RollDown(); }

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/Font/misaki_gothic-japanese-level2.h"
+#include "jxglib/Font/naga10-japanese-level2.h"
 #include "jxglib/Font/shinonome12-japanese-level2.h"
 #include "jxglib/Font/shinonome14-japanese-level2.h"
 #include "jxglib/Font/shinonome16-japanese-level2.h"
@@ -25,7 +26,7 @@ void CheckFontSet(const FontSet& fontSet)
 				break;
 			}
 		}
-		::printf("  Basic Font (%dentries): %s\n", fontSet.nFontEntries_Basic, successFlag? "success" : "**NG**");
+		::printf("  Basic Font (%dcharacters): %s\n", fontSet.nFontEntries_Basic, successFlag? "success" : "**NG**");
 	} while (0);
 	if (fontSet.nFontEntries_Extra > 0) {
 		bool successFlag = true;
@@ -38,7 +39,7 @@ void CheckFontSet(const FontSet& fontSet)
 				break;
 			}
 		}
-		::printf("  Extra Font (%dentries): %s\n", fontSet.nFontEntries_Extra, successFlag? "success" : "**NG**");
+		::printf("  Extra Font (%dcharacters): %s\n", fontSet.nFontEntries_Extra, successFlag? "success" : "**NG**");
 	}
 }
 
@@ -46,6 +47,7 @@ int main()
 {
 	::stdio_init_all();
 	CheckFontSet(Font::misaki_gothic);
+	CheckFontSet(Font::naga10);
 	CheckFontSet(Font::shinonome12);
 	CheckFontSet(Font::shinonome14);
 	CheckFontSet(Font::shinonome16);

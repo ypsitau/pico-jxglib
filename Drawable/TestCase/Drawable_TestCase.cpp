@@ -8,11 +8,13 @@
 #include "jxglib/sample/cat-240x320.h"
 #include "jxglib/sample/cat-320x480.h"
 #include "jxglib/Font/misaki_gothic-japanese-level1.h"
+#include "jxglib/Font/naga10-japanese-level1.h"
 #include "jxglib/Font/shinonome12-japanese-level1.h"
 #include "jxglib/Font/shinonome14-japanese-level1.h"
 #include "jxglib/Font/shinonome16-japanese-level1.h"
 #include "jxglib/Font/shinonome18.h"
 #include "jxglib/Font/sisd8x16.h"
+#include "jxglib/Font/sisd24x32.h"
 #include "jxglib/Font/unifont-japanese-level1.h"
 #include "jxglib/sample/Text_Botchan.h"
 
@@ -26,27 +28,38 @@ template<typename T> T LimitNum(T num, T numMin, T numMax) { return (num < numMi
 void Drawable_TestCase::DrawFonts(Drawable* drawableTbl[], int nDrawables)
 {
 	const FontSet* fontSetTbl[] = {
-		&Font::misaki_gothic, &Font::shinonome12, &Font::shinonome14, &Font::shinonome16, &Font::shinonome18, &Font::unifont, &Font::sisd8x16,
+		&Font::misaki_gothic, &Font::naga10,
+		&Font::shinonome12, &Font::shinonome14, &Font::shinonome16, &Font::unifont,
+		//&Font::shinonome18, &Font::sisd8x16, &Font::sisd24x32,
 	};
-	for (int iDrawable = 0; iDrawable < nDrawables; iDrawable++) {
-		Drawable& drawable = *drawableTbl[iDrawable];
-		drawable.Clear();
-		int y = 0;
-		for (int i = 0; i < count_of(fontSetTbl); i++) {
-			const FontSet& fontSet = *fontSetTbl[i];
-			drawable.SetFont(fontSet);
-			drawable.SetColor(Color::red);
-			drawable.DrawString(0, y, fontSet.name);
-			drawable.SetColor(Color::white);
-			const char* str = "0123456789!\"#$%";
-			drawable.DrawString(drawable.GetWidth() - fontSet.CalcStringWidth(str), y, str);
-			y += fontSet.yAdvance;
-			drawable.DrawString(0, y, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-			y += fontSet.yAdvance;
-			drawable.DrawString(0, y, "abcdefghijklmnopqrstuvwxyz");
-			y += fontSet.yAdvance;
+	static const char* strTbl[] = {
+		"!\"#$%&'()*+,-.:;<=>?[\\]^_{|}~",
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+		"abcdefghijklmnopqrstuvwxyz",
+		"あいうえおかきくけこさしすせそ",
+		"木曾路はすべて山の中である。",
+	};
+	for (int iStr = 0;;) {
+		const char* str = strTbl[iStr];
+		for (int iDrawable = 0; iDrawable < nDrawables; iDrawable++) {
+			Drawable& drawable = *drawableTbl[iDrawable];
+			drawable.Clear();
+			int y = 0;
+			for (int i = 0; i < count_of(fontSetTbl); i++) {
+				const FontSet& fontSet = *fontSetTbl[i];
+				drawable.SetFont(fontSet);
+				drawable.SetColor(Color::red);
+				drawable.DrawString(0, y, fontSet.name);
+				drawable.SetColor(Color::white);
+				y += fontSet.yAdvance;
+				drawable.DrawString(0, y, str);
+				y += fontSet.yAdvance;
+			}
+			drawable.Refresh();
 		}
-		drawable.Refresh();
+		::sleep_ms(2000);
+		iStr++;
+		if (iStr >= count_of(strTbl)) iStr = 0;
 	}
 }
 
