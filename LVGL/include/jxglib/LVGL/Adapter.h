@@ -43,6 +43,12 @@ public:
 	public:
 		virtual void Handle(lv_indev_t* indev_drv, lv_indev_data_t* data) override;
 	};
+	class DrawImageFastHandler : public Drawable::DrawImageFastHandler {
+	public:
+		lv_display_t* disp;
+	public:
+		virtual void OnDrawImageFastCompleted() override { ::lv_display_flush_ready(disp); }
+	};
 private:
 	bool doubleBuffFlag_;
 	int nPartial_;
@@ -53,6 +59,7 @@ private:
 	Input* pInput_Keypad_;
 	Input* pInput_Button_;
 	Input* pInput_Encoder_;
+	DrawImageFastHandler drawImageFastHandler_;
 private:
 	InputTouchScreen inputTouchScreen_;
 	InputKeyUART inputKeyUART_;

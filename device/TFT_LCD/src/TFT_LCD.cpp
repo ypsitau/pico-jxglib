@@ -201,9 +201,8 @@ void TFT_LCD::DispatcherRGB565::DrawImageFast(int x, int y, const Image& image, 
 		.set_read_addr(image.GetPointer())
 		.set_write_addr(&::spi_get_hw(spi)->dr)
 		.set_trans_count_trig(image.GetWidth() * image.GetHeight());
-	//channel.wait_for_finish_blocking();
 	finishFlag_ = false;
-	if (!pHandler) {
+	if (blockFlag) {
 		while (!finishFlag_) ::tight_loop_contents();
 	}
 }
@@ -223,8 +222,8 @@ void TFT_LCD::DispatcherRGB565::OnDMAInterrupt(DMA::Channel& channel, uint irq_i
 	Raw& raw = display_.raw;
 	raw.MemoryWrite_End();
 	channel.acknowledge_irqn(irq_index);
-	finishFlag_ = true;
 	if (pDrawImageFastHandler_) pDrawImageFastHandler_->OnDrawImageFastCompleted();
+	finishFlag_ = true;
 }
 
 //------------------------------------------------------------------------------

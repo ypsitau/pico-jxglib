@@ -105,7 +105,7 @@ public:
 		virtual void ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip) override;
 		virtual void ScrollVert(DirVert dirVert, int htScroll, const Rect& rectClip) override;
 		// virtual function of DMA::IRQHandler
-		virtual void OnDMAInterrupt(DMA::Channel& channel, uint irq_index);
+		virtual void OnDMAInterrupt(DMA::Channel& channel, uint irq_index) override;
 	};
 	class DispatcherRGB666 : public Dispatcher {
 	private:

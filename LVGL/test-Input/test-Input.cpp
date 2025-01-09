@@ -69,7 +69,7 @@ int main()
 	ILI9341::TouchScreen touchScreen(spi0, {CS: GPIO6, IRQ: GPIO7});
 	display.Initialize(Display::Dir::Rotate270);
 	touchScreen.Initialize(display);
-	LVGL::Adapter lvglAdapter(false, 10);
+	LVGL::Adapter lvglAdapter(true, 10);
 	lvglAdapter.AttachOutput(display);
 	lvglAdapter.AttachInput(touchScreen);
 	lvglAdapter.AttachInput(UART::Default);
