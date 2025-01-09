@@ -11,8 +11,7 @@ namespace jxglib { namespace LVGL {
 Adapter::InputDumb Adapter::inputDumb_;
 VT100::Decoder Adapter::vt100Decoder;
 
-Adapter::Adapter(bool doubleBuffFlag, int nPartial) :
-	doubleBuffFlag_{doubleBuffFlag}, nPartial_{nPartial}, pDrawableOut_{nullptr}, disp_{nullptr},
+Adapter::Adapter() : doubleBuffFlag_{false}, nPixelsBuff_{-1}, nPartialBuff_{10}, pDrawableOut_{nullptr}, disp_{nullptr},
 	pInput_Pointer_{&inputDumb_}, pInput_Keypad_{&inputDumb_}, pInput_Button_{&inputDumb_}, pInput_Encoder_{&inputDumb_},
 	inputKeyUART_(vt100Decoder)
 {}
@@ -26,16 +25,16 @@ bool Adapter::AttachOutput(Drawable& drawable, const Rect& rect)
 	disp_ = ::lv_display_create(rectOut_.width, rectOut_.height);
 	::lv_display_set_flush_cb(disp_, FlushCB);
 	::lv_display_set_user_data(disp_, this);
-	uint32_t buffSize = rectOut_.width * rectOut_.height / nPartial_ * ::lv_color_format_get_size(::lv_display_get_color_format(disp_));
-	void* buff1 = ::lv_malloc(buffSize);
+	uint32_t bytesBuff = (nPixelsBuff_ < 0)? (rectOut_.width * rectOut_.height / nPartialBuff_) : nPixelsBuff_;
+	bytesBuff *= ::lv_color_format_get_size(::lv_display_get_color_format(disp_));
+	void* buff1 = ::lv_malloc(bytesBuff);
 	if (!buff1) return false;
 	void* buff2 = nullptr;
 	if (doubleBuffFlag_) {
-		buff2 = ::lv_malloc(buffSize);
+		buff2 = ::lv_malloc(bytesBuff);
 		if (!buff2) return false;
 	}
-	::lv_display_set_buffers(disp_, buff1, buff2, buffSize,
-				(nPartial_ > 1)? LV_DISPLAY_RENDER_MODE_PARTIAL : LV_DISPLAY_RENDER_MODE_FULL);
+	::lv_display_set_buffers(disp_, buff1, buff2, bytesBuff, LV_DISPLAY_RENDER_MODE_PARTIAL);
 	SetDefault();	// just for the convenience in the following process
 	return true;
 }

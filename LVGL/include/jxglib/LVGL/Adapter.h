@@ -51,7 +51,8 @@ public:
 	};
 private:
 	bool doubleBuffFlag_;
-	int nPartial_;
+	int nPixelsBuff_;
+	int nPartialBuff_;
 	Drawable* pDrawableOut_;
 	Rect rectOut_;
 	lv_display_t* disp_;
@@ -67,10 +68,12 @@ private:
 public:
 	static VT100::Decoder vt100Decoder;
 public:
-	Adapter(bool doubleBuffFlag = true, int nPartial = 10);
+	Adapter();
 public:
 	Drawable& GetDrawableOut() { return *pDrawableOut_; }
 	lv_display_t* Get_lv_display() { return disp_; }
+	Adapter& EnableDoubleBuff(bool doubleBuffFlag = true) { doubleBuffFlag_ = doubleBuffFlag; return *this; }
+	Adapter& SetPixelsBuff(int nPixelsBuff) { nPixelsBuff_ = nPixelsBuff; return *this; }
 	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty);
 	void Flush(lv_display_t* disp, const lv_area_t* area, unsigned char* buf);
 	void SetDefault();
