@@ -15,7 +15,6 @@
 
 namespace jxglib {
 
-
 //------------------------------------------------------------------------------
 // TFT_LCD
 //------------------------------------------------------------------------------
@@ -89,8 +88,9 @@ public:
 		TFT_LCD& display_;
 		DMA::Channel* pDMAChannel_;
 		volatile bool finishFlag_;
+		DrawImageFastHandler* pDrawImageFastHandler_;
 	public:
-		DispatcherRGB565(TFT_LCD& display) : display_{display}, pDMAChannel_{nullptr}, finishFlag_{false} {}
+		DispatcherRGB565(TFT_LCD& display) : display_{display}, pDMAChannel_{nullptr}, finishFlag_{false}, pDrawImageFastHandler_{nullptr} {}
 	public:
 		// virtual functions of Dispatcher
 		virtual bool Initialize() override;

@@ -175,6 +175,7 @@ void TFT_LCD::DispatcherRGB565::DrawImage(int x, int y, const Image& image, cons
 
 void TFT_LCD::DispatcherRGB565::DrawImageFast(int x, int y, const Image& image, DrawImageFastHandler* pHandler)
 {
+	pDrawImageFastHandler_ = pHandler;
 	Raw& raw = display_.raw;
 	spi_inst_t* spi = raw.GetSPI();
 	int xAdjust, yAdjust;
@@ -202,7 +203,9 @@ void TFT_LCD::DispatcherRGB565::DrawImageFast(int x, int y, const Image& image, 
 		.set_trans_count_trig(image.GetWidth() * image.GetHeight());
 	//channel.wait_for_finish_blocking();
 	finishFlag_ = false;
-	while (!finishFlag_) ::tight_loop_contents();
+	if (!pHandler) {
+		while (!finishFlag_) ::tight_loop_contents();
+	}
 }
 
 void TFT_LCD::DispatcherRGB565::ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip)
@@ -221,6 +224,7 @@ void TFT_LCD::DispatcherRGB565::OnDMAInterrupt(DMA::Channel& channel, uint irq_i
 	raw.MemoryWrite_End();
 	channel.acknowledge_irqn(irq_index);
 	finishFlag_ = true;
+	if (pDrawImageFastHandler_) pDrawImageFastHandler_->OnDrawImageFastCompleted();
 }
 
 //------------------------------------------------------------------------------

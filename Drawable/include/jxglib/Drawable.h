@@ -29,7 +29,7 @@ public:
 	};
 	class DrawImageFastHandler {
 	public:
-		virtual void OnDrawImageFastFinished() = 0;
+		virtual void OnDrawImageFastCompleted() = 0;
 	};
 	class Dispatcher {
 	public:
