@@ -2,7 +2,6 @@
 // TFT_LCD.cpp
 //==============================================================================
 #include "jxglib/TFT_LCD.h"
-#include "jxglib/DMA.h"
 
 namespace jxglib {
 
@@ -56,7 +55,7 @@ void TFT_LCD::CalcPosAdjust(Dir displayDir, int* pxAdjust, int* pyAdjust) const
 //------------------------------------------------------------------------------
 bool TFT_LCD::DispatcherRGB565::Initialize()
 {
-	// do nothing
+	pDMAChannel_ = DMA::claim_unused_channel(true);
 	return true;
 }
 
@@ -185,7 +184,7 @@ void TFT_LCD::DispatcherRGB565::DrawImageFast(int x, int y, const Image& image)
 	raw.RowAddressSet(y, y + image.GetHeight() - 1);
 	raw.MemoryWrite_Begin(16);
 	DMA::ChannelConfig config;
-	DMA::Channel& channel = *DMA::claim_unused_channel(true);
+	DMA::Channel& channel = *pDMAChannel_;
 	config.set_enable(true)
 		.set_transfer_data_size(DMA_SIZE_16)
 		.set_read_increment(true)
@@ -197,12 +196,11 @@ void TFT_LCD::DispatcherRGB565::DrawImageFast(int x, int y, const Image& image)
 		.set_irq_quiet(false)
 		.set_sniff_enable(false)
 		.set_high_priority(false);
-	channel.set_config(config);
-	channel.set_read_addr(image.GetPointer())
+	channel.set_config(config)
+		.set_read_addr(image.GetPointer())
 		.set_write_addr(&::spi_get_hw(spi)->dr)
-		.set_trans_count_trig(image.GetWidth() * image.GetHeight())
-		.wait_for_finish_blocking();
-	channel.unclaim();
+		.set_trans_count_trig(image.GetWidth() * image.GetHeight());
+	channel.wait_for_finish_blocking();
 	raw.MemoryWrite_End();
 }
 

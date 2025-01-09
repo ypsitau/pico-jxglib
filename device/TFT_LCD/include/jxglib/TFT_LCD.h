@@ -11,6 +11,7 @@
 #include "hardware/spi.h"
 #include "jxglib/Display.h"
 #include "jxglib/Image.h"
+#include "jxglib/DMA.h"
 
 namespace jxglib {
 
@@ -86,8 +87,9 @@ public:
 	class DispatcherRGB565 : public Dispatcher {
 	private:
 		TFT_LCD& display_;
+		DMA::Channel* pDMAChannel_;
 	public:
-		DispatcherRGB565(TFT_LCD& display) : display_{display} {}
+		DispatcherRGB565(TFT_LCD& display) : display_{display}, pDMAChannel_{nullptr} {}
 	public:
 		virtual bool Initialize() override;
 		virtual void Refresh() override;
