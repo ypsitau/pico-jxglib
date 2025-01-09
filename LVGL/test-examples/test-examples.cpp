@@ -248,7 +248,7 @@ int main()
 	ILI9488::TouchScreen touchScreen(spi0, {CS: GPIO6, IRQ: GPIO7});
 	display.Initialize(Display::Dir::Rotate270);
 	touchScreen.Initialize(display);
-	LVGLAdapter lvglAdapter(false);
+	LVGL::Adapter lvglAdapter(false);
 	lvglAdapter.AttachOutput(display);
 	lvglAdapter.AttachInput(touchScreen);
 	lvglAdapter.AttachInput(UART::Default);

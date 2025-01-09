@@ -1,23 +1,23 @@
 //==============================================================================
-// LVGLAdapter.cpp
+// LVGL::Adapter.cpp
 //==============================================================================
-#include "jxglib/LVGLAdapter.h"
+#include "jxglib/LVGL.h"
 
-namespace jxglib {
+namespace jxglib { namespace LVGL {
 
 //------------------------------------------------------------------------------
-// LVGLAdapter
+// LVGL::Adapter
 //------------------------------------------------------------------------------
-LVGLAdapter::InputDumb LVGLAdapter::inputDumb_;
-VT100::Decoder LVGLAdapter::vt100Decoder;
+Adapter::InputDumb Adapter::inputDumb_;
+VT100::Decoder Adapter::vt100Decoder;
 
-LVGLAdapter::LVGLAdapter(bool doubleBuffFlag, int nPartial) :
+Adapter::Adapter(bool doubleBuffFlag, int nPartial) :
 	doubleBuffFlag_{doubleBuffFlag}, nPartial_{nPartial}, pDrawableOut_{nullptr}, disp_{nullptr},
 	pInput_Pointer_{&inputDumb_}, pInput_Keypad_{&inputDumb_}, pInput_Button_{&inputDumb_}, pInput_Encoder_{&inputDumb_},
 	inputKeyUART_(vt100Decoder)
 {}
 
-bool LVGLAdapter::AttachOutput(Drawable& drawable, const Rect& rect)
+bool Adapter::AttachOutput(Drawable& drawable, const Rect& rect)
 {
 	pDrawableOut_ = &drawable;
 	rectOut_ = rect;
@@ -40,49 +40,49 @@ bool LVGLAdapter::AttachOutput(Drawable& drawable, const Rect& rect)
 	return true;
 }
 
-void LVGLAdapter::SetDefault()
+void Adapter::SetDefault()
 {
 	::lv_display_set_default(disp_);
 }
 
-void LVGLAdapter::Flush(lv_display_t* disp, const lv_area_t* area, unsigned char* buf)
+void Adapter::Flush(lv_display_t* disp, const lv_area_t* area, unsigned char* buf)
 {
 	Image image(Image::Format::RGB565, ::lv_area_get_width(area), ::lv_area_get_height(area), buf);
 	GetDrawableOut().DrawImageFast(rectOut_.x + area->x1, rectOut_.y + area->y1, image);
 	::lv_display_flush_ready(disp);
 }
 
-lv_indev_t* LVGLAdapter::SetInput_Pointer(Input& input)
+lv_indev_t* Adapter::SetInput_Pointer(Input& input)
 {
 	pInput_Pointer_ = &input;
 	return RegisterInput(LV_INDEV_TYPE_POINTER, IndevReadPointerCB);
 }
 
-lv_indev_t* LVGLAdapter::SetInput_Keypad(Input& input)
+lv_indev_t* Adapter::SetInput_Keypad(Input& input)
 {
 	pInput_Keypad_ = &input;
 	return RegisterInput(LV_INDEV_TYPE_KEYPAD, IndevReadKeypadCB);
 }
 
-lv_indev_t* LVGLAdapter::SetInput_Button(Input& input)
+lv_indev_t* Adapter::SetInput_Button(Input& input)
 {
 	pInput_Button_ = &input;
 	return RegisterInput(LV_INDEV_TYPE_BUTTON, IndevReadButtonCB);
 }
 
-lv_indev_t* LVGLAdapter::SetInput_Encoder(Input& input)
+lv_indev_t* Adapter::SetInput_Encoder(Input& input)
 {
 	pInput_Encoder_ = &input;
 	return RegisterInput(LV_INDEV_TYPE_ENCODER, IndevReadEncoderCB);
 }
 
-lv_indev_t* LVGLAdapter::AttachInput(TouchScreen& touchScreen)
+lv_indev_t* Adapter::AttachInput(TouchScreen& touchScreen)
 {
 	inputTouchScreen_.SetTouchScreen(touchScreen);
 	return SetInput_Pointer(inputTouchScreen_);
 }
 
-lv_indev_t* LVGLAdapter::AttachInput(UART& uart, bool setGroupFlag)
+lv_indev_t* Adapter::AttachInput(UART& uart, bool setGroupFlag)
 {
 	uart.irq_add_shared_handler((uart.raw.get_index() == 0)? HandlerUART0 : HandlerUART1).irq_set_enabled(true);
 	uart.raw.set_irq_enables(true, false);
@@ -95,7 +95,7 @@ lv_indev_t* LVGLAdapter::AttachInput(UART& uart, bool setGroupFlag)
 	return indev;
 }
 
-lv_indev_t* LVGLAdapter::RegisterInput(lv_indev_type_t indev_type, lv_indev_read_cb_t cb)
+lv_indev_t* Adapter::RegisterInput(lv_indev_type_t indev_type, lv_indev_read_cb_t cb)
 {
 	lv_indev_t* indev = ::lv_indev_create();
 	::lv_indev_set_type(indev, indev_type);
@@ -106,53 +106,53 @@ lv_indev_t* LVGLAdapter::RegisterInput(lv_indev_type_t indev_type, lv_indev_read
 	return indev;
 }
 
-void LVGLAdapter::FlushCB(lv_display_t* disp, const lv_area_t* area, unsigned char* buf)
+void Adapter::FlushCB(lv_display_t* disp, const lv_area_t* area, unsigned char* buf)
 {
 	//::printf("FlushCB(x1:%d, y1:%d, x2:%d, y2:%d)\n", area->x1, area->y1, area->x2, area->y2);
-	LVGLAdapter* pSelf = reinterpret_cast<LVGLAdapter*>(::lv_display_get_user_data(disp));
+	Adapter* pSelf = reinterpret_cast<Adapter*>(::lv_display_get_user_data(disp));
 	pSelf->Flush(disp, area, buf);
 }
 
-void LVGLAdapter::IndevReadPointerCB(lv_indev_t* indev, lv_indev_data_t* data)
+void Adapter::IndevReadPointerCB(lv_indev_t* indev, lv_indev_data_t* data)
 {
-	LVGLAdapter* pSelf = reinterpret_cast<LVGLAdapter*>(::lv_indev_get_user_data(indev));
+	Adapter* pSelf = reinterpret_cast<Adapter*>(::lv_indev_get_user_data(indev));
 	pSelf->pInput_Pointer_->Handle(indev, data);
 }
 
-void LVGLAdapter::IndevReadKeypadCB(lv_indev_t* indev, lv_indev_data_t* data)
+void Adapter::IndevReadKeypadCB(lv_indev_t* indev, lv_indev_data_t* data)
 {
-	LVGLAdapter* pSelf = reinterpret_cast<LVGLAdapter*>(::lv_indev_get_user_data(indev));
+	Adapter* pSelf = reinterpret_cast<Adapter*>(::lv_indev_get_user_data(indev));
 	pSelf->pInput_Keypad_->Handle(indev, data);
 }
 
-void LVGLAdapter::IndevReadButtonCB(lv_indev_t* indev, lv_indev_data_t* data)
+void Adapter::IndevReadButtonCB(lv_indev_t* indev, lv_indev_data_t* data)
 {
-	LVGLAdapter* pSelf = reinterpret_cast<LVGLAdapter*>(::lv_indev_get_user_data(indev));
+	Adapter* pSelf = reinterpret_cast<Adapter*>(::lv_indev_get_user_data(indev));
 	pSelf->pInput_Button_->Handle(indev, data);
 }
 
-void LVGLAdapter::IndevReadEncoderCB(lv_indev_t* indev, lv_indev_data_t* data)
+void Adapter::IndevReadEncoderCB(lv_indev_t* indev, lv_indev_data_t* data)
 {
-	LVGLAdapter* pSelf = reinterpret_cast<LVGLAdapter*>(::lv_indev_get_user_data(indev));
+	Adapter* pSelf = reinterpret_cast<Adapter*>(::lv_indev_get_user_data(indev));
 	pSelf->pInput_Encoder_->Handle(indev, data);
 }
 
-void LVGLAdapter::HandlerUART0(void)
+void Adapter::HandlerUART0(void)
 {
 	UART& uart = UART0;
 	while (uart.raw.is_readable()) vt100Decoder.FeedChar(uart.raw.getc());
 }
 
-void LVGLAdapter::HandlerUART1(void)
+void Adapter::HandlerUART1(void)
 {
 	UART& uart = UART1;
 	while (uart.raw.is_readable()) vt100Decoder.FeedChar(uart.raw.getc());
 }
 
 //------------------------------------------------------------------------------
-// LVGLAdapter::InputTouchScreen
+// Adapter::InputTouchScreen
 //------------------------------------------------------------------------------
-void LVGLAdapter::InputTouchScreen::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
+void Adapter::InputTouchScreen::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
 {
 	int x, y;
 	data->state = pTouchScreen_->ReadPosition(&x, &y)? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
@@ -161,9 +161,9 @@ void LVGLAdapter::InputTouchScreen::Handle(lv_indev_t* indev_drv, lv_indev_data_
 }
 
 //------------------------------------------------------------------------------
-// LVGLAdapter::InputKeyUART
+// Adapter::InputKeyUART
 //------------------------------------------------------------------------------
-void LVGLAdapter::InputKeyUART::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
+void Adapter::InputKeyUART::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
 {
 	if (vt100Decoder_.HasKeyData()) {
 		int keyCode = vt100Decoder_.GetKeyData();
@@ -188,4 +188,4 @@ void LVGLAdapter::InputKeyUART::Handle(lv_indev_t* indev_drv, lv_indev_data_t* d
 	}
 }
 
-}
+} }

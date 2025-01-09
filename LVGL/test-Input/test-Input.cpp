@@ -4,7 +4,7 @@
 #include "pico/stdlib.h"
 #include "jxglib/ST7789.h"
 #include "jxglib/ILI9341.h"
-#include "jxglib/LVGLAdapter.h"
+#include "jxglib/LVGL.h"
 #include "jxglib/UART.h"
 #include "jxglib/VT100.h"
 #include "jxglib/KeyCode.h"
@@ -13,7 +13,7 @@ using namespace jxglib;
 
 VT100::Decoder decoder;
 
-class InputPointer : public LVGLAdapter::Input {
+class InputPointer : public LVGL::Adapter::Input {
 public:
 	virtual void Handle(lv_indev_t* indev_drv, lv_indev_data_t* data) override;
 };
@@ -26,7 +26,7 @@ void InputPointer::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
 	data->point.y = 0;
 }
 
-class InputKeypad : public LVGLAdapter::Input {
+class InputKeypad : public LVGL::Adapter::Input {
 public:
 	virtual void Handle(lv_indev_t* indev_drv, lv_indev_data_t* data) override;
 };
@@ -37,7 +37,7 @@ void InputKeypad::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
 	data->state = LV_INDEV_STATE_PRESSED;
 }
 
-class InputButton : public LVGLAdapter::Input {
+class InputButton : public LVGL::Adapter::Input {
 public:
 	virtual void Handle(lv_indev_t* indev_drv, lv_indev_data_t* data) override;
 };
@@ -49,7 +49,7 @@ void InputButton::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
 	data->btn_id = 0;
 }
 
-class InputEncoder : public LVGLAdapter::Input {
+class InputEncoder : public LVGL::Adapter::Input {
 public:
 	virtual void Handle(lv_indev_t* indev_drv, lv_indev_data_t* data) override;
 };
@@ -69,7 +69,7 @@ int main()
 	ILI9341::TouchScreen touchScreen(spi0, {CS: GPIO6, IRQ: GPIO7});
 	display.Initialize(Display::Dir::Rotate90);
 	touchScreen.Initialize(display);
-	LVGLAdapter lvglAdapter(false, 10);
+	LVGL::Adapter lvglAdapter(false, 10);
 	lvglAdapter.AttachOutput(display);
 	lvglAdapter.AttachInput(touchScreen);
 	lvglAdapter.AttachInput(UART::Default);

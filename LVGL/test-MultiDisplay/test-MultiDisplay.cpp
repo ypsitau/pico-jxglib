@@ -3,7 +3,7 @@
 #include "pico/stdlib.h"
 #include "jxglib/ILI9341.h"
 #include "jxglib/ILI9488.h"
-#include "jxglib/LVGLAdapter.h"
+#include "jxglib/LVGL.h"
 
 using namespace jxglib;
 
@@ -28,14 +28,14 @@ int main()
 	touchScreen2.Initialize(display2);
 	//-----------------------------------------
 	// Attach display1 to LVGL
-	LVGLAdapter lvglAdapter1(false);
+	LVGL::Adapter lvglAdapter1(false);
 	lvglAdapter1.AttachOutput(display1);
 	lvglAdapter1.AttachInput(touchScreen1);
-	::lv_example_anim_2();
-	//::lv_example_textarea_2();
+	//::lv_example_anim_2();
+	::lv_example_textarea_2();
 	//-----------------------------------------
 	// Attach display2 to LVGL
-	LVGLAdapter lvglAdapter2(false);
+	LVGL::Adapter lvglAdapter2(false);
 	lvglAdapter2.AttachOutput(display2);
 	lvglAdapter2.AttachInput(UART::Default);	// shared by all the displays
 	lvglAdapter2.AttachInput(touchScreen2);

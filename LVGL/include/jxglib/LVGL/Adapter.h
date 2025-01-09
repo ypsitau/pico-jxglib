@@ -1,8 +1,8 @@
 //==============================================================================
-// jxglib/LVGLAdapter.h
+// jxglib/LVGL/Adapter.h
 //==============================================================================
-#ifndef PICO_JXGLIB_LVGLAdapter_H
-#define PICO_JXGLIB_LVGLAdapter_H
+#ifndef PICO_JXGLIB_LVGL_Adapter_H
+#define PICO_JXGLIB_LVGL_Adapter_H
 #include <lvgl/lvgl.h>
 #include "pico/stdlib.h"
 #include "jxglib/Drawable.h"
@@ -10,12 +10,12 @@
 #include "jxglib/UART.h"
 #include "jxglib/VT100.h"
 
-namespace jxglib {
+namespace jxglib { namespace LVGL {
 
 //------------------------------------------------------------------------------
-// LVGLAdapter
+// LVGL::Adapter
 //------------------------------------------------------------------------------
-class LVGLAdapter {
+class Adapter {
 public:
 	class Input {
 	public:
@@ -25,7 +25,7 @@ public:
 	public:
 		virtual void Handle(lv_indev_t* indev_drv, lv_indev_data_t* data) override {};
 	};
-	class InputTouchScreen : public LVGLAdapter::Input {
+	class InputTouchScreen : public Input {
 	private:
 		TouchScreen* pTouchScreen_;
 	public:
@@ -35,7 +35,7 @@ public:
 	public:
 		virtual void Handle(lv_indev_t* indev_drv, lv_indev_data_t* data) override;
 	};
-	class InputKeyUART : public LVGLAdapter::Input {
+	class InputKeyUART : public Input {
 	private:
 		VT100::Decoder& vt100Decoder_;
 	public:
@@ -60,7 +60,7 @@ private:
 public:
 	static VT100::Decoder vt100Decoder;
 public:
-	LVGLAdapter(bool doubleBuffFlag = true, int nPartial = 10);
+	Adapter(bool doubleBuffFlag = true, int nPartial = 10);
 public:
 	Drawable& GetDrawableOut() { return *pDrawableOut_; }
 	lv_display_t* Get_lv_display() { return disp_; }
@@ -86,6 +86,6 @@ private:
 	static void HandlerUART1(void);
 };
 
-}
+} }
 
 #endif

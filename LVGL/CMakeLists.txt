@@ -33,4 +33,4 @@ target_link_libraries(jxglib_LVGL INTERFACE
 
 target_sources(jxglib_LVGL INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/LVGL.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/LVGLAdapter.cpp)
+	${CMAKE_CURRENT_LIST_DIR}/src/Adapter.cpp)

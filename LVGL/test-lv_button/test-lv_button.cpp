@@ -2,7 +2,7 @@
 #include "pico/stdlib.h"
 #include "jxglib/ILI9341.h"
 #include "jxglib/ILI9488.h"
-#include "jxglib/LVGLAdapter.h"
+#include "jxglib/LVGL.h"
 
 using namespace jxglib;
 
@@ -25,7 +25,7 @@ int main()
 	ILI9488::TouchScreen touchScreen(spi0, {CS: GPIO6, IRQ: GPIO7});
 	display.Initialize(Display::Dir::Rotate90);
 	touchScreen.Initialize(display);
-	LVGLAdapter lvglAdapter;
+	LVGL::Adapter lvglAdapter;
 	lvglAdapter.AttachOutput(display);
 	lvglAdapter.AttachInput(touchScreen);
 	lvglAdapter.AttachInput(UART::Default);
