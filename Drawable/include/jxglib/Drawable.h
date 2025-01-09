@@ -43,7 +43,7 @@ public:
 		virtual void DrawBitmap(int x, int y, const void* data, int width, int height,
 			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) = 0;
 		virtual void DrawImage(int x, int y, const Image& image, const Rect& rectClip, DrawDir drawDir) = 0;
-		virtual void DrawImageFast(int x, int y, const Image& image) = 0;
+		virtual void DrawImageFast(int x, int y, const Image& image, DrawImageFastHandler* pHandler) = 0;
 		virtual void ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip) = 0;
 		virtual void ScrollVert(DirVert dirVert, int htScroll, const Rect& rectClip) = 0;
 	};
@@ -59,7 +59,7 @@ public:
 		virtual void DrawBitmap(int x, int y, const void* data, int width, int height,
 			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override {}
 		virtual void DrawImage(int x, int y, const Image& image, const Rect& rectClip, DrawDir drawDir) override {}
-		virtual void DrawImageFast(int x, int y, const Image& image) override {}
+		virtual void DrawImageFast(int x, int y, const Image& image, DrawImageFastHandler* pHandler) override {}
 		virtual void ScrollHorz(DirHorz dirHorz, int width, const Rect& rectClip) override {};
 		virtual void ScrollVert(DirVert dirVert, int height, const Rect& rectClip) override {};
 	};
@@ -226,7 +226,7 @@ public:
 		return DrawBitmap(pt.x, pt.y, data, width, height, transparentBgFlag, scaleX, scaleY, pContext);
 	}
 	Drawable& DrawImage(int x, int y, const Image& image, const Rect& rectClip = Rect::Empty, DrawDir drawDir = DrawDir::Normal);
-	Drawable& DrawImageFast(int x, int y, const Image& image);
+	Drawable& DrawImageFast(int x, int y, const Image& image, DrawImageFastHandler* pHandler = nullptr);
 	Drawable& ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip = Rect::Empty);
 	Drawable& ScrollVert(DirVert dirVert, int htScroll, const Rect& rectClip = Rect::Empty);
 	Drawable& DrawChar(int x, int y, const FontEntry& fontEntry, bool transparentBgFlag = false, const Context* pContext = nullptr);

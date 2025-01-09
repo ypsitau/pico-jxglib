@@ -82,9 +82,9 @@ Drawable& Drawable::DrawImage(int x, int y, const Image& image, const Rect& rect
 	return *this;
 }
 
-Drawable& Drawable::DrawImageFast(int x, int y, const Image& image)
+Drawable& Drawable::DrawImageFast(int x, int y, const Image& image, DrawImageFastHandler* pHandler)
 {
-	GetDispatcher().DrawImageFast(x, y, image);
+	GetDispatcher().DrawImageFast(x, y, image, pHandler);
 	return *this;
 }
 

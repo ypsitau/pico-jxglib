@@ -48,7 +48,9 @@ void Adapter::SetDefault()
 void Adapter::Flush(lv_display_t* disp, const lv_area_t* area, unsigned char* buf)
 {
 	Image image(Image::Format::RGB565, ::lv_area_get_width(area), ::lv_area_get_height(area), buf);
+	
 	GetDrawableOut().DrawImageFast(rectOut_.x + area->x1, rectOut_.y + area->y1, image);
+	
 	::lv_display_flush_ready(disp);
 }
 

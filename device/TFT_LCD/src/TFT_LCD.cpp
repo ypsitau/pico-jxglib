@@ -173,7 +173,7 @@ void TFT_LCD::DispatcherRGB565::DrawImage(int x, int y, const Image& image, cons
 	raw.MemoryDataAccessControl(saved.displayDir, saved.configData);
 }
 
-void TFT_LCD::DispatcherRGB565::DrawImageFast(int x, int y, const Image& image)
+void TFT_LCD::DispatcherRGB565::DrawImageFast(int x, int y, const Image& image, DrawImageFastHandler* pHandler)
 {
 	Raw& raw = display_.raw;
 	spi_inst_t* spi = raw.GetSPI();
@@ -345,7 +345,7 @@ void TFT_LCD::DispatcherRGB666::DrawImage(int x, int y, const Image& image, cons
 	raw.MemoryDataAccessControl(saved.displayDir, saved.configData);
 }
 
-void TFT_LCD::DispatcherRGB666::DrawImageFast(int x, int y, const Image& image)
+void TFT_LCD::DispatcherRGB666::DrawImageFast(int x, int y, const Image& image, DrawImageFastHandler* pHandler)
 {
 
 	Raw& raw = display_.raw;

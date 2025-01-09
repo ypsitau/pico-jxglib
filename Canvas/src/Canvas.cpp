@@ -112,7 +112,7 @@ void Canvas::Dispatcher_T<T_Color>::DrawImage(int x, int y, const Image& image, 
 }
 
 template<typename T_Color>
-void Canvas::Dispatcher_T<T_Color>::DrawImageFast(int x, int y, const Image& image)
+void Canvas::Dispatcher_T<T_Color>::DrawImageFast(int x, int y, const Image& image, DrawImageFastHandler* pHandler)
 {
 	DrawImage(x, y, image, Rect::Empty, DrawDir::Normal);
 #if 0

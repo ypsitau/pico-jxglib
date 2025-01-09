@@ -143,7 +143,7 @@ void SSD1306::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 	// do nothing
 }
 
-void SSD1306::DispatcherEx::DrawImageFast(int x, int y, const Image& image)
+void SSD1306::DispatcherEx::DrawImageFast(int x, int y, const Image& image, DrawImageFastHandler* pHandler)
 {
 	// do nothing
 }
