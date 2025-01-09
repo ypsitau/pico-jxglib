@@ -220,7 +220,7 @@ public:
 		void FillBuffer(uint8_t data) { ::memset(buff_, data, bufferLen_); }
 		void SendBuffer() const { raw.SendBuffer(buffWhole_, bufferLen_ + 1); }
 	public:
-		virtual void Initialize() override;
+		virtual bool Initialize() override;
 		virtual void Refresh() override;
 		virtual void Fill(const Color& color) override;
 		virtual void DrawPixel(int x, int y, const Color& color) override;
@@ -244,7 +244,7 @@ public:
 		SetDispatcher(dispatcherEx_);
 	}
 public:
-	void Initialize() { GetDispatcher().Initialize(); }
+	bool Initialize() { return GetDispatcher().Initialize(); }
 };
 
 }

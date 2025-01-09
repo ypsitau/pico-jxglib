@@ -67,7 +67,7 @@ int main()
 	GPIO15.set_function_SPI1_TX();
 	ILI9341 display(spi1, 240, 320, {RST: GPIO11, DC: GPIO10, CS: GPIO12, BL: GPIO13});
 	ILI9341::TouchScreen touchScreen(spi0, {CS: GPIO6, IRQ: GPIO7});
-	display.Initialize(Display::Dir::Rotate90);
+	display.Initialize(Display::Dir::Rotate270);
 	touchScreen.Initialize(display);
 	LVGL::Adapter lvglAdapter(false, 10);
 	lvglAdapter.AttachOutput(display);

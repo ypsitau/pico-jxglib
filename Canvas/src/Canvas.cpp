@@ -264,9 +264,10 @@ bool Canvas::AttachOutput(Drawable& drawableOut, const Rect& rect, Dir dir)
 //------------------------------------------------------------------------------
 // Canvas::DispatcherEx
 //------------------------------------------------------------------------------
-void Canvas::DispatcherEx::Initialize()
+bool Canvas::DispatcherEx::Initialize()
 {
 	// do nothing
+	return true;
 }
 
 void Canvas::DispatcherEx::Refresh()

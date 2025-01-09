@@ -89,7 +89,7 @@ public:
 	public:
 		DispatcherRGB565(TFT_LCD& display) : display_{display} {}
 	public:
-		virtual void Initialize() override;
+		virtual bool Initialize() override;
 		virtual void Refresh() override;
 		virtual void Fill(const Color& color) override;
 		virtual void DrawPixel(int x, int y, const Color& color) override;
@@ -107,7 +107,7 @@ public:
 	public:
 		DispatcherRGB666(TFT_LCD& display) : display_{display} {}
 	public:
-		virtual void Initialize() override;
+		virtual bool Initialize() override;
 		virtual void Refresh() override;
 		virtual void Fill(const Color& color) override;
 		virtual void DrawPixel(int x, int y, const Color& color) override;
@@ -408,7 +408,7 @@ public:
 		}
 	}
 public:
-	void Initialize(Dir displayDir, const ConfigData& configData);
+	bool Initialize(Dir displayDir, const ConfigData& configData);
 	const Saved& GetSaved() const { return saved_; }
 	virtual Dir GetDirection() const override { return saved_.displayDir; }
 	bool UsesCS() { return raw.UsesCS(); }

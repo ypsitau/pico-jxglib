@@ -25,7 +25,7 @@ public:
 	public:
 		DispatcherEx(Canvas& canvas) : canvas_{canvas} {}
 	public:
-		virtual void Initialize() override;
+		virtual bool Initialize() override;
 		virtual void Refresh() override;
 	};
 	template<typename T_Color> class Dispatcher_T : public DispatcherEx {

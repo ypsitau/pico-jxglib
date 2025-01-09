@@ -9,7 +9,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // TFT_LCD
 //------------------------------------------------------------------------------
-void TFT_LCD::Initialize(Dir displayDir, const ConfigData& configData)
+bool TFT_LCD::Initialize(Dir displayDir, const ConfigData& configData)
 {
 	saved_.displayDir = displayDir;
 	saved_.configData = configData;
@@ -37,6 +37,7 @@ void TFT_LCD::Initialize(Dir displayDir, const ConfigData& configData)
 	Clear();
 	::sleep_ms(10);
 	raw.SetGPIO_BL(1);
+	return GetDispatcher().Initialize();
 }
 
 void TFT_LCD::CalcPosAdjust(Dir displayDir, int* pxAdjust, int* pyAdjust) const
@@ -53,9 +54,10 @@ void TFT_LCD::CalcPosAdjust(Dir displayDir, int* pxAdjust, int* pyAdjust) const
 //------------------------------------------------------------------------------
 // TFT_LCD::DispatcherRGB565
 //------------------------------------------------------------------------------
-void TFT_LCD::DispatcherRGB565::Initialize()
+bool TFT_LCD::DispatcherRGB565::Initialize()
 {
 	// do nothing
+	return true;
 }
 
 void TFT_LCD::DispatcherRGB565::Refresh()
@@ -217,9 +219,10 @@ void TFT_LCD::DispatcherRGB565::ScrollVert(DirVert dirVert, int htScroll, const 
 //------------------------------------------------------------------------------
 // TFT_LCD::DispatcherRGB666
 //------------------------------------------------------------------------------
-void TFT_LCD::DispatcherRGB666::Initialize()
+bool TFT_LCD::DispatcherRGB666::Initialize()
 {
 	// do nothing
+	return true;
 }
 
 void TFT_LCD::DispatcherRGB666::Refresh()

@@ -31,7 +31,7 @@ public:
 	public:
 		Dispatcher() {}
 	public:
-		virtual void Initialize() = 0;
+		virtual bool Initialize() = 0;
 		virtual void Refresh() = 0;
 		virtual void Fill(const Color& color) = 0;
 		virtual void DrawPixel(int x, int y, const Color& color) = 0;
@@ -47,7 +47,7 @@ public:
 	public:
 		DispatcherNone() {}
 	public:
-		virtual void Initialize() override {};
+		virtual bool Initialize() override { return true; };
 		virtual void Refresh() override {}
 		virtual void Fill(const Color& color) override {}
 		virtual void DrawPixel(int x, int y, const Color& color) override {}
