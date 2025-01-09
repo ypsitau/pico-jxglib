@@ -28,19 +28,21 @@ int main()
 	touchScreen2.Initialize(display2);
 	//-----------------------------------------
 	// Attach display1 to LVGL
-	LVGL::Adapter lvglAdapter1(false);
-	lvglAdapter1.AttachOutput(display1);
+	LVGL::Adapter lvglAdapter1;
+	lvglAdapter1.EnableDoubleBuff(false).AttachOutput(display1);
 	lvglAdapter1.AttachInput(touchScreen1);
 	//::lv_example_anim_2();
 	::lv_example_textarea_2();
+#if 0
 	//-----------------------------------------
 	// Attach display2 to LVGL
-	LVGL::Adapter lvglAdapter2(false);
-	lvglAdapter2.AttachOutput(display2);
+	LVGL::Adapter lvglAdapter2;
+	lvglAdapter2.EnableDoubleBuff(false).AttachOutput(display2);
 	lvglAdapter2.AttachInput(UART::Default);	// shared by all the displays
 	lvglAdapter2.AttachInput(touchScreen2);
 	::lv_example_anim_3();
 	//::lv_example_textarea_1();
+#endif
 	for (;;) {
 		::sleep_ms(1);
 		::lv_timer_handler();
