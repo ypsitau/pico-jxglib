@@ -6,7 +6,10 @@
 #include <lvgl/lvgl.h>
 #include "jxglib/LVGL/Adapter.h"
 
-namespace jxglib {
+namespace jxglib::LVGL {
+
+void Initialize();
+
 }
 
 #endif

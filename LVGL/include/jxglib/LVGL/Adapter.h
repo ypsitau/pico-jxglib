@@ -10,7 +10,7 @@
 #include "jxglib/UART.h"
 #include "jxglib/VT100.h"
 
-namespace jxglib { namespace LVGL {
+namespace jxglib::LVGL {
 
 //------------------------------------------------------------------------------
 // LVGL::Adapter
@@ -74,7 +74,6 @@ public:
 	lv_display_t* Get_lv_display() { return disp_; }
 	Adapter& EnableDoubleBuff(bool doubleBuffFlag = true) { doubleBuffFlag_ = doubleBuffFlag; return *this; }
 	Adapter& SetPixelsBuff(int nPixelsBuff) { nPixelsBuff_ = nPixelsBuff; return *this; }
-	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty);
 	void Flush(lv_display_t* disp, const lv_area_t* area, unsigned char* buf);
 	void SetDefault();
 	lv_indev_t* SetInput_Pointer(Input& input);
@@ -82,14 +81,12 @@ public:
 	lv_indev_t* SetInput_Button(Input& input);
 	lv_indev_t* SetInput_Encoder(Input& input);
 public:
+	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty);
 	lv_indev_t* AttachInput(TouchScreen& touchScreen);
 	lv_indev_t* AttachInput(UART& uart, bool setGroupFlag = true);
-public:
-	static void InitTick() { ::lv_tick_set_cb(GetTickCB); }
 private:
 	lv_indev_t* RegisterInput(lv_indev_type_t indev_type, lv_indev_read_cb_t cb);
 private:
-	static uint32_t GetTickCB() { return ::to_ms_since_boot(::get_absolute_time()); }
 	static void FlushCB(lv_display_t* disp, const lv_area_t* area, unsigned char* buf);
 	static void IndevReadPointerCB(lv_indev_t* indev_drv, lv_indev_data_t* data);
 	static void IndevReadKeypadCB(lv_indev_t* indev_drv, lv_indev_data_t* data);
@@ -99,6 +96,6 @@ private:
 	static void HandlerUART1(void);
 };
 
-} }
+}
 
 #endif

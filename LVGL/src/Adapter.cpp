@@ -3,7 +3,7 @@
 //==============================================================================
 #include "jxglib/LVGL.h"
 
-namespace jxglib { namespace LVGL {
+namespace jxglib::LVGL {
 
 //------------------------------------------------------------------------------
 // LVGL::Adapter
@@ -193,4 +193,4 @@ void Adapter::InputKeyUART::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
 	}
 }
 
-} }
+}

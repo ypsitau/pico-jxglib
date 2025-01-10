@@ -13,7 +13,6 @@ int main()
 	::stdio_init_all();
 	::spi_init(spi0, 2 * 1000 * 1000);
 	::spi_init(spi1, 125 * 1000 * 1000);
-	::lv_init();
 	GPIO2.set_function_SPI0_SCK();
 	GPIO3.set_function_SPI0_TX();
 	GPIO4.set_function_SPI0_RX();
@@ -25,7 +24,7 @@ int main()
 	//ILI9488::TouchScreen touchScreen(spi0, {CS: GPIO6, IRQ: GPIO7});
 	display.Initialize(Display::Dir::Rotate90);
 	touchScreen.Initialize(display);
-	LVGL::Adapter::InitTick();
+	LVGL::Initialize();
 	LVGL::Adapter lvglAdapter;
 	lvglAdapter.EnableDoubleBuff(true).AttachOutput(display);
 	lvglAdapter.AttachInput(touchScreen);
