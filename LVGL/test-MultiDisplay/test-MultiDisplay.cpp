@@ -33,7 +33,6 @@ int main()
 	lvglAdapter1.AttachInput(touchScreen1);
 	//::lv_example_anim_2();
 	::lv_example_textarea_2();
-#if 0
 	//-----------------------------------------
 	// Attach display2 to LVGL
 	LVGL::Adapter lvglAdapter2;
@@ -42,7 +41,6 @@ int main()
 	lvglAdapter2.AttachInput(touchScreen2);
 	::lv_example_anim_3();
 	//::lv_example_textarea_1();
-#endif
 	for (;;) {
 		::sleep_ms(1);
 		::lv_timer_handler();

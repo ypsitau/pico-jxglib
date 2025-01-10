@@ -350,7 +350,6 @@ void TFT_LCD::DispatcherRGB666::DrawImage(int x, int y, const Image& image, cons
 
 void TFT_LCD::DispatcherRGB666::DrawImageFast(int x, int y, const Image& image, bool blockFlag, DrawImageFastHandler* pHandler)
 {
-
 	Raw& raw = display_.raw;
 	spi_inst_t* spi = raw.GetSPI();
 	int xAdjust, yAdjust;
@@ -380,6 +379,7 @@ void TFT_LCD::DispatcherRGB666::DrawImageFast(int x, int y, const Image& image, 
 		while (!reader.HasDone()) raw.MemoryWrite_Color666(reader.ReadForward());
 	}
 	raw.MemoryWrite_End();
+	if (pHandler) pHandler->OnDrawImageFastCompleted();
 }
 
 void TFT_LCD::DispatcherRGB666::ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip)
