@@ -1,3 +1,17 @@
+# == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
+if(WIN32)
+    set(USERHOME $ENV{USERPROFILE})
+else()
+    set(USERHOME $ENV{HOME})
+endif()
+set(sdkVersion 2.1.0)
+set(toolchainVersion 13_3_Rel1)
+set(picotoolVersion 2.1.0)
+set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
+if (EXISTS ${picoVscode})
+    include(${picoVscode})
+endif()
+# ====================================================================================
 # Generated Cmake Pico project file
 
 cmake_minimum_required(VERSION 3.13)
@@ -28,33 +42,33 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-ILI9488 C CXX ASM)
+project(test-ST7735 C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-ILI9488 test-ILI9488.cpp )
+add_executable(test-ST7735 test-ST7735.cpp )
 
-pico_set_program_name(test-ILI9488 "test-ILI9488")
-pico_set_program_version(test-ILI9488 "0.1")
+pico_set_program_name(test-ST7735 "test-ST7735")
+pico_set_program_version(test-ST7735 "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-ILI9488 1)
-pico_enable_stdio_usb(test-ILI9488 0)
+pico_enable_stdio_uart(test-ST7735 1)
+pico_enable_stdio_usb(test-ST7735 0)
 
 # Add the standard library to the build
-target_link_libraries(test-ILI9488
+target_link_libraries(test-ST7735
 	pico_stdlib
 	jxglib_Drawable_TestCase
-	jxglib_ILI9488)
+	jxglib_ST7735)
 
 # Add the standard include files to the build
-target_include_directories(test-ILI9488 PRIVATE
+target_include_directories(test-ST7735 PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-ILI9488)
+pico_add_extra_outputs(test-ST7735)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../../.. jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. jxglib)

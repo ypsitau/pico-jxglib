@@ -26,6 +26,20 @@ if (EXISTS ${picoVscode})
     include(${picoVscode})
 endif()
 # ====================================================================================
+# == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
+if(WIN32)
+    set(USERHOME $ENV{USERPROFILE})
+else()
+    set(USERHOME $ENV{HOME})
+endif()
+set(sdkVersion 2.1.0)
+set(toolchainVersion 13_3_Rel1)
+set(picotoolVersion 2.1.0)
+set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
+if (EXISTS ${picoVscode})
+    include(${picoVscode})
+endif()
+# ====================================================================================
 # == DO NEVER EDIT THE NEXT LINES for Raspberry Pi Pico VS Code Extension to work ==
 if(WIN32)
     set(USERHOME $ENV{USERPROFILE})
@@ -75,8 +89,6 @@ project(test-SSD1306 C CXX ASM)
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../../.. jxglib)
-
 # Add executable. Default name is the project name, version 0.1
 
 add_executable(test-SSD1306 test-SSD1306.cpp)
@@ -90,15 +102,15 @@ pico_enable_stdio_usb(test-SSD1306 0)
 
 # Add the standard library to the build
 target_link_libraries(test-SSD1306
-	pico_stdlib)
+	pico_stdlib
+	jxglib_Drawable_TestCase
+	jxglib_SSD1306)
 
 # Add the standard include files to the build
 target_include_directories(test-SSD1306 PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}
-	${CMAKE_CURRENT_LIST_DIR}/.. # for our common lwipopts or any other standard includes, if required
 )
 
-target_link_libraries(test-SSD1306
-	jxglib_SSD1306)
-
 pico_add_extra_outputs(test-SSD1306)
+
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. jxglib)

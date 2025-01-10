@@ -10,9 +10,9 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // SSD1306
 //------------------------------------------------------------------------------
-void SSD1306::DispatcherEx::Initialize()
+bool SSD1306::DispatcherEx::Initialize()
 {
-	AllocBuffer();
+	if (!AllocateBuff()) return false;
 	raw.SetDisplayOnOff(0);							// Set Display ON/OFF = 0: OFF
 	raw.SetMemoryAddressingMode(0);					// Set Memory Addressing Mode = 0: Horizontal Addressing Mode
 	raw.SetDisplayStartLine(0);						// Set Display Start Line = 0
@@ -39,6 +39,7 @@ void SSD1306::DispatcherEx::Initialize()
 	raw.ChargePumpSetting(1);						// Charge Pump Settig = 1: Enable charge pump during display on
 	raw.DeactivateScroll();							// Deactivate Scroll
 	raw.SetDisplayOnOff(1);							// Set Display ON/OFF = 1: ON
+	return true;
 }
 
 void SSD1306::DispatcherEx::Refresh()

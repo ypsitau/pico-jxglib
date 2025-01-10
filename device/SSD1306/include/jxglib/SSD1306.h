@@ -204,13 +204,15 @@ public:
 		int GetHeightPerPage() const { return heightPerPage_; }
 		int GetNumPages() const { return numPages_; }
 		int GetBufferLen() const { return bufferLen_; }
-		void AllocBuffer() {
+		bool AllocateBuff() {
 			buffWhole_ = reinterpret_cast<uint8_t*>(::malloc(bufferLen_ + 1));
+			if (!buffWhole_) return false;
 			buffWhole_[0] = 
 				(0b0 << 7) |	// Co = 0
 				(0b1 << 6);		// D/C# = 1
 			buff_ = buffWhole_ + 1;
 			FillBuffer(0x00);
+			return true;
 		}
 		uint8_t* GetPointer() { return buff_; }
 		uint8_t* GetPointer(int x) { return buff_ + x; }
