@@ -22,10 +22,11 @@ int main()
 	ILI9488 display2(spi1, 320, 480, {RST: GPIO19, DC: GPIO18, CS: GPIO20, BL: GPIO21});
 	ILI9341::TouchScreen touchScreen1(spi0, {CS: GPIO6, IRQ: GPIO7});
 	ILI9488::TouchScreen touchScreen2(spi0, {CS: GPIO8, IRQ: GPIO9});
-	display1.Initialize(Display::Dir::Rotate270);
+	display1.Initialize(Display::Dir::Rotate90);
 	display2.Initialize(Display::Dir::Rotate90);
 	touchScreen1.Initialize(display1);
 	touchScreen2.Initialize(display2);
+	LVGL::Adapter::InitTick();
 	//-----------------------------------------
 	// Attach display1 to LVGL
 	LVGL::Adapter lvglAdapter1;
@@ -42,8 +43,7 @@ int main()
 	::lv_example_anim_3();
 	//::lv_example_textarea_1();
 	for (;;) {
-		::sleep_ms(1);
+		::sleep_ms(5);
 		::lv_timer_handler();
-		::lv_tick_inc(1);
 	}
 }

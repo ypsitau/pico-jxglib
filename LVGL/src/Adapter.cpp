@@ -23,6 +23,11 @@ bool Adapter::AttachOutput(Drawable& drawable, const Rect& rect)
 	Rect rectBound(0, 0, drawable.GetWidth(), drawable.GetHeight());
 	if (rectOut_.IsEmpty()) { rectOut_ = rectBound; } else if (!rectOut_.Adjust(rectBound)) return false;
 	disp_ = ::lv_display_create(rectOut_.width, rectOut_.height);
+	::lv_display_set_color_format(disp_, LV_COLOR_FORMAT_RGB565);
+	//::lv_display_set_color_format(disp_,
+	//		drawable.IsFormatRGB565()? LV_COLOR_FORMAT_RGB565 :
+	//		drawable.IsFormatRGB()? LV_COLOR_FORMAT_RGB888 :
+	//		drawable.IsFormatBitmap()? LV_COLOR_FORMAT_I1 : LV_COLOR_FORMAT_RGB565);
 	::lv_display_set_flush_cb(disp_, FlushCB);
 	::lv_display_set_user_data(disp_, this);
 	uint32_t bytesBuff = (nPixelsBuff_ < 0)? (rectOut_.width * rectOut_.height / nPartialBuff_) : nPixelsBuff_;
@@ -47,6 +52,7 @@ void Adapter::SetDefault()
 void Adapter::Flush(lv_display_t* disp, const lv_area_t* area, unsigned char* buf)
 {
 	Image image(Image::Format::RGB565, ::lv_area_get_width(area), ::lv_area_get_height(area), buf);
+	//Image image(pDrawableOut_->GetFormat(), ::lv_area_get_width(area), ::lv_area_get_height(area), buf);
 	drawImageFastHandler_.disp = disp;	
 	GetDrawableOut().DrawImageFast(rectOut_.x + area->x1, rectOut_.y + area->y1, image, !doubleBuffFlag_, &drawImageFastHandler_);
 }

@@ -84,9 +84,12 @@ public:
 public:
 	lv_indev_t* AttachInput(TouchScreen& touchScreen);
 	lv_indev_t* AttachInput(UART& uart, bool setGroupFlag = true);
+public:
+	static void InitTick() { ::lv_tick_set_cb(GetTickCB); }
 private:
 	lv_indev_t* RegisterInput(lv_indev_type_t indev_type, lv_indev_read_cb_t cb);
 private:
+	static uint32_t GetTickCB() { return ::to_ms_since_boot(::get_absolute_time()); }
 	static void FlushCB(lv_display_t* disp, const lv_area_t* area, unsigned char* buf);
 	static void IndevReadPointerCB(lv_indev_t* indev_drv, lv_indev_data_t* data);
 	static void IndevReadKeypadCB(lv_indev_t* indev_drv, lv_indev_data_t* data);

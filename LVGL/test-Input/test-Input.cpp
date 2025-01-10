@@ -69,6 +69,7 @@ int main()
 	ILI9341::TouchScreen touchScreen(spi0, {CS: GPIO6, IRQ: GPIO7});
 	display.Initialize(Display::Dir::Rotate270);
 	touchScreen.Initialize(display);
+	LVGL::Adapter::InitTick();
 	LVGL::Adapter lvglAdapter;
 	lvglAdapter.EnableDoubleBuff().AttachOutput(display);
 	//lvglAdapter.AttachOutput(display);
@@ -89,6 +90,5 @@ int main()
 	for (;;) {
 		::sleep_ms(5);
 		::lv_timer_handler();
-		::lv_tick_inc(5);
 	}
 }
