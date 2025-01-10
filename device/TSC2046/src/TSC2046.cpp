@@ -9,7 +9,7 @@ namespace jxglib {
 // TSC2046
 //------------------------------------------------------------------------------
 TSC2046::TSC2046(spi_inst_t* spi, const PinAssign& pinAssign) :
-		spi_{spi}, pinAssign_{pinAssign}, hvFlippedFlag_{false} {}
+		spi_{spi}, pinAssign_{pinAssign}, hvFlippedFlag_{false}, xPrev_{0}, yPrev_{0} {}
 
 void TSC2046::Initialize(bool hvFlippedFlag)
 {
@@ -85,23 +85,30 @@ bool TSC2046::ReadPositionRaw(int* px, int* py, int* pz1, int* pz2)
 
 bool TSC2046::ReadPosition(int* px, int* py)
 {
-	const int nSamples = 10;
-	int xSum = 0, ySum = 0, z1Sum = 0;
-	for (int iSample = 0; iSample < nSamples; iSample++) {
+	const int nTrials = 10;
+	int xSum = 0, ySum = 0;
+	int nSamplesPos = 0;
+	for (int iTrial = 0; iTrial < nTrials; iTrial++) {
 		int x, y, z1;
 		ReadPositionRaw(&x, &y, &z1);
 		//::sleep_ms(1);
-		xSum += x, ySum += y, z1Sum += z1;
+		if (z1 >= z1Threshold) {
+			xSum += x, ySum += y;
+			nSamplesPos++;
+		}
 	}
-	int x, y;
+	if (nSamplesPos == 0) {
+		*px = xPrev_, *py = yPrev_;
+		return false;
+	}
+	int x = 0, y = 0;
 	if (hvFlippedFlag_) {
-		x = ySum / nSamples, y = xSum / nSamples;
+		x = ySum / nSamplesPos, y = xSum / nSamplesPos;
 	} else {
-		x = xSum / nSamples, y = ySum / nSamples;
+		x = xSum / nSamplesPos, y = ySum / nSamplesPos;
 	}
-	if (z1Sum < z1Threshold * nSamples) return false;
-	*px = adjusterX_.Adjust(x);
-	*py = adjusterY_.Adjust(y);
+	xPrev_ = *px = adjusterX_.Adjust(x);
+	yPrev_ = *py = adjusterY_.Adjust(y);
 	return true;
 }
 

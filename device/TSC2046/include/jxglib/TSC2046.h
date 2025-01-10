@@ -40,6 +40,7 @@ private:
 	Adjuster adjusterX_;
 	Adjuster adjusterY_;
 	bool hvFlippedFlag_;
+	int xPrev_, yPrev_;
 private:
 	static const int z1Threshold = 3;
 public:
