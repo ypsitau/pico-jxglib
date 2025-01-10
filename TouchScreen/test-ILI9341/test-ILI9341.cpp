@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "jxglib/Drawable_TestCase.h"
 #include "jxglib/ILI9341.h"
 
 using namespace jxglib;
@@ -19,17 +18,11 @@ int main()
 	ILI9341::TouchScreen touchScreen(spi0, {CS: GPIO6, IRQ: GPIO7});
 	display.Initialize(Display::Dir::Rotate0);
 	touchScreen.Initialize(display);
-	Drawable_TestCase::DrawString(display);
-	//Drawable_TestCase::RotateImage(display);
-	//for (;;) ;
-	//touchScreen.Calibrate(display);
-	::printf("----\n");
+	touchScreen.Calibrate(display);
 	touchScreen.PrintCalibration();
 	for (;;) {
 		int x, y;
-		if (touchScreen.ReadPosition(&x, &y)) {
-			display.DrawRectFill(x - 2, y - 2, 4, 4);
-		}
+		if (touchScreen.ReadPosition(&x, &y)) display.DrawRectFill(x - 1, y - 1, 2, 2);
 		::sleep_ms(10);
 	}
 }
