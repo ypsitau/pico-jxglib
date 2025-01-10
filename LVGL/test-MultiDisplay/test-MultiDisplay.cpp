@@ -31,8 +31,8 @@ int main()
 	LVGL::Adapter lvglAdapter1;
 	lvglAdapter1.EnableDoubleBuff(false).AttachOutput(display1);
 	lvglAdapter1.AttachInput(touchScreen1);
-	//::lv_example_anim_2();
-	::lv_example_textarea_2();
+	::lv_example_anim_2();
+	//::lv_example_textarea_2();
 	//-----------------------------------------
 	// Attach display2 to LVGL
 	LVGL::Adapter lvglAdapter2;
