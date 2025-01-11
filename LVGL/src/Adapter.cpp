@@ -16,28 +16,34 @@ Adapter::Adapter() : doubleBuffFlag_{false}, nPixelsBuff_{-1}, nPartialBuff_{10}
 	inputKeyUART_(vt100Decoder)
 {}
 
-bool Adapter::AttachOutput(Drawable& drawable, const Rect& rect)
+bool Adapter::AttachOutput(Drawable& drawable, const Rect& rect, bool requiredFlag)
 {
 	pDrawableOut_ = &drawable;
 	rectOut_ = rect;
 	Rect rectBound(0, 0, drawable.GetWidth(), drawable.GetHeight());
 	if (rectOut_.IsEmpty()) { rectOut_ = rectBound; } else if (!rectOut_.Adjust(rectBound)) return false;
 	disp_ = ::lv_display_create(rectOut_.width, rectOut_.height);
-	::lv_display_set_color_format(disp_, LV_COLOR_FORMAT_RGB565);
-	//::lv_display_set_color_format(disp_,
-	//		drawable.IsFormatRGB565()? LV_COLOR_FORMAT_RGB565 :
-	//		drawable.IsFormatRGB()? LV_COLOR_FORMAT_RGB888 :
-	//		drawable.IsFormatBitmap()? LV_COLOR_FORMAT_I1 : LV_COLOR_FORMAT_RGB565);
+	//::lv_display_set_color_format(disp_, LV_COLOR_FORMAT_RGB565);
+	::lv_display_set_color_format(disp_,
+			drawable.IsFormatRGB565()? LV_COLOR_FORMAT_RGB565 :
+			drawable.IsFormatRGB()? LV_COLOR_FORMAT_RGB888 :
+			drawable.IsFormatBitmap()? LV_COLOR_FORMAT_I1 : LV_COLOR_FORMAT_RGB565);
 	::lv_display_set_flush_cb(disp_, FlushCB);
 	::lv_display_set_user_data(disp_, this);
 	uint32_t bytesBuff = (nPixelsBuff_ < 0)? (rectOut_.width * rectOut_.height / nPartialBuff_) : nPixelsBuff_;
 	bytesBuff *= ::lv_color_format_get_size(::lv_display_get_color_format(disp_));
 	void* buff1 = ::lv_malloc(bytesBuff);
-	if (!buff1) return false;
+	if (!buff1) {
+		if (requiredFlag) panic("can't allocate the first buffer");
+		return false;
+	}
 	void* buff2 = nullptr;
 	if (doubleBuffFlag_) {
 		buff2 = ::lv_malloc(bytesBuff);
-		if (!buff2) return false;
+		if (!buff2) {
+			if (requiredFlag) panic("can't allocate the second buffer");
+			return false;
+		}
 	}
 	::lv_display_set_buffers(disp_, buff1, buff2, bytesBuff, LV_DISPLAY_RENDER_MODE_PARTIAL);
 	SetDefault();	// just for the convenience in the following process
@@ -51,8 +57,8 @@ void Adapter::SetDefault()
 
 void Adapter::Flush(lv_display_t* disp, const lv_area_t* area, unsigned char* buf)
 {
-	Image image(Image::Format::RGB565, ::lv_area_get_width(area), ::lv_area_get_height(area), buf);
-	//Image image(pDrawableOut_->GetFormat(), ::lv_area_get_width(area), ::lv_area_get_height(area), buf);
+	//Image image(Image::Format::RGB565, ::lv_area_get_width(area), ::lv_area_get_height(area), buf);
+	Image image(pDrawableOut_->GetFormat(), ::lv_area_get_width(area), ::lv_area_get_height(area), buf);
 	drawImageFastHandler_.disp = disp;	
 	GetDrawableOut().DrawImageFast(rectOut_.x + area->x1, rectOut_.y + area->y1, image, !doubleBuffFlag_, &drawImageFastHandler_);
 }

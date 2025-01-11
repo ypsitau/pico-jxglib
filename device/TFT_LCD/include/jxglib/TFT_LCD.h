@@ -164,7 +164,7 @@ public:
 			while (!::spi_is_writable(spi_)) tight_loop_contents();
 			spi_get_hw(spi_)->dr = static_cast<uint32_t>(data);
 		}
-		void MemoryWrite_Color666(const Color& color) {
+		void MemoryWrite_Color(const Color& color) {
 			MemoryWrite_Data8(color.r);
 			MemoryWrite_Data8(color.g);
 			MemoryWrite_Data8(color.b);
@@ -280,7 +280,7 @@ public:
 		}
 		void MemoryWriteConstColor666(const Color& color, int len) {
 			MemoryWrite_Begin(8);
-			while (len-- > 0) MemoryWrite_Color666(color);
+			while (len-- > 0) MemoryWrite_Color(color);
 			MemoryWrite_End();
 		}
 		// 9.1.23 RAMRD (2Dh): Memory Read

@@ -74,6 +74,7 @@ public:
 	lv_display_t* Get_lv_display() { return disp_; }
 	Adapter& EnableDoubleBuff(bool doubleBuffFlag = true) { doubleBuffFlag_ = doubleBuffFlag; return *this; }
 	Adapter& SetPixelsBuff(int nPixelsBuff) { nPixelsBuff_ = nPixelsBuff; return *this; }
+	Adapter& SetPartialNum(int nPartialBuff) { nPartialBuff_ = nPartialBuff; return *this; }
 	void Flush(lv_display_t* disp, const lv_area_t* area, unsigned char* buf);
 	void SetDefault();
 	lv_indev_t* SetInput_Pointer(Input& input);
@@ -81,7 +82,7 @@ public:
 	lv_indev_t* SetInput_Button(Input& input);
 	lv_indev_t* SetInput_Encoder(Input& input);
 public:
-	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty);
+	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, bool requiredFlag = true);
 	lv_indev_t* AttachInput(TouchScreen& touchScreen);
 	lv_indev_t* AttachInput(UART& uart, bool setGroupFlag = true);
 private:
