@@ -15,6 +15,7 @@ int main()
 	GPIO7.set_function_I2C1_SCL().pull_up();
 	SSD1306 display(i2c1);
 	display.Initialize();
+	display.Clear().Refresh();
 	LVGL::Initialize();
 	LVGL::Adapter lvglAdapter;
 	lvglAdapter.AttachOutput(display);
@@ -28,6 +29,13 @@ int main()
 
 void Setup()
 {
+	lv_obj_t* button = ::lv_button_create(::lv_screen_active());
+	do {
+		lv_obj_t* label = ::lv_label_create(button);
+		::lv_label_set_text(label, "Button");
+		::lv_obj_center(label);
+	} while (0);
+#if 0
 	lv_obj_t* buttonPrev = nullptr;
 	for (int i = 0; i < 1; i++) {
 		lv_obj_t* button = ::lv_button_create(::lv_screen_active());
@@ -44,4 +52,5 @@ void Setup()
 		} while (0);
 		buttonPrev = button;
 	}
+#endif
 }
