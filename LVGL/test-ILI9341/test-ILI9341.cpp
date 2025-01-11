@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/ILI9341.h"
-#include "jxglib/ILI9488.h"
 #include "jxglib/LVGL.h"
 
 using namespace jxglib;
@@ -18,13 +17,8 @@ int main()
 	GPIO4.set_function_SPI0_RX();
 	GPIO14.set_function_SPI1_SCK();
 	GPIO15.set_function_SPI1_TX();
-#if 1
 	ILI9341 display(spi1, 240, 320, {RST: GPIO11, DC: GPIO10, CS: GPIO12, BL: GPIO13});
 	ILI9341::TouchScreen touchScreen(spi0, {CS: GPIO6, IRQ: GPIO7});
-#else
-	ILI9488 display(spi1, 320, 480, {RST: GPIO11, DC: GPIO10, CS: GPIO12, BL: GPIO13});
-	ILI9488::TouchScreen touchScreen(spi0, {CS: GPIO6, IRQ: GPIO7});
-#endif
 	display.Initialize(Display::Dir::Rotate90);
 	touchScreen.Initialize(display);
 	LVGL::Initialize();
@@ -41,14 +35,10 @@ int main()
 
 void Setup()
 {
-	lv_obj_t* button = lv_button_create(lv_screen_active());
-	//lv_obj_add_event_cb(button, event_handler, LV_EVENT_ALL, NULL);
-	lv_obj_align(button, LV_ALIGN_CENTER, 0, -40);
-	lv_obj_set_width(button, 200);
-	lv_obj_remove_flag(button, LV_OBJ_FLAG_PRESS_LOCK);
+	lv_obj_t* button = ::lv_button_create(::lv_screen_active());
 	do {
-		lv_obj_t* label = lv_label_create(button);
-		lv_label_set_text(label, "Button");
-		lv_obj_center(label);
+		lv_obj_t* label = ::lv_label_create(button);
+		::lv_label_set_text(label, "Button");
+		::lv_obj_center(label);
 	} while (0);
 }
