@@ -1,16 +1,3 @@
-# == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
-if(WIN32)
-    set(USERHOME $ENV{USERPROFILE})
-else()
-    set(USERHOME $ENV{HOME})
-endif()
-set(sdkVersion 2.1.0)
-set(toolchainVersion 13_3_Rel1)
-set(picotoolVersion 2.1.0)
-set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
-if (EXISTS ${picoVscode})
-    include(${picoVscode})
-endif()
 # ====================================================================================
 # Generated Cmake Pico project file
 
@@ -42,34 +29,34 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-demos C CXX ASM)
+project(test-benchmark C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-demos test-demos.cpp )
+add_executable(test-benchmark test-benchmark.cpp )
 
-pico_set_program_name(test-demos "test-demos")
-pico_set_program_version(test-demos "0.1")
+pico_set_program_name(test-benchmark "test-benchmark")
+pico_set_program_version(test-benchmark "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-demos 1)
-pico_enable_stdio_usb(test-demos 0)
+pico_enable_stdio_uart(test-benchmark 1)
+pico_enable_stdio_usb(test-benchmark 0)
 
 # Add the standard library to the build
-target_link_libraries(test-demos
+target_link_libraries(test-benchmark
 	pico_stdlib
 	lvgl_demos
 	jxglib_ILI9341
 	jxglib_LVGL)
 
 # Add the standard include files to the build
-target_include_directories(test-demos PRIVATE
+target_include_directories(test-benchmark PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-demos)
+pico_add_extra_outputs(test-benchmark)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. jxglib)

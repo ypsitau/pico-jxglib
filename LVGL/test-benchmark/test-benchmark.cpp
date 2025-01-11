@@ -24,7 +24,7 @@ int main()
 	touchScreen.Initialize(display);
 	LVGL::Initialize();
 	LVGL::Adapter lvglAdapter;
-	lvglAdapter.EnableDoubleBuff(true).AttachOutput(display);
+	lvglAdapter.EnableDoubleBuff(false).AttachOutput(display);
 	lvglAdapter.AttachInput(touchScreen);
 	Setup();
 	for (;;) {
@@ -37,5 +37,6 @@ void Setup()
 {
 	//::lv_demo_music();
 	//::lv_demo_multilang();
-	::lv_demo_scroll();
+	//::lv_demo_scroll();
+	::lv_demo_benchmark();
 }

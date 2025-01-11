@@ -5,17 +5,12 @@
 
 namespace jxglib::LVGL {
 
-static uint32_t GetTickCB();
+static uint32_t GetTickMSecCB() { return ::to_ms_since_boot(::get_absolute_time()); }
 
 void Initialize()
 {
 	::lv_init();
-    ::lv_tick_set_cb(GetTickCB);
-}
-
-static uint32_t GetTickCB()
-{
-    return ::to_ms_since_boot(::get_absolute_time());
+	::lv_tick_set_cb(GetTickMSecCB);
 }
 
 }
