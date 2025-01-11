@@ -6,8 +6,6 @@
 
 using namespace jxglib;
 
-void Setup();
-
 int main()
 {
 	::stdio_init_all();
@@ -24,19 +22,11 @@ int main()
 	touchScreen.Initialize(display);
 	LVGL::Initialize();
 	LVGL::Adapter lvglAdapter;
-	lvglAdapter.EnableDoubleBuff(false).AttachOutput(display);
+	lvglAdapter.EnableDoubleBuff(true).AttachOutput(display);
 	lvglAdapter.AttachInput(touchScreen);
-	Setup();
+	::lv_demo_benchmark();
 	for (;;) {
 		::sleep_ms(5);
 		::lv_timer_handler();
 	}
-}
-
-void Setup()
-{
-	//::lv_demo_music();
-	//::lv_demo_multilang();
-	//::lv_demo_scroll();
-	::lv_demo_benchmark();
 }

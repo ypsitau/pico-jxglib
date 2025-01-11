@@ -275,6 +275,7 @@ void Setup(Display& display)
 		::printf("\n");
 	}
 	char buff[64];
+	::printf("Enter Number: ");
 	for (;;) {
 		int nChars = 0;
 		for (;;) {
