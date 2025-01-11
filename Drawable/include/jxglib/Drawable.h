@@ -41,7 +41,7 @@ public:
 		virtual void DrawPixel(int x, int y, const Color& color) = 0;
 		virtual void DrawRectFill(int x, int y, int width, int height, const Color& color) = 0;
 		virtual void DrawBitmap(int x, int y, const void* data, int width, int height,
-			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) = 0;
+			const Color& color, const Color* pColorBg, int scaleX, int scaleY, const Rect& rectClip, DrawDir drawDir) = 0;
 		virtual void DrawImage(int x, int y, const Image& image, const Rect& rectClip, DrawDir drawDir) = 0;
 		virtual void DrawImageFast(int x, int y, const Image& image, bool blockFlag, DrawImageFastHandler* pHandler) = 0;
 		virtual void ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip) = 0;
@@ -57,7 +57,7 @@ public:
 		virtual void DrawPixel(int x, int y, const Color& color) override {}
 		virtual void DrawRectFill(int x, int y, int width, int height, const Color& color) override {}
 		virtual void DrawBitmap(int x, int y, const void* data, int width, int height,
-			const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) override {}
+			const Color& color, const Color* pColorBg, int scaleX, int scaleY, const Rect& rectClip, DrawDir drawDir) override {}
 		virtual void DrawImage(int x, int y, const Image& image, const Rect& rectClip, DrawDir drawDir) override {}
 		virtual void DrawImageFast(int x, int y, const Image& image, bool blockFlag, DrawImageFastHandler* pHandler) override {}
 		virtual void ScrollHorz(DirHorz dirHorz, int width, const Rect& rectClip) override {};
@@ -210,20 +210,21 @@ public:
 	Drawable& DrawRectFill(const Point& pt, const Size& size) { return DrawRectFill(pt, size, context_.colorFg); }
 	Drawable& DrawRectFill(const Rect& rc, const Color& color) { return DrawRectFill(rc.x, rc.y, rc.width, rc.height, color); }
 	Drawable& DrawRectFill(const Rect& rc) { return DrawRectFill(rc, context_.colorFg); }
-	Drawable& DrawBitmap(int x, int y, const void* data, int width, int height,
-				const Color& color, const Color* pColorBg, int scaleX = 1, int scaleY = 1) {
-		GetDispatcher().DrawBitmap(x, y, data, width, height, color, pColorBg, scaleX, scaleY);
+	Drawable& DrawBitmap(int x, int y, const void* data, int width, int height, const Color& color, const Color* pColorBg,
+					int scaleX = 1, int scaleY = 1, const Rect& rectClip = Rect::Empty, DrawDir drawDir = DrawDir::Normal) {
+		GetDispatcher().DrawBitmap(x, y, data, width, height, color, pColorBg, scaleX, scaleY, rectClip, drawDir);
 		return *this;
 	}
-	Drawable& DrawBitmap(int x, int y, const void* data, int width, int height,
-			bool transparentBgFlag = false, int scaleX = 1, int scaleY = 1, const Context* pContext = nullptr) {
+	Drawable& DrawBitmap(int x, int y, const void* data, int width, int height, bool transparentBgFlag = false,
+			int scaleX = 1, int scaleY = 1, const Rect& rectClip = Rect::Empty, DrawDir drawDir = DrawDir::Normal, const Context* pContext = nullptr) {
 		if (!pContext) pContext = &context_;
 		if (!(capabilities_ & Capability::TransparentBg)) transparentBgFlag = false;
-		return DrawBitmap(x, y, data, width, height, pContext->colorFg, transparentBgFlag? nullptr : &pContext->colorBg, scaleX, scaleY);
+		return DrawBitmap(x, y, data, width, height, pContext->colorFg,
+						transparentBgFlag? nullptr : &pContext->colorBg, scaleX, scaleY, rectClip, drawDir);
 	}
-	Drawable& DrawBitmap(const Point& pt, const void* data, int width, int height,
-			bool transparentBgFlag = false, int scaleX = 1, int scaleY = 1, const Context* pContext = nullptr) {
-		return DrawBitmap(pt.x, pt.y, data, width, height, transparentBgFlag, scaleX, scaleY, pContext);
+	Drawable& DrawBitmap(const Point& pt, const void* data, int width, int height, bool transparentBgFlag = false,
+			int scaleX = 1, int scaleY = 1, const Rect& rectClip = Rect::Empty, DrawDir drawDir = DrawDir::Normal, const Context* pContext = nullptr) {
+		return DrawBitmap(pt.x, pt.y, data, width, height, transparentBgFlag, scaleX, scaleY, rectClip, drawDir, pContext);
 	}
 	Drawable& DrawImage(int x, int y, const Image& image, const Rect& rectClip = Rect::Empty, DrawDir drawDir = DrawDir::Normal);
 	Drawable& DrawImageFast(int x, int y, const Image& image, bool blockFlag = true, DrawImageFastHandler* pHandler = nullptr);

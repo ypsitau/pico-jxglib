@@ -39,7 +39,7 @@ void Canvas::Dispatcher_T<T_Color>::DrawRectFill(int x, int y, int width, int he
 
 template<typename T_Color>
 void Canvas::Dispatcher_T<T_Color>::DrawBitmap(int x, int y, const void* data, int width, int height,
-	const Color& color, const Color* pColorBg, int scaleX, int scaleY)
+	const Color& color, const Color* pColorBg, int scaleX, int scaleY const Rect& rectClip, DrawDir drawDir)
 {
 	Image& imageOwn = canvas_.GetImageOwn();
 	int nDots = width * height;

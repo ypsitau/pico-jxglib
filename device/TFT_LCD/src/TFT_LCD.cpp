@@ -97,7 +97,7 @@ void TFT_LCD::DispatcherRGB565::DrawRectFill(int x, int y, int width, int height
 }
 
 void TFT_LCD::DispatcherRGB565::DrawBitmap(int x, int y, const void* data, int width, int height,
-					const Color& color, const Color* pColorBg, int scaleX, int scaleY)
+			const Color& color, const Color* pColorBg, int scaleX, int scaleY, const Rect& rectClip, DrawDir drawDir)
 {
 	Raw& raw = display_.raw;
 	int xAdjust = display_.GetXAdjust(), yAdjust = display_.GetYAdjust();
@@ -296,7 +296,7 @@ void TFT_LCD::DispatcherRGB666::DrawRectFill(int x, int y, int width, int height
 }
 
 void TFT_LCD::DispatcherRGB666::DrawBitmap(int x, int y, const void* data, int width, int height,
-					const Color& color, const Color* pColorBg, int scaleX, int scaleY)
+			const Color& color, const Color* pColorBg, int scaleX, int scaleY, const Rect& rectClip, DrawDir drawDir)
 {
 	Raw& raw = display_.raw;
 	int xAdjust = display_.GetXAdjust(), yAdjust = display_.GetYAdjust();

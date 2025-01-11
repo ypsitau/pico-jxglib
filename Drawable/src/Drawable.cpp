@@ -78,13 +78,24 @@ Drawable& Drawable::DrawImage(int x, int y, const Image& image, const Rect& rect
 		rectClipAdj = rectClip;
 		if (!rectClipAdj.Adjust({0, 0, image.GetWidth(), image.GetHeight()})) return *this;
 	}
-	GetDispatcher().DrawImage(x, y, image, rectClipAdj, drawDir);
+	if (image.GetFormat().IsBitmap()) {
+		GetDispatcher().DrawBitmap(x, y, image.GetPointer(), image.GetWidth(), image.GetHeight(),
+			context_.GetColor(), &context_.GetColorBg(), 1, 1, rectClipAdj, drawDir);
+	} else {
+		GetDispatcher().DrawImage(x, y, image, rectClipAdj, drawDir);
+	}
 	return *this;
 }
 
 Drawable& Drawable::DrawImageFast(int x, int y, const Image& image, bool blockFlag, DrawImageFastHandler* pHandler)
 {
-	GetDispatcher().DrawImageFast(x, y, image, blockFlag, pHandler);
+	if (image.GetFormat().IsBitmap()) {
+		GetDispatcher().DrawBitmap(x, y, image.GetPointer(), image.GetWidth(), image.GetHeight(),
+			context_.GetColor(), &context_.GetColorBg(), 1, 1, Rect::Empty, DrawDir::Normal);
+		if (pHandler) pHandler->OnDrawImageFastCompleted();
+	} else {
+		GetDispatcher().DrawImageFast(x, y, image, blockFlag, pHandler);
+	}
 	return *this;
 }
 
@@ -119,7 +130,7 @@ Drawable& Drawable::DrawChar(int x, int y, const FontEntry& fontEntry, bool tran
 	if (!pContext) pContext = &context_;
 	if (!(capabilities_ & Capability::TransparentBg)) transparentBgFlag = false;
 	DrawBitmap(x, y, fontEntry.data, fontEntry.width, fontEntry.height, transparentBgFlag,
-			pContext->fontScaleWidth, pContext->fontScaleHeight, pContext);
+			pContext->fontScaleWidth, pContext->fontScaleHeight, Rect::Empty, DrawDir::Normal, pContext);
 	if (!transparentBgFlag && (fontEntry.width < fontEntry.xAdvance)) {
 		DrawRectFill(x + fontEntry.width * pContext->fontScaleWidth, y,
 			(fontEntry.xAdvance - fontEntry.width) * pContext->fontScaleWidth, fontEntry.height * pContext->fontScaleHeight,
