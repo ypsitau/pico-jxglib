@@ -178,6 +178,13 @@ void TFT_LCD::DispatcherRGB565::DrawImage(int x, int y, const Image& image, cons
 
 void TFT_LCD::DispatcherRGB565::DrawImageFast(int x, int y, const Image& image, bool blockFlag, DrawImageFastHandler* pHandler)
 {
+	if (image.GetFormat().IsBitmap()) {
+		Context& context = display_.GetContext();
+		DrawBitmap(x, y, image.GetPointer(), image.GetWidth(), image.GetHeight(),
+					context.GetColor(), &context.GetColorBg(), 1, 1, Rect::Empty, DrawDir::Normal);
+		if (pHandler) pHandler->OnDrawImageFastCompleted();
+		return;
+	}
 	int wdImage = image.GetWidth(), htImage = image.GetHeight();
 	pDrawImageFastHandler_ = pHandler;
 	Raw& raw = display_.raw;

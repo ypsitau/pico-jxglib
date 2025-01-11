@@ -15,11 +15,9 @@ int main()
 	GPIO7.set_function_I2C1_SCL().pull_up();
 	SSD1306 display(i2c1);
 	display.Initialize();
-	display.Clear();
-	display.Refresh();
 	LVGL::Initialize();
 	LVGL::Adapter lvglAdapter;
-	lvglAdapter.EnableDoubleBuff(false).AttachOutput(display);
+	lvglAdapter.AttachOutput(display);
 	lvglAdapter.AttachInput(UART::Default);
 	Setup();
 	for (;;) {

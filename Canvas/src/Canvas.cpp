@@ -112,34 +112,6 @@ void Canvas::Dispatcher_T<T_Color>::DrawImage(int x, int y, const Image& image, 
 }
 
 template<typename T_Color>
-void Canvas::Dispatcher_T<T_Color>::DrawImageFast(int x, int y, const Image& image, bool blockFlag, DrawImageFastHandler* pHandler)
-{
-	DrawImage(x, y, image, Rect::Empty, DrawDir::Normal);
-#if 0
-	Image& imageOwn = canvas_.GetImageOwn();
-	DMA::Channel channel(DMA::claim_unused_channel(true));
-	DMA::ChannelConfig config;
-	config.set_enable(true)
-		.set_transfer_data_size(DMA_SIZE_32)
-		.set_read_increment(true)
-		.set_write_increment(true)
-		.set_dreq_FORCE()		// see RP2040 Datasheet 2.5.3.1 System DREQ Table
-		.set_chain_to(channel)	// disable chain_to by setting it to the own channel
-		.set_ring_to_read(0)
-		.set_bswap(false)
-		.set_irq_quiet(false)
-		.set_sniff_enable(false)
-		.set_high_priority(false);
-	channel.set_config(config);
-	channel.set_read_addr(image.GetPointer())
-		.set_write_addr(imageOwn.GetPointer(x, y))
-		.set_trans_count_trig(image.GetWidth() * image.GetHeight() * sizeof(uint16_t) / sizeof(uint32_t))
-		.wait_for_finish_blocking();
-	channel.unclaim();
-#endif
-}
-
-template<typename T_Color>
 void Canvas::Dispatcher_T<T_Color>::ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip)
 {
 	Image& imageOwn = canvas_.GetImageOwn();
@@ -279,5 +251,19 @@ void Canvas::DispatcherEx::Refresh()
 	pDrawableOut->DrawImageFast(output.rect.x, output.rect.y, imageOwn);
 	pDrawableOut->Refresh();
 }
+
+void Canvas::DispatcherEx::DrawImageFast(int x, int y, const Image& image, bool blockFlag, DrawImageFastHandler* pHandler)
+{
+	if (image.GetFormat().IsBitmap()) {
+		Context& context = canvas_.GetContext();
+		DrawBitmap(x, y, image.GetPointer(), image.GetWidth(), image.GetHeight(),
+					context.GetColor(), &context.GetColorBg(), 1, 1, Rect::Empty, DrawDir::Normal);
+	} else {
+		DrawImage(x, y, image, Rect::Empty, DrawDir::Normal);
+	}
+	Refresh();
+	if (pHandler) pHandler->OnDrawImageFastCompleted();
+}
+
 
 }

@@ -146,7 +146,15 @@ void SSD1306::DispatcherEx::DrawImage(int x, int y, const Image& image, const Re
 
 void SSD1306::DispatcherEx::DrawImageFast(int x, int y, const Image& image, bool blockFlag, DrawImageFastHandler* pHandler)
 {
-	// do nothing
+	if (image.GetFormat().IsBitmap()) {
+		Context& context = display_.GetContext();
+		DrawBitmap(x, y, image.GetPointer(), image.GetWidth(), image.GetHeight(),
+					context.GetColor(), &context.GetColorBg(), 1, 1, Rect::Empty, DrawDir::Normal);
+	} else {
+		DrawImage(x, y, image, Rect::Empty, DrawDir::Normal);
+	}
+	Refresh();
+	if (pHandler) pHandler->OnDrawImageFastCompleted();
 }
 
 void SSD1306::DispatcherEx::ScrollHorz(DirHorz dirHorz, int wdScroll, const Rect& rectClip)

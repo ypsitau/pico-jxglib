@@ -30,7 +30,12 @@ bool Adapter::AttachOutput(Drawable& drawable, const Rect& rect, bool requiredFl
 	::lv_display_set_flush_cb(disp_, FlushCB);
 	::lv_display_set_user_data(disp_, this);
 	uint32_t bytesBuff = (nPixelsBuff_ < 0)? (rectOut_.width * rectOut_.height / nPartialBuff_) : nPixelsBuff_;
-	bytesBuff *= ::lv_color_format_get_size(::lv_display_get_color_format(disp_));
+	if (drawable.GetFormat().IsBitmap()) {
+		bytesBuff /= 8;
+		if (bytesBuff < 1024) bytesBuff = 1024;
+	} else {
+		bytesBuff *= ::lv_color_format_get_size(::lv_display_get_color_format(disp_));
+	}
 	void* buff1 = ::lv_malloc(bytesBuff);
 	if (!buff1) {
 		if (requiredFlag) panic("can't allocate the first buffer");
@@ -59,7 +64,6 @@ void Adapter::Flush(lv_display_t* disp, const lv_area_t* area, unsigned char* bu
 	Image image(GetDrawableOut().GetFormat(), ::lv_area_get_width(area), ::lv_area_get_height(area), buf);
 	drawImageFastHandler_.disp = disp;	
 	GetDrawableOut().DrawImageFast(rectOut_.x + area->x1, rectOut_.y + area->y1, image, !doubleBuffFlag_, &drawImageFastHandler_);
-	GetDrawableOut().Refresh();
 }
 
 lv_indev_t* Adapter::SetInput_Pointer(Input& input)

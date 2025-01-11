@@ -150,6 +150,8 @@ public:
 	int GetHeight() const { return height_; }
 	Size GetSize() const { return Size(width_, height_); }
 	Rect GetRect() const { return Rect(0, 0, width_, height_); }
+	Context& GetContext() { return context_; }
+	const Context& GetContext() const { return context_; }
 public:
 	bool IsFormatNone() const { return pFormat_->IsIdentical(Format::None); }
 	bool IsFormatBitmap() const { return pFormat_->IsIdentical(Format::Bitmap); }

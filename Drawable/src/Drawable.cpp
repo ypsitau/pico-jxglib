@@ -89,13 +89,7 @@ Drawable& Drawable::DrawImage(int x, int y, const Image& image, const Rect& rect
 
 Drawable& Drawable::DrawImageFast(int x, int y, const Image& image, bool blockFlag, DrawImageFastHandler* pHandler)
 {
-	if (image.GetFormat().IsBitmap()) {
-		GetDispatcher().DrawBitmap(x, y, image.GetPointer(), image.GetWidth(), image.GetHeight(),
-			context_.GetColor(), &context_.GetColorBg(), 1, 1, Rect::Empty, DrawDir::Normal);
-		if (pHandler) pHandler->OnDrawImageFastCompleted();
-	} else {
-		GetDispatcher().DrawImageFast(x, y, image, blockFlag, pHandler);
-	}
+	GetDispatcher().DrawImageFast(x, y, image, blockFlag, pHandler);
 	return *this;
 }
 
