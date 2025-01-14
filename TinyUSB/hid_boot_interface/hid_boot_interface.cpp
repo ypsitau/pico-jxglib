@@ -11,20 +11,6 @@
 // MACRO CONSTANT TYPEDEF PROTYPES
 //--------------------------------------------------------------------+
 
-/* Blink pattern
- * - 250 ms  : device not mounted
- * - 1000 ms : device mounted
- * - 2500 ms : device is suspended
- */
-enum  {
-	BLINK_NOT_MOUNTED = 250,
-	BLINK_MOUNTED = 1000,
-	BLINK_SUSPENDED = 2500,
-};
-
-static uint32_t blink_interval_ms = BLINK_NOT_MOUNTED;
-
-void led_blinking_task(void);
 void hid_task(void);
 
 using namespace jxglib;
@@ -32,48 +18,29 @@ using namespace jxglib;
 /*------------- MAIN -------------*/
 int main(void)
 {
-	stdio_init_all();    
-	//board_init();
-
+	::stdio_init_all();    
 	GPIO16.init().set_dir_IN().pull_up();
 	GPIO17.init().set_dir_IN().pull_up();
 	GPIO18.init().set_dir_IN().pull_up();
 	GPIO19.init().set_dir_IN().pull_up();
 	GPIO20.init().set_dir_IN().pull_up();
 	GPIO21.init().set_dir_IN().pull_up();
-	
-	// init device stack on configured roothub port
-	tud_init(BOARD_TUD_RHPORT);
-
-	//if (board_init_after_tusb) {
-	//  board_init_after_tusb();
-	//}
-
-	while (1)
-	{
-	tud_task(); // tinyusb device task
-	led_blinking_task();
-
-	hid_task();
+	::tud_init(BOARD_TUD_RHPORT);
+	for (;;) {
+		::tud_task(); // tinyusb device task
+		::hid_task();
 	}
-
 	return 0;
 }
-
-//--------------------------------------------------------------------+
-// Device callbacks
-//--------------------------------------------------------------------+
 
 // Invoked when device is mounted
 void tud_mount_cb(void)
 {
-	blink_interval_ms = BLINK_MOUNTED;
 }
 
 // Invoked when device is unmounted
 void tud_umount_cb(void)
 {
-	blink_interval_ms = BLINK_NOT_MOUNTED;
 }
 
 // Invoked when usb bus is suspended
@@ -81,24 +48,18 @@ void tud_umount_cb(void)
 // Within 7ms, device must draw an average of current less than 2.5 mA from bus
 void tud_suspend_cb(bool remote_wakeup_en)
 {
-	(void) remote_wakeup_en;
-	blink_interval_ms = BLINK_SUSPENDED;
 }
 
 // Invoked when usb bus is resumed
 void tud_resume_cb(void)
 {
-	blink_interval_ms = tud_mounted() ? BLINK_MOUNTED : BLINK_NOT_MOUNTED;
+	//tud_mounted();
 }
 
 uint32_t board_millis()
 {
 	return ::to_ms_since_boot(::get_absolute_time());
 }
-
-//--------------------------------------------------------------------+
-// USB HID
-//--------------------------------------------------------------------+
 
 // Every 10ms, we will sent 1 report for each HID profile (keyboard, mouse etc ..)
 // tud_hid_report_complete_cb() is used to send the next report after previous one is complete
@@ -119,22 +80,19 @@ void hid_task(void)
 	bool btnA = !GPIO20.get();
 	bool btnB = !GPIO21.get();
 
-	if ( tud_suspended() && (btnLeft || btnUp || btnDown || btnRight))
-	{
-	// Wake up host if we are in suspend mode
-	// and REMOTE_WAKEUP feature is enabled by host
-	tud_remote_wakeup();
+	if (::tud_suspended() && (btnLeft || btnUp || btnDown || btnRight)) {
+		// Wake up host if we are in suspend mode
+		// and REMOTE_WAKEUP feature is enabled by host
+		::tud_remote_wakeup();
+		return;
 	}
-	else
-	{
-	// keyboard interface
-	if ( tud_hid_n_ready(ITF_NUM_KEYBOARD) )
-	{
+	if (::tud_hid_n_ready(ITF_NUM_KEYBOARD)) {
+		// keyboard interface
 		// used to avoid send multiple consecutive zero report for keyboard
 		static bool has_keyboard_key = false;
 
-		uint8_t const report_id = 0;
-		uint8_t const modifier  = 0;
+		uint8_t report_id = 0;
+		uint8_t modifier  = 0;
 
 		if ( btnLeft )
 		{
@@ -207,7 +165,6 @@ void hid_task(void)
 		}
 	}
 #endif
-	}
 }
 
 // Invoked when received SET_PROTOCOL request
@@ -238,13 +195,6 @@ void tud_hid_report_complete_cb(uint8_t instance, uint8_t const* report, uint16_
 // Return zero will cause the stack to STALL request
 uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, uint8_t* buffer, uint16_t reqlen)
 {
-	// TODO not Implemented
-	(void) instance;
-	(void) report_id;
-	(void) report_type;
-	(void) buffer;
-	(void) reqlen;
-
 	return 0;
 }
 
@@ -268,33 +218,13 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_
 		if (kbd_leds & KEYBOARD_LED_CAPSLOCK)
 		{
 		// Capslock On: disable blink, turn led on
-		blink_interval_ms = 0;
+		//blink_interval_ms = 0;
 		//board_led_write(true);
 		}else
 		{
 		// Caplocks Off: back to normal blink
 		//board_led_write(false);
-		blink_interval_ms = BLINK_MOUNTED;
 		}
 	}
 	}
-}
-
-//--------------------------------------------------------------------+
-// BLINKING TASK
-//--------------------------------------------------------------------+
-void led_blinking_task(void)
-{
-	static uint32_t start_ms = 0;
-	static bool led_state = false;
-
-	// blink is disabled
-	if (!blink_interval_ms) return;
-
-	// Blink every interval ms
-	if ( board_millis() - start_ms < blink_interval_ms) return; // not enough time
-	start_ms += blink_interval_ms;
-
-	//board_led_write(led_state);
-	led_state = 1 - led_state; // toggle
 }

@@ -8,32 +8,26 @@
  * Auto ProductID layout's Bitmap:
  *   [MSB]         HID | MSC | CDC          [LSB]
  */
-#define _PID_MAP(itf, n)  ( (CFG_TUD_##itf) << (n) )
-#define USB_PID           (0x4000 | _PID_MAP(CDC, 0) | _PID_MAP(MSC, 1) | _PID_MAP(HID, 2) | \
-													 _PID_MAP(MIDI, 3) | _PID_MAP(VENDOR, 4) )
 
 //--------------------------------------------------------------------+
 // Device Descriptors
 //--------------------------------------------------------------------+
 tusb_desc_device_t const desc_device =
 {
-		.bLength            = sizeof(tusb_desc_device_t),
-		.bDescriptorType    = TUSB_DESC_DEVICE,
-		.bcdUSB             = 0x0200,
-		.bDeviceClass       = 0x00,
-		.bDeviceSubClass    = 0x00,
-		.bDeviceProtocol    = 0x00,
-		.bMaxPacketSize0    = CFG_TUD_ENDPOINT0_SIZE,
-
-		.idVendor           = 0xCafe,
-		.idProduct          = USB_PID,
-		.bcdDevice          = 0x0100,
-
-		.iManufacturer      = 0x01,
-		.iProduct           = 0x02,
-		.iSerialNumber      = 0x03,
-
-		.bNumConfigurations = 0x01
+	.bLength            = sizeof(tusb_desc_device_t),
+	.bDescriptorType    = TUSB_DESC_DEVICE,
+	.bcdUSB             = 0x0200,
+	.bDeviceClass       = 0x00,
+	.bDeviceSubClass    = 0x00,
+	.bDeviceProtocol    = 0x00,
+	.bMaxPacketSize0    = CFG_TUD_ENDPOINT0_SIZE,
+	.idVendor           = 0xCafe,
+	.idProduct          = 0x4000 | (CFG_TUD_CDC << 0) | (CFG_TUD_MSC << 1) | (CFG_TUD_HID << 2) | (CFG_TUD_MIDI << 3) | (CFG_TUD_VENDOR << 4),
+	.bcdDevice          = 0x0100,
+	.iManufacturer      = 0x01,
+	.iProduct           = 0x02,
+	.iSerialNumber      = 0x03,
+	.bNumConfigurations = 0x01
 };
 
 // Invoked when received GET DEVICE DESCRIPTOR
@@ -69,8 +63,6 @@ uint8_t const * tud_hid_descriptor_report_cb(uint8_t instance)
 // Configuration Descriptor
 //--------------------------------------------------------------------+
 
-#define CONFIG_TOTAL_LEN  (TUD_CONFIG_DESC_LEN + 2*TUD_HID_DESC_LEN)
-
 #if CFG_TUSB_MCU == OPT_MCU_LPC175X_6X || CFG_TUSB_MCU == OPT_MCU_LPC177X_8X || CFG_TUSB_MCU == OPT_MCU_LPC40XX
 	// LPC 17xx and 40xx endpoint type (bulk/interrupt/iso) are fixed by its number
 	// 1 Interrupt, 2 Bulk, 3 Iso, 4 Interrupt, 5 Bulk etc ...
@@ -84,7 +76,7 @@ uint8_t const * tud_hid_descriptor_report_cb(uint8_t instance)
 uint8_t const desc_configuration[] =
 {
 	// Config number, interface count, string index, total length, attribute, power in mA
-	TUD_CONFIG_DESCRIPTOR(1, ITF_NUM_TOTAL, 0, CONFIG_TOTAL_LEN, TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP, 100),
+	TUD_CONFIG_DESCRIPTOR(1, ITF_NUM_TOTAL, 0, (TUD_CONFIG_DESC_LEN + 2 * TUD_HID_DESC_LEN), TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP, 100),
 
 	// Interface number, string index, protocol, report descriptor len, EP In address, size & polling interval
 	TUD_HID_DESCRIPTOR(ITF_NUM_KEYBOARD, 0, HID_ITF_PROTOCOL_KEYBOARD, sizeof(desc_hid_keyboard_report), EPNUM_KEYBOARD, CFG_TUD_HID_EP_BUFSIZE, 10),
