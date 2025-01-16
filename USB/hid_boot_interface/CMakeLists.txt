@@ -47,8 +47,7 @@ pico_enable_stdio_usb(hid_boot_interface 0)
 # Add the standard library to the build
 target_link_libraries(hid_boot_interface
 	pico_stdlib
-	tinyusb_device
-	jxglib_Common)
+	jxglib_USB)
 
 # Add the standard include files to the build
 target_include_directories(hid_boot_interface PRIVATE

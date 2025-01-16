@@ -19,5 +19,6 @@ add_subdirectory(Stream)
 add_subdirectory(Terminal)
 add_subdirectory(TouchScreen)
 add_subdirectory(UART)
+add_subdirectory(USB)
 
 add_subdirectory(device)
