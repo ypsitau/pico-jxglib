@@ -8,6 +8,9 @@
 
 namespace jxglib::LVGL {
 
+/**
+ * @brief Initialize LVGL by calling lv_init() and lv_tick_set_cb() internally.
+ */
 void Initialize();
 
 }
