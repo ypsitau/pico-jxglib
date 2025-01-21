@@ -16,6 +16,12 @@ public:
 	virtual void OnTask() override;
 };
 
+class Mouse : public USB::Mouse {
+public:
+	Mouse(USB::Device& device) : USB::Mouse(device) {}
+	virtual void OnTask() override;
+};
+
 int main(void)
 {
 	::stdio_init_all(); 
@@ -33,6 +39,7 @@ int main(void)
 		iSerialNumber:		0x03,
 	});
 	Keyboard keyboard(device);
+	Mouse mouse(device);
 
 	GPIO16.init().set_dir_IN().pull_up();
 	GPIO17.init().set_dir_IN().pull_up();
@@ -73,7 +80,7 @@ void Keyboard::OnTask()
 	bool btnDown = !GPIO18.get();
 	bool btnRight = !GPIO19.get();
 	bool btnA = !GPIO20.get();
-	bool btnB = !GPIO21.get();
+	//bool btnB = !GPIO21.get();
 	// keyboard interface
 	// used to avoid send multiple consecutive zero report for keyboard
 	static bool has_keyboard_key = false;
@@ -106,15 +113,31 @@ void Keyboard::OnTask()
 		keycode[0] = HID_KEY_PAGE_UP;
 		::tud_hid_n_keyboard_report(ITF_NUM_KEYBOARD, report_id, modifier, keycode);
 		has_keyboard_key = true;
+#if 0
 	} else if (btnB) {
 		uint8_t keycode[6] = { 0 };
 		keycode[0] = HID_KEY_PAGE_DOWN;
 		::tud_hid_n_keyboard_report(ITF_NUM_KEYBOARD, report_id, modifier, keycode);
 		has_keyboard_key = true;
+#endif
 	} else {
 		// send empty key report if previously has key pressed
 		if (has_keyboard_key) ::tud_hid_n_keyboard_report(ITF_NUM_KEYBOARD, report_id, modifier, NULL);
 		has_keyboard_key = false;
+	}
+}
+
+void Mouse::OnTask()
+{
+	if (!::tud_hid_n_ready(GetInterfaceNum())) return;
+	bool btnB = !GPIO21.get();
+	if (btnB) {
+		uint8_t const report_id   = 0;
+		uint8_t const button_mask = 0;
+		int8_t  const vertical    = 0;
+		int8_t  const horizontal  = 0;
+		int8_t  const delta       = 5;
+		::tud_hid_n_mouse_report(ITF_NUM_MOUSE, report_id, button_mask, delta, delta, vertical, horizontal);
 	}
 }
 
