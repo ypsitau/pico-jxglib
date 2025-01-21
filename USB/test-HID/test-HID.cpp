@@ -47,8 +47,8 @@ int main(void)
 	GPIO19.init().set_dir_IN().pull_up();
 	GPIO20.init().set_dir_IN().pull_up();
 	GPIO21.init().set_dir_IN().pull_up();
-	::tud_init(BOARD_TUD_RHPORT);
-	//device.Initialize();
+	//::tud_init(BOARD_TUD_RHPORT);
+	device.Initialize();
 	for (;;) {
 		//USB::Device::Task();
 		::tud_task();
