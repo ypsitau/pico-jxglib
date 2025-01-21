@@ -28,32 +28,33 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-HID C CXX ASM)
+project(hid_boot_interface C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-HID test-HID.cpp usb_descriptors.cpp)
+add_executable(hid_boot_interface hid_boot_interface.cpp usb_descriptors.cpp)
 
-pico_set_program_name(test-HID "test-HID")
-pico_set_program_version(test-HID "0.1")
+pico_set_program_name(hid_boot_interface "hid_boot_interface")
+pico_set_program_version(hid_boot_interface "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-HID 1)
-pico_enable_stdio_usb(test-HID 0)
+pico_enable_stdio_uart(hid_boot_interface 1)
+pico_enable_stdio_usb(hid_boot_interface 0)
 
 # Add the standard library to the build
-target_link_libraries(test-HID
+target_link_libraries(hid_boot_interface
 	pico_stdlib
-	jxglib_USB)
+	tinyusb_device
+	jxglib_Common)
 
 # Add the standard include files to the build
-target_include_directories(test-HID PRIVATE
+target_include_directories(hid_boot_interface PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-HID)
+pico_add_extra_outputs(hid_boot_interface)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. jxglib)
