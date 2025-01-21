@@ -43,7 +43,7 @@ int main(void)
 	device.Initialize();
 	for (;;) {
 		device.Task();
-		::hid_task();
+		//::hid_task();
 	}
 	return 0;
 }
@@ -118,6 +118,7 @@ void Keyboard::OnTask()
 	}
 }
 
+#if 0
 // Every 10ms, we will sent 1 report for each HID profile (keyboard, mouse etc ..)
 // tud_hid_report_complete_cb() is used to send the next report after previous one is complete
 void hid_task(void)
@@ -202,3 +203,4 @@ void hid_task(void)
 #endif
 }
 
+#endif

@@ -9,6 +9,7 @@
  *   [MSB]         HID | MSC | CDC          [LSB]
  */
 
+#if 0
 //--------------------------------------------------------------------+
 // HID Report Descriptor
 //--------------------------------------------------------------------+
@@ -22,6 +23,7 @@ uint8_t const desc_hid_mouse_report[] =
 {
 	TUD_HID_REPORT_DESC_MOUSE()
 };
+#endif
 
 // Invoked when received GET HID REPORT DESCRIPTOR
 // Application return pointer to descriptor
@@ -34,7 +36,7 @@ uint8_t const desc_hid_mouse_report[] =
 //--------------------------------------------------------------------+
 // Configuration Descriptor
 //--------------------------------------------------------------------+
-
+#if 0
 #if CFG_TUSB_MCU == OPT_MCU_LPC175X_6X || CFG_TUSB_MCU == OPT_MCU_LPC177X_8X || CFG_TUSB_MCU == OPT_MCU_LPC40XX
 	// LPC 17xx and 40xx endpoint type (bulk/interrupt/iso) are fixed by its number
 	// 1 Interrupt, 2 Bulk, 3 Iso, 4 Interrupt, 5 Bulk etc ...
@@ -61,11 +63,12 @@ uint8_t const desc_configuration[] =
 // Invoked when received GET CONFIGURATION DESCRIPTOR
 // Application return pointer to descriptor
 // Descriptor contents must exist long enough for transfer to complete
-uint8_t const * tud_descriptor_configuration_cb(uint8_t index)
+uint8_t const * tud_descriptor_configuration_cb__(uint8_t index)
 {
 	(void) index; // for multiple configurations
 	return desc_configuration;
 }
+#endif
 
 //--------------------------------------------------------------------+
 // String Descriptors
