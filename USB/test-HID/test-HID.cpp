@@ -10,19 +10,11 @@ void hid_task(void);
 
 using namespace jxglib;
 
-#if 0
-    .bcdUSB             = USB_BCD,
-    .bDeviceClass       = TUSB_CLASS_MISC,
-    .bDeviceSubClass    = MISC_SUBCLASS_COMMON,
-    .bDeviceProtocol    = MISC_PROTOCOL_IAD,
-    .bMaxPacketSize0    = CFG_TUD_ENDPOINT0_SIZE,
-    .idVendor           = 0xcafe,
-    .idProduct          = 0x4000,
-    .bcdDevice          = 0x0100,
-    .iManufacturer      = 0x01,
-    .iProduct           = 0x02,
-    .iSerialNumber      = 0x03,
-#endif
+class Keyboard : public USB::Keyboard {
+public:
+	Keyboard(USB::Device& device) : USB::Keyboard(device) {}
+	virtual void OnTask() override;
+};
 
 int main(void)
 {
@@ -40,7 +32,8 @@ int main(void)
 		iProduct:			0x02,
 		iSerialNumber:		0x03,
 	});
-	//device.AddInterface();
+	Keyboard keyboard(device);
+
 	GPIO16.init().set_dir_IN().pull_up();
 	GPIO17.init().set_dir_IN().pull_up();
 	GPIO18.init().set_dir_IN().pull_up();
@@ -49,8 +42,7 @@ int main(void)
 	GPIO21.init().set_dir_IN().pull_up();
 	device.Initialize();
 	for (;;) {
-		//USB::Device::Task();
-		::tud_task();
+		device.Task();
 		::hid_task();
 	}
 	return 0;
@@ -63,6 +55,67 @@ int main(void)
 uint32_t board_millis()
 {
 	return ::to_ms_since_boot(::get_absolute_time());
+}
+
+void Keyboard::OnTask()
+{
+	const uint32_t interval_ms = 10;
+	static uint32_t start_ms = 0;
+
+	if (board_millis() - start_ms < interval_ms) return; // not enough time
+	start_ms += interval_ms;
+
+	if (!::tud_hid_n_ready(GetInterfaceNum())) return;
+
+	//uint32_t const btn = board_button_read();
+	bool btnLeft = !GPIO16.get();
+	bool btnUp = !GPIO17.get();
+	bool btnDown = !GPIO18.get();
+	bool btnRight = !GPIO19.get();
+	bool btnA = !GPIO20.get();
+	bool btnB = !GPIO21.get();
+	// keyboard interface
+	// used to avoid send multiple consecutive zero report for keyboard
+	static bool has_keyboard_key = false;
+
+	uint8_t report_id = 0;
+	uint8_t modifier  = 0;
+
+	if (btnLeft) {
+		uint8_t keycode[6] = { 0 };
+		keycode[0] = HID_KEY_ARROW_LEFT;
+		::tud_hid_n_keyboard_report(ITF_NUM_KEYBOARD, report_id, modifier, keycode);
+		has_keyboard_key = true;
+	} else if (btnUp) {
+		uint8_t keycode[6] = { 0 };
+		keycode[0] = HID_KEY_ARROW_UP;
+		::tud_hid_n_keyboard_report(ITF_NUM_KEYBOARD, report_id, modifier, keycode);
+		has_keyboard_key = true;
+	} else if (btnDown) {
+		uint8_t keycode[6] = { 0 };
+		keycode[0] = HID_KEY_ARROW_DOWN;
+		::tud_hid_n_keyboard_report(ITF_NUM_KEYBOARD, report_id, modifier, keycode);
+		has_keyboard_key = true;
+	} else if (btnRight) {
+		uint8_t keycode[6] = { 0 };
+		keycode[0] = HID_KEY_ARROW_RIGHT;
+		::tud_hid_n_keyboard_report(ITF_NUM_KEYBOARD, report_id, modifier, keycode);
+		has_keyboard_key = true;
+	} else if (btnA) {
+		uint8_t keycode[6] = { 0 };
+		keycode[0] = HID_KEY_PAGE_UP;
+		::tud_hid_n_keyboard_report(ITF_NUM_KEYBOARD, report_id, modifier, keycode);
+		has_keyboard_key = true;
+	} else if (btnB) {
+		uint8_t keycode[6] = { 0 };
+		keycode[0] = HID_KEY_PAGE_DOWN;
+		::tud_hid_n_keyboard_report(ITF_NUM_KEYBOARD, report_id, modifier, keycode);
+		has_keyboard_key = true;
+	} else {
+		// send empty key report if previously has key pressed
+		if (has_keyboard_key) ::tud_hid_n_keyboard_report(ITF_NUM_KEYBOARD, report_id, modifier, NULL);
+		has_keyboard_key = false;
+	}
 }
 
 // Every 10ms, we will sent 1 report for each HID profile (keyboard, mouse etc ..)
