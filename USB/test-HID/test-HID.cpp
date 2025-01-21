@@ -4,7 +4,8 @@
 #include "pico/stdlib.h"
 #include "usb_descriptors.h"
 #include "jxglib/GPIO.h"
-#include "jxglib/USB.h"
+//#include "jxglib/USB.h"
+#include "tusb.h"
 
 void hid_task(void);
 
@@ -27,22 +28,22 @@ using namespace jxglib;
 int main(void)
 {
 	::stdio_init_all(); 
-	USB::Device device({
-		bcdUSB:				0x0200,
-		//bDeviceClass:		TUSB_CLASS_HID, //0x00,
-		//bDeviceSubClass:	MISC_SUBCLASS_COMMON, //0x00,
-		//bDeviceProtocol:	MISC_PROTOCOL_IAD, //0x00,
-		bDeviceClass:		0x00,
-		bDeviceSubClass:	0x00,
-		bDeviceProtocol:	0x00,
-		bMaxPacketSize0:	CFG_TUD_ENDPOINT0_SIZE,
-		idVendor:			0xcafe,
-		idProduct:			0x4000,
-		bcdDevice:			0x0100,
-		iManufacturer:		0x01,
-		iProduct:			0x02,
-		iSerialNumber:		0x03,
-	});
+	//USB::Device device({
+	//	bcdUSB:				0x0200,
+	//	//bDeviceClass:		TUSB_CLASS_HID, //0x00,
+	//	//bDeviceSubClass:	MISC_SUBCLASS_COMMON, //0x00,
+	//	//bDeviceProtocol:	MISC_PROTOCOL_IAD, //0x00,
+	//	bDeviceClass:		0x00,
+	//	bDeviceSubClass:	0x00,
+	//	bDeviceProtocol:	0x00,
+	//	bMaxPacketSize0:	CFG_TUD_ENDPOINT0_SIZE,
+	//	idVendor:			0xcafe,
+	//	idProduct:			0x4000,
+	//	bcdDevice:			0x0100,
+	//	iManufacturer:		0x01,
+	//	iProduct:			0x02,
+	//	iSerialNumber:		0x03,
+	//});
 	//device.AddInterface();
 	GPIO16.init().set_dir_IN().pull_up();
 	GPIO17.init().set_dir_IN().pull_up();
@@ -50,8 +51,8 @@ int main(void)
 	GPIO19.init().set_dir_IN().pull_up();
 	GPIO20.init().set_dir_IN().pull_up();
 	GPIO21.init().set_dir_IN().pull_up();
-	//::tud_init(BOARD_TUD_RHPORT);
-	device.Initialize();
+	::tud_init(BOARD_TUD_RHPORT);
+	//device.Initialize();
 	for (;;) {
 		//USB::Device::Task();
 		::tud_task();
@@ -151,4 +152,49 @@ void hid_task(void)
 		}
 	}
 #endif
+}
+
+// Invoked when received SET_PROTOCOL request
+// protocol is either HID_PROTOCOL_BOOT (0) or HID_PROTOCOL_REPORT (1)
+void tud_hid_set_protocol_cb(uint8_t instance, uint8_t protocol)
+{
+	// TODO set a indicator for user
+}
+
+// Invoked when sent REPORT successfully to host
+// Application can use this to send the next report
+// Note: For composite reports, report[0] is report ID
+void tud_hid_report_complete_cb(uint8_t instance, uint8_t const* report, uint16_t len)
+{
+}
+
+// Invoked when received GET_REPORT control request
+// Application must fill buffer report's content and return its length.
+// Return zero will cause the stack to STALL request
+uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, uint8_t* buffer, uint16_t reqlen)
+{
+	return 0;
+}
+
+// Invoked when received SET_REPORT control request or
+// received data on OUT endpoint (Report ID = 0, Type = 0 )
+void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize)
+{
+	// keyboard interface
+	if (instance == ITF_NUM_KEYBOARD) {
+		// Set keyboard LED e.g Capslock, Numlock etc...
+		if (report_type == HID_REPORT_TYPE_OUTPUT) {
+			// bufsize should be (at least) 1
+			if (bufsize < 1) return;
+			uint8_t const kbd_leds = buffer[0];
+			if (kbd_leds & KEYBOARD_LED_CAPSLOCK) {
+				// Capslock On: disable blink, turn led on
+				//blink_interval_ms = 0;
+				//board_led_write(true);
+			} else {
+				// Caplocks Off: back to normal blink
+				//board_led_write(false);
+			}
+		}
+	}
 }

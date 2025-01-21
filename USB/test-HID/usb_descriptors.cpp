@@ -10,6 +10,34 @@
  */
 
 //--------------------------------------------------------------------+
+// Device Descriptors
+//--------------------------------------------------------------------+
+tusb_desc_device_t const desc_device =
+{
+	.bLength            = sizeof(tusb_desc_device_t),
+	.bDescriptorType    = TUSB_DESC_DEVICE,
+	.bcdUSB             = 0x0200,
+	.bDeviceClass       = 0x00,
+	.bDeviceSubClass    = 0x00,
+	.bDeviceProtocol    = 0x00,
+	.bMaxPacketSize0    = CFG_TUD_ENDPOINT0_SIZE,
+	.idVendor           = 0xCafe,
+	.idProduct          = 0x4000 | (CFG_TUD_CDC << 0) | (CFG_TUD_MSC << 1) | (CFG_TUD_HID << 2) | (CFG_TUD_MIDI << 3) | (CFG_TUD_VENDOR << 4),
+	.bcdDevice          = 0x0100,
+	.iManufacturer      = 0x01,
+	.iProduct           = 0x02,
+	.iSerialNumber      = 0x03,
+	.bNumConfigurations = 0x01
+};
+
+// Invoked when received GET DEVICE DESCRIPTOR
+// Application return pointer to descriptor
+uint8_t const * tud_descriptor_device_cb(void)
+{
+	return (uint8_t const *) &desc_device;
+}
+
+//--------------------------------------------------------------------+
 // HID Report Descriptor
 //--------------------------------------------------------------------+
 
