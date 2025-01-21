@@ -29,9 +29,9 @@ int main(void)
 	::stdio_init_all(); 
 	USB::Device device({
 		bcdUSB:				0x0200,
-		bDeviceClass:		TUSB_CLASS_HID, //0x00,
-		bDeviceSubClass:	MISC_SUBCLASS_COMMON, //0x00,
-		bDeviceProtocol:	MISC_PROTOCOL_IAD, //0x00,
+		bDeviceClass:		0x00,
+		bDeviceSubClass:	0x00,
+		bDeviceProtocol:	0x00,
 		bMaxPacketSize0:	CFG_TUD_ENDPOINT0_SIZE,
 		idVendor:			0xcafe,
 		idProduct:			0x4000,
@@ -47,7 +47,6 @@ int main(void)
 	GPIO19.init().set_dir_IN().pull_up();
 	GPIO20.init().set_dir_IN().pull_up();
 	GPIO21.init().set_dir_IN().pull_up();
-	//::tud_init(BOARD_TUD_RHPORT);
 	device.Initialize();
 	for (;;) {
 		//USB::Device::Task();

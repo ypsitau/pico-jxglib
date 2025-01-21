@@ -12,6 +12,7 @@
 //--------------------------------------------------------------------+
 // Device Descriptors
 //--------------------------------------------------------------------+
+#if 0
 tusb_desc_device_t const desc_device =
 {
 	.bLength            = sizeof(tusb_desc_device_t),
@@ -36,6 +37,7 @@ uint8_t const * tud_descriptor_device_cb(void)
 {
 	return (uint8_t const *) &desc_device;
 }
+#endif
 
 //--------------------------------------------------------------------+
 // HID Report Descriptor
