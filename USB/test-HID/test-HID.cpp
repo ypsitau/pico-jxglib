@@ -4,8 +4,7 @@
 #include "pico/stdlib.h"
 #include "usb_descriptors.h"
 #include "jxglib/GPIO.h"
-//#include "jxglib/USB.h"
-#include "tusb.h"
+#include "jxglib/USB.h"
 
 void hid_task(void);
 
@@ -28,22 +27,19 @@ using namespace jxglib;
 int main(void)
 {
 	::stdio_init_all(); 
-	//USB::Device device({
-	//	bcdUSB:				0x0200,
-	//	//bDeviceClass:		TUSB_CLASS_HID, //0x00,
-	//	//bDeviceSubClass:	MISC_SUBCLASS_COMMON, //0x00,
-	//	//bDeviceProtocol:	MISC_PROTOCOL_IAD, //0x00,
-	//	bDeviceClass:		0x00,
-	//	bDeviceSubClass:	0x00,
-	//	bDeviceProtocol:	0x00,
-	//	bMaxPacketSize0:	CFG_TUD_ENDPOINT0_SIZE,
-	//	idVendor:			0xcafe,
-	//	idProduct:			0x4000,
-	//	bcdDevice:			0x0100,
-	//	iManufacturer:		0x01,
-	//	iProduct:			0x02,
-	//	iSerialNumber:		0x03,
-	//});
+	USB::Device device({
+		bcdUSB:				0x0200,
+		bDeviceClass:		TUSB_CLASS_HID, //0x00,
+		bDeviceSubClass:	MISC_SUBCLASS_COMMON, //0x00,
+		bDeviceProtocol:	MISC_PROTOCOL_IAD, //0x00,
+		bMaxPacketSize0:	CFG_TUD_ENDPOINT0_SIZE,
+		idVendor:			0xcafe,
+		idProduct:			0x4000,
+		bcdDevice:			0x0100,
+		iManufacturer:		0x01,
+		iProduct:			0x02,
+		iSerialNumber:		0x03,
+	});
 	//device.AddInterface();
 	GPIO16.init().set_dir_IN().pull_up();
 	GPIO17.init().set_dir_IN().pull_up();
