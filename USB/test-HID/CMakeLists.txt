@@ -35,7 +35,7 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-HID test-HID.cpp usb_descriptors.cpp)
+add_executable(test-HID test-HID.cpp)
 
 pico_set_program_name(test-HID "test-HID")
 pico_set_program_version(test-HID "0.1")

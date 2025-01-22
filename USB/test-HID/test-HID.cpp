@@ -2,17 +2,19 @@
 #include <stdio.h>
 #include <string.h>
 #include "pico/stdlib.h"
-//#include "usb_descriptors.h"
 #include "jxglib/GPIO.h"
 #include "jxglib/USB.h"
 
-void hid_task(void);
-
 using namespace jxglib;
 
+//-----------------------------------------------------------------------------
+// Keyboard
+//-----------------------------------------------------------------------------
 class Keyboard : public USB::Keyboard {
+private:
+	int nKeycodePrev_;
 public:
-	Keyboard(USB::Device& device) : USB::Keyboard(device, 0x81) {}
+	Keyboard(USB::Device& device) : USB::Keyboard(device, 0x81), nKeycodePrev_{0} {}
 public:
 	void Initialize();
 	virtual void OnTask() override;
@@ -22,6 +24,9 @@ public:
 	virtual void On_SET_PROTOCOL(uint8_t protocol) override;
 };
 
+//-----------------------------------------------------------------------------
+// Mouse
+//-----------------------------------------------------------------------------
 class Mouse : public USB::Mouse {
 public:
 	Mouse(USB::Device& device) : USB::Mouse(device, 0x82) {}
@@ -30,6 +35,9 @@ public:
 	virtual void OnTask() override;
 };
 
+//-----------------------------------------------------------------------------
+// main
+//-----------------------------------------------------------------------------
 int main(void)
 {
 	::stdio_init_all(); 
@@ -57,15 +65,11 @@ int main(void)
 	return 0;
 }
 
-
+//-----------------------------------------------------------------------------
+// Keyboard
+//-----------------------------------------------------------------------------
 // remote_wakeup_en : if host allow us  to perform remote wakeup
 // Within 7ms, device must draw an average of current less than 2.5 mA from bus
-
-uint32_t board_millis()
-{
-	return ::to_ms_since_boot(::get_absolute_time());
-}
-
 void Keyboard::Initialize()
 {
 	GPIO16.init().set_dir_IN().pull_up();
@@ -77,65 +81,29 @@ void Keyboard::Initialize()
 
 void Keyboard::OnTask()
 {
-	const uint32_t interval_ms = 10;
-	static uint32_t start_ms = 0;
-
-	if (board_millis() - start_ms < interval_ms) return; // not enough time
-	start_ms += interval_ms;
-
 	if (!ready()) return;
-
-	//uint32_t const btn = board_button_read();
-	bool btnLeft = !GPIO16.get();
-	bool btnUp = !GPIO17.get();
-	bool btnDown = !GPIO18.get();
-	bool btnRight = !GPIO19.get();
-	bool btnA = !GPIO20.get();
-	//bool btnB = !GPIO21.get();
-	// keyboard interface
-	// used to avoid send multiple consecutive zero report for keyboard
-	static bool has_keyboard_key = false;
-
 	uint8_t report_id = 0;
 	uint8_t modifier  = 0;
-
-	if (btnLeft) {
-		uint8_t keycode[6] = { 0 };
-		keycode[0] = HID_KEY_ARROW_LEFT;
-		keyboard_report(report_id, modifier, keycode);
-		has_keyboard_key = true;
-	} else if (btnUp) {
-		uint8_t keycode[6] = { 0 };
-		keycode[0] = HID_KEY_ARROW_UP;
-		keyboard_report(report_id, modifier, keycode);
-		has_keyboard_key = true;
-	} else if (btnDown) {
-		uint8_t keycode[6] = { 0 };
-		keycode[0] = HID_KEY_ARROW_DOWN;
-		keyboard_report(report_id, modifier, keycode);
-		has_keyboard_key = true;
-	} else if (btnRight) {
-		uint8_t keycode[6] = { 0 };
-		keycode[0] = HID_KEY_ARROW_RIGHT;
-		keyboard_report(report_id, modifier, keycode);
-		has_keyboard_key = true;
-	} else if (btnA) {
-		uint8_t keycode[6] = { 0 };
-		keycode[0] = HID_KEY_PAGE_UP;
-		keyboard_report(report_id, modifier, keycode);
-		has_keyboard_key = true;
-#if 0
-	} else if (btnB) {
-		uint8_t keycode[6] = { 0 };
-		keycode[0] = HID_KEY_PAGE_DOWN;
-		keyboard_report(report_id, modifier, keycode);
-		has_keyboard_key = true;
-#endif
-	} else {
-		// send empty key report if previously has key pressed
-		if (has_keyboard_key) keyboard_report(report_id, modifier, NULL);
-		has_keyboard_key = false;
+	uint8_t keycode[6] = { 0 };
+	int nKeycode = 0;
+	if (!GPIO16.get() && nKeycode < sizeof(keycode)) keycode[nKeycode++] = HID_KEY_ARROW_LEFT;
+	if (!GPIO17.get() && nKeycode < sizeof(keycode)) keycode[nKeycode++] = HID_KEY_ARROW_UP;
+	if (!GPIO18.get() && nKeycode < sizeof(keycode)) keycode[nKeycode++] = HID_KEY_ARROW_DOWN;
+	if (!GPIO19.get() && nKeycode < sizeof(keycode)) keycode[nKeycode++] = HID_KEY_ARROW_RIGHT;
+	if (!GPIO20.get() && nKeycode < sizeof(keycode)) keycode[nKeycode++] = HID_KEY_PAGE_UP;
+	if (!GPIO21.get() && nKeycode < sizeof(keycode)) keycode[nKeycode++] = HID_KEY_PAGE_DOWN;
+	if (::tud_suspended()) {
+		// Wake up host if we are in suspend mode
+		// and REMOTE_WAKEUP feature is enabled by host
+		if (nKeycode > 0) ::tud_remote_wakeup();
+		return;
 	}
+	if (nKeycode > 0) {
+		keyboard_report(report_id, modifier, keycode);
+	} else if (nKeycodePrev_ > 0) {
+		keyboard_report(report_id, modifier, nullptr);
+	}
+	nKeycodePrev_ = nKeycode;
 }
 
 uint16_t Keyboard::On_GET_REPORT(uint8_t reportID, hid_report_type_t reportType, uint8_t* report, uint16_t reportLength)
@@ -173,16 +141,19 @@ void Mouse::Initialize()
 	GPIO21.init().set_dir_IN().pull_up();
 }
 
+//-----------------------------------------------------------------------------
+// Mouse
+//-----------------------------------------------------------------------------
 void Mouse::OnTask()
 {
 	if (!ready()) return;
 	bool btnB = !GPIO21.get();
 	if (btnB) {
-		uint8_t const report_id   = 0;
-		uint8_t const button_mask = 0;
-		int8_t  const vertical    = 0;
-		int8_t  const horizontal  = 0;
-		int8_t  const delta       = 5;
+		uint8_t report_id = 0;
+		uint8_t button_mask = 0;
+		int8_t vertical = 0;
+		int8_t horizontal = 0;
+		int8_t delta = 5;
 		mouse_report(report_id, button_mask, delta, delta, vertical, horizontal);
 	}
 }
