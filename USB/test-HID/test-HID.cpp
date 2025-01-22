@@ -68,8 +68,6 @@ int main(void)
 //-----------------------------------------------------------------------------
 // Keyboard
 //-----------------------------------------------------------------------------
-// remote_wakeup_en : if host allow us  to perform remote wakeup
-// Within 7ms, device must draw an average of current less than 2.5 mA from bus
 void Keyboard::Initialize()
 {
 	GPIO16.init().set_dir_IN().pull_up();
