@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "pico/stdlib.h"
-#include "usb_descriptors.h"
+//#include "usb_descriptors.h"
 #include "jxglib/GPIO.h"
 #include "jxglib/USB.h"
 
@@ -83,7 +83,7 @@ void Keyboard::OnTask()
 	if (board_millis() - start_ms < interval_ms) return; // not enough time
 	start_ms += interval_ms;
 
-	if (!::tud_hid_n_ready(GetInterfaceNum())) return;
+	if (!ready()) return;
 
 	//uint32_t const btn = board_button_read();
 	bool btnLeft = !GPIO16.get();
@@ -102,38 +102,38 @@ void Keyboard::OnTask()
 	if (btnLeft) {
 		uint8_t keycode[6] = { 0 };
 		keycode[0] = HID_KEY_ARROW_LEFT;
-		::tud_hid_n_keyboard_report(ITF_NUM_KEYBOARD, report_id, modifier, keycode);
+		keyboard_report(report_id, modifier, keycode);
 		has_keyboard_key = true;
 	} else if (btnUp) {
 		uint8_t keycode[6] = { 0 };
 		keycode[0] = HID_KEY_ARROW_UP;
-		::tud_hid_n_keyboard_report(ITF_NUM_KEYBOARD, report_id, modifier, keycode);
+		keyboard_report(report_id, modifier, keycode);
 		has_keyboard_key = true;
 	} else if (btnDown) {
 		uint8_t keycode[6] = { 0 };
 		keycode[0] = HID_KEY_ARROW_DOWN;
-		::tud_hid_n_keyboard_report(ITF_NUM_KEYBOARD, report_id, modifier, keycode);
+		keyboard_report(report_id, modifier, keycode);
 		has_keyboard_key = true;
 	} else if (btnRight) {
 		uint8_t keycode[6] = { 0 };
 		keycode[0] = HID_KEY_ARROW_RIGHT;
-		::tud_hid_n_keyboard_report(ITF_NUM_KEYBOARD, report_id, modifier, keycode);
+		keyboard_report(report_id, modifier, keycode);
 		has_keyboard_key = true;
 	} else if (btnA) {
 		uint8_t keycode[6] = { 0 };
 		keycode[0] = HID_KEY_PAGE_UP;
-		::tud_hid_n_keyboard_report(ITF_NUM_KEYBOARD, report_id, modifier, keycode);
+		keyboard_report(report_id, modifier, keycode);
 		has_keyboard_key = true;
 #if 0
 	} else if (btnB) {
 		uint8_t keycode[6] = { 0 };
 		keycode[0] = HID_KEY_PAGE_DOWN;
-		::tud_hid_n_keyboard_report(ITF_NUM_KEYBOARD, report_id, modifier, keycode);
+		keyboard_report(report_id, modifier, keycode);
 		has_keyboard_key = true;
 #endif
 	} else {
 		// send empty key report if previously has key pressed
-		if (has_keyboard_key) ::tud_hid_n_keyboard_report(ITF_NUM_KEYBOARD, report_id, modifier, NULL);
+		if (has_keyboard_key) keyboard_report(report_id, modifier, NULL);
 		has_keyboard_key = false;
 	}
 }
@@ -175,7 +175,7 @@ void Mouse::Initialize()
 
 void Mouse::OnTask()
 {
-	if (!::tud_hid_n_ready(GetInterfaceNum())) return;
+	if (!ready()) return;
 	bool btnB = !GPIO21.get();
 	if (btnB) {
 		uint8_t const report_id   = 0;
@@ -183,6 +183,6 @@ void Mouse::OnTask()
 		int8_t  const vertical    = 0;
 		int8_t  const horizontal  = 0;
 		int8_t  const delta       = 5;
-		::tud_hid_n_mouse_report(ITF_NUM_MOUSE, report_id, button_mask, delta, delta, vertical, horizontal);
+		mouse_report(report_id, button_mask, delta, delta, vertical, horizontal);
 	}
 }
