@@ -58,7 +58,7 @@ pico_set_program_version(test-Input "0.1")
 pico_enable_stdio_uart(test-Input 1)
 pico_enable_stdio_usb(test-Input 0)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 
 # Add the standard library to the build
 target_link_libraries(test-Input

@@ -57,4 +57,4 @@ target_include_directories(test-Terminal-SSD1306 PRIVATE
 
 pico_add_extra_outputs(test-Terminal-SSD1306)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)

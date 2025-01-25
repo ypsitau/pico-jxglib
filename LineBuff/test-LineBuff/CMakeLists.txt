@@ -56,4 +56,4 @@ target_include_directories(test-LineBuff PRIVATE
 
 pico_add_extra_outputs(test-LineBuff)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)

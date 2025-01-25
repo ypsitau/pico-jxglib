@@ -57,4 +57,4 @@ target_include_directories(hid_boot_interface PRIVATE
 
 pico_add_extra_outputs(hid_boot_interface)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)

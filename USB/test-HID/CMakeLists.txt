@@ -57,4 +57,4 @@ target_include_directories(test-HID PRIVATE
 
 pico_add_extra_outputs(test-HID)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)

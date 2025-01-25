@@ -85,4 +85,4 @@ target_include_directories(test-DMA PRIVATE
 
 pico_add_extra_outputs(test-DMA)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)

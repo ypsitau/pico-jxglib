@@ -42,7 +42,7 @@ pico_set_program_version(test-ST7789 "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(test-ST7789 1)
-pico_enable_stdio_usb(test-ST7789 0)
+pico_enable_stdio_usb(test-ST7789 1)
 
 # Add the standard library to the build
 target_link_libraries(test-ST7789
@@ -57,4 +57,4 @@ target_include_directories(test-ST7789 PRIVATE
 
 pico_add_extra_outputs(test-ST7789)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)

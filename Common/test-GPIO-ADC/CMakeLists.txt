@@ -58,4 +58,4 @@ target_include_directories(test-GPIO-ADC PRIVATE
 
 pico_add_extra_outputs(test-GPIO-ADC)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)

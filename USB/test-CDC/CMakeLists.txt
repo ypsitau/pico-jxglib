@@ -57,4 +57,4 @@ target_include_directories(test-CDC PRIVATE
 
 pico_add_extra_outputs(test-CDC)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)

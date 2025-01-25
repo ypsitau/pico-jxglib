@@ -71,4 +71,4 @@ target_include_directories(test-ILI9341 PRIVATE
 
 pico_add_extra_outputs(test-ILI9341)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)

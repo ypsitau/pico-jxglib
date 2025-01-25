@@ -57,4 +57,4 @@ target_include_directories(test-VT100 PRIVATE
 
 pico_add_extra_outputs(test-VT100)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../../.. jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../../.. pico-jxglib)
