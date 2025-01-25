@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "jxglib/Drawable_TestCase.h"
 #include "jxglib/SSD1306.h"
+#include "jxglib/DrawableTest.h"
 
 using namespace jxglib;
 
@@ -13,7 +13,7 @@ int main()
 	GPIO7.set_function_I2C1_SCL().pull_up();
 	SSD1306 display(i2c1);
 	display.Initialize();
-	Drawable_TestCase::DrawString(display);
-	//Drawable_TestCase::RotateImage(display);
-	//Drawable_TestCase::DrawFonts(display);
+	DrawableTest::DrawString(display);
+	//DrawableTest::RotateImage(display);
+	//DrawableTest::DrawFonts(display);
 }

@@ -1,7 +1,7 @@
 //==============================================================================
-// Drawable_TestCase.cpp
+// DrawableTest.cpp
 //==============================================================================
-#include "jxglib/Drawable_TestCase.h"
+#include "jxglib/DrawableTest.h"
 #include "jxglib/sample/cat-60x80.h"
 #include "jxglib/sample/cat-128x160.h"
 #include "jxglib/sample/cat-240x240.h"
@@ -18,14 +18,11 @@
 #include "jxglib/Font/unifont-japanese-level1.h"
 #include "jxglib/sample/Text_Botchan.h"
 
-namespace jxglib {
+namespace jxglib::DrawableTest {
 
 template<typename T> T LimitNum(T num, T numMin, T numMax) { return (num < numMin)? numMin : (num > numMax)? numMax : num; }
 
-//------------------------------------------------------------------------------
-// Drawable_TestCase
-//------------------------------------------------------------------------------
-void Drawable_TestCase::DrawFonts(Drawable* drawableTbl[], int nDrawables)
+void DrawFonts(Drawable* drawableTbl[], int nDrawables)
 {
 	const FontSet* fontSetTbl[] = {
 		&Font::misaki_gothic, &Font::naga10,
@@ -63,7 +60,7 @@ void Drawable_TestCase::DrawFonts(Drawable* drawableTbl[], int nDrawables)
 	}
 }
 
-void Drawable_TestCase::DrawString(Drawable* drawableTbl[], int nDrawables)
+void DrawString(Drawable* drawableTbl[], int nDrawables)
 {
 	const char* msg =
 		"[J], [K] .. change font\n"
@@ -100,7 +97,7 @@ void Drawable_TestCase::DrawString(Drawable* drawableTbl[], int nDrawables)
 	}
 }
 
-void Drawable_TestCase::RotateImage(Drawable* drawableTbl[], int nDrawables)
+void RotateImage(Drawable* drawableTbl[], int nDrawables)
 {
 	struct TestCase {
 		const char* name;
@@ -185,7 +182,7 @@ void Test_DrawVLine(Drawable& drawable)
 }
 #endif
 
-void Drawable_TestCase::DrawLine(Drawable& drawable)
+void DrawLine(Drawable& drawable)
 {
 	int xMid = drawable.GetWidth() / 2;
 	int yMid = drawable.GetHeight() / 2;

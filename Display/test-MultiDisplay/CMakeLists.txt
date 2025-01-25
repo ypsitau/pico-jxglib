@@ -1,17 +1,3 @@
-# == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
-if(WIN32)
-    set(USERHOME $ENV{USERPROFILE})
-else()
-    set(USERHOME $ENV{HOME})
-endif()
-set(sdkVersion 2.1.0)
-set(toolchainVersion 13_3_Rel1)
-set(picotoolVersion 2.1.0)
-set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
-if (EXISTS ${picoVscode})
-    include(${picoVscode})
-endif()
-# ====================================================================================
 # Generated Cmake Pico project file
 
 cmake_minimum_required(VERSION 3.13)
@@ -47,7 +33,7 @@ project(test-MultiDisplay C CXX ASM)
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../../.. pico-jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 
 # Add executable. Default name is the project name, version 0.1
 
@@ -63,10 +49,10 @@ pico_enable_stdio_usb(test-MultiDisplay 0)
 # Add the standard library to the build
 target_link_libraries(test-MultiDisplay
 	pico_stdlib
-	jxglib_Drawable_TestCase
 	jxglib_ST7735
 	jxglib_ST7789
-	jxglib_ILI9341)
+	jxglib_ILI9341
+	jxglib_DrawableTest)
 
 # Add the standard include files to the build
 target_include_directories(test-MultiDisplay PRIVATE

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "jxglib/Drawable_TestCase.h"
 #include "jxglib/ST7735.h"
+#include "jxglib/DrawableTest.h"
 
 using namespace jxglib;
 
@@ -15,6 +15,6 @@ int main()
 	//ST7735 display(spi1, 128, 160, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
 	//ST7735::TypeB display(spi1, 128, 160, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
 	display.Initialize(Display::Dir::Rotate0);
-	//Drawable_TestCase::DrawString(display);
-	Drawable_TestCase::RotateImage(display);
+	//DrawableTest::DrawString(display);
+	DrawableTest::RotateImage(display);
 }

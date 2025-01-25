@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "jxglib/Drawable_TestCase.h"
 #include "jxglib/ST7735.h"
 #include "jxglib/ST7789.h"
 #include "jxglib/ILI9341.h"
+#include "jxglib/DrawableTest.h"
 
 using namespace jxglib;
 
@@ -32,6 +32,6 @@ int main()
 	display5.Initialize(displayDir);
 	Drawable* drawables[] = { &display3 };
 	//Drawable* drawables[] = { &display1, &display2, &display4, &display5 };
-	Drawable_TestCase::DrawString(drawables, count_of(drawables));
-	//Drawable_TestCase::RotateImage(drawables, count_of(drawables));
+	DrawableTest::DrawString(drawables, count_of(drawables));
+	//DrawableTest::RotateImage(drawables, count_of(drawables));
 }
