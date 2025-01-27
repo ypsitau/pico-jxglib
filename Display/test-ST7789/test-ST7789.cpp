@@ -13,7 +13,7 @@ int main()
 	GPIO15.set_function_SPI1_TX();
 	ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
 	display.Initialize(Display::Dir::Rotate0);
-	//DrawableTest::DrawString(display);
-	DrawableTest::RotateImage(display);
+	DrawableTest::DrawString(display);
+	//DrawableTest::RotateImage(display);
 	//DrawableTest::DrawFonts(display);
 }
