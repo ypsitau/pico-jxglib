@@ -14,11 +14,12 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class FATMgr {
 public:
-	class Disk {
+	
+	class PhysicalDrive {
 	private:
 		BYTE pdrv_;
 	public:
-		Disk(BYTE pdrv = 0) : pdrv_{pdrv} {}
+		PhysicalDrive(BYTE pdrv = 0) : pdrv_{pdrv} {}
 	public:
 		BYTE GetPDRV() const { return pdrv_; }
 	public:
@@ -29,17 +30,20 @@ public:
 		virtual DRESULT ioctl(BYTE cmd, void* buff) = 0;
 	};
 private:
-	int nDisks_;
-	Disk* diskTbl_[16];
+	int nDis;
+	PhysicalDrive* physicalDriveTbl_[16];
 public:
 	static FATMgr Instance;
 public:
 	FATMgr() {}
-	Disk& GetDisk(BYTE pdrv) { return *diskTbl_[pdrv]; }
 public:
-	static void RegisterDisk(Disk& disk) { Instance.RegisterDisk_(disk); }
+	PhysicalDrive& GetPhysicalDrive(BYTE pdrv) { return *physicalDriveTbl_[pdrv]; }
+public:
+	static FATMgr& RegisterPhysicalDrive(PhysicalDrive& physicalDrive) {
+		return Instance.RegisterPhysicalDrive_(physicalDrive);
+	}
 private:
-	void RegisterDisk_(Disk& disk);
+	FATMgr& RegisterPhysicalDrive_(PhysicalDrive& physicalDrive);
 };
 
 }

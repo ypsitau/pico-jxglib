@@ -4,9 +4,9 @@
 
 using namespace jxglib;
 
-class DiskDummy : public FATMgr::Disk {
+class PhysicalDrive : public FATMgr::PhysicalDrive {
 public:
-	DiskDummy(BYTE pdrv = 0) : FATMgr::Disk{pdrv} {}
+	PhysicalDrive(BYTE pdrv = 0) : FATMgr::PhysicalDrive{pdrv} {}
 public:
 	virtual DSTATUS initialize() override;
 	virtual DSTATUS status() override;
@@ -15,31 +15,31 @@ public:
 	virtual DRESULT ioctl(BYTE cmd, void* buff) override;
 };
 
-DSTATUS DiskDummy::initialize()
+DSTATUS PhysicalDrive::initialize()
 {
 	::printf("initialize\n");
 	return RES_OK;
 }
 
-DSTATUS DiskDummy::status()
+DSTATUS PhysicalDrive::status()
 {
 	::printf("status\n");
 	return RES_OK;
 }
 
-DRESULT DiskDummy::read(BYTE* buff, LBA_t sector, UINT count)
+DRESULT PhysicalDrive::read(BYTE* buff, LBA_t sector, UINT count)
 {
 	::printf("read(sector=%d, count=%d)\n", sector, count);
 	return RES_OK;
 }
 
-DRESULT DiskDummy::write(const BYTE* buff, LBA_t sector, UINT count)
+DRESULT PhysicalDrive::write(const BYTE* buff, LBA_t sector, UINT count)
 {
 	::printf("write(sector=%d, count=%d)\n", sector, count);
 	return RES_OK;
 }
 
-DRESULT DiskDummy::ioctl(BYTE cmd, void* buff)
+DRESULT PhysicalDrive::ioctl(BYTE cmd, void* buff)
 {
 	::printf("ioctl(cmd=%d)\n", cmd);
 	return RES_OK;
@@ -54,8 +54,8 @@ int main()
 #if 1
 	FIL fil;
 	char line[100];
-	DiskDummy disk(0);
-	FATMgr::RegisterDisk(disk);
+	PhysicalDrive physicalDrive(0);
+	FATMgr::RegisterPhysicalDrive(physicalDrive);
 	::f_mount(&FatFs, "", 0);
 	::f_open(&fil, "hoge.txt", 0);
 	while (::f_gets(line, sizeof(line), &fil)) {

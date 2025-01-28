@@ -10,9 +10,10 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 FATMgr FATMgr::Instance;
 
-void FATMgr::RegisterDisk_(Disk& disk)
+FATMgr& FATMgr::RegisterPhysicalDrive_(PhysicalDrive& physicalDrive)
 {
-	diskTbl_[disk.GetPDRV()] = &disk;
+	physicalDriveTbl_[physicalDrive.GetPDRV()] = &physicalDrive;
+	return *this;
 }
 
 }
@@ -22,27 +23,27 @@ void FATMgr::RegisterDisk_(Disk& disk)
 //------------------------------------------------------------------------------
 DSTATUS disk_initialize(BYTE pdrv)
 {
-	return jxglib::FATMgr::Instance.GetDisk(pdrv).initialize();
+	return jxglib::FATMgr::Instance.GetPhysicalDrive(pdrv).initialize();
 }
 
 DSTATUS disk_status(BYTE pdrv)
 {
-	return jxglib::FATMgr::Instance.GetDisk(pdrv).status();
+	return jxglib::FATMgr::Instance.GetPhysicalDrive(pdrv).status();
 }
 
 DRESULT disk_read(BYTE pdrv, BYTE* buff, LBA_t sector, UINT count)
 {
-	return jxglib::FATMgr::Instance.GetDisk(pdrv).read(buff, sector, count);
+	return jxglib::FATMgr::Instance.GetPhysicalDrive(pdrv).read(buff, sector, count);
 }
 
 DRESULT disk_write(BYTE pdrv, const BYTE* buff, LBA_t sector, UINT count)
 {
-	return jxglib::FATMgr::Instance.GetDisk(pdrv).write(buff, sector, count);
+	return jxglib::FATMgr::Instance.GetPhysicalDrive(pdrv).write(buff, sector, count);
 }
 
 DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void* buff)
 {
-	return jxglib::FATMgr::Instance.GetDisk(pdrv).ioctl(cmd, buff);
+	return jxglib::FATMgr::Instance.GetPhysicalDrive(pdrv).ioctl(cmd, buff);
 }
 
 DWORD get_fattime()
