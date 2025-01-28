@@ -4,9 +4,9 @@
 
 using namespace jxglib;
 
-class PhysicalDrive : public FATMgr::PhysicalDrive {
+class PhysicalDrive : public FATMgr::PhysicalDriveT<> {
 public:
-	PhysicalDrive(BYTE pdrv = 0) : FATMgr::PhysicalDrive{pdrv} {}
+	PhysicalDrive(BYTE pdrv = 0) : FATMgr::PhysicalDriveT<>{pdrv} {}
 public:
 	virtual DSTATUS initialize() override;
 	virtual DSTATUS status() override;
@@ -45,18 +45,14 @@ DRESULT PhysicalDrive::ioctl(BYTE cmd, void* buff)
 	return RES_OK;
 }
 
-FATFS FatFs;
-
 int main()
 {
 	::stdio_init_all();
-	::printf("check\n");
 #if 1
 	FIL fil;
 	char line[100];
-	PhysicalDrive physicalDrive(0);
-	FATMgr::RegisterPhysicalDrive(physicalDrive);
-	::f_mount(&FatFs, "", 0);
+	PhysicalDrive physicalDrive;
+	physicalDrive.Mount();
 	::f_open(&fil, "hoge.txt", 0);
 	while (::f_gets(line, sizeof(line), &fil)) {
 		::printf(line);

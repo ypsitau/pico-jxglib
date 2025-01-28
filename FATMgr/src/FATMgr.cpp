@@ -10,10 +10,9 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 FATMgr FATMgr::Instance;
 
-FATMgr& FATMgr::RegisterPhysicalDrive_(PhysicalDrive& physicalDrive)
+void FATMgr::MountDrive(PhysicalDrive& physicalDrive)
 {
 	physicalDriveTbl_[physicalDrive.GetPDRV()] = &physicalDrive;
-	return *this;
 }
 
 }
