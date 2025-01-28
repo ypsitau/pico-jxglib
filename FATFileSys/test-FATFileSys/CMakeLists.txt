@@ -28,33 +28,33 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-FATFS C CXX ASM)
+project(test-FATFileSys C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-FATFS test-FATFS.cpp)
+add_executable(test-FATFileSys test-FATFileSys.cpp)
 
-pico_set_program_name(test-FATFS "test-FATFS")
-pico_set_program_version(test-FATFS "0.1")
+pico_set_program_name(test-FATFileSys "test-FATFileSys")
+pico_set_program_version(test-FATFileSys "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-FATFS 1)
-pico_enable_stdio_usb(test-FATFS 0)
+pico_enable_stdio_uart(test-FATFileSys 1)
+pico_enable_stdio_usb(test-FATFileSys 0)
 
 # Add the standard library to the build
-target_link_libraries(test-FATFS
+target_link_libraries(test-FATFileSys
     pico_stdlib
-    jxglib_FATFS)
+    jxglib_FATFileSys)
 
 # Add the standard include files to the build
-target_include_directories(test-FATFS PRIVATE
+target_include_directories(test-FATFileSys PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-FATFS)
+pico_add_extra_outputs(test-FATFileSys)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../../ pico-jxglib)
 
