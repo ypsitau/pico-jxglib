@@ -1,8 +1,8 @@
 //==============================================================================
-// jxglib/FATFileSys.h
+// jxglib/FATMgr.h
 //==============================================================================
-#ifndef PICO_JXGLIB_FATFILESYS_H
-#define PICO_JXGLIB_FATFILESYS_H
+#ifndef PICO_JXGLIB_FATMGR_H
+#define PICO_JXGLIB_FATMGR_H
 #include "pico/stdlib.h"
 #include "ff15a/source/ff.h"
 #include "ff15a/source/diskio.h"
@@ -10,9 +10,9 @@
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// FATFileSys
+// FATMgr
 //------------------------------------------------------------------------------
-class FATFileSys {
+class FATMgr {
 public:
 	class Disk {
 	private:
@@ -32,9 +32,9 @@ private:
 	int nDisks_;
 	Disk* diskTbl_[16];
 public:
-	static FATFileSys Instance;
+	static FATMgr Instance;
 public:
-	FATFileSys() {}
+	FATMgr() {}
 	Disk& GetDisk(BYTE pdrv) { return *diskTbl_[pdrv]; }
 public:
 	static void RegisterDisk(Disk& disk) { Instance.RegisterDisk_(disk); }
