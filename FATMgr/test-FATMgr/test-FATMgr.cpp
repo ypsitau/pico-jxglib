@@ -5,83 +5,10 @@
 
 using namespace jxglib;
 
-#define README_CONTENTS \
-"This is tinyusb's MassStorage Class demo.\r\n\r\n\
-If you find any bugs or get any questions, feel free to file an\r\n\
-issue at github.com/hathach/tinyusb"
 
-const int DISK_BLOCK_NUM = 16;
-
-uint8_t dummySectorTbl[DISK_BLOCK_NUM][FATMgr::SectorSize] =
-{
-	//------------- Block0: Boot Sector -------------//
-	// byte_per_sector    = DISK_BLOCK_SIZE; fat12_sector_num_16  = DISK_BLOCK_NUM;
-	// sector_per_cluster = 1; reserved_sectors = 1;
-	// fat_num            = 1; fat12_root_entry_num = 16;
-	// sector_per_fat     = 1; sector_per_track = 1; head_num = 1; hidden_sectors = 0;
-	// drive_number       = 0x80; media_type = 0xf8; extended_boot_signature = 0x29;
-	// filesystem_type    = "FAT12   "; volume_serial_number = 0x1234; volume_label = "TinyUSB MSC";
-	// FAT magic code at offset 510-511
-	{	
-	0xEB, 0x3C, 0x90, 0x4D, 0x53, 0x44, 0x4F, 0x53, 0x35, 0x2E, 0x30, 0x00, 0x02, 0x01, 0x01, 0x00,	
-	0x01, 0x10, 0x00, 0x10, 0x00, 0xF8, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,	
-	0x00, 0x00, 0x00, 0x00, 0x80, 0x00, 0x29, 0x34, 0x12, 0x00, 0x00, 'T' , 'i' , 'n' , 'y' , 'U' ,	
-	'S' , 'B' , ' ' , 'M' , 'S' , 'C' , 0x46, 0x41, 0x54, 0x31, 0x32, 0x20, 0x20, 0x20, 0x00, 0x00,
-	
-	// Zero up to 2 last bytes of FAT magic code	
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x55, 0xAA
-	},
-	//------------- Block1: FAT12 Table -------------//
-	{	
-	0xF8, 0xFF, 0xFF, 0xFF, 0x0F // // first 2 entries must be F8FF, third entry is cluster end of readme file
-	},
-	//------------- Block2: Root Directory -------------//
-	{	
-	// first entry is volume label	
-		'T' , 'i' , 'n' , 'y' , 'U' , 'S' , 'B' , ' ' , 'M' , 'S' , 'C' , 0x08, 0x00, 0x00, 0x00, 0x00,	
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x4F, 0x6D, 0x65, 0x43, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	
-		// second entry is readme file	
-		'R' , 'E' , 'A' , 'D' , 'M' , 'E' , ' ' , ' ' , 'T' , 'X' , 'T' , 0x20, 0x00, 0xC6, 0x52, 0x6D,	
-		0x65, 0x43, 0x65, 0x43, 0x00, 0x00, 0x88, 0x6D, 0x65, 0x43, 0x02, 0x00,	
-		sizeof(README_CONTENTS)-1, 0x00, 0x00, 0x00 // readme's files size (4 Bytes)
-		},
-	//------------- Block3: Readme Content -------------//
-	README_CONTENTS
-};
-
-class PhysicalDrive : public FATMgr::PhysicalDriveT<> {
+class DriveDummy : public FATMgr::PhysicalDriveT<> {
 public:
-	PhysicalDrive(BYTE pdrv = 0) : FATMgr::PhysicalDriveT<>{pdrv} {}
+	DriveDummy(BYTE pdrv = 0) : FATMgr::PhysicalDriveT<>{pdrv} {}
 public:
 	virtual DSTATUS status() override;
 	virtual DSTATUS initialize() override;
@@ -94,59 +21,143 @@ public:
 	virtual DRESULT ioctl_CTRL_TRIM(LBA_t startLBA, LBA_t endLBA) override;
 };
 
-DSTATUS PhysicalDrive::status()
+DSTATUS DriveDummy::status()
 {
-	::printf("status\n");
+	//::printf("status\n");
 	return 0x00;	// STA_NOINIT, STA_NODISK, STA_PROTECT
 }
 
-DSTATUS PhysicalDrive::initialize()
+DSTATUS DriveDummy::initialize()
 {
 	::printf("initialize\n");
 	return 0x00;	// STA_NOINIT, STA_NODISK, STA_PROTECT
 }
 
-DRESULT PhysicalDrive::read(BYTE* buff, LBA_t sector, UINT count)
+DRESULT DriveDummy::read(BYTE* buff, LBA_t sector, UINT count)
 {
 	::printf("read(sector=%d, count=%d)\n", sector, count);
-	::memcpy(buff, dummySectorTbl[sector], FATMgr::SectorSize * count);
+	const char sector0[] =
+		"\xeb\x3c\x90\x6d\x6b\x66\x73\x2e\x66\x61\x74\x00\x02\x04\x01\x00"
+		"\x02\x00\x02\x80\x00\xf8\x01\x00\x10\x00\x02\x00\x00\x00\x00\x00"
+		"\x00\x00\x00\x00\x80\x00\x29\x49\x67\xbe\x00\x4e\x4f\x20\x4e\x41"
+		"\x4d\x45\x20\x20\x20\x20\x46\x41\x54\x31\x32\x20\x20\x20\x0e\x1f"
+		"\xbe\x5b\x7c\xac\x22\xc0\x74\x0b\x56\xb4\x0e\xbb\x07\x00\xcd\x10"
+		"\x5e\xeb\xf0\x32\xe4\xcd\x16\xcd\x19\xeb\xfe\x54\x68\x69\x73\x20"
+		"\x69\x73\x20\x6e\x6f\x74\x20\x61\x20\x62\x6f\x6f\x74\x61\x62\x6c"
+		"\x65\x20\x64\x69\x73\x6b\x2e\x20\x20\x50\x6c\x65\x61\x73\x65\x20"
+		"\x69\x6e\x73\x65\x72\x74\x20\x61\x20\x62\x6f\x6f\x74\x61\x62\x6c"
+		"\x65\x20\x66\x6c\x6f\x70\x70\x79\x20\x61\x6e\x64\x0d\x0a\x70\x72"
+		"\x65\x73\x73\x20\x61\x6e\x79\x20\x6b\x65\x79\x20\x74\x6f\x20\x74"
+		"\x72\x79\x20\x61\x67\x61\x69\x6e\x20\x2e\x2e\x2e\x20\x0d\x0a\x00"
+		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x55\xaa";
+	const char sector1[] =
+		"\xf8\xff\xff\x00\xf0\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
+	const char sector2[] =
+		"\xf8\xff\xff\x00\xf0\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
+	const char sector3[] =
+		"\x53\x41\x4d\x50\x4c\x45\x20\x20\x54\x58\x54\x20\x00\x00\x00\x00"
+		"\x00\x00\x00\x00\x00\x00\xb7\x3e\x3e\x5a\x03\x00\x93\x01\x00\x00";
+	const char sector39[] =
+		"\x46\x61\x72\x20\x66\x61\x72\x20\x61\x77\x61\x79\x2c\x20\x62\x65"
+		"\x68\x69\x6e\x64\x20\x74\x68\x65\x20\x77\x6f\x72\x64\x20\x6d\x6f"
+		"\x75\x6e\x74\x61\x69\x6e\x73\x2c\x20\x66\x61\x72\x20\x66\x72\x6f"
+		"\x6d\x20\x74\x68\x65\x20\x63\x6f\x75\x6e\x74\x72\x69\x65\x73\x20"
+		"\x56\x6f\x6b\x61\x6c\x69\x61\x20\x61\x6e\x64\x20\x43\x6f\x6e\x73"
+		"\x6f\x6e\x61\x6e\x74\x69\x61\x2c\x0d\x0a\x74\x68\x65\x72\x65\x20"
+		"\x6c\x69\x76\x65\x20\x74\x68\x65\x20\x62\x6c\x69\x6e\x64\x20\x74"
+		"\x65\x78\x74\x73\x2e\x20\x53\x65\x70\x61\x72\x61\x74\x65\x64\x20"
+		"\x74\x68\x65\x79\x20\x6c\x69\x76\x65\x20\x69\x6e\x20\x42\x6f\x6f"
+		"\x6b\x6d\x61\x72\x6b\x73\x67\x72\x6f\x76\x65\x20\x72\x69\x67\x68"
+		"\x74\x20\x61\x74\x20\x74\x68\x65\x20\x63\x6f\x61\x73\x74\x20\x6f"
+		"\x66\x0d\x0a\x74\x68\x65\x20\x53\x65\x6d\x61\x6e\x74\x69\x63\x73"
+		"\x2c\x20\x61\x20\x6c\x61\x72\x67\x65\x20\x6c\x61\x6e\x67\x75\x61"
+		"\x67\x65\x20\x6f\x63\x65\x61\x6e\x2e\x20\x41\x20\x73\x6d\x61\x6c"
+		"\x6c\x20\x72\x69\x76\x65\x72\x20\x6e\x61\x6d\x65\x64\x20\x44\x75"
+		"\x64\x65\x6e\x20\x66\x6c\x6f\x77\x73\x20\x62\x79\x20\x74\x68\x65"
+		"\x69\x72\x20\x70\x6c\x61\x63\x65\x20\x61\x6e\x64\x0d\x0a\x73\x75"
+		"\x70\x70\x6c\x69\x65\x73\x20\x69\x74\x20\x77\x69\x74\x68\x20\x74"
+		"\x68\x65\x20\x6e\x65\x63\x65\x73\x73\x61\x72\x79\x20\x72\x65\x67"
+		"\x65\x6c\x69\x61\x6c\x69\x61\x2e\x20\x49\x74\x20\x69\x73\x20\x61"
+		"\x20\x70\x61\x72\x61\x64\x69\x73\x65\x6d\x61\x74\x69\x63\x20\x63"
+		"\x6f\x75\x6e\x74\x72\x79\x2c\x20\x69\x6e\x20\x77\x68\x69\x63\x68"
+		"\x20\x72\x6f\x61\x73\x74\x65\x64\x0d\x0a\x70\x61\x72\x74\x73\x20"
+		"\x6f\x66\x20\x73\x65\x6e\x74\x65\x6e\x63\x65\x73\x20\x66\x6c\x79"
+		"\x20\x69\x6e\x74\x6f\x20\x79\x6f\x75\x72\x20\x6d\x6f\x75\x74\x68"
+		"\x2e\x0d\x0a\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
+	::memset(buff, 0x00, FATMgr::SectorSize * count);
+	uint8_t* buffp = buff;
+	for (int i = 0; i < count; i++, sector++, buffp += FATMgr::SectorSize) {
+		switch (sector) {
+		case 0: ::memcpy(buffp, sector0, sizeof(sector0)); break;
+		case 1: ::memcpy(buffp, sector1, sizeof(sector1)); break;
+		case 2: ::memcpy(buffp, sector2, sizeof(sector2)); break;
+		case 3: ::memcpy(buffp, sector3, sizeof(sector3)); break;
+		case 39: ::memcpy(buffp, sector39, sizeof(sector39)); break;
+		default: break;
+		}
+	} 
 	return RES_OK;	// RES_OK, RES_ERROR, RES_PARERR, RES_NOTRDY
 }
 
-DRESULT PhysicalDrive::write(const BYTE* buff, LBA_t sector, UINT count)
+DRESULT DriveDummy::write(const BYTE* buff, LBA_t sector, UINT count)
 {
 	::printf("write(sector=%d, count=%d)\n", sector, count);
 	return RES_OK;	// RES_OK, RES_ERROR, RES_WRPRT, RES_PARERR, RES_NOTRDY
 }
 
-DRESULT PhysicalDrive::ioctl_CTRL_SYNC()
+DRESULT DriveDummy::ioctl_CTRL_SYNC()
 {
 	::printf("ioctl(CTRL_SYNC)\n");
 	return RES_OK;
 }
 
-DRESULT PhysicalDrive::ioctl_GET_SECTOR_COUNT(LBA_t* pSectorCount)
+DRESULT DriveDummy::ioctl_GET_SECTOR_COUNT(LBA_t* pSectorCount)
 {
 	::printf("ioctl(GET_SECTOR_COUNT)\n");
 	*pSectorCount = 0;
 	return RES_OK;
 }
 
-DRESULT PhysicalDrive::ioctl_GET_SECTOR_SIZE(WORD* pSectorSize)
+DRESULT DriveDummy::ioctl_GET_SECTOR_SIZE(WORD* pSectorSize)
 {
 	::printf("ioctl(GET_SECTOR_SIZE)\n");
 	*pSectorSize = 512;
 	return RES_OK;
 }
 
-DRESULT PhysicalDrive::ioctl_GET_BLOCK_SIZE(DWORD* pBlockSize)
+DRESULT DriveDummy::ioctl_GET_BLOCK_SIZE(DWORD* pBlockSize)
 {
 	::printf("ioctl(GET_BLOCK_SIZE)\n");
 	*pBlockSize = 1 << 0;
 	return RES_OK;
 }
 
-DRESULT PhysicalDrive::ioctl_CTRL_TRIM(LBA_t startLBA, LBA_t endLBA)
+DRESULT DriveDummy::ioctl_CTRL_TRIM(LBA_t startLBA, LBA_t endLBA)
 {
 	::printf("ioctl(CTRL_TRIM)\n");
 	return RES_OK;
@@ -158,10 +169,13 @@ int main()
 #if 1
 	FIL fil;
 	char buff[80];
-	PhysicalDrive physicalDrive;
-	physicalDrive.Mount();
-	FRESULT result = ::f_open(&fil, "0:README.TXT", FA_READ);
-	::printf("%d\n", result);
+	DriveDummy driveDummy;
+	driveDummy.Mount();
+	FRESULT result = ::f_open(&fil, "/SAMPLE.TXT", FA_READ);
+	if (result != FR_OK) {
+		::printf("Error: %s\n", FATMgr::FRESULTToStr(result));
+		return 1;
+	}
 	while (::f_gets(buff, sizeof(buff), &fil)) {
 		::printf(buff);
 	}

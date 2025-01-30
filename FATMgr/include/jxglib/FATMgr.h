@@ -65,6 +65,8 @@ public:
 		physicalDriveTbl_[physicalDrive.GetPDRV()] = &physicalDrive;
 	}
 	PhysicalDrive* GetPhysicalDrive(BYTE pdrv) { return physicalDriveTbl_[pdrv]; }
+public:
+	static const char* FRESULTToStr(FRESULT result);
 };
 
 }
