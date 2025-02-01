@@ -35,7 +35,7 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-Flash test-Flash.c )
+add_executable(test-Flash test-Flash.cpp)
 
 pico_set_program_name(test-Flash "test-Flash")
 pico_set_program_version(test-Flash "0.1")
