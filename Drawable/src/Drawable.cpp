@@ -19,9 +19,10 @@ Size Drawable::CalcStringSize(const char* str) const
 	for (const char* p = str; *p; p++) {
 		if (!decoder.FeedChar(*p, &code)) continue;
 		const FontEntry& fontEntry = context_.pFontSet->GetFontEntry(code);
-		size.width += fontEntry.xAdvance;
+		int wdChar = fontEntry.xAdvance * context_.fontScaleWidth;
+		if (*(p + 1)) wdChar *= context_.charWidthRatio;
+		size.width += wdChar;
 	}
-	size.width *= context_.fontScaleWidth * context_.charWidthRatio;
 	size.height = context_.pFontSet->yAdvance * context_.fontScaleHeight; 
 	return size;
 }
