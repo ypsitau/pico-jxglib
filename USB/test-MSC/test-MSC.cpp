@@ -14,14 +14,14 @@ class RAMDisk : public USB::MSC {
 public:
 	RAMDisk(USB::Device& device) : USB::MSC(device, 0x01, 0x81) {}
 public:
-	virtual void inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]) override;
-	virtual bool test_unit_ready(uint8_t lun) override;
-	virtual void capacity(uint8_t lun, uint32_t* block_count, uint16_t* block_size) override;
-	virtual bool start_stop(uint8_t lun, uint8_t power_condition, bool start, bool load_eject) override;
-	virtual int32_t read10(uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize) override;
-	virtual bool is_writable(uint8_t lun) override;
-	virtual int32_t write10(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize) override;
-	virtual int32_t scsi(uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize) override;
+	virtual void On_inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]) override;
+	virtual bool On_test_unit_ready(uint8_t lun) override;
+	virtual void On_capacity(uint8_t lun, uint32_t* block_count, uint16_t* block_size) override;
+	virtual bool On_start_stop(uint8_t lun, uint8_t power_condition, bool start, bool load_eject) override;
+	virtual int32_t On_read10(uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize) override;
+	virtual bool On_is_writable(uint8_t lun) override;
+	virtual int32_t On_write10(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize) override;
+	virtual int32_t On_scsi(uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize) override;
 };
 
 // whether host does safe-eject
@@ -100,7 +100,7 @@ uint8_t msc_disk2[DISK_BLOCK_NUM][DISK_BLOCK_SIZE] =
 	README_CONTENTS
 };
 
-void RAMDisk::inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4])
+void RAMDisk::On_inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4])
 {
 	const char vid[] = "TinyUSB";
 	const char pid[] = "Mass Storage";
@@ -110,7 +110,7 @@ void RAMDisk::inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16],
 	memcpy(product_rev, rev, strlen(rev));
 }
 
-bool RAMDisk::test_unit_ready(uint8_t lun)
+bool RAMDisk::On_test_unit_ready(uint8_t lun)
 {
 	// RAM disk is ready until ejected
 	if (ejected) {
@@ -121,13 +121,13 @@ bool RAMDisk::test_unit_ready(uint8_t lun)
 	return true;
 }
 
-void RAMDisk::capacity(uint8_t lun, uint32_t* block_count, uint16_t* block_size)
+void RAMDisk::On_capacity(uint8_t lun, uint32_t* block_count, uint16_t* block_size)
 {
 	*block_count = DISK_BLOCK_NUM;
 	*block_size  = DISK_BLOCK_SIZE;
 }
 
-bool RAMDisk::start_stop(uint8_t lun, uint8_t power_condition, bool start, bool load_eject)
+bool RAMDisk::On_start_stop(uint8_t lun, uint8_t power_condition, bool start, bool load_eject)
 {
 	if (load_eject) {
 		if (start) {
@@ -140,20 +140,21 @@ bool RAMDisk::start_stop(uint8_t lun, uint8_t power_condition, bool start, bool 
 	return true;
 }
 
-int32_t RAMDisk::read10(uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize)
+int32_t RAMDisk::On_read10(uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize)
 {
+	::printf("read10(lba=%d)\n", lba);
 	if (lba >= DISK_BLOCK_NUM) return -1;
 	uint8_t const* addr = msc_disk2[lba] + offset;
 	memcpy(buffer, addr, bufsize);
 	return bufsize;
 }
 
-bool RAMDisk::is_writable(uint8_t lun)
+bool RAMDisk::On_is_writable(uint8_t lun)
 {
 	return true;
 }
 
-int32_t RAMDisk::write10(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize)
+int32_t RAMDisk::On_write10(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize)
 {
 	if ( lba >= DISK_BLOCK_NUM ) return -1;
 	uint8_t* addr = msc_disk2[lba] + offset;
@@ -161,7 +162,7 @@ int32_t RAMDisk::write10(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* bu
 	return bufsize;
 }
 
-int32_t RAMDisk::scsi(uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize)
+int32_t RAMDisk::On_scsi(uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize)
 {
 	// read10 & write10 has their own callback and MUST not be handled here
 	void const* response = NULL;

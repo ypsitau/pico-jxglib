@@ -40,7 +40,6 @@ void Device::Initialize(uint8_t rhport)
 uint8_t Device::AddInterface(Interface* pInterface)
 {
 	interfaceTbl_[interfaceNumCur_++] = pInterface;
-	if (pInterface->IsMSC()) pMSC_ = reinterpret_cast<MSC*>(pInterface);
 	return interfaceNumCur_ - 1;
 }
 
@@ -369,10 +368,12 @@ MSC::MSC(Device& device, uint8_t endpBulkOut, uint8_t endpBulkIn, uint16_t endpS
 		TUD_MSC_DESCRIPTOR(GetInterfaceNum(), 5, endpBulkOut, endpBulkIn, endpSize),
 	};
 	RegisterConfigDesc(configDesc, sizeof(configDesc));
+	device.SetInterfaceMSC(this);
 }
 
 }
 
+#if 0
 // whether host does safe-eject
 static bool ejected = false;
 
@@ -553,47 +554,72 @@ int32_t tud_msc_scsi_cb (uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, 
 	return resplen;
 }
 
-#if 0
-int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize)
-{
-	::printf("tud_msc_read10_cb()\n");
-	return 0;
-}
+#else
 
-int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize)
-{
-	::printf("tud_msc_write10_cb()\n");
-	return 0;
-}
-
+// Invoked when received SCSI_CMD_INQUIRY
+// Application fill vendor id, product id and revision with string up to 8, 16, 4 characters respectively
 void tud_msc_inquiry_cb(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4])
 {
-	::printf("tud_msc_inquiry_cb()\n");
+	using namespace jxglib::USB;
+	Device::GetInterfaceMSC().On_inquiry(lun, vendor_id, product_id, product_rev);
 }
 
+// Invoked when received Test Unit Ready command.
+// return true allowing host to read/write this LUN e.g SD card inserted
 bool tud_msc_test_unit_ready_cb(uint8_t lun)
 {
-	::printf("tud_msc_test_unit_ready_cb()\n");
-	return false;
+	using namespace jxglib::USB;
+	return Device::GetInterfaceMSC().On_test_unit_ready(lun);
 }
 
+// Invoked when received SCSI_CMD_READ_CAPACITY_10 and SCSI_CMD_READ_FORMAT_CAPACITY to determine the disk size
+// Application update block count and block size
 void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count, uint16_t* block_size)
 {
-	::printf("tud_msc_capacity_cb()\n");
+	using namespace jxglib::USB;
+	return Device::GetInterfaceMSC().On_capacity(lun, block_count, block_size);
 }
 
-int32_t tud_msc_scsi_cb (uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize)
-{
-	::printf("tud_msc_scsi_cb()\n");
-	return 0;
-}
-
-// Optional
+// Invoked when received Start Stop Unit command
+// - Start = 0 : stopped power mode, if load_eject = 1 : unload disk storage
+// - Start = 1 : active mode, if load_eject = 1 : load disk storage
 bool tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool start, bool load_eject)
 {
-	::printf("tud_msc_start_stop_cb()\n");
-	return false;
+	using namespace jxglib::USB;
+	return Device::GetInterfaceMSC().On_start_stop(lun, power_condition, start, load_eject);
 }
+
+// Callback invoked when received READ10 command.
+// Copy disk's data to buffer (up to bufsize) and return number of copied bytes.
+int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize)
+{
+	using namespace jxglib::USB;
+	return Device::GetInterfaceMSC().On_read10(lun, lba, offset, buffer, bufsize);
+}
+
+bool tud_msc_is_writable_cb(uint8_t lun)
+{
+	using namespace jxglib::USB;
+	return Device::GetInterfaceMSC().On_is_writable(lun);
+}
+
+// Callback invoked when received WRITE10 command.
+// Process data in buffer to disk's storage and return number of written bytes
+int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize)
+{
+	using namespace jxglib::USB;
+	return Device::GetInterfaceMSC().On_write10(lun, lba, offset, buffer, bufsize);
+}
+
+// Callback invoked when received an SCSI command not in built-in list below
+// - READ_CAPACITY10, READ_FORMAT_CAPACITY, INQUIRY, MODE_SENSE6, REQUEST_SENSE
+// - READ10 and WRITE10 has their own callbacks
+int32_t tud_msc_scsi_cb (uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize)
+{
+	using namespace jxglib::USB;
+	return Device::GetInterfaceMSC().On_scsi(lun, scsi_cmd, buffer, bufsize);
+}
+
 #endif
 
 #endif
