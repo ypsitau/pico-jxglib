@@ -152,7 +152,7 @@ class Keyboard : public HID {
 private:
 	static const uint8_t descriptor[];
 public:
-	Keyboard(Device& device, uint8_t endpNum, uint8_t pollingInterval = 10);
+	Keyboard(Device& device, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
 public:
 	virtual const uint8_t* On_DESCRIPTOR_REPORT() override { return descriptor; }
 };
@@ -164,7 +164,7 @@ class Mouse : public HID {
 private:
 	static const uint8_t descriptor[];
 public:
-	Mouse(Device& device, uint8_t endpNum, uint8_t pollingInterval = 10);
+	Mouse(Device& device, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
 public:
 	virtual const uint8_t* On_DESCRIPTOR_REPORT() override { return descriptor; }
 };
@@ -176,7 +176,7 @@ class Gamepad : public HID {
 private:
 	static const uint8_t descriptor[];
 public:
-	Gamepad(Device& device, uint8_t endpNum, uint8_t pollingInterval = 10);
+	Gamepad(Device& device, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
 public:
 	virtual const uint8_t* On_DESCRIPTOR_REPORT() override { return descriptor; }
 };
@@ -188,7 +188,7 @@ class Consumer : public HID {
 private:
 	static const uint8_t descriptor[];
 public:
-	Consumer(Device& device, uint8_t endpNum, uint8_t pollingInterval = 10);
+	Consumer(Device& device, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
 public:
 	virtual const uint8_t* On_DESCRIPTOR_REPORT() override { return descriptor; }
 };
@@ -204,7 +204,7 @@ class CDC : public Interface {
 private:
 	static const uint8_t descriptor[];
 public:
-	CDC(Device& device, uint8_t endpNum, uint8_t pollingInterval = 10);
+	CDC(Device& device, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
 public:
 	virtual const uint8_t* On_DESCRIPTOR_REPORT() override { return descriptor; }
 };
@@ -216,6 +216,10 @@ public:
 //-----------------------------------------------------------------------------
 #if CFG_TUD_MSC > 0
 class MSC : public Interface {
+public:
+	MSC(Device& device, uint8_t endpBulkOut, uint8_t endpBulkIn, uint16_t endpSize = 64);
+public:
+	virtual void OnTask() override {}
 };
 #endif
 
