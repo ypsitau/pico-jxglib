@@ -176,6 +176,7 @@ public:
 	Drawable& SetSpacingRatio(float charWidthRatio, float lineHeightRatio) {
 		context_.SetSpacingRatio(charWidthRatio, lineHeightRatio); return *this;
 	}
+	Size CalcStringSize(const char* str) const;
 public:
 	Drawable& Refresh() { GetDispatcher().Refresh(); return *this; }
 	Drawable& Clear() { Fill(context_.colorBg); return *this; }

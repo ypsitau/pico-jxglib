@@ -45,8 +45,6 @@ public:
 	bool IsGray() const { return format == Format::Gray; }
 	bool HasExtraFont() const { return nFontEntries_Extra > 0; }
 	const FontEntry& GetFontEntry(uint32_t code) const;
-	int CalcStringWidth(const char* str) const;
-	const char* SplitString(const char* str, int widthToSplit, int* pWidthSplit = nullptr) const;
 };
 
 }

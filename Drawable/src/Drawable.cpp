@@ -10,6 +10,22 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 const Drawable::DispatcherNone dispacherNone;
 
+Size Drawable::CalcStringSize(const char* str) const
+{
+	if (!context_.pFontSet) return Size::Zero;
+	Size size(0, 0);
+	uint32_t code;
+	UTF8Decoder decoder;
+	for (const char* p = str; *p; p++) {
+		if (!decoder.FeedChar(*p, &code)) continue;
+		const FontEntry& fontEntry = context_.pFontSet->GetFontEntry(code);
+		size.width += fontEntry.xAdvance;
+	}
+	size.width *= context_.fontScaleWidth * context_.charWidthRatio;
+	size.height = context_.pFontSet->yAdvance * context_.fontScaleHeight; 
+	return size;
+}
+
 Drawable& Drawable::DrawLine(int x0, int y0, int x1, int y1, const Color& color)
 {
 	if (x0 == x1) {
@@ -151,8 +167,9 @@ Drawable& Drawable::DrawString(int x, int y, const char* str, bool transparentBg
 	for ( ; *p; p++) {
 		if (!decoder.FeedChar(*p, &code)) continue;
 		const FontEntry& fontEntry = context_.pFontSet->GetFontEntry(code);
+		int xAdvance = context_.CalcAdvanceX(fontEntry);
 		DrawChar(x, y, fontEntry, transparentBgFlag);
-		x += fontEntry.xAdvance * context_.fontScaleWidth;
+		x += xAdvance;
 	}
 	return *this;
 }
@@ -160,7 +177,6 @@ Drawable& Drawable::DrawString(int x, int y, const char* str, bool transparentBg
 Drawable& Drawable::DrawStringWrap(int x, int y, int width, int height, const char* str, bool transparentBgFlag)
 {
 	if (!context_.pFontSet) return *this;
-	const char* strDone = str;
 	uint32_t code;
 	UTF8Decoder decoder;
 	int xStart = x;
@@ -182,7 +198,6 @@ Drawable& Drawable::DrawStringWrap(int x, int y, int width, int height, const ch
 			DrawChar(x, y, fontEntry, transparentBgFlag);
 			x += xAdvance;
 		}
-		strDone = p + 1;
 	}
 	return *this;
 }
