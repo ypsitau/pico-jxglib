@@ -9,6 +9,7 @@
 namespace jxglib::USB {
 
 class Interface;
+class MSC;
 
 //-----------------------------------------------------------------------------
 // Utility function
@@ -40,6 +41,7 @@ public:
 	uint8_t rhport_;
 	uint8_t interfaceNumCur_;
 	Interface* interfaceTbl_[nInterfaces];
+	MSC* pMSC_;
 	int offsetConfigDesc_;
 	uint8_t configDescAccum_[
 		TUD_CONFIG_DESC_LEN +
@@ -65,10 +67,7 @@ public:
 	void RegisterConfigDesc(const void* configDesc, int bytes);
 	void Initialize(uint8_t rhport = 0);
 public:
-	uint8_t AddInterface(Interface* pInterface) {
-		interfaceTbl_[interfaceNumCur_++] = pInterface;
-		return interfaceNumCur_ - 1;
-	}
+	uint8_t AddInterface(Interface* pInterface);
 	template<typename T> static T& GetInterface(int interfaceNum) {
 		return *reinterpret_cast<T*>(Instance->interfaceTbl_[interfaceNum]);
 	}
@@ -101,6 +100,7 @@ public:
 public:
 	uint8_t GetInterfaceNum() const { return interfaceNum_; }
 public:
+	virtual bool IsMSC() const { return false; }
 	virtual void OnTask() = 0;
 public:
 	void RegisterConfigDesc(const void* configDesc, int bytes);
@@ -219,7 +219,18 @@ class MSC : public Interface {
 public:
 	MSC(Device& device, uint8_t endpBulkOut, uint8_t endpBulkIn, uint16_t endpSize = 64);
 public:
+	virtual bool IsMSC() const override { return true; }
 	virtual void OnTask() override {}
+public:
+	virtual void inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]) = 0;
+	virtual bool test_unit_ready(uint8_t lun) = 0;
+	virtual void capacity(uint8_t lun, uint32_t* block_count, uint16_t* block_size) = 0;
+	virtual bool start_stop(uint8_t lun, uint8_t power_condition, bool start, bool load_eject) = 0;
+	virtual int32_t read10(uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize) = 0;
+	virtual bool is_writable(uint8_t lun) = 0;
+	virtual int32_t write10(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize) = 0;
+	virtual int32_t scsi(uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize) = 0;
+
 };
 #endif
 
