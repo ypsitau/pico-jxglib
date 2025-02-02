@@ -243,10 +243,10 @@ int main()
 	GPIO15.set_function_SPI1_TX();
 #if 1
 	ILI9341 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
-	ILI9341::TouchScreen touchScreen(spi0, {CS: GPIO6, IRQ: GPIO7});
+	ILI9341::TouchScreen touchScreen(spi0, {CS: GPIO8, IRQ: GPIO9});
 #else
 	ILI9488 display(spi1, 320, 480, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
-	ILI9488::TouchScreen touchScreen(spi0, {CS: GPIO6, IRQ: GPIO7});
+	ILI9488::TouchScreen touchScreen(spi0, {CS: GPIO8, IRQ: GPIO9});
 #endif
 	display.Initialize(Display::Dir::Rotate90);
 	touchScreen.Initialize(display);

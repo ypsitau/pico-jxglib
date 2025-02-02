@@ -11,7 +11,7 @@ int main()
 	GPIO2.set_function_SPI0_SCK();
 	GPIO3.set_function_SPI0_TX();
 	GPIO4.set_function_SPI0_RX();
-	//TSC2046 touchScreen(spi0, {CS: GPIO6, IRQ: GPIO7});
+	//TSC2046 touchScreen(spi0, {CS: GPIO8, IRQ: GPIO9});
 	TSC2046 touchScreen(spi0, {CS: GPIO8, IRQ: GPIO9});
 	touchScreen.Initialize();
 	::printf("Touch Screen Test\n");

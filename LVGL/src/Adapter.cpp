@@ -38,14 +38,14 @@ bool Adapter::AttachOutput(Drawable& drawable, const Rect& rect, bool requiredFl
 	}
 	void* buff1 = ::lv_malloc(bytesBuff);
 	if (!buff1) {
-		if (requiredFlag) panic("can't allocate the first buffer");
+		if (requiredFlag) panic("can't allocate the first buffer (%dbytes)", bytesBuff);
 		return false;
 	}
 	void* buff2 = nullptr;
 	if (doubleBuffFlag_) {
 		buff2 = ::lv_malloc(bytesBuff);
 		if (!buff2) {
-			if (requiredFlag) panic("can't allocate the second buffer");
+			if (requiredFlag) panic("can't allocate the second buffer (%dbytes)", bytesBuff);
 			return false;
 		}
 	}
