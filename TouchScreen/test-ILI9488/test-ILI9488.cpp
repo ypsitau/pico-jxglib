@@ -14,7 +14,7 @@ int main()
 	GPIO4.set_function_SPI0_RX();
 	GPIO14.set_function_SPI1_SCK();
 	GPIO15.set_function_SPI1_TX();
-	ILI9488 display(spi1, 320, 480, {RST: GPIO11, DC: GPIO10, CS: GPIO12, BL: GPIO13});
+	ILI9488 display(spi1, 320, 480, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
 	ILI9488::TouchScreen touchScreen(spi0, {CS: GPIO6, IRQ: GPIO7});
 	//ILI9488 display(spi1, 320, 480, {RST: GPIO19, DC: GPIO18, CS: GPIO20, BL: GPIO21});
 	//ILI9488::TouchScreen touchScreen(spi0, {CS: GPIO8, IRQ: GPIO9});
