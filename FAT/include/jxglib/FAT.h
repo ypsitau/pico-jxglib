@@ -1,8 +1,8 @@
 //==============================================================================
-// jxglib/FATMgr.h
+// jxglib/FAT.h
 //==============================================================================
-#ifndef PICO_JXGLIB_FATMGR_H
-#define PICO_JXGLIB_FATMGR_H
+#ifndef PICO_JXGLIB_FAT_H
+#define PICO_JXGLIB_FAT_H
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "ff15a/source/ff.h"
@@ -11,9 +11,9 @@
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// FATMgr
+// FAT
 //------------------------------------------------------------------------------
-class FATMgr {
+class FAT {
 public:
 	enum class MountMode { Normal, Forced, };
 	static const int SectorSize = FF_MIN_SS;
@@ -44,10 +44,10 @@ public:
 		PhysicalDriveT(BYTE pdrv) : PhysicalDrive(pdrv) {}
 	public:
 		virtual void Mount(MountMode mountMode = MountMode::Normal) override {
-			FATMgr::Instance.RegisterPhysicalDrive(*this);
+			FAT::Instance.RegisterPhysicalDrive(*this);
 			for (int i = 0; i < cntLogicalDrive; i++) {
 				TCHAR path[16];
-				::snprintf(path, sizeof(path), "%d:", FATMgr::Instance.AssignLogialDrive());
+				::snprintf(path, sizeof(path), "%d:", FAT::Instance.AssignLogialDrive());
 				::f_mount(&fatFsTbl_[i], path, (mountMode == MountMode::Forced)? 1 : 0);
 			}
 		}
@@ -56,9 +56,9 @@ private:
 	int numLogicalDrive_;
 	PhysicalDrive* physicalDriveTbl_[16];
 public:
-	static FATMgr Instance;
+	static FAT Instance;
 public:
-	FATMgr() : numLogicalDrive_{0} {}
+	FAT() : numLogicalDrive_{0} {}
 public:
 	int AssignLogialDrive() { numLogicalDrive_++; return numLogicalDrive_ - 1; }
 	void RegisterPhysicalDrive(PhysicalDrive& physicalDrive) {

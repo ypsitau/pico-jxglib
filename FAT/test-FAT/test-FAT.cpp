@@ -1,14 +1,14 @@
 #include <stdio.h>
 #include <memory.h>
 #include "pico/stdlib.h"
-#include "jxglib/FATMgr.h"
+#include "jxglib/FAT.h"
 
 using namespace jxglib;
 
 
-class DriveDummy : public FATMgr::PhysicalDriveT<> {
+class DummyDrive : public FAT::PhysicalDriveT<> {
 public:
-	DriveDummy(BYTE pdrv = 0) : FATMgr::PhysicalDriveT<>{pdrv} {}
+	DummyDrive(BYTE pdrv = 0) : FAT::PhysicalDriveT<>{pdrv} {}
 public:
 	virtual DSTATUS status() override;
 	virtual DSTATUS initialize() override;
@@ -21,19 +21,19 @@ public:
 	virtual DRESULT ioctl_CTRL_TRIM(LBA_t startLBA, LBA_t endLBA) override;
 };
 
-DSTATUS DriveDummy::status()
+DSTATUS DummyDrive::status()
 {
 	//::printf("status\n");
 	return 0x00;	// STA_NOINIT, STA_NODISK, STA_PROTECT
 }
 
-DSTATUS DriveDummy::initialize()
+DSTATUS DummyDrive::initialize()
 {
 	::printf("initialize\n");
 	return 0x00;	// STA_NOINIT, STA_NODISK, STA_PROTECT
 }
 
-DRESULT DriveDummy::read(BYTE* buff, LBA_t sector, UINT count)
+DRESULT DummyDrive::read(BYTE* buff, LBA_t sector, UINT count)
 {
 	::printf("read(sector=%d, count=%d)\n", sector, count);
 	const char sector0[] =
@@ -109,9 +109,9 @@ DRESULT DriveDummy::read(BYTE* buff, LBA_t sector, UINT count)
 		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
 		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
 		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
-	::memset(buff, 0x00, FATMgr::SectorSize * count);
+	::memset(buff, 0x00, FAT::SectorSize * count);
 	uint8_t* buffp = buff;
-	for (int i = 0; i < count; i++, sector++, buffp += FATMgr::SectorSize) {
+	for (int i = 0; i < count; i++, sector++, buffp += FAT::SectorSize) {
 		switch (sector) {
 		case 0: ::memcpy(buffp, sector0, sizeof(sector0)); break;
 		case 1: ::memcpy(buffp, sector1, sizeof(sector1)); break;
@@ -124,40 +124,40 @@ DRESULT DriveDummy::read(BYTE* buff, LBA_t sector, UINT count)
 	return RES_OK;	// RES_OK, RES_ERROR, RES_PARERR, RES_NOTRDY
 }
 
-DRESULT DriveDummy::write(const BYTE* buff, LBA_t sector, UINT count)
+DRESULT DummyDrive::write(const BYTE* buff, LBA_t sector, UINT count)
 {
 	::printf("write(sector=%d, count=%d)\n", sector, count);
 	return RES_OK;	// RES_OK, RES_ERROR, RES_WRPRT, RES_PARERR, RES_NOTRDY
 }
 
-DRESULT DriveDummy::ioctl_CTRL_SYNC()
+DRESULT DummyDrive::ioctl_CTRL_SYNC()
 {
 	::printf("ioctl(CTRL_SYNC)\n");
 	return RES_OK;
 }
 
-DRESULT DriveDummy::ioctl_GET_SECTOR_COUNT(LBA_t* pSectorCount)
+DRESULT DummyDrive::ioctl_GET_SECTOR_COUNT(LBA_t* pSectorCount)
 {
 	::printf("ioctl(GET_SECTOR_COUNT)\n");
 	*pSectorCount = 0;
 	return RES_OK;
 }
 
-DRESULT DriveDummy::ioctl_GET_SECTOR_SIZE(WORD* pSectorSize)
+DRESULT DummyDrive::ioctl_GET_SECTOR_SIZE(WORD* pSectorSize)
 {
 	::printf("ioctl(GET_SECTOR_SIZE)\n");
 	*pSectorSize = 512;
 	return RES_OK;
 }
 
-DRESULT DriveDummy::ioctl_GET_BLOCK_SIZE(DWORD* pBlockSize)
+DRESULT DummyDrive::ioctl_GET_BLOCK_SIZE(DWORD* pBlockSize)
 {
 	::printf("ioctl(GET_BLOCK_SIZE)\n");
 	*pBlockSize = 1 << 0;
 	return RES_OK;
 }
 
-DRESULT DriveDummy::ioctl_CTRL_TRIM(LBA_t startLBA, LBA_t endLBA)
+DRESULT DummyDrive::ioctl_CTRL_TRIM(LBA_t startLBA, LBA_t endLBA)
 {
 	::printf("ioctl(CTRL_TRIM)\n");
 	return RES_OK;
@@ -169,11 +169,11 @@ int main()
 #if 1
 	FIL fil;
 	char buff[80];
-	DriveDummy driveDummy;
+	DummyDrive driveDummy;
 	driveDummy.Mount();
 	FRESULT result = ::f_open(&fil, "/SAMPLE.TXT", FA_READ);
 	if (result != FR_OK) {
-		::printf("Error: %s\n", FATMgr::FRESULTToStr(result));
+		::printf("Error: %s\n", FAT::FRESULTToStr(result));
 		return 1;
 	}
 	while (::f_gets(buff, sizeof(buff), &fil)) {

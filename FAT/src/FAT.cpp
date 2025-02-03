@@ -1,16 +1,16 @@
 //==============================================================================
-// FATMgr.cpp
+// FAT.cpp
 //==============================================================================
-#include "jxglib/FATMgr.h"
+#include "jxglib/FAT.h"
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// FATMgr
+// FAT
 //------------------------------------------------------------------------------
-FATMgr FATMgr::Instance;
+FAT FAT::Instance;
 
-const char* FATMgr::FRESULTToStr(FRESULT result)
+const char* FAT::FRESULTToStr(FRESULT result)
 {
 	static const char* strTbl[] = {
 		"OK",					/* (0) Function succeeded */
@@ -45,7 +45,7 @@ const char* FATMgr::FRESULTToStr(FRESULT result)
 DSTATUS disk_initialize(BYTE pdrv)
 {
 	using namespace jxglib;
-	FATMgr::PhysicalDrive* pPhysicalDrive = FATMgr::Instance.GetPhysicalDrive(pdrv);
+	FAT::PhysicalDrive* pPhysicalDrive = FAT::Instance.GetPhysicalDrive(pdrv);
 	if (!pPhysicalDrive) return RES_PARERR;
 	return pPhysicalDrive->initialize();
 }
@@ -53,7 +53,7 @@ DSTATUS disk_initialize(BYTE pdrv)
 DSTATUS disk_status(BYTE pdrv)
 {
 	using namespace jxglib;
-	FATMgr::PhysicalDrive* pPhysicalDrive = FATMgr::Instance.GetPhysicalDrive(pdrv);
+	FAT::PhysicalDrive* pPhysicalDrive = FAT::Instance.GetPhysicalDrive(pdrv);
 	if (!pPhysicalDrive) return RES_PARERR;
 	return pPhysicalDrive->status();
 }
@@ -61,7 +61,7 @@ DSTATUS disk_status(BYTE pdrv)
 DRESULT disk_read(BYTE pdrv, BYTE* buff, LBA_t sector, UINT count)
 {
 	using namespace jxglib;
-	FATMgr::PhysicalDrive* pPhysicalDrive = FATMgr::Instance.GetPhysicalDrive(pdrv);
+	FAT::PhysicalDrive* pPhysicalDrive = FAT::Instance.GetPhysicalDrive(pdrv);
 	if (!pPhysicalDrive) return RES_PARERR;
 	return pPhysicalDrive->read(buff, sector, count);
 }
@@ -69,7 +69,7 @@ DRESULT disk_read(BYTE pdrv, BYTE* buff, LBA_t sector, UINT count)
 DRESULT disk_write(BYTE pdrv, const BYTE* buff, LBA_t sector, UINT count)
 {
 	using namespace jxglib;
-	FATMgr::PhysicalDrive* pPhysicalDrive = FATMgr::Instance.GetPhysicalDrive(pdrv);
+	FAT::PhysicalDrive* pPhysicalDrive = FAT::Instance.GetPhysicalDrive(pdrv);
 	if (!pPhysicalDrive) return RES_PARERR;
 	return pPhysicalDrive->write(buff, sector, count);
 }
@@ -77,7 +77,7 @@ DRESULT disk_write(BYTE pdrv, const BYTE* buff, LBA_t sector, UINT count)
 DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void* buff)
 {
 	using namespace jxglib;
-	FATMgr::PhysicalDrive* pPhysicalDrive = FATMgr::Instance.GetPhysicalDrive(pdrv);
+	FAT::PhysicalDrive* pPhysicalDrive = FAT::Instance.GetPhysicalDrive(pdrv);
 	if (!pPhysicalDrive) return RES_PARERR;
 	switch (cmd) {
 	case CTRL_SYNC: {
