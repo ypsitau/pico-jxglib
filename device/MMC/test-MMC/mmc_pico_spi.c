@@ -10,204 +10,6 @@
 / * Redistributions of source code must retain the above copyright notice.
 /
 /-------------------------------------------------------------------------*/
-
-#if 0
-#define SPI_CH	1	/* SPI channel to use = 1: SPI1, 11: SPI1/remap, 2: SPI2 */
-
-#define FCLK_SLOW() { SPIx_CR1 = (SPIx_CR1 & ~0x38) | 0x28; }	/* Set SCLK = PCLK / 64 */
-#define FCLK_FAST() { SPIx_CR1 = (SPIx_CR1 & ~0x38) | 0x00; }	/* Set SCLK = PCLK / 2 */
-
-#if SPI_CH == 1	/* PA4:MMC_CS, PA5:MMC_SCLK, PA6:MMC_DO, PA7:MMC_DI, PC4:MMC_CD */
-#define CS_HIGH()	GPIOA_BSRR = _BV(4)
-#define CS_LOW()	GPIOA_BSRR = _BV(4+16)
-#define	MMC_CD		!(GPIOC_IDR & _BV(4))	/* Card detect (yes:true, no:false, default:true) */
-#define	MMC_WP		0 /* Write protected (yes:true, no:false, default:false) */
-#define SPIx_CR1	SPI1_CR1
-#define SPIx_SR		SPI1_SR
-#define SPIx_DR		SPI1_DR
-#define	SPIxENABLE() {\
-	__enable_peripheral(SPI1EN);\
-	__enable_peripheral(IOPAEN);\
-	__enable_peripheral(IOPCEN);\
-	__gpio_conf_bit(GPIOA, 4, OUT_PP);						/* PA4: MMC_CS */\
-	__gpio_conf_bit(GPIOA, 5, ALT_PP);						/* PA5: MMC_SCLK */\
-	GPIOA_BSRR = _BV(6); __gpio_conf_bit(GPIOA, 6, IN_PUL); /* PA6: MMC_DO with pull-up */\
-	__gpio_conf_bit(GPIOA, 7, ALT_PP);						/* PA7: MMC_DI */\
-	GPIOC_BSRR = _BV(4); __gpio_conf_bit(GPIOC, 4, IN_PUL);	/* PC4: MMC_CD with pull-up */\
-	SPIx_CR1 = _BV(9)|_BV(8)|_BV(6)|_BV(2);					/* Enable SPI1 */\
-}
-
-#elif SPI_CH == 11	/* PA15:MMC_CS, PB3:MMC_SCLK, PB4:MMC_DO, PB5:MMC_DI, PB6:MMC_CD */
-#define CS_HIGH()	GPIOA_BSRR = _BV(15)
-#define CS_LOW()	GPIOA_BSRR = _BV(15+16)
-#define	MMC_CD		!(GPIOB_IDR & _BV(6))	/* Card detect (yes:true, no:false, default:true) */
-#define	MMC_WP		0 /* Write protected (yes:true, no:false, default:false) */
-#define SPIx_CR1	SPI1_CR1
-#define SPIx_SR		SPI1_SR
-#define SPIx_DR		SPI1_DR
-#define	SPIxENABLE() {\
-	AFIO_MAPR |= _BV(1);
-	__enable_peripheral(SPI1EN);\
-	__enable_peripheral(IOPAEN);\
-	__enable_peripheral(IOPBEN);\
-	__gpio_conf_bit(GPIOA, 15, OUT_PP); 						/* PA15: MMC_CS */\
-	__gpio_conf_bit(GPIOB, 3, ALT_PP);							/* PB3: MMC_SCLK */\
-	GPIOB_BSRR = _BV(4); __gpio_conf_bit(GPIOB, 4, IN_PUL);		/* PB4: MMC_DO with pull-up */\
-	__gpio_conf_bit(GPIOB, 5, ALT_PP);							/* PB5: MMC_DI */\
-	GPIOB_BSRR = _BV(6); __gpio_conf_bit(GPIOB, 6, IN_PUL);		/* PB6: MMC_CD with pull-up */\
-	SPIx_CR1 = _BV(9)|_BV(8)|_BV(6)|_BV(2);						/* Enable SPI1 */\
-}
-
-#elif SPI_CH == 2	/* PB12:MMC_CS, PB13:MMC_SCLK, PB14:MMC_DO, PB15:MMC_DI, PD8:MMC_CD */
-#define CS_HIGH()	GPIOB_BSRR = _BV(12)
-#define CS_LOW()	GPIOB_BSRR = _BV(12+16)
-#define	MMC_CD		!(GPIOD_IDR & _BV(8))	/* Card detect (yes:true, no:false, default:true) */
-#define	MMC_WP		0 /* Write protected (yes:true, no:false, default:false) */
-#define SPIx_CR1	SPI2_CR1
-#define SPIx_SR		SPI2_SR
-#define SPIx_DR		SPI2_DR
-#define	SPIxENABLE() {\
-	__enable_peripheral(SPI2EN);\
-	__enable_peripheral(IOPBEN);\
-	__enable_peripheral(IOPDEN);\
-	__gpio_conf_bit(GPIOB, 12, OUT_PP);							/* PB12: MMC_CS */\
-	__gpio_conf_bit(GPIOB, 13, ALT_PP);							/* PB13: MMC_SCLK */\
-	GPIOB_BSRR = _BV(14); __gpio_conf_bit(GPIOB, 14, IN_PUL); 	/* PB14: MMC_DO with pull-up */\
-	__gpio_conf_bit(GPIOB, 15, ALT_PP);							/* PB15: MMC_DI */\
-	GPIOD_BSRR = _BV(8); __gpio_conf_bit(GPIOD, 8, IN_PUL); 	/* PD8: MMC_CD with pull-up */\
-	SPIx_CR1 = _BV(9)|_BV(8)|_BV(6)|_BV(2);						/* Enable SPI1 */\
-}
-
-#endif
-
-
-
-
-/*--------------------------------------------------------------------------
-
-   Module Private Functions
-
----------------------------------------------------------------------------*/
-
-#include "STM32F100.h"
-#include "diskio.h"
-
-
-/* MMC/SD command */
-#define CMD0	(0)			/* GO_IDLE_STATE */
-#define CMD1	(1)			/* SEND_OP_COND (MMC) */
-#define	ACMD41	(0x80+41)	/* SEND_OP_COND (SDC) */
-#define CMD8	(8)			/* SEND_IF_COND */
-#define CMD9	(9)			/* SEND_CSD */
-#define CMD10	(10)		/* SEND_CID */
-#define CMD12	(12)		/* STOP_TRANSMISSION */
-#define ACMD13	(0x80+13)	/* SD_STATUS (SDC) */
-#define CMD16	(16)		/* SET_BLOCKLEN */
-#define CMD17	(17)		/* READ_SINGLE_BLOCK */
-#define CMD18	(18)		/* READ_MULTIPLE_BLOCK */
-#define CMD23	(23)		/* SET_BLOCK_COUNT (MMC) */
-#define	ACMD23	(0x80+23)	/* SET_WR_BLK_ERASE_COUNT (SDC) */
-#define CMD24	(24)		/* WRITE_BLOCK */
-#define CMD25	(25)		/* WRITE_MULTIPLE_BLOCK */
-#define CMD32	(32)		/* ERASE_ER_BLK_START */
-#define CMD33	(33)		/* ERASE_ER_BLK_END */
-#define CMD38	(38)		/* ERASE */
-#define CMD55	(55)		/* APP_CMD */
-#define CMD58	(58)		/* READ_OCR */
-
-
-static volatile DSTATUS Stat = STA_NOINIT;	/* Physical drive status */
-static volatile UINT Timer1, Timer2;		/* 1kHz decrement timer stopped at zero (disk_timerproc()) */
-
-static BYTE CardType;	/* Card type flags */
-
-
-
-/*-----------------------------------------------------------------------*/
-/* SPI controls (Platform dependent)                                     */
-/*-----------------------------------------------------------------------*/
-
-/* Initialize MMC interface */
-static void init_spi (void)
-{
-	SPIxENABLE();		/* Enable SPI function */
-	CS_HIGH();			/* Set CS# high */
-
-	for (Timer1 = 10; Timer1; ) ;	/* 10ms */
-}
-
-
-/* Exchange a byte */
-static BYTE xchg_spi (
-	BYTE dat	/* Data to send */
-)
-{
-	SPIx_DR = dat;				/* Start an SPI transaction */
-	while ((SPIx_SR & 0x83) != 0x03) ;	/* Wait for end of the transaction */
-	return (BYTE)SPIx_DR;		/* Return received byte */
-}
-
-
-/* Receive multiple byte */
-static void rcvr_spi_multi (
-	BYTE *buff,		/* Pointer to data buffer */
-	UINT btr		/* Number of bytes to receive (even number) */
-)
-{
-	WORD d;
-
-
-	SPIx_CR1 &= ~_BV(6);
-	SPIx_CR1 |= (_BV(6) | _BV(11));	/* Put SPI into 16-bit mode */
-
-	SPIx_DR = 0xFFFF;		/* Start the first SPI transaction */
-	btr -= 2;
-	do {					/* Receive the data block into buffer */
-		while ((SPIx_SR & 0x83) != 0x03) ;	/* Wait for end of the SPI transaction */
-		d = SPIx_DR;						/* Get received word */
-		SPIx_DR = 0xFFFF;					/* Start next transaction */
-		buff[1] = d; buff[0] = d >> 8; 		/* Store received data */
-		buff += 2;
-	} while (btr -= 2);
-	while ((SPIx_SR & 0x83) != 0x03) ;		/* Wait for end of the SPI transaction */
-	d = SPIx_DR;							/* Get last word received */
-	buff[1] = d; buff[0] = d >> 8;			/* Store it */
-
-	SPIx_CR1 &= ~(_BV(6) | _BV(11));	/* Put SPI into 8-bit mode */
-	SPIx_CR1 |= _BV(6);
-}
-
-
-#if FF_FS_READONLY == 0
-/* Send multiple byte */
-static void xmit_spi_multi (
-	const BYTE *buff,	/* Pointer to the data */
-	UINT btx			/* Number of bytes to send (even number) */
-)
-{
-	WORD d;
-
-
-	SPIx_CR1 &= ~_BV(6);
-	SPIx_CR1 |= (_BV(6) | _BV(11));		/* Put SPI into 16-bit mode */
-
-	d = buff[0] << 8 | buff[1]; buff += 2;
-	SPIx_DR = d;	/* Send the first word */
-	btx -= 2;
-	do {
-		d = buff[0] << 8 | buff[1]; buff += 2;	/* Word to send next */
-		while ((SPIx_SR & 0x83) != 0x03) ;	/* Wait for end of the SPI transaction */
-		SPIx_DR;							/* Discard received word */
-		SPIx_DR = d;						/* Start next transaction */
-	} while (btx -= 2);
-	while ((SPIx_SR & 0x83) != 0x03) ;	/* Wait for end of the SPI transaction */
-	SPIx_DR;							/* Discard received word */
-
-	SPIx_CR1 &= ~(_BV(6) | _BV(11));	/* Put SPI into 8-bit mode */
-	SPIx_CR1 |= _BV(6);
-}
-#endif
-#endif
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
 
@@ -217,10 +19,10 @@ static void xmit_spi_multi (
    GPIO 18 (pin 24) SCK/spi0_sclk -> SCK
    GPIO 19 (pin 25) MOSI/spi0_tx -> SDI
 */
-#define DEF_SPI_TX_PIN	19
-#define DEF_SPI_RX_PIN	16
-#define DEF_SPI_SCK_PIN	18
-#define DEF_SPI_CSN_PIN	17
+#define DEF_SPI_SCK_PIN	2
+#define DEF_SPI_TX_PIN	3
+#define DEF_SPI_RX_PIN	4
+#define DEF_SPI_CSN_PIN	5
 
 #define SPIDEV		spi0
 
@@ -298,7 +100,7 @@ static BYTE CardType;	/* Card type flags */
 /* Initialize MMC interface */
 static void init_spi (void)
 {
-	spi_init( SPIDEV, 5 * 1000 * 1000 ); /* 5Mbps */
+	spi_init( SPIDEV, 2 * 1000 * 1000 );
 	gpio_set_function( DEF_SPI_TX_PIN, GPIO_FUNC_SPI );
 	gpio_set_function( DEF_SPI_RX_PIN, GPIO_FUNC_SPI );
 	gpio_set_function( DEF_SPI_SCK_PIN, GPIO_FUNC_SPI );
