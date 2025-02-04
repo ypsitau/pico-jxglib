@@ -18,7 +18,7 @@ void TSC2046::Initialize(bool hvFlippedFlag)
 	pinAssign_.IRQ.init().set_dir_IN();
 }
 
-bool TSC2046::Calibrate(Drawable& drawable)
+bool TSC2046::Calibrate(Drawable& drawable, bool drawResultFlag)
 {
 	const int msecDelay = 100;
 	const int nSamples = 10;
@@ -73,6 +73,22 @@ bool TSC2046::Calibrate(Drawable& drawable)
 				ptMarkerTbl[0].y - static_cast<int>(-slopeY * adcTbl[1].y),
 				ptMarkerTbl[0].y - static_cast<int>(slopeY * adcTbl[0].y));
 		adjusterY_.SetNeg();
+	}
+	if (drawResultFlag) {
+		int yCenter = drawable.GetHeight() / 2;
+		char str[64], strPart[64];
+		do {
+			::snprintf(str, sizeof(str), "X: (%s)%s",
+					adjusterX_.ToString(strPart, sizeof(strPart)), adjusterX_.GetNeg()? " -" : "");
+			Size sizeStr = drawable.CalcStringSize(str); 
+			drawable.DrawString(0, yCenter - sizeStr.height - 4, str);
+		} while (0);
+		do {
+			::snprintf(str, sizeof(str), "Y: (%s)%s",
+					adjusterY_.ToString(strPart, sizeof(strPart)), adjusterY_.GetNeg()? " -" : "");
+			drawable.DrawString(0, yCenter + 4, str);
+		} while (0);
+		drawable.Refresh();
 	}
 	return true;
 }
@@ -171,9 +187,9 @@ uint16_t TSC2046::ReadADC12Bit(uint8_t adc)
 
 void TSC2046::PrintCalibration() const
 {
-	char buff[64];
-	::printf("X: Adjuster(%s)%s\n", adjusterX_.ToString(buff, sizeof(buff)), adjusterX_.GetNeg()? " negate" : "");
-	::printf("Y: Adjuster(%s)%s\n", adjusterY_.ToString(buff, sizeof(buff)), adjusterY_.GetNeg()? " negate" : "");
+	char str[64];
+	::printf("X: Adjuster(%s)%s\n", adjusterX_.ToString(str, sizeof(str)), adjusterX_.GetNeg()? " negate" : "");
+	::printf("Y: Adjuster(%s)%s\n", adjusterY_.ToString(str, sizeof(str)), adjusterY_.GetNeg()? " negate" : "");
 }
 
 //------------------------------------------------------------------------------

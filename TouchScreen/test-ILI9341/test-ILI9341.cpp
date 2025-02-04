@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/ILI9341.h"
+#include "jxglib/Font/shinonome16.h"
 
 using namespace jxglib;
 
@@ -16,10 +17,10 @@ int main()
 	GPIO15.set_function_SPI1_TX();
 	ILI9341 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
 	ILI9341::TouchScreen touchScreen(spi0, {CS: GPIO8, IRQ: GPIO9});
-	display.Initialize(Display::Dir::Rotate90);
+	display.Initialize(Display::Dir::Rotate0);
+	display.SetFont(Font::shinonome16);
 	touchScreen.Initialize(display);
-	touchScreen.Calibrate(display);
-	touchScreen.PrintCalibration();
+	touchScreen.Calibrate(display, true);
 	for (;;) {
 		int x, y;
 		if (touchScreen.ReadPosition(&x, &y)) display.DrawRectFill(x - 1, y - 1, 2, 2);

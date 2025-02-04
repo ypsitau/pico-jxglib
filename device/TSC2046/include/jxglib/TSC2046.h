@@ -40,9 +40,9 @@ public:
 		float GetSlope() const { return slope_; }
 		int GetInterceptForPos() const { return interceptForPos_; }
 		int GetInterceptForNeg() const { return interceptForNeg_; }
-		const char* ToString(char* buff, int bytes) const {
-			::snprintf(buff, bytes, "%.2f, %d, %d", slope_, interceptForPos_, interceptForNeg_);
-			return buff;
+		const char* ToString(char* str, int bytes) const {
+			::snprintf(str, bytes, "%.2f, %d, %d", slope_, interceptForPos_, interceptForNeg_);
+			return str;
 		}
 	};
 private:
@@ -61,7 +61,7 @@ public:
 	virtual bool ReadPosition(int* px, int* py) override;
 	virtual bool IsTouched() override;
 public:
-	bool Calibrate(Drawable& drawable);
+	bool Calibrate(Drawable& drawable, bool drawResultFlag = false);
 	bool ReadPositionRaw(int* px, int* py, int* pz1 = nullptr, int* pz2 = nullptr);
 	void SetAdjusterX(const Adjuster& adjuster) { adjusterX_ = adjuster; }
 	void SetAdjusterY(const Adjuster& adjuster) { adjusterY_ = adjuster; }
