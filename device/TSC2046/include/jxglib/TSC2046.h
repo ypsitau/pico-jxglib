@@ -27,15 +27,23 @@ public:
 		float slope_;
 		int interceptForPos_;
 		int interceptForNeg_;
+		bool negFlag_;
 	public:
 		Adjuster(int valueMax = 1, float slope = 1., int interceptForPos = 0, int interceptForNeg = 0) :
-			valueMax_{valueMax}, slope_{slope}, interceptForPos_{interceptForPos}, interceptForNeg_{interceptForNeg} {}
+			valueMax_{valueMax}, slope_{slope}, interceptForPos_{interceptForPos}, interceptForNeg_{interceptForNeg},
+			negFlag_{false} {}
 	public:
 		int Adjust(int value) const;
+		void SetNeg(bool negFlag = true) { negFlag_ = negFlag; }
+		bool GetNeg() const { return negFlag_; }
 		int GetValueMax() const { return valueMax_; }
 		float GetSlope() const { return slope_; }
 		int GetInterceptForPos() const { return interceptForPos_; }
 		int GetInterceptForNeg() const { return interceptForNeg_; }
+		const char* ToString(char* buff, int bytes) const {
+			::snprintf(buff, bytes, "%.2f, %d, %d", slope_, interceptForPos_, interceptForNeg_);
+			return buff;
+		}
 	};
 private:
 	spi_inst_t* spi_;

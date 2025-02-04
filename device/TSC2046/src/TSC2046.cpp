@@ -53,9 +53,27 @@ bool TSC2046::Calibrate(Drawable& drawable)
 	drawable.Clear().Refresh();
 	if (adcTbl[0].x == adcTbl[1].x || adcTbl[0].y == adcTbl[1].y) return false;
 	float slopeX = static_cast<float>(ptMarkerTbl[1].x - ptMarkerTbl[0].x) / (adcTbl[1].x - adcTbl[0].x);
-	adjusterX_ = Adjuster(drawable.GetWidth() - 1, slopeX, ptMarkerTbl[0].x - static_cast<int>(slopeX * adcTbl[0].x));
+	if (slopeX > 0) {
+		adjusterX_ = Adjuster(drawable.GetWidth() - 1, slopeX,
+				ptMarkerTbl[0].x - static_cast<int>(slopeX * adcTbl[0].x),
+				ptMarkerTbl[0].x - static_cast<int>(-slopeX * adcTbl[1].x));
+	} else {
+		adjusterX_ = Adjuster(drawable.GetWidth() - 1, -slopeX,
+				ptMarkerTbl[0].x - static_cast<int>(-slopeX * adcTbl[1].x),
+				ptMarkerTbl[0].x - static_cast<int>(slopeX * adcTbl[0].x));
+		adjusterX_.SetNeg();
+	}
 	float slopeY = static_cast<float>(ptMarkerTbl[1].y - ptMarkerTbl[0].y) / (adcTbl[1].y - adcTbl[0].y);
-	adjusterY_ = Adjuster(drawable.GetHeight() - 1, slopeY, ptMarkerTbl[0].y - static_cast<int>(slopeY * adcTbl[0].y));
+	if (slopeY > 0) {
+		adjusterY_ = Adjuster(drawable.GetHeight() - 1, slopeY,
+				ptMarkerTbl[0].y - static_cast<int>(slopeY * adcTbl[0].y),
+				ptMarkerTbl[0].y - static_cast<int>(-slopeY * adcTbl[1].y));
+	} else {
+		adjusterY_ = Adjuster(drawable.GetHeight() - 1, -slopeY,
+				ptMarkerTbl[0].y - static_cast<int>(-slopeY * adcTbl[1].y),
+				ptMarkerTbl[0].y - static_cast<int>(slopeY * adcTbl[0].y));
+		adjusterY_.SetNeg();
+	}
 	return true;
 }
 
@@ -153,8 +171,9 @@ uint16_t TSC2046::ReadADC12Bit(uint8_t adc)
 
 void TSC2046::PrintCalibration() const
 {
-	::printf("X: valueMax=%d, slope=%f, intercept=%d\n", adjusterX_.GetValueMax(), adjusterX_.GetSlope(), adjusterX_.GetInterceptForPos());
-	::printf("Y: valueMax=%d, slope=%f, intercept=%d\n", adjusterY_.GetValueMax(), adjusterY_.GetSlope(), adjusterY_.GetInterceptForPos());
+	char buff[64];
+	::printf("X: Adjuster(%s)%s\n", adjusterX_.ToString(buff, sizeof(buff)), adjusterX_.GetNeg()? " negate" : "");
+	::printf("Y: Adjuster(%s)%s\n", adjusterY_.ToString(buff, sizeof(buff)), adjusterY_.GetNeg()? " negate" : "");
 }
 
 //------------------------------------------------------------------------------
@@ -162,7 +181,9 @@ void TSC2046::PrintCalibration() const
 //------------------------------------------------------------------------------
 int TSC2046::Adjuster::Adjust(int value) const
 {
-	int valueAdj = static_cast<int>(slope_ * value + interceptForPos_);
+	int valueAdj = negFlag_?
+			static_cast<int>(-slope_ * value + interceptForNeg_) :
+			static_cast<int>(slope_ * value + interceptForPos_);
 	return (valueAdj < 0)? 0 : (valueAdj > valueMax_)? valueMax_ : valueAdj;
 }
 
