@@ -52,19 +52,17 @@ bool TSC2046::Calibrate(Drawable& drawable)
 	}
 	drawable.Clear().Refresh();
 	if (adcTbl[0].x == adcTbl[1].x || adcTbl[0].y == adcTbl[1].y) return false;
+	float slopeX = static_cast<float>(ptMarkerTbl[1].x - ptMarkerTbl[0].x) / (adcTbl[1].x - adcTbl[0].x);
 	if (adcTbl[0].x < adcTbl[1].x) {
-		float slope = static_cast<float>(ptMarkerTbl[1].x - ptMarkerTbl[0].x) / (adcTbl[1].x - adcTbl[0].x);
-		adjusterX_ = Adjuster(drawable.GetWidth() - 1, slope, ptMarkerTbl[0].x - static_cast<int>(slope * adcTbl[0].x));
+		adjusterX_ = Adjuster(drawable.GetWidth() - 1, slopeX, ptMarkerTbl[0].x - static_cast<int>(slopeX * adcTbl[0].x));
 	} else {
-		float slope = static_cast<float>(ptMarkerTbl[0].x - ptMarkerTbl[1].x) / (adcTbl[0].x - adcTbl[1].x);
-		adjusterX_ = Adjuster(drawable.GetWidth() - 1, slope, ptMarkerTbl[1].x - static_cast<int>(slope * adcTbl[1].x));
+		adjusterX_ = Adjuster(drawable.GetWidth() - 1, slopeX, ptMarkerTbl[1].x - static_cast<int>(slopeX * adcTbl[1].x));
 	}
+	float slopeY = static_cast<float>(ptMarkerTbl[1].y - ptMarkerTbl[0].y) / (adcTbl[1].y - adcTbl[0].y);
 	if (adcTbl[0].y < adcTbl[1].y) {
-		float slope = static_cast<float>(ptMarkerTbl[1].y - ptMarkerTbl[0].y) / (adcTbl[1].y - adcTbl[0].y);
-		adjusterY_ = Adjuster(drawable.GetHeight() - 1, slope, ptMarkerTbl[0].y - static_cast<int>(slope * adcTbl[0].y));
+		adjusterY_ = Adjuster(drawable.GetHeight() - 1, slopeY, ptMarkerTbl[0].y - static_cast<int>(slopeY * adcTbl[0].y));
 	} else {
-		float slope = static_cast<float>(ptMarkerTbl[0].y - ptMarkerTbl[1].y) / (adcTbl[0].y - adcTbl[1].y);
-		adjusterY_ = Adjuster(drawable.GetHeight() - 1, slope, ptMarkerTbl[1].y - static_cast<int>(slope * adcTbl[1].y));
+		adjusterY_ = Adjuster(drawable.GetHeight() - 1, slopeY, ptMarkerTbl[1].y - static_cast<int>(slopeY * adcTbl[1].y));
 	}
 	return true;
 }
