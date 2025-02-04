@@ -22,7 +22,7 @@ public:
 		const GPIO& IRQ;
 	};
 	class Adjuster {
-	private:
+	protected:
 		int valueMax_;
 		float slope_;
 		int interceptForPos_;
@@ -34,7 +34,12 @@ public:
 			negFlag_{false} {}
 	public:
 		int Adjust(int value) const;
-		void SetNeg(bool negFlag = true) { negFlag_ = negFlag; }
+		Adjuster& Set(float slope, int interceptForPos, int interceptForNeg) {
+			slope_ = slope, interceptForPos_ = interceptForPos, interceptForNeg_ = interceptForNeg;
+			return *this;
+		}
+		Adjuster& SetValueMax(int valueMax) { valueMax_ = valueMax; return *this; }
+		Adjuster& SetNeg(bool negFlag = true) { negFlag_ = negFlag; return *this; }
 		bool GetNeg() const { return negFlag_; }
 		int GetValueMax() const { return valueMax_; }
 		float GetSlope() const { return slope_; }
@@ -45,7 +50,7 @@ public:
 			return str;
 		}
 	};
-private:
+protected:
 	spi_inst_t* spi_;
 	PinAssign pinAssign_;
 	Adjuster adjusterX_;
