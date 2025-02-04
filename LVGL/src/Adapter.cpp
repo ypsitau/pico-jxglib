@@ -168,10 +168,10 @@ void Adapter::HandlerUART1(void)
 //------------------------------------------------------------------------------
 void Adapter::InputTouchScreen::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
 {
-	int x, y;
-	data->state = pTouchScreen_->ReadPosition(&x, &y)? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
-	data->point.x = x;
-	data->point.y = y;
+	Point pt;
+	data->state = pTouchScreen_->ReadPoint(&pt)? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
+	data->point.x = pt.x;
+	data->point.y = pt.y;
 }
 
 //------------------------------------------------------------------------------

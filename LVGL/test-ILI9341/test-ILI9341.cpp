@@ -1,11 +1,10 @@
 #include <stdio.h>
+#include <examples/lv_examples.h>
 #include "pico/stdlib.h"
 #include "jxglib/ILI9341.h"
 #include "jxglib/LVGL.h"
 
 using namespace jxglib;
-
-void Setup();
 
 int main()
 {
@@ -26,19 +25,9 @@ int main()
 	lvglAdapter.EnableDoubleBuff(true).AttachOutput(display);
 	lvglAdapter.AttachInput(touchScreen);
 	lvglAdapter.AttachInput(UART::Default);
-	Setup();
+	::lv_example_anim_3();
 	for (;;) {
 		::sleep_ms(5);
 		::lv_timer_handler();
 	}
-}
-
-void Setup()
-{
-	lv_obj_t* button = ::lv_button_create(::lv_screen_active());
-	do {
-		lv_obj_t* label = ::lv_label_create(button);
-		::lv_label_set_text(label, "Button");
-		::lv_obj_center(label);
-	} while (0);
 }
