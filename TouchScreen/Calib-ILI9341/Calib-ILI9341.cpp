@@ -23,8 +23,8 @@ int main()
 	touchScreen.Calibrate(display, true);
 	touchScreen.PrintCalibration();
 	for (;;) {
-		int x, y;
-		if (touchScreen.ReadPosition(&x, &y)) display.DrawRectFill(x - 1, y - 1, 2, 2);
+		Point pt;
+		if (touchScreen.ReadPoint(&pt)) display.DrawRectFill(pt.x - 1, pt.y - 1, 2, 2);
 		::sleep_ms(10);
 	}
 }

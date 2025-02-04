@@ -63,11 +63,11 @@ public:
 	TSC2046(spi_inst_t* spi, const PinAssign& pinAssign);
 public:
 	void Initialize(bool hvFlippedFlag = false);
-	virtual bool ReadPosition(int* px, int* py) override;
+	virtual bool ReadXY(int* px, int* py) override;
 	virtual bool IsTouched() override;
 public:
 	bool Calibrate(Drawable& drawable, bool drawResultFlag = false);
-	bool ReadPositionRaw(int* px, int* py, int* pz1 = nullptr, int* pz2 = nullptr);
+	bool ReadXYRaw(int* px, int* py, int* pz1 = nullptr, int* pz2 = nullptr);
 	void SetAdjusterX(const Adjuster& adjuster) { adjusterX_ = adjuster; }
 	void SetAdjusterY(const Adjuster& adjuster) { adjusterY_ = adjuster; }
 	const Adjuster& GetAdjusterX() const { return adjusterX_; }

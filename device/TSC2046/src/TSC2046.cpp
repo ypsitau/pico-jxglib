@@ -35,7 +35,7 @@ bool TSC2046::Calibrate(Drawable& drawable, bool drawResultFlag)
 		for (int iSample = 0; iSample < nSamples; iSample++) {
 			Point& ptSample = ptSampleTbl[iSample];
 			int x, y;
-			while (!ReadPositionRaw(&x, &y)) ::sleep_ms(msecDelay);
+			while (!ReadXYRaw(&x, &y)) ::sleep_ms(msecDelay);
 			if (hvFlippedFlag_) {
 				ptSample.x = y, ptSample.y = x;
 			} else {
@@ -93,7 +93,7 @@ bool TSC2046::Calibrate(Drawable& drawable, bool drawResultFlag)
 	return true;
 }
 
-bool TSC2046::ReadPositionRaw(int* px, int* py, int* pz1, int* pz2)
+bool TSC2046::ReadXYRaw(int* px, int* py, int* pz1, int* pz2)
 {
 	pinAssign_.CS.put(0);
 	SPISetFormat();
@@ -107,14 +107,14 @@ bool TSC2046::ReadPositionRaw(int* px, int* py, int* pz1, int* pz2)
 	return z1 > z1Threshold;
 }
 
-bool TSC2046::ReadPosition(int* px, int* py)
+bool TSC2046::ReadXY(int* px, int* py)
 {
 	const int nTrials = 10;
 	int xSum = 0, ySum = 0;
 	int nSamplesPos = 0;
 	for (int iTrial = 0; iTrial < nTrials; iTrial++) {
 		int x, y, z1;
-		ReadPositionRaw(&x, &y, &z1);
+		ReadXYRaw(&x, &y, &z1);
 		//::sleep_ms(1);
 		if (z1 >= z1Threshold) {
 			xSum += x, ySum += y;

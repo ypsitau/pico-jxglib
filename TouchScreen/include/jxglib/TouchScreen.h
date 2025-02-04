@@ -15,7 +15,9 @@ class TouchScreen {
 public:
 	TouchScreen() {}
 public:
-	virtual bool ReadPosition(int* px, int* py) = 0;
+	bool ReadPoint(Point* pPt) { return ReadXY(&pPt->x, &pPt->y); }
+public:
+	virtual bool ReadXY(int* px, int* py) = 0;
 	virtual bool IsTouched() = 0;
 };
 
