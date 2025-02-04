@@ -20,29 +20,11 @@ public:
 		void Initialize(Drawable& drawable) {
 			Drawable::Dir dir = drawable.GetDirection();
 			TSC2046::Initialize(dir.IsVert());
-			if (dir.IsHorz()) {
-				if (dir.IsLeftToRight()) {
-					SetAdjusterX(Adjuster(drawable.GetWidth() - 1, 0.18, -20));
-				} else {
-					SetAdjusterX(Adjuster(drawable.GetWidth() - 1, -0.18, 350));
-				}
-				if (dir.IsTopToBottom()) {
-					SetAdjusterY(Adjuster(drawable.GetHeight() - 1, -0.26, 510));
-				} else {
-					SetAdjusterY(Adjuster(drawable.GetHeight() - 1, 0.26, -30));
-				}
-			} else {
-				if (dir.IsLeftToRight()) {
-					SetAdjusterX(Adjuster(drawable.GetWidth() - 1, 0.26, -30));
-				} else {
-					SetAdjusterX(Adjuster(drawable.GetWidth() - 1, -0.26, 510));
-				}
-				if (dir.IsTopToBottom()) {
-					SetAdjusterY(Adjuster(drawable.GetHeight() - 1, -0.18, 350));
-				} else {
-					SetAdjusterY(Adjuster(drawable.GetHeight() - 1, 0.18, -20));
-				}
-			}
+			adjusterX_.Set(0.18, -26, 345);
+			adjusterY_.Set(0.27, -41, 520);
+			if (dir.IsVert()) Swap(&adjusterX_, &adjusterY_);
+			adjusterX_.SetValueMax(drawable.GetWidth() - 1).SetNeg(dir.IsRightToLeft());
+			adjusterY_.SetValueMax(drawable.GetHeight() - 1).SetNeg(dir.IsTopToBottom());
 		}
 	};
 public:
@@ -56,15 +38,15 @@ public:
 inline void ILI9488::Initialize(Dir displayDir)
 {
 	static const ConfigData configData = {
-		.rgbInterfaceFormat		= RGBInterfaceFormat::BPP18,
-		.mcuInterfaceFormat		= MCUInterfaceFormat::BPP18,
-		.lineAddressOrder		= LineAddressOrder::TopToBottom,
-		.rgbBgrOrder			= RGBBGROrder::BGR,
-		.displayDataLatchOrder	= DisplayDataLatchOrder::LeftToRight,
-		.invertHorzFlag			= true,
-		.invertVertFlag			= false,
-		.displayInversionOnFlag	= false,
-		.gammaCurve				= 0x01,
+		rgbInterfaceFormat:		RGBInterfaceFormat::BPP18,
+		mcuInterfaceFormat:		MCUInterfaceFormat::BPP18,
+		lineAddressOrder:		LineAddressOrder::TopToBottom,
+		rgbBgrOrder:			RGBBGROrder::BGR,
+		displayDataLatchOrder:	DisplayDataLatchOrder::LeftToRight,
+		invertHorzFlag:			true,
+		invertVertFlag:			false,
+		displayInversionOnFlag:	false,
+		gammaCurve:				0x01,
 	};
 	TFT_LCD::Initialize(displayDir, configData);
 }

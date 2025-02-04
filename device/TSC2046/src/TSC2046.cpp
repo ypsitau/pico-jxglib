@@ -188,8 +188,8 @@ uint16_t TSC2046::ReadADC12Bit(uint8_t adc)
 void TSC2046::PrintCalibration() const
 {
 	char str[64];
-	::printf("X: Adjuster(%s)%s\n", adjusterX_.ToString(str, sizeof(str)), adjusterX_.GetNeg()? " negate" : "");
-	::printf("Y: Adjuster(%s)%s\n", adjusterY_.ToString(str, sizeof(str)), adjusterY_.GetNeg()? " negate" : "");
+	::printf("adjusterX: %s%s\n", adjusterX_.ToString(str, sizeof(str)), adjusterX_.GetNeg()? " #" : "");
+	::printf("adjusterY: %s%s\n", adjusterY_.ToString(str, sizeof(str)), adjusterY_.GetNeg()? " #" : "");
 }
 
 //------------------------------------------------------------------------------

@@ -38,15 +38,15 @@ public:
 inline void ILI9341::Initialize(Dir displayDir)
 {
 	static const ConfigData configData = {
-		.rgbInterfaceFormat		= RGBInterfaceFormat::BPP16,
-		.mcuInterfaceFormat		= MCUInterfaceFormat::BPP16,
-		.lineAddressOrder		= LineAddressOrder::TopToBottom,
-		.rgbBgrOrder			= RGBBGROrder::BGR,
-		.displayDataLatchOrder	= DisplayDataLatchOrder::LeftToRight,
-		.invertHorzFlag			= true,
-		.invertVertFlag			= false,
-		.displayInversionOnFlag	= false,
-		.gammaCurve				= 0x01,
+		rgbInterfaceFormat:		RGBInterfaceFormat::BPP16,
+		mcuInterfaceFormat:		MCUInterfaceFormat::BPP16,
+		lineAddressOrder:		LineAddressOrder::TopToBottom,
+		rgbBgrOrder:			RGBBGROrder::BGR,
+		displayDataLatchOrder:	DisplayDataLatchOrder::LeftToRight,
+		invertHorzFlag:			true,
+		invertVertFlag:			false,
+		displayInversionOnFlag:	false,
+		gammaCurve:				0x01,
 	};
 	TFT_LCD::Initialize(displayDir, configData);
 }
