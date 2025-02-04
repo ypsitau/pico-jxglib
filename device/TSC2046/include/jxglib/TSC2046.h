@@ -25,14 +25,17 @@ public:
 	private:
 		int valueMax_;
 		float slope_;
-		int intercept_;
+		int interceptForPos_;
+		int interceptForNeg_;
 	public:
-		Adjuster(int valueMax = 1, float slope = 1., int intercept = 0) : valueMax_{valueMax}, slope_{slope}, intercept_{intercept} {}
+		Adjuster(int valueMax = 1, float slope = 1., int interceptForPos = 0, int interceptForNeg = 0) :
+			valueMax_{valueMax}, slope_{slope}, interceptForPos_{interceptForPos}, interceptForNeg_{interceptForNeg} {}
 	public:
 		int Adjust(int value) const;
 		int GetValueMax() const { return valueMax_; }
 		float GetSlope() const { return slope_; }
-		int GetIntercept() const { return intercept_; }
+		int GetInterceptForPos() const { return interceptForPos_; }
+		int GetInterceptForNeg() const { return interceptForNeg_; }
 	};
 private:
 	spi_inst_t* spi_;
