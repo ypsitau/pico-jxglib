@@ -6,6 +6,7 @@ target_include_directories(jxglib_Flash INTERFACE
 target_link_libraries(jxglib_Flash INTERFACE
 	hardware_flash
 	jxglib_Common
+	jxglib_Stream
 	jxglib_Printable)
 
 target_sources(jxglib_Flash INTERFACE

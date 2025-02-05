@@ -6,6 +6,7 @@
 #include "pico/stdlib.h"
 #include "pico/flash.h"
 #include "hardware/flash.h"
+#include "jxglib/Stream.h"
 
 namespace jxglib {
 
@@ -19,6 +20,20 @@ public:
 	static const uint32_t BlockSize = FLASH_BLOCK_SIZE;
 	static const uint32_t SectorSize = FLASH_SECTOR_SIZE;
 	static const uint32_t PageSize = FLASH_PAGE_SIZE;
+public:
+	class Stream : public jxglib::Stream {
+	private:
+		uint32_t offsetStart_;
+		uint32_t offset_;
+		uint32_t bytesBuffPage_;
+		uint8_t buffPage_[PageSize];
+	public:
+		Stream(uint32_t offset);
+	public:
+		virtual bool Read(void* buff, int bytesBuff, int* pBytesRead) override;
+		virtual bool Write(const void* buff, int bytesBuff) override;
+		void Flush();
+	};
 public:
 	struct Param_Erase { uint32_t offset; size_t bytes; };
 	struct Param_Program { uint32_t offset; const void* data; size_t bytes; };

@@ -13,8 +13,16 @@ int main()
 	uint8_t buff[Flash::PageSize];
 	for (uint i = 0; i < sizeof(buff); ++i) buff[i] = static_cast<uint8_t>(i);
 	Flash::EraseSafe(offset, Flash::SectorSize * 1);
+	//Dump.AddrStart(Flash::GetAddress(offset))(Flash::GetPointer<void>(offset), Flash::PageSize * 1);
+	//Flash::ProgramSafe(offset, buff, Flash::PageSize * 1);
+	//Dump.AddrStart(Flash::GetAddress(offset))(Flash::GetPointer<void>(offset), Flash::PageSize * 1);
+	Flash::Stream stream(offset);
+	stream.Write("hello world", 11);
+	stream.Flush();
+	Dump.Ascii();
 	Dump.AddrStart(Flash::GetAddress(offset))(Flash::GetPointer<void>(offset), Flash::PageSize * 1);
-	Flash::ProgramSafe(offset, buff, Flash::PageSize * 1);
+	stream.Write("hello world", 11);
+	stream.Flush();
 	Dump.AddrStart(Flash::GetAddress(offset))(Flash::GetPointer<void>(offset), Flash::PageSize * 1);
 }
 
