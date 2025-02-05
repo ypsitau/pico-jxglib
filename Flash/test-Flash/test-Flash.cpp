@@ -17,13 +17,11 @@ int main()
 	//Flash::ProgramSafe(offset, buff, Flash::PageSize * 1);
 	//Dump.AddrStart(Flash::GetAddress(offset))(Flash::GetPointer<void>(offset), Flash::PageSize * 1);
 	Flash::Stream stream(offset);
-	stream.Write("hello world", 11);
+	stream.Write(buff, 200);
+	stream.Write(buff, 200);
 	stream.Flush();
 	Dump.Ascii();
-	Dump.AddrStart(Flash::GetAddress(offset))(Flash::GetPointer<void>(offset), Flash::PageSize * 1);
-	stream.Write("hello world", 11);
-	stream.Flush();
-	Dump.AddrStart(Flash::GetAddress(offset))(Flash::GetPointer<void>(offset), Flash::PageSize * 1);
+	Dump.AddrStart(Flash::GetAddress(offset))(Flash::GetPointer<void>(offset), Flash::PageSize * 2);
 }
 
 #if 0
