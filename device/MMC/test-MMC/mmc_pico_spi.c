@@ -1,3 +1,268 @@
+#if 0
+//#include "user_define.h"
+#include "pico/stdlib.h"
+#include "hardware/spi.h"
+#include "ff.h"			/* Obtains integer types */
+#include "diskio.h"		/* Declarations of disk functions */
+
+#define SPI_CH spi0
+#define P_SPI_SCK 2
+#define P_SPI_TX 3
+#define P_SPI_RX 4
+#define P_SPI_CS 5
+
+/* Definitions for MMC/SDC command */
+#define CMD0    (0x40+0)    /* GO_IDLE_STATE */
+#define CMD1    (0x40+1)    /* SEND_OP_COND (MMC) */
+#define CMD16    (0x40+16)    /* SET_BLOCKLEN */
+#define CMD17    (0x40+17)    /* READ_SINGLE_BLOCK */
+
+#define CS_HIGH() {gpio_put(P_SPI_CS, 1);}
+#define CS_LOW() {gpio_put(P_SPI_CS, 0);}
+
+static BYTE rcv_spi( void );        /* Send a 0xFF to the SDC/MMC and get the received byte */
+static void xmit_spi( BYTE d );    /* Send a byte to the SDC/MMC */
+static BYTE send_cmd( BYTE cmd, DWORD arg );
+
+/*-----------------------------------------------------------------------*/
+/* Initialize Disk Drive                                                 */
+/*-----------------------------------------------------------------------*/
+
+DSTATUS disk_initialize( BYTE drv)
+{
+    DSTATUS stat = STA_NOINIT;
+    WORD i;
+
+    /* マイコンリソースの初期設定 */
+    {
+        spi_init( SPI_CH, 100 * 1000 );
+        spi_set_format( SPI_CH, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST );
+        gpio_set_function( P_SPI_RX, GPIO_FUNC_SPI );
+        gpio_set_function( P_SPI_SCK, GPIO_FUNC_SPI );
+        gpio_set_function( P_SPI_TX, GPIO_FUNC_SPI );
+
+        gpio_init( P_SPI_CS );
+        gpio_set_dir( P_SPI_CS, GPIO_OUT );
+    }
+
+    CS_HIGH();
+
+    /* ダミークロックを80発 */
+    {
+        BYTE i;
+        for ( i= 0; i < 10; i++ )
+        {
+            rcv_spi();
+        }
+    }
+
+    {
+        BYTE cmd_res;
+
+        /* CMD0を0x01が返ってくるまでトライ */
+        for ( i = 0; i < 10000; i++ )
+        {
+            cmd_res = send_cmd( CMD0, 0 );
+            if ( cmd_res == 0x01 )
+            {
+                break;
+            }
+        }
+
+        if ( cmd_res == 0x01 )/* Enter Idle state */
+        {
+            /* CMD1を0x00が返ってくるまでトライ */
+            for ( i = 0; i < 10000; i++ )
+            {
+                cmd_res = send_cmd( CMD1, 0 );
+                if ( cmd_res == 0x00 )
+                {
+                    /* 初期化完了 */
+                    stat = 0;
+                    break;
+                }
+                sleep_us( 100 );
+            }
+
+            /* CMD16でブロックサイズを512バイトに設定 */
+            send_cmd( CMD16, 512 );
+        }
+    }
+
+    CS_HIGH();
+    rcv_spi();
+
+    return ( stat );
+}
+
+
+
+/*-----------------------------------------------------------------------*/
+/* Read Partial Sector                                                   */
+/*-----------------------------------------------------------------------*/
+
+DRESULT disk_readp (
+    BYTE* buff,        /* Pointer to the destination object */
+    DWORD sector,    /* Sector number (LBA) */
+    UINT offset,    /* Offset in the sector */
+    UINT count        /* Byte count (bit15:destination) */
+)
+{
+    DRESULT res;
+    BYTE cmd_res;
+
+    res = RES_ERROR;
+
+    cmd_res = send_cmd( CMD17, ( sector * 512 ) );
+    if ( cmd_res == 0x00 )
+    {
+        WORD i;
+        /* なんらかの応答が来るまでループ */
+        for ( i = 0; i < 40000; i++ )
+        {
+            cmd_res = rcv_spi();
+            if ( cmd_res != 0xFF )
+            {
+                break;
+            }
+        }
+
+        /* 応答がデータパケットの先頭0xFE時の処理 */
+        if ( cmd_res == 0xFE )
+        {
+            /* offsetまで読み飛ばす */
+            for ( i = 0; i < offset; i++ )
+            {
+                rcv_spi();
+            }
+
+            /* データを読み込む */
+            if ( buff != 0 )
+            {
+                for ( i = 0; i < count; i++ )
+                {
+                    buff[ i ] = rcv_spi();
+                }
+            }
+            else
+            {
+                for ( i = 0; i < count; i++ )
+                {
+                    rcv_spi();
+                }
+            }
+
+            /* 残りは読み飛ばす */
+            for ( i = 0; i < ( 514 - ( offset + count ) ); i++ )
+            {
+                rcv_spi();
+            }
+
+            res = RES_OK;
+        }
+    }
+
+    CS_HIGH();
+    rcv_spi();
+
+    return ( res );
+}
+
+
+
+/*-----------------------------------------------------------------------*/
+/* Write Partial Sector                                                  */
+/*-----------------------------------------------------------------------*/
+
+DRESULT disk_writep (
+    const BYTE* buff,        /* Pointer to the data to be written, NULL:Initiate/Finalize write operation */
+    DWORD sc        /* Sector number (LBA) or Number of bytes to send */
+)
+{
+    DRESULT res;
+
+
+    if (!buff) {
+        if (sc) {
+
+            // Initiate write process
+
+        } else {
+
+            // Finalize write process
+
+        }
+    } else {
+
+        // Send data to the disk
+
+    }
+
+    return res;
+}
+
+
+static void xmit_spi( BYTE d )    /* Send a byte to the SDC/MMC */
+{
+    BYTE src[ 1 ];
+
+    src[ 0 ] = d;
+    spi_write_blocking( SPI_CH, src, 1 );
+}
+
+static BYTE rcv_spi( void )        /* Send a 0xFF to the SDC/MMC and get the received byte */
+{
+    BYTE dst[ 1 ];
+
+    spi_read_blocking( SPI_CH, 0xFF, dst, 1 );
+
+    return ( dst[ 0 ] );
+}
+
+
+static BYTE send_cmd(
+    BYTE cmd,        /* 1st byte (Start + Index) */
+    DWORD arg        /* Argument (32 bits) */
+)
+{
+    BYTE n, res;
+
+    /* Select the card */
+    CS_HIGH();
+    rcv_spi();
+    CS_LOW();
+    rcv_spi();
+
+    /* Send a command packet */
+    xmit_spi( cmd );                        /* Start + Command index */
+    xmit_spi( (BYTE)( arg >> 24 ) );        /* Argument[31..24] */
+    xmit_spi( (BYTE)( arg >> 16 ) );        /* Argument[23..16] */
+    xmit_spi( (BYTE)( arg >>  8 ) );            /* Argument[15..8] */
+    xmit_spi( (BYTE)arg );                /* Argument[7..0] */
+    n = 0x01;                            /* Dummy CRC + Stop */
+    if ( cmd == CMD0 )
+    {
+        n = 0x95;            /* Valid CRC for CMD0(0) */
+    }
+    xmit_spi( n );
+
+    /* Receive a command response */
+    n = 10;                                /* Wait for a valid response in timeout of 10 attempts */
+    for ( n = 0; n < 10; n++ )
+    {
+        res = rcv_spi();
+        if ( ( res & 0x80 ) == 0x00 )
+        {
+            break;
+        }
+    }
+
+    return ( res );            /* Return with the response value */
+}
+#endif
+
+#if 1
+
 /*------------------------------------------------------------------------*/
 /* STM32F100: MMCv3/SDv1/SDv2 (SPI mode) control module                   */
 /*------------------------------------------------------------------------*/
@@ -40,7 +305,8 @@ volatile  int  conter1;
 
 void  Delay( int ms )
 {
-  for( conter1=0; conter1<125*ms ; conter1++ ) ;
+  //for( conter1=0; conter1<125*ms ; conter1++ ) ;
+  sleep_ms(ms);
 }
 
 
@@ -101,6 +367,9 @@ static BYTE CardType;	/* Card type flags */
 static void init_spi (void)
 {
 	spi_init( SPIDEV, 2 * 1000 * 1000 );
+	spi_cpol_t cpol = SPI_CPOL_0;
+	spi_cpha_t cpha = SPI_CPHA_0;
+	spi_set_format(SPIDEV, 8, cpol, cpha, SPI_MSB_FIRST); 
 	gpio_set_function( DEF_SPI_TX_PIN, GPIO_FUNC_SPI );
 	gpio_set_function( DEF_SPI_RX_PIN, GPIO_FUNC_SPI );
 	gpio_set_function( DEF_SPI_SCK_PIN, GPIO_FUNC_SPI );
@@ -618,3 +887,4 @@ void disk_timerproc (void)
 	}
 	Stat = s;
 }
+#endif
