@@ -56,5 +56,5 @@ target_include_directories(test-FAT PRIVATE
 
 pico_add_extra_outputs(test-FAT)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../../ pico-jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../../.. pico-jxglib)
 
