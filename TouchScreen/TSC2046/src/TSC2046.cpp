@@ -76,18 +76,11 @@ bool TSC2046::Calibrate(Drawable& drawable, bool drawResultFlag)
 	}
 	if (drawResultFlag) {
 		int yCenter = drawable.GetHeight() / 2;
-		char str[64], strPart[64];
-		do {
-			::snprintf(str, sizeof(str), "adjusterX: %s%s",
-					adjusterX_.ToString(strPart, sizeof(strPart)), adjusterX_.GetNeg()? " #" : "");
-			Size sizeStr = drawable.CalcStringSize(str); 
-			drawable.DrawString(0, yCenter - sizeStr.height - 4, str);
-		} while (0);
-		do {
-			::snprintf(str, sizeof(str), "adjusterY: %s%s",
-					adjusterY_.ToString(strPart, sizeof(strPart)), adjusterY_.GetNeg()? " #" : "");
-			drawable.DrawString(0, yCenter + 4, str);
-		} while (0);
+		char str[64];
+		drawable.DrawFormat(0, yCenter - drawable.CalcFontHeight() - 4, "adjusterX: %s%s",
+			adjusterX_.ToString(str, sizeof(str)), adjusterX_.GetNeg()? " #" : "");
+		drawable.DrawFormat(0, yCenter + 4, "adjusterY: %s%s",
+			adjusterY_.ToString(str, sizeof(str)), adjusterY_.GetNeg()? " #" : "");
 		drawable.Refresh();
 	}
 	return true;

@@ -69,10 +69,11 @@ public:
 		const FontSet* pFontSet;
 		int fontScaleWidth, fontScaleHeight;
 		float charWidthRatio, lineHeightRatio;
+		bool transparentBgFlag;
 	public:
 		Context() : colorFg{Color::white}, colorBg{Color::black},
 			pFontSet{&FontSet::None}, fontScaleWidth{1}, fontScaleHeight{1},
-			charWidthRatio(1.0), lineHeightRatio(1.0) {}
+			charWidthRatio(1.0), lineHeightRatio(1.0), transparentBgFlag{false} {}
 	public:
 		Context& SetColor(const Color& color) { this->colorFg = color; return *this; }
 		const Color& GetColor() const { return this->colorFg; }
@@ -100,6 +101,10 @@ public:
 			this->charWidthRatio = charWidthRatio, this->lineHeightRatio = lineHeightRatio;
 			return *this;
 		}
+		Context& SetTransparentBg(bool transparentBgFlag) {
+			this->transparentBgFlag = transparentBgFlag;
+			return *this;
+		}
 	public:
 		int CalcAdvanceX(const FontEntry& fontEntry) const {
 			return static_cast<int>(fontEntry.xAdvance * fontScaleWidth * charWidthRatio);
@@ -107,18 +112,6 @@ public:
 		int CalcAdvanceY() const {
 			return static_cast<int>(pFontSet->yAdvance * fontScaleHeight * lineHeightRatio);
 		}
-	};
-	class StringCont {
-	private:
-		Point pos_;
-		const char* str_;
-	public:
-		StringCont() : str_{nullptr} {}
-		StringCont(const Point& pos, const char* str) : pos_{pos}, str_{str} {}
-		const Point& GetPosition() const { return pos_; }
-		const char* GetString() const { return str_; }
-		void Update(const Point& pos, const char* str) { pos_ = pos; str_ = str; }
-		bool IsDone() const { return !*str_; }
 	};
 protected:
 	uint32_t capabilities_;
@@ -176,6 +169,7 @@ public:
 	Drawable& SetSpacingRatio(float charWidthRatio, float lineHeightRatio) {
 		context_.SetSpacingRatio(charWidthRatio, lineHeightRatio); return *this;
 	}
+	int CalcFontHeight() const { return context_.pFontSet->yAdvance * context_.fontScaleHeight; }
 	Size CalcStringSize(const char* str) const;
 public:
 	Drawable& Refresh() { GetDispatcher().Refresh(); return *this; }
@@ -241,14 +235,24 @@ public:
 	Drawable& DrawChar(const Point& pt, uint32_t code, bool transparentBgFlag = false, const Context* pContext = nullptr) {
 		return DrawChar(pt.x, pt.y, code, transparentBgFlag, pContext);
 	}
-	Drawable& DrawString(int x, int y, const char* str, bool transparentBgFlag = false);
-	Drawable& DrawString(const Point& pt, const char* str, bool transparentBgFlag = false) { return DrawString(pt.x, pt.y, str, transparentBgFlag); }
-	Drawable& DrawStringWrap(int x, int y, int width, int height, const char* str, bool transparentBgFlag = false);
-	Drawable& DrawStringWrap(int x, int y, const char* str, bool transparentBgFlag = false) { return DrawStringWrap(x, y, -1, -1, str, transparentBgFlag); }
-	Drawable& DrawStringWrap(const Point& pt, const char* str, bool transparentBgFlag = false) { return DrawStringWrap(pt.x, pt.y, str, transparentBgFlag); }
-	Drawable& DrawStringWrap(const Rect& rcBBox, const char* str, bool transparentBgFlag = false) {
+	Drawable& DrawString(int x, int y, const char* str, bool transparentBgFlag);
+	Drawable& DrawString(const Point& pt, const char* str, bool transparentBgFlag) { return DrawString(pt.x, pt.y, str, transparentBgFlag); }
+	Drawable& DrawStringWrap(int x, int y, int width, int height, const char* str, bool transparentBgFlag);
+	Drawable& DrawStringWrap(int x, int y, const char* str, bool transparentBgFlag) { return DrawStringWrap(x, y, -1, -1, str, transparentBgFlag); }
+	Drawable& DrawStringWrap(const Point& pt, const char* str, bool transparentBgFlag) { return DrawStringWrap(pt.x, pt.y, str, transparentBgFlag); }
+	Drawable& DrawStringWrap(const Rect& rcBBox, const char* str, bool transparentBgFlag) {
 		return DrawStringWrap(rcBBox.x, rcBBox.y, rcBBox.width, rcBBox.height, str, transparentBgFlag);
 	}
+	Drawable& DrawString(int x, int y, const char* str) { return DrawString(x, y, str, context_.transparentBgFlag); }
+	Drawable& DrawString(const Point& pt, const char* str) { return DrawString(pt, str, context_.transparentBgFlag); }
+	Drawable& DrawStringWrap(int x, int y, int width, int height, const char* str) { return DrawStringWrap(x, y, width, height, str, context_.transparentBgFlag); }
+	Drawable& DrawStringWrap(int x, int y, const char* str) { return DrawStringWrap(x, y, str, context_.transparentBgFlag); }
+	Drawable& DrawStringWrap(const Point& pt, const char* str) { return DrawStringWrap(pt, str, context_.transparentBgFlag); }
+	Drawable& DrawStringWrap(const Rect& rcBBox, const char* str) { return DrawStringWrap(rcBBox, str, context_.transparentBgFlag); }
+	Drawable& DrawFormatV(int x, int y, const char* format, va_list args);
+	Drawable& DrawFormatV(const Point& pt, const char* format, va_list args) { return DrawFormatV(pt.x, pt.y, format, args); }
+	Drawable& DrawFormat(int x, int y, const char* format, ...);
+	Drawable& DrawFormat(const Point& pt, const char* format, ...);
 public:
 	Drawable& DrawCross(int x, int y, int width, int height, int wdLine = 1, int htLine = 1);
 };

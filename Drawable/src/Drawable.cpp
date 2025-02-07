@@ -23,7 +23,7 @@ Size Drawable::CalcStringSize(const char* str) const
 		if (*(p + 1)) wdChar *= context_.charWidthRatio;
 		size.width += wdChar;
 	}
-	size.height = context_.pFontSet->yAdvance * context_.fontScaleHeight; 
+	size.height = CalcFontHeight(); 
 	return size;
 }
 
@@ -202,6 +202,32 @@ Drawable& Drawable::DrawStringWrap(int x, int y, int width, int height, const ch
 	}
 	return *this;
 }
+
+Drawable& Drawable::DrawFormatV(int x, int y, const char* format, va_list args)
+{
+	char str[256];
+	::vsnprintf(str, sizeof(str), format, args);
+	return DrawString(x, y, str);
+}
+
+Drawable& Drawable::DrawFormat(int x, int y, const char* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	DrawFormatV(x, y, format, args);
+	va_end(args);
+	return *this;
+}
+
+Drawable& Drawable::DrawFormat(const Point& pt, const char* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	DrawFormatV(pt, format, args);
+	va_end(args);
+	return *this;
+}
+
 
 Drawable& Drawable::DrawCross(int x, int y, int width, int height, int wdLine, int htLine)
 {
