@@ -366,14 +366,15 @@ static BYTE CardType;	/* Card type flags */
 /* Initialize MMC interface */
 static void init_spi (void)
 {
-	spi_init( SPIDEV, 2 * 1000 * 1000 );
+	//spi_init( SPIDEV, 2 * 1000 * 1000 );
+	spi_init( SPIDEV, 5 * 1000 * 1000 );
 	spi_cpol_t cpol = SPI_CPOL_0;
 	spi_cpha_t cpha = SPI_CPHA_0;
 	spi_set_format(SPIDEV, 8, cpol, cpha, SPI_MSB_FIRST); 
 	gpio_set_function( DEF_SPI_TX_PIN, GPIO_FUNC_SPI );
 	gpio_set_function( DEF_SPI_RX_PIN, GPIO_FUNC_SPI );
 	gpio_set_function( DEF_SPI_SCK_PIN, GPIO_FUNC_SPI );
-
+	//gpio_pull_up(DEF_SPI_RX_PIN);
 	/* CS# */
 	gpio_init( DEF_SPI_CSN_PIN );
 	gpio_set_dir( DEF_SPI_CSN_PIN, GPIO_OUT);
@@ -464,7 +465,9 @@ static void deselect (void)
 static int select (void)	/* 1:OK, 0:Timeout */
 {
 	CS_LOW();		/* Set CS# low */
-	xchg_spi(0xFF);	/* Dummy clock (force DO enabled) */
+
+    for (int i= 0; i < 10; i++ )
+		xchg_spi(0xFF);	/* Dummy clock (force DO enabled) */
 	if (wait_ready(500)) return 1;	/* Wait for card ready */
 
 	deselect();

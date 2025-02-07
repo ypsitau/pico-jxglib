@@ -20,6 +20,11 @@ int main()
 	BYTE buff[512];
 	::memset(buff, 0x00, sizeof(buff));
 	disk_initialize(0);
+	//for (int i = 0; i < sizeof(buff); i++) {
+	//	buff[i] = static_cast<BYTE>(i);
+	//}
+	//disk_write(0, buff, 0, 1);
+	::memset(buff, 0x00, sizeof(buff));
 	for (int i = 0; i < 2; i++) {
 		disk_read(0, buff, i, 1);
 		//disk_readp(buff, i, 0, 1);
