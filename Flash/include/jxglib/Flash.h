@@ -37,8 +37,19 @@ public:
 public:
 	struct Param_Erase { uint32_t offset; size_t bytes; };
 	struct Param_Program { uint32_t offset; const void* data; size_t bytes; };
+private:
+	uint32_t offset_;
+	uint8_t buffSector_[SectorSize];
+private:
+	static Flash Instance;
 public:
 	Flash() {}
+public:
+	void Read(uint32_t offset, void* buff, size_t bytes) { Instance.Read_(offset, buff, bytes); }
+	void Write(uint32_t offset, const void* buff, size_t bytes) { Instance.Write_(offset, buff, bytes); }
+private:
+	void Read_(uint32_t offset, void* buff, size_t bytes);
+	void Write_(uint32_t offset, const void* buff, size_t bytes);
 public:
 	static uint32_t GetAddress(uint32_t offset) { return XIP_BASE + offset; }
 	template<typename T = void>
