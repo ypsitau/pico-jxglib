@@ -70,121 +70,28 @@ void Device::Task()
 	}
 }
 
-#if 1
-enum {
-	STRID_LANGID = 0,
-	STRID_MANUFACTURER,
-	STRID_PRODUCT,
-	STRID_SERIAL,
-};
-
-// array of pointer to string descriptors
-char const *string_desc_arr[] =
-{
-	(const char[]) { 0x09, 0x04 }, // 0: is supported language is English (0x0409)
-	"TinyUSB",                     // 1: Manufacturer
-	"TinyUSB Device",              // 2: Product
-	NULL,                          // 3: Serials will use unique ID if possible
-	"TinyUSB CDC",
-	"TinyUSB MSC",
-};
-
-static uint16_t _desc_str[32 + 1];
-
-static inline size_t board_usb_get_serial(uint16_t desc_str1[], size_t max_chars) {
-	uint8_t uid[16] TU_ATTR_ALIGNED(4);
-	size_t uid_len;
-
-	// TODO work with make, but not working with esp32s3 cmake
-	//if ( board_get_unique_id ) {
-	//  uid_len = board_get_unique_id(uid, sizeof(uid));
-	{
-		// fixed serial string is 01234567889ABCDEF
-		uint32_t* uid32 = (uint32_t*) (uintptr_t) uid;
-		uid32[0] = 0x67452301;
-		uid32[1] = 0xEFCDAB89;
-		uid_len = 8;
-	}
-
-	if ( uid_len > max_chars / 2 ) uid_len = max_chars / 2;
-
-	for ( size_t i = 0; i < uid_len; i++ ) {
-		for ( size_t j = 0; j < 2; j++ ) {
-			const char nibble_to_hex[16] = {
-					'0', '1', '2', '3', '4', '5', '6', '7',
-					'8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
-			};
-			uint8_t const nibble = (uid[i] >> (j * 4)) & 0xf;
-			desc_str1[i * 2 + (1 - j)] = nibble_to_hex[nibble]; // UTF-16-LE
-		}
-	}
-
-	return 2 * uid_len;
-}
-#endif
-
 const uint16_t* Device::On_GET_STRING_DESCRIPTOR(uint8_t idxString, uint16_t langid)
 {
 	::printf("On_GET_STRING_DESCRIPTOR(%d, %04x)\n", idxString, langid);
-#if 0
-	size_t chr_count;
-
-	switch ( idxString ) {
-		case STRID_LANGID:
-			memcpy(&_desc_str[1], string_desc_arr[0], 2);
-			chr_count = 1;
-			break;
-
-		case STRID_SERIAL:
-			chr_count = board_usb_get_serial(_desc_str + 1, 32);
-			break;
-
-		default:
-			// Note: the 0xEE index string is a Microsoft OS 1.0 Descriptors.
-			// https://docs.microsoft.com/en-us/windows-hardware/drivers/usbcon/microsoft-defined-usb-descriptors
-
-			if ( !(idxString < sizeof(string_desc_arr) / sizeof(string_desc_arr[0])) ) return NULL;
-
-			const char *str = string_desc_arr[idxString];
-
-			// Cap at max char
-			chr_count = strlen(str);
-			size_t const max_count = sizeof(_desc_str) / sizeof(_desc_str[0]) - 1; // -1 for string type
-			if ( chr_count > max_count ) chr_count = max_count;
-
-			// Convert ASCII string into UTF-16
-			for ( size_t i = 0; i < chr_count; i++ ) {
-				_desc_str[1 + i] = str[i];
-			}
-			break;
-	}
-
-	// first byte is length (including header), second byte is string type
-	_desc_str[0] = (uint16_t) ((TUSB_DESC_STRING << 8) | (2 * chr_count + 2));
-	Dump(_desc_str, 128);
-	return _desc_str;
-#else
 	int bytesDst = 0;
 	if (idxString == 0) {
-		_desc_str[1] = langid_;
+		stringDesc_[1] = langid_;
 		bytesDst = 2;
 	} else {
 		UTF8Decoder decoder;
-		uint8_t* pDst = reinterpret_cast<uint8_t*>(&_desc_str[1]);
+		uint8_t* pDst = reinterpret_cast<uint8_t*>(&stringDesc_[1]);
 		for (const char* pSrc = stringDescTbl_[idxString]; *pSrc; pSrc++) {
 			uint32_t codeUTF32;
 			if (decoder.FeedChar(*pSrc, &codeUTF32)) {
-				if (bytesDst + 2 > sizeof(_desc_str) - 2) break;
+				if (bytesDst + 2 > sizeof(stringDesc_) - 2) break;
 				*pDst++ = static_cast<uint8_t>(codeUTF32 & 0xff);
 				*pDst++ = static_cast<uint8_t>((codeUTF32 >> 8) & 0xff);
 				bytesDst += 2;
 			}
 		}
 	}
-	_desc_str[0] = static_cast<uint16_t>((TUSB_DESC_STRING << 8) | static_cast<uint8_t>(bytesDst + 2));
-	Dump(_desc_str, 128);
-	return _desc_str;
-#endif
+	stringDesc_[0] = static_cast<uint16_t>((TUSB_DESC_STRING << 8) | static_cast<uint8_t>(bytesDst + 2));
+	return stringDesc_;
 }
 
 }

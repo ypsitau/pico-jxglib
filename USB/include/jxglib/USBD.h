@@ -65,7 +65,7 @@ public:
 	//	TUD_NCM_DESC_LEN *			CFG_TUD_NCM +
 	//	TUD_BTH_DESC_LEN *			CFG_TUD_BTH
 	];
-	const char* stringDescTbl_[64];
+	const char* stringDescTbl_[256];
 	uint16_t langid_;
 	uint8_t iStringDescCur_;
 	uint16_t stringDesc_[128];
