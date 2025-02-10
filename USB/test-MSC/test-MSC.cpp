@@ -160,29 +160,14 @@ int32_t RAMDisk::On_write10(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t*
 
 int32_t RAMDisk::On_scsi(uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize)
 {
-	// read10 & write10 has their own callback and MUST not be handled here
-	void const* response = NULL;
-	int32_t resplen = 0;
-	// most scsi handled is input
-	bool in_xfer = true;
 	switch (scsi_cmd[0]) {
 	default:
 		// Set Sense = Invalid Command Operation
-		tud_msc_set_sense(lun, SCSI_SENSE_ILLEGAL_REQUEST, 0x20, 0x00);
+		::tud_msc_set_sense(lun, SCSI_SENSE_ILLEGAL_REQUEST, 0x20, 0x00);
 		// negative means error -> tinyusb could stall and/or response with failed status
-		resplen = -1;
-		break;
+		return -1;
 	}
-	// return resplen must not larger than bufsize
-	if (resplen > bufsize) resplen = bufsize;
-	if (response && (resplen > 0)) {
-		if(in_xfer) {
-			memcpy(buffer, response, (size_t) resplen);
-		} else {
-			// SCSI output
-		}
-	}
-	return resplen;
+	return 0;
 }
 
 //-----------------------------------------------------------------------------
