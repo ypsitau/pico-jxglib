@@ -39,17 +39,17 @@ int main(void)
 	::stdio_init_all(); 
 	USBD::Device device({
 		bcdUSB:				0x0200,
-		bDeviceClass:		TUSB_CLASS_MISC,
-		bDeviceSubClass:	MISC_SUBCLASS_COMMON,
-		bDeviceProtocol:	MISC_PROTOCOL_IAD,
+		bDeviceClass:		0x00, //TUSB_CLASS_MISC,
+		bDeviceSubClass:	0x00, //MISC_SUBCLASS_COMMON,
+		bDeviceProtocol:	0x00, //MISC_PROTOCOL_IAD,
 		bMaxPacketSize0:	CFG_TUD_ENDPOINT0_SIZE,
 		idVendor:			0xcafe,
 		idProduct:			USBD::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
 	}, 0x0409, "CDC Test", "CDC Test Product", "0123456");
 	EchoBack echoBack(device);
-	device.Initialize();
 	echoBack.Initialize();
+	device.Initialize();
 	for (;;) {
 		device.Task();
 	}

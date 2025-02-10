@@ -190,7 +190,6 @@ int main(void)
 	RAMDisk ramDisk(device);
 	ramDisk.Initialize();
 	device.Initialize();
-
 	for (;;) {
 		device.Task();
 	}

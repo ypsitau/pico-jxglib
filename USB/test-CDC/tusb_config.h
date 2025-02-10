@@ -72,16 +72,11 @@
 #define CFG_TUD_MIDI              0
 #define CFG_TUD_VENDOR            0
 
-// HID buffer size Should be sufficient to hold ID (if any) + Data
-#define CFG_TUD_HID_EP_BUFSIZE    8
-
 #define CFG_TUD_CDC_RX_BUFSIZE 1024
 #define CFG_TUD_CDC_TX_BUFSIZE 1024
 
-//#define CFG_TUD_MSC_EP_BUFSIZE 1024
-
 #ifdef __cplusplus
- }
+}
 #endif
 
 #endif /* _TUSB_CONFIG_H_ */

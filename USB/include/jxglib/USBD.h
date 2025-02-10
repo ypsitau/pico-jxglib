@@ -37,12 +37,6 @@ public:
 	static const int nInterfaces = CFG_TUD_CDC + CFG_TUD_MSC + CFG_TUD_HID + CFG_TUD_AUDIO +
 		CFG_TUD_VIDEO + CFG_TUD_MIDI + CFG_TUD_VENDOR + CFG_TUD_BTH;
 public:
-	//struct StringDesc {
-	//	uint8_t  bLength;
-	//	uint8_t  bDescriptorType;
-	//	uint8_t strBuff[252];
-	//};
-public:
 	tusb_desc_device_t deviceDesc_;
 	uint8_t rhport_;
 	uint8_t interfaceNumCur_;
