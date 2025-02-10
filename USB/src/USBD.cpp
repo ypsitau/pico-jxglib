@@ -307,6 +307,18 @@ CDC::CDC(Device& device, const char* str, uint8_t endpNotif, uint8_t bytesNotif,
 
 }
 
+void tud_cdc_line_state_cb(uint8_t interfaceNum, bool dtr, bool rts)
+{
+	using namespace jxglib::USBD;
+	Device::GetInterface<CDC>(interfaceNum).On_line_state(dtr, rts);
+}  
+
+void tud_cdc_rx_cb(uint8_t interfaceNum)
+{
+	using namespace jxglib::USBD;
+	Device::GetInterface<CDC>(interfaceNum).On_rx();
+}
+
 #endif
 
 //-----------------------------------------------------------------------------

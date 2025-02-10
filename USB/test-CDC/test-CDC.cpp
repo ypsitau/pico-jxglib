@@ -8,6 +8,19 @@
 using namespace jxglib;
 
 //-----------------------------------------------------------------------------
+// EchoBack
+//-----------------------------------------------------------------------------
+class EchoBack : public USBD::CDC {
+public:
+	EchoBack(USBD::Device& device, const char* str, uint8_t endpNotif, uint8_t bytesNotif, 
+			uint8_t endpBulkOut, uint8_t endpBulkIn, uint8_t bytesBulk, uint8_t pollingInterval) :
+		USBD::CDC(device, str, endpBulkIn, bytesBulk, endpBulkIn, endpBulkIn, bytesBulk, pollingInterval) {}
+public:
+	virtual void On_line_state(bool dtr, bool rts) = 0;
+	virtual void On_rx() = 0;
+};
+
+//-----------------------------------------------------------------------------
 // main
 //-----------------------------------------------------------------------------
 int main(void)
