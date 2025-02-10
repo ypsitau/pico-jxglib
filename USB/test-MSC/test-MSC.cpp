@@ -12,7 +12,13 @@ using namespace jxglib;
 //-----------------------------------------------------------------------------
 class RAMDisk : public USBD::MSC {
 public:
-	RAMDisk(USBD::Device& device) : USBD::MSC(device, 0x01, 0x81) {}
+	static const int BlockNum  = 16;	// 8KB is the smallest size that windows allow to mount
+	static const int BlockSize = 512;
+private:
+	bool ejected_;
+	static uint8_t blocks_[BlockNum][BlockSize];
+public:
+	RAMDisk(USBD::Device& device) : USBD::MSC(device, 0x01, 0x81), ejected_{false} {}
 public:
 	virtual void On_inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]) override;
 	virtual bool On_test_unit_ready(uint8_t lun) override;
@@ -24,23 +30,15 @@ public:
 	virtual int32_t On_scsi(uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize) override;
 };
 
-// whether host does safe-eject
-static bool ejected = false;
-
 #define README_CONTENTS \
 "hoge This is tinyusb's MassStorage Class demo.\r\n\r\n\
 If you find any bugs or get any questions, feel free to file an\r\n\
 issue at github.com/hathach/tinyusb"
 
-enum {
-	DISK_BLOCK_NUM  = 16, // 8KB is the smallest size that windows allow to mount
-	DISK_BLOCK_SIZE = 512
-};
-
-uint8_t msc_disk2[DISK_BLOCK_NUM][DISK_BLOCK_SIZE] =
+uint8_t RAMDisk::blocks_[BlockNum][BlockSize] =
 {
 	//------------- Block0: Boot Sector -------------//
-	// byte_per_sector    = DISK_BLOCK_SIZE; fat12_sector_num_16  = DISK_BLOCK_NUM;
+	// byte_per_sector    = BlockSize; fat12_sector_num_16  = BlockNum;
 	// sector_per_cluster = 1; reserved_sectors = 1;
 	// fat_num            = 1; fat12_root_entry_num = 16;
 	// sector_per_fat     = 1; sector_per_track = 1; head_num = 1; hidden_sectors = 0;
@@ -112,8 +110,8 @@ void RAMDisk::On_inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[1
 
 bool RAMDisk::On_test_unit_ready(uint8_t lun)
 {
-	// RAM disk is ready until ejected
-	if (ejected) {
+	// RAM disk is ready until ejected_
+	if (ejected_) {
 	  // Additional Sense 3A-00 is NOT_FOUND
 		tud_msc_set_sense(lun, SCSI_SENSE_NOT_READY, 0x3a, 0x00);
 		return false;
@@ -123,8 +121,8 @@ bool RAMDisk::On_test_unit_ready(uint8_t lun)
 
 void RAMDisk::On_capacity(uint8_t lun, uint32_t* block_count, uint16_t* block_size)
 {
-	*block_count = DISK_BLOCK_NUM;
-	*block_size  = DISK_BLOCK_SIZE;
+	*block_count = BlockNum;
+	*block_size  = BlockSize;
 }
 
 bool RAMDisk::On_start_stop(uint8_t lun, uint8_t power_condition, bool start, bool load_eject)
@@ -134,7 +132,7 @@ bool RAMDisk::On_start_stop(uint8_t lun, uint8_t power_condition, bool start, bo
 			// load disk storage
 		} else {
 			// unload disk storage
-			ejected = true;
+			ejected_ = true;
 		}
 	}
 	return true;
@@ -143,9 +141,8 @@ bool RAMDisk::On_start_stop(uint8_t lun, uint8_t power_condition, bool start, bo
 int32_t RAMDisk::On_read10(uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize)
 {
 	::printf("read10(lba=%d)\n", lba);
-	if (lba >= DISK_BLOCK_NUM) return -1;
-	uint8_t const* addr = msc_disk2[lba] + offset;
-	memcpy(buffer, addr, bufsize);
+	if (lba >= BlockNum) return -1;
+	memcpy(buffer, blocks_[lba] + offset, bufsize);
 	return bufsize;
 }
 
@@ -156,9 +153,8 @@ bool RAMDisk::On_is_writable(uint8_t lun)
 
 int32_t RAMDisk::On_write10(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize)
 {
-	if ( lba >= DISK_BLOCK_NUM ) return -1;
-	uint8_t* addr = msc_disk2[lba] + offset;
-	memcpy(addr, buffer, bufsize);
+	if (lba >= BlockNum) return -1;
+	memcpy(blocks_[lba] + offset, buffer, bufsize);
 	return bufsize;
 }
 
