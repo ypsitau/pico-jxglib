@@ -48,7 +48,7 @@ pico_enable_stdio_usb(test-CDC 0)
 target_link_libraries(test-CDC
 	pico_stdlib
 	tinyusb_device
-	jxglib_USB)
+	jxglib_USBD)
 
 # Add the standard include files to the build
 target_include_directories(test-CDC PRIVATE

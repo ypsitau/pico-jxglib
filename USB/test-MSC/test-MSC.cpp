@@ -3,16 +3,16 @@
 #include <string.h>
 #include "pico/stdlib.h"
 #include "jxglib/GPIO.h"
-#include "jxglib/USB.h"
+#include "jxglib/USBD.h"
 
 using namespace jxglib;
 
 //-----------------------------------------------------------------------------
 // RAMDisk
 //-----------------------------------------------------------------------------
-class RAMDisk : public USB::MSC {
+class RAMDisk : public USBD::MSC {
 public:
-	RAMDisk(USB::Device& device) : USB::MSC(device, 0x01, 0x81) {}
+	RAMDisk(USBD::Device& device) : USBD::MSC(device, 0x01, 0x81) {}
 public:
 	virtual void On_inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]) override;
 	virtual bool On_test_unit_ready(uint8_t lun) override;
@@ -195,14 +195,14 @@ int32_t RAMDisk::On_scsi(uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, 
 int main(void)
 {
 	::stdio_init_all(); 
-	USB::Device device({
+	USBD::Device device({
 		bcdUSB:				0x0200,
 		bDeviceClass:		0x00,
 		bDeviceSubClass:	0x00,
 		bDeviceProtocol:	0x00,
 		bMaxPacketSize0:	CFG_TUD_ENDPOINT0_SIZE,
 		idVendor:			0xcafe,
-		idProduct:			USB::GenerateSpecificProductId(0x4000),
+		idProduct:			USBD::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
 		iManufacturer:		0x01,
 		iProduct:			0x02,
