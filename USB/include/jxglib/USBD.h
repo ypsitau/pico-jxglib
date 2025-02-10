@@ -214,12 +214,11 @@ public:
 // USBD::CDC
 //-----------------------------------------------------------------------------
 class CDC : public Interface {
-private:
-	static const uint8_t descriptor[];
 public:
-	CDC(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
+	CDC(Device& device, const char* str, uint8_t endpNotif, uint8_t bytesNotif, uint8_t endpBulkOut, uint8_t endpBulkIn, uint8_t bytesBulk, uint8_t pollingInterval);
 public:
-	virtual const uint8_t* On_DESCRIPTOR_REPORT() override { return descriptor; }
+	virtual void On_line_state(bool dtr, bool rts) = 0;
+	virtual void On_rx() = 0;
 };
 
 #endif

@@ -293,16 +293,18 @@ Gamepad::Gamepad(Device& device, const char* str, uint8_t endpInterrupt, uint8_t
 //-----------------------------------------------------------------------------
 #if CFG_TUD_CDC > 0
 
-CDC::CDC(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval) : Interface(device, pollingInterval)
+namespace jxglib::USBD {
+
+CDC::CDC(Device& device, const char* str, uint8_t endpNotif, uint8_t bytesNotif, uint8_t endpBulkOut, uint8_t endpBulkIn, uint8_t bytesBulk, uint8_t pollingInterval) :
+				Interface(device, pollingInterval)
 {
-	uint8_t EPNUM_CDC_NOTIF = 0x81;
-	uint8_t EPNUM_CDC_OUT   = 0x02;
-	uint8_t EPNUM_CDC_IN    = 0x82;
 	uint8_t configDesc[] = {
 		// Interface number, string index, EP notification address and size, EP data address (out, in) and size.
-		TUD_CDC_DESCRIPTOR(ITF_NUM_CDC, device.RegisterStringDesc(str), EPNUM_CDC_NOTIF, 8, EPNUM_CDC_OUT, EPNUM_CDC_IN, 64),
+		TUD_CDC_DESCRIPTOR(GetInterfaceNum(), device.RegisterStringDesc(str), endpNotif, bytesNotif, endpBulkOut, endpBulkIn, bytesBulk),
 	};
 	RegisterConfigDesc(configDesc, sizeof(configDesc));
+}
+
 }
 
 #endif
