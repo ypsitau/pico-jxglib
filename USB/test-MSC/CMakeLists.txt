@@ -48,7 +48,7 @@ pico_enable_stdio_usb(test-MSC 0)
 target_link_libraries(test-MSC
 	pico_stdlib
 	tinyusb_device
-	jxglib_USBD)
+	jxglib_USBD jxglib_Stream)
 
 # Add the standard include files to the build
 target_include_directories(test-MSC PRIVATE

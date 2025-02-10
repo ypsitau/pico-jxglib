@@ -37,6 +37,12 @@ public:
 	static const int nInterfaces = CFG_TUD_CDC + CFG_TUD_MSC + CFG_TUD_HID + CFG_TUD_AUDIO +
 		CFG_TUD_VIDEO + CFG_TUD_MIDI + CFG_TUD_VENDOR + CFG_TUD_BTH;
 public:
+	//struct StringDesc {
+	//	uint8_t  bLength;
+	//	uint8_t  bDescriptorType;
+	//	uint8_t strBuff[252];
+	//};
+public:
 	tusb_desc_device_t deviceDesc_;
 	uint8_t rhport_;
 	uint8_t interfaceNumCur_;
@@ -59,12 +65,18 @@ public:
 	//	TUD_NCM_DESC_LEN *			CFG_TUD_NCM +
 	//	TUD_BTH_DESC_LEN *			CFG_TUD_BTH
 	];
+	const char* stringDescTbl_[64];
+	uint16_t langid_;
+	uint8_t iStringDescCur_;
+	uint16_t stringDesc_[128];
 public:
 	static Device* Instance;
 public:
-	Device(const tusb_desc_device_t& deviceDesc);
+	Device(const tusb_desc_device_t& deviceDesc, uint16_t langid,
+		const char* strManufacturer, const char* strProduct, const char* strSerialNumber);
 public:
 	void RegisterConfigDesc(const void* configDesc, int bytes);
+	uint8_t RegisterStringDesc(const char* str);
 	void Initialize(uint8_t rhport = 0);
 public:
 	uint8_t AddInterface(Interface* pInterface);
@@ -153,7 +165,7 @@ class Keyboard : public HID {
 private:
 	static const uint8_t descriptor[];
 public:
-	Keyboard(Device& device, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
+	Keyboard(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
 public:
 	virtual const uint8_t* On_DESCRIPTOR_REPORT() override { return descriptor; }
 };
@@ -165,7 +177,7 @@ class Mouse : public HID {
 private:
 	static const uint8_t descriptor[];
 public:
-	Mouse(Device& device, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
+	Mouse(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
 public:
 	virtual const uint8_t* On_DESCRIPTOR_REPORT() override { return descriptor; }
 };
@@ -177,7 +189,7 @@ class Gamepad : public HID {
 private:
 	static const uint8_t descriptor[];
 public:
-	Gamepad(Device& device, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
+	Gamepad(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
 public:
 	virtual const uint8_t* On_DESCRIPTOR_REPORT() override { return descriptor; }
 };
@@ -189,7 +201,7 @@ class Consumer : public HID {
 private:
 	static const uint8_t descriptor[];
 public:
-	Consumer(Device& device, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
+	Consumer(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
 public:
 	virtual const uint8_t* On_DESCRIPTOR_REPORT() override { return descriptor; }
 };
@@ -205,7 +217,7 @@ class CDC : public Interface {
 private:
 	static const uint8_t descriptor[];
 public:
-	CDC(Device& device, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
+	CDC(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
 public:
 	virtual const uint8_t* On_DESCRIPTOR_REPORT() override { return descriptor; }
 };
@@ -218,7 +230,7 @@ public:
 #if CFG_TUD_MSC > 0
 class MSC : public Interface {
 public:
-	MSC(Device& device, uint8_t endpBulkOut, uint8_t endpBulkIn, uint16_t endpSize = 64);
+	MSC(Device& device, const char* str, uint8_t endpBulkOut, uint8_t endpBulkIn, uint16_t endpSize = 64);
 public:
 	virtual void OnTask() override {}
 public:

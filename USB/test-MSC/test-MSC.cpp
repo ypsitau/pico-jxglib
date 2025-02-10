@@ -18,7 +18,7 @@ private:
 	bool ejected_;
 	static uint8_t blocks_[BlockNum][BlockSize];
 public:
-	RAMDisk(USBD::Device& device) : USBD::MSC(device, 0x01, 0x81), ejected_{false} {}
+	RAMDisk(USBD::Device& device) : USBD::MSC(device, "TinyUSB RAMDisk", 0x01, 0x81), ejected_{false} {}
 public:
 	virtual void On_inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]) override;
 	virtual bool On_test_unit_ready(uint8_t lun) override;
@@ -182,13 +182,10 @@ int main(void)
 		bDeviceSubClass:	0x00,
 		bDeviceProtocol:	0x00,
 		bMaxPacketSize0:	CFG_TUD_ENDPOINT0_SIZE,
-		idVendor:			0xcafe,
+		idVendor:			0xcaff,
 		idProduct:			USBD::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
-		iManufacturer:		0x01,
-		iProduct:			0x02,
-		iSerialNumber:		0x03,
-	});
+	}, 0x0409, "TinyUSB", "TinyUSB Device", "3141592653");
 	RAMDisk ramDisk(device);
 	device.Initialize();
 	for (;;) {
