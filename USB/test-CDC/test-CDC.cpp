@@ -12,13 +12,24 @@ using namespace jxglib;
 //-----------------------------------------------------------------------------
 class EchoBack : public USBD::CDC {
 public:
-	EchoBack(USBD::Device& device, const char* str, uint8_t endpNotif, uint8_t bytesNotif, 
-			uint8_t endpBulkOut, uint8_t endpBulkIn, uint8_t bytesBulk, uint8_t pollingInterval) :
-		USBD::CDC(device, str, endpBulkIn, bytesBulk, endpBulkIn, endpBulkIn, bytesBulk, pollingInterval) {}
+	EchoBack(USBD::Device& device) : USBD::CDC(device, "CDC", 0x81, 8, 0x02, 0x82, 64, 10) {}
 public:
-	virtual void On_line_state(bool dtr, bool rts) = 0;
-	virtual void On_rx() = 0;
+	void Initialize() {}
+public:
+	virtual void OnTask() override;
+	virtual void On_line_state(bool dtr, bool rts) override {}
+	virtual void On_rx() override {}
 };
+
+void EchoBack::OnTask()
+{
+	if (::tud_cdc_available()) {
+		char buff[64];
+		uint32_t bytes = ::tud_cdc_read(buff, sizeof(buff));
+		::tud_cdc_write(buff, bytes);
+		::tud_cdc_write_flush();
+	}
+}
 
 //-----------------------------------------------------------------------------
 // main
@@ -28,15 +39,17 @@ int main(void)
 	::stdio_init_all(); 
 	USBD::Device device({
 		bcdUSB:				0x0200,
-		bDeviceClass:		0x00,
-		bDeviceSubClass:	0x00,
-		bDeviceProtocol:	0x00,
+		bDeviceClass:		TUSB_CLASS_MISC,
+		bDeviceSubClass:	MISC_SUBCLASS_COMMON,
+		bDeviceProtocol:	MISC_PROTOCOL_IAD,
 		bMaxPacketSize0:	CFG_TUD_ENDPOINT0_SIZE,
 		idVendor:			0xcafe,
 		idProduct:			USBD::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
 	}, 0x0409, "CDC Test", "CDC Test Product", "0123456");
+	EchoBack echoBack(device);
 	device.Initialize();
+	echoBack.Initialize();
 	for (;;) {
 		device.Task();
 	}

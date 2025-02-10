@@ -20,6 +20,7 @@ private:
 public:
 	RAMDisk(USBD::Device& device) : USBD::MSC(device, "RAMDisk Interface", 0x01, 0x81), ejected_{false} {}
 public:
+	void Initialize() {}
 	virtual void On_inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]) override;
 	virtual bool On_test_unit_ready(uint8_t lun) override;
 	virtual void On_capacity(uint8_t lun, uint32_t* block_count, uint16_t* block_size) override;
@@ -187,7 +188,9 @@ int main(void)
 		bcdDevice:			0x0100,
 	}, 0x0409, "RPi RAMDisk", "RPi RAMDisk Device", "3141592653");
 	RAMDisk ramDisk(device);
+	ramDisk.Initialize();
 	device.Initialize();
+
 	for (;;) {
 		device.Task();
 	}
