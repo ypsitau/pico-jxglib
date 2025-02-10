@@ -3,18 +3,18 @@
 #include <string.h>
 #include "pico/stdlib.h"
 #include "jxglib/GPIO.h"
-#include "jxglib/USB.h"
+#include "jxglib/USBD.h"
 
 using namespace jxglib;
 
 //-----------------------------------------------------------------------------
 // Keyboard
 //-----------------------------------------------------------------------------
-class Keyboard : public USB::Keyboard {
+class Keyboard : public USBD::Keyboard {
 private:
 	int nKeycodePrev_;
 public:
-	Keyboard(USB::Device& device) : USB::Keyboard(device, 0x81), nKeycodePrev_{0} {}
+	Keyboard(USBD::Device& device) : USBD::Keyboard(device, "RPi Keyboard", 0x81), nKeycodePrev_{0} {}
 public:
 	void Initialize();
 	virtual void OnTask() override;
@@ -27,9 +27,9 @@ public:
 //-----------------------------------------------------------------------------
 // Mouse
 //-----------------------------------------------------------------------------
-class Mouse : public USB::Mouse {
+class Mouse : public USBD::Mouse {
 public:
-	Mouse(USB::Device& device) : USB::Mouse(device, 0x82) {}
+	Mouse(USBD::Device& device) : USBD::Mouse(device, "RPi Mouse", 0x82) {}
 public:
 	void Initialize();
 	virtual void OnTask() override;
@@ -41,19 +41,19 @@ public:
 int main(void)
 {
 	::stdio_init_all(); 
-	USB::Device device({
+	USBD::Device device({
 		bcdUSB:				0x0200,
 		bDeviceClass:		0x00,
 		bDeviceSubClass:	0x00,
 		bDeviceProtocol:	0x00,
 		bMaxPacketSize0:	CFG_TUD_ENDPOINT0_SIZE,
 		idVendor:			0xcafe,
-		idProduct:			USB::GenerateSpecificProductId(0x4000),
+		idProduct:			USBD::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
 		iManufacturer:		0x01,
 		iProduct:			0x02,
 		iSerialNumber:		0x03,
-	});
+	}, 0x0409, "RPi HMI", "RPi HMI Device", "0123456789ABCDEF");
 	Keyboard keyboard(device);
 	Mouse mouse(device);
 	device.Initialize();
