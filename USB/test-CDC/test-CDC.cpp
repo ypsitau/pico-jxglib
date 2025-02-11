@@ -12,7 +12,8 @@ using namespace jxglib;
 //-----------------------------------------------------------------------------
 class EchoBack : public USBD::CDC {
 public:
-	EchoBack(USBD::Device& device) : USBD::CDC(device, "CDC", 0x81, 8, 0x02, 0x82, 64, 10) {}
+	EchoBack(USBD::Device& device, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn) :
+				USBD::CDC(device, "CDC", endpNotif, 8, endpBulkOut, endpBulkIn, 64, 10) {}
 public:
 	void Initialize() {}
 public:
@@ -47,7 +48,7 @@ int main(void)
 		idProduct:			USBD::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
 	}, 0x0409, "CDC Test", "CDC Test Product", "0123456");
-	EchoBack echoBack(device);
+	EchoBack echoBack(device, 0x81, 0x02, 0x82);
 	echoBack.Initialize();
 	device.Initialize();
 	for (;;) {
