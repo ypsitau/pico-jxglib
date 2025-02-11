@@ -157,11 +157,11 @@ public:
 //-----------------------------------------------------------------------------
 class Keyboard : public HID {
 private:
-	static const uint8_t descriptor[];
+	static const uint8_t reportDesc[];
 public:
 	Keyboard(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
 public:
-	virtual const uint8_t* On_DESCRIPTOR_REPORT() override { return descriptor; }
+	virtual const uint8_t* On_DESCRIPTOR_REPORT() override { return reportDesc; }
 };
 
 //-----------------------------------------------------------------------------
@@ -169,11 +169,11 @@ public:
 //-----------------------------------------------------------------------------
 class Mouse : public HID {
 private:
-	static const uint8_t descriptor[];
+	static const uint8_t reportDesc[];
 public:
 	Mouse(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
 public:
-	virtual const uint8_t* On_DESCRIPTOR_REPORT() override { return descriptor; }
+	virtual const uint8_t* On_DESCRIPTOR_REPORT() override { return reportDesc; }
 };
 
 //-----------------------------------------------------------------------------
@@ -181,11 +181,11 @@ public:
 //-----------------------------------------------------------------------------
 class Gamepad : public HID {
 private:
-	static const uint8_t descriptor[];
+	static const uint8_t reportDesc[];
 public:
 	Gamepad(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
 public:
-	virtual const uint8_t* On_DESCRIPTOR_REPORT() override { return descriptor; }
+	virtual const uint8_t* On_DESCRIPTOR_REPORT() override { return reportDesc; }
 };
 
 //-----------------------------------------------------------------------------
@@ -193,11 +193,11 @@ public:
 //-----------------------------------------------------------------------------
 class Consumer : public HID {
 private:
-	static const uint8_t descriptor[];
+	static const uint8_t reportDesc[];
 public:
 	Consumer(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
 public:
-	virtual const uint8_t* On_DESCRIPTOR_REPORT() override { return descriptor; }
+	virtual const uint8_t* On_DESCRIPTOR_REPORT() override { return reportDesc; }
 };
 
 #endif
