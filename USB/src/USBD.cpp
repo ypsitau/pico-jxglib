@@ -183,7 +183,9 @@ HID::HID(Device& device, uint32_t msecTaskInterval) : Interface(device, 1, msecT
 const uint8_t* tud_hid_descriptor_report_cb(uint8_t interfaceNum)
 {
 	using namespace jxglib::USBD;
-	return Device::GetInterface<HID>(interfaceNum).On_DESCRIPTOR_REPORT();
+	HID* pHID = Device::GetInterface<HID>(interfaceNum);
+	if (pHID) return pHID->On_DESCRIPTOR_REPORT();
+	return reinterpret_cast<const uint8_t*>("");
 }
 
 // Invoked when received GET_REPORT control request
@@ -192,7 +194,9 @@ const uint8_t* tud_hid_descriptor_report_cb(uint8_t interfaceNum)
 uint16_t tud_hid_get_report_cb(uint8_t interfaceNum, uint8_t reportID, hid_report_type_t reportType, uint8_t* report, uint16_t reportLength)
 {
 	using namespace jxglib::USBD;
-	return Device::GetInterface<HID>(interfaceNum).On_GET_REPORT(reportID, reportType, report, reportLength);
+	HID* pHID = Device::GetInterface<HID>(interfaceNum);
+	if (pHID) return pHID->On_GET_REPORT(reportID, reportType, report, reportLength);
+	return 0;
 }
 
 // Invoked when sent REPORT successfully to host
@@ -201,7 +205,8 @@ uint16_t tud_hid_get_report_cb(uint8_t interfaceNum, uint8_t reportID, hid_repor
 void tud_hid_report_complete_cb(uint8_t interfaceNum, uint8_t const* report, uint16_t reportLength)
 {
 	using namespace jxglib::USBD;
-	Device::GetInterface<HID>(interfaceNum).On_GET_REPORT_Complete(report, reportLength);
+	HID* pHID = Device::GetInterface<HID>(interfaceNum);
+	if (pHID) pHID->On_GET_REPORT_Complete(report, reportLength);
 }
 
 // Invoked when received SET_REPORT control request or
@@ -209,7 +214,8 @@ void tud_hid_report_complete_cb(uint8_t interfaceNum, uint8_t const* report, uin
 void tud_hid_set_report_cb(uint8_t interfaceNum, uint8_t reportID, hid_report_type_t reportType, const uint8_t* report, uint16_t reportLength)
 {
 	using namespace jxglib::USBD;
-	Device::GetInterface<HID>(interfaceNum).On_SET_REPORT(reportID, reportType, report, reportLength);
+	HID* pHID = Device::GetInterface<HID>(interfaceNum);
+	if (pHID) pHID->On_SET_REPORT(reportID, reportType, report, reportLength);
 }
 
 // Invoked when received SET_PROTOCOL request
@@ -217,7 +223,8 @@ void tud_hid_set_report_cb(uint8_t interfaceNum, uint8_t reportID, hid_report_ty
 void tud_hid_set_protocol_cb(uint8_t interfaceNum, uint8_t protocol)
 {
 	using namespace jxglib::USBD;
-	Device::GetInterface<HID>(interfaceNum).On_SET_PROTOCOL(protocol);
+	HID* pHID = Device::GetInterface<HID>(interfaceNum);
+	if (pHID) pHID->On_SET_PROTOCOL(protocol);
 }
 
 //-----------------------------------------------------------------------------

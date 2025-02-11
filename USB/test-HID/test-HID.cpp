@@ -79,7 +79,7 @@ void Keyboard::Initialize()
 
 void Keyboard::OnTask()
 {
-	if (!ready()) return;
+	if (!hid_ready()) return;
 	uint8_t report_id = 0;
 	uint8_t modifier  = 0;
 	uint8_t keycode[6] = { 0 };
@@ -97,9 +97,9 @@ void Keyboard::OnTask()
 		return;
 	}
 	if (nKeycode > 0) {
-		keyboard_report(report_id, modifier, keycode);
+		hid_keyboard_report(report_id, modifier, keycode);
 	} else if (nKeycodePrev_ > 0) {
-		keyboard_report(report_id, modifier, nullptr);
+		hid_keyboard_report(report_id, modifier, nullptr);
 	}
 	nKeycodePrev_ = nKeycode;
 }
@@ -144,7 +144,7 @@ void Mouse::Initialize()
 //-----------------------------------------------------------------------------
 void Mouse::OnTask()
 {
-	if (!ready()) return;
+	if (!hid_ready()) return;
 	bool btnB = !GPIO21.get();
 	if (btnB) {
 		uint8_t report_id = 0;
@@ -152,6 +152,6 @@ void Mouse::OnTask()
 		int8_t vertical = 0;
 		int8_t horizontal = 0;
 		int8_t delta = 5;
-		mouse_report(report_id, button_mask, delta, delta, vertical, horizontal);
+		hid_mouse_report(report_id, button_mask, delta, delta, vertical, horizontal);
 	}
 }
