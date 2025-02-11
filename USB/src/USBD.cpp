@@ -54,10 +54,12 @@ void Device::Initialize(uint8_t rhport)
 	::tud_init(rhport);
 }
 
-uint8_t Device::AddInterface(Interface* pInterface)
+uint8_t Device::AddInterface(Interface* pInterface, int nInterfacesToOccupy)
 {
-	interfaceTbl_[interfaceNumCur_++] = pInterface;
-	return interfaceNumCur_ - 1;
+	uint8_t interfaceNum = interfaceNumCur_;
+	interfaceTbl_[interfaceNum] = pInterface;
+	interfaceNumCur_ += nInterfacesToOccupy;
+	return interfaceNum;
 }
 
 void Device::Task()
@@ -140,10 +142,10 @@ const uint16_t* tud_descriptor_string_cb(uint8_t idxString, uint16_t langid)
 //-----------------------------------------------------------------------------
 namespace jxglib::USBD {
 
-Interface::Interface(Device& device, uint32_t msecTaskInterval) :
+Interface::Interface(Device& device, int nInterfacesToOccupy, uint32_t msecTaskInterval) :
 			device_{device}, msecTaskInterval_{msecTaskInterval}
 {
-	interfaceNum_ = device.AddInterface(this);
+	interfaceNum_ = device.AddInterface(this, nInterfacesToOccupy);
 }
 	
 void Interface::RegisterConfigDesc(const void* configDesc, int bytes)
@@ -167,7 +169,7 @@ bool Interface::IsTimerElapsed()
 //-----------------------------------------------------------------------------
 namespace jxglib::USBD {
 
-HID::HID(Device& device, uint32_t msecTaskInterval) : Interface(device, msecTaskInterval)
+HID::HID(Device& device, uint32_t msecTaskInterval) : Interface(device, 1, msecTaskInterval)
 {
 }
 
@@ -296,7 +298,7 @@ Gamepad::Gamepad(Device& device, const char* str, uint8_t endpInterrupt, uint8_t
 namespace jxglib::USBD {
 
 CDC::CDC(Device& device, const char* str, uint8_t endpNotif, uint8_t bytesNotif, uint8_t endpBulkOut, uint8_t endpBulkIn, uint8_t bytesBulk, uint8_t pollingInterval) :
-				Interface(device, pollingInterval)
+				Interface(device, 2, pollingInterval)
 {
 	uint8_t configDesc[] = {
 		// Interface number, string index, EP notification address and size, EP data address (out, in) and size.
@@ -328,7 +330,7 @@ void tud_cdc_rx_cb(uint8_t interfaceNum)
 
 namespace jxglib::USBD {
 
-MSC::MSC(Device& device, const char* str, uint8_t endpBulkOut, uint8_t endpBulkIn, uint16_t endpSize) : Interface(device, 0)
+MSC::MSC(Device& device, const char* str, uint8_t endpBulkOut, uint8_t endpBulkIn, uint16_t endpSize) : Interface(device, 1, 0)
 {
 	uint8_t configDesc[] = {
 		// Interface number, string index, EP Out & EP In address, EP size

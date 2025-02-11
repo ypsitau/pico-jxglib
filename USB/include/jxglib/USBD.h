@@ -34,7 +34,7 @@ constexpr uint16_t GenerateSpecificProductId(uint16_t base)
 //-----------------------------------------------------------------------------
 class Device {
 public:
-	static const int nInterfaces = CFG_TUD_CDC + CFG_TUD_MSC + CFG_TUD_HID + CFG_TUD_AUDIO +
+	static const int nInterfaces = CFG_TUD_CDC * 2 + CFG_TUD_MSC + CFG_TUD_HID + CFG_TUD_AUDIO +
 		CFG_TUD_VIDEO + CFG_TUD_MIDI + CFG_TUD_VENDOR + CFG_TUD_BTH;
 public:
 	tusb_desc_device_t deviceDesc_;
@@ -73,7 +73,7 @@ public:
 	uint8_t RegisterStringDesc(const char* str);
 	void Initialize(uint8_t rhport = 0);
 public:
-	uint8_t AddInterface(Interface* pInterface);
+	uint8_t AddInterface(Interface* pInterface, int nInterfacesToOccupy);
 	void SetInterfaceMSC(MSC* pMSC) { pMSC_ = pMSC; }
 	template<typename T> static T& GetInterface(int interfaceNum) {
 		return *reinterpret_cast<T*>(Instance->interfaceTbl_[interfaceNum]);
@@ -101,7 +101,7 @@ protected:
 	uint32_t msecStart_;
 	uint32_t msecTaskInterval_;
 public:
-	Interface(Device& device, uint32_t msecTaskInterval);
+	Interface(Device& device, int nInterfacesToOccupy, uint32_t msecTaskInterval);
 public:
 	void InitTimer() { msecStart_ = GetAbsoluteTimeMSec(); }
 	bool IsTimerElapsed();
