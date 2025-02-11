@@ -14,7 +14,7 @@ class Keyboard : public USBD::Keyboard {
 private:
 	int nKeycodePrev_;
 public:
-	Keyboard(USBD::Device& device) : USBD::Keyboard(device, "RPi Keyboard", 0x81), nKeycodePrev_{0} {}
+	Keyboard(USBD::Device& device) : USBD::Keyboard(device, "RaspberryPi Pico Keyboard", 0x81), nKeycodePrev_{0} {}
 public:
 	void Initialize();
 	virtual void OnTask() override;
@@ -29,7 +29,7 @@ public:
 //-----------------------------------------------------------------------------
 class Mouse : public USBD::Mouse {
 public:
-	Mouse(USBD::Device& device) : USBD::Mouse(device, "RPi Mouse", 0x82) {}
+	Mouse(USBD::Device& device) : USBD::Mouse(device, "RaspberryPi Pico Mouse", 0x82) {}
 public:
 	void Initialize();
 	virtual void OnTask() override;
@@ -53,7 +53,7 @@ int main(void)
 		iManufacturer:		0x01,
 		iProduct:			0x02,
 		iSerialNumber:		0x03,
-	}, 0x0409, "RPi HMI", "RPi HMI Device", "0123456789ABCDEF");
+	}, 0x0409, "RaspberryPi Pico HMI", "RaspberryPi Pico HMI Device", "0123456789ABCDEF");
 	Keyboard keyboard(device);
 	Mouse mouse(device);
 	device.Initialize();
