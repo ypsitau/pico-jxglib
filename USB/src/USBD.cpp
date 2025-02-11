@@ -16,6 +16,9 @@ Device::Device(const tusb_desc_device_t& deviceDesc, uint16_t langid,
 	deviceDesc_{deviceDesc}, langid_{langid}, interfaceNumCur_{0}, pMSC_{nullptr},
 	offsetConfigDesc_{TUD_CONFIG_DESC_LEN}, iStringDescCur_{4}
 {
+	for (int interfaceNum = 0; interfaceNum < nInterfaces; interfaceNum++) {
+		interfaceTbl_[interfaceNum] = nullptr;
+	}
 	Instance = this;
 	deviceDesc_.bLength = sizeof(tusb_desc_device_t);
 	deviceDesc_.bDescriptorType		= TUSB_DESC_DEVICE;
@@ -49,7 +52,8 @@ void Device::Initialize(uint8_t rhport)
 	};
 	::memcpy(configDescAccum_, configDesc, sizeof(configDesc));
 	for (int interfaceNum = 0; interfaceNum < interfaceNumCur_; interfaceNum++) {
-		interfaceTbl_[interfaceNum]->InitTimer();
+		Interface* pInterface = interfaceTbl_[interfaceNum];
+		if (pInterface) pInterface->InitTimer();
 	}
 	::tud_init(rhport);
 }
@@ -67,7 +71,7 @@ void Device::Task()
 	::tud_task();
 	for (int interfaceNum = 0; interfaceNum < interfaceNumCur_; interfaceNum++) {
 		Interface* pInterface = interfaceTbl_[interfaceNum];
-		if (pInterface->IsTimerElapsed()) pInterface->OnTask();
+		if (pInterface && pInterface->IsTimerElapsed()) pInterface->OnTask();
 	}
 }
 
@@ -176,7 +180,7 @@ HID::HID(Device& device, uint32_t msecTaskInterval) : Interface(device, 1, msecT
 }
 
 // Invoked when received DESCRIPTOR_REPORT control request
-uint8_t const * tud_hid_descriptor_report_cb(uint8_t interfaceNum)
+const uint8_t* tud_hid_descriptor_report_cb(uint8_t interfaceNum)
 {
 	using namespace jxglib::USBD;
 	return Device::GetInterface<HID>(interfaceNum).On_DESCRIPTOR_REPORT();
@@ -312,13 +316,15 @@ CDC::CDC(Device& device, const char* str, uint8_t endpNotif, uint8_t bytesNotif,
 void tud_cdc_line_state_cb(uint8_t interfaceNum, bool dtr, bool rts)
 {
 	using namespace jxglib::USBD;
-	Device::GetInterface<CDC>(interfaceNum).On_line_state(dtr, rts);
+	CDC* pCDC = Device::GetInterface<CDC>(interfaceNum);
+	if (pCDC) pCDC->On_line_state(dtr, rts);
 }  
 
 void tud_cdc_rx_cb(uint8_t interfaceNum)
 {
 	using namespace jxglib::USBD;
-	Device::GetInterface<CDC>(interfaceNum).On_rx();
+	CDC* pCDC = Device::GetInterface<CDC>(interfaceNum);
+	if (pCDC) pCDC->On_rx();
 }
 
 #endif

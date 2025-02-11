@@ -75,8 +75,8 @@ public:
 public:
 	uint8_t AddInterface(Interface* pInterface, int nInterfacesToOccupy);
 	void SetInterfaceMSC(MSC* pMSC) { pMSC_ = pMSC; }
-	template<typename T> static T& GetInterface(int interfaceNum) {
-		return *reinterpret_cast<T*>(Instance->interfaceTbl_[interfaceNum]);
+	template<typename T> static T* GetInterface(int interfaceNum) {
+		return reinterpret_cast<T*>(Instance->interfaceTbl_[interfaceNum]);
 	}
 	static MSC& GetInterfaceMSC() { return *Instance->pMSC_; }
 	void Task();
@@ -125,25 +125,25 @@ public:
 	HID(Device& device, uint32_t msecTaskInterval);
 public:
 	// Check if the interface is ready to use
-	bool ready() { return tud_hid_n_ready(GetInterfaceNum()); }
+	bool hid_ready() { return tud_hid_n_ready(GetInterfaceNum()); }
 	// Get interface supported protocol (bInterfaceProtocol) check out hid_interface_protocol_enum_t for possible values
-	uint8_t interface_protocol() { return tud_hid_n_interface_protocol(GetInterfaceNum()); }
+	uint8_t hid_interface_protocol() { return tud_hid_n_interface_protocol(GetInterfaceNum()); }
 	// Get current active protocol: HID_PROTOCOL_BOOT (0) or HID_PROTOCOL_REPORT (1)
-	uint8_t get_protocol() { return tud_hid_n_get_protocol(GetInterfaceNum()); }
+	uint8_t hid_get_protocol() { return tud_hid_n_get_protocol(GetInterfaceNum()); }
 	// Send report to host
-	bool report(uint8_t report_id, void const* report, uint16_t len) { return tud_hid_n_report(GetInterfaceNum(), report_id, report, len); }
+	bool hid_report(uint8_t report_id, void const* report, uint16_t len) { return tud_hid_n_report(GetInterfaceNum(), report_id, report, len); }
 	// KEYBOARD: convenient helper to send keyboard report if application
 	// use template layout report as defined by hid_keyboard_report_t
-	bool keyboard_report(uint8_t report_id, uint8_t modifier, const uint8_t keycode[6]) { return tud_hid_n_keyboard_report(GetInterfaceNum(), report_id, modifier, keycode); }
+	bool hid_keyboard_report(uint8_t report_id, uint8_t modifier, const uint8_t keycode[6]) { return tud_hid_n_keyboard_report(GetInterfaceNum(), report_id, modifier, keycode); }
 	// MOUSE: convenient helper to send mouse report if application
 	// use template layout report as defined by hid_mouse_report_t
-	bool mouse_report(uint8_t report_id, uint8_t buttons, int8_t x, int8_t y, int8_t vertical, int8_t horizontal) { return tud_hid_n_mouse_report(GetInterfaceNum(), report_id, buttons, x, y, vertical, horizontal); }
+	bool hid_mouse_report(uint8_t report_id, uint8_t buttons, int8_t x, int8_t y, int8_t vertical, int8_t horizontal) { return tud_hid_n_mouse_report(GetInterfaceNum(), report_id, buttons, x, y, vertical, horizontal); }
 	// ABSOLUTE MOUSE: convenient helper to send absolute mouse report if application
 	// use template layout report as defined by hid_abs_mouse_report_t
-	bool abs_mouse_report(uint8_t report_id, uint8_t buttons, int16_t x, int16_t y, int8_t vertical, int8_t horizontal) { return tud_hid_n_abs_mouse_report(GetInterfaceNum(), report_id, buttons, x, y, vertical, horizontal); }
+	bool hid_abs_mouse_report(uint8_t report_id, uint8_t buttons, int16_t x, int16_t y, int8_t vertical, int8_t horizontal) { return tud_hid_n_abs_mouse_report(GetInterfaceNum(), report_id, buttons, x, y, vertical, horizontal); }
 	// Gamepad: convenient helper to send gamepad report if application
 	// use template layout report TUD_HID_REPORT_DESC_GAMEPAD
-	bool gamepad_report(uint8_t report_id, int8_t x, int8_t y, int8_t z, int8_t rz, int8_t rx, int8_t ry, uint8_t hat, uint32_t buttons) { return tud_hid_n_gamepad_report(GetInterfaceNum(), report_id, x, y, z, rz, rx, ry, hat, buttons); }
+	bool hid_gamepad_report(uint8_t report_id, int8_t x, int8_t y, int8_t z, int8_t rz, int8_t rx, int8_t ry, uint8_t hat, uint32_t buttons) { return tud_hid_n_gamepad_report(GetInterfaceNum(), report_id, x, y, z, rz, rx, ry, hat, buttons); }
 public:
 	virtual const uint8_t* On_DESCRIPTOR_REPORT() = 0;
 	virtual uint16_t On_GET_REPORT(uint8_t reportID, hid_report_type_t reportType, uint8_t* report, uint16_t reportLength) { return 0; }
@@ -213,6 +213,23 @@ public:
 public:
 	virtual void On_line_state(bool dtr, bool rts) = 0;
 	virtual void On_rx() = 0;
+public:
+	bool cdc_ready() { return ::tud_cdc_n_ready(GetInterfaceNum()); }
+	bool cdc_connected() { return ::tud_cdc_n_connected(GetInterfaceNum()); }
+	uint8_t cdc_get_line_state() { return ::tud_cdc_n_get_line_state(GetInterfaceNum()); }
+	void cdc_get_line_coding(cdc_line_coding_t* coding) { return ::tud_cdc_n_get_line_coding(GetInterfaceNum(), coding); }
+	void cdc_set_wanted_char(char wanted) { return ::tud_cdc_n_set_wanted_char(GetInterfaceNum(), wanted); }
+	uint32_t cdc_available() { return ::tud_cdc_n_available(GetInterfaceNum()); }
+	uint32_t cdc_read(void* buffer, uint32_t bufsize) { return ::tud_cdc_n_read(GetInterfaceNum(), buffer, bufsize); }
+	int32_t cdc_read_char() { return ::tud_cdc_n_read_char(GetInterfaceNum()); }
+	void cdc_read_flush() { return ::tud_cdc_n_read_flush(GetInterfaceNum()); }
+	bool cdc_peek(uint8_t* ui8) { return ::tud_cdc_n_peek(GetInterfaceNum(), ui8); }
+	uint32_t cdc_write(void const* buffer, uint32_t bufsize) { return ::tud_cdc_n_write(GetInterfaceNum(), buffer, bufsize); }
+	uint32_t cdc_write_char(char ch) { return ::tud_cdc_n_write_char(GetInterfaceNum(), ch); }
+	uint32_t cdc_write_str(char const* str) { return ::tud_cdc_n_write_str(GetInterfaceNum(), str); }
+	uint32_t cdc_write_flush() { return ::tud_cdc_n_write_flush(GetInterfaceNum()); }
+	uint32_t cdc_write_available() { return ::tud_cdc_n_write_available(GetInterfaceNum()); }
+	bool write_clear() { return ::tud_cdc_n_write_clear(GetInterfaceNum()); }
 };
 
 #endif

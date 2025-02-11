@@ -24,11 +24,11 @@ public:
 
 void EchoBack::OnTask()
 {
-	if (::tud_cdc_available()) {
+	if (cdc_available()) {
 		char buff[64];
-		uint32_t bytes = ::tud_cdc_read(buff, sizeof(buff));
-		::tud_cdc_write(buff, bytes);
-		::tud_cdc_write_flush();
+		uint32_t bytes = cdc_read(buff, sizeof(buff));
+		cdc_write(buff, bytes);
+		cdc_write_flush();
 	}
 }
 
@@ -48,8 +48,10 @@ int main(void)
 		idProduct:			USBD::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
 	}, 0x0409, "CDC Test", "CDC Test Product", "0123456");
-	EchoBack echoBack(device, 0x81, 0x02, 0x82);
-	echoBack.Initialize();
+	EchoBack echoBack1(device, 0x81, 0x02, 0x82);
+	//EchoBack echoBack2(device, 0x83, 0x04, 0x84);
+	echoBack1.Initialize();
+	//echoBack2.Initialize();
 	device.Initialize();
 	for (;;) {
 		device.Task();
