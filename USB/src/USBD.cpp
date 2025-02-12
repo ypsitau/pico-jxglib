@@ -426,7 +426,7 @@ MSC::MSC(Device& device, const char* str, uint8_t endpBulkOut, uint8_t endpBulkI
 void tud_msc_inquiry_cb(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4])
 {
 	using namespace jxglib::USBD;
-	Device::GetInterface_MSC().On_inquiry(lun, vendor_id, product_id, product_rev);
+	Device::GetInterface_MSC()->On_msc_inquiry(lun, vendor_id, product_id, product_rev);
 }
 
 // Invoked when received Test Unit Ready command.
@@ -434,7 +434,7 @@ void tud_msc_inquiry_cb(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16
 bool tud_msc_test_unit_ready_cb(uint8_t lun)
 {
 	using namespace jxglib::USBD;
-	return Device::GetInterface_MSC().On_test_unit_ready(lun);
+	return Device::GetInterface_MSC()->On_msc_test_unit_ready(lun);
 }
 
 // Invoked when received SCSI_CMD_READ_CAPACITY_10 and SCSI_CMD_READ_FORMAT_CAPACITY to determine the disk size
@@ -442,7 +442,7 @@ bool tud_msc_test_unit_ready_cb(uint8_t lun)
 void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count, uint16_t* block_size)
 {
 	using namespace jxglib::USBD;
-	return Device::GetInterface_MSC().On_capacity(lun, block_count, block_size);
+	return Device::GetInterface_MSC()->On_msc_capacity(lun, block_count, block_size);
 }
 
 // Invoked when received Start Stop Unit command
@@ -451,7 +451,7 @@ void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count, uint16_t* block_siz
 bool tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool start, bool load_eject)
 {
 	using namespace jxglib::USBD;
-	return Device::GetInterface_MSC().On_start_stop(lun, power_condition, start, load_eject);
+	return Device::GetInterface_MSC()->On_msc_start_stop(lun, power_condition, start, load_eject);
 }
 
 // Callback invoked when received READ10 command.
@@ -459,13 +459,13 @@ bool tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool start, boo
 int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize)
 {
 	using namespace jxglib::USBD;
-	return Device::GetInterface_MSC().On_read10(lun, lba, offset, buffer, bufsize);
+	return Device::GetInterface_MSC()->On_msc_read10(lun, lba, offset, buffer, bufsize);
 }
 
 bool tud_msc_is_writable_cb(uint8_t lun)
 {
 	using namespace jxglib::USBD;
-	return Device::GetInterface_MSC().On_is_writable(lun);
+	return Device::GetInterface_MSC()->On_msc_is_writable(lun);
 }
 
 // Callback invoked when received WRITE10 command.
@@ -473,7 +473,7 @@ bool tud_msc_is_writable_cb(uint8_t lun)
 int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize)
 {
 	using namespace jxglib::USBD;
-	return Device::GetInterface_MSC().On_write10(lun, lba, offset, buffer, bufsize);
+	return Device::GetInterface_MSC()->On_msc_write10(lun, lba, offset, buffer, bufsize);
 }
 
 // Callback invoked when received an SCSI command not in built-in list below
@@ -482,7 +482,7 @@ int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* 
 int32_t tud_msc_scsi_cb (uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize)
 {
 	using namespace jxglib::USBD;
-	return Device::GetInterface_MSC().On_scsi(lun, scsi_cmd, buffer, bufsize);
+	return Device::GetInterface_MSC()->On_msc_scsi(lun, scsi_cmd, buffer, bufsize);
 }
 
 #endif

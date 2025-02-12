@@ -21,14 +21,14 @@ public:
 	RAMDisk(USBD::Device& device) : USBD::MSC(device, "RAMDisk Interface", 0x01, 0x81), ejected_{false} {}
 public:
 	void Initialize() {}
-	virtual void On_inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]) override;
-	virtual bool On_test_unit_ready(uint8_t lun) override;
-	virtual void On_capacity(uint8_t lun, uint32_t* block_count, uint16_t* block_size) override;
-	virtual bool On_start_stop(uint8_t lun, uint8_t power_condition, bool start, bool load_eject) override;
-	virtual int32_t On_read10(uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize) override;
-	virtual bool On_is_writable(uint8_t lun) override;
-	virtual int32_t On_write10(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize) override;
-	virtual int32_t On_scsi(uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize) override;
+	virtual void On_msc_inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]) override;
+	virtual bool On_msc_test_unit_ready(uint8_t lun) override;
+	virtual void On_msc_capacity(uint8_t lun, uint32_t* block_count, uint16_t* block_size) override;
+	virtual bool On_msc_start_stop(uint8_t lun, uint8_t power_condition, bool start, bool load_eject) override;
+	virtual int32_t On_msc_read10(uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize) override;
+	virtual bool On_msc_is_writable(uint8_t lun) override;
+	virtual int32_t On_msc_write10(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize) override;
+	virtual int32_t On_msc_scsi(uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize) override;
 };
 
 #define README_CONTENTS \
@@ -99,7 +99,7 @@ uint8_t RAMDisk::blocks_[BlockNum][BlockSize] =
 	README_CONTENTS
 };
 
-void RAMDisk::On_inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4])
+void RAMDisk::On_msc_inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4])
 {
 	const char vid[] = "TinyUSB";
 	const char pid[] = "Mass Storage";
@@ -109,7 +109,7 @@ void RAMDisk::On_inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[1
 	memcpy(product_rev, rev, strlen(rev));
 }
 
-bool RAMDisk::On_test_unit_ready(uint8_t lun)
+bool RAMDisk::On_msc_test_unit_ready(uint8_t lun)
 {
 	// RAM disk is ready until ejected_
 	if (ejected_) {
@@ -120,13 +120,13 @@ bool RAMDisk::On_test_unit_ready(uint8_t lun)
 	return true;
 }
 
-void RAMDisk::On_capacity(uint8_t lun, uint32_t* block_count, uint16_t* block_size)
+void RAMDisk::On_msc_capacity(uint8_t lun, uint32_t* block_count, uint16_t* block_size)
 {
 	*block_count = BlockNum;
 	*block_size  = BlockSize;
 }
 
-bool RAMDisk::On_start_stop(uint8_t lun, uint8_t power_condition, bool start, bool load_eject)
+bool RAMDisk::On_msc_start_stop(uint8_t lun, uint8_t power_condition, bool start, bool load_eject)
 {
 	if (load_eject) {
 		if (start) {
@@ -139,7 +139,7 @@ bool RAMDisk::On_start_stop(uint8_t lun, uint8_t power_condition, bool start, bo
 	return true;
 }
 
-int32_t RAMDisk::On_read10(uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize)
+int32_t RAMDisk::On_msc_read10(uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize)
 {
 	::printf("read10(lba=%d)\n", lba);
 	if (lba >= BlockNum) return -1;
@@ -147,19 +147,19 @@ int32_t RAMDisk::On_read10(uint8_t lun, uint32_t lba, uint32_t offset, void* buf
 	return bufsize;
 }
 
-bool RAMDisk::On_is_writable(uint8_t lun)
+bool RAMDisk::On_msc_is_writable(uint8_t lun)
 {
 	return true;
 }
 
-int32_t RAMDisk::On_write10(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize)
+int32_t RAMDisk::On_msc_write10(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize)
 {
 	if (lba >= BlockNum) return -1;
 	memcpy(blocks_[lba] + offset, buffer, bufsize);
 	return bufsize;
 }
 
-int32_t RAMDisk::On_scsi(uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize)
+int32_t RAMDisk::On_msc_scsi(uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize)
 {
 	switch (scsi_cmd[0]) {
 	default:
