@@ -16,7 +16,6 @@ private:
 public:
 	Keyboard(USBD::Device& device) : USBD::Keyboard(device, "RaspberryPi Pico Keyboard", 0x81), nKeycodePrev_{0} {}
 public:
-	void Initialize();
 	virtual void OnTask() override;
 	virtual uint16_t On_GET_REPORT(uint8_t reportID, hid_report_type_t reportType, uint8_t* report, uint16_t reportLength) override;
 	virtual void On_GET_REPORT_Complete(const uint8_t* report, uint16_t reportLength) override;
@@ -31,7 +30,6 @@ class Mouse : public USBD::Mouse {
 public:
 	Mouse(USBD::Device& device) : USBD::Mouse(device, "RaspberryPi Pico Mouse", 0x82) {}
 public:
-	void Initialize();
 	virtual void OnTask() override;
 };
 
@@ -57,8 +55,12 @@ int main(void)
 	Keyboard keyboard(device);
 	Mouse mouse(device);
 	device.Initialize();
-	keyboard.Initialize();
-	mouse.Initialize();
+	GPIO16.init().set_dir_IN().pull_up();
+	GPIO17.init().set_dir_IN().pull_up();
+	GPIO18.init().set_dir_IN().pull_up();
+	GPIO19.init().set_dir_IN().pull_up();
+	GPIO20.init().set_dir_IN().pull_up();
+	GPIO21.init().set_dir_IN().pull_up();
 	for (;;) {
 		device.Task();
 	}
@@ -68,15 +70,6 @@ int main(void)
 //-----------------------------------------------------------------------------
 // Keyboard
 //-----------------------------------------------------------------------------
-void Keyboard::Initialize()
-{
-	GPIO16.init().set_dir_IN().pull_up();
-	GPIO17.init().set_dir_IN().pull_up();
-	GPIO18.init().set_dir_IN().pull_up();
-	GPIO19.init().set_dir_IN().pull_up();
-	GPIO20.init().set_dir_IN().pull_up();
-}
-
 void Keyboard::OnTask()
 {
 	if (!hid_ready()) return;
@@ -132,11 +125,6 @@ void Keyboard::On_SET_REPORT(uint8_t reportID, hid_report_type_t report_type, co
 void Keyboard::On_SET_PROTOCOL(uint8_t protocol)
 {
 	::printf("On_SET_PROTOCOL()\n");
-}
-
-void Mouse::Initialize()
-{
-	GPIO21.init().set_dir_IN().pull_up();
 }
 
 //-----------------------------------------------------------------------------

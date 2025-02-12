@@ -132,8 +132,12 @@ public:
 // USBD::HID
 //-----------------------------------------------------------------------------
 class HID : public Interface {
+protected:
+	const uint8_t* reportDesc_;
 public:
 	HID(Device& device, uint32_t msecTaskInterval);
+public:
+	void RegisterReportDesc(const uint8_t* reportDesc) { reportDesc_ = reportDesc; }
 public:
 	// Check if the interface is ready to use
 	bool hid_ready() { return tud_hid_n_ready(iInstance_); }
@@ -156,7 +160,7 @@ public:
 	// use template layout report TUD_HID_REPORT_DESC_GAMEPAD
 	bool hid_gamepad_report(uint8_t report_id, int8_t x, int8_t y, int8_t z, int8_t rz, int8_t rx, int8_t ry, uint8_t hat, uint32_t buttons) { return tud_hid_n_gamepad_report(iInstance_, report_id, x, y, z, rz, rx, ry, hat, buttons); }
 public:
-	virtual const uint8_t* On_DESCRIPTOR_REPORT() = 0;
+	const uint8_t* On_DESCRIPTOR_REPORT() { return reportDesc_; }
 	virtual uint16_t On_GET_REPORT(uint8_t reportID, hid_report_type_t reportType, uint8_t* report, uint16_t reportLength) { return 0; }
 	virtual void On_GET_REPORT_Complete(const uint8_t* report, uint16_t reportLength) {}
 	virtual void On_SET_REPORT(uint8_t reportID, hid_report_type_t report_type, const uint8_t* report, uint16_t reportLength) {}
@@ -167,48 +171,32 @@ public:
 // USBD::Keyboard
 //-----------------------------------------------------------------------------
 class Keyboard : public HID {
-private:
-	static const uint8_t reportDesc[];
 public:
 	Keyboard(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
-public:
-	virtual const uint8_t* On_DESCRIPTOR_REPORT() override { return reportDesc; }
 };
 
 //-----------------------------------------------------------------------------
 // USBD::Mouse
 //-----------------------------------------------------------------------------
 class Mouse : public HID {
-private:
-	static const uint8_t reportDesc[];
 public:
 	Mouse(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
-public:
-	virtual const uint8_t* On_DESCRIPTOR_REPORT() override { return reportDesc; }
 };
 
 //-----------------------------------------------------------------------------
 // USBD::Gamepad
 //-----------------------------------------------------------------------------
 class Gamepad : public HID {
-private:
-	static const uint8_t reportDesc[];
 public:
 	Gamepad(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
-public:
-	virtual const uint8_t* On_DESCRIPTOR_REPORT() override { return reportDesc; }
 };
 
 //-----------------------------------------------------------------------------
 // USBD::Consumer
 //-----------------------------------------------------------------------------
 class Consumer : public HID {
-private:
-	static const uint8_t reportDesc[];
 public:
 	Consumer(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
-public:
-	virtual const uint8_t* On_DESCRIPTOR_REPORT() override { return reportDesc; }
 };
 
 #endif
