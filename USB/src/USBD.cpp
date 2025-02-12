@@ -46,6 +46,35 @@ uint8_t Device::RegisterStringDesc(const char* str)
 	return iStringDesc;
 }
 
+uint8_t Device::AddInterface_CDC(CDC* pCDC)
+{
+	uint8_t iInstance = nInstances_CDC_++;
+	if (iInstance >= CFG_TUD_CDC) {
+		::panic("CFG_TUD_CDC in tusb_config.h must be set to at least %d.", iInstance + 1);
+	}
+	specific_.pCDCTbl[iInstance] = pCDC;
+	return iInstance;
+}
+
+uint8_t Device::AddInterface_MSC(MSC* pMSC) {
+	uint8_t iInstance = nInstances_MSC_++;
+	if (iInstance >= CFG_TUD_MSC) {
+		::panic("CFG_TUD_MSC in tusb_config.h must be set to at least %d.", iInstance + 1);
+	}
+	specific_.pMSCTbl[iInstance] = pMSC;
+	return iInstance;
+}
+
+uint8_t Device::AddInterface_HID(HID* pHID)
+{
+	uint8_t iInstance = nInstances_HID_++;
+	if (iInstance >= CFG_TUD_HID) {
+		::panic("CFG_TUD_HID in tusb_config.h must be set to at least %d.", iInstance + 1);
+	}
+	specific_.pHIDTbl[iInstance] = pHID;
+	return iInstance;
+}
+
 void Device::Initialize(uint8_t rhport)
 {
 	uint8_t configDesc[] = {

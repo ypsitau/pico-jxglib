@@ -85,15 +85,9 @@ public:
 	void Initialize(uint8_t rhport = 0);
 public:
 	uint8_t AssignInterfaceNum(int nInterfacesToOccupy);
-	uint8_t AddInterface_CDC(CDC* pCDC) {
-		uint8_t iInstance = nInstances_CDC_++; specific_.pCDCTbl[iInstance] = pCDC; return iInstance;
-	}
-	uint8_t AddInterface_MSC(MSC* pMSC) {
-		uint8_t iInstance = nInstances_MSC_++; specific_.pMSCTbl[iInstance] = pMSC; return iInstance;
-	}
-	uint8_t AddInterface_HID(HID* pHID) {
-		uint8_t iInstance = nInstances_HID_++; specific_.pHIDTbl[iInstance] = pHID; return iInstance;
-	}
+	uint8_t AddInterface_CDC(CDC* pCDC);
+	uint8_t AddInterface_MSC(MSC* pMSC);
+	uint8_t AddInterface_HID(HID* pHID);
 	static CDC* GetInterface_CDC(uint8_t iInstance = 0) { return Instance->specific_.pCDCTbl[iInstance]; }
 	static MSC* GetInterface_MSC(uint8_t iInstance = 0) { return Instance->specific_.pMSCTbl[iInstance]; }
 	static HID* GetInterface_HID(uint8_t iInstance = 0) { return Instance->specific_.pHIDTbl[iInstance]; }

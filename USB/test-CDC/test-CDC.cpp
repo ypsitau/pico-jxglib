@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include "pico/stdlib.h"
 #include "jxglib/GPIO.h"
 #include "jxglib/USBD.h"
@@ -12,19 +13,35 @@ using namespace jxglib;
 //-----------------------------------------------------------------------------
 class EchoBack : public USBD::CDC {
 public:
-	EchoBack(USBD::Device& device, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn) :
-				USBD::CDC(device, "CDC", endpNotif, 8, endpBulkOut, endpBulkIn, 64, 10) {}
+	enum Mode { Normal, Upper, Lower };
+private:
+	Mode mode_;
 public:
-	void Initialize() {}
+	EchoBack(USBD::Device& device, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn, Mode mode) :
+				USBD::CDC(device, name, endpNotif, 8, endpBulkOut, endpBulkIn, 64, 10), mode_{mode} {}
 public:
 	virtual void OnTask() override;
 };
 
 void EchoBack::OnTask()
 {
+	char buff[64];
 	if (cdc_available()) {
-		char buff[64];
-		uint32_t bytes = cdc_read(buff, sizeof(buff));
+		int bytes = cdc_read(buff, sizeof(buff));
+		switch (mode_) {
+		case Mode::Normal: {
+			break;
+		}
+		case Mode::Upper: {
+			for (int i = 0; i < bytes; i++) buff[i] = toupper(buff[i]);
+			break;
+		}
+		case Mode::Lower: {
+			for (int i = 0; i < bytes; i++) buff[i] = tolower(buff[i]);
+			break;
+		}
+		default: break;
+		}
 		cdc_write(buff, bytes);
 		cdc_write_flush();
 	}
@@ -46,10 +63,9 @@ int main(void)
 		idProduct:			USBD::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
 	}, 0x0409, "CDC Test", "CDC Test Product", "0123456");
-	EchoBack echoBack1(device, 0x81, 0x02, 0x82);
-	EchoBack echoBack2(device, 0x83, 0x04, 0x84);
-	echoBack1.Initialize();
-	echoBack2.Initialize();
+	EchoBack echoBack1(device, "EchoBack Normal", 0x81, 0x02, 0x82, EchoBack::Mode::Normal);
+	EchoBack echoBack2(device, "EchoBack Upper", 0x83, 0x04, 0x84, EchoBack::Mode::Upper);
+	EchoBack echoBack3(device, "EchoBack Lower", 0x85, 0x06, 0x86, EchoBack::Mode::Lower);
 	device.Initialize();
 	for (;;) {
 		device.Task();
