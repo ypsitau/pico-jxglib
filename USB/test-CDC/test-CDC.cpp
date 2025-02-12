@@ -18,8 +18,6 @@ public:
 	void Initialize() {}
 public:
 	virtual void OnTask() override;
-	virtual void On_cdc_line_state(bool dtr, bool rts) override {}
-	virtual void On_cdc_rx() override {}
 };
 
 void EchoBack::OnTask()
@@ -49,9 +47,9 @@ int main(void)
 		bcdDevice:			0x0100,
 	}, 0x0409, "CDC Test", "CDC Test Product", "0123456");
 	EchoBack echoBack1(device, 0x81, 0x02, 0x82);
-	//EchoBack echoBack2(device, 0x83, 0x04, 0x84);
+	EchoBack echoBack2(device, 0x83, 0x04, 0x84);
 	echoBack1.Initialize();
-	//echoBack2.Initialize();
+	echoBack2.Initialize();
 	device.Initialize();
 	for (;;) {
 		device.Task();

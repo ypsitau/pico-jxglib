@@ -52,8 +52,8 @@ void Device::Initialize(uint8_t rhport)
 		TUD_CONFIG_DESCRIPTOR(1, interfaceNumCur_, 0, offsetConfigDesc_, TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP, 100)
 	};
 	::memcpy(configDescAccum_, configDesc, sizeof(configDesc));
-	for (int interfaceNum = 0; interfaceNum < interfaceNumCur_; interfaceNum++) {
-		Interface* pInterface = interfaceTbl_[interfaceNum];
+	for (int iInstance = 0; iInstance < nInstancesMax; iInstance++) {
+		Interface* pInterface = interfaceTbl_[iInstance];
 		if (pInterface) pInterface->InitTimer();
 	}
 	::tud_init(rhport);
@@ -69,8 +69,8 @@ uint8_t Device::AssignInterfaceNum(int nInterfacesToOccupy)
 void Device::Task()
 {
 	::tud_task();
-	for (int interfaceNum = 0; interfaceNum < interfaceNumCur_; interfaceNum++) {
-		Interface* pInterface = interfaceTbl_[interfaceNum];
+	for (int iInstance = 0; iInstance < nInstancesMax; iInstance++) {
+		Interface* pInterface = interfaceTbl_[iInstance];
 		if (pInterface && pInterface->IsTimerElapsed()) pInterface->OnTask();
 	}
 }
