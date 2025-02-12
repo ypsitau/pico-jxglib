@@ -9,7 +9,9 @@
 namespace jxglib::USBD {
 
 class Interface;
+class CDC;
 class MSC;
+class HID;
 
 //-----------------------------------------------------------------------------
 // Utility function
@@ -34,14 +36,23 @@ constexpr uint16_t GenerateSpecificProductId(uint16_t base)
 //-----------------------------------------------------------------------------
 class Device {
 public:
-	static const int nInterfaces = CFG_TUD_CDC * 2 + CFG_TUD_MSC + CFG_TUD_HID + CFG_TUD_AUDIO +
+	static const int nInstancesMax = CFG_TUD_CDC + CFG_TUD_MSC + CFG_TUD_HID + CFG_TUD_AUDIO +
 		CFG_TUD_VIDEO + CFG_TUD_MIDI + CFG_TUD_VENDOR + CFG_TUD_BTH;
 public:
 	tusb_desc_device_t deviceDesc_;
 	uint8_t rhport_;
 	uint8_t interfaceNumCur_;
-	Interface* interfaceTbl_[nInterfaces];
-	MSC* pMSC_;
+	uint8_t nInstances_CDC_;
+	uint8_t nInstances_MSC_;
+	uint8_t nInstances_HID_;
+	union {
+		Interface* interfaceTbl_[nInstancesMax];
+		struct {
+			CDC* pCDCTbl[CFG_TUD_CDC];
+			MSC* pMSCTbl[CFG_TUD_MSC];
+			HID* pHIDTbl[CFG_TUD_HID];
+		} specific_;
+	};
 	int offsetConfigDesc_;
 	uint8_t configDescAccum_[
 		TUD_CONFIG_DESC_LEN +
@@ -73,12 +84,19 @@ public:
 	uint8_t RegisterStringDesc(const char* str);
 	void Initialize(uint8_t rhport = 0);
 public:
-	uint8_t AddInterface(Interface* pInterface, int nInterfacesToOccupy);
-	void SetInterfaceMSC(MSC* pMSC) { pMSC_ = pMSC; }
-	template<typename T> static T* GetInterface(int interfaceNum) {
-		return reinterpret_cast<T*>(Instance->interfaceTbl_[interfaceNum]);
+	uint8_t AssignInterfaceNum(int nInterfacesToOccupy);
+	uint8_t AddInterface_CDC(CDC* pCDC) {
+		uint8_t iInstance = nInstances_CDC_++; specific_.pCDCTbl[iInstance] = pCDC; return iInstance;
 	}
-	static MSC& GetInterfaceMSC() { return *Instance->pMSC_; }
+	uint8_t AddInterface_MSC(MSC* pMSC) {
+		uint8_t iInstance = nInstances_MSC_++; specific_.pMSCTbl[iInstance] = pMSC; return iInstance;
+	}
+	uint8_t AddInterface_HID(HID* pHID) {
+		uint8_t iInstance = nInstances_HID_++; specific_.pHIDTbl[iInstance] = pHID; return iInstance;
+	}
+	static CDC* GetInterface_CDC(uint8_t iInstance = 0) { return Instance->specific_.pCDCTbl[iInstance]; }
+	static MSC* GetInterface_MSC(uint8_t iInstance = 0) { return Instance->specific_.pMSCTbl[iInstance]; }
+	static HID* GetInterface_HID(uint8_t iInstance = 0) { return Instance->specific_.pHIDTbl[iInstance]; }
 	void Task();
 public:
 	virtual void OnMount() {}
@@ -98,6 +116,7 @@ class Interface {
 protected:
 	Device& device_;
 	uint8_t interfaceNum_;
+	uint8_t iInstance_;
 	uint32_t msecStart_;
 	uint32_t msecTaskInterval_;
 public:
@@ -105,8 +124,6 @@ public:
 public:
 	void InitTimer() { msecStart_ = GetAbsoluteTimeMSec(); }
 	bool IsTimerElapsed();
-public:
-	uint8_t GetInterfaceNum() const { return interfaceNum_; }
 public:
 	virtual void OnTask() = 0;
 public:
@@ -125,25 +142,25 @@ public:
 	HID(Device& device, uint32_t msecTaskInterval);
 public:
 	// Check if the interface is ready to use
-	bool hid_ready() { return tud_hid_n_ready(GetInterfaceNum()); }
+	bool hid_ready() { return tud_hid_n_ready(iInstance_); }
 	// Get interface supported protocol (bInterfaceProtocol) check out hid_interface_protocol_enum_t for possible values
-	uint8_t hid_interface_protocol() { return tud_hid_n_interface_protocol(GetInterfaceNum()); }
+	uint8_t hid_interface_protocol() { return tud_hid_n_interface_protocol(iInstance_); }
 	// Get current active protocol: HID_PROTOCOL_BOOT (0) or HID_PROTOCOL_REPORT (1)
-	uint8_t hid_get_protocol() { return tud_hid_n_get_protocol(GetInterfaceNum()); }
+	uint8_t hid_get_protocol() { return tud_hid_n_get_protocol(iInstance_); }
 	// Send report to host
-	bool hid_report(uint8_t report_id, void const* report, uint16_t len) { return tud_hid_n_report(GetInterfaceNum(), report_id, report, len); }
+	bool hid_report(uint8_t report_id, void const* report, uint16_t len) { return tud_hid_n_report(iInstance_, report_id, report, len); }
 	// KEYBOARD: convenient helper to send keyboard report if application
 	// use template layout report as defined by hid_keyboard_report_t
-	bool hid_keyboard_report(uint8_t report_id, uint8_t modifier, const uint8_t keycode[6]) { return tud_hid_n_keyboard_report(GetInterfaceNum(), report_id, modifier, keycode); }
+	bool hid_keyboard_report(uint8_t report_id, uint8_t modifier, const uint8_t keycode[6]) { return tud_hid_n_keyboard_report(iInstance_, report_id, modifier, keycode); }
 	// MOUSE: convenient helper to send mouse report if application
 	// use template layout report as defined by hid_mouse_report_t
-	bool hid_mouse_report(uint8_t report_id, uint8_t buttons, int8_t x, int8_t y, int8_t vertical, int8_t horizontal) { return tud_hid_n_mouse_report(GetInterfaceNum(), report_id, buttons, x, y, vertical, horizontal); }
+	bool hid_mouse_report(uint8_t report_id, uint8_t buttons, int8_t x, int8_t y, int8_t vertical, int8_t horizontal) { return tud_hid_n_mouse_report(iInstance_, report_id, buttons, x, y, vertical, horizontal); }
 	// ABSOLUTE MOUSE: convenient helper to send absolute mouse report if application
 	// use template layout report as defined by hid_abs_mouse_report_t
-	bool hid_abs_mouse_report(uint8_t report_id, uint8_t buttons, int16_t x, int16_t y, int8_t vertical, int8_t horizontal) { return tud_hid_n_abs_mouse_report(GetInterfaceNum(), report_id, buttons, x, y, vertical, horizontal); }
+	bool hid_abs_mouse_report(uint8_t report_id, uint8_t buttons, int16_t x, int16_t y, int8_t vertical, int8_t horizontal) { return tud_hid_n_abs_mouse_report(iInstance_, report_id, buttons, x, y, vertical, horizontal); }
 	// Gamepad: convenient helper to send gamepad report if application
 	// use template layout report TUD_HID_REPORT_DESC_GAMEPAD
-	bool hid_gamepad_report(uint8_t report_id, int8_t x, int8_t y, int8_t z, int8_t rz, int8_t rx, int8_t ry, uint8_t hat, uint32_t buttons) { return tud_hid_n_gamepad_report(GetInterfaceNum(), report_id, x, y, z, rz, rx, ry, hat, buttons); }
+	bool hid_gamepad_report(uint8_t report_id, int8_t x, int8_t y, int8_t z, int8_t rz, int8_t rx, int8_t ry, uint8_t hat, uint32_t buttons) { return tud_hid_n_gamepad_report(iInstance_, report_id, x, y, z, rz, rx, ry, hat, buttons); }
 public:
 	virtual const uint8_t* On_DESCRIPTOR_REPORT() = 0;
 	virtual uint16_t On_GET_REPORT(uint8_t reportID, hid_report_type_t reportType, uint8_t* report, uint16_t reportLength) { return 0; }
@@ -211,25 +228,29 @@ class CDC : public Interface {
 public:
 	CDC(Device& device, const char* str, uint8_t endpNotif, uint8_t bytesNotif, uint8_t endpBulkOut, uint8_t endpBulkIn, uint8_t bytesBulk, uint8_t pollingInterval);
 public:
-	virtual void On_line_state(bool dtr, bool rts) = 0;
-	virtual void On_rx() = 0;
+	virtual void On_cdc_rx() {}
+	virtual void On_cdc_rx_wanted(char wanted_char) {}
+	virtual void On_cdc_tx_complete() {}
+	virtual void On_cdc_line_state(bool dtr, bool rts) {}
+	virtual void On_cdc_line_coding(const cdc_line_coding_t* p_line_coding) {}
+	virtual void On_cdc_send_break(uint16_t duration_ms) {}
 public:
-	bool cdc_ready() { return ::tud_cdc_n_ready(GetInterfaceNum()); }
-	bool cdc_connected() { return ::tud_cdc_n_connected(GetInterfaceNum()); }
-	uint8_t cdc_get_line_state() { return ::tud_cdc_n_get_line_state(GetInterfaceNum()); }
-	void cdc_get_line_coding(cdc_line_coding_t* coding) { return ::tud_cdc_n_get_line_coding(GetInterfaceNum(), coding); }
-	void cdc_set_wanted_char(char wanted) { return ::tud_cdc_n_set_wanted_char(GetInterfaceNum(), wanted); }
-	uint32_t cdc_available() { return ::tud_cdc_n_available(GetInterfaceNum()); }
-	uint32_t cdc_read(void* buffer, uint32_t bufsize) { return ::tud_cdc_n_read(GetInterfaceNum(), buffer, bufsize); }
-	int32_t cdc_read_char() { return ::tud_cdc_n_read_char(GetInterfaceNum()); }
-	void cdc_read_flush() { return ::tud_cdc_n_read_flush(GetInterfaceNum()); }
-	bool cdc_peek(uint8_t* ui8) { return ::tud_cdc_n_peek(GetInterfaceNum(), ui8); }
-	uint32_t cdc_write(void const* buffer, uint32_t bufsize) { return ::tud_cdc_n_write(GetInterfaceNum(), buffer, bufsize); }
-	uint32_t cdc_write_char(char ch) { return ::tud_cdc_n_write_char(GetInterfaceNum(), ch); }
-	uint32_t cdc_write_str(char const* str) { return ::tud_cdc_n_write_str(GetInterfaceNum(), str); }
-	uint32_t cdc_write_flush() { return ::tud_cdc_n_write_flush(GetInterfaceNum()); }
-	uint32_t cdc_write_available() { return ::tud_cdc_n_write_available(GetInterfaceNum()); }
-	bool write_clear() { return ::tud_cdc_n_write_clear(GetInterfaceNum()); }
+	bool cdc_ready() { return ::tud_cdc_n_ready(iInstance_); }
+	bool cdc_connected() { return ::tud_cdc_n_connected(iInstance_); }
+	uint8_t cdc_get_line_state() { return ::tud_cdc_n_get_line_state(iInstance_); }
+	void cdc_get_line_coding(cdc_line_coding_t* coding) { return ::tud_cdc_n_get_line_coding(iInstance_, coding); }
+	void cdc_set_wanted_char(char wanted) { return ::tud_cdc_n_set_wanted_char(iInstance_, wanted); }
+	uint32_t cdc_available() { return ::tud_cdc_n_available(iInstance_); }
+	uint32_t cdc_read(void* buffer, uint32_t bufsize) { return ::tud_cdc_n_read(iInstance_, buffer, bufsize); }
+	int32_t cdc_read_char() { return ::tud_cdc_n_read_char(iInstance_); }
+	void cdc_read_flush() { return ::tud_cdc_n_read_flush(iInstance_); }
+	bool cdc_peek(uint8_t* ui8) { return ::tud_cdc_n_peek(iInstance_, ui8); }
+	uint32_t cdc_write(void const* buffer, uint32_t bufsize) { return ::tud_cdc_n_write(iInstance_, buffer, bufsize); }
+	uint32_t cdc_write_char(char ch) { return ::tud_cdc_n_write_char(iInstance_, ch); }
+	uint32_t cdc_write_str(char const* str) { return ::tud_cdc_n_write_str(iInstance_, str); }
+	uint32_t cdc_write_flush() { return ::tud_cdc_n_write_flush(iInstance_); }
+	uint32_t cdc_write_available() { return ::tud_cdc_n_write_available(iInstance_); }
+	bool write_clear() { return ::tud_cdc_n_write_clear(iInstance_); }
 };
 
 #endif

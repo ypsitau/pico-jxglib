@@ -18,8 +18,8 @@ public:
 	void Initialize() {}
 public:
 	virtual void OnTask() override;
-	virtual void On_line_state(bool dtr, bool rts) override {}
-	virtual void On_rx() override {}
+	virtual void On_cdc_line_state(bool dtr, bool rts) override {}
+	virtual void On_cdc_rx() override {}
 };
 
 void EchoBack::OnTask()
