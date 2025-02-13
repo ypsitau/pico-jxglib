@@ -7,12 +7,21 @@
 
 using namespace jxglib;
 
+auto& GPIO_CURSOR_LEFT	= GPIO16;
+auto& GPIO_CURSOR_UP	= GPIO17;
+auto& GPIO_CURSOR_DOWN	= GPIO18;
+auto& GPIO_CURSOR_RIGHT	= GPIO19;
+auto& GPIO_LBUTTON		= GPIO20;
+auto& GPIO_RBUTTON		= GPIO21;
+
 //-----------------------------------------------------------------------------
 // Mouse
 //-----------------------------------------------------------------------------
 class Mouse : public USBD::Mouse {
+private:
+	bool senseFlagPrev_;
 public:
-	Mouse(USBD::Device& device) : USBD::Mouse(device, "RaspberryPi Pico Mouse", 0x81) {}
+	Mouse(USBD::Device& device) : USBD::Mouse(device, "RaspberryPi Pico Mouse", 0x81), senseFlagPrev_{false} {}
 public:
 	virtual void OnTask() override;
 };
@@ -35,12 +44,12 @@ int main(void)
 	}, 0x0409, "RaspberryPi Pico HMI", "RaspberryPi Pico HMI Device", "0123456789ABCDEF");
 	Mouse mouse(device);
 	device.Initialize();
-	GPIO16.init().set_dir_IN().pull_up();
-	GPIO17.init().set_dir_IN().pull_up();
-	GPIO18.init().set_dir_IN().pull_up();
-	GPIO19.init().set_dir_IN().pull_up();
-	GPIO20.init().set_dir_IN().pull_up();
-	GPIO21.init().set_dir_IN().pull_up();
+	GPIO_CURSOR_LEFT	.init().set_dir_IN().pull_up();
+	GPIO_CURSOR_UP		.init().set_dir_IN().pull_up();
+	GPIO_CURSOR_DOWN	.init().set_dir_IN().pull_up();
+	GPIO_CURSOR_RIGHT	.init().set_dir_IN().pull_up();
+	GPIO_LBUTTON		.init().set_dir_IN().pull_up();
+	GPIO_RBUTTON		.init().set_dir_IN().pull_up();
 	for (;;) {
 		device.Task();
 	}
@@ -53,14 +62,17 @@ int main(void)
 void Mouse::OnTask()
 {
 	if (!hid_ready()) return;
-	bool btnB = !GPIO21.get();
-	if (btnB) {
-		uint8_t report_id = 0;
-		uint8_t button_mask = 0;
-		int8_t x = 5;
-		int8_t y = 5;
-		int8_t vertical = 0;
-		int8_t horizontal = 0;
-		hid_mouse_report(report_id, button_mask, x, y, vertical, horizontal);
-	}
+	bool senseFlag = false;
+	uint8_t report_id = 0;
+	uint8_t buttons = 0;
+	int8_t x = 0, y = 0;
+	int8_t vertical = 0, horizontal = 0;
+	if (!GPIO_CURSOR_LEFT.get())	{ senseFlag = true; x = -5; }
+	if (!GPIO_CURSOR_UP.get())		{ senseFlag = true; y = -5; }
+	if (!GPIO_CURSOR_DOWN.get())	{ senseFlag = true; y = 5; }
+	if (!GPIO_CURSOR_RIGHT.get())	{ senseFlag = true; x = 5; }
+	if (!GPIO_LBUTTON.get())		{ senseFlag = true; buttons |= 1 << 0; }
+	if (!GPIO_RBUTTON.get())		{ senseFlag = true; buttons |= 1 << 1; }
+	if (senseFlag || senseFlagPrev_) hid_mouse_report(report_id, buttons, x, y, vertical, horizontal);
+	senseFlagPrev_ = senseFlag;
 }

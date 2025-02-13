@@ -7,6 +7,13 @@
 
 using namespace jxglib;
 
+auto& GPIO_ARROW_LEFT	= GPIO16;
+auto& GPIO_ARROW_UP		= GPIO17;
+auto& GPIO_ARROW_DOWN	= GPIO18;
+auto& GPIO_ARROW_RIGHT	= GPIO19;
+auto& GPIO_PAGE_UP		= GPIO20;
+auto& GPIO_PAGE_DOWN	= GPIO21;
+
 //-----------------------------------------------------------------------------
 // Keyboard
 //-----------------------------------------------------------------------------
@@ -41,12 +48,12 @@ int main(void)
 	}, 0x0409, "RaspberryPi Pico HMI", "RaspberryPi Pico HMI Device", "0123456789ABCDEF");
 	Keyboard keyboard(device);
 	device.Initialize();
-	GPIO16.init().set_dir_IN().pull_up();
-	GPIO17.init().set_dir_IN().pull_up();
-	GPIO18.init().set_dir_IN().pull_up();
-	GPIO19.init().set_dir_IN().pull_up();
-	GPIO20.init().set_dir_IN().pull_up();
-	GPIO21.init().set_dir_IN().pull_up();
+	GPIO_ARROW_LEFT		.init().set_dir_IN().pull_up();
+	GPIO_ARROW_UP		.init().set_dir_IN().pull_up();
+	GPIO_ARROW_DOWN		.init().set_dir_IN().pull_up();
+	GPIO_ARROW_RIGHT	.init().set_dir_IN().pull_up();
+	GPIO_PAGE_UP		.init().set_dir_IN().pull_up();
+	GPIO_PAGE_DOWN		.init().set_dir_IN().pull_up();
 	for (;;) {
 		device.Task();
 	}
@@ -63,15 +70,14 @@ void Keyboard::OnTask()
 	uint8_t modifier  = 0;
 	uint8_t keycode[6] = { 0 };
 	int nKeycode = 0;
-	if (!GPIO16.get() && nKeycode < sizeof(keycode)) keycode[nKeycode++] = HID_KEY_ARROW_LEFT;
-	if (!GPIO17.get() && nKeycode < sizeof(keycode)) keycode[nKeycode++] = HID_KEY_ARROW_UP;
-	if (!GPIO18.get() && nKeycode < sizeof(keycode)) keycode[nKeycode++] = HID_KEY_ARROW_DOWN;
-	if (!GPIO19.get() && nKeycode < sizeof(keycode)) keycode[nKeycode++] = HID_KEY_ARROW_RIGHT;
-	if (!GPIO20.get() && nKeycode < sizeof(keycode)) keycode[nKeycode++] = HID_KEY_PAGE_UP;
-	if (!GPIO21.get() && nKeycode < sizeof(keycode)) keycode[nKeycode++] = HID_KEY_PAGE_DOWN;
+	if (!GPIO_ARROW_LEFT.get())		keycode[nKeycode++] = HID_KEY_ARROW_LEFT;
+	if (!GPIO_ARROW_UP.get())		keycode[nKeycode++] = HID_KEY_ARROW_UP;
+	if (!GPIO_ARROW_DOWN.get())		keycode[nKeycode++] = HID_KEY_ARROW_DOWN;
+	if (!GPIO_ARROW_RIGHT.get())	keycode[nKeycode++] = HID_KEY_ARROW_RIGHT;
+	if (!GPIO_PAGE_UP.get())		keycode[nKeycode++] = HID_KEY_PAGE_UP;
+	if (!GPIO_PAGE_DOWN.get())		keycode[nKeycode++] = HID_KEY_PAGE_DOWN;
 	if (::tud_suspended()) {
-		// Wake up host if we are in suspend mode
-		// and REMOTE_WAKEUP feature is enabled by host
+		// Wake up host if we are in suspend mode and REMOTE_WAKEUP feature is enabled by host
 		if (nKeycode > 0) ::tud_remote_wakeup();
 		return;
 	}
@@ -85,18 +91,15 @@ void Keyboard::OnTask()
 
 uint16_t Keyboard::On_GET_REPORT(uint8_t reportID, hid_report_type_t reportType, uint8_t* report, uint16_t reportLength)
 {
-	::printf("On_GET_REPORT()\n");
 	return 0;
 }
 
 void Keyboard::On_GET_REPORT_Complete(const uint8_t* report, uint16_t reportLength)
 {
-	::printf("On_GET_REPORT_Complete()\n");
 }
 
 void Keyboard::On_SET_REPORT(uint8_t reportID, hid_report_type_t report_type, const uint8_t* report, uint16_t reportLength)
 {
-	::printf("On_SET_REPORT()\n");
 	if (report_type == HID_REPORT_TYPE_OUTPUT) {
 		if (reportLength < 1) {
 			// do nothing
@@ -110,5 +113,4 @@ void Keyboard::On_SET_REPORT(uint8_t reportID, hid_report_type_t report_type, co
 
 void Keyboard::On_SET_PROTOCOL(uint8_t protocol)
 {
-	::printf("On_SET_PROTOCOL()\n");
 }
