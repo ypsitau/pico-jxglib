@@ -24,16 +24,6 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-// Mouse
-//-----------------------------------------------------------------------------
-class Mouse : public USBD::Mouse {
-public:
-	Mouse(USBD::Device& device) : USBD::Mouse(device, "RaspberryPi Pico Mouse", 0x82) {}
-public:
-	virtual void OnTask() override;
-};
-
-//-----------------------------------------------------------------------------
 // main
 //-----------------------------------------------------------------------------
 int main(void)
@@ -48,12 +38,8 @@ int main(void)
 		idVendor:			0xcafe,
 		idProduct:			USBD::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
-		iManufacturer:		0x01,
-		iProduct:			0x02,
-		iSerialNumber:		0x03,
 	}, 0x0409, "RaspberryPi Pico HMI", "RaspberryPi Pico HMI Device", "0123456789ABCDEF");
 	Keyboard keyboard(device);
-	Mouse mouse(device);
 	device.Initialize();
 	GPIO16.init().set_dir_IN().pull_up();
 	GPIO17.init().set_dir_IN().pull_up();
@@ -125,21 +111,4 @@ void Keyboard::On_SET_REPORT(uint8_t reportID, hid_report_type_t report_type, co
 void Keyboard::On_SET_PROTOCOL(uint8_t protocol)
 {
 	::printf("On_SET_PROTOCOL()\n");
-}
-
-//-----------------------------------------------------------------------------
-// Mouse
-//-----------------------------------------------------------------------------
-void Mouse::OnTask()
-{
-	if (!hid_ready()) return;
-	bool btnB = !GPIO21.get();
-	if (btnB) {
-		uint8_t report_id = 0;
-		uint8_t button_mask = 0;
-		int8_t vertical = 0;
-		int8_t horizontal = 0;
-		int8_t delta = 5;
-		hid_mouse_report(report_id, button_mask, delta, delta, vertical, horizontal);
-	}
 }
