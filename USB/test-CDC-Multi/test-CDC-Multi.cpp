@@ -25,26 +25,25 @@ public:
 
 void EchoBack::OnTask()
 {
+	if (!cdc_available()) return;
 	char buff[64];
-	if (cdc_available()) {
-		int bytes = cdc_read(buff, sizeof(buff));
-		switch (mode_) {
-		case Mode::Normal: {
-			break;
-		}
-		case Mode::Upper: {
-			for (int i = 0; i < bytes; i++) buff[i] = toupper(buff[i]);
-			break;
-		}
-		case Mode::Lower: {
-			for (int i = 0; i < bytes; i++) buff[i] = tolower(buff[i]);
-			break;
-		}
-		default: break;
-		}
-		cdc_write(buff, bytes);
-		cdc_write_flush();
+	int bytes = cdc_read(buff, sizeof(buff));
+	switch (mode_) {
+	case Mode::Normal: {
+		break;
 	}
+	case Mode::Upper: {
+		for (int i = 0; i < bytes; i++) buff[i] = toupper(buff[i]);
+		break;
+	}
+	case Mode::Lower: {
+		for (int i = 0; i < bytes; i++) buff[i] = tolower(buff[i]);
+		break;
+	}
+	default: break;
+	}
+	cdc_write(buff, bytes);
+	cdc_write_flush();
 }
 
 //-----------------------------------------------------------------------------

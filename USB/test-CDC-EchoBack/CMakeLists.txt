@@ -28,33 +28,33 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-CDC C CXX ASM)
+project(test-CDC-EchoBack C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-CDC test-CDC.cpp)
+add_executable(test-CDC-EchoBack test-CDC-EchoBack.cpp)
 
-pico_set_program_name(test-CDC "test-CDC")
-pico_set_program_version(test-CDC "0.1")
+pico_set_program_name(test-CDC-EchoBack "test-CDC-EchoBack")
+pico_set_program_version(test-CDC-EchoBack "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-CDC 1)
-pico_enable_stdio_usb(test-CDC 0)
+pico_enable_stdio_uart(test-CDC-EchoBack 1)
+pico_enable_stdio_usb(test-CDC-EchoBack 0)
 
 # Add the standard library to the build
-target_link_libraries(test-CDC
+target_link_libraries(test-CDC-EchoBack
 	pico_stdlib
 	tinyusb_device
 	jxglib_USBD)
 
 # Add the standard include files to the build
-target_include_directories(test-CDC PRIVATE
+target_include_directories(test-CDC-EchoBack PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-CDC)
+pico_add_extra_outputs(test-CDC-EchoBack)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
