@@ -38,6 +38,10 @@ class Device {
 public:
 	static const int nInstancesMax = CFG_TUD_CDC + CFG_TUD_MSC + CFG_TUD_HID + CFG_TUD_AUDIO +
 		CFG_TUD_VIDEO + CFG_TUD_MIDI + CFG_TUD_VENDOR + CFG_TUD_BTH;
+	struct Attr {
+		static const uint8_t REMOTE_WAKEUP = TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP;
+		static const uint8_t SELF_POWERED = TUSB_DESC_CONFIG_ATT_SELF_POWERED;
+	};
 public:
 	tusb_desc_device_t deviceDesc_;
 	uint8_t rhport_;
@@ -74,11 +78,14 @@ public:
 	uint16_t langid_;
 	uint8_t iStringDescCur_;
 	uint16_t stringDesc_[128];
+	uint8_t attr_;
+	uint16_t power_ma_;
 public:
 	static Device* Instance;
 public:
 	Device(const tusb_desc_device_t& deviceDesc, uint16_t langid,
-		const char* strManufacturer, const char* strProduct, const char* strSerialNumber);
+		const char* strManufacturer, const char* strProduct, const char* strSerialNumber,
+		uint8_t attr = 0, uint16_t power_ma = 100);
 public:
 	void RegisterConfigDesc(const void* configDesc, int bytes);
 	uint8_t RegisterStringDesc(const char* str);

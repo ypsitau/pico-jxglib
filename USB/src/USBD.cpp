@@ -12,8 +12,9 @@ namespace jxglib::USBD {
 Device* Device::Instance = nullptr;
 
 Device::Device(const tusb_desc_device_t& deviceDesc, uint16_t langid,
-		const char* strManufacturer, const char* strProduct, const char* strSerialNumber) :
-	deviceDesc_{deviceDesc}, langid_{langid}, interfaceNumCur_{0},
+		const char* strManufacturer, const char* strProduct, const char* strSerialNumber,
+		uint8_t attr, uint16_t power_ma) :
+	deviceDesc_{deviceDesc}, langid_{langid}, attr_{attr}, power_ma_{power_ma}, interfaceNumCur_{0},
 	offsetConfigDesc_{TUD_CONFIG_DESC_LEN}, iStringDescCur_{1},
 	nInstances_CDC_{0}, nInstances_MSC_{0}, nInstances_HID_{0}
 {
@@ -74,14 +75,11 @@ uint8_t Device::AddInterface_HID(HID* pHID)
 
 void Device::Initialize(uint8_t rhport)
 {
-	uint8_t attr = TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP;
-	uint8_t power_ma = 100;
 	uint8_t config_num = 1;
 	uint8_t stridx = 0;
 	uint8_t configDesc[] = {
 		9, TUSB_DESC_CONFIGURATION, U16_TO_U8S_LE(offsetConfigDesc_), interfaceNumCur_, config_num,
-		stridx, static_cast<uint8_t>(TU_BIT(7) | attr), static_cast<uint8_t>(power_ma / 2)
-		//TUD_CONFIG_DESCRIPTOR(1, interfaceNumCur_, 0, offsetConfigDesc_, attr, power_ma)
+		stridx, static_cast<uint8_t>(TU_BIT(7) | attr_), static_cast<uint8_t>(power_ma_ / 2)
 	};
 	::memcpy(configDescAccum_, configDesc, sizeof(configDesc));
 	for (int iInstance = 0; iInstance < nInstancesMax; iInstance++) {

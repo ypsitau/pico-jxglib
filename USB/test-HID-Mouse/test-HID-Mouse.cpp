@@ -41,7 +41,8 @@ int main(void)
 		idVendor:			0xcafe,
 		idProduct:			USBD::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
-	}, 0x0409, "RaspberryPi Pico HMI", "RaspberryPi Pico HMI Device", "0123456789ABCDEF");
+	}, 0x0409, "RaspberryPi Pico HMI", "RaspberryPi Pico HMI Device", "0123456789ABCDEF",
+		USBD::Device::Attr::REMOTE_WAKEUP);
 	Mouse mouse(device);
 	device.Initialize();
 	GPIO_CURSOR_LEFT	.init().set_dir_IN().pull_up();
@@ -61,7 +62,6 @@ int main(void)
 //-----------------------------------------------------------------------------
 void Mouse::OnTask()
 {
-	if (!hid_ready()) return;
 	bool senseFlag = false;
 	uint8_t report_id = 0;
 	uint8_t buttons = 0;
@@ -73,6 +73,13 @@ void Mouse::OnTask()
 	if (!GPIO_CURSOR_RIGHT.get())	{ senseFlag = true; x = 5; }
 	if (!GPIO_LBUTTON.get())		{ senseFlag = true; buttons |= 1 << 0; }
 	if (!GPIO_RBUTTON.get())		{ senseFlag = true; buttons |= 1 << 1; }
-	if (senseFlag || senseFlagPrev_) hid_mouse_report(report_id, buttons, x, y, vertical, horizontal);
+	if (::tud_suspended()) {
+		// Wake up host if we are in suspend mode and REMOTE_WAKEUP feature is enabled by host
+		if (senseFlag) ::tud_remote_wakeup();
+	} else if (!hid_ready()) {
+		// do nothing
+	} else if (senseFlag || senseFlagPrev_) {
+		hid_mouse_report(report_id, buttons, x, y, vertical, horizontal);
+	}
 	senseFlagPrev_ = senseFlag;
 }

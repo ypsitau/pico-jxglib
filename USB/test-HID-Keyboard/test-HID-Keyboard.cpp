@@ -45,7 +45,8 @@ int main(void)
 		idVendor:			0xcafe,
 		idProduct:			USBD::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
-	}, 0x0409, "RaspberryPi Pico HMI", "RaspberryPi Pico HMI Device", "0123456789ABCDEF");
+	}, 0x0409, "RaspberryPi Pico HMI", "RaspberryPi Pico HMI Device", "0123456789ABCDEF",
+		USBD::Device::Attr::REMOTE_WAKEUP);
 	Keyboard keyboard(device);
 	device.Initialize();
 	GPIO_ARROW_LEFT		.init().set_dir_IN().pull_up();
