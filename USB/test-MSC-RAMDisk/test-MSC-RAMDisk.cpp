@@ -12,15 +12,14 @@ using namespace jxglib;
 //-----------------------------------------------------------------------------
 class RAMDisk : public USBD::MSC {
 public:
-	static const int BlockNum  = 16;	// 8KB is the smallest size that windows allow to mount
+	static const int BlockCount = 16;	// 8KB is the smallest size that windows allow to mount
 	static const int BlockSize = 512;
 private:
 	bool ejected_;
-	static uint8_t blocks_[BlockNum][BlockSize];
+	static uint8_t blocks_[BlockCount][BlockSize];
 public:
 	RAMDisk(USBD::Device& device) : USBD::MSC(device, "RAMDisk Interface", 0x01, 0x81), ejected_{false} {}
 public:
-	void Initialize() {}
 	virtual void On_msc_inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]) override;
 	virtual bool On_msc_test_unit_ready(uint8_t lun) override;
 	virtual void On_msc_capacity(uint8_t lun, uint32_t* block_count, uint16_t* block_size) override;
@@ -36,10 +35,10 @@ public:
 If you find any bugs or get any questions, feel free to file an\r\n\
 issue at github.com/hathach/tinyusb"
 
-uint8_t RAMDisk::blocks_[BlockNum][BlockSize] =
+uint8_t RAMDisk::blocks_[BlockCount][BlockSize] =
 {
 	//------------- Block0: Boot Sector -------------//
-	// byte_per_sector    = BlockSize; fat12_sector_num_16  = BlockNum;
+	// byte_per_sector    = BlockSize; fat12_sector_num_16  = BlockCount;
 	// sector_per_cluster = 1; reserved_sectors = 1;
 	// fat_num            = 1; fat12_root_entry_num = 16;
 	// sector_per_fat     = 1; sector_per_track = 1; head_num = 1; hidden_sectors = 0;
@@ -104,9 +103,9 @@ void RAMDisk::On_msc_inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_
 	const char vid[] = "TinyUSB";
 	const char pid[] = "Mass Storage";
 	const char rev[] = "1.0";
-	memcpy(vendor_id  , vid, strlen(vid));
-	memcpy(product_id , pid, strlen(pid));
-	memcpy(product_rev, rev, strlen(rev));
+	memcpy(vendor_id,	vid, strlen(vid));
+	memcpy(product_id,	pid, strlen(pid));
+	memcpy(product_rev,	rev, strlen(rev));
 }
 
 bool RAMDisk::On_msc_test_unit_ready(uint8_t lun)
@@ -122,7 +121,7 @@ bool RAMDisk::On_msc_test_unit_ready(uint8_t lun)
 
 void RAMDisk::On_msc_capacity(uint8_t lun, uint32_t* block_count, uint16_t* block_size)
 {
-	*block_count = BlockNum;
+	*block_count = BlockCount;
 	*block_size  = BlockSize;
 }
 
@@ -141,8 +140,7 @@ bool RAMDisk::On_msc_start_stop(uint8_t lun, uint8_t power_condition, bool start
 
 int32_t RAMDisk::On_msc_read10(uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize)
 {
-	::printf("read10(lba=%d)\n", lba);
-	if (lba >= BlockNum) return -1;
+	if (lba >= BlockCount) return -1;
 	memcpy(buffer, blocks_[lba] + offset, bufsize);
 	return bufsize;
 }
@@ -154,7 +152,7 @@ bool RAMDisk::On_msc_is_writable(uint8_t lun)
 
 int32_t RAMDisk::On_msc_write10(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize)
 {
-	if (lba >= BlockNum) return -1;
+	if (lba >= BlockCount) return -1;
 	memcpy(blocks_[lba] + offset, buffer, bufsize);
 	return bufsize;
 }
@@ -183,12 +181,11 @@ int main(void)
 		bDeviceSubClass:	0x00,
 		bDeviceProtocol:	0x00,
 		bMaxPacketSize0:	CFG_TUD_ENDPOINT0_SIZE,
-		idVendor:			0xcaff,
+		idVendor:			0xcafe,
 		idProduct:			USBD::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
 	}, 0x0409, "RPi RAMDisk", "RPi RAMDisk Device", "3141592653");
 	RAMDisk ramDisk(device);
-	ramDisk.Initialize();
 	device.Initialize();
 	for (;;) {
 		device.Task();

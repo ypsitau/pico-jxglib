@@ -53,9 +53,6 @@ int main(void)
 		idVendor:			0xcafe,
 		idProduct:			USBD::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
-		iManufacturer:		0x01,
-		iProduct:			0x02,
-		iSerialNumber:		0x03,
 	}, 0x0409, "RaspberryPi Pico HMI", "RaspberryPi Pico HMI Device", "0123456789ABCDEF");
 	Keyboard keyboard(device);
 	Mouse mouse(device);

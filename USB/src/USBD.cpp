@@ -14,7 +14,7 @@ Device* Device::Instance = nullptr;
 Device::Device(const tusb_desc_device_t& deviceDesc, uint16_t langid,
 		const char* strManufacturer, const char* strProduct, const char* strSerialNumber) :
 	deviceDesc_{deviceDesc}, langid_{langid}, interfaceNumCur_{0},
-	offsetConfigDesc_{TUD_CONFIG_DESC_LEN}, iStringDescCur_{4},
+	offsetConfigDesc_{TUD_CONFIG_DESC_LEN}, iStringDescCur_{1},
 	nInstances_CDC_{0}, nInstances_MSC_{0}, nInstances_HID_{0}
 {
 	for (int iInstance = 0; iInstance < nInstancesMax; iInstance++) {
@@ -23,13 +23,10 @@ Device::Device(const tusb_desc_device_t& deviceDesc, uint16_t langid,
 	Instance = this;
 	deviceDesc_.bLength = sizeof(tusb_desc_device_t);
 	deviceDesc_.bDescriptorType		= TUSB_DESC_DEVICE;
-	deviceDesc_.iManufacturer		= 1;
-	deviceDesc_.iProduct			= 2;
-	deviceDesc_.iSerialNumber		= 3;
+	deviceDesc_.iManufacturer		= RegisterStringDesc(strManufacturer);
+	deviceDesc_.iProduct			= RegisterStringDesc(strProduct);
+	deviceDesc_.iSerialNumber		= RegisterStringDesc(strSerialNumber);
 	deviceDesc_.bNumConfigurations	= 1;
-	stringDescTbl_[deviceDesc_.iManufacturer] = strManufacturer;
-	stringDescTbl_[deviceDesc_.iProduct] = strProduct;
-	stringDescTbl_[deviceDesc_.iSerialNumber] = strSerialNumber;
 }
 
 void Device::RegisterConfigDesc(const void* configDesc, int bytes)
@@ -77,8 +74,14 @@ uint8_t Device::AddInterface_HID(HID* pHID)
 
 void Device::Initialize(uint8_t rhport)
 {
+	uint8_t attr = TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP;
+	uint8_t power_ma = 100;
+	uint8_t config_num = 1;
+	uint8_t stridx = 0;
 	uint8_t configDesc[] = {
-		TUD_CONFIG_DESCRIPTOR(1, interfaceNumCur_, 0, offsetConfigDesc_, TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP, 100)
+		9, TUSB_DESC_CONFIGURATION, U16_TO_U8S_LE(offsetConfigDesc_), interfaceNumCur_, config_num,
+		stridx, static_cast<uint8_t>(TU_BIT(7) | attr), static_cast<uint8_t>(power_ma / 2)
+		//TUD_CONFIG_DESCRIPTOR(1, interfaceNumCur_, 0, offsetConfigDesc_, attr, power_ma)
 	};
 	::memcpy(configDescAccum_, configDesc, sizeof(configDesc));
 	for (int iInstance = 0; iInstance < nInstancesMax; iInstance++) {
