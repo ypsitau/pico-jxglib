@@ -74,7 +74,6 @@ int main(void)
 //-----------------------------------------------------------------------------
 void Keyboard::OnTask()
 {
-	if (!hid_ready()) return;
 	uint8_t report_id = 0;
 	uint8_t modifier  = 0;
 	uint8_t keycode[6] = { 0 };
@@ -86,9 +85,9 @@ void Keyboard::OnTask()
 	if (::tud_suspended()) {
 		// Wake up host if we are in suspend mode and REMOTE_WAKEUP feature is enabled by host
 		if (nKeycode > 0) ::tud_remote_wakeup();
-		return;
-	}
-	if (nKeycode > 0) {
+	} else if (!hid_ready()) {
+		// do nothing
+	} else if (nKeycode > 0) {
 		hid_keyboard_report(report_id, modifier, keycode);
 	} else if (nKeycodePrev_ > 0) {
 		hid_keyboard_report(report_id, modifier, nullptr);
@@ -101,7 +100,6 @@ void Keyboard::OnTask()
 //-----------------------------------------------------------------------------
 void Mouse::OnTask()
 {
-	if (!hid_ready()) return;
 	bool senseFlag = false;
 	uint8_t report_id = 0;
 	uint8_t buttons = 0;
@@ -109,6 +107,13 @@ void Mouse::OnTask()
 	int8_t vertical = 0, horizontal = 0;
 	if (!GPIO_CURSOR_UP_LEFT.get())		{ senseFlag = true; x = y = -5; }
 	if (!GPIO_CURSOR_DOWN_RIGHT.get())	{ senseFlag = true; x = y = 5; }
-	if (senseFlag || senseFlagPrev_) hid_mouse_report(report_id, buttons, x, y, vertical, horizontal);
+	if (::tud_suspended()) {
+		// Wake up host if we are in suspend mode and REMOTE_WAKEUP feature is enabled by host
+		if (senseFlag) ::tud_remote_wakeup();
+	} else if (!hid_ready()) {
+		// do nothing
+	} else if (senseFlag || senseFlagPrev_) {
+		hid_mouse_report(report_id, buttons, x, y, vertical, horizontal);
+	}
 	senseFlagPrev_ = senseFlag;
 }
