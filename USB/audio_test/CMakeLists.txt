@@ -35,7 +35,7 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(audio_test main.c usb_descritors.c)
+add_executable(audio_test main.c usb_descriptors.c)
 
 pico_set_program_name(audio_test "audio_test")
 pico_set_program_version(audio_test "0.1")

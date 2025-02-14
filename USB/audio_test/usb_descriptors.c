@@ -23,7 +23,7 @@
  *
  */
 
-#include "bsp/board_api.h"
+//#include "bsp/board_api.h"
 #include "tusb.h"
 
 /* A combination of interfaces must have a unique product id, since PC will save device driver after the first plug.
@@ -137,6 +137,37 @@ char const* string_desc_arr [] =
 };
 
 static uint16_t _desc_str[32 + 1];
+
+static inline size_t board_usb_get_serial(uint16_t desc_str1[], size_t max_chars) {
+	uint8_t uid[16] TU_ATTR_ALIGNED(4);
+	size_t uid_len;
+
+	// TODO work with make, but not working with esp32s3 cmake
+	//if ( board_get_unique_id ) {
+	//  uid_len = board_get_unique_id(uid, sizeof(uid));
+	{
+		// fixed serial string is 01234567889ABCDEF
+		uint32_t* uid32 = (uint32_t*) (uintptr_t) uid;
+		uid32[0] = 0x67452301;
+		uid32[1] = 0xEFCDAB89;
+		uid_len = 8;
+	}
+
+	if ( uid_len > max_chars / 2 ) uid_len = max_chars / 2;
+
+	for ( size_t i = 0; i < uid_len; i++ ) {
+		for ( size_t j = 0; j < 2; j++ ) {
+			const char nibble_to_hex[16] = {
+					'0', '1', '2', '3', '4', '5', '6', '7',
+					'8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
+			};
+			uint8_t const nibble = (uid[i] >> (j * 4)) & 0xf;
+			desc_str1[i * 2 + (1 - j)] = nibble_to_hex[nibble]; // UTF-16-LE
+		}
+	}
+
+	return 2 * uid_len;
+}
 
 // Invoked when received GET STRING DESCRIPTOR request
 // Application return pointer to descriptor, whose contents must exist long enough for transfer to complete

@@ -35,7 +35,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "bsp/board_api.h"
+//#include "bsp/board_api.h"
 #include "tusb.h"
 
 //--------------------------------------------------------------------+
@@ -76,18 +76,19 @@ void audio_task(void);
 /*------------- MAIN -------------*/
 int main(void)
 {
-  board_init();
+  //board_init();
 
   // init device stack on configured roothub port
-  tusb_rhport_init_t dev_init = {
-    .role = TUSB_ROLE_DEVICE,
-    .speed = TUSB_SPEED_AUTO
-  };
-  tusb_init(BOARD_TUD_RHPORT, &dev_init);
+  //tusb_rhport_init_t dev_init = {
+  //  .role = TUSB_ROLE_DEVICE,
+  //  .speed = TUSB_SPEED_AUTO
+  //};
+  //tusb_init(BOARD_TUD_RHPORT, &dev_init);
+	tud_init(BOARD_TUD_RHPORT);
 
-  if (board_init_after_tusb) {
-    board_init_after_tusb();
-  }
+  //if (board_init_after_tusb) {
+  //  board_init_after_tusb();
+  //}
 
   // Init values
   sampFreq = CFG_TUD_AUDIO_FUNC_1_SAMPLE_RATE;
@@ -436,13 +437,13 @@ bool tud_audio_set_itf_close_EP_cb(uint8_t rhport, tusb_control_request_t const 
 //--------------------------------------------------------------------+
 void led_blinking_task(void)
 {
-  static uint32_t start_ms = 0;
-  static bool led_state = false;
-
-  // Blink every interval ms
-  if ( board_millis() - start_ms < blink_interval_ms) return; // not enough time
-  start_ms += blink_interval_ms;
-
-  board_led_write(led_state);
-  led_state = 1 - led_state; // toggle
+  //static uint32_t start_ms = 0;
+  //static bool led_state = false;
+//
+  //// Blink every interval ms
+  //if ( board_millis() - start_ms < blink_interval_ms) return; // not enough time
+  //start_ms += blink_interval_ms;
+//
+  //board_led_write(led_state);
+  //led_state = 1 - led_state; // toggle
 }
