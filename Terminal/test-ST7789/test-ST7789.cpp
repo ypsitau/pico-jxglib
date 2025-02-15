@@ -23,7 +23,6 @@ int main()
 		.SetFont(Font::shinonome16).SetSpacingRatio(1, 1.5)
 		.SetColor({255, 255, 255}).SetColorBg({0, 0, 64})
 		.ClearScreen().Print(Text_Botchan); // Text_FarFarAway_700Words
-
 	::printf("\n");
 	for (;;) {
 		::printf("[J] Roll Down  [K] Roll Up  [D] Dump\r");

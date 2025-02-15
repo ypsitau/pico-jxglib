@@ -32,8 +32,9 @@ private:
 	LineBuff lineBuff_;
 	Drawable::Context context_;
 	EventHandler* pEventHandler_;
+	const char* pLineStop_;
 public:
-	Terminal() : pDrawable_{nullptr}, nLinesWhole_{0}, pEventHandler_{nullptr} {}
+	Terminal() : pDrawable_{nullptr}, nLinesWhole_{0}, pEventHandler_{nullptr}, pLineStop_{nullptr} {}
 public:
 	bool Initialize(int bytes = 4096);
 	Terminal& AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);

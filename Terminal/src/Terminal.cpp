@@ -39,6 +39,7 @@ Terminal& Terminal::BeginRollBack()
 	const char* pLineTop = GetLineBuff().GetLineLast();
 	GetLineBuff().PrevLine(&pLineTop, nLines - 1);
 	GetLineBuff().SetLineMark(pLineTop);
+	pLineStop_ = pLineTop;
 	return *this;
 }
 
@@ -66,7 +67,7 @@ Terminal& Terminal::RollUp()
 Terminal& Terminal::RollDown()
 {
 	if (!IsRollingBack()) BeginRollBack();	
-	if (GetLineBuff().MoveLineMarkDown()) {
+	if (GetLineBuff().MoveLineMarkDown(pLineStop_)) {
 		DrawTextLines(0, GetLineBuff().GetLineMark(), GetRowNum());
 		GetDrawable().Refresh();
 	}
@@ -96,6 +97,7 @@ Printable& Terminal::Locate(int col, int row)
 
 Printable& Terminal::PutChar(char ch)
 {
+	if (IsRollingBack()) EndRollBack();	
 	int yAdvance = context_.CalcAdvanceY();
 	const FontSet& fontSet = GetFont();
 	uint32_t code;
