@@ -16,19 +16,24 @@ int main()
 	GPIO14.set_function_SPI1_SCK();
 	GPIO15.set_function_SPI1_TX();
 	ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
-	display.Initialize(Display::Dir::Rotate0);
+	display.Initialize(Display::Dir::Rotate90);
 	Terminal terminal;
 	terminal.Initialize();
 	terminal.AttachOutput(display)
-		.SetColorBg({0, 0, 64})
-		.SetFont(Font::shinonome16)
-		//.SetFont(Font::misaki_gothic)
-		.SetSpacingRatio(1, 1.5)
-		.ClearScreen();
-	terminal.Print(Text_Botchan);
-		//.Print(Text_FarFarAway_700Words);
+		.SetFont(Font::shinonome16).SetSpacingRatio(1, 1.5)
+		.SetColor({255, 255, 255}).SetColorBg({0, 0, 64})
+		.ClearScreen().Print(Text_Botchan); // Text_FarFarAway_700Words
+
+	::printf("\n");
 	for (;;) {
+		::printf("[J] Roll Down  [K] Roll Up  [D] Dump\r");
 		int ch = ::getchar();
-		if (ch == 'j') { terminal.RollUp(); } else if (ch == 'k') { terminal.RollDown(); }
+		if (ch == 'j') {
+			terminal.RollDown();
+		} else if (ch == 'k') {
+			terminal.RollUp();
+		} else if (ch == 'd') {
+			terminal.Dump.Cols(8).Ascii()(reinterpret_cast<const void*>(0x10000000), 64);
+		}
 	}
 }
