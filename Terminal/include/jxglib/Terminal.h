@@ -81,7 +81,8 @@ public:
 private:
 	void DrawTextLines(int iLine, const char* pLineTop, int nLines);
 	void DrawTextLine(int iLine, const char* pLineTop);
-	void EraseTextLine(int iLine, int nLines = 1);
+	void EraseTextLines(int iLine, int nLines);
+	void EraseToEndOfLine();
 	void ScrollUp();
 };
 

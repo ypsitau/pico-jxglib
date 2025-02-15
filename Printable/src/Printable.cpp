@@ -77,7 +77,7 @@ Printable& Printable::PrintfRaw(const char* format, ...)
 // Printable::DumpT
 //------------------------------------------------------------------------------
 Printable::DumpT::DumpT(Printable* pPrintable) : pPrintable_(pPrintable),
-	upperCaseFlag_{true}, nDigitsAddr_{0}, nCols_{16}, addrStart_{0}, bytesPerElem_{1},
+	upperCaseFlag_{true}, nDigitsAddr_{-1}, nCols_{16}, addrStart_{0}, bytesPerElem_{1},
 	bigEndianFlag_{false}, asciiFlag_{false}
 {}
 
@@ -88,15 +88,14 @@ Printable::DumpT& Printable::DumpT::operator()(const void* buff, int cnt)
 	char formatData[16];
 	char asciiBuff[64];
 	int iCol = 0;
-	int nDigitsAddr = 0;
-	if (nDigitsAddr_ > 0) {
-		nDigitsAddr = nDigitsAddr_;
-	} else {
+	int nDigitsAddr = nDigitsAddr_;
+	if (nDigitsAddr < 0) {
+		nDigitsAddr = 0;
 		uint32_t addrEnd = addrStart_ + ((cnt - 1) / nCols_) * nCols_ * bytesPerElem_;
 		for ( ; addrEnd; addrEnd >>= 4, nDigitsAddr++) ;
 		if (nDigitsAddr == 0) nDigitsAddr = 1;
 	}
-	::snprintf(formatAddr, sizeof(formatAddr), "%%0%d%c", nDigitsAddr, upperCaseFlag_? 'X' : 'x');
+	::snprintf(formatAddr, sizeof(formatAddr), "%%0%d%c  ", nDigitsAddr, upperCaseFlag_? 'X' : 'x');
 	::snprintf(formatData, sizeof(formatData), "%%0%d%s%c", bytesPerElem_ * 2,
 		(bytesPerElem_ < 4)? "" : (bytesPerElem_ < 8)? "l" : "ll", upperCaseFlag_? 'X' : 'x');
 	uint32_t addr = addrStart_;
@@ -104,10 +103,13 @@ Printable::DumpT& Printable::DumpT::operator()(const void* buff, int cnt)
 	const uint8_t* pElem = reinterpret_cast<const uint8_t*>(buff);
 	for (int i = 0; i < cnt; i++, pElem += bytesPerElem_) {
 		if (iCol == 0) {
-			printable.Printf(formatAddr, addr + i * bytesPerElem_);
+			if (nDigitsAddr > 0) {
+				printable.Printf(formatAddr, addr + i * bytesPerElem_);
+			}
 			pAsciiBuff = asciiBuff;
+		} else {
+			printable.Print((iCol % 8 == 0)? "  " : " ");
 		}
-		printable.Print((iCol % 8 == 0)? "  " : " ");
 		if (bytesPerElem_ == 1) {	
 			printable.Printf(formatData, *pElem);
 		} else if (bytesPerElem_ == 2) {

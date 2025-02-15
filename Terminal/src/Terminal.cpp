@@ -90,8 +90,8 @@ Printable& Terminal::Locate(int col, int row)
 {
 	const FontEntry& fontEntry = GetFont().GetFontEntry('M');
 	ptCursor_ = Point(
-			rectDst_.x + context_.CalcAdvanceX(fontEntry) * col,
-			rectDst_.y + context_.CalcAdvanceY() * row);
+		rectDst_.x + context_.CalcAdvanceX(fontEntry) * col,
+		rectDst_.y + context_.CalcAdvanceY() * row);
 	return *this;
 }
 
@@ -117,7 +117,6 @@ Printable& Terminal::PutChar(char ch)
 		} else if (code == '\r') {
 			GetLineBuff().PutChar('\r').PutChar('\0').MoveLineLastHere().PlaceChar('\0');
 			ptCursor_.x = rectDst_.x;
-			GetDrawable().DrawRectFill(rectDst_.x, ptCursor_.y, rectDst_.width, yAdvance, context_.colorBg);
 		} else {
 			if (ptCursor_.x + xAdvance > rectDst_.x + rectDst_.width) {
 				GetLineBuff().PutChar('\0').MoveLineLastHere();
@@ -171,10 +170,17 @@ void Terminal::DrawTextLine(int iLine, const char* pLineTop)
 	}
 }
 
-void Terminal::EraseTextLine(int iLine, int nLines)
+void Terminal::EraseTextLines(int iLine, int nLines)
 {
 	int yAdvance = context_.CalcAdvanceY();
 	GetDrawable().DrawRectFill(rectDst_.x, rectDst_.y + yAdvance * iLine, rectDst_.width, yAdvance * nLines, context_.colorBg);
+}
+
+void Terminal::EraseToEndOfLine()
+{
+	int yAdvance = context_.CalcAdvanceY();
+	GetDrawable().DrawRectFill(ptCursor_.x, ptCursor_.y,
+			rectDst_.x + rectDst_.width - ptCursor_.x, yAdvance, context_.colorBg);
 }
 
 void Terminal::ScrollUp()
@@ -183,7 +189,7 @@ void Terminal::ScrollUp()
 	const char* pLineTop = GetLineBuff().GetLineLast();
 	GetLineBuff().PrevLine(&pLineTop, nLines - 1);
 	DrawTextLines(0, pLineTop, nLines - 1);
-	EraseTextLine(nLines - 1);
+	EraseTextLines(nLines - 1, 1);
 	GetDrawable().Refresh();
 }
 
