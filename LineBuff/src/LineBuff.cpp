@@ -32,6 +32,13 @@ bool LineBuff::Allocate(int bytes)
 	return true;
 }
 
+void LineBuff::Clear()
+{
+	pBuffLast_ = buffBegin_;
+	pLineFirst_ = pLineLast_ = nullptr;
+	pLineMark_ = nullptr;
+}
+
 bool LineBuff::PrevLine(char** pp) const
 {
 	char* p = *pp;

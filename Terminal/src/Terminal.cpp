@@ -76,7 +76,9 @@ Terminal& Terminal::RollDown()
 
 Printable& Terminal::ClearScreen()
 {
-	GetDrawable().DrawRectFill(rectDst_, GetColorBg());
+	GetDrawable().DrawRectFill(rectDst_, GetColorBg()).Refresh();
+	GetLineBuff().Clear();
+	Locate(0, 0);
 	return *this;
 }
 
@@ -180,7 +182,7 @@ void Terminal::EraseToEndOfLine()
 {
 	int yAdvance = context_.CalcAdvanceY();
 	GetDrawable().DrawRectFill(ptCursor_.x, ptCursor_.y,
-			rectDst_.x + rectDst_.width - ptCursor_.x, yAdvance, context_.colorBg);
+		rectDst_.x + rectDst_.width - ptCursor_.x, yAdvance, context_.colorBg).Refresh();
 }
 
 void Terminal::ScrollUp()

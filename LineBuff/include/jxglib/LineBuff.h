@@ -40,6 +40,7 @@ public:
 	~LineBuff();
 public:
 	bool Allocate(int bytes);
+	void Clear();
 public:
 	char* GetBuffBegin() { return buffBegin_; }
 	char* GetBuffEnd() { return buffEnd_; }
