@@ -4,6 +4,8 @@
 #include "jxglib/Terminal.h"
 #include "jxglib/Font/shinonome12.h"
 #include "jxglib/Font/shinonome16.h"
+#include "jxglib/Font/sisd24x32.h"
+#include "jxglib/sample/Text_FarFarAway_700Words.h"
 
 using namespace jxglib;
 
@@ -22,13 +24,14 @@ int main()
 	terminal1.AttachOutput(display, {0, 0, 240, 160});
 	terminal2.AttachOutput(display, {0, 160, 120, 160});
 	terminal3.AttachOutput(display, {120, 160, 120, 160});
-	terminal1.SetColorBg(Color(0, 0, 32)).ClearScreen();
-	terminal2.SetColorBg(Color(0, 32, 0)).ClearScreen();
-	terminal3.SetColorBg(Color(32, 0, 0)).ClearScreen();
-	terminal1.SetFont(Font::shinonome16);
-	terminal2.SetFont(Font::shinonome12);
-	terminal3.SetFont(Font::shinonome12);
-	terminal1.Printf("[Terminal1]\nABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\n");
-	terminal2.Printf("[Terminal2]\nABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\n");
-	terminal3.Printf("[Terminal3]\nABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\n");
+	terminal1.SetColorBg(Color(0, 0, 128)).ClearScreen();
+	terminal2.SetColorBg(Color(0, 128, 0)).ClearScreen();
+	terminal3.SetColorBg(Color(128, 0, 0)).ClearScreen();
+	terminal1.SetFont(Font::shinonome16).SetSpacingRatio(1., 1.2);
+	terminal2.SetFont(Font::sisd24x32).SetSpacingRatio(1., 1.2);
+	terminal3.SetFont(Font::shinonome12).SetSpacingRatio(1., 1.2);
+	terminal1.Dump.Cols(8)(reinterpret_cast<const void*>(0x10000000), 64);
+	terminal2.Printf("0123456789ABCDEFGHIJ");
+	terminal3.Print(Text_FarFarAway_700Words);
+	for (;;) ::tight_loop_contents();
 }
