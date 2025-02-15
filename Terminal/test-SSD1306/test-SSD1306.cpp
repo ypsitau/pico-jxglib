@@ -10,14 +10,14 @@ using namespace jxglib;
 int main()
 {
 	::stdio_init_all();
-	::i2c_init(i2c1, 400 * 1000);
-	GPIO26.set_function_I2C1_SDA().pull_up();
-	GPIO27.set_function_I2C1_SCL().pull_up();
+	::i2c_init(i2c0, 400 * 1000);
+	GPIO4.set_function_I2C0_SDA().pull_up();
+	GPIO5.set_function_I2C0_SCL().pull_up();
 	GPIO18.init().pull_up();
 	GPIO19.init().pull_up();
 	GPIO20.init().pull_up();
 	GPIO21.init().pull_up();
-	SSD1306 display(i2c1);
+	SSD1306 display(i2c0);
 	display.Initialize();
 	Terminal terminal;
 	terminal.Initialize();
