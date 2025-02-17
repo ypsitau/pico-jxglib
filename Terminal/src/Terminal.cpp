@@ -10,7 +10,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 bool Terminal::Initialize(int bytes)
 {
-	return GetLineBuff().Allocate(bytes);
+	return GetLineBuff().Initialize(bytes);
 }
 
 Terminal& Terminal::AttachOutput(Drawable& drawable, const Rect& rect, Dir dir)

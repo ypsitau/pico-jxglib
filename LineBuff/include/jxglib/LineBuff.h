@@ -39,7 +39,7 @@ public:
 	LineBuff();
 	~LineBuff();
 public:
-	bool Allocate(int bytes);
+	bool Initialize(int bytes);
 	void Clear();
 public:
 	char* GetBuffBegin() { return buffBegin_; }

@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/Terminal.h"
+#include "jxglib/ST7789.h"
 #include "jxglib/Font/shinonome16-japanese-level2.h"
 #include "jxglib/sample/Text_Botchan.h"
-#include "jxglib/ST7789.h"
 
 using namespace jxglib;
 

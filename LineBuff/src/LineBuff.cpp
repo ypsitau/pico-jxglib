@@ -22,7 +22,7 @@ LineBuff::~LineBuff()
 	::free(buffBegin_);
 }
 
-bool LineBuff::Allocate(int bytes)
+bool LineBuff::Initialize(int bytes)
 {
 	buffBegin_ = reinterpret_cast<char*>(::malloc(bytes));
 	::memset(buffBegin_, 0xcc, bytes);

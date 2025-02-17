@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/Terminal.h"
+#include "jxglib/SSD1306.h"
 #include "jxglib/Font/naga10-japanese-level2.h"
 #include "jxglib/sample/Text_Botchan.h"
-#include "jxglib/SSD1306.h"
 
 using namespace jxglib;
 
@@ -17,7 +17,7 @@ int main()
 	GPIO19.init().pull_up();
 	GPIO20.init().pull_up();
 	GPIO21.init().pull_up();
-	SSD1306 display(i2c0);
+	SSD1306 display(i2c0, 0x3c);
 	display.Initialize();
 	Terminal terminal;
 	terminal.Initialize();
