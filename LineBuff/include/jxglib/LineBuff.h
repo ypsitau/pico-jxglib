@@ -13,16 +13,16 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // LineBuff
 //------------------------------------------------------------------------------
-class LineBuff {
+class LineBuff : public Printable {
 public:
-	class Stream : public jxglib::Stream {
+	class Reader : public Stream {
 	private:
 		WrappedCharFeeder charFeeder_;
 		const char* pBuffLast_;
 	public:
-		Stream(const char* p, const char* buffBegin, const char* biffEnd, const char* pBuffLast) :
-			charFeeder_(p, buffBegin, biffEnd), pBuffLast_{pBuffLast} {}
-		Stream(const Stream& stream) : charFeeder_(stream.charFeeder_) {}
+		Reader(const char* pBuffCur, const char* buffBegin, const char* buffEnd, const char* pBuffLast) :
+			charFeeder_(pBuffCur, buffBegin, buffEnd), pBuffLast_{pBuffLast} {}
+		Reader(const Reader& stream) : charFeeder_(stream.charFeeder_) {}
 	public:
 		// virtual functions of Stream
 		virtual bool Read(void* buff, int bytesBuff, int* pBytesRead) override;
@@ -70,12 +70,16 @@ public:
 	bool NextLine(const char** pp) const { return NextLine(const_cast<char**>(pp)); }
 	bool NextLine(const char** pp, int nLines) const;
 	LineBuff& PlaceChar(char ch) { *pBuffLast_ = ch; return *this; }
-	LineBuff& PutChar(char ch);
-	LineBuff& PutString(const char* str);
-	WrappedCharFeeder CreateCharFeeder(const char* p) { return WrappedCharFeeder(p, buffBegin_, buffEnd_); }
-	Stream CreateStream() const;
+	WrappedCharFeeder CreateCharFeeder(const char* pBuffCur) { return WrappedCharFeeder(pBuffCur, buffBegin_, buffEnd_); }
+	Reader CreateReader() const;
 public:
-	void Print() const;
+	void PrintInfo(Printable& printable) const;
+public:
+	// virtual functions of Printable
+	virtual Printable& ClearScreen() override { Clear(); return *this; }
+	virtual Printable& RefreshScreen() override { /* do nothing */ return *this; }
+	virtual Printable& Locate(int col, int row) override { /* do nothing */ return *this; }
+	virtual Printable& PutChar(char ch) override;
 };
 
 }

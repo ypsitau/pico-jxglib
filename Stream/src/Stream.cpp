@@ -30,4 +30,14 @@ bool Stream::PrintFrom(Stream&& streamFrom)
 	return true;
 }
 
+bool Stream::WriteTo(FILE* fp)
+{
+	int bytesRead;
+	char buff[1024];
+	while (Read(buff, sizeof(buff), &bytesRead)) {
+		if (::fwrite(buff, sizeof(char), bytesRead, fp) < bytesRead) return false;
+	}
+	return true;
+}
+
 }

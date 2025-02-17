@@ -87,7 +87,30 @@ bool LineBuff::NextLine(const char** pp, int nLines) const
 	return true;
 }
 
-LineBuff& LineBuff::PutChar(char ch)
+LineBuff::Reader LineBuff::CreateReader() const
+{
+	return Reader(pLineFirst_, buffBegin_, buffEnd_, pBuffLast_);
+}
+
+void LineBuff::PrintInfo(Printable& printable) const
+{
+	char buff[32];
+	auto ToString = [this](char* buff, const char* p) -> const char* {
+		if (p) {
+			::sprintf(buff, "%04x", p - buffBegin_);
+			return buff;
+		} else {
+			return "(null)";
+		}
+	};
+	printable.Dump.DigitsAddr(4).Ascii()(buffBegin_, buffEnd_ - buffBegin_);
+	printable.Printf("buffEnd:%s", ToString(buff, buffEnd_));
+	printable.Printf(" pBuffLast:%s", ToString(buff, pBuffLast_));
+	printable.Printf(" pLineFirst:%s", ToString(buff, pLineFirst_));
+	printable.Printf(" pLineLast:%s\n", ToString(buff, pLineLast_));
+}
+
+Printable& LineBuff::PutChar(char ch)
 {
 	*pBuffLast_ = ch;
 	WrappedPointer<char*> pointer(pBuffLast_, buffBegin_, buffEnd_);
@@ -101,48 +124,19 @@ LineBuff& LineBuff::PutChar(char ch)
 	return *this;
 }
 
-LineBuff& LineBuff::PutString(const char* str)
-{
-	for (const char* p = str; *p; p++) PutChar(*p);
-	return *this;
-}
-
-LineBuff::Stream LineBuff::CreateStream() const
-{
-	return Stream(pLineFirst_, buffBegin_, buffEnd_, pBuffLast_);
-}
-
-void LineBuff::Print() const
-{
-	char buff[32];
-	auto ToString = [this](char* buff, const char* p) -> const char* {
-		if (p) {
-			::sprintf(buff, "%04x", p - buffBegin_);
-			return buff;
-		} else {
-			return "(null)";
-		}
-	};
-	Printable::DumpT().DigitsAddr(4).Ascii()(buffBegin_, buffEnd_ - buffBegin_);
-	Printf("buffEnd:%s", ToString(buff, buffEnd_));
-	Printf(" pBuffLast:%s", ToString(buff, pBuffLast_));
-	Printf(" pLineFirst:%s", ToString(buff, pLineFirst_));
-	Printf(" pLineLast:%s\n", ToString(buff, pLineLast_));
-}
-
 //------------------------------------------------------------------------------
-// LineBuff::Stream
+// LineBuff::Reader
 //------------------------------------------------------------------------------
-bool LineBuff::Stream::Read(void* buff, int bytesBuff, int* pBytesRead)
+bool LineBuff::Reader::Read(void* buff, int bytesBuff, int* pBytesRead)
 {
 	int bytesRead = 0;
 	char* pDst = reinterpret_cast<char*>(buff);
 	for ( ; bytesRead < bytesBuff; charFeeder_.Forward()) {
-		const char* p = charFeeder_.GetPointer();
-		if (p == pBuffLast_) break;
-		if (*p) {
+		const char* pBuffCur = charFeeder_.GetPointer();
+		if (pBuffCur == pBuffLast_) break;
+		if (*pBuffCur) {
 			bytesRead++;
-			*pDst++ = *p;
+			*pDst++ = *pBuffCur;
 		}
 	}
 	*pBytesRead = bytesRead;

@@ -107,7 +107,8 @@ Printable& Terminal::PutChar(char ch)
 		const FontEntry& fontEntry = fontSet.GetFontEntry(code);
 		int xAdvance = context_.CalcAdvanceX(fontEntry);
 		if (code == '\n') {
-			GetLineBuff().PutChar('\n').PutChar('\0').MoveLineLastHere().PlaceChar('\0');
+			GetLineBuff().PutChar('\n').PutChar('\0');
+			GetLineBuff().MoveLineLastHere().PlaceChar('\0');
 			ptCursor_.x = rectDst_.x;
 			if (pEventHandler_) pEventHandler_->OnNewLine(*this);
 			if (ptCursor_.y + yAdvance * 2 <= rectDst_.y + rectDst_.height) {
@@ -117,11 +118,13 @@ Printable& Terminal::PutChar(char ch)
 				ScrollUp();
 			}
 		} else if (code == '\r') {
-			GetLineBuff().PutChar('\r').PutChar('\0').MoveLineLastHere().PlaceChar('\0');
+			GetLineBuff().PutChar('\r').PutChar('\0');
+			GetLineBuff().MoveLineLastHere().PlaceChar('\0');
 			ptCursor_.x = rectDst_.x;
 		} else {
 			if (ptCursor_.x + xAdvance > rectDst_.x + rectDst_.width) {
-				GetLineBuff().PutChar('\0').MoveLineLastHere();
+				GetLineBuff().PutChar('\0');
+				GetLineBuff().MoveLineLastHere();
 				ptCursor_.x = rectDst_.x;
 				if (pEventHandler_) pEventHandler_->OnNewLine(*this);
 				if (ptCursor_.y + yAdvance * 2 <= rectDst_.y + rectDst_.height) {
@@ -130,7 +133,8 @@ Printable& Terminal::PutChar(char ch)
 					ScrollUp();
 				}
 			}
-			GetLineBuff().PutString(decoder_.GetStringOrg()).PlaceChar('\0');
+			GetLineBuff().Print(decoder_.GetStringOrg());
+			GetLineBuff().PlaceChar('\0');
 			GetDrawable().DrawChar(ptCursor_, fontEntry, false, &context_);
 			ptCursor_.x += xAdvance;
 		}

@@ -22,7 +22,7 @@ public:
 	};
 public:
 	using Dir = Drawable::Dir;
-	using Stream = LineBuff::Stream;
+	using Reader = LineBuff::Reader;
 private:
 	Drawable* pDrawable_;
 	Rect rectDst_;
@@ -65,7 +65,7 @@ public:
 	int GetRowNum() const;
 	LineBuff& GetLineBuff() { return lineBuff_; }
 	const LineBuff& GetLineBuff() const { return lineBuff_; }
-	Stream CreateStream() const { return GetLineBuff().CreateStream(); }
+	Reader CreateReader() const { return GetLineBuff().CreateReader(); }
 public:
 	bool IsRollingBack() const { return !!GetLineBuff().GetLineMark(); }
 	Terminal& BeginRollBack();
