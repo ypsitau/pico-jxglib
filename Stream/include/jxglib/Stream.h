@@ -21,7 +21,12 @@ public:
 	bool WriteFrom(Stream& streamFrom) { return WriteFrom(std::move(streamFrom)); }
 	bool PrintFrom(Stream&& streamFrom);
 	bool PrintFrom(Stream& streamFrom) { return PrintFrom(std::move(streamFrom)); }
+	bool WriteTo(Stream&& streamTo) { return streamTo.WriteFrom(*this); }
+	bool WriteTo(Stream& streamTo) { return streamTo.WriteFrom(*this); }
+	bool PrintTo(Stream&& streamTo) { return streamTo.PrintFrom(*this); }
+	bool PrintTo(Stream& streamTo) { return streamTo.PrintFrom(*this); }
 	bool WriteTo(FILE* fp);
+	bool PrintTo(FILE* fp) { return WriteTo(fp); }
 public:
 	// virtual functions of Printable
 	virtual Printable& ClearScreen() override { /* do nothing */ return *this; }
