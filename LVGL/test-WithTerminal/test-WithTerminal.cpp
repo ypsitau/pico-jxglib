@@ -47,9 +47,9 @@ int main()
 		::lv_obj_add_event_cb(btnm, eventHandler_btnm, LV_EVENT_VALUE_CHANGED, &terminal);
 		::lv_obj_remove_flag(btnm, LV_OBJ_FLAG_CLICK_FOCUSABLE);
 		::lv_buttonmatrix_set_map(btnm, labelTbl);
-	
 	} while (0);
-	terminal.Print(Text_Botchan);	
+	terminal.Suppress().Print(Text_Botchan);
+	terminal.Suppress(false);
 	for (;;) {
 		::sleep_ms(5);
 		::lv_timer_handler();
@@ -58,7 +58,10 @@ int main()
 
 void eventHandler_btnm(lv_event_t* e)
 {
-	enum class Id { RollUp, Dump, RollDown, PrintBuffer };
+	enum class Id {
+		RollUp, Dump,
+		RollDown, PrintBuffer,
+	};
 	lv_obj_t* btnm = reinterpret_cast<lv_obj_t*>(::lv_event_get_target(e));
 	Terminal& terminal = *reinterpret_cast<Terminal*>(::lv_event_get_user_data(e));
 	Id id = static_cast<Id>(::lv_buttonmatrix_get_selected_button(btnm));

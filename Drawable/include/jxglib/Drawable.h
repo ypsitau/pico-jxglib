@@ -71,7 +71,8 @@ public:
 		float charWidthRatio, lineHeightRatio;
 		bool transparentBgFlag;
 	public:
-		Context() : colorFg{Color::white}, colorBg{Color::black},
+		// Don't depend on instances in the data segment, such as Color::white and Color::black.
+		Context() : colorFg(255, 255, 255), colorBg(0, 0, 0),
 			pFontSet{&FontSet::None}, fontScaleWidth{1}, fontScaleHeight{1},
 			charWidthRatio(1.0), lineHeightRatio(1.0), transparentBgFlag{false} {}
 	public:

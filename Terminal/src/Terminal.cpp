@@ -45,11 +45,7 @@ Terminal& Terminal::BeginRollBack()
 
 Terminal& Terminal::EndRollBack()
 {
-	int nLines = GetRowNum();
-	const char* pLineTop = GetLineBuff().GetLineLast();
-	GetLineBuff().PrevLine(&pLineTop, nLines - 1);
-	DrawTextLines(0, pLineTop, nLines);
-	GetDrawable().Refresh();
+	DrawLatestTextLines();	
 	GetLineBuff().RemoveLineMark();
 	return *this;
 }
@@ -71,6 +67,13 @@ Terminal& Terminal::RollDown()
 		DrawTextLines(0, GetLineBuff().GetLineMark(), GetRowNum());
 		GetDrawable().Refresh();
 	}
+	return *this;
+}
+
+Terminal& Terminal::Suppress(bool suppressFlag)
+{
+	suppressFlag_ = suppressFlag;
+	if (!suppressFlag_) DrawLatestTextLines();
 	return *this;
 }
 
@@ -99,7 +102,7 @@ Printable& Terminal::Locate(int col, int row)
 
 Printable& Terminal::PutChar(char ch)
 {
-	if (IsRollingBack()) EndRollBack();	
+	if (!suppressFlag_ && IsRollingBack()) EndRollBack();	
 	int yAdvance = context_.CalcAdvanceY();
 	const FontSet& fontSet = GetFont();
 	uint32_t code;
@@ -112,9 +115,9 @@ Printable& Terminal::PutChar(char ch)
 			ptCursor_.x = rectDst_.x;
 			if (pEventHandler_) pEventHandler_->OnNewLine(*this);
 			if (ptCursor_.y + yAdvance * 2 <= rectDst_.y + rectDst_.height) {
-				GetDrawable().Refresh();
+				if (!suppressFlag_) GetDrawable().Refresh();
 				ptCursor_.y += yAdvance;
-			} else {
+			} else if (!suppressFlag_) {
 				ScrollUp();
 			}
 		} else if (code == '\r') {
@@ -129,17 +132,26 @@ Printable& Terminal::PutChar(char ch)
 				if (pEventHandler_) pEventHandler_->OnNewLine(*this);
 				if (ptCursor_.y + yAdvance * 2 <= rectDst_.y + rectDst_.height) {
 					ptCursor_.y += yAdvance;
-				} else {
+				} else if (!suppressFlag_) {
 					ScrollUp();
 				}
 			}
 			GetLineBuff().Print(decoder_.GetStringOrg());
 			GetLineBuff().PlaceChar('\0');
-			GetDrawable().DrawChar(ptCursor_, fontEntry, false, &context_);
+			if (!suppressFlag_) GetDrawable().DrawChar(ptCursor_, fontEntry, false, &context_);
 			ptCursor_.x += xAdvance;
 		}
 	}
 	return *this;
+}
+
+void Terminal::DrawLatestTextLines()
+{
+	int nLines = GetRowNum();
+	const char* pLineTop = GetLineBuff().GetLineLast();
+	GetLineBuff().PrevLine(&pLineTop, nLines - 1);
+	DrawTextLines(0, pLineTop, nLines);
+	GetDrawable().Refresh();
 }
 
 void Terminal::DrawTextLines(int iLine, const char* pLineTop, int nLines)

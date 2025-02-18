@@ -33,8 +33,9 @@ private:
 	Drawable::Context context_;
 	EventHandler* pEventHandler_;
 	const char* pLineStop_;
+	bool suppressFlag_;
 public:
-	Terminal() : pDrawable_{nullptr}, nLinesWhole_{0}, pEventHandler_{nullptr}, pLineStop_{nullptr} {}
+	Terminal() : pDrawable_{nullptr}, nLinesWhole_{0}, pEventHandler_{nullptr}, pLineStop_{nullptr}, suppressFlag_{false} {}
 public:
 	bool Initialize(int bytes = 4096);
 	Terminal& AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
@@ -72,6 +73,7 @@ public:
 	Terminal& EndRollBack();
 	Terminal& RollUp();
 	Terminal& RollDown();
+	Terminal& Suppress(bool suppressFlag = true);
 public:
 	// Virtual functions of Printable
 	virtual Printable& ClearScreen() override;
@@ -79,6 +81,7 @@ public:
 	virtual Printable& Locate(int col, int row) override;
 	virtual Printable& PutChar(char ch) override;
 private:
+	void DrawLatestTextLines();
 	void DrawTextLines(int iLine, const char* pLineTop, int nLines);
 	void DrawTextLine(int iLine, const char* pLineTop);
 	void EraseTextLines(int iLine, int nLines);
