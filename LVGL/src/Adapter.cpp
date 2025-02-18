@@ -13,7 +13,7 @@ VT100::Decoder Adapter::vt100Decoder;
 
 Adapter::Adapter() : doubleBuffFlag_{false}, nPixelsBuff_{-1}, nPartialBuff_{10}, pDrawableOut_{nullptr}, disp_{nullptr},
 	pInput_Pointer_{&inputDumb_}, pInput_Keypad_{&inputDumb_}, pInput_Button_{&inputDumb_}, pInput_Encoder_{&inputDumb_},
-	inputKeyUART_(vt100Decoder)
+	inputTouchScreen_(*this), inputKeyUART_(vt100Decoder)
 {}
 
 bool Adapter::AttachOutput(Drawable& drawable, const Rect& rect, bool requiredFlag)
@@ -169,9 +169,11 @@ void Adapter::HandlerUART1(void)
 void Adapter::InputTouchScreen::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
 {
 	Point pt;
-	data->state = pTouchScreen_->ReadPoint(&pt)? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
-	data->point.x = pt.x;
-	data->point.y = pt.y;
+	const Rect& rectOut = adapter_.GetRectOut();
+	bool touchFlag = pTouchScreen_->ReadPoint(&pt);
+	data->state = touchFlag? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
+	data->point.x = pt.x - rectOut.x;
+	data->point.y = pt.y - rectOut.y;
 }
 
 //------------------------------------------------------------------------------

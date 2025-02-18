@@ -42,6 +42,7 @@ public:
 	Rect Inflate(int amount) const;
 	Rect Deflate(int amount) { return Inflate(-amount); }
 	bool Adjust(const Rect& rectBound);
+	bool Contains(const Point& pt) const { return x < pt.x && pt.x < x + width && y < pt.y && pt.y < y + height; }
 public:
 	Rect& operator=(const Rect& rect) { x = rect.x, y = rect.y, width = rect.width, height = rect.height; return *this; }
 };

@@ -27,9 +27,10 @@ public:
 	};
 	class InputTouchScreen : public Input {
 	private:
+		Adapter& adapter_;
 		TouchScreen* pTouchScreen_;
 	public:
-		InputTouchScreen() {}
+		InputTouchScreen(Adapter& adapter) : adapter_{adapter} {}
 	public:
 		void SetTouchScreen(TouchScreen& touchScreen) { pTouchScreen_ = &touchScreen; }
 	public:
@@ -77,6 +78,7 @@ public:
 	Adapter& SetPartialNum(int nPartialBuff) { nPartialBuff_ = nPartialBuff; return *this; }
 	void Flush(lv_display_t* disp, const lv_area_t* area, unsigned char* buf);
 	void SetDefault();
+	const Rect& GetRectOut() const { return rectOut_; }
 	lv_indev_t* SetInput_Pointer(Input& input);
 	lv_indev_t* SetInput_Keypad(Input& input);
 	lv_indev_t* SetInput_Button(Input& input);
