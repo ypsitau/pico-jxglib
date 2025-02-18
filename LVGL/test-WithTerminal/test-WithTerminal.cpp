@@ -1,11 +1,16 @@
 #include <stdio.h>
 #include <examples/lv_examples.h>
 #include "pico/stdlib.h"
+#include "jxglib/Terminal.h"
 #include "jxglib/ILI9341.h"
 #include "jxglib/ILI9488.h"
 #include "jxglib/LVGL.h"
+#include "jxglib/Font/shinonome12-japanese-level2.h"
+#include "jxglib/sample/Text_Botchan.h"
 
 using namespace jxglib;
+
+void eventHandler_btnm(lv_event_t* e);
 
 int main()
 {
@@ -21,27 +26,44 @@ int main()
 	ILI9341::TouchScreen touchScreen(spi0, {CS: GPIO8, IRQ: GPIO9});
 	display.Initialize(Display::Dir::Rotate0);
 	touchScreen.Initialize(display);
-	LVGL::Initialize();
 	//-----------------------------------------
-	// Create another adapter and attach it to the display
+	Terminal terminal;
+	terminal.Initialize();
+	terminal.AttachOutput(display, {0, 0, 240, 220});
+	terminal.SetFont(Font::shinonome12).SetSpacingRatio(1., 1.2);
+	//-----------------------------------------
+	LVGL::Initialize();
 	LVGL::Adapter lvglAdapter;
 	lvglAdapter.AttachOutput(display, {0, 220, 240, 100});
 	lvglAdapter.AttachInput(touchScreen);
 	do {
 		static const char *labelTbl[] = {
-			"RollUp", "Dump", "\n",
-			"RollDown", "Print Buffer", "",
+			"Roll Up", "Dump", "\n",
+			"Roll Down", "Print Buffer", "",
 		};
-		lv_obj_t* btnm = lv_buttonmatrix_create(lv_screen_active());
-		lv_obj_set_size(btnm, 230, 90);
-		lv_obj_align(btnm, LV_ALIGN_BOTTOM_MID, 0, -5);
-		//lv_obj_add_event_cb(btnm, btnm_event_handler, LV_EVENT_VALUE_CHANGED, ta);
-		lv_obj_remove_flag(btnm, LV_OBJ_FLAG_CLICK_FOCUSABLE); /*To keep the text area focused on button clicks*/
-		lv_buttonmatrix_set_map(btnm, labelTbl);
+		lv_obj_t* btnm = ::lv_buttonmatrix_create(lv_screen_active());
+		::lv_obj_set_size(btnm, 230, 90);
+		::lv_obj_align(btnm, LV_ALIGN_BOTTOM_MID, 0, -5);
+		::lv_obj_add_event_cb(btnm, eventHandler_btnm, LV_EVENT_VALUE_CHANGED, &terminal);
+		::lv_obj_remove_flag(btnm, LV_OBJ_FLAG_CLICK_FOCUSABLE);
+		::lv_buttonmatrix_set_map(btnm, labelTbl);
 	
 	} while (0);
+	terminal.Print(Text_Botchan);	
 	for (;;) {
 		::sleep_ms(5);
 		::lv_timer_handler();
 	}
+}
+
+void eventHandler_btnm(lv_event_t* e)
+{
+	enum class Id { RollUp, Dump, RollDown, PrintBuffer };
+	lv_obj_t* btnm = reinterpret_cast<lv_obj_t*>(::lv_event_get_target(e));
+	Terminal& terminal = *reinterpret_cast<Terminal*>(::lv_event_get_user_data(e));
+	Id id = static_cast<Id>(::lv_buttonmatrix_get_selected_button(btnm));
+	if (id == Id::RollUp) terminal.RollUp();
+	if (id == Id::RollDown) terminal.RollDown();
+	if (id == Id::Dump) terminal.Dump.Cols(8).Ascii()(reinterpret_cast<const void*>(0x10000000), 64);
+	if (id == Id::PrintBuffer) terminal.CreateReader().WriteTo(stdout);
 }
