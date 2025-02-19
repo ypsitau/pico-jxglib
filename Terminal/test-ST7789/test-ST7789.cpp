@@ -22,7 +22,13 @@ int main()
 	Terminal terminal;
 	terminal.Initialize();
 	terminal.AttachOutput(display).SetFont(Font::shinonome16).SetSpacingRatio(1., 1.2).ClearScreen();
+	terminal.Suppress();
 	terminal.Print(Text_Botchan);
+	terminal.Suppress(false);
+	for (int i = 1; i < 7; i++) {
+		for (int j = 1; j < 13; j++) terminal.Printf("%3d", i * j);
+		terminal.Println();
+	}
 	for (;;) {
 		if (!GPIO18.get()) terminal.RollUp();
 		if (!GPIO19.get()) terminal.RollDown();

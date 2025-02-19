@@ -3,7 +3,6 @@
 #include "pico/stdlib.h"
 #include "jxglib/Terminal.h"
 #include "jxglib/ILI9341.h"
-#include "jxglib/ILI9488.h"
 #include "jxglib/LVGL.h"
 #include "jxglib/Font/shinonome12-japanese-level2.h"
 #include "jxglib/sample/Text_Botchan.h"
@@ -31,6 +30,8 @@ int main()
 	terminal.Initialize();
 	terminal.AttachOutput(display, {0, 0, 240, 220});
 	terminal.SetFont(Font::shinonome12).SetSpacingRatio(1., 1.2);
+	terminal.Suppress().Print(Text_Botchan);
+	terminal.Suppress(false);
 	//-----------------------------------------
 	LVGL::Initialize();
 	LVGL::Adapter lvglAdapter;
@@ -48,8 +49,6 @@ int main()
 		::lv_obj_remove_flag(btnm, LV_OBJ_FLAG_CLICK_FOCUSABLE);
 		::lv_buttonmatrix_set_map(btnm, labelTbl);
 	} while (0);
-	terminal.Suppress().Print(Text_Botchan);
-	terminal.Suppress(false);
 	for (;;) {
 		::sleep_ms(5);
 		::lv_timer_handler();
