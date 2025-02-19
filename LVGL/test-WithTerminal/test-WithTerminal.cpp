@@ -9,7 +9,7 @@
 
 using namespace jxglib;
 
-void eventHandler_btnm(lv_event_t* e);
+void OnValueChanged_btnm(lv_event_t* e);
 
 int main()
 {
@@ -38,14 +38,14 @@ int main()
 	lvglAdapter.AttachOutput(display, {0, 220, 240, 100});
 	lvglAdapter.AttachInput(touchScreen);
 	do {
-		static const char *labelTbl[] = {
+		static const char* labelTbl[] = {
 			"Roll Up", "Dump", "\n",
 			"Roll Down", "Print Buffer", "",
 		};
 		lv_obj_t* btnm = ::lv_buttonmatrix_create(lv_screen_active());
 		::lv_obj_set_size(btnm, 230, 90);
 		::lv_obj_align(btnm, LV_ALIGN_BOTTOM_MID, 0, -5);
-		::lv_obj_add_event_cb(btnm, eventHandler_btnm, LV_EVENT_VALUE_CHANGED, &terminal);
+		::lv_obj_add_event_cb(btnm, OnValueChanged_btnm, LV_EVENT_VALUE_CHANGED, &terminal);
 		::lv_obj_remove_flag(btnm, LV_OBJ_FLAG_CLICK_FOCUSABLE);
 		::lv_buttonmatrix_set_map(btnm, labelTbl);
 	} while (0);
@@ -55,7 +55,7 @@ int main()
 	}
 }
 
-void eventHandler_btnm(lv_event_t* e)
+void OnValueChanged_btnm(lv_event_t* e)
 {
 	enum class Id {
 		RollUp, Dump,
