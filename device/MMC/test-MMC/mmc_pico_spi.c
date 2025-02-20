@@ -1,5 +1,6 @@
-#if 0
+#if 1
 //#include "user_define.h"
+#include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
 #include "ff.h"			/* Obtains integer types */
@@ -40,13 +41,15 @@ DSTATUS disk_initialize( BYTE drv)
         gpio_set_function( P_SPI_RX, GPIO_FUNC_SPI );
         gpio_set_function( P_SPI_SCK, GPIO_FUNC_SPI );
         gpio_set_function( P_SPI_TX, GPIO_FUNC_SPI );
-
+		gpio_pull_up(P_SPI_TX);
         gpio_init( P_SPI_CS );
         gpio_set_dir( P_SPI_CS, GPIO_OUT );
     }
 
     CS_HIGH();
-
+	gpio_set_function(P_SPI_RX, GPIO_FUNC_SIO);
+	gpio_set_dir(P_SPI_RX, GPIO_OUT);
+	gpio_put(P_SPI_RX, 1);
     /* ダミークロックを80発 */
     {
         BYTE i;
@@ -55,15 +58,19 @@ DSTATUS disk_initialize( BYTE drv)
             rcv_spi();
         }
     }
+	gpio_put(P_SPI_RX, 0);
+	gpio_set_function( P_SPI_RX, GPIO_FUNC_SPI );
 
+	spi_init( SPI_CH, 10 * 1000 * 1000 );
     {
         BYTE cmd_res;
 
-        /* CMD0を0x01が返ってくるまでトライ */
+		/* CMD0を0x01が返ってくるまでトライ */
         for ( i = 0; i < 10000; i++ )
         {
             cmd_res = send_cmd( CMD0, 0 );
-            if ( cmd_res == 0x01 )
+            printf("A:%02x\n", cmd_res);
+			if ( cmd_res == 0x01 )
             {
                 break;
             }
@@ -75,6 +82,7 @@ DSTATUS disk_initialize( BYTE drv)
             for ( i = 0; i < 10000; i++ )
             {
                 cmd_res = send_cmd( CMD1, 0 );
+				printf("B:%02x\n", cmd_res);
                 if ( cmd_res == 0x00 )
                 {
                     /* 初期化完了 */
@@ -261,7 +269,7 @@ static BYTE send_cmd(
 }
 #endif
 
-#if 1
+#if 0
 
 /*------------------------------------------------------------------------*/
 /* STM32F100: MMCv3/SDv1/SDv2 (SPI mode) control module                   */
@@ -291,8 +299,8 @@ static BYTE send_cmd(
 
 #define SPIDEV		spi0
 
-#define FCLK_FAST()	{ }
-#define FCLK_SLOW()	{ }
+#define FCLK_FAST()	{ spi_init( SPIDEV, 5 * 1000 * 1000 ); }
+#define FCLK_SLOW()	{ spi_init( SPIDEV, 100 * 1000 ); }
 
 #define CS_HIGH()	{ gpio_put( DEF_SPI_CSN_PIN, 1 ); /* HIGH */ }
 #define CS_LOW()	{ gpio_put(DEF_SPI_CSN_PIN , 0 ); /* LOW */ }
@@ -367,7 +375,7 @@ static BYTE CardType;	/* Card type flags */
 static void init_spi (void)
 {
 	//spi_init( SPIDEV, 2 * 1000 * 1000 );
-	spi_init( SPIDEV, 5 * 1000 * 1000 );
+	//spi_init( SPIDEV, 5 * 1000 * 1000 );
 	spi_cpol_t cpol = SPI_CPOL_0;
 	spi_cpha_t cpha = SPI_CPHA_0;
 	spi_set_format(SPIDEV, 8, cpol, cpha, SPI_MSB_FIRST); 
