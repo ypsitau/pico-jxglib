@@ -38,6 +38,7 @@ public:
 	Terminal(int bytesBuff = 4096) : pDrawable_{nullptr}, nLinesWhole_{0}, lineBuff_(bytesBuff),
 				pEventHandler_{nullptr}, pLineStop_{nullptr}, suppressFlag_{false} {}
 public:
+	void Initialize() {}
 	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
 public:
 	Drawable& GetDrawable() { return *pDrawable_; }
