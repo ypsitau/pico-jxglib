@@ -20,8 +20,8 @@ int main()
 	SSD1306 display(i2c0, 0x3c);
 	display.Initialize();
 	Terminal terminal;
-	terminal.Initialize();
-	terminal.AttachOutput(display).SetFont(Font::naga10).SetSpacingRatio(1., 1.).ClearScreen();
+	terminal.AttachOutput(display);
+	terminal.SetFont(Font::naga10).SetSpacingRatio(1., 1.).ClearScreen();
 	terminal.Suppress();
 	terminal.Print(Text_Botchan);
 	terminal.Suppress(false);

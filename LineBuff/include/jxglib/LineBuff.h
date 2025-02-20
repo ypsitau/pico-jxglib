@@ -29,26 +29,26 @@ public:
 		virtual bool Write(const void* buff, int bytesBuff) override { /* do nothing */ return false; };
 	};
 private:
+	int bytesBuff_;
 	char* buffBegin_;
-	char* buffEnd_;
 	char* pBuffLast_;
 	char* pLineFirst_;
 	char* pLineLast_;
 	const char* pLineMark_;
 public:
-	LineBuff();
+	LineBuff(int bytes = 4096);
 	~LineBuff();
 public:
-	bool Initialize(int bytes);
+	bool Initialize();
 	void Clear();
 public:
 	char* GetBuffBegin() { return buffBegin_; }
-	char* GetBuffEnd() { return buffEnd_; }
+	char* GetBuffEnd() { return buffBegin_ + bytesBuff_; }
 	char* GetWrite() { return pBuffLast_; }
 	char* GetLineFirst() { return pLineFirst_; }
 	char* GetLineLast() { return pLineLast_; }
 	const char* GetBuffBegin() const { return buffBegin_; }
-	const char* GetBuffEnd() const { return buffEnd_; }
+	const char* GetBuffEnd() const { return buffBegin_ + bytesBuff_; }
 	const char* GetWrite() const { return pBuffLast_; }
 	const char* GetLineFirst() const { return pLineFirst_; }
 	const char* GetLineLast() const { return pLineLast_; }
@@ -70,7 +70,7 @@ public:
 	bool NextLine(const char** pp) const { return NextLine(const_cast<char**>(pp)); }
 	bool NextLine(const char** pp, int nLines) const;
 	LineBuff& PlaceChar(char ch) { *pBuffLast_ = ch; return *this; }
-	WrappedCharFeeder CreateCharFeeder(const char* pBuffCur) { return WrappedCharFeeder(pBuffCur, buffBegin_, buffEnd_); }
+	WrappedCharFeeder CreateCharFeeder(const char* pBuffCur) { return WrappedCharFeeder(pBuffCur, GetBuffBegin(), GetBuffEnd()); }
 	Reader CreateReader() const;
 public:
 	void PrintInfo(Printable& printable) const;

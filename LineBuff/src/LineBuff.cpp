@@ -12,8 +12,8 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // LineBuff
 //------------------------------------------------------------------------------
-LineBuff::LineBuff() : buffBegin_{nullptr}, buffEnd_{nullptr}, pBuffLast_{nullptr},
-			pLineFirst_{nullptr}, pLineLast_{nullptr}, pLineMark_{nullptr}
+LineBuff::LineBuff(int bytesBuff) : bytesBuff_{bytesBuff}, buffBegin_{nullptr},
+		pBuffLast_{nullptr}, pLineFirst_{nullptr}, pLineLast_{nullptr}, pLineMark_{nullptr}
 {
 }
 
@@ -22,12 +22,11 @@ LineBuff::~LineBuff()
 	::free(buffBegin_);
 }
 
-bool LineBuff::Initialize(int bytes)
+bool LineBuff::Initialize()
 {
-	buffBegin_ = reinterpret_cast<char*>(::malloc(bytes));
-	::memset(buffBegin_, 0xcc, bytes);
+	buffBegin_ = reinterpret_cast<char*>(::malloc(bytesBuff_));
 	if (!buffBegin_) return false;
-	buffEnd_ = buffBegin_ + bytes;
+	::memset(buffBegin_, 0xcc, bytesBuff_);
 	pBuffLast_ = buffBegin_;
 	return true;
 }
@@ -43,7 +42,7 @@ bool LineBuff::PrevLine(char** pp) const
 {
 	char* p = *pp;
 	if (p == pLineFirst_) return false;
-	WrappedPointer<char*> pointer(p, buffBegin_, buffEnd_);
+	WrappedPointer<const char*> pointer(p, GetBuffBegin(), GetBuffEnd());
 	if (pointer.Get()) {
 		for ( ; pointer.Get(); pointer.Backward()) ;
 	} else {
@@ -56,7 +55,7 @@ bool LineBuff::PrevLine(char** pp) const
 			return true;
 		}
 	}
-	*pp = pointer.Forward().GetPointer();
+	*pp = const_cast<char*>(pointer.Forward().GetPointer());
 	return true;
 }
 
@@ -72,10 +71,10 @@ bool LineBuff::NextLine(char** pp) const
 {
 	char* p = *pp;
 	if (p == pLineLast_) return false;
-	WrappedPointer<char*> pointer(p, buffBegin_, buffEnd_);
+	WrappedPointer<const char*> pointer(p, GetBuffBegin(), GetBuffEnd());
 	if (!pointer.Get()) return pointer.Forward().GetPointer();
 	for ( ; pointer.Get(); pointer.Forward()) ;
-	*pp = pointer.Forward().GetPointer();
+	*pp = const_cast<char*>(pointer.Forward().GetPointer());
 	return true;
 }
 
@@ -89,7 +88,7 @@ bool LineBuff::NextLine(const char** pp, int nLines) const
 
 LineBuff::Reader LineBuff::CreateReader() const
 {
-	return Reader(pLineFirst_, buffBegin_, buffEnd_, pBuffLast_);
+	return Reader(pLineFirst_, GetBuffBegin(), GetBuffEnd(), pBuffLast_);
 }
 
 void LineBuff::PrintInfo(Printable& printable) const
@@ -97,14 +96,13 @@ void LineBuff::PrintInfo(Printable& printable) const
 	char buff[32];
 	auto ToString = [this](char* buff, const char* p) -> const char* {
 		if (p) {
-			::sprintf(buff, "%04x", p - buffBegin_);
+			::sprintf(buff, "%04x", p - GetBuffBegin());
 			return buff;
 		} else {
 			return "(null)";
 		}
 	};
-	printable.Dump.DigitsAddr(4).Ascii()(buffBegin_, buffEnd_ - buffBegin_);
-	printable.Printf("buffEnd:%s", ToString(buff, buffEnd_));
+	printable.Dump.DigitsAddr(4).Ascii()(GetBuffBegin(), bytesBuff_);
 	printable.Printf(" pBuffLast:%s", ToString(buff, pBuffLast_));
 	printable.Printf(" pLineFirst:%s", ToString(buff, pLineFirst_));
 	printable.Printf(" pLineLast:%s\n", ToString(buff, pLineLast_));
@@ -113,10 +111,10 @@ void LineBuff::PrintInfo(Printable& printable) const
 Printable& LineBuff::PutChar(char ch)
 {
 	*pBuffLast_ = ch;
-	WrappedPointer<char*> pointer(pBuffLast_, buffBegin_, buffEnd_);
+	WrappedPointer<char*> pointer(pBuffLast_, GetBuffBegin(), GetBuffEnd());
 	pBuffLast_ = pointer.Forward().GetPointer();
 	if (!pLineFirst_) {
-		pLineFirst_ = buffBegin_;
+		pLineFirst_ = GetBuffBegin();
 	} else if (pLineFirst_ == pBuffLast_) {
 		NextLine(&pLineFirst_);
 	}

@@ -8,17 +8,13 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // Terminal
 //------------------------------------------------------------------------------
-bool Terminal::Initialize(int bytes)
+bool Terminal::AttachOutput(Drawable& drawable, const Rect& rect, Dir dir)
 {
-	return GetLineBuff().Initialize(bytes);
-}
-
-Terminal& Terminal::AttachOutput(Drawable& drawable, const Rect& rect, Dir dir)
-{
+	if (!GetLineBuff().Initialize()) return false;
 	rectDst_ = rect.IsEmpty()? Rect(0, 0, drawable.GetWidth(), drawable.GetHeight()) : rect;
 	ptCursor_ = Point(rectDst_.x, rectDst_.y);
 	pDrawable_ = &drawable;
-	return *this;
+	return true;
 }
 
 int Terminal::GetColNum() const

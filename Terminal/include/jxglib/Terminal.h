@@ -35,10 +35,10 @@ private:
 	const char* pLineStop_;
 	bool suppressFlag_;
 public:
-	Terminal() : pDrawable_{nullptr}, nLinesWhole_{0}, pEventHandler_{nullptr}, pLineStop_{nullptr}, suppressFlag_{false} {}
+	Terminal(int bytesBuff = 4096) : pDrawable_{nullptr}, nLinesWhole_{0}, lineBuff_(bytesBuff),
+				pEventHandler_{nullptr}, pLineStop_{nullptr}, suppressFlag_{false} {}
 public:
-	bool Initialize(int bytes = 4096);
-	Terminal& AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
+	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
 public:
 	Drawable& GetDrawable() { return *pDrawable_; }
 	const Drawable& GetDrawable() const { return *pDrawable_; }
