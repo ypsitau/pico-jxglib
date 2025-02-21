@@ -24,12 +24,14 @@ void SendCmd(spi_inst_t* spi, uint8_t cmd, uint32_t arg, uint8_t crc = 0x01)
 
 void SendCMD0(spi_inst_t* spi)
 {
-	SendCmd(spi, 0x40 | 0, 0, 0x95);
+	// https://crccalc.com/?crc=4000000000&method=CRC-8/LTE&datatype=hex&outtype=hex
+	SendCmd(spi, 0x40, 0, 0x94 | 0x01);
 }
 
 void SendCMD8(spi_inst_t* spi)
 {
-	SendCmd(spi, 0x40 | 8, 0x1aa, 0x87);
+	// https://crccalc.com/?crc=48000001aa&method=CRC-8/LTE&datatype=hex&outtype=hex
+	SendCmd(spi, 0x48, 0x1aa, 0x86 | 0x01);
 }
 
 uint8_t RecvByte(spi_inst_t* spi)
@@ -54,8 +56,7 @@ int main()
 	::sleep_ms(10);	// at least 1 msec
 	::spi_init(spi, 100 * 1000);
 	for (int i = 0; i < 80; i++) RecvByte(spi);
-	GPIO4.init().set_dir_IN();
-	GPIO4.put(0);	// DI
+	GPIO4.init().set_function_SPI0_RX();
 	GPIO5.put(0);	// CS
 	for (;;) {
 		SendCMD0(spi);

@@ -174,6 +174,7 @@ inline void GPIO::adc_set_round_robin(const GPIO_ADC& gpio1, const GPIO_ADC& gpi
 class GPIO0_T : public GPIO {
 public:
 	GPIO0_T() : GPIO(0) {}
+	const GPIO0_T& init() const						{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI0_RX() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART0_TX() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C0_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -184,6 +185,7 @@ public:
 class GPIO1_T : public GPIO {
 public:
 	GPIO1_T() : GPIO(1) {}
+	const GPIO1_T& init() const						{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI0_CSn() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART0_RX() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C0_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -194,6 +196,7 @@ public:
 class GPIO2_T : public GPIO {
 public:
 	GPIO2_T() : GPIO(2) {}
+	const GPIO2_T& init() const						{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI0_SCK() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART0_CTS() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C1_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -204,6 +207,7 @@ public:
 class GPIO3_T : public GPIO {
 public:
 	GPIO3_T() : GPIO(3) {}
+	const GPIO3_T& init() const						{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI0_TX() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART0_RTS() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C1_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -214,6 +218,7 @@ public:
 class GPIO4_T : public GPIO {
 public:
 	GPIO4_T() : GPIO(4) {}
+	const GPIO4_T& init() const						{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI0_RX() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART1_TX() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C0_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -224,6 +229,7 @@ public:
 class GPIO5_T : public GPIO {
 public:
 	GPIO5_T() : GPIO(5) {}
+	const GPIO5_T& init() const						{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI0_CSn() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART1_RX() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C0_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -234,6 +240,7 @@ public:
 class GPIO6_T : public GPIO {
 public:
 	GPIO6_T() : GPIO(6) {}
+	const GPIO6_T& init() const						{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI0_SCK() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART1_CTS() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C1_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -244,6 +251,7 @@ public:
 class GPIO7_T : public GPIO {
 public:
 	GPIO7_T() : GPIO(7) {}
+	const GPIO7_T& init() const						{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI0_TX() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART1_RTS() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C1_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -254,6 +262,7 @@ public:
 class GPIO8_T : public GPIO {
 public:
 	GPIO8_T() : GPIO(8) {}
+	const GPIO8_T& init() const						{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI1_RX() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART1_TX() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C0_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -264,6 +273,7 @@ public:
 class GPIO9_T : public GPIO {
 public:
 	GPIO9_T() : GPIO(9) {}
+	const GPIO9_T& init() const						{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI1_CSn() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART1_RX() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C0_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -274,6 +284,7 @@ public:
 class GPIO10_T : public GPIO {
 public:
 	GPIO10_T() : GPIO(10) {}
+	const GPIO10_T& init() const					{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI1_SCK() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART1_CTS() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C1_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -284,6 +295,7 @@ public:
 class GPIO11_T : public GPIO {
 public:
 	GPIO11_T() : GPIO(11) {}
+	const GPIO11_T& init() const					{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI1_TX() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART1_RTS() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C1_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -294,6 +306,7 @@ public:
 class GPIO12_T : public GPIO {
 public:
 	GPIO12_T() : GPIO(12) {}
+	const GPIO12_T& init() const					{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI1_RX() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART0_TX() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C0_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -304,6 +317,7 @@ public:
 class GPIO13_T : public GPIO {
 public:
 	GPIO13_T() : GPIO(13) {}
+	const GPIO13_T& init() const					{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI1_CSn() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART0_RX() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C0_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -314,6 +328,7 @@ public:
 class GPIO14_T : public GPIO {
 public:
 	GPIO14_T() : GPIO(14) {}
+	const GPIO14_T& init() const					{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI1_SCK() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART0_CTS() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C1_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -324,6 +339,7 @@ public:
 class GPIO15_T : public GPIO {
 public:
 	GPIO15_T() : GPIO(15) {}
+	const GPIO15_T& init() const					{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI1_TX() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART0_RTS() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C1_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -334,6 +350,7 @@ public:
 class GPIO16_T : public GPIO {
 public:
 	GPIO16_T() : GPIO(16) {}
+	const GPIO16_T& init() const					{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI0_RX() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART0_TX() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C0_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -344,6 +361,7 @@ public:
 class GPIO17_T : public GPIO {
 public:
 	GPIO17_T() : GPIO(17) {}
+	const GPIO17_T& init() const					{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI0_CSn() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART0_RX() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C0_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -354,6 +372,7 @@ public:
 class GPIO18_T : public GPIO {
 public:
 	GPIO18_T() : GPIO(18) {}
+	const GPIO18_T& init() const					{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI0_SCK() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART0_CTS() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C1_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -364,6 +383,7 @@ public:
 class GPIO19_T : public GPIO {
 public:
 	GPIO19_T() : GPIO(19) {}
+	const GPIO19_T& init() const					{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI0_TX() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART0_RTS() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C0_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -374,6 +394,7 @@ public:
 class GPIO20_T : public GPIO {
 public:
 	GPIO20_T() : GPIO(20) {}
+	const GPIO20_T& init() const					{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI0_RX() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART1_TX() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C0_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -385,6 +406,7 @@ public:
 class GPIO21_T : public GPIO {
 public:
 	GPIO21_T() : GPIO(21) {}
+	const GPIO21_T& init() const					{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI0_CSn() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART1_RX() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C0_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -396,6 +418,7 @@ public:
 class GPIO22_T : public GPIO {
 public:
 	GPIO22_T() : GPIO(22) {}
+	const GPIO22_T& init() const					{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI0_SCK() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART1_CTS() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C1_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -407,6 +430,7 @@ public:
 class GPIO23_T : public GPIO {
 public:
 	GPIO23_T() : GPIO(23) {}
+	const GPIO23_T& init() const					{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI0_TX() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART1_RTS() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C1_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -418,6 +442,7 @@ public:
 class GPIO24_T : public GPIO {
 public:
 	GPIO24_T() : GPIO(24) {}
+	const GPIO24_T& init() const					{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI1_RX() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART1_TX() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C1_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -429,6 +454,7 @@ public:
 class GPIO25_T : public GPIO {
 public:
 	GPIO25_T() : GPIO(25) {}
+	const GPIO25_T& init() const					{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI1_CSn() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART1_RX() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C0_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -440,6 +466,7 @@ public:
 class GPIO26_T : public GPIO_ADC {
 public:
 	GPIO26_T() : GPIO_ADC(26) {}
+	const GPIO26_T& init() const					{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI1_SCK() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART0_CTS() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C1_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -450,6 +477,7 @@ public:
 class GPIO27_T : public GPIO_ADC {
 public:
 	GPIO27_T() : GPIO_ADC(27) {}
+	const GPIO27_T& init() const					{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI1_TX() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART1_RTS() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C1_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -460,6 +488,7 @@ public:
 class GPIO28_T : public GPIO_ADC {
 public:
 	GPIO28_T() : GPIO_ADC(28) {}
+	const GPIO28_T& init() const					{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI1_RX() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART0_TX() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C0_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
@@ -470,6 +499,7 @@ public:
 class GPIO29_T : public GPIO_ADC {
 public:
 	GPIO29_T() : GPIO_ADC(29) {}
+	const GPIO29_T& init() const					{ ::gpio_init(pin); return *this; }
 	const GPIO& set_function_SPI1_CSn() const		{ return set_function(GPIO_FUNC_SPI); }
 	const GPIO& set_function_UART0_RX() const		{ return set_function(GPIO_FUNC_UART); }
 	const GPIO& set_function_I2C0_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
