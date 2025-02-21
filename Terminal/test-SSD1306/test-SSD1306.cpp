@@ -7,6 +7,8 @@
 
 using namespace jxglib;
 
+Terminal terminal;
+
 int main()
 {
 	::stdio_init_all();
@@ -19,7 +21,6 @@ int main()
 	GPIO21.init().pull_up();
 	SSD1306 display(i2c0, 0x3c);
 	display.Initialize();
-	Terminal terminal;
 	terminal.AttachOutput(display);
 	terminal.SetFont(Font::naga10).SetSpacingRatio(1., 1.).ClearScreen();
 	terminal.Suppress();

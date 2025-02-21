@@ -9,6 +9,8 @@
 
 using namespace jxglib;
 
+Terminal terminal1, terminal2, terminal3;
+
 int main()
 {
 	::stdio_init_all();
@@ -17,7 +19,6 @@ int main()
 	GPIO15.set_function_SPI1_TX();
 	ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
 	display.Initialize(Display::Dir::Rotate0);
-	Terminal terminal1, terminal2, terminal3;
 	terminal1.AttachOutput(display, {0, 0, 240, 160});
 	terminal2.AttachOutput(display, {0, 160, 120, 160});
 	terminal3.AttachOutput(display, {120, 160, 120, 160});
