@@ -8,48 +8,6 @@
 
 using namespace jxglib;
 
-void SendByte(spi_inst_t* spi, uint8_t data)
-{
-	::spi_write_blocking(spi, &data, 1);
-}
-
-uint8_t RecvByte(spi_inst_t* spi)
-{
-	uint8_t rtn;
-	::spi_read_blocking(spi, 0xff, &rtn, 1);
-	return rtn;
-}
-
-void SendCmd(spi_inst_t* spi, uint8_t cmd, uint32_t arg, uint8_t crc = 0x01)
-{
-	//uint8_t buff[6];
-	//buff[0] = cmd;
-	//buff[1] = static_cast<uint8_t>(arg >> 24);
-	//buff[2] = static_cast<uint8_t>(arg >> 16);
-	//buff[3] = static_cast<uint8_t>(arg >> 8);
-	//buff[4] = static_cast<uint8_t>(arg >> 0);
-	//buff[5] = crc;
-	//::spi_write_blocking(spi, buff, sizeof(buff));
-	SendByte(spi, cmd);
-	SendByte(spi, static_cast<uint8_t>(arg >> 24));
-	SendByte(spi, static_cast<uint8_t>(arg >> 16));
-	SendByte(spi, static_cast<uint8_t>(arg >> 8));
-	SendByte(spi, static_cast<uint8_t>(arg >> 0));
-	SendByte(spi, crc);
-}
-
-void SendCMD0(spi_inst_t* spi)
-{
-	// CRC: https://crccalc.com/?crc=4000000000&method=CRC-8/LTE&datatype=hex&outtype=hex
-	SendCmd(spi, 0x40 | 0, 0, 0x94 | 0x01);
-}
-
-void SendCMD8(spi_inst_t* spi)
-{
-	// CRC: https://crccalc.com/?crc=48000001aa&method=CRC-8/LTE&datatype=hex&outtype=hex
-	SendCmd(spi, 0x40 | 8, 0x1aa, 0x86 | 0x01);
-}
-
 #define SPI_CH spi0
 #define P_SPI_SCK 2
 #define P_SPI_TX 3
@@ -88,13 +46,10 @@ static BYTE send_cmd(
 )
 {
     BYTE n, res;
-
-    /* Select the card */
     CS_HIGH();
     rcv_spi();
     CS_LOW();
     rcv_spi();
-
     /* Send a command packet */
     xmit_spi( cmd );                        /* Start + Command index */
     xmit_spi( (BYTE)( arg >> 24 ) );        /* Argument[31..24] */
@@ -120,6 +75,52 @@ static BYTE send_cmd(
     }
 
     return ( res );            /* Return with the response value */
+}
+
+void SendByte(spi_inst_t* spi, uint8_t data)
+{
+	::spi_write_blocking(spi, &data, 1);
+}
+
+uint8_t RecvByte(spi_inst_t* spi)
+{
+	uint8_t rtn;
+	::spi_read_blocking(spi, 0xff, &rtn, 1);
+	return rtn;
+}
+
+void SendCmd(spi_inst_t* spi, uint8_t cmd, uint32_t arg, uint8_t crc = 0x01)
+{
+    CS_HIGH();
+    rcv_spi();
+    CS_LOW();
+    rcv_spi();
+	//uint8_t buff[6];
+	//buff[0] = cmd;
+	//buff[1] = static_cast<uint8_t>(arg >> 24);
+	//buff[2] = static_cast<uint8_t>(arg >> 16);
+	//buff[3] = static_cast<uint8_t>(arg >> 8);
+	//buff[4] = static_cast<uint8_t>(arg >> 0);
+	//buff[5] = crc;
+	//::spi_write_blocking(spi, buff, sizeof(buff));
+	SendByte(spi, cmd);
+	SendByte(spi, static_cast<uint8_t>(arg >> 24));
+	SendByte(spi, static_cast<uint8_t>(arg >> 16));
+	SendByte(spi, static_cast<uint8_t>(arg >> 8));
+	SendByte(spi, static_cast<uint8_t>(arg >> 0));
+	SendByte(spi, crc);
+}
+
+void SendCMD0(spi_inst_t* spi)
+{
+	// CRC: https://crccalc.com/?crc=4000000000&method=CRC-8/LTE&datatype=hex&outtype=hex
+	SendCmd(spi, 0x40 | 0, 0, 0x94 | 0x01);
+}
+
+void SendCMD8(spi_inst_t* spi)
+{
+	// CRC: https://crccalc.com/?crc=48000001aa&method=CRC-8/LTE&datatype=hex&outtype=hex
+	SendCmd(spi, 0x40 | 8, 0x1aa, 0x86 | 0x01);
 }
 
 int main()
@@ -181,9 +182,9 @@ int main()
 		/* CMD0を0x01が返ってくるまでトライ */
         for (int i = 0; i < 10000; i++ )
         {
-			SendCMD0(spi);
-			cmd_res = RecvByte(spi);
-			//cmd_res = send_cmd( CMD0, 0 );
+			//SendCMD0(spi);
+			//cmd_res = RecvByte(spi);
+			cmd_res = send_cmd( CMD0, 0 );
             printf("A:%02x\n", cmd_res);
 			if ( cmd_res == 0x01 )
             {
