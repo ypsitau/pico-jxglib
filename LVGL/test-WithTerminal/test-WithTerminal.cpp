@@ -9,6 +9,8 @@
 
 using namespace jxglib;
 
+Terminal terminal;
+
 void OnValueChanged_btnm(lv_event_t* e);
 
 int main()
@@ -26,7 +28,6 @@ int main()
 	display.Initialize(Display::Dir::Rotate0);
 	touchScreen.Initialize(display);
 	//-----------------------------------------
-	Terminal terminal;
 	terminal.AttachOutput(display, {0, 0, 240, 220});
 	terminal.SetFont(Font::shinonome12).SetSpacingRatio(1., 1.2);
 	terminal.Suppress().Print(Text_Botchan);
@@ -44,7 +45,7 @@ int main()
 		lv_obj_t* btnm = ::lv_buttonmatrix_create(lv_screen_active());
 		::lv_obj_set_size(btnm, 230, 90);
 		::lv_obj_align(btnm, LV_ALIGN_BOTTOM_MID, 0, -5);
-		::lv_obj_add_event_cb(btnm, OnValueChanged_btnm, LV_EVENT_VALUE_CHANGED, &terminal);
+		::lv_obj_add_event_cb(btnm, OnValueChanged_btnm, LV_EVENT_VALUE_CHANGED, nullptr);
 		::lv_obj_remove_flag(btnm, LV_OBJ_FLAG_CLICK_FOCUSABLE);
 		::lv_buttonmatrix_set_map(btnm, labelTbl);
 	} while (0);
@@ -61,7 +62,6 @@ void OnValueChanged_btnm(lv_event_t* e)
 		RollDown, PrintBuffer,
 	};
 	lv_obj_t* btnm = reinterpret_cast<lv_obj_t*>(::lv_event_get_target(e));
-	Terminal& terminal = *reinterpret_cast<Terminal*>(::lv_event_get_user_data(e));
 	Id id = static_cast<Id>(::lv_buttonmatrix_get_selected_button(btnm));
 	if (id == Id::RollUp) terminal.RollUp();
 	if (id == Id::RollDown) terminal.RollDown();
