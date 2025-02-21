@@ -123,6 +123,12 @@ uint8_t SendCMD0(spi_inst_t* spi)
 	return SendCmd(spi, 0x40 | 0, 0, 0x94 | 0x01);
 }
 
+uint8_t SendCMD1(spi_inst_t* spi)
+{
+	// CRC: https://crccalc.com/?crc=4100000000&method=CRC-8/LTE&datatype=hex&outtype=hex
+	return SendCmd(spi, 0x40 | 1, 0, 0x71 | 0x01);
+}
+
 uint8_t SendCMD8(spi_inst_t* spi)
 {
 	// CRC: https://crccalc.com/?crc=48000001aa&method=CRC-8/LTE&datatype=hex&outtype=hex
@@ -180,8 +186,7 @@ int main()
 	GPIO_CS.put(0);	// CS
 	::spi_init(spi, 10 * 1000 * 1000);
 #endif
-#if 1
-	::printf("----\n");
+#if 0
     {
         BYTE cmd_res;
 
@@ -219,18 +224,24 @@ int main()
         }
     }
 #endif
-#if 0
+#if 1
+	::printf("----\n");
 	for (;;) {
-		SendCMD0(spi);
-		uint8_t rtn = RecvByte(spi);
+		uint8_t rtn = SendCMD0(spi);
 		::printf("%02x\n", rtn);
 		if (rtn == 0x01) break;
-		::sleep_ms(1000);
+		::sleep_ms(100);
 	}
-	uint8_t rtn;
-	SendCMD8(spi);
-	rtn = RecvByte(spi);
-	::printf("%02xn", rtn);
+	for (;;) {
+		uint8_t rtn = SendCMD1(spi);
+		::printf("%02x\n", rtn);
+		if (rtn == 0x00) break;
+		::sleep_ms(100);
+	}
+	do {
+		uint8_t rtn = SendCMD8(spi);
+		::printf("%02x\n", rtn);
+	} while (0);
 #endif
 }
 
