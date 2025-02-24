@@ -392,9 +392,14 @@ int main()
 	uint8_t buf[512];
 	sdCard.readblocks(0, buf, 1);
 	SDCard::PrintMBR(buf);
-	//for (int i = 0; i < 16; i++) {
-	//	::printf("sector#%d\n", i);
-	//	sdCard.readblocks(0x200000 + i, buf, 1);
-	//	Dump(buf, 512);
-	//}
+	//for (int i = 0; i < 512; i++) buf[i] = static_cast<uint8_t>(i);
+	::memset(buf, 0x00, sizeof(buf));
+	sdCard.writeblocks(1, buf, 1);
+	sdCard.writeblocks(2, buf, 1);
+	::memset(buf, 0x00, sizeof(buf));
+	for (int i = 0; i < 4; i++) {
+		::printf("sector#%d\n", i);
+		sdCard.readblocks(i, buf, 1);
+		Dump(buf, 512);
+	}
 }
