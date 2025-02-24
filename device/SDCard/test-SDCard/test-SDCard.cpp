@@ -56,6 +56,7 @@ public:
 	bool write(uint8_t token, const uint8_t* buf, int bytes);
 	bool write_token(uint8_t token);
 	bool readblocks(int block_num, uint8_t* buf, int nblocks);
+	bool writeblocks(int block_num, const uint8_t* buf, int nblocks);
 public:
 	static void PrintMBR(const uint8_t* bufSector);
 private:
@@ -338,34 +339,35 @@ bool SDCard::readblocks(int block_num, uint8_t* buf, int nblocks)
 	return true;
 }
 
+bool SDCard::writeblocks(int block_num, const uint8_t* buf, int nblocks)
+{
+	// workaround for shared bus, required for (at least) some Kingston
+	// devices, ensure MOSI is high before starting transaction
+	spi_write(0xff);
+	if (nblocks == 1) {
+		// CMD24: set write address for single block
+		if (cmd(24, block_num * cdv_, 0) != 0) {
+			return false; // EIO
+		}
+		// send the data
+		write(_TOKEN_DATA, buf, nblocks * 512);
+	} else {
+		// CMD25: set write address for first block
+		if (cmd(25, block_num * cdv_, 0) != 0) {
+			return false; // EIO
+		}
+		// send the data
+		int offset = 0;
+		for (int i = 0; i < nblocks; i++) {
+			write(_TOKEN_CMD25, buf + offset, 512);
+			offset += 512;
+		}
+		write_token(_TOKEN_STOP_TRAN);
+	}
+	return true;
+}
+
 /*
-	def writeblocks(self, block_num, buf):
-		// workaround for shared bus, required for (at least) some Kingston
-		// devices, ensure MOSI is high before starting transaction
-		self.spi.write(b"\xff")
-
-		nblocks, err = divmod(len(buf), 512)
-		assert nblocks and not err, "Buffer length is invalid"
-		if nblocks == 1:
-			// CMD24: set write address for single block
-			if self.cmd(24, block_num * self.cdv, 0) != 0:
-				raise OSError(5)  // EIO
-
-			// send the data
-			self.write(_TOKEN_DATA, buf)
-		else:
-			// CMD25: set write address for first block
-			if self.cmd(25, block_num * self.cdv, 0) != 0:
-				raise OSError(5)  // EIO
-			// send the data
-			offset = 0
-			mv = memoryview(buf)
-			while nblocks:
-				self.write(_TOKEN_CMD25, mv[offset : offset + 512])
-				offset += 512
-				nblocks -= 1
-			self.write_token(_TOKEN_STOP_TRAN)
-
 	def ioctl(self, op, arg):
 		if op == 4:  // get number of blocks
 			return self.sectors
