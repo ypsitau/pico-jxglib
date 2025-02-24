@@ -58,7 +58,6 @@ void SDCard::init_spi(uint baudrate)
 bool SDCard::init_card()
 {
 	// init CS pin
-	cs_.set_dir_OUT();
 	cs_.put(1);
 
 	// init SPI bus; use low data rate for initialisation
@@ -66,6 +65,7 @@ bool SDCard::init_card()
 	// clock card at least 100 cycles with cs high
 	for (int i = 0; i < 16; i++) spi_write(0xff);
 
+	::printf("check %d\n", __LINE__);
 	// CMD0: init card; should return _R1_IDLE_STATE (allow 5 attempts)
 	bool successFlag = false;
 	for (int i = 0; i < 5; i++) {
@@ -75,7 +75,7 @@ bool SDCard::init_card()
 		}
 	}
 	if (!successFlag) return false; // no SD card
-
+	::printf("check %d\n", __LINE__);
 	// CMD8: determine card version
 	int r = cmd(8, 0x01AA, 0x87, 4);
 	if (r == _R1_IDLE_STATE) {
@@ -85,17 +85,21 @@ bool SDCard::init_card()
 	} else {
 		return false; // couldn't determine SD card version
 	}
+	::printf("check %d\n", __LINE__);
 	// get the number of sectors
 	// CMD9: response R2 (R1 byte + 16-byte block read)
 	if (cmd(9, 0, 0, 0, false) != 0) {
 		return false; // no response from SD card
 	}
+	::printf("check %d\n", __LINE__);
 	uint8_t csd[16];
+	::memset(csd, 0x00, sizeof(csd));
 	readinto(csd, sizeof(csd));
+	Dump.NoAddr()(csd, sizeof(csd));
 	int sectors, c_size, c_size_mult, capacity, read_bl_len;
-	if (csd[0] & 0xc0 == 0x40) {  // CSD version 2.0
+	if ((csd[0] & 0xc0) == 0x40) {  // CSD version 2.0
 		sectors = ((csd[8] << 8 | csd[9]) + 1) * 1024;
-	} else if (csd[0] & 0xC0 == 0x00) { // CSD version 1.0 (old, <=2GB)
+	} else if ((csd[0] & 0xc0) == 0x00) { // CSD version 1.0 (old, <=2GB)
 		c_size = (csd[6] & 0b11) << 10 | csd[7] << 2 | csd[8] >> 6;
 		c_size_mult = (csd[9] & 0b11) << 1 | csd[10] >> 7;
 		read_bl_len = csd[5] & 0b1111;
@@ -104,13 +108,15 @@ bool SDCard::init_card()
 	} else {
 		return false; // SD card CSD format not supported
 	}
-	// print('sectors', sectors)
+	printf("sectors: %d\n", sectors);
+	::printf("check %d\n", __LINE__);
 
 	// CMD16: set block length to 512 bytes
 	if (cmd(16, 512, 0) != 0) {
 		return false; // can't set 512 block size
 	}
 
+	::printf("check %d\n", __LINE__);
 	// set to high data rate now that it's initialised
 	init_spi(baudrate_);
 	return true;
