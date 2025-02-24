@@ -53,7 +53,7 @@ public:
 	bool init_card_v2();
 	int cmd(uint8_t cmd, uint32_t arg, uint8_t crc, int final = 0, bool release = true, bool skip1 = false);
 	bool readinto(uint8_t* buf, int bytes);
-	void write(uint8_t token, uint8_t* buf, int bytes);
+	bool write(uint8_t token, const uint8_t* buf, int bytes);
 	bool readblocks(int block_num, uint8_t* buf, int nblocks);
 public:
 	static void PrintMBR(const uint8_t* bufSector);
@@ -261,29 +261,33 @@ bool SDCard::readinto(uint8_t* buf, int bytes)
 	return true;
 }
 
+bool SDCard::write(uint8_t token, const uint8_t* buf, int bytes)
+{
+	cs_.put(0);
+	// send: start of block, data, checksum
+	uint8_t rtn;
+	spi_readinto(&rtn, 1, token);
+	spi_write(buf, bytes);
+	spi_write(0xff);
+	spi_write(0xff);
+	// check the response
+	spi_readinto(&rtn, 1, 0xff);
+	if ((rtn & 0x1f) != 0x05) {
+		cs_.put(1);
+		spi_write(0xff);
+		return false;
+	}
+	// wait for write to finish
+	for (;;) {
+		spi_readinto(&rtn, 1, 0xff);
+		if (rtn != 0) break;
+	}
+	cs_.put(1);
+	spi_write(0xff);
+	return true;
+}
+
 /*
-	def write(self, token, buf):
-		self.cs(0)
-
-		// send: start of block, data, checksum
-		self.spi.read(1, token)
-		self.spi.write(buf)
-		self.spi.write(b"\xff")
-		self.spi.write(b"\xff")
-
-		// check the response
-		if (self.spi.read(1, 0xFF)[0] & 0x1F) != 0x05:
-			self.cs(1)
-			self.spi.write(b"\xff")
-			return
-
-		// wait for write to finish
-		while self.spi.read(1, 0xFF)[0] == 0:
-			pass
-
-		self.cs(1)
-		self.spi.write(b"\xff")
-
 	def write_token(self, token):
 		self.cs(0)
 		self.spi.read(1, token)
