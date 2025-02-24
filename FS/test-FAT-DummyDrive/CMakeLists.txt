@@ -28,33 +28,32 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-FAT C CXX ASM)
+project(test-FAT-DummyDrive C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-FAT test-FAT.cpp)
+add_executable(test-FAT-DummyDrive test-FAT-DummyDrive.cpp)
 
-pico_set_program_name(test-FAT "test-FAT")
-pico_set_program_version(test-FAT "0.1")
+pico_set_program_name(test-FAT-DummyDrive "test-FAT-DummyDrive")
+pico_set_program_version(test-FAT-DummyDrive "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-FAT 1)
-pico_enable_stdio_usb(test-FAT 0)
+pico_enable_stdio_uart(test-FAT-DummyDrive 1)
+pico_enable_stdio_usb(test-FAT-DummyDrive 0)
 
 # Add the standard library to the build
-target_link_libraries(test-FAT
+target_link_libraries(test-FAT-DummyDrive
     pico_stdlib
     jxglib_FAT)
 
 # Add the standard include files to the build
-target_include_directories(test-FAT PRIVATE
+target_include_directories(test-FAT-DummyDrive PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-FAT)
+pico_add_extra_outputs(test-FAT-DummyDrive)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../../.. pico-jxglib)
-
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
