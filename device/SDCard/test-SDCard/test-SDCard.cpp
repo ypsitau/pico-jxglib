@@ -6,21 +6,37 @@
 #include "ff.h"
 #include "diskio.h"
 #include "hardware/spi.h"
+#include "jxglib/PackedNumber.h"
 
 using namespace jxglib;
 
+
 class SDCard {
-	static const int _CMD_TIMEOUT = 100;
-	static const uint8_t _R1_IDLE_STATE = 1 << 0;
-	//static const uint8_t _R1_ERASE_RESET = 1 << 1;
-	static const uint8_t _R1_ILLEGAL_COMMAND = 1 << 2;
-	//static const uint8_t _R1_COM_CRC_ERROR = 1 << 3;
-	//static const uint8_t _R1_ERASE_SEQUENCE_ERROR = 1 << 4;
-	//static const uint8_t _R1_ADDRESS_ERROR = 1 << 5;
-	//static const uint8_t _R1_PARAMETER_ERROR = 1 << 6;
-	static const uint8_t _TOKEN_CMD25 = 0xFC;
-	static const uint8_t _TOKEN_STOP_TRAN = 0xFD;
-	static const uint8_t _TOKEN_DATA = 0xFE;
+public:
+	struct Partition {
+		uint8_t BootID;
+		uint8_t Start_Cylinder;
+		uint8_t Start_Header;
+		uint8_t Start_Sector;
+		uint8_t System;
+		uint8_t End_Cylinder;
+		uint8_t End_Header;
+		uint8_t End_Sector;
+		Packed_uint32(LbaOfs);
+		Packed_uint32(LbaSize);
+	};
+private:
+	static const int _CMD_TIMEOUT					= 100;
+	static const uint8_t _R1_IDLE_STATE				= 1 << 0;
+	static const uint8_t _R1_ERASE_RESET			= 1 << 1;
+	static const uint8_t _R1_ILLEGAL_COMMAND		= 1 << 2;
+	static const uint8_t _R1_COM_CRC_ERROR			= 1 << 3;
+	static const uint8_t _R1_ERASE_SEQUENCE_ERROR	= 1 << 4;
+	static const uint8_t _R1_ADDRESS_ERROR			= 1 << 5;
+	static const uint8_t _R1_PARAMETER_ERROR		= 1 << 6;
+	static const uint8_t _TOKEN_CMD25				= 0xfc;
+	static const uint8_t _TOKEN_STOP_TRAN			= 0xfd;
+	static const uint8_t _TOKEN_DATA				= 0xfe;
 private:
 	spi_inst_t* spi_;
 	const GPIO& cs_;
@@ -39,6 +55,8 @@ public:
 	bool readinto(uint8_t* buf, int bytes);
 	void write(uint8_t token, uint8_t* buf, int bytes);
 	bool readblocks(int block_num, uint8_t* buf, int nblocks);
+public:
+	static void PrintMBR(const uint8_t* bufSector);
 private:
 	void spi_write(uint8_t data) { spi_write_blocking(spi_, &data, 1); }
 	void spi_write(const uint8_t* data, int bytes) { spi_write_blocking(spi_, data, bytes); }
@@ -48,6 +66,20 @@ private:
 SDCard::SDCard(spi_inst_t* spi, const GPIO& cs, uint baudrate) : spi_{spi}, cs_{cs}, baudrate_{baudrate}
 {
 	for (int i = 0; i < sizeof(dummybuf_); i++) dummybuf_[i] = 0xff;
+}
+
+void SDCard::PrintMBR(const uint8_t* bufSector)
+{
+	if (bufSector[510] != 0x55 || bufSector[511] != 0xaa) {
+		::printf("invalid MBR\n");
+		return;
+	}
+	int offset = 446;
+	for (int iPartition = 0; iPartition < 4; iPartition++, offset += 16) {
+		const Partition& partition = *reinterpret_cast<const Partition*>(bufSector + offset);
+		::printf("#%d: BootID=%02x System=%02x LbaOfs=%08x LbaSize=%08x\n", iPartition + 1,
+			partition.BootID, partition.System, Unpack_uint32(partition.LbaOfs), Unpack_uint32(partition.LbaSize));
+	}
 }
 
 void SDCard::init_spi(uint baudrate)
@@ -220,9 +252,6 @@ bool SDCard::readinto(uint8_t* buf, int bytes)
 		return false; // timeout waiting for response
 	}
 	// read data
-	//mv = self.dummybuf_memoryview
-	//if len(buf) != len(mv):
-	//	mv = mv[: len(buf)]
 	spi_readinto(buf, bytes, 0xff);
 	// read checksum
 	spi_write(0xff);
@@ -351,9 +380,11 @@ int main()
 	SDCard sdCard(spi, GPIO_CS, 10 * 1000 * 1000);
 	sdCard.init_card();
 	uint8_t buf[512];
-	for (int i = 0; i < 128; i++) {
-		::printf("sector#%d\n", i);
-		sdCard.readblocks(i, buf, 1);
-		Dump(buf, 512);
-	}
+	sdCard.readblocks(0, buf, 1);
+	SDCard::PrintMBR(buf);
+	//for (int i = 0; i < 16; i++) {
+	//	::printf("sector#%d\n", i);
+	//	sdCard.readblocks(0x200000 + i, buf, 1);
+	//	Dump(buf, 512);
+	//}
 }
