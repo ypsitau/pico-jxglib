@@ -1,3 +1,4 @@
+// original: https://github.com/micropython/micropython-lib
 #include <stdio.h>
 #include <memory.h>
 #include "pico/stdlib.h"
@@ -34,12 +35,12 @@ public:
 	void init_card_v1();
 	void init_card_v2();
 	int cmd(uint8_t cmd, uint32_t arg, uint8_t crc, int final = 0, bool release = true, bool skip1 = false);
-	void readinto(uint8_t* buf);
+	bool readinto(uint8_t* buf, int bytes);
 	void write(uint8_t token, uint8_t* buf, int bytes);
 private:
 	void spi_write(uint8_t data) { spi_write_blocking(spi_, &data, 1); }
 	void spi_write(const uint8_t* data, int bytes) { spi_write_blocking(spi_, data, bytes); }
-	void spi_readinto(uint8_t* data, uint8_t repeated_tx_data) { spi_read_blocking(spi_, repeated_tx_data, data, 1); }
+	void spi_readinto(uint8_t* data, int bytes, uint8_t repeated_tx_data) { spi_read_blocking(spi_, repeated_tx_data, data, bytes); }
 };
 
 SDCard::SDCard(spi_inst_t* spi, GPIO& cs, uint baudrate) : spi_{spi}, cs_{cs}, baudrate_{baudrate}
@@ -155,17 +156,17 @@ int SDCard::cmd(uint8_t cmd, uint32_t arg, uint8_t crc, int final, bool release,
 	buf[4] = static_cast<uint8_t>(arg);
 	buf[5] = crc;
 	spi_write(buf, 6);
-	if (skip1) spi_readinto(tokenbuf_, 0xff);
+	if (skip1) spi_readinto(tokenbuf_, 1, 0xff);
 
 	// wait for the response (response[7] == 0)
 	for (int i = 0; i < _CMD_TIMEOUT; i++) {
-		spi_readinto(tokenbuf_, 0xff);
+		spi_readinto(tokenbuf_, 1, 0xff);
 		uint8_t response = tokenbuf_[0];
 		if (!(response & 0x80)) {
 			// this could be a big-endian integer that we are getting here
 			// if final<0 then store the first byte to tokenbuf and discard the rest
 			if (final < 0) {
-				spi_readinto(tokenbuf_, 0xff);
+				spi_readinto(tokenbuf_, 1, 0xff);
 				final = -1 - final;
 			}
 			for (int j = 0; j < final; j++) {
@@ -184,33 +185,37 @@ int SDCard::cmd(uint8_t cmd, uint32_t arg, uint8_t crc, int final, bool release,
 	return -1;
 }
 
+bool SDCard::readinto(uint8_t* buf, int bytes)
+{
+	cs_.put(0);
+	// read until start byte (0xff)
+	bool successFlag = false;
+	for (int i = 0; i < _CMD_TIMEOUT; i++) {
+		spi_readinto(tokenbuf_, 1, 0xff);
+		if (tokenbuf_[0] == _TOKEN_DATA) {
+			successFlag = true;
+			break;
+		}
+		::sleep_ms(1);
+	}
+	if (!successFlag) {
+		cs_.put(1);
+		return false; // timeout waiting for response
+	}
+	// read data
+	//mv = self.dummybuf_memoryview
+	//if len(buf) != len(mv):
+	//	mv = mv[: len(buf)]
+	spi_readinto(buf, bytes, 0xff);
+	// read checksum
+	spi_write(0xff);
+	spi_write(0xff);
+	cs_.put(1);
+	spi_write(0xff);
+	return true;
+}
+
 /*
-	def readinto(self, buf):
-		self.cs(0)
-
-		// read until start byte (0xff)
-		for i in range(_CMD_TIMEOUT):
-			self.spi.readinto(self.tokenbuf, 0xFF)
-			if self.tokenbuf[0] == _TOKEN_DATA:
-				break
-			time.sleep_ms(1)
-		else:
-			self.cs(1)
-			raise OSError("timeout waiting for response")
-
-		// read data
-		mv = self.dummybuf_memoryview
-		if len(buf) != len(mv):
-			mv = mv[: len(buf)]
-		self.spi.write_readinto(mv, buf)
-
-		// read checksum
-		self.spi.write(b"\xff")
-		self.spi.write(b"\xff")
-
-		self.cs(1)
-		self.spi.write(b"\xff")
-
 	def write(self, token, buf):
 		self.cs(0)
 
