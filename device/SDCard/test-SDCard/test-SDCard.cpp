@@ -38,6 +38,7 @@ public:
 	int cmd(uint8_t cmd, uint32_t arg, uint8_t crc, int final = 0, bool release = true, bool skip1 = false);
 	bool readinto(uint8_t* buf, int bytes);
 	void write(uint8_t token, uint8_t* buf, int bytes);
+	bool readblocks(int block_num, uint8_t* buf, int nblocks);
 private:
 	void spi_write(uint8_t data) { spi_write_blocking(spi_, &data, 1); }
 	void spi_write(const uint8_t* data, int bytes) { spi_write_blocking(spi_, data, bytes); }
@@ -264,38 +265,43 @@ bool SDCard::readinto(uint8_t* buf, int bytes)
 
 		self.cs(1)
 		self.spi.write(b"\xff")
+*/
 
-	def readblocks(self, block_num, buf):
-		// workaround for shared bus, required for (at least) some Kingston
-		// devices, ensure MOSI is high before starting transaction
-		self.spi.write(b"\xff")
-
-		nblocks = len(buf) // 512
-		assert nblocks and not len(buf) % 512, "Buffer length is invalid"
-		if nblocks == 1:
-			// CMD17: set read address for single block
-			if self.cmd(17, block_num * self.cdv, 0, release=False) != 0:
-				// release the card
-				self.cs(1)
-				raise OSError(5)  // EIO
+bool SDCard::readblocks(int block_num, uint8_t* buf, int nblocks)
+{
+	// workaround for shared bus, required for (at least) some Kingston
+	// devices, ensure MOSI is high before starting transaction
+	spi_write(0xff);
+	if (nblocks == 1) {
+		// CMD17: set read address for single block
+		if (cmd(17, block_num * cdv_, 0, 0, false) != 0) {
+			// release the card
+			cs_.put(1);
+			return false; // EIO
+		}
+		// receive the data and release card
+		readinto(buf, nblocks * 512);
+	} else {
+		// CMD18: set read address for multiple blocks
+		if (cmd(18, block_num * cdv_, 0, 0, false) != 0) {
+			// release the card
+			cs_.put(1);
+			return false; // EIO
+		}
+		int offset = 0;
+		for (int i = 0; i < nblocks; i++) {
 			// receive the data and release card
-			self.readinto(buf)
-		else:
-			// CMD18: set read address for multiple blocks
-			if self.cmd(18, block_num * self.cdv, 0, release=False) != 0:
-				// release the card
-				self.cs(1)
-				raise OSError(5)  // EIO
-			offset = 0
-			mv = memoryview(buf)
-			while nblocks:
-				// receive the data and release card
-				self.readinto(mv[offset : offset + 512])
-				offset += 512
-				nblocks -= 1
-			if self.cmd(12, 0, 0xFF, skip1=True):
-				raise OSError(5)  // EIO
+			readinto(buf + offset, 512);
+			offset += 512;
+		}
+		if (cmd(12, 0, 0xff, 0, true, true) != 0) {
+			return false; // EIO
+		}
+	}
+	return true;
+}
 
+/*
 	def writeblocks(self, block_num, buf):
 		// workaround for shared bus, required for (at least) some Kingston
 		// devices, ensure MOSI is high before starting transaction
