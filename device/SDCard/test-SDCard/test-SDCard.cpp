@@ -350,4 +350,10 @@ int main()
 	GPIO_CS.init().set_dir_OUT();
 	SDCard sdCard(spi, GPIO_CS, 10 * 1000 * 1000);
 	sdCard.init_card();
+	uint8_t buf[512];
+	for (int i = 0; i < 128; i++) {
+		::printf("sector#%d\n", i);
+		sdCard.readblocks(i, buf, 1);
+		Dump(buf, 512);
+	}
 }
