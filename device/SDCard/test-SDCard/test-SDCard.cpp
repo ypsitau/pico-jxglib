@@ -37,68 +37,49 @@ private:
 	static const uint8_t _TOKEN_CMD25				= 0xfc;
 	static const uint8_t _TOKEN_STOP_TRAN			= 0xfd;
 	static const uint8_t _TOKEN_DATA				= 0xfe;
+public:
+	static const uint baudrateSlow = 100 * 1000;	// 100kHz
 private:
 	spi_inst_t* spi_;
 	const GPIO& cs_;
 	uint baudrate_;
 	uint8_t cmdbuf_[6];
-	uint8_t dummybuf_[512];
 	uint8_t tokenbuf_[1];
 	int cdv_;
 public:
 	SDCard(spi_inst_t* spi, const GPIO& cs, uint baudrate);
-	void init_spi(uint baudrate);
-	bool init_card();
+	bool Initialize();
+	bool ReadBlock(int lba, uint8_t* buf, int nBlocks);
+	bool WriteBlock(int lba, const uint8_t* buf, int nBlocks);
+public:
+	static void PrintMBR(const uint8_t* bufSector);
+private:
 	bool init_card_v1();
 	bool init_card_v2();
 	int cmd(uint8_t cmd, uint32_t arg, uint8_t crc, int final = 0, bool release = true, bool skip1 = false);
 	bool readinto(uint8_t* buf, int bytes);
+private:
 	bool write(uint8_t token, const uint8_t* buf, int bytes);
 	bool write_token(uint8_t token);
-	bool readblocks(int block_num, uint8_t* buf, int nblocks);
-	bool writeblocks(int block_num, const uint8_t* buf, int nblocks);
-public:
-	static void PrintMBR(const uint8_t* bufSector);
-private:
-	void spi_write(uint8_t data) { spi_write_blocking(spi_, &data, 1); }
-	void spi_write(const uint8_t* data, int bytes) { spi_write_blocking(spi_, data, bytes); }
-	void spi_readinto(uint8_t* data, int bytes, uint8_t repeated_tx_data) { spi_read_blocking(spi_, repeated_tx_data, data, bytes); }
+	void SPIRead(uint8_t* data, int bytes, uint8_t repeated_tx_data) { spi_read_blocking(spi_, repeated_tx_data, data, bytes); }
+	void SPIWrite(const uint8_t* data, int bytes) { spi_write_blocking(spi_, data, bytes); }
+	void SPIWriteByte(uint8_t data) { spi_write_blocking(spi_, &data, 1); }
 };
 
 SDCard::SDCard(spi_inst_t* spi, const GPIO& cs, uint baudrate) : spi_{spi}, cs_{cs}, baudrate_{baudrate}
 {
-	for (int i = 0; i < sizeof(dummybuf_); i++) dummybuf_[i] = 0xff;
 }
 
-void SDCard::PrintMBR(const uint8_t* bufSector)
-{
-	if (bufSector[510] != 0x55 || bufSector[511] != 0xaa) {
-		::printf("invalid MBR\n");
-		return;
-	}
-	int offset = 446;
-	for (int iPartition = 0; iPartition < 4; iPartition++, offset += 16) {
-		const Partition& partition = *reinterpret_cast<const Partition*>(bufSector + offset);
-		::printf("#%d: BootID=%02x System=%02x LbaOfs=%08x LbaSize=%08x\n", iPartition + 1,
-			partition.BootID, partition.System, Unpack_uint32(partition.LbaOfs), Unpack_uint32(partition.LbaSize));
-	}
-}
-
-void SDCard::init_spi(uint baudrate)
-{
-	::spi_init(spi_, baudrate);
-	::spi_set_format(spi_, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST); 
-}
-
-bool SDCard::init_card()
+bool SDCard::Initialize()
 {
 	// init CS pin
 	cs_.put(1);
 
 	// init SPI bus; use low data rate for initialisation
-	init_spi(100 * 1000);
+	::spi_init(spi_, baudrateSlow);
+	::spi_set_format(spi_, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST); 
 	// clock card at least 100 cycles with cs high
-	for (int i = 0; i < 16; i++) spi_write(0xff);
+	for (int i = 0; i < 16; i++) SPIWriteByte(0xff);
 
 	::printf("check %d\n", __LINE__);
 	// CMD0: init card; should return _R1_IDLE_STATE (allow 5 attempts)
@@ -153,7 +134,8 @@ bool SDCard::init_card()
 
 	::printf("check %d\n", __LINE__);
 	// set to high data rate now that it's initialised
-	init_spi(baudrate_);
+	::spi_init(spi_, baudrate_);
+	::spi_set_format(spi_, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST); 
 	return true;
 }
 
@@ -206,33 +188,33 @@ int SDCard::cmd(uint8_t cmd, uint32_t arg, uint8_t crc, int final, bool release,
 	buf[3] = static_cast<uint8_t>(arg >> 8);
 	buf[4] = static_cast<uint8_t>(arg);
 	buf[5] = crc;
-	spi_write(buf, 6);
-	if (skip1) spi_readinto(tokenbuf_, 1, 0xff);
+	SPIWrite(buf, 6);
+	if (skip1) SPIRead(tokenbuf_, 1, 0xff);
 
 	// wait for the response (response[7] == 0)
 	for (int i = 0; i < _CMD_TIMEOUT; i++) {
-		spi_readinto(tokenbuf_, 1, 0xff);
+		SPIRead(tokenbuf_, 1, 0xff);
 		uint8_t response = tokenbuf_[0];
 		if (!(response & 0x80)) {
 			// this could be a big-endian integer that we are getting here
 			// if final<0 then store the first byte to tokenbuf and discard the rest
 			if (final < 0) {
-				spi_readinto(tokenbuf_, 1, 0xff);
+				SPIRead(tokenbuf_, 1, 0xff);
 				final = -1 - final;
 			}
 			for (int j = 0; j < final; j++) {
-				spi_write(0xff);
+				SPIWriteByte(0xff);
 			}
 			if (release) {
 				cs_.put(1);
-				spi_write(0xff);
+				SPIWriteByte(0xff);
 			}
 			return response;
 		}
 	}
 	// timeout
 	cs_.put(1);
-	spi_write(0xff);
+	SPIWriteByte(0xff);
 	return -1;
 }
 
@@ -242,7 +224,7 @@ bool SDCard::readinto(uint8_t* buf, int bytes)
 	// read until start byte (0xff)
 	bool successFlag = false;
 	for (int i = 0; i < _CMD_TIMEOUT; i++) {
-		spi_readinto(tokenbuf_, 1, 0xff);
+		SPIRead(tokenbuf_, 1, 0xff);
 		if (tokenbuf_[0] == _TOKEN_DATA) {
 			successFlag = true;
 			break;
@@ -254,12 +236,12 @@ bool SDCard::readinto(uint8_t* buf, int bytes)
 		return false; // timeout waiting for response
 	}
 	// read data
-	spi_readinto(buf, bytes, 0xff);
+	SPIRead(buf, bytes, 0xff);
 	// read checksum
-	spi_write(0xff);
-	spi_write(0xff);
+	SPIWriteByte(0xff);
+	SPIWriteByte(0xff);
 	cs_.put(1);
-	spi_write(0xff);
+	SPIWriteByte(0xff);
 	return true;
 }
 
@@ -268,24 +250,24 @@ bool SDCard::write(uint8_t token, const uint8_t* buf, int bytes)
 	cs_.put(0);
 	// send: start of block, data, checksum
 	uint8_t rtn;
-	spi_readinto(&rtn, 1, token);
-	spi_write(buf, bytes);
-	spi_write(0xff);
-	spi_write(0xff);
+	SPIRead(&rtn, 1, token);
+	SPIWrite(buf, bytes);
+	SPIWriteByte(0xff);
+	SPIWriteByte(0xff);
 	// check the response
-	spi_readinto(&rtn, 1, 0xff);
+	SPIRead(&rtn, 1, 0xff);
 	if ((rtn & 0x1f) != 0x05) {
 		cs_.put(1);
-		spi_write(0xff);
+		SPIWriteByte(0xff);
 		return false;
 	}
 	// wait for write to finish
 	for (;;) {
-		spi_readinto(&rtn, 1, 0xff);
+		SPIRead(&rtn, 1, 0xff);
 		if (rtn != 0x00) break;
 	}
 	cs_.put(1);
-	spi_write(0xff);
+	SPIWriteByte(0xff);
 	return true;
 }
 
@@ -293,41 +275,41 @@ bool SDCard::write_token(uint8_t token)
 {
 	cs_.put(0);
 	uint8_t rtn;
-	spi_readinto(&rtn, 1, token);
-	spi_write(0xff);
+	SPIRead(&rtn, 1, token);
+	SPIWriteByte(0xff);
 	// wait for write to finish
 	for (;;) {
-		spi_readinto(&rtn, 1, 0xff);
+		SPIRead(&rtn, 1, 0xff);
 		if (rtn != 0x00) break;
 	}
 	cs_.put(1);
-	spi_write(0xff);
+	SPIWriteByte(0xff);
 	return true;
 }
 
-bool SDCard::readblocks(int block_num, uint8_t* buf, int nblocks)
+bool SDCard::ReadBlock(int lba, uint8_t* buf, int nBlocks)
 {
 	// workaround for shared bus, required for (at least) some Kingston
 	// devices, ensure MOSI is high before starting transaction
-	spi_write(0xff);
-	if (nblocks == 1) {
+	SPIWriteByte(0xff);
+	if (nBlocks == 1) {
 		// CMD17: set read address for single block
-		if (cmd(17, block_num * cdv_, 0, 0, false) != 0) {
+		if (cmd(17, lba * cdv_, 0, 0, false) != 0) {
 			// release the card
 			cs_.put(1);
 			return false; // EIO
 		}
 		// receive the data and release card
-		readinto(buf, nblocks * 512);
+		readinto(buf, nBlocks * 512);
 	} else {
 		// CMD18: set read address for multiple blocks
-		if (cmd(18, block_num * cdv_, 0, 0, false) != 0) {
+		if (cmd(18, lba * cdv_, 0, 0, false) != 0) {
 			// release the card
 			cs_.put(1);
 			return false; // EIO
 		}
 		int offset = 0;
-		for (int i = 0; i < nblocks; i++) {
+		for (int i = 0; i < nBlocks; i++) {
 			// receive the data and release card
 			readinto(buf + offset, 512);
 			offset += 512;
@@ -339,26 +321,26 @@ bool SDCard::readblocks(int block_num, uint8_t* buf, int nblocks)
 	return true;
 }
 
-bool SDCard::writeblocks(int block_num, const uint8_t* buf, int nblocks)
+bool SDCard::WriteBlock(int lba, const uint8_t* buf, int nBlocks)
 {
 	// workaround for shared bus, required for (at least) some Kingston
 	// devices, ensure MOSI is high before starting transaction
-	spi_write(0xff);
-	if (nblocks == 1) {
+	SPIWriteByte(0xff);
+	if (nBlocks == 1) {
 		// CMD24: set write address for single block
-		if (cmd(24, block_num * cdv_, 0) != 0) {
+		if (cmd(24, lba * cdv_, 0) != 0) {
 			return false; // EIO
 		}
 		// send the data
-		write(_TOKEN_DATA, buf, nblocks * 512);
+		write(_TOKEN_DATA, buf, nBlocks * 512);
 	} else {
 		// CMD25: set write address for first block
-		if (cmd(25, block_num * cdv_, 0) != 0) {
+		if (cmd(25, lba * cdv_, 0) != 0) {
 			return false; // EIO
 		}
 		// send the data
 		int offset = 0;
-		for (int i = 0; i < nblocks; i++) {
+		for (int i = 0; i < nBlocks; i++) {
 			write(_TOKEN_CMD25, buf + offset, 512);
 			offset += 512;
 		}
@@ -375,6 +357,20 @@ bool SDCard::writeblocks(int block_num, const uint8_t* buf, int nblocks)
 			return 512
 */
 
+void SDCard::PrintMBR(const uint8_t* bufSector)
+{
+	if (bufSector[510] != 0x55 || bufSector[511] != 0xaa) {
+		::printf("invalid MBR\n");
+		return;
+	}
+	int offset = 446;
+	for (int iPartition = 0; iPartition < 4; iPartition++, offset += 16) {
+		const Partition& partition = *reinterpret_cast<const Partition*>(bufSector + offset);
+		::printf("#%d: BootID=%02x System=%02x LbaOfs=%08x LbaSize=%08x\n", iPartition + 1,
+			partition.BootID, partition.System, Unpack_uint32(partition.LbaOfs), Unpack_uint32(partition.LbaSize));
+	}
+}
+
 int main()
 {
 	const auto& GPIO_SCK = GPIO2;
@@ -388,18 +384,18 @@ int main()
 	GPIO_RX.set_function_SPI0_RX();
 	GPIO_CS.init().set_dir_OUT();
 	SDCard sdCard(spi, GPIO_CS, 10 * 1000 * 1000);
-	sdCard.init_card();
+	sdCard.Initialize();
 	uint8_t buf[512];
-	sdCard.readblocks(0, buf, 1);
+	sdCard.ReadBlock(0, buf, 1);
 	SDCard::PrintMBR(buf);
-	//for (int i = 0; i < 512; i++) buf[i] = static_cast<uint8_t>(i);
-	::memset(buf, 0x00, sizeof(buf));
-	sdCard.writeblocks(1, buf, 1);
-	sdCard.writeblocks(2, buf, 1);
+	for (int i = 0; i < 512; i++) buf[i] = static_cast<uint8_t>(i);
+	//::memset(buf, 0x00, sizeof(buf));
+	sdCard.WriteBlock(1, buf, 1);
+	sdCard.WriteBlock(2, buf, 1);
 	::memset(buf, 0x00, sizeof(buf));
 	for (int i = 0; i < 4; i++) {
 		::printf("sector#%d\n", i);
-		sdCard.readblocks(i, buf, 1);
+		sdCard.ReadBlock(i, buf, 1);
 		Dump(buf, 512);
 	}
 }

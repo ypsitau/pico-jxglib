@@ -5,7 +5,6 @@
 
 using namespace jxglib;
 
-
 class DummyDrive : public FAT::PhysicalDriveT<> {
 public:
 	DummyDrive(BYTE pdrv = 0) : FAT::PhysicalDriveT<>{pdrv} {}
