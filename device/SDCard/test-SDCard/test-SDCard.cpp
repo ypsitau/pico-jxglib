@@ -54,8 +54,6 @@ public:
 public:
 	static void PrintMBR(const uint8_t* bufSector);
 private:
-	bool init_card_v1();
-	bool init_card_v2();
 	int cmd(uint8_t cmd, uint32_t arg, uint8_t crc, int final = 0, bool release = true, bool skip1 = false);
 	bool readinto(uint8_t* buf, int bytes);
 private:
@@ -93,11 +91,44 @@ bool SDCard::Initialize()
 	if (!successFlag) return false; // no SD card
 	::printf("check %d\n", __LINE__);
 	// CMD8: determine card version
-	int r = cmd(8, 0x01AA, 0x87, 4);
+	int r = cmd(8, 0x01aa, 0x87, 4);
 	if (r == _R1_IDLE_STATE) {
-		init_card_v2();
+		// v2 card
+		successFlag = false;
+		for (int i = 0; i < _CMD_TIMEOUT; i++) {
+			sleep_ms(50);
+			cmd(58, 0, 0, 4);
+			cmd(55, 0, 0);
+			if (cmd(41, 0x40000000, 0) == 0) {
+				cmd(58, 0, 0, -4); // 4-byte response, negative means keep the first byte
+				uint8_t ocr = tokenbuf_[0];  // get first byte of response, which is OCR
+				if (!(ocr & 0x40)) {
+					// SDSC card, uses byte addressing in read/write/erase commands
+					cdv_ = 512;
+				} else {
+					// SDHC/SDXC card, uses block addressing in read/write/erase commands
+					cdv_ = 1;
+				}
+				successFlag = true;
+				break;
+			}
+		}
+		if (!successFlag) return false;
 	} else if (r == (_R1_IDLE_STATE | _R1_ILLEGAL_COMMAND)) {
-		init_card_v1();
+		// v1 card
+		successFlag = false;
+		for (int i = 0; i < _CMD_TIMEOUT; i++) {
+			sleep_ms(50);
+			cmd(55, 0, 0);
+			if (cmd(41, 0, 0) == 0) {
+				// SDSC card, uses byte addressing in read/write/erase commands
+				cdv_ = 512;
+				// print("[SDCard] v1 card")
+				successFlag = true;
+				break;
+			}
+		}
+		if (!successFlag) return false;
 	} else {
 		return false; // couldn't determine SD card version
 	}
@@ -137,44 +168,6 @@ bool SDCard::Initialize()
 	::spi_init(spi_, baudrate_);
 	::spi_set_format(spi_, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST); 
 	return true;
-}
-
-bool SDCard::init_card_v1()
-{
-	for (int i = 0; i < _CMD_TIMEOUT; i++) {
-		sleep_ms(50);
-		cmd(55, 0, 0);
-		if (cmd(41, 0, 0) == 0) {
-			// SDSC card, uses byte addressing in read/write/erase commands
-			cdv_ = 512;
-			// print("[SDCard] v1 card")
-			return true;
-		}
-	}
-	return false; // timeout waiting for v1 card
-}
-
-bool SDCard::init_card_v2()
-{
-	for (int i = 0; i < _CMD_TIMEOUT; i++) {
-		sleep_ms(50);
-		cmd(58, 0, 0, 4);
-		cmd(55, 0, 0);
-		if (cmd(41, 0x40000000, 0) == 0) {
-			cmd(58, 0, 0, -4); // 4-byte response, negative means keep the first byte
-			uint8_t ocr = tokenbuf_[0];  // get first byte of response, which is OCR
-			if (!(ocr & 0x40)) {
-				// SDSC card, uses byte addressing in read/write/erase commands
-				cdv_ = 512;
-			} else {
-				// SDHC/SDXC card, uses block addressing in read/write/erase commands
-				cdv_ = 1;
-			}
-			// print("[SDCard] v2 card")
-			return true;
-		}
-	}
-	return false; // timeout waiting for v2 card
 }
 
 int SDCard::cmd(uint8_t cmd, uint32_t arg, uint8_t crc, int final, bool release, bool skip1)
