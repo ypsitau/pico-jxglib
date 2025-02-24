@@ -16,6 +16,9 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class SDCard {
 public:
+	struct PinAssign {
+		const GPIO& CS;
+	};
 	struct Partition {
 		uint8_t BootID;
 		uint8_t Start_Cylinder;
@@ -51,7 +54,7 @@ private:
 	int cdv_;
 	int nSectors_;
 public:
-	SDCard(spi_inst_t* spi, const GPIO& gpio_CS, uint baudrate);
+	SDCard(spi_inst_t* spi, uint baudrate, const PinAssign& pinAssign);
 	bool Initialize();
 	bool ReadBlock(int lba, uint8_t* buf, int nBlocks);
 	bool WriteBlock(int lba, const uint8_t* buf, int nBlocks);

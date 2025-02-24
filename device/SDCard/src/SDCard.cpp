@@ -10,8 +10,8 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // SDCard
 //------------------------------------------------------------------------------
-SDCard::SDCard(spi_inst_t* spi, const GPIO& gpio_CS, uint baudrate) :
-		spi_{spi}, gpio_CS_{gpio_CS}, baudrate_{baudrate}, cdv_{0}, nSectors_{0}
+SDCard::SDCard(spi_inst_t* spi, uint baudrate, const PinAssign& pinAssign) :
+		spi_{spi}, gpio_CS_{pinAssign.CS}, baudrate_{baudrate}, cdv_{0}, nSectors_{0}
 {
 }
 

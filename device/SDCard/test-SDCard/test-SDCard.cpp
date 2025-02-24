@@ -12,7 +12,7 @@ int main()
 	GPIO2.set_function_SPI0_SCK();
 	GPIO3.set_function_SPI0_TX();
 	GPIO4.set_function_SPI0_RX();
-	SDCard sdCard(spi0, GPIO5, 10 * 1000 * 1000);
+	SDCard sdCard(spi0, 10 * 1000 * 1000, {CS: GPIO5});	// 10MHz
 	sdCard.Initialize();
 	uint8_t buf[512];
 	sdCard.ReadBlock(0, buf, 1);
