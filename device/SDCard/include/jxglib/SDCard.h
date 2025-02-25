@@ -70,9 +70,9 @@ private:
 	bool WriteDataPacket(uint8_t token, const uint8_t* buf, int bytes);
 	bool WriteToken(uint8_t token);
 private:
-	void SPIRead(uint8_t* data, int bytes, uint8_t token) { spi_read_blocking(spi_, token, data, bytes); }
-	uint8_t SPIReadByte(uint8_t token = 0xff) {
-		uint8_t data; spi_read_blocking(spi_, token, &data, 1); return data;
+	void SPIRead(uint8_t* data, int bytes, uint8_t dataToSend) { spi_read_blocking(spi_, dataToSend, data, bytes); }
+	uint8_t SPIReadByte(uint8_t dataToSend = 0xff) {
+		uint8_t data; spi_read_blocking(spi_, dataToSend, &data, 1); return data;
 	}
 	void SPIWrite(const uint8_t* data, int bytes) { spi_write_blocking(spi_, data, bytes); }
 	void SPIWriteByte(uint8_t data) { spi_write_blocking(spi_, &data, 1); }

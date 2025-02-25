@@ -27,31 +27,34 @@ bool SDCard::Initialize(bool debugFlag)
 	::spi_set_format(spi_, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST); 
 	PRINTF("send 128 clocks to SCLKs (at least requires 74 clocks) while DI and CS set to H\n");
 	for (int i = 0; i < 16; i++) SPIWriteByte(0xff);
-	PRINTF("CMD0: GO_IDLE_STATE ... returns to IDLE_STATE\n");
-	bool successFlag = false;
-	for (int iTrial = 0; iTrial < 5; iTrial++) {
-		if (WriteCommandFrame(0, 0, 0x95) == _R1_IDLE_STATE) {
-			successFlag = true;
-			break;
+	do {
+		bool successFlag = false;
+		PRINTF("CMD0: GO_IDLE_STATE ... returns to IDLE_STATE\n");
+		for (int iTrial = 0; iTrial < 5; iTrial++) {
+			// https://crccalc.com/?crc=4000000000&method=CRC-8/LTE&datatype=hex&outtype=hex
+			if (WriteCommandFrame(0, 0, 0x94) == _R1_IDLE_STATE) {
+				successFlag = true;
+				break;
+			}
 		}
-	}
-	if (!successFlag) {
-		PRINTF("Error: IDLE_STATE is not detected\n");
-		return false; // no SD card
-	}
+		if (!successFlag) {
+			PRINTF("Error: failed to go to idle state\n");
+			return false;
+		}
+	} while (0);
 	PRINTF("CMD8: SEND_IF_COND ... determines card version\n");
 	uint8_t status[4];
-	int r1 = WriteCommandFrame(8, 0x01aa, 0x87, status, 4);
+	// https://crccalc.com/?crc=48000001aa&method=CRC-8/LTE&datatype=hex&outtype=hex
+	int r1 = WriteCommandFrame(8, 0x01aa, 0x86, status, 4);
 	if (r1 == _R1_IDLE_STATE) {
 		PRINTF("card version is v2\n");
-		successFlag = false;
+		bool successFlag = false;
 		for (int iTrial = 0; iTrial < TrialCountForCmd; iTrial++) {
 			sleep_ms(50);
 			PRINTF("CMD58: READ_OCR\n");
 			WriteCommandFrame(58, 0, crc_zero, status, 4);
-			PRINTF("CMD55: APP_CMD\n");
+			PRINTF("ACMD41: APP_SEND_OP_COND\n");
 			WriteCommandFrame(55, 0, crc_zero);
-			PRINTF("CMD41: APP_SEND_OP_COND\n");
 			if (WriteCommandFrame(41, 0x40000000, crc_zero) == _R1_SUCCESS) {
 				PRINTF("CMD58: READ_OCR\n");
 				WriteCommandFrame(58, 0, crc_zero, status, 4);
@@ -67,17 +70,16 @@ bool SDCard::Initialize(bool debugFlag)
 			}
 		}
 		if (!successFlag) {
-			PRINTF("failed to get SUCCESS response\n");
+			PRINTF("Error: failed to read OCR\n");
 			return false;
 		}
 	} else if (r1 == (_R1_IDLE_STATE | _R1_ILLEGAL_COMMAND)) {
 		PRINTF("card version is v1\n");
-		successFlag = false;
+		bool successFlag = false;
 		for (int iTrial = 0; iTrial < TrialCountForCmd; iTrial++) {
 			sleep_ms(50);
-			PRINTF("CMD55: APP_CMD\n");
+			PRINTF("ACMD41: APP_SEND_OP_COND\n");
 			WriteCommandFrame(55, 0, crc_zero);
-			PRINTF("CMD41: APP_SEND_OP_COND\n");
 			if (WriteCommandFrame(41, 0, crc_zero) == _R1_SUCCESS) {
 				PRINTF("SDSC card, uses byte addressing in read/write/erase commands\n");
 				cdv_ = 512;
@@ -86,17 +88,17 @@ bool SDCard::Initialize(bool debugFlag)
 			}
 		}
 		if (!successFlag) {
-			PRINTF("failed to get SUCCESS response\n");
+			PRINTF("Error: failed to read\n");
 			return false;
 		}
 	} else {
-		PRINTF("unknown response 0x%02x\n", r1);
+		PRINTF("Error: unknown response 0x%02x\n", r1);
 		return false;
 	}
 	// get the number of sectors
 	PRINTF("CMD9: SEND_CSD\n");
 	if (WriteCommandFrame(9, 0, crc_zero, nullptr, 0, false) != _R1_SUCCESS) {
-		PRINTF("no response from SD card\n");
+		PRINTF("Error: no response from SD card\n");
 		return false;
 	}
 	PRINTF("receives CSD (16-byte data packet)\n");
@@ -113,12 +115,12 @@ bool SDCard::Initialize(bool debugFlag)
 		int capacity = (c_size + 1) * (1 << (c_size_mult + 2)) * (1 << read_bl_len);
 		nSectors_ = capacity / 512;
 	} else {
-		PRINTF("unknown CSD format\n");
+		PRINTF("Error: invalid CSD format\n");
 		return false;
 	}
 	PRINTF("CMD16: SET_BLOCKLEN\n");
 	if (WriteCommandFrame(16, 512, crc_zero) != _R1_SUCCESS) {
-		PRINTF("no response from SD card\n");
+		PRINTF("Error: no response from SD card\n");
 		return false;
 	}
 	PRINTF("set SPI baudrate to %dHz\n", baudrate_);
@@ -129,16 +131,14 @@ bool SDCard::Initialize(bool debugFlag)
 
 int SDCard::WriteCommandFrame(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t* status, int bytesStatus, bool release)
 {
-	bool skip1 = false;
 	gpio_CS_.put(0);
-	// create and send the command
 	uint8_t commandFrame[6];
 	commandFrame[0] = 0x40 | cmd;
 	commandFrame[1] = static_cast<uint8_t>(arg >> 24);
 	commandFrame[2] = static_cast<uint8_t>(arg >> 16);
 	commandFrame[3] = static_cast<uint8_t>(arg >> 8);
 	commandFrame[4] = static_cast<uint8_t>(arg);
-	commandFrame[5] = crc;
+	commandFrame[5] = crc | 0x01;
 	SPIWrite(commandFrame, sizeof(commandFrame));
 	if (cmd == 12) SPIReadByte(); // CMD12 has a reponse format of R1b
 	int rtn = -1;
