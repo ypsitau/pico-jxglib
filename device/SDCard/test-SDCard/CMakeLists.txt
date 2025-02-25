@@ -35,7 +35,7 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-SDCard test-SDCard.cpp mmc_pico_spi.c)
+add_executable(test-SDCard test-SDCard.cpp)
 
 pico_set_program_name(test-SDCard "test-SDCard")
 pico_set_program_version(test-SDCard "0.1")
