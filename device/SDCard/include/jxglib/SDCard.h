@@ -32,7 +32,10 @@ public:
 		Packed_uint32(LbaSize);
 	};
 private:
-	static const int TrialCountOfCmd				= 100;
+	static const int TrialCountForCmd				= 100;
+	static const int TrialCountForRead				= 10;
+	static const int TrialCountForWrite				= 10;
+	static const uint8_t _R1_SUCCESS				= 0x00;
 	static const uint8_t _R1_IDLE_STATE				= 1 << 0;
 	static const uint8_t _R1_ERASE_RESET			= 1 << 1;
 	static const uint8_t _R1_ILLEGAL_COMMAND		= 1 << 2;
@@ -50,19 +53,19 @@ private:
 	spi_inst_t* spi_;
 	const GPIO& gpio_CS_;
 	uint baudrate_;
-	uint8_t tokenbuf_[1];
 	int cdv_;
 	int nSectors_;
 public:
 	SDCard(spi_inst_t* spi, uint baudrate, const PinAssign& pinAssign);
-	bool Initialize();
+	bool Initialize(bool debugFlag = false);
 	bool ReadBlock(int lba, uint8_t* buf, int nBlocks);
 	bool WriteBlock(int lba, const uint8_t* buf, int nBlocks);
 public:
 	int GetSectors() const { return nSectors_; }
 	static void PrintMBR(const uint8_t* bufSector);
 private:
-	int WriteCommandFrame(uint8_t cmd, uint32_t arg, uint8_t crc, int final = 0, bool release = true, bool skip1 = false);
+	int WriteCommandFrame(uint8_t cmd, uint32_t arg, uint8_t crc,
+				uint8_t* status = nullptr, int bytesStatus = 0, bool release = true);
 	bool ReadDataPacket(uint8_t* buf, int bytes);
 	bool WriteDataPacket(uint8_t token, const uint8_t* buf, int bytes);
 	bool WriteToken(uint8_t token);

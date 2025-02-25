@@ -5,6 +5,8 @@
 #include <memory.h>
 #include "jxglib/SDCard.h"
 
+#define PRINTF(args...) if (debugFlag) ::printf(args)
+
 namespace jxglib {
 
 //------------------------------------------------------------------------------
@@ -15,103 +17,119 @@ SDCard::SDCard(spi_inst_t* spi, uint baudrate, const PinAssign& pinAssign) :
 {
 }
 
-bool SDCard::Initialize()
+bool SDCard::Initialize(bool debugFlag)
 {
+	const uint8_t crc_zero = 0x00;
 	gpio_CS_.init().set_dir_OUT();
 	gpio_CS_.put(1);
+	PRINTF("set SPI baudrate to %dHz\n", baudrateSlow);
 	::spi_init(spi_, baudrateSlow);
 	::spi_set_format(spi_, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST); 
-	// clock card at least 100 cycles with cs high
+	PRINTF("send 128 clocks to SCLKs (at least requires 74 clocks) while DI and CS set to H\n");
 	for (int i = 0; i < 16; i++) SPIWriteByte(0xff);
-	// CMD0: init card; should return _R1_IDLE_STATE (allow 5 attempts)
+	PRINTF("CMD0: GO_IDLE_STATE ... returns to IDLE_STATE\n");
 	bool successFlag = false;
-	for (int i = 0; i < 5; i++) {
+	for (int iTrial = 0; iTrial < 5; iTrial++) {
 		if (WriteCommandFrame(0, 0, 0x95) == _R1_IDLE_STATE) {
 			successFlag = true;
 			break;
 		}
 	}
 	if (!successFlag) {
+		PRINTF("Error: IDLE_STATE is not detected\n");
 		return false; // no SD card
 	}
-	// CMD8: determine card version
-	int r = WriteCommandFrame(8, 0x01aa, 0x87, 4);
-	if (r == _R1_IDLE_STATE) {
-		// v2 card
+	PRINTF("CMD8: SEND_IF_COND ... determines card version\n");
+	uint8_t status[4];
+	int r1 = WriteCommandFrame(8, 0x01aa, 0x87, status, 4);
+	if (r1 == _R1_IDLE_STATE) {
+		PRINTF("card version is v2\n");
 		successFlag = false;
-		for (int iTrial = 0; iTrial < TrialCountOfCmd; iTrial++) {
+		for (int iTrial = 0; iTrial < TrialCountForCmd; iTrial++) {
 			sleep_ms(50);
-			WriteCommandFrame(58, 0, 0, 4);
-			WriteCommandFrame(55, 0, 0);
-			if (WriteCommandFrame(41, 0x40000000, 0) == 0) {
-				WriteCommandFrame(58, 0, 0, -4); // 4-byte response, negative means keep the first byte
-				uint8_t ocr = tokenbuf_[0];  // get first byte of response, which is OCR
-				if (!(ocr & 0x40)) {
-					// SDSC card, uses byte addressing in read/write/erase commands
-					cdv_ = 512;
-				} else {
-					// SDHC/SDXC card, uses block addressing in read/write/erase commands
+			PRINTF("CMD58: READ_OCR\n");
+			WriteCommandFrame(58, 0, crc_zero, status, 4);
+			PRINTF("CMD55: APP_CMD\n");
+			WriteCommandFrame(55, 0, crc_zero);
+			PRINTF("CMD41: APP_SEND_OP_COND\n");
+			if (WriteCommandFrame(41, 0x40000000, crc_zero) == _R1_SUCCESS) {
+				PRINTF("CMD58: READ_OCR\n");
+				WriteCommandFrame(58, 0, crc_zero, status, 4);
+				if (status[0] & 0x40) {
+					PRINTF("SDHC/SDXC card, uses block addressing in read/write/erase commands\n");
 					cdv_ = 1;
+				} else {
+					PRINTF("SDSC card, uses byte addressing in read/write/erase commands\n");
+					cdv_ = 512;
 				}
 				successFlag = true;
 				break;
 			}
 		}
 		if (!successFlag) {
+			PRINTF("failed to get SUCCESS response\n");
 			return false;
 		}
-	} else if (r == (_R1_IDLE_STATE | _R1_ILLEGAL_COMMAND)) {
-		// v1 card
+	} else if (r1 == (_R1_IDLE_STATE | _R1_ILLEGAL_COMMAND)) {
+		PRINTF("card version is v1\n");
 		successFlag = false;
-		for (int iTrial = 0; iTrial < TrialCountOfCmd; iTrial++) {
+		for (int iTrial = 0; iTrial < TrialCountForCmd; iTrial++) {
 			sleep_ms(50);
-			WriteCommandFrame(55, 0, 0);
-			if (WriteCommandFrame(41, 0, 0) == 0) {
-				// SDSC card, uses byte addressing in read/write/erase commands
+			PRINTF("CMD55: APP_CMD\n");
+			WriteCommandFrame(55, 0, crc_zero);
+			PRINTF("CMD41: APP_SEND_OP_COND\n");
+			if (WriteCommandFrame(41, 0, crc_zero) == _R1_SUCCESS) {
+				PRINTF("SDSC card, uses byte addressing in read/write/erase commands\n");
 				cdv_ = 512;
-				// print("[SDCard] v1 card")
 				successFlag = true;
 				break;
 			}
 		}
 		if (!successFlag) {
+			PRINTF("failed to get SUCCESS response\n");
 			return false;
 		}
 	} else {
-		return false; // couldn't determine SD card version
+		PRINTF("unknown response 0x%02x\n", r1);
+		return false;
 	}
 	// get the number of sectors
-	// CMD9: response R2 (R1 byte + 16-byte block read)
-	if (WriteCommandFrame(9, 0, 0, 0, false) != 0) {
-		return false; // no response from SD card
+	PRINTF("CMD9: SEND_CSD\n");
+	if (WriteCommandFrame(9, 0, crc_zero, nullptr, 0, false) != _R1_SUCCESS) {
+		PRINTF("no response from SD card\n");
+		return false;
 	}
+	PRINTF("receives CSD (16-byte data packet)\n");
 	uint8_t csd[16];
-	::memset(csd, 0x00, sizeof(csd));
 	ReadDataPacket(csd, sizeof(csd));
-	int c_size, c_size_mult, capacity, read_bl_len;
-	if ((csd[0] & 0xc0) == 0x40) {  // CSD version 2.0
+	if ((csd[0] & 0xc0) == 0x40) {
+		PRINTF("CSD version 2.0\n");
 		nSectors_ = ((csd[8] << 8 | csd[9]) + 1) * 1024;
-	} else if ((csd[0] & 0xc0) == 0x00) { // CSD version 1.0 (old, <=2GB)
-		c_size = (csd[6] & 0b11) << 10 | csd[7] << 2 | csd[8] >> 6;
-		c_size_mult = (csd[9] & 0b11) << 1 | csd[10] >> 7;
-		read_bl_len = csd[5] & 0b1111;
-		capacity = (c_size + 1) * (1 << (c_size_mult + 2)) * (1 << read_bl_len);
+	} else if ((csd[0] & 0xc0) == 0x00) {
+		PRINTF("CSD version 1.0 (old, <=2GB)\n");
+		int c_size = ((csd[6] & 0b11) << 10) | (csd[7] << 2) | (csd[8] >> 6);
+		int c_size_mult = ((csd[9] & 0b11) << 1) | (csd[10] >> 7);
+		int read_bl_len = csd[5] & 0b1111;
+		int capacity = (c_size + 1) * (1 << (c_size_mult + 2)) * (1 << read_bl_len);
 		nSectors_ = capacity / 512;
 	} else {
-		return false; // SD card CSD format not supported
+		PRINTF("unknown CSD format\n");
+		return false;
 	}
-	// CMD16: set block length to 512 bytes
-	if (WriteCommandFrame(16, 512, 0) != 0) {
-		return false; // can't set 512 block size
+	PRINTF("CMD16: SET_BLOCKLEN\n");
+	if (WriteCommandFrame(16, 512, crc_zero) != _R1_SUCCESS) {
+		PRINTF("no response from SD card\n");
+		return false;
 	}
-	// set to high data rate now that it's initialised
+	PRINTF("set SPI baudrate to %dHz\n", baudrate_);
 	::spi_init(spi_, baudrate_);
 	::spi_set_format(spi_, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST); 
 	return true;
 }
 
-int SDCard::WriteCommandFrame(uint8_t cmd, uint32_t arg, uint8_t crc, int final, bool release, bool skip1)
+int SDCard::WriteCommandFrame(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t* status, int bytesStatus, bool release)
 {
+	bool skip1 = false;
 	gpio_CS_.put(0);
 	// create and send the command
 	uint8_t commandFrame[6];
@@ -122,46 +140,36 @@ int SDCard::WriteCommandFrame(uint8_t cmd, uint32_t arg, uint8_t crc, int final,
 	commandFrame[4] = static_cast<uint8_t>(arg);
 	commandFrame[5] = crc;
 	SPIWrite(commandFrame, sizeof(commandFrame));
-	if (skip1) SPIReadByte();
-	// wait for the response (response[7] == 0)
-	for (int iTrial = 0; iTrial < TrialCountOfCmd; iTrial++) {
-		uint8_t response = SPIReadByte();
-		if (!(response & 0x80)) {
-			// this could be a big-endian integer that we are getting here
-			// if final<0 then store the first byte to tokenbuf and discard the rest
-			if (final < 0) {
-				SPIRead(tokenbuf_, 1, 0xff);
-				final = -1 - final;
-			}
-			for (int j = 0; j < final; j++) SPIWriteByte(0xff);
-			if (release) {
-				gpio_CS_.put(1);
-				SPIWriteByte(0xff);
-			}
-			return response;
+	if (cmd == 12) SPIReadByte(); // CMD12 has a reponse format of R1b
+	int rtn = -1;
+	for (int iTrial = 0; iTrial < TrialCountForCmd; iTrial++) {
+		uint8_t resp = SPIReadByte();
+		if (!(resp & 0x80)) {
+			if (bytesStatus > 0) SPIRead(status, bytesStatus, 0xff);
+			rtn = resp;
+			break;
 		}
 	}
-	gpio_CS_.put(1);
-	SPIWriteByte(0xff);
-	return -1;
+	if (release) {
+		gpio_CS_.put(1);
+		SPIWriteByte(0xff);
+	}
+	return rtn;
 }
 
 bool SDCard::ReadDataPacket(uint8_t* buf, int bytes)
 {
-	gpio_CS_.put(0);
 	bool successFlag = false;
-	// Wait for Data Token
-	for (int iTrial = 0; iTrial < TrialCountOfCmd; iTrial++) {
+	gpio_CS_.put(0);
+	for (int iTrial = 0; iTrial < TrialCountForRead; iTrial++) {
 		if (SPIReadByte() == Token_ReadData) {
+			uint8_t crc[2];
+			SPIRead(buf, bytes, 0xff);			// Data Block
+			SPIRead(crc, sizeof(crc), 0xff);	// CRC
 			successFlag = true;
 			break;
 		}
 		::sleep_ms(1);
-	}
-	if (successFlag) {
-		uint8_t crc[2];
-		SPIRead(buf, bytes, 0xff);			// Data Block
-		SPIRead(crc, sizeof(crc), 0xff);	// CRC
 	}
 	gpio_CS_.put(1);
 	SPIWriteByte(0xff);
@@ -170,23 +178,21 @@ bool SDCard::ReadDataPacket(uint8_t* buf, int bytes)
 
 bool SDCard::WriteDataPacket(uint8_t token, const uint8_t* buf, int bytes)
 {
+	bool successFlag = false;
 	gpio_CS_.put(0);
 	uint8_t crc[2];
 	crc[0] = crc[1] = 0xff;
 	SPIWriteByte(token);		// Data Token
 	SPIWrite(buf, bytes);		// Data Block
 	SPIWrite(crc, sizeof(crc));	// CRC
-	uint8_t rtn;
-	SPIRead(&rtn, 1, 0xff);
-	if ((rtn & 0x1f) != 0x05) {
-		gpio_CS_.put(1);
-		SPIWriteByte(0xff);
-		return false;
+	uint8_t resp = SPIReadByte() & 0x1f;
+	if (resp == 0x05) { // Data accepted
+		while (SPIReadByte() == 0x00) ;
+		successFlag = true;
 	}
-	while (SPIReadByte() == 0x00) ;
 	gpio_CS_.put(1);
 	SPIWriteByte(0xff);
-	return true;
+	return successFlag;
 }
 
 bool SDCard::WriteToken(uint8_t token)
@@ -202,32 +208,30 @@ bool SDCard::WriteToken(uint8_t token)
 
 bool SDCard::ReadBlock(int lba, uint8_t* buf, int nBlocks)
 {
-	// workaround for shared bus, required for (at least) some Kingston
-	// devices, ensure MOSI is high before starting transaction
+	const uint8_t crc_zero = 0x00;
+	const uint8_t crc_ff = 0xff;
+	// workaround for shared bus, required for (at least) some Kingston devices,
+	// ensure MOSI is high before starting transaction
 	SPIWriteByte(0xff);
 	if (nBlocks == 1) {
 		// CMD17: set read address for single block
-		if (WriteCommandFrame(17, lba * cdv_, 0, 0, false) != 0) {
-			// release the card
+		if (WriteCommandFrame(17, lba * cdv_, crc_zero, nullptr, 0, false) != _R1_SUCCESS) {
 			gpio_CS_.put(1);
 			return false; // EIO
 		}
-		// receive the data and release card
 		ReadDataPacket(buf, nBlocks * 512);
 	} else {
 		// CMD18: set read address for multiple blocks
-		if (WriteCommandFrame(18, lba * cdv_, 0, 0, false) != 0) {
-			// release the card
+		if (WriteCommandFrame(18, lba * cdv_, crc_zero, nullptr, 0, false) != _R1_SUCCESS) {
 			gpio_CS_.put(1);
 			return false; // EIO
 		}
 		int offset = 0;
 		for (int i = 0; i < nBlocks; i++) {
-			// receive the data and release card
 			ReadDataPacket(buf + offset, 512);
 			offset += 512;
 		}
-		if (WriteCommandFrame(12, 0, 0xff, 0, true, true) != 0) {
+		if (WriteCommandFrame(12, 0, crc_ff) != _R1_SUCCESS) {
 			return false; // EIO
 		}
 	}
@@ -236,30 +240,33 @@ bool SDCard::ReadBlock(int lba, uint8_t* buf, int nBlocks)
 
 bool SDCard::WriteBlock(int lba, const uint8_t* buf, int nBlocks)
 {
+	bool successFlag = true;
+	const uint8_t crc_zero = 0x00;
 	// workaround for shared bus, required for (at least) some Kingston
 	// devices, ensure MOSI is high before starting transaction
 	SPIWriteByte(0xff);
 	if (nBlocks == 1) {
-		// CMD24: set write address for single block
-		if (WriteCommandFrame(24, lba * cdv_, 0) != 0) {
-			return false; // EIO
+		// CMD24: WRITE_BLOCK
+		if (WriteCommandFrame(24, lba * cdv_, crc_zero) != _R1_SUCCESS) {
+			return false;
 		}
-		// send the data
-		WriteDataPacket(Token_CMD24, buf, nBlocks * 512);
+		successFlag = WriteDataPacket(Token_CMD24, buf, nBlocks * 512);
 	} else {
-		// CMD25: set write address for first block
-		if (WriteCommandFrame(25, lba * cdv_, 0) != 0) {
-			return false; // EIO
+		// CMD25: WRITE_MULTIPLE_BLOCK
+		if (WriteCommandFrame(25, lba * cdv_, crc_zero) != _R1_SUCCESS) {
+			return false;
 		}
-		// send the data
 		int offset = 0;
 		for (int i = 0; i < nBlocks; i++) {
-			WriteDataPacket(Token_CMD25, buf + offset, 512);
+			if (!WriteDataPacket(Token_CMD25, buf + offset, 512)) {
+				successFlag = false;
+				break;
+			}
 			offset += 512;
 		}
 		WriteToken(Token_CMD25_STOP_TRAN);
 	}
-	return true;
+	return successFlag;
 }
 
 void SDCard::PrintMBR(const uint8_t* bufSector)
