@@ -11,6 +11,7 @@ namespace jxglib {
 bool Terminal::AttachOutput(Drawable& drawable, const Rect& rect, Dir dir)
 {
 	if (!GetLineBuff().Initialize()) return false;
+	Tickable::AddTickable(this);
 	rectDst_ = rect.IsEmpty()? Rect(0, 0, drawable.GetWidth(), drawable.GetHeight()) : rect;
 	ptCursor_ = Point(rectDst_.x, rectDst_.y);
 	pDrawable_ = &drawable;
@@ -143,6 +144,9 @@ Printable& Terminal::PutChar(char ch)
 
 void Terminal::OnTick()
 {
+	//int yAdvance = context_.CalcAdvanceY();
+	//GetDrawable().SetColor(blinkFlag_? Color::white : Color::black).DrawRectFill(ptCursor_.x, ptCursor_.y, 5, yAdvance);
+	//blinkFlag_ = !blinkFlag_;
 }
 
 void Terminal::DrawLatestTextLines()

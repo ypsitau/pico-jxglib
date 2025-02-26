@@ -35,9 +35,11 @@ private:
 	EventHandler* pEventHandler_;
 	const char* pLineStop_;
 	bool suppressFlag_;
+	bool blinkFlag_;
 public:
 	Terminal(int bytesBuff = 4096, int msecBlink = 500) : Tickable(msecBlink), pDrawable_{nullptr},
-		nLinesWhole_{0}, lineBuff_(bytesBuff), pEventHandler_{nullptr}, pLineStop_{nullptr}, suppressFlag_{false} {}
+		nLinesWhole_{0}, lineBuff_(bytesBuff), pEventHandler_{nullptr}, pLineStop_{nullptr},
+		suppressFlag_{false}, blinkFlag_{false} {}
 public:
 	void Initialize() {}
 	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
