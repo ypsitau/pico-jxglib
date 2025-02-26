@@ -206,10 +206,11 @@ bool SDCard::WriteToken(uint8_t token)
 	return true;
 }
 
-bool SDCard::ReadBlock(int lba, uint8_t* buf, int nBlocks)
+bool SDCard::ReadBlock(int lba, void* buf, int nBlocks)
 {
 	const uint8_t crc_zero = 0x00;
 	const uint8_t crc_ff = 0xff;
+	uint8_t* bufCast = reinterpret_cast<uint8_t*>(buf);
 	// workaround for shared bus, required for (at least) some Kingston devices,
 	// ensure MOSI is high before starting transaction
 	SPIWriteByte(0xff);
@@ -219,7 +220,7 @@ bool SDCard::ReadBlock(int lba, uint8_t* buf, int nBlocks)
 			gpio_CS_.put(1);
 			return false; // EIO
 		}
-		ReadDataPacket(buf, nBlocks * 512);
+		ReadDataPacket(bufCast, nBlocks * 512);
 	} else {
 		// CMD18: set read address for multiple blocks
 		if (WriteCommandFrame(18, lba * cdv_, crc_zero, nullptr, 0, false) != _R1_SUCCESS) {
@@ -228,7 +229,7 @@ bool SDCard::ReadBlock(int lba, uint8_t* buf, int nBlocks)
 		}
 		int offset = 0;
 		for (int i = 0; i < nBlocks; i++) {
-			ReadDataPacket(buf + offset, 512);
+			ReadDataPacket(bufCast + offset, 512);
 			offset += 512;
 		}
 		if (WriteCommandFrame(12, 0, crc_ff) != _R1_SUCCESS) {
@@ -238,10 +239,11 @@ bool SDCard::ReadBlock(int lba, uint8_t* buf, int nBlocks)
 	return true;
 }
 
-bool SDCard::WriteBlock(int lba, const uint8_t* buf, int nBlocks)
+bool SDCard::WriteBlock(int lba, const void* buf, int nBlocks)
 {
 	bool successFlag = true;
 	const uint8_t crc_zero = 0x00;
+	const uint8_t* bufCast = reinterpret_cast<const uint8_t*>(buf);
 	// workaround for shared bus, required for (at least) some Kingston
 	// devices, ensure MOSI is high before starting transaction
 	SPIWriteByte(0xff);
@@ -250,7 +252,7 @@ bool SDCard::WriteBlock(int lba, const uint8_t* buf, int nBlocks)
 		if (WriteCommandFrame(24, lba * cdv_, crc_zero) != _R1_SUCCESS) {
 			return false;
 		}
-		successFlag = WriteDataPacket(Token_CMD24, buf, nBlocks * 512);
+		successFlag = WriteDataPacket(Token_CMD24, bufCast, nBlocks * 512);
 	} else {
 		// CMD25: WRITE_MULTIPLE_BLOCK
 		if (WriteCommandFrame(25, lba * cdv_, crc_zero) != _R1_SUCCESS) {
@@ -258,7 +260,7 @@ bool SDCard::WriteBlock(int lba, const uint8_t* buf, int nBlocks)
 		}
 		int offset = 0;
 		for (int i = 0; i < nBlocks; i++) {
-			if (!WriteDataPacket(Token_CMD25, buf + offset, 512)) {
+			if (!WriteDataPacket(Token_CMD25, bufCast + offset, 512)) {
 				successFlag = false;
 				break;
 			}

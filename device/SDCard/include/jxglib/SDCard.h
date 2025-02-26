@@ -58,8 +58,8 @@ private:
 public:
 	SDCard(spi_inst_t* spi, uint baudrate, const PinAssign& pinAssign);
 	bool Initialize(bool debugFlag = false);
-	bool ReadBlock(int lba, uint8_t* buf, int nBlocks);
-	bool WriteBlock(int lba, const uint8_t* buf, int nBlocks);
+	bool ReadBlock(int lba, void* buf, int nBlocks);
+	bool WriteBlock(int lba, const void* buf, int nBlocks);
 public:
 	int GetSectors() const { return nSectors_; }
 	static void PrintMBR(const uint8_t* bufSector);
