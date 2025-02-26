@@ -187,5 +187,6 @@ int main(void)
 	}, 0x0409, "RPi RAMDisk", "RPi RAMDisk Device", "3141592653");
 	RAMDisk ramDisk(device);
 	device.Initialize();
+	ramDisk.Initialize();
 	for (;;) Tickable::Tick();
 }

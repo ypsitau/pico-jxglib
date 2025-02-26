@@ -45,6 +45,7 @@ int main(void)
 		USBD::Device::Attr::REMOTE_WAKEUP);
 	Mouse mouse(device);
 	device.Initialize();
+	mouse.Initialize();
 	GPIO_CURSOR_LEFT	.init().set_dir_IN().pull_up();
 	GPIO_CURSOR_UP		.init().set_dir_IN().pull_up();
 	GPIO_CURSOR_DOWN	.init().set_dir_IN().pull_up();

@@ -58,6 +58,8 @@ int main(void)
 	Keyboard keyboard(device);
 	Mouse mouse(device);
 	device.Initialize();
+	keyboard.Initialize();
+	mouse.Initialize();
 	GPIO_ARROW_LEFT			.init().set_dir_IN().pull_up();
 	GPIO_ARROW_UP			.init().set_dir_IN().pull_up();
 	GPIO_ARROW_DOWN			.init().set_dir_IN().pull_up();

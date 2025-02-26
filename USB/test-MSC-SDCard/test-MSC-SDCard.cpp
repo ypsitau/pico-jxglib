@@ -130,7 +130,8 @@ int main(void)
 	GPIO4.set_function_SPI0_RX();
 	SDCard sdCard(spi0, 10 * 1000 * 1000, {CS: GPIO5});	// 10MHz
 	MSC_SDCard msc(device, sdCard);
-	sdCard.Initialize(true);
 	device.Initialize();
+	sdCard.Initialize(true);
+	msc.Initialize();
 	for (;;) Tickable::Tick();
 }
