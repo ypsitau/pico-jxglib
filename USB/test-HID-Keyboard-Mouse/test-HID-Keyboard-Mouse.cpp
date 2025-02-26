@@ -23,7 +23,7 @@ private:
 public:
 	Keyboard(USBD::Device& device) : USBD::Keyboard(device, "RaspberryPi Pico Keyboard", 0x81), nKeycodePrev_{0} {}
 public:
-	virtual void OnTask() override;
+	virtual void OnTick() override;
 };
 
 //-----------------------------------------------------------------------------
@@ -35,7 +35,7 @@ private:
 public:
 	Mouse(USBD::Device& device) : USBD::Mouse(device, "RaspberryPi Pico Mouse", 0x82), senseFlagPrev_{false} {}
 public:
-	virtual void OnTask() override;
+	virtual void OnTick() override;
 };
 
 //-----------------------------------------------------------------------------
@@ -64,16 +64,13 @@ int main(void)
 	GPIO_ARROW_RIGHT		.init().set_dir_IN().pull_up();
 	GPIO_CURSOR_UP_LEFT		.init().set_dir_IN().pull_up();
 	GPIO_CURSOR_DOWN_RIGHT	.init().set_dir_IN().pull_up();
-	for (;;) {
-		device.Task();
-	}
-	return 0;
+	for (;;) Tickable::Tick();
 }
 
 //-----------------------------------------------------------------------------
 // Keyboard
 //-----------------------------------------------------------------------------
-void Keyboard::OnTask()
+void Keyboard::OnTick()
 {
 	uint8_t report_id = 0;
 	uint8_t modifier  = 0;
@@ -99,7 +96,7 @@ void Keyboard::OnTask()
 //-----------------------------------------------------------------------------
 // Mouse
 //-----------------------------------------------------------------------------
-void Mouse::OnTask()
+void Mouse::OnTick()
 {
 	bool senseFlag = false;
 	uint8_t report_id = 0;

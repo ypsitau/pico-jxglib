@@ -13,17 +13,17 @@ using namespace jxglib;
 //-----------------------------------------------------------------------------
 class EchoBack : public USBD::CDC {
 public:
-	enum Mode { Normal, Upper, Lower };
+	enum Mode { Normal, Upper, Crypt };
 private:
 	Mode mode_;
 public:
 	EchoBack(USBD::Device& device, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn, Mode mode) :
 				USBD::CDC(device, name, endpNotif, 8, endpBulkOut, endpBulkIn, 64, 10), mode_{mode} {}
 public:
-	virtual void OnTask() override;
+	virtual void OnTick() override;
 };
 
-void EchoBack::OnTask()
+void EchoBack::OnTick()
 {
 	if (!cdc_available()) return;
 	char buff[64];
@@ -36,8 +36,8 @@ void EchoBack::OnTask()
 		for (int i = 0; i < bytes; i++) buff[i] = toupper(buff[i]);
 		break;
 	}
-	case Mode::Lower: {
-		for (int i = 0; i < bytes; i++) buff[i] = tolower(buff[i]);
+	case Mode::Crypt: {
+		for (int i = 0; i < bytes; i++) buff[i] = buff[i] + 1;
 		break;
 	}
 	default: break;
@@ -64,10 +64,10 @@ int main(void)
 	}, 0x0409, "CDC Test", "CDC Test Product", "0123456");
 	EchoBack echoBack1(device, "EchoBack Normal", 0x81, 0x02, 0x82, EchoBack::Mode::Normal);
 	EchoBack echoBack2(device, "EchoBack Upper", 0x83, 0x04, 0x84, EchoBack::Mode::Upper);
-	EchoBack echoBack3(device, "EchoBack Lower", 0x85, 0x06, 0x86, EchoBack::Mode::Lower);
+	EchoBack echoBack3(device, "EchoBack Crypt", 0x85, 0x06, 0x86, EchoBack::Mode::Crypt);
 	device.Initialize();
-	for (;;) {
-		device.Task();
-	}
-	return 0;
+	echoBack1.Initialize();
+	echoBack2.Initialize();
+	echoBack3.Initialize();
+	for (;;) Tickable::Tick();
 }

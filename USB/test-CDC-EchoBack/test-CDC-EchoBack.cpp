@@ -16,10 +16,10 @@ public:
 	EchoBack(USBD::Device& device, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn) :
 				USBD::CDC(device, name, endpNotif, 8, endpBulkOut, endpBulkIn, 64, 10) {}
 public:
-	virtual void OnTask() override;
+	virtual void OnTick() override;
 };
 
-void EchoBack::OnTask()
+void EchoBack::OnTick()
 {
 	if (!cdc_available()) return;
 	char buff[64];
@@ -46,8 +46,6 @@ int main(void)
 	}, 0x0409, "CDC EchoBack", "CDC EchoBack Product", "0123456");
 	EchoBack echoBack(device, "EchoBack Normal", 0x81, 0x02, 0x82);
 	device.Initialize();
-	for (;;) {
-		device.Task();
-	}
-	return 0;
+	echoBack.Initialize();
+	for (;;) Tickable::Tick();
 }

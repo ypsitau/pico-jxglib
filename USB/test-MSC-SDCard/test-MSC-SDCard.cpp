@@ -132,8 +132,5 @@ int main(void)
 	MSC_SDCard msc(device, sdCard);
 	sdCard.Initialize(true);
 	device.Initialize();
-	for (;;) {
-		device.Task();
-	}
-	return 0;
+	for (;;) Tickable::Tick();
 }

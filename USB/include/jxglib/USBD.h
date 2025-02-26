@@ -249,7 +249,7 @@ class MSC : public Interface {
 public:
 	MSC(Device& device, const char* str, uint8_t endpBulkOut, uint8_t endpBulkIn, uint16_t endpSize = 64);
 public:
-	virtual void OnTask() override {}
+	virtual void OnTick() override {}
 public:
 	virtual void On_msc_inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]) = 0;
 	virtual bool On_msc_test_unit_ready(uint8_t lun) = 0;

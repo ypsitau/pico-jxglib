@@ -23,7 +23,7 @@ private:
 public:
 	Mouse(USBD::Device& device) : USBD::Mouse(device, "RaspberryPi Pico Mouse", 0x81), senseFlagPrev_{false} {}
 public:
-	virtual void OnTask() override;
+	virtual void OnTick() override;
 };
 
 //-----------------------------------------------------------------------------
@@ -51,16 +51,13 @@ int main(void)
 	GPIO_CURSOR_RIGHT	.init().set_dir_IN().pull_up();
 	GPIO_LBUTTON		.init().set_dir_IN().pull_up();
 	GPIO_RBUTTON		.init().set_dir_IN().pull_up();
-	for (;;) {
-		device.Task();
-	}
-	return 0;
+	for (;;) Tickable::Tick();
 }
 
 //-----------------------------------------------------------------------------
 // Mouse
 //-----------------------------------------------------------------------------
-void Mouse::OnTask()
+void Mouse::OnTick()
 {
 	bool senseFlag = false;
 	uint8_t report_id = 0;
