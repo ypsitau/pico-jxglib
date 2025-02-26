@@ -1,8 +1,8 @@
 //==============================================================================
 // jxglib/Tickable.h
 //==============================================================================
-#ifndef PICO_JXGLIB_DISPLAY_H
-#define PICO_JXGLIB_DISPLAY_H
+#ifndef PICO_JXGLIB_TICKABLE_H
+#define PICO_JXGLIB_TICKABLE_H
 #include "pico/stdlib.h"
 #include "jxglib/Common.h"
 

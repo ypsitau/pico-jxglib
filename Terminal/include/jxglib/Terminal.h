@@ -8,13 +8,14 @@
 #include "jxglib/Printable.h"
 #include "jxglib/Font.h"
 #include "jxglib/LineBuff.h"
+#include "jxglib/Tickable.h"
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
 // Terminal
 //------------------------------------------------------------------------------
-struct Terminal : public Printable {
+struct Terminal : public Printable, public Tickable {
 public:
 	class EventHandler {
 	public:
@@ -35,8 +36,8 @@ private:
 	const char* pLineStop_;
 	bool suppressFlag_;
 public:
-	Terminal(int bytesBuff = 4096) : pDrawable_{nullptr}, nLinesWhole_{0}, lineBuff_(bytesBuff),
-				pEventHandler_{nullptr}, pLineStop_{nullptr}, suppressFlag_{false} {}
+	Terminal(int bytesBuff = 4096, int msecBlink = 500) : Tickable(msecBlink), pDrawable_{nullptr},
+		nLinesWhole_{0}, lineBuff_(bytesBuff), pEventHandler_{nullptr}, pLineStop_{nullptr}, suppressFlag_{false} {}
 public:
 	void Initialize() {}
 	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
@@ -81,6 +82,9 @@ public:
 	virtual Printable& RefreshScreen() override;
 	virtual Printable& Locate(int col, int row) override;
 	virtual Printable& PutChar(char ch) override;
+public:
+	// Virtual functions of Tickable
+	virtual void OnTick() override;
 private:
 	void DrawLatestTextLines();
 	void DrawTextLines(int iLine, const char* pLineTop, int nLines);

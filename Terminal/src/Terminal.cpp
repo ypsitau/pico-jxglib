@@ -141,6 +141,10 @@ Printable& Terminal::PutChar(char ch)
 	return *this;
 }
 
+void Terminal::OnTick()
+{
+}
+
 void Terminal::DrawLatestTextLines()
 {
 	int nLines = GetRowNum();
