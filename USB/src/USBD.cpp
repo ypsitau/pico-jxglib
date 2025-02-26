@@ -13,7 +13,7 @@ Device* Device::Instance = nullptr;
 
 Device::Device(const tusb_desc_device_t& deviceDesc, uint16_t langid,
 		const char* strManufacturer, const char* strProduct, const char* strSerialNumber,
-		uint8_t attr, uint16_t power_ma) :
+		uint8_t attr, uint16_t power_ma) : Tickable(0),
 	deviceDesc_{deviceDesc}, langid_{langid}, attr_{attr}, power_ma_{power_ma}, interfaceNumCur_{0},
 	offsetConfigDesc_{TUD_CONFIG_DESC_LEN}, iStringDescCur_{1},
 	nInstances_CDC_{0}, nInstances_MSC_{0}, nInstances_HID_{0}
@@ -82,11 +82,8 @@ void Device::Initialize(uint8_t rhport)
 		stridx, static_cast<uint8_t>(TU_BIT(7) | attr_), static_cast<uint8_t>(power_ma_ / 2)
 	};
 	::memcpy(configDescAccum_, configDesc, sizeof(configDesc));
-	for (int iInstance = 0; iInstance < nInstancesMax; iInstance++) {
-		Interface* pInterface = interfaceTbl_[iInstance];
-		if (pInterface) pInterface->InitTimer();
-	}
 	::tud_init(rhport);
+	AddTickable(this);
 }
 
 uint8_t Device::AssignInterfaceNum(int nInterfacesToOccupy)
@@ -94,15 +91,6 @@ uint8_t Device::AssignInterfaceNum(int nInterfacesToOccupy)
 	uint8_t interfaceNum = interfaceNumCur_;
 	interfaceNumCur_ += nInterfacesToOccupy;
 	return interfaceNum;
-}
-
-void Device::Task()
-{
-	::tud_task();
-	for (int iInstance = 0; iInstance < nInstancesMax; iInstance++) {
-		Interface* pInterface = interfaceTbl_[iInstance];
-		if (pInterface && pInterface->IsTimerElapsed()) pInterface->OnTask();
-	}
 }
 
 const uint16_t* Device::On_GET_STRING_DESCRIPTOR(uint8_t idxString, uint16_t langid)
@@ -177,7 +165,7 @@ const uint16_t* tud_descriptor_string_cb(uint8_t idxString, uint16_t langid)
 namespace jxglib::USBD {
 
 Interface::Interface(Device& device, int nInterfacesToOccupy, uint32_t msecTaskInterval) :
-		device_{device}, iInstance_{0}, msecStart_{0}, msecTaskInterval_{msecTaskInterval}
+	Tickable(msecTaskInterval), device_{device}, iInstance_{0}
 {
 	interfaceNum_ = device.AssignInterfaceNum(nInterfacesToOccupy);
 }
@@ -185,13 +173,6 @@ Interface::Interface(Device& device, int nInterfacesToOccupy, uint32_t msecTaskI
 void Interface::RegisterConfigDesc(const void* configDesc, int bytes)
 {
 	device_.RegisterConfigDesc(configDesc, bytes);
-}
-
-bool Interface::IsTimerElapsed()
-{
-	if (GetAbsoluteTimeMSec() - msecStart_ < msecTaskInterval_) return false;
-	msecStart_ += msecTaskInterval_;
-	return true;
 }
 
 }

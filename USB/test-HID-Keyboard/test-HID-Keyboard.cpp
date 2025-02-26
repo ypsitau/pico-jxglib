@@ -23,7 +23,7 @@ private:
 public:
 	Keyboard(USBD::Device& device) : USBD::Keyboard(device, nullptr, 0x81), nKeycodePrev_{0} {}
 public:
-	virtual void OnTask() override;
+	virtual void OnTick() override;
 	virtual uint16_t On_GET_REPORT(uint8_t reportID, hid_report_type_t reportType, uint8_t* report, uint16_t reportLength) override;
 	virtual void On_GET_REPORT_Complete(const uint8_t* report, uint16_t reportLength) override;
 	virtual void On_SET_REPORT(uint8_t reportID, hid_report_type_t report_type, const uint8_t* report, uint16_t reportLength) override;
@@ -49,22 +49,20 @@ int main(void)
 		USBD::Device::Attr::REMOTE_WAKEUP);
 	Keyboard keyboard(device);
 	device.Initialize();
+	keyboard.Initialize();
 	GPIO_ARROW_LEFT		.init().set_dir_IN().pull_up();
 	GPIO_ARROW_UP		.init().set_dir_IN().pull_up();
 	GPIO_ARROW_DOWN		.init().set_dir_IN().pull_up();
 	GPIO_ARROW_RIGHT	.init().set_dir_IN().pull_up();
 	GPIO_PAGE_UP		.init().set_dir_IN().pull_up();
 	GPIO_PAGE_DOWN		.init().set_dir_IN().pull_up();
-	for (;;) {
-		device.Task();
-	}
-	return 0;
+	for (;;) Tickable::Tick();
 }
 
 //-----------------------------------------------------------------------------
 // Keyboard
 //-----------------------------------------------------------------------------
-void Keyboard::OnTask()
+void Keyboard::OnTick()
 {
 	uint8_t report_id = 0;
 	uint8_t modifier  = 0;

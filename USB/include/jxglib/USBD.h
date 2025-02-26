@@ -4,6 +4,7 @@
 #ifndef PICO_JXGLIB_USBD_H
 #define PICO_JXGLIB_USBD_H
 #include "pico/stdlib.h"
+#include "jxglib/Tickable.h"
 #include "tusb.h"
 
 namespace jxglib::USBD {
@@ -34,7 +35,7 @@ constexpr uint16_t GenerateSpecificProductId(uint16_t base)
 //-----------------------------------------------------------------------------
 // USBD::Device
 //-----------------------------------------------------------------------------
-class Device {
+class Device : public Tickable {
 public:
 	static const int nInstancesMax = CFG_TUD_CDC + CFG_TUD_MSC + CFG_TUD_HID + CFG_TUD_AUDIO +
 		CFG_TUD_VIDEO + CFG_TUD_MIDI + CFG_TUD_VENDOR + CFG_TUD_BTH;
@@ -98,7 +99,8 @@ public:
 	static CDC* GetInterface_CDC(uint8_t iInstance = 0) { return Instance->specific_.pCDCTbl[iInstance]; }
 	static MSC* GetInterface_MSC(uint8_t iInstance = 0) { return Instance->specific_.pMSCTbl[iInstance]; }
 	static HID* GetInterface_HID(uint8_t iInstance = 0) { return Instance->specific_.pHIDTbl[iInstance]; }
-	void Task();
+public:
+	virtual void OnTick() { ::tud_task(); }
 public:
 	virtual void OnMount() {}
 	virtual void OnUmount() {}
@@ -113,24 +115,19 @@ public:
 //-----------------------------------------------------------------------------
 // USBD::Interface
 //-----------------------------------------------------------------------------
-class Interface {
+class Interface : public Tickable {
 protected:
 	Device& device_;
 	uint8_t interfaceNum_;
 	uint8_t iInstance_;
-	uint32_t msecStart_;
-	uint32_t msecTaskInterval_;
+	//uint32_t msecStart_;
+	//uint32_t msecTaskInterval_;
 public:
 	Interface(Device& device, int nInterfacesToOccupy, uint32_t msecTaskInterval);
 public:
-	void InitTimer() { msecStart_ = GetAbsoluteTimeMSec(); }
-	bool IsTimerElapsed();
-public:
-	virtual void OnTask() = 0;
-public:
 	void RegisterConfigDesc(const void* configDesc, int bytes);
 public:
-	uint32_t GetAbsoluteTimeMSec() { return ::to_ms_since_boot(::get_absolute_time()); }
+	void Initialize() { Tickable::AddTickable(this); }
 };
 
 #if CFG_TUD_HID > 0
