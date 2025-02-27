@@ -25,7 +25,7 @@ int main()
 	display2.Initialize(Display::Dir::Rotate90);
 	touchScreen1.Initialize(display1);
 	touchScreen2.Initialize(display2);
-	LVGL::Initialize();
+	LVGL::Initialize(5);
 	//-----------------------------------------
 	// Attach display1 to LVGL
 	LVGL::Adapter lvglAdapter1;
@@ -41,8 +41,5 @@ int main()
 	lvglAdapter2.AttachInput(touchScreen2);
 	::lv_example_anim_3();
 	//::lv_example_textarea_1();
-	for (;;) {
-		::sleep_ms(5);
-		::lv_timer_handler();
-	}
+	for (;;) Tickable::Tick();
 }
