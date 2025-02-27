@@ -34,11 +34,13 @@ private:
 	EventHandler* pEventHandler_;
 	const char* pLineStop_;
 	bool suppressFlag_;
+	bool showCursorFlag_;
 	bool blinkFlag_;
+	int wdCursor_;
 public:
 	Terminal(int bytesBuff = 4096, int msecBlink = 500) : Tickable(msecBlink), pDrawable_{nullptr},
 		nLinesWhole_{0}, lineBuff_(bytesBuff), pEventHandler_{nullptr}, pLineStop_{nullptr},
-		suppressFlag_{false}, blinkFlag_{false} {}
+		suppressFlag_{false}, showCursorFlag_{false}, blinkFlag_{false}, wdCursor_{2} {}
 public:
 	void Initialize() {}
 	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
@@ -77,12 +79,16 @@ public:
 	Terminal& RollUp();
 	Terminal& RollDown();
 	Terminal& Suppress(bool suppressFlag = true);
+	Terminal& ShowCursor(bool showCursorFlag = true);
 public:
 	// Virtual functions of Printable
 	virtual Printable& ClearScreen() override;
 	virtual Printable& RefreshScreen() override;
 	virtual Printable& Locate(int col, int row) override;
 	virtual Printable& PutChar(char ch) override;
+public:
+	void DrawCursor();
+	void EraseCursor();
 public:
 	// Virtual functions of Tickable
 	virtual void OnTick() override;

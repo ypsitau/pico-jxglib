@@ -74,6 +74,12 @@ Terminal& Terminal::Suppress(bool suppressFlag)
 	return *this;
 }
 
+Terminal& Terminal::ShowCursor(bool showCursorFlag)
+{
+	showCursorFlag_ = showCursorFlag;
+	return *this;
+}
+
 Printable& Terminal::ClearScreen()
 {
 	GetDrawable().DrawRectFill(rectDst_, GetColorBg()).Refresh();
@@ -142,11 +148,24 @@ Printable& Terminal::PutChar(char ch)
 	return *this;
 }
 
+void Terminal::DrawCursor()
+{
+	int yAdvance = context_.CalcAdvanceY();
+	GetDrawable().SetColor(Color::white).DrawRectFill(ptCursor_.x, ptCursor_.y, wdCursor_, yAdvance);
+}
+
+void Terminal::EraseCursor()
+{
+	int yAdvance = context_.CalcAdvanceY();
+	GetDrawable().SetColor(Color::black).DrawRectFill(ptCursor_.x, ptCursor_.y, wdCursor_, yAdvance);
+}
+
 void Terminal::OnTick()
 {
-	//int yAdvance = context_.CalcAdvanceY();
-	//GetDrawable().SetColor(blinkFlag_? Color::white : Color::black).DrawRectFill(ptCursor_.x, ptCursor_.y, 5, yAdvance);
-	//blinkFlag_ = !blinkFlag_;
+	if (showCursorFlag_) {
+		blinkFlag_ = !blinkFlag_;
+		if (blinkFlag_) DrawCursor(); else EraseCursor();
+	}
 }
 
 void Terminal::DrawLatestTextLines()
