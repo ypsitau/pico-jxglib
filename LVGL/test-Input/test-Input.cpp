@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <examples/lv_examples.h>
-#include <demos/lv_demos.h>
 #include "pico/stdlib.h"
 #include "jxglib/ST7789.h"
 #include "jxglib/ILI9341.h"
@@ -68,7 +67,7 @@ int main()
 	ILI9341::TouchScreen touchScreen(spi0, {CS: GPIO8, IRQ: GPIO9});
 	display.Initialize(Display::Dir::Rotate270);
 	touchScreen.Initialize(display);
-	LVGL::Initialize();
+	LVGL::Initialize(5);
 	LVGL::Adapter lvglAdapter;
 	lvglAdapter.EnableDoubleBuff().AttachOutput(display);
 	//lvglAdapter.AttachOutput(display);
@@ -86,8 +85,5 @@ int main()
 	//::lv_example_textarea_1();
 	::lv_example_textarea_2();
 	//::lv_example_keyboard_1();
-	for (;;) {
-		::sleep_ms(5);
-		::lv_timer_handler();
-	}
+	for (;;) Tickable::Tick();
 }

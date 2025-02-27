@@ -64,7 +64,6 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 target_link_libraries(test-Input
 	pico_stdlib
 	lvgl_examples
-	lvgl_demos
 	jxglib_ILI9341
 	jxglib_ST7789
 	jxglib_LVGL
