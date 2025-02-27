@@ -13,7 +13,7 @@ bool Terminal::AttachOutput(Drawable& drawable, const Rect& rect, Dir dir)
 	if (!GetLineBuff().Initialize()) return false;
 	Tickable::AddTickable(this);
 	rectDst_ = rect.IsEmpty()? Rect(0, 0, drawable.GetWidth(), drawable.GetHeight()) : rect;
-	ptCursor_ = Point(rectDst_.x, rectDst_.y);
+	ptCurrent_ = Point(rectDst_.x, rectDst_.y);
 	pDrawable_ = &drawable;
 	return true;
 }
@@ -74,6 +74,19 @@ Terminal& Terminal::Suppress(bool suppressFlag)
 	return *this;
 }
 
+Terminal& Terminal::BeginEdit()
+{
+	buffEdit_[0] = '\0';
+	iBuffEdit_ = 0;
+	return *this;
+}
+
+Terminal& Terminal::EndEdit()
+{
+	return *this;
+}
+
+
 Terminal& Terminal::ShowCursor(bool showCursorFlag)
 {
 	showCursorFlag_ = showCursorFlag;
@@ -97,7 +110,7 @@ Printable& Terminal::RefreshScreen()
 Printable& Terminal::Locate(int col, int row)
 {
 	const FontEntry& fontEntry = GetFont().GetFontEntry('M');
-	ptCursor_ = Point(
+	ptCurrent_ = Point(
 		rectDst_.x + context_.CalcAdvanceX(fontEntry) * col,
 		rectDst_.y + context_.CalcAdvanceY() * row);
 	return *this;
@@ -115,34 +128,34 @@ Printable& Terminal::PutChar(char ch)
 		if (code == '\n') {
 			GetLineBuff().PutChar('\n').PutChar('\0');
 			GetLineBuff().MoveLineLastHere().PlaceChar('\0');
-			ptCursor_.x = rectDst_.x;
+			ptCurrent_.x = rectDst_.x;
 			if (pEventHandler_) pEventHandler_->OnNewLine(*this);
-			if (ptCursor_.y + yAdvance * 2 <= rectDst_.y + rectDst_.height) {
+			if (ptCurrent_.y + yAdvance * 2 <= rectDst_.y + rectDst_.height) {
 				if (!suppressFlag_) GetDrawable().Refresh();
-				ptCursor_.y += yAdvance;
+				ptCurrent_.y += yAdvance;
 			} else if (!suppressFlag_) {
 				ScrollUp();
 			}
 		} else if (code == '\r') {
 			GetLineBuff().PutChar('\r').PutChar('\0');
 			GetLineBuff().MoveLineLastHere().PlaceChar('\0');
-			ptCursor_.x = rectDst_.x;
+			ptCurrent_.x = rectDst_.x;
 		} else {
-			if (ptCursor_.x + xAdvance > rectDst_.x + rectDst_.width) {
+			if (ptCurrent_.x + xAdvance > rectDst_.x + rectDst_.width) {
 				GetLineBuff().PutChar('\0');
 				GetLineBuff().MoveLineLastHere();
-				ptCursor_.x = rectDst_.x;
+				ptCurrent_.x = rectDst_.x;
 				if (pEventHandler_) pEventHandler_->OnNewLine(*this);
-				if (ptCursor_.y + yAdvance * 2 <= rectDst_.y + rectDst_.height) {
-					ptCursor_.y += yAdvance;
+				if (ptCurrent_.y + yAdvance * 2 <= rectDst_.y + rectDst_.height) {
+					ptCurrent_.y += yAdvance;
 				} else if (!suppressFlag_) {
 					ScrollUp();
 				}
 			}
 			GetLineBuff().Print(decoder_.GetStringOrg());
 			GetLineBuff().PlaceChar('\0');
-			if (!suppressFlag_) GetDrawable().DrawChar(ptCursor_, fontEntry, false, &context_);
-			ptCursor_.x += xAdvance;
+			if (!suppressFlag_) GetDrawable().DrawChar(ptCurrent_, fontEntry, false, &context_);
+			ptCurrent_.x += xAdvance;
 		}
 	}
 	return *this;
@@ -151,13 +164,13 @@ Printable& Terminal::PutChar(char ch)
 void Terminal::DrawCursor()
 {
 	int yAdvance = context_.CalcAdvanceY();
-	GetDrawable().SetColor(Color::white).DrawRectFill(ptCursor_.x, ptCursor_.y, wdCursor_, yAdvance);
+	GetDrawable().SetColor(Color::white).DrawRectFill(ptCurrent_.x, ptCurrent_.y, wdCursor_, yAdvance);
 }
 
 void Terminal::EraseCursor()
 {
 	int yAdvance = context_.CalcAdvanceY();
-	GetDrawable().SetColor(Color::black).DrawRectFill(ptCursor_.x, ptCursor_.y, wdCursor_, yAdvance);
+	GetDrawable().SetColor(Color::black).DrawRectFill(ptCurrent_.x, ptCurrent_.y, wdCursor_, yAdvance);
 }
 
 void Terminal::OnTick()
@@ -220,8 +233,8 @@ void Terminal::EraseTextLines(int iLine, int nLines)
 void Terminal::EraseToEndOfLine()
 {
 	int yAdvance = context_.CalcAdvanceY();
-	GetDrawable().DrawRectFill(ptCursor_.x, ptCursor_.y,
-		rectDst_.x + rectDst_.width - ptCursor_.x, yAdvance, context_.colorBg).Refresh();
+	GetDrawable().DrawRectFill(ptCurrent_.x, ptCurrent_.y,
+		rectDst_.x + rectDst_.width - ptCurrent_.x, yAdvance, context_.colorBg).Refresh();
 }
 
 void Terminal::ScrollUp()

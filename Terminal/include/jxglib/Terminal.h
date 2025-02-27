@@ -27,7 +27,7 @@ private:
 	Drawable* pDrawable_;
 	Rect rectDst_;
 	int nLinesWhole_;
-	Point ptCursor_;
+	Point ptCurrent_;
 	UTF8Decoder decoder_;
 	LineBuff lineBuff_;
 	Drawable::Context context_;
@@ -37,10 +37,12 @@ private:
 	bool showCursorFlag_;
 	bool blinkFlag_;
 	int wdCursor_;
+	char buffEdit_[128];
+	int iBuffEdit_;
 public:
 	Terminal(int bytesBuff = 4096, int msecBlink = 500) : Tickable(msecBlink), pDrawable_{nullptr},
 		nLinesWhole_{0}, lineBuff_(bytesBuff), pEventHandler_{nullptr}, pLineStop_{nullptr},
-		suppressFlag_{false}, showCursorFlag_{false}, blinkFlag_{false}, wdCursor_{2} {}
+		suppressFlag_{false}, showCursorFlag_{false}, blinkFlag_{false}, wdCursor_{2}, iBuffEdit_{0} {}
 public:
 	void Initialize() {}
 	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
@@ -79,7 +81,10 @@ public:
 	Terminal& RollUp();
 	Terminal& RollDown();
 	Terminal& Suppress(bool suppressFlag = true);
+public:
 	Terminal& ShowCursor(bool showCursorFlag = true);
+	Terminal& BeginEdit();
+	Terminal& EndEdit();
 public:
 	// Virtual functions of Printable
 	virtual Printable& ClearScreen() override;
