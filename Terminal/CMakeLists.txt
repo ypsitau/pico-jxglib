@@ -5,8 +5,7 @@ target_include_directories(jxglib_Terminal INTERFACE
 
 target_link_libraries(jxglib_Terminal INTERFACE
 	jxglib_Display
-	jxglib_LineBuff
-	jxglib_Tickable)
+	jxglib_LineBuff)
 
 target_sources(jxglib_Terminal INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/Terminal.cpp)

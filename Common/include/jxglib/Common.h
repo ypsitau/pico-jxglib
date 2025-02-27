@@ -12,6 +12,7 @@
 #include "Point.h"
 #include "Rect.h"
 #include "Size.h"
+#include "Tickable.h"
 #include "UTF8Decoder.h"
 #include "Util.h"
 

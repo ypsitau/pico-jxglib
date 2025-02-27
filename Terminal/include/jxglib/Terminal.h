@@ -8,7 +8,6 @@
 #include "jxglib/Printable.h"
 #include "jxglib/Font.h"
 #include "jxglib/LineBuff.h"
-#include "jxglib/Tickable.h"
 
 namespace jxglib {
 

@@ -26,7 +26,6 @@ target_compile_definitions(lvgl_thorvg PRIVATE
 	LV_CONF_PATH="${CMAKE_CURRENT_LIST_DIR}/src/lv_conf.h")
 
 target_link_libraries(jxglib_LVGL INTERFACE
-	jxglib_Tickable
 	jxglib_VT100
 	jxglib_UART
 	jxglib_TouchScreen
