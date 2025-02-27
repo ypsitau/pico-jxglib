@@ -21,7 +21,7 @@ int main()
 	ILI9341::TouchScreen touchScreen(spi0, {CS: GPIO8, IRQ: GPIO9});
 	display.Initialize(Display::Dir::Rotate0);
 	touchScreen.Initialize(display);
-	LVGL::Initialize();
+	LVGL::Initialize(5);
 	//-----------------------------------------
 	// Create an adapter and attach it to the display
 	LVGL::Adapter lvglAdapter1;
@@ -34,8 +34,5 @@ int main()
 	lvglAdapter2.EnableDoubleBuff(false).AttachOutput(display, {0, 100, 240, 220});
 	lvglAdapter2.AttachInput(touchScreen);
 	::lv_example_textarea_1();
-	for (;;) {
-		::sleep_ms(5);
-		::lv_timer_handler();
-	}
+	for (;;) Tickable::Tick();
 }
