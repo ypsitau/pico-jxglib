@@ -17,13 +17,14 @@ public:
 	private:
 		Tickable* pTickableTop_;
 		bool firstFlag_;
+		uint32_t msecStart_;
 	public:
 		static Master Instance;
 	public:
-		Master() : pTickableTop_{nullptr}, firstFlag_{true} {}
+		Master() : pTickableTop_{nullptr}, firstFlag_{true}, msecStart_{0} {}
 	public:
 		void AddTickable(Tickable* pTickable);
-		void Tick();
+		bool Tick(uint32_t msecTick);
 	};
 private:
 	uint32_t msecTick_;
@@ -33,7 +34,7 @@ public:
 	Tickable(uint32_t msecTick = -1) : msecTick_{msecTick}, msecStart_{0}, pTickableNext_{nullptr} {}
 public:
 	static void AddTickable(Tickable* pTickable) { Master::Instance.AddTickable(pTickable); }
-	static void Tick() { Master::Instance.Tick(); }
+	static bool Tick(uint32_t msecTick = 0) { return Master::Instance.Tick(msecTick); }
 public:
 	void SetNext(Tickable* pTickable) { pTickableNext_ = pTickable; }
 	Tickable* GetNext() { return pTickableNext_; }

@@ -33,19 +33,24 @@ void Tickable::Master::AddTickable(Tickable* pTickable)
 	pTickableLast->SetNext(pTickable);
 }
 
-void Tickable::Master::Tick()
+bool Tickable::Master::Tick(uint32_t msecTick)
 {
 	uint32_t msecCur = ::to_ms_since_boot(::get_absolute_time());
 	if (firstFlag_) {
+		firstFlag_ = false;
 		for (Tickable* pTickable = pTickableTop_; pTickable; pTickable = pTickable->GetNext()) {
 			pTickable->InitTick(msecCur);
 			pTickable->OnTick();
 		}
-		firstFlag_ = false;
+		msecStart_ = msecCur;
+		return true;
 	} else {
 		for (Tickable* pTickable = pTickableTop_; pTickable; pTickable = pTickable->GetNext()) {
 			if (pTickable->IsExpired(msecCur)) pTickable->OnTick();
 		}
+		if (msecTick == -1 || msecCur - msecStart_ < msecTick) return false;
+		msecStart_ += msecTick;
+		return true;
 	}
 }
 
