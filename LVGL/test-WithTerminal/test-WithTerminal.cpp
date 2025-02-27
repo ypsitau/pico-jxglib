@@ -33,7 +33,7 @@ int main()
 	terminal.Suppress().Print(Text_Botchan);
 	terminal.Suppress(false);
 	//-----------------------------------------
-	LVGL::Initialize();
+	LVGL::Initialize(5);
 	LVGL::Adapter lvglAdapter;
 	lvglAdapter.AttachOutput(display, {0, 220, 240, 100});
 	lvglAdapter.AttachInput(touchScreen);
@@ -49,10 +49,7 @@ int main()
 		::lv_obj_remove_flag(btnm, LV_OBJ_FLAG_CLICK_FOCUSABLE);
 		::lv_buttonmatrix_set_map(btnm, labelTbl);
 	} while (0);
-	for (;;) {
-		::sleep_ms(5);
-		::lv_timer_handler();
-	}
+	for (;;) Tickable::Tick();
 }
 
 void OnValueChanged_btnm(lv_event_t* e)
