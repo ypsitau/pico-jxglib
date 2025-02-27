@@ -21,14 +21,11 @@ int main()
 	display.Initialize(Display::Dir::Rotate90);
 	touchScreen.Initialize(display);
 	//touchScreen.Calibrate(display);
-	LVGL::Initialize();
+	LVGL::Initialize(5);
 	LVGL::Adapter lvglAdapter;
 	lvglAdapter.EnableDoubleBuff(true).AttachOutput(display);
 	lvglAdapter.AttachInput(touchScreen);
 	lvglAdapter.AttachInput(UART::Default);
 	::lv_example_anim_3();
-	for (;;) {
-		::sleep_ms(5);
-		::lv_timer_handler();
-	}
+	for (;;) Tickable::Tick();
 }

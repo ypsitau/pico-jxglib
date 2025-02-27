@@ -95,8 +95,8 @@ private:
 	static void IndevReadKeypadCB(lv_indev_t* indev_drv, lv_indev_data_t* data);
 	static void IndevReadButtonCB(lv_indev_t* indev_drv, lv_indev_data_t* data);
 	static void IndevReadEncoderCB(lv_indev_t* indev_drv, lv_indev_data_t* data);
-	static void HandlerUART0(void);
-	static void HandlerUART1(void);
+	static void HandlerUART0();
+	static void HandlerUART1();
 };
 
 }
