@@ -28,6 +28,7 @@ public:
 			PM,
 			APC,
 		};
+		static const int OffsetForAscii = 0x100;
 	private:
 		Stat stat_;
 		FIFOBuff<int, 32> buff_;
@@ -39,7 +40,7 @@ public:
 		Decoder();
 	public:
 		bool HasKeyData() const { return buff_.HasData(); }
-		int GetKeyData() { return buff_.ReadData(); }
+		bool GetKeyData(int* pKeyData);
 	public:
 		void FeedChar(char ch);
 	};

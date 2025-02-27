@@ -39,7 +39,7 @@ void VT100::Decoder::FeedChar(char ch)
 				break;
 			}
 			default: {
-				buff_.WriteData(0x100 + ch);
+				buff_.WriteData(OffsetForAscii + ch);
 				break;
 			}
 			}
@@ -194,6 +194,14 @@ void VT100::Decoder::FeedChar(char ch)
 		}
 		}
 	} while (contFlag);
+}
+
+bool VT100::Decoder::GetKeyData(int* pKeyData)
+{
+	*pKeyData = buff_.ReadData();
+	if (*pKeyData < OffsetForAscii) return true;
+	*pKeyData -= OffsetForAscii;
+	return false;
 }
 
 }

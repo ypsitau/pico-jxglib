@@ -19,8 +19,12 @@ int main()
 	UART::Default.irq_set_exclusive_handler(UARTHandler).irq_set_enabled(true);
 	UART::Default.raw.set_irq_enables(true, false);
 	for (;;) {
-		if (decoder.HasKeyData()) {
-			::printf("0x%02x\n", decoder.GetKeyData());
+		int keyData;
+		if (!decoder.HasKeyData()) {
+		} else if (decoder.GetKeyData(&keyData)) {
+			::printf("Control: %02x\n", keyData);
+		} else {
+			::printf("Ascii:   %02x\n", keyData);
 		}
 	}
 }
