@@ -10,21 +10,18 @@ void Setup();
 int main()
 {
 	::stdio_init_all();
-	::i2c_init(i2c1, 400000);
-	GPIO6.set_function_I2C1_SDA().pull_up();
-	GPIO7.set_function_I2C1_SCL().pull_up();
-	SSD1306 display(i2c1);
+	::i2c_init(i2c0, 400000);
+	GPIO4.set_function_I2C0_SDA().pull_up();
+	GPIO5.set_function_I2C0_SCL().pull_up();
+	SSD1306 display(i2c0);
 	display.Initialize();
 	display.Clear().Refresh();
-	LVGL::Initialize();
+	LVGL::Initialize(5);
 	LVGL::Adapter lvglAdapter;
 	lvglAdapter.AttachOutput(display);
 	lvglAdapter.AttachInput(UART::Default);
 	Setup();
-	for (;;) {
-		::sleep_ms(5);
-		::lv_timer_handler();
-	}
+	for (;;) Tickable::Tick();
 }
 
 void Setup()
