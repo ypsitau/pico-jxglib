@@ -164,13 +164,19 @@ Printable& Terminal::PutChar(char ch)
 void Terminal::DrawCursor()
 {
 	int yAdvance = context_.CalcAdvanceY();
-	GetDrawable().SetColor(Color::white).DrawRectFill(ptCurrent_.x, ptCurrent_.y, wdCursor_, yAdvance);
+	GetDrawable()
+		.SetColor(Color::white)
+		.DrawRectFill(ptCurrent_.x, ptCurrent_.y, wdCursor_, yAdvance)
+		.Refresh();
 }
 
 void Terminal::EraseCursor()
 {
 	int yAdvance = context_.CalcAdvanceY();
-	GetDrawable().SetColor(Color::black).DrawRectFill(ptCurrent_.x, ptCurrent_.y, wdCursor_, yAdvance);
+	GetDrawable()
+		.SetColor(Color::black)
+		.DrawRectFill(ptCurrent_.x, ptCurrent_.y, wdCursor_, yAdvance)
+		.Refresh();
 }
 
 void Terminal::OnTick()

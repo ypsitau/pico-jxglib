@@ -35,6 +35,7 @@ public:
 public:
 	static void AddTickable(Tickable* pTickable) { Master::Instance.AddTickable(pTickable); }
 	static bool Tick(uint32_t msecTick = 0) { return Master::Instance.Tick(msecTick); }
+	static void Sleep(uint32_t msecTick = 0) { while (!Master::Instance.Tick(msecTick)) ::tight_loop_contents(); }
 public:
 	void SetNext(Tickable* pTickable) { pTickableNext_ = pTickable; }
 	Tickable* GetNext() { return pTickableNext_; }
