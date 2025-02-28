@@ -8,20 +8,24 @@ using namespace jxglib;
 
 int main()
 {
-	uint32_t offset = 1024 * 1024;
 	::stdio_init_all();
+	::printf("--------------------------------------------------------------------------------\n");
+	Flash::Test();
+#if 0
+	uint32_t offset = 1024 * 1024;
 	uint8_t buff[Flash::PageSize];
 	for (uint i = 0; i < sizeof(buff); ++i) buff[i] = static_cast<uint8_t>(i);
-	Flash::EraseSafe(offset, Flash::SectorSize * 1);
-	//Dump.AddrStart(Flash::GetAddress(offset))(Flash::GetPointer<void>(offset), Flash::PageSize * 1);
+	Flash::Instance.Erase(offset, Flash::SectorSize * 1);
+	//Dump.AddrStart(Flash::GetAddress(offset))(Flash::GetPointerXIP<void>(offset), Flash::PageSize * 1);
 	//Flash::ProgramSafe(offset, buff, Flash::PageSize * 1);
-	//Dump.AddrStart(Flash::GetAddress(offset))(Flash::GetPointer<void>(offset), Flash::PageSize * 1);
+	//Dump.AddrStart(Flash::GetAddress(offset))(Flash::GetPointerXIP<void>(offset), Flash::PageSize * 1);
 	Flash::Stream stream(offset);
 	stream.Write(buff, 200);
 	stream.Write(buff, 200);
 	stream.Flush();
 	Dump.Ascii();
-	Dump.AddrStart(Flash::GetAddress(offset))(Flash::GetPointer<void>(offset), Flash::PageSize * 2);
+	Dump.AddrStart(Flash::GetAddress(offset))(Flash::GetPointerXIP<void>(offset), Flash::PageSize * 2);
+#endif
 }
 
 #if 0
