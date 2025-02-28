@@ -20,6 +20,7 @@ public:
 	UTF8Decoder() : nFollowers_{0}, codeUTF32_{0}, iStrOrg_{0} { strOrg_[0] = '\0'; }
 	bool FeedChar(char ch, uint32_t* pCodeUTF32);
 	const char* GetStringOrg() const { return strOrg_; }
+	static uint32_t ToUTF32(const char* p);
 };
 
 }
