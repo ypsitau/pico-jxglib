@@ -60,8 +60,8 @@ bool Terminal::Editor::DeleteChar()
 // Terminal
 //------------------------------------------------------------------------------
 Terminal::Terminal(int bytesBuff, int msecBlink) : Tickable(msecBlink),
-		pDrawable_{nullptr}, nLinesWhole_{0}, lineBuff_(bytesBuff), pEventHandler_{nullptr}, pLineStop_{nullptr},
-		suppressFlag_{false}, showCursorFlag_{false}, blinkFlag_{false}, wdCursor_{2}
+	pDrawable_{nullptr}, nLinesWhole_{0}, lineBuff_(bytesBuff), pEventHandler_{nullptr}, pLineStop_{nullptr},
+	suppressFlag_{false}, showCursorFlag_{false}, blinkFlag_{false}, wdCursor_{2}, colorCursor_{255, 255, 255}
 {
 }
 
@@ -263,18 +263,22 @@ void Terminal::DrawCursor()
 {
 	int yAdvance = context_.CalcAdvanceY();
 	GetDrawable()
-		.SetColor(Color::white)
-		.DrawRectFill(CalcCursorPos(), Size(wdCursor_, yAdvance))
+		.DrawRectFill(CalcCursorPos(), Size(wdCursor_, yAdvance), colorCursor_)
 		.Refresh();
 }
 
 void Terminal::EraseCursor()
 {
+	const char* p = editor_.GetBuff() + editor_.GetCharCursor();
+	uint32_t code = UTF8Decoder::ToUTF32(p);
+	Point pt = CalcCursorPos();
 	int yAdvance = context_.CalcAdvanceY();
-	GetDrawable()
-		.SetColor(Color::black)
-		.DrawRectFill(CalcCursorPos(), Size(wdCursor_, yAdvance))
-		.Refresh();
+	GetDrawable().DrawRectFill(pt, Size(wdCursor_, yAdvance), GetColorBg());
+	if (code) {
+		const FontEntry& fontEntry = GetFont().GetFontEntry(code);
+		GetDrawable().DrawChar(pt, fontEntry, false, &context_);
+	}
+	GetDrawable().Refresh();
 }
 
 void Terminal::OnTick()

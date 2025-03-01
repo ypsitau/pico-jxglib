@@ -50,6 +50,7 @@ private:
 	bool suppressFlag_;
 	bool showCursorFlag_;
 	bool blinkFlag_;
+	Color colorCursor_;
 	int wdCursor_;
 	Editor editor_;
 public:
