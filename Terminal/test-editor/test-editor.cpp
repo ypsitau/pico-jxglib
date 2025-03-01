@@ -3,6 +3,7 @@
 #include "jxglib/Terminal.h"
 #include "jxglib/SSD1306.h"
 #include "jxglib/ST7789.h"
+#include "jxglib/Font/naga10-japanese-level2.h"
 #include "jxglib/Font/shinonome16-japanese-level2.h"
 #include "jxglib/Font/sisd24x32.h"
 #include "jxglib/sample/Text_Botchan.h"
@@ -26,12 +27,18 @@ int main()
 	GPIO19.init().pull_up();
 	GPIO20.init().pull_up();
 	GPIO21.init().pull_up();
-	//SSD1306 display(i2c0, 0x3c);
-	//display.Initialize();
+#if 0
+	SSD1306 display(i2c0, 0x3c);
+	display.Initialize();
+	const FontSet& fontSet = Font::naga10;
+#else
 	ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
 	display.Initialize(Display::Dir::Rotate0);
+	const FontSet& fontSet = Font::shinonome16;
+#endif
 	terminal.AttachOutput(display);
-	terminal.SetFont(Font::shinonome16).SetSpacingRatio(1., 1.2).ClearScreen();
+	terminal.SetFont(fontSet).SetSpacingRatio(1., 1.2).ClearScreen();
+	//terminal.SetFont(Font::naga10).SetSpacingRatio(1., 1.2).ClearScreen();
 	terminal.Println("hello");
 	VT100::Decoder vt100Decoder;
 	UART& uart = UART0;
@@ -42,31 +49,32 @@ int main()
 		if (!vt100Decoder.HasKeyData()) {
 			// nothing to do
 		} else if (vt100Decoder.GetKeyData(&keyData)) {
-			if (keyData == VK_DELETE) {
-				terminal.EraseCursor();
-				if (terminal.GetEditor().DeleteChar()) {
-					terminal.DrawEditBuff();
-					terminal.DrawCursor();
-				}
+			if (keyData == VK_RETURN) {
+				terminal.Edit_Finish('\n');
+			} else if (keyData == VK_DELETE) {
+				terminal.Edit_Delete();
 			} else if (keyData == VK_BACK) {
-				terminal.EraseCursor();
-				if (terminal.GetEditor().MoveCursorBackward() && terminal.GetEditor().DeleteChar()) {
-					terminal.DrawEditBuff();
-					terminal.DrawCursor();
-				}
+				terminal.Edit_Back();
 			} else if (keyData == VK_LEFT) {
-				terminal.EraseCursor();
-				if (terminal.GetEditor().MoveCursorBackward()) terminal.DrawCursor();
+				terminal.Edit_MoveBackward();
 			} else if (keyData == VK_RIGHT) {
-				terminal.EraseCursor();
-				if (terminal.GetEditor().MoveCursorForward()) terminal.DrawCursor();
+				terminal.Edit_MoveForward();
 			}
-		} else {
-			terminal.EraseCursor();
-			if (terminal.GetEditor().InsertChar(keyData)) {
-				terminal.DrawEditBuff();
-				terminal.DrawCursor();
-			}
+		} else if (keyData >= 0x20) {
+			terminal.Edit_Char(keyData);
+		} else if (keyData == 'A' - '@') {
+			terminal.Edit_MoveHome();
+		} else if (keyData == 'B' - '@') {
+			terminal.Edit_MoveBackward();
+		} else if (keyData == 'C' - '@') {
+		} else if (keyData == 'D' - '@') {
+			terminal.Edit_Delete();
+		} else if (keyData == 'E' - '@') {
+			terminal.Edit_MoveEnd();
+		} else if (keyData == 'F' - '@') {
+			terminal.Edit_MoveForward();
+		} else if (keyData == 'K' - '@') {
+			terminal.Edit_KillLine();
 		}
 		Tickable::Sleep(50);
 	}

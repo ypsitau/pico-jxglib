@@ -6,62 +6,12 @@
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// Terminal::Editor
-//------------------------------------------------------------------------------
-Terminal::Editor::Editor() : iCharCursor_{0}
-{
-	buff_[0] = '\0';
-}
-
-bool Terminal::Editor::MoveCursorForward()
-{
-	int iChar = iCharCursor_;
-	if (buff_[iChar]) {
-		iChar++;
-		iCharCursor_ = iChar;
-		return true;
-	}
-	return false;
-}
-
-bool Terminal::Editor::MoveCursorBackward()
-{
-	int iChar = iCharCursor_;
-	if (iChar > 0) {
-		iChar--;
-		iCharCursor_ = iChar;
-		return true;
-	}
-	return false;
-}
-
-bool Terminal::Editor::InsertChar(char ch)
-{
-	if (::strlen(buff_) + 1 < sizeof(buff_)) {
-		char *p = buff_ + iCharCursor_;
-		::memmove(p + 1, p, ::strlen(p) + 1);
-		buff_[iCharCursor_++] = ch;
-		return true;
-	}
-	return false;
-}
-
-bool Terminal::Editor::DeleteChar()
-{
-	char *p = buff_ + iCharCursor_;
-	if (*p) {
-		::memmove(p, p + 1, ::strlen(p + 1) + 1);
-		return true;
-	}
-	return false;
-}
-
-//------------------------------------------------------------------------------
 // Terminal
 //------------------------------------------------------------------------------
 Terminal::Terminal(int bytesBuff, int msecBlink) : Tickable(msecBlink),
 	pDrawable_{nullptr}, nLinesWhole_{0}, lineBuff_(bytesBuff), pEventHandler_{nullptr}, pLineStop_{nullptr},
-	suppressFlag_{false}, showCursorFlag_{false}, blinkFlag_{false}, wdCursor_{2}, colorCursor_{255, 255, 255}
+	suppressFlag_{false}, showCursorFlag_{false}, blinkFlag_{false}, wdCursor_{2},
+	colorEditor_{128, 128, 255}, colorCursor_{128, 128, 255}
 {
 }
 
@@ -160,9 +110,9 @@ Printable& Terminal::Locate(int col, int row)
 	return *this;
 }
 
-Printable& Terminal::PutChar(char ch)
+void Terminal::AppendChar(char ch, bool suppressFlag)
 {
-	if (!suppressFlag_ && IsRollingBack()) EndRollBack();	
+	if (!suppressFlag && IsRollingBack()) EndRollBack();
 	int yAdvance = context_.CalcAdvanceY();
 	const FontSet& fontSet = GetFont();
 	uint32_t code;
@@ -175,9 +125,9 @@ Printable& Terminal::PutChar(char ch)
 			ptCurrent_.x = rectDst_.x;
 			if (pEventHandler_) pEventHandler_->OnNewLine(*this);
 			if (ptCurrent_.y + yAdvance * 2 <= rectDst_.y + rectDst_.height) {
-				if (!suppressFlag_) GetDrawable().Refresh();
+				if (!suppressFlag) GetDrawable().Refresh();
 				ptCurrent_.y += yAdvance;
-			} else if (!suppressFlag_) {
+			} else if (!suppressFlag) {
 				ScrollUp();
 			}
 		} else if (code == '\r') {
@@ -192,32 +142,28 @@ Printable& Terminal::PutChar(char ch)
 				if (pEventHandler_) pEventHandler_->OnNewLine(*this);
 				if (ptCurrent_.y + yAdvance * 2 <= rectDst_.y + rectDst_.height) {
 					ptCurrent_.y += yAdvance;
-				} else if (!suppressFlag_) {
+				} else if (!suppressFlag) {
 					ScrollUp();
 				}
 			}
 			GetLineBuff().Print(decoder_.GetStringOrg());
 			GetLineBuff().PlaceChar('\0');
-			if (!suppressFlag_) GetDrawable().DrawChar(ptCurrent_, fontEntry, false, &context_);
+			if (!suppressFlag) GetDrawable().DrawChar(ptCurrent_, fontEntry, false, &context_);
 			ptCurrent_.x += xAdvance;
 		}
 	}
-	return *this;
 }
 
-void Terminal::DrawEditBuff()
+void Terminal::DrawEditorArea()
 {
 	Point pt = ptCurrent_;;
-	DrawString(pt, editor_.GetBuff());
-}
-
-void Terminal::DrawString(Point& pt, const char* str)
-{
 	int yAdvance = context_.CalcAdvanceY();
 	const FontSet& fontSet = GetFont();
 	uint32_t code;
 	UTF8Decoder decoder;
-	for (const char* p = str; *p; p++) {
+	Color colorFgSaved = context_.colorFg;
+	context_.colorFg = colorEditor_;
+	for (const char* p = editor_.GetBuff(); *p; p++) {
 		if (!decoder.FeedChar(*p, &code)) continue;
 		const FontEntry& fontEntry = fontSet.GetFontEntry(code);
 		int xAdvance = context_.CalcAdvanceX(fontEntry);
@@ -232,9 +178,12 @@ void Terminal::DrawString(Point& pt, const char* str)
 		GetDrawable().DrawChar(pt, fontEntry, false, &context_);
 		pt.x += xAdvance;
 	}
+	context_.colorFg = colorFgSaved;
 	if (pt.x < rectDst_.x + rectDst_.width) {
 		GetDrawable().DrawRectFill(pt.x, pt.y, rectDst_.x + rectDst_.width - pt.x, yAdvance, context_.colorBg);
 	}
+	pt.y += yAdvance;
+	GetDrawable().DrawRectFill(rectDst_.x, pt.y, rectDst_.width, rectDst_.height - pt.y + rectDst_.y, context_.colorBg);
 	GetDrawable().Refresh();
 }
 
@@ -276,7 +225,10 @@ void Terminal::EraseCursor()
 	GetDrawable().DrawRectFill(pt, Size(wdCursor_, yAdvance), GetColorBg());
 	if (code) {
 		const FontEntry& fontEntry = GetFont().GetFontEntry(code);
+		Color colorFgSaved = context_.colorFg;
+		context_.colorFg = colorEditor_;
 		GetDrawable().DrawChar(pt, fontEntry, false, &context_);
+		context_.colorFg = colorFgSaved;
 	}
 	GetDrawable().Refresh();
 }
@@ -353,6 +305,157 @@ void Terminal::ScrollUp()
 	DrawTextLines(0, pLineTop, nLines - 1);
 	EraseTextLines(nLines - 1, 1);
 	GetDrawable().Refresh();
+}
+
+Terminal& Terminal::Edit_Finish(char chEnd)
+{
+	for (const char* p = GetEditor().GetBuff(); *p; p++) AppendChar(*p, true);
+	if (chEnd) AppendChar(chEnd, true);
+	GetEditor().Clear();
+	DrawLatestTextLines();
+	return *this;
+}
+
+Terminal& Terminal::Edit_Char(int ch)
+{
+	EraseCursor();
+	if (GetEditor().InsertChar(ch)) {
+		DrawEditorArea();
+		DrawCursor();
+	}
+	return *this;
+}
+
+Terminal& Terminal::Edit_Delete()
+{
+	EraseCursor();
+	if (GetEditor().DeleteChar()) {
+		DrawEditorArea();
+		DrawCursor();
+	}
+	return *this;
+}
+
+Terminal& Terminal::Edit_Back()
+{
+	EraseCursor();
+	if (GetEditor().MoveBackward() && GetEditor().DeleteChar()) {
+		DrawEditorArea();
+		DrawCursor();
+	}
+	return *this;
+}
+
+Terminal& Terminal::Edit_MoveForward()
+{
+	EraseCursor();
+	if (GetEditor().MoveForward()) DrawCursor();
+	return *this;
+}
+
+Terminal& Terminal::Edit_MoveBackward()
+{
+	EraseCursor();
+	if (GetEditor().MoveBackward()) DrawCursor();
+	return *this;
+}
+
+Terminal& Terminal::Edit_MoveHome()
+{
+	EraseCursor();
+	if (GetEditor().MoveHome()) DrawCursor();
+	return *this;
+}
+
+Terminal& Terminal::Edit_MoveEnd()
+{
+	EraseCursor();
+	if (GetEditor().MoveEnd()) DrawCursor();
+	return *this;
+}
+
+Terminal& Terminal::Edit_KillLine()
+{
+	EraseCursor();
+	if (GetEditor().KillLine()) {
+		DrawEditorArea();
+		DrawCursor();
+	}
+	return *this;
+}
+
+//------------------------------------------------------------------------------
+// Terminal::Editor
+//------------------------------------------------------------------------------
+Terminal::Editor::Editor() : iCharCursor_{0}
+{
+	buff_[0] = '\0';
+}
+
+void Terminal::Editor::Clear()
+{
+	iCharCursor_ = 0;
+	buff_[0] = '\0';
+}
+
+bool Terminal::Editor::InsertChar(char ch)
+{
+	if (::strlen(buff_) + 1 < sizeof(buff_)) {
+		char *p = buff_ + iCharCursor_;
+		::memmove(p + 1, p, ::strlen(p) + 1);
+		buff_[iCharCursor_++] = ch;
+		return true;
+	}
+	return false;
+}
+
+bool Terminal::Editor::DeleteChar()
+{
+	char *p = buff_ + iCharCursor_;
+	if (*p) {
+		::memmove(p, p + 1, ::strlen(p + 1) + 1);
+		return true;
+	}
+	return false;
+}
+
+bool Terminal::Editor::MoveForward()
+{
+	if (buff_[iCharCursor_]) {
+		iCharCursor_++;
+		return true;
+	}
+	return false;
+}
+
+bool Terminal::Editor::MoveBackward()
+{
+	if (iCharCursor_ > 0) {
+		iCharCursor_--;
+		return true;
+	}
+	return false;
+}
+
+bool Terminal::Editor::MoveHome()
+{
+	iCharCursor_ = 0;
+	return true;
+}
+
+bool Terminal::Editor::MoveEnd()
+{
+	iCharCursor_ = ::strlen(buff_);
+	return true;
+}
+
+bool Terminal::Editor::KillLine()
+{
+	if (buff_[iCharCursor_]) {
+		buff_[iCharCursor_] = '\0';
+		return true;
+	}
+	return false;
 }
 
 }

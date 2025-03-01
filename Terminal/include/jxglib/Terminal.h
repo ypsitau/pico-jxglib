@@ -29,10 +29,14 @@ public:
 	public:
 		int GetCharCursor() const { return iCharCursor_; }
 		const char* GetBuff() const { return buff_; }
-		bool MoveCursorForward();
-		bool MoveCursorBackward();
+		void Clear();
 		bool InsertChar(char ch);
 		bool DeleteChar();
+		bool MoveForward();
+		bool MoveBackward();
+		bool MoveHome();
+		bool MoveEnd();
+		bool KillLine();
 	};
 public:
 	using Dir = Drawable::Dir;
@@ -50,6 +54,7 @@ private:
 	bool suppressFlag_;
 	bool showCursorFlag_;
 	bool blinkFlag_;
+	Color colorEditor_;
 	Color colorCursor_;
 	int wdCursor_;
 	Editor editor_;
@@ -101,10 +106,10 @@ public:
 	virtual Printable& ClearScreen() override;
 	virtual Printable& RefreshScreen() override;
 	virtual Printable& Locate(int col, int row) override;
-	virtual Printable& PutChar(char ch) override;
+	virtual Printable& PutChar(char ch) override { AppendChar(ch, suppressFlag_); return *this; };
 public:
-	void DrawEditBuff();
-	void DrawString(Point& pt, const char* str);
+	void AppendChar(char ch, bool suppressFlag);
+	void DrawEditorArea();
 	Point CalcCursorPos();
 	void DrawCursor();
 	void EraseCursor();
@@ -118,6 +123,16 @@ private:
 	void EraseTextLines(int iLine, int nLines);
 	void EraseToEndOfLine();
 	void ScrollUp();
+public:
+	Terminal& Edit_Finish(char chEnd = '\0');
+	Terminal& Edit_Char(int ch);
+	Terminal& Edit_Delete();
+	Terminal& Edit_Back();
+	Terminal& Edit_MoveForward();
+	Terminal& Edit_MoveBackward();
+	Terminal& Edit_MoveHome();
+	Terminal& Edit_MoveEnd();
+	Terminal& Edit_KillLine();
 };
 
 }
