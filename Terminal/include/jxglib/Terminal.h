@@ -20,6 +20,20 @@ public:
 	public:
 		virtual void OnNewLine(Terminal& terminal) = 0;
 	};
+	class Editor {
+	private:
+		int iCharCursor_;
+		char buff_[128];
+	public:
+		Editor();
+	public:
+		int GetCharCursor() const { return iCharCursor_; }
+		const char* GetBuff() const { return buff_; }
+		bool MoveCursorForward();
+		bool MoveCursorBackward();
+		bool InsertChar(char ch);
+		bool DeleteChar();
+	};
 public:
 	using Dir = Drawable::Dir;
 	using Reader = LineBuff::Reader;
@@ -37,12 +51,9 @@ private:
 	bool showCursorFlag_;
 	bool blinkFlag_;
 	int wdCursor_;
-	char buffEdit_[128];
-	int iBuffEdit_;
+	Editor editor_;
 public:
-	Terminal(int bytesBuff = 4096, int msecBlink = 500) : Tickable(msecBlink), pDrawable_{nullptr},
-		nLinesWhole_{0}, lineBuff_(bytesBuff), pEventHandler_{nullptr}, pLineStop_{nullptr},
-		suppressFlag_{false}, showCursorFlag_{false}, blinkFlag_{false}, wdCursor_{2}, iBuffEdit_{0} {}
+	Terminal(int bytesBuff = 4096, int msecBlink = 500);
 public:
 	void Initialize() {}
 	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
@@ -50,6 +61,7 @@ public:
 	Drawable& GetDrawable() { return *pDrawable_; }
 	const Drawable& GetDrawable() const { return *pDrawable_; }
 	const Rect& GetRectDst() const { return rectDst_; }
+	Editor& GetEditor() { return editor_; }
 public:
 	Terminal& SetColor(const Color& color) { context_.SetColor(color); return *this; }
 	const Color& GetColor() const { return context_.GetColor(); }
@@ -83,8 +95,6 @@ public:
 	Terminal& Suppress(bool suppressFlag = true);
 public:
 	Terminal& ShowCursor(bool showCursorFlag = true);
-	Terminal& BeginEdit();
-	Terminal& EndEdit();
 public:
 	// Virtual functions of Printable
 	virtual Printable& ClearScreen() override;
@@ -92,6 +102,9 @@ public:
 	virtual Printable& Locate(int col, int row) override;
 	virtual Printable& PutChar(char ch) override;
 public:
+	void DrawEditBuff();
+	void DrawString(Point& pt, const char* str);
+	Point CalcCursorPos();
 	void DrawCursor();
 	void EraseCursor();
 public:

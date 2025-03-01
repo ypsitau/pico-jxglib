@@ -6,8 +6,65 @@
 namespace jxglib {
 
 //------------------------------------------------------------------------------
+// Terminal::Editor
+//------------------------------------------------------------------------------
+Terminal::Editor::Editor() : iCharCursor_{0}
+{
+	buff_[0] = '\0';
+}
+
+bool Terminal::Editor::MoveCursorForward()
+{
+	int iChar = iCharCursor_;
+	if (buff_[iChar]) {
+		iChar++;
+		iCharCursor_ = iChar;
+		return true;
+	}
+	return false;
+}
+
+bool Terminal::Editor::MoveCursorBackward()
+{
+	int iChar = iCharCursor_;
+	if (iChar > 0) {
+		iChar--;
+		iCharCursor_ = iChar;
+		return true;
+	}
+	return false;
+}
+
+bool Terminal::Editor::InsertChar(char ch)
+{
+	if (::strlen(buff_) + 1 < sizeof(buff_)) {
+		char *p = buff_ + iCharCursor_;
+		::memmove(p + 1, p, ::strlen(p) + 1);
+		buff_[iCharCursor_++] = ch;
+		return true;
+	}
+	return false;
+}
+
+bool Terminal::Editor::DeleteChar()
+{
+	char *p = buff_ + iCharCursor_;
+	if (*p) {
+		::memmove(p, p + 1, ::strlen(p + 1) + 1);
+		return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------------
 // Terminal
 //------------------------------------------------------------------------------
+Terminal::Terminal(int bytesBuff, int msecBlink) : Tickable(msecBlink),
+		pDrawable_{nullptr}, nLinesWhole_{0}, lineBuff_(bytesBuff), pEventHandler_{nullptr}, pLineStop_{nullptr},
+		suppressFlag_{false}, showCursorFlag_{false}, blinkFlag_{false}, wdCursor_{2}
+{
+}
+
 bool Terminal::AttachOutput(Drawable& drawable, const Rect& rect, Dir dir)
 {
 	if (!GetLineBuff().Initialize()) return false;
@@ -73,19 +130,6 @@ Terminal& Terminal::Suppress(bool suppressFlag)
 	if (!suppressFlag_) DrawLatestTextLines();
 	return *this;
 }
-
-Terminal& Terminal::BeginEdit()
-{
-	buffEdit_[0] = '\0';
-	iBuffEdit_ = 0;
-	return *this;
-}
-
-Terminal& Terminal::EndEdit()
-{
-	return *this;
-}
-
 
 Terminal& Terminal::ShowCursor(bool showCursorFlag)
 {
@@ -161,12 +205,66 @@ Printable& Terminal::PutChar(char ch)
 	return *this;
 }
 
+void Terminal::DrawEditBuff()
+{
+	Point pt = ptCurrent_;;
+	DrawString(pt, editor_.GetBuff());
+}
+
+void Terminal::DrawString(Point& pt, const char* str)
+{
+	int yAdvance = context_.CalcAdvanceY();
+	const FontSet& fontSet = GetFont();
+	uint32_t code;
+	UTF8Decoder decoder;
+	for (const char* p = str; *p; p++) {
+		if (!decoder.FeedChar(*p, &code)) continue;
+		const FontEntry& fontEntry = fontSet.GetFontEntry(code);
+		int xAdvance = context_.CalcAdvanceX(fontEntry);
+		if (pt.x + xAdvance > rectDst_.x + rectDst_.width) {
+			pt.x = rectDst_.x;
+			if (pt.y + yAdvance * 2 <= rectDst_.y + rectDst_.height) {
+				pt.y += yAdvance;
+			} else {
+				// scroll up
+			}
+		}
+		GetDrawable().DrawChar(pt, fontEntry, false, &context_);
+		pt.x += xAdvance;
+	}
+	if (pt.x < rectDst_.x + rectDst_.width) {
+		GetDrawable().DrawRectFill(pt.x, pt.y, rectDst_.x + rectDst_.width - pt.x, yAdvance, context_.colorBg);
+	}
+	GetDrawable().Refresh();
+}
+
+Point Terminal::CalcCursorPos()
+{
+	Point pt = ptCurrent_;
+	int yAdvance = context_.CalcAdvanceY();
+	const FontSet& fontSet = GetFont();
+	uint32_t code;
+	UTF8Decoder decoder;
+	const char* pEnd = editor_.GetBuff() + editor_.GetCharCursor();
+	for (const char* p = editor_.GetBuff(); *p && p < pEnd; p++) {
+		if (!decoder.FeedChar(*p, &code)) continue;
+		const FontEntry& fontEntry = fontSet.GetFontEntry(code);
+		int xAdvance = context_.CalcAdvanceX(fontEntry);
+		if (pt.x + xAdvance > rectDst_.x + rectDst_.width) {
+			pt.x = rectDst_.x;
+			pt.y += yAdvance;
+		}
+		pt.x += xAdvance;
+	}
+	return pt;
+}
+
 void Terminal::DrawCursor()
 {
 	int yAdvance = context_.CalcAdvanceY();
 	GetDrawable()
 		.SetColor(Color::white)
-		.DrawRectFill(ptCurrent_.x, ptCurrent_.y, wdCursor_, yAdvance)
+		.DrawRectFill(CalcCursorPos(), Size(wdCursor_, yAdvance))
 		.Refresh();
 }
 
@@ -175,7 +273,7 @@ void Terminal::EraseCursor()
 	int yAdvance = context_.CalcAdvanceY();
 	GetDrawable()
 		.SetColor(Color::black)
-		.DrawRectFill(ptCurrent_.x, ptCurrent_.y, wdCursor_, yAdvance)
+		.DrawRectFill(CalcCursorPos(), Size(wdCursor_, yAdvance))
 		.Refresh();
 }
 
