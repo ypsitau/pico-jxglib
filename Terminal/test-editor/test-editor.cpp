@@ -3,7 +3,8 @@
 #include "jxglib/Terminal.h"
 #include "jxglib/SSD1306.h"
 #include "jxglib/ST7789.h"
-#include "jxglib/Font/naga10-japanese-level2.h"
+//#include "jxglib/Font/naga10-japanese-level2.h"
+#include "jxglib/Font/shinonome12-japanese-level2.h"
 #include "jxglib/Font/shinonome16-japanese-level2.h"
 #include "jxglib/Font/sisd24x32.h"
 #include "jxglib/sample/Text_Botchan.h"
@@ -30,11 +31,12 @@ int main()
 #if 0
 	SSD1306 display(i2c0, 0x3c);
 	display.Initialize();
-	const FontSet& fontSet = Font::naga10;
+	const FontSet& fontSet = Font::shinonome12;
 #else
 	ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
 	display.Initialize(Display::Dir::Rotate0);
 	const FontSet& fontSet = Font::shinonome16;
+	//const FontSet& fontSet = Font::sisd24x32;
 #endif
 	terminal.AttachOutput(display);
 	terminal.SetFont(fontSet).SetSpacingRatio(1., 1.2).ClearScreen();
@@ -49,32 +51,27 @@ int main()
 		if (!vt100Decoder.HasKeyData()) {
 			// nothing to do
 		} else if (vt100Decoder.GetKeyData(&keyData)) {
-			if (keyData == VK_RETURN) {
-				terminal.Edit_Finish('\n');
-			} else if (keyData == VK_DELETE) {
-				terminal.Edit_Delete();
-			} else if (keyData == VK_BACK) {
-				terminal.Edit_Back();
-			} else if (keyData == VK_LEFT) {
-				terminal.Edit_MoveBackward();
-			} else if (keyData == VK_RIGHT) {
-				terminal.Edit_MoveForward();
+			switch (keyData) {
+			case VK_RETURN: terminal.Edit_Finish('\n'); break;
+			case VK_DELETE: terminal.Edit_Delete(); break;
+			case VK_BACK: terminal.Edit_Back(); break;
+			case VK_LEFT: terminal.Edit_MoveBackward(); break;
+			case VK_RIGHT: terminal.Edit_MoveForward(); break;
+			default: break;
 			}
-		} else if (keyData >= 0x20) {
-			terminal.Edit_Char(keyData);
-		} else if (keyData == 'A' - '@') {
-			terminal.Edit_MoveHome();
-		} else if (keyData == 'B' - '@') {
-			terminal.Edit_MoveBackward();
-		} else if (keyData == 'C' - '@') {
-		} else if (keyData == 'D' - '@') {
-			terminal.Edit_Delete();
-		} else if (keyData == 'E' - '@') {
-			terminal.Edit_MoveEnd();
-		} else if (keyData == 'F' - '@') {
-			terminal.Edit_MoveForward();
-		} else if (keyData == 'K' - '@') {
-			terminal.Edit_KillLine();
+		} else if (keyData < 0x20) {
+			switch (keyData) {
+			case 'A' - '@': terminal.Edit_MoveHome(); break;
+			case 'B' - '@': terminal.Edit_MoveBackward(); break;
+			case 'C' - '@': break;
+			case 'D' - '@': terminal.Edit_Delete(); break;
+			case 'E' - '@': terminal.Edit_MoveEnd(); break;
+			case 'F' - '@': terminal.Edit_MoveForward(); break;
+			case 'K' - '@': terminal.Edit_KillLine(); break;
+			default:break;
+			}
+		} else {
+			terminal.Edit_InsertChar(keyData);
 		}
 		Tickable::Sleep(50);
 	}

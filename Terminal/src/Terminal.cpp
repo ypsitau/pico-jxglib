@@ -112,45 +112,43 @@ Printable& Terminal::Locate(int col, int row)
 
 void Terminal::AppendChar(char ch, bool suppressFlag)
 {
+	uint32_t code;
+	if (!decoder_.FeedChar(ch, &code)) return;
 	if (!suppressFlag && IsRollingBack()) EndRollBack();
 	int yAdvance = context_.CalcAdvanceY();
-	const FontSet& fontSet = GetFont();
-	uint32_t code;
-	if (decoder_.FeedChar(ch, &code)) {
-		const FontEntry& fontEntry = fontSet.GetFontEntry(code);
-		int xAdvance = context_.CalcAdvanceX(fontEntry);
-		if (code == '\n') {
-			GetLineBuff().PutChar('\n').PutChar('\0');
-			GetLineBuff().MoveLineLastHere().PlaceChar('\0');
+	const FontEntry& fontEntry = GetFont().GetFontEntry(code);
+	int xAdvance = context_.CalcAdvanceX(fontEntry);
+	if (code == '\n') {
+		GetLineBuff().PutChar('\n').PutChar('\0');
+		GetLineBuff().MoveLineLastHere().PlaceChar('\0');
+		ptCurrent_.x = rectDst_.x;
+		if (pEventHandler_) pEventHandler_->OnNewLine(*this);
+		if (ptCurrent_.y + yAdvance * 2 <= rectDst_.y + rectDst_.height) {
+			if (!suppressFlag) GetDrawable().Refresh();
+			ptCurrent_.y += yAdvance;
+		} else if (!suppressFlag) {
+			ScrollUp();
+		}
+	} else if (code == '\r') {
+		GetLineBuff().PutChar('\r').PutChar('\0');
+		GetLineBuff().MoveLineLastHere().PlaceChar('\0');
+		ptCurrent_.x = rectDst_.x;
+	} else {
+		if (ptCurrent_.x + xAdvance > rectDst_.x + rectDst_.width) {
+			GetLineBuff().PutChar('\0');
+			GetLineBuff().MoveLineLastHere();
 			ptCurrent_.x = rectDst_.x;
 			if (pEventHandler_) pEventHandler_->OnNewLine(*this);
 			if (ptCurrent_.y + yAdvance * 2 <= rectDst_.y + rectDst_.height) {
-				if (!suppressFlag) GetDrawable().Refresh();
 				ptCurrent_.y += yAdvance;
 			} else if (!suppressFlag) {
 				ScrollUp();
 			}
-		} else if (code == '\r') {
-			GetLineBuff().PutChar('\r').PutChar('\0');
-			GetLineBuff().MoveLineLastHere().PlaceChar('\0');
-			ptCurrent_.x = rectDst_.x;
-		} else {
-			if (ptCurrent_.x + xAdvance > rectDst_.x + rectDst_.width) {
-				GetLineBuff().PutChar('\0');
-				GetLineBuff().MoveLineLastHere();
-				ptCurrent_.x = rectDst_.x;
-				if (pEventHandler_) pEventHandler_->OnNewLine(*this);
-				if (ptCurrent_.y + yAdvance * 2 <= rectDst_.y + rectDst_.height) {
-					ptCurrent_.y += yAdvance;
-				} else if (!suppressFlag) {
-					ScrollUp();
-				}
-			}
-			GetLineBuff().Print(decoder_.GetStringOrg());
-			GetLineBuff().PlaceChar('\0');
-			if (!suppressFlag) GetDrawable().DrawChar(ptCurrent_, fontEntry, false, &context_);
-			ptCurrent_.x += xAdvance;
 		}
+		GetLineBuff().Print(decoder_.GetStringOrg());
+		GetLineBuff().PlaceChar('\0');
+		if (!suppressFlag) GetDrawable().DrawChar(ptCurrent_, fontEntry, false, &context_);
+		ptCurrent_.x += xAdvance;
 	}
 }
 
@@ -163,7 +161,7 @@ void Terminal::DrawEditorArea()
 	UTF8Decoder decoder;
 	Color colorFgSaved = context_.colorFg;
 	context_.colorFg = colorEditor_;
-	for (const char* p = editor_.GetBuff(); *p; p++) {
+	for (const char* p = editor_.GetPointer(0); *p; p++) {
 		if (!decoder.FeedChar(*p, &code)) continue;
 		const FontEntry& fontEntry = fontSet.GetFontEntry(code);
 		int xAdvance = context_.CalcAdvanceX(fontEntry);
@@ -194,8 +192,8 @@ Point Terminal::CalcCursorPos()
 	const FontSet& fontSet = GetFont();
 	uint32_t code;
 	UTF8Decoder decoder;
-	const char* pEnd = editor_.GetBuff() + editor_.GetCharCursor();
-	for (const char* p = editor_.GetBuff(); *p && p < pEnd; p++) {
+	const char* pEnd = editor_.GetPointerAtCursor();
+	for (const char* p = editor_.GetPointer(0); *p && p < pEnd; p++) {
 		if (!decoder.FeedChar(*p, &code)) continue;
 		const FontEntry& fontEntry = fontSet.GetFontEntry(code);
 		int xAdvance = context_.CalcAdvanceX(fontEntry);
@@ -216,9 +214,9 @@ void Terminal::DrawCursor()
 		.Refresh();
 }
 
-void Terminal::EraseCursor()
+void Terminal::EraseCursor(int idxCursor)
 {
-	const char* p = editor_.GetBuff() + editor_.GetCharCursor();
+	const char* p = editor_.GetPointer(idxCursor);
 	uint32_t code = UTF8Decoder::ToUTF32(p);
 	Point pt = CalcCursorPos();
 	int yAdvance = context_.CalcAdvanceY();
@@ -309,14 +307,14 @@ void Terminal::ScrollUp()
 
 Terminal& Terminal::Edit_Finish(char chEnd)
 {
-	for (const char* p = GetEditor().GetBuff(); *p; p++) AppendChar(*p, true);
+	for (const char* p = GetEditor().GetPointer(0); *p; p++) AppendChar(*p, true);
 	if (chEnd) AppendChar(chEnd, true);
 	GetEditor().Clear();
 	DrawLatestTextLines();
 	return *this;
 }
 
-Terminal& Terminal::Edit_Char(int ch)
+Terminal& Terminal::Edit_InsertChar(int ch)
 {
 	EraseCursor();
 	if (GetEditor().InsertChar(ch)) {
@@ -387,23 +385,23 @@ Terminal& Terminal::Edit_KillLine()
 //------------------------------------------------------------------------------
 // Terminal::Editor
 //------------------------------------------------------------------------------
-Terminal::Editor::Editor() : iCharCursor_{0}
+Terminal::Editor::Editor() : idxCursor_{0}
 {
 	buff_[0] = '\0';
 }
 
 void Terminal::Editor::Clear()
 {
-	iCharCursor_ = 0;
+	idxCursor_ = 0;
 	buff_[0] = '\0';
 }
 
 bool Terminal::Editor::InsertChar(char ch)
 {
 	if (::strlen(buff_) + 1 < sizeof(buff_)) {
-		char *p = buff_ + iCharCursor_;
+		char *p = buff_ + idxCursor_;
 		::memmove(p + 1, p, ::strlen(p) + 1);
-		buff_[iCharCursor_++] = ch;
+		buff_[idxCursor_++] = ch;
 		return true;
 	}
 	return false;
@@ -411,7 +409,7 @@ bool Terminal::Editor::InsertChar(char ch)
 
 bool Terminal::Editor::DeleteChar()
 {
-	char *p = buff_ + iCharCursor_;
+	char *p = buff_ + idxCursor_;
 	if (*p) {
 		::memmove(p, p + 1, ::strlen(p + 1) + 1);
 		return true;
@@ -421,8 +419,8 @@ bool Terminal::Editor::DeleteChar()
 
 bool Terminal::Editor::MoveForward()
 {
-	if (buff_[iCharCursor_]) {
-		iCharCursor_++;
+	if (buff_[idxCursor_]) {
+		idxCursor_++;
 		return true;
 	}
 	return false;
@@ -430,8 +428,8 @@ bool Terminal::Editor::MoveForward()
 
 bool Terminal::Editor::MoveBackward()
 {
-	if (iCharCursor_ > 0) {
-		iCharCursor_--;
+	if (idxCursor_ > 0) {
+		idxCursor_--;
 		return true;
 	}
 	return false;
@@ -439,20 +437,20 @@ bool Terminal::Editor::MoveBackward()
 
 bool Terminal::Editor::MoveHome()
 {
-	iCharCursor_ = 0;
+	idxCursor_ = 0;
 	return true;
 }
 
 bool Terminal::Editor::MoveEnd()
 {
-	iCharCursor_ = ::strlen(buff_);
+	idxCursor_ = ::strlen(buff_);
 	return true;
 }
 
 bool Terminal::Editor::KillLine()
 {
-	if (buff_[iCharCursor_]) {
-		buff_[iCharCursor_] = '\0';
+	if (buff_[idxCursor_]) {
+		buff_[idxCursor_] = '\0';
 		return true;
 	}
 	return false;

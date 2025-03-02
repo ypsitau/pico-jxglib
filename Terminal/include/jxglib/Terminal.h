@@ -22,13 +22,14 @@ public:
 	};
 	class Editor {
 	private:
-		int iCharCursor_;
+		int idxCursor_;
 		char buff_[128];
 	public:
 		Editor();
 	public:
-		int GetCharCursor() const { return iCharCursor_; }
-		const char* GetBuff() const { return buff_; }
+		int GetIdxCursor() const { return idxCursor_; }
+		const char* GetPointer(int pos) const { return buff_ + pos; }
+		const char* GetPointerAtCursor() const { return buff_ + idxCursor_; }
 		void Clear();
 		bool InsertChar(char ch);
 		bool DeleteChar();
@@ -112,7 +113,8 @@ public:
 	void DrawEditorArea();
 	Point CalcCursorPos();
 	void DrawCursor();
-	void EraseCursor();
+	void EraseCursor() { EraseCursor(editor_.GetIdxCursor()); };
+	void EraseCursor(int posCursor);
 public:
 	// Virtual functions of Tickable
 	virtual void OnTick() override;
@@ -125,7 +127,7 @@ private:
 	void ScrollUp();
 public:
 	Terminal& Edit_Finish(char chEnd = '\0');
-	Terminal& Edit_Char(int ch);
+	Terminal& Edit_InsertChar(int ch);
 	Terminal& Edit_Delete();
 	Terminal& Edit_Back();
 	Terminal& Edit_MoveForward();
