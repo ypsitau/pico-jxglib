@@ -8,8 +8,6 @@
 #include "jxglib/Font/shinonome16-japanese-level2.h"
 #include "jxglib/Font/sisd24x32.h"
 #include "jxglib/sample/Text_Botchan.h"
-#include "jxglib/VT100.h"
-#include "jxglib/UART.h"
 
 using namespace jxglib;
 

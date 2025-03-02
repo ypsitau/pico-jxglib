@@ -8,6 +8,8 @@
 #include "jxglib/Printable.h"
 #include "jxglib/Font.h"
 #include "jxglib/LineBuff.h"
+#include "jxglib/VT100.h"
+#include "jxglib/UART.h"
 
 namespace jxglib {
 
@@ -42,6 +44,18 @@ public:
 		bool MoveEnd();
 		bool DeleteToEnd();
 	};
+	class Input {
+	public:
+		virtual void OnTick(Terminal& terminal) = 0;
+	};
+	class InputUART : public Input {
+	private:
+		UART& uart_;
+		VT100::Decoder decoder_;
+	public:
+		InputUART(UART& uart) : uart_{uart} {}
+		virtual void OnTick(Terminal& terminal) override;
+	};
 public:
 	using Dir = Drawable::Dir;
 	using Reader = LineBuff::Reader;
@@ -62,11 +76,13 @@ private:
 	Color colorCursor_;
 	int wdCursor_;
 	Editor editor_;
+	Input* pInput_;
 public:
 	Terminal(int bytesBuff = 4096, int msecBlink = 500);
 public:
 	void Initialize() {}
 	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
+	void AttachInput(Input& input);
 public:
 	Drawable& GetDrawable() { return *pDrawable_; }
 	const Drawable& GetDrawable() const { return *pDrawable_; }

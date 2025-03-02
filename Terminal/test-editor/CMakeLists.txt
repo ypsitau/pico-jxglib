@@ -47,8 +47,6 @@ pico_enable_stdio_usb(test-editor 0)
 # Add the standard library to the build
 target_link_libraries(test-editor
 	pico_stdlib
-	jxglib_VT100
-	jxglib_UART
 	jxglib_SSD1306
 	jxglib_ST7789
 	jxglib_Terminal)

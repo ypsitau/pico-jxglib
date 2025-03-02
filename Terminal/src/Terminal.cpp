@@ -11,18 +11,24 @@ namespace jxglib {
 Terminal::Terminal(int bytesBuff, int msecBlink) : Tickable(msecBlink),
 	pDrawable_{nullptr}, nLinesWhole_{0}, lineBuff_(bytesBuff), pEventHandler_{nullptr}, pLineStop_{nullptr},
 	suppressFlag_{false}, showCursorFlag_{false}, blinkFlag_{false}, wdCursor_{2},
-	colorEditor_{128, 128, 255}, colorCursor_{128, 128, 255}
+	colorEditor_{128, 128, 255}, colorCursor_{128, 128, 255}, pInput_{nullptr}
 {
 }
 
 bool Terminal::AttachOutput(Drawable& drawable, const Rect& rect, Dir dir)
 {
 	if (!GetLineBuff().Initialize()) return false;
-	Tickable::AddTickable(this);
+	Tickable::AddTickable(*this);
 	rectDst_ = rect.IsEmpty()? Rect(0, 0, drawable.GetWidth(), drawable.GetHeight()) : rect;
 	ptCurrent_ = Point(rectDst_.x, rectDst_.y);
 	pDrawable_ = &drawable;
 	return true;
+}
+
+void Terminal::AttachInput(Input& input)
+{
+	pInput_ = &input;
+	//Tickable::AddTickable(tickableInput_);
 }
 
 int Terminal::GetColNum() const

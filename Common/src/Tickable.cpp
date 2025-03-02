@@ -20,17 +20,17 @@ bool Tickable::IsExpired(uint32_t msecCur)
 //------------------------------------------------------------------------------
 Tickable::Master Tickable::Master::Instance;
 
-void Tickable::Master::AddTickable(Tickable* pTickable)
+void Tickable::Master::AddTickable(Tickable& tickable)
 {
 	if (!pTickableTop_) {
-		pTickableTop_ = pTickable;
+		pTickableTop_ = &tickable;
 		return;
 	}
 	Tickable* pTickableLast = pTickableTop_;
 	for (Tickable* pTickable = pTickableTop_; pTickable; pTickable = pTickable->GetNext()) {
 		pTickableLast = pTickable;
 	}
-	pTickableLast->SetNext(pTickable);
+	pTickableLast->SetNext(&tickable);
 }
 
 bool Tickable::Master::Tick(uint32_t msecTick)

@@ -23,7 +23,7 @@ public:
 	public:
 		Master() : pTickableTop_{nullptr}, firstFlag_{true}, msecStart_{0} {}
 	public:
-		void AddTickable(Tickable* pTickable);
+		void AddTickable(Tickable& tickable);
 		bool Tick(uint32_t msecTick);
 	};
 private:
@@ -33,7 +33,7 @@ private:
 public:
 	Tickable(uint32_t msecTick = -1) : msecTick_{msecTick}, msecStart_{0}, pTickableNext_{nullptr} {}
 public:
-	static void AddTickable(Tickable* pTickable) { Master::Instance.AddTickable(pTickable); }
+	static void AddTickable(Tickable& tickable) { Master::Instance.AddTickable(tickable); }
 	static bool Tick(uint32_t msecTick = 0) { return Master::Instance.Tick(msecTick); }
 	static void Sleep(uint32_t msecTick = 0) { while (!Master::Instance.Tick(msecTick)) ::tight_loop_contents(); }
 public:
