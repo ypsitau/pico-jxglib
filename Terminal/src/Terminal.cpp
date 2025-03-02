@@ -385,10 +385,10 @@ Terminal& Terminal::Edit_MoveEnd()
 	return *this;
 }
 
-Terminal& Terminal::Edit_KillLine()
+Terminal& Terminal::Edit_DeleteToEnd()
 {
 	int idxCursor = GetEditor().GetIdxCursor();
-	if (GetEditor().KillLine()) {
+	if (GetEditor().DeleteToEnd()) {
 		EraseCursor(idxCursor);
 		DrawEditorArea();
 		DrawCursor();
@@ -471,7 +471,7 @@ bool Terminal::Editor::MoveEnd()
 	return true;
 }
 
-bool Terminal::Editor::KillLine()
+bool Terminal::Editor::DeleteToEnd()
 {
 	char *p = GetPointerAtCursor();
 	if (*p) {

@@ -52,23 +52,23 @@ int main()
 			// nothing to do
 		} else if (vt100Decoder.GetKeyData(&keyData)) {
 			switch (keyData) {
-			case VK_RETURN: terminal.Edit_Finish('\n'); break;
-			case VK_DELETE: terminal.Edit_Delete(); break;
-			case VK_BACK: terminal.Edit_Back(); break;
-			case VK_LEFT: terminal.Edit_MoveBackward(); break;
-			case VK_RIGHT: terminal.Edit_MoveForward(); break;
+			case VK_RETURN:	terminal.Edit_Finish('\n');		break;
+			case VK_DELETE:	terminal.Edit_Delete();			break;
+			case VK_BACK:	terminal.Edit_Back();			break;
+			case VK_LEFT:	terminal.Edit_MoveBackward();	break;
+			case VK_RIGHT:	terminal.Edit_MoveForward();	break;
 			default: break;
 			}
 		} else if (keyData < 0x20) {
 			switch (keyData) {
-			case 'A' - '@': terminal.Edit_MoveHome(); break;
-			case 'B' - '@': terminal.Edit_MoveBackward(); break;
+			case 'A' - '@': terminal.Edit_MoveHome();		break;
+			case 'B' - '@': terminal.Edit_MoveBackward();	break;
 			case 'C' - '@': break;
-			case 'D' - '@': terminal.Edit_Delete(); break;
-			case 'E' - '@': terminal.Edit_MoveEnd(); break;
-			case 'F' - '@': terminal.Edit_MoveForward(); break;
-			case 'K' - '@': terminal.Edit_KillLine(); break;
-			default:break;
+			case 'D' - '@': terminal.Edit_Delete();			break;
+			case 'E' - '@': terminal.Edit_MoveEnd();		break;
+			case 'F' - '@': terminal.Edit_MoveForward();	break;
+			case 'K' - '@': terminal.Edit_DeleteToEnd();	break;
+			default: break;
 			}
 		} else {
 			terminal.Edit_InsertChar(keyData);

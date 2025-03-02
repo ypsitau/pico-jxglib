@@ -40,7 +40,7 @@ public:
 		bool MoveBackward();
 		bool MoveHome();
 		bool MoveEnd();
-		bool KillLine();
+		bool DeleteToEnd();
 	};
 public:
 	using Dir = Drawable::Dir;
@@ -138,7 +138,7 @@ public:
 	Terminal& Edit_MoveBackward();
 	Terminal& Edit_MoveHome();
 	Terminal& Edit_MoveEnd();
-	Terminal& Edit_KillLine();
+	Terminal& Edit_DeleteToEnd();
 };
 
 }
