@@ -49,14 +49,16 @@ bool UTF8Decoder::FeedChar(char ch, uint32_t* pCodeUTF32)
 	return false;
 }
 
-uint32_t UTF8Decoder::ToUTF32(const char* p)
+uint32_t UTF8Decoder::ToUTF32(const char* str, int* pBytes)
 {
-	uint32_t codeUTF32;
+	uint32_t codeUTF32 = 0;
 	UTF8Decoder decoder;
+	const char* p = str;
 	for ( ; *p; p++) {
-		if (decoder.FeedChar(*p, &codeUTF32)) return codeUTF32;
+		if (decoder.FeedChar(*p, &codeUTF32)) break;
 	}
-	return 0;
+	if (pBytes) *pBytes = p - str + 1;
+	return codeUTF32;
 }
 
 }

@@ -112,13 +112,13 @@ Printable& Terminal::Locate(int col, int row)
 
 void Terminal::AppendChar(char ch, bool suppressFlag)
 {
-	uint32_t code;
-	if (!decoder_.FeedChar(ch, &code)) return;
+	uint32_t codeUTF32;
+	if (!decoder_.FeedChar(ch, &codeUTF32)) return;
 	if (!suppressFlag && IsRollingBack()) EndRollBack();
 	int yAdvance = context_.CalcAdvanceY();
-	const FontEntry& fontEntry = GetFont().GetFontEntry(code);
+	const FontEntry& fontEntry = GetFont().GetFontEntry(codeUTF32);
 	int xAdvance = context_.CalcAdvanceX(fontEntry);
-	if (code == '\n') {
+	if (codeUTF32 == '\n') {
 		GetLineBuff().PutChar('\n').PutChar('\0');
 		GetLineBuff().MoveLineLastHere().PlaceChar('\0');
 		ptCurrent_.x = rectDst_.x;
@@ -129,7 +129,7 @@ void Terminal::AppendChar(char ch, bool suppressFlag)
 		} else if (!suppressFlag) {
 			ScrollUp();
 		}
-	} else if (code == '\r') {
+	} else if (codeUTF32 == '\r') {
 		GetLineBuff().PutChar('\r').PutChar('\0');
 		GetLineBuff().MoveLineLastHere().PlaceChar('\0');
 		ptCurrent_.x = rectDst_.x;
@@ -156,14 +156,13 @@ void Terminal::DrawEditorArea()
 {
 	Point pt = ptCurrent_;;
 	int yAdvance = context_.CalcAdvanceY();
-	const FontSet& fontSet = GetFont();
-	uint32_t code;
 	UTF8Decoder decoder;
 	Color colorFgSaved = context_.colorFg;
 	context_.colorFg = colorEditor_;
 	for (const char* p = editor_.GetPointer(0); *p; p++) {
-		if (!decoder.FeedChar(*p, &code)) continue;
-		const FontEntry& fontEntry = fontSet.GetFontEntry(code);
+		uint32_t codeUTF32;
+		if (!decoder.FeedChar(*p, &codeUTF32)) continue;
+		const FontEntry& fontEntry = GetFont().GetFontEntry(codeUTF32);
 		int xAdvance = context_.CalcAdvanceX(fontEntry);
 		if (pt.x + xAdvance > rectDst_.x + rectDst_.width) {
 			pt.x = rectDst_.x;
@@ -185,17 +184,16 @@ void Terminal::DrawEditorArea()
 	GetDrawable().Refresh();
 }
 
-Point Terminal::CalcCursorPos()
+Point Terminal::CalcCursorPos(int idxCursor)
 {
 	Point pt = ptCurrent_;
 	int yAdvance = context_.CalcAdvanceY();
-	const FontSet& fontSet = GetFont();
-	uint32_t code;
 	UTF8Decoder decoder;
-	const char* pEnd = editor_.GetPointerAtCursor();
+	const char* pEnd = editor_.GetPointer(idxCursor);
 	for (const char* p = editor_.GetPointer(0); *p && p < pEnd; p++) {
-		if (!decoder.FeedChar(*p, &code)) continue;
-		const FontEntry& fontEntry = fontSet.GetFontEntry(code);
+		uint32_t codeUTF32;
+		if (!decoder.FeedChar(*p, &codeUTF32)) continue;
+		const FontEntry& fontEntry = GetFont().GetFontEntry(codeUTF32);
 		int xAdvance = context_.CalcAdvanceX(fontEntry);
 		if (pt.x + xAdvance > rectDst_.x + rectDst_.width) {
 			pt.x = rectDst_.x;
@@ -217,12 +215,12 @@ void Terminal::DrawCursor()
 void Terminal::EraseCursor(int idxCursor)
 {
 	const char* p = editor_.GetPointer(idxCursor);
-	uint32_t code = UTF8Decoder::ToUTF32(p);
-	Point pt = CalcCursorPos();
+	uint32_t codeUTF32 = UTF8Decoder::ToUTF32(p);
+	Point pt = CalcCursorPos(idxCursor);
 	int yAdvance = context_.CalcAdvanceY();
 	GetDrawable().DrawRectFill(pt, Size(wdCursor_, yAdvance), GetColorBg());
-	if (code) {
-		const FontEntry& fontEntry = GetFont().GetFontEntry(code);
+	if (codeUTF32) {
+		const FontEntry& fontEntry = GetFont().GetFontEntry(codeUTF32);
 		Color colorFgSaved = context_.colorFg;
 		context_.colorFg = colorEditor_;
 		GetDrawable().DrawChar(pt, fontEntry, false, &context_);
@@ -263,15 +261,15 @@ void Terminal::DrawTextLine(int iLine, const char* pLineTop)
 	int yAdvance = context_.CalcAdvanceY();
 	int x = rectDst_.x;
 	int y = rectDst_.y + yAdvance * iLine;
-	uint32_t code;
+	uint32_t codeUTF32;
 	WrappedCharFeeder charFeeder(GetLineBuff().CreateCharFeeder(pLineTop));
 	UTF8Decoder decoder;
 	for (;;) {
 		char ch = charFeeder.Get();
 		if (!ch || ch == '\n' || ch == '\r') break;
 		charFeeder.Forward();
-		if (decoder.FeedChar(ch, &code)) {
-			const FontEntry& fontEntry = fontSet.GetFontEntry(code);
+		if (decoder.FeedChar(ch, &codeUTF32)) {
+			const FontEntry& fontEntry = fontSet.GetFontEntry(codeUTF32);
 			int xAdvance = context_.CalcAdvanceX(fontEntry);
 			GetDrawable().DrawChar(x, y, fontEntry, false, &context_);
 			x += xAdvance;
@@ -316,8 +314,9 @@ Terminal& Terminal::Edit_Finish(char chEnd)
 
 Terminal& Terminal::Edit_InsertChar(int ch)
 {
-	EraseCursor();
+	int idxCursor = GetEditor().GetIdxCursor();
 	if (GetEditor().InsertChar(ch)) {
+		EraseCursor(idxCursor);
 		DrawEditorArea();
 		DrawCursor();
 	}
@@ -326,8 +325,9 @@ Terminal& Terminal::Edit_InsertChar(int ch)
 
 Terminal& Terminal::Edit_Delete()
 {
-	EraseCursor();
+	int idxCursor = GetEditor().GetIdxCursor();
 	if (GetEditor().DeleteChar()) {
+		EraseCursor(idxCursor);
 		DrawEditorArea();
 		DrawCursor();
 	}
@@ -336,8 +336,9 @@ Terminal& Terminal::Edit_Delete()
 
 Terminal& Terminal::Edit_Back()
 {
-	EraseCursor();
+	int idxCursor = GetEditor().GetIdxCursor();
 	if (GetEditor().MoveBackward() && GetEditor().DeleteChar()) {
+		EraseCursor(idxCursor);
 		DrawEditorArea();
 		DrawCursor();
 	}
@@ -346,36 +347,49 @@ Terminal& Terminal::Edit_Back()
 
 Terminal& Terminal::Edit_MoveForward()
 {
-	EraseCursor();
-	if (GetEditor().MoveForward()) DrawCursor();
+	int idxCursor = GetEditor().GetIdxCursor();
+	if (GetEditor().MoveForward()) {
+		EraseCursor(idxCursor);
+		DrawCursor();
+	}
 	return *this;
 }
 
 Terminal& Terminal::Edit_MoveBackward()
 {
-	EraseCursor();
-	if (GetEditor().MoveBackward()) DrawCursor();
+	int idxCursor = GetEditor().GetIdxCursor();
+	if (GetEditor().MoveBackward()) {
+		EraseCursor(idxCursor);
+		DrawCursor();
+	}
 	return *this;
 }
 
 Terminal& Terminal::Edit_MoveHome()
 {
-	EraseCursor();
-	if (GetEditor().MoveHome()) DrawCursor();
+	int idxCursor = GetEditor().GetIdxCursor();
+	if (GetEditor().MoveHome()) {
+		EraseCursor(idxCursor);
+		DrawCursor();
+	}
 	return *this;
 }
 
 Terminal& Terminal::Edit_MoveEnd()
 {
-	EraseCursor();
-	if (GetEditor().MoveEnd()) DrawCursor();
+	int idxCursor = GetEditor().GetIdxCursor();
+	if (GetEditor().MoveEnd()) {
+		EraseCursor(idxCursor);
+		DrawCursor();
+	}
 	return *this;
 }
 
 Terminal& Terminal::Edit_KillLine()
 {
-	EraseCursor();
+	int idxCursor = GetEditor().GetIdxCursor();
 	if (GetEditor().KillLine()) {
+		EraseCursor(idxCursor);
 		DrawEditorArea();
 		DrawCursor();
 	}
@@ -399,19 +413,23 @@ void Terminal::Editor::Clear()
 bool Terminal::Editor::InsertChar(char ch)
 {
 	if (::strlen(buff_) + 1 < sizeof(buff_)) {
-		char *p = buff_ + idxCursor_;
+		char *p = GetPointerAtCursor();
 		::memmove(p + 1, p, ::strlen(p) + 1);
-		buff_[idxCursor_++] = ch;
-		return true;
+		*p = ch;
+		idxCursor_++;
+		uint32_t codeUTF32;
+		return decoder_.FeedChar(ch, &codeUTF32);
 	}
 	return false;
 }
 
 bool Terminal::Editor::DeleteChar()
 {
-	char *p = buff_ + idxCursor_;
+	char *p = GetPointerAtCursor();
 	if (*p) {
-		::memmove(p, p + 1, ::strlen(p + 1) + 1);
+		int bytes;
+		UTF8Decoder::ToUTF32(p, &bytes);
+		::memmove(p, p + bytes, ::strlen(p + bytes) + 1);
 		return true;
 	}
 	return false;
@@ -419,8 +437,11 @@ bool Terminal::Editor::DeleteChar()
 
 bool Terminal::Editor::MoveForward()
 {
-	if (buff_[idxCursor_]) {
-		idxCursor_++;
+	char *pStart = GetPointerAtCursor();
+	if (*pStart) {
+		char* p = pStart + 1;
+		for ( ; (*p & 0xc0) == 0x80; p++) ;
+		idxCursor_ += p - pStart;
 		return true;
 	}
 	return false;
@@ -429,7 +450,10 @@ bool Terminal::Editor::MoveForward()
 bool Terminal::Editor::MoveBackward()
 {
 	if (idxCursor_ > 0) {
-		idxCursor_--;
+		char* pStart = GetPointerAtCursor();
+		char* p = pStart - 1;
+		for ( ; p != buff_ && (*p & 0xc0) == 0x80; p--) ;
+		idxCursor_ -= pStart - p;
 		return true;
 	}
 	return false;
@@ -449,8 +473,9 @@ bool Terminal::Editor::MoveEnd()
 
 bool Terminal::Editor::KillLine()
 {
-	if (buff_[idxCursor_]) {
-		buff_[idxCursor_] = '\0';
+	char *p = GetPointerAtCursor();
+	if (*p) {
+		*p = '\0';
 		return true;
 	}
 	return false;

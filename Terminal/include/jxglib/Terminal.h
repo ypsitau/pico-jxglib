@@ -24,10 +24,13 @@ public:
 	private:
 		int idxCursor_;
 		char buff_[128];
+		UTF8Decoder decoder_;
 	public:
 		Editor();
 	public:
 		int GetIdxCursor() const { return idxCursor_; }
+		char* GetPointer(int pos) { return buff_ + pos; }
+		char* GetPointerAtCursor() { return buff_ + idxCursor_; }
 		const char* GetPointer(int pos) const { return buff_ + pos; }
 		const char* GetPointerAtCursor() const { return buff_ + idxCursor_; }
 		void Clear();
@@ -111,7 +114,8 @@ public:
 public:
 	void AppendChar(char ch, bool suppressFlag);
 	void DrawEditorArea();
-	Point CalcCursorPos();
+	Point CalcCursorPos() { return CalcCursorPos(editor_.GetIdxCursor()); }
+	Point CalcCursorPos(int idxCursor);
 	void DrawCursor();
 	void EraseCursor() { EraseCursor(editor_.GetIdxCursor()); };
 	void EraseCursor(int posCursor);
