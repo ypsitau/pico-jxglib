@@ -47,7 +47,7 @@ pico_enable_stdio_usb(test-Tickable 0)
 # Add the standard library to the build
 target_link_libraries(test-Tickable
     pico_stdlib
-    jxglib_Tickable)
+    jxglib_Common)
 
 # Add the standard include files to the build
 target_include_directories(test-Tickable PRIVATE

@@ -4,7 +4,7 @@ target_include_directories(jxglib_USBD INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/include)
 
 target_link_libraries(jxglib_USBD INTERFACE
-	jxglib_Tickable
+	jxglib_Common
 	tinyusb_device)
 #	tinyusb_host
 
