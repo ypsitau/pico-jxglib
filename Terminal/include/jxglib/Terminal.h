@@ -24,25 +24,33 @@ public:
 	};
 	class Editor {
 	private:
-		int idxCursor_;
+		int iCharCursor_;
 		char buff_[128];
 		UTF8Decoder decoder_;
 	public:
 		Editor();
 	public:
-		int GetIdxCursor() const { return idxCursor_; }
-		char* GetPointer(int pos) { return buff_ + pos; }
-		char* GetPointerAtCursor() { return buff_ + idxCursor_; }
-		const char* GetPointer(int pos) const { return buff_ + pos; }
-		const char* GetPointerAtCursor() const { return buff_ + idxCursor_; }
+		int GetICharCursor() const { return iCharCursor_; }
+		int GetICharEnd() const { return ::strlen(buff_); }
+		char* GetPointer(int iChar) { return buff_ + iChar; }
+		char* GetPointerBegin() { return buff_; }
+		char* GetPointerEnd() { return buff_ + GetICharEnd(); }
+		const char* GetPointer(int iChar) const { return buff_ + iChar; }
+		const char* GetPointerAtCursor() const { return buff_ + iCharCursor_; }
 		void Clear();
-		bool InsertChar(char ch);
-		bool DeleteChar();
-		bool MoveForward();
-		bool MoveBackward();
+		bool InsertChar(char ch) { return InsertChar(&iCharCursor_, ch); }
+		bool InsertChar(int* piChar, char ch);
+		bool DeleteChar() { return DeleteChar(iCharCursor_); }
+		bool DeleteChar(int iChar);
+		bool DeleteLastChar();
+		bool MoveForward() { return MoveForward(&iCharCursor_); }
+		bool MoveBackward() { return MoveBackward(&iCharCursor_); }
+		bool MoveForward(int* pIChar);
+		bool MoveBackward(int* pIChar);
 		bool MoveHome();
 		bool MoveEnd();
-		bool DeleteToEnd();
+		bool DeleteToEnd() { return DeleteToEnd(iCharCursor_); }
+		bool DeleteToEnd(int iChar);
 	};
 	class Input {
 	public:
@@ -71,8 +79,8 @@ private:
 	const char* pLineStop_;
 	bool suppressFlag_;
 	bool showCursorFlag_;
-	bool blinkFlag_;
-	Color colorEditor_;
+	bool appearCursorFlag_;
+	Color colorTextInEdit_;
 	Color colorCursor_;
 	int wdCursor_;
 	Editor editor_;
@@ -130,10 +138,10 @@ public:
 public:
 	void AppendChar(char ch, bool suppressFlag);
 	void DrawEditorArea();
-	Point CalcCursorPos() { return CalcCursorPos(editor_.GetIdxCursor()); }
-	Point CalcCursorPos(int idxCursor);
+	Point CalcCursorPos() { return CalcCursorPos(editor_.GetICharCursor()); }
+	Point CalcCursorPos(int iChar);
 	void DrawCursor();
-	void EraseCursor() { EraseCursor(editor_.GetIdxCursor()); };
+	void EraseCursor() { EraseCursor(editor_.GetICharCursor()); };
 	void EraseCursor(int posCursor);
 public:
 	// Virtual functions of Tickable
