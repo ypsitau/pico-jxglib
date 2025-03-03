@@ -37,40 +37,12 @@ int main()
 	//const FontSet& fontSet = Font::sisd24x32;
 #endif
 	terminal.AttachOutput(display);
+	terminal.AttachInput(UART::Default);
 	terminal.SetFont(fontSet).SetSpacingRatio(1., 1.2).ClearScreen();
 	//terminal.SetFont(Font::naga10).SetSpacingRatio(1., 1.2).ClearScreen();
-	terminal.Println("hello");
-	VT100::Decoder vt100Decoder;
-	UART& uart = UART0;
+	terminal.Dump.Cols(8)(reinterpret_cast<const void*>(0x10000000), 128);
 	terminal.ShowCursor();
 	for (;;) {
-		int keyData;
-		while (uart.raw.is_readable()) vt100Decoder.FeedChar(uart.raw.getc());
-		if (!vt100Decoder.HasKeyData()) {
-			// nothing to do
-		} else if (vt100Decoder.GetKeyData(&keyData)) {
-			switch (keyData) {
-			case VK_RETURN:	terminal.Edit_Finish('\n');		break;
-			case VK_DELETE:	terminal.Edit_Delete();			break;
-			case VK_BACK:	terminal.Edit_Back();			break;
-			case VK_LEFT:	terminal.Edit_MoveBackward();	break;
-			case VK_RIGHT:	terminal.Edit_MoveForward();	break;
-			default: break;
-			}
-		} else if (keyData < 0x20) {
-			switch (keyData) {
-			case 'A' - '@': terminal.Edit_MoveHome();		break;
-			case 'B' - '@': terminal.Edit_MoveBackward();	break;
-			case 'C' - '@': break;
-			case 'D' - '@': terminal.Edit_Delete();			break;
-			case 'E' - '@': terminal.Edit_MoveEnd();		break;
-			case 'F' - '@': terminal.Edit_MoveForward();	break;
-			case 'K' - '@': terminal.Edit_DeleteToEnd();	break;
-			default: break;
-			}
-		} else {
-			terminal.Edit_InsertChar(keyData);
-		}
 		Tickable::Sleep(50);
 	}
 }

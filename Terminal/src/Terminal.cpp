@@ -8,27 +8,37 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // Terminal
 //------------------------------------------------------------------------------
-Terminal::Terminal(int bytesBuff, int msecBlink) : Tickable(msecBlink),
+Terminal::Terminal(int bytesBuff, int msecBlink) :
 	pDrawable_{nullptr}, nLinesWhole_{0}, lineBuff_(bytesBuff), pEventHandler_{nullptr}, pLineStop_{nullptr},
 	suppressFlag_{false}, showCursorFlag_{false}, appearCursorFlag_{false}, wdCursor_{2},
-	colorTextInEdit_{128, 128, 255}, colorCursor_{128, 128, 255}, pInput_{nullptr}
+	colorTextInEdit_{128, 128, 255}, colorCursor_{128, 128, 255}, pInput_{nullptr},
+	tickable_Blink_(*this, msecBlink), tickable_Input_(*this)
 {
 }
 
 bool Terminal::AttachOutput(Drawable& drawable, const Rect& rect, Dir dir)
 {
 	if (!GetLineBuff().Initialize()) return false;
-	Tickable::AddTickable(*this);
+	Tickable::AddTickable(tickable_Blink_);
 	rectDst_ = rect.IsEmpty()? Rect(0, 0, drawable.GetWidth(), drawable.GetHeight()) : rect;
 	ptCurrent_ = Point(rectDst_.x, rectDst_.y);
 	pDrawable_ = &drawable;
 	return true;
 }
 
-void Terminal::AttachInput(Input& input)
+void Terminal::AttachInput(Input& input, int msecTick)
 {
-	pInput_ = &input;
-	//Tickable::AddTickable(tickableInput_);
+	if (!pInput_) {
+		pInput_ = &input;
+		tickable_Input_.SetTick(msecTick);
+		Tickable::AddTickable(tickable_Input_);
+	}
+}
+
+void Terminal::AttachInput(UART& uart)
+{
+	inputUART_.SetUART(uart);
+	AttachInput(inputUART_, 50);
 }
 
 int Terminal::GetColNum() const
@@ -247,7 +257,7 @@ void Terminal::EraseCursor(int iChar)
 	GetDrawable().Refresh();
 }
 
-void Terminal::OnTick()
+void Terminal::BlinkCursor()
 {
 	if (showCursorFlag_) {
 		appearCursorFlag_ = !appearCursorFlag_;
@@ -497,6 +507,41 @@ bool Terminal::Editor::DeleteToEnd(int iChar)
 		return true;
 	}
 	return false;
+}
+
+//------------------------------------------------------------------------------
+// Terminal::InputUART
+//------------------------------------------------------------------------------
+void Terminal::InputUART::OnTick(Terminal& terminal)
+{
+	UART& uart = *pUART_;
+	int keyData;
+	while (uart.raw.is_readable()) decoder_.FeedChar(uart.raw.getc());
+	if (!decoder_.HasKeyData()) {
+		// nothing to do
+	} else if (decoder_.GetKeyData(&keyData)) {
+		switch (keyData) {
+		case VK_RETURN:	terminal.Edit_Finish('\n');		break;
+		case VK_DELETE:	terminal.Edit_Delete();			break;
+		case VK_BACK:	terminal.Edit_Back();			break;
+		case VK_LEFT:	terminal.Edit_MoveBackward();	break;
+		case VK_RIGHT:	terminal.Edit_MoveForward();	break;
+		default: break;
+		}
+	} else if (keyData < 0x20) {
+		switch (keyData) {
+		case 'A' - '@': terminal.Edit_MoveHome();		break;
+		case 'B' - '@': terminal.Edit_MoveBackward();	break;
+		case 'C' - '@': break;
+		case 'D' - '@': terminal.Edit_Delete();			break;
+		case 'E' - '@': terminal.Edit_MoveEnd();		break;
+		case 'F' - '@': terminal.Edit_MoveForward();	break;
+		case 'K' - '@': terminal.Edit_DeleteToEnd();	break;
+		default: break;
+		}
+	} else {
+		terminal.Edit_InsertChar(keyData);
+	}
 }
 
 }

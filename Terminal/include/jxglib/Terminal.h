@@ -16,7 +16,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // Terminal
 //------------------------------------------------------------------------------
-struct Terminal : public Printable, public Tickable {
+struct Terminal : public Printable {
 public:
 	class EventHandler {
 	public:
@@ -58,11 +58,34 @@ public:
 	};
 	class InputUART : public Input {
 	private:
-		UART& uart_;
+		UART* pUART_;
 		VT100::Decoder decoder_;
 	public:
-		InputUART(UART& uart) : uart_{uart} {}
+		InputUART() : pUART_{nullptr} {}
+	public:
+		void SetUART(UART& uart) { pUART_ = &uart; }
+	public:
+		// virtual function of Input
 		virtual void OnTick(Terminal& terminal) override;
+	};
+public:
+	class Tickable_Blink : public Tickable {
+	private:
+		Terminal& terminal_;
+		int msecBlink_;
+	public:
+		Tickable_Blink(Terminal& terminal, int msecBlink) : Tickable(msecBlink),
+				terminal_{terminal}, msecBlink_{msecBlink} {}
+	public:
+		virtual void OnTick() override { terminal_.BlinkCursor(); }
+	};
+	class Tickable_Input : public Tickable {
+	private:
+		Terminal& terminal_;
+	public:
+		Tickable_Input(Terminal& terminal) : terminal_{terminal} {}
+	public:
+		virtual void OnTick() override { terminal_.TickInput(); }
 	};
 public:
 	using Dir = Drawable::Dir;
@@ -85,12 +108,17 @@ private:
 	int wdCursor_;
 	Editor editor_;
 	Input* pInput_;
+	InputUART inputUART_;
+	Tickable_Blink tickable_Blink_;
+	Tickable_Input tickable_Input_;
 public:
 	Terminal(int bytesBuff = 4096, int msecBlink = 500);
 public:
 	void Initialize() {}
 	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
-	void AttachInput(Input& input);
+	void AttachInput(Input& input, int msecTick);
+	void AttachInput(UART& uart);
+	void TickInput() { if (pInput_) pInput_->OnTick(*this); }
 public:
 	Drawable& GetDrawable() { return *pDrawable_; }
 	const Drawable& GetDrawable() const { return *pDrawable_; }
@@ -144,9 +172,7 @@ public:
 	void DrawCursor();
 	void EraseCursor() { EraseCursor(editor_.GetICharCursor()); };
 	void EraseCursor(int posCursor);
-public:
-	// Virtual functions of Tickable
-	virtual void OnTick() override;
+	void BlinkCursor();
 private:
 	void DrawLatestTextLines();
 	void DrawTextLines(int iLine, const char* pLineTop, int nLines);
