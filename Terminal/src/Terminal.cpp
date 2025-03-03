@@ -298,20 +298,16 @@ void Terminal::DrawTextLine(int iLine, const char* pLineTop)
 	}
 }
 
-void Terminal::EraseTextLines(int iLine, int nLines)
-{
-	int yAdvance = context_.CalcAdvanceY();
-	GetDrawable().DrawRectFill(rectDst_.x, rectDst_.y + yAdvance * iLine, rectDst_.width, yAdvance * nLines, context_.colorBg);
-}
-
 void Terminal::ScrollUp(int nLinesToScroll, bool refreshFlag)
 {
+	int yAdvance = context_.CalcAdvanceY();
 	int nLines = GetRowNum();
 	if (nLinesToScroll > nLines) return;
 	const char* pLineTop = GetLineBuff().GetLineLast();
 	GetLineBuff().PrevLine(&pLineTop, nLines - nLinesToScroll);
 	DrawTextLines(0, pLineTop, nLines - nLinesToScroll);
-	EraseTextLines(nLines - nLinesToScroll, nLinesToScroll);
+	int htLines = yAdvance * (nLines - nLinesToScroll);
+	GetDrawable().DrawRectFill(rectDst_.x, rectDst_.y + htLines, rectDst_.width, rectDst_.height - htLines, context_.colorBg);
 	if (refreshFlag) GetDrawable().Refresh();
 }
 

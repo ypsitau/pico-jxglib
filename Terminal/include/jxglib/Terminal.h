@@ -151,7 +151,6 @@ private:
 	void DrawLatestTextLines();
 	void DrawTextLines(int iLine, const char* pLineTop, int nLines);
 	void DrawTextLine(int iLine, const char* pLineTop);
-	void EraseTextLines(int iLine, int nLines);
 	void ScrollUp(int nLinesToScroll, bool refreshFlag);
 public:
 	Terminal& Edit_Finish(char chEnd = '\0');
