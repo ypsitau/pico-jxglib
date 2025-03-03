@@ -188,7 +188,7 @@ void Terminal::DrawEditorArea()
 	GetDrawable().Refresh();
 }
 
-Point Terminal::CalcCursorPos(int iChar)
+Point Terminal::CalcDrawPos(int iChar, int wdAdvance)
 {
 	Point pt = ptCurrent_;
 	int yAdvance = context_.CalcAdvanceY();
@@ -205,22 +205,30 @@ Point Terminal::CalcCursorPos(int iChar)
 		}
 		pt.x += xAdvance;
 	}
+	if (wdAdvance > 0) {
+		if (pt.x + wdAdvance > rectDst_.x + rectDst_.width) {
+			pt.x = rectDst_.x;
+			pt.y += yAdvance;
+		}
+		pt.x += wdAdvance;
+	}
 	return pt;
 }
 
 void Terminal::DrawCursor()
 {
 	int yAdvance = context_.CalcAdvanceY();
-	GetDrawable()
-		.DrawRectFill(CalcCursorPos(), Size(wdCursor_, yAdvance), colorCursor_)
-		.Refresh();
+	Point pt = CalcDrawPos(editor_.GetICharCursor(), wdCursor_);
+	pt.x -= wdCursor_;
+	GetDrawable().DrawRectFill(pt, Size(wdCursor_, yAdvance), colorCursor_).Refresh();
 }
 
 void Terminal::EraseCursor(int iChar)
 {
 	const char* p = editor_.GetPointer(iChar);
 	uint32_t codeUTF32 = UTF8Decoder::ToUTF32(p);
-	Point pt = CalcCursorPos(iChar);
+	Point pt = CalcDrawPos(iChar, wdCursor_);
+	pt.x -= wdCursor_;
 	int yAdvance = context_.CalcAdvanceY();
 	GetDrawable().DrawRectFill(pt, Size(wdCursor_, yAdvance), GetColorBg());
 	if (codeUTF32) {

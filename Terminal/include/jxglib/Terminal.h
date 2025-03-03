@@ -138,8 +138,7 @@ public:
 public:
 	void AppendChar(char ch, bool suppressFlag);
 	void DrawEditorArea();
-	Point CalcCursorPos() { return CalcCursorPos(editor_.GetICharCursor()); }
-	Point CalcCursorPos(int iChar);
+	Point CalcDrawPos(int iChar, int wdAdvance);
 	void DrawCursor();
 	void EraseCursor() { EraseCursor(editor_.GetICharCursor()); };
 	void EraseCursor(int posCursor);
