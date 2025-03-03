@@ -116,7 +116,7 @@ Printable& Terminal::Locate(int col, int row)
 	return *this;
 }
 
-void Terminal::AppendChar(char ch, bool suppressFlag)
+void Terminal::AppendChar(Point& pt, char ch, bool suppressFlag)
 {
 	uint32_t codeUTF32;
 	if (!decoder_.FeedChar(ch, &codeUTF32)) return;
@@ -127,44 +127,50 @@ void Terminal::AppendChar(char ch, bool suppressFlag)
 	if (codeUTF32 == '\n') {
 		GetLineBuff().PutChar('\n').PutChar('\0');
 		GetLineBuff().MoveLineLastHere().PlaceChar('\0');
-		ptCurrent_.x = rectDst_.x;
+		pt.x = rectDst_.x;
 		if (pEventHandler_) pEventHandler_->OnNewLine(*this);
-		if (ptCurrent_.y + yAdvance * 2 <= rectDst_.y + rectDst_.height) {
+		if (pt.y + yAdvance * 2 <= rectDst_.y + rectDst_.height) {
 			if (!suppressFlag) GetDrawable().Refresh();
-			ptCurrent_.y += yAdvance;
+			pt.y += yAdvance;
 		} else if (!suppressFlag) {
-			ScrollUp();
+			ScrollUp(1, true);
 		}
 	} else if (codeUTF32 == '\r') {
 		GetLineBuff().PutChar('\r').PutChar('\0');
 		GetLineBuff().MoveLineLastHere().PlaceChar('\0');
-		ptCurrent_.x = rectDst_.x;
+		pt.x = rectDst_.x;
 	} else {
-		if (ptCurrent_.x + xAdvance > rectDst_.x + rectDst_.width) {
+		if (pt.x + xAdvance > rectDst_.x + rectDst_.width) {
 			GetLineBuff().PutChar('\0');
 			GetLineBuff().MoveLineLastHere();
-			ptCurrent_.x = rectDst_.x;
+			pt.x = rectDst_.x;
 			if (pEventHandler_) pEventHandler_->OnNewLine(*this);
-			if (ptCurrent_.y + yAdvance * 2 <= rectDst_.y + rectDst_.height) {
-				ptCurrent_.y += yAdvance;
+			if (pt.y + yAdvance * 2 <= rectDst_.y + rectDst_.height) {
+				pt.y += yAdvance;
 			} else if (!suppressFlag) {
-				ScrollUp();
+				ScrollUp(1, false);
 			}
 		}
 		GetLineBuff().Print(decoder_.GetStringOrg());
 		GetLineBuff().PlaceChar('\0');
-		if (!suppressFlag) GetDrawable().DrawChar(ptCurrent_, fontEntry, false, &context_);
-		ptCurrent_.x += xAdvance;
+		if (!suppressFlag) GetDrawable().DrawChar(pt, fontEntry, false, &context_).Refresh();
+		pt.x += xAdvance;
 	}
 }
 
 void Terminal::DrawEditorArea()
 {
-	Point pt = ptCurrent_;;
 	int yAdvance = context_.CalcAdvanceY();
-	UTF8Decoder decoder;
+	Point ptEnd = CalcDrawPos(ptCurrent_, editor_.GetICharEnd(), wdCursor_);
+	int htExceed = ptEnd.y + yAdvance - (rectDst_.y + rectDst_.height);
+	if (htExceed > 0) {
+		ScrollUp(htExceed / yAdvance, false);
+		ptCurrent_.y -= htExceed;
+	}
 	Color colorFgSaved = context_.colorFg;
 	context_.colorFg = colorTextInEdit_;
+	Point pt = ptCurrent_;
+	UTF8Decoder decoder;
 	for (const char* p = editor_.GetPointerBegin(); *p; p++) {
 		uint32_t codeUTF32;
 		if (!decoder.FeedChar(*p, &codeUTF32)) continue;
@@ -188,9 +194,9 @@ void Terminal::DrawEditorArea()
 	GetDrawable().Refresh();
 }
 
-Point Terminal::CalcDrawPos(int iChar, int wdAdvance)
+Point Terminal::CalcDrawPos(const Point& ptBase, int iChar, int wdAdvance)
 {
-	Point pt = ptCurrent_;
+	Point pt = ptBase;
 	int yAdvance = context_.CalcAdvanceY();
 	UTF8Decoder decoder;
 	const char* pEnd = editor_.GetPointer(iChar);
@@ -218,7 +224,7 @@ Point Terminal::CalcDrawPos(int iChar, int wdAdvance)
 void Terminal::DrawCursor()
 {
 	int yAdvance = context_.CalcAdvanceY();
-	Point pt = CalcDrawPos(editor_.GetICharCursor(), wdCursor_);
+	Point pt = CalcDrawPos(ptCurrent_, editor_.GetICharCursor(), wdCursor_);
 	pt.x -= wdCursor_;
 	GetDrawable().DrawRectFill(pt, Size(wdCursor_, yAdvance), colorCursor_).Refresh();
 }
@@ -227,7 +233,7 @@ void Terminal::EraseCursor(int iChar)
 {
 	const char* p = editor_.GetPointer(iChar);
 	uint32_t codeUTF32 = UTF8Decoder::ToUTF32(p);
-	Point pt = CalcDrawPos(iChar, wdCursor_);
+	Point pt = CalcDrawPos(ptCurrent_, iChar, wdCursor_);
 	pt.x -= wdCursor_;
 	int yAdvance = context_.CalcAdvanceY();
 	GetDrawable().DrawRectFill(pt, Size(wdCursor_, yAdvance), GetColorBg());
@@ -298,27 +304,21 @@ void Terminal::EraseTextLines(int iLine, int nLines)
 	GetDrawable().DrawRectFill(rectDst_.x, rectDst_.y + yAdvance * iLine, rectDst_.width, yAdvance * nLines, context_.colorBg);
 }
 
-void Terminal::EraseToEndOfLine()
-{
-	int yAdvance = context_.CalcAdvanceY();
-	GetDrawable().DrawRectFill(ptCurrent_.x, ptCurrent_.y,
-		rectDst_.x + rectDst_.width - ptCurrent_.x, yAdvance, context_.colorBg).Refresh();
-}
-
-void Terminal::ScrollUp()
+void Terminal::ScrollUp(int nLinesToScroll, bool refreshFlag)
 {
 	int nLines = GetRowNum();
+	if (nLinesToScroll > nLines) return;
 	const char* pLineTop = GetLineBuff().GetLineLast();
-	GetLineBuff().PrevLine(&pLineTop, nLines - 1);
-	DrawTextLines(0, pLineTop, nLines - 1);
-	EraseTextLines(nLines - 1, 1);
-	GetDrawable().Refresh();
+	GetLineBuff().PrevLine(&pLineTop, nLines - nLinesToScroll);
+	DrawTextLines(0, pLineTop, nLines - nLinesToScroll);
+	EraseTextLines(nLines - nLinesToScroll, nLinesToScroll);
+	if (refreshFlag) GetDrawable().Refresh();
 }
 
 Terminal& Terminal::Edit_Finish(char chEnd)
 {
-	for (const char* p = GetEditor().GetPointerBegin(); *p; p++) AppendChar(*p, true);
-	if (chEnd) AppendChar(chEnd, true);
+	for (const char* p = GetEditor().GetPointerBegin(); *p; p++) AppendChar(ptCurrent_, *p, true);
+	if (chEnd) AppendChar(ptCurrent_, chEnd, true);
 	GetEditor().Clear();
 	DrawLatestTextLines();
 	return *this;

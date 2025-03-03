@@ -134,11 +134,13 @@ public:
 	virtual Printable& ClearScreen() override;
 	virtual Printable& RefreshScreen() override;
 	virtual Printable& Locate(int col, int row) override;
-	virtual Printable& PutChar(char ch) override { AppendChar(ch, suppressFlag_); return *this; };
+	virtual Printable& PutChar(char ch) override {
+		AppendChar(ptCurrent_, ch, suppressFlag_); return *this; 
+	};
 public:
-	void AppendChar(char ch, bool suppressFlag);
+	void AppendChar(Point& pt, char ch, bool suppressFlag);
 	void DrawEditorArea();
-	Point CalcDrawPos(int iChar, int wdAdvance);
+	Point CalcDrawPos(const Point& ptBase, int iChar, int wdAdvance);
 	void DrawCursor();
 	void EraseCursor() { EraseCursor(editor_.GetICharCursor()); };
 	void EraseCursor(int posCursor);
@@ -150,8 +152,7 @@ private:
 	void DrawTextLines(int iLine, const char* pLineTop, int nLines);
 	void DrawTextLine(int iLine, const char* pLineTop);
 	void EraseTextLines(int iLine, int nLines);
-	void EraseToEndOfLine();
-	void ScrollUp();
+	void ScrollUp(int nLinesToScroll, bool refreshFlag);
 public:
 	Terminal& Edit_Finish(char chEnd = '\0');
 	Terminal& Edit_InsertChar(int ch);
