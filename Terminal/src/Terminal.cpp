@@ -263,10 +263,13 @@ void Terminal::EraseCursor(int iChar)
 	GetDrawable().DrawRectFill(pt, Size(wdCursor_, yAdvance), GetColorBg());
 	if (codeUTF32) {
 		const FontEntry& fontEntry = GetFont().GetFontEntry(codeUTF32);
-		Color colorFgSaved = context_.colorFg;
-		context_.colorFg = colorTextInEdit_;
-		GetDrawable().DrawChar(pt, fontEntry, false, &context_);
-		context_.colorFg = colorFgSaved;
+		int xAdvance = context_.CalcAdvanceX(fontEntry);
+		if (pt.x + xAdvance <= rectDst_.x + rectDst_.width) {
+			Color colorFgSaved = context_.colorFg;
+			context_.colorFg = colorTextInEdit_;
+			GetDrawable().DrawChar(pt, fontEntry, false, &context_);
+			context_.colorFg = colorFgSaved;
+		}
 	}
 	GetDrawable().Refresh();
 }
