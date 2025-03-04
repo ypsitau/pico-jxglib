@@ -30,6 +30,7 @@ public:
 	public:
 		Editor();
 	public:
+		bool IsEditing() const { return buff_[0] != '\0'; }
 		int GetICharCursor() const { return iCharCursor_; }
 		int GetICharEnd() const { return ::strlen(buff_); }
 		char* GetPointer(int iChar) { return buff_ + iChar; }
@@ -143,8 +144,8 @@ public:
 	}
 public:
 	int GetLineIndex() const { return nLinesWhole_; }
-	int GetColNum() const;
-	int GetRowNum() const;
+	int CalcApproxNColsOnDisplay() const;
+	int CalcNLinesOnDisplay() const;
 	LineBuff& GetLineBuff() { return lineBuff_; }
 	const LineBuff& GetLineBuff() const { return lineBuff_; }
 	Reader CreateReader() const { return GetLineBuff().CreateReader(); }
@@ -169,12 +170,14 @@ public:
 	void AppendChar(Point& pt, char ch, bool suppressFlag);
 	void DrawEditorArea();
 	Point CalcDrawPos(const Point& ptBase, int iChar, int wdAdvance);
+public:
+	void SetCursorBlinkSpeed(int msecBlink) { tickable_Blink_.SetTick(msecBlink); }
 	void DrawCursor();
 	void EraseCursor() { EraseCursor(editor_.GetICharCursor()); };
 	void EraseCursor(int posCursor);
 	void BlinkCursor();
 private:
-	void DrawLatestTextLines();
+	void DrawLatestTextLines(bool refreshFlag);
 	void DrawTextLines(int iLine, const char* pLineTop, int nLines);
 	void DrawTextLine(int iLine, const char* pLineTop);
 	void ScrollUp(int nLinesToScroll, bool refreshFlag);

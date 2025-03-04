@@ -39,8 +39,8 @@ int main()
 	terminal.AttachOutput(display);
 	terminal.AttachInput(UART::Default);
 	terminal.SetFont(fontSet).SetSpacingRatio(1., 1.2).ClearScreen();
-	//terminal.SetFont(Font::naga10).SetSpacingRatio(1., 1.2).ClearScreen();
-	terminal.Dump.Cols(8)(reinterpret_cast<const void*>(0x10000000), 128);
+	terminal.Dump.Cols(8)(reinterpret_cast<const void*>(0x10000000), 8 * 20);
+	//terminal.SetCursorBlinkSpeed(10);
 	terminal.ShowCursor();
 	for (;;) {
 		Tickable::Sleep(50);

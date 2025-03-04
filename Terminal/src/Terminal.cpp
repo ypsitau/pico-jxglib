@@ -41,13 +41,13 @@ void Terminal::AttachInput(UART& uart)
 	AttachInput(inputUART_, 50);
 }
 
-int Terminal::GetColNum() const
+int Terminal::CalcApproxNColsOnDisplay() const
 {
 	const FontEntry& fontEntry = GetFont().GetFontEntry('M');
 	return rectDst_.width / fontEntry.xAdvance;
 }
 
-int Terminal::GetRowNum() const
+int Terminal::CalcNLinesOnDisplay() const
 {
 	int yAdvance = context_.CalcAdvanceY();
 	return rectDst_.height / yAdvance;
@@ -55,7 +55,7 @@ int Terminal::GetRowNum() const
 
 Terminal& Terminal::BeginRollBack()
 {
-	int nLines = GetRowNum();
+	int nLines = CalcNLinesOnDisplay();
 	const char* pLineTop = GetLineBuff().GetLineLast();
 	GetLineBuff().PrevLine(&pLineTop, nLines - 1);
 	GetLineBuff().SetLineMark(pLineTop);
@@ -65,16 +65,21 @@ Terminal& Terminal::BeginRollBack()
 
 Terminal& Terminal::EndRollBack()
 {
-	DrawLatestTextLines();	
+	DrawLatestTextLines(true);
 	GetLineBuff().RemoveLineMark();
 	return *this;
 }
 
 Terminal& Terminal::RollUp()
 {
+	if (editor_.IsEditing()) {
+		editor_.Clear();
+		DrawLatestTextLines(true);
+		return *this;
+	}
 	if (!IsRollingBack()) BeginRollBack();	
 	if (GetLineBuff().MoveLineMarkUp()) {
-		DrawTextLines(0, GetLineBuff().GetLineMark(), GetRowNum());
+		DrawTextLines(0, GetLineBuff().GetLineMark(), CalcNLinesOnDisplay());
 		GetDrawable().Refresh();
 	}
 	return *this;
@@ -82,9 +87,18 @@ Terminal& Terminal::RollUp()
 
 Terminal& Terminal::RollDown()
 {
+	if (editor_.IsEditing()) {
+		editor_.Clear();
+		DrawLatestTextLines(true);
+		return *this;
+	}
 	if (!IsRollingBack()) BeginRollBack();	
-	if (GetLineBuff().MoveLineMarkDown(pLineStop_)) {
-		DrawTextLines(0, GetLineBuff().GetLineMark(), GetRowNum());
+	if (!GetLineBuff().MoveLineMarkDown(pLineStop_)) {
+		// nothing to do
+	} else if (GetLineBuff().GetLineMark() == pLineStop_) {
+		EndRollBack();
+	} else {
+		DrawTextLines(0, GetLineBuff().GetLineMark(), CalcNLinesOnDisplay());
 		GetDrawable().Refresh();
 	}
 	return *this;
@@ -93,7 +107,7 @@ Terminal& Terminal::RollDown()
 Terminal& Terminal::Suppress(bool suppressFlag)
 {
 	suppressFlag_ = suppressFlag;
-	if (!suppressFlag_) DrawLatestTextLines();
+	if (!suppressFlag_) DrawLatestTextLines(true);
 	return *this;
 }
 
@@ -131,9 +145,9 @@ void Terminal::AppendChar(Point& pt, char ch, bool suppressFlag)
 	uint32_t codeUTF32;
 	if (!decoder_.FeedChar(ch, &codeUTF32)) return;
 	if (!suppressFlag && IsRollingBack()) EndRollBack();
-	int yAdvance = context_.CalcAdvanceY();
 	const FontEntry& fontEntry = GetFont().GetFontEntry(codeUTF32);
 	int xAdvance = context_.CalcAdvanceX(fontEntry);
+	int yAdvance = context_.CalcAdvanceY();
 	if (codeUTF32 == '\n') {
 		GetLineBuff().PutChar('\n').PutChar('\0');
 		GetLineBuff().MoveLineLastHere().PlaceChar('\0');
@@ -155,7 +169,7 @@ void Terminal::AppendChar(Point& pt, char ch, bool suppressFlag)
 			GetLineBuff().MoveLineLastHere();
 			pt.x = rectDst_.x;
 			if (pEventHandler_) pEventHandler_->OnNewLine(*this);
-			if (pt.y + yAdvance * 2 <= rectDst_.y + rectDst_.height) {
+			if (pt.y + yAdvance < rectDst_.y + rectDst_.height) {
 				pt.y += yAdvance;
 			} else if (!suppressFlag) {
 				ScrollUp(1, false);
@@ -163,7 +177,7 @@ void Terminal::AppendChar(Point& pt, char ch, bool suppressFlag)
 		}
 		GetLineBuff().Print(decoder_.GetStringOrg());
 		GetLineBuff().PlaceChar('\0');
-		if (!suppressFlag) GetDrawable().DrawChar(pt, fontEntry, false, &context_).Refresh();
+		if (!suppressFlag) GetDrawable().DrawChar(pt, fontEntry, false, &context_);
 		pt.x += xAdvance;
 	}
 }
@@ -172,10 +186,10 @@ void Terminal::DrawEditorArea()
 {
 	int yAdvance = context_.CalcAdvanceY();
 	Point ptEnd = CalcDrawPos(ptCurrent_, editor_.GetICharEnd(), wdCursor_);
-	int htExceed = ptEnd.y + yAdvance - (rectDst_.y + rectDst_.height);
+	int htExceed = ptEnd.y + yAdvance - (rectDst_.y + rectDst_.height / yAdvance * yAdvance);
 	if (htExceed > 0) {
-		ScrollUp(htExceed / yAdvance, false);
 		ptCurrent_.y -= htExceed;
+		DrawLatestTextLines(false);
 	}
 	Color colorFgSaved = context_.colorFg;
 	context_.colorFg = colorTextInEdit_;
@@ -265,9 +279,11 @@ void Terminal::BlinkCursor()
 	}
 }
 
-void Terminal::DrawLatestTextLines()
+void Terminal::DrawLatestTextLines(bool refreshFlag)
 {
-	int nLines = GetRowNum();
+	int yAdvance = context_.CalcAdvanceY();
+	int nLines = ptCurrent_.y / yAdvance + 1;
+	//int nLines = CalcNLinesOnDisplay();
 	const char* pLineTop = GetLineBuff().GetLineLast();
 	GetLineBuff().PrevLine(&pLineTop, nLines - 1);
 	DrawTextLines(0, pLineTop, nLines);
@@ -311,7 +327,7 @@ void Terminal::DrawTextLine(int iLine, const char* pLineTop)
 void Terminal::ScrollUp(int nLinesToScroll, bool refreshFlag)
 {
 	int yAdvance = context_.CalcAdvanceY();
-	int nLines = GetRowNum();
+	int nLines = CalcNLinesOnDisplay();
 	if (nLinesToScroll > nLines) return;
 	const char* pLineTop = GetLineBuff().GetLineLast();
 	GetLineBuff().PrevLine(&pLineTop, nLines - nLinesToScroll);
@@ -326,12 +342,13 @@ Terminal& Terminal::Edit_Finish(char chEnd)
 	for (const char* p = GetEditor().GetPointerBegin(); *p; p++) AppendChar(ptCurrent_, *p, true);
 	if (chEnd) AppendChar(ptCurrent_, chEnd, true);
 	GetEditor().Clear();
-	DrawLatestTextLines();
+	DrawLatestTextLines(true);
 	return *this;
 }
 
 Terminal& Terminal::Edit_InsertChar(int ch)
 {
+	if (IsRollingBack()) EndRollBack();
 	int iChar = GetEditor().GetICharCursor();
 	if (GetEditor().InsertChar(ch)) {
 		EraseCursor(iChar);
@@ -526,17 +543,21 @@ void Terminal::InputUART::OnTick(Terminal& terminal)
 		case VK_BACK:	terminal.Edit_Back();			break;
 		case VK_LEFT:	terminal.Edit_MoveBackward();	break;
 		case VK_RIGHT:	terminal.Edit_MoveForward();	break;
+		case VK_PRIOR:	terminal.RollUp();				break;
+		case VK_NEXT:	terminal.RollDown();			break;
 		default: break;
 		}
 	} else if (keyData < 0x20) {
-		switch (keyData) {
-		case 'A' - '@': terminal.Edit_MoveHome();		break;
-		case 'B' - '@': terminal.Edit_MoveBackward();	break;
-		case 'C' - '@': break;
-		case 'D' - '@': terminal.Edit_Delete();			break;
-		case 'E' - '@': terminal.Edit_MoveEnd();		break;
-		case 'F' - '@': terminal.Edit_MoveForward();	break;
-		case 'K' - '@': terminal.Edit_DeleteToEnd();	break;
+		switch (keyData + '@') {
+		case 'A': terminal.Edit_MoveHome();		break;
+		case 'B': terminal.Edit_MoveBackward();	break;
+		case 'C': break;
+		case 'D': terminal.Edit_Delete();		break;
+		case 'E': terminal.Edit_MoveEnd();		break;
+		case 'F': terminal.Edit_MoveForward();	break;
+		case 'K': terminal.Edit_DeleteToEnd();	break;
+		case 'N': break;
+		case 'P': break;
 		default: break;
 		}
 	} else {
