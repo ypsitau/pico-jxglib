@@ -66,7 +66,7 @@ Terminal& Terminal::BeginRollBack()
 Terminal& Terminal::EndRollBack()
 {
 	DrawLatestTextLines(true);
-	GetLineBuff().RemoveLineMark();
+	GetLineBuff().RemoveLineMark();	// end roll-back
 	return *this;
 }
 
@@ -93,13 +93,12 @@ Terminal& Terminal::RollDown()
 		return *this;
 	}
 	if (!IsRollingBack()) BeginRollBack();	
-	if (!GetLineBuff().MoveLineMarkDown(pLineStop_)) {
-		// nothing to do
-	} else if (GetLineBuff().GetLineMark() == pLineStop_) {
-		EndRollBack();
-	} else {
+	if (GetLineBuff().MoveLineMarkDown(pLineStop_)) {
 		DrawTextLines(0, GetLineBuff().GetLineMark(), CalcNLinesOnDisplay());
 		GetDrawable().Refresh();
+		if (GetLineBuff().GetLineMark() == pLineStop_) {
+			GetLineBuff().RemoveLineMark();	// end roll-back
+		}
 	}
 	return *this;
 }
