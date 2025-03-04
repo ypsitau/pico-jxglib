@@ -140,11 +140,11 @@ Printable& Terminal::Locate(int col, int row)
 	return *this;
 }
 
-void Terminal::AppendChar(Point& pt, char ch, bool suppressFlag)
+void Terminal::AppendChar(Point& pt, char ch, bool drawFlag)
 {
 	uint32_t codeUTF32;
 	if (!decoder_.FeedChar(ch, &codeUTF32)) return;
-	if (!suppressFlag && IsRollingBack()) EndRollBack();
+	if (drawFlag && IsRollingBack()) EndRollBack();
 	const FontEntry& fontEntry = GetFont().GetFontEntry(codeUTF32);
 	int xAdvance = context_.CalcAdvanceX(fontEntry);
 	int yAdvance = context_.CalcAdvanceY();
@@ -154,9 +154,9 @@ void Terminal::AppendChar(Point& pt, char ch, bool suppressFlag)
 		pt.x = rectDst_.x;
 		if (pEventHandler_) pEventHandler_->OnNewLine(*this);
 		if (pt.y + yAdvance * 2 <= rectDst_.y + rectDst_.height) {
-			if (!suppressFlag) GetDrawable().Refresh();
+			if (drawFlag) GetDrawable().Refresh();
 			pt.y += yAdvance;
-		} else if (!suppressFlag) {
+		} else if (drawFlag) {
 			ScrollUp(1, true);
 		}
 	} else if (codeUTF32 == '\r') {
@@ -169,15 +169,15 @@ void Terminal::AppendChar(Point& pt, char ch, bool suppressFlag)
 			GetLineBuff().MoveLineLastHere();
 			pt.x = rectDst_.x;
 			if (pEventHandler_) pEventHandler_->OnNewLine(*this);
-			if (pt.y + yAdvance < rectDst_.y + rectDst_.height) {
+			if (pt.y + yAdvance * 2 <= rectDst_.y + rectDst_.height) {
 				pt.y += yAdvance;
-			} else if (!suppressFlag) {
-				ScrollUp(1, false);
+			} else if (drawFlag) {
+				ScrollUp(1, true);
 			}
 		}
 		GetLineBuff().Print(decoder_.GetStringOrg());
 		GetLineBuff().PlaceChar('\0');
-		if (!suppressFlag) GetDrawable().DrawChar(pt, fontEntry, false, &context_);
+		if (drawFlag) GetDrawable().DrawChar(pt, fontEntry, false, &context_);
 		pt.x += xAdvance;
 	}
 }
@@ -339,8 +339,8 @@ void Terminal::ScrollUp(int nLinesToScroll, bool refreshFlag)
 
 Terminal& Terminal::Edit_Finish(char chEnd)
 {
-	for (const char* p = GetEditor().GetPointerBegin(); *p; p++) AppendChar(ptCurrent_, *p, true);
-	if (chEnd) AppendChar(ptCurrent_, chEnd, true);
+	for (const char* p = GetEditor().GetPointerBegin(); *p; p++) AppendChar(ptCurrent_, *p, false);
+	if (chEnd) AppendChar(ptCurrent_, chEnd, false);
 	GetEditor().Clear();
 	DrawLatestTextLines(true);
 	return *this;

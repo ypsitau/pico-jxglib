@@ -164,10 +164,10 @@ public:
 	virtual Printable& RefreshScreen() override;
 	virtual Printable& Locate(int col, int row) override;
 	virtual Printable& PutChar(char ch) override {
-		AppendChar(ptCurrent_, ch, suppressFlag_); return *this; 
+		AppendChar(ptCurrent_, ch, !suppressFlag_); return *this; 
 	};
 public:
-	void AppendChar(Point& pt, char ch, bool suppressFlag);
+	void AppendChar(Point& pt, char ch, bool drawFlag);
 	void DrawEditorArea();
 	Point CalcDrawPos(const Point& ptBase, int iChar, int wdAdvance);
 public:
