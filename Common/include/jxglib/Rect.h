@@ -25,8 +25,10 @@ public:
 	bool IsEmpty() const { return width == 0 || height == 0; }
 	int GetLeft() const { return x; }
 	int GetRight() const { return x + width - 1; }
+	int GetRightExceed() const { return x + width; }
 	int GetTop() const { return y; }
 	int GetBottom() const { return y + height - 1; }
+	int GetBottomExceed() const { return y + height; }
 	int GetCenterH() const { return x + width / 2; }
 	int GetCenterV() const { return y + height / 2; }
 	Point GetPointN() const { return Point(x + width / 2, y); }

@@ -153,7 +153,7 @@ void Terminal::AppendChar(Point& pt, char ch, bool drawFlag)
 		GetLineBuff().MoveLineLastHere().PlaceChar('\0');
 		pt.x = rectDst_.x;
 		if (pEventHandler_) pEventHandler_->OnNewLine(*this);
-		if (pt.y + yAdvance * 2 <= rectDst_.y + rectDst_.height) {
+		if (pt.y + yAdvance * 2 <= rectDst_.GetBottomExceed()) {
 			if (drawFlag) GetDrawable().Refresh();
 			pt.y += yAdvance;
 		} else if (drawFlag) {
@@ -164,12 +164,12 @@ void Terminal::AppendChar(Point& pt, char ch, bool drawFlag)
 		GetLineBuff().MoveLineLastHere().PlaceChar('\0');
 		pt.x = rectDst_.x;
 	} else {
-		if (pt.x + xAdvance > rectDst_.x + rectDst_.width) {
+		if (pt.x + xAdvance > rectDst_.GetRightExceed()) {
 			GetLineBuff().PutChar('\0');
 			GetLineBuff().MoveLineLastHere();
 			pt.x = rectDst_.x;
 			if (pEventHandler_) pEventHandler_->OnNewLine(*this);
-			if (pt.y + yAdvance * 2 <= rectDst_.y + rectDst_.height) {
+			if (pt.y + yAdvance * 2 <= rectDst_.GetBottomExceed()) {
 				pt.y += yAdvance;
 			} else if (drawFlag) {
 				ScrollUp(1, true);
@@ -186,9 +186,9 @@ void Terminal::DrawEditorArea()
 {
 	int yAdvance = context_.CalcAdvanceY();
 	Point ptEnd = CalcDrawPos(ptCurrent_, editor_.GetICharEnd(), wdCursor_);
-	int htExceed = ptEnd.y + yAdvance - (rectDst_.y + rectDst_.height / yAdvance * yAdvance);
+	int htExceed = ptEnd.y + yAdvance - (rectDst_.GetBottomExceed() / yAdvance * yAdvance);
 	if (htExceed > 0) {
-		ptCurrent_.y -= htExceed;
+		if (ptCurrent_.y - htExceed >= rectDst_.y) ptCurrent_.y -= htExceed;
 		DrawLatestTextLines(false);
 	}
 	Color colorFgSaved = context_.colorFg;
@@ -200,21 +200,25 @@ void Terminal::DrawEditorArea()
 		if (!decoder.FeedChar(*p, &codeUTF32)) continue;
 		const FontEntry& fontEntry = GetFont().GetFontEntry(codeUTF32);
 		int xAdvance = context_.CalcAdvanceX(fontEntry);
-		if (pt.x + xAdvance > rectDst_.x + rectDst_.width) {
+		if (pt.x + xAdvance > rectDst_.GetRightExceed()) {
 			pt.x = rectDst_.x;
-			if (pt.y + yAdvance * 2 <= rectDst_.y + rectDst_.height) {
+			if (pt.y + yAdvance * 2 <= rectDst_.GetBottomExceed()) {
 				pt.y += yAdvance;
 			}
 		}
-		GetDrawable().DrawChar(pt, fontEntry, false, &context_);
+		if (pt.y + yAdvance <= rectDst_.GetBottomExceed()) {
+			GetDrawable().DrawChar(pt, fontEntry, false, &context_);
+		}
 		pt.x += xAdvance;
 	}
 	context_.colorFg = colorFgSaved;
-	if (pt.x < rectDst_.x + rectDst_.width) {
-		GetDrawable().DrawRectFill(pt.x, pt.y, rectDst_.x + rectDst_.width - pt.x, yAdvance, context_.colorBg);
+	if (pt.x < rectDst_.GetRightExceed() && pt.y + yAdvance <= rectDst_.GetBottomExceed()) {
+		GetDrawable().DrawRectFill(pt.x, pt.y, rectDst_.GetRightExceed() - pt.x, yAdvance, context_.colorBg);
 	}
 	pt.y += yAdvance;
-	GetDrawable().DrawRectFill(rectDst_.x, pt.y, rectDst_.width, rectDst_.height - pt.y + rectDst_.y, context_.colorBg);
+	if (pt.y < rectDst_.GetBottomExceed()) {
+		GetDrawable().DrawRectFill(rectDst_.x, pt.y, rectDst_.width, rectDst_.GetBottomExceed() - pt.y, context_.colorBg);
+	}
 	GetDrawable().Refresh();
 }
 
@@ -229,14 +233,14 @@ Point Terminal::CalcDrawPos(const Point& ptBase, int iChar, int wdAdvance)
 		if (!decoder.FeedChar(*p, &codeUTF32)) continue;
 		const FontEntry& fontEntry = GetFont().GetFontEntry(codeUTF32);
 		int xAdvance = context_.CalcAdvanceX(fontEntry);
-		if (pt.x + xAdvance > rectDst_.x + rectDst_.width) {
+		if (pt.x + xAdvance > rectDst_.GetRightExceed()) {
 			pt.x = rectDst_.x;
 			pt.y += yAdvance;
 		}
 		pt.x += xAdvance;
 	}
 	if (wdAdvance > 0) {
-		if (pt.x + wdAdvance > rectDst_.x + rectDst_.width) {
+		if (pt.x + wdAdvance > rectDst_.GetRightExceed()) {
 			pt.x = rectDst_.x;
 			pt.y += yAdvance;
 		}
@@ -249,8 +253,10 @@ void Terminal::DrawCursor()
 {
 	int yAdvance = context_.CalcAdvanceY();
 	Point pt = CalcDrawPos(ptCurrent_, editor_.GetICharCursor(), wdCursor_);
-	pt.x -= wdCursor_;
-	GetDrawable().DrawRectFill(pt, Size(wdCursor_, yAdvance), colorCursor_).Refresh();
+	if (pt.y + yAdvance <= rectDst_.GetBottomExceed()) {
+		pt.x -= wdCursor_;
+		GetDrawable().DrawRectFill(pt, Size(wdCursor_, yAdvance), colorCursor_).Refresh();
+	}
 }
 
 void Terminal::EraseCursor(int iChar)
@@ -260,18 +266,20 @@ void Terminal::EraseCursor(int iChar)
 	Point pt = CalcDrawPos(ptCurrent_, iChar, wdCursor_);
 	pt.x -= wdCursor_;
 	int yAdvance = context_.CalcAdvanceY();
-	GetDrawable().DrawRectFill(pt, Size(wdCursor_, yAdvance), GetColorBg());
-	if (codeUTF32) {
-		const FontEntry& fontEntry = GetFont().GetFontEntry(codeUTF32);
-		int xAdvance = context_.CalcAdvanceX(fontEntry);
-		if (pt.x + xAdvance <= rectDst_.x + rectDst_.width) {
-			Color colorFgSaved = context_.colorFg;
-			context_.colorFg = colorTextInEdit_;
-			GetDrawable().DrawChar(pt, fontEntry, false, &context_);
-			context_.colorFg = colorFgSaved;
+	if (pt.y + yAdvance <= rectDst_.GetBottomExceed()) {
+		GetDrawable().DrawRectFill(pt, Size(wdCursor_, yAdvance), GetColorBg());
+		if (codeUTF32) {
+			const FontEntry& fontEntry = GetFont().GetFontEntry(codeUTF32);
+			int xAdvance = context_.CalcAdvanceX(fontEntry);
+			if (pt.x + xAdvance <= rectDst_.GetRightExceed()) {
+				Color colorFgSaved = context_.colorFg;
+				context_.colorFg = colorTextInEdit_;
+				GetDrawable().DrawChar(pt, fontEntry, false, &context_);
+				context_.colorFg = colorFgSaved;
+			}
 		}
+		GetDrawable().Refresh();
 	}
-	GetDrawable().Refresh();
 }
 
 void Terminal::BlinkCursor()
@@ -321,8 +329,8 @@ void Terminal::DrawTextLine(int iLine, const char* pLineTop)
 			x += xAdvance;
 		}
 	}
-	if (x < rectDst_.x + rectDst_.width) {
-		GetDrawable().DrawRectFill(x, y, rectDst_.x + rectDst_.width - x, yAdvance, context_.colorBg);
+	if (x < rectDst_.GetRightExceed()) {
+		GetDrawable().DrawRectFill(x, y, rectDst_.GetRightExceed() - x, yAdvance, context_.colorBg);
 	}
 }
 
