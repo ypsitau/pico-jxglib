@@ -282,8 +282,7 @@ void Terminal::BlinkCursor()
 void Terminal::DrawLatestTextLines(bool refreshFlag)
 {
 	int yAdvance = context_.CalcAdvanceY();
-	int nLines = ptCurrent_.y / yAdvance + 1;
-	//int nLines = CalcNLinesOnDisplay();
+	int nLines = ptCurrent_.y / yAdvance;
 	const char* pLineTop = GetLineBuff().GetLineLast();
 	GetLineBuff().PrevLine(&pLineTop, nLines - 1);
 	DrawTextLines(0, pLineTop, nLines);
