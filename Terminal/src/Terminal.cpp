@@ -11,7 +11,7 @@ namespace jxglib {
 Terminal::Terminal(int bytesBuff, int msecBlink) :
 	pDrawable_{nullptr}, nLinesWhole_{0}, lineBuff_(bytesBuff), pEventHandler_{nullptr}, pLineStop_{nullptr},
 	suppressFlag_{false}, editingFlag_{false}, showCursorFlag_{false}, appearCursorFlag_{false}, wdCursor_{2},
-	colorTextInEdit_{128, 128, 255}, colorCursor_{128, 128, 255}, pInput_{nullptr},
+	colorTextInEdit_{255, 255, 255}, colorCursor_{255, 255, 255}, pInput_{nullptr},
 	tickable_Blink_(*this, msecBlink), tickable_Input_(*this)
 {
 }
@@ -140,18 +140,15 @@ Printable& Terminal::Locate(int col, int row)
 	return *this;
 }
 
-bool Terminal::ReadLine(char* buff, int bytes)
+char* Terminal::ReadLine(const char* prompt)
 {
+	Print(prompt);
 	Edit_Begin();
 	for (;;) {
 		Tickable::Tick();
 		if (!editingFlag_) break;
 	}
-	const char* src = GetEditor().GetPointerBegin();
-	int bytesToCopy = ChooseMin(static_cast<int>(::strlen(src)), bytes - 1);
-	::memcpy(buff, src, bytesToCopy);
-	buff[bytesToCopy] = '\0';
-	return true;
+	return GetEditor().GetPointerBegin();
 }
 
 void Terminal::AppendChar(Point& pt, char ch, bool drawFlag)

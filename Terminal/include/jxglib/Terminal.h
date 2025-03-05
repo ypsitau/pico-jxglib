@@ -131,6 +131,8 @@ public:
 public:
 	Terminal& SetColor(const Color& color) { context_.SetColor(color); return *this; }
 	const Color& GetColor() const { return context_.GetColor(); }
+	Terminal& SetColorInEdit(const Color& color) { colorTextInEdit_ = color; return *this; }
+	Terminal& SetColorCursor(const Color& color) { colorCursor_ = color; return *this; }
 	Terminal& SetColorBg(const Color& color) { context_.SetColorBg(color); return *this; }
 	const Color& GetColorBg() const { return context_.GetColorBg(); }
 	Terminal& SetFont(const FontSet& fontSet, int fontScale = 1) { context_.SetFont(fontSet, fontScale); return *this; }
@@ -170,7 +172,7 @@ public:
 		AppendChar(ptCurrent_, ch, !suppressFlag_); return *this; 
 	};
 public:
-	bool ReadLine(char* buff, int bytes);
+	char* ReadLine(const char* prompt);
 public:
 	void AppendChar(Point& pt, char ch, bool drawFlag);
 	void AppendString(Point& pt, const char* str, bool drawFlag);

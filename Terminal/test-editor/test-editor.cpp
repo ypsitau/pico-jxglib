@@ -44,9 +44,8 @@ int main()
 	terminal.SetFont(fontSet).SetColorBg(colorBg).SetSpacingRatio(1., 1).ClearScreen();
 	terminal.Dump.Cols(12)(reinterpret_cast<const void*>(0x10000000), 8 * 20);
 	//terminal.SetCursorBlinkSpeed(10);
-	char buff[128];
 	for (;;) {
-		terminal.ReadLine(buff, sizeof(buff));
-		::printf("%s\n", buff);
+		char* str = terminal.ReadLine("> ");
+		::printf("%s\n", str);
 	}
 }
