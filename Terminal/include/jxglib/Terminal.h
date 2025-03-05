@@ -18,6 +18,8 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 struct Terminal : public Printable {
 public:
+	static const int EditBuffSize = 128;
+public:
 	class EventHandler {
 	public:
 		virtual void OnNewLine(Terminal& terminal) = 0;
@@ -25,7 +27,7 @@ public:
 	class Editor {
 	private:
 		int iCharCursor_;
-		char buff_[128];
+		char buff_[EditBuffSize];
 		UTF8Decoder decoder_;
 	public:
 		Editor();
@@ -102,6 +104,7 @@ private:
 	EventHandler* pEventHandler_;
 	const char* pLineStop_;
 	bool suppressFlag_;
+	bool editingFlag_;
 	bool showCursorFlag_;
 	bool appearCursorFlag_;
 	Color colorTextInEdit_;
@@ -167,7 +170,10 @@ public:
 		AppendChar(ptCurrent_, ch, !suppressFlag_); return *this; 
 	};
 public:
+	bool ReadLine(char* buff, int bytes);
+public:
 	void AppendChar(Point& pt, char ch, bool drawFlag);
+	void AppendString(Point& pt, const char* str, bool drawFlag);
 	void DrawEditorArea();
 	Point CalcDrawPos(const Point& ptBase, int iChar, int wdAdvance);
 public:
@@ -182,6 +188,7 @@ private:
 	void DrawTextLine(int iLine, const char* pLineTop);
 	void ScrollUp(int nLinesToScroll, bool refreshFlag);
 public:
+	Terminal& Edit_Begin(bool showCursorFlag = true);
 	Terminal& Edit_Finish(char chEnd = '\0');
 	Terminal& Edit_InsertChar(int ch);
 	Terminal& Edit_Delete();

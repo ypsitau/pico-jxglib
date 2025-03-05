@@ -10,7 +10,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 Terminal::Terminal(int bytesBuff, int msecBlink) :
 	pDrawable_{nullptr}, nLinesWhole_{0}, lineBuff_(bytesBuff), pEventHandler_{nullptr}, pLineStop_{nullptr},
-	suppressFlag_{false}, showCursorFlag_{false}, appearCursorFlag_{false}, wdCursor_{2},
+	suppressFlag_{false}, editingFlag_{false}, showCursorFlag_{false}, appearCursorFlag_{false}, wdCursor_{2},
 	colorTextInEdit_{128, 128, 255}, colorCursor_{128, 128, 255}, pInput_{nullptr},
 	tickable_Blink_(*this, msecBlink), tickable_Input_(*this)
 {
@@ -140,6 +140,20 @@ Printable& Terminal::Locate(int col, int row)
 	return *this;
 }
 
+bool Terminal::ReadLine(char* buff, int bytes)
+{
+	Edit_Begin();
+	for (;;) {
+		Tickable::Tick();
+		if (!editingFlag_) break;
+	}
+	const char* src = GetEditor().GetPointerBegin();
+	int bytesToCopy = ChooseMin(static_cast<int>(::strlen(src)), bytes - 1);
+	::memcpy(buff, src, bytesToCopy);
+	buff[bytesToCopy] = '\0';
+	return true;
+}
+
 void Terminal::AppendChar(Point& pt, char ch, bool drawFlag)
 {
 	uint32_t codeUTF32;
@@ -180,6 +194,11 @@ void Terminal::AppendChar(Point& pt, char ch, bool drawFlag)
 		if (drawFlag) GetDrawable().DrawChar(pt, fontEntry, false, &context_);
 		pt.x += xAdvance;
 	}
+}
+
+void Terminal::AppendString(Point& pt, const char* str, bool drawFlag)
+{
+	for (const char* p = str; *p; p++) AppendChar(pt, *p, drawFlag);
 }
 
 void Terminal::DrawEditorArea()
@@ -347,17 +366,28 @@ void Terminal::ScrollUp(int nLinesToScroll, bool refreshFlag)
 	if (refreshFlag) GetDrawable().Refresh();
 }
 
+Terminal& Terminal::Edit_Begin(bool showCursorFlag)
+{
+	ShowCursor(showCursorFlag);
+	editingFlag_ = true;
+	GetEditor().Clear();
+	return *this;
+}
+
 Terminal& Terminal::Edit_Finish(char chEnd)
 {
-	for (const char* p = GetEditor().GetPointerBegin(); *p; p++) AppendChar(ptCurrent_, *p, false);
+	if (!editingFlag_) return *this;
+	AppendString(ptCurrent_, GetEditor().GetPointerBegin(), false);
 	if (chEnd) AppendChar(ptCurrent_, chEnd, false);
-	GetEditor().Clear();
 	DrawLatestTextLines(true);
+	ShowCursor(false);
+	editingFlag_ = false;
 	return *this;
 }
 
 Terminal& Terminal::Edit_InsertChar(int ch)
 {
+	if (!editingFlag_) return *this;
 	if (IsRollingBack()) EndRollBack();
 	int iChar = GetEditor().GetICharCursor();
 	if (GetEditor().InsertChar(ch)) {
@@ -375,6 +405,7 @@ Terminal& Terminal::Edit_InsertChar(int ch)
 
 Terminal& Terminal::Edit_Delete()
 {
+	if (!editingFlag_) return *this;
 	int iChar = GetEditor().GetICharCursor();
 	if (GetEditor().DeleteChar()) {
 		EraseCursor(iChar);
@@ -386,6 +417,7 @@ Terminal& Terminal::Edit_Delete()
 
 Terminal& Terminal::Edit_Back()
 {
+	if (!editingFlag_) return *this;
 	int iChar = GetEditor().GetICharCursor();
 	if (GetEditor().MoveBackward() && GetEditor().DeleteChar()) {
 		EraseCursor(iChar);
@@ -397,6 +429,7 @@ Terminal& Terminal::Edit_Back()
 
 Terminal& Terminal::Edit_MoveForward()
 {
+	if (!editingFlag_) return *this;
 	int iChar = GetEditor().GetICharCursor();
 	if (GetEditor().MoveForward()) {
 		EraseCursor(iChar);
@@ -407,6 +440,7 @@ Terminal& Terminal::Edit_MoveForward()
 
 Terminal& Terminal::Edit_MoveBackward()
 {
+	if (!editingFlag_) return *this;
 	int iChar = GetEditor().GetICharCursor();
 	if (GetEditor().MoveBackward()) {
 		EraseCursor(iChar);
@@ -417,6 +451,7 @@ Terminal& Terminal::Edit_MoveBackward()
 
 Terminal& Terminal::Edit_MoveHome()
 {
+	if (!editingFlag_) return *this;
 	int iChar = GetEditor().GetICharCursor();
 	if (GetEditor().MoveHome()) {
 		EraseCursor(iChar);
@@ -427,6 +462,7 @@ Terminal& Terminal::Edit_MoveHome()
 
 Terminal& Terminal::Edit_MoveEnd()
 {
+	if (!editingFlag_) return *this;
 	int iChar = GetEditor().GetICharCursor();
 	if (GetEditor().MoveEnd()) {
 		EraseCursor(iChar);
@@ -437,6 +473,7 @@ Terminal& Terminal::Edit_MoveEnd()
 
 Terminal& Terminal::Edit_DeleteToEnd()
 {
+	if (!editingFlag_) return *this;
 	int iChar = GetEditor().GetICharCursor();
 	if (GetEditor().DeleteToEnd()) {
 		EraseCursor(iChar);
