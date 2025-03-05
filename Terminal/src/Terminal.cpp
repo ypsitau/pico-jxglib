@@ -489,7 +489,9 @@ Terminal& Terminal::Edit_HistoryPrev()
 		GetHistoryBuff().SetLineMark(GetHistoryBuff().GetLineLast());
 	}
 	if (GetHistoryBuff().MoveLineMarkUp()) {
-		GetEditor().Replace(GetHistoryBuff().GetLineMark());
+		const char* pLineMark = GetHistoryBuff().GetLineMark();
+		WrappedCharFeeder charFeeder(GetHistoryBuff().CreateCharFeeder(pLineMark));
+		GetEditor().SetString(charFeeder);
 		EraseCursor(iChar);
 		DrawEditorArea();
 		DrawCursor();
@@ -502,7 +504,9 @@ Terminal& Terminal::Edit_HistoryNext()
 	if (!editingFlag_) return *this;
 	int iChar = GetEditor().GetICharCursor();
 	if (GetHistoryBuff().MoveLineMarkDown()) {
-		GetEditor().Replace(GetHistoryBuff().GetLineMark());
+		const char* pLineMark = GetHistoryBuff().GetLineMark();
+		WrappedCharFeeder charFeeder(GetHistoryBuff().CreateCharFeeder(pLineMark));
+		GetEditor().SetString(charFeeder);
 		EraseCursor(iChar);
 		DrawEditorArea();
 		DrawCursor();
@@ -606,10 +610,15 @@ bool Terminal::Editor::DeleteToEnd(int iChar)
 	return false;
 }
 
-bool Terminal::Editor::Replace(const char* buff)
+bool Terminal::Editor::SetString(WrappedCharFeeder& charFeeder)
 {
-	::strcpy(buff_, buff);
-	iCharCursor_ = ::strlen(buff_);
+	char* buffp = buff_;
+	for ( ; ; buffp++) {
+		char ch = charFeeder.Get();
+		if (!ch) break;
+		*buffp = ch;
+	}
+	iCharCursor_ = buffp - buff_;
 	return true;
 }
 

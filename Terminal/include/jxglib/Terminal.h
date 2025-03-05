@@ -54,7 +54,7 @@ public:
 		bool MoveEnd();
 		bool DeleteToEnd() { return DeleteToEnd(iCharCursor_); }
 		bool DeleteToEnd(int iChar);
-		bool Replace(const char* buff);
+		bool SetString(WrappedCharFeeder& charFeeder);
 	};
 	class Input {
 	public:
