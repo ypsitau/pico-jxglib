@@ -8,17 +8,17 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // Terminal
 //------------------------------------------------------------------------------
-Terminal::Terminal(int bytesBuff, int msecBlink) :
-	pDrawable_{nullptr}, nLinesWhole_{0}, lineBuff_(bytesBuff), pEventHandler_{nullptr}, pLineStop_{nullptr},
+Terminal::Terminal(int bytesLineBuff, int bytesHistoryBuff) :
+	pDrawable_{nullptr}, nLinesWhole_{0}, lineBuff_(bytesLineBuff), pEventHandler_{nullptr}, pLineStop_{nullptr},
 	suppressFlag_{false}, editingFlag_{false}, showCursorFlag_{false}, appearCursorFlag_{false}, wdCursor_{2},
 	colorTextInEdit_{255, 255, 255}, colorCursor_{255, 255, 255}, pInput_{nullptr},
-	tickable_Blink_(*this, msecBlink), tickable_Input_(*this)
+	tickable_Blink_(*this, 500), tickable_Input_(*this)
 {
 }
 
 bool Terminal::AttachOutput(Drawable& drawable, const Rect& rect, Dir dir)
 {
-	if (!GetLineBuff().Initialize()) return false;
+	if (!GetLineBuff().Initialize() || !GetHistoryBuff().Initialize()) return false;
 	Tickable::AddTickable(tickable_Blink_);
 	rectDst_ = rect.IsEmpty()? Rect(0, 0, drawable.GetWidth(), drawable.GetHeight()) : rect;
 	ptCurrent_ = Point(rectDst_.x, rectDst_.y);
@@ -379,6 +379,7 @@ Terminal& Terminal::Edit_Finish(char chEnd)
 	DrawLatestTextLines(true);
 	ShowCursor(false);
 	editingFlag_ = false;
+	GetHistoryBuff().Print(GetEditor().GetPointerBegin()).PutChar('\0');
 	return *this;
 }
 
@@ -473,6 +474,35 @@ Terminal& Terminal::Edit_DeleteToEnd()
 	if (!editingFlag_) return *this;
 	int iChar = GetEditor().GetICharCursor();
 	if (GetEditor().DeleteToEnd()) {
+		EraseCursor(iChar);
+		DrawEditorArea();
+		DrawCursor();
+	}
+	return *this;
+}
+
+Terminal& Terminal::Edit_HistoryPrev()
+{
+	if (!editingFlag_) return *this;
+	int iChar = GetEditor().GetICharCursor();
+	if (!GetHistoryBuff().GetLineMark()) {
+		GetHistoryBuff().SetLineMark(GetHistoryBuff().GetLineLast());
+	}
+	if (GetHistoryBuff().MoveLineMarkUp()) {
+		GetEditor().Replace(GetHistoryBuff().GetLineMark());
+		EraseCursor(iChar);
+		DrawEditorArea();
+		DrawCursor();
+	}
+	return *this;
+}
+
+Terminal& Terminal::Edit_HistoryNext()
+{
+	if (!editingFlag_) return *this;
+	int iChar = GetEditor().GetICharCursor();
+	if (GetHistoryBuff().MoveLineMarkDown()) {
+		GetEditor().Replace(GetHistoryBuff().GetLineMark());
 		EraseCursor(iChar);
 		DrawEditorArea();
 		DrawCursor();
@@ -576,6 +606,13 @@ bool Terminal::Editor::DeleteToEnd(int iChar)
 	return false;
 }
 
+bool Terminal::Editor::Replace(const char* buff)
+{
+	::strcpy(buff_, buff);
+	iCharCursor_ = ::strlen(buff_);
+	return true;
+}
+
 //------------------------------------------------------------------------------
 // Terminal::InputUART
 //------------------------------------------------------------------------------
@@ -606,8 +643,8 @@ void Terminal::InputUART::OnTick(Terminal& terminal)
 		case 'E': terminal.Edit_MoveEnd();		break;
 		case 'F': terminal.Edit_MoveForward();	break;
 		case 'K': terminal.Edit_DeleteToEnd();	break;
-		case 'N': break;
-		case 'P': break;
+		case 'N': terminal.Edit_HistoryNext();	break;
+		case 'P': terminal.Edit_HistoryPrev();	break;
 		default: break;
 		}
 	} else {

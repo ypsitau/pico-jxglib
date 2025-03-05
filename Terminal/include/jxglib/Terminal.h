@@ -54,6 +54,7 @@ public:
 		bool MoveEnd();
 		bool DeleteToEnd() { return DeleteToEnd(iCharCursor_); }
 		bool DeleteToEnd(int iChar);
+		bool Replace(const char* buff);
 	};
 	class Input {
 	public:
@@ -100,6 +101,7 @@ private:
 	Point ptCurrent_;
 	UTF8Decoder decoder_;
 	LineBuff lineBuff_;
+	LineBuff historyBuff_;
 	Drawable::Context context_;
 	EventHandler* pEventHandler_;
 	const char* pLineStop_;
@@ -116,7 +118,7 @@ private:
 	Tickable_Blink tickable_Blink_;
 	Tickable_Input tickable_Input_;
 public:
-	Terminal(int bytesBuff = 4096, int msecBlink = 500);
+	Terminal(int bytesLineBuff = 4096, int byteshistoryBuff = 512);
 public:
 	void Initialize() {}
 	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
@@ -153,6 +155,8 @@ public:
 	int CalcNLinesOnDisplay() const;
 	LineBuff& GetLineBuff() { return lineBuff_; }
 	const LineBuff& GetLineBuff() const { return lineBuff_; }
+	LineBuff& GetHistoryBuff() { return historyBuff_; }
+	const LineBuff& GetHistoryBuff() const { return historyBuff_; }
 	Reader CreateReader() const { return GetLineBuff().CreateReader(); }
 public:
 	bool IsRollingBack() const { return !!GetLineBuff().GetLineMark(); }
@@ -200,6 +204,8 @@ public:
 	Terminal& Edit_MoveHome();
 	Terminal& Edit_MoveEnd();
 	Terminal& Edit_DeleteToEnd();
+	Terminal& Edit_HistoryPrev();
+	Terminal& Edit_HistoryNext();
 };
 
 }
