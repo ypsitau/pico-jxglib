@@ -30,7 +30,7 @@ public:
 	public:
 		Editor();
 	public:
-		bool IsEditing() const { return buff_[0] != '\0'; }
+		bool IsEmpty() const { return buff_[0] == '\0'; }
 		int GetICharCursor() const { return iCharCursor_; }
 		int GetICharEnd() const { return ::strlen(buff_); }
 		char* GetPointer(int iChar) { return buff_ + iChar; }

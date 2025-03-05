@@ -60,6 +60,7 @@ Terminal& Terminal::BeginRollBack()
 	GetLineBuff().PrevLine(&pLineTop, nLines - 1);
 	GetLineBuff().SetLineMark(pLineTop);
 	pLineStop_ = pLineTop;
+	if (showCursorFlag_) EraseCursor();
 	return *this;
 }
 
@@ -72,8 +73,8 @@ Terminal& Terminal::EndRollBack()
 
 Terminal& Terminal::RollUp()
 {
-	if (editor_.IsEditing()) {
-		editor_.Clear();
+	if (!GetEditor().IsEmpty()) {
+		GetEditor().Clear();
 		DrawLatestTextLines(true);
 		return *this;
 	}
@@ -87,13 +88,13 @@ Terminal& Terminal::RollUp()
 
 Terminal& Terminal::RollDown()
 {
-	if (editor_.IsEditing()) {
-		editor_.Clear();
+	if (!GetEditor().IsEmpty()) {
+		GetEditor().Clear();
 		DrawLatestTextLines(true);
 		return *this;
 	}
-	if (!IsRollingBack()) BeginRollBack();	
 	if (GetLineBuff().MoveLineMarkDown(pLineStop_)) {
+		if (!IsRollingBack()) BeginRollBack();	
 		DrawTextLines(0, GetLineBuff().GetLineMark(), CalcNLinesOnDisplay());
 		GetDrawable().Refresh();
 		if (GetLineBuff().GetLineMark() == pLineStop_) {
@@ -184,7 +185,7 @@ void Terminal::AppendChar(Point& pt, char ch, bool drawFlag)
 void Terminal::DrawEditorArea()
 {
 	int yAdvance = context_.CalcAdvanceY();
-	Point ptEnd = CalcDrawPos(ptCurrent_, editor_.GetICharEnd(), wdCursor_);
+	Point ptEnd = CalcDrawPos(ptCurrent_, GetEditor().GetICharEnd(), wdCursor_);
 	int htExceed = ptEnd.y + yAdvance - (rectDst_.GetBottomExceed() / yAdvance * yAdvance);
 	if (htExceed > 0) {
 		if (ptCurrent_.y - htExceed >= rectDst_.y) ptCurrent_.y -= htExceed;
@@ -194,16 +195,14 @@ void Terminal::DrawEditorArea()
 	context_.colorFg = colorTextInEdit_;
 	Point pt = ptCurrent_;
 	UTF8Decoder decoder;
-	for (const char* p = editor_.GetPointerBegin(); *p; p++) {
+	for (const char* p = GetEditor().GetPointerBegin(); *p; p++) {
 		uint32_t codeUTF32;
 		if (!decoder.FeedChar(*p, &codeUTF32)) continue;
 		const FontEntry& fontEntry = GetFont().GetFontEntry(codeUTF32);
 		int xAdvance = context_.CalcAdvanceX(fontEntry);
 		if (pt.x + xAdvance > rectDst_.GetRightExceed()) {
 			pt.x = rectDst_.x;
-			if (pt.y + yAdvance * 2 <= rectDst_.GetBottomExceed()) {
-				pt.y += yAdvance;
-			}
+			pt.y += yAdvance;
 		}
 		if (pt.y + yAdvance <= rectDst_.GetBottomExceed()) {
 			GetDrawable().DrawChar(pt, fontEntry, false, &context_);
@@ -226,8 +225,8 @@ Point Terminal::CalcDrawPos(const Point& ptBase, int iChar, int wdAdvance)
 	Point pt = ptBase;
 	int yAdvance = context_.CalcAdvanceY();
 	UTF8Decoder decoder;
-	const char* pEnd = editor_.GetPointer(iChar);
-	for (const char* p = editor_.GetPointerBegin(); *p && p < pEnd; p++) {
+	const char* pEnd = GetEditor().GetPointer(iChar);
+	for (const char* p = GetEditor().GetPointerBegin(); *p && p < pEnd; p++) {
 		uint32_t codeUTF32;
 		if (!decoder.FeedChar(*p, &codeUTF32)) continue;
 		const FontEntry& fontEntry = GetFont().GetFontEntry(codeUTF32);
@@ -251,7 +250,7 @@ Point Terminal::CalcDrawPos(const Point& ptBase, int iChar, int wdAdvance)
 void Terminal::DrawCursor()
 {
 	int yAdvance = context_.CalcAdvanceY();
-	Point pt = CalcDrawPos(ptCurrent_, editor_.GetICharCursor(), wdCursor_);
+	Point pt = CalcDrawPos(ptCurrent_, GetEditor().GetICharCursor(), wdCursor_);
 	if (pt.y + yAdvance <= rectDst_.GetBottomExceed()) {
 		pt.x -= wdCursor_;
 		GetDrawable().DrawRectFill(pt, Size(wdCursor_, yAdvance), colorCursor_).Refresh();
@@ -260,7 +259,7 @@ void Terminal::DrawCursor()
 
 void Terminal::EraseCursor(int iChar)
 {
-	const char* p = editor_.GetPointer(iChar);
+	const char* p = GetEditor().GetPointer(iChar);
 	uint32_t codeUTF32 = UTF8Decoder::ToUTF32(p);
 	Point pt = CalcDrawPos(ptCurrent_, iChar, wdCursor_);
 	pt.x -= wdCursor_;
@@ -283,7 +282,7 @@ void Terminal::EraseCursor(int iChar)
 
 void Terminal::BlinkCursor()
 {
-	if (showCursorFlag_) {
+	if (showCursorFlag_ && !IsRollingBack()) {
 		appearCursorFlag_ = !appearCursorFlag_;
 		if (appearCursorFlag_) DrawCursor(); else EraseCursor();
 	}
@@ -292,10 +291,12 @@ void Terminal::BlinkCursor()
 void Terminal::DrawLatestTextLines(bool refreshFlag)
 {
 	int yAdvance = context_.CalcAdvanceY();
-	int nLines = ptCurrent_.y / yAdvance;
+	int nLines = (ptCurrent_.y - rectDst_.y) / yAdvance;
 	const char* pLineTop = GetLineBuff().GetLineLast();
-	GetLineBuff().PrevLine(&pLineTop, nLines - 1);
+	GetLineBuff().PrevLine(&pLineTop, nLines);
 	DrawTextLines(0, pLineTop, nLines);
+	int htLines = yAdvance * nLines;
+	GetDrawable().DrawRectFill(rectDst_.x, rectDst_.y + htLines, rectDst_.width, rectDst_.height - htLines, context_.colorBg);
 	GetDrawable().Refresh();
 }
 
@@ -360,6 +361,11 @@ Terminal& Terminal::Edit_InsertChar(int ch)
 	if (IsRollingBack()) EndRollBack();
 	int iChar = GetEditor().GetICharCursor();
 	if (GetEditor().InsertChar(ch)) {
+		int yAdvance = context_.CalcAdvanceY();
+		for ( ; !GetEditor().IsEmpty(); GetEditor().DeleteLastChar()) {
+			Point ptEnd = CalcDrawPos(rectDst_.GetPointNW(), GetEditor().GetICharEnd(), wdCursor_);
+			if (ptEnd.y + yAdvance <= rectDst_.GetBottomExceed()) break;
+		}
 		EraseCursor(iChar);
 		DrawEditorArea();
 		DrawCursor();
@@ -484,6 +490,7 @@ bool Terminal::Editor::DeleteLastChar()
 	int iChar = GetICharEnd();
 	if (MoveBackward(&iChar)) {
 		DeleteToEnd(iChar);
+		if (iCharCursor_ > iChar) iCharCursor_ = iChar;
 		return true;
 	}
 	return false;
