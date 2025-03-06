@@ -36,8 +36,8 @@ public:
 		LineEditor(int bytesHistoryBuff);
 	public:
 		bool Initialize();
-		void BeginEdit() { editingFlag_ = true; }
-		void EndEdit() { editingFlag_ = false; }
+		void Begin();
+		void Finish();
 		bool IsEditing() { return editingFlag_; }
 		bool IsEmpty() const { return buff_[0] == '\0'; }
 		int GetICharCursor() const { return iCharCursor_; }
@@ -48,10 +48,8 @@ public:
 		const char* GetPointer(int iChar) const { return buff_ + iChar; }
 		const char* GetPointerAtCursor() const { return buff_ + iCharCursor_; }
 		void Clear();
-		bool InsertChar(char ch) { return InsertChar(&iCharCursor_, ch); }
-		bool InsertChar(int* piChar, char ch);
-		bool DeleteChar() { return DeleteChar(iCharCursor_); }
-		bool DeleteChar(int iChar);
+		bool InsertChar(char ch);
+		bool DeleteChar();
 		bool DeleteLastChar();
 		bool MoveForward() { return MoveForward(&iCharCursor_); }
 		bool MoveBackward() { return MoveBackward(&iCharCursor_); }
@@ -65,9 +63,9 @@ public:
 	public:
 		bool MoveHistoryPrev();
 		bool MoveHistoryNext();
-		bool EndHistory();
-		bool AddHistory(const char* str);
-		bool ReplaceWithHistory();
+		void EndHistory();
+	private:
+		void ReplaceWithHistory();
 	public:
 		LineBuff& GetHistoryBuff() { return historyBuff_; }
 		const LineBuff& GetHistoryBuff() const { return historyBuff_; }
@@ -184,14 +182,12 @@ public:
 	virtual Printable& ClearScreen() override;
 	virtual Printable& RefreshScreen() override;
 	virtual Printable& Locate(int col, int row) override;
-	virtual Printable& PutChar(char ch) override {
-		AppendChar(ptCurrent_, ch, !suppressFlag_); return *this; 
-	};
+	virtual Printable& PutChar(char ch) override { AppendChar(ch, !suppressFlag_); return *this; };
 public:
 	char* ReadLine(const char* prompt);
 public:
-	void AppendChar(Point& pt, char ch, bool drawFlag);
-	void AppendString(Point& pt, const char* str, bool drawFlag);
+	void AppendChar(char ch, bool drawFlag);
+	void AppendString(const char* str, bool drawFlag);
 	void DrawEditorArea();
 	Point CalcDrawPos(const Point& ptBase, int iChar, int wdAdvance);
 public:
