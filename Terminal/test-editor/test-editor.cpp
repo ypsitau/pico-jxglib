@@ -26,7 +26,7 @@ int main()
 	GPIO19.init().pull_up();
 	GPIO20.init().pull_up();
 	GPIO21.init().pull_up();
-#if 0
+#if 1
 	SSD1306 display(i2c0, 0x3c);
 	display.Initialize();
 	Color colorBg(0, 0, 0);
@@ -38,14 +38,15 @@ int main()
 	const FontSet& fontSet = Font::shinonome16;
 	Color colorBg(16, 32, 16);
 	//const FontSet& fontSet = Font::sisd24x32;
-	terminal.AttachOutput(display, {30, 30, 100, 100});
+	terminal.AttachOutput(display);
+	//terminal.AttachOutput(display, {30, 30, 100, 100});
 #endif
 	terminal.AttachInput(UART::Default);
 	terminal.SetFont(fontSet).SetColorBg(colorBg).SetSpacingRatio(1., 1).ClearScreen();
 	terminal.Dump.Cols(12)(reinterpret_cast<const void*>(0x10000000), 8 * 20);
 	//terminal.SetCursorBlinkSpeed(10);
 	for (;;) {
-		char* str = terminal.ReadLine("> ");
+		char* str = terminal.ReadLine(">");
 		::printf("%s\n", str);
 	}
 }
