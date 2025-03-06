@@ -307,9 +307,9 @@ void Terminal::BlinkCursor()
 void Terminal::DrawLatestTextLines(bool refreshFlag)
 {
 	int yAdvance = context_.CalcAdvanceY();
-	int nLines = (ptCurrent_.y - rectDst_.y) / yAdvance;
+	int nLines = (ptCurrent_.y - rectDst_.y) / yAdvance + 1;
 	const char* pLineTop = GetLineBuff().GetLineLast();
-	GetLineBuff().PrevLine(&pLineTop, nLines);
+	GetLineBuff().PrevLine(&pLineTop, nLines - 1);
 	DrawTextLines(0, pLineTop, nLines);
 	int htLines = yAdvance * nLines;
 	GetDrawable().DrawRectFill(rectDst_.x, rectDst_.y + htLines, rectDst_.width, rectDst_.height - htLines, context_.colorBg);

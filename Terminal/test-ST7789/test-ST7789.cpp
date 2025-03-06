@@ -31,11 +31,10 @@ int main()
 		terminal.Println();
 	}
 	for (;;) {
-		if (Tickable::Tick(50)) {
-			if (!GPIO18.get()) terminal.RollUp();
-			if (!GPIO19.get()) terminal.RollDown();
-			if (!GPIO20.get()) terminal.Dump.Cols(8).Ascii()(reinterpret_cast<const void*>(0x10000000), 64);
-			if (!GPIO21.get()) terminal.CreateReader().WriteTo(stdout);
-		}
+		if (!GPIO18.get()) terminal.RollUp();
+		if (!GPIO19.get()) terminal.RollDown();
+		if (!GPIO20.get()) terminal.Dump.Cols(8).Ascii()(reinterpret_cast<const void*>(0x10000000), 64);
+		if (!GPIO21.get()) terminal.CreateReader().WriteTo(stdout);
+		Tickable::Sleep(50);
 	}
 }
