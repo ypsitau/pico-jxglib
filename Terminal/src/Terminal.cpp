@@ -480,6 +480,19 @@ Terminal& Terminal::Edit_MoveEnd()
 	return *this;
 }
 
+Terminal& Terminal::Edit_DeleteToHome()
+{
+	if (!editingFlag_) return *this;
+	int iChar = GetEditor().GetICharCursor();
+	if (GetEditor().DeleteToHome()) {
+		GetHistoryBuff().RemoveLineMark();
+		EraseCursor(iChar);
+		DrawEditorArea();
+		DrawCursor();
+	}
+	return *this;
+}
+
 Terminal& Terminal::Edit_DeleteToEnd()
 {
 	if (!editingFlag_) return *this;
@@ -616,9 +629,21 @@ bool Terminal::Editor::MoveEnd()
 	return true;
 }
 
+bool Terminal::Editor::DeleteToHome()
+{
+	if (iCharCursor_ > 0) {
+		char* p = GetPointer(iCharCursor_);
+		int bytes = ::strlen(p) + 1;
+		::memmove(buff_, p, bytes);
+		iCharCursor_ = 0;
+		return true;
+	}
+	return false;
+}
+
 bool Terminal::Editor::DeleteToEnd(int iChar)
 {
-	char *p = GetPointer(iChar);
+	char* p = GetPointer(iChar);
 	if (*p) {
 		*p = '\0';
 		return true;
@@ -674,6 +699,7 @@ void Terminal::InputUART::OnTick(Terminal& terminal)
 		case 'K':		terminal.Edit_DeleteToEnd();	break;
 		case 'N':		terminal.Edit_HistoryNext();	break;
 		case 'P':		terminal.Edit_HistoryPrev();	break;
+		case 'U':		terminal.Edit_DeleteToHome();	break;
 		default: break;
 		}
 	} else {

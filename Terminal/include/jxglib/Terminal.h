@@ -52,6 +52,7 @@ public:
 		bool MoveBackward(int* pIChar);
 		bool MoveHome();
 		bool MoveEnd();
+		bool DeleteToHome();
 		bool DeleteToEnd() { return DeleteToEnd(iCharCursor_); }
 		bool DeleteToEnd(int iChar);
 		bool SetHistory(LineBuff& historyBuff);
@@ -204,6 +205,7 @@ public:
 	Terminal& Edit_MoveBackward();
 	Terminal& Edit_MoveHome();
 	Terminal& Edit_MoveEnd();
+	Terminal& Edit_DeleteToHome();
 	Terminal& Edit_DeleteToEnd();
 	Terminal& Edit_HistoryPrev();
 	Terminal& Edit_HistoryNext();
