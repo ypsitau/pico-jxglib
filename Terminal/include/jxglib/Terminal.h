@@ -29,9 +29,12 @@ public:
 		int iCharCursor_;
 		char buff_[EditBuffSize];
 		UTF8Decoder decoder_;
+		LineBuff historyBuff_;
+		const char* pLineStop_History_;
 	public:
-		Editor();
+		Editor(int bytesHistoryBuff);
 	public:
+		bool Initialize();
 		bool IsEmpty() const { return buff_[0] == '\0'; }
 		int GetICharCursor() const { return iCharCursor_; }
 		int GetICharEnd() const { return ::strlen(buff_); }
@@ -55,7 +58,15 @@ public:
 		bool DeleteToHome();
 		bool DeleteToEnd() { return DeleteToEnd(iCharCursor_); }
 		bool DeleteToEnd(int iChar);
-		bool SetHistory(LineBuff& historyBuff);
+	public:
+		bool PrevHistory();
+		bool NextHistory();
+		bool EndHistory();
+		bool AddHistory(const char* str);
+		bool ReplaceWithHistory();
+	public:
+		LineBuff& GetHistoryBuff() { return historyBuff_; }
+		const LineBuff& GetHistoryBuff() const { return historyBuff_; }
 	};
 	class Input {
 	public:
@@ -96,17 +107,16 @@ public:
 	using Dir = Drawable::Dir;
 	using Reader = LineBuff::Reader;
 private:
+	Editor editor_;
 	Drawable* pDrawable_;
 	Rect rectDst_;
 	int nLinesWhole_;
 	Point ptCurrent_;
 	UTF8Decoder decoder_;
 	LineBuff lineBuff_;
-	LineBuff historyBuff_;
 	Drawable::Context context_;
 	EventHandler* pEventHandler_;
 	const char* pLineStop_RollBack_;
-	const char* pLineStop_History_;
 	bool suppressFlag_;
 	bool editingFlag_;
 	bool showCursorFlag_;
@@ -114,7 +124,6 @@ private:
 	Color colorTextInEdit_;
 	Color colorCursor_;
 	int wdCursor_;
-	Editor editor_;
 	Input* pInput_;
 	InputUART inputUART_;
 	Tickable_Blink tickable_Blink_;
@@ -157,8 +166,6 @@ public:
 	int CalcNLinesOnDisplay() const;
 	LineBuff& GetLineBuff() { return lineBuff_; }
 	const LineBuff& GetLineBuff() const { return lineBuff_; }
-	LineBuff& GetHistoryBuff() { return historyBuff_; }
-	const LineBuff& GetHistoryBuff() const { return historyBuff_; }
 	Reader CreateReader() const { return GetLineBuff().CreateReader(); }
 public:
 	bool IsRollingBack() const { return !!GetLineBuff().GetLineMark(); }
