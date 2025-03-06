@@ -24,7 +24,7 @@ public:
 	public:
 		virtual void OnNewLine(Terminal& terminal) = 0;
 	};
-	class Editor {
+	class LineEditor {
 	private:
 		int iCharCursor_;
 		char buff_[EditBuffSize];
@@ -32,7 +32,7 @@ public:
 		LineBuff historyBuff_;
 		const char* pLineStop_History_;
 	public:
-		Editor(int bytesHistoryBuff);
+		LineEditor(int bytesHistoryBuff);
 	public:
 		bool Initialize();
 		bool IsEmpty() const { return buff_[0] == '\0'; }
@@ -107,7 +107,7 @@ public:
 	using Dir = Drawable::Dir;
 	using Reader = LineBuff::Reader;
 private:
-	Editor editor_;
+	LineEditor lineEditor_;
 	Drawable* pDrawable_;
 	Rect rectDst_;
 	int nLinesWhole_;
@@ -140,7 +140,7 @@ public:
 	Drawable& GetDrawable() { return *pDrawable_; }
 	const Drawable& GetDrawable() const { return *pDrawable_; }
 	const Rect& GetRectDst() const { return rectDst_; }
-	Editor& GetEditor() { return editor_; }
+	LineEditor& GetLineEditor() { return lineEditor_; }
 public:
 	Terminal& SetColor(const Color& color) { context_.SetColor(color); return *this; }
 	const Color& GetColor() const { return context_.GetColor(); }
@@ -194,7 +194,7 @@ public:
 public:
 	void SetCursorBlinkSpeed(int msecBlink) { tickable_Blink_.SetTick(msecBlink); }
 	void DrawCursor();
-	void EraseCursor() { EraseCursor(editor_.GetICharCursor()); };
+	void EraseCursor() { EraseCursor(lineEditor_.GetICharCursor()); };
 	void EraseCursor(int posCursor);
 	void BlinkCursor();
 private:
