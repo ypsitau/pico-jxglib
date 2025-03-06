@@ -103,7 +103,7 @@ void LineBuff::PrintInfo(Printable& printable) const
 		}
 	};
 	printable.Dump.DigitsAddr(4).Ascii()(GetBuffBegin(), bytesBuff_);
-	printable.Printf(" pBuffLast:%s", ToString(buff, pBuffLast_));
+	printable.Printf("pBuffLast:%s", ToString(buff, pBuffLast_));
 	printable.Printf(" pLineFirst:%s", ToString(buff, pLineFirst_));
 	printable.Printf(" pLineLast:%s\n", ToString(buff, pLineLast_));
 }

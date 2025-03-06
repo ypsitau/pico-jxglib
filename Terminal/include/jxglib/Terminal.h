@@ -104,7 +104,8 @@ private:
 	LineBuff historyBuff_;
 	Drawable::Context context_;
 	EventHandler* pEventHandler_;
-	const char* pLineStop_;
+	const char* pLineStop_RollBack_;
+	const char* pLineStop_History_;
 	bool suppressFlag_;
 	bool editingFlag_;
 	bool showCursorFlag_;
@@ -118,7 +119,7 @@ private:
 	Tickable_Blink tickable_Blink_;
 	Tickable_Input tickable_Input_;
 public:
-	Terminal(int bytesLineBuff = 4096, int byteshistoryBuff = 512);
+	Terminal(int bytesLineBuff = 4096, int byteshistoryBuff = 64);
 public:
 	void Initialize() {}
 	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
