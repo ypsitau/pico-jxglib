@@ -54,7 +54,7 @@ public:
 		bool MoveEnd();
 		bool DeleteToEnd() { return DeleteToEnd(iCharCursor_); }
 		bool DeleteToEnd(int iChar);
-		bool SetString(WrappedCharFeeder& charFeeder);
+		bool SetHistory(LineBuff& historyBuff);
 	};
 	class Input {
 	public:
@@ -119,7 +119,7 @@ private:
 	Tickable_Blink tickable_Blink_;
 	Tickable_Input tickable_Input_;
 public:
-	Terminal(int bytesLineBuff = 4096, int byteshistoryBuff = 64);
+	Terminal(int bytesLineBuff = 4096, int byteshistoryBuff = 512);
 public:
 	void Initialize() {}
 	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
