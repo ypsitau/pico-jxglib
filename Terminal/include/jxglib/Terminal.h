@@ -26,6 +26,7 @@ public:
 	};
 	class LineEditor {
 	private:
+		bool editingFlag_;
 		int iCharCursor_;
 		char buff_[EditBuffSize];
 		UTF8Decoder decoder_;
@@ -35,6 +36,9 @@ public:
 		LineEditor(int bytesHistoryBuff);
 	public:
 		bool Initialize();
+		void BeginEdit() { editingFlag_ = true; }
+		void EndEdit() { editingFlag_ = false; }
+		bool IsEditing() { return editingFlag_; }
 		bool IsEmpty() const { return buff_[0] == '\0'; }
 		int GetICharCursor() const { return iCharCursor_; }
 		int GetICharEnd() const { return ::strlen(buff_); }
@@ -118,7 +122,6 @@ private:
 	EventHandler* pEventHandler_;
 	const char* pLineStop_RollBack_;
 	bool suppressFlag_;
-	bool editingFlag_;
 	bool showCursorFlag_;
 	bool appearCursorFlag_;
 	Color colorTextInEdit_;

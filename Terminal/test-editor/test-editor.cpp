@@ -26,7 +26,7 @@ int main()
 	GPIO19.init().pull_up();
 	GPIO20.init().pull_up();
 	GPIO21.init().pull_up();
-#if 1
+#if 0
 	SSD1306 display(i2c0, 0x3c);
 	display.Initialize();
 	Color colorBg(0, 0, 0);
