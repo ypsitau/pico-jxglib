@@ -507,7 +507,7 @@ Terminal& Terminal::Edit_HistoryPrev()
 	if (!editingFlag_) return *this;
 	//GetHistoryBuff().PrintInfo(UART::Default);
 	int iChar = GetEditor().GetICharCursor();
-	if (GetEditor().PrevHistory()) {
+	if (GetEditor().MoveHistoryPrev()) {
 		GetEditor().ReplaceWithHistory();
 		EraseCursor(iChar);
 		DrawEditorArea();
@@ -520,7 +520,7 @@ Terminal& Terminal::Edit_HistoryNext()
 {
 	if (!editingFlag_) return *this;
 	int iChar = GetEditor().GetICharCursor();
-	if (GetEditor().NextHistory()) {
+	if (GetEditor().MoveHistoryNext()) {
 		GetEditor().ReplaceWithHistory();
 		EraseCursor(iChar);
 		DrawEditorArea();
@@ -643,7 +643,7 @@ bool Terminal::Editor::DeleteToEnd(int iChar)
 	return false;
 }
 
-bool Terminal::Editor::PrevHistory()
+bool Terminal::Editor::MoveHistoryPrev()
 {
 	bool updateFlag = false;
 	if (GetHistoryBuff().GetLineMark()) {
@@ -658,7 +658,7 @@ bool Terminal::Editor::PrevHistory()
 	return updateFlag;
 }
 
-bool Terminal::Editor::NextHistory()
+bool Terminal::Editor::MoveHistoryNext()
 {
 	return GetHistoryBuff().GetLineMark() && GetHistoryBuff().MoveLineMarkDown(pLineStop_History_);
 }

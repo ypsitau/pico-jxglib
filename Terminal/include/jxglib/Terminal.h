@@ -59,8 +59,8 @@ public:
 		bool DeleteToEnd() { return DeleteToEnd(iCharCursor_); }
 		bool DeleteToEnd(int iChar);
 	public:
-		bool PrevHistory();
-		bool NextHistory();
+		bool MoveHistoryPrev();
+		bool MoveHistoryNext();
 		bool EndHistory();
 		bool AddHistory(const char* str);
 		bool ReplaceWithHistory();
