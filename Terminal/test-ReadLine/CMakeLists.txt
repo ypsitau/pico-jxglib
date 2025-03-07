@@ -28,34 +28,34 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-editor C CXX ASM)
+project(test-ReadLine C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-editor test-editor.cpp)
+add_executable(test-ReadLine test-ReadLine.cpp)
 
-pico_set_program_name(test-editor "test-editor")
-pico_set_program_version(test-editor "0.1")
+pico_set_program_name(test-ReadLine "test-ReadLine")
+pico_set_program_version(test-ReadLine "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-editor 1)
-pico_enable_stdio_usb(test-editor 0)
+pico_enable_stdio_uart(test-ReadLine 1)
+pico_enable_stdio_usb(test-ReadLine 0)
 
 # Add the standard library to the build
-target_link_libraries(test-editor
+target_link_libraries(test-ReadLine
 	pico_stdlib
 	jxglib_SSD1306
 	jxglib_ST7789
 	jxglib_Terminal)
 
 # Add the standard include files to the build
-target_include_directories(test-editor PRIVATE
+target_include_directories(test-ReadLine PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-editor)
+pico_add_extra_outputs(test-ReadLine)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
