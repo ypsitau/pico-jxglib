@@ -36,7 +36,15 @@ public:
 //------------------------------------------------------------------------------
 // WrappedCharFeeder
 //------------------------------------------------------------------------------
-using WrappedCharFeeder = WrappedPointer<const char*>;
+class WrappedCharFeeder : public WrappedPointer<const char*> {
+public:
+	using T = const char*;
+public:
+	WrappedCharFeeder(T p, T pBegin, T pEnd) : WrappedPointer(p, pBegin, pEnd) {}
+	WrappedCharFeeder(const WrappedCharFeeder& wrappedCharFeeder) : WrappedPointer(wrappedCharFeeder) {}
+public:
+	int Compare(const char* str);
+};
 
 }
 

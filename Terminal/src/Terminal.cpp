@@ -656,6 +656,8 @@ bool Terminal::LineEditor::DeleteToEnd(int iChar)
 
 bool Terminal::LineEditor::AddHistory(const char* str)
 {
+	char* pLine = GetHistoryBuff().GetLineLast();
+	GetHistoryBuff().PrevLine(&pLine);
 	GetHistoryBuff().Print(str).PutChar('\0');
 	GetHistoryBuff().MoveLineLastHere().PlaceChar('\0');
 	return true;

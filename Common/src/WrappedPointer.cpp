@@ -9,4 +9,14 @@ namespace jxglib {
 // WrappedPointer
 //------------------------------------------------------------------------------
 
+//------------------------------------------------------------------------------
+// WrappedCharFeeder
+//------------------------------------------------------------------------------
+int WrappedCharFeeder::Compare(const char* str)
+{
+	const char* p = str;
+	for ( ; Get() && Get() == *p; Forward(), p++) ;
+	return static_cast<uint8_t>(Get()) - static_cast<uint8_t>(*p);
+}
+
 }
