@@ -61,6 +61,7 @@ public:
 		bool DeleteToEnd() { return DeleteToEnd(iCharCursor_); }
 		bool DeleteToEnd(int iChar);
 	public:
+		bool AddHistory(const char* str);
 		bool MoveHistoryPrev();
 		bool MoveHistoryNext();
 		void EndHistory();

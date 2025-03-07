@@ -543,8 +543,7 @@ void Terminal::LineEditor::Begin()
 void Terminal::LineEditor::Finish()
 {
 	if (*GetPointerBegin()) {
-		GetHistoryBuff().Print(GetPointerBegin()).PutChar('\0');
-		GetHistoryBuff().MoveLineLastHere().PlaceChar('\0');
+		AddHistory(GetPointerBegin());
 	}
 	editingFlag_ = false;
 }
@@ -653,6 +652,13 @@ bool Terminal::LineEditor::DeleteToEnd(int iChar)
 		return true;
 	}
 	return false;
+}
+
+bool Terminal::LineEditor::AddHistory(const char* str)
+{
+	GetHistoryBuff().Print(str).PutChar('\0');
+	GetHistoryBuff().MoveLineLastHere().PlaceChar('\0');
+	return true;
 }
 
 bool Terminal::LineEditor::MoveHistoryPrev()
