@@ -224,19 +224,20 @@ private:
 	void DrawTextLine(int iLine, const char* pLineTop);
 	void ScrollUp(int nLinesToScroll, bool refreshFlag);
 public:
-	Editable& Edit_Begin() override;
-	Editable& Edit_Finish(char chEnd = '\0') override;
-	Editable& Edit_InsertChar(int ch) override;
-	Editable& Edit_DeleteChar() override;
-	Editable& Edit_Back() override;
-	Editable& Edit_MoveForward() override;
-	Editable& Edit_MoveBackward() override;
-	Editable& Edit_MoveHome() override;
-	Editable& Edit_MoveEnd() override;
-	Editable& Edit_DeleteToHome() override;
-	Editable& Edit_DeleteToEnd() override;
-	Editable& Edit_MoveHistoryPrev() override;
-	Editable& Edit_MoveHistoryNext() override;
+	// virtual functions of Editable
+	virtual Editable& Edit_Begin() override;
+	virtual Editable& Edit_Finish(char chEnd = '\0') override;
+	virtual Editable& Edit_InsertChar(int ch) override;
+	virtual Editable& Edit_DeleteChar() override;
+	virtual Editable& Edit_Back() override;
+	virtual Editable& Edit_MoveForward() override;
+	virtual Editable& Edit_MoveBackward() override;
+	virtual Editable& Edit_MoveHome() override;
+	virtual Editable& Edit_MoveEnd() override;
+	virtual Editable& Edit_DeleteToHome() override;
+	virtual Editable& Edit_DeleteToEnd() override;
+	virtual Editable& Edit_MoveHistoryPrev() override;
+	virtual Editable& Edit_MoveHistoryNext() override;
 };
 
 }
