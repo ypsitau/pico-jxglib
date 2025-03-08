@@ -3,6 +3,7 @@
 //==============================================================================
 #ifndef PICO_JXGLIB_EDITABLE_H
 #define PICO_JXGLIB_EDITABLE_H
+#include <string.h>
 #include "pico/stdlib.h"
 #include "jxglib/Common.h"
 #include "jxglib/LineBuff.h"
