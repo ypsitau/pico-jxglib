@@ -13,17 +13,10 @@
 
 namespace jxglib {
 
-//------------------------------------------------------------------------------
-// Terminal
-//------------------------------------------------------------------------------
-struct Terminal : public Printable {
+class Editable {
 public:
 	static const int EditBuffSize = 128;
 public:
-	class EventHandler {
-	public:
-		virtual void OnNewLine(Terminal& terminal) = 0;
-	};
 	class LineEditor {
 	private:
 		bool editingFlag_;
@@ -71,6 +64,38 @@ public:
 		LineBuff& GetHistoryBuff() { return historyBuff_; }
 		const LineBuff& GetHistoryBuff() const { return historyBuff_; }
 	};
+private:
+	LineEditor lineEditor_;
+public:
+	Editable(int byteshistoryBuff = 512);
+public:
+	bool Initialize();
+	LineEditor& GetLineEditor() { return lineEditor_; }
+public:
+	virtual Editable& Edit_Begin() = 0;
+	virtual Editable& Edit_Finish(char chEnd = '\0') = 0;
+	virtual Editable& Edit_InsertChar(int ch) = 0;
+	virtual Editable& Edit_DeleteChar() = 0;
+	virtual Editable& Edit_Back() = 0;
+	virtual Editable& Edit_MoveForward() = 0;
+	virtual Editable& Edit_MoveBackward() = 0;
+	virtual Editable& Edit_MoveHome() = 0;
+	virtual Editable& Edit_MoveEnd() = 0;
+	virtual Editable& Edit_DeleteToHome() = 0;
+	virtual Editable& Edit_DeleteToEnd() = 0;
+	virtual Editable& Edit_MoveHistoryPrev() = 0;
+	virtual Editable& Edit_MoveHistoryNext() = 0;
+};
+
+//------------------------------------------------------------------------------
+// Terminal
+//------------------------------------------------------------------------------
+class Terminal : public Printable, public Editable {
+public:
+	class EventHandler {
+	public:
+		virtual void OnNewLine(Terminal& terminal) = 0;
+	};
 	class Input {
 	public:
 		virtual void OnTick(Terminal& terminal) = 0;
@@ -110,7 +135,6 @@ public:
 	using Dir = Drawable::Dir;
 	using Reader = LineBuff::Reader;
 private:
-	LineEditor lineEditor_;
 	Drawable* pDrawable_;
 	Rect rectDst_;
 	int nLinesWhole_;
@@ -133,7 +157,6 @@ private:
 public:
 	Terminal(int bytesLineBuff = 4096, int byteshistoryBuff = 512);
 public:
-	void Initialize() {}
 	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
 	void AttachInput(Input& input, int msecTick);
 	void AttachInput(UART& uart);
@@ -142,7 +165,6 @@ public:
 	Drawable& GetDrawable() { return *pDrawable_; }
 	const Drawable& GetDrawable() const { return *pDrawable_; }
 	const Rect& GetRectDst() const { return rectDst_; }
-	LineEditor& GetLineEditor() { return lineEditor_; }
 public:
 	Terminal& SetColor(const Color& color) { context_.SetColor(color); return *this; }
 	const Color& GetColor() const { return context_.GetColor(); }
@@ -193,9 +215,8 @@ public:
 	Point CalcDrawPos(const Point& ptBase, int iChar, int wdAdvance);
 public:
 	void SetCursorBlinkSpeed(int msecBlink) { tickable_Blink_.SetTick(msecBlink); }
-	void DrawCursor();
-	void EraseCursor() { EraseCursor(lineEditor_.GetICharCursor()); };
-	void EraseCursor(int posCursor);
+	void DrawCursor(int iCharCursor);
+	void EraseCursor(int iCharCursor);
 	void BlinkCursor();
 private:
 	void DrawLatestTextLines(bool refreshFlag);
@@ -203,19 +224,19 @@ private:
 	void DrawTextLine(int iLine, const char* pLineTop);
 	void ScrollUp(int nLinesToScroll, bool refreshFlag);
 public:
-	Terminal& Edit_Begin(bool showCursorFlag = true);
-	Terminal& Edit_Finish(char chEnd = '\0');
-	Terminal& Edit_InsertChar(int ch);
-	Terminal& Edit_Delete();
-	Terminal& Edit_Back();
-	Terminal& Edit_MoveForward();
-	Terminal& Edit_MoveBackward();
-	Terminal& Edit_MoveHome();
-	Terminal& Edit_MoveEnd();
-	Terminal& Edit_DeleteToHome();
-	Terminal& Edit_DeleteToEnd();
-	Terminal& Edit_HistoryPrev();
-	Terminal& Edit_HistoryNext();
+	Editable& Edit_Begin() override;
+	Editable& Edit_Finish(char chEnd = '\0') override;
+	Editable& Edit_InsertChar(int ch) override;
+	Editable& Edit_DeleteChar() override;
+	Editable& Edit_Back() override;
+	Editable& Edit_MoveForward() override;
+	Editable& Edit_MoveBackward() override;
+	Editable& Edit_MoveHome() override;
+	Editable& Edit_MoveEnd() override;
+	Editable& Edit_DeleteToHome() override;
+	Editable& Edit_DeleteToEnd() override;
+	Editable& Edit_MoveHistoryPrev() override;
+	Editable& Edit_MoveHistoryNext() override;
 };
 
 }

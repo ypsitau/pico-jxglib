@@ -10,7 +10,7 @@ namespace jxglib {
 // Terminal
 //------------------------------------------------------------------------------
 Terminal::Terminal(int bytesLineBuff, int bytesHistoryBuff) :
-	lineEditor_(bytesHistoryBuff), pDrawable_{nullptr}, nLinesWhole_{0}, lineBuff_(bytesLineBuff),
+	Editable(bytesHistoryBuff), pDrawable_{nullptr}, nLinesWhole_{0}, lineBuff_(bytesLineBuff),
 	pEventHandler_{nullptr}, pLineStop_RollBack_{nullptr},
 	suppressFlag_{false}, showCursorFlag_{false}, appearCursorFlag_{false}, wdCursor_{2},
 	colorTextInEdit_{255, 255, 255}, colorCursor_{255, 255, 255}, pInput_{nullptr},
@@ -20,7 +20,7 @@ Terminal::Terminal(int bytesLineBuff, int bytesHistoryBuff) :
 
 bool Terminal::AttachOutput(Drawable& drawable, const Rect& rect, Dir dir)
 {
-	if (!GetLineBuff().Initialize() || !GetLineEditor().Initialize()) return false;
+	if (!Editable::Initialize() || !GetLineBuff().Initialize()) return false;
 	Tickable::AddTickable(tickable_Blink_);
 	rectDst_ = rect.IsEmpty()? Rect(0, 0, drawable.GetWidth(), drawable.GetHeight()) : rect;
 	ptCurrent_ = Point(rectDst_.x, rectDst_.y);
@@ -62,7 +62,7 @@ Terminal& Terminal::BeginRollBack()
 	GetLineBuff().PrevLine(&pLineTop, nLines - 1);
 	GetLineBuff().SetLineMark(pLineTop);
 	pLineStop_RollBack_ = pLineTop;
-	if (showCursorFlag_) EraseCursor();
+	if (showCursorFlag_) EraseCursor(GetLineEditor().GetICharCursor());
 	return *this;
 }
 
@@ -266,21 +266,21 @@ Point Terminal::CalcDrawPos(const Point& ptBase, int iChar, int wdAdvance)
 	return pt;
 }
 
-void Terminal::DrawCursor()
+void Terminal::DrawCursor(int iCharCursor)
 {
 	int yAdvance = context_.CalcAdvanceY();
-	Point pt = CalcDrawPos(ptCurrent_, GetLineEditor().GetICharCursor(), wdCursor_);
+	Point pt = CalcDrawPos(ptCurrent_, iCharCursor, wdCursor_);
 	if (pt.y + yAdvance <= rectDst_.GetBottomExceed()) {
 		pt.x -= wdCursor_;
 		GetDrawable().DrawRectFill(pt, Size(wdCursor_, yAdvance), colorCursor_).Refresh();
 	}
 }
 
-void Terminal::EraseCursor(int iChar)
+void Terminal::EraseCursor(int iCharCursor)
 {
-	const char* p = GetLineEditor().GetPointer(iChar);
+	const char* p = GetLineEditor().GetPointer(iCharCursor);
 	uint32_t codeUTF32 = UTF8Decoder::ToUTF32(p);
-	Point pt = CalcDrawPos(ptCurrent_, iChar, wdCursor_);
+	Point pt = CalcDrawPos(ptCurrent_, iCharCursor, wdCursor_);
 	pt.x -= wdCursor_;
 	int yAdvance = context_.CalcAdvanceY();
 	if (pt.y + yAdvance <= rectDst_.GetBottomExceed()) {
@@ -303,7 +303,8 @@ void Terminal::BlinkCursor()
 {
 	if (showCursorFlag_ && !IsRollingBack()) {
 		appearCursorFlag_ = !appearCursorFlag_;
-		if (appearCursorFlag_) DrawCursor(); else EraseCursor();
+		int iCharCursor = GetLineEditor().GetICharCursor();
+		if (appearCursorFlag_) DrawCursor(iCharCursor); else EraseCursor(iCharCursor);
 	}
 }
 
@@ -366,14 +367,14 @@ void Terminal::ScrollUp(int nLinesToScroll, bool refreshFlag)
 	if (refreshFlag) GetDrawable().Refresh();
 }
 
-Terminal& Terminal::Edit_Begin(bool showCursorFlag)
+Editable& Terminal::Edit_Begin()
 {
-	ShowCursor(showCursorFlag);
+	ShowCursor();
 	GetLineEditor().Begin();
 	return *this;
 }
 
-Terminal& Terminal::Edit_Finish(char chEnd)
+Editable& Terminal::Edit_Finish(char chEnd)
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	GetLineEditor().EndHistory();
@@ -386,174 +387,186 @@ Terminal& Terminal::Edit_Finish(char chEnd)
 	return *this;
 }
 
-Terminal& Terminal::Edit_InsertChar(int ch)
+Editable& Terminal::Edit_InsertChar(int ch)
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (IsRollingBack()) EndRollBack();
-	int iChar = GetLineEditor().GetICharCursor();
+	int iCharCursorPrev = GetLineEditor().GetICharCursor();
 	if (GetLineEditor().InsertChar(ch)) {
 		int yAdvance = context_.CalcAdvanceY();
 		for ( ; !GetLineEditor().IsEmpty(); GetLineEditor().DeleteLastChar()) {
 			Point ptEnd = CalcDrawPos(rectDst_.GetPointNW(), GetLineEditor().GetICharEnd(), wdCursor_);
 			if (ptEnd.y + yAdvance <= rectDst_.GetBottomExceed()) break;
 		}
-		EraseCursor(iChar);
+		EraseCursor(iCharCursorPrev);
 		DrawEditorArea();
-		DrawCursor();
+		DrawCursor(GetLineEditor().GetICharCursor());
 	}
 	return *this;
 }
 
-Terminal& Terminal::Edit_Delete()
+Editable& Terminal::Edit_DeleteChar()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
-	int iChar = GetLineEditor().GetICharCursor();
+	int iCharCursorPrev = GetLineEditor().GetICharCursor();
 	if (GetLineEditor().DeleteChar()) {
-		EraseCursor(iChar);
+		EraseCursor(iCharCursorPrev);
 		DrawEditorArea();
-		DrawCursor();
+		DrawCursor(GetLineEditor().GetICharCursor());
 	}
 	return *this;
 }
 
-Terminal& Terminal::Edit_Back()
+Editable& Terminal::Edit_Back()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
-	int iChar = GetLineEditor().GetICharCursor();
+	int iCharCursorPrev = GetLineEditor().GetICharCursor();
 	if (GetLineEditor().MoveBackward() && GetLineEditor().DeleteChar()) {
-		EraseCursor(iChar);
+		EraseCursor(iCharCursorPrev);
 		DrawEditorArea();
-		DrawCursor();
+		DrawCursor(GetLineEditor().GetICharCursor());
 	}
 	return *this;
 }
 
-Terminal& Terminal::Edit_MoveForward()
+Editable& Terminal::Edit_MoveForward()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
-	int iChar = GetLineEditor().GetICharCursor();
+	int iCharCursorPrev = GetLineEditor().GetICharCursor();
 	if (GetLineEditor().MoveForward()) {
-		EraseCursor(iChar);
-		DrawCursor();
+		EraseCursor(iCharCursorPrev);
+		DrawCursor(GetLineEditor().GetICharCursor());
 	}
 	return *this;
 }
 
-Terminal& Terminal::Edit_MoveBackward()
+Editable& Terminal::Edit_MoveBackward()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
-	int iChar = GetLineEditor().GetICharCursor();
+	int iCharCursorPrev = GetLineEditor().GetICharCursor();
 	if (GetLineEditor().MoveBackward()) {
-		EraseCursor(iChar);
-		DrawCursor();
+		EraseCursor(iCharCursorPrev);
+		DrawCursor(GetLineEditor().GetICharCursor());
 	}
 	return *this;
 }
 
-Terminal& Terminal::Edit_MoveHome()
+Editable& Terminal::Edit_MoveHome()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
-	int iChar = GetLineEditor().GetICharCursor();
+	int iCharCursorPrev = GetLineEditor().GetICharCursor();
 	if (GetLineEditor().MoveHome()) {
-		EraseCursor(iChar);
-		DrawCursor();
+		EraseCursor(iCharCursorPrev);
+		DrawCursor(GetLineEditor().GetICharCursor());
 	}
 	return *this;
 }
 
-Terminal& Terminal::Edit_MoveEnd()
+Editable& Terminal::Edit_MoveEnd()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
-	int iChar = GetLineEditor().GetICharCursor();
+	int iCharCursorPrev = GetLineEditor().GetICharCursor();
 	if (GetLineEditor().MoveEnd()) {
-		EraseCursor(iChar);
-		DrawCursor();
+		EraseCursor(iCharCursorPrev);
+		DrawCursor(GetLineEditor().GetICharCursor());
 	}
 	return *this;
 }
 
-Terminal& Terminal::Edit_DeleteToHome()
+Editable& Terminal::Edit_DeleteToHome()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
-	int iChar = GetLineEditor().GetICharCursor();
+	int iCharCursorPrev = GetLineEditor().GetICharCursor();
 	if (GetLineEditor().DeleteToHome()) {
-		EraseCursor(iChar);
+		EraseCursor(iCharCursorPrev);
 		DrawEditorArea();
-		DrawCursor();
+		DrawCursor(GetLineEditor().GetICharCursor());
 	}
 	return *this;
 }
 
-Terminal& Terminal::Edit_DeleteToEnd()
+Editable& Terminal::Edit_DeleteToEnd()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
-	int iChar = GetLineEditor().GetICharCursor();
+	int iCharCursorPrev = GetLineEditor().GetICharCursor();
 	if (GetLineEditor().DeleteToEnd()) {
-		EraseCursor(iChar);
+		EraseCursor(iCharCursorPrev);
 		DrawEditorArea();
-		DrawCursor();
+		DrawCursor(GetLineEditor().GetICharCursor());
 	}
 	return *this;
 }
 
-Terminal& Terminal::Edit_HistoryPrev()
+Editable& Terminal::Edit_MoveHistoryPrev()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	//GetHistoryBuff().PrintInfo(UART::Default);
-	int iChar = GetLineEditor().GetICharCursor();
+	int iCharCursorPrev = GetLineEditor().GetICharCursor();
 	if (GetLineEditor().MoveHistoryPrev()) {
-		EraseCursor(iChar);
+		EraseCursor(iCharCursorPrev);
 		DrawEditorArea();
-		DrawCursor();
+		DrawCursor(GetLineEditor().GetICharCursor());
 	}
 	return *this;
 }
 
-Terminal& Terminal::Edit_HistoryNext()
+Editable& Terminal::Edit_MoveHistoryNext()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
-	int iChar = GetLineEditor().GetICharCursor();
+	int iCharCursorPrev = GetLineEditor().GetICharCursor();
 	if (GetLineEditor().MoveHistoryNext()) {
-		EraseCursor(iChar);
+		EraseCursor(iCharCursorPrev);
 		DrawEditorArea();
-		DrawCursor();
+		DrawCursor(GetLineEditor().GetICharCursor());
 	}
 	return *this;
 }
 
 //------------------------------------------------------------------------------
-// Terminal::LineEditor
+// Editable
 //------------------------------------------------------------------------------
-Terminal::LineEditor::LineEditor(int bytesHistoryBuff) :
+Editable::Editable(int bytesHistoryBuff) : lineEditor_(bytesHistoryBuff)
+{
+}
+
+bool Editable::Initialize()
+{
+	return GetLineEditor().Initialize();
+}
+
+//------------------------------------------------------------------------------
+// Editable::LineEditor
+//------------------------------------------------------------------------------
+Editable::LineEditor::LineEditor(int bytesHistoryBuff) :
 	editingFlag_{false}, iCharCursor_{0}, historyBuff_(bytesHistoryBuff), pLineStop_History_{nullptr}
 {
 	buff_[0] = '\0';
 }
 
-bool Terminal::LineEditor::Initialize()
+bool Editable::LineEditor::Initialize()
 {
 	return GetHistoryBuff().Initialize();
 }
 
-void Terminal::LineEditor::Begin()
+void Editable::LineEditor::Begin()
 {
 	Clear();
 	editingFlag_ = true;
 }
 
-void Terminal::LineEditor::Finish()
+void Editable::LineEditor::Finish()
 {
 	AddHistory(GetPointerBegin());
 	editingFlag_ = false;
 }
 
-void Terminal::LineEditor::Clear()
+void Editable::LineEditor::Clear()
 {
 	iCharCursor_ = 0;
 	buff_[0] = '\0';
 }
 
-bool Terminal::LineEditor::InsertChar(char ch)
+bool Editable::LineEditor::InsertChar(char ch)
 {
 	if (::strlen(buff_) + 1 < sizeof(buff_)) {
 		char *p = GetPointer(iCharCursor_);
@@ -569,7 +582,7 @@ bool Terminal::LineEditor::InsertChar(char ch)
 	return false;
 }
 
-bool Terminal::LineEditor::DeleteChar()
+bool Editable::LineEditor::DeleteChar()
 {
 	char *p = GetPointer(iCharCursor_);
 	if (*p) {
@@ -582,7 +595,7 @@ bool Terminal::LineEditor::DeleteChar()
 	return false;
 }
 
-bool Terminal::LineEditor::DeleteLastChar()
+bool Editable::LineEditor::DeleteLastChar()
 {
 	int iChar = GetICharEnd();
 	if (MoveBackward(&iChar)) {
@@ -593,7 +606,7 @@ bool Terminal::LineEditor::DeleteLastChar()
 	return false;
 }
 
-bool Terminal::LineEditor::MoveForward(int* piChar)
+bool Editable::LineEditor::MoveForward(int* piChar)
 {
 	char *pStart = GetPointer(*piChar);
 	if (*pStart) {
@@ -605,7 +618,7 @@ bool Terminal::LineEditor::MoveForward(int* piChar)
 	return false;
 }
 
-bool Terminal::LineEditor::MoveBackward(int* piChar)
+bool Editable::LineEditor::MoveBackward(int* piChar)
 {
 	if (*piChar > 0) {
 		char* pStart = GetPointer(*piChar);
@@ -617,19 +630,19 @@ bool Terminal::LineEditor::MoveBackward(int* piChar)
 	return false;
 }
 
-bool Terminal::LineEditor::MoveHome()
+bool Editable::LineEditor::MoveHome()
 {
 	iCharCursor_ = 0;
 	return true;
 }
 
-bool Terminal::LineEditor::MoveEnd()
+bool Editable::LineEditor::MoveEnd()
 {
 	iCharCursor_ = ::strlen(buff_);
 	return true;
 }
 
-bool Terminal::LineEditor::DeleteToHome()
+bool Editable::LineEditor::DeleteToHome()
 {
 	if (iCharCursor_ > 0) {
 		char* p = GetPointer(iCharCursor_);
@@ -642,7 +655,7 @@ bool Terminal::LineEditor::DeleteToHome()
 	return false;
 }
 
-bool Terminal::LineEditor::DeleteToEnd(int iChar)
+bool Editable::LineEditor::DeleteToEnd(int iChar)
 {
 	char* p = GetPointer(iChar);
 	if (*p) {
@@ -653,7 +666,7 @@ bool Terminal::LineEditor::DeleteToEnd(int iChar)
 	return false;
 }
 
-bool Terminal::LineEditor::AddHistory(const char* str)
+bool Editable::LineEditor::AddHistory(const char* str)
 {
 	const char*p = str;
 	for ( ; std::isspace(*p); p++) ;
@@ -668,7 +681,7 @@ bool Terminal::LineEditor::AddHistory(const char* str)
 	return true;
 }
 
-bool Terminal::LineEditor::MoveHistoryPrev()
+bool Editable::LineEditor::MoveHistoryPrev()
 {
 	bool updateFlag = false;
 	if (GetHistoryBuff().GetLineMark()) {
@@ -684,7 +697,7 @@ bool Terminal::LineEditor::MoveHistoryPrev()
 	return updateFlag;
 }
 
-bool Terminal::LineEditor::MoveHistoryNext()
+bool Editable::LineEditor::MoveHistoryNext()
 {
 	if (GetHistoryBuff().GetLineMark() && GetHistoryBuff().MoveLineMarkDown(pLineStop_History_)) {
 		ReplaceWithHistory();
@@ -693,12 +706,12 @@ bool Terminal::LineEditor::MoveHistoryNext()
 	return false;
 }
 
-void Terminal::LineEditor::EndHistory()
+void Editable::LineEditor::EndHistory()
 {
 	GetHistoryBuff().RemoveLineMark();
 }
 
-void Terminal::LineEditor::ReplaceWithHistory()
+void Editable::LineEditor::ReplaceWithHistory()
 {
 	const char* pLineMark = GetHistoryBuff().GetLineMark();
 	WrappedCharFeeder charFeeder(GetHistoryBuff().CreateCharFeeder(pLineMark));
@@ -723,29 +736,29 @@ void Terminal::InputUART::OnTick(Terminal& terminal)
 		// nothing to do
 	} else if (decoder_.GetKeyData(&keyData)) {
 		switch (keyData) {
-		case VK_RETURN:	terminal.Edit_Finish('\n');		break;
-		case VK_DELETE:	terminal.Edit_Delete();			break;
-		case VK_BACK:	terminal.Edit_Back();			break;
-		case VK_LEFT:	terminal.Edit_MoveBackward();	break;
-		case VK_RIGHT:	terminal.Edit_MoveForward();	break;
-		case VK_UP:		terminal.Edit_HistoryPrev();	break;
-		case VK_DOWN:	terminal.Edit_HistoryNext();	break;
-		case VK_PRIOR:	terminal.RollUp();				break;
-		case VK_NEXT:	terminal.RollDown();			break;
+		case VK_RETURN:	terminal.Edit_Finish('\n');			break;
+		case VK_DELETE:	terminal.Edit_DeleteChar();			break;
+		case VK_BACK:	terminal.Edit_Back();				break;
+		case VK_LEFT:	terminal.Edit_MoveBackward();		break;
+		case VK_RIGHT:	terminal.Edit_MoveForward();		break;
+		case VK_UP:		terminal.Edit_MoveHistoryPrev();	break;
+		case VK_DOWN:	terminal.Edit_MoveHistoryNext();	break;
+		case VK_PRIOR:	terminal.RollUp();					break;
+		case VK_NEXT:	terminal.RollDown();				break;
 		default: break;
 		}
 	} else if (keyData < 0x20) {
 		switch (keyData + '@') {
-		case 'A':		terminal.Edit_MoveHome();		break;
-		case 'B':		terminal.Edit_MoveBackward();	break;
-		case 'D':		terminal.Edit_Delete();			break;
-		case 'E':		terminal.Edit_MoveEnd();		break;
-		case 'F':		terminal.Edit_MoveForward();	break;
-		case 'J':		terminal.Edit_Finish('\n');		break;
-		case 'K':		terminal.Edit_DeleteToEnd();	break;
-		case 'N':		terminal.Edit_HistoryNext();	break;
-		case 'P':		terminal.Edit_HistoryPrev();	break;
-		case 'U':		terminal.Edit_DeleteToHome();	break;
+		case 'A':		terminal.Edit_MoveHome();			break;
+		case 'B':		terminal.Edit_MoveBackward();		break;
+		case 'D':		terminal.Edit_DeleteChar();			break;
+		case 'E':		terminal.Edit_MoveEnd();			break;
+		case 'F':		terminal.Edit_MoveForward();		break;
+		case 'J':		terminal.Edit_Finish('\n');			break;
+		case 'K':		terminal.Edit_DeleteToEnd();		break;
+		case 'N':		terminal.Edit_MoveHistoryNext();	break;
+		case 'P':		terminal.Edit_MoveHistoryPrev();	break;
+		case 'U':		terminal.Edit_DeleteToHome();		break;
 		default: break;
 		}
 	} else {
