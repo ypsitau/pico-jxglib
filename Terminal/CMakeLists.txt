@@ -6,6 +6,7 @@ target_include_directories(jxglib_Terminal INTERFACE
 target_link_libraries(jxglib_Terminal INTERFACE
 	jxglib_Display
 	jxglib_LineBuff
+	jxglib_Editable
 	jxglib_VT100
 	jxglib_UART)
 

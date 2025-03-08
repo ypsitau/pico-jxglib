@@ -47,7 +47,7 @@ pico_enable_stdio_usb(test-Editable 0)
 # Add the standard library to the build
 target_link_libraries(test-Editable
     pico_stdlib
-    jxglib_Drawable)
+    jxglib_Editable)
 
 # Add the standard include files to the build
 target_include_directories(test-Editable PRIVATE
