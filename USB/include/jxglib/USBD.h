@@ -39,10 +39,6 @@ class Device : public Tickable {
 public:
 	static const int nInstancesMax = CFG_TUD_CDC + CFG_TUD_MSC + CFG_TUD_HID + CFG_TUD_AUDIO +
 		CFG_TUD_VIDEO + CFG_TUD_MIDI + CFG_TUD_VENDOR + CFG_TUD_BTH;
-	struct Attr {
-		static const uint8_t REMOTE_WAKEUP = TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP;
-		static const uint8_t SELF_POWERED = TUSB_DESC_CONFIG_ATT_SELF_POWERED;
-	};
 public:
 	tusb_desc_device_t deviceDesc_;
 	uint8_t rhport_;

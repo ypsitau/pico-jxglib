@@ -1,6 +1,7 @@
 //==============================================================================
 // Terminal.cpp
 //==============================================================================
+#include <cctype>
 #include "jxglib/Terminal.h"
 
 namespace jxglib {
@@ -542,9 +543,7 @@ void Terminal::LineEditor::Begin()
 
 void Terminal::LineEditor::Finish()
 {
-	if (*GetPointerBegin()) {
-		AddHistory(GetPointerBegin());
-	}
+	AddHistory(GetPointerBegin());
 	editingFlag_ = false;
 }
 
@@ -656,8 +655,14 @@ bool Terminal::LineEditor::DeleteToEnd(int iChar)
 
 bool Terminal::LineEditor::AddHistory(const char* str)
 {
+	const char*p = str;
+	for ( ; std::isspace(*p); p++) ;
+	if (!*p) return false;
 	char* pLine = GetHistoryBuff().GetLineLast();
-	GetHistoryBuff().PrevLine(&pLine);
+	if (GetHistoryBuff().PrevLine(&pLine)) {
+		WrappedCharFeeder charFeeder(GetHistoryBuff().CreateCharFeeder(pLine));
+		if (charFeeder.Compare(str) == 0) return false;
+	}
 	GetHistoryBuff().Print(str).PutChar('\0');
 	GetHistoryBuff().MoveLineLastHere().PlaceChar('\0');
 	return true;
