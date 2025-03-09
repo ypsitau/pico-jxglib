@@ -1,153 +1,122 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "jxglib/Editable.h"
 #include "jxglib/UART.h"
 #include "jxglib/VT100.h"
 
 using namespace jxglib;
 
-class EditableEx : public Editable, public Tickable {
-private:
-	Printable& printable_;
-	VT100::Decoder decoder_;
-public:
-	EditableEx(Printable& printable) : Tickable(0), printable_{printable} {}
-public:
-	bool Initialize();
-public:
-	// virtual functions of Editable
-	virtual Editable& Edit_Begin();
-	virtual Editable& Edit_Finish(char chEnd = '\0');
-	virtual Editable& Edit_InsertChar(int ch);
-	virtual Editable& Edit_DeleteChar();
-	virtual Editable& Edit_Back();
-	virtual Editable& Edit_MoveForward();
-	virtual Editable& Edit_MoveBackward();
-	virtual Editable& Edit_MoveHome();
-	virtual Editable& Edit_MoveEnd();
-	virtual Editable& Edit_DeleteToHome();
-	virtual Editable& Edit_DeleteToEnd();
-	virtual Editable& Edit_MoveHistoryPrev();
-	virtual Editable& Edit_MoveHistoryNext();
-public:
-	// virtual function of Tickable
-	virtual void OnTick() override;
-};
 
-bool EditableEx::Initialize()
+bool VT100::Terminal::Initialize()
 {
 	if (!Editable::Initialize()) return false;
 	Tickable::AddTickable(*this);
 	return true;
 }
 
-Editable& EditableEx::Edit_Begin()
+Editable& VT100::Terminal::Edit_Begin()
 {
-	VT100::SaveCursorPosition(printable_);
+	SaveCursorPosition(printable_);
 	return *this;
 }
 
-Editable& EditableEx::Edit_Finish(char chEnd)
+Editable& VT100::Terminal::Edit_Finish(char chEnd)
 {
 	printable_.PutChar(chEnd);
 	return *this;
 }
 
-Editable& EditableEx::Edit_InsertChar(int ch)
+Editable& VT100::Terminal::Edit_InsertChar(int ch)
 {
-	int nChars = GetLineEditor().CountFollowingChars();
 	if (GetLineEditor().InsertChar(ch)) {
-		VT100::RestoreCursorPosition(printable_);
+		RestoreCursorPosition(printable_);
 		printable_.Print(GetLineEditor().GetPointerBegin());
-		VT100::CursorBackward(printable_, nChars);
+		CursorBackward(printable_, GetLineEditor().CountFollowingChars());
 		printable_.RefreshScreen();
 	}
 	return *this;
 }
 
-Editable& EditableEx::Edit_DeleteChar()
+Editable& VT100::Terminal::Edit_DeleteChar()
 {
-	int nChars = GetLineEditor().CountFollowingChars();
 	if (GetLineEditor().DeleteChar()) {
-		VT100::RestoreCursorPosition(printable_);
+		RestoreCursorPosition(printable_);
 		printable_.Print(GetLineEditor().GetPointerBegin());
-		VT100::EraseToEndOfLine(printable_);
-		VT100::CursorBackward(printable_, nChars - 1);
+		EraseToEndOfLine(printable_);
+		CursorBackward(printable_, GetLineEditor().CountFollowingChars());
 		printable_.RefreshScreen();
 	}
 	return *this;
 }
 
-Editable& EditableEx::Edit_Back()
+Editable& VT100::Terminal::Edit_Back()
 {
-	int nChars = GetLineEditor().CountFollowingChars();
 	if (GetLineEditor().Back()) {
-		VT100::RestoreCursorPosition(printable_);
+		RestoreCursorPosition(printable_);
 		printable_.Print(GetLineEditor().GetPointerBegin());
-		VT100::EraseToEndOfLine(printable_);
-		VT100::CursorBackward(printable_, nChars);
+		EraseToEndOfLine(printable_);
+		CursorBackward(printable_, GetLineEditor().CountFollowingChars());
 		printable_.RefreshScreen();
 	}
 	return *this;
 }
 
-Editable& EditableEx::Edit_MoveForward()
+Editable& VT100::Terminal::Edit_MoveForward()
 {
 	if (GetLineEditor().MoveForward()) {
-		VT100::CursorForward(printable_);
+		CursorForward(printable_);
 		printable_.RefreshScreen();
 	}
 	return *this;
 }
 
-Editable& EditableEx::Edit_MoveBackward()
+Editable& VT100::Terminal::Edit_MoveBackward()
 {
 	if (GetLineEditor().MoveBackward()) {
-		VT100::CursorBackward(printable_);
+		CursorBackward(printable_);
 		printable_.RefreshScreen();
 	}
 	return *this;
 }
 
-Editable& EditableEx::Edit_MoveHome()
+Editable& VT100::Terminal::Edit_MoveHome()
 {
 	if (GetLineEditor().MoveHome()) {
-		VT100::RestoreCursorPosition(printable_);
+		RestoreCursorPosition(printable_);
 		printable_.RefreshScreen();
 	}
 	return *this;
 }
 
-Editable& EditableEx::Edit_MoveEnd()
+Editable& VT100::Terminal::Edit_MoveEnd()
 {
 	if (GetLineEditor().MoveEnd()) {
-		VT100::RestoreCursorPosition(printable_);
+		RestoreCursorPosition(printable_);
 		printable_.RefreshScreen();
 	}
 	return *this;
 }
 
-Editable& EditableEx::Edit_DeleteToHome()
+Editable& VT100::Terminal::Edit_DeleteToHome()
 {
 	return *this;
 }
 
-Editable& EditableEx::Edit_DeleteToEnd()
+Editable& VT100::Terminal::Edit_DeleteToEnd()
 {
 	return *this;
 }
 
-Editable& EditableEx::Edit_MoveHistoryPrev()
+Editable& VT100::Terminal::Edit_MoveHistoryPrev()
 {
 	return *this;
 }
 
-Editable& EditableEx::Edit_MoveHistoryNext()
+Editable& VT100::Terminal::Edit_MoveHistoryNext()
 {
 	return *this;
 }
 
-void EditableEx::OnTick()
+void VT100::Terminal::OnTick()
 {
 	UART& uart = UART::Default;
 	int keyData;
@@ -188,8 +157,8 @@ void EditableEx::OnTick()
 
 int main()
 {
-	EditableEx editable(UART::Default);
-	editable.Initialize();
+	VT100::Terminal terminal(UART::Default);
+	terminal.Initialize();
 	::stdio_init_all();
 	for (;;) Tickable::Tick();
 }

@@ -28,33 +28,32 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-VT100 C CXX ASM)
+project(test-Decoder C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-VT100 test-VT100.cpp )
+add_executable(test-Decoder test-Decoder.cpp )
 
-pico_set_program_name(test-VT100 "test-VT100")
-pico_set_program_version(test-VT100 "0.1")
+pico_set_program_name(test-Decoder "test-Decoder")
+pico_set_program_version(test-Decoder "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-VT100 1)
-pico_enable_stdio_usb(test-VT100 0)
+pico_enable_stdio_uart(test-Decoder 1)
+pico_enable_stdio_usb(test-Decoder 0)
 
 # Add the standard library to the build
-target_link_libraries(test-VT100
+target_link_libraries(test-Decoder
 	pico_stdlib
-	jxglib_UART
 	jxglib_VT100)
 
 # Add the standard include files to the build
-target_include_directories(test-VT100 PRIVATE
+target_include_directories(test-Decoder PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-VT100)
+pico_add_extra_outputs(test-Decoder)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../../.. pico-jxglib)
