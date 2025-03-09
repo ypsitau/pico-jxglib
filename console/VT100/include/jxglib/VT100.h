@@ -9,6 +9,8 @@
 #include "jxglib/KeyCode.h"
 #include "jxglib/FIFOBuff.h"
 
+#include "jxglib/UART.h"
+
 namespace jxglib {
 
 //------------------------------------------------------------------------------
@@ -16,7 +18,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class VT100 {
 public:
-class Decoder {
+	class Decoder {
 	public:
 		enum class Stat {
 			First, Escape,
@@ -54,6 +56,7 @@ class Decoder {
 		Terminal(Printable& printable) : Tickable(0), printable_{printable} {}
 	public:
 		bool Initialize();
+		char* ReadLine(const char* prompt);
 	public:
 		// virtual functions of Printable
 		virtual Printable& ClearScreen() { return printable_.ClearScreen(); }
@@ -88,12 +91,12 @@ class Decoder {
 	};
 public:
 	// Cursor movement
-	static void CursorUp(Printable& printable, int nRows = 1) { printable.Printf("\x1b[%dA", nRows); }
-	static void CursorDown(Printable& printable, int nRows = 1) { printable.Printf("\x1b[%dB", nRows); }
-	static void CursorForward(Printable& printable, int nCols = 1) { printable.Printf("\x1b[%dC", nCols); }
-	static void CursorBackward(Printable& printable, int nCols = 1) { printable.Printf("\x1b[%dD", nCols); }
-	static void CursorNextLine(Printable& printable, int nRows = 1) { printable.Printf("\x1b[%dE", nRows); }
-	static void CursorPreviousLine(Printable& printable, int nRows = 1) { printable.Printf("\x1b[%dF", nRows); }
+	static void CursorUp(Printable& printable, int nRows = 1) { if (nRows > 0) printable.Printf("\x1b[%dA", nRows); }
+	static void CursorDown(Printable& printable, int nRows = 1) { if (nRows > 0) printable.Printf("\x1b[%dB", nRows); }
+	static void CursorForward(Printable& printable, int nCols = 1) { if (nCols > 0) printable.Printf("\x1b[%dC", nCols); }
+	static void CursorBackward(Printable& printable, int nCols = 1) { if (nCols > 0) printable.Printf("\x1b[%dD", nCols); }
+	static void CursorNextLine(Printable& printable, int nRows = 1) { if (nRows > 0) printable.Printf("\x1b[%dE", nRows); }
+	static void CursorPreviousLine(Printable& printable, int nRows = 1) { if (nRows > 0) printable.Printf("\x1b[%dF", nRows); }
 	static void CursorHorizontalAbsolute(Printable& printable, int n) { printable.Printf("\x1b[%dG", n); }
 	static void CursorPosition(Printable& printable, int row, int column) { printable.Printf("\x1b[%d;%dH", row, column); }
 	// Line erasure
@@ -106,11 +109,11 @@ public:
 	static void EraseScreen(Printable& printable) { printable.Printf("\x1b[2J"); }
 	static void EraseScreenAndScrollbackBuffer(Printable& printable) { printable.Printf("\x1b[3J"); }
 	// Character erasure
-	static void DeleteCharacters(Printable& printable, int nChars) { printable.Printf("\x1b[%dP", nChars); }
-	static void EraseCharacters(Printable& printable, int nChars) { printable.Printf("\x1b[%dX", nChars); }
+	static void DeleteCharacters(Printable& printable, int nChars) { if (nChars > 0) printable.Printf("\x1b[%dP", nChars); }
+	static void EraseCharacters(Printable& printable, int nChars) { if (nChars > 0) printable.Printf("\x1b[%dX", nChars); }
 	// Scrolling
-	static void ScrollUp(Printable& printable, int nRows = 1) { printable.Printf("\x1b[%dS", nRows); }
-	static void ScrollDown(Printable& printable, int nRows = 1) { printable.Printf("\x1b[%dT", nRows); }
+	static void ScrollUp(Printable& printable, int nRows = 1) { if (nRows > 0) printable.Printf("\x1b[%dS", nRows); }
+	static void ScrollDown(Printable& printable, int nRows = 1) { if (nRows > 0) printable.Printf("\x1b[%dT", nRows); }
 	// Other
 	static void SaveCursorPosition(Printable& printable) { printable.Printf("\x1b[s"); }
 	static void RestoreCursorPosition(Printable& printable) { printable.Printf("\x1b[u"); }
