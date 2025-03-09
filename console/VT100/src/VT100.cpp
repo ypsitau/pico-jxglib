@@ -350,12 +350,26 @@ Editable& VT100::Terminal::Edit_DeleteToEnd()
 Editable& VT100::Terminal::Edit_MoveHistoryPrev()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
+	if (GetLineEditor().MoveHistoryPrev()) {
+		RestoreCursorPosition(printable_);
+		printable_.Print(GetLineEditor().GetPointerBegin());
+		EraseToEndOfLine(printable_);
+		CursorBackward(printable_, GetLineEditor().CountFollowingChars());
+		printable_.RefreshScreen();
+	}
 	return *this;
 }
 
 Editable& VT100::Terminal::Edit_MoveHistoryNext()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
+	if (GetLineEditor().MoveHistoryNext()) {
+		RestoreCursorPosition(printable_);
+		printable_.Print(GetLineEditor().GetPointerBegin());
+		EraseToEndOfLine(printable_);
+		CursorBackward(printable_, GetLineEditor().CountFollowingChars());
+		printable_.RefreshScreen();
+	}
 	return *this;
 }
 

@@ -500,7 +500,6 @@ Editable& Terminal::Edit_DeleteToEnd()
 Editable& Terminal::Edit_MoveHistoryPrev()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
-	//GetHistoryBuff().PrintInfo(UART::Default);
 	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
 	if (GetLineEditor().MoveHistoryPrev()) {
 		EraseCursor(iByteCursorPrev);
