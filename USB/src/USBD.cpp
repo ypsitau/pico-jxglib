@@ -1,7 +1,7 @@
 //==============================================================================
 // USBD.cpp
 //==============================================================================
-#include "jxglib/UTF8Decoder.h"
+#include "jxglib/UTF8.h"
 #include "jxglib/USBD.h"
 
 //-----------------------------------------------------------------------------
@@ -101,7 +101,7 @@ const uint16_t* Device::On_GET_STRING_DESCRIPTOR(uint8_t idxString, uint16_t lan
 		stringDesc_[1] = langid_;
 		bytesDst = 2;
 	} else {
-		UTF8Decoder decoder;
+		UTF8::Decoder decoder;
 		uint8_t* pDst = reinterpret_cast<uint8_t*>(&stringDesc_[1]);
 		for (const char* pSrc = stringDescTbl_[idxString]; *pSrc; pSrc++) {
 			uint32_t codeUTF32;

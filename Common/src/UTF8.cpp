@@ -1,14 +1,38 @@
 //==============================================================================
-// UTF8Decoder.cpp
+// UTF8.cpp
 //==============================================================================
-#include "jxglib/UTF8Decoder.h"
+#include "jxglib/UTF8.h"
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// UTF8Decoder
+// UTF8
 //------------------------------------------------------------------------------
-bool UTF8Decoder::FeedChar(char ch, uint32_t* pCodeUTF32)
+uint32_t UTF8::ToUTF32(const char* str, int* pBytes)
+{
+	uint32_t codeUTF32 = 0;
+	Decoder decoder;
+	const char* p = str;
+	for ( ; *p; p++) {
+		if (decoder.FeedChar(*p, &codeUTF32)) break;
+	}
+	if (pBytes) *pBytes = p - str + 1;
+	return codeUTF32;
+}
+
+int UTF8::CountChars(const char* str)
+{
+	int nChars = 0;
+	for (auto p = reinterpret_cast<const uint8_t*>(str); *p; p++) {
+		if ((*p & 0xc0) != 0x80) nChars++; // Check if it's not a continuation byte
+	}
+	return nChars;
+}
+
+//------------------------------------------------------------------------------
+// UTF8::Decoder
+//------------------------------------------------------------------------------
+bool UTF8::Decoder::FeedChar(char ch, uint32_t* pCodeUTF32)
 {
 	strOrg_[iStrOrg_++] = ch;
 	uint8_t chCasted = static_cast<uint8_t>(ch);
@@ -47,27 +71,6 @@ bool UTF8Decoder::FeedChar(char ch, uint32_t* pCodeUTF32)
 		nFollowers_ = 5;
 	}
 	return false;
-}
-
-uint32_t UTF8Decoder::ToUTF32(const char* str, int* pBytes)
-{
-	uint32_t codeUTF32 = 0;
-	UTF8Decoder decoder;
-	const char* p = str;
-	for ( ; *p; p++) {
-		if (decoder.FeedChar(*p, &codeUTF32)) break;
-	}
-	if (pBytes) *pBytes = p - str + 1;
-	return codeUTF32;
-}
-
-int UTF8Decoder::CountChars(const char* str)
-{
-	int nChars = 0;
-	for (auto p = reinterpret_cast<const uint8_t*>(str); *p; p++) {
-		if ((*p & 0xc0) != 0x80) nChars++; // Check if it's not a continuation byte
-	}
-	return nChars;
 }
 
 }

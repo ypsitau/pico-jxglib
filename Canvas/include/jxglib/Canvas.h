@@ -9,7 +9,7 @@
 #include "jxglib/Drawable.h"
 #include "jxglib/Font.h"
 #include "jxglib/Image.h"
-#include "jxglib/UTF8Decoder.h"
+#include "jxglib/UTF8.h"
 #include "jxglib/Util.h"
 
 namespace jxglib {

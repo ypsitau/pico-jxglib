@@ -5,7 +5,7 @@
 #define PICO_JXGLIB_FONT_H
 #include "pico/stdlib.h"
 #include "jxglib/Size.h"
-#include "jxglib/UTF8Decoder.h"
+#include "jxglib/UTF8.h"
 
 namespace jxglib {
 

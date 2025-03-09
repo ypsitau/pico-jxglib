@@ -213,7 +213,7 @@ void Terminal::DrawEditorArea()
 	Color colorFgSaved = context_.colorFg;
 	context_.colorFg = colorTextInEdit_;
 	Point pt = ptCurrent_;
-	UTF8Decoder decoder;
+	UTF8::Decoder decoder;
 	for (const char* p = GetLineEditor().GetPointerBegin(); *p; p++) {
 		uint32_t codeUTF32;
 		if (!decoder.FeedChar(*p, &codeUTF32)) continue;
@@ -243,7 +243,7 @@ Point Terminal::CalcDrawPos(const Point& ptBase, int iByte, int wdAdvance)
 {
 	Point pt = ptBase;
 	int yAdvance = context_.CalcAdvanceY();
-	UTF8Decoder decoder;
+	UTF8::Decoder decoder;
 	const char* pEnd = GetLineEditor().GetPointer(iByte);
 	for (const char* p = GetLineEditor().GetPointerBegin(); *p && p < pEnd; p++) {
 		uint32_t codeUTF32;
@@ -279,7 +279,7 @@ void Terminal::DrawCursor(int iByteCursor)
 void Terminal::EraseCursor(int iByteCursor)
 {
 	const char* p = GetLineEditor().GetPointer(iByteCursor);
-	uint32_t codeUTF32 = UTF8Decoder::ToUTF32(p);
+	uint32_t codeUTF32 = UTF8::ToUTF32(p);
 	Point pt = CalcDrawPos(ptCurrent_, iByteCursor, wdCursor_);
 	pt.x -= wdCursor_;
 	int yAdvance = context_.CalcAdvanceY();
@@ -337,7 +337,7 @@ void Terminal::DrawTextLine(int iLine, const char* pLineTop)
 	int y = rectDst_.y + yAdvance * iLine;
 	uint32_t codeUTF32;
 	WrappedCharFeeder charFeeder(GetLineBuff().CreateCharFeeder(pLineTop));
-	UTF8Decoder decoder;
+	UTF8::Decoder decoder;
 	for (;;) {
 		char ch = charFeeder.Get();
 		if (!ch || ch == '\n' || ch == '\r') break;

@@ -15,7 +15,7 @@ Size Drawable::CalcStringSize(const char* str) const
 	if (!context_.pFontSet) return Size::Zero;
 	Size size(0, 0);
 	uint32_t code;
-	UTF8Decoder decoder;
+	UTF8::Decoder decoder;
 	for (const char* p = str; *p; p++) {
 		if (!decoder.FeedChar(*p, &code)) continue;
 		const FontEntry& fontEntry = context_.pFontSet->GetFontEntry(code);
@@ -163,7 +163,7 @@ Drawable& Drawable::DrawString(int x, int y, const char* str, bool transparentBg
 {
 	if (!context_.pFontSet) return *this;
 	uint32_t code;
-	UTF8Decoder decoder;
+	UTF8::Decoder decoder;
 	const char* p = str;
 	for ( ; *p; p++) {
 		if (!decoder.FeedChar(*p, &code)) continue;
@@ -179,7 +179,7 @@ Drawable& Drawable::DrawStringWrap(int x, int y, int width, int height, const ch
 {
 	if (!context_.pFontSet) return *this;
 	uint32_t code;
-	UTF8Decoder decoder;
+	UTF8::Decoder decoder;
 	int xStart = x;
 	int xExceed = (width >= 0)? x + width : width_;
 	int yExceed = (height >= 0)? y + height : height_;

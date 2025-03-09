@@ -66,7 +66,7 @@ private:
 	Rect rectDst_;
 	int nLinesWhole_;
 	Point ptCurrent_;
-	UTF8Decoder decoder_;
+	UTF8::Decoder decoder_;
 	LineBuff lineBuff_;
 	Drawable::Context context_;
 	EventHandler* pEventHandler_;

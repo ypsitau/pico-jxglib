@@ -17,5 +17,5 @@ target_sources(jxglib_Common INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/Size.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Tickable.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Util.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/UTF8Decoder.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/UTF8.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/WrappedPointer.cpp)

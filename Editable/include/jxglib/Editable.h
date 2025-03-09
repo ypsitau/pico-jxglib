@@ -22,7 +22,7 @@ public:
 		bool editingFlag_;
 		int iByteCursor_;
 		char buff_[EditBuffSize];
-		UTF8Decoder decoder_;
+		UTF8::Decoder decoder_;
 		LineBuff historyBuff_;
 		const char* pLineStop_History_;
 	public:
@@ -40,8 +40,8 @@ public:
 		char* GetPointerEnd() { return buff_ + GetIByteEnd(); }
 		const char* GetPointer(int iByte) const { return buff_ + iByte; }
 		const char* GetPointerAtCursor() const { return buff_ + iByteCursor_; }
-		int CountFollowingChars() const { return UTF8Decoder::CountChars(GetPointer(iByteCursor_)); }
-		int CountFollowingChars(int iByte) const { return UTF8Decoder::CountChars(GetPointer(iByte)); }
+		int CountFollowingChars() const { return CountFollowingChars(iByteCursor_); }
+		int CountFollowingChars(int iByte) const { return UTF8::CountChars(GetPointer(iByte)); }
 		void Clear();
 		bool InsertChar(char ch);
 		bool DeleteChar();

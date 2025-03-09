@@ -13,7 +13,7 @@
 #include "Rect.h"
 #include "Size.h"
 #include "Tickable.h"
-#include "UTF8Decoder.h"
+#include "UTF8.h"
 #include "Util.h"
 
 #endif

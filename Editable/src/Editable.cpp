@@ -72,7 +72,7 @@ bool Editable::LineEditor::DeleteChar()
 	char *p = GetPointer(iByteCursor_);
 	if (*p) {
 		int bytes;
-		UTF8Decoder::ToUTF32(p, &bytes);
+		UTF8::ToUTF32(p, &bytes);
 		::memmove(p, p + bytes, ::strlen(p + bytes) + 1);
 		EndHistory();
 		return true;
