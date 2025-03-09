@@ -20,7 +20,7 @@ public:
 	class LineEditor {
 	private:
 		bool editingFlag_;
-		int iCharCursor_;
+		int iByteCursor_;
 		char buff_[EditBuffSize];
 		UTF8Decoder decoder_;
 		LineBuff historyBuff_;
@@ -33,28 +33,29 @@ public:
 		void Finish();
 		bool IsEditing() { return editingFlag_; }
 		bool IsEmpty() const { return buff_[0] == '\0'; }
-		int GetICharCursor() const { return iCharCursor_; }
-		int GetICharEnd() const { return ::strlen(buff_); }
-		int GetPosition(int iChar) const;
-		char* GetPointer(int iChar) { return buff_ + iChar; }
+		int GetIByteCursor() const { return iByteCursor_; }
+		int GetIByteEnd() const { return ::strlen(buff_); }
+		char* GetPointer(int iByte) { return buff_ + iByte; }
 		char* GetPointerBegin() { return buff_; }
-		char* GetPointerEnd() { return buff_ + GetICharEnd(); }
-		const char* GetPointer(int iChar) const { return buff_ + iChar; }
-		const char* GetPointerAtCursor() const { return buff_ + iCharCursor_; }
+		char* GetPointerEnd() { return buff_ + GetIByteEnd(); }
+		const char* GetPointer(int iByte) const { return buff_ + iByte; }
+		const char* GetPointerAtCursor() const { return buff_ + iByteCursor_; }
+		int CountFollowingChars() const { return UTF8Decoder::CountChars(GetPointer(iByteCursor_)); }
+		int CountFollowingChars(int iByte) const { return UTF8Decoder::CountChars(GetPointer(iByte)); }
 		void Clear();
 		bool InsertChar(char ch);
 		bool DeleteChar();
 		bool Back() { return MoveBackward() && DeleteChar(); }
 		bool DeleteLastChar();
-		bool MoveForward() { return MoveForward(&iCharCursor_); }
-		bool MoveBackward() { return MoveBackward(&iCharCursor_); }
-		bool MoveForward(int* pIChar);
-		bool MoveBackward(int* pIChar);
+		bool MoveForward() { return MoveForward(&iByteCursor_); }
+		bool MoveBackward() { return MoveBackward(&iByteCursor_); }
+		bool MoveForward(int* pIByte);
+		bool MoveBackward(int* pIByte);
 		bool MoveHome();
 		bool MoveEnd();
 		bool DeleteToHome();
-		bool DeleteToEnd() { return DeleteToEnd(iCharCursor_); }
-		bool DeleteToEnd(int iChar);
+		bool DeleteToEnd() { return DeleteToEnd(iByteCursor_); }
+		bool DeleteToEnd(int iByte);
 	public:
 		bool AddHistory(const char* str);
 		bool MoveHistoryPrev();

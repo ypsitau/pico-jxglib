@@ -23,7 +23,7 @@ bool Editable::Initialize()
 // Editable::LineEditor
 //------------------------------------------------------------------------------
 Editable::LineEditor::LineEditor(int bytesHistoryBuff) :
-	editingFlag_{false}, iCharCursor_{0}, historyBuff_(bytesHistoryBuff), pLineStop_History_{nullptr}
+	editingFlag_{false}, iByteCursor_{0}, historyBuff_(bytesHistoryBuff), pLineStop_History_{nullptr}
 {
 	buff_[0] = '\0';
 }
@@ -45,24 +45,19 @@ void Editable::LineEditor::Finish()
 	editingFlag_ = false;
 }
 
-int Editable::LineEditor::GetPosition(int iChar) const
-{
-	return iChar;
-}
-
 void Editable::LineEditor::Clear()
 {
-	iCharCursor_ = 0;
+	iByteCursor_ = 0;
 	buff_[0] = '\0';
 }
 
 bool Editable::LineEditor::InsertChar(char ch)
 {
 	if (::strlen(buff_) + 1 < sizeof(buff_)) {
-		char *p = GetPointer(iCharCursor_);
+		char *p = GetPointer(iByteCursor_);
 		::memmove(p + 1, p, ::strlen(p) + 1);
 		*p = ch;
-		iCharCursor_++;
+		iByteCursor_++;
 		uint32_t codeUTF32;
 		if (decoder_.FeedChar(ch, &codeUTF32)) {
 			EndHistory();
@@ -74,7 +69,7 @@ bool Editable::LineEditor::InsertChar(char ch)
 
 bool Editable::LineEditor::DeleteChar()
 {
-	char *p = GetPointer(iCharCursor_);
+	char *p = GetPointer(iByteCursor_);
 	if (*p) {
 		int bytes;
 		UTF8Decoder::ToUTF32(p, &bytes);
@@ -87,34 +82,34 @@ bool Editable::LineEditor::DeleteChar()
 
 bool Editable::LineEditor::DeleteLastChar()
 {
-	int iChar = GetICharEnd();
-	if (MoveBackward(&iChar)) {
-		DeleteToEnd(iChar);
-		if (iCharCursor_ > iChar) iCharCursor_ = iChar;
+	int iByte = GetIByteEnd();
+	if (MoveBackward(&iByte)) {
+		DeleteToEnd(iByte);
+		if (iByteCursor_ > iByte) iByteCursor_ = iByte;
 		return true;
 	}
 	return false;
 }
 
-bool Editable::LineEditor::MoveForward(int* piChar)
+bool Editable::LineEditor::MoveForward(int* piByte)
 {
-	char *pStart = GetPointer(*piChar);
+	char *pStart = GetPointer(*piByte);
 	if (*pStart) {
 		char* p = pStart + 1;
 		for ( ; (*p & 0xc0) == 0x80; p++) ;
-		*piChar += p - pStart;
+		*piByte += p - pStart;
 		return true;
 	}
 	return false;
 }
 
-bool Editable::LineEditor::MoveBackward(int* piChar)
+bool Editable::LineEditor::MoveBackward(int* piByte)
 {
-	if (*piChar > 0) {
-		char* pStart = GetPointer(*piChar);
+	if (*piByte > 0) {
+		char* pStart = GetPointer(*piByte);
 		char* p = pStart - 1;
 		for ( ; p != buff_ && (*p & 0xc0) == 0x80; p--) ;
-		*piChar -= pStart - p;
+		*piByte -= pStart - p;
 		return true;
 	}
 	return false;
@@ -122,32 +117,32 @@ bool Editable::LineEditor::MoveBackward(int* piChar)
 
 bool Editable::LineEditor::MoveHome()
 {
-	iCharCursor_ = 0;
+	iByteCursor_ = 0;
 	return true;
 }
 
 bool Editable::LineEditor::MoveEnd()
 {
-	iCharCursor_ = ::strlen(buff_);
+	iByteCursor_ = ::strlen(buff_);
 	return true;
 }
 
 bool Editable::LineEditor::DeleteToHome()
 {
-	if (iCharCursor_ > 0) {
-		char* p = GetPointer(iCharCursor_);
+	if (iByteCursor_ > 0) {
+		char* p = GetPointer(iByteCursor_);
 		int bytes = ::strlen(p) + 1;
 		::memmove(buff_, p, bytes);
-		iCharCursor_ = 0;
+		iByteCursor_ = 0;
 		EndHistory();
 		return true;
 	}
 	return false;
 }
 
-bool Editable::LineEditor::DeleteToEnd(int iChar)
+bool Editable::LineEditor::DeleteToEnd(int iByte)
 {
-	char* p = GetPointer(iChar);
+	char* p = GetPointer(iByte);
 	if (*p) {
 		*p = '\0';
 		EndHistory();
@@ -211,7 +206,7 @@ void Editable::LineEditor::ReplaceWithHistory()
 		*buffp = ch;
 		if (!ch) break;
 	}
-	iCharCursor_ = buffp - buff_;
+	iByteCursor_ = buffp - buff_;
 }
 
 }

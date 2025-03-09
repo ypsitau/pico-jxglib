@@ -139,11 +139,11 @@ public:
 	void AppendChar(char ch, bool drawFlag);
 	void AppendString(const char* str, bool drawFlag);
 	void DrawEditorArea();
-	Point CalcDrawPos(const Point& ptBase, int iChar, int wdAdvance);
+	Point CalcDrawPos(const Point& ptBase, int iByte, int wdAdvance);
 public:
 	void SetCursorBlinkSpeed(int msecBlink) { tickable_Blink_.SetTick(msecBlink); }
-	void DrawCursor(int iCharCursor);
-	void EraseCursor(int iCharCursor);
+	void DrawCursor(int iByteCursor);
+	void EraseCursor(int iByteCursor);
 	void BlinkCursor();
 private:
 	void DrawLatestTextLines(bool refreshFlag);

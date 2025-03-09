@@ -6,8 +6,16 @@
 
 using namespace jxglib;
 
-class EditableEx : public Editable {
+class EditableEx : public Editable, public Tickable {
+private:
+	Printable& printable_;
+	VT100::Decoder decoder_;
 public:
+	EditableEx(Printable& printable) : Tickable(0), printable_{printable} {}
+public:
+	bool Initialize();
+public:
+	// virtual functions of Editable
 	virtual Editable& Edit_Begin();
 	virtual Editable& Edit_Finish(char chEnd = '\0');
 	virtual Editable& Edit_InsertChar(int ch);
@@ -21,48 +29,64 @@ public:
 	virtual Editable& Edit_DeleteToEnd();
 	virtual Editable& Edit_MoveHistoryPrev();
 	virtual Editable& Edit_MoveHistoryNext();
+public:
+	// virtual function of Tickable
+	virtual void OnTick() override;
 };
+
+bool EditableEx::Initialize()
+{
+	if (!Editable::Initialize()) return false;
+	Tickable::AddTickable(*this);
+	return true;
+}
 
 Editable& EditableEx::Edit_Begin()
 {
-	::printf("\033[s");	// save position
+	VT100::SaveCursorPosition(printable_);
 	return *this;
 }
 
 Editable& EditableEx::Edit_Finish(char chEnd)
 {
-	::printf("%c", chEnd);
+	printable_.PutChar(chEnd);
 	return *this;
 }
 
 Editable& EditableEx::Edit_InsertChar(int ch)
 {
+	int nChars = GetLineEditor().CountFollowingChars();
 	if (GetLineEditor().InsertChar(ch)) {
-		::printf("\033[u"); // return to saved position
-		::printf("%s", GetLineEditor().GetPointerBegin());
-		::fflush(stdout);
+		VT100::RestoreCursorPosition(printable_);
+		printable_.Print(GetLineEditor().GetPointerBegin());
+		VT100::CursorBackward(printable_, nChars);
+		printable_.RefreshScreen();
 	}
 	return *this;
 }
 
 Editable& EditableEx::Edit_DeleteChar()
 {
+	int nChars = GetLineEditor().CountFollowingChars();
 	if (GetLineEditor().DeleteChar()) {
-		::printf("\033[u"); // return to saved position
-		::printf("%s", GetLineEditor().GetPointerBegin());
-		::printf("\033[K");
-		::fflush(stdout);
+		VT100::RestoreCursorPosition(printable_);
+		printable_.Print(GetLineEditor().GetPointerBegin());
+		VT100::EraseToEndOfLine(printable_);
+		VT100::CursorBackward(printable_, nChars - 1);
+		printable_.RefreshScreen();
 	}
 	return *this;
 }
 
 Editable& EditableEx::Edit_Back()
 {
+	int nChars = GetLineEditor().CountFollowingChars();
 	if (GetLineEditor().Back()) {
-		::printf("\033[u"); // return to saved position
-		::printf("%s", GetLineEditor().GetPointerBegin());
-		::printf("\033[K");
-		::fflush(stdout);
+		VT100::RestoreCursorPosition(printable_);
+		printable_.Print(GetLineEditor().GetPointerBegin());
+		VT100::EraseToEndOfLine(printable_);
+		VT100::CursorBackward(printable_, nChars);
+		printable_.RefreshScreen();
 	}
 	return *this;
 }
@@ -70,8 +94,8 @@ Editable& EditableEx::Edit_Back()
 Editable& EditableEx::Edit_MoveForward()
 {
 	if (GetLineEditor().MoveForward()) {
-		::printf("\033[C");
-		::fflush(stdout);
+		VT100::CursorForward(printable_);
+		printable_.RefreshScreen();
 	}
 	return *this;
 }
@@ -79,8 +103,8 @@ Editable& EditableEx::Edit_MoveForward()
 Editable& EditableEx::Edit_MoveBackward()
 {
 	if (GetLineEditor().MoveBackward()) {
-		::printf("\033[D");
-		::fflush(stdout);
+		VT100::CursorBackward(printable_);
+		printable_.RefreshScreen();
 	}
 	return *this;
 }
@@ -88,8 +112,8 @@ Editable& EditableEx::Edit_MoveBackward()
 Editable& EditableEx::Edit_MoveHome()
 {
 	if (GetLineEditor().MoveHome()) {
-		::printf("\033[u"); // return to saved position
-		::fflush(stdout);
+		VT100::RestoreCursorPosition(printable_);
+		printable_.RefreshScreen();
 	}
 	return *this;
 }
@@ -97,8 +121,8 @@ Editable& EditableEx::Edit_MoveHome()
 Editable& EditableEx::Edit_MoveEnd()
 {
 	if (GetLineEditor().MoveEnd()) {
-		::printf("\033[u"); // return to saved position
-		::fflush(stdout);
+		VT100::RestoreCursorPosition(printable_);
+		printable_.RefreshScreen();
 	}
 	return *this;
 }
@@ -123,52 +147,49 @@ Editable& EditableEx::Edit_MoveHistoryNext()
 	return *this;
 }
 
-void OnTick(UART& uart, VT100::Decoder& decoder_, Editable& editable)
+void EditableEx::OnTick()
 {
-	//UART& uart = *pUART_;
+	UART& uart = UART::Default;
 	int keyData;
 	while (uart.raw.is_readable()) decoder_.FeedChar(uart.raw.getc());
 	if (!decoder_.HasKeyData()) {
 		// nothing to do
 	} else if (decoder_.GetKeyData(&keyData)) {
 		switch (keyData) {
-		case VK_RETURN:	editable.Edit_Finish('\n');			break;
-		case VK_DELETE:	editable.Edit_DeleteChar();			break;
-		case VK_BACK:	editable.Edit_Back();				break;
-		case VK_LEFT:	editable.Edit_MoveBackward();		break;
-		case VK_RIGHT:	editable.Edit_MoveForward();		break;
-		case VK_UP:		editable.Edit_MoveHistoryPrev();	break;
-		case VK_DOWN:	editable.Edit_MoveHistoryNext();	break;
-		//case VK_PRIOR:	editable.RollUp();					break;
-		//case VK_NEXT:	editable.RollDown();				break;
+		case VK_RETURN:	Edit_Finish('\n');		break;
+		case VK_DELETE:	Edit_DeleteChar();		break;
+		case VK_BACK:	Edit_Back();			break;
+		case VK_LEFT:	Edit_MoveBackward();	break;
+		case VK_RIGHT:	Edit_MoveForward();		break;
+		case VK_UP:		Edit_MoveHistoryPrev();	break;
+		case VK_DOWN:	Edit_MoveHistoryNext();	break;
+		//case VK_PRIOR:	RollUp();					break;
+		//case VK_NEXT:		RollDown();				break;
 		default: break;
 		}
 	} else if (keyData < 0x20) {
 		switch (keyData + '@') {
-		case 'A':		editable.Edit_MoveHome();			break;
-		case 'B':		editable.Edit_MoveBackward();		break;
-		case 'D':		editable.Edit_DeleteChar();			break;
-		case 'E':		editable.Edit_MoveEnd();			break;
-		case 'F':		editable.Edit_MoveForward();		break;
-		case 'J':		editable.Edit_Finish('\n');			break;
-		case 'K':		editable.Edit_DeleteToEnd();		break;
-		case 'N':		editable.Edit_MoveHistoryNext();	break;
-		case 'P':		editable.Edit_MoveHistoryPrev();	break;
-		case 'U':		editable.Edit_DeleteToHome();		break;
+		case 'A':		Edit_MoveHome();		break;
+		case 'B':		Edit_MoveBackward();	break;
+		case 'D':		Edit_DeleteChar();		break;
+		case 'E':		Edit_MoveEnd();			break;
+		case 'F':		Edit_MoveForward();		break;
+		case 'J':		Edit_Finish('\n');		break;
+		case 'K':		Edit_DeleteToEnd();		break;
+		case 'N':		Edit_MoveHistoryNext();	break;
+		case 'P':		Edit_MoveHistoryPrev();	break;
+		case 'U':		Edit_DeleteToHome();	break;
 		default: break;
 		}
 	} else {
-		editable.Edit_InsertChar(keyData);
+		Edit_InsertChar(keyData);
 	}
 }
 
 int main()
 {
-	VT100::Decoder decoder;
-	EditableEx editable;
+	EditableEx editable(UART::Default);
 	editable.Initialize();
 	::stdio_init_all();
-	for (;;) {
-		OnTick(UART::Default, decoder, editable);
-	}
+	for (;;) Tickable::Tick();
 }

@@ -62,7 +62,7 @@ Terminal& Terminal::BeginRollBack()
 	GetLineBuff().PrevLine(&pLineTop, nLines - 1);
 	GetLineBuff().SetLineMark(pLineTop);
 	pLineStop_RollBack_ = pLineTop;
-	if (showCursorFlag_) EraseCursor(GetLineEditor().GetICharCursor());
+	if (showCursorFlag_) EraseCursor(GetLineEditor().GetIByteCursor());
 	return *this;
 }
 
@@ -204,7 +204,7 @@ void Terminal::AppendString(const char* str, bool drawFlag)
 void Terminal::DrawEditorArea()
 {
 	int yAdvance = context_.CalcAdvanceY();
-	Point ptEnd = CalcDrawPos(ptCurrent_, GetLineEditor().GetICharEnd(), wdCursor_);
+	Point ptEnd = CalcDrawPos(ptCurrent_, GetLineEditor().GetIByteEnd(), wdCursor_);
 	int htExceed = ptEnd.y + yAdvance - (rectDst_.GetBottomExceed() / yAdvance * yAdvance);
 	if (htExceed > 0) {
 		if (ptCurrent_.y - htExceed >= rectDst_.y) ptCurrent_.y -= htExceed;
@@ -239,12 +239,12 @@ void Terminal::DrawEditorArea()
 	GetDrawable().Refresh();
 }
 
-Point Terminal::CalcDrawPos(const Point& ptBase, int iChar, int wdAdvance)
+Point Terminal::CalcDrawPos(const Point& ptBase, int iByte, int wdAdvance)
 {
 	Point pt = ptBase;
 	int yAdvance = context_.CalcAdvanceY();
 	UTF8Decoder decoder;
-	const char* pEnd = GetLineEditor().GetPointer(iChar);
+	const char* pEnd = GetLineEditor().GetPointer(iByte);
 	for (const char* p = GetLineEditor().GetPointerBegin(); *p && p < pEnd; p++) {
 		uint32_t codeUTF32;
 		if (!decoder.FeedChar(*p, &codeUTF32)) continue;
@@ -266,21 +266,21 @@ Point Terminal::CalcDrawPos(const Point& ptBase, int iChar, int wdAdvance)
 	return pt;
 }
 
-void Terminal::DrawCursor(int iCharCursor)
+void Terminal::DrawCursor(int iByteCursor)
 {
 	int yAdvance = context_.CalcAdvanceY();
-	Point pt = CalcDrawPos(ptCurrent_, iCharCursor, wdCursor_);
+	Point pt = CalcDrawPos(ptCurrent_, iByteCursor, wdCursor_);
 	if (pt.y + yAdvance <= rectDst_.GetBottomExceed()) {
 		pt.x -= wdCursor_;
 		GetDrawable().DrawRectFill(pt, Size(wdCursor_, yAdvance), colorCursor_).Refresh();
 	}
 }
 
-void Terminal::EraseCursor(int iCharCursor)
+void Terminal::EraseCursor(int iByteCursor)
 {
-	const char* p = GetLineEditor().GetPointer(iCharCursor);
+	const char* p = GetLineEditor().GetPointer(iByteCursor);
 	uint32_t codeUTF32 = UTF8Decoder::ToUTF32(p);
-	Point pt = CalcDrawPos(ptCurrent_, iCharCursor, wdCursor_);
+	Point pt = CalcDrawPos(ptCurrent_, iByteCursor, wdCursor_);
 	pt.x -= wdCursor_;
 	int yAdvance = context_.CalcAdvanceY();
 	if (pt.y + yAdvance <= rectDst_.GetBottomExceed()) {
@@ -303,8 +303,8 @@ void Terminal::BlinkCursor()
 {
 	if (showCursorFlag_ && !IsRollingBack()) {
 		appearCursorFlag_ = !appearCursorFlag_;
-		int iCharCursor = GetLineEditor().GetICharCursor();
-		if (appearCursorFlag_) DrawCursor(iCharCursor); else EraseCursor(iCharCursor);
+		int iByteCursor = GetLineEditor().GetIByteCursor();
+		if (appearCursorFlag_) DrawCursor(iByteCursor); else EraseCursor(iByteCursor);
 	}
 }
 
@@ -391,16 +391,16 @@ Editable& Terminal::Edit_InsertChar(int ch)
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (IsRollingBack()) EndRollBack();
-	int iCharCursorPrev = GetLineEditor().GetICharCursor();
+	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
 	if (GetLineEditor().InsertChar(ch)) {
 		int yAdvance = context_.CalcAdvanceY();
 		for ( ; !GetLineEditor().IsEmpty(); GetLineEditor().DeleteLastChar()) {
-			Point ptEnd = CalcDrawPos(rectDst_.GetPointNW(), GetLineEditor().GetICharEnd(), wdCursor_);
+			Point ptEnd = CalcDrawPos(rectDst_.GetPointNW(), GetLineEditor().GetIByteEnd(), wdCursor_);
 			if (ptEnd.y + yAdvance <= rectDst_.GetBottomExceed()) break;
 		}
-		EraseCursor(iCharCursorPrev);
+		EraseCursor(iByteCursorPrev);
 		DrawEditorArea();
-		DrawCursor(GetLineEditor().GetICharCursor());
+		DrawCursor(GetLineEditor().GetIByteCursor());
 	}
 	return *this;
 }
@@ -408,11 +408,11 @@ Editable& Terminal::Edit_InsertChar(int ch)
 Editable& Terminal::Edit_DeleteChar()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
-	int iCharCursorPrev = GetLineEditor().GetICharCursor();
+	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
 	if (GetLineEditor().DeleteChar()) {
-		EraseCursor(iCharCursorPrev);
+		EraseCursor(iByteCursorPrev);
 		DrawEditorArea();
-		DrawCursor(GetLineEditor().GetICharCursor());
+		DrawCursor(GetLineEditor().GetIByteCursor());
 	}
 	return *this;
 }
@@ -420,11 +420,11 @@ Editable& Terminal::Edit_DeleteChar()
 Editable& Terminal::Edit_Back()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
-	int iCharCursorPrev = GetLineEditor().GetICharCursor();
+	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
 	if (GetLineEditor().Back()) {
-		EraseCursor(iCharCursorPrev);
+		EraseCursor(iByteCursorPrev);
 		DrawEditorArea();
-		DrawCursor(GetLineEditor().GetICharCursor());
+		DrawCursor(GetLineEditor().GetIByteCursor());
 	}
 	return *this;
 }
@@ -432,10 +432,10 @@ Editable& Terminal::Edit_Back()
 Editable& Terminal::Edit_MoveForward()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
-	int iCharCursorPrev = GetLineEditor().GetICharCursor();
+	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
 	if (GetLineEditor().MoveForward()) {
-		EraseCursor(iCharCursorPrev);
-		DrawCursor(GetLineEditor().GetICharCursor());
+		EraseCursor(iByteCursorPrev);
+		DrawCursor(GetLineEditor().GetIByteCursor());
 	}
 	return *this;
 }
@@ -443,10 +443,10 @@ Editable& Terminal::Edit_MoveForward()
 Editable& Terminal::Edit_MoveBackward()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
-	int iCharCursorPrev = GetLineEditor().GetICharCursor();
+	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
 	if (GetLineEditor().MoveBackward()) {
-		EraseCursor(iCharCursorPrev);
-		DrawCursor(GetLineEditor().GetICharCursor());
+		EraseCursor(iByteCursorPrev);
+		DrawCursor(GetLineEditor().GetIByteCursor());
 	}
 	return *this;
 }
@@ -454,10 +454,10 @@ Editable& Terminal::Edit_MoveBackward()
 Editable& Terminal::Edit_MoveHome()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
-	int iCharCursorPrev = GetLineEditor().GetICharCursor();
+	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
 	if (GetLineEditor().MoveHome()) {
-		EraseCursor(iCharCursorPrev);
-		DrawCursor(GetLineEditor().GetICharCursor());
+		EraseCursor(iByteCursorPrev);
+		DrawCursor(GetLineEditor().GetIByteCursor());
 	}
 	return *this;
 }
@@ -465,10 +465,10 @@ Editable& Terminal::Edit_MoveHome()
 Editable& Terminal::Edit_MoveEnd()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
-	int iCharCursorPrev = GetLineEditor().GetICharCursor();
+	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
 	if (GetLineEditor().MoveEnd()) {
-		EraseCursor(iCharCursorPrev);
-		DrawCursor(GetLineEditor().GetICharCursor());
+		EraseCursor(iByteCursorPrev);
+		DrawCursor(GetLineEditor().GetIByteCursor());
 	}
 	return *this;
 }
@@ -476,11 +476,11 @@ Editable& Terminal::Edit_MoveEnd()
 Editable& Terminal::Edit_DeleteToHome()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
-	int iCharCursorPrev = GetLineEditor().GetICharCursor();
+	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
 	if (GetLineEditor().DeleteToHome()) {
-		EraseCursor(iCharCursorPrev);
+		EraseCursor(iByteCursorPrev);
 		DrawEditorArea();
-		DrawCursor(GetLineEditor().GetICharCursor());
+		DrawCursor(GetLineEditor().GetIByteCursor());
 	}
 	return *this;
 }
@@ -488,11 +488,11 @@ Editable& Terminal::Edit_DeleteToHome()
 Editable& Terminal::Edit_DeleteToEnd()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
-	int iCharCursorPrev = GetLineEditor().GetICharCursor();
+	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
 	if (GetLineEditor().DeleteToEnd()) {
-		EraseCursor(iCharCursorPrev);
+		EraseCursor(iByteCursorPrev);
 		DrawEditorArea();
-		DrawCursor(GetLineEditor().GetICharCursor());
+		DrawCursor(GetLineEditor().GetIByteCursor());
 	}
 	return *this;
 }
@@ -501,11 +501,11 @@ Editable& Terminal::Edit_MoveHistoryPrev()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	//GetHistoryBuff().PrintInfo(UART::Default);
-	int iCharCursorPrev = GetLineEditor().GetICharCursor();
+	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
 	if (GetLineEditor().MoveHistoryPrev()) {
-		EraseCursor(iCharCursorPrev);
+		EraseCursor(iByteCursorPrev);
 		DrawEditorArea();
-		DrawCursor(GetLineEditor().GetICharCursor());
+		DrawCursor(GetLineEditor().GetIByteCursor());
 	}
 	return *this;
 }
@@ -513,11 +513,11 @@ Editable& Terminal::Edit_MoveHistoryPrev()
 Editable& Terminal::Edit_MoveHistoryNext()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
-	int iCharCursorPrev = GetLineEditor().GetICharCursor();
+	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
 	if (GetLineEditor().MoveHistoryNext()) {
-		EraseCursor(iCharCursorPrev);
+		EraseCursor(iByteCursorPrev);
 		DrawEditorArea();
-		DrawCursor(GetLineEditor().GetICharCursor());
+		DrawCursor(GetLineEditor().GetIByteCursor());
 	}
 	return *this;
 }
