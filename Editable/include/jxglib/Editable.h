@@ -10,6 +10,8 @@
 
 namespace jxglib {
 
+class Printable;
+
 //------------------------------------------------------------------------------
 // Editable
 //------------------------------------------------------------------------------
@@ -74,7 +76,9 @@ public:
 public:
 	bool Initialize();
 	LineEditor& GetLineEditor() { return lineEditor_; }
+	char* ReadLine(const char* prompt);
 public:
+	virtual Printable& GetPrintable() = 0;
 	virtual Editable& Edit_Begin() = 0;
 	virtual Editable& Edit_Finish(char chEnd = '\0') = 0;
 	virtual Editable& Edit_InsertChar(int ch) = 0;

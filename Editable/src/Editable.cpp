@@ -19,6 +19,17 @@ bool Editable::Initialize()
 	return GetLineEditor().Initialize();
 }
 
+char* Editable::ReadLine(const char* prompt)
+{
+	GetPrintable().Print(prompt).RefreshScreen();
+	Edit_Begin();
+	for (;;) {
+		Tickable::Tick();
+		if (!GetLineEditor().IsEditing()) break;
+	}
+	return GetLineEditor().GetPointerBegin();
+}
+
 //------------------------------------------------------------------------------
 // Editable::LineEditor
 //------------------------------------------------------------------------------

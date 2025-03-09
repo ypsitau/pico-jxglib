@@ -119,40 +119,6 @@ Terminal& Terminal::ShowCursor(bool showCursorFlag)
 	return *this;
 }
 
-Printable& Terminal::ClearScreen()
-{
-	GetDrawable().DrawRectFill(rectDst_, GetColorBg()).Refresh();
-	GetLineBuff().Clear();
-	Locate(0, 0);
-	return *this;
-}
-
-Printable& Terminal::RefreshScreen()
-{
-	GetDrawable().Refresh();
-	return *this;
-}
-
-Printable& Terminal::Locate(int col, int row)
-{
-	const FontEntry& fontEntry = GetFont().GetFontEntry('M');
-	ptCurrent_ = Point(
-		rectDst_.x + context_.CalcAdvanceX(fontEntry) * col,
-		rectDst_.y + context_.CalcAdvanceY() * row);
-	return *this;
-}
-
-char* Terminal::ReadLine(const char* prompt)
-{
-	Print(prompt);
-	Edit_Begin();
-	for (;;) {
-		Tickable::Tick();
-		if (!GetLineEditor().IsEditing()) break;
-	}
-	return GetLineEditor().GetPointerBegin();
-}
-
 void Terminal::AppendChar(char ch, bool drawFlag)
 {
 	Point& pt = ptCurrent_;
@@ -367,6 +333,37 @@ void Terminal::ScrollUp(int nLinesToScroll, bool refreshFlag)
 	if (refreshFlag) GetDrawable().Refresh();
 }
 
+// Virtual functions of Printable
+Printable& Terminal::ClearScreen()
+{
+	GetDrawable().DrawRectFill(rectDst_, GetColorBg()).Refresh();
+	GetLineBuff().Clear();
+	Locate(0, 0);
+	return *this;
+}
+
+Printable& Terminal::RefreshScreen()
+{
+	GetDrawable().Refresh();
+	return *this;
+}
+
+Printable& Terminal::Locate(int col, int row)
+{
+	const FontEntry& fontEntry = GetFont().GetFontEntry('M');
+	ptCurrent_ = Point(
+		rectDst_.x + context_.CalcAdvanceX(fontEntry) * col,
+		rectDst_.y + context_.CalcAdvanceY() * row);
+	return *this;
+}
+
+Printable& Terminal::PutChar(char ch)
+{
+	AppendChar(ch, !suppressFlag_);
+	return *this;
+};
+
+// virtual functions of Editable
 Editable& Terminal::Edit_Begin()
 {
 	ShowCursor();

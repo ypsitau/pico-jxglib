@@ -128,14 +128,6 @@ public:
 public:
 	Terminal& ShowCursor(bool showCursorFlag = true);
 public:
-	// Virtual functions of Printable
-	virtual Printable& ClearScreen() override;
-	virtual Printable& RefreshScreen() override;
-	virtual Printable& Locate(int col, int row) override;
-	virtual Printable& PutChar(char ch) override { AppendChar(ch, !suppressFlag_); return *this; };
-public:
-	char* ReadLine(const char* prompt);
-public:
 	void AppendChar(char ch, bool drawFlag);
 	void AppendString(const char* str, bool drawFlag);
 	void DrawEditorArea();
@@ -151,7 +143,14 @@ private:
 	void DrawTextLine(int iLine, const char* pLineTop);
 	void ScrollUp(int nLinesToScroll, bool refreshFlag);
 public:
+	// Virtual functions of Printable
+	virtual Printable& ClearScreen() override;
+	virtual Printable& RefreshScreen() override;
+	virtual Printable& Locate(int col, int row) override;
+	virtual Printable& PutChar(char ch) override;
+public:
 	// virtual functions of Editable
+	virtual Printable& GetPrintable() override { return *this; }
 	virtual Editable& Edit_Begin() override;
 	virtual Editable& Edit_Finish(char chEnd = '\0') override;
 	virtual Editable& Edit_InsertChar(int ch) override;

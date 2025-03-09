@@ -31,7 +31,7 @@ private:
 	uint32_t msecStart_;
 	Tickable* pTickableNext_;
 public:
-	Tickable(uint32_t msecTick = -1) : msecTick_{msecTick}, msecStart_{0}, pTickableNext_{nullptr} {}
+	Tickable(uint32_t msecTick = 0) : msecTick_{msecTick}, msecStart_{0}, pTickableNext_{nullptr} {}
 public:
 	static void AddTickable(Tickable& tickable) { Master::Instance.AddTickable(tickable); }
 	static bool Tick(uint32_t msecTick = 0) { return Master::Instance.Tick(msecTick); }
