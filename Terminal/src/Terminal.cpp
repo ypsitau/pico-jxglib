@@ -421,7 +421,7 @@ Editable& Terminal::Edit_Back()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	int iCharCursorPrev = GetLineEditor().GetICharCursor();
-	if (GetLineEditor().MoveBackward() && GetLineEditor().DeleteChar()) {
+	if (GetLineEditor().Back()) {
 		EraseCursor(iCharCursorPrev);
 		DrawEditorArea();
 		DrawCursor(GetLineEditor().GetICharCursor());

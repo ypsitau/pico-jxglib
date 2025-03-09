@@ -45,6 +45,11 @@ void Editable::LineEditor::Finish()
 	editingFlag_ = false;
 }
 
+int Editable::LineEditor::GetPosition(int iChar) const
+{
+	return iChar;
+}
+
 void Editable::LineEditor::Clear()
 {
 	iCharCursor_ = 0;

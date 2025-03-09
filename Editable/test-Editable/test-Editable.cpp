@@ -47,11 +47,23 @@ Editable& EditableEx::Edit_InsertChar(int ch)
 
 Editable& EditableEx::Edit_DeleteChar()
 {
+	if (GetLineEditor().DeleteChar()) {
+		::printf("\033[u"); // return to saved position
+		::printf("%s", GetLineEditor().GetPointerBegin());
+		::printf("\033[K");
+		::fflush(stdout);
+	}
 	return *this;
 }
 
 Editable& EditableEx::Edit_Back()
 {
+	if (GetLineEditor().Back()) {
+		::printf("\033[u"); // return to saved position
+		::printf("%s", GetLineEditor().GetPointerBegin());
+		::printf("\033[K");
+		::fflush(stdout);
+	}
 	return *this;
 }
 
@@ -84,6 +96,10 @@ Editable& EditableEx::Edit_MoveHome()
 
 Editable& EditableEx::Edit_MoveEnd()
 {
+	if (GetLineEditor().MoveEnd()) {
+		::printf("\033[u"); // return to saved position
+		::fflush(stdout);
+	}
 	return *this;
 }
 

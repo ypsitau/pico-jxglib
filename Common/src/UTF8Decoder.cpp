@@ -61,4 +61,13 @@ uint32_t UTF8Decoder::ToUTF32(const char* str, int* pBytes)
 	return codeUTF32;
 }
 
+int UTF8Decoder::CountChars(const char* str)
+{
+	int nChars = 0;
+	for (auto p = reinterpret_cast<const uint8_t*>(str); *p; p++) {
+		if ((*p & 0xc0) != 0x80) nChars++; // Check if it's not a continuation byte
+	}
+	return nChars;
+}
+
 }

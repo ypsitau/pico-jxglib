@@ -35,6 +35,7 @@ public:
 		bool IsEmpty() const { return buff_[0] == '\0'; }
 		int GetICharCursor() const { return iCharCursor_; }
 		int GetICharEnd() const { return ::strlen(buff_); }
+		int GetPosition(int iChar) const;
 		char* GetPointer(int iChar) { return buff_ + iChar; }
 		char* GetPointerBegin() { return buff_; }
 		char* GetPointerEnd() { return buff_ + GetICharEnd(); }
@@ -43,6 +44,7 @@ public:
 		void Clear();
 		bool InsertChar(char ch);
 		bool DeleteChar();
+		bool Back() { return MoveBackward() && DeleteChar(); }
 		bool DeleteLastChar();
 		bool MoveForward() { return MoveForward(&iCharCursor_); }
 		bool MoveBackward() { return MoveBackward(&iCharCursor_); }
