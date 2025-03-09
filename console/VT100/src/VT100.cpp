@@ -218,17 +218,6 @@ bool VT100::Terminal::Initialize()
 	return true;
 }
 
-char* VT100::Terminal::ReadLine(const char* prompt)
-{
-	Print(prompt);
-	Edit_Begin();
-	for (;;) {
-		Tickable::Tick();
-		if (!GetLineEditor().IsEditing()) break;
-	}
-	return GetLineEditor().GetPointerBegin();
-}
-
 Editable& VT100::Terminal::Edit_Begin()
 {
 	GetLineEditor().Begin();

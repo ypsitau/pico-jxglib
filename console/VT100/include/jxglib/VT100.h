@@ -56,7 +56,6 @@ public:
 		Terminal(Printable& printable) : Tickable(0), printable_{printable} {}
 	public:
 		bool Initialize();
-		char* ReadLine(const char* prompt);
 	public:
 		// virtual functions of Printable
 		virtual Printable& ClearScreen() { return printable_.ClearScreen(); }
@@ -72,6 +71,7 @@ public:
 		virtual Printable& VPrintfRaw(const char* format, va_list args) { return printable_.VPrintfRaw(format, args); }
 	public:
 		// virtual functions of Editable
+		virtual Printable& GetPrintable() override { return printable_; }
 		virtual Editable& Edit_Begin();
 		virtual Editable& Edit_Finish(char chEnd = '\0');
 		virtual Editable& Edit_InsertChar(int ch);
