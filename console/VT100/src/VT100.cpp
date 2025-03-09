@@ -316,6 +316,7 @@ Editable& VT100::Terminal::Edit_MoveEnd()
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (GetLineEditor().MoveEnd()) {
 		RestoreCursorPosition(printable_);
+		printable_.Print(GetLineEditor().GetPointerBegin());
 		printable_.RefreshScreen();
 	}
 	return *this;
@@ -324,12 +325,25 @@ Editable& VT100::Terminal::Edit_MoveEnd()
 Editable& VT100::Terminal::Edit_DeleteToHome()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
+	if (GetLineEditor().DeleteToHome()) {
+		RestoreCursorPosition(printable_);
+		printable_.Print(GetLineEditor().GetPointerBegin());
+		EraseToEndOfLine(printable_);
+		RestoreCursorPosition(printable_);
+		printable_.RefreshScreen();
+	}
 	return *this;
 }
 
 Editable& VT100::Terminal::Edit_DeleteToEnd()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
+	if (GetLineEditor().DeleteToEnd()) {
+		RestoreCursorPosition(printable_);
+		printable_.Print(GetLineEditor().GetPointerBegin());
+		EraseToEndOfLine(printable_);
+		printable_.RefreshScreen();
+	}
 	return *this;
 }
 
