@@ -51,7 +51,7 @@ public:
 		Printable& printable_;
 		Decoder decoder_;
 	public:
-		Terminal(Printable& printable) : Tickable(0), printable_{printable} {}
+		Terminal(Printable& printable = PrintableStdio::Instance) : Tickable(0), printable_{printable} {}
 	public:
 		bool Initialize();
 	public:

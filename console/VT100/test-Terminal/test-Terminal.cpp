@@ -4,10 +4,11 @@
 
 using namespace jxglib;
 
+VT100::Terminal terminal;
+
 int main()
 {
 	::stdio_init_all();
-	VT100::Terminal terminal(PrintableStdio::Instance);
 	terminal.Initialize();
 	for (;;) {
 		::printf("%s\n", terminal.ReadLine(">"));
