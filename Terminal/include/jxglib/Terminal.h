@@ -10,7 +10,6 @@
 #include "jxglib/Font.h"
 #include "jxglib/LineBuff.h"
 #include "jxglib/VT100.h"
-#include "jxglib/UART.h"
 
 namespace jxglib {
 
@@ -27,14 +26,11 @@ public:
 	public:
 		virtual void OnTick(Terminal& terminal) = 0;
 	};
-	class InputUART : public Input {
+	class InputStdio : public Input {
 	private:
-		UART* pUART_;
 		VT100::Decoder decoder_;
 	public:
-		InputUART() : pUART_{nullptr} {}
-	public:
-		void SetUART(UART& uart) { pUART_ = &uart; }
+		InputStdio() {}
 	public:
 		// virtual function of Input
 		virtual void OnTick(Terminal& terminal) override;
@@ -78,7 +74,7 @@ private:
 	Color colorCursor_;
 	int wdCursor_;
 	Input* pInput_;
-	InputUART inputUART_;
+	InputStdio inputStdio_;
 	Tickable_Blink tickable_Blink_;
 	Tickable_Input tickable_Input_;
 public:
@@ -86,7 +82,7 @@ public:
 public:
 	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
 	void AttachInput(Input& input, int msecTick);
-	void AttachInput(UART& uart);
+	void AttachInputStdio();
 	void TickInput() { if (pInput_) pInput_->OnTick(*this); }
 public:
 	Drawable& GetDrawable() { return *pDrawable_; }

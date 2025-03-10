@@ -41,9 +41,9 @@ int main()
 	terminal.AttachOutput(display);
 	//terminal.AttachOutput(display, {30, 30, 100, 100});
 #endif
-	terminal.AttachInput(UART::Default);
+	terminal.AttachInputStdio();
 	terminal.SetFont(fontSet).SetColorBg(colorBg).SetSpacingRatio(1., 1).ClearScreen();
-	terminal.Dump.Cols(12)(reinterpret_cast<const void*>(0x10000000), 8 * 20);
+	terminal.Dump.Cols(8)(reinterpret_cast<const void*>(0x10000000), 8 * 20);
 	//terminal.SetCursorBlinkSpeed(10);
 	for (;;) {
 		char* str = terminal.ReadLine(">");

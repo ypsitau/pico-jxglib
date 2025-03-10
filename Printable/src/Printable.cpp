@@ -11,7 +11,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // Printable
 //------------------------------------------------------------------------------
-Printable* Printable::pStandardOutput_ = &UART::Default;
+Printable* Printable::pStandardOutput_ = &PrintableStdio::Instance;
 
 Printable& Printable::Print(const char* str)
 {
@@ -165,6 +165,11 @@ void Printable::DumpT::PrintAscii(Printable& printable, const char* asciiBuff, i
 		printable.PutChar((0x20 <= ch && ch < 0x7f)? ch : '.');
 	}
 }
+
+//------------------------------------------------------------------------------
+// PrintableStdio
+//------------------------------------------------------------------------------
+PrintableStdio PrintableStdio::Instance;
 
 //------------------------------------------------------------------------------
 // PrintableDumb

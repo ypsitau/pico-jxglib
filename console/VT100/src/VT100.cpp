@@ -364,9 +364,9 @@ Editable& VT100::Terminal::Edit_MoveHistoryNext()
 
 void VT100::Terminal::OnTick()
 {
-	UART& uart = UART::Default;
+	int ch;
 	int keyData;
-	while (uart.raw.is_readable()) decoder_.FeedChar(uart.raw.getc());
+	while ((ch = ::stdio_getchar_timeout_us(0)) > 0) decoder_.FeedChar(ch);
 	if (!decoder_.HasKeyData()) {
 		// nothing to do
 	} else if (decoder_.GetKeyData(&keyData)) {

@@ -6,9 +6,9 @@ using namespace jxglib;
 
 int main()
 {
-	VT100::Terminal terminal(UART::Default);
-	terminal.Initialize();
 	::stdio_init_all();
+	VT100::Terminal terminal(PrintableStdio::Instance);
+	terminal.Initialize();
 	for (;;) {
 		::printf("%s\n", terminal.ReadLine(">"));
 	}

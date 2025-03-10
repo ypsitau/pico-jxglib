@@ -9,8 +9,6 @@
 #include "jxglib/KeyCode.h"
 #include "jxglib/FIFOBuff.h"
 
-#include "jxglib/UART.h"
-
 namespace jxglib {
 
 //------------------------------------------------------------------------------

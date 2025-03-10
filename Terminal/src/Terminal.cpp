@@ -37,10 +37,9 @@ void Terminal::AttachInput(Input& input, int msecTick)
 	}
 }
 
-void Terminal::AttachInput(UART& uart)
+void Terminal::AttachInputStdio()
 {
-	inputUART_.SetUART(uart);
-	AttachInput(inputUART_, 50);
+	AttachInput(inputStdio_, 50);
 }
 
 int Terminal::CalcApproxNColsOnDisplay() const
@@ -519,13 +518,13 @@ Editable& Terminal::Edit_MoveHistoryNext()
 }
 
 //------------------------------------------------------------------------------
-// Terminal::InputUART
+// Terminal::InputStdio
 //------------------------------------------------------------------------------
-void Terminal::InputUART::OnTick(Terminal& terminal)
+void Terminal::InputStdio::OnTick(Terminal& terminal)
 {
-	UART& uart = *pUART_;
+	int ch;
 	int keyData;
-	while (uart.raw.is_readable()) decoder_.FeedChar(uart.raw.getc());
+	while ((ch = ::stdio_getchar_timeout_us(0)) > 0) decoder_.FeedChar(ch);
 	if (!decoder_.HasKeyData()) {
 		// nothing to do
 	} else if (decoder_.GetKeyData(&keyData)) {

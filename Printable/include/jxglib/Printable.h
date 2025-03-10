@@ -3,6 +3,7 @@
 //==============================================================================
 #ifndef PICO_JXGLIB_PRINTABLE_H
 #define PICO_JXGLIB_PRINTABLE_H
+#include <string.h>
 #include "pico/stdlib.h"
 #include "jxglib/Common.h"
 
@@ -71,6 +72,24 @@ public:
 public:
 	static void SetStandardOutput(Printable& printable) { pStandardOutput_ = &printable; }
 	static Printable& GetStandardOutput() { return *pStandardOutput_; }
+};
+
+//------------------------------------------------------------------------------
+// PrintableStdio
+//------------------------------------------------------------------------------
+class PrintableStdio : public Printable {
+public:
+	static PrintableStdio Instance;
+public:
+	virtual Printable& ClearScreen() { return *this; }
+	virtual Printable& RefreshScreen() { ::stdio_flush(); return *this; }
+	virtual Printable& Locate(int col, int row) { return *this; }
+	virtual Printable& PutChar(char ch) { ::stdio_putchar(ch); return *this; }
+	virtual Printable& PutCharRaw(char ch) { ::stdio_putchar_raw(ch); return *this; }
+	virtual Printable& Print(const char* str) { ::stdio_put_string(str, ::strlen(str), false, true); return *this; }
+	virtual Printable& PrintRaw(const char* str) { ::stdio_put_string(str, ::strlen(str), false, false); return *this; }
+	virtual Printable& Println(const char* str = "") { ::stdio_put_string(str, ::strlen(str), true, true); return *this; }
+	virtual Printable& PrintlnRaw(const char* str = "") { ::stdio_put_string(str, ::strlen(str), true, false); return *this; }
 };
 
 //------------------------------------------------------------------------------
