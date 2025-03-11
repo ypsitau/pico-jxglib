@@ -3,11 +3,7 @@
 #include "jxglib/Terminal.h"
 #include "jxglib/SSD1306.h"
 #include "jxglib/ST7789.h"
-//#include "jxglib/Font/naga10-japanese-level2.h"
-#include "jxglib/Font/shinonome12-japanese-level2.h"
 #include "jxglib/Font/shinonome16-japanese-level2.h"
-#include "jxglib/Font/sisd24x32.h"
-#include "jxglib/sample/Text_Botchan.h"
 
 using namespace jxglib;
 
@@ -39,7 +35,6 @@ int main()
 #endif
 	terminal.AttachInputStdio();
 	terminal.SetFont(fontSet).SetColorBg(colorBg).SetSpacingRatio(1., 1).ClearScreen();
-	terminal.Dump.Cols(8)(reinterpret_cast<const void*>(0x10000000), 8 * 20);
 	//terminal.SetCursorBlinkSpeed(10);
 	for (;;) {
 		::printf("%s\n", terminal.ReadLine(">"));

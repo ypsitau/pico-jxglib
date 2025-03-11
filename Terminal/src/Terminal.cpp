@@ -29,10 +29,8 @@ bool Terminal::AttachOutput(Drawable& drawable, const Rect& rect, Dir dir)
 
 void Terminal::AttachInput(Input& input, int msecTick)
 {
-	if (!pInput_) {
-		pInput_ = &input;
-		tickable_Input_.SetTick(msecTick);
-	}
+	pInput_ = &input;
+	tickable_Input_.SetTick(msecTick);
 }
 
 void Terminal::AttachInputStdio()
@@ -521,40 +519,10 @@ Editable& Terminal::Edit_MoveHistoryNext()
 void Terminal::InputStdio::OnTick(Terminal& terminal)
 {
 	int ch;
-	int keyData;
 	while ((ch = ::stdio_getchar_timeout_us(0)) > 0) decoder_.FeedChar(ch);
-	if (!decoder_.HasKeyData()) {
-		// nothing to do
-	} else if (decoder_.GetKeyData(&keyData)) {
-		switch (keyData) {
-		case VK_RETURN:	terminal.Edit_Finish('\n');			break;
-		case VK_DELETE:	terminal.Edit_DeleteChar();			break;
-		case VK_BACK:	terminal.Edit_Back();				break;
-		case VK_LEFT:	terminal.Edit_MoveBackward();		break;
-		case VK_RIGHT:	terminal.Edit_MoveForward();		break;
-		case VK_UP:		terminal.Edit_MoveHistoryPrev();	break;
-		case VK_DOWN:	terminal.Edit_MoveHistoryNext();	break;
-		case VK_PRIOR:	terminal.RollUp();					break;
-		case VK_NEXT:	terminal.RollDown();				break;
-		default: break;
-		}
-	} else if (keyData < 0x20) {
-		switch (keyData + '@') {
-		case 'A':		terminal.Edit_MoveHome();			break;
-		case 'B':		terminal.Edit_MoveBackward();		break;
-		case 'D':		terminal.Edit_DeleteChar();			break;
-		case 'E':		terminal.Edit_MoveEnd();			break;
-		case 'F':		terminal.Edit_MoveForward();		break;
-		case 'J':		terminal.Edit_Finish('\n');			break;
-		case 'K':		terminal.Edit_DeleteToEnd();		break;
-		case 'N':		terminal.Edit_MoveHistoryNext();	break;
-		case 'P':		terminal.Edit_MoveHistoryPrev();	break;
-		case 'U':		terminal.Edit_DeleteToHome();		break;
-		default: break;
-		}
-	} else {
-		terminal.Edit_InsertChar(keyData);
-	}
+	int keyData;
+	bool vkFlag;
+	if (decoder_.GetKeyData(&keyData, &vkFlag)) terminal.AcceptKey(keyData, vkFlag);
 }
 
 }

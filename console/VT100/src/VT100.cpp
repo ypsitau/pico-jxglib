@@ -200,11 +200,14 @@ void VT100::Decoder::FeedChar(char ch)
 	} while (contFlag);
 }
 
-bool VT100::Decoder::GetKeyData(int* pKeyData)
+bool VT100::Decoder::GetKeyData(int* pKeyData, bool* pvkFlag)
 {
-	*pKeyData = buff_.ReadData();
-	if (*pKeyData < OffsetForAscii) return true;
-	*pKeyData -= OffsetForAscii;
+	if (HasKeyData()) {
+		*pKeyData = buff_.ReadData();
+		*pvkFlag = (*pKeyData < OffsetForAscii);
+		if (!*pvkFlag) *pKeyData -= OffsetForAscii;
+		return true;
+	}
 	return false;
 }
 
@@ -363,12 +366,10 @@ Editable& VT100::Terminal::Edit_MoveHistoryNext()
 void VT100::Terminal::OnTick()
 {
 	int ch;
-	int keyData;
 	while ((ch = ::stdio_getchar_timeout_us(0)) > 0) decoder_.FeedChar(ch);
-	if (decoder_.HasKeyData()) {
-		bool vkFlag = decoder_.GetKeyData(&keyData);
-		AcceptKey(keyData, vkFlag);
-	}
+	int keyData;
+	bool vkFlag;
+	if (decoder_.GetKeyData(&keyData, &vkFlag)) AcceptKey(keyData, vkFlag);
 }
 
 }
