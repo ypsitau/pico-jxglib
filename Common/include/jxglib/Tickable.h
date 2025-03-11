@@ -12,32 +12,20 @@ namespace jxglib {
 // Tickable
 //------------------------------------------------------------------------------
 class Tickable {
-public:
-	class Master {
-	private:
-		Tickable* pTickableTop_;
-		bool firstFlag_;
-		uint32_t msecStart_;
-	public:
-		static Master Instance;
-	public:
-		Master() : pTickableTop_{nullptr}, firstFlag_{true}, msecStart_{0} {}
-	public:
-		void AddTickable(Tickable& tickable);
-		bool Tick(uint32_t msecTick);
-	};
 private:
 	uint32_t msecTick_;
 	uint32_t msecStart_;
 	Tickable* pTickableNext_;
+private:
+	static Tickable* pTickableTop_;
+	static bool firstFlag_;
+	static uint32_t msecMainStart_;
 public:
-	Tickable(uint32_t msecTick = 0) : msecTick_{msecTick}, msecStart_{0}, pTickableNext_{nullptr} {}
+	Tickable(uint32_t msecTick = 0);
 public:
-	static void AddTickable(Tickable& tickable) { Master::Instance.AddTickable(tickable); }
-	static bool Tick(uint32_t msecTick = 0) { return Master::Instance.Tick(msecTick); }
-	static void Sleep(uint32_t msecTick = 0) { while (!Master::Instance.Tick(msecTick)) ::tight_loop_contents(); }
+	static bool Tick(uint32_t msecTick = 0);
+	static void Sleep(uint32_t msecTick = 0) { while (!Tick(msecTick)) ::tight_loop_contents(); }
 public:
-	void SetNext(Tickable* pTickable) { pTickableNext_ = pTickable; }
 	Tickable* GetNext() { return pTickableNext_; }
 public:
 	void DisableTick() { msecTick_ = -1; }

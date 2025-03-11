@@ -21,7 +21,6 @@ Terminal::Terminal(int bytesLineBuff, int bytesHistoryBuff) :
 bool Terminal::AttachOutput(Drawable& drawable, const Rect& rect, Dir dir)
 {
 	if (!Editable::Initialize() || !GetLineBuff().Initialize()) return false;
-	Tickable::AddTickable(tickable_Blink_);
 	rectDst_ = rect.IsEmpty()? Rect(0, 0, drawable.GetWidth(), drawable.GetHeight()) : rect;
 	ptCurrent_ = Point(rectDst_.x, rectDst_.y);
 	pDrawable_ = &drawable;
@@ -33,7 +32,6 @@ void Terminal::AttachInput(Input& input, int msecTick)
 	if (!pInput_) {
 		pInput_ = &input;
 		tickable_Input_.SetTick(msecTick);
-		Tickable::AddTickable(tickable_Input_);
 	}
 }
 

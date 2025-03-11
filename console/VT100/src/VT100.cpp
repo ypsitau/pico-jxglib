@@ -213,9 +213,7 @@ bool VT100::Decoder::GetKeyData(int* pKeyData)
 //------------------------------------------------------------------------------
 bool VT100::Terminal::Initialize()
 {
-	if (!Editable::Initialize()) return false;
-	Tickable::AddTickable(*this);
-	return true;
+	return Editable::Initialize();
 }
 
 Editable& VT100::Terminal::Edit_Begin()
