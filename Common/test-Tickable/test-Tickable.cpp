@@ -10,7 +10,7 @@ private:
 	bool value_;
 public:
 	Blink(const GPIO& gpio, uint32_t msec) : Tickable(msec), gpio_{gpio}, value_{false} {}
-	void Initialize() { Tickable::AddTickable(*this); gpio_.init().set_dir_OUT(); }
+	void Initialize() { gpio_.init().set_dir_OUT(); }
 	void OnTick() { gpio_.put(value_); value_ = !value_; }
 };
 

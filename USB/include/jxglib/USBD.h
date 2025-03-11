@@ -123,7 +123,7 @@ public:
 public:
 	void RegisterConfigDesc(const void* configDesc, int bytes);
 public:
-	void Initialize() { Tickable::AddTickable(*this); }
+	void Initialize() {}
 };
 
 #if CFG_TUD_HID > 0

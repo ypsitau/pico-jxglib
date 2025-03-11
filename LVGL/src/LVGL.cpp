@@ -21,7 +21,6 @@ void Initialize(uint32_t msecTick)
 	::lv_init();
 	::lv_tick_set_cb(GetTickMSecCB);
 	TickableEx::Instance.SetTick(msecTick);
-	Tickable::AddTickable(TickableEx::Instance);
 }
 
 }

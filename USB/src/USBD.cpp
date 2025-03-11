@@ -83,7 +83,6 @@ void Device::Initialize(uint8_t rhport)
 	};
 	::memcpy(configDescAccum_, configDesc, sizeof(configDesc));
 	::tud_init(rhport);
-	AddTickable(*this);
 }
 
 uint8_t Device::AssignInterfaceNum(int nInterfacesToOccupy)
