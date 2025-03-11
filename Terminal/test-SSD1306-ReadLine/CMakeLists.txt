@@ -28,34 +28,33 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-ReadLine C CXX ASM)
+project(test-SSD1306-ReadLine C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-ReadLine test-ReadLine.cpp)
+add_executable(test-SSD1306-ReadLine test-SSD1306-ReadLine.cpp)
 
-pico_set_program_name(test-ReadLine "test-ReadLine")
-pico_set_program_version(test-ReadLine "0.1")
+pico_set_program_name(test-SSD1306-ReadLine "test-SSD1306-ReadLine")
+pico_set_program_version(test-SSD1306-ReadLine "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-ReadLine 1)
-pico_enable_stdio_usb(test-ReadLine 1)
+pico_enable_stdio_uart(test-SSD1306-ReadLine 1)
+pico_enable_stdio_usb(test-SSD1306-ReadLine 1)
 
 # Add the standard library to the build
-target_link_libraries(test-ReadLine
+target_link_libraries(test-SSD1306-ReadLine
 	pico_stdlib
 	jxglib_SSD1306
-	jxglib_ST7789
 	jxglib_Terminal)
 
 # Add the standard include files to the build
-target_include_directories(test-ReadLine PRIVATE
+target_include_directories(test-SSD1306-ReadLine PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-ReadLine)
+pico_add_extra_outputs(test-SSD1306-ReadLine)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
