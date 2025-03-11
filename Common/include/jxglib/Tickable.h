@@ -24,7 +24,7 @@ void Tickable_##name##_::OnTick()
 #define ResumeTickable(name) Tickable_##name##_::Instance.Resume()
 #define SuspendTickable(name) Tickable_##name##_::Instance.Suspend()
 
-	//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // Tickable
 //------------------------------------------------------------------------------
 class Tickable {
