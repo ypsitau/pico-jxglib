@@ -22,10 +22,6 @@ int main()
 	GPIO5.set_function_I2C0_SCL().pull_up();
 	GPIO14.set_function_SPI1_SCK();
 	GPIO15.set_function_SPI1_TX();
-	GPIO18.init().pull_up();
-	GPIO19.init().pull_up();
-	GPIO20.init().pull_up();
-	GPIO21.init().pull_up();
 #if 0
 	SSD1306 display(i2c0, 0x3c);
 	display.Initialize();
@@ -46,7 +42,6 @@ int main()
 	terminal.Dump.Cols(8)(reinterpret_cast<const void*>(0x10000000), 8 * 20);
 	//terminal.SetCursorBlinkSpeed(10);
 	for (;;) {
-		char* str = terminal.ReadLine(">");
-		::printf("%s\n", str);
+		::printf("%s\n", terminal.ReadLine(">"));
 	}
 }

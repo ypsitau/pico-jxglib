@@ -43,7 +43,6 @@ public:
 	public:
 		bool HasKeyData() const { return buff_.HasData(); }
 		bool GetKeyData(int* pKeyData);
-		void StdioToEditable(Editable& editable);
 	public:
 		void FeedChar(char ch);
 	};

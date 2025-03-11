@@ -30,6 +30,39 @@ char* Editable::ReadLine(const char* prompt)
 	return GetLineEditor().GetPointerBegin();
 }
 
+Editable& Editable::AcceptKey(int keyData, bool vkFlag)
+{
+	if (vkFlag) {
+		switch (keyData) {
+		case VK_RETURN:	Edit_Finish('\n');		break;
+		case VK_DELETE:	Edit_DeleteChar();		break;
+		case VK_BACK:	Edit_Back();			break;
+		case VK_LEFT:	Edit_MoveBackward();	break;
+		case VK_RIGHT:	Edit_MoveForward();		break;
+		case VK_UP:		Edit_MoveHistoryPrev();	break;
+		case VK_DOWN:	Edit_MoveHistoryNext();	break;
+		default: break;
+		}
+	} else if (keyData < 0x20) {
+		switch (keyData + '@') {
+		case 'A':		Edit_MoveHome();		break;
+		case 'B':		Edit_MoveBackward();	break;
+		case 'D':		Edit_DeleteChar();		break;
+		case 'E':		Edit_MoveEnd();			break;
+		case 'F':		Edit_MoveForward();		break;
+		case 'J':		Edit_Finish('\n');		break;
+		case 'K':		Edit_DeleteToEnd();		break;
+		case 'N':		Edit_MoveHistoryNext();	break;
+		case 'P':		Edit_MoveHistoryPrev();	break;
+		case 'U':		Edit_DeleteToHome();	break;
+		default: break;
+		}
+	} else {
+		Edit_InsertChar(keyData);
+	}
+	return *this;
+}
+
 //------------------------------------------------------------------------------
 // Editable::LineEditor
 //------------------------------------------------------------------------------
