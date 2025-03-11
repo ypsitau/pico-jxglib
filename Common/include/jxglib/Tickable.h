@@ -8,13 +8,30 @@
 
 namespace jxglib {
 
-//------------------------------------------------------------------------------
+#define TickableEntry(name, msecTick) \
+class Tickable_##name##_ : public Tickable { \
+public: \
+	static Tickable_##name##_ Instance; \
+public: \
+	Tickable_##name##_() : Tickable(msecTick) {} \
+	void OnTick(); \
+}; \
+Tickable_##name##_ Tickable_##name##_::Instance; \
+void Tickable_##name##_::OnTick()
+
+#define SetTickableTick(name, msecTick) Tickable_##name##_::Instance.SetTick(msecTick)
+#define GetTickableTick(name) Tickable_##name##_::Instance.GetTick()
+#define ResumeTickable(name) Tickable_##name##_::Instance.Resume()
+#define SuspendTickable(name) Tickable_##name##_::Instance.Suspend()
+
+	//------------------------------------------------------------------------------
 // Tickable
 //------------------------------------------------------------------------------
 class Tickable {
 private:
 	uint32_t msecTick_;
 	uint32_t msecStart_;
+	bool runningFlag_;
 	Tickable* pTickableNext_;
 private:
 	static Tickable* pTickableTop_;
@@ -28,7 +45,9 @@ public:
 public:
 	Tickable* GetNext() { return pTickableNext_; }
 public:
-	void DisableTick() { msecTick_ = -1; }
+	bool IsRunning() const { return runningFlag_; }
+	void Resume() { runningFlag_ = true; }
+	void Suspend() { runningFlag_ = false; }
 	void SetTick(uint32_t msecTick) { msecTick_ = msecTick; }
 	uint32_t GetTick() const { return msecTick_; }
 	void InitTick(uint32_t msecStart) { msecStart_ = msecStart; }

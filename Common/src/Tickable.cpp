@@ -12,16 +12,21 @@ Tickable* Tickable::pTickableTop_ = nullptr;
 bool Tickable::firstFlag_ = true;
 uint32_t Tickable::msecMainStart_ = 0;
 
-Tickable::Tickable(uint32_t msecTick) : msecTick_{msecTick}, msecStart_{0}, pTickableNext_{pTickableTop_}
+Tickable::Tickable(uint32_t msecTick) :
+	msecTick_{msecTick}, msecStart_{0}, runningFlag_{true}, pTickableNext_{pTickableTop_}
 {
 	pTickableTop_ = this;
 }
 
 bool Tickable::IsExpired(uint32_t msecCur)
 {
-	if (msecTick_ == -1 || msecCur - msecStart_ < msecTick_) return false;
-	msecStart_ += msecTick_;
-	return true;
+	if (!runningFlag_) {
+		msecStart_ = msecCur;
+	} else if (msecCur - msecStart_ >= msecTick_) {
+		msecStart_ += msecTick_;
+		return true;
+	}
+	return false;
 }
 
 bool Tickable::Tick(uint32_t msecTick)
