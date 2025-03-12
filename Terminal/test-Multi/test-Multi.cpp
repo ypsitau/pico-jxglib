@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/ST7789.h"
-#include "jxglib/Terminal.h"
 #include "jxglib/Font/shinonome12.h"
 #include "jxglib/Font/shinonome16.h"
 #include "jxglib/Font/sisd24x32.h"
@@ -9,7 +8,7 @@
 
 using namespace jxglib;
 
-Terminal terminal1, terminal2, terminal3;
+Display::Terminal terminal1, terminal2, terminal3;
 
 int main()
 {

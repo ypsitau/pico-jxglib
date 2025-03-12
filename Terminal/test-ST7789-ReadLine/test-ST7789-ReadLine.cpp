@@ -22,6 +22,7 @@ int main()
 		.SetColor(Color::white).SetColorBg(Color::black)
 		.SetColorInEdit(Color::white).SetColorCursor(Color::white)
 		.ClearScreen();
+	terminal.Println("ReadLine Test Program");
 	for (;;) {
 		::printf("%s\n", terminal.ReadLine(">"));
 	}

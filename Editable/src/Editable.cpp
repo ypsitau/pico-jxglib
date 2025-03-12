@@ -30,37 +30,38 @@ char* Editable::ReadLine(const char* prompt)
 	return GetLineEditor().GetPointerBegin();
 }
 
-Editable& Editable::AcceptKey(int keyData, bool vkFlag)
+bool Editable::FeedEditableKey(int keyData, bool vkFlag)
 {
 	if (vkFlag) {
 		switch (keyData) {
-		case VK_RETURN:	Edit_Finish('\n');		break;
-		case VK_DELETE:	Edit_DeleteChar();		break;
-		case VK_BACK:	Edit_Back();			break;
-		case VK_LEFT:	Edit_MoveBackward();	break;
-		case VK_RIGHT:	Edit_MoveForward();		break;
-		case VK_UP:		Edit_MoveHistoryPrev();	break;
-		case VK_DOWN:	Edit_MoveHistoryNext();	break;
+		case VK_RETURN:	Edit_Finish('\n');		return true;
+		case VK_DELETE:	Edit_DeleteChar();		return true;
+		case VK_BACK:	Edit_Back();			return true;
+		case VK_LEFT:	Edit_MoveBackward();	return true;
+		case VK_RIGHT:	Edit_MoveForward();		return true;
+		case VK_UP:		Edit_MoveHistoryPrev();	return true;
+		case VK_DOWN:	Edit_MoveHistoryNext();	return true;
 		default: break;
 		}
 	} else if (keyData < 0x20) {
 		switch (keyData + '@') {
-		case 'A':		Edit_MoveHome();		break;
-		case 'B':		Edit_MoveBackward();	break;
-		case 'D':		Edit_DeleteChar();		break;
-		case 'E':		Edit_MoveEnd();			break;
-		case 'F':		Edit_MoveForward();		break;
-		case 'J':		Edit_Finish('\n');		break;
-		case 'K':		Edit_DeleteToEnd();		break;
-		case 'N':		Edit_MoveHistoryNext();	break;
-		case 'P':		Edit_MoveHistoryPrev();	break;
-		case 'U':		Edit_DeleteToHome();	break;
+		case 'A':		Edit_MoveHome();		return true;
+		case 'B':		Edit_MoveBackward();	return true;
+		case 'D':		Edit_DeleteChar();		return true;
+		case 'E':		Edit_MoveEnd();			return true;
+		case 'F':		Edit_MoveForward();		return true;
+		case 'J':		Edit_Finish('\n');		return true;
+		case 'K':		Edit_DeleteToEnd();		return true;
+		case 'N':		Edit_MoveHistoryNext();	return true;
+		case 'P':		Edit_MoveHistoryPrev();	return true;
+		case 'U':		Edit_DeleteToHome();	return true;
 		default: break;
 		}
 	} else {
 		Edit_InsertChar(keyData);
+		return true;
 	}
-	return *this;
+	return false;
 }
 
 //------------------------------------------------------------------------------

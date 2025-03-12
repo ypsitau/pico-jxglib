@@ -10,6 +10,7 @@ int main()
 {
 	::stdio_init_all();
 	terminal.Initialize();
+	terminal.Println("ReadLine Test Program");
 	for (;;) {
 		::printf("%s\n", terminal.ReadLine(">"));
 	}

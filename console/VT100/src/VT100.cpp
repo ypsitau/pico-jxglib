@@ -369,7 +369,7 @@ void VT100::Terminal::OnTick()
 	while ((ch = ::stdio_getchar_timeout_us(0)) > 0) decoder_.FeedChar(ch);
 	int keyData;
 	bool vkFlag;
-	if (decoder_.GetKeyData(&keyData, &vkFlag)) AcceptKey(keyData, vkFlag);
+	if (decoder_.GetKeyData(&keyData, &vkFlag)) FeedEditableKey(keyData, vkFlag);
 }
 
 }
