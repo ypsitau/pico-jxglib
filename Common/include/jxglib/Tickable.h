@@ -14,6 +14,7 @@ public: \
 	static Tickable_##name##_ Instance; \
 public: \
 	Tickable_##name##_() : Tickable(__VA_ARGS__) {} \
+	virtual const char* GetTickableName() const override { return #name; } \
 	virtual void OnTick() override; \
 }; \
 Tickable_##name##_ Tickable_##name##_::Instance; \
@@ -28,7 +29,10 @@ void Tickable_##name##_::OnTick()
 // Tickable
 //------------------------------------------------------------------------------
 class Tickable {
+public:
+	enum class Priority { Lowest, BelowNormal, Normal, AboveNormal, Highest };
 private:
+	Priority priority_;
 	uint32_t msecTick_;
 	uint32_t msecStart_;
 	bool runningFlag_;
@@ -38,12 +42,14 @@ private:
 	static bool firstFlag_;
 	static uint32_t msecMainStart_;
 public:
-	Tickable(uint32_t msecTick = 0);
+	Tickable(uint32_t msecTick = 0, Priority priority = Priority::Normal);
 public:
 	static bool Tick(uint32_t msecTick = 0);
 	static void Sleep(uint32_t msecTick = 0) { while (!Tick(msecTick)) ::tight_loop_contents(); }
 public:
+	Priority GetPriority() const { return priority_; }
 	Tickable* GetNext() { return pTickableNext_; }
+	void SetNext(Tickable* pTickable) { pTickableNext_ = pTickable; }
 public:
 	bool IsRunning() const { return runningFlag_; }
 	void Resume() { runningFlag_ = true; }
@@ -53,6 +59,7 @@ public:
 	void InitTick(uint32_t msecStart) { msecStart_ = msecStart; }
 	bool IsExpired(uint32_t msecCur);
 public:
+	virtual const char* GetTickableName() const { return "no-name"; }
 	virtual void OnTick() = 0;
 };
 

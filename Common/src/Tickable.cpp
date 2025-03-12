@@ -12,10 +12,21 @@ Tickable* Tickable::pTickableTop_ = nullptr;
 bool Tickable::firstFlag_ = true;
 uint32_t Tickable::msecMainStart_ = 0;
 
-Tickable::Tickable(uint32_t msecTick) :
-	msecTick_{msecTick}, msecStart_{0}, runningFlag_{true}, pTickableNext_{pTickableTop_}
+Tickable::Tickable(uint32_t msecTick, Priority priority) :
+	msecTick_{msecTick}, priority_{priority}, msecStart_{0}, runningFlag_{true}, pTickableNext_{pTickableTop_}
 {
-	pTickableTop_ = this;
+	Tickable* pTickablePrev = nullptr;
+	for (Tickable* pTickable = pTickableTop_; pTickable; pTickable = pTickable->GetNext()) {
+		if (GetPriority() >= pTickable->GetPriority()) break;
+		pTickablePrev = pTickable;
+	}
+	if (pTickablePrev) {
+		SetNext(pTickablePrev->GetNext());
+		pTickablePrev->SetNext(this);
+	} else {
+		pTickableTop_ = this;
+	}
+
 }
 
 bool Tickable::IsExpired(uint32_t msecCur)
