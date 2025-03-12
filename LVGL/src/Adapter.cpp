@@ -181,9 +181,10 @@ void Adapter::InputTouchScreen::Handle(lv_indev_t* indev_drv, lv_indev_data_t* d
 //------------------------------------------------------------------------------
 void Adapter::InputKeyUART::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
 {
-	if (vt100Decoder_.HasKeyData()) {
-		int keyData;
-		if (vt100Decoder_.GetKeyData(&keyData)) {
+	int keyData;
+	bool vkFlag;
+	if (vt100Decoder_.GetKeyData(&keyData, &vkFlag)) {
+		if (vkFlag) {
 			data->key =
 				(keyData == VK_TAB)?	LV_KEY_NEXT :
 				(keyData == VK_PRIOR)?	LV_KEY_PREV :
