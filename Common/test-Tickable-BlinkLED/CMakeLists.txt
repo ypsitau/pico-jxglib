@@ -28,32 +28,32 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-Tickable C CXX ASM)
+project(test-Tickable-BlinkLED C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-Tickable test-Tickable.cpp )
+add_executable(test-Tickable-BlinkLED test-Tickable-BlinkLED.cpp )
 
-pico_set_program_name(test-Tickable "test-Tickable")
-pico_set_program_version(test-Tickable "0.1")
+pico_set_program_name(test-Tickable-BlinkLED "test-Tickable-BlinkLED")
+pico_set_program_version(test-Tickable-BlinkLED "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-Tickable 1)
-pico_enable_stdio_usb(test-Tickable 0)
+pico_enable_stdio_uart(test-Tickable-BlinkLED 1)
+pico_enable_stdio_usb(test-Tickable-BlinkLED 0)
 
 # Add the standard library to the build
-target_link_libraries(test-Tickable
+target_link_libraries(test-Tickable-BlinkLED
     pico_stdlib
     jxglib_Common)
 
 # Add the standard include files to the build
-target_include_directories(test-Tickable PRIVATE
+target_include_directories(test-Tickable-BlinkLED PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-Tickable)
+pico_add_extra_outputs(test-Tickable-BlinkLED)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
