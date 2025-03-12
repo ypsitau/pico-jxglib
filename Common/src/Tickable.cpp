@@ -1,6 +1,7 @@
 //==============================================================================
 // Tickable.cpp
 //==============================================================================
+#include <stdio.h>
 #include "jxglib/Tickable.h"
 
 namespace jxglib {
@@ -59,6 +60,26 @@ bool Tickable::Tick(uint32_t msecTick)
 		msecMainStart_ += msecTick;
 		return true;
 	}
+}
+
+void Tickable::PrintList()
+{
+	for (const Tickable* pTickable = pTickableTop_; pTickable; pTickable = pTickable->GetNext()) {
+		::printf("%-16s %s\n", pTickable->GetTickableName(), pTickable->GetPriorityName());
+	}
+}
+
+const char* Tickable::GetPriorityName(Priority priority)
+{
+	switch (priority) {
+	case Priority::Lowest:		return "Lowest";
+	case Priority::BelowNormal:	return "BelowNormal";
+	case Priority::Normal:		return "Normal";
+	case Priority::AboveNormal:	return "AboveNormal";
+	case Priority::Highest:		return "Highest";
+	default: break;
+	}
+	return "unknown";
 }
 
 }

@@ -48,7 +48,9 @@ public:
 	static void Sleep(uint32_t msecTick = 0) { while (!Tick(msecTick)) ::tight_loop_contents(); }
 public:
 	Priority GetPriority() const { return priority_; }
+	const char* GetPriorityName() const { return GetPriorityName(GetPriority()); }
 	Tickable* GetNext() { return pTickableNext_; }
+	const Tickable* GetNext() const { return pTickableNext_; }
 	void SetNext(Tickable* pTickable) { pTickableNext_ = pTickable; }
 public:
 	bool IsRunning() const { return runningFlag_; }
@@ -61,6 +63,9 @@ public:
 public:
 	virtual const char* GetTickableName() const { return "no-name"; }
 	virtual void OnTick() = 0;
+public:
+	static void PrintList();
+	static const char* GetPriorityName(Priority priority);
 };
 
 }
