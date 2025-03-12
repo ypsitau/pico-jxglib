@@ -1,12 +1,11 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "jxglib/Terminal.h"
 #include "jxglib/SSD1306.h"
 #include "jxglib/Font/shinonome12-japanese-level2.h"
 
 using namespace jxglib;
 
-Terminal terminal;
+Display::Terminal terminal;
 
 int main()
 {
@@ -22,6 +21,7 @@ int main()
 		.SetColor(Color::white).SetColorBg(Color::black)
 		.SetColorInEdit(Color::white).SetColorCursor(Color::white)
 		.ClearScreen();
+	terminal.Println("ReadLine Test Program");
 	for (;;) {
 		::printf("%s\n", terminal.ReadLine(">"));
 	}

@@ -1,12 +1,11 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "jxglib/Terminal.h"
 #include "jxglib/ST7789.h"
 #include "jxglib/Font/shinonome16-japanese-level2.h"
 
 using namespace jxglib;
 
-Terminal terminal;
+Display::Terminal terminal;
 
 int main()
 {
