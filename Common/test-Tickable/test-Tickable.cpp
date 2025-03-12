@@ -13,7 +13,6 @@ const GPIO& GPIO_ButtonSuspend = GPIO17;
 bool value_LED1 = false;
 bool value_LED2 = false;
 bool value_LED3 = false;
-bool value_LED4 = false;
 
 TickableEntry(BlinkLED1, 100)
 {
@@ -33,16 +32,19 @@ TickableEntry(BlinkLED3, 400)
 	value_LED3 = !value_LED3;
 }
 
-class Tickable_BlinkLED4 : public Tickable {
+class Tickable_BlinkLEDAny : public Tickable {
+private:
+	const GPIO& gpio_;
+	bool value_;
 public:
-	Tickable_BlinkLED4() : Tickable(800) {}
+	Tickable_BlinkLEDAny(const GPIO& gpio, int msecTick) : Tickable(msecTick), gpio_{gpio}, value_{false} {}
 	virtual void OnTick() override {
-		GPIO_LED4.put(value_LED4);
-		value_LED4 = !value_LED4;
+		gpio_.put(value_);
+		value_ = !value_;
 	}
 };
 
-Tickable_BlinkLED4 Tickable_BlinkLED4_Instance;
+Tickable_BlinkLEDAny tickable_BlinkLED4(GPIO_LED4, 800);
 
 TickableEntry(Button)
 {
