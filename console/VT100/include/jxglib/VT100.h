@@ -4,8 +4,7 @@
 #ifndef PICO_JXGLIB_VT100_H
 #define PICO_JXGLIB_VT100_H
 #include "pico/stdlib.h"
-#include "jxglib/Printable.h"
-#include "jxglib/Editable.h"
+#include "jxglib/Terminal.h"
 #include "jxglib/KeyCode.h"
 #include "jxglib/FIFOBuff.h"
 
@@ -46,12 +45,13 @@ public:
 	public:
 		void FeedChar(char ch);
 	};
-	class Terminal : public Printable, public Editable, public Tickable {
+	class Terminal : public jxglib::Terminal, public Tickable {
 	private:
 		Printable& printable_;
 		Decoder decoder_;
 	public:
-		Terminal(Printable& printable = PrintableStdio::Instance) : Tickable(0), printable_{printable} {}
+		Terminal(Printable& printable = PrintableStdio::Instance, int bytesHistoryBuff = 512) :
+				jxglib::Terminal(bytesHistoryBuff), Tickable(0), printable_{printable} {}
 	public:
 		bool Initialize();
 	public:
