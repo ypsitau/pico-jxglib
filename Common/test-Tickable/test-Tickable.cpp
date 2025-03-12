@@ -33,16 +33,21 @@ TickableEntry(BlinkLED3, 400)
 	value_LED3 = !value_LED3;
 }
 
-TickableEntry(BlinkLED4, 800)
-{
-	GPIO_LED4.put(value_LED4);
-	value_LED4 = !value_LED4;
-}
+class Tickable_BlinkLED4 : public Tickable {
+public:
+	Tickable_BlinkLED4() : Tickable(800) {}
+	virtual void OnTick() override {
+		GPIO_LED4.put(value_LED4);
+		value_LED4 = !value_LED4;
+	}
+};
 
-TickableEntry(Button, 20)
+Tickable_BlinkLED4 Tickable_BlinkLED4_Instance;
+
+TickableEntry(Button)
 {
-	if (!GPIO_ButtonResume.get()) ResumeTickable(BlinkLED1);
-	if (!GPIO_ButtonSuspend.get()) SuspendTickable(BlinkLED1);
+	if (!GPIO_ButtonResume.get()) ResumeTickable(BlinkLED2);
+	if (!GPIO_ButtonSuspend.get()) SuspendTickable(BlinkLED2);
 }
 
 int main()

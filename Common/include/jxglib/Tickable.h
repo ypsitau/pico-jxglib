@@ -8,13 +8,13 @@
 
 namespace jxglib {
 
-#define TickableEntry(name, msecTick) \
+#define TickableEntry(name, ...) \
 class Tickable_##name##_ : public Tickable { \
 public: \
 	static Tickable_##name##_ Instance; \
 public: \
-	Tickable_##name##_() : Tickable(msecTick) {} \
-	void OnTick(); \
+	Tickable_##name##_() : Tickable(__VA_ARGS__) {} \
+	virtual void OnTick() override; \
 }; \
 Tickable_##name##_ Tickable_##name##_::Instance; \
 void Tickable_##name##_::OnTick()
