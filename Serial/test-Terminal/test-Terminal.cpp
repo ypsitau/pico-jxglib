@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "jxglib/VT100.h"
+#include "jxglib/Serial.h"
 
 using namespace jxglib;
 
-VT100::Terminal terminal;
+Serial::Terminal terminal;
 
 int main()
 {
