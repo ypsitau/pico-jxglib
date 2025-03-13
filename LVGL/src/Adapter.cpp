@@ -181,26 +181,26 @@ void Adapter::InputTouchScreen::Handle(lv_indev_t* indev_drv, lv_indev_data_t* d
 //------------------------------------------------------------------------------
 void Adapter::InputKeyUART::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
 {
-	int keyData;
-	bool vkFlag;
-	if (vt100Decoder_.GetKeyData(&keyData, &vkFlag)) {
-		if (vkFlag) {
+	Keyboard::KeyData keyData;
+	if (vt100Decoder_.GetKeyData(keyData)) {
+		if (keyData.IsKeyCode()) {
+			uint8_t keyCode = keyData.GetKeyCode();
 			data->key =
-				(keyData == VK_TAB)?	LV_KEY_NEXT :
-				(keyData == VK_PRIOR)?	LV_KEY_PREV :
-				(keyData == VK_NEXT)?	LV_KEY_NEXT :
-				(keyData == VK_RETURN)?	LV_KEY_ENTER :
-				(keyData == VK_UP)?		LV_KEY_UP :
-				(keyData == VK_DOWN)?	LV_KEY_DOWN :
-				(keyData == VK_LEFT)?	LV_KEY_LEFT :
-				(keyData == VK_RIGHT)?	LV_KEY_RIGHT :
-				(keyData == VK_ESCAPE)?	LV_KEY_ESC :
-				(keyData == VK_DELETE)?	LV_KEY_DEL :
-				(keyData == VK_BACK)?	LV_KEY_BACKSPACE :
-				(keyData == VK_HOME)?	LV_KEY_HOME :
-				(keyData == VK_END)?	LV_KEY_END : 0;
+				(keyCode == VK_TAB)?	LV_KEY_NEXT :
+				(keyCode == VK_PRIOR)?	LV_KEY_PREV :
+				(keyCode == VK_NEXT)?	LV_KEY_NEXT :
+				(keyCode == VK_RETURN)?	LV_KEY_ENTER :
+				(keyCode == VK_UP)?		LV_KEY_UP :
+				(keyCode == VK_DOWN)?	LV_KEY_DOWN :
+				(keyCode == VK_LEFT)?	LV_KEY_LEFT :
+				(keyCode == VK_RIGHT)?	LV_KEY_RIGHT :
+				(keyCode == VK_ESCAPE)?	LV_KEY_ESC :
+				(keyCode == VK_DELETE)?	LV_KEY_DEL :
+				(keyCode == VK_BACK)?	LV_KEY_BACKSPACE :
+				(keyCode == VK_HOME)?	LV_KEY_HOME :
+				(keyCode == VK_END)?	LV_KEY_END : 0;
 		} else {
-			data->key = keyData;
+			data->key = keyData.GetCharCode();
 		}
 		data->state = LV_INDEV_STATE_PRESSED;
 	} else {

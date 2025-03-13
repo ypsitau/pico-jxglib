@@ -520,14 +520,14 @@ void Display::Terminal::InputStdio::OnTick(Terminal& terminal)
 {
 	int ch;
 	while ((ch = ::stdio_getchar_timeout_us(0)) > 0) decoder_.FeedChar(ch);
-	int keyData;
-	bool vkFlag;
-	if (decoder_.GetKeyData(&keyData, &vkFlag)) {
-		if (vkFlag) {
-			if (keyData == VK_PRIOR) terminal.RollUp();
-			if (keyData == VK_NEXT) terminal.RollDown();
+	Keyboard::KeyData keyData;
+	if (decoder_.GetKeyData(keyData)) {
+		if (keyData.IsKeyCode()) {
+			uint8_t keyCode = keyData.GetKeyCode();
+			if (keyCode == VK_PRIOR) terminal.RollUp();
+			if (keyCode == VK_NEXT) terminal.RollDown();
 		}
-		terminal.FeedEditableKey(keyData, vkFlag);
+		terminal.FeedKeyData(keyData);
 	}
 }
 
