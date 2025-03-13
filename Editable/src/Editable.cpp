@@ -30,10 +30,10 @@ char* Editable::ReadLine(const char* prompt)
 	return GetLineEditor().GetPointerBegin();
 }
 
-bool Editable::FeedEditableKey(int keyData, bool vkFlag)
+bool Editable::FeedKeyData(const Keyboard::KeyData& keyData)
 {
-	if (vkFlag) {
-		switch (keyData) {
+	if (keyData.IsKeyCode()) {
+		switch (keyData.GetKeyCode()) {
 		case VK_RETURN:	Edit_Finish('\n');		return true;
 		case VK_DELETE:	Edit_DeleteChar();		return true;
 		case VK_BACK:	Edit_Back();			return true;
@@ -43,8 +43,8 @@ bool Editable::FeedEditableKey(int keyData, bool vkFlag)
 		case VK_DOWN:	Edit_MoveHistoryNext();	return true;
 		default: break;
 		}
-	} else if (keyData < 0x20) {
-		switch (keyData + '@') {
+	} else if (keyData.GetCharCode() < 0x20) {
+		switch (keyData.GetCharCode() + '@') {
 		case 'A':		Edit_MoveHome();		return true;
 		case 'B':		Edit_MoveBackward();	return true;
 		case 'D':		Edit_DeleteChar();		return true;
@@ -58,7 +58,7 @@ bool Editable::FeedEditableKey(int keyData, bool vkFlag)
 		default: break;
 		}
 	} else {
-		Edit_InsertChar(keyData);
+		Edit_InsertChar(keyData.GetCharCode());
 		return true;
 	}
 	return false;

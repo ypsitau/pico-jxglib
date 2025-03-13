@@ -41,7 +41,7 @@ public:
 		Decoder();
 	public:
 		bool HasKeyData() const { return buff_.HasData(); }
-		bool GetKeyData(int* pKeyData, bool* pvkFlag);
+		bool GetKeyData(Keyboard::KeyData& keyData);
 	public:
 		void FeedChar(char ch);
 	};

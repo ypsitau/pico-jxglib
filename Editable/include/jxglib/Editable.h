@@ -7,6 +7,7 @@
 #include "pico/stdlib.h"
 #include "jxglib/Common.h"
 #include "jxglib/LineBuff.h"
+#include "jxglib/Keyboard.h"
 
 namespace jxglib {
 
@@ -77,7 +78,7 @@ public:
 	bool Initialize();
 	LineEditor& GetLineEditor() { return lineEditor_; }
 	char* ReadLine(const char* prompt);
-	bool FeedEditableKey(int keyData, bool vkFlag);
+	bool FeedKeyData(const Keyboard::KeyData& keyData);
 public:
 	virtual Printable& GetPrintable() = 0;
 	virtual Editable& Edit_Begin() = 0;

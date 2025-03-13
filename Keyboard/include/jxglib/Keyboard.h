@@ -25,14 +25,25 @@ public:
 		static const uint8_t WindowsR	= (1 << 7);
 	};
 	struct KeyData {
-		int code;
-		bool vkFlag;
-		uint8_t modifier;
+		uint8_t code_;
+		bool keyCodeFlag_;
+		uint8_t modifier_;
 	public:
-		bool IsCtrlDown() const		{ return !!(modifier & (Mod::CtrlL | Mod::CtrlR)); }
-		bool IsShiftDown() const	{ return !!(modifier & (Mod::ShiftL | Mod::ShiftR)); }
-		bool IsAltDown() const		{ return !!(modifier & (Mod::AltL | Mod::AltR)); }
-		bool IsWindowsDown() const	{ return !!(modifier & (Mod::WindowsL | Mod::WindowsR)); }
+		KeyData() : code_{0}, keyCodeFlag_{false}, modifier_{0} {}
+		KeyData(uint8_t code, bool keyCodeFlag, uint8_t modifier) :
+			code_{code}, keyCodeFlag_{keyCodeFlag}, modifier_{modifier} {}
+		KeyData(const KeyData& keyData) :
+			code_{keyData.code_}, keyCodeFlag_{keyData.keyCodeFlag_}, modifier_{keyData.modifier_} {}
+		public:
+		uint8_t GetKeyCode() const { return code_; }
+		char GetCharCode() const { return static_cast<char>(code_); }
+		bool IsKeyCode() const { return keyCodeFlag_; }
+		bool IsCharCode() const { return !keyCodeFlag_; }
+		uint8_t GetModifier() const { return modifier_; }
+		bool IsCtrlDown() const		{ return !!(modifier_ & (Mod::CtrlL | Mod::CtrlR)); }
+		bool IsShiftDown() const	{ return !!(modifier_ & (Mod::ShiftL | Mod::ShiftR)); }
+		bool IsAltDown() const		{ return !!(modifier_ & (Mod::AltL | Mod::AltR)); }
+		bool IsWindowsDown() const	{ return !!(modifier_ & (Mod::WindowsL | Mod::WindowsR)); }
 	};
 public:
 	Keyboard() {}

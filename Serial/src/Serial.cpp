@@ -165,9 +165,8 @@ void Serial::Terminal::OnTick()
 {
 	int ch;
 	while ((ch = ::stdio_getchar_timeout_us(0)) > 0) decoder_.FeedChar(ch);
-	int keyData;
-	bool vkFlag;
-	if (decoder_.GetKeyData(&keyData, &vkFlag)) FeedEditableKey(keyData, vkFlag);
+	Keyboard::KeyData keyData;
+	if (decoder_.GetKeyData(keyData)) FeedKeyData(keyData);
 }
 
 }
