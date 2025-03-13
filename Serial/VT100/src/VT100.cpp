@@ -211,5 +211,4 @@ bool VT100::Decoder::GetKeyData(int* pKeyData, bool* pvkFlag)
 	return false;
 }
 
-
 }

@@ -4,8 +4,8 @@
 #ifndef PICO_JXGLIB_VT100_H
 #define PICO_JXGLIB_VT100_H
 #include "pico/stdlib.h"
-#include "jxglib/Terminal.h"
-#include "jxglib/KeyCode.h"
+#include "jxglib/Printable.h"
+#include "jxglib/Keyboard.h"
 #include "jxglib/FIFOBuff.h"
 
 namespace jxglib {
