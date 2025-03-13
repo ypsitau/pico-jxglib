@@ -70,5 +70,5 @@ int main()
 	telePlot.Add("Multiple-Scaled (uint32)").Plot(values_uint32, count_of(values_uint32), 3.3 / 0xffffffff);
 	telePlot.Add("Multiple-Scaled (float)").Plot(values_float, count_of(values_float), 3.3);
 	telePlot.Add("Multiple-Scaled (double)").Plot(values_double, count_of(values_double), 3.3);
-
+	for (;;) ::tight_loop_contents();
 }
