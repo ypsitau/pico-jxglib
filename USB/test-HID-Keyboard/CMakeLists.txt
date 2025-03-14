@@ -47,7 +47,6 @@ pico_enable_stdio_usb(test-HID-Keyboard 0)
 # Add the standard library to the build
 target_link_libraries(test-HID-Keyboard
 	pico_stdlib
-	tinyusb_device
 	jxglib_USBD)
 
 # Add the standard include files to the build

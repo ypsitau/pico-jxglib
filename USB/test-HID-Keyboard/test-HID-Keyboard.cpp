@@ -21,13 +21,9 @@ class Keyboard : public USBD::Keyboard {
 private:
 	int nKeycodePrev_;
 public:
-	Keyboard(USBD::Device& device) : USBD::Keyboard(device, nullptr, 0x81), nKeycodePrev_{0} {}
+	Keyboard(USBD::Device& device) : USBD::Keyboard(device, "RaspberryPi Pico Keyboard Interface", 0x81), nKeycodePrev_{0} {}
 public:
 	virtual void OnTick() override;
-	virtual uint16_t On_GET_REPORT(uint8_t reportID, hid_report_type_t reportType, uint8_t* report, uint16_t reportLength) override;
-	virtual void On_GET_REPORT_Complete(const uint8_t* report, uint16_t reportLength) override;
-	virtual void On_SET_REPORT(uint8_t reportID, hid_report_type_t report_type, const uint8_t* report, uint16_t reportLength) override;
-	virtual void On_SET_PROTOCOL(uint8_t protocol) override;
 };
 
 //-----------------------------------------------------------------------------
@@ -45,7 +41,7 @@ int main(void)
 		idVendor:			0xcafe,
 		idProduct:			USBD::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
-	}, 0x0409, "RaspberryPi Pico HMI", "RaspberryPi Pico HMI Device", "0123456789ABCDEF",
+	}, 0x0409, "pico-jxglib sample", "RaspberryPi Pico HID Device (Keyboard)", "0123456789ABCDEF",
 		TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP);
 	Keyboard keyboard(device);
 	device.Initialize();
@@ -64,7 +60,7 @@ int main(void)
 //-----------------------------------------------------------------------------
 void Keyboard::OnTick()
 {
-	uint8_t report_id = 0;
+	uint8_t reportId = 0;
 	uint8_t modifier  = 0;
 	uint8_t keycode[6] = { 0 };
 	int nKeycode = 0;
@@ -80,35 +76,9 @@ void Keyboard::OnTick()
 	} else if (!hid_ready()) {
 		// do nothing
 	} else if (nKeycode > 0) {
-		hid_keyboard_report(report_id, modifier, keycode);
+		hid_keyboard_report(reportId, modifier, keycode);
 	} else if (nKeycodePrev_ > 0) {
-		hid_keyboard_report(report_id, modifier, nullptr);
+		hid_keyboard_report(reportId, modifier, nullptr);
 	}
 	nKeycodePrev_ = nKeycode;
-}
-
-uint16_t Keyboard::On_GET_REPORT(uint8_t reportID, hid_report_type_t reportType, uint8_t* report, uint16_t reportLength)
-{
-	return 0;
-}
-
-void Keyboard::On_GET_REPORT_Complete(const uint8_t* report, uint16_t reportLength)
-{
-}
-
-void Keyboard::On_SET_REPORT(uint8_t reportID, hid_report_type_t report_type, const uint8_t* report, uint16_t reportLength)
-{
-	if (report_type == HID_REPORT_TYPE_OUTPUT) {
-		if (reportLength < 1) {
-			// do nothing
-		} else if (report[0] & KEYBOARD_LED_CAPSLOCK) {
-			//board_led_write(true);
-		} else {
-			//board_led_write(false);
-		}
-	}
-}
-
-void Keyboard::On_SET_PROTOCOL(uint8_t protocol)
-{
 }

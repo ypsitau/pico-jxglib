@@ -183,9 +183,15 @@ void Interface::RegisterConfigDesc(const void* configDesc, int bytes)
 //-----------------------------------------------------------------------------
 namespace jxglib::USBD {
 
-HID::HID(Device& device, uint32_t msecTaskInterval) : Interface(device, 1, msecTaskInterval), reportDesc_{nullptr}
+HID::HID(Device& device, const char* str, uint8_t protocol, const uint8_t* reportDesc, uint8_t bytesReportDesc,
+	uint8_t endpInterrupt, uint8_t pollingInterval) : Interface(device, 1, pollingInterval), reportDesc_{reportDesc}
 {
+	uint8_t configDesc[] = {
+		TUD_HID_DESCRIPTOR(interfaceNum_, device.RegisterStringDesc(str), protocol,
+					bytesReportDesc, endpInterrupt, CFG_TUD_HID_EP_BUFSIZE, pollingInterval)
+	};
 	iInstance_ = device.AddInterface_HID(this);
+	RegisterConfigDesc(configDesc, sizeof(configDesc));
 }
 
 }
@@ -243,17 +249,13 @@ void tud_hid_set_protocol_cb(uint8_t iInstance, uint8_t protocol)
 //-----------------------------------------------------------------------------
 namespace jxglib::USBD {
 
+const uint8_t Keyboard::reportDesc_[] = { TUD_HID_REPORT_DESC_KEYBOARD() };
 
-Keyboard::Keyboard(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval) : HID(device, pollingInterval)
+Keyboard::Keyboard(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval) :
+	HID(device, str, HID_ITF_PROTOCOL_KEYBOARD, reportDesc_, sizeof(reportDesc_), endpInterrupt, pollingInterval)
 {
-	static const uint8_t reportDesc[] = { TUD_HID_REPORT_DESC_KEYBOARD() };
-	uint8_t configDesc[] = {
-		TUD_HID_DESCRIPTOR(interfaceNum_, device.RegisterStringDesc(str), HID_ITF_PROTOCOL_KEYBOARD,
-			sizeof(reportDesc), endpInterrupt, CFG_TUD_HID_EP_BUFSIZE, pollingInterval)
-	};
-	RegisterReportDesc(reportDesc);
-	RegisterConfigDesc(configDesc, sizeof(configDesc));
 }
+
 
 }
 
@@ -262,33 +264,11 @@ Keyboard::Keyboard(Device& device, const char* str, uint8_t endpInterrupt, uint8
 //-----------------------------------------------------------------------------
 namespace jxglib::USBD {
 
-Mouse::Mouse(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval) : HID(device, pollingInterval)
+const uint8_t Mouse::reportDesc_[] = { TUD_HID_REPORT_DESC_MOUSE() };
+
+Mouse::Mouse(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval) :
+	HID(device, str, HID_ITF_PROTOCOL_MOUSE, reportDesc_, sizeof(reportDesc_), endpInterrupt, pollingInterval)
 {
-	static const uint8_t reportDesc[] = { TUD_HID_REPORT_DESC_MOUSE() };
-	uint8_t configDesc[] = {
-		TUD_HID_DESCRIPTOR(interfaceNum_, device.RegisterStringDesc(str), HID_ITF_PROTOCOL_MOUSE,
-			sizeof(reportDesc), endpInterrupt, CFG_TUD_HID_EP_BUFSIZE, pollingInterval)
-	};
-	RegisterReportDesc(reportDesc);
-	RegisterConfigDesc(configDesc, sizeof(configDesc));
-}
-
-}
-
-//-----------------------------------------------------------------------------
-// USBD::Consumer
-//-----------------------------------------------------------------------------
-namespace jxglib::USBD {
-
-Consumer::Consumer(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval) : HID(device, pollingInterval)
-{
-	static const uint8_t reportDesc[] = { TUD_HID_REPORT_DESC_GAMEPAD() };
-	uint8_t configDesc[] = {
-		TUD_HID_DESCRIPTOR(interfaceNum_, device.RegisterStringDesc(str), HID_ITF_PROTOCOL_NONE,
-			sizeof(reportDesc), endpInterrupt, CFG_TUD_HID_EP_BUFSIZE, pollingInterval)
-	};
-	RegisterReportDesc(reportDesc);
-	RegisterConfigDesc(configDesc, sizeof(configDesc));
 }
 
 }
@@ -298,17 +278,13 @@ Consumer::Consumer(Device& device, const char* str, uint8_t endpInterrupt, uint8
 //-----------------------------------------------------------------------------
 namespace jxglib::USBD {
 
-Gamepad::Gamepad(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval) : HID(device, pollingInterval)
-{
-	static const uint8_t reportDesc[] = { TUD_HID_REPORT_DESC_GAMEPAD() };
-	uint8_t configDesc[] = {
-		TUD_HID_DESCRIPTOR(interfaceNum_, device.RegisterStringDesc(str), HID_ITF_PROTOCOL_NONE,
-			sizeof(reportDesc), endpInterrupt, CFG_TUD_HID_EP_BUFSIZE, pollingInterval)
-	};
-	RegisterReportDesc(reportDesc);
-	RegisterConfigDesc(configDesc, sizeof(configDesc));
-}
+const uint8_t Gamepad::reportDesc_[] = { TUD_HID_REPORT_DESC_GAMEPAD() };
 
+Gamepad::Gamepad(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval) :
+	HID(device, str, HID_ITF_PROTOCOL_NONE, reportDesc_, sizeof(reportDesc_), endpInterrupt, pollingInterval)
+{
+}
+		
 }
 
 #endif

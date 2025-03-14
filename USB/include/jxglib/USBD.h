@@ -135,6 +135,7 @@ class HID : public Interface {
 protected:
 	const uint8_t* reportDesc_;
 public:
+	HID(Device& device, const char* str, uint8_t protocol, const uint8_t* reportDesc, uint8_t bytesReportDesc, uint8_t endpInterrupt, uint8_t pollingInterval);
 	HID(Device& device, uint32_t msecTaskInterval);
 public:
 	void RegisterReportDesc(const uint8_t* reportDesc) { reportDesc_ = reportDesc; }
@@ -146,24 +147,24 @@ public:
 	// Get current active protocol: HID_PROTOCOL_BOOT (0) or HID_PROTOCOL_REPORT (1)
 	uint8_t hid_get_protocol() { return tud_hid_n_get_protocol(iInstance_); }
 	// Send report to host
-	bool hid_report(uint8_t report_id, void const* report, uint16_t len) { return tud_hid_n_report(iInstance_, report_id, report, len); }
+	bool hid_report(uint8_t reportId, void const* report, uint16_t len) { return tud_hid_n_report(iInstance_, reportId, report, len); }
 	// KEYBOARD: convenient helper to send keyboard report if application
 	// use template layout report as defined by hid_keyboard_report_t
-	bool hid_keyboard_report(uint8_t report_id, uint8_t modifier, const uint8_t keycode[6]) { return tud_hid_n_keyboard_report(iInstance_, report_id, modifier, keycode); }
+	bool hid_keyboard_report(uint8_t reportId, uint8_t modifier, const uint8_t keycode[6]) { return tud_hid_n_keyboard_report(iInstance_, reportId, modifier, keycode); }
 	// MOUSE: convenient helper to send mouse report if application
 	// use template layout report as defined by hid_mouse_report_t
-	bool hid_mouse_report(uint8_t report_id, uint8_t buttons, int8_t x, int8_t y, int8_t vertical, int8_t horizontal) { return tud_hid_n_mouse_report(iInstance_, report_id, buttons, x, y, vertical, horizontal); }
+	bool hid_mouse_report(uint8_t reportId, uint8_t buttons, int8_t x, int8_t y, int8_t vertical, int8_t horizontal) { return tud_hid_n_mouse_report(iInstance_, reportId, buttons, x, y, vertical, horizontal); }
 	// ABSOLUTE MOUSE: convenient helper to send absolute mouse report if application
 	// use template layout report as defined by hid_abs_mouse_report_t
-	bool hid_abs_mouse_report(uint8_t report_id, uint8_t buttons, int16_t x, int16_t y, int8_t vertical, int8_t horizontal) { return tud_hid_n_abs_mouse_report(iInstance_, report_id, buttons, x, y, vertical, horizontal); }
+	bool hid_abs_mouse_report(uint8_t reportId, uint8_t buttons, int16_t x, int16_t y, int8_t vertical, int8_t horizontal) { return tud_hid_n_abs_mouse_report(iInstance_, reportId, buttons, x, y, vertical, horizontal); }
 	// Gamepad: convenient helper to send gamepad report if application
 	// use template layout report TUD_HID_REPORT_DESC_GAMEPAD
-	bool hid_gamepad_report(uint8_t report_id, int8_t x, int8_t y, int8_t z, int8_t rz, int8_t rx, int8_t ry, uint8_t hat, uint32_t buttons) { return tud_hid_n_gamepad_report(iInstance_, report_id, x, y, z, rz, rx, ry, hat, buttons); }
+	bool hid_gamepad_report(uint8_t reportId, int8_t x, int8_t y, int8_t z, int8_t rz, int8_t rx, int8_t ry, uint8_t hat, uint32_t buttons) { return tud_hid_n_gamepad_report(iInstance_, reportId, x, y, z, rz, rx, ry, hat, buttons); }
 public:
 	const uint8_t* On_DESCRIPTOR_REPORT() { return reportDesc_; }
 	virtual uint16_t On_GET_REPORT(uint8_t reportID, hid_report_type_t reportType, uint8_t* report, uint16_t reportLength) { return 0; }
 	virtual void On_GET_REPORT_Complete(const uint8_t* report, uint16_t reportLength) {}
-	virtual void On_SET_REPORT(uint8_t reportID, hid_report_type_t report_type, const uint8_t* report, uint16_t reportLength) {}
+	virtual void On_SET_REPORT(uint8_t reportID, hid_report_type_t reportType, const uint8_t* report, uint16_t reportLength) {}
 	virtual void On_SET_PROTOCOL(uint8_t protocol) {}
 };
 
@@ -171,6 +172,8 @@ public:
 // USBD::Keyboard
 //-----------------------------------------------------------------------------
 class Keyboard : public HID {
+private:
+	static const uint8_t reportDesc_[];
 public:
 	Keyboard(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
 };
@@ -179,6 +182,8 @@ public:
 // USBD::Mouse
 //-----------------------------------------------------------------------------
 class Mouse : public HID {
+private:
+	static const uint8_t reportDesc_[];
 public:
 	Mouse(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
 };
@@ -187,16 +192,10 @@ public:
 // USBD::Gamepad
 //-----------------------------------------------------------------------------
 class Gamepad : public HID {
+private:
+	static const uint8_t reportDesc_[];
 public:
 	Gamepad(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
-};
-
-//-----------------------------------------------------------------------------
-// USBD::Consumer
-//-----------------------------------------------------------------------------
-class Consumer : public HID {
-public:
-	Consumer(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
 };
 
 #endif
