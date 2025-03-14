@@ -61,7 +61,7 @@ int main(void)
 void Mouse::OnTick()
 {
 	bool senseFlag = false;
-	uint8_t report_id = 0;
+	uint8_t reportId = 0;
 	uint8_t buttons = 0;
 	int8_t x = 0, y = 0;
 	int8_t vertical = 0, horizontal = 0;
@@ -77,7 +77,7 @@ void Mouse::OnTick()
 	} else if (!hid_ready()) {
 		// do nothing
 	} else if (senseFlag || senseFlagPrev_) {
-		hid_mouse_report(report_id, buttons, x, y, vertical, horizontal);
+		hid_mouse_report(reportId, buttons, x, y, vertical, horizontal);
 	}
 	senseFlagPrev_ = senseFlag;
 }

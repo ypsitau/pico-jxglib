@@ -74,7 +74,7 @@ int main(void)
 //-----------------------------------------------------------------------------
 void Keyboard::OnTick()
 {
-	uint8_t report_id = 0;
+	uint8_t reportId = 0;
 	uint8_t modifier  = 0;
 	uint8_t keycode[6] = { 0 };
 	int nKeycode = 0;
@@ -88,9 +88,9 @@ void Keyboard::OnTick()
 	} else if (!hid_ready()) {
 		// do nothing
 	} else if (nKeycode > 0) {
-		hid_keyboard_report(report_id, modifier, keycode);
+		hid_keyboard_report(reportId, modifier, keycode);
 	} else if (nKeycodePrev_ > 0) {
-		hid_keyboard_report(report_id, modifier, nullptr);
+		hid_keyboard_report(reportId, modifier, nullptr);
 	}
 	nKeycodePrev_ = nKeycode;
 }
@@ -101,7 +101,7 @@ void Keyboard::OnTick()
 void Mouse::OnTick()
 {
 	bool senseFlag = false;
-	uint8_t report_id = 0;
+	uint8_t reportId = 0;
 	uint8_t buttons = 0;
 	int8_t x = 0, y = 0;
 	int8_t vertical = 0, horizontal = 0;
@@ -113,7 +113,7 @@ void Mouse::OnTick()
 	} else if (!hid_ready()) {
 		// do nothing
 	} else if (senseFlag || senseFlagPrev_) {
-		hid_mouse_report(report_id, buttons, x, y, vertical, horizontal);
+		hid_mouse_report(reportId, buttons, x, y, vertical, horizontal);
 	}
 	senseFlagPrev_ = senseFlag;
 }

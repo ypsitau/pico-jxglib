@@ -117,7 +117,7 @@ protected:
 	uint8_t interfaceNum_;
 	uint8_t iInstance_;
 public:
-	Interface(Device& device, int nInterfacesToOccupy, uint32_t msecTaskInterval);
+	Interface(Device& device, int nInterfacesToOccupy, uint32_t msecTick);
 public:
 	void RegisterConfigDesc(const void* configDesc, int bytes);
 public:
@@ -133,8 +133,8 @@ class HID : public Interface {
 protected:
 	const uint8_t* reportDesc_;
 public:
-	HID(Device& device, const char* str, uint8_t protocol, const uint8_t* reportDesc, uint8_t bytesReportDesc, uint8_t endpInterrupt, uint8_t pollingInterval);
-	HID(Device& device, uint32_t msecTaskInterval);
+	HID(Device& device, uint32_t msecTick, const char* str, uint8_t protocol, const uint8_t* reportDesc, uint8_t bytesReportDesc,
+							uint8_t endpInterrupt, uint8_t pollingInterval);
 public:
 	void RegisterReportDesc(const uint8_t* reportDesc) { reportDesc_ = reportDesc; }
 public:
