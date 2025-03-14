@@ -20,9 +20,9 @@ auto& GPIO_CURSOR_DOWN_RIGHT	= GPIO21;
 class HIDComposite : public USBD::HID {
 public:
 	struct ReportId {
-		static const uint8_t Keyboard	= 1;
-		static const uint8_t Mouse		= 2;
-		static const uint8_t Max		= 3;
+		static const uint8_t Keyboard	= 0;
+		static const uint8_t Mouse		= 1;
+		static const uint8_t Max		= 2;
 	};
 private:
 	int nKeycodePrev_;
@@ -39,7 +39,8 @@ public:
 };
 
 const uint8_t HIDComposite::reportDesc_[] = {
-	TUD_HID_REPORT_DESC_KEYBOARD()
+	TUD_HID_REPORT_DESC_KEYBOARD(),
+	//TUD_HID_REPORT_DESC_MOUSE()
 	//TUD_HID_REPORT_DESC_KEYBOARD(HID_REPORT_ID(ReportId::Keyboard)),
 	//TUD_HID_REPORT_DESC_MOUSE(HID_REPORT_ID(ReportId::Mouse))
 };
@@ -94,11 +95,11 @@ int main(void)
 		bcdDevice:			0x0100,
 	}, 0x0409, "pico-jxglib sample", "RaspberryPi Pico HMI Composite Device (Keyboard + Mouse)", "0123456789ABCDEF",
 		TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP);
-	//HIDComposite hidComposite(device);
-	Keyboard keyboard(device);
+	HIDComposite hidComposite(device);
+	//Keyboard keyboard(device);
 	device.Initialize();
-	//hidComposite.Initialize();
-	keyboard.Initialize();
+	hidComposite.Initialize();
+	//keyboard.Initialize();
 	GPIO_ARROW_LEFT			.init().set_dir_IN().pull_up();
 	GPIO_ARROW_UP			.init().set_dir_IN().pull_up();
 	GPIO_ARROW_DOWN			.init().set_dir_IN().pull_up();
