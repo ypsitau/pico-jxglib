@@ -21,7 +21,7 @@ class Keyboard : public USBD::Keyboard {
 private:
 	int nKeycodePrev_;
 public:
-	Keyboard(USBD::Device& device) : USBD::Keyboard(device, "RaspberryPi Pico Keyboard", 0x81), nKeycodePrev_{0} {}
+	Keyboard(USBD::Device& device) : USBD::Keyboard(device, "RaspberryPi Pico Keyboard Interface", 0x81), nKeycodePrev_{0} {}
 public:
 	virtual void OnTick() override;
 };
@@ -33,7 +33,7 @@ class Mouse : public USBD::Mouse {
 private:
 	bool senseFlagPrev_;
 public:
-	Mouse(USBD::Device& device) : USBD::Mouse(device, "RaspberryPi Pico Mouse", 0x82), senseFlagPrev_{false} {}
+	Mouse(USBD::Device& device) : USBD::Mouse(device, "RaspberryPi Pico Mouse Interface", 0x82), senseFlagPrev_{false} {}
 public:
 	virtual void OnTick() override;
 };
@@ -53,7 +53,7 @@ int main(void)
 		idVendor:			0xcafe,
 		idProduct:			USBD::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
-	}, 0x0409, "RaspberryPi Pico HMI", "RaspberryPi Pico HMI Device", "0123456789ABCDEF",
+	}, 0x0409, "pico-jxglib sample", "RaspberryPi Pico HMI Device (Keyboard + Mouse)", "0123456789ABCDEF",
 		TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP);
 	Keyboard keyboard(device);
 	Mouse mouse(device);

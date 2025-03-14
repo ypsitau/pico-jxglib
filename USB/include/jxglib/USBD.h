@@ -116,8 +116,6 @@ protected:
 	Device& device_;
 	uint8_t interfaceNum_;
 	uint8_t iInstance_;
-	//uint32_t msecStart_;
-	//uint32_t msecTaskInterval_;
 public:
 	Interface(Device& device, int nInterfacesToOccupy, uint32_t msecTaskInterval);
 public:
