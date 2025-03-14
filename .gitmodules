@@ -4,9 +4,3 @@
 [submodule "FS/LFS/littlefs"]
 	path = FS/LFS/littlefs
 	url = https://github.com/littlefs-project/littlefs
-[submodule "littlefs"]
-	path = littlefs
-	url = https://github.com/littlefs-project/littlefs
-[submodule "USB/tinyusb"]
-	path = USB/tinyusb
-	url = https://github.com/hathach/tinyusb
