@@ -1,3 +1,6 @@
 [submodule "LVGLAdapter/lvgl"]
 	path = LVGL/lvgl
 	url = https://github.com/lvgl/lvgl
+[submodule "littlefs"]
+	path = littlefs
+	url = https://github.com/littlefs-project/littlefs
