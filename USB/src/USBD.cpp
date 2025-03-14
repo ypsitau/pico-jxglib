@@ -184,7 +184,7 @@ void Interface::RegisterConfigDesc(const void* configDesc, int bytes)
 namespace jxglib::USBD {
 
 HID::HID(Device& device, uint32_t msecTick, const char* str, uint8_t protocol, const uint8_t* reportDesc, uint8_t bytesReportDesc,
-	uint8_t endpInterrupt, uint8_t pollingInterval) : Interface(device, 1, msecTick), reportDesc_{reportDesc}
+	uint8_t endpInterrupt, uint8_t pollingInterval) : Interface(device, 1, msecTick), reportDescSaved_{reportDesc}
 {
 	uint8_t configDesc[] = {
 		TUD_HID_DESCRIPTOR(interfaceNum_, device.RegisterStringDesc(str), protocol,

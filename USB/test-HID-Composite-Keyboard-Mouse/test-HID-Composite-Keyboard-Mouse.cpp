@@ -51,6 +51,12 @@ HIDComposite::HIDComposite(USBD::Device& device) : USBD::HID(device, 30, "Raspbe
 // Keyboard
 //-----------------------------------------------------------------------------
 class Keyboard : public USBD::HID {
+public:
+	struct ReportId {
+		static const uint8_t Keyboard	= 1;
+		static const uint8_t Mouse		= 2;
+		static const uint8_t Max		= 3;
+	};
 private:
 	int nKeycodePrev_;
 private:
@@ -59,6 +65,7 @@ public:
 	Keyboard(USBD::Device& device);
 public:
 	virtual void OnTick() override;
+	virtual void On_GET_REPORT_Complete(const uint8_t* report, uint16_t reportLength) override;
 };
 
 const uint8_t Keyboard::reportDesc_[] = {
@@ -68,7 +75,7 @@ const uint8_t Keyboard::reportDesc_[] = {
 };
 
 Keyboard::Keyboard(USBD::Device& device) : USBD::HID(device, 30, "RaspberryPi Pico HID Composite Interface",
-	HID_ITF_PROTOCOL_KEYBOARD, reportDesc_, sizeof(reportDesc_), 0x81, 5), nKeycodePrev_{0} {}
+	HID_ITF_PROTOCOL_NONE, reportDesc_, sizeof(reportDesc_), 0x81, 5), nKeycodePrev_{0} {}
 
 //-----------------------------------------------------------------------------
 // main
@@ -167,7 +174,7 @@ void HIDComposite::On_GET_REPORT_Complete(const uint8_t* report, uint16_t report
 //-----------------------------------------------------------------------------
 void Keyboard::OnTick()
 {
-	uint8_t reportId = 0;
+	uint8_t reportId = 0; //ReportId::Keyboard;
 	uint8_t modifier  = 0;
 	uint8_t keycode[6] = { 0 };
 	int nKeycode = 0;
@@ -186,4 +193,9 @@ void Keyboard::OnTick()
 		hid_keyboard_report(reportId, modifier, nullptr);
 	}
 	nKeycodePrev_ = nKeycode;
+}
+
+void Keyboard::On_GET_REPORT_Complete(const uint8_t* report, uint16_t reportLength)
+{
+	::printf("On_GET_REPORT_Complete\n");
 }

@@ -131,12 +131,10 @@ public:
 //-----------------------------------------------------------------------------
 class HID : public Interface {
 protected:
-	const uint8_t* reportDesc_;
+	const uint8_t* reportDescSaved_;
 public:
 	HID(Device& device, uint32_t msecTick, const char* str, uint8_t protocol, const uint8_t* reportDesc, uint8_t bytesReportDesc,
 							uint8_t endpInterrupt, uint8_t pollingInterval);
-public:
-	void RegisterReportDesc(const uint8_t* reportDesc) { reportDesc_ = reportDesc; }
 public:
 	// Check if the interface is ready to use
 	bool hid_ready() { return tud_hid_n_ready(iInstance_); }
@@ -159,7 +157,7 @@ public:
 	// use template layout report TUD_HID_REPORT_DESC_GAMEPAD
 	bool hid_gamepad_report(uint8_t reportId, int8_t x, int8_t y, int8_t z, int8_t rz, int8_t rx, int8_t ry, uint8_t hat, uint32_t buttons) { return tud_hid_n_gamepad_report(iInstance_, reportId, x, y, z, rz, rx, ry, hat, buttons); }
 public:
-	const uint8_t* On_DESCRIPTOR_REPORT() { return reportDesc_; }
+	const uint8_t* On_DESCRIPTOR_REPORT() { return reportDescSaved_; }
 	virtual uint16_t On_GET_REPORT(uint8_t reportID, hid_report_type_t reportType, uint8_t* report, uint16_t reportLength) { return 0; }
 	virtual void On_GET_REPORT_Complete(const uint8_t* report, uint16_t reportLength) {}
 	virtual void On_SET_REPORT(uint8_t reportID, hid_report_type_t reportType, const uint8_t* report, uint16_t reportLength) {}
