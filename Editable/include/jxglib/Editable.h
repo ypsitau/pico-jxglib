@@ -78,7 +78,7 @@ public:
 	bool Initialize();
 	LineEditor& GetLineEditor() { return lineEditor_; }
 	char* ReadLine(const char* prompt);
-	bool FeedKeyData(const KeyData& keyData);
+	bool ProcessKeyData(const KeyData& keyData);
 public:
 	virtual Printable& GetPrintable() = 0;
 	virtual Editable& Edit_Begin() = 0;

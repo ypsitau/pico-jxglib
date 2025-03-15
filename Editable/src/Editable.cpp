@@ -30,7 +30,7 @@ char* Editable::ReadLine(const char* prompt)
 	return GetLineEditor().GetPointerBegin();
 }
 
-bool Editable::FeedKeyData(const KeyData& keyData)
+bool Editable::ProcessKeyData(const KeyData& keyData)
 {
 	if (keyData.IsKeyCode()) {
 		switch (keyData.GetKeyCode()) {

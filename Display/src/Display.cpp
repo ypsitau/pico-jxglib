@@ -14,12 +14,18 @@ namespace jxglib {
 // Display::Terminal
 //------------------------------------------------------------------------------
 Display::Terminal::Terminal(int bytesLineBuff, int bytesHistoryBuff) :
-	jxglib::Terminal(bytesHistoryBuff), pDrawable_{nullptr}, nLinesWhole_{0}, lineBuff_(bytesLineBuff),
+	jxglib::Terminal(bytesHistoryBuff, KeyboardDumb::Instance), pDrawable_{nullptr}, nLinesWhole_{0}, lineBuff_(bytesLineBuff),
 	pEventHandler_{nullptr}, pLineStop_RollBack_{nullptr},
 	suppressFlag_{false}, showCursorFlag_{false}, appearCursorFlag_{false}, wdCursor_{2},
-	colorTextInEdit_{255, 255, 255}, colorCursor_{255, 255, 255}, pKeyboard_{&KeyboardDumb::Instance},
+	colorTextInEdit_{255, 255, 255}, colorCursor_{255, 255, 255},
 	tickable_Blink_(*this, 500), tickable_Keyboard_(*this)
 {
+}
+
+void Display::Terminal::AttachInput(Keyboard& keyboard)
+{
+	jxglib::Terminal::AttachInput(keyboard);
+	tickable_Keyboard_.SetTick(50);
 }
 
 bool Display::Terminal::AttachOutput(Drawable& drawable, const Rect& rect, Dir dir)
@@ -29,12 +35,6 @@ bool Display::Terminal::AttachOutput(Drawable& drawable, const Rect& rect, Dir d
 	ptCurrent_ = Point(rectDst_.x, rectDst_.y);
 	pDrawable_ = &drawable;
 	return true;
-}
-
-void Display::Terminal::AttachInput(Keyboard& keyboard)
-{
-	pKeyboard_ = &keyboard;
-	tickable_Keyboard_.SetTick(50);
 }
 
 int Display::Terminal::CalcApproxNColsOnDisplay() const
@@ -515,7 +515,7 @@ Editable& Display::Terminal::Edit_MoveHistoryNext()
 void Display::Terminal::Tickable_Keyboard::OnTick()
 {
 	KeyData keyData;
-	if (terminal_.GetKeyboard().GetKeyData(keyData)) {
+	if (terminal_.GetKeyData(keyData)) {
 		if (keyData.IsKeyCode()) {
 			switch (keyData.GetKeyCode()) {
 			case VK_PRIOR: terminal_.RollUp(); return;
@@ -523,7 +523,7 @@ void Display::Terminal::Tickable_Keyboard::OnTick()
 			default: break;
 			}
 		}
-		terminal_.FeedKeyData(keyData);
+		terminal_.ProcessKeyData(keyData);
 	}
 }
 

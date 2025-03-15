@@ -61,19 +61,17 @@ public:
 		Color colorTextInEdit_;
 		Color colorCursor_;
 		int wdCursor_;
-		Keyboard* pKeyboard_;
 		Tickable_Blink tickable_Blink_;
 		Tickable_Keyboard tickable_Keyboard_;
 	public:
 		Terminal(int bytesLineBuff = 4096, int byteshistoryBuff = 512);
 	public:
 		bool Initialize() { return true; }
-		bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
 		void AttachInput(Keyboard& keyboard);
+		bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
 	public:
 		Drawable& GetDrawable() { return *pDrawable_; }
 		const Drawable& GetDrawable() const { return *pDrawable_; }
-		Keyboard& GetKeyboard() { return *pKeyboard_; }
 		const Rect& GetRectDst() const { return rectDst_; }
 	public:
 		Terminal& SetColor(const Color& color) { context_.SetColor(color); return *this; }

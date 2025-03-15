@@ -16,30 +16,30 @@ class Serial {
 public:
 	class Terminal : public jxglib::Terminal, public Tickable {
 	private:
-		Printable& printable_;
-		Keyboard& keyboard_;
+		Printable* pPrintable_;
 	public:
-		Terminal(Printable& printable = PrintableStdio::Instance,
-						Keyboard& keyboard = KeyboardStdio::Instance, int bytesHistoryBuff = 512) :
-			jxglib::Terminal(bytesHistoryBuff), Tickable(0), printable_{printable}, keyboard_{keyboard} {}
+		Terminal(int bytesHistoryBuff = 512) : jxglib::Terminal(bytesHistoryBuff, KeyboardStdio::Instance),
+				Tickable(0), pPrintable_{&PrintableStdio::Instance} {}
 	public:
 		bool Initialize();
 	public:
+		void AttachOutput(Printable& printable) { pPrintable_ = &printable; }
+	public:
 		// virtual functions of Printable
-		virtual Printable& ClearScreen() { return printable_.ClearScreen(); }
-		virtual Printable& RefreshScreen() { return printable_.RefreshScreen(); }
-		virtual Printable& Locate(int col, int row) { return printable_.Locate(col, row); }
-		virtual Printable& PutChar(char ch) { return printable_.PutChar(ch); }
-		virtual Printable& PutCharRaw(char ch) { return printable_.PutCharRaw(ch); }
-		virtual Printable& Print(const char* str) { return printable_.Print(str); }
-		virtual Printable& PrintRaw(const char* str) { return printable_.PrintRaw(str); }
-		virtual Printable& Println(const char* str = "") { return printable_.Println(str); }
-		virtual Printable& PrintlnRaw(const char* str = "") { return printable_.PrintlnRaw(str); }
-		virtual Printable& VPrintf(const char* format, va_list args) { return printable_.VPrintf(format, args); }
-		virtual Printable& VPrintfRaw(const char* format, va_list args) { return printable_.VPrintfRaw(format, args); }
+		virtual Printable& ClearScreen() { return pPrintable_->ClearScreen(); }
+		virtual Printable& RefreshScreen() { return pPrintable_->RefreshScreen(); }
+		virtual Printable& Locate(int col, int row) { return pPrintable_->Locate(col, row); }
+		virtual Printable& PutChar(char ch) { return pPrintable_->PutChar(ch); }
+		virtual Printable& PutCharRaw(char ch) { return pPrintable_->PutCharRaw(ch); }
+		virtual Printable& Print(const char* str) { return pPrintable_->Print(str); }
+		virtual Printable& PrintRaw(const char* str) { return pPrintable_->PrintRaw(str); }
+		virtual Printable& Println(const char* str = "") { return pPrintable_->Println(str); }
+		virtual Printable& PrintlnRaw(const char* str = "") { return pPrintable_->PrintlnRaw(str); }
+		virtual Printable& VPrintf(const char* format, va_list args) { return pPrintable_->VPrintf(format, args); }
+		virtual Printable& VPrintfRaw(const char* format, va_list args) { return pPrintable_->VPrintfRaw(format, args); }
 	public:
 		// virtual functions of Editable
-		virtual Printable& GetPrintable() override { return printable_; }
+		virtual Printable& GetPrintable() override { return *pPrintable_; }
 		virtual Editable& Edit_Begin();
 		virtual Editable& Edit_Finish(char chEnd = '\0');
 		virtual Editable& Edit_InsertChar(int ch);
