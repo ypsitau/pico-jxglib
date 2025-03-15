@@ -4,8 +4,8 @@
 #ifndef PICO_JXGLIB_VT100_H
 #define PICO_JXGLIB_VT100_H
 #include "pico/stdlib.h"
+#include "jxglib/KeyData.h"
 #include "jxglib/Printable.h"
-#include "jxglib/Keyboard.h"
 #include "jxglib/FIFOBuff.h"
 
 namespace jxglib {
@@ -41,7 +41,7 @@ public:
 		Decoder();
 	public:
 		bool HasKeyData() const { return buff_.HasData(); }
-		bool GetKeyData(Keyboard::KeyData& keyData);
+		bool GetKeyData(KeyData& keyData);
 	public:
 		void FeedChar(char ch);
 	};

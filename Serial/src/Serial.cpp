@@ -165,7 +165,7 @@ void Serial::Terminal::OnTick()
 {
 	int ch;
 	while ((ch = ::stdio_getchar_timeout_us(0)) > 0) decoder_.FeedChar(ch);
-	Keyboard::KeyData keyData;
+	KeyData keyData;
 	if (decoder_.GetKeyData(keyData)) FeedKeyData(keyData);
 }
 

@@ -200,14 +200,14 @@ void VT100::Decoder::FeedChar(char ch)
 	} while (contFlag);
 }
 
-bool VT100::Decoder::GetKeyData(Keyboard::KeyData& keyData)
+bool VT100::Decoder::GetKeyData(KeyData& keyData)
 {
 	if (HasKeyData()) {
 		int code = buff_.ReadData();
 		bool keyCodeFlag = (code < OffsetForAscii);
 		if (!keyCodeFlag) code -= OffsetForAscii;
 		const uint8_t modifier = 0;
-		keyData = Keyboard::KeyData(code, keyCodeFlag, modifier);
+		keyData = KeyData(code, keyCodeFlag, modifier);
 		return true;
 	}
 	return false;

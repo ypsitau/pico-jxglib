@@ -9,4 +9,17 @@ namespace jxglib {
 // Keyboard
 //------------------------------------------------------------------------------
 
+//------------------------------------------------------------------------------
+// KeyboardStdio
+//------------------------------------------------------------------------------
+KeyboardStdio KeyboardStdio::Instance;
+
+bool KeyboardStdio::GetKeyData(KeyData& keyData)
+{
+	int ch;
+	while ((ch = ::stdio_getchar_timeout_us(0)) > 0) decoder_.FeedChar(ch);
+	return decoder_.GetKeyData(keyData);
+}
+
+
 }

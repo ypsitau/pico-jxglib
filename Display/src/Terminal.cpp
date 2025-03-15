@@ -520,7 +520,7 @@ void Display::Terminal::InputStdio::OnTick(Terminal& terminal)
 {
 	int ch;
 	while ((ch = ::stdio_getchar_timeout_us(0)) > 0) decoder_.FeedChar(ch);
-	Keyboard::KeyData keyData;
+	KeyData keyData;
 	if (decoder_.GetKeyData(keyData)) {
 		if (keyData.IsKeyCode()) {
 			uint8_t keyCode = keyData.GetKeyCode();

@@ -181,7 +181,7 @@ void Adapter::InputTouchScreen::Handle(lv_indev_t* indev_drv, lv_indev_data_t* d
 //------------------------------------------------------------------------------
 void Adapter::InputKeyUART::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
 {
-	Keyboard::KeyData keyData;
+	KeyData keyData;
 	if (vt100Decoder_.GetKeyData(keyData)) {
 		if (keyData.IsKeyCode()) {
 			uint8_t keyCode = keyData.GetKeyCode();

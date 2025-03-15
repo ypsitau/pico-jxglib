@@ -12,6 +12,7 @@ target_sources(jxglib_Common INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/Color.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/GPIO.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/KeyCode.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/KeyData.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Point.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Rect.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Size.cpp
