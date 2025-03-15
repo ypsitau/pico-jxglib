@@ -163,10 +163,8 @@ Editable& Serial::Terminal::Edit_MoveHistoryNext()
 
 void Serial::Terminal::OnTick()
 {
-	int ch;
-	while ((ch = ::stdio_getchar_timeout_us(0)) > 0) decoder_.FeedChar(ch);
 	KeyData keyData;
-	if (decoder_.GetKeyData(keyData)) FeedKeyData(keyData);
+	if (keyboard_.GetKeyData(keyData)) FeedKeyData(keyData);
 }
 
 }

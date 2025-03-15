@@ -16,7 +16,7 @@ int main()
 	ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
 	display.Initialize(Display::Dir::Rotate0);
 	terminal.AttachOutput(display);
-	terminal.AttachInputStdio();
+	terminal.AttachInput(KeyboardStdio::Instance);
 	terminal.SetFont(Font::shinonome16).SetSpacingRatio(1., 1)
 		.SetColor(Color::white).SetColorBg(Color::black)
 		.SetColorInEdit(Color::white).SetColorCursor(Color::white)

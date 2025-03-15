@@ -23,19 +23,6 @@ public:
 		public:
 			virtual void OnNewLine(Terminal& terminal) = 0;
 		};
-		class Input {
-		public:
-			virtual void OnTick(Terminal& terminal) = 0;
-		};
-		class InputStdio : public Input {
-		private:
-			VT100::Decoder decoder_;
-		public:
-			InputStdio() {}
-		public:
-			// virtual function of Input
-			virtual void OnTick(Terminal& terminal) override;
-		};
 	public:
 		class Tickable_Blink : public Tickable {
 		private:
@@ -47,13 +34,13 @@ public:
 		public:
 			virtual void OnTick() override { terminal_.BlinkCursor(); }
 		};
-		class Tickable_Input : public Tickable {
+		class Tickable_Keyboard : public Tickable {
 		private:
 			Terminal& terminal_;
 		public:
-			Tickable_Input(Terminal& terminal) : Tickable(5, Priority::Lowest), terminal_{terminal} {}
+			Tickable_Keyboard(Terminal& terminal) : Tickable(-1, Priority::Lowest), terminal_{terminal} {}
 		public:
-			virtual void OnTick() override { terminal_.TickInput(); }
+			virtual void OnTick() override;
 		};
 	public:
 		using Dir = Drawable::Dir;
@@ -74,21 +61,19 @@ public:
 		Color colorTextInEdit_;
 		Color colorCursor_;
 		int wdCursor_;
-		Input* pInput_;
-		InputStdio inputStdio_;
+		Keyboard* pKeyboard_;
 		Tickable_Blink tickable_Blink_;
-		Tickable_Input tickable_Input_;
+		Tickable_Keyboard tickable_Keyboard_;
 	public:
 		Terminal(int bytesLineBuff = 4096, int byteshistoryBuff = 512);
 	public:
 		bool Initialize() { return true; }
 		bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
-		void AttachInput(Input& input, int msecTick);
-		void AttachInputStdio();
-		void TickInput() { if (pInput_) pInput_->OnTick(*this); }
+		void AttachInput(Keyboard& keyboard);
 	public:
 		Drawable& GetDrawable() { return *pDrawable_; }
 		const Drawable& GetDrawable() const { return *pDrawable_; }
+		Keyboard& GetKeyboard() { return *pKeyboard_; }
 		const Rect& GetRectDst() const { return rectDst_; }
 	public:
 		Terminal& SetColor(const Color& color) { context_.SetColor(color); return *this; }

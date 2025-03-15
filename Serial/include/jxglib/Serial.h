@@ -17,10 +17,11 @@ public:
 	class Terminal : public jxglib::Terminal, public Tickable {
 	private:
 		Printable& printable_;
-		VT100::Decoder decoder_;
+		Keyboard& keyboard_;
 	public:
-		Terminal(Printable& printable = PrintableStdio::Instance, int bytesHistoryBuff = 512) :
-				jxglib::Terminal(bytesHistoryBuff), Tickable(0), printable_{printable} {}
+		Terminal(Printable& printable = PrintableStdio::Instance,
+						Keyboard& keyboard = KeyboardStdio::Instance, int bytesHistoryBuff = 512) :
+			jxglib::Terminal(bytesHistoryBuff), Tickable(0), printable_{printable}, keyboard_{keyboard} {}
 	public:
 		bool Initialize();
 	public:

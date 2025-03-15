@@ -21,13 +21,26 @@ public:
 	virtual bool GetKeyData(KeyData& keyData) = 0;
 };
 
+//------------------------------------------------------------------------------
+// KeyboardDumb
+//------------------------------------------------------------------------------
+class KeyboardDumb : public Keyboard {
+public:
+	static KeyboardDumb Instance;
+public:
+	virtual bool GetKeyData(KeyData& keyData) override { return false; }
+};
+	
+//------------------------------------------------------------------------------
+// KeyboardStdio
+//------------------------------------------------------------------------------
 class KeyboardStdio : public Keyboard {
 private:
 	VT100::Decoder decoder_;
 public:
 	static KeyboardStdio Instance;
 public:
-	virtual bool GetKeyData(KeyData& keyData);
+	virtual bool GetKeyData(KeyData& keyData) override;
 };
 
 }
