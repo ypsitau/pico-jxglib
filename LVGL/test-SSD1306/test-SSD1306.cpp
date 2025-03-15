@@ -19,7 +19,7 @@ int main()
 	LVGL::Initialize(5);
 	LVGL::Adapter lvglAdapter;
 	lvglAdapter.AttachOutput(display);
-	lvglAdapter.AttachInput(UART::Default);
+	lvglAdapter.AttachInput(KeyboardStdio::Instance);
 	Setup();
 	for (;;) Tickable::Tick();
 }

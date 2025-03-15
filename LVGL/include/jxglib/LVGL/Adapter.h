@@ -6,8 +6,8 @@
 #include <lvgl/lvgl.h>
 #include "pico/stdlib.h"
 #include "jxglib/Drawable.h"
+#include "jxglib/Keyboard.h"
 #include "jxglib/TouchScreen.h"
-#include "jxglib/UART.h"
 #include "jxglib/VT100.h"
 
 namespace jxglib::LVGL {
@@ -36,11 +36,13 @@ public:
 	public:
 		virtual void Handle(lv_indev_t* indev_drv, lv_indev_data_t* data) override;
 	};
-	class InputKeyUART : public Input {
+	class InputKeyboard : public Input {
 	private:
-		VT100::Decoder& vt100Decoder_;
+		Keyboard* pKeyboard_;
 	public:
-		InputKeyUART(VT100::Decoder& vt100Decoder) : vt100Decoder_{vt100Decoder} {}
+		InputKeyboard() : pKeyboard_{&KeyboardDumb::Instance} {}
+	public:
+		void SetKeyboard(Keyboard& keyboard) { pKeyboard_ = &keyboard; }
 	public:
 		virtual void Handle(lv_indev_t* indev_drv, lv_indev_data_t* data) override;
 	};
@@ -64,7 +66,7 @@ private:
 	DrawImageFastHandler drawImageFastHandler_;
 private:
 	InputTouchScreen inputTouchScreen_;
-	InputKeyUART inputKeyUART_;
+	InputKeyboard inputKeyboard_;
 	static InputDumb inputDumb_;
 public:
 	static VT100::Decoder vt100Decoder;
@@ -86,7 +88,7 @@ public:
 public:
 	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, bool requiredFlag = true);
 	lv_indev_t* AttachInput(TouchScreen& touchScreen);
-	lv_indev_t* AttachInput(UART& uart, bool setGroupFlag = true);
+	lv_indev_t* AttachInput(Keyboard& keyboard, bool setGroupFlag = true);
 private:
 	lv_indev_t* RegisterInput(lv_indev_type_t indev_type, lv_indev_read_cb_t cb);
 private:
@@ -95,8 +97,6 @@ private:
 	static void IndevReadKeypadCB(lv_indev_t* indev_drv, lv_indev_data_t* data);
 	static void IndevReadButtonCB(lv_indev_t* indev_drv, lv_indev_data_t* data);
 	static void IndevReadEncoderCB(lv_indev_t* indev_drv, lv_indev_data_t* data);
-	static void HandlerUART0();
-	static void HandlerUART1();
 };
 
 }

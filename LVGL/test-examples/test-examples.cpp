@@ -255,7 +255,7 @@ int main()
 	LVGL::Adapter lvglAdapter;
 	lvglAdapter.EnableDoubleBuff(true).AttachOutput(display);
 	lvglAdapter.AttachInput(touchScreen);
-	lvglAdapter.AttachInput(UART::Default);
+	lvglAdapter.AttachInput(KeyboardStdio::Instance);
 	Setup(display);
 	for (;;) Tickable::Tick();
 }

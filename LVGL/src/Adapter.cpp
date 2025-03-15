@@ -13,7 +13,7 @@ VT100::Decoder Adapter::vt100Decoder;
 
 Adapter::Adapter() : doubleBuffFlag_{false}, nPixelsBuff_{-1}, nPartialBuff_{10}, pDrawableOut_{nullptr}, disp_{nullptr},
 	pInput_Pointer_{&inputDumb_}, pInput_Keypad_{&inputDumb_}, pInput_Button_{&inputDumb_}, pInput_Encoder_{&inputDumb_},
-	inputTouchScreen_(*this), inputKeyUART_(vt100Decoder)
+	inputTouchScreen_(*this)
 {}
 
 bool Adapter::AttachOutput(Drawable& drawable, const Rect& rect, bool requiredFlag)
@@ -96,11 +96,10 @@ lv_indev_t* Adapter::AttachInput(TouchScreen& touchScreen)
 	return SetInput_Pointer(inputTouchScreen_);
 }
 
-lv_indev_t* Adapter::AttachInput(UART& uart, bool setGroupFlag)
+lv_indev_t* Adapter::AttachInput(Keyboard& keyboard, bool setGroupFlag)
 {
-	uart.irq_add_shared_handler((uart.raw.get_index() == 0)? HandlerUART0 : HandlerUART1).irq_set_enabled(true);
-	uart.raw.set_irq_enables(true, false);
-	lv_indev_t* indev = SetInput_Keypad(inputKeyUART_);
+	inputKeyboard_.SetKeyboard(keyboard);
+	lv_indev_t* indev = SetInput_Keypad(inputKeyboard_);
 	if (setGroupFlag) {
 		lv_group_t* group = ::lv_group_create();
 		::lv_group_set_default(group);
@@ -151,18 +150,6 @@ void Adapter::IndevReadEncoderCB(lv_indev_t* indev, lv_indev_data_t* data)
 	pSelf->pInput_Encoder_->Handle(indev, data);
 }
 
-void Adapter::HandlerUART0(void)
-{
-	UART& uart = UART0;
-	while (uart.raw.is_readable()) vt100Decoder.FeedChar(uart.raw.getc());
-}
-
-void Adapter::HandlerUART1(void)
-{
-	UART& uart = UART1;
-	while (uart.raw.is_readable()) vt100Decoder.FeedChar(uart.raw.getc());
-}
-
 //------------------------------------------------------------------------------
 // Adapter::InputTouchScreen
 //------------------------------------------------------------------------------
@@ -177,12 +164,12 @@ void Adapter::InputTouchScreen::Handle(lv_indev_t* indev_drv, lv_indev_data_t* d
 }
 
 //------------------------------------------------------------------------------
-// Adapter::InputKeyUART
+// Adapter::InputKeyboard
 //------------------------------------------------------------------------------
-void Adapter::InputKeyUART::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
+void Adapter::InputKeyboard::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
 {
 	KeyData keyData;
-	if (vt100Decoder_.GetKeyData(keyData)) {
+	if (pKeyboard_->GetKeyData(keyData)) {
 		if (keyData.IsKeyCode()) {
 			uint8_t keyCode = keyData.GetKeyCode();
 			data->key =

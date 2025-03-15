@@ -37,7 +37,7 @@ int main()
 	// Attach display2 to LVGL
 	LVGL::Adapter lvglAdapter2;
 	lvglAdapter2.EnableDoubleBuff(false).SetPartialNum(20).AttachOutput(display2);
-	lvglAdapter2.AttachInput(UART::Default);	// shared by all the displays
+	lvglAdapter2.AttachInput(KeyboardStdio::Instance);	// shared by all the displays
 	lvglAdapter2.AttachInput(touchScreen2);
 	::lv_example_anim_3();
 	//::lv_example_textarea_1();
