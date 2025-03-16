@@ -13,7 +13,7 @@ using namespace jxglib;
 //-----------------------------------------------------------------------------
 class EchoBack : public USBDevice::CDC {
 public:
-	EchoBack(USBDevice::Device& device, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn) :
+	EchoBack(USBDevice& device, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn) :
 				USBDevice::CDC(device, name, endpNotif, 8, endpBulkOut, endpBulkIn, 64, 10) {}
 public:
 	virtual void OnTick() override;
@@ -34,7 +34,7 @@ void EchoBack::OnTick()
 int main(void)
 {
 	::stdio_init_all(); 
-	USBDevice::Device device({
+	USBDevice device({
 		bcdUSB:				0x0200,
 		bDeviceClass:		TUSB_CLASS_MISC,
 		bDeviceSubClass:	MISC_SUBCLASS_COMMON,

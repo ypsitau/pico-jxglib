@@ -4,6 +4,7 @@
 #ifndef PICO_JXGLIB_USBHOST_H
 #define PICO_JXGLIB_USBHOST_H
 #include "pico/stdlib.h"
+#include "tusb.h"
 #include "jxglib/Common.h"
 
 namespace jxglib {
@@ -13,7 +14,9 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class USBHost {
 public:
-	USBHost() {}
+	USBHost();
+public:
+
 };
 
 }

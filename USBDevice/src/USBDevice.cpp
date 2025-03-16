@@ -5,13 +5,13 @@
 #include "jxglib/USBDevice.h"
 
 //-----------------------------------------------------------------------------
-// USBDevice::Device
+// USBDevice
 //-----------------------------------------------------------------------------
-namespace jxglib::USBDevice {
+namespace jxglib {
 
-Device* Device::Instance = nullptr;
+USBDevice* USBDevice::Instance = nullptr;
 
-Device::Device(const tusb_desc_device_t& deviceDesc, uint16_t langid,
+USBDevice::USBDevice(const tusb_desc_device_t& deviceDesc, uint16_t langid,
 		const char* strManufacturer, const char* strProduct, const char* strSerialNumber,
 		uint8_t attr, uint16_t power_ma) : Tickable(0),
 	deviceDesc_{deviceDesc}, langid_{langid}, attr_{attr}, power_ma_{power_ma}, interfaceNumCur_{0},
@@ -30,13 +30,13 @@ Device::Device(const tusb_desc_device_t& deviceDesc, uint16_t langid,
 	deviceDesc_.bNumConfigurations	= 1;
 }
 
-void Device::RegisterConfigDesc(const void* configDesc, int bytes)
+void USBDevice::RegisterConfigDesc(const void* configDesc, int bytes)
 {
 	::memcpy(configDescAccum_ + offsetConfigDesc_, configDesc, bytes);
 	offsetConfigDesc_ += bytes;
 }
 
-uint8_t Device::RegisterStringDesc(const char* str)
+uint8_t USBDevice::RegisterStringDesc(const char* str)
 {
 	if (!str) return 0;
 	uint8_t iStringDesc = iStringDescCur_++;
@@ -44,7 +44,7 @@ uint8_t Device::RegisterStringDesc(const char* str)
 	return iStringDesc;
 }
 
-uint8_t Device::AddInterface_CDC(CDC* pCDC)
+uint8_t USBDevice::AddInterface_CDC(CDC* pCDC)
 {
 	uint8_t iInstance = nInstances_CDC_++;
 	if (iInstance >= CFG_TUD_CDC) {
@@ -54,7 +54,7 @@ uint8_t Device::AddInterface_CDC(CDC* pCDC)
 	return iInstance;
 }
 
-uint8_t Device::AddInterface_MSC(MSC* pMSC) {
+uint8_t USBDevice::AddInterface_MSC(MSC* pMSC) {
 	uint8_t iInstance = nInstances_MSC_++;
 	if (iInstance >= CFG_TUD_MSC) {
 		::panic("CFG_TUD_MSC in tusb_config.h must be set to at least %d.", iInstance + 1);
@@ -63,7 +63,7 @@ uint8_t Device::AddInterface_MSC(MSC* pMSC) {
 	return iInstance;
 }
 
-uint8_t Device::AddInterface_HID(HID* pHID)
+uint8_t USBDevice::AddInterface_HID(HID* pHID)
 {
 	uint8_t iInstance = nInstances_HID_++;
 	if (iInstance >= CFG_TUD_HID) {
@@ -73,7 +73,7 @@ uint8_t Device::AddInterface_HID(HID* pHID)
 	return iInstance;
 }
 
-void Device::Initialize(uint8_t rhport)
+void USBDevice::Initialize(uint8_t rhport)
 {
 	uint8_t config_num = 1;
 	uint8_t stridx = 0;
@@ -85,14 +85,14 @@ void Device::Initialize(uint8_t rhport)
 	::tud_init(rhport);
 }
 
-uint8_t Device::AssignInterfaceNum(int nInterfacesToOccupy)
+uint8_t USBDevice::AssignInterfaceNum(int nInterfacesToOccupy)
 {
 	uint8_t interfaceNum = interfaceNumCur_;
 	interfaceNumCur_ += nInterfacesToOccupy;
 	return interfaceNum;
 }
 
-const uint16_t* Device::On_GET_STRING_DESCRIPTOR(uint8_t idxString, uint16_t langid)
+const uint16_t* USBDevice::On_GET_STRING_DESCRIPTOR(uint8_t idxString, uint16_t langid)
 {
 	//::printf("On_GET_STRING_DESCRIPTOR(%d, %04x)\n", idxString, langid);
 	int bytesDst = 0;
@@ -120,56 +120,56 @@ const uint16_t* Device::On_GET_STRING_DESCRIPTOR(uint8_t idxString, uint16_t lan
 
 void tud_mount_cb()
 {
-	jxglib::USBDevice::Device::Instance->OnMount();
+	jxglib::USBDevice::Instance->OnMount();
 }
 
 void tud_umount_cb()
 {
-	jxglib::USBDevice::Device::Instance->OnUmount();
+	jxglib::USBDevice::Instance->OnUmount();
 }
 
 // remote_wakeup_en : if host allow us to perform remote wakeup
 // Within 7ms, device must draw an average of current less than 2.5 mA from bus
 void tud_suspend_cb(bool remote_wakeup_en)
 {
-	jxglib::USBDevice::Device::Instance->OnSuspend();
+	jxglib::USBDevice::Instance->OnSuspend();
 }
 
 void tud_resume_cb()
 {
-	jxglib::USBDevice::Device::Instance->OnResume();
+	jxglib::USBDevice::Instance->OnResume();
 }
 
 // Invoked when received GET DEVICE DESCRIPTOR
 const uint8_t* tud_descriptor_device_cb()
 {
-	return jxglib::USBDevice::Device::Instance->On_GET_DEVICE_DESCRIPTOR();
+	return jxglib::USBDevice::Instance->On_GET_DEVICE_DESCRIPTOR();
 }
 
 // Invoked when received GET CONFIGURATION DESCRIPTOR
 const uint8_t* tud_descriptor_configuration_cb(uint8_t idxConfig)
 {
-	return jxglib::USBDevice::Device::Instance->On_GET_CONFIGURATION_DESCRIPTOR(idxConfig);
+	return jxglib::USBDevice::Instance->On_GET_CONFIGURATION_DESCRIPTOR(idxConfig);
 }
 
 // Invoked when received GET STRING DESCRIPTOR request
 const uint16_t* tud_descriptor_string_cb(uint8_t idxString, uint16_t langid)
 {
-	return jxglib::USBDevice::Device::Instance->On_GET_STRING_DESCRIPTOR(idxString, langid);
+	return jxglib::USBDevice::Instance->On_GET_STRING_DESCRIPTOR(idxString, langid);
 }
 
 //-----------------------------------------------------------------------------
 // USBDevice::Interface
 //-----------------------------------------------------------------------------
-namespace jxglib::USBDevice {
+namespace jxglib {
 
-Interface::Interface(Device& device, int nInterfacesToOccupy, uint32_t msecTick) :
+USBDevice::Interface::Interface(USBDevice& device, int nInterfacesToOccupy, uint32_t msecTick) :
 	Tickable(msecTick), device_{device}, iInstance_{0}
 {
 	interfaceNum_ = device.AssignInterfaceNum(nInterfacesToOccupy);
 }
 	
-void Interface::RegisterConfigDesc(const void* configDesc, int bytes)
+void USBDevice::Interface::RegisterConfigDesc(const void* configDesc, int bytes)
 {
 	device_.RegisterConfigDesc(configDesc, bytes);
 }
@@ -181,9 +181,9 @@ void Interface::RegisterConfigDesc(const void* configDesc, int bytes)
 //-----------------------------------------------------------------------------
 // USBDevice::HID
 //-----------------------------------------------------------------------------
-namespace jxglib::USBDevice {
+namespace jxglib {
 
-HID::HID(Device& device, uint32_t msecTick, const char* str, uint8_t protocol, const uint8_t* reportDesc, uint8_t bytesReportDesc,
+USBDevice::HID::HID(USBDevice& device, uint32_t msecTick, const char* str, uint8_t protocol, const uint8_t* reportDesc, uint8_t bytesReportDesc,
 	uint8_t endpInterrupt, uint8_t pollingInterval) : Interface(device, 1, msecTick), reportDescSaved_{reportDesc}
 {
 	uint8_t configDesc[] = {
@@ -199,8 +199,8 @@ HID::HID(Device& device, uint32_t msecTick, const char* str, uint8_t protocol, c
 // Invoked when received DESCRIPTOR_REPORT control request
 const uint8_t* tud_hid_descriptor_report_cb(uint8_t iInstance)
 {
-	using namespace jxglib::USBDevice;
-	HID* pHID = Device::GetInterface_HID(iInstance);
+	using namespace jxglib;
+	HID* pHID = USBDevice::GetInterface_HID(iInstance);
 	if (pHID) return pHID->On_DESCRIPTOR_REPORT();
 	return reinterpret_cast<const uint8_t*>("");
 }
@@ -210,8 +210,8 @@ const uint8_t* tud_hid_descriptor_report_cb(uint8_t iInstance)
 // Return zero will cause the stack to STALL request
 uint16_t tud_hid_get_report_cb(uint8_t iInstance, uint8_t reportID, hid_report_type_t reportType, uint8_t* report, uint16_t reportLength)
 {
-	using namespace jxglib::USBDevice;
-	HID* pHID = Device::GetInterface_HID(iInstance);
+	using namespace jxglib;
+	HID* pHID = USBDevice::GetInterface_HID(iInstance);
 	if (pHID) return pHID->On_GET_REPORT(reportID, reportType, report, reportLength);
 	return 0;
 }
@@ -221,8 +221,8 @@ uint16_t tud_hid_get_report_cb(uint8_t iInstance, uint8_t reportID, hid_report_t
 // Note: For composite reports, report[0] is report ID
 void tud_hid_report_complete_cb(uint8_t iInstance, uint8_t const* report, uint16_t reportLength)
 {
-	using namespace jxglib::USBDevice;
-	HID* pHID = Device::GetInterface_HID(iInstance);
+	using namespace jxglib;
+	HID* pHID = USBDevice::GetInterface_HID(iInstance);
 	if (pHID) pHID->On_GET_REPORT_Complete(report, reportLength);
 }
 
@@ -230,8 +230,8 @@ void tud_hid_report_complete_cb(uint8_t iInstance, uint8_t const* report, uint16
 // received data on OUT endpoint (Report ID = 0, Type = 0 )
 void tud_hid_set_report_cb(uint8_t iInstance, uint8_t reportID, hid_report_type_t reportType, const uint8_t* report, uint16_t reportLength)
 {
-	using namespace jxglib::USBDevice;
-	HID* pHID = Device::GetInterface_HID(iInstance);
+	using namespace jxglib;
+	HID* pHID = USBDevice::GetInterface_HID(iInstance);
 	if (pHID) pHID->On_SET_REPORT(reportID, reportType, report, reportLength);
 }
 
@@ -239,19 +239,19 @@ void tud_hid_set_report_cb(uint8_t iInstance, uint8_t reportID, hid_report_type_
 // protocol is either HID_PROTOCOL_BOOT (0) or HID_PROTOCOL_REPORT (1)
 void tud_hid_set_protocol_cb(uint8_t iInstance, uint8_t protocol)
 {
-	using namespace jxglib::USBDevice;
-	HID* pHID = Device::GetInterface_HID(iInstance);
+	using namespace jxglib;
+	HID* pHID = USBDevice::GetInterface_HID(iInstance);
 	if (pHID) pHID->On_SET_PROTOCOL(protocol);
 }
 
 //-----------------------------------------------------------------------------
 // USBDevice::Keyboard
 //-----------------------------------------------------------------------------
-namespace jxglib::USBDevice {
+namespace jxglib {
 
-const uint8_t Keyboard::reportDesc_[] = { TUD_HID_REPORT_DESC_KEYBOARD() };
+const uint8_t USBDevice::Keyboard::reportDesc_[] = { TUD_HID_REPORT_DESC_KEYBOARD() };
 
-Keyboard::Keyboard(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval) :
+USBDevice::Keyboard::Keyboard(USBDevice& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval) :
 	HID(device, pollingInterval, str, HID_ITF_PROTOCOL_KEYBOARD, reportDesc_, sizeof(reportDesc_), endpInterrupt, pollingInterval)
 {
 }
@@ -262,11 +262,11 @@ Keyboard::Keyboard(Device& device, const char* str, uint8_t endpInterrupt, uint8
 //-----------------------------------------------------------------------------
 // USBDevice::Mouse
 //-----------------------------------------------------------------------------
-namespace jxglib::USBDevice {
+namespace jxglib {
 
-const uint8_t Mouse::reportDesc_[] = { TUD_HID_REPORT_DESC_MOUSE() };
+const uint8_t USBDevice::Mouse::reportDesc_[] = { TUD_HID_REPORT_DESC_MOUSE() };
 
-Mouse::Mouse(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval) :
+USBDevice::Mouse::Mouse(USBDevice& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval) :
 	HID(device, pollingInterval, str, HID_ITF_PROTOCOL_MOUSE, reportDesc_, sizeof(reportDesc_), endpInterrupt, pollingInterval)
 {
 }
@@ -276,11 +276,11 @@ Mouse::Mouse(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pol
 //-----------------------------------------------------------------------------
 // USBDevice::Gamepad
 //-----------------------------------------------------------------------------
-namespace jxglib::USBDevice {
+namespace jxglib {
 
-const uint8_t Gamepad::reportDesc_[] = { TUD_HID_REPORT_DESC_GAMEPAD() };
+const uint8_t USBDevice::Gamepad::reportDesc_[] = { TUD_HID_REPORT_DESC_GAMEPAD() };
 
-Gamepad::Gamepad(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval) :
+USBDevice::Gamepad::Gamepad(USBDevice& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval) :
 	HID(device, pollingInterval, str, HID_ITF_PROTOCOL_NONE, reportDesc_, sizeof(reportDesc_), endpInterrupt, pollingInterval)
 {
 }
@@ -294,9 +294,9 @@ Gamepad::Gamepad(Device& device, const char* str, uint8_t endpInterrupt, uint8_t
 //-----------------------------------------------------------------------------
 #if CFG_TUD_CDC > 0
 
-namespace jxglib::USBDevice {
+namespace jxglib {
 
-CDC::CDC(Device& device, const char* str, uint8_t endpNotif, uint8_t bytesNotif, uint8_t endpBulkOut, uint8_t endpBulkIn, uint8_t bytesBulk, uint8_t pollingInterval) :
+USBDevice::CDC::CDC(USBDevice& device, const char* str, uint8_t endpNotif, uint8_t bytesNotif, uint8_t endpBulkOut, uint8_t endpBulkIn, uint8_t bytesBulk, uint8_t pollingInterval) :
 				Interface(device, 2, pollingInterval)
 {
 	uint8_t configDesc[] = {
@@ -312,48 +312,48 @@ CDC::CDC(Device& device, const char* str, uint8_t endpNotif, uint8_t bytesNotif,
 // Invoked when received new data
 void tud_cdc_rx_cb(uint8_t iInstance)
 {
-	using namespace jxglib::USBDevice;
-	CDC* pCDC = Device::GetInterface_CDC(iInstance);
+	using namespace jxglib;
+	USBDevice::CDC* pCDC = USBDevice::GetInterface_CDC(iInstance);
 	if (pCDC) pCDC->On_cdc_rx();
 }
 
 // Invoked when received `wanted_char`
 void tud_cdc_rx_wanted_cb(uint8_t iInstance, char wanted_char)
 {
-	using namespace jxglib::USBDevice;
-	CDC* pCDC = Device::GetInterface_CDC(iInstance);
+	using namespace jxglib;
+	USBDevice::CDC* pCDC = USBDevice::GetInterface_CDC(iInstance);
 	if (pCDC) pCDC->On_cdc_rx_wanted(wanted_char);
 }  
 
 // Invoked when a TX is complete and therefore space becomes available in TX buffer
 void tud_cdc_tx_complete_cb(uint8_t iInstance)
 {
-	using namespace jxglib::USBDevice;
-	CDC* pCDC = Device::GetInterface_CDC(iInstance);
+	using namespace jxglib;
+	USBDevice::CDC* pCDC = USBDevice::GetInterface_CDC(iInstance);
 	if (pCDC) pCDC->On_cdc_tx_complete();
 }  
 
 // Invoked when line state DTR & RTS are changed via SET_CONTROL_LINE_STATE
 void tud_cdc_line_state_cb(uint8_t iInstance, bool dtr, bool rts)
 {
-	using namespace jxglib::USBDevice;
-	CDC* pCDC = Device::GetInterface_CDC(iInstance);
+	using namespace jxglib;
+	USBDevice::CDC* pCDC = USBDevice::GetInterface_CDC(iInstance);
 	if (pCDC) pCDC->On_cdc_line_state(dtr, rts);
 }  
 
 // Invoked when line coding is change via SET_LINE_CODING
 void tud_cdc_line_coding_cb(uint8_t iInstance, const cdc_line_coding_t* p_line_coding)
 {
-	using namespace jxglib::USBDevice;
-	CDC* pCDC = Device::GetInterface_CDC(iInstance);
+	using namespace jxglib;
+	USBDevice::CDC* pCDC = USBDevice::GetInterface_CDC(iInstance);
 	if (pCDC) pCDC->On_cdc_line_coding(p_line_coding);
 }  
 
 // Invoked when received send break
 void tud_cdc_send_break_cb(uint8_t iInstance, uint16_t duration_ms)
 {
-	using namespace jxglib::USBDevice;
-	CDC* pCDC = Device::GetInterface_CDC(iInstance);
+	using namespace jxglib;
+	USBDevice::CDC* pCDC = USBDevice::GetInterface_CDC(iInstance);
 	if (pCDC) pCDC->On_cdc_send_break(duration_ms);
 }  
 
@@ -364,9 +364,9 @@ void tud_cdc_send_break_cb(uint8_t iInstance, uint16_t duration_ms)
 //-----------------------------------------------------------------------------
 #if CFG_TUD_MSC > 0
 
-namespace jxglib::USBDevice {
+namespace jxglib {
 
-MSC::MSC(Device& device, const char* str, uint8_t endpBulkOut, uint8_t endpBulkIn, uint16_t endpSize) : Interface(device, 1, 0)
+USBDevice::MSC::MSC(USBDevice& device, const char* str, uint8_t endpBulkOut, uint8_t endpBulkIn, uint16_t endpSize) : Interface(device, 1, 0)
 {
 	uint8_t configDesc[] = {
 		// Interface number, string index, EP Out & EP In address, EP size
@@ -382,24 +382,24 @@ MSC::MSC(Device& device, const char* str, uint8_t endpBulkOut, uint8_t endpBulkI
 // Application fill vendor id, product id and revision with string up to 8, 16, 4 characters respectively
 void tud_msc_inquiry_cb(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4])
 {
-	using namespace jxglib::USBDevice;
-	Device::GetInterface_MSC()->On_msc_inquiry(lun, vendor_id, product_id, product_rev);
+	using namespace jxglib;
+	USBDevice::GetInterface_MSC()->On_msc_inquiry(lun, vendor_id, product_id, product_rev);
 }
 
 // Invoked when received Test Unit Ready command.
 // return true allowing host to read/write this LUN e.g SD card inserted
 bool tud_msc_test_unit_ready_cb(uint8_t lun)
 {
-	using namespace jxglib::USBDevice;
-	return Device::GetInterface_MSC()->On_msc_test_unit_ready(lun);
+	using namespace jxglib;
+	return USBDevice::GetInterface_MSC()->On_msc_test_unit_ready(lun);
 }
 
 // Invoked when received SCSI_CMD_READ_CAPACITY_10 and SCSI_CMD_READ_FORMAT_CAPACITY to determine the disk size
 // Application update block count and block size
 void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count, uint16_t* block_size)
 {
-	using namespace jxglib::USBDevice;
-	return Device::GetInterface_MSC()->On_msc_capacity(lun, block_count, block_size);
+	using namespace jxglib;
+	return USBDevice::GetInterface_MSC()->On_msc_capacity(lun, block_count, block_size);
 }
 
 // Invoked when received Start Stop Unit command
@@ -407,30 +407,30 @@ void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count, uint16_t* block_siz
 // - Start = 1 : active mode, if load_eject = 1 : load disk storage
 bool tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool start, bool load_eject)
 {
-	using namespace jxglib::USBDevice;
-	return Device::GetInterface_MSC()->On_msc_start_stop(lun, power_condition, start, load_eject);
+	using namespace jxglib;
+	return USBDevice::GetInterface_MSC()->On_msc_start_stop(lun, power_condition, start, load_eject);
 }
 
 // Callback invoked when received READ10 command.
 // Copy disk's data to buffer (up to bufsize) and return number of copied bytes.
 int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize)
 {
-	using namespace jxglib::USBDevice;
-	return Device::GetInterface_MSC()->On_msc_read10(lun, lba, offset, buffer, bufsize);
+	using namespace jxglib;
+	return USBDevice::GetInterface_MSC()->On_msc_read10(lun, lba, offset, buffer, bufsize);
 }
 
 bool tud_msc_is_writable_cb(uint8_t lun)
 {
-	using namespace jxglib::USBDevice;
-	return Device::GetInterface_MSC()->On_msc_is_writable(lun);
+	using namespace jxglib;
+	return USBDevice::GetInterface_MSC()->On_msc_is_writable(lun);
 }
 
 // Callback invoked when received WRITE10 command.
 // Process data in buffer to disk's storage and return number of written bytes
 int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize)
 {
-	using namespace jxglib::USBDevice;
-	return Device::GetInterface_MSC()->On_msc_write10(lun, lba, offset, buffer, bufsize);
+	using namespace jxglib;
+	return USBDevice::GetInterface_MSC()->On_msc_write10(lun, lba, offset, buffer, bufsize);
 }
 
 // Callback invoked when received an SCSI command not in built-in list below
@@ -438,8 +438,8 @@ int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* 
 // - READ10 and WRITE10 has their own callbacks
 int32_t tud_msc_scsi_cb (uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize)
 {
-	using namespace jxglib::USBDevice;
-	return Device::GetInterface_MSC()->On_msc_scsi(lun, scsi_cmd, buffer, bufsize);
+	using namespace jxglib;
+	return USBDevice::GetInterface_MSC()->On_msc_scsi(lun, scsi_cmd, buffer, bufsize);
 }
 
 #endif
