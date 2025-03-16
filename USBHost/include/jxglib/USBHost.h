@@ -23,7 +23,7 @@ public:
 		int cntHold_;
 		FIFOBuff<KeyData, 8> fifoKeyData_;
 	public:
-		static const uint8_t convTbl_101Keyboard[128][2];
+		static const uint8_t convTbl_101Keyboard[128][3];
 	public:
 		Keyboard();
 	public:
