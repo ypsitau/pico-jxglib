@@ -6,9 +6,17 @@ using namespace jxglib;
 
 Serial::Terminal terminal;
 
+TickableEntry(hoge, 300)
+{
+	static bool value = false;
+	value = !value;
+	GPIO2.put(value);
+}
+
 int main()
 {
 	::stdio_init_all();
+	GPIO2.init().set_dir_OUT();
 	terminal.Initialize();
 	//terminal.AttachInput(KeyboardStdio::Instance);
 	//terminal.AttachOutput(PrintableStdio::Instance);
