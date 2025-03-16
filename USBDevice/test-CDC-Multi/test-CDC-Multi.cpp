@@ -17,7 +17,7 @@ public:
 private:
 	Mode mode_;
 public:
-	EchoBack(USBDevice::Device& device, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn, Mode mode) :
+	EchoBack(USBDevice& device, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn, Mode mode) :
 				USBDevice::CDC(device, name, endpNotif, 8, endpBulkOut, endpBulkIn, 64, 10), mode_{mode} {}
 public:
 	virtual void OnTick() override;
@@ -52,7 +52,7 @@ void EchoBack::OnTick()
 int main(void)
 {
 	::stdio_init_all(); 
-	USBDevice::Device device({
+	USBDevice device({
 		bcdUSB:				0x0200,
 		bDeviceClass:		TUSB_CLASS_MISC,
 		bDeviceSubClass:	MISC_SUBCLASS_COMMON,

@@ -18,7 +18,7 @@ private:
 	bool ejected_;
 	static uint8_t blocks_[BlockCount][BlockSize];
 public:
-	RAMDisk(USBDevice::Device& device) : USBDevice::MSC(device, "RAMDisk Interface", 0x01, 0x81), ejected_{false} {}
+	RAMDisk(USBDevice& device) : USBDevice::MSC(device, "RAMDisk Interface", 0x01, 0x81), ejected_{false} {}
 public:
 	virtual void On_msc_inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]) override;
 	virtual bool On_msc_test_unit_ready(uint8_t lun) override;
@@ -175,7 +175,7 @@ int32_t RAMDisk::On_msc_scsi(uint8_t lun, uint8_t const scsi_cmd[16], void* buff
 int main(void)
 {
 	::stdio_init_all(); 
-	USBDevice::Device device({
+	USBDevice device({
 		bcdUSB:				0x0200,
 		bDeviceClass:		0x00,
 		bDeviceSubClass:	0x00,

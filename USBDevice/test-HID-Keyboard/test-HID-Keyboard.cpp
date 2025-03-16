@@ -21,7 +21,7 @@ class Keyboard : public USBDevice::Keyboard {
 private:
 	int nKeycodePrev_;
 public:
-	Keyboard(USBDevice::Device& device) : USBDevice::Keyboard(device, "RaspberryPi Pico Keyboard Interface", 0x81), nKeycodePrev_{0} {}
+	Keyboard(USBDevice& device) : USBDevice::Keyboard(device, "RaspberryPi Pico Keyboard Interface", 0x81), nKeycodePrev_{0} {}
 public:
 	virtual void OnTick() override;
 };
@@ -32,7 +32,7 @@ public:
 int main(void)
 {
 	::stdio_init_all(); 
-	USBDevice::Device device({
+	USBDevice device({
 		bcdUSB:				0x0200,
 		bDeviceClass:		0x00,
 		bDeviceSubClass:	0x00,

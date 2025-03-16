@@ -30,7 +30,7 @@ private:
 private:
 	static const uint8_t reportDesc_[];
 public:
-	HIDComposite(USBDevice::Device& device);
+	HIDComposite(USBDevice& device);
 public:
 	void SendReport(uint8_t reportId);
 public:
@@ -45,7 +45,7 @@ const uint8_t HIDComposite::reportDesc_[] = {
 	//TUD_HID_REPORT_DESC_MOUSE(HID_REPORT_ID(ReportId::Mouse))
 };
 
-HIDComposite::HIDComposite(USBDevice::Device& device) : USBDevice::HID(device, 30, "RaspberryPi Pico HID Composite Interface",
+HIDComposite::HIDComposite(USBDevice& device) : USBDevice::HID(device, 30, "RaspberryPi Pico HID Composite Interface",
 	HID_ITF_PROTOCOL_KEYBOARD, reportDesc_, sizeof(reportDesc_), 0x81, 5), nKeycodePrev_{0}, senseFlagPrev_{false} {}
 
 //-----------------------------------------------------------------------------
@@ -63,7 +63,7 @@ private:
 private:
 	static const uint8_t reportDesc_[];
 public:
-	Keyboard(USBDevice::Device& device);
+	Keyboard(USBDevice& device);
 public:
 	virtual void OnTick() override;
 	virtual void On_GET_REPORT_Complete(const uint8_t* report, uint16_t reportLength) override;
@@ -75,7 +75,7 @@ const uint8_t Keyboard::reportDesc_[] = {
 	//TUD_HID_REPORT_DESC_MOUSE(HID_REPORT_ID(ReportId::Mouse))
 };
 
-Keyboard::Keyboard(USBDevice::Device& device) : USBDevice::HID(device, 30, "RaspberryPi Pico HID Composite Interface",
+Keyboard::Keyboard(USBDevice& device) : USBDevice::HID(device, 30, "RaspberryPi Pico HID Composite Interface",
 	HID_ITF_PROTOCOL_NONE, reportDesc_, sizeof(reportDesc_), 0x81, 5), nKeycodePrev_{0} {}
 
 //-----------------------------------------------------------------------------
@@ -84,7 +84,7 @@ Keyboard::Keyboard(USBDevice::Device& device) : USBDevice::HID(device, 30, "Rasp
 int main(void)
 {
 	::stdio_init_all(); 
-	USBDevice::Device device({
+	USBDevice device({
 		bcdUSB:				0x0200,
 		bDeviceClass:		0x00,
 		bDeviceSubClass:	0x00,

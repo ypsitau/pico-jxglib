@@ -18,7 +18,7 @@ private:
 	SDCard& sdCard_;
 	bool ejected_;
 public:
-	MSC_SDCard(USBDevice::Device& device, SDCard& sdCard) :
+	MSC_SDCard(USBDevice& device, SDCard& sdCard) :
 		USBDevice::MSC(device, "SDCard Interface", 0x01, 0x81), sdCard_{sdCard}, ejected_{false} {}
 public:
 	virtual void On_msc_inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]) override;
@@ -115,7 +115,7 @@ int32_t MSC_SDCard::On_msc_scsi(uint8_t lun, uint8_t const scsi_cmd[16], void* b
 int main(void)
 {
 	::stdio_init_all(); 
-	USBDevice::Device device({
+	USBDevice device({
 		bcdUSB:				0x0200,
 		bDeviceClass:		0x00,
 		bDeviceSubClass:	0x00,

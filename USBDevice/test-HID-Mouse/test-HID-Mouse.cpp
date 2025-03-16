@@ -21,7 +21,7 @@ class Mouse : public USBDevice::Mouse {
 private:
 	bool senseFlagPrev_;
 public:
-	Mouse(USBDevice::Device& device) : USBDevice::Mouse(device, "RaspberryPi Pico Mouse Interface", 0x81), senseFlagPrev_{false} {}
+	Mouse(USBDevice& device) : USBDevice::Mouse(device, "RaspberryPi Pico Mouse Interface", 0x81), senseFlagPrev_{false} {}
 public:
 	virtual void OnTick() override;
 };
@@ -32,7 +32,7 @@ public:
 int main(void)
 {
 	::stdio_init_all(); 
-	USBDevice::Device device({
+	USBDevice device({
 		bcdUSB:				0x0200,
 		bDeviceClass:		0x00,
 		bDeviceSubClass:	0x00,
