@@ -1,12 +1,21 @@
 //==============================================================================
-// USB.cpp
+// jxglib/USBHost.h
 //==============================================================================
-#include "jxglib/USB.h"
+#ifndef PICO_JXGLIB_USBHOST_H
+#define PICO_JXGLIB_USBHOST_H
+#include "pico/stdlib.h"
+#include "jxglib/Common.h"
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// USB
+// USBHost
 //------------------------------------------------------------------------------
+class USBHost {
+public:
+	USBHost() {}
+};
 
 }
+
+#endif

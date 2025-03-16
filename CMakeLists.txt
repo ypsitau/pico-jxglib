@@ -25,5 +25,6 @@ add_subdirectory(Terminal)
 add_subdirectory(TouchScreen)
 add_subdirectory(UART)
 add_subdirectory(USBDevice)
+add_subdirectory(USBHost)
 
 add_subdirectory(device)
