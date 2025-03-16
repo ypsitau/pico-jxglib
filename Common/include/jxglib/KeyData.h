@@ -35,6 +35,7 @@ public:
         code_{keyData.code_}, keyCodeFlag_{keyData.keyCodeFlag_}, modifier_{keyData.modifier_} {}
     public:
     uint8_t GetKeyCode() const { return code_; }
+    const char* GetKeyCodeName() const { return jxglib::GetKeyCodeName(code_); }
     char GetCharCode() const { return static_cast<char>(code_); }
     bool IsKeyCode() const { return keyCodeFlag_; }
     bool IsCharCode() const { return !keyCodeFlag_; }

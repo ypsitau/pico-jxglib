@@ -17,13 +17,20 @@ namespace jxglib {
 class USBHost : public Tickable {
 public:
 	class Keyboard : public jxglib::Keyboard, public Tickable {
+	public:
+		struct ConvEntry {
+			uint8_t keyCode;
+			uint8_t charCode;
+			uint8_t charCodeShift;
+			uint8_t charCodeCtrl;
+		};
 	private:
 		uint8_t modifier_;
 		uint8_t keycode_[6];
 		int cntHold_;
 		FIFOBuff<KeyData, 8> fifoKeyData_;
 	public:
-		static const uint8_t convTbl_101Keyboard[128][3];
+		static const ConvEntry convEntryTbl_101Keyboard[128];
 	public:
 		Keyboard();
 	public:

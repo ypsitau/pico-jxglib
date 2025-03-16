@@ -95,216 +95,114 @@ void tuh_hid_report_received_cb(uint8_t devAddr, uint8_t iInstance, const uint8_
 
 }
 
-/*
-    0,              // 0x00 (No event)
-    0,              // 0x01 (Reserved)
-    0,              // 0x02 (Reserved)
-    0,              // 0x03 (Reserved)
-    'A',            // 0x04
-    'B',            // 0x05
-    'C',            // 0x06
-    'D',            // 0x07
-    'E',            // 0x08
-    'F',            // 0x09
-    'G',            // 0x0A
-    'H',            // 0x0B
-    'I',            // 0x0C
-    'J',            // 0x0D
-    'K',            // 0x0E
-    'L',            // 0x0F
-    'M',            // 0x10
-    'N',            // 0x11
-    'O',            // 0x12
-    'P',            // 0x13
-    'Q',            // 0x14
-    'R',            // 0x15
-    'S',            // 0x16
-    'T',            // 0x17
-    'U',            // 0x18
-    'V',            // 0x19
-    'W',            // 0x1A
-    'X',            // 0x1B
-    'Y',            // 0x1C
-    'Z',            // 0x1D
-    '1',            // 0x1E
-    '2',            // 0x1F
-    '3',            // 0x20
-    '4',            // 0x21
-    '5',            // 0x22
-    '6',            // 0x23
-    '7',            // 0x24
-    '8',            // 0x25
-    '9',            // 0x26
-    '0',            // 0x27
-    VK_RETURN,      // 0x28 (Enter)
-    VK_ESCAPE,      // 0x29 (Escape)
-    VK_BACK,        // 0x2A (Backspace)
-    VK_TAB,         // 0x2B (Tab)
-    VK_SPACE,       // 0x2C (Space)
-    VK_OEM_MINUS,   // 0x2D (-)
-    VK_OEM_PLUS,    // 0x2E (=)
-    VK_OEM_4,       // 0x2F ([)
-    VK_OEM_6,       // 0x30 (])
-    VK_OEM_5,       // 0x31 (\)
-    VK_OEM_3,       // 0x32 (`)
-    VK_OEM_1,       // 0x33 (;)
-    VK_OEM_7,       // 0x34 (')
-    VK_OEM_COMMA,   // 0x36 (,)
-    VK_OEM_PERIOD,  // 0x37 (.)
-    VK_OEM_2,       // 0x38 (/)
-    VK_CAPITAL,     // 0x39 (Caps Lock)
-    VK_F1,          // 0x3A
-    VK_F2,          // 0x3B
-    VK_F3,          // 0x3C
-    VK_F4,          // 0x3D
-    VK_F5,          // 0x3E
-    VK_F6,          // 0x3F
-    VK_F7,          // 0x40
-    VK_F8,          // 0x41
-    VK_F9,          // 0x42
-    VK_F10,         // 0x43
-    VK_F11,         // 0x44
-    VK_F12,         // 0x45
-    VK_PRINT,       // 0x46 (Print Screen)
-    VK_SCROLL,      // 0x47 (Scroll Lock)
-    VK_PAUSE,       // 0x48 (Pause)
-    VK_INSERT,      // 0x49
-    VK_HOME,        // 0x4A
-    VK_PRIOR,       // 0x4B (Page Up)
-    VK_DELETE,      // 0x4C
-    VK_END,         // 0x4D
-    VK_NEXT,        // 0x4E (Page Down)
-    VK_RIGHT,       // 0x4F
-    VK_LEFT,        // 0x50
-    VK_DOWN,        // 0x51
-    VK_UP,          // 0x52
-    VK_NUMLOCK,     // 0x53 (Num Lock)
-    VK_NUMPAD0,     // 0x54
-    VK_NUMPAD1,     // 0x55
-    VK_NUMPAD2,     // 0x56
-    VK_NUMPAD3,     // 0x57
-    VK_NUMPAD4,     // 0x58
-    VK_NUMPAD5,     // 0x59
-    VK_NUMPAD6,     // 0x5A
-    VK_NUMPAD7,     // 0x5B
-    VK_NUMPAD8,     // 0x5C
-    VK_NUMPAD9,     // 0x5D
-    VK_DECIMAL,     // 0x5E (Keypad .)
-    VK_DIVIDE,      // 0x5F (Keypad /)
-    VK_MULTIPLY,    // 0x60 (Keypad *)
-    VK_SUBTRACT,    // 0x61 (Keypad -)
-    VK_ADD,         // 0x62 (Keypad +)
-    VK_RETURN,      // 0x63 (Keypad Enter)
-*/
-
 //------------------------------------------------------------------------------
 // USBHost::Keyboard
 //------------------------------------------------------------------------------
-const uint8_t USBHost::Keyboard::convTbl_101Keyboard[128][3] = {
-	{0,			0,			0x00}, // 0x00
-	{0,			0,			0x00}, // 0x01
-	{0,			0,			0x00}, // 0x02
-	{0,			0,			0x00}, // 0x03
-	{'a',		'A',		0x01}, // 0x04
-	{'b',		'B',		0x02}, // 0x05
-	{'c',		'C',		0x03}, // 0x06
-	{'d',		'D',		0x04}, // 0x07
-	{'e',		'E',		0x05}, // 0x08
-	{'f',		'F',		0x06}, // 0x09
-	{'g',		'G',		0x07}, // 0x0a
-	{'h',		'H',		0x08}, // 0x0b
-	{'i',		'I',		0x09}, // 0x0c
-	{'j',		'J',		0x0a}, // 0x0d
-	{'k',		'K',		0x0b}, // 0x0e
-	{'l',		'L',		0x0c}, // 0x0f
-	{'m',		'M',		0x0d}, // 0x10
-	{'n',		'N',		0x0e}, // 0x11
-	{'o',		'O',		0x0f}, // 0x12
-	{'p',		'P',		0x10}, // 0x13
-	{'q',		'Q',		0x11}, // 0x14
-	{'r',		'R',		0x12}, // 0x15
-	{'s',		'S',		0x13}, // 0x16
-	{'t',		'T',		0x14}, // 0x17
-	{'u',		'U',		0x15}, // 0x18
-	{'v',		'V',		0x16}, // 0x19
-	{'w',		'W',		0x17}, // 0x1a
-	{'x',		'X',		0x18}, // 0x1b
-	{'y',		'Y',		0x19}, // 0x1c
-	{'z',		'Z',		0x1a}, // 0x1d
-	{'1',		'!',		0x00}, // 0x1e
-	{'2',		'@',		0x00}, // 0x1f
-	{'3',		'#',		0x00}, // 0x20
-	{'4',		'$',		0x00}, // 0x21
-	{'5',		'%',		0x00}, // 0x22
-	{'6',		'^',		0x00}, // 0x23
-	{'7',		'&',		0x00}, // 0x24
-	{'8',		'*',		0x00}, // 0x25
-	{'9',		'(',		0x00}, // 0x26
-	{'0',		')',		0x00}, // 0x27
-	{'\r',		'\r',		0x00}, // 0x28
-	{'\x1b',	'\x1b',		0x00}, // 0x29
-	{'\b',		'\b',		0x00}, // 0x2a
-	{'\t',		'\t',		0x00}, // 0x2b
-	{' ',		' ',		0x00}, // 0x2c
-	{'-',		'_',		0x00}, // 0x2d
-	{'=',		'+',		0x00}, // 0x2e
-	{'[',		'{',		0x00}, // 0x2f
-	{']',		'}',		0x00}, // 0x30
-	{'\\',		'|',		0x00}, // 0x31
-	{'#',		'~',		0x00}, // 0x32
-	{';',		':',		0x00}, // 0x33
-	{'\'',		'\"',		0x00}, // 0x34
-	{'`',		'~',		0x00}, // 0x35
-	{',',		'<',		0x00}, // 0x36
-	{'.',		'>',		0x00}, // 0x37
-	{'/',		'?',		0x00}, // 0x38
-	{0,			0,			0x00}, // 0x39
-	{0,			0,			0x00}, // 0x3a
-	{0,			0,			0x00}, // 0x3b
-	{0,			0,			0x00}, // 0x3c
-	{0,			0,			0x00}, // 0x3d
-	{0,			0,			0x00}, // 0x3e
-	{0,			0,			0x00}, // 0x3f
-	{0,			0,			0x00}, // 0x40
-	{0,			0,			0x00}, // 0x41
-	{0,			0,			0x00}, // 0x42
-	{0,			0,			0x00}, // 0x43
-	{0,			0,			0x00}, // 0x44
-	{0,			0,			0x00}, // 0x45
-	{0,			0,			0x00}, // 0x46
-	{0,			0,			0x00}, // 0x47
-	{0,			0,			0x00}, // 0x48
-	{0,			0,			0x00}, // 0x49
-	{0,			0,			0x00}, // 0x4a
-	{0,			0,			0x00}, // 0x4b
-	{0,			0,			0x00}, // 0x4c
-	{0,			0,			0x00}, // 0x4d
-	{0,			0,			0x00}, // 0x4e
-	{0,			0,			0x00}, // 0x4f
-	{0,			0,			0x00}, // 0x50
-	{0,			0,			0x00}, // 0x51
-	{0,			0,			0x00}, // 0x52
-	{0,			0,			0x00}, // 0x53
-	{'/',		'/',		0x00}, // 0x54
-	{'*',		'*',		0x00}, // 0x55
-	{'-',		'-',		0x00}, // 0x56
-	{'+',		'+',		0x00}, // 0x57
-	{'\r',		'\r',		0x00}, // 0x58
-	{'1',		0,			0x00}, // 0x59
-	{'2',		0,			0x00}, // 0x5a
-	{'3',		0,			0x00}, // 0x5b
-	{'4',		0,			0x00}, // 0x5c
-	{'5',		'5',		0x00}, // 0x5d
-	{'6',		0,			0x00}, // 0x5e
-	{'7',		0,			0x00}, // 0x5f
-	{'8',		0,			0x00}, // 0x60
-	{'9',		0,			0x00}, // 0x61
-	{'0',		0,			0x00}, // 0x62
-	{'.',		0,			0x00}, // 0x63
-	{0,			0,			0x00}, // 0x64
-	{0,			0,			0x00}, // 0x65
-	{0,			0,			0x00}, // 0x66
-	{'=',		'=',		0x00}, // 0x67
+const USBHost::Keyboard::ConvEntry USBHost::Keyboard::convEntryTbl_101Keyboard[128] = {
+	{0,				0,			0,			0x00}, // 0x00
+	{0,				0,			0,			0x00}, // 0x01
+	{0,				0,			0,			0x00}, // 0x02
+	{0,				0,			0,			0x00}, // 0x03
+	{'A',			'a',		'A',		0x01}, // 0x04
+	{'B',			'b',		'B',		0x02}, // 0x05
+	{'C',			'c',		'C',		0x03}, // 0x06
+	{'D',			'd',		'D',		0x04}, // 0x07
+	{'E',			'e',		'E',		0x05}, // 0x08
+	{'F',			'f',		'F',		0x06}, // 0x09
+	{'G',			'g',		'G',		0x07}, // 0x0a
+	{'H',			'h',		'H',		0x08}, // 0x0b
+	{'I',			'i',		'I',		0x09}, // 0x0c
+	{'J',			'j',		'J',		0x0a}, // 0x0d
+	{'K',			'k',		'K',		0x0b}, // 0x0e
+	{'L',			'l',		'L',		0x0c}, // 0x0f
+	{'M',			'm',		'M',		0x0d}, // 0x10
+	{'N',			'n',		'N',		0x0e}, // 0x11
+	{'O',			'o',		'O',		0x0f}, // 0x12
+	{'P',			'p',		'P',		0x10}, // 0x13
+	{'Q',			'q',		'Q',		0x11}, // 0x14
+	{'R',			'r',		'R',		0x12}, // 0x15
+	{'S',			's',		'S',		0x13}, // 0x16
+	{'T',			't',		'T',		0x14}, // 0x17
+	{'U',			'u',		'U',		0x15}, // 0x18
+	{'V',			'v',		'V',		0x16}, // 0x19
+	{'W',			'w',		'W',		0x17}, // 0x1a
+	{'X',			'x',		'X',		0x18}, // 0x1b
+	{'Y',			'y',		'Y',		0x19}, // 0x1c
+	{'Z',			'z',		'Z',		0x1a}, // 0x1d
+	{'1',			'1',		'!',		0x00}, // 0x1e
+	{'2',			'2',		'@',		0x00}, // 0x1f
+	{'3',			'3',		'#',		0x00}, // 0x20
+	{'4',			'4',		'$',		0x00}, // 0x21
+	{'5',			'5',		'%',		0x00}, // 0x22
+	{'6',			'6',		'^',		0x00}, // 0x23
+	{'7',			'7',		'&',		0x00}, // 0x24
+	{'8',			'8',		'*',		0x00}, // 0x25
+	{'9',			'9',		'(',		0x00}, // 0x26
+	{'0',			'0',		')',		0x00}, // 0x27
+	{VK_RETURN,		0,			0,			0x00}, // 0x28
+	{VK_ESCAPE,		'\x1b',		'\x1b',		0x00}, // 0x29
+	{VK_BACK,		0,			0,			0x00}, // 0x2a
+	{VK_TAB,		'\t',		'\t',		0x00}, // 0x2b
+	{VK_SPACE,		' ',		' ',		0x00}, // 0x2c
+	{VK_OEM_MINUS,	'-',		'_',		0x00}, // 0x2d
+	{VK_OEM_PLUS,	'=',		'+',		0x00}, // 0x2e
+	{VK_OEM_4,		'[',		'{',		0x00}, // 0x2f
+	{VK_OEM_6,		']',		'}',		0x00}, // 0x30
+	{VK_OEM_5,		'\\',		'|',		0x00}, // 0x31
+	{VK_OEM_3,		'#',		'~',		0x00}, // 0x32
+	{VK_OEM_1,		';',		':',		0x00}, // 0x33
+	{VK_OEM_7,		'\'',		'\"',		0x00}, // 0x34
+	{VK_OEM_3,		'`',		'~',		0x00}, // 0x35
+	{VK_OEM_COMMA,	',',		'<',		0x00}, // 0x36
+	{VK_OEM_PERIOD,	'.',		'>',		0x00}, // 0x37
+	{VK_OEM_2,		'/',		'?',		0x00}, // 0x38
+	{VK_CAPITAL,	0,			0,			0x00}, // 0x39
+	{VK_F1,			0,			0,			0x00}, // 0x3a
+	{VK_F2,			0,			0,			0x00}, // 0x3b
+	{VK_F3,			0,			0,			0x00}, // 0x3c
+	{VK_F4,			0,			0,			0x00}, // 0x3d
+	{VK_F5,			0,			0,			0x00}, // 0x3e
+	{VK_F6,			0,			0,			0x00}, // 0x3f
+	{VK_F7,			0,			0,			0x00}, // 0x40
+	{VK_F8,			0,			0,			0x00}, // 0x41
+	{VK_F9,			0,			0,			0x00}, // 0x42
+	{VK_F10,		0,			0,			0x00}, // 0x43
+	{VK_F11,		0,			0,			0x00}, // 0x44
+	{VK_F12,		0,			0,			0x00}, // 0x45
+	{VK_PRINT,		0,			0,			0x00}, // 0x46
+	{VK_SCROLL,		0,			0,			0x00}, // 0x47
+	{VK_PAUSE,		0,			0,			0x00}, // 0x48
+	{VK_INSERT,		0,			0,			0x00}, // 0x49
+	{VK_HOME,		0,			0,			0x00}, // 0x4a
+	{VK_PRIOR,		0,			0,			0x00}, // 0x4b
+	{VK_DELETE,		0,			0,			0x00}, // 0x4c
+	{VK_END,		0,			0,			0x00}, // 0x4d
+	{VK_NEXT,		0,			0,			0x00}, // 0x4e
+	{VK_RIGHT,		0,			0,			0x00}, // 0x4f
+	{VK_LEFT,		0,			0,			0x00}, // 0x50
+	{VK_DOWN,		0,			0,			0x00}, // 0x51
+	{VK_UP,			0,			0,			0x00}, // 0x52
+	{VK_NUMLOCK,	0,			0,			0x00}, // 0x53
+	{VK_DIVIDE,		'/',		'/',		0x00}, // 0x54
+	{VK_MULTIPLY,	'*',		'*',		0x00}, // 0x55
+	{VK_SUBTRACT,	'-',		'-',		0x00}, // 0x56
+	{VK_ADD,		'+',		'+',		0x00}, // 0x57
+	{VK_RETURN,		0,			0,			0x00}, // 0x58
+	{VK_NUMPAD1,	'1',		0,			0x00}, // 0x59
+	{VK_NUMPAD2,	'2',		0,			0x00}, // 0x5a
+	{VK_NUMPAD3,	'3',		0,			0x00}, // 0x5b
+	{VK_NUMPAD4,	'4',		0,			0x00}, // 0x5c
+	{VK_NUMPAD5,	'5',		0,			0x00}, // 0x5d
+	{VK_NUMPAD6,	'6',		0,			0x00}, // 0x5e
+	{VK_NUMPAD7,	'7',		0,			0x00}, // 0x5f
+	{VK_NUMPAD8,	'8',		0,			0x00}, // 0x60
+	{VK_NUMPAD9,	'9',		0,			0x00}, // 0x61
+	{VK_NUMPAD0,	'0',		0,			0x00}, // 0x62
+	{VK_DECIMAL,	'.',		0,			0x00}, // 0x63
+	{0,				0,			0,			0x00}, // 0x64
+	{0,				0,			0,			0x00}, // 0x65
+	{0,				0,			0,			0x00}, // 0x66
+	{0,				'=',		'=',		0x00}, // 0x67
 };
 
 USBHost::Keyboard::Keyboard() : Tickable(100), modifier_{0}, cntHold_{0}
@@ -346,8 +244,9 @@ KeyData USBHost::Keyboard::CreateKeyData(uint8_t keycode, uint8_t modifier)
 {
 	bool isShiftDown = !!(modifier & (KEYBOARD_MODIFIER_LEFTSHIFT | KEYBOARD_MODIFIER_RIGHTSHIFT));
 	bool isCtrlDown = !!(modifier & (KEYBOARD_MODIFIER_LEFTCTRL | KEYBOARD_MODIFIER_RIGHTCTRL));
-	char charCode = (keycode >= 128)? 0 : convTbl_101Keyboard[keycode][isCtrlDown? 2 : isShiftDown? 1 : 0];
-	return (charCode == 0)? KeyData(keycode, true, modifier) : KeyData(charCode, false, modifier);
+	const ConvEntry& convEntry = convEntryTbl_101Keyboard[keycode];
+	char charCode = isCtrlDown? convEntry.charCodeCtrl : isShiftDown? convEntry.charCodeShift : convEntry.charCode;
+	return (charCode == 0)? KeyData(convEntry.keyCode, true, modifier) : KeyData(charCode, false, modifier);
 }
 
 //------------------------------------------------------------------------------
