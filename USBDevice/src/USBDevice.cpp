@@ -63,7 +63,7 @@ uint8_t USBDevice::AddInterface_MSC(MSC* pMSC) {
 	return iInstance;
 }
 
-uint8_t USBDevice::AddInterface_HID(HID* pHID)
+uint8_t USBDevice::AddInterface_HID(USBDevice::HID* pHID)
 {
 	uint8_t iInstance = nInstances_HID_++;
 	if (iInstance >= CFG_TUD_HID) {
@@ -200,7 +200,7 @@ USBDevice::HID::HID(USBDevice& device, uint32_t msecTick, const char* str, uint8
 const uint8_t* tud_hid_descriptor_report_cb(uint8_t iInstance)
 {
 	using namespace jxglib;
-	HID* pHID = USBDevice::GetInterface_HID(iInstance);
+	USBDevice::HID* pHID = USBDevice::GetInterface_HID(iInstance);
 	if (pHID) return pHID->On_DESCRIPTOR_REPORT();
 	return reinterpret_cast<const uint8_t*>("");
 }
@@ -211,7 +211,7 @@ const uint8_t* tud_hid_descriptor_report_cb(uint8_t iInstance)
 uint16_t tud_hid_get_report_cb(uint8_t iInstance, uint8_t reportID, hid_report_type_t reportType, uint8_t* report, uint16_t reportLength)
 {
 	using namespace jxglib;
-	HID* pHID = USBDevice::GetInterface_HID(iInstance);
+	USBDevice::HID* pHID = USBDevice::GetInterface_HID(iInstance);
 	if (pHID) return pHID->On_GET_REPORT(reportID, reportType, report, reportLength);
 	return 0;
 }
@@ -222,7 +222,7 @@ uint16_t tud_hid_get_report_cb(uint8_t iInstance, uint8_t reportID, hid_report_t
 void tud_hid_report_complete_cb(uint8_t iInstance, uint8_t const* report, uint16_t reportLength)
 {
 	using namespace jxglib;
-	HID* pHID = USBDevice::GetInterface_HID(iInstance);
+	USBDevice::HID* pHID = USBDevice::GetInterface_HID(iInstance);
 	if (pHID) pHID->On_GET_REPORT_Complete(report, reportLength);
 }
 
@@ -231,7 +231,7 @@ void tud_hid_report_complete_cb(uint8_t iInstance, uint8_t const* report, uint16
 void tud_hid_set_report_cb(uint8_t iInstance, uint8_t reportID, hid_report_type_t reportType, const uint8_t* report, uint16_t reportLength)
 {
 	using namespace jxglib;
-	HID* pHID = USBDevice::GetInterface_HID(iInstance);
+	USBDevice::HID* pHID = USBDevice::GetInterface_HID(iInstance);
 	if (pHID) pHID->On_SET_REPORT(reportID, reportType, report, reportLength);
 }
 
@@ -240,7 +240,7 @@ void tud_hid_set_report_cb(uint8_t iInstance, uint8_t reportID, hid_report_type_
 void tud_hid_set_protocol_cb(uint8_t iInstance, uint8_t protocol)
 {
 	using namespace jxglib;
-	HID* pHID = USBDevice::GetInterface_HID(iInstance);
+	USBDevice::HID* pHID = USBDevice::GetInterface_HID(iInstance);
 	if (pHID) pHID->On_SET_PROTOCOL(protocol);
 }
 
