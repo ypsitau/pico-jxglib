@@ -3,7 +3,7 @@
 #include <string.h>
 #include "pico/stdlib.h"
 #include "jxglib/GPIO.h"
-#include "jxglib/USBD.h"
+#include "jxglib/USBDevice.h"
 #include "jxglib/SDCard.h"
 
 using namespace jxglib;
@@ -11,15 +11,15 @@ using namespace jxglib;
 //-----------------------------------------------------------------------------
 // MSC_SDCard
 //-----------------------------------------------------------------------------
-class MSC_SDCard : public USBD::MSC {
+class MSC_SDCard : public USBDevice::MSC {
 public:
 	static const int BlockSize = 512;
 private:
 	SDCard& sdCard_;
 	bool ejected_;
 public:
-	MSC_SDCard(USBD::Device& device, SDCard& sdCard) :
-		USBD::MSC(device, "SDCard Interface", 0x01, 0x81), sdCard_{sdCard}, ejected_{false} {}
+	MSC_SDCard(USBDevice::Device& device, SDCard& sdCard) :
+		USBDevice::MSC(device, "SDCard Interface", 0x01, 0x81), sdCard_{sdCard}, ejected_{false} {}
 public:
 	virtual void On_msc_inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]) override;
 	virtual bool On_msc_test_unit_ready(uint8_t lun) override;
@@ -115,14 +115,14 @@ int32_t MSC_SDCard::On_msc_scsi(uint8_t lun, uint8_t const scsi_cmd[16], void* b
 int main(void)
 {
 	::stdio_init_all(); 
-	USBD::Device device({
+	USBDevice::Device device({
 		bcdUSB:				0x0200,
 		bDeviceClass:		0x00,
 		bDeviceSubClass:	0x00,
 		bDeviceProtocol:	0x00,
 		bMaxPacketSize0:	CFG_TUD_ENDPOINT0_SIZE,
 		idVendor:			0xcafe,
-		idProduct:			USBD::GenerateSpecificProductId(0x4000),
+		idProduct:			USBDevice::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
 	}, 0x0409, "RPi SDCard", "RPi SDCard Device", "3141592653");
 	GPIO2.set_function_SPI0_SCK();

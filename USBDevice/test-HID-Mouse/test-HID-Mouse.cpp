@@ -3,7 +3,7 @@
 #include <string.h>
 #include "pico/stdlib.h"
 #include "jxglib/GPIO.h"
-#include "jxglib/USBD.h"
+#include "jxglib/USBDevice.h"
 
 using namespace jxglib;
 
@@ -17,11 +17,11 @@ auto& GPIO_RBUTTON		= GPIO21;
 //-----------------------------------------------------------------------------
 // Mouse
 //-----------------------------------------------------------------------------
-class Mouse : public USBD::Mouse {
+class Mouse : public USBDevice::Mouse {
 private:
 	bool senseFlagPrev_;
 public:
-	Mouse(USBD::Device& device) : USBD::Mouse(device, "RaspberryPi Pico Mouse Interface", 0x81), senseFlagPrev_{false} {}
+	Mouse(USBDevice::Device& device) : USBDevice::Mouse(device, "RaspberryPi Pico Mouse Interface", 0x81), senseFlagPrev_{false} {}
 public:
 	virtual void OnTick() override;
 };
@@ -32,14 +32,14 @@ public:
 int main(void)
 {
 	::stdio_init_all(); 
-	USBD::Device device({
+	USBDevice::Device device({
 		bcdUSB:				0x0200,
 		bDeviceClass:		0x00,
 		bDeviceSubClass:	0x00,
 		bDeviceProtocol:	0x00,
 		bMaxPacketSize0:	CFG_TUD_ENDPOINT0_SIZE,
 		idVendor:			0xcafe,
-		idProduct:			USBD::GenerateSpecificProductId(0x4000),
+		idProduct:			USBDevice::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
 	}, 0x0409, "pico-jxglib sample", "RaspberryPi Pico HID Device (Mouse)", "0123456789ABCDEF",
 		TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP);

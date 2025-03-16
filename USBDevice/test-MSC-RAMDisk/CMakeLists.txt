@@ -28,35 +28,32 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-MSC-SDCard C CXX ASM)
+project(test-MSC-RAMDisk C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-MSC-SDCard test-MSC-SDCard.cpp)
+add_executable(test-MSC-RAMDisk test-MSC-RAMDisk.cpp)
 
-pico_set_program_name(test-MSC-SDCard "test-MSC-SDCard")
-pico_set_program_version(test-MSC-SDCard "0.1")
+pico_set_program_name(test-MSC-RAMDisk "test-MSC-RAMDisk")
+pico_set_program_version(test-MSC-RAMDisk "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-MSC-SDCard 1)
-pico_enable_stdio_usb(test-MSC-SDCard 0)
+pico_enable_stdio_uart(test-MSC-RAMDisk 1)
+pico_enable_stdio_usb(test-MSC-RAMDisk 0)
 
 # Add the standard library to the build
-target_link_libraries(test-MSC-SDCard
+target_link_libraries(test-MSC-RAMDisk
 	pico_stdlib
-	tinyusb_device
-	jxglib_USBD
-	jxglib_Stream
-	jxglib_SDCard)
+	jxglib_USBDevice jxglib_Stream)
 
 # Add the standard include files to the build
-target_include_directories(test-MSC-SDCard PRIVATE
+target_include_directories(test-MSC-RAMDisk PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-MSC-SDCard)
+pico_add_extra_outputs(test-MSC-RAMDisk)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)

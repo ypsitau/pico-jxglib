@@ -28,32 +28,32 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-HID-Mouse C CXX ASM)
+project(test-CDC-Multi C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-HID-Mouse test-HID-Mouse.cpp)
+add_executable(test-CDC-Multi test-CDC-Multi.cpp)
 
-pico_set_program_name(test-HID-Mouse "test-HID-Mouse")
-pico_set_program_version(test-HID-Mouse "0.1")
+pico_set_program_name(test-CDC-Multi "test-CDC-Multi")
+pico_set_program_version(test-CDC-Multi "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-HID-Mouse 1)
-pico_enable_stdio_usb(test-HID-Mouse 0)
+pico_enable_stdio_uart(test-CDC-Multi 1)
+pico_enable_stdio_usb(test-CDC-Multi 0)
 
 # Add the standard library to the build
-target_link_libraries(test-HID-Mouse
+target_link_libraries(test-CDC-Multi
 	pico_stdlib
-	jxglib_USBD)
+	jxglib_USBDevice)
 
 # Add the standard include files to the build
-target_include_directories(test-HID-Mouse PRIVATE
+target_include_directories(test-CDC-Multi PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-HID-Mouse)
+pico_add_extra_outputs(test-CDC-Multi)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)

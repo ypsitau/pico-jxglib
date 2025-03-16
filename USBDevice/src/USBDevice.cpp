@@ -1,13 +1,13 @@
 //==============================================================================
-// USBD.cpp
+// USBDevice.cpp
 //==============================================================================
 #include "jxglib/UTF8.h"
-#include "jxglib/USBD.h"
+#include "jxglib/USBDevice.h"
 
 //-----------------------------------------------------------------------------
-// USBD::Device
+// USBDevice::Device
 //-----------------------------------------------------------------------------
-namespace jxglib::USBD {
+namespace jxglib::USBDevice {
 
 Device* Device::Instance = nullptr;
 
@@ -120,48 +120,48 @@ const uint16_t* Device::On_GET_STRING_DESCRIPTOR(uint8_t idxString, uint16_t lan
 
 void tud_mount_cb()
 {
-	jxglib::USBD::Device::Instance->OnMount();
+	jxglib::USBDevice::Device::Instance->OnMount();
 }
 
 void tud_umount_cb()
 {
-	jxglib::USBD::Device::Instance->OnUmount();
+	jxglib::USBDevice::Device::Instance->OnUmount();
 }
 
 // remote_wakeup_en : if host allow us to perform remote wakeup
 // Within 7ms, device must draw an average of current less than 2.5 mA from bus
 void tud_suspend_cb(bool remote_wakeup_en)
 {
-	jxglib::USBD::Device::Instance->OnSuspend();
+	jxglib::USBDevice::Device::Instance->OnSuspend();
 }
 
 void tud_resume_cb()
 {
-	jxglib::USBD::Device::Instance->OnResume();
+	jxglib::USBDevice::Device::Instance->OnResume();
 }
 
 // Invoked when received GET DEVICE DESCRIPTOR
 const uint8_t* tud_descriptor_device_cb()
 {
-	return jxglib::USBD::Device::Instance->On_GET_DEVICE_DESCRIPTOR();
+	return jxglib::USBDevice::Device::Instance->On_GET_DEVICE_DESCRIPTOR();
 }
 
 // Invoked when received GET CONFIGURATION DESCRIPTOR
 const uint8_t* tud_descriptor_configuration_cb(uint8_t idxConfig)
 {
-	return jxglib::USBD::Device::Instance->On_GET_CONFIGURATION_DESCRIPTOR(idxConfig);
+	return jxglib::USBDevice::Device::Instance->On_GET_CONFIGURATION_DESCRIPTOR(idxConfig);
 }
 
 // Invoked when received GET STRING DESCRIPTOR request
 const uint16_t* tud_descriptor_string_cb(uint8_t idxString, uint16_t langid)
 {
-	return jxglib::USBD::Device::Instance->On_GET_STRING_DESCRIPTOR(idxString, langid);
+	return jxglib::USBDevice::Device::Instance->On_GET_STRING_DESCRIPTOR(idxString, langid);
 }
 
 //-----------------------------------------------------------------------------
-// USBD::Interface
+// USBDevice::Interface
 //-----------------------------------------------------------------------------
-namespace jxglib::USBD {
+namespace jxglib::USBDevice {
 
 Interface::Interface(Device& device, int nInterfacesToOccupy, uint32_t msecTick) :
 	Tickable(msecTick), device_{device}, iInstance_{0}
@@ -179,9 +179,9 @@ void Interface::RegisterConfigDesc(const void* configDesc, int bytes)
 #if CFG_TUD_HID > 0
 
 //-----------------------------------------------------------------------------
-// USBD::HID
+// USBDevice::HID
 //-----------------------------------------------------------------------------
-namespace jxglib::USBD {
+namespace jxglib::USBDevice {
 
 HID::HID(Device& device, uint32_t msecTick, const char* str, uint8_t protocol, const uint8_t* reportDesc, uint8_t bytesReportDesc,
 	uint8_t endpInterrupt, uint8_t pollingInterval) : Interface(device, 1, msecTick), reportDescSaved_{reportDesc}
@@ -199,7 +199,7 @@ HID::HID(Device& device, uint32_t msecTick, const char* str, uint8_t protocol, c
 // Invoked when received DESCRIPTOR_REPORT control request
 const uint8_t* tud_hid_descriptor_report_cb(uint8_t iInstance)
 {
-	using namespace jxglib::USBD;
+	using namespace jxglib::USBDevice;
 	HID* pHID = Device::GetInterface_HID(iInstance);
 	if (pHID) return pHID->On_DESCRIPTOR_REPORT();
 	return reinterpret_cast<const uint8_t*>("");
@@ -210,7 +210,7 @@ const uint8_t* tud_hid_descriptor_report_cb(uint8_t iInstance)
 // Return zero will cause the stack to STALL request
 uint16_t tud_hid_get_report_cb(uint8_t iInstance, uint8_t reportID, hid_report_type_t reportType, uint8_t* report, uint16_t reportLength)
 {
-	using namespace jxglib::USBD;
+	using namespace jxglib::USBDevice;
 	HID* pHID = Device::GetInterface_HID(iInstance);
 	if (pHID) return pHID->On_GET_REPORT(reportID, reportType, report, reportLength);
 	return 0;
@@ -221,7 +221,7 @@ uint16_t tud_hid_get_report_cb(uint8_t iInstance, uint8_t reportID, hid_report_t
 // Note: For composite reports, report[0] is report ID
 void tud_hid_report_complete_cb(uint8_t iInstance, uint8_t const* report, uint16_t reportLength)
 {
-	using namespace jxglib::USBD;
+	using namespace jxglib::USBDevice;
 	HID* pHID = Device::GetInterface_HID(iInstance);
 	if (pHID) pHID->On_GET_REPORT_Complete(report, reportLength);
 }
@@ -230,7 +230,7 @@ void tud_hid_report_complete_cb(uint8_t iInstance, uint8_t const* report, uint16
 // received data on OUT endpoint (Report ID = 0, Type = 0 )
 void tud_hid_set_report_cb(uint8_t iInstance, uint8_t reportID, hid_report_type_t reportType, const uint8_t* report, uint16_t reportLength)
 {
-	using namespace jxglib::USBD;
+	using namespace jxglib::USBDevice;
 	HID* pHID = Device::GetInterface_HID(iInstance);
 	if (pHID) pHID->On_SET_REPORT(reportID, reportType, report, reportLength);
 }
@@ -239,15 +239,15 @@ void tud_hid_set_report_cb(uint8_t iInstance, uint8_t reportID, hid_report_type_
 // protocol is either HID_PROTOCOL_BOOT (0) or HID_PROTOCOL_REPORT (1)
 void tud_hid_set_protocol_cb(uint8_t iInstance, uint8_t protocol)
 {
-	using namespace jxglib::USBD;
+	using namespace jxglib::USBDevice;
 	HID* pHID = Device::GetInterface_HID(iInstance);
 	if (pHID) pHID->On_SET_PROTOCOL(protocol);
 }
 
 //-----------------------------------------------------------------------------
-// USBD::Keyboard
+// USBDevice::Keyboard
 //-----------------------------------------------------------------------------
-namespace jxglib::USBD {
+namespace jxglib::USBDevice {
 
 const uint8_t Keyboard::reportDesc_[] = { TUD_HID_REPORT_DESC_KEYBOARD() };
 
@@ -260,9 +260,9 @@ Keyboard::Keyboard(Device& device, const char* str, uint8_t endpInterrupt, uint8
 }
 
 //-----------------------------------------------------------------------------
-// USBD::Mouse
+// USBDevice::Mouse
 //-----------------------------------------------------------------------------
-namespace jxglib::USBD {
+namespace jxglib::USBDevice {
 
 const uint8_t Mouse::reportDesc_[] = { TUD_HID_REPORT_DESC_MOUSE() };
 
@@ -274,9 +274,9 @@ Mouse::Mouse(Device& device, const char* str, uint8_t endpInterrupt, uint8_t pol
 }
 
 //-----------------------------------------------------------------------------
-// USBD::Gamepad
+// USBDevice::Gamepad
 //-----------------------------------------------------------------------------
-namespace jxglib::USBD {
+namespace jxglib::USBDevice {
 
 const uint8_t Gamepad::reportDesc_[] = { TUD_HID_REPORT_DESC_GAMEPAD() };
 
@@ -290,11 +290,11 @@ Gamepad::Gamepad(Device& device, const char* str, uint8_t endpInterrupt, uint8_t
 #endif
 
 //-----------------------------------------------------------------------------
-// USBD::CDC
+// USBDevice::CDC
 //-----------------------------------------------------------------------------
 #if CFG_TUD_CDC > 0
 
-namespace jxglib::USBD {
+namespace jxglib::USBDevice {
 
 CDC::CDC(Device& device, const char* str, uint8_t endpNotif, uint8_t bytesNotif, uint8_t endpBulkOut, uint8_t endpBulkIn, uint8_t bytesBulk, uint8_t pollingInterval) :
 				Interface(device, 2, pollingInterval)
@@ -312,7 +312,7 @@ CDC::CDC(Device& device, const char* str, uint8_t endpNotif, uint8_t bytesNotif,
 // Invoked when received new data
 void tud_cdc_rx_cb(uint8_t iInstance)
 {
-	using namespace jxglib::USBD;
+	using namespace jxglib::USBDevice;
 	CDC* pCDC = Device::GetInterface_CDC(iInstance);
 	if (pCDC) pCDC->On_cdc_rx();
 }
@@ -320,7 +320,7 @@ void tud_cdc_rx_cb(uint8_t iInstance)
 // Invoked when received `wanted_char`
 void tud_cdc_rx_wanted_cb(uint8_t iInstance, char wanted_char)
 {
-	using namespace jxglib::USBD;
+	using namespace jxglib::USBDevice;
 	CDC* pCDC = Device::GetInterface_CDC(iInstance);
 	if (pCDC) pCDC->On_cdc_rx_wanted(wanted_char);
 }  
@@ -328,7 +328,7 @@ void tud_cdc_rx_wanted_cb(uint8_t iInstance, char wanted_char)
 // Invoked when a TX is complete and therefore space becomes available in TX buffer
 void tud_cdc_tx_complete_cb(uint8_t iInstance)
 {
-	using namespace jxglib::USBD;
+	using namespace jxglib::USBDevice;
 	CDC* pCDC = Device::GetInterface_CDC(iInstance);
 	if (pCDC) pCDC->On_cdc_tx_complete();
 }  
@@ -336,7 +336,7 @@ void tud_cdc_tx_complete_cb(uint8_t iInstance)
 // Invoked when line state DTR & RTS are changed via SET_CONTROL_LINE_STATE
 void tud_cdc_line_state_cb(uint8_t iInstance, bool dtr, bool rts)
 {
-	using namespace jxglib::USBD;
+	using namespace jxglib::USBDevice;
 	CDC* pCDC = Device::GetInterface_CDC(iInstance);
 	if (pCDC) pCDC->On_cdc_line_state(dtr, rts);
 }  
@@ -344,7 +344,7 @@ void tud_cdc_line_state_cb(uint8_t iInstance, bool dtr, bool rts)
 // Invoked when line coding is change via SET_LINE_CODING
 void tud_cdc_line_coding_cb(uint8_t iInstance, const cdc_line_coding_t* p_line_coding)
 {
-	using namespace jxglib::USBD;
+	using namespace jxglib::USBDevice;
 	CDC* pCDC = Device::GetInterface_CDC(iInstance);
 	if (pCDC) pCDC->On_cdc_line_coding(p_line_coding);
 }  
@@ -352,7 +352,7 @@ void tud_cdc_line_coding_cb(uint8_t iInstance, const cdc_line_coding_t* p_line_c
 // Invoked when received send break
 void tud_cdc_send_break_cb(uint8_t iInstance, uint16_t duration_ms)
 {
-	using namespace jxglib::USBD;
+	using namespace jxglib::USBDevice;
 	CDC* pCDC = Device::GetInterface_CDC(iInstance);
 	if (pCDC) pCDC->On_cdc_send_break(duration_ms);
 }  
@@ -360,11 +360,11 @@ void tud_cdc_send_break_cb(uint8_t iInstance, uint16_t duration_ms)
 #endif
 
 //-----------------------------------------------------------------------------
-// USBD::MSC
+// USBDevice::MSC
 //-----------------------------------------------------------------------------
 #if CFG_TUD_MSC > 0
 
-namespace jxglib::USBD {
+namespace jxglib::USBDevice {
 
 MSC::MSC(Device& device, const char* str, uint8_t endpBulkOut, uint8_t endpBulkIn, uint16_t endpSize) : Interface(device, 1, 0)
 {
@@ -382,7 +382,7 @@ MSC::MSC(Device& device, const char* str, uint8_t endpBulkOut, uint8_t endpBulkI
 // Application fill vendor id, product id and revision with string up to 8, 16, 4 characters respectively
 void tud_msc_inquiry_cb(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4])
 {
-	using namespace jxglib::USBD;
+	using namespace jxglib::USBDevice;
 	Device::GetInterface_MSC()->On_msc_inquiry(lun, vendor_id, product_id, product_rev);
 }
 
@@ -390,7 +390,7 @@ void tud_msc_inquiry_cb(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16
 // return true allowing host to read/write this LUN e.g SD card inserted
 bool tud_msc_test_unit_ready_cb(uint8_t lun)
 {
-	using namespace jxglib::USBD;
+	using namespace jxglib::USBDevice;
 	return Device::GetInterface_MSC()->On_msc_test_unit_ready(lun);
 }
 
@@ -398,7 +398,7 @@ bool tud_msc_test_unit_ready_cb(uint8_t lun)
 // Application update block count and block size
 void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count, uint16_t* block_size)
 {
-	using namespace jxglib::USBD;
+	using namespace jxglib::USBDevice;
 	return Device::GetInterface_MSC()->On_msc_capacity(lun, block_count, block_size);
 }
 
@@ -407,7 +407,7 @@ void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count, uint16_t* block_siz
 // - Start = 1 : active mode, if load_eject = 1 : load disk storage
 bool tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool start, bool load_eject)
 {
-	using namespace jxglib::USBD;
+	using namespace jxglib::USBDevice;
 	return Device::GetInterface_MSC()->On_msc_start_stop(lun, power_condition, start, load_eject);
 }
 
@@ -415,13 +415,13 @@ bool tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool start, boo
 // Copy disk's data to buffer (up to bufsize) and return number of copied bytes.
 int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize)
 {
-	using namespace jxglib::USBD;
+	using namespace jxglib::USBDevice;
 	return Device::GetInterface_MSC()->On_msc_read10(lun, lba, offset, buffer, bufsize);
 }
 
 bool tud_msc_is_writable_cb(uint8_t lun)
 {
-	using namespace jxglib::USBD;
+	using namespace jxglib::USBDevice;
 	return Device::GetInterface_MSC()->On_msc_is_writable(lun);
 }
 
@@ -429,7 +429,7 @@ bool tud_msc_is_writable_cb(uint8_t lun)
 // Process data in buffer to disk's storage and return number of written bytes
 int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize)
 {
-	using namespace jxglib::USBD;
+	using namespace jxglib::USBDevice;
 	return Device::GetInterface_MSC()->On_msc_write10(lun, lba, offset, buffer, bufsize);
 }
 
@@ -438,20 +438,20 @@ int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* 
 // - READ10 and WRITE10 has their own callbacks
 int32_t tud_msc_scsi_cb (uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize)
 {
-	using namespace jxglib::USBD;
+	using namespace jxglib::USBDevice;
 	return Device::GetInterface_MSC()->On_msc_scsi(lun, scsi_cmd, buffer, bufsize);
 }
 
 #endif
 
 //-----------------------------------------------------------------------------
-// USBD::MIDI
+// USBDevice::MIDI
 //-----------------------------------------------------------------------------
 #if CFG_TUD_MIDI > 0
 #endif
 
 //-----------------------------------------------------------------------------
-// USBD::Vendor
+// USBDevice::Vendor
 //-----------------------------------------------------------------------------
 #if CFG_TUD_VENDOR > 0
 #endif

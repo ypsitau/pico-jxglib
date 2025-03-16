@@ -28,32 +28,34 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-HID-Keyboard C CXX ASM)
+project(test-MSC-SDCard C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-HID-Keyboard test-HID-Keyboard.cpp)
+add_executable(test-MSC-SDCard test-MSC-SDCard.cpp)
 
-pico_set_program_name(test-HID-Keyboard "test-HID-Keyboard")
-pico_set_program_version(test-HID-Keyboard "0.1")
+pico_set_program_name(test-MSC-SDCard "test-MSC-SDCard")
+pico_set_program_version(test-MSC-SDCard "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-HID-Keyboard 1)
-pico_enable_stdio_usb(test-HID-Keyboard 0)
+pico_enable_stdio_uart(test-MSC-SDCard 1)
+pico_enable_stdio_usb(test-MSC-SDCard 0)
 
 # Add the standard library to the build
-target_link_libraries(test-HID-Keyboard
+target_link_libraries(test-MSC-SDCard
 	pico_stdlib
-	jxglib_USBD)
+	jxglib_USBDevice
+	jxglib_Stream
+	jxglib_SDCard)
 
 # Add the standard include files to the build
-target_include_directories(test-HID-Keyboard PRIVATE
+target_include_directories(test-MSC-SDCard PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-HID-Keyboard)
+pico_add_extra_outputs(test-MSC-SDCard)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)

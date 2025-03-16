@@ -3,7 +3,7 @@
 #include <string.h>
 #include "pico/stdlib.h"
 #include "jxglib/GPIO.h"
-#include "jxglib/USBD.h"
+#include "jxglib/USBDevice.h"
 
 using namespace jxglib;
 
@@ -17,11 +17,11 @@ auto& GPIO_PAGE_DOWN	= GPIO21;
 //-----------------------------------------------------------------------------
 // Keyboard
 //-----------------------------------------------------------------------------
-class Keyboard : public USBD::Keyboard {
+class Keyboard : public USBDevice::Keyboard {
 private:
 	int nKeycodePrev_;
 public:
-	Keyboard(USBD::Device& device) : USBD::Keyboard(device, "RaspberryPi Pico Keyboard Interface", 0x81), nKeycodePrev_{0} {}
+	Keyboard(USBDevice::Device& device) : USBDevice::Keyboard(device, "RaspberryPi Pico Keyboard Interface", 0x81), nKeycodePrev_{0} {}
 public:
 	virtual void OnTick() override;
 };
@@ -32,14 +32,14 @@ public:
 int main(void)
 {
 	::stdio_init_all(); 
-	USBD::Device device({
+	USBDevice::Device device({
 		bcdUSB:				0x0200,
 		bDeviceClass:		0x00,
 		bDeviceSubClass:	0x00,
 		bDeviceProtocol:	0x00,
 		bMaxPacketSize0:	CFG_TUD_ENDPOINT0_SIZE,
 		idVendor:			0xcafe,
-		idProduct:			USBD::GenerateSpecificProductId(0x4000),
+		idProduct:			USBDevice::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
 	}, 0x0409, "pico-jxglib sample", "RaspberryPi Pico HID Device (Keyboard)", "0123456789ABCDEF",
 		TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP);

@@ -4,21 +4,21 @@
 #include <ctype.h>
 #include "pico/stdlib.h"
 #include "jxglib/GPIO.h"
-#include "jxglib/USBD.h"
+#include "jxglib/USBDevice.h"
 
 using namespace jxglib;
 
 //-----------------------------------------------------------------------------
 // EchoBack
 //-----------------------------------------------------------------------------
-class EchoBack : public USBD::CDC {
+class EchoBack : public USBDevice::CDC {
 public:
 	enum Mode { Normal, Upper, Crypt };
 private:
 	Mode mode_;
 public:
-	EchoBack(USBD::Device& device, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn, Mode mode) :
-				USBD::CDC(device, name, endpNotif, 8, endpBulkOut, endpBulkIn, 64, 10), mode_{mode} {}
+	EchoBack(USBDevice::Device& device, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn, Mode mode) :
+				USBDevice::CDC(device, name, endpNotif, 8, endpBulkOut, endpBulkIn, 64, 10), mode_{mode} {}
 public:
 	virtual void OnTick() override;
 };
@@ -52,14 +52,14 @@ void EchoBack::OnTick()
 int main(void)
 {
 	::stdio_init_all(); 
-	USBD::Device device({
+	USBDevice::Device device({
 		bcdUSB:				0x0200,
 		bDeviceClass:		TUSB_CLASS_MISC,
 		bDeviceSubClass:	MISC_SUBCLASS_COMMON,
 		bDeviceProtocol:	MISC_PROTOCOL_IAD,
 		bMaxPacketSize0:	CFG_TUD_ENDPOINT0_SIZE,
 		idVendor:			0xcafe,
-		idProduct:			USBD::GenerateSpecificProductId(0x4000),
+		idProduct:			USBDevice::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
 	}, 0x0409, "CDC Test", "CDC Test Product", "0123456");
 	EchoBack echoBack1(device, "EchoBack Normal", 0x81, 0x02, 0x82, EchoBack::Mode::Normal);

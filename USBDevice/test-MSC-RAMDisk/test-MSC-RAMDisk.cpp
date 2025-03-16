@@ -3,14 +3,14 @@
 #include <string.h>
 #include "pico/stdlib.h"
 #include "jxglib/GPIO.h"
-#include "jxglib/USBD.h"
+#include "jxglib/USBDevice.h"
 
 using namespace jxglib;
 
 //-----------------------------------------------------------------------------
 // RAMDisk
 //-----------------------------------------------------------------------------
-class RAMDisk : public USBD::MSC {
+class RAMDisk : public USBDevice::MSC {
 public:
 	static const int BlockCount = 16;	// 8KB is the smallest size that windows allow to mount
 	static const int BlockSize = 512;
@@ -18,7 +18,7 @@ private:
 	bool ejected_;
 	static uint8_t blocks_[BlockCount][BlockSize];
 public:
-	RAMDisk(USBD::Device& device) : USBD::MSC(device, "RAMDisk Interface", 0x01, 0x81), ejected_{false} {}
+	RAMDisk(USBDevice::Device& device) : USBDevice::MSC(device, "RAMDisk Interface", 0x01, 0x81), ejected_{false} {}
 public:
 	virtual void On_msc_inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]) override;
 	virtual bool On_msc_test_unit_ready(uint8_t lun) override;
@@ -175,14 +175,14 @@ int32_t RAMDisk::On_msc_scsi(uint8_t lun, uint8_t const scsi_cmd[16], void* buff
 int main(void)
 {
 	::stdio_init_all(); 
-	USBD::Device device({
+	USBDevice::Device device({
 		bcdUSB:				0x0200,
 		bDeviceClass:		0x00,
 		bDeviceSubClass:	0x00,
 		bDeviceProtocol:	0x00,
 		bMaxPacketSize0:	CFG_TUD_ENDPOINT0_SIZE,
 		idVendor:			0xcafe,
-		idProduct:			USBD::GenerateSpecificProductId(0x4000),
+		idProduct:			USBDevice::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
 	}, 0x0409, "RPi RAMDisk", "RPi RAMDisk Device", "3141592653");
 	RAMDisk ramDisk(device);
