@@ -205,17 +205,16 @@ const USBHost::Keyboard::ConvEntry USBHost::Keyboard::convEntryTbl_101Keyboard[1
 	{0,				'=',		'=',		0x00}, // 0x67
 };
 
-USBHost::Keyboard::Keyboard() : Tickable(100), modifier_{0}, cntHold_{0}
+USBHost::Keyboard::Keyboard() : Tickable(100), cntHold_{0}
 {
-	::memset(keycode_, 0x00, sizeof(keycode_));
+	::memset(&report_, 0x00, sizeof(report_));
 }
 
 void USBHost::Keyboard::OnReport(uint8_t devAddr, uint8_t iInstance, const hid_keyboard_report_t& report)
 {
-	modifier_ = report.modifier;
-	::memcpy(keycode_, report.keycode, sizeof(keycode_));
-	if (keycode_[0]) {
-		fifoKeyData_.WriteData(CreateKeyData(keycode_[0], modifier_));
+	report_ = report;
+	if (report_.keycode[0]) {
+		fifoKeyData_.WriteData(CreateKeyData(report_.keycode[0], report_.modifier));
 		cntHold_ = 5;
 	}
 }
@@ -235,8 +234,8 @@ void USBHost::Keyboard::OnTick()
 		cntHold_--;
 		return;
 	}
-	if (keycode_[0]) {
-		fifoKeyData_.WriteData(CreateKeyData(keycode_[0], modifier_));
+	if (report_.keycode[0]) {
+		fifoKeyData_.WriteData(CreateKeyData(report_.keycode[0], report_.modifier));
 	}
 }
 
@@ -258,11 +257,35 @@ USBHost::Mouse::Mouse()
 
 void USBHost::Mouse::OnReport(uint8_t devAddr, uint8_t iInstance, const hid_mouse_report_t& report)
 {
-	report.buttons;
-	report.pan;
-	report.wheel;
-	report.x;
-	report.y;
+	status_.Update(report);
+}
+
+USBHost::Mouse::Status USBHost::Mouse::CaptureStatus()
+{
+	Status statusRtn = status_;
+	status_.Clear();
+	return statusRtn;
+}
+
+//------------------------------------------------------------------------------
+// USBHost::Mouse::Report
+//------------------------------------------------------------------------------
+void USBHost::Mouse::Status::Update(const hid_mouse_report_t& report)
+{
+	deltaX_ += report.x;
+	deltaY_ += report.y;
+	deltaWheel_ += report.wheel;
+	deltaPan_ += report.pan;
+	buttonsPrev_ = buttons_;
+	buttons_ = report.buttons;
+}
+
+void USBHost::Mouse::Status::Clear()
+{
+	deltaX_ = 0;
+	deltaY_ = 0;
+	deltaWheel_ = 0;
+	deltaPan_ = 0;
 }
 
 }
