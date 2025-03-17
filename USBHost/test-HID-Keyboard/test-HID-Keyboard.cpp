@@ -21,6 +21,6 @@ int main()
 				::printf("'%c'\n", keyData.GetCharCode());
 			}
 		}
-		Tickable::Sleep(100);
+		Tickable::Tick();
 	}
 }

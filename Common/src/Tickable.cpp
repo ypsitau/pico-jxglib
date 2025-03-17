@@ -41,9 +41,15 @@ bool Tickable::IsExpired(uint32_t msecCur)
 	return false;
 }
 
+void Tickable::ResetTick(uint32_t msecTick)
+{
+	msecStart_ = GetCurrentTime();
+	msecTick_ = msecTick;
+}
+
 bool Tickable::Tick(uint32_t msecTick)
 {
-	uint32_t msecCur = ::to_ms_since_boot(::get_absolute_time());
+	uint32_t msecCur = GetCurrentTime();
 	if (firstFlag_) {
 		firstFlag_ = false;
 		for (Tickable* pTickable = pTickableTop_; pTickable; pTickable = pTickable->GetNext()) {

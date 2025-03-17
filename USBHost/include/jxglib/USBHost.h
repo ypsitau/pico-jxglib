@@ -27,10 +27,13 @@ public:
 		using Report = hid_keyboard_report_t;
 	private:
 		Report report_;
-		int cntHold_;
 		FIFOBuff<KeyData, 8> fifoKeyData_;
+		bool firstFlag_;
+		uint32_t msecHold_;
+		uint32_t msecRepeat_;
 	public:
-		static const ConvEntry convEntryTbl_101Keyboard[128];
+		static const ConvEntry convEntryTbl_101Keyboard[256];
+		static const ConvEntry convEntryTbl_106Keyboard[256];
 	public:
 		Keyboard();
 	public:

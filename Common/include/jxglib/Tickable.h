@@ -46,6 +46,7 @@ public:
 public:
 	static bool Tick(uint32_t msecTick = 0);
 	static void Sleep(uint32_t msecTick = 0) { while (!Tick(msecTick)) ::tight_loop_contents(); }
+	static uint32_t GetCurrentTime() { return ::to_ms_since_boot(::get_absolute_time()); }
 public:
 	Priority GetPriority() const { return priority_; }
 	const char* GetPriorityName() const { return GetPriorityName(GetPriority()); }
@@ -60,6 +61,7 @@ public:
 	uint32_t GetTick() const { return msecTick_; }
 	void InitTick(uint32_t msecStart) { msecStart_ = msecStart; }
 	bool IsExpired(uint32_t msecCur);
+	void ResetTick(uint32_t msecTick);
 public:
 	virtual const char* GetTickableName() const { return "no-name"; }
 	virtual void OnTick() = 0;
