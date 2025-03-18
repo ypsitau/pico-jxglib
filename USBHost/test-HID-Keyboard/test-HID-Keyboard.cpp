@@ -7,8 +7,7 @@ using namespace jxglib;
 int main()
 {
 	::stdio_init_all();
-	USBHost host;
-	host.Initialize();
+	USBHost::Initialize();
 	::printf("----\n");
 	for (;;) {
 		KeyData keyData;

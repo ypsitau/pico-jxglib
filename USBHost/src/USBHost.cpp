@@ -8,16 +8,16 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // USBHost
 //------------------------------------------------------------------------------
-USBHost* USBHost::Instance = nullptr;
+USBHost USBHost::Instance;
 
-USBHost::USBHost()
+USBHost::USBHost() : pEventHandler_{nullptr}
 {
-	Instance = this;
 }
 
-void USBHost::Initialize(uint8_t rhport)
+void USBHost::Initialize(uint8_t rhport, EventHandler* pEventHandler)
 {
 	::tuh_init(rhport);
+	Instance.pEventHandler_ = pEventHandler;
 }
 
 void USBHost::OnTick()
@@ -29,12 +29,14 @@ extern "C" {
 
 void tuh_mount_cb(uint8_t devAddr)
 {
-	USBHost::Instance->OnMount(devAddr);
+	auto pEventHandler = USBHost::Instance.GetEventHandler();
+	if (pEventHandler) pEventHandler->OnMount(devAddr);
 }
 
 void tuh_umount_cb(uint8_t devAddr)
 {
-	USBHost::Instance->OnUmount(devAddr);
+	auto pEventHandler = USBHost::Instance.GetEventHandler();
+	if (pEventHandler) pEventHandler->OnUmount(devAddr);
 }
 
 #define MAX_REPORT  4

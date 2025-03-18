@@ -16,6 +16,11 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class USBHost : public Tickable {
 public:
+	class EventHandler {
+	public:
+		virtual void OnMount(uint8_t devAddr) {}
+		virtual void OnUmount(uint8_t devAddr) {}
+	};
 	class Keyboard : public jxglib::Keyboard, public Tickable {
 	public:
 		struct ConvEntry {
@@ -114,23 +119,22 @@ public:
 		Status CaptureStatus() { return status_.Capture(); }
 	};
 public:
-	static USBHost* Instance;
+	static USBHost Instance;
 private:
 	Keyboard keyboard_;
 	Mouse mouse_;
+	EventHandler* pEventHandler_;
 public:
 	USBHost();
 public:
-	void Initialize(uint8_t rhport = BOARD_TUH_RHPORT);
+	static void Initialize(uint8_t rhport = BOARD_TUH_RHPORT, EventHandler* pEventHandler = nullptr);
 public:
-	static Keyboard& GetKeyboard() { return Instance->keyboard_; }
-	static Mouse& GetMouse() { return Instance->mouse_; }
+	static Keyboard& GetKeyboard() { return Instance.keyboard_; }
+	static Mouse& GetMouse() { return Instance.mouse_; }
+	static EventHandler* GetEventHandler() { return Instance.pEventHandler_; }
 public:
 	// virtual function of Tickable
 	virtual void OnTick() override;
-public:
-	virtual void OnMount(uint8_t devAddr) {}
-	virtual void OnUmount(uint8_t devAddr) {}
 };
 
 }
