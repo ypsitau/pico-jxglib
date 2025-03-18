@@ -78,7 +78,10 @@ private:
 	InputTouchScreen inputTouchScreen_;
 	InputMouse inputMouse_;
 	InputKeyboard inputKeyboard_;
+public:
 	static InputDumb inputDumb_;
+	static const uint8_t argbData_MouseCursor[];
+	static const lv_image_dsc_t imageDsc_MouseCursor;
 public:
 	Adapter();
 public:

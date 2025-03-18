@@ -669,7 +669,7 @@ KeyData USBHost::Keyboard::CreateKeyData(uint8_t keycode, uint8_t modifier)
 //------------------------------------------------------------------------------
 // USBHost::Mouse
 //------------------------------------------------------------------------------
-USBHost::Mouse::Mouse() : sensibility_{.4}
+USBHost::Mouse::Mouse() : sensibility_{.6}
 {
 	SetStage({0, 0, 320, 240});
 }
