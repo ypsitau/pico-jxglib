@@ -36,6 +36,14 @@ public:
 	public:
 		virtual void Handle(lv_indev_t* indev_drv, lv_indev_data_t* data) override;
 	};
+	class InputUSBMouse : public Input {
+	private:
+		Adapter& adapter_;
+	public:
+		InputUSBMouse(Adapter& adapter) : adapter_{adapter} {}
+	public:
+		virtual void Handle(lv_indev_t* indev_drv, lv_indev_data_t* data) override;
+	};
 	class InputKeyboard : public Input {
 	private:
 		Keyboard* pKeyboard_;

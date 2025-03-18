@@ -674,6 +674,18 @@ USBHost::Mouse::Mouse() : sensibility_{.2}
 	SetStage({0, 0, 320, 240});
 }
 
+void USBHost::Mouse::SetStage(const Rect& rcStage)
+{
+	rcStage_ = rcStage;
+	UpdateStage();
+}
+
+void USBHost::Mouse::SetSensibility(float sensibility)
+{
+	sensibility_ = sensibility;
+	UpdateStage();
+}
+
 void USBHost::Mouse::UpdateStage()
 {
 	rcStageRaw_.width = static_cast<int>(rcStage_.width / sensibility_);
@@ -692,30 +704,8 @@ void USBHost::Mouse::OnReport(uint8_t devAddr, uint8_t iInstance, const hid_mous
 {
 	xRaw_ = ChooseMin(ChooseMax(xRaw_ + report.x, 0), rcStageRaw_.width - 1);
 	yRaw_ = ChooseMin(ChooseMax(yRaw_ + report.y, 0), rcStageRaw_.height - 1);
-	status_.Update(report, CalcPoint());
+	status_.Update(CalcPoint(), report.x, report.y, report.wheel, report.pan, report.buttons);
 }
 
-//------------------------------------------------------------------------------
-// USBHost::Mouse::Report
-//------------------------------------------------------------------------------
-void USBHost::Mouse::Status::Update(const hid_mouse_report_t& report, const Point& pt)
-{
-	pt_ = pt;
-	deltaX_ += report.x, deltaY_ += report.y;
-	deltaWheel_ += report.wheel;
-	deltaPan_ += report.pan;
-	buttonsPrev_ = buttons_;
-	buttons_ = report.buttons;
-}
-
-USBHost::Mouse::Status USBHost::Mouse::Status::Capture()
-{
-	Status statusRtn = *this;
-	deltaX_ = 0;
-	deltaY_ = 0;
-	deltaWheel_ = 0;
-	deltaPan_ = 0;
-	return statusRtn;
-}
 
 }
