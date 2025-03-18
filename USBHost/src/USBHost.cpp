@@ -667,41 +667,53 @@ KeyData USBHost::Keyboard::CreateKeyData(uint8_t keycode, uint8_t modifier)
 //------------------------------------------------------------------------------
 // USBHost::Mouse
 //------------------------------------------------------------------------------
-USBHost::Mouse::Mouse()
+USBHost::Mouse::Mouse() : sensibility_{.2}
 {
+	SetStage({0, 0, 320, 240});
+}
+
+void USBHost::Mouse::UpdateStage()
+{
+	rcStageRaw_.width = static_cast<int>(rcStage_.width / sensibility_);
+	rcStageRaw_.height = static_cast<int>(rcStage_.height / sensibility_);
+	xRaw_ = rcStageRaw_.width / 2, yRaw_ = rcStageRaw_.height / 2;
+	status_.SetPoint(CalcPoint());	
+}
+
+Point USBHost::Mouse::CalcPoint() const
+{
+	return Point(xRaw_ * (rcStage_.width - 1) / (rcStageRaw_.width - 1) + rcStage_.x,
+			yRaw_ * (rcStage_.height - 1) / (rcStageRaw_.height - 1) + rcStage_.y);
 }
 
 void USBHost::Mouse::OnReport(uint8_t devAddr, uint8_t iInstance, const hid_mouse_report_t& report)
 {
-	status_.Update(report);
-}
-
-USBHost::Mouse::Status USBHost::Mouse::CaptureStatus()
-{
-	Status statusRtn = status_;
-	status_.Clear();
-	return statusRtn;
+	xRaw_ = ChooseMin(ChooseMax(xRaw_ + report.x, 0), rcStageRaw_.width - 1);
+	yRaw_ = ChooseMin(ChooseMax(yRaw_ + report.y, 0), rcStageRaw_.height - 1);
+	status_.Update(report, CalcPoint());
 }
 
 //------------------------------------------------------------------------------
 // USBHost::Mouse::Report
 //------------------------------------------------------------------------------
-void USBHost::Mouse::Status::Update(const hid_mouse_report_t& report)
+void USBHost::Mouse::Status::Update(const hid_mouse_report_t& report, const Point& pt)
 {
-	deltaX_ += report.x;
-	deltaY_ += report.y;
+	pt_ = pt;
+	deltaX_ += report.x, deltaY_ += report.y;
 	deltaWheel_ += report.wheel;
 	deltaPan_ += report.pan;
 	buttonsPrev_ = buttons_;
 	buttons_ = report.buttons;
 }
 
-void USBHost::Mouse::Status::Clear()
+USBHost::Mouse::Status USBHost::Mouse::Status::Capture()
 {
+	Status statusRtn = *this;
 	deltaX_ = 0;
 	deltaY_ = 0;
 	deltaWheel_ = 0;
 	deltaPan_ = 0;
+	return statusRtn;
 }
 
 }

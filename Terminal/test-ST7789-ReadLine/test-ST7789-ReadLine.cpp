@@ -21,7 +21,7 @@ int main()
 	terminal.AttachOutput(display);
 	//terminal.AttachInput(KeyboardStdio::Instance);
 	terminal.AttachInput(USBHost::GetKeyboard());
-	terminal.SetFont(Font::shinonome16).SetSpacingRatio(1., 1)
+	terminal.SetFont(Font::shinonome16).SetSpacingRatio(1., 1).SetFontScale(2)
 		.SetColor(Color::white).SetColorBg(Color::black)
 		.SetColorInEdit(Color::white).SetColorCursor(Color::white)
 		.ClearScreen();

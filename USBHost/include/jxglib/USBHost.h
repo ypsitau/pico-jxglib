@@ -51,6 +51,7 @@ public:
 	public:
 		class Status {
 		private:
+			Point pt_;
 			int deltaX_;
 			int deltaY_;
 			int deltaWheel_;
@@ -59,13 +60,15 @@ public:
 			uint8_t buttonsPrev_;
 		public:
 			Status() : deltaX_{0}, deltaY_{0}, deltaWheel_{0}, deltaPan_{0}, buttons_{0}, buttonsPrev_{0} {}
-			Status(const Status& status) : deltaX_{status.deltaX_}, deltaY_{status.deltaY_},
+			Status(const Status& status) : pt_{status.pt_}, deltaX_{status.deltaX_}, deltaY_{status.deltaY_},
 				deltaWheel_{status.deltaWheel_}, deltaPan_{status.deltaPan_},
 				buttons_{status.buttons_}, buttonsPrev_{status.buttonsPrev_} {}
 		public:
-			void Update(const hid_mouse_report_t& report);
-			void Clear();
+			void SetPoint(const Point& pt) { pt_ = pt; }
+			void Update(const hid_mouse_report_t& report, const Point& pt);
+			Status Capture();
 			uint8_t GetButtons() const { return buttons_; }
+			const Point& GetPoint() const { return pt_; }
 			int GetDeltaX() const { return deltaX_; }
 			int GetDeltaY() const { return deltaY_; }
 			int GetDeltaWheel() const { return deltaWheel_; }
@@ -92,13 +95,23 @@ public:
 			bool IsButtonForwardReleased() const { return IsButtonForwardChanged() && !GetButtonForward(); }
 		};
 	private:
+		float sensibility_;
+		Rect rcStage_;
+		Rect rcStageRaw_;
+		int xRaw_;
+		int yRaw_;
 		Status status_;
 	public:
 		Mouse();
 	public:
+		void SetStage(const Rect& rcStage) { rcStage_ = rcStage; UpdateStage(); }
+		void SetSensibility(float sensibility) { sensibility_ = sensibility; UpdateStage(); }
+		void UpdateStage();
+		Point CalcPoint() const;
+	public:
 		void OnReport(uint8_t devAddr, uint8_t iInstance, const hid_mouse_report_t& report);
 	public:
-		Status CaptureStatus();
+		Status CaptureStatus() { return status_.Capture(); }
 	};
 public:
 	static USBHost* Instance;
