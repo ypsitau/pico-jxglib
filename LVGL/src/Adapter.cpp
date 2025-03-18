@@ -9,7 +9,6 @@ namespace jxglib::LVGL {
 // LVGL::Adapter
 //------------------------------------------------------------------------------
 Adapter::InputDumb Adapter::inputDumb_;
-VT100::Decoder Adapter::vt100Decoder;
 
 Adapter::Adapter() : doubleBuffFlag_{false}, nPixelsBuff_{-1}, nPartialBuff_{10}, pDrawableOut_{nullptr}, disp_{nullptr},
 	pInput_Pointer_{&inputDumb_}, pInput_Keypad_{&inputDumb_}, pInput_Button_{&inputDumb_}, pInput_Encoder_{&inputDumb_},
@@ -96,6 +95,12 @@ lv_indev_t* Adapter::AttachInput(TouchScreen& touchScreen)
 	return SetInput_Pointer(inputTouchScreen_);
 }
 
+lv_indev_t* Adapter::AttachInput(Mouse& mouse)
+{
+	inputMouse_.SetMouse(mouse);
+	return SetInput_Pointer(inputMouse_);
+}
+
 lv_indev_t* Adapter::AttachInput(Keyboard& keyboard, bool setGroupFlag)
 {
 	inputKeyboard_.SetKeyboard(keyboard);
@@ -161,6 +166,17 @@ void Adapter::InputTouchScreen::Handle(lv_indev_t* indev_drv, lv_indev_data_t* d
 	data->state = touchFlag? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
 	data->point.x = pt.x - rectOut.x;
 	data->point.y = pt.y - rectOut.y;
+}
+
+//------------------------------------------------------------------------------
+// Adapter::InputMouse
+//------------------------------------------------------------------------------
+void Adapter::InputMouse::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
+{
+	Mouse::Status status = pMouse_->CaptureStatus();
+	data->state = status.GetButtonLeft()? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
+	data->point.x = status.GetPoint().x;
+	data->point.y = status.GetPoint().y;
 }
 
 //------------------------------------------------------------------------------

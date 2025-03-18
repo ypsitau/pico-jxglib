@@ -6,9 +6,9 @@
 #include <lvgl/lvgl.h>
 #include "pico/stdlib.h"
 #include "jxglib/Drawable.h"
+#include "jxglib/Mouse.h"
 #include "jxglib/Keyboard.h"
 #include "jxglib/TouchScreen.h"
-#include "jxglib/VT100.h"
 
 namespace jxglib::LVGL {
 
@@ -36,11 +36,13 @@ public:
 	public:
 		virtual void Handle(lv_indev_t* indev_drv, lv_indev_data_t* data) override;
 	};
-	class InputUSBMouse : public Input {
+	class InputMouse : public Input {
 	private:
-		Adapter& adapter_;
+		Mouse* pMouse_;
 	public:
-		InputUSBMouse(Adapter& adapter) : adapter_{adapter} {}
+		InputMouse() {}
+	public:
+		void SetMouse(Mouse& mouse) { pMouse_ = &mouse; }
 	public:
 		virtual void Handle(lv_indev_t* indev_drv, lv_indev_data_t* data) override;
 	};
@@ -74,10 +76,9 @@ private:
 	DrawImageFastHandler drawImageFastHandler_;
 private:
 	InputTouchScreen inputTouchScreen_;
+	InputMouse inputMouse_;
 	InputKeyboard inputKeyboard_;
 	static InputDumb inputDumb_;
-public:
-	static VT100::Decoder vt100Decoder;
 public:
 	Adapter();
 public:
@@ -95,6 +96,7 @@ public:
 	lv_indev_t* SetInput_Encoder(Input& input);
 public:
 	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, bool requiredFlag = true);
+	lv_indev_t* AttachInput(Mouse& mouse);
 	lv_indev_t* AttachInput(TouchScreen& touchScreen);
 	lv_indev_t* AttachInput(Keyboard& keyboard, bool setGroupFlag = true);
 private:

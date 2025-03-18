@@ -62,6 +62,7 @@ pico_enable_stdio_usb(test-ST7789 0)
 target_link_libraries(test-ST7789
     pico_stdlib
     lvgl_examples
+    jxglib_USBHost
     jxglib_ST7789
     jxglib_LVGL)
 

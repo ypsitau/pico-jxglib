@@ -63,8 +63,8 @@ public:
 	public:
 		Mouse();
 	public:
-		void SetStage(const Rect& rcStage);
-		void SetSensibility(float sensibility);
+		Mouse& SetStage(const Rect& rcStage);
+		Mouse& SetSensibility(float sensibility);
 		void UpdateStage();
 		Point CalcPoint() const;
 	public:

@@ -21,6 +21,7 @@ int main()
 	LVGL::Initialize(5);
 	LVGL::Adapter lvglAdapter;
 	lvglAdapter.AttachOutput(display);
+	lvglAdapter.AttachInput(USBHost::GetMouse().SetStage(lvglAdapter.GetRectOut()));
 	lvglAdapter.AttachInput(KeyboardStdio::Instance);
 	::lv_example_keyboard_1();
 	for (;;) Tickable::Tick();

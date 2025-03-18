@@ -669,21 +669,23 @@ KeyData USBHost::Keyboard::CreateKeyData(uint8_t keycode, uint8_t modifier)
 //------------------------------------------------------------------------------
 // USBHost::Mouse
 //------------------------------------------------------------------------------
-USBHost::Mouse::Mouse() : sensibility_{.2}
+USBHost::Mouse::Mouse() : sensibility_{.4}
 {
 	SetStage({0, 0, 320, 240});
 }
 
-void USBHost::Mouse::SetStage(const Rect& rcStage)
+USBHost::Mouse& USBHost::Mouse::SetStage(const Rect& rcStage)
 {
 	rcStage_ = rcStage;
 	UpdateStage();
+	return *this;
 }
 
-void USBHost::Mouse::SetSensibility(float sensibility)
+USBHost::Mouse& USBHost::Mouse::SetSensibility(float sensibility)
 {
 	sensibility_ = sensibility;
 	UpdateStage();
+	return *this;
 }
 
 void USBHost::Mouse::UpdateStage()
