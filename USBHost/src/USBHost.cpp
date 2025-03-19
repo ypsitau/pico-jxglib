@@ -704,8 +704,9 @@ Point USBHost::Mouse::CalcPoint() const
 
 void USBHost::Mouse::OnReport(uint8_t devAddr, uint8_t iInstance, const hid_mouse_report_t& report)
 {
-	xRaw_ = ChooseMin(ChooseMax(xRaw_ + report.x, 0), rcStageRaw_.width - 1);
-	yRaw_ = ChooseMin(ChooseMax(yRaw_ + report.y, 0), rcStageRaw_.height - 1);
+	int xDiff = report.x, yDiff = report.y;
+	xRaw_ = ChooseMin(ChooseMax(xRaw_ + xDiff, 0), rcStageRaw_.width - 1);
+	yRaw_ = ChooseMin(ChooseMax(yRaw_ + yDiff, 0), rcStageRaw_.height - 1);
 	status_.Update(CalcPoint(), report.x, report.y, report.wheel, report.pan, report.buttons);
 }
 
