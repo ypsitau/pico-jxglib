@@ -12,6 +12,7 @@ int main()
 	for (;;) {
 		KeyData keyDataTbl[6];
 		int nKeys = USBHost::GetKeyboard().SenseKeyData(keyDataTbl, count_of(keyDataTbl));
+		//int nKeys = USBHost::GetKeyboard().GetKeyData(keyDataTbl[0])? 1 : 0;
 		if (nKeys > 0) {
 			for (int i = 0; i < nKeys; i++) {
 				const KeyData& keyData = keyDataTbl[i];
