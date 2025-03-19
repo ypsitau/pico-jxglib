@@ -41,7 +41,7 @@ public:
 		Decoder();
 	public:
 		bool HasKeyData() const { return buff_.HasData(); }
-		bool GetKeyData(KeyData& keyData);
+		bool GetKeyData(KeyData* pKeyData);
 	public:
 		void FeedChar(char ch);
 	};

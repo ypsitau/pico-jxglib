@@ -164,7 +164,7 @@ Editable& Serial::Terminal::Edit_MoveHistoryNext()
 void Serial::Terminal::OnTick()
 {
 	KeyData keyData;
-	if (GetKeyData(keyData)) ProcessKeyData(keyData);
+	if (GetKeyData(&keyData)) ProcessKeyData(keyData);
 }
 
 }

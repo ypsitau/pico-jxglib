@@ -46,7 +46,7 @@ public:
 		void OnReport(uint8_t devAddr, uint8_t iInstance, const hid_keyboard_report_t& report);
 	public:
 		// virtual function of jxglib::Keyboard
-		virtual bool GetKeyData(KeyData& keyData) override;
+		virtual bool GetKeyData(KeyData* pKeyData) override;
 		virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax) override;
 	public:
 		// virtual function of Tickable

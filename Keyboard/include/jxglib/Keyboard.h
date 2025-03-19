@@ -17,8 +17,8 @@ class Keyboard {
 public:
 	Keyboard() {}
 public:
-	virtual bool GetKeyData(KeyData& keyData) = 0;
-	virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax) = 0;
+	virtual bool GetKeyData(KeyData* pKeyData) = 0;
+	virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) = 0;
 };
 
 //------------------------------------------------------------------------------
@@ -28,8 +28,8 @@ class KeyboardDumb : public Keyboard {
 public:
 	static KeyboardDumb Instance;
 public:
-	virtual bool GetKeyData(KeyData& keyData) override { return false; }
-	virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax) override { return 0; }
+	virtual bool GetKeyData(KeyData* pKeyData) override { return false; }
+	virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) override { return 0; }
 };
 	
 //------------------------------------------------------------------------------
@@ -41,8 +41,8 @@ private:
 public:
 	static KeyboardStdio Instance;
 public:
-	virtual bool GetKeyData(KeyData& keyData) override;
-	virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax) override;
+	virtual bool GetKeyData(KeyData* pKeyData) override;
+	virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) override;
 };
 
 }

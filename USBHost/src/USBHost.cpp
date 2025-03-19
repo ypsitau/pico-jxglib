@@ -638,10 +638,10 @@ void USBHost::Keyboard::OnReport(uint8_t devAddr, uint8_t iInstance, const hid_k
 	}
 }
 
-bool USBHost::Keyboard::GetKeyData(KeyData& keyData)
+bool USBHost::Keyboard::GetKeyData(KeyData* pKeyData)
 {
 	if (fifoKeyData_.HasData()) {
-		keyData = fifoKeyData_.ReadData();
+		*pKeyData = fifoKeyData_.ReadData();
 		return true;
 	}
 	return false;

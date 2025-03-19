@@ -19,16 +19,16 @@ KeyboardDumb KeyboardDumb::Instance;
 //------------------------------------------------------------------------------
 KeyboardStdio KeyboardStdio::Instance;
 
-bool KeyboardStdio::GetKeyData(KeyData& keyData)
+bool KeyboardStdio::GetKeyData(KeyData* pKeyData)
 {
 	int ch;
 	while ((ch = ::stdio_getchar_timeout_us(0)) > 0) decoder_.FeedChar(ch);
-	return decoder_.GetKeyData(keyData);
+	return decoder_.GetKeyData(pKeyData);
 }
 
 int KeyboardStdio::SenseKeyData(KeyData keyDataTbl[], int nKeysMax)
 {
-	return (nKeysMax > 0 && GetKeyData(keyDataTbl[0]))? 1 : 0;
+	return (nKeysMax > 0 && GetKeyData(&keyDataTbl[0]))? 1 : 0;
 }
 
 }

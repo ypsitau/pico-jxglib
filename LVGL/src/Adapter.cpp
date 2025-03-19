@@ -223,29 +223,29 @@ void Adapter::InputMouse::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
 void Adapter::InputKeyboard::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data)
 {
 	KeyData keyData;
-	if (pKeyboard_->GetKeyData(keyData)) {
-		if (keyData.IsKeyCode()) {
-			uint8_t keyCode = keyData.GetKeyCode();
-			data->key =
-				(keyCode == VK_TAB)?	LV_KEY_NEXT :
-				(keyCode == VK_PRIOR)?	LV_KEY_PREV :
-				(keyCode == VK_NEXT)?	LV_KEY_NEXT :
-				(keyCode == VK_RETURN)?	LV_KEY_ENTER :
-				(keyCode == VK_UP)?		LV_KEY_UP :
-				(keyCode == VK_DOWN)?	LV_KEY_DOWN :
-				(keyCode == VK_LEFT)?	LV_KEY_LEFT :
-				(keyCode == VK_RIGHT)?	LV_KEY_RIGHT :
-				(keyCode == VK_ESCAPE)?	LV_KEY_ESC :
-				(keyCode == VK_DELETE)?	LV_KEY_DEL :
-				(keyCode == VK_BACK)?	LV_KEY_BACKSPACE :
-				(keyCode == VK_HOME)?	LV_KEY_HOME :
-				(keyCode == VK_END)?	LV_KEY_END : 0;
-		} else {
-			data->key = keyData.GetCharCode();
-		}
-		data->state = LV_INDEV_STATE_PRESSED;
-	} else {
+	if (pKeyboard_->SenseKeyData(&keyData) == 0) {
 		data->state = LV_INDEV_STATE_RELEASED;
+	} else if (keyData.IsKeyCode()) {
+		uint8_t keyCode = keyData.GetKeyCode();
+		data->key =
+			(keyCode == VK_TAB)?	(keyData.IsShiftDown()? LV_KEY_PREV : LV_KEY_NEXT) :
+			(keyCode == VK_PRIOR)?	LV_KEY_PREV :
+			(keyCode == VK_NEXT)?	LV_KEY_NEXT :
+			(keyCode == VK_RETURN)?	LV_KEY_ENTER :
+			(keyCode == VK_UP)?		LV_KEY_UP :
+			(keyCode == VK_DOWN)?	LV_KEY_DOWN :
+			(keyCode == VK_LEFT)?	LV_KEY_LEFT :
+			(keyCode == VK_RIGHT)?	LV_KEY_RIGHT :
+			(keyCode == VK_ESCAPE)?	LV_KEY_ESC :
+			(keyCode == VK_DELETE)?	LV_KEY_DEL :
+			(keyCode == VK_BACK)?	LV_KEY_BACKSPACE :
+			(keyCode == VK_HOME)?	LV_KEY_HOME :
+			(keyCode == VK_END)?	LV_KEY_END : 0;
+		data->state = data->key? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
+	} else {
+		data->key = keyData.GetCharCode();
+		if (data->key == '\t') data->key = keyData.IsShiftDown()? LV_KEY_PREV : LV_KEY_NEXT;
+		data->state = LV_INDEV_STATE_PRESSED;
 	}
 }
 

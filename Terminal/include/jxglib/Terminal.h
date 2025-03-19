@@ -20,7 +20,10 @@ public:
 public:
 	void AttachInput(Keyboard& keyboard) { pKeyboard_ = &keyboard; }
 	Keyboard& GetKeyboard() { return *pKeyboard_; }
-	bool GetKeyData(KeyData& keyData) { return GetKeyboard().GetKeyData(keyData); }
+	bool GetKeyData(KeyData* pKeyData) { return GetKeyboard().GetKeyData(pKeyData); }
+	int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) {
+		return GetKeyboard().SenseKeyData(keyDataTbl, nKeysMax);
+	}
 	char GetChar();
 	uint8_t GetKeyCode();
 };
