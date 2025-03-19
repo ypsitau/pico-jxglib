@@ -41,6 +41,8 @@ bool Editable::ProcessKeyData(const KeyData& keyData)
 		case VK_RIGHT:	Edit_MoveForward();		return true;
 		case VK_UP:		Edit_MoveHistoryPrev();	return true;
 		case VK_DOWN:	Edit_MoveHistoryNext();	return true;
+		case VK_HOME:	Edit_MoveHome();		return true;
+		case VK_END:	Edit_MoveEnd();			return true;
 		default: break;
 		}
 	} else if (keyData.GetCharCode() < 0x20) {
