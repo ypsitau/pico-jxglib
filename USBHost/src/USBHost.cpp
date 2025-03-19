@@ -628,10 +628,13 @@ void USBHost::Keyboard::OnReport(uint8_t devAddr, uint8_t iInstance, const hid_k
 {
 	report_ = report;
 	if (report_.keycode[0]) {
-		fifoKeyData_.WriteData(CreateKeyData(report_.keycode[0], report_.modifier));
-		firstFlag_ = true;
-		ResetTick(msecHold_);
-		Resume();
+		KeyData keyData = CreateKeyData(report_.keycode[0], report_.modifier);
+		if (keyData.IsValid()) {
+			fifoKeyData_.WriteData(keyData);
+			firstFlag_ = true;
+			ResetTick(msecHold_);
+			Resume();
+		}
 	}
 }
 
@@ -642,6 +645,18 @@ bool USBHost::Keyboard::GetKeyData(KeyData& keyData)
 		return true;
 	}
 	return false;
+}
+
+int USBHost::Keyboard::SenseKeyData(KeyData keyDataTbl[], int nKeysMax)
+{
+	int nKeys = 0;
+	for (int i = 0; i < ChooseMin(6, nKeysMax); i++) {
+		if (report_.keycode[i]) {
+			KeyData keyData = CreateKeyData(report_.keycode[i], report_.modifier);
+			if (keyData.IsValid()) keyDataTbl[nKeys++] = keyData;
+		}
+	}
+	return nKeys;
 }
 
 void USBHost::Keyboard::OnTick()

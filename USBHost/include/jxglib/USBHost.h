@@ -47,6 +47,7 @@ public:
 	public:
 		// virtual function of jxglib::Keyboard
 		virtual bool GetKeyData(KeyData& keyData) override;
+		virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax) override;
 	public:
 		// virtual function of Tickable
 		virtual void OnTick() override;

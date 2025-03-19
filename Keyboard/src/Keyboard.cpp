@@ -26,5 +26,9 @@ bool KeyboardStdio::GetKeyData(KeyData& keyData)
 	return decoder_.GetKeyData(keyData);
 }
 
+int KeyboardStdio::SenseKeyData(KeyData keyDataTbl[], int nKeysMax)
+{
+	return (nKeysMax > 0 && GetKeyData(keyDataTbl[0]))? 1 : 0;
+}
 
 }

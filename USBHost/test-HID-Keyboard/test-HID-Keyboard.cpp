@@ -10,15 +10,21 @@ int main()
 	USBHost::Initialize();
 	::printf("----\n");
 	for (;;) {
-		KeyData keyData;
-		if (USBHost::GetKeyboard().GetKeyData(keyData)) {
-			if (keyData.IsKeyCode()) {
-				::printf("VK_%s\n", keyData.GetKeyCodeName());
-			} else if (keyData.GetCharCode() <= 'Z' - '@') {
-				::printf("Ctrl+%c\n", keyData.GetCharCode() + '@');
-			} else {
-				::printf("'%c'\n", keyData.GetCharCode());
+		KeyData keyDataTbl[6];
+		int nKeys = USBHost::GetKeyboard().SenseKeyData(keyDataTbl, count_of(keyDataTbl));
+		if (nKeys > 0) {
+			for (int i = 0; i < nKeys; i++) {
+				const KeyData& keyData = keyDataTbl[i];
+				if (i > 0) ::printf(" ");
+				if (keyData.IsKeyCode()) {
+					::printf("VK_%s", keyData.GetKeyCodeName());
+				} else if (keyData.GetCharCode() <= 'Z' - '@') {
+					::printf("Ctrl+%c", keyData.GetCharCode() + '@');
+				} else {
+					::printf("'%c'", keyData.GetCharCode());
+				}
 			}
+			::printf("\n");
 		}
 		Tickable::Tick();
 	}

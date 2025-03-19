@@ -15,10 +15,10 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class Keyboard {
 public:
-public:
 	Keyboard() {}
 public:
 	virtual bool GetKeyData(KeyData& keyData) = 0;
+	virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax) = 0;
 };
 
 //------------------------------------------------------------------------------
@@ -29,6 +29,7 @@ public:
 	static KeyboardDumb Instance;
 public:
 	virtual bool GetKeyData(KeyData& keyData) override { return false; }
+	virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax) override { return 0; }
 };
 	
 //------------------------------------------------------------------------------
@@ -41,6 +42,7 @@ public:
 	static KeyboardStdio Instance;
 public:
 	virtual bool GetKeyData(KeyData& keyData) override;
+	virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax) override;
 };
 
 }
