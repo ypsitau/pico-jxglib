@@ -527,7 +527,7 @@ Editable& Display::Terminal::Edit_MoveHistoryNext()
 void Display::Terminal::Tickable_Keyboard::OnTick()
 {
 	KeyData keyData;
-	if (terminal_.GetKeyData(&keyData)) {
+	if (terminal_.GetKeyDataNB(&keyData)) {
 		if (keyData.IsKeyCode()) {
 			switch (keyData.GetKeyCode()) {
 			case VK_PRIOR: terminal_.RollUp(); return;

@@ -22,7 +22,7 @@ int main()
 	//terminal.AttachOutput(PrintableStdio::Instance);
 	terminal.Println("ReadLine Test Program");
 	for (;;) {
-		//::printf("%s\n", terminal.ReadLine(">"));
-		::printf("%d\n", terminal.GetChar());
+		::printf("%s\n", terminal.ReadLine(">"));
+		//::printf("%d\n", terminal.GetChar());
 	}
 }

@@ -178,7 +178,7 @@ void Serial::Terminal::OnTick()
 {
 	if (!GetLineEditor().IsEditing()) return;
 	KeyData keyData;
-	if (GetKeyData(&keyData)) ProcessKeyData(keyData);
+	if (GetKeyDataNB(&keyData)) ProcessKeyData(keyData);
 }
 
 }
