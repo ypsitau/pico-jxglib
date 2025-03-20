@@ -32,16 +32,21 @@ public:
 		};
 		using Report = hid_keyboard_report_t;
 	private:
-		Report report_;
-		FIFOBuff<KeyData, 8> fifoKeyData_;
-		bool firstFlag_;
-		uint32_t msecHold_;
-		uint32_t msecRepeat_;
+		Report reportCaptured_;
+		struct {
+			uint8_t keycode;
+			uint8_t modifier;
+			bool consumedFlag;
+			uint32_t msecDelay;
+			uint32_t msecRate;
+		} repeat_;
 	public:
 		static const ConvEntry convEntryTbl_101Keyboard[256];
 		static const ConvEntry convEntryTbl_106Keyboard[256];
 	public:
 		Keyboard();
+	public:
+		Keyboard& SetRepeatTime(uint32_t msecDelay, uint32_t msecRate);
 	public:
 		void OnReport(uint8_t devAddr, uint8_t iInstance, const hid_keyboard_report_t& report);
 	public:

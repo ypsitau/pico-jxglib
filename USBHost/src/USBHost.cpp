@@ -618,41 +618,57 @@ const USBHost::Keyboard::ConvEntry USBHost::Keyboard::convEntryTbl_106Keyboard[2
 	{0,				0,			0,			0x00}, // 0xff
 };
 
-USBHost::Keyboard::Keyboard() : msecHold_{500}, msecRepeat_{100}, firstFlag_{false}
+USBHost::Keyboard::Keyboard() :
+	repeat_{keycode: 0, modifier: 0, consumedFlag: true, msecDelay: 300, msecRate: 100}
 {
-	::memset(&report_, 0x00, sizeof(report_));
+	::memset(&reportCaptured_, 0x00, sizeof(reportCaptured_));
 	Suspend();
+}
+
+USBHost::Keyboard& USBHost::Keyboard::SetRepeatTime(uint32_t msecDelay, uint32_t msecRate)
+{
+	repeat_.msecDelay = msecDelay;
+	repeat_.msecRate = msecRate;
+	return *this;
 }
 
 void USBHost::Keyboard::OnReport(uint8_t devAddr, uint8_t iInstance, const hid_keyboard_report_t& report)
 {
-	report_ = report;
-	if (report_.keycode[0]) {
-		KeyData keyData = CreateKeyData(report_.keycode[0], report_.modifier);
-		if (keyData.IsValid()) {
-			fifoKeyData_.WriteData(keyData);
-			firstFlag_ = true;
-			ResetTick(msecHold_);
+	reportCaptured_ = report;
+	if (reportCaptured_.keycode[0] == 0) {
+		repeat_.keycode = 0;
+		repeat_.modifier = 0;
+		repeat_.consumedFlag = true;
+		return;
+	}
+	for (int i = 0; i < count_of(reportCaptured_.keycode); i++) {
+		uint8_t keycode = reportCaptured_.keycode[i];
+		if (repeat_.keycode != keycode) {
+			repeat_.keycode = keycode;
+			repeat_.modifier = reportCaptured_.modifier;
+			repeat_.consumedFlag = false;
+			ResetTick(repeat_.msecDelay);
 			Resume();
+			break;
 		}
 	}
 }
 
 bool USBHost::Keyboard::GetKeyData(KeyData* pKeyData)
 {
-	if (fifoKeyData_.HasData()) {
-		*pKeyData = fifoKeyData_.ReadData();
-		return true;
-	}
-	return false;
+	if (repeat_.consumedFlag) return false;
+	*pKeyData = CreateKeyData(repeat_.keycode, repeat_.modifier);
+	repeat_.consumedFlag = true;
+	return pKeyData->IsValid();
 }
 
 int USBHost::Keyboard::SenseKeyData(KeyData keyDataTbl[], int nKeysMax)
 {
 	int nKeys = 0;
-	for (int i = 0; i < ChooseMin(6, nKeysMax); i++) {
-		if (report_.keycode[i]) {
-			KeyData keyData = CreateKeyData(report_.keycode[i], report_.modifier);
+	for (int i = 0; i < ChooseMin(static_cast<int>(count_of(reportCaptured_.keycode)), nKeysMax); i++) {
+		uint8_t keycode = reportCaptured_.keycode[i];
+		if (keycode) {
+			KeyData keyData = CreateKeyData(keycode, reportCaptured_.modifier);
 			if (keyData.IsValid()) keyDataTbl[nKeys++] = keyData;
 		}
 	}
@@ -661,15 +677,15 @@ int USBHost::Keyboard::SenseKeyData(KeyData keyDataTbl[], int nKeysMax)
 
 void USBHost::Keyboard::OnTick()
 {
-	if (report_.keycode[0]) {
-		fifoKeyData_.WriteData(CreateKeyData(report_.keycode[0], report_.modifier));
-		if (firstFlag_) {
-			firstFlag_ = false;
-			SetTick(msecRepeat_);
+	for (int i = 0; i < count_of(reportCaptured_.keycode); i++) {
+		uint8_t keycode = reportCaptured_.keycode[i];
+		if (repeat_.keycode == keycode) {
+			repeat_.consumedFlag = false;
+			if (GetTick() != repeat_.msecRate) SetTick(repeat_.msecRate);
+			return;
 		}
-	} else {
-		Suspend();
 	}
+	Suspend();
 }
 
 KeyData USBHost::Keyboard::CreateKeyData(uint8_t keycode, uint8_t modifier)
