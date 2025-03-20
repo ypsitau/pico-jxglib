@@ -11,11 +11,14 @@ int main()
 	::printf("Press any keys...\n");
 	for (;;) {
 		int ch;
-		while ((ch = ::stdio_getchar_timeout_us(0)) > 0) decoder.FeedChar(ch);
-		int keyData;
-		bool vkFlag;
-		if (decoder.GetKeyData(&keyData, &vkFlag)) {
-			::printf("%-8s %02x\n", vkFlag? "VKey:" : "Ascii:", keyData);
+		while ((ch = ::stdio_getchar_timeout_us(0)) > 0 && !decoder.FeedChar(ch)) ;
+		KeyData keyData;
+		if (!decoder.GetKeyData(&keyData)) {
+			// nothing to do
+		} else if (keyData.IsKeyCode()) {
+			::printf("KeyCode VK_%s\n", keyData.GetKeyCodeName());
+		} else {
+			::printf("Char    0x%02x\n", keyData.GetChar());
 		}
 	}
 }

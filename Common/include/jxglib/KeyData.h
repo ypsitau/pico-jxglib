@@ -35,11 +35,13 @@ public:
 		code_{keyData.code_}, keyCodeFlag_{keyData.keyCodeFlag_}, modifier_{keyData.modifier_} {}
 public:
 	bool IsValid() const { return code_ != 0; }
-	uint8_t GetKeyCode() const { return code_; }
+	uint8_t GetKeyCode() const { return keyCodeFlag_? code_ : 0; }
 	const char* GetKeyCodeName() const { return jxglib::GetKeyCodeName(code_); }
-	char GetCharCode() const { return static_cast<char>(code_); }
+	char GetChar() const;
+	char GetCharRaw() const { return keyCodeFlag_? '\0' : static_cast<char>(code_); }
 	bool IsKeyCode() const { return keyCodeFlag_; }
-	bool IsCharCode() const { return !keyCodeFlag_; }
+	bool IsChar() const;
+	bool IsCharRaw() const { return !keyCodeFlag_; }
 	uint8_t GetModifier() const { return modifier_; }
 	bool IsCtrlDown() const		{ return !!(modifier_ & (Mod::CtrlL | Mod::CtrlR)); }
 	bool IsShiftDown() const	{ return !!(modifier_ & (Mod::ShiftL | Mod::ShiftR)); }

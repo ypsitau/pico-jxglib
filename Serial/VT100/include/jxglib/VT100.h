@@ -43,7 +43,7 @@ public:
 		bool HasKeyData() const { return buff_.HasData(); }
 		bool GetKeyData(KeyData* pKeyData);
 	public:
-		void FeedChar(char ch);
+		bool FeedChar(char ch);
 	};
 public:
 	// Cursor movement

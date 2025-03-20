@@ -176,6 +176,7 @@ Editable& Serial::Terminal::Edit_MoveHistoryNext()
 
 void Serial::Terminal::OnTick()
 {
+	if (!GetLineEditor().IsEditing()) return;
 	KeyData keyData;
 	if (GetKeyData(&keyData)) ProcessKeyData(keyData);
 }

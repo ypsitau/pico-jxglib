@@ -20,12 +20,12 @@ public:
 public:
 	void AttachInput(Keyboard& keyboard) { pKeyboard_ = &keyboard; }
 	Keyboard& GetKeyboard() { return *pKeyboard_; }
-	bool GetKeyData(KeyData* pKeyData) { return GetKeyboard().GetKeyData(pKeyData); }
+	char GetChar() { return GetKeyboard().GetChar(); }
+	uint8_t GetKeyCode() { return GetKeyboard().GetKeyCode(); }
+	bool GetKeyDataNB(KeyData* pKeyData) { return GetKeyboard().GetKeyDataNB(pKeyData); }
 	int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) {
 		return GetKeyboard().SenseKeyData(keyDataTbl, nKeysMax);
 	}
-	char GetChar();
-	uint8_t GetKeyCode();
 };
 
 }

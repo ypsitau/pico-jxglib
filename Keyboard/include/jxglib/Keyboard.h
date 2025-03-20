@@ -17,7 +17,10 @@ class Keyboard {
 public:
 	Keyboard() {}
 public:
-	virtual bool GetKeyData(KeyData* pKeyData) = 0;
+	char GetChar();
+	uint8_t GetKeyCode();
+public:
+	virtual bool GetKeyDataNB(KeyData* pKeyData) = 0;
 	virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) = 0;
 };
 
@@ -28,7 +31,7 @@ class KeyboardDumb : public Keyboard {
 public:
 	static KeyboardDumb Instance;
 public:
-	virtual bool GetKeyData(KeyData* pKeyData) override { return false; }
+	virtual bool GetKeyDataNB(KeyData* pKeyData) override { return false; }
 	virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) override { return 0; }
 };
 	
@@ -41,7 +44,7 @@ private:
 public:
 	static KeyboardStdio Instance;
 public:
-	virtual bool GetKeyData(KeyData* pKeyData) override;
+	virtual bool GetKeyDataNB(KeyData* pKeyData) override;
 	virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) override;
 };
 

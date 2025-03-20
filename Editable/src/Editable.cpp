@@ -46,8 +46,8 @@ bool Editable::ProcessKeyData(const KeyData& keyData)
 		case VK_END:		Edit_MoveEnd();			return true;
 		default: break;
 		}
-	} else if (keyData.GetCharCode() < 0x20) {
-		switch (keyData.GetCharCode()) {
+	} else if (keyData.GetCharRaw() < 0x20) {
+		switch (keyData.GetCharRaw()) {
 		//case '\x1b':		Edit_Clear();			return true;
 		case 'A' - '@':		Edit_MoveHome();		return true;
 		case 'B' - '@':		Edit_MoveBackward();	return true;
@@ -62,7 +62,7 @@ bool Editable::ProcessKeyData(const KeyData& keyData)
 		default: break;
 		}
 	} else {
-		Edit_InsertChar(keyData.GetCharCode());
+		Edit_InsertChar(keyData.GetCharRaw());
 		return true;
 	}
 	return false;

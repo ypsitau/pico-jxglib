@@ -17,8 +17,9 @@ VT100::Decoder::Decoder() : stat_{Stat::First}
 {
 }
 
-void VT100::Decoder::FeedChar(char ch)
+bool VT100::Decoder::FeedChar(char ch)
 {
+	bool rtn = false;
 	bool contFlag = false;
 	//::printf("%02x %c\n", ch, (ch == 0x1b)? 'e' : ch);
 	do {
@@ -28,10 +29,12 @@ void VT100::Decoder::FeedChar(char ch)
 			switch (ch) {
 			case 0x08: {
 				buff_.WriteData(VK_BACK);
+				rtn = true;
 				break;
 			}
 			case 0x0d: {
 				buff_.WriteData(VK_RETURN);
+				rtn = true;
 				break;
 			}
 			case 0x1b: {
@@ -40,10 +43,12 @@ void VT100::Decoder::FeedChar(char ch)
 			}
 			case 0x7f: {
 				buff_.WriteData(VK_DELETE);
+				rtn = true;
 				break;
 			}
 			default: {
 				buff_.WriteData(OffsetForAscii + ch);
+				rtn = true;
 				break;
 			}
 			}
@@ -53,6 +58,7 @@ void VT100::Decoder::FeedChar(char ch)
 			switch (ch) {
 			case 0x1b: {
 				buff_.WriteData(0x1b);
+				rtn = true;
 				stat_ = Stat::First;
 				break;
 			}
@@ -141,29 +147,37 @@ void VT100::Decoder::FeedChar(char ch)
 			switch (ch) {
 			case 'A': {
 				buff_.WriteData(VK_UP);
+				rtn = true;
 				break;
 			}
 			case 'B': {
 				buff_.WriteData(VK_DOWN);
+				rtn = true;
 				break;
 			}
 			case 'C': {
 				buff_.WriteData(VK_RIGHT);
+				rtn = true;
 				break;
 			}
 			case 'D': {
 				buff_.WriteData(VK_LEFT);
+				rtn = true;
 				break;
 			}
 			case '~': {
 				if (::strcmp(buffParameter_, "1") == 0) {
 					buff_.WriteData(VK_HOME);
+					rtn = true;
 				} else if (::strcmp(buffParameter_, "4") == 0) {
 					buff_.WriteData(VK_END);
+					rtn = true;
 				} else if (::strcmp(buffParameter_, "5") == 0) {
 					buff_.WriteData(VK_PRIOR);
+					rtn = true;
 				} else if (::strcmp(buffParameter_, "6") == 0) {
 					buff_.WriteData(VK_NEXT);
+					rtn = true;
 				} else {
 				}
 				break;
@@ -198,6 +212,7 @@ void VT100::Decoder::FeedChar(char ch)
 		}
 		}
 	} while (contFlag);
+	return rtn;
 }
 
 bool VT100::Decoder::GetKeyData(KeyData* pKeyData)

@@ -12,24 +12,4 @@ Terminal::Terminal(int bytesHistoryBuff, Keyboard& keyboard) : Editable(bytesHis
 {
 }
 
-char Terminal::GetChar()
-{
-	KeyData keyData;
-	for (;;) {
-		if (GetKeyData(&keyData) && keyData.IsCharCode()) break;
-		Tickable::Tick();
-	}
-	return keyData.GetCharCode();
-}
-
-uint8_t Terminal::GetKeyCode()
-{
-	KeyData keyData;
-	for (;;) {
-		if (GetKeyData(&keyData) && keyData.IsKeyCode()) break;
-		Tickable::Tick();
-	}
-	return keyData.GetKeyCode();
-}
-
 }

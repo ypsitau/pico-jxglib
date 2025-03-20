@@ -243,7 +243,7 @@ void Adapter::InputKeyboard::Handle(lv_indev_t* indev_drv, lv_indev_data_t* data
 			(keyCode == VK_END)?	LV_KEY_END : 0;
 		data->state = data->key? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
 	} else {
-		data->key = keyData.GetCharCode();
+		data->key = keyData.GetCharRaw();
 		if (data->key == '\t') data->key = keyData.IsShiftDown()? LV_KEY_PREV : LV_KEY_NEXT;
 		data->state = LV_INDEV_STATE_PRESSED;
 	}

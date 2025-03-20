@@ -654,7 +654,7 @@ void USBHost::Keyboard::OnReport(uint8_t devAddr, uint8_t iInstance, const hid_k
 	}
 }
 
-bool USBHost::Keyboard::GetKeyData(KeyData* pKeyData)
+bool USBHost::Keyboard::GetKeyDataNB(KeyData* pKeyData)
 {
 	if (repeat_.consumedFlag) return false;
 	*pKeyData = CreateKeyData(repeat_.keycode, repeat_.modifier);
