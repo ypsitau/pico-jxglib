@@ -40,7 +40,7 @@ int main(void)
 		idProduct:			USBDevice::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
 	}, 0x0409, "pico-jxglib sample", "RaspberryPi Pico HID Device (Gamepad)", "0123456789ABCDEF",
-		TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP);
+		0); //TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP);
 	Gamepad gamepad(device);
 	device.Initialize();
 	gamepad.Initialize();
@@ -59,14 +59,16 @@ int main(void)
 void Gamepad::OnTick()
 {
 	uint8_t reportId = 0;
-	int8_t x = 0, y = 0, z = 0, rz = 0, rx = 0, ry = 0, hat = 0;
-	uint32_t buttons = 0;
-	if (!GPIO_ARROW_LEFT.get()) x = -4;
-	if (!GPIO_ARROW_RIGHT.get()) x = +4;
-	if (!GPIO_BUTTON_A.get()) buttons |= (1 << 0);
-	if (!GPIO_BUTTON_B.get()) buttons |= (1 << 1);
-	::printf("chek %04x\n", buttons);
+	hid_gamepad_report_t report = {
+		.x   = 0, .y = 0, .z = 0, .rz = 0, .rx = 0, .ry = 0,
+		.hat = 0, .buttons = 0
+	};
+	if (!GPIO_ARROW_LEFT.get()) report.x = -4;
+	if (!GPIO_ARROW_RIGHT.get()) report.x = +4;
+	if (!GPIO_BUTTON_A.get()) report.buttons |= (1 << 0);
+	if (!GPIO_BUTTON_B.get()) report.buttons |= (1 << 1);
+	::printf("%04x\n", report.buttons);
 	if (hid_ready()) {
-		hid_gamepad_report(reportId, x, y, z, rz, rx, ry, hat, buttons);
+		hid_report(reportId, &report, sizeof(report));
 	}
 }
