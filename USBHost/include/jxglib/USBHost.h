@@ -32,6 +32,7 @@ public:
 		};
 		using Report = hid_keyboard_report_t;
 	private:
+		bool capsLockAsCtrlFlag_;
 		Report reportCaptured_;
 		struct {
 			uint8_t keycode;
@@ -46,6 +47,7 @@ public:
 	public:
 		Keyboard();
 	public:
+		Keyboard& SetCapsLockAsCtrl(bool capsLockAsCtrlFlag = true) { capsLockAsCtrlFlag_ = capsLockAsCtrlFlag; return *this; }
 		Keyboard& SetRepeatTime(uint32_t msecDelay, uint32_t msecRate);
 	public:
 		void OnReport(uint8_t devAddr, uint8_t iInstance, const hid_keyboard_report_t& report);

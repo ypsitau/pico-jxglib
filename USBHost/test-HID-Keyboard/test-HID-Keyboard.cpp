@@ -8,6 +8,7 @@ int main()
 {
 	::stdio_init_all();
 	USBHost::Initialize();
+	USBHost::GetKeyboard().SetCapsLockAsCtrl();
 	::printf("----\n");
 	for (;;) {
 		KeyData keyDataTbl[6];

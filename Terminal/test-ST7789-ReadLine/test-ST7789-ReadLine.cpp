@@ -19,7 +19,7 @@ int main()
 	display.Initialize(Display::Dir::Rotate0);
 	terminal.AttachOutput(display);
 	//terminal.AttachInput(KeyboardStdio::Instance);
-	terminal.AttachInput(USBHost::GetKeyboard());
+	terminal.AttachInput(USBHost::GetKeyboard().SetCapsLockAsCtrl());
 	terminal.SetFont(Font::shinonome16).SetSpacingRatio(1., 1)
 		.SetColor(Color::white).SetColorBg(Color::black)
 		.SetColorInEdit(Color::white).SetColorCursor(Color::white)

@@ -618,7 +618,7 @@ const USBHost::Keyboard::ConvEntry USBHost::Keyboard::convEntryTbl_106Keyboard[2
 	{0,				0,			0,			0x00}, // 0xff
 };
 
-USBHost::Keyboard::Keyboard() :
+USBHost::Keyboard::Keyboard() : capsLockAsCtrlFlag_{false},
 	repeat_{keycode: 0, modifier: 0, consumedFlag: true, msecDelay: 300, msecRate: 100}
 {
 	::memset(&reportCaptured_, 0x00, sizeof(reportCaptured_));
@@ -635,6 +635,18 @@ USBHost::Keyboard& USBHost::Keyboard::SetRepeatTime(uint32_t msecDelay, uint32_t
 void USBHost::Keyboard::OnReport(uint8_t devAddr, uint8_t iInstance, const hid_keyboard_report_t& report)
 {
 	reportCaptured_ = report;
+	if (capsLockAsCtrlFlag_) {
+		for (int i = 0; i < count_of(reportCaptured_.keycode); i++) {
+			uint8_t keycode = reportCaptured_.keycode[i];
+			if (keycode == HID_KEY_CAPS_LOCK) {
+				::memmove(&reportCaptured_.keycode[i], &reportCaptured_.keycode[i + 1],
+												count_of(reportCaptured_.keycode) - i - 1);
+				reportCaptured_.keycode[count_of(reportCaptured_.keycode) - 1] = 0;
+				reportCaptured_.modifier |= KEYBOARD_MODIFIER_LEFTCTRL;
+				break;
+			}
+		}
+	}
 	if (reportCaptured_.keycode[0] == 0) {
 		repeat_.keycode = 0;
 		repeat_.modifier = 0;
