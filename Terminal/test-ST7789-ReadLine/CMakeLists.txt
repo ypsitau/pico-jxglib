@@ -47,9 +47,9 @@ pico_enable_stdio_usb(test-ST7789-ReadLine 0)
 # Add the standard library to the build
 target_link_libraries(test-ST7789-ReadLine
 	pico_stdlib
+	jxglib_USBHost
 	jxglib_ST7789
-	jxglib_Terminal
-	jxglib_USBHost)
+	jxglib_Terminal)
 
 # Add the standard include files to the build
 target_include_directories(test-ST7789-ReadLine PRIVATE

@@ -42,11 +42,12 @@ pico_set_program_version(test-SSD1306-ReadLine "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(test-SSD1306-ReadLine 1)
-pico_enable_stdio_usb(test-SSD1306-ReadLine 1)
+pico_enable_stdio_usb(test-SSD1306-ReadLine 0)
 
 # Add the standard library to the build
 target_link_libraries(test-SSD1306-ReadLine
 	pico_stdlib
+	jxglib_USBHost
 	jxglib_SSD1306
 	jxglib_Terminal)
 
