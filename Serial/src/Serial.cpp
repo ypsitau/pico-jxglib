@@ -110,6 +110,19 @@ Editable& Serial::Terminal::Edit_MoveEnd()
 	return *this;
 }
 
+Editable& Serial::Terminal::Edit_Clear()
+{
+	if (!GetLineEditor().IsEditing()) return *this;
+	if (GetLineEditor().Clear()) {
+		VT100::RestoreCursorPosition(GetPrintable());
+		GetPrintable().Print(GetLineEditor().GetPointerBegin());
+		VT100::EraseToEndOfLine(GetPrintable());
+		VT100::RestoreCursorPosition(GetPrintable());
+		GetPrintable().RefreshScreen();
+	}
+	return *this;
+}
+
 Editable& Serial::Terminal::Edit_DeleteToHome()
 {
 	if (!GetLineEditor().IsEditing()) return *this;

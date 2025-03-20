@@ -45,7 +45,7 @@ public:
 		const char* GetPointerAtCursor() const { return buff_ + iByteCursor_; }
 		int CountFollowingChars() const { return CountFollowingChars(iByteCursor_); }
 		int CountFollowingChars(int iByte) const { return UTF8::CountChars(GetPointer(iByte)); }
-		void Clear();
+		bool Clear();
 		bool InsertChar(char ch);
 		bool DeleteChar();
 		bool Back() { return MoveBackward() && DeleteChar(); }
@@ -90,6 +90,7 @@ public:
 	virtual Editable& Edit_MoveBackward() = 0;
 	virtual Editable& Edit_MoveHome() = 0;
 	virtual Editable& Edit_MoveEnd() = 0;
+	virtual Editable& Edit_Clear() = 0;
 	virtual Editable& Edit_DeleteToHome() = 0;
 	virtual Editable& Edit_DeleteToEnd() = 0;
 	virtual Editable& Edit_MoveHistoryPrev() = 0;

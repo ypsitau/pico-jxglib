@@ -141,6 +141,7 @@ public:
 		virtual Editable& Edit_MoveBackward() override;
 		virtual Editable& Edit_MoveHome() override;
 		virtual Editable& Edit_MoveEnd() override;
+		virtual Editable& Edit_Clear() override;
 		virtual Editable& Edit_DeleteToHome() override;
 		virtual Editable& Edit_DeleteToEnd() override;
 		virtual Editable& Edit_MoveHistoryPrev() override;

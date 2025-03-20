@@ -49,6 +49,7 @@ public:
 		virtual Editable& Edit_MoveBackward();
 		virtual Editable& Edit_MoveHome();
 		virtual Editable& Edit_MoveEnd();
+		virtual Editable& Edit_Clear();
 		virtual Editable& Edit_DeleteToHome();
 		virtual Editable& Edit_DeleteToEnd();
 		virtual Editable& Edit_MoveHistoryPrev();

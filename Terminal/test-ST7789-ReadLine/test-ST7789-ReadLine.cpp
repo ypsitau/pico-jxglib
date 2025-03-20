@@ -11,8 +11,7 @@ Display::Terminal terminal;
 int main()
 {
 	::stdio_init_all();
-	USBHost host;
-	host.Initialize();
+	USBHost::Initialize();
 	::spi_init(spi1, 125 * 1000 * 1000);
 	GPIO14.set_function_SPI1_SCK();
 	GPIO15.set_function_SPI1_TX();

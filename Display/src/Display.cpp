@@ -464,6 +464,18 @@ Editable& Display::Terminal::Edit_MoveEnd()
 	return *this;
 }
 
+Editable& Display::Terminal::Edit_Clear()
+{
+	if (!GetLineEditor().IsEditing()) return *this;
+	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
+	if (GetLineEditor().Clear()) {
+		EraseCursor(iByteCursorPrev);
+		DrawEditorArea();
+		DrawCursor(GetLineEditor().GetIByteCursor());
+	}
+	return *this;
+}
+
 Editable& Display::Terminal::Edit_DeleteToHome()
 {
 	if (!GetLineEditor().IsEditing()) return *this;

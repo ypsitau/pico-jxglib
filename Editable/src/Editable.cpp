@@ -34,29 +34,31 @@ bool Editable::ProcessKeyData(const KeyData& keyData)
 {
 	if (keyData.IsKeyCode()) {
 		switch (keyData.GetKeyCode()) {
-		case VK_RETURN:	Edit_Finish('\n');		return true;
-		case VK_DELETE:	Edit_DeleteChar();		return true;
-		case VK_BACK:	Edit_Back();			return true;
-		case VK_LEFT:	Edit_MoveBackward();	return true;
-		case VK_RIGHT:	Edit_MoveForward();		return true;
-		case VK_UP:		Edit_MoveHistoryPrev();	return true;
-		case VK_DOWN:	Edit_MoveHistoryNext();	return true;
-		case VK_HOME:	Edit_MoveHome();		return true;
-		case VK_END:	Edit_MoveEnd();			return true;
+		//case VK_ESCAPE:	Edit_Clear();			return true;
+		case VK_RETURN:		Edit_Finish('\n');		return true;
+		case VK_DELETE:		Edit_DeleteChar();		return true;
+		case VK_BACK:		Edit_Back();			return true;
+		case VK_LEFT:		Edit_MoveBackward();	return true;
+		case VK_RIGHT:		Edit_MoveForward();		return true;
+		case VK_UP:			Edit_MoveHistoryPrev();	return true;
+		case VK_DOWN:		Edit_MoveHistoryNext();	return true;
+		case VK_HOME:		Edit_MoveHome();		return true;
+		case VK_END:		Edit_MoveEnd();			return true;
 		default: break;
 		}
 	} else if (keyData.GetCharCode() < 0x20) {
-		switch (keyData.GetCharCode() + '@') {
-		case 'A':		Edit_MoveHome();		return true;
-		case 'B':		Edit_MoveBackward();	return true;
-		case 'D':		Edit_DeleteChar();		return true;
-		case 'E':		Edit_MoveEnd();			return true;
-		case 'F':		Edit_MoveForward();		return true;
-		case 'J':		Edit_Finish('\n');		return true;
-		case 'K':		Edit_DeleteToEnd();		return true;
-		case 'N':		Edit_MoveHistoryNext();	return true;
-		case 'P':		Edit_MoveHistoryPrev();	return true;
-		case 'U':		Edit_DeleteToHome();	return true;
+		switch (keyData.GetCharCode()) {
+		//case '\x1b':		Edit_Clear();			return true;
+		case 'A' - '@':		Edit_MoveHome();		return true;
+		case 'B' - '@':		Edit_MoveBackward();	return true;
+		case 'D' - '@':		Edit_DeleteChar();		return true;
+		case 'E' - '@':		Edit_MoveEnd();			return true;
+		case 'F' - '@':		Edit_MoveForward();		return true;
+		case 'J' - '@':		Edit_Finish('\n');		return true;
+		case 'K' - '@':		Edit_DeleteToEnd();		return true;
+		case 'N' - '@':		Edit_MoveHistoryNext();	return true;
+		case 'P' - '@':		Edit_MoveHistoryPrev();	return true;
+		case 'U' - '@':		Edit_DeleteToHome();	return true;
 		default: break;
 		}
 	} else {
@@ -92,10 +94,14 @@ void Editable::LineEditor::Finish()
 	editingFlag_ = false;
 }
 
-void Editable::LineEditor::Clear()
+bool Editable::LineEditor::Clear()
 {
-	iByteCursor_ = 0;
-	buff_[0] = '\0';
+	if (buff_[0]) {
+		iByteCursor_ = 0;
+		buff_[0] = '\0';
+		return true;
+	}
+	return false;
 }
 
 bool Editable::LineEditor::InsertChar(char ch)
