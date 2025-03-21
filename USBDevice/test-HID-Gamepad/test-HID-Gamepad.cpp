@@ -4,6 +4,7 @@
 #include "pico/stdlib.h"
 #include "jxglib/GPIO.h"
 #include "jxglib/USBDevice.h"
+#include "jxglib/PackedNumber.h"
 
 using namespace jxglib;
 
@@ -16,13 +17,58 @@ auto& GPIO_BUTTON_B		= GPIO21;
 
 //-----------------------------------------------------------------------------
 // Gamepad
+// https://www.usb.org/document-library/hid-descriptor-tool
 //-----------------------------------------------------------------------------
-class Gamepad : public USBDevice::Gamepad {
+class Gamepad : public USBDevice::HIDCustom {
 public:
-	Gamepad(USBDevice& device) : USBDevice::Gamepad(device, "RaspberryPi Pico Gamepad Interface", 0x81) {}
+	struct Report {
+		uint8_t buttons;
+		int16_t rx;
+		int16_t ry;
+	} __attribute__((__packed__));
+private:
+	static const uint8_t reportDesc_[];
+public:
+	Gamepad(USBDevice& device);
 public:
 	virtual void OnTick() override;
 };
+
+const uint8_t Gamepad::reportDesc_[] = {
+    0x05, 0x01,                    // USAGE_PAGE (Generic Desktop)
+    0x09, 0x05,                    // USAGE (Game Pad)
+    0xa1, 0x01,                    // COLLECTION (Application)
+    0x09, 0x01,                    //   USAGE (Pointer)
+    0xa1, 0x00,                    //   COLLECTION (Physical)
+	//
+	0x05, 0x09,                    //     USAGE_PAGE (Button)
+    0x19, 0x01,                    //     USAGE_MINIMUM (Button 1)
+    0x29, 0x02,                    //     USAGE_MAXIMUM (Button 2)
+    0x15, 0x00,                    //     LOGICAL_MINIMUM (0)
+    0x25, 0x01,                    //     LOGICAL_MAXIMUM (1)
+    0x75, 0x01,                    //     REPORT_SIZE (1)
+    0x95, 0x02,                    //     REPORT_COUNT (2)
+    0x81, 0x02,                    //     INPUT (Data,Var,Abs)
+	//
+    0x75, 0x06,                    //     REPORT_SIZE (6)
+    0x95, 0x01,                    //     REPORT_COUNT (1)
+    0x81, 0x03,                    //     INPUT (Cnst,Var,Abs)
+	//
+    0x05, 0x01,                    //     USAGE_PAGE (Generic Desktop)
+    0x09, 0x33,                    //     USAGE (rX)
+    0x09, 0x34,                    //     USAGE (rY)
+    0x16, 0x01, 0x80,              //     LOGICAL_MINIMUM (-32767)
+    0x26, 0xff, 0x7f,              //     LOGICAL_MAXIMUM (32767)
+    0x75, 0x10,                    //     REPORT_SIZE (16) ... must be 16 for Windows
+	0x95, 0x02,                    //     REPORT_COUNT (2)
+    0x81, 0x06,                    //     INPUT (Data,Var,Rel)
+	//
+	0xc0,                          //   END_COLLECTION
+    0xc0                           // END_COLLECTION	
+};
+
+Gamepad::Gamepad(USBDevice& device) : USBDevice::HIDCustom(device, "RaspberryPi Pico Gamepad Interface",
+							reportDesc_, sizeof(reportDesc_), 0x81, 10) {}
 
 //-----------------------------------------------------------------------------
 // main
@@ -59,15 +105,14 @@ int main(void)
 void Gamepad::OnTick()
 {
 	uint8_t reportId = 0;
-	hid_gamepad_report_t report = {
-		.x   = 0, .y = 0, .z = 0, .rz = 0, .rx = 0, .ry = 0,
-		.hat = 0, .buttons = 0
-	};
-	if (!GPIO_ARROW_LEFT.get()) report.x = -4;
-	if (!GPIO_ARROW_RIGHT.get()) report.x = +4;
+	Report report;
+	::memset(&report, 0x00, sizeof(report));
+	if (!GPIO_ARROW_LEFT.get()) report.rx = -1;
+	if (!GPIO_ARROW_RIGHT.get()) report.rx = +1;
+	if (!GPIO_ARROW_UP.get()) report.ry = -1;
+	if (!GPIO_ARROW_DOWN.get()) report.ry = +1;
 	if (!GPIO_BUTTON_A.get()) report.buttons |= (1 << 0);
 	if (!GPIO_BUTTON_B.get()) report.buttons |= (1 << 1);
-	::printf("%04x\n", report.buttons);
 	if (hid_ready()) {
 		hid_report(reportId, &report, sizeof(report));
 	}

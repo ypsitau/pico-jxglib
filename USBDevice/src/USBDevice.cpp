@@ -274,14 +274,13 @@ USBDevice::Mouse::Mouse(USBDevice& device, const char* str, uint8_t endpInterrup
 }
 
 //-----------------------------------------------------------------------------
-// USBDevice::Gamepad
+// USBDevice::HIDCustom
 //-----------------------------------------------------------------------------
 namespace jxglib {
 
-const uint8_t USBDevice::Gamepad::reportDesc_[] = { TUD_HID_REPORT_DESC_GAMEPAD() };
-
-USBDevice::Gamepad::Gamepad(USBDevice& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval) :
-	HID(device, pollingInterval, str, HID_ITF_PROTOCOL_NONE, reportDesc_, sizeof(reportDesc_), endpInterrupt, pollingInterval)
+USBDevice::HIDCustom::HIDCustom(USBDevice& device, const char* str, const uint8_t* reportDesc,
+					uint8_t bytesReportDesc, uint8_t endpInterrupt, uint8_t pollingInterval) :
+	HID(device, pollingInterval, str, HID_ITF_PROTOCOL_NONE, reportDesc, bytesReportDesc, endpInterrupt, pollingInterval)
 {
 }
 		

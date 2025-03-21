@@ -79,11 +79,10 @@ public:
 	public:
 		Mouse(USBDevice& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
 	};
-	class Gamepad : public HID {
-	private:
-		static const uint8_t reportDesc_[];
+	class HIDCustom : public HID {
 	public:
-		Gamepad(USBDevice& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
+		HIDCustom(USBDevice& device, const char* str, const uint8_t* reportDesc,
+						uint8_t bytesReportDesc, uint8_t endpInterrupt, uint8_t pollingInterval);
 	};
 #endif
 #if CFG_TUD_CDC > 0
