@@ -584,14 +584,14 @@ const USBHost::Keyboard::ConvEntry USBHost::Keyboard::convEntryTbl_106Keyboard[2
 	{0,				0,			0,			0x00}, // 0xdd
 	{0,				0,			0,			0x00}, // 0xde
 	{0,				0,			0,			0x00}, // 0xdf
-	{0,				0,			0,			0x00}, // 0xe0
-	{0,				0,			0,			0x00}, // 0xe1
-	{0,				0,			0,			0x00}, // 0xe2
-	{0,				0,			0,			0x00}, // 0xe3
-	{0,				0,			0,			0x00}, // 0xe4
-	{0,				0,			0,			0x00}, // 0xe5
-	{0,				0,			0,			0x00}, // 0xe6
-	{0,				0,			0,			0x00}, // 0xe7
+	{VK_LCONTROL,	0,			0,			0x00}, // 0xe0
+	{VK_LSHIFT,		0,			0,			0x00}, // 0xe1
+	{VK_LMENU,		0,			0,			0x00}, // 0xe2
+	{VK_LWIN,		0,			0,			0x00}, // 0xe3
+	{VK_RCONTROL,	0,			0,			0x00}, // 0xe4
+	{VK_RSHIFT,		0,			0,			0x00}, // 0xe5
+	{VK_RMENU,		0,			0,			0x00}, // 0xe6
+	{VK_RWIN,		0,			0,			0x00}, // 0xe7
 	{0,				0,			0,			0x00}, // 0xe8
 	{0,				0,			0,			0x00}, // 0xe9
 	{0,				0,			0,			0x00}, // 0xea
