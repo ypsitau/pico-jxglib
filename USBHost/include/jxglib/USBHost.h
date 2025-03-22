@@ -44,6 +44,7 @@ public:
 	public:
 		static const ConvEntry convEntryTbl_101Keyboard[256];
 		static const ConvEntry convEntryTbl_106Keyboard[256];
+		static const uint8_t virtualKeyCodeTbl[256];
 	public:
 		Keyboard();
 	public:
