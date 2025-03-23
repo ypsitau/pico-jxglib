@@ -19,9 +19,12 @@ public:
 		char charCode;
 		char charCodeShift;
 	};
+private:
+	bool nonUSFlag_;
 public:
-	KeyLayout() {}
+	KeyLayout(bool nonUSFlag) : nonUSFlag_{nonUSFlag} {}
 public:
+	bool IsNonUS() const { return nonUSFlag_; }
 	KeyData CreateKeyData(uint8_t keyCode, uint8_t modifier) const;
 public:
 	virtual const CharEntry* GetCharEntryTbl() const = 0;
@@ -53,6 +56,7 @@ class KeyLayout_101 : public KeyLayout {
 public:
 	static const KeyLayout_101 Instance;
 public:
+	KeyLayout_101() : KeyLayout(false) {}
 	virtual const CharEntry* GetCharEntryTbl() const;
 };
 
@@ -60,11 +64,12 @@ public:
 // KeyLayout_109
 //------------------------------------------------------------------------------
 class KeyLayout_109 : public KeyLayout {
-	public:
-		static const KeyLayout_109 Instance;
-	public:
-		virtual const CharEntry* GetCharEntryTbl() const;
-	};
+public:
+	static const KeyLayout_109 Instance;
+public:
+	KeyLayout_109() : KeyLayout(true) {}
+	virtual const CharEntry* GetCharEntryTbl() const;
+};
 	
 	//------------------------------------------------------------------------------
 // KeyboardDumb

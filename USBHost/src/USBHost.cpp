@@ -147,14 +147,14 @@ const USBHost::Keyboard::ReportIdToKeyCode USBHost::Keyboard::reportIdToKeyCodeT
 	{ VK_TAB,			VK_TAB,			},	// 0x2b
 	{ VK_SPACE,			VK_SPACE,		},	// 0x2c
 	{ VK_OEM_MINUS,		VK_OEM_MINUS,	},	// 0x2d
-	{ VK_OEM_7,			VK_OEM_7,		},	// 0x2e
-	{ VK_OEM_3,			VK_OEM_3,		},	// 0x2f
-	{ VK_OEM_4,			VK_OEM_4,		},	// 0x30
+	{ VK_OEM_PLUS,		VK_OEM_7,		},	// 0x2e
+	{ VK_OEM_4,			VK_OEM_3,		},	// 0x2f
+	{ VK_OEM_6,			VK_OEM_4,		},	// 0x30
 	{ VK_OEM_5,			VK_OEM_5,		},	// 0x31
 	{ VK_OEM_6,			VK_OEM_6,		},	// 0x32
-	{ VK_OEM_PLUS,		VK_OEM_PLUS,	},	// 0x33
-	{ VK_OEM_1,			VK_OEM_1,		},	// 0x34
-	{ VK_OEM_3,			VK_OEM_3,		},	// 0x35
+	{ VK_OEM_1,			VK_OEM_PLUS,	},	// 0x33
+	{ VK_OEM_7,			VK_OEM_1,		},	// 0x34
+	{ VK_OEM_3,			VK_KANJI,		},	// 0x35
 	{ VK_OEM_COMMA,		VK_OEM_COMMA,	},	// 0x36
 	{ VK_OEM_PERIOD,	VK_OEM_PERIOD,	},	// 0x37
 	{ VK_OEM_2,			VK_OEM_2,		},	// 0x38
@@ -378,7 +378,8 @@ void USBHost::Keyboard::OnReport(uint8_t devAddr, uint8_t iInstance, const hid_k
 	::memset(&reportCaptured_, 0x00, sizeof(reportCaptured_));
 	reportCaptured_.modifier = report.modifier;
 	for (int iSrc = 0, iDst = 0; iSrc < count_of(report.keycode); iSrc++) {
-		uint8_t keyCode = reportIdToKeyCodeTbl[report.keycode[iSrc]].keyCodeUS;
+		const ReportIdToKeyCode& reportIdToKeyCode = reportIdToKeyCodeTbl[report.keycode[iSrc]];
+		uint8_t keyCode = GetKeyLayout().IsNonUS()? reportIdToKeyCode.keyCodeNonUS : reportIdToKeyCode.keyCodeUS;
 		if (capsLockAsCtrlFlag_ && keyCode == VK_CAPITAL) {
 			reportCaptured_.modifier |= KEYBOARD_MODIFIER_LEFTCTRL;
 		} else {
