@@ -30,21 +30,22 @@ public:
 			uint8_t charCodeShift;
 			uint8_t charCodeCtrl;
 		};
-		using Report = hid_keyboard_report_t;
+		struct Report {
+			uint8_t modifier;
+			uint8_t keyCodeTbl[6];	
+		};
 	private:
 		bool capsLockAsCtrlFlag_;
 		Report reportCaptured_;
 		struct {
-			uint8_t keycode;
 			uint8_t modifier;
+			uint8_t keyCode;
 			bool consumedFlag;
 			uint32_t msecDelay;
 			uint32_t msecRate;
 		} repeat_;
 	public:
-		static const ConvEntry convEntryTbl_101Keyboard[256];
-		static const ConvEntry convEntryTbl_106Keyboard[256];
-		static const uint8_t virtualKeyCodeTbl[256];
+		static const uint8_t reportIdToVirtualKeyCodeTbl[256];
 	public:
 		Keyboard();
 	public:
@@ -55,12 +56,11 @@ public:
 	public:
 		// virtual function of jxglib::Keyboard
 		virtual bool GetKeyDataNB(KeyData* pKeyData) override;
+		virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax) override;
 		virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax) override;
 	public:
 		// virtual function of Tickable
 		virtual void OnTick() override;
-	public:
-		static KeyData CreateKeyData(uint8_t keycode, uint8_t modifier);
 	};
 	class Mouse : public jxglib::Mouse {
 	private:

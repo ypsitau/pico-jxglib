@@ -11,17 +11,49 @@
 namespace jxglib {
 
 //------------------------------------------------------------------------------
+// KeyLayout
+//------------------------------------------------------------------------------
+class KeyLayout {
+public:
+	struct CharEntry {
+		char charCode;
+		char charCodeShift;
+	};
+public:
+	KeyLayout() {}
+public:
+	KeyData CreateKeyData(uint8_t keyCode, uint8_t modifier) const;
+public:
+	virtual const CharEntry* GetCharEntryTbl() const = 0;
+	virtual uint8_t ConvKeyCodeToCharCode(uint8_t keyCode, uint8_t modifier) const;
+};
+
+//------------------------------------------------------------------------------
 // Keyboard
 //------------------------------------------------------------------------------
 class Keyboard {
+private:
+	const KeyLayout* pKeyLayout_;
 public:
-	Keyboard() {}
+	Keyboard();
 public:
+	const KeyLayout& GetKeyLayout() const { return *pKeyLayout_; }
 	char GetChar();
-	uint8_t GetKeyCode();
 public:
+	virtual uint8_t GetModifier() { return 0; }
 	virtual bool GetKeyDataNB(KeyData* pKeyData) = 0;
+	virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax);
 	virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) = 0;
+};
+
+//------------------------------------------------------------------------------
+// KeyLayout_109
+//------------------------------------------------------------------------------
+class KeyLayout_109 : public KeyLayout {
+public:
+	static const KeyLayout_109 Instance;
+public:
+	virtual const CharEntry* GetCharEntryTbl() const;
 };
 
 //------------------------------------------------------------------------------
