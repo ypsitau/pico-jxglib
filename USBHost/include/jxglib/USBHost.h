@@ -24,11 +24,9 @@ public:
 	};
 	class Keyboard : public jxglib::Keyboard, public Tickable {
 	public:
-		struct ConvEntry {
-			uint8_t keyCode;
-			uint8_t charCode;
-			uint8_t charCodeShift;
-			uint8_t charCodeCtrl;
+		struct ReportIdToKeyCode {
+			uint8_t keyCodeUS;
+			uint8_t keyCodeNonUS;
 		};
 		struct Report {
 			uint8_t modifier;
@@ -45,7 +43,7 @@ public:
 			uint32_t msecRate;
 		} repeat_;
 	public:
-		static const uint8_t reportIdToVirtualKeyCodeTbl[256];
+		static const ReportIdToKeyCode reportIdToKeyCodeTbl[256];
 	public:
 		Keyboard();
 	public:

@@ -47,16 +47,26 @@ public:
 };
 
 //------------------------------------------------------------------------------
-// KeyLayout_109
+// KeyLayout_101
 //------------------------------------------------------------------------------
-class KeyLayout_109 : public KeyLayout {
+class KeyLayout_101 : public KeyLayout {
 public:
-	static const KeyLayout_109 Instance;
+	static const KeyLayout_101 Instance;
 public:
 	virtual const CharEntry* GetCharEntryTbl() const;
 };
 
 //------------------------------------------------------------------------------
+// KeyLayout_109
+//------------------------------------------------------------------------------
+class KeyLayout_109 : public KeyLayout {
+	public:
+		static const KeyLayout_109 Instance;
+	public:
+		virtual const CharEntry* GetCharEntryTbl() const;
+	};
+	
+	//------------------------------------------------------------------------------
 // KeyboardDumb
 //------------------------------------------------------------------------------
 class KeyboardDumb : public Keyboard {
