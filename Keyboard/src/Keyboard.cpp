@@ -26,7 +26,7 @@ uint8_t KeyLayout::ConvKeyCodeToCharCode(uint8_t keyCode, uint8_t modifier) cons
 //------------------------------------------------------------------------------
 // Keyboard
 //------------------------------------------------------------------------------
-Keyboard::Keyboard() : pKeyLayout_{&KeyLayout_109::Instance}
+Keyboard::Keyboard() : pKeyLayout_{&KeyLayout_106::Instance}
 {}
 
 char Keyboard::GetChar()
@@ -317,11 +317,11 @@ const KeyLayout::CharEntry* KeyLayout_101::GetCharEntryTbl() const
 }
 
 //------------------------------------------------------------------------------
-// KeyLayout_109
+// KeyLayout_106
 //------------------------------------------------------------------------------
-const KeyLayout_109 KeyLayout_109::Instance;
+const KeyLayout_106 KeyLayout_106::Instance;
 
-const KeyLayout::CharEntry* KeyLayout_109::GetCharEntryTbl() const
+const KeyLayout::CharEntry* KeyLayout_106::GetCharEntryTbl() const
 {
 	static const CharEntry charEntryTbl[] = {
 		{0,			0		},	// 0x00			

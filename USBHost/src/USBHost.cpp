@@ -366,7 +366,13 @@ USBHost::Keyboard::Keyboard() : capsLockAsCtrlFlag_{false},
 	Suspend();
 }
 
-USBHost::Keyboard& USBHost::Keyboard::SetRepeatTime(uint32_t msecDelay, uint32_t msecRate)
+Keyboard& USBHost::Keyboard::SetCapsLockAsCtrl(bool capsLockAsCtrlFlag)
+{
+	capsLockAsCtrlFlag_ = capsLockAsCtrlFlag;
+	return *this;
+}
+
+Keyboard& USBHost::Keyboard::SetRepeatTime(uint32_t msecDelay, uint32_t msecRate)
 {
 	repeat_.msecDelay = msecDelay;
 	repeat_.msecRate = msecRate;

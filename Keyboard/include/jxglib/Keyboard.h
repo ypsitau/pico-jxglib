@@ -40,9 +40,12 @@ private:
 public:
 	Keyboard();
 public:
+	Keyboard& SetKeyLayout(const KeyLayout& keyLayout) { pKeyLayout_ = &keyLayout; return *this; }
 	const KeyLayout& GetKeyLayout() const { return *pKeyLayout_; }
 	char GetChar();
 public:
+	virtual Keyboard& SetCapsLockAsCtrl(bool capsLockAsCtrlFlag = true) { return *this; }
+	virtual Keyboard& SetRepeatTime(uint32_t msecDelay, uint32_t msecRate) { return *this; }
 	virtual uint8_t GetModifier() { return 0; }
 	virtual bool GetKeyDataNB(KeyData* pKeyData) = 0;
 	virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax);
@@ -61,13 +64,13 @@ public:
 };
 
 //------------------------------------------------------------------------------
-// KeyLayout_109
+// KeyLayout_106
 //------------------------------------------------------------------------------
-class KeyLayout_109 : public KeyLayout {
+class KeyLayout_106 : public KeyLayout {
 public:
-	static const KeyLayout_109 Instance;
+	static const KeyLayout_106 Instance;
 public:
-	KeyLayout_109() : KeyLayout(true) {}
+	KeyLayout_106() : KeyLayout(true) {}
 	virtual const CharEntry* GetCharEntryTbl() const;
 };
 	

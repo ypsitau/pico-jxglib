@@ -47,12 +47,11 @@ public:
 	public:
 		Keyboard();
 	public:
-		Keyboard& SetCapsLockAsCtrl(bool capsLockAsCtrlFlag = true) { capsLockAsCtrlFlag_ = capsLockAsCtrlFlag; return *this; }
-		Keyboard& SetRepeatTime(uint32_t msecDelay, uint32_t msecRate);
-	public:
 		void OnReport(uint8_t devAddr, uint8_t iInstance, const hid_keyboard_report_t& report);
 	public:
 		// virtual function of jxglib::Keyboard
+		virtual jxglib::Keyboard& SetCapsLockAsCtrl(bool capsLockAsCtrlFlag = true) override;
+		virtual jxglib::Keyboard& SetRepeatTime(uint32_t msecDelay, uint32_t msecRate) override;
 		virtual bool GetKeyDataNB(KeyData* pKeyData) override;
 		virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax) override;
 		virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax) override;
