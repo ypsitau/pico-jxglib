@@ -46,47 +46,221 @@ static struct {
 	tuh_hid_report_info_t report_info[MAX_REPORT];
 } hid_info[CFG_TUH_HID];
 
-struct Item {
-	static const uint8_t Usage				= 0x10 | 1;
-	static const uint8_t UsagePage			= 0x04 | 1;
-	static const uint8_t UsageMinimum		= 0x18 | 1;
-	static const uint8_t UsageMaximum		= 0x28 | 1;
-	static const uint8_t DesignatorIndex	= 0x38 | 1;
-	static const uint8_t DesignatorMinimum	= 0x48 | 1;
-	static const uint8_t DesignatorMaximum	= 0x58 | 1;
-	static const uint8_t StringIndex		= 0x68 | 1;
-	static const uint8_t StringMaximum		= 0x78 | 1;
-	static const uint8_t StringMinimum		= 0x88 | 1;
-	static const uint8_t Collection			= 0xa0 | 1;
-	static const uint8_t EndCollection		= 0xc0 | 0;
-	static const uint8_t Input				= 0x80 | 1;
-	static const uint8_t Output				= 0x90 | 1;
-	static const uint8_t Feature			= 0xb0 | 1;
-	static const uint8_t LogicalMinimum		= 0x14 | 1;
-	static const uint8_t LogicalMaximum		= 0x24 | 1;
-	static const uint8_t PhysicalMinimum	= 0x34 | 1;
-	static const uint8_t PhysicalMaximum	= 0x44 | 1;
-	static const uint8_t UnitExponent		= 0x54 | 1;
-	static const uint8_t Unit				= 0x64 | 1;
-	static const uint8_t ReportSize			= 0x74 | 1;
-	static const uint8_t ReortId			= 0x84 | 1;
-	static const uint8_t ReportCount		= 0x94 | 1;
-	static const uint8_t Push				= 0xa4 | 0;
-	static const uint8_t Pop				= 0xb4 | 0;
-	static const uint8_t Delimeter			= 0xa8 | 1;
+class Item {
 };
+
+// 6.2.2.4 Main Items
+class Item_Input : public Item {
+public:
+	static const uint8_t Type = 0x80;
+};
+
+class Item_Output : public Item {
+public:
+	static const uint8_t Type = 0x90;
+};
+
+class Item_Feature : public Item {
+public:
+	static const uint8_t Type = 0xb0;
+};
+
+class Item_Collection : public Item {
+public:
+	static const uint8_t Type = 0xa0;
+};
+
+class Item_EndCollection : public Item {
+public:
+	static const uint8_t Type = 0xc0;
+};
+
+// 6.2.2.7 Global Items
+class Item_UsagePage : public Item {
+public:
+	static const uint8_t Type = 0x04;
+};
+
+class Item_LogicalMinimum : public Item {
+public:
+	static const uint8_t Type = 0x14;
+};
+
+class Item_LogicalMaximum : public Item {
+public:
+	static const uint8_t Type = 0x24;
+};
+
+class Item_PhysicalMinimum : public Item {
+public:
+	static const uint8_t Type = 0x34;
+};
+
+class Item_PhysicalMaximum : public Item {
+public:
+	static const uint8_t Type = 0x44;
+};
+
+class Item_UnitExponent : public Item {
+public:
+	static const uint8_t Type = 0x54;
+};
+
+class Item_Unit : public Item {
+public:
+	static const uint8_t Type = 0x64;
+};
+
+class Item_ReportSize : public Item {
+public:
+	static const uint8_t Type = 0x74;
+};
+
+class Item_ReortID : public Item {
+public:
+	static const uint8_t Type = 0x84;
+};
+
+class Item_ReportCount : public Item {
+public:
+	static const uint8_t Type = 0x94;
+};
+
+class Item_Push : public Item {
+public:
+	static const uint8_t Type = 0xa4;
+};
+
+class Item_Pop : public Item {
+public:
+	static const uint8_t Type = 0xb4;
+};
+
+// 6.2.2.8 Local Items
+class Item_Usage : public Item {
+public:
+	static const uint8_t Type = 0x08;
+};
+
+class Item_UsageMinimum : public Item {
+public:
+	static const uint8_t Type = 0x18;
+};
+
+class Item_UsageMaximum : public Item {
+public:
+	static const uint8_t Type = 0x28;
+};
+
+class Item_DesignatorIndex : public Item {
+public:
+	static const uint8_t Type = 0x38;
+};
+
+class Item_DesignatorMinimum : public Item {
+public:
+	static const uint8_t Type = 0x48;
+};
+
+class Item_DesignatorMaximum : public Item {
+public:
+	static const uint8_t Type = 0x58;
+};
+
+class Item_StringIndex : public Item {
+public:
+	static const uint8_t Type = 0x78;
+};
+
+class Item_StringMaximum : public Item {
+public:
+	static const uint8_t Type = 0x88;
+};
+
+class Item_StringMinimum : public Item {
+public:
+	static const uint8_t Type = 0x98;
+};
+
+class Item_Delimeter : public Item {
+public:
+	static const uint8_t Type = 0xa8;
+};
+
+const char* GetItemTypeName(uint8_t itemType)
+{
+	static const struct {
+		uint8_t itemType;
+		const char* name;
+	} tbl[] = {
+		// 6.2.2.4 Main Items
+		{ Item_Input::Type,				"Input"				},
+		{ Item_Output::Type,			"Output"			},
+		{ Item_Feature::Type,			"Feature"			},
+		{ Item_Collection::Type,		"Collection"		},
+		{ Item_EndCollection::Type,		"EndCollection"		},
+		// 6.2.2.7 Global Items
+		{ Item_UsagePage::Type,			"UsagePage"			},
+		{ Item_LogicalMinimum::Type,	"LogicalMinimum"	},
+		{ Item_LogicalMaximum::Type,	"LogicalMaximum"	},
+		{ Item_PhysicalMinimum::Type,	"PhysicalMinimum"	},
+		{ Item_PhysicalMaximum::Type,	"PhysicalMaximum"	},
+		{ Item_UnitExponent::Type,		"UnitExponent"		},
+		{ Item_Unit::Type,				"Unit"				},
+		{ Item_ReportSize::Type,		"ReportSize"		},
+		{ Item_ReortID::Type,			"ReortID"			},
+		{ Item_ReportCount::Type,		"ReportCount"		},
+		{ Item_Push::Type,				"Push"				},
+		{ Item_Pop::Type,				"Pop"				},
+		// 6.2.2.8 Local Items
+		{ Item_Usage::Type,				"Usage"				},
+		{ Item_UsageMinimum::Type,		"UsageMinimum"		},
+		{ Item_UsageMaximum::Type,		"UsageMaximum"		},
+		{ Item_DesignatorIndex::Type,	"DesignatorIndex"	},
+		{ Item_DesignatorMinimum::Type,	"DesignatorMinimum"	},
+		{ Item_DesignatorMaximum::Type,	"DesignatorMaximum"	},
+		{ Item_StringIndex::Type,		"StringIndex"		},
+		{ Item_StringMaximum::Type,		"StringMaximum"		},
+		{ Item_StringMinimum::Type,		"StringMinimum"		},
+		{ Item_Delimeter::Type,			"Delimeter"			},
+	};
+	for (int i = 0; i < count_of(tbl); i++) {
+		if (tbl[i].itemType == itemType) return tbl[i].name;
+	}
+	return "unknown";
+}
 
 void PrintReportDescriptor(const uint8_t* descReport, uint16_t descLen)
 {
 	enum class Stat {
-		Begin,
-	} stat = Stat::Begin;
+		Prefix, Data,
+	} stat = Stat::Prefix;
 	Dump(descReport, descLen);
+	int iData = 0;
+	int nData = 0;
+	uint8_t itemType = 0x00;
+	uint8_t data[4];
 	for (uint16_t i = 0; i < descLen; i++) {
-		uint8_t data = descReport[i];
+		uint8_t src = descReport[i];
 		switch (stat) {
-		case Stat::Begin: {
-			
+		case Stat::Prefix: {
+			itemType = src & 0xfc;
+			nData = src & 0x03;
+			if (nData == 3) nData = 4;
+			if (nData == 0) {
+				::printf("%02x:%s\n", itemType, GetItemTypeName(itemType));
+			} else {
+				iData = 0;
+				stat = Stat::Data;
+			}
+			break;
+		}
+		case Stat::Data: {
+			data[iData++] = src;
+			if (iData == nData) {
+				::printf("%02x:%s\n", itemType, GetItemTypeName(itemType));
+				stat = Stat::Prefix;
+			}
 			break;
 		}
 		default: break;
