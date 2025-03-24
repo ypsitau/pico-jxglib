@@ -19,11 +19,11 @@ int main()
 				const KeyData& keyData = keyDataTbl[i];
 				if (i > 0) ::printf(" ");
 				if (keyData.IsKeyCode()) {
-					::printf("VK_%s", keyData.GetKeyCodeName());
-				} else if (keyData.GetCharRaw() <= 'Z' - '@') {
-					::printf("Ctrl+%c", keyData.GetCharRaw() + '@');
+					::printf("VK_%s", GetKeyCodeName(keyData.GetKeyCode()));
+				} else if (keyData.GetChar() <= 'Z' - '@') {
+					::printf("Ctrl+%c", keyData.GetChar() + '@');
 				} else {
-					::printf("'%c'", keyData.GetCharRaw());
+					::printf("'%c'", keyData.GetChar());
 				}
 			}
 			::printf("\n");

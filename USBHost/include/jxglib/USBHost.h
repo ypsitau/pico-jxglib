@@ -52,9 +52,9 @@ public:
 		// virtual function of jxglib::Keyboard
 		virtual jxglib::Keyboard& SetCapsLockAsCtrl(bool capsLockAsCtrlFlag = true) override;
 		virtual jxglib::Keyboard& SetRepeatTime(uint32_t msecDelay, uint32_t msecRate) override;
+		virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1) override;
+		virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) override;
 		virtual bool GetKeyDataNB(KeyData* pKeyData) override;
-		virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax) override;
-		virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax) override;
 	public:
 		// virtual function of Tickable
 		virtual void OnTick() override;

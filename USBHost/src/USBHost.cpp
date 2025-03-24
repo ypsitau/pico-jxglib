@@ -46,6 +46,54 @@ static struct {
 	tuh_hid_report_info_t report_info[MAX_REPORT];
 } hid_info[CFG_TUH_HID];
 
+struct Item {
+	static const uint8_t Usage				= 0x10 | 1;
+	static const uint8_t UsagePage			= 0x04 | 1;
+	static const uint8_t UsageMinimum		= 0x18 | 1;
+	static const uint8_t UsageMaximum		= 0x28 | 1;
+	static const uint8_t DesignatorIndex	= 0x38 | 1;
+	static const uint8_t DesignatorMinimum	= 0x48 | 1;
+	static const uint8_t DesignatorMaximum	= 0x58 | 1;
+	static const uint8_t StringIndex		= 0x68 | 1;
+	static const uint8_t StringMaximum		= 0x78 | 1;
+	static const uint8_t StringMinimum		= 0x88 | 1;
+	static const uint8_t Collection			= 0xa0 | 1;
+	static const uint8_t EndCollection		= 0xc0 | 0;
+	static const uint8_t Input				= 0x80 | 1;
+	static const uint8_t Output				= 0x90 | 1;
+	static const uint8_t Feature			= 0xb0 | 1;
+	static const uint8_t LogicalMinimum		= 0x14 | 1;
+	static const uint8_t LogicalMaximum		= 0x24 | 1;
+	static const uint8_t PhysicalMinimum	= 0x34 | 1;
+	static const uint8_t PhysicalMaximum	= 0x44 | 1;
+	static const uint8_t UnitExponent		= 0x54 | 1;
+	static const uint8_t Unit				= 0x64 | 1;
+	static const uint8_t ReportSize			= 0x74 | 1;
+	static const uint8_t ReortId			= 0x84 | 1;
+	static const uint8_t ReportCount		= 0x94 | 1;
+	static const uint8_t Push				= 0xa4 | 0;
+	static const uint8_t Pop				= 0xb4 | 0;
+	static const uint8_t Delimeter			= 0xa8 | 1;
+};
+
+void PrintReportDescriptor(const uint8_t* descReport, uint16_t descLen)
+{
+	enum class Stat {
+		Begin,
+	} stat = Stat::Begin;
+	Dump(descReport, descLen);
+	for (uint16_t i = 0; i < descLen; i++) {
+		uint8_t data = descReport[i];
+		switch (stat) {
+		case Stat::Begin: {
+			
+			break;
+		}
+		default: break;
+		}
+	}
+}
+
 void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descReport, uint16_t descLen)
 {
 	::printf("tuh_hid_mount_cb(%d, %d)\n", devAddr, iInstance);
@@ -61,6 +109,7 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 							hid_info[iInstance].report_info, MAX_REPORT, descReport, descLen);
 		::printf("HID has %u reports \r\n", hid_info[iInstance].report_count);
 	}
+	PrintReportDescriptor(descReport, descLen);
 	// request to receive report
 	// tuh_hid_report_received_cb() will be invoked when report is available
 	if (!::tuh_hid_receive_report(devAddr, iInstance)) {
@@ -411,14 +460,6 @@ void USBHost::Keyboard::OnReport(uint8_t devAddr, uint8_t iInstance, const hid_k
 	}
 }
 
-bool USBHost::Keyboard::GetKeyDataNB(KeyData* pKeyData)
-{
-	if (repeat_.consumedFlag) return false;
-	*pKeyData = GetKeyLayout().CreateKeyData(repeat_.keyCode, repeat_.modifier);
-	repeat_.consumedFlag = true;
-	return pKeyData->IsValid();
-}
-
 int USBHost::Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax)
 {
 	int nKeys = 0;
@@ -440,6 +481,14 @@ int USBHost::Keyboard::SenseKeyData(KeyData keyDataTbl[], int nKeysMax)
 		}
 	}
 	return nKeys;
+}
+
+bool USBHost::Keyboard::GetKeyDataNB(KeyData* pKeyData)
+{
+	if (repeat_.consumedFlag) return false;
+	*pKeyData = GetKeyLayout().CreateKeyData(repeat_.keyCode, repeat_.modifier);
+	repeat_.consumedFlag = true;
+	return pKeyData->IsValid();
 }
 
 void USBHost::Keyboard::OnTick()

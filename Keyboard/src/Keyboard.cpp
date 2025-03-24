@@ -11,10 +11,17 @@ namespace jxglib {
 KeyData KeyLayout::CreateKeyData(uint8_t keyCode, uint8_t modifier) const
 {
 	bool isCtrlDown = !!(modifier & (KeyData::Mod::CtrlL | KeyData::Mod::CtrlR));
-	char charCode = (keyCode == VK_RETURN)? '\0' : (keyCode == VK_TAB)? '\0' :
+	char charCode = (keyCode == VK_TAB)? '\0' : (keyCode == VK_RETURN)? '\0' :
 			(keyCode == VK_ESCAPE)? '\0' : ConvKeyCodeToCharCode(keyCode, modifier);
-	if (isCtrlDown && ('A' <= charCode && charCode <='Z')) charCode -= '@';
-	return (charCode == 0)? KeyData(keyCode, true, modifier) : KeyData(charCode, false, modifier);
+	if (charCode == 0) return KeyData(keyCode, true, modifier);
+	if (!isCtrlDown) {
+		// nothing to do
+	} else if ('A' <= charCode && charCode <='Z') {
+		charCode = charCode - 'A' + 1;
+	} else  if ('a' <= charCode && charCode <='z') {
+		charCode = charCode - 'a' + 1;
+	}
+	return KeyData(charCode, false, modifier);
 }
 
 uint8_t KeyLayout::ConvKeyCodeToCharCode(uint8_t keyCode, uint8_t modifier) const
@@ -39,6 +46,14 @@ char Keyboard::GetChar()
 	return keyData.GetChar();
 }
 
+bool Keyboard::IsPressed(uint8_t keyCode)
+{
+	uint8_t keyCodeTbl[6];
+	int nKeys = SenseKeyCode(keyCodeTbl, count_of(keyCodeTbl));
+	for (int i = 0; i < nKeys; i++) if (keyCodeTbl[i] == keyCode) return true;
+	return false;
+}
+
 int Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax)
 {
 	if (nKeysMax == 0) return 0;
@@ -46,6 +61,11 @@ int Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax)
 	KeyData keyData;
 	if (GetKeyDataNB(&keyData) && keyData.IsKeyCode()) keyCodeTbl[nKeys++] = keyData.GetKeyCode();
 	return nKeys;
+}
+
+int Keyboard::SenseKeyData(KeyData keyDataTbl[], int nKeysMax)
+{
+	return (nKeysMax > 0 && GetKeyDataNB(&keyDataTbl[0]))? 1 : 0;
 }
 
 //------------------------------------------------------------------------------
@@ -599,11 +619,6 @@ bool KeyboardStdio::GetKeyDataNB(KeyData* pKeyData)
 	int ch;
 	while ((ch = ::stdio_getchar_timeout_us(0)) > 0 && !decoder_.FeedChar(ch)) ;
 	return decoder_.GetKeyData(pKeyData);
-}
-
-int KeyboardStdio::SenseKeyData(KeyData keyDataTbl[], int nKeysMax)
-{
-	return (nKeysMax > 0 && GetKeyDataNB(&keyDataTbl[0]))? 1 : 0;
 }
 
 }

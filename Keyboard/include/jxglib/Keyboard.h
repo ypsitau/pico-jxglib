@@ -47,9 +47,10 @@ public:
 	virtual Keyboard& SetCapsLockAsCtrl(bool capsLockAsCtrlFlag = true) { return *this; }
 	virtual Keyboard& SetRepeatTime(uint32_t msecDelay, uint32_t msecRate) { return *this; }
 	virtual uint8_t GetModifier() { return 0; }
+	virtual bool IsPressed(uint8_t keyCode);
+	virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1);
+	virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1);
 	virtual bool GetKeyDataNB(KeyData* pKeyData) = 0;
-	virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax);
-	virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) = 0;
 };
 
 //------------------------------------------------------------------------------
@@ -74,7 +75,7 @@ public:
 	virtual const CharEntry* GetCharEntryTbl() const;
 };
 	
-	//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // KeyboardDumb
 //------------------------------------------------------------------------------
 class KeyboardDumb : public Keyboard {
@@ -95,7 +96,6 @@ public:
 	static KeyboardStdio Instance;
 public:
 	virtual bool GetKeyDataNB(KeyData* pKeyData) override;
-	virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) override;
 };
 
 }

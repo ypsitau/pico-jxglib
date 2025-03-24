@@ -46,8 +46,8 @@ bool Editable::ProcessKeyData(const KeyData& keyData)
 		case VK_DELETE:		Edit_DeleteChar();		return true;
 		default: break;
 		}
-	} else if (keyData.GetCharRaw() < 0x20) {
-		switch (keyData.GetCharRaw() + '@') {
+	} else if (keyData.GetChar() < 0x20) {
+		switch (keyData.GetChar() + '@') {
 		case 'A':			Edit_MoveHome();		return true;
 		case 'B':			Edit_MoveBackward();	return true;
 		case 'C':			break;
@@ -77,7 +77,7 @@ bool Editable::ProcessKeyData(const KeyData& keyData)
 		default: break;
 		}
 	} else {
-		Edit_InsertChar(keyData.GetCharRaw());
+		Edit_InsertChar(keyData.GetChar());
 		return true;
 	}
 	return false;
