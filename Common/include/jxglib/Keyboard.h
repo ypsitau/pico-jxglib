@@ -6,7 +6,7 @@
 #include "pico/stdlib.h"
 #include "jxglib/Common.h"
 #include "jxglib/KeyCode.h"
-#include "jxglib/VT100.h"
+#include "jxglib/KeyData.h"
 
 namespace jxglib {
 
@@ -42,6 +42,7 @@ public:
 public:
 	Keyboard& SetKeyLayout(const KeyLayout& keyLayout) { pKeyLayout_ = &keyLayout; return *this; }
 	const KeyLayout& GetKeyLayout() const { return *pKeyLayout_; }
+	bool GetKeyData(KeyData* pKeyData);
 	char GetChar();
 public:
 	virtual Keyboard& SetCapsLockAsCtrl(bool capsLockAsCtrlFlag = true) { return *this; }
@@ -86,18 +87,6 @@ public:
 	virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) override { return 0; }
 };
 	
-//------------------------------------------------------------------------------
-// KeyboardStdio
-//------------------------------------------------------------------------------
-class KeyboardStdio : public Keyboard {
-private:
-	VT100::Decoder decoder_;
-public:
-	static KeyboardStdio Instance;
-public:
-	virtual bool GetKeyDataNB(KeyData* pKeyData) override;
-};
-
 }
 
 #endif

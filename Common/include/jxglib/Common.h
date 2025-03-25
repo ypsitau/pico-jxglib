@@ -8,7 +8,7 @@
 #include "Dir.h"
 #include "FIFOBuff.h"
 #include "GPIO.h"
-#include "KeyCode.h"
+#include "Keyboard.h"
 #include "Point.h"
 #include "Rect.h"
 #include "Size.h"

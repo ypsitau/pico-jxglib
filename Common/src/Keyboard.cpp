@@ -46,6 +46,16 @@ char Keyboard::GetChar()
 	return keyData.GetChar();
 }
 
+bool Keyboard::GetKeyData(KeyData* pKeyData)
+{
+	KeyData keyData;
+	for (;;) {
+		if (GetKeyDataNB(pKeyData)) break;
+		Tickable::Tick();
+	}
+	return true;
+}
+
 bool Keyboard::IsPressed(uint8_t keyCode)
 {
 	uint8_t keyCodeTbl[6];
@@ -608,17 +618,5 @@ const KeyLayout::CharEntry* KeyLayout_106::GetCharEntryTbl() const
 // KeyboardDumb
 //------------------------------------------------------------------------------
 KeyboardDumb KeyboardDumb::Instance;
-
-//------------------------------------------------------------------------------
-// KeyboardStdio
-//------------------------------------------------------------------------------
-KeyboardStdio KeyboardStdio::Instance;
-
-bool KeyboardStdio::GetKeyDataNB(KeyData* pKeyData)
-{
-	int ch;
-	while ((ch = ::stdio_getchar_timeout_us(0)) > 0 && !decoder_.FeedChar(ch)) ;
-	return decoder_.GetKeyData(pKeyData);
-}
 
 }

@@ -27,7 +27,6 @@ target_compile_definitions(lvgl_thorvg PRIVATE
 
 target_link_libraries(jxglib_LVGL INTERFACE
 	jxglib_Mouse
-	jxglib_Keyboard
 	jxglib_TouchScreen
 	lvgl)
 

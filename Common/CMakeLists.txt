@@ -11,6 +11,7 @@ target_link_libraries(jxglib_Common INTERFACE
 target_sources(jxglib_Common INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/Color.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/GPIO.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/Keyboard.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/KeyCode.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/KeyData.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Point.cpp
