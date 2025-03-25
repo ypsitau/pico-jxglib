@@ -18,7 +18,7 @@ int main()
 	::stdio_init_all();
 	GPIO2.init().set_dir_OUT();
 	terminal.Initialize();
-	//terminal.AttachOutput(PrintableStdio::Instance);
+	//terminal.AttachOutput(Stdio::Printable::Instance);
 	terminal.Println("ReadLine Test Program");
 	for (;;) {
 		::printf("%s\n", terminal.ReadLine(">"));

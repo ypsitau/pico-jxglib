@@ -20,7 +20,7 @@ public:
 		Printable* pPrintable_;
 	public:
 		Terminal(int bytesHistoryBuff = 512) : jxglib::Terminal(bytesHistoryBuff, Stdio::Keyboard::Instance),
-				Tickable(0), pPrintable_{&PrintableStdio::Instance} {}
+				Tickable(0), pPrintable_{&Stdio::Printable::Instance} {}
 	public:
 		bool Initialize();
 	public:
