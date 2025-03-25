@@ -235,7 +235,7 @@ void PrintReportDescriptor(const uint8_t* descReport, uint16_t descLen)
 	enum class Stat {
 		Prefix, Data,
 	} stat = Stat::Prefix;
-	Dump(descReport, descLen);
+	//Dump(descReport, descLen);
 	int iData = 0;
 	int nData = 0;
 	uint8_t itemType = 0x00;
