@@ -9,7 +9,7 @@
 
 using namespace jxglib;
 
-Terminal terminal;
+Display::Terminal terminal;
 
 void OnValueChanged_btnm(lv_event_t* e);
 
