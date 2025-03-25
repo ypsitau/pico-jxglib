@@ -18,7 +18,6 @@ int main()
 	SSD1306 display(i2c0, 0x3c);
 	display.Initialize();
 	terminal.AttachOutput(display);
-	//terminal.AttachInput(KeyboardStdio::Instance);
 	terminal.AttachInput(USBHost::GetKeyboard().SetCapsLockAsCtrl());
 	terminal.SetFont(Font::shinonome12).SetSpacingRatio(1., 1)
 		.SetColor(Color::white).SetColorBg(Color::black)

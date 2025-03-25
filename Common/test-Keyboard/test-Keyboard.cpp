@@ -6,7 +6,7 @@ using namespace jxglib;
 
 int main()
 {
-	Keyboard& keyboard = KeyboardStdio::Instance;
+	Keyboard& keyboard = Stdio::Keyboard::Instance;
 	::stdio_init_all();
 	GPIO2.init().set_dir_OUT();
 	::printf("Press any keys\n");

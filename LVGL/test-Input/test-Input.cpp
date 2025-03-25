@@ -72,7 +72,6 @@ int main()
 	lvglAdapter.EnableDoubleBuff().AttachOutput(display);
 	//lvglAdapter.AttachOutput(display);
 	lvglAdapter.AttachInput(touchScreen);
-	lvglAdapter.AttachInput(KeyboardStdio::Instance);
 	//InputPointer inputPointer;
 	//InputKeypad inputKeypad;
 	//InputButton inputButton;

@@ -4,6 +4,7 @@
 #ifndef PICO_JXGLIB_SERIAL_H
 #define PICO_JXGLIB_SERIAL_H
 #include "pico/stdlib.h"
+#include "jxglib/Stdio.h"
 #include "jxglib/Terminal.h"
 #include "jxglib/VT100.h"
 
@@ -18,7 +19,7 @@ public:
 	private:
 		Printable* pPrintable_;
 	public:
-		Terminal(int bytesHistoryBuff = 512) : jxglib::Terminal(bytesHistoryBuff, KeyboardStdio::Instance),
+		Terminal(int bytesHistoryBuff = 512) : jxglib::Terminal(bytesHistoryBuff, Stdio::Keyboard::Instance),
 				Tickable(0), pPrintable_{&PrintableStdio::Instance} {}
 	public:
 		bool Initialize();
