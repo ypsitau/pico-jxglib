@@ -52,9 +52,4 @@ int GPIO::Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax)
     return 0;
 }
 
-int GPIO::Keyboard::SenseKeyData(KeyData keyDataTbl[], int nKeysMax)
-{
-    return 0;
-}
-
 }

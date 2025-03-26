@@ -64,6 +64,7 @@ public:
 public:
 	// virtual function of Keyboard
 	virtual Keyboard& SetRepeatTime(uint32_t msecDelay, uint32_t msecRate) override;
+	virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) override;
 	virtual bool GetKeyDataNB(KeyData* pKeyData) override;
 };
 	

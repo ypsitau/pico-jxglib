@@ -625,19 +625,6 @@ int USBHost::Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax)
 	return nKeys;
 }
 
-int USBHost::Keyboard::SenseKeyData(KeyData keyDataTbl[], int nKeysMax)
-{
-	int nKeys = 0;
-	for (int i = 0; i < ChooseMin(static_cast<int>(count_of(reportCaptured_.keyCodeTbl)), nKeysMax); i++) {
-		uint8_t keyCode = reportCaptured_.keyCodeTbl[i];
-		if (keyCode) {
-			KeyData keyData = GetKeyLayout().CreateKeyData(keyCode, reportCaptured_.modifier);
-			if (keyData.IsValid()) keyDataTbl[nKeys++] = keyData;
-		}
-	}
-	return nKeys;
-}
-
 //------------------------------------------------------------------------------
 // USBHost::Mouse
 //------------------------------------------------------------------------------

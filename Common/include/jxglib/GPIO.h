@@ -25,7 +25,6 @@ public:
 	public:
 		// virtual function of jxglib::Keyboard
 		virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1) override;
-		virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) override;
 	};
 public:
 	uint pin;

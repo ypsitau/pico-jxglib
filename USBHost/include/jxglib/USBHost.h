@@ -44,8 +44,8 @@ public:
 	public:
 		// virtual function of jxglib::Keyboard
 		virtual jxglib::Keyboard& SetCapsLockAsCtrl(bool capsLockAsCtrlFlag = true) override;
+		virtual uint8_t GetModifier() override { return reportCaptured_.modifier; }
 		virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1) override;
-		virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) override;
 	};
 	class Mouse : public jxglib::Mouse {
 	private:

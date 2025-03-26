@@ -1,6 +1,7 @@
 //==============================================================================
 // Keyboard.cpp
 //==============================================================================
+#include "jxglib/Common.h"
 #include "jxglib/Keyboard.h"
 
 namespace jxglib {
@@ -50,6 +51,18 @@ Keyboard& KeyboardRepeatable::SetRepeatTime(uint32_t msecDelay, uint32_t msecRat
 {
 	repeat_.SetRepeatTime(msecDelay, msecRate);
 	return *this;
+}
+
+int KeyboardRepeatable::SenseKeyData(KeyData keyDataTbl[], int nKeysMax)
+{
+	uint8_t keyCodeTbl[6];
+	int nKeys = 0;
+	int nKeysIn = SenseKeyCode(keyCodeTbl, count_of(keyCodeTbl));
+	for (int i = 0; i < ChooseMin(nKeysIn, nKeysMax); i++) {
+		KeyData keyData = GetKeyLayout().CreateKeyData(keyCodeTbl[i], GetModifier());
+		if (keyData.IsValid()) keyDataTbl[nKeys++] = keyData;
+	}
+	return nKeys;
 }
 
 bool KeyboardRepeatable::GetKeyDataNB(KeyData* pKeyData)
