@@ -582,23 +582,14 @@ const USBHost::Keyboard::ReportIdToKeyCode USBHost::Keyboard::reportIdToKeyCodeT
 	{ 0,				0,				},	// 0xff
 };
 
-USBHost::Keyboard::Keyboard() : capsLockAsCtrlFlag_{false},
-	repeat_{modifier: 0, keyCode: 0, validFlag: false, msecDelay: 300, msecRate: 100}
+USBHost::Keyboard::Keyboard() : capsLockAsCtrlFlag_{false}
 {
 	::memset(&reportCaptured_, 0x00, sizeof(reportCaptured_));
-	Suspend();
 }
 
 Keyboard& USBHost::Keyboard::SetCapsLockAsCtrl(bool capsLockAsCtrlFlag)
 {
 	capsLockAsCtrlFlag_ = capsLockAsCtrlFlag;
-	return *this;
-}
-
-Keyboard& USBHost::Keyboard::SetRepeatTime(uint32_t msecDelay, uint32_t msecRate)
-{
-	repeat_.msecDelay = msecDelay;
-	repeat_.msecRate = msecRate;
 	return *this;
 }
 
@@ -616,21 +607,11 @@ void USBHost::Keyboard::OnReport(uint8_t devAddr, uint8_t iInstance, const hid_k
 		}
 	}
 	if (reportCaptured_.keyCodeTbl[0] == 0) {
-		repeat_.modifier = 0;
-		repeat_.keyCode = 0;
-		repeat_.validFlag = false;
+		GetRepeat().Invalidate();
 		return;
 	}
 	for (int i = 0; i < count_of(reportCaptured_.keyCodeTbl); i++) {
-		uint8_t keyCode = reportCaptured_.keyCodeTbl[i];
-		if (repeat_.keyCode != keyCode) {
-			repeat_.modifier = reportCaptured_.modifier;
-			repeat_.keyCode = keyCode;
-			repeat_.validFlag = true;
-			ResetTick(repeat_.msecDelay);
-			Resume();
-			break;
-		}
+		if (GetRepeat().SignalFirst(reportCaptured_.keyCodeTbl[i], reportCaptured_.modifier)) break;
 	}
 }
 
@@ -657,21 +638,58 @@ int USBHost::Keyboard::SenseKeyData(KeyData keyDataTbl[], int nKeysMax)
 	return nKeys;
 }
 
-bool USBHost::Keyboard::GetKeyDataNB(KeyData* pKeyData)
+KeyboardRepeatable::KeyboardRepeatable() : repeat_(*this)
 {
-	if (!repeat_.validFlag) return false;
-	*pKeyData = GetKeyLayout().CreateKeyData(repeat_.keyCode, repeat_.modifier);
-	repeat_.validFlag = false;
-	return pKeyData->IsValid();
 }
 
-void USBHost::Keyboard::OnTick()
+bool KeyboardRepeatable::GetKeyDataNB(KeyData* pKeyData)
 {
-	for (int i = 0; i < count_of(reportCaptured_.keyCodeTbl); i++) {
-		uint8_t keyCode = reportCaptured_.keyCodeTbl[i];
-		if (repeat_.keyCode == keyCode) {
-			repeat_.validFlag = true;
-			if (GetTick() != repeat_.msecRate) SetTick(repeat_.msecRate);
+	uint8_t keyCode, modifier;
+	if (GetRepeat().GetKey(&keyCode, &modifier)) {
+		*pKeyData = GetKeyLayout().CreateKeyData(keyCode, modifier);
+		return pKeyData->IsValid();
+	}
+	return false;
+}
+
+KeyboardRepeatable::Repeat::Repeat(Keyboard& keyboard) : Tickable(-1, Tickable::Priority::Lowest),
+	keyboard_{keyboard}, modifier_{0}, keyCode_{0}, readyFlag_{false}, msecDelay_{300}, msecRate_{100}
+{
+	Suspend();
+}
+
+bool KeyboardRepeatable::Repeat::SignalFirst(uint8_t keyCode, uint8_t modifier)
+{
+	if (keyCode_ != keyCode) {
+		modifier_ = modifier;
+		keyCode_ = keyCode;
+		readyFlag_ = true;
+		ResetTick(msecDelay_);
+		Resume();
+		return true;
+	}
+	return false;
+}
+
+bool KeyboardRepeatable::Repeat::GetKey(uint8_t* pKeyCode, uint8_t* pModifier)
+{
+	if (readyFlag_) {
+		readyFlag_ = false;
+		*pKeyCode = keyCode_;
+		*pModifier = modifier_;
+		return true;
+	}
+	return false;
+}
+
+void KeyboardRepeatable::Repeat::OnTick()
+{
+	uint8_t keyCodeTbl[6];
+	keyboard_.SenseKeyCode(keyCodeTbl, count_of(keyCodeTbl));
+	for (int i = 0; i < count_of(keyCodeTbl); i++) {
+		if (keyCode_ == keyCodeTbl[i]) {
+			readyFlag_ = true;
+			if (GetTick() != msecRate_) SetTick(msecRate_);
 			return;
 		}
 	}

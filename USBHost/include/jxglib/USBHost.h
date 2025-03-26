@@ -12,6 +12,41 @@
 
 namespace jxglib {
 
+class KeyboardRepeatable : public Keyboard {
+public:
+	class Repeat : public Tickable {
+	private:
+		Keyboard& keyboard_;
+		uint8_t modifier_;
+		uint8_t keyCode_;
+		bool readyFlag_;
+		uint32_t msecDelay_;
+		uint32_t msecRate_;
+	public:
+		Repeat(Keyboard& keyboard);
+		void SetRepeatTime(uint32_t msecDelay, uint32_t msecRate) { msecDelay_ = msecDelay, msecRate_ = msecRate; }
+		void Invalidate() { modifier_ = 0, keyCode_ = 0, readyFlag_ = false; }
+		bool SignalFirst(uint8_t keyCode, uint8_t modifier);
+		bool GetKey(uint8_t* pKeyCode, uint8_t* pModifier);
+	public:
+		// virtual function of Tickable
+		virtual void OnTick() override;
+	};
+private:
+	Repeat repeat_;
+public:
+	KeyboardRepeatable();
+public:
+	virtual Keyboard& SetRepeatTime(uint32_t msecDelay, uint32_t msecRate) override {
+		repeat_.SetRepeatTime(msecDelay, msecRate);
+		return *this;
+	}
+	Repeat& GetRepeat() { return repeat_; }
+public:
+	// virtual function of Keyboard
+	virtual bool GetKeyDataNB(KeyData* pKeyData) override;
+};
+
 //------------------------------------------------------------------------------
 // USBHost
 //------------------------------------------------------------------------------
@@ -22,7 +57,7 @@ public:
 		virtual void OnMount(uint8_t devAddr) {}
 		virtual void OnUmount(uint8_t devAddr) {}
 	};
-	class Keyboard : public jxglib::Keyboard, public Tickable {
+	class Keyboard : public KeyboardRepeatable {
 	public:
 		struct ReportIdToKeyCode {
 			uint8_t keyCodeUS;
@@ -35,13 +70,6 @@ public:
 	private:
 		bool capsLockAsCtrlFlag_;
 		Report reportCaptured_;
-		struct Repeat {
-			uint8_t modifier;
-			uint8_t keyCode;
-			bool validFlag;
-			uint32_t msecDelay;
-			uint32_t msecRate;
-		} repeat_;
 	public:
 		static const ReportIdToKeyCode reportIdToKeyCodeTbl[256];
 	public:
@@ -51,13 +79,8 @@ public:
 	public:
 		// virtual function of jxglib::Keyboard
 		virtual jxglib::Keyboard& SetCapsLockAsCtrl(bool capsLockAsCtrlFlag = true) override;
-		virtual jxglib::Keyboard& SetRepeatTime(uint32_t msecDelay, uint32_t msecRate) override;
 		virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1) override;
 		virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) override;
-		virtual bool GetKeyDataNB(KeyData* pKeyData) override;
-	public:
-		// virtual function of Tickable
-		virtual void OnTick() override;
 	};
 	class Mouse : public jxglib::Mouse {
 	private:
