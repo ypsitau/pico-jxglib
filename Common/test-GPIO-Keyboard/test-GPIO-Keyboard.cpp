@@ -4,13 +4,15 @@
 
 using namespace jxglib;
 
+GPIO::Keyboard keyboard;
+
 int main()
 {
-	stdio_init_all();
-	GPIO12.init().set_dir_OUT().set_drive_strength(GPIO_DRIVE_STRENGTH_2MA).put(true);
-	GPIO13.init().set_dir_OUT().set_drive_strength(GPIO_DRIVE_STRENGTH_4MA).put(true);
-	GPIO14.init().set_dir_OUT().set_drive_strength(GPIO_DRIVE_STRENGTH_8MA).put(true);
-	GPIO15.init().set_dir_OUT().set_drive_strength(GPIO_DRIVE_STRENGTH_12MA).put(true);
+	::stdio_init_all();
+	GPIO::Key keyLeft(GPIO10, VK_LEFT);
+	GPIO::Key keyUp(GPIO11, VK_UP);
+	GPIO::Key keyDown(GPIO12, VK_DOWN);
+	GPIO::Key keyRight(GPIO13, VK_RIGHT);
 	while (true) {
 		printf("Hello, world!\n");
 		sleep_ms(1000);

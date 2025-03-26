@@ -19,6 +19,22 @@ class GPIO_ADC;
 //------------------------------------------------------------------------------
 class GPIO {
 public:
+#if 0
+	class KeyA {
+	private:
+		const GPIO& gpio_;
+		uint8_t keyCode_;
+	public:
+		KeyA(const GPIO& gpio, uint8_t keyCode);
+	};
+#endif
+	class Key {
+	private:
+		const GPIO& gpio_;
+		uint8_t keyCode_;
+	public:
+		Key(const GPIO& gpio, uint8_t keyCode);
+	};
 	class Keyboard : public jxglib::KeyboardRepeatable {
 	public:
 		Keyboard();
