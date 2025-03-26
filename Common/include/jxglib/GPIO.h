@@ -19,28 +19,49 @@ class GPIO_ADC;
 //------------------------------------------------------------------------------
 class GPIO {
 public:
-#if 0
-	class KeyA {
-	private:
-		const GPIO& gpio_;
-		uint8_t keyCode_;
-	public:
-		KeyA(const GPIO& gpio, uint8_t keyCode);
-	};
-#endif
 	class Key {
-	private:
+	public:
+		static const uint32_t PullUp	= (1 << 0);
+		static const uint32_t PullDown	= (1 << 1);
+	protected:
 		const GPIO& gpio_;
 		uint8_t keyCode_;
+		uint32_t flags_;
+		bool pressedFlag_;
+		Key* pKeyNext_;
+	private:
+		static Key* pKeyHead_;
 	public:
-		Key(const GPIO& gpio, uint8_t keyCode);
+		Key(const GPIO& gpio, uint8_t keyCode = 0, uint32_t flags = 0);
+	public:
+		void Initialize();
+		uint8_t GetKeyCode() const { return keyCode_; }
+		Key* GetNext() { return pKeyNext_; }
+		const Key* GetNext() const { return pKeyNext_; }
+		bool IsPressed() const { return pressedFlag_; }
+	public:
+		virtual void Update() { pressedFlag_ = !gpio_.get(); }
+	public:
+		static Key* GetHead() { return pKeyHead_; }
 	};
-	class Keyboard : public jxglib::KeyboardRepeatable {
+	class KeyPos : public Key {
+	public:
+		KeyPos(const GPIO& gpio, uint8_t keyCode = 0, uint32_t flags = 0) : Key(gpio, keyCode, flags) {}
+	public:
+		virtual void Update() { pressedFlag_ = gpio_.get(); }
+	};
+	class Keyboard : public KeyboardRepeatable, public Tickable {
 	public:
 		Keyboard();
 	public:
+		void Initialize();
+	public:
 		// virtual function of jxglib::Keyboard
+		virtual bool IsPressed(uint8_t keyCode) override;
 		virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1) override;
+	public:
+		// virtual function of Tickable
+		virtual void OnTick() override;
 	};
 public:
 	uint pin;
