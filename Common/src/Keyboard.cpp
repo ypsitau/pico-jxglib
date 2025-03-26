@@ -39,25 +39,17 @@ bool Keyboard::IsPressed(uint8_t keyCode)
 	return false;
 }
 
-int Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax)
-{
-	if (nKeysMax == 0) return 0;
-	int nKeys = 0;
-	KeyData keyData;
-	if (GetKeyDataNB(&keyData) && keyData.IsKeyCode()) keyCodeTbl[nKeys++] = keyData.GetKeyCode();
-	return nKeys;
-}
-
-int Keyboard::SenseKeyData(KeyData keyDataTbl[], int nKeysMax)
-{
-	return (nKeysMax > 0 && GetKeyDataNB(&keyDataTbl[0]))? 1 : 0;
-}
-
 //------------------------------------------------------------------------------
 // KeyboardRepeatable
 //------------------------------------------------------------------------------
 KeyboardRepeatable::KeyboardRepeatable() : repeat_(*this)
 {
+}
+
+Keyboard& KeyboardRepeatable::SetRepeatTime(uint32_t msecDelay, uint32_t msecRate)
+{
+	repeat_.SetRepeatTime(msecDelay, msecRate);
+	return *this;
 }
 
 bool KeyboardRepeatable::GetKeyDataNB(KeyData* pKeyData)

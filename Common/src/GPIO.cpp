@@ -47,11 +47,6 @@ GPIO::Keyboard::Keyboard()
 {
 }
 
-jxglib::Keyboard& GPIO::Keyboard::SetRepeatTime(uint32_t msecDelay, uint32_t msecRate)
-{
-    return *this;
-}
-
 int GPIO::Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax)
 {
     return 0;
@@ -60,15 +55,6 @@ int GPIO::Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax)
 int GPIO::Keyboard::SenseKeyData(KeyData keyDataTbl[], int nKeysMax)
 {
     return 0;
-}
-
-bool GPIO::Keyboard::GetKeyDataNB(KeyData* pKeyData)
-{
-    return false;
-}
-
-void GPIO::Keyboard::OnTick()
-{
 }
 
 }

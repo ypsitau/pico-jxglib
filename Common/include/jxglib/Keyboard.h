@@ -27,8 +27,8 @@ public:
 	virtual Keyboard& SetRepeatTime(uint32_t msecDelay, uint32_t msecRate) { return *this; }
 	virtual uint8_t GetModifier() { return 0; }
 	virtual bool IsPressed(uint8_t keyCode);
-	virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1);
-	virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1);
+	virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1) = 0;
+	virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) = 0;
 	virtual bool GetKeyDataNB(KeyData* pKeyData) = 0;
 };
 
@@ -60,13 +60,10 @@ private:
 public:
 	KeyboardRepeatable();
 public:
-	virtual Keyboard& SetRepeatTime(uint32_t msecDelay, uint32_t msecRate) override {
-		repeat_.SetRepeatTime(msecDelay, msecRate);
-		return *this;
-	}
 	Repeat& GetRepeat() { return repeat_; }
 public:
 	// virtual function of Keyboard
+	virtual Keyboard& SetRepeatTime(uint32_t msecDelay, uint32_t msecRate) override;
 	virtual bool GetKeyDataNB(KeyData* pKeyData) override;
 };
 	
@@ -77,8 +74,9 @@ class KeyboardDumb : public Keyboard {
 public:
 	static KeyboardDumb Instance;
 public:
-	virtual bool GetKeyDataNB(KeyData* pKeyData) override { return false; }
+	virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1) override { return 0; }
 	virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) override { return 0; }
+	virtual bool GetKeyDataNB(KeyData* pKeyData) override { return false; }
 };
 	
 }

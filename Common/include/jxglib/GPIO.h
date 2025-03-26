@@ -19,18 +19,13 @@ class GPIO_ADC;
 //------------------------------------------------------------------------------
 class GPIO {
 public:
-	class Keyboard : public jxglib::Keyboard, public Tickable {
+	class Keyboard : public jxglib::KeyboardRepeatable {
 	public:
 		Keyboard();
 	public:
 		// virtual function of jxglib::Keyboard
-		virtual jxglib::Keyboard& SetRepeatTime(uint32_t msecDelay, uint32_t msecRate) override;
 		virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1) override;
 		virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) override;
-		virtual bool GetKeyDataNB(KeyData* pKeyData) override;
-	public:
-		// virtual function of Tickable
-		virtual void OnTick() override;
 	};
 public:
 	uint pin;

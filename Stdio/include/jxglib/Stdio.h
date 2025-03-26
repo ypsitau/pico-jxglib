@@ -35,6 +35,8 @@ public:
 	public:
 		static Keyboard Instance;
 	public:
+		virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1) override;
+		virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) override;
 		virtual bool GetKeyDataNB(KeyData* pKeyData) override;
 	};
 public:
