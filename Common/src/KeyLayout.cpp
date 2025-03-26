@@ -10,7 +10,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 KeyData KeyLayout::CreateKeyData(uint8_t keyCode, uint8_t modifier) const
 {
-	bool isCtrlDown = !!(modifier & (KeyData::Mod::CtrlL | KeyData::Mod::CtrlR));
+	bool isCtrlDown = KeyData::IsCtrlDown(modifier);
 	char charCode = (keyCode == VK_TAB)? '\0' : (keyCode == VK_RETURN)? '\0' :
 			(keyCode == VK_ESCAPE)? '\0' : ConvKeyCodeToCharCode(keyCode, modifier);
 	if (charCode == 0) return KeyData(keyCode, true, modifier);
@@ -27,7 +27,7 @@ KeyData KeyLayout::CreateKeyData(uint8_t keyCode, uint8_t modifier) const
 uint8_t KeyLayout::ConvKeyCodeToCharCode(uint8_t keyCode, uint8_t modifier) const
 {
 	const CharEntry& charEntry = GetCharEntryTbl()[keyCode];
-	return (modifier & (KeyData::Mod::ShiftL | KeyData::Mod::ShiftR))? charEntry.charCodeShift : charEntry.charCode;
+	return (KeyData::IsShiftDown(modifier))? charEntry.charCodeShift : charEntry.charCode;
 }
 
 //------------------------------------------------------------------------------

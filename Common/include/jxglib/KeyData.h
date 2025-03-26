@@ -40,10 +40,15 @@ public:
 	bool IsKeyCode() const { return keyCodeFlag_; }
 	bool IsChar() const { return !keyCodeFlag_; }
 	uint8_t GetModifier() const { return modifier_; }
-	bool IsCtrlDown() const		{ return !!(modifier_ & (Mod::CtrlL | Mod::CtrlR)); }
-	bool IsShiftDown() const	{ return !!(modifier_ & (Mod::ShiftL | Mod::ShiftR)); }
-	bool IsAltDown() const		{ return !!(modifier_ & (Mod::AltL | Mod::AltR)); }
-	bool IsWindowsDown() const	{ return !!(modifier_ & (Mod::WindowsL | Mod::WindowsR)); }
+	bool IsCtrlDown() const		{ return IsCtrlDown(modifier_); }
+	bool IsShiftDown() const	{ return IsShiftDown(modifier_); }
+	bool IsAltDown() const		{ return IsAltDown(modifier_); }
+	bool IsWindowsDown() const	{ return IsWindowsDown(modifier_); }
+public:
+	static bool IsCtrlDown(uint8_t modifier)	{ return !!(modifier & (Mod::CtrlL | Mod::CtrlR)); }
+	static bool IsShiftDown(uint8_t modifier)	{ return !!(modifier & (Mod::ShiftL | Mod::ShiftR)); }
+	static bool IsAltDown(uint8_t modifier)		{ return !!(modifier & (Mod::AltL | Mod::AltR)); }
+	static bool IsWindowsDown(uint8_t modifier)	{ return !!(modifier & (Mod::WindowsL | Mod::WindowsR)); }
 };
 
 }
