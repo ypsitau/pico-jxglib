@@ -35,10 +35,10 @@ public:
 	private:
 		bool capsLockAsCtrlFlag_;
 		Report reportCaptured_;
-		struct {
+		struct Repeat {
 			uint8_t modifier;
 			uint8_t keyCode;
-			bool consumedFlag;
+			bool validFlag;
 			uint32_t msecDelay;
 			uint32_t msecRate;
 		} repeat_;

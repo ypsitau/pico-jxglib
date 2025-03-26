@@ -35,10 +35,6 @@ public:
 		code_{keyData.code_}, keyCodeFlag_{keyData.keyCodeFlag_}, modifier_{keyData.modifier_} {}
 public:
 	bool IsValid() const { return code_ != 0; }
-	//uint8_t GetKeyCode() const;
-	//char GetChar() const;
-	//bool IsKeyCode() const;
-	//bool IsChar() const;
 	uint8_t GetKeyCode() const { return keyCodeFlag_? code_ : 0; }
 	char GetChar() const { return keyCodeFlag_? '\0' : static_cast<char>(code_); }
 	bool IsKeyCode() const { return keyCodeFlag_; }

@@ -583,7 +583,7 @@ const USBHost::Keyboard::ReportIdToKeyCode USBHost::Keyboard::reportIdToKeyCodeT
 };
 
 USBHost::Keyboard::Keyboard() : capsLockAsCtrlFlag_{false},
-	repeat_{modifier: 0, keyCode: 0, consumedFlag: true, msecDelay: 300, msecRate: 100}
+	repeat_{modifier: 0, keyCode: 0, validFlag: false, msecDelay: 300, msecRate: 100}
 {
 	::memset(&reportCaptured_, 0x00, sizeof(reportCaptured_));
 	Suspend();
@@ -618,7 +618,7 @@ void USBHost::Keyboard::OnReport(uint8_t devAddr, uint8_t iInstance, const hid_k
 	if (reportCaptured_.keyCodeTbl[0] == 0) {
 		repeat_.modifier = 0;
 		repeat_.keyCode = 0;
-		repeat_.consumedFlag = true;
+		repeat_.validFlag = false;
 		return;
 	}
 	for (int i = 0; i < count_of(reportCaptured_.keyCodeTbl); i++) {
@@ -626,7 +626,7 @@ void USBHost::Keyboard::OnReport(uint8_t devAddr, uint8_t iInstance, const hid_k
 		if (repeat_.keyCode != keyCode) {
 			repeat_.modifier = reportCaptured_.modifier;
 			repeat_.keyCode = keyCode;
-			repeat_.consumedFlag = false;
+			repeat_.validFlag = true;
 			ResetTick(repeat_.msecDelay);
 			Resume();
 			break;
@@ -659,9 +659,9 @@ int USBHost::Keyboard::SenseKeyData(KeyData keyDataTbl[], int nKeysMax)
 
 bool USBHost::Keyboard::GetKeyDataNB(KeyData* pKeyData)
 {
-	if (repeat_.consumedFlag) return false;
+	if (!repeat_.validFlag) return false;
 	*pKeyData = GetKeyLayout().CreateKeyData(repeat_.keyCode, repeat_.modifier);
-	repeat_.consumedFlag = true;
+	repeat_.validFlag = false;
 	return pKeyData->IsValid();
 }
 
@@ -670,7 +670,7 @@ void USBHost::Keyboard::OnTick()
 	for (int i = 0; i < count_of(reportCaptured_.keyCodeTbl); i++) {
 		uint8_t keyCode = reportCaptured_.keyCodeTbl[i];
 		if (repeat_.keyCode == keyCode) {
-			repeat_.consumedFlag = false;
+			repeat_.validFlag = true;
 			if (GetTick() != repeat_.msecRate) SetTick(repeat_.msecRate);
 			return;
 		}
