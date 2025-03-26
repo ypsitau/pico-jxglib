@@ -66,7 +66,7 @@ bool KeyboardRepeatable::GetKeyDataNB(KeyData* pKeyData)
 // KeyboardRepeatable::Repeat
 //------------------------------------------------------------------------------
 KeyboardRepeatable::Repeat::Repeat(Keyboard& keyboard) : Tickable(-1, Tickable::Priority::Lowest),
-	keyboard_{keyboard}, modifier_{0}, keyCode_{0}, readyFlag_{false}, msecDelay_{300}, msecRate_{100}
+	keyboard_{keyboard}, modifier_{0}, keyCode_{0}, readyFlag_{false}, msecDelay_{400}, msecRate_{100}
 {
 	Suspend();
 }
