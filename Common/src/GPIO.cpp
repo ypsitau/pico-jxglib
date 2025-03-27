@@ -146,13 +146,13 @@ void GPIO::KeyboardMatrix::Initialize(const uint8_t* keyCodeTbl,
 int GPIO::KeyboardMatrix::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax)
 {
 	nKeysMax = ChooseMin(nKeysMax, static_cast<int>(count_of(keyCodeCapturedTbl_)));
-	int i = 0;
-	for ( ; i < nKeysMax; i++) {
-		uint8_t keyCode = keyCodeCapturedTbl_[i];
+	int nKeys = 0;
+	for ( ; nKeys < nKeysMax; nKeys++) {
+		uint8_t keyCode = keyCodeCapturedTbl_[nKeys];
 		if (!keyCode) break;
-		keyCodeTbl[i] = keyCode;
+		keyCodeTbl[nKeys] = keyCode;
 	}
-	return i;
+	return nKeys;
 }
 
 void GPIO::KeyboardMatrix::OnTick()
