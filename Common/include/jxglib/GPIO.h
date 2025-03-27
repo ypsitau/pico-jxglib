@@ -80,8 +80,9 @@ public:
 		int nKeyCols_;
 		bool valueActive_, valueInactive_;
 		int iKeyRow_;
-		uint8_t keyCodePressedTbl_[6];
-		int nKeysPressed_;
+		uint8_t keyCodeCapturedTbl_[6];
+		uint8_t keyCodeScannedTbl_[6];
+		int nKeysScanned_;
 	public:
 		KeyboardMatrix();
 	public:

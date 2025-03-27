@@ -115,7 +115,7 @@ void GPIO::Keyboard::OnTick()
 //------------------------------------------------------------------------------
 GPIO::KeyboardMatrix::KeyboardMatrix() : Tickable(10, Tickable::Priority::Lowest),
 	keyCodeTbl_{nullptr}, keyRowTbl_{nullptr}, nKeyRows_{0}, keyColTbl_{nullptr}, nKeyCols_{0},
-	iKeyRow_{0}, nKeysPressed_{0}
+	iKeyRow_{0}, nKeysScanned_{0}
 {
 }
 
@@ -136,52 +136,49 @@ void GPIO::KeyboardMatrix::Initialize(const uint8_t* keyCodeTbl,
 	for (int iKeyCol = 0; iKeyCol < nKeyCols_; iKeyCol++) {
 		keyColTbl_[iKeyCol].GetGPIO().set_dir_IN().put(0).set_function_SIO();
 	}
+	::memset(keyCodeCapturedTbl_, 0x00, sizeof(keyCodeCapturedTbl_));
+	::memset(keyCodeScannedTbl_, 0x00, sizeof(keyCodeScannedTbl_));
 	iKeyRow_ = 0;
-	nKeysPressed_ = 0;
+	nKeysScanned_ = 0;
 	keyRowTbl_[iKeyRow_].put(valueActive_);
 }
 
 int GPIO::KeyboardMatrix::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax)
 {
-#if 0
-	int nKeys = 0;
-	for (int i = 0; i < nKeys_; i++) {
-		Key& key = keyTbl_[i];
-		uint8_t keyCode = key.GetKeyCode();
-		if (key.IsPressed() && keyCode) keyCodeTbl[nKeys++] = keyCode;
+	nKeysMax = ChooseMin(nKeysMax, static_cast<int>(count_of(keyCodeCapturedTbl_)));
+	int i = 0;
+	for ( ; i < nKeysMax; i++) {
+		uint8_t keyCode = keyCodeCapturedTbl_[i];
+		if (!keyCode) break;
+		keyCodeTbl[i] = keyCode;
 	}
-	return nKeys;
-#endif
-	return 0;
+	return i;
 }
 
 void GPIO::KeyboardMatrix::OnTick()
 {
+	uint8_t modifier = 0;
 	for (int iKeyCol = 0; iKeyCol < nKeyCols_; iKeyCol++) {
-		if (nKeysPressed_ < count_of(keyCodePressedTbl_) && keyColTbl_[iKeyCol].get() == valueActive_) {
-			keyCodePressedTbl_[nKeysPressed_++] = keyCodeTbl_[iKeyCol + iKeyRow_ * nKeyCols_];
+		if (nKeysScanned_ < count_of(keyCodeScannedTbl_) && keyColTbl_[iKeyCol].get() == valueActive_) {
+			keyCodeScannedTbl_[nKeysScanned_++] = keyCodeTbl_[iKeyCol + iKeyRow_ * nKeyCols_];
 		}
 	}
 	keyRowTbl_[iKeyRow_].put(valueInactive_);
 	iKeyRow_++;
 	if (iKeyRow_ == nKeyRows_) {
+		::memcpy(keyCodeCapturedTbl_, keyCodeScannedTbl_, sizeof(keyCodeCapturedTbl_));
+		::memset(keyCodeScannedTbl_, 0x00, sizeof(keyCodeScannedTbl_));
 		iKeyRow_ = 0;
-		nKeysPressed_ = 0;
+		nKeysScanned_ = 0;
 	}
 	keyRowTbl_[iKeyRow_].put(valueActive_);
-#if 0
-	uint8_t modifier = 0;
-	bool anyPressedFlag = false;
-	for (int i = 0; i < nKeys_; i++) {
-		Key& key = keyTbl_[i];
-		key.Update();
-		if (key.IsPressed()) {
-			anyPressedFlag = true;
-			if (GetRepeat().SignalFirst(key.GetKeyCode(), modifier)) break;
-		}
+	int i = 0;
+	for ( ; i < count_of(keyCodeCapturedTbl_); i++) {
+		uint8_t keyCode = keyCodeCapturedTbl_[i];
+		if (!keyCode) break;
+		if (GetRepeat().SignalFirst(keyCode, modifier)) break;
 	}
-	if (!anyPressedFlag) GetRepeat().Invalidate();
-#endif
+	if (i == 0) GetRepeat().Invalidate();
 }
 
 }

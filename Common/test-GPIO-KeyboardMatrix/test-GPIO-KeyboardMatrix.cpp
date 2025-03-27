@@ -19,6 +19,15 @@ int main()
 	::stdio_init_all();
 	keyboard.Initialize(keyCodeTbl, keyRowTbl, count_of(keyRowTbl), keyColTbl, count_of(keyColTbl), GPIO::LogicNeg);
 	for (;;) {
+		uint8_t keyCodeTbl[6];
+		int nKeys = keyboard.SenseKeyCode(keyCodeTbl, count_of(keyCodeTbl));
+		if (nKeys > 0) {
+			for (int i = 0; i < nKeys; i++) {
+				if (i > 0) ::printf(" ");
+				::printf("%s", GetKeyCodeName(keyCodeTbl[i]));
+			}
+			::printf("\n");
+		}
 		Tickable::Sleep(100);
 	}
 }
