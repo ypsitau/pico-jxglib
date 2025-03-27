@@ -23,7 +23,7 @@ public:
 	static const uint32_t LogicNeg	= (1 << 0);
 public:
 	class Key {
-	protected:
+	private:
 		const GPIO& gpio_;
 		uint8_t keyCode_;
 		uint32_t flags_;
@@ -37,6 +37,24 @@ public:
 	public:
 		virtual void Update() { pressedFlag_ = (flags_ & LogicNeg) ^ gpio_.get(); }
 	};
+	class KeyRow {
+	private:
+		const GPIO& gpio_;
+	public:
+		KeyRow(const GPIO& gpio) : gpio_{gpio} {};
+	public:
+		const GPIO& GetGPIO() const { return gpio_; }
+		void put(bool value) const { gpio_.put(value); }
+	};
+	class KeyCol {
+	private:
+		const GPIO& gpio_;
+	public:
+		KeyCol(const GPIO& gpio) : gpio_{gpio} {};
+	public:
+		const GPIO& GetGPIO() const { return gpio_; }
+		bool get() const { return gpio_.get(); }
+	};
 	class Keyboard : public KeyboardRepeatable, public Tickable {
 	private:
 		Key* keyTbl_;
@@ -46,23 +64,34 @@ public:
 	public:
 		void Initialize(Key* keyTbl, int nKeys);
 	public:
-		// virtual function of jxglib::Keyboard
+		// virtual function of KeyboardRepeatable
 		virtual bool IsPressed(uint8_t keyCode) override;
 		virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1) override;
 	public:
 		// virtual function of Tickable
 		virtual void OnTick() override;
 	};
-	class KeyboardMatrix {
+	class KeyboardMatrix : public KeyboardRepeatable, public Tickable {
 	private:
-		GPIO* gpioDriveTbl;
-		int nDrives;
-		GPIO* gpioSenseTbl;
-		int nSenses;
+		const uint8_t* keyCodeTbl_;
+		const KeyRow* keyRowTbl_;
+		int nKeyRows_;
+		const KeyCol* keyColTbl_;
+		int nKeyCols_;
+		bool valueActive_, valueInactive_;
+		int iKeyRow_;
+		uint8_t keyCodePressedTbl_[6];
+		int nKeysPressed_;
 	public:
 		KeyboardMatrix();
 	public:
-		void Initialize();
+		void Initialize(const uint8_t* keyCodeTbl, const KeyRow* keyRowTbl, int nKeyRows, const KeyCol* keyColTbl, int nKeyCols, uint32_t flags);
+	public:
+		// virtual function of KeyboardRepeatable
+		virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1) override;
+	public:
+		// virtual function of Tickable
+		virtual void OnTick() override;
 	};
 public:
 	uint pin;

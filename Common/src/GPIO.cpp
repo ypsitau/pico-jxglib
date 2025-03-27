@@ -1,6 +1,7 @@
 //==============================================================================
 // GPIO.cpp
 //==============================================================================
+#include <memory.h>
 #include "jxglib/Common.h"
 
 namespace jxglib {
@@ -54,6 +55,14 @@ void GPIO::Key::Initialize()
 }
 
 //------------------------------------------------------------------------------
+// GPIO::KeyRow
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+// GPIO::KeyCol
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
 // GPIO::Keyboard
 //------------------------------------------------------------------------------
 GPIO::Keyboard::Keyboard() : Tickable(20, Tickable::Priority::Lowest), keyTbl_{nullptr}, nKeys_{0}
@@ -104,12 +113,75 @@ void GPIO::Keyboard::OnTick()
 //------------------------------------------------------------------------------
 // GPIO::KeyboardMatrix
 //------------------------------------------------------------------------------
-GPIO::KeyboardMatrix::KeyboardMatrix()
+GPIO::KeyboardMatrix::KeyboardMatrix() : Tickable(10, Tickable::Priority::Lowest),
+	keyCodeTbl_{nullptr}, keyRowTbl_{nullptr}, nKeyRows_{0}, keyColTbl_{nullptr}, nKeyCols_{0},
+	iKeyRow_{0}, nKeysPressed_{0}
 {
 }
 
-void GPIO::KeyboardMatrix::Initialize()
+void GPIO::KeyboardMatrix::Initialize(const uint8_t* keyCodeTbl,
+	const KeyRow* keyRowTbl, int nKeyRows, const KeyCol* keyColTbl, int nKeyCols, uint32_t flags)
 {
+	keyCodeTbl_ = keyCodeTbl;
+	keyRowTbl_ = keyRowTbl, nKeyRows_ = nKeyRows;
+	keyColTbl_ = keyColTbl, nKeyCols_ = nKeyCols;
+	if (flags & LogicNeg) {
+		valueActive_ = false, valueInactive_ = true;
+	} else {
+		valueActive_ = true, valueInactive_ = false;
+	}
+	for (int iKeyRow = 0; iKeyRow < nKeyRows_; iKeyRow++) {
+		keyRowTbl_[iKeyRow].GetGPIO().set_dir_OUT().put(valueInactive_).set_function_SIO();
+	}
+	for (int iKeyCol = 0; iKeyCol < nKeyCols_; iKeyCol++) {
+		keyColTbl_[iKeyCol].GetGPIO().set_dir_IN().put(0).set_function_SIO();
+	}
+	iKeyRow_ = 0;
+	nKeysPressed_ = 0;
+	keyRowTbl_[iKeyRow_].put(valueActive_);
+}
+
+int GPIO::KeyboardMatrix::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax)
+{
+#if 0
+	int nKeys = 0;
+	for (int i = 0; i < nKeys_; i++) {
+		Key& key = keyTbl_[i];
+		uint8_t keyCode = key.GetKeyCode();
+		if (key.IsPressed() && keyCode) keyCodeTbl[nKeys++] = keyCode;
+	}
+	return nKeys;
+#endif
+	return 0;
+}
+
+void GPIO::KeyboardMatrix::OnTick()
+{
+	for (int iKeyCol = 0; iKeyCol < nKeyCols_; iKeyCol++) {
+		if (nKeysPressed_ < count_of(keyCodePressedTbl_) && keyColTbl_[iKeyCol].get() == valueActive_) {
+			keyCodePressedTbl_[nKeysPressed_++] = keyCodeTbl_[iKeyCol + iKeyRow_ * nKeyCols_];
+		}
+	}
+	keyRowTbl_[iKeyRow_].put(valueInactive_);
+	iKeyRow_++;
+	if (iKeyRow_ == nKeyRows_) {
+		iKeyRow_ = 0;
+		nKeysPressed_ = 0;
+	}
+	keyRowTbl_[iKeyRow_].put(valueActive_);
+#if 0
+	uint8_t modifier = 0;
+	bool anyPressedFlag = false;
+	for (int i = 0; i < nKeys_; i++) {
+		Key& key = keyTbl_[i];
+		key.Update();
+		if (key.IsPressed()) {
+			anyPressedFlag = true;
+			if (GetRepeat().SignalFirst(key.GetKeyCode(), modifier)) break;
+		}
+	}
+	if (!anyPressedFlag) GetRepeat().Invalidate();
+#endif
 }
 
 }
