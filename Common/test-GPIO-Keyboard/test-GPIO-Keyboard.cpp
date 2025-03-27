@@ -4,21 +4,22 @@
 
 using namespace jxglib;
 
-GPIO::Key keyA(GPIO16, 'Z', GPIO::Key::PullUp);
-GPIO::Key keyB(GPIO17, 'X', GPIO::Key::PullUp);
-GPIO::Key keyLeft(GPIO18, VK_LEFT, GPIO::Key::PullUp);
-GPIO::Key keyUp(GPIO19, VK_UP, GPIO::Key::PullUp);
-GPIO::Key keyDown(GPIO20, VK_DOWN, GPIO::Key::PullUp);
-GPIO::Key keyRight(GPIO21, VK_RIGHT, GPIO::Key::PullUp);
-
 GPIO::Keyboard keyboard;
 
 int main()
 {
-	uint8_t keyCodeTbl[6];
 	::stdio_init_all();
-	keyboard.Initialize();
-	while (true) {
+	GPIO::Key keyTbl[] = {
+		{GPIO16.pull_up(),	VK_Z,		},
+		{GPIO17.pull_up(),	VK_X,		},
+		{GPIO18.pull_up(),	VK_LEFT,	},
+		{GPIO19.pull_up(),	VK_UP,		},
+		{GPIO20.pull_up(),	VK_DOWN,	},
+		{GPIO21.pull_up(),	VK_RIGHT,	},
+	};
+	keyboard.Initialize(keyTbl, count_of(keyTbl));
+	for (;;) {
+#if 0
 		KeyData keyData;
 		if (keyboard.GetKeyData(&keyData)) {
 			if (keyData.IsKeyCode()) {
@@ -30,14 +31,17 @@ int main()
 			}
 			::printf("\n");
 		}
-		//int nKeys = keyboard.SenseKeyCode(keyCodeTbl, count_of(keyCodeTbl));
-		//if (nKeys > 0) {
-		//	for (int i = 0; i < nKeys; i++) {
-		//		if (i > 0) ::printf(" ");
-		//		::printf("%s", GetKeyCodeName(keyCodeTbl[i]));
-		//	}
-		//	::printf("\n");
-		//}
+#else
+		uint8_t keyCodeTbl[6];
+		int nKeys = keyboard.SenseKeyCode(keyCodeTbl, count_of(keyCodeTbl));
+		if (nKeys > 0) {
+			for (int i = 0; i < nKeys; i++) {
+				if (i > 0) ::printf(" ");
+				::printf("%s", GetKeyCodeName(keyCodeTbl[i]));
+			}
+			::printf("\n");
+		}
+#endif
 		Tickable::Sleep(100);
 	}
 }

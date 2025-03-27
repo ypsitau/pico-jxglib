@@ -43,37 +43,34 @@ const GPIO29_T GPIO29;
 //------------------------------------------------------------------------------
 // GPIO::Key
 //------------------------------------------------------------------------------
-GPIO::Key* GPIO::Key::pKeyHead_ = nullptr;
-
 GPIO::Key::Key(const GPIO& gpio, uint8_t keyCode, uint32_t flags) :
-		gpio_{gpio}, keyCode_{keyCode}, flags_{flags}, pressedFlag_{false}, pKeyNext_{pKeyHead_}
+		gpio_{gpio}, keyCode_{keyCode}, flags_{flags}, pressedFlag_{false}
 {
-	pKeyHead_ = this;
 }
 
 void GPIO::Key::Initialize()
 {
-	gpio_.init().set_dir_IN();
-	if (flags_ & PullUp) gpio_.pull_up();
-	if (flags_ & PullDown) gpio_.pull_down();
+	gpio_.set_dir_IN().put(0).set_function_SIO();
 }
 
 //------------------------------------------------------------------------------
 // GPIO::Keyboard
 //------------------------------------------------------------------------------
-GPIO::Keyboard::Keyboard() : Tickable(20, Tickable::Priority::Lowest)
+GPIO::Keyboard::Keyboard() : Tickable(20, Tickable::Priority::Lowest), keyTbl_{nullptr}, nKeys_{0}
 {
 }
 
-void GPIO::Keyboard::Initialize()
+void GPIO::Keyboard::Initialize(Key* keyTbl, int nKeys)
 {
-	for (Key* pKey = Key::GetHead(); pKey; pKey = pKey->GetNext()) pKey->Initialize();
+	keyTbl_ = keyTbl, nKeys_ = nKeys;
+	for (int i = 0; i < nKeys_; i++) keyTbl_[i].Initialize();
 }
 
 bool GPIO::Keyboard::IsPressed(uint8_t keyCode)
 {
-	for (Key* pKey = Key::GetHead(); pKey; pKey = pKey->GetNext()) {
-		if (pKey->IsPressed() && keyCode == pKey->GetKeyCode()) return true;
+	for (int i = 0; i < nKeys_; i++) {
+		Key& key = keyTbl_[i];
+		if (key.IsPressed() && keyCode == key.GetKeyCode()) return true;
 	}
 	return false;
 }
@@ -81,9 +78,10 @@ bool GPIO::Keyboard::IsPressed(uint8_t keyCode)
 int GPIO::Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax)
 {
 	int nKeys = 0;
-	for (Key* pKey = Key::GetHead(); pKey && nKeys < nKeysMax; pKey = pKey->GetNext()) {
-		uint8_t keyCode = pKey->GetKeyCode();
-		if (pKey->IsPressed() && keyCode) keyCodeTbl[nKeys++] = keyCode;
+	for (int i = 0; i < nKeys_; i++) {
+		Key& key = keyTbl_[i];
+		uint8_t keyCode = key.GetKeyCode();
+		if (key.IsPressed() && keyCode) keyCodeTbl[nKeys++] = keyCode;
 	}
 	return nKeys;
 }
@@ -92,11 +90,12 @@ void GPIO::Keyboard::OnTick()
 {
 	uint8_t modifier = 0;
 	bool anyPressedFlag = false;
-	for (Key* pKey = Key::GetHead(); pKey; pKey = pKey->GetNext()) {
-		pKey->Update();
-		if (pKey->IsPressed()) {
+	for (int i = 0; i < nKeys_; i++) {
+		Key& key = keyTbl_[i];
+		key.Update();
+		if (key.IsPressed()) {
 			anyPressedFlag = true;
-			if (GetRepeat().SignalFirst(pKey->GetKeyCode(), modifier)) break;
+			if (GetRepeat().SignalFirst(key.GetKeyCode(), modifier)) break;
 		}
 	}
 	if (!anyPressedFlag) GetRepeat().Invalidate();
