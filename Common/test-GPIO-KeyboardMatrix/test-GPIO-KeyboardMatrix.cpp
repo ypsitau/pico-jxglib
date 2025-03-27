@@ -42,7 +42,7 @@ void Test_SenseKeyData(Keyboard& keyboard)
 			}
 			::printf("\n");
 		}
-		Tickable::Sleep(100);
+		Tickable::Sleep(10);
 	}
 }
 
@@ -58,6 +58,6 @@ int main()
 	const GPIO::KeyRow keyRowTbl[] = { GPIO16, GPIO17, GPIO18, GPIO19 };
 	const GPIO::KeyCol keyColTbl[] = { GPIO20.pull_up(), GPIO21.pull_up(), GPIO26.pull_up(), GPIO27.pull_up() };
 	keyboard.Initialize(keyCodeTbl, keyRowTbl, count_of(keyRowTbl), keyColTbl, count_of(keyColTbl), GPIO::LogicNeg);
-	//Test_GetKeyDataNB(keyboard);
-	Test_SenseKeyData(keyboard);
+	Test_GetKeyDataNB(keyboard);
+	//Test_SenseKeyData(keyboard);
 }
