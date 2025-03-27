@@ -170,15 +170,15 @@ void GPIO::KeyboardMatrix::OnTick()
 		::memset(keyCodeScannedTbl_, 0x00, sizeof(keyCodeScannedTbl_));
 		iKeyRow_ = 0;
 		nKeysScanned_ = 0;
+		if (keyCodeCapturedTbl_[0] == 0) {
+			GetRepeat().Invalidate();
+		} else {
+			for (int i = 0; i < count_of(keyCodeCapturedTbl_); i++) {
+				if (GetRepeat().SignalFirst(keyCodeCapturedTbl_[i], modifier)) break;
+			}
+		}
 	}
 	keyRowTbl_[iKeyRow_].put(valueActive_);
-	int i = 0;
-	for ( ; i < count_of(keyCodeCapturedTbl_); i++) {
-		uint8_t keyCode = keyCodeCapturedTbl_[i];
-		if (!keyCode) break;
-		if (GetRepeat().SignalFirst(keyCode, modifier)) break;
-	}
-	if (i == 0) GetRepeat().Invalidate();
 }
 
 }
