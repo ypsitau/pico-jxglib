@@ -157,7 +157,6 @@ int GPIO::KeyboardMatrix::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax)
 
 void GPIO::KeyboardMatrix::OnTick()
 {
-	uint8_t modifier = 0;
 	for (int iKeyCol = 0; iKeyCol < nKeyCols_; iKeyCol++) {
 		if (nKeysScanned_ < count_of(keyCodeScannedTbl_) && keyColTbl_[iKeyCol].get() == valueActive_) {
 			keyCodeScannedTbl_[nKeysScanned_++] = keyCodeTbl_[iKeyCol + iKeyRow_ * nKeyCols_];
@@ -174,6 +173,7 @@ void GPIO::KeyboardMatrix::OnTick()
 			GetRepeat().Invalidate();
 		} else {
 			for (int i = 0; i < count_of(keyCodeCapturedTbl_); i++) {
+				const uint8_t modifier = 0;
 				if (GetRepeat().SignalFirst(keyCodeCapturedTbl_[i], modifier)) break;
 			}
 		}
