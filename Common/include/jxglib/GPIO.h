@@ -37,14 +37,6 @@ public:
 	public:
 		virtual void Update() { pressedFlag_ = (flags_ & LogicNeg) ^ gpio_.get(); }
 	};
-	class KeyDrive {
-	protected:
-		const GPIO& gpio_;
-		uint32_t flags_;
-		KeyDrive* pKeyDriveNext_;
-	public:
-		KeyDrive(const GPIO& gpio, uint32_t flags);
-	};
 	class Keyboard : public KeyboardRepeatable, public Tickable {
 	private:
 		Key* keyTbl_;
@@ -60,6 +52,17 @@ public:
 	public:
 		// virtual function of Tickable
 		virtual void OnTick() override;
+	};
+	class KeyboardMatrix {
+	private:
+		GPIO* gpioDriveTbl;
+		int nDrives;
+		GPIO* gpioSenseTbl;
+		int nSenses;
+	public:
+		KeyboardMatrix();
+	public:
+		void Initialize();
 	};
 public:
 	uint pin;

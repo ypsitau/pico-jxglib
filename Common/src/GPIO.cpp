@@ -101,4 +101,15 @@ void GPIO::Keyboard::OnTick()
 	if (!anyPressedFlag) GetRepeat().Invalidate();
 }
 
+//------------------------------------------------------------------------------
+// GPIO::KeyboardMatrix
+//------------------------------------------------------------------------------
+GPIO::KeyboardMatrix::KeyboardMatrix()
+{
+}
+
+void GPIO::KeyboardMatrix::Initialize()
+{
+}
+
 }
