@@ -75,6 +75,7 @@ public:
 		};
 	private:
 		static const uint8_t reportDesc_[];
+	public:
 		static const KeyCodeToReportId keyCodeToReportIdTbl[];
 	public:
 		Keyboard(USBDevice& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
