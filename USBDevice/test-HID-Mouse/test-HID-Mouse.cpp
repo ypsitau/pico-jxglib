@@ -15,13 +15,13 @@ auto& GPIO_LBUTTON		= GPIO20;
 auto& GPIO_RBUTTON		= GPIO21;
 
 //-----------------------------------------------------------------------------
-// Mouse
+// DeviceMouse
 //-----------------------------------------------------------------------------
-class Mouse : public USBDevice::Mouse {
+class DeviceMouse : public USBDevice::Mouse {
 private:
 	bool senseFlagPrev_;
 public:
-	Mouse(USBDevice& device) : USBDevice::Mouse(device, "RaspberryPi Pico Mouse Interface", 0x81), senseFlagPrev_{false} {}
+	DeviceMouse(USBDevice& device) : USBDevice::Mouse(device, "RaspberryPi Pico Mouse Interface", 0x81), senseFlagPrev_{false} {}
 public:
 	virtual void OnTick() override;
 };
@@ -43,9 +43,9 @@ int main(void)
 		bcdDevice:			0x0100,
 	}, 0x0409, "pico-jxglib sample", "RaspberryPi Pico HID Device (Mouse)", "0123456789ABCDEF",
 		TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP);
-	Mouse mouse(device);
+	DeviceMouse deviceMouse(device);
 	device.Initialize();
-	mouse.Initialize();
+	deviceMouse.Initialize();
 	GPIO_CURSOR_LEFT	.init().set_dir_IN().pull_up();
 	GPIO_CURSOR_UP		.init().set_dir_IN().pull_up();
 	GPIO_CURSOR_DOWN	.init().set_dir_IN().pull_up();
@@ -56,9 +56,9 @@ int main(void)
 }
 
 //-----------------------------------------------------------------------------
-// Mouse
+// DeviceMouse
 //-----------------------------------------------------------------------------
-void Mouse::OnTick()
+void DeviceMouse::OnTick()
 {
 	bool senseFlag = false;
 	uint8_t reportId = 0;

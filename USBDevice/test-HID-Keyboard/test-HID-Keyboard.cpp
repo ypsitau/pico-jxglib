@@ -15,13 +15,13 @@ auto& GPIO_PAGE_UP		= GPIO20;
 auto& GPIO_PAGE_DOWN	= GPIO21;
 
 //-----------------------------------------------------------------------------
-// Keyboard
+// DeviceKeyboard
 //-----------------------------------------------------------------------------
-class Keyboard : public USBDevice::Keyboard {
+class DeviceKeyboard : public USBDevice::Keyboard {
 private:
 	int nKeycodePrev_;
 public:
-	Keyboard(USBDevice& device) : USBDevice::Keyboard(device, "RaspberryPi Pico Keyboard Interface", 0x81), nKeycodePrev_{0} {}
+	DeviceKeyboard(USBDevice& device) : USBDevice::Keyboard(device, "RaspberryPi Pico Keyboard Interface", 0x81), nKeycodePrev_{0} {}
 public:
 	virtual void OnTick() override;
 };
@@ -43,9 +43,9 @@ int main(void)
 		bcdDevice:			0x0100,
 	}, 0x0409, "pico-jxglib sample", "RaspberryPi Pico HID Device (Keyboard)", "0123456789ABCDEF",
 		TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP);
-	Keyboard keyboard(device);
+	DeviceKeyboard deviceKeyboard(device);
 	device.Initialize();
-	keyboard.Initialize();
+	deviceKeyboard.Initialize();
 	GPIO_ARROW_LEFT		.init().set_dir_IN().pull_up();
 	GPIO_ARROW_UP		.init().set_dir_IN().pull_up();
 	GPIO_ARROW_DOWN		.init().set_dir_IN().pull_up();
@@ -56,9 +56,9 @@ int main(void)
 }
 
 //-----------------------------------------------------------------------------
-// Keyboard
+// DeviceKeyboard
 //-----------------------------------------------------------------------------
-void Keyboard::OnTick()
+void DeviceKeyboard::OnTick()
 {
 	uint8_t reportId = 0;
 	uint8_t modifier  = 0;

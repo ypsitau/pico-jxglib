@@ -15,25 +15,25 @@ auto& GPIO_CURSOR_UP_LEFT		= GPIO20;
 auto& GPIO_CURSOR_DOWN_RIGHT	= GPIO21;
 
 //-----------------------------------------------------------------------------
-// Keyboard
+// DeviceKeyboard
 //-----------------------------------------------------------------------------
-class Keyboard : public USBDevice::Keyboard {
+class DeviceKeyboard : public USBDevice::Keyboard {
 private:
 	int nKeycodePrev_;
 public:
-	Keyboard(USBDevice& device) : USBDevice::Keyboard(device, "RaspberryPi Pico Keyboard Interface", 0x81), nKeycodePrev_{0} {}
+	DeviceKeyboard(USBDevice& device) : USBDevice::Keyboard(device, "RaspberryPi Pico Keyboard Interface", 0x81), nKeycodePrev_{0} {}
 public:
 	virtual void OnTick() override;
 };
 
 //-----------------------------------------------------------------------------
-// Mouse
+// DeviceMouse
 //-----------------------------------------------------------------------------
-class Mouse : public USBDevice::Mouse {
+class DeviceMouse : public USBDevice::Mouse {
 private:
 	bool senseFlagPrev_;
 public:
-	Mouse(USBDevice& device) : USBDevice::Mouse(device, "RaspberryPi Pico Mouse Interface", 0x82), senseFlagPrev_{false} {}
+	DeviceMouse(USBDevice& device) : USBDevice::Mouse(device, "RaspberryPi Pico Mouse Interface", 0x82), senseFlagPrev_{false} {}
 public:
 	virtual void OnTick() override;
 };
@@ -55,11 +55,11 @@ int main(void)
 		bcdDevice:			0x0100,
 	}, 0x0409, "pico-jxglib sample", "RaspberryPi Pico HMI Device (Keyboard + Mouse)", "0123456789ABCDEF",
 		TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP);
-	Keyboard keyboard(device);
-	Mouse mouse(device);
+	DeviceKeyboard deviceKeyboard(device);
+	DeviceMouse deviceMouse(device);
 	device.Initialize();
-	keyboard.Initialize();
-	mouse.Initialize();
+	deviceKeyboard.Initialize();
+	deviceMouse.Initialize();
 	GPIO_ARROW_LEFT			.init().set_dir_IN().pull_up();
 	GPIO_ARROW_UP			.init().set_dir_IN().pull_up();
 	GPIO_ARROW_DOWN			.init().set_dir_IN().pull_up();
@@ -70,9 +70,9 @@ int main(void)
 }
 
 //-----------------------------------------------------------------------------
-// Keyboard
+// DeviceKeyboard
 //-----------------------------------------------------------------------------
-void Keyboard::OnTick()
+void DeviceKeyboard::OnTick()
 {
 	uint8_t reportId = 0;
 	uint8_t modifier  = 0;
@@ -96,9 +96,9 @@ void Keyboard::OnTick()
 }
 
 //-----------------------------------------------------------------------------
-// Mouse
+// DeviceMouse
 //-----------------------------------------------------------------------------
-void Mouse::OnTick()
+void DeviceMouse::OnTick()
 {
 	bool senseFlag = false;
 	uint8_t reportId = 0;
