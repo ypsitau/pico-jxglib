@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/Common.h"
+#include "jxglib/KeyboardTest.h"
 
 using namespace jxglib;
 
@@ -18,30 +19,6 @@ int main()
 		{GPIO21.pull_up(),	VK_RIGHT,	},
 	};
 	keyboard.Initialize(keyTbl, count_of(keyTbl));
-	for (;;) {
-#if 0
-		KeyData keyData;
-		if (keyboard.GetKeyData(&keyData)) {
-			if (keyData.IsKeyCode()) {
-				::printf("VK_%s", GetKeyCodeName(keyData.GetKeyCode()));
-			} else if (keyData.GetChar() <= 'Z' - '@') {
-				::printf("Ctrl+%c", keyData.GetChar() + '@');
-			} else {
-				::printf("'%c'", keyData.GetChar());
-			}
-			::printf("\n");
-		}
-#else
-		uint8_t keyCodeTbl[6];
-		int nKeys = keyboard.SenseKeyCode(keyCodeTbl, count_of(keyCodeTbl));
-		if (nKeys > 0) {
-			for (int i = 0; i < nKeys; i++) {
-				if (i > 0) ::printf(" ");
-				::printf("%s", GetKeyCodeName(keyCodeTbl[i]));
-			}
-			::printf("\n");
-		}
-#endif
-		Tickable::Sleep(100);
-	}
+	KeyboardTest::GetKeyDataNB(keyboard);
+	//KeyboardTest::SenseKeyData(keyboard);
 }

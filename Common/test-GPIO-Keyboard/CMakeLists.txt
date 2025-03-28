@@ -63,7 +63,8 @@ pico_enable_stdio_usb(test-GPIO-Keyboard 0)
 # Add the standard library to the build
 target_link_libraries(test-GPIO-Keyboard
 	pico_stdlib
-	jxglib_Common)
+	jxglib_Common
+	jxglib_KeyboardTest)
 
 # Add the standard include files to the build
 target_include_directories(test-GPIO-Keyboard PRIVATE
