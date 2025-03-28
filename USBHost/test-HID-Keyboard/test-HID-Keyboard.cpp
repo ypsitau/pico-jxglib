@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/USBHost.h"
+#include "jxglib/KeyboardTest.h"
 
 using namespace jxglib;
 
@@ -8,26 +9,8 @@ int main()
 {
 	::stdio_init_all();
 	USBHost::Initialize();
-	USBHost::GetKeyboard().SetKeyLayout(KeyLayout_106::Instance).SetCapsLockAsCtrl();
-	::printf("----\n");
-	for (;;) {
-		KeyData keyDataTbl[6];
-		//int nKeys = USBHost::GetKeyboard().SenseKeyData(keyDataTbl, count_of(keyDataTbl));
-		int nKeys = USBHost::GetKeyboard().GetKeyDataNB(&keyDataTbl[0])? 1 : 0;
-		if (nKeys > 0) {
-			for (int i = 0; i < nKeys; i++) {
-				const KeyData& keyData = keyDataTbl[i];
-				if (i > 0) ::printf(" ");
-				if (keyData.IsKeyCode()) {
-					::printf("VK_%s", GetKeyCodeName(keyData.GetKeyCode()));
-				} else if (keyData.GetChar() <= 'Z' - '@') {
-					::printf("Ctrl+%c", keyData.GetChar() + '@');
-				} else {
-					::printf("'%c'", keyData.GetChar());
-				}
-			}
-			::printf("\n");
-		}
-		Tickable::Tick();
-	}
+	Keyboard& keyboard = USBHost::GetKeyboard();
+	keyboard.SetKeyLayout(KeyLayout_106::Instance).SetCapsLockAsCtrl();
+	//KeyboardTest::GetKeyDataNB(keyboard);
+	KeyboardTest::SenseKeyData(keyboard);
 }

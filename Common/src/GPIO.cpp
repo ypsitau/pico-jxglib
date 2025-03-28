@@ -173,8 +173,10 @@ void GPIO::KeyboardMatrix::OnTick()
 			GetRepeat().Invalidate();
 		} else {
 			for (int i = 0; i < count_of(keyCodeCapturedTbl_); i++) {
+				uint8_t keyCode = keyCodeCapturedTbl_[i];
+				if (!keyCode) break;
 				const uint8_t modifier = 0;
-				if (GetRepeat().SignalFirst(keyCodeCapturedTbl_[i], modifier)) break;
+				if (GetRepeat().SignalFirst(keyCode, modifier)) break;
 			}
 		}
 	}
