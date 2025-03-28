@@ -69,14 +69,14 @@ public:
 	};
 	class Keyboard : public HID {
 	public:
-		struct KeyCodeToReportId {
-			uint8_t reportIdUS;
-			uint8_t reportIdNonUS;
+		struct KeyCodeToUsageId {
+			uint8_t usageIdUS;
+			uint8_t usageIdNonUS;
 		};
 	private:
 		static const uint8_t reportDesc_[];
 	public:
-		static const KeyCodeToReportId keyCodeToReportIdTbl[];
+		static const KeyCodeToUsageId keyCodeToUsageIdTbl[];
 	public:
 		Keyboard(USBDevice& device, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval = 10);
 	};

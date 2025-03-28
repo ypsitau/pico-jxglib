@@ -61,23 +61,23 @@ void DeviceKeyboard::OnTick()
 {
 	uint8_t reportId = 0;
 	uint8_t modifier  = 0;
-	uint8_t reportIdTbl[6] = { 0 };
+	uint8_t usageIdTbl[6] = { 0 };
 	uint8_t keyCodeTbl[6];
 	int nKeyCode = keyboard_.SenseKeyCode(keyCodeTbl, count_of(keyCodeTbl));
-	int nReportId = 0;
+	int nUsageId = 0;
 	for (int i = 0; i < nKeyCode; i++) {
-		uint8_t reportId = keyCodeToReportIdTbl[keyCodeTbl[i]].reportIdUS;
-		if (reportId) reportIdTbl[nReportId++] = reportId;
+		uint8_t usageId = keyCodeToUsageIdTbl[keyCodeTbl[i]].usageIdUS;
+		if (usageId) usageIdTbl[nUsageId++] = usageId;
 	}
 	if (::tud_suspended()) {
 		// Wake up host if we are in suspend mode and REMOTE_WAKEUP feature is enabled by host
-		if (nReportId > 0) ::tud_remote_wakeup();
+		if (nUsageId > 0) ::tud_remote_wakeup();
 	} else if (!hid_ready()) {
 		// do nothing
-	} else if (nReportId > 0) {
-		hid_keyboard_report(reportId, modifier, reportIdTbl);
+	} else if (nUsageId > 0) {
+		hid_keyboard_report(reportId, modifier, usageIdTbl);
 	} else if (nKeycodePrev_ > 0) {
 		hid_keyboard_report(reportId, modifier, nullptr);
 	}
-	nKeycodePrev_ = nReportId;
+	nKeycodePrev_ = nUsageId;
 }

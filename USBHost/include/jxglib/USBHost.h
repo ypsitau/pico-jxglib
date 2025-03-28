@@ -24,7 +24,7 @@ public:
 	};
 	class Keyboard : public KeyboardRepeatable {
 	public:
-		struct ReportIdToKeyCode {
+		struct UsageIdToKeyCode {
 			uint8_t keyCodeUS;
 			uint8_t keyCodeNonUS;
 		};
@@ -36,7 +36,7 @@ public:
 		bool capsLockAsCtrlFlag_;
 		Report reportCaptured_;
 	public:
-		static const ReportIdToKeyCode reportIdToKeyCodeTbl[256];
+		static const UsageIdToKeyCode usageIdToKeyCodeTbl[256];
 	public:
 		Keyboard();
 	public:

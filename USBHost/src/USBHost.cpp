@@ -323,7 +323,7 @@ void tuh_hid_report_received_cb(uint8_t devAddr, uint8_t iInstance, const uint8_
 //------------------------------------------------------------------------------
 // USBHost::Keyboard
 //------------------------------------------------------------------------------
-const USBHost::Keyboard::ReportIdToKeyCode USBHost::Keyboard::reportIdToKeyCodeTbl[256] = {
+const USBHost::Keyboard::UsageIdToKeyCode USBHost::Keyboard::usageIdToKeyCodeTbl[256] = {
 	{ 0,				0,				},	// 0x00
 	{ 0,				0,				},	// 0x01
 	{ 0,				0,				},	// 0x02
@@ -598,8 +598,8 @@ void USBHost::Keyboard::OnReport(uint8_t devAddr, uint8_t iInstance, const hid_k
 	::memset(&reportCaptured_, 0x00, sizeof(reportCaptured_));
 	reportCaptured_.modifier = report.modifier;
 	for (int iSrc = 0, iDst = 0; iSrc < count_of(report.keycode); iSrc++) {
-		const ReportIdToKeyCode& reportIdToKeyCode = reportIdToKeyCodeTbl[report.keycode[iSrc]];
-		uint8_t keyCode = GetKeyLayout().IsNonUS()? reportIdToKeyCode.keyCodeNonUS : reportIdToKeyCode.keyCodeUS;
+		const UsageIdToKeyCode& usageIdToKeyCode = usageIdToKeyCodeTbl[report.keycode[iSrc]];
+		uint8_t keyCode = GetKeyLayout().IsNonUS()? usageIdToKeyCode.keyCodeNonUS : usageIdToKeyCode.keyCodeUS;
 		if (capsLockAsCtrlFlag_ && keyCode == VK_CAPITAL) {
 			reportCaptured_.modifier |= KEYBOARD_MODIFIER_LEFTCTRL;
 		} else {

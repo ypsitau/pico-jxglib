@@ -251,7 +251,7 @@ namespace jxglib {
 
 const uint8_t USBDevice::Keyboard::reportDesc_[] = { TUD_HID_REPORT_DESC_KEYBOARD() };
 
-const USBDevice::Keyboard::KeyCodeToReportId USBDevice::Keyboard::keyCodeToReportIdTbl[] = {
+const USBDevice::Keyboard::KeyCodeToUsageId USBDevice::Keyboard::keyCodeToUsageIdTbl[] = {
 	{ 0x00,	0x00 },	// 0x00			
 	{ 0x00,	0x00 },	// 0x01: VK_LBUTTON		
 	{ 0x00,	0x00 },	// 0x02: VK_RBUTTON		

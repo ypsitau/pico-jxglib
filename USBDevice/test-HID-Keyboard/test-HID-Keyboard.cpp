@@ -62,23 +62,23 @@ void DeviceKeyboard::OnTick()
 {
 	uint8_t reportId = 0;
 	uint8_t modifier  = 0;
-	uint8_t keycode[6] = { 0 };
-	int nKeycode = 0;
-	if (!GPIO_ARROW_LEFT.get())		keycode[nKeycode++] = HID_KEY_ARROW_LEFT;
-	if (!GPIO_ARROW_UP.get())		keycode[nKeycode++] = HID_KEY_ARROW_UP;
-	if (!GPIO_ARROW_DOWN.get())		keycode[nKeycode++] = HID_KEY_ARROW_DOWN;
-	if (!GPIO_ARROW_RIGHT.get())	keycode[nKeycode++] = HID_KEY_ARROW_RIGHT;
-	if (!GPIO_PAGE_UP.get())		keycode[nKeycode++] = HID_KEY_PAGE_UP;
-	if (!GPIO_PAGE_DOWN.get())		keycode[nKeycode++] = HID_KEY_PAGE_DOWN;
+	uint8_t usageIdTbl[6] = { 0 };
+	int nUsageId = 0;
+	if (!GPIO_ARROW_LEFT.get())		usageIdTbl[nUsageId++] = HID_KEY_ARROW_LEFT;
+	if (!GPIO_ARROW_UP.get())		usageIdTbl[nUsageId++] = HID_KEY_ARROW_UP;
+	if (!GPIO_ARROW_DOWN.get())		usageIdTbl[nUsageId++] = HID_KEY_ARROW_DOWN;
+	if (!GPIO_ARROW_RIGHT.get())	usageIdTbl[nUsageId++] = HID_KEY_ARROW_RIGHT;
+	if (!GPIO_PAGE_UP.get())		usageIdTbl[nUsageId++] = HID_KEY_PAGE_UP;
+	if (!GPIO_PAGE_DOWN.get())		usageIdTbl[nUsageId++] = HID_KEY_PAGE_DOWN;
 	if (::tud_suspended()) {
 		// Wake up host if we are in suspend mode and REMOTE_WAKEUP feature is enabled by host
-		if (nKeycode > 0) ::tud_remote_wakeup();
+		if (nUsageId > 0) ::tud_remote_wakeup();
 	} else if (!hid_ready()) {
 		// do nothing
-	} else if (nKeycode > 0) {
-		hid_keyboard_report(reportId, modifier, keycode);
+	} else if (nUsageId > 0) {
+		hid_keyboard_report(reportId, modifier, usageIdTbl);
 	} else if (nKeycodePrev_ > 0) {
 		hid_keyboard_report(reportId, modifier, nullptr);
 	}
-	nKeycodePrev_ = nKeycode;
+	nKeycodePrev_ = nUsageId;
 }

@@ -11,6 +11,6 @@ int main()
 	USBHost::Initialize();
 	Keyboard& keyboard = USBHost::GetKeyboard();
 	keyboard.SetKeyLayout(KeyLayout_106::Instance).SetCapsLockAsCtrl();
-	//KeyboardTest::GetKeyDataNB(keyboard);
-	KeyboardTest::SenseKeyData(keyboard);
+	KeyboardTest::GetKeyDataNB(keyboard);
+	//KeyboardTest::SenseKeyData(keyboard);
 }
