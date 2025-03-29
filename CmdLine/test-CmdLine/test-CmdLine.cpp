@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "pico/stdlib.h"
 #include "jxglib/CmdLine.h"
 #include "jxglib/Serial.h"
@@ -7,9 +8,9 @@ using namespace jxglib;
 
 Serial::Terminal terminal;
 
-CmdLineEntry(dump)
+CmdLineEntry(ls)
 {
-	terminal.Dump(reinterpret_cast<const void*>(0x10000000), 64);
+	terminal.Printf("hoge\n");
 }
 
 int main()

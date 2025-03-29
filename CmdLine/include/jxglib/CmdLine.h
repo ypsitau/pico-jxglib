@@ -8,7 +8,7 @@
 
 #define CmdLineEntry(name) \
 class CmdLineEntry_##name : public CmdLine::Entry { \
-private: \
+public: \
 	static CmdLineEntry_##name Instance; \
 public: \
 	CmdLineEntry_##name() : CmdLine::Entry(#name) {} \
@@ -34,6 +34,7 @@ public:
 	public:
 		Entry(const char* name);
 	public:
+		const char* GetName() const { return name_; }
 		Entry* GetEntryNext() { return pEntryNext_; }
 	public:
 		static Entry* GetEntryHead() { return pEntryHead_; }
@@ -51,7 +52,7 @@ public:
 public:
 	CmdLine();
 public:
-	void RunEntry(char* line);
+	bool RunEntry(char* line);
 	Terminal& GetTerminal() { return *pTerminal_; }
 public:
 	static void AttachTerminal(Terminal& terminal) { Instance.AttachTerminal_(terminal); }

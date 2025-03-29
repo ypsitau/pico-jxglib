@@ -48,6 +48,7 @@ pico_enable_stdio_usb(test-CmdLine 0)
 target_link_libraries(test-CmdLine
     pico_stdlib
     jxglib_CmdLine
+    jxglib_CmdBuiltIn
     jxglib_Serial)
 
 # Add the standard include files to the build
