@@ -79,7 +79,8 @@ public:
 	static Mouse& GetMouse() { return Instance.mouse_; }
 	static EventHandler* GetEventHandler() { return Instance.pEventHandler_; }
 public:
-	// virtual function of Tickable
+	// virtual functions of Tickable
+	virtual const char* GetTickableName() const override { return "USBHost"; }
 	virtual void OnTick() override;
 };
 

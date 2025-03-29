@@ -52,7 +52,8 @@ public:
 		bool SignalFirst(uint8_t keyCode, uint8_t modifier);
 		bool GetKey(uint8_t* pKeyCode, uint8_t* pModifier);
 	public:
-		// virtual function of Tickable
+		// virtual functions of Tickable
+		virtual const char* GetTickableName() const override { return "KeyboardRepeatable::Repeat"; }
 		virtual void OnTick() override;
 	};
 private:

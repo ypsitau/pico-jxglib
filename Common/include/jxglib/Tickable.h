@@ -7,6 +7,8 @@
 
 namespace jxglib {
 
+class Printable;
+
 #define TickableEntry(name, ...) \
 class Tickable_##name##_ : public Tickable { \
 public: \
@@ -65,7 +67,7 @@ public:
 	virtual const char* GetTickableName() const { return "no-name"; }
 	virtual void OnTick() = 0;
 public:
-	static void PrintList();
+	static void PrintList(Printable& printable);
 	static const char* GetPriorityName(Priority priority);
 };
 

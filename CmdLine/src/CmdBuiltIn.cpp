@@ -16,4 +16,9 @@ CmdLineEntry(d)
 	terminal.Dump.AddrStart(addr).DigitsAddr(8)(reinterpret_cast<const void*>(addr), 64);
 }
 
+CmdLineEntry(ticks)
+{
+	Tickable::PrintList(terminal);
+}
+
 }

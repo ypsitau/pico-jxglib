@@ -127,6 +127,7 @@ public:
 	public:
 		MSC(USBDevice& device, const char* str, uint8_t endpBulkOut, uint8_t endpBulkIn, uint16_t endpSize = 64);
 	public:
+		virtual const char* GetTickableName() const override { return "USBDevice::MSC"; }
 		virtual void OnTick() override {}
 	public:
 		virtual void On_msc_inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]) = 0;
@@ -211,7 +212,9 @@ public:
 	static MSC* GetInterface_MSC(uint8_t iInstance = 0) { return Instance->specific_.pMSCTbl[iInstance]; }
 	static HID* GetInterface_HID(uint8_t iInstance = 0) { return Instance->specific_.pHIDTbl[iInstance]; }
 public:
-	virtual void OnTick() { ::tud_task(); }
+	// virtual functions of Tickable
+	virtual const char* GetTickableName() const override { return "USBDevice"; }
+	virtual void OnTick() override { ::tud_task(); }
 public:
 	virtual void OnMount() {}
 	virtual void OnUmount() {}

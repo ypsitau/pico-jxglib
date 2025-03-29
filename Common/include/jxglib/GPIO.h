@@ -68,7 +68,8 @@ public:
 		virtual bool IsPressed(uint8_t keyCode) override;
 		virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1) override;
 	public:
-		// virtual function of Tickable
+		// virtual functions of Tickable
+		virtual const char* GetTickableName() const override { return "GPIO::Keyboard"; }
 		virtual void OnTick() override;
 	};
 	class KeyboardMatrix : public KeyboardRepeatable, public Tickable {
@@ -91,7 +92,8 @@ public:
 		// virtual function of KeyboardRepeatable
 		virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1) override;
 	public:
-		// virtual function of Tickable
+		// virtual functions of Tickable
+		virtual const char* GetTickableName() const override { return "GPIO::KeyboardMatrix"; }
 		virtual void OnTick() override;
 	};
 public:

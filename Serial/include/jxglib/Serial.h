@@ -56,7 +56,8 @@ public:
 		virtual Editable& Edit_MoveHistoryPrev();
 		virtual Editable& Edit_MoveHistoryNext();
 	public:
-		// virtual function of Tickable
+		// virtual functions of Tickable
+		virtual const char* GetTickableName() const override { return "Serial::Terminal"; }
 		virtual void OnTick() override;
 	};
 public:

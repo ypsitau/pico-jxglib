@@ -59,8 +59,9 @@ public:
 private:
 	void AttachTerminal_(Terminal& terminal) { pTerminal_ = &terminal; }
 public:
-	// virtual function of Tickable
-	void OnTick() override;
+	// virtual functions of Tickable
+	virtual const char* GetTickableName() const override { return "CmdLine"; }
+	virtual void OnTick() override;
 };
 
 }

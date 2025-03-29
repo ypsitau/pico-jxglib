@@ -32,6 +32,8 @@ public:
 			Tickable_Blink(Terminal& terminal, int msecBlink) : Tickable(msecBlink, Priority::Lowest),
 					terminal_{terminal}, msecBlink_{msecBlink} {}
 		public:
+			// virtual functions of Tickable
+			virtual const char* GetTickableName() const override { return "Display::Terminal::Tickable_Blink"; }
 			virtual void OnTick() override { terminal_.BlinkCursor(); }
 		};
 		class Tickable_Keyboard : public Tickable {
@@ -40,6 +42,8 @@ public:
 		public:
 			Tickable_Keyboard(Terminal& terminal) : Tickable(-1, Priority::Lowest), terminal_{terminal} {}
 		public:
+			// virtual functions of Tickable
+			virtual const char* GetTickableName() const override { return "Display::Terminal::Tickable_Keyboard"; }
 			virtual void OnTick() override;
 		};
 	public:
