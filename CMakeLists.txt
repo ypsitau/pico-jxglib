@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.12)
 project(jxglib C CXX ASM)
 
 add_subdirectory(Canvas)
+add_subdirectory(CmdLine)
 add_subdirectory(Common)
 add_subdirectory(Display)
 add_subdirectory(DMA)
