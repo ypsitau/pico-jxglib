@@ -30,6 +30,17 @@ char* Editable::ReadLine(const char* prompt)
 	return GetLineEditor().GetPointerBegin();
 }
 
+void Editable::ReadLine_Begin(const char* prompt)
+{
+	GetPrintable().Print(prompt).RefreshScreen();
+	Edit_Begin();
+}
+
+char* Editable::ReadLine_Process()
+{
+	return GetLineEditor().IsEditing()? nullptr : GetLineEditor().GetPointerBegin();
+}
+
 bool Editable::ProcessKeyData(const KeyData& keyData)
 {
 	if (keyData.IsKeyCode()) {

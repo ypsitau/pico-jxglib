@@ -12,4 +12,13 @@ Terminal::Terminal(int bytesHistoryBuff, Keyboard& keyboard) : Editable(bytesHis
 {
 }
 
+//------------------------------------------------------------------------------
+// TerminalDumb
+//------------------------------------------------------------------------------
+TerminalDumb TerminalDumb::Instance;
+
+TerminalDumb::TerminalDumb() : Terminal(0, KeyboardDumb::Instance)
+{
+}
+
 }
