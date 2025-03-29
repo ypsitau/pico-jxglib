@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include "jxglib/Printable.h"
-#include "jxglib/UART.h"
 
 namespace jxglib {
 
@@ -108,7 +107,7 @@ Printable::DumpT& Printable::DumpT::operator()(const void* buff, int cnt)
 			}
 			pAsciiBuff = asciiBuff;
 		} else {
-			printable.Print((iCol % 8 == 0)? "  " : " ");
+			printable.Print(" ");
 		}
 		if (bytesPerElem_ == 1) {	
 			printable.Printf(formatData, *pElem);

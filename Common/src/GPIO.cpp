@@ -104,10 +104,10 @@ void GPIO::Keyboard::OnTick()
 		key.Update();
 		if (key.IsPressed()) {
 			anyPressedFlag = true;
-			if (GetRepeat().SignalFirst(key.GetKeyCode(), modifier)) break;
+			if (GetRepeater().SignalFirst(key.GetKeyCode(), modifier)) break;
 		}
 	}
-	if (!anyPressedFlag) GetRepeat().Invalidate();
+	if (!anyPressedFlag) GetRepeater().Invalidate();
 }
 
 //------------------------------------------------------------------------------
@@ -170,13 +170,13 @@ void GPIO::KeyboardMatrix::OnTick()
 		iKeyRow_ = 0;
 		nKeysScanned_ = 0;
 		if (keyCodeCapturedTbl_[0] == 0) {
-			GetRepeat().Invalidate();
+			GetRepeater().Invalidate();
 		} else {
 			for (int i = 0; i < count_of(keyCodeCapturedTbl_); i++) {
 				uint8_t keyCode = keyCodeCapturedTbl_[i];
 				if (!keyCode) break;
 				const uint8_t modifier = 0;
-				if (GetRepeat().SignalFirst(keyCode, modifier)) break;
+				if (GetRepeater().SignalFirst(keyCode, modifier)) break;
 			}
 		}
 	}

@@ -9,15 +9,15 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Initialise pico_sdk from installed location
 # (note this can come from environment, CMake cache etc)
 
-# == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
+# == DO NEVER EDIT THE NEXT LINES for Raspberry Pi Pico VS Code Extension to work ==
 if(WIN32)
 	set(USERHOME $ENV{USERPROFILE})
 else()
 	set(USERHOME $ENV{HOME})
 endif()
-set(sdkVersion 2.1.0)
-set(toolchainVersion 13_3_Rel1)
-set(picotoolVersion 2.1.0)
+set(sdkVersion 2.0.0)
+set(toolchainVersion 13_2_Rel1)
+set(picotoolVersion 2.0.0)
 set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
 if (EXISTS ${picoVscode})
 	include(${picoVscode})
@@ -28,32 +28,34 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-LineBuff C CXX ASM)
+project(test-Printable C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-LineBuff test-LineBuff.cpp )
+add_executable(test-Printable test-Printable.cpp )
 
-pico_set_program_name(test-LineBuff "test-LineBuff")
-pico_set_program_version(test-LineBuff "0.1")
+pico_set_program_name(test-Printable "test-Printable")
+pico_set_program_version(test-Printable "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-LineBuff 1)
-pico_enable_stdio_usb(test-LineBuff 0)
+pico_enable_stdio_uart(test-Printable 1)
+pico_enable_stdio_usb(test-Printable 0)
 
 # Add the standard library to the build
-target_link_libraries(test-LineBuff
+target_link_libraries(test-Printable
 	pico_stdlib
 	jxglib_Common)
 
 # Add the standard include files to the build
-target_include_directories(test-LineBuff PRIVATE
+target_include_directories(test-Printable PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}
+	${CMAKE_CURRENT_LIST_DIR}/.. # for our common lwipopts or any other standard includes, if required
 )
 
-pico_add_extra_outputs(test-LineBuff)
+pico_add_extra_outputs(test-Printable)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)

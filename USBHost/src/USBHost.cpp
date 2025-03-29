@@ -607,10 +607,10 @@ void USBHost::Keyboard::OnReport(uint8_t devAddr, uint8_t iInstance, const hid_k
 		}
 	}
 	if (reportCaptured_.keyCodeTbl[0] == 0) {
-		GetRepeat().Invalidate();
+		GetRepeater().Invalidate();
 	} else {
 		for (int i = 0; i < count_of(reportCaptured_.keyCodeTbl); i++) {
-			if (GetRepeat().SignalFirst(reportCaptured_.keyCodeTbl[i], reportCaptured_.modifier)) break;
+			if (GetRepeater().SignalFirst(reportCaptured_.keyCodeTbl[i], reportCaptured_.modifier)) break;
 		}
 	}
 }

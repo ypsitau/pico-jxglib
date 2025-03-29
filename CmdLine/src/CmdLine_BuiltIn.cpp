@@ -25,6 +25,10 @@ CmdLineEntry_d CmdLineEntry_d::Instance;
 
 void CmdLineEntry_d::Run(Terminal& terminal, int argc, char* argv[])
 {
+	int nColsTerm, nRowsTerm;
+	terminal.GetSize(&nColsTerm, &nRowsTerm);
+	nColsTerm -= 8 + 2;
+	int nCols = ((nColsTerm + 1) / 3) / 4 * 4;
 	if (argc >= 2) {
 		char* p = nullptr;
 		uint32_t num = ::strtoul(argv[1], &p, 0);
@@ -43,7 +47,9 @@ void CmdLineEntry_d::Run(Terminal& terminal, int argc, char* argv[])
 		}
 		bytes_ = num;
 	}
-	terminal.Dump.AddrStart(addr_).DigitsAddr(8)(reinterpret_cast<const void*>(addr_), bytes_);
+	if (nCols > 0) {
+		terminal.Dump.Cols(nCols).AddrStart(addr_).DigitsAddr(8)(reinterpret_cast<const void*>(addr_), bytes_);
+	}
 	addr_ += bytes_;
 }
 

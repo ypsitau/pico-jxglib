@@ -43,13 +43,13 @@ bool Keyboard::IsPressed(uint8_t keyCode)
 //------------------------------------------------------------------------------
 // KeyboardRepeatable
 //------------------------------------------------------------------------------
-KeyboardRepeatable::KeyboardRepeatable() : repeat_(*this)
+KeyboardRepeatable::KeyboardRepeatable() : repeater_(*this)
 {
 }
 
 Keyboard& KeyboardRepeatable::SetRepeatTime(uint32_t msecDelay, uint32_t msecRate)
 {
-	repeat_.SetRepeatTime(msecDelay, msecRate);
+	repeater_.SetRepeatTime(msecDelay, msecRate);
 	return *this;
 }
 
@@ -68,7 +68,7 @@ int KeyboardRepeatable::SenseKeyData(KeyData keyDataTbl[], int nKeysMax)
 bool KeyboardRepeatable::GetKeyDataNB(KeyData* pKeyData)
 {
 	uint8_t keyCode, modifier;
-	if (GetRepeat().GetKey(&keyCode, &modifier)) {
+	if (GetRepeater().GetKey(&keyCode, &modifier)) {
 		*pKeyData = GetKeyLayout().CreateKeyData(keyCode, modifier);
 		return pKeyData->IsValid();
 	}
@@ -76,15 +76,15 @@ bool KeyboardRepeatable::GetKeyDataNB(KeyData* pKeyData)
 }
 
 //------------------------------------------------------------------------------
-// KeyboardRepeatable::Repeat
+// KeyboardRepeatable::Repeater
 //------------------------------------------------------------------------------
-KeyboardRepeatable::Repeat::Repeat(Keyboard& keyboard) : Tickable(-1, Tickable::Priority::Lowest),
+KeyboardRepeatable::Repeater::Repeater(Keyboard& keyboard) : Tickable(-1, Tickable::Priority::Lowest),
 	keyboard_{keyboard}, modifier_{0}, keyCode_{0}, readyFlag_{false}, msecDelay_{400}, msecRate_{100}
 {
 	Suspend();
 }
 
-bool KeyboardRepeatable::Repeat::SignalFirst(uint8_t keyCode, uint8_t modifier)
+bool KeyboardRepeatable::Repeater::SignalFirst(uint8_t keyCode, uint8_t modifier)
 {
 	if (keyCode_ != keyCode) {
 		modifier_ = modifier;
@@ -97,7 +97,7 @@ bool KeyboardRepeatable::Repeat::SignalFirst(uint8_t keyCode, uint8_t modifier)
 	return false;
 }
 
-bool KeyboardRepeatable::Repeat::GetKey(uint8_t* pKeyCode, uint8_t* pModifier)
+bool KeyboardRepeatable::Repeater::GetKey(uint8_t* pKeyCode, uint8_t* pModifier)
 {
 	if (readyFlag_) {
 		readyFlag_ = false;
@@ -108,7 +108,7 @@ bool KeyboardRepeatable::Repeat::GetKey(uint8_t* pKeyCode, uint8_t* pModifier)
 	return false;
 }
 
-void KeyboardRepeatable::Repeat::OnTick()
+void KeyboardRepeatable::Repeater::OnTick()
 {
 	uint8_t keyCodeTbl[6];
 	keyboard_.SenseKeyCode(keyCodeTbl, count_of(keyCodeTbl));
