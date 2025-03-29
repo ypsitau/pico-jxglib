@@ -351,6 +351,14 @@ Printable& Display::Terminal::Locate(int col, int row)
 	return *this;
 }
 
+Printable& Display::Terminal::GetSize(int* pnCols, int* pnRows)
+{
+	const FontEntry& fontEntry = GetFont().GetFontEntry('M');
+	*pnCols = GetDrawable().GetWidth() / fontEntry.width;
+	*pnRows = GetDrawable().GetHeight() / context_.CalcAdvanceY();
+	return *this;
+}
+
 Printable& Display::Terminal::PutChar(char ch)
 {
 	AppendChar(ch, !suppressFlag_);

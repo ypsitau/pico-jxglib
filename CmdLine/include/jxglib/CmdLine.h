@@ -35,6 +35,7 @@ public:
 		Entry(const char* name);
 	public:
 		const char* GetName() const { return name_; }
+		void SetEntryNext(Entry* pEntry) { pEntryNext_ = pEntry; }
 		Entry* GetEntryNext() { return pEntryNext_; }
 	public:
 		static Entry* GetEntryHead() { return pEntryHead_; }
@@ -62,6 +63,8 @@ public:
 	// virtual functions of Tickable
 	virtual const char* GetTickableName() const override { return "CmdLine"; }
 	virtual void OnTick() override;
+public:
+	static void PrintList(Printable& printable);
 };
 
 }

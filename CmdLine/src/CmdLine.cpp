@@ -67,8 +67,7 @@ bool CmdLine::RunEntry(char* line)
 	}
 	argv[argc] = nullptr;
 	if (argc == 0) return false;
-	Entry* pEntry = Entry::GetEntryHead();
-	for ( ; pEntry; pEntry = pEntry->GetEntryNext()) {
+	for (Entry* pEntry = Entry::GetEntryHead(); pEntry; pEntry = pEntry->GetEntryNext()) {
 		if (::strcmp(argv[0], pEntry->GetName()) == 0) {
 			pEntryRunning_ = pEntry;
 			pEntry->Run(GetTerminal(), argc, argv);
@@ -103,15 +102,32 @@ void CmdLine::OnTick()
 	}
 }
 
+void CmdLine::PrintList(Printable& printable)
+{
+	for (Entry* pEntry = Entry::GetEntryHead(); pEntry; pEntry = pEntry->GetEntryNext()) {
+		printable.Printf("%s\n", pEntry->GetName());
+	}
+}
+
 //------------------------------------------------------------------------------
 // CmdLine::Entry
 //------------------------------------------------------------------------------
 CmdLine::Entry* CmdLine::Entry::pEntryHead_ = nullptr;
 
-CmdLine::Entry::Entry(const char* name) : name_{name}
+CmdLine::Entry::Entry(const char* name) : name_{name}, pEntryNext_{nullptr}
 {
-	pEntryNext_ = pEntryHead_;
-	pEntryHead_ = this;
+	Entry* pEntryPrev = nullptr;
+	for (Entry* pEntry = pEntryHead_; pEntry; pEntry = pEntry->GetEntryNext()) {
+		if (::strcmp(name, pEntry->GetName()) <= 0) break;
+		pEntryPrev = pEntry;
+	}
+	if (pEntryPrev) {
+		SetEntryNext(pEntryPrev->GetEntryNext());
+		pEntryPrev->SetEntryNext(this);
+	} else {
+		SetEntryNext(pEntryHead_);
+		pEntryHead_ = this;
+	}
 }
 
 }

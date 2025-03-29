@@ -59,6 +59,7 @@ public:
 	virtual Printable& ClearScreen() = 0;
 	virtual Printable& RefreshScreen() = 0;
 	virtual Printable& Locate(int col, int row) = 0;
+	virtual Printable& GetSize(int* pnCols, int* pnRows) { *pnCols = 80, *pnRows = 25; return *this; }
 	virtual Printable& PutChar(char ch) = 0;
 	virtual Printable& PutCharRaw(char ch) { return PutChar(ch); }
 	virtual Printable& Print(const char* str);

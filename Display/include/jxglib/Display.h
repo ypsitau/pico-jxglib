@@ -132,6 +132,7 @@ public:
 		virtual Printable& ClearScreen() override;
 		virtual Printable& RefreshScreen() override;
 		virtual Printable& Locate(int col, int row) override;
+		virtual Printable& GetSize(int* pnCols, int* pnRows) override;
 		virtual Printable& PutChar(char ch) override;
 	public:
 		// virtual functions of Editable
