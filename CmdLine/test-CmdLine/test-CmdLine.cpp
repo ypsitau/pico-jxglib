@@ -8,11 +8,6 @@ using namespace jxglib;
 
 Serial::Terminal terminal;
 
-CmdLineEntry(ls)
-{
-	terminal.Printf("hoge\n");
-}
-
 int main()
 {
 	::stdio_init_all();

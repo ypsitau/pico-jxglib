@@ -71,8 +71,13 @@ bool Tickable::Tick(uint32_t msecTick)
 
 void Tickable::PrintList(Printable& printable)
 {
+	int lenMax = 1;
 	for (const Tickable* pTickable = pTickableTop_; pTickable; pTickable = pTickable->GetNext()) {
-		printable.Printf("%-16s %s\n", pTickable->GetTickableName(), pTickable->GetPriorityName());
+		int len = ::strlen(pTickable->GetTickableName());
+		if (lenMax < len) lenMax = len;
+	}
+	for (const Tickable* pTickable = pTickableTop_; pTickable; pTickable = pTickable->GetNext()) {
+		printable.Printf("%-*s %-12s %dmsec\n", lenMax, pTickable->GetTickableName(), pTickable->GetPriorityName(), pTickable->GetTick());
 	}
 }
 
