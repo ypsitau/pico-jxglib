@@ -4,7 +4,7 @@
 #include "jxglib/CmdLine.h"
 #include "jxglib/ST7789.h"
 #include "jxglib/USBHost.h"
-#include "jxglib/Font/shinonome16-japanese-level2.h"
+#include "jxglib/Font/shinonome12.h"
 
 using namespace jxglib;
 
@@ -21,7 +21,7 @@ int main()
 	display.Initialize(Display::Dir::Rotate90);
 	terminal.AttachOutput(display);
 	terminal.AttachInput(USBHost::GetKeyboard().SetCapsLockAsCtrl());
-	terminal.SetFont(Font::shinonome16);
+	terminal.SetFont(Font::shinonome12);
 	CmdLine::AttachTerminal(terminal);
 	for (;;) Tickable::Tick();
 }

@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include "jxglib/CmdLine.h"
 
-namespace jxglib {
+namespace jxglib::CmdLine_BuiltIn {
 
 //-----------------------------------------------------------------------------
 // d addr bytes
@@ -28,7 +28,7 @@ void CmdLineEntry_d::Run(Terminal& terminal, int argc, char* argv[])
 	int nColsTerm, nRowsTerm;
 	terminal.GetSize(&nColsTerm, &nRowsTerm);
 	nColsTerm -= 8 + 2;
-	int nCols = ((nColsTerm + 1) / 3) / 4 * 4;
+	int nCols = ((nColsTerm + 1) / 3) / 8 * 8;
 	if (argc >= 2) {
 		char* p = nullptr;
 		uint32_t num = ::strtoul(argv[1], &p, 0);

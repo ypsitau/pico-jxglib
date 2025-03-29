@@ -532,6 +532,9 @@ Editable& Display::Terminal::Edit_MoveHistoryNext()
 	return *this;
 }
 
+//------------------------------------------------------------------------------
+// Display::Terminal::Tickable_Keyboard
+//------------------------------------------------------------------------------
 void Display::Terminal::Tickable_Keyboard::OnTick()
 {
 	KeyData keyData;

@@ -15,17 +15,22 @@ bool Tickable::firstFlag_ = true;
 uint32_t Tickable::msecMainStart_ = 0;
 
 Tickable::Tickable(uint32_t msecTick, Priority priority) :
-	msecTick_{msecTick}, priority_{priority}, msecStart_{0}, runningFlag_{true}, pTickableNext_{pTickableTop_}
+	msecTick_{msecTick}, priority_{priority}, msecStart_{0}, runningFlag_{true}, pTickableNext_{nullptr}
 {
 	Tickable* pTickablePrev = nullptr;
 	for (Tickable* pTickable = pTickableTop_; pTickable; pTickable = pTickable->GetNext()) {
-		if (GetPriority() >= pTickable->GetPriority()) break;
+		if (priority > pTickable->GetPriority()) {
+			break;
+		} else if (priority == pTickable->GetPriority() && msecTick <= pTickable->GetTick()) {
+			break;
+		} 
 		pTickablePrev = pTickable;
 	}
 	if (pTickablePrev) {
 		SetNext(pTickablePrev->GetNext());
 		pTickablePrev->SetNext(this);
 	} else {
+		SetNext(pTickableTop_);
 		pTickableTop_ = this;
 	}
 
@@ -77,7 +82,7 @@ void Tickable::PrintList(Printable& printable)
 		if (lenMax < len) lenMax = len;
 	}
 	for (const Tickable* pTickable = pTickableTop_; pTickable; pTickable = pTickable->GetNext()) {
-		printable.Printf("%-*s %-12s %dmsec\n", lenMax, pTickable->GetTickableName(), pTickable->GetPriorityName(), pTickable->GetTick());
+		printable.Printf("%-*s %-4s %dmsec\n", lenMax, pTickable->GetTickableName(), pTickable->GetPriorityNameShort(), pTickable->GetTick());
 	}
 }
 
@@ -91,7 +96,20 @@ const char* Tickable::GetPriorityName(Priority priority)
 	case Priority::Highest:		return "Highest";
 	default: break;
 	}
-	return "unknown";
+	return "unk";
+}
+
+const char* Tickable::GetPriorityNameShort(Priority priority)
+{
+	switch (priority) {
+	case Priority::Lowest:		return "Low";
+	case Priority::BelowNormal:	return "BNml";
+	case Priority::Normal:		return "Nml";
+	case Priority::AboveNormal:	return "ANml";
+	case Priority::Highest:		return "High";
+	default: break;
+	}
+	return "unk";
 }
 
 }

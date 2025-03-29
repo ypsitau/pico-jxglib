@@ -51,6 +51,7 @@ public:
 public:
 	Priority GetPriority() const { return priority_; }
 	const char* GetPriorityName() const { return GetPriorityName(GetPriority()); }
+	const char* GetPriorityNameShort() const { return GetPriorityNameShort(GetPriority()); }
 	Tickable* GetNext() { return pTickableNext_; }
 	const Tickable* GetNext() const { return pTickableNext_; }
 	void SetNext(Tickable* pTickable) { pTickableNext_ = pTickable; }
@@ -69,6 +70,7 @@ public:
 public:
 	static void PrintList(Printable& printable);
 	static const char* GetPriorityName(Priority priority);
+	static const char* GetPriorityNameShort(Priority priority);
 };
 
 }
