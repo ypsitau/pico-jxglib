@@ -4,7 +4,7 @@
 #include "jxglib/CmdLine.h"
 #include "jxglib/ST7789.h"
 #include "jxglib/USBHost.h"
-#include "jxglib/Font/shinonome12.h"
+#include "jxglib/Font/shinonome16.h"
 
 using namespace jxglib;
 
@@ -21,7 +21,8 @@ int main()
 	display.Initialize(Display::Dir::Rotate90);
 	terminal.AttachOutput(display);
 	terminal.AttachInput(USBHost::GetKeyboard().SetCapsLockAsCtrl());
-	terminal.SetFont(Font::shinonome12);
+	terminal.SetFont(Font::shinonome16);
 	CmdLine::AttachTerminal(terminal);
+	terminal.Println("CmdLine Test Program");
 	for (;;) Tickable::Tick();
 }
