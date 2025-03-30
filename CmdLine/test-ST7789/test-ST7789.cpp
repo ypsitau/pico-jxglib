@@ -18,9 +18,8 @@ int main()
 	GPIO15.set_function_SPI1_TX();
 	ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
 	display.Initialize(Display::Dir::Rotate90);
-	terminal.AttachDrawable(display);
-	terminal.AttachKeyboard(USBHost::GetKeyboard().SetCapsLockAsCtrl());
-	terminal.SetFont(Font::shinonome16);
+	terminal.AttachDisplay(display)
+		.AttachKeyboard(USBHost::GetKeyboard().SetCapsLockAsCtrl()).SetFont(Font::shinonome16);
 	CmdLine::AttachTerminal(terminal);
 	terminal.Println("CmdLine Test Program");
 	for (;;) Tickable::Tick();
