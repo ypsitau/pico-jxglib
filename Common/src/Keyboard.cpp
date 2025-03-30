@@ -22,6 +22,15 @@ char Keyboard::GetChar()
 	return keyData.GetChar();
 }
 
+bool Keyboard::GetKeyCode(uint8_t* pKeyCode, uint8_t* pModifier)
+{
+	for (;;) {
+		if (GetKeyCodeNB(pKeyCode, pModifier)) break;
+		Tickable::Tick();
+	}
+	return true;
+}
+
 bool Keyboard::GetKeyData(KeyData* pKeyData)
 {
 	KeyData keyData;
@@ -63,6 +72,17 @@ int KeyboardRepeatable::SenseKeyData(KeyData keyDataTbl[], int nKeysMax)
 		if (keyData.IsValid()) keyDataTbl[nKeys++] = keyData;
 	}
 	return nKeys;
+}
+
+bool KeyboardRepeatable::GetKeyCodeNB(uint8_t* pKeyCode, uint8_t* pModifier)
+{
+	uint8_t keyCode, modifier;
+	if (GetRepeater().GetKey(&keyCode, &modifier)) {
+		*pKeyCode = keyCode;
+		if (pModifier) *pModifier = modifier;
+		return true;
+	}
+	return false;
 }
 
 bool KeyboardRepeatable::GetKeyDataNB(KeyData* pKeyData)
@@ -112,7 +132,7 @@ void KeyboardRepeatable::Repeater::OnTick()
 {
 	uint8_t keyCodeTbl[6];
 	keyboard_.SenseKeyCode(keyCodeTbl, count_of(keyCodeTbl));
-	for (int i = 0; i < count_of(keyCodeTbl); i++) {
+	for (int i = 0; i < count_of(keyCodeTbl) && keyCodeTbl[i]; i++) {
 		if (keyCode_ == keyCodeTbl[i]) {
 			readyFlag_ = true;
 			if (GetTick() != msecRate_) SetTick(msecRate_);

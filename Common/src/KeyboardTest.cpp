@@ -17,6 +17,18 @@ const char* TextizeKeyData(char* str, int len, const KeyData& keyData)
 	return str;
 }
 
+void GetKeyCodeNB(Printable& printable, Keyboard& keyboard)
+{
+	printable.Printf("Test for Keyboard::GetKeyCodeNB(). Press any keys..\n");
+	for (;;) {
+		uint8_t keyCode;
+		if (keyboard.GetKeyCodeNB(&keyCode)) {
+			printable.Printf("VK_%s\n", GetKeyCodeName(keyCode));
+		}
+		Tickable::Tick();
+	}
+}
+
 void GetKeyDataNB(Printable& printable, Keyboard& keyboard)
 {
 	char str[64];
@@ -27,6 +39,22 @@ void GetKeyDataNB(Printable& printable, Keyboard& keyboard)
 			printable.Printf("%s\n", TextizeKeyData(str, sizeof(str), keyData));
 		}
 		Tickable::Tick();
+	}
+}
+
+void SenseKeyCode(Printable& printable, Keyboard& keyboard)
+{
+	printable.Printf("Test for Keyboard::SenseKeyCode(). Press any keys..\n");
+	for (;;) {
+		uint8_t keyCodeTbl[6];
+		int nKeys = keyboard.SenseKeyCode(keyCodeTbl, count_of(keyCodeTbl));
+		if (nKeys > 0) {
+			for (int i = 0; i < nKeys; i++) {
+				printable.Printf((i == 0)? "VK_%s" : " VK_%s", GetKeyCodeName(keyCodeTbl[i]));
+			}
+			printable.Printf("\n");
+		}
+		Tickable::Sleep(10);
 	}
 }
 
@@ -48,28 +76,12 @@ void SenseKeyData(Printable& printable, Keyboard& keyboard)
 	}
 }
 	
-void SenseKeyCode(Printable& printable, Keyboard& keyboard)
-{
-	printable.Printf("Test for Keyboard::SenseKeyCode(). Press any keys..\n");
-	for (;;) {
-		uint8_t keyCodeTbl[6];
-		int nKeys = keyboard.SenseKeyCode(keyCodeTbl, count_of(keyCodeTbl));
-		if (nKeys > 0) {
-			for (int i = 0; i < nKeys; i++) {
-				printable.Printf((i == 0)? "%s" : " %s", GetKeyCodeName(keyCodeTbl[i]));
-			}
-			printable.Printf("\n");
-		}
-		Tickable::Sleep(10);
-	}
-}
-
 void IsPressed(Printable& printable, Keyboard& keyboard)
 {
 	for (;;) {
-		printable.Printf("VK_1:%d VK_2:%d VK_3:%d VK_4:%d VK_5:%d VK_6:%d\n",
-			keyboard.IsPressed(VK_1), keyboard.IsPressed(VK_2), keyboard.IsPressed(VK_3),
-			keyboard.IsPressed(VK_4), keyboard.IsPressed(VK_5), keyboard.IsPressed(VK_6));
+		printable.Printf("VK_LEFT:%d VK_RIGHT:%d VK_UP:%d VK_DOWN:%d VK_Z:%d VK_X:%d\n",
+			keyboard.IsPressed(VK_LEFT), keyboard.IsPressed(VK_RIGHT), keyboard.IsPressed(VK_UP),
+			keyboard.IsPressed(VK_DOWN), keyboard.IsPressed(VK_Z), keyboard.IsPressed(VK_X));
 		Tickable::Sleep(10);
 	}
 }

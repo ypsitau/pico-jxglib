@@ -2,6 +2,7 @@
 #include "pico/stdlib.h"
 #include "jxglib/Common.h"
 #include "jxglib/KeyboardTest.h"
+#include "jxglib/Stdio.h"
 
 using namespace jxglib;
 
@@ -19,6 +20,8 @@ int main()
 		{GPIO21.pull_up(),	VK_RIGHT,	},
 	};
 	keyboard.Initialize(keyTbl, count_of(keyTbl));
-	KeyboardTest::GetKeyDataNB(keyboard);
-	//KeyboardTest::SenseKeyData(keyboard);
+	//KeyboardTest::GetKeyDataNB(Stdio::Printable::Instance, keyboard);
+	KeyboardTest::SenseKeyData(Stdio::Printable::Instance, keyboard);
+	//KeyboardTest::SenseKeyCode(Stdio::Printable::Instance, keyboard);
+	//KeyboardTest::IsPressed(Stdio::Printable::Instance, keyboard);
 }

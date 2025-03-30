@@ -37,6 +37,7 @@ public:
 	public:
 		virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1) override;
 		virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) override;
+		virtual bool GetKeyCodeNB(uint8_t* pKeyCode, uint8_t* pModifier = nullptr) override;
 		virtual bool GetKeyDataNB(KeyData* pKeyData) override;
 	};
 public:

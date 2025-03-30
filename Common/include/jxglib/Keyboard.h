@@ -20,6 +20,7 @@ public:
 public:
 	Keyboard& SetKeyLayout(const KeyLayout& keyLayout) { pKeyLayout_ = &keyLayout; return *this; }
 	const KeyLayout& GetKeyLayout() const { return *pKeyLayout_; }
+	bool GetKeyCode(uint8_t* pKeyCode, uint8_t* pModifier);
 	bool GetKeyData(KeyData* pKeyData);
 	char GetChar();
 public:
@@ -29,6 +30,7 @@ public:
 	virtual bool IsPressed(uint8_t keyCode);
 	virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1) = 0;
 	virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) = 0;
+	virtual bool GetKeyCodeNB(uint8_t* pKeyCode, uint8_t* pModifier = nullptr) = 0;
 	virtual bool GetKeyDataNB(KeyData* pKeyData) = 0;
 };
 
@@ -66,6 +68,7 @@ public:
 	// virtual function of Keyboard
 	virtual Keyboard& SetRepeatTime(uint32_t msecDelay, uint32_t msecRate) override;
 	virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) override;
+	virtual bool GetKeyCodeNB(uint8_t* pKeyCode, uint8_t* pModifier = nullptr) override;
 	virtual bool GetKeyDataNB(KeyData* pKeyData) override;
 };
 	
@@ -78,6 +81,7 @@ public:
 public:
 	virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1) override { return 0; }
 	virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) override { return 0; }
+	virtual bool GetKeyCodeNB(uint8_t* pKeyCode, uint8_t* pModifier = nullptr) override { return false; }
 	virtual bool GetKeyDataNB(KeyData* pKeyData) override { return false; }
 };
 	
