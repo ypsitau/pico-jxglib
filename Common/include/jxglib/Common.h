@@ -12,6 +12,7 @@
 #include "KeyData.h"
 #include "Keyboard.h"
 #include "Point.h"
+#include "Printable.h"
 #include "Rect.h"
 #include "Size.h"
 #include "Tickable.h"

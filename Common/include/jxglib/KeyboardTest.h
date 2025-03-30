@@ -2,11 +2,12 @@
 // KeyboardTest.cpp
 //==============================================================================
 #include "jxglib/Common.h"
-#include "jxglib/Keyboard.h"
 
 namespace jxglib::KeyboardTest {
 
-void GetKeyDataNB(Keyboard& keyboard);
-void SenseKeyData(Keyboard& keyboard);
+void GetKeyDataNB(Printable& printable, Keyboard& keyboard);
+void SenseKeyData(Printable& printable, Keyboard& keyboard);
+void SenseKeyCode(Printable& printable, Keyboard& keyboard);
+void IsPressed(Printable& printable, Keyboard& keyboard);
 
 }
