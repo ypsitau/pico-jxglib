@@ -1,9 +1,8 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include "pico/stdlib.h"
-#include "jxglib/CmdLine.h"
 #include "jxglib/ST7789.h"
 #include "jxglib/USBHost.h"
+#include "jxglib/CmdLine.h"
 #include "jxglib/Font/shinonome16.h"
 
 using namespace jxglib;
