@@ -22,8 +22,6 @@ public:
 		Terminal(int bytesHistoryBuff = 512) : jxglib::Terminal(bytesHistoryBuff, Stdio::Keyboard::Instance),
 				Tickable(0), pPrintable_{&Stdio::Printable::Instance} {}
 	public:
-		bool Initialize();
-	public:
 		void AttachOutput(Printable& printable) { pPrintable_ = &printable; }
 	public:
 		// virtual functions of Printable
@@ -39,22 +37,22 @@ public:
 		virtual Printable& VPrintf(const char* format, va_list args) { return pPrintable_->VPrintf(format, args); }
 		virtual Printable& VPrintfRaw(const char* format, va_list args) { return pPrintable_->VPrintfRaw(format, args); }
 	public:
-		// virtual functions of Editable
+		// virtual functions of jxglib::Terminal
 		virtual Printable& GetPrintable() override { return *pPrintable_; }
-		virtual Editable& Edit_Begin();
-		virtual Editable& Edit_Finish(char chEnd = '\0');
-		virtual Editable& Edit_InsertChar(int ch);
-		virtual Editable& Edit_DeleteChar();
-		virtual Editable& Edit_Back();
-		virtual Editable& Edit_MoveForward();
-		virtual Editable& Edit_MoveBackward();
-		virtual Editable& Edit_MoveHome();
-		virtual Editable& Edit_MoveEnd();
-		virtual Editable& Edit_Clear();
-		virtual Editable& Edit_DeleteToHome();
-		virtual Editable& Edit_DeleteToEnd();
-		virtual Editable& Edit_MoveHistoryPrev();
-		virtual Editable& Edit_MoveHistoryNext();
+		virtual jxglib::Terminal& Edit_Begin();
+		virtual jxglib::Terminal& Edit_Finish(char chEnd = '\0');
+		virtual jxglib::Terminal& Edit_InsertChar(int ch);
+		virtual jxglib::Terminal& Edit_DeleteChar();
+		virtual jxglib::Terminal& Edit_Back();
+		virtual jxglib::Terminal& Edit_MoveForward();
+		virtual jxglib::Terminal& Edit_MoveBackward();
+		virtual jxglib::Terminal& Edit_MoveHome();
+		virtual jxglib::Terminal& Edit_MoveEnd();
+		virtual jxglib::Terminal& Edit_Clear();
+		virtual jxglib::Terminal& Edit_DeleteToHome();
+		virtual jxglib::Terminal& Edit_DeleteToEnd();
+		virtual jxglib::Terminal& Edit_MoveHistoryPrev();
+		virtual jxglib::Terminal& Edit_MoveHistoryNext();
 	public:
 		// virtual functions of Tickable
 		virtual const char* GetTickableName() const override { return "Serial::Terminal"; }

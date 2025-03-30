@@ -3,16 +3,80 @@
 //==============================================================================
 #ifndef PICO_JXGLIB_TERMINAL_H
 #define PICO_JXGLIB_TERMINAL_H
+#include <string.h>
 #include "pico/stdlib.h"
+#include "jxglib/LineBuff.h"
+#include "jxglib/Keyboard.h"
 #include "jxglib/Printable.h"
-#include "jxglib/Editable.h"
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
 // Terminal
 //------------------------------------------------------------------------------
-class Terminal : public Printable, public Editable {
+class Terminal : public Printable {
+public:
+	static const int EditBuffSize = 128;
+public:
+	class LineEditor {
+	private:
+		bool editingFlag_;
+		int iByteCursor_;
+		char buff_[EditBuffSize];
+		UTF8::Decoder decoder_;
+		LineBuff historyBuff_;
+		const char* pLineStop_History_;
+	public:
+		LineEditor(int bytesHistoryBuff);
+	public:
+		bool Initialize();
+		void Begin();
+		void Finish();
+		bool IsEditing() { return editingFlag_; }
+		bool IsEmpty() const { return buff_[0] == '\0'; }
+		int GetIByteCursor() const { return iByteCursor_; }
+		int GetIByteEnd() const { return ::strlen(buff_); }
+		char* GetPointer(int iByte) { return buff_ + iByte; }
+		char* GetPointerBegin() { return buff_; }
+		char* GetPointerEnd() { return buff_ + GetIByteEnd(); }
+		const char* GetPointer(int iByte) const { return buff_ + iByte; }
+		const char* GetPointerAtCursor() const { return buff_ + iByteCursor_; }
+		int CountFollowingChars() const { return CountFollowingChars(iByteCursor_); }
+		int CountFollowingChars(int iByte) const { return UTF8::CountChars(GetPointer(iByte)); }
+		bool Clear();
+		bool InsertChar(char ch);
+		bool DeleteChar();
+		bool Back() { return MoveBackward() && DeleteChar(); }
+		bool DeleteLastChar();
+		bool MoveForward() { return MoveForward(&iByteCursor_); }
+		bool MoveBackward() { return MoveBackward(&iByteCursor_); }
+		bool MoveForward(int* pIByte);
+		bool MoveBackward(int* pIByte);
+		bool MoveHome();
+		bool MoveEnd();
+		bool DeleteToHome();
+		bool DeleteToEnd() { return DeleteToEnd(iByteCursor_); }
+		bool DeleteToEnd(int iByte);
+	public:
+		bool AddHistory(const char* str);
+		bool MoveHistoryPrev();
+		bool MoveHistoryNext();
+		void EndHistory();
+	private:
+		void ReplaceWithHistory();
+	public:
+		LineBuff& GetHistoryBuff() { return historyBuff_; }
+		const LineBuff& GetHistoryBuff() const { return historyBuff_; }
+	};
+private:
+	LineEditor lineEditor_;
+public:
+	bool Initialize();
+	LineEditor& GetLineEditor() { return lineEditor_; }
+	char* ReadLine(const char* prompt);
+	void ReadLine_Begin(const char* prompt);
+	char* ReadLine_Process();
+	bool ProcessKeyData(const KeyData& keyData);
 private:
 	Keyboard* pKeyboard_;
 public:
@@ -25,6 +89,22 @@ public:
 	int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) {
 		return GetKeyboard().SenseKeyData(keyDataTbl, nKeysMax);
 	}
+	public:
+	virtual Printable& GetPrintable() = 0;
+	virtual Terminal& Edit_Begin() = 0;
+	virtual Terminal& Edit_Finish(char chEnd = '\0') = 0;
+	virtual Terminal& Edit_InsertChar(int ch) = 0;
+	virtual Terminal& Edit_DeleteChar() = 0;
+	virtual Terminal& Edit_Back() = 0;
+	virtual Terminal& Edit_MoveForward() = 0;
+	virtual Terminal& Edit_MoveBackward() = 0;
+	virtual Terminal& Edit_MoveHome() = 0;
+	virtual Terminal& Edit_MoveEnd() = 0;
+	virtual Terminal& Edit_Clear() = 0;
+	virtual Terminal& Edit_DeleteToHome() = 0;
+	virtual Terminal& Edit_DeleteToEnd() = 0;
+	virtual Terminal& Edit_MoveHistoryPrev() = 0;
+	virtual Terminal& Edit_MoveHistoryNext() = 0;
 };
 
 //------------------------------------------------------------------------------
@@ -49,22 +129,22 @@ public:
 	virtual Printable& VPrintf(const char* format, va_list args) { return *this; }
 	virtual Printable& VPrintfRaw(const char* format, va_list args) { return *this; }
 public:
-	// virtual functions of Editable
+	// virtual functions of Terminal
 	virtual Printable& GetPrintable() override { return *this; }
-	virtual Editable& Edit_Begin() override { return *this; }
-	virtual Editable& Edit_Finish(char chEnd = '\0') override { return *this; }
-	virtual Editable& Edit_InsertChar(int ch) override { return *this; }
-	virtual Editable& Edit_DeleteChar() override { return *this; }
-	virtual Editable& Edit_Back() override { return *this; }
-	virtual Editable& Edit_MoveForward() override { return *this; }
-	virtual Editable& Edit_MoveBackward() override { return *this; }
-	virtual Editable& Edit_MoveHome() override { return *this; }
-	virtual Editable& Edit_MoveEnd() override { return *this; }
-	virtual Editable& Edit_Clear() override { return *this; }
-	virtual Editable& Edit_DeleteToHome() override { return *this; }
-	virtual Editable& Edit_DeleteToEnd() override { return *this; }
-	virtual Editable& Edit_MoveHistoryPrev() override { return *this; }
-	virtual Editable& Edit_MoveHistoryNext() override { return *this; }
+	virtual Terminal& Edit_Begin() override { return *this; }
+	virtual Terminal& Edit_Finish(char chEnd = '\0') override { return *this; }
+	virtual Terminal& Edit_InsertChar(int ch) override { return *this; }
+	virtual Terminal& Edit_DeleteChar() override { return *this; }
+	virtual Terminal& Edit_Back() override { return *this; }
+	virtual Terminal& Edit_MoveForward() override { return *this; }
+	virtual Terminal& Edit_MoveBackward() override { return *this; }
+	virtual Terminal& Edit_MoveHome() override { return *this; }
+	virtual Terminal& Edit_MoveEnd() override { return *this; }
+	virtual Terminal& Edit_Clear() override { return *this; }
+	virtual Terminal& Edit_DeleteToHome() override { return *this; }
+	virtual Terminal& Edit_DeleteToEnd() override { return *this; }
+	virtual Terminal& Edit_MoveHistoryPrev() override { return *this; }
+	virtual Terminal& Edit_MoveHistoryNext() override { return *this; }
 };
 
 }

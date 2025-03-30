@@ -30,7 +30,7 @@ void Display::Terminal::AttachInput(Keyboard& keyboard)
 
 bool Display::Terminal::AttachOutput(Drawable& drawable, const Rect& rect, Dir dir)
 {
-	if (!Editable::Initialize() || !GetLineBuff().Initialize()) return false;
+	if (!Initialize() || !GetLineBuff().Initialize()) return false;
 	rectDst_ = rect.IsEmpty()? Rect(0, 0, drawable.GetWidth(), drawable.GetHeight()) : rect;
 	ptCurrent_ = Point(rectDst_.x, rectDst_.y);
 	pDrawable_ = &drawable;
@@ -365,15 +365,15 @@ Printable& Display::Terminal::PutChar(char ch)
 	return *this;
 };
 
-// virtual functions of Editable
-Editable& Display::Terminal::Edit_Begin()
+// virtual functions of jxglib::Terminal
+Terminal& Display::Terminal::Edit_Begin()
 {
 	ShowCursor();
 	GetLineEditor().Begin();
 	return *this;
 }
 
-Editable& Display::Terminal::Edit_Finish(char chEnd)
+Terminal& Display::Terminal::Edit_Finish(char chEnd)
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	GetLineEditor().EndHistory();
@@ -386,7 +386,7 @@ Editable& Display::Terminal::Edit_Finish(char chEnd)
 	return *this;
 }
 
-Editable& Display::Terminal::Edit_InsertChar(int ch)
+Terminal& Display::Terminal::Edit_InsertChar(int ch)
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (IsRollingBack()) EndRollBack();
@@ -404,7 +404,7 @@ Editable& Display::Terminal::Edit_InsertChar(int ch)
 	return *this;
 }
 
-Editable& Display::Terminal::Edit_DeleteChar()
+Terminal& Display::Terminal::Edit_DeleteChar()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
@@ -416,7 +416,7 @@ Editable& Display::Terminal::Edit_DeleteChar()
 	return *this;
 }
 
-Editable& Display::Terminal::Edit_Back()
+Terminal& Display::Terminal::Edit_Back()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
@@ -428,7 +428,7 @@ Editable& Display::Terminal::Edit_Back()
 	return *this;
 }
 
-Editable& Display::Terminal::Edit_MoveForward()
+Terminal& Display::Terminal::Edit_MoveForward()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
@@ -439,7 +439,7 @@ Editable& Display::Terminal::Edit_MoveForward()
 	return *this;
 }
 
-Editable& Display::Terminal::Edit_MoveBackward()
+Terminal& Display::Terminal::Edit_MoveBackward()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
@@ -450,7 +450,7 @@ Editable& Display::Terminal::Edit_MoveBackward()
 	return *this;
 }
 
-Editable& Display::Terminal::Edit_MoveHome()
+Terminal& Display::Terminal::Edit_MoveHome()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
@@ -461,7 +461,7 @@ Editable& Display::Terminal::Edit_MoveHome()
 	return *this;
 }
 
-Editable& Display::Terminal::Edit_MoveEnd()
+Terminal& Display::Terminal::Edit_MoveEnd()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
@@ -472,7 +472,7 @@ Editable& Display::Terminal::Edit_MoveEnd()
 	return *this;
 }
 
-Editable& Display::Terminal::Edit_Clear()
+Terminal& Display::Terminal::Edit_Clear()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
@@ -484,7 +484,7 @@ Editable& Display::Terminal::Edit_Clear()
 	return *this;
 }
 
-Editable& Display::Terminal::Edit_DeleteToHome()
+Terminal& Display::Terminal::Edit_DeleteToHome()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
@@ -496,7 +496,7 @@ Editable& Display::Terminal::Edit_DeleteToHome()
 	return *this;
 }
 
-Editable& Display::Terminal::Edit_DeleteToEnd()
+Terminal& Display::Terminal::Edit_DeleteToEnd()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
@@ -508,7 +508,7 @@ Editable& Display::Terminal::Edit_DeleteToEnd()
 	return *this;
 }
 
-Editable& Display::Terminal::Edit_MoveHistoryPrev()
+Terminal& Display::Terminal::Edit_MoveHistoryPrev()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
@@ -520,7 +520,7 @@ Editable& Display::Terminal::Edit_MoveHistoryPrev()
 	return *this;
 }
 
-Editable& Display::Terminal::Edit_MoveHistoryNext()
+Terminal& Display::Terminal::Edit_MoveHistoryNext()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	int iByteCursorPrev = GetLineEditor().GetIByteCursor();

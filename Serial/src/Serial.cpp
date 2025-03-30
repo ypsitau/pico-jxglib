@@ -12,26 +12,21 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // Serial::Terminal
 //------------------------------------------------------------------------------
-bool Serial::Terminal::Initialize()
-{
-	return Editable::Initialize();
-}
-
-Editable& Serial::Terminal::Edit_Begin()
+Terminal& Serial::Terminal::Edit_Begin()
 {
 	GetLineEditor().Begin();
 	VT100::SaveCursorPosition(GetPrintable());
 	return *this;
 }
 
-Editable& Serial::Terminal::Edit_Finish(char chEnd)
+Terminal& Serial::Terminal::Edit_Finish(char chEnd)
 {
 	GetPrintable().PutChar(chEnd);
 	GetLineEditor().Finish();
 	return *this;
 }
 
-Editable& Serial::Terminal::Edit_InsertChar(int ch)
+Terminal& Serial::Terminal::Edit_InsertChar(int ch)
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (GetLineEditor().InsertChar(ch)) {
@@ -43,7 +38,7 @@ Editable& Serial::Terminal::Edit_InsertChar(int ch)
 	return *this;
 }
 
-Editable& Serial::Terminal::Edit_DeleteChar()
+Terminal& Serial::Terminal::Edit_DeleteChar()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (GetLineEditor().DeleteChar()) {
@@ -56,7 +51,7 @@ Editable& Serial::Terminal::Edit_DeleteChar()
 	return *this;
 }
 
-Editable& Serial::Terminal::Edit_Back()
+Terminal& Serial::Terminal::Edit_Back()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (GetLineEditor().Back()) {
@@ -69,7 +64,7 @@ Editable& Serial::Terminal::Edit_Back()
 	return *this;
 }
 
-Editable& Serial::Terminal::Edit_MoveForward()
+Terminal& Serial::Terminal::Edit_MoveForward()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (GetLineEditor().MoveForward()) {
@@ -79,7 +74,7 @@ Editable& Serial::Terminal::Edit_MoveForward()
 	return *this;
 }
 
-Editable& Serial::Terminal::Edit_MoveBackward()
+Terminal& Serial::Terminal::Edit_MoveBackward()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (GetLineEditor().MoveBackward()) {
@@ -89,7 +84,7 @@ Editable& Serial::Terminal::Edit_MoveBackward()
 	return *this;
 }
 
-Editable& Serial::Terminal::Edit_MoveHome()
+Terminal& Serial::Terminal::Edit_MoveHome()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (GetLineEditor().MoveHome()) {
@@ -99,7 +94,7 @@ Editable& Serial::Terminal::Edit_MoveHome()
 	return *this;
 }
 
-Editable& Serial::Terminal::Edit_MoveEnd()
+Terminal& Serial::Terminal::Edit_MoveEnd()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (GetLineEditor().MoveEnd()) {
@@ -110,7 +105,7 @@ Editable& Serial::Terminal::Edit_MoveEnd()
 	return *this;
 }
 
-Editable& Serial::Terminal::Edit_Clear()
+Terminal& Serial::Terminal::Edit_Clear()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (GetLineEditor().Clear()) {
@@ -123,7 +118,7 @@ Editable& Serial::Terminal::Edit_Clear()
 	return *this;
 }
 
-Editable& Serial::Terminal::Edit_DeleteToHome()
+Terminal& Serial::Terminal::Edit_DeleteToHome()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (GetLineEditor().DeleteToHome()) {
@@ -136,7 +131,7 @@ Editable& Serial::Terminal::Edit_DeleteToHome()
 	return *this;
 }
 
-Editable& Serial::Terminal::Edit_DeleteToEnd()
+Terminal& Serial::Terminal::Edit_DeleteToEnd()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (GetLineEditor().DeleteToEnd()) {
@@ -148,7 +143,7 @@ Editable& Serial::Terminal::Edit_DeleteToEnd()
 	return *this;
 }
 
-Editable& Serial::Terminal::Edit_MoveHistoryPrev()
+Terminal& Serial::Terminal::Edit_MoveHistoryPrev()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (GetLineEditor().MoveHistoryPrev()) {
@@ -161,7 +156,7 @@ Editable& Serial::Terminal::Edit_MoveHistoryPrev()
 	return *this;
 }
 
-Editable& Serial::Terminal::Edit_MoveHistoryNext()
+Terminal& Serial::Terminal::Edit_MoveHistoryNext()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (GetLineEditor().MoveHistoryNext()) {

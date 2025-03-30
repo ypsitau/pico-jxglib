@@ -2,7 +2,7 @@
 #include "pico/stdlib.h"
 #include "jxglib/USBHost.h"
 #include "jxglib/ST7789.h"
-#include "jxglib/Font/shinonome16-japanese-level2.h"
+#include "jxglib/Font/shinonome16.h"
 
 using namespace jxglib;
 

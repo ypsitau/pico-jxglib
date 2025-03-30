@@ -70,7 +70,6 @@ public:
 	public:
 		Terminal(int bytesLineBuff = 4096, int byteshistoryBuff = 512);
 	public:
-		bool Initialize() { return true; }
 		void AttachInput(Keyboard& keyboard);
 		bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
 	public:
@@ -135,22 +134,22 @@ public:
 		virtual Printable& GetSize(int* pnCols, int* pnRows) override;
 		virtual Printable& PutChar(char ch) override;
 	public:
-		// virtual functions of Editable
+		// virtual functions of jxglib::Terminal
 		virtual Printable& GetPrintable() override { return *this; }
-		virtual Editable& Edit_Begin() override;
-		virtual Editable& Edit_Finish(char chEnd = '\0') override;
-		virtual Editable& Edit_InsertChar(int ch) override;
-		virtual Editable& Edit_DeleteChar() override;
-		virtual Editable& Edit_Back() override;
-		virtual Editable& Edit_MoveForward() override;
-		virtual Editable& Edit_MoveBackward() override;
-		virtual Editable& Edit_MoveHome() override;
-		virtual Editable& Edit_MoveEnd() override;
-		virtual Editable& Edit_Clear() override;
-		virtual Editable& Edit_DeleteToHome() override;
-		virtual Editable& Edit_DeleteToEnd() override;
-		virtual Editable& Edit_MoveHistoryPrev() override;
-		virtual Editable& Edit_MoveHistoryNext() override;
+		virtual jxglib::Terminal& Edit_Begin() override;
+		virtual jxglib::Terminal& Edit_Finish(char chEnd = '\0') override;
+		virtual jxglib::Terminal& Edit_InsertChar(int ch) override;
+		virtual jxglib::Terminal& Edit_DeleteChar() override;
+		virtual jxglib::Terminal& Edit_Back() override;
+		virtual jxglib::Terminal& Edit_MoveForward() override;
+		virtual jxglib::Terminal& Edit_MoveBackward() override;
+		virtual jxglib::Terminal& Edit_MoveHome() override;
+		virtual jxglib::Terminal& Edit_MoveEnd() override;
+		virtual jxglib::Terminal& Edit_Clear() override;
+		virtual jxglib::Terminal& Edit_DeleteToHome() override;
+		virtual jxglib::Terminal& Edit_DeleteToEnd() override;
+		virtual jxglib::Terminal& Edit_MoveHistoryPrev() override;
+		virtual jxglib::Terminal& Edit_MoveHistoryNext() override;
 	};
 public:
 	Display(uint32_t capabilities, const Format& format, int width, int height) :
