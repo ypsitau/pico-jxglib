@@ -69,9 +69,7 @@ int main()
 	touchScreen.Initialize(display);
 	LVGL::Initialize(5);
 	LVGL::Adapter lvglAdapter;
-	lvglAdapter.EnableDoubleBuff().AttachOutput(display);
-	//lvglAdapter.AttachOutput(display);
-	lvglAdapter.AttachInput(touchScreen);
+	lvglAdapter.EnableDoubleBuff().AttachDisplay(display).AttachTouchScreen(touchScreen);
 	//InputPointer inputPointer;
 	//InputKeypad inputKeypad;
 	//InputButton inputButton;

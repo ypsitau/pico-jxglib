@@ -56,12 +56,8 @@ public:
 	LineBuff& MoveLineLastHere() { pLineLast_ = pBuffLast_; return *this; }
 	LineBuff& SetLineMark(const char* pLineMark) { pLineMark_ = pLineMark; return *this; }
 	LineBuff& RemoveLineMark() { pLineMark_ = nullptr; return *this; }
-	bool MoveLineMarkUp(const char* pLineStop = nullptr) {
-		return (pLineMark_ != pLineStop) && PrevLine(&pLineMark_);
-	}
-	bool MoveLineMarkDown(const char* pLineStop = nullptr) {
-		return (pLineMark_ != pLineStop) && NextLine(&pLineMark_);
-	}
+	bool MoveLineMarkUp(int nLines = 1, const char* pLineStop = nullptr);
+	bool MoveLineMarkDown(int nLines = 1, const char* pLineStop = nullptr);
 public:
 	bool PrevLine(char** pp) const;
 	bool PrevLine(const char** pp) const { return PrevLine(const_cast<char**>(pp)); }

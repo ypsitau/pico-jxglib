@@ -10,7 +10,8 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // Terminal
 //------------------------------------------------------------------------------
-Terminal::Terminal(int bytesHistoryBuff, Keyboard& keyboard) : lineEditor_{bytesHistoryBuff}, pKeyboard_{&keyboard}
+Terminal::Terminal(int bytesHistoryBuff, Keyboard& keyboard) :
+		lineEditor_{bytesHistoryBuff}, editableFlag_{true}, pKeyboard_{&keyboard}
 {
 }
 
@@ -272,7 +273,7 @@ bool Terminal::LineEditor::MoveHistoryPrev()
 
 bool Terminal::LineEditor::MoveHistoryNext()
 {
-	if (GetHistoryBuff().GetLineMark() && GetHistoryBuff().MoveLineMarkDown(pLineStop_History_)) {
+	if (GetHistoryBuff().GetLineMark() && GetHistoryBuff().MoveLineMarkDown(1, pLineStop_History_)) {
 		ReplaceWithHistory();
 		return true;
 	}

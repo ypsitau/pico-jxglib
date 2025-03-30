@@ -20,9 +20,7 @@ int main()
 	display.Initialize(Display::Dir::Rotate90);
 	LVGL::Initialize(5);
 	LVGL::Adapter lvglAdapter;
-	lvglAdapter.AttachOutput(display);
-	lvglAdapter.AttachInput(USBHost::GetMouse().SetStage(lvglAdapter.GetRectOut()));
-	lvglAdapter.AttachInput(USBHost::GetKeyboard());
+	lvglAdapter.AttachDisplay(display).AttachMouse(USBHost::GetMouse()).AttachKeyboard(USBHost::GetKeyboard());
 	::lv_example_keyboard_1();
 	for (;;) Tickable::Tick();
 }

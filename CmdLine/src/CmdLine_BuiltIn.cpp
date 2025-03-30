@@ -69,4 +69,16 @@ CmdLineEntry(cmds)
 	CmdLine::PrintList(terminal);
 }
 
+//-----------------------------------------------------------------------------
+// prompt str
+//-----------------------------------------------------------------------------
+CmdLineEntry(prompt)
+{
+	if (argc < 2) {
+		terminal.Println(CmdLine::GetPrompt());
+	} else {
+		CmdLine::SetPrompt(argv[1]);
+	}
+}
+
 }

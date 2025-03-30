@@ -22,19 +22,23 @@ Display::Terminal::Terminal(int bytesLineBuff, int bytesHistoryBuff) :
 {
 }
 
-void Display::Terminal::AttachInput(Keyboard& keyboard)
+Display::Terminal& Display::Terminal::AttachKeyboard(Keyboard& keyboard)
 {
-	jxglib::Terminal::AttachInput(keyboard);
+	jxglib::Terminal::AttachKeyboard(keyboard);
 	tickable_Keyboard_.SetTick(50);
+	return *this;
 }
 
-bool Display::Terminal::AttachOutput(Drawable& drawable, const Rect& rect, Dir dir)
+Display::Terminal& Display::Terminal::AttachDrawable(Drawable& drawable, const Rect& rect, Dir dir)
 {
-	if (!Initialize() || !GetLineBuff().Initialize()) return false;
+	if (!Initialize() || !GetLineBuff().Initialize()) {
+		::panic("failed to allocate memory in Display::Terminal::AttachDrawable()");
+		return *this;
+	}
 	rectDst_ = rect.IsEmpty()? Rect(0, 0, drawable.GetWidth(), drawable.GetHeight()) : rect;
 	ptCurrent_ = Point(rectDst_.x, rectDst_.y);
 	pDrawable_ = &drawable;
-	return true;
+	return *this;
 }
 
 int Display::Terminal::CalcApproxNColsOnDisplay() const
@@ -67,7 +71,7 @@ Display::Terminal& Display::Terminal::EndRollBack()
 	return *this;
 }
 
-Display::Terminal& Display::Terminal::RollUp()
+Display::Terminal& Display::Terminal::RollUp(int nLines)
 {
 	if (!GetLineEditor().IsEmpty()) {
 		GetLineEditor().Clear();
@@ -75,21 +79,21 @@ Display::Terminal& Display::Terminal::RollUp()
 		return *this;
 	}
 	if (!IsRollingBack()) BeginRollBack();	
-	if (GetLineBuff().MoveLineMarkUp()) {
+	if (GetLineBuff().MoveLineMarkUp(nLines)) {
 		DrawTextLines(0, GetLineBuff().GetLineMark(), CalcNLinesOnDisplay());
 		GetDrawable().Refresh();
 	}
 	return *this;
 }
 
-Display::Terminal& Display::Terminal::RollDown()
+Display::Terminal& Display::Terminal::RollDown(int nLines)
 {
 	if (!GetLineEditor().IsEmpty()) {
 		GetLineEditor().Clear();
 		DrawLatestTextLines(true);
 		return *this;
 	}
-	if (GetLineBuff().MoveLineMarkDown(pLineStop_RollBack_)) {
+	if (GetLineBuff().MoveLineMarkDown(nLines, pLineStop_RollBack_)) {
 		if (!IsRollingBack()) BeginRollBack();	
 		DrawTextLines(0, GetLineBuff().GetLineMark(), CalcNLinesOnDisplay());
 		GetDrawable().Refresh();
@@ -540,13 +544,14 @@ void Display::Terminal::Tickable_Keyboard::OnTick()
 	KeyData keyData;
 	if (terminal_.GetKeyDataNB(&keyData)) {
 		if (keyData.IsKeyCode()) {
+			int nLines = keyData.IsShiftDown()? 10 : 1;
 			switch (keyData.GetKeyCode()) {
-			case VK_PRIOR: terminal_.RollUp(); return;
-			case VK_NEXT: terminal_.RollDown(); return;
+			case VK_PRIOR: terminal_.RollUp(nLines); return;
+			case VK_NEXT: terminal_.RollDown(nLines); return;
 			default: break;
 			}
 		}
-		terminal_.ProcessKeyData(keyData);
+		if (terminal_.IsEditable()) terminal_.ProcessKeyData(keyData);
 	}
 }
 

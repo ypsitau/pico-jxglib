@@ -33,7 +33,7 @@ int main()
 		ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
 		display.Initialize(Display::Dir::Rotate0);
 		Canvas canvas;
-		canvas.AttachOutput(display);
+		canvas.AttachDrawable(display);
 		canvas.SetFont(Font::shinonome12).SetSpacingRatio(1., 1.2);
 		canvas.DrawStringWrap(0, 0, Text_Botchan).Refresh();
 		absolute_time_t absTimeStart = ::get_absolute_time();

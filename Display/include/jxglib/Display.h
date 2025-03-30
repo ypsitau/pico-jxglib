@@ -70,8 +70,11 @@ public:
 	public:
 		Terminal(int bytesLineBuff = 4096, int byteshistoryBuff = 512);
 	public:
-		void AttachInput(Keyboard& keyboard);
-		bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
+		Terminal& AttachKeyboard(Keyboard& keyboard);
+		Terminal& AttachDrawable(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
+		Terminal& AttachDisplay(Drawable& display, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal) {
+			return AttachDrawable(display, rect, dir);
+		}
 	public:
 		Drawable& GetDrawable() { return *pDrawable_; }
 		const Drawable& GetDrawable() const { return *pDrawable_; }
@@ -106,8 +109,8 @@ public:
 		bool IsRollingBack() const { return !!GetLineBuff().GetLineMark(); }
 		Terminal& BeginRollBack();
 		Terminal& EndRollBack();
-		Terminal& RollUp();
-		Terminal& RollDown();
+		Terminal& RollUp(int nLines = 1);
+		Terminal& RollDown(int nLines = 1);
 		Terminal& Suppress(bool suppressFlag = true);
 	public:
 		Terminal& ShowCursor(bool showCursorFlag = true);

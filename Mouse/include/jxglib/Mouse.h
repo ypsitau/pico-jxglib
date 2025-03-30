@@ -72,6 +72,8 @@ public:
 	Mouse() {}
 public:
 	Status CaptureStatus() { return status_.Capture(); }
+	virtual Mouse& SetSensibility(float sensibility) { return *this; }
+	virtual Mouse& SetStage(const Rect& rcStage) { return *this; }
 };
 
 }

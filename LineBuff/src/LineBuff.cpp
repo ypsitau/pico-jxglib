@@ -38,6 +38,20 @@ void LineBuff::Clear()
 	pLineMark_ = nullptr;
 }
 
+bool LineBuff::MoveLineMarkUp(int nLines, const char* pLineStop)
+{
+	int nLinesMove = 0;
+	for ( ; nLinesMove < nLines && (pLineMark_ != pLineStop) && PrevLine(&pLineMark_); nLinesMove++) ;
+	return nLinesMove > 0;
+}
+
+bool LineBuff::MoveLineMarkDown(int nLines, const char* pLineStop)
+{
+	int nLinesMove = 0;
+	for ( ; nLinesMove < nLines && (pLineMark_ != pLineStop) && NextLine(&pLineMark_); nLinesMove++) ;
+	return nLinesMove > 0;
+}
+
 bool LineBuff::PrevLine(char** pp) const
 {
 	char* p = *pp;

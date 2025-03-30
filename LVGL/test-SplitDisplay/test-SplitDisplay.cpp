@@ -25,14 +25,14 @@ int main()
 	//-----------------------------------------
 	// Create an adapter and attach it to the display
 	LVGL::Adapter lvglAdapter1;
-	lvglAdapter1.EnableDoubleBuff(false).AttachOutput(display, {0, 0, 240, 100});
-	lvglAdapter1.AttachInput(touchScreen);
+	lvglAdapter1.EnableDoubleBuff(false)
+			.AttachDisplay(display, {0, 0, 240, 100}).AttachTouchScreen(touchScreen);
 	::lv_example_style_13();
 	//-----------------------------------------
 	// Create another adapter and attach it to the display
 	LVGL::Adapter lvglAdapter2;
-	lvglAdapter2.EnableDoubleBuff(false).AttachOutput(display, {0, 100, 240, 220});
-	lvglAdapter2.AttachInput(touchScreen);
+	lvglAdapter2.EnableDoubleBuff(false)
+			.AttachDisplay(display, {0, 100, 240, 220}).AttachTouchScreen(touchScreen);
 	::lv_example_textarea_1();
 	for (;;) Tickable::Tick();
 }

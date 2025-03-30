@@ -57,12 +57,14 @@ public:
 	public:
 		Mouse();
 	public:
-		Mouse& SetStage(const Rect& rcStage);
-		Mouse& SetSensibility(float sensibility);
 		void UpdateStage();
 		Point CalcPoint() const;
 	public:
 		void OnReport(uint8_t devAddr, uint8_t iInstance, const hid_mouse_report_t& report);
+	public:
+		// virtual function of jxglib::Mouse
+		virtual jxglib::Mouse& SetSensibility(float sensibility) override;
+		virtual jxglib::Mouse& SetStage(const Rect& rcStage) override;
 	};
 public:
 	static USBHost Instance;

@@ -190,7 +190,7 @@ void Canvas::Dispatcher_T<T_Color>::ScrollVert(DirVert dirVert, int htScroll, co
 //------------------------------------------------------------------------------
 // Canvas
 //------------------------------------------------------------------------------
-bool Canvas::AttachOutput(Drawable& drawableOut, const Rect& rect, Dir dir)
+Canvas& Canvas::AttachDrawable(Drawable& drawableOut, const Rect& rect, Dir dir)
 {
 	const Format& formatOut = drawableOut.GetFormat();
 	int wdImage, htImage;
@@ -212,25 +212,32 @@ bool Canvas::AttachOutput(Drawable& drawableOut, const Rect& rect, Dir dir)
 	SetCapacity(formatOut, wdImage, htImage);
 	output_.dir = dir;
 	pDrawableOut_ = &drawableOut;
-	if (!imageOwn_.Allocate(formatOut, wdImage, htImage)) return false;
+	if (!imageOwn_.Allocate(formatOut, wdImage, htImage)) {
+		::panic("Canvas::AttachDrawable() can't allocate memory");
+		return *this;
+	}
 	imageOwn_.FillZero();
 	if (formatOut.IsBitmap()) {
-		return false;
+		::panic("bitmap format is not supported");
+		return *this;
 	} else if (formatOut.IsGray()) {
+		::panic("gray format is not supported");
 		//pDispatcherEx_.reset(new Dispatcher_T<ColorGray>(*this));
-		return false;
+		return *this;
 	} else if (formatOut.IsRGB()) {
 		pDispatcherEx_.reset(new Dispatcher_T<Color>(*this));
 	} else if (formatOut.IsRGBA()) {
+		::panic("RGBA format is not supported");
 		//pDispatcherEx_.reset(new Dispatcher_T<ColorA>(*this));
-		return false;
+		return *this;
 	} else if (formatOut.IsRGB565()) {
 		pDispatcherEx_.reset(new Dispatcher_T<ColorRGB565>(*this));
 	} else {
-		return false;
+		::panic("unknown format");
+		return *this;
 	}
 	SetDispatcher(*pDispatcherEx_);
-	return true;
+	return *this;
 }
 
 //------------------------------------------------------------------------------

@@ -20,8 +20,7 @@ int main()
 	GPIO21.init().pull_up();
 	SSD1306 display(i2c0, 0x3c);
 	display.Initialize();
-	terminal.AttachOutput(display);
-	terminal.SetFont(Font::naga10).SetSpacingRatio(1., 1.).ClearScreen();
+	terminal.AttachDisplay(display).SetFont(Font::naga10).SetSpacingRatio(1., 1.).ClearScreen();
 	terminal.Suppress();
 	terminal.Print(Text_Botchan);
 	terminal.Suppress(false);

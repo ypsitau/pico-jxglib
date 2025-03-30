@@ -70,19 +70,20 @@ public:
 	};
 private:
 	LineEditor lineEditor_;
+	bool editableFlag_;
+	Keyboard* pKeyboard_;
 public:
+	Terminal(int bytesHistoryBuff, Keyboard& keyboard);
 	bool Initialize();
+	void SetEditable(bool editableFlag) { editableFlag_ = editableFlag; }
+	bool IsEditable() const { return editableFlag_; }
 	LineEditor& GetLineEditor() { return lineEditor_; }
 	char* ReadLine(const char* prompt);
 	void ReadLine_Begin(const char* prompt);
 	char* ReadLine_Process();
 	bool ProcessKeyData(const KeyData& keyData);
-private:
-	Keyboard* pKeyboard_;
 public:
-	Terminal(int bytesHistoryBuff, Keyboard& keyboard);
-public:
-	void AttachInput(Keyboard& keyboard) { pKeyboard_ = &keyboard; }
+	Terminal& AttachKeyboard(Keyboard& keyboard) { pKeyboard_ = &keyboard; return *this; }
 	Keyboard& GetKeyboard() { return *pKeyboard_; }
 	char GetChar() { return GetKeyboard().GetChar(); }
 	bool GetKeyDataNB(KeyData* pKeyData) { return GetKeyboard().GetKeyDataNB(pKeyData); }

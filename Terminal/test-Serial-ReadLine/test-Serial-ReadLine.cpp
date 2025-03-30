@@ -29,9 +29,8 @@ int main()
 	keyboard.Initialize(keyCodeTbl, keyRowTbl, count_of(keyRowTbl), keyColTbl, count_of(keyColTbl), GPIO::LogicNeg);
 	GPIO2.init().set_dir_OUT();
 	terminal.Initialize();
-	//terminal.AttachInput(keyboard);
-	terminal.AttachInput(Stdio::Keyboard::Instance);
-	terminal.AttachOutput(Stdio::Printable::Instance);
+	//terminal.AttachKeyboard(keyboard);
+	terminal.AttachPrintable(Stdio::Printable::Instance).AttachKeyboard(Stdio::Keyboard::Instance);
 	terminal.Println("ReadLine Test Program");
 	for (;;) {
 		::printf("%s\n", terminal.ReadLine(">"));

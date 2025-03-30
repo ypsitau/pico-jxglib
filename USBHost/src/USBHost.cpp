@@ -633,14 +633,14 @@ USBHost::Mouse::Mouse() : sensibility_{.6}
 	SetStage({0, 0, 320, 240});
 }
 
-USBHost::Mouse& USBHost::Mouse::SetStage(const Rect& rcStage)
+Mouse& USBHost::Mouse::SetStage(const Rect& rcStage)
 {
 	rcStage_ = rcStage;
 	UpdateStage();
 	return *this;
 }
 
-USBHost::Mouse& USBHost::Mouse::SetSensibility(float sensibility)
+Mouse& USBHost::Mouse::SetSensibility(float sensibility)
 {
 	sensibility_ = sensibility;
 	UpdateStage();

@@ -44,12 +44,17 @@ Adapter::Adapter() : doubleBuffFlag_{false}, nPixelsBuff_{-1}, nPartialBuff_{10}
 	inputTouchScreen_(*this)
 {}
 
-bool Adapter::AttachOutput(Drawable& drawable, const Rect& rect, bool requiredFlag)
+Adapter& Adapter::AttachDrawable(Drawable& drawable, const Rect& rect)
 {
 	pDrawableOut_ = &drawable;
 	rectOut_ = rect;
 	Rect rectBound(0, 0, drawable.GetWidth(), drawable.GetHeight());
-	if (rectOut_.IsEmpty()) { rectOut_ = rectBound; } else if (!rectOut_.Adjust(rectBound)) return false;
+	if (rectOut_.IsEmpty()) {
+		rectOut_ = rectBound;
+	} else if (!rectOut_.Adjust(rectBound)) {
+		::panic("failed to adjust bounding rectangle");
+		return *this;
+	}
 	disp_ = ::lv_display_create(rectOut_.width, rectOut_.height);
 	::lv_display_set_color_format(disp_,
 			drawable.IsFormatRGB565()? LV_COLOR_FORMAT_RGB565 :
@@ -66,20 +71,20 @@ bool Adapter::AttachOutput(Drawable& drawable, const Rect& rect, bool requiredFl
 	}
 	void* buff1 = ::lv_malloc(bytesBuff);
 	if (!buff1) {
-		if (requiredFlag) panic("can't allocate the first buffer (%dbytes)", bytesBuff);
-		return false;
+		::panic("failed to allocate the first buffer (%dbytes) in LVGL::Adapter::AttachDrawable()", bytesBuff);
+		return *this;
 	}
 	void* buff2 = nullptr;
 	if (doubleBuffFlag_) {
 		buff2 = ::lv_malloc(bytesBuff);
 		if (!buff2) {
-			if (requiredFlag) panic("can't allocate the second buffer (%dbytes)", bytesBuff);
-			return false;
+			::panic("failed to allocate the second buffer (%dbytes) in LVGL::Adapter::AttachDrawable()", bytesBuff);
+			return *this;
 		}
 	}
 	::lv_display_set_buffers(disp_, buff1, buff2, bytesBuff, LV_DISPLAY_RENDER_MODE_PARTIAL);
 	SetDefault();	// just for the convenience in the following process
-	return true;
+	return *this;
 }
 
 void Adapter::SetDefault()
@@ -118,39 +123,6 @@ lv_indev_t* Adapter::SetInput_Encoder(Input& input)
 	return RegisterInput(LV_INDEV_TYPE_ENCODER, IndevReadEncoderCB);
 }
 
-lv_indev_t* Adapter::AttachInput(TouchScreen& touchScreen)
-{
-	inputTouchScreen_.SetTouchScreen(touchScreen);
-	return SetInput_Pointer(inputTouchScreen_);
-}
-
-lv_indev_t* Adapter::AttachInput(Mouse& mouse)
-{
-	inputMouse_.SetMouse(mouse);
-	lv_indev_t* indev = SetInput_Pointer(inputMouse_);
-	// https://docs.lvgl.io/master/details/main-modules/indev.html
-	//LV_IMAGE_DECLARE(mouse_cursor_icon);							// Declare the image source.
-	lv_obj_t* objCursor = lv_image_create(::lv_screen_active());	// Create image Widget for cursor.
-	::lv_image_set_src(objCursor, &imageDsc_MouseCursor);			// Set image source.
-	::lv_indev_set_cursor(indev, objCursor);						// Connect image to Input Device.
-	Mouse::Status status = mouse.CaptureStatus();
-	//::lv_image_set_pivot(objCursor, 10, 0);
-	::lv_obj_set_pos(objCursor, status.GetPoint().x, status.GetPoint().y);
-	return indev;
-}
-
-lv_indev_t* Adapter::AttachInput(Keyboard& keyboard, bool setGroupFlag)
-{
-	inputKeyboard_.SetKeyboard(keyboard);
-	lv_indev_t* indev = SetInput_Keypad(inputKeyboard_);
-	if (setGroupFlag) {
-		lv_group_t* group = ::lv_group_create();
-		::lv_group_set_default(group);
-		::lv_indev_set_group(indev, group);
-	}
-	return indev;
-}
-
 lv_indev_t* Adapter::RegisterInput(lv_indev_type_t indev_type, lv_indev_read_cb_t cb)
 {
 	lv_indev_t* indev = ::lv_indev_create();
@@ -160,6 +132,42 @@ lv_indev_t* Adapter::RegisterInput(lv_indev_type_t indev_type, lv_indev_read_cb_
 	::lv_indev_set_display(indev, disp_);
 	SetDefault();	// just for the convenience in the following process
 	return indev;
+}
+
+Adapter& Adapter::AttachTouchScreen(TouchScreen& touchScreen, lv_indev_t** p_indev)
+{
+	inputTouchScreen_.SetTouchScreen(touchScreen);
+	lv_indev_t* indev = SetInput_Pointer(inputTouchScreen_);
+	if (p_indev) *p_indev = indev;
+	return *this;
+}
+
+Adapter& Adapter::AttachMouse(Mouse& mouse, lv_indev_t** p_indev)
+{
+	inputMouse_.SetMouse(mouse);
+	lv_indev_t* indev = SetInput_Pointer(inputMouse_);
+	// https://docs.lvgl.io/master/details/main-modules/indev.html
+	lv_obj_t* objCursor = lv_image_create(::lv_screen_active());	// Create image Widget for cursor.
+	::lv_image_set_src(objCursor, &imageDsc_MouseCursor);			// Set image source.
+	::lv_indev_set_cursor(indev, objCursor);						// Connect image to Input Device.
+	Mouse::Status status = mouse.CaptureStatus();
+	::lv_obj_set_pos(objCursor, status.GetPoint().x, status.GetPoint().y);
+	if (p_indev) *p_indev = indev;
+	mouse.SetStage(GetRectOut());
+	return *this;
+}
+
+Adapter& Adapter::AttachKeyboard(Keyboard& keyboard, lv_indev_t** p_indev, bool setGroupFlag)
+{
+	inputKeyboard_.SetKeyboard(keyboard);
+	lv_indev_t* indev = SetInput_Keypad(inputKeyboard_);
+	if (setGroupFlag) {
+		lv_group_t* group = ::lv_group_create();
+		::lv_group_set_default(group);
+		::lv_indev_set_group(indev, group);
+	}
+	if (p_indev) *p_indev = indev;
+	return *this;
 }
 
 void Adapter::FlushCB(lv_display_t* disp, const lv_area_t* area, unsigned char* buf)

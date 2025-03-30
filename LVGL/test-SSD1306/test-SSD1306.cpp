@@ -18,7 +18,7 @@ int main()
 	display.Clear().Refresh();
 	LVGL::Initialize(5);
 	LVGL::Adapter lvglAdapter;
-	lvglAdapter.AttachOutput(display);
+	lvglAdapter.AttachDisplay(display);
 	Setup();
 	for (;;) Tickable::Tick();
 }

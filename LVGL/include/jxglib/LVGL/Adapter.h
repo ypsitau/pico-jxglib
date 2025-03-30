@@ -97,19 +97,21 @@ public:
 	lv_indev_t* SetInput_Keypad(Input& input);
 	lv_indev_t* SetInput_Button(Input& input);
 	lv_indev_t* SetInput_Encoder(Input& input);
-public:
-	bool AttachOutput(Drawable& drawable, const Rect& rect = Rect::Empty, bool requiredFlag = true);
-	lv_indev_t* AttachInput(Mouse& mouse);
-	lv_indev_t* AttachInput(TouchScreen& touchScreen);
-	lv_indev_t* AttachInput(Keyboard& keyboard, bool setGroupFlag = true);
 private:
 	lv_indev_t* RegisterInput(lv_indev_type_t indev_type, lv_indev_read_cb_t cb);
+public:
+	Adapter& AttachDrawable(Drawable& drawable, const Rect& rect = Rect::Empty);
+	Adapter& AttachCanvas(Drawable& canvas, const Rect& rect = Rect::Empty) { return AttachDrawable(canvas, rect); }
+	Adapter& AttachDisplay(Drawable& display, const Rect& rect = Rect::Empty) { return AttachDrawable(display, rect); }
+	Adapter& AttachMouse(Mouse& mouse, lv_indev_t** p_indev = nullptr);
+	Adapter& AttachTouchScreen(TouchScreen& touchScreen, lv_indev_t** p_indev = nullptr);
+	Adapter& AttachKeyboard(Keyboard& keyboard, lv_indev_t** p_indev = nullptr, bool setGroupFlag = true);
 private:
 	static void FlushCB(lv_display_t* disp, const lv_area_t* area, unsigned char* buf);
-	static void IndevReadPointerCB(lv_indev_t* indev_drv, lv_indev_data_t* data);
-	static void IndevReadKeypadCB(lv_indev_t* indev_drv, lv_indev_data_t* data);
-	static void IndevReadButtonCB(lv_indev_t* indev_drv, lv_indev_data_t* data);
-	static void IndevReadEncoderCB(lv_indev_t* indev_drv, lv_indev_data_t* data);
+	static void IndevReadPointerCB(lv_indev_t* indev, lv_indev_data_t* data);
+	static void IndevReadKeypadCB(lv_indev_t* indev, lv_indev_data_t* data);
+	static void IndevReadButtonCB(lv_indev_t* indev, lv_indev_data_t* data);
+	static void IndevReadEncoderCB(lv_indev_t* indev, lv_indev_data_t* data);
 };
 
 }

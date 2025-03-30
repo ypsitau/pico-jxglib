@@ -171,7 +171,7 @@ Terminal& Serial::Terminal::Edit_MoveHistoryNext()
 
 void Serial::Terminal::OnTick()
 {
-	if (!GetLineEditor().IsEditing()) return;
+	if (!IsEditable() || !GetLineEditor().IsEditing()) return;
 	KeyData keyData;
 	if (GetKeyDataNB(&keyData)) ProcessKeyData(keyData);
 }

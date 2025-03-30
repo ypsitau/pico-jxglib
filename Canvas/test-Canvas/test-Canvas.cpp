@@ -21,7 +21,7 @@ int main()
 	ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
 	display.Initialize(Display::Dir::Rotate0);
 	Canvas canvas;
-	canvas.AttachOutput(display, {50, 50, 100, 150});
+	canvas.AttachDrawable(display, {50, 50, 100, 150});
 	//DrawableTest::DrawString(canvas);
 	DrawableTest::RotateImage(canvas);
 }

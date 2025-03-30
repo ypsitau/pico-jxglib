@@ -23,8 +23,7 @@ int main()
 	//touchScreen.Calibrate(display);
 	LVGL::Initialize(5);
 	LVGL::Adapter lvglAdapter;
-	lvglAdapter.EnableDoubleBuff(true).AttachOutput(display);
-	lvglAdapter.AttachInput(touchScreen);
+	lvglAdapter.EnableDoubleBuff(true).AttachDisplay(display).AttachTouchScreen(touchScreen);
 	::lv_example_anim_3();
 	for (;;) Tickable::Tick();
 }

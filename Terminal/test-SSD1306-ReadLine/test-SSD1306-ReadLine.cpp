@@ -17,14 +17,13 @@ int main()
 	GPIO5.set_function_I2C0_SCL().pull_up();
 	SSD1306 display(i2c0, 0x3c);
 	display.Initialize();
-	terminal.AttachOutput(display);
-	terminal.AttachInput(USBHost::GetKeyboard().SetCapsLockAsCtrl());
-	terminal.SetFont(Font::shinonome12).SetSpacingRatio(1., 1)
+	terminal.AttachDisplay(display).AttachKeyboard(USBHost::GetKeyboard().SetCapsLockAsCtrl())
+		.SetFont(Font::shinonome12).SetSpacingRatio(1., 1)
 		.SetColor(Color::white).SetColorBg(Color::black)
 		.SetColorInEdit(Color::white).SetColorCursor(Color::white)
 		.ClearScreen();
 	terminal.Println("ReadLine Test Program");
 	for (;;) {
-		::printf("%s\n", terminal.ReadLine(">"));
+		terminal.Printf("%s\n", terminal.ReadLine(">"));
 	}
 }

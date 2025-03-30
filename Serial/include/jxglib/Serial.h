@@ -22,7 +22,7 @@ public:
 		Terminal(int bytesHistoryBuff = 512) : jxglib::Terminal(bytesHistoryBuff, Stdio::Keyboard::Instance),
 				Tickable(0), pPrintable_{&Stdio::Printable::Instance} {}
 	public:
-		void AttachOutput(Printable& printable) { pPrintable_ = &printable; }
+		Terminal& AttachPrintable(Printable& printable) { pPrintable_ = &printable; return *this; }
 	public:
 		// virtual functions of Printable
 		virtual Printable& ClearScreen() { return pPrintable_->ClearScreen(); }

@@ -102,6 +102,13 @@ void CmdLine::OnTick()
 	}
 }
 
+void CmdLine::SetPrompt_(const char* prompt)
+{
+	size_t len = ChooseMin(sizeof(prompt_) - 1, ::strlen(prompt));
+	::memcpy(prompt_, prompt, len);
+	prompt_[len] = '\0';
+}
+
 void CmdLine::PrintList(Printable& printable)
 {
 	for (Entry* pEntry = Entry::GetEntryHead(); pEntry; pEntry = pEntry->GetEntryNext()) {

@@ -56,8 +56,12 @@ public:
 	bool RunEntry(char* line);
 	Terminal& GetTerminal() { return *pTerminal_; }
 public:
+	static const char* GetPrompt() { return Instance.GetPrompt_(); }
+	static void SetPrompt(const char* prompt) { Instance.SetPrompt_(prompt); }
 	static void AttachTerminal(Terminal& terminal) { Instance.AttachTerminal_(terminal); }
 private:
+	const char* GetPrompt_() const { return prompt_; }
+	void SetPrompt_(const char* prompt);
 	void AttachTerminal_(Terminal& terminal) { pTerminal_ = &terminal; }
 public:
 	// virtual functions of Tickable
