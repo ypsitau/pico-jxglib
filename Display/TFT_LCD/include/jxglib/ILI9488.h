@@ -17,7 +17,7 @@ public:
 	public:
 		TouchScreen(spi_inst_t* spi, const PinAssign& pinAssign) : TSC2046(spi, pinAssign) {}
 	public:
-		void Initialize(Drawable& drawable) {
+		TouchScreen& Initialize(Drawable& drawable) {
 			Drawable::Dir dir = drawable.GetDirection();
 			TSC2046::Initialize(dir.IsVert());
 			adjusterX_.Set(0.18, -26, 345);
@@ -25,17 +25,18 @@ public:
 			if (dir.IsVert()) Swap(&adjusterX_, &adjusterY_);
 			adjusterX_.SetValueMax(drawable.GetWidth() - 1).SetNeg(dir.IsRightToLeft());
 			adjusterY_.SetValueMax(drawable.GetHeight() - 1).SetNeg(dir.IsTopToBottom());
+			return *this;
 		}
 	};
 public:
 	ILI9488(spi_inst_t* spi, int width, int height, const PinAssign& pinAssign) :
 			TFT_LCD(spi, Format::RGB, 320, 480, width, height, pinAssign) {}
-	inline void Initialize(Dir displayDir = Dir::Normal);
+	inline TFT_LCD& Initialize(Dir displayDir = Dir::Normal);
 public:
 	using TypeA = ILI9488;
 };
 
-inline void ILI9488::Initialize(Dir displayDir)
+inline TFT_LCD& ILI9488::Initialize(Dir displayDir)
 {
 	static const ConfigData configData = {
 		rgbInterfaceFormat:		RGBInterfaceFormat::BPP18,
@@ -48,7 +49,7 @@ inline void ILI9488::Initialize(Dir displayDir)
 		displayInversionOnFlag:	false,
 		gammaCurve:				0x01,
 	};
-	TFT_LCD::Initialize(displayDir, configData);
+	return TFT_LCD::Initialize(displayDir, configData);
 }
 
 }

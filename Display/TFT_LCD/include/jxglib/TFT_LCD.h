@@ -414,7 +414,7 @@ public:
 		}
 	}
 public:
-	bool Initialize(Dir displayDir, const ConfigData& configData);
+	TFT_LCD& Initialize(Dir displayDir, const ConfigData& configData);
 	const Saved& GetSaved() const { return saved_; }
 	virtual Dir GetDirection() const override { return saved_.displayDir; }
 	bool UsesCS() { return raw.UsesCS(); }

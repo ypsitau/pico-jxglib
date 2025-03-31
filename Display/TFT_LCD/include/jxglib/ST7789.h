@@ -16,12 +16,12 @@ public:
 			TFT_LCD(spi, Format::RGB565, 240, 320, width, height, pinAssign) {}
 	ST7789(spi_inst_t* spi, int width, int height, const PinAssignNoCS& pinAssign) :
 			TFT_LCD(spi, Format::RGB565, 240, 320, width, height, pinAssign) {}
-	inline void Initialize(Dir displayDir = Dir::Normal);
+	inline TFT_LCD& Initialize(Dir displayDir = Dir::Normal);
 public:
 	using TypeA = ST7789;
 };
 
-inline void ST7789::Initialize(Dir displayDir)
+inline TFT_LCD& ST7789::Initialize(Dir displayDir)
 {
 	static const ConfigData configData = {
 		.rgbInterfaceFormat		= RGBInterfaceFormat::BPP16,
@@ -34,7 +34,7 @@ inline void ST7789::Initialize(Dir displayDir)
 		.displayInversionOnFlag	= true,
 		.gammaCurve				= 0x01,
 	};
-	TFT_LCD::Initialize(displayDir, configData);
+	return TFT_LCD::Initialize(displayDir, configData);
 }
 
 }

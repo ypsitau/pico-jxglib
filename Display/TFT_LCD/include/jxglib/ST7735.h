@@ -16,7 +16,7 @@ public:
 			TFT_LCD(spi, Format::RGB565, 128, 160, width, height, pinAssign) {}
 	ST7735(spi_inst_t* spi, int width, int height, const PinAssignNoCS& pinAssign) :
 			TFT_LCD(spi, Format::RGB565, 128, 160, width, height, pinAssign) {}
-	inline void Initialize(Dir displayDir = Dir::Normal);
+	inline TFT_LCD& Initialize(Dir displayDir = Dir::Normal);
 public:
 	using TypeA = ST7735;
 	class TypeB : public TFT_LCD {
@@ -25,11 +25,11 @@ public:
 				TFT_LCD(spi, Format::RGB565, 128, 160, width, height, pinAssign) {}
 		TypeB(spi_inst_t* spi, int width, int height, const PinAssignNoCS& pinAssign) :
 				TFT_LCD(spi, Format::RGB565, 128, 160, width, height, pinAssign) {}
-		inline void Initialize(Dir displayDir = Dir::Normal);
+		inline TFT_LCD& Initialize(Dir displayDir = Dir::Normal);
 	};
 };
 
-inline void ST7735::Initialize(Dir displayDir)
+inline TFT_LCD& ST7735::Initialize(Dir displayDir)
 {
 	static const ConfigData configData = {
 		.rgbInterfaceFormat		= RGBInterfaceFormat::BPP16,
@@ -42,10 +42,10 @@ inline void ST7735::Initialize(Dir displayDir)
 		.displayInversionOnFlag	= false,
 		.gammaCurve				= 0x01,
 	};
-	TFT_LCD::Initialize(displayDir, configData);
+	return TFT_LCD::Initialize(displayDir, configData);
 }
 
-inline void ST7735::TypeB::Initialize(Dir displayDir)
+inline TFT_LCD& ST7735::TypeB::Initialize(Dir displayDir)
 {
 	static const ConfigData configData = {
 		.rgbInterfaceFormat		= RGBInterfaceFormat::BPP16,
@@ -58,7 +58,7 @@ inline void ST7735::TypeB::Initialize(Dir displayDir)
 		.displayInversionOnFlag	= false,
 		.gammaCurve				= 0x02,
 	};
-	TFT_LCD::Initialize(displayDir, configData);
+	return TFT_LCD::Initialize(displayDir, configData);
 }
 
 }

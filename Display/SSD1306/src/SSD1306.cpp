@@ -12,7 +12,10 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 bool SSD1306::DispatcherEx::Initialize()
 {
-	if (!AllocateBuff()) return false;
+	if (!AllocateBuff()) {
+		::panic("failed to allocate buffer for SSD1306");
+		return false;
+	}
 	raw.SetDisplayOnOff(0);							// Set Display ON/OFF = 0: OFF
 	raw.SetMemoryAddressingMode(0);					// Set Memory Addressing Mode = 0: Horizontal Addressing Mode
 	raw.SetDisplayStartLine(0);						// Set Display Start Line = 0

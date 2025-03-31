@@ -8,7 +8,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // TFT_LCD
 //------------------------------------------------------------------------------
-bool TFT_LCD::Initialize(Dir displayDir, const ConfigData& configData)
+TFT_LCD& TFT_LCD::Initialize(Dir displayDir, const ConfigData& configData)
 {
 	saved_.displayDir = displayDir;
 	saved_.configData = configData;
@@ -36,7 +36,8 @@ bool TFT_LCD::Initialize(Dir displayDir, const ConfigData& configData)
 	Clear();
 	::sleep_ms(10);
 	raw.SetGPIO_BL(1);
-	return GetDispatcher().Initialize();
+	GetDispatcher().Initialize();
+	return *this;
 }
 
 void TFT_LCD::CalcPosAdjust(Dir displayDir, int* pxAdjust, int* pyAdjust) const

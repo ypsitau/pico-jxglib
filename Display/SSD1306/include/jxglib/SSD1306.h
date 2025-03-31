@@ -246,7 +246,7 @@ public:
 		SetDispatcher(dispatcherEx_);
 	}
 public:
-	bool Initialize() { return GetDispatcher().Initialize(); }
+	SSD1306& Initialize() { GetDispatcher().Initialize(); return *this; }
 };
 
 }
