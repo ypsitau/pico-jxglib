@@ -1,7 +1,6 @@
 //==============================================================================
 // CmdLine.cpp
 //==============================================================================
-#include <ctype.h>
 #include "jxglib/CmdLine.h"
 
 namespace jxglib {
@@ -18,81 +17,13 @@ CmdLine::CmdLine() : stat_{Stat::Begin}, pTerminal_{&TerminalDumb::Instance}, pE
 
 bool CmdLine::RunEntry(char* line)
 {
-	enum class Stat {
-		SeekHead, Quoted, QuotedEscape, NoQuoted, NoQuotedEscape,
-	} stat = Stat::SeekHead;
-	int argc = 0;
 	char* argv[16];
-	bool contFlag = true;
-	for (char* p = line; contFlag; p++) {
-		switch (stat) {
-		case Stat::SeekHead: {
-			if (!*p) {
-				contFlag = false;
-			} else if (isspace(*p)) {
-				// nothing to do
-			} else if (*p == '"') {
-				if (argc < count_of(argv) - 1) argv[argc++] = p + 1;
-				stat = Stat::Quoted;
-			} else if (*p == '\\') {
-				if (argc < count_of(argv) - 1) argv[argc++] = p;
-				DeleteChar(p);
-				stat = Stat::NoQuotedEscape;
-			} else {
-				if (argc < count_of(argv) - 1) argv[argc++] = p;
-				stat = Stat::NoQuoted;
-			}
-			break;
-		}
-		case Stat::Quoted: {
-			if (!*p) {
-				GetTerminal().Printf("unmatched double quotation\n");
-				return false;
-			} else if (*p == '\\') {
-				DeleteChar(p);
-				stat = Stat::QuotedEscape;
-			} else if (*p == '"') {
-				*p = '\0';
-				stat = Stat::SeekHead;
-			} else {
-				// nothing to do
-			}
-			break;
-		}
-		case Stat::QuotedEscape: {
-			if (!*p) {
-				GetTerminal().Printf("unmatched double quotation\n");
-				return false;
-			} else {
-				stat = Stat::Quoted;
-			}
-			break;
-		}
-		case Stat::NoQuoted: {
-			if (!*p) {
-				contFlag = false;
-			} else if (*p == '\\') {
-				DeleteChar(p);
-				stat = Stat::NoQuotedEscape;
-			} else if (isspace(*p)) {
-				*p = '\0';
-				stat = Stat::SeekHead;
-			} else {
-				// nothing to do
-			}
-			break;
-		}
-		case Stat::NoQuotedEscape: {
-			if (!*p) {
-				contFlag = false;
-			} else {
-				stat = Stat::NoQuoted;
-			}
-			break;
-		}
-		}
+	int argc = count_of(argv);
+	const char* errMsg;
+	if (!Tokenizer().Tokenize(line, &argc, argv, &errMsg)) {
+		GetTerminal().Println(errMsg);
+		return false;
 	}
-	argv[argc] = nullptr;
 	if (argc == 0) return false;
 	for (Entry* pEntry = Entry::GetEntryHead(); pEntry; pEntry = pEntry->GetEntryNext()) {
 		if (::strcmp(argv[0], pEntry->GetName()) == 0) {
@@ -145,11 +76,6 @@ void CmdLine::PrintHelp(Printable& printable)
 	for (const Entry* pEntry = Entry::GetEntryHead(); pEntry; pEntry = pEntry->GetEntryNext()) {
 		printable.Printf("%-*s  %s\n", lenMax, pEntry->GetName(), pEntry->GetHelp());
 	}
-}
-
-void CmdLine::DeleteChar(char* p)
-{
-	if (*p) ::memmove(p, p + 1, ::strlen(p + 1) + 1);
 }
 
 //------------------------------------------------------------------------------

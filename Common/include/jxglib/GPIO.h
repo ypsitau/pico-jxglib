@@ -25,11 +25,11 @@ public:
 	class Key {
 	private:
 		const GPIO& gpio_;
-		uint8_t keyCode_;
 		uint32_t flags_;
+		uint8_t keyCode_;
 		bool pressedFlag_;
 	public:
-		Key(const GPIO& gpio, uint8_t keyCode = 0, uint32_t flags = LogicNeg);
+		Key(const GPIO& gpio, uint32_t flags, uint8_t keyCode);
 	public:
 		void Initialize();
 		uint8_t GetKeyCode() const { return keyCode_; }
@@ -41,7 +41,7 @@ public:
 	private:
 		const GPIO& gpio_;
 	public:
-		KeyRow(const GPIO& gpio) : gpio_{gpio} {};
+		KeyRow(const GPIO& gpio);
 	public:
 		const GPIO& GetGPIO() const { return gpio_; }
 		void put(bool value) const { gpio_.put(value); }
@@ -50,7 +50,7 @@ public:
 	private:
 		const GPIO& gpio_;
 	public:
-		KeyCol(const GPIO& gpio) : gpio_{gpio} {};
+		KeyCol(const GPIO& gpio);
 	public:
 		const GPIO& GetGPIO() const { return gpio_; }
 		bool get() const { return gpio_.get(); }
@@ -60,7 +60,7 @@ public:
 		Key* keyTbl_;
 		int nKeys_;
 	public:
-		Keyboard();
+		Keyboard(int msecTick = 20);
 	public:
 		void Initialize(Key* keyTbl, int nKeys);
 	public:
@@ -85,7 +85,7 @@ public:
 		uint8_t keyCodeScannedTbl_[6];
 		int nKeysScanned_;
 	public:
-		KeyboardMatrix();
+		KeyboardMatrix(int msecTick = 10);
 	public:
 		void Initialize(const uint8_t* keyCodeTbl, const KeyRow* keyRowTbl, int nKeyRows, const KeyCol* keyColTbl, int nKeyCols, uint32_t flags);
 	public:

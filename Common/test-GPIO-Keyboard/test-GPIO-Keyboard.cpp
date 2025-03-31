@@ -12,12 +12,12 @@ int main()
 {
 	::stdio_init_all();
 	GPIO::Key keyTbl[] = {
-		{GPIO16.pull_up(),	VK_Z,		},
-		{GPIO17.pull_up(),	VK_X,		},
-		{GPIO18.pull_up(),	VK_LEFT,	},
-		{GPIO19.pull_up(),	VK_UP,		},
-		{GPIO20.pull_up(),	VK_DOWN,	},
-		{GPIO21.pull_up(),	VK_RIGHT,	},
+		{ GPIO16.pull_up(), GPIO::LogicNeg, VK_Z		},
+		{ GPIO17.pull_up(), GPIO::LogicNeg, VK_X		},
+		{ GPIO18.pull_up(), GPIO::LogicNeg, VK_LEFT		},
+		{ GPIO19.pull_up(), GPIO::LogicNeg, VK_UP		},
+		{ GPIO20.pull_up(), GPIO::LogicNeg, VK_DOWN		},
+		{ GPIO21.pull_up(), GPIO::LogicNeg, VK_RIGHT	},
 	};
 	keyboard.Initialize(keyTbl, count_of(keyTbl));
 	//KeyboardTest::GetKeyDataNB(Stdio::Printable::Instance, keyboard);

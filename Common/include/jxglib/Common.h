@@ -16,6 +16,7 @@
 #include "Rect.h"
 #include "Size.h"
 #include "Tickable.h"
+#include "Tokenizer.h"
 #include "UTF8.h"
 #include "Util.h"
 

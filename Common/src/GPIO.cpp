@@ -44,8 +44,8 @@ const GPIO29_T GPIO29;
 //------------------------------------------------------------------------------
 // GPIO::Key
 //------------------------------------------------------------------------------
-GPIO::Key::Key(const GPIO& gpio, uint8_t keyCode, uint32_t flags) :
-		gpio_{gpio}, keyCode_{keyCode}, flags_{flags}, pressedFlag_{false}
+GPIO::Key::Key(const GPIO& gpio, uint32_t flags, uint8_t keyCode) :
+		gpio_{gpio}, flags_{flags}, keyCode_{keyCode}, pressedFlag_{false}
 {
 }
 
@@ -57,15 +57,21 @@ void GPIO::Key::Initialize()
 //------------------------------------------------------------------------------
 // GPIO::KeyRow
 //------------------------------------------------------------------------------
+GPIO::KeyRow::KeyRow(const GPIO& gpio) : gpio_{gpio}
+{
+}
 
 //------------------------------------------------------------------------------
 // GPIO::KeyCol
 //------------------------------------------------------------------------------
+GPIO::KeyCol::KeyCol(const GPIO& gpio) : gpio_{gpio}
+{
+}
 
 //------------------------------------------------------------------------------
 // GPIO::Keyboard
 //------------------------------------------------------------------------------
-GPIO::Keyboard::Keyboard() : Tickable(20, Tickable::Priority::Lowest), keyTbl_{nullptr}, nKeys_{0}
+GPIO::Keyboard::Keyboard(int msecTick) : Tickable(msecTick, Tickable::Priority::Lowest), keyTbl_{nullptr}, nKeys_{0}
 {
 }
 
@@ -113,7 +119,7 @@ void GPIO::Keyboard::OnTick()
 //------------------------------------------------------------------------------
 // GPIO::KeyboardMatrix
 //------------------------------------------------------------------------------
-GPIO::KeyboardMatrix::KeyboardMatrix() : Tickable(10, Tickable::Priority::Lowest),
+GPIO::KeyboardMatrix::KeyboardMatrix(int msecTick) : Tickable(msecTick, Tickable::Priority::Lowest),
 	keyCodeTbl_{nullptr}, keyRowTbl_{nullptr}, nKeyRows_{0}, keyColTbl_{nullptr}, nKeyCols_{0},
 	iKeyRow_{0}, nKeysScanned_{0}
 {

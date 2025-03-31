@@ -72,8 +72,6 @@ public:
 	virtual void OnTick() override;
 public:
 	static void PrintHelp(Printable& printable);
-private:
-	static void DeleteChar(char* p);
 };
 
 }

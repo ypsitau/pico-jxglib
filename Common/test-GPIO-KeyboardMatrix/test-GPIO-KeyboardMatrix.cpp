@@ -10,7 +10,7 @@ GPIO::KeyboardMatrix keyboard;
 int main()
 {
 	::stdio_init_all();
-	static const uint8_t keyCodeTbl[] = {
+	const uint8_t keyCodeTbl[] = {
 		VK_1, VK_2, VK_3, VK_UP,
 		VK_4, VK_5, VK_6, VK_DOWN,
 		VK_7, VK_8, VK_9, VK_LEFT,

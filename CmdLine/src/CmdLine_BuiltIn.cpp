@@ -70,7 +70,7 @@ CmdLineEntry(help, "prints help strings for available commands")
 }
 
 //-----------------------------------------------------------------------------
-// prompt str
+// prompt
 //-----------------------------------------------------------------------------
 CmdLineEntry(prompt, "changes the command line prompt")
 {
@@ -78,6 +78,16 @@ CmdLineEntry(prompt, "changes the command line prompt")
 		terminal.Println(CmdLine::GetPrompt());
 	} else {
 		CmdLine::SetPrompt(argv[1]);
+	}
+}
+
+//-----------------------------------------------------------------------------
+// argtest
+//-----------------------------------------------------------------------------
+CmdLineEntry(argtest, "tests command line arguments")
+{
+	for (int i = 0; i < argc; i++) {
+		terminal.Printf("argv[%d] \"%s\"\n", i, argv[i]);
 	}
 }
 
