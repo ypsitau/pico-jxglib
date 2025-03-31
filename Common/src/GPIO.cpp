@@ -78,7 +78,7 @@ GPIO::KeyCol::KeyCol(const GPIO& gpio) : gpio_{gpio}
 //------------------------------------------------------------------------------
 // GPIO::Keyboard
 //------------------------------------------------------------------------------
-GPIO::Keyboard::Keyboard(int msecTick) : Tickable(msecTick, Tickable::Priority::Lowest), keyTbl_{nullptr}, nKeys_{0}
+GPIO::Keyboard::Keyboard(int msecTick) : Tickable(msecTick, Tickable::Priority::Lowest), keyTbl_{nullptr}, nKeys_{0}, modifier_{0}
 {
 }
 
@@ -111,12 +111,20 @@ int GPIO::Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax)
 void GPIO::Keyboard::OnTick()
 {
 	bool anyPressedFlag = false;
+	modifier_ = 0;
 	for (int i = 0; i < nKeys_; i++) {
 		Key& key = keyTbl_[i];
 		key.Update();
 		if (key.IsPressed()) {
 			anyPressedFlag = true;
-			if (GetRepeater().SignalFirst(key.GetKeyCode(), key.GetModifier())) break;
+			modifier_ |= key.GetModifier();
+		}
+	}
+	for (int i = 0; i < nKeys_; i++) {
+		Key& key = keyTbl_[i];
+		uint8_t keyCode = key.GetKeyCode();
+		if (key.IsPressed() && keyCode) {
+			if (GetRepeater().SignalFirst(keyCode, modifier_)) break;
 		}
 	}
 	if (!anyPressedFlag) GetRepeater().Invalidate();

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/Common.h"
+#include "jxglib/KeyData.h"
 #include "jxglib/KeyboardTest.h"
 #include "jxglib/Stdio.h"
 
@@ -12,7 +13,7 @@ int main()
 {
 	::stdio_init_all();
 	GPIO::Key keyTbl[] = {
-		{ GPIO16.pull_up(), GPIO::LogicNeg, VK_Z		},
+		{ GPIO16.pull_up(), GPIO::LogicNeg, VK_Z,		KeyData::Mod::ShiftL },
 		{ GPIO17.pull_up(), GPIO::LogicNeg, VK_X		},
 		{ GPIO18.pull_up(), GPIO::LogicNeg, VK_LEFT		},
 		{ GPIO19.pull_up(), GPIO::LogicNeg, VK_UP		},

@@ -71,6 +71,7 @@ public:
 	private:
 		Key* keyTbl_;
 		int nKeys_;
+		uint8_t modifier_;
 	public:
 		Keyboard(int msecTick = 20);
 	public:
@@ -78,6 +79,7 @@ public:
 	public:
 		// virtual function of KeyboardRepeatable
 		virtual bool IsPressed(uint8_t keyCode) override;
+		virtual uint8_t GetModifier() override { return modifier_; }
 		virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1) override;
 	public:
 		// virtual functions of Tickable
