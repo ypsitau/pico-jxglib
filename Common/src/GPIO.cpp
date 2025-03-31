@@ -44,14 +44,21 @@ const GPIO29_T GPIO29;
 //------------------------------------------------------------------------------
 // GPIO::Key
 //------------------------------------------------------------------------------
-GPIO::Key::Key(const GPIO& gpio, uint32_t flags, uint8_t keyCode) :
-		gpio_{gpio}, flags_{flags}, keyCode_{keyCode}, pressedFlag_{false}
+GPIO::Key::Key(const GPIO& gpio, uint32_t flags, uint8_t keyCode, uint8_t modifier) :
+	gpio_{gpio}, flags_{flags}, keyCode_{keyCode}, modifier_{modifier}, pressedFlag_{false}
 {
 }
 
 void GPIO::Key::Initialize()
 {
 	gpio_.set_dir_IN().put(0).set_function_SIO();
+}
+
+//------------------------------------------------------------------------------
+// GPIO::KeySet
+//------------------------------------------------------------------------------
+GPIO::KeySet::KeySet(uint8_t keyCode, uint8_t modifier) : keyCode_{keyCode}, modifier_{modifier}
+{
 }
 
 //------------------------------------------------------------------------------
@@ -103,14 +110,13 @@ int GPIO::Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax)
 
 void GPIO::Keyboard::OnTick()
 {
-	uint8_t modifier = 0;
 	bool anyPressedFlag = false;
 	for (int i = 0; i < nKeys_; i++) {
 		Key& key = keyTbl_[i];
 		key.Update();
 		if (key.IsPressed()) {
 			anyPressedFlag = true;
-			if (GetRepeater().SignalFirst(key.GetKeyCode(), modifier)) break;
+			if (GetRepeater().SignalFirst(key.GetKeyCode(), key.GetModifier())) break;
 		}
 	}
 	if (!anyPressedFlag) GetRepeater().Invalidate();
@@ -120,15 +126,15 @@ void GPIO::Keyboard::OnTick()
 // GPIO::KeyboardMatrix
 //------------------------------------------------------------------------------
 GPIO::KeyboardMatrix::KeyboardMatrix(int msecTick) : Tickable(msecTick, Tickable::Priority::Lowest),
-	keyCodeTbl_{nullptr}, keyRowTbl_{nullptr}, nKeyRows_{0}, keyColTbl_{nullptr}, nKeyCols_{0},
+	keySetTbl_{nullptr}, keyRowTbl_{nullptr}, nKeyRows_{0}, keyColTbl_{nullptr}, nKeyCols_{0},
 	iKeyRow_{0}, nKeysScanned_{0}
 {
 }
 
-void GPIO::KeyboardMatrix::Initialize(const uint8_t* keyCodeTbl,
+void GPIO::KeyboardMatrix::Initialize(const KeySet* keySetTbl,
 	const KeyRow* keyRowTbl, int nKeyRows, const KeyCol* keyColTbl, int nKeyCols, uint32_t flags)
 {
-	keyCodeTbl_ = keyCodeTbl;
+	keySetTbl_ = keySetTbl;
 	keyRowTbl_ = keyRowTbl, nKeyRows_ = nKeyRows;
 	keyColTbl_ = keyColTbl, nKeyCols_ = nKeyCols;
 	if (flags & LogicNeg) {
@@ -165,7 +171,7 @@ void GPIO::KeyboardMatrix::OnTick()
 {
 	for (int iKeyCol = 0; iKeyCol < nKeyCols_; iKeyCol++) {
 		if (nKeysScanned_ < count_of(keyCodeScannedTbl_) && keyColTbl_[iKeyCol].get() == valueActive_) {
-			keyCodeScannedTbl_[nKeysScanned_++] = keyCodeTbl_[iKeyCol + iKeyRow_ * nKeyCols_];
+			keyCodeScannedTbl_[nKeysScanned_++] = keySetTbl_[iKeyCol + iKeyRow_ * nKeyCols_].GetKeyCode();
 		}
 	}
 	keyRowTbl_[iKeyRow_].put(valueInactive_);

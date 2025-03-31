@@ -27,15 +27,27 @@ public:
 		const GPIO& gpio_;
 		uint32_t flags_;
 		uint8_t keyCode_;
+		uint8_t modifier_;
 		bool pressedFlag_;
 	public:
-		Key(const GPIO& gpio, uint32_t flags, uint8_t keyCode);
+		Key(const GPIO& gpio, uint32_t flags, uint8_t keyCode, uint8_t modifier = 0);
 	public:
 		void Initialize();
 		uint8_t GetKeyCode() const { return keyCode_; }
+		uint8_t GetModifier() const { return modifier_; }
 		bool IsPressed() const { return pressedFlag_; }
 	public:
 		virtual void Update() { pressedFlag_ = (flags_ & LogicNeg) ^ gpio_.get(); }
+	};
+	class KeySet {
+	public:
+		uint8_t keyCode_;
+		uint8_t modifier_;
+	public:
+		KeySet(uint8_t keyCode, uint8_t modifier = 0);
+	public:
+		uint8_t GetKeyCode() const { return keyCode_; }
+		uint8_t GetModifier() const { return modifier_; }
 	};
 	class KeyRow {
 	private:
@@ -74,7 +86,7 @@ public:
 	};
 	class KeyboardMatrix : public KeyboardRepeatable, public Tickable {
 	private:
-		const uint8_t* keyCodeTbl_;
+		const KeySet* keySetTbl_;
 		const KeyRow* keyRowTbl_;
 		int nKeyRows_;
 		const KeyCol* keyColTbl_;
@@ -87,7 +99,7 @@ public:
 	public:
 		KeyboardMatrix(int msecTick = 10);
 	public:
-		void Initialize(const uint8_t* keyCodeTbl, const KeyRow* keyRowTbl, int nKeyRows, const KeyCol* keyColTbl, int nKeyCols, uint32_t flags);
+		void Initialize(const KeySet* keySetTbl, const KeyRow* keyRowTbl, int nKeyRows, const KeyCol* keyColTbl, int nKeyCols, uint32_t flags);
 	public:
 		// virtual function of KeyboardRepeatable
 		virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1) override;
