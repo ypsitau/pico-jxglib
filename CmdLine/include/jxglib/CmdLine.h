@@ -6,12 +6,12 @@
 #include "pico/stdlib.h"
 #include "jxglib/Terminal.h"
 
-#define CmdLineEntry(name) \
+#define CmdLineEntry(name, help) \
 class CmdLineEntry_##name : public CmdLine::Entry { \
 public: \
 	static CmdLineEntry_##name Instance; \
 public: \
-	CmdLineEntry_##name() : CmdLine::Entry(#name) {} \
+	CmdLineEntry_##name() : CmdLine::Entry(#name, help) {} \
 public: \
 	virtual void Run(Terminal& terminal, int argc, char* argv[]) override; \
 }; \
@@ -28,15 +28,18 @@ public:
 	class Entry {
 	private:
 		const char* name_;
+		const char* help_;
 		Entry* pEntryNext_;
 	private:
 		static Entry* pEntryHead_;
 	public:
-		Entry(const char* name);
+		Entry(const char* name, const char* help);
 	public:
 		const char* GetName() const { return name_; }
+		const char* GetHelp() const { return help_; }
 		void SetEntryNext(Entry* pEntry) { pEntryNext_ = pEntry; }
 		Entry* GetEntryNext() { return pEntryNext_; }
+		const Entry* GetEntryNext() const { return pEntryNext_; }
 	public:
 		static Entry* GetEntryHead() { return pEntryHead_; }
 	public:
@@ -68,7 +71,9 @@ public:
 	virtual const char* GetTickableName() const override { return "CmdLine"; }
 	virtual void OnTick() override;
 public:
-	static void PrintList(Printable& printable);
+	static void PrintHelp(Printable& printable);
+private:
+	static void DeleteChar(char* p);
 };
 
 }

@@ -16,7 +16,7 @@ private:
 public:
 	static CmdLineEntry_d Instance;
 public:
-	CmdLineEntry_d() : CmdLine::Entry("d"), addr_{0x00000000}, bytes_{64} {}
+	CmdLineEntry_d() : CmdLine::Entry("d", "prints memory content at the specified address"), addr_{0x00000000}, bytes_{64} {}
 public:
 	virtual void Run(Terminal& terminal, int argc, char* argv[]) override;
 };
@@ -56,23 +56,23 @@ void CmdLineEntry_d::Run(Terminal& terminal, int argc, char* argv[])
 //-----------------------------------------------------------------------------
 // ticks
 //-----------------------------------------------------------------------------
-CmdLineEntry(ticks)
+CmdLineEntry(ticks, "prints names and attributes of running Tickable instances")
 {
 	Tickable::PrintList(terminal);
 }
 
 //-----------------------------------------------------------------------------
-// cmds
+// help
 //-----------------------------------------------------------------------------
-CmdLineEntry(cmds)
+CmdLineEntry(help, "prints help strings for available commands")
 {
-	CmdLine::PrintList(terminal);
+	CmdLine::PrintHelp(terminal);
 }
 
 //-----------------------------------------------------------------------------
 // prompt str
 //-----------------------------------------------------------------------------
-CmdLineEntry(prompt)
+CmdLineEntry(prompt, "changes the command line prompt")
 {
 	if (argc < 2) {
 		terminal.Println(CmdLine::GetPrompt());
