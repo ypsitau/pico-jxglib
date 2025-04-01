@@ -77,6 +77,8 @@ int KeyboardRepeatable::SenseKeyData(KeyData keyDataTbl[], int nKeysMax)
 bool KeyboardRepeatable::GetKeyCodeNB(uint8_t* pKeyCode, uint8_t* pModifier)
 {
 	uint8_t keyCode, modifier;
+	*pKeyCode = 0;
+	if (pModifier) *pModifier = 0;
 	if (GetRepeater().GetKey(&keyCode, &modifier)) {
 		*pKeyCode = keyCode;
 		if (pModifier) *pModifier = modifier;

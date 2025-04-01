@@ -20,7 +20,7 @@ public:
 public:
 	Keyboard& SetKeyLayout(const KeyLayout& keyLayout) { pKeyLayout_ = &keyLayout; return *this; }
 	const KeyLayout& GetKeyLayout() const { return *pKeyLayout_; }
-	bool GetKeyCode(uint8_t* pKeyCode, uint8_t* pModifier);
+	bool GetKeyCode(uint8_t* pKeyCode, uint8_t* pModifier = nullptr);
 	bool GetKeyData(KeyData* pKeyData);
 	char GetChar();
 public:
