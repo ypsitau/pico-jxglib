@@ -59,3 +59,5 @@ target_include_directories(test-ST7789-ReadLine PRIVATE
 pico_add_extra_outputs(test-ST7789-ReadLine)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+
+jxglib_configure_USBHost(test-ST7789-ReadLine CFG_TUH_HID 3)
