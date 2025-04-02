@@ -60,4 +60,4 @@ pico_add_extra_outputs(test-HID-Keyboard)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 
-jxglib_configure_USBHost(test-HID-Keyboard CFG_TUH_HID "(3 * CFG_TUH_DEVICE_MAX)")
+jxglib_configure_USBHost(test-HID-Keyboard CFG_TUH_HID 3)
