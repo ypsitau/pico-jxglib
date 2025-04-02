@@ -30,7 +30,8 @@ add_subdirectory(device)
 
 set(JXGLIB_DIR ${CMAKE_CURRENT_LIST_DIR} PARENT_SCOPE)
 
-function(jxglib_gen_tusb_config_host target)
-    configure_file(${JXGLIB_DIR}/template/tusb_config.h.host ${CMAKE_CURRENT_BINARY_DIR}/tusb_config.h)
-    target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+function(jxglib_set_if_undefined VAR VALUE)
+	if (NOT DEFINED ${VAR})
+		set(${VAR} "${VALUE}" PARENT_SCOPE)
+	endif()
 endfunction()

@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <lvgl/examples/lv_examples.h>
 #include "pico/stdlib.h"
 #include "jxglib/USBHost.h"
@@ -6,8 +5,6 @@
 #include "jxglib/LVGL.h"
 
 using namespace jxglib;
-
-void Setup();
 
 int main()
 {
@@ -20,7 +17,9 @@ int main()
 	display.Initialize(Display::Dir::Rotate90);
 	LVGL::Initialize(5);
 	LVGL::Adapter lvglAdapter;
-	lvglAdapter.AttachDisplay(display).AttachMouse(USBHost::GetMouse()).AttachKeyboard(USBHost::GetKeyboard());
+	lvglAdapter.AttachDisplay(display)
+		.AttachMouse(USBHost::GetMouse())
+		.AttachKeyboard(USBHost::GetKeyboard());
 	::lv_example_keyboard_1();
 	for (;;) Tickable::Tick();
 }
