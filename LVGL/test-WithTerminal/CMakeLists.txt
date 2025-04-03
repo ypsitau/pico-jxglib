@@ -74,3 +74,5 @@ target_include_directories(test-WithTerminal PRIVATE
 pico_add_extra_outputs(test-WithTerminal)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+
+jxglib_configure_LVGL(test-WithTerminal)

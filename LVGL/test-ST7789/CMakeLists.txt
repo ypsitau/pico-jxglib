@@ -76,3 +76,5 @@ pico_add_extra_outputs(test-ST7789)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 
 jxglib_configure_USBHost(test-ST7789 CFG_TUH_HID 3)
+
+jxglib_configure_LVGL(test-ST7789)

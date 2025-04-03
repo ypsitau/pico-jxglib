@@ -74,3 +74,5 @@ target_include_directories(test-MultiDisplay PRIVATE
 pico_add_extra_outputs(test-MultiDisplay)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+
+jxglib_configure_LVGL(test-MultiDisplay)
