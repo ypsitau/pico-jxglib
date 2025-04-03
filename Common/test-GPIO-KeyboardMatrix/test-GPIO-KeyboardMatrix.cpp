@@ -14,7 +14,7 @@ int main()
 		VK_1, VK_2, VK_3, VK_UP,
 		VK_4, VK_5, VK_6, VK_DOWN,
 		VK_7, VK_8, VK_9, VK_LEFT,
-		VK_Z, VK_0, VK_X, VK_RIGHT,
+		VK_Z, VK_0, VK_X, VK_RIGHT, //{0, KeyData::Mod::ShiftL}
 	};
 	const GPIO::KeyRow keyRowTbl[] = { GPIO16, GPIO17, GPIO18, GPIO19 };
 	const GPIO::KeyCol keyColTbl[] = { GPIO20.pull_up(), GPIO21.pull_up(), GPIO26.pull_up(), GPIO27.pull_up() };
