@@ -59,3 +59,5 @@ target_include_directories(test-MSC-SDCard PRIVATE
 pico_add_extra_outputs(test-MSC-SDCard)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+
+jxglib_configure_USBDevice(test-MSC-SDCard CFG_TUD_MSC 1)

@@ -1,9 +1,4 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
 #include "pico/stdlib.h"
-#include "jxglib/GPIO.h"
 #include "jxglib/USBDevice.h"
 
 using namespace jxglib;

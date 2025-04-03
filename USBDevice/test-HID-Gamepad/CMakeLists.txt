@@ -57,3 +57,5 @@ target_include_directories(test-HID-Gamepad PRIVATE
 pico_add_extra_outputs(test-HID-Gamepad)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+
+jxglib_configure_USBDevice(test-HID-Gamepad CFG_TUD_HID 1)

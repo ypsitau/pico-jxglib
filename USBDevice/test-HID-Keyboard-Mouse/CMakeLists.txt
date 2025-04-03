@@ -57,3 +57,5 @@ target_include_directories(test-HID-Keyboard-Mouse PRIVATE
 pico_add_extra_outputs(test-HID-Keyboard-Mouse)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+
+jxglib_configure_USBDevice(test-HID-Keyboard-Mouse CFG_TUD_HID 2)

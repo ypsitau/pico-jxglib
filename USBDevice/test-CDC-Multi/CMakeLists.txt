@@ -57,3 +57,5 @@ target_include_directories(test-CDC-Multi PRIVATE
 pico_add_extra_outputs(test-CDC-Multi)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+
+jxglib_configure_USBDevice(test-CDC-Multi CFG_TUD_CDC 3)

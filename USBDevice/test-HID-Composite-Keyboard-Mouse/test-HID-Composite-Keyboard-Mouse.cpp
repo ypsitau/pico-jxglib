@@ -49,9 +49,9 @@ HIDComposite::HIDComposite(USBDevice& device) : USBDevice::HID(device, 30, "Rasp
 	HID_ITF_PROTOCOL_KEYBOARD, reportDesc_, sizeof(reportDesc_), 0x81, 5), nKeycodePrev_{0}, senseFlagPrev_{false} {}
 
 //-----------------------------------------------------------------------------
-// Keyboard
+// DeviceKeyboard
 //-----------------------------------------------------------------------------
-class Keyboard : public USBDevice::HID {
+class DeviceKeyboard : public USBDevice::HID {
 public:
 	struct ReportId {
 		static const uint8_t Keyboard	= 1;
@@ -63,19 +63,19 @@ private:
 private:
 	static const uint8_t reportDesc_[];
 public:
-	Keyboard(USBDevice& device);
+	DeviceKeyboard(USBDevice& device);
 public:
 	virtual void OnTick() override;
 	virtual void On_GET_REPORT_Complete(const uint8_t* report, uint16_t reportLength) override;
 };
 
-const uint8_t Keyboard::reportDesc_[] = {
+const uint8_t DeviceKeyboard::reportDesc_[] = {
 	TUD_HID_REPORT_DESC_KEYBOARD()
 	//TUD_HID_REPORT_DESC_KEYBOARD(HID_REPORT_ID(ReportId::Keyboard)),
 	//TUD_HID_REPORT_DESC_MOUSE(HID_REPORT_ID(ReportId::Mouse))
 };
 
-Keyboard::Keyboard(USBDevice& device) : USBDevice::HID(device, 30, "RaspberryPi Pico HID Composite Interface",
+DeviceKeyboard::DeviceKeyboard(USBDevice& device) : USBDevice::HID(device, 30, "RaspberryPi Pico HID Composite Interface",
 	HID_ITF_PROTOCOL_NONE, reportDesc_, sizeof(reportDesc_), 0x81, 5), nKeycodePrev_{0} {}
 
 //-----------------------------------------------------------------------------
@@ -96,7 +96,7 @@ int main(void)
 	}, 0x0409, "pico-jxglib sample", "RaspberryPi Pico HMI Composite Device (Keyboard + Mouse)", "0123456789ABCDEF",
 		TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP);
 	HIDComposite hidComposite(device);
-	//Keyboard keyboard(device);
+	//DeviceKeyboard keyboard(device);
 	device.Initialize();
 	hidComposite.Initialize();
 	//keyboard.Initialize();
@@ -171,9 +171,9 @@ void HIDComposite::On_GET_REPORT_Complete(const uint8_t* report, uint16_t report
 }
 
 //-----------------------------------------------------------------------------
-// Keyboard
+// DeviceKeyboard
 //-----------------------------------------------------------------------------
-void Keyboard::OnTick()
+void DeviceKeyboard::OnTick()
 {
 	uint8_t reportId = 0; //ReportId::Keyboard;
 	uint8_t modifier  = 0;
@@ -196,7 +196,7 @@ void Keyboard::OnTick()
 	nKeycodePrev_ = nKeycode;
 }
 
-void Keyboard::On_GET_REPORT_Complete(const uint8_t* report, uint16_t reportLength)
+void DeviceKeyboard::On_GET_REPORT_Complete(const uint8_t* report, uint16_t reportLength)
 {
 	::printf("On_GET_REPORT_Complete\n");
 }
