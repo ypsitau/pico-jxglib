@@ -56,7 +56,6 @@ public:
 		KeyRow(const GPIO& gpio);
 	public:
 		const GPIO& GetGPIO() const { return gpio_; }
-		void put(bool value) const { gpio_.put(value); }
 	};
 	class KeyCol {
 	private:
@@ -65,7 +64,6 @@ public:
 		KeyCol(const GPIO& gpio);
 	public:
 		const GPIO& GetGPIO() const { return gpio_; }
-		bool get() const { return gpio_.get(); }
 	};
 	class Keyboard : public KeyboardRepeatable, public Tickable {
 	private:
@@ -95,8 +93,8 @@ public:
 		int nKeyCols_;
 		bool valueActive_, valueInactive_;
 		int iKeyRow_;
-		uint8_t keyCodeCapturedTbl_[6];
-		uint8_t keyCodeScannedTbl_[6];
+		uint8_t iKeySetCapturedTbl_[6];
+		uint8_t iKeySetScannedTbl_[6];
 		int nKeysScanned_;
 	public:
 		KeyboardMatrix(int msecTick = 10);
@@ -104,6 +102,7 @@ public:
 		void Initialize(const KeySet* keySetTbl, const KeyRow* keyRowTbl, int nKeyRows, const KeyCol* keyColTbl, int nKeyCols, uint32_t flags);
 	public:
 		// virtual function of KeyboardRepeatable
+		virtual uint8_t GetModifier() override;
 		virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1) override;
 	public:
 		// virtual functions of Tickable

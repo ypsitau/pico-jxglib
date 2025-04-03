@@ -156,21 +156,32 @@ void GPIO::KeyboardMatrix::Initialize(const KeySet* keySetTbl,
 	for (int iKeyCol = 0; iKeyCol < nKeyCols_; iKeyCol++) {
 		keyColTbl_[iKeyCol].GetGPIO().set_dir_IN().put(0).set_function_SIO();
 	}
-	::memset(keyCodeCapturedTbl_, 0x00, sizeof(keyCodeCapturedTbl_));
-	::memset(keyCodeScannedTbl_, 0x00, sizeof(keyCodeScannedTbl_));
+	::memset(iKeySetScannedTbl_, 0xff, sizeof(iKeySetScannedTbl_));
+	::memset(iKeySetCapturedTbl_, 0xff, sizeof(iKeySetCapturedTbl_));
 	iKeyRow_ = 0;
 	nKeysScanned_ = 0;
-	keyRowTbl_[iKeyRow_].put(valueActive_);
+	keyRowTbl_[iKeyRow_].GetGPIO().put(valueActive_);
+}
+
+uint8_t GPIO::KeyboardMatrix::GetModifier()
+{
+	uint8_t modifier = 0;
+	for (int i = 0; i < count_of(iKeySetCapturedTbl_); i++) {
+		uint8_t iKeySet = iKeySetCapturedTbl_[i];
+		if (iKeySet == 0xff) break;
+		modifier |= keySetTbl_[iKeySet].GetModifier();
+	}
+	return modifier;
 }
 
 int GPIO::KeyboardMatrix::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax)
 {
-	nKeysMax = ChooseMin(nKeysMax, static_cast<int>(count_of(keyCodeCapturedTbl_)));
 	int nKeys = 0;
-	for ( ; nKeys < nKeysMax; nKeys++) {
-		uint8_t keyCode = keyCodeCapturedTbl_[nKeys];
-		if (!keyCode) break;
-		keyCodeTbl[nKeys] = keyCode;
+	for (int i = 0; i < count_of(iKeySetCapturedTbl_) && nKeys < nKeysMax; i++) {
+		uint8_t iKeySet = iKeySetCapturedTbl_[i];
+		if (iKeySet == 0xff) break;
+		uint8_t keyCode = keySetTbl_[iKeySet].GetKeyCode();
+		if (keyCode) keyCodeTbl[nKeys++] = keyCode;
 	}
 	return nKeys;
 }
@@ -178,29 +189,30 @@ int GPIO::KeyboardMatrix::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax)
 void GPIO::KeyboardMatrix::OnTick()
 {
 	for (int iKeyCol = 0; iKeyCol < nKeyCols_; iKeyCol++) {
-		if (nKeysScanned_ < count_of(keyCodeScannedTbl_) && keyColTbl_[iKeyCol].get() == valueActive_) {
-			keyCodeScannedTbl_[nKeysScanned_++] = keySetTbl_[iKeyCol + iKeyRow_ * nKeyCols_].GetKeyCode();
+		if (nKeysScanned_ < count_of(iKeySetScannedTbl_) && keyColTbl_[iKeyCol].GetGPIO().get() == valueActive_) {
+			iKeySetScannedTbl_[nKeysScanned_++] = static_cast<uint8_t>(iKeyCol + iKeyRow_ * nKeyCols_);
 		}
 	}
-	keyRowTbl_[iKeyRow_].put(valueInactive_);
+	keyRowTbl_[iKeyRow_].GetGPIO().put(valueInactive_);
 	iKeyRow_++;
 	if (iKeyRow_ == nKeyRows_) {
-		::memcpy(keyCodeCapturedTbl_, keyCodeScannedTbl_, sizeof(keyCodeCapturedTbl_));
-		::memset(keyCodeScannedTbl_, 0x00, sizeof(keyCodeScannedTbl_));
+		::memcpy(iKeySetCapturedTbl_, iKeySetScannedTbl_, sizeof(iKeySetCapturedTbl_));
+		::memset(iKeySetScannedTbl_, 0xff, sizeof(iKeySetScannedTbl_));
 		iKeyRow_ = 0;
 		nKeysScanned_ = 0;
-		if (keyCodeCapturedTbl_[0] == 0) {
+		if (iKeySetCapturedTbl_[0] == 0xff) {
 			GetRepeater().Invalidate();
 		} else {
-			for (int i = 0; i < count_of(keyCodeCapturedTbl_); i++) {
-				uint8_t keyCode = keyCodeCapturedTbl_[i];
-				if (!keyCode) break;
-				const uint8_t modifier = 0;
-				if (GetRepeater().SignalFirst(keyCode, modifier)) break;
+			uint8_t modifier = GetModifier();
+			for (int i = 0; i < count_of(iKeySetCapturedTbl_); i++) {
+				uint8_t iKeySet = iKeySetCapturedTbl_[i];
+				if (iKeySet == 0xff) break;
+				uint8_t keyCode = keySetTbl_[iKeySet].GetKeyCode();
+				if (keyCode && GetRepeater().SignalFirst(keyCode, modifier)) break;
 			}
 		}
 	}
-	keyRowTbl_[iKeyRow_].put(valueActive_);
+	keyRowTbl_[iKeyRow_].GetGPIO().put(valueActive_);
 }
 
 }
