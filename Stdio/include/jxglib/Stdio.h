@@ -43,6 +43,9 @@ public:
 public:
 	Stdio() {}
 public:
+	static Printable& GetPrintable() { return Printable::Instance; }
+	static Keyboard& GetKeyboard() { return Keyboard::Instance; }
+public:
 	static bool init_all() { return ::stdio_init_all(); }
 	static bool deinit_all() { return ::stdio_deinit_all(); }
 	static void flush() { return ::stdio_flush(); }
