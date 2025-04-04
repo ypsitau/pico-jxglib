@@ -76,5 +76,4 @@ target_include_directories(test-Input PRIVATE
 )
 
 pico_add_extra_outputs(test-Input)
-
-jxglib_configure_LVGL(test-examples)
+jxglib_configure_LVGL(test-Input LV_FONT_MONTSERRAT_14)

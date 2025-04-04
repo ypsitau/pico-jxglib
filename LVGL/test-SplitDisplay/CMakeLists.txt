@@ -73,5 +73,4 @@ target_include_directories(test-SplitDisplay PRIVATE
 pico_add_extra_outputs(test-SplitDisplay)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
-
-jxglib_configure_LVGL(test-SplitDisplay)
+jxglib_configure_LVGL(test-SplitDisplay LV_FONT_MONTSERRAT_14)

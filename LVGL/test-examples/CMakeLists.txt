@@ -87,5 +87,4 @@ target_include_directories(test-examples PRIVATE
 pico_add_extra_outputs(test-examples)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
-
-jxglib_configure_LVGL(test-examples)
+jxglib_configure_LVGL(test-examples LV_FONT_MONTSERRAT_14)
