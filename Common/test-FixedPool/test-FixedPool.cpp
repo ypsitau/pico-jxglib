@@ -2,108 +2,124 @@
 #include <malloc.h>
 #include "pico/stdlib.h"
 #include "jxglib/Common.h"
-#include "jxglib/Stdio.h"
 
 using namespace jxglib;
 
-class FixedPool {
-public:
-	struct Header {
-		union {
-			uint8_t* p;
-			Header* pHeaderNext;
-			const char* ownerName;
-		};
-	};
+class A {
 private:
-	uint8_t* buff_;
-	int bytesBlock_;
-	int nBlocks_;
-	int iBlockLast_;
-	Header* pHeaderFreedTop_;
+	char buff_[32];
 public:
-	static FixedPool Inst64;
+	FixedPoolAllocator(FixedPool::InstSmall, "A")
 public:
-	FixedPool(int bytesBlock);
-public:
-	void Initialize(int nBlocks);
-	void* Allocate(const char* ownerName, int bytes);
-	void Free(void* p);
-	bool IsUsed(const Header* pHeader) const;
-	int GetBytesBuff() const { return nBlocks_ * (sizeof(Header) + bytesBlock_); }
-public:
-	void PrintUsage(Printable& printable) const;
+	A() {}
 };
 
-FixedPool FixedPool::Inst64(64);
-
-FixedPool::FixedPool(int bytesBlock) : buff_{nullptr}, bytesBlock_{bytesBlock}, nBlocks_{0}, pHeaderFreedTop_{nullptr}
-{
-}
-
-void FixedPool::Initialize(int nBlocks)
-{
-	nBlocks_ = nBlocks;
-	int bytesBuff = GetBytesBuff();
-	buff_ = reinterpret_cast<uint8_t*>(::malloc(bytesBuff));
-	if (!buff_) ::panic("failed to allocate memory in FixedPool::Initialize()");
-	::memset(buff_, 0x00, bytesBuff);
-}
-
-void* FixedPool::Allocate(const char* ownerName, int bytes)
-{
-	Header* pHeader;
-	if (bytes > bytesBlock_) {
-		::panic("the size of %s is %d bytes, which is over %d bytes", bytes, bytesBlock_);
-	} else if (pHeaderFreedTop_) {
-		pHeader = pHeaderFreedTop_;
-		pHeaderFreedTop_ = pHeaderFreedTop_->pHeaderNext;
-	} else if (iBlockLast_ < nBlocks_) {
-		pHeader = reinterpret_cast<Header*>(buff_ + iBlockLast_ * (sizeof(Header) + bytesBlock_));
-		iBlockLast_++;
-	} else {
-		::panic("no memory block is available in FixedPool(%d) with %d blocks", bytesBlock_, nBlocks_);
-	}
-	pHeader->ownerName = ownerName;
-	return pHeader + 1;
-}
-
-void FixedPool::Free(void* p)
-{
-	Header* pHeader = reinterpret_cast<Header*>(p) - 1;
-	pHeader->pHeaderNext = pHeaderFreedTop_;
-	pHeaderFreedTop_ = pHeader;
-}
-
-bool FixedPool::IsUsed(const Header* pHeader) const
-{
-	return pHeader->p && (pHeader->p < buff_ || pHeader->p >= buff_ + GetBytesBuff());
-}
-
-void FixedPool::PrintUsage(Printable& printable) const
-{
-	const uint8_t* p = buff_;
-	for (int iBlock = 0; iBlock < iBlockLast_; iBlock++, p += sizeof(Header) + bytesBlock_) {
-		const Header* pHeader = reinterpret_cast<const Header*>(p);
-		printable.Printf("%s", IsUsed(pHeader)? "*" : ".");
-	}
-	printable.Printf("\n");
-}
-
+class B {
+public:
+	FixedPoolAllocator(FixedPool::InstSmall, "B")
+public:
+	B() {}
+};
+	
+class C {
+private:
+	char buff_[33];
+public:
+	FixedPoolAllocator(FixedPool::InstSmall, "C")
+public:
+	C() {}
+};
+	
 int main()
 {
 	const char* ownerName = "test";
-	FixedPool::Inst64.Initialize(8);
 	::stdio_init_all();
-	void* p;
-	FixedPool& pool = FixedPool::Inst64;
-	p = pool.Allocate(ownerName, 32);
-	pool.PrintUsage(Stdio::GetPrintable());
-	pool.Free(p);
-	pool.PrintUsage(Stdio::GetPrintable());
-	p = pool.Allocate(ownerName, 32);
-	pool.PrintUsage(Stdio::GetPrintable());
-	pool.Free(p);
-	pool.PrintUsage(Stdio::GetPrintable());
-	for (;;) ;
+	FixedPool::InstSmall.Initialize(8);
+	FixedPool& pool = FixedPool::InstSmall;
+	::printf("----------------\n");
+	for (int i = 0; i < 3; i++) {
+		::printf("\n");
+		do {
+			auto p1 = new A;		pool.PrintUsage();
+			delete p1;				pool.PrintUsage();
+		} while (0);
+		::printf("\n");
+		do {
+			auto p1 = new A;		pool.PrintUsage();
+			delete p1;				pool.PrintUsage();
+		} while (0);
+		::printf("\n");
+		do {
+			auto p1 = new A;		pool.PrintUsage();
+			auto p2 = new A;		pool.PrintUsage();
+			delete p1;				pool.PrintUsage();
+			delete p2;				pool.PrintUsage();
+		} while (0);
+		::printf("\n");
+		do {
+			auto p1 = new A;		pool.PrintUsage();
+			auto p2 = new A;		pool.PrintUsage();
+			auto p3 = new A;		pool.PrintUsage();
+			delete p1;				pool.PrintUsage();
+			delete p2;				pool.PrintUsage();
+			delete p3;				pool.PrintUsage();
+		} while (0);
+		::printf("\n");
+		do {
+			auto p1 = new A;		pool.PrintUsage();
+			auto p2 = new A;		pool.PrintUsage();
+			auto p3 = new A;		pool.PrintUsage();
+			delete p1;				pool.PrintUsage();
+			delete p2;				pool.PrintUsage();
+			auto p4 = new B;		pool.PrintUsage();
+			delete p3;				pool.PrintUsage();
+			delete p4;				pool.PrintUsage();
+		} while (0);
+		::printf("\n");
+		do {
+			auto p1 = new A;		pool.PrintUsage();
+			auto p2 = new A;		pool.PrintUsage();
+			auto p3 = new A;		pool.PrintUsage();
+			auto p4 = new A;		pool.PrintUsage();
+			auto p5 = new A;		pool.PrintUsage();
+			auto p6 = new A;		pool.PrintUsage();
+			auto p7 = new A;		pool.PrintUsage();
+			auto p8 = new A;		pool.PrintUsage();
+			delete p4;				pool.PrintUsage();
+			delete p3;				pool.PrintUsage();
+			delete p1;				pool.PrintUsage();
+			delete p2;				pool.PrintUsage();
+			auto p9 = new B;		pool.PrintUsage();
+			auto p10 = new B;		pool.PrintUsage();
+			delete p8;				pool.PrintUsage();
+			delete p7;				pool.PrintUsage();
+			delete p5;				pool.PrintUsage();
+			delete p6;				pool.PrintUsage();
+			delete p9;				pool.PrintUsage();
+			delete p10;				pool.PrintUsage();
+		} while (0);
+	}
+#if 0
+	::printf("\n");
+	do {
+		auto p1 = new A;
+		auto p2 = new A;
+		auto p3 = new A;
+		auto p4 = new A;
+		auto p5 = new A;
+		auto p6 = new A;
+		auto p7 = new A;
+		auto p8 = new A;
+		pool.PrintUsage();
+		auto p9 = new A;
+		pool.PrintUsage();
+	} while (0);
+#endif
+#if 0
+	::printf("\n");
+	do {
+		auto p = new C;
+	} while (0);
+#endif
+	for (;;) tight_loop_contents();
 }

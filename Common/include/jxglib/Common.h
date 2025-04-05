@@ -7,6 +7,7 @@
 #include "DataType.h"
 #include "Dir.h"
 #include "FIFOBuff.h"
+#include "FixedPool.h"
 #include "GPIO.h"
 #include "KeyCode.h"
 #include "KeyData.h"
