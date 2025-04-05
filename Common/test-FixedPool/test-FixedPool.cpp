@@ -34,7 +34,10 @@ int main()
 {
 	const char* ownerName = "test";
 	::stdio_init_all();
-	FixedPool::InstSmall.Initialize(8);
+#if 1
+	FixedPool::InstSmall.SetBlocks(8);
+	FixedPool::InstSmall.Initialize();
+#endif
 	FixedPool& pool = FixedPool::InstSmall;
 	::printf("----------------\n");
 	for (int i = 0; i < 3; i++) {
@@ -102,23 +105,21 @@ int main()
 #if 0
 	::printf("\n");
 	do {
-		auto p1 = new A;
-		auto p2 = new A;
-		auto p3 = new A;
-		auto p4 = new A;
-		auto p5 = new A;
-		auto p6 = new A;
-		auto p7 = new A;
-		auto p8 = new A;
-		pool.PrintUsage();
-		auto p9 = new A;
-		pool.PrintUsage();
+		auto p1 = new A;			pool.PrintUsage();
+		auto p2 = new A;			pool.PrintUsage();
+		auto p3 = new A;			pool.PrintUsage();
+		auto p4 = new A;			pool.PrintUsage();
+		auto p5 = new A;			pool.PrintUsage();
+		auto p6 = new A;			pool.PrintUsage();
+		auto p7 = new A;			pool.PrintUsage();
+		auto p8 = new A;			pool.PrintUsage();
+		auto p9 = new A;			pool.PrintUsage();
 	} while (0);
 #endif
 #if 0
 	::printf("\n");
 	do {
-		auto p = new C;
+		auto p = new C;				pool.PrintUsage();
 	} while (0);
 #endif
 	for (;;) tight_loop_contents();

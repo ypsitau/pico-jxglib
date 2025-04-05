@@ -32,10 +32,11 @@ public:
     static FixedPool InstMedium;
     static FixedPool InstLarge;
 public:
-    FixedPool(const char* name, int bytesBlock);
+    FixedPool(const char* name, int bytesBlock, int nBlocks);
 public:
     const char* GetName() { return name_; }
-    void Initialize(int nBlocks);
+    void Initialize();
+    void SetBlocks(int nBlocks) { nBlocks_ = nBlocks; }
     void* Allocate(const char* ownerName, int bytes);
     void Free(void* p);
     bool IsUsed(const Header* pHeader) const;
