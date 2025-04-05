@@ -13,6 +13,8 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class FS {
 public:
+	static FixedPool Pool;
+public:
 	FS() {}
 };
 

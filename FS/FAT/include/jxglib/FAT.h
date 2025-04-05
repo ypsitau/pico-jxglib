@@ -7,13 +7,14 @@
 #include "pico/stdlib.h"
 #include "ff15a/source/ff.h"
 #include "ff15a/source/diskio.h"
+#include "jxglib/FS.h"
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
 // FAT
 //------------------------------------------------------------------------------
-class FAT {
+class FAT : public FS {
 public:
 	enum class MountMode { Normal, Forced, };
 	static const int SectorSize = FF_MIN_SS;
@@ -61,7 +62,6 @@ public:
 	FAT() : numLogicalDrive_{0} {}
 public:
 	bool OpenFile();
-
 public:
 	int AssignLogialDrive() { numLogicalDrive_++; return numLogicalDrive_ - 1; }
 	void RegisterPhysicalDrive(PhysicalDrive& physicalDrive) {
