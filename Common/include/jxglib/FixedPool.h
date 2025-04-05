@@ -11,6 +11,9 @@ static void operator delete(void* p) { inst.Free(p); }
 
 namespace jxglib {
 
+//-----------------------------------------------------------------------------
+// FixedPool
+//-----------------------------------------------------------------------------
 class FixedPool {
 public:
 	struct Header {
@@ -27,10 +30,6 @@ private:
 	int nBlocks_;
 	int iBlockLast_;
 	Header* pHeaderFreedTop_;
-public:
-	static FixedPool InstSmall;
-	static FixedPool InstMedium;
-	static FixedPool InstLarge;
 public:
 	FixedPool(const char* name, int bytesBlock, int nBlocks);
 public:

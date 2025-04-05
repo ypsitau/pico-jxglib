@@ -5,18 +5,20 @@
 
 using namespace jxglib;
 
+FixedPool fixedPoolTest("fixedPoolTest", 32, 8);
+
 class A {
 private:
 	char buff_[32];
 public:
-	FixedPoolAllocator(FixedPool::InstSmall, "A")
+	FixedPoolAllocator(fixedPoolTest, "A")
 public:
 	A() {}
 };
 
 class B {
 public:
-	FixedPoolAllocator(FixedPool::InstSmall, "B")
+	FixedPoolAllocator(fixedPoolTest, "B")
 public:
 	B() {}
 };
@@ -25,7 +27,7 @@ class C {
 private:
 	char buff_[33];
 public:
-	FixedPoolAllocator(FixedPool::InstSmall, "C")
+	FixedPoolAllocator(fixedPoolTest, "C")
 public:
 	C() {}
 };
@@ -34,9 +36,9 @@ int main()
 {
 	::stdio_init_all();
 #if 1
-	FixedPool::InstSmall.SetBlocks(8).Initialize();
+	fixedPoolTest.Initialize();
 #endif
-	FixedPool& pool = FixedPool::InstSmall;
+	FixedPool& pool = fixedPoolTest;
 	::printf("----------------\n");
 	for (int i = 0; i < 3; i++) {
 		::printf("\n");

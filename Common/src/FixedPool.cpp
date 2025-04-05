@@ -8,10 +8,9 @@
 
 namespace jxglib {
 
-FixedPool FixedPool::InstSmall("FixedPool::InstSmall",		32, 64);
-FixedPool FixedPool::InstMedium("FixedPool::InstMedium",	64, 32);
-FixedPool FixedPool::InstLarge("FixedPool::InstLarge",		128, 16);
-
+//-----------------------------------------------------------------------------
+// FixedPool
+//-----------------------------------------------------------------------------
 FixedPool::FixedPool(const char* name, int bytesBlock, int nBlocks) :
 	name_{name}, buff_{nullptr}, bytesBlock_{bytesBlock}, nBlocks_{nBlocks}, pHeaderFreedTop_{nullptr}
 {
