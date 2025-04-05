@@ -13,38 +13,38 @@ namespace jxglib {
 
 class FixedPool {
 public:
-    struct Header {
-        union {
-            uint8_t* p;
-            Header* pHeaderNext;
-            const char* ownerName;
-        };
-    };
+	struct Header {
+		union {
+			uint8_t* p;
+			Header* pHeaderNext;
+			const char* ownerName;
+		};
+	};
 private:
-    const char* name_;
-    uint8_t* buff_;
-    int bytesBlock_;
-    int nBlocks_;
-    int iBlockLast_;
-    Header* pHeaderFreedTop_;
+	const char* name_;
+	uint8_t* buff_;
+	int bytesBlock_;
+	int nBlocks_;
+	int iBlockLast_;
+	Header* pHeaderFreedTop_;
 public:
-    static FixedPool InstSmall;
-    static FixedPool InstMedium;
-    static FixedPool InstLarge;
+	static FixedPool InstSmall;
+	static FixedPool InstMedium;
+	static FixedPool InstLarge;
 public:
-    FixedPool(const char* name, int bytesBlock, int nBlocks);
+	FixedPool(const char* name, int bytesBlock, int nBlocks);
 public:
-    const char* GetName() { return name_; }
-    void Initialize();
-    void SetBlocks(int nBlocks) { nBlocks_ = nBlocks; }
-    void* Allocate(const char* ownerName, int bytes);
-    void Free(void* p);
-    bool IsUsed(const Header* pHeader) const;
-    int GetBytesBuff() const { return nBlocks_ * (sizeof(Header) + bytesBlock_); }
+	const char* GetName() { return name_; }
+	void Initialize();
+	FixedPool& SetBlocks(int nBlocks) { nBlocks_ = nBlocks; return *this; }
+	void* Allocate(const char* ownerName, int bytes);
+	void Free(void* p);
+	bool IsUsed(const Header* pHeader) const;
+	int GetBytesBuff() const { return nBlocks_ * (sizeof(Header) + bytesBlock_); }
 public:
-    void PrintUsage() const;
+	void PrintUsage() const;
 };
-        
+		
 }
 
 #endif

@@ -32,11 +32,9 @@ public:
 	
 int main()
 {
-	const char* ownerName = "test";
 	::stdio_init_all();
 #if 1
-	FixedPool::InstSmall.SetBlocks(8);
-	FixedPool::InstSmall.Initialize();
+	FixedPool::InstSmall.SetBlocks(8).Initialize();
 #endif
 	FixedPool& pool = FixedPool::InstSmall;
 	::printf("----------------\n");
