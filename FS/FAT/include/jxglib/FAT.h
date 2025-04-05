@@ -60,6 +60,9 @@ public:
 public:
 	FAT() : numLogicalDrive_{0} {}
 public:
+	bool OpenFile();
+
+public:
 	int AssignLogialDrive() { numLogicalDrive_++; return numLogicalDrive_ - 1; }
 	void RegisterPhysicalDrive(PhysicalDrive& physicalDrive) {
 		physicalDriveTbl_[physicalDrive.GetPDRV()] = &physicalDrive;
