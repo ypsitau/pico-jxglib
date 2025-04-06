@@ -42,7 +42,7 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-ExtendSign C CXX ASM)
+project(test-SignExtend C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
@@ -51,24 +51,24 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-ExtendSign test-ExtendSign.cpp )
+add_executable(test-SignExtend test-SignExtend.cpp )
 
-pico_set_program_name(test-ExtendSign "test-ExtendSign")
-pico_set_program_version(test-ExtendSign "0.1")
+pico_set_program_name(test-SignExtend "test-SignExtend")
+pico_set_program_version(test-SignExtend "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-ExtendSign 1)
-pico_enable_stdio_usb(test-ExtendSign 0)
+pico_enable_stdio_uart(test-SignExtend 1)
+pico_enable_stdio_usb(test-SignExtend 0)
 
 # Add the standard library to the build
-target_link_libraries(test-ExtendSign
+target_link_libraries(test-SignExtend
 	pico_stdlib
 	jxglib_Common)
 
 # Add the standard include files to the build
-target_include_directories(test-ExtendSign PRIVATE
+target_include_directories(test-SignExtend PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-ExtendSign)
+pico_add_extra_outputs(test-SignExtend)
 
