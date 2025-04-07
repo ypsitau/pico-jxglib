@@ -25,204 +25,42 @@ void USBHost::OnTick()
 	::tuh_task();
 }
 
-extern "C" {
-
-void tuh_mount_cb(uint8_t devAddr)
-{
-	auto pEventHandler = USBHost::Instance.GetEventHandler();
-	if (pEventHandler) pEventHandler->OnMount(devAddr);
-}
-
-void tuh_umount_cb(uint8_t devAddr)
-{
-	auto pEventHandler = USBHost::Instance.GetEventHandler();
-	if (pEventHandler) pEventHandler->OnUmount(devAddr);
-}
-
-#define MAX_REPORT  4
-
-static struct {
-	uint8_t report_count;
-	tuh_hid_report_info_t report_info[MAX_REPORT];
-} hid_info[CFG_TUH_HID];
-
-class Item {
-};
-
-// 6.2.2.4 Main Items
-class Item_Input : public Item {
-public:
-	static const uint8_t Type = 0x80;
-};
-
-class Item_Output : public Item {
-public:
-	static const uint8_t Type = 0x90;
-};
-
-class Item_Feature : public Item {
-public:
-	static const uint8_t Type = 0xb0;
-};
-
-class Item_Collection : public Item {
-public:
-	static const uint8_t Type = 0xa0;
-};
-
-class Item_EndCollection : public Item {
-public:
-	static const uint8_t Type = 0xc0;
-};
-
-// 6.2.2.7 Global Items
-class Item_UsagePage : public Item {
-public:
-	static const uint8_t Type = 0x04;
-};
-
-class Item_LogicalMinimum : public Item {
-public:
-	static const uint8_t Type = 0x14;
-};
-
-class Item_LogicalMaximum : public Item {
-public:
-	static const uint8_t Type = 0x24;
-};
-
-class Item_PhysicalMinimum : public Item {
-public:
-	static const uint8_t Type = 0x34;
-};
-
-class Item_PhysicalMaximum : public Item {
-public:
-	static const uint8_t Type = 0x44;
-};
-
-class Item_UnitExponent : public Item {
-public:
-	static const uint8_t Type = 0x54;
-};
-
-class Item_Unit : public Item {
-public:
-	static const uint8_t Type = 0x64;
-};
-
-class Item_ReportSize : public Item {
-public:
-	static const uint8_t Type = 0x74;
-};
-
-class Item_ReortID : public Item {
-public:
-	static const uint8_t Type = 0x84;
-};
-
-class Item_ReportCount : public Item {
-public:
-	static const uint8_t Type = 0x94;
-};
-
-class Item_Push : public Item {
-public:
-	static const uint8_t Type = 0xa4;
-};
-
-class Item_Pop : public Item {
-public:
-	static const uint8_t Type = 0xb4;
-};
-
-// 6.2.2.8 Local Items
-class Item_Usage : public Item {
-public:
-	static const uint8_t Type = 0x08;
-};
-
-class Item_UsageMinimum : public Item {
-public:
-	static const uint8_t Type = 0x18;
-};
-
-class Item_UsageMaximum : public Item {
-public:
-	static const uint8_t Type = 0x28;
-};
-
-class Item_DesignatorIndex : public Item {
-public:
-	static const uint8_t Type = 0x38;
-};
-
-class Item_DesignatorMinimum : public Item {
-public:
-	static const uint8_t Type = 0x48;
-};
-
-class Item_DesignatorMaximum : public Item {
-public:
-	static const uint8_t Type = 0x58;
-};
-
-class Item_StringIndex : public Item {
-public:
-	static const uint8_t Type = 0x78;
-};
-
-class Item_StringMaximum : public Item {
-public:
-	static const uint8_t Type = 0x88;
-};
-
-class Item_StringMinimum : public Item {
-public:
-	static const uint8_t Type = 0x98;
-};
-
-class Item_Delimeter : public Item {
-public:
-	static const uint8_t Type = 0xa8;
-};
-
-const char* GetItemTypeName(uint8_t itemType)
+const char* USBHost::GetItemTypeName(uint8_t itemType)
 {
 	static const struct {
 		uint8_t itemType;
 		const char* name;
 	} tbl[] = {
 		// 6.2.2.4 Main Items
-		{ Item_Input::Type,				"Input"				},
-		{ Item_Output::Type,			"Output"			},
-		{ Item_Feature::Type,			"Feature"			},
-		{ Item_Collection::Type,		"Collection"		},
-		{ Item_EndCollection::Type,		"EndCollection"		},
+		{ ItemType::Input,				"Input"				},
+		{ ItemType::Output,				"Output"			},
+		{ ItemType::Feature,			"Feature"			},
+		{ ItemType::Collection,			"Collection"		},
+		{ ItemType::EndCollection,		"EndCollection"		},
 		// 6.2.2.7 Global Items
-		{ Item_UsagePage::Type,			"UsagePage"			},
-		{ Item_LogicalMinimum::Type,	"LogicalMinimum"	},
-		{ Item_LogicalMaximum::Type,	"LogicalMaximum"	},
-		{ Item_PhysicalMinimum::Type,	"PhysicalMinimum"	},
-		{ Item_PhysicalMaximum::Type,	"PhysicalMaximum"	},
-		{ Item_UnitExponent::Type,		"UnitExponent"		},
-		{ Item_Unit::Type,				"Unit"				},
-		{ Item_ReportSize::Type,		"ReportSize"		},
-		{ Item_ReortID::Type,			"ReortID"			},
-		{ Item_ReportCount::Type,		"ReportCount"		},
-		{ Item_Push::Type,				"Push"				},
-		{ Item_Pop::Type,				"Pop"				},
+		{ ItemType::UsagePage,			"UsagePage"			},
+		{ ItemType::LogicalMinimum,		"LogicalMinimum"	},
+		{ ItemType::LogicalMaximum,		"LogicalMaximum"	},
+		{ ItemType::PhysicalMinimum,	"PhysicalMinimum"	},
+		{ ItemType::PhysicalMaximum,	"PhysicalMaximum"	},
+		{ ItemType::UnitExponent,		"UnitExponent"		},
+		{ ItemType::Unit,				"Unit"				},
+		{ ItemType::ReportSize,			"ReportSize"		},
+		{ ItemType::ReortID,			"ReortID"			},
+		{ ItemType::ReportCount,		"ReportCount"		},
+		{ ItemType::Push,				"Push"				},
+		{ ItemType::Pop,				"Pop"				},
 		// 6.2.2.8 Local Items
-		{ Item_Usage::Type,				"Usage"				},
-		{ Item_UsageMinimum::Type,		"UsageMinimum"		},
-		{ Item_UsageMaximum::Type,		"UsageMaximum"		},
-		{ Item_DesignatorIndex::Type,	"DesignatorIndex"	},
-		{ Item_DesignatorMinimum::Type,	"DesignatorMinimum"	},
-		{ Item_DesignatorMaximum::Type,	"DesignatorMaximum"	},
-		{ Item_StringIndex::Type,		"StringIndex"		},
-		{ Item_StringMaximum::Type,		"StringMaximum"		},
-		{ Item_StringMinimum::Type,		"StringMinimum"		},
-		{ Item_Delimeter::Type,			"Delimeter"			},
+		{ ItemType::Usage,				"Usage"				},
+		{ ItemType::UsageMinimum,		"UsageMinimum"		},
+		{ ItemType::UsageMaximum,		"UsageMaximum"		},
+		{ ItemType::DesignatorIndex,	"DesignatorIndex"	},
+		{ ItemType::DesignatorMinimum,	"DesignatorMinimum"	},
+		{ ItemType::DesignatorMaximum,	"DesignatorMaximum"	},
+		{ ItemType::StringIndex,		"StringIndex"		},
+		{ ItemType::StringMaximum,		"StringMaximum"		},
+		{ ItemType::StringMinimum,		"StringMinimum"		},
+		{ ItemType::Delimeter,			"Delimeter"			},
 	};
 	for (int i = 0; i < count_of(tbl); i++) {
 		if (tbl[i].itemType == itemType) return tbl[i].name;
@@ -230,7 +68,7 @@ const char* GetItemTypeName(uint8_t itemType)
 	return "unknown";
 }
 
-void PrintReportDescriptor(const uint8_t* descReport, uint16_t descLen)
+void USBHost::PrintReportDescriptor(const uint8_t* descReport, uint16_t descLen)
 {
 	enum class Stat {
 		Prefix, Data,
@@ -268,6 +106,27 @@ void PrintReportDescriptor(const uint8_t* descReport, uint16_t descLen)
 	}
 }
 
+extern "C" {
+
+void tuh_mount_cb(uint8_t devAddr)
+{
+	auto pEventHandler = USBHost::Instance.GetEventHandler();
+	if (pEventHandler) pEventHandler->OnMount(devAddr);
+}
+
+void tuh_umount_cb(uint8_t devAddr)
+{
+	auto pEventHandler = USBHost::Instance.GetEventHandler();
+	if (pEventHandler) pEventHandler->OnUmount(devAddr);
+}
+
+#define MAX_REPORT  4
+
+static struct {
+	uint8_t report_count;
+	tuh_hid_report_info_t report_info[MAX_REPORT];
+} hid_info[CFG_TUH_HID];
+
 void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descReport, uint16_t descLen)
 {
 	::printf("tuh_hid_mount_cb(%d, %d)\n", devAddr, iInstance);
@@ -283,7 +142,7 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 							hid_info[iInstance].report_info, MAX_REPORT, descReport, descLen);
 		::printf("HID has %u reports \r\n", hid_info[iInstance].report_count);
 	}
-	PrintReportDescriptor(descReport, descLen);
+	USBHost::PrintReportDescriptor(descReport, descLen);
 	// request to receive report
 	// tuh_hid_report_received_cb() will be invoked when report is available
 	if (!::tuh_hid_receive_report(devAddr, iInstance)) {
