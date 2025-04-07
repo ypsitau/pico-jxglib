@@ -49,7 +49,77 @@ public:
 		static const uint8_t StringMinimum		= 0x98;
 		static const uint8_t Delimeter			= 0xa8;
 	};
-	class EventHandler {
+	class MainItemData {
+	private:
+		uint32_t itemData_;
+	public:
+		MainItemData(uint32_t itemData) : itemData_{itemData} {}
+	public:
+		bool IsData() const				{ return  !(itemData_ & (1 << 0)); }
+		bool IsConstatnt() const		{ return !!(itemData_ & (1 << 0)); }
+		bool IsArray() const			{ return  !(itemData_ & (1 << 1)); }
+		bool IsVariable() const			{ return !!(itemData_ & (1 << 1)); }
+		bool IsAbsolute() const			{ return  !(itemData_ & (1 << 2)); }
+		bool IsRelative() const			{ return !!(itemData_ & (1 << 2)); }
+		bool IsNoWrap() const			{ return  !(itemData_ & (1 << 3)); }
+		bool IsWrap() const				{ return !!(itemData_ & (1 << 3)); }
+		bool IsLinear() const			{ return  !(itemData_ & (1 << 4)); }
+		bool IsNonLinear() const		{ return !!(itemData_ & (1 << 4)); }
+		bool IsPreferredState() const	{ return  !(itemData_ & (1 << 5)); }
+		bool IsNoPreferred() const		{ return !!(itemData_ & (1 << 5)); }
+		bool IsNoNullPosition() const	{ return  !(itemData_ & (1 << 6)); }
+		bool IsNullState() const		{ return !!(itemData_ & (1 << 6)); }
+		bool IsNonVolatile() const		{ return  !(itemData_ & (1 << 7)); }	// for Output and Feature
+		bool IsVolatile() const			{ return !!(itemData_ & (1 << 7)); }	// for Output and Feature
+		bool IsBitField() const			{ return  !(itemData_ & (1 << 8)); }
+		bool IsBufferedBytes() const	{ return !!(itemData_ & (1 << 8)); }
+	};
+	enum class CollectionType : uint8_t {
+		Physical		= 0x00,
+		Application		= 0x01,
+		Logical			= 0x02,
+		Report			= 0x03,
+		NamedArray		= 0x04,
+		UsageSwitch		= 0x05,
+		UsageModifier	= 0x06,
+	};
+	struct GlobalItem {
+		uint32_t usagePage;
+		uint32_t logicalMinimum;
+		uint32_t logicalMaximum;
+		uint32_t physicalMinimum;
+		uint32_t physicalMaximum;
+		uint32_t unitExponent;
+		uint32_t unit;
+		uint32_t reportSize;
+		uint32_t reportID;
+		uint32_t reportCount;
+	public:
+		void Clear() { ::memset(this, 0x00, sizeof(GlobalItem)); }
+	};
+	struct LocalItem {
+		uint32_t usage;
+		uint32_t usageMinimum;
+		uint32_t usageMaximum;
+		uint32_t designatorIndex;
+		uint32_t designatorMinimum;
+		uint32_t designatorMaximum;
+		uint32_t stringIndex;
+		uint32_t stringMinimum;
+		uint32_t stringMaximum;
+		uint32_t delimeter;
+	public:
+		void Clear() { ::memset(this, 0x00, sizeof(LocalItem)); }
+	};
+	class ReportDescriptorHandler {
+		public:
+			virtual bool OnInput(MainItemData itemData, const GlobalItem& globalItem) = 0;
+			virtual bool OnOutput(MainItemData itemData, const GlobalItem& globalItem) = 0;
+			virtual bool OnFeature(MainItemData itemData, const GlobalItem& globalItem) = 0;
+			virtual bool OnCollection(CollectionType collectionType) = 0;
+			virtual bool OnEndCollection() = 0;
+		};
+		class EventHandler {
 	public:
 		virtual void OnMount(uint8_t devAddr) {}
 		virtual void OnUmount(uint8_t devAddr) {}
@@ -118,7 +188,7 @@ public:
 	virtual void OnTick() override;
 public:
 	static const char* GetItemTypeName(uint8_t itemType);
-	static void PrintReportDescriptor(const uint8_t* descReport, uint16_t descLen);
+	static bool ParseReportDescriptor(ReportDescriptorHandler& handler, const uint8_t* descReport, uint16_t descLen);
 };
 
 }
