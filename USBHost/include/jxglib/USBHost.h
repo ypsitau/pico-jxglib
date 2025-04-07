@@ -113,9 +113,9 @@ public:
 	};
 	class ReportDescriptorHandler {
 		public:
-			virtual bool OnInput(MainItemData itemData, const GlobalItem& globalItem) = 0;
-			virtual bool OnOutput(MainItemData itemData, const GlobalItem& globalItem) = 0;
-			virtual bool OnFeature(MainItemData itemData, const GlobalItem& globalItem) = 0;
+			virtual bool OnInput(MainItemData itemData, const GlobalItem& globalItem, const LocalItem& localItem) = 0;
+			virtual bool OnOutput(MainItemData itemData, const GlobalItem& globalItem, const LocalItem& localItem) = 0;
+			virtual bool OnFeature(MainItemData itemData, const GlobalItem& globalItem, const LocalItem& localItem) = 0;
 			virtual bool OnCollection(CollectionType collectionType) = 0;
 			virtual bool OnEndCollection() = 0;
 		};

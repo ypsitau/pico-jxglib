@@ -97,15 +97,15 @@ bool USBHost::ParseReportDescriptor(ReportDescriptorHandler& handler, const uint
 		switch (itemType) {
 		// 6.2.2.4 Main Items
 		case ItemType::Input: {
-			if (!handler.OnInput(MainItemData(itemData), globalItem)) return false;
+			if (!handler.OnInput(MainItemData(itemData), globalItem, localItem)) return false;
 			break;
 		}
 		case ItemType::Output: {
-			if (!handler.OnOutput(MainItemData(itemData), globalItem)) return false;
+			if (!handler.OnOutput(MainItemData(itemData), globalItem, localItem)) return false;
 			break;
 		}
 		case ItemType::Feature: {
-			if (!handler.OnFeature(MainItemData(itemData), globalItem)) return false;
+			if (!handler.OnFeature(MainItemData(itemData), globalItem, localItem)) return false;
 			break;
 		}
 		case ItemType::Collection: {
@@ -232,13 +232,13 @@ static struct {
 
 class ReportDescriptorHandler_Print : public USBHost::ReportDescriptorHandler {
 public:
-	virtual bool OnInput(USBHost::MainItemData itemData, const USBHost::GlobalItem& globalItem) override {
+	virtual bool OnInput(USBHost::MainItemData itemData, const USBHost::GlobalItem& globalItem, const USBHost::LocalItem& localItem) override {
 		return true;
 	}
-	virtual bool OnOutput(USBHost::MainItemData itemData, const USBHost::GlobalItem& globalItem) override {
+	virtual bool OnOutput(USBHost::MainItemData itemData, const USBHost::GlobalItem& globalItem, const USBHost::LocalItem& localItem) override {
 		return true;
 	}
-	virtual bool OnFeature(USBHost::MainItemData itemData, const USBHost::GlobalItem& globalItem) override {
+	virtual bool OnFeature(USBHost::MainItemData itemData, const USBHost::GlobalItem& globalItem, const USBHost::LocalItem& localItem) override {
 		return true;
 	}
 	virtual bool OnCollection(USBHost::CollectionType collectionType) override {
