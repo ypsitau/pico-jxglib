@@ -27,7 +27,7 @@ public:
 	virtual Keyboard& SetCapsLockAsCtrl(bool capsLockAsCtrlFlag = true) { return *this; }
 	virtual Keyboard& SetRepeatTime(uint32_t msecDelay, uint32_t msecRate) { return *this; }
 	virtual uint8_t GetModifier() { return 0; }
-	virtual bool IsPressed(uint8_t keyCode, bool includeModifiers = false);
+	virtual bool IsPressed(uint8_t keyCode, bool includeModifiers = true);
 	virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1, bool includeModifiers = false) = 0;
 	virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) = 0;
 	virtual bool GetKeyCodeNB(uint8_t* pKeyCode, uint8_t* pModifier = nullptr) = 0;

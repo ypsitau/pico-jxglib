@@ -178,6 +178,7 @@ static const KeyCodeToName keyCodeToNameTbl[] = {
 	{ VK_OEM_102,				"OEM_102"				},
 	{ VK_PROCESSKEY,			"PROCESSKEY"			},
 	{ VK_PACKET,				"PACKET"				},
+	{ VK_OEM_COPY,				"OEM_COPY"				},
 	{ VK_ATTN,					"ATTN"					},
 	{ VK_CRSEL,					"CRSEL"					},
 	{ VK_EXSEL,					"EXSEL"					},

@@ -78,12 +78,10 @@ void SenseKeyData(Printable& printable, Keyboard& keyboard)
 	
 void IsPressed(Printable& printable, Keyboard& keyboard)
 {
-	bool includeModifiers = true;
 	for (;;) {
 		printable.Printf("VK_LEFT:%d VK_RIGHT:%d VK_UP:%d VK_DOWN:%d VK_Z:%d VK_X:%d\n",
-			keyboard.IsPressed(VK_LEFT, includeModifiers), keyboard.IsPressed(VK_RIGHT, includeModifiers),
-			keyboard.IsPressed(VK_UP, includeModifiers), keyboard.IsPressed(VK_DOWN, includeModifiers),
-			keyboard.IsPressed(VK_Z, includeModifiers), keyboard.IsPressed(VK_X, includeModifiers));
+			keyboard.IsPressed(VK_LEFT), keyboard.IsPressed(VK_RIGHT), keyboard.IsPressed(VK_UP),
+			keyboard.IsPressed(VK_DOWN), keyboard.IsPressed(VK_Z), keyboard.IsPressed(VK_X));
 		Tickable::Sleep(10);
 	}
 }

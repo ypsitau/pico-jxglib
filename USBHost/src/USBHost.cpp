@@ -407,7 +407,7 @@ const USBHost::Keyboard::UsageIdToKeyCode USBHost::Keyboard::usageIdToKeyCodeTbl
 	{ VK_NUMPAD0,		VK_NUMPAD0,		},	// 0x62
 	{ VK_DECIMAL,		VK_DECIMAL,		},	// 0x63
 	{ 0,				0,				},	// 0x64
-	{ 0,				0,				},	// 0x65
+	{ VK_APPS,			VK_APPS,		},	// 0x65
 	{ 0,				0,				},	// 0x66
 	{ 0,				0,				},	// 0x67
 	{ 0,				0,				},	// 0x68
@@ -442,10 +442,10 @@ const USBHost::Keyboard::UsageIdToKeyCode USBHost::Keyboard::usageIdToKeyCodeTbl
 	{ 0,				0,				},	// 0x85
 	{ 0,				0,				},	// 0x86
 	{ VK_OEM_102,		VK_OEM_102,		},	// 0x87
-	{ 0,				0,				},	// 0x88
+	{ VK_OEM_COPY,		VK_OEM_COPY,	},	// 0x88 kana
 	{ VK_OEM_5,			VK_OEM_5,		},	// 0x89
-	{ 0,				0,				},	// 0x8a
-	{ 0,				0,				},	// 0x8b
+	{ VK_CONVERT,		VK_CONVERT,		},	// 0x8a
+	{ VK_NONCONVERT,	VK_NONCONVERT,	},	// 0x8b
 	{ 0,				0,				},	// 0x8c
 	{ 0,				0,				},	// 0x8d
 	{ 0,				0,				},	// 0x8e
@@ -581,7 +581,8 @@ void USBHost::Keyboard::OnReport(uint8_t devAddr, uint8_t iInstance, const hid_k
 	reportCaptured_.modifier = report.modifier;
 	int iDst = 0;
 	for (int iSrc = 0; iSrc < count_of(report.keycode); iSrc++) {
-		const UsageIdToKeyCode& usageIdToKeyCode = usageIdToKeyCodeTbl[report.keycode[iSrc]];
+		uint8_t usageId = report.keycode[iSrc];
+		const UsageIdToKeyCode& usageIdToKeyCode = usageIdToKeyCodeTbl[usageId];
 		uint8_t keyCode = GetKeyLayout().IsNonUS()? usageIdToKeyCode.keyCodeNonUS : usageIdToKeyCode.keyCodeUS;
 		if (capsLockAsCtrlFlag_ && keyCode == VK_CAPITAL) {
 			reportCaptured_.modifier |= KEYBOARD_MODIFIER_LEFTCTRL;

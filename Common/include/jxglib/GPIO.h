@@ -76,7 +76,7 @@ public:
 		void Initialize(Key* keyTbl, int nKeys);
 	public:
 		// virtual function of KeyboardRepeatable
-		virtual bool IsPressed(uint8_t keyCode, bool includeModifiers = false) override;
+		virtual bool IsPressed(uint8_t keyCode, bool includeModifiers = true) override;
 		virtual uint8_t GetModifier() override { return modifier_; }
 		virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1, bool includeModifiers = false) override;
 	public:

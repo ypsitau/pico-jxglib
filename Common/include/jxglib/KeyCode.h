@@ -174,6 +174,7 @@ static const uint8_t VK_OEM_8				= 0xdf;
 static const uint8_t VK_OEM_102				= 0xe2;
 static const uint8_t VK_PROCESSKEY			= 0xe5;
 static const uint8_t VK_PACKET				= 0xe7;
+static const uint8_t VK_OEM_COPY			= 0xf2;
 static const uint8_t VK_ATTN				= 0xf6;
 static const uint8_t VK_CRSEL				= 0xf7;
 static const uint8_t VK_EXSEL				= 0xf8;
