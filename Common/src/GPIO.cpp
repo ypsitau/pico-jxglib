@@ -88,7 +88,7 @@ void GPIO::Keyboard::Initialize(Key* keyTbl, int nKeys)
 	for (int i = 0; i < nKeys_; i++) keyTbl_[i].Initialize();
 }
 
-bool GPIO::Keyboard::IsPressed(uint8_t keyCode)
+bool GPIO::Keyboard::IsPressed(uint8_t keyCode, bool includeModifiers)
 {
 	for (int i = 0; i < nKeys_; i++) {
 		Key& key = keyTbl_[i];
@@ -97,7 +97,7 @@ bool GPIO::Keyboard::IsPressed(uint8_t keyCode)
 	return false;
 }
 
-int GPIO::Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax)
+int GPIO::Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax, bool includeModifiers)
 {
 	int nKeys = 0;
 	for (int i = 0; i < nKeys_; i++) {
@@ -174,7 +174,7 @@ uint8_t GPIO::KeyboardMatrix::GetModifier()
 	return modifier;
 }
 
-int GPIO::KeyboardMatrix::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax)
+int GPIO::KeyboardMatrix::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax, bool includeModifiers)
 {
 	int nKeys = 0;
 	for (int i = 0; i < count_of(iKeySetCapturedTbl_) && nKeys < nKeysMax; i++) {

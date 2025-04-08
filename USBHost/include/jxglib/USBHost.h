@@ -130,13 +130,13 @@ public:
 			uint8_t keyCodeUS;
 			uint8_t keyCodeNonUS;
 		};
-		struct Report {
+		struct ReportCaptured {
 			uint8_t modifier;
-			uint8_t keyCodeTbl[6];	
+			uint8_t keyCodeTbl[6 + 8];
 		};
 	private:
 		bool capsLockAsCtrlFlag_;
-		Report reportCaptured_;
+		ReportCaptured reportCaptured_;
 	public:
 		static const UsageIdToKeyCode usageIdToKeyCodeTbl[256];
 	public:
@@ -147,7 +147,7 @@ public:
 		// virtual function of jxglib::Keyboard
 		virtual jxglib::Keyboard& SetCapsLockAsCtrl(bool capsLockAsCtrlFlag = true) override;
 		virtual uint8_t GetModifier() override { return reportCaptured_.modifier; }
-		virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1) override;
+		virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1, bool includeModifiers = false) override;
 	};
 	class Mouse : public jxglib::Mouse {
 	private:

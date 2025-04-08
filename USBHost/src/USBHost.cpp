@@ -88,7 +88,7 @@ bool USBHost::ParseReportDescriptor(ReportDescriptorHandler& handler, const uint
 		for (int iData = 0; iData < dataSize; iData++, i++) {
 			itemData = itemData | static_cast<uint32_t>(descReport[i]) << (iData * 8);
 		}
-		if (itemType = 0xfc) {
+		if (itemType == 0xfc) {
 			// Long Items
 			i += itemData & 0xff;
 			continue;
@@ -264,8 +264,8 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 							hid_info[iInstance].report_info, MAX_REPORT, descReport, descLen);
 		::printf("HID has %u reports \r\n", hid_info[iInstance].report_count);
 	}
-	//ReportDescriptorHandler_Print handler;
-	//USBHost::ParseReportDescriptor(handler, descReport, descLen);
+	ReportDescriptorHandler_Print handler;
+	USBHost::ParseReportDescriptor(handler, descReport, descLen);
 	// request to receive report
 	// tuh_hid_report_received_cb() will be invoked when report is available
 	if (!::tuh_hid_receive_report(devAddr, iInstance)) {
@@ -579,7 +579,8 @@ void USBHost::Keyboard::OnReport(uint8_t devAddr, uint8_t iInstance, const hid_k
 {
 	::memset(&reportCaptured_, 0x00, sizeof(reportCaptured_));
 	reportCaptured_.modifier = report.modifier;
-	for (int iSrc = 0, iDst = 0; iSrc < count_of(report.keycode); iSrc++) {
+	int iDst = 0;
+	for (int iSrc = 0; iSrc < count_of(report.keycode); iSrc++) {
 		const UsageIdToKeyCode& usageIdToKeyCode = usageIdToKeyCodeTbl[report.keycode[iSrc]];
 		uint8_t keyCode = GetKeyLayout().IsNonUS()? usageIdToKeyCode.keyCodeNonUS : usageIdToKeyCode.keyCodeUS;
 		if (capsLockAsCtrlFlag_ && keyCode == VK_CAPITAL) {
@@ -597,12 +598,23 @@ void USBHost::Keyboard::OnReport(uint8_t devAddr, uint8_t iInstance, const hid_k
 	}
 }
 
-int USBHost::Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax)
+int USBHost::Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax, bool includeModifiers)
 {
 	int nKeys = 0;
 	for (int i = 0; i < ChooseMin(static_cast<int>(count_of(reportCaptured_.keyCodeTbl)), nKeysMax); i++) {
 		uint8_t keyCode = reportCaptured_.keyCodeTbl[i];
 		if (keyCode) keyCodeTbl[nKeys++] = keyCode;
+	}
+	uint8_t modifier = reportCaptured_.modifier;
+	if (includeModifiers) {
+		if (nKeys < nKeysMax && (modifier & KeyData::Mod::CtrlL))		keyCodeTbl[nKeys++] = VK_LCONTROL;
+		if (nKeys < nKeysMax && (modifier & KeyData::Mod::ShiftL)) 		keyCodeTbl[nKeys++] = VK_LSHIFT;
+		if (nKeys < nKeysMax && (modifier & KeyData::Mod::AltL))		keyCodeTbl[nKeys++] = VK_LMENU;
+		if (nKeys < nKeysMax && (modifier & KeyData::Mod::WindowsL))	keyCodeTbl[nKeys++] = VK_LWIN;
+		if (nKeys < nKeysMax && (modifier & KeyData::Mod::CtrlR)) 		keyCodeTbl[nKeys++] = VK_RCONTROL;
+		if (nKeys < nKeysMax && (modifier & KeyData::Mod::ShiftR))		keyCodeTbl[nKeys++] = VK_RSHIFT;
+		if (nKeys < nKeysMax && (modifier & KeyData::Mod::AltR))		keyCodeTbl[nKeys++] = VK_RMENU;
+		if (nKeys < nKeysMax && (modifier & KeyData::Mod::WindowsR))	keyCodeTbl[nKeys++] = VK_RWIN;
 	}
 	return nKeys;
 }

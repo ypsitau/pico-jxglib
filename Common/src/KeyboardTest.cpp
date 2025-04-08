@@ -47,7 +47,7 @@ void SenseKeyCode(Printable& printable, Keyboard& keyboard)
 	printable.Printf("Test for Keyboard::SenseKeyCode(). Press any keys..\n");
 	for (;;) {
 		uint8_t keyCodeTbl[6];
-		int nKeys = keyboard.SenseKeyCode(keyCodeTbl, count_of(keyCodeTbl));
+		int nKeys = keyboard.SenseKeyCode(keyCodeTbl, count_of(keyCodeTbl), true);
 		if (nKeys > 0) {
 			for (int i = 0; i < nKeys; i++) {
 				printable.Printf((i == 0)? "VK_%s" : " VK_%s", GetKeyCodeName(keyCodeTbl[i]));
@@ -78,10 +78,12 @@ void SenseKeyData(Printable& printable, Keyboard& keyboard)
 	
 void IsPressed(Printable& printable, Keyboard& keyboard)
 {
+	bool includeModifiers = true;
 	for (;;) {
 		printable.Printf("VK_LEFT:%d VK_RIGHT:%d VK_UP:%d VK_DOWN:%d VK_Z:%d VK_X:%d\n",
-			keyboard.IsPressed(VK_LEFT), keyboard.IsPressed(VK_RIGHT), keyboard.IsPressed(VK_UP),
-			keyboard.IsPressed(VK_DOWN), keyboard.IsPressed(VK_Z), keyboard.IsPressed(VK_X));
+			keyboard.IsPressed(VK_LEFT, includeModifiers), keyboard.IsPressed(VK_RIGHT, includeModifiers),
+			keyboard.IsPressed(VK_UP, includeModifiers), keyboard.IsPressed(VK_DOWN, includeModifiers),
+			keyboard.IsPressed(VK_Z, includeModifiers), keyboard.IsPressed(VK_X, includeModifiers));
 		Tickable::Sleep(10);
 	}
 }

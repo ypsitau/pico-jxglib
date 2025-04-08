@@ -19,7 +19,7 @@ Stdio::Printable Stdio::Printable::Instance;
 //------------------------------------------------------------------------------
 Stdio::Keyboard Stdio::Keyboard::Instance;
 
-int Stdio::Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax)
+int Stdio::Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax, bool includeModifiers)
 {
 	if (nKeysMax == 0) return 0;
 	int nKeys = 0;

@@ -41,10 +41,10 @@ bool Keyboard::GetKeyData(KeyData* pKeyData)
 	return true;
 }
 
-bool Keyboard::IsPressed(uint8_t keyCode)
+bool Keyboard::IsPressed(uint8_t keyCode, bool includeModifiers)
 {
 	uint8_t keyCodeTbl[6];
-	int nKeys = SenseKeyCode(keyCodeTbl, count_of(keyCodeTbl));
+	int nKeys = SenseKeyCode(keyCodeTbl, count_of(keyCodeTbl), includeModifiers);
 	for (int i = 0; i < nKeys; i++) if (keyCodeTbl[i] == keyCode) return true;
 	return false;
 }
