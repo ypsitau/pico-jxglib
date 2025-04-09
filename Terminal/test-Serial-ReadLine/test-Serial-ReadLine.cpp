@@ -30,7 +30,7 @@ int main()
 	GPIO2.init().set_dir_OUT();
 	terminal.Initialize();
 	//terminal.AttachKeyboard(keyboard);
-	terminal.AttachPrintable(Stdio::Printable::Instance).AttachKeyboard(Stdio::GetKeyboard());
+	terminal.AttachPrintable(Stdio::Instance).AttachKeyboard(Stdio::GetKeyboard());
 	terminal.Println("ReadLine Test Program");
 	for (;;) {
 		::printf("%s\n", terminal.ReadLine(">"));

@@ -13,22 +13,8 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // Stdio
 //------------------------------------------------------------------------------
-class Stdio {
+class Stdio : public Printable {
 public:
-	class Printable : public jxglib::Printable {
-	public:
-		static Printable Instance;
-	public:
-		virtual Printable& ClearScreen() { return *this; }
-		virtual Printable& RefreshScreen() { ::stdio_flush(); return *this; }
-		virtual Printable& Locate(int col, int row) { return *this; }
-		virtual Printable& PutChar(char ch) { ::stdio_putchar(ch); return *this; }
-		virtual Printable& PutCharRaw(char ch) { ::stdio_putchar_raw(ch); return *this; }
-		virtual Printable& Print(const char* str) { ::stdio_put_string(str, ::strlen(str), false, true); return *this; }
-		virtual Printable& PrintRaw(const char* str) { ::stdio_put_string(str, ::strlen(str), false, false); return *this; }
-		virtual Printable& Println(const char* str = "") { ::stdio_put_string(str, ::strlen(str), true, true); return *this; }
-		virtual Printable& PrintlnRaw(const char* str = "") { ::stdio_put_string(str, ::strlen(str), true, false); return *this; }
-	};
 	class Keyboard : public jxglib::Keyboard {
 	private:
 		VT100::Decoder decoder_;
@@ -41,9 +27,21 @@ public:
 		virtual bool GetKeyDataNB(KeyData* pKeyData) override;
 	};
 public:
+	static Stdio Instance;
+public:
 	Stdio() {}
 public:
-	static Printable& GetPrintable() { return Printable::Instance; }
+	virtual Printable& ClearScreen() override { return *this; }
+	virtual Printable& RefreshScreen() override { ::stdio_flush(); return *this; }
+	virtual Printable& Locate(int col, int row) override { return *this; }
+	virtual Printable& PutChar(char ch) override { ::stdio_putchar(ch); return *this; }
+	virtual Printable& PutCharRaw(char ch) override { ::stdio_putchar_raw(ch); return *this; }
+	virtual Printable& Print(const char* str) override { ::stdio_put_string(str, ::strlen(str), false, true); return *this; }
+	virtual Printable& PrintRaw(const char* str) override { ::stdio_put_string(str, ::strlen(str), false, false); return *this; }
+	virtual Printable& Println(const char* str = "") override { ::stdio_put_string(str, ::strlen(str), true, true); return *this; }
+	virtual Printable& PrintlnRaw(const char* str = "") override { ::stdio_put_string(str, ::strlen(str), true, false); return *this; }
+public:
+	static Printable& GetPrintable() { return Instance; }
 	static Keyboard& GetKeyboard() { return Keyboard::Instance; }
 public:
 	static bool init_all() { return ::stdio_init_all(); }

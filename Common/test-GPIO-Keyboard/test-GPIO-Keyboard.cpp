@@ -21,8 +21,8 @@ int main()
 		{ GPIO21.pull_up(), GPIO::LogicNeg, VK_RIGHT	},
 	};
 	keyboard.Initialize(keyTbl, count_of(keyTbl));
-	//KeyboardTest::GetKeyDataNB(Stdio::Printable::Instance, keyboard);
-	KeyboardTest::SenseKeyData(Stdio::Printable::Instance, keyboard);
-	//KeyboardTest::SenseKeyCode(Stdio::Printable::Instance, keyboard);
-	//KeyboardTest::IsPressed(Stdio::Printable::Instance, keyboard);
+	KeyboardTest::GetKeyDataNB(Stdio::Instance, keyboard);
+	//KeyboardTest::SenseKeyData(Stdio::Instance, keyboard);
+	//KeyboardTest::SenseKeyCode(Stdio::Instance, keyboard);
+	//KeyboardTest::IsPressed(Stdio::Instance, keyboard);
 }

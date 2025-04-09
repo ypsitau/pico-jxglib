@@ -8,7 +8,7 @@ using namespace jxglib;
 int main()
 {
 	::stdio_init_all();
-	Printable& printable = Stdio::GetPrintable();
+	Printable& printable = Stdio::Instance;
 	Keyboard& keyboard = Stdio::GetKeyboard();
 	//KeyboardTest::GetKeyCodeNB(printable, keyboard);
 	//KeyboardTest::SenseKeyCode(printable, keyboard);

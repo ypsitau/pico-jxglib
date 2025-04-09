@@ -20,9 +20,9 @@ int main()
 	const GPIO::KeyCol keyColTbl[] = { GPIO20.pull_up(), GPIO21.pull_up(), GPIO26.pull_up(), GPIO27.pull_up() };
 	//const GPIO::KeyCol keyColTbl[] = { GPIO20.pull_down(), GPIO21.pull_down(), GPIO26.pull_down(), GPIO27.pull_down() };
 	keyboard.Initialize(keySetTbl, keyRowTbl, count_of(keyRowTbl), keyColTbl, count_of(keyColTbl), GPIO::LogicNeg);
-	KeyboardTest::GetKeyCodeNB(Stdio::Printable::Instance, keyboard);
-	//KeyboardTest::GetKeyDataNB(Stdio::Printable::Instance, keyboard);
-	//KeyboardTest::SenseKeyCode(Stdio::Printable::Instance, keyboard);
-	//KeyboardTest::SenseKeyData(Stdio::Printable::Instance, keyboard);
-	//KeyboardTest::IsPressed(Stdio::Printable::Instance, keyboard);
+	KeyboardTest::GetKeyCodeNB(Stdio::Instance, keyboard);
+	//KeyboardTest::GetKeyDataNB(Stdio::Instance, keyboard);
+	//KeyboardTest::SenseKeyCode(Stdio::Instance, keyboard);
+	//KeyboardTest::SenseKeyData(Stdio::Instance, keyboard);
+	//KeyboardTest::IsPressed(Stdio::Instance, keyboard);
 }
