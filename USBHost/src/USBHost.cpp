@@ -608,14 +608,14 @@ int USBHost::Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax, bool inc
 	}
 	uint8_t modifier = reportCaptured_.modifier;
 	if (includeModifiers) {
-		if (nKeys < nKeysMax && (modifier & KeyData::Mod::CtrlL))		keyCodeTbl[nKeys++] = VK_LCONTROL;
-		if (nKeys < nKeysMax && (modifier & KeyData::Mod::ShiftL)) 		keyCodeTbl[nKeys++] = VK_LSHIFT;
-		if (nKeys < nKeysMax && (modifier & KeyData::Mod::AltL))		keyCodeTbl[nKeys++] = VK_LMENU;
-		if (nKeys < nKeysMax && (modifier & KeyData::Mod::WindowsL))	keyCodeTbl[nKeys++] = VK_LWIN;
-		if (nKeys < nKeysMax && (modifier & KeyData::Mod::CtrlR)) 		keyCodeTbl[nKeys++] = VK_RCONTROL;
-		if (nKeys < nKeysMax && (modifier & KeyData::Mod::ShiftR))		keyCodeTbl[nKeys++] = VK_RSHIFT;
-		if (nKeys < nKeysMax && (modifier & KeyData::Mod::AltR))		keyCodeTbl[nKeys++] = VK_RMENU;
-		if (nKeys < nKeysMax && (modifier & KeyData::Mod::WindowsR))	keyCodeTbl[nKeys++] = VK_RWIN;
+		if (nKeys < nKeysMax && (modifier & Mod::CtrlL))	keyCodeTbl[nKeys++] = VK_LCONTROL;
+		if (nKeys < nKeysMax && (modifier & Mod::ShiftL)) 	keyCodeTbl[nKeys++] = VK_LSHIFT;
+		if (nKeys < nKeysMax && (modifier & Mod::AltL))		keyCodeTbl[nKeys++] = VK_LMENU;
+		if (nKeys < nKeysMax && (modifier & Mod::WindowsL))	keyCodeTbl[nKeys++] = VK_LWIN;
+		if (nKeys < nKeysMax && (modifier & Mod::CtrlR)) 	keyCodeTbl[nKeys++] = VK_RCONTROL;
+		if (nKeys < nKeysMax && (modifier & Mod::ShiftR))	keyCodeTbl[nKeys++] = VK_RSHIFT;
+		if (nKeys < nKeysMax && (modifier & Mod::AltR))		keyCodeTbl[nKeys++] = VK_RMENU;
+		if (nKeys < nKeysMax && (modifier & Mod::WindowsR))	keyCodeTbl[nKeys++] = VK_RWIN;
 	}
 	return nKeys;
 }

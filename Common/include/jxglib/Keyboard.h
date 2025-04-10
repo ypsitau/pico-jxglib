@@ -13,6 +13,17 @@ namespace jxglib {
 // Keyboard
 //------------------------------------------------------------------------------
 class Keyboard {
+public:
+	struct Mod {
+		static const uint8_t CtrlL		= (1 << 0);
+		static const uint8_t ShiftL		= (1 << 1);
+		static const uint8_t AltL		= (1 << 2);
+		static const uint8_t WindowsL	= (1 << 3);
+		static const uint8_t CtrlR		= (1 << 4);
+		static const uint8_t ShiftR		= (1 << 5);
+		static const uint8_t AltR		= (1 << 6);
+		static const uint8_t WindowsR	= (1 << 7);
+	};
 private:
 	const KeyLayout* pKeyLayout_;
 public:
@@ -32,6 +43,11 @@ public:
 	virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) = 0;
 	virtual bool GetKeyCodeNB(uint8_t* pKeyCode, uint8_t* pModifier = nullptr) = 0;
 	virtual bool GetKeyDataNB(KeyData* pKeyData) = 0;
+public:
+	static bool IsCtrlDown(uint8_t modifier)	{ return !!(modifier & (Mod::CtrlL | Mod::CtrlR)); }
+	static bool IsShiftDown(uint8_t modifier)	{ return !!(modifier & (Mod::ShiftL | Mod::ShiftR)); }
+	static bool IsAltDown(uint8_t modifier)		{ return !!(modifier & (Mod::AltL | Mod::AltR)); }
+	static bool IsWindowsDown(uint8_t modifier)	{ return !!(modifier & (Mod::WindowsL | Mod::WindowsR)); }
 };
 
 //------------------------------------------------------------------------------

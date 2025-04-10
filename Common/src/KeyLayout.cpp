@@ -1,7 +1,7 @@
 //==============================================================================
 // KeyLayout.cpp
 //==============================================================================
-#include "jxglib/KeyLayout.h"
+#include "jxglib/Keyboard.h"
 
 namespace jxglib {
 
@@ -10,7 +10,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 KeyData KeyLayout::CreateKeyData(uint8_t keyCode, uint8_t modifier) const
 {
-	bool isCtrlDown = KeyData::IsCtrlDown(modifier);
+	bool isCtrlDown = Keyboard::IsCtrlDown(modifier);
 	char charCode = (keyCode == VK_TAB)? '\0' : (keyCode == VK_RETURN)? '\0' :
 			(keyCode == VK_ESCAPE)? '\0' : ConvKeyCodeToCharCode(keyCode, modifier);
 	if (charCode == 0) return KeyData(keyCode, true, modifier);
@@ -27,7 +27,7 @@ KeyData KeyLayout::CreateKeyData(uint8_t keyCode, uint8_t modifier) const
 uint8_t KeyLayout::ConvKeyCodeToCharCode(uint8_t keyCode, uint8_t modifier) const
 {
 	const CharEntry& charEntry = GetCharEntryTbl()[keyCode];
-	return (KeyData::IsShiftDown(modifier))? charEntry.charCodeShift : charEntry.charCode;
+	return (Keyboard::IsShiftDown(modifier))? charEntry.charCodeShift : charEntry.charCode;
 }
 
 //------------------------------------------------------------------------------
