@@ -18,7 +18,7 @@ TickableEntry(hoge, 300)
 int main()
 {
 	::stdio_init_all();
-	const GPIO::KeySet keySetTbl[] = {
+	const Keyboard::KeySet keySetTbl[] = {
 		VK_1, VK_2, VK_3, VK_BACK,
 		VK_4, VK_5, VK_6, VK_LEFT,
 		VK_7, VK_8, VK_9, VK_RIGHT,

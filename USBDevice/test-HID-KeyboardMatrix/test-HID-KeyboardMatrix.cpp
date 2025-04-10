@@ -27,7 +27,7 @@ public:
 //-----------------------------------------------------------------------------
 int main(void)
 {
-	::stdio_init_all(); 
+	::stdio_init_all();
 	USBDevice device({
 		bcdUSB:				0x0200,
 		bDeviceClass:		0x00,
@@ -42,11 +42,11 @@ int main(void)
 	DeviceKeyboard deviceKeyboard(device);
 	device.Initialize();
 	deviceKeyboard.Initialize();
-	const GPIO::KeySet keySetTbl[] = {
-		VK_1, VK_2, VK_3, VK_BACK,
-		VK_4, VK_5, VK_6, VK_LEFT,
-		VK_7, VK_8, VK_9, VK_RIGHT,
-		VK_OEM_COMMA, VK_0, VK_OEM_PERIOD, VK_RETURN,
+	static const Keyboard::KeySet keySetTbl[] = {
+		VK_1,    VK_2, VK_3,     VK_BACK,
+		VK_4,    VK_5, VK_6,     VK_UP,
+		VK_7,    VK_8, VK_9,     VK_DOWN,
+		VK_LEFT, VK_0, VK_RIGHT, VK_RETURN, // {0, Keyboard::Mod::ShiftL},
 	};
 	const GPIO::KeyRow keyRowTbl[] = { GPIO16, GPIO17, GPIO18, GPIO19 };
 	const GPIO::KeyCol keyColTbl[] = { GPIO20.pull_up(), GPIO21.pull_up(), GPIO26.pull_up(), GPIO27.pull_up() };
@@ -60,7 +60,7 @@ int main(void)
 void DeviceKeyboard::OnTick()
 {
 	uint8_t reportId = 0;
-	uint8_t modifier  = 0;
+	uint8_t modifier  = keyboard_.GetModifier();
 	uint8_t usageIdTbl[6] = { 0 };
 	uint8_t keyCodeTbl[6];
 	int nKeyCode = keyboard_.SenseKeyCode(keyCodeTbl, count_of(keyCodeTbl));
