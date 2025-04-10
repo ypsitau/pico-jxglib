@@ -24,6 +24,17 @@ public:
 		static const uint8_t AltR		= (1 << 6);
 		static const uint8_t WindowsR	= (1 << 7);
 	};
+	class KeySet {
+	public:
+		uint8_t keyCode_;
+		uint8_t modifier_;
+	public:
+		constexpr KeySet(const KeySet& keySet) : keyCode_{keySet.keyCode_}, modifier_{keySet.modifier_} {}
+		constexpr KeySet(uint8_t keyCode, uint8_t modifier = 0) : keyCode_{keyCode}, modifier_{modifier} {}
+	public:
+		uint8_t GetKeyCode() const { return keyCode_; }
+		uint8_t GetModifier() const { return modifier_; }
+	};
 private:
 	const KeyLayout* pKeyLayout_;
 public:

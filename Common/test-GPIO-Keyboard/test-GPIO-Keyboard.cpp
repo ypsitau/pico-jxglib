@@ -13,7 +13,7 @@ int main()
 {
 	::stdio_init_all();
 	GPIO::Key keyTbl[] = {
-		{ GPIO16.pull_up(), GPIO::LogicNeg, VK_Z,		Keyboard::Mod::ShiftL },
+		{ GPIO16.pull_up(), GPIO::LogicNeg, {VK_Z, Keyboard::Mod::ShiftL} },
 		{ GPIO17.pull_up(), GPIO::LogicNeg, VK_X		},
 		{ GPIO18.pull_up(), GPIO::LogicNeg, VK_LEFT		},
 		{ GPIO19.pull_up(), GPIO::LogicNeg, VK_UP		},

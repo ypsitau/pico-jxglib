@@ -44,8 +44,8 @@ const GPIO29_T GPIO29;
 //------------------------------------------------------------------------------
 // GPIO::Key
 //------------------------------------------------------------------------------
-GPIO::Key::Key(const GPIO& gpio, uint32_t flags, uint8_t keyCode, uint8_t modifier) :
-	gpio_{gpio}, flags_{flags}, keyCode_{keyCode}, modifier_{modifier}, pressedFlag_{false}
+GPIO::Key::Key(const GPIO& gpio, uint32_t flags, const Keyboard::KeySet& keySet) :
+	gpio_{gpio}, flags_{flags}, keySet_{keySet}, pressedFlag_{false}
 {
 }
 
@@ -57,9 +57,6 @@ void GPIO::Key::Initialize()
 //------------------------------------------------------------------------------
 // GPIO::KeySet
 //------------------------------------------------------------------------------
-GPIO::KeySet::KeySet(uint8_t keyCode, uint8_t modifier) : keyCode_{keyCode}, modifier_{modifier}
-{
-}
 
 //------------------------------------------------------------------------------
 // GPIO::KeyRow

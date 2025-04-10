@@ -26,28 +26,17 @@ public:
 	private:
 		const GPIO& gpio_;
 		uint32_t flags_;
-		uint8_t keyCode_;
-		uint8_t modifier_;
+		jxglib::Keyboard::KeySet keySet_;
 		bool pressedFlag_;
 	public:
-		Key(const GPIO& gpio, uint32_t flags, uint8_t keyCode, uint8_t modifier = 0);
+		Key(const GPIO& gpio, uint32_t flags, const jxglib::Keyboard::KeySet& keySet);
 	public:
 		void Initialize();
-		uint8_t GetKeyCode() const { return keyCode_; }
-		uint8_t GetModifier() const { return modifier_; }
+		uint8_t GetKeyCode() const { return keySet_.GetKeyCode(); }
+		uint8_t GetModifier() const { return keySet_.GetModifier(); }
 		bool IsPressed() const { return pressedFlag_; }
 	public:
 		virtual void Update() { pressedFlag_ = (flags_ & LogicNeg) ^ gpio_.get(); }
-	};
-	class KeySet {
-	public:
-		uint8_t keyCode_;
-		uint8_t modifier_;
-	public:
-		KeySet(uint8_t keyCode, uint8_t modifier = 0);
-	public:
-		uint8_t GetKeyCode() const { return keyCode_; }
-		uint8_t GetModifier() const { return modifier_; }
 	};
 	class KeyRow {
 	private:
