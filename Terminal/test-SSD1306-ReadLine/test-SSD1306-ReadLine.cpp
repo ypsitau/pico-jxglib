@@ -17,7 +17,7 @@ int main()
 	GPIO5.set_function_I2C0_SCL().pull_up();
 	SSD1306 display(i2c0, 0x3c);
 	display.Initialize();
-	terminal.AttachKeyboard(USBHost::GetKeyboard().SetCapsLockAsCtrl()).AttachDisplay(display)
+	terminal.AttachDisplay(display).AttachKeyboard(USBHost::GetKeyboard().SetCapsLockAsCtrl())
 		.SetFont(Font::shinonome12).SetSpacingRatio(1., 1)
 		.SetColor(Color::white).SetColorBg(Color::black)
 		.SetColorInEdit(Color::white).SetColorCursor(Color::white)
