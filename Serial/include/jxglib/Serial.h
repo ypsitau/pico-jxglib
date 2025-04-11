@@ -22,6 +22,8 @@ public:
 		Terminal(int bytesHistoryBuff = 512) : jxglib::Terminal(bytesHistoryBuff, Stdio::Keyboard::Instance),
 				Tickable(0), pPrintable_{&Stdio::Instance} {}
 	public:
+		Terminal& Initialize() { jxglib::Terminal::Initialize(); return *this; }
+	public:
 		Terminal& AttachKeyboard(Keyboard& keyboard) { jxglib::Terminal::AttachKeyboard(keyboard); return *this; }
 		Terminal& AttachPrintable(Printable& printable) { pPrintable_ = &printable; return *this; }
 	public:

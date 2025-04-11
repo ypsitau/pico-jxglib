@@ -31,7 +31,8 @@ Display::Terminal& Display::Terminal::AttachKeyboard(Keyboard& keyboard)
 
 Display::Terminal& Display::Terminal::AttachDrawable(Drawable& drawable, const Rect& rect, Dir dir)
 {
-	if (!Initialize() || !GetLineBuff().Initialize()) {
+	Initialize();
+	if (!GetLineBuff().Initialize()) {
 		::panic("failed to allocate memory in Display::Terminal::AttachDrawable()");
 		return *this;
 	}

@@ -70,6 +70,8 @@ public:
 	public:
 		Terminal(int bytesLineBuff = 4096, int byteshistoryBuff = 512);
 	public:
+		Terminal& Initialize() { jxglib::Terminal::Initialize(); return *this; }
+	public:
 		Terminal& AttachKeyboard(Keyboard& keyboard);
 		Terminal& AttachDrawable(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
 		Terminal& AttachDisplay(Drawable& display, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal) {

@@ -29,7 +29,7 @@ public:
 	public:
 		LineEditor(int bytesHistoryBuff);
 	public:
-		bool Initialize();
+		void Initialize();
 		void Begin();
 		void Finish();
 		bool IsEditing() { return editingFlag_; }
@@ -74,7 +74,7 @@ private:
 	Keyboard* pKeyboard_;
 public:
 	Terminal(int bytesHistoryBuff, Keyboard& keyboard);
-	bool Initialize();
+	Terminal& Initialize();
 	void SetEditable(bool editableFlag) { editableFlag_ = editableFlag; }
 	bool IsEditable() const { return editableFlag_; }
 	LineEditor& GetLineEditor() { return lineEditor_; }

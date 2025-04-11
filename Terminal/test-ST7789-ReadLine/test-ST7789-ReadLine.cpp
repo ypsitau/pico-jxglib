@@ -30,7 +30,8 @@ int main()
 	display.Initialize(Display::Dir::Rotate0);
 	//Keyboard& keyboard = keyboardGPIO;
 	Keyboard& keyboard = USBHost::GetKeyboard().SetCapsLockAsCtrl();
-	terminal.AttachDisplay(display).AttachKeyboard(keyboard)
+	terminal.Initialize()
+		.AttachDisplay(display).AttachKeyboard(keyboard)
 		.SetFont(Font::shinonome16).SetSpacingRatio(1., 1)
 		.SetColor(Color::white).SetColorBg(Color::black)
 		.SetColorInEdit(Color::white).SetColorCursor(Color::white)

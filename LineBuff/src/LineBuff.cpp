@@ -24,9 +24,10 @@ LineBuff::~LineBuff()
 
 bool LineBuff::Initialize()
 {
+	if (buffBegin_) return true;
 	buffBegin_ = reinterpret_cast<char*>(::malloc(bytesBuff_));
 	if (!buffBegin_) return false;
-	::memset(buffBegin_, 0xcc, bytesBuff_);
+	::memset(buffBegin_, 0x00, bytesBuff_);
 	pBuffLast_ = buffBegin_;
 	return true;
 }

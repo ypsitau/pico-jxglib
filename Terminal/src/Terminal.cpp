@@ -15,9 +15,10 @@ Terminal::Terminal(int bytesHistoryBuff, Keyboard& keyboard) :
 {
 }
 
-bool Terminal::Initialize()
+Terminal& Terminal::Initialize()
 {
-	return GetLineEditor().Initialize();
+	GetLineEditor().Initialize();
+	return *this;
 }
 
 char* Terminal::ReadLine(const char* prompt)
@@ -113,9 +114,11 @@ Terminal::LineEditor::LineEditor(int bytesHistoryBuff) :
 	buff_[0] = '\0';
 }
 
-bool Terminal::LineEditor::Initialize()
+void Terminal::LineEditor::Initialize()
 {
-	return GetHistoryBuff().Initialize();
+	if (!GetHistoryBuff().Initialize()) {
+		::panic("failed to initialize the history buffer in Terminal::LineEditor::Initialize()\n");
+	}
 }
 
 void Terminal::LineEditor::Begin()
