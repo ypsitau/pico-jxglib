@@ -69,6 +69,8 @@ bool AdjustRange(T* pValue, T* pRange, T valueMin, T valueExceed, T* pValueSkip)
 	return true;
 }
 
+void WaitMSecSinceBoot(uint32_t msec);
+
 }
 
 #endif

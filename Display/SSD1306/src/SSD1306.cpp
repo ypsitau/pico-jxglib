@@ -12,6 +12,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 bool SSD1306::DispatcherEx::Initialize()
 {
+	WaitMSecSinceBoot(100);
 	if (!AllocateBuff()) {
 		::panic("failed to allocate buffer for SSD1306");
 		return false;
