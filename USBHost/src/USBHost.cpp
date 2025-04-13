@@ -25,189 +25,6 @@ void USBHost::OnTick()
 	::tuh_task();
 }
 
-const char* USBHost::GetItemTypeName(uint8_t itemType)
-{
-	static const struct {
-		uint8_t itemType;
-		const char* name;
-	} tbl[] = {
-		// 6.2.2.4 Main Items
-		{ ItemType::Input,				"Input"				},
-		{ ItemType::Output,				"Output"			},
-		{ ItemType::Feature,			"Feature"			},
-		{ ItemType::Collection,			"Collection"		},
-		{ ItemType::EndCollection,		"EndCollection"		},
-		// 6.2.2.7 Global Items
-		{ ItemType::UsagePage,			"UsagePage"			},
-		{ ItemType::LogicalMinimum,		"LogicalMinimum"	},
-		{ ItemType::LogicalMaximum,		"LogicalMaximum"	},
-		{ ItemType::PhysicalMinimum,	"PhysicalMinimum"	},
-		{ ItemType::PhysicalMaximum,	"PhysicalMaximum"	},
-		{ ItemType::UnitExponent,		"UnitExponent"		},
-		{ ItemType::Unit,				"Unit"				},
-		{ ItemType::ReportSize,			"ReportSize"		},
-		{ ItemType::ReortID,			"ReortID"			},
-		{ ItemType::ReportCount,		"ReportCount"		},
-		{ ItemType::Push,				"Push"				},
-		{ ItemType::Pop,				"Pop"				},
-		// 6.2.2.8 Local Items
-		{ ItemType::Usage,				"Usage"				},
-		{ ItemType::UsageMinimum,		"UsageMinimum"		},
-		{ ItemType::UsageMaximum,		"UsageMaximum"		},
-		{ ItemType::DesignatorIndex,	"DesignatorIndex"	},
-		{ ItemType::DesignatorMinimum,	"DesignatorMinimum"	},
-		{ ItemType::DesignatorMaximum,	"DesignatorMaximum"	},
-		{ ItemType::StringIndex,		"StringIndex"		},
-		{ ItemType::StringMaximum,		"StringMaximum"		},
-		{ ItemType::StringMinimum,		"StringMinimum"		},
-		{ ItemType::Delimeter,			"Delimeter"			},
-	};
-	for (int i = 0; i < count_of(tbl); i++) {
-		if (tbl[i].itemType == itemType) return tbl[i].name;
-	}
-	return "unknown";
-}
-
-bool USBHost::ParseReportDescriptor(ReportDescriptorHandler& handler, const uint8_t* descReport, uint16_t descLen)
-{
-	GlobalItem globalItem;
-	LocalItem localItem;
-	globalItem.Clear();
-	localItem.Clear();
-	//Dump(descReport, descLen);
-	for (uint16_t i = 0; i < descLen; ) {
-		uint8_t src = descReport[i++];
-		uint8_t itemType = src & 0xfc;
-		int dataSize = src & 0x03;
-		if (dataSize == 3) dataSize = 4;
-		if (i + dataSize > descLen) {
-			// illegal format
-			return false;
-		}
-		uint32_t itemData = 0;
-		for (int iData = 0; iData < dataSize; iData++, i++) {
-			itemData = itemData | static_cast<uint32_t>(descReport[i]) << (iData * 8);
-		}
-		if (itemType == 0xfc) {
-			// Long Items
-			i += itemData & 0xff;
-			continue;
-		}
-		::printf("%02x:%s (0x%0*x)\n", itemType, GetItemTypeName(itemType), dataSize * 2, itemData);
-		switch (itemType) {
-		// 6.2.2.4 Main Items
-		case ItemType::Input: {
-			if (!handler.OnInput(MainItemData(itemData), globalItem, localItem)) return false;
-			break;
-		}
-		case ItemType::Output: {
-			if (!handler.OnOutput(MainItemData(itemData), globalItem, localItem)) return false;
-			break;
-		}
-		case ItemType::Feature: {
-			if (!handler.OnFeature(MainItemData(itemData), globalItem, localItem)) return false;
-			break;
-		}
-		case ItemType::Collection: {
-			if (!handler.OnCollection(static_cast<CollectionType>(itemData))) return false;
-			break;
-		}
-		case ItemType::EndCollection: {
-			if (!handler.OnEndCollection()) return false;
-			break;
-		}
-		// 6.2.2.7 Global Items
-		case ItemType::UsagePage: {
-			globalItem.usagePage = itemData;
-			break;
-		}
-		case ItemType::LogicalMinimum: {
-			globalItem.logicalMinimum = itemData;
-			break;
-		}
-		case ItemType::LogicalMaximum: {
-			globalItem.logicalMinimum = itemData;
-			break;
-		}
-		case ItemType::PhysicalMinimum: {
-			globalItem.physicalMinimum = itemData;
-			break;
-		}
-		case ItemType::PhysicalMaximum: {
-			globalItem.physicalMaximum = itemData;
-			break;
-		}
-		case ItemType::UnitExponent: {
-			globalItem.unitExponent = itemData;
-			break;
-		}
-		case ItemType::Unit: {
-			globalItem.unit = itemData;
-			break;
-		}
-		case ItemType::ReportSize: {
-			globalItem.reportSize = itemData;
-			break;
-		}
-		case ItemType::ReortID: {
-			globalItem.reportID = itemData;
-			break;
-		}
-		case ItemType::ReportCount: {
-			globalItem.reportCount = itemData;
-			break;
-		}
-		case ItemType::Push: {
-			break;
-		}
-		case ItemType::Pop: {
-			break;
-		}
-		// 6.2.2.8 Local Items
-		case ItemType::Usage: {
-			localItem.usage = itemData;
-			break;
-		}
-		case ItemType::UsageMinimum: {
-			localItem.usageMinimum = itemData;
-			break;
-		}
-		case ItemType::UsageMaximum: {
-			localItem.usageMaximum = itemData;
-			break;
-		}
-		case ItemType::DesignatorIndex: {
-			localItem.designatorIndex = itemData;
-			break;
-		}
-		case ItemType::DesignatorMinimum: {
-			localItem.designatorMinimum = itemData;
-			break;
-		}
-		case ItemType::DesignatorMaximum: {
-			localItem.designatorMaximum = itemData;
-			break;
-		}
-		case ItemType::StringIndex: {
-			localItem.stringIndex = itemData;
-			break;
-		}
-		case ItemType::StringMaximum: {
-			localItem.stringMaximum = itemData;
-			break;
-		}
-		case ItemType::StringMinimum: {
-			localItem.stringMinimum = itemData;
-			break;
-		}
-		case ItemType::Delimeter: {
-			localItem.delimeter = itemData;
-			break;
-		}
-		}
-	}
-	return true;
-}
 
 extern "C" {
 
@@ -230,18 +47,57 @@ static struct {
 	tuh_hid_report_info_t report_info[MAX_REPORT];
 } hid_info[CFG_TUH_HID];
 
-class ReportDescriptorHandler_Print : public USBHost::ReportDescriptorHandler {
+class ReportDescriptorHandler_Print : public USBHost::ReportDescriptor::Handler {
 public:
-	virtual bool OnInput(USBHost::MainItemData itemData, const USBHost::GlobalItem& globalItem, const USBHost::LocalItem& localItem) override {
+	virtual bool OnInput(USBHost::ReportDescriptor::MainItemData itemData, const USBHost::ReportDescriptor::GlobalItem& globalItem, const USBHost::ReportDescriptor::LocalItem& localItem) override {
+		::printf("Input (%s,%s,%s)\n", itemData.IsData()? "Data" : "Constant",
+			itemData.IsArray()? "Array" : "Variable", itemData.IsAbsolute()? "Absolute" : "Relative");
+		if (localItem.nUsage > 0) {
+			::printf("Usage:");
+			for (int i = 0; i < localItem.nUsage; i++) {
+				const USBHost::ReportDescriptor::Range& range = localItem.usageTbl[i];
+				for (uint32_t usage = range.minimum; usage <= range.maximum; usage++) ::printf(" %08x", usage);
+			}
+			::printf("\n");
+		}
 		return true;
 	}
-	virtual bool OnOutput(USBHost::MainItemData itemData, const USBHost::GlobalItem& globalItem, const USBHost::LocalItem& localItem) override {
+	virtual bool OnOutput(USBHost::ReportDescriptor::MainItemData itemData, const USBHost::ReportDescriptor::GlobalItem& globalItem, const USBHost::ReportDescriptor::LocalItem& localItem) override {
+		::printf("Output (%s,%s,%s)\n", itemData.IsData()? "Data" : "Constant",
+			itemData.IsArray()? "Array" : "Variable", itemData.IsAbsolute()? "Absolute" : "Relative");
+		if (localItem.nUsage > 0) {
+			::printf("Usage:");
+			for (int i = 0; i < localItem.nUsage; i++) {
+				const USBHost::ReportDescriptor::Range& range = localItem.usageTbl[i];
+				for (uint32_t usage = range.minimum; usage <= range.maximum; usage++) ::printf(" %08x", usage);
+			}
+			::printf("\n");
+		}
 		return true;
 	}
-	virtual bool OnFeature(USBHost::MainItemData itemData, const USBHost::GlobalItem& globalItem, const USBHost::LocalItem& localItem) override {
+	virtual bool OnFeature(USBHost::ReportDescriptor::MainItemData itemData, const USBHost::ReportDescriptor::GlobalItem& globalItem, const USBHost::ReportDescriptor::LocalItem& localItem) override {
+		::printf("Feature (%s,%s,%s)\n", itemData.IsData()? "Data" : "Constant",
+			itemData.IsArray()? "Array" : "Variable", itemData.IsAbsolute()? "Absolute" : "Relative");
+		if (localItem.nUsage > 0) {
+			::printf("Usage:");
+			for (int i = 0; i < localItem.nUsage; i++) {
+				const USBHost::ReportDescriptor::Range& range = localItem.usageTbl[i];
+				for (uint32_t usage = range.minimum; usage <= range.maximum; usage++) ::printf(" %08x", usage);
+			}
+			::printf("\n");
+		}
 		return true;
 	}
-	virtual bool OnCollection(USBHost::CollectionType collectionType) override {
+	virtual bool OnCollection(USBHost::ReportDescriptor::CollectionType collectionType, const USBHost::ReportDescriptor::LocalItem& localItem) override {
+		::printf("Collection\n");
+		if (localItem.nUsage > 0) {
+			::printf("Usage:");
+			for (int i = 0; i < localItem.nUsage; i++) {
+				const USBHost::ReportDescriptor::Range& range = localItem.usageTbl[i];
+				for (uint32_t usage = range.minimum; usage <= range.maximum; usage++) ::printf(" %08x", usage);
+			}
+			::printf("\n");
+		}
 		return true;
 	}
 	virtual bool OnEndCollection() override {
@@ -265,7 +121,7 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 		::printf("HID has %u reports \r\n", hid_info[iInstance].report_count);
 	}
 	ReportDescriptorHandler_Print handler;
-	USBHost::ParseReportDescriptor(handler, descReport, descLen);
+	USBHost::Instance.reportDescriptor.Parse(handler, descReport, descLen);
 	// request to receive report
 	// tuh_hid_report_received_cb() will be invoked when report is available
 	if (!::tuh_hid_receive_report(devAddr, iInstance)) {
@@ -664,5 +520,197 @@ void USBHost::Mouse::OnReport(uint8_t devAddr, uint8_t iInstance, const hid_mous
 	status_.Update(CalcPoint(), report.x, report.y, report.wheel, report.pan, report.buttons);
 }
 
+//-----------------------------------------------------------------------------
+// USBHost::ReportDescriptor
+//-----------------------------------------------------------------------------
+const char* USBHost::ReportDescriptor::GetItemTypeName(uint8_t itemType)
+{
+	static const struct {
+		uint8_t itemType;
+		const char* name;
+	} tbl[] = {
+		// 6.2.2.4 Main Items
+		{ ItemType::Input,				"Input"				},
+		{ ItemType::Output,				"Output"			},
+		{ ItemType::Feature,			"Feature"			},
+		{ ItemType::Collection,			"Collection"		},
+		{ ItemType::EndCollection,		"EndCollection"		},
+		// 6.2.2.7 Global Items
+		{ ItemType::UsagePage,			"UsagePage"			},
+		{ ItemType::LogicalMinimum,		"LogicalMinimum"	},
+		{ ItemType::LogicalMaximum,		"LogicalMaximum"	},
+		{ ItemType::PhysicalMinimum,	"PhysicalMinimum"	},
+		{ ItemType::PhysicalMaximum,	"PhysicalMaximum"	},
+		{ ItemType::UnitExponent,		"UnitExponent"		},
+		{ ItemType::Unit,				"Unit"				},
+		{ ItemType::ReportSize,			"ReportSize"		},
+		{ ItemType::ReportID,			"ReportID"			},
+		{ ItemType::ReportCount,		"ReportCount"		},
+		{ ItemType::Push,				"Push"				},
+		{ ItemType::Pop,				"Pop"				},
+		// 6.2.2.8 Local Items
+		{ ItemType::Usage,				"Usage"				},
+		{ ItemType::UsageMinimum,		"UsageMinimum"		},
+		{ ItemType::UsageMaximum,		"UsageMaximum"		},
+		{ ItemType::DesignatorIndex,	"DesignatorIndex"	},
+		{ ItemType::DesignatorMinimum,	"DesignatorMinimum"	},
+		{ ItemType::DesignatorMaximum,	"DesignatorMaximum"	},
+		{ ItemType::StringIndex,		"StringIndex"		},
+		{ ItemType::StringMaximum,		"StringMaximum"		},
+		{ ItemType::StringMinimum,		"StringMinimum"		},
+		{ ItemType::Delimeter,			"Delimeter"			},
+	};
+	for (int i = 0; i < count_of(tbl); i++) {
+		if (tbl[i].itemType == itemType) return tbl[i].name;
+	}
+	return "unknown";
+}
+
+bool USBHost::ReportDescriptor::Parse(Handler& handler, const uint8_t* descReport, uint16_t descLen)
+{
+	uint32_t usagePage = 0;
+	globalItem_.Clear();
+	localItem_.Clear();
+	//Dump(descReport, descLen);
+	for (uint16_t descOffset = 0; descOffset < descLen; ) {
+		uint8_t src = descReport[descOffset++];
+		uint8_t itemType = src & 0xfc;
+		int bytesItemData = src & 0x03;
+		if (bytesItemData == 3) bytesItemData = 4;
+		if (descOffset + bytesItemData > descLen) {
+			// illegal format
+			return false;
+		}
+		uint32_t itemData = 0;
+		for (int iByte = 0; iByte < bytesItemData; iByte++, descOffset++) {
+			itemData = itemData | static_cast<uint32_t>(descReport[descOffset]) << (iByte * 8);
+		}
+		if (itemType == 0xfc) {
+			// Long Items
+			descOffset += itemData & 0xff;
+			continue;
+		}
+		::printf("%02x:%s (0x%0*x)\n", itemType, GetItemTypeName(itemType), bytesItemData * 2, itemData);
+		switch (itemType) {
+		// 6.2.2.4 Main Items
+		case ItemType::Input: {
+			if (!handler.OnInput(MainItemData(itemData), globalItem_, localItem_)) return false;
+			
+			localItem_.Clear();
+			break;
+		}
+		case ItemType::Output: {
+			if (!handler.OnOutput(MainItemData(itemData), globalItem_, localItem_)) return false;
+			localItem_.Clear();
+			break;
+		}
+		case ItemType::Feature: {
+			if (!handler.OnFeature(MainItemData(itemData), globalItem_, localItem_)) return false;
+			localItem_.Clear();
+			break;
+		}
+		case ItemType::Collection: {
+			if (!handler.OnCollection(static_cast<CollectionType>(itemData), localItem_)) return false;
+			localItem_.Clear();
+			break;
+		}
+		case ItemType::EndCollection: {
+			if (!handler.OnEndCollection()) return false;
+			break;
+		}
+		// 6.2.2.7 Global Items
+		case ItemType::UsagePage: {
+			usagePage = itemData;
+			break;
+		}
+		case ItemType::LogicalMinimum: {
+			globalItem_.logicalMinimum = itemData;
+			break;
+		}
+		case ItemType::LogicalMaximum: {
+			globalItem_.logicalMinimum = itemData;
+			break;
+		}
+		case ItemType::PhysicalMinimum: {
+			globalItem_.physicalMinimum = itemData;
+			break;
+		}
+		case ItemType::PhysicalMaximum: {
+			globalItem_.physicalMaximum = itemData;
+			break;
+		}
+		case ItemType::UnitExponent: {
+			globalItem_.unitExponent = itemData;
+			break;
+		}
+		case ItemType::Unit: {
+			globalItem_.unit = itemData;
+			break;
+		}
+		case ItemType::ReportSize: {
+			globalItem_.reportSize = itemData;
+			break;
+		}
+		case ItemType::ReportID: {
+			globalItem_.reportID = itemData;
+			break;
+		}
+		case ItemType::ReportCount: {
+			globalItem_.reportCount = itemData;
+			break;
+		}
+		case ItemType::Push: {
+			break;
+		}
+		case ItemType::Pop: {
+			break;
+		}
+		// 6.2.2.8 Local Items
+		case ItemType::Usage: case ItemType::UsageMinimum: {
+			if (localItem_.nUsage < count_of(localItem_.usageTbl)) {
+				uint32_t usage = ((bytesItemData < 4)? (usagePage << 16) : 0) | itemData;
+				localItem_.usageTbl[localItem_.nUsage++] = Range(usage, usage);
+			}
+			break;
+		}
+		case ItemType::UsageMaximum: {
+			if (localItem_.nUsage > 0) {
+				uint32_t usage = ((bytesItemData < 4)? (usagePage << 16) : 0) | itemData;
+				localItem_.usageTbl[localItem_.nUsage - 1].maximum = usage;
+			}
+			break;
+		}
+		case ItemType::DesignatorIndex: case ItemType::DesignatorMinimum: {
+			if (localItem_.nDesignatorIndex < count_of(localItem_.designatorIndexTbl)) {
+				localItem_.designatorIndexTbl[localItem_.nDesignatorIndex++] = Range(itemData, itemData);
+			}
+			break;
+		}
+		case ItemType::DesignatorMaximum: {
+			if (localItem_.nDesignatorIndex > 0) {
+				localItem_.designatorIndexTbl[localItem_.nDesignatorIndex - 1].maximum = itemData;
+			}
+			break;
+		}
+		case ItemType::StringIndex: case ItemType::StringMinimum: {
+			if (localItem_.nStringIndex < count_of(localItem_.stringIndexTbl)) {
+				localItem_.stringIndexTbl[localItem_.nStringIndex++] = Range(itemData, itemData);
+			}
+			break;
+		}
+		case ItemType::StringMaximum: {
+			if (localItem_.nStringIndex > 0) {
+				localItem_.stringIndexTbl[localItem_.nStringIndex - 1].maximum = itemData;
+			}
+			break;
+		}
+		case ItemType::Delimeter: {
+			localItem_.delimeter = itemData;
+			break;
+		}
+		}
+	}
+	return true;
+}
 
 }

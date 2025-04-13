@@ -17,113 +17,161 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class USBHost : public Tickable {
 public:
-	struct ItemType {
-		// 6.2.2.4 Main Items
-		static const uint8_t Input				= 0x80;
-		static const uint8_t Output				= 0x90;
-		static const uint8_t Feature			= 0xb0;
-		static const uint8_t Collection			= 0xa0;
-		static const uint8_t EndCollection		= 0xc0;
-		// 6.2.2.7 Global Items
-		static const uint8_t UsagePage			= 0x04;
-		static const uint8_t LogicalMinimum		= 0x14;
-		static const uint8_t LogicalMaximum		= 0x24;
-		static const uint8_t PhysicalMinimum	= 0x34;
-		static const uint8_t PhysicalMaximum	= 0x44;
-		static const uint8_t UnitExponent		= 0x54;
-		static const uint8_t Unit				= 0x64;
-		static const uint8_t ReportSize			= 0x74;
-		static const uint8_t ReortID			= 0x84;
-		static const uint8_t ReportCount		= 0x94;
-		static const uint8_t Push				= 0xa4;
-		static const uint8_t Pop				= 0xb4;
-		// 6.2.2.8 Local Items
-		static const uint8_t Usage				= 0x08;
-		static const uint8_t UsageMinimum		= 0x18;
-		static const uint8_t UsageMaximum		= 0x28;
-		static const uint8_t DesignatorIndex	= 0x38;
-		static const uint8_t DesignatorMinimum	= 0x48;
-		static const uint8_t DesignatorMaximum	= 0x58;
-		static const uint8_t StringIndex		= 0x78;
-		static const uint8_t StringMaximum		= 0x88;
-		static const uint8_t StringMinimum		= 0x98;
-		static const uint8_t Delimeter			= 0xa8;
-	};
-	class MainItemData {
-	private:
-		uint32_t itemData_;
+	class ReportDescriptor {
 	public:
-		MainItemData(uint32_t itemData) : itemData_{itemData} {}
-	public:
-		bool IsData() const				{ return  !(itemData_ & (1 << 0)); }
-		bool IsConstatnt() const		{ return !!(itemData_ & (1 << 0)); }
-		bool IsArray() const			{ return  !(itemData_ & (1 << 1)); }
-		bool IsVariable() const			{ return !!(itemData_ & (1 << 1)); }
-		bool IsAbsolute() const			{ return  !(itemData_ & (1 << 2)); }
-		bool IsRelative() const			{ return !!(itemData_ & (1 << 2)); }
-		bool IsNoWrap() const			{ return  !(itemData_ & (1 << 3)); }
-		bool IsWrap() const				{ return !!(itemData_ & (1 << 3)); }
-		bool IsLinear() const			{ return  !(itemData_ & (1 << 4)); }
-		bool IsNonLinear() const		{ return !!(itemData_ & (1 << 4)); }
-		bool IsPreferredState() const	{ return  !(itemData_ & (1 << 5)); }
-		bool IsNoPreferred() const		{ return !!(itemData_ & (1 << 5)); }
-		bool IsNoNullPosition() const	{ return  !(itemData_ & (1 << 6)); }
-		bool IsNullState() const		{ return !!(itemData_ & (1 << 6)); }
-		bool IsNonVolatile() const		{ return  !(itemData_ & (1 << 7)); }	// for Output and Feature
-		bool IsVolatile() const			{ return !!(itemData_ & (1 << 7)); }	// for Output and Feature
-		bool IsBitField() const			{ return  !(itemData_ & (1 << 8)); }
-		bool IsBufferedBytes() const	{ return !!(itemData_ & (1 << 8)); }
-	};
-	enum class CollectionType : uint8_t {
-		Physical		= 0x00,
-		Application		= 0x01,
-		Logical			= 0x02,
-		Report			= 0x03,
-		NamedArray		= 0x04,
-		UsageSwitch		= 0x05,
-		UsageModifier	= 0x06,
-	};
-	struct GlobalItem {
-		uint32_t usagePage;
-		uint32_t logicalMinimum;
-		uint32_t logicalMaximum;
-		uint32_t physicalMinimum;
-		uint32_t physicalMaximum;
-		uint32_t unitExponent;
-		uint32_t unit;
-		uint32_t reportSize;
-		uint32_t reportID;
-		uint32_t reportCount;
-	public:
-		void Clear() { ::memset(this, 0x00, sizeof(GlobalItem)); }
-	};
-	struct LocalItem {
-		uint32_t usage;
-		uint32_t usageMinimum;
-		uint32_t usageMaximum;
-		uint32_t designatorIndex;
-		uint32_t designatorMinimum;
-		uint32_t designatorMaximum;
-		uint32_t stringIndex;
-		uint32_t stringMinimum;
-		uint32_t stringMaximum;
-		uint32_t delimeter;
-	public:
-		void Clear() { ::memset(this, 0x00, sizeof(LocalItem)); }
-	};
-	class ReportDescriptorHandler {
+		struct ItemType {
+			// 6.2.2.4 Main Items
+			static const uint8_t Input				= 0x80;
+			static const uint8_t Output				= 0x90;
+			static const uint8_t Feature			= 0xb0;
+			static const uint8_t Collection			= 0xa0;
+			static const uint8_t EndCollection		= 0xc0;
+			// 6.2.2.7 Global Items
+			static const uint8_t UsagePage			= 0x04;
+			static const uint8_t LogicalMinimum		= 0x14;
+			static const uint8_t LogicalMaximum		= 0x24;
+			static const uint8_t PhysicalMinimum	= 0x34;
+			static const uint8_t PhysicalMaximum	= 0x44;
+			static const uint8_t UnitExponent		= 0x54;
+			static const uint8_t Unit				= 0x64;
+			static const uint8_t ReportSize			= 0x74;
+			static const uint8_t ReportID			= 0x84;
+			static const uint8_t ReportCount		= 0x94;
+			static const uint8_t Push				= 0xa4;
+			static const uint8_t Pop				= 0xb4;
+			// 6.2.2.8 Local Items
+			static const uint8_t Usage				= 0x08;
+			static const uint8_t UsageMinimum		= 0x18;
+			static const uint8_t UsageMaximum		= 0x28;
+			static const uint8_t DesignatorIndex	= 0x38;
+			static const uint8_t DesignatorMinimum	= 0x48;
+			static const uint8_t DesignatorMaximum	= 0x58;
+			static const uint8_t StringIndex		= 0x78;
+			static const uint8_t StringMaximum		= 0x88;
+			static const uint8_t StringMinimum		= 0x98;
+			static const uint8_t Delimeter			= 0xa8;
+		};
+		class MainItemData {
+		private:
+			uint32_t itemData_;
+		public:
+			MainItemData(uint32_t itemData) : itemData_{itemData} {}
+		public:
+			bool IsData() const				{ return  !(itemData_ & (1 << 0)); }
+			bool IsConstatnt() const		{ return !!(itemData_ & (1 << 0)); }
+			bool IsArray() const			{ return  !(itemData_ & (1 << 1)); }
+			bool IsVariable() const			{ return !!(itemData_ & (1 << 1)); }
+			bool IsAbsolute() const			{ return  !(itemData_ & (1 << 2)); }
+			bool IsRelative() const			{ return !!(itemData_ & (1 << 2)); }
+			bool IsNoWrap() const			{ return  !(itemData_ & (1 << 3)); }
+			bool IsWrap() const				{ return !!(itemData_ & (1 << 3)); }
+			bool IsLinear() const			{ return  !(itemData_ & (1 << 4)); }
+			bool IsNonLinear() const		{ return !!(itemData_ & (1 << 4)); }
+			bool IsPreferredState() const	{ return  !(itemData_ & (1 << 5)); }
+			bool IsNoPreferred() const		{ return !!(itemData_ & (1 << 5)); }
+			bool IsNoNullPosition() const	{ return  !(itemData_ & (1 << 6)); }
+			bool IsNullState() const		{ return !!(itemData_ & (1 << 6)); }
+			bool IsNonVolatile() const		{ return  !(itemData_ & (1 << 7)); }	// for Output and Feature
+			bool IsVolatile() const			{ return !!(itemData_ & (1 << 7)); }	// for Output and Feature
+			bool IsBitField() const			{ return  !(itemData_ & (1 << 8)); }
+			bool IsBufferedBytes() const	{ return !!(itemData_ & (1 << 8)); }
+		};
+		enum class CollectionType : uint8_t {
+			Physical		= 0x00,
+			Application		= 0x01,
+			Logical			= 0x02,
+			Report			= 0x03,
+			NamedArray		= 0x04,
+			UsageSwitch		= 0x05,
+			UsageModifier	= 0x06,
+		};
+		class MainItem {
+		private:
+			MainItem* pMainItemNext_;
+		public:
+			MainItem() : pMainItemNext_{nullptr} {}
+		};
+		class MainItem_Member : public MainItem {
+		private:
+			MainItemData mainItemData_;
+		public:
+			MainItem_Member(MainItemData mainItemData) : mainItemData_{mainItemData} {}
+		};
+		class MainItem_Input : public MainItem_Member {
+		public:
+			MainItem_Input(MainItemData mainItemData) : MainItem_Member(mainItemData) {}
+		};
+		class MainItem_Output : public MainItem_Member {
+		public:
+			MainItem_Output(MainItemData mainItemData) : MainItem_Member(mainItemData) {}
+		};
+		class MainItem_Feature : public MainItem_Member {
+		public:
+			MainItem_Feature(MainItemData mainItemData) : MainItem_Member(mainItemData) {}
+		};
+		class MainItem_Collection : public MainItem {
+		private:
+			CollectionType collectionType_;
+			uint32_t usage_;
+			MainItem* pMainItemChild_;
+		public:
+			MainItem_Collection(CollectionType collectionType, uint32_t usage) :
+				collectionType_{collectionType}, usage_{usage}, pMainItemChild_{nullptr} {}
+		};
+
+		struct GlobalItem {
+			uint32_t logicalMinimum;
+			uint32_t logicalMaximum;
+			uint32_t physicalMinimum;
+			uint32_t physicalMaximum;
+			uint32_t unitExponent;
+			uint32_t unit;
+			uint32_t reportSize;
+			uint32_t reportID;
+			uint32_t reportCount;
+		public:
+			void Clear() { ::memset(this, 0x00, sizeof(GlobalItem)); }
+		};
+		struct Range {
+			uint32_t minimum;
+			uint32_t maximum;
+		public:
+			Range() : minimum{0}, maximum{0} {}
+			Range(uint32_t minimum, uint32_t maximum) : minimum{minimum}, maximum{maximum} {}
+		};
+		struct LocalItem {
+			int nUsage;
+			Range usageTbl[16];
+			int nDesignatorIndex;
+			Range designatorIndexTbl[16];
+			int nStringIndex;
+			Range stringIndexTbl[16];
+			uint32_t delimeter;
+		public:
+			void Clear() { ::memset(this, 0x00, sizeof(LocalItem)); }
+		};
+		class Handler {
 		public:
 			virtual bool OnInput(MainItemData itemData, const GlobalItem& globalItem, const LocalItem& localItem) = 0;
 			virtual bool OnOutput(MainItemData itemData, const GlobalItem& globalItem, const LocalItem& localItem) = 0;
 			virtual bool OnFeature(MainItemData itemData, const GlobalItem& globalItem, const LocalItem& localItem) = 0;
-			virtual bool OnCollection(CollectionType collectionType) = 0;
+			virtual bool OnCollection(CollectionType collectionType, const LocalItem& localItem) = 0;
 			virtual bool OnEndCollection() = 0;
 		};
-		class EventHandler {
+	private:
+		GlobalItem globalItem_;
+		LocalItem localItem_;
 	public:
-		virtual void OnMount(uint8_t devAddr) {}
-		virtual void OnUmount(uint8_t devAddr) {}
+		ReportDescriptor() {}
+		bool Parse(Handler& handler, const uint8_t* descReport, uint16_t descLen);
+	public:
+		static const char* GetItemTypeName(uint8_t itemType);
 	};
+	class EventHandler {
+		public:
+			virtual void OnMount(uint8_t devAddr) {}
+			virtual void OnUmount(uint8_t devAddr) {}
+		};
 	class Keyboard : public KeyboardRepeatable {
 	public:
 		struct UsageIdToKeyCode {
@@ -170,6 +218,8 @@ public:
 	};
 public:
 	static USBHost Instance;
+public:
+	ReportDescriptor reportDescriptor;
 private:
 	Keyboard keyboard_;
 	Mouse mouse_;
@@ -186,9 +236,6 @@ public:
 	// virtual functions of Tickable
 	virtual const char* GetTickableName() const override { return "USBHost"; }
 	virtual void OnTick() override;
-public:
-	static const char* GetItemTypeName(uint8_t itemType);
-	static bool ParseReportDescriptor(ReportDescriptorHandler& handler, const uint8_t* descReport, uint16_t descLen);
 };
 
 }
