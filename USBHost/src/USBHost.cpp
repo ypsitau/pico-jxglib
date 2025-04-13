@@ -121,8 +121,8 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 							hid_info[iInstance].report_info, MAX_REPORT, descReport, descLen);
 		::printf("HID has %u reports \r\n", hid_info[iInstance].report_count);
 	}
-	ReportDescriptorHandler_Print handler;
-	USBHost::Instance.reportDescriptor.Parse(handler, descReport, descLen);
+	//ReportDescriptorHandler_Print handler;
+	//USBHost::Instance.reportDescriptor.Parse(handler, descReport, descLen);
 	// request to receive report
 	// tuh_hid_report_received_cb() will be invoked when report is available
 	if (!::tuh_hid_receive_report(devAddr, iInstance)) {
