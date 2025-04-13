@@ -85,40 +85,14 @@ public:
 			UsageSwitch		= 0x05,
 			UsageModifier	= 0x06,
 		};
-		class MainItem {
-		private:
-			MainItem* pMainItemNext_;
-		public:
-			MainItem() : pMainItemNext_{nullptr} {}
-		};
-		class MainItem_Member : public MainItem {
-		private:
-			MainItemData mainItemData_;
-		public:
-			MainItem_Member(MainItemData mainItemData) : mainItemData_{mainItemData} {}
-		};
-		class MainItem_Input : public MainItem_Member {
-		public:
-			MainItem_Input(MainItemData mainItemData) : MainItem_Member(mainItemData) {}
-		};
-		class MainItem_Output : public MainItem_Member {
-		public:
-			MainItem_Output(MainItemData mainItemData) : MainItem_Member(mainItemData) {}
-		};
-		class MainItem_Feature : public MainItem_Member {
-		public:
-			MainItem_Feature(MainItemData mainItemData) : MainItem_Member(mainItemData) {}
-		};
-		class MainItem_Collection : public MainItem {
-		private:
-			CollectionType collectionType_;
-			uint32_t usage_;
-			MainItem* pMainItemChild_;
-		public:
-			MainItem_Collection(CollectionType collectionType, uint32_t usage) :
-				collectionType_{collectionType}, usage_{usage}, pMainItemChild_{nullptr} {}
-		};
 
+		struct Range {
+			uint32_t minimum;
+			uint32_t maximum;
+		public:
+			Range() : minimum{0}, maximum{0} {}
+			Range(uint32_t minimum, uint32_t maximum) : minimum{minimum}, maximum{maximum} {}
+		};
 		struct GlobalItem {
 			uint32_t logicalMinimum;
 			uint32_t logicalMaximum;
@@ -132,23 +106,66 @@ public:
 		public:
 			void Clear() { ::memset(this, 0x00, sizeof(GlobalItem)); }
 		};
-		struct Range {
-			uint32_t minimum;
-			uint32_t maximum;
-		public:
-			Range() : minimum{0}, maximum{0} {}
-			Range(uint32_t minimum, uint32_t maximum) : minimum{minimum}, maximum{maximum} {}
-		};
 		struct LocalItem {
 			int nUsage;
-			Range usageTbl[16];
+			Range usageTbl[8];
 			int nDesignatorIndex;
-			Range designatorIndexTbl[16];
+			Range designatorIndexTbl[4];
 			int nStringIndex;
-			Range stringIndexTbl[16];
+			Range stringIndexTbl[4];
 			uint32_t delimeter;
 		public:
 			void Clear() { ::memset(this, 0x00, sizeof(LocalItem)); }
+		};
+		class MainItem {
+		public:
+			MainItem() {}
+		};
+		class MainItem_Member : public MainItem {
+		protected:
+			MainItemData mainItemData_;
+			GlobalItem globalItem_;
+			LocalItem localItem_;
+		public:
+			MainItem_Member(MainItemData mainItemData, const GlobalItem& globalItem, const LocalItem& localItem) :
+				mainItemData_{mainItemData}, globalItem_{globalItem}, localItem_{localItem} {}
+		};
+		class MainItem_Input : public MainItem_Member {
+		public:
+			FixedPoolAllocator(USBHost::ReportDescriptor::fixedPool, "USBHost::ReportDescriptor::MainItem_Input")
+		public:
+			MainItem_Input(MainItemData mainItemData, const GlobalItem& globalItem, const LocalItem& localItem) :
+				MainItem_Member(mainItemData, globalItem, localItem) {}
+		};
+		class MainItem_Output : public MainItem_Member {
+		public:
+			FixedPoolAllocator(USBHost::ReportDescriptor::fixedPool, "USBHost::ReportDescriptor::MainItem_Output")
+		public:
+			MainItem_Output(MainItemData mainItemData, const GlobalItem& globalItem, const LocalItem& localItem) :
+				MainItem_Member(mainItemData, globalItem, localItem) {}
+		};
+		class MainItem_Feature : public MainItem_Member {
+		public:
+			FixedPoolAllocator(USBHost::ReportDescriptor::fixedPool, "USBHost::ReportDescriptor::MainItem_Feature")
+		public:
+			MainItem_Feature(MainItemData mainItemData, const GlobalItem& globalItem, const LocalItem& localItem) :
+				MainItem_Member(mainItemData, globalItem, localItem) {}
+		};
+		class MainItem_Collection : public MainItem {
+		public:
+			FixedPoolAllocator(USBHost::ReportDescriptor::fixedPool, "USBHost::ReportDescriptor::MainItem_Collection")
+		public:
+			static const int nMainItemMax = (sizeof(MainItem_Member) - (sizeof(CollectionType) + sizeof(uint32_t) + sizeof(int))) / sizeof(MainItem*);
+		private:
+			CollectionType collectionType_;
+			uint32_t usage_;
+			int nMainItem_;
+			MainItem* pMainItemTbl_[nMainItemMax];
+		public:
+			MainItem_Collection(CollectionType collectionType, uint32_t usage) :
+				collectionType_{collectionType}, usage_{usage}, nMainItem_{0} {}
+		public:
+			void Add(MainItem* pMainItem);
 		};
 		class Handler {
 		public:
@@ -158,11 +175,14 @@ public:
 			virtual bool OnCollection(CollectionType collectionType, const LocalItem& localItem) = 0;
 			virtual bool OnEndCollection() = 0;
 		};
+	public:
+		static FixedPool fixedPool;
 	private:
 		GlobalItem globalItem_;
 		LocalItem localItem_;
+		MainItem_Collection* pMainItemTop_;
 	public:
-		ReportDescriptor() {}
+		ReportDescriptor();
 		bool Parse(Handler& handler, const uint8_t* descReport, uint16_t descLen);
 	public:
 		static const char* GetItemTypeName(uint8_t itemType);
