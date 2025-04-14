@@ -51,30 +51,26 @@ public:
 			static const uint8_t StringMinimum		= 0x98;
 			static const uint8_t Delimeter			= 0xa8;
 		};
-		class MainItemData {
-		private:
-			uint32_t itemData_;
+		struct MainItemData {
 		public:
-			MainItemData(uint32_t itemData) : itemData_{itemData} {}
-		public:
-			bool IsData() const				{ return  !(itemData_ & (1 << 0)); }
-			bool IsConstatnt() const		{ return !!(itemData_ & (1 << 0)); }
-			bool IsArray() const			{ return  !(itemData_ & (1 << 1)); }
-			bool IsVariable() const			{ return !!(itemData_ & (1 << 1)); }
-			bool IsAbsolute() const			{ return  !(itemData_ & (1 << 2)); }
-			bool IsRelative() const			{ return !!(itemData_ & (1 << 2)); }
-			bool IsNoWrap() const			{ return  !(itemData_ & (1 << 3)); }
-			bool IsWrap() const				{ return !!(itemData_ & (1 << 3)); }
-			bool IsLinear() const			{ return  !(itemData_ & (1 << 4)); }
-			bool IsNonLinear() const		{ return !!(itemData_ & (1 << 4)); }
-			bool IsPreferredState() const	{ return  !(itemData_ & (1 << 5)); }
-			bool IsNoPreferred() const		{ return !!(itemData_ & (1 << 5)); }
-			bool IsNoNullPosition() const	{ return  !(itemData_ & (1 << 6)); }
-			bool IsNullState() const		{ return !!(itemData_ & (1 << 6)); }
-			bool IsNonVolatile() const		{ return  !(itemData_ & (1 << 7)); }	// for Output and Feature
-			bool IsVolatile() const			{ return !!(itemData_ & (1 << 7)); }	// for Output and Feature
-			bool IsBitField() const			{ return  !(itemData_ & (1 << 8)); }
-			bool IsBufferedBytes() const	{ return !!(itemData_ & (1 << 8)); }
+			static bool IsData(uint32_t mainItemData)			{ return  !(mainItemData & (1 << 0)); }
+			static bool IsConstatnt(uint32_t mainItemData)		{ return !!(mainItemData & (1 << 0)); }
+			static bool IsArray(uint32_t mainItemData)			{ return  !(mainItemData & (1 << 1)); }
+			static bool IsVariable(uint32_t mainItemData)		{ return !!(mainItemData & (1 << 1)); }
+			static bool IsAbsolute(uint32_t mainItemData)		{ return  !(mainItemData & (1 << 2)); }
+			static bool IsRelative(uint32_t mainItemData)		{ return !!(mainItemData & (1 << 2)); }
+			static bool IsNoWrap(uint32_t mainItemData)			{ return  !(mainItemData & (1 << 3)); }
+			static bool IsWrap(uint32_t mainItemData)			{ return !!(mainItemData & (1 << 3)); }
+			static bool IsLinear(uint32_t mainItemData)			{ return  !(mainItemData & (1 << 4)); }
+			static bool IsNonLinear(uint32_t mainItemData)		{ return !!(mainItemData & (1 << 4)); }
+			static bool IsPreferredState(uint32_t mainItemData)	{ return  !(mainItemData & (1 << 5)); }
+			static bool IsNoPreferred(uint32_t mainItemData)	{ return !!(mainItemData & (1 << 5)); }
+			static bool IsNoNullPosition(uint32_t mainItemData)	{ return  !(mainItemData & (1 << 6)); }
+			static bool IsNullState(uint32_t mainItemData)		{ return !!(mainItemData & (1 << 6)); }
+			static bool IsNonVolatile(uint32_t mainItemData)	{ return  !(mainItemData & (1 << 7)); }	// for Output and Feature
+			static bool IsVolatile(uint32_t mainItemData)		{ return !!(mainItemData & (1 << 7)); }	// for Output and Feature
+			static bool IsBitField(uint32_t mainItemData)		{ return  !(mainItemData & (1 << 8)); }
+			static bool IsBufferedBytes(uint32_t mainItemData)	{ return !!(mainItemData & (1 << 8)); }
 		};
 		enum class CollectionType : uint8_t {
 			Physical		= 0x00,
@@ -94,6 +90,8 @@ public:
 			Range(uint32_t minimum, uint32_t maximum) : minimum{minimum}, maximum{maximum} {}
 		};
 		struct GlobalItem {
+			uint8_t itemType;
+			uint32_t mainItemData;
 			uint32_t logicalMinimum;
 			uint32_t logicalMaximum;
 			uint32_t physicalMinimum;
@@ -126,9 +124,11 @@ public:
 		public:
 			UsageInfo() : usage_{0}, pGlobalItem_{nullptr}, reportOffset_{0} {}
 			UsageInfo(const UsageInfo& usageInfo) :
-					usage_{usageInfo.usage_}, pGlobalItem_{usageInfo.pGlobalItem_}, reportOffset_{usageInfo.reportOffset_} {}
-			UsageInfo(uint32_t usage, const GlobalItem& globalItem, uint32_t reportOffset) :
-					usage_{usage}, pGlobalItem_{&globalItem}, reportOffset_{reportOffset} {}
+				usage_{usageInfo.usage_}, pGlobalItem_{usageInfo.pGlobalItem_}, reportOffset_{usageInfo.reportOffset_} {}
+			UsageInfo(uint32_t usage, const GlobalItem* pGlobalItem, uint32_t reportOffset) :
+				usage_{usage}, pGlobalItem_{pGlobalItem}, reportOffset_{reportOffset} {}
+		public:
+			uint32_t GetUsage() const { return usage_; }
 			uint32_t GetLogicalMinimum() const { return pGlobalItem_->logicalMinimum; }
 			uint32_t GetLogicalMaximum() const { return pGlobalItem_->logicalMaximum; }
 			uint32_t GetPhysicalMinimum() const { return pGlobalItem_->physicalMinimum; }
@@ -139,12 +139,14 @@ public:
 			uint32_t GetReportID() const { return pGlobalItem_->reportID; }
 			uint32_t GetReportCount() const { return pGlobalItem_->reportCount; }
 			uint32_t GetReportOffset() const { return reportOffset_; }
+		public:
+			uint32_t GetReportValue(const uint8_t* report, uint16_t len) const;
+		public:
+			void Print(int indentLevel = 0) const;
 		};
 		class Handler {
 		public:
-			virtual void OnInput(MainItemData itemData, const GlobalItem& globalItem, const LocalItem& localItem) = 0;
-			virtual void OnOutput(MainItemData itemData, const GlobalItem& globalItem, const LocalItem& localItem) = 0;
-			virtual void OnFeature(MainItemData itemData, const GlobalItem& globalItem, const LocalItem& localItem) = 0;
+			virtual void OnMainItem(const GlobalItem& globalItem, const LocalItem& localItem) = 0;
 			virtual void OnCollection(CollectionType collectionType, uint32_t usage) = 0;
 			virtual void OnEndCollection() = 0;
 		};
@@ -208,19 +210,30 @@ public:
 	};
 	class GamePad : public ReportDescriptor::Handler {
 	private:
+		uint8_t reportCaptured_[32];
+		uint16_t lenCaptured_;
+		int nGlobalItem_;
 		int nUsageInfo_;
+		uint32_t reportOffset_Input_;
+		uint32_t reportOffset_Output_;
+		uint32_t reportOffset_Feature_;
+		ReportDescriptor::GlobalItem globalItemTbl_[8];
 		ReportDescriptor::UsageInfo usageInfoTbl_[32];
 	public:
 		GamePad();
 	public:
+		uint32_t GetReportValue(uint32_t usage) const;
+	public:
+		const ReportDescriptor::UsageInfo* FindUsageInfo(uint32_t usage) const;
+	public:
 		bool ParseReportDescriptor(const uint8_t* descReport, uint16_t descLen);
 		void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len);
 	public:
-		virtual void OnInput(ReportDescriptor::MainItemData itemData, const ReportDescriptor::GlobalItem& globalItem, const ReportDescriptor::LocalItem& localItem);
-		virtual void OnOutput(ReportDescriptor::MainItemData itemData, const ReportDescriptor::GlobalItem& globalItem, const ReportDescriptor::LocalItem& localItem);
-		virtual void OnFeature(ReportDescriptor::MainItemData itemData, const ReportDescriptor::GlobalItem& globalItem, const ReportDescriptor::LocalItem& localItem);
+		virtual void OnMainItem(const USBHost::ReportDescriptor::GlobalItem& globalItem, const USBHost::ReportDescriptor::LocalItem& localItem);
 		virtual void OnCollection(ReportDescriptor::CollectionType collectionType, uint32_t usage);
 		virtual void OnEndCollection();
+	public:
+		void PrintUsage(int indentLevel = 0) const;
 	};
 public:
 	static USBHost Instance;

@@ -64,7 +64,9 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 	}
 	
 	USBHost::Instance.GetGamePad().ParseReportDescriptor(descReport, descLen);
-	
+
+	USBHost::Instance.GetGamePad().PrintUsage();
+
 	// request to receive report
 	// tuh_hid_report_received_cb() will be invoked when report is available
 	if (!::tuh_hid_receive_report(devAddr, iInstance)) {
@@ -82,6 +84,9 @@ void tuh_hid_report_received_cb(uint8_t devAddr, uint8_t iInstance, const uint8_
 	uint8_t const itfProtocol = ::tuh_hid_interface_protocol(devAddr, iInstance);
 	switch (itfProtocol) {
 	case HID_ITF_PROTOCOL_NONE: {
+
+		USBHost::GetGamePad().OnReport(devAddr, iInstance, report, len);
+
 		break;
 	}
 	case HID_ITF_PROTOCOL_KEYBOARD: {
@@ -466,8 +471,14 @@ void USBHost::Mouse::OnReport(uint8_t devAddr, uint8_t iInstance, const hid_mous
 //------------------------------------------------------------------------------
 // USBHost::GamePad
 //------------------------------------------------------------------------------
-USBHost::GamePad::GamePad() : nUsageInfo_{0}
+USBHost::GamePad::GamePad() : nGlobalItem_{0}, nUsageInfo_{0}, reportOffset_Input_{0}, reportOffset_Output_{0}, reportOffset_Feature_{0}
 {
+}
+
+uint32_t USBHost::GamePad::GetReportValue(uint32_t usage) const
+{
+	auto pUsageInfo = FindUsageInfo(usage);
+	return pUsageInfo? pUsageInfo->GetReportValue(reportCaptured_, lenCaptured_) : 0;
 }
 
 bool USBHost::GamePad::ParseReportDescriptor(const uint8_t* descReport, uint16_t descLen)
@@ -475,41 +486,76 @@ bool USBHost::GamePad::ParseReportDescriptor(const uint8_t* descReport, uint16_t
 	return Instance.reportDescriptor.Parse(*this, descReport, descLen);
 }
 
-void USBHost::GamePad::OnInput(USBHost::ReportDescriptor::MainItemData itemData, const USBHost::ReportDescriptor::GlobalItem& globalItem, const USBHost::ReportDescriptor::LocalItem& localItem)
+const USBHost::ReportDescriptor::UsageInfo* USBHost::GamePad::FindUsageInfo(uint32_t usage) const
 {
-	::printf("Input (%s,%s,%s)\n", itemData.IsData()? "Data" : "Constant",
-		itemData.IsArray()? "Array" : "Variable", itemData.IsAbsolute()? "Absolute" : "Relative");
-	globalItem.Print(1);
-	if (localItem.nUsage > 0) {
-		::printf("Usage:");
-		for (int i = 0; i < localItem.nUsage; i++) {
-			const USBHost::ReportDescriptor::Range& range = localItem.usageTbl[i];
-			for (uint32_t usage = range.minimum; usage <= range.maximum; usage++) ::printf(" %08x", usage);
-		}
-		::printf("\n");
+	for (int i = 0; i < nUsageInfo_; i++) {
+		if (usageInfoTbl_[i].GetUsage() == usage) return &usageInfoTbl_[i];
+	}
+	return nullptr;
+}
+
+void USBHost::GamePad::OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len)
+{
+	if (len <= sizeof(reportCaptured_)) {
+		::memcpy(reportCaptured_, report, len);
+		lenCaptured_ = len;
 	}
 }
 
-void USBHost::GamePad::OnOutput(USBHost::ReportDescriptor::MainItemData itemData, const USBHost::ReportDescriptor::GlobalItem& globalItem, const USBHost::ReportDescriptor::LocalItem& localItem)
+void USBHost::GamePad::OnMainItem(const USBHost::ReportDescriptor::GlobalItem& globalItem, const USBHost::ReportDescriptor::LocalItem& localItem)
 {
-	::printf("Output (%s,%s,%s)\n", itemData.IsData()? "Data" : "Constant",
-		itemData.IsArray()? "Array" : "Variable", itemData.IsAbsolute()? "Absolute" : "Relative");
-	globalItem.Print(1);
-	if (localItem.nUsage > 0) {
-		::printf("Usage:");
-		for (int i = 0; i < localItem.nUsage; i++) {
-			const USBHost::ReportDescriptor::Range& range = localItem.usageTbl[i];
-			for (uint32_t usage = range.minimum; usage <= range.maximum; usage++) ::printf(" %08x", usage);
-		}
-		::printf("\n");
-	}
-}
-
-void USBHost::GamePad::OnFeature(USBHost::ReportDescriptor::MainItemData itemData, const USBHost::ReportDescriptor::GlobalItem& globalItem, const USBHost::ReportDescriptor::LocalItem& localItem)
-{
-	//::printf("Feature (%s,%s,%s)\n", itemData.IsData()? "Data" : "Constant",
+	//::printf("%s,%s,%s\n", itemData.IsData()? "Data" : "Constant",
 	//	itemData.IsArray()? "Array" : "Variable", itemData.IsAbsolute()? "Absolute" : "Relative");
 	//globalItem.Print(1);
+	if (nGlobalItem_ >= count_of(globalItemTbl_)) {
+		::panic("the number of global items exceeds the capacity of USBHost::GamePad (%d)", count_of(globalItemTbl_));
+	}
+	ReportDescriptor::GlobalItem* pGlobalItem = &globalItemTbl_[nGlobalItem_++];
+	*pGlobalItem = globalItem;
+	if (ReportDescriptor::MainItemData::IsVariable(globalItem.mainItemData)) {
+		for (int i = 0; i < localItem.nUsage; i++) {
+			const USBHost::ReportDescriptor::Range& range = localItem.usageTbl[i];
+			for (uint32_t usage = range.minimum; usage <= range.maximum; usage++) {
+				if (nUsageInfo_ >= count_of(usageInfoTbl_)) {
+					::panic("the number of usages exceeds the capacity of USBHost::GamePad (%d)", count_of(usageInfoTbl_));
+				}
+				switch (globalItem.itemType) {
+				case ReportDescriptor::ItemType::Input: {
+					usageInfoTbl_[nUsageInfo_++] = ReportDescriptor::UsageInfo(usage, pGlobalItem, reportOffset_Input_);
+					reportOffset_Input_ += globalItem.reportSize;
+					break;
+				}
+				case ReportDescriptor::ItemType::Output: {
+					usageInfoTbl_[nUsageInfo_++] = ReportDescriptor::UsageInfo(usage, pGlobalItem, reportOffset_Output_);
+					reportOffset_Output_ += globalItem.reportSize;
+					break;
+				}
+				case ReportDescriptor::ItemType::Feature: {
+					usageInfoTbl_[nUsageInfo_++] = ReportDescriptor::UsageInfo(usage, pGlobalItem, reportOffset_Feature_);
+					reportOffset_Feature_ += globalItem.reportSize;
+					break;
+				}
+				default: break;
+				}
+			}
+		}
+	} else {
+		switch (globalItem.itemType) {
+		case ReportDescriptor::ItemType::Input: {
+			reportOffset_Input_ += globalItem.reportSize * globalItem.reportCount;
+			break;
+		}
+		case ReportDescriptor::ItemType::Output: {
+			reportOffset_Output_ += globalItem.reportSize * globalItem.reportCount;
+			break;
+		}
+		case ReportDescriptor::ItemType::Feature: {
+			reportOffset_Feature_ += globalItem.reportSize * globalItem.reportCount;
+			break;
+		}
+		default: break;
+		}
+	}
 }
 
 void USBHost::GamePad::OnCollection(USBHost::ReportDescriptor::CollectionType collectionType, uint32_t usage)
@@ -522,6 +568,13 @@ void USBHost::GamePad::OnCollection(USBHost::ReportDescriptor::CollectionType co
 
 void USBHost::GamePad::OnEndCollection()
 {
+}
+
+void USBHost::GamePad::PrintUsage(int indentLevel) const
+{
+	for (uint32_t i = 0; i < nUsageInfo_; i++) {
+		usageInfoTbl_[i].Print(indentLevel);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -558,18 +611,10 @@ bool USBHost::ReportDescriptor::Parse(Handler& handler, const uint8_t* descRepor
 		//::printf("%02x:%s (0x%0*x)\n", itemType, GetItemTypeName(itemType), bytesItemData * 2, itemData);
 		switch (itemType) {
 		// 6.2.2.4 Main Items
-		case ItemType::Input: {
-			handler.OnInput(MainItemData(itemData), globalItem_, localItem_);
-			localItem_.Clear();
-			break;
-		}
-		case ItemType::Output: {
-			handler.OnOutput(MainItemData(itemData), globalItem_, localItem_);
-			localItem_.Clear();
-			break;
-		}
-		case ItemType::Feature: {
-			handler.OnFeature(MainItemData(itemData), globalItem_, localItem_);
+		case ItemType::Input: case ItemType::Output: case ItemType::Feature: {
+			globalItem_.itemType = itemType;
+			globalItem_.mainItemData = itemData;
+			handler.OnMainItem(globalItem_, localItem_);
 			localItem_.Clear();
 			break;
 		}
@@ -735,6 +780,25 @@ void USBHost::ReportDescriptor::GlobalItem::Print(int indentLevel) const
 	::printf("%*sreportSize:      %08x\n", indentLevel * 2, "", reportSize);
 	::printf("%*sreportID:        %08x\n", indentLevel * 2, "", reportID);
 	::printf("%*sreportCount:     %08x\n", indentLevel * 2, "", reportCount);
+}
+
+//-----------------------------------------------------------------------------
+// USBHost::ReportDescriptor::UsageInfo
+//-----------------------------------------------------------------------------
+uint32_t USBHost::ReportDescriptor::UsageInfo::GetReportValue(const uint8_t* report, uint16_t len) const
+{
+	uint32_t byteOffset = GetReportOffset() / 8;
+	uint32_t nBytes = (GetReportSize() + 7) / 8;
+	uint32_t value = 0;
+	for (uint32_t iByte = 0; iByte < nBytes; iByte++) {
+		value = value | (static_cast<uint32_t>(report[byteOffset + iByte]) << (iByte * 8));
+	}
+	return (value >> (GetReportOffset() % 8)) & ((1 << GetReportSize()) - 1);
+}
+
+void USBHost::ReportDescriptor::UsageInfo::Print(int indentLevel) const
+{
+	::printf("%*susage:%08x offset:%d size:%d\n", indentLevel * 2, "", GetUsage(), GetReportOffset(), GetReportSize());
 }
 
 }
