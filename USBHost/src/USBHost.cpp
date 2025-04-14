@@ -63,8 +63,8 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 		::printf("HID has %u reports \r\n", hid_info[iInstance].report_count);
 	}
 	
-	//USBHost::Instance.GetGamePad().ParseReportDescriptor(descReport, descLen);
-	//USBHost::Instance.GetGamePad().PrintUsage();
+	USBHost::Instance.GetGamePad().ParseReportDescriptor(descReport, descLen);
+	USBHost::Instance.GetGamePad().PrintUsage();
 
 	// request to receive report
 	// tuh_hid_report_received_cb() will be invoked when report is available
@@ -84,7 +84,7 @@ void tuh_hid_report_received_cb(uint8_t devAddr, uint8_t iInstance, const uint8_
 	switch (itfProtocol) {
 	case HID_ITF_PROTOCOL_NONE: {
 
-		//USBHost::GetGamePad().OnReport(devAddr, iInstance, report, len);
+		USBHost::GetGamePad().OnReport(devAddr, iInstance, report, len);
 
 		break;
 	}
@@ -589,6 +589,7 @@ bool USBHost::ReportDescriptor::Parse(Handler& handler, const uint8_t* descRepor
 	globalItem_.Clear();
 	localItem_.Clear();
 	//Dump(descReport, descLen);
+	uint8_t itemTypePrev = 0;
 	for (uint16_t descOffset = 0; descOffset < descLen; ) {
 		uint8_t src = descReport[descOffset++];
 		uint8_t itemType = src & 0xfc;
@@ -605,6 +606,7 @@ bool USBHost::ReportDescriptor::Parse(Handler& handler, const uint8_t* descRepor
 		if (itemType == 0xfc) {
 			// Long Items
 			descOffset += itemData & 0xff;
+			itemTypePrev = itemType;
 			continue;
 		}
 		//::printf("%02x:%s (0x%0*x)\n", itemType, GetItemTypeName(itemType), bytesItemData * 2, itemData);
@@ -675,17 +677,28 @@ bool USBHost::ReportDescriptor::Parse(Handler& handler, const uint8_t* descRepor
 			break;
 		}
 		// 6.2.2.8 Local Items
-		case ItemType::Usage: case ItemType::UsageMinimum: {
+		case ItemType::Usage: {
 			if (localItem_.nUsage < count_of(localItem_.usageTbl)) {
 				uint32_t usage = ((bytesItemData < 4)? (usagePage << 16) : 0) | itemData;
 				localItem_.usageTbl[localItem_.nUsage++] = Range(usage, usage);
 			}
 			break;
 		}
+		case ItemType::UsageMinimum: {
+			uint32_t usage = ((bytesItemData < 4)? (usagePage << 16) : 0) | itemData;
+			if (itemTypePrev == ItemType::UsageMaximum) {
+				localItem_.usageTbl[localItem_.nUsage - 1].minimum = usage;
+			} else if (localItem_.nUsage < count_of(localItem_.usageTbl)) {
+				localItem_.usageTbl[localItem_.nUsage++] = Range(usage, usage);
+			}
+			break;
+		}		
 		case ItemType::UsageMaximum: {
-			if (localItem_.nUsage > 0) {
-				uint32_t usage = ((bytesItemData < 4)? (usagePage << 16) : 0) | itemData;
+			uint32_t usage = ((bytesItemData < 4)? (usagePage << 16) : 0) | itemData;
+			if (itemTypePrev == ItemType::UsageMinimum) {
 				localItem_.usageTbl[localItem_.nUsage - 1].maximum = usage;
+			} else if (localItem_.nUsage < count_of(localItem_.usageTbl)) {
+				localItem_.usageTbl[localItem_.nUsage++] = Range(usage, usage);
 			}
 			break;
 		}
@@ -718,6 +731,7 @@ bool USBHost::ReportDescriptor::Parse(Handler& handler, const uint8_t* descRepor
 			break;
 		}
 		}
+		itemTypePrev = itemType;
 	}
 	return true;
 }
