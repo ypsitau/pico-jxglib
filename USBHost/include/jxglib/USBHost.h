@@ -120,11 +120,11 @@ public:
 		};
 		class Handler {
 		public:
-			virtual bool OnInput(MainItemData itemData, const GlobalItem& globalItem, const LocalItem& localItem) = 0;
-			virtual bool OnOutput(MainItemData itemData, const GlobalItem& globalItem, const LocalItem& localItem) = 0;
-			virtual bool OnFeature(MainItemData itemData, const GlobalItem& globalItem, const LocalItem& localItem) = 0;
-			virtual bool OnCollection(CollectionType collectionType, uint32_t usage) = 0;
-			virtual bool OnEndCollection() = 0;
+			virtual void OnInput(MainItemData itemData, const GlobalItem& globalItem, const LocalItem& localItem) = 0;
+			virtual void OnOutput(MainItemData itemData, const GlobalItem& globalItem, const LocalItem& localItem) = 0;
+			virtual void OnFeature(MainItemData itemData, const GlobalItem& globalItem, const LocalItem& localItem) = 0;
+			virtual void OnCollection(CollectionType collectionType, uint32_t usage) = 0;
+			virtual void OnEndCollection() = 0;
 		};
 	private:
 		GlobalItem globalItem_;
@@ -184,6 +184,19 @@ public:
 		virtual jxglib::Mouse& SetSensibility(float sensibility) override;
 		virtual jxglib::Mouse& SetStage(const Rect& rcStage) override;
 	};
+	class GamePad : public ReportDescriptor::Handler {
+	public:
+		GamePad();
+	public:
+		bool ParseReportDescriptor(const uint8_t* descReport, uint16_t descLen);
+		void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len);
+	public:
+		virtual void OnInput(ReportDescriptor::MainItemData itemData, const ReportDescriptor::GlobalItem& globalItem, const ReportDescriptor::LocalItem& localItem);
+		virtual void OnOutput(ReportDescriptor::MainItemData itemData, const ReportDescriptor::GlobalItem& globalItem, const ReportDescriptor::LocalItem& localItem);
+		virtual void OnFeature(ReportDescriptor::MainItemData itemData, const ReportDescriptor::GlobalItem& globalItem, const ReportDescriptor::LocalItem& localItem);
+		virtual void OnCollection(ReportDescriptor::CollectionType collectionType, uint32_t usage);
+		virtual void OnEndCollection();
+	};
 public:
 	static USBHost Instance;
 public:
@@ -191,6 +204,7 @@ public:
 private:
 	Keyboard keyboard_;
 	Mouse mouse_;
+	GamePad gamePad_;
 	EventHandler* pEventHandler_;
 public:
 	USBHost();
@@ -199,6 +213,7 @@ public:
 public:
 	static Keyboard& GetKeyboard() { return Instance.keyboard_; }
 	static Mouse& GetMouse() { return Instance.mouse_; }
+	static GamePad& GetGamePad() { return Instance.gamePad_; }
 	static EventHandler* GetEventHandler() { return Instance.pEventHandler_; }
 public:
 	// virtual functions of Tickable
