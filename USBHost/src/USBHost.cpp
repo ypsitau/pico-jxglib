@@ -18,7 +18,6 @@ void USBHost::Initialize(uint8_t rhport, EventHandler* pEventHandler)
 {
 	::tuh_init(rhport);
 	Instance.pEventHandler_ = pEventHandler;
-	USBHost::ReportDescriptor::fixedPool.Initialize();
 }
 
 void USBHost::OnTick()
@@ -48,11 +47,12 @@ static struct {
 	tuh_hid_report_info_t report_info[MAX_REPORT];
 } hid_info[CFG_TUH_HID];
 
-class ReportDescriptorHandler_Print : public USBHost::ReportDescriptor::Handler {
+class ReportDescriptorHandler_Gamepad : public USBHost::ReportDescriptor::Handler {
 public:
 	virtual bool OnInput(USBHost::ReportDescriptor::MainItemData itemData, const USBHost::ReportDescriptor::GlobalItem& globalItem, const USBHost::ReportDescriptor::LocalItem& localItem) override {
 		::printf("Input (%s,%s,%s)\n", itemData.IsData()? "Data" : "Constant",
 			itemData.IsArray()? "Array" : "Variable", itemData.IsAbsolute()? "Absolute" : "Relative");
+		globalItem.Print(1);
 		if (localItem.nUsage > 0) {
 			::printf("Usage:");
 			for (int i = 0; i < localItem.nUsage; i++) {
@@ -66,6 +66,7 @@ public:
 	virtual bool OnOutput(USBHost::ReportDescriptor::MainItemData itemData, const USBHost::ReportDescriptor::GlobalItem& globalItem, const USBHost::ReportDescriptor::LocalItem& localItem) override {
 		::printf("Output (%s,%s,%s)\n", itemData.IsData()? "Data" : "Constant",
 			itemData.IsArray()? "Array" : "Variable", itemData.IsAbsolute()? "Absolute" : "Relative");
+		globalItem.Print(1);
 		if (localItem.nUsage > 0) {
 			::printf("Usage:");
 			for (int i = 0; i < localItem.nUsage; i++) {
@@ -79,6 +80,7 @@ public:
 	virtual bool OnFeature(USBHost::ReportDescriptor::MainItemData itemData, const USBHost::ReportDescriptor::GlobalItem& globalItem, const USBHost::ReportDescriptor::LocalItem& localItem) override {
 		::printf("Feature (%s,%s,%s)\n", itemData.IsData()? "Data" : "Constant",
 			itemData.IsArray()? "Array" : "Variable", itemData.IsAbsolute()? "Absolute" : "Relative");
+		globalItem.Print(1);
 		if (localItem.nUsage > 0) {
 			::printf("Usage:");
 			for (int i = 0; i < localItem.nUsage; i++) {
@@ -89,16 +91,8 @@ public:
 		}
 		return true;
 	}
-	virtual bool OnCollection(USBHost::ReportDescriptor::CollectionType collectionType, const USBHost::ReportDescriptor::LocalItem& localItem) override {
-		::printf("Collection\n");
-		if (localItem.nUsage > 0) {
-			::printf("Usage:");
-			for (int i = 0; i < localItem.nUsage; i++) {
-				const USBHost::ReportDescriptor::Range& range = localItem.usageTbl[i];
-				for (uint32_t usage = range.minimum; usage <= range.maximum; usage++) ::printf(" %08x", usage);
-			}
-			::printf("\n");
-		}
+	virtual bool OnCollection(USBHost::ReportDescriptor::CollectionType collectionType, uint32_t usage) override {
+		::printf("Collection: %08x\n", usage);
 		return true;
 	}
 	virtual bool OnEndCollection() override {
@@ -121,8 +115,8 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 							hid_info[iInstance].report_info, MAX_REPORT, descReport, descLen);
 		::printf("HID has %u reports \r\n", hid_info[iInstance].report_count);
 	}
-	//ReportDescriptorHandler_Print handler;
-	//USBHost::Instance.reportDescriptor.Parse(handler, descReport, descLen);
+	ReportDescriptorHandler_Gamepad handler;
+	USBHost::Instance.reportDescriptor.Parse(handler, descReport, descLen);
 	// request to receive report
 	// tuh_hid_report_received_cb() will be invoked when report is available
 	if (!::tuh_hid_receive_report(devAddr, iInstance)) {
@@ -524,9 +518,7 @@ void USBHost::Mouse::OnReport(uint8_t devAddr, uint8_t iInstance, const hid_mous
 //-----------------------------------------------------------------------------
 // USBHost::ReportDescriptor
 //-----------------------------------------------------------------------------
-FixedPool USBHost::ReportDescriptor::fixedPool("USBHost::ReportDescriptor", sizeof(USBHost::ReportDescriptor::MainItem_Member), 64);
-
-USBHost::ReportDescriptor::ReportDescriptor() : pMainItemTop_{nullptr}
+USBHost::ReportDescriptor::ReportDescriptor()
 {
 }
 
@@ -535,9 +527,6 @@ bool USBHost::ReportDescriptor::Parse(Handler& handler, const uint8_t* descRepor
 	uint32_t usagePage = 0;
 	globalItem_.Clear();
 	localItem_.Clear();
-	int nMainItemStack = 0;
-	MainItem_Collection *pMainItemStack[8];
-	MainItem_Collection* pMainItemParent = nullptr;
 	//Dump(descReport, descLen);
 	for (uint16_t descOffset = 0; descOffset < descLen; ) {
 		uint8_t src = descReport[descOffset++];
@@ -557,47 +546,32 @@ bool USBHost::ReportDescriptor::Parse(Handler& handler, const uint8_t* descRepor
 			descOffset += itemData & 0xff;
 			continue;
 		}
-		::printf("%02x:%s (0x%0*x)\n", itemType, GetItemTypeName(itemType), bytesItemData * 2, itemData);
+		//::printf("%02x:%s (0x%0*x)\n", itemType, GetItemTypeName(itemType), bytesItemData * 2, itemData);
 		switch (itemType) {
 		// 6.2.2.4 Main Items
 		case ItemType::Input: {
 			if (!handler.OnInput(MainItemData(itemData), globalItem_, localItem_)) return false;
-			auto pMainItem = new MainItem_Input(MainItemData(itemData), globalItem_, localItem_);
-			pMainItemParent->Add(pMainItem);
 			localItem_.Clear();
 			break;
 		}
 		case ItemType::Output: {
 			if (!handler.OnOutput(MainItemData(itemData), globalItem_, localItem_)) return false;
-			auto pMainItem = new MainItem_Output(MainItemData(itemData), globalItem_, localItem_);
-			pMainItemParent->Add(pMainItem);
 			localItem_.Clear();
 			break;
 		}
 		case ItemType::Feature: {
 			if (!handler.OnFeature(MainItemData(itemData), globalItem_, localItem_)) return false;
-			auto pMainItem = new MainItem_Feature(MainItemData(itemData), globalItem_, localItem_);
-			pMainItemParent->Add(pMainItem);
 			localItem_.Clear();
 			break;
 		}
 		case ItemType::Collection: {
-			if (!handler.OnCollection(static_cast<CollectionType>(itemData), localItem_)) return false;
 			uint32_t usage = localItem_.usageTbl[0].minimum;
-			auto pMainItem = new MainItem_Collection(static_cast<CollectionType>(itemData), usage);
-			if (pMainItemParent) {
-				pMainItemParent->Add(pMainItem);
-			} else {
-				pMainItemTop_ = pMainItem;
-			}
-			pMainItemStack[nMainItemStack++] = pMainItem;
-			pMainItemParent = pMainItem;
+			if (!handler.OnCollection(static_cast<CollectionType>(itemData), usage)) return false;
 			localItem_.Clear();
 			break;
 		}
 		case ItemType::EndCollection: {
 			if (!handler.OnEndCollection()) return false;
-			pMainItemParent = pMainItemStack[--nMainItemStack];
 			break;
 		}
 		// 6.2.2.7 Global Items
@@ -610,7 +584,7 @@ bool USBHost::ReportDescriptor::Parse(Handler& handler, const uint8_t* descRepor
 			break;
 		}
 		case ItemType::LogicalMaximum: {
-			globalItem_.logicalMinimum = itemData;
+			globalItem_.logicalMaximum = itemData;
 			break;
 		}
 		case ItemType::PhysicalMinimum: {
@@ -739,14 +713,19 @@ const char* USBHost::ReportDescriptor::GetItemTypeName(uint8_t itemType)
 }
 
 //-----------------------------------------------------------------------------
-// USBHost::ReportDescriptor::MainItem_Collection
+// USBHost::ReportDescriptor::GlobalItem
 //-----------------------------------------------------------------------------
-void USBHost::ReportDescriptor::MainItem_Collection::Add(MainItem* pMainItem)
+void USBHost::ReportDescriptor::GlobalItem::Print(int indentLevel) const
 {
-	if (nMainItem_ >= nMainItemMax) {
-		::panic("the number of main items exceeds the capacity of USBHost::ReportDescriptor::MainItem_Collector (%d)\n", nMainItemMax);
-	}
-	pMainItemTbl_[nMainItem_++] = pMainItem;
+	::printf("%*slogicalMinimum:  %08x\n", indentLevel * 2, "", logicalMinimum);
+	::printf("%*slogicalMaximum:  %08x\n", indentLevel * 2, "", logicalMaximum);
+	::printf("%*sphysicalMinimum: %08x\n", indentLevel * 2, "", physicalMinimum);
+	::printf("%*sphysicalMaximum: %08x\n", indentLevel * 2, "", physicalMaximum);
+	::printf("%*sunitExponent:    %08x\n", indentLevel * 2, "", unitExponent);
+	::printf("%*sunit:            %08x\n", indentLevel * 2, "", unit);
+	::printf("%*sreportSize:      %08x\n", indentLevel * 2, "", reportSize);
+	::printf("%*sreportID:        %08x\n", indentLevel * 2, "", reportID);
+	::printf("%*sreportCount:     %08x\n", indentLevel * 2, "", reportCount);
 }
 
 }

@@ -105,6 +105,7 @@ public:
 			uint32_t reportCount;
 		public:
 			void Clear() { ::memset(this, 0x00, sizeof(GlobalItem)); }
+			void Print(int indentLevel = 0) const;
 		};
 		struct LocalItem {
 			int nUsage;
@@ -117,70 +118,17 @@ public:
 		public:
 			void Clear() { ::memset(this, 0x00, sizeof(LocalItem)); }
 		};
-		class MainItem {
-		public:
-			MainItem() {}
-		};
-		class MainItem_Member : public MainItem {
-		protected:
-			MainItemData mainItemData_;
-			GlobalItem globalItem_;
-			LocalItem localItem_;
-		public:
-			MainItem_Member(MainItemData mainItemData, const GlobalItem& globalItem, const LocalItem& localItem) :
-				mainItemData_{mainItemData}, globalItem_{globalItem}, localItem_{localItem} {}
-		};
-		class MainItem_Input : public MainItem_Member {
-		public:
-			FixedPoolAllocator(USBHost::ReportDescriptor::fixedPool, "USBHost::ReportDescriptor::MainItem_Input")
-		public:
-			MainItem_Input(MainItemData mainItemData, const GlobalItem& globalItem, const LocalItem& localItem) :
-				MainItem_Member(mainItemData, globalItem, localItem) {}
-		};
-		class MainItem_Output : public MainItem_Member {
-		public:
-			FixedPoolAllocator(USBHost::ReportDescriptor::fixedPool, "USBHost::ReportDescriptor::MainItem_Output")
-		public:
-			MainItem_Output(MainItemData mainItemData, const GlobalItem& globalItem, const LocalItem& localItem) :
-				MainItem_Member(mainItemData, globalItem, localItem) {}
-		};
-		class MainItem_Feature : public MainItem_Member {
-		public:
-			FixedPoolAllocator(USBHost::ReportDescriptor::fixedPool, "USBHost::ReportDescriptor::MainItem_Feature")
-		public:
-			MainItem_Feature(MainItemData mainItemData, const GlobalItem& globalItem, const LocalItem& localItem) :
-				MainItem_Member(mainItemData, globalItem, localItem) {}
-		};
-		class MainItem_Collection : public MainItem {
-		public:
-			FixedPoolAllocator(USBHost::ReportDescriptor::fixedPool, "USBHost::ReportDescriptor::MainItem_Collection")
-		public:
-			static const int nMainItemMax = (sizeof(MainItem_Member) - (sizeof(CollectionType) + sizeof(uint32_t) + sizeof(int))) / sizeof(MainItem*);
-		private:
-			CollectionType collectionType_;
-			uint32_t usage_;
-			int nMainItem_;
-			MainItem* pMainItemTbl_[nMainItemMax];
-		public:
-			MainItem_Collection(CollectionType collectionType, uint32_t usage) :
-				collectionType_{collectionType}, usage_{usage}, nMainItem_{0} {}
-		public:
-			void Add(MainItem* pMainItem);
-		};
 		class Handler {
 		public:
 			virtual bool OnInput(MainItemData itemData, const GlobalItem& globalItem, const LocalItem& localItem) = 0;
 			virtual bool OnOutput(MainItemData itemData, const GlobalItem& globalItem, const LocalItem& localItem) = 0;
 			virtual bool OnFeature(MainItemData itemData, const GlobalItem& globalItem, const LocalItem& localItem) = 0;
-			virtual bool OnCollection(CollectionType collectionType, const LocalItem& localItem) = 0;
+			virtual bool OnCollection(CollectionType collectionType, uint32_t usage) = 0;
 			virtual bool OnEndCollection() = 0;
 		};
-	public:
-		static FixedPool fixedPool;
 	private:
 		GlobalItem globalItem_;
 		LocalItem localItem_;
-		MainItem_Collection* pMainItemTop_;
 	public:
 		ReportDescriptor();
 		bool Parse(Handler& handler, const uint8_t* descReport, uint16_t descLen);
