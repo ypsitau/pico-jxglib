@@ -63,9 +63,8 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 		::printf("HID has %u reports \r\n", hid_info[iInstance].report_count);
 	}
 	
-	USBHost::Instance.GetGamePad().ParseReportDescriptor(descReport, descLen);
-
-	USBHost::Instance.GetGamePad().PrintUsage();
+	//USBHost::Instance.GetGamePad().ParseReportDescriptor(descReport, descLen);
+	//USBHost::Instance.GetGamePad().PrintUsage();
 
 	// request to receive report
 	// tuh_hid_report_received_cb() will be invoked when report is available
@@ -85,7 +84,7 @@ void tuh_hid_report_received_cb(uint8_t devAddr, uint8_t iInstance, const uint8_
 	switch (itfProtocol) {
 	case HID_ITF_PROTOCOL_NONE: {
 
-		USBHost::GetGamePad().OnReport(devAddr, iInstance, report, len);
+		//USBHost::GetGamePad().OnReport(devAddr, iInstance, report, len);
 
 		break;
 	}
