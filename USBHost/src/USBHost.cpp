@@ -466,7 +466,7 @@ void USBHost::Mouse::OnReport(uint8_t devAddr, uint8_t iInstance, const hid_mous
 //------------------------------------------------------------------------------
 // USBHost::GamePad
 //------------------------------------------------------------------------------
-USBHost::GamePad::GamePad()
+USBHost::GamePad::GamePad() : nUsageInfo_{0}
 {
 }
 

@@ -118,6 +118,28 @@ public:
 		public:
 			void Clear() { ::memset(this, 0x00, sizeof(LocalItem)); }
 		};
+		class UsageInfo {
+		private:
+			uint32_t usage_;
+			const GlobalItem* pGlobalItem_;
+			uint32_t reportOffset_;
+		public:
+			UsageInfo() : usage_{0}, pGlobalItem_{nullptr}, reportOffset_{0} {}
+			UsageInfo(const UsageInfo& usageInfo) :
+					usage_{usageInfo.usage_}, pGlobalItem_{usageInfo.pGlobalItem_}, reportOffset_{usageInfo.reportOffset_} {}
+			UsageInfo(uint32_t usage, const GlobalItem& globalItem, uint32_t reportOffset) :
+					usage_{usage}, pGlobalItem_{&globalItem}, reportOffset_{reportOffset} {}
+			uint32_t GetLogicalMinimum() const { return pGlobalItem_->logicalMinimum; }
+			uint32_t GetLogicalMaximum() const { return pGlobalItem_->logicalMaximum; }
+			uint32_t GetPhysicalMinimum() const { return pGlobalItem_->physicalMinimum; }
+			uint32_t GetPhysicalMaximum() const { return pGlobalItem_->physicalMaximum; }
+			uint32_t GetUnitExponent() const { return pGlobalItem_->unitExponent; }
+			uint32_t GetUnit() const { return pGlobalItem_->unit; }
+			uint32_t GetReportSize() const { return pGlobalItem_->reportSize; }
+			uint32_t GetReportID() const { return pGlobalItem_->reportID; }
+			uint32_t GetReportCount() const { return pGlobalItem_->reportCount; }
+			uint32_t GetReportOffset() const { return reportOffset_; }
+		};
 		class Handler {
 		public:
 			virtual void OnInput(MainItemData itemData, const GlobalItem& globalItem, const LocalItem& localItem) = 0;
@@ -136,10 +158,10 @@ public:
 		static const char* GetItemTypeName(uint8_t itemType);
 	};
 	class EventHandler {
-		public:
-			virtual void OnMount(uint8_t devAddr) {}
-			virtual void OnUmount(uint8_t devAddr) {}
-		};
+	public:
+		virtual void OnMount(uint8_t devAddr) {}
+		virtual void OnUmount(uint8_t devAddr) {}
+	};
 	class Keyboard : public KeyboardRepeatable {
 	public:
 		struct UsageIdToKeyCode {
@@ -185,6 +207,9 @@ public:
 		virtual jxglib::Mouse& SetStage(const Rect& rcStage) override;
 	};
 	class GamePad : public ReportDescriptor::Handler {
+	private:
+		int nUsageInfo_;
+		ReportDescriptor::UsageInfo usageInfoTbl_[32];
 	public:
 		GamePad();
 	public:
