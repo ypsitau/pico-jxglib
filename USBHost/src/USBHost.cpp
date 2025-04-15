@@ -588,7 +588,7 @@ bool USBHost::ReportDescriptor::Parse(Handler& handler, const uint8_t* descRepor
 	uint32_t usagePage = 0;
 	globalItem_.Clear();
 	localItem_.Clear();
-	//Dump(descReport, descLen);
+	Dump(descReport, descLen);
 	uint8_t itemTypePrev = 0;
 	for (uint16_t descOffset = 0; descOffset < descLen; ) {
 		uint8_t src = descReport[descOffset++];
@@ -609,7 +609,7 @@ bool USBHost::ReportDescriptor::Parse(Handler& handler, const uint8_t* descRepor
 			itemTypePrev = itemType;
 			continue;
 		}
-		//::printf("%02x:%s (0x%0*x)\n", itemType, GetItemTypeName(itemType), bytesItemData * 2, itemData);
+		::printf("%02x:%s (0x%0*x)\n", itemType, GetItemTypeName(itemType), bytesItemData * 2, itemData);
 		switch (itemType) {
 		// 6.2.2.4 Main Items
 		case ItemType::Input: case ItemType::Output: case ItemType::Feature: {
@@ -811,7 +811,7 @@ uint32_t USBHost::ReportDescriptor::UsageInfo::GetReportValue(const uint8_t* rep
 
 void USBHost::ReportDescriptor::UsageInfo::Print(int indentLevel) const
 {
-	::printf("%*susage:%08x offset:%d size:%d\n", indentLevel * 2, "", GetUsage(), GetReportOffset(), GetReportSize());
+	::printf("%*susage:%04x:%04x offset:%d size:%d\n", indentLevel * 2, "", GetUsage() >> 16, GetUsage() & 0xffff, GetReportOffset(), GetReportSize());
 }
 
 }

@@ -217,7 +217,7 @@ public:
 		uint32_t reportOffset_Input_;
 		uint32_t reportOffset_Output_;
 		uint32_t reportOffset_Feature_;
-		ReportDescriptor::GlobalItem globalItemTbl_[8];
+		ReportDescriptor::GlobalItem globalItemTbl_[32];
 		ReportDescriptor::UsageInfo usageInfoTbl_[32];
 	public:
 		GamePad();
