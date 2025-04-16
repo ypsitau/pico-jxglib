@@ -268,24 +268,24 @@ public:
 	public:
 		virtual bool IsGamePad() const override { return true; }
 	public:
-		const uint32_t GetReportValue_ButtonX() const		{ return GetReportValue(0x0009, 0x0001); }
-		const uint32_t GetReportValue_ButtonY() const		{ return GetReportValue(0x0009, 0x0002); }
-		const uint32_t GetReportValue_ButtonA() const		{ return GetReportValue(0x0009, 0x0003); }
-		const uint32_t GetReportValue_ButtonB() const		{ return GetReportValue(0x0009, 0x0004); }
-		const uint32_t GetReportValue_ButtonLB() const		{ return GetReportValue(0x0009, 0x0005); }
-		const uint32_t GetReportValue_ButtonRB() const		{ return GetReportValue(0x0009, 0x0006); }
-		const uint32_t GetReportValue_ButtonLT() const		{ return GetReportValue(0x0009, 0x0007); }
-		const uint32_t GetReportValue_ButtonRT() const		{ return GetReportValue(0x0009, 0x0008); }
-		const uint32_t GetReportValue_ButtonLStick() const	{ return GetReportValue(0x0009, 0x0009); }
-		const uint32_t GetReportValue_ButtonRStick() const	{ return GetReportValue(0x0009, 0x000a); }
-		const uint32_t GetReportValue_ButtonBACK() const	{ return GetReportValue(0x0009, 0x000b); }
-		const uint32_t GetReportValue_ButtonSTART() const	{ return GetReportValue(0x0009, 0x000c); }
-		const uint32_t GetReportValue_ButtonGUIDE() const	{ return GetReportValue(0x0009, 0x000d); }
-		const uint32_t GetReportValue_HatSwitch() const		{ return GetReportValue(0x0001, 0x0039); }
-		const uint32_t GetReportValue_LStickHorz() const	{ return GetReportValue(0x0001, 0x0030); }
-		const uint32_t GetReportValue_LStickVert() const	{ return GetReportValue(0x0001, 0x0031); }
-		const uint32_t GetReportValue_RStickHorz() const	{ return GetReportValue(0x0001, 0x0035); }
-		const uint32_t GetReportValue_RStickVert() const	{ return GetReportValue(0x0001, 0x0032); }
+		const uint32_t Get_ButtonX() const		{ return GetReportValue(0x0009, 0x0001); }
+		const uint32_t Get_ButtonY() const		{ return GetReportValue(0x0009, 0x0002); }
+		const uint32_t Get_ButtonA() const		{ return GetReportValue(0x0009, 0x0003); }
+		const uint32_t Get_ButtonB() const		{ return GetReportValue(0x0009, 0x0004); }
+		const uint32_t Get_ButtonLB() const		{ return GetReportValue(0x0009, 0x0005); }
+		const uint32_t Get_ButtonRB() const		{ return GetReportValue(0x0009, 0x0006); }
+		const uint32_t Get_ButtonLT() const		{ return GetReportValue(0x0009, 0x0007); }
+		const uint32_t Get_ButtonRT() const		{ return GetReportValue(0x0009, 0x0008); }
+		const uint32_t Get_ButtonLStick() const	{ return GetReportValue(0x0009, 0x0009); }
+		const uint32_t Get_ButtonRStick() const	{ return GetReportValue(0x0009, 0x000a); }
+		const uint32_t Get_ButtonBACK() const	{ return GetReportValue(0x0009, 0x000b); }
+		const uint32_t Get_ButtonSTART() const	{ return GetReportValue(0x0009, 0x000c); }
+		const uint32_t Get_ButtonGUIDE() const	{ return GetReportValue(0x0009, 0x000d); }
+		const uint32_t Get_HatSwitch() const	{ return GetReportValue(0x0001, 0x0039); }
+		const uint32_t Get_LStickHorz() const	{ return GetReportValue(0x0001, 0x0030); }
+		const uint32_t Get_LStickVert() const	{ return GetReportValue(0x0001, 0x0031); }
+		const uint32_t Get_RStickHorz() const	{ return GetReportValue(0x0001, 0x0035); }
+		const uint32_t Get_RStickVert() const	{ return GetReportValue(0x0001, 0x0032); }
 	};
 public:
 	static USBHost Instance;

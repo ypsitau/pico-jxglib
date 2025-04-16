@@ -122,7 +122,7 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 	} else {
 		auto pGamePad = new USBHost::GamePad();
 		pGamePad->ParseReportDescriptor(descReport, descLen);
-		//pGamePad->PrintUsage();
+		pGamePad->PrintUsage();
 		USBHost::Instance.SetHID(iInstance, pGamePad);
 	}
 	::tuh_hid_receive_report(devAddr, iInstance);
@@ -863,7 +863,9 @@ uint32_t USBHost::ReportDescriptor::UsageInfo::GetReportValue(const uint8_t* rep
 
 void USBHost::ReportDescriptor::UsageInfo::Print(int indentLevel) const
 {
-	::printf("%*susage:%04x:%04x offset:%d size:%d\n", indentLevel * 2, "", GetUsage() >> 16, GetUsage() & 0xffff, GetReportOffset(), GetReportSize());
+	::printf("%*susage:%04x:%04x offset:%d size:%d LMin:%d LMax:%d PMin:%d PMax:%d UnitExp:%d\n",
+		indentLevel * 2, "", GetUsage() >> 16, GetUsage() & 0xffff, GetReportOffset(), GetReportSize(),
+		GetLogicalMinimum(), GetLogicalMaximum(), GetPhysicalMinimum(), GetPhysicalMaximum(), GetUnitExponent());
 }
 
 }

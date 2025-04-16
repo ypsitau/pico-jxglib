@@ -18,24 +18,24 @@ int main()
 	for (;;) {
 		USBHost::GamePad& gamePad = USBHost::FindGamePad();
 		::printf("%d%d%d%d%d%d%d%d%d%d%d%d%d %x %02x %02x %02x %02x\n",
-			gamePad.GetReportValue_ButtonX(),
-			gamePad.GetReportValue_ButtonY(),
-			gamePad.GetReportValue_ButtonA(),
-			gamePad.GetReportValue_ButtonB(),
-			gamePad.GetReportValue_ButtonLB(),
-			gamePad.GetReportValue_ButtonRB(),
-			gamePad.GetReportValue_ButtonLT(),
-			gamePad.GetReportValue_ButtonRT(),
-			gamePad.GetReportValue_ButtonLStick(),
-			gamePad.GetReportValue_ButtonRStick(),
-			gamePad.GetReportValue_ButtonBACK(),
-			gamePad.GetReportValue_ButtonSTART(), 
-			gamePad.GetReportValue_ButtonGUIDE(),
-			gamePad.GetReportValue_HatSwitch(),
-			gamePad.GetReportValue_LStickHorz(),
-			gamePad.GetReportValue_LStickVert(),
-			gamePad.GetReportValue_RStickHorz(),
-			gamePad.GetReportValue_RStickVert());
+			gamePad.Get_ButtonX(),
+			gamePad.Get_ButtonY(),
+			gamePad.Get_ButtonA(),
+			gamePad.Get_ButtonB(),
+			gamePad.Get_ButtonLB(),
+			gamePad.Get_ButtonRB(),
+			gamePad.Get_ButtonLT(),
+			gamePad.Get_ButtonRT(),
+			gamePad.Get_ButtonLStick(),
+			gamePad.Get_ButtonRStick(),
+			gamePad.Get_ButtonBACK(),
+			gamePad.Get_ButtonSTART(), 
+			gamePad.Get_ButtonGUIDE(),
+			gamePad.Get_HatSwitch(),
+			gamePad.Get_LStickHorz(),
+			gamePad.Get_LStickVert(),
+			gamePad.Get_RStickHorz(),
+			gamePad.Get_RStickVert());
 		Tickable::Sleep(300);
 	}
 }
