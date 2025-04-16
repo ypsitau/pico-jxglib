@@ -10,7 +10,7 @@ int main()
 	::stdio_init_all();
 	Printable::SetStandardOutput(Stdio::Instance);
 	USBHost::Initialize();
-	USBHost::GamePad& gamePad = USBHost::GetGamePad();
+	USBHost::GenericHID& gamePad = USBHost::GetGamePad();
 	::printf("----\n");
 	for (;;) {
 		::printf("%d%d%d%d%d%d%d%d%d%d%d%d%d %x %02x %02x %02x %02x\n",

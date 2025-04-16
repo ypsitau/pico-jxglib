@@ -102,6 +102,8 @@ public:
 			uint32_t reportID;
 			uint32_t reportCount;
 		public:
+			static const GlobalItem None;
+		public:
 			void Clear() { ::memset(this, 0x00, sizeof(GlobalItem)); }
 			void Print(int indentLevel = 0) const;
 		};
@@ -122,12 +124,15 @@ public:
 			const GlobalItem* pGlobalItem_;
 			uint32_t reportOffset_;
 		public:
+			static const UsageInfo None;
+		public:
 			UsageInfo() : usage_{0}, pGlobalItem_{nullptr}, reportOffset_{0} {}
 			UsageInfo(const UsageInfo& usageInfo) :
 				usage_{usageInfo.usage_}, pGlobalItem_{usageInfo.pGlobalItem_}, reportOffset_{usageInfo.reportOffset_} {}
-			UsageInfo(uint32_t usage, const GlobalItem* pGlobalItem, uint32_t reportOffset) :
+			constexpr UsageInfo(uint32_t usage, const GlobalItem* pGlobalItem, uint32_t reportOffset) :
 				usage_{usage}, pGlobalItem_{pGlobalItem}, reportOffset_{reportOffset} {}
 		public:
+			bool IsValid() const { return usage_ != 0; }
 			uint32_t GetUsage() const { return usage_; }
 			uint32_t GetLogicalMinimum() const { return pGlobalItem_->logicalMinimum; }
 			uint32_t GetLogicalMaximum() const { return pGlobalItem_->logicalMaximum; }
@@ -208,7 +213,16 @@ public:
 		virtual jxglib::Mouse& SetSensibility(float sensibility) override;
 		virtual jxglib::Mouse& SetStage(const Rect& rcStage) override;
 	};
-	class GamePad : public ReportDescriptor::Handler {
+	class GenericHID : public ReportDescriptor::Handler {
+	public:
+		class UsageAccessor {
+		private:
+			GenericHID& genericHID_;
+		public:
+			UsageAccessor(GenericHID& genericHID) : genericHID_{genericHID} {}
+		public:
+
+		};
 	private:
 		uint8_t reportCaptured_[32];
 		uint16_t lenCaptured_;
@@ -220,11 +234,13 @@ public:
 		ReportDescriptor::GlobalItem globalItemTbl_[32];
 		ReportDescriptor::UsageInfo usageInfoTbl_[32];
 	public:
-		GamePad();
+		UsageAccessor usage;
+	public:
+		GenericHID();
 	public:
 		uint32_t GetReportValue(uint32_t usage) const;
 	public:
-		const ReportDescriptor::UsageInfo* FindUsageInfo(uint32_t usage) const;
+		const ReportDescriptor::UsageInfo& FindUsageInfo(uint32_t usage) const;
 	public:
 		bool ParseReportDescriptor(const uint8_t* descReport, uint16_t descLen);
 		void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len);
@@ -242,7 +258,7 @@ public:
 private:
 	Keyboard keyboard_;
 	Mouse mouse_;
-	GamePad gamePad_;
+	GenericHID genericHID_;
 	EventHandler* pEventHandler_;
 public:
 	USBHost();
@@ -251,7 +267,7 @@ public:
 public:
 	static Keyboard& GetKeyboard() { return Instance.keyboard_; }
 	static Mouse& GetMouse() { return Instance.mouse_; }
-	static GamePad& GetGamePad() { return Instance.gamePad_; }
+	static GenericHID& GetGamePad() { return Instance.genericHID_; }
 	static EventHandler* GetEventHandler() { return Instance.pEventHandler_; }
 public:
 	// virtual functions of Tickable
