@@ -67,16 +67,16 @@ USBHost::Mouse& USBHost::FindMouse(int idx)
 	return Mouse::None;
 }
 
-USBHost::GenericHID& USBHost::FindGamePad(int idx)
+USBHost::GamePad& USBHost::FindGamePad(int idx)
 {
 	for (uint8_t iInstance = 0; iInstance < CFG_TUH_HID; iInstance++) {
 		HID* pHID = Instance.GetHID(iInstance);
 		if (pHID && pHID->IsGamePad()) {
-			if (idx == 0) return *reinterpret_cast<GenericHID*>(pHID);
+			if (idx == 0) return *reinterpret_cast<GamePad*>(pHID);
 			idx--;
 		}
 	}
-	return GenericHID::None;
+	return GamePad::None;
 }
 
 void USBHost::DeleteHID(uint8_t iInstance)
@@ -120,10 +120,10 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 	} else if (itfProtocol == HID_ITF_PROTOCOL_MOUSE) {
 		USBHost::Instance.SetMouse(iInstance);
 	} else {
-		auto pHID = new USBHost::GenericHID();
-		pHID->ParseReportDescriptor(descReport, descLen);
-		pHID->PrintUsage();
-		USBHost::Instance.SetHID(iInstance, pHID);
+		auto pGamePad = new USBHost::GamePad();
+		pGamePad->ParseReportDescriptor(descReport, descLen);
+		//pGamePad->PrintUsage();
+		USBHost::Instance.SetHID(iInstance, pGamePad);
 	}
 	::tuh_hid_receive_report(devAddr, iInstance);
 }
@@ -514,8 +514,6 @@ void USBHost::Mouse::OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t*
 //------------------------------------------------------------------------------
 // USBHost::GenericHID
 //------------------------------------------------------------------------------
-USBHost::GenericHID USBHost::GenericHID::None;
-
 USBHost::GenericHID::GenericHID() : nGlobalItem_{0}, nUsageInfo_{0}
 {
 }
@@ -591,6 +589,11 @@ void USBHost::GenericHID::PrintUsage(int indentLevel) const
 	}
 }
 
+//------------------------------------------------------------------------------
+// USBHost::GamePad
+//------------------------------------------------------------------------------
+USBHost::GamePad USBHost::GamePad::None;
+
 //-----------------------------------------------------------------------------
 // USBHost::ReportDescriptor
 //-----------------------------------------------------------------------------
@@ -627,7 +630,7 @@ bool USBHost::ReportDescriptor::Parse(Handler& handler, const uint8_t* descRepor
 			itemTypePrev = itemType;
 			continue;
 		}
-		::printf("%02x:%s (0x%0*x)\n", itemType, GetItemTypeName(itemType), bytesItemData * 2, itemData);
+		//::printf("%02x:%s (0x%0*x)\n", itemType, GetItemTypeName(itemType), bytesItemData * 2, itemData);
 		switch (itemType) {
 		// 6.2.2.4 Main Items
 		case ItemType::Input: {

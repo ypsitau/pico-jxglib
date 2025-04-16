@@ -238,14 +238,35 @@ public:
 		ReportDescriptor::GlobalItem globalItemTbl_[32];
 		ReportDescriptor::UsageInfo usageInfoTbl_[32];
 	public:
-		static GenericHID None;
-	public:
 		GenericHID();
 	public:
 		uint32_t GetReportValue(uint32_t usage) const;
 		uint32_t GetReportValue(uint16_t usagePage, uint16_t usageId) const {
 			return GetReportValue(Usage(usagePage, usageId));
 		}
+	public:
+		const ReportDescriptor::UsageInfo& FindUsageInfo(uint32_t usage) const;
+		const ReportDescriptor::UsageInfo& FindUsageInfo(uint16_t usagePage, uint16_t usageId) const {
+			return FindUsageInfo(Usage(usagePage, usageId));
+		}
+	public:
+		bool ParseReportDescriptor(const uint8_t* descReport, uint16_t descLen);
+	public:
+		virtual void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len) override;
+	public:
+		virtual void OnMainItem(const USBHost::ReportDescriptor::GlobalItem& globalItem, const USBHost::ReportDescriptor::LocalItem& localItem, uint32_t& reportOffset);
+		virtual void OnCollection(ReportDescriptor::CollectionType collectionType, uint32_t usage);
+		virtual void OnEndCollection();
+	public:
+		void PrintUsage(int indentLevel = 0) const;
+	};
+	class GamePad : public GenericHID {
+	public:
+		static GamePad None;
+	public:
+		GamePad() {}
+	public:
+		virtual bool IsGamePad() const override { return true; }
 	public:
 		const uint32_t GetReportValue_ButtonX() const		{ return GetReportValue(0x0009, 0x0001); }
 		const uint32_t GetReportValue_ButtonY() const		{ return GetReportValue(0x0009, 0x0002); }
@@ -265,22 +286,6 @@ public:
 		const uint32_t GetReportValue_LStickVert() const	{ return GetReportValue(0x0001, 0x0031); }
 		const uint32_t GetReportValue_RStickHorz() const	{ return GetReportValue(0x0001, 0x0035); }
 		const uint32_t GetReportValue_RStickVert() const	{ return GetReportValue(0x0001, 0x0032); }
-	public:
-		const ReportDescriptor::UsageInfo& FindUsageInfo(uint32_t usage) const;
-		const ReportDescriptor::UsageInfo& FindUsageInfo(uint16_t usagePage, uint16_t usageId) const {
-			return FindUsageInfo(Usage(usagePage, usageId));
-		}
-	public:
-		bool ParseReportDescriptor(const uint8_t* descReport, uint16_t descLen);
-	public:
-		virtual bool IsGamePad() const override { return true; }
-		virtual void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len) override;
-	public:
-		virtual void OnMainItem(const USBHost::ReportDescriptor::GlobalItem& globalItem, const USBHost::ReportDescriptor::LocalItem& localItem, uint32_t& reportOffset);
-		virtual void OnCollection(ReportDescriptor::CollectionType collectionType, uint32_t usage);
-		virtual void OnEndCollection();
-	public:
-		void PrintUsage(int indentLevel = 0) const;
 	};
 public:
 	static USBHost Instance;
@@ -306,7 +311,7 @@ public:
 	static Mouse& GetMouse() { return Instance.mouse_; }
 	static Keyboard& FindKeyboard(int idx = 0);
 	static Mouse& FindMouse(int idx = 0);
-	static GenericHID& FindGamePad(int idx = 0);
+	static GamePad& FindGamePad(int idx = 0);
 	static EventHandler* GetEventHandler() { return Instance.pEventHandler_; }
 	constexpr static uint32_t Usage(uint16_t usagePage, uint16_t usageID) { return (static_cast<uint32_t>(usagePage) << 16) + usageID; }
 public:
