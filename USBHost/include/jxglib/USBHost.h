@@ -169,7 +169,16 @@ public:
 		virtual void OnMount(uint8_t devAddr) {}
 		virtual void OnUmount(uint8_t devAddr) {}
 	};
-	class Keyboard : public KeyboardRepeatable {
+	class HID {
+	private:
+		uint8_t devAddr_;
+		uint8_t iInstance_;
+	public:
+		HID(uint8_t devAddr, uint8_t iInstance) : devAddr_{devAddr}, iInstance_{iInstance} {}
+	public:
+		virtual void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len) = 0;
+	};
+	class Keyboard : public HID, public KeyboardRepeatable {
 	public:
 		struct UsageIdToKeyCode {
 			uint8_t keyCodeUS;
@@ -185,16 +194,16 @@ public:
 	public:
 		static const UsageIdToKeyCode usageIdToKeyCodeTbl[256];
 	public:
-		Keyboard();
+		Keyboard(uint8_t devAddr, uint8_t iInstance);
 	public:
-		void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len);
+		virtual void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len) override;
 	public:
 		// virtual function of jxglib::Keyboard
 		virtual jxglib::Keyboard& SetCapsLockAsCtrl(bool capsLockAsCtrlFlag = true) override;
 		virtual uint8_t GetModifier() override { return reportCaptured_.modifier; }
 		virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1, bool includeModifiers = false) override;
 	};
-	class Mouse : public jxglib::Mouse {
+	class Mouse : public HID, public jxglib::Mouse {
 	private:
 		float sensibility_;
 		Rect rcStage_;
@@ -202,32 +211,18 @@ public:
 		int xRaw_;
 		int yRaw_;
 	public:
-		Mouse();
+		Mouse(uint8_t devAddr, uint8_t iInstance);
 	public:
 		void UpdateStage();
 		Point CalcPoint() const;
 	public:
-		void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len);
+		virtual void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len) override;
 	public:
 		// virtual function of jxglib::Mouse
 		virtual jxglib::Mouse& SetSensibility(float sensibility) override;
 		virtual jxglib::Mouse& SetStage(const Rect& rcStage) override;
 	};
-	class GenericHID : public ReportDescriptor::Handler {
-	public:
-		class UsageAccessor {
-		public:
-			using UsageInfo = ReportDescriptor::UsageInfo;
-		private:
-			GenericHID& genericHID_;
-		public:
-			UsageAccessor(GenericHID& genericHID) : genericHID_{genericHID} {}
-		public:
-		private:
-			const UsageInfo& FindUsageInfo(uint16_t usagePage, uint16_t usageId) const {
-				return genericHID_.FindUsageInfo(usagePage, usageId);
-			}
-		};
+	class GenericHID : public HID, public ReportDescriptor::Handler {
 	private:
 		uint8_t reportCaptured_[32];
 		uint16_t lenCaptured_;
@@ -236,9 +231,7 @@ public:
 		ReportDescriptor::GlobalItem globalItemTbl_[32];
 		ReportDescriptor::UsageInfo usageInfoTbl_[32];
 	public:
-		UsageAccessor usage;
-	public:
-		GenericHID();
+		GenericHID(uint8_t devAddr, uint8_t iInstance);
 	public:
 		uint32_t GetReportValue(uint32_t usage) const;
 		uint32_t GetReportValue(uint16_t usagePage, uint16_t usageId) const {
@@ -270,7 +263,8 @@ public:
 		}
 	public:
 		bool ParseReportDescriptor(const uint8_t* descReport, uint16_t descLen);
-		void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len);
+	public:
+		virtual void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len) override;
 	public:
 		virtual void OnMainItem(const USBHost::ReportDescriptor::GlobalItem& globalItem, const USBHost::ReportDescriptor::LocalItem& localItem, uint32_t& reportOffset);
 		virtual void OnCollection(ReportDescriptor::CollectionType collectionType, uint32_t usage);
@@ -286,6 +280,7 @@ private:
 	Keyboard keyboard_;
 	Mouse mouse_;
 	GenericHID genericHID_;
+	HID* hidTbl_[CFG_TUH_HID];
 	EventHandler* pEventHandler_;
 public:
 	USBHost();

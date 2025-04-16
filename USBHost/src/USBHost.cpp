@@ -10,7 +10,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 USBHost USBHost::Instance;
 
-USBHost::USBHost() : pEventHandler_{nullptr}
+USBHost::USBHost() : pEventHandler_{nullptr}, keyboard_(0, 0), mouse_(0, 0), genericHID_(0, 0)
 {
 }
 
@@ -347,7 +347,7 @@ const USBHost::Keyboard::UsageIdToKeyCode USBHost::Keyboard::usageIdToKeyCodeTbl
 	{ 0,				0,				},	// 0xff
 };
 
-USBHost::Keyboard::Keyboard() : capsLockAsCtrlFlag_{false}
+USBHost::Keyboard::Keyboard(uint8_t devAddr, uint8_t iInstance) : HID(devAddr, iInstance), capsLockAsCtrlFlag_{false}
 {
 	::memset(&reportCaptured_, 0x00, sizeof(reportCaptured_));
 }
@@ -407,7 +407,7 @@ int USBHost::Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax, bool inc
 //------------------------------------------------------------------------------
 // USBHost::Mouse
 //------------------------------------------------------------------------------
-USBHost::Mouse::Mouse() : sensibility_{.6}
+USBHost::Mouse::Mouse(uint8_t devAddr, uint8_t iInstance) : HID(devAddr, iInstance), sensibility_{.6}
 {
 	SetStage({0, 0, 320, 240});
 }
@@ -452,7 +452,7 @@ void USBHost::Mouse::OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t*
 //------------------------------------------------------------------------------
 // USBHost::GenericHID
 //------------------------------------------------------------------------------
-USBHost::GenericHID::GenericHID() : usage(*this), nGlobalItem_{0}, nUsageInfo_{0}
+USBHost::GenericHID::GenericHID(uint8_t devAddr, uint8_t iInstance) : HID(devAddr, iInstance), nGlobalItem_{0}, nUsageInfo_{0}
 {
 }
 
