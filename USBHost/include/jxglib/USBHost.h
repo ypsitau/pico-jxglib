@@ -170,15 +170,9 @@ public:
 		virtual void OnUmount(uint8_t devAddr) {}
 	};
 	class HID {
-	private:
-		uint8_t devAddr_;
-		uint8_t iInstance_;
 	public:
-		HID(uint8_t devAddr, uint8_t iInstance) : devAddr_{devAddr}, iInstance_{iInstance} {}
+		HID() {}
 		virtual ~HID() {}
-	public:
-		uint8_t GetDevAddr() const { return devAddr_; }
-		uint8_t GetIInstance() const { return iInstance_; }
 	public:
 		virtual bool IsKeyboard() const { return false; }
 		virtual bool IsMouse() const { return false; }
@@ -203,7 +197,7 @@ public:
 	public:
 		static const UsageIdToKeyCode usageIdToKeyCodeTbl[256];
 	public:
-		Keyboard(uint8_t devAddr, uint8_t iInstance);
+		Keyboard();
 	public:
 		virtual bool IsKeyboard() const override { return true; }
 		virtual void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len) override;
@@ -223,7 +217,7 @@ public:
 	public:
 		static Mouse None;
 	public:
-		Mouse(uint8_t devAddr, uint8_t iInstance);
+		Mouse();
 	public:
 		void UpdateStage();
 		Point CalcPoint() const;
@@ -246,7 +240,7 @@ public:
 	public:
 		static GenericHID None;
 	public:
-		GenericHID(uint8_t devAddr, uint8_t iInstance);
+		GenericHID();
 	public:
 		uint32_t GetReportValue(uint32_t usage) const;
 		uint32_t GetReportValue(uint16_t usagePage, uint16_t usageId) const {
@@ -293,9 +287,8 @@ public:
 public:
 	ReportDescriptor reportDescriptor;
 private:
-	//Keyboard keyboard_;
-	//Mouse mouse_;
-	//GenericHID genericHID_;
+	Keyboard keyboard_;
+	Mouse mouse_;
 	HID* hidTbl_[CFG_TUH_HID];
 	EventHandler* pEventHandler_;
 public:
@@ -303,12 +296,17 @@ public:
 public:
 	static void Initialize(uint8_t rhport = BOARD_TUH_RHPORT, EventHandler* pEventHandler = nullptr);
 public:
-	static void SetHID(HID* pHID) { Instance.hidTbl_[pHID->GetIInstance()] = pHID; }
-	static HID* GetHID(uint8_t iInstance) { return Instance.hidTbl_[iInstance]; }
-	static void DeleteHID(uint8_t iInstance) { delete Instance.hidTbl_[iInstance]; Instance.hidTbl_[iInstance] = nullptr; }
-	static Keyboard& GetKeyboard();
-	static Mouse& GetMouse();
-	static GenericHID& GetGamePad();
+	void SetKeyboard(uint8_t iInstance);
+	void SetMouse(uint8_t iInstance);
+	void SetHID(uint8_t iInstance, HID* pHID) { hidTbl_[iInstance] = pHID; }
+	HID* GetHID(uint8_t iInstance) { return hidTbl_[iInstance]; }
+	void DeleteHID(uint8_t iInstance);
+public:
+	static Keyboard& GetKeyboard() { return Instance.keyboard_; }
+	static Mouse& GetMouse() { return Instance.mouse_; }
+	static Keyboard& FindKeyboard(int idx = 0);
+	static Mouse& FindMouse(int idx = 0);
+	static GenericHID& FindGamePad(int idx = 0);
 	static EventHandler* GetEventHandler() { return Instance.pEventHandler_; }
 	constexpr static uint32_t Usage(uint16_t usagePage, uint16_t usageID) { return (static_cast<uint32_t>(usagePage) << 16) + usageID; }
 public:

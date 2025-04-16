@@ -16,7 +16,7 @@ int main()
 	//	Tickable::Sleep(1000);
 	//}
 	for (;;) {
-		USBHost::GenericHID& gamePad = USBHost::GetGamePad();
+		USBHost::GenericHID& gamePad = USBHost::FindGamePad();
 		::printf("%d%d%d%d%d%d%d%d%d%d%d%d%d %x %02x %02x %02x %02x\n",
 			gamePad.GetReportValue_ButtonX(),		// X
 			gamePad.GetReportValue_ButtonY(),		// Y
