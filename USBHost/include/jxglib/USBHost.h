@@ -151,7 +151,7 @@ public:
 		};
 		class Handler {
 		public:
-			virtual void OnMainItem(const GlobalItem& globalItem, const LocalItem& localItem) = 0;
+			virtual void OnMainItem(const GlobalItem& globalItem, const LocalItem& localItem, uint32_t& reportOffset) = 0;
 			virtual void OnCollection(CollectionType collectionType, uint32_t usage) = 0;
 			virtual void OnEndCollection() = 0;
 		};
@@ -233,9 +233,6 @@ public:
 		uint16_t lenCaptured_;
 		int nGlobalItem_;
 		int nUsageInfo_;
-		uint32_t reportOffset_Input_;
-		uint32_t reportOffset_Output_;
-		uint32_t reportOffset_Feature_;
 		ReportDescriptor::GlobalItem globalItemTbl_[32];
 		ReportDescriptor::UsageInfo usageInfoTbl_[32];
 	public:
@@ -275,7 +272,7 @@ public:
 		bool ParseReportDescriptor(const uint8_t* descReport, uint16_t descLen);
 		void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len);
 	public:
-		virtual void OnMainItem(const USBHost::ReportDescriptor::GlobalItem& globalItem, const USBHost::ReportDescriptor::LocalItem& localItem);
+		virtual void OnMainItem(const USBHost::ReportDescriptor::GlobalItem& globalItem, const USBHost::ReportDescriptor::LocalItem& localItem, uint32_t& reportOffset);
 		virtual void OnCollection(ReportDescriptor::CollectionType collectionType, uint32_t usage);
 		virtual void OnEndCollection();
 	public:

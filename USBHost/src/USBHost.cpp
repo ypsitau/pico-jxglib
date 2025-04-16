@@ -470,7 +470,7 @@ void USBHost::Mouse::OnReport(uint8_t devAddr, uint8_t iInstance, const hid_mous
 //------------------------------------------------------------------------------
 // USBHost::GenericHID
 //------------------------------------------------------------------------------
-USBHost::GenericHID::GenericHID() : usage(*this), nGlobalItem_{0}, nUsageInfo_{0}, reportOffset_Input_{0}, reportOffset_Output_{0}, reportOffset_Feature_{0}
+USBHost::GenericHID::GenericHID() : usage(*this), nGlobalItem_{0}, nUsageInfo_{0}
 {
 }
 
@@ -500,7 +500,7 @@ void USBHost::GenericHID::OnReport(uint8_t devAddr, uint8_t iInstance, const uin
 	}
 }
 
-void USBHost::GenericHID::OnMainItem(const USBHost::ReportDescriptor::GlobalItem& globalItem, const USBHost::ReportDescriptor::LocalItem& localItem)
+void USBHost::GenericHID::OnMainItem(const USBHost::ReportDescriptor::GlobalItem& globalItem, const USBHost::ReportDescriptor::LocalItem& localItem, uint32_t& reportOffset)
 {
 	//::printf("%s,%s,%s\n", itemData.IsData()? "Data" : "Constant",
 	//	itemData.IsArray()? "Array" : "Variable", itemData.IsAbsolute()? "Absolute" : "Relative");
@@ -517,42 +517,12 @@ void USBHost::GenericHID::OnMainItem(const USBHost::ReportDescriptor::GlobalItem
 				if (nUsageInfo_ >= count_of(usageInfoTbl_)) {
 					::panic("the number of usages exceeds the capacity of USBHost::GenericHID (%d)", count_of(usageInfoTbl_));
 				}
-				switch (globalItem.itemType) {
-				case ReportDescriptor::ItemType::Input: {
-					usageInfoTbl_[nUsageInfo_++] = ReportDescriptor::UsageInfo(usage, pGlobalItem, reportOffset_Input_);
-					reportOffset_Input_ += globalItem.reportSize;
-					break;
-				}
-				case ReportDescriptor::ItemType::Output: {
-					usageInfoTbl_[nUsageInfo_++] = ReportDescriptor::UsageInfo(usage, pGlobalItem, reportOffset_Output_);
-					reportOffset_Output_ += globalItem.reportSize;
-					break;
-				}
-				case ReportDescriptor::ItemType::Feature: {
-					usageInfoTbl_[nUsageInfo_++] = ReportDescriptor::UsageInfo(usage, pGlobalItem, reportOffset_Feature_);
-					reportOffset_Feature_ += globalItem.reportSize;
-					break;
-				}
-				default: break;
-				}
+				usageInfoTbl_[nUsageInfo_++] = ReportDescriptor::UsageInfo(usage, pGlobalItem, reportOffset);
+				reportOffset += globalItem.reportSize;
 			}
 		}
 	} else {
-		switch (globalItem.itemType) {
-		case ReportDescriptor::ItemType::Input: {
-			reportOffset_Input_ += globalItem.reportSize * globalItem.reportCount;
-			break;
-		}
-		case ReportDescriptor::ItemType::Output: {
-			reportOffset_Output_ += globalItem.reportSize * globalItem.reportCount;
-			break;
-		}
-		case ReportDescriptor::ItemType::Feature: {
-			reportOffset_Feature_ += globalItem.reportSize * globalItem.reportCount;
-			break;
-		}
-		default: break;
-		}
+		reportOffset += globalItem.reportSize * globalItem.reportCount;
 	}
 }
 
@@ -585,6 +555,9 @@ USBHost::ReportDescriptor::ReportDescriptor()
 bool USBHost::ReportDescriptor::Parse(Handler& handler, const uint8_t* descReport, uint16_t descLen)
 {
 	uint32_t usagePage = 0;
+	uint32_t reportOffset_Input = 0;
+	uint32_t reportOffset_Output = 0;
+	uint32_t reportOffset_Feature = 0;
 	globalItem_.Clear();
 	localItem_.Clear();
 	Dump(descReport, descLen);
@@ -611,10 +584,24 @@ bool USBHost::ReportDescriptor::Parse(Handler& handler, const uint8_t* descRepor
 		::printf("%02x:%s (0x%0*x)\n", itemType, GetItemTypeName(itemType), bytesItemData * 2, itemData);
 		switch (itemType) {
 		// 6.2.2.4 Main Items
-		case ItemType::Input: case ItemType::Output: case ItemType::Feature: {
+		case ItemType::Input: {
 			globalItem_.itemType = itemType;
 			globalItem_.mainItemData = itemData;
-			handler.OnMainItem(globalItem_, localItem_);
+			handler.OnMainItem(globalItem_, localItem_, reportOffset_Input);
+			localItem_.Clear();
+			break;
+		}
+		case ItemType::Output: {
+			globalItem_.itemType = itemType;
+			globalItem_.mainItemData = itemData;
+			handler.OnMainItem(globalItem_, localItem_, reportOffset_Output);
+			localItem_.Clear();
+			break;
+		}
+		case ItemType::Feature: {
+			globalItem_.itemType = itemType;
+			globalItem_.mainItemData = itemData;
+			handler.OnMainItem(globalItem_, localItem_, reportOffset_Feature);
 			localItem_.Clear();
 			break;
 		}
