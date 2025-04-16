@@ -609,7 +609,7 @@ bool USBHost::ReportDescriptor::Parse(Handler& handler, const uint8_t* descRepor
 	uint32_t reportOffset_Feature = 0;
 	globalItem_.Clear();
 	localItem_.Clear();
-	Dump(descReport, descLen);
+	//Dump(descReport, descLen);
 	uint8_t itemTypePrev = 0;
 	for (uint16_t descOffset = 0; descOffset < descLen; ) {
 		uint8_t src = descReport[descOffset++];
