@@ -14,24 +14,24 @@ int main()
 	::printf("----\n");
 	for (;;) {
 		::printf("%d%d%d%d%d%d%d%d%d%d%d%d%d %x %02x %02x %02x %02x\n",
-			gamePad.GetReportValue(0x00090001),	// X
-			gamePad.GetReportValue(0x00090002),	// Y
-			gamePad.GetReportValue(0x00090003),	// A
-			gamePad.GetReportValue(0x00090004),	// B
-			gamePad.GetReportValue(0x00090005),	// 5|LB
-			gamePad.GetReportValue(0x00090006),	// 6|RB
-			gamePad.GetReportValue(0x00090007),	// 7|LT
-			gamePad.GetReportValue(0x00090008),	// 8|RT
-			gamePad.GetReportValue(0x00090009),	// Left Stick
-			gamePad.GetReportValue(0x0009000a),	// Right Stick
-			gamePad.GetReportValue(0x0009000b),	// BACK
-			gamePad.GetReportValue(0x0009000c),	// START 
-			gamePad.GetReportValue(0x0009000d),	// GUIDE
-			gamePad.GetReportValue(0x00010039),	// Hat Switch
-			gamePad.GetReportValue(0x00010030),	// X
-			gamePad.GetReportValue(0x00010031),	// Y
-			gamePad.GetReportValue(0x00010032),	// Z
-			gamePad.GetReportValue(0x00010035)	// Rz
+			gamePad.GetReportValue_ButtonX(),		// X
+			gamePad.GetReportValue_ButtonY(),		// Y
+			gamePad.GetReportValue_ButtonA(),		// A
+			gamePad.GetReportValue_ButtonB(),		// B
+			gamePad.GetReportValue_ButtonLB(),		// 5|LB
+			gamePad.GetReportValue_ButtonRB(),		// 6|RB
+			gamePad.GetReportValue_ButtonLT(),		// 7|LT
+			gamePad.GetReportValue_ButtonRT(),		// 8|RT
+			gamePad.GetReportValue_ButtonLStick(),	// Left Stick
+			gamePad.GetReportValue_ButtonRStick(),	// Right Stick
+			gamePad.GetReportValue_ButtonBACK(),	// BACK
+			gamePad.GetReportValue_ButtonSTART(),	// START 
+			gamePad.GetReportValue_ButtonGUIDE(),	// GUIDE
+			gamePad.GetReportValue_HatSwitch(),		// Hat Switch
+			gamePad.GetReportValue_LStickHorz(),	// X
+			gamePad.GetReportValue_LStickVert(),	// Y
+			gamePad.GetReportValue_RStickHorz(),	// Z
+			gamePad.GetReportValue_RStickVert()		// Rz
 		);
 		Tickable::Sleep(100);
 	}

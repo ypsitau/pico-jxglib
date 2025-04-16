@@ -216,12 +216,17 @@ public:
 	class GenericHID : public ReportDescriptor::Handler {
 	public:
 		class UsageAccessor {
+		public:
+			using UsageInfo = ReportDescriptor::UsageInfo;
 		private:
 			GenericHID& genericHID_;
 		public:
 			UsageAccessor(GenericHID& genericHID) : genericHID_{genericHID} {}
 		public:
-
+		private:
+			const UsageInfo& FindUsageInfo(uint16_t usagePage, uint16_t usageId) const {
+				return genericHID_.FindUsageInfo(usagePage, usageId);
+			}
 		};
 	private:
 		uint8_t reportCaptured_[32];
@@ -239,8 +244,33 @@ public:
 		GenericHID();
 	public:
 		uint32_t GetReportValue(uint32_t usage) const;
+		uint32_t GetReportValue(uint16_t usagePage, uint16_t usageId) const {
+			return GetReportValue(Usage(usagePage, usageId));
+		}
+	public:
+		const uint32_t GetReportValue_ButtonX() const		{ return GetReportValue(0x0009, 0x0001); }
+		const uint32_t GetReportValue_ButtonY() const		{ return GetReportValue(0x0009, 0x0002); }
+		const uint32_t GetReportValue_ButtonA() const		{ return GetReportValue(0x0009, 0x0003); }
+		const uint32_t GetReportValue_ButtonB() const		{ return GetReportValue(0x0009, 0x0004); }
+		const uint32_t GetReportValue_ButtonLB() const		{ return GetReportValue(0x0009, 0x0005); }
+		const uint32_t GetReportValue_ButtonRB() const		{ return GetReportValue(0x0009, 0x0006); }
+		const uint32_t GetReportValue_ButtonLT() const		{ return GetReportValue(0x0009, 0x0007); }
+		const uint32_t GetReportValue_ButtonRT() const		{ return GetReportValue(0x0009, 0x0008); }
+		const uint32_t GetReportValue_ButtonLStick() const	{ return GetReportValue(0x0009, 0x0009); }
+		const uint32_t GetReportValue_ButtonRStick() const	{ return GetReportValue(0x0009, 0x000a); }
+		const uint32_t GetReportValue_ButtonBACK() const	{ return GetReportValue(0x0009, 0x000b); }
+		const uint32_t GetReportValue_ButtonSTART() const	{ return GetReportValue(0x0009, 0x000c); }
+		const uint32_t GetReportValue_ButtonGUIDE() const	{ return GetReportValue(0x0009, 0x000d); }
+		const uint32_t GetReportValue_HatSwitch() const		{ return GetReportValue(0x0001, 0x0039); }
+		const uint32_t GetReportValue_LStickHorz() const	{ return GetReportValue(0x0001, 0x0030); }
+		const uint32_t GetReportValue_LStickVert() const	{ return GetReportValue(0x0001, 0x0031); }
+		const uint32_t GetReportValue_RStickHorz() const	{ return GetReportValue(0x0001, 0x0035); }
+		const uint32_t GetReportValue_RStickVert() const	{ return GetReportValue(0x0001, 0x0032); }
 	public:
 		const ReportDescriptor::UsageInfo& FindUsageInfo(uint32_t usage) const;
+		const ReportDescriptor::UsageInfo& FindUsageInfo(uint16_t usagePage, uint16_t usageId) const {
+			return FindUsageInfo(Usage(usagePage, usageId));
+		}
 	public:
 		bool ParseReportDescriptor(const uint8_t* descReport, uint16_t descLen);
 		void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len);
@@ -269,6 +299,7 @@ public:
 	static Mouse& GetMouse() { return Instance.mouse_; }
 	static GenericHID& GetGamePad() { return Instance.genericHID_; }
 	static EventHandler* GetEventHandler() { return Instance.pEventHandler_; }
+	constexpr static uint32_t Usage(uint16_t usagePage, uint16_t usageID) { return (static_cast<uint32_t>(usagePage) << 16) + usageID; }
 public:
 	// virtual functions of Tickable
 	virtual const char* GetTickableName() const override { return "USBHost"; }
