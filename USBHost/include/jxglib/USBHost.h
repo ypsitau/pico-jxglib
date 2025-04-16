@@ -175,8 +175,15 @@ public:
 		uint8_t iInstance_;
 	public:
 		HID(uint8_t devAddr, uint8_t iInstance) : devAddr_{devAddr}, iInstance_{iInstance} {}
+		virtual ~HID() {}
 	public:
-		virtual void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len) = 0;
+		uint8_t GetDevAddr() const { return devAddr_; }
+		uint8_t GetIInstance() const { return iInstance_; }
+	public:
+		virtual bool IsKeyboard() const { return false; }
+		virtual bool IsMouse() const { return false; }
+		virtual bool IsGamePad() const { return false; }
+		virtual void OnReport(const uint8_t* report, uint16_t len) = 0;
 	};
 	class Keyboard : public HID, public KeyboardRepeatable {
 	public:
@@ -192,11 +199,14 @@ public:
 		bool capsLockAsCtrlFlag_;
 		ReportCaptured reportCaptured_;
 	public:
+		static Keyboard None;
+	public:
 		static const UsageIdToKeyCode usageIdToKeyCodeTbl[256];
 	public:
 		Keyboard(uint8_t devAddr, uint8_t iInstance);
 	public:
-		virtual void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len) override;
+		virtual bool IsKeyboard() const override { return true; }
+		virtual void OnReport(const uint8_t* report, uint16_t len) override;
 	public:
 		// virtual function of jxglib::Keyboard
 		virtual jxglib::Keyboard& SetCapsLockAsCtrl(bool capsLockAsCtrlFlag = true) override;
@@ -211,12 +221,15 @@ public:
 		int xRaw_;
 		int yRaw_;
 	public:
+		static Mouse None;
+	public:
 		Mouse(uint8_t devAddr, uint8_t iInstance);
 	public:
 		void UpdateStage();
 		Point CalcPoint() const;
 	public:
-		virtual void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len) override;
+		virtual bool IsMouse() const override { return true; }
+		virtual void OnReport(const uint8_t* report, uint16_t len) override;
 	public:
 		// virtual function of jxglib::Mouse
 		virtual jxglib::Mouse& SetSensibility(float sensibility) override;
@@ -230,6 +243,8 @@ public:
 		int nUsageInfo_;
 		ReportDescriptor::GlobalItem globalItemTbl_[32];
 		ReportDescriptor::UsageInfo usageInfoTbl_[32];
+	public:
+		static GenericHID None;
 	public:
 		GenericHID(uint8_t devAddr, uint8_t iInstance);
 	public:
@@ -264,7 +279,8 @@ public:
 	public:
 		bool ParseReportDescriptor(const uint8_t* descReport, uint16_t descLen);
 	public:
-		virtual void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len) override;
+		virtual bool IsGamePad() const override { return true; }
+		virtual void OnReport(const uint8_t* report, uint16_t len) override;
 	public:
 		virtual void OnMainItem(const USBHost::ReportDescriptor::GlobalItem& globalItem, const USBHost::ReportDescriptor::LocalItem& localItem, uint32_t& reportOffset);
 		virtual void OnCollection(ReportDescriptor::CollectionType collectionType, uint32_t usage);
@@ -277,9 +293,9 @@ public:
 public:
 	ReportDescriptor reportDescriptor;
 private:
-	Keyboard keyboard_;
-	Mouse mouse_;
-	GenericHID genericHID_;
+	//Keyboard keyboard_;
+	//Mouse mouse_;
+	//GenericHID genericHID_;
 	HID* hidTbl_[CFG_TUH_HID];
 	EventHandler* pEventHandler_;
 public:
@@ -287,9 +303,12 @@ public:
 public:
 	static void Initialize(uint8_t rhport = BOARD_TUH_RHPORT, EventHandler* pEventHandler = nullptr);
 public:
-	static Keyboard& GetKeyboard() { return Instance.keyboard_; }
-	static Mouse& GetMouse() { return Instance.mouse_; }
-	static GenericHID& GetGamePad() { return Instance.genericHID_; }
+	static void SetHID(HID* pHID) { Instance.hidTbl_[pHID->GetIInstance()] = pHID; }
+	static HID* GetHID(uint8_t iInstance) { return Instance.hidTbl_[iInstance]; }
+	static void DeleteHID(uint8_t iInstance) { delete Instance.hidTbl_[iInstance]; Instance.hidTbl_[iInstance] = nullptr; }
+	static Keyboard& GetKeyboard();
+	static Mouse& GetMouse();
+	static GenericHID& GetGamePad();
 	static EventHandler* GetEventHandler() { return Instance.pEventHandler_; }
 	constexpr static uint32_t Usage(uint16_t usagePage, uint16_t usageID) { return (static_cast<uint32_t>(usagePage) << 16) + usageID; }
 public:

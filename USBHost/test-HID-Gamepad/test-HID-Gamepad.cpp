@@ -11,12 +11,12 @@ int main()
 	::stdio_init_all();
 	Printable::SetStandardOutput(Stdio::Instance);
 	USBHost::Initialize();
-	USBHost::GenericHID& gamePad = USBHost::GetGamePad();
+	//for (;;) {
+	//	::printf("----\n");
+	//	Tickable::Sleep(1000);
+	//}
 	for (;;) {
-		::printf("----\n");
-		Tickable::Sleep(1000);
-	}
-	for (;;) {
+		USBHost::GenericHID& gamePad = USBHost::GetGamePad();
 		::printf("%d%d%d%d%d%d%d%d%d%d%d%d%d %x %02x %02x %02x %02x\n",
 			gamePad.GetReportValue_ButtonX(),		// X
 			gamePad.GetReportValue_ButtonY(),		// Y
@@ -37,6 +37,6 @@ int main()
 			gamePad.GetReportValue_RStickHorz(),	// Z
 			gamePad.GetReportValue_RStickVert()		// Rz
 		);
-		Tickable::Sleep(100);
+		Tickable::Sleep(300);
 	}
 }
