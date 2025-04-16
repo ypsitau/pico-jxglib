@@ -70,7 +70,6 @@ void tuh_umount_cb(uint8_t devAddr)
 void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descReport, uint16_t descLen)
 {
 	::printf("tuh_hid_mount_cb(devAddr=%d, iInstance=%d)\n", devAddr, iInstance);
-
 	uint8_t itfProtocol = ::tuh_hid_interface_protocol(devAddr, iInstance);
 	if (itfProtocol == HID_ITF_PROTOCOL_KEYBOARD) {
 		USBHost::SetHID(new USBHost::Keyboard(devAddr, iInstance));
@@ -82,8 +81,6 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 		pHID->PrintUsage();
 		USBHost::SetHID(pHID);
 	}
-	//USBHost::Instance.GetGamePad().ParseReportDescriptor(descReport, descLen);
-	//USBHost::Instance.GetGamePad().PrintUsage();
 	::tuh_hid_receive_report(devAddr, iInstance);
 }
 
@@ -96,27 +93,7 @@ void tuh_hid_umount_cb(uint8_t devAddr, uint8_t iInstance)
 void tuh_hid_report_received_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len)
 {
 	USBHost::HID* pHID = USBHost::GetHID(iInstance);
-	if (pHID) pHID->OnReport(report, len);
-#if 0
-	uint8_t const itfProtocol = ::tuh_hid_interface_protocol(devAddr, iInstance);
-	switch (itfProtocol) {
-	case HID_ITF_PROTOCOL_NONE: {
-
-		USBHost::GetGamePad().OnReport(devAddr, iInstance, report, len);
-
-		break;
-	}
-	case HID_ITF_PROTOCOL_KEYBOARD: {
-		USBHost::GetKeyboard().OnReport(devAddr, iInstance, report, len);
-		break;
-	}
-	case HID_ITF_PROTOCOL_MOUSE: {
-		USBHost::GetMouse().OnReport(devAddr, iInstance, report, len);
-		break;
-	}
-	default: break;
-	}
-#endif
+	if (pHID) pHID->OnReport(devAddr, iInstance, report, len);
 	::tuh_hid_receive_report(devAddr, iInstance);
 }
 
@@ -397,7 +374,7 @@ Keyboard& USBHost::Keyboard::SetCapsLockAsCtrl(bool capsLockAsCtrlFlag)
 	return *this;
 }
 
-void USBHost::Keyboard::OnReport(const uint8_t* report, uint16_t len)
+void USBHost::Keyboard::OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len)
 {
 	const hid_keyboard_report_t& reportEx = *reinterpret_cast<const hid_keyboard_report_t*>(report);
 	::memset(&reportCaptured_, 0x00, sizeof(reportCaptured_));
@@ -481,7 +458,7 @@ Point USBHost::Mouse::CalcPoint() const
 			yRaw_ * (rcStage_.height - 1) / (rcStageRaw_.height - 1) + rcStage_.y);
 }
 
-void USBHost::Mouse::OnReport(const uint8_t* report, uint16_t len)
+void USBHost::Mouse::OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len)
 {
 	const hid_mouse_report_t& reportEx = *reinterpret_cast<const hid_mouse_report_t*>(report);
 	int xDiff = reportEx.x, yDiff = reportEx.y;
@@ -517,7 +494,7 @@ const USBHost::ReportDescriptor::UsageInfo& USBHost::GenericHID::FindUsageInfo(u
 	return ReportDescriptor::UsageInfo::None;
 }
 
-void USBHost::GenericHID::OnReport(const uint8_t* report, uint16_t len)
+void USBHost::GenericHID::OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len)
 {
 	if (len <= sizeof(reportCaptured_)) {
 		::memcpy(reportCaptured_, report, len);

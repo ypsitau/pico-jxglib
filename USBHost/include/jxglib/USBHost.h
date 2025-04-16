@@ -183,7 +183,7 @@ public:
 		virtual bool IsKeyboard() const { return false; }
 		virtual bool IsMouse() const { return false; }
 		virtual bool IsGamePad() const { return false; }
-		virtual void OnReport(const uint8_t* report, uint16_t len) = 0;
+		virtual void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len) = 0;
 	};
 	class Keyboard : public HID, public KeyboardRepeatable {
 	public:
@@ -206,7 +206,7 @@ public:
 		Keyboard(uint8_t devAddr, uint8_t iInstance);
 	public:
 		virtual bool IsKeyboard() const override { return true; }
-		virtual void OnReport(const uint8_t* report, uint16_t len) override;
+		virtual void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len) override;
 	public:
 		// virtual function of jxglib::Keyboard
 		virtual jxglib::Keyboard& SetCapsLockAsCtrl(bool capsLockAsCtrlFlag = true) override;
@@ -229,7 +229,7 @@ public:
 		Point CalcPoint() const;
 	public:
 		virtual bool IsMouse() const override { return true; }
-		virtual void OnReport(const uint8_t* report, uint16_t len) override;
+		virtual void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len) override;
 	public:
 		// virtual function of jxglib::Mouse
 		virtual jxglib::Mouse& SetSensibility(float sensibility) override;
@@ -280,7 +280,7 @@ public:
 		bool ParseReportDescriptor(const uint8_t* descReport, uint16_t descLen);
 	public:
 		virtual bool IsGamePad() const override { return true; }
-		virtual void OnReport(const uint8_t* report, uint16_t len) override;
+		virtual void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len) override;
 	public:
 		virtual void OnMainItem(const USBHost::ReportDescriptor::GlobalItem& globalItem, const USBHost::ReportDescriptor::LocalItem& localItem, uint32_t& reportOffset);
 		virtual void OnCollection(ReportDescriptor::CollectionType collectionType, uint32_t usage);
