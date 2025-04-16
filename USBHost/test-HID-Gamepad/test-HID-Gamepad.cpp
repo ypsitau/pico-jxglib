@@ -7,12 +7,15 @@ using namespace jxglib;
 
 int main()
 {
+
 	::stdio_init_all();
 	Printable::SetStandardOutput(Stdio::Instance);
 	USBHost::Initialize();
 	USBHost::GenericHID& gamePad = USBHost::GetGamePad();
-	::printf("----\n");
-	for (;;) Tickable::Tick();
+	for (;;) {
+		::printf("----\n");
+		Tickable::Sleep(1000);
+	}
 	for (;;) {
 		::printf("%d%d%d%d%d%d%d%d%d%d%d%d%d %x %02x %02x %02x %02x\n",
 			gamePad.GetReportValue_ButtonX(),		// X

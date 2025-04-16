@@ -187,7 +187,7 @@ public:
 	public:
 		Keyboard();
 	public:
-		void OnReport(uint8_t devAddr, uint8_t iInstance, const hid_keyboard_report_t& report);
+		void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len);
 	public:
 		// virtual function of jxglib::Keyboard
 		virtual jxglib::Keyboard& SetCapsLockAsCtrl(bool capsLockAsCtrlFlag = true) override;
@@ -207,7 +207,7 @@ public:
 		void UpdateStage();
 		Point CalcPoint() const;
 	public:
-		void OnReport(uint8_t devAddr, uint8_t iInstance, const hid_mouse_report_t& report);
+		void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len);
 	public:
 		// virtual function of jxglib::Mouse
 		virtual jxglib::Mouse& SetSensibility(float sensibility) override;

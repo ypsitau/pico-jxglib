@@ -43,20 +43,16 @@ void tuh_umount_cb(uint8_t devAddr)
 void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descReport, uint16_t descLen)
 {
 	::printf("tuh_hid_mount_cb(devAddr=%d, iInstance=%d)\n", devAddr, iInstance);
-	uint8_t itfProtocol = ::tuh_hid_interface_protocol(devAddr, iInstance);
-	::printf("HID Interface Protocol = %s\r\n",
-		(itfProtocol == HID_ITF_PROTOCOL_NONE)? "None" :
-		(itfProtocol == HID_ITF_PROTOCOL_KEYBOARD)? "Keyboard" :
-		(itfProtocol == HID_ITF_PROTOCOL_MOUSE)? "Mouse" : "unknown");
+	//uint8_t itfProtocol = ::tuh_hid_interface_protocol(devAddr, iInstance);
+	//::printf("HID Interface Protocol = %s\r\n",
+	//	(itfProtocol == HID_ITF_PROTOCOL_NONE)? "None" :
+	//	(itfProtocol == HID_ITF_PROTOCOL_KEYBOARD)? "Keyboard" :
+	//	(itfProtocol == HID_ITF_PROTOCOL_MOUSE)? "Mouse" : "unknown");
 	
-	USBHost::Instance.GetGamePad().ParseReportDescriptor(descReport, descLen);
-	USBHost::Instance.GetGamePad().PrintUsage();
+	//USBHost::Instance.GetGamePad().ParseReportDescriptor(descReport, descLen);
+	//USBHost::Instance.GetGamePad().PrintUsage();
 
-	// request to receive report
-	// tuh_hid_report_received_cb() will be invoked when report is available
-	if (!::tuh_hid_receive_report(devAddr, iInstance)) {
-		::printf("Error: cannot request to receive report\r\n");
-	}
+	::tuh_hid_receive_report(devAddr, iInstance);
 }
 
 void tuh_hid_umount_cb(uint8_t devAddr, uint8_t iInstance)
@@ -75,18 +71,16 @@ void tuh_hid_report_received_cb(uint8_t devAddr, uint8_t iInstance, const uint8_
 		break;
 	}
 	case HID_ITF_PROTOCOL_KEYBOARD: {
-		USBHost::GetKeyboard().OnReport(devAddr, iInstance, *reinterpret_cast<const hid_keyboard_report_t*>(report));
+		USBHost::GetKeyboard().OnReport(devAddr, iInstance, report, len);
 		break;
 	}
 	case HID_ITF_PROTOCOL_MOUSE: {
-		USBHost::GetMouse().OnReport(devAddr, iInstance, *reinterpret_cast<const hid_mouse_report_t*>(report));
+		USBHost::GetMouse().OnReport(devAddr, iInstance, report, len);
 		break;
 	}
 	default: break;
 	}
-	if (!::tuh_hid_receive_report(devAddr, iInstance)) {
-		printf("Error: cannot request to receive report\r\n");
-	}
+	::tuh_hid_receive_report(devAddr, iInstance);
 }
 
 }
@@ -364,13 +358,14 @@ Keyboard& USBHost::Keyboard::SetCapsLockAsCtrl(bool capsLockAsCtrlFlag)
 	return *this;
 }
 
-void USBHost::Keyboard::OnReport(uint8_t devAddr, uint8_t iInstance, const hid_keyboard_report_t& report)
+void USBHost::Keyboard::OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len)
 {
+	const hid_keyboard_report_t& reportEx = *reinterpret_cast<const hid_keyboard_report_t*>(report);
 	::memset(&reportCaptured_, 0x00, sizeof(reportCaptured_));
-	reportCaptured_.modifier = report.modifier;
+	reportCaptured_.modifier = reportEx.modifier;
 	int iDst = 0;
-	for (int iSrc = 0; iSrc < count_of(report.keycode); iSrc++) {
-		uint8_t usageId = report.keycode[iSrc];
+	for (int iSrc = 0; iSrc < count_of(reportEx.keycode); iSrc++) {
+		uint8_t usageId = reportEx.keycode[iSrc];
 		const UsageIdToKeyCode& usageIdToKeyCode = usageIdToKeyCodeTbl[usageId];
 		uint8_t keyCode = GetKeyLayout().IsNonUS()? usageIdToKeyCode.keyCodeNonUS : usageIdToKeyCode.keyCodeUS;
 		if (capsLockAsCtrlFlag_ && keyCode == VK_CAPITAL) {
@@ -445,12 +440,13 @@ Point USBHost::Mouse::CalcPoint() const
 			yRaw_ * (rcStage_.height - 1) / (rcStageRaw_.height - 1) + rcStage_.y);
 }
 
-void USBHost::Mouse::OnReport(uint8_t devAddr, uint8_t iInstance, const hid_mouse_report_t& report)
+void USBHost::Mouse::OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len)
 {
-	int xDiff = report.x, yDiff = report.y;
+	const hid_mouse_report_t& reportEx = *reinterpret_cast<const hid_mouse_report_t*>(report);
+	int xDiff = reportEx.x, yDiff = reportEx.y;
 	xRaw_ = ChooseMin(ChooseMax(xRaw_ + xDiff, 0), rcStageRaw_.width - 1);
 	yRaw_ = ChooseMin(ChooseMax(yRaw_ + yDiff, 0), rcStageRaw_.height - 1);
-	status_.Update(CalcPoint(), report.x, report.y, report.wheel, report.pan, report.buttons);
+	status_.Update(CalcPoint(), reportEx.x, reportEx.y, reportEx.wheel, reportEx.pan, reportEx.buttons);
 }
 
 //------------------------------------------------------------------------------
