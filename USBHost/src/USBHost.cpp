@@ -656,7 +656,7 @@ USBHost::GenericHID* USBHost::ReportDescriptor::Parse(const uint8_t* descReport,
 			itemTypePrev = itemType;
 			continue;
 		}
-		::printf("%p %02x:%s (0x%0*x)\n", pGenericHIDCur, itemType, GetItemTypeName(itemType), bytesItemData * 2, itemData);
+		//::printf("%p %02x:%s (0x%0*x)\n", pGenericHIDCur, itemType, GetItemTypeName(itemType), bytesItemData * 2, itemData);
 		switch (itemType) {
 		// 6.2.2.4 Main Items
 		case ItemType::Input: {
