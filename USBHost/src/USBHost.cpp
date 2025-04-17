@@ -10,7 +10,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 USBHost USBHost::Instance;
 
-USBHost::USBHost() : pEventHandler_{nullptr} //, keyboard_(0, 0), mouse_(0, 0), genericHID_(0, 0)
+USBHost::USBHost() : pEventHandler_{nullptr}, keyboard_(false), mouse_(false)
 {
 	::memset(hidTbl_, 0x00, sizeof(hidTbl_));
 }
@@ -25,7 +25,7 @@ void USBHost::SetKeyboard(uint8_t iInstance)
 {
 	for (uint8_t iInstanceIter = 0; iInstanceIter < CFG_TUH_HID; iInstanceIter++) {
 		if (GetHID(iInstanceIter) == &keyboard_) {
-			SetHID(iInstance, new Keyboard());
+			SetHID(iInstance, new Keyboard(true));
 			return;
 		}
 	}
@@ -36,7 +36,7 @@ void USBHost::SetMouse(uint8_t iInstance)
 {
 	for (uint8_t iInstanceIter = 0; iInstanceIter < CFG_TUH_HID; iInstanceIter++) {
 		if (GetHID(iInstanceIter) == &mouse_) {
-			SetHID(iInstance, new Mouse());
+			SetHID(iInstance, new Mouse(true));
 			return;
 		}
 	}
@@ -47,9 +47,11 @@ USBHost::Keyboard& USBHost::FindKeyboard(int idx)
 {
 	for (uint8_t iInstance = 0; iInstance < CFG_TUH_HID; iInstance++) {
 		HID* pHID = Instance.GetHID(iInstance);
-		if (pHID && pHID->IsKeyboard()) {
-			if (idx == 0) return *reinterpret_cast<Keyboard*>(pHID);
-			idx--;
+		for ( ; pHID; pHID->GetListNext()) {
+			if (pHID->IsKeyboard()) {
+				if (idx == 0) return *reinterpret_cast<Keyboard*>(pHID);
+				idx--;
+			}
 		}
 	}
 	return Keyboard::None;
@@ -59,24 +61,28 @@ USBHost::Mouse& USBHost::FindMouse(int idx)
 {
 	for (uint8_t iInstance = 0; iInstance < CFG_TUH_HID; iInstance++) {
 		HID* pHID = Instance.GetHID(iInstance);
-		if (pHID && pHID->IsMouse()) {
-			if (idx == 0) return *reinterpret_cast<Mouse*>(pHID);
-			idx--;
+		for ( ; pHID; pHID->GetListNext()) {
+			if (pHID->IsMouse()) {
+				if (idx == 0) return *reinterpret_cast<Mouse*>(pHID);
+				idx--;
+			}
 		}
 	}
 	return Mouse::None;
 }
 
-USBHost::GamePad& USBHost::FindGamePad(int idx)
+USBHost::GenericHID& USBHost::FindGenericHID(uint32_t usage, int idx)
 {
 	for (uint8_t iInstance = 0; iInstance < CFG_TUH_HID; iInstance++) {
 		HID* pHID = Instance.GetHID(iInstance);
-		if (pHID && pHID->IsGamePad()) {
-			if (idx == 0) return *reinterpret_cast<GamePad*>(pHID);
-			idx--;
+		for ( ; pHID; pHID->GetListNext()) {
+			if( pHID->IsGenericHID(usage)) {
+				if (idx == 0) return *reinterpret_cast<GenericHID*>(pHID);
+				idx--;
+			}
 		}
 	}
-	return GamePad::None;
+	return GenericHID::None;
 }
 
 void USBHost::DeleteHID(uint8_t iInstance)
@@ -88,7 +94,7 @@ void USBHost::DeleteHID(uint8_t iInstance)
 	} else if (pHID == &mouse_) {
 		// nothing to do
 	} else {
-		delete pHID;
+		HID::DeleteList(pHID);
 	}
 }
 
@@ -120,10 +126,11 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 	} else if (itfProtocol == HID_ITF_PROTOCOL_MOUSE) {
 		USBHost::Instance.SetMouse(iInstance);
 	} else {
-		auto pGamePad = new USBHost::GamePad();
-		pGamePad->ParseReportDescriptor(descReport, descLen);
-		pGamePad->PrintUsage();
-		USBHost::Instance.SetHID(iInstance, pGamePad);
+		std::unique_ptr<USBHost::GenericHID> pGenericHID(USBHost::Instance.reportDescriptor.Parse(descReport, descLen));
+		if (pGenericHID) {
+			//pGenericHID->PrintUsage();
+			USBHost::Instance.SetHID(iInstance, pGenericHID.release());
+		}
 	}
 	::tuh_hid_receive_report(devAddr, iInstance);
 }
@@ -144,9 +151,37 @@ void tuh_hid_report_received_cb(uint8_t devAddr, uint8_t iInstance, const uint8_
 }
 
 //------------------------------------------------------------------------------
+// USBHost::HID
+//------------------------------------------------------------------------------
+USBHost::HID::HID(bool deletableFlag) : deletableFlag_{deletableFlag}, pHIDNext_{nullptr}
+{
+}
+
+void USBHost::HID::AppendList(HID* pHID)
+{
+	GetListLast()->pHIDNext_ = pHID;
+}
+
+void USBHost::HID::DeleteList(HID* pHID)
+{
+	while (pHID) {
+		HID* pHIDNext = pHID->GetListNext();
+		if (pHID->IsDeletable()) delete pHID;
+		pHID = pHIDNext;
+	}
+}
+
+USBHost::HID* USBHost::HID::GetListLast()
+{
+	HID* pHID = this;
+	for ( ; pHID->GetListNext(); pHID = pHID->GetListNext()) ;
+	return pHID;
+}
+
+//------------------------------------------------------------------------------
 // USBHost::Keyboard
 //------------------------------------------------------------------------------
-USBHost::Keyboard USBHost::Keyboard::None;
+USBHost::Keyboard USBHost::Keyboard::None(false);
 
 const USBHost::Keyboard::UsageIdToKeyCode USBHost::Keyboard::usageIdToKeyCodeTbl[256] = {
 	{ 0,				0,				},	// 0x00
@@ -407,7 +442,7 @@ const USBHost::Keyboard::UsageIdToKeyCode USBHost::Keyboard::usageIdToKeyCodeTbl
 	{ 0,				0,				},	// 0xff
 };
 
-USBHost::Keyboard::Keyboard() : capsLockAsCtrlFlag_{false}
+USBHost::Keyboard::Keyboard(bool deletableFlag) : HID(deletableFlag), capsLockAsCtrlFlag_{false}
 {
 	::memset(&reportCaptured_, 0x00, sizeof(reportCaptured_));
 }
@@ -467,9 +502,9 @@ int USBHost::Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax, bool inc
 //------------------------------------------------------------------------------
 // USBHost::Mouse
 //------------------------------------------------------------------------------
-USBHost::Mouse USBHost::Mouse::None;
+USBHost::Mouse USBHost::Mouse::None(false);
 
-USBHost::Mouse::Mouse() : sensibility_{.6}
+USBHost::Mouse::Mouse(bool deletableFlag) : HID(deletableFlag), sensibility_{.6}
 {
 	SetStage({0, 0, 320, 240});
 }
@@ -514,18 +549,15 @@ void USBHost::Mouse::OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t*
 //------------------------------------------------------------------------------
 // USBHost::GenericHID
 //------------------------------------------------------------------------------
-USBHost::GenericHID::GenericHID() : nGlobalItem_{0}, nUsageInfo_{0}
+USBHost::GenericHID USBHost::GenericHID::None(false, 0);
+
+USBHost::GenericHID::GenericHID(bool deletableFlag, uint32_t usage) : HID(deletableFlag), usage_{usage}, nGlobalItem_{0}, nUsageInfo_{0}
 {
 }
 
 uint32_t USBHost::GenericHID::GetReportValue(uint32_t usage) const
 {
 	return FindUsageInfo(usage).GetReportValue(reportCaptured_, lenCaptured_);
-}
-
-bool USBHost::GenericHID::ParseReportDescriptor(const uint8_t* descReport, uint16_t descLen)
-{
-	return Instance.reportDescriptor.Parse(*this, descReport, descLen);
 }
 
 const USBHost::ReportDescriptor::UsageInfo& USBHost::GenericHID::FindUsageInfo(uint32_t usage) const
@@ -572,10 +604,6 @@ void USBHost::GenericHID::OnMainItem(const USBHost::ReportDescriptor::GlobalItem
 
 void USBHost::GenericHID::OnCollection(USBHost::ReportDescriptor::CollectionType collectionType, uint32_t usage)
 {
-	//::printf("Collection: %08x\n", usage);
-	if (usage == 0x00010005) { // Generic Desktop Page : Game Pad
-
-	}
 }
 
 void USBHost::GenericHID::OnEndCollection()
@@ -589,11 +617,6 @@ void USBHost::GenericHID::PrintUsage(int indentLevel) const
 	}
 }
 
-//------------------------------------------------------------------------------
-// USBHost::GamePad
-//------------------------------------------------------------------------------
-USBHost::GamePad USBHost::GamePad::None;
-
 //-----------------------------------------------------------------------------
 // USBHost::ReportDescriptor
 //-----------------------------------------------------------------------------
@@ -601,8 +624,9 @@ USBHost::ReportDescriptor::ReportDescriptor()
 {
 }
 
-bool USBHost::ReportDescriptor::Parse(Handler& handler, const uint8_t* descReport, uint16_t descLen)
+USBHost::GenericHID* USBHost::ReportDescriptor::Parse(const uint8_t* descReport, uint16_t descLen)
 {
+	int collectionLevel = 0;
 	uint32_t usagePage = 0;
 	uint32_t reportOffset_Input = 0;
 	uint32_t reportOffset_Output = 0;
@@ -611,6 +635,8 @@ bool USBHost::ReportDescriptor::Parse(Handler& handler, const uint8_t* descRepor
 	localItem_.Clear();
 	//Dump(descReport, descLen);
 	uint8_t itemTypePrev = 0;
+	std::unique_ptr<GenericHID> pGenericHIDFirst;
+	GenericHID* pGenericHIDCur = nullptr;
 	for (uint16_t descOffset = 0; descOffset < descLen; ) {
 		uint8_t src = descReport[descOffset++];
 		uint8_t itemType = src & 0xfc;
@@ -618,7 +644,7 @@ bool USBHost::ReportDescriptor::Parse(Handler& handler, const uint8_t* descRepor
 		if (bytesItemData == 3) bytesItemData = 4;
 		if (descOffset + bytesItemData > descLen) {
 			// illegal format
-			return false;
+			return nullptr;
 		}
 		uint32_t itemData = 0;
 		for (int iByte = 0; iByte < bytesItemData; iByte++, descOffset++) {
@@ -630,38 +656,54 @@ bool USBHost::ReportDescriptor::Parse(Handler& handler, const uint8_t* descRepor
 			itemTypePrev = itemType;
 			continue;
 		}
-		//::printf("%02x:%s (0x%0*x)\n", itemType, GetItemTypeName(itemType), bytesItemData * 2, itemData);
+		::printf("%p %02x:%s (0x%0*x)\n", pGenericHIDCur, itemType, GetItemTypeName(itemType), bytesItemData * 2, itemData);
 		switch (itemType) {
 		// 6.2.2.4 Main Items
 		case ItemType::Input: {
 			globalItem_.itemType = itemType;
 			globalItem_.mainItemData = itemData;
-			handler.OnMainItem(globalItem_, localItem_, reportOffset_Input);
+			if (pGenericHIDCur) pGenericHIDCur->OnMainItem(globalItem_, localItem_, reportOffset_Input);
 			localItem_.Clear();
 			break;
 		}
 		case ItemType::Output: {
 			globalItem_.itemType = itemType;
 			globalItem_.mainItemData = itemData;
-			handler.OnMainItem(globalItem_, localItem_, reportOffset_Output);
+			if (pGenericHIDCur) pGenericHIDCur->OnMainItem(globalItem_, localItem_, reportOffset_Output);
 			localItem_.Clear();
 			break;
 		}
 		case ItemType::Feature: {
 			globalItem_.itemType = itemType;
 			globalItem_.mainItemData = itemData;
-			handler.OnMainItem(globalItem_, localItem_, reportOffset_Feature);
+			if (pGenericHIDCur) pGenericHIDCur->OnMainItem(globalItem_, localItem_, reportOffset_Feature);
 			localItem_.Clear();
 			break;
 		}
 		case ItemType::Collection: {
+			CollectionType collectionType = static_cast<CollectionType>(itemData);
 			uint32_t usage = localItem_.usageTbl[0].minimum;
-			handler.OnCollection(static_cast<CollectionType>(itemData), usage);
+			if (collectionType == CollectionType::Application) {
+				pGenericHIDCur = new GenericHID(true, usage);
+				if (pGenericHIDFirst) {
+					pGenericHIDFirst->AppendList(pGenericHIDCur);
+				} else {
+					pGenericHIDFirst.reset(pGenericHIDCur);
+				}
+			} else if (pGenericHIDCur) {
+				pGenericHIDCur->OnCollection(collectionType, usage);
+			}
 			localItem_.Clear();
+			collectionLevel++;
 			break;
 		}
 		case ItemType::EndCollection: {
-			handler.OnEndCollection();
+			collectionLevel--;
+			if (collectionLevel == 0) {
+				pGenericHIDCur = nullptr;
+			} else if (pGenericHIDCur) {
+				pGenericHIDCur->OnEndCollection();
+			}
 			break;
 		}
 		// 6.2.2.7 Global Items
@@ -768,7 +810,7 @@ bool USBHost::ReportDescriptor::Parse(Handler& handler, const uint8_t* descRepor
 		}
 		itemTypePrev = itemType;
 	}
-	return true;
+	return pGenericHIDFirst.release();
 }
 
 const char* USBHost::ReportDescriptor::GetItemTypeName(uint8_t itemType)

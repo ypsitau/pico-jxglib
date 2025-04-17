@@ -3,6 +3,7 @@
 //==============================================================================
 #ifndef PICO_JXGLIB_USBHOST_H
 #define PICO_JXGLIB_USBHOST_H
+#include <memory>
 #include "pico/stdlib.h"
 #include "tusb.h"
 #include "jxglib/FIFOBuff.h"
@@ -17,6 +18,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class USBHost : public Tickable {
 public:
+	class GenericHID;
 	class ReportDescriptor {
 	public:
 		struct ItemType {
@@ -149,18 +151,12 @@ public:
 		public:
 			void Print(int indentLevel = 0) const;
 		};
-		class Handler {
-		public:
-			virtual void OnMainItem(const GlobalItem& globalItem, const LocalItem& localItem, uint32_t& reportOffset) = 0;
-			virtual void OnCollection(CollectionType collectionType, uint32_t usage) = 0;
-			virtual void OnEndCollection() = 0;
-		};
 	private:
 		GlobalItem globalItem_;
 		LocalItem localItem_;
 	public:
 		ReportDescriptor();
-		bool Parse(Handler& handler, const uint8_t* descReport, uint16_t descLen);
+		GenericHID* Parse(const uint8_t* descReport, uint16_t descLen);
 	public:
 		static const char* GetItemTypeName(uint8_t itemType);
 	};
@@ -170,13 +166,23 @@ public:
 		virtual void OnUmount(uint8_t devAddr) {}
 	};
 	class HID {
+	private:
+		bool deletableFlag_;
+		HID* pHIDNext_;		
 	public:
-		HID() {}
+		HID(bool deletableFlag);
 		virtual ~HID() {}
+	public:
+		bool IsDeletable() const { return deletableFlag_; }
+	public:
+		void AppendList(HID* pHID);
+		static void DeleteList(HID* pHID);
+		HID* GetListNext() { return pHIDNext_; }
+		HID* GetListLast();
 	public:
 		virtual bool IsKeyboard() const { return false; }
 		virtual bool IsMouse() const { return false; }
-		virtual bool IsGamePad() const { return false; }
+		virtual bool IsGenericHID(uint32_t usage) const { return false; }
 		virtual void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len) = 0;
 	};
 	class Keyboard : public HID, public KeyboardRepeatable {
@@ -197,7 +203,7 @@ public:
 	public:
 		static const UsageIdToKeyCode usageIdToKeyCodeTbl[256];
 	public:
-		Keyboard();
+		Keyboard(bool deletableFlag);
 	public:
 		virtual bool IsKeyboard() const override { return true; }
 		virtual void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len) override;
@@ -217,7 +223,7 @@ public:
 	public:
 		static Mouse None;
 	public:
-		Mouse();
+		Mouse(bool deletableFlag);
 	public:
 		void UpdateStage();
 		Point CalcPoint() const;
@@ -229,8 +235,9 @@ public:
 		virtual jxglib::Mouse& SetSensibility(float sensibility) override;
 		virtual jxglib::Mouse& SetStage(const Rect& rcStage) override;
 	};
-	class GenericHID : public HID, public ReportDescriptor::Handler {
+	class GenericHID : public HID {
 	private:
+		uint32_t usage_;
 		uint8_t reportCaptured_[32];
 		uint16_t lenCaptured_;
 		int nGlobalItem_;
@@ -238,7 +245,9 @@ public:
 		ReportDescriptor::GlobalItem globalItemTbl_[32];
 		ReportDescriptor::UsageInfo usageInfoTbl_[32];
 	public:
-		GenericHID();
+		static GenericHID None;
+	public:
+		GenericHID(bool deletableFlag, uint32_t usage);
 	public:
 		uint32_t GetReportValue(uint32_t usage) const;
 		uint32_t GetReportValue(uint16_t usagePage, uint16_t usageId) const {
@@ -250,23 +259,20 @@ public:
 			return FindUsageInfo(Usage(usagePage, usageId));
 		}
 	public:
-		bool ParseReportDescriptor(const uint8_t* descReport, uint16_t descLen);
-	public:
+		virtual bool IsGenericHID(uint32_t usage) const override { return usage == usage_; }
 		virtual void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len) override;
 	public:
-		virtual void OnMainItem(const USBHost::ReportDescriptor::GlobalItem& globalItem, const USBHost::ReportDescriptor::LocalItem& localItem, uint32_t& reportOffset);
-		virtual void OnCollection(ReportDescriptor::CollectionType collectionType, uint32_t usage);
-		virtual void OnEndCollection();
+		void OnMainItem(const USBHost::ReportDescriptor::GlobalItem& globalItem, const USBHost::ReportDescriptor::LocalItem& localItem, uint32_t& reportOffset);
+		void OnCollection(ReportDescriptor::CollectionType collectionType, uint32_t usage);
+		void OnEndCollection();
 	public:
 		void PrintUsage(int indentLevel = 0) const;
 	};
-	class GamePad : public GenericHID {
+	class GamePad {
+	private:
+		GenericHID& genericHID_;
 	public:
-		static GamePad None;
-	public:
-		GamePad() {}
-	public:
-		virtual bool IsGamePad() const override { return true; }
+		GamePad(GenericHID& genericHID) : genericHID_{genericHID} {}
 	public:
 		const uint32_t Get_ButtonX() const		{ return GetReportValue(0x0009, 0x0001); }
 		const uint32_t Get_ButtonY() const		{ return GetReportValue(0x0009, 0x0002); }
@@ -286,6 +292,10 @@ public:
 		const uint32_t Get_LStickVert() const	{ return GetReportValue(0x0001, 0x0031); }
 		const uint32_t Get_RStickHorz() const	{ return GetReportValue(0x0001, 0x0035); }
 		const uint32_t Get_RStickVert() const	{ return GetReportValue(0x0001, 0x0032); }
+	public:
+		uint32_t GetReportValue(uint16_t usagePage, uint16_t usageId) const {
+			return genericHID_.GetReportValue(usagePage, usageId);
+		}
 	};
 public:
 	static USBHost Instance;
@@ -311,7 +321,7 @@ public:
 	static Mouse& GetMouse() { return Instance.mouse_; }
 	static Keyboard& FindKeyboard(int idx = 0);
 	static Mouse& FindMouse(int idx = 0);
-	static GamePad& FindGamePad(int idx = 0);
+	static GenericHID& FindGenericHID(uint32_t usage, int idx = 0);
 	static EventHandler* GetEventHandler() { return Instance.pEventHandler_; }
 	constexpr static uint32_t Usage(uint16_t usagePage, uint16_t usageID) { return (static_cast<uint32_t>(usagePage) << 16) + usageID; }
 public:

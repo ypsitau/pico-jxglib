@@ -7,16 +7,14 @@ using namespace jxglib;
 
 int main()
 {
-
 	::stdio_init_all();
+	//::printf("%d %d\n", sizeof(USBHost::ReportDescriptor::GlobalItem), sizeof(USBHost::ReportDescriptor::UsageInfo));
 	Printable::SetStandardOutput(Stdio::Instance);
 	USBHost::Initialize();
-	//for (;;) {
-	//	::printf("----\n");
-	//	Tickable::Sleep(1000);
-	//}
+	//for (;;) Tickable::Sleep(1000);
+#if 1
 	for (;;) {
-		USBHost::GamePad& gamePad = USBHost::FindGamePad();
+		USBHost::GamePad gamePad(USBHost::FindGenericHID(0x00010005));
 		::printf("%d%d%d%d%d%d%d%d%d%d%d%d%d %x %02x %02x %02x %02x\n",
 			gamePad.Get_ButtonX(),
 			gamePad.Get_ButtonY(),
@@ -38,4 +36,5 @@ int main()
 			gamePad.Get_RStickVert());
 		Tickable::Sleep(300);
 	}
+#endif
 }
