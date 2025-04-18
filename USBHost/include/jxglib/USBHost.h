@@ -210,6 +210,7 @@ public:
 		ReportDescriptor();
 		GenericHID* Parse(const uint8_t* descReport, uint16_t descLen);
 	public:
+		static const char* GetCollectionTypeName(CollectionType collectionType);
 		static const char* GetItemTypeName(uint8_t itemType);
 	};
 	class EventHandler {

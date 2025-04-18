@@ -580,31 +580,6 @@ void USBHost::GenericHID::OnReport(uint8_t devAddr, uint8_t iInstance, const uin
 	}
 }
 
-#if 0
-void USBHost::GenericHID::OnMainItem(USBHost::ReportDescriptor::GlobalItem* pGlobalItem, const USBHost::ReportDescriptor::LocalItem& localItem, uint32_t& reportOffset)
-{
-	//::printf("%s,%s,%s\n", itemData.IsData()? "Data" : "Constant",
-	//	itemData.IsArray()? "Array" : "Variable", itemData.IsAbsolute()? "Absolute" : "Relative");
-	//globalItem.Print(1);
-	if (ReportDescriptor::MainItemData::IsVariable(pGlobalItem->mainItemData)) {
-		for (int i = 0; i < localItem.nUsage; i++) {
-			const USBHost::ReportDescriptor::Range& range = localItem.usageTbl[i];
-			for (uint32_t usage = range.minimum; usage <= range.maximum; usage++) {
-				auto pUsageInfo = new ReportDescriptor::UsageInfo(usage, pGlobalItem, reportOffset);
-				if (pUsageInfoTop_) {
-					pUsageInfoTop_->AppendList(pUsageInfo);
-				} else {
-					pUsageInfoTop_.reset(pUsageInfo);
-				}
-				reportOffset += pGlobalItem->reportSize;
-			}
-		}
-	} else {
-		reportOffset += pGlobalItem->reportSize * pGlobalItem->reportCount;
-	}
-}
-#endif
-
 //-----------------------------------------------------------------------------
 // USBHost::ReportDescriptor
 //-----------------------------------------------------------------------------
@@ -788,6 +763,18 @@ USBHost::GenericHID* USBHost::ReportDescriptor::Parse(const uint8_t* descReport,
 	return pGenericHID.release();
 }
 
+const char* USBHost::ReportDescriptor::GetCollectionTypeName(CollectionType collectionType)
+{
+	return
+		(collectionType == CollectionType::Physical)?		"Physical" :
+		(collectionType == CollectionType::Application)?	"Application" :
+		(collectionType == CollectionType::Logical)?		"Logical" :
+		(collectionType == CollectionType::Report)?			"Report" :
+		(collectionType == CollectionType::NamedArray)?		"NamedArray" :
+		(collectionType == CollectionType::UsageSwitch)?	"UsageSwitch" :
+		(collectionType == CollectionType::UsageModifier)?	"UsageModifier" : "none";
+}
+
 const char* USBHost::ReportDescriptor::GetItemTypeName(uint8_t itemType)
 {
 	static const struct {
@@ -966,7 +953,7 @@ void USBHost::ReportDescriptor::Collection::PrintUsage(int indentLevel) const
 		pUsageInfo->Print(indentLevel);
 	}
 	for (auto pCollection = pCollectionChildTop_.get(); pCollection; pCollection = pCollection->GetListNext()) {
-		::printf("%*s{\n", indentLevel * 2, "");
+		::printf("%*s%s(%08x) {\n", indentLevel * 2, "", GetCollectionTypeName(pCollection->GetCollectionType()), pCollection->GetUsage());
 		pCollection->PrintUsage(indentLevel + 1);
 		::printf("%*s}\n", indentLevel * 2, "");
 	}
