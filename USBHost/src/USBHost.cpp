@@ -120,16 +120,19 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 {
 	::printf("tuh_hid_mount_cb(devAddr=%d, iInstance=%d)\n", devAddr, iInstance);
 	uint8_t itfProtocol = ::tuh_hid_interface_protocol(devAddr, iInstance);
+
+	//do {
+	//	std::unique_ptr<USBHost::GenericHID> pGenericHID(USBHost::Instance.reportDescriptor.Parse(descReport, descLen));
+	//	if (pGenericHID) pGenericHID->GetCollection().PrintUsage();
+	//} while (0);
+
 	if (itfProtocol == HID_ITF_PROTOCOL_KEYBOARD) {
 		USBHost::Instance.SetKeyboard(iInstance);
 	} else if (itfProtocol == HID_ITF_PROTOCOL_MOUSE) {
 		USBHost::Instance.SetMouse(iInstance);
 	} else {
 		std::unique_ptr<USBHost::GenericHID> pGenericHID(USBHost::Instance.reportDescriptor.Parse(descReport, descLen));
-		if (pGenericHID) {
-			pGenericHID->GetCollection().PrintUsage();
-			USBHost::Instance.SetHID(iInstance, pGenericHID.release());
-		}
+		if (pGenericHID) USBHost::Instance.SetHID(iInstance, pGenericHID.release());
 	}
 	::tuh_hid_receive_report(devAddr, iInstance);
 }
