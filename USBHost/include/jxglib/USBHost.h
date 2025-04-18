@@ -83,7 +83,6 @@ public:
 			UsageSwitch		= 0x05,
 			UsageModifier	= 0x06,
 		};
-
 		struct Range {
 			uint32_t minimum;
 			uint32_t maximum;
@@ -167,6 +166,22 @@ public:
 			uint32_t GetReportValue(const uint8_t* report, uint16_t len) const;
 		public:
 			void Print(int indentLevel = 0) const;
+		};
+		class Collection {
+		private:
+			CollectionType collectionType_;
+			std::unique_ptr<UsageInfo> pUsageInfoTop_;
+			std::unique_ptr<Collection> pCollectionTop_;
+			std::unique_ptr<Collection> pCollectionNext_;
+		public:
+			static const Collection None;
+		public:
+			Collection(CollectionType collectionType) : collectionType_{collectionType} {}
+		public:
+			void AppendList(Collection* pCollection) { GetListLast()->pCollectionNext_.reset(pCollection); }
+			Collection* GetListNext() { return pCollectionNext_.get(); }
+			const Collection* GetListNext() const { return pCollectionNext_.get(); }
+			Collection* GetListLast();
 		};
 	private:
 		GlobalItem globalItem_;
@@ -268,6 +283,8 @@ public:
 		uint32_t GetReportValue(uint16_t usagePage, uint16_t usageId) const {
 			return GetReportValue(Usage(usagePage, usageId));
 		}
+	public:
+		ReportDescriptor::GlobalItem* AddGlobalItem(const ReportDescriptor::GlobalItem& globalItem);
 	public:
 		const ReportDescriptor::UsageInfo& FindUsageInfo(uint32_t usage) const;
 		const ReportDescriptor::UsageInfo& FindUsageInfo(uint16_t usagePage, uint16_t usageId) const {

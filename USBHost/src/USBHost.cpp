@@ -74,8 +74,7 @@ USBHost::Mouse& USBHost::FindMouse(int idx)
 USBHost::GenericHID& USBHost::FindGenericHID(uint32_t usage, int idx)
 {
 	for (uint8_t iInstance = 0; iInstance < CFG_TUH_HID; iInstance++) {
-		HID* pHID = Instance.GetHID(iInstance);
-		for ( ; pHID; pHID->GetListNext()) {
+		for (HID* pHID = Instance.GetHID(iInstance); pHID; pHID->GetListNext()) {
 			if( pHID->IsGenericHID(usage)) {
 				if (idx == 0) return *reinterpret_cast<GenericHID*>(pHID);
 				idx--;
@@ -555,6 +554,17 @@ USBHost::GenericHID::GenericHID(bool deletableFlag, uint32_t usage) : HID(deleta
 {
 }
 
+USBHost::ReportDescriptor::GlobalItem* USBHost::GenericHID::AddGlobalItem(const USBHost::ReportDescriptor::GlobalItem& globalItem)
+{
+	ReportDescriptor::GlobalItemList* pGlobalItemList = new ReportDescriptor::GlobalItemList(globalItem);
+	if (pGlobalItemListTop_) {
+		pGlobalItemListTop_->AppendList(pGlobalItemList);
+	} else {
+		pGlobalItemListTop_.reset(pGlobalItemList);
+	}
+	return &pGlobalItemList->globalItem;
+}
+
 uint32_t USBHost::GenericHID::GetReportValue(uint32_t usage) const
 {
 	return FindUsageInfo(usage).GetReportValue(reportCaptured_, lenCaptured_);
@@ -581,17 +591,12 @@ void USBHost::GenericHID::OnMainItem(const USBHost::ReportDescriptor::GlobalItem
 	//::printf("%s,%s,%s\n", itemData.IsData()? "Data" : "Constant",
 	//	itemData.IsArray()? "Array" : "Variable", itemData.IsAbsolute()? "Absolute" : "Relative");
 	//globalItem.Print(1);
-	ReportDescriptor::GlobalItemList* pGlobalItemList = new ReportDescriptor::GlobalItemList(globalItem);
-	if (pGlobalItemListTop_) {
-		pGlobalItemListTop_->AppendList(pGlobalItemList);
-	} else {
-		pGlobalItemListTop_.reset(pGlobalItemList);
-	}
+	auto pGlobalItem = AddGlobalItem(globalItem);
 	if (ReportDescriptor::MainItemData::IsVariable(globalItem.mainItemData)) {
 		for (int i = 0; i < localItem.nUsage; i++) {
 			const USBHost::ReportDescriptor::Range& range = localItem.usageTbl[i];
 			for (uint32_t usage = range.minimum; usage <= range.maximum; usage++) {
-				auto pUsageInfo = new ReportDescriptor::UsageInfo(usage, &pGlobalItemList->globalItem, reportOffset);
+				auto pUsageInfo = new ReportDescriptor::UsageInfo(usage, pGlobalItem, reportOffset);
 				if (pUsageInfoTop_) {
 					pUsageInfoTop_->AppendList(pUsageInfo);
 				} else {
@@ -925,6 +930,18 @@ void USBHost::ReportDescriptor::UsageInfo::Print(int indentLevel) const
 	::printf("%*susage:%04x:%04x offset:%d size:%d LMin:%d LMax:%d PMin:%d PMax:%d UnitExp:%d\n",
 		indentLevel * 2, "", GetUsage() >> 16, GetUsage() & 0xffff, GetReportOffset(), GetReportSize(),
 		GetLogicalMinimum(), GetLogicalMaximum(), GetPhysicalMinimum(), GetPhysicalMaximum(), GetUnitExponent());
+}
+
+//-----------------------------------------------------------------------------
+// USBHost::ReportDescriptor::Collection
+//-----------------------------------------------------------------------------
+const USBHost::ReportDescriptor::Collection USBHost::ReportDescriptor::Collection::None(CollectionType::Physical);
+
+USBHost::ReportDescriptor::Collection* USBHost::ReportDescriptor::Collection::GetListLast()
+{
+	auto* pCollection = this;
+	for ( ; pCollection->GetListNext(); pCollection = pCollection->GetListNext()) ;
+	return pCollection;
 }
 
 }
