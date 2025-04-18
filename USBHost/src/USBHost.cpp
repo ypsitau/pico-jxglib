@@ -592,7 +592,7 @@ void USBHost::GenericHID::OnMainItem(const USBHost::ReportDescriptor::GlobalItem
 	//	itemData.IsArray()? "Array" : "Variable", itemData.IsAbsolute()? "Absolute" : "Relative");
 	//globalItem.Print(1);
 	auto pGlobalItem = AddGlobalItem(globalItem);
-	if (ReportDescriptor::MainItemData::IsVariable(globalItem.mainItemData)) {
+	if (ReportDescriptor::MainItemData::IsVariable(pGlobalItem->mainItemData)) {
 		for (int i = 0; i < localItem.nUsage; i++) {
 			const USBHost::ReportDescriptor::Range& range = localItem.usageTbl[i];
 			for (uint32_t usage = range.minimum; usage <= range.maximum; usage++) {
@@ -602,20 +602,12 @@ void USBHost::GenericHID::OnMainItem(const USBHost::ReportDescriptor::GlobalItem
 				} else {
 					pUsageInfoTop_.reset(pUsageInfo);
 				}
-				reportOffset += globalItem.reportSize;
+				reportOffset += pGlobalItem->reportSize;
 			}
 		}
 	} else {
-		reportOffset += globalItem.reportSize * globalItem.reportCount;
+		reportOffset += pGlobalItem->reportSize * pGlobalItem->reportCount;
 	}
-}
-
-void USBHost::GenericHID::OnCollection(USBHost::ReportDescriptor::CollectionType collectionType, uint32_t usage)
-{
-}
-
-void USBHost::GenericHID::OnEndCollection()
-{
 }
 
 void USBHost::GenericHID::PrintUsage(int indentLevel) const
@@ -643,6 +635,7 @@ USBHost::GenericHID* USBHost::ReportDescriptor::Parse(const uint8_t* descReport,
 	localItem_.Clear();
 	//Dump(descReport, descLen);
 	uint8_t itemTypePrev = 0;
+	std::unique_ptr<Collection> pCollection(new Collection(CollectionType::None, 0));
 	std::unique_ptr<GenericHID> pGenericHIDFirst;
 	GenericHID* pGenericHIDCur = nullptr;
 	for (uint16_t descOffset = 0; descOffset < descLen; ) {
@@ -691,6 +684,8 @@ USBHost::GenericHID* USBHost::ReportDescriptor::Parse(const uint8_t* descReport,
 		case ItemType::Collection: {
 			CollectionType collectionType = static_cast<CollectionType>(itemData);
 			uint32_t usage = localItem_.usageTbl[0].minimum;
+			new Collection(collectionType, usage);
+
 			if (collectionType == CollectionType::Application) {
 				pGenericHIDCur = new GenericHID(true, usage);
 				if (pGenericHIDFirst) {
@@ -699,7 +694,7 @@ USBHost::GenericHID* USBHost::ReportDescriptor::Parse(const uint8_t* descReport,
 					pGenericHIDFirst.reset(pGenericHIDCur);
 				}
 			} else if (pGenericHIDCur) {
-				pGenericHIDCur->OnCollection(collectionType, usage);
+				//pGenericHIDCur->OnCollection(collectionType, usage);
 			}
 			localItem_.Clear();
 			collectionLevel++;
@@ -707,11 +702,6 @@ USBHost::GenericHID* USBHost::ReportDescriptor::Parse(const uint8_t* descReport,
 		}
 		case ItemType::EndCollection: {
 			collectionLevel--;
-			if (collectionLevel == 0) {
-				pGenericHIDCur = nullptr;
-			} else if (pGenericHIDCur) {
-				pGenericHIDCur->OnEndCollection();
-			}
 			break;
 		}
 		// 6.2.2.7 Global Items
@@ -935,13 +925,31 @@ void USBHost::ReportDescriptor::UsageInfo::Print(int indentLevel) const
 //-----------------------------------------------------------------------------
 // USBHost::ReportDescriptor::Collection
 //-----------------------------------------------------------------------------
-const USBHost::ReportDescriptor::Collection USBHost::ReportDescriptor::Collection::None(CollectionType::Physical);
+const USBHost::ReportDescriptor::Collection USBHost::ReportDescriptor::Collection::None(CollectionType::None, 0);
 
 USBHost::ReportDescriptor::Collection* USBHost::ReportDescriptor::Collection::GetListLast()
 {
 	auto* pCollection = this;
 	for ( ; pCollection->GetListNext(); pCollection = pCollection->GetListNext()) ;
 	return pCollection;
+}
+
+void USBHost::ReportDescriptor::Collection::AppendUsageInfo(UsageInfo* pUsageInfo)
+{
+	if (pUsageInfoTop_) {
+		pUsageInfoTop_->AppendList(pUsageInfo);
+	} else {
+		pUsageInfoTop_.reset(pUsageInfo);
+	}
+}
+
+void USBHost::ReportDescriptor::Collection::AppendCollection(Collection* pCollection)
+{
+	if (pCollectionTop_) {
+		pCollectionTop_->AppendList(pCollection);
+	} else {
+		pCollectionTop_.reset(pCollection);
+	}
 }
 
 }

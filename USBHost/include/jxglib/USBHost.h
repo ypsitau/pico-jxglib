@@ -82,6 +82,7 @@ public:
 			NamedArray		= 0x04,
 			UsageSwitch		= 0x05,
 			UsageModifier	= 0x06,
+			None			= 0xff,
 		};
 		struct Range {
 			uint32_t minimum;
@@ -170,18 +171,25 @@ public:
 		class Collection {
 		private:
 			CollectionType collectionType_;
+			uint32_t usage_;
 			std::unique_ptr<UsageInfo> pUsageInfoTop_;
 			std::unique_ptr<Collection> pCollectionTop_;
 			std::unique_ptr<Collection> pCollectionNext_;
 		public:
 			static const Collection None;
 		public:
-			Collection(CollectionType collectionType) : collectionType_{collectionType} {}
+			Collection(CollectionType collectionType, uint32_t usage) : collectionType_{collectionType}, usage_{usage} {}
+		public:
+			CollectionType GetCollectionType() const { return collectionType_; }
+			uint32_t GetUsage() const { return usage_; }
 		public:
 			void AppendList(Collection* pCollection) { GetListLast()->pCollectionNext_.reset(pCollection); }
 			Collection* GetListNext() { return pCollectionNext_.get(); }
 			const Collection* GetListNext() const { return pCollectionNext_.get(); }
 			Collection* GetListLast();
+		public:
+			void AppendUsageInfo(UsageInfo* pUsageInfo);
+			void AppendCollection(Collection* pCollection);
 		};
 	private:
 		GlobalItem globalItem_;
@@ -295,8 +303,6 @@ public:
 		virtual void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len) override;
 	public:
 		void OnMainItem(const USBHost::ReportDescriptor::GlobalItem& globalItem, const USBHost::ReportDescriptor::LocalItem& localItem, uint32_t& reportOffset);
-		void OnCollection(ReportDescriptor::CollectionType collectionType, uint32_t usage);
-		void OnEndCollection();
 	public:
 		void PrintUsage(int indentLevel = 0) const;
 	};
