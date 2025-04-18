@@ -109,6 +109,19 @@ public:
 			void Clear() { ::memset(this, 0x00, sizeof(GlobalItem)); }
 			void Print(int indentLevel = 0) const;
 		};
+		class GlobalItemList {
+		public:
+			GlobalItem globalItem;
+		private:
+			std::unique_ptr<GlobalItemList> pGlobalItemListNext_;
+		public:
+			GlobalItemList(const GlobalItem& globalItem) : globalItem{globalItem} {}
+		public:
+			void AppendList(GlobalItemList* pGlobalItemList) { GetListLast()->pGlobalItemListNext_.reset(pGlobalItemList); }
+			GlobalItemList* GetListNext() { return pGlobalItemListNext_.get(); }
+			const GlobalItemList* GetListNext() const { return pGlobalItemListNext_.get(); }
+			GlobalItemList* GetListLast();
+		};
 		struct LocalItem {
 			int nUsage;
 			Range usageTbl[8];
@@ -244,8 +257,7 @@ public:
 		uint32_t usage_;
 		uint8_t reportCaptured_[32];
 		uint16_t lenCaptured_;
-		int nGlobalItem_;
-		ReportDescriptor::GlobalItem globalItemTbl_[32];
+		std::unique_ptr<ReportDescriptor::GlobalItemList> pGlobalItemListTop_;
 		std::unique_ptr<ReportDescriptor::UsageInfo> pUsageInfoTop_;
 	public:
 		static GenericHID None;

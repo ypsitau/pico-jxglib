@@ -551,7 +551,7 @@ void USBHost::Mouse::OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t*
 //------------------------------------------------------------------------------
 USBHost::GenericHID USBHost::GenericHID::None(false, 0);
 
-USBHost::GenericHID::GenericHID(bool deletableFlag, uint32_t usage) : HID(deletableFlag), usage_{usage}, nGlobalItem_{0}
+USBHost::GenericHID::GenericHID(bool deletableFlag, uint32_t usage) : HID(deletableFlag), usage_{usage}
 {
 }
 
@@ -581,16 +581,17 @@ void USBHost::GenericHID::OnMainItem(const USBHost::ReportDescriptor::GlobalItem
 	//::printf("%s,%s,%s\n", itemData.IsData()? "Data" : "Constant",
 	//	itemData.IsArray()? "Array" : "Variable", itemData.IsAbsolute()? "Absolute" : "Relative");
 	//globalItem.Print(1);
-	if (nGlobalItem_ >= count_of(globalItemTbl_)) {
-		::panic("the number of global items exceeds the capacity of USBHost::GenericHID (%d)", count_of(globalItemTbl_));
+	ReportDescriptor::GlobalItemList* pGlobalItemList = new ReportDescriptor::GlobalItemList(globalItem);
+	if (pGlobalItemListTop_) {
+		pGlobalItemListTop_->AppendList(pGlobalItemList);
+	} else {
+		pGlobalItemListTop_.reset(pGlobalItemList);
 	}
-	ReportDescriptor::GlobalItem* pGlobalItem = &globalItemTbl_[nGlobalItem_++];
-	*pGlobalItem = globalItem;
 	if (ReportDescriptor::MainItemData::IsVariable(globalItem.mainItemData)) {
 		for (int i = 0; i < localItem.nUsage; i++) {
 			const USBHost::ReportDescriptor::Range& range = localItem.usageTbl[i];
 			for (uint32_t usage = range.minimum; usage <= range.maximum; usage++) {
-				auto pUsageInfo = new ReportDescriptor::UsageInfo(usage, pGlobalItem, reportOffset);
+				auto pUsageInfo = new ReportDescriptor::UsageInfo(usage, &pGlobalItemList->globalItem, reportOffset);
 				if (pUsageInfoTop_) {
 					pUsageInfoTop_->AppendList(pUsageInfo);
 				} else {
@@ -874,6 +875,13 @@ const USBHost::ReportDescriptor::GlobalItem USBHost::ReportDescriptor::GlobalIte
 	reportID:			0,
 	reportCount:		0,
 };
+
+USBHost::ReportDescriptor::GlobalItemList* USBHost::ReportDescriptor::GlobalItemList::GetListLast()
+{
+	auto* pGlobalItemList = this;
+	for ( ; pGlobalItemList->GetListNext(); pGlobalItemList = pGlobalItemList->GetListNext()) ;
+	return pGlobalItemList;
+}
 
 void USBHost::ReportDescriptor::GlobalItem::Print(int indentLevel) const
 {
