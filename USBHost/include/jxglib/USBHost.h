@@ -125,14 +125,18 @@ public:
 			uint32_t usage_;
 			const GlobalItem* pGlobalItem_;
 			uint32_t reportOffset_;
+			std::unique_ptr<UsageInfo> pUsageInfoNext_;
 		public:
 			static const UsageInfo None;
 		public:
 			UsageInfo() : usage_{0}, pGlobalItem_{nullptr}, reportOffset_{0} {}
-			UsageInfo(const UsageInfo& usageInfo) :
-				usage_{usageInfo.usage_}, pGlobalItem_{usageInfo.pGlobalItem_}, reportOffset_{usageInfo.reportOffset_} {}
 			constexpr UsageInfo(uint32_t usage, const GlobalItem* pGlobalItem, uint32_t reportOffset) :
 				usage_{usage}, pGlobalItem_{pGlobalItem}, reportOffset_{reportOffset} {}
+		public:
+			void AppendList(UsageInfo* pUsageInfo) { GetListLast()->pUsageInfoNext_.reset(pUsageInfo); }
+			UsageInfo* GetListNext() { return pUsageInfoNext_.get(); }
+			const UsageInfo* GetListNext() const { return pUsageInfoNext_.get(); }
+			UsageInfo* GetListLast();
 		public:
 			bool IsValid() const { return usage_ != 0; }
 			uint32_t GetUsage() const { return usage_; }
@@ -241,9 +245,8 @@ public:
 		uint8_t reportCaptured_[32];
 		uint16_t lenCaptured_;
 		int nGlobalItem_;
-		int nUsageInfo_;
 		ReportDescriptor::GlobalItem globalItemTbl_[32];
-		ReportDescriptor::UsageInfo usageInfoTbl_[32];
+		std::unique_ptr<ReportDescriptor::UsageInfo> pUsageInfoTop_;
 	public:
 		static GenericHID None;
 	public:

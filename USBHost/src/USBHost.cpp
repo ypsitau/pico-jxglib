@@ -128,7 +128,7 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 	} else {
 		std::unique_ptr<USBHost::GenericHID> pGenericHID(USBHost::Instance.reportDescriptor.Parse(descReport, descLen));
 		if (pGenericHID) {
-			//pGenericHID->PrintUsage();
+			pGenericHID->PrintUsage();
 			USBHost::Instance.SetHID(iInstance, pGenericHID.release());
 		}
 	}
@@ -551,7 +551,7 @@ void USBHost::Mouse::OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t*
 //------------------------------------------------------------------------------
 USBHost::GenericHID USBHost::GenericHID::None(false, 0);
 
-USBHost::GenericHID::GenericHID(bool deletableFlag, uint32_t usage) : HID(deletableFlag), usage_{usage}, nGlobalItem_{0}, nUsageInfo_{0}
+USBHost::GenericHID::GenericHID(bool deletableFlag, uint32_t usage) : HID(deletableFlag), usage_{usage}, nGlobalItem_{0}
 {
 }
 
@@ -562,8 +562,8 @@ uint32_t USBHost::GenericHID::GetReportValue(uint32_t usage) const
 
 const USBHost::ReportDescriptor::UsageInfo& USBHost::GenericHID::FindUsageInfo(uint32_t usage) const
 {
-	for (int i = 0; i < nUsageInfo_; i++) {
-		if (usageInfoTbl_[i].GetUsage() == usage) return usageInfoTbl_[i];
+	for (auto pUsageInfo = pUsageInfoTop_.get(); pUsageInfo; pUsageInfo = pUsageInfo->GetListNext()) {
+		if (pUsageInfo->GetUsage() == usage) return *pUsageInfo;
 	}
 	return ReportDescriptor::UsageInfo::None;
 }
@@ -590,10 +590,12 @@ void USBHost::GenericHID::OnMainItem(const USBHost::ReportDescriptor::GlobalItem
 		for (int i = 0; i < localItem.nUsage; i++) {
 			const USBHost::ReportDescriptor::Range& range = localItem.usageTbl[i];
 			for (uint32_t usage = range.minimum; usage <= range.maximum; usage++) {
-				if (nUsageInfo_ >= count_of(usageInfoTbl_)) {
-					::panic("the number of usages exceeds the capacity of USBHost::GenericHID (%d)", count_of(usageInfoTbl_));
+				auto pUsageInfo = new ReportDescriptor::UsageInfo(usage, pGlobalItem, reportOffset);
+				if (pUsageInfoTop_) {
+					pUsageInfoTop_->AppendList(pUsageInfo);
+				} else {
+					pUsageInfoTop_.reset(pUsageInfo);
 				}
-				usageInfoTbl_[nUsageInfo_++] = ReportDescriptor::UsageInfo(usage, pGlobalItem, reportOffset);
 				reportOffset += globalItem.reportSize;
 			}
 		}
@@ -612,8 +614,8 @@ void USBHost::GenericHID::OnEndCollection()
 
 void USBHost::GenericHID::PrintUsage(int indentLevel) const
 {
-	for (uint32_t i = 0; i < nUsageInfo_; i++) {
-		usageInfoTbl_[i].Print(indentLevel);
+	for (auto pUsageInfo = pUsageInfoTop_.get(); pUsageInfo; pUsageInfo = pUsageInfo->GetListNext()) {
+		pUsageInfo->Print(indentLevel);
 	}
 }
 
@@ -890,6 +892,13 @@ void USBHost::ReportDescriptor::GlobalItem::Print(int indentLevel) const
 // USBHost::ReportDescriptor::UsageInfo
 //-----------------------------------------------------------------------------
 const USBHost::ReportDescriptor::UsageInfo USBHost::ReportDescriptor::UsageInfo::None(0, &GlobalItem::None, 0);
+
+USBHost::ReportDescriptor::UsageInfo* USBHost::ReportDescriptor::UsageInfo::GetListLast()
+{
+	auto* pUsageInfo = this;
+	for ( ; pUsageInfo->GetListNext(); pUsageInfo = pUsageInfo->GetListNext()) ;
+	return pUsageInfo;
+}
 
 uint32_t USBHost::ReportDescriptor::UsageInfo::GetReportValue(const uint8_t* report, uint16_t len) const
 {
