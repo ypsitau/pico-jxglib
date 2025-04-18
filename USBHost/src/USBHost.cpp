@@ -127,7 +127,7 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 	} else {
 		std::unique_ptr<USBHost::GenericHID> pGenericHID(USBHost::Instance.reportDescriptor.Parse(descReport, descLen));
 		if (pGenericHID) {
-			pGenericHID->PrintUsage();
+			pGenericHID->GetCollection().PrintUsage();
 			USBHost::Instance.SetHID(iInstance, pGenericHID.release());
 		}
 	}
@@ -548,9 +548,10 @@ void USBHost::Mouse::OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t*
 //------------------------------------------------------------------------------
 // USBHost::GenericHID
 //------------------------------------------------------------------------------
-USBHost::GenericHID USBHost::GenericHID::None(false, 0);
+USBHost::GenericHID USBHost::GenericHID::None(false);
 
-USBHost::GenericHID::GenericHID(bool deletableFlag, uint32_t usage) : HID(deletableFlag), usage_{usage}
+USBHost::GenericHID::GenericHID(bool deletableFlag) :
+			HID(deletableFlag), collection_(ReportDescriptor::CollectionType::None, 0, nullptr)
 {
 }
 
@@ -567,15 +568,8 @@ USBHost::ReportDescriptor::GlobalItem* USBHost::GenericHID::AddGlobalItem(const 
 
 uint32_t USBHost::GenericHID::GetReportValue(uint32_t usage) const
 {
-	return FindUsageInfo(usage).GetReportValue(reportCaptured_, lenCaptured_);
-}
-
-const USBHost::ReportDescriptor::UsageInfo& USBHost::GenericHID::FindUsageInfo(uint32_t usage) const
-{
-	for (auto pUsageInfo = pUsageInfoTop_.get(); pUsageInfo; pUsageInfo = pUsageInfo->GetListNext()) {
-		if (pUsageInfo->GetUsage() == usage) return *pUsageInfo;
-	}
-	return ReportDescriptor::UsageInfo::None;
+	auto pCollection = GetCollection().GetCollectionChildTop();
+	return pCollection? pCollection->FindUsageInfo(usage).GetReportValue(reportCaptured_, lenCaptured_) : 0;
 }
 
 void USBHost::GenericHID::OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len)
@@ -586,12 +580,12 @@ void USBHost::GenericHID::OnReport(uint8_t devAddr, uint8_t iInstance, const uin
 	}
 }
 
-void USBHost::GenericHID::OnMainItem(const USBHost::ReportDescriptor::GlobalItem& globalItem, const USBHost::ReportDescriptor::LocalItem& localItem, uint32_t& reportOffset)
+#if 0
+void USBHost::GenericHID::OnMainItem(USBHost::ReportDescriptor::GlobalItem* pGlobalItem, const USBHost::ReportDescriptor::LocalItem& localItem, uint32_t& reportOffset)
 {
 	//::printf("%s,%s,%s\n", itemData.IsData()? "Data" : "Constant",
 	//	itemData.IsArray()? "Array" : "Variable", itemData.IsAbsolute()? "Absolute" : "Relative");
 	//globalItem.Print(1);
-	auto pGlobalItem = AddGlobalItem(globalItem);
 	if (ReportDescriptor::MainItemData::IsVariable(pGlobalItem->mainItemData)) {
 		for (int i = 0; i < localItem.nUsage; i++) {
 			const USBHost::ReportDescriptor::Range& range = localItem.usageTbl[i];
@@ -609,13 +603,7 @@ void USBHost::GenericHID::OnMainItem(const USBHost::ReportDescriptor::GlobalItem
 		reportOffset += pGlobalItem->reportSize * pGlobalItem->reportCount;
 	}
 }
-
-void USBHost::GenericHID::PrintUsage(int indentLevel) const
-{
-	for (auto pUsageInfo = pUsageInfoTop_.get(); pUsageInfo; pUsageInfo = pUsageInfo->GetListNext()) {
-		pUsageInfo->Print(indentLevel);
-	}
-}
+#endif
 
 //-----------------------------------------------------------------------------
 // USBHost::ReportDescriptor
@@ -626,7 +614,6 @@ USBHost::ReportDescriptor::ReportDescriptor()
 
 USBHost::GenericHID* USBHost::ReportDescriptor::Parse(const uint8_t* descReport, uint16_t descLen)
 {
-	int collectionLevel = 0;
 	uint32_t usagePage = 0;
 	uint32_t reportOffset_Input = 0;
 	uint32_t reportOffset_Output = 0;
@@ -635,9 +622,8 @@ USBHost::GenericHID* USBHost::ReportDescriptor::Parse(const uint8_t* descReport,
 	localItem_.Clear();
 	//Dump(descReport, descLen);
 	uint8_t itemTypePrev = 0;
-	std::unique_ptr<Collection> pCollection(new Collection(CollectionType::None, 0));
-	std::unique_ptr<GenericHID> pGenericHIDFirst;
-	GenericHID* pGenericHIDCur = nullptr;
+	std::unique_ptr<GenericHID> pGenericHID(new GenericHID(true));
+	auto pCollectionCur = &pGenericHID->GetCollection();
 	for (uint16_t descOffset = 0; descOffset < descLen; ) {
 		uint8_t src = descReport[descOffset++];
 		uint8_t itemType = src & 0xfc;
@@ -657,51 +643,42 @@ USBHost::GenericHID* USBHost::ReportDescriptor::Parse(const uint8_t* descReport,
 			itemTypePrev = itemType;
 			continue;
 		}
-		//::printf("%p %02x:%s (0x%0*x)\n", pGenericHIDCur, itemType, GetItemTypeName(itemType), bytesItemData * 2, itemData);
+		::printf("%02x:%s (0x%0*x)\n", itemType, GetItemTypeName(itemType), bytesItemData * 2, itemData);
 		switch (itemType) {
 		// 6.2.2.4 Main Items
 		case ItemType::Input: {
 			globalItem_.itemType = itemType;
 			globalItem_.mainItemData = itemData;
-			if (pGenericHIDCur) pGenericHIDCur->OnMainItem(globalItem_, localItem_, reportOffset_Input);
+			pCollectionCur->AddMainItem(pGenericHID->AddGlobalItem(globalItem_), localItem_, reportOffset_Input);
 			localItem_.Clear();
 			break;
 		}
 		case ItemType::Output: {
 			globalItem_.itemType = itemType;
 			globalItem_.mainItemData = itemData;
-			if (pGenericHIDCur) pGenericHIDCur->OnMainItem(globalItem_, localItem_, reportOffset_Output);
+			pCollectionCur->AddMainItem(pGenericHID->AddGlobalItem(globalItem_), localItem_, reportOffset_Output);
 			localItem_.Clear();
 			break;
 		}
 		case ItemType::Feature: {
 			globalItem_.itemType = itemType;
 			globalItem_.mainItemData = itemData;
-			if (pGenericHIDCur) pGenericHIDCur->OnMainItem(globalItem_, localItem_, reportOffset_Feature);
+			pCollectionCur->AddMainItem(pGenericHID->AddGlobalItem(globalItem_), localItem_, reportOffset_Feature);
 			localItem_.Clear();
 			break;
 		}
 		case ItemType::Collection: {
 			CollectionType collectionType = static_cast<CollectionType>(itemData);
 			uint32_t usage = localItem_.usageTbl[0].minimum;
-			new Collection(collectionType, usage);
-
-			if (collectionType == CollectionType::Application) {
-				pGenericHIDCur = new GenericHID(true, usage);
-				if (pGenericHIDFirst) {
-					pGenericHIDFirst->AppendList(pGenericHIDCur);
-				} else {
-					pGenericHIDFirst.reset(pGenericHIDCur);
-				}
-			} else if (pGenericHIDCur) {
-				//pGenericHIDCur->OnCollection(collectionType, usage);
-			}
+			Collection* pCollection = new Collection(collectionType, usage, pCollectionCur);
+			pCollectionCur->AppendCollectionChild(pCollection);
+			pCollectionCur = pCollection;
 			localItem_.Clear();
-			collectionLevel++;
 			break;
 		}
 		case ItemType::EndCollection: {
-			collectionLevel--;
+			pCollectionCur = pCollectionCur->GetCollectionParent();
+			if (!pCollectionCur) return nullptr;
 			break;
 		}
 		// 6.2.2.7 Global Items
@@ -808,7 +785,7 @@ USBHost::GenericHID* USBHost::ReportDescriptor::Parse(const uint8_t* descReport,
 		}
 		itemTypePrev = itemType;
 	}
-	return pGenericHIDFirst.release();
+	return pGenericHID.release();
 }
 
 const char* USBHost::ReportDescriptor::GetItemTypeName(uint8_t itemType)
@@ -925,7 +902,7 @@ void USBHost::ReportDescriptor::UsageInfo::Print(int indentLevel) const
 //-----------------------------------------------------------------------------
 // USBHost::ReportDescriptor::Collection
 //-----------------------------------------------------------------------------
-const USBHost::ReportDescriptor::Collection USBHost::ReportDescriptor::Collection::None(CollectionType::None, 0);
+const USBHost::ReportDescriptor::Collection USBHost::ReportDescriptor::Collection::None(CollectionType::None, 0, nullptr);
 
 USBHost::ReportDescriptor::Collection* USBHost::ReportDescriptor::Collection::GetListLast()
 {
@@ -943,12 +920,55 @@ void USBHost::ReportDescriptor::Collection::AppendUsageInfo(UsageInfo* pUsageInf
 	}
 }
 
-void USBHost::ReportDescriptor::Collection::AppendCollection(Collection* pCollection)
+void USBHost::ReportDescriptor::Collection::AppendCollectionChild(Collection* pCollection)
 {
-	if (pCollectionTop_) {
-		pCollectionTop_->AppendList(pCollection);
+	if (pCollectionChildTop_) {
+		pCollectionChildTop_->AppendList(pCollection);
 	} else {
-		pCollectionTop_.reset(pCollection);
+		pCollectionChildTop_.reset(pCollection);
+	}
+}
+
+void USBHost::ReportDescriptor::Collection::AddMainItem(GlobalItem* pGlobalItem, const LocalItem& localItem, uint32_t& reportOffset)
+{
+	//::printf("%s,%s,%s\n", itemData.IsData()? "Data" : "Constant",
+	//	itemData.IsArray()? "Array" : "Variable", itemData.IsAbsolute()? "Absolute" : "Relative");
+	//globalItem.Print(1);
+	if (ReportDescriptor::MainItemData::IsVariable(pGlobalItem->mainItemData)) {
+		for (int i = 0; i < localItem.nUsage; i++) {
+			const USBHost::ReportDescriptor::Range& range = localItem.usageTbl[i];
+			for (uint32_t usage = range.minimum; usage <= range.maximum; usage++) {
+				auto pUsageInfo = new ReportDescriptor::UsageInfo(usage, pGlobalItem, reportOffset);
+				if (pUsageInfoTop_) {
+					pUsageInfoTop_->AppendList(pUsageInfo);
+				} else {
+					pUsageInfoTop_.reset(pUsageInfo);
+				}
+				reportOffset += pGlobalItem->reportSize;
+			}
+		}
+	} else {
+		reportOffset += pGlobalItem->reportSize * pGlobalItem->reportCount;
+	}
+}
+
+const USBHost::ReportDescriptor::UsageInfo& USBHost::ReportDescriptor::Collection::FindUsageInfo(uint32_t usage) const
+{
+	for (auto pUsageInfo = pUsageInfoTop_.get(); pUsageInfo; pUsageInfo = pUsageInfo->GetListNext()) {
+		if (pUsageInfo->GetUsage() == usage) return *pUsageInfo;
+	}
+	return UsageInfo::None;
+}
+
+void USBHost::ReportDescriptor::Collection::PrintUsage(int indentLevel) const
+{
+	for (auto pUsageInfo = pUsageInfoTop_.get(); pUsageInfo; pUsageInfo = pUsageInfo->GetListNext()) {
+		pUsageInfo->Print(indentLevel);
+	}
+	for (auto pCollection = pCollectionChildTop_.get(); pCollection; pCollection = pCollection->GetListNext()) {
+		::printf("%*s{\n", indentLevel * 2, "");
+		pCollection->PrintUsage(indentLevel + 1);
+		::printf("%*s}\n", indentLevel * 2, "");
 	}
 }
 

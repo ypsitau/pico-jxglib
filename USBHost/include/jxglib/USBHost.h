@@ -172,16 +172,22 @@ public:
 		private:
 			CollectionType collectionType_;
 			uint32_t usage_;
+			Collection* pCollectionParent_;
 			std::unique_ptr<UsageInfo> pUsageInfoTop_;
-			std::unique_ptr<Collection> pCollectionTop_;
+			std::unique_ptr<Collection> pCollectionChildTop_;
 			std::unique_ptr<Collection> pCollectionNext_;
 		public:
 			static const Collection None;
 		public:
-			Collection(CollectionType collectionType, uint32_t usage) : collectionType_{collectionType}, usage_{usage} {}
+			Collection(CollectionType collectionType, uint32_t usage, Collection* pCollectionParent) :
+				collectionType_{collectionType}, usage_{usage}, pCollectionParent_{pCollectionParent} {}
 		public:
 			CollectionType GetCollectionType() const { return collectionType_; }
 			uint32_t GetUsage() const { return usage_; }
+			Collection* GetCollectionParent() { return pCollectionParent_; }
+			Collection* GetCollectionChildTop() { return pCollectionChildTop_.get(); }
+			const Collection* GetCollectionChildTop() const { return pCollectionChildTop_.get(); }
+			UsageInfo* GetUsageInfoTop() { return pUsageInfoTop_.get(); }
 		public:
 			void AppendList(Collection* pCollection) { GetListLast()->pCollectionNext_.reset(pCollection); }
 			Collection* GetListNext() { return pCollectionNext_.get(); }
@@ -189,7 +195,13 @@ public:
 			Collection* GetListLast();
 		public:
 			void AppendUsageInfo(UsageInfo* pUsageInfo);
-			void AppendCollection(Collection* pCollection);
+			void AppendCollectionChild(Collection* pCollection);
+		public:
+			void AddMainItem(GlobalItem* pGlobalItem, const LocalItem& localItem, uint32_t& reportOffset);
+		public:
+			const UsageInfo& FindUsageInfo(uint32_t usage) const;
+		public:
+			void PrintUsage(int indentLevel = 0) const;
 		};
 	private:
 		GlobalItem globalItem_;
@@ -277,20 +289,22 @@ public:
 	};
 	class GenericHID : public HID {
 	private:
-		uint32_t usage_;
 		uint8_t reportCaptured_[32];
 		uint16_t lenCaptured_;
 		std::unique_ptr<ReportDescriptor::GlobalItemList> pGlobalItemListTop_;
-		std::unique_ptr<ReportDescriptor::UsageInfo> pUsageInfoTop_;
+		ReportDescriptor::Collection collection_;
 	public:
 		static GenericHID None;
 	public:
-		GenericHID(bool deletableFlag, uint32_t usage);
+		GenericHID(bool deletableFlag);
 	public:
 		uint32_t GetReportValue(uint32_t usage) const;
 		uint32_t GetReportValue(uint16_t usagePage, uint16_t usageId) const {
 			return GetReportValue(Usage(usagePage, usageId));
 		}
+	public:
+		ReportDescriptor::Collection& GetCollection() { return collection_; }
+		const ReportDescriptor::Collection& GetCollection() const { return collection_; }
 	public:
 		ReportDescriptor::GlobalItem* AddGlobalItem(const ReportDescriptor::GlobalItem& globalItem);
 	public:
@@ -299,12 +313,11 @@ public:
 			return FindUsageInfo(Usage(usagePage, usageId));
 		}
 	public:
-		virtual bool IsGenericHID(uint32_t usage) const override { return usage == usage_; }
+		virtual bool IsGenericHID(uint32_t usage) const override {
+			auto pCollection = collection_.GetCollectionChildTop();
+			return pCollection && usage == pCollection->GetUsage();
+		}
 		virtual void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len) override;
-	public:
-		void OnMainItem(const USBHost::ReportDescriptor::GlobalItem& globalItem, const USBHost::ReportDescriptor::LocalItem& localItem, uint32_t& reportOffset);
-	public:
-		void PrintUsage(int indentLevel = 0) const;
 	};
 	class GamePad {
 	private:
