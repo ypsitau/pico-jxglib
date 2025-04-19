@@ -930,14 +930,18 @@ void USBHost::ReportDescriptor::Collection::AppendCollectionChild(Collection* pC
 
 void USBHost::ReportDescriptor::Collection::AddMainItem(GlobalItem* pGlobalItem, const LocalItem& localItem, uint32_t& reportOffset)
 {
-	//::printf("%s,%s,%s\n", itemData.IsData()? "Data" : "Constant",
-	//	itemData.IsArray()? "Array" : "Variable", itemData.IsAbsolute()? "Absolute" : "Relative");
+	uint32_t mainItemData = pGlobalItem->mainItemData;
+	::printf("%s,%s,%s ReportSize:%d ReportCount:%d\n", MainItemData::IsData(mainItemData)? "Data" : "Constant",
+		MainItemData::IsArray(mainItemData)? "Array" : "Variable", MainItemData::IsAbsolute(mainItemData)? "Absolute" : "Relative",
+		pGlobalItem->reportSize, pGlobalItem->reportCount);
 	//globalItem.Print(1);
-	if (ReportDescriptor::MainItemData::IsVariable(pGlobalItem->mainItemData)) {
+	if (MainItemData::IsConstant(pGlobalItem->mainItemData)) {
+		reportOffset += pGlobalItem->reportSize * pGlobalItem->reportCount;
+	} else if (MainItemData::IsVariable(pGlobalItem->mainItemData)) {
 		for (int i = 0; i < localItem.nUsage; i++) {
-			const USBHost::ReportDescriptor::Range& range = localItem.usageTbl[i];
+			const Range& range = localItem.usageTbl[i];
 			for (uint32_t usage = range.minimum; usage <= range.maximum; usage++) {
-				auto pUsageInfo = new ReportDescriptor::UsageInfo(usage, pGlobalItem, reportOffset);
+				auto pUsageInfo = new UsageInfo(usage, pGlobalItem, reportOffset);
 				if (pUsageInfoTop_) {
 					pUsageInfoTop_->AppendList(pUsageInfo);
 				} else {
@@ -946,7 +950,7 @@ void USBHost::ReportDescriptor::Collection::AddMainItem(GlobalItem* pGlobalItem,
 				reportOffset += pGlobalItem->reportSize;
 			}
 		}
-	} else {
+	} else { // Array
 		reportOffset += pGlobalItem->reportSize * pGlobalItem->reportCount;
 	}
 }

@@ -56,7 +56,7 @@ public:
 		struct MainItemData {
 		public:
 			static bool IsData(uint32_t mainItemData)			{ return  !(mainItemData & (1 << 0)); }
-			static bool IsConstatnt(uint32_t mainItemData)		{ return !!(mainItemData & (1 << 0)); }
+			static bool IsConstant(uint32_t mainItemData)		{ return !!(mainItemData & (1 << 0)); }
 			static bool IsArray(uint32_t mainItemData)			{ return  !(mainItemData & (1 << 1)); }
 			static bool IsVariable(uint32_t mainItemData)		{ return !!(mainItemData & (1 << 1)); }
 			static bool IsAbsolute(uint32_t mainItemData)		{ return  !(mainItemData & (1 << 2)); }
