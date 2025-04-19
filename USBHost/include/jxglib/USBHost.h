@@ -107,7 +107,7 @@ public:
 			static const GlobalItem None;
 		public:
 			void Clear() { ::memset(this, 0x00, sizeof(GlobalItem)); }
-			void Print(int indentLevel = 0) const;
+			void Print(Printable& printable, int indentLevel = 0) const;
 		};
 		class GlobalItemList {
 		public:
@@ -166,7 +166,7 @@ public:
 		public:
 			uint32_t GetReportValue(const uint8_t* report, uint16_t len) const;
 		public:
-			void Print(int indentLevel = 0) const;
+			void Print(Printable& printable, int indentLevel = 0) const;
 		};
 		class Collection {
 		private:
@@ -201,7 +201,7 @@ public:
 		public:
 			const UsageInfo& FindUsageInfo(uint32_t usage) const;
 		public:
-			void PrintUsage(int indentLevel = 0) const;
+			void PrintUsage(Printable& printable, int indentLevel = 0) const;
 		};
 		class Application {
 		private:
@@ -211,8 +211,6 @@ public:
 			std::unique_ptr<GlobalItemList> pGlobalItemListTop_;
 			Collection collection_;
 			std::unique_ptr<Application> pApplicationNext_;
-		public:
-			static Application None;
 		public:
 			Application(uint32_t usage);
 		public:
@@ -231,7 +229,7 @@ public:
 			Collection& GetCollection() { return collection_; }
 			const Collection& GetCollection() const { return collection_; }
 		public:
-			GlobalItem* AddGlobalItem(const GlobalItem& globalItem);
+			void AddMainItem(Collection& collection, const GlobalItem& globalItem, const LocalItem& localItem, uint32_t& reportOffset);
 		public:
 			const UsageInfo& FindUsageInfo(uint32_t usage) const;
 			const UsageInfo& FindUsageInfo(uint16_t usagePage, uint16_t usageId) const {
@@ -239,13 +237,15 @@ public:
 			}
 		public:
 			//virtual void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len) override;
+		public:
+			void Print(Printable& printable, int indentLevel = 0) const;
 		};
 	private:
 		GlobalItem globalItem_;
 		LocalItem localItem_;
 	public:
 		ReportDescriptor();
-		GenericHID* Parse(const uint8_t* descReport, uint16_t descLen);
+		Application* Parse(const uint8_t* descReport, uint16_t descLen);
 	public:
 		static const char* GetCollectionTypeName(CollectionType collectionType);
 		static const char* GetItemTypeName(uint8_t itemType);

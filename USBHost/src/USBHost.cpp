@@ -2,6 +2,7 @@
 // USBHost.cpp
 //==============================================================================
 #include "jxglib/USBHost.h"
+#include "jxglib/Stdio.h"
 
 namespace jxglib {
 
@@ -122,10 +123,11 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 	uint8_t itfProtocol = ::tuh_hid_interface_protocol(devAddr, iInstance);
 
 	do {
-		std::unique_ptr<USBHost::GenericHID> pGenericHID(USBHost::Instance.reportDescriptor.Parse(descReport, descLen));
-		if (pGenericHID) pGenericHID->GetCollection().PrintUsage();
+		std::unique_ptr<USBHost::ReportDescriptor::Application> pApplication(USBHost::Instance.reportDescriptor.Parse(descReport, descLen));
+		if (pApplication) pApplication->Print(Stdio::Instance);
 	} while (0);
 
+#if 0
 	if (itfProtocol == HID_ITF_PROTOCOL_KEYBOARD) {
 		USBHost::Instance.SetKeyboard(iInstance);
 	} else if (itfProtocol == HID_ITF_PROTOCOL_MOUSE) {
@@ -134,6 +136,7 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 		std::unique_ptr<USBHost::GenericHID> pGenericHID(USBHost::Instance.reportDescriptor.Parse(descReport, descLen));
 		if (pGenericHID) USBHost::Instance.SetHID(iInstance, pGenericHID.release());
 	}
+#endif
 	::tuh_hid_receive_report(devAddr, iInstance);
 }
 
@@ -590,7 +593,7 @@ USBHost::ReportDescriptor::ReportDescriptor()
 {
 }
 
-USBHost::GenericHID* USBHost::ReportDescriptor::Parse(const uint8_t* descReport, uint16_t descLen)
+USBHost::ReportDescriptor::Application* USBHost::ReportDescriptor::Parse(const uint8_t* descReport, uint16_t descLen)
 {
 	uint32_t usagePage = 0;
 	uint32_t reportOffset_Input = 0;
@@ -600,8 +603,9 @@ USBHost::GenericHID* USBHost::ReportDescriptor::Parse(const uint8_t* descReport,
 	localItem_.Clear();
 	//Dump(descReport, descLen);
 	uint8_t itemTypePrev = 0;
-	std::unique_ptr<GenericHID> pGenericHID(new GenericHID(true));
-	auto pCollectionCur = &pGenericHID->GetCollection();
+	std::unique_ptr<Application> pApplicationTop;
+	Collection* pCollectionCur = nullptr;
+	Application* pApplicationCur = nullptr;
 	for (uint16_t descOffset = 0; descOffset < descLen; ) {
 		uint8_t src = descReport[descOffset++];
 		uint8_t itemType = src & 0xfc;
@@ -627,36 +631,45 @@ USBHost::GenericHID* USBHost::ReportDescriptor::Parse(const uint8_t* descReport,
 		case ItemType::Input: {
 			globalItem_.itemType = itemType;
 			globalItem_.mainItemData = itemData;
-			pCollectionCur->AddMainItem(pGenericHID->AddGlobalItem(globalItem_), localItem_, reportOffset_Input);
+			if (pApplicationCur) pApplicationCur->AddMainItem(*pCollectionCur, globalItem_, localItem_, reportOffset_Input);
 			localItem_.Clear();
 			break;
 		}
 		case ItemType::Output: {
 			globalItem_.itemType = itemType;
 			globalItem_.mainItemData = itemData;
-			pCollectionCur->AddMainItem(pGenericHID->AddGlobalItem(globalItem_), localItem_, reportOffset_Output);
+			if (pApplicationCur) pApplicationCur->AddMainItem(*pCollectionCur, globalItem_, localItem_, reportOffset_Output);
 			localItem_.Clear();
 			break;
 		}
 		case ItemType::Feature: {
 			globalItem_.itemType = itemType;
 			globalItem_.mainItemData = itemData;
-			pCollectionCur->AddMainItem(pGenericHID->AddGlobalItem(globalItem_), localItem_, reportOffset_Feature);
+			if (pApplicationCur) pApplicationCur->AddMainItem(*pCollectionCur, globalItem_, localItem_, reportOffset_Feature);
 			localItem_.Clear();
 			break;
 		}
 		case ItemType::Collection: {
 			CollectionType collectionType = static_cast<CollectionType>(itemData);
 			uint32_t usage = localItem_.usageTbl[0].minimum;
-			Collection* pCollection = new Collection(collectionType, usage, pCollectionCur);
-			pCollectionCur->AppendCollectionChild(pCollection);
-			pCollectionCur = pCollection;
+			if (pCollectionCur) {
+				Collection* pCollection = new Collection(collectionType, usage, pCollectionCur);
+				pCollectionCur->AppendCollectionChild(pCollection);
+				pCollectionCur = pCollection;
+			} else {
+				pApplicationCur = new Application(usage);
+				pCollectionCur = &pApplicationCur->GetCollection();
+				if (pApplicationTop) {
+					pApplicationTop->AppendList(pApplicationCur);
+				} else {
+					pApplicationTop.reset(pApplicationCur);
+				}
+			}
 			localItem_.Clear();
 			break;
 		}
 		case ItemType::EndCollection: {
 			pCollectionCur = pCollectionCur->GetCollectionParent();
-			if (!pCollectionCur) return nullptr;
 			break;
 		}
 		// 6.2.2.7 Global Items
@@ -763,7 +776,7 @@ USBHost::GenericHID* USBHost::ReportDescriptor::Parse(const uint8_t* descReport,
 		}
 		itemTypePrev = itemType;
 	}
-	return pGenericHID.release();
+	return pApplicationTop.release();
 }
 
 const char* USBHost::ReportDescriptor::GetCollectionTypeName(CollectionType collectionType)
@@ -845,17 +858,17 @@ USBHost::ReportDescriptor::GlobalItemList* USBHost::ReportDescriptor::GlobalItem
 	return pGlobalItemList;
 }
 
-void USBHost::ReportDescriptor::GlobalItem::Print(int indentLevel) const
+void USBHost::ReportDescriptor::GlobalItem::Print(Printable& printable, int indentLevel) const
 {
-	::printf("%*slogicalMinimum:  %08x\n", indentLevel * 2, "", logicalMinimum);
-	::printf("%*slogicalMaximum:  %08x\n", indentLevel * 2, "", logicalMaximum);
-	::printf("%*sphysicalMinimum: %08x\n", indentLevel * 2, "", physicalMinimum);
-	::printf("%*sphysicalMaximum: %08x\n", indentLevel * 2, "", physicalMaximum);
-	::printf("%*sunitExponent:    %08x\n", indentLevel * 2, "", unitExponent);
-	::printf("%*sunit:            %08x\n", indentLevel * 2, "", unit);
-	::printf("%*sreportSize:      %08x\n", indentLevel * 2, "", reportSize);
-	::printf("%*sreportID:        %08x\n", indentLevel * 2, "", reportID);
-	::printf("%*sreportCount:     %08x\n", indentLevel * 2, "", reportCount);
+	printable.Printf("%*slogicalMinimum:  %08x\n", indentLevel * 2, "", logicalMinimum);
+	printable.Printf("%*slogicalMaximum:  %08x\n", indentLevel * 2, "", logicalMaximum);
+	printable.Printf("%*sphysicalMinimum: %08x\n", indentLevel * 2, "", physicalMinimum);
+	printable.Printf("%*sphysicalMaximum: %08x\n", indentLevel * 2, "", physicalMaximum);
+	printable.Printf("%*sunitExponent:    %08x\n", indentLevel * 2, "", unitExponent);
+	printable.Printf("%*sunit:            %08x\n", indentLevel * 2, "", unit);
+	printable.Printf("%*sreportSize:      %08x\n", indentLevel * 2, "", reportSize);
+	printable.Printf("%*sreportID:        %08x\n", indentLevel * 2, "", reportID);
+	printable.Printf("%*sreportCount:     %08x\n", indentLevel * 2, "", reportCount);
 }
 
 //-----------------------------------------------------------------------------
@@ -882,9 +895,9 @@ uint32_t USBHost::ReportDescriptor::UsageInfo::GetReportValue(const uint8_t* rep
 	return (value >> (GetReportOffset() % 8)) & ((1 << GetReportSize()) - 1);
 }
 
-void USBHost::ReportDescriptor::UsageInfo::Print(int indentLevel) const
+void USBHost::ReportDescriptor::UsageInfo::Print(Printable& printable, int indentLevel) const
 {
-	::printf("%*susage:%04x:%04x offset:%d size:%d LMin:%d LMax:%d PMin:%d PMax:%d UnitExp:%d\n",
+	printable.Printf("%*susage:%04x:%04x offset:%d size:%d LMin:%d LMax:%d PMin:%d PMax:%d UnitExp:%d\n",
 		indentLevel * 2, "", GetUsage() >> 16, GetUsage() & 0xffff, GetReportOffset(), GetReportSize(),
 		GetLogicalMinimum(), GetLogicalMaximum(), GetPhysicalMinimum(), GetPhysicalMaximum(), GetUnitExponent());
 }
@@ -950,23 +963,21 @@ const USBHost::ReportDescriptor::UsageInfo& USBHost::ReportDescriptor::Collectio
 	return UsageInfo::None;
 }
 
-void USBHost::ReportDescriptor::Collection::PrintUsage(int indentLevel) const
+void USBHost::ReportDescriptor::Collection::PrintUsage(Printable& printable, int indentLevel) const
 {
 	for (auto pUsageInfo = pUsageInfoTop_.get(); pUsageInfo; pUsageInfo = pUsageInfo->GetListNext()) {
-		pUsageInfo->Print(indentLevel);
+		pUsageInfo->Print(printable, indentLevel);
 	}
 	for (auto pCollection = pCollectionChildTop_.get(); pCollection; pCollection = pCollection->GetListNext()) {
-		::printf("%*s%s(%08x) {\n", indentLevel * 2, "", GetCollectionTypeName(pCollection->GetCollectionType()), pCollection->GetUsage());
-		pCollection->PrintUsage(indentLevel + 1);
-		::printf("%*s}\n", indentLevel * 2, "");
+		printable.Printf("%*s%s(%08x) {\n", indentLevel * 2, "", GetCollectionTypeName(pCollection->GetCollectionType()), pCollection->GetUsage());
+		pCollection->PrintUsage(printable, indentLevel + 1);
+		printable.Printf("%*s}\n", indentLevel * 2, "");
 	}
 }
 
 //------------------------------------------------------------------------------
 // USBHost::ReportDescriptor::Application
 //------------------------------------------------------------------------------
-USBHost::ReportDescriptor::Application USBHost::ReportDescriptor::Application::None(0);
-
 USBHost::ReportDescriptor::Application::Application(uint32_t usage) : collection_(CollectionType::Application, usage, nullptr)
 {
 }
@@ -978,7 +989,7 @@ USBHost::ReportDescriptor::Application* USBHost::ReportDescriptor::Application::
 	return pApplication;
 }
 
-USBHost::ReportDescriptor::ReportDescriptor::GlobalItem* USBHost::ReportDescriptor::Application::AddGlobalItem(const GlobalItem& globalItem)
+void USBHost::ReportDescriptor::Application::AddMainItem(Collection& collection, const GlobalItem& globalItem, const LocalItem& localItem, uint32_t& reportOffset)
 {
 	GlobalItemList* pGlobalItemList = new GlobalItemList(globalItem);
 	if (pGlobalItemListTop_) {
@@ -986,7 +997,7 @@ USBHost::ReportDescriptor::ReportDescriptor::GlobalItem* USBHost::ReportDescript
 	} else {
 		pGlobalItemListTop_.reset(pGlobalItemList);
 	}
-	return &pGlobalItemList->globalItem;
+	collection.AddMainItem(&pGlobalItemList->globalItem, localItem, reportOffset);
 }
 
 uint32_t USBHost::ReportDescriptor::Application::GetReportValue(uint32_t usage) const
@@ -1003,5 +1014,13 @@ void USBHost::ReportDescriptor::Application::OnReport(uint8_t devAddr, uint8_t i
 	}
 }
 #endif
+
+void USBHost::ReportDescriptor::Application::Print(Printable& printable, int indentLevel) const
+{
+	printable.Printf("%*sApplication(%08x) {\n", indentLevel * 2, "", GetUsage());
+	GetCollection().PrintUsage(printable, indentLevel + 1);
+	printable.Printf("%*s}\n", indentLevel * 2, "");
+	if (GetListNext()) GetListNext()->Print(printable, indentLevel);
+}
 
 }
