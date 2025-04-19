@@ -123,7 +123,7 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 	uint8_t itfProtocol = ::tuh_hid_interface_protocol(devAddr, iInstance);
 
 	do {
-		std::unique_ptr<USBHost::ReportDescriptor::Application> pApplication(USBHost::Instance.reportDescriptor.Parse(descReport, descLen));
+		RefPtr<USBHost::ReportDescriptor::Application> pApplication(USBHost::Instance.reportDescriptor.Parse(descReport, descLen));
 		if (pApplication) pApplication->Print(Stdio::Instance);
 	} while (0);
 
@@ -603,7 +603,7 @@ USBHost::ReportDescriptor::Application* USBHost::ReportDescriptor::Parse(const u
 	localItem_.Clear();
 	//Dump(descReport, descLen);
 	uint8_t itemTypePrev = 0;
-	std::unique_ptr<Application> pApplicationTop;
+	RefPtr<Application> pApplicationTop;
 	Collection* pCollectionCur = nullptr;
 	Application* pApplicationCur = nullptr;
 	for (uint16_t descOffset = 0; descOffset < descLen; ) {
@@ -1020,7 +1020,13 @@ void USBHost::ReportDescriptor::Application::Print(Printable& printable, int ind
 	printable.Printf("%*sApplication(%08x) {\n", indentLevel * 2, "", GetUsage());
 	GetCollection().PrintUsage(printable, indentLevel + 1);
 	printable.Printf("%*s}\n", indentLevel * 2, "");
-	if (GetListNext()) GetListNext()->Print(printable, indentLevel);
+}
+
+void USBHost::ReportDescriptor::Application::PrintAll(Printable& printable, int indentLevel) const
+{
+	for (const Application* pApplication = this; pApplication; pApplication = pApplication->GetListNext()) {
+		pApplication->Print(printable, indentLevel);
+	}
 }
 
 }

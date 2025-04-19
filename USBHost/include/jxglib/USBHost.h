@@ -203,16 +203,20 @@ public:
 		public:
 			void PrintUsage(Printable& printable, int indentLevel = 0) const;
 		};
-		class Application {
+		class Application : public Referable {
 		private:
 			std::unique_ptr<uint8_t[]> report_;
 			uint16_t bytes_;
 			uint16_t bytesMax_;
 			std::unique_ptr<GlobalItemList> pGlobalItemListTop_;
 			Collection collection_;
-			std::unique_ptr<Application> pApplicationNext_;
+			RefPtr<Application> pApplicationNext_;
+		public:
+			DeclareReferable(Application)
 		public:
 			Application(uint32_t usage);
+		protected:
+			~Application() {}
 		public:
 			void AppendList(Application* pApplication) { GetListLast()->pApplicationNext_.reset(pApplication); }
 			Application* GetListNext() { return pApplicationNext_.get(); }
@@ -239,6 +243,7 @@ public:
 			//virtual void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len) override;
 		public:
 			void Print(Printable& printable, int indentLevel = 0) const;
+			void PrintAll(Printable& printable, int indentLevel = 0) const;
 		};
 	private:
 		GlobalItem globalItem_;
