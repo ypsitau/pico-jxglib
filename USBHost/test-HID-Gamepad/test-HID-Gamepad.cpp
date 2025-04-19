@@ -8,7 +8,6 @@ using namespace jxglib;
 int main()
 {
 	::stdio_init_all();
-	//::printf("%d %d\n", sizeof(USBHost::ReportDescriptor::GlobalItem), sizeof(USBHost::ReportDescriptor::UsageInfo));
 	Printable::SetStandardOutput(Stdio::Instance);
 	USBHost::Initialize();
 	//for (;;) Tickable::Sleep(1000);

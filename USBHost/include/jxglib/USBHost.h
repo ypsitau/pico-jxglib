@@ -205,9 +205,6 @@ public:
 		};
 		class Application : public Referable {
 		private:
-			std::unique_ptr<uint8_t[]> report_;
-			uint16_t bytes_;
-			uint16_t bytesMax_;
 			std::unique_ptr<GlobalItemList> pGlobalItemListTop_;
 			Collection collection_;
 			RefPtr<Application> pApplicationNext_;
@@ -225,22 +222,10 @@ public:
 		public:
 			uint32_t GetUsage() const { return collection_.GetUsage(); }
 		public:
-			uint32_t GetReportValue(uint32_t usage) const;
-			uint32_t GetReportValue(uint16_t usagePage, uint16_t usageId) const {
-				return GetReportValue(Usage(usagePage, usageId));
-			}
-		public:
 			Collection& GetCollection() { return collection_; }
 			const Collection& GetCollection() const { return collection_; }
 		public:
 			void AddMainItem(Collection& collection, const GlobalItem& globalItem, const LocalItem& localItem, uint32_t& reportOffset);
-		public:
-			const UsageInfo& FindUsageInfo(uint32_t usage) const;
-			const UsageInfo& FindUsageInfo(uint16_t usagePage, uint16_t usageId) const {
-				return FindUsageInfo(Usage(usagePage, usageId));
-			}
-		public:
-			//virtual void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len) override;
 		public:
 			void Print(Printable& printable, int indentLevel = 0) const;
 			void PrintAll(Printable& printable, int indentLevel = 0) const;
@@ -332,33 +317,23 @@ public:
 	};
 	class GenericHID : public HID {
 	private:
-		uint8_t reportCaptured_[32];
+		RefPtr<ReportDescriptor::Application> pApplication_;
+		uint8_t reportCaptured_[CFG_TUH_HID_EPIN_BUFSIZE];
 		uint16_t lenCaptured_;
-		std::unique_ptr<ReportDescriptor::GlobalItemList> pGlobalItemListTop_;
-		ReportDescriptor::Collection collection_;
 	public:
 		static GenericHID None;
 	public:
-		GenericHID(bool deletableFlag);
+		GenericHID(ReportDescriptor::Application* pApplication, bool deletableFlag);
+	public:
+		void AttachApplication(ReportDescriptor::Application* pApplication) { pApplication_.reset(pApplication); }
 	public:
 		uint32_t GetReportValue(uint32_t usage) const;
 		uint32_t GetReportValue(uint16_t usagePage, uint16_t usageId) const {
 			return GetReportValue(Usage(usagePage, usageId));
 		}
 	public:
-		ReportDescriptor::Collection& GetCollection() { return collection_; }
-		const ReportDescriptor::Collection& GetCollection() const { return collection_; }
-	public:
-		ReportDescriptor::GlobalItem* AddGlobalItem(const ReportDescriptor::GlobalItem& globalItem);
-	public:
-		const ReportDescriptor::UsageInfo& FindUsageInfo(uint32_t usage) const;
-		const ReportDescriptor::UsageInfo& FindUsageInfo(uint16_t usagePage, uint16_t usageId) const {
-			return FindUsageInfo(Usage(usagePage, usageId));
-		}
-	public:
 		virtual bool IsGenericHID(uint32_t usage) const override {
-			auto pCollection = collection_.GetCollectionChildTop();
-			return pCollection && usage == pCollection->GetUsage();
+			return pApplication_? pApplication_->GetUsage() == usage : false;
 		}
 		virtual void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len) override;
 	};

@@ -47,8 +47,7 @@ void USBHost::SetMouse(uint8_t iInstance)
 USBHost::Keyboard& USBHost::FindKeyboard(int idx)
 {
 	for (uint8_t iInstance = 0; iInstance < CFG_TUH_HID; iInstance++) {
-		HID* pHID = Instance.GetHID(iInstance);
-		for ( ; pHID; pHID->GetListNext()) {
+		for (HID* pHID = Instance.GetHID(iInstance); pHID; pHID = pHID->GetListNext()) {
 			if (pHID->IsKeyboard()) {
 				if (idx == 0) return *reinterpret_cast<Keyboard*>(pHID);
 				idx--;
@@ -61,8 +60,7 @@ USBHost::Keyboard& USBHost::FindKeyboard(int idx)
 USBHost::Mouse& USBHost::FindMouse(int idx)
 {
 	for (uint8_t iInstance = 0; iInstance < CFG_TUH_HID; iInstance++) {
-		HID* pHID = Instance.GetHID(iInstance);
-		for ( ; pHID; pHID->GetListNext()) {
+		for (HID* pHID = Instance.GetHID(iInstance); pHID; pHID = pHID->GetListNext()) {
 			if (pHID->IsMouse()) {
 				if (idx == 0) return *reinterpret_cast<Mouse*>(pHID);
 				idx--;
@@ -75,8 +73,8 @@ USBHost::Mouse& USBHost::FindMouse(int idx)
 USBHost::GenericHID& USBHost::FindGenericHID(uint32_t usage, int idx)
 {
 	for (uint8_t iInstance = 0; iInstance < CFG_TUH_HID; iInstance++) {
-		for (HID* pHID = Instance.GetHID(iInstance); pHID; pHID->GetListNext()) {
-			if( pHID->IsGenericHID(usage)) {
+		for (HID* pHID = Instance.GetHID(iInstance); pHID; pHID = pHID->GetListNext()) {
+			if (pHID->IsGenericHID(usage)) {
 				if (idx == 0) return *reinterpret_cast<GenericHID*>(pHID);
 				idx--;
 			}
@@ -122,21 +120,19 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 	::printf("tuh_hid_mount_cb(devAddr=%d, iInstance=%d)\n", devAddr, iInstance);
 	uint8_t itfProtocol = ::tuh_hid_interface_protocol(devAddr, iInstance);
 
-	do {
-		RefPtr<USBHost::ReportDescriptor::Application> pApplication(USBHost::Instance.reportDescriptor.Parse(descReport, descLen));
-		if (pApplication) pApplication->Print(Stdio::Instance);
-	} while (0);
+	//do {
+	//	RefPtr<USBHost::ReportDescriptor::Application> pApplication(USBHost::Instance.reportDescriptor.Parse(descReport, descLen));
+	//	if (pApplication) pApplication->Print(Stdio::Instance);
+	//} while (0);
 
-#if 0
 	if (itfProtocol == HID_ITF_PROTOCOL_KEYBOARD) {
 		USBHost::Instance.SetKeyboard(iInstance);
 	} else if (itfProtocol == HID_ITF_PROTOCOL_MOUSE) {
 		USBHost::Instance.SetMouse(iInstance);
 	} else {
-		std::unique_ptr<USBHost::GenericHID> pGenericHID(USBHost::Instance.reportDescriptor.Parse(descReport, descLen));
-		if (pGenericHID) USBHost::Instance.SetHID(iInstance, pGenericHID.release());
+		RefPtr<USBHost::ReportDescriptor::Application> pApplication(USBHost::Instance.reportDescriptor.Parse(descReport, descLen));
+		if (pApplication) USBHost::Instance.SetHID(iInstance, new USBHost::GenericHID(pApplication.release(), true));
 	}
-#endif
 	::tuh_hid_receive_report(devAddr, iInstance);
 }
 
@@ -554,28 +550,15 @@ void USBHost::Mouse::OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t*
 //------------------------------------------------------------------------------
 // USBHost::GenericHID
 //------------------------------------------------------------------------------
-USBHost::GenericHID USBHost::GenericHID::None(false);
+USBHost::GenericHID USBHost::GenericHID::None(nullptr, false);
 
-USBHost::GenericHID::GenericHID(bool deletableFlag) :
-			HID(deletableFlag), collection_(ReportDescriptor::CollectionType::None, 0, nullptr)
+USBHost::GenericHID::GenericHID(ReportDescriptor::Application* pApplication, bool deletableFlag) : HID(deletableFlag), pApplication_{pApplication}
 {
-}
-
-USBHost::ReportDescriptor::GlobalItem* USBHost::GenericHID::AddGlobalItem(const USBHost::ReportDescriptor::GlobalItem& globalItem)
-{
-	ReportDescriptor::GlobalItemList* pGlobalItemList = new ReportDescriptor::GlobalItemList(globalItem);
-	if (pGlobalItemListTop_) {
-		pGlobalItemListTop_->AppendList(pGlobalItemList);
-	} else {
-		pGlobalItemListTop_.reset(pGlobalItemList);
-	}
-	return &pGlobalItemList->globalItem;
 }
 
 uint32_t USBHost::GenericHID::GetReportValue(uint32_t usage) const
 {
-	auto pCollection = GetCollection().GetCollectionChildTop();
-	return pCollection? pCollection->FindUsageInfo(usage).GetReportValue(reportCaptured_, lenCaptured_) : 0;
+	return pApplication_? pApplication_->GetCollection().FindUsageInfo(usage).GetReportValue(reportCaptured_, lenCaptured_) : 0;
 }
 
 void USBHost::GenericHID::OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len)
@@ -999,21 +982,6 @@ void USBHost::ReportDescriptor::Application::AddMainItem(Collection& collection,
 	}
 	collection.AddMainItem(&pGlobalItemList->globalItem, localItem, reportOffset);
 }
-
-uint32_t USBHost::ReportDescriptor::Application::GetReportValue(uint32_t usage) const
-{
-	return GetCollection().FindUsageInfo(usage).GetReportValue(report_.get(), bytes_);
-}
-
-#if 0
-void USBHost::ReportDescriptor::Application::OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len)
-{
-	if (len <= sizeof(reportCaptured_)) {
-		::memcpy(reportCaptured_, report, len);
-		lenCaptured_ = len;
-	}
-}
-#endif
 
 void USBHost::ReportDescriptor::Application::Print(Printable& printable, int indentLevel) const
 {
