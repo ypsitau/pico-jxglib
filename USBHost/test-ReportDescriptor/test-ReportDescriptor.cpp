@@ -56,12 +56,17 @@ void test_Keyboard()
 	pApplication->Print(Stdio::Instance);
 	for (int i = 0; i < count_of(reportTbl); i++) {
 		hid.OnReport(0, 0, reportTbl[i], sizeof(reportTbl[0])); 
-		//::printf("Button1:%d Button2:%d Button3:%d X:%d Y:%d\n",
-		//	hid.GetReportValue(0x0001'0001, 0x0009'0001),
-		//	hid.GetReportValue(0x0001'0001, 0x0009'0002),
-		//	hid.GetReportValue(0x0001'0001, 0x0009'0003),
-		//	hid.GetReportValue(0x0001'0001, 0x0001'0030),
-		//	hid.GetReportValue(0x0001'0001, 0x0001'0031));
+		::printf("Modifier:%d%d%d%d%d%d%d%d %02x %02x %02x %02x %02x %02x\n",
+			hid.GetVariable(0x0007'00e0),
+			hid.GetVariable(0x0007'00e1),
+			hid.GetVariable(0x0007'00e2),
+			hid.GetVariable(0x0007'00e3),
+			hid.GetVariable(0x0007'00e4),
+			hid.GetVariable(0x0007'00e5),
+			hid.GetVariable(0x0007'00e6),
+			hid.GetVariable(0x0007'00e7),
+			hid.GetArrayItem(0), hid.GetArrayItem(1), hid.GetArrayItem(2),
+			hid.GetArrayItem(3), hid.GetArrayItem(4), hid.GetArrayItem(5));
 	}
 }
 

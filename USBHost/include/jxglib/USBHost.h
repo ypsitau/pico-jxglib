@@ -155,6 +155,7 @@ public:
 		public:
 			bool IsValid() const { return pGlobalItem_->IsValid(); }
 			uint32_t GetUsage() const { return usage_; }
+			uint8_t GetItemType() const { return pGlobalItem_->itemType; }
 			int32_t GetLogicalMinimum() const { return pGlobalItem_->logicalMinimum; }
 			int32_t GetLogicalMaximum() const { return pGlobalItem_->logicalMaximum; }
 			int32_t GetPhysicalMinimum() const { return pGlobalItem_->physicalMinimum; }
@@ -337,6 +338,10 @@ public:
 		int32_t GetVariable(uint32_t usage) const;
 		int32_t GetVariable(uint32_t usage1, uint32_t usage2) const;
 		int32_t GetVariable(uint32_t usage1, uint32_t usage2, uint32_t usage3) const;
+	public:
+		int32_t GetArrayItem(int idx) const;
+		int32_t GetArrayItem(uint32_t usage, int idx) const;
+		int32_t GetArrayItem(uint32_t usage1, uint32_t usage2, int idx) const;
 	public:
 		virtual bool IsGenericHID(uint32_t usage) const override {
 			return pApplication_? pApplication_->GetUsage() == usage : false;

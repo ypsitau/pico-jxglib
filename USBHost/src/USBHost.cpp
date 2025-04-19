@@ -119,12 +119,6 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 {
 	::printf("tuh_hid_mount_cb(devAddr=%d, iInstance=%d)\n", devAddr, iInstance);
 	uint8_t itfProtocol = ::tuh_hid_interface_protocol(devAddr, iInstance);
-
-	//do {
-	//	RefPtr<USBHost::ReportDescriptor::Application> pApplication(USBHost::Instance.reportDescriptor.Parse(descReport, descLen));
-	//	if (pApplication) pApplication->Print(Stdio::Instance);
-	//} while (0);
-
 	if (itfProtocol == HID_ITF_PROTOCOL_KEYBOARD) {
 		USBHost::Instance.SetKeyboard(iInstance);
 	} else if (itfProtocol == HID_ITF_PROTOCOL_MOUSE) {
@@ -574,6 +568,24 @@ int32_t USBHost::GenericHID::GetVariable(uint32_t usage1, uint32_t usage2, uint3
 		.FindUsageInfo(usage3).GetVariable(reportCaptured_, lenCaptured_) : 0;
 }
 
+int32_t USBHost::GenericHID::GetArrayItem(int idx) const
+{
+	return pApplication_? pApplication_->GetCollection()
+		.GetArrayItem(reportCaptured_, lenCaptured_, idx) : 0;
+}
+
+int32_t USBHost::GenericHID::GetArrayItem(uint32_t usage, int idx) const
+{
+	return pApplication_? pApplication_->GetCollection().FindCollection(usage)
+		.GetArrayItem(reportCaptured_, lenCaptured_, idx) : 0;
+}
+
+int32_t USBHost::GenericHID::GetArrayItem(uint32_t usage1, uint32_t usage2, int idx) const
+{
+	return pApplication_? pApplication_->GetCollection().FindCollection(usage1).FindCollection(usage2)
+		.GetArrayItem(reportCaptured_, lenCaptured_, idx) : 0;
+}
+
 void USBHost::GenericHID::OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len)
 {
 	if (len <= sizeof(reportCaptured_)) {
@@ -621,7 +633,7 @@ USBHost::ReportDescriptor::Application* USBHost::ReportDescriptor::Parse(const u
 			itemTypePrev = itemType;
 			continue;
 		}
-		::printf("%02x:%s (0x%0*x)\n", itemType, GetItemTypeName(itemType), bytesItemData * 2, itemData);
+		//::printf("%02x:%s (0x%0*x)\n", itemType, GetItemTypeName(itemType), bytesItemData * 2, itemData);
 		switch (itemType) {
 		// 6.2.2.4 Main Items
 		case ItemType::Input: {
@@ -895,8 +907,9 @@ int32_t USBHost::ReportDescriptor::UsageInfo::GetVariable(const uint8_t* report,
 
 void USBHost::ReportDescriptor::UsageInfo::Print(Printable& printable, int indentLevel) const
 {
-	printable.Printf("%*susage:%04x:%04x offset:%d size:%d LMin:%d LMax:%d PMin:%d PMax:%d UnitExp:%d\n",
-		indentLevel * 2, "", GetUsage() >> 16, GetUsage() & 0xffff, GetReportOffset(), GetReportSize(),
+	printable.Printf("%*s%s(%08x) offset:%d size:%d LMin:%d LMax:%d PMin:%d PMax:%d UnitExp:%d\n",
+		indentLevel * 2, "", GetItemTypeName(GetItemType()),
+		GetUsage(), GetReportOffset(), GetReportSize(),
 		GetLogicalMinimum(), GetLogicalMaximum(), GetPhysicalMinimum(), GetPhysicalMaximum(), GetUnitExponent());
 }
 
@@ -937,10 +950,10 @@ void USBHost::ReportDescriptor::Collection::AppendCollectionChild(Collection* pC
 
 void USBHost::ReportDescriptor::Collection::AddMainItem(GlobalItem* pGlobalItem, const LocalItem& localItem, uint32_t& reportOffset)
 {
-	uint32_t mainItemData = pGlobalItem->mainItemData;
-	::printf("%s,%s,%s ReportSize:%d ReportCount:%d\n", MainItemData::IsData(mainItemData)? "Data" : "Constant",
-		MainItemData::IsArray(mainItemData)? "Array" : "Variable", MainItemData::IsAbsolute(mainItemData)? "Absolute" : "Relative",
-		pGlobalItem->reportSize, pGlobalItem->reportCount);
+	//uint32_t mainItemData = pGlobalItem->mainItemData;
+	//::printf("%s,%s,%s ReportSize:%d ReportCount:%d\n", MainItemData::IsData(mainItemData)? "Data" : "Constant",
+	//	MainItemData::IsArray(mainItemData)? "Array" : "Variable", MainItemData::IsAbsolute(mainItemData)? "Absolute" : "Relative",
+	//	pGlobalItem->reportSize, pGlobalItem->reportCount);
 	//globalItem.Print(1);
 	if (MainItemData::IsConstant(pGlobalItem->mainItemData)) {
 		reportOffset += pGlobalItem->reportSize * pGlobalItem->reportCount;
@@ -983,6 +996,10 @@ void USBHost::ReportDescriptor::Collection::PrintUsage(Printable& printable, int
 {
 	for (auto pUsageInfo = pUsageInfoTop_.get(); pUsageInfo; pUsageInfo = pUsageInfo->GetListNext()) {
 		pUsageInfo->Print(printable, indentLevel);
+	}
+	if (pUsageInfoArray_) {
+		printable.Printf("%*sArray: ", indentLevel * 2, "");
+		pUsageInfoArray_->Print(printable);
 	}
 	for (auto pCollection = pCollectionChildTop_.get(); pCollection; pCollection = pCollection->GetListNext()) {
 		printable.Printf("%*s%s(%08x) {\n", indentLevel * 2, "", GetCollectionTypeName(pCollection->GetCollectionType()), pCollection->GetUsage());
