@@ -5,12 +5,6 @@
 
 using namespace jxglib;
 
-template<typename T = int32_t> T SignExtend(uint32_t value, int nBits)
-{
-	int nBitsShift = 32 - nBits;
-	return static_cast<T>(static_cast<int32_t>(value << nBitsShift) >> nBitsShift);
-}
-
 int main()
 {
 	::stdio_init_all();

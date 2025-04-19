@@ -22,6 +22,7 @@ public:
 	class ReportDescriptor {
 	public:
 		struct ItemType {
+			static const uint8_t None				= 0x00;
 			// 6.2.2.4 Main Items
 			static const uint8_t Input				= 0x80;
 			static const uint8_t Output				= 0x90;
@@ -94,18 +95,19 @@ public:
 		struct GlobalItem {
 			uint8_t itemType;
 			uint32_t mainItemData;
-			uint32_t logicalMinimum;
-			uint32_t logicalMaximum;
-			uint32_t physicalMinimum;
-			uint32_t physicalMaximum;
-			uint32_t unitExponent;
-			uint32_t unit;
+			int32_t logicalMinimum;
+			int32_t logicalMaximum;
+			int32_t physicalMinimum;
+			int32_t physicalMaximum;
+			int32_t unitExponent;
+			int32_t unit;
 			uint32_t reportSize;
 			uint32_t reportID;
 			uint32_t reportCount;
 		public:
 			static const GlobalItem None;
 		public:
+			bool IsValid() const { return itemType != ItemType::None; }
 			void Clear() { ::memset(this, 0x00, sizeof(GlobalItem)); }
 			void Print(Printable& printable, int indentLevel = 0) const;
 		};
@@ -142,7 +144,7 @@ public:
 		public:
 			static const UsageInfo None;
 		public:
-			UsageInfo() : usage_{0}, pGlobalItem_{nullptr}, reportOffset_{0} {}
+			UsageInfo() : usage_{0}, pGlobalItem_{&GlobalItem::None}, reportOffset_{0} {}
 			constexpr UsageInfo(uint32_t usage, const GlobalItem* pGlobalItem, uint32_t reportOffset) :
 				usage_{usage}, pGlobalItem_{pGlobalItem}, reportOffset_{reportOffset} {}
 		public:
@@ -151,20 +153,20 @@ public:
 			const UsageInfo* GetListNext() const { return pUsageInfoNext_.get(); }
 			UsageInfo* GetListLast();
 		public:
-			bool IsValid() const { return usage_ != 0; }
+			bool IsValid() const { return pGlobalItem_->IsValid(); }
 			uint32_t GetUsage() const { return usage_; }
-			uint32_t GetLogicalMinimum() const { return pGlobalItem_->logicalMinimum; }
-			uint32_t GetLogicalMaximum() const { return pGlobalItem_->logicalMaximum; }
-			uint32_t GetPhysicalMinimum() const { return pGlobalItem_->physicalMinimum; }
-			uint32_t GetPhysicalMaximum() const { return pGlobalItem_->physicalMaximum; }
-			uint32_t GetUnitExponent() const { return pGlobalItem_->unitExponent; }
-			uint32_t GetUnit() const { return pGlobalItem_->unit; }
+			int32_t GetLogicalMinimum() const { return pGlobalItem_->logicalMinimum; }
+			int32_t GetLogicalMaximum() const { return pGlobalItem_->logicalMaximum; }
+			int32_t GetPhysicalMinimum() const { return pGlobalItem_->physicalMinimum; }
+			int32_t GetPhysicalMaximum() const { return pGlobalItem_->physicalMaximum; }
+			int32_t GetUnitExponent() const { return pGlobalItem_->unitExponent; }
+			int32_t GetUnit() const { return pGlobalItem_->unit; }
 			uint32_t GetReportSize() const { return pGlobalItem_->reportSize; }
 			uint32_t GetReportID() const { return pGlobalItem_->reportID; }
 			uint32_t GetReportCount() const { return pGlobalItem_->reportCount; }
 			uint32_t GetReportOffset() const { return reportOffset_; }
 		public:
-			uint32_t GetReportValue(const uint8_t* report, uint16_t len) const;
+			int32_t GetVariable(const uint8_t* report, uint16_t len, int idx = 0) const;
 		public:
 			void Print(Printable& printable, int indentLevel = 0) const;
 		};
@@ -173,6 +175,7 @@ public:
 			CollectionType collectionType_;
 			uint32_t usage_;
 			Collection* pCollectionParent_;
+			std::unique_ptr<UsageInfo> pUsageInfoArray_;
 			std::unique_ptr<UsageInfo> pUsageInfoTop_;
 			std::unique_ptr<Collection> pCollectionChildTop_;
 			std::unique_ptr<Collection> pCollectionNext_;
@@ -193,6 +196,9 @@ public:
 			Collection* GetListNext() { return pCollectionNext_.get(); }
 			const Collection* GetListNext() const { return pCollectionNext_.get(); }
 			Collection* GetListLast();
+		public:
+			int32_t GetArrayItem(const uint8_t* report, uint16_t len, int idx) const;
+			uint32_t GetArraySize() const { return pUsageInfoArray_? pUsageInfoArray_->GetReportSize() : 0; }
 		public:
 			void AppendUsageInfo(UsageInfo* pUsageInfo);
 			void AppendCollectionChild(Collection* pCollection);
@@ -328,9 +334,9 @@ public:
 	public:
 		void AttachApplication(ReportDescriptor::Application* pApplication) { pApplication_.reset(pApplication); }
 	public:
-		uint32_t GetReportValue(uint32_t usage) const;
-		uint32_t GetReportValue(uint32_t usage1, uint32_t usage2) const;
-		uint32_t GetReportValue(uint32_t usage1, uint32_t usage2, uint32_t usage3) const;
+		int32_t GetVariable(uint32_t usage) const;
+		int32_t GetVariable(uint32_t usage1, uint32_t usage2) const;
+		int32_t GetVariable(uint32_t usage1, uint32_t usage2, uint32_t usage3) const;
 	public:
 		virtual bool IsGenericHID(uint32_t usage) const override {
 			return pApplication_? pApplication_->GetUsage() == usage : false;
@@ -343,27 +349,27 @@ public:
 	public:
 		GamePad(GenericHID& genericHID) : genericHID_{genericHID} {}
 	public:
-		const uint32_t Get_ButtonX() const		{ return GetReportValue(0x0009'0001); }
-		const uint32_t Get_ButtonY() const		{ return GetReportValue(0x0009'0002); }
-		const uint32_t Get_ButtonA() const		{ return GetReportValue(0x0009'0003); }
-		const uint32_t Get_ButtonB() const		{ return GetReportValue(0x0009'0004); }
-		const uint32_t Get_ButtonLB() const		{ return GetReportValue(0x0009'0005); }
-		const uint32_t Get_ButtonRB() const		{ return GetReportValue(0x0009'0006); }
-		const uint32_t Get_ButtonLT() const		{ return GetReportValue(0x0009'0007); }
-		const uint32_t Get_ButtonRT() const		{ return GetReportValue(0x0009'0008); }
-		const uint32_t Get_ButtonLStick() const	{ return GetReportValue(0x0009'0009); }
-		const uint32_t Get_ButtonRStick() const	{ return GetReportValue(0x0009'000a); }
-		const uint32_t Get_ButtonBACK() const	{ return GetReportValue(0x0009'000b); }
-		const uint32_t Get_ButtonSTART() const	{ return GetReportValue(0x0009'000c); }
-		const uint32_t Get_ButtonGUIDE() const	{ return GetReportValue(0x0009'000d); }
-		const uint32_t Get_HatSwitch() const	{ return GetReportValue(0x0001'0039); }
-		const uint32_t Get_LStickHorz() const	{ return GetReportValue(0x0001'0030); }
-		const uint32_t Get_LStickVert() const	{ return GetReportValue(0x0001'0031); }
-		const uint32_t Get_RStickHorz() const	{ return GetReportValue(0x0001'0035); }
-		const uint32_t Get_RStickVert() const	{ return GetReportValue(0x0001'0032); }
+		const uint32_t Get_ButtonX() const		{ return GetVariable(0x0009'0001); }
+		const uint32_t Get_ButtonY() const		{ return GetVariable(0x0009'0002); }
+		const uint32_t Get_ButtonA() const		{ return GetVariable(0x0009'0003); }
+		const uint32_t Get_ButtonB() const		{ return GetVariable(0x0009'0004); }
+		const uint32_t Get_ButtonLB() const		{ return GetVariable(0x0009'0005); }
+		const uint32_t Get_ButtonRB() const		{ return GetVariable(0x0009'0006); }
+		const uint32_t Get_ButtonLT() const		{ return GetVariable(0x0009'0007); }
+		const uint32_t Get_ButtonRT() const		{ return GetVariable(0x0009'0008); }
+		const uint32_t Get_ButtonLStick() const	{ return GetVariable(0x0009'0009); }
+		const uint32_t Get_ButtonRStick() const	{ return GetVariable(0x0009'000a); }
+		const uint32_t Get_ButtonBACK() const	{ return GetVariable(0x0009'000b); }
+		const uint32_t Get_ButtonSTART() const	{ return GetVariable(0x0009'000c); }
+		const uint32_t Get_ButtonGUIDE() const	{ return GetVariable(0x0009'000d); }
+		const uint32_t Get_HatSwitch() const	{ return GetVariable(0x0001'0039); }
+		const uint32_t Get_LStickHorz() const	{ return GetVariable(0x0001'0030); }
+		const uint32_t Get_LStickVert() const	{ return GetVariable(0x0001'0031); }
+		const uint32_t Get_RStickHorz() const	{ return GetVariable(0x0001'0035); }
+		const uint32_t Get_RStickVert() const	{ return GetVariable(0x0001'0032); }
 	public:
-		uint32_t GetReportValue(uint32_t usage) const {
-			return genericHID_.GetReportValue(usage);
+		uint32_t GetVariable(uint32_t usage) const {
+			return genericHID_.GetVariable(usage);
 		}
 	};
 public:

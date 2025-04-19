@@ -556,22 +556,22 @@ USBHost::GenericHID::GenericHID(ReportDescriptor::Application* pApplication, boo
 {
 }
 
-uint32_t USBHost::GenericHID::GetReportValue(uint32_t usage) const
+int32_t USBHost::GenericHID::GetVariable(uint32_t usage) const
 {
 	return pApplication_? pApplication_->GetCollection()
-		.FindUsageInfo(usage).GetReportValue(reportCaptured_, lenCaptured_) : 0;
+		.FindUsageInfo(usage).GetVariable(reportCaptured_, lenCaptured_) : 0;
 }
 
-uint32_t USBHost::GenericHID::GetReportValue(uint32_t usage1, uint32_t usage2) const
+int32_t USBHost::GenericHID::GetVariable(uint32_t usage1, uint32_t usage2) const
 {
 	return pApplication_? pApplication_->GetCollection().FindCollection(usage1)
-		.FindUsageInfo(usage2).GetReportValue(reportCaptured_, lenCaptured_) : 0;
+		.FindUsageInfo(usage2).GetVariable(reportCaptured_, lenCaptured_) : 0;
 }
 
-uint32_t USBHost::GenericHID::GetReportValue(uint32_t usage1, uint32_t usage2, uint32_t usage3) const
+int32_t USBHost::GenericHID::GetVariable(uint32_t usage1, uint32_t usage2, uint32_t usage3) const
 {
 	return pApplication_? pApplication_->GetCollection().FindCollection(usage1).FindCollection(usage2)
-		.FindUsageInfo(usage3).GetReportValue(reportCaptured_, lenCaptured_) : 0;
+		.FindUsageInfo(usage3).GetVariable(reportCaptured_, lenCaptured_) : 0;
 }
 
 void USBHost::GenericHID::OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len)
@@ -674,27 +674,27 @@ USBHost::ReportDescriptor::Application* USBHost::ReportDescriptor::Parse(const u
 			break;
 		}
 		case ItemType::LogicalMinimum: {
-			globalItem_.logicalMinimum = itemData;
+			globalItem_.logicalMinimum = static_cast<int32_t>(itemData);
 			break;
 		}
 		case ItemType::LogicalMaximum: {
-			globalItem_.logicalMaximum = itemData;
+			globalItem_.logicalMaximum = static_cast<int32_t>(itemData);
 			break;
 		}
 		case ItemType::PhysicalMinimum: {
-			globalItem_.physicalMinimum = itemData;
+			globalItem_.physicalMinimum = static_cast<int32_t>(itemData);
 			break;
 		}
 		case ItemType::PhysicalMaximum: {
-			globalItem_.physicalMaximum = itemData;
+			globalItem_.physicalMaximum = static_cast<int32_t>(itemData);
 			break;
 		}
 		case ItemType::UnitExponent: {
-			globalItem_.unitExponent = itemData;
+			globalItem_.unitExponent = static_cast<int32_t>(itemData);
 			break;
 		}
 		case ItemType::Unit: {
-			globalItem_.unit = itemData;
+			globalItem_.unit = static_cast<int32_t>(itemData);
 			break;
 		}
 		case ItemType::ReportSize: {
@@ -856,15 +856,15 @@ USBHost::ReportDescriptor::GlobalItemList* USBHost::ReportDescriptor::GlobalItem
 
 void USBHost::ReportDescriptor::GlobalItem::Print(Printable& printable, int indentLevel) const
 {
-	printable.Printf("%*slogicalMinimum:  %08x\n", indentLevel * 2, "", logicalMinimum);
-	printable.Printf("%*slogicalMaximum:  %08x\n", indentLevel * 2, "", logicalMaximum);
-	printable.Printf("%*sphysicalMinimum: %08x\n", indentLevel * 2, "", physicalMinimum);
-	printable.Printf("%*sphysicalMaximum: %08x\n", indentLevel * 2, "", physicalMaximum);
-	printable.Printf("%*sunitExponent:    %08x\n", indentLevel * 2, "", unitExponent);
-	printable.Printf("%*sunit:            %08x\n", indentLevel * 2, "", unit);
-	printable.Printf("%*sreportSize:      %08x\n", indentLevel * 2, "", reportSize);
-	printable.Printf("%*sreportID:        %08x\n", indentLevel * 2, "", reportID);
-	printable.Printf("%*sreportCount:     %08x\n", indentLevel * 2, "", reportCount);
+	printable.Printf("%*slogicalMinimum:  %d\n", indentLevel * 2, "", logicalMinimum);
+	printable.Printf("%*slogicalMaximum:  %d\n", indentLevel * 2, "", logicalMaximum);
+	printable.Printf("%*sphysicalMinimum: %d\n", indentLevel * 2, "", physicalMinimum);
+	printable.Printf("%*sphysicalMaximum: %d\n", indentLevel * 2, "", physicalMaximum);
+	printable.Printf("%*sunitExponent:    %d\n", indentLevel * 2, "", unitExponent);
+	printable.Printf("%*sunit:            %d\n", indentLevel * 2, "", unit);
+	printable.Printf("%*sreportSize:      %d\n", indentLevel * 2, "", reportSize);
+	printable.Printf("%*sreportID:        %d\n", indentLevel * 2, "", reportID);
+	printable.Printf("%*sreportCount:     %d\n", indentLevel * 2, "", reportCount);
 }
 
 //-----------------------------------------------------------------------------
@@ -879,16 +879,18 @@ USBHost::ReportDescriptor::UsageInfo* USBHost::ReportDescriptor::UsageInfo::GetL
 	return pUsageInfo;
 }
 
-uint32_t USBHost::ReportDescriptor::UsageInfo::GetReportValue(const uint8_t* report, uint16_t len) const
+int32_t USBHost::ReportDescriptor::UsageInfo::GetVariable(const uint8_t* report, uint16_t len, int idx) const
 {
 	if (!IsValid()) return 0;
-	uint32_t byteOffset = GetReportOffset() / 8;
+	uint32_t reportOffset = GetReportOffset() + GetReportSize() * idx;
+	uint32_t byteOffset = reportOffset / 8;
 	uint32_t nBytes = (GetReportSize() + 7) / 8;
 	uint32_t value = 0;
 	for (uint32_t iByte = 0; iByte < nBytes; iByte++) {
 		value = value | (static_cast<uint32_t>(report[byteOffset + iByte]) << (iByte * 8));
 	}
-	return (value >> (GetReportOffset() % 8)) & ((1 << GetReportSize()) - 1);
+	value = (value >> (reportOffset % 8)) & ((1 << GetReportSize()) - 1);
+	return (GetReportSize() == 1)? static_cast<int32_t>(value) : SignExtend(value, GetReportSize());
 }
 
 void USBHost::ReportDescriptor::UsageInfo::Print(Printable& printable, int indentLevel) const
@@ -908,6 +910,11 @@ USBHost::ReportDescriptor::Collection* USBHost::ReportDescriptor::Collection::Ge
 	auto* pCollection = this;
 	for ( ; pCollection->GetListNext(); pCollection = pCollection->GetListNext()) ;
 	return pCollection;
+}
+
+int32_t USBHost::ReportDescriptor::Collection::GetArrayItem(const uint8_t* report, uint16_t len, int idx) const
+{
+	return pUsageInfoArray_? pUsageInfoArray_->GetVariable(report, len, idx) : 0;
 }
 
 void USBHost::ReportDescriptor::Collection::AppendUsageInfo(UsageInfo* pUsageInfo)
@@ -951,6 +958,7 @@ void USBHost::ReportDescriptor::Collection::AddMainItem(GlobalItem* pGlobalItem,
 			}
 		}
 	} else { // Array
+		pUsageInfoArray_.reset(new UsageInfo(0, pGlobalItem, reportOffset));
 		reportOffset += pGlobalItem->reportSize * pGlobalItem->reportCount;
 	}
 }

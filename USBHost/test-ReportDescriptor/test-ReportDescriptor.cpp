@@ -5,11 +5,65 @@
 
 using namespace jxglib;
 /*
-C 言語で、マウスの USB report descriptor と、それをテストする report データのサンプルを 10 個つくってください。
+C 言語で、キーボードの USB report descriptor と、それをテストする report データのサンプルを 10 個つくってください。
 - reort descritor の変数名は descReort, report データサンプルの変数名は reportTbl とすること
 - コメントを英語で表記すること
-- インデントにはタブを使うこと
 */
+
+void test_Keyboard()
+{
+	// USB HID Report Descriptor for a keyboard
+	const uint8_t descReport[] = {
+		0x05, 0x01, // Usage Page (Generic Desktop)
+		0x09, 0x06, // Usage (Keyboard)
+		0xA1, 0x01, // Collection (Application)
+		0x05, 0x07, // Usage Page (Key Codes)
+		0x19, 0xE0, // Usage Minimum (224)
+		0x29, 0xE7, // Usage Maximum (231)
+		0x15, 0x00, // Logical Minimum (0)
+		0x25, 0x01, // Logical Maximum (1)
+		0x75, 0x01, // Report Size (1)
+		0x95, 0x08, // Report Count (8)
+		0x81, 0x02, // Input (Data, Variable, Absolute) - Modifier keys
+		0x95, 0x01, // Report Count (1)
+		0x75, 0x08, // Report Size (8)
+		0x81, 0x03, // Input (Constant) - Reserved byte
+		0x95, 0x06, // Report Count (6)
+		0x75, 0x08, // Report Size (8)
+		0x15, 0x00, // Logical Minimum (0)
+		0x25, 0x65, // Logical Maximum (101)
+		0x05, 0x07, // Usage Page (Key Codes)
+		0x19, 0x00, // Usage Minimum (0)
+		0x29, 0x65, // Usage Maximum (101)
+		0x81, 0x00, // Input (Data, Array) - Key array
+		0xC0        // End Collection
+	};
+	// Sample report data for testing (10 samples)
+	const uint8_t reportTbl[10][8] = {
+		{0x02, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00}, // Left Shift + 'a'
+		{0x00, 0x00, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00}, // 'b'
+		{0x02, 0x00, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00}, // Left Shift + 'c'
+		{0x00, 0x00, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00}, // 'd'
+		{0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00}, // 'e'
+		{0x02, 0x00, 0x09, 0x00, 0x00, 0x00, 0x00, 0x00}, // Left Shift + 'f'
+		{0x00, 0x00, 0x0A, 0x00, 0x00, 0x00, 0x00, 0x00}, // 'g'
+		{0x00, 0x00, 0x0B, 0x00, 0x00, 0x00, 0x00, 0x00}, // 'h'
+		{0x02, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x00, 0x00}, // Left Shift + 'i'
+		{0x00, 0x00, 0x0D, 0x00, 0x00, 0x00, 0x00, 0x00}  // 'j'
+	};
+	RefPtr<USBHost::ReportDescriptor::Application> pApplication(::USBHost::Instance.reportDescriptor.Parse(descReport, sizeof(descReport)));
+	USBHost::GenericHID hid(pApplication.Reference(), true);
+	pApplication->Print(Stdio::Instance);
+	for (int i = 0; i < count_of(reportTbl); i++) {
+		hid.OnReport(0, 0, reportTbl[i], sizeof(reportTbl[0])); 
+		//::printf("Button1:%d Button2:%d Button3:%d X:%d Y:%d\n",
+		//	hid.GetReportValue(0x0001'0001, 0x0009'0001),
+		//	hid.GetReportValue(0x0001'0001, 0x0009'0002),
+		//	hid.GetReportValue(0x0001'0001, 0x0009'0003),
+		//	hid.GetReportValue(0x0001'0001, 0x0001'0030),
+		//	hid.GetReportValue(0x0001'0001, 0x0001'0031));
+	}
+}
 
 void test_Mouse()
 {
@@ -61,11 +115,11 @@ void test_Mouse()
 	for (int i = 0; i < count_of(reportTbl); i++) {
 		hid.OnReport(0, 0, reportTbl[i], sizeof(reportTbl[0])); 
 		::printf("Button1:%d Button2:%d Button3:%d X:%d Y:%d\n",
-			hid.GetReportValue(0x0001'0001, 0x0009'0001),
-			hid.GetReportValue(0x0001'0001, 0x0009'0002),
-			hid.GetReportValue(0x0001'0001, 0x0009'0003),
-			hid.GetReportValue(0x0001'0001, 0x0001'0030),
-			hid.GetReportValue(0x0001'0001, 0x0001'0031));
+			hid.GetVariable(0x0001'0001, 0x0009'0001),
+			hid.GetVariable(0x0001'0001, 0x0009'0002),
+			hid.GetVariable(0x0001'0001, 0x0009'0003),
+			hid.GetVariable(0x0001'0001, 0x0001'0030),
+			hid.GetVariable(0x0001'0001, 0x0001'0031));
 	}
 }
 
@@ -73,6 +127,7 @@ int main()
 {
 	::stdio_init_all();
 	Printable::SetStandardOutput(Stdio::Instance);
+	test_Keyboard();
 	test_Mouse();
 	for (;;) ::tight_loop_contents();
 }
