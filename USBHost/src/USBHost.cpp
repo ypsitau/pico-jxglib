@@ -2,7 +2,6 @@
 // USBHost.cpp
 //==============================================================================
 #include "jxglib/USBHost.h"
-#include "jxglib/Stdio.h"
 
 namespace jxglib {
 
