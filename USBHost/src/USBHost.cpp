@@ -558,7 +558,20 @@ USBHost::GenericHID::GenericHID(ReportDescriptor::Application* pApplication, boo
 
 uint32_t USBHost::GenericHID::GetReportValue(uint32_t usage) const
 {
-	return pApplication_? pApplication_->GetCollection().FindUsageInfo(usage).GetReportValue(reportCaptured_, lenCaptured_) : 0;
+	return pApplication_? pApplication_->GetCollection()
+		.FindUsageInfo(usage).GetReportValue(reportCaptured_, lenCaptured_) : 0;
+}
+
+uint32_t USBHost::GenericHID::GetReportValue(uint32_t usage1, uint32_t usage2) const
+{
+	return pApplication_? pApplication_->GetCollection().FindCollection(usage1)
+		.FindUsageInfo(usage2).GetReportValue(reportCaptured_, lenCaptured_) : 0;
+}
+
+uint32_t USBHost::GenericHID::GetReportValue(uint32_t usage1, uint32_t usage2, uint32_t usage3) const
+{
+	return pApplication_? pApplication_->GetCollection().FindCollection(usage1).FindCollection(usage2)
+		.FindUsageInfo(usage3).GetReportValue(reportCaptured_, lenCaptured_) : 0;
 }
 
 void USBHost::GenericHID::OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len)
@@ -944,6 +957,14 @@ const USBHost::ReportDescriptor::UsageInfo& USBHost::ReportDescriptor::Collectio
 		if (pUsageInfo->GetUsage() == usage) return *pUsageInfo;
 	}
 	return UsageInfo::None;
+}
+
+const USBHost::ReportDescriptor::Collection& USBHost::ReportDescriptor::Collection::FindCollection(uint32_t usage) const
+{
+	for (auto pCollection = pCollectionChildTop_.get(); pCollection; pCollection = pCollection->GetListNext()) {
+		if (pCollection->GetUsage() == usage) return *pCollection;
+	}
+	return Collection::None;
 }
 
 void USBHost::ReportDescriptor::Collection::PrintUsage(Printable& printable, int indentLevel) const
