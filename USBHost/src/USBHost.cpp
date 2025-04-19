@@ -637,21 +637,21 @@ USBHost::ReportDescriptor::Application* USBHost::ReportDescriptor::Parse(const u
 		// 6.2.2.4 Main Items
 		case ItemType::Input: {
 			globalItem_.itemType = itemType;
-			globalItem_.mainItemData = itemData;
+			globalItem_.mainItemData.itemData = itemData;
 			if (pApplicationCur) pApplicationCur->AddMainItem(*pCollectionCur, globalItem_, localItem_, reportOffset_Input);
 			localItem_.Clear();
 			break;
 		}
 		case ItemType::Output: {
 			globalItem_.itemType = itemType;
-			globalItem_.mainItemData = itemData;
+			globalItem_.mainItemData.itemData = itemData;
 			if (pApplicationCur) pApplicationCur->AddMainItem(*pCollectionCur, globalItem_, localItem_, reportOffset_Output);
 			localItem_.Clear();
 			break;
 		}
 		case ItemType::Feature: {
 			globalItem_.itemType = itemType;
-			globalItem_.mainItemData = itemData;
+			globalItem_.mainItemData.itemData = itemData;
 			if (pApplicationCur) pApplicationCur->AddMainItem(*pCollectionCur, globalItem_, localItem_, reportOffset_Feature);
 			localItem_.Clear();
 			break;
@@ -685,27 +685,27 @@ USBHost::ReportDescriptor::Application* USBHost::ReportDescriptor::Parse(const u
 			break;
 		}
 		case ItemType::LogicalMinimum: {
-			globalItem_.logicalMinimum = static_cast<int32_t>(itemData);
+			globalItem_.logicalMinimum = SignExtend(itemData, bytesItemData * 8);
 			break;
 		}
 		case ItemType::LogicalMaximum: {
-			globalItem_.logicalMaximum = static_cast<int32_t>(itemData);
+			globalItem_.logicalMaximum = SignExtend(itemData, bytesItemData * 8);
 			break;
 		}
 		case ItemType::PhysicalMinimum: {
-			globalItem_.physicalMinimum = static_cast<int32_t>(itemData);
+			globalItem_.physicalMinimum = SignExtend(itemData, bytesItemData * 8);
 			break;
 		}
 		case ItemType::PhysicalMaximum: {
-			globalItem_.physicalMaximum = static_cast<int32_t>(itemData);
+			globalItem_.physicalMaximum = SignExtend(itemData, bytesItemData * 8);
 			break;
 		}
 		case ItemType::UnitExponent: {
-			globalItem_.unitExponent = static_cast<int32_t>(itemData);
+			globalItem_.unitExponent = SignExtend(itemData, bytesItemData * 8);
 			break;
 		}
 		case ItemType::Unit: {
-			globalItem_.unit = static_cast<int32_t>(itemData);
+			globalItem_.unit = SignExtend(itemData, bytesItemData * 8);
 			break;
 		}
 		case ItemType::ReportSize: {
@@ -901,14 +901,15 @@ int32_t USBHost::ReportDescriptor::UsageInfo::GetVariable(const uint8_t* report,
 		value = value | (static_cast<uint32_t>(report[byteOffset + iByte]) << (iByte * 8));
 	}
 	value = (value >> (reportOffset % 8)) & ((1 << GetReportSize()) - 1);
-	return (GetReportSize() == 1)? static_cast<int32_t>(value) : SignExtend(value, GetReportSize());
+	return (GetLogicalMinimum() >= 0)? static_cast<int32_t>(value) : SignExtend(value, GetReportSize());
 }
 
 void USBHost::ReportDescriptor::UsageInfo::Print(Printable& printable, int indentLevel) const
 {
-	printable.Printf("%*s%s(%08x) offset:%d size:%d LMin:%d LMax:%d PMin:%d PMax:%d UnitExp:%d\n",
+	printable.Printf("%*s%s(%04x'%04x)%s %s offset:%d size:%d LMin:%d LMax:%d PMin:%d PMax:%d UnitExp:%d\n",
 		indentLevel * 2, "", GetItemTypeName(GetItemType()),
-		GetUsage(), GetReportOffset(), GetReportSize(),
+		GetUsagePage(), GetUsageId(), GetMainItemData().IsArray()? ":array" : "", IsAbsolute()? "Abs" : "Rel",
+		GetReportOffset(), GetReportSize(),
 		GetLogicalMinimum(), GetLogicalMaximum(), GetPhysicalMinimum(), GetPhysicalMaximum(), GetUnitExponent());
 }
 
@@ -954,9 +955,9 @@ void USBHost::ReportDescriptor::Collection::AddMainItem(GlobalItem* pGlobalItem,
 	//	MainItemData::IsArray(mainItemData)? "Array" : "Variable", MainItemData::IsAbsolute(mainItemData)? "Absolute" : "Relative",
 	//	pGlobalItem->reportSize, pGlobalItem->reportCount);
 	//globalItem.Print(1);
-	if (MainItemData::IsConstant(pGlobalItem->mainItemData)) {
+	if (pGlobalItem->mainItemData.IsConstant()) {
 		reportOffset += pGlobalItem->reportSize * pGlobalItem->reportCount;
-	} else if (MainItemData::IsVariable(pGlobalItem->mainItemData)) {
+	} else if (pGlobalItem->mainItemData.IsVariable()) {
 		for (int i = 0; i < localItem.nUsage; i++) {
 			const Range& range = localItem.usageTbl[i];
 			for (uint32_t usage = range.minimum; usage <= range.maximum; usage++) {
@@ -996,12 +997,10 @@ void USBHost::ReportDescriptor::Collection::PrintUsage(Printable& printable, int
 	for (auto pUsageInfo = pUsageInfoTop_.get(); pUsageInfo; pUsageInfo = pUsageInfo->GetListNext()) {
 		pUsageInfo->Print(printable, indentLevel);
 	}
-	if (pUsageInfoArray_) {
-		printable.Printf("%*sArray: ", indentLevel * 2, "");
-		pUsageInfoArray_->Print(printable);
-	}
+	if (pUsageInfoArray_) pUsageInfoArray_->Print(printable, indentLevel);
 	for (auto pCollection = pCollectionChildTop_.get(); pCollection; pCollection = pCollection->GetListNext()) {
-		printable.Printf("%*s%s(%08x) {\n", indentLevel * 2, "", GetCollectionTypeName(pCollection->GetCollectionType()), pCollection->GetUsage());
+		printable.Printf("%*s%s(%04x'%04x) {\n", indentLevel * 2, "",
+			GetCollectionTypeName(pCollection->GetCollectionType()), pCollection->GetUsagePage(), pCollection->GetUsageId());
 		pCollection->PrintUsage(printable, indentLevel + 1);
 		printable.Printf("%*s}\n", indentLevel * 2, "");
 	}

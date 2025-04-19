@@ -55,25 +55,26 @@ public:
 			static const uint8_t Delimeter			= 0xa8;
 		};
 		struct MainItemData {
+			uint32_t itemData;
 		public:
-			static bool IsData(uint32_t mainItemData)			{ return  !(mainItemData & (1 << 0)); }
-			static bool IsConstant(uint32_t mainItemData)		{ return !!(mainItemData & (1 << 0)); }
-			static bool IsArray(uint32_t mainItemData)			{ return  !(mainItemData & (1 << 1)); }
-			static bool IsVariable(uint32_t mainItemData)		{ return !!(mainItemData & (1 << 1)); }
-			static bool IsAbsolute(uint32_t mainItemData)		{ return  !(mainItemData & (1 << 2)); }
-			static bool IsRelative(uint32_t mainItemData)		{ return !!(mainItemData & (1 << 2)); }
-			static bool IsNoWrap(uint32_t mainItemData)			{ return  !(mainItemData & (1 << 3)); }
-			static bool IsWrap(uint32_t mainItemData)			{ return !!(mainItemData & (1 << 3)); }
-			static bool IsLinear(uint32_t mainItemData)			{ return  !(mainItemData & (1 << 4)); }
-			static bool IsNonLinear(uint32_t mainItemData)		{ return !!(mainItemData & (1 << 4)); }
-			static bool IsPreferredState(uint32_t mainItemData)	{ return  !(mainItemData & (1 << 5)); }
-			static bool IsNoPreferred(uint32_t mainItemData)	{ return !!(mainItemData & (1 << 5)); }
-			static bool IsNoNullPosition(uint32_t mainItemData)	{ return  !(mainItemData & (1 << 6)); }
-			static bool IsNullState(uint32_t mainItemData)		{ return !!(mainItemData & (1 << 6)); }
-			static bool IsNonVolatile(uint32_t mainItemData)	{ return  !(mainItemData & (1 << 7)); }	// for Output and Feature
-			static bool IsVolatile(uint32_t mainItemData)		{ return !!(mainItemData & (1 << 7)); }	// for Output and Feature
-			static bool IsBitField(uint32_t mainItemData)		{ return  !(mainItemData & (1 << 8)); }
-			static bool IsBufferedBytes(uint32_t mainItemData)	{ return !!(mainItemData & (1 << 8)); }
+			bool IsData() const				{ return  !(itemData & (1 << 0)); }
+			bool IsConstant() const			{ return !!(itemData & (1 << 0)); }
+			bool IsArray() const			{ return  !(itemData & (1 << 1)); }
+			bool IsVariable() const			{ return !!(itemData & (1 << 1)); }
+			bool IsAbsolute() const			{ return  !(itemData & (1 << 2)); }
+			bool IsRelative() const			{ return !!(itemData & (1 << 2)); }
+			bool IsNoWrap() const			{ return  !(itemData & (1 << 3)); }
+			bool IsWrap() const				{ return !!(itemData & (1 << 3)); }
+			bool IsLinear() const			{ return  !(itemData & (1 << 4)); }
+			bool IsNonLinear() const		{ return !!(itemData & (1 << 4)); }
+			bool IsPreferredState() const	{ return  !(itemData & (1 << 5)); }
+			bool IsNoPreferred() const		{ return !!(itemData & (1 << 5)); }
+			bool IsNoNullPosition() const	{ return  !(itemData & (1 << 6)); }
+			bool IsNullState() const		{ return !!(itemData & (1 << 6)); }
+			bool IsNonVolatile() const		{ return  !(itemData & (1 << 7)); }	// for Output and Feature
+			bool IsVolatile() const			{ return !!(itemData & (1 << 7)); }	// for Output and Feature
+			bool IsBitField() const			{ return  !(itemData & (1 << 8)); }
+			bool IsBufferedBytes() const	{ return !!(itemData & (1 << 8)); }
 		};
 		enum class CollectionType : uint8_t {
 			Physical		= 0x00,
@@ -94,7 +95,7 @@ public:
 		};
 		struct GlobalItem {
 			uint8_t itemType;
-			uint32_t mainItemData;
+			MainItemData mainItemData;
 			int32_t logicalMinimum;
 			int32_t logicalMaximum;
 			int32_t physicalMinimum;
@@ -155,7 +156,10 @@ public:
 		public:
 			bool IsValid() const { return pGlobalItem_->IsValid(); }
 			uint32_t GetUsage() const { return usage_; }
+			uint16_t GetUsagePage() const { return static_cast<uint16_t>(usage_ >> 16); }
+			uint16_t GetUsageId() const { return static_cast<uint16_t>(usage_ & 0xffff); }
 			uint8_t GetItemType() const { return pGlobalItem_->itemType; }
+			const MainItemData& GetMainItemData() const { return pGlobalItem_->mainItemData; }
 			int32_t GetLogicalMinimum() const { return pGlobalItem_->logicalMinimum; }
 			int32_t GetLogicalMaximum() const { return pGlobalItem_->logicalMaximum; }
 			int32_t GetPhysicalMinimum() const { return pGlobalItem_->physicalMinimum; }
@@ -166,6 +170,8 @@ public:
 			uint32_t GetReportID() const { return pGlobalItem_->reportID; }
 			uint32_t GetReportCount() const { return pGlobalItem_->reportCount; }
 			uint32_t GetReportOffset() const { return reportOffset_; }
+			bool IsAbsolute() const { return GetMainItemData().IsAbsolute(); }
+			bool IsRelative() const { return GetMainItemData().IsRelative(); }
 		public:
 			int32_t GetVariable(const uint8_t* report, uint16_t len, int idx = 0) const;
 		public:
@@ -188,6 +194,8 @@ public:
 		public:
 			CollectionType GetCollectionType() const { return collectionType_; }
 			uint32_t GetUsage() const { return usage_; }
+			uint16_t GetUsagePage() const { return static_cast<uint16_t>(usage_ >> 16); }
+			uint16_t GetUsageId() const { return static_cast<uint16_t>(usage_ & 0xffff); }
 			Collection* GetCollectionParent() { return pCollectionParent_; }
 			Collection* GetCollectionChildTop() { return pCollectionChildTop_.get(); }
 			const Collection* GetCollectionChildTop() const { return pCollectionChildTop_.get(); }
