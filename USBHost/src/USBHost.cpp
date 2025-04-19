@@ -121,10 +121,10 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 	::printf("tuh_hid_mount_cb(devAddr=%d, iInstance=%d)\n", devAddr, iInstance);
 	uint8_t itfProtocol = ::tuh_hid_interface_protocol(devAddr, iInstance);
 
-	//do {
-	//	std::unique_ptr<USBHost::GenericHID> pGenericHID(USBHost::Instance.reportDescriptor.Parse(descReport, descLen));
-	//	if (pGenericHID) pGenericHID->GetCollection().PrintUsage();
-	//} while (0);
+	do {
+		std::unique_ptr<USBHost::GenericHID> pGenericHID(USBHost::Instance.reportDescriptor.Parse(descReport, descLen));
+		if (pGenericHID) pGenericHID->GetCollection().PrintUsage();
+	} while (0);
 
 	if (itfProtocol == HID_ITF_PROTOCOL_KEYBOARD) {
 		USBHost::Instance.SetKeyboard(iInstance);
@@ -961,5 +961,47 @@ void USBHost::ReportDescriptor::Collection::PrintUsage(int indentLevel) const
 		::printf("%*s}\n", indentLevel * 2, "");
 	}
 }
+
+//------------------------------------------------------------------------------
+// USBHost::ReportDescriptor::Application
+//------------------------------------------------------------------------------
+USBHost::ReportDescriptor::Application USBHost::ReportDescriptor::Application::None(0);
+
+USBHost::ReportDescriptor::Application::Application(uint32_t usage) : collection_(CollectionType::Application, usage, nullptr)
+{
+}
+
+USBHost::ReportDescriptor::Application* USBHost::ReportDescriptor::Application::GetListLast()
+{
+	auto* pApplication = this;
+	for ( ; pApplication->GetListNext(); pApplication = pApplication->GetListNext()) ;
+	return pApplication;
+}
+
+USBHost::ReportDescriptor::ReportDescriptor::GlobalItem* USBHost::ReportDescriptor::Application::AddGlobalItem(const GlobalItem& globalItem)
+{
+	GlobalItemList* pGlobalItemList = new GlobalItemList(globalItem);
+	if (pGlobalItemListTop_) {
+		pGlobalItemListTop_->AppendList(pGlobalItemList);
+	} else {
+		pGlobalItemListTop_.reset(pGlobalItemList);
+	}
+	return &pGlobalItemList->globalItem;
+}
+
+uint32_t USBHost::ReportDescriptor::Application::GetReportValue(uint32_t usage) const
+{
+	return GetCollection().FindUsageInfo(usage).GetReportValue(report_.get(), bytes_);
+}
+
+#if 0
+void USBHost::ReportDescriptor::Application::OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len)
+{
+	if (len <= sizeof(reportCaptured_)) {
+		::memcpy(reportCaptured_, report, len);
+		lenCaptured_ = len;
+	}
+}
+#endif
 
 }

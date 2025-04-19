@@ -203,6 +203,43 @@ public:
 		public:
 			void PrintUsage(int indentLevel = 0) const;
 		};
+		class Application {
+		private:
+			std::unique_ptr<uint8_t[]> report_;
+			uint16_t bytes_;
+			uint16_t bytesMax_;
+			std::unique_ptr<GlobalItemList> pGlobalItemListTop_;
+			Collection collection_;
+			std::unique_ptr<Application> pApplicationNext_;
+		public:
+			static Application None;
+		public:
+			Application(uint32_t usage);
+		public:
+			void AppendList(Application* pApplication) { GetListLast()->pApplicationNext_.reset(pApplication); }
+			Application* GetListNext() { return pApplicationNext_.get(); }
+			const Application* GetListNext() const { return pApplicationNext_.get(); }
+			Application* GetListLast();
+		public:
+			uint32_t GetUsage() const { return collection_.GetUsage(); }
+		public:
+			uint32_t GetReportValue(uint32_t usage) const;
+			uint32_t GetReportValue(uint16_t usagePage, uint16_t usageId) const {
+				return GetReportValue(Usage(usagePage, usageId));
+			}
+		public:
+			Collection& GetCollection() { return collection_; }
+			const Collection& GetCollection() const { return collection_; }
+		public:
+			GlobalItem* AddGlobalItem(const GlobalItem& globalItem);
+		public:
+			const UsageInfo& FindUsageInfo(uint32_t usage) const;
+			const UsageInfo& FindUsageInfo(uint16_t usagePage, uint16_t usageId) const {
+				return FindUsageInfo(Usage(usagePage, usageId));
+			}
+		public:
+			//virtual void OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len) override;
+		};
 	private:
 		GlobalItem globalItem_;
 		LocalItem localItem_;
