@@ -9,6 +9,7 @@ using namespace jxglib;
 int main()
 {
 	::stdio_init_all();
+	::printf("check");
 	USBHost::Initialize();
 	Keyboard& keyboard = USBHost::GetKeyboard();
 	KeyboardTest::GetKeyDataNB(Stdio::Instance, keyboard);

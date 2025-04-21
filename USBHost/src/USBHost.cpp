@@ -10,7 +10,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 USBHost USBHost::Instance;
 
-USBHost::USBHost() : pEventHandler_{nullptr}, keyboard_(false), mouse_(false)
+USBHost::USBHost() : pEventHandler_{nullptr}
 {
 	::memset(hidTbl_, 0x00, sizeof(hidTbl_));
 }
@@ -91,7 +91,7 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 	RefPtr<USBHost::ReportDescriptor::Application> pApplication(USBHost::Instance.reportDescriptor.Parse(descReport, descLen));
 	pApplication->Print(Stdio::Instance);
 	if (pApplication) {
-		USBHost::HID* pHID = new USBHost::HID(devAddr, iInstance, pApplication.release(), true);
+		USBHost::HID* pHID = new USBHost::HID(devAddr, iInstance, pApplication.release());
 		USBHost::Instance.SetHID(iInstance, pHID);
 		if (itfProtocol == HID_ITF_PROTOCOL_KEYBOARD) {
 			pHID->AttachHandler(USBHost::Instance.GetKeyboard());
@@ -120,10 +120,8 @@ void tuh_hid_report_received_cb(uint8_t devAddr, uint8_t iInstance, const uint8_
 //------------------------------------------------------------------------------
 // USBHost::HID
 //------------------------------------------------------------------------------
-USBHost::HID USBHost::HID::None(0, 0, nullptr, false);
-
-USBHost::HID::HID(uint8_t devAddr, uint8_t iInstance, ReportDescriptor::Application* pApplication, bool deletableFlag) :
-		devAddr_{devAddr}, iInstance_{iInstance}, pApplication_{pApplication}, deletableFlag_{deletableFlag},
+USBHost::HID::HID(uint8_t devAddr, uint8_t iInstance, ReportDescriptor::Application* pApplication) :
+		devAddr_{devAddr}, iInstance_{iInstance}, pApplication_{pApplication},
 		pHandler_{nullptr}, pHIDNext_{nullptr}
 {
 }
@@ -137,7 +135,6 @@ void USBHost::HID::DeleteList(HID* pHID)
 {
 	while (pHID) {
 		HID* pHIDNext = pHID->GetListNext();
-		if (pHID->IsDeletable()) delete pHID;
 		pHID = pHIDNext;
 	}
 }
@@ -197,8 +194,6 @@ void USBHost::HID::OnReport(const uint8_t* report, uint16_t len)
 //------------------------------------------------------------------------------
 // USBHost::Keyboard
 //------------------------------------------------------------------------------
-USBHost::Keyboard USBHost::Keyboard::None(false);
-
 const USBHost::Keyboard::UsageIdToKeyCode USBHost::Keyboard::usageIdToKeyCodeTbl[256] = {
 	{ 0,				0,				},	// 0x00
 	{ 0,				0,				},	// 0x01
@@ -458,7 +453,7 @@ const USBHost::Keyboard::UsageIdToKeyCode USBHost::Keyboard::usageIdToKeyCodeTbl
 	{ 0,				0,				},	// 0xff
 };
 
-USBHost::Keyboard::Keyboard(bool deletableFlag) : capsLockAsCtrlFlag_{false}
+USBHost::Keyboard::Keyboard() : capsLockAsCtrlFlag_{false}
 {
 	::memset(&reportCaptured_, 0x00, sizeof(reportCaptured_));
 }
@@ -518,9 +513,7 @@ int USBHost::Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax, bool inc
 //------------------------------------------------------------------------------
 // USBHost::Mouse
 //------------------------------------------------------------------------------
-USBHost::Mouse USBHost::Mouse::None(false);
-
-USBHost::Mouse::Mouse(bool deletableFlag) : sensibility_{.6}
+USBHost::Mouse::Mouse() : sensibility_{.6}
 {
 	SetStage({0, 0, 320, 240});
 }

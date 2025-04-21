@@ -275,14 +275,12 @@ public:
 		RefPtr<ReportDescriptor::Application> pApplication_;
 		uint8_t reportCaptured_[CFG_TUH_HID_EPIN_BUFSIZE];
 		uint16_t lenCaptured_;
-		bool deletableFlag_;
 		Handler* pHandler_;
 		HID* pHIDNext_;
 	public:
 		static HID None;
 	public:
-		HID(uint8_t devAddr, uint8_t iInstance, ReportDescriptor::Application* pApplication, bool deletableFlag);
-		bool IsDeletable() const { return deletableFlag_; }
+		HID(uint8_t devAddr, uint8_t iInstance, ReportDescriptor::Application* pApplication);
 	public:
 		void AppendList(HID* pHID);
 		static void DeleteList(HID* pHID);
@@ -327,11 +325,9 @@ public:
 		bool capsLockAsCtrlFlag_;
 		ReportCaptured reportCaptured_;
 	public:
-		static Keyboard None;
-	public:
 		static const UsageIdToKeyCode usageIdToKeyCodeTbl[256];
 	public:
-		Keyboard(bool deletableFlag);
+		Keyboard();
 	public:
 		// virtual function of HID::Handler
 		virtual void OnReport(const uint8_t* report, uint16_t len) override;
@@ -349,9 +345,7 @@ public:
 		int xRaw_;
 		int yRaw_;
 	public:
-		static Mouse None;
-	public:
-		Mouse(bool deletableFlag);
+		Mouse();
 	public:
 		void UpdateStage();
 		Point CalcPoint() const;
