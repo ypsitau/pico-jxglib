@@ -47,7 +47,6 @@ pico_enable_stdio_usb(test-ReportDescriptor 0)
 # Add the standard library to the build
 target_link_libraries(test-ReportDescriptor
     pico_stdlib
-    jxglib_Stdio
     jxglib_USBHost)
 
 # Add the standard include files to the build
