@@ -21,30 +21,6 @@ void USBHost::Initialize(uint8_t rhport, EventHandler* pEventHandler)
 	Instance.pEventHandler_ = pEventHandler;
 }
 
-//void USBHost::SetKeyboard(uint8_t iInstance)
-//{
-//	for (uint8_t iInstanceIter = 0; iInstanceIter < CFG_TUH_HID; iInstanceIter++) {
-//		if (GetHID(iInstanceIter) == &keyboard_) {
-//			SetHID(iInstance, new Keyboard(true));
-//			return;
-//		}
-//	}
-//	SetHID(iInstance, &keyboard_);
-//}
-//
-//USBHost::Keyboard& USBHost::FindKeyboard(int idx)
-//{
-//	for (uint8_t iInstance = 0; iInstance < CFG_TUH_HID; iInstance++) {
-//		for (HID* pHID = Instance.GetHID(iInstance); pHID; pHID = pHID->GetListNext()) {
-//			if (pHID->IsKeyboard()) {
-//				if (idx == 0) return *reinterpret_cast<Keyboard*>(pHID);
-//				idx--;
-//			}
-//		}
-//	}
-//	return Keyboard::None;
-//}
-
 USBHost::HID& USBHost::FindHID(uint32_t usage, int idx)
 {
 	for (uint8_t iInstance = 0; iInstance < CFG_TUH_HID; iInstance++) {
@@ -70,21 +46,19 @@ void USBHost::OnTick()
 	::tuh_task();
 }
 
-extern "C" {
-
-void tuh_mount_cb(uint8_t devAddr)
+extern "C" void tuh_mount_cb(uint8_t devAddr)
 {
 	auto pEventHandler = USBHost::Instance.GetEventHandler();
 	if (pEventHandler) pEventHandler->OnMount(devAddr);
 }
 
-void tuh_umount_cb(uint8_t devAddr)
+extern "C" void tuh_umount_cb(uint8_t devAddr)
 {
 	auto pEventHandler = USBHost::Instance.GetEventHandler();
 	if (pEventHandler) pEventHandler->OnUmount(devAddr);
 }
 
-void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descReport, uint16_t descLen)
+extern "C" void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descReport, uint16_t descLen)
 {
 	::printf("tuh_hid_mount_cb(devAddr=%d, iInstance=%d)\n", devAddr, iInstance);
 	uint8_t itfProtocol = ::tuh_hid_interface_protocol(devAddr, iInstance);
@@ -102,19 +76,17 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 	::tuh_hid_receive_report(devAddr, iInstance);
 }
 
-void tuh_hid_umount_cb(uint8_t devAddr, uint8_t iInstance)
+extern "C" void tuh_hid_umount_cb(uint8_t devAddr, uint8_t iInstance)
 {
 	::printf("tuh_hid_umount_cb(%d, %d)\n", devAddr, iInstance);
 	USBHost::Instance.DeleteHID(iInstance);
 }
 
-void tuh_hid_report_received_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len)
+extern "C" void tuh_hid_report_received_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len)
 {
 	USBHost::HID* pHID = USBHost::Instance.GetHID(iInstance);
 	if (pHID) pHID->OnReport(report, len);
 	::tuh_hid_receive_report(devAddr, iInstance);
-}
-
 }
 
 //------------------------------------------------------------------------------
@@ -594,7 +566,7 @@ USBHost::ReportDescriptor::Application* USBHost::ReportDescriptor::Parse(const u
 			itemTypePrev = itemType;
 			continue;
 		}
-		::printf("%02x:%s (0x%0*x)\n", itemType, GetItemTypeName(itemType), bytesItemData * 2, itemData);
+		//::printf("%02x:%s (0x%0*x)\n", itemType, GetItemTypeName(itemType), bytesItemData * 2, itemData);
 		switch (itemType) {
 		// 6.2.2.4 Main Items
 		case ItemType::Input: {
