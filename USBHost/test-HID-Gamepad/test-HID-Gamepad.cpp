@@ -33,6 +33,19 @@ int main()
 			gamePad.Get_LStickVert(),
 			gamePad.Get_RStickHorz(),
 			gamePad.Get_RStickVert());
+		if (gamePad.Get_ButtonX() && gamePad.GetGenericHID().IsSendReady()) {
+			::printf("check\n");
+			uint8_t buff[8];
+			buff[0] = 0xff;
+			buff[1] = 0xff;
+			buff[2] = 0xff;
+			buff[3] = 0xff;
+			buff[4] = 0xff;
+			buff[5] = 0xff;
+			buff[6] = 0xff;
+			buff[7] = 0xff;
+			gamePad.GetGenericHID().SendReport(0x00, buff, 8);
+		}
 		Tickable::Sleep(300);
 	}
 #endif

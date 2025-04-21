@@ -6,8 +6,7 @@ target_include_directories(jxglib_Display INTERFACE
 target_link_libraries(jxglib_Display INTERFACE
 	jxglib_Drawable
 	jxglib_LineBuff
-	jxglib_Terminal
-	jxglib_VT100)
+	jxglib_Terminal)
 
 target_sources(jxglib_Display INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/Display.cpp)

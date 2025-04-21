@@ -67,8 +67,7 @@ target_link_libraries(test-Input
 	jxglib_ILI9341
 	jxglib_ST7789
 	jxglib_LVGL
-	jxglib_UART
-	jxglib_VT100)
+	jxglib_UART)
 
 	# Add the standard include files to the build
 target_include_directories(test-Input PRIVATE

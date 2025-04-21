@@ -124,7 +124,8 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 		USBHost::Instance.SetMouse(iInstance);
 	} else {
 		RefPtr<USBHost::ReportDescriptor::Application> pApplication(USBHost::Instance.reportDescriptor.Parse(descReport, descLen));
-		if (pApplication) USBHost::Instance.SetHID(iInstance, new USBHost::GenericHID(pApplication.release(), true));
+		//pApplication->Print(Stdio::Instance);
+		if (pApplication) USBHost::Instance.SetHID(iInstance, new USBHost::GenericHID(devAddr, iInstance, pApplication.release(), true));
 	}
 	::tuh_hid_receive_report(devAddr, iInstance);
 }
@@ -543,9 +544,10 @@ void USBHost::Mouse::OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t*
 //------------------------------------------------------------------------------
 // USBHost::GenericHID
 //------------------------------------------------------------------------------
-USBHost::GenericHID USBHost::GenericHID::None(nullptr, false);
+USBHost::GenericHID USBHost::GenericHID::None(0, 0, nullptr, false);
 
-USBHost::GenericHID::GenericHID(ReportDescriptor::Application* pApplication, bool deletableFlag) : HID(deletableFlag), pApplication_{pApplication}
+USBHost::GenericHID::GenericHID(uint8_t devAddr, uint8_t iInstance, ReportDescriptor::Application* pApplication, bool deletableFlag) :
+		devAddr_{devAddr}, iInstance_{iInstance}, HID(deletableFlag), pApplication_{pApplication}
 {
 }
 
@@ -632,7 +634,7 @@ USBHost::ReportDescriptor::Application* USBHost::ReportDescriptor::Parse(const u
 			itemTypePrev = itemType;
 			continue;
 		}
-		//::printf("%02x:%s (0x%0*x)\n", itemType, GetItemTypeName(itemType), bytesItemData * 2, itemData);
+		::printf("%02x:%s (0x%0*x)\n", itemType, GetItemTypeName(itemType), bytesItemData * 2, itemData);
 		switch (itemType) {
 		// 6.2.2.4 Main Items
 		case ItemType::Input: {

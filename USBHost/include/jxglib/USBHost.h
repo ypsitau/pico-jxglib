@@ -333,13 +333,15 @@ public:
 	};
 	class GenericHID : public HID {
 	private:
+		uint8_t devAddr_;
+		uint8_t iInstance_;
 		RefPtr<ReportDescriptor::Application> pApplication_;
 		uint8_t reportCaptured_[CFG_TUH_HID_EPIN_BUFSIZE];
 		uint16_t lenCaptured_;
 	public:
 		static GenericHID None;
 	public:
-		GenericHID(ReportDescriptor::Application* pApplication, bool deletableFlag);
+		GenericHID(uint8_t devAddr, uint8_t iInstance, ReportDescriptor::Application* pApplication, bool deletableFlag);
 	public:
 		void AttachApplication(ReportDescriptor::Application* pApplication) { pApplication_.reset(pApplication); }
 	public:
@@ -350,6 +352,11 @@ public:
 		int32_t GetArrayItem(int idx) const;
 		int32_t GetArrayItem(uint32_t usage, int idx) const;
 		int32_t GetArrayItem(uint32_t usage1, uint32_t usage2, int idx) const;
+	public:
+		bool IsSendReady() { return ::tuh_hid_send_ready(devAddr_, iInstance_); }
+		void SendReport(uint8_t reportId, const uint8_t* report, uint16_t len) {
+			::tuh_hid_send_report(devAddr_, iInstance_, reportId, report, len);
+		}
 	public:
 		virtual bool IsGenericHID(uint32_t usage) const override {
 			return pApplication_? pApplication_->GetUsage() == usage : false;
@@ -380,6 +387,8 @@ public:
 		const uint32_t Get_LStickVert() const	{ return GetVariable(0x0001'0031); }
 		const uint32_t Get_RStickHorz() const	{ return GetVariable(0x0001'0035); }
 		const uint32_t Get_RStickVert() const	{ return GetVariable(0x0001'0032); }
+	public:
+		GenericHID& GetGenericHID() { return genericHID_; }
 	public:
 		uint32_t GetVariable(uint32_t usage) const {
 			return genericHID_.GetVariable(usage);

@@ -47,7 +47,7 @@ pico_enable_stdio_usb(test-VT100-Decoder 0)
 # Add the standard library to the build
 target_link_libraries(test-VT100-Decoder
 	pico_stdlib
-	jxglib_VT100)
+	jxglib_Common)
 
 # Add the standard include files to the build
 target_include_directories(test-VT100-Decoder PRIVATE

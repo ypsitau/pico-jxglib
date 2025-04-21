@@ -24,6 +24,7 @@ target_sources(jxglib_Common INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/Tokenizer.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Util.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/UTF8.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/VT100.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/WrappedPointer.cpp)
 
 #------------------------------------------------------------------------------
