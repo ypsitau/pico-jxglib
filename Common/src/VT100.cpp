@@ -3,6 +3,7 @@
 //==============================================================================
 #include <string.h>
 #include "jxglib/VT100.h"
+#include "jxglib/Printable.h"
 
 namespace jxglib {
 
@@ -227,5 +228,33 @@ bool VT100::Decoder::GetKeyData(KeyData* pKeyData)
 	}
 	return false;
 }
+
+// Cursor movement
+void VT100::CursorUp(Printable& printable, int nRows) { if (nRows > 0) printable.Printf("\x1b[%dA", nRows); }
+void VT100::CursorDown(Printable& printable, int nRows) { if (nRows > 0) printable.Printf("\x1b[%dB", nRows); }
+void VT100::CursorForward(Printable& printable, int nCols) { if (nCols > 0) printable.Printf("\x1b[%dC", nCols); }
+void VT100::CursorBackward(Printable& printable, int nCols) { if (nCols > 0) printable.Printf("\x1b[%dD", nCols); }
+void VT100::CursorNextLine(Printable& printable, int nRows) { if (nRows > 0) printable.Printf("\x1b[%dE", nRows); }
+void VT100::CursorPreviousLine(Printable& printable, int nRows) { if (nRows > 0) printable.Printf("\x1b[%dF", nRows); }
+void VT100::CursorHorizontalAbsolute(Printable& printable, int n) { printable.Printf("\x1b[%dG", n); }
+void VT100::CursorPosition(Printable& printable, int row, int column) { printable.Printf("\x1b[%d;%dH", row, column); }
+// Line erasure
+void VT100::EraseToEndOfLine(Printable& printable) { printable.Printf("\x1b[0K"); }
+void VT100::EraseToBeginningOfLine(Printable& printable) { printable.Printf("\x1b[1K"); }
+void VT100::EraseCurrentLine(Printable& printable) { printable.Printf("\x1b[2K"); }
+// Screen erasure
+void VT100::EraseFromCursorToEndOfScreen(Printable& printable) { printable.Printf("\x1b[0J"); }
+void VT100::EraseFromBeginningOfScreenToCursor(Printable& printable) { printable.Printf("\x1b[1J"); }
+void VT100::EraseScreen(Printable& printable) { printable.Printf("\x1b[2J"); }
+void VT100::EraseScreenAndScrollbackBuffer(Printable& printable) { printable.Printf("\x1b[3J"); }
+// Character erasure
+void VT100::DeleteCharacters(Printable& printable, int nChars) { if (nChars > 0) printable.Printf("\x1b[%dP", nChars); }
+void VT100::EraseCharacters(Printable& printable, int nChars) { if (nChars > 0) printable.Printf("\x1b[%dX", nChars); }
+// Scrolling
+void VT100::ScrollUp(Printable& printable, int nRows) { if (nRows > 0) printable.Printf("\x1b[%dS", nRows); }
+void VT100::ScrollDown(Printable& printable, int nRows) { if (nRows > 0) printable.Printf("\x1b[%dT", nRows); }
+// Other
+void VT100::SaveCursorPosition(Printable& printable) { printable.Printf("\x1b[s"); }
+void VT100::RestoreCursorPosition(Printable& printable) { printable.Printf("\x1b[u"); }
 
 }

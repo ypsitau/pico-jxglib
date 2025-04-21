@@ -5,7 +5,7 @@
 #define PICO_JXGLIB_STREAM_H
 #include <utility>
 #include "pico/stdlib.h"
-#include "jxglib/Printable.h"
+#include "jxglib/Common.h"
 
 namespace jxglib {
 

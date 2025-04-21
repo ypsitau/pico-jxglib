@@ -6,8 +6,6 @@
 #include <string.h>
 #include "pico/stdlib.h"
 #include "jxglib/LineBuff.h"
-#include "jxglib/Keyboard.h"
-#include "jxglib/Printable.h"
 
 namespace jxglib {
 

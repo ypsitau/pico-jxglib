@@ -17,9 +17,11 @@
 #include "Rect.h"
 #include "Referable.h"
 #include "Size.h"
+#include "Stdio.h"
 #include "Tickable.h"
 #include "Tokenizer.h"
 #include "UTF8.h"
 #include "Util.h"
+#include "WrappedPointer.h"
 
 #endif

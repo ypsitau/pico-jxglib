@@ -5,7 +5,6 @@
 #define PICO_JXGLIB_PRINTABLE_H
 #include <string.h>
 #include "pico/stdlib.h"
-#include "jxglib/Common.h"
 
 namespace jxglib {
 

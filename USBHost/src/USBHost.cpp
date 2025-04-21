@@ -124,7 +124,7 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 		USBHost::Instance.SetMouse(iInstance);
 	} else {
 		RefPtr<USBHost::ReportDescriptor::Application> pApplication(USBHost::Instance.reportDescriptor.Parse(descReport, descLen));
-		//pApplication->Print(Stdio::Instance);
+		pApplication->Print(Stdio::Instance);
 		if (pApplication) USBHost::Instance.SetHID(iInstance, new USBHost::GenericHID(devAddr, iInstance, pApplication.release(), true));
 	}
 	::tuh_hid_receive_report(devAddr, iInstance);
