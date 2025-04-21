@@ -13,7 +13,7 @@ int main()
 	//for (;;) Tickable::Sleep(1000);
 #if 1
 	for (;;) {
-		USBHost::GamePad gamePad(USBHost::FindGenericHID(0x00010005));
+		USBHost::GamePad gamePad(USBHost::FindHID(0x00010005));
 		::printf("%d%d%d%d%d%d%d%d%d%d%d%d%d %x %02x %02x %02x %02x\n",
 			gamePad.Get_ButtonX(),
 			gamePad.Get_ButtonY(),
@@ -33,7 +33,7 @@ int main()
 			gamePad.Get_LStickVert(),
 			gamePad.Get_RStickHorz(),
 			gamePad.Get_RStickVert());
-		if (gamePad.Get_ButtonX() && gamePad.GetGenericHID().IsSendReady()) {
+		if (gamePad.Get_ButtonX() && gamePad.GetHID().IsSendReady()) {
 			::printf("check\n");
 			uint8_t buff[8];
 			buff[0] = 0xff;
@@ -44,7 +44,7 @@ int main()
 			buff[5] = 0xff;
 			buff[6] = 0xff;
 			buff[7] = 0xff;
-			gamePad.GetGenericHID().SendReport(0x00, buff, 8);
+			gamePad.GetHID().SendReport(0x00, buff, 8);
 		}
 		Tickable::Sleep(300);
 	}

@@ -69,17 +69,17 @@ USBHost::Mouse& USBHost::FindMouse(int idx)
 	return Mouse::None;
 }
 
-USBHost::GenericHID& USBHost::FindGenericHID(uint32_t usage, int idx)
+USBHost::HID& USBHost::FindHID(uint32_t usage, int idx)
 {
 	for (uint8_t iInstance = 0; iInstance < CFG_TUH_HID; iInstance++) {
 		for (HID* pHID = Instance.GetHID(iInstance); pHID; pHID = pHID->GetListNext()) {
-			if (pHID->IsGenericHID(usage)) {
-				if (idx == 0) return *reinterpret_cast<GenericHID*>(pHID);
+			if (pHID->CheckUsage(usage)) {
+				if (idx == 0) return *reinterpret_cast<HID*>(pHID);
 				idx--;
 			}
 		}
 	}
-	return GenericHID::None;
+	return HID::None;
 }
 
 void USBHost::DeleteHID(uint8_t iInstance)
@@ -125,7 +125,7 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 	} else {
 		RefPtr<USBHost::ReportDescriptor::Application> pApplication(USBHost::Instance.reportDescriptor.Parse(descReport, descLen));
 		pApplication->Print(Stdio::Instance);
-		if (pApplication) USBHost::Instance.SetHID(iInstance, new USBHost::GenericHID(devAddr, iInstance, pApplication.release(), true));
+		if (pApplication) USBHost::Instance.SetHID(iInstance, new USBHost::HID(devAddr, iInstance, pApplication.release(), true));
 	}
 	::tuh_hid_receive_report(devAddr, iInstance);
 }
@@ -139,7 +139,7 @@ void tuh_hid_umount_cb(uint8_t devAddr, uint8_t iInstance)
 void tuh_hid_report_received_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len)
 {
 	USBHost::HID* pHID = USBHost::Instance.GetHID(iInstance);
-	if (pHID) pHID->OnReport(devAddr, iInstance, report, len);
+	if (pHID) pHID->OnReport(report, len);
 	::tuh_hid_receive_report(devAddr, iInstance);
 }
 
@@ -148,7 +148,10 @@ void tuh_hid_report_received_cb(uint8_t devAddr, uint8_t iInstance, const uint8_
 //------------------------------------------------------------------------------
 // USBHost::HID
 //------------------------------------------------------------------------------
-USBHost::HID::HID(bool deletableFlag) : deletableFlag_{deletableFlag}, pHIDNext_{nullptr}
+USBHost::HID USBHost::HID::None(0, 0, nullptr, false);
+
+USBHost::HID::HID(uint8_t devAddr, uint8_t iInstance, ReportDescriptor::Application* pApplication, bool deletableFlag) :
+		devAddr_{devAddr}, iInstance_{iInstance}, pApplication_{pApplication}, deletableFlag_{deletableFlag}, pHIDNext_{nullptr}
 {
 }
 
@@ -171,6 +174,50 @@ USBHost::HID* USBHost::HID::GetListLast()
 	HID* pHID = this;
 	for ( ; pHID->GetListNext(); pHID = pHID->GetListNext()) ;
 	return pHID;
+}
+
+int32_t USBHost::HID::GetVariable(uint32_t usage) const
+{
+	return pApplication_? pApplication_->GetCollection()
+		.FindUsageInfo(usage).GetVariable(reportCaptured_, lenCaptured_) : 0;
+}
+
+int32_t USBHost::HID::GetVariable(uint32_t usage1, uint32_t usage2) const
+{
+	return pApplication_? pApplication_->GetCollection().FindCollection(usage1)
+		.FindUsageInfo(usage2).GetVariable(reportCaptured_, lenCaptured_) : 0;
+}
+
+int32_t USBHost::HID::GetVariable(uint32_t usage1, uint32_t usage2, uint32_t usage3) const
+{
+	return pApplication_? pApplication_->GetCollection().FindCollection(usage1).FindCollection(usage2)
+		.FindUsageInfo(usage3).GetVariable(reportCaptured_, lenCaptured_) : 0;
+}
+
+int32_t USBHost::HID::GetArrayItem(int idx) const
+{
+	return pApplication_? pApplication_->GetCollection()
+		.GetArrayItem(reportCaptured_, lenCaptured_, idx) : 0;
+}
+
+int32_t USBHost::HID::GetArrayItem(uint32_t usage, int idx) const
+{
+	return pApplication_? pApplication_->GetCollection().FindCollection(usage)
+		.GetArrayItem(reportCaptured_, lenCaptured_, idx) : 0;
+}
+
+int32_t USBHost::HID::GetArrayItem(uint32_t usage1, uint32_t usage2, int idx) const
+{
+	return pApplication_? pApplication_->GetCollection().FindCollection(usage1).FindCollection(usage2)
+		.GetArrayItem(reportCaptured_, lenCaptured_, idx) : 0;
+}
+
+void USBHost::HID::OnReport(const uint8_t* report, uint16_t len)
+{
+	if (len <= sizeof(reportCaptured_)) {
+		::memcpy(reportCaptured_, report, len);
+		lenCaptured_ = len;
+	}
 }
 
 //------------------------------------------------------------------------------
@@ -437,7 +484,7 @@ const USBHost::Keyboard::UsageIdToKeyCode USBHost::Keyboard::usageIdToKeyCodeTbl
 	{ 0,				0,				},	// 0xff
 };
 
-USBHost::Keyboard::Keyboard(bool deletableFlag) : HID(deletableFlag), capsLockAsCtrlFlag_{false}
+USBHost::Keyboard::Keyboard(bool deletableFlag) : HID(0, 0, nullptr, deletableFlag), capsLockAsCtrlFlag_{false}
 {
 	::memset(&reportCaptured_, 0x00, sizeof(reportCaptured_));
 }
@@ -448,7 +495,7 @@ Keyboard& USBHost::Keyboard::SetCapsLockAsCtrl(bool capsLockAsCtrlFlag)
 	return *this;
 }
 
-void USBHost::Keyboard::OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len)
+void USBHost::Keyboard::OnReport(const uint8_t* report, uint16_t len)
 {
 	const hid_keyboard_report_t& reportEx = *reinterpret_cast<const hid_keyboard_report_t*>(report);
 	::memset(&reportCaptured_, 0x00, sizeof(reportCaptured_));
@@ -499,7 +546,7 @@ int USBHost::Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax, bool inc
 //------------------------------------------------------------------------------
 USBHost::Mouse USBHost::Mouse::None(false);
 
-USBHost::Mouse::Mouse(bool deletableFlag) : HID(deletableFlag), sensibility_{.6}
+USBHost::Mouse::Mouse(bool deletableFlag) : HID(0, 0, nullptr, deletableFlag), sensibility_{.6}
 {
 	SetStage({0, 0, 320, 240});
 }
@@ -532,67 +579,13 @@ Point USBHost::Mouse::CalcPoint() const
 			yRaw_ * (rcStage_.height - 1) / (rcStageRaw_.height - 1) + rcStage_.y);
 }
 
-void USBHost::Mouse::OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len)
+void USBHost::Mouse::OnReport(const uint8_t* report, uint16_t len)
 {
 	const hid_mouse_report_t& reportEx = *reinterpret_cast<const hid_mouse_report_t*>(report);
 	int xDiff = reportEx.x, yDiff = reportEx.y;
 	xRaw_ = ChooseMin(ChooseMax(xRaw_ + xDiff, 0), rcStageRaw_.width - 1);
 	yRaw_ = ChooseMin(ChooseMax(yRaw_ + yDiff, 0), rcStageRaw_.height - 1);
 	status_.Update(CalcPoint(), reportEx.x, reportEx.y, reportEx.wheel, reportEx.pan, reportEx.buttons);
-}
-
-//------------------------------------------------------------------------------
-// USBHost::GenericHID
-//------------------------------------------------------------------------------
-USBHost::GenericHID USBHost::GenericHID::None(0, 0, nullptr, false);
-
-USBHost::GenericHID::GenericHID(uint8_t devAddr, uint8_t iInstance, ReportDescriptor::Application* pApplication, bool deletableFlag) :
-		devAddr_{devAddr}, iInstance_{iInstance}, HID(deletableFlag), pApplication_{pApplication}
-{
-}
-
-int32_t USBHost::GenericHID::GetVariable(uint32_t usage) const
-{
-	return pApplication_? pApplication_->GetCollection()
-		.FindUsageInfo(usage).GetVariable(reportCaptured_, lenCaptured_) : 0;
-}
-
-int32_t USBHost::GenericHID::GetVariable(uint32_t usage1, uint32_t usage2) const
-{
-	return pApplication_? pApplication_->GetCollection().FindCollection(usage1)
-		.FindUsageInfo(usage2).GetVariable(reportCaptured_, lenCaptured_) : 0;
-}
-
-int32_t USBHost::GenericHID::GetVariable(uint32_t usage1, uint32_t usage2, uint32_t usage3) const
-{
-	return pApplication_? pApplication_->GetCollection().FindCollection(usage1).FindCollection(usage2)
-		.FindUsageInfo(usage3).GetVariable(reportCaptured_, lenCaptured_) : 0;
-}
-
-int32_t USBHost::GenericHID::GetArrayItem(int idx) const
-{
-	return pApplication_? pApplication_->GetCollection()
-		.GetArrayItem(reportCaptured_, lenCaptured_, idx) : 0;
-}
-
-int32_t USBHost::GenericHID::GetArrayItem(uint32_t usage, int idx) const
-{
-	return pApplication_? pApplication_->GetCollection().FindCollection(usage)
-		.GetArrayItem(reportCaptured_, lenCaptured_, idx) : 0;
-}
-
-int32_t USBHost::GenericHID::GetArrayItem(uint32_t usage1, uint32_t usage2, int idx) const
-{
-	return pApplication_? pApplication_->GetCollection().FindCollection(usage1).FindCollection(usage2)
-		.GetArrayItem(reportCaptured_, lenCaptured_, idx) : 0;
-}
-
-void USBHost::GenericHID::OnReport(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len)
-{
-	if (len <= sizeof(reportCaptured_)) {
-		::memcpy(reportCaptured_, report, len);
-		lenCaptured_ = len;
-	}
 }
 
 //-----------------------------------------------------------------------------
