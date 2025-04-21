@@ -313,7 +313,7 @@ public:
 	public:
 		virtual void OnReport(const uint8_t* report, uint16_t len);
 	};
-	class Keyboard : public HID, public KeyboardRepeatable {
+	class Keyboard : public KeyboardRepeatable, public HID::Handler {
 	public:
 		struct UsageIdToKeyCode {
 			uint8_t keyCodeUS;
@@ -333,7 +333,7 @@ public:
 	public:
 		Keyboard(bool deletableFlag);
 	public:
-		virtual bool IsKeyboard() const override { return true; }
+		// virtual function of HID::Handler
 		virtual void OnReport(const uint8_t* report, uint16_t len) override;
 	public:
 		// virtual function of jxglib::Keyboard
@@ -408,14 +408,14 @@ public:
 public:
 	static void Initialize(uint8_t rhport = BOARD_TUH_RHPORT, EventHandler* pEventHandler = nullptr);
 public:
-	void SetKeyboard(uint8_t iInstance);
+	//void SetKeyboard(uint8_t iInstance);
 	void SetHID(uint8_t iInstance, HID* pHID) { hidTbl_[iInstance] = pHID; }
 	HID* GetHID(uint8_t iInstance) { return hidTbl_[iInstance]; }
 	void DeleteHID(uint8_t iInstance);
 public:
 	static Keyboard& GetKeyboard() { return Instance.keyboard_; }
 	static Mouse& GetMouse() { return Instance.mouse_; }
-	static Keyboard& FindKeyboard(int idx = 0);
+	//static Keyboard& FindKeyboard(int idx = 0);
 	static HID& FindHID(uint32_t usage, int idx = 0);
 	static EventHandler* GetEventHandler() { return Instance.pEventHandler_; }
 public:

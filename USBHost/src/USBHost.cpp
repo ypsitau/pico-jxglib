@@ -21,29 +21,29 @@ void USBHost::Initialize(uint8_t rhport, EventHandler* pEventHandler)
 	Instance.pEventHandler_ = pEventHandler;
 }
 
-void USBHost::SetKeyboard(uint8_t iInstance)
-{
-	for (uint8_t iInstanceIter = 0; iInstanceIter < CFG_TUH_HID; iInstanceIter++) {
-		if (GetHID(iInstanceIter) == &keyboard_) {
-			SetHID(iInstance, new Keyboard(true));
-			return;
-		}
-	}
-	SetHID(iInstance, &keyboard_);
-}
-
-USBHost::Keyboard& USBHost::FindKeyboard(int idx)
-{
-	for (uint8_t iInstance = 0; iInstance < CFG_TUH_HID; iInstance++) {
-		for (HID* pHID = Instance.GetHID(iInstance); pHID; pHID = pHID->GetListNext()) {
-			if (pHID->IsKeyboard()) {
-				if (idx == 0) return *reinterpret_cast<Keyboard*>(pHID);
-				idx--;
-			}
-		}
-	}
-	return Keyboard::None;
-}
+//void USBHost::SetKeyboard(uint8_t iInstance)
+//{
+//	for (uint8_t iInstanceIter = 0; iInstanceIter < CFG_TUH_HID; iInstanceIter++) {
+//		if (GetHID(iInstanceIter) == &keyboard_) {
+//			SetHID(iInstance, new Keyboard(true));
+//			return;
+//		}
+//	}
+//	SetHID(iInstance, &keyboard_);
+//}
+//
+//USBHost::Keyboard& USBHost::FindKeyboard(int idx)
+//{
+//	for (uint8_t iInstance = 0; iInstance < CFG_TUH_HID; iInstance++) {
+//		for (HID* pHID = Instance.GetHID(iInstance); pHID; pHID = pHID->GetListNext()) {
+//			if (pHID->IsKeyboard()) {
+//				if (idx == 0) return *reinterpret_cast<Keyboard*>(pHID);
+//				idx--;
+//			}
+//		}
+//	}
+//	return Keyboard::None;
+//}
 
 USBHost::HID& USBHost::FindHID(uint32_t usage, int idx)
 {
@@ -62,11 +62,7 @@ void USBHost::DeleteHID(uint8_t iInstance)
 {
 	HID* pHID = hidTbl_[iInstance];
 	hidTbl_[iInstance] = nullptr;
-	if (pHID == &keyboard_) {
-		// nothing to do
-	} else {
-		HID::DeleteList(pHID);
-	}
+	HID::DeleteList(pHID);
 }
 
 void USBHost::OnTick()
@@ -92,15 +88,15 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 {
 	::printf("tuh_hid_mount_cb(devAddr=%d, iInstance=%d)\n", devAddr, iInstance);
 	uint8_t itfProtocol = ::tuh_hid_interface_protocol(devAddr, iInstance);
-	if (itfProtocol == HID_ITF_PROTOCOL_KEYBOARD) {
-		USBHost::Instance.SetKeyboard(iInstance);
-	} else {
-		RefPtr<USBHost::ReportDescriptor::Application> pApplication(USBHost::Instance.reportDescriptor.Parse(descReport, descLen));
-		pApplication->Print(Stdio::Instance);
-		if (pApplication) {
-			USBHost::HID* pHID = new USBHost::HID(devAddr, iInstance, pApplication.release(), true);
-			USBHost::Instance.SetHID(iInstance, pHID);
-			if (itfProtocol == HID_ITF_PROTOCOL_MOUSE) pHID->AttachHandler(USBHost::Instance.GetMouse());
+	RefPtr<USBHost::ReportDescriptor::Application> pApplication(USBHost::Instance.reportDescriptor.Parse(descReport, descLen));
+	pApplication->Print(Stdio::Instance);
+	if (pApplication) {
+		USBHost::HID* pHID = new USBHost::HID(devAddr, iInstance, pApplication.release(), true);
+		USBHost::Instance.SetHID(iInstance, pHID);
+		if (itfProtocol == HID_ITF_PROTOCOL_KEYBOARD) {
+			pHID->AttachHandler(USBHost::Instance.GetKeyboard());
+		} else if (itfProtocol == HID_ITF_PROTOCOL_MOUSE) {
+			pHID->AttachHandler(USBHost::Instance.GetMouse());
 		}
 	}
 	::tuh_hid_receive_report(devAddr, iInstance);
@@ -462,7 +458,7 @@ const USBHost::Keyboard::UsageIdToKeyCode USBHost::Keyboard::usageIdToKeyCodeTbl
 	{ 0,				0,				},	// 0xff
 };
 
-USBHost::Keyboard::Keyboard(bool deletableFlag) : HID(0, 0, nullptr, deletableFlag), capsLockAsCtrlFlag_{false}
+USBHost::Keyboard::Keyboard(bool deletableFlag) : capsLockAsCtrlFlag_{false}
 {
 	::memset(&reportCaptured_, 0x00, sizeof(reportCaptured_));
 }
