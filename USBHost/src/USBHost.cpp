@@ -32,17 +32,6 @@ void USBHost::SetKeyboard(uint8_t iInstance)
 	SetHID(iInstance, &keyboard_);
 }
 
-void USBHost::SetMouse(uint8_t iInstance)
-{
-	for (uint8_t iInstanceIter = 0; iInstanceIter < CFG_TUH_HID; iInstanceIter++) {
-		if (GetHID(iInstanceIter) == &mouse_) {
-			SetHID(iInstance, new Mouse(true));
-			return;
-		}
-	}
-	SetHID(iInstance, &mouse_);
-}
-
 USBHost::Keyboard& USBHost::FindKeyboard(int idx)
 {
 	for (uint8_t iInstance = 0; iInstance < CFG_TUH_HID; iInstance++) {
@@ -54,19 +43,6 @@ USBHost::Keyboard& USBHost::FindKeyboard(int idx)
 		}
 	}
 	return Keyboard::None;
-}
-
-USBHost::Mouse& USBHost::FindMouse(int idx)
-{
-	for (uint8_t iInstance = 0; iInstance < CFG_TUH_HID; iInstance++) {
-		for (HID* pHID = Instance.GetHID(iInstance); pHID; pHID = pHID->GetListNext()) {
-			if (pHID->IsMouse()) {
-				if (idx == 0) return *reinterpret_cast<Mouse*>(pHID);
-				idx--;
-			}
-		}
-	}
-	return Mouse::None;
 }
 
 USBHost::HID& USBHost::FindHID(uint32_t usage, int idx)
@@ -87,8 +63,6 @@ void USBHost::DeleteHID(uint8_t iInstance)
 	HID* pHID = hidTbl_[iInstance];
 	hidTbl_[iInstance] = nullptr;
 	if (pHID == &keyboard_) {
-		// nothing to do
-	} else if (pHID == &mouse_) {
 		// nothing to do
 	} else {
 		HID::DeleteList(pHID);
@@ -120,12 +94,14 @@ void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRep
 	uint8_t itfProtocol = ::tuh_hid_interface_protocol(devAddr, iInstance);
 	if (itfProtocol == HID_ITF_PROTOCOL_KEYBOARD) {
 		USBHost::Instance.SetKeyboard(iInstance);
-	} else if (itfProtocol == HID_ITF_PROTOCOL_MOUSE) {
-		USBHost::Instance.SetMouse(iInstance);
 	} else {
 		RefPtr<USBHost::ReportDescriptor::Application> pApplication(USBHost::Instance.reportDescriptor.Parse(descReport, descLen));
 		pApplication->Print(Stdio::Instance);
-		if (pApplication) USBHost::Instance.SetHID(iInstance, new USBHost::HID(devAddr, iInstance, pApplication.release(), true));
+		if (pApplication) {
+			USBHost::HID* pHID = new USBHost::HID(devAddr, iInstance, pApplication.release(), true);
+			USBHost::Instance.SetHID(iInstance, pHID);
+			if (itfProtocol == HID_ITF_PROTOCOL_MOUSE) pHID->AttachHandler(USBHost::Instance.GetMouse());
+		}
 	}
 	::tuh_hid_receive_report(devAddr, iInstance);
 }
@@ -151,7 +127,8 @@ void tuh_hid_report_received_cb(uint8_t devAddr, uint8_t iInstance, const uint8_
 USBHost::HID USBHost::HID::None(0, 0, nullptr, false);
 
 USBHost::HID::HID(uint8_t devAddr, uint8_t iInstance, ReportDescriptor::Application* pApplication, bool deletableFlag) :
-		devAddr_{devAddr}, iInstance_{iInstance}, pApplication_{pApplication}, deletableFlag_{deletableFlag}, pHIDNext_{nullptr}
+		devAddr_{devAddr}, iInstance_{iInstance}, pApplication_{pApplication}, deletableFlag_{deletableFlag},
+		pHandler_{nullptr}, pHIDNext_{nullptr}
 {
 }
 
@@ -218,6 +195,7 @@ void USBHost::HID::OnReport(const uint8_t* report, uint16_t len)
 		::memcpy(reportCaptured_, report, len);
 		lenCaptured_ = len;
 	}
+	if (pHandler_) pHandler_->OnReport(report, len);
 }
 
 //------------------------------------------------------------------------------
@@ -546,7 +524,7 @@ int USBHost::Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax, bool inc
 //------------------------------------------------------------------------------
 USBHost::Mouse USBHost::Mouse::None(false);
 
-USBHost::Mouse::Mouse(bool deletableFlag) : HID(0, 0, nullptr, deletableFlag), sensibility_{.6}
+USBHost::Mouse::Mouse(bool deletableFlag) : sensibility_{.6}
 {
 	SetStage({0, 0, 320, 240});
 }

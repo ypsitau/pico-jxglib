@@ -262,6 +262,13 @@ public:
 		virtual void OnUmount(uint8_t devAddr) {}
 	};
 	class HID {
+	public:
+		class Handler {
+		public:
+			virtual void OnMount() {};
+			virtual void OnUmount() {};
+			virtual void OnReport(const uint8_t* report, uint16_t len) {};
+		};
 	private:
 		uint8_t devAddr_;
 		uint8_t iInstance_;
@@ -269,7 +276,8 @@ public:
 		uint8_t reportCaptured_[CFG_TUH_HID_EPIN_BUFSIZE];
 		uint16_t lenCaptured_;
 		bool deletableFlag_;
-		HID* pHIDNext_;		
+		Handler* pHandler_;
+		HID* pHIDNext_;
 	public:
 		static HID None;
 	public:
@@ -282,9 +290,9 @@ public:
 		HID* GetListLast();
 	public:
 		virtual bool IsKeyboard() const { return false; }
-		virtual bool IsMouse() const { return false; }
 	public:
 		void AttachApplication(ReportDescriptor::Application* pApplication) { pApplication_.reset(pApplication); }
+		void AttachHandler(Handler& handler) { pHandler_ = &handler; }
 	public:
 		int32_t GetVariable(uint32_t usage) const;
 		int32_t GetVariable(uint32_t usage1, uint32_t usage2) const;
@@ -333,7 +341,7 @@ public:
 		virtual uint8_t GetModifier() override { return reportCaptured_.modifier; }
 		virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1, bool includeModifiers = false) override;
 	};
-	class Mouse : public HID, public jxglib::Mouse {
+	class Mouse : public jxglib::Mouse, public HID::Handler {
 	private:
 		float sensibility_;
 		Rect rcStage_;
@@ -348,7 +356,7 @@ public:
 		void UpdateStage();
 		Point CalcPoint() const;
 	public:
-		virtual bool IsMouse() const override { return true; }
+		// virtual function of HID::Handler
 		virtual void OnReport(const uint8_t* report, uint16_t len) override;
 	public:
 		// virtual function of jxglib::Mouse
@@ -401,7 +409,6 @@ public:
 	static void Initialize(uint8_t rhport = BOARD_TUH_RHPORT, EventHandler* pEventHandler = nullptr);
 public:
 	void SetKeyboard(uint8_t iInstance);
-	void SetMouse(uint8_t iInstance);
 	void SetHID(uint8_t iInstance, HID* pHID) { hidTbl_[iInstance] = pHID; }
 	HID* GetHID(uint8_t iInstance) { return hidTbl_[iInstance]; }
 	void DeleteHID(uint8_t iInstance);
@@ -409,7 +416,6 @@ public:
 	static Keyboard& GetKeyboard() { return Instance.keyboard_; }
 	static Mouse& GetMouse() { return Instance.mouse_; }
 	static Keyboard& FindKeyboard(int idx = 0);
-	static Mouse& FindMouse(int idx = 0);
 	static HID& FindHID(uint32_t usage, int idx = 0);
 	static EventHandler* GetEventHandler() { return Instance.pEventHandler_; }
 public:
