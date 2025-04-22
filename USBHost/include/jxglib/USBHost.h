@@ -402,14 +402,12 @@ public:
 public:
 	static void Initialize(uint8_t rhport = BOARD_TUH_RHPORT, EventHandler* pEventHandler = nullptr);
 public:
-	//void SetKeyboard(uint8_t iInstance);
 	void SetHID(uint8_t iInstance, HID* pHID) { hidTbl_[iInstance] = pHID; }
 	HID* GetHID(uint8_t iInstance) { return hidTbl_[iInstance]; }
 	void DeleteHID(uint8_t iInstance);
 public:
 	static Keyboard& GetKeyboard() { return Instance.keyboard_; }
 	static Mouse& GetMouse() { return Instance.mouse_; }
-	//static Keyboard& FindKeyboard(int idx = 0);
 	static HID& FindHID(uint32_t usage, int idx = 0);
 	static EventHandler* GetEventHandler() { return Instance.pEventHandler_; }
 public:
