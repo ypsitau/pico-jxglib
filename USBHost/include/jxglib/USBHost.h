@@ -219,17 +219,13 @@ public:
 		public:
 			void PrintUsage(Printable& printable, int indentLevel = 0) const;
 		};
-		class Application : public Referable {
+		class Application {
 		private:
 			std::unique_ptr<GlobalItemList> pGlobalItemListTop_;
 			Collection collection_;
-			RefPtr<Application> pApplicationNext_;
-		public:
-			DeclareReferable(Application)
+			std::unique_ptr<Application> pApplicationNext_;
 		public:
 			Application(uint32_t usage);
-		protected:
-			~Application() {}
 		public:
 			void AppendList(Application* pApplication) { GetListLast()->pApplicationNext_.reset(pApplication); }
 			Application* GetListNext() { return pApplicationNext_.get(); }
@@ -261,7 +257,7 @@ public:
 		virtual void OnMount(uint8_t devAddr) {}
 		virtual void OnUmount(uint8_t devAddr) {}
 	};
-	class HID {
+	class HID : public Referable {
 	public:
 		class Handler {
 		public:
@@ -272,20 +268,16 @@ public:
 	private:
 		uint8_t devAddr_;
 		uint8_t iInstance_;
-		RefPtr<ReportDescriptor::Application> pApplication_;
+		std::unique_ptr<ReportDescriptor::Application> pApplication_;
 		uint8_t reportCaptured_[CFG_TUH_HID_EPIN_BUFSIZE];
 		uint16_t lenCaptured_;
 		Handler* pHandler_;
-		HID* pHIDNext_;
 	public:
-		static HID None;
+		DeclareReferable(HID)
 	public:
 		HID(uint8_t devAddr, uint8_t iInstance, ReportDescriptor::Application* pApplication);
-	public:
-		void AppendList(HID* pHID);
-		static void DeleteList(HID* pHID);
-		HID* GetListNext() { return pHIDNext_; }
-		HID* GetListLast();
+	protected:
+		~HID() {}
 	public:
 		virtual bool IsKeyboard() const { return false; }
 	public:
@@ -404,11 +396,10 @@ public:
 public:
 	void SetHID(uint8_t iInstance, HID* pHID) { hidTbl_[iInstance] = pHID; }
 	HID* GetHID(uint8_t iInstance) { return hidTbl_[iInstance]; }
-	void DeleteHID(uint8_t iInstance);
+	void RemoveHID(uint8_t iInstance);
 public:
 	static Keyboard& GetKeyboard() { return Instance.keyboard_; }
 	static Mouse& GetMouse() { return Instance.mouse_; }
-	static HID& FindHID(uint32_t usage, int idx = 0);
 	static EventHandler* GetEventHandler() { return Instance.pEventHandler_; }
 public:
 	// virtual functions of Tickable

@@ -21,24 +21,11 @@ void USBHost::Initialize(uint8_t rhport, EventHandler* pEventHandler)
 	Instance.pEventHandler_ = pEventHandler;
 }
 
-USBHost::HID& USBHost::FindHID(uint32_t usage, int idx)
-{
-	for (uint8_t iInstance = 0; iInstance < CFG_TUH_HID; iInstance++) {
-		for (HID* pHID = Instance.GetHID(iInstance); pHID; pHID = pHID->GetListNext()) {
-			if (pHID->CheckUsage(usage)) {
-				if (idx == 0) return *reinterpret_cast<HID*>(pHID);
-				idx--;
-			}
-		}
-	}
-	return HID::None;
-}
-
-void USBHost::DeleteHID(uint8_t iInstance)
+void USBHost::RemoveHID(uint8_t iInstance)
 {
 	HID* pHID = hidTbl_[iInstance];
 	hidTbl_[iInstance] = nullptr;
-	HID::DeleteList(pHID);
+	HID::Delete(pHID);
 }
 
 void USBHost::OnTick()
@@ -62,7 +49,7 @@ extern "C" void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8
 {
 	::printf("tuh_hid_mount_cb(devAddr=%d, iInstance=%d)\n", devAddr, iInstance);
 	uint8_t itfProtocol = ::tuh_hid_interface_protocol(devAddr, iInstance);
-	RefPtr<USBHost::ReportDescriptor::Application> pApplication(USBHost::Instance.reportDescriptor.Parse(descReport, descLen));
+	std::unique_ptr<USBHost::ReportDescriptor::Application> pApplication(USBHost::Instance.reportDescriptor.Parse(descReport, descLen));
 	pApplication->Print(Stdio::Instance);
 	if (pApplication) {
 		USBHost::HID* pHID = new USBHost::HID(devAddr, iInstance, pApplication.release());
@@ -79,7 +66,7 @@ extern "C" void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8
 extern "C" void tuh_hid_umount_cb(uint8_t devAddr, uint8_t iInstance)
 {
 	::printf("tuh_hid_umount_cb(%d, %d)\n", devAddr, iInstance);
-	USBHost::Instance.DeleteHID(iInstance);
+	USBHost::Instance.RemoveHID(iInstance);
 }
 
 extern "C" void tuh_hid_report_received_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len)
@@ -93,29 +80,8 @@ extern "C" void tuh_hid_report_received_cb(uint8_t devAddr, uint8_t iInstance, c
 // USBHost::HID
 //------------------------------------------------------------------------------
 USBHost::HID::HID(uint8_t devAddr, uint8_t iInstance, ReportDescriptor::Application* pApplication) :
-		devAddr_{devAddr}, iInstance_{iInstance}, pApplication_{pApplication},
-		pHandler_{nullptr}, pHIDNext_{nullptr}
+		devAddr_{devAddr}, iInstance_{iInstance}, pApplication_{pApplication}, pHandler_{nullptr}
 {
-}
-
-void USBHost::HID::AppendList(HID* pHID)
-{
-	GetListLast()->pHIDNext_ = pHID;
-}
-
-void USBHost::HID::DeleteList(HID* pHID)
-{
-	while (pHID) {
-		HID* pHIDNext = pHID->GetListNext();
-		pHID = pHIDNext;
-	}
-}
-
-USBHost::HID* USBHost::HID::GetListLast()
-{
-	HID* pHID = this;
-	for ( ; pHID->GetListNext(); pHID = pHID->GetListNext()) ;
-	return pHID;
 }
 
 int32_t USBHost::HID::GetVariable(uint32_t usage) const
@@ -544,7 +510,7 @@ USBHost::ReportDescriptor::Application* USBHost::ReportDescriptor::Parse(const u
 	localItem_.Clear();
 	//Dump(descReport, descLen);
 	uint8_t itemTypePrev = 0;
-	RefPtr<Application> pApplicationTop;
+	std::unique_ptr<Application> pApplicationTop;
 	Collection* pCollectionCur = nullptr;
 	Application* pApplicationCur = nullptr;
 	for (uint16_t descOffset = 0; descOffset < descLen; ) {
