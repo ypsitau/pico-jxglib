@@ -19,6 +19,7 @@ namespace jxglib {
 class USBHost : public Tickable {
 public:
 	class HID;
+	class HIDDriver;
 	class ReportDescriptor {
 	public:
 		struct ItemType {
@@ -258,20 +259,13 @@ public:
 		virtual void OnUmount(uint8_t devAddr) {}
 	};
 	class HID : public Referable {
-	public:
-		class Handler {
-		public:
-			virtual void OnMount() {};
-			virtual void OnUmount() {};
-			virtual void OnReport(const uint8_t* report, uint16_t len) {};
-		};
 	private:
 		uint8_t devAddr_;
 		uint8_t iInstance_;
 		std::unique_ptr<ReportDescriptor::Application> pApplication_;
-		uint8_t reportCaptured_[CFG_TUH_HID_EPIN_BUFSIZE];
-		uint16_t lenCaptured_;
-		Handler* pHandler_;
+		uint8_t report_[CFG_TUH_HID_EPIN_BUFSIZE];
+		uint16_t reportLen_;
+		HIDDriver* pHIDDriver_;
 	public:
 		DeclareReferable(HID)
 	public:
@@ -281,16 +275,11 @@ public:
 	public:
 		virtual bool IsKeyboard() const { return false; }
 	public:
-		void AttachApplication(ReportDescriptor::Application* pApplication) { pApplication_.reset(pApplication); }
-		void AttachHandler(Handler& handler) { pHandler_ = &handler; }
+		void AttachDriver(HIDDriver& hidDriver) { pHIDDriver_ = &hidDriver; }
+		HIDDriver* GetHIDDriver() { return pHIDDriver_; }
 	public:
-		int32_t GetVariable(uint32_t usage) const;
-		int32_t GetVariable(uint32_t usage1, uint32_t usage2) const;
-		int32_t GetVariable(uint32_t usage1, uint32_t usage2, uint32_t usage3) const;
-	public:
-		int32_t GetArrayItem(int idx) const;
-		int32_t GetArrayItem(uint32_t usage, int idx) const;
-		int32_t GetArrayItem(uint32_t usage1, uint32_t usage2, int idx) const;
+		const uint8_t* GetReport() const { return report_; }
+		uint16_t GetReportLen() const { return reportLen_; }
 	public:
 		bool IsSendReady() { return ::tuh_hid_send_ready(devAddr_, iInstance_); }
 		void SendReport(uint8_t reportId, const uint8_t* report, uint16_t len) {
@@ -303,7 +292,41 @@ public:
 	public:
 		virtual void OnReport(const uint8_t* report, uint16_t len);
 	};
-	class Keyboard : public KeyboardRepeatable, public HID::Handler {
+	class HIDDriver {
+	private:
+		uint32_t usage_;
+		RefPtr<HID> pHID_;
+		ReportDescriptor::Application* pApplication_;
+		std::unique_ptr<HIDDriver> pHIDDriverRegisteredNext_;
+	public:
+		static HIDDriver* pHIDDriverRegisteredTop;
+	public:
+		HIDDriver(uint32_t usage);
+	public:
+		void AppendRegisteredList(HIDDriver* pHIDDriver) { GetRegisteredListLast()->pHIDDriverRegisteredNext_.reset(pHIDDriver); }
+		HIDDriver* GetRegisteredListNext() { return pHIDDriverRegisteredNext_.get(); }
+		const HIDDriver* GetRegisteredListNext() const { return pHIDDriverRegisteredNext_.get(); }
+		HIDDriver* GetRegisteredListLast();
+	public:
+		uint32_t GetUsage() const { return usage_; }
+		void AttachHID(HID* pHID, ReportDescriptor::Application* pApplication) { pHID_.reset(pHID); pApplication_ = pApplication; }
+		void DetachHID() { pHID_.reset(), pApplication_ = nullptr; }
+		bool IsMounted() const { return !!pHID_ && !!pApplication_; }
+		const ReportDescriptor::Application& GetApplication() const { return *pApplication_; }
+	public:
+		virtual void OnMount() {};
+		virtual void OnUmount() {}
+		virtual void OnReport(const uint8_t* report, uint16_t len) {};
+	public:
+		int32_t GetVariable(uint32_t usage) const;
+		int32_t GetVariable(uint32_t usage1, uint32_t usage2) const;
+		int32_t GetVariable(uint32_t usage1, uint32_t usage2, uint32_t usage3) const;
+	public:
+		int32_t GetArrayItem(int idx) const;
+		int32_t GetArrayItem(uint32_t usage, int idx) const;
+		int32_t GetArrayItem(uint32_t usage1, uint32_t usage2, int idx) const;
+	};
+	class Keyboard : public KeyboardRepeatable, public HIDDriver {
 	public:
 		struct UsageIdToKeyCode {
 			uint8_t keyCodeUS;
@@ -321,7 +344,7 @@ public:
 	public:
 		Keyboard();
 	public:
-		// virtual function of HID::Handler
+		// virtual function of HIDDriver
 		virtual void OnReport(const uint8_t* report, uint16_t len) override;
 	public:
 		// virtual function of jxglib::Keyboard
@@ -329,7 +352,7 @@ public:
 		virtual uint8_t GetModifier() override { return reportCaptured_.modifier; }
 		virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1, bool includeModifiers = false) override;
 	};
-	class Mouse : public jxglib::Mouse, public HID::Handler {
+	class Mouse : public jxglib::Mouse, public HIDDriver {
 	private:
 		float sensibility_;
 		Rect rcStage_;
@@ -342,18 +365,16 @@ public:
 		void UpdateStage();
 		Point CalcPoint() const;
 	public:
-		// virtual function of HID::Handler
+		// virtual function of HIDDriver
 		virtual void OnReport(const uint8_t* report, uint16_t len) override;
 	public:
 		// virtual function of jxglib::Mouse
 		virtual jxglib::Mouse& SetSensibility(float sensibility) override;
 		virtual jxglib::Mouse& SetStage(const Rect& rcStage) override;
 	};
-	class GamePad {
-	private:
-		HID& hid_;
+	class GamePad : public HIDDriver {
 	public:
-		GamePad(HID& hid) : hid_{hid} {}
+		GamePad();
 	public:
 		const uint32_t Get_ButtonX() const		{ return GetVariable(0x0009'0001); }
 		const uint32_t Get_ButtonY() const		{ return GetVariable(0x0009'0002); }
@@ -373,34 +394,28 @@ public:
 		const uint32_t Get_LStickVert() const	{ return GetVariable(0x0001'0031); }
 		const uint32_t Get_RStickHorz() const	{ return GetVariable(0x0001'0035); }
 		const uint32_t Get_RStickVert() const	{ return GetVariable(0x0001'0032); }
-	public:
-		HID& GetHID() { return hid_; }
-	public:
-		uint32_t GetVariable(uint32_t usage) const {
-			return hid_.GetVariable(usage);
-		}
 	};
 public:
 	static USBHost Instance;
 public:
 	ReportDescriptor reportDescriptor;
 private:
-	Keyboard keyboard_;
-	Mouse mouse_;
 	HID* hidTbl_[CFG_TUH_HID];
 	EventHandler* pEventHandler_;
+	Keyboard keyboard_;
+	Mouse mouse_;
 public:
 	USBHost();
 public:
 	static void Initialize(uint8_t rhport = BOARD_TUH_RHPORT, EventHandler* pEventHandler = nullptr);
 public:
-	void SetHID(uint8_t iInstance, HID* pHID) { hidTbl_[iInstance] = pHID; }
+	void MountHID(uint8_t devAddr, uint8_t iInstance, const uint8_t* descReport, uint16_t descLen);
+	void UmountHID(uint8_t iInstance);
 	HID* GetHID(uint8_t iInstance) { return hidTbl_[iInstance]; }
-	void RemoveHID(uint8_t iInstance);
 public:
+	static EventHandler* GetEventHandler() { return Instance.pEventHandler_; }
 	static Keyboard& GetKeyboard() { return Instance.keyboard_; }
 	static Mouse& GetMouse() { return Instance.mouse_; }
-	static EventHandler* GetEventHandler() { return Instance.pEventHandler_; }
 public:
 	// virtual functions of Tickable
 	virtual const char* GetTickableName() const override { return "USBHost"; }

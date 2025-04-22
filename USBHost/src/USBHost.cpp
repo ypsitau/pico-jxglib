@@ -21,9 +21,35 @@ void USBHost::Initialize(uint8_t rhport, EventHandler* pEventHandler)
 	Instance.pEventHandler_ = pEventHandler;
 }
 
-void USBHost::RemoveHID(uint8_t iInstance)
+void USBHost::MountHID(uint8_t devAddr, uint8_t iInstance, const uint8_t* descReport, uint16_t descLen)
+{
+	uint8_t itfProtocol = ::tuh_hid_interface_protocol(devAddr, iInstance);
+	ReportDescriptor::Application* pApplication = reportDescriptor.Parse(descReport, descLen);
+	if (pApplication) {
+		pApplication->Print(Stdio::Instance);
+		HID* pHID = new HID(devAddr, iInstance, pApplication);
+		hidTbl_[iInstance] = pHID;
+		for (HIDDriver* pHIDDriver = HIDDriver::pHIDDriverRegisteredTop; pHIDDriver; pHIDDriver = pHIDDriver->GetRegisteredListNext()) {
+			if (pHIDDriver->GetUsage() == pApplication->GetUsage() && !pHIDDriver->IsMounted()) {
+				pHIDDriver->AttachHID(pHID->Reference(), pApplication);
+				pHID->AttachDriver(*pHIDDriver);
+			}
+		}
+		//if (pApplication->GetUsage() == keyboard_.GetUsage()) {
+		//	keyboard_.AttachHID(pHID->Reference(), pApplication);
+		//	pHID->AttachDriver(keyboard_);
+		//} else if (pApplication->GetUsage() == mouse_.GetUsage()) {
+		//	mouse_.AttachHID(pHID->Reference(), pApplication);
+		//	pHID->AttachDriver(mouse_);
+		//}
+	}
+}
+
+void USBHost::UmountHID(uint8_t iInstance)
 {
 	HID* pHID = hidTbl_[iInstance];
+	HIDDriver* pHIDDriver = pHID->GetHIDDriver();
+	if (pHIDDriver) pHIDDriver->DetachHID();
 	hidTbl_[iInstance] = nullptr;
 	HID::Delete(pHID);
 }
@@ -48,25 +74,14 @@ extern "C" void tuh_umount_cb(uint8_t devAddr)
 extern "C" void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descReport, uint16_t descLen)
 {
 	::printf("tuh_hid_mount_cb(devAddr=%d, iInstance=%d)\n", devAddr, iInstance);
-	uint8_t itfProtocol = ::tuh_hid_interface_protocol(devAddr, iInstance);
-	std::unique_ptr<USBHost::ReportDescriptor::Application> pApplication(USBHost::Instance.reportDescriptor.Parse(descReport, descLen));
-	pApplication->Print(Stdio::Instance);
-	if (pApplication) {
-		USBHost::HID* pHID = new USBHost::HID(devAddr, iInstance, pApplication.release());
-		USBHost::Instance.SetHID(iInstance, pHID);
-		if (itfProtocol == HID_ITF_PROTOCOL_KEYBOARD) {
-			pHID->AttachHandler(USBHost::Instance.GetKeyboard());
-		} else if (itfProtocol == HID_ITF_PROTOCOL_MOUSE) {
-			pHID->AttachHandler(USBHost::Instance.GetMouse());
-		}
-	}
+	USBHost::Instance.MountHID(devAddr, iInstance, descReport, descLen);
 	::tuh_hid_receive_report(devAddr, iInstance);
 }
 
 extern "C" void tuh_hid_umount_cb(uint8_t devAddr, uint8_t iInstance)
 {
 	::printf("tuh_hid_umount_cb(%d, %d)\n", devAddr, iInstance);
-	USBHost::Instance.RemoveHID(iInstance);
+	USBHost::Instance.UmountHID(iInstance);
 }
 
 extern "C" void tuh_hid_report_received_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len)
@@ -80,53 +95,74 @@ extern "C" void tuh_hid_report_received_cb(uint8_t devAddr, uint8_t iInstance, c
 // USBHost::HID
 //------------------------------------------------------------------------------
 USBHost::HID::HID(uint8_t devAddr, uint8_t iInstance, ReportDescriptor::Application* pApplication) :
-		devAddr_{devAddr}, iInstance_{iInstance}, pApplication_{pApplication}, pHandler_{nullptr}
+	devAddr_{devAddr}, iInstance_{iInstance}, pApplication_{pApplication}, reportLen_{0}, pHIDDriver_{nullptr}
 {
-}
-
-int32_t USBHost::HID::GetVariable(uint32_t usage) const
-{
-	return pApplication_? pApplication_->GetCollection()
-		.FindUsageInfo(usage).GetVariable(reportCaptured_, lenCaptured_) : 0;
-}
-
-int32_t USBHost::HID::GetVariable(uint32_t usage1, uint32_t usage2) const
-{
-	return pApplication_? pApplication_->GetCollection().FindCollection(usage1)
-		.FindUsageInfo(usage2).GetVariable(reportCaptured_, lenCaptured_) : 0;
-}
-
-int32_t USBHost::HID::GetVariable(uint32_t usage1, uint32_t usage2, uint32_t usage3) const
-{
-	return pApplication_? pApplication_->GetCollection().FindCollection(usage1).FindCollection(usage2)
-		.FindUsageInfo(usage3).GetVariable(reportCaptured_, lenCaptured_) : 0;
-}
-
-int32_t USBHost::HID::GetArrayItem(int idx) const
-{
-	return pApplication_? pApplication_->GetCollection()
-		.GetArrayItem(reportCaptured_, lenCaptured_, idx) : 0;
-}
-
-int32_t USBHost::HID::GetArrayItem(uint32_t usage, int idx) const
-{
-	return pApplication_? pApplication_->GetCollection().FindCollection(usage)
-		.GetArrayItem(reportCaptured_, lenCaptured_, idx) : 0;
-}
-
-int32_t USBHost::HID::GetArrayItem(uint32_t usage1, uint32_t usage2, int idx) const
-{
-	return pApplication_? pApplication_->GetCollection().FindCollection(usage1).FindCollection(usage2)
-		.GetArrayItem(reportCaptured_, lenCaptured_, idx) : 0;
 }
 
 void USBHost::HID::OnReport(const uint8_t* report, uint16_t len)
 {
-	if (len <= sizeof(reportCaptured_)) {
-		::memcpy(reportCaptured_, report, len);
-		lenCaptured_ = len;
+	if (len <= sizeof(report_)) {
+		::memcpy(report_, report, len);
+		reportLen_ = len;
 	}
-	if (pHandler_) pHandler_->OnReport(report, len);
+	if (pHIDDriver_) pHIDDriver_->OnReport(report, len);
+}
+
+//------------------------------------------------------------------------------
+// USBHost::HIDDriver
+//------------------------------------------------------------------------------
+USBHost::HIDDriver* USBHost::HIDDriver::pHIDDriverRegisteredTop = nullptr;
+
+USBHost::HIDDriver::HIDDriver(uint32_t usage) : usage_{usage}, pApplication_{nullptr}
+{
+	if (pHIDDriverRegisteredTop) {
+		pHIDDriverRegisteredTop->AppendRegisteredList(this);
+	} else {
+		pHIDDriverRegisteredTop = this;
+	}
+}
+
+USBHost::HIDDriver* USBHost::HIDDriver::GetRegisteredListLast()
+{
+	HIDDriver* pHIDDriver = this;
+	for ( ; pHIDDriver->GetRegisteredListNext(); pHIDDriver = pHIDDriver->GetRegisteredListNext()) ;
+	return pHIDDriver;
+}
+
+int32_t USBHost::HIDDriver::GetVariable(uint32_t usage) const
+{
+	return pApplication_? pApplication_->GetCollection()
+		.FindUsageInfo(usage).GetVariable(pHID_->GetReport(), pHID_->GetReportLen()) : 0;
+}
+
+int32_t USBHost::HIDDriver::GetVariable(uint32_t usage1, uint32_t usage2) const
+{
+	return pApplication_? pApplication_->GetCollection().FindCollection(usage1)
+		.FindUsageInfo(usage2).GetVariable(pHID_->GetReport(), pHID_->GetReportLen()) : 0;
+}
+
+int32_t USBHost::HIDDriver::GetVariable(uint32_t usage1, uint32_t usage2, uint32_t usage3) const
+{
+	return pApplication_? pApplication_->GetCollection().FindCollection(usage1).FindCollection(usage2)
+		.FindUsageInfo(usage3).GetVariable(pHID_->GetReport(), pHID_->GetReportLen()) : 0;
+}
+
+int32_t USBHost::HIDDriver::GetArrayItem(int idx) const
+{
+	return pApplication_? pApplication_->GetCollection()
+		.GetArrayItem(pHID_->GetReport(), pHID_->GetReportLen(), idx) : 0;
+}
+
+int32_t USBHost::HIDDriver::GetArrayItem(uint32_t usage, int idx) const
+{
+	return pApplication_? pApplication_->GetCollection().FindCollection(usage)
+		.GetArrayItem(pHID_->GetReport(), pHID_->GetReportLen(), idx) : 0;
+}
+
+int32_t USBHost::HIDDriver::GetArrayItem(uint32_t usage1, uint32_t usage2, int idx) const
+{
+	return pApplication_? pApplication_->GetCollection().FindCollection(usage1).FindCollection(usage2)
+		.GetArrayItem(pHID_->GetReport(), pHID_->GetReportLen(), idx) : 0;
 }
 
 //------------------------------------------------------------------------------
@@ -391,7 +427,7 @@ const USBHost::Keyboard::UsageIdToKeyCode USBHost::Keyboard::usageIdToKeyCodeTbl
 	{ 0,				0,				},	// 0xff
 };
 
-USBHost::Keyboard::Keyboard() : capsLockAsCtrlFlag_{false}
+USBHost::Keyboard::Keyboard() : HIDDriver(0x00010006), capsLockAsCtrlFlag_{false}
 {
 	::memset(&reportCaptured_, 0x00, sizeof(reportCaptured_));
 }
@@ -451,7 +487,7 @@ int USBHost::Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax, bool inc
 //------------------------------------------------------------------------------
 // USBHost::Mouse
 //------------------------------------------------------------------------------
-USBHost::Mouse::Mouse() : sensibility_{.6}
+USBHost::Mouse::Mouse() : HIDDriver(0x00010002), sensibility_{.6}
 {
 	SetStage({0, 0, 320, 240});
 }
@@ -491,6 +527,13 @@ void USBHost::Mouse::OnReport(const uint8_t* report, uint16_t len)
 	xRaw_ = ChooseMin(ChooseMax(xRaw_ + xDiff, 0), rcStageRaw_.width - 1);
 	yRaw_ = ChooseMin(ChooseMax(yRaw_ + yDiff, 0), rcStageRaw_.height - 1);
 	status_.Update(CalcPoint(), reportEx.x, reportEx.y, reportEx.wheel, reportEx.pan, reportEx.buttons);
+}
+
+//------------------------------------------------------------------------------
+// USBHost::GamePad
+//------------------------------------------------------------------------------
+USBHost::GamePad::GamePad() : HIDDriver(0x00010005)
+{
 }
 
 //-----------------------------------------------------------------------------
