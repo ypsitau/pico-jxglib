@@ -408,8 +408,6 @@ public:
 private:
 	HID* hidTbl_[CFG_TUH_HID];
 	EventHandler* pEventHandler_;
-	Keyboard keyboard_;
-	Mouse mouse_;
 public:
 	USBHost();
 public:
@@ -420,8 +418,6 @@ public:
 	HID* GetHID(uint8_t iInstance) { return hidTbl_[iInstance]; }
 public:
 	static EventHandler* GetEventHandler() { return Instance.pEventHandler_; }
-	static Keyboard& GetKeyboard() { return Instance.keyboard_; }
-	static Mouse& GetMouse() { return Instance.mouse_; }
 public:
 	// virtual functions of Tickable
 	virtual const char* GetTickableName() const override { return "USBHost"; }

@@ -8,7 +8,7 @@ int main()
 {
 	::stdio_init_all();
 	USBHost::Initialize();
-	USBHost::Mouse& mouse = USBHost::GetMouse();
+	USBHost::Mouse mouse;
 	::printf("----\n");
 	for (;;) {
 		if (mouse.IsMounted()) {
