@@ -104,7 +104,7 @@ public:
 			int32_t unitExponent;
 			int32_t unit;
 			uint32_t reportSize;
-			uint32_t reportID;
+			//uint32_t reportID;
 			uint32_t reportCount;
 		public:
 			static const GlobalItem None;
@@ -168,7 +168,7 @@ public:
 			int32_t GetUnitExponent() const { return pGlobalItem_->unitExponent; }
 			int32_t GetUnit() const { return pGlobalItem_->unit; }
 			uint32_t GetReportSize() const { return pGlobalItem_->reportSize; }
-			uint32_t GetReportID() const { return pGlobalItem_->reportID; }
+			//uint32_t GetReportID() const { return pGlobalItem_->reportID; }
 			uint32_t GetReportCount() const { return pGlobalItem_->reportCount; }
 			uint32_t GetReportOffset() const { return reportOffset_; }
 			bool IsAbsolute() const { return GetMainItemData().IsAbsolute(); }
@@ -222,6 +222,7 @@ public:
 		};
 		class Application {
 		private:
+			uint8_t reportID_;
 			std::unique_ptr<GlobalItemList> pGlobalItemListTop_;
 			Collection collection_;
 			std::unique_ptr<Application> pApplicationNext_;
@@ -233,6 +234,8 @@ public:
 			const Application* GetListNext() const { return pApplicationNext_.get(); }
 			Application* GetListLast();
 		public:
+			void SetReportID(uint8_t reportID) { reportID_ = reportID; }
+			uint8_t GetReportID() const { return reportID_; }
 			uint32_t GetUsage() const { return collection_.GetUsage(); }
 		public:
 			Collection& GetCollection() { return collection_; }
@@ -284,10 +287,6 @@ public:
 		bool IsSendReady() { return ::tuh_hid_send_ready(devAddr_, iInstance_); }
 		void SendReport(uint8_t reportId, const uint8_t* report, uint16_t len) {
 			::tuh_hid_send_report(devAddr_, iInstance_, reportId, report, len);
-		}
-	public:
-		bool CheckUsage(uint32_t usage) const {
-			return pApplication_? pApplication_->GetUsage() == usage : false;
 		}
 	public:
 		virtual void OnReport(const uint8_t* report, uint16_t len);
@@ -376,24 +375,24 @@ public:
 	public:
 		GamePad();
 	public:
-		const uint32_t Get_ButtonX() const		{ return GetVariable(0x0009'0001); }
-		const uint32_t Get_ButtonY() const		{ return GetVariable(0x0009'0002); }
-		const uint32_t Get_ButtonA() const		{ return GetVariable(0x0009'0003); }
-		const uint32_t Get_ButtonB() const		{ return GetVariable(0x0009'0004); }
-		const uint32_t Get_ButtonLB() const		{ return GetVariable(0x0009'0005); }
-		const uint32_t Get_ButtonRB() const		{ return GetVariable(0x0009'0006); }
-		const uint32_t Get_ButtonLT() const		{ return GetVariable(0x0009'0007); }
-		const uint32_t Get_ButtonRT() const		{ return GetVariable(0x0009'0008); }
-		const uint32_t Get_ButtonLStick() const	{ return GetVariable(0x0009'0009); }
-		const uint32_t Get_ButtonRStick() const	{ return GetVariable(0x0009'000a); }
-		const uint32_t Get_ButtonBACK() const	{ return GetVariable(0x0009'000b); }
-		const uint32_t Get_ButtonSTART() const	{ return GetVariable(0x0009'000c); }
-		const uint32_t Get_ButtonGUIDE() const	{ return GetVariable(0x0009'000d); }
-		const uint32_t Get_HatSwitch() const	{ return GetVariable(0x0001'0039); }
-		const uint32_t Get_LStickHorz() const	{ return GetVariable(0x0001'0030); }
-		const uint32_t Get_LStickVert() const	{ return GetVariable(0x0001'0031); }
-		const uint32_t Get_RStickHorz() const	{ return GetVariable(0x0001'0035); }
-		const uint32_t Get_RStickVert() const	{ return GetVariable(0x0001'0032); }
+		const uint32_t Get_ButtonX() const			{ return GetVariable(0x0009'0001); }
+		const uint32_t Get_ButtonY() const			{ return GetVariable(0x0009'0002); }
+		const uint32_t Get_ButtonA() const			{ return GetVariable(0x0009'0003); }
+		const uint32_t Get_ButtonB() const			{ return GetVariable(0x0009'0004); }
+		const uint32_t Get_ButtonLB() const			{ return GetVariable(0x0009'0005); }
+		const uint32_t Get_ButtonRB() const			{ return GetVariable(0x0009'0006); }
+		const uint32_t Get_ButtonLT() const			{ return GetVariable(0x0009'0007); }
+		const uint32_t Get_ButtonRT() const			{ return GetVariable(0x0009'0008); }
+		const uint32_t Get_ButtonLStick() const		{ return GetVariable(0x0009'0009); }
+		const uint32_t Get_ButtonRStick() const		{ return GetVariable(0x0009'000a); }
+		const uint32_t Get_ButtonBACK() const		{ return GetVariable(0x0009'000b); }
+		const uint32_t Get_ButtonSTART() const		{ return GetVariable(0x0009'000c); }
+		const uint32_t Get_ButtonGUIDE() const		{ return GetVariable(0x0009'000d); }
+		const uint32_t Get_HatSwitch() const		{ return GetVariable(0x0001'0039); }
+		const uint32_t GetRaw_LStickHorz() const	{ return GetVariable(0x0001'0030); }
+		const uint32_t GetRaw_LStickVert() const	{ return GetVariable(0x0001'0031); }
+		const uint32_t GetRaw_RStickHorz() const	{ return GetVariable(0x0001'0035); }
+		const uint32_t GetRaw_RStickVert() const	{ return GetVariable(0x0001'0032); }
 	};
 public:
 	static USBHost Instance;

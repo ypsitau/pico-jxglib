@@ -23,7 +23,6 @@ void USBHost::Initialize(uint8_t rhport, EventHandler* pEventHandler)
 
 void USBHost::MountHID(uint8_t devAddr, uint8_t iInstance, const uint8_t* descReport, uint16_t descLen)
 {
-	uint8_t itfProtocol = ::tuh_hid_interface_protocol(devAddr, iInstance);
 	ReportDescriptor::Application* pApplication = reportDescriptor.Parse(descReport, descLen);
 	if (pApplication) {
 		pApplication->Print(Stdio::Instance);
@@ -33,15 +32,9 @@ void USBHost::MountHID(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRe
 			if (pHIDDriver->GetUsage() == pApplication->GetUsage() && !pHIDDriver->IsMounted()) {
 				pHIDDriver->AttachHID(pHID->Reference(), pApplication);
 				pHID->AttachDriver(*pHIDDriver);
+				break;
 			}
 		}
-		//if (pApplication->GetUsage() == keyboard_.GetUsage()) {
-		//	keyboard_.AttachHID(pHID->Reference(), pApplication);
-		//	pHID->AttachDriver(keyboard_);
-		//} else if (pApplication->GetUsage() == mouse_.GetUsage()) {
-		//	mouse_.AttachHID(pHID->Reference(), pApplication);
-		//	pHID->AttachDriver(mouse_);
-		//}
 	}
 }
 
@@ -656,7 +649,9 @@ USBHost::ReportDescriptor::Application* USBHost::ReportDescriptor::Parse(const u
 			break;
 		}
 		case ItemType::ReportID: {
-			globalItem_.reportID = itemData;
+			//globalItem_.reportID = itemData;
+			if (pApplicationCur) pApplicationCur->SetReportID(static_cast<uint8_t>(itemData));
+			reportOffset_Input += 8;
 			break;
 		}
 		case ItemType::ReportCount: {
@@ -797,7 +792,7 @@ const USBHost::ReportDescriptor::GlobalItem USBHost::ReportDescriptor::GlobalIte
 	unitExponent:		0,
 	unit:				0,
 	reportSize:			0,
-	reportID:			0,
+	//reportID:			0,
 	reportCount:		0,
 };
 
@@ -817,7 +812,7 @@ void USBHost::ReportDescriptor::GlobalItem::Print(Printable& printable, int inde
 	printable.Printf("%*sunitExponent:    %d\n", indentLevel * 2, "", unitExponent);
 	printable.Printf("%*sunit:            %d\n", indentLevel * 2, "", unit);
 	printable.Printf("%*sreportSize:      %d\n", indentLevel * 2, "", reportSize);
-	printable.Printf("%*sreportID:        %d\n", indentLevel * 2, "", reportID);
+	//printable.Printf("%*sreportID:        %d\n", indentLevel * 2, "", reportID);
 	printable.Printf("%*sreportCount:     %d\n", indentLevel * 2, "", reportCount);
 }
 
@@ -952,7 +947,7 @@ void USBHost::ReportDescriptor::Collection::PrintUsage(Printable& printable, int
 //------------------------------------------------------------------------------
 // USBHost::ReportDescriptor::Application
 //------------------------------------------------------------------------------
-USBHost::ReportDescriptor::Application::Application(uint32_t usage) : collection_(CollectionType::Application, usage, nullptr)
+USBHost::ReportDescriptor::Application::Application(uint32_t usage) : reportID_{0}, collection_(CollectionType::Application, usage, nullptr)
 {
 }
 

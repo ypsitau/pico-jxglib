@@ -30,10 +30,10 @@ int main()
 				gamePad.Get_ButtonSTART(), 
 				gamePad.Get_ButtonGUIDE(),
 				gamePad.Get_HatSwitch(),
-				gamePad.Get_LStickHorz(),
-				gamePad.Get_LStickVert(),
-				gamePad.Get_RStickHorz(),
-				gamePad.Get_RStickVert());
+				gamePad.GetRaw_LStickHorz(),
+				gamePad.GetRaw_LStickVert(),
+				gamePad.GetRaw_RStickHorz(),
+				gamePad.GetRaw_RStickVert());
 		}
 		Tickable::Sleep(300);
 	}
