@@ -529,6 +529,30 @@ USBHost::GamePad::GamePad() : HIDDriver(0x00010005)
 {
 }
 
+float USBHost::GamePad::GetAxis(uint32_t usage) const
+{
+	if (!IsMounted()) return 0.;
+	const auto& usageInfo = GetApplication().GetCollection().FindUsageInfo(usage);
+	int32_t valueMin = usageInfo.GetLogicalMinimum();
+	int32_t valueMax = usageInfo.GetLogicalMaximum();
+	int32_t value = usageInfo.GetVariable(GetHID().GetReport(), GetHID().GetReportLen());
+	if (valueMin <= 0) {
+		if (valueMin == 0) {
+			int32_t valueMid = (valueMax + 1) / 2;
+			valueMin -= valueMid;
+			valueMax -= valueMid;
+			value -= valueMid;
+			if (valueMin == 0) return 0.;
+		}
+		return (value < 0)? -static_cast<float>(value) / valueMin :
+			(valueMax > 0)? static_cast<float>(value) / valueMax : 0;
+	} else if (valueMax > 0) {
+		return static_cast<float>(value) / valueMax;
+	} else {
+		return 0.;
+	}
+}
+
 //-----------------------------------------------------------------------------
 // USBHost::ReportDescriptor
 //-----------------------------------------------------------------------------

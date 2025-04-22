@@ -311,6 +311,7 @@ public:
 		void AttachHID(HID* pHID, ReportDescriptor::Application* pApplication) { pHID_.reset(pHID); pApplication_ = pApplication; }
 		void DetachHID() { pHID_.reset(), pApplication_ = nullptr; }
 		bool IsMounted() const { return !!pHID_ && !!pApplication_; }
+		const HID& GetHID() const { return *pHID_; }
 		const ReportDescriptor::Application& GetApplication() const { return *pApplication_; }
 	public:
 		virtual void OnMount() {};
@@ -375,24 +376,30 @@ public:
 	public:
 		GamePad();
 	public:
-		const uint32_t Get_ButtonX() const			{ return GetVariable(0x0009'0001); }
-		const uint32_t Get_ButtonY() const			{ return GetVariable(0x0009'0002); }
-		const uint32_t Get_ButtonA() const			{ return GetVariable(0x0009'0003); }
-		const uint32_t Get_ButtonB() const			{ return GetVariable(0x0009'0004); }
-		const uint32_t Get_ButtonLB() const			{ return GetVariable(0x0009'0005); }
-		const uint32_t Get_ButtonRB() const			{ return GetVariable(0x0009'0006); }
-		const uint32_t Get_ButtonLT() const			{ return GetVariable(0x0009'0007); }
-		const uint32_t Get_ButtonRT() const			{ return GetVariable(0x0009'0008); }
-		const uint32_t Get_ButtonLStick() const		{ return GetVariable(0x0009'0009); }
-		const uint32_t Get_ButtonRStick() const		{ return GetVariable(0x0009'000a); }
-		const uint32_t Get_ButtonBACK() const		{ return GetVariable(0x0009'000b); }
-		const uint32_t Get_ButtonSTART() const		{ return GetVariable(0x0009'000c); }
-		const uint32_t Get_ButtonGUIDE() const		{ return GetVariable(0x0009'000d); }
-		const uint32_t Get_HatSwitch() const		{ return GetVariable(0x0001'0039); }
-		const uint32_t GetRaw_LStickHorz() const	{ return GetVariable(0x0001'0030); }
-		const uint32_t GetRaw_LStickVert() const	{ return GetVariable(0x0001'0031); }
-		const uint32_t GetRaw_RStickHorz() const	{ return GetVariable(0x0001'0035); }
-		const uint32_t GetRaw_RStickVert() const	{ return GetVariable(0x0001'0032); }
+		uint32_t Get_ButtonX() const		{ return GetVariable(0x0009'0001); }
+		uint32_t Get_ButtonY() const		{ return GetVariable(0x0009'0002); }
+		uint32_t Get_ButtonA() const		{ return GetVariable(0x0009'0003); }
+		uint32_t Get_ButtonB() const		{ return GetVariable(0x0009'0004); }
+		uint32_t Get_ButtonLB() const		{ return GetVariable(0x0009'0005); }
+		uint32_t Get_ButtonRB() const		{ return GetVariable(0x0009'0006); }
+		uint32_t Get_ButtonLT() const		{ return GetVariable(0x0009'0007); }
+		uint32_t Get_ButtonRT() const		{ return GetVariable(0x0009'0008); }
+		uint32_t Get_ButtonLStick() const	{ return GetVariable(0x0009'0009); }
+		uint32_t Get_ButtonRStick() const	{ return GetVariable(0x0009'000a); }
+		uint32_t Get_ButtonBACK() const		{ return GetVariable(0x0009'000b); }
+		uint32_t Get_ButtonSTART() const	{ return GetVariable(0x0009'000c); }
+		uint32_t Get_ButtonGUIDE() const	{ return GetVariable(0x0009'000d); }
+		uint32_t Get_HatSwitch() const		{ return GetVariable(0x0001'0039); }
+		uint32_t GetRaw_LStickHorz() const	{ return GetVariable(0x0001'0030); }
+		uint32_t GetRaw_LStickVert() const	{ return GetVariable(0x0001'0031); }
+		uint32_t GetRaw_RStickHorz() const	{ return GetVariable(0x0001'0035); }
+		uint32_t GetRaw_RStickVert() const	{ return GetVariable(0x0001'0032); }
+		float Get_LStickHorz() const		{ return GetAxis(0x0001'0030); }
+		float Get_LStickVert() const		{ return GetAxis(0x0001'0031); }
+		float Get_RStickHorz() const		{ return GetAxis(0x0001'0035); }
+		float Get_RStickVert() const		{ return GetAxis(0x0001'0032); }
+	public:
+		float GetAxis(uint32_t usage) const;
 	};
 public:
 	static USBHost Instance;

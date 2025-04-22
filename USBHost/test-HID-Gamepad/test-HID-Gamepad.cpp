@@ -15,7 +15,7 @@ int main()
 #if 1
 	for (;;) {
 		if (gamePad.IsMounted()) {
-			::printf("%d%d%d%d%d%d%d%d%d%d%d%d%d %x %02x %02x %02x %02x\n",
+			::printf("%d%d%d%d%d%d%d%d%d%d%d%d%d %x %+1.4f %+1.4f %+1.4f %+1.4f\n",
 				gamePad.Get_ButtonX(),
 				gamePad.Get_ButtonY(),
 				gamePad.Get_ButtonA(),
@@ -30,10 +30,10 @@ int main()
 				gamePad.Get_ButtonSTART(), 
 				gamePad.Get_ButtonGUIDE(),
 				gamePad.Get_HatSwitch(),
-				gamePad.GetRaw_LStickHorz(),
-				gamePad.GetRaw_LStickVert(),
-				gamePad.GetRaw_RStickHorz(),
-				gamePad.GetRaw_RStickVert());
+				gamePad.Get_LStickHorz(),
+				gamePad.Get_LStickVert(),
+				gamePad.Get_RStickHorz(),
+				gamePad.Get_RStickVert());
 		}
 		Tickable::Sleep(300);
 	}
