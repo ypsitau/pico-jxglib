@@ -25,7 +25,7 @@ void USBHost::MountHID(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRe
 {
 	ReportDescriptor::Application* pApplication = reportDescriptor.Parse(descReport, descLen);
 	if (pApplication) {
-		pApplication->Print(Stdio::Instance);
+		//pApplication->Print(Stdio::Instance);
 		HID* pHID = new HID(devAddr, iInstance, pApplication);
 		hidTbl_[iInstance] = pHID;
 		for (HIDDriver* pHIDDriver = HIDDriver::pHIDDriverRegisteredTop; pHIDDriver; pHIDDriver = pHIDDriver->GetRegisteredListNext()) {

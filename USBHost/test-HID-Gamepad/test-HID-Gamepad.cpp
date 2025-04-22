@@ -11,11 +11,9 @@ int main()
 	Printable::SetStandardOutput(Stdio::Instance);
 	USBHost::Initialize();
 	USBHost::GamePad gamePad;
-	//for (;;) Tickable::Sleep(1000);
-#if 1
 	for (;;) {
 		if (gamePad.IsMounted()) {
-			::printf("%d%d%d%d%d%d%d%d%d%d%d%d%d %x %+1.4f %+1.4f %+1.4f %+1.4f\n",
+			::printf("%d%d%d%d%d%d%d%d%d%d%d%d%d %x % 1.4f % 1.4f % 1.4f % 1.4f\n",
 				gamePad.Get_ButtonX(),
 				gamePad.Get_ButtonY(),
 				gamePad.Get_ButtonA(),
@@ -37,5 +35,4 @@ int main()
 		}
 		Tickable::Sleep(300);
 	}
-#endif
 }
