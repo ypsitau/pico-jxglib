@@ -119,11 +119,13 @@ public:
 		private:
 			std::unique_ptr<GlobalItemList> pGlobalItemListNext_;
 		public:
+			GlobalItemList() { globalItem.Clear(); }
 			GlobalItemList(const GlobalItem& globalItem) : globalItem{globalItem} {}
 		public:
 			void AppendList(GlobalItemList* pGlobalItemList) { GetListLast()->pGlobalItemListNext_.reset(pGlobalItemList); }
 			GlobalItemList* GetListNext() { return pGlobalItemListNext_.get(); }
 			const GlobalItemList* GetListNext() const { return pGlobalItemListNext_.get(); }
+			void RemoveListNext() { pGlobalItemListNext_.reset(); }
 			GlobalItemList* GetListLast();
 		};
 		struct LocalItem {
@@ -246,9 +248,6 @@ public:
 			void Print(Printable& printable, int indentLevel = 0) const;
 			void PrintAll(Printable& printable, int indentLevel = 0) const;
 		};
-	private:
-		GlobalItem globalItem_;
-		LocalItem localItem_;
 	public:
 		ReportDescriptor();
 		Application* Parse(const uint8_t* descReport, uint16_t descLen);
@@ -311,6 +310,7 @@ public:
 		void AttachHID(HID* pHID, ReportDescriptor::Application* pApplication) { pHID_.reset(pHID); pApplication_ = pApplication; }
 		void DetachHID() { pHID_.reset(), pApplication_ = nullptr; }
 		bool IsMounted() const { return !!pHID_ && !!pApplication_; }
+		HID& GetHID() { return *pHID_; }
 		const HID& GetHID() const { return *pHID_; }
 		const ReportDescriptor::Application& GetApplication() const { return *pApplication_; }
 	public:
@@ -403,8 +403,6 @@ public:
 	};
 public:
 	static USBHost Instance;
-public:
-	ReportDescriptor reportDescriptor;
 private:
 	HID* hidTbl_[CFG_TUH_HID];
 	EventHandler* pEventHandler_;

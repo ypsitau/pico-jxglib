@@ -23,7 +23,7 @@ void USBHost::Initialize(uint8_t rhport, EventHandler* pEventHandler)
 
 void USBHost::MountHID(uint8_t devAddr, uint8_t iInstance, const uint8_t* descReport, uint16_t descLen)
 {
-	ReportDescriptor::Application* pApplication = reportDescriptor.Parse(descReport, descLen);
+	ReportDescriptor::Application* pApplication = ReportDescriptor().Parse(descReport, descLen);
 	if (pApplication) {
 		//pApplication->Print(Stdio::Instance);
 		HID* pHID = new HID(devAddr, iInstance, pApplication);
@@ -566,13 +566,14 @@ USBHost::ReportDescriptor::Application* USBHost::ReportDescriptor::Parse(const u
 	uint32_t reportOffset_Input = 0;
 	uint32_t reportOffset_Output = 0;
 	uint32_t reportOffset_Feature = 0;
-	globalItem_.Clear();
-	localItem_.Clear();
+	std::unique_ptr<GlobalItemList> pGlobalItemStack(new GlobalItemList());
+	std::unique_ptr<LocalItem> pLocalItem(new LocalItem());
 	//Dump(descReport, descLen);
 	uint8_t itemTypePrev = 0;
 	std::unique_ptr<Application> pApplicationTop;
 	Collection* pCollectionCur = nullptr;
 	Application* pApplicationCur = nullptr;
+	GlobalItem* pGlobalItemCur = &pGlobalItemStack->globalItem;
 	for (uint16_t descOffset = 0; descOffset < descLen; ) {
 		uint8_t src = descReport[descOffset++];
 		uint8_t itemType = src & 0xfc;
@@ -596,29 +597,29 @@ USBHost::ReportDescriptor::Application* USBHost::ReportDescriptor::Parse(const u
 		switch (itemType) {
 		// 6.2.2.4 Main Items
 		case ItemType::Input: {
-			globalItem_.itemType = itemType;
-			globalItem_.mainItemData.itemData = itemData;
-			if (pApplicationCur) pApplicationCur->AddMainItem(*pCollectionCur, globalItem_, localItem_, reportOffset_Input);
-			localItem_.Clear();
+			pGlobalItemCur->itemType = itemType;
+			pGlobalItemCur->mainItemData.itemData = itemData;
+			if (pApplicationCur) pApplicationCur->AddMainItem(*pCollectionCur, *pGlobalItemCur, *pLocalItem, reportOffset_Input);
+			pLocalItem->Clear();
 			break;
 		}
 		case ItemType::Output: {
-			globalItem_.itemType = itemType;
-			globalItem_.mainItemData.itemData = itemData;
-			if (pApplicationCur) pApplicationCur->AddMainItem(*pCollectionCur, globalItem_, localItem_, reportOffset_Output);
-			localItem_.Clear();
+			pGlobalItemCur->itemType = itemType;
+			pGlobalItemCur->mainItemData.itemData = itemData;
+			if (pApplicationCur) pApplicationCur->AddMainItem(*pCollectionCur, *pGlobalItemCur, *pLocalItem, reportOffset_Output);
+			pLocalItem->Clear();
 			break;
 		}
 		case ItemType::Feature: {
-			globalItem_.itemType = itemType;
-			globalItem_.mainItemData.itemData = itemData;
-			if (pApplicationCur) pApplicationCur->AddMainItem(*pCollectionCur, globalItem_, localItem_, reportOffset_Feature);
-			localItem_.Clear();
+			pGlobalItemCur->itemType = itemType;
+			pGlobalItemCur->mainItemData.itemData = itemData;
+			if (pApplicationCur) pApplicationCur->AddMainItem(*pCollectionCur, *pGlobalItemCur, *pLocalItem, reportOffset_Feature);
+			pLocalItem->Clear();
 			break;
 		}
 		case ItemType::Collection: {
 			CollectionType collectionType = static_cast<CollectionType>(itemData);
-			uint32_t usage = localItem_.usageTbl[0].minimum;
+			uint32_t usage = pLocalItem->usageTbl[0].minimum;
 			if (pCollectionCur) {
 				Collection* pCollection = new Collection(collectionType, usage, pCollectionCur);
 				pCollectionCur->AppendCollectionChild(pCollection);
@@ -632,7 +633,7 @@ USBHost::ReportDescriptor::Application* USBHost::ReportDescriptor::Parse(const u
 					pApplicationTop.reset(pApplicationCur);
 				}
 			}
-			localItem_.Clear();
+			pLocalItem->Clear();
 			break;
 		}
 		case ItemType::EndCollection: {
@@ -645,101 +646,112 @@ USBHost::ReportDescriptor::Application* USBHost::ReportDescriptor::Parse(const u
 			break;
 		}
 		case ItemType::LogicalMinimum: {
-			globalItem_.logicalMinimum = SignExtend(itemData, bytesItemData * 8);
+			pGlobalItemCur->logicalMinimum = SignExtend(itemData, bytesItemData * 8);
 			break;
 		}
 		case ItemType::LogicalMaximum: {
-			globalItem_.logicalMaximum = SignExtend(itemData, bytesItemData * 8);
+			pGlobalItemCur->logicalMaximum = SignExtend(itemData, bytesItemData * 8);
 			break;
 		}
 		case ItemType::PhysicalMinimum: {
-			globalItem_.physicalMinimum = SignExtend(itemData, bytesItemData * 8);
+			pGlobalItemCur->physicalMinimum = SignExtend(itemData, bytesItemData * 8);
 			break;
 		}
 		case ItemType::PhysicalMaximum: {
-			globalItem_.physicalMaximum = SignExtend(itemData, bytesItemData * 8);
+			pGlobalItemCur->physicalMaximum = SignExtend(itemData, bytesItemData * 8);
 			break;
 		}
 		case ItemType::UnitExponent: {
-			globalItem_.unitExponent = SignExtend(itemData, bytesItemData * 8);
+			pGlobalItemCur->unitExponent = SignExtend(itemData, bytesItemData * 8);
 			break;
 		}
 		case ItemType::Unit: {
-			globalItem_.unit = SignExtend(itemData, bytesItemData * 8);
+			pGlobalItemCur->unit = SignExtend(itemData, bytesItemData * 8);
 			break;
 		}
 		case ItemType::ReportSize: {
-			globalItem_.reportSize = itemData;
+			pGlobalItemCur->reportSize = itemData;
 			break;
 		}
 		case ItemType::ReportID: {
-			//globalItem_.reportID = itemData;
+			//pGlobalItemCur->reportID = itemData;
 			if (pApplicationCur) pApplicationCur->SetReportID(static_cast<uint8_t>(itemData));
 			reportOffset_Input += 8;
 			break;
 		}
 		case ItemType::ReportCount: {
-			globalItem_.reportCount = itemData;
+			pGlobalItemCur->reportCount = itemData;
 			break;
 		}
 		case ItemType::Push: {
+			GlobalItemList* pGlobalItemList = new GlobalItemList(*pGlobalItemCur);
+			pGlobalItemStack->AppendList(pGlobalItemList);
+			pGlobalItemCur = &pGlobalItemList->globalItem;
 			break;
 		}
 		case ItemType::Pop: {
+			for (GlobalItemList* pGlobalItemList = pGlobalItemStack.get(); pGlobalItemList;
+															pGlobalItemList = pGlobalItemList->GetListNext()) {
+				if (pGlobalItemCur == &pGlobalItemList->GetListNext()->globalItem) {
+					pGlobalItemList->RemoveListNext();
+					pGlobalItemCur = &pGlobalItemList->globalItem;
+					break;
+				}
+			}
 			break;
 		}
 		// 6.2.2.8 Local Items
 		case ItemType::Usage: {
-			if (localItem_.nUsage < count_of(localItem_.usageTbl)) {
+			if (pLocalItem->nUsage < count_of(pLocalItem->usageTbl)) {
 				uint32_t usage = ((bytesItemData < 4)? (usagePage << 16) : 0) | itemData;
-				localItem_.usageTbl[localItem_.nUsage++] = Range(usage, usage);
+				pLocalItem->usageTbl[pLocalItem->nUsage++] = Range(usage, usage);
 			}
 			break;
 		}
 		case ItemType::UsageMinimum: {
 			uint32_t usage = ((bytesItemData < 4)? (usagePage << 16) : 0) | itemData;
 			if (itemTypePrev == ItemType::UsageMaximum) {
-				localItem_.usageTbl[localItem_.nUsage - 1].minimum = usage;
-			} else if (localItem_.nUsage < count_of(localItem_.usageTbl)) {
-				localItem_.usageTbl[localItem_.nUsage++] = Range(usage, usage);
+				pLocalItem->usageTbl[pLocalItem->nUsage - 1].minimum = usage;
+			} else if (pLocalItem->nUsage < count_of(pLocalItem->usageTbl)) {
+				pLocalItem->usageTbl[pLocalItem->nUsage++] = Range(usage, usage);
 			}
 			break;
 		}		
 		case ItemType::UsageMaximum: {
 			uint32_t usage = ((bytesItemData < 4)? (usagePage << 16) : 0) | itemData;
 			if (itemTypePrev == ItemType::UsageMinimum) {
-				localItem_.usageTbl[localItem_.nUsage - 1].maximum = usage;
-			} else if (localItem_.nUsage < count_of(localItem_.usageTbl)) {
-				localItem_.usageTbl[localItem_.nUsage++] = Range(usage, usage);
+				pLocalItem->usageTbl[pLocalItem->nUsage - 1].maximum = usage;
+			} else if (pLocalItem->nUsage < count_of(pLocalItem->usageTbl)) {
+				pLocalItem->usageTbl[pLocalItem->nUsage++] = Range(usage, usage);
 			}
 			break;
 		}
 		case ItemType::DesignatorIndex: case ItemType::DesignatorMinimum: {
-			if (localItem_.nDesignatorIndex < count_of(localItem_.designatorIndexTbl)) {
-				localItem_.designatorIndexTbl[localItem_.nDesignatorIndex++] = Range(itemData, itemData);
+			if (pLocalItem->nDesignatorIndex < count_of(pLocalItem->designatorIndexTbl)) {
+				pLocalItem->designatorIndexTbl[pLocalItem->nDesignatorIndex++] = Range(itemData, itemData);
 			}
 			break;
 		}
 		case ItemType::DesignatorMaximum: {
-			if (localItem_.nDesignatorIndex > 0) {
-				localItem_.designatorIndexTbl[localItem_.nDesignatorIndex - 1].maximum = itemData;
+			if (pLocalItem->nDesignatorIndex > 0) {
+				pLocalItem->designatorIndexTbl[pLocalItem->nDesignatorIndex - 1].maximum = itemData;
 			}
 			break;
 		}
 		case ItemType::StringIndex: case ItemType::StringMinimum: {
-			if (localItem_.nStringIndex < count_of(localItem_.stringIndexTbl)) {
-				localItem_.stringIndexTbl[localItem_.nStringIndex++] = Range(itemData, itemData);
+			if (pLocalItem->nStringIndex < count_of(pLocalItem->stringIndexTbl)) {
+				pLocalItem->stringIndexTbl[pLocalItem->nStringIndex++] = Range(itemData, itemData);
 			}
 			break;
 		}
 		case ItemType::StringMaximum: {
-			if (localItem_.nStringIndex > 0) {
-				localItem_.stringIndexTbl[localItem_.nStringIndex - 1].maximum = itemData;
+			if (pLocalItem->nStringIndex > 0) {
+				pLocalItem->stringIndexTbl[pLocalItem->nStringIndex - 1].maximum = itemData;
 			}
 			break;
 		}
 		case ItemType::Delimeter: {
-			localItem_.delimeter = itemData;
+			pLocalItem->delimeter = itemData;
 			break;
 		}
 		}

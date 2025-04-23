@@ -10,8 +10,9 @@ C 言語で、ジョイスティックの USB report descriptor と、それを�
 - コメントを英語で表記すること
 */
 
-USBHost::ReportDescriptor::Application* PrepareApplication(const uint8_t* descReport, int descLen);
+USBHost::HIDDriver* PrepareHIDDriver(const uint8_t* descReport, int descLen);
 
+#if 1
 void test_Keyboard()
 {
 	// USB HID Report Descriptor for a keyboard
@@ -54,20 +55,20 @@ void test_Keyboard()
 		{0x00, 0x00, 0x0D, 0x00, 0x00, 0x00, 0x00, 0x00}  // 'j'
 	};
 	::printf("\n" "test_Keyboard\n");
-	USBHost::GenericHID hid(PrepareApplication(descReport, sizeof(descReport)), true);
+	std::unique_ptr<USBHost::HIDDriver> pHIDDriver(PrepareHIDDriver(descReport, sizeof(descReport)));
 	for (int i = 0; i < count_of(reportTbl); i++) {
-		hid.OnReport(0, 0, reportTbl[i], sizeof(reportTbl[0])); 
+		pHIDDriver->GetHID().OnReport(reportTbl[i], sizeof(reportTbl[0])); 
 		::printf("Modifier:%d%d%d%d%d%d%d%d %02x %02x %02x %02x %02x %02x\n",
-			hid.GetVariable(0x0007'00e0),
-			hid.GetVariable(0x0007'00e1),
-			hid.GetVariable(0x0007'00e2),
-			hid.GetVariable(0x0007'00e3),
-			hid.GetVariable(0x0007'00e4),
-			hid.GetVariable(0x0007'00e5),
-			hid.GetVariable(0x0007'00e6),
-			hid.GetVariable(0x0007'00e7),
-			hid.GetArrayItem(0), hid.GetArrayItem(1), hid.GetArrayItem(2),
-			hid.GetArrayItem(3), hid.GetArrayItem(4), hid.GetArrayItem(5));
+			pHIDDriver->GetVariable(0x0007'00e0),
+			pHIDDriver->GetVariable(0x0007'00e1),
+			pHIDDriver->GetVariable(0x0007'00e2),
+			pHIDDriver->GetVariable(0x0007'00e3),
+			pHIDDriver->GetVariable(0x0007'00e4),
+			pHIDDriver->GetVariable(0x0007'00e5),
+			pHIDDriver->GetVariable(0x0007'00e6),
+			pHIDDriver->GetVariable(0x0007'00e7),
+			pHIDDriver->GetArrayItem(0), pHIDDriver->GetArrayItem(1), pHIDDriver->GetArrayItem(2),
+			pHIDDriver->GetArrayItem(3), pHIDDriver->GetArrayItem(4), pHIDDriver->GetArrayItem(5));
 	}
 }
 
@@ -116,15 +117,15 @@ void test_Mouse()
 		{0x00, 0x00, 0x00}  // No buttons pressed, no movement
 	};
 	::printf("\n" "test_Mouse\n");
-	USBHost::GenericHID hid(PrepareApplication(descReport, sizeof(descReport)), true);
+	std::unique_ptr<USBHost::HIDDriver> pHIDDriver(PrepareHIDDriver(descReport, sizeof(descReport)));
 	for (int i = 0; i < count_of(reportTbl); i++) {
-		hid.OnReport(0, 0, reportTbl[i], sizeof(reportTbl[0])); 
+		pHIDDriver->GetHID().OnReport(reportTbl[i], sizeof(reportTbl[0])); 
 		::printf("Button1:%d Button2:%d Button3:%d X:%d Y:%d\n",
-			hid.GetVariable(0x0001'0001, 0x0009'0001),
-			hid.GetVariable(0x0001'0001, 0x0009'0002),
-			hid.GetVariable(0x0001'0001, 0x0009'0003),
-			hid.GetVariable(0x0001'0001, 0x0001'0030),
-			hid.GetVariable(0x0001'0001, 0x0001'0031));
+			pHIDDriver->GetVariable(0x0001'0001, 0x0009'0001),
+			pHIDDriver->GetVariable(0x0001'0001, 0x0009'0002),
+			pHIDDriver->GetVariable(0x0001'0001, 0x0009'0003),
+			pHIDDriver->GetVariable(0x0001'0001, 0x0001'0030),
+			pHIDDriver->GetVariable(0x0001'0001, 0x0001'0031));
 	}
 }
 
@@ -169,30 +170,30 @@ void test_GamePad1()
 		{0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00}  // All buttons pressed, all axes centered
 	};
 	::printf("\n" "test_GamePad1\n");
-	USBHost::GenericHID hid(PrepareApplication(descReport, sizeof(descReport)), true);
+	std::unique_ptr<USBHost::HIDDriver> pHIDDriver(PrepareHIDDriver(descReport, sizeof(descReport)));
 	for (int i = 0; i < count_of(reportTbl); i++) {
-		hid.OnReport(0, 0, reportTbl[i], sizeof(reportTbl[0])); 
+		pHIDDriver->GetHID().OnReport(reportTbl[i], sizeof(reportTbl[0])); 
 		::printf("Button:%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d LStick:%4d:%4d RStick:%4d:%4d\n",
-			hid.GetVariable(0x0009'0001),
-			hid.GetVariable(0x0009'0002),
-			hid.GetVariable(0x0009'0003),
-			hid.GetVariable(0x0009'0004),
-			hid.GetVariable(0x0009'0005),
-			hid.GetVariable(0x0009'0006),
-			hid.GetVariable(0x0009'0007),
-			hid.GetVariable(0x0009'0008),
-			hid.GetVariable(0x0009'0009),
-			hid.GetVariable(0x0009'000a),
-			hid.GetVariable(0x0009'000b),
-			hid.GetVariable(0x0009'000c),
-			hid.GetVariable(0x0009'000d),
-			hid.GetVariable(0x0009'000e),
-			hid.GetVariable(0x0009'000f),
-			hid.GetVariable(0x0009'0010),
-			hid.GetVariable(0x0001'0030),
-			hid.GetVariable(0x0001'0031),
-			hid.GetVariable(0x0001'0032),
-			hid.GetVariable(0x0001'0035));
+			pHIDDriver->GetVariable(0x0009'0001),
+			pHIDDriver->GetVariable(0x0009'0002),
+			pHIDDriver->GetVariable(0x0009'0003),
+			pHIDDriver->GetVariable(0x0009'0004),
+			pHIDDriver->GetVariable(0x0009'0005),
+			pHIDDriver->GetVariable(0x0009'0006),
+			pHIDDriver->GetVariable(0x0009'0007),
+			pHIDDriver->GetVariable(0x0009'0008),
+			pHIDDriver->GetVariable(0x0009'0009),
+			pHIDDriver->GetVariable(0x0009'000a),
+			pHIDDriver->GetVariable(0x0009'000b),
+			pHIDDriver->GetVariable(0x0009'000c),
+			pHIDDriver->GetVariable(0x0009'000d),
+			pHIDDriver->GetVariable(0x0009'000e),
+			pHIDDriver->GetVariable(0x0009'000f),
+			pHIDDriver->GetVariable(0x0009'0010),
+			pHIDDriver->GetVariable(0x0001'0030),
+			pHIDDriver->GetVariable(0x0001'0031),
+			pHIDDriver->GetVariable(0x0001'0032),
+			pHIDDriver->GetVariable(0x0001'0035));
 	}
 }
 
@@ -239,22 +240,22 @@ void test_GamePad2()
 		{0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x5A}  // Example 10
 	};
 	::printf("\n" "test_GamePad2\n");
-	USBHost::GenericHID hid(PrepareApplication(descReport, sizeof(descReport)), true);
+	std::unique_ptr<USBHost::HIDDriver> pHIDDriver(PrepareHIDDriver(descReport, sizeof(descReport)));
 	for (int i = 0; i < count_of(reportTbl); i++) {
-		hid.OnReport(0, 0, reportTbl[i], sizeof(reportTbl[0])); 
+		pHIDDriver->GetHID().OnReport(reportTbl[i], sizeof(reportTbl[0])); 
 		::printf("Button:%d%d%d%d%d%d%d%d LStick:%5d:%5d RStick:%5d:%5d\n",
-			hid.GetVariable(0x0009'0001),
-			hid.GetVariable(0x0009'0002),
-			hid.GetVariable(0x0009'0003),
-			hid.GetVariable(0x0009'0004),
-			hid.GetVariable(0x0009'0005),
-			hid.GetVariable(0x0009'0006),
-			hid.GetVariable(0x0009'0007),
-			hid.GetVariable(0x0009'0008),
-			hid.GetVariable(0x0001'0030),
-			hid.GetVariable(0x0001'0031),
-			hid.GetVariable(0x0001'0032),
-			hid.GetVariable(0x0001'0033));
+			pHIDDriver->GetVariable(0x0009'0001),
+			pHIDDriver->GetVariable(0x0009'0002),
+			pHIDDriver->GetVariable(0x0009'0003),
+			pHIDDriver->GetVariable(0x0009'0004),
+			pHIDDriver->GetVariable(0x0009'0005),
+			pHIDDriver->GetVariable(0x0009'0006),
+			pHIDDriver->GetVariable(0x0009'0007),
+			pHIDDriver->GetVariable(0x0009'0008),
+			pHIDDriver->GetVariable(0x0001'0030),
+			pHIDDriver->GetVariable(0x0001'0031),
+			pHIDDriver->GetVariable(0x0001'0032),
+			pHIDDriver->GetVariable(0x0001'0033));
 	}
 }
 
@@ -307,42 +308,44 @@ void test_Joystick()
 		{0xa0, 0x7F, 0x81, 0x00}  // Max X, min Y, no buttons pressed
 	};
 	::printf("\n" "test_Joystick\n");
-	USBHost::GenericHID hid(PrepareApplication(descReport, sizeof(descReport)), true);
+	std::unique_ptr<USBHost::HIDDriver> pHIDDriver(PrepareHIDDriver(descReport, sizeof(descReport)));
 	for (int i = 0; i < count_of(reportTbl); i++) {
-		hid.OnReport(0, 0, reportTbl[i], sizeof(reportTbl[0]));
+		pHIDDriver->GetHID().OnReport(reportTbl[i], sizeof(reportTbl[0])); 
 		::printf("Button:%d%d%d%d%d%d%d%d Throttle:%3d X:%3d Y:%3d\n",
-			hid.GetVariable(0x0009'0001),
-			hid.GetVariable(0x0009'0002),
-			hid.GetVariable(0x0009'0003),
-			hid.GetVariable(0x0009'0004),
-			hid.GetVariable(0x0009'0005),
-			hid.GetVariable(0x0009'0006),
-			hid.GetVariable(0x0009'0007),
-			hid.GetVariable(0x0009'0008),
-			hid.GetVariable(0x0002'00bb),
-			hid.GetVariable(0x0001'0001, 0x0001'0030),
-			hid.GetVariable(0x0001'0001, 0x0001'0031));
+			pHIDDriver->GetVariable(0x0009'0001),
+			pHIDDriver->GetVariable(0x0009'0002),
+			pHIDDriver->GetVariable(0x0009'0003),
+			pHIDDriver->GetVariable(0x0009'0004),
+			pHIDDriver->GetVariable(0x0009'0005),
+			pHIDDriver->GetVariable(0x0009'0006),
+			pHIDDriver->GetVariable(0x0009'0007),
+			pHIDDriver->GetVariable(0x0009'0008),
+			pHIDDriver->GetVariable(0x0002'00bb),
+			pHIDDriver->GetVariable(0x0001'0001, 0x0001'0030),
+			pHIDDriver->GetVariable(0x0001'0001, 0x0001'0031));
 	}
 }
+#endif
 
-USBHost::ReportDescriptor::Application* PrepareApplication(const uint8_t* descReport, int descLen)
+USBHost::HIDDriver* PrepareHIDDriver(const uint8_t* descReport, int descLen)
 {
-	RefPtr<USBHost::ReportDescriptor::Application> pApplication(USBHost::Instance.reportDescriptor.Parse(descReport, descLen));
+	auto pApplication = USBHost::ReportDescriptor().Parse(descReport, descLen);
 	if (!pApplication) {
 		::panic("error while parsing report descriptor\n");
 	}
 	pApplication->Print(Stdio::Instance);
-	return pApplication.release();
+	auto pHIDDriver = new USBHost::HIDDriver(0);
+	pHIDDriver->AttachHID(new USBHost::HID(0, 0, pApplication), pApplication); 
+	return pHIDDriver;
 }
 
 int main()
 {
 	::stdio_init_all();
-	Printable::SetStandardOutput(Stdio::Instance);
 	test_Keyboard();
-	test_Mouse();
+	//test_Mouse();
 	test_GamePad1();
-	test_GamePad2();
-	test_Joystick();
+	//test_GamePad2();
+	//test_Joystick();
 	for (;;) ::tight_loop_contents();
 }
