@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "jxglib/Stdio.h"
 #include "jxglib/USBHost.h"
 
 using namespace jxglib;
@@ -8,7 +7,6 @@ using namespace jxglib;
 int main()
 {
 	::stdio_init_all();
-	Printable::SetStandardOutput(Stdio::Instance);
 	USBHost::Initialize();
 	USBHost::GamePad gamePad;
 	for (;;) {
