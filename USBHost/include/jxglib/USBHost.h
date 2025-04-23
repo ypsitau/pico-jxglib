@@ -175,6 +175,9 @@ public:
 			bool IsRelative() const { return GetMainItemData().IsRelative(); }
 		public:
 			int32_t GetVariable(const uint8_t* report, uint16_t len, int idx = 0) const;
+			int32_t GetVariableWithDefault(const uint8_t* report, uint16_t len, int32_t valueDefault, int idx = 0) const {
+				return IsValid()? GetVariable(report, len, idx) : valueDefault;
+			}
 		public:
 			void Print(Printable& printable, int indentLevel = 0) const;
 		};
@@ -322,11 +325,11 @@ public:
 		uint8_t GetReportID() const { return pApplication_? pApplication_->GetReportID() : 0; }
 	public:
 		int32_t GetVariable(uint32_t usage) const;
-		int32_t GetVariable(uint32_t usage, const ReportDescriptor::UsageInfo** ppUsageInfo) const;
 		int32_t GetVariable(uint32_t usageCollection, uint32_t usage) const;
-		int32_t GetVariable(uint32_t usageCollection, uint32_t usage, const ReportDescriptor::UsageInfo** ppUsageInfo) const;
 		int32_t GetVariable(uint32_t usageCollection1, uint32_t usageCollection2, uint32_t usage) const;
-		int32_t GetVariable(uint32_t usageCollection1, uint32_t usageCollection2, uint32_t usage, const ReportDescriptor::UsageInfo** ppUsageInfo) const;
+		int32_t GetVariableWithDefault(uint32_t usage, int32_t valueDefault) const;
+		int32_t GetVariableWithDefault(uint32_t usageCollection, uint32_t usage, int32_t valueDefault) const;
+		int32_t GetVariableWithDefault(uint32_t usageCollection1, uint32_t usageCollection2, uint32_t usage, int32_t valueDefault) const;
 	public:
 		int32_t GetArrayItem(int idx) const;
 		int32_t GetArrayItem(uint32_t usageCollection, int idx) const;
@@ -395,7 +398,7 @@ public:
 		uint32_t Get_ButtonBACK() const		{ return GetVariable(0x0009'000b); }
 		uint32_t Get_ButtonSTART() const	{ return GetVariable(0x0009'000c); }
 		uint32_t Get_ButtonGUIDE() const	{ return GetVariable(0x0009'000d); }
-		uint32_t Get_HatSwitch() const		{ return GetVariable(0x0001'0039); }
+		uint32_t Get_HatSwitch() const		{ return GetVariableWithDefault(0x0001'0039, 0xf); }
 		uint32_t GetRaw_LStickHorz() const	{ return GetVariable(0x0001'0030); }
 		uint32_t GetRaw_LStickVert() const	{ return GetVariable(0x0001'0031); }
 		uint32_t GetRaw_RStickHorz() const	{ return GetVariable(0x0001'0035); }
