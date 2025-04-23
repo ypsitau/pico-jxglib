@@ -5,14 +5,13 @@
 
 using namespace jxglib;
 /*
-C 言語で、ジョイスティックの USB report descriptor と、それをテストする report データのサンプルを 10 個つくってください。
+C 言語で、Digitizer の USB report descriptor と、それをテストする report データのサンプルを 10 個つくってください。
 - reort descritor の変数名は descReort, report データサンプルの変数名は reportTbl とすること。それぞれ static 宣言すること
 - コメントを英語で表記すること
 */
 
 USBHost::HIDDriver* PrepareHIDDriver(const uint8_t* descReport, int descLen);
 
-#if 1
 void test_Keyboard()
 {
 	// USB HID Report Descriptor for a keyboard
@@ -259,7 +258,7 @@ void test_GamePad2()
 	}
 }
 
-void test_Joystick()
+void test_Joystick1()
 {
 	// USB report descriptor for a joystick
 	static const uint8_t descReport[] = {
@@ -307,7 +306,7 @@ void test_Joystick()
 		{0x90, 0x00, 0x00, 0x80}, // Neutral X, neutral Y, Button 8 pressed
 		{0xa0, 0x7F, 0x81, 0x00}  // Max X, min Y, no buttons pressed
 	};
-	::printf("\n" "test_Joystick\n");
+	::printf("\n" "test_Joystick1\n");
 	std::unique_ptr<USBHost::HIDDriver> pHIDDriver(PrepareHIDDriver(descReport, sizeof(descReport)));
 	for (int i = 0; i < count_of(reportTbl); i++) {
 		pHIDDriver->GetHID().OnReport(reportTbl[i], sizeof(reportTbl[0])); 
@@ -325,7 +324,71 @@ void test_Joystick()
 			pHIDDriver->GetVariable(0x0001'0001, 0x0001'0031));
 	}
 }
-#endif
+
+void test_Digitizer()
+{
+	// USB report descriptor for a Digitizer
+	static const uint8_t descReport[] = {
+		0x05, 0x0D,        // Usage Page (Digitizer)
+		0x09, 0x02,        // Usage (Pen)
+		0xA1, 0x01,        // Collection (Application)
+		0x85, 0x01,        //   Report ID (1)
+		0x09, 0x20,        //   Usage (Stylus)
+		0xA1, 0x00,        //   Collection (Physical)
+		0x09, 0x42,        //     Usage (Tip Switch)
+		0x15, 0x00,        //     Logical Minimum (0)
+		0x25, 0x01,        //     Logical Maximum (1)
+		0x75, 0x01,        //     Report Size (1)
+		0x95, 0x01,        //     Report Count (1)
+		0x81, 0x02,        //     Input (Data, Variable, Absolute)
+		0x75, 0x07,        //     Report Size (7)
+		0x95, 0x01,        //     Report Count (1)
+		0x81, 0x03,        //     Input (Constant, Variable, Absolute)
+		0x09, 0x32,        //     Usage (In Range)
+		0x15, 0x00,        //     Logical Minimum (0)
+		0x25, 0x01,        //     Logical Maximum (1)
+		0x75, 0x01,        //     Report Size (1)
+		0x95, 0x01,        //     Report Count (1)
+		0x81, 0x02,        //     Input (Data, Variable, Absolute)
+		0x75, 0x07,        //     Report Size (7)
+		0x95, 0x01,        //     Report Count (1)
+		0x81, 0x03,        //     Input (Constant, Variable, Absolute)
+		0x05, 0x01,        //     Usage Page (Generic Desktop)
+		0x09, 0x30,        //     Usage (X)
+		0x09, 0x31,        //     Usage (Y)
+		0x16, 0x00, 0x00,  //     Logical Minimum (0)
+		0x26, 0xFF, 0x7F,  //     Logical Maximum (32767)
+		0x75, 0x10,        //     Report Size (16)
+		0x95, 0x02,        //     Report Count (2)
+		0x81, 0x02,        //     Input (Data, Variable, Absolute)
+		0xC0,              //   End Collection
+		0xC0               // End Collection
+	};
+	// Sample report data for testing
+	static const uint8_t reportTbl[10][7] = {
+		{0x01, 0x01, 0x00, 0x10, 0x00, 0x20, 0x00}, // Sample 1: Tip switch off, X=16, Y=32
+		{0x01, 0x01, 0x01, 0x30, 0x00, 0x40, 0x00}, // Sample 2: Tip switch on, X=48, Y=64
+		{0x01, 0x01, 0x00, 0x50, 0x00, 0x60, 0x00}, // Sample 3: Tip switch off, X=80, Y=96
+		{0x01, 0x01, 0x01, 0x70, 0x00, 0x80, 0x00}, // Sample 4: Tip switch on, X=112, Y=128
+		{0x01, 0x01, 0x00, 0x90, 0x00, 0xA0, 0x00}, // Sample 5: Tip switch off, X=144, Y=160
+		{0x01, 0x01, 0x01, 0xB0, 0x00, 0xC0, 0x00}, // Sample 6: Tip switch on, X=176, Y=192
+		{0x01, 0x01, 0x00, 0xD0, 0x00, 0xE0, 0x00}, // Sample 7: Tip switch off, X=208, Y=224
+		{0x01, 0x01, 0x01, 0xF0, 0x00, 0x00, 0x00}, // Sample 8: Tip switch on, X=240, Y=0
+		{0x01, 0x01, 0x00, 0x10, 0x01, 0x20, 0x01}, // Sample 9: Tip switch off, X=272, Y=288
+		{0x01, 0x01, 0x01, 0x30, 0x01, 0x40, 0x01}  // Sample 10: Tip switch on, X=304, Y=320
+	};
+	::printf("\n" "test_Digitizer\n");
+	std::unique_ptr<USBHost::HIDDriver> pHIDDriver(PrepareHIDDriver(descReport, sizeof(descReport)));
+	::printf("ReportID: %d\n", pHIDDriver->GetReportID());
+	for (int i = 0; i < count_of(reportTbl); i++) {
+		pHIDDriver->GetHID().OnReport(reportTbl[i], sizeof(reportTbl[0])); 
+		::printf("Button:%d%d X:%5d Y:%5d\n",
+			pHIDDriver->GetVariable(0x000d'0020, 0x000d'0042),
+			pHIDDriver->GetVariable(0x000d'0020, 0x000d'0032),
+			pHIDDriver->GetVariable(0x000d'0020, 0x0001'0030),
+			pHIDDriver->GetVariable(0x000d'0020, 0x0001'0031));
+	}
+}
 
 USBHost::HIDDriver* PrepareHIDDriver(const uint8_t* descReport, int descLen)
 {
@@ -343,9 +406,10 @@ int main()
 {
 	::stdio_init_all();
 	test_Keyboard();
-	//test_Mouse();
+	test_Mouse();
 	test_GamePad1();
-	//test_GamePad2();
-	//test_Joystick();
+	test_GamePad2();
+	test_Joystick1();
+	test_Digitizer();
 	for (;;) ::tight_loop_contents();
 }

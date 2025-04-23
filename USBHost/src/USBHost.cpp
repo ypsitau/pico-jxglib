@@ -115,6 +115,19 @@ USBHost::HIDDriver::HIDDriver(uint32_t usage) : usage_{usage}, pApplication_{nul
 	}
 }
 
+USBHost::HIDDriver::~HIDDriver()
+{
+	if (pHIDDriverRegisteredTop == this) {
+		pHIDDriverRegisteredTop = GetRegisteredListNext();
+	} else {
+		for (HIDDriver* pHIDDriver = pHIDDriverRegisteredTop; pHIDDriver; pHIDDriver = pHIDDriver->GetRegisteredListNext()) {
+			if (pHIDDriver->GetRegisteredListNext() == this) {
+				pHIDDriver->SetRegisteredListNext(ReleaseRegisteredListNext());
+			}
+		}
+	}
+}
+
 USBHost::HIDDriver* USBHost::HIDDriver::GetRegisteredListLast()
 {
 	HIDDriver* pHIDDriver = this;
@@ -128,16 +141,35 @@ int32_t USBHost::HIDDriver::GetVariable(uint32_t usage) const
 		.FindUsageInfo(usage).GetVariable(pHID_->GetReport(), pHID_->GetReportLen()) : 0;
 }
 
-int32_t USBHost::HIDDriver::GetVariable(uint32_t usage1, uint32_t usage2) const
+int32_t USBHost::HIDDriver::GetVariable(uint32_t usage, const ReportDescriptor::UsageInfo** ppUsageInfo) const
 {
-	return pApplication_? pApplication_->GetCollection().FindCollection(usage1)
-		.FindUsageInfo(usage2).GetVariable(pHID_->GetReport(), pHID_->GetReportLen()) : 0;
+	*ppUsageInfo = &ReportDescriptor::UsageInfo::None;
+	return pApplication_? (*ppUsageInfo = &pApplication_->GetCollection()
+		.FindUsageInfo(usage))->GetVariable(pHID_->GetReport(), pHID_->GetReportLen()) : 0;
 }
 
-int32_t USBHost::HIDDriver::GetVariable(uint32_t usage1, uint32_t usage2, uint32_t usage3) const
+int32_t USBHost::HIDDriver::GetVariable(uint32_t usageCollection, uint32_t usage) const
 {
-	return pApplication_? pApplication_->GetCollection().FindCollection(usage1).FindCollection(usage2)
-		.FindUsageInfo(usage3).GetVariable(pHID_->GetReport(), pHID_->GetReportLen()) : 0;
+	return pApplication_? pApplication_->GetCollection().FindCollection(usageCollection)
+		.FindUsageInfo(usage).GetVariable(pHID_->GetReport(), pHID_->GetReportLen()) : 0;
+}
+
+int32_t USBHost::HIDDriver::GetVariable(uint32_t usageCollection, uint32_t usage, const ReportDescriptor::UsageInfo** ppUsageInfo) const
+{
+	return pApplication_? (*ppUsageInfo = &pApplication_->GetCollection().FindCollection(usageCollection)
+		.FindUsageInfo(usage))->GetVariable(pHID_->GetReport(), pHID_->GetReportLen()) : 0;
+}
+
+int32_t USBHost::HIDDriver::GetVariable(uint32_t usageCollection1, uint32_t usageCollection2, uint32_t usage) const
+{
+	return pApplication_? pApplication_->GetCollection().FindCollection(usageCollection1).FindCollection(usageCollection2)
+		.FindUsageInfo(usage).GetVariable(pHID_->GetReport(), pHID_->GetReportLen()) : 0;
+}
+
+int32_t USBHost::HIDDriver::GetVariable(uint32_t usageCollection1, uint32_t usageCollection2, uint32_t usage, const ReportDescriptor::UsageInfo** ppUsageInfo) const
+{
+	return pApplication_? (*ppUsageInfo = &pApplication_->GetCollection().FindCollection(usageCollection1).FindCollection(usageCollection2)
+		.FindUsageInfo(usage))->GetVariable(pHID_->GetReport(), pHID_->GetReportLen()) : 0;
 }
 
 int32_t USBHost::HIDDriver::GetArrayItem(int idx) const
@@ -146,15 +178,15 @@ int32_t USBHost::HIDDriver::GetArrayItem(int idx) const
 		.GetArrayItem(pHID_->GetReport(), pHID_->GetReportLen(), idx) : 0;
 }
 
-int32_t USBHost::HIDDriver::GetArrayItem(uint32_t usage, int idx) const
+int32_t USBHost::HIDDriver::GetArrayItem(uint32_t usageCollection, int idx) const
 {
-	return pApplication_? pApplication_->GetCollection().FindCollection(usage)
+	return pApplication_? pApplication_->GetCollection().FindCollection(usageCollection)
 		.GetArrayItem(pHID_->GetReport(), pHID_->GetReportLen(), idx) : 0;
 }
 
-int32_t USBHost::HIDDriver::GetArrayItem(uint32_t usage1, uint32_t usage2, int idx) const
+int32_t USBHost::HIDDriver::GetArrayItem(uint32_t usageCollection1, uint32_t usageCollection2, int idx) const
 {
-	return pApplication_? pApplication_->GetCollection().FindCollection(usage1).FindCollection(usage2)
+	return pApplication_? pApplication_->GetCollection().FindCollection(usageCollection1).FindCollection(usageCollection2)
 		.GetArrayItem(pHID_->GetReport(), pHID_->GetReportLen(), idx) : 0;
 }
 
@@ -619,7 +651,7 @@ USBHost::ReportDescriptor::Application* USBHost::ReportDescriptor::Parse(const u
 		}
 		case ItemType::Collection: {
 			CollectionType collectionType = static_cast<CollectionType>(itemData);
-			uint32_t usage = pLocalItem->usageTbl[0].minimum;
+			uint32_t usage = (pLocalItem->nUsage > 0)? pLocalItem->usageTbl[0].minimum : (usagePage << 16);
 			if (pCollectionCur) {
 				Collection* pCollection = new Collection(collectionType, usage, pCollectionCur);
 				pCollectionCur->AppendCollectionChild(pCollection);

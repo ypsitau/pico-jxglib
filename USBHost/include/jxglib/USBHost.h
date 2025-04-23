@@ -104,7 +104,6 @@ public:
 			int32_t unitExponent;
 			int32_t unit;
 			uint32_t reportSize;
-			//uint32_t reportID;
 			uint32_t reportCount;
 		public:
 			static const GlobalItem None;
@@ -170,7 +169,6 @@ public:
 			int32_t GetUnitExponent() const { return pGlobalItem_->unitExponent; }
 			int32_t GetUnit() const { return pGlobalItem_->unit; }
 			uint32_t GetReportSize() const { return pGlobalItem_->reportSize; }
-			//uint32_t GetReportID() const { return pGlobalItem_->reportID; }
 			uint32_t GetReportCount() const { return pGlobalItem_->reportCount; }
 			uint32_t GetReportOffset() const { return reportOffset_; }
 			bool IsAbsolute() const { return GetMainItemData().IsAbsolute(); }
@@ -300,9 +298,12 @@ public:
 		static HIDDriver* pHIDDriverRegisteredTop;
 	public:
 		HIDDriver(uint32_t usage);
+		virtual ~HIDDriver();
 	public:
 		void AppendRegisteredList(HIDDriver* pHIDDriver) { GetRegisteredListLast()->pHIDDriverRegisteredNext_.reset(pHIDDriver); }
 		HIDDriver* GetRegisteredListNext() { return pHIDDriverRegisteredNext_.get(); }
+		HIDDriver* ReleaseRegisteredListNext() { return pHIDDriverRegisteredNext_.release(); }
+		void SetRegisteredListNext(HIDDriver* pHIDDriver) { pHIDDriverRegisteredNext_.reset(pHIDDriver); }
 		const HIDDriver* GetRegisteredListNext() const { return pHIDDriverRegisteredNext_.get(); }
 		HIDDriver* GetRegisteredListLast();
 	public:
@@ -318,13 +319,18 @@ public:
 		virtual void OnUmount() {}
 		virtual void OnReport(const uint8_t* report, uint16_t len) {};
 	public:
+		uint8_t GetReportID() const { return pApplication_? pApplication_->GetReportID() : 0; }
+	public:
 		int32_t GetVariable(uint32_t usage) const;
-		int32_t GetVariable(uint32_t usage1, uint32_t usage2) const;
-		int32_t GetVariable(uint32_t usage1, uint32_t usage2, uint32_t usage3) const;
+		int32_t GetVariable(uint32_t usage, const ReportDescriptor::UsageInfo** ppUsageInfo) const;
+		int32_t GetVariable(uint32_t usageCollection, uint32_t usage) const;
+		int32_t GetVariable(uint32_t usageCollection, uint32_t usage, const ReportDescriptor::UsageInfo** ppUsageInfo) const;
+		int32_t GetVariable(uint32_t usageCollection1, uint32_t usageCollection2, uint32_t usage) const;
+		int32_t GetVariable(uint32_t usageCollection1, uint32_t usageCollection2, uint32_t usage, const ReportDescriptor::UsageInfo** ppUsageInfo) const;
 	public:
 		int32_t GetArrayItem(int idx) const;
-		int32_t GetArrayItem(uint32_t usage, int idx) const;
-		int32_t GetArrayItem(uint32_t usage1, uint32_t usage2, int idx) const;
+		int32_t GetArrayItem(uint32_t usageCollection, int idx) const;
+		int32_t GetArrayItem(uint32_t usageCollection1, uint32_t usageCollection2, int idx) const;
 	};
 	class Keyboard : public KeyboardRepeatable, public HIDDriver {
 	public:
