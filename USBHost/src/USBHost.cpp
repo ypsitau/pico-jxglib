@@ -119,60 +119,6 @@ USBHost::HIDDriver* USBHost::HIDDriver::GetRegisteredListLast()
 	return pHIDDriver;
 }
 
-int32_t USBHost::HIDDriver::GetVariable(uint32_t usage) const
-{
-	return pApplication_? pApplication_->GetCollection()
-		.FindUsageAccessor(usage).GetVariable(pHID_->GetReport(), pHID_->GetReportLen()) : 0;
-}
-
-int32_t USBHost::HIDDriver::GetVariable(uint32_t usageCollection, uint32_t usage) const
-{
-	return pApplication_? pApplication_->GetCollection().FindCollection(usageCollection)
-		.FindUsageAccessor(usage).GetVariable(pHID_->GetReport(), pHID_->GetReportLen()) : 0;
-}
-
-int32_t USBHost::HIDDriver::GetVariable(uint32_t usageCollection1, uint32_t usageCollection2, uint32_t usage) const
-{
-	return pApplication_? pApplication_->GetCollection().FindCollection(usageCollection1).FindCollection(usageCollection2)
-		.FindUsageAccessor(usage).GetVariable(pHID_->GetReport(), pHID_->GetReportLen()) : 0;
-}
-
-int32_t USBHost::HIDDriver::GetVariableWithDefault(uint32_t usage, int32_t valueDefault) const
-{
-	return pApplication_? pApplication_->GetCollection()
-		.FindUsageAccessor(usage).GetVariableWithDefault(pHID_->GetReport(), pHID_->GetReportLen(), valueDefault) : valueDefault;
-}
-
-int32_t USBHost::HIDDriver::GetVariableWithDefault(uint32_t usageCollection, uint32_t usage, int32_t valueDefault) const
-{
-	return pApplication_? pApplication_->GetCollection().FindCollection(usageCollection)
-		.FindUsageAccessor(usage).GetVariableWithDefault(pHID_->GetReport(), pHID_->GetReportLen(), valueDefault) : valueDefault;
-}
-
-int32_t USBHost::HIDDriver::GetVariableWithDefault(uint32_t usageCollection1, uint32_t usageCollection2, uint32_t usage, int32_t valueDefault) const
-{
-	return pApplication_? pApplication_->GetCollection().FindCollection(usageCollection1).FindCollection(usageCollection2)
-		.FindUsageAccessor(usage).GetVariableWithDefault(pHID_->GetReport(), pHID_->GetReportLen(), valueDefault) : valueDefault;
-}
-
-int32_t USBHost::HIDDriver::GetArrayItem(int idx) const
-{
-	return pApplication_? pApplication_->GetCollection()
-		.GetArrayItem(pHID_->GetReport(), pHID_->GetReportLen(), idx) : 0;
-}
-
-int32_t USBHost::HIDDriver::GetArrayItem(uint32_t usageCollection, int idx) const
-{
-	return pApplication_? pApplication_->GetCollection().FindCollection(usageCollection)
-		.GetArrayItem(pHID_->GetReport(), pHID_->GetReportLen(), idx) : 0;
-}
-
-int32_t USBHost::HIDDriver::GetArrayItem(uint32_t usageCollection1, uint32_t usageCollection2, int idx) const
-{
-	return pApplication_? pApplication_->GetCollection().FindCollection(usageCollection1).FindCollection(usageCollection2)
-		.GetArrayItem(pHID_->GetReport(), pHID_->GetReportLen(), idx) : 0;
-}
-
 //------------------------------------------------------------------------------
 // USBHost::Keyboard
 //------------------------------------------------------------------------------
@@ -1028,6 +974,52 @@ void USBHost::HID::Application::AddMainItem(Collection& collection, const Global
 		pGlobalItemListTop_.reset(pGlobalItemList);
 	}
 	collection.AddMainItem(&pGlobalItemList->globalItem, localItem, reportOffset);
+}
+
+int32_t USBHost::HID::Application::GetVariable(const uint8_t* report, uint16_t len, uint32_t usage) const
+{
+	return GetCollection().FindUsageAccessor(usage).GetVariable(report, len);
+}
+
+int32_t USBHost::HID::Application::GetVariable(const uint8_t* report, uint16_t len, uint32_t usageCollection, uint32_t usage) const
+{
+	return GetCollection().FindCollection(usageCollection).FindUsageAccessor(usage).GetVariable(report, len);
+}
+
+int32_t USBHost::HID::Application::GetVariable(const uint8_t* report, uint16_t len, uint32_t usageCollection1, uint32_t usageCollection2, uint32_t usage) const
+{
+	return GetCollection().FindCollection(usageCollection1).FindCollection(usageCollection2).FindUsageAccessor(usage).GetVariable(report, len);
+}
+
+int32_t USBHost::HID::Application::GetVariableWithDefault(const uint8_t* report, uint16_t len, uint32_t usage, int32_t valueDefault) const
+{
+	return GetCollection().FindUsageAccessor(usage).GetVariableWithDefault(report, len, valueDefault);
+}
+
+int32_t USBHost::HID::Application::GetVariableWithDefault(const uint8_t* report, uint16_t len, uint32_t usageCollection, uint32_t usage, int32_t valueDefault) const
+{
+	return GetCollection().FindCollection(usageCollection).FindUsageAccessor(usage).GetVariableWithDefault(report, len, valueDefault);
+}
+
+int32_t USBHost::HID::Application::GetVariableWithDefault(const uint8_t* report, uint16_t len, uint32_t usageCollection1, uint32_t usageCollection2, uint32_t usage, int32_t valueDefault) const
+{
+	return GetCollection().FindCollection(usageCollection1).FindCollection(usageCollection2)
+		.FindUsageAccessor(usage).GetVariableWithDefault(report, len, valueDefault);
+}
+
+int32_t USBHost::HID::Application::GetArrayItem(const uint8_t* report, uint16_t len, int idx) const
+{
+	return GetCollection().GetArrayItem(report, len, idx);
+}
+
+int32_t USBHost::HID::Application::GetArrayItem(const uint8_t* report, uint16_t len, uint32_t usageCollection, int idx) const
+{
+	return GetCollection().FindCollection(usageCollection).GetArrayItem(report, len, idx);
+}
+
+int32_t USBHost::HID::Application::GetArrayItem(const uint8_t* report, uint16_t len, uint32_t usageCollection1, uint32_t usageCollection2, int idx) const
+{
+	return GetCollection().FindCollection(usageCollection1).FindCollection(usageCollection2).GetArrayItem(report, len, idx);
 }
 
 void USBHost::HID::Application::Print(Printable& printable, int indentLevel) const

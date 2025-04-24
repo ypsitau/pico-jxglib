@@ -19,10 +19,6 @@ namespace jxglib {
 class USBHost : public Tickable {
 public:
 	class HIDDriver;
-	struct Report {
-		const uint8_t* report;
-		uint16_t len;
-	};
 	class EventHandler {
 	public:
 		virtual void OnMount(uint8_t devAddr) {}
@@ -30,6 +26,10 @@ public:
 	};
 	class HID : public Referable {
 	public:
+		struct Report {
+			const uint8_t* report;
+			uint16_t len;
+		};
 		struct ItemType {
 			static const uint8_t None				= 0x00;
 			// 6.2.2.4 Main Items
@@ -260,6 +260,16 @@ public:
 		public:
 			void AddMainItem(Collection& collection, const GlobalItem& globalItem, const LocalItem& localItem, uint32_t& reportOffset);
 		public:
+			int32_t GetVariable(const uint8_t* report, uint16_t len, uint32_t usage) const;
+			int32_t GetVariable(const uint8_t* report, uint16_t len, uint32_t usageCollection, uint32_t usage) const;
+			int32_t GetVariable(const uint8_t* report, uint16_t len, uint32_t usageCollection1, uint32_t usageCollection2, uint32_t usage) const;
+			int32_t GetVariableWithDefault(const uint8_t* report, uint16_t len, uint32_t usage, int32_t valueDefault) const;
+			int32_t GetVariableWithDefault(const uint8_t* report, uint16_t len, uint32_t usageCollection, uint32_t usage, int32_t valueDefault) const;
+			int32_t GetVariableWithDefault(const uint8_t* report, uint16_t len, uint32_t usageCollection1, uint32_t usageCollection2, uint32_t usage, int32_t valueDefault) const;
+			int32_t GetArrayItem(const uint8_t* report, uint16_t len, int idx) const;
+			int32_t GetArrayItem(const uint8_t* report, uint16_t len, uint32_t usageCollection, int idx) const;
+			int32_t GetArrayItem(const uint8_t* report, uint16_t len, uint32_t usageCollection1, uint32_t usageCollection2, int idx) const;
+		public:
 			void Print(Printable& printable = Stdio::Instance, int indentLevel = 0) const;
 			void PrintAll(Printable& printable = Stdio::Instance, int indentLevel = 0) const;
 		};
@@ -329,16 +339,41 @@ public:
 	public:
 		uint8_t GetReportID() const { return pApplication_? pApplication_->GetReportID() : 0; }
 	public:
-		int32_t GetVariable(uint32_t usage) const;
-		int32_t GetVariable(uint32_t usageCollection, uint32_t usage) const;
-		int32_t GetVariable(uint32_t usageCollection1, uint32_t usageCollection2, uint32_t usage) const;
-		int32_t GetVariableWithDefault(uint32_t usage, int32_t valueDefault) const;
-		int32_t GetVariableWithDefault(uint32_t usageCollection, uint32_t usage, int32_t valueDefault) const;
-		int32_t GetVariableWithDefault(uint32_t usageCollection1, uint32_t usageCollection2, uint32_t usage, int32_t valueDefault) const;
+		int32_t GetVariable(uint32_t usage) const {
+			return pApplication_? pApplication_->GetVariable(pHID_->GetReport(), pHID_->GetReportLen(), usage) : 0;
+		}
+		int32_t GetVariable(uint32_t usageCollection, uint32_t usage) const {
+			return pApplication_? pApplication_->GetVariable(
+				pHID_->GetReport(), pHID_->GetReportLen(), usageCollection, usage) : 0;
+		}
+		int32_t GetVariable(uint32_t usageCollection1, uint32_t usageCollection2, uint32_t usage) const {
+			return pApplication_? pApplication_->GetVariable(
+				pHID_->GetReport(), pHID_->GetReportLen(), usageCollection1, usageCollection2, usage) : 0;
+		}
+		int32_t GetVariableWithDefault(uint32_t usage, int32_t valueDefault) const {
+			return pApplication_? pApplication_->GetVariableWithDefault(
+				pHID_->GetReport(), pHID_->GetReportLen(), usage, valueDefault) : valueDefault;
+		}
+		int32_t GetVariableWithDefault(uint32_t usageCollection, uint32_t usage, int32_t valueDefault) const {
+			return pApplication_? pApplication_->GetVariableWithDefault(
+				pHID_->GetReport(), pHID_->GetReportLen(), usageCollection, usage, valueDefault) : valueDefault;
+		}
+		int32_t GetVariableWithDefault(uint32_t usageCollection1, uint32_t usageCollection2, uint32_t usage, int32_t valueDefault) const {
+			return pApplication_? pApplication_->GetVariableWithDefault(
+				pHID_->GetReport(), pHID_->GetReportLen(), usageCollection1, usageCollection2, usage, valueDefault) : valueDefault;
+		}
 	public:
-		int32_t GetArrayItem(int idx) const;
-		int32_t GetArrayItem(uint32_t usageCollection, int idx) const;
-		int32_t GetArrayItem(uint32_t usageCollection1, uint32_t usageCollection2, int idx) const;
+		int32_t GetArrayItem(int idx) const {
+			return pApplication_? pApplication_->GetArrayItem(pHID_->GetReport(), pHID_->GetReportLen(), idx) : 0;
+		}
+		int32_t GetArrayItem(uint32_t usageCollection, int idx) const {
+			return pApplication_? pApplication_->GetArrayItem(pHID_->GetReport(),
+				pHID_->GetReportLen(), usageCollection, idx) : 0;
+		}
+		int32_t GetArrayItem(uint32_t usageCollection1, uint32_t usageCollection2, int idx) const {
+			return pApplication_? pApplication_->GetArrayItem(
+				pHID_->GetReport(), pHID_->GetReportLen(), usageCollection1, usageCollection2, idx) : 0;
+		}
 	};
 	class Keyboard : public KeyboardRepeatable, public HIDDriver {
 	public:
