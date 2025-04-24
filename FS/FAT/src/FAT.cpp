@@ -156,7 +156,7 @@ bool FAT::Dir::Create()
 
 void FAT::Dir::Close()
 {
-	f_closedir(&dir);
+	::f_closedir(&dir);
 }
 
 FAT::File* FAT::OpenFile(const char* path, const char* mode)
@@ -168,7 +168,7 @@ FAT::File* FAT::OpenFile(const char* path, const char* mode)
 	if (mode[0] == 'w') flags |= FA_WRITE | FA_CREATE_ALWAYS;
 	if (mode[0] == 'a') flags |= FA_WRITE | FA_OPEN_APPEND;
 
-	if (f_open(&file, path, flags) == FR_OK) {
+	if (::f_open(&file, path, flags) == FR_OK) {
 		return new FAT::File(file);
 	}
 	return nullptr;
@@ -177,7 +177,7 @@ FAT::File* FAT::OpenFile(const char* path, const char* mode)
 FAT::Dir* FAT::OpenDir(const char* path)
 {
 	DIR dir;
-	if (f_opendir(&dir, path) == FR_OK) {
+	if (::f_opendir(&dir, path) == FR_OK) {
 		return new FAT::Dir(dir);
 	}
 	return nullptr;
