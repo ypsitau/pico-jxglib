@@ -16,23 +16,23 @@ public:
     class File {
     public:
         virtual ~File() {}
-        virtual int Read(void* buffer, unsigned int size) = 0;
-        virtual int Write(const void* buffer, unsigned int size) = 0;
+        virtual int Read(void* buffer, int bytes) = 0;
+        virtual int Write(const void* buffer, int bytes) = 0;
         virtual void Close() = 0;
-        virtual void Seek(unsigned int position) = 0;
-        virtual unsigned int Tell() = 0;
-        virtual unsigned int Size() = 0;
+        virtual bool Seek(int position) = 0;
+        virtual int Tell() = 0;
+        virtual int Size() = 0;
         virtual bool Remove() = 0;
         virtual bool Rename(const char* newName) = 0;
         virtual bool Flush() = 0;
-        virtual bool Truncate(unsigned int size) = 0;
+        virtual bool Truncate(int size) = 0;
         virtual bool Sync() = 0;
     };
     class Dir {
     public:
         struct FileInfo {
             const char* name;
-            unsigned int size;
+            int size;
         };
 
         virtual ~Dir() {}

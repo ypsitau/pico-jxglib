@@ -23,16 +23,16 @@ public:
 		File(FIL f);
 		~File();
 	public:
-		int Read(void* buffer, unsigned int size) override;
-		int Write(const void* buffer, unsigned int size) override;
+		int Read(void* buffer, int bytes) override;
+		int Write(const void* buffer, int bytes) override;
 		void Close() override;
-		void Seek(unsigned int position) override;
-		unsigned int Tell() override;
-		unsigned int Size() override;
+		bool Seek(int position) override;
+		int Tell() override;
+		int Size() override;
 		bool Remove() override;
 		bool Rename(const char* newName) override;
 		bool Flush() override;
-		bool Truncate(unsigned int size) override;
+		bool Truncate(int bytes) override;
 		bool Sync() override;
 	};
 	class Dir : public FS::Dir {
