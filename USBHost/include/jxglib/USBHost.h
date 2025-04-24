@@ -138,23 +138,23 @@ public:
 		public:
 			void Clear() { ::memset(this, 0x00, sizeof(LocalItem)); }
 		};
-		class UsageInfo {
+		class UsageAccessor {
 		private:
 			uint32_t usage_;
 			const GlobalItem* pGlobalItem_;
 			uint32_t reportOffset_;
-			std::unique_ptr<UsageInfo> pUsageInfoNext_;
+			std::unique_ptr<UsageAccessor> pUsageAccessorNext_;
 		public:
-			static const UsageInfo None;
+			static const UsageAccessor None;
 		public:
-			UsageInfo() : usage_{0}, pGlobalItem_{&GlobalItem::None}, reportOffset_{0} {}
-			constexpr UsageInfo(uint32_t usage, const GlobalItem* pGlobalItem, uint32_t reportOffset) :
+			UsageAccessor() : usage_{0}, pGlobalItem_{&GlobalItem::None}, reportOffset_{0} {}
+			constexpr UsageAccessor(uint32_t usage, const GlobalItem* pGlobalItem, uint32_t reportOffset) :
 				usage_{usage}, pGlobalItem_{pGlobalItem}, reportOffset_{reportOffset} {}
 		public:
-			void AppendList(UsageInfo* pUsageInfo) { GetListLast()->pUsageInfoNext_.reset(pUsageInfo); }
-			UsageInfo* GetListNext() { return pUsageInfoNext_.get(); }
-			const UsageInfo* GetListNext() const { return pUsageInfoNext_.get(); }
-			UsageInfo* GetListLast();
+			void AppendList(UsageAccessor* pUsageAccessor) { GetListLast()->pUsageAccessorNext_.reset(pUsageAccessor); }
+			UsageAccessor* GetListNext() { return pUsageAccessorNext_.get(); }
+			const UsageAccessor* GetListNext() const { return pUsageAccessorNext_.get(); }
+			UsageAccessor* GetListLast();
 		public:
 			bool IsValid() const { return pGlobalItem_->IsValid(); }
 			uint32_t GetUsage() const { return usage_; }
@@ -186,8 +186,8 @@ public:
 			CollectionType collectionType_;
 			uint32_t usage_;
 			Collection* pCollectionParent_;
-			std::unique_ptr<UsageInfo> pUsageInfoArray_;
-			std::unique_ptr<UsageInfo> pUsageInfoTop_;
+			std::unique_ptr<UsageAccessor> pUsageAccessorArray_;
+			std::unique_ptr<UsageAccessor> pUsageAccessorTop_;
 			std::unique_ptr<Collection> pCollectionChildTop_;
 			std::unique_ptr<Collection> pCollectionNext_;
 		public:
@@ -203,7 +203,7 @@ public:
 			Collection* GetCollectionParent() { return pCollectionParent_; }
 			Collection* GetCollectionChildTop() { return pCollectionChildTop_.get(); }
 			const Collection* GetCollectionChildTop() const { return pCollectionChildTop_.get(); }
-			UsageInfo* GetUsageInfoTop() { return pUsageInfoTop_.get(); }
+			UsageAccessor* GetUsageAccessorTop() { return pUsageAccessorTop_.get(); }
 		public:
 			void AppendList(Collection* pCollection) { GetListLast()->pCollectionNext_.reset(pCollection); }
 			Collection* GetListNext() { return pCollectionNext_.get(); }
@@ -211,14 +211,14 @@ public:
 			Collection* GetListLast();
 		public:
 			int32_t GetArrayItem(const uint8_t* report, uint16_t len, int idx) const;
-			uint32_t GetArraySize() const { return pUsageInfoArray_? pUsageInfoArray_->GetReportSize() : 0; }
+			uint32_t GetArraySize() const { return pUsageAccessorArray_? pUsageAccessorArray_->GetReportSize() : 0; }
 		public:
-			void AppendUsageInfo(UsageInfo* pUsageInfo);
+			void AppendUsageAccessor(UsageAccessor* pUsageAccessor);
 			void AppendCollectionChild(Collection* pCollection);
 		public:
 			void AddMainItem(GlobalItem* pGlobalItem, const LocalItem& localItem, uint32_t& reportOffset);
 		public:
-			const UsageInfo& FindUsageInfo(uint32_t usage) const;
+			const UsageAccessor& FindUsageAccessor(uint32_t usage) const;
 			const Collection& FindCollection(uint32_t usage) const;
 		public:
 			void PrintUsage(Printable& printable, int indentLevel = 0) const;
