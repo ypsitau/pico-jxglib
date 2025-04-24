@@ -646,7 +646,6 @@ USBHost::HID::Application* USBHost::HID::ParseReportDescriptor(const uint8_t* de
 			break;
 		}
 		case ItemType::ReportID: {
-			//pGlobalItemCur->reportID = itemData;
 			if (pApplicationCur) pApplicationCur->SetReportID(static_cast<uint8_t>(itemData));
 			reportOffset_Input += 8;
 			break;
@@ -819,7 +818,6 @@ void USBHost::HID::GlobalItem::Print(Printable& printable, int indentLevel) cons
 	printable.Printf("%*sunitExponent:    %d\n", indentLevel * 2, "", unitExponent);
 	printable.Printf("%*sunit:            %d\n", indentLevel * 2, "", unit);
 	printable.Printf("%*sreportSize:      %d\n", indentLevel * 2, "", reportSize);
-	//printable.Printf("%*sreportID:        %d\n", indentLevel * 2, "", reportID);
 	printable.Printf("%*sreportCount:     %d\n", indentLevel * 2, "", reportCount);
 }
 
