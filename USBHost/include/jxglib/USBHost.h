@@ -18,9 +18,17 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class USBHost : public Tickable {
 public:
-	class HID;
 	class HIDDriver;
-	class ReportDescriptor {
+	struct Report {
+		const uint8_t* report;
+		uint16_t len;
+	};
+	class EventHandler {
+	public:
+		virtual void OnMount(uint8_t devAddr) {}
+		virtual void OnUmount(uint8_t devAddr) {}
+	};
+	class HID : public Referable {
 	public:
 		struct ItemType {
 			static const uint8_t None				= 0x00;
@@ -110,7 +118,7 @@ public:
 		public:
 			bool IsValid() const { return itemType != ItemType::None; }
 			void Clear() { ::memset(this, 0x00, sizeof(GlobalItem)); }
-			void Print(Printable& printable, int indentLevel = 0) const;
+			void Print(Printable& printable = Stdio::Instance, int indentLevel = 0) const;
 		};
 		class GlobalItemList {
 		public:
@@ -178,8 +186,14 @@ public:
 			int32_t GetVariableWithDefault(const uint8_t* report, uint16_t len, int32_t valueDefault, int idx = 0) const {
 				return IsValid()? GetVariable(report, len, idx) : valueDefault;
 			}
+			int32_t GetVariable(const Report& report, int idx = 0) const {
+				return GetVariable(report.report, report.len, idx);
+			}
+			int32_t GetVariableWithDefault(const Report& report, int32_t valueDefault, int idx = 0) const {
+				return GetVariableWithDefault(report.report, report.len, valueDefault, idx);
+			}
 		public:
-			void Print(Printable& printable, int indentLevel = 0) const;
+			void Print(Printable& printable = Stdio::Instance, int indentLevel = 0) const;
 		};
 		class Collection {
 		private:
@@ -246,33 +260,20 @@ public:
 		public:
 			void AddMainItem(Collection& collection, const GlobalItem& globalItem, const LocalItem& localItem, uint32_t& reportOffset);
 		public:
-			void Print(Printable& printable, int indentLevel = 0) const;
-			void PrintAll(Printable& printable, int indentLevel = 0) const;
+			void Print(Printable& printable = Stdio::Instance, int indentLevel = 0) const;
+			void PrintAll(Printable& printable = Stdio::Instance, int indentLevel = 0) const;
 		};
-	public:
-		ReportDescriptor();
-		Application* Parse(const uint8_t* descReport, uint16_t descLen);
-	public:
-		static const char* GetCollectionTypeName(CollectionType collectionType);
-		static const char* GetItemTypeName(uint8_t itemType);
-	};
-	class EventHandler {
-	public:
-		virtual void OnMount(uint8_t devAddr) {}
-		virtual void OnUmount(uint8_t devAddr) {}
-	};
-	class HID : public Referable {
 	private:
 		uint8_t devAddr_;
 		uint8_t iInstance_;
-		std::unique_ptr<ReportDescriptor::Application> pApplication_;
+		std::unique_ptr<Application> pApplication_;
 		uint8_t report_[CFG_TUH_HID_EPIN_BUFSIZE];
 		uint16_t reportLen_;
 		HIDDriver* pHIDDriver_;
 	public:
 		DeclareReferable(HID)
 	public:
-		HID(uint8_t devAddr, uint8_t iInstance, ReportDescriptor::Application* pApplication);
+		HID(uint8_t devAddr, uint8_t iInstance, Application* pApplication);
 	protected:
 		~HID() {}
 	public:
@@ -290,12 +291,16 @@ public:
 		}
 	public:
 		virtual void OnReport(const uint8_t* report, uint16_t len);
+	public:
+		static Application* ParseReportDescriptor(const uint8_t* descReport, uint16_t descLen);
+		static const char* GetCollectionTypeName(CollectionType collectionType);
+		static const char* GetItemTypeName(uint8_t itemType);
 	};
 	class HIDDriver {
 	private:
 		uint32_t usage_;
 		RefPtr<HID> pHID_;
-		ReportDescriptor::Application* pApplication_;
+		HID::Application* pApplication_;
 		std::unique_ptr<HIDDriver> pHIDDriverRegisteredNext_;
 	public:
 		static HIDDriver* pHIDDriverRegisteredTop;
@@ -311,12 +316,12 @@ public:
 		HIDDriver* GetRegisteredListLast();
 	public:
 		uint32_t GetUsage() const { return usage_; }
-		void AttachHID(HID* pHID, ReportDescriptor::Application* pApplication) { pHID_.reset(pHID); pApplication_ = pApplication; }
+		void AttachHID(HID* pHID, HID::Application* pApplication) { pHID_.reset(pHID); pApplication_ = pApplication; }
 		void DetachHID() { pHID_.reset(), pApplication_ = nullptr; }
 		bool IsMounted() const { return !!pHID_ && !!pApplication_; }
 		HID& GetHID() { return *pHID_; }
 		const HID& GetHID() const { return *pHID_; }
-		const ReportDescriptor::Application& GetApplication() const { return *pApplication_; }
+		const HID::Application& GetApplication() const { return *pApplication_; }
 	public:
 		virtual void OnMount() {};
 		virtual void OnUmount() {}
@@ -422,7 +427,7 @@ public:
 public:
 	void MountHID(uint8_t devAddr, uint8_t iInstance, const uint8_t* descReport, uint16_t descLen);
 	void UmountHID(uint8_t iInstance);
-	HID* GetHID(uint8_t iInstance) { return hidTbl_[iInstance]; }
+	HID* LookupHID(uint8_t iInstance) { return hidTbl_[iInstance]; }
 public:
 	static EventHandler* GetEventHandler() { return Instance.pEventHandler_; }
 public:
