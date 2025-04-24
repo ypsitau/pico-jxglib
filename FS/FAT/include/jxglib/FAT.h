@@ -16,6 +16,40 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class FAT : public FS {
 public:
+	class File : public FS::File {
+	private:
+		FIL file; // FATFS file object
+	public:
+		File(FIL f);
+		~File();
+	public:
+		int Read(void* buffer, unsigned int size) override;
+		int Write(const void* buffer, unsigned int size) override;
+		void Close() override;
+		void Seek(unsigned int position) override;
+		unsigned int Tell() override;
+		unsigned int Size() override;
+		bool Remove() override;
+		bool Rename(const char* newName) override;
+		bool Flush() override;
+		bool Truncate(unsigned int size) override;
+		bool Sync() override;
+	};
+	class Dir : public FS::Dir {
+	private:
+		DIR dir; // FATFS directory object
+	public:
+		Dir(DIR d);
+		~Dir();
+
+		bool First(FileInfo& info) override;
+		bool Next(FileInfo& info) override;
+		void Close() override;
+		bool Remove() override;
+		bool Exists() override;
+		bool Rename(const char* newName) override;
+		bool Create() override;
+	};
 	enum class MountMode { Normal, Forced, };
 	static const int SectorSize = FF_MIN_SS;
 	class PhysicalDrive {
@@ -61,7 +95,8 @@ public:
 public:
 	FAT() : numLogicalDrive_{0} {}
 public:
-	bool OpenFile();
+	static File* OpenFile(const char* path, const char* mode);
+	static Dir* OpenDir(const char* path);
 public:
 	int AssignLogialDrive() { numLogicalDrive_++; return numLogicalDrive_ - 1; }
 	void RegisterPhysicalDrive(PhysicalDrive& physicalDrive) {
