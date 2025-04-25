@@ -425,19 +425,19 @@ public:
 	public:
 		GamePad();
 	public:
-		uint32_t Get_ButtonX() const		{ return GetVariable(0x0009'0001); }
-		uint32_t Get_ButtonY() const		{ return GetVariable(0x0009'0002); }
-		uint32_t Get_ButtonA() const		{ return GetVariable(0x0009'0003); }
-		uint32_t Get_ButtonB() const		{ return GetVariable(0x0009'0004); }
-		uint32_t Get_ButtonLB() const		{ return GetVariable(0x0009'0005); }
-		uint32_t Get_ButtonRB() const		{ return GetVariable(0x0009'0006); }
-		uint32_t Get_ButtonLT() const		{ return GetVariable(0x0009'0007); }
-		uint32_t Get_ButtonRT() const		{ return GetVariable(0x0009'0008); }
-		uint32_t Get_ButtonLStick() const	{ return GetVariable(0x0009'0009); }
-		uint32_t Get_ButtonRStick() const	{ return GetVariable(0x0009'000a); }
-		uint32_t Get_ButtonBACK() const		{ return GetVariable(0x0009'000b); }
-		uint32_t Get_ButtonSTART() const	{ return GetVariable(0x0009'000c); }
-		uint32_t Get_ButtonGUIDE() const	{ return GetVariable(0x0009'000d); }
+		uint32_t Get_Button1() const		{ return GetVariable(0x0009'0001); }
+		uint32_t Get_Button2() const		{ return GetVariable(0x0009'0002); }
+		uint32_t Get_Button3() const		{ return GetVariable(0x0009'0003); }
+		uint32_t Get_Button4() const		{ return GetVariable(0x0009'0004); }
+		uint32_t Get_Button5() const		{ return GetVariable(0x0009'0005); }
+		uint32_t Get_Button6() const		{ return GetVariable(0x0009'0006); }
+		uint32_t Get_Button7() const		{ return GetVariable(0x0009'0007); }
+		uint32_t Get_Button8() const		{ return GetVariable(0x0009'0008); }
+		uint32_t Get_Button9() const		{ return GetVariable(0x0009'0009); }
+		uint32_t Get_Button10() const		{ return GetVariable(0x0009'000a); }
+		uint32_t Get_Button11() const		{ return GetVariable(0x0009'000b); }
+		uint32_t Get_Button12() const		{ return GetVariable(0x0009'000c); }
+		uint32_t Get_Button13() const		{ return GetVariable(0x0009'000d); }
 		uint32_t Get_HatSwitch() const		{ return GetVariableWithDefault(0x0001'0039, 0xf); }
 		uint32_t GetRaw_LStickHorz() const	{ return GetVariable(0x0001'0030); }
 		uint32_t GetRaw_LStickVert() const	{ return GetVariable(0x0001'0031); }
