@@ -264,15 +264,21 @@ public:
 		public:
 			void AddMainItem(Collection& collection, const GlobalItem& globalItem, const LocalItem& localItem, uint32_t& reportOffset);
 		public:
-			int32_t GetVariable(const uint8_t* report, uint16_t len, uint32_t usage) const;
-			int32_t GetVariable(const uint8_t* report, uint16_t len, uint32_t usageCollection, uint32_t usage) const;
-			int32_t GetVariable(const uint8_t* report, uint16_t len, uint32_t usageCollection1, uint32_t usageCollection2, uint32_t usage) const;
-			int32_t GetVariableWithDefault(const uint8_t* report, uint16_t len, uint32_t usage, int32_t valueDefault) const;
-			int32_t GetVariableWithDefault(const uint8_t* report, uint16_t len, uint32_t usageCollection, uint32_t usage, int32_t valueDefault) const;
-			int32_t GetVariableWithDefault(const uint8_t* report, uint16_t len, uint32_t usageCollection1, uint32_t usageCollection2, uint32_t usage, int32_t valueDefault) const;
-			int32_t GetArrayItem(const uint8_t* report, uint16_t len, int idx) const;
-			int32_t GetArrayItem(const uint8_t* report, uint16_t len, uint32_t usageCollection, int idx) const;
-			int32_t GetArrayItem(const uint8_t* report, uint16_t len, uint32_t usageCollection1, uint32_t usageCollection2, int idx) const;
+			const Collection& FindCollection(uint32_t usageCollection) const {
+				return GetCollection().FindCollection(usageCollection);
+			}
+			const Collection& FindCollection(uint32_t usageCollection1, uint32_t usageCollection2) const {
+				return GetCollection().FindCollection(usageCollection1).FindCollection(usageCollection2);
+			}
+			const UsageAccessor& FindUsageAccessor(uint32_t usage) const {
+				return GetCollection().FindUsageAccessor(usage);
+			}
+			const UsageAccessor& FindUsageAccessor(uint32_t usageCollection, uint32_t usage) const {
+				return FindCollection(usageCollection).FindUsageAccessor(usage);
+			}
+			const UsageAccessor& FindUsageAccessor(uint32_t usageCollection1, uint32_t usageCollection2, uint32_t usage) const {
+				return FindCollection(usageCollection1, usageCollection2).FindUsageAccessor(usage);
+			}
 		public:
 			void Print(Printable& printable = Stdio::Instance, int indentLevel = 0) const;
 			void PrintAll(Printable& printable = Stdio::Instance, int indentLevel = 0) const;
@@ -344,37 +350,38 @@ public:
 		uint8_t GetReportID() const { return GetApplication().GetReportID(); }
 	public:
 		int32_t GetVariable(uint32_t usage) const {
-			return GetApplication().GetVariable(pHID_->GetReport(), pHID_->GetReportLen(), usage);
+			return GetApplication().FindUsageAccessor(usage)
+				.GetVariable(pHID_->GetReport(), pHID_->GetReportLen());
 		}
 		int32_t GetVariable(uint32_t usageCollection, uint32_t usage) const {
-			return GetApplication().GetVariable(
-				pHID_->GetReport(), pHID_->GetReportLen(), usageCollection, usage);
+			return GetApplication().FindUsageAccessor(usageCollection, usage)
+				.GetVariable(pHID_->GetReport(), pHID_->GetReportLen());
 		}
 		int32_t GetVariable(uint32_t usageCollection1, uint32_t usageCollection2, uint32_t usage) const {
-			return GetApplication().GetVariable(
-				pHID_->GetReport(), pHID_->GetReportLen(), usageCollection1, usageCollection2, usage);
+			return GetApplication().FindUsageAccessor(usageCollection1, usageCollection2, usage)
+				.GetVariable(pHID_->GetReport(), pHID_->GetReportLen());
 		}
 		int32_t GetVariableWithDefault(uint32_t usage, int32_t valueDefault) const {
-			return GetApplication().GetVariableWithDefault(
-				pHID_->GetReport(), pHID_->GetReportLen(), usage, valueDefault);
+			return GetApplication().FindUsageAccessor(usage)
+				.GetVariableWithDefault(pHID_->GetReport(), pHID_->GetReportLen(), valueDefault);
 		}
 		int32_t GetVariableWithDefault(uint32_t usageCollection, uint32_t usage, int32_t valueDefault) const {
-			return GetApplication().GetVariableWithDefault(
-				pHID_->GetReport(), pHID_->GetReportLen(), usageCollection, usage, valueDefault);
+			return GetApplication().FindUsageAccessor(usageCollection, usage)
+				.GetVariableWithDefault(pHID_->GetReport(), pHID_->GetReportLen(), valueDefault);
 		}
 		int32_t GetVariableWithDefault(uint32_t usageCollection1, uint32_t usageCollection2, uint32_t usage, int32_t valueDefault) const {
-			return GetApplication().GetVariableWithDefault(
-				pHID_->GetReport(), pHID_->GetReportLen(), usageCollection1, usageCollection2, usage, valueDefault);
+			return GetApplication().FindUsageAccessor(usageCollection1, usageCollection2, usage)
+				.GetVariableWithDefault(pHID_->GetReport(), pHID_->GetReportLen(), valueDefault);
 		}
 	public:
 		int32_t GetArrayItem(int idx) const {
-			return GetApplication().GetArrayItem(pHID_->GetReport(), pHID_->GetReportLen(), idx);
+			return GetApplication().GetCollection().GetArrayItem(pHID_->GetReport(), pHID_->GetReportLen(), idx);
 		}
 		int32_t GetArrayItem(uint32_t usageCollection, int idx) const {
-			return GetApplication().GetArrayItem(pHID_->GetReport(), pHID_->GetReportLen(), usageCollection, idx);
+			return GetApplication().FindCollection(usageCollection).GetArrayItem(pHID_->GetReport(), pHID_->GetReportLen(), idx);
 		}
 		int32_t GetArrayItem(uint32_t usageCollection1, uint32_t usageCollection2, int idx) const {
-			return GetApplication().GetArrayItem(pHID_->GetReport(), pHID_->GetReportLen(), usageCollection1, usageCollection2, idx);
+			return GetApplication().FindCollection(usageCollection1, usageCollection2).GetArrayItem(pHID_->GetReport(), pHID_->GetReportLen(), idx);
 		}
 	};
 	class Keyboard : public KeyboardRepeatable, public HIDDriver {
