@@ -28,7 +28,7 @@ void USBHost::MountHID(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRe
 		HID::Application* pApplication = pApplicationTop.get();
 		HID* pHID = new HID(devAddr, iInstance, pApplicationTop.release());
 		hidTbl_[iInstance] = pHID;
-		pApplication->Print();
+		//pApplication->Print();
 		for (HIDDriver* pHIDDriver = HIDDriver::pHIDDriverRegisteredTop; pHIDDriver; pHIDDriver = pHIDDriver->GetRegisteredListNext()) {
 			if (pHIDDriver->GetUsage() == pApplication->GetUsage() && !pHIDDriver->IsMounted()) {
 				pHIDDriver->AttachHID(pHID->Reference(), pApplication);
