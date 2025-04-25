@@ -85,7 +85,8 @@ extern "C" void tuh_hid_umount_cb(uint8_t devAddr, uint8_t iInstance)
 extern "C" void tuh_hid_report_received_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len)
 {
 	USBHost::HID* pHID = USBHost::Instance.LookupHID(iInstance);
-	if (pHID) pHID->OnReport(report, len);
+	USBHost::HID::Report reportPack { report, len };
+	if (pHID) pHID->OnReport(reportPack);
 	::tuh_hid_receive_report(devAddr, iInstance);
 }
 
@@ -396,9 +397,9 @@ Keyboard& USBHost::Keyboard::SetCapsLockAsCtrl(bool capsLockAsCtrlFlag)
 	return *this;
 }
 
-void USBHost::Keyboard::OnReport(const uint8_t* report, uint16_t len)
+void USBHost::Keyboard::OnReport()
 {
-	const hid_keyboard_report_t& reportEx = *reinterpret_cast<const hid_keyboard_report_t*>(report);
+	const hid_keyboard_report_t& reportEx = *reinterpret_cast<const hid_keyboard_report_t*>(GetReport().buff);
 	::memset(&reportCaptured_, 0x00, sizeof(reportCaptured_));
 	reportCaptured_.modifier = reportEx.modifier;
 	int iDst = 0;
@@ -478,9 +479,9 @@ Point USBHost::Mouse::CalcPoint() const
 			yRaw_ * (rcStage_.height - 1) / (rcStageRaw_.height - 1) + rcStage_.y);
 }
 
-void USBHost::Mouse::OnReport(const uint8_t* report, uint16_t len)
+void USBHost::Mouse::OnReport()
 {
-	const hid_mouse_report_t& reportEx = *reinterpret_cast<const hid_mouse_report_t*>(report);
+	const hid_mouse_report_t& reportEx = *reinterpret_cast<const hid_mouse_report_t*>(GetReport().buff);
 	int xDiff = reportEx.x, yDiff = reportEx.y;
 	xRaw_ = ChooseMin(ChooseMax(xRaw_ + xDiff, 0), rcStageRaw_.width - 1);
 	yRaw_ = ChooseMin(ChooseMax(yRaw_ + yDiff, 0), rcStageRaw_.height - 1);
@@ -492,16 +493,15 @@ void USBHost::Mouse::OnReport(const uint8_t* report, uint16_t len)
 //------------------------------------------------------------------------------
 USBHost::GamePad::GamePad() : HIDDriver(0x00010005)
 {
+	ClearUsageAccessor();
 }
 
-float USBHost::GamePad::GetAxis(uint32_t usage) const
+float USBHost::GamePad::GetAxis(const HID::UsageAccessor& usageAccessor) const
 {
-	if (!IsMounted()) return 0.;
-	const auto& UsageAccessor = GetApplication().GetCollection().FindUsageAccessor(usage);
-	if (!UsageAccessor.IsValid()) return 0.;
-	int32_t valueMin = UsageAccessor.GetLogicalMinimum();
-	int32_t valueMax = UsageAccessor.GetLogicalMaximum();
-	int32_t value = UsageAccessor.GetVariable(GetHID().GetReport(), GetHID().GetReportLen());
+	if (!usageAccessor.IsValid()) return 0.;
+	int32_t valueMin = usageAccessor.GetLogicalMinimum();
+	int32_t valueMax = usageAccessor.GetLogicalMaximum();
+	int32_t value = usageAccessor.GetVariable(GetHID().GetReport());
 	if (valueMin <= 0) {
 		if (valueMin == 0) {
 			int32_t valueMid = (valueMax + 1) / 2;
@@ -519,30 +519,72 @@ float USBHost::GamePad::GetAxis(uint32_t usage) const
 	}
 }
 
+void USBHost::GamePad::ClearUsageAccessor()
+{
+	pUsageAccessor_Button1		= &HID::UsageAccessor::None;
+	pUsageAccessor_Button2		= &HID::UsageAccessor::None;
+	pUsageAccessor_Button3		= &HID::UsageAccessor::None;
+	pUsageAccessor_Button4		= &HID::UsageAccessor::None;
+	pUsageAccessor_Button5		= &HID::UsageAccessor::None;
+	pUsageAccessor_Button6		= &HID::UsageAccessor::None;
+	pUsageAccessor_Button7		= &HID::UsageAccessor::None;
+	pUsageAccessor_Button8		= &HID::UsageAccessor::None;
+	pUsageAccessor_Button9		= &HID::UsageAccessor::None;
+	pUsageAccessor_Button10		= &HID::UsageAccessor::None;
+	pUsageAccessor_Button11		= &HID::UsageAccessor::None;
+	pUsageAccessor_Button12		= &HID::UsageAccessor::None;
+	pUsageAccessor_Button13		= &HID::UsageAccessor::None;
+	pUsageAccessor_HatSwitch	= &HID::UsageAccessor::None;
+	pUsageAccessor_LStickHorz	= &HID::UsageAccessor::None;
+	pUsageAccessor_LStickVert	= &HID::UsageAccessor::None;
+	pUsageAccessor_RStickHorz	= &HID::UsageAccessor::None;
+	pUsageAccessor_RStickVert	= &HID::UsageAccessor::None;
+}
+
 void USBHost::GamePad::OnMount()
 {
-
+	::printf("OnMount\n");
+	pUsageAccessor_Button1		= &GetApplication().FindUsageAccessor(0x0009'0001);
+	pUsageAccessor_Button2		= &GetApplication().FindUsageAccessor(0x0009'0002);
+	pUsageAccessor_Button3		= &GetApplication().FindUsageAccessor(0x0009'0003);
+	pUsageAccessor_Button4		= &GetApplication().FindUsageAccessor(0x0009'0004);
+	pUsageAccessor_Button5		= &GetApplication().FindUsageAccessor(0x0009'0005);
+	pUsageAccessor_Button6		= &GetApplication().FindUsageAccessor(0x0009'0006);
+	pUsageAccessor_Button7		= &GetApplication().FindUsageAccessor(0x0009'0007);
+	pUsageAccessor_Button8		= &GetApplication().FindUsageAccessor(0x0009'0008);
+	pUsageAccessor_Button9		= &GetApplication().FindUsageAccessor(0x0009'0009);
+	pUsageAccessor_Button10		= &GetApplication().FindUsageAccessor(0x0009'000a);
+	pUsageAccessor_Button11		= &GetApplication().FindUsageAccessor(0x0009'000b);
+	pUsageAccessor_Button12		= &GetApplication().FindUsageAccessor(0x0009'000c);
+	pUsageAccessor_Button13		= &GetApplication().FindUsageAccessor(0x0009'000d);
+	pUsageAccessor_HatSwitch	= &GetApplication().FindUsageAccessor(0x0001'0039);
+	pUsageAccessor_LStickHorz	= &GetApplication().FindUsageAccessor(0x0001'0030);
+	pUsageAccessor_LStickVert	= &GetApplication().FindUsageAccessor(0x0001'0031);
+	pUsageAccessor_RStickHorz	= &GetApplication().FindUsageAccessor(0x0001'0035);
+	pUsageAccessor_RStickVert	= &GetApplication().FindUsageAccessor(0x0001'0032);
 }
 
 void USBHost::GamePad::OnUmount()
 {
+	ClearUsageAccessor();
 }
 
 //------------------------------------------------------------------------------
 // USBHost::HID
 //------------------------------------------------------------------------------
 USBHost::HID::HID(uint8_t devAddr, uint8_t iInstance, HID::Application* pApplication) :
-	devAddr_{devAddr}, iInstance_{iInstance}, pApplication_{pApplication}, reportLen_{0}, pHIDDriver_{nullptr}
+	devAddr_{devAddr}, iInstance_{iInstance}, pApplication_{pApplication}, report_{reportBuff_, 0}, pHIDDriver_{nullptr}
 {
 }
 
-void USBHost::HID::OnReport(const uint8_t* report, uint16_t len)
+void USBHost::HID::OnReport(const Report& report)
 {
-	if (len <= sizeof(report_)) {
-		::memcpy(report_, report, len);
-		reportLen_ = len;
+	::memset(reportBuff_, 0x00, sizeof(reportBuff_));
+	if (report.len <= sizeof(reportBuff_)) {
+		::memcpy(reportBuff_, report.buff, report.len);
+		report_.len = report.len;
 	}
-	if (pHIDDriver_) pHIDDriver_->OnReport(report, len);
+	if (pHIDDriver_) pHIDDriver_->OnReport();
 }
 
 USBHost::HID::Application* USBHost::HID::ParseReportDescriptor(const uint8_t* descReport, uint16_t descLen)
@@ -846,7 +888,7 @@ USBHost::HID::UsageAccessor* USBHost::HID::UsageAccessor::GetListLast()
 	return pUsageAccessor;
 }
 
-int32_t USBHost::HID::UsageAccessor::GetVariable(const uint8_t* report, uint16_t len, int idx) const
+int32_t USBHost::HID::UsageAccessor::GetVariable(const Report& report, int idx) const
 {
 	if (!IsValid()) return 0;
 	uint32_t reportOffset = GetReportOffset() + GetReportSize() * idx;
@@ -854,7 +896,7 @@ int32_t USBHost::HID::UsageAccessor::GetVariable(const uint8_t* report, uint16_t
 	uint32_t nBytes = (GetReportSize() + 7) / 8;
 	uint32_t value = 0;
 	for (uint32_t iByte = 0; iByte < nBytes; iByte++) {
-		value = value | (static_cast<uint32_t>(report[byteOffset + iByte]) << (iByte * 8));
+		value = value | (static_cast<uint32_t>(report.buff[byteOffset + iByte]) << (iByte * 8));
 	}
 	value = (value >> (reportOffset % 8)) & ((1 << GetReportSize()) - 1);
 	return (GetLogicalMinimum() >= 0)? static_cast<int32_t>(value) : SignExtend(value, GetReportSize());
@@ -881,9 +923,9 @@ USBHost::HID::Collection* USBHost::HID::Collection::GetListLast()
 	return pCollection;
 }
 
-int32_t USBHost::HID::Collection::GetArrayItem(const uint8_t* report, uint16_t len, int idx) const
+int32_t USBHost::HID::Collection::GetArrayItem(const Report& report, int idx) const
 {
-	return pUsageAccessorArray_? pUsageAccessorArray_->GetVariable(report, len, idx) : 0;
+	return pUsageAccessorArray_? pUsageAccessorArray_->GetVariable(report, idx) : 0;
 }
 
 void USBHost::HID::Collection::AppendUsageAccessor(UsageAccessor* pUsageAccessor)

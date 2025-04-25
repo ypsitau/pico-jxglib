@@ -27,8 +27,10 @@ public:
 	class HID : public Referable {
 	public:
 		struct Report {
-			const uint8_t* report;
+			const uint8_t* buff;
 			uint16_t len;
+		public:
+			void Dump(Printable& printable = Stdio::Instance) const { printable.Dump(buff, len); }
 		};
 		struct ItemType {
 			static const uint8_t None				= 0x00;
@@ -182,15 +184,9 @@ public:
 			bool IsAbsolute() const { return GetMainItemData().IsAbsolute(); }
 			bool IsRelative() const { return GetMainItemData().IsRelative(); }
 		public:
-			int32_t GetVariable(const uint8_t* report, uint16_t len, int idx = 0) const;
-			int32_t GetVariableWithDefault(const uint8_t* report, uint16_t len, int32_t valueDefault, int idx = 0) const {
-				return IsValid()? GetVariable(report, len, idx) : valueDefault;
-			}
-			int32_t GetVariable(const Report& report, int idx = 0) const {
-				return GetVariable(report.report, report.len, idx);
-			}
+			int32_t GetVariable(const Report& report, int idx = 0) const;
 			int32_t GetVariableWithDefault(const Report& report, int32_t valueDefault, int idx = 0) const {
-				return GetVariableWithDefault(report.report, report.len, valueDefault, idx);
+				return IsValid()? GetVariable(report, idx) : valueDefault;
 			}
 		public:
 			void Print(Printable& printable = Stdio::Instance, int indentLevel = 0) const;
@@ -225,7 +221,7 @@ public:
 			const Collection* GetListNext() const { return pCollectionNext_.get(); }
 			Collection* GetListLast();
 		public:
-			int32_t GetArrayItem(const uint8_t* report, uint16_t len, int idx) const;
+			int32_t GetArrayItem(const Report& report, int idx) const;
 			uint32_t GetArraySize() const { return pUsageAccessorArray_? pUsageAccessorArray_->GetReportSize() : 0; }
 		public:
 			void AppendUsageAccessor(UsageAccessor* pUsageAccessor);
@@ -287,8 +283,8 @@ public:
 		uint8_t devAddr_;
 		uint8_t iInstance_;
 		std::unique_ptr<Application> pApplication_;
-		uint8_t report_[CFG_TUH_HID_EPIN_BUFSIZE];
-		uint16_t reportLen_;
+		uint8_t reportBuff_[CFG_TUH_HID_EPIN_BUFSIZE];
+		Report report_;
 		HIDDriver* pHIDDriver_;
 	public:
 		DeclareReferable(HID)
@@ -302,15 +298,14 @@ public:
 		void AttachDriver(HIDDriver& hidDriver) { pHIDDriver_ = &hidDriver; }
 		HIDDriver* GetHIDDriver() { return pHIDDriver_; }
 	public:
-		const uint8_t* GetReport() const { return report_; }
-		uint16_t GetReportLen() const { return reportLen_; }
+		const Report& GetReport() const { return report_; }
 	public:
 		bool IsSendReady() { return ::tuh_hid_send_ready(devAddr_, iInstance_); }
 		void SendReport(uint8_t reportId, const uint8_t* report, uint16_t len) {
 			::tuh_hid_send_report(devAddr_, iInstance_, reportId, report, len);
 		}
 	public:
-		virtual void OnReport(const uint8_t* report, uint16_t len);
+		virtual void OnReport(const Report& report);
 	public:
 		static Application* ParseReportDescriptor(const uint8_t* descReport, uint16_t descLen);
 		static const char* GetCollectionTypeName(CollectionType collectionType);
@@ -341,47 +336,42 @@ public:
 		bool IsMounted() const { return !!pHID_ && !!pApplication_; }
 		HID& GetHID() { return *pHID_; }
 		const HID& GetHID() const { return *pHID_; }
+		const HID::Report& GetReport() const { return GetHID().GetReport(); }
 		const HID::Application& GetApplication() const { return *pApplication_; }
 	public:
 		virtual void OnMount() {};
 		virtual void OnUmount() {}
-		virtual void OnReport(const uint8_t* report, uint16_t len) {};
+		virtual void OnReport() {};
 	public:
 		uint8_t GetReportID() const { return GetApplication().GetReportID(); }
 	public:
 		int32_t GetVariable(uint32_t usage) const {
-			return GetApplication().FindUsageAccessor(usage)
-				.GetVariable(pHID_->GetReport(), pHID_->GetReportLen());
+			return GetApplication().FindUsageAccessor(usage).GetVariable(GetReport());
 		}
 		int32_t GetVariable(uint32_t usageCollection, uint32_t usage) const {
-			return GetApplication().FindUsageAccessor(usageCollection, usage)
-				.GetVariable(pHID_->GetReport(), pHID_->GetReportLen());
+			return GetApplication().FindUsageAccessor(usageCollection, usage).GetVariable(GetReport());
 		}
 		int32_t GetVariable(uint32_t usageCollection1, uint32_t usageCollection2, uint32_t usage) const {
-			return GetApplication().FindUsageAccessor(usageCollection1, usageCollection2, usage)
-				.GetVariable(pHID_->GetReport(), pHID_->GetReportLen());
+			return GetApplication().FindUsageAccessor(usageCollection1, usageCollection2, usage).GetVariable(GetReport());
 		}
 		int32_t GetVariableWithDefault(uint32_t usage, int32_t valueDefault) const {
-			return GetApplication().FindUsageAccessor(usage)
-				.GetVariableWithDefault(pHID_->GetReport(), pHID_->GetReportLen(), valueDefault);
+			return GetApplication().FindUsageAccessor(usage).GetVariableWithDefault(GetReport(), valueDefault);
 		}
 		int32_t GetVariableWithDefault(uint32_t usageCollection, uint32_t usage, int32_t valueDefault) const {
-			return GetApplication().FindUsageAccessor(usageCollection, usage)
-				.GetVariableWithDefault(pHID_->GetReport(), pHID_->GetReportLen(), valueDefault);
+			return GetApplication().FindUsageAccessor(usageCollection, usage).GetVariableWithDefault(GetReport(), valueDefault);
 		}
 		int32_t GetVariableWithDefault(uint32_t usageCollection1, uint32_t usageCollection2, uint32_t usage, int32_t valueDefault) const {
-			return GetApplication().FindUsageAccessor(usageCollection1, usageCollection2, usage)
-				.GetVariableWithDefault(pHID_->GetReport(), pHID_->GetReportLen(), valueDefault);
+			return GetApplication().FindUsageAccessor(usageCollection1, usageCollection2, usage).GetVariableWithDefault(GetReport(), valueDefault);
 		}
 	public:
 		int32_t GetArrayItem(int idx) const {
-			return GetApplication().GetCollection().GetArrayItem(pHID_->GetReport(), pHID_->GetReportLen(), idx);
+			return GetApplication().GetCollection().GetArrayItem(GetReport(), idx);
 		}
 		int32_t GetArrayItem(uint32_t usageCollection, int idx) const {
-			return GetApplication().FindCollection(usageCollection).GetArrayItem(pHID_->GetReport(), pHID_->GetReportLen(), idx);
+			return GetApplication().FindCollection(usageCollection).GetArrayItem(GetReport(), idx);
 		}
 		int32_t GetArrayItem(uint32_t usageCollection1, uint32_t usageCollection2, int idx) const {
-			return GetApplication().FindCollection(usageCollection1, usageCollection2).GetArrayItem(pHID_->GetReport(), pHID_->GetReportLen(), idx);
+			return GetApplication().FindCollection(usageCollection1, usageCollection2).GetArrayItem(GetReport(), idx);
 		}
 	};
 	class Keyboard : public KeyboardRepeatable, public HIDDriver {
@@ -403,7 +393,7 @@ public:
 		Keyboard();
 	public:
 		// virtual function of HIDDriver
-		virtual void OnReport(const uint8_t* report, uint16_t len) override;
+		virtual void OnReport() override;
 	public:
 		// virtual function of jxglib::Keyboard
 		virtual jxglib::Keyboard& SetCapsLockAsCtrl(bool capsLockAsCtrlFlag = true) override;
@@ -424,40 +414,61 @@ public:
 		Point CalcPoint() const;
 	public:
 		// virtual function of HIDDriver
-		virtual void OnReport(const uint8_t* report, uint16_t len) override;
+		virtual void OnReport() override;
 	public:
 		// virtual function of jxglib::Mouse
 		virtual jxglib::Mouse& SetSensibility(float sensibility) override;
 		virtual jxglib::Mouse& SetStage(const Rect& rcStage) override;
 	};
 	class GamePad : public HIDDriver {
+	private:
+		const HID::UsageAccessor* pUsageAccessor_Button1;
+		const HID::UsageAccessor* pUsageAccessor_Button2;
+		const HID::UsageAccessor* pUsageAccessor_Button3;
+		const HID::UsageAccessor* pUsageAccessor_Button4;
+		const HID::UsageAccessor* pUsageAccessor_Button5;
+		const HID::UsageAccessor* pUsageAccessor_Button6;
+		const HID::UsageAccessor* pUsageAccessor_Button7;
+		const HID::UsageAccessor* pUsageAccessor_Button8;
+		const HID::UsageAccessor* pUsageAccessor_Button9;
+		const HID::UsageAccessor* pUsageAccessor_Button10;
+		const HID::UsageAccessor* pUsageAccessor_Button11;
+		const HID::UsageAccessor* pUsageAccessor_Button12;
+		const HID::UsageAccessor* pUsageAccessor_Button13;
+		const HID::UsageAccessor* pUsageAccessor_HatSwitch;
+		const HID::UsageAccessor* pUsageAccessor_LStickHorz;
+		const HID::UsageAccessor* pUsageAccessor_LStickVert;
+		const HID::UsageAccessor* pUsageAccessor_RStickHorz;
+		const HID::UsageAccessor* pUsageAccessor_RStickVert;
 	public:
 		GamePad();
 	public:
-		uint32_t Get_Button1() const		{ return GetVariable(0x0009'0001); }
-		uint32_t Get_Button2() const		{ return GetVariable(0x0009'0002); }
-		uint32_t Get_Button3() const		{ return GetVariable(0x0009'0003); }
-		uint32_t Get_Button4() const		{ return GetVariable(0x0009'0004); }
-		uint32_t Get_Button5() const		{ return GetVariable(0x0009'0005); }
-		uint32_t Get_Button6() const		{ return GetVariable(0x0009'0006); }
-		uint32_t Get_Button7() const		{ return GetVariable(0x0009'0007); }
-		uint32_t Get_Button8() const		{ return GetVariable(0x0009'0008); }
-		uint32_t Get_Button9() const		{ return GetVariable(0x0009'0009); }
-		uint32_t Get_Button10() const		{ return GetVariable(0x0009'000a); }
-		uint32_t Get_Button11() const		{ return GetVariable(0x0009'000b); }
-		uint32_t Get_Button12() const		{ return GetVariable(0x0009'000c); }
-		uint32_t Get_Button13() const		{ return GetVariable(0x0009'000d); }
-		uint32_t Get_HatSwitch() const		{ return GetVariableWithDefault(0x0001'0039, 0xf); }
-		uint32_t GetRaw_LStickHorz() const	{ return GetVariable(0x0001'0030); }
-		uint32_t GetRaw_LStickVert() const	{ return GetVariable(0x0001'0031); }
-		uint32_t GetRaw_RStickHorz() const	{ return GetVariable(0x0001'0035); }
-		uint32_t GetRaw_RStickVert() const	{ return GetVariable(0x0001'0032); }
-		float Get_LStickHorz() const		{ return GetAxis(0x0001'0030); }
-		float Get_LStickVert() const		{ return GetAxis(0x0001'0031); }
-		float Get_RStickHorz() const		{ return GetAxis(0x0001'0035); }
-		float Get_RStickVert() const		{ return GetAxis(0x0001'0032); }
+		uint32_t Get_Button1() const		{ return pUsageAccessor_Button1->GetVariable(GetReport()); }
+		uint32_t Get_Button2() const		{ return pUsageAccessor_Button2->GetVariable(GetReport()); }
+		uint32_t Get_Button3() const		{ return pUsageAccessor_Button3->GetVariable(GetReport()); }
+		uint32_t Get_Button4() const		{ return pUsageAccessor_Button4->GetVariable(GetReport()); }
+		uint32_t Get_Button5() const		{ return pUsageAccessor_Button5->GetVariable(GetReport()); }
+		uint32_t Get_Button6() const		{ return pUsageAccessor_Button6->GetVariable(GetReport()); }
+		uint32_t Get_Button7() const		{ return pUsageAccessor_Button7->GetVariable(GetReport()); }
+		uint32_t Get_Button8() const		{ return pUsageAccessor_Button8->GetVariable(GetReport()); }
+		uint32_t Get_Button9() const		{ return pUsageAccessor_Button9->GetVariable(GetReport()); }
+		uint32_t Get_Button10() const		{ return pUsageAccessor_Button10->GetVariable(GetReport()); }
+		uint32_t Get_Button11() const		{ return pUsageAccessor_Button11->GetVariable(GetReport()); }
+		uint32_t Get_Button12() const		{ return pUsageAccessor_Button12->GetVariable(GetReport()); }
+		uint32_t Get_Button13() const		{ return pUsageAccessor_Button13->GetVariable(GetReport()); }
+		uint32_t Get_HatSwitch() const		{ return pUsageAccessor_HatSwitch->GetVariableWithDefault(GetReport(), 0xf); }
+		uint32_t GetRaw_LStickHorz() const	{ return pUsageAccessor_LStickHorz->GetVariable(GetReport()); }
+		uint32_t GetRaw_LStickVert() const	{ return pUsageAccessor_LStickVert->GetVariable(GetReport()); }
+		uint32_t GetRaw_RStickHorz() const	{ return pUsageAccessor_RStickHorz->GetVariable(GetReport()); }
+		uint32_t GetRaw_RStickVert() const	{ return pUsageAccessor_RStickVert->GetVariable(GetReport()); }
+		float Get_LStickHorz() const		{ return GetAxis(*pUsageAccessor_LStickHorz); }
+		float Get_LStickVert() const		{ return GetAxis(*pUsageAccessor_LStickVert); }
+		float Get_RStickHorz() const		{ return GetAxis(*pUsageAccessor_RStickHorz); }
+		float Get_RStickVert() const		{ return GetAxis(*pUsageAccessor_RStickVert); }
 	public:
-		float GetAxis(uint32_t usage) const;
+		float GetAxis(const HID::UsageAccessor& usageAccessor) const;
+	public:
+		void ClearUsageAccessor();
 	public:
 		virtual void OnMount() override;
 		virtual void OnUmount() override;
