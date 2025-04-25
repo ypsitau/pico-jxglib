@@ -199,11 +199,11 @@ public:
 		private:
 			CollectionType collectionType_;
 			uint32_t usage_;
-			Collection* pCollectionParent_;
-			std::unique_ptr<UsageAccessor> pUsageAccessorArray_;
-			std::unique_ptr<UsageAccessor> pUsageAccessorTop_;
-			std::unique_ptr<Collection> pCollectionChildTop_;
-			std::unique_ptr<Collection> pCollectionNext_;
+			Collection* pCollectionParent_;							// maybe nullptr
+			std::unique_ptr<UsageAccessor> pUsageAccessorArray_;	// maybe nullptr
+			std::unique_ptr<UsageAccessor> pUsageAccessorTop_;		// maybe nullptr
+			std::unique_ptr<Collection> pCollectionChildTop_;		// maybe nullptr
+			std::unique_ptr<Collection> pCollectionNext_;			// maybe nullptr
 		public:
 			static const Collection None;
 		public:
@@ -211,6 +211,7 @@ public:
 				collectionType_{collectionType}, usage_{usage}, pCollectionParent_{pCollectionParent} {}
 		public:
 			CollectionType GetCollectionType() const { return collectionType_; }
+			bool IsValid() const { return usage_ != 0; }
 			uint32_t GetUsage() const { return usage_; }
 			uint16_t GetUsagePage() const { return static_cast<uint16_t>(usage_ >> 16); }
 			uint16_t GetUsageId() const { return static_cast<uint16_t>(usage_ & 0xffff); }
@@ -244,6 +245,8 @@ public:
 			Collection collection_;
 			std::unique_ptr<Application> pApplicationNext_;
 		public:
+			static Application None;
+		public:
 			Application(uint32_t usage);
 		public:
 			void AppendList(Application* pApplication) { GetListLast()->pApplicationNext_.reset(pApplication); }
@@ -251,6 +254,7 @@ public:
 			const Application* GetListNext() const { return pApplicationNext_.get(); }
 			Application* GetListLast();
 		public:
+			bool IsValid() const { return GetCollection().IsValid(); }
 			void SetReportID(uint8_t reportID) { reportID_ = reportID; }
 			uint8_t GetReportID() const { return reportID_; }
 			uint32_t GetUsage() const { return collection_.GetUsage(); }
@@ -337,42 +341,40 @@ public:
 		virtual void OnUmount() {}
 		virtual void OnReport(const uint8_t* report, uint16_t len) {};
 	public:
-		uint8_t GetReportID() const { return pApplication_? pApplication_->GetReportID() : 0; }
+		uint8_t GetReportID() const { return GetApplication().GetReportID(); }
 	public:
 		int32_t GetVariable(uint32_t usage) const {
-			return pApplication_? pApplication_->GetVariable(pHID_->GetReport(), pHID_->GetReportLen(), usage) : 0;
+			return GetApplication().GetVariable(pHID_->GetReport(), pHID_->GetReportLen(), usage);
 		}
 		int32_t GetVariable(uint32_t usageCollection, uint32_t usage) const {
-			return pApplication_? pApplication_->GetVariable(
-				pHID_->GetReport(), pHID_->GetReportLen(), usageCollection, usage) : 0;
+			return GetApplication().GetVariable(
+				pHID_->GetReport(), pHID_->GetReportLen(), usageCollection, usage);
 		}
 		int32_t GetVariable(uint32_t usageCollection1, uint32_t usageCollection2, uint32_t usage) const {
-			return pApplication_? pApplication_->GetVariable(
-				pHID_->GetReport(), pHID_->GetReportLen(), usageCollection1, usageCollection2, usage) : 0;
+			return GetApplication().GetVariable(
+				pHID_->GetReport(), pHID_->GetReportLen(), usageCollection1, usageCollection2, usage);
 		}
 		int32_t GetVariableWithDefault(uint32_t usage, int32_t valueDefault) const {
-			return pApplication_? pApplication_->GetVariableWithDefault(
-				pHID_->GetReport(), pHID_->GetReportLen(), usage, valueDefault) : valueDefault;
+			return GetApplication().GetVariableWithDefault(
+				pHID_->GetReport(), pHID_->GetReportLen(), usage, valueDefault);
 		}
 		int32_t GetVariableWithDefault(uint32_t usageCollection, uint32_t usage, int32_t valueDefault) const {
-			return pApplication_? pApplication_->GetVariableWithDefault(
-				pHID_->GetReport(), pHID_->GetReportLen(), usageCollection, usage, valueDefault) : valueDefault;
+			return GetApplication().GetVariableWithDefault(
+				pHID_->GetReport(), pHID_->GetReportLen(), usageCollection, usage, valueDefault);
 		}
 		int32_t GetVariableWithDefault(uint32_t usageCollection1, uint32_t usageCollection2, uint32_t usage, int32_t valueDefault) const {
-			return pApplication_? pApplication_->GetVariableWithDefault(
-				pHID_->GetReport(), pHID_->GetReportLen(), usageCollection1, usageCollection2, usage, valueDefault) : valueDefault;
+			return GetApplication().GetVariableWithDefault(
+				pHID_->GetReport(), pHID_->GetReportLen(), usageCollection1, usageCollection2, usage, valueDefault);
 		}
 	public:
 		int32_t GetArrayItem(int idx) const {
-			return pApplication_? pApplication_->GetArrayItem(pHID_->GetReport(), pHID_->GetReportLen(), idx) : 0;
+			return GetApplication().GetArrayItem(pHID_->GetReport(), pHID_->GetReportLen(), idx);
 		}
 		int32_t GetArrayItem(uint32_t usageCollection, int idx) const {
-			return pApplication_? pApplication_->GetArrayItem(pHID_->GetReport(),
-				pHID_->GetReportLen(), usageCollection, idx) : 0;
+			return GetApplication().GetArrayItem(pHID_->GetReport(), pHID_->GetReportLen(), usageCollection, idx);
 		}
 		int32_t GetArrayItem(uint32_t usageCollection1, uint32_t usageCollection2, int idx) const {
-			return pApplication_? pApplication_->GetArrayItem(
-				pHID_->GetReport(), pHID_->GetReportLen(), usageCollection1, usageCollection2, idx) : 0;
+			return GetApplication().GetArrayItem(pHID_->GetReport(), pHID_->GetReportLen(), usageCollection1, usageCollection2, idx);
 		}
 	};
 	class Keyboard : public KeyboardRepeatable, public HIDDriver {
@@ -449,6 +451,9 @@ public:
 		float Get_RStickVert() const		{ return GetAxis(0x0001'0032); }
 	public:
 		float GetAxis(uint32_t usage) const;
+	public:
+		virtual void OnMount() override;
+		virtual void OnUmount() override;
 	};
 public:
 	static USBHost Instance;

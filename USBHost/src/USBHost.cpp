@@ -33,6 +33,7 @@ void USBHost::MountHID(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRe
 			if (pHIDDriver->GetUsage() == pApplication->GetUsage() && !pHIDDriver->IsMounted()) {
 				pHIDDriver->AttachHID(pHID->Reference(), pApplication);
 				pHID->AttachDriver(*pHIDDriver);
+				pHIDDriver->OnMount();
 				break;
 			}
 		}
@@ -43,7 +44,10 @@ void USBHost::UmountHID(uint8_t iInstance)
 {
 	HID* pHID = hidTbl_[iInstance];
 	HIDDriver* pHIDDriver = pHID->GetHIDDriver();
-	if (pHIDDriver) pHIDDriver->DetachHID();
+	if (pHIDDriver) {
+		pHIDDriver->OnUmount();
+		pHIDDriver->DetachHID();
+	}
 	hidTbl_[iInstance] = nullptr;
 	HID::Delete(pHID);
 }
@@ -90,7 +94,7 @@ extern "C" void tuh_hid_report_received_cb(uint8_t devAddr, uint8_t iInstance, c
 //------------------------------------------------------------------------------
 USBHost::HIDDriver* USBHost::HIDDriver::pHIDDriverRegisteredTop = nullptr;
 
-USBHost::HIDDriver::HIDDriver(uint32_t usage) : usage_{usage}, pApplication_{nullptr}
+USBHost::HIDDriver::HIDDriver(uint32_t usage) : usage_{usage}, pApplication_{&USBHost::HID::Application::None}
 {
 	if (pHIDDriverRegisteredTop) {
 		pHIDDriverRegisteredTop->AppendRegisteredList(this);
@@ -513,6 +517,15 @@ float USBHost::GamePad::GetAxis(uint32_t usage) const
 	} else {
 		return 0.;
 	}
+}
+
+void USBHost::GamePad::OnMount()
+{
+
+}
+
+void USBHost::GamePad::OnUmount()
+{
 }
 
 //------------------------------------------------------------------------------
@@ -952,6 +965,8 @@ void USBHost::HID::Collection::PrintUsage(Printable& printable, int indentLevel)
 //------------------------------------------------------------------------------
 // USBHost::HID::Application
 //------------------------------------------------------------------------------
+USBHost::HID::Application USBHost::HID::Application::None(0);
+
 USBHost::HID::Application::Application(uint32_t usage) : reportID_{0}, collection_(CollectionType::Application, usage, nullptr)
 {
 }
