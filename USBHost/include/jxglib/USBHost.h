@@ -307,6 +307,9 @@ public:
 	public:
 		virtual void OnReport(const Report& report);
 	public:
+		uint16_t GetVID() const { uint16_t vid, pid; ::tuh_vid_pid_get(devAddr_, &vid, &pid); return vid; }
+		uint16_t GetPID() const { uint16_t vid, pid; ::tuh_vid_pid_get(devAddr_, &vid, &pid); return pid; }
+	public:
 		static Application* ParseReportDescriptor(const uint8_t* descReport, uint16_t descLen);
 		static const char* GetCollectionTypeName(CollectionType collectionType);
 		static const char* GetItemTypeName(uint8_t itemType);
@@ -422,51 +425,66 @@ public:
 	};
 	class GamePad : public HIDDriver {
 	private:
-		const HID::UsageAccessor* pUsageAccessor_Button1;
-		const HID::UsageAccessor* pUsageAccessor_Button2;
-		const HID::UsageAccessor* pUsageAccessor_Button3;
-		const HID::UsageAccessor* pUsageAccessor_Button4;
-		const HID::UsageAccessor* pUsageAccessor_Button5;
-		const HID::UsageAccessor* pUsageAccessor_Button6;
-		const HID::UsageAccessor* pUsageAccessor_Button7;
-		const HID::UsageAccessor* pUsageAccessor_Button8;
-		const HID::UsageAccessor* pUsageAccessor_Button9;
-		const HID::UsageAccessor* pUsageAccessor_Button10;
-		const HID::UsageAccessor* pUsageAccessor_Button11;
-		const HID::UsageAccessor* pUsageAccessor_Button12;
-		const HID::UsageAccessor* pUsageAccessor_Button13;
-		const HID::UsageAccessor* pUsageAccessor_HatSwitch;
-		const HID::UsageAccessor* pUsageAccessor_LStickHorz;
-		const HID::UsageAccessor* pUsageAccessor_LStickVert;
-		const HID::UsageAccessor* pUsageAccessor_RStickHorz;
-		const HID::UsageAccessor* pUsageAccessor_RStickVert;
+		const HID::UsageAccessor* pUsage_Button0;
+		const HID::UsageAccessor* pUsage_Button1;
+		const HID::UsageAccessor* pUsage_Button2;
+		const HID::UsageAccessor* pUsage_Button3;
+		const HID::UsageAccessor* pUsage_Button4;
+		const HID::UsageAccessor* pUsage_Button5;
+		const HID::UsageAccessor* pUsage_Button6;
+		const HID::UsageAccessor* pUsage_Button7;
+		const HID::UsageAccessor* pUsage_Button8;
+		const HID::UsageAccessor* pUsage_Button9;
+		const HID::UsageAccessor* pUsage_Button10;
+		const HID::UsageAccessor* pUsage_Button11;
+		const HID::UsageAccessor* pUsage_Button12;
+		const HID::UsageAccessor* pUsage_Axis0;
+		const HID::UsageAccessor* pUsage_Axis1;
+		const HID::UsageAccessor* pUsage_Axis2;
+		const HID::UsageAccessor* pUsage_Axis3;
+		const HID::UsageAccessor* pUsage_Axis4;
+		const HID::UsageAccessor* pUsage_Axis5;
+		const HID::UsageAccessor* pUsage_Axis6;
+		const HID::UsageAccessor* pUsage_Axis7;
+		const HID::UsageAccessor* pUsage_Axis8;
+		const HID::UsageAccessor* pUsage_HatSwitch;
 	public:
 		GamePad();
 	public:
-		uint32_t Get_Button1() const		{ return pUsageAccessor_Button1->GetVariable(GetReport()); }
-		uint32_t Get_Button2() const		{ return pUsageAccessor_Button2->GetVariable(GetReport()); }
-		uint32_t Get_Button3() const		{ return pUsageAccessor_Button3->GetVariable(GetReport()); }
-		uint32_t Get_Button4() const		{ return pUsageAccessor_Button4->GetVariable(GetReport()); }
-		uint32_t Get_Button5() const		{ return pUsageAccessor_Button5->GetVariable(GetReport()); }
-		uint32_t Get_Button6() const		{ return pUsageAccessor_Button6->GetVariable(GetReport()); }
-		uint32_t Get_Button7() const		{ return pUsageAccessor_Button7->GetVariable(GetReport()); }
-		uint32_t Get_Button8() const		{ return pUsageAccessor_Button8->GetVariable(GetReport()); }
-		uint32_t Get_Button9() const		{ return pUsageAccessor_Button9->GetVariable(GetReport()); }
-		uint32_t Get_Button10() const		{ return pUsageAccessor_Button10->GetVariable(GetReport()); }
-		uint32_t Get_Button11() const		{ return pUsageAccessor_Button11->GetVariable(GetReport()); }
-		uint32_t Get_Button12() const		{ return pUsageAccessor_Button12->GetVariable(GetReport()); }
-		uint32_t Get_Button13() const		{ return pUsageAccessor_Button13->GetVariable(GetReport()); }
-		uint32_t Get_HatSwitch() const		{ return pUsageAccessor_HatSwitch->GetVariableWithDefault(GetReport(), 0xf); }
-		uint32_t GetRaw_LStickHorz() const	{ return pUsageAccessor_LStickHorz->GetVariable(GetReport()); }
-		uint32_t GetRaw_LStickVert() const	{ return pUsageAccessor_LStickVert->GetVariable(GetReport()); }
-		uint32_t GetRaw_RStickHorz() const	{ return pUsageAccessor_RStickHorz->GetVariable(GetReport()); }
-		uint32_t GetRaw_RStickVert() const	{ return pUsageAccessor_RStickVert->GetVariable(GetReport()); }
-		float Get_LStickHorz() const		{ return GetAxis(*pUsageAccessor_LStickHorz); }
-		float Get_LStickVert() const		{ return GetAxis(*pUsageAccessor_LStickVert); }
-		float Get_RStickHorz() const		{ return GetAxis(*pUsageAccessor_RStickHorz); }
-		float Get_RStickVert() const		{ return GetAxis(*pUsageAccessor_RStickVert); }
+		uint32_t Get_Button0() const		{ return pUsage_Button0->GetVariable(GetReport()); }
+		uint32_t Get_Button1() const		{ return pUsage_Button1->GetVariable(GetReport()); }
+		uint32_t Get_Button2() const		{ return pUsage_Button2->GetVariable(GetReport()); }
+		uint32_t Get_Button3() const		{ return pUsage_Button3->GetVariable(GetReport()); }
+		uint32_t Get_Button4() const		{ return pUsage_Button4->GetVariable(GetReport()); }
+		uint32_t Get_Button5() const		{ return pUsage_Button5->GetVariable(GetReport()); }
+		uint32_t Get_Button6() const		{ return pUsage_Button6->GetVariable(GetReport()); }
+		uint32_t Get_Button7() const		{ return pUsage_Button7->GetVariable(GetReport()); }
+		uint32_t Get_Button8() const		{ return pUsage_Button8->GetVariable(GetReport()); }
+		uint32_t Get_Button9() const		{ return pUsage_Button9->GetVariable(GetReport()); }
+		uint32_t Get_Button10() const		{ return pUsage_Button10->GetVariable(GetReport()); }
+		uint32_t Get_Button11() const		{ return pUsage_Button11->GetVariable(GetReport()); }
+		uint32_t Get_Button12() const		{ return pUsage_Button12->GetVariable(GetReport()); }
+		float Get_Axis0() const				{ return GetCookedAxis(*pUsage_Axis0); }
+		float Get_Axis1() const				{ return GetCookedAxis(*pUsage_Axis1); }
+		float Get_Axis2() const				{ return GetCookedAxis(*pUsage_Axis2); }
+		float Get_Axis3() const				{ return GetCookedAxis(*pUsage_Axis3); }
+		float Get_Axis4() const				{ return GetCookedAxis(*pUsage_Axis4); }
+		float Get_Axis5() const				{ return GetCookedAxis(*pUsage_Axis5); }
+		float Get_Axis6() const				{ return GetCookedAxis(*pUsage_Axis6); }
+		float Get_Axis7() const				{ return GetCookedAxis(*pUsage_Axis7); }
+		float Get_Axis8() const				{ return GetCookedAxis(*pUsage_Axis8); }
+		uint32_t Get_HatSwitch() const		{ return pUsage_HatSwitch->GetVariableWithDefault(GetReport(), 0xf); }
+		uint32_t GetRaw_Axis0() const		{ return pUsage_Axis0->GetVariable(GetReport()); }
+		uint32_t GetRaw_Axis1() const		{ return pUsage_Axis1->GetVariable(GetReport()); }
+		uint32_t GetRaw_Axis2() const		{ return pUsage_Axis2->GetVariable(GetReport()); }
+		uint32_t GetRaw_Axis3() const		{ return pUsage_Axis3->GetVariable(GetReport()); }
+		uint32_t GetRaw_Axis4() const		{ return pUsage_Axis4->GetVariable(GetReport()); }
+		uint32_t GetRaw_Axis5() const		{ return pUsage_Axis5->GetVariable(GetReport()); }
+		uint32_t GetRaw_Axis6() const		{ return pUsage_Axis6->GetVariable(GetReport()); }
+		uint32_t GetRaw_Axis7() const		{ return pUsage_Axis7->GetVariable(GetReport()); }
+		uint32_t GetRaw_Axis8() const		{ return pUsage_Axis8->GetVariable(GetReport()); }
 	public:
-		float GetAxis(const HID::UsageAccessor& usageAccessor) const;
+		float GetCookedAxis(const HID::UsageAccessor& usageAccessor) const;
 	public:
 		void ClearUsageAccessor();
 	public:

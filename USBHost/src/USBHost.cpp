@@ -28,7 +28,6 @@ void USBHost::MountHID(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRe
 		HID::Application* pApplication = pApplicationTop.get();
 		HID* pHID = new HID(devAddr, iInstance, pApplicationTop.release());
 		hidTbl_[iInstance] = pHID;
-		//pApplication->Print();
 		for (HIDDriver* pHIDDriver = HIDDriver::pHIDDriverRegisteredTop; pHIDDriver; pHIDDriver = pHIDDriver->GetRegisteredListNext()) {
 			if (pHIDDriver->GetUsage() == pApplication->GetUsage() && !pHIDDriver->IsMounted()) {
 				pHIDDriver->AttachHID(pHID->Reference(), pApplication);
@@ -496,7 +495,66 @@ USBHost::GamePad::GamePad() : HIDDriver(0x00010005)
 	ClearUsageAccessor();
 }
 
-float USBHost::GamePad::GetAxis(const HID::UsageAccessor& usageAccessor) const
+void USBHost::GamePad::ClearUsageAccessor()
+{
+	pUsage_Button0		= &HID::UsageAccessor::None;
+	pUsage_Button1		= &HID::UsageAccessor::None;
+	pUsage_Button2		= &HID::UsageAccessor::None;
+	pUsage_Button3		= &HID::UsageAccessor::None;
+	pUsage_Button4		= &HID::UsageAccessor::None;
+	pUsage_Button5		= &HID::UsageAccessor::None;
+	pUsage_Button6		= &HID::UsageAccessor::None;
+	pUsage_Button7		= &HID::UsageAccessor::None;
+	pUsage_Button8		= &HID::UsageAccessor::None;
+	pUsage_Button9		= &HID::UsageAccessor::None;
+	pUsage_Button10		= &HID::UsageAccessor::None;
+	pUsage_Button11		= &HID::UsageAccessor::None;
+	pUsage_Button12		= &HID::UsageAccessor::None;
+	pUsage_Axis0		= &HID::UsageAccessor::None;
+	pUsage_Axis1		= &HID::UsageAccessor::None;
+	pUsage_Axis2		= &HID::UsageAccessor::None;
+	pUsage_Axis3		= &HID::UsageAccessor::None;
+	pUsage_Axis4		= &HID::UsageAccessor::None;
+	pUsage_Axis5		= &HID::UsageAccessor::None;
+	pUsage_Axis6		= &HID::UsageAccessor::None;
+	pUsage_Axis7		= &HID::UsageAccessor::None;
+	pUsage_Axis8		= &HID::UsageAccessor::None;
+	pUsage_HatSwitch	= &HID::UsageAccessor::None;
+}
+
+void USBHost::GamePad::OnMount()
+{
+	pUsage_Button0		= &GetApplication().FindUsageAccessor(0x0009'0001);
+	pUsage_Button1		= &GetApplication().FindUsageAccessor(0x0009'0002);
+	pUsage_Button2		= &GetApplication().FindUsageAccessor(0x0009'0003);
+	pUsage_Button3		= &GetApplication().FindUsageAccessor(0x0009'0004);
+	pUsage_Button4		= &GetApplication().FindUsageAccessor(0x0009'0005);
+	pUsage_Button5		= &GetApplication().FindUsageAccessor(0x0009'0006);
+	pUsage_Button6		= &GetApplication().FindUsageAccessor(0x0009'0007);
+	pUsage_Button7		= &GetApplication().FindUsageAccessor(0x0009'0008);
+	pUsage_Button8		= &GetApplication().FindUsageAccessor(0x0009'0009);
+	pUsage_Button9		= &GetApplication().FindUsageAccessor(0x0009'000a);
+	pUsage_Button10		= &GetApplication().FindUsageAccessor(0x0009'000b);
+	pUsage_Button11		= &GetApplication().FindUsageAccessor(0x0009'000c);
+	pUsage_Button12		= &GetApplication().FindUsageAccessor(0x0009'000d);
+	pUsage_Axis0		= &GetApplication().FindUsageAccessor(0x0001'0030);
+	pUsage_Axis1		= &GetApplication().FindUsageAccessor(0x0001'0031);
+	pUsage_Axis2		= &GetApplication().FindUsageAccessor(0x0001'0032);
+	pUsage_Axis3		= &GetApplication().FindUsageAccessor(0x0001'0033);
+	pUsage_Axis4		= &GetApplication().FindUsageAccessor(0x0001'0034);
+	pUsage_Axis5		= &GetApplication().FindUsageAccessor(0x0001'0035);
+	pUsage_Axis6		= &GetApplication().FindUsageAccessor(0x0001'0036);
+	pUsage_Axis7		= &GetApplication().FindUsageAccessor(0x0001'0037);
+	pUsage_Axis8		= &GetApplication().FindUsageAccessor(0x0001'0038);
+	pUsage_HatSwitch	= &GetApplication().FindUsageAccessor(0x0001'0039);
+}
+
+void USBHost::GamePad::OnUmount()
+{
+	ClearUsageAccessor();
+}
+
+float USBHost::GamePad::GetCookedAxis(const HID::UsageAccessor& usageAccessor) const
 {
 	if (!usageAccessor.IsValid()) return 0.;
 	int32_t valueMin = usageAccessor.GetLogicalMinimum();
@@ -517,56 +575,6 @@ float USBHost::GamePad::GetAxis(const HID::UsageAccessor& usageAccessor) const
 	} else {
 		return 0.;
 	}
-}
-
-void USBHost::GamePad::ClearUsageAccessor()
-{
-	pUsageAccessor_Button1		= &HID::UsageAccessor::None;
-	pUsageAccessor_Button2		= &HID::UsageAccessor::None;
-	pUsageAccessor_Button3		= &HID::UsageAccessor::None;
-	pUsageAccessor_Button4		= &HID::UsageAccessor::None;
-	pUsageAccessor_Button5		= &HID::UsageAccessor::None;
-	pUsageAccessor_Button6		= &HID::UsageAccessor::None;
-	pUsageAccessor_Button7		= &HID::UsageAccessor::None;
-	pUsageAccessor_Button8		= &HID::UsageAccessor::None;
-	pUsageAccessor_Button9		= &HID::UsageAccessor::None;
-	pUsageAccessor_Button10		= &HID::UsageAccessor::None;
-	pUsageAccessor_Button11		= &HID::UsageAccessor::None;
-	pUsageAccessor_Button12		= &HID::UsageAccessor::None;
-	pUsageAccessor_Button13		= &HID::UsageAccessor::None;
-	pUsageAccessor_HatSwitch	= &HID::UsageAccessor::None;
-	pUsageAccessor_LStickHorz	= &HID::UsageAccessor::None;
-	pUsageAccessor_LStickVert	= &HID::UsageAccessor::None;
-	pUsageAccessor_RStickHorz	= &HID::UsageAccessor::None;
-	pUsageAccessor_RStickVert	= &HID::UsageAccessor::None;
-}
-
-void USBHost::GamePad::OnMount()
-{
-	::printf("OnMount\n");
-	pUsageAccessor_Button1		= &GetApplication().FindUsageAccessor(0x0009'0001);
-	pUsageAccessor_Button2		= &GetApplication().FindUsageAccessor(0x0009'0002);
-	pUsageAccessor_Button3		= &GetApplication().FindUsageAccessor(0x0009'0003);
-	pUsageAccessor_Button4		= &GetApplication().FindUsageAccessor(0x0009'0004);
-	pUsageAccessor_Button5		= &GetApplication().FindUsageAccessor(0x0009'0005);
-	pUsageAccessor_Button6		= &GetApplication().FindUsageAccessor(0x0009'0006);
-	pUsageAccessor_Button7		= &GetApplication().FindUsageAccessor(0x0009'0007);
-	pUsageAccessor_Button8		= &GetApplication().FindUsageAccessor(0x0009'0008);
-	pUsageAccessor_Button9		= &GetApplication().FindUsageAccessor(0x0009'0009);
-	pUsageAccessor_Button10		= &GetApplication().FindUsageAccessor(0x0009'000a);
-	pUsageAccessor_Button11		= &GetApplication().FindUsageAccessor(0x0009'000b);
-	pUsageAccessor_Button12		= &GetApplication().FindUsageAccessor(0x0009'000c);
-	pUsageAccessor_Button13		= &GetApplication().FindUsageAccessor(0x0009'000d);
-	pUsageAccessor_HatSwitch	= &GetApplication().FindUsageAccessor(0x0001'0039);
-	pUsageAccessor_LStickHorz	= &GetApplication().FindUsageAccessor(0x0001'0030);
-	pUsageAccessor_LStickVert	= &GetApplication().FindUsageAccessor(0x0001'0031);
-	pUsageAccessor_RStickHorz	= &GetApplication().FindUsageAccessor(0x0001'0035);
-	pUsageAccessor_RStickVert	= &GetApplication().FindUsageAccessor(0x0001'0032);
-}
-
-void USBHost::GamePad::OnUmount()
-{
-	ClearUsageAccessor();
 }
 
 //------------------------------------------------------------------------------

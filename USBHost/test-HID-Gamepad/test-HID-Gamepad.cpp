@@ -11,7 +11,8 @@ int main()
 	USBHost::GamePad gamePad;
 	for (;;) {
 		if (gamePad.IsMounted()) {
-			::printf("%d%d%d%d%d%d%d%d%d%d%d%d%d %x % 1.4f % 1.4f % 1.4f % 1.4f\n",
+			::printf("%d%d%d%d%d%d%d%d%d%d%d%d%d %x % 1.4f % 1.4f % 1.4f % 1.4f % 1.4f % 1.4f % 1.4f % 1.4f % 1.4f\n",
+				gamePad.Get_Button0(),
 				gamePad.Get_Button1(),
 				gamePad.Get_Button2(),
 				gamePad.Get_Button3(),
@@ -24,12 +25,16 @@ int main()
 				gamePad.Get_Button10(),
 				gamePad.Get_Button11(),
 				gamePad.Get_Button12(),
-				gamePad.Get_Button13(),
 				gamePad.Get_HatSwitch(),
-				gamePad.Get_LStickHorz(),
-				gamePad.Get_LStickVert(),
-				gamePad.Get_RStickHorz(),
-				gamePad.Get_RStickVert());
+				gamePad.Get_Axis0(),
+				gamePad.Get_Axis1(),
+				gamePad.Get_Axis2(),
+				gamePad.Get_Axis3(),
+				gamePad.Get_Axis4(),
+				gamePad.Get_Axis5(),
+				gamePad.Get_Axis6(),
+				gamePad.Get_Axis7(),
+				gamePad.Get_Axis8());
 		}
 		Tickable::Sleep(300);
 	}
