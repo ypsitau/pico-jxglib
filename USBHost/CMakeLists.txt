@@ -8,7 +8,8 @@ target_link_libraries(jxglib_USBHost INTERFACE
 	tinyusb_host)
 
 target_sources(jxglib_USBHost INTERFACE
-	${CMAKE_CURRENT_LIST_DIR}/src/USBHost.cpp)
+	${CMAKE_CURRENT_LIST_DIR}/src/USBHost.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/GamePad.cpp)
 
 function(jxglib_configure_USBHost target)
 	set(VARS

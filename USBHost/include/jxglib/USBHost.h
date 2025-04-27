@@ -285,6 +285,7 @@ public:
 		std::unique_ptr<Application> pApplication_;
 		uint8_t reportBuff_[CFG_TUH_HID_EPIN_BUFSIZE];
 		Report report_;
+		bool reportChangedFlag_;
 		HIDDriver* pHIDDriver_;
 	public:
 		DeclareReferable(HID)
@@ -298,6 +299,7 @@ public:
 		void AttachDriver(HIDDriver& hidDriver) { pHIDDriver_ = &hidDriver; }
 		HIDDriver* GetHIDDriver() { return pHIDDriver_; }
 	public:
+		bool HasReportChanged() { bool rtn = reportChangedFlag_; reportChangedFlag_ = false; return rtn; }
 		const Report& GetReport() const { return report_; }
 	public:
 		bool IsSendReady() { return ::tuh_hid_send_ready(devAddr_, iInstance_); }
@@ -346,6 +348,7 @@ public:
 		virtual void OnUmount() {}
 		virtual void OnReport() {};
 	public:
+		bool HasReportChanged() { return IsMounted() && GetHID().HasReportChanged(); }
 		uint8_t GetReportID() const { return GetApplication().GetReportID(); }
 	public:
 		int32_t GetVariable(uint32_t usage) const {
@@ -448,22 +451,39 @@ public:
 		const HID::UsageAccessor* pUsage_Axis7;
 		const HID::UsageAccessor* pUsage_Axis8;
 		const HID::UsageAccessor* pUsage_HatSwitch;
+		const HID::UsageAccessor* pUsage_ButtonA;
+		const HID::UsageAccessor* pUsage_ButtonB;
+		const HID::UsageAccessor* pUsage_ButtonX;
+		const HID::UsageAccessor* pUsage_ButtonY;
+		const HID::UsageAccessor* pUsage_ButtonLB;
+		const HID::UsageAccessor* pUsage_ButtonRB;
+		const HID::UsageAccessor* pUsage_ButtonLT;
+		const HID::UsageAccessor* pUsage_ButtonRT;
+		const HID::UsageAccessor* pUsage_ButtonLeft;
+		const HID::UsageAccessor* pUsage_ButtonRight;
+		const HID::UsageAccessor* pUsage_ButtonBack;
+		const HID::UsageAccessor* pUsage_ButtonStart;
+		const HID::UsageAccessor* pUsage_ButtonHome;
+		const HID::UsageAccessor* pUsage_LeftX;
+		const HID::UsageAccessor* pUsage_LeftY;
+		const HID::UsageAccessor* pUsage_RightX;
+		const HID::UsageAccessor* pUsage_RightY;
 	public:
 		GamePad();
 	public:
-		uint32_t Get_Button0() const		{ return pUsage_Button0->GetVariable(GetReport()); }
-		uint32_t Get_Button1() const		{ return pUsage_Button1->GetVariable(GetReport()); }
-		uint32_t Get_Button2() const		{ return pUsage_Button2->GetVariable(GetReport()); }
-		uint32_t Get_Button3() const		{ return pUsage_Button3->GetVariable(GetReport()); }
-		uint32_t Get_Button4() const		{ return pUsage_Button4->GetVariable(GetReport()); }
-		uint32_t Get_Button5() const		{ return pUsage_Button5->GetVariable(GetReport()); }
-		uint32_t Get_Button6() const		{ return pUsage_Button6->GetVariable(GetReport()); }
-		uint32_t Get_Button7() const		{ return pUsage_Button7->GetVariable(GetReport()); }
-		uint32_t Get_Button8() const		{ return pUsage_Button8->GetVariable(GetReport()); }
-		uint32_t Get_Button9() const		{ return pUsage_Button9->GetVariable(GetReport()); }
-		uint32_t Get_Button10() const		{ return pUsage_Button10->GetVariable(GetReport()); }
-		uint32_t Get_Button11() const		{ return pUsage_Button11->GetVariable(GetReport()); }
-		uint32_t Get_Button12() const		{ return pUsage_Button12->GetVariable(GetReport()); }
+		bool Get_Button0() const			{ return GetBool(*pUsage_Button0); }
+		bool Get_Button1() const			{ return GetBool(*pUsage_Button1); }
+		bool Get_Button2() const			{ return GetBool(*pUsage_Button2); }
+		bool Get_Button3() const			{ return GetBool(*pUsage_Button3); }
+		bool Get_Button4() const			{ return GetBool(*pUsage_Button4); }
+		bool Get_Button5() const			{ return GetBool(*pUsage_Button5); }
+		bool Get_Button6() const			{ return GetBool(*pUsage_Button6); }
+		bool Get_Button7() const			{ return GetBool(*pUsage_Button7); }
+		bool Get_Button8() const			{ return GetBool(*pUsage_Button8); }
+		bool Get_Button9() const			{ return GetBool(*pUsage_Button9); }
+		bool Get_Button10() const			{ return GetBool(*pUsage_Button10); }
+		bool Get_Button11() const			{ return GetBool(*pUsage_Button11); }
+		bool Get_Button12() const			{ return GetBool(*pUsage_Button12); }
 		float Get_Axis0() const				{ return GetCookedAxis(*pUsage_Axis0); }
 		float Get_Axis1() const				{ return GetCookedAxis(*pUsage_Axis1); }
 		float Get_Axis2() const				{ return GetCookedAxis(*pUsage_Axis2); }
@@ -474,6 +494,23 @@ public:
 		float Get_Axis7() const				{ return GetCookedAxis(*pUsage_Axis7); }
 		float Get_Axis8() const				{ return GetCookedAxis(*pUsage_Axis8); }
 		uint32_t Get_HatSwitch() const		{ return pUsage_HatSwitch->GetVariableWithDefault(GetReport(), 0xf); }
+		bool Get_ButtonA() const			{ return GetBool(*pUsage_ButtonA); }
+		bool Get_ButtonB() const			{ return GetBool(*pUsage_ButtonB); }
+		bool Get_ButtonX() const			{ return GetBool(*pUsage_ButtonX); }
+		bool Get_ButtonY() const			{ return GetBool(*pUsage_ButtonY); }
+		bool Get_ButtonLB() const			{ return GetBool(*pUsage_ButtonLB); }
+		bool Get_ButtonRB() const			{ return GetBool(*pUsage_ButtonRB); }
+		bool Get_ButtonLT() const			{ return GetBool(*pUsage_ButtonLT); }
+		bool Get_ButtonRT() const			{ return GetBool(*pUsage_ButtonRT); }
+		bool Get_ButtonLeft() const			{ return GetBool(*pUsage_ButtonLeft); }
+		bool Get_ButtonRight() const		{ return GetBool(*pUsage_ButtonRight); }
+		bool Get_ButtonBack() const			{ return GetBool(*pUsage_ButtonBack); }
+		bool Get_ButtonStart() const		{ return GetBool(*pUsage_ButtonStart); }
+		bool Get_ButtonHome() const			{ return GetBool(*pUsage_ButtonHome); }
+		float Get_LeftX() const				{ return GetCookedAxis(*pUsage_LeftX); }
+		float Get_LeftY() const				{ return GetCookedAxis(*pUsage_LeftY); }
+		float Get_RightX() const			{ return GetCookedAxis(*pUsage_RightX); }
+		float Get_RightY() const			{ return GetCookedAxis(*pUsage_RightY); }
 		uint32_t GetRaw_Axis0() const		{ return pUsage_Axis0->GetVariable(GetReport()); }
 		uint32_t GetRaw_Axis1() const		{ return pUsage_Axis1->GetVariable(GetReport()); }
 		uint32_t GetRaw_Axis2() const		{ return pUsage_Axis2->GetVariable(GetReport()); }
@@ -484,6 +521,7 @@ public:
 		uint32_t GetRaw_Axis7() const		{ return pUsage_Axis7->GetVariable(GetReport()); }
 		uint32_t GetRaw_Axis8() const		{ return pUsage_Axis8->GetVariable(GetReport()); }
 	public:
+		bool GetBool(const HID::UsageAccessor& usageAccessor) const { return !!usageAccessor.GetVariable(GetReport()); }
 		float GetCookedAxis(const HID::UsageAccessor& usageAccessor) const;
 	public:
 		void ClearUsageAccessor();

@@ -23,7 +23,7 @@ if (EXISTS ${picoVscode})
     include(${picoVscode})
 endif()
 # ====================================================================================
-set(PICO_BOARD pico2 CACHE STRING "Board type")
+set(PICO_BOARD pico CACHE STRING "Board type")
 
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
@@ -47,6 +47,9 @@ pico_enable_stdio_usb(test-HID-Gamepad 0)
 # Add the standard library to the build
 target_link_libraries(test-HID-Gamepad
     pico_stdlib
+    jxglib_ILI9341
+    jxglib_ST7789
+    jxglib_Terminal
     jxglib_USBHost)
 
 # Add the standard include files to the build
