@@ -14,8 +14,8 @@ int main()
 	GPIO18.set_function_SPI0_SCK();
 	GPIO19.set_function_SPI0_TX();
 	Display::Terminal terminal;
-	//ILI9341 display(spi0, 240, 320, {RST: GPIO13, DC: GPIO12, CS: GPIO11, BL: GPIO::None});
-	ST7789 display(spi0, 240, 320, {RST: GPIO13, DC: GPIO12, CS: GPIO11, BL: GPIO::None});
+	ILI9341 display(spi0, 240, 320, {RST: GPIO13, DC: GPIO12, CS: GPIO11, BL: GPIO::None});
+	//ST7789 display(spi0, 240, 320, {RST: GPIO13, DC: GPIO12, CS: GPIO11, BL: GPIO::None});
 	display.Initialize(Display::Dir::Rotate270);
 	terminal.Initialize().AttachDisplay(display).SetFont(Font::naga10);
 	USBHost::Initialize();
@@ -49,5 +49,8 @@ int main()
 				gamePad.Get_Axis8());
 		}
 		Tickable::Sleep(300);
+		//Tickable::Sleep(3000);
+		//::printf("retry\n");
+		//::tuh_hid_receive_report(1, 0);
 	}
 }

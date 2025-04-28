@@ -8,7 +8,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // USBHost::GamePad
 //------------------------------------------------------------------------------
-USBHost::GamePad::GamePad() : HIDDriver(0x00010005)
+USBHost::GamePad::GamePad()
 {
 	ClearUsageAccessor();
 }
@@ -59,29 +59,29 @@ void USBHost::GamePad::ClearUsageAccessor()
 
 void USBHost::GamePad::OnMount()
 {
-	pUsage_Button0		= &GetApplication().FindUsageAccessor(0x0009'0001);
-	pUsage_Button1		= &GetApplication().FindUsageAccessor(0x0009'0002);
-	pUsage_Button2		= &GetApplication().FindUsageAccessor(0x0009'0003);
-	pUsage_Button3		= &GetApplication().FindUsageAccessor(0x0009'0004);
-	pUsage_Button4		= &GetApplication().FindUsageAccessor(0x0009'0005);
-	pUsage_Button5		= &GetApplication().FindUsageAccessor(0x0009'0006);
-	pUsage_Button6		= &GetApplication().FindUsageAccessor(0x0009'0007);
-	pUsage_Button7		= &GetApplication().FindUsageAccessor(0x0009'0008);
-	pUsage_Button8		= &GetApplication().FindUsageAccessor(0x0009'0009);
-	pUsage_Button9		= &GetApplication().FindUsageAccessor(0x0009'000a);
-	pUsage_Button10		= &GetApplication().FindUsageAccessor(0x0009'000b);
-	pUsage_Button11		= &GetApplication().FindUsageAccessor(0x0009'000c);
-	pUsage_Button12		= &GetApplication().FindUsageAccessor(0x0009'000d);
-	pUsage_Axis0		= &GetApplication().FindUsageAccessor(0x0001'0030);
-	pUsage_Axis1		= &GetApplication().FindUsageAccessor(0x0001'0031);
-	pUsage_Axis2		= &GetApplication().FindUsageAccessor(0x0001'0032);
-	pUsage_Axis3		= &GetApplication().FindUsageAccessor(0x0001'0033);
-	pUsage_Axis4		= &GetApplication().FindUsageAccessor(0x0001'0034);
-	pUsage_Axis5		= &GetApplication().FindUsageAccessor(0x0001'0035);
-	pUsage_Axis6		= &GetApplication().FindUsageAccessor(0x0001'0036);
-	pUsage_Axis7		= &GetApplication().FindUsageAccessor(0x0001'0037);
-	pUsage_Axis8		= &GetApplication().FindUsageAccessor(0x0001'0038);
-	pUsage_HatSwitch	= &GetApplication().FindUsageAccessor(0x0001'0039);
+	pUsage_Button0		= &GetApplication().FindUsageAccessorRecursive(0x0009'0001);
+	pUsage_Button1		= &GetApplication().FindUsageAccessorRecursive(0x0009'0002);
+	pUsage_Button2		= &GetApplication().FindUsageAccessorRecursive(0x0009'0003);
+	pUsage_Button3		= &GetApplication().FindUsageAccessorRecursive(0x0009'0004);
+	pUsage_Button4		= &GetApplication().FindUsageAccessorRecursive(0x0009'0005);
+	pUsage_Button5		= &GetApplication().FindUsageAccessorRecursive(0x0009'0006);
+	pUsage_Button6		= &GetApplication().FindUsageAccessorRecursive(0x0009'0007);
+	pUsage_Button7		= &GetApplication().FindUsageAccessorRecursive(0x0009'0008);
+	pUsage_Button8		= &GetApplication().FindUsageAccessorRecursive(0x0009'0009);
+	pUsage_Button9		= &GetApplication().FindUsageAccessorRecursive(0x0009'000a);
+	pUsage_Button10		= &GetApplication().FindUsageAccessorRecursive(0x0009'000b);
+	pUsage_Button11		= &GetApplication().FindUsageAccessorRecursive(0x0009'000c);
+	pUsage_Button12		= &GetApplication().FindUsageAccessorRecursive(0x0009'000d);
+	pUsage_Axis0		= &GetApplication().FindUsageAccessorRecursive(0x0001'0030);
+	pUsage_Axis1		= &GetApplication().FindUsageAccessorRecursive(0x0001'0031);
+	pUsage_Axis2		= &GetApplication().FindUsageAccessorRecursive(0x0001'0032);
+	pUsage_Axis3		= &GetApplication().FindUsageAccessorRecursive(0x0001'0033);
+	pUsage_Axis4		= &GetApplication().FindUsageAccessorRecursive(0x0001'0034);
+	pUsage_Axis5		= &GetApplication().FindUsageAccessorRecursive(0x0001'0035);
+	pUsage_Axis6		= &GetApplication().FindUsageAccessorRecursive(0x0001'0036);
+	pUsage_Axis7		= &GetApplication().FindUsageAccessorRecursive(0x0001'0037);
+	pUsage_Axis8		= &GetApplication().FindUsageAccessorRecursive(0x0001'0038);
+	pUsage_HatSwitch	= &GetApplication().FindUsageAccessorRecursive(0x0001'0039);
 	uint16_t vid = GetHID().GetVID();
 	uint16_t pid = GetHID().GetPID();
 	pUsage_ButtonA		= pUsage_Button0;

@@ -23,7 +23,7 @@ if (EXISTS ${picoVscode})
     include(${picoVscode})
 endif()
 # ====================================================================================
-set(PICO_BOARD pico CACHE STRING "Board type")
+set(PICO_BOARD pico2 CACHE STRING "Board type")
 
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
@@ -61,4 +61,4 @@ pico_add_extra_outputs(test-HID-Gamepad)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 
-jxglib_configure_USBHost(test-HID-Gamepad CFG_TUH_HID 8)
+jxglib_configure_USBHost(test-HID-Gamepad CFG_TUSB_DEBUG 0 CFG_TUH_HID 8)

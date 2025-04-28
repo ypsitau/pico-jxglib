@@ -29,13 +29,15 @@ void USBHost::MountHID(uint8_t devAddr, uint8_t iInstance, const uint8_t* descRe
 		HID* pHID = new HID(devAddr, iInstance, pApplicationTop.release());
 		hidTbl_[iInstance] = pHID;
 		for (HIDDriver* pHIDDriver = HIDDriver::pHIDDriverRegisteredTop; pHIDDriver; pHIDDriver = pHIDDriver->GetRegisteredListNext()) {
-			if (pHIDDriver->GetUsage() == pApplication->GetUsage() && !pHIDDriver->IsMounted()) {
+			if (pHIDDriver->DoesAcceptUsage(pApplication->GetUsage()) && !pHIDDriver->IsMounted()) {
 				pHIDDriver->AttachHID(pHID->Reference(), pApplication);
 				pHID->AttachDriver(*pHIDDriver);
 				pHIDDriver->OnMount();
 				break;
 			}
 		}
+	} else {
+		::printf("error while parsing the report descriptor\n");
 	}
 }
 
@@ -68,11 +70,40 @@ extern "C" void tuh_umount_cb(uint8_t devAddr)
 	if (pEventHandler) pEventHandler->OnUmount(devAddr);
 }
 
+#if 0
+void set_idle(uint8_t dev_addr) {
+    // tuh_xfer_t 構造体を初期化
+    tuh_xfer_t control_xfer = {0};
+    
+    // Set Idle コマンド用のパラメータ設定
+    uint8_t request_type = TUSB_REQ_TYPE_CLASS | TUSB_REQ_RECIPIENT_INTERFACE | TUSB_REQ_DIRECTION_OUT;
+    uint8_t bRequest = HID_REQ_SET_IDLE;
+    uint16_t wValue = 0;  // Report ID (0), Idle Rate (0)
+    uint16_t wIndex = 0;  // Interface index (通常は0)
+    uint16_t wLength = 0; // データなし
+
+    // 転送設定
+    control_xfer.daddr = dev_addr;
+    control_xferrequest_type = request_type;
+    control_xfer.bRequest = bRequest;
+    control_xfer.wValue = wValue;
+    control_xfer.wIndex = wIndex;
+    control_xfer.wLength = wLength;
+    control_xfer.pData = NULL; // データなし
+
+    // コントロール転送を実行
+    tuh_control_xfer(&control_xfer);
+}
+#endif
+
 extern "C" void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descReport, uint16_t descLen)
 {
+	Dump(descReport, descLen);
 	::printf("tuh_hid_mount_cb(devAddr=%d, iInstance=%d)\n", devAddr, iInstance);
 	USBHost::Instance.MountHID(devAddr, iInstance, descReport, descLen);
-	::tuh_hid_receive_report(devAddr, iInstance);
+	if (!::tuh_hid_receive_report(devAddr, iInstance)) {
+		::printf("tuh_hid_receive_report() failed\n");
+	}
 }
 
 extern "C" void tuh_hid_umount_cb(uint8_t devAddr, uint8_t iInstance)
@@ -83,6 +114,7 @@ extern "C" void tuh_hid_umount_cb(uint8_t devAddr, uint8_t iInstance)
 
 extern "C" void tuh_hid_report_received_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len)
 {
+	//Dump(report, len);
 	USBHost::HID* pHID = USBHost::Instance.LookupHID(iInstance);
 	USBHost::HID::Report reportPack { report, len };
 	if (pHID) pHID->OnReport(reportPack);
@@ -94,7 +126,7 @@ extern "C" void tuh_hid_report_received_cb(uint8_t devAddr, uint8_t iInstance, c
 //------------------------------------------------------------------------------
 USBHost::HIDDriver* USBHost::HIDDriver::pHIDDriverRegisteredTop = nullptr;
 
-USBHost::HIDDriver::HIDDriver(uint32_t usage) : usage_{usage}, pApplication_{&USBHost::HID::Application::None}
+USBHost::HIDDriver::HIDDriver() : pApplication_{&USBHost::HID::Application::None}
 {
 	if (pHIDDriverRegisteredTop) {
 		pHIDDriverRegisteredTop->AppendRegisteredList(this);
@@ -385,7 +417,7 @@ const USBHost::Keyboard::UsageIdToKeyCode USBHost::Keyboard::usageIdToKeyCodeTbl
 	{ 0,				0,				},	// 0xff
 };
 
-USBHost::Keyboard::Keyboard() : HIDDriver(0x00010006), capsLockAsCtrlFlag_{false}
+USBHost::Keyboard::Keyboard() : capsLockAsCtrlFlag_{false}
 {
 	::memset(&reportCaptured_, 0x00, sizeof(reportCaptured_));
 }
@@ -445,7 +477,7 @@ int USBHost::Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax, bool inc
 //------------------------------------------------------------------------------
 // USBHost::Mouse
 //------------------------------------------------------------------------------
-USBHost::Mouse::Mouse() : HIDDriver(0x00010002), sensibility_{.6}
+USBHost::Mouse::Mouse() : sensibility_{.6}
 {
 	SetStage({0, 0, 320, 240});
 }
@@ -499,6 +531,7 @@ USBHost::HID::HID(uint8_t devAddr, uint8_t iInstance, HID::Application* pApplica
 
 void USBHost::HID::OnReport(const Report& report)
 {
+	report.Dump();
 	if (report.len <= sizeof(reportBuff_) && (report_.len == 0 || ::memcmp(reportBuff_, report.buff, report.len) != 0)) {
 		reportChangedFlag_ = true;
 		::memcpy(reportBuff_, report.buff, report.len);
@@ -898,6 +931,17 @@ const USBHost::HID::UsageAccessor& USBHost::HID::Collection::FindUsageAccessor(u
 {
 	for (auto pUsageAccessor = pUsageAccessorTop_.get(); pUsageAccessor; pUsageAccessor = pUsageAccessor->GetListNext()) {
 		if (pUsageAccessor->GetUsage() == usage) return *pUsageAccessor;
+	}
+	return UsageAccessor::None;
+}
+
+const USBHost::HID::UsageAccessor& USBHost::HID::Collection::FindUsageAccessorRecursive(uint32_t usage) const
+{
+	const UsageAccessor& usageAccessor = FindUsageAccessor(usage);
+	if (usageAccessor.IsValid()) return usageAccessor;
+	for (auto pCollection = pCollectionChildTop_.get(); pCollection; pCollection = pCollection->GetListNext()) {
+		const UsageAccessor& usageAccessor = pCollection->FindUsageAccessorRecursive(usage);
+		if (usageAccessor.IsValid()) return usageAccessor;
 	}
 	return UsageAccessor::None;
 }

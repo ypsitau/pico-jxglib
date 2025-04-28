@@ -230,6 +230,7 @@ public:
 			void AddMainItem(GlobalItem* pGlobalItem, const LocalItem& localItem, uint32_t& reportOffset);
 		public:
 			const UsageAccessor& FindUsageAccessor(uint32_t usage) const;
+			const UsageAccessor& FindUsageAccessorRecursive(uint32_t usage) const;
 			const Collection& FindCollection(uint32_t usage) const;
 		public:
 			void PrintUsage(Printable& printable, int indentLevel = 0) const;
@@ -268,6 +269,9 @@ public:
 			}
 			const UsageAccessor& FindUsageAccessor(uint32_t usage) const {
 				return GetCollection().FindUsageAccessor(usage);
+			}
+			const UsageAccessor& FindUsageAccessorRecursive(uint32_t usage) const {
+				return GetCollection().FindUsageAccessorRecursive(usage);
 			}
 			const UsageAccessor& FindUsageAccessor(uint32_t usageCollection, uint32_t usage) const {
 				return FindCollection(usageCollection).FindUsageAccessor(usage);
@@ -318,14 +322,13 @@ public:
 	};
 	class HIDDriver {
 	private:
-		uint32_t usage_;
 		RefPtr<HID> pHID_;
 		HID::Application* pApplication_;
 		std::unique_ptr<HIDDriver> pHIDDriverRegisteredNext_;
 	public:
 		static HIDDriver* pHIDDriverRegisteredTop;
 	public:
-		HIDDriver(uint32_t usage);
+		HIDDriver();
 		virtual ~HIDDriver();
 	public:
 		void AppendRegisteredList(HIDDriver* pHIDDriver) { GetRegisteredListLast()->pHIDDriverRegisteredNext_.reset(pHIDDriver); }
@@ -335,7 +338,6 @@ public:
 		const HIDDriver* GetRegisteredListNext() const { return pHIDDriverRegisteredNext_.get(); }
 		HIDDriver* GetRegisteredListLast();
 	public:
-		uint32_t GetUsage() const { return usage_; }
 		void AttachHID(HID* pHID, HID::Application* pApplication) { pHID_.reset(pHID); pApplication_ = pApplication; }
 		void DetachHID() { pHID_.reset(), pApplication_ = nullptr; }
 		bool IsMounted() const { return !!pHID_ && !!pApplication_; }
@@ -344,6 +346,7 @@ public:
 		const HID::Report& GetReport() const { return GetHID().GetReport(); }
 		const HID::Application& GetApplication() const { return *pApplication_; }
 	public:
+		virtual bool DoesAcceptUsage(uint32_t usage) = 0;
 		virtual void OnMount() {};
 		virtual void OnUmount() {}
 		virtual void OnReport() {};
@@ -399,6 +402,7 @@ public:
 		Keyboard();
 	public:
 		// virtual function of HIDDriver
+		virtual bool DoesAcceptUsage(uint32_t usage) override { return usage == 0x00010006; }
 		virtual void OnReport() override;
 	public:
 		// virtual function of jxglib::Keyboard
@@ -420,6 +424,7 @@ public:
 		Point CalcPoint() const;
 	public:
 		// virtual function of HIDDriver
+		virtual bool DoesAcceptUsage(uint32_t usage) override { return usage == 0x00010002; }
 		virtual void OnReport() override;
 	public:
 		// virtual function of jxglib::Mouse
@@ -526,6 +531,7 @@ public:
 	public:
 		void ClearUsageAccessor();
 	public:
+		virtual bool DoesAcceptUsage(uint32_t usage) override { return usage == 0x00010004 || usage == 0x00010005; }
 		virtual void OnMount() override;
 		virtual void OnUmount() override;
 	};
