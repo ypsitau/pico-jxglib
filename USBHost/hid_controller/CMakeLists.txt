@@ -28,37 +28,34 @@ set(PICO_BOARD pico2 CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-HID-Gamepad C CXX ASM)
+project(hid_controller C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-HID-Gamepad test-HID-Gamepad.cpp)
+add_executable(hid_controller main.c hid_app.c)
 
-pico_set_program_name(test-HID-Gamepad "test-HID-Gamepad")
-pico_set_program_version(test-HID-Gamepad "0.1")
+pico_set_program_name(hid_controller "hid_controller")
+pico_set_program_version(hid_controller "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-HID-Gamepad 1)
-pico_enable_stdio_usb(test-HID-Gamepad 0)
+pico_enable_stdio_uart(hid_controller 1)
+pico_enable_stdio_usb(hid_controller 0)
 
 # Add the standard library to the build
-target_link_libraries(test-HID-Gamepad
-    pico_stdlib
-    jxglib_ILI9341
-    jxglib_ST7789
-    jxglib_Terminal
-    jxglib_USBHost)
-
-# Add the standard include files to the build
-target_include_directories(test-HID-Gamepad PRIVATE
-    ${CMAKE_CURRENT_LIST_DIR}
+target_link_libraries(hid_controller
+        pico_stdlib
+        tinyusb_host
+        #jxglib_USBHost
 )
 
-pico_add_extra_outputs(test-HID-Gamepad)
+# Add the standard include files to the build
+target_include_directories(hid_controller PRIVATE
+        ${CMAKE_CURRENT_LIST_DIR}
+)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+pico_add_extra_outputs(hid_controller)
 
-jxglib_configure_USBHost(test-HID-Gamepad CFG_TUSB_DEBUG 0 CFG_TUH_HID 8)
+#add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)

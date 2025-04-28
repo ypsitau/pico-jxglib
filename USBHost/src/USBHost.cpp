@@ -70,35 +70,8 @@ extern "C" void tuh_umount_cb(uint8_t devAddr)
 	if (pEventHandler) pEventHandler->OnUmount(devAddr);
 }
 
-#if 0
-void set_idle(uint8_t dev_addr) {
-    // tuh_xfer_t 構造体を初期化
-    tuh_xfer_t control_xfer = {0};
-    
-    // Set Idle コマンド用のパラメータ設定
-    uint8_t request_type = TUSB_REQ_TYPE_CLASS | TUSB_REQ_RECIPIENT_INTERFACE | TUSB_REQ_DIRECTION_OUT;
-    uint8_t bRequest = HID_REQ_SET_IDLE;
-    uint16_t wValue = 0;  // Report ID (0), Idle Rate (0)
-    uint16_t wIndex = 0;  // Interface index (通常は0)
-    uint16_t wLength = 0; // データなし
-
-    // 転送設定
-    control_xfer.daddr = dev_addr;
-    control_xferrequest_type = request_type;
-    control_xfer.bRequest = bRequest;
-    control_xfer.wValue = wValue;
-    control_xfer.wIndex = wIndex;
-    control_xfer.wLength = wLength;
-    control_xfer.pData = NULL; // データなし
-
-    // コントロール転送を実行
-    tuh_control_xfer(&control_xfer);
-}
-#endif
-
 extern "C" void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descReport, uint16_t descLen)
 {
-	Dump(descReport, descLen);
 	::printf("tuh_hid_mount_cb(devAddr=%d, iInstance=%d)\n", devAddr, iInstance);
 	USBHost::Instance.MountHID(devAddr, iInstance, descReport, descLen);
 	if (!::tuh_hid_receive_report(devAddr, iInstance)) {
