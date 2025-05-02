@@ -43,9 +43,8 @@
 #define CFG_TUSB_OS           OPT_OS_NONE
 #endif
 
-#ifndef CFG_TUSB_DEBUG
-#define CFG_TUSB_DEBUG        0
-#endif
+#undef CFG_TUSB_DEBUG
+#define CFG_TUSB_DEBUG        3
 
 /* USB DMA on some MCUs can only access a specific SRAM region with restriction on alignment.
  * Tinyusb use follows macros to declare transferring memory so that they can be put

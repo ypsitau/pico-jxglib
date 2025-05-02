@@ -318,6 +318,8 @@ void tuh_hid_report_received_cb(uint8_t dev_addr, uint8_t instance, uint8_t cons
     printf("%02x ", report[i]);
   }
   printf("\n");
+  printf("successfully received report from device\r\n");
+  for (;;) tight_loop_contents();
   if (is_sony_ds4(dev_addr)) {
     process_sony_ds4(report, len);
   }

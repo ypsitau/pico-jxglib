@@ -61,4 +61,4 @@ pico_add_extra_outputs(test-HID-Gamepad)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 
-jxglib_configure_USBHost(test-HID-Gamepad CFG_TUSB_DEBUG 0 CFG_TUH_HID 8)
+jxglib_configure_USBHost(test-HID-Gamepad CFG_TUSB_DEBUG 3 CFG_TUH_HID 8)

@@ -47,9 +47,7 @@ pico_enable_stdio_usb(hid_controller 0)
 # Add the standard library to the build
 target_link_libraries(hid_controller
         pico_stdlib
-        tinyusb_host
-        #jxglib_USBHost
-)
+        tinyusb_host)
 
 # Add the standard include files to the build
 target_include_directories(hid_controller PRIVATE
@@ -57,5 +55,3 @@ target_include_directories(hid_controller PRIVATE
 )
 
 pico_add_extra_outputs(hid_controller)
-
-#add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
