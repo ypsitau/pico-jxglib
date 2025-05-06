@@ -7,8 +7,8 @@
 
 namespace jxglib {
 
-template<typename T> T ChooseMin(T a, T b) { return (a < b)? a : b; }
-template<typename T> T ChooseMax(T a, T b) { return (a > b)? a : b; }
+template<typename T1, typename T2> T1 ChooseMin(T1 v1, T2 v2) { return (v1 < static_cast<T1>(v2))? v1 : static_cast<T1>(v2); }
+template<typename T1, typename T2> T1 ChooseMax(T1 v1, T2 v2) { return (v1 > static_cast<T1>(v2))? v1 : static_cast<T1>(v2); }
 
 template<typename T> void Swap(T* a, T* b) { T tmp = *a; *a = *b, *b = tmp; }
 

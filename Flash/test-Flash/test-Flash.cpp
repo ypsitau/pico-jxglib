@@ -26,6 +26,7 @@ int main()
 	Dump.Ascii();
 	Dump.AddrStart(Flash::GetAddress(offset))(Flash::GetPointerXIP<void>(offset), Flash::PageSize * 2);
 #endif
+	for (;;) ::tight_loop_contents();
 }
 
 #if 0

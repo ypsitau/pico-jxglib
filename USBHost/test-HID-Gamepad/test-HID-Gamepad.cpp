@@ -20,7 +20,7 @@ int main()
 	terminal.Initialize().AttachDisplay(display).SetFont(Font::naga10);
 	USBHost::Initialize();
 	USBHost::GamePad gamePad;
-	terminal.Printf("USB GamePad Tester\n");
+	terminal.Printf("USB GamePad Monitor\n");
 	for (;;) {
 		if (gamePad.HasReportChanged()) {
 			terminal.Printf("%s%s%s%s%s%s%s%s%s%s%s%s%s %X % 1.2f% 1.2f% 1.2f% 1.2f% 1.2f% 1.2f% 1.2f% 1.2f% 1.2f\n",
@@ -49,8 +49,5 @@ int main()
 				gamePad.Get_Axis8());
 		}
 		Tickable::Sleep(300);
-		//Tickable::Sleep(3000);
-		//::printf("retry\n");
-		//::tuh_hid_receive_report(1, 0);
 	}
 }
