@@ -90,18 +90,16 @@ void Flash::Write_(uint32_t offsetXIP, const void* buff, uint32_t bytes)
 	uint32_t offsetInCache = offsetXIP - offsetXIPCached_;
 	uint32_t bytesRest = bytes;
 	for (;;) {
-		uint32_t bytesToCopy = bytesRest;
-		if (bytesRest < sizeof(buffCache_) - offsetInCache) {
+		if (offsetInCache > 0 || bytesRest < sizeof(buffCache_)) {
 			CopyMemory(buffCache_, 0, XIP_BASE, offsetXIPCached_, sizeof(buffCache_));
-		} else {
-			bytesToCopy = sizeof(buffCache_) - offsetInCache;
 		}
+		uint32_t bytesToCopy = ChooseMin(bytesRest, sizeof(buffCache_) - offsetInCache);
 		CopyMemory(buffCache_, offsetInCache, buff, offsetBuff, bytesToCopy);
+		bytesRest -= bytesToCopy;
+		if (bytesRest == 0) break;
 		if (offsetXIPCached_ != offsetXIPToSkip) {
 			EraseAndProgram(offsetXIPCached_, buffCache_, sizeof(buffCache_));
 		}
-		bytesRest -= bytesToCopy;
-		if (bytesRest == 0) break;
 		offsetInCache = 0;
 		offsetXIPCached_ += sizeof(buffCache_), offsetBuff += bytesToCopy;
 	}
@@ -110,36 +108,6 @@ void Flash::Write_(uint32_t offsetXIP, const void* buff, uint32_t bytes)
 void Flash::Synchronize_()
 {
 	EraseAndProgram(offsetXIPCached_, buffCache_, sizeof(buffCache_));
-}
-
-void Flash::Test()
-{
-	void* buff = nullptr;
-	FlashDummy flash;
-	flash.Read(0x00000000, buff, 1024);	
-	flash.Read(0x00000f00, buff, 1024);	
-	flash.Read(0x00001000, buff, 1024);	
-	flash.Read(0x00002000, buff, 1024);	
-	::printf("\n");
-	flash.Write(0x00000000, buff, 1024);
-	flash.Read(0x00000000, buff, 1024);	
-	flash.Read(0x00000f00, buff, 1024);	
-	flash.Read(0x00000f00, buff, 1024 * 5);	
-	flash.Read(0x00001000, buff, 1024);	
-	flash.Read(0x00002000, buff, 1024);	
-	flash.Write(0x00000200, buff, 1024);
-	flash.Write(0x00000400, buff, 1024);
-	::printf("\n");
-	flash.Write(0x00001000, buff, 1024);
-	flash.Read(0x00000000, buff, 1024);	
-	flash.Read(0x00000f00, buff, 1024);	
-	flash.Read(0x00000f00, buff, 1024 * 5);	
-	flash.Read(0x00001000, buff, 1024);	
-	flash.Read(0x00002000, buff, 1024);	
-	::printf("\n");
-	flash.Write(0x00000f00, buff, 1024);
-	::printf("\n");
-	flash.Write(0x00000f00, buff, 1024);
 }
 
 //------------------------------------------------------------------------------
@@ -199,17 +167,17 @@ void FlashDummy::Write(uint32_t offsetXIP, const void* buff, uint32_t bytes)
 
 void FlashDummy::Erase(uint32_t offsetXIP, uint32_t bytes)
 {
-	//::printf("  Erase   Flash:0x%08x                  0x%04x bytes\n", offsetXIP, bytes);
+	//::printf("    Erase   Flash:0x%08x                  0x%04x bytes\n", offsetXIP, bytes);
 }
 
 void FlashDummy::Program(uint32_t offsetXIP, const void* data, uint32_t bytes)
 {
-	::printf("  Program Flash:0x%08x Cache:0x%08x 0x%04x bytes\n", offsetXIP, 0, bytes);
+	::printf("    Program Flash:0x%08x Cache:0x%08x 0x%04x bytes\n", offsetXIP, 0, bytes);
 }
 
 void FlashDummy::CopyMemory(void* dst, uint32_t offsetDst, const void* src, uint32_t offsetSrc, uint32_t bytes)
 {
 	const char* nameDst = (dst == buffCache_)? "Cache" : (dst == reinterpret_cast<const void*>(XIP_BASE))? "Flash" : "Read ";
 	const char* nameSrc = (src == buffCache_)? "Cache" : (src == reinterpret_cast<const void*>(XIP_BASE))? "Flash" : "Write";
-	::printf("  Copy    %s:0x%08x %s:0x%08x 0x%04x bytes\n", nameDst, offsetDst, nameSrc, offsetSrc, bytes);}
+	::printf("    Copy    %s:0x%08x %s:0x%08x 0x%04x bytes\n", nameDst, offsetDst, nameSrc, offsetSrc, bytes);}
 }

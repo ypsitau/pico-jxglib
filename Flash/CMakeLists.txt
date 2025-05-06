@@ -9,4 +9,5 @@ target_link_libraries(jxglib_Flash INTERFACE
 	jxglib_Stream)
 
 target_sources(jxglib_Flash INTERFACE
-	${CMAKE_CURRENT_LIST_DIR}/src/Flash.cpp)
+	${CMAKE_CURRENT_LIST_DIR}/src/Flash.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/Test.cpp)
