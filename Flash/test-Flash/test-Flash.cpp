@@ -6,97 +6,212 @@
 
 using namespace jxglib;
 
+class FlashDummy : public Flash {
+public:
+	void Read(uint32_t offsetXIP, void* buff, uint32_t bytes);
+	void Write(uint32_t offsetXIP, const void* buff, uint32_t bytes);
+public:
+	virtual void Erase(uint32_t offsetXIP, uint32_t bytes) override;
+	virtual void Program(uint32_t offsetXIP, const void* data, uint32_t bytes) override;
+	virtual void CopyMemory(void* dst, uint32_t offsetDst, const void* src, uint32_t offsetSrc, uint32_t bytes) override;
+};
+
 int main()
 {
 	::stdio_init_all();
 	::printf("--------------------------------------------------------------------------------\n");
-	Flash::Test();
-#if 0
-	uint32_t offset = 1024 * 1024;
-	uint8_t buff[Flash::PageSize];
-	for (uint i = 0; i < sizeof(buff); ++i) buff[i] = static_cast<uint8_t>(i);
-	Flash::Instance.Erase(offset, Flash::SectorSize * 1);
-	//Dump.AddrStart(Flash::GetAddress(offset))(Flash::GetPointerXIP<void>(offset), Flash::PageSize * 1);
-	//Flash::ProgramSafe(offset, buff, Flash::PageSize * 1);
-	//Dump.AddrStart(Flash::GetAddress(offset))(Flash::GetPointerXIP<void>(offset), Flash::PageSize * 1);
-	Flash::Stream stream(offset);
-	stream.Write(buff, 200);
-	stream.Write(buff, 200);
-	stream.Flush();
-	Dump.Ascii();
-	Dump.AddrStart(Flash::GetAddress(offset))(Flash::GetPointerXIP<void>(offset), Flash::PageSize * 2);
-#endif
+	void* buff = nullptr;
+	FlashDummy flash;
+	flash.Read(0x00000000, buff, 1024);	
+	flash.Read(0x00000f00, buff, 1024);	
+	flash.Read(0x00001000, buff, 1024);	
+	flash.Read(0x00002000, buff, 1024);	
+	::printf("\n");
+	flash.Write(0x00000000, buff, 1024);
+	flash.Read(0x00000000, buff, 1024);	
+	flash.Read(0x00000f00, buff, 1024);	
+	flash.Read(0x00000f00, buff, 1024 * 5);	
+	flash.Read(0x00001000, buff, 1024);	
+	flash.Read(0x00002000, buff, 1024);	
+	flash.Write(0x00000200, buff, 1024);
+	flash.Write(0x00000400, buff, 1024);
+	::printf("\n");
+	flash.Write(0x00001000, buff, 1024);
+	flash.Read(0x00000000, buff, 1024);	
+	flash.Read(0x00000f00, buff, 1024);	
+	flash.Read(0x00000f00, buff, 1024 * 5);	
+	flash.Read(0x00001000, buff, 1024);	
+	flash.Read(0x00002000, buff, 1024);	
+	::printf("\n");
+	flash.Write(0x00000f00, buff, 1024);
+	::printf("\n");
+	flash.Write(0x00000f00, buff, 1024);
+	::printf("\n");
+	flash.Write(0x00000e00, buff, 1024 * 8);
+	::printf("\n");
+	flash.Write(0x00000e00, buff, 1024 * 10);
+	::printf("\n");
+	flash.Write(0x00000e00, buff, 1024 * 14);
+	::printf("\n");
+	flash.Write(0x00001f00, buff, 1024);
+	::printf("\n");
+	flash.Write(0x00000e00, buff, 1024 * 14);
 	for (;;) ::tight_loop_contents();
 }
 
-#if 0
-// We're going to erase and reprogram a region 256k from the start of flash.
-// Once done, we can access this at XIP_BASE + 256k.
-#define FLASH_TARGET_OFFSET (256 * 1024)
+/*
+Read(Flash:0x00000000, 0x0400 bytes)
+    Copy    Read :0x00000000 Flash:0x00000000 0x0400 bytes
+Read(Flash:0x00000f00, 0x0400 bytes)
+    Copy    Read :0x00000000 Flash:0x00000f00 0x0400 bytes
+Read(Flash:0x00001000, 0x0400 bytes)
+    Copy    Read :0x00000000 Flash:0x00001000 0x0400 bytes
+Read(Flash:0x00002000, 0x0400 bytes)
+    Copy    Read :0x00000000 Flash:0x00002000 0x0400 bytes
 
-const uint8_t *flash_target_contents = (const uint8_t *) (XIP_BASE + FLASH_TARGET_OFFSET);
+Write(Flash:0x00000000, 0x0400 bytes)
+    Copy    Cache:0x00000000 Flash:0x00000000 0x1000 bytes
+    Copy    Cache:0x00000000 Write:0x00000000 0x0400 bytes
+Read(Flash:0x00000000, 0x0400 bytes)
+    Copy    Read :0x00000000 Cache:0x00000000 0x0400 bytes
+Read(Flash:0x00000f00, 0x0400 bytes)
+    Copy    Read :0x00000000 Cache:0x00000f00 0x0100 bytes
+    Copy    Read :0x00000100 Flash:0x00001000 0x0300 bytes
+Read(Flash:0x00000f00, 0x1400 bytes)
+    Copy    Read :0x00000000 Cache:0x00000f00 0x0100 bytes
+    Copy    Read :0x00000100 Flash:0x00001000 0x1300 bytes
+Read(Flash:0x00001000, 0x0400 bytes)
+    Copy    Read :0x00000000 Flash:0x00001000 0x0400 bytes
+Read(Flash:0x00002000, 0x0400 bytes)
+    Copy    Read :0x00000000 Flash:0x00002000 0x0400 bytes
+Write(Flash:0x00000200, 0x0400 bytes)
+    Copy    Cache:0x00000200 Write:0x00000000 0x0400 bytes
+Write(Flash:0x00000400, 0x0400 bytes)
+    Copy    Cache:0x00000400 Write:0x00000000 0x0400 bytes
 
-void print_buf(const uint8_t *buf, size_t len) {
-	for (size_t i = 0; i < len; ++i) {
-		printf("%02x", buf[i]);
-		if (i % 16 == 15)
-			printf("\n");
-		else
-			printf(" ");
-	}
+Write(Flash:0x00001000, 0x0400 bytes)
+    Program Flash:0x00000000 Cache:0x00000000 0x1000 bytes
+    Copy    Cache:0x00000000 Flash:0x00001000 0x1000 bytes
+    Copy    Cache:0x00000000 Write:0x00000000 0x0400 bytes
+Read(Flash:0x00000000, 0x0400 bytes)
+    Copy    Read :0x00000000 Flash:0x00000000 0x0400 bytes
+Read(Flash:0x00000f00, 0x0400 bytes)
+    Copy    Read :0x00000000 Flash:0x00000f00 0x0100 bytes
+    Copy    Read :0x00000100 Cache:0x00000000 0x0300 bytes
+Read(Flash:0x00000f00, 0x1400 bytes)
+    Copy    Read :0x00000000 Flash:0x00000f00 0x0100 bytes
+    Copy    Read :0x00000100 Cache:0x00000000 0x1000 bytes
+    Copy    Read :0x00001100 Flash:0x00002000 0x0300 bytes
+Read(Flash:0x00001000, 0x0400 bytes)
+    Copy    Read :0x00000000 Cache:0x00000000 0x0400 bytes
+Read(Flash:0x00002000, 0x0400 bytes)
+    Copy    Read :0x00000000 Flash:0x00002000 0x0400 bytes
+
+Write(Flash:0x00000f00, 0x0400 bytes)
+    Copy    Cache:0x00000000 Write:0x00000100 0x0300 bytes
+    Program Flash:0x00001000 Cache:0x00000000 0x1000 bytes
+    Copy    Cache:0x00000000 Flash:0x00000000 0x1000 bytes
+    Copy    Cache:0x00000f00 Write:0x00000000 0x0100 bytes
+    Program Flash:0x00000000 Cache:0x00000000 0x1000 bytes
+    Copy    Cache:0x00000000 Flash:0x00001000 0x1000 bytes
+    Copy    Cache:0x00000000 Write:0x00000100 0x0300 bytes
+
+Write(Flash:0x00000f00, 0x0400 bytes)
+    Copy    Cache:0x00000000 Write:0x00000100 0x0300 bytes
+    Program Flash:0x00001000 Cache:0x00000000 0x1000 bytes
+    Copy    Cache:0x00000000 Flash:0x00000000 0x1000 bytes
+    Copy    Cache:0x00000f00 Write:0x00000000 0x0100 bytes
+    Program Flash:0x00000000 Cache:0x00000000 0x1000 bytes
+    Copy    Cache:0x00000000 Flash:0x00001000 0x1000 bytes
+    Copy    Cache:0x00000000 Write:0x00000100 0x0300 bytes
+
+Write(Flash:0x00000e00, 0x2000 bytes)
+    Copy    Cache:0x00000000 Write:0x00000200 0x1000 bytes
+    Program Flash:0x00001000 Cache:0x00000000 0x1000 bytes
+    Copy    Cache:0x00000000 Flash:0x00000000 0x1000 bytes
+    Copy    Cache:0x00000e00 Write:0x00000000 0x0200 bytes
+    Program Flash:0x00000000 Cache:0x00000000 0x1000 bytes
+    Copy    Cache:0x00000000 Write:0x00000200 0x1000 bytes
+    Copy    Cache:0x00000000 Flash:0x00002000 0x1000 bytes
+    Copy    Cache:0x00000000 Write:0x00001200 0x0e00 bytes
+
+Write(Flash:0x00000e00, 0x2800 bytes)
+    Copy    Cache:0x00000000 Write:0x00001200 0x1000 bytes
+    Program Flash:0x00002000 Cache:0x00000000 0x1000 bytes
+    Copy    Cache:0x00000000 Flash:0x00000000 0x1000 bytes
+    Copy    Cache:0x00000e00 Write:0x00000000 0x0200 bytes
+    Program Flash:0x00000000 Cache:0x00000000 0x1000 bytes
+    Copy    Cache:0x00000000 Write:0x00000200 0x1000 bytes
+    Program Flash:0x00001000 Cache:0x00000000 0x1000 bytes
+    Copy    Cache:0x00000000 Write:0x00001200 0x1000 bytes
+    Copy    Cache:0x00000000 Flash:0x00003000 0x1000 bytes
+    Copy    Cache:0x00000000 Write:0x00002200 0x0600 bytes
+
+Write(Flash:0x00000e00, 0x3800 bytes)
+    Copy    Cache:0x00000000 Write:0x00002200 0x1000 bytes
+    Program Flash:0x00003000 Cache:0x00000000 0x1000 bytes
+    Copy    Cache:0x00000000 Flash:0x00000000 0x1000 bytes
+    Copy    Cache:0x00000e00 Write:0x00000000 0x0200 bytes
+    Program Flash:0x00000000 Cache:0x00000000 0x1000 bytes
+    Copy    Cache:0x00000000 Write:0x00000200 0x1000 bytes
+    Program Flash:0x00001000 Cache:0x00000000 0x1000 bytes
+    Copy    Cache:0x00000000 Write:0x00001200 0x1000 bytes
+    Program Flash:0x00002000 Cache:0x00000000 0x1000 bytes
+    Copy    Cache:0x00000000 Write:0x00002200 0x1000 bytes
+    Copy    Cache:0x00000000 Flash:0x00004000 0x1000 bytes
+    Copy    Cache:0x00000000 Write:0x00003200 0x0600 bytes
+
+Write(Flash:0x00001f00, 0x0400 bytes)
+    Program Flash:0x00004000 Cache:0x00000000 0x1000 bytes
+    Copy    Cache:0x00000000 Flash:0x00001000 0x1000 bytes
+    Copy    Cache:0x00000f00 Write:0x00000000 0x0100 bytes
+    Program Flash:0x00001000 Cache:0x00000000 0x1000 bytes
+    Copy    Cache:0x00000000 Flash:0x00002000 0x1000 bytes
+    Copy    Cache:0x00000000 Write:0x00000100 0x0300 bytes
+
+Write(Flash:0x00000e00, 0x3800 bytes)
+    Copy    Cache:0x00000000 Write:0x00001200 0x1000 bytes
+    Program Flash:0x00002000 Cache:0x00000000 0x1000 bytes
+    Copy    Cache:0x00000000 Flash:0x00000000 0x1000 bytes
+    Copy    Cache:0x00000e00 Write:0x00000000 0x0200 bytes
+    Program Flash:0x00000000 Cache:0x00000000 0x1000 bytes
+    Copy    Cache:0x00000000 Write:0x00000200 0x1000 bytes
+    Program Flash:0x00001000 Cache:0x00000000 0x1000 bytes
+    Copy    Cache:0x00000000 Write:0x00001200 0x1000 bytes
+    Copy    Cache:0x00000000 Write:0x00002200 0x1000 bytes
+    Program Flash:0x00003000 Cache:0x00000000 0x1000 bytes
+    Copy    Cache:0x00000000 Flash:0x00004000 0x1000 bytes
+    Copy    Cache:0x00000000 Write:0x00003200 0x0600 bytes
+*/
+
+//------------------------------------------------------------------------------
+// FlashDummy
+//------------------------------------------------------------------------------
+void FlashDummy::Read(uint32_t offsetXIP, void* buff, uint32_t bytes)
+{
+	::printf("Read(Flash:0x%08x, 0x%04x bytes)\n", offsetXIP, bytes);
+	Read_(offsetXIP, buff, bytes);
 }
 
-// This function will be called when it's safe to call flash_range_erase
-static void call_flash_range_erase(void *param) {
-	uint32_t offset = (uint32_t)param;
-	flash_range_erase(offset, FLASH_SECTOR_SIZE);
+void FlashDummy::Write(uint32_t offsetXIP, const void* buff, uint32_t bytes)
+{
+	::printf("Write(Flash:0x%08x, 0x%04x bytes)\n", offsetXIP, bytes);
+	Write_(offsetXIP, buff, bytes);
 }
 
-// This function will be called when it's safe to call flash_range_program
-static void call_flash_range_program(void *param) {
-	uint32_t offset = ((uintptr_t*)param)[0];
-	const uint8_t *data = (const uint8_t *)((uintptr_t*)param)[1];
-	flash_range_program(offset, data, FLASH_PAGE_SIZE);
+void FlashDummy::Erase(uint32_t offsetXIP, uint32_t bytes)
+{
+	//::printf("    Erase   Flash:0x%08x                  0x%04x bytes\n", offsetXIP, bytes);
 }
 
-int main() {
-	stdio_init_all();
-	uint8_t random_data[FLASH_PAGE_SIZE];
-	for (uint i = 0; i < FLASH_PAGE_SIZE; ++i)
-		random_data[i] = rand() >> 16;
-
-	printf("Generated random data:\n");
-	print_buf(random_data, FLASH_PAGE_SIZE);
-
-	// Note that a whole number of sectors must be erased at a time.
-	printf("\nErasing target region...\n");
-
-	// Flash is "execute in place" and so will be in use when any code that is stored in flash runs, e.g. an interrupt handler
-	// or code running on a different core.
-	// Calling flash_range_erase or flash_range_program at the same time as flash is running code would cause a crash.
-	// flash_safe_execute disables interrupts and tries to cooperate with the other core to ensure flash is not in use
-	// See the documentation for flash_safe_execute and its assumptions and limitations
-	int rc = flash_safe_execute(call_flash_range_erase, (void*)FLASH_TARGET_OFFSET, UINT32_MAX);
-	hard_assert(rc == PICO_OK);
-
-	printf("Done. Read back target region:\n");
-	print_buf(flash_target_contents, FLASH_PAGE_SIZE);
-
-	printf("\nProgramming target region...\n");
-	uintptr_t params[] = { FLASH_TARGET_OFFSET, (uintptr_t)random_data};
-	rc = flash_safe_execute(call_flash_range_program, params, UINT32_MAX);
-	hard_assert(rc == PICO_OK);
-	printf("Done. Read back target region:\n");
-	print_buf(flash_target_contents, FLASH_PAGE_SIZE);
-
-	bool mismatch = false;
-	for (uint i = 0; i < FLASH_PAGE_SIZE; ++i) {
-		if (random_data[i] != flash_target_contents[i])
-			mismatch = true;
-	}
-	if (mismatch)
-		printf("Programming failed!\n");
-	else
-		printf("Programming successful!\n");
+void FlashDummy::Program(uint32_t offsetXIP, const void* data, uint32_t bytes)
+{
+	::printf("    Program Flash:0x%08x Cache:0x%08x 0x%04x bytes\n", offsetXIP, 0, bytes);
 }
-#endif
+
+void FlashDummy::CopyMemory(void* dst, uint32_t offsetDst, const void* src, uint32_t offsetSrc, uint32_t bytes)
+{
+	const char* nameDst = (dst == buffCache_)? "Cache" : (dst == reinterpret_cast<const void*>(XIP_BASE))? "Flash" : "Read ";
+	const char* nameSrc = (src == buffCache_)? "Cache" : (src == reinterpret_cast<const void*>(XIP_BASE))? "Flash" : "Write";
+	::printf("    Copy    %s:0x%08x %s:0x%08x 0x%04x bytes\n", nameDst, offsetDst, nameSrc, offsetSrc, bytes);
+}

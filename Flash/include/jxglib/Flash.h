@@ -90,18 +90,6 @@ private:
 		auto& paramEx = *reinterpret_cast<Param_Program*>(param);
 		ProgramUnsafe(paramEx.offsetXIP, paramEx.data, paramEx.bytes);
 	}
-public:
-	static void Test();
-};
-
-class FlashDummy : public Flash {
-public:
-	void Read(uint32_t offsetXIP, void* buff, uint32_t bytes);
-	void Write(uint32_t offsetXIP, const void* buff, uint32_t bytes);
-public:
-	virtual void Erase(uint32_t offsetXIP, uint32_t bytes) override;
-	virtual void Program(uint32_t offsetXIP, const void* data, uint32_t bytes) override;
-	virtual void CopyMemory(void* dst, uint32_t offsetDst, const void* src, uint32_t offsetSrc, uint32_t bytes) override;
 };
 
 }

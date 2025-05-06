@@ -150,34 +150,4 @@ void Flash::Stream::Flush()
 	}
 }
 
-//------------------------------------------------------------------------------
-// FlashDummy
-//------------------------------------------------------------------------------
-void FlashDummy::Read(uint32_t offsetXIP, void* buff, uint32_t bytes)
-{
-	::printf("Read(Flash:0x%08x, 0x%04x bytes)\n", offsetXIP, bytes);
-	Read_(offsetXIP, buff, bytes);
-}
-
-void FlashDummy::Write(uint32_t offsetXIP, const void* buff, uint32_t bytes)
-{
-	::printf("Write(Flash:0x%08x, 0x%04x bytes)\n", offsetXIP, bytes);
-	Write_(offsetXIP, buff, bytes);
-}
-
-void FlashDummy::Erase(uint32_t offsetXIP, uint32_t bytes)
-{
-	//::printf("    Erase   Flash:0x%08x                  0x%04x bytes\n", offsetXIP, bytes);
-}
-
-void FlashDummy::Program(uint32_t offsetXIP, const void* data, uint32_t bytes)
-{
-	::printf("    Program Flash:0x%08x Cache:0x%08x 0x%04x bytes\n", offsetXIP, 0, bytes);
-}
-
-void FlashDummy::CopyMemory(void* dst, uint32_t offsetDst, const void* src, uint32_t offsetSrc, uint32_t bytes)
-{
-	const char* nameDst = (dst == buffCache_)? "Cache" : (dst == reinterpret_cast<const void*>(XIP_BASE))? "Flash" : "Read ";
-	const char* nameSrc = (src == buffCache_)? "Cache" : (src == reinterpret_cast<const void*>(XIP_BASE))? "Flash" : "Write";
-	::printf("    Copy    %s:0x%08x %s:0x%08x 0x%04x bytes\n", nameDst, offsetDst, nameSrc, offsetSrc, bytes);}
 }
