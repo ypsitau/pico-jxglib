@@ -18,16 +18,15 @@ class Flash {
 public:
 	static const uint32_t Timeout = UINT32_MAX;
 	static const uint32_t Address = XIP_BASE;
-	static const uint32_t BlockSize = FLASH_BLOCK_SIZE;
-	static const uint32_t SectorSize = FLASH_SECTOR_SIZE;
-	static const uint32_t PageSize = FLASH_PAGE_SIZE;
+	static const uint32_t bytesBlock = FLASH_BLOCK_SIZE;
+	static const uint32_t bytesPage = FLASH_PAGE_SIZE;
 public:
 	class Stream : public jxglib::Stream {
 	private:
 		uint32_t offsetXIPStart_;
 		uint32_t offsetXIPCached_;
 		uint32_t bytesBuffPage_;
-		uint8_t buffPage_[PageSize];
+		uint8_t buffPage_[bytesPage];
 	public:
 		Stream(uint32_t offset);
 	public:
@@ -40,19 +39,20 @@ public:
 	struct Param_Program { uint32_t offsetXIP; const void* data; uint32_t bytes; };
 protected:
 	uint32_t offsetXIPCached_;
-	uint8_t buffCache_[SectorSize];
+	uint32_t bytesCache_;
+	uint8_t buffCache_[FLASH_SECTOR_SIZE];
 public:
 	static Flash Instance;
 public:
-	Flash() : offsetXIPCached_{UINT32_MAX} {}
+	Flash(uint32_t bytesCache = FLASH_SECTOR_SIZE) : offsetXIPCached_{UINT32_MAX}, bytesCache_{bytesCache} {}
 public:
 	static void Read(uint32_t offsetXIP, void* buff, uint32_t bytes) { Instance.Read_(offsetXIP, buff, bytes); }
 	static void Write(uint32_t offsetXIP, const void* buff, uint32_t bytes) { Instance.Write_(offsetXIP, buff, bytes); }
-	static void Synchronize() { Instance.Synchronize_(); }
+	static void Sync() { Instance.Sync_(); }
 protected:
 	void Read_(uint32_t offsetXIP, void* buff, uint32_t bytes);
 	void Write_(uint32_t offsetXIP, const void* buff, uint32_t bytes);
-	void Synchronize_();
+	void Sync_();
 public:
 	static uint32_t GetAddress(uint32_t offsetXIP) { return XIP_BASE + offsetXIP; }
 	template<typename T = void>

@@ -27,20 +27,20 @@ void Flash::Read_(uint32_t offsetXIP, void* buff, uint32_t bytes)
 		bytesRest -= bytesToCopy;
 		if (bytesRest == 0) return;
 		offsetBuff += bytesToCopy, offsetXIP += bytesToCopy;
-		bytesToCopy = ChooseMin(bytesRest, sizeof(buffCache_));
+		bytesToCopy = ChooseMin(bytesRest, bytesCache_);
 		CopyMemory(buff, offsetBuff, buffCache_, 0, bytesToCopy);
 		bytesRest -= bytesToCopy;
 		if (bytesRest == 0) return;
 		offsetBuff += bytesToCopy, offsetXIP += bytesToCopy;
 		CopyMemory(buff, offsetBuff, XIP_BASE, offsetXIP, bytesRest);
-	} else if (offsetXIP < offsetXIPCached_ + sizeof(buffCache_)) {
+	} else if (offsetXIP < offsetXIPCached_ + bytesCache_) {
 		// ----------[buffCache]----------
 		// -----------rrrrr---------------
 		// -----------rrrrrrrrrrrr--------
 		uint32_t offsetBuff = 0;
 		uint32_t offsetInCache = offsetXIP - offsetXIPCached_;
 		uint32_t bytesRest = bytes;
-		uint32_t bytesToCopy = ChooseMin(bytesRest, sizeof(buffCache_) - offsetInCache);
+		uint32_t bytesToCopy = ChooseMin(bytesRest, bytesCache_ - offsetInCache);
 		CopyMemory(buff, offsetBuff, buffCache_, offsetInCache, bytesToCopy);
 		bytesRest -= bytesToCopy;
 		if (bytesRest == 0) return;
@@ -56,22 +56,22 @@ void Flash::Read_(uint32_t offsetXIP, void* buff, uint32_t bytes)
 void Flash::Write_(uint32_t offsetXIP, const void* buff, uint32_t bytes)
 {
 	if (offsetXIPCached_ == UINT32_MAX) {
-		offsetXIPCached_ = offsetXIP & ~(sizeof(buffCache_) - 1);
-		CopyMemory(buffCache_, 0, XIP_BASE, offsetXIPCached_, sizeof(buffCache_));
+		offsetXIPCached_ = offsetXIP & ~(bytesCache_ - 1);
+		CopyMemory(buffCache_, 0, XIP_BASE, offsetXIPCached_, bytesCache_);
 	}
-	if (offsetXIP + bytes < offsetXIPCached_ || offsetXIPCached_ + sizeof(buffCache_) <= offsetXIP) {
+	if (offsetXIP + bytes < offsetXIPCached_ || offsetXIPCached_ + bytesCache_ <= offsetXIP) {
 		// ----------[buffCache]----------
 		// ---wwwwww----------------------
 		// ----------------------wwwwww---
-		EraseAndProgram(offsetXIPCached_, buffCache_, sizeof(buffCache_));
+		EraseAndProgram(offsetXIPCached_, buffCache_, bytesCache_);
 	} else if (offsetXIP < offsetXIPCached_) {
 		// ----------[buffCache]----------
 		// ---wwwwwwwwwwww----------------
 		// ---wwwwwwwwwwwwwwwwwwwwwwwww---
-		uint32_t bytesToCopy = ChooseMin(offsetXIP + bytes - offsetXIPCached_, sizeof(buffCache_));
+		uint32_t bytesToCopy = ChooseMin(offsetXIP + bytes - offsetXIPCached_, bytesCache_);
 		CopyMemory(buffCache_, 0, buff, offsetXIPCached_ - offsetXIP, bytesToCopy); 
-		EraseAndProgram(offsetXIPCached_, buffCache_, sizeof(buffCache_));
-	} else if (offsetXIP + bytes <= offsetXIPCached_ + sizeof(buffCache_)) {
+		EraseAndProgram(offsetXIPCached_, buffCache_, bytesCache_);
+	} else if (offsetXIP + bytes <= offsetXIPCached_ + bytesCache_) {
 		// ----------[buffCache]----------
 		// -----------wwwwww--------------
 		uint32_t offsetInCache = offsetXIP - offsetXIPCached_;
@@ -81,33 +81,33 @@ void Flash::Write_(uint32_t offsetXIP, const void* buff, uint32_t bytes)
 		// ----------[buffCache]----------
 		// -----------wwwwwwwwwww---------
 		uint32_t offsetInCache = offsetXIP - offsetXIPCached_;
-		CopyMemory(buffCache_, offsetInCache, buff, 0, sizeof(buffCache_) - offsetInCache); 
-		EraseAndProgram(offsetXIPCached_, buffCache_, sizeof(buffCache_));
+		CopyMemory(buffCache_, offsetInCache, buff, 0, bytesCache_ - offsetInCache); 
+		EraseAndProgram(offsetXIPCached_, buffCache_, bytesCache_);
 	}
 	uint32_t offsetXIPToSkip = offsetXIPCached_;
-	offsetXIPCached_ = offsetXIP & ~(sizeof(buffCache_) - 1);
+	offsetXIPCached_ = offsetXIP & ~(bytesCache_ - 1);
 	uint32_t offsetBuff = 0;
 	uint32_t offsetInCache = offsetXIP - offsetXIPCached_;
 	uint32_t bytesRest = bytes;
 	for (;;) {
-		if (offsetInCache > 0 || bytesRest < sizeof(buffCache_)) {
-			CopyMemory(buffCache_, 0, XIP_BASE, offsetXIPCached_, sizeof(buffCache_));
+		if (offsetInCache > 0 || bytesRest < bytesCache_) {
+			CopyMemory(buffCache_, 0, XIP_BASE, offsetXIPCached_, bytesCache_);
 		}
-		uint32_t bytesToCopy = ChooseMin(bytesRest, sizeof(buffCache_) - offsetInCache);
+		uint32_t bytesToCopy = ChooseMin(bytesRest, bytesCache_ - offsetInCache);
 		CopyMemory(buffCache_, offsetInCache, buff, offsetBuff, bytesToCopy);
 		bytesRest -= bytesToCopy;
 		if (bytesRest == 0) break;
 		if (offsetXIPCached_ != offsetXIPToSkip) {
-			EraseAndProgram(offsetXIPCached_, buffCache_, sizeof(buffCache_));
+			EraseAndProgram(offsetXIPCached_, buffCache_, bytesCache_);
 		}
 		offsetInCache = 0;
-		offsetXIPCached_ += sizeof(buffCache_), offsetBuff += bytesToCopy;
+		offsetXIPCached_ += bytesCache_, offsetBuff += bytesToCopy;
 	}
 }
 
-void Flash::Synchronize_()
+void Flash::Sync_()
 {
-	EraseAndProgram(offsetXIPCached_, buffCache_, sizeof(buffCache_));
+	EraseAndProgram(offsetXIPCached_, buffCache_, bytesCache_);
 }
 
 //------------------------------------------------------------------------------
