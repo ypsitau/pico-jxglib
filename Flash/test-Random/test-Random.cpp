@@ -8,7 +8,7 @@
 
 using namespace jxglib;
 
-const uint32_t bytesXIP = 256;
+const uint32_t bytesXIP = 32768;
 uint8_t regionXIP[bytesXIP];
 uint8_t buffToWrite[bytesXIP];
 uint8_t buffToRead[bytesXIP];
@@ -17,7 +17,7 @@ class FlashDummy : public Flash {
 private:
 	uint8_t regionXIP_[bytesXIP];
 public:
-	FlashDummy() : Flash(16) { ::memset(regionXIP_, 0xff, sizeof(regionXIP_)); }
+	FlashDummy() : Flash(256) { ::memset(regionXIP_, 0xff, sizeof(regionXIP_)); }
 public:
 	bool CompareRegion(const void* regionXIP) { return ::memcmp(regionXIP_, regionXIP, sizeof(regionXIP_)) == 0; }
 	void DumpXIP() const { Dump(regionXIP_, sizeof(regionXIP_)); }
@@ -44,7 +44,7 @@ int main()
 	for (int i = 0; i < sizeof(buffToWrite); i++) buffToWrite[i] = static_cast<uint8_t>(i);
 	::stdio_init_all();
 	for (int iTrial = 1; ; iTrial++) {
-		if (iTrial % 10000 == 0) ::printf("# %d\n", iTrial);
+		if (iTrial % 1000 == 0) ::printf("# %d\n", iTrial);
 		do {
 			uint32_t offsetXIP = GetRand(bytesXIP - 16);
 			uint32_t bytes = GetRand(bytesXIP - offsetXIP);
