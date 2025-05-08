@@ -13,10 +13,10 @@ public: \
 public: \
 	ShellCmd_##name() : Shell::Cmd(#name, help) {} \
 public: \
-	virtual void Run(Terminal& terminal, int argc, char* argv[]) override; \
+	virtual int Run(Terminal& terminal, int argc, char* argv[]) override; \
 }; \
 ShellCmd_##name ShellCmd_##name::Instance; \
-void ShellCmd_##name::Run(Terminal& terminal, int argc, char* argv[])
+int ShellCmd_##name::Run(Terminal& terminal, int argc, char* argv[])
 
 namespace jxglib {
 
@@ -43,7 +43,7 @@ public:
 	public:
 		static Cmd* GetCmdHead() { return pCmdHead_; }
 	public:
-		virtual void Run(Terminal& terminal, int argc, char* argv[]) = 0;
+		virtual int Run(Terminal& terminal, int argc, char* argv[]) = 0;
 	};
 	enum class Stat { Begin, Prompt, Running, };
 private:
