@@ -9,21 +9,21 @@ namespace jxglib::Shell_BuiltIn {
 //-----------------------------------------------------------------------------
 // d addr bytes
 //-----------------------------------------------------------------------------
-class ShellEntry_d : public Shell::Entry {
+class ShellCmd_d : public Shell::Cmd {
 private:
 	uint32_t addr_;
 	uint32_t bytes_;
 public:
-	static ShellEntry_d Instance;
+	static ShellCmd_d Instance;
 public:
-	ShellEntry_d() : Shell::Entry("d", "prints memory content at the specified address"), addr_{0x00000000}, bytes_{64} {}
+	ShellCmd_d() : Shell::Cmd("d", "prints memory content at the specified address"), addr_{0x00000000}, bytes_{64} {}
 public:
 	virtual void Run(Terminal& terminal, int argc, char* argv[]) override;
 };
 
-ShellEntry_d ShellEntry_d::Instance;
+ShellCmd_d ShellCmd_d::Instance;
 
-void ShellEntry_d::Run(Terminal& terminal, int argc, char* argv[])
+void ShellCmd_d::Run(Terminal& terminal, int argc, char* argv[])
 {
 	int nColsTerm, nRowsTerm;
 	terminal.GetSize(&nColsTerm, &nRowsTerm);
@@ -56,7 +56,7 @@ void ShellEntry_d::Run(Terminal& terminal, int argc, char* argv[])
 //-----------------------------------------------------------------------------
 // ticks
 //-----------------------------------------------------------------------------
-ShellEntry(ticks, "prints names and attributes of running Tickable instances")
+ShellCmd(ticks, "prints names and attributes of running Tickable instances")
 {
 	Tickable::PrintList(terminal);
 }
@@ -64,7 +64,7 @@ ShellEntry(ticks, "prints names and attributes of running Tickable instances")
 //-----------------------------------------------------------------------------
 // help
 //-----------------------------------------------------------------------------
-ShellEntry(help, "prints help strings for available commands")
+ShellCmd(help, "prints help strings for available commands")
 {
 	Shell::PrintHelp(terminal);
 }
@@ -72,7 +72,7 @@ ShellEntry(help, "prints help strings for available commands")
 //-----------------------------------------------------------------------------
 // prompt
 //-----------------------------------------------------------------------------
-ShellEntry(prompt, "changes the command line prompt")
+ShellCmd(prompt, "changes the command line prompt")
 {
 	if (argc < 2) {
 		terminal.Println(Shell::GetPrompt());
@@ -84,7 +84,7 @@ ShellEntry(prompt, "changes the command line prompt")
 //-----------------------------------------------------------------------------
 // argtest
 //-----------------------------------------------------------------------------
-ShellEntry(argtest, "tests command line arguments")
+ShellCmd(argtest, "tests command line arguments")
 {
 	for (int i = 0; i < argc; i++) {
 		terminal.Printf("argv[%d] \"%s\"\n", i, argv[i]);

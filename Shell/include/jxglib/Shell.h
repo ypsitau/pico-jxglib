@@ -1,22 +1,22 @@
 //==============================================================================
 // jxglib/Shell.h
 //==============================================================================
-#ifndef PICO_JXGLIB_CMDLINE_H
-#define PICO_JXGLIB_CMDLINE_H
+#ifndef PICO_JXGLIB_SHELL_H
+#define PICO_JXGLIB_SHELL_H
 #include "pico/stdlib.h"
 #include "jxglib/Terminal.h"
 
-#define ShellEntry(name, help) \
-class ShellEntry_##name : public Shell::Entry { \
+#define ShellCmd(name, help) \
+class ShellCmd_##name : public Shell::Cmd { \
 public: \
-	static ShellEntry_##name Instance; \
+	static ShellCmd_##name Instance; \
 public: \
-	ShellEntry_##name() : Shell::Entry(#name, help) {} \
+	ShellCmd_##name() : Shell::Cmd(#name, help) {} \
 public: \
 	virtual void Run(Terminal& terminal, int argc, char* argv[]) override; \
 }; \
-ShellEntry_##name ShellEntry_##name::Instance; \
-void ShellEntry_##name::Run(Terminal& terminal, int argc, char* argv[])
+ShellCmd_##name ShellCmd_##name::Instance; \
+void ShellCmd_##name::Run(Terminal& terminal, int argc, char* argv[])
 
 namespace jxglib {
 
@@ -25,23 +25,23 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class Shell : public Tickable {
 public:
-	class Entry {
+	class Cmd {
 	private:
 		const char* name_;
 		const char* help_;
-		Entry* pEntryNext_;
+		Cmd* pCmdNext_;
 	private:
-		static Entry* pEntryHead_;
+		static Cmd* pCmdHead_;
 	public:
-		Entry(const char* name, const char* help);
+		Cmd(const char* name, const char* help);
 	public:
 		const char* GetName() const { return name_; }
 		const char* GetHelp() const { return help_; }
-		void SetEntryNext(Entry* pEntry) { pEntryNext_ = pEntry; }
-		Entry* GetEntryNext() { return pEntryNext_; }
-		const Entry* GetEntryNext() const { return pEntryNext_; }
+		void SetCmdNext(Cmd* pCmd) { pCmdNext_ = pCmd; }
+		Cmd* GetCmdNext() { return pCmdNext_; }
+		const Cmd* GetCmdNext() const { return pCmdNext_; }
 	public:
-		static Entry* GetEntryHead() { return pEntryHead_; }
+		static Cmd* GetCmdHead() { return pCmdHead_; }
 	public:
 		virtual void Run(Terminal& terminal, int argc, char* argv[]) = 0;
 	};
@@ -50,13 +50,13 @@ private:
 	Stat stat_;
 	char prompt_[64];
 	Terminal* pTerminal_;
-	Entry* pEntryRunning_;
+	Cmd* pCmdRunning_;
 public:
 	static Shell Instance;
 public:
 	Shell();
 public:
-	bool RunEntry(char* line);
+	bool RunCmd(char* line);
 	Terminal& GetTerminal() { return *pTerminal_; }
 public:
 	static const char* GetPrompt() { return Instance.GetPrompt_(); }

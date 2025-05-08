@@ -10,12 +10,12 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 Shell Shell::Instance;
 
-Shell::Shell() : stat_{Stat::Begin}, pTerminal_{&TerminalDumb::Instance}, pEntryRunning_{nullptr}
+Shell::Shell() : stat_{Stat::Begin}, pTerminal_{&TerminalDumb::Instance}, pCmdRunning_{nullptr}
 {
 	::strcpy(prompt_, ">");
 }
 
-bool Shell::RunEntry(char* line)
+bool Shell::RunCmd(char* line)
 {
 	char* argv[16];
 	int argc = count_of(argv);
@@ -25,10 +25,10 @@ bool Shell::RunEntry(char* line)
 		return false;
 	}
 	if (argc == 0) return false;
-	for (Entry* pEntry = Entry::GetEntryHead(); pEntry; pEntry = pEntry->GetEntryNext()) {
-		if (::strcmp(argv[0], pEntry->GetName()) == 0) {
-			pEntryRunning_ = pEntry;
-			pEntry->Run(GetTerminal(), argc, argv);
+	for (Cmd* pCmd = Cmd::GetCmdHead(); pCmd; pCmd = pCmd->GetCmdNext()) {
+		if (::strcmp(argv[0], pCmd->GetName()) == 0) {
+			pCmdRunning_ = pCmd;
+			pCmd->Run(GetTerminal(), argc, argv);
 			return true;
 		}
 	}
@@ -48,7 +48,7 @@ void Shell::OnTick()
 		char* line = GetTerminal().ReadLine_Process();
 		if (line) {
 			stat_ = Stat::Running;
-			RunEntry(line);
+			RunCmd(line);
 			stat_ = Stat::Begin;
 		}
 		break;
@@ -70,32 +70,32 @@ void Shell::SetPrompt_(const char* prompt)
 void Shell::PrintHelp(Printable& printable)
 {
 	int lenMax = 1;
-	for (const Entry* pEntry = Entry::GetEntryHead(); pEntry; pEntry = pEntry->GetEntryNext()) {
-		lenMax = ChooseMax(lenMax, static_cast<int>(::strlen(pEntry->GetName())));
+	for (const Cmd* pCmd = Cmd::GetCmdHead(); pCmd; pCmd = pCmd->GetCmdNext()) {
+		lenMax = ChooseMax(lenMax, static_cast<int>(::strlen(pCmd->GetName())));
 	}
-	for (const Entry* pEntry = Entry::GetEntryHead(); pEntry; pEntry = pEntry->GetEntryNext()) {
-		printable.Printf("%-*s  %s\n", lenMax, pEntry->GetName(), pEntry->GetHelp());
+	for (const Cmd* pCmd = Cmd::GetCmdHead(); pCmd; pCmd = pCmd->GetCmdNext()) {
+		printable.Printf("%-*s  %s\n", lenMax, pCmd->GetName(), pCmd->GetHelp());
 	}
 }
 
 //------------------------------------------------------------------------------
-// Shell::Entry
+// Shell::Cmd
 //------------------------------------------------------------------------------
-Shell::Entry* Shell::Entry::pEntryHead_ = nullptr;
+Shell::Cmd* Shell::Cmd::pCmdHead_ = nullptr;
 
-Shell::Entry::Entry(const char* name, const char* help) : name_{name}, help_{help}, pEntryNext_{nullptr}
+Shell::Cmd::Cmd(const char* name, const char* help) : name_{name}, help_{help}, pCmdNext_{nullptr}
 {
-	Entry* pEntryPrev = nullptr;
-	for (Entry* pEntry = pEntryHead_; pEntry; pEntry = pEntry->GetEntryNext()) {
-		if (::strcmp(name, pEntry->GetName()) <= 0) break;
-		pEntryPrev = pEntry;
+	Cmd* pCmdPrev = nullptr;
+	for (Cmd* pCmd = pCmdHead_; pCmd; pCmd = pCmd->GetCmdNext()) {
+		if (::strcmp(name, pCmd->GetName()) <= 0) break;
+		pCmdPrev = pCmd;
 	}
-	if (pEntryPrev) {
-		SetEntryNext(pEntryPrev->GetEntryNext());
-		pEntryPrev->SetEntryNext(this);
+	if (pCmdPrev) {
+		SetCmdNext(pCmdPrev->GetCmdNext());
+		pCmdPrev->SetCmdNext(this);
 	} else {
-		SetEntryNext(pEntryHead_);
-		pEntryHead_ = this;
+		SetCmdNext(pCmdHead_);
+		pCmdHead_ = this;
 	}
 }
 

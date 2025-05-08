@@ -10,8 +10,9 @@ int main()
 	::stdio_init_all();
 	//-------------------------------------------------------------------------
 	Serial::Terminal terminal;
-	Shell::AttachTerminal(terminal.Initialize());
+	terminal.Initialize();
+	Shell::AttachTerminal(terminal);
 	//-------------------------------------------------------------------------
-	terminal.Println("Shell Test Program with Serial Terminal");
+	terminal.Println("Shell with Serial Terminal");
 	for (;;) Tickable::Tick();
 }

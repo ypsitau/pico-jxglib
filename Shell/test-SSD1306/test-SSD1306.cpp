@@ -22,6 +22,6 @@ int main()
 		.AttachKeyboard(keyboard.SetCapsLockAsCtrl()).SetFont(Font::shinonome12);
 	Shell::AttachTerminal(terminal);
 	//-------------------------------------------------------------------------
-	terminal.Println("Shell Test Program with SSD1306 Display");
+	terminal.Println("Shell with SSD1306");
 	for (;;) Tickable::Tick();
 }

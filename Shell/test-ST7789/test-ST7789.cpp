@@ -22,6 +22,6 @@ int main()
 		.AttachKeyboard(keyboard.SetCapsLockAsCtrl()).SetFont(Font::shinonome16);
 	Shell::AttachTerminal(terminal);
 	//-------------------------------------------------------------------------
-	terminal.Println("Shell Test Program with ST7789 Display");
+	terminal.Println("Shell with ST7789 TFT LCD");
 	for (;;) Tickable::Tick();
 }
