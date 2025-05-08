@@ -28,33 +28,36 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-Serial  C CXX ASM)
+project(test-ST7789 C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-Serial test-Serial.cpp )
+add_executable(test-ST7789 test-ST7789.cpp )
 
-pico_set_program_name(test-Serial "test-Serial")
-pico_set_program_version(test-Serial "0.1")
+pico_set_program_name(test-ST7789 "test-ST7789")
+pico_set_program_version(test-ST7789 "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-Serial 1)
-pico_enable_stdio_usb(test-Serial 0)
+pico_enable_stdio_uart(test-ST7789 1)
+pico_enable_stdio_usb(test-ST7789 0)
 
 # Add the standard library to the build
-target_link_libraries(test-Serial
+target_link_libraries(test-ST7789
     pico_stdlib
-    jxglib_CmdLine_BuiltIn
-    jxglib_Serial)
+    jxglib_ST7789
+    jxglib_USBHost
+    jxglib_Shell_BuiltIn)
 
 # Add the standard include files to the build
-target_include_directories(test-Serial PRIVATE
+target_include_directories(test-ST7789 PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-Serial)
+pico_add_extra_outputs(test-ST7789)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+
+jxglib_configure_USBHost(test-ST7789 CFG_TUH_HID 3)

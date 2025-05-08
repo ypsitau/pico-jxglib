@@ -1,21 +1,21 @@
 //==============================================================================
-// CmdLine.cpp
+// Shell.cpp
 //==============================================================================
-#include "jxglib/CmdLine.h"
+#include "jxglib/Shell.h"
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// CmdLine
+// Shell
 //------------------------------------------------------------------------------
-CmdLine CmdLine::Instance;
+Shell Shell::Instance;
 
-CmdLine::CmdLine() : stat_{Stat::Begin}, pTerminal_{&TerminalDumb::Instance}, pEntryRunning_{nullptr}
+Shell::Shell() : stat_{Stat::Begin}, pTerminal_{&TerminalDumb::Instance}, pEntryRunning_{nullptr}
 {
 	::strcpy(prompt_, ">");
 }
 
-bool CmdLine::RunEntry(char* line)
+bool Shell::RunEntry(char* line)
 {
 	char* argv[16];
 	int argc = count_of(argv);
@@ -36,7 +36,7 @@ bool CmdLine::RunEntry(char* line)
 	return false;
 }
 
-void CmdLine::OnTick()
+void Shell::OnTick()
 {
 	switch (stat_) {
 	case Stat::Begin: {
@@ -60,14 +60,14 @@ void CmdLine::OnTick()
 	}
 }
 
-void CmdLine::SetPrompt_(const char* prompt)
+void Shell::SetPrompt_(const char* prompt)
 {
 	size_t len = ChooseMin(sizeof(prompt_) - 1, ::strlen(prompt));
 	::memcpy(prompt_, prompt, len);
 	prompt_[len] = '\0';
 }
 
-void CmdLine::PrintHelp(Printable& printable)
+void Shell::PrintHelp(Printable& printable)
 {
 	int lenMax = 1;
 	for (const Entry* pEntry = Entry::GetEntryHead(); pEntry; pEntry = pEntry->GetEntryNext()) {
@@ -79,11 +79,11 @@ void CmdLine::PrintHelp(Printable& printable)
 }
 
 //------------------------------------------------------------------------------
-// CmdLine::Entry
+// Shell::Entry
 //------------------------------------------------------------------------------
-CmdLine::Entry* CmdLine::Entry::pEntryHead_ = nullptr;
+Shell::Entry* Shell::Entry::pEntryHead_ = nullptr;
 
-CmdLine::Entry::Entry(const char* name, const char* help) : name_{name}, help_{help}, pEntryNext_{nullptr}
+Shell::Entry::Entry(const char* name, const char* help) : name_{name}, help_{help}, pEntryNext_{nullptr}
 {
 	Entry* pEntryPrev = nullptr;
 	for (Entry* pEntry = pEntryHead_; pEntry; pEntry = pEntry->GetEntryNext()) {

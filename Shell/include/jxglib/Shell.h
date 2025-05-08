@@ -1,29 +1,29 @@
 //==============================================================================
-// jxglib/CmdLine.h
+// jxglib/Shell.h
 //==============================================================================
 #ifndef PICO_JXGLIB_CMDLINE_H
 #define PICO_JXGLIB_CMDLINE_H
 #include "pico/stdlib.h"
 #include "jxglib/Terminal.h"
 
-#define CmdLineEntry(name, help) \
-class CmdLineEntry_##name : public CmdLine::Entry { \
+#define ShellEntry(name, help) \
+class ShellEntry_##name : public Shell::Entry { \
 public: \
-	static CmdLineEntry_##name Instance; \
+	static ShellEntry_##name Instance; \
 public: \
-	CmdLineEntry_##name() : CmdLine::Entry(#name, help) {} \
+	ShellEntry_##name() : Shell::Entry(#name, help) {} \
 public: \
 	virtual void Run(Terminal& terminal, int argc, char* argv[]) override; \
 }; \
-CmdLineEntry_##name CmdLineEntry_##name::Instance; \
-void CmdLineEntry_##name::Run(Terminal& terminal, int argc, char* argv[])
+ShellEntry_##name ShellEntry_##name::Instance; \
+void ShellEntry_##name::Run(Terminal& terminal, int argc, char* argv[])
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// CmdLine
+// Shell
 //------------------------------------------------------------------------------
-class CmdLine : public Tickable {
+class Shell : public Tickable {
 public:
 	class Entry {
 	private:
@@ -52,9 +52,9 @@ private:
 	Terminal* pTerminal_;
 	Entry* pEntryRunning_;
 public:
-	static CmdLine Instance;
+	static Shell Instance;
 public:
-	CmdLine();
+	Shell();
 public:
 	bool RunEntry(char* line);
 	Terminal& GetTerminal() { return *pTerminal_; }
@@ -68,7 +68,7 @@ private:
 	void AttachTerminal_(Terminal& terminal) { pTerminal_ = &terminal; }
 public:
 	// virtual functions of Tickable
-	virtual const char* GetTickableName() const override { return "CmdLine"; }
+	virtual const char* GetTickableName() const override { return "Shell"; }
 	virtual void OnTick() override;
 public:
 	static void PrintHelp(Printable& printable);

@@ -1,29 +1,29 @@
 //==============================================================================
-// CmdLine_BuiltIn.cpp
+// Shell_BuiltIn.cpp
 //==============================================================================
 #include <stdlib.h>
-#include "jxglib/CmdLine.h"
+#include "jxglib/Shell.h"
 
-namespace jxglib::CmdLine_BuiltIn {
+namespace jxglib::Shell_BuiltIn {
 
 //-----------------------------------------------------------------------------
 // d addr bytes
 //-----------------------------------------------------------------------------
-class CmdLineEntry_d : public CmdLine::Entry {
+class ShellEntry_d : public Shell::Entry {
 private:
 	uint32_t addr_;
 	uint32_t bytes_;
 public:
-	static CmdLineEntry_d Instance;
+	static ShellEntry_d Instance;
 public:
-	CmdLineEntry_d() : CmdLine::Entry("d", "prints memory content at the specified address"), addr_{0x00000000}, bytes_{64} {}
+	ShellEntry_d() : Shell::Entry("d", "prints memory content at the specified address"), addr_{0x00000000}, bytes_{64} {}
 public:
 	virtual void Run(Terminal& terminal, int argc, char* argv[]) override;
 };
 
-CmdLineEntry_d CmdLineEntry_d::Instance;
+ShellEntry_d ShellEntry_d::Instance;
 
-void CmdLineEntry_d::Run(Terminal& terminal, int argc, char* argv[])
+void ShellEntry_d::Run(Terminal& terminal, int argc, char* argv[])
 {
 	int nColsTerm, nRowsTerm;
 	terminal.GetSize(&nColsTerm, &nRowsTerm);
@@ -56,7 +56,7 @@ void CmdLineEntry_d::Run(Terminal& terminal, int argc, char* argv[])
 //-----------------------------------------------------------------------------
 // ticks
 //-----------------------------------------------------------------------------
-CmdLineEntry(ticks, "prints names and attributes of running Tickable instances")
+ShellEntry(ticks, "prints names and attributes of running Tickable instances")
 {
 	Tickable::PrintList(terminal);
 }
@@ -64,27 +64,27 @@ CmdLineEntry(ticks, "prints names and attributes of running Tickable instances")
 //-----------------------------------------------------------------------------
 // help
 //-----------------------------------------------------------------------------
-CmdLineEntry(help, "prints help strings for available commands")
+ShellEntry(help, "prints help strings for available commands")
 {
-	CmdLine::PrintHelp(terminal);
+	Shell::PrintHelp(terminal);
 }
 
 //-----------------------------------------------------------------------------
 // prompt
 //-----------------------------------------------------------------------------
-CmdLineEntry(prompt, "changes the command line prompt")
+ShellEntry(prompt, "changes the command line prompt")
 {
 	if (argc < 2) {
-		terminal.Println(CmdLine::GetPrompt());
+		terminal.Println(Shell::GetPrompt());
 	} else {
-		CmdLine::SetPrompt(argv[1]);
+		Shell::SetPrompt(argv[1]);
 	}
 }
 
 //-----------------------------------------------------------------------------
 // argtest
 //-----------------------------------------------------------------------------
-CmdLineEntry(argtest, "tests command line arguments")
+ShellEntry(argtest, "tests command line arguments")
 {
 	for (int i = 0; i < argc; i++) {
 		terminal.Printf("argv[%d] \"%s\"\n", i, argv[i]);
