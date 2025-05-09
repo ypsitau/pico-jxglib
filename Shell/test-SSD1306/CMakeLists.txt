@@ -49,7 +49,7 @@ target_link_libraries(test-SSD1306
     pico_stdlib
     jxglib_SSD1306
     jxglib_USBHost
-    jxglib_Shell_BuiltIn)
+    jxglib_ShellCmd_Basic)
 
 # Add the standard include files to the build
 target_include_directories(test-SSD1306 PRIVATE

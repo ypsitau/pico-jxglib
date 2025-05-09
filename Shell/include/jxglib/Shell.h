@@ -6,17 +6,19 @@
 #include "pico/stdlib.h"
 #include "jxglib/Terminal.h"
 
-#define ShellCmd(name, help) \
-class ShellCmd_##name : public Shell::Cmd { \
+#define ShellCmd_Alias(symbol, name, help) \
+class ShellCmd_##symbol : public Shell::Cmd { \
 public: \
-	static ShellCmd_##name Instance; \
+	static ShellCmd_##symbol Instance; \
 public: \
-	ShellCmd_##name() : Shell::Cmd(#name, help) {} \
+	ShellCmd_##symbol() : Shell::Cmd(name, help) {} \
 public: \
 	virtual int Run(Terminal& terminal, int argc, char* argv[]) override; \
 }; \
-ShellCmd_##name ShellCmd_##name::Instance; \
-int ShellCmd_##name::Run(Terminal& terminal, int argc, char* argv[])
+ShellCmd_##symbol ShellCmd_##symbol::Instance; \
+int ShellCmd_##symbol::Run(Terminal& terminal, int argc, char* argv[])
+
+#define ShellCmd(name, help) ShellCmd_Alias(name, #name, help)
 
 namespace jxglib {
 

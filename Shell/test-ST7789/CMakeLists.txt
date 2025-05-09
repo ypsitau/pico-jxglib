@@ -23,7 +23,7 @@ if (EXISTS ${picoVscode})
     include(${picoVscode})
 endif()
 # ====================================================================================
-set(PICO_BOARD pico CACHE STRING "Board type")
+set(PICO_BOARD pico2 CACHE STRING "Board type")
 
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
@@ -49,7 +49,7 @@ target_link_libraries(test-ST7789
     pico_stdlib
     jxglib_ST7789
     jxglib_USBHost
-    jxglib_Shell_BuiltIn)
+    jxglib_ShellCmd_Basic)
 
 # Add the standard include files to the build
 target_include_directories(test-ST7789 PRIVATE

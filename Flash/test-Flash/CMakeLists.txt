@@ -47,7 +47,7 @@ pico_enable_stdio_usb(test-Flash 0)
 # Add the standard library to the build
 target_link_libraries(test-Flash
 	pico_stdlib
-    jxglib_Shell_BuiltIn
+    jxglib_ShellCmd_Basic
     jxglib_Serial
 	jxglib_Flash)
 
