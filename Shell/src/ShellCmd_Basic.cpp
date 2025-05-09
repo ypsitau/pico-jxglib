@@ -51,6 +51,22 @@ ShellCmd_Alias(about_cpu, "about-platform", "prints information about the platfo
 //-----------------------------------------------------------------------------
 ShellCmd_Alias(about_me, "about-me", "prints information about this own program")
 {
+#if defined(PICO_PROGRAM_NAME)
+	terminal.Printf("%s", PICO_PROGRAM_NAME);
+#else
+	terminal.Printf("(no name)");
+#endif
+#if defined(PICO_PROGRAM_VERSION_STRING)
+	terminal.Printf(" ver.%s\n", PICO_PROGRAM_VERSION_STRING);
+#else
+	terminal.Printf("\n");
+#endif
+#if defined(PICO_PROGRAM_DESCRIPTION)
+	terminal.Printf("Desc   %s\n", PICO_PROGRAM_DESCRIPTION);
+#endif
+#if defined(PICO_PROGRAM_URL)
+	terminal.Printf("URL    %s\n", PICO_PROGRAM_URL);
+#endif
 	terminal.Printf("Flash  0x%p - 0x%p %8d bytes\n", &__flash_binary_start, &__flash_binary_end, &__flash_binary_end - &__flash_binary_start);
 #if defined(__arm__)
 	terminal.Printf("Vector 0x%p - 0x%p %8d bytes\n", &ram_vector_table, &ram_vector_table + PICO_RAM_VECTOR_TABLE_SIZE, PICO_RAM_VECTOR_TABLE_SIZE * sizeof(void*));
