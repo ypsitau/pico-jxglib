@@ -504,7 +504,7 @@ USBHost::HID::HID(uint8_t devAddr, uint8_t iInstance, HID::Application* pApplica
 
 void USBHost::HID::OnReport(const Report& report)
 {
-	report.Dump();
+	//report.Dump();
 	if (report.len <= sizeof(reportBuff_) && (report_.len == 0 || ::memcmp(reportBuff_, report.buff, report.len) != 0)) {
 		reportChangedFlag_ = true;
 		::memcpy(reportBuff_, report.buff, report.len);
