@@ -3,6 +3,8 @@
 #include "pico/stdlib.h"
 #include "jxglib/FAT.h"
 #include "jxglib/SDCard.h"
+#include "jxglib/Serial.h"
+#include "jxglib/Shell.h"
 
 using namespace jxglib;
 
@@ -82,18 +84,16 @@ DRESULT SDDrive::ioctl_CTRL_TRIM(LBA_t startLBA, LBA_t endLBA)
 	return RES_OK;
 }
 
-int main()
+ShellCmd(cat, "prints the contents of a file")
 {
-	::stdio_init_all();
-	GPIO2.set_function_SPI0_SCK();
-	GPIO3.set_function_SPI0_TX();
-	GPIO4.set_function_SPI0_RX();
-	SDDrive sdDrive(spi0, 10 * 1000 * 1000, {CS: GPIO5});
-	sdDrive.Mount();
-#if 1
+	if (argc < 2) {
+		::printf("Usage: %s <filename>\n", argv[0]);
+		return 1;
+	}
+	const char* fileName = argv[1];
 	FIL fil;
 	char buff[80];
-	FRESULT result = ::f_open(&fil, "/SAMPLE.TXT", FA_READ);
+	FRESULT result = ::f_open(&fil, fileName, FA_READ);
 	if (result != FR_OK) {
 		::printf("Error: %s\n", FAT::FRESULTToStr(result));
 		return 1;
@@ -102,5 +102,18 @@ int main()
 		::printf(buff);
 	}
 	::f_close(&fil);
-#endif
+	return 0;
+}
+
+int main()
+{
+	::stdio_init_all();
+	GPIO2.set_function_SPI0_SCK();
+	GPIO3.set_function_SPI0_TX();
+	GPIO4.set_function_SPI0_RX();
+	SDDrive sdDrive(spi0, 10 * 1000 * 1000, {CS: GPIO5});
+	sdDrive.Mount();
+	Serial::Terminal terminal;
+	Shell::AttachTerminal(terminal);
+	for (;;) Tickable::Tick();
 }
