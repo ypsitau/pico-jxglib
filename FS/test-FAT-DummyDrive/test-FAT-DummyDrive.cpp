@@ -2,6 +2,8 @@
 #include <memory.h>
 #include "pico/stdlib.h"
 #include "jxglib/FAT.h"
+#include "jxglib/Serial.h"
+#include "jxglib/Shell.h"
 
 using namespace jxglib;
 
@@ -35,7 +37,7 @@ DSTATUS DummyDrive::initialize()
 DRESULT DummyDrive::read(BYTE* buff, LBA_t sector, UINT count)
 {
 	::printf("read(sector=%d, count=%d)\n", sector, count);
-	const char sector0[] =
+	static const char sector0[] =
 		"\xeb\x3c\x90\x6d\x6b\x66\x73\x2e\x66\x61\x74\x00\x02\x04\x01\x00"
 		"\x02\x00\x02\x80\x00\xf8\x01\x00\x10\x00\x02\x00\x00\x00\x00\x00"
 		"\x00\x00\x00\x00\x80\x00\x29\x49\x67\xbe\x00\x4e\x4f\x20\x4e\x41"
@@ -68,14 +70,14 @@ DRESULT DummyDrive::read(BYTE* buff, LBA_t sector, UINT count)
 		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
 		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
 		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x55\xaa";
-	const char sector1[] =
+	static const char sector1[] =
 		"\xf8\xff\xff\x00\xf0\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
-	const char sector2[] =
+	static const char sector2[] =
 		"\xf8\xff\xff\x00\xf0\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
-	const char sector3[] =
+	static const char sector3[] =
 		"\x53\x41\x4d\x50\x4c\x45\x20\x20\x54\x58\x54\x20\x00\x00\x00\x00"
 		"\x00\x00\x00\x00\x00\x00\xb7\x3e\x3e\x5a\x03\x00\x93\x01\x00\x00";
-	const char sector39[] =
+	static const char sector39[] =
 		"\x46\x61\x72\x20\x66\x61\x72\x20\x61\x77\x61\x79\x2c\x20\x62\x65"
 		"\x68\x69\x6e\x64\x20\x74\x68\x65\x20\x77\x6f\x72\x64\x20\x6d\x6f"
 		"\x75\x6e\x74\x61\x69\x6e\x73\x2c\x20\x66\x61\x72\x20\x66\x72\x6f"
@@ -162,22 +164,49 @@ DRESULT DummyDrive::ioctl_CTRL_TRIM(LBA_t startLBA, LBA_t endLBA)
 	return RES_OK;
 }
 
+ShellCmd(cat, "Display file content")
+{
+	if (argc < 2) {
+		terminal.Printf("Usage: %s <file>\n", argv[0]);
+		return 1;
+	}
+	const char* fileName = argv[1];
+#if 1
+	FIL fil;
+	FRESULT result = ::f_open(&fil, fileName, FA_READ);
+	if (result != FR_OK) {
+		terminal.Printf("Error: %s\n", FAT::FRESULTToStr(result));
+		return 1;
+	}
+	char buff[128];
+	while (::f_gets(buff, sizeof(buff), &fil)) {
+		terminal.Printf("%s", buff);
+	}
+	::f_close(&fil);
+#else
+	//const char* fileName = "/SAMPLE.TXT";
+	RefPtr<FS::File> pFile(FAT::OpenFile(fileName, "r"));
+	if (!pFile) {
+		terminal.Printf("failed to open file\n");
+		return 1;
+	}
+	int bytes;
+	char buff[128];
+	while ((bytes = pFile->Read(buff, sizeof(buff) - 1)) > 0) {
+		buff[bytes] = '\0';
+		terminal.Printf("%s", buff);
+	}
+	pFile->Close();
+#endif
+	return 0;
+}
+
 int main()
 {
 	::stdio_init_all();
-#if 1
-	FIL fil;
-	char buff[80];
-	DummyDrive driveDummy;
-	driveDummy.Mount();
-	FRESULT result = ::f_open(&fil, "/SAMPLE.TXT", FA_READ);
-	if (result != FR_OK) {
-		::printf("Error: %s\n", FAT::FRESULTToStr(result));
-		return 1;
-	}
-	while (::f_gets(buff, sizeof(buff), &fil)) {
-		::printf(buff);
-	}
-	::f_close(&fil);
-#endif
+	Serial::Terminal terminal;
+	Shell::AttachTerminal(terminal.Initialize());
+	DummyDrive dummyDrive;
+	dummyDrive.Mount();
+	for (;;) Tickable::Tick();	
 }

@@ -12,7 +12,7 @@ int main()
 	Serial::Terminal terminal;
 	terminal.Initialize();
 	Shell::AttachTerminal(terminal);
-	terminal.Println("Shell with Serial Terminal");
+	terminal.Println("Shell on Serial Terminal");
 	//-------------------------------------------------------------------------
 	for (;;) Tickable::Tick();
 }

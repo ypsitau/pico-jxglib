@@ -47,7 +47,9 @@ pico_enable_stdio_usb(test-FAT-DummyDrive 0)
 # Add the standard library to the build
 target_link_libraries(test-FAT-DummyDrive
     pico_stdlib
-    jxglib_FAT)
+    jxglib_FAT
+    jxglib_Serial
+    jxglib_ShellCmd_Basic)
 
 # Add the standard include files to the build
 target_include_directories(test-FAT-DummyDrive PRIVATE

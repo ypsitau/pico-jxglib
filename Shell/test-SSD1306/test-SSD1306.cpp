@@ -21,7 +21,7 @@ int main()
 	terminal.Initialize().AttachDisplay(display.Initialize())
 		.AttachKeyboard(keyboard.SetCapsLockAsCtrl()).SetFont(Font::shinonome12);
 	Shell::AttachTerminal(terminal);
+	terminal.Println("Shell on SSD1306");
 	//-------------------------------------------------------------------------
-	terminal.Println("Shell with SSD1306");
 	for (;;) Tickable::Tick();
 }

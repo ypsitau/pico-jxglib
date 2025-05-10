@@ -21,7 +21,7 @@ int main()
 	terminal.Initialize().AttachDisplay(display.Initialize(Display::Dir::Rotate90))
 		.AttachKeyboard(keyboard.SetCapsLockAsCtrl()).SetFont(Font::shinonome16);
 	Shell::AttachTerminal(terminal);
+	terminal.Println("Shell on ST7789 TFT LCD");
 	//-------------------------------------------------------------------------
-	terminal.Println("Shell with ST7789 TFT LCD");
 	for (;;) Tickable::Tick();
 }

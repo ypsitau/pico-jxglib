@@ -40,7 +40,7 @@ const char* FAT::FRESULTToStr(FRESULT result)
 //------------------------------------------------------------------------------
 // FAT::File
 //------------------------------------------------------------------------------
-FAT::File::File(FIL f) : file(f) {}
+FAT::File::File() {}
 
 FAT::File::~File()
 {
@@ -50,38 +50,38 @@ FAT::File::~File()
 int FAT::File::Read(void* buffer, int bytes)
 {
 	UINT bytesRead;
-	return (::f_read(&file, buffer, bytes, &bytesRead) == FR_OK)? static_cast<int>(bytesRead) : -1;
+	return (::f_read(&fil_, buffer, bytes, &bytesRead) == FR_OK)? static_cast<int>(bytesRead) : -1;
 }
 
 int FAT::File::Write(const void* buffer, int bytes)
 {
 	UINT bytesWritten;
-	return (::f_write(&file, buffer, bytes, &bytesWritten) == FR_OK)? static_cast<int>(bytesWritten) : -1;
+	return (::f_write(&fil_, buffer, bytes, &bytesWritten) == FR_OK)? static_cast<int>(bytesWritten) : -1;
 }
 
 void FAT::File::Close()
 {
-	::f_close(&file);
+	::f_close(&fil_);
 }
 
 bool FAT::File::Seek(int position)
 {
-	return ::f_lseek(&file, position) == FR_OK;
+	return ::f_lseek(&fil_, position) == FR_OK;
 }
 
 int FAT::File::Tell()
 {
-	return f_tell(&file);
+	return f_tell(&fil_);
 }
 
 int FAT::File::Size()
 {
-	return f_size(&file);
+	return f_size(&fil_);
 }
 
 bool FAT::File::Remove()
 {
-	//return f_unlink(f_gets(file.fname, sizeof(file.fname), &file)) == FR_OK;
+	//return f_unlink(f_gets(file.fname, sizeof(file.fname), &fil_)) == FR_OK;
 	return true;
 }
 
@@ -93,17 +93,17 @@ bool FAT::File::Rename(const char* newName)
 
 bool FAT::File::Flush()
 {
-	return f_sync(&file) == FR_OK;
+	return f_sync(&fil_) == FR_OK;
 }
 
 bool FAT::File::Truncate(int bytes)
 {
-	return f_truncate(&file) == FR_OK;
+	return f_truncate(&fil_) == FR_OK;
 }
 
 bool FAT::File::Sync()
 {
-	return f_sync(&file) == FR_OK;
+	return f_sync(&fil_) == FR_OK;
 }
 
 //------------------------------------------------------------------------------
@@ -127,7 +127,8 @@ bool FAT::Dir::First(FileInfo& info)
 	return false;
 }
 
-bool FAT::Dir::Next(FileInfo& info) {
+bool FAT::Dir::Next(FileInfo& info)
+{
 	return First(info);
 }
 
@@ -161,17 +162,12 @@ void FAT::Dir::Close()
 
 FAT::File* FAT::OpenFile(const char* path, const char* mode)
 {
-	FIL file;
+	RefPtr<File> pFile(new File());
 	BYTE flags = 0;
-
 	if (mode[0] == 'r') flags |= FA_READ;
 	if (mode[0] == 'w') flags |= FA_WRITE | FA_CREATE_ALWAYS;
 	if (mode[0] == 'a') flags |= FA_WRITE | FA_OPEN_APPEND;
-
-	if (::f_open(&file, path, flags) == FR_OK) {
-		return new FAT::File(file);
-	}
-	return nullptr;
+	return (::f_open(pFile->GetFIL(), path, flags) == FR_OK)? pFile.release() : nullptr;
 }
 
 FAT::Dir* FAT::OpenDir(const char* path)

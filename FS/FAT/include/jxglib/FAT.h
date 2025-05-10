@@ -17,11 +17,16 @@ namespace jxglib {
 class FAT : public FS {
 public:
 	class File : public FS::File {
-	private:
-		FIL file; // FATFS file object
 	public:
-		File(FIL f);
+		DeclareReferable(File);
+	private:
+		FIL fil_;
+	public:
+		File();
 		~File();
+	public:
+		FIL* GetFIL() { return &fil_; }
+		const FIL* GetFIL() const { return &fil_; }
 	public:
 		int Read(void* buffer, int bytes) override;
 		int Write(const void* buffer, int bytes) override;
@@ -41,7 +46,7 @@ public:
 	public:
 		Dir(DIR d);
 		~Dir();
-
+	public:
 		bool First(FileInfo& info) override;
 		bool Next(FileInfo& info) override;
 		void Close() override;
