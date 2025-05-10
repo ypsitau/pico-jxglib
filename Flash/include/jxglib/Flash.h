@@ -20,6 +20,7 @@ public:
 	static const uint32_t Address = XIP_BASE;
 	static const uint32_t bytesBlock = FLASH_BLOCK_SIZE;
 	static const uint32_t bytesPage = FLASH_PAGE_SIZE;
+	static const uint32_t bytesWhole = PICO_FLASH_SIZE_BYTES;
 public:
 	class Stream : public jxglib::Stream {
 	private:

@@ -34,15 +34,13 @@ ShellCmd_Alias(about_cpu, "about-platform", "prints information about the platfo
 {
 #if defined(PICO_RP2040)
 	terminal.Printf("RP2040 %d MHz\n", ::clock_get_hz(clk_sys) / 1000000);
-	terminal.Printf("Flash  0x10000000 - 0x10200000 %8d bytes\n", 0x10200000 - 0x10000000); 
-	terminal.Printf("SRAM   0x20000000 - 0x%p %8d bytes\n", &__stack, &__stack - reinterpret_cast<char*>(0x20000000));
 #elif defined(PICO_RP2350)
 	terminal.Printf("RP2350 (%s) %d MHz\n", CPU_ARCH, ::clock_get_hz(clk_sys) / 1000000);
-	terminal.Printf("Flash  0x10000000 - 0x10400000 %8d bytes\n", 0x10400000 - 0x10000000); 
-	terminal.Printf("SRAM   0x20000000 - 0x%p %8d bytes\n", &__stack, &__stack - reinterpret_cast<char*>(0x20000000));
 #else
 	terminal.Printf("unknown %d MHz\n", ::clock_get_hz(clk_sys) / 1000000);
 #endif
+	terminal.Printf("Flash  0x%08X-0x%08X %7d\n", XIP_BASE, XIP_BASE + PICO_FLASH_SIZE_BYTES, PICO_FLASH_SIZE_BYTES); 
+	terminal.Printf("SRAM   0x20000000-0x%p %7d\n", &__stack, &__stack - reinterpret_cast<char*>(0x20000000));
 	return 0;
 }
 
@@ -67,14 +65,14 @@ ShellCmd_Alias(about_me, "about-me", "prints information about this own program"
 #if defined(PICO_PROGRAM_URL)
 	terminal.Printf("URL    %s\n", PICO_PROGRAM_URL);
 #endif
-	terminal.Printf("Flash  0x%p - 0x%p %8d bytes\n", &__flash_binary_start, &__flash_binary_end, &__flash_binary_end - &__flash_binary_start);
+	terminal.Printf("Flash  0x%p-0x%p %7d\n", &__flash_binary_start, &__flash_binary_end, &__flash_binary_end - &__flash_binary_start);
 #if defined(__arm__)
-	terminal.Printf("Vector 0x%p - 0x%p %8d bytes\n", &ram_vector_table, &ram_vector_table + PICO_RAM_VECTOR_TABLE_SIZE, PICO_RAM_VECTOR_TABLE_SIZE * sizeof(void*));
+	terminal.Printf("Vector 0x%p-0x%p %7d\n", &ram_vector_table, &ram_vector_table + PICO_RAM_VECTOR_TABLE_SIZE, PICO_RAM_VECTOR_TABLE_SIZE * sizeof(void*));
 #endif
-	terminal.Printf("Data   0x%p - 0x%p %8d bytes\n", &__data_start__, &__data_end__, &__data_end__ - &__data_start__);
-	terminal.Printf("Bss    0x%p - 0x%p %8d bytes\n", &__bss_start__, &__bss_end__, &__bss_end__ - &__bss_start__);
-	terminal.Printf("Heap   0x%p - 0x%p %8d bytes\n", &__heap_start, &__heap_end, &__heap_end - &__heap_start);
-	terminal.Printf("Stack  0x%p - 0x%p %8d bytes\n", &__heap_end, &__stack, &__stack - &__heap_end);
+	terminal.Printf("Data   0x%p-0x%p %7d\n", &__data_start__, &__data_end__, &__data_end__ - &__data_start__);
+	terminal.Printf("Bss    0x%p-0x%p %7d\n", &__bss_start__, &__bss_end__, &__bss_end__ - &__bss_start__);
+	terminal.Printf("Heap   0x%p-0x%p %7d\n", &__heap_start, &__heap_end, &__heap_end - &__heap_start);
+	terminal.Printf("Stack  0x%p-0x%p %7d\n", &__heap_end, &__stack, &__stack - &__heap_end);
 	return 0;
 }
 
