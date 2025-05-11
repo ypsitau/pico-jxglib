@@ -232,40 +232,6 @@ ShellCmd(df, "shows free space on the drive")
 }
 */
 
-ShellCmd(ls, "lists files in the specified directory")
-{
-	const char* dirName = (argc < 2)? "" : argv[1];
-	RefPtr<FS::Dir> pDir(FS::OpenDir(dirName));
-	if (!pDir) {
-		out.Printf("failed to open %s\n", dirName);
-		return 1;
-	}
-	FS::FileInfo* pFileInfo;
-	while (pDir->Read(&pFileInfo)) {
-		if (pFileInfo->IsDirectory()) {
-			out.Printf("%-20s <DIR>\n", pFileInfo->GetName());
-		} else if (pFileInfo->IsFile()) {
-			out.Printf("%-20s %d\n", pFileInfo->GetName(), pFileInfo->GetSize());
-		}
-	}
-	pDir->Close();
-#if 0
-	FILINFO fno;
-	DIR dir;
-	const char* dirName = (argc < 2)? "" : argv[1];
-	FRESULT result = ::f_opendir(&dir, dirName);
-	if (result != FR_OK) {
-		out.Printf("Error: %s\n", FAT::FRESULTToStr(result));
-		return 1;
-	}
-	while (::f_readdir(&dir, &fno) == FR_OK && fno.fname[0]) {
-		out.Printf("%s\n", fno.fname);
-	}
-	::f_closedir(&dir);
-#endif
-	return 0;
-}
-
 ShellCmd(cat, "prints the contents of a file")
 {
 	if (argc < 2) {

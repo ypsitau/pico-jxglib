@@ -50,7 +50,8 @@ target_link_libraries(test-FAT-SDCard
     jxglib_FAT
     jxglib_SDCard
     jxglib_Serial
-    jxglib_Shell)
+    jxglib_Shell
+    jxglib_ShellCmd_FS)
 
 # Add the standard include files to the build
 target_include_directories(test-FAT-SDCard PRIVATE
