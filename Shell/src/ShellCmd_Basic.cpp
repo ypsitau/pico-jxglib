@@ -88,12 +88,12 @@ public:
 public:
 	ShellCmd_d() : Shell::Cmd("d", "prints memory content at the specified address"), addr_{0x00000000}, bytes_{64} {}
 public:
-	virtual int Run(Printable& out, int argc, char* argv[]) override;
+	virtual int Run(Printable& out, Printable& err, int argc, char* argv[]) override;
 };
 
 ShellCmd_d ShellCmd_d::Instance;
 
-int ShellCmd_d::Run(Printable& out, int argc, char* argv[])
+int ShellCmd_d::Run(Printable& out, Printable& err, int argc, char* argv[])
 {
 	int nColsOut, nRowsOut;
 	out.GetSize(&nColsOut, &nRowsOut);
@@ -103,7 +103,7 @@ int ShellCmd_d::Run(Printable& out, int argc, char* argv[])
 		char* p = nullptr;
 		uint32_t num = ::strtoul(argv[1], &p, 0);
 		if (*p != '\0') {
-			out.Printf("invalid number\n");
+			err.Printf("invalid number\n");
 			return 1;
 		}
 		addr_ = num;
@@ -112,7 +112,7 @@ int ShellCmd_d::Run(Printable& out, int argc, char* argv[])
 		char* p = nullptr;
 		uint32_t num = ::strtoul(argv[2], &p, 0);
 		if (*p != '\0') {
-			out.Printf("invalid number\n");
+			err.Printf("invalid number\n");
 			return 1;
 		}
 		bytes_ = num;

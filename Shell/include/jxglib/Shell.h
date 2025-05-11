@@ -13,10 +13,10 @@ public: \
 public: \
 	ShellCmd_##symbol() : Shell::Cmd(name, help) {} \
 public: \
-	virtual int Run(Printable& out, int argc, char* argv[]) override; \
+	virtual int Run(Printable& out, Printable& err, int argc, char* argv[]) override; \
 }; \
 ShellCmd_##symbol ShellCmd_##symbol::Instance; \
-int ShellCmd_##symbol::Run(Printable& out, int argc, char* argv[])
+int ShellCmd_##symbol::Run(Printable& out, Printable& err, int argc, char* argv[])
 
 #define ShellCmd(name, help) ShellCmd_Alias(name, #name, help)
 
@@ -45,7 +45,7 @@ public:
 	public:
 		static Cmd* GetCmdHead() { return pCmdHead_; }
 	public:
-		virtual int Run(Printable& out, int argc, char* argv[]) = 0;
+		virtual int Run(Printable& out, Printable& err, int argc, char* argv[]) = 0;
 	};
 	enum class Stat { Begin, Prompt, Running, };
 private:

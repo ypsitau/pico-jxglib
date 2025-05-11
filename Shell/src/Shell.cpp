@@ -17,22 +17,37 @@ Shell::Shell() : stat_{Stat::Begin}, pTerminal_{&TerminalDumb::Instance}, pCmdRu
 
 bool Shell::RunCmd(char* line)
 {
-	char* argv[16];
-	int argc = count_of(argv);
+	char* tokenTbl[16];
+	int nToken = count_of(tokenTbl);
 	const char* errMsg;
-	if (!Tokenizer().Tokenize(line, &argc, argv, &errMsg)) {
-		GetTerminal().Println(errMsg);
+	Printable* pOut = &GetTerminal();
+	Printable* pErr = &GetTerminal();
+	if (!Tokenizer().Tokenize(line, &nToken, tokenTbl, &errMsg)) {
+		pErr->Println(errMsg);
 		return false;
 	}
-	if (argc == 0) return false;
+	if (nToken == 0) return false;
+	int argc = nToken;
+	char** argv = tokenTbl;
+	for (int iToken = 0; iToken < nToken; iToken++) {
+		if (::strcmp(tokenTbl[iToken], ">") == 0) {
+			argc = iToken;
+			tokenTbl[iToken] = nullptr;
+			if (iToken + 1 >= nToken) {
+				pErr->Println("missing file name");
+				return false;
+			}
+			break;
+		}
+	}
 	for (Cmd* pCmd = Cmd::GetCmdHead(); pCmd; pCmd = pCmd->GetCmdNext()) {
 		if (::strcmp(argv[0], pCmd->GetName()) == 0) {
 			pCmdRunning_ = pCmd;
-			pCmd->Run(GetTerminal(), argc, argv);
+			pCmd->Run(*pOut, *pErr, argc, argv);
 			return true;
 		}
 	}
-	GetTerminal().Printf("%s: command not found\n", argv[0]);
+	pErr->Printf("%s: command not found\n", argv[0]);
 	return false;
 }
 
