@@ -9,4 +9,5 @@ target_include_directories(jxglib_LFS INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/include)
 
 target_link_libraries(jxglib_LFS INTERFACE
+	jxglib_Flash
 	jxglib_FS)

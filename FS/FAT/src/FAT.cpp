@@ -51,6 +51,15 @@ bool FAT::RenameDir(const char* fileNameOld, const char* fileNameNew)
 	return ::f_rename(fileNameOld, fileNameNew) == FR_OK;
 }
 
+bool FAT::Format()
+{
+#if defined(FATFS_MKFS_SUPPORT)
+	return ::f_mkfs("", nullptr, nullptr, 0) == FR_OK;
+#else
+	return false; // FATFS_MKFS_SUPPORT is not defined
+#endif
+}
+
 const char* FAT::FRESULTToStr(FRESULT result)
 {
 	static const char* strTbl[] = {
@@ -118,18 +127,6 @@ int FAT::File::Tell()
 int FAT::File::Size()
 {
 	return f_size(&fil_);
-}
-
-bool FAT::File::Remove()
-{
-	//return f_unlink(f_gets(file.fname, sizeof(file.fname), &fil_)) == FR_OK;
-	return true;
-}
-
-bool FAT::File::Rename(const char* newName)
-{
-	//return f_rename(file.fname, newName) == FR_OK;
-	return true;
 }
 
 bool FAT::File::Flush()

@@ -25,10 +25,8 @@ public:
 		virtual bool Seek(int position) = 0;
 		virtual int Tell() = 0;
 		virtual int Size() = 0;
-		virtual bool Remove() = 0;
-		virtual bool Rename(const char* newName) = 0;
 		virtual bool Flush() = 0;
-		virtual bool Truncate(int size) = 0;
+		virtual bool Truncate(int bytes) = 0;
 		virtual bool Sync() = 0;
 	};
 	class FileInfo {
@@ -60,7 +58,7 @@ public:
 		virtual bool CreateDir(const char* dirName) = 0;
 		virtual bool RemoveDir(const char* dirName) = 0;
 		virtual bool RenameDir(const char* fileNameOld, const char* fileNameNew) = 0;
-		//virtual bool Format() = 0;
+		virtual bool Format() = 0;
 		//virtual bool Sync() = 0;
 		//virtual bool GetFreeSpace(uint32_t* pFreeSpace) = 0;
 		//virtual bool GetTotalSpace(uint32_t* pTotalSpace) = 0;
@@ -78,6 +76,7 @@ public:
 	static bool CreateDir(const char* dirName);
 	static bool RemoveDir(const char* dirName);
 	static bool RenameDir(const char* fileNameOld, const char* fileNameNew);
+	static bool Format(const char* dirName);
 };
 
 }

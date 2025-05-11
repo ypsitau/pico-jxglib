@@ -28,17 +28,15 @@ public:
 		FIL* GetEntity() { return &fil_; }
 		const FIL* GetEntity() const { return &fil_; }
 	public:
-		int Read(void* buffer, int bytes) override;
-		int Write(const void* buffer, int bytes) override;
-		void Close() override;
-		bool Seek(int position) override;
-		int Tell() override;
-		int Size() override;
-		bool Remove() override;
-		bool Rename(const char* newName) override;
-		bool Flush() override;
-		bool Truncate(int bytes) override;
-		bool Sync() override;
+		virtual int Read(void* buffer, int bytes) override;
+		virtual int Write(const void* buffer, int bytes) override;
+		virtual void Close() override;
+		virtual bool Seek(int position) override;
+		virtual int Tell() override;
+		virtual int Size() override;
+		virtual bool Flush() override;
+		virtual bool Truncate(int bytes) override;
+		virtual bool Sync() override;
 	};
 	class FileInfo : public FS::FileInfo {
 	private:
@@ -126,13 +124,14 @@ public:
 	PhysicalDrive* GetPhysicalDrive(BYTE pdrv) { return physicalDriveTbl_[pdrv]; }
 public:
 	// virtual functions of FS::Manager
-	virtual FS::File* OpenFile(const char* fileName, const char* mode);
-	virtual FS::Dir* OpenDir(const char* dirName);
-	virtual bool RemoveFile(const char* fileName);
-	virtual bool RenameFile(const char* fileNameOld, const char* fileNameNew);
-	virtual bool CreateDir(const char* dirName);
-	virtual bool RemoveDir(const char* dirName);
-	virtual bool RenameDir(const char* fileNameOld, const char* fileNameNew);
+	virtual FS::File* OpenFile(const char* fileName, const char* mode) override;
+	virtual FS::Dir* OpenDir(const char* dirName) override;
+	virtual bool RemoveFile(const char* fileName) override;
+	virtual bool RenameFile(const char* fileNameOld, const char* fileNameNew) override;
+	virtual bool CreateDir(const char* dirName) override;
+	virtual bool RemoveDir(const char* dirName) override;
+	virtual bool RenameDir(const char* fileNameOld, const char* fileNameNew) override;
+	virtual bool Format() override;
 public:
 	static const char* FRESULTToStr(FRESULT result);
 };
