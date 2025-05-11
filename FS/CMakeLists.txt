@@ -21,3 +21,4 @@ target_sources(jxglib_ShellCmd_FS INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/ShellCmd_FS.cpp)
 
 add_subdirectory(FAT)
+add_subdirectory(LFS)
