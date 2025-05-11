@@ -30,6 +30,46 @@ FS::Dir* FS::OpenDir(const char* dirName)
 	return nullptr;
 }
 
+bool FS::RemoveFile(const char* fileName)
+{
+	if (pManagerTop) {
+		return pManagerTop->RemoveFile(fileName);
+	}
+	return false;
+}
+
+bool FS::RenameFile(const char* fileNameOld, const char* fileNameNew)
+{
+	if (pManagerTop) {
+		return pManagerTop->RenameFile(fileNameOld, fileNameNew);
+	}
+	return false;
+}
+
+bool FS::CreateDir(const char* dirName)
+{
+	if (pManagerTop) {
+		return pManagerTop->CreateDir(dirName);
+	}
+	return false;
+}
+
+bool FS::RemoveDir(const char* dirName)
+{
+	if (pManagerTop) {
+		return pManagerTop->RemoveDir(dirName);
+	}
+	return false;
+}
+
+bool FS::RenameDir(const char* fileNameOld, const char* fileNameNew)
+{
+	if (pManagerTop) {
+		return pManagerTop->RenameDir(fileNameOld, fileNameNew);
+	}
+	return false;
+}
+
 //------------------------------------------------------------------------------
 // FS::Manager
 //------------------------------------------------------------------------------

@@ -55,6 +55,16 @@ public:
 	public:
 		virtual File* OpenFile(const char* fileName, const char* mode) = 0;
 		virtual Dir* OpenDir(const char* dirName) = 0;
+		virtual bool RemoveFile(const char* fileName) = 0;
+		virtual bool RenameFile(const char* fileNameOld, const char* fileNameNew) = 0;
+		virtual bool CreateDir(const char* dirName) = 0;
+		virtual bool RemoveDir(const char* dirName) = 0;
+		virtual bool RenameDir(const char* fileNameOld, const char* fileNameNew) = 0;
+		//virtual bool Format() = 0;
+		//virtual bool Sync() = 0;
+		//virtual bool GetFreeSpace(uint32_t* pFreeSpace) = 0;
+		//virtual bool GetTotalSpace(uint32_t* pTotalSpace) = 0;
+		//virtual bool GetUsedSpace(uint32_t* pUsedSpace) = 0;
 	};
 public:
 	static Manager* pManagerTop;
@@ -63,6 +73,11 @@ public:
 public:
 	static File* OpenFile(const char* fileName, const char* mode);
 	static Dir* OpenDir(const char* dirName);
+	static bool RemoveFile(const char* fileName);
+	static bool RenameFile(const char* fileNameOld, const char* fileNameNew);
+	static bool CreateDir(const char* dirName);
+	static bool RemoveDir(const char* dirName);
+	static bool RenameDir(const char* fileNameOld, const char* fileNameNew);
 };
 
 }

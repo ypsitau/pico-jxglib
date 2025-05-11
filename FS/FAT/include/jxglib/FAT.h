@@ -119,14 +119,20 @@ public:
 public:
 	FAT() : numLogicalDrive_{0} {}
 public:
-	virtual FS::File* OpenFile(const char* fileName, const char* mode);
-	virtual FS::Dir* OpenDir(const char* dirName);
-public:
 	int AssignLogialDrive() { numLogicalDrive_++; return numLogicalDrive_ - 1; }
 	void RegisterPhysicalDrive(PhysicalDrive& physicalDrive) {
 		physicalDriveTbl_[physicalDrive.GetPDRV()] = &physicalDrive;
 	}
 	PhysicalDrive* GetPhysicalDrive(BYTE pdrv) { return physicalDriveTbl_[pdrv]; }
+public:
+	// virtual functions of FS::Manager
+	virtual FS::File* OpenFile(const char* fileName, const char* mode);
+	virtual FS::Dir* OpenDir(const char* dirName);
+	virtual bool RemoveFile(const char* fileName);
+	virtual bool RenameFile(const char* fileNameOld, const char* fileNameNew);
+	virtual bool CreateDir(const char* dirName);
+	virtual bool RemoveDir(const char* dirName);
+	virtual bool RenameDir(const char* fileNameOld, const char* fileNameNew);
 public:
 	static const char* FRESULTToStr(FRESULT result);
 };

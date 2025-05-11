@@ -10,6 +10,47 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 FAT FAT::Instance;
 
+FS::File* FAT::OpenFile(const char* fileName, const char* mode)
+{
+	RefPtr<File> pFile(new File());
+	BYTE flags = 0;
+	if (mode[0] == 'r') flags |= FA_READ;
+	if (mode[0] == 'w') flags |= FA_WRITE | FA_CREATE_ALWAYS;
+	if (mode[0] == 'a') flags |= FA_WRITE | FA_OPEN_APPEND;
+	return (::f_open(pFile->GetEntity(), fileName, flags) == FR_OK)? pFile.release() : nullptr;
+}
+
+FS::Dir* FAT::OpenDir(const char* dirName)
+{
+	RefPtr<Dir> pDir(new Dir());
+	return (::f_opendir(pDir->GetEntity(), dirName) == FR_OK)? pDir.release() : nullptr;
+}
+
+bool FAT::RemoveFile(const char* fileName)
+{
+	return ::f_unlink(fileName) == FR_OK;
+}
+
+bool FAT::RenameFile(const char* fileNameOld, const char* fileNameNew)
+{
+	return ::f_rename(fileNameOld, fileNameNew) == FR_OK;
+}
+
+bool FAT::CreateDir(const char* dirName)
+{
+	return ::f_mkdir(dirName) == FR_OK;
+}
+
+bool FAT::RemoveDir(const char* dirName)
+{
+	return ::f_rmdir(dirName) == FR_OK;
+}
+
+bool FAT::RenameDir(const char* fileNameOld, const char* fileNameNew)
+{
+	return ::f_rename(fileNameOld, fileNameNew) == FR_OK;
+}
+
 const char* FAT::FRESULTToStr(FRESULT result)
 {
 	static const char* strTbl[] = {
@@ -126,22 +167,6 @@ bool FAT::Dir::Read(FS::FileInfo** ppFileInfo)
 void FAT::Dir::Close()
 {
 	::f_closedir(&dir_);
-}
-
-FS::File* FAT::OpenFile(const char* fileName, const char* mode)
-{
-	RefPtr<File> pFile(new File());
-	BYTE flags = 0;
-	if (mode[0] == 'r') flags |= FA_READ;
-	if (mode[0] == 'w') flags |= FA_WRITE | FA_CREATE_ALWAYS;
-	if (mode[0] == 'a') flags |= FA_WRITE | FA_OPEN_APPEND;
-	return (::f_open(pFile->GetEntity(), fileName, flags) == FR_OK)? pFile.release() : nullptr;
-}
-
-FS::Dir* FAT::OpenDir(const char* dirName)
-{
-	RefPtr<Dir> pDir(new Dir());
-	return (::f_opendir(pDir->GetEntity(), dirName) == FR_OK)? pDir.release() : nullptr;
 }
 
 }
