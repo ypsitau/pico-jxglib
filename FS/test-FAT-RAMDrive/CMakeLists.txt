@@ -59,3 +59,5 @@ target_include_directories(test-FAT-RAMDrive PRIVATE
 pico_add_extra_outputs(test-FAT-RAMDrive)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+
+jxglib_configure_FAT(test-FAT-RAMDrive FF_USE_MKFS 1)
