@@ -34,60 +34,227 @@ DSTATUS SDDrive::status()
 
 DSTATUS SDDrive::initialize()
 {
-	::printf("initialize\n");
+	//::printf("initialize\n");
 	sdCard_.Initialize();
 	return 0x00;	// STA_NOINIT, STA_NODISK, STA_PROTECT
 }
 
 DRESULT SDDrive::read(BYTE* buff, LBA_t sector, UINT count)
 {
-	::printf("read(sector=%d, count=%d)\n", sector, count);
+	//::printf("read(sector=%d, count=%d)\n", sector, count);
 	return sdCard_.ReadBlock(sector, buff, count)? RES_OK : RES_ERROR;
 }
 
 DRESULT SDDrive::write(const BYTE* buff, LBA_t sector, UINT count)
 {
-	::printf("write(sector=%d, count=%d)\n", sector, count);
+	//::printf("write(sector=%d, count=%d)\n", sector, count);
 	return sdCard_.WriteBlock(sector, buff, count)? RES_OK : RES_ERROR;
 }
 
 DRESULT SDDrive::ioctl_CTRL_SYNC()
 {
-	::printf("ioctl(CTRL_SYNC)\n");
+	//::printf("ioctl(CTRL_SYNC)\n");
 	return RES_OK;
 }
 
 DRESULT SDDrive::ioctl_GET_SECTOR_COUNT(LBA_t* pSectorCount)
 {
-	::printf("ioctl(GET_SECTOR_COUNT)\n");
+	//::printf("ioctl(GET_SECTOR_COUNT)\n");
 	*pSectorCount = 0;
 	return RES_OK;
 }
 
 DRESULT SDDrive::ioctl_GET_SECTOR_SIZE(WORD* pSectorSize)
 {
-	::printf("ioctl(GET_SECTOR_SIZE)\n");
+	//::printf("ioctl(GET_SECTOR_SIZE)\n");
 	*pSectorSize = 512;
 	return RES_OK;
 }
 
 DRESULT SDDrive::ioctl_GET_BLOCK_SIZE(DWORD* pBlockSize)
 {
-	::printf("ioctl(GET_BLOCK_SIZE)\n");
+	//::printf("ioctl(GET_BLOCK_SIZE)\n");
 	*pBlockSize = 1 << 0;
 	return RES_OK;
 }
 
 DRESULT SDDrive::ioctl_CTRL_TRIM(LBA_t startLBA, LBA_t endLBA)
 {
-	::printf("ioctl(CTRL_TRIM)\n");
+	//::printf("ioctl(CTRL_TRIM)\n");
 	return RES_OK;
+}
+
+ShellCmd(cp, "copies a file")
+{
+	if (argc < 3) {
+		terminal.Printf("Usage: %s <src> <dst>\n", argv[0]);
+		return 1;
+	}
+	const char* fileNameSrc = argv[1];
+	const char* fileNameDst = argv[2];
+	FIL filSrc, filDst;
+	FRESULT result = ::f_open(&filSrc, fileNameSrc, FA_READ);
+	if (result != FR_OK) {
+		terminal.Printf("Error: %s\n", FAT::FRESULTToStr(result));
+		return 1;
+	}
+	result = ::f_open(&filDst, fileNameDst, FA_WRITE | FA_CREATE_ALWAYS);
+	if (result != FR_OK) {
+		terminal.Printf("Error: %s\n", FAT::FRESULTToStr(result));
+		::f_close(&filSrc);
+		return 1;
+	}
+	char buff[512];
+	UINT bytesRead, bytesWritten;
+	while (::f_read(&filSrc, buff, sizeof(buff), &bytesRead) == FR_OK && bytesRead > 0) {
+		if (::f_write(&filDst, buff, bytesRead, &bytesWritten) != FR_OK || bytesWritten != bytesRead) {
+			terminal.Printf("Error writing to destination file\n");
+			break;
+		}
+	}
+	::f_close(&filSrc);
+	::f_close(&filDst);
+	return 0;
+}
+
+ShellCmd(mkdir, "creates a directory")
+{
+	if (argc < 2) {
+		terminal.Printf("Usage: %s <directory>\n", argv[0]);
+		return 1;
+	}
+	const char* dirName = argv[1];
+	FRESULT result = ::f_mkdir(dirName);
+	if (result != FR_OK) {
+		terminal.Printf("Error: %s\n", FAT::FRESULTToStr(result));
+		return 1;
+	}
+	return 0;
+}
+
+ShellCmd(rm, "removes a file")
+{
+	if (argc < 2) {
+		terminal.Printf("Usage: %s <filename>\n", argv[0]);
+		return 1;
+	}
+	const char* fileName = argv[1];
+	FRESULT result = ::f_unlink(fileName);
+	if (result != FR_OK) {
+		terminal.Printf("Error: %s\n", FAT::FRESULTToStr(result));
+		return 1;
+	}
+	return 0;
+}
+
+ShellCmd(rmdir, "removes a directory")
+{
+	if (argc < 2) {
+		terminal.Printf("Usage: %s <directory>\n", argv[0]);
+		return 1;
+	}
+	const char* dirName = argv[1];
+	FRESULT result = ::f_rmdir(dirName);
+	if (result != FR_OK) {
+		terminal.Printf("Error: %s\n", FAT::FRESULTToStr(result));
+		return 1;
+	}
+	return 0;
+}
+
+ShellCmd(mv, "moves a file")
+{
+	if (argc < 3) {
+		terminal.Printf("Usage: %s <src> <dst>\n", argv[0]);
+		return 1;
+	}
+	const char* fileNameSrc = argv[1];
+	const char* fileNameDst = argv[2];
+	FRESULT result = ::f_rename(fileNameSrc, fileNameDst);
+	if (result != FR_OK) {
+		terminal.Printf("Error: %s\n", FAT::FRESULTToStr(result));
+		return 1;
+	}
+	return 0;
+}
+
+ShellCmd(touch, "creates an empty file")
+{
+	if (argc < 2) {
+		terminal.Printf("Usage: %s <filename>\n", argv[0]);
+		return 1;
+	}
+	const char* fileName = argv[1];
+	FIL fil;
+	FRESULT result = ::f_open(&fil, fileName, FA_WRITE | FA_CREATE_ALWAYS);
+	if (result != FR_OK) {
+		terminal.Printf("Error: %s\n", FAT::FRESULTToStr(result));
+		return 1;
+	}
+	::f_close(&fil);
+	return 0;
+}
+
+#if 0
+ShellCmd(format, "formats the drive")
+{
+	const char*path = "";
+	MKFS_PARM opt;
+	opt.fmt = 0;	// FAT12
+	opt.n_fat = 1;
+	opt.n_root = 0;	// auto
+	//opt.n_clst = 0;	// auto
+	//opt.n_sect = 0;	// auto
+	//opt.n_size = 0;	// auto
+	opt.align = 0;	// auto
+	opt.au_size = 0;	// auto
+	//opt.use_trimming = 0;	// no trimming
+	//opt.use_lfn = 1;	// use LFN
+	FRESULT result = ::f_mkfs(path, &opt, nullptr, 0);
+	if (result != FR_OK) {
+		terminal.Printf("Error: %s\n", FAT::FRESULTToStr(result));
+		return 1;
+	}
+	return 0;
+}
+#endif
+
+/*
+ShellCmd(df, "shows free space on the drive")
+{
+	DWORD nFreeClusters;
+	FRESULT result = ::f_getfree("", &nFreeClusters, &volInfo.fs);
+	if (result != FR_OK) {
+		terminal.Printf("Error: %s\n", FAT::FRESULTToStr(result));
+		return 1;
+	}
+	terminal.Printf("Free clusters: %lu\n", volInfo.freeClusters);
+	terminal.Printf("Total clusters: %lu\n", volInfo.fs->n_fatent - 2);
+	return 0;
+}
+*/
+
+ShellCmd(ls, "lists files in the specified directory")
+{
+	FILINFO fno;
+	DIR dir;
+	const char* dirName = (argc < 2)? "" : argv[1];
+	FRESULT result = ::f_opendir(&dir, dirName);
+	if (result != FR_OK) {
+		terminal.Printf("Error: %s\n", FAT::FRESULTToStr(result));
+		return 1;
+	}
+	while (::f_readdir(&dir, &fno) == FR_OK && fno.fname[0]) {
+		terminal.Printf("%s\n", fno.fname);
+	}
+	::f_closedir(&dir);
+	return 0;
 }
 
 ShellCmd(cat, "prints the contents of a file")
 {
 	if (argc < 2) {
-		::printf("Usage: %s <filename>\n", argv[0]);
+		terminal.Printf("Usage: %s <filename>\n", argv[0]);
 		return 1;
 	}
 	const char* fileName = argv[1];
@@ -95,13 +262,23 @@ ShellCmd(cat, "prints the contents of a file")
 	char buff[80];
 	FRESULT result = ::f_open(&fil, fileName, FA_READ);
 	if (result != FR_OK) {
-		::printf("Error: %s\n", FAT::FRESULTToStr(result));
+		terminal.Printf("Error: %s\n", FAT::FRESULTToStr(result));
 		return 1;
 	}
 	while (::f_gets(buff, sizeof(buff), &fil)) {
-		::printf(buff);
+		terminal.Printf(buff);
 	}
 	::f_close(&fil);
+	return 0;
+}
+
+ShellCmd(sync, "syncs the file system")
+{
+	FRESULT result = ::f_sync(NULL);
+	if (result != FR_OK) {
+		terminal.Printf("Error: %s\n", FAT::FRESULTToStr(result));
+		return 1;
+	}
 	return 0;
 }
 

@@ -5,8 +5,8 @@
 #define PICO_JXGLIB_FAT_H
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "ff15a/source/ff.h"
-#include "ff15a/source/diskio.h"
+#include "ff.h"
+#include "diskio.h"
 #include "jxglib/FS.h"
 
 namespace jxglib {
