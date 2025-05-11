@@ -109,74 +109,39 @@ bool FAT::File::Sync()
 //------------------------------------------------------------------------------
 // FAT::Dir
 //------------------------------------------------------------------------------
-FAT::Dir::Dir(DIR d) : dir(d) {}
+FAT::Dir::Dir() {}
 
 FAT::Dir::~Dir()
 {
 	Close();
 }
 
-bool FAT::Dir::First(FileInfo& info)
+bool FAT::Dir::Read(FS::FileInfo** ppFileInfo)
 {
-	FILINFO fno;
-	if (f_readdir(&dir, &fno) == FR_OK && fno.fname[0] != '\0') {
-		info.name = fno.fname;
-		info.size = fno.fsize;
-		return true;
-	}
-	return false;
-}
-
-bool FAT::Dir::Next(FileInfo& info)
-{
-	return First(info);
-}
-
-bool FAT::Dir::Remove()
-{
-	//return f_unlink(dir.obj.fs->lfn) == FR_OK;
-	return true;
-}
-
-bool FAT::Dir::Exists()
-{
-	return true; // Assuming directory exists if opened
-}
-
-bool FAT::Dir::Rename(const char* newName)
-{
-	//return f_rename(dir.obj.fs->lfn, newName) == FR_OK;
-	return true;
-}
-
-bool FAT::Dir::Create()
-{
-	//return f_mkdir(dir.obj.fs->lfn) == FR_OK;
-	return true;
+	FILINFO& filInfo = fileInfo_.GetEntity();
+	*ppFileInfo = &fileInfo_;
+	return ::f_readdir(&dir_, &filInfo) == FR_OK && filInfo.fname[0] != '\0';
 }
 
 void FAT::Dir::Close()
 {
-	::f_closedir(&dir);
+	::f_closedir(&dir_);
 }
 
-FAT::File* FAT::OpenFile(const char* path, const char* mode)
+FS::File* FAT::OpenFile(const char* fileName, const char* mode)
 {
 	RefPtr<File> pFile(new File());
 	BYTE flags = 0;
 	if (mode[0] == 'r') flags |= FA_READ;
 	if (mode[0] == 'w') flags |= FA_WRITE | FA_CREATE_ALWAYS;
 	if (mode[0] == 'a') flags |= FA_WRITE | FA_OPEN_APPEND;
-	return (::f_open(pFile->GetFIL(), path, flags) == FR_OK)? pFile.release() : nullptr;
+	return (::f_open(pFile->GetEntity(), fileName, flags) == FR_OK)? pFile.release() : nullptr;
 }
 
-FAT::Dir* FAT::OpenDir(const char* path)
+FS::Dir* FAT::OpenDir(const char* dirName)
 {
-	DIR dir;
-	if (::f_opendir(&dir, path) == FR_OK) {
-		return new FAT::Dir(dir);
-	}
-	return nullptr;
+	RefPtr<Dir> pDir(new Dir());
+	return (::f_opendir(pDir->GetEntity(), dirName) == FR_OK)? pDir.release() : nullptr;
 }
 
 }

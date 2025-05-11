@@ -14,7 +14,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // FAT
 //------------------------------------------------------------------------------
-class FAT : public FS {
+class FAT : public FS::Manager {
 public:
 	class File : public FS::File {
 	public:
@@ -25,8 +25,8 @@ public:
 		File();
 		~File();
 	public:
-		FIL* GetFIL() { return &fil_; }
-		const FIL* GetFIL() const { return &fil_; }
+		FIL* GetEntity() { return &fil_; }
+		const FIL* GetEntity() const { return &fil_; }
 	public:
 		int Read(void* buffer, int bytes) override;
 		int Write(const void* buffer, int bytes) override;
@@ -40,20 +40,39 @@ public:
 		bool Truncate(int bytes) override;
 		bool Sync() override;
 	};
+	class FileInfo : public FS::FileInfo {
+	private:
+		FILINFO filInfo_;
+	public:
+		FileInfo() {}
+		~FileInfo() {}
+	public:
+		FILINFO& GetEntity() { return filInfo_; }
+		const FILINFO& GetEntity() const { return filInfo_; }
+	public:
+		virtual const char* GetName() const { return filInfo_.fname; }
+		virtual uint32_t GetSize() const { return filInfo_.fsize; }
+		virtual bool IsDirectory() const { return (filInfo_.fattrib & AM_DIR) != 0; }
+		virtual bool IsFile() const { return (filInfo_.fattrib & AM_DIR) == 0; }
+		//virtual bool IsHidden() const { return (filInfo_.fattrib & AM_HID) != 0; }
+		//virtual bool IsReadOnly() const { return (filInfo_.fattrib & AM_RDO) != 0; }
+		//virtual bool IsSystem() const { return (filInfo_.fattrib & AM_SYS) != 0; }
+		//virtual bool IsArchive() const { return (filInfo_.fattrib & AM_ARC) != 0; }
+		//virtual bool IsNormal() const { return (filInfo_.fattrib & AM_DIR) == 0 && (filInfo_.fattrib & AM_HID) == 0; }
+	};
 	class Dir : public FS::Dir {
 	private:
-		DIR dir; // FATFS directory object
+		DIR dir_;
+		FileInfo fileInfo_;
 	public:
-		Dir(DIR d);
+		Dir();
 		~Dir();
 	public:
-		bool First(FileInfo& info) override;
-		bool Next(FileInfo& info) override;
+		DIR* GetEntity() { return &dir_; }
+		const DIR* GetEntity() const { return &dir_; }
+	public:
+		bool Read(FS::FileInfo** ppFileInfo) override;
 		void Close() override;
-		bool Remove() override;
-		bool Exists() override;
-		bool Rename(const char* newName) override;
-		bool Create() override;
 	};
 	enum class MountMode { Normal, Forced, };
 	static const int SectorSize = FF_MIN_SS;
@@ -100,8 +119,8 @@ public:
 public:
 	FAT() : numLogicalDrive_{0} {}
 public:
-	static File* OpenFile(const char* path, const char* mode);
-	static Dir* OpenDir(const char* path);
+	virtual FS::File* OpenFile(const char* fileName, const char* mode);
+	virtual FS::Dir* OpenDir(const char* dirName);
 public:
 	int AssignLogialDrive() { numLogicalDrive_++; return numLogicalDrive_ - 1; }
 	void RegisterPhysicalDrive(PhysicalDrive& physicalDrive) {

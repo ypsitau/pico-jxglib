@@ -31,24 +31,38 @@ public:
 		virtual bool Truncate(int size) = 0;
 		virtual bool Sync() = 0;
 	};
-	class Dir {
+	class FileInfo {
 	public:
-		struct FileInfo {
-			const char* name;
-			int size;
-		};
-
+		virtual const char* GetName() const = 0;
+		virtual uint32_t GetSize() const = 0;
+		virtual bool IsDirectory() const = 0;
+		virtual bool IsFile() const = 0;
+	};
+	class Dir : public Referable {
+	public:
+		DeclareReferable(Dir);
+	protected:
 		virtual ~Dir() { Close(); }
-		virtual bool First(FileInfo& info) = 0;
-		virtual bool Next(FileInfo& info) = 0;
+	public:
+		virtual bool Read(FileInfo** ppFileInfo) = 0;
 		virtual void Close() {}
-		virtual bool Remove() = 0;
-		virtual bool Exists() = 0;
-		virtual bool Rename(const char* newName) = 0;
-		virtual bool Create() = 0;
+	};
+	class Manager {
+	private:
+		Manager* pManagerNext_;
+	public:
+		Manager();
+	public:
+		virtual File* OpenFile(const char* fileName, const char* mode) = 0;
+		virtual Dir* OpenDir(const char* dirName) = 0;
 	};
 public:
-	FS() {}
+	static Manager* pManagerTop;
+public:
+	FS();
+public:
+	static File* OpenFile(const char* fileName, const char* mode);
+	static Dir* OpenDir(const char* dirName);
 };
 
 }
