@@ -33,14 +33,14 @@ namespace jxglib::ShellCmd_Basic {
 ShellCmd_Alias(about_cpu, "about-platform", "prints information about the platform")
 {
 #if defined(PICO_RP2040)
-	terminal.Printf("RP2040 %d MHz\n", ::clock_get_hz(clk_sys) / 1000000);
+	out.Printf("RP2040 %d MHz\n", ::clock_get_hz(clk_sys) / 1000000);
 #elif defined(PICO_RP2350)
-	terminal.Printf("RP2350 (%s) %d MHz\n", CPU_ARCH, ::clock_get_hz(clk_sys) / 1000000);
+	out.Printf("RP2350 (%s) %d MHz\n", CPU_ARCH, ::clock_get_hz(clk_sys) / 1000000);
 #else
-	terminal.Printf("unknown %d MHz\n", ::clock_get_hz(clk_sys) / 1000000);
+	out.Printf("unknown %d MHz\n", ::clock_get_hz(clk_sys) / 1000000);
 #endif
-	terminal.Printf("Flash  0x%08X-0x%08X %7d\n", XIP_BASE, XIP_BASE + PICO_FLASH_SIZE_BYTES, PICO_FLASH_SIZE_BYTES); 
-	terminal.Printf("SRAM   0x20000000-0x%p %7d\n", &__stack, &__stack - reinterpret_cast<char*>(0x20000000));
+	out.Printf("Flash  0x%08X-0x%08X %7d\n", XIP_BASE, XIP_BASE + PICO_FLASH_SIZE_BYTES, PICO_FLASH_SIZE_BYTES); 
+	out.Printf("SRAM   0x20000000-0x%p %7d\n", &__stack, &__stack - reinterpret_cast<char*>(0x20000000));
 	return 0;
 }
 
@@ -50,29 +50,29 @@ ShellCmd_Alias(about_cpu, "about-platform", "prints information about the platfo
 ShellCmd_Alias(about_me, "about-me", "prints information about this own program")
 {
 #if defined(PICO_PROGRAM_NAME)
-	terminal.Printf("%s", PICO_PROGRAM_NAME);
+	out.Printf("%s", PICO_PROGRAM_NAME);
 #else
-	terminal.Printf("(no name)");
+	out.Printf("(no name)");
 #endif
 #if defined(PICO_PROGRAM_VERSION_STRING)
-	terminal.Printf(" ver.%s\n", PICO_PROGRAM_VERSION_STRING);
+	out.Printf(" ver.%s\n", PICO_PROGRAM_VERSION_STRING);
 #else
-	terminal.Printf("\n");
+	out.Printf("\n");
 #endif
 #if defined(PICO_PROGRAM_DESCRIPTION)
-	terminal.Printf("Desc   %s\n", PICO_PROGRAM_DESCRIPTION);
+	out.Printf("Desc   %s\n", PICO_PROGRAM_DESCRIPTION);
 #endif
 #if defined(PICO_PROGRAM_URL)
-	terminal.Printf("URL    %s\n", PICO_PROGRAM_URL);
+	out.Printf("URL    %s\n", PICO_PROGRAM_URL);
 #endif
-	terminal.Printf("Flash  0x%p-0x%p %7d\n", &__flash_binary_start, &__flash_binary_end, &__flash_binary_end - &__flash_binary_start);
+	out.Printf("Flash  0x%p-0x%p %7d\n", &__flash_binary_start, &__flash_binary_end, &__flash_binary_end - &__flash_binary_start);
 #if defined(__arm__)
-	terminal.Printf("Vector 0x%p-0x%p %7d\n", &ram_vector_table, &ram_vector_table + PICO_RAM_VECTOR_TABLE_SIZE, PICO_RAM_VECTOR_TABLE_SIZE * sizeof(void*));
+	out.Printf("Vector 0x%p-0x%p %7d\n", &ram_vector_table, &ram_vector_table + PICO_RAM_VECTOR_TABLE_SIZE, PICO_RAM_VECTOR_TABLE_SIZE * sizeof(void*));
 #endif
-	terminal.Printf("Data   0x%p-0x%p %7d\n", &__data_start__, &__data_end__, &__data_end__ - &__data_start__);
-	terminal.Printf("Bss    0x%p-0x%p %7d\n", &__bss_start__, &__bss_end__, &__bss_end__ - &__bss_start__);
-	terminal.Printf("Heap   0x%p-0x%p %7d\n", &__heap_start, &__heap_end, &__heap_end - &__heap_start);
-	terminal.Printf("Stack  0x%p-0x%p %7d\n", &__heap_end, &__stack, &__stack - &__heap_end);
+	out.Printf("Data   0x%p-0x%p %7d\n", &__data_start__, &__data_end__, &__data_end__ - &__data_start__);
+	out.Printf("Bss    0x%p-0x%p %7d\n", &__bss_start__, &__bss_end__, &__bss_end__ - &__bss_start__);
+	out.Printf("Heap   0x%p-0x%p %7d\n", &__heap_start, &__heap_end, &__heap_end - &__heap_start);
+	out.Printf("Stack  0x%p-0x%p %7d\n", &__heap_end, &__stack, &__stack - &__heap_end);
 	return 0;
 }
 
@@ -88,22 +88,22 @@ public:
 public:
 	ShellCmd_d() : Shell::Cmd("d", "prints memory content at the specified address"), addr_{0x00000000}, bytes_{64} {}
 public:
-	virtual int Run(Terminal& terminal, int argc, char* argv[]) override;
+	virtual int Run(Printable& out, int argc, char* argv[]) override;
 };
 
 ShellCmd_d ShellCmd_d::Instance;
 
-int ShellCmd_d::Run(Terminal& terminal, int argc, char* argv[])
+int ShellCmd_d::Run(Printable& out, int argc, char* argv[])
 {
-	int nColsTerm, nRowsTerm;
-	terminal.GetSize(&nColsTerm, &nRowsTerm);
-	nColsTerm -= 8 + 2;
-	int nCols = ((nColsTerm + 1) / 3) / 8 * 8;
+	int nColsOut, nRowsOut;
+	out.GetSize(&nColsOut, &nRowsOut);
+	nColsOut -= 8 + 2;
+	int nCols = ((nColsOut + 1) / 3) / 8 * 8;
 	if (argc >= 2) {
 		char* p = nullptr;
 		uint32_t num = ::strtoul(argv[1], &p, 0);
 		if (*p != '\0') {
-			terminal.Printf("invalid number\n");
+			out.Printf("invalid number\n");
 			return 1;
 		}
 		addr_ = num;
@@ -112,13 +112,13 @@ int ShellCmd_d::Run(Terminal& terminal, int argc, char* argv[])
 		char* p = nullptr;
 		uint32_t num = ::strtoul(argv[2], &p, 0);
 		if (*p != '\0') {
-			terminal.Printf("invalid number\n");
+			out.Printf("invalid number\n");
 			return 1;
 		}
 		bytes_ = num;
 	}
 	if (nCols > 0) {
-		terminal.Dump.Cols(nCols).AddrStart(addr_).DigitsAddr(8)(reinterpret_cast<const void*>(addr_), bytes_);
+		out.Dump.Cols(nCols).AddrStart(addr_).DigitsAddr(8)(reinterpret_cast<const void*>(addr_), bytes_);
 	}
 	addr_ += bytes_;
 	return 0;
@@ -129,7 +129,7 @@ int ShellCmd_d::Run(Terminal& terminal, int argc, char* argv[])
 //-----------------------------------------------------------------------------
 ShellCmd(ticks, "prints names and attributes of running Tickable instances")
 {
-	Tickable::PrintList(terminal);
+	Tickable::PrintList(out);
 	return 0;
 }
 
@@ -138,7 +138,7 @@ ShellCmd(ticks, "prints names and attributes of running Tickable instances")
 //-----------------------------------------------------------------------------
 ShellCmd(help, "prints help strings for available commands")
 {
-	Shell::PrintHelp(terminal);
+	Shell::PrintHelp(out);
 	return 0;
 }
 
@@ -148,7 +148,7 @@ ShellCmd(help, "prints help strings for available commands")
 ShellCmd(prompt, "changes the command line prompt")
 {
 	if (argc < 2) {
-		terminal.Println(Shell::GetPrompt());
+		out.Println(Shell::GetPrompt());
 	} else {
 		Shell::SetPrompt(argv[1]);
 	}
