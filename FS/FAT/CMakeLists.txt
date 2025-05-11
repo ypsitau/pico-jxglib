@@ -11,3 +11,13 @@ target_include_directories(jxglib_FAT INTERFACE
 
 target_link_libraries(jxglib_FAT INTERFACE
 	jxglib_FS)
+
+function(jxglib_configure_FAT target)
+	set(VARS
+		CFG_TUSB_DEBUG
+	)
+	cmake_parse_arguments("" ""  "${VARS}" "" ${ARGN})
+	jxglib_set_if_undefined(_CFG_TUSB_DEBUG						0)
+	configure_file(${JXGLIB_DIR}/FS/FAT/ffconf.h.in ${CMAKE_CURRENT_BINARY_DIR}/ffconf.h)
+	target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+endfunction()
