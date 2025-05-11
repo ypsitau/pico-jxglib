@@ -61,4 +61,4 @@ pico_add_extra_outputs(test-FAT-SDCard)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 
-jxglib_configure_FAT(test-FAT-SDCard)
+jxglib_configure_FAT(test-FAT-SDCard FF_USE_MKFS 1)

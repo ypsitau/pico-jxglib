@@ -195,7 +195,6 @@ ShellCmd(touch, "creates an empty file")
 	return 0;
 }
 
-#if 0
 ShellCmd(format, "formats the drive")
 {
 	const char*path = "";
@@ -217,7 +216,6 @@ ShellCmd(format, "formats the drive")
 	}
 	return 0;
 }
-#endif
 
 /*
 ShellCmd(df, "shows free space on the drive")
