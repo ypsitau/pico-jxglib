@@ -65,9 +65,9 @@ public:
 		::flash_range_program(offsetXIP, reinterpret_cast<const uint8_t*>(data), bytes);
 	}
 public:
-	static void EraseAndProgram(uint32_t offsetXIP, const void* data, uint32_t bytes) { Instance.EraseAndProgram(offsetXIP, data, bytes); }
-	static void Erase(uint32_t offsetXIP, uint32_t bytes) {	Instance.Erase(offsetXIP, bytes); }
-	static void Program(uint32_t offsetXIP, const void* data, uint32_t bytes) { Instance.Program(offsetXIP, data, bytes); }
+	static void EraseAndProgram(uint32_t offsetXIP, const void* data, uint32_t bytes) { Instance.EraseAndProgram_(offsetXIP, data, bytes); }
+	static void Erase(uint32_t offsetXIP, uint32_t bytes) {	Instance.Erase_(offsetXIP, bytes); }
+	static void Program(uint32_t offsetXIP, const void* data, uint32_t bytes) { Instance.Program_(offsetXIP, data, bytes); }
 public:
 	void EraseAndProgram_(uint32_t offsetXIP, const void* data, uint32_t bytes) {
 		Erase_(offsetXIP, bytes);

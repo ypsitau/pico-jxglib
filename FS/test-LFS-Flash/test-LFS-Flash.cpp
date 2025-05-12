@@ -8,13 +8,12 @@
 
 using namespace jxglib;
 
+LFS lfs(0x00100000, 0x00010000); // XIP address and size
+
 int main()
 {
 	::stdio_init_all();
-	GPIO2.set_function_SPI0_SCK();
-	GPIO3.set_function_SPI0_TX();
-	GPIO4.set_function_SPI0_RX();
 	Serial::Terminal terminal;
-	Shell::AttachTerminal(terminal);
+	Shell::AttachTerminal(terminal.Initialize());
 	for (;;) Tickable::Tick();
 }

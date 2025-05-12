@@ -124,6 +124,7 @@ public:
 	PhysicalDrive* GetPhysicalDrive(BYTE pdrv) { return physicalDriveTbl_[pdrv]; }
 public:
 	// virtual functions of FS::Manager
+	virtual const char* GetDriveName() const override { return "FAT"; }
 	virtual FS::File* OpenFile(const char* fileName, const char* mode) override;
 	virtual FS::Dir* OpenDir(const char* dirName) override;
 	virtual bool RemoveFile(const char* fileName) override;

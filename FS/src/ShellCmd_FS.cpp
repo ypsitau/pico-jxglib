@@ -151,4 +151,18 @@ ShellCmd(rm, "removes a file")
 	return 0;
 }
 
+ShellCmd(format, "formats the filesystem")
+{
+	if (argc < 2) {
+		out.Printf("Usage: %s <pathname>\n", argv[0]);
+		return 1;
+	}
+	const char* dirName = argv[1];
+	if (!FS::Format(dirName)) {
+		out.Printf("failed to format\n");
+		return 1;
+	}
+	return 0;
+}
+
 }

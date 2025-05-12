@@ -9,20 +9,21 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // LFS
 //------------------------------------------------------------------------------
-LFS::LFS() :
+LFS::LFS(uint32_t offsetXIP, uint32_t bytesXIP, const char* driveName) : offsetXIP_{offsetXIP},
 	cfg_ {
-		context:			nullptr,
+		context:			this,
 		read:				user_provided_block_device_read,
 		prog:				user_provided_block_device_prog,
 		erase:				user_provided_block_device_erase,
 		sync:				user_provided_block_device_sync,
-		read_size:			16,					// Minimum size of a block read in bytes
+		read_size:			FLASH_PAGE_SIZE,	// Minimum size of a block read in bytes
 		prog_size:			FLASH_PAGE_SIZE,	// Minimum size of a block program in bytes
 		block_size:			FLASH_SECTOR_SIZE,	// Size of an erasable block in bytes
-		block_count:		128,				// Number of erasable blocks on the device
+		block_count:		bytesXIP / FLASH_SECTOR_SIZE,
+												// Number of erasable blocks on the device
 		block_cycles:		500,				// Number of erase cycles before littlefs evicts metadata logs and moves the metadata to another block
-		cache_size:			16,					// Size of block caches in bytes
-		lookahead_size:		16,					// Size of the lookahead buffer in bytes
+		cache_size:			FLASH_SECTOR_SIZE,	// Size of block caches in bytes
+		lookahead_size:		FLASH_SECTOR_SIZE,	// Size of the lookahead buffer in bytes
 		compact_thresh:		0,					// Threshold for compacting the filesystem. Default is set if zero
 		read_buffer:		nullptr,			// Pointer to the read buffer. lfs will allocate this if nullptr
 		prog_buffer:		nullptr,			// Pointer to the program buffer. lfs will allocate this if nullptr
@@ -32,7 +33,7 @@ LFS::LFS() :
 		attr_max:			0,					// Maximum number of attributes per file. Default is set if zero
 		metadata_max:		0,					// Maximum number of metadata entries per file. Default is set if zero
 		inline_max:			0,					// Maximum size of inline data. Default is set if zero
-	}
+	}, driveName_{driveName}
 {
 }
 
@@ -49,73 +50,81 @@ FS::File* LFS::OpenFile(const char* fileName, const char* mode)
 	} else {
 		flags = LFS_O_RDONLY;
 	}
-	return (::lfs_file_open(&lfs_, pFile->GetEntity(), fileName, flags) == 0)? pFile.release() : nullptr;
+	return (::lfs_file_open(&lfs_, pFile->GetEntity(), fileName, flags) == LFS_ERR_OK)? pFile.release() : nullptr;
 }
 
 FS::Dir* LFS::OpenDir(const char* dirName)
 {
 	RefPtr<Dir> pDir(new Dir(lfs_));
-	return (::lfs_dir_open(&lfs_, pDir->GetEntity(), dirName) == 0)? pDir.release() : nullptr;
+	return (::lfs_dir_open(&lfs_, pDir->GetEntity(), dirName) == LFS_ERR_OK)? pDir.release() : nullptr;
 }
 
 bool LFS::RemoveFile(const char* fileName)
 {
-	return ::lfs_remove(&lfs_, fileName) == 0;
+	return ::lfs_remove(&lfs_, fileName) == LFS_ERR_OK;
 }
 
 bool LFS::RenameFile(const char* fileNameOld, const char* fileNameNew)
 {
-	return ::lfs_rename(&lfs_, fileNameOld, fileNameNew) == 0;
+	return ::lfs_rename(&lfs_, fileNameOld, fileNameNew) == LFS_ERR_OK;
 }
 
 bool LFS::CreateDir(const char* dirName)
 {
-	return ::lfs_mkdir(&lfs_, dirName) == 0;
+	return ::lfs_mkdir(&lfs_, dirName) == LFS_ERR_OK;
 }
 
 bool LFS::RemoveDir(const char* dirName)
 {
-	return ::lfs_remove(&lfs_, dirName) == 0;
+	return ::lfs_remove(&lfs_, dirName) == LFS_ERR_OK;
 }
 
 bool LFS::RenameDir(const char* dirNameOld, const char* dirNameNew)
 {
-	return ::lfs_rename(&lfs_, dirNameOld, dirNameNew) == 0;
+	return ::lfs_rename(&lfs_, dirNameOld, dirNameNew) == LFS_ERR_OK;
 }
 
 bool LFS::Format()
 {
-	return ::lfs_format(&lfs_, &cfg_) == 0 && ::lfs_mount(&lfs_, &cfg_) == 0;
+	return ::lfs_format(&lfs_, &cfg_) == LFS_ERR_OK && ::lfs_mount(&lfs_, &cfg_) == LFS_ERR_OK;
 }
-
-uint32_t offsetXIP = 0x00100000;
 
 int LFS::user_provided_block_device_read(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size)
 {
-	::memcpy(buffer, reinterpret_cast<const void*>(offsetXIP + block * cfg->block_size + off), size);
-	return 0; // Return 0 on success
+	uint32_t offsetXIP = reinterpret_cast<LFS*>(cfg->context)->GetOffsetXIP() + block * cfg->block_size + off;
+	::printf("Read 0x%08x %d\n", offsetXIP, size);
+	::memcpy(buffer, reinterpret_cast<const void*>(XIP_BASE + offsetXIP), size);
+	return LFS_ERR_OK;
 }
 
 int LFS::user_provided_block_device_prog(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, const void* buffer, lfs_size_t size)
 {
-	Flash::Instance.Program(offsetXIP + block * cfg->block_size + off, buffer, size);
-	return 0; // Return 0 on success
+	uint32_t offsetXIP = reinterpret_cast<LFS*>(cfg->context)->GetOffsetXIP() + block * cfg->block_size + off;
+	::printf("Program 0x%08x %d\n", offsetXIP, size);
+	Flash::Program(offsetXIP, buffer, size);
+	return LFS_ERR_OK;
 }
 
 int LFS::user_provided_block_device_erase(const struct lfs_config* cfg, lfs_block_t block)
 {
-	Flash::Instance.Erase(offsetXIP + block * cfg->block_size, cfg->block_size);
-	return 0; // Return 0 on success
+	uint32_t offsetXIP = reinterpret_cast<LFS*>(cfg->context)->GetOffsetXIP() + block * cfg->block_size;
+	::printf("Erase 0x%08x %d\n", offsetXIP, cfg->block_size);
+	Flash::Erase(offsetXIP, cfg->block_size);
+	return LFS_ERR_OK;
 }
 
 int LFS::user_provided_block_device_sync(const struct lfs_config* cfg)
 {
-	return 0; // Return 0 on success
+	return LFS_ERR_OK;
 }
 
 //------------------------------------------------------------------------------
 // LFS::File
 //------------------------------------------------------------------------------
+LFS::File::File(lfs_t& lfs) : lfs_(lfs)
+{
+}
+
 int LFS::File::Read(void* buffer, int bytes)
 {
 	return ::lfs_file_read(&lfs_, &file_, buffer, bytes);
@@ -175,16 +184,9 @@ LFS::Dir::Dir(lfs_t& lfs) : lfs_(lfs)
 
 bool LFS::Dir::Read(FS::FileInfo** ppFileInfo)
 {
-	// Read the next entry in the directory
-	int err = ::lfs_dir_read(&lfs_, &dir_, &fileInfo_.GetEntity());
-	if (err == 0) {
-		*ppFileInfo = &fileInfo_;
-		return true;
-	} else if (err == LFS_ERR_NOENT) {
-		return false; // No more entries
-	} else {
-		return false; // Error occurred
-	}
+	*ppFileInfo = &fileInfo_;
+	// LFS_ERR_NOENT indicates no more entries
+	return ::lfs_dir_read(&lfs_, &dir_, &fileInfo_.GetEntity()) == LFS_ERR_OK;
 }
 
 void LFS::Dir::Close()

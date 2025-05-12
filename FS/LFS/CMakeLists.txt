@@ -2,6 +2,7 @@ add_library(jxglib_LFS INTERFACE)
 
 target_sources(jxglib_LFS INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/littlefs/lfs.c
+	${CMAKE_CURRENT_LIST_DIR}/littlefs/lfs_util.c
 	${CMAKE_CURRENT_LIST_DIR}/src/LFS.cpp)
 
 target_include_directories(jxglib_LFS INTERFACE

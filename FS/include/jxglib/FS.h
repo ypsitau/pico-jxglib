@@ -51,6 +51,10 @@ public:
 	public:
 		Manager();
 	public:
+		Manager* GetNext() const { return pManagerNext_; }
+	public:
+		virtual const char* GetDriveName() const = 0;
+	public:
 		virtual File* OpenFile(const char* fileName, const char* mode) = 0;
 		virtual Dir* OpenDir(const char* dirName) = 0;
 		virtual bool RemoveFile(const char* fileName) = 0;
@@ -69,6 +73,10 @@ public:
 public:
 	FS();
 public:
+	static Manager* FindManager(const char* pathName);
+	static const char* SkipDriveName(const char* pathName);
+	static const char* ExtractDriveName(const char* pathName, char* driveName, int lenMax);
+public:
 	static File* OpenFile(const char* fileName, const char* mode);
 	static Dir* OpenDir(const char* dirName);
 	static bool RemoveFile(const char* fileName);
@@ -76,7 +84,7 @@ public:
 	static bool CreateDir(const char* dirName);
 	static bool RemoveDir(const char* dirName);
 	static bool RenameDir(const char* fileNameOld, const char* fileNameNew);
-	static bool Format(const char* dirName);
+	static bool Format(const char* driveName);
 };
 
 }

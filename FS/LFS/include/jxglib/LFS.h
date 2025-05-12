@@ -23,7 +23,7 @@ public:
 		lfs_file_t file_;
 	public:
 		File(lfs_t& lfs);
-		~File();
+		~File() {}
 	public:
 		lfs_file_t* GetEntity() { return &file_; }
 		const lfs_file_t* GetEntity() const { return &file_; }
@@ -77,10 +77,15 @@ public:
 private:
 	lfs_t lfs_;
 	lfs_config cfg_;
+	const char* driveName_;
+	uint32_t offsetXIP_;
 public:
-	LFS();
+	LFS(uint32_t offsetXIP, uint32_t bytesXIP, const char* driveName = "flash");
+public:
+	uint32_t GetOffsetXIP() const { return offsetXIP_; }
 public:
 	// virtual functions of FS::Manager
+	virtual const char* GetDriveName() const override { return driveName_; }
 	virtual FS::File* OpenFile(const char* fileName, const char* mode) override;
 	virtual FS::Dir* OpenDir(const char* dirName) override;
 	virtual bool RemoveFile(const char* fileName) override;
