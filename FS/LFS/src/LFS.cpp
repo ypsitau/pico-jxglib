@@ -16,22 +16,22 @@ LFS::LFS() :
 		prog:				user_provided_block_device_prog,
 		erase:				user_provided_block_device_erase,
 		sync:				user_provided_block_device_sync,
-		read_size:			16,
-		prog_size:			16,
-		block_size:			4096,
-		block_count:		128,
-		block_cycles:		500,
-		cache_size:			16,
-		lookahead_size:		16,
-		compact_thresh:		0,
-		read_buffer:		nullptr,
-		prog_buffer:		nullptr,
-		lookahead_buffer:	nullptr,
-		name_max:			0,
-		file_max:			0,
-		attr_max:			0,
-		metadata_max:		0,
-		inline_max:			0,
+		read_size:			16,					// Minimum size of a block read in bytes
+		prog_size:			FLASH_PAGE_SIZE,	// Minimum size of a block program in bytes
+		block_size:			FLASH_SECTOR_SIZE,	// Size of an erasable block in bytes
+		block_count:		128,				// Number of erasable blocks on the device
+		block_cycles:		500,				// Number of erase cycles before littlefs evicts metadata logs and moves the metadata to another block
+		cache_size:			16,					// Size of block caches in bytes
+		lookahead_size:		16,					// Size of the lookahead buffer in bytes
+		compact_thresh:		0,					// Threshold for compacting the filesystem. Default is set if zero
+		read_buffer:		nullptr,			// Pointer to the read buffer. lfs will allocate this if nullptr
+		prog_buffer:		nullptr,			// Pointer to the program buffer. lfs will allocate this if nullptr
+		lookahead_buffer:	nullptr,			// Pointer to the lookahead buffer. lfs will allocate this if nullptr
+		name_max:			0,					// Maximum length of file names. Default is set if zero
+		file_max:			0,					// Maximum number of open files. Default is set if zero
+		attr_max:			0,					// Maximum number of attributes per file. Default is set if zero
+		metadata_max:		0,					// Maximum number of metadata entries per file. Default is set if zero
+		inline_max:			0,					// Maximum size of inline data. Default is set if zero
 	}
 {
 }
@@ -118,76 +118,48 @@ int LFS::user_provided_block_device_sync(const struct lfs_config* cfg)
 //------------------------------------------------------------------------------
 int LFS::File::Read(void* buffer, int bytes)
 {
-	// Read data from the file
-	int bytesRead = ::lfs_file_read(&lfs_, &file_, buffer, bytes);
-	if (bytesRead < 0) {
-		return -1; // Error occurred
-	}
-	return bytesRead; // Return number of bytes read
+	return ::lfs_file_read(&lfs_, &file_, buffer, bytes);
 }
 
 int LFS::File::Write(const void* buffer, int bytes)
 {
-	// Write data to the file
-	int bytesWritten = ::lfs_file_write(&lfs_, &file_, buffer, bytes);
-	if (bytesWritten < 0) {
-		return -1; // Error occurred
-	}
-	return bytesWritten; // Return number of bytes written
+	return ::lfs_file_write(&lfs_, &file_, buffer, bytes);
 }
 
 void LFS::File::Close()
 {
-	// Close the file
 	::lfs_file_close(&lfs_, &file_);
 }
 
 bool LFS::File::Seek(int position)
 {
 	// Seek to the specified position in the file
-	int err = ::lfs_file_seek(&lfs_, &file_, position, LFS_SEEK_SET);
-	return (err == 0);
+	return ::lfs_file_seek(&lfs_, &file_, position, LFS_SEEK_SET) == LFS_ERR_OK;
 }
 
 int LFS::File::Tell()
 {
-	// Get the current position in the file
-	int err = ::lfs_file_tell(&lfs_, &file_);
-	if (err < 0) {
-		return -1; // Error occurred
-	}
-	return err; // Return current position
+	return ::lfs_file_tell(&lfs_, &file_);
 }
 
 int LFS::File::Size()
 {
-	// Get the size of the file
-	int err = ::lfs_file_size(&lfs_, &file_);
-	if (err < 0) {
-		return -1; // Error occurred
-	}
-	return err; // Return size of the file
+	return ::lfs_file_size(&lfs_, &file_);
 }
 
 bool LFS::File::Flush()
 {
-	// Flush the file to ensure all data is written
-	int err = ::lfs_file_sync(&lfs_, &file_);
-	return (err == 0);
+	return ::lfs_file_sync(&lfs_, &file_) == LFS_ERR_OK;
 }
 
 bool LFS::File::Truncate(int bytes)
 {
-	// Truncate the file to the specified size
-	int err = ::lfs_file_truncate(&lfs_, &file_, bytes);
-	return (err == 0);
+	return ::lfs_file_truncate(&lfs_, &file_, bytes) == LFS_ERR_OK;
 }
 
 bool LFS::File::Sync()
 {
-	// Sync the file to ensure all data is written
-	int err = ::lfs_file_sync(&lfs_, &file_);
-	return (err == 0);
+	return ::lfs_file_sync(&lfs_, &file_) == LFS_ERR_OK;
 }
 
 //------------------------------------------------------------------------------

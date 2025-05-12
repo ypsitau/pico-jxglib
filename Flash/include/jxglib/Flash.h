@@ -64,30 +64,35 @@ public:
 	static void ProgramUnsafe(uint32_t offsetXIP, const void* data, uint32_t bytes) {
 		::flash_range_program(offsetXIP, reinterpret_cast<const uint8_t*>(data), bytes);
 	}
-	void EraseAndProgram(uint32_t offsetXIP, const void* data, uint32_t bytes) {
-		Erase(offsetXIP, bytes);
-		Program(offsetXIP, data, bytes);
+public:
+	static void EraseAndProgram(uint32_t offsetXIP, const void* data, uint32_t bytes) { Instance.EraseAndProgram(offsetXIP, data, bytes); }
+	static void Erase(uint32_t offsetXIP, uint32_t bytes) {	Instance.Erase(offsetXIP, bytes); }
+	static void Program(uint32_t offsetXIP, const void* data, uint32_t bytes) { Instance.Program(offsetXIP, data, bytes); }
+public:
+	void EraseAndProgram_(uint32_t offsetXIP, const void* data, uint32_t bytes) {
+		Erase_(offsetXIP, bytes);
+		Program_(offsetXIP, data, bytes);
 	}
-	virtual void Erase(uint32_t offsetXIP, uint32_t bytes) {
+	virtual void Erase_(uint32_t offsetXIP, uint32_t bytes) {
 		Param_Erase param { offsetXIP, bytes };
-		::flash_safe_execute(Erase_, &param, Timeout);
+		::flash_safe_execute(EraseStub, &param, Timeout);
 	}
-	virtual void Program(uint32_t offsetXIP, const void* data, uint32_t bytes) {
+	virtual void Program_(uint32_t offsetXIP, const void* data, uint32_t bytes) {
 		Param_Program param { offsetXIP, data, bytes };
-		::flash_safe_execute(Program_, &param, Timeout);
+		::flash_safe_execute(ProgramStub, &param, Timeout);
 	}
-	virtual void CopyMemory(void* dst, uint32_t offsetDst, const void* src, uint32_t offsetSrc, uint32_t bytes) {
+	virtual void CopyMemory_(void* dst, uint32_t offsetDst, const void* src, uint32_t offsetSrc, uint32_t bytes) {
 		::memcpy(reinterpret_cast<uint8_t*>(dst) + offsetDst, reinterpret_cast<const uint8_t*>(src) + offsetSrc, bytes);
 	}
-	void CopyMemory(void* dst, uint32_t offsetDst, uint32_t src, uint32_t offsetSrc, uint32_t bytes) {
-		CopyMemory(dst, offsetDst, reinterpret_cast<const void*>(src), offsetSrc, bytes);
+	void CopyMemory_(void* dst, uint32_t offsetDst, uint32_t src, uint32_t offsetSrc, uint32_t bytes) {
+		CopyMemory_(dst, offsetDst, reinterpret_cast<const void*>(src), offsetSrc, bytes);
 	}
 private:
-	static void Erase_(void* param) {
+	static void EraseStub(void* param) {
 		auto& paramEx = *reinterpret_cast<Param_Erase*>(param);
 		EraseUnsafe(paramEx.offsetXIP, paramEx.bytes);
 	}
-	static void Program_(void* param) {
+	static void ProgramStub(void* param) {
 		auto& paramEx = *reinterpret_cast<Param_Program*>(param);
 		ProgramUnsafe(paramEx.offsetXIP, paramEx.data, paramEx.bytes);
 	}

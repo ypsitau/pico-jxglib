@@ -11,9 +11,9 @@ public:
 	void Read(uint32_t offsetXIP, void* buff, uint32_t bytes);
 	void Write(uint32_t offsetXIP, const void* buff, uint32_t bytes);
 public:
-	virtual void Erase(uint32_t offsetXIP, uint32_t bytes) override;
-	virtual void Program(uint32_t offsetXIP, const void* data, uint32_t bytes) override;
-	virtual void CopyMemory(void* dst, uint32_t offsetDst, const void* src, uint32_t offsetSrc, uint32_t bytes) override;
+	virtual void Erase_(uint32_t offsetXIP, uint32_t bytes) override;
+	virtual void Program_(uint32_t offsetXIP, const void* data, uint32_t bytes) override;
+	virtual void CopyMemory_(void* dst, uint32_t offsetDst, const void* src, uint32_t offsetSrc, uint32_t bytes) override;
 };
 
 int main()
@@ -199,17 +199,17 @@ void FlashDummy::Write(uint32_t offsetXIP, const void* buff, uint32_t bytes)
 	Write_(offsetXIP, buff, bytes);
 }
 
-void FlashDummy::Erase(uint32_t offsetXIP, uint32_t bytes)
+void FlashDummy::Erase_(uint32_t offsetXIP, uint32_t bytes)
 {
-	//::printf("    Erase   Flash:0x%08x                  0x%04x bytes\n", offsetXIP, bytes);
+	//::printf("    Erase_   Flash:0x%08x                  0x%04x bytes\n", offsetXIP, bytes);
 }
 
-void FlashDummy::Program(uint32_t offsetXIP, const void* data, uint32_t bytes)
+void FlashDummy::Program_(uint32_t offsetXIP, const void* data, uint32_t bytes)
 {
 	::printf("    Program Flash:0x%08x Cache:0x%08x 0x%04x bytes\n", offsetXIP, 0, bytes);
 }
 
-void FlashDummy::CopyMemory(void* dst, uint32_t offsetDst, const void* src, uint32_t offsetSrc, uint32_t bytes)
+void FlashDummy::CopyMemory_(void* dst, uint32_t offsetDst, const void* src, uint32_t offsetSrc, uint32_t bytes)
 {
 	const char* nameDst = (dst == buffCache_)? "Cache" : (dst == reinterpret_cast<const void*>(XIP_BASE))? "Flash" : "Read ";
 	const char* nameSrc = (src == buffCache_)? "Cache" : (src == reinterpret_cast<const void*>(XIP_BASE))? "Flash" : "Write";

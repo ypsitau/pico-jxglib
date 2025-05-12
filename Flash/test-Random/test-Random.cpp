@@ -13,11 +13,11 @@ uint8_t regionXIP[bytesXIP];
 uint8_t buffToWrite[bytesXIP];
 uint8_t buffToRead[bytesXIP];
 
-class FlashDummy : public Flash {
+class FlashRAM : public Flash {
 private:
 	uint8_t regionXIP_[bytesXIP];
 public:
-	FlashDummy() : Flash(256) { ::memset(regionXIP_, 0xff, sizeof(regionXIP_)); }
+	FlashRAM() : Flash(256) { ::memset(regionXIP_, 0xff, sizeof(regionXIP_)); }
 public:
 	bool CompareRegion(const void* regionXIP) { return ::memcmp(regionXIP_, regionXIP, sizeof(regionXIP_)) == 0; }
 	void DumpXIP() const { Dump(regionXIP_, sizeof(regionXIP_)); }
@@ -26,9 +26,9 @@ public:
 	void Write(uint32_t offsetXIP, const void* buff, uint32_t bytes) { Write_(offsetXIP, buff, bytes); }
 	void Sync() { Sync_(); }
 public:
-	virtual void Erase(uint32_t offsetXIP, uint32_t bytes) override;
-	virtual void Program(uint32_t offsetXIP, const void* data, uint32_t bytes) override;
-	virtual void CopyMemory(void* dst, uint32_t offsetDst, const void* src, uint32_t offsetSrc, uint32_t bytes) override;
+	virtual void Erase_(uint32_t offsetXIP, uint32_t bytes) override;
+	virtual void Program_(uint32_t offsetXIP, const void* data, uint32_t bytes) override;
+	virtual void CopyMemory_(void* dst, uint32_t offsetDst, const void* src, uint32_t offsetSrc, uint32_t bytes) override;
 };
 
 uint32_t GetRand(uint32_t n)
@@ -36,7 +36,7 @@ uint32_t GetRand(uint32_t n)
 	return static_cast<uint32_t>((static_cast<uint64_t>(::get_rand_32()) * n) >> 32);
 }
 
-FlashDummy flash;
+FlashRAM flash;
 
 int main()
 {
@@ -67,19 +67,19 @@ int main()
 }
 
 //------------------------------------------------------------------------------
-// FlashDummy
+// FlashRAM
 //------------------------------------------------------------------------------
-void FlashDummy::Erase(uint32_t offsetXIP, uint32_t bytes)
+void FlashRAM::Erase_(uint32_t offsetXIP, uint32_t bytes)
 {
 	::memset(regionXIP_ + offsetXIP, 0xff, bytes);
 }
 
-void FlashDummy::Program(uint32_t offsetXIP, const void* data, uint32_t bytes)
+void FlashRAM::Program_(uint32_t offsetXIP, const void* data, uint32_t bytes)
 {
 	::memcpy(regionXIP_ + offsetXIP, data, bytes);
 }
 
-void FlashDummy::CopyMemory(void* dst, uint32_t offsetDst, const void* src, uint32_t offsetSrc, uint32_t bytes)
+void FlashRAM::CopyMemory_(void* dst, uint32_t offsetDst, const void* src, uint32_t offsetSrc, uint32_t bytes)
 {
 	void* pDst = (dst == reinterpret_cast<void*>(XIP_BASE))? regionXIP_ : dst;
 	const void *pSrc = (src == reinterpret_cast<const void*>(XIP_BASE))? regionXIP_ : src;

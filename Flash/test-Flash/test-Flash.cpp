@@ -7,16 +7,13 @@
 
 using namespace jxglib;
 
-Serial::Terminal terminal;
-
-
 int main()
 {
 	uint8_t buff[256];
 	for (int i = 0; i < sizeof(buff); i++) buff[i] = static_cast<uint8_t>(i);
 	::stdio_init_all();
-	terminal.Initialize();
-	Shell::AttachTerminal(terminal);
+	Serial::Terminal terminal;
+	Shell::AttachTerminal(terminal.Initialize());
 	terminal.Println("Flash Test Program");
 	Flash::Write(0x00100000, buff, 256);
 	Flash::Sync();
