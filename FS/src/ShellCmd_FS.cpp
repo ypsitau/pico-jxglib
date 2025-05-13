@@ -78,6 +78,17 @@ ShellCmd(ls, "lists files in the specified directory")
 	return 0;
 }
 
+ShellCmd_Alias(ls_drive, "ls-drive", "lists availabld drives")
+{
+	RefPtr<FS::Dir> pDir(FS::OpenDirDrive());
+	FS::FileInfo* pFileInfo;
+	while (pDir->Read(&pFileInfo)) {
+		out.Printf("%s:\n", pFileInfo->GetName());
+	}
+	pDir->Close();
+	return 0;
+}
+
 ShellCmd(mkdir, "creates a directory")
 {
 	if (argc < 2) {
@@ -154,14 +165,11 @@ ShellCmd(rm, "removes a file")
 ShellCmd(format, "formats the filesystem")
 {
 	if (argc < 2) {
-		out.Printf("Usage: %s <pathname>\n", argv[0]);
+		out.Printf("Usage: %s <drivename>\n", argv[0]);
 		return 1;
 	}
-	const char* dirName = argv[1];
-	if (!FS::Format(dirName)) {
-		out.Printf("failed to format\n");
-		return 1;
-	}
+	const char* driveName = argv[1];
+	FS::Format(driveName, out);
 	return 0;
 }
 

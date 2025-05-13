@@ -68,14 +68,32 @@ public:
 		//virtual bool GetTotalSpace(uint32_t* pTotalSpace) = 0;
 		//virtual bool GetUsedSpace(uint32_t* pUsedSpace) = 0;
 	};
+	class DirDrive : public Dir {
+	public:
+		class FileInfo : public FS::FileInfo {
+		private:
+			const Manager* pManager_;
+		public:
+			FileInfo() : pManager_(nullptr) {}
+		public:
+			void SetManager(const Manager* pManager) { pManager_ = pManager; }
+		public:
+			virtual const char* GetName() const override { return pManager_? pManager_->GetDriveName() : ""; }
+			virtual uint32_t GetSize() const override { return 0; }
+			virtual bool IsDirectory() const override { return false; }
+			virtual bool IsFile() const override { return false; }
+		};
+	private:
+		Manager* pManager_;
+		FileInfo fileInfo_;
+	public:
+		DirDrive(Manager* pManager) : pManager_(pManager) {}
+	public:
+		virtual bool Read(FS::FileInfo** ppFileInfo) override;
+	};			
 public:
 	static Manager* pManagerTop;
-public:
-	static const int MaxLenDriveName = 16;
-	static const int MaxLenPathName = 256;
-private:
-	char driveNameCur_[MaxLenDriveName + 1];
-	char dirNameCur_[MaxLenPathName + 1];
+	static Manager* pManagerCur;
 public:
 	FS();
 public:
@@ -83,6 +101,8 @@ public:
 	static const char* SkipDriveName(const char* pathName);
 	static const char* ExtractDriveName(const char* pathName, char* driveName, int lenMax);
 public:
+	static bool SetDriveCur(const char* driveName);
+	static Dir* OpenDirDrive();
 	static File* OpenFile(const char* fileName, const char* mode);
 	static Dir* OpenDir(const char* dirName);
 	static bool RemoveFile(const char* fileName);
@@ -90,7 +110,7 @@ public:
 	static bool CreateDir(const char* dirName);
 	static bool RemoveDir(const char* dirName);
 	static bool RenameDir(const char* fileNameOld, const char* fileNameNew);
-	static bool Format(const char* driveName);
+	static bool Format(const char* driveName, Printable& out);
 	static bool IsLegalDriveName(const char* driveName);
 	static const char* JoinPathName(char* pathName, const char* dirName, const char* fileName);
 };

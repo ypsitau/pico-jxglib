@@ -1,6 +1,7 @@
 //==============================================================================
 // Shell.cpp
 //==============================================================================
+#include "jxglib/FS.h"
 #include "jxglib/Shell.h"
 
 namespace jxglib {
@@ -61,7 +62,12 @@ void Shell::OnTick()
 	}
 	case Stat::Prompt: {
 		char* line = GetTerminal().ReadLine_Process();
-		if (line) {
+		if (!line) {
+			// nothing to do
+		} else if (FS::IsLegalDriveName(line)) {
+			FS::SetDriveCur(line);
+			stat_ = Stat::Begin;
+		} else {
 			stat_ = Stat::Running;
 			RunCmd(line);
 			stat_ = Stat::Begin;
