@@ -30,6 +30,12 @@ FS::Manager* FS::FindManager(const char* pathName)
 	return nullptr;
 }
 
+FS::Manager* FS::GetManagerCur()
+{
+	if (!pManagerCur) pManagerCur = pManagerTop;
+	return pManagerCur;
+}
+
 const char* FS::SkipDriveName(const char* pathName)
 {
 	for (const char* p = pathName; *p; p++) {
@@ -67,44 +73,63 @@ FS::Dir* FS::OpenDirDrive()
 
 FS::File* FS::OpenFile(const char* fileName, const char* mode)
 {
+	char pathName[MaxLenPathName];
 	Manager* pManager = FindManager(fileName);
-	return pManager? pManager->OpenFile(SkipDriveName(fileName), mode) : nullptr;
+	return pManager? pManager->OpenFile(pManager->RegulatePathName(pathName, fileName), mode) : nullptr;
 }
 
 FS::Dir* FS::OpenDir(const char* dirName)
 {
+	char pathName[MaxLenPathName];
 	Manager* pManager = FindManager(dirName);
-	return pManager? pManager->OpenDir(SkipDriveName(dirName)) : nullptr;
+	return pManager? pManager->OpenDir(pManager->RegulatePathName(pathName, dirName)) : nullptr;
 }
 
 bool FS::RemoveFile(const char* fileName)
 {
+	char pathName[MaxLenPathName];
 	Manager* pManager = FindManager(fileName);
-	return pManager? pManager->RemoveFile(SkipDriveName(fileName)) : false;
+	return pManager? pManager->RemoveFile(pManager->RegulatePathName(pathName, fileName)) : false;
 }
 
 bool FS::RenameFile(const char* fileNameOld, const char* fileNameNew)
 {
+	char pathNameOld[MaxLenPathName], pathNameNew[MaxLenPathName];
 	Manager* pManager = FindManager(fileNameOld);
-	return pManager? pManager->RenameFile(SkipDriveName(fileNameOld), SkipDriveName(fileNameNew)) : false;
+	return pManager? pManager->RenameFile(pManager->RegulatePathName(pathNameOld, fileNameOld), pManager->RegulatePathName(pathNameNew, fileNameNew)) : false;
 }
 
 bool FS::CreateDir(const char* dirName)
 {
+	char pathName[MaxLenPathName];
 	Manager* pManager = FindManager(dirName);
-	return pManager? pManager->CreateDir(SkipDriveName(dirName)) : false;
+	return pManager? pManager->CreateDir(pManager->RegulatePathName(pathName, dirName)) : false;
 }
 
 bool FS::RemoveDir(const char* dirName)
 {
+	char pathName[MaxLenPathName];
 	Manager* pManager = FindManager(dirName);
-	return pManager? pManager->RemoveDir(SkipDriveName(dirName)) : false;
+	return pManager? pManager->RemoveDir(pManager->RegulatePathName(pathName, dirName)) : false;
 }
 
 bool FS::RenameDir(const char* dirNameOld, const char* dirNameNew)
 {
+	char pathNameOld[MaxLenPathName], pathNameNew[MaxLenPathName];
 	Manager* pManager = FindManager(dirNameOld);
-	return pManager? pManager->RenameDir(SkipDriveName(dirNameOld), SkipDriveName(dirNameNew)) : false;
+	return pManager? pManager->RenameDir(pManager->RegulatePathName(pathNameOld, dirNameOld), pManager->RegulatePathName(pathNameNew, dirNameNew)) : false;
+}
+
+bool FS::ChangeCurDir(const char* dirName)
+{
+	Manager* pManager = FindManager(dirName);
+	if (!pManager) return false;
+	char pathName[MaxLenPathName];
+	dirName = pManager->RegulatePathName(pathName, dirName);
+	RefPtr<FS::Dir> pDir(pManager->OpenDir(dirName));
+	if (!pDir) return false;
+	pManager->SetDirNameCur(dirName);
+	return true;
 }
 
 bool FS::Format(const char* driveName, Printable& out)
@@ -149,6 +174,7 @@ const char* FS::JoinPathName(char* pathName, const char* dirName, const char* fi
 //------------------------------------------------------------------------------
 FS::Manager::Manager() : pManagerNext_{nullptr}
 {
+	::strcpy(dirNameCur_, "/");
 	if (pManagerTop) {
 		for (Manager* pManager = FS::pManagerTop; pManager; pManager = pManager->pManagerNext_) {
 			if (!pManager->pManagerNext_) {
@@ -159,6 +185,22 @@ FS::Manager::Manager() : pManagerNext_{nullptr}
 	} else {
 		FS::pManagerTop = this;
 	}
+}
+
+const char* FS::Manager::RegulatePathName(char* pathNameBuff, const char* pathName)
+{
+	pathName = SkipDriveName(pathName);
+	if (pathName[0] == '/') {
+		::strcpy(pathNameBuff, pathName);
+	} else {
+		::strcpy(pathNameBuff, dirNameCur_);
+		int len = ::strlen(pathNameBuff);
+		if (len == 0 || pathNameBuff[len - 1] != '/') {
+			pathNameBuff[len++] = '/';
+		}
+		::strcpy(pathNameBuff + len, pathName);
+	}
+	return pathNameBuff;
 }
 
 //------------------------------------------------------------------------------

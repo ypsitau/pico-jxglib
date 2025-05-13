@@ -12,10 +12,10 @@ namespace jxglib {
 LFS::LFS(uint32_t offsetXIP, uint32_t bytesXIP, const char* driveName) : offsetXIP_{offsetXIP}, mountedFlag_{false},
 	cfg_ {
 		context:			this,
-		read:				user_provided_block_device_read,
-		prog:				user_provided_block_device_prog,
-		erase:				user_provided_block_device_erase,
-		sync:				user_provided_block_device_sync,
+		read:				Callback_read,
+		prog:				Callback_prog,
+		erase:				Callback_erase,
+		sync:				Callback_sync,
 		read_size:			FLASH_PAGE_SIZE,	// Minimum size of a block read in bytes
 		prog_size:			FLASH_PAGE_SIZE,	// Minimum size of a block program in bytes
 		block_size:			FLASH_SECTOR_SIZE,	// Size of an erasable block in bytes
@@ -117,31 +117,31 @@ bool LFS::Format()
 	return ::lfs_format(&lfs_, &cfg_) == LFS_ERR_OK && ::lfs_mount(&lfs_, &cfg_) == LFS_ERR_OK;
 }
 
-int LFS::user_provided_block_device_read(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size)
+int LFS::Callback_read(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size)
 {
 	uint32_t offsetXIP = reinterpret_cast<LFS*>(cfg->context)->GetOffsetXIP() + block * cfg->block_size + off;
-	::printf("Read 0x%08x %d\n", offsetXIP, size);
+	//::printf("Read 0x%08x %d\n", offsetXIP, size);
 	::memcpy(buffer, reinterpret_cast<const void*>(XIP_BASE + offsetXIP), size);
 	return LFS_ERR_OK;
 }
 
-int LFS::user_provided_block_device_prog(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, const void* buffer, lfs_size_t size)
+int LFS::Callback_prog(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, const void* buffer, lfs_size_t size)
 {
 	uint32_t offsetXIP = reinterpret_cast<LFS*>(cfg->context)->GetOffsetXIP() + block * cfg->block_size + off;
-	::printf("Program 0x%08x %d\n", offsetXIP, size);
+	//::printf("Program 0x%08x %d\n", offsetXIP, size);
 	Flash::Program(offsetXIP, buffer, size);
 	return LFS_ERR_OK;
 }
 
-int LFS::user_provided_block_device_erase(const struct lfs_config* cfg, lfs_block_t block)
+int LFS::Callback_erase(const struct lfs_config* cfg, lfs_block_t block)
 {
 	uint32_t offsetXIP = reinterpret_cast<LFS*>(cfg->context)->GetOffsetXIP() + block * cfg->block_size;
-	::printf("Erase 0x%08x %d\n", offsetXIP, cfg->block_size);
+	//::printf("Erase 0x%08x %d\n", offsetXIP, cfg->block_size);
 	Flash::Erase(offsetXIP, cfg->block_size);
 	return LFS_ERR_OK;
 }
 
-int LFS::user_provided_block_device_sync(const struct lfs_config* cfg)
+int LFS::Callback_sync(const struct lfs_config* cfg)
 {
 	return LFS_ERR_OK;
 }
@@ -149,7 +149,7 @@ int LFS::user_provided_block_device_sync(const struct lfs_config* cfg)
 //------------------------------------------------------------------------------
 // LFS::File
 //------------------------------------------------------------------------------
-LFS::File::File(lfs_t& lfs) : lfs_(lfs)
+LFS::File::File(lfs_t& lfs) : lfs_(lfs), openedFlag_{true}
 {
 }
 
@@ -165,7 +165,10 @@ int LFS::File::Write(const void* buffer, int bytes)
 
 void LFS::File::Close()
 {
-	::lfs_file_close(&lfs_, &file_);
+	if (openedFlag_) {
+		::lfs_file_close(&lfs_, &file_);
+		openedFlag_ = false;
+	}
 }
 
 bool LFS::File::Seek(int position)
@@ -206,7 +209,7 @@ bool LFS::File::Sync()
 //------------------------------------------------------------------------------
 // LFS::Dir
 //------------------------------------------------------------------------------
-LFS::Dir::Dir(lfs_t& lfs) : lfs_(lfs)
+LFS::Dir::Dir(lfs_t& lfs) : lfs_(lfs), openedFlag_{true}
 {
 }
 
@@ -218,65 +221,10 @@ bool LFS::Dir::Read(FS::FileInfo** ppFileInfo)
 
 void LFS::Dir::Close()
 {
-	::lfs_dir_close(&lfs_, &dir_);
-}
-
-}
-
-#if 0
-void initializeLFS()
-{
-	// LittleFSの初期化
-	int err = ::lfs_mount(&lfs, &cfg);
-	if (err) {
-		// マウントに失敗した場合はフォーマットして再マウント
-		::lfs_format(&lfs, &cfg);
-		err = ::lfs_mount(&lfs, &cfg);
-		if (err) {
-			// 再マウント失敗時のエラーハンドリング
-			printf("Failed to mount LFS\n");
-			return;
-		}
+	if (openedFlag_) {
+		::lfs_dir_close(&lfs_, &dir_);
+		openedFlag_ = false;
 	}
-	printf("LFS mounted successfully\n");
 }
 
-void writeFile(const char* path, const char* data)
-{
-	// ファイルを書き込む
-	lfs_file_t file;
-	int err = ::lfs_file_open(&lfs, &file, path, LFS_O_WRONLY | LFS_O_CREAT);
-	if (err) {
-		printf("Failed to open file for writing\n");
-		return;
-	}
-	::lfs_file_write(&lfs, &file, data, strlen(data));
-	::lfs_file_close(&lfs, &file);
-	printf("File written successfully\n");
 }
-
-void readFile(const char* path)
-{
-	// ファイルを読み込む
-	lfs_file_t file;
-	int err = ::lfs_file_open(&lfs, &file, path, LFS_O_RDONLY);
-	if (err) {
-		printf("Failed to open file for reading\n");
-		return;
-	}
-	char buffer[128];
-	int bytesRead = ::lfs_file_read(&lfs, &file, buffer, sizeof(buffer) - 1);
-	if (bytesRead > 0) {
-		buffer[bytesRead] = '\0'; // Null-terminate the string
-		printf("File content: %s\n", buffer);
-	}
-	::lfs_file_close(&lfs, &file);
-}
-
-void unmountLFS()
-{
-	// LittleFSのアンマウント
-	::lfs_unmount(&lfs);
-	printf("LFS unmounted successfully\n");
-}
-#endif

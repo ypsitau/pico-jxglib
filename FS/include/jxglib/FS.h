@@ -13,6 +13,8 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class FS {
 public:
+	static const int MaxLenPathName = 256;
+public:
 	class File : public Referable {
 	public:
 		DeclareReferable(File);
@@ -47,11 +49,16 @@ public:
 	};
 	class Manager {
 	private:
+		char dirNameCur_[FS::MaxLenPathName];
 		Manager* pManagerNext_;
 	public:
 		Manager();
 	public:
 		Manager* GetNext() const { return pManagerNext_; }
+	public:
+		void SetDirNameCur(const char* dirName) { ::strcpy(dirNameCur_, dirName); }
+		const char* GetDirNameCur() const { return dirNameCur_; }
+		const char* RegulatePathName(char* pathNameBuff, const char* pathName);
 	public:
 		virtual const char* GetDriveName() const = 0;
 	public:
@@ -98,6 +105,8 @@ public:
 	FS();
 public:
 	static Manager* FindManager(const char* pathName);
+	static Manager* GetManagerCur();
+public:
 	static const char* SkipDriveName(const char* pathName);
 	static const char* ExtractDriveName(const char* pathName, char* driveName, int lenMax);
 public:
@@ -110,6 +119,7 @@ public:
 	static bool CreateDir(const char* dirName);
 	static bool RemoveDir(const char* dirName);
 	static bool RenameDir(const char* fileNameOld, const char* fileNameNew);
+	static bool ChangeCurDir(const char* dirName);
 	static bool Format(const char* driveName, Printable& out);
 	static bool IsLegalDriveName(const char* driveName);
 	static const char* JoinPathName(char* pathName, const char* dirName, const char* fileName);

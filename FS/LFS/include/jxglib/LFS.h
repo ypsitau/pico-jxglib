@@ -21,9 +21,10 @@ public:
 	private:
 		lfs_t& lfs_;
 		lfs_file_t file_;
+		bool openedFlag_;
 	public:
 		File(lfs_t& lfs);
-		~File() {}
+		~File() { Close(); }
 	public:
 		lfs_file_t* GetEntity() { return &file_; }
 		const lfs_file_t* GetEntity() const { return &file_; }
@@ -64,9 +65,10 @@ public:
 		lfs_t& lfs_;
 		lfs_dir_t dir_;
 		FileInfo fileInfo_;
+		bool openedFlag_;
 	public:
 		Dir(lfs_t& lfs);
-		~Dir() {}
+		~Dir() { Close(); }
 	public:
 		lfs_dir_t* GetEntity() { return &dir_; }
 		const lfs_dir_t* GetEntity() const { return &dir_; }
@@ -96,10 +98,10 @@ public:
 	virtual bool RenameDir(const char* fileNameOld, const char* fileNameNew) override;
 	virtual bool Format() override;
 public:
-	static int user_provided_block_device_read(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size);
-	static int user_provided_block_device_prog(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, const void* buffer, lfs_size_t size);
-	static int user_provided_block_device_erase(const struct lfs_config* cfg, lfs_block_t block);
-	static int user_provided_block_device_sync(const struct lfs_config* cfg);
+	static int Callback_read(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size);
+	static int Callback_prog(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, const void* buffer, lfs_size_t size);
+	static int Callback_erase(const struct lfs_config* cfg, lfs_block_t block);
+	static int Callback_sync(const struct lfs_config* cfg);
 };
 
 }

@@ -117,6 +117,31 @@ ShellCmd(rmdir, "removes a directory")
 	return 0;
 }
 
+ShellCmd(cd, "changes the current directory")
+{
+	if (argc < 2) {
+		out.Printf("Usage: %s <directory>\n", argv[0]);
+		return 1;
+	}
+	const char* dirName = argv[1];
+	if (!FS::ChangeCurDir(dirName)) {
+		out.Printf("failed to change directory to %s\n", dirName);
+		return 1;
+	}
+	return 0;
+}
+
+ShellCmd(pwd, "prints the current directory")
+{
+	FS::Manager* pManager = FS::GetManagerCur();
+	if (!pManager) {
+		out.Printf("no current drive\n");
+		return 1;
+	}
+	out.Printf("%s:%s\n", pManager->GetDriveName(), pManager->GetDirNameCur());
+	return 0;
+}
+
 ShellCmd(mv, "moves a file")
 {
 	if (argc < 3) {
