@@ -12,6 +12,8 @@ FS::Manager* FS::pManagerTop = nullptr;
 
 FS::FS()
 {
+	::strcpy(driveNameCur_, "");
+	::strcpy(dirNameCur_, "/");
 }
 
 FS::Manager* FS::FindManager(const char* pathName)
@@ -27,21 +29,22 @@ FS::Manager* FS::FindManager(const char* pathName)
 
 const char* FS::SkipDriveName(const char* pathName)
 {
-	const char* p = pathName;
-	if (*p == '/') p++;
-	for ( ; *p && *p != '/'; p++) ;
-	return p;
+	for (const char* p = pathName; *p; p++) {
+		if (*p == ':') return p + 1;
+	}
+	return pathName;
 }
 
 const char* FS::ExtractDriveName(const char* pathName, char* driveName, int lenMax)
 {
-	const char* p = pathName;
-	if (*p == '/') p++;
-	const char* pMark = p;
-	for ( ; *p && *p != '/'; p++) ;
-	int len = ChooseMin(p - pMark, lenMax - 1);
-	::memcpy(driveName, pMark, len);
-	driveName[len] = '\0';
+	driveName[0] = '\0';
+	for (const char* p = pathName; *p; p++) {
+		if (*p == ':') {
+			int len = ChooseMin(p - pathName, lenMax - 1);
+			::memcpy(driveName, pathName, len);
+			driveName[len] = '\0';
+		}
+	}
 	return driveName;
 }
 
@@ -91,6 +94,23 @@ bool FS::Format(const char* driveName)
 {
 	Manager* pManager = FindManager(driveName);
 	return pManager? pManager->Format() : false;
+}
+
+bool FS::IsLegalDriveName(const char* driveName)
+{
+	int len = ::strlen(driveName);
+	return len > 0 && len <= MaxLenDriveName && driveName[len - 1] == ':';
+}
+
+const char* FS::JoinPathName(char* pathName, const char* dirName, const char* fileName)
+{
+	::strcpy(pathName, dirName);
+	int len = ::strlen(pathName);
+	if (len > 0 && pathName[len - 1] != '/') {
+		pathName[len++] = '/';
+	}
+	::strcpy(pathName + len, fileName);
+	return pathName;
 }
 
 //------------------------------------------------------------------------------

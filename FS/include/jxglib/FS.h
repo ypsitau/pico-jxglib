@@ -71,6 +71,12 @@ public:
 public:
 	static Manager* pManagerTop;
 public:
+	static const int MaxLenDriveName = 16;
+	static const int MaxLenPathName = 256;
+private:
+	char driveNameCur_[MaxLenDriveName + 1];
+	char dirNameCur_[MaxLenPathName + 1];
+public:
 	FS();
 public:
 	static Manager* FindManager(const char* pathName);
@@ -85,6 +91,8 @@ public:
 	static bool RemoveDir(const char* dirName);
 	static bool RenameDir(const char* fileNameOld, const char* fileNameNew);
 	static bool Format(const char* driveName);
+	static bool IsLegalDriveName(const char* driveName);
+	static const char* JoinPathName(char* pathName, const char* dirName, const char* fileName);
 };
 
 }

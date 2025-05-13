@@ -48,14 +48,14 @@ public:
 		lfs_info& GetEntity() { return info_; }
 		const lfs_info& GetEntity() const { return info_; }
 	public:
-		virtual const char* GetName() const { return info_.name; }
-		virtual uint32_t GetSize() const { return info_.size; }
-		virtual bool IsDirectory() const { return (info_.type & LFS_TYPE_DIR) != 0; }
-		virtual bool IsFile() const { return (info_.type & LFS_TYPE_REG) != 0; }
-		//virtual bool IsHidden() const { return (info_.fattrib & AM_HID) != 0; }
-		//virtual bool IsReadOnly() const { return (info_.fattrib & AM_RDO) != 0; }
-		//virtual bool IsSystem() const { return (info_.fattrib & AM_SYS) != 0; }
-		//virtual bool IsArchive() const { return (info_.fattrib & AM_ARC) != 0; }
+		virtual const char* GetName() const override { return info_.name; }
+		virtual uint32_t GetSize() const override { return info_.size; }
+		virtual bool IsDirectory() const override { return (info_.type & LFS_TYPE_DIR) != 0; }
+		virtual bool IsFile() const override { return (info_.type & LFS_TYPE_REG) != 0; }
+		//virtual bool IsHidden() const override { return (info_.fattrib & AM_HID) != 0; }
+		//virtual bool IsReadOnly() const override { return (info_.fattrib & AM_RDO) != 0; }
+		//virtual bool IsSystem() const override { return (info_.fattrib & AM_SYS) != 0; }
+		//virtual bool IsArchive() const override { return (info_.fattrib & AM_ARC) != 0; }
 	};
 	class Dir : public FS::Dir {
 	public:
@@ -79,6 +79,7 @@ private:
 	lfs_config cfg_;
 	const char* driveName_;
 	uint32_t offsetXIP_;
+	bool mountedFlag_;
 public:
 	LFS(uint32_t offsetXIP, uint32_t bytesXIP, const char* driveName = "flash");
 public:

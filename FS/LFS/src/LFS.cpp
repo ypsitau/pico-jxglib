@@ -9,7 +9,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // LFS
 //------------------------------------------------------------------------------
-LFS::LFS(uint32_t offsetXIP, uint32_t bytesXIP, const char* driveName) : offsetXIP_{offsetXIP},
+LFS::LFS(uint32_t offsetXIP, uint32_t bytesXIP, const char* driveName) : offsetXIP_{offsetXIP}, mountedFlag_{false},
 	cfg_ {
 		context:			this,
 		read:				user_provided_block_device_read,
@@ -39,6 +39,10 @@ LFS::LFS(uint32_t offsetXIP, uint32_t bytesXIP, const char* driveName) : offsetX
 
 FS::File* LFS::OpenFile(const char* fileName, const char* mode)
 {
+	if (!mountedFlag_) {
+		if (::lfs_mount(&lfs_, &cfg_) != LFS_ERR_OK) return nullptr;
+		mountedFlag_ = true;
+	}
 	RefPtr<File> pFile(new File(lfs_));
 	int flags = 0;
 	if (mode[0] == 'r') {
@@ -55,32 +59,56 @@ FS::File* LFS::OpenFile(const char* fileName, const char* mode)
 
 FS::Dir* LFS::OpenDir(const char* dirName)
 {
+	if (!mountedFlag_) {
+		if (::lfs_mount(&lfs_, &cfg_) != LFS_ERR_OK) return nullptr;
+		mountedFlag_ = true;
+	}
 	RefPtr<Dir> pDir(new Dir(lfs_));
 	return (::lfs_dir_open(&lfs_, pDir->GetEntity(), dirName) == LFS_ERR_OK)? pDir.release() : nullptr;
 }
 
 bool LFS::RemoveFile(const char* fileName)
 {
+	if (!mountedFlag_) {
+		if (::lfs_mount(&lfs_, &cfg_) != LFS_ERR_OK) return false;
+		mountedFlag_ = true;
+	}
 	return ::lfs_remove(&lfs_, fileName) == LFS_ERR_OK;
 }
 
 bool LFS::RenameFile(const char* fileNameOld, const char* fileNameNew)
 {
+	if (!mountedFlag_) {
+		if (::lfs_mount(&lfs_, &cfg_) != LFS_ERR_OK) return false;
+		mountedFlag_ = true;
+	}
 	return ::lfs_rename(&lfs_, fileNameOld, fileNameNew) == LFS_ERR_OK;
 }
 
 bool LFS::CreateDir(const char* dirName)
 {
+	if (!mountedFlag_) {
+		if (::lfs_mount(&lfs_, &cfg_) != LFS_ERR_OK) return false;
+		mountedFlag_ = true;
+	}
 	return ::lfs_mkdir(&lfs_, dirName) == LFS_ERR_OK;
 }
 
 bool LFS::RemoveDir(const char* dirName)
 {
+	if (!mountedFlag_) {
+		if (::lfs_mount(&lfs_, &cfg_) != LFS_ERR_OK) return false;
+		mountedFlag_ = true;
+	}
 	return ::lfs_remove(&lfs_, dirName) == LFS_ERR_OK;
 }
 
 bool LFS::RenameDir(const char* dirNameOld, const char* dirNameNew)
 {
+	if (!mountedFlag_) {
+		if (::lfs_mount(&lfs_, &cfg_) != LFS_ERR_OK) return false;
+		mountedFlag_ = true;
+	}
 	return ::lfs_rename(&lfs_, dirNameOld, dirNameNew) == LFS_ERR_OK;
 }
 
@@ -185,8 +213,7 @@ LFS::Dir::Dir(lfs_t& lfs) : lfs_(lfs)
 bool LFS::Dir::Read(FS::FileInfo** ppFileInfo)
 {
 	*ppFileInfo = &fileInfo_;
-	// LFS_ERR_NOENT indicates no more entries
-	return ::lfs_dir_read(&lfs_, &dir_, &fileInfo_.GetEntity()) == LFS_ERR_OK;
+	return ::lfs_dir_read(&lfs_, &dir_, &fileInfo_.GetEntity()) > 0;
 }
 
 void LFS::Dir::Close()
