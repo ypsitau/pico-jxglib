@@ -4,7 +4,7 @@
 #ifndef PICO_JXGLIB_FS_H
 #define PICO_JXGLIB_FS_H
 #include "pico/stdlib.h"
-#include "jxglib/Common.h"
+#include "jxglib/Stream.h"
 
 namespace jxglib {
 
@@ -97,6 +97,18 @@ public:
 		DirDrive(Manager* pManager) : pManager_(pManager) {}
 	public:
 		virtual bool Read(FS::FileInfo** ppFileInfo) override;
+	};
+	class Stream : public jxglib::Stream {
+	private:
+		RefPtr<File> pFile_;
+	public:
+		Stream() {}
+	public:
+		void SetFile(File* pFile) { pFile_ = pFile; }
+	public:
+		// virtual functions of jxglib::Stream
+		virtual bool Read(void* buff, int bytesBuff, int* pBytesRead) override;
+		virtual bool Write(const void* buff, int bytesBuff) override;
 	};			
 public:
 	static Manager* pManagerTop;

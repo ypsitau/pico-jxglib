@@ -30,6 +30,7 @@ bool Shell::RunCmd(char* line)
 	if (nToken == 0) return false;
 	int argc = nToken;
 	char** argv = tokenTbl;
+	const char* fileNameOut = nullptr;
 	for (int iToken = 0; iToken < nToken; iToken++) {
 		if (::strcmp(tokenTbl[iToken], ">") == 0) {
 			argc = iToken;
@@ -38,8 +39,19 @@ bool Shell::RunCmd(char* line)
 				pErr->Println("missing file name");
 				return false;
 			}
+			fileNameOut = tokenTbl[iToken + 1];
 			break;
 		}
+	}
+	FS::Stream streamOut;
+	if (fileNameOut) {
+		RefPtr<FS::File> pFile(FS::OpenFile(fileNameOut, "w"));
+		if (!pFile) {
+			pErr->Printf("failed to open %s\n", fileNameOut);
+			return false;
+		}
+		streamOut.SetFile(pFile.release());
+		pOut = &streamOut;
 	}
 	for (Cmd* pCmd = Cmd::GetCmdHead(); pCmd; pCmd = pCmd->GetCmdNext()) {
 		if (::strcmp(argv[0], pCmd->GetName()) == 0) {
