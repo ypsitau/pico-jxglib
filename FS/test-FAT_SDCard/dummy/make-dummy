@@ -1,0 +1,9 @@
+#!/bin/bash
+dd if=/dev/zero of=dummy.img bs=1024 count=64
+mkdosfs -F 12 dummy.img
+rm -rf mnt
+mkdir mnt
+mount -o loop -t msdos dummy.img mnt
+cp SAMPLE.TXT mnt
+umount mnt
+rm -rf mnt
