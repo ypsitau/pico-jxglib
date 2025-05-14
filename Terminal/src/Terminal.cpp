@@ -130,6 +130,7 @@ void Terminal::LineEditor::Begin()
 void Terminal::LineEditor::Finish()
 {
 	AddHistory(GetPointerBegin());
+	EndHistory();
 	editingFlag_ = false;
 }
 
