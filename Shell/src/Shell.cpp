@@ -21,10 +21,11 @@ bool Shell::RunCmd(char* line)
 	char* tokenTbl[16];
 	int nToken = count_of(tokenTbl);
 	const char* errMsg;
-	Printable* pOut = &GetTerminal();
-	Printable* pErr = &GetTerminal();
+	Readable* ptin = &ReadableDumb::Instance;
+	Printable* ptout = &GetTerminal();
+	Printable* pterr = &GetTerminal();
 	if (!Tokenizer().Tokenize(line, &nToken, tokenTbl, &errMsg)) {
-		pErr->Println(errMsg);
+		pterr->Println(errMsg);
 		return false;
 	}
 	if (nToken == 0) return false;
@@ -36,7 +37,7 @@ bool Shell::RunCmd(char* line)
 			argc = iToken;
 			tokenTbl[iToken] = nullptr;
 			if (iToken + 1 >= nToken) {
-				pErr->Println("missing file name");
+				pterr->Println("missing file name");
 				return false;
 			}
 			fileNameOut = tokenTbl[iToken + 1];
@@ -47,20 +48,20 @@ bool Shell::RunCmd(char* line)
 	if (fileNameOut) {
 		RefPtr<FS::File> pFile(FS::OpenFile(fileNameOut, "w"));
 		if (!pFile) {
-			pErr->Printf("failed to open %s\n", fileNameOut);
+			pterr->Printf("failed to open %s\n", fileNameOut);
 			return false;
 		}
 		streamOut.SetFile(pFile.release());
-		pOut = &streamOut;
+		ptout = &streamOut;
 	}
 	for (Cmd* pCmd = Cmd::GetCmdHead(); pCmd; pCmd = pCmd->GetCmdNext()) {
 		if (::strcmp(argv[0], pCmd->GetName()) == 0) {
 			pCmdRunning_ = pCmd;
-			pCmd->Run(*pOut, *pErr, argc, argv);
+			pCmd->Run(*ptin, *ptout, *pterr, argc, argv);
 			return true;
 		}
 	}
-	pErr->Printf("%s: command not found\n", argv[0]);
+	pterr->Printf("%s: command not found\n", argv[0]);
 	return false;
 }
 

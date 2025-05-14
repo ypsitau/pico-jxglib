@@ -14,6 +14,7 @@
 #include "Keyboard.h"
 #include "Point.h"
 #include "Printable.h"
+#include "Readable.h"
 #include "Rect.h"
 #include "Referable.h"
 #include "Size.h"

@@ -6,19 +6,19 @@
 #include "pico/stdlib.h"
 #include "jxglib/Terminal.h"
 
-#define ShellCmd_Alias(symbol, name, help) \
+#define ShellCmd_Named(symbol, name, help) \
 class ShellCmd_##symbol : public Shell::Cmd { \
 public: \
 	static ShellCmd_##symbol Instance; \
 public: \
 	ShellCmd_##symbol() : Shell::Cmd(name, help) {} \
 public: \
-	virtual int Run(Printable& out, Printable& err, int argc, char* argv[]) override; \
+	virtual int Run(Readable& tin, Printable& tout, Printable& terr, int argc, char* argv[]) override; \
 }; \
 ShellCmd_##symbol ShellCmd_##symbol::Instance; \
-int ShellCmd_##symbol::Run(Printable& out, Printable& err, int argc, char* argv[])
+int ShellCmd_##symbol::Run(Readable& tin, Printable& tout, Printable& terr, int argc, char* argv[])
 
-#define ShellCmd(name, help) ShellCmd_Alias(name, #name, help)
+#define ShellCmd(name, help) ShellCmd_Named(name, #name, help)
 
 namespace jxglib {
 
@@ -45,7 +45,7 @@ public:
 	public:
 		static Cmd* GetCmdHead() { return pCmdHead_; }
 	public:
-		virtual int Run(Printable& out, Printable& err, int argc, char* argv[]) = 0;
+		virtual int Run(Readable& tin, Printable& tout, Printable& terr, int argc, char* argv[]) = 0;
 	};
 	enum class Stat { Begin, Prompt, Running, };
 private:
