@@ -31,9 +31,10 @@ bool Shell::RunCmd(char* line)
 	if (nToken == 0) return false;
 	int argc = nToken;
 	char** argv = tokenTbl;
+	bool appendFlag = false;
 	const char* fileNameOut = nullptr;
 	for (int iToken = 0; iToken < nToken; iToken++) {
-		if (::strcmp(tokenTbl[iToken], ">") == 0) {
+		if ((appendFlag = (::strcmp(tokenTbl[iToken], ">>") == 0)) || ::strcmp(tokenTbl[iToken], ">") == 0) {
 			argc = iToken;
 			tokenTbl[iToken] = nullptr;
 			if (iToken + 1 >= nToken) {
@@ -46,7 +47,7 @@ bool Shell::RunCmd(char* line)
 	}
 	FS::Stream streamOut;
 	if (fileNameOut) {
-		RefPtr<FS::File> pFile(FS::OpenFile(fileNameOut, "w"));
+		RefPtr<FS::File> pFile(FS::OpenFile(fileNameOut, appendFlag? "a" : "w"));
 		if (!pFile) {
 			pterr->Printf("failed to open %s\n", fileNameOut);
 			return false;
