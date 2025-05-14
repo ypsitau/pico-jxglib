@@ -22,20 +22,6 @@ public:
 	static const uint32_t bytesPage = FLASH_PAGE_SIZE;
 	static const uint32_t bytesWhole = PICO_FLASH_SIZE_BYTES;
 public:
-	class Stream : public jxglib::Stream {
-	private:
-		uint32_t offsetXIPStart_;
-		uint32_t offsetXIPCached_;
-		uint32_t bytesBuffPage_;
-		uint8_t buffPage_[bytesPage];
-	public:
-		Stream(uint32_t offset);
-	public:
-		virtual bool Read(void* buff, int bytesBuff, int* pBytesRead) override;
-		virtual bool Write(const void* buff, int bytesBuff) override;
-		void Flush();
-	};
-public:
 	struct Param_Erase { uint32_t offsetXIP; uint32_t bytes; };
 	struct Param_Program { uint32_t offsetXIP; const void* data; uint32_t bytes; };
 protected:
