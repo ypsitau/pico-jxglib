@@ -28,8 +28,8 @@ public:
 		FIL* GetEntity() { return &fil_; }
 		const FIL* GetEntity() const { return &fil_; }
 	public:
-		virtual int Read(void* buffer, int bytes) override;
-		virtual int Write(const void* buffer, int bytes) override;
+		virtual int Read(void* buff, int bytesBuff) override;
+		virtual int Write(const void* buff, int bytesBuff) override;
 		virtual void Close() override;
 		virtual bool Seek(int position) override;
 		virtual int Tell() override;

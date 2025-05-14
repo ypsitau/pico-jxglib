@@ -56,8 +56,8 @@ public:
 	UART& AddCr(bool addCrFlag) { addCrFlag_ = addCrFlag; return* this; }
 public:
 	// virtual functions of Stream
-	virtual bool Read(void* buff, int bytesBuff, int* pBytesRead) override;
-	virtual bool Write(const void* buff, int bytesBuff) override;
+	virtual int Read(void* buff, int bytesBuff) override;
+	virtual int Write(const void* buff, int bytesBuff) override;
 	// virtual functions of Printable
 	virtual Printable& ClearScreen() override;
 	virtual Printable& RefreshScreen() override;

@@ -140,7 +140,7 @@ Printable& LineBuff::PutChar(char ch)
 //------------------------------------------------------------------------------
 // LineBuff::Reader
 //------------------------------------------------------------------------------
-bool LineBuff::Reader::Read(void* buff, int bytesBuff, int* pBytesRead)
+int LineBuff::Reader::Read(void* buff, int bytesBuff)
 {
 	int bytesRead = 0;
 	char* pDst = reinterpret_cast<char*>(buff);
@@ -152,8 +152,7 @@ bool LineBuff::Reader::Read(void* buff, int bytesBuff, int* pBytesRead)
 			*pDst++ = *pBuffCur;
 		}
 	}
-	*pBytesRead = bytesRead;
-	return bytesRead > 0;
+	return bytesRead;
 }
 
 }

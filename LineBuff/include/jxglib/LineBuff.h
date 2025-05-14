@@ -24,8 +24,8 @@ public:
 		Reader(const Reader& stream) : charFeeder_(stream.charFeeder_) {}
 	public:
 		// virtual functions of Stream
-		virtual bool Read(void* buff, int bytesBuff, int* pBytesRead) override;
-		virtual bool Write(const void* buff, int bytesBuff) override { /* do nothing */ return false; };
+		virtual int Read(void* buff, int bytesBuff) override;
+		virtual int Write(const void* buff, int bytesBuff) override { /* do nothing */ return 0; };
 	};
 private:
 	int bytesBuff_;

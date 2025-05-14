@@ -13,8 +13,8 @@ bool Stream::WriteFrom(Stream&& streamFrom)
 {
 	int bytesRead;
 	char buff[1024];
-	while (streamFrom.Read(buff, sizeof(buff), &bytesRead)) {
-		if (!Write(buff, bytesRead)) return false;
+	while ((bytesRead = streamFrom.Read(buff, sizeof(buff))) > 0) {
+		if (Write(buff, bytesRead) != bytesRead) return false;
 	}
 	return true;
 }
@@ -23,7 +23,7 @@ bool Stream::PrintFrom(Stream&& streamFrom)
 {
 	int bytesRead;
 	char buff[1024];
-	while (streamFrom.Read(buff, sizeof(buff) - 1, &bytesRead)) {
+	while ((bytesRead = streamFrom.Read(buff, sizeof(buff) - 1)) > 0) {
 		buff[bytesRead] = '\0';
 		Print(buff);
 	}
@@ -34,7 +34,7 @@ bool Stream::WriteTo(FILE* fp)
 {
 	int bytesRead;
 	char buff[1024];
-	while (Read(buff, sizeof(buff), &bytesRead)) {
+	while ((bytesRead = Read(buff, sizeof(buff))) > 0) {
 		if (::fwrite(buff, sizeof(char), bytesRead, fp) < bytesRead) return false;
 	}
 	return true;

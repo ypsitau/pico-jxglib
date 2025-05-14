@@ -153,14 +153,14 @@ LFS::File::File(lfs_t& lfs) : lfs_(lfs), openedFlag_{true}
 {
 }
 
-int LFS::File::Read(void* buffer, int bytes)
+int LFS::File::Read(void* buff, int bytesBuff)
 {
-	return ::lfs_file_read(&lfs_, &file_, buffer, bytes);
+	return ::lfs_file_read(&lfs_, &file_, buff, bytesBuff);
 }
 
-int LFS::File::Write(const void* buffer, int bytes)
+int LFS::File::Write(const void* buff, int bytesBuff)
 {
-	return ::lfs_file_write(&lfs_, &file_, buffer, bytes);
+	return ::lfs_file_write(&lfs_, &file_, buff, bytesBuff);
 }
 
 void LFS::File::Close()

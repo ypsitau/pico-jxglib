@@ -14,8 +14,8 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class Stream : public Printable {
 public:
-	virtual bool Read(void* buff, int bytesBuff, int* pBytesRead) = 0;
-	virtual bool Write(const void* buff, int bytesBuff) = 0;
+	virtual int Read(void* buff, int bytesBuff) = 0;
+	virtual int Write(const void* buff, int bytesBuff) = 0;
 public:
 	bool WriteFrom(Stream&& streamFrom);
 	bool WriteFrom(Stream& streamFrom) { return WriteFrom(std::move(streamFrom)); }

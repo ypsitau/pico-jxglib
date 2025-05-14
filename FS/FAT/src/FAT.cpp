@@ -97,16 +97,16 @@ FAT::File::~File()
 	Close();
 }
 
-int FAT::File::Read(void* buffer, int bytes)
+int FAT::File::Read(void* buff, int bytesBuff)
 {
 	UINT bytesRead;
-	return (::f_read(&fil_, buffer, bytes, &bytesRead) == FR_OK)? static_cast<int>(bytesRead) : -1;
+	return (::f_read(&fil_, buff, bytesBuff, &bytesRead) == FR_OK)? static_cast<int>(bytesRead) : -1;
 }
 
-int FAT::File::Write(const void* buffer, int bytes)
+int FAT::File::Write(const void* buff, int bytesBuff)
 {
 	UINT bytesWritten;
-	return (::f_write(&fil_, buffer, bytes, &bytesWritten) == FR_OK)? static_cast<int>(bytesWritten) : -1;
+	return (::f_write(&fil_, buff, bytesBuff, &bytesWritten) == FR_OK)? static_cast<int>(bytesWritten) : -1;
 }
 
 void FAT::File::Close()

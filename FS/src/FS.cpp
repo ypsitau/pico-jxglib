@@ -218,16 +218,14 @@ bool FS::DirDrive::Read(FS::FileInfo** ppFileInfo)
 //------------------------------------------------------------------------------
 // FS::Stream
 //------------------------------------------------------------------------------
-bool FS::Stream::Read(void* buff, int bytesBuff, int* pBytesRead)
+int FS::Stream::Read(void* buff, int bytesBuff)
 {
-	int bytesRead = pFile_->Read(buff, bytesBuff);
-	if (pBytesRead) *pBytesRead = bytesRead;
-	return bytesRead > 0;	
+	return pFile_->Read(buff, bytesBuff);
 }
 
-bool FS::Stream::Write(const void* buff, int bytesBuff)
+int FS::Stream::Write(const void* buff, int bytesBuff)
 {
-	return pFile_->Write(buff, bytesBuff) == bytesBuff;
+	return pFile_->Write(buff, bytesBuff);
 }
 
 }

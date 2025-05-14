@@ -21,8 +21,8 @@ public:
 	protected:
 		virtual ~File() { Close(); }
 	public:
-		virtual int Read(void* buffer, int bytes) = 0;
-		virtual int Write(const void* buffer, int bytes) = 0;
+		virtual int Read(void* buff, int bytesBuff) = 0;
+		virtual int Write(const void* buff, int bytesBuff) = 0;
 		virtual void Close() {}
 		virtual bool Seek(int position) = 0;
 		virtual int Tell() = 0;
@@ -107,8 +107,8 @@ public:
 		void SetFile(File* pFile) { pFile_ = pFile; }
 	public:
 		// virtual functions of jxglib::Stream
-		virtual bool Read(void* buff, int bytesBuff, int* pBytesRead) override;
-		virtual bool Write(const void* buff, int bytesBuff) override;
+		virtual int Read(void* buff, int bytesBuff) override;
+		virtual int Write(const void* buff, int bytesBuff) override;
 	};			
 public:
 	static Manager* pManagerTop;

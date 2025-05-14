@@ -29,8 +29,8 @@ public:
 		lfs_file_t* GetEntity() { return &file_; }
 		const lfs_file_t* GetEntity() const { return &file_; }
 	public:
-		virtual int Read(void* buffer, int bytes) override;
-		virtual int Write(const void* buffer, int bytes) override;
+		virtual int Read(void* buff, int bytesBuff) override;
+		virtual int Write(const void* buff, int bytesBuff) override;
 		virtual void Close() override;
 		virtual bool Seek(int position) override;
 		virtual int Tell() override;
