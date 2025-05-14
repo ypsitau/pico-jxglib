@@ -28,8 +28,10 @@ public:
 		FIL* GetEntity() { return &fil_; }
 		const FIL* GetEntity() const { return &fil_; }
 	public:
+		// virtual functions of Stream
 		virtual int Read(void* buff, int bytesBuff) override;
 		virtual int Write(const void* buff, int bytesBuff) override;
+		// virtual functions of FS::File
 		virtual void Close() override;
 		virtual bool Seek(int position) override;
 		virtual int Tell() override;

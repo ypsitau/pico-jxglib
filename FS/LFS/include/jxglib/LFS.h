@@ -29,8 +29,10 @@ public:
 		lfs_file_t* GetEntity() { return &file_; }
 		const lfs_file_t* GetEntity() const { return &file_; }
 	public:
+		// virtual functions of Stream
 		virtual int Read(void* buff, int bytesBuff) override;
 		virtual int Write(const void* buff, int bytesBuff) override;
+		// virtual functions of FS::File
 		virtual void Close() override;
 		virtual bool Seek(int position) override;
 		virtual int Tell() override;

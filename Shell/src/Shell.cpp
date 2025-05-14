@@ -45,15 +45,14 @@ bool Shell::RunCmd(char* line)
 			break;
 		}
 	}
-	FS::Stream streamOut;
+	RefPtr<FS::File> pFileOut;
 	if (fileNameOut) {
-		RefPtr<FS::File> pFile(FS::OpenFile(fileNameOut, appendFlag? "a" : "w"));
-		if (!pFile) {
+		pFileOut.reset(FS::OpenFile(fileNameOut, appendFlag? "a" : "w"));
+		if (!pFileOut) {
 			pterr->Printf("failed to open %s\n", fileNameOut);
 			return false;
 		}
-		streamOut.SetFile(pFile.release());
-		ptout = &streamOut;
+		ptout = pFileOut.get();
 	}
 	for (Cmd* pCmd = Cmd::GetCmdHead(); pCmd; pCmd = pCmd->GetCmdNext()) {
 		if (::strcmp(argv[0], pCmd->GetName()) == 0) {

@@ -215,17 +215,4 @@ bool FS::DirDrive::Read(FS::FileInfo** ppFileInfo)
 	return rtn;
 }
 
-//------------------------------------------------------------------------------
-// FS::Stream
-//------------------------------------------------------------------------------
-int FS::Stream::Read(void* buff, int bytesBuff)
-{
-	return pFile_->Read(buff, bytesBuff);
-}
-
-int FS::Stream::Write(const void* buff, int bytesBuff)
-{
-	return pFile_->Write(buff, bytesBuff);
-}
-
 }

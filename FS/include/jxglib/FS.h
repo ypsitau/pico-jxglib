@@ -15,14 +15,12 @@ class FS {
 public:
 	static const int MaxLenPathName = 256;
 public:
-	class File : public Referable {
+	class File : public Referable, public Stream {
 	public:
 		DeclareReferable(File);
 	protected:
 		virtual ~File() { Close(); }
 	public:
-		virtual int Read(void* buff, int bytesBuff) = 0;
-		virtual int Write(const void* buff, int bytesBuff) = 0;
 		virtual void Close() {}
 		virtual bool Seek(int position) = 0;
 		virtual int Tell() = 0;
@@ -98,18 +96,6 @@ public:
 	public:
 		virtual bool Read(FS::FileInfo** ppFileInfo) override;
 	};
-	class Stream : public jxglib::Stream {
-	private:
-		RefPtr<File> pFile_;
-	public:
-		Stream() {}
-	public:
-		void SetFile(File* pFile) { pFile_ = pFile; }
-	public:
-		// virtual functions of jxglib::Stream
-		virtual int Read(void* buff, int bytesBuff) override;
-		virtual int Write(const void* buff, int bytesBuff) override;
-	};			
 public:
 	static Manager* pManagerTop;
 	static Manager* pManagerCur;
