@@ -47,9 +47,8 @@ pico_enable_stdio_usb(test-FAT-SDCard 0)
 # Add the standard library to the build
 target_link_libraries(test-FAT-SDCard
     pico_stdlib
-    jxglib_FAT
+    jxglib_FAT_SDCard
     jxglib_LFS
-    jxglib_SDCard
     jxglib_Serial
     jxglib_Shell
     jxglib_ShellCmd_FS)
