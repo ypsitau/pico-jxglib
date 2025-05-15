@@ -1,6 +1,7 @@
 //==============================================================================
 // FS.cpp
 //==============================================================================
+#include <ctype.h>
 #include "jxglib/FS.h"
 
 namespace jxglib {
@@ -154,8 +155,14 @@ bool FS::Format(const char* driveName, Printable& out)
 
 bool FS::IsLegalDriveName(const char* driveName)
 {
-	int len = ::strlen(driveName);
-	return len > 0 && driveName[len - 1] == ':';
+	for (const char*p = driveName; *p; p++) {
+		if (*p == ':') {
+			return *(p + 1) == '\0';
+		} else if (!isalpha(*p)) {
+			return false;
+		}
+	}
+	return false;
 }
 
 const char* FS::JoinPathName(char* pathName, const char* dirName, const char* fileName)

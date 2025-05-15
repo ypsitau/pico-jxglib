@@ -78,7 +78,9 @@ void Shell::OnTick()
 		if (!line) {
 			// nothing to do
 		} else if (FS::IsLegalDriveName(line)) {
-			FS::SetDriveCur(line);
+			if (!FS::SetDriveCur(line)) {
+				GetTerminal().Printf("failed to change drive to %s\n", line);
+			}
 			stat_ = Stat::Begin;
 		} else {
 			stat_ = Stat::Running;
