@@ -28,24 +28,24 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-SDCard C CXX ASM)
+project(SDCard-tester C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-SDCard test-SDCard.cpp)
+add_executable(SDCard-tester SDCard-tester.cpp)
 
-pico_set_program_name(test-SDCard "test-SDCard")
-pico_set_program_version(test-SDCard "0.1")
+pico_set_program_name(SDCard-tester "SDCard-tester")
+pico_set_program_version(SDCard-tester "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-SDCard 1)
-pico_enable_stdio_usb(test-SDCard 0)
+pico_enable_stdio_uart(SDCard-tester 1)
+pico_enable_stdio_usb(SDCard-tester 0)
 
 # Add the standard library to the build
-target_link_libraries(test-SDCard
+target_link_libraries(SDCard-tester
 	pico_stdlib
 	jxglib_Stream
 	jxglib_SDCard
@@ -53,10 +53,10 @@ target_link_libraries(test-SDCard
 	jxglib_ShellCmd_Basic)
 
 # Add the standard include files to the build
-target_include_directories(test-SDCard PRIVATE
+target_include_directories(SDCard-tester PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-SDCard)
+pico_add_extra_outputs(SDCard-tester)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../../.. pico-jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
