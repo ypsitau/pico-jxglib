@@ -50,8 +50,13 @@ ShellCmd_Named(about_cpu, "about-platform", "prints information about the platfo
 	return 0;
 }
 
+class BinaryInfo {
+public:
+	static const char* GetString(uint32_t id);
+	static void Print(Printable& tout);
+};
 
-const char* FindBinaryInfo_string(uint32_t id)
+const char* BinaryInfo::GetString(uint32_t id)
 {
 	const binary_info_t** ppStart = reinterpret_cast<const binary_info_t**>(&__binary_info_start);
 	const binary_info_t** ppEnd = reinterpret_cast<const binary_info_t**>(&__binary_info_end);
@@ -65,7 +70,7 @@ const char* FindBinaryInfo_string(uint32_t id)
 	return "";
 }
 
-void PrintBinaryInfo(Printable& tout)
+void BinaryInfo::Print(Printable& tout)
 {
 	const binary_info_t** ppStart = reinterpret_cast<const binary_info_t**>(&__binary_info_start);
 	const binary_info_t** ppEnd = reinterpret_cast<const binary_info_t**>(&__binary_info_end);
@@ -142,6 +147,12 @@ void PrintBinaryInfo(Printable& tout)
 		}
 		case BINARY_INFO_TYPE_PINS_WITH_NAME: {
 			const binary_info_pins_with_name_t* pInfo = reinterpret_cast<const binary_info_pins_with_name_t*>(pInfoCore);
+			uint32_t pin_mask = pInfo->pin_mask;
+			tout.Printf("Pins");
+			for (int pin = 0; pin_mask; pin++, pin_mask >>= 1) {
+				if (pin_mask & 1) tout.Printf(" %d", pin);
+			}
+			tout.Printf(": %s\n", pInfo->label);
 			break;
 		}
 		case BINARY_INFO_TYPE_NAMED_GROUP: {
@@ -215,18 +226,18 @@ ShellCmd_Named(about_me, "about-me", "prints information about this own program"
 	tout.Printf("Heap   0x%p-0x%p %7d\n", &__heap_start, &__heap_end, &__heap_end - &__heap_start);
 	tout.Printf("Stack  0x%p-0x%p %7d\n", &__heap_end, &__stack, &__stack - &__heap_end);
 #if 1
-	tout.Printf("program name    %s\n", FindBinaryInfo_string(BINARY_INFO_ID_RP_PROGRAM_NAME));
-	tout.Printf("program version %s\n", FindBinaryInfo_string(BINARY_INFO_ID_RP_PROGRAM_VERSION_STRING));
-	tout.Printf("build date      %s\n", FindBinaryInfo_string(BINARY_INFO_ID_RP_PROGRAM_BUILD_DATE_STRING));
-	tout.Printf("binary end      %s\n", FindBinaryInfo_string(BINARY_INFO_ID_RP_BINARY_END));
-	tout.Printf("url             %s\n", FindBinaryInfo_string(BINARY_INFO_ID_RP_PROGRAM_URL));
-	tout.Printf("description     %s\n", FindBinaryInfo_string(BINARY_INFO_ID_RP_PROGRAM_DESCRIPTION));
-	tout.Printf("feature         %s\n", FindBinaryInfo_string(BINARY_INFO_ID_RP_PROGRAM_FEATURE));
-	tout.Printf("attribute       %s\n", FindBinaryInfo_string(BINARY_INFO_ID_RP_PROGRAM_BUILD_ATTRIBUTE));
-	tout.Printf("sd version      %s\n", FindBinaryInfo_string(BINARY_INFO_ID_RP_SDK_VERSION));
-	tout.Printf("pico board      %s\n", FindBinaryInfo_string(BINARY_INFO_ID_RP_PICO_BOARD));
-	tout.Printf("boot2           %s\n", FindBinaryInfo_string(BINARY_INFO_ID_RP_BOOT2_NAME));
-	PrintBinaryInfo(tout);
+	tout.Printf("program name    %s\n", BinaryInfo::GetString(BINARY_INFO_ID_RP_PROGRAM_NAME));
+	tout.Printf("program version %s\n", BinaryInfo::GetString(BINARY_INFO_ID_RP_PROGRAM_VERSION_STRING));
+	tout.Printf("build date      %s\n", BinaryInfo::GetString(BINARY_INFO_ID_RP_PROGRAM_BUILD_DATE_STRING));
+	tout.Printf("binary end      %s\n", BinaryInfo::GetString(BINARY_INFO_ID_RP_BINARY_END));
+	tout.Printf("url             %s\n", BinaryInfo::GetString(BINARY_INFO_ID_RP_PROGRAM_URL));
+	tout.Printf("description     %s\n", BinaryInfo::GetString(BINARY_INFO_ID_RP_PROGRAM_DESCRIPTION));
+	tout.Printf("feature         %s\n", BinaryInfo::GetString(BINARY_INFO_ID_RP_PROGRAM_FEATURE));
+	tout.Printf("attribute       %s\n", BinaryInfo::GetString(BINARY_INFO_ID_RP_PROGRAM_BUILD_ATTRIBUTE));
+	tout.Printf("sdk version     %s\n", BinaryInfo::GetString(BINARY_INFO_ID_RP_SDK_VERSION));
+	tout.Printf("pico board      %s\n", BinaryInfo::GetString(BINARY_INFO_ID_RP_PICO_BOARD));
+	tout.Printf("boot2           %s\n", BinaryInfo::GetString(BINARY_INFO_ID_RP_BOOT2_NAME));
+	BinaryInfo::Print(tout);
 #endif
 	return 0;
 }
