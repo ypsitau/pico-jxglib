@@ -61,7 +61,7 @@ public:
 	bool ReadBlock(int lba, void* buf, int nBlocks);
 	bool WriteBlock(int lba, const void* buf, int nBlocks);
 public:
-	int GetSectors() const { return nSectors_; }
+	int GetSectorCount() const { return nSectors_; }
 	static void PrintMBR(const uint8_t* bufSector);
 private:
 	int WriteCommandFrame(uint8_t cmd, uint32_t arg, uint8_t crc,

@@ -39,7 +39,7 @@ DRESULT FAT_SDCard::ioctl_CTRL_SYNC()
 DRESULT FAT_SDCard::ioctl_GET_SECTOR_COUNT(LBA_t* pSectorCount)
 {
 	//::printf("ioctl(GET_SECTOR_COUNT)\n");
-	*pSectorCount = 0;
+	*pSectorCount = sdCard_.GetSectors();
 	return RES_OK;
 }
 
