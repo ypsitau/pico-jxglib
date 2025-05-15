@@ -50,6 +50,7 @@ private:
 public:
 	static const uint baudrateSlow = 100 * 1000;	// 100kHz
 private:
+	bool initializedFlag_;
 	spi_inst_t* spi_;
 	const GPIO& gpio_CS_;
 	uint baudrate_;
@@ -60,9 +61,11 @@ public:
 	bool Initialize(bool debugFlag = false);
 	bool ReadBlock(int lba, void* buf, int nBlocks);
 	bool WriteBlock(int lba, const void* buf, int nBlocks);
+	bool IsInitialized() const { return initializedFlag_; }
 public:
 	int GetSectorCount() const { return nSectors_; }
-	static void PrintMBR(const uint8_t* bufSector);
+public:
+	static void PrintMBR(Printable& printable, const uint8_t* bufSector);
 private:
 	int WriteCommandFrame(uint8_t cmd, uint32_t arg, uint8_t crc,
 				uint8_t* status = nullptr, int bytesStatus = 0, bool release = true);

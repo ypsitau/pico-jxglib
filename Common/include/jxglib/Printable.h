@@ -27,6 +27,7 @@ public:
 		bool asciiFlag_;
 	public:
 		DumpT(Printable* pPrintable = nullptr);
+		DumpT(Printable& printable) : DumpT(&printable) {}
 	public:
 		DumpT& UpperCase() { upperCaseFlag_ = true; return *this; }
 		DumpT& LowerCase() { upperCaseFlag_ = false; return *this; }

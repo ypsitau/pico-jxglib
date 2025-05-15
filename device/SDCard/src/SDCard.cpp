@@ -12,13 +12,14 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // SDCard
 //------------------------------------------------------------------------------
-SDCard::SDCard(spi_inst_t* spi, uint baudrate, const PinAssign& pinAssign) :
+SDCard::SDCard(spi_inst_t* spi, uint baudrate, const PinAssign& pinAssign) : initializedFlag_{false},
 		spi_{spi}, gpio_CS_{pinAssign.CS}, baudrate_{baudrate}, cdv_{0}, nSectors_{0}
 {
 }
 
 bool SDCard::Initialize(bool debugFlag)
 {
+	initializedFlag_ = false;
 	const uint8_t crc_zero = 0x00;
 	gpio_CS_.init().set_dir_OUT();
 	gpio_CS_.put(1);
@@ -126,6 +127,7 @@ bool SDCard::Initialize(bool debugFlag)
 	PRINTF("set SPI baudrate to %dHz\n", baudrate_);
 	::spi_init(spi_, baudrate_);
 	::spi_set_format(spi_, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST); 
+	initializedFlag_ = true;
 	return true;
 }
 
@@ -271,16 +273,16 @@ bool SDCard::WriteBlock(int lba, const void* buf, int nBlocks)
 	return successFlag;
 }
 
-void SDCard::PrintMBR(const uint8_t* bufSector)
+void SDCard::PrintMBR(Printable& printable, const uint8_t* bufSector)
 {
 	if (bufSector[510] != 0x55 || bufSector[511] != 0xaa) {
-		::printf("invalid MBR\n");
+		printable.Printf("invalid MBR\n");
 		return;
 	}
 	int offset = 446;
 	for (int iPartition = 0; iPartition < 4; iPartition++, offset += 16) {
 		const Partition& partition = *reinterpret_cast<const Partition*>(bufSector + offset);
-		::printf("#%d: BootID=%02x System=%02x LbaOfs=%08x LbaSize=%08x\n", iPartition + 1,
+		printable.Printf("#%d: BootID=%02x System=%02x LbaOfs=%08x LbaSize=%08x\n", iPartition + 1,
 			partition.BootID, partition.System, Unpack_uint32(partition.LbaOfs), Unpack_uint32(partition.LbaSize));
 	}
 }
