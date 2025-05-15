@@ -214,7 +214,7 @@ ShellCmd_Named(about_me, "about-me", "prints information about this own program"
 	tout.Printf("Bss    0x%p-0x%p %7d\n", &__bss_start__, &__bss_end__, &__bss_end__ - &__bss_start__);
 	tout.Printf("Heap   0x%p-0x%p %7d\n", &__heap_start, &__heap_end, &__heap_end - &__heap_start);
 	tout.Printf("Stack  0x%p-0x%p %7d\n", &__heap_end, &__stack, &__stack - &__heap_end);
-#if 0
+#if 1
 	tout.Printf("program name    %s\n", FindBinaryInfo_string(BINARY_INFO_ID_RP_PROGRAM_NAME));
 	tout.Printf("program version %s\n", FindBinaryInfo_string(BINARY_INFO_ID_RP_PROGRAM_VERSION_STRING));
 	tout.Printf("build date      %s\n", FindBinaryInfo_string(BINARY_INFO_ID_RP_PROGRAM_BUILD_DATE_STRING));

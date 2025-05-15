@@ -103,8 +103,8 @@ public:
 public:
 	static const GPIO None;
 public:
-	explicit GPIO(uint pin) : pin{pin} {}
-	GPIO(const GPIO& gpio) : pin{gpio.pin} {}
+	explicit constexpr GPIO(uint pin) : pin{pin} {}
+	constexpr GPIO(const GPIO& gpio) : pin{gpio.pin} {}
 	operator uint() const { return pin; }
 	bool IsValid() const { return pin != static_cast<uint>(-1); }
 	bool IsInvalid() const { return pin == static_cast<uint>(-1); }
@@ -262,6 +262,7 @@ public:
 	const GPIO& set_function_I2C0_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
 	const GPIO& set_function_PWM0_A() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_USB_OVCUR_DET() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 0; }
 };
 
 class GPIO1_T : public GPIO {
@@ -273,6 +274,7 @@ public:
 	const GPIO& set_function_I2C0_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
 	const GPIO& set_function_PWM0_B() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_USB_VBUS_DET() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 1; }
 };
 
 class GPIO2_T : public GPIO {
@@ -284,6 +286,7 @@ public:
 	const GPIO& set_function_I2C1_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
 	const GPIO& set_function_PWM1_A() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_USB_VBUS_DET() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 2; }
 };
 
 class GPIO3_T : public GPIO {
@@ -295,6 +298,7 @@ public:
 	const GPIO& set_function_I2C1_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
 	const GPIO& set_function_PWM1_B() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_USB_OVCUR_DET() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 3; }
 };
 
 class GPIO4_T : public GPIO {
@@ -306,6 +310,7 @@ public:
 	const GPIO& set_function_I2C0_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
 	const GPIO& set_function_PWM2_A() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_USB_VBUS_DET() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 4; }
 };
 
 class GPIO5_T : public GPIO {
@@ -317,6 +322,7 @@ public:
 	const GPIO& set_function_I2C0_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
 	const GPIO& set_function_PWM2_B() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_USB_VBUS_EN() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 5; }
 };
 
 class GPIO6_T : public GPIO {
@@ -328,6 +334,7 @@ public:
 	const GPIO& set_function_I2C1_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
 	const GPIO& set_function_PWM3_A() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_USB_OVCUR_DET() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 6; }
 };
 
 class GPIO7_T : public GPIO {
@@ -339,6 +346,7 @@ public:
 	const GPIO& set_function_I2C1_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
 	const GPIO& set_function_PWM3_B() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_USB_VBUS_DET() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 7; }
 };
 
 class GPIO8_T : public GPIO {
@@ -350,6 +358,7 @@ public:
 	const GPIO& set_function_I2C0_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
 	const GPIO& set_function_PWM4_A() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_USB_VBUS_EN() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 8; }
 };
 
 class GPIO9_T : public GPIO {
@@ -361,6 +370,7 @@ public:
 	const GPIO& set_function_I2C0_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
 	const GPIO& set_function_PWM4_B() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_USB_OVCUR_DET() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 9; }
 };
 
 class GPIO10_T : public GPIO {
@@ -372,6 +382,7 @@ public:
 	const GPIO& set_function_I2C1_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
 	const GPIO& set_function_PWM5_A() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_USB_VBUS_DET() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 10; }
 };
 
 class GPIO11_T : public GPIO {
@@ -383,6 +394,7 @@ public:
 	const GPIO& set_function_I2C1_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
 	const GPIO& set_function_PWM5_B() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_USB_VBUS_EN() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 11; }
 };
 
 class GPIO12_T : public GPIO {
@@ -394,6 +406,7 @@ public:
 	const GPIO& set_function_I2C0_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
 	const GPIO& set_function_PWM6_A() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_USB_OVCUR_DET() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 12; }
 };
 
 class GPIO13_T : public GPIO {
@@ -405,6 +418,7 @@ public:
 	const GPIO& set_function_I2C0_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
 	const GPIO& set_function_PWM6_B() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_USB_VBUS_DET() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 13; }
 };
 
 class GPIO14_T : public GPIO {
@@ -416,6 +430,7 @@ public:
 	const GPIO& set_function_I2C1_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
 	const GPIO& set_function_PWM7_A() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_USB_VBUS_EN() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 14; }
 };
 
 class GPIO15_T : public GPIO {
@@ -427,6 +442,7 @@ public:
 	const GPIO& set_function_I2C1_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
 	const GPIO& set_function_PWM7_B() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_USB_OVCUR_DET() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 15; }
 };
 
 class GPIO16_T : public GPIO {
@@ -438,6 +454,7 @@ public:
 	const GPIO& set_function_I2C0_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
 	const GPIO& set_function_PWM0_A() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_USB_VBUS_DET() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 16; }
 };
 
 class GPIO17_T : public GPIO {
@@ -449,6 +466,7 @@ public:
 	const GPIO& set_function_I2C0_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
 	const GPIO& set_function_PWM0_B() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_USB_VBUS_EN() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 17; }
 };
 
 class GPIO18_T : public GPIO {
@@ -460,6 +478,7 @@ public:
 	const GPIO& set_function_I2C1_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
 	const GPIO& set_function_PWM1_A() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_USB_OVCUR_DET() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 18; }
 };
 
 class GPIO19_T : public GPIO {
@@ -471,6 +490,7 @@ public:
 	const GPIO& set_function_I2C0_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
 	const GPIO& set_function_PWM1_B() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_USB_VBUS_DET() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 19; }
 };
 
 class GPIO20_T : public GPIO {
@@ -483,6 +503,7 @@ public:
 	const GPIO& set_function_PWM2_A() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_CLOCK_GPIN0() const	{ return set_function(GPIO_FUNC_GPCK); }
 	const GPIO& set_function_USB_VBUS_DET() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 20; }
 };
 
 class GPIO21_T : public GPIO {
@@ -495,6 +516,7 @@ public:
 	const GPIO& set_function_PWM2_B() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_CLOCK_GPOUT0() const	{ return set_function(GPIO_FUNC_GPCK); }
 	const GPIO& set_function_USB_OVCUR_DET() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 21; }
 };
 
 class GPIO22_T : public GPIO {
@@ -507,6 +529,7 @@ public:
 	const GPIO& set_function_PWM3_A() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_CLOCK_GPIN1() const	{ return set_function(GPIO_FUNC_GPCK); }
 	const GPIO& set_function_USB_VBUS_DET() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 22; }
 };
 
 class GPIO23_T : public GPIO {
@@ -519,6 +542,7 @@ public:
 	const GPIO& set_function_PWM3_B() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_CLOCK_GPOUT1() const	{ return set_function(GPIO_FUNC_GPCK); }
 	const GPIO& set_function_USB_VBUS_EN() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 23; }
 };
 
 class GPIO24_T : public GPIO {
@@ -531,6 +555,7 @@ public:
 	const GPIO& set_function_PWM4_A() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_CLOCK_GPOUT2() const	{ return set_function(GPIO_FUNC_GPCK); }
 	const GPIO& set_function_USB_OVCUR_DET() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 24; }
 };
 
 class GPIO25_T : public GPIO {
@@ -543,6 +568,7 @@ public:
 	const GPIO& set_function_PWM4_B() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_CLOCK_GPOUT3() const	{ return set_function(GPIO_FUNC_GPCK); }
 	const GPIO& set_function_USB_VBUS_DET() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 25; }
 };
 
 class GPIO26_T : public GPIO_ADC {
@@ -554,6 +580,7 @@ public:
 	const GPIO& set_function_I2C1_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
 	const GPIO& set_function_PWM5_A() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_USB_VBUS_EN() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 26; }
 };
 
 class GPIO27_T : public GPIO_ADC {
@@ -565,6 +592,7 @@ public:
 	const GPIO& set_function_I2C1_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
 	const GPIO& set_function_PWM5_B() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_USB_OVCUR_DET() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 27; }
 };
 
 class GPIO28_T : public GPIO_ADC {
@@ -576,6 +604,7 @@ public:
 	const GPIO& set_function_I2C0_SDA() const		{ return set_function(GPIO_FUNC_I2C); }
 	const GPIO& set_function_PWM6_A() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_USB_VBUS_DET() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 28; }
 };
 
 class GPIO29_T : public GPIO_ADC {
@@ -587,6 +616,7 @@ public:
 	const GPIO& set_function_I2C0_SCL() const		{ return set_function(GPIO_FUNC_I2C); }
 	const GPIO& set_function_PWM6_B() const			{ return set_function(GPIO_FUNC_PWM); }
 	const GPIO& set_function_USB_VBUS_EN() const	{ return set_function(GPIO_FUNC_USB); }
+	constexpr operator uint() const { return 29; }
 };
 
 extern const GPIO0_T GPIO0;

@@ -14,12 +14,12 @@ SDCard sdCard(spi0, 10 * 1000 * 1000, {CS: GPIO5});	// 10MHz
 
 int main()
 {
+	bi_decl(bi_3pins_with_func(GPIO2, GPIO3, GPIO4, GPIO_FUNC_SPI));
+	bi_decl(bi_1pin_with_name(GPIO5, "CS"));
 	::stdio_init_all();
 	GPIO2.set_function_SPI0_SCK();
 	GPIO3.set_function_SPI0_TX();
 	GPIO4.set_function_SPI0_RX();
-	//bi_decl(bi_3pins_with_func(GPIO2.pin, GPIO3.pin, GPIO4.pin, GPIO_FUNC_SPI));
-	//bi_decl(bi_1pin_with_name(GPIO5.pin, "CS"));
 	Serial::Terminal terminal; Shell::AttachTerminal(terminal.Initialize());
 	Shell::SetPrompt("SDCard>");
 	for (;;) Tickable::Tick();
