@@ -40,3 +40,15 @@ target_link_libraries(jxglib_KeyboardTest INTERFACE
 
 target_sources(jxglib_KeyboardTest INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/KeyboardTest.cpp)
+
+#------------------------------------------------------------------------------
+add_library(jxglib_BinaryInfo INTERFACE)
+
+target_include_directories(jxglib_BinaryInfo INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/include)
+
+target_link_libraries(jxglib_BinaryInfo INTERFACE
+	jxglib_Common)
+
+target_sources(jxglib_BinaryInfo INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/src/BinaryInfo.cpp)
