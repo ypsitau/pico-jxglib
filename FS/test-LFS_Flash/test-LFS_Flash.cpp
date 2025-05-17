@@ -1,14 +1,13 @@
 #include <stdio.h>
 #include <memory.h>
 #include "pico/stdlib.h"
-#include "jxglib/LFS.h"
-#include "jxglib/Flash.h"
+#include "jxglib/LFS_Flash.h"
 #include "jxglib/Serial.h"
 #include "jxglib/Shell.h"
 
 using namespace jxglib;
 
-LFS lfs(0x00100000, 0x00010000); // XIP address and size
+LFS_Flash lfs(0x00100000, 0x00010000); // XIP address and size
 
 int main()
 {

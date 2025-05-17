@@ -28,34 +28,34 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-LFS-Flash C CXX ASM)
+project(test-LFS_Flash C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-LFS-Flash test-LFS-Flash.cpp)
+add_executable(test-LFS_Flash test-LFS_Flash.cpp)
 
-pico_set_program_name(test-LFS-Flash "test-LFS-Flash")
-pico_set_program_version(test-LFS-Flash "0.1")
+pico_set_program_name(test-LFS_Flash "test-LFS_Flash")
+pico_set_program_version(test-LFS_Flash "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-LFS-Flash 1)
-pico_enable_stdio_usb(test-LFS-Flash 0)
+pico_enable_stdio_uart(test-LFS_Flash 1)
+pico_enable_stdio_usb(test-LFS_Flash 0)
 
 # Add the standard library to the build
-target_link_libraries(test-LFS-Flash
+target_link_libraries(test-LFS_Flash
     pico_stdlib
-    jxglib_LFS
+    jxglib_LFS_Flash
     jxglib_Serial
     jxglib_ShellCmd_FS)
 
 # Add the standard include files to the build
-target_include_directories(test-LFS-Flash PRIVATE
+target_include_directories(test-LFS_Flash PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-LFS-Flash)
+pico_add_extra_outputs(test-LFS_Flash)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)

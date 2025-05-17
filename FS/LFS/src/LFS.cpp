@@ -1,7 +1,6 @@
 //==============================================================================
 // LFS.cpp
 //==============================================================================
-#include "jxglib/Flash.h"
 #include "jxglib/LFS.h"
 
 namespace jxglib {
@@ -9,30 +8,29 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // LFS
 //------------------------------------------------------------------------------
-LFS::LFS(uint32_t offsetXIP, uint32_t bytesXIP, const char* driveName) : offsetXIP_{offsetXIP}, mountedFlag_{false},
+LFS::LFS(const char* driveName) : mountedFlag_{false},
 	cfg_ {
 		context:			this,
 		read:				Callback_read,
 		prog:				Callback_prog,
 		erase:				Callback_erase,
 		sync:				Callback_sync,
-		read_size:			FLASH_PAGE_SIZE,	// Minimum size of a block read in bytes
-		prog_size:			FLASH_PAGE_SIZE,	// Minimum size of a block program in bytes
-		block_size:			FLASH_SECTOR_SIZE,	// Size of an erasable block in bytes
-		block_count:		bytesXIP / FLASH_SECTOR_SIZE,
-												// Number of erasable blocks on the device
-		block_cycles:		500,				// Number of erase cycles before littlefs evicts metadata logs and moves the metadata to another block
-		cache_size:			FLASH_SECTOR_SIZE,	// Size of block caches in bytes
-		lookahead_size:		FLASH_SECTOR_SIZE,	// Size of the lookahead buffer in bytes
-		compact_thresh:		0,					// Threshold for compacting the filesystem. Default is set if zero
-		read_buffer:		nullptr,			// Pointer to the read buffer. lfs will allocate this if nullptr
-		prog_buffer:		nullptr,			// Pointer to the program buffer. lfs will allocate this if nullptr
-		lookahead_buffer:	nullptr,			// Pointer to the lookahead buffer. lfs will allocate this if nullptr
-		name_max:			0,					// Maximum length of file names. Default is set if zero
-		file_max:			0,					// Maximum number of open files. Default is set if zero
-		attr_max:			0,					// Maximum number of attributes per file. Default is set if zero
-		metadata_max:		0,					// Maximum number of metadata entries per file. Default is set if zero
-		inline_max:			0,					// Maximum size of inline data. Default is set if zero
+		read_size:			0,				// Minimum size of a block read in bytes (initialized in derived class)
+		prog_size:			0,				// Minimum size of a block program in bytes (initialized in derived class)
+		block_size:			0,				// Size of an erasable block in bytes (initialized in derived class)
+		block_count:		0,				// Number of erasable blocks on the device (initialized in derived class)
+		block_cycles:		500,			// Number of erase cycles before littlefs evicts metadata logs and moves the metadata to another block
+		cache_size:			0,				// Size of block caches in bytes (initialized in derived class)
+		lookahead_size:		0,				// Size of the lookahead buffer in bytes (initialized in derived class)
+		compact_thresh:		0,				// Threshold for compacting the filesystem. Default is set if zero
+		read_buffer:		nullptr,		// Pointer to the read buffer. lfs will allocate this if nullptr
+		prog_buffer:		nullptr,		// Pointer to the program buffer. lfs will allocate this if nullptr
+		lookahead_buffer:	nullptr,		// Pointer to the lookahead buffer. lfs will allocate this if nullptr
+		name_max:			0,				// Maximum length of file names. Default is set if zero
+		file_max:			0,				// Maximum number of open files. Default is set if zero
+		attr_max:			0,				// Maximum number of attributes per file. Default is set if zero
+		metadata_max:		0,				// Maximum number of metadata entries per file. Default is set if zero
+		inline_max:			0,				// Maximum size of inline data. Default is set if zero
 	}, driveName_{driveName}
 {
 }
@@ -119,31 +117,35 @@ bool LFS::Format()
 
 int LFS::Callback_read(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size)
 {
-	uint32_t offsetXIP = reinterpret_cast<LFS*>(cfg->context)->GetOffsetXIP() + block * cfg->block_size + off;
-	//::printf("Read 0x%08x %d\n", offsetXIP, size);
-	::memcpy(buffer, reinterpret_cast<const void*>(XIP_BASE + offsetXIP), size);
-	return LFS_ERR_OK;
+	return reinterpret_cast<LFS*>(cfg->context)->On_read(cfg, block, off, buffer, size);
+	//uint32_t offsetXIP = reinterpret_cast<LFS*>(cfg->context)->GetOffsetXIP() + block * cfg->block_size + off;
+	////::printf("Read 0x%08x %d\n", offsetXIP, size);
+	//::memcpy(buffer, reinterpret_cast<const void*>(XIP_BASE + offsetXIP), size);
+	//return LFS_ERR_OK;
 }
 
 int LFS::Callback_prog(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, const void* buffer, lfs_size_t size)
 {
-	uint32_t offsetXIP = reinterpret_cast<LFS*>(cfg->context)->GetOffsetXIP() + block * cfg->block_size + off;
-	//::printf("Program 0x%08x %d\n", offsetXIP, size);
-	Flash::Program(offsetXIP, buffer, size);
-	return LFS_ERR_OK;
+	return reinterpret_cast<LFS*>(cfg->context)->On_prog(cfg, block, off, buffer, size);
+	//uint32_t offsetXIP = reinterpret_cast<LFS*>(cfg->context)->GetOffsetXIP() + block * cfg->block_size + off;
+	////::printf("Program 0x%08x %d\n", offsetXIP, size);
+	//Flash::Program(offsetXIP, buffer, size);
+	//return LFS_ERR_OK;
 }
 
 int LFS::Callback_erase(const struct lfs_config* cfg, lfs_block_t block)
 {
-	uint32_t offsetXIP = reinterpret_cast<LFS*>(cfg->context)->GetOffsetXIP() + block * cfg->block_size;
-	//::printf("Erase 0x%08x %d\n", offsetXIP, cfg->block_size);
-	Flash::Erase(offsetXIP, cfg->block_size);
-	return LFS_ERR_OK;
+	return reinterpret_cast<LFS*>(cfg->context)->On_erase(cfg, block);
+	//uint32_t offsetXIP = reinterpret_cast<LFS*>(cfg->context)->GetOffsetXIP() + block * cfg->block_size;
+	////::printf("Erase 0x%08x %d\n", offsetXIP, cfg->block_size);
+	//Flash::Erase(offsetXIP, cfg->block_size);
+	//return LFS_ERR_OK;
 }
 
 int LFS::Callback_sync(const struct lfs_config* cfg)
 {
-	return LFS_ERR_OK;
+	return reinterpret_cast<LFS*>(cfg->context)->On_sync(cfg);
+	//return LFS_ERR_OK;
 }
 
 //------------------------------------------------------------------------------

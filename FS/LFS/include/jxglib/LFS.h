@@ -78,16 +78,17 @@ public:
 		bool Read(FS::FileInfo** ppFileInfo) override;
 		void Close() override;
 	};
-private:
+protected:
 	lfs_t lfs_;
 	lfs_config cfg_;
 	const char* driveName_;
-	uint32_t offsetXIP_;
+	//uint32_t offsetXIP_;
 	bool mountedFlag_;
 public:
-	LFS(uint32_t offsetXIP, uint32_t bytesXIP, const char* driveName = "flash");
+	//LFS(uint32_t offsetXIP, uint32_t bytesXIP, const char* driveName = "flash");
+	LFS(const char* driveName = "flash");
 public:
-	uint32_t GetOffsetXIP() const { return offsetXIP_; }
+	//uint32_t GetOffsetXIP() const { return offsetXIP_; }
 public:
 	// virtual functions of FS::Manager
 	virtual const char* GetDriveName() const override { return driveName_; }
@@ -99,6 +100,11 @@ public:
 	virtual bool RemoveDir(const char* dirName) override;
 	virtual bool RenameDir(const char* fileNameOld, const char* fileNameNew) override;
 	virtual bool Format() override;
+public:
+	virtual int On_read(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size) = 0;
+	virtual int On_prog(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, const void* buffer, lfs_size_t size) = 0;
+	virtual int On_erase(const struct lfs_config* cfg, lfs_block_t block) = 0;
+	virtual int On_sync(const struct lfs_config* cfg) = 0;
 public:
 	static int Callback_read(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size);
 	static int Callback_prog(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, const void* buffer, lfs_size_t size);
