@@ -1,22 +1,24 @@
 //==============================================================================
-// jxglib/FAT_SDCard.h
+// jxglib/FAT_RAMDisk.h
 //==============================================================================
-#ifndef PICO_JXGLIB_FAT_SDCARD_H
-#define PICO_JXGLIB_FAT_SDCARD_H
+#ifndef PICO_JXGLIB_FAT_RAMDISK_H
+#define PICO_JXGLIB_FAT_RAMDISK_H
 #include "jxglib/FAT.h"
-#include "jxglib/SDCard.h"
 
 namespace jxglib {
 
 //-----------------------------------------------------------------------------
-// FAT_SDCard
+// FAT_RAMDisk
 //-----------------------------------------------------------------------------
-class FAT_SDCard : public FAT::PhysicalDriveT<> {
-private:
-	SDCard sdCard_;
+class FAT_RAMDisk : public FAT::PhysicalDriveT<> {
 public:
-	FAT_SDCard(spi_inst_t* spi, uint baudrate, const SDCard::PinAssign& pinAssign, BYTE pdrv = 0) :
-		FAT::PhysicalDriveT<>{pdrv}, sdCard_(spi, baudrate, pinAssign) {}
+	static const uint32_t bytesSector = 512;
+private:
+	uint8_t* buffDisk_;
+	uint32_t bytesDisk_; 	// must be multiple of bytesSector
+public:
+	FAT_RAMDisk(uint32_t bytesDisk, BYTE pdrv = 0);
+	~FAT_RAMDisk();
 public:
 	virtual DSTATUS status() override;
 	virtual DSTATUS initialize() override;

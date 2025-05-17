@@ -22,6 +22,25 @@ target_link_libraries(jxglib_FAT_SDCard INTERFACE
 	jxglib_FAT)
 
 #------------------------------------------------------------------------------
+add_library(jxglib_FAT_Flash INTERFACE)
+
+target_sources(jxglib_FAT_Flash INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/src/FAT_Flash.cpp)
+
+target_link_libraries(jxglib_FAT_Flash INTERFACE
+    jxglib_Flash
+	jxglib_FAT)
+
+#------------------------------------------------------------------------------
+add_library(jxglib_FAT_RAMDisk INTERFACE)
+
+target_sources(jxglib_FAT_RAMDisk INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/src/FAT_RAMDisk.cpp)
+
+target_link_libraries(jxglib_FAT_RAMDisk INTERFACE
+	jxglib_FAT)
+
+#------------------------------------------------------------------------------
 function(jxglib_configure_FAT target)
 	set(VARS
 		FF_FS_READONLY
@@ -69,7 +88,7 @@ function(jxglib_configure_FAT target)
 	jxglib_set_if_undefined(_FF_FS_READONLY		0)
 	jxglib_set_if_undefined(_FF_FS_MINIMIZE		0)
 	jxglib_set_if_undefined(_FF_USE_FIND		0)
-	jxglib_set_if_undefined(_FF_USE_MKFS		0)
+	jxglib_set_if_undefined(_FF_USE_MKFS		1)
 	jxglib_set_if_undefined(_FF_USE_FASTSEEK	0)
 	jxglib_set_if_undefined(_FF_USE_EXPAND		0)
 	jxglib_set_if_undefined(_FF_USE_CHMOD		0)

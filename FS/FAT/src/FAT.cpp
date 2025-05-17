@@ -53,10 +53,18 @@ bool FAT::RenameDir(const char* fileNameOld, const char* fileNameNew)
 
 bool FAT::Format()
 {
-#if defined(FATFS_MKFS_SUPPORT)
-	return ::f_mkfs("", nullptr, nullptr, 0) == FR_OK;
+#if defined(FF_USE_MKFS)
+	MKFS_PARM opt {
+		fmt: FM_ANY,	// auto
+		n_fat: 0,		// default
+		align: 0,		// default
+		n_root: 0,		// default
+		au_size: 0		// default
+	};
+	char work[FF_MAX_SS];
+	return ::f_mkfs("0:", &opt, work, sizeof(work)) == FR_OK;
 #else
-	return false; // FATFS_MKFS_SUPPORT is not defined
+	return false;
 #endif
 }
 

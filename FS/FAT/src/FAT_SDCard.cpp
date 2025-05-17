@@ -5,6 +5,11 @@
 
 namespace jxglib {
 
+FAT_SDCard::FAT_SDCard(spi_inst_t* spi, uint baudrate, const SDCard::PinAssign& pinAssign, BYTE pdrv = 0) :
+		FAT::PhysicalDriveT<>{pdrv}, sdCard_(spi, baudrate, pinAssign)
+{
+}	
+
 DSTATUS FAT_SDCard::status()
 {
 	//::printf("status\n");
