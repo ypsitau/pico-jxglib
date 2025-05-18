@@ -118,34 +118,21 @@ bool LFS::Format()
 int LFS::Callback_read(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size)
 {
 	return reinterpret_cast<LFS*>(cfg->context)->On_read(cfg, block, off, buffer, size);
-	//uint32_t offsetXIP = reinterpret_cast<LFS*>(cfg->context)->GetOffsetXIP() + block * cfg->block_size + off;
-	////::printf("Read 0x%08x %d\n", offsetXIP, size);
-	//::memcpy(buffer, reinterpret_cast<const void*>(XIP_BASE + offsetXIP), size);
-	//return LFS_ERR_OK;
 }
 
 int LFS::Callback_prog(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, const void* buffer, lfs_size_t size)
 {
 	return reinterpret_cast<LFS*>(cfg->context)->On_prog(cfg, block, off, buffer, size);
-	//uint32_t offsetXIP = reinterpret_cast<LFS*>(cfg->context)->GetOffsetXIP() + block * cfg->block_size + off;
-	////::printf("Program 0x%08x %d\n", offsetXIP, size);
-	//Flash::Program(offsetXIP, buffer, size);
-	//return LFS_ERR_OK;
 }
 
 int LFS::Callback_erase(const struct lfs_config* cfg, lfs_block_t block)
 {
 	return reinterpret_cast<LFS*>(cfg->context)->On_erase(cfg, block);
-	//uint32_t offsetXIP = reinterpret_cast<LFS*>(cfg->context)->GetOffsetXIP() + block * cfg->block_size;
-	////::printf("Erase 0x%08x %d\n", offsetXIP, cfg->block_size);
-	//Flash::Erase(offsetXIP, cfg->block_size);
-	//return LFS_ERR_OK;
 }
 
 int LFS::Callback_sync(const struct lfs_config* cfg)
 {
 	return reinterpret_cast<LFS*>(cfg->context)->On_sync(cfg);
-	//return LFS_ERR_OK;
 }
 
 //------------------------------------------------------------------------------

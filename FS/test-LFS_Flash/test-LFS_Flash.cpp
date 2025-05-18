@@ -7,7 +7,7 @@
 
 using namespace jxglib;
 
-LFS_Flash lfs(0x00100000, 0x00010000); // XIP address and size
+LFS_Flash lfs(0x00100000, 0x00010000); // XIP offset and size
 
 int main()
 {

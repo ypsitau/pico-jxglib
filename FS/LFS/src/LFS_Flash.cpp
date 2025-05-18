@@ -10,7 +10,7 @@ namespace jxglib {
 // LFS_Flash
 //------------------------------------------------------------------------------
 LFS_Flash::LFS_Flash(uint32_t offsetXIP, uint32_t bytesXIP, const char* driveName) :
-	LFS(driveName), offsetXIP_{offsetXIP}
+	LFS(driveName), offsetXIP_{offsetXIP & 0x0fff'ffff}
 {
 	cfg_.read_size		= FLASH_PAGE_SIZE;				// Minimum size of a block read in bytes
 	cfg_.prog_size		= FLASH_PAGE_SIZE;				// Minimum size of a block program in bytes
