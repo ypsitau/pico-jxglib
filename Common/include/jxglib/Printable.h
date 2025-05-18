@@ -29,6 +29,7 @@ public:
 		DumpT(Printable* pPrintable = nullptr);
 		DumpT(Printable& printable) : DumpT(&printable) {}
 	public:
+		DumpT& SetPrintable(Printable& printable) { pPrintable_ = &printable; return *this; }
 		DumpT& UpperCase() { upperCaseFlag_ = true; return *this; }
 		DumpT& LowerCase() { upperCaseFlag_ = false; return *this; }
 		DumpT& NoAddr() { nDigitsAddr_ = 0; return *this; }

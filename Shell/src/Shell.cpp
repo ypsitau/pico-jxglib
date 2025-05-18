@@ -1,6 +1,7 @@
 //==============================================================================
 // Shell.cpp
 //==============================================================================
+#include <stdlib.h>
 #include "jxglib/FS.h"
 #include "jxglib/Shell.h"
 
@@ -132,6 +133,172 @@ Shell::Cmd::Cmd(const char* name, const char* help) : name_{name}, help_{help}, 
 	} else {
 		SetCmdNext(pCmdHead_);
 		pCmdHead_ = this;
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Shell::Arg
+//-----------------------------------------------------------------------------
+bool Shell::Arg::Parse(Printable& terr, int& argc, char* argv[])
+{
+	for (int iArg = 1; iArg < argc; ) {
+		if (argv[iArg][0] == '-') {
+			int nArgsToRemove = 1;
+			const Opt* pOptFound = nullptr;
+			const char* value = nullptr;
+			if (argv[iArg][1] == '-') {
+				// long option
+				const char* longName = argv[iArg] + 2;
+				for (int iOpt = 0; iOpt < nOpts_; iOpt++) {
+					const Opt& opt = optTbl_[iOpt];
+					if (opt.CheckLongName(longName, &value)) {
+						if (opt.DoesRequireValue() && !value) {
+							terr.Printf("missing value for option: %s\n", argv[iArg]);
+							return false;
+						}
+						pOptFound = &opt;
+						break;
+					}
+				}
+			} else {
+				// short option
+				const char* shortName = argv[iArg] + 1;
+				for (int iOpt = 0; iOpt < nOpts_; iOpt++) {
+					const Opt& opt = optTbl_[iOpt];
+					if (opt.CheckShortName(shortName)) {
+						if (opt.DoesRequireValue()) {
+							if (iArg + 1 >= argc) {
+								terr.Printf("missing value for option: %s\n", argv[iArg]);
+								return false;
+							}
+							value = argv[iArg + 1];
+							nArgsToRemove = 2;
+						} 
+						pOptFound = &opt;
+						break;
+					}
+				}
+			}
+			if (!pOptFound) {
+				terr.Printf("unknown option: %s\n", argv[iArg]);
+				return false;
+			}
+			if (pOptFound->GetType() == Opt::Type::Int) {
+				const char* pEnd = value;
+				::strtol(value, const_cast<char**>(&pEnd), 0);
+				if (*pEnd != '\0') {
+					terr.Printf("invalid value for option: %s\n", argv[iArg]);
+					return false;
+				}
+			}
+			AddOptValue(pOptFound, value);
+			for (int iArgIter = iArg; iArgIter + nArgsToRemove <= argc; iArgIter++) argv[iArgIter] = argv[iArgIter + nArgsToRemove];
+			argc -= nArgsToRemove;
+		} else {
+			++iArg;
+		}
+	}
+	return true;	
+}
+
+void Shell::Arg::PrintHelp(Printable& tout) const
+{
+	int lenMax = 0;
+	char str[80];
+	for (int iOpt = 0; iOpt < nOpts_; iOpt++) {
+		const Opt& opt = optTbl_[iOpt];
+		opt.MakeHelp(str, sizeof(str));
+		lenMax = ChooseMax(::strlen(str), lenMax);;
+	}
+	for (int iOpt = 0; iOpt < nOpts_; iOpt++) {
+		const Opt& opt = optTbl_[iOpt];
+		opt.MakeHelp(str, sizeof(str));
+		tout.Printf("%-*s %s\n", lenMax, str, opt.GetHelp());
+		//tout.Printf("%s %s\n", str, opt.GetHelp());
+	}
+}
+
+bool Shell::Arg::GetBool(const char* longName) const
+{
+	return !!FindOptValue(longName);
+}
+
+bool Shell::Arg::GetString(const char* longName, const char** pValue) const
+{
+	const OptValue* pOptValue = FindOptValue(longName);
+	if (pOptValue) {
+		*pValue = pOptValue->GetValue();
+		return true;
+	}
+	return false;
+}
+
+bool Shell::Arg::GetInt(const char* longName, int* pValue) const
+{
+	const OptValue* pOptValue = FindOptValue(longName);
+	if (pOptValue) {
+		*pValue = ::strtol(pOptValue->GetValue(), nullptr, 0);
+		return true;
+	}
+	return false;
+}
+
+void Shell::Arg::AddOptValue(const Opt* pOpt, const char* value)
+{
+	if (!value) value = "";
+	if (pOptValueHead_) {
+		OptValue* pOptValue = pOptValueHead_.get();
+		for ( ; pOptValue->GetNext(); pOptValue = pOptValue->GetNext()) ;
+		pOptValue->SetNext(new OptValue(pOpt, value));
+	} else {
+		pOptValueHead_.reset(new OptValue(pOpt, value));
+	}
+}
+
+const Shell::Arg::OptValue* Shell::Arg::FindOptValue(const char* longName) const
+{
+	for (const OptValue* pOptValue = pOptValueHead_.get(); pOptValue; pOptValue = pOptValue->GetNext()) {
+		if (pOptValue->GetOpt().CheckLongName(longName, nullptr)) return pOptValue;
+	}
+	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+// Shell::Arg::Opt
+//-----------------------------------------------------------------------------
+bool Shell::Arg::Opt::CheckLongName(const char* longName, const char** pValue) const
+{
+	const char* p1 = longName;
+	const char* p2 = longName_;
+	for ( ; ; p1++, p2++) {
+		char ch1 = (*p1 == '=')? '\0' : *p1;
+		char ch2 = *p2;
+		if (ch1 != ch2) return false;
+		if (ch1 == '\0') break;
+	}
+	if (pValue && *p1 == '=') *pValue = p1 + 1;
+	return true;
+}
+
+bool Shell::Arg::Opt::CheckShortName(const char* shortName) const
+{
+	return ::strcmp(shortName, shortName_) == 0;
+}
+
+void Shell::Arg::Opt::MakeHelp(char* str, int len) const
+{
+	if (type_ == Type::Bool) {
+		if (shortName_[0] == '\0') {
+			::snprintf(str, len, "--%s", longName_);
+		} else {
+			::snprintf(str, len, "--%s, -%s", longName_, shortName_);
+		}
+	} else {
+		if (shortName_[0] == '\0') {
+			::snprintf(str, len, "--%s=%s", longName_, helpValue_);
+		} else {
+			::snprintf(str, len, "--%s=%s, -%s %s", longName_, helpValue_, shortName_, helpValue_);
+		}
 	}
 }
 
