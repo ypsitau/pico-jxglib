@@ -39,9 +39,31 @@ void BinaryInfo::PrintBuildInformation(Printable& tout)
 
 void BinaryInfo::PrintFixedPinInformation(Printable& tout)
 {
-	int n = 0;
-	const char* labelTbl[32] = { nullptr };
-	auto printPinsWithFunc = [&labelTbl](uint64_t pin_encoding, int nBitsPinFunc, int nBitsPin, int nPins) {
+	const char* labelTbl[30 + 1] = { nullptr };	// 30 GPIO pins + 1 for null terminator
+	auto isLabelMatched = [](const char* label1, const char* label2) {
+		const char* p1 = label1;
+		const char* p2 = label2;
+		if (!p1 || !p2) return false;
+		for ( ; ; p1++, p2++) {
+			char ch1 = (*p1 == '|')? '\0' : *p1;
+			char ch2 = (*p2 == '|')? '\0' : *p2;
+			if (ch1 != ch2) return false;
+			if (ch1 == '\0') break;
+		}
+		return true;
+	};
+	auto printPinFunc = [&tout](int pinStart, int pinEnd, const char* label) {
+		char buff[32];
+		if (pinStart == pinEnd) {
+			::snprintf(buff, sizeof(buff), "%d:", pinStart);
+		} else {
+			::snprintf(buff, sizeof(buff), "%d-%d:", pinStart, pinEnd);
+		}
+		tout.Printf(" %-19s", buff);
+		for (const char* p = label; *p && *p != '|'; p++) tout.PutChar(*p);
+		tout.Println();
+	};	
+	auto parsePinsWithFunc = [&labelTbl](uint64_t pin_encoding, int nBitsPinFunc, int nBitsPin, int nPins) {
 	    // 32 bits
 		// p4_5 : p3_5 : p2_5 : p1_5 : p0_5 : func_4 : 010_3 //individual pins p0,p1,p2,p3,p4 ... if fewer than 5 then duplicate p
     	//                    phi_5 : plo_5 : func_4 : 001_3 // pin range plo-phi inclusive
@@ -59,10 +81,9 @@ void BinaryInfo::PrintFixedPinInformation(Printable& tout)
 			uint32_t pinLow = static_cast<uint32_t>(pin_encoding & maskPin);
 			pin_encoding >>= nBitsPin;
 			uint32_t pinHigh = static_cast<uint32_t>(pin_encoding & maskPin);
-			for (uint32_t pin = pinLow; pin <= pinHigh; ++pin) labelTbl[pin] = GetPinFuncName(pinFunc, pin);
-			//char buff[32];
-			//::snprintf(buff, sizeof(buff), "%d-%d:", pinLow, pinHigh);
-			//tout.Printf(" %-19s%s\n", buff, GetPinFuncName(pinFunc));
+			for (uint32_t pin = pinLow; pin <= pinHigh; ++pin) {
+				if (!labelTbl[pin]) labelTbl[pin] = GetPinFuncName(pinFunc, pin);
+			}
 			break;
 		}
 		case BI_PINS_ENCODING_MULTI: {
@@ -71,10 +92,7 @@ void BinaryInfo::PrintFixedPinInformation(Printable& tout)
 				uint32_t pin = static_cast<uint32_t>(pin_encoding & maskPin);
 				pin_encoding >>= nBitsPin;
 				if (pin == pinPrev) break;
-				labelTbl[pin] = GetPinFuncName(pinFunc, pin);
-				//char buff[32];
-				//::snprintf(buff, sizeof(buff), "%d:", pin);
-				//tout.Printf(" %-19s%s\n", buff, GetPinFuncName(pinFunc, pin));
+				if (!labelTbl[pin]) labelTbl[pin] = GetPinFuncName(pinFunc, pin);
 				pinPrev = pin;
 			}
 			break;
@@ -83,67 +101,61 @@ void BinaryInfo::PrintFixedPinInformation(Printable& tout)
 			break;
 		}
 	};
-	auto printPinsWithName = [&labelTbl](uint64_t pin_mask, const char* label) {
+	auto parsePinsWithName = [&labelTbl](uint64_t pin_mask, const char* label) {
 		for (int pin = 0; pin_mask; pin++, pin_mask >>= 1) {
 			if (pin_mask & 1) {
-				labelTbl[pin] = label;
+				if (!labelTbl[pin]) labelTbl[pin] = label;
 				label = ::strchr(label, '|');
 				label = label? label + 1 : nullptr;
-				//char buff[32];
-				//::snprintf(buff, sizeof(buff), "%d:", pin);
-				//tout.Printf(" %-19s", buff);
-				//for ( ; *label; label++) {
-				//	if (*label == '|') {
-				//		label++;
-				//		break;
-				//	} else {
-				//		//tout.PutChar(*label);
-				//	}
-				//}
-				//tout.Println();
 			}
 		}
 	};
 	tout.Printf("Fixed Pin Information\n");
-	for (auto ppInfo = GetInfoEnd(); ppInfo != GetInfoStart(); --ppInfo) {
-		const binary_info_t* pInfo = *(ppInfo - 1);
+	for (auto ppInfo = GetInfoStart(); ppInfo != GetInfoEnd(); ++ppInfo) {
+		const binary_info_t* pInfo = *ppInfo;
 		switch (pInfo->type) {
 		case BINARY_INFO_TYPE_PINS_WITH_FUNC: {
-			n++;
 			auto& info = *reinterpret_cast<const binary_info_pins_with_func_t*>(pInfo);
-			printPinsWithFunc(info.pin_encoding, 4, 5, 5);
+			parsePinsWithFunc(info.pin_encoding, 4, 5, 5);
 			break;
 		}
 		case BINARY_INFO_TYPE_PINS_WITH_NAME: {
-			n++;
 			auto& info = *reinterpret_cast<const binary_info_pins_with_name_t*>(pInfo);
-			printPinsWithName(info.pin_mask, info.label);
+			parsePinsWithName(info.pin_mask, info.label);
 			break;
 		}
 		case BINARY_INFO_TYPE_PINS64_WITH_FUNC: {
-			n++;
 			auto& info = *reinterpret_cast<const binary_info_pins64_with_func_t*>(pInfo);
-			printPinsWithFunc(info.pin_encoding, 5, 8, 7);
+			parsePinsWithFunc(info.pin_encoding, 5, 8, 7);
 			break;
 		}
 		case BINARY_INFO_TYPE_PINS64_WITH_NAME: {
-			n++;
 			auto& info = *reinterpret_cast<const binary_info_pins64_with_name_t*>(pInfo);
-			printPinsWithName(info.pin_mask, info.label);
+			parsePinsWithName(info.pin_mask, info.label);
 			break;
 		}
 		default:
 			break;
 		}
 	}
+	int n = 0;
+	const char* labelPrev = nullptr;
+	int pinStart = -1;
 	for (int pin = 0; pin < count_of(labelTbl); ++pin) {
 		const char* label = labelTbl[pin];
-		if (!label) continue;
-		char buff[32];
-		::snprintf(buff, sizeof(buff), "%d:", pin);
-		tout.Printf(" %-19s", buff);
-		for (const char* p = label; *p && *p != '|'; p++) tout.PutChar(*p);
-		tout.Println();
+		if (label) {
+			n++;
+			if (!labelPrev) {
+				pinStart = pin;
+			} else if (!isLabelMatched(label, labelPrev)) {
+				printPinFunc(pinStart, pin - 1, labelPrev);
+				pinStart = pin;
+			}
+		} else if (labelPrev) {
+			printPinFunc(pinStart, pin - 1, labelPrev);
+			pinStart = -1;
+		}
+		labelPrev = label;
 	}
 	if (n == 0) tout.Printf(" none\n");
 }
