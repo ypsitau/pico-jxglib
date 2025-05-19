@@ -11,15 +11,16 @@ namespace jxglib {
 //-----------------------------------------------------------------------------
 // FAT_Flash
 //-----------------------------------------------------------------------------
-class FAT_Flash : public FAT::PhysicalDriveT<> {
+class FAT_Flash : public FAT {
 public:
 	static const uint32_t bytesSector = 512;
 private:
 	uint32_t offsetXIP_;
 	uint32_t bytesXIP_; 	// must be multiple of bytesSector
 public:
-	FAT_Flash(uint32_t offsetXIP, uint32_t bytesXIP, BYTE pdrv = 0);
+	FAT_Flash(uint32_t offsetXIP, uint32_t bytesXIP);
 public:
+	// virtual functions of FAT
 	virtual DSTATUS status() override;
 	virtual DSTATUS initialize() override;
 	virtual DRESULT read(BYTE* buff, LBA_t sector, UINT count) override;

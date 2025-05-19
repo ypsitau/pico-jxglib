@@ -76,18 +76,23 @@ public:
 	};
 	enum class MountMode { Normal, Forced, };
 	static const int SectorSize = FF_MIN_SS;
+#if 0
 	class PhysicalDrive {
 	private:
-		BYTE pdrv_;
+		FATFS fatFs_;
 		PhysicalDrive* pPhysicalDriveNext_;
 	public:
 		static PhysicalDrive* pPhysicalDriveHead;
 	public:
-		PhysicalDrive(BYTE pdrv);
+		PhysicalDrive();
 	public:
-		BYTE GetPDRV() const { return pdrv_; }
+		PhysicalDrive* GetNext() { return pPhysicalDriveNext_; }
 	public:
-		virtual void Mount(MountMode mountMode = MountMode::Normal) = 0;
+		void Mount(MountMode mountMode = MountMode::Normal) {
+			TCHAR path[16];
+			::snprintf(path, sizeof(path), "%d:", 0);
+			::f_mount(&fatFs_, path, (mountMode == MountMode::Forced)? 1 : 0);
+		}
 	public:
 		virtual DSTATUS status() = 0;
 		virtual DSTATUS initialize() = 0;
@@ -99,14 +104,15 @@ public:
 		virtual DRESULT ioctl_GET_BLOCK_SIZE(DWORD* pBlockSize) = 0;
 		virtual DRESULT ioctl_CTRL_TRIM(LBA_t startLBA, LBA_t endLBA) = 0;
 	};
+#endif
+#if 0
 	template<int cntLogicalDrive = 1> class PhysicalDriveT : public PhysicalDrive {
 	public:
 		FATFS fatFsTbl_[cntLogicalDrive];
 	public:
-		PhysicalDriveT(BYTE pdrv) : PhysicalDrive(pdrv) {}
+		PhysicalDriveT() {}
 	public:
 		virtual void Mount(MountMode mountMode = MountMode::Normal) override {
-			FAT::Instance.RegisterPhysicalDrive(*this);
 			for (int i = 0; i < cntLogicalDrive; i++) {
 				TCHAR path[16];
 				::snprintf(path, sizeof(path), "%d:", FAT::Instance.AssignLogialDrive());
@@ -114,19 +120,22 @@ public:
 			}
 		}
 	};
+#endif
 private:
-	int numLogicalDrive_;
-	PhysicalDrive* physicalDriveTbl_[16];
+	//static FAT Instance;
+	FATFS fatFs_;
+	FAT* pFATNext_;
+private:
+	static FAT* pFATHead_;
 public:
-	static FAT Instance;
+	FAT();
 public:
-	FAT() : numLogicalDrive_{0} {}
-public:
-	int AssignLogialDrive() { numLogicalDrive_++; return numLogicalDrive_ - 1; }
-	void RegisterPhysicalDrive(PhysicalDrive& physicalDrive) {
-		physicalDriveTbl_[physicalDrive.GetPDRV()] = &physicalDrive;
+	void Mount(MountMode mountMode = MountMode::Normal) {
+		TCHAR path[16];
+		::snprintf(path, sizeof(path), "%d:", 0);
+		::f_mount(&fatFs_, path, (mountMode == MountMode::Forced)? 1 : 0);
 	}
-	PhysicalDrive* GetPhysicalDrive(BYTE pdrv) { return physicalDriveTbl_[pdrv]; }
+	//PhysicalDrive* GetPhysicalDrive(BYTE pdrv);
 public:
 	// virtual functions of FS::Manager
 	virtual const char* GetDriveName() const override { return "FAT"; }
@@ -139,7 +148,18 @@ public:
 	virtual bool RenameDir(const char* fileNameOld, const char* fileNameNew) override;
 	virtual bool Format() override;
 public:
+	static FAT* GetFAT(BYTE pdrv);
 	static const char* FRESULTToStr(FRESULT result);
+public:
+	virtual DSTATUS status() = 0;
+	virtual DSTATUS initialize() = 0;
+	virtual DRESULT read(BYTE* buff, LBA_t sector, UINT count) = 0;
+	virtual DRESULT write(const BYTE* buff, LBA_t sector, UINT count) = 0;
+	virtual DRESULT ioctl_CTRL_SYNC() = 0;
+	virtual DRESULT ioctl_GET_SECTOR_COUNT(LBA_t* pSectorCount) = 0;
+	virtual DRESULT ioctl_GET_SECTOR_SIZE(WORD* pSectorSize) = 0;
+	virtual DRESULT ioctl_GET_BLOCK_SIZE(DWORD* pBlockSize) = 0;
+	virtual DRESULT ioctl_CTRL_TRIM(LBA_t startLBA, LBA_t endLBA) = 0;
 };
 
 }

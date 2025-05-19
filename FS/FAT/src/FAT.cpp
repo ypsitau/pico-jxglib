@@ -8,7 +8,30 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // FAT
 //------------------------------------------------------------------------------
-FAT FAT::Instance;
+//FAT FAT::Instance;
+FAT* FAT::pFATHead_ = nullptr;
+
+FAT::FAT() : pFATNext_{nullptr}
+{
+	if (pFATHead_) {
+		FAT* pFAT = pFATHead_;
+		for ( ; pFAT->pFATNext_; pFAT = pFAT->pFATNext_) ;
+		pFAT->pFATNext_ = this;
+	} else {
+		pFATHead_ = this;
+	}
+}
+
+#if 0
+FAT::PhysicalDrive* FAT::GetPhysicalDrive(BYTE pdrv)
+{
+	PhysicalDrive* pPhysicalDrive = PhysicalDrive::pPhysicalDriveHead;
+	for (BYTE pdrvIter = 0; pPhysicalDrive; pPhysicalDrive = pPhysicalDrive->GetNext(), pdrvIter++) {
+		if (pdrv == pdrvIter) return pPhysicalDrive;
+	}
+	return nullptr;
+}
+#endif
 
 FS::File* FAT::OpenFile(const char* fileName, const char* mode)
 {
@@ -66,6 +89,15 @@ bool FAT::Format()
 #else
 	return false;
 #endif
+}
+
+FAT* FAT::GetFAT(BYTE pdrv)
+{
+	FAT* pFAT = pFATHead_;
+	for (BYTE pdrvIter = 0; pFAT; pFAT = pFAT->pFATNext_, pdrvIter++) {
+		if (pdrv == pdrvIter) return pFAT;
+	}
+	return nullptr;
 }
 
 const char* FAT::FRESULTToStr(FRESULT result)
@@ -174,12 +206,13 @@ void FAT::Dir::Close()
 	::f_closedir(&dir_);
 }
 
+#if 0
 //------------------------------------------------------------------------------
 // FAT::PhysicalDrive
 //------------------------------------------------------------------------------
 FAT::PhysicalDrive* FAT::PhysicalDrive::pPhysicalDriveHead = nullptr;
 
-FAT::PhysicalDrive::PhysicalDrive(BYTE pdrv) : pdrv_{pdrv}, pPhysicalDriveNext_{nullptr}
+FAT::PhysicalDrive::PhysicalDrive() : pPhysicalDriveNext_{nullptr}
 {
 	if (pPhysicalDriveHead) {
 		PhysicalDrive* pPhysicalDrive = pPhysicalDriveHead;
@@ -189,12 +222,77 @@ FAT::PhysicalDrive::PhysicalDrive(BYTE pdrv) : pdrv_{pdrv}, pPhysicalDriveNext_{
 		pPhysicalDriveHead = this;
 	}
 }
+#endif
 
 }
 
 //------------------------------------------------------------------------------
 // Callback Function
 //------------------------------------------------------------------------------
+DSTATUS disk_initialize(BYTE pdrv)
+{
+	using namespace jxglib;
+	FAT* pFAT = FAT::GetFAT(pdrv);
+	if (!pFAT) return RES_PARERR;
+	return pFAT->initialize();
+}
+
+DSTATUS disk_status(BYTE pdrv)
+{
+	using namespace jxglib;
+	FAT* pFAT = FAT::GetFAT(pdrv);
+	if (!pFAT) return RES_PARERR;
+	return pFAT->status();
+}
+
+DRESULT disk_read(BYTE pdrv, BYTE* buff, LBA_t sector, UINT count)
+{
+	using namespace jxglib;
+	FAT* pFAT = FAT::GetFAT(pdrv);
+	if (!pFAT) return RES_PARERR;
+	return pFAT->read(buff, sector, count);
+}
+
+DRESULT disk_write(BYTE pdrv, const BYTE* buff, LBA_t sector, UINT count)
+{
+	using namespace jxglib;
+	FAT* pFAT = FAT::GetFAT(pdrv);
+	if (!pFAT) return RES_PARERR;
+	return pFAT->write(buff, sector, count);
+}
+
+DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void* buff)
+{
+	using namespace jxglib;
+	FAT* pFAT = FAT::GetFAT(pdrv);
+	if (!pFAT) return RES_PARERR;
+	switch (cmd) {
+	case CTRL_SYNC: {
+		return pFAT->ioctl_CTRL_SYNC();
+	}
+	case GET_SECTOR_COUNT: {
+		LBA_t* pSectorCount = reinterpret_cast<LBA_t*>(buff);
+		return pFAT->ioctl_GET_SECTOR_COUNT(pSectorCount);
+	}
+	case GET_SECTOR_SIZE: {
+		WORD* pSectorSize = reinterpret_cast<WORD*>(buff);
+		return pFAT->ioctl_GET_SECTOR_SIZE(pSectorSize);
+	}
+	case GET_BLOCK_SIZE: {
+		DWORD* pBlockSize = reinterpret_cast<DWORD*>(buff);
+		return pFAT->ioctl_GET_BLOCK_SIZE(pBlockSize);
+	}
+	case CTRL_TRIM: {
+		LBA_t* args = reinterpret_cast<LBA_t*>(buff);
+		return pFAT->ioctl_CTRL_TRIM(args[0], args[1]);
+	}
+	default:
+		break;
+	}
+	return RES_PARERR;
+}
+
+#if 0
 DSTATUS disk_initialize(BYTE pdrv)
 {
 	using namespace jxglib;
@@ -257,6 +355,7 @@ DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void* buff)
 	}
 	return RES_PARERR;
 }
+#endif
 
 DWORD get_fattime()
 {
