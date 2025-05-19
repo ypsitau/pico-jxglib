@@ -79,8 +79,11 @@ public:
 	class PhysicalDrive {
 	private:
 		BYTE pdrv_;
+		PhysicalDrive* pPhysicalDriveNext_;
 	public:
-		PhysicalDrive(BYTE pdrv) : pdrv_{pdrv} {}
+		static PhysicalDrive* pPhysicalDriveHead;
+	public:
+		PhysicalDrive(BYTE pdrv);
 	public:
 		BYTE GetPDRV() const { return pdrv_; }
 	public:

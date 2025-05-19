@@ -174,6 +174,22 @@ void FAT::Dir::Close()
 	::f_closedir(&dir_);
 }
 
+//------------------------------------------------------------------------------
+// FAT::PhysicalDrive
+//------------------------------------------------------------------------------
+FAT::PhysicalDrive* FAT::PhysicalDrive::pPhysicalDriveHead = nullptr;
+
+FAT::PhysicalDrive::PhysicalDrive(BYTE pdrv) : pdrv_{pdrv}, pPhysicalDriveNext_{nullptr}
+{
+	if (pPhysicalDriveHead) {
+		PhysicalDrive* pPhysicalDrive = pPhysicalDriveHead;
+		for ( ; pPhysicalDrive->pPhysicalDriveNext_; pPhysicalDrive = pPhysicalDrive->pPhysicalDriveNext_) ;
+		pPhysicalDrive->pPhysicalDriveNext_ = this;
+	} else {
+		pPhysicalDriveHead = this;
+	}
+}
+
 }
 
 //------------------------------------------------------------------------------
