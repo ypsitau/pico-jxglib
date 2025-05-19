@@ -130,15 +130,10 @@ private:
 public:
 	FAT();
 public:
-	void Mount(MountMode mountMode = MountMode::Normal) {
-		TCHAR path[16];
-		::snprintf(path, sizeof(path), "%d:", 0);
-		::f_mount(&fatFs_, path, (mountMode == MountMode::Forced)? 1 : 0);
-	}
+	void Mount(MountMode mountMode = MountMode::Normal);
 	//PhysicalDrive* GetPhysicalDrive(BYTE pdrv);
 public:
 	// virtual functions of FS::Manager
-	virtual const char* GetDriveName() const override { return "FAT"; }
 	virtual FS::File* OpenFile(const char* fileName, const char* mode) override;
 	virtual FS::Dir* OpenDir(const char* dirName) override;
 	virtual bool RemoveFile(const char* fileName) override;

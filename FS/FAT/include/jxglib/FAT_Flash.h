@@ -20,6 +20,9 @@ private:
 public:
 	FAT_Flash(uint32_t offsetXIP, uint32_t bytesXIP);
 public:
+	// virtual functions of FS::Manager
+	virtual const char* GetDriveName() const override { return "Flash"; }
+public:
 	// virtual functions of FAT
 	virtual DSTATUS status() override;
 	virtual DSTATUS initialize() override;

@@ -22,6 +22,13 @@ FAT::FAT() : pFATNext_{nullptr}
 	}
 }
 
+void FAT::Mount(MountMode mountMode)
+{
+	TCHAR path[16];
+	::snprintf(path, sizeof(path), "%d:", 0);
+	::f_mount(&fatFs_, path, (mountMode == MountMode::Forced)? 1 : 0);
+}
+
 #if 0
 FAT::PhysicalDrive* FAT::GetPhysicalDrive(BYTE pdrv)
 {
