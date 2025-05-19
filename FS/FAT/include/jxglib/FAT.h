@@ -76,53 +76,7 @@ public:
 	};
 	enum class MountMode { Normal, Forced, };
 	static const int SectorSize = FF_MIN_SS;
-#if 0
-	class PhysicalDrive {
-	private:
-		FATFS fatFs_;
-		PhysicalDrive* pPhysicalDriveNext_;
-	public:
-		static PhysicalDrive* pPhysicalDriveHead;
-	public:
-		PhysicalDrive();
-	public:
-		PhysicalDrive* GetNext() { return pPhysicalDriveNext_; }
-	public:
-		void Mount(MountMode mountMode = MountMode::Normal) {
-			TCHAR path[16];
-			::snprintf(path, sizeof(path), "%d:", 0);
-			::f_mount(&fatFs_, path, (mountMode == MountMode::Forced)? 1 : 0);
-		}
-	public:
-		virtual DSTATUS status() = 0;
-		virtual DSTATUS initialize() = 0;
-		virtual DRESULT read(BYTE* buff, LBA_t sector, UINT count) = 0;
-		virtual DRESULT write(const BYTE* buff, LBA_t sector, UINT count) = 0;
-		virtual DRESULT ioctl_CTRL_SYNC() = 0;
-		virtual DRESULT ioctl_GET_SECTOR_COUNT(LBA_t* pSectorCount) = 0;
-		virtual DRESULT ioctl_GET_SECTOR_SIZE(WORD* pSectorSize) = 0;
-		virtual DRESULT ioctl_GET_BLOCK_SIZE(DWORD* pBlockSize) = 0;
-		virtual DRESULT ioctl_CTRL_TRIM(LBA_t startLBA, LBA_t endLBA) = 0;
-	};
-#endif
-#if 0
-	template<int cntLogicalDrive = 1> class PhysicalDriveT : public PhysicalDrive {
-	public:
-		FATFS fatFsTbl_[cntLogicalDrive];
-	public:
-		PhysicalDriveT() {}
-	public:
-		virtual void Mount(MountMode mountMode = MountMode::Normal) override {
-			for (int i = 0; i < cntLogicalDrive; i++) {
-				TCHAR path[16];
-				::snprintf(path, sizeof(path), "%d:", FAT::Instance.AssignLogialDrive());
-				::f_mount(&fatFsTbl_[i], path, (mountMode == MountMode::Forced)? 1 : 0);
-			}
-		}
-	};
-#endif
 private:
-	//static FAT Instance;
 	FATFS fatFs_;
 	FAT* pFATNext_;
 private:
@@ -131,7 +85,6 @@ public:
 	FAT();
 public:
 	void Mount(MountMode mountMode = MountMode::Normal);
-	//PhysicalDrive* GetPhysicalDrive(BYTE pdrv);
 public:
 	// virtual functions of FS::Manager
 	virtual FS::File* OpenFile(const char* fileName, const char* mode) override;
