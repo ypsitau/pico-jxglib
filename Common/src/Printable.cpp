@@ -77,7 +77,7 @@ Printable& Printable::PrintfRaw(const char* format, ...)
 // Printable::DumpT
 //------------------------------------------------------------------------------
 Printable::DumpT::DumpT(Printable* pPrintable) : pPrintable_(pPrintable),
-	upperCaseFlag_{true}, nDigitsAddr_{-1}, nCols_{16}, addrStart_{0}, bytesPerElem_{1},
+	upperCaseFlag_{true}, nDigitsAddr_{-1}, bytesPerRow_{16}, addrStart_{0}, bytesPerElem_{1},
 	bigEndianFlag_{false}, asciiFlag_{false}
 {}
 
@@ -91,7 +91,7 @@ Printable::DumpT& Printable::DumpT::operator()(const void* buff, int cnt)
 	int nDigitsAddr = nDigitsAddr_;
 	if (nDigitsAddr < 0) {
 		nDigitsAddr = 0;
-		uint32_t addrEnd = addrStart_ + ((cnt - 1) / nCols_) * nCols_ * bytesPerElem_;
+		uint32_t addrEnd = addrStart_ + ((cnt - 1) / bytesPerRow_) * bytesPerRow_ * bytesPerElem_;
 		for ( ; addrEnd; addrEnd >>= 4, nDigitsAddr++) ;
 		if (nDigitsAddr == 0) nDigitsAddr = 1;
 	}
@@ -101,6 +101,7 @@ Printable::DumpT& Printable::DumpT::operator()(const void* buff, int cnt)
 	uint32_t addr = addrStart_;
 	char* pAsciiBuff;
 	const uint8_t* pElem = reinterpret_cast<const uint8_t*>(buff);
+	int nCols = (bytesPerRow_ + bytesPerElem_ - 1) / bytesPerElem_;
 	for (int i = 0; i < cnt; i++, pElem += bytesPerElem_) {
 		if (iCol == 0) {
 			if (nDigitsAddr > 0) {
@@ -138,7 +139,7 @@ Printable::DumpT& Printable::DumpT::operator()(const void* buff, int cnt)
 		}
 		for (int i = 0; i < bytesPerElem_; i++) *pAsciiBuff++ = pElem[i];
 		iCol++;
-		if (iCol == nCols_) {
+		if (iCol == nCols) {
 			if (asciiFlag_) PrintAscii(printable, asciiBuff, bytesPerElem_ * iCol);
 			printable.Println();
 			iCol = 0;
@@ -146,7 +147,7 @@ Printable::DumpT& Printable::DumpT::operator()(const void* buff, int cnt)
 	}
 	if (iCol > 0) {
 		if (asciiFlag_) {
-			for ( ; iCol < nCols_; iCol++) {
+			for ( ; iCol < nCols; iCol++) {
 				printable.Print((iCol % 8 == 0)? "  " : " ");
 				for (int i = 0; i < bytesPerElem_ * 2; i++) printable.PutChar(' ');
 			}

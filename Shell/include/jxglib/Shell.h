@@ -28,74 +28,76 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class Shell : public Tickable {
 public:
-	class Arg {
-	public:
-		class Opt {
-		public:
-			enum class Type { Bool, String, Int};
-		private:
-			Type type_;
-			const char* longName_;
-			const char* shortName_;
-			const char* strHelp_;
-			const char* helpValue_;
-		public:
-			constexpr Opt(Type type, const char* longName, const char* shortName, const char* strHelp, const char* helpValue) :
-				type_{type}, longName_{longName}, shortName_{shortName}, strHelp_{strHelp}, helpValue_{helpValue} {}
-		public:
-			void MakeHelp(char* str, int len) const;
-			constexpr Type GetType() const { return type_; }
-			constexpr const char* GetLongName() const { return longName_; }
-			constexpr const char* GetShortName() const { return shortName_; }
-			constexpr const char* GetHelp() const { return strHelp_; }
-			constexpr const char* GetHelpValue() const { return helpValue_; }
-			constexpr bool DoesRequireValue() const { return type_ != Type::Bool; }
-		public:
-			bool CheckLongName(const char* longName, const char** pValue) const;
-			bool CheckLongName(const char* longName) const { return CheckLongName(longName, nullptr); }
-			bool CheckShortName(const char* shortName) const;
-		};
-		class OptValue {
-		private:
-			const Opt* pOpt_;
-			const char* value_;
-			std::unique_ptr<OptValue> pOptValueNext_;
-		public:
-			OptValue(const Opt* pOpt, const char* value) : pOpt_{pOpt}, value_{value} {}
-		public:
-			const Opt& GetOpt() const { return *pOpt_; }
-			const char* GetValue() const { return value_; }
-			void SetNext(OptValue* pOptValueNext) { pOptValueNext_.reset(pOptValueNext); }
-			OptValue* GetNext() const { return pOptValueNext_.get(); }
-		};	
-	private:
-		const Opt* optTbl_;
-		int nOpts_;
-		std::unique_ptr<OptValue> pOptValueHead_;
-	public:
-		Arg(const Opt optTbl[], int nOpts) : optTbl_{optTbl}, nOpts_{nOpts} {}
-	public:
-		bool Parse(Printable& terr, int& argc, char* argv[]);
-		void PrintHelp(Printable& tout) const;
-	public:
-		bool GetBool(const char* longName) const;
-		bool GetString(const char* longName, const char** pValue) const;
-		bool GetInt(const char* longName, int* pValue) const;
-	private:
-		void AddOptValue(const Opt* pOpt, const char* value);
-		const OptValue* FindOptValue(const char* longName) const;
-	public:
-		constexpr static Opt OptBool(const char* longName, const char* shortName, const char* strHelp = "", const char* helpValue = "") {
-			return Opt(Opt::Type::Bool, longName, shortName, strHelp, helpValue);
-		}
-		constexpr static Opt OptString(const char* longName, const char* shortName, const char* strHelp = "", const char* helpValue = "") {
-			return Opt(Opt::Type::String, longName, shortName, strHelp, helpValue);
-		}
-		constexpr static Opt OptInt(const char* longName, const char* shortName, const char* strHelp = "", const char* helpValue = "") {
-			return Opt(Opt::Type::Int, longName, shortName, strHelp, helpValue);
-		}
-	};
 	class Cmd {
+	public:
+		class Arg {
+		public:
+			class Opt {
+			public:
+				enum class Type { Bool, String, Int};
+			private:
+				Type type_;
+				const char* longName_;
+				const char* shortName_;
+				const char* strHelp_;
+				const char* helpValue_;
+			public:
+				constexpr Opt(Type type, const char* longName, const char* shortName, const char* strHelp, const char* helpValue) :
+					type_{type}, longName_{longName}, shortName_{shortName}, strHelp_{strHelp}, helpValue_{helpValue} {}
+			public:
+				void MakeHelp(char* str, int len) const;
+				constexpr Type GetType() const { return type_; }
+				constexpr const char* GetLongName() const { return longName_; }
+				constexpr const char* GetShortName() const { return shortName_; }
+				constexpr const char* GetHelp() const { return strHelp_; }
+				constexpr const char* GetHelpValue() const { return helpValue_; }
+				constexpr bool DoesRequireValue() const { return type_ != Type::Bool; }
+			public:
+				bool CheckLongName(const char* longName, const char** pValue) const;
+				bool CheckLongName(const char* longName) const { return CheckLongName(longName, nullptr); }
+				bool CheckShortName(const char* shortName) const;
+			};
+			class OptValue {
+			private:
+				const Opt* pOpt_;
+				const char* value_;
+				std::unique_ptr<OptValue> pOptValueNext_;
+			public:
+				OptValue(const Opt* pOpt, const char* value) : pOpt_{pOpt}, value_{value} {}
+			public:
+				const Opt& GetOpt() const { return *pOpt_; }
+				const char* GetValue() const { return value_; }
+				void SetNext(OptValue* pOptValueNext) { pOptValueNext_.reset(pOptValueNext); }
+				OptValue* GetNext() const { return pOptValueNext_.get(); }
+			};	
+		private:
+			const Opt* optTbl_;
+			int nOpts_;
+			std::unique_ptr<OptValue> pOptValueHead_;
+		public:
+			Arg(const Opt optTbl[], int nOpts) : optTbl_{optTbl}, nOpts_{nOpts} {}
+		public:
+			bool Parse(Printable& terr, int& argc, const char* argv[]);
+			bool Parse(Printable& terr, int& argc, char* argv[]) { return Parse(terr, argc, const_cast<const char**>(argv)); }
+			void PrintHelp(Printable& tout) const;
+		public:
+			bool GetBool(const char* longName) const;
+			bool GetString(const char* longName, const char** pValue) const;
+			bool GetInt(const char* longName, int* pValue) const;
+		private:
+			void AddOptValue(const Opt* pOpt, const char* value);
+			const OptValue* FindOptValue(const char* longName) const;
+		public:
+			constexpr static Opt OptBool(const char* longName, const char* shortName, const char* strHelp = "", const char* helpValue = "") {
+				return Opt(Opt::Type::Bool, longName, shortName, strHelp, helpValue);
+			}
+			constexpr static Opt OptString(const char* longName, const char* shortName, const char* strHelp = "", const char* helpValue = "") {
+				return Opt(Opt::Type::String, longName, shortName, strHelp, helpValue);
+			}
+			constexpr static Opt OptInt(const char* longName, const char* shortName, const char* strHelp = "", const char* helpValue = "") {
+				return Opt(Opt::Type::Int, longName, shortName, strHelp, helpValue);
+			}
+		};
 	private:
 		const char* name_;
 		const char* help_;

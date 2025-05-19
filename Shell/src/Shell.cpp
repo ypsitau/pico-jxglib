@@ -137,9 +137,9 @@ Shell::Cmd::Cmd(const char* name, const char* help) : name_{name}, help_{help}, 
 }
 
 //-----------------------------------------------------------------------------
-// Shell::Arg
+// Shell::Cmd::Arg
 //-----------------------------------------------------------------------------
-bool Shell::Arg::Parse(Printable& terr, int& argc, char* argv[])
+bool Shell::Cmd::Arg::Parse(Printable& terr, int& argc, const char* argv[])
 {
 	for (int iArg = 1; iArg < argc; ) {
 		if (argv[iArg][0] == '-') {
@@ -201,7 +201,7 @@ bool Shell::Arg::Parse(Printable& terr, int& argc, char* argv[])
 	return true;	
 }
 
-void Shell::Arg::PrintHelp(Printable& tout) const
+void Shell::Cmd::Arg::PrintHelp(Printable& tout) const
 {
 	int lenMax = 0;
 	char str[80];
@@ -218,12 +218,12 @@ void Shell::Arg::PrintHelp(Printable& tout) const
 	}
 }
 
-bool Shell::Arg::GetBool(const char* longName) const
+bool Shell::Cmd::Arg::GetBool(const char* longName) const
 {
 	return !!FindOptValue(longName);
 }
 
-bool Shell::Arg::GetString(const char* longName, const char** pValue) const
+bool Shell::Cmd::Arg::GetString(const char* longName, const char** pValue) const
 {
 	const OptValue* pOptValue = FindOptValue(longName);
 	if (pOptValue) {
@@ -233,7 +233,7 @@ bool Shell::Arg::GetString(const char* longName, const char** pValue) const
 	return false;
 }
 
-bool Shell::Arg::GetInt(const char* longName, int* pValue) const
+bool Shell::Cmd::Arg::GetInt(const char* longName, int* pValue) const
 {
 	const OptValue* pOptValue = FindOptValue(longName);
 	if (pOptValue) {
@@ -243,7 +243,7 @@ bool Shell::Arg::GetInt(const char* longName, int* pValue) const
 	return false;
 }
 
-void Shell::Arg::AddOptValue(const Opt* pOpt, const char* value)
+void Shell::Cmd::Arg::AddOptValue(const Opt* pOpt, const char* value)
 {
 	if (!value) value = "";
 	if (pOptValueHead_) {
@@ -255,7 +255,7 @@ void Shell::Arg::AddOptValue(const Opt* pOpt, const char* value)
 	}
 }
 
-const Shell::Arg::OptValue* Shell::Arg::FindOptValue(const char* longName) const
+const Shell::Cmd::Arg::OptValue* Shell::Cmd::Arg::FindOptValue(const char* longName) const
 {
 	for (const OptValue* pOptValue = pOptValueHead_.get(); pOptValue; pOptValue = pOptValue->GetNext()) {
 		if (pOptValue->GetOpt().CheckLongName(longName, nullptr)) return pOptValue;
@@ -264,9 +264,9 @@ const Shell::Arg::OptValue* Shell::Arg::FindOptValue(const char* longName) const
 }
 
 //-----------------------------------------------------------------------------
-// Shell::Arg::Opt
+// Shell::Cmd::Arg::Opt
 //-----------------------------------------------------------------------------
-bool Shell::Arg::Opt::CheckLongName(const char* longName, const char** pValue) const
+bool Shell::Cmd::Arg::Opt::CheckLongName(const char* longName, const char** pValue) const
 {
 	const char* p1 = longName;
 	const char* p2 = longName_;
@@ -280,12 +280,12 @@ bool Shell::Arg::Opt::CheckLongName(const char* longName, const char** pValue) c
 	return true;
 }
 
-bool Shell::Arg::Opt::CheckShortName(const char* shortName) const
+bool Shell::Cmd::Arg::Opt::CheckShortName(const char* shortName) const
 {
 	return ::strcmp(shortName, shortName_) == 0;
 }
 
-void Shell::Arg::Opt::MakeHelp(char* str, int len) const
+void Shell::Cmd::Arg::Opt::MakeHelp(char* str, int len) const
 {
 	if (type_ == Type::Bool) {
 		if (shortName_[0] == '\0') {

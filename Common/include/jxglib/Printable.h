@@ -20,7 +20,7 @@ public:
 		Printable* pPrintable_;	// maybe nullptr
 		bool upperCaseFlag_;
 		int nDigitsAddr_;
-		int nCols_;
+		int bytesPerRow_;
 		uint32_t addrStart_;
 		int bytesPerElem_;
 		bool bigEndianFlag_;
@@ -35,15 +35,15 @@ public:
 		DumpT& NoAddr() { nDigitsAddr_ = 0; return *this; }
 		DumpT& DigitsAddr(int nDigitsAddr) { nDigitsAddr_ = nDigitsAddr; return *this; }
 		DumpT& DigitsAddr_Auto() { nDigitsAddr_ = -1; return *this; }
-		DumpT& Cols(int nCols) { nCols_ = nCols; return *this; }
+		DumpT& BytesPerRow(int bytesPerRow) { bytesPerRow_ = bytesPerRow; return *this; }
 		DumpT& AddrStart(uint32_t addrStart) { addrStart_ = addrStart; return *this; }
-		DumpT& Data8Bit(int nCols = 16) { bytesPerElem_ = 1; nCols_ = nCols; bigEndianFlag_ = false; return *this; } 
-		DumpT& Data16Bit(int nCols = 8) { bytesPerElem_ = 2; nCols_ = nCols; bigEndianFlag_ = false; return *this; } 
-		DumpT& Data32Bit(int nCols = 4) { bytesPerElem_ = 4; nCols_ = nCols; bigEndianFlag_ = false; return *this; } 
-		DumpT& Data64Bit(int nCols = 2) { bytesPerElem_ = 8; nCols_ = nCols; bigEndianFlag_ = false; return *this; } 
-		DumpT& Data16BitBE(int nCols = 8) { bytesPerElem_ = 2; nCols_ = nCols; bigEndianFlag_ = true; return *this; } 
-		DumpT& Data32BitBE(int nCols = 4) { bytesPerElem_ = 4; nCols_ = nCols; bigEndianFlag_ = true; return *this; } 
-		DumpT& Data64BitBE(int nCols = 2) { bytesPerElem_ = 8; nCols_ = nCols; bigEndianFlag_ = true; return *this; } 
+		DumpT& Data8Bit() { bytesPerElem_ = 1; bigEndianFlag_ = false; return *this; } 
+		DumpT& Data16Bit() { bytesPerElem_ = 2; bigEndianFlag_ = false; return *this; } 
+		DumpT& Data32Bit() { bytesPerElem_ = 4; bigEndianFlag_ = false; return *this; } 
+		DumpT& Data64Bit() { bytesPerElem_ = 8; bigEndianFlag_ = false; return *this; } 
+		DumpT& Data16BitBE() { bytesPerElem_ = 2; bigEndianFlag_ = true; return *this; } 
+		DumpT& Data32BitBE() { bytesPerElem_ = 4; bigEndianFlag_ = true; return *this; } 
+		DumpT& Data64BitBE() { bytesPerElem_ = 8; bigEndianFlag_ = true; return *this; } 
 		DumpT& Ascii(bool asciiFlag = true) { asciiFlag_ = asciiFlag; return *this; }
 	public:
 		DumpT& operator()(const void* buff, int bytes);

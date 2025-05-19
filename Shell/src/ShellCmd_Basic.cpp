@@ -57,12 +57,12 @@ class ShellCmd_d : public Shell::Cmd {
 private:
 	uint32_t addr_;
 	uint32_t bytes_;
-	int nCols_;
+	int bytesPerRow_;
 	Printable::DumpT dump_;
 public:
 	static ShellCmd_d Instance;
 public:
-	ShellCmd_d() : Shell::Cmd("d", "prints memory content at the specified address"), addr_{0x00000000}, bytes_{64}, nCols_{-1} {}
+	ShellCmd_d() : Shell::Cmd("d", "prints memory content at the specified address"), addr_{0x00000000}, bytes_{64}, bytesPerRow_{-1} {}
 public:
 	virtual int Run(Readable& tin, Printable& tout, Printable& terr, int argc, char* argv[]) override;
 };
@@ -71,16 +71,20 @@ ShellCmd_d ShellCmd_d::Instance;
 
 int ShellCmd_d::Run(Readable& tin, Printable& tout, Printable& terr, int argc, char* argv[])
 {
-	static const Shell::Arg::Opt optTbl[] = {
-		Shell::Arg::OptBool("help",		"h",	"prints this help"),
-		Shell::Arg::OptInt("cols",		"c",	"number of columns to print", "n"),
-		Shell::Arg::OptBool("ascii",	"A",	"print ASCII characters"),
-		Shell::Arg::OptBool("u16",		"",		"print data in 16-bit format"),
-		Shell::Arg::OptBool("u32",		"",		"print data in 32-bit format"),
-		Shell::Arg::OptBool("u16be",	"",		"print data in 16-bit big-endian format"),
-		Shell::Arg::OptBool("u32be",	"",		"print data in 32-bit big-endian format"),
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		"h",	"prints this help"),
+		Arg::OptInt("addr-digits",	"",		"specifies address digits", "n"),
+		Arg::OptBool("ascii",		"",		"prints ASCII characters"),
+		Arg::OptBool("no-ascii",	"",		"prints no ASCII characters"),
+		Arg::OptBool("no-dump",		"",		"skips actual dump, just modifies parameters"),
+		Arg::OptInt("row-bytes",	"c",	"specifies number of bytes per row", "n"),
+		Arg::OptBool("hex8",		"",		"prints data in 16-bit hex format"),
+		Arg::OptBool("hex16",		"",		"prints data in 16-bit hex format"),
+		Arg::OptBool("hex32",		"",		"prints data in 32-bit hex format"),
+		Arg::OptBool("hex16be",		"",		"prints data in 16-bit big-endian hex format"),
+		Arg::OptBool("hex32be",		"",		"prints data in 32-bit big-endian hex format"),
 	};
-	Shell::Arg arg(optTbl, count_of(optTbl));
+	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
 		terr.Printf("usage: %s [options] [addr [bytes]]\n", argv[0]);
@@ -88,21 +92,25 @@ int ShellCmd_d::Run(Readable& tin, Printable& tout, Printable& terr, int argc, c
 		return 0;
 	}
 	if (arg.GetBool("ascii")) dump_.Ascii();
-	if (arg.GetInt("cols", &nCols_)) {
-		if (nCols_ > 32) {
-			terr.Printf("invalid number of columns: %d\n", nCols_);
+	if (arg.GetBool("no-ascii")) dump_.Ascii(false);
+	int num;
+	if (arg.GetInt("addr-digits", &num)) dump_.DigitsAddr(num);
+	if (arg.GetInt("row-bytes", &bytesPerRow_)) {
+		if (bytesPerRow_ > 32) {
+			terr.Printf("invalid number of columns: %d\n", bytesPerRow_);
 			return 1;
 		}
 	}
-	if (arg.GetBool("u16")) dump_.Data16Bit();
-	if (arg.GetBool("u32")) dump_.Data32Bit();
-	if (arg.GetBool("u16be")) dump_.Data16BitBE();
-	if (arg.GetBool("u32be")) dump_.Data32BitBE();
+	if (arg.GetBool("hex8")) dump_.Data8Bit();
+	if (arg.GetBool("hex16")) dump_.Data16Bit();
+	if (arg.GetBool("hex32")) dump_.Data32Bit();
+	if (arg.GetBool("hex16be")) dump_.Data16BitBE();
+	if (arg.GetBool("hex32be")) dump_.Data32BitBE();
 	int nColsOut, nRowsOut;
 	tout.GetSize(&nColsOut, &nRowsOut);
 	nColsOut -= 8 + 2;
-	int nCols = (nCols_ > 0)? nCols_ : ((nColsOut + 1) / 3) / 8 * 8;
-	if (nCols == 0) nCols = 8;
+	int bytesPerRow = (bytesPerRow_ > 0)? bytesPerRow_ : ((nColsOut + 1) / 3) / 8 * 8;
+	if (bytesPerRow == 0) bytesPerRow = 8;
 	if (argc >= 2) {
 		char* p = nullptr;
 		uint32_t num = ::strtoul(argv[1], &p, 0);
@@ -121,8 +129,11 @@ int ShellCmd_d::Run(Readable& tin, Printable& tout, Printable& terr, int argc, c
 		}
 		bytes_ = num;
 	}
-	dump_.SetPrintable(tout).Cols(nCols).AddrStart(addr_).DigitsAddr(8)(reinterpret_cast<const void*>(addr_), bytes_);
-	addr_ += bytes_;
+	dump_.SetPrintable(tout).BytesPerRow(bytesPerRow).AddrStart(addr_);
+	if (!arg.GetBool("no-dump")) {
+		dump_(reinterpret_cast<const void*>(addr_), bytes_);
+		addr_ += bytes_;
+	}
 	return 0;
 }
 
