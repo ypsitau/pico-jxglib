@@ -5,8 +5,11 @@
 
 namespace jxglib {
 
-FAT_SDCard::FAT_SDCard(spi_inst_t* spi, uint baudrate, const SDCard::PinAssign& pinAssign, BYTE pdrv = 0) :
-		FAT::PhysicalDriveT<>{pdrv}, sdCard_(spi, baudrate, pinAssign)
+//-----------------------------------------------------------------------------
+// FAT_SDCard
+//-----------------------------------------------------------------------------
+FAT_SDCard::FAT_SDCard(spi_inst_t* spi, uint baudrate, const SDCard::PinAssign& pinAssign, const char* driveName) :
+		FAT(driveName), sdCard_(spi, baudrate, pinAssign)
 {
 }	
 

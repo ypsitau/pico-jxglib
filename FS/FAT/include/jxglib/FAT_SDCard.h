@@ -11,13 +11,13 @@ namespace jxglib {
 //-----------------------------------------------------------------------------
 // FAT_SDCard
 //-----------------------------------------------------------------------------
-class FAT_SDCard : public FAT::PhysicalDriveT<> {
+class FAT_SDCard : public FAT {
 private:
 	SDCard sdCard_;
 public:
-	FAT_SDCard(spi_inst_t* spi, uint baudrate, const SDCard::PinAssign& pinAssign, BYTE pdrv = 0) :
-		FAT::PhysicalDriveT<>{pdrv}, sdCard_(spi, baudrate, pinAssign) {}
+	FAT_SDCard(spi_inst_t* spi, uint baudrate, const SDCard::PinAssign& pinAssign, const char* driveName = "SDCard");
 public:
+	// virtual functions of FAT
 	virtual DSTATUS status() override;
 	virtual DSTATUS initialize() override;
 	virtual DRESULT read(BYTE* buff, LBA_t sector, UINT count) override;
