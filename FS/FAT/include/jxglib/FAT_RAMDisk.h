@@ -10,16 +10,17 @@ namespace jxglib {
 //-----------------------------------------------------------------------------
 // FAT_RAMDisk
 //-----------------------------------------------------------------------------
-class FAT_RAMDisk : public FAT::PhysicalDriveT<> {
+class FAT_RAMDisk : public FAT {
 public:
 	static const uint32_t bytesSector = 512;
 private:
 	uint8_t* buffDisk_;
 	uint32_t bytesDisk_; 	// must be multiple of bytesSector
 public:
-	FAT_RAMDisk(uint32_t bytesDisk, BYTE pdrv = 0);
+	FAT_RAMDisk(uint32_t bytesDisk, const char* driveName = "RAMDisk");
 	~FAT_RAMDisk();
 public:
+	// virtual functions of FAT
 	virtual DSTATUS status() override;
 	virtual DSTATUS initialize() override;
 	virtual DRESULT read(BYTE* buff, LBA_t sector, UINT count) override;
