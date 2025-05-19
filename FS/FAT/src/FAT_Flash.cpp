@@ -8,7 +8,8 @@ namespace jxglib {
 //-----------------------------------------------------------------------------
 // FAT_Flash
 //-----------------------------------------------------------------------------
-FAT_Flash::FAT_Flash(uint32_t offsetXIP, uint32_t bytesXIP) : offsetXIP_{offsetXIP & 0x0fff'ffff}, bytesXIP_{bytesXIP}
+FAT_Flash::FAT_Flash(uint32_t offsetXIP, uint32_t bytesXIP, const char* driveName) :
+	FAT(driveName), offsetXIP_{offsetXIP & 0x0fff'ffff}, bytesXIP_{bytesXIP}
 {
 }
 

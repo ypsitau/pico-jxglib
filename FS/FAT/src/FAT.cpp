@@ -10,7 +10,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 FAT* FAT::pFATHead_ = nullptr;
 
-FAT::FAT() : pFATNext_{nullptr}
+FAT::FAT(const char* driveName) : driveName_{driveName}, pFATNext_{nullptr}
 {
 	if (pFATHead_) {
 		FAT* pFAT = pFATHead_;
