@@ -1,5 +1,5 @@
 //==============================================================================
-// jxglib/FAT_SDCard.h
+// jxglib/FAT/SDCard.h
 //==============================================================================
 #ifndef PICO_JXGLIB_FAT_SDCARD_H
 #define PICO_JXGLIB_FAT_SDCARD_H
