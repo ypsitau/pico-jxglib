@@ -4,13 +4,13 @@
 #include "jxglib/LFS_Flash.h"
 #include "jxglib/Flash.h"
 
-namespace jxglib {
+namespace jxglib::LFS {
 
 //------------------------------------------------------------------------------
-// LFS_Flash
+// LFS::Flash
 //------------------------------------------------------------------------------
-LFS_Flash::LFS_Flash(uint32_t offsetXIP, uint32_t bytesXIP, const char* driveName) :
-	LFS(driveName), offsetXIP_{offsetXIP & 0x0fff'ffff}
+Flash::Flash(uint32_t offsetXIP, uint32_t bytesXIP, const char* driveName) :
+	Drive(driveName), offsetXIP_{offsetXIP & 0x0fff'ffff}
 {
 	cfg_.read_size		= FLASH_PAGE_SIZE;				// Minimum size of a block read in bytes
 	cfg_.prog_size		= FLASH_PAGE_SIZE;				// Minimum size of a block program in bytes
@@ -20,7 +20,7 @@ LFS_Flash::LFS_Flash(uint32_t offsetXIP, uint32_t bytesXIP, const char* driveNam
 	cfg_.lookahead_size	= FLASH_SECTOR_SIZE;			// Size of the lookahead buffer in bytes
 }
 
-int LFS_Flash::On_read(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size)
+int Flash::On_read(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size)
 {
 	uint32_t offsetXIP = offsetXIP_ + block * cfg->block_size + off;
 	//::printf("Read 0x%08x %d\n", offsetXIP, size);
@@ -28,23 +28,23 @@ int LFS_Flash::On_read(const struct lfs_config* cfg, lfs_block_t block, lfs_off_
 	return LFS_ERR_OK;
 }
 
-int LFS_Flash::On_prog(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, const void* buffer, lfs_size_t size)
+int Flash::On_prog(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, const void* buffer, lfs_size_t size)
 {
 	uint32_t offsetXIP = offsetXIP_ + block * cfg->block_size + off;
 	//::printf("Program 0x%08x %d\n", offsetXIP, size);
-	Flash::Program(offsetXIP, buffer, size);
+	jxglib::Flash::Program(offsetXIP, buffer, size);
 	return LFS_ERR_OK;
 }
 
-int LFS_Flash::On_erase(const struct lfs_config* cfg, lfs_block_t block)
+int Flash::On_erase(const struct lfs_config* cfg, lfs_block_t block)
 {
 	uint32_t offsetXIP = offsetXIP_ + block * cfg->block_size;
 	//::printf("Erase 0x%08x %d\n", offsetXIP, cfg->block_size);
-	Flash::Erase(offsetXIP, cfg->block_size);
+	jxglib::Flash::Erase(offsetXIP, cfg->block_size);
 	return LFS_ERR_OK;
 }
 
-int LFS_Flash::On_sync(const struct lfs_config* cfg)
+int Flash::On_sync(const struct lfs_config* cfg)
 {
 	return LFS_ERR_OK;
 }

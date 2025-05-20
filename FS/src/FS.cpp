@@ -4,40 +4,39 @@
 #include <ctype.h>
 #include "jxglib/FS.h"
 
-namespace jxglib {
+namespace jxglib::FS {
 
 //------------------------------------------------------------------------------
 // FS
 //------------------------------------------------------------------------------
-FS::Manager* FS::pManagerTop = nullptr;
-FS::Manager* FS::pManagerCur = nullptr;
+static Drive* pDriveTop = nullptr;
+static Drive* pDriveCur = nullptr;
 
-FS::FS()
-{
-}
-
-FS::Manager* FS::FindManager(const char* pathName)
+//------------------------------------------------------------------------------
+// Functions
+//------------------------------------------------------------------------------
+Drive* FindDrive(const char* pathName)
 {
 	char driveName[32];
 	ExtractDriveName(pathName, driveName, sizeof(driveName));
 	if (driveName[0] == '\0') {
-		if (!pManagerCur) pManagerCur = pManagerTop;
-		return pManagerCur;
+		if (!pDriveCur) pDriveCur = pDriveTop;
+		return pDriveCur;
 	}
-	Manager* pManager = pManagerTop;
-	for ( ; pManager; pManager = pManager->GetNext()) {
-		if (::strcasecmp(pManager->GetDriveName(), driveName) == 0) return pManager;
+	Drive* pDrive = pDriveTop;
+	for ( ; pDrive; pDrive = pDrive->GetNext()) {
+		if (::strcasecmp(pDrive->GetDriveName(), driveName) == 0) return pDrive;
 	}
 	return nullptr;
 }
 
-FS::Manager* FS::GetManagerCur()
+Drive* GetDriveCur()
 {
-	if (!pManagerCur) pManagerCur = pManagerTop;
-	return pManagerCur;
+	if (!pDriveCur) pDriveCur = pDriveTop;
+	return pDriveCur;
 }
 
-const char* FS::SkipDriveName(const char* pathName)
+const char* SkipDriveName(const char* pathName)
 {
 	for (const char* p = pathName; *p; p++) {
 		if (*p == ':') return p + 1;
@@ -45,7 +44,7 @@ const char* FS::SkipDriveName(const char* pathName)
 	return pathName;
 }
 
-const char* FS::ExtractDriveName(const char* pathName, char* driveName, int lenMax)
+const char* ExtractDriveName(const char* pathName, char* driveName, int lenMax)
 {
 	driveName[0] = '\0';
 	for (const char* p = pathName; *p; p++) {
@@ -58,93 +57,93 @@ const char* FS::ExtractDriveName(const char* pathName, char* driveName, int lenM
 	return driveName;
 }
 
-bool FS::SetDriveCur(const char* driveName)
+bool SetDriveCur(const char* driveName)
 {
 	if (!IsLegalDriveName(driveName)) return false;
-	Manager* pManager = FindManager(driveName);
-	if (!pManager) return false;
-	pManagerCur = pManager;
+	Drive* pDrive = FindDrive(driveName);
+	if (!pDrive) return false;
+	pDriveCur = pDrive;
 	return true;
 }
 
-FS::Dir* FS::OpenDirDrive()
+Dir* OpenDirDrive()
 {
-	return new DirDrive(pManagerTop);
+	return new DirDrive(pDriveTop);
 }
 
-FS::File* FS::OpenFile(const char* fileName, const char* mode)
-{
-	char pathName[MaxLenPathName];
-	Manager* pManager = FindManager(fileName);
-	return pManager? pManager->OpenFile(pManager->RegulatePathName(pathName, fileName), mode) : nullptr;
-}
-
-FS::Dir* FS::OpenDir(const char* dirName)
+File* OpenFile(const char* fileName, const char* mode)
 {
 	char pathName[MaxLenPathName];
-	Manager* pManager = FindManager(dirName);
-	return pManager? pManager->OpenDir(pManager->RegulatePathName(pathName, dirName)) : nullptr;
+	Drive* pDrive = FindDrive(fileName);
+	return pDrive? pDrive->OpenFile(pDrive->RegulatePathName(pathName, fileName), mode) : nullptr;
 }
 
-bool FS::RemoveFile(const char* fileName)
+Dir* OpenDir(const char* dirName)
 {
 	char pathName[MaxLenPathName];
-	Manager* pManager = FindManager(fileName);
-	return pManager? pManager->RemoveFile(pManager->RegulatePathName(pathName, fileName)) : false;
+	Drive* pDrive = FindDrive(dirName);
+	return pDrive? pDrive->OpenDir(pDrive->RegulatePathName(pathName, dirName)) : nullptr;
 }
 
-bool FS::RenameFile(const char* fileNameOld, const char* fileNameNew)
+bool RemoveFile(const char* fileName)
+{
+	char pathName[MaxLenPathName];
+	Drive* pDrive = FindDrive(fileName);
+	return pDrive? pDrive->RemoveFile(pDrive->RegulatePathName(pathName, fileName)) : false;
+}
+
+bool RenameFile(const char* fileNameOld, const char* fileNameNew)
 {
 	char pathNameOld[MaxLenPathName], pathNameNew[MaxLenPathName];
-	Manager* pManager = FindManager(fileNameOld);
-	return pManager? pManager->RenameFile(pManager->RegulatePathName(pathNameOld, fileNameOld), pManager->RegulatePathName(pathNameNew, fileNameNew)) : false;
+	Drive* pDrive = FindDrive(fileNameOld);
+	return pDrive? pDrive->RenameFile(pDrive->RegulatePathName(pathNameOld, fileNameOld), pDrive->RegulatePathName(pathNameNew, fileNameNew)) : false;
 }
 
-bool FS::CreateDir(const char* dirName)
+bool CreateDir(const char* dirName)
 {
 	char pathName[MaxLenPathName];
-	Manager* pManager = FindManager(dirName);
-	return pManager? pManager->CreateDir(pManager->RegulatePathName(pathName, dirName)) : false;
+	Drive* pDrive = FindDrive(dirName);
+	return pDrive? pDrive->CreateDir(pDrive->RegulatePathName(pathName, dirName)) : false;
 }
 
-bool FS::RemoveDir(const char* dirName)
+bool RemoveDir(const char* dirName)
 {
 	char pathName[MaxLenPathName];
-	Manager* pManager = FindManager(dirName);
-	return pManager? pManager->RemoveDir(pManager->RegulatePathName(pathName, dirName)) : false;
+	Drive* pDrive = FindDrive(dirName);
+	return pDrive? pDrive->RemoveDir(pDrive->RegulatePathName(pathName, dirName)) : false;
 }
 
-bool FS::RenameDir(const char* dirNameOld, const char* dirNameNew)
+bool RenameDir(const char* dirNameOld, const char* dirNameNew)
 {
 	char pathNameOld[MaxLenPathName], pathNameNew[MaxLenPathName];
-	Manager* pManager = FindManager(dirNameOld);
-	return pManager? pManager->RenameDir(pManager->RegulatePathName(pathNameOld, dirNameOld), pManager->RegulatePathName(pathNameNew, dirNameNew)) : false;
+	Drive* pDrive = FindDrive(dirNameOld);
+	return pDrive? pDrive->RenameDir(pDrive->RegulatePathName(pathNameOld, dirNameOld), pDrive->RegulatePathName(pathNameNew, dirNameNew)) : false;
 }
 
-bool FS::ChangeCurDir(const char* dirName)
+bool ChangeCurDir(const char* dirName)
 {
-	Manager* pManager = FindManager(dirName);
-	if (!pManager) return false;
+	Drive* pDrive = FindDrive(dirName);
+	if (!pDrive) return false;
 	char pathName[MaxLenPathName];
-	dirName = pManager->RegulatePathName(pathName, dirName);
-	RefPtr<FS::Dir> pDir(pManager->OpenDir(dirName));
+	dirName = pDrive->RegulatePathName(pathName, dirName);
+	RefPtr<Dir> pDir(pDrive->OpenDir(dirName));
 	if (!pDir) return false;
-	pManager->SetDirNameCur(dirName);
+	pDrive->SetDirNameCur(dirName);
 	return true;
 }
 
-bool FS::Format(const char* driveName, Printable& out)
+bool Format(const char* driveName, Printable& out)
 {
 	if (!IsLegalDriveName(driveName)) {
 		out.Printf("illegal drive name %s\n", driveName);
 		return false;
 	}
-	Manager* pManager = FindManager(driveName);
-	if (!pManager) {
+	Drive* pDrive = FindDrive(driveName);
+	if (!pDrive) {
 		out.Printf("drive %s not found\n", driveName);
 		return false;
 	}
-	if (pManager->Format()) {
+	if (pDrive->Format()) {
 		out.Printf("drive %s formatted successfully\n", driveName);
 		return true;
 	} else {
@@ -153,7 +152,7 @@ bool FS::Format(const char* driveName, Printable& out)
 	}
 }
 
-bool FS::IsLegalDriveName(const char* driveName)
+bool IsLegalDriveName(const char* driveName)
 {
 	for (const char*p = driveName; *p; p++) {
 		if (*p == ':') {
@@ -165,7 +164,7 @@ bool FS::IsLegalDriveName(const char* driveName)
 	return false;
 }
 
-const char* FS::JoinPathName(char* pathName, const char* dirName, const char* fileName)
+const char* JoinPathName(char* pathName, const char* dirName, const char* fileName)
 {
 	::strcpy(pathName, dirName);
 	int len = ::strlen(pathName);
@@ -177,24 +176,24 @@ const char* FS::JoinPathName(char* pathName, const char* dirName, const char* fi
 }
 
 //------------------------------------------------------------------------------
-// FS::Manager
+// FS::Drive
 //------------------------------------------------------------------------------
-FS::Manager::Manager() : pManagerNext_{nullptr}
+Drive::Drive() : pDriveNext_{nullptr}
 {
 	::strcpy(dirNameCur_, "/");
-	if (pManagerTop) {
-		for (Manager* pManager = FS::pManagerTop; pManager; pManager = pManager->pManagerNext_) {
-			if (!pManager->pManagerNext_) {
-				pManager->pManagerNext_ = this;
+	if (pDriveTop) {
+		for (Drive* pDrive = pDriveTop; pDrive; pDrive = pDrive->pDriveNext_) {
+			if (!pDrive->pDriveNext_) {
+				pDrive->pDriveNext_ = this;
 				break;
 			}
 		}
 	} else {
-		FS::pManagerTop = this;
+		pDriveTop = this;
 	}
 }
 
-const char* FS::Manager::RegulatePathName(char* pathNameBuff, const char* pathName)
+const char* Drive::RegulatePathName(char* pathNameBuff, const char* pathName)
 {
 	pathName = SkipDriveName(pathName);
 	if (pathName[0] == '/') {
@@ -213,12 +212,12 @@ const char* FS::Manager::RegulatePathName(char* pathNameBuff, const char* pathNa
 //------------------------------------------------------------------------------
 // FS::DirDrive
 //------------------------------------------------------------------------------
-bool FS::DirDrive::Read(FS::FileInfo** ppFileInfo)
+bool DirDrive::Read(FS::FileInfo** ppFileInfo)
 {
 	*ppFileInfo = &fileInfo_;
-	fileInfo_.SetManager(pManager_);
-	bool rtn = !!pManager_;
-	pManager_ = pManager_->GetNext();
+	fileInfo_.SetDrive(pDrive_);
+	bool rtn = !!pDrive_;
+	pDrive_ = pDrive_->GetNext();
 	return rtn;
 }
 

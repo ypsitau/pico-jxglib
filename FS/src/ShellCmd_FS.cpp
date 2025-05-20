@@ -133,12 +133,12 @@ ShellCmd(cd, "changes the current directory")
 
 ShellCmd(pwd, "prints the current directory")
 {
-	FS::Manager* pManager = FS::GetManagerCur();
-	if (!pManager) {
+	FS::Drive* pDrive = FS::GetDriveCur();
+	if (!pDrive) {
 		tout.Printf("no current drive\n");
 		return 1;
 	}
-	tout.Printf("%s:%s\n", pManager->GetDriveName(), pManager->GetDirNameCur());
+	tout.Printf("%s:%s\n", pDrive->GetDriveName(), pDrive->GetDirNameCur());
 	return 0;
 }
 

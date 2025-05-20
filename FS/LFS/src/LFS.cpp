@@ -3,12 +3,12 @@
 //==============================================================================
 #include "jxglib/LFS.h"
 
-namespace jxglib {
+namespace jxglib::LFS {
 
 //------------------------------------------------------------------------------
-// LFS
+// LFS::Drive
 //------------------------------------------------------------------------------
-LFS::LFS(const char* driveName) : mountedFlag_{false},
+Drive::Drive(const char* driveName) : mountedFlag_{false},
 	cfg_ {
 		context:			this,
 		read:				Callback_read,
@@ -35,7 +35,7 @@ LFS::LFS(const char* driveName) : mountedFlag_{false},
 {
 }
 
-FS::File* LFS::OpenFile(const char* fileName, const char* mode)
+FS::File* Drive::OpenFile(const char* fileName, const char* mode)
 {
 	if (!mountedFlag_) {
 		if (::lfs_mount(&lfs_, &cfg_) != LFS_ERR_OK) return nullptr;
@@ -55,7 +55,7 @@ FS::File* LFS::OpenFile(const char* fileName, const char* mode)
 	return (::lfs_file_open(&lfs_, pFile->GetEntity(), fileName, flags) == LFS_ERR_OK)? pFile.release() : nullptr;
 }
 
-FS::Dir* LFS::OpenDir(const char* dirName)
+FS::Dir* Drive::OpenDir(const char* dirName)
 {
 	if (!mountedFlag_) {
 		if (::lfs_mount(&lfs_, &cfg_) != LFS_ERR_OK) return nullptr;
@@ -65,7 +65,7 @@ FS::Dir* LFS::OpenDir(const char* dirName)
 	return (::lfs_dir_open(&lfs_, pDir->GetEntity(), dirName) == LFS_ERR_OK)? pDir.release() : nullptr;
 }
 
-bool LFS::RemoveFile(const char* fileName)
+bool Drive::RemoveFile(const char* fileName)
 {
 	if (!mountedFlag_) {
 		if (::lfs_mount(&lfs_, &cfg_) != LFS_ERR_OK) return false;
@@ -74,7 +74,7 @@ bool LFS::RemoveFile(const char* fileName)
 	return ::lfs_remove(&lfs_, fileName) == LFS_ERR_OK;
 }
 
-bool LFS::RenameFile(const char* fileNameOld, const char* fileNameNew)
+bool Drive::RenameFile(const char* fileNameOld, const char* fileNameNew)
 {
 	if (!mountedFlag_) {
 		if (::lfs_mount(&lfs_, &cfg_) != LFS_ERR_OK) return false;
@@ -83,7 +83,7 @@ bool LFS::RenameFile(const char* fileNameOld, const char* fileNameNew)
 	return ::lfs_rename(&lfs_, fileNameOld, fileNameNew) == LFS_ERR_OK;
 }
 
-bool LFS::CreateDir(const char* dirName)
+bool Drive::CreateDir(const char* dirName)
 {
 	if (!mountedFlag_) {
 		if (::lfs_mount(&lfs_, &cfg_) != LFS_ERR_OK) return false;
@@ -92,7 +92,7 @@ bool LFS::CreateDir(const char* dirName)
 	return ::lfs_mkdir(&lfs_, dirName) == LFS_ERR_OK;
 }
 
-bool LFS::RemoveDir(const char* dirName)
+bool Drive::RemoveDir(const char* dirName)
 {
 	if (!mountedFlag_) {
 		if (::lfs_mount(&lfs_, &cfg_) != LFS_ERR_OK) return false;
@@ -101,7 +101,7 @@ bool LFS::RemoveDir(const char* dirName)
 	return ::lfs_remove(&lfs_, dirName) == LFS_ERR_OK;
 }
 
-bool LFS::RenameDir(const char* dirNameOld, const char* dirNameNew)
+bool Drive::RenameDir(const char* dirNameOld, const char* dirNameNew)
 {
 	if (!mountedFlag_) {
 		if (::lfs_mount(&lfs_, &cfg_) != LFS_ERR_OK) return false;
@@ -110,49 +110,49 @@ bool LFS::RenameDir(const char* dirNameOld, const char* dirNameNew)
 	return ::lfs_rename(&lfs_, dirNameOld, dirNameNew) == LFS_ERR_OK;
 }
 
-bool LFS::Format()
+bool Drive::Format()
 {
 	return ::lfs_format(&lfs_, &cfg_) == LFS_ERR_OK && ::lfs_mount(&lfs_, &cfg_) == LFS_ERR_OK;
 }
 
-int LFS::Callback_read(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size)
+int Drive::Callback_read(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size)
 {
-	return reinterpret_cast<LFS*>(cfg->context)->On_read(cfg, block, off, buffer, size);
+	return reinterpret_cast<Drive*>(cfg->context)->On_read(cfg, block, off, buffer, size);
 }
 
-int LFS::Callback_prog(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, const void* buffer, lfs_size_t size)
+int Drive::Callback_prog(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, const void* buffer, lfs_size_t size)
 {
-	return reinterpret_cast<LFS*>(cfg->context)->On_prog(cfg, block, off, buffer, size);
+	return reinterpret_cast<Drive*>(cfg->context)->On_prog(cfg, block, off, buffer, size);
 }
 
-int LFS::Callback_erase(const struct lfs_config* cfg, lfs_block_t block)
+int Drive::Callback_erase(const struct lfs_config* cfg, lfs_block_t block)
 {
-	return reinterpret_cast<LFS*>(cfg->context)->On_erase(cfg, block);
+	return reinterpret_cast<Drive*>(cfg->context)->On_erase(cfg, block);
 }
 
-int LFS::Callback_sync(const struct lfs_config* cfg)
+int Drive::Callback_sync(const struct lfs_config* cfg)
 {
-	return reinterpret_cast<LFS*>(cfg->context)->On_sync(cfg);
+	return reinterpret_cast<Drive*>(cfg->context)->On_sync(cfg);
 }
 
 //------------------------------------------------------------------------------
 // LFS::File
 //------------------------------------------------------------------------------
-LFS::File::File(lfs_t& lfs) : lfs_(lfs), openedFlag_{true}
+File::File(lfs_t& lfs) : lfs_(lfs), openedFlag_{true}
 {
 }
 
-int LFS::File::Read(void* buff, int bytesBuff)
+int File::Read(void* buff, int bytesBuff)
 {
 	return ::lfs_file_read(&lfs_, &file_, buff, bytesBuff);
 }
 
-int LFS::File::Write(const void* buff, int bytesBuff)
+int File::Write(const void* buff, int bytesBuff)
 {
 	return ::lfs_file_write(&lfs_, &file_, buff, bytesBuff);
 }
 
-void LFS::File::Close()
+void File::Close()
 {
 	if (openedFlag_) {
 		::lfs_file_close(&lfs_, &file_);
@@ -160,33 +160,33 @@ void LFS::File::Close()
 	}
 }
 
-bool LFS::File::Seek(int position)
+bool File::Seek(int position)
 {
 	// Seek to the specified position in the file
 	return ::lfs_file_seek(&lfs_, &file_, position, LFS_SEEK_SET) == LFS_ERR_OK;
 }
 
-int LFS::File::Tell()
+int File::Tell()
 {
 	return ::lfs_file_tell(&lfs_, &file_);
 }
 
-int LFS::File::Size()
+int File::Size()
 {
 	return ::lfs_file_size(&lfs_, &file_);
 }
 
-bool LFS::File::Flush()
+bool File::Flush()
 {
 	return ::lfs_file_sync(&lfs_, &file_) == LFS_ERR_OK;
 }
 
-bool LFS::File::Truncate(int bytes)
+bool File::Truncate(int bytes)
 {
 	return ::lfs_file_truncate(&lfs_, &file_, bytes) == LFS_ERR_OK;
 }
 
-bool LFS::File::Sync()
+bool File::Sync()
 {
 	return ::lfs_file_sync(&lfs_, &file_) == LFS_ERR_OK;
 }
@@ -198,17 +198,17 @@ bool LFS::File::Sync()
 //------------------------------------------------------------------------------
 // LFS::Dir
 //------------------------------------------------------------------------------
-LFS::Dir::Dir(lfs_t& lfs) : lfs_(lfs), openedFlag_{true}
+Dir::Dir(lfs_t& lfs) : lfs_(lfs), openedFlag_{true}
 {
 }
 
-bool LFS::Dir::Read(FS::FileInfo** ppFileInfo)
+bool Dir::Read(FS::FileInfo** ppFileInfo)
 {
 	*ppFileInfo = &fileInfo_;
 	return ::lfs_dir_read(&lfs_, &dir_, &fileInfo_.GetEntity()) > 0;
 }
 
-void LFS::Dir::Close()
+void Dir::Close()
 {
 	if (openedFlag_) {
 		::lfs_dir_close(&lfs_, &dir_);

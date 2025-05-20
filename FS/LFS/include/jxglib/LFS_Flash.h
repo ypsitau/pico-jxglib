@@ -5,16 +5,16 @@
 #define PICO_JXGLIB_LFS_FLASH_H
 #include "jxglib/LFS.h"
 
-namespace jxglib {
+namespace jxglib::LFS {
 
 //------------------------------------------------------------------------------
-// LFS_Flash
+// Flash
 //------------------------------------------------------------------------------
-class LFS_Flash : public LFS {
+class Flash : public LFS::Drive {
 private:
 	uint32_t offsetXIP_;
 public:
-	LFS_Flash(uint32_t offsetXIP, uint32_t bytesXIP, const char* driveName = "flash");
+	Flash(uint32_t offsetXIP, uint32_t bytesXIP, const char* driveName = "flash");
 public:
 	virtual int On_read(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size) override;
 	virtual int On_prog(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, const void* buffer, lfs_size_t size) override;
