@@ -17,7 +17,7 @@ private:
 	uint8_t* buffDisk_;
 	uint32_t bytesDisk_; 	// must be multiple of bytesSector
 public:
-	RAMDisk(uint32_t bytesDisk, const char* driveName = "RAM");
+	RAMDisk(uint32_t bytesDisk, const char* driveName = "ram");
 	~RAMDisk();
 public:
 	// virtual functions of FAT

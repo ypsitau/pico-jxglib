@@ -87,13 +87,15 @@ void Dir::Close()
 //------------------------------------------------------------------------------
 // FAT::Drive
 //------------------------------------------------------------------------------
+FATFS Drive::fatFs_;
 Drive* Drive::pDriveHead_ = nullptr;
 
-Drive::Drive(const char* driveName) : FS::Drive(driveName), pDriveNext_{nullptr}
+Drive::Drive(const char* driveName) : FS::Drive("FAT", driveName), pdrv_{0}, pDriveNext_{nullptr}
 {
 	if (pDriveHead_) {
+		pdrv_ = 1;
 		Drive* pDrive = pDriveHead_;
-		for ( ; pDrive->pDriveNext_; pDrive = pDrive->pDriveNext_) ;
+		for ( ; pDrive->pDriveNext_; pDrive = pDrive->pDriveNext_, pdrv_++) ;
 		pDrive->pDriveNext_ = this;
 	} else {
 		pDriveHead_ = this;
@@ -105,6 +107,18 @@ void Drive::Mount(MountMode mountMode)
 	TCHAR path[16];
 	::snprintf(path, sizeof(path), "%d:", 0);
 	::f_mount(&fatFs_, path, (mountMode == MountMode::Forced)? 1 : 0);
+}
+
+const char* Drive::NativePathName(char* pathNameBuff, int lenBuff, const char* pathName)
+{
+	char* p = pathNameBuff;
+#if 1
+	int len = ::snprintf(p, lenBuff, "%d:", pdrv_);
+	if (len >= lenBuff) ::panic("Drive::RegulatePathName");
+	p += len, lenBuff -= len;
+#endif
+	FS::Drive::RegulatePathName(p, lenBuff, pathName);
+	return pathNameBuff;
 }
 
 FS::File* Drive::OpenFile(const char* fileName, const char* mode)
@@ -158,8 +172,11 @@ bool Drive::Format()
 		n_root: 0,		// default
 		au_size: 0		// default
 	};
+	char path[16];
+	::snprintf(path, sizeof(path), "%d:", pdrv_);
+	::printf("%d: format\n", pdrv_);
 	char work[FF_MAX_SS];
-	return ::f_mkfs("0:", &opt, work, sizeof(work)) == FR_OK;
+	return ::f_mkfs(path, &opt, work, sizeof(work)) == FR_OK;
 #else
 	return false;
 #endif
@@ -208,6 +225,7 @@ const char* Drive::FRESULTToStr(FRESULT result)
 //------------------------------------------------------------------------------
 DSTATUS disk_initialize(BYTE pdrv)
 {
+	::printf("disk_initialize(%d)\n", pdrv);
 	using namespace jxglib;
 	FAT::Drive* pDrive = FAT::Drive::LookupDrive(pdrv);
 	if (!pDrive) return RES_PARERR;
@@ -216,6 +234,7 @@ DSTATUS disk_initialize(BYTE pdrv)
 
 DSTATUS disk_status(BYTE pdrv)
 {
+	::printf("disk_status(%d)\n", pdrv);
 	using namespace jxglib;
 	FAT::Drive* pDrive = FAT::Drive::LookupDrive(pdrv);
 	if (!pDrive) return RES_PARERR;
@@ -224,6 +243,7 @@ DSTATUS disk_status(BYTE pdrv)
 
 DRESULT disk_read(BYTE pdrv, BYTE* buff, LBA_t sector, UINT count)
 {
+	::printf("disk_read(%d, %d, %d)\n", pdrv, sector, count);
 	using namespace jxglib;
 	FAT::Drive* pDrive = FAT::Drive::LookupDrive(pdrv);
 	if (!pDrive) return RES_PARERR;
@@ -232,6 +252,7 @@ DRESULT disk_read(BYTE pdrv, BYTE* buff, LBA_t sector, UINT count)
 
 DRESULT disk_write(BYTE pdrv, const BYTE* buff, LBA_t sector, UINT count)
 {
+	::printf("disk_write(%d, %d, %d)\n", pdrv, sector, count);
 	using namespace jxglib;
 	FAT::Drive* pDrive = FAT::Drive::LookupDrive(pdrv);
 	if (!pDrive) return RES_PARERR;
@@ -240,6 +261,7 @@ DRESULT disk_write(BYTE pdrv, const BYTE* buff, LBA_t sector, UINT count)
 
 DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void* buff)
 {
+	::printf("disk_ioctl(%d, %d)\n", pdrv, cmd);
 	using namespace jxglib;
 	FAT::Drive* pDrive = FAT::Drive::LookupDrive(pdrv);
 	if (!pDrive) return RES_PARERR;

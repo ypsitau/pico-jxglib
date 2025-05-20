@@ -48,6 +48,7 @@ pico_enable_stdio_usb(test-FAT_Flash 0)
 target_link_libraries(test-FAT_Flash
     pico_stdlib
     jxglib_FAT_Flash
+    jxglib_FAT_SDCard
     jxglib_Serial
     jxglib_Shell
     jxglib_ShellCmd_FS)
@@ -61,4 +62,4 @@ pico_add_extra_outputs(test-FAT_Flash)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 
-jxglib_configure_FAT(test-FAT_Flash FF_USE_MKFS 1)
+jxglib_configure_FAT(test-FAT_Flash FF_USE_MKFS 1 FF_VOLUMES 2)

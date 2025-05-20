@@ -1,6 +1,7 @@
 //==============================================================================
 // FS.cpp
 //==============================================================================
+#include <string.h>
 #include <ctype.h>
 #include "jxglib/FS.h"
 
@@ -75,49 +76,51 @@ File* OpenFile(const char* fileName, const char* mode)
 {
 	char pathName[MaxLenPathName];
 	Drive* pDrive = FindDrive(fileName);
-	return pDrive? pDrive->OpenFile(pDrive->RegulatePathName(pathName, fileName), mode) : nullptr;
+	return pDrive? pDrive->OpenFile(pDrive->NativePathName(pathName, sizeof(pathName), fileName), mode) : nullptr;
 }
 
 Dir* OpenDir(const char* dirName)
 {
 	char pathName[MaxLenPathName];
 	Drive* pDrive = FindDrive(dirName);
-	return pDrive? pDrive->OpenDir(pDrive->RegulatePathName(pathName, dirName)) : nullptr;
+	return pDrive? pDrive->OpenDir(pDrive->NativePathName(pathName, sizeof(pathName), dirName)) : nullptr;
 }
 
 bool RemoveFile(const char* fileName)
 {
 	char pathName[MaxLenPathName];
 	Drive* pDrive = FindDrive(fileName);
-	return pDrive? pDrive->RemoveFile(pDrive->RegulatePathName(pathName, fileName)) : false;
+	return pDrive? pDrive->RemoveFile(pDrive->NativePathName(pathName, sizeof(pathName), fileName)) : false;
 }
 
 bool RenameFile(const char* fileNameOld, const char* fileNameNew)
 {
 	char pathNameOld[MaxLenPathName], pathNameNew[MaxLenPathName];
 	Drive* pDrive = FindDrive(fileNameOld);
-	return pDrive? pDrive->RenameFile(pDrive->RegulatePathName(pathNameOld, fileNameOld), pDrive->RegulatePathName(pathNameNew, fileNameNew)) : false;
+	return pDrive? pDrive->RenameFile(pDrive->NativePathName(pathNameOld, sizeof(pathNameOld), fileNameOld),
+				pDrive->NativePathName(pathNameNew, sizeof(pathNameNew), fileNameNew)) : false;
 }
 
 bool CreateDir(const char* dirName)
 {
 	char pathName[MaxLenPathName];
 	Drive* pDrive = FindDrive(dirName);
-	return pDrive? pDrive->CreateDir(pDrive->RegulatePathName(pathName, dirName)) : false;
+	return pDrive? pDrive->CreateDir(pDrive->NativePathName(pathName, sizeof(pathName), dirName)) : false;
 }
 
 bool RemoveDir(const char* dirName)
 {
 	char pathName[MaxLenPathName];
 	Drive* pDrive = FindDrive(dirName);
-	return pDrive? pDrive->RemoveDir(pDrive->RegulatePathName(pathName, dirName)) : false;
+	return pDrive? pDrive->RemoveDir(pDrive->NativePathName(pathName, sizeof(pathName), dirName)) : false;
 }
 
 bool RenameDir(const char* dirNameOld, const char* dirNameNew)
 {
 	char pathNameOld[MaxLenPathName], pathNameNew[MaxLenPathName];
 	Drive* pDrive = FindDrive(dirNameOld);
-	return pDrive? pDrive->RenameDir(pDrive->RegulatePathName(pathNameOld, dirNameOld), pDrive->RegulatePathName(pathNameNew, dirNameNew)) : false;
+	return pDrive? pDrive->RenameDir(pDrive->NativePathName(pathNameOld, sizeof(pathNameOld), dirNameOld),
+			pDrive->NativePathName(pathNameNew, sizeof(pathNameNew), dirNameNew)) : false;
 }
 
 bool ChangeCurDir(const char* dirName)
@@ -125,7 +128,7 @@ bool ChangeCurDir(const char* dirName)
 	Drive* pDrive = FindDrive(dirName);
 	if (!pDrive) return false;
 	char pathName[MaxLenPathName];
-	dirName = pDrive->RegulatePathName(pathName, dirName);
+	dirName = pDrive->RegulatePathName(pathName, sizeof(pathName), dirName);
 	RefPtr<Dir> pDir(pDrive->OpenDir(dirName));
 	if (!pDir) return false;
 	pDrive->SetDirNameCur(dirName);
@@ -157,7 +160,7 @@ bool IsLegalDriveName(const char* driveName)
 	for (const char*p = driveName; *p; p++) {
 		if (*p == ':') {
 			return *(p + 1) == '\0';
-		} else if (!isalpha(*p)) {
+		} else if (!isalnum(*p)) {
 			return false;
 		}
 	}
@@ -178,7 +181,8 @@ const char* JoinPathName(char* pathName, const char* dirName, const char* fileNa
 //------------------------------------------------------------------------------
 // FS::Drive
 //------------------------------------------------------------------------------
-Drive::Drive(const char* driveName) : driveName_{driveName}, pDriveNext_{nullptr}
+Drive::Drive(const char* formatName, const char* driveName) :
+		formatName_{formatName}, driveName_{driveName}, pDriveNext_{nullptr}
 {
 	::strcpy(dirNameCur_, "/");
 	if (pDriveTop) {
@@ -193,18 +197,28 @@ Drive::Drive(const char* driveName) : driveName_{driveName}, pDriveNext_{nullptr
 	}
 }
 
-const char* Drive::RegulatePathName(char* pathNameBuff, const char* pathName)
+void Drive::SetDirNameCur(const char* dirName)
+{
+	int len = ::strlen(dirName);
+	if (len == 0) {
+		::strcpy(dirNameCur_, "/");
+	} else {
+		if (::snprintf(dirNameCur_, sizeof(dirNameCur_), dirName) >= sizeof(dirNameCur_)) ::panic("Drive::SetDirNameCur");
+		if (dirNameCur_[len - 1] != '/') {
+			if (len >= sizeof(dirNameCur_) - 2) ::panic("Drive::SetDirNameCur");
+			dirNameCur_[len++] = '/';
+			dirNameCur_[len] = '\0';
+		}
+	}	
+}
+
+const char* Drive::RegulatePathName(char* pathNameBuff, int lenBuff, const char* pathName)
 {
 	pathName = SkipDriveName(pathName);
 	if (pathName[0] == '/') {
-		::strcpy(pathNameBuff, pathName);
+		if (::snprintf(pathNameBuff, lenBuff, "%s", pathName) >= lenBuff) ::panic("Drive::RegulatePathName");
 	} else {
-		::strcpy(pathNameBuff, dirNameCur_);
-		int len = ::strlen(pathNameBuff);
-		if (len == 0 || pathNameBuff[len - 1] != '/') {
-			pathNameBuff[len++] = '/';
-		}
-		::strcpy(pathNameBuff + len, pathName);
+		if (::snprintf(pathNameBuff, lenBuff, "%s%s", dirNameCur_, pathName) >= lenBuff) ::panic("Drive::RegulatePathName");
 	}
 	return pathNameBuff;
 }

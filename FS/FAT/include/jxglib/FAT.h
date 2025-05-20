@@ -89,9 +89,10 @@ public:
 	enum class MountMode { Normal, Forced, };
 	static const int SectorSize = FF_MIN_SS;
 private:
-	FATFS fatFs_;
+	BYTE pdrv_;
 	Drive* pDriveNext_;
 private:
+	static FATFS fatFs_;
 	static Drive* pDriveHead_;
 public:
 	Drive(const char* driveName);
@@ -99,6 +100,7 @@ public:
 	void Mount(MountMode mountMode = MountMode::Normal);
 public:
 	// virtual functions of FS::Manager
+	virtual const char* NativePathName(char* pathNameBuff, int lenBuff, const char* pathName) override;
 	virtual FS::File* OpenFile(const char* fileName, const char* mode) override;
 	virtual FS::Dir* OpenDir(const char* dirName) override;
 	virtual bool RemoveFile(const char* fileName) override;

@@ -15,7 +15,7 @@ class SDCard : public Drive {
 private:
 	jxglib::SDCard sdCard_;
 public:
-	SDCard(spi_inst_t* spi, uint baudrate, const jxglib::SDCard::PinAssign& pinAssign, const char* driveName = "SD");
+	SDCard(spi_inst_t* spi, uint baudrate, const jxglib::SDCard::PinAssign& pinAssign, const char* driveName = "sd");
 public:
 	// virtual functions of FAT
 	virtual DSTATUS status() override;

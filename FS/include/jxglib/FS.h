@@ -83,19 +83,24 @@ public:
 //------------------------------------------------------------------------------
 class Drive {
 private:
+	const char* formatName_;
 	const char* driveName_;
 	char dirNameCur_[FS::MaxLenPathName];
 	Drive* pDriveNext_;
 public:
-	Drive(const char* driveName);
+	Drive(const char* formatName, const char* driveName);
 public:
 	Drive* GetNext() const { return pDriveNext_; }
 public:
+	const char* GetFormatName() const { return formatName_; }
 	const char* GetDriveName() const { return driveName_; }
-	void SetDirNameCur(const char* dirName) { ::strcpy(dirNameCur_, dirName); }
+	void SetDirNameCur(const char* dirName);
 	const char* GetDirNameCur() const { return dirNameCur_; }
-	const char* RegulatePathName(char* pathNameBuff, const char* pathName);
+	const char* RegulatePathName(char* pathNameBuff, int lenBuff, const char* pathName);
 public:
+	virtual const char* NativePathName(char* pathNameBuff, int lenBuff, const char* pathName) {
+		return RegulatePathName(pathNameBuff, lenBuff, pathName);
+	}
 	virtual File* OpenFile(const char* fileName, const char* mode) = 0;
 	virtual Dir* OpenDir(const char* dirName) = 0;
 	virtual bool RemoveFile(const char* fileName) = 0;
