@@ -6,16 +6,16 @@
 #include "jxglib/FAT.h"
 #include "jxglib/SDCard.h"
 
-namespace jxglib {
+namespace jxglib::FAT {
 
 //-----------------------------------------------------------------------------
-// FAT_SDCard
+// FAT::SDCard
 //-----------------------------------------------------------------------------
-class FAT_SDCard : public FAT {
+class SDCard : public Drive {
 private:
-	SDCard sdCard_;
+	jxglib::SDCard sdCard_;
 public:
-	FAT_SDCard(spi_inst_t* spi, uint baudrate, const SDCard::PinAssign& pinAssign, const char* driveName = "SDCard");
+	SDCard(spi_inst_t* spi, uint baudrate, const jxglib::SDCard::PinAssign& pinAssign, const char* driveName = "SD");
 public:
 	// virtual functions of FAT
 	virtual DSTATUS status() override;
