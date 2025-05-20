@@ -5,20 +5,20 @@
 #define PICO_JXGLIB_FAT_RAMDISK_H
 #include "jxglib/FAT.h"
 
-namespace jxglib {
+namespace jxglib::FAT {
 
 //-----------------------------------------------------------------------------
-// FAT_RAMDisk
+// FAT::RAMDisk
 //-----------------------------------------------------------------------------
-class FAT_RAMDisk : public FAT {
+class RAMDisk : public Drive {
 public:
 	static const uint32_t bytesSector = 512;
 private:
 	uint8_t* buffDisk_;
 	uint32_t bytesDisk_; 	// must be multiple of bytesSector
 public:
-	FAT_RAMDisk(uint32_t bytesDisk, const char* driveName = "RAMDisk");
-	~FAT_RAMDisk();
+	RAMDisk(uint32_t bytesDisk, const char* driveName = "RAM");
+	~RAMDisk();
 public:
 	// virtual functions of FAT
 	virtual DSTATUS status() override;
