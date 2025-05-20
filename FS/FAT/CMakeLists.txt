@@ -15,7 +15,7 @@ target_link_libraries(jxglib_FAT INTERFACE
 add_library(jxglib_FAT_SDCard INTERFACE)
 
 target_sources(jxglib_FAT_SDCard INTERFACE
-	${CMAKE_CURRENT_LIST_DIR}/src/FAT_SDCard.cpp)
+	${CMAKE_CURRENT_LIST_DIR}/src/SDCard.cpp)
 
 target_link_libraries(jxglib_FAT_SDCard INTERFACE
     jxglib_SDCard
@@ -25,7 +25,7 @@ target_link_libraries(jxglib_FAT_SDCard INTERFACE
 add_library(jxglib_FAT_Flash INTERFACE)
 
 target_sources(jxglib_FAT_Flash INTERFACE
-	${CMAKE_CURRENT_LIST_DIR}/src/FAT_Flash.cpp)
+	${CMAKE_CURRENT_LIST_DIR}/src/Flash.cpp)
 
 target_link_libraries(jxglib_FAT_Flash INTERFACE
     jxglib_Flash
@@ -35,7 +35,7 @@ target_link_libraries(jxglib_FAT_Flash INTERFACE
 add_library(jxglib_FAT_RAMDisk INTERFACE)
 
 target_sources(jxglib_FAT_RAMDisk INTERFACE
-	${CMAKE_CURRENT_LIST_DIR}/src/FAT_RAMDisk.cpp)
+	${CMAKE_CURRENT_LIST_DIR}/src/RAMDisk.cpp)
 
 target_link_libraries(jxglib_FAT_RAMDisk INTERFACE
 	jxglib_FAT)

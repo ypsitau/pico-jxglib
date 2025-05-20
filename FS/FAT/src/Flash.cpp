@@ -2,7 +2,7 @@
 // Flash.cpp
 //==============================================================================
 #include "jxglib/Flash.h"
-#include "jxglib/FAT_Flash.h"
+#include "jxglib/FAT/Flash.h"
 
 namespace jxglib::FAT {
 
