@@ -178,7 +178,7 @@ const char* JoinPathName(char* pathName, const char* dirName, const char* fileNa
 //------------------------------------------------------------------------------
 // FS::Drive
 //------------------------------------------------------------------------------
-Drive::Drive() : pDriveNext_{nullptr}
+Drive::Drive(const char* driveName) : driveName_{driveName}, pDriveNext_{nullptr}
 {
 	::strcpy(dirNameCur_, "/");
 	if (pDriveTop) {

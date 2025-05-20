@@ -8,7 +8,7 @@ namespace jxglib::LFS {
 //------------------------------------------------------------------------------
 // LFS::Drive
 //------------------------------------------------------------------------------
-Drive::Drive(const char* driveName) : mountedFlag_{false},
+Drive::Drive(const char* driveName) : FS::Drive(driveName), mountedFlag_{false},
 	cfg_ {
 		context:			this,
 		read:				Callback_read,
@@ -31,7 +31,7 @@ Drive::Drive(const char* driveName) : mountedFlag_{false},
 		attr_max:			0,				// Maximum number of attributes per file. Default is set if zero
 		metadata_max:		0,				// Maximum number of metadata entries per file. Default is set if zero
 		inline_max:			0,				// Maximum size of inline data. Default is set if zero
-	}, driveName_{driveName}
+	}
 {
 }
 

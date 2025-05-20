@@ -16,7 +16,7 @@ target_link_libraries(jxglib_LFS INTERFACE
 add_library(jxglib_LFS_Flash INTERFACE)
 
 target_sources(jxglib_LFS_Flash INTERFACE
-	${CMAKE_CURRENT_LIST_DIR}/src/LFS_Flash.cpp)
+	${CMAKE_CURRENT_LIST_DIR}/src/Flash.cpp)
 
 target_include_directories(jxglib_LFS_Flash INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}

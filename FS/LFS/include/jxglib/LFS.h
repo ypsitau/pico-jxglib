@@ -92,14 +92,11 @@ class Drive : public FS::Drive {
 protected:
 	lfs_t lfs_;
 	lfs_config cfg_;
-	const char* driveName_;
-	//uint32_t offsetXIP_;
 	bool mountedFlag_;
 public:
 	Drive(const char* driveName = "flash");
 public:
 	// virtual functions of FS::Drive
-	virtual const char* GetDriveName() const override { return driveName_; }
 	virtual FS::File* OpenFile(const char* fileName, const char* mode) override;
 	virtual FS::Dir* OpenDir(const char* dirName) override;
 	virtual bool RemoveFile(const char* fileName) override;

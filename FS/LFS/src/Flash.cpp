@@ -1,7 +1,7 @@
 //==============================================================================
-// LFS_Flash.cpp
+// Flash.cpp
 //==============================================================================
-#include "jxglib/LFS_Flash.h"
+#include "jxglib/LFS/Flash.h"
 #include "jxglib/Flash.h"
 
 namespace jxglib::LFS {
@@ -9,8 +9,8 @@ namespace jxglib::LFS {
 //------------------------------------------------------------------------------
 // LFS::Flash
 //------------------------------------------------------------------------------
-Flash::Flash(uint32_t offsetXIP, uint32_t bytesXIP, const char* driveName) :
-	Drive(driveName), offsetXIP_{offsetXIP & 0x0fff'ffff}
+Flash::Flash(uint32_t addrXIP, uint32_t bytesXIP, const char* driveName) :
+	Drive(driveName), offsetXIP_{addrXIP & 0x0fff'ffff}
 {
 	cfg_.read_size		= FLASH_PAGE_SIZE;				// Minimum size of a block read in bytes
 	cfg_.prog_size		= FLASH_PAGE_SIZE;				// Minimum size of a block program in bytes
