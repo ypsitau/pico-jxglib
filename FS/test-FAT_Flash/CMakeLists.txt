@@ -62,4 +62,4 @@ pico_add_extra_outputs(test-FAT_Flash)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 
-jxglib_configure_FAT(test-FAT_Flash FF_USE_MKFS 1 FF_VOLUMES 2)
+jxglib_configure_FAT(test-FAT_Flash FF_USE_MKFS 1 FF_VOLUMES 3)

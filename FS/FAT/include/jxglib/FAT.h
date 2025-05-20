@@ -91,8 +91,8 @@ public:
 private:
 	BYTE pdrv_;
 	Drive* pDriveNext_;
+	FATFS fatFs_;
 private:
-	static FATFS fatFs_;
 	static Drive* pDriveHead_;
 public:
 	Drive(const char* driveName);

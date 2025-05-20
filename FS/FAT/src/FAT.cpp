@@ -87,7 +87,6 @@ void Dir::Close()
 //------------------------------------------------------------------------------
 // FAT::Drive
 //------------------------------------------------------------------------------
-FATFS Drive::fatFs_;
 Drive* Drive::pDriveHead_ = nullptr;
 
 Drive::Drive(const char* driveName) : FS::Drive("FAT", driveName), pdrv_{0}, pDriveNext_{nullptr}
@@ -100,12 +99,13 @@ Drive::Drive(const char* driveName) : FS::Drive("FAT", driveName), pdrv_{0}, pDr
 	} else {
 		pDriveHead_ = this;
 	}
+	if (pdrv_ >= FF_VOLUMES) ::panic("set FF_VOLUMES to more than %d", pdrv_ + 1);
 }
 
 void Drive::Mount(MountMode mountMode)
 {
 	TCHAR path[16];
-	::snprintf(path, sizeof(path), "%d:", 0);
+	::snprintf(path, sizeof(path), "%d:", pdrv_);
 	::f_mount(&fatFs_, path, (mountMode == MountMode::Forced)? 1 : 0);
 }
 
@@ -225,7 +225,7 @@ const char* Drive::FRESULTToStr(FRESULT result)
 //------------------------------------------------------------------------------
 DSTATUS disk_initialize(BYTE pdrv)
 {
-	::printf("disk_initialize(%d)\n", pdrv);
+	//::printf("disk_initialize(%d)\n", pdrv);
 	using namespace jxglib;
 	FAT::Drive* pDrive = FAT::Drive::LookupDrive(pdrv);
 	if (!pDrive) return RES_PARERR;
@@ -234,7 +234,7 @@ DSTATUS disk_initialize(BYTE pdrv)
 
 DSTATUS disk_status(BYTE pdrv)
 {
-	::printf("disk_status(%d)\n", pdrv);
+	//::printf("disk_status(%d)\n", pdrv);
 	using namespace jxglib;
 	FAT::Drive* pDrive = FAT::Drive::LookupDrive(pdrv);
 	if (!pDrive) return RES_PARERR;
@@ -243,7 +243,7 @@ DSTATUS disk_status(BYTE pdrv)
 
 DRESULT disk_read(BYTE pdrv, BYTE* buff, LBA_t sector, UINT count)
 {
-	::printf("disk_read(%d, %d, %d)\n", pdrv, sector, count);
+	//::printf("disk_read(%d, %d, %d)\n", pdrv, sector, count);
 	using namespace jxglib;
 	FAT::Drive* pDrive = FAT::Drive::LookupDrive(pdrv);
 	if (!pDrive) return RES_PARERR;
@@ -252,7 +252,7 @@ DRESULT disk_read(BYTE pdrv, BYTE* buff, LBA_t sector, UINT count)
 
 DRESULT disk_write(BYTE pdrv, const BYTE* buff, LBA_t sector, UINT count)
 {
-	::printf("disk_write(%d, %d, %d)\n", pdrv, sector, count);
+	//::printf("disk_write(%d, %d, %d)\n", pdrv, sector, count);
 	using namespace jxglib;
 	FAT::Drive* pDrive = FAT::Drive::LookupDrive(pdrv);
 	if (!pDrive) return RES_PARERR;
@@ -261,7 +261,7 @@ DRESULT disk_write(BYTE pdrv, const BYTE* buff, LBA_t sector, UINT count)
 
 DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void* buff)
 {
-	::printf("disk_ioctl(%d, %d)\n", pdrv, cmd);
+	//::printf("disk_ioctl(%d, %d)\n", pdrv, cmd);
 	using namespace jxglib;
 	FAT::Drive* pDrive = FAT::Drive::LookupDrive(pdrv);
 	if (!pDrive) return RES_PARERR;
