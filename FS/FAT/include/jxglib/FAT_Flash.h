@@ -4,23 +4,22 @@
 #ifndef PICO_JXGLIB_FAT_FLASH_H
 #define PICO_JXGLIB_FAT_FLASH_H
 #include "jxglib/FAT.h"
-#include "jxglib/Flash.h"
 
-namespace jxglib {
+namespace jxglib::FAT {
 
 //-----------------------------------------------------------------------------
-// FAT_Flash
+// FAT::Flash
 //-----------------------------------------------------------------------------
-class FAT_Flash : public FAT {
+class Flash : public Drive {
 public:
 	static const uint32_t bytesSector = 512;
 private:
 	uint32_t offsetXIP_;
 	uint32_t bytesXIP_; 	// must be multiple of bytesSector
 public:
-	FAT_Flash(uint32_t offsetXIP, uint32_t bytesXIP, const char* driveName = "Flash");
+	Flash(uint32_t addrXIP, uint32_t bytesXIP, const char* driveName = "Flash");
 public:
-	// virtual functions of FAT
+	// virtual functions of FAT::Drive
 	virtual DSTATUS status() override;
 	virtual DSTATUS initialize() override;
 	virtual DRESULT read(BYTE* buff, LBA_t sector, UINT count) override;

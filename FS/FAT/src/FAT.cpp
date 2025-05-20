@@ -3,32 +3,111 @@
 //==============================================================================
 #include "jxglib/FAT.h"
 
-namespace jxglib {
+namespace jxglib::FAT {
 
 //------------------------------------------------------------------------------
-// FAT
+// FAT::File
 //------------------------------------------------------------------------------
-FAT* FAT::pFATHead_ = nullptr;
+File::File() {}
 
-FAT::FAT(const char* driveName) : driveName_{driveName}, pFATNext_{nullptr}
+File::~File()
 {
-	if (pFATHead_) {
-		FAT* pFAT = pFATHead_;
-		for ( ; pFAT->pFATNext_; pFAT = pFAT->pFATNext_) ;
-		pFAT->pFATNext_ = this;
+	Close();
+}
+
+int File::Read(void* buff, int bytesBuff)
+{
+	UINT bytesRead;
+	return (::f_read(&fil_, buff, bytesBuff, &bytesRead) == FR_OK)? static_cast<int>(bytesRead) : -1;
+}
+
+int File::Write(const void* buff, int bytesBuff)
+{
+	UINT bytesWritten;
+	return (::f_write(&fil_, buff, bytesBuff, &bytesWritten) == FR_OK)? static_cast<int>(bytesWritten) : -1;
+}
+
+void File::Close()
+{
+	::f_close(&fil_);
+}
+
+bool File::Seek(int position)
+{
+	return ::f_lseek(&fil_, position) == FR_OK;
+}
+
+int File::Tell()
+{
+	return f_tell(&fil_);
+}
+
+int File::Size()
+{
+	return f_size(&fil_);
+}
+
+bool File::Flush()
+{
+	return f_sync(&fil_) == FR_OK;
+}
+
+bool File::Truncate(int bytes)
+{
+	return f_truncate(&fil_) == FR_OK;
+}
+
+bool File::Sync()
+{
+	return f_sync(&fil_) == FR_OK;
+}
+
+//------------------------------------------------------------------------------
+// FAT::Dir
+//------------------------------------------------------------------------------
+Dir::Dir() {}
+
+Dir::~Dir()
+{
+	Close();
+}
+
+bool Dir::Read(FS::FileInfo** ppFileInfo)
+{
+	FILINFO& filInfo = fileInfo_.GetEntity();
+	*ppFileInfo = &fileInfo_;
+	return ::f_readdir(&dir_, &filInfo) == FR_OK && filInfo.fname[0] != '\0';
+}
+
+void Dir::Close()
+{
+	::f_closedir(&dir_);
+}
+
+//------------------------------------------------------------------------------
+// FAT::Drive
+//------------------------------------------------------------------------------
+Drive* Drive::pDriveHead_ = nullptr;
+
+Drive::Drive(const char* driveName) : FS::Drive(driveName), pDriveNext_{nullptr}
+{
+	if (pDriveHead_) {
+		Drive* pDrive = pDriveHead_;
+		for ( ; pDrive->pDriveNext_; pDrive = pDrive->pDriveNext_) ;
+		pDrive->pDriveNext_ = this;
 	} else {
-		pFATHead_ = this;
+		pDriveHead_ = this;
 	}
 }
 
-void FAT::Mount(MountMode mountMode)
+void Drive::Mount(MountMode mountMode)
 {
 	TCHAR path[16];
 	::snprintf(path, sizeof(path), "%d:", 0);
 	::f_mount(&fatFs_, path, (mountMode == MountMode::Forced)? 1 : 0);
 }
 
-FS::File* FAT::OpenFile(const char* fileName, const char* mode)
+FS::File* Drive::OpenFile(const char* fileName, const char* mode)
 {
 	RefPtr<File> pFile(new File());
 	BYTE flags = 0;
@@ -38,38 +117,38 @@ FS::File* FAT::OpenFile(const char* fileName, const char* mode)
 	return (::f_open(pFile->GetEntity(), fileName, flags) == FR_OK)? pFile.release() : nullptr;
 }
 
-FS::Dir* FAT::OpenDir(const char* dirName)
+FS::Dir* Drive::OpenDir(const char* dirName)
 {
 	RefPtr<Dir> pDir(new Dir());
 	return (::f_opendir(pDir->GetEntity(), dirName) == FR_OK)? pDir.release() : nullptr;
 }
 
-bool FAT::RemoveFile(const char* fileName)
+bool Drive::RemoveFile(const char* fileName)
 {
 	return ::f_unlink(fileName) == FR_OK;
 }
 
-bool FAT::RenameFile(const char* fileNameOld, const char* fileNameNew)
+bool Drive::RenameFile(const char* fileNameOld, const char* fileNameNew)
 {
 	return ::f_rename(fileNameOld, fileNameNew) == FR_OK;
 }
 
-bool FAT::CreateDir(const char* dirName)
+bool Drive::CreateDir(const char* dirName)
 {
 	return ::f_mkdir(dirName) == FR_OK;
 }
 
-bool FAT::RemoveDir(const char* dirName)
+bool Drive::RemoveDir(const char* dirName)
 {
 	return ::f_rmdir(dirName) == FR_OK;
 }
 
-bool FAT::RenameDir(const char* fileNameOld, const char* fileNameNew)
+bool Drive::RenameDir(const char* fileNameOld, const char* fileNameNew)
 {
 	return ::f_rename(fileNameOld, fileNameNew) == FR_OK;
 }
 
-bool FAT::Format()
+bool Drive::Format()
 {
 #if defined(FF_USE_MKFS)
 	MKFS_PARM opt {
@@ -86,16 +165,16 @@ bool FAT::Format()
 #endif
 }
 
-FAT* FAT::GetFAT(BYTE pdrv)
+Drive* Drive::LookupDrive(BYTE pdrv)
 {
-	FAT* pFAT = pFATHead_;
-	for (BYTE pdrvIter = 0; pFAT; pFAT = pFAT->pFATNext_, pdrvIter++) {
-		if (pdrv == pdrvIter) return pFAT;
+	Drive* pDrive = pDriveHead_;
+	for (BYTE pdrvIter = 0; pDrive; pDrive = pDrive->pDriveNext_, pdrvIter++) {
+		if (pdrv == pdrvIter) return pDrive;
 	}
 	return nullptr;
 }
 
-const char* FAT::FRESULTToStr(FRESULT result)
+const char* Drive::FRESULTToStr(FRESULT result)
 {
 	static const char* strTbl[] = {
 		"OK",					/* (0) Function succeeded */
@@ -122,85 +201,6 @@ const char* FAT::FRESULTToStr(FRESULT result)
 	return strTbl[static_cast<int>(result)];
 }
 
-//------------------------------------------------------------------------------
-// FAT::File
-//------------------------------------------------------------------------------
-FAT::File::File() {}
-
-FAT::File::~File()
-{
-	Close();
-}
-
-int FAT::File::Read(void* buff, int bytesBuff)
-{
-	UINT bytesRead;
-	return (::f_read(&fil_, buff, bytesBuff, &bytesRead) == FR_OK)? static_cast<int>(bytesRead) : -1;
-}
-
-int FAT::File::Write(const void* buff, int bytesBuff)
-{
-	UINT bytesWritten;
-	return (::f_write(&fil_, buff, bytesBuff, &bytesWritten) == FR_OK)? static_cast<int>(bytesWritten) : -1;
-}
-
-void FAT::File::Close()
-{
-	::f_close(&fil_);
-}
-
-bool FAT::File::Seek(int position)
-{
-	return ::f_lseek(&fil_, position) == FR_OK;
-}
-
-int FAT::File::Tell()
-{
-	return f_tell(&fil_);
-}
-
-int FAT::File::Size()
-{
-	return f_size(&fil_);
-}
-
-bool FAT::File::Flush()
-{
-	return f_sync(&fil_) == FR_OK;
-}
-
-bool FAT::File::Truncate(int bytes)
-{
-	return f_truncate(&fil_) == FR_OK;
-}
-
-bool FAT::File::Sync()
-{
-	return f_sync(&fil_) == FR_OK;
-}
-
-//------------------------------------------------------------------------------
-// FAT::Dir
-//------------------------------------------------------------------------------
-FAT::Dir::Dir() {}
-
-FAT::Dir::~Dir()
-{
-	Close();
-}
-
-bool FAT::Dir::Read(FS::FileInfo** ppFileInfo)
-{
-	FILINFO& filInfo = fileInfo_.GetEntity();
-	*ppFileInfo = &fileInfo_;
-	return ::f_readdir(&dir_, &filInfo) == FR_OK && filInfo.fname[0] != '\0';
-}
-
-void FAT::Dir::Close()
-{
-	::f_closedir(&dir_);
-}
-
 }
 
 //------------------------------------------------------------------------------
@@ -209,59 +209,59 @@ void FAT::Dir::Close()
 DSTATUS disk_initialize(BYTE pdrv)
 {
 	using namespace jxglib;
-	FAT* pFAT = FAT::GetFAT(pdrv);
-	if (!pFAT) return RES_PARERR;
-	return pFAT->initialize();
+	FAT::Drive* pDrive = FAT::Drive::LookupDrive(pdrv);
+	if (!pDrive) return RES_PARERR;
+	return pDrive->initialize();
 }
 
 DSTATUS disk_status(BYTE pdrv)
 {
 	using namespace jxglib;
-	FAT* pFAT = FAT::GetFAT(pdrv);
-	if (!pFAT) return RES_PARERR;
-	return pFAT->status();
+	FAT::Drive* pDrive = FAT::Drive::LookupDrive(pdrv);
+	if (!pDrive) return RES_PARERR;
+	return pDrive->status();
 }
 
 DRESULT disk_read(BYTE pdrv, BYTE* buff, LBA_t sector, UINT count)
 {
 	using namespace jxglib;
-	FAT* pFAT = FAT::GetFAT(pdrv);
-	if (!pFAT) return RES_PARERR;
-	return pFAT->read(buff, sector, count);
+	FAT::Drive* pDrive = FAT::Drive::LookupDrive(pdrv);
+	if (!pDrive) return RES_PARERR;
+	return pDrive->read(buff, sector, count);
 }
 
 DRESULT disk_write(BYTE pdrv, const BYTE* buff, LBA_t sector, UINT count)
 {
 	using namespace jxglib;
-	FAT* pFAT = FAT::GetFAT(pdrv);
-	if (!pFAT) return RES_PARERR;
-	return pFAT->write(buff, sector, count);
+	FAT::Drive* pDrive = FAT::Drive::LookupDrive(pdrv);
+	if (!pDrive) return RES_PARERR;
+	return pDrive->write(buff, sector, count);
 }
 
 DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void* buff)
 {
 	using namespace jxglib;
-	FAT* pFAT = FAT::GetFAT(pdrv);
-	if (!pFAT) return RES_PARERR;
+	FAT::Drive* pDrive = FAT::Drive::LookupDrive(pdrv);
+	if (!pDrive) return RES_PARERR;
 	switch (cmd) {
 	case CTRL_SYNC: {
-		return pFAT->ioctl_CTRL_SYNC();
+		return pDrive->ioctl_CTRL_SYNC();
 	}
 	case GET_SECTOR_COUNT: {
 		LBA_t* pSectorCount = reinterpret_cast<LBA_t*>(buff);
-		return pFAT->ioctl_GET_SECTOR_COUNT(pSectorCount);
+		return pDrive->ioctl_GET_SECTOR_COUNT(pSectorCount);
 	}
 	case GET_SECTOR_SIZE: {
 		WORD* pSectorSize = reinterpret_cast<WORD*>(buff);
-		return pFAT->ioctl_GET_SECTOR_SIZE(pSectorSize);
+		return pDrive->ioctl_GET_SECTOR_SIZE(pSectorSize);
 	}
 	case GET_BLOCK_SIZE: {
 		DWORD* pBlockSize = reinterpret_cast<DWORD*>(buff);
-		return pFAT->ioctl_GET_BLOCK_SIZE(pBlockSize);
+		return pDrive->ioctl_GET_BLOCK_SIZE(pBlockSize);
 	}
 	case CTRL_TRIM: {
 		LBA_t* args = reinterpret_cast<LBA_t*>(buff);
-		return pFAT->ioctl_CTRL_TRIM(args[0], args[1]);
+		return pDrive->ioctl_CTRL_TRIM(args[0], args[1]);
 	}
 	default:
 		break;

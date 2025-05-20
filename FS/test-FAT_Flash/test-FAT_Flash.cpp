@@ -10,7 +10,7 @@ using namespace jxglib;
 int main()
 {
 	::stdio_init_all();
-	FAT_Flash fat(0x00100000, 0x00080000);
+	FAT::Flash fat(0x10100000, 0x00080000);
 	fat.Mount();
 	Serial::Terminal terminal;
 	Shell::AttachTerminal(terminal.Initialize());

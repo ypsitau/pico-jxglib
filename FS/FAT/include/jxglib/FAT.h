@@ -9,86 +9,96 @@
 #include "diskio.h"
 #include "jxglib/FS.h"
 
-namespace jxglib {
+namespace jxglib::FAT {
 
 //------------------------------------------------------------------------------
-// FAT
+// FAT::File
 //------------------------------------------------------------------------------
-class FAT : public FS::Manager {
+class File : public FS::File {
 public:
-	class File : public FS::File {
-	public:
-		DeclareReferable(File);
-	private:
-		FIL fil_;
-	public:
-		File();
-		~File();
-	public:
-		FIL* GetEntity() { return &fil_; }
-		const FIL* GetEntity() const { return &fil_; }
-	public:
-		// virtual functions of Stream
-		virtual int Read(void* buff, int bytesBuff) override;
-		virtual int Write(const void* buff, int bytesBuff) override;
-		// virtual functions of FS::File
-		virtual void Close() override;
-		virtual bool Seek(int position) override;
-		virtual int Tell() override;
-		virtual int Size() override;
-		virtual bool Flush() override;
-		virtual bool Truncate(int bytes) override;
-		virtual bool Sync() override;
-	};
-	class FileInfo : public FS::FileInfo {
-	private:
-		FILINFO filInfo_;
-	public:
-		FileInfo() {}
-		~FileInfo() {}
-	public:
-		FILINFO& GetEntity() { return filInfo_; }
-		const FILINFO& GetEntity() const { return filInfo_; }
-	public:
-		virtual const char* GetName() const { return filInfo_.fname; }
-		virtual uint32_t GetSize() const { return filInfo_.fsize; }
-		virtual bool IsDirectory() const { return (filInfo_.fattrib & AM_DIR) != 0; }
-		virtual bool IsFile() const { return (filInfo_.fattrib & AM_DIR) == 0; }
-		//virtual bool IsHidden() const { return (filInfo_.fattrib & AM_HID) != 0; }
-		//virtual bool IsReadOnly() const { return (filInfo_.fattrib & AM_RDO) != 0; }
-		//virtual bool IsSystem() const { return (filInfo_.fattrib & AM_SYS) != 0; }
-		//virtual bool IsArchive() const { return (filInfo_.fattrib & AM_ARC) != 0; }
-		//virtual bool IsNormal() const { return (filInfo_.fattrib & AM_DIR) == 0 && (filInfo_.fattrib & AM_HID) == 0; }
-	};
-	class Dir : public FS::Dir {
-	private:
-		DIR dir_;
-		FileInfo fileInfo_;
-	public:
-		Dir();
-		~Dir();
-	public:
-		DIR* GetEntity() { return &dir_; }
-		const DIR* GetEntity() const { return &dir_; }
-	public:
-		bool Read(FS::FileInfo** ppFileInfo) override;
-		void Close() override;
-	};
+	DeclareReferable(File);
+private:
+	FIL fil_;
+public:
+	File();
+	~File();
+public:
+	FIL* GetEntity() { return &fil_; }
+	const FIL* GetEntity() const { return &fil_; }
+public:
+	// virtual functions of Stream
+	virtual int Read(void* buff, int bytesBuff) override;
+	virtual int Write(const void* buff, int bytesBuff) override;
+	// virtual functions of FS::File
+	virtual void Close() override;
+	virtual bool Seek(int position) override;
+	virtual int Tell() override;
+	virtual int Size() override;
+	virtual bool Flush() override;
+	virtual bool Truncate(int bytes) override;
+	virtual bool Sync() override;
+};
+
+//------------------------------------------------------------------------------
+// FAT::FileInfo
+//------------------------------------------------------------------------------
+class FileInfo : public FS::FileInfo {
+private:
+	FILINFO filInfo_;
+public:
+	FileInfo() {}
+	~FileInfo() {}
+public:
+	FILINFO& GetEntity() { return filInfo_; }
+	const FILINFO& GetEntity() const { return filInfo_; }
+public:
+	virtual const char* GetName() const { return filInfo_.fname; }
+	virtual uint32_t GetSize() const { return filInfo_.fsize; }
+	virtual bool IsDirectory() const { return (filInfo_.fattrib & AM_DIR) != 0; }
+	virtual bool IsFile() const { return (filInfo_.fattrib & AM_DIR) == 0; }
+	//virtual bool IsHidden() const { return (filInfo_.fattrib & AM_HID) != 0; }
+	//virtual bool IsReadOnly() const { return (filInfo_.fattrib & AM_RDO) != 0; }
+	//virtual bool IsSystem() const { return (filInfo_.fattrib & AM_SYS) != 0; }
+	//virtual bool IsArchive() const { return (filInfo_.fattrib & AM_ARC) != 0; }
+	//virtual bool IsNormal() const { return (filInfo_.fattrib & AM_DIR) == 0 && (filInfo_.fattrib & AM_HID) == 0; }
+};
+
+//------------------------------------------------------------------------------
+// FAT::Dir
+//------------------------------------------------------------------------------
+class Dir : public FS::Dir {
+private:
+	DIR dir_;
+	FileInfo fileInfo_;
+public:
+	Dir();
+	~Dir();
+public:
+	DIR* GetEntity() { return &dir_; }
+	const DIR* GetEntity() const { return &dir_; }
+public:
+	bool Read(FS::FileInfo** ppFileInfo) override;
+	void Close() override;
+};
+
+//------------------------------------------------------------------------------
+// FAT::Drive
+//------------------------------------------------------------------------------
+class Drive : public FS::Drive {
+public:
 	enum class MountMode { Normal, Forced, };
 	static const int SectorSize = FF_MIN_SS;
 private:
-	const char* driveName_;
 	FATFS fatFs_;
-	FAT* pFATNext_;
+	Drive* pDriveNext_;
 private:
-	static FAT* pFATHead_;
+	static Drive* pDriveHead_;
 public:
-	FAT(const char* driveName);
+	Drive(const char* driveName);
 public:
 	void Mount(MountMode mountMode = MountMode::Normal);
 public:
 	// virtual functions of FS::Manager
-	virtual const char* GetDriveName() const override { return driveName_; }
 	virtual FS::File* OpenFile(const char* fileName, const char* mode) override;
 	virtual FS::Dir* OpenDir(const char* dirName) override;
 	virtual bool RemoveFile(const char* fileName) override;
@@ -98,7 +108,7 @@ public:
 	virtual bool RenameDir(const char* fileNameOld, const char* fileNameNew) override;
 	virtual bool Format() override;
 public:
-	static FAT* GetFAT(BYTE pdrv);
+	static Drive* LookupDrive(BYTE pdrv);
 	static const char* FRESULTToStr(FRESULT result);
 public:
 	virtual DSTATUS status() = 0;
