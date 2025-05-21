@@ -11,8 +11,8 @@ using namespace jxglib;
 int main()
 {
 	::stdio_init_all();
-	FAT::Flash fat1(0x10100000, 0x00080000, "a"); // XIP address and size
-	FAT::Flash fat2(0x10180000, 0x00080000, "b"); // XIP address and size
+	FAT::Flash fat1(0x1010'0000, 0x0008'0000, "a"); // XIP address and size
+	FAT::Flash fat2(0x1018'0000, 0x0008'0000, "b"); // XIP address and size
 	GPIO2.set_function_SPI0_SCK();
 	GPIO3.set_function_SPI0_TX();
 	GPIO4.set_function_SPI0_RX();
