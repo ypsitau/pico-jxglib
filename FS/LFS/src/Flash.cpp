@@ -9,7 +9,7 @@ namespace jxglib::LFS {
 //------------------------------------------------------------------------------
 // LFS::Flash
 //------------------------------------------------------------------------------
-Flash::Flash(uint32_t addrXIP, uint32_t bytesXIP, const char* driveName) :
+Flash::Flash(const char* driveName, uint32_t addrXIP, uint32_t bytesXIP) :
 	Drive(driveName), offsetXIP_{addrXIP & 0x0fff'ffff}
 {
 	cfg_.read_size		= FLASH_PAGE_SIZE;				// Minimum size of a block read in bytes

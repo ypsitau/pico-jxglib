@@ -14,7 +14,7 @@ class Flash : public Drive {
 private:
 	uint32_t offsetXIP_;
 public:
-	Flash(uint32_t addrXIP, uint32_t bytesXIP, const char* driveName = "flash");
+	Flash(const char* driveName, uint32_t addrXIP, uint32_t bytesXIP);
 public:
 	virtual int On_read(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size) override;
 	virtual int On_prog(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, const void* buffer, lfs_size_t size) override;
