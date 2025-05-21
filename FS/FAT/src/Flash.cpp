@@ -9,7 +9,7 @@ namespace jxglib::FAT {
 //-----------------------------------------------------------------------------
 // FAT::Flash
 //-----------------------------------------------------------------------------
-Flash::Flash(uint32_t addrXIP, uint32_t bytesXIP, const char* driveName) :
+Flash::Flash(const char* driveName, uint32_t addrXIP, uint32_t bytesXIP) :
 	Drive(driveName), offsetXIP_{addrXIP & 0x0fff'ffff}, bytesXIP_{bytesXIP}
 {
 }
@@ -23,6 +23,7 @@ DSTATUS Flash::status()
 DSTATUS Flash::initialize()
 {
 	//::printf("initialize\n");
+	//Mount();
 	return 0x00;	// STA_NOINIT, STA_NODISK, STA_PROTECT
 }
 

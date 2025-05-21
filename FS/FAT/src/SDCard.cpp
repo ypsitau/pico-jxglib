@@ -8,7 +8,7 @@ namespace jxglib::FAT {
 //-----------------------------------------------------------------------------
 // FAT::SDCard
 //-----------------------------------------------------------------------------
-SDCard::SDCard(spi_inst_t* spi, uint baudrate, const jxglib::SDCard::PinAssign& pinAssign, const char* driveName) :
+SDCard::SDCard(const char* driveName, spi_inst_t* spi, uint baudrate, const jxglib::SDCard::PinAssign& pinAssign) :
 		Drive(driveName), sdCard_(spi, baudrate, pinAssign)
 {
 }	

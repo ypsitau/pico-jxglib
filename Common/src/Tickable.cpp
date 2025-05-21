@@ -53,6 +53,21 @@ void Tickable::ResetTick(uint32_t msecTick)
 	msecTick_ = msecTick;
 }
 
+void Tickable::RemoveFromTickable()
+{
+	if (pTickableTop_ == this) {
+		pTickableTop_ = GetNext();
+	} else {
+		for (Tickable* pTickable = pTickableTop_; pTickable; pTickable = pTickable->GetNext()) {
+			if (pTickable->GetNext() == this) {
+				pTickable->SetNext(GetNext());
+				break;
+			}
+		}
+	}
+	SetNext(nullptr);
+}
+
 bool Tickable::Tick(uint32_t msecTick)
 {
 	uint32_t msecCur = GetCurrentTime();

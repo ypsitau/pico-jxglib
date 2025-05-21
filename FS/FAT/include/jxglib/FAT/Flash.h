@@ -17,7 +17,7 @@ private:
 	uint32_t offsetXIP_;
 	uint32_t bytesXIP_; 	// must be multiple of bytesSector
 public:
-	Flash(uint32_t addrXIP, uint32_t bytesXIP, const char* driveName = "flash");
+	Flash(const char* driveName, uint32_t addrXIP, uint32_t bytesXIP);
 public:
 	// virtual functions of FAT::Drive
 	virtual DSTATUS status() override;

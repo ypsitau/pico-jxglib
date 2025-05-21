@@ -64,6 +64,7 @@ public:
 	void InitTick(uint32_t msecStart) { msecStart_ = msecStart; }
 	bool IsExpired(uint32_t msecCur);
 	void ResetTick(uint32_t msecTick);
+	void RemoveFromTickable();
 public:
 	virtual const char* GetTickableName() const { return "no-name"; }
 	virtual void OnTick() = 0;

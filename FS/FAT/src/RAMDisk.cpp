@@ -9,7 +9,7 @@ namespace jxglib::FAT {
 //-----------------------------------------------------------------------------
 // RAMDisk
 //-----------------------------------------------------------------------------
-RAMDisk::RAMDisk(uint32_t bytesDisk, const char* driveName) :
+RAMDisk::RAMDisk(const char* driveName, uint32_t bytesDisk) :
 		Drive(driveName), buffDisk_{nullptr}, bytesDisk_{bytesDisk}
 {
 }

@@ -83,8 +83,9 @@ public:
 
 //------------------------------------------------------------------------------
 // FAT::Drive
+// Tickable is used to mount the drive at the first call of Tickable::Tick().
 //------------------------------------------------------------------------------
-class Drive : public FS::Drive {
+class Drive : public FS::Drive, public Tickable {
 public:
 	enum class MountMode { Normal, Forced, };
 	static const int SectorSize = FF_MIN_SS;
@@ -109,6 +110,9 @@ public:
 	virtual bool RemoveDir(const char* dirName) override;
 	virtual bool RenameDir(const char* fileNameOld, const char* fileNameNew) override;
 	virtual bool Format() override;
+public:
+	// virtual function of Tickable
+	virtual void OnTick() override;
 public:
 	static Drive* LookupDrive(BYTE pdrv);
 	static const char* FRESULTToStr(FRESULT result);

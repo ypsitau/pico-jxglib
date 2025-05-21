@@ -10,8 +10,7 @@ using namespace jxglib;
 int main()
 {
 	::stdio_init_all();
-	FAT::RAMDisk fat(100 * 1024); // it seems 100kB is minimum
-	fat.Mount();
+	FAT::RAMDisk fat("ram", 100 * 1024); // it seems 100kB is minimum
 	Serial::Terminal terminal;
 	Shell::AttachTerminal(terminal.Initialize());
 	for (;;) Tickable::Tick();

@@ -182,6 +182,13 @@ bool Drive::Format()
 #endif
 }
 
+void Drive::OnTick()
+{
+	::printf("Drive::OnTick()\n");
+	RemoveFromTickable();
+	Mount();
+}
+
 Drive* Drive::LookupDrive(BYTE pdrv)
 {
 	Drive* pDrive = pDriveHead_;
