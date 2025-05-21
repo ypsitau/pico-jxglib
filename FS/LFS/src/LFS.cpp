@@ -41,7 +41,7 @@ FS::File* Drive::OpenFile(const char* fileName, const char* mode)
 		if (::lfs_mount(&lfs_, &cfg_) != LFS_ERR_OK) return nullptr;
 		mountedFlag_ = true;
 	}
-	RefPtr<File> pFile(new File(lfs_));
+	RefPtr<File> pFile(new File(*this, lfs_));
 	int flags = 0;
 	if (mode[0] == 'r') {
 		flags = LFS_O_RDONLY;
@@ -61,7 +61,7 @@ FS::Dir* Drive::OpenDir(const char* dirName)
 		if (::lfs_mount(&lfs_, &cfg_) != LFS_ERR_OK) return nullptr;
 		mountedFlag_ = true;
 	}
-	RefPtr<Dir> pDir(new Dir(lfs_));
+	RefPtr<Dir> pDir(new Dir(*this, lfs_));
 	return (::lfs_dir_open(&lfs_, pDir->GetEntity(), dirName) == LFS_ERR_OK)? pDir.release() : nullptr;
 }
 
@@ -138,7 +138,7 @@ int Drive::Callback_sync(const struct lfs_config* cfg)
 //------------------------------------------------------------------------------
 // LFS::File
 //------------------------------------------------------------------------------
-File::File(lfs_t& lfs) : lfs_(lfs), openedFlag_{true}
+File::File(FS::Drive& drive, lfs_t& lfs) : FS::File(drive), lfs_(lfs), openedFlag_{true}
 {
 }
 
@@ -198,7 +198,7 @@ bool File::Sync()
 //------------------------------------------------------------------------------
 // LFS::Dir
 //------------------------------------------------------------------------------
-Dir::Dir(lfs_t& lfs) : lfs_(lfs), openedFlag_{true}
+Dir::Dir(FS::Drive& drive, lfs_t& lfs) : FS::Dir(drive), lfs_(lfs), openedFlag_{true}
 {
 }
 

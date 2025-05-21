@@ -21,7 +21,7 @@ private:
 	lfs_file_t file_;
 	bool openedFlag_;
 public:
-	File(lfs_t& lfs);
+	File(FS::Drive& drive, lfs_t& lfs);
 	~File() { Close(); }
 public:
 	lfs_file_t* GetEntity() { return &file_; }
@@ -75,7 +75,7 @@ private:
 	FileInfo fileInfo_;
 	bool openedFlag_;
 public:
-	Dir(lfs_t& lfs);
+	Dir(FS::Drive& drive, lfs_t& lfs);
 	~Dir() { Close(); }
 public:
 	lfs_dir_t* GetEntity() { return &dir_; }

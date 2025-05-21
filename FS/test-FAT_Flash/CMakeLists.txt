@@ -47,10 +47,9 @@ pico_enable_stdio_usb(test-FAT_Flash 0)
 # Add the standard library to the build
 target_link_libraries(test-FAT_Flash
     pico_stdlib
-    jxglib_FAT_Flash
     jxglib_Serial
-    jxglib_Shell
-    jxglib_ShellCmd_FS)
+    jxglib_ShellCmd_FS
+    jxglib_FAT_Flash)
 
 # Add the standard include files to the build
 target_include_directories(test-FAT_Flash PRIVATE

@@ -19,11 +19,11 @@ constexpr int MaxLenPathName = 256;
 // Functions
 //------------------------------------------------------------------------------
 Drive* FindDrive(const char* pathName);
+Drive* GetDriveHead();
 Drive* GetDriveCur();
 const char* SkipDriveName(const char* pathName);
 const char* ExtractDriveName(const char* pathName, char* driveName, int lenMax);
 bool SetDriveCur(const char* driveName);
-Dir* OpenDirDrive();
 File* OpenFile(const char* fileName, const char* mode);
 Dir* OpenDir(const char* dirName);
 bool RemoveFile(const char* fileName);
@@ -43,7 +43,13 @@ class File : public Referable, public Stream {
 public:
 	DeclareReferable(File);
 protected:
+	const Drive& drive_;
+public:
+	File(const Drive& drive) : drive_(drive) {}
+protected:
 	virtual ~File() { Close(); }
+public:
+	const Drive& GetDrive() const { return drive_; }
 public:
 	virtual void Close() {}
 	virtual bool Seek(int position) = 0;
@@ -58,6 +64,12 @@ public:
 // FS::FileInfo
 //------------------------------------------------------------------------------
 class FileInfo {
+protected:
+	const Drive* pDrive_;
+public:
+	FileInfo(const Drive* pDrive = nullptr) : pDrive_(pDrive) {}
+public:
+	void SetDrive(const Drive* pDrive) { pDrive_ = pDrive; }
 public:
 	virtual const char* GetName() const = 0;
 	virtual uint32_t GetSize() const = 0;
@@ -72,7 +84,13 @@ class Dir : public Referable {
 public:
 	DeclareReferable(Dir);
 protected:
+	const Drive& drive_;
+public:
+	Dir(const Drive& drive) : drive_(drive) {}
+protected:
 	virtual ~Dir() { Close(); }
+public:
+	const Drive& GetDrive() const { return drive_; }
 public:
 	virtual bool Read(FileInfo** ppFileInfo) = 0;
 	virtual void Close() {}
@@ -110,23 +128,20 @@ public:
 	virtual bool RenameDir(const char* fileNameOld, const char* fileNameNew) = 0;
 	virtual bool Format() = 0;
 	//virtual bool Sync() = 0;
-	//virtual bool GetFreeSpace(uint32_t* pFreeSpace) = 0;
-	//virtual bool GetTotalSpace(uint32_t* pTotalSpace) = 0;
-	//virtual bool GetUsedSpace(uint32_t* pUsedSpace) = 0;
+	//virtual bool GetFreeSpace(uint32_t* bytesFree) = 0;
+	//virtual bool GetTotalSpace(uint32_t* bytesTotal) = 0;
+	//virtual bool GetUsedSpace(uint32_t* bytesUsed) = 0;
 };
 
+#if 0
 //------------------------------------------------------------------------------
 // FS::DirDrive
 //------------------------------------------------------------------------------
 class DirDrive : public Dir {
 public:
 	class FileInfo : public FS::FileInfo {
-	private:
-		const Drive* pDrive_;
 	public:
-		FileInfo() : pDrive_(nullptr) {}
-	public:
-		void SetDrive(const Drive* pDrive) { pDrive_ = pDrive; }
+		FileInfo() {}
 	public:
 		virtual const char* GetName() const override { return pDrive_? pDrive_->GetDriveName() : ""; }
 		virtual uint32_t GetSize() const override { return 0; }
@@ -141,6 +156,7 @@ public:
 public:
 	virtual bool Read(FS::FileInfo** ppFileInfo) override;
 };
+#endif
 
 }
 

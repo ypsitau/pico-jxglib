@@ -47,13 +47,12 @@ pico_enable_stdio_usb(test-Composite 0)
 # Add the standard library to the build
 target_link_libraries(test-Composite
     pico_stdlib
+    jxglib_Serial
+    jxglib_ShellCmd_FS
     jxglib_FAT_Flash
     jxglib_FAT_RAMDisk
     jxglib_FAT_SDCard
-    jxglib_LFS_Flash
-    jxglib_Serial
-    jxglib_Shell
-    jxglib_ShellCmd_FS)
+    jxglib_LFS_Flash)
 
 # Add the standard include files to the build
 target_include_directories(test-Composite PRIVATE

@@ -80,12 +80,16 @@ ShellCmd(ls, "lists files in the specified directory")
 
 ShellCmd_Named(ls_drive, "ls-drive", "lists availabld drives")
 {
-	RefPtr<FS::Dir> pDir(FS::OpenDirDrive());
-	FS::FileInfo* pFileInfo;
-	while (pDir->Read(&pFileInfo)) {
-		tout.Printf("%s:\n", pFileInfo->GetName());
+	int lenMax = 0;
+	for (const FS::Drive* pDrive = FS::GetDriveHead(); pDrive; pDrive = pDrive->GetNext()) {
+		int len = ::strlen(pDrive->GetDriveName()) + 1;
+		if (len > lenMax) lenMax = len;
 	}
-	pDir->Close();
+	for (const FS::Drive* pDrive = FS::GetDriveHead(); pDrive; pDrive = pDrive->GetNext()) {
+		char buff[32];
+		::snprintf(buff, sizeof(buff), "%s:", pDrive->GetDriveName());
+		tout.Printf("%*s  %s\n", -lenMax, buff, pDrive->GetFormatName());
+	}
 	return 0;
 }
 

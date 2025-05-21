@@ -8,7 +8,7 @@ namespace jxglib::FAT {
 //------------------------------------------------------------------------------
 // FAT::File
 //------------------------------------------------------------------------------
-File::File() {}
+File::File(FS::Drive& drive) : FS::File(drive) {}
 
 File::~File()
 {
@@ -65,7 +65,7 @@ bool File::Sync()
 //------------------------------------------------------------------------------
 // FAT::Dir
 //------------------------------------------------------------------------------
-Dir::Dir() {}
+Dir::Dir(FS::Drive& drive) : FS::Dir(drive) {}
 
 Dir::~Dir()
 {
@@ -123,7 +123,7 @@ const char* Drive::NativePathName(char* pathNameBuff, int lenBuff, const char* p
 
 FS::File* Drive::OpenFile(const char* fileName, const char* mode)
 {
-	RefPtr<File> pFile(new File());
+	RefPtr<File> pFile(new File(*this));
 	BYTE flags = 0;
 	if (mode[0] == 'r') flags |= FA_READ;
 	if (mode[0] == 'w') flags |= FA_WRITE | FA_CREATE_ALWAYS;
@@ -133,7 +133,7 @@ FS::File* Drive::OpenFile(const char* fileName, const char* mode)
 
 FS::Dir* Drive::OpenDir(const char* dirName)
 {
-	RefPtr<Dir> pDir(new Dir());
+	RefPtr<Dir> pDir(new Dir(*this));
 	return (::f_opendir(pDir->GetEntity(), dirName) == FR_OK)? pDir.release() : nullptr;
 }
 

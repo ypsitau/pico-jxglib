@@ -20,7 +20,7 @@ public:
 private:
 	FIL fil_;
 public:
-	File();
+	File(FS::Drive& drive);
 	~File();
 public:
 	FIL* GetEntity() { return &fil_; }
@@ -71,7 +71,7 @@ private:
 	DIR dir_;
 	FileInfo fileInfo_;
 public:
-	Dir();
+	Dir(FS::Drive& drive);
 	~Dir();
 public:
 	DIR* GetEntity() { return &dir_; }

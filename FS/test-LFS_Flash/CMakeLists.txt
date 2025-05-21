@@ -47,9 +47,9 @@ pico_enable_stdio_usb(test-LFS_Flash 0)
 # Add the standard library to the build
 target_link_libraries(test-LFS_Flash
     pico_stdlib
-    jxglib_LFS_Flash
     jxglib_Serial
-    jxglib_ShellCmd_FS)
+    jxglib_ShellCmd_FS
+    jxglib_LFS_Flash)
 
 # Add the standard include files to the build
 target_include_directories(test-LFS_Flash PRIVATE

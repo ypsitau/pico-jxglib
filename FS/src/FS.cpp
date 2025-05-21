@@ -10,7 +10,7 @@ namespace jxglib::FS {
 //------------------------------------------------------------------------------
 // FS
 //------------------------------------------------------------------------------
-static Drive* pDriveTop = nullptr;
+static Drive* pDriveHead = nullptr;
 static Drive* pDriveCur = nullptr;
 
 //------------------------------------------------------------------------------
@@ -21,19 +21,24 @@ Drive* FindDrive(const char* pathName)
 	char driveName[32];
 	ExtractDriveName(pathName, driveName, sizeof(driveName));
 	if (driveName[0] == '\0') {
-		if (!pDriveCur) pDriveCur = pDriveTop;
+		if (!pDriveCur) pDriveCur = pDriveHead;
 		return pDriveCur;
 	}
-	Drive* pDrive = pDriveTop;
+	Drive* pDrive = pDriveHead;
 	for ( ; pDrive; pDrive = pDrive->GetNext()) {
 		if (::strcasecmp(pDrive->GetDriveName(), driveName) == 0) return pDrive;
 	}
 	return nullptr;
 }
 
+Drive* GetDriveHead()
+{
+	return pDriveHead;
+}
+
 Drive* GetDriveCur()
 {
-	if (!pDriveCur) pDriveCur = pDriveTop;
+	if (!pDriveCur) pDriveCur = pDriveHead;
 	return pDriveCur;
 }
 
@@ -65,11 +70,6 @@ bool SetDriveCur(const char* driveName)
 	if (!pDrive) return false;
 	pDriveCur = pDrive;
 	return true;
-}
-
-Dir* OpenDirDrive()
-{
-	return new DirDrive(pDriveTop);
 }
 
 File* OpenFile(const char* fileName, const char* mode)
@@ -185,15 +185,15 @@ Drive::Drive(const char* formatName, const char* driveName) :
 		formatName_{formatName}, driveName_{driveName}, pDriveNext_{nullptr}
 {
 	::strcpy(dirNameCur_, "/");
-	if (pDriveTop) {
-		for (Drive* pDrive = pDriveTop; pDrive; pDrive = pDrive->pDriveNext_) {
+	if (pDriveHead) {
+		for (Drive* pDrive = pDriveHead; pDrive; pDrive = pDrive->pDriveNext_) {
 			if (!pDrive->pDriveNext_) {
 				pDrive->pDriveNext_ = this;
 				break;
 			}
 		}
 	} else {
-		pDriveTop = this;
+		pDriveHead = this;
 	}
 }
 
@@ -223,6 +223,7 @@ const char* Drive::RegulatePathName(char* pathNameBuff, int lenBuff, const char*
 	return pathNameBuff;
 }
 
+#if 0
 //------------------------------------------------------------------------------
 // FS::DirDrive
 //------------------------------------------------------------------------------
@@ -234,5 +235,6 @@ bool DirDrive::Read(FS::FileInfo** ppFileInfo)
 	pDrive_ = pDrive_->GetNext();
 	return rtn;
 }
+#endif
 
 }
