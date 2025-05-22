@@ -19,6 +19,9 @@ private:
 public:
 	Flash(const char* driveName, uint32_t addrXIP, uint32_t bytesXIP);
 public:
+	// virtual functions of FS::Drive
+	virtual const char* GetRemarks(char* buff, int lenMax) const override;
+public:
 	// virtual functions of FAT::Drive
 	virtual DSTATUS status() override;
 	virtual DSTATUS initialize() override;

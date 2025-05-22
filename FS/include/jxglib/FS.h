@@ -33,6 +33,7 @@ bool RemoveDir(const char* dirName);
 bool RenameDir(const char* fileNameOld, const char* fileNameNew);
 bool ChangeCurDir(const char* dirName);
 bool Format(const char* driveName, Printable& out);
+bool Unmount(const char* driveName, Printable& out);
 bool IsLegalDriveName(const char* driveName);
 const char* JoinPathName(char* pathName, const char* dirName, const char* fileName);
 
@@ -127,36 +128,11 @@ public:
 	virtual bool RemoveDir(const char* dirName) = 0;
 	virtual bool RenameDir(const char* fileNameOld, const char* fileNameNew) = 0;
 	virtual bool Format() = 0;
-	//virtual bool Sync() = 0;
-	//virtual bool GetFreeSpace(uint32_t* bytesFree) = 0;
-	//virtual bool GetTotalSpace(uint32_t* bytesTotal) = 0;
-	//virtual bool GetUsedSpace(uint32_t* bytesUsed) = 0;
+	virtual bool Unmount() = 0;
+	virtual uint64_t GetBytesTotal() = 0;
+	virtual uint64_t GetBytesUsed() = 0;
+	virtual const char* GetRemarks(char* buff, int lenMax) const { return buff;}
 };
-
-#if 0
-//------------------------------------------------------------------------------
-// FS::DirDrive
-//------------------------------------------------------------------------------
-class DirDrive : public Dir {
-public:
-	class FileInfo : public FS::FileInfo {
-	public:
-		FileInfo() {}
-	public:
-		virtual const char* GetName() const override { return pDrive_? pDrive_->GetDriveName() : ""; }
-		virtual uint32_t GetSize() const override { return 0; }
-		virtual bool IsDirectory() const override { return false; }
-		virtual bool IsFile() const override { return false; }
-	};
-private:
-	Drive* pDrive_;
-	FileInfo fileInfo_;
-public:
-	DirDrive(Drive* pDrive) : pDrive_(pDrive) {}
-public:
-	virtual bool Read(FS::FileInfo** ppFileInfo) override;
-};
-#endif
 
 }
 

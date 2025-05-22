@@ -155,6 +155,21 @@ bool Format(const char* driveName, Printable& out)
 	}
 }
 
+bool Unmount(const char* driveName, Printable& out)
+{
+	if (!IsLegalDriveName(driveName)) {
+		out.Printf("illegal drive name %s\n", driveName);
+		return false;
+	}
+	Drive* pDrive = FindDrive(driveName);
+	if (!pDrive) {
+		out.Printf("drive %s not found\n", driveName);
+		return false;
+	}
+	pDrive->Unmount();
+	return true;
+}
+
 bool IsLegalDriveName(const char* driveName)
 {
 	for (const char*p = driveName; *p; p++) {
@@ -222,19 +237,5 @@ const char* Drive::RegulatePathName(char* pathNameBuff, int lenBuff, const char*
 	}
 	return pathNameBuff;
 }
-
-#if 0
-//------------------------------------------------------------------------------
-// FS::DirDrive
-//------------------------------------------------------------------------------
-bool DirDrive::Read(FS::FileInfo** ppFileInfo)
-{
-	*ppFileInfo = &fileInfo_;
-	fileInfo_.SetDrive(pDrive_);
-	bool rtn = !!pDrive_;
-	pDrive_ = pDrive_->GetNext();
-	return rtn;
-}
-#endif
 
 }

@@ -19,6 +19,12 @@ RAMDisk::~RAMDisk()
 	::free(buffDisk_);
 }
 
+const char* RAMDisk::GetRemarks(char* buff, int lenMax) const
+{
+	::snprintf(buff, lenMax, "RAM on board 0x%08x-0x%08x", buffDisk_, buffDisk_ + bytesDisk_);
+	return buff;
+}
+
 DSTATUS RAMDisk::status()
 {
 	//::printf("status\n");

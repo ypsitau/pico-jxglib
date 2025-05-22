@@ -8,7 +8,7 @@ namespace jxglib::LFS {
 //------------------------------------------------------------------------------
 // LFS::Drive
 //------------------------------------------------------------------------------
-Drive::Drive(const char* driveName) : FS::Drive("LFS", driveName), mountedFlag_{false},
+Drive::Drive(const char* driveName) : FS::Drive("lfs", driveName), mountedFlag_{false},
 	cfg_ {
 		context:			this,
 		read:				Callback_read,
@@ -37,10 +37,7 @@ Drive::Drive(const char* driveName) : FS::Drive("LFS", driveName), mountedFlag_{
 
 FS::File* Drive::OpenFile(const char* fileName, const char* mode)
 {
-	if (!mountedFlag_) {
-		if (::lfs_mount(&lfs_, &cfg_) != LFS_ERR_OK) return nullptr;
-		mountedFlag_ = true;
-	}
+	if (!Mount()) return nullptr;
 	RefPtr<File> pFile(new File(*this, lfs_));
 	int flags = 0;
 	if (mode[0] == 'r') {
@@ -57,62 +54,72 @@ FS::File* Drive::OpenFile(const char* fileName, const char* mode)
 
 FS::Dir* Drive::OpenDir(const char* dirName)
 {
-	if (!mountedFlag_) {
-		if (::lfs_mount(&lfs_, &cfg_) != LFS_ERR_OK) return nullptr;
-		mountedFlag_ = true;
-	}
+	if (!Mount()) return nullptr;
 	RefPtr<Dir> pDir(new Dir(*this, lfs_));
 	return (::lfs_dir_open(&lfs_, pDir->GetEntity(), dirName) == LFS_ERR_OK)? pDir.release() : nullptr;
 }
 
 bool Drive::RemoveFile(const char* fileName)
 {
-	if (!mountedFlag_) {
-		if (::lfs_mount(&lfs_, &cfg_) != LFS_ERR_OK) return false;
-		mountedFlag_ = true;
-	}
+	if (!Mount()) return false;
 	return ::lfs_remove(&lfs_, fileName) == LFS_ERR_OK;
 }
 
 bool Drive::RenameFile(const char* fileNameOld, const char* fileNameNew)
 {
-	if (!mountedFlag_) {
-		if (::lfs_mount(&lfs_, &cfg_) != LFS_ERR_OK) return false;
-		mountedFlag_ = true;
-	}
+	if (!Mount()) return false;
 	return ::lfs_rename(&lfs_, fileNameOld, fileNameNew) == LFS_ERR_OK;
 }
 
 bool Drive::CreateDir(const char* dirName)
 {
-	if (!mountedFlag_) {
-		if (::lfs_mount(&lfs_, &cfg_) != LFS_ERR_OK) return false;
-		mountedFlag_ = true;
-	}
+	if (!Mount()) return false;
 	return ::lfs_mkdir(&lfs_, dirName) == LFS_ERR_OK;
 }
 
 bool Drive::RemoveDir(const char* dirName)
 {
-	if (!mountedFlag_) {
-		if (::lfs_mount(&lfs_, &cfg_) != LFS_ERR_OK) return false;
-		mountedFlag_ = true;
-	}
+	if (!Mount()) return false;
 	return ::lfs_remove(&lfs_, dirName) == LFS_ERR_OK;
 }
 
 bool Drive::RenameDir(const char* dirNameOld, const char* dirNameNew)
 {
-	if (!mountedFlag_) {
-		if (::lfs_mount(&lfs_, &cfg_) != LFS_ERR_OK) return false;
-		mountedFlag_ = true;
-	}
+	if (!Mount()) return false;
 	return ::lfs_rename(&lfs_, dirNameOld, dirNameNew) == LFS_ERR_OK;
 }
 
 bool Drive::Format()
 {
 	return ::lfs_format(&lfs_, &cfg_) == LFS_ERR_OK && ::lfs_mount(&lfs_, &cfg_) == LFS_ERR_OK;
+}
+
+bool Drive::Unmount()
+{
+	if (!mountedFlag_) return true;
+	if (::lfs_unmount(&lfs_) != LFS_ERR_OK) return false;
+	mountedFlag_ = false;
+	return true;
+}
+
+uint64_t Drive::GetBytesTotal()
+{
+	return static_cast<uint64_t>(cfg_.block_count) * cfg_.block_size;
+}
+
+uint64_t Drive::GetBytesUsed()
+{
+	if (!Mount()) return 0;
+	lfs_ssize_t nBlocks = ::lfs_fs_size(&lfs_);
+	return (nBlocks < 0)? 0 : static_cast<uint64_t>(nBlocks) * cfg_.block_size;
+}
+
+bool Drive::Mount()
+{
+	if (mountedFlag_) return true;
+	if (::lfs_mount(&lfs_, &cfg_) != LFS_ERR_OK) return false;
+	mountedFlag_ = true;
+	return true;
 }
 
 int Drive::Callback_read(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size)

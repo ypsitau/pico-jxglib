@@ -20,6 +20,13 @@ Flash::Flash(const char* driveName, uint32_t addrXIP, uint32_t bytesXIP) :
 	cfg_.lookahead_size	= FLASH_SECTOR_SIZE;			// Size of the lookahead buffer in bytes
 }
 
+const char* Flash::GetRemarks(char* buff, int lenMax) const
+{
+	::snprintf(buff, lenMax, "Flash on board 0x%08x-0x%08x",
+			0x10000000 + offsetXIP_, 0x10000000 + offsetXIP_ + cfg_.block_count * cfg_.block_size);
+	return buff;
+}
+
 int Flash::On_read(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size)
 {
 	uint32_t offsetXIP = offsetXIP_ + block * cfg->block_size + off;

@@ -20,7 +20,10 @@ public:
 	RAMDisk(const char* driveName, uint32_t bytesDisk);
 	~RAMDisk();
 public:
-	// virtual functions of FAT
+	// virtual functions of FS::Drive
+	const char* GetRemarks(char* buff, int lenMax) const;
+public:
+	// virtual functions of FAT::Drive
 	virtual DSTATUS status() override;
 	virtual DSTATUS initialize() override;
 	virtual DRESULT read(BYTE* buff, LBA_t sector, UINT count) override;

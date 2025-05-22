@@ -5,25 +5,27 @@
 
 namespace jxglib::ShellCmd_FS {
 
-ShellCmd(cat, "prints the contents of a file")
+ShellCmd(cat, "prints the contents of files")
 {
 	if (argc < 2) {
 		tout.Printf("Usage: %s <filename>\n", argv[0]);
 		return 1;
 	}
-	const char* fileName = argv[1];
-	RefPtr<FS::File> pFile(FS::OpenFile(fileName, "r"));
-	if (!pFile) {
-		terr.Printf("failed to open %s\n", fileName);
-		return 1;
+	for (int i = 1; i < argc; i++) {
+		const char* fileName = argv[i];
+		RefPtr<FS::File> pFile(FS::OpenFile(fileName, "r"));
+		if (!pFile) {
+			tout.Printf("failed to open %s\n", fileName);
+			return 1;
+		}
+		int bytes;
+		char buff[128];
+		while ((bytes = pFile->Read(buff, sizeof(buff) - 1)) > 0) {
+			buff[bytes] = '\0';
+			tout.Print(buff);
+		}
+		pFile->Close();
 	}
-	int bytes;
-	char buff[128];
-	while ((bytes = pFile->Read(buff, sizeof(buff) - 1)) > 0) {
-		buff[bytes] = '\0';
-		tout.Print(buff);
-	}
-	pFile->Close();
 	return 0;
 }
 
@@ -80,15 +82,35 @@ ShellCmd(ls, "lists files in the specified directory")
 
 ShellCmd_Named(ls_drive, "ls-drive", "lists availabld drives")
 {
-	int lenMax = 0;
+	const char* labelDriveName = "Drive";
+	const char* labelFormatName = "Format";
+	int lenMaxDriveName = ::strlen(labelDriveName) + 1, lenMaxFormatName = ::strlen(labelFormatName) + 1;
 	for (const FS::Drive* pDrive = FS::GetDriveHead(); pDrive; pDrive = pDrive->GetNext()) {
-		int len = ::strlen(pDrive->GetDriveName()) + 1;
-		if (len > lenMax) lenMax = len;
+		lenMaxDriveName = ChooseMax(lenMaxDriveName, ::strlen(pDrive->GetDriveName()) + 1);
+		lenMaxFormatName = ChooseMax(lenMaxFormatName, ::strlen(pDrive->GetFormatName()) + 1);
 	}
-	for (const FS::Drive* pDrive = FS::GetDriveHead(); pDrive; pDrive = pDrive->GetNext()) {
+#if 0
+	tout.Printf("%*s  %*s %11s/%11s\n",
+			-lenMaxDriveName, labelDriveName, -lenMaxFormatName, labelFormatName,
+			"Used", "Total");
+	for (FS::Drive* pDrive = FS::GetDriveHead(); pDrive; pDrive = pDrive->GetNext()) {
 		char buff[32];
 		::snprintf(buff, sizeof(buff), "%s:", pDrive->GetDriveName());
-		tout.Printf("%*s  %s\n", -lenMax, buff, pDrive->GetFormatName());
+		tout.Printf("%*s  %*s %11lld/%11lld\n",
+				-lenMaxDriveName, buff, -lenMaxFormatName, pDrive->GetFormatName(),
+				pDrive->GetBytesUsed(), pDrive->GetBytesTotal());
+	}
+#endif
+	char remarks[80];
+	tout.Printf("%*s %*s %11s Remarks\n",
+			-lenMaxDriveName, labelDriveName, -lenMaxFormatName, labelFormatName,
+			"Total");
+	for (FS::Drive* pDrive = FS::GetDriveHead(); pDrive; pDrive = pDrive->GetNext()) {
+		char buff[32];
+		::snprintf(buff, sizeof(buff), "%s:", pDrive->GetDriveName());
+		tout.Printf("%*s %*s %11lld %s\n",
+				-lenMaxDriveName, buff, -lenMaxFormatName, pDrive->GetFormatName(),
+				pDrive->GetBytesTotal(), pDrive->GetRemarks(remarks, sizeof(remarks)));
 	}
 	return 0;
 }
@@ -199,6 +221,17 @@ ShellCmd(format, "formats the filesystem")
 	}
 	const char* driveName = argv[1];
 	FS::Format(driveName, tout);
+	return 0;
+}
+
+ShellCmd(reload, "reloads a specified drive")
+{
+	if (argc < 2) {
+		tout.Printf("Usage: %s <drivename>\n", argv[0]);
+		return 1;
+	}
+	const char* driveName = argv[1];
+	FS::Unmount(driveName, tout);
 	return 0;
 }
 

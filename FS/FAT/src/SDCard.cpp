@@ -13,6 +13,12 @@ SDCard::SDCard(const char* driveName, spi_inst_t* spi, uint baudrate, const jxgl
 {
 }	
 
+const char* SDCard::GetRemarks(char* buff, int lenMax) const
+{
+	::snprintf(buff, lenMax, "SDCard");
+	return buff;
+}
+
 DSTATUS SDCard::status()
 {
 	//::printf("status\n");

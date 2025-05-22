@@ -14,6 +14,13 @@ Flash::Flash(const char* driveName, uint32_t addrXIP, uint32_t bytesXIP) :
 {
 }
 
+const char* Flash::GetRemarks(char* buff, int lenMax) const
+{
+	::snprintf(buff, lenMax, "Flash on board 0x%08x-0x%08x",
+			0x10000000 + offsetXIP_, 0x10000000 + offsetXIP_ + bytesXIP_);
+	return buff;
+}
+
 DSTATUS Flash::status()
 {
 	//::printf("status\n");
@@ -23,7 +30,6 @@ DSTATUS Flash::status()
 DSTATUS Flash::initialize()
 {
 	//::printf("initialize\n");
-	//Mount();
 	return 0x00;	// STA_NOINIT, STA_NODISK, STA_PROTECT
 }
 

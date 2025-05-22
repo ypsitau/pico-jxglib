@@ -89,7 +89,7 @@ void Dir::Close()
 //------------------------------------------------------------------------------
 Drive* Drive::pDriveHead_ = nullptr;
 
-Drive::Drive(const char* driveName) : FS::Drive("FAT", driveName), pdrv_{0}, pDriveNext_{nullptr}
+Drive::Drive(const char* driveName) : FS::Drive("FAT", driveName), pdrv_{0}, pDriveNext_{nullptr}, mountedFlag_{false}
 {
 	if (pDriveHead_) {
 		pdrv_ = 1;
@@ -102,27 +102,31 @@ Drive::Drive(const char* driveName) : FS::Drive("FAT", driveName), pdrv_{0}, pDr
 	if (pdrv_ >= FF_VOLUMES) ::panic("set FF_VOLUMES to more than %d", pdrv_ + 1);
 }
 
-void Drive::Mount(MountMode mountMode)
+bool Drive::Mount(MountMode mountMode)
 {
+	if (mountedFlag_) return true;
 	TCHAR path[16];
 	::snprintf(path, sizeof(path), "%d:", pdrv_);
-	::f_mount(&fatFs_, path, (mountMode == MountMode::Forced)? 1 : 0);
+	if (::f_mount(&fatFs_, path, (mountMode == MountMode::Forced)? 1 : 0) == FR_OK) {
+		mountedFlag_ = true;
+		return true;
+	}
+	return false;
 }
 
 const char* Drive::NativePathName(char* pathNameBuff, int lenBuff, const char* pathName)
 {
 	char* p = pathNameBuff;
-#if 1
 	int len = ::snprintf(p, lenBuff, "%d:", pdrv_);
 	if (len >= lenBuff) ::panic("Drive::RegulatePathName");
 	p += len, lenBuff -= len;
-#endif
 	FS::Drive::RegulatePathName(p, lenBuff, pathName);
 	return pathNameBuff;
 }
 
 FS::File* Drive::OpenFile(const char* fileName, const char* mode)
 {
+	if (!Mount()) return nullptr;
 	RefPtr<File> pFile(new File(*this));
 	BYTE flags = 0;
 	if (mode[0] == 'r') flags |= FA_READ;
@@ -133,33 +137,34 @@ FS::File* Drive::OpenFile(const char* fileName, const char* mode)
 
 FS::Dir* Drive::OpenDir(const char* dirName)
 {
+	if (!Mount()) return nullptr;
 	RefPtr<Dir> pDir(new Dir(*this));
 	return (::f_opendir(pDir->GetEntity(), dirName) == FR_OK)? pDir.release() : nullptr;
 }
 
 bool Drive::RemoveFile(const char* fileName)
 {
-	return ::f_unlink(fileName) == FR_OK;
+	return Mount() && ::f_unlink(fileName) == FR_OK;
 }
 
 bool Drive::RenameFile(const char* fileNameOld, const char* fileNameNew)
 {
-	return ::f_rename(fileNameOld, fileNameNew) == FR_OK;
+	return Mount() && ::f_rename(fileNameOld, fileNameNew) == FR_OK;
 }
 
 bool Drive::CreateDir(const char* dirName)
 {
-	return ::f_mkdir(dirName) == FR_OK;
+	return Mount() && ::f_mkdir(dirName) == FR_OK;
 }
 
 bool Drive::RemoveDir(const char* dirName)
 {
-	return ::f_rmdir(dirName) == FR_OK;
+	return Mount() && ::f_rmdir(dirName) == FR_OK;
 }
 
 bool Drive::RenameDir(const char* fileNameOld, const char* fileNameNew)
 {
-	return ::f_rename(fileNameOld, fileNameNew) == FR_OK;
+	return Mount() && ::f_rename(fileNameOld, fileNameNew) == FR_OK;
 }
 
 bool Drive::Format()
@@ -174,7 +179,6 @@ bool Drive::Format()
 	};
 	char path[16];
 	::snprintf(path, sizeof(path), "%d:", pdrv_);
-	::printf("%d: format\n", pdrv_);
 	char work[FF_MAX_SS];
 	return ::f_mkfs(path, &opt, work, sizeof(work)) == FR_OK;
 #else
@@ -182,11 +186,48 @@ bool Drive::Format()
 #endif
 }
 
-void Drive::OnTick()
+bool Drive::Unmount()
 {
-	::printf("Drive::OnTick()\n");
-	RemoveFromTickable();
-	Mount();
+	if (!mountedFlag_) return true;
+	char path[16];
+	::snprintf(path, sizeof(path), "%d:", pdrv_);
+	if (::f_mount(nullptr, path, 0) == FR_OK) {
+		mountedFlag_ = false;
+		return true;
+	}
+	return false;
+}
+
+uint64_t Drive::GetBytesTotal()
+{
+	if (!Mount()) return 0;
+#if 0
+	// see Examle in https://elm-chan.org/fsw/ff/doc/getfree.html
+	FATFS* fs;
+	char path[16];
+	::snprintf(path, sizeof(path), "%d:", pdrv_);
+	DWORD fre_clust;
+	if (::f_getfree(path, &fre_clust, &fs) != FR_OK) return 0;
+	DWORD tot_sect = (fs->n_fatent - 2) * fs->csize;
+	return tot_sect * SectorSize;
+#endif
+	LBA_t sectorCount;
+	ioctl_GET_SECTOR_COUNT(&sectorCount);
+	return static_cast<uint64_t>(sectorCount) * SectorSize;
+}
+
+uint64_t Drive::GetBytesUsed()
+{
+	if (!Mount()) return 0;
+	// see Examle in https://elm-chan.org/fsw/ff/doc/getfree.html
+	FATFS* fs;
+	char path[16];
+	::snprintf(path, sizeof(path), "%d:", pdrv_);
+	DWORD fre_clust;
+	if (::f_getfree(path, &fre_clust, &fs) != FR_OK) return 0;
+	uint64_t tot_sect = (static_cast<uint64_t>(fs->n_fatent) - 2) * fs->csize;
+	uint64_t fre_sect = static_cast<uint64_t>(fre_clust) * fs->csize;
+	return (tot_sect - fre_sect) * SectorSize;
 }
 
 Drive* Drive::LookupDrive(BYTE pdrv)

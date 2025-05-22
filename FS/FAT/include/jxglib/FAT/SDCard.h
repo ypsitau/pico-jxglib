@@ -17,6 +17,9 @@ private:
 public:
 	SDCard(const char* driveName, spi_inst_t* spi, uint baudrate, const jxglib::SDCard::PinAssign& pinAssign);
 public:
+	// virtual functions of FS::Drive
+	const char* GetRemarks(char* buff, int lenMax) const;
+public:
 	// virtual functions of FAT
 	virtual DSTATUS status() override;
 	virtual DSTATUS initialize() override;
