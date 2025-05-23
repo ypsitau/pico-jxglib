@@ -122,6 +122,18 @@ bool Drive::Mount(MountMode mountMode)
 	return false;
 }
 
+const char* Drive::GetFileSystemName()
+{
+	if (!Mount()) return "unmounted";
+	switch (fatFs_.fs_type) {
+	case FS_FAT12: return "FAT12";
+	case FS_FAT16: return "FAT16";
+	case FS_FAT32: return "FAT32";
+	case FS_EXFAT: return "exFAT";
+	default: return "unknown";
+	}
+}
+
 const char* Drive::NativePathName(char* pathNameBuff, int lenBuff, const char* pathName)
 {
 	char* p = pathNameBuff;

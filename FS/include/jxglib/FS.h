@@ -111,12 +111,12 @@ public:
 public:
 	Drive* GetNext() const { return pDriveNext_; }
 public:
-	const char* GetFormatName() const { return formatName_; }
 	const char* GetDriveName() const { return driveName_; }
 	void SetDirNameCur(const char* dirName);
 	const char* GetDirNameCur() const { return dirNameCur_; }
 	const char* RegulatePathName(char* pathNameBuff, int lenBuff, const char* pathName);
 public:
+	virtual const char* GetFileSystemName() = 0;
 	virtual const char* NativePathName(char* pathNameBuff, int lenBuff, const char* pathName) {
 		return RegulatePathName(pathNameBuff, lenBuff, pathName);
 	}

@@ -35,6 +35,11 @@ Drive::Drive(const char* driveName) : FS::Drive("lfs", driveName), mountedFlag_{
 {
 }
 
+const char* Drive::GetFileSystemName()
+{
+	return Mount()? "LittleFS" : "unmounted";
+}
+
 FS::File* Drive::OpenFile(const char* fileName, const char* mode)
 {
 	if (!Mount()) return nullptr;

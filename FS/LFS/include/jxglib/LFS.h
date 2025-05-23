@@ -97,6 +97,7 @@ public:
 	Drive(const char* driveName = "flash");
 public:
 	// virtual functions of FS::Drive
+	virtual const char* GetFileSystemName() override;
 	virtual FS::File* OpenFile(const char* fileName, const char* mode) override;
 	virtual FS::Dir* OpenDir(const char* dirName) override;
 	virtual bool RemoveFile(const char* fileName) override;

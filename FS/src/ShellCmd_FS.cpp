@@ -85,9 +85,9 @@ ShellCmd_Named(ls_drive, "ls-drive", "lists availabld drives")
 	const char* labelDriveName = "Drive";
 	const char* labelFormatName = "Format";
 	int lenMaxDriveName = ::strlen(labelDriveName) + 1, lenMaxFormatName = ::strlen(labelFormatName) + 1;
-	for (const FS::Drive* pDrive = FS::GetDriveHead(); pDrive; pDrive = pDrive->GetNext()) {
+	for (FS::Drive* pDrive = FS::GetDriveHead(); pDrive; pDrive = pDrive->GetNext()) {
 		lenMaxDriveName = ChooseMax(lenMaxDriveName, ::strlen(pDrive->GetDriveName()) + 1);
-		lenMaxFormatName = ChooseMax(lenMaxFormatName, ::strlen(pDrive->GetFormatName()) + 1);
+		lenMaxFormatName = ChooseMax(lenMaxFormatName, ::strlen(pDrive->GetFileSystemName()) + 1);
 	}
 #if 0
 	tout.Printf("%*s  %*s %11s/%11s\n",
@@ -97,7 +97,7 @@ ShellCmd_Named(ls_drive, "ls-drive", "lists availabld drives")
 		char buff[32];
 		::snprintf(buff, sizeof(buff), "%s:", pDrive->GetDriveName());
 		tout.Printf("%*s  %*s %11lld/%11lld\n",
-				-lenMaxDriveName, buff, -lenMaxFormatName, pDrive->GetFormatName(),
+				-lenMaxDriveName, buff, -lenMaxFormatName, pDrive->GetFileSystemName(),
 				pDrive->GetBytesUsed(), pDrive->GetBytesTotal());
 	}
 #endif
@@ -109,7 +109,7 @@ ShellCmd_Named(ls_drive, "ls-drive", "lists availabld drives")
 		char buff[32];
 		::snprintf(buff, sizeof(buff), "%s:", pDrive->GetDriveName());
 		tout.Printf("%*s %*s %11lld %s\n",
-				-lenMaxDriveName, buff, -lenMaxFormatName, pDrive->GetFormatName(),
+				-lenMaxDriveName, buff, -lenMaxFormatName, pDrive->GetFileSystemName(),
 				pDrive->GetBytesTotal(), pDrive->GetRemarks(remarks, sizeof(remarks)));
 	}
 	return 0;
