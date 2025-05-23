@@ -65,7 +65,10 @@ bool File::Sync()
 //------------------------------------------------------------------------------
 // FAT::Dir
 //------------------------------------------------------------------------------
-Dir::Dir(FS::Drive& drive) : FS::Dir(drive) {}
+Dir::Dir(FS::Drive& drive, bool includeHidden, bool includeSystem) : FS::Dir(drive),
+	fattribSkip_{static_cast<BYTE>((includeHidden? 0 : AM_HID) | (includeSystem? 0 : AM_SYS))}
+{
+}
 
 Dir::~Dir()
 {
@@ -76,7 +79,12 @@ bool Dir::Read(FS::FileInfo** ppFileInfo)
 {
 	FILINFO& filInfo = fileInfo_.GetEntity();
 	*ppFileInfo = &fileInfo_;
-	return ::f_readdir(&dir_, &filInfo) == FR_OK && filInfo.fname[0] != '\0';
+	for (;;) {
+		if (::f_readdir(&dir_, &filInfo) != FR_OK) return false;
+		if (filInfo.fname[0] == '\0') return false;		// end of directory
+		if (!(filInfo.fattrib & fattribSkip_)) break;
+	}
+	return true;
 }
 
 void Dir::Close()

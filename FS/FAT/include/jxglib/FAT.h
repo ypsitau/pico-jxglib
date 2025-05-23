@@ -70,8 +70,9 @@ class Dir : public FS::Dir {
 private:
 	DIR dir_;
 	FileInfo fileInfo_;
+	BYTE fattribSkip_;
 public:
-	Dir(FS::Drive& drive);
+	Dir(FS::Drive& drive, bool includeHidden = false, bool includeSystem = false);
 	~Dir();
 public:
 	DIR* GetEntity() { return &dir_; }
