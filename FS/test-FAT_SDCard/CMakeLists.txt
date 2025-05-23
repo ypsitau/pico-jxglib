@@ -49,6 +49,7 @@ target_link_libraries(test-FAT_SDCard
     pico_stdlib
     jxglib_Serial
     jxglib_ShellCmd_FS
+    jxglib_ShellCmd_SDCard
     jxglib_FAT_SDCard)
 
 # Add the standard include files to the build

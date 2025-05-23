@@ -3,6 +3,7 @@
 //==============================================================================
 #ifndef PICO_JXGLIB_SHELL_H
 #define PICO_JXGLIB_SHELL_H
+#include <stdlib.h>
 #include <memory>
 #include "pico/stdlib.h"
 #include "jxglib/Terminal.h"

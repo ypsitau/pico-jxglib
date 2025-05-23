@@ -47,10 +47,8 @@ pico_enable_stdio_usb(SDCard-tester 0)
 # Add the standard library to the build
 target_link_libraries(SDCard-tester
 	pico_stdlib
-	jxglib_Stream
-	jxglib_SDCard
 	jxglib_Serial
-	jxglib_ShellCmd_Basic)
+	jxglib_ShellCmd_SDCard)
 
 # Add the standard include files to the build
 target_include_directories(SDCard-tester PRIVATE
