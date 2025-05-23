@@ -170,6 +170,14 @@ bool Unmount(const char* driveName, Printable& out)
 	return true;
 }
 
+FileInfo* GetFileInfo(const char* pathName)
+{
+	char pathNameBuff[MaxLenPathName];
+	Drive* pDrive = FindDrive(pathName);
+	if (!pDrive) return nullptr;
+	return pDrive->GetFileInfo(pDrive->NativePathName(pathNameBuff, sizeof(pathNameBuff), pathName));
+}
+
 bool IsLegalDriveName(const char* driveName)
 {
 	for (const char*p = driveName; *p; p++) {

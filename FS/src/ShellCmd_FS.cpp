@@ -42,6 +42,11 @@ ShellCmd(cp, "copies a file")
 		tout.Printf("failed to open %s\n", fileNameSrc);
 		return 1;
 	}
+	std::unique_ptr<FS::FileInfo> pFileInfo(FS::GetFileInfo(fileNameDst));
+	//if (pFileInfo) {
+	//	if (pFileInfo->IsDirectory()) {
+	//	}
+	//}
 	RefPtr<FS::File> pFileDst(FS::OpenFile(fileNameDst, "w"));
 	if (!pFileDst) {
 		tout.Printf("failed to open %s\n", fileNameDst);

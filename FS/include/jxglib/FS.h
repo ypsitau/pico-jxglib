@@ -34,6 +34,7 @@ bool RenameDir(const char* fileNameOld, const char* fileNameNew);
 bool ChangeCurDir(const char* dirName);
 bool Format(const char* driveName, Printable& out);
 bool Unmount(const char* driveName, Printable& out);
+FileInfo* GetFileInfo(const char* pathName);
 bool IsLegalDriveName(const char* driveName);
 const char* JoinPathName(char* pathName, const char* dirName, const char* fileName);
 
@@ -129,6 +130,7 @@ public:
 	virtual bool RenameDir(const char* fileNameOld, const char* fileNameNew) = 0;
 	virtual bool Format() = 0;
 	virtual bool Unmount() = 0;
+	virtual FileInfo* GetFileInfo(const char* pathName) = 0;
 	virtual uint64_t GetBytesTotal() = 0;
 	virtual uint64_t GetBytesUsed() = 0;
 	virtual const char* GetRemarks(char* buff, int lenMax) const { return buff;}

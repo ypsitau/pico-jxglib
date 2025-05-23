@@ -1,6 +1,7 @@
 //==============================================================================
 // LFS.cpp
 //==============================================================================
+#include <memory>
 #include "jxglib/LFS.h"
 
 namespace jxglib::LFS {
@@ -125,6 +126,13 @@ bool Drive::Mount()
 	if (::lfs_mount(&lfs_, &cfg_) != LFS_ERR_OK) return false;
 	mountedFlag_ = true;
 	return true;
+}
+
+FS::FileInfo* Drive::GetFileInfo(const char* pathName)
+{
+	if (!Mount()) return nullptr;
+	std::unique_ptr<FileInfo> pFileInfo(new FileInfo());
+	return (::lfs_stat(&lfs_, pathName, &pFileInfo->GetEntity()) == LFS_ERR_OK)? pFileInfo.release() : nullptr;
 }
 
 int Drive::Callback_read(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size)

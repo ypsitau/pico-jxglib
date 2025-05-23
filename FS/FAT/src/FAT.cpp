@@ -1,6 +1,7 @@
 //==============================================================================
 // FAT.cpp
 //==============================================================================
+#include <memory>
 #include "jxglib/FAT.h"
 
 namespace jxglib::FAT {
@@ -216,6 +217,13 @@ bool Drive::Unmount()
 		return true;
 	}
 	return false;
+}
+
+FS::FileInfo* Drive::GetFileInfo(const char* pathName)
+{
+	if (!Mount()) return nullptr;
+	std::unique_ptr<FileInfo> pFileInfo(new FileInfo());
+	return (::f_stat(pathName, &pFileInfo->GetEntity()) == FR_OK)? pFileInfo.release() : nullptr;
 }
 
 uint64_t Drive::GetBytesTotal()

@@ -56,11 +56,6 @@ public:
 	virtual uint32_t GetSize() const { return filInfo_.fsize; }
 	virtual bool IsDirectory() const { return (filInfo_.fattrib & AM_DIR) != 0; }
 	virtual bool IsFile() const { return (filInfo_.fattrib & AM_DIR) == 0; }
-	//virtual bool IsHidden() const { return (filInfo_.fattrib & AM_HID) != 0; }
-	//virtual bool IsReadOnly() const { return (filInfo_.fattrib & AM_RDO) != 0; }
-	//virtual bool IsSystem() const { return (filInfo_.fattrib & AM_SYS) != 0; }
-	//virtual bool IsArchive() const { return (filInfo_.fattrib & AM_ARC) != 0; }
-	//virtual bool IsNormal() const { return (filInfo_.fattrib & AM_DIR) == 0 && (filInfo_.fattrib & AM_HID) == 0; }
 };
 
 //------------------------------------------------------------------------------
@@ -113,6 +108,7 @@ public:
 	virtual bool RenameDir(const char* fileNameOld, const char* fileNameNew) override;
 	virtual bool Format() override;
 	virtual bool Unmount() override;
+	virtual FS::FileInfo* GetFileInfo(const char* pathName) override;
 	virtual uint64_t GetBytesTotal() override;
 	virtual uint64_t GetBytesUsed() override;
 public:
