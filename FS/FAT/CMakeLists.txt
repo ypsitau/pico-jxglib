@@ -2,6 +2,7 @@ add_library(jxglib_FAT INTERFACE)
 
 target_sources(jxglib_FAT INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/ff/ff.c
+	${CMAKE_CURRENT_LIST_DIR}/ff/ffunicode.c
 	${CMAKE_CURRENT_LIST_DIR}/src/FAT.cpp)
 
 target_include_directories(jxglib_FAT INTERFACE
@@ -101,7 +102,7 @@ function(jxglib_configure_FAT target)
 	jxglib_set_if_undefined(_FF_CODE_PAGE		932)
 	jxglib_set_if_undefined(_FF_USE_LFN			0)
 	jxglib_set_if_undefined(_FF_MAX_LFN			255)
-	jxglib_set_if_undefined(_FF_LFN_UNICODE		0)
+	jxglib_set_if_undefined(_FF_LFN_UNICODE		2)	# UTF-8
 	jxglib_set_if_undefined(_FF_LFN_BUF			255)
 	jxglib_set_if_undefined(_FF_SFN_BUF			12)
 	jxglib_set_if_undefined(_FF_FS_RPATH		0)

@@ -63,4 +63,4 @@ pico_add_extra_outputs(test-Composite)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 
-jxglib_configure_FAT(test-Composite FF_VOLUMES 4)
+jxglib_configure_FAT(test-Composite FF_VOLUMES 5 FF_USE_LFN 1)
