@@ -94,8 +94,6 @@ private:
 public:
 	Drive(const char* driveName);
 public:
-	bool Mount(MountMode mountMode = MountMode::Forced);
-public:
 	// virtual functions of FS::Manager
 	virtual const char* GetFileSystemName() override;
 	virtual const char* NativePathName(char* pathNameBuff, int lenBuff, const char* pathName) override;
@@ -107,6 +105,7 @@ public:
 	virtual bool RemoveDir(const char* dirName) override;
 	virtual bool RenameDir(const char* fileNameOld, const char* fileNameNew) override;
 	virtual bool Format() override;
+	virtual bool Mount() override;
 	virtual bool Unmount() override;
 	virtual FS::FileInfo* GetFileInfo(const char* pathName) override;
 	virtual uint64_t GetBytesTotal() override;

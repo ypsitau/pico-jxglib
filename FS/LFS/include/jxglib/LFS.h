@@ -102,12 +102,11 @@ public:
 	virtual bool RemoveDir(const char* dirName) override;
 	virtual bool RenameDir(const char* fileNameOld, const char* fileNameNew) override;
 	virtual bool Format() override;
+	virtual bool Mount() override;
 	virtual bool Unmount() override;
 	virtual FS::FileInfo* GetFileInfo(const char* pathName) override;
 	virtual uint64_t GetBytesTotal() override;
 	virtual uint64_t GetBytesUsed() override;
-private:
-	bool Mount();
 public:
 	virtual int On_read(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size) = 0;
 	virtual int On_prog(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, const void* buffer, lfs_size_t size) = 0;

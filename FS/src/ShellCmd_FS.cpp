@@ -225,18 +225,29 @@ ShellCmd(format, "formats the filesystem")
 		return 1;
 	}
 	const char* driveName = argv[1];
-	FS::Format(driveName, tout);
+	FS::Format(tout, driveName);
 	return 0;
 }
 
-ShellCmd(reload, "reloads a specified drive")
+ShellCmd(mount, "mounts a specified drive")
 {
 	if (argc < 2) {
 		tout.Printf("Usage: %s <drivename>\n", argv[0]);
 		return 1;
 	}
 	const char* driveName = argv[1];
-	FS::Unmount(driveName, tout);
+	FS::Mount(tout, driveName);
+	return 0;
+}
+
+ShellCmd(unmount, "unmounts a specified drive")
+{
+	if (argc < 2) {
+		tout.Printf("Usage: %s <drivename>\n", argv[0]);
+		return 1;
+	}
+	const char* driveName = argv[1];
+	FS::Unmount(tout, driveName);
 	return 0;
 }
 

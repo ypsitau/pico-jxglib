@@ -135,7 +135,7 @@ bool ChangeCurDir(const char* dirName)
 	return true;
 }
 
-bool Format(const char* driveName, Printable& out)
+bool Format(Printable& out, const char* driveName)
 {
 	if (!IsLegalDriveName(driveName)) {
 		out.Printf("illegal drive name %s\n", driveName);
@@ -155,7 +155,22 @@ bool Format(const char* driveName, Printable& out)
 	}
 }
 
-bool Unmount(const char* driveName, Printable& out)
+bool Mount(Printable& out, const char* driveName)
+{
+	if (!IsLegalDriveName(driveName)) {
+		out.Printf("illegal drive name %s\n", driveName);
+		return false;
+	}
+	Drive* pDrive = FindDrive(driveName);
+	if (!pDrive) {
+		out.Printf("drive %s not found\n", driveName);
+		return false;
+	}
+	pDrive->Mount();
+	return true;
+}
+
+bool Unmount(Printable& out, const char* driveName)
 {
 	if (!IsLegalDriveName(driveName)) {
 		out.Printf("illegal drive name %s\n", driveName);

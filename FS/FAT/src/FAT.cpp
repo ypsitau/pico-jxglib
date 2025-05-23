@@ -111,18 +111,6 @@ Drive::Drive(const char* driveName) : FS::Drive("FAT", driveName), pdrv_{0}, pDr
 	if (pdrv_ >= FF_VOLUMES) ::panic("set FF_VOLUMES to more than %d", pdrv_ + 1);
 }
 
-bool Drive::Mount(MountMode mountMode)
-{
-	if (mountedFlag_) return true;
-	TCHAR path[16];
-	::snprintf(path, sizeof(path), "%d:", pdrv_);
-	if (::f_mount(&fatFs_, path, (mountMode == MountMode::Forced)? 1 : 0) == FR_OK) {
-		mountedFlag_ = true;
-		return true;
-	}
-	return false;
-}
-
 const char* Drive::GetFileSystemName()
 {
 	if (!Mount()) return "unmounted";
@@ -192,11 +180,11 @@ bool Drive::Format()
 {
 #if defined(FF_USE_MKFS)
 	MKFS_PARM opt {
-		fmt: FM_ANY,	// auto
-		n_fat: 0,		// default
-		align: 0,		// default
-		n_root: 0,		// default
-		au_size: 0		// default
+		fmt:		FM_ANY,	// auto
+		n_fat:		0,		// default
+		align:		0,		// default
+		n_root:		0,		// default
+		au_size:	0		// default
 	};
 	char path[16];
 	::snprintf(path, sizeof(path), "%d:", pdrv_);
@@ -205,6 +193,18 @@ bool Drive::Format()
 #else
 	return false;
 #endif
+}
+
+bool Drive::Mount()
+{
+	if (mountedFlag_) return true;
+	TCHAR path[16];
+	::snprintf(path, sizeof(path), "%d:", pdrv_);
+	if (::f_mount(&fatFs_, path, 1) == FR_OK) {	// mounts immediately
+		mountedFlag_ = true;
+		return true;
+	}
+	return false;
 }
 
 bool Drive::Unmount()

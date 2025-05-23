@@ -100,6 +100,14 @@ bool Drive::Format()
 	return ::lfs_format(&lfs_, &cfg_) == LFS_ERR_OK && ::lfs_mount(&lfs_, &cfg_) == LFS_ERR_OK;
 }
 
+bool Drive::Mount()
+{
+	if (mountedFlag_) return true;
+	if (::lfs_mount(&lfs_, &cfg_) != LFS_ERR_OK) return false;
+	mountedFlag_ = true;
+	return true;
+}
+
 bool Drive::Unmount()
 {
 	if (!mountedFlag_) return true;
@@ -118,14 +126,6 @@ uint64_t Drive::GetBytesUsed()
 	if (!Mount()) return 0;
 	lfs_ssize_t nBlocks = ::lfs_fs_size(&lfs_);
 	return (nBlocks < 0)? 0 : static_cast<uint64_t>(nBlocks) * cfg_.block_size;
-}
-
-bool Drive::Mount()
-{
-	if (mountedFlag_) return true;
-	if (::lfs_mount(&lfs_, &cfg_) != LFS_ERR_OK) return false;
-	mountedFlag_ = true;
-	return true;
 }
 
 FS::FileInfo* Drive::GetFileInfo(const char* pathName)
