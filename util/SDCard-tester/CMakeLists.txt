@@ -48,6 +48,8 @@ pico_enable_stdio_usb(SDCard-tester 0)
 target_link_libraries(SDCard-tester
 	pico_stdlib
 	jxglib_Serial
+	jxglib_FAT_SDCard
+	jxglib_ShellCmd_FS
 	jxglib_ShellCmd_SDCard)
 
 # Add the standard include files to the build
@@ -58,3 +60,5 @@ target_include_directories(SDCard-tester PRIVATE
 pico_add_extra_outputs(SDCard-tester)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+
+jxglib_configure_FAT(SDCard-tester FF_VOLUMES 1)
