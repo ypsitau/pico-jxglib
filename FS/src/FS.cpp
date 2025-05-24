@@ -323,10 +323,11 @@ const char* Drive::RegulatePathName(char* pathNameBuff, int lenBuff, const char*
 {
 	pathName = SkipDriveName(pathName);
 	if (pathName[0] == '/') {
-		if (::snprintf(pathNameBuff, lenBuff, "%s", pathName) >= lenBuff) ::panic("Drive::RegulatePathName");
+		pathNameBuff[0] = '\0';
 	} else {
-		if (::snprintf(pathNameBuff, lenBuff, "%s%s", dirNameCur_, pathName) >= lenBuff) ::panic("Drive::RegulatePathName");
+		if (::snprintf(pathNameBuff, lenBuff, "%s", dirNameCur_) >= lenBuff) ::panic("Drive::RegulatePathName");
 	}
+	AppendPathName(pathNameBuff, lenBuff, pathName);
 	return pathNameBuff;
 }
 

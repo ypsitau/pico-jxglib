@@ -82,6 +82,10 @@ void test_AppendPathName()
 		{ "/dir",			"sub/file.txt",		"/dir/sub/file.txt",		},
 		{ "/dir",			"/file.txt",		"/dir/file.txt",			},
 		{ "/longdir",		"file.txt",			"/longdir/file.txt",		},
+		{ "",				"/",				"/",						},
+		{ "",				"/dir",				"/dir",						},
+		{ "",				"/sub/sub2",		"/sub/sub2",				},
+		{ "",				"/sub/sub2/..",		"/sub/",					},
 		// ".." cases
 		{ "/dir",			"..",				"/",						},
 		{ "/dir/sub",		"..",				"/dir/",					},
