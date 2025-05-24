@@ -12,6 +12,10 @@ target_include_directories(jxglib_LFS INTERFACE
 target_link_libraries(jxglib_LFS INTERFACE
 	jxglib_FS)
 
+target_compile_definitions(jxglib_LFS INTERFACE
+	LFS_NO_ERROR
+	LFS_NO_WARN)
+
 #------------------------------------------------------------------------------
 add_library(jxglib_LFS_Flash INTERFACE)
 
