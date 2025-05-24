@@ -49,6 +49,7 @@ target_link_libraries(test-Composite
     pico_stdlib
     jxglib_Serial
     jxglib_ShellCmd_FS
+    jxglib_ShellCmd_Flash
     jxglib_FAT_Flash
     jxglib_FAT_RAMDisk
     jxglib_FAT_SDCard
