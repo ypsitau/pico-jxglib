@@ -116,6 +116,13 @@ bool Drive::Unmount()
 	return true;
 }
 
+FS::FileInfo* Drive::GetFileInfo(const char* pathName)
+{
+	if (!Mount()) return nullptr;
+	std::unique_ptr<FileInfo> pFileInfo(new FileInfo());
+	return (::lfs_stat(&lfs_, pathName, &pFileInfo->GetEntity()) == LFS_ERR_OK)? pFileInfo.release() : nullptr;
+}
+
 uint64_t Drive::GetBytesTotal()
 {
 	return static_cast<uint64_t>(cfg_.block_count) * cfg_.block_size;
@@ -126,13 +133,6 @@ uint64_t Drive::GetBytesUsed()
 	if (!Mount()) return 0;
 	lfs_ssize_t nBlocks = ::lfs_fs_size(&lfs_);
 	return (nBlocks < 0)? 0 : static_cast<uint64_t>(nBlocks) * cfg_.block_size;
-}
-
-FS::FileInfo* Drive::GetFileInfo(const char* pathName)
-{
-	if (!Mount()) return nullptr;
-	std::unique_ptr<FileInfo> pFileInfo(new FileInfo());
-	return (::lfs_stat(&lfs_, pathName, &pFileInfo->GetEntity()) == LFS_ERR_OK)? pFileInfo.release() : nullptr;
 }
 
 int Drive::Callback_read(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size)

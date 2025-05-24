@@ -8,7 +8,7 @@
 namespace jxglib::FS {
 
 //------------------------------------------------------------------------------
-// FS
+// Global Variables
 //------------------------------------------------------------------------------
 static Drive* pDriveHead = nullptr;
 static Drive* pDriveCur = nullptr;
@@ -74,28 +74,28 @@ bool SetDriveCur(const char* driveName)
 
 File* OpenFile(const char* fileName, const char* mode)
 {
-	char pathName[MaxLenPathName];
+	char pathName[MaxPath];
 	Drive* pDrive = FindDrive(fileName);
 	return pDrive? pDrive->OpenFile(pDrive->NativePathName(pathName, sizeof(pathName), fileName), mode) : nullptr;
 }
 
 Dir* OpenDir(const char* dirName)
 {
-	char pathName[MaxLenPathName];
+	char pathName[MaxPath];
 	Drive* pDrive = FindDrive(dirName);
 	return pDrive? pDrive->OpenDir(pDrive->NativePathName(pathName, sizeof(pathName), dirName)) : nullptr;
 }
 
 bool RemoveFile(const char* fileName)
 {
-	char pathName[MaxLenPathName];
+	char pathName[MaxPath];
 	Drive* pDrive = FindDrive(fileName);
 	return pDrive? pDrive->RemoveFile(pDrive->NativePathName(pathName, sizeof(pathName), fileName)) : false;
 }
 
 bool RenameFile(const char* fileNameOld, const char* fileNameNew)
 {
-	char pathNameOld[MaxLenPathName], pathNameNew[MaxLenPathName];
+	char pathNameOld[MaxPath], pathNameNew[MaxPath];
 	Drive* pDrive = FindDrive(fileNameOld);
 	return pDrive? pDrive->RenameFile(pDrive->NativePathName(pathNameOld, sizeof(pathNameOld), fileNameOld),
 				pDrive->NativePathName(pathNameNew, sizeof(pathNameNew), fileNameNew)) : false;
@@ -103,21 +103,21 @@ bool RenameFile(const char* fileNameOld, const char* fileNameNew)
 
 bool CreateDir(const char* dirName)
 {
-	char pathName[MaxLenPathName];
+	char pathName[MaxPath];
 	Drive* pDrive = FindDrive(dirName);
 	return pDrive? pDrive->CreateDir(pDrive->NativePathName(pathName, sizeof(pathName), dirName)) : false;
 }
 
 bool RemoveDir(const char* dirName)
 {
-	char pathName[MaxLenPathName];
+	char pathName[MaxPath];
 	Drive* pDrive = FindDrive(dirName);
 	return pDrive? pDrive->RemoveDir(pDrive->NativePathName(pathName, sizeof(pathName), dirName)) : false;
 }
 
 bool RenameDir(const char* dirNameOld, const char* dirNameNew)
 {
-	char pathNameOld[MaxLenPathName], pathNameNew[MaxLenPathName];
+	char pathNameOld[MaxPath], pathNameNew[MaxPath];
 	Drive* pDrive = FindDrive(dirNameOld);
 	return pDrive? pDrive->RenameDir(pDrive->NativePathName(pathNameOld, sizeof(pathNameOld), dirNameOld),
 			pDrive->NativePathName(pathNameNew, sizeof(pathNameNew), dirNameNew)) : false;
@@ -127,7 +127,7 @@ bool ChangeCurDir(const char* dirName)
 {
 	Drive* pDrive = FindDrive(dirName);
 	if (!pDrive) return false;
-	char pathName[MaxLenPathName];
+	char pathName[MaxPath];
 	dirName = pDrive->RegulatePathName(pathName, sizeof(pathName), dirName);
 	RefPtr<Dir> pDir(pDrive->OpenDir(dirName));
 	if (!pDir) return false;
@@ -146,8 +146,8 @@ bool Format(Printable& out, const char* driveName)
 		out.Printf("drive %s not found\n", driveName);
 		return false;
 	}
-	if (pDrive->Format()) {
-		out.Printf("drive %s formatted successfully\n", driveName);
+	if (pDrive->Unmount() && pDrive->Format() && pDrive->Mount()) {
+		out.Printf("drive %s formatted in %s\n", driveName, pDrive->GetFileSystemName());
 		return true;
 	} else {
 		out.Printf("failed to format drive %s\n", driveName);
@@ -187,7 +187,7 @@ bool Unmount(Printable& out, const char* driveName)
 
 FileInfo* GetFileInfo(const char* pathName)
 {
-	char pathNameBuff[MaxLenPathName];
+	char pathNameBuff[MaxPath];
 	Drive* pDrive = FindDrive(pathName);
 	if (!pDrive) return nullptr;
 	return pDrive->GetFileInfo(pDrive->NativePathName(pathNameBuff, sizeof(pathNameBuff), pathName));

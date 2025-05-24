@@ -13,7 +13,7 @@ class FileInfo;
 class Dir;
 class Drive;
 
-constexpr int MaxLenPathName = 256;
+constexpr int MaxPath = 256;
 
 //------------------------------------------------------------------------------
 // Functions
@@ -106,7 +106,7 @@ class Drive {
 private:
 	const char* formatName_;
 	const char* driveName_;
-	char dirNameCur_[FS::MaxLenPathName];
+	char dirNameCur_[MaxPath];
 	Drive* pDriveNext_;
 public:
 	Drive(const char* formatName, const char* driveName);

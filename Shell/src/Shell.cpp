@@ -115,31 +115,12 @@ void Shell::PrintHelp(Printable& printable)
 	}
 }
 
-//------------------------------------------------------------------------------
-// Shell::Cmd
-//------------------------------------------------------------------------------
-Shell::Cmd* Shell::Cmd::pCmdHead_ = nullptr;
-
-Shell::Cmd::Cmd(const char* name, const char* help) : name_{name}, help_{help}, pCmdNext_{nullptr}
-{
-	Cmd* pCmdPrev = nullptr;
-	for (Cmd* pCmd = pCmdHead_; pCmd; pCmd = pCmd->GetCmdNext()) {
-		if (::strcmp(name, pCmd->GetName()) <= 0) break;
-		pCmdPrev = pCmd;
-	}
-	if (pCmdPrev) {
-		SetCmdNext(pCmdPrev->GetCmdNext());
-		pCmdPrev->SetCmdNext(this);
-	} else {
-		SetCmdNext(pCmdHead_);
-		pCmdHead_ = this;
-	}
-}
-
 //-----------------------------------------------------------------------------
-// Shell::Cmd::Arg
+// Shell::Arg
 //-----------------------------------------------------------------------------
-bool Shell::Cmd::Arg::Parse(Printable& terr, int& argc, const char* argv[])
+const Shell::Arg Shell::Arg::None(nullptr, 0);
+
+bool Shell::Arg::Parse(Printable& terr, int& argc, const char* argv[])
 {
 	for (int iArg = 1; iArg < argc; ) {
 		if (argv[iArg][0] == '-') {
@@ -201,7 +182,7 @@ bool Shell::Cmd::Arg::Parse(Printable& terr, int& argc, const char* argv[])
 	return true;	
 }
 
-void Shell::Cmd::Arg::PrintHelp(Printable& tout) const
+void Shell::Arg::PrintHelp(Printable& tout) const
 {
 	int lenMax = 0;
 	char str[80];
@@ -218,12 +199,12 @@ void Shell::Cmd::Arg::PrintHelp(Printable& tout) const
 	}
 }
 
-bool Shell::Cmd::Arg::GetBool(const char* longName) const
+bool Shell::Arg::GetBool(const char* longName) const
 {
 	return !!FindOptValue(longName);
 }
 
-bool Shell::Cmd::Arg::GetString(const char* longName, const char** pValue) const
+bool Shell::Arg::GetString(const char* longName, const char** pValue) const
 {
 	const OptValue* pOptValue = FindOptValue(longName);
 	if (pOptValue) {
@@ -233,7 +214,7 @@ bool Shell::Cmd::Arg::GetString(const char* longName, const char** pValue) const
 	return false;
 }
 
-bool Shell::Cmd::Arg::GetInt(const char* longName, int* pValue) const
+bool Shell::Arg::GetInt(const char* longName, int* pValue) const
 {
 	const OptValue* pOptValue = FindOptValue(longName);
 	if (pOptValue) {
@@ -243,7 +224,7 @@ bool Shell::Cmd::Arg::GetInt(const char* longName, int* pValue) const
 	return false;
 }
 
-void Shell::Cmd::Arg::AddOptValue(const Opt* pOpt, const char* value)
+void Shell::Arg::AddOptValue(const Opt* pOpt, const char* value)
 {
 	if (!value) value = "";
 	if (pOptValueHead_) {
@@ -255,7 +236,7 @@ void Shell::Cmd::Arg::AddOptValue(const Opt* pOpt, const char* value)
 	}
 }
 
-const Shell::Cmd::Arg::OptValue* Shell::Cmd::Arg::FindOptValue(const char* longName) const
+const Shell::Arg::OptValue* Shell::Arg::FindOptValue(const char* longName) const
 {
 	for (const OptValue* pOptValue = pOptValueHead_.get(); pOptValue; pOptValue = pOptValue->GetNext()) {
 		if (pOptValue->GetOpt().CheckLongName(longName, nullptr)) return pOptValue;
@@ -264,9 +245,9 @@ const Shell::Cmd::Arg::OptValue* Shell::Cmd::Arg::FindOptValue(const char* longN
 }
 
 //-----------------------------------------------------------------------------
-// Shell::Cmd::Arg::Opt
+// Shell::Arg::Opt
 //-----------------------------------------------------------------------------
-bool Shell::Cmd::Arg::Opt::CheckLongName(const char* longName, const char** pValue) const
+bool Shell::Arg::Opt::CheckLongName(const char* longName, const char** pValue) const
 {
 	const char* p1 = longName;
 	const char* p2 = longName_;
@@ -280,12 +261,12 @@ bool Shell::Cmd::Arg::Opt::CheckLongName(const char* longName, const char** pVal
 	return true;
 }
 
-bool Shell::Cmd::Arg::Opt::CheckShortName(const char* shortName) const
+bool Shell::Arg::Opt::CheckShortName(const char* shortName) const
 {
 	return ::strcmp(shortName, shortName_) == 0;
 }
 
-void Shell::Cmd::Arg::Opt::MakeHelp(char* str, int len) const
+void Shell::Arg::Opt::MakeHelp(char* str, int len) const
 {
 	if (type_ == Type::Bool) {
 		if (shortName_[0] == '\0') {
@@ -299,6 +280,27 @@ void Shell::Cmd::Arg::Opt::MakeHelp(char* str, int len) const
 		} else {
 			::snprintf(str, len, "--%s=%s, -%s %s", longName_, helpValue_, shortName_, helpValue_);
 		}
+	}
+}
+
+//------------------------------------------------------------------------------
+// Shell::Cmd
+//------------------------------------------------------------------------------
+Shell::Cmd* Shell::Cmd::pCmdHead_ = nullptr;
+
+Shell::Cmd::Cmd(const char* name, const char* help) : name_{name}, help_{help}, pCmdNext_{nullptr}
+{
+	Cmd* pCmdPrev = nullptr;
+	for (Cmd* pCmd = pCmdHead_; pCmd; pCmd = pCmd->GetCmdNext()) {
+		if (::strcmp(name, pCmd->GetName()) <= 0) break;
+		pCmdPrev = pCmd;
+	}
+	if (pCmdPrev) {
+		SetCmdNext(pCmdPrev->GetCmdNext());
+		pCmdPrev->SetCmdNext(this);
+	} else {
+		SetCmdNext(pCmdHead_);
+		pCmdHead_ = this;
 	}
 }
 
