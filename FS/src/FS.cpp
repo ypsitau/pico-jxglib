@@ -219,6 +219,43 @@ const char* JoinPathName(char* pathName, const char* dirName, const char* fileNa
 	return pathName;
 }
 
+bool DoesMatchWildcard(const char* pattern, const char* str)
+{
+	const char* p = pattern;
+	const char* s = str;
+	for (;;) {
+		if (*p == '?') {
+			p++;
+			s++;
+		} else if (*p == '*') {
+			p++;
+			if (*p == '\0') return true;
+			if (*s == '.' && s == str) return false;
+			while (*s && *s != *p) s++;
+		} else if (::toupper(*p) == ::toupper(*s)) {
+			if (*p == '\0') break;
+			p++;
+			s++;
+		} else {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool DoesMatchElemName(const char* str1, const char* str2)
+{
+	for (;;) {
+		char ch1 = (*str1 == '/')? '\0' : *str1;
+		char ch2 = (*str2 == '/')? '\0' : *str2;
+		if (::toupper(ch1) != ::toupper(ch2)) return false;
+		if (ch1 == '\0') break;
+		str1++;
+		str2++;
+	}
+	return true;
+}
+
 //------------------------------------------------------------------------------
 // FS::Drive
 //------------------------------------------------------------------------------

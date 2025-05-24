@@ -37,7 +37,10 @@ bool Mount(Printable& out, const char* driveName);
 bool Unmount(Printable& out, const char* driveName);
 FileInfo* GetFileInfo(const char* pathName);
 bool IsLegalDriveName(const char* driveName);
+
 const char* JoinPathName(char* pathName, const char* dirName, const char* fileName);
+bool DoesMatchWildcard(const char* pattern, const char* str);
+bool DoesMatchElemName(const char* str1, const char* str2);
 
 //------------------------------------------------------------------------------
 // FS::File
