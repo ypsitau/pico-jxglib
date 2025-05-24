@@ -221,6 +221,7 @@ FS::FileInfo* Drive::GetFileInfo(const char* pathName)
 {
 	if (!Mount()) return nullptr;
 	std::unique_ptr<FileInfo> pFileInfo(new FileInfo());
+	// f_stat() fails when given with a root directory
 	return (::f_stat(pathName, &pFileInfo->GetEntity()) == FR_OK)? pFileInfo.release() : nullptr;
 }
 

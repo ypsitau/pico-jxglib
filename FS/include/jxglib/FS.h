@@ -113,6 +113,7 @@ public:
 public:
 	Drive* GetNext() const { return pDriveNext_; }
 public:
+	bool IsDirectory(const char* pathName);
 	const char* GetDriveName() const { return driveName_; }
 	void SetDirNameCur(const char* dirName);
 	const char* GetDirNameCur() const { return dirNameCur_; }

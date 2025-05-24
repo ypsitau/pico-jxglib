@@ -3,6 +3,7 @@
 //==============================================================================
 #include <string.h>
 #include <ctype.h>
+#include <memory>
 #include "jxglib/FS.h"
 
 namespace jxglib::FS {
@@ -128,11 +129,13 @@ bool ChangeCurDir(const char* dirName)
 	Drive* pDrive = FindDrive(dirName);
 	if (!pDrive) return false;
 	char pathName[MaxPath];
+	char pathNameNative[MaxPath];
 	dirName = pDrive->RegulatePathName(pathName, sizeof(pathName), dirName);
-	RefPtr<Dir> pDir(pDrive->OpenDir(dirName));
-	if (!pDir) return false;
-	pDrive->SetDirNameCur(dirName);
-	return true;
+	if (pDrive->IsDirectory(pDrive->NativePathName(pathNameNative, sizeof(pathNameNative), dirName))) {
+		pDrive->SetDirNameCur(dirName);
+		return true;
+	}
+	return false;
 }
 
 bool Format(Printable& out, const char* driveName)
@@ -233,6 +236,12 @@ Drive::Drive(const char* formatName, const char* driveName) :
 	} else {
 		pDriveHead = this;
 	}
+}
+
+bool Drive::IsDirectory(const char* pathName)
+{
+	RefPtr<Dir> pDir(OpenDir(pathName));
+	return !!pDir;
 }
 
 void Drive::SetDirNameCur(const char* dirName)
