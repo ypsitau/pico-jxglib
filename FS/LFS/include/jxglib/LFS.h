@@ -26,6 +26,7 @@ public:
 public:
 	lfs_file_t* GetEntity() { return &file_; }
 	const lfs_file_t* GetEntity() const { return &file_; }
+	void SetOpenedFlag(bool openedFlag = true) { openedFlag_ = openedFlag; }
 public:
 	// virtual functions of Stream
 	virtual int Read(void* buff, int bytesBuff) override;

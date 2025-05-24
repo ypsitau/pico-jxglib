@@ -51,19 +51,6 @@ const char* SkipDriveName(const char* pathName)
 	return pathName;
 }
 
-const char* ExtractDriveName(const char* pathName, char* driveName, int lenMax)
-{
-	driveName[0] = '\0';
-	for (const char* p = pathName; *p; p++) {
-		if (*p == ':') {
-			int len = ChooseMin(p - pathName, lenMax - 1);
-			::memcpy(driveName, pathName, len);
-			driveName[len] = '\0';
-		}
-	}
-	return driveName;
-}
-
 bool SetDriveCur(const char* driveName)
 {
 	if (!IsLegalDriveName(driveName)) return false;
@@ -73,11 +60,26 @@ bool SetDriveCur(const char* driveName)
 	return true;
 }
 
-File* OpenFile(const char* fileName, const char* mode)
+File* OpenFile(const char* fileName, const char* mode, Drive* pDrive)
 {
 	char pathName[MaxPath];
-	Drive* pDrive = FindDrive(fileName);
+	if (!pDrive) pDrive = FindDrive(fileName);
 	return pDrive? pDrive->OpenFile(pDrive->NativePathName(pathName, sizeof(pathName), fileName), mode) : nullptr;
+}
+
+File* OpenFileForCopy(const char* fileNameSrc, const char* fileNameDst)
+{
+	if (FS::IsDirectory(fileNameDst)) {
+		char fileNameBuff[MaxPath];
+		Drive* pDrive = FindDrive(fileNameDst);
+		if (!pDrive) return nullptr;
+		fileNameDst = SkipDriveName(fileNameDst);
+		pDrive->RegulatePathName(fileNameBuff, sizeof(fileNameBuff), fileNameDst);
+		AppendPathName(fileNameBuff, sizeof(fileNameBuff), ExtractFileName(fileNameSrc));
+		return OpenFile(fileNameBuff, "w", pDrive);
+	} else {
+		return OpenFile(fileNameDst, "w");
+	}
 }
 
 Dir* OpenDir(const char* dirName)
@@ -136,6 +138,14 @@ bool ChangeCurDir(const char* dirName)
 		return true;
 	}
 	return false;
+}
+
+bool IsDirectory(const char* pathName)
+{
+	char pathNameBuff[MaxPath];
+	Drive* pDrive = FindDrive(pathName);
+	if (!pDrive) return false;
+	return pDrive->IsDirectory(pDrive->NativePathName(pathNameBuff, sizeof(pathNameBuff), pathName));
 }
 
 bool Format(Printable& out, const char* driveName)
@@ -206,6 +216,29 @@ bool IsLegalDriveName(const char* driveName)
 		}
 	}
 	return false;
+}
+
+const char* ExtractDriveName(const char* pathName, char* driveName, int lenMax)
+{
+	driveName[0] = '\0';
+	for (const char* p = pathName; *p; p++) {
+		if (*p == ':') {
+			int len = ChooseMin(p - pathName, lenMax - 1);
+			::memcpy(driveName, pathName, len);
+			driveName[len] = '\0';
+		}
+	}
+	return driveName;
+}
+
+const char* ExtractFileName(const char* pathName)
+{
+	const char* p = pathName;
+	const char* fileName = nullptr;
+	for ( ; *p; p++) {
+		if (*p == '/') fileName = p + 1; // remember the start of the file name
+	}
+	return fileName? fileName : pathName; // return the last part or the whole path if no slashes
 }
 
 const char* AppendPathName(char* pathName, int lenMax, const char* pathNameSub)

@@ -55,7 +55,11 @@ FS::File* Drive::OpenFile(const char* fileName, const char* mode)
 	} else {
 		flags = LFS_O_RDONLY;
 	}
-	return (::lfs_file_open(&lfs_, pFile->GetEntity(), fileName, flags) == LFS_ERR_OK)? pFile.release() : nullptr;
+	if (::lfs_file_open(&lfs_, pFile->GetEntity(), fileName, flags) == LFS_ERR_OK) {
+		pFile->SetOpenedFlag();
+		return pFile.release();
+	}
+	return nullptr;	
 }
 
 FS::Dir* Drive::OpenDir(const char* dirName)
@@ -158,7 +162,7 @@ int Drive::Callback_sync(const struct lfs_config* cfg)
 //------------------------------------------------------------------------------
 // LFS::File
 //------------------------------------------------------------------------------
-File::File(FS::Drive& drive, lfs_t& lfs) : FS::File(drive), lfs_(lfs), openedFlag_{true}
+File::File(FS::Drive& drive, lfs_t& lfs) : FS::File(drive), lfs_(lfs), openedFlag_{false}
 {
 }
 
