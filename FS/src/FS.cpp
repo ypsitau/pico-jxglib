@@ -208,14 +208,37 @@ bool IsLegalDriveName(const char* driveName)
 	return false;
 }
 
-const char* JoinPathName(char* pathName, const char* dirName, const char* fileName)
+const char* AppendPathName(char* pathName, int lenMax, const char* pathNameSub)
 {
-	::strcpy(pathName, dirName);
 	int len = ::strlen(pathName);
-	if (len > 0 && pathName[len - 1] != '/') {
-		pathName[len++] = '/';
+	const char* p = pathNameSub;
+	if (len > 0) {
+		if (pathName[len - 1] != '/' && len < lenMax) pathName[len++] = '/';
+		while (*p == '/') p++;
 	}
-	::strcpy(pathName + len, fileName);
+	while (*p) {
+		if (DoesMatchElemName(p, ".")) {
+			p += 1;
+			while (*p == '/') p++;
+		} else if (DoesMatchElemName(p, "..")) {
+			p += 2;
+			if (len == 1 && pathName[0] == '/') {
+				// nothing to do
+			} else if (len > 0) {
+				if (pathName[len - 1] == '/') len--;
+				while (len > 0 && pathName[len - 1] != '/') len--;
+			}
+			while (*p == '/') p++;
+		} else {
+			for ( ; len < lenMax && *p && *p != '/'; len++, p++) pathName[len] = *p;
+			if (*p == '/') {
+				while (*p == '/') p++;
+				if (len < lenMax) pathName[len++] = '/';
+			}
+		}
+	}
+	if (len >= lenMax) ::panic("FS::AppendPathName");
+	pathName[len] = '\0';
 	return pathName;
 }
 
@@ -243,15 +266,15 @@ bool DoesMatchWildcard(const char* pattern, const char* str)
 	return true;
 }
 
-bool DoesMatchElemName(const char* str1, const char* str2)
+bool DoesMatchElemName(const char* elemName1, const char* elemName2)
 {
 	for (;;) {
-		char ch1 = (*str1 == '/')? '\0' : *str1;
-		char ch2 = (*str2 == '/')? '\0' : *str2;
+		char ch1 = (*elemName1 == '/')? '\0' : *elemName1;
+		char ch2 = (*elemName2 == '/')? '\0' : *elemName2;
 		if (::toupper(ch1) != ::toupper(ch2)) return false;
 		if (ch1 == '\0') break;
-		str1++;
-		str2++;
+		elemName1++;
+		elemName2++;
 	}
 	return true;
 }

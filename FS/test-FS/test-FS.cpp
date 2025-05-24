@@ -13,7 +13,7 @@ void test_DoesMatchWildcard()
 		const char* pattern;
 		const char* str;
 		bool expected;
-	} cases[] = {
+	} testCases[] = {
 		{ "file.txt",	"file.txt",							true	},
 		{ "file.*",		"file.txt",							true	},
 		{ "*.txt",		"file.txt",							true	},
@@ -58,15 +58,62 @@ void test_DoesMatchWildcard()
 		{ "a?c",		"ac",								false	},
 	};
 
-	for (const auto& tc : cases) {
-		bool result = FS::DoesMatchWildcard(tc.pattern, tc.str);
-		::printf("%-16s %-16s expected:%-5s result:%-5s%s\n", tc.pattern, tc.str,
-			tc.expected? "true" : "false", result? "true" : "false", (result == tc.expected) ? "" : " ***");
+	for (const auto& testCase : testCases) {
+		bool result = FS::DoesMatchWildcard(testCase.pattern, testCase.str);
+		::printf("%-16s %-16s expected:%-5s result:%-5s%s\n", testCase.pattern, testCase.str,
+			testCase.expected? "true" : "false", result? "true" : "false", (result == testCase.expected) ? "" : " ***");
 	}
 }
+
+void test_AppendPathName()
+{
+	struct TestCase {
+		const char* base;
+		const char* sub;
+		const char* expected;
+	} testCases[] = {
+		{ "/dir",			"file.txt",			"/dir/file.txt",			},
+		{ "/dir/",			"file.txt",			"/dir/file.txt",			},
+		{ "/dir/sub",		"file.txt",			"/dir/sub/file.txt",		},
+		{ "/dir/sub/",		"file.txt",			"/dir/sub/file.txt",		},
+		{ "/",				"file.txt",			"/file.txt",				},
+		{ "/dir",			"",					"/dir/"						},
+		{ "/",				"",					"/",						},
+		{ "/dir",			"sub/file.txt",		"/dir/sub/file.txt",		},
+		{ "/dir",			"/file.txt",		"/dir/file.txt",			},
+		{ "/longdir",		"file.txt",			"/longdir/file.txt",		},
+		// ".." cases
+		{ "/dir",			"..",				"/",						},
+		{ "/dir/sub",		"..",				"/dir/",					},
+		{ "/dir",			"../file.txt",		"/file.txt",				},
+		{ "/dir/sub",		"../..",			"/",						},
+		{ "/",				"..",				"/",						},
+		// "." cases
+		{ "/dir",			".",				"/dir/",					},
+		{ "/dir/sub",		".",				"/dir/sub/",				},
+		{ "/dir",			"./file.txt",		"/dir/file.txt",			},
+		{ "/dir/sub",		"./..",				"/dir/",					},
+		// ".." in the middle of sub
+		{ "/dir",			"sub/../file.txt",	"/dir/file.txt",			},
+		{ "/dir",			"sub/..",			"/dir/",					},
+		{ "/dir",			"sub/../..",		"/",						},
+		{ "/dir",			"sub/../other.txt",	"/dir/other.txt",	},
+		{ "/dir",			"sub/../sub2/..",	"/dir/",					},
+	};
+	char buff[64];
+	for (const auto& testCase : testCases) {
+		::memset(buff, 0, sizeof(buff));
+		::strncpy(buff, testCase.base, sizeof(buff) - 1);
+		const char* ret = FS::AppendPathName(buff, sizeof(buff), testCase.sub);
+		bool ok = (ret != nullptr) && (::strcmp(buff, testCase.expected) == 0);
+		::printf("%-14s %-20s -> %-28s%s\n", testCase.base, testCase.sub, buff, ok? "" : " ***");
+	}
+}
+
 int main()
 {
 	::stdio_init_all();
 	test_DoesMatchWildcard();
+	test_AppendPathName();
 	for (;;) ::tight_loop_contents();
 }

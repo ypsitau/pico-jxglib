@@ -38,9 +38,9 @@ bool Unmount(Printable& out, const char* driveName);
 FileInfo* GetFileInfo(const char* pathName);
 bool IsLegalDriveName(const char* driveName);
 
-const char* JoinPathName(char* pathName, const char* dirName, const char* fileName);
+const char* AppendPathName(char* pathName, int lenMax, const char* pathNameSub);
 bool DoesMatchWildcard(const char* pattern, const char* str);
-bool DoesMatchElemName(const char* str1, const char* str2);
+bool DoesMatchElemName(const char* elemName1, const char* elemName2);
 
 //------------------------------------------------------------------------------
 // FS::File
