@@ -125,6 +125,10 @@ public:
 	class ComplementProvider : public Terminal::ComplementProvider {
 	private:
 		RefPtr<FS::Dir> pDir_;
+		char fileNameFirst_[FS::MaxPath];
+		int nItemsReturned_;
+	public:
+		ComplementProvider() : nItemsReturned_{0} {}
 	public:
 		// virtual functions of Terminal::ComplementProvider
 		virtual void StartComplement() override;

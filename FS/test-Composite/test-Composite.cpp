@@ -44,7 +44,7 @@ int main()
 	FAT::Flash		drive_D("d", 0x101c'0000, 0x0004'0000); 	// Flash address and size 256kB
 	FAT::SDCard		drive_E("e", spi0, 10'000'000, {CS: GPIO5});// SDCard on SPI0 10MHz
 	FAT::RAMDisk	drive_F("f", 0x2'0000);						// RAM Disk 128kB
-	//-------------------------------------------------------------------------
+#if 0
 	USBHost::Initialize();
 	USBHost::Keyboard keyboard;
 	::spi_init(spi1, 125 * 1000 * 1000);
@@ -55,9 +55,9 @@ int main()
 	terminal.Initialize().AttachDisplay(display.Initialize(Display::Dir::Rotate90))
 		.AttachKeyboard(keyboard.SetCapsLockAsCtrl()).SetFont(Font::shinonome16);
 	Shell::AttachTerminal(terminal);
-	//-------------------------------------------------------------------------
-	//Serial::Terminal terminal;
-	//Shell::AttachTerminal(terminal.Initialize());
-	//-------------------------------------------------------------------------
+#else
+	Serial::Terminal terminal;
+	Shell::AttachTerminal(terminal.Initialize());
+#endif
 	for (;;) Tickable::Tick();
 }

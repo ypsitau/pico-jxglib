@@ -322,6 +322,8 @@ void Shell::ComplementProvider::StartComplement()
 {
 	pDir_.reset(FS::OpenDir(""));
 	if (pDir_) pDir_->EnableRewind();
+	fileNameFirst_[0] = '\0';
+	nItemsReturned_ = 0;
 }
 
 void Shell::ComplementProvider::EndComplement()
@@ -333,7 +335,18 @@ const char* Shell::ComplementProvider::NextComplement()
 {
 	if (!pDir_) return nullptr;
 	FS::FileInfo* pFileInfo;
-	return pDir_->Read(&pFileInfo)? pFileInfo->GetName() : nullptr;
+	while (pDir_->Read(&pFileInfo)) {
+		if (StartsWithICase(pFileInfo->GetName(), GetHint())) {
+			nItemsReturned_++;
+			return pFileInfo->GetName();
+		} else if (fileNameFirst_[0] == '\0') {
+			::strcpy(fileNameFirst_, pFileInfo->GetName());
+		} else if (::strcmp(fileNameFirst_, pFileInfo->GetName()) == 0) {
+			if (nItemsReturned_ == 0) return nullptr;
+			nItemsReturned_ = 0;
+		}
+	}
+	return nullptr;
 }
 
 }
