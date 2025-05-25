@@ -66,6 +66,7 @@ private:
 	DIR dir_;
 	FileInfo fileInfo_;
 	BYTE fattribSkip_;
+	int nItems_;
 public:
 	Dir(FS::Drive& drive, bool includeHidden = false, bool includeSystem = false);
 	~Dir();

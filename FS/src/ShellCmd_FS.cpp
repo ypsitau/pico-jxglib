@@ -42,24 +42,6 @@ ShellCmd(cp, "copies a file")
 		tout.Printf("failed to open %s\n", fileNameSrc);
 		return 1;
 	}
-#if 0
-	RefPtr<FS::File> pFileDst;
-	if (FS::IsDirectory(fileNameDst)) {
-		// If the destination is a directory, append the source file name to it
-		char fileNameBuff[FS::MaxPath];
-		FS::Drive* pDrive = FS::FindDrive(fileNameDst);
-		if (!pDrive) {
-			tout.Printf("failed open %s\n", fileNameDst);
-			return 1;
-		}
-		fileNameDst = FS::SkipDriveName(fileNameDst);
-		pDrive->RegulatePathName(fileNameBuff, sizeof(fileNameBuff), fileNameDst);
-		FS::AppendPathName(fileNameBuff, sizeof(fileNameBuff), FS::ExtractFileName(fileNameSrc));
-		pFileDst.reset(FS::OpenFile(fileNameBuff, "w", pDrive));
-	} else {
-		pFileDst.reset(FS::OpenFile(fileNameDst, "w"));
-	}
-#endif
 	RefPtr<FS::File> pFileDst(FS::OpenFileForCopy(fileNameSrc, fileNameDst));
 	if (!pFileDst) {
 		tout.Printf("failed to open %s\n", fileNameDst);

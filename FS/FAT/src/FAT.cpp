@@ -67,7 +67,8 @@ bool File::Sync()
 // FAT::Dir
 //------------------------------------------------------------------------------
 Dir::Dir(FS::Drive& drive, bool includeHidden, bool includeSystem) : FS::Dir(drive),
-	fattribSkip_{static_cast<BYTE>((includeHidden? 0 : AM_HID) | (includeSystem? 0 : AM_SYS))}
+	fattribSkip_{static_cast<BYTE>((includeHidden? 0 : AM_HID) | (includeSystem? 0 : AM_SYS))},
+	nItems_{0}
 {
 }
 
@@ -82,8 +83,17 @@ bool Dir::Read(FS::FileInfo** ppFileInfo)
 	*ppFileInfo = &fileInfo_;
 	for (;;) {
 		if (::f_readdir(&dir_, &filInfo) != FR_OK) return false;
-		if (filInfo.fname[0] == '\0') return false;		// end of directory
-		if (!(filInfo.fattrib & fattribSkip_)) break;
+		if (filInfo.fname[0] == '\0') {	// end of directory
+			if (rewindFlag_ && nItems_ > 0) {
+				::f_rewinddir(&dir_);
+				nItems_ = 0;
+			} else {
+				return false;
+			}
+		} else if (!(filInfo.fattrib & fattribSkip_)) {
+			nItems_++;
+			break;
+		}
 	}
 	return true;
 }
@@ -221,7 +231,7 @@ FS::FileInfo* Drive::GetFileInfo(const char* pathName)
 {
 	if (!Mount()) return nullptr;
 	std::unique_ptr<FileInfo> pFileInfo(new FileInfo());
-	// f_stat() fails when given with a root directory
+	// f_stat() fails when given with a root directory. See https://elm-chan.org/fsw/ff/doc/stat.html.
 	return (::f_stat(pathName, &pFileInfo->GetEntity()) == FR_OK)? pFileInfo.release() : nullptr;
 }
 

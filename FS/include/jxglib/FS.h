@@ -94,12 +94,14 @@ public:
 	DeclareReferable(Dir);
 protected:
 	const Drive& drive_;
+	bool rewindFlag_;
 public:
-	Dir(const Drive& drive) : drive_(drive) {}
+	Dir(const Drive& drive) : drive_(drive), rewindFlag_{false} {}
 protected:
 	virtual ~Dir() { Close(); }
 public:
 	const Drive& GetDrive() const { return drive_; }
+	void EnableRewind() { rewindFlag_ = true; }
 public:
 	virtual bool Read(FileInfo** ppFileInfo) = 0;
 	virtual void Close() {}

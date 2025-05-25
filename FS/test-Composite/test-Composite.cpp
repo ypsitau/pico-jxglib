@@ -10,6 +10,25 @@
 
 using namespace jxglib;
 
+ShellCmd_Named(test_rewind, "test-rewind", "tests rewind of directory")
+{
+	RefPtr<FS::Dir> pDir(FS::OpenDir("."));
+	if (!pDir) {
+		tout.Printf("failed to open current directory\n");
+		return 1;
+	}
+	pDir->EnableRewind();
+	FS::FileInfo* pFileInfo;
+	for (int i = 0; i < 20 && pDir->Read(&pFileInfo); i++) {
+		if (pFileInfo->IsDirectory()) {
+			tout.Printf("%-20s <DIR>\n", pFileInfo->GetName());
+		} else if (pFileInfo->IsFile()) {
+			tout.Printf("%-20s %d\n", pFileInfo->GetName(), pFileInfo->GetSize());
+		}
+	}
+	return 0;
+}
+
 int main()
 {
 	::stdio_init_all();
