@@ -13,7 +13,7 @@ Shell Shell::Instance;
 
 Shell::Shell() : stat_{Stat::Begin}, pTerminal_{&TerminalDumb::Instance}, pCmdRunning_{nullptr}
 {
-	::strcpy(prompt_, ">");
+	::strcpy(prompt_, "%d%w>");
 }
 
 bool Shell::RunCmd(char* line)
@@ -69,13 +69,8 @@ void Shell::OnTick()
 {
 	switch (stat_) {
 	case Stat::Begin: {
-		GetTerminal().ReadLine_Begin(prompt_);
-		//char prompt[FS::MaxPath];
-		//const char* driveName;
-		//const char* dirName;
-		//FS::GetDirNameCur(&driveName, &dirName);
-		//::snprintf(prompt, sizeof(prompt), "%s:%s$ ", driveName, dirName);
-		//GetTerminal().ReadLine_Begin(prompt);
+		char prompt[256];
+		GetTerminal().ReadLine_Begin(MakePrompt(prompt, sizeof(prompt)));
 		stat_ = Stat::Prompt;
 		break;
 	}
@@ -107,6 +102,57 @@ void Shell::SetPrompt_(const char* prompt)
 	size_t len = ChooseMin(sizeof(prompt_) - 1, ::strlen(prompt));
 	::memcpy(prompt_, prompt, len);
 	prompt_[len] = '\0';
+}
+
+const char* Shell::MakePrompt(char* prompt, int lenMax)
+{
+	enum class State { Normal, Variable, };
+	State stat = State::Normal;
+	int i = 0;
+	for (const char* p = prompt_; *p && lenMax > 0; p++, lenMax--) {
+		char ch = *p;
+		switch (stat) {
+		case State::Normal: {
+			if (ch == '%') {
+				stat = State::Variable;
+			} else {
+				if (i < lenMax) prompt[i++] = ch;
+			}
+			break;
+		}
+		case State::Variable: {
+			if (ch == 'd') {
+				FS::Drive* pDrive = FS::GetDriveCur();
+				if (pDrive) {
+					int len = ChooseMin(::strlen(pDrive->GetDriveName()), lenMax - i);
+					::memcpy(prompt + i, pDrive->GetDriveName(), len);
+					i += len;
+					if (i < lenMax) prompt[i++] = ':';
+				}
+			} else if (ch == 'w') {
+				FS::Drive* pDrive = FS::GetDriveCur();
+				if (pDrive) {
+					int len = ChooseMin(::strlen(pDrive->GetDirNameCur()), lenMax - i);
+					::memcpy(prompt + i, pDrive->GetDirNameCur(), len);
+					if (len > 1 && prompt[i + len - 1] == '/') {
+						prompt[i + len - 1] = '\0'; // remove trailing slash
+						len--;
+					}
+					i += len;
+				}
+			} else {
+				// nothing to do, just ignore the variable
+			}
+			stat = State::Normal;
+			break;
+		}
+		default:
+			break;
+		}
+	}
+	if (i >= lenMax) ::panic("Shell::MakePrompt: prompt buffer overflow");
+	prompt[i++] = '\0';
+	return prompt;
 }
 
 void Shell::AttachTerminal_(Terminal& terminal)

@@ -177,6 +177,7 @@ public:
 private:
 	const char* GetPrompt_() const { return prompt_; }
 	void SetPrompt_(const char* prompt);
+	const char* MakePrompt(char* prompt, int lenMax);
 	void AttachTerminal_(Terminal& terminal);
 public:
 	// virtual functions of Tickable
