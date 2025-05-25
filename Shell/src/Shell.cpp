@@ -316,32 +316,60 @@ Shell::Cmd::Cmd(const char* name, const char* help) : name_{name}, help_{help}, 
 }
 
 //------------------------------------------------------------------------------
+// Shell::ItemProvider_Cmd
+//------------------------------------------------------------------------------
+const char* Shell::ItemProvider_Cmd::NextItemName()
+{
+	if (!pCmd_) return nullptr;
+	const char* itemName = pCmd_->GetName();
+	pCmd_ = pCmd_->GetCmdNext();
+	if (!pCmd_) pCmd_ = Cmd::GetCmdHead(); // loop back to the head
+	return itemName;
+}
+
+//------------------------------------------------------------------------------
+// Shell::ItemProvider_Dir
+//------------------------------------------------------------------------------
+const char* Shell::ItemProvider_Dir::NextItemName()
+{
+	FS::FileInfo* pFileInfo = nullptr;
+	return pDir_->Read(&pFileInfo)? pFileInfo->GetName() : nullptr;
+}
+
+//------------------------------------------------------------------------------
 // Shell::ComplementProvider
 //------------------------------------------------------------------------------
 void Shell::ComplementProvider::StartComplement()
 {
-	pDir_.reset(FS::OpenDir(""));
-	if (pDir_) pDir_->EnableRewind();
-	fileNameFirst_[0] = '\0';
+	if (GetIByte() == 0) {
+		pItemProvider_.reset(new ItemProvider_Cmd());
+	} else {
+		RefPtr<FS::Dir> pDir(FS::OpenDir(""));
+		if (pDir) {
+			pDir->EnableRewind();
+			pItemProvider_.reset(new ItemProvider_Dir(pDir.release()));
+		}
+	}
+	itemNameFirst_[0] = '\0';
 	nItemsReturned_ = 0;
 }
 
 void Shell::ComplementProvider::EndComplement()
 {
-	pDir_.reset();
+	pItemProvider_.reset();
 }
 
 const char* Shell::ComplementProvider::NextComplement()
 {
-	if (!pDir_) return nullptr;
-	FS::FileInfo* pFileInfo;
-	while (pDir_->Read(&pFileInfo)) {
-		if (StartsWithICase(pFileInfo->GetName(), GetHint())) {
+	if (!pItemProvider_) return nullptr;
+	const char* itemName;
+	while (itemName = pItemProvider_->NextItemName()) {
+		if (StartsWithICase(itemName, GetHint())) {
 			nItemsReturned_++;
-			return pFileInfo->GetName();
-		} else if (fileNameFirst_[0] == '\0') {
-			::strcpy(fileNameFirst_, pFileInfo->GetName());
-		} else if (::strcmp(fileNameFirst_, pFileInfo->GetName()) == 0) {
+			return itemName;
+		} else if (itemNameFirst_[0] == '\0') {
+			::strcpy(itemNameFirst_, itemName);
+		} else if (::strcmp(itemNameFirst_, itemName) == 0) {
 			if (nItemsReturned_ == 0) return nullptr;
 			nItemsReturned_ = 0;
 		}

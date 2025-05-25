@@ -122,10 +122,31 @@ public:
 	public:
 		virtual int Run(Readable& tin, Printable& tout, Printable& terr, int argc, char* argv[]) = 0;
 	};
-	class ComplementProvider : public Terminal::ComplementProvider {
+	class ItemProvider {
+	public:
+		virtual const char* NextItemName() = 0;
+	};
+	class ItemProvider_Cmd : public ItemProvider {
+	private:
+		const Cmd* pCmd_;
+	public:
+		ItemProvider_Cmd() : pCmd_{Cmd::GetCmdHead()} {}
+	public:
+		virtual const char* NextItemName() override;
+	};
+	class ItemProvider_Dir : public ItemProvider {
 	private:
 		RefPtr<FS::Dir> pDir_;
-		char fileNameFirst_[FS::MaxPath];
+	public:
+		ItemProvider_Dir(FS::Dir* pDir) : pDir_{pDir} {}	
+	public:
+		virtual const char* NextItemName() override;
+	};
+	class ComplementProvider : public Terminal::ComplementProvider {
+	private:
+		//RefPtr<FS::Dir> pDir_;
+		std::unique_ptr<ItemProvider> pItemProvider_;
+		char itemNameFirst_[FS::MaxPath];
 		int nItemsReturned_;
 	public:
 		ComplementProvider() : nItemsReturned_{0} {}
