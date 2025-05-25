@@ -246,7 +246,6 @@ bool Dir::Read(FS::FileInfo** ppFileInfo)
 		}
 	}
 	return true;
-	//return ::lfs_dir_read(&lfs_, &dir_, &fileInfo_.GetEntity()) > 0;
 }
 
 void Dir::Close()
