@@ -85,7 +85,7 @@ public:
 		virtual void EndComplement() = 0;
 		virtual const char* NextComplement() = 0;
 	};
-private:
+protected:
 	LineEditor lineEditor_;
 	bool editableFlag_;
 	Keyboard* pKeyboard_;
@@ -129,7 +129,7 @@ public:
 	virtual Terminal& Edit_DeleteToEnd() = 0;
 	virtual Terminal& Edit_MoveHistoryPrev() = 0;
 	virtual Terminal& Edit_MoveHistoryNext() = 0;
-	virtual Terminal& Edit_Complement();
+	virtual Terminal& Edit_Complement() = 0;
 };
 
 //------------------------------------------------------------------------------
@@ -142,17 +142,17 @@ public:
 	TerminalDumb();
 public:
 	// virtual functions of Printable
-	virtual Printable& ClearScreen() { return *this; }
-	virtual Printable& RefreshScreen() { return *this; }
-	virtual Printable& Locate(int col, int row) { return *this; }
-	virtual Printable& PutChar(char ch) { return *this; }
-	virtual Printable& PutCharRaw(char ch) { return *this; }
-	virtual Printable& Print(const char* str) { return *this; }
-	virtual Printable& PrintRaw(const char* str) { return *this; }
-	virtual Printable& Println(const char* str = "") { return *this; }
-	virtual Printable& PrintlnRaw(const char* str = "") { return *this; }
-	virtual Printable& VPrintf(const char* format, va_list args) { return *this; }
-	virtual Printable& VPrintfRaw(const char* format, va_list args) { return *this; }
+	virtual Printable& ClearScreen() override { return *this; }
+	virtual Printable& RefreshScreen() override { return *this; }
+	virtual Printable& Locate(int col, int row) override { return *this; }
+	virtual Printable& PutChar(char ch) override { return *this; }
+	virtual Printable& PutCharRaw(char ch) override { return *this; }
+	virtual Printable& Print(const char* str) override { return *this; }
+	virtual Printable& PrintRaw(const char* str) override { return *this; }
+	virtual Printable& Println(const char* str = "") override { return *this; }
+	virtual Printable& PrintlnRaw(const char* str = "") override { return *this; }
+	virtual Printable& VPrintf(const char* format, va_list args) override { return *this; }
+	virtual Printable& VPrintfRaw(const char* format, va_list args) override { return *this; }
 public:
 	// virtual functions of Terminal
 	virtual Printable& GetPrintable() override { return *this; }
@@ -170,6 +170,7 @@ public:
 	virtual Terminal& Edit_DeleteToEnd() override { return *this; }
 	virtual Terminal& Edit_MoveHistoryPrev() override { return *this; }
 	virtual Terminal& Edit_MoveHistoryNext() override { return *this; }
+	virtual Terminal& Edit_Complement() override { return *this; }
 };
 
 }

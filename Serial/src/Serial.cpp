@@ -181,7 +181,7 @@ Terminal& Serial::Terminal::Edit_MoveHistoryNext()
 	return *this;
 }
 
-Terminal& Terminal::Edit_Complement()
+Terminal& Serial::Terminal::Edit_Complement()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (!pComplementProvider_) return *this;

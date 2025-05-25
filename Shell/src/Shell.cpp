@@ -69,14 +69,13 @@ void Shell::OnTick()
 {
 	switch (stat_) {
 	case Stat::Begin: {
-		//GetTerminal().ReadLine_Begin(prompt_);
-		//GetTerminal().ReadLine_Begin(FS::prompt_);
-		char prompt[FS::MaxPath];
-		const char* driveName;
-		const char* dirName;
-		FS::GetDirNameCur(&driveName, &dirName);
-		::snprintf(prompt, sizeof(prompt), "%s:%s$ ", driveName, dirName);
-		GetTerminal().ReadLine_Begin(prompt);
+		GetTerminal().ReadLine_Begin(prompt_);
+		//char prompt[FS::MaxPath];
+		//const char* driveName;
+		//const char* dirName;
+		//FS::GetDirNameCur(&driveName, &dirName);
+		//::snprintf(prompt, sizeof(prompt), "%s:%s$ ", driveName, dirName);
+		//GetTerminal().ReadLine_Begin(prompt);
 		stat_ = Stat::Prompt;
 		break;
 	}

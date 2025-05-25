@@ -42,20 +42,21 @@ public:
 	public:
 		// virtual functions of jxglib::Terminal
 		virtual Printable& GetPrintable() override { return *pPrintable_; }
-		virtual jxglib::Terminal& Edit_Begin();
-		virtual jxglib::Terminal& Edit_Finish(char chEnd = '\0');
-		virtual jxglib::Terminal& Edit_InsertChar(int ch);
-		virtual jxglib::Terminal& Edit_DeleteChar();
-		virtual jxglib::Terminal& Edit_Back();
-		virtual jxglib::Terminal& Edit_MoveForward();
-		virtual jxglib::Terminal& Edit_MoveBackward();
-		virtual jxglib::Terminal& Edit_MoveHome();
-		virtual jxglib::Terminal& Edit_MoveEnd();
-		virtual jxglib::Terminal& Edit_Clear();
-		virtual jxglib::Terminal& Edit_DeleteToHome();
-		virtual jxglib::Terminal& Edit_DeleteToEnd();
-		virtual jxglib::Terminal& Edit_MoveHistoryPrev();
-		virtual jxglib::Terminal& Edit_MoveHistoryNext();
+		virtual jxglib::Terminal& Edit_Begin() override;
+		virtual jxglib::Terminal& Edit_Finish(char chEnd = '\0') override;
+		virtual jxglib::Terminal& Edit_InsertChar(int ch) override;
+		virtual jxglib::Terminal& Edit_DeleteChar() override;
+		virtual jxglib::Terminal& Edit_Back() override;
+		virtual jxglib::Terminal& Edit_MoveForward() override;
+		virtual jxglib::Terminal& Edit_MoveBackward() override;
+		virtual jxglib::Terminal& Edit_MoveHome() override;
+		virtual jxglib::Terminal& Edit_MoveEnd() override;
+		virtual jxglib::Terminal& Edit_Clear() override;
+		virtual jxglib::Terminal& Edit_DeleteToHome() override;
+		virtual jxglib::Terminal& Edit_DeleteToEnd() override;
+		virtual jxglib::Terminal& Edit_MoveHistoryPrev() override;
+		virtual jxglib::Terminal& Edit_MoveHistoryNext() override;
+		virtual jxglib::Terminal& Edit_Complement() override;
 	public:
 		// virtual functions of Tickable
 		virtual const char* GetTickableName() const override { return "Serial::Terminal"; }
