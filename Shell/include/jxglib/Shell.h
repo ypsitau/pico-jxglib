@@ -121,12 +121,17 @@ public:
 	public:
 		virtual int Run(Readable& tin, Printable& tout, Printable& terr, int argc, char* argv[]) = 0;
 	};
+	class ComplementProvider : public Terminal::ComplementProvider {
+	public:
+		virtual const char* NextComplement() override;
+	};
 	enum class Stat { Begin, Prompt, Running, };
 private:
 	Stat stat_;
 	char prompt_[64];
 	Terminal* pTerminal_;
 	Cmd* pCmdRunning_;
+	ComplementProvider complementProvider_;
 public:
 	static Shell Instance;
 public:
@@ -141,7 +146,7 @@ public:
 private:
 	const char* GetPrompt_() const { return prompt_; }
 	void SetPrompt_(const char* prompt);
-	void AttachTerminal_(Terminal& terminal) { pTerminal_ = &terminal; }
+	void AttachTerminal_(Terminal& terminal);
 public:
 	// virtual functions of Tickable
 	virtual const char* GetTickableName() const override { return "Shell"; }

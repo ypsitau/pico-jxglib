@@ -11,7 +11,7 @@ namespace jxglib {
 // Terminal
 //------------------------------------------------------------------------------
 Terminal::Terminal(int bytesHistoryBuff, Keyboard& keyboard) :
-		lineEditor_{bytesHistoryBuff}, editableFlag_{true}, pKeyboard_{&keyboard}
+	lineEditor_{bytesHistoryBuff}, editableFlag_{true}, pKeyboard_{&keyboard}, pComplementProvider_{nullptr}
 {
 }
 
@@ -57,6 +57,7 @@ bool Terminal::ProcessKeyData(const KeyData& keyData)
 		case VK_RIGHT:		Edit_MoveForward();		return true;
 		case VK_DOWN:		Edit_MoveHistoryNext();	return true;
 		case VK_DELETE:		Edit_DeleteChar();		return true;
+		case VK_TAB:		Edit_Complement();		return true;
 		default: break;
 		}
 	} else if (keyData.GetChar() < 0x20) {
@@ -69,7 +70,7 @@ bool Terminal::ProcessKeyData(const KeyData& keyData)
 		case 'F':			Edit_MoveForward();		return true;
 		case 'G':			break;
 		case 'H':			Edit_Back();			return true;
-		case 'I':			break;
+		case 'I':			Edit_Complement();		return true;
 		case 'J':			Edit_Finish('\n');		return true;
 		case 'K':			Edit_DeleteToEnd();		return true;
 		case 'L':			break;
@@ -156,6 +157,19 @@ bool Terminal::LineEditor::InsertChar(char ch)
 			EndHistory();
 			return true;
 		}
+	}
+	return false;
+}
+
+bool Terminal::LineEditor::Replace(const char* str, int iByte)
+{
+	int bytes = ::strlen(str);
+	if (iByte + bytes + 1 < sizeof(buff_)) {
+		char* p = GetPointer(iByteCursor_);
+		::memcpy(p, str, bytes + 1);
+		iByteCursor_ = iByte + bytes;
+		EndHistory();
+		return true;
 	}
 	return false;
 }

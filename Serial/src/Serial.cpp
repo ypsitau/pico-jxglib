@@ -169,6 +169,20 @@ Terminal& Serial::Terminal::Edit_MoveHistoryNext()
 	return *this;
 }
 
+Terminal& Terminal::Edit_Complement()
+{
+	if (!GetLineEditor().IsEditing()) return *this;
+	if (!pComplementProvider_) return *this;
+	const char* strComplement = pComplementProvider_->NextComplement();
+	if (strComplement && GetLineEditor().Replace(strComplement, 0)) {
+		VT100::RestoreCursorPosition(GetPrintable());
+		GetPrintable().Print(GetLineEditor().GetPointerBegin());
+		VT100::CursorBackward(GetPrintable(), GetLineEditor().CountFollowingChars());
+		GetPrintable().RefreshScreen();
+	}
+	return *this;
+}
+
 void Serial::Terminal::OnTick()
 {
 	if (!IsEditable() || !GetLineEditor().IsEditing()) return;

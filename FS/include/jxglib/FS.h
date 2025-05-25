@@ -38,6 +38,7 @@ bool Mount(Printable& out, const char* driveName);
 bool Unmount(Printable& out, const char* driveName);
 FileInfo* GetFileInfo(const char* pathName);
 bool IsLegalDriveName(const char* driveName);
+bool GetDirNameCur(const char** pDriveName, const char** pDirName);
 
 const char* ExtractDriveName(const char* pathName, char* driveName, int lenMax);
 const char* ExtractFileName(const char* pathName);

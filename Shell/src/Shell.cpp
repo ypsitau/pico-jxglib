@@ -70,7 +70,14 @@ void Shell::OnTick()
 {
 	switch (stat_) {
 	case Stat::Begin: {
-		GetTerminal().ReadLine_Begin(prompt_);
+		//GetTerminal().ReadLine_Begin(prompt_);
+		//GetTerminal().ReadLine_Begin(FS::prompt_);
+		char prompt[FS::MaxPath];
+		const char* driveName;
+		const char* dirName;
+		FS::GetDirNameCur(&driveName, &dirName);
+		::snprintf(prompt, sizeof(prompt), "%s:%s$ ", driveName, dirName);
+		GetTerminal().ReadLine_Begin(prompt);
 		stat_ = Stat::Prompt;
 		break;
 	}
@@ -102,6 +109,12 @@ void Shell::SetPrompt_(const char* prompt)
 	size_t len = ChooseMin(sizeof(prompt_) - 1, ::strlen(prompt));
 	::memcpy(prompt_, prompt, len);
 	prompt_[len] = '\0';
+}
+
+void Shell::AttachTerminal_(Terminal& terminal)
+{
+	pTerminal_ = &terminal;
+	pTerminal_->SetComplementProvider(complementProvider_);
 }
 
 void Shell::PrintHelp(Printable& printable)
@@ -302,6 +315,17 @@ Shell::Cmd::Cmd(const char* name, const char* help) : name_{name}, help_{help}, 
 		SetCmdNext(pCmdHead_);
 		pCmdHead_ = this;
 	}
+}
+
+//------------------------------------------------------------------------------
+// Shell::ComplementProvider
+//------------------------------------------------------------------------------
+const char* Shell::ComplementProvider::NextComplement()
+{
+	static char str[64];
+	static int iComplement = 0;
+	::snprintf(str, sizeof(str), "complement%d", iComplement++);
+	return str;
 }
 
 }

@@ -218,6 +218,17 @@ bool IsLegalDriveName(const char* driveName)
 	return false;
 }
 
+bool GetDirNameCur(const char** pDriveName, const char** pDirName)
+{
+	if (pDriveName) *pDriveName = "";
+	if (pDirName) *pDirName = "";
+	FS::Drive* pDrive = FS::GetDriveCur();
+	if (!pDrive) return false;
+	if (pDriveName) *pDriveName = pDrive->GetDriveName();
+	if (pDirName) *pDirName = pDrive->GetDirNameCur();
+	return true;
+}
+
 const char* ExtractDriveName(const char* pathName, char* driveName, int lenMax)
 {
 	driveName[0] = '\0';

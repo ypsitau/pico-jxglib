@@ -43,6 +43,7 @@ public:
 		int CountFollowingChars(int iByte) const { return UTF8::CountChars(GetPointer(iByte)); }
 		bool Clear();
 		bool InsertChar(char ch);
+		bool Replace(const char* str, int iByte);
 		bool DeleteChar();
 		bool Back() { return MoveBackward() && DeleteChar(); }
 		bool DeleteLastChar();
@@ -66,16 +67,24 @@ public:
 		LineBuff& GetHistoryBuff() { return historyBuff_; }
 		const LineBuff& GetHistoryBuff() const { return historyBuff_; }
 	};
+	class ComplementProvider {
+	public:
+		virtual const char* NextComplement() = 0;
+	};
 private:
 	LineEditor lineEditor_;
 	bool editableFlag_;
 	Keyboard* pKeyboard_;
+	ComplementProvider* pComplementProvider_;
 public:
 	Terminal(int bytesHistoryBuff, Keyboard& keyboard);
 	Terminal& Initialize();
 	void SetEditable(bool editableFlag) { editableFlag_ = editableFlag; }
 	bool IsEditable() const { return editableFlag_; }
 	LineEditor& GetLineEditor() { return lineEditor_; }
+	void SetComplementProvider(ComplementProvider& complementProvider) {
+		pComplementProvider_ = &complementProvider;
+	}
 	char* ReadLine(const char* prompt);
 	void ReadLine_Begin(const char* prompt);
 	char* ReadLine_Process();
@@ -88,7 +97,7 @@ public:
 	int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) {
 		return GetKeyboard().SenseKeyData(keyDataTbl, nKeysMax);
 	}
-	public:
+public:
 	virtual Printable& GetPrintable() = 0;
 	virtual Terminal& Edit_Begin() = 0;
 	virtual Terminal& Edit_Finish(char chEnd = '\0') = 0;
@@ -104,6 +113,7 @@ public:
 	virtual Terminal& Edit_DeleteToEnd() = 0;
 	virtual Terminal& Edit_MoveHistoryPrev() = 0;
 	virtual Terminal& Edit_MoveHistoryNext() = 0;
+	virtual Terminal& Edit_Complement();
 };
 
 //------------------------------------------------------------------------------
