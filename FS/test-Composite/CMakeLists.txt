@@ -48,6 +48,8 @@ pico_enable_stdio_usb(test-Composite 0)
 target_link_libraries(test-Composite
     pico_stdlib
     jxglib_Serial
+    jxglib_ST7789
+    jxglib_USBHost
     jxglib_ShellCmd_FS
     jxglib_ShellCmd_Flash
     jxglib_FAT_Flash
@@ -64,4 +66,5 @@ pico_add_extra_outputs(test-Composite)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 
-jxglib_configure_FAT(test-Composite FF_VOLUMES 5 FF_USE_LFN 1)
+jxglib_configure_USBHost(test-Composite CFG_TUH_HID 3)
+jxglib_configure_FAT(test-Composite FF_VOLUMES 5)

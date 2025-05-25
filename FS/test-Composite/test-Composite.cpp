@@ -3,10 +3,13 @@
 #include "pico/stdlib.h"
 #include "jxglib/Serial.h"
 #include "jxglib/Shell.h"
+#include "jxglib/ST7789.h"
+#include "jxglib/USBHost.h"
 #include "jxglib/FAT/Flash.h"
 #include "jxglib/FAT/SDCard.h"
 #include "jxglib/FAT/RAMDisk.h"
 #include "jxglib/LFS/Flash.h"
+#include "jxglib/Font/shinonome16.h"
 
 using namespace jxglib;
 
@@ -41,7 +44,20 @@ int main()
 	FAT::Flash		drive_D("d", 0x101c'0000, 0x0004'0000); 	// Flash address and size 256kB
 	FAT::SDCard		drive_E("e", spi0, 10'000'000, {CS: GPIO5});// SDCard on SPI0 10MHz
 	FAT::RAMDisk	drive_F("f", 0x2'0000);						// RAM Disk 128kB
-	Serial::Terminal terminal;
-	Shell::AttachTerminal(terminal.Initialize());
+	//-------------------------------------------------------------------------
+	USBHost::Initialize();
+	USBHost::Keyboard keyboard;
+	::spi_init(spi1, 125 * 1000 * 1000);
+	GPIO14.set_function_SPI1_SCK();
+	GPIO15.set_function_SPI1_TX();
+	ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
+	Display::Terminal terminal;
+	terminal.Initialize().AttachDisplay(display.Initialize(Display::Dir::Rotate90))
+		.AttachKeyboard(keyboard.SetCapsLockAsCtrl()).SetFont(Font::shinonome16);
+	Shell::AttachTerminal(terminal);
+	//-------------------------------------------------------------------------
+	//Serial::Terminal terminal;
+	//Shell::AttachTerminal(terminal.Initialize());
+	//-------------------------------------------------------------------------
 	for (;;) Tickable::Tick();
 }
