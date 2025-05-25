@@ -60,6 +60,8 @@ ShellCmd(cp, "copies a file")
 	return 0;
 }
 
+ShellCmdAlias(copy, cp)
+
 ShellCmd(ls, "lists files in the specified directory")
 {
 	const char* dirName = (argc < 2)? "" : argv[1];
@@ -79,6 +81,8 @@ ShellCmd(ls, "lists files in the specified directory")
 	pDir->Close();
 	return 0;
 }
+
+ShellCmdAlias(dir, ls)
 
 ShellCmd_Named(ls_drive, "ls-drive", "lists availabld drives")
 {

@@ -9,19 +9,21 @@
 #include "jxglib/Terminal.h"
 #include "jxglib/FS.h"
 
-#define ShellCmd_Named(symbol, name, help) \
+#define ShellCmd_Named(symbol, strSymbol, help) \
 class ShellCmd_##symbol : public Shell::Cmd { \
 public: \
-	static ShellCmd_##symbol Instance; \
-public: \
-	ShellCmd_##symbol() : Shell::Cmd(name, help) {} \
+	ShellCmd_##symbol(const char* name_ = strSymbol) : Shell::Cmd(name_, help) {} \
 public: \
 	virtual int Run(Readable& tin, Printable& tout, Printable& terr, int argc, char* argv[]) override; \
 }; \
-ShellCmd_##symbol ShellCmd_##symbol::Instance; \
+ShellCmd_##symbol ShellCmd_##symbol##_Instance; \
 int ShellCmd_##symbol::Run(Readable& tin, Printable& tout, Printable& terr, int argc, char* argv[])
 
-#define ShellCmd(name, help) ShellCmd_Named(name, #name, help)
+#define ShellCmdAlias_Named(symbolAlias, strSymbolAlias, symbolOrg) \
+ShellCmd_##symbolOrg ShellCmd_##symbolAlias##_Instance(strSymbolAlias);
+
+#define ShellCmd(symbol, help) ShellCmd_Named(symbol, #symbol, help)
+#define ShellCmdAlias(symbolAlias, symbolOrg) ShellCmdAlias_Named(symbolAlias, #symbolAlias, symbolOrg)
 
 namespace jxglib {
 
