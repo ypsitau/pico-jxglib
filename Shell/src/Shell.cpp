@@ -2,7 +2,6 @@
 // Shell.cpp
 //==============================================================================
 #include <stdlib.h>
-#include "jxglib/FS.h"
 #include "jxglib/Shell.h"
 
 namespace jxglib {
@@ -320,12 +319,22 @@ Shell::Cmd::Cmd(const char* name, const char* help) : name_{name}, help_{help}, 
 //------------------------------------------------------------------------------
 // Shell::ComplementProvider
 //------------------------------------------------------------------------------
+void Shell::ComplementProvider::StartComplement()
+{
+	pDir_.reset(FS::OpenDir(""));
+	if (pDir_) pDir_->EnableRewind();
+}
+
+void Shell::ComplementProvider::EndComplement()
+{
+	pDir_.reset();
+}
+
 const char* Shell::ComplementProvider::NextComplement()
 {
-	static char str[64];
-	static int iComplement = 0;
-	::snprintf(str, sizeof(str), "complement%d", iComplement++);
-	return str;
+	if (!pDir_) return nullptr;
+	FS::FileInfo* pFileInfo;
+	return pDir_->Read(&pFileInfo)? pFileInfo->GetName() : nullptr;
 }
 
 }

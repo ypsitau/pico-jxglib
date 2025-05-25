@@ -34,10 +34,11 @@ public:
 		bool IsEmpty() const { return buff_[0] == '\0'; }
 		int GetIByteCursor() const { return iByteCursor_; }
 		int GetIByteEnd() const { return ::strlen(buff_); }
+		int GetIByteToComplement() const;
 		char* GetPointer(int iByte) { return buff_ + iByte; }
+		const char* GetPointer(int iByte) const { return buff_ + iByte; }
 		char* GetPointerBegin() { return buff_; }
 		char* GetPointerEnd() { return buff_ + GetIByteEnd(); }
-		const char* GetPointer(int iByte) const { return buff_ + iByte; }
 		const char* GetPointerAtCursor() const { return buff_ + iByteCursor_; }
 		int CountFollowingChars() const { return CountFollowingChars(iByteCursor_); }
 		int CountFollowingChars(int iByte) const { return UTF8::CountChars(GetPointer(iByte)); }
@@ -68,7 +69,20 @@ public:
 		const LineBuff& GetHistoryBuff() const { return historyBuff_; }
 	};
 	class ComplementProvider {
+	private:
+		int iByte_;
+		char strHint_[EditBuffSize];
 	public:
+		ComplementProvider() : iByte_{-1} {}
+	public:
+		void Start(const Terminal& terminal, int iByte);
+		void End();
+		bool IsStarted() const { return iByte_ >= 0; }
+		int GetIByte() const { return iByte_; }
+		const char* GetHint() const { return strHint_; }
+	public:
+		virtual void StartComplement() = 0;
+		virtual void EndComplement() = 0;
 		virtual const char* NextComplement() = 0;
 	};
 private:
@@ -82,9 +96,11 @@ public:
 	void SetEditable(bool editableFlag) { editableFlag_ = editableFlag; }
 	bool IsEditable() const { return editableFlag_; }
 	LineEditor& GetLineEditor() { return lineEditor_; }
+	const LineEditor& GetLineEditor() const { return lineEditor_; }
 	void SetComplementProvider(ComplementProvider& complementProvider) {
 		pComplementProvider_ = &complementProvider;
 	}
+	void EndComplement() { if (pComplementProvider_) pComplementProvider_->End(); }
 	char* ReadLine(const char* prompt);
 	void ReadLine_Begin(const char* prompt);
 	char* ReadLine_Process();

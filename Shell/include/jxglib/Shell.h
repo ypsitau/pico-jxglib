@@ -7,6 +7,7 @@
 #include <memory>
 #include "pico/stdlib.h"
 #include "jxglib/Terminal.h"
+#include "jxglib/FS.h"
 
 #define ShellCmd_Named(symbol, name, help) \
 class ShellCmd_##symbol : public Shell::Cmd { \
@@ -122,7 +123,12 @@ public:
 		virtual int Run(Readable& tin, Printable& tout, Printable& terr, int argc, char* argv[]) = 0;
 	};
 	class ComplementProvider : public Terminal::ComplementProvider {
+	private:
+		RefPtr<FS::Dir> pDir_;
 	public:
+		// virtual functions of Terminal::ComplementProvider
+		virtual void StartComplement() override;
+		virtual void EndComplement() override;
 		virtual const char* NextComplement() override;
 	};
 	enum class Stat { Begin, Prompt, Running, };

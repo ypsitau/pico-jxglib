@@ -135,6 +135,22 @@ void Terminal::LineEditor::Finish()
 	editingFlag_ = false;
 }
 
+int Terminal::LineEditor::GetIByteToComplement() const
+{
+	int iByte = 0;
+	bool spaceAheadFlag = false;
+	for (const char* p = buff_; ; p++) {
+		if (::isspace(*p)) {
+			spaceAheadFlag = true;
+		} else if (spaceAheadFlag) {
+			iByte = p - buff_;
+			spaceAheadFlag = false;
+		}
+		if (!*p) break;
+	}
+	return iByte;
+}
+
 bool Terminal::LineEditor::Clear()
 {
 	if (buff_[0]) {
@@ -165,7 +181,7 @@ bool Terminal::LineEditor::Replace(const char* str, int iByte)
 {
 	int bytes = ::strlen(str);
 	if (iByte + bytes + 1 < sizeof(buff_)) {
-		char* p = GetPointer(iByteCursor_);
+		char* p = GetPointer(iByte);
 		::memcpy(p, str, bytes + 1);
 		iByteCursor_ = iByte + bytes;
 		EndHistory();
@@ -314,6 +330,22 @@ void Terminal::LineEditor::ReplaceWithHistory()
 		if (!ch) break;
 	}
 	iByteCursor_ = buffp - buff_;
+}
+
+//------------------------------------------------------------------------------
+// Terminal::ComplementProvider
+//------------------------------------------------------------------------------
+void Terminal::ComplementProvider::Start(const Terminal& terminal, int iByte)
+{
+	iByte_ = iByte;
+	::strcpy(strHint_, terminal.GetLineEditor().GetPointer(iByte));
+	StartComplement();
+}
+
+void Terminal::ComplementProvider::End()
+{
+	EndComplement();
+	iByte_ = -1;
 }
 
 }
