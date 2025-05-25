@@ -71,6 +71,7 @@ private:
 	lfs_dir_t dir_;
 	FileInfo fileInfo_;
 	bool openedFlag_;
+	int nItems_;
 public:
 	Dir(FS::Drive& drive, lfs_t& lfs);
 	~Dir() { Close(); }

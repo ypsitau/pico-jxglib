@@ -222,14 +222,31 @@ bool File::Sync()
 //------------------------------------------------------------------------------
 // LFS::Dir
 //------------------------------------------------------------------------------
-Dir::Dir(FS::Drive& drive, lfs_t& lfs) : FS::Dir(drive), lfs_(lfs), openedFlag_{true}
+Dir::Dir(FS::Drive& drive, lfs_t& lfs) : FS::Dir(drive), lfs_(lfs), openedFlag_{true}, nItems_{0}
 {
 }
 
 bool Dir::Read(FS::FileInfo** ppFileInfo)
 {
+	lfs_info& info = fileInfo_.GetEntity();
 	*ppFileInfo = &fileInfo_;
-	return ::lfs_dir_read(&lfs_, &dir_, &fileInfo_.GetEntity()) > 0;
+	for (;;) {
+		int rtn = ::lfs_dir_read(&lfs_, &dir_, &info);
+		if (rtn < 0) return false;  // Error reading directory
+		if (rtn == 0) {  // End of directory
+			if (rewindFlag_ && nItems_ > 0) {
+				::lfs_dir_rewind(&lfs_, &dir_);
+				nItems_ = 0;
+			} else {
+				return false;  // No more items
+			}
+		} else if (::strcmp(info.name, ".") != 0 && ::strcmp(info.name, "..") != 0) {
+			nItems_++;
+			break;  // Found a valid file or directory entry
+		}
+	}
+	return true;
+	//return ::lfs_dir_read(&lfs_, &dir_, &fileInfo_.GetEntity()) > 0;
 }
 
 void Dir::Close()

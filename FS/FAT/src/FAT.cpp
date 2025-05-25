@@ -7,103 +7,6 @@
 namespace jxglib::FAT {
 
 //------------------------------------------------------------------------------
-// FAT::File
-//------------------------------------------------------------------------------
-File::File(FS::Drive& drive) : FS::File(drive) {}
-
-File::~File()
-{
-	Close();
-}
-
-int File::Read(void* buff, int bytesBuff)
-{
-	UINT bytesRead;
-	return (::f_read(&fil_, buff, bytesBuff, &bytesRead) == FR_OK)? static_cast<int>(bytesRead) : -1;
-}
-
-int File::Write(const void* buff, int bytesBuff)
-{
-	UINT bytesWritten;
-	return (::f_write(&fil_, buff, bytesBuff, &bytesWritten) == FR_OK)? static_cast<int>(bytesWritten) : -1;
-}
-
-void File::Close()
-{
-	::f_close(&fil_);
-}
-
-bool File::Seek(int position)
-{
-	return ::f_lseek(&fil_, position) == FR_OK;
-}
-
-int File::Tell()
-{
-	return f_tell(&fil_);
-}
-
-int File::Size()
-{
-	return f_size(&fil_);
-}
-
-bool File::Flush()
-{
-	return f_sync(&fil_) == FR_OK;
-}
-
-bool File::Truncate(int bytes)
-{
-	return f_truncate(&fil_) == FR_OK;
-}
-
-bool File::Sync()
-{
-	return f_sync(&fil_) == FR_OK;
-}
-
-//------------------------------------------------------------------------------
-// FAT::Dir
-//------------------------------------------------------------------------------
-Dir::Dir(FS::Drive& drive, bool includeHidden, bool includeSystem) : FS::Dir(drive),
-	fattribSkip_{static_cast<BYTE>((includeHidden? 0 : AM_HID) | (includeSystem? 0 : AM_SYS))},
-	nItems_{0}
-{
-}
-
-Dir::~Dir()
-{
-	Close();
-}
-
-bool Dir::Read(FS::FileInfo** ppFileInfo)
-{
-	FILINFO& filInfo = fileInfo_.GetEntity();
-	*ppFileInfo = &fileInfo_;
-	for (;;) {
-		if (::f_readdir(&dir_, &filInfo) != FR_OK) return false;
-		if (filInfo.fname[0] == '\0') {	// end of directory
-			if (rewindFlag_ && nItems_ > 0) {
-				::f_rewinddir(&dir_);
-				nItems_ = 0;
-			} else {
-				return false;
-			}
-		} else if (!(filInfo.fattrib & fattribSkip_)) {
-			nItems_++;
-			break;
-		}
-	}
-	return true;
-}
-
-void Dir::Close()
-{
-	::f_closedir(&dir_);
-}
-
-//------------------------------------------------------------------------------
 // FAT::Drive
 //------------------------------------------------------------------------------
 Drive* Drive::pDriveHead_ = nullptr;
@@ -301,6 +204,103 @@ const char* Drive::FRESULTToStr(FRESULT result)
 		"INVALID_PARAMETER",	/* (19) Given parameter is invalid */
 	};
 	return strTbl[static_cast<int>(result)];
+}
+
+//------------------------------------------------------------------------------
+// FAT::File
+//------------------------------------------------------------------------------
+File::File(FS::Drive& drive) : FS::File(drive) {}
+
+File::~File()
+{
+	Close();
+}
+
+int File::Read(void* buff, int bytesBuff)
+{
+	UINT bytesRead;
+	return (::f_read(&fil_, buff, bytesBuff, &bytesRead) == FR_OK)? static_cast<int>(bytesRead) : -1;
+}
+
+int File::Write(const void* buff, int bytesBuff)
+{
+	UINT bytesWritten;
+	return (::f_write(&fil_, buff, bytesBuff, &bytesWritten) == FR_OK)? static_cast<int>(bytesWritten) : -1;
+}
+
+void File::Close()
+{
+	::f_close(&fil_);
+}
+
+bool File::Seek(int position)
+{
+	return ::f_lseek(&fil_, position) == FR_OK;
+}
+
+int File::Tell()
+{
+	return f_tell(&fil_);
+}
+
+int File::Size()
+{
+	return f_size(&fil_);
+}
+
+bool File::Flush()
+{
+	return f_sync(&fil_) == FR_OK;
+}
+
+bool File::Truncate(int bytes)
+{
+	return f_truncate(&fil_) == FR_OK;
+}
+
+bool File::Sync()
+{
+	return f_sync(&fil_) == FR_OK;
+}
+
+//------------------------------------------------------------------------------
+// FAT::Dir
+//------------------------------------------------------------------------------
+Dir::Dir(FS::Drive& drive, bool includeHidden, bool includeSystem) : FS::Dir(drive),
+	fattribSkip_{static_cast<BYTE>((includeHidden? 0 : AM_HID) | (includeSystem? 0 : AM_SYS))},
+	nItems_{0}
+{
+}
+
+Dir::~Dir()
+{
+	Close();
+}
+
+bool Dir::Read(FS::FileInfo** ppFileInfo)
+{
+	FILINFO& filInfo = fileInfo_.GetEntity();
+	*ppFileInfo = &fileInfo_;
+	for (;;) {
+		if (::f_readdir(&dir_, &filInfo) != FR_OK) return false;
+		if (filInfo.fname[0] == '\0') {	// end of directory
+			if (rewindFlag_ && nItems_ > 0) {
+				::f_rewinddir(&dir_);
+				nItems_ = 0;
+			} else {
+				return false;	// no more items
+			}
+		} else if (!(filInfo.fattrib & fattribSkip_)) {
+			nItems_++;
+			break;	// find a valid file or directory entry
+		}
+	}
+	return true;
+}
+
+void Dir::Close()
+{
+	::f_closedir(&dir_);
 }
 
 }
