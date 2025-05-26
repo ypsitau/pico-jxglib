@@ -137,17 +137,7 @@ void Terminal::LineEditor::Finish()
 
 int Terminal::LineEditor::GetIByteToCompletion() const
 {
-	int iByte = 0;
-	bool spaceAheadFlag = false;
-	for (const char* p = buff_; ; p++) {
-		if (::isspace(*p)) {
-			spaceAheadFlag = true;
-		} else if (spaceAheadFlag) {
-			iByte = p - buff_;
-			spaceAheadFlag = false;
-		}
-		if (!*p) break;
-	}
+	int iByte = Tokenizer().FindLastToken(buff_) - buff_;
 	return iByte;
 }
 
