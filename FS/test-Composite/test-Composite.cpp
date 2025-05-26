@@ -42,8 +42,9 @@ int main()
 	LFS::Flash		drive_B("b", 0x1014'0000, 0x0004'0000); 	// Flash address and size 256kB
 	FAT::Flash		drive_C("c", 0x1018'0000, 0x0004'0000); 	// Flash address and size 256kB
 	FAT::Flash		drive_D("d", 0x101c'0000, 0x0004'0000); 	// Flash address and size 256kB
-	FAT::SDCard		drive_E("e", spi0, 10'000'000, {CS: GPIO5});// SDCard on SPI0 10MHz
-	FAT::RAMDisk	drive_F("f", 0x2'0000);						// RAM Disk 128kB
+	FAT::RAMDisk	drive_E("e", 0x2'0000);						// RAM Disk 128kB
+	FAT::SDCard		drive_F("f", spi0, 10'000'000, {CS: GPIO5});// SDCard on SPI0 10MHz
+	FAT::SDCard		drive_G("g", spi0, 10'000'000, {CS: GPIO6});// SDCard on SPI0 10MHz
 #if 0
 	USBHost::Initialize();
 	USBHost::Keyboard keyboard;

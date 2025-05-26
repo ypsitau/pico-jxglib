@@ -16,8 +16,8 @@ Flash::Flash(const char* driveName, uint32_t addrXIP, uint32_t bytesXIP) :
 
 const char* Flash::GetRemarks(char* buff, int lenMax) const
 {
-	::snprintf(buff, lenMax, "Flash on board 0x%08x-0x%08x",
-			0x10000000 + offsetXIP_, 0x10000000 + offsetXIP_ + bytesXIP_);
+	::snprintf(buff, lenMax, "Flash 0x%08x-0x%08x (%dkB)",
+		0x10000000 + offsetXIP_, 0x10000000 + offsetXIP_ + bytesXIP_, bytesXIP_ / 1024);
 	return buff;
 }
 
