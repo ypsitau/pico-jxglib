@@ -124,29 +124,29 @@ public:
 	public:
 		virtual int Run(Readable& tin, Printable& tout, Printable& terr, int argc, char* argv[]) = 0;
 	};
-	class ItemProvider {
+	class CandidateProvider {
 	public:
 		virtual const char* NextItemName() = 0;
 	};
-	class ItemProvider_Cmd : public ItemProvider {
+	class CandidateProvider_Cmd : public CandidateProvider {
 	private:
 		const Cmd* pCmd_;
 	public:
-		ItemProvider_Cmd() : pCmd_{Cmd::GetCmdHead()} {}
+		CandidateProvider_Cmd() : pCmd_{Cmd::GetCmdHead()} {}
 	public:
 		virtual const char* NextItemName() override;
 	};
-	class ItemProvider_Dir : public ItemProvider {
+	class CandidateProvider_Dir : public CandidateProvider {
 	private:
 		RefPtr<FS::Dir> pDir_;
 	public:
-		ItemProvider_Dir(FS::Dir* pDir) : pDir_{pDir} {}	
+		CandidateProvider_Dir(FS::Dir* pDir) : pDir_{pDir} {}	
 	public:
 		virtual const char* NextItemName() override;
 	};
 	class CompletionProvider : public Terminal::CompletionProvider {
 	private:
-		std::unique_ptr<ItemProvider> pItemProvider_;
+		std::unique_ptr<CandidateProvider> pCandidateProvider_;
 		char dirName_[FS::MaxPath];
 		char result_[FS::MaxPath];
 		char itemNameFirst_[FS::MaxPath];

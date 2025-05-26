@@ -362,9 +362,9 @@ Shell::Cmd::Cmd(const char* name, const char* help) : name_{name}, help_{help}, 
 }
 
 //------------------------------------------------------------------------------
-// Shell::ItemProvider_Cmd
+// Shell::CandidateProvider_Cmd
 //------------------------------------------------------------------------------
-const char* Shell::ItemProvider_Cmd::NextItemName()
+const char* Shell::CandidateProvider_Cmd::NextItemName()
 {
 	if (!pCmd_) return nullptr;
 	const char* itemName = pCmd_->GetName();
@@ -374,9 +374,9 @@ const char* Shell::ItemProvider_Cmd::NextItemName()
 }
 
 //------------------------------------------------------------------------------
-// Shell::ItemProvider_Dir
+// Shell::CandidateProvider_Dir
 //------------------------------------------------------------------------------
-const char* Shell::ItemProvider_Dir::NextItemName()
+const char* Shell::CandidateProvider_Dir::NextItemName()
 {
 	FS::FileInfo* pFileInfo = nullptr;
 	return pDir_->Read(&pFileInfo)? pFileInfo->GetName() : nullptr;
@@ -393,7 +393,7 @@ void Shell::CompletionProvider::StartCompletion()
 	nItemsReturned_ = 0;
 	if (GetIByte() == 0) {
 		// the first field is a command name
-		pItemProvider_.reset(new ItemProvider_Cmd());
+		pCandidateProvider_.reset(new CandidateProvider_Cmd());
 		prefix_ = GetHint();
 	} else {
 		// following fields are file names
@@ -405,21 +405,21 @@ void Shell::CompletionProvider::StartCompletion()
 		}
 		if (pDir) {
 			pDir->EnableRewind();
-			pItemProvider_.reset(new ItemProvider_Dir(pDir.release()));
+			pCandidateProvider_.reset(new CandidateProvider_Dir(pDir.release()));
 		}
 	}
 }
 
 void Shell::CompletionProvider::EndCompletion()
 {
-	pItemProvider_.reset();
+	pCandidateProvider_.reset();
 }
 
 const char* Shell::CompletionProvider::NextCompletion()
 {
-	if (!pItemProvider_) return nullptr;
+	if (!pCandidateProvider_) return nullptr;
 	const char* itemName;
-	while (itemName = pItemProvider_->NextItemName()) {
+	while (itemName = pCandidateProvider_->NextItemName()) {
 		if (StartsWithICase(itemName, prefix_)) {
 			nItemsReturned_++;
 			FS::JoinPathName(result_, sizeof(result_), dirName_, itemName);
