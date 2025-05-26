@@ -146,12 +146,14 @@ public:
 	};
 	class ComplementProvider : public Terminal::ComplementProvider {
 	private:
-		//RefPtr<FS::Dir> pDir_;
 		std::unique_ptr<ItemProvider> pItemProvider_;
+		char dirName_[FS::MaxPath];
+		char result_[FS::MaxPath];
 		char itemNameFirst_[FS::MaxPath];
 		int nItemsReturned_;
+		const char* prefix_;
 	public:
-		ComplementProvider() : nItemsReturned_{0} {}
+		ComplementProvider() : nItemsReturned_{0}, prefix_{""} {}
 	public:
 		// virtual functions of Terminal::ComplementProvider
 		virtual void StartComplement() override;

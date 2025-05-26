@@ -274,7 +274,7 @@ const char* AppendPathName(char* pathName, int lenMax, const char* pathNameSub)
 	int len = ::strlen(pathName);
 	const char* p = pathNameSub;
 	if (len > 0) {
-		if (pathName[len - 1] != '/' && len < lenMax) pathName[len++] = '/';
+		if (pathName[len - 1] != '/' && pathName[len - 1] != ':' && len < lenMax) pathName[len++] = '/';
 		while (*p == '/') p++;
 	}
 	while (*p) {
@@ -300,6 +300,14 @@ const char* AppendPathName(char* pathName, int lenMax, const char* pathNameSub)
 	}
 	if (len >= lenMax) ::panic("FS::AppendPathName");
 	pathName[len] = '\0';
+	return pathName;
+}
+
+const char* JoinPathName(char* pathName, int lenMax, const char* dirName, const char* fileName)
+{
+	pathName[0] = '\0';
+	AppendPathName(pathName, lenMax, dirName);
+	AppendPathName(pathName, lenMax, fileName);
 	return pathName;
 }
 

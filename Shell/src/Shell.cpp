@@ -387,17 +387,27 @@ const char* Shell::ItemProvider_Dir::NextItemName()
 //------------------------------------------------------------------------------
 void Shell::ComplementProvider::StartComplement()
 {
+	dirName_[0] = '\0';
+	prefix_ = "";
+	itemNameFirst_[0] = '\0';
+	nItemsReturned_ = 0;
 	if (GetIByte() == 0) {
+		// the first field is a command name
 		pItemProvider_.reset(new ItemProvider_Cmd());
+		prefix_ = GetHint();
 	} else {
-		RefPtr<FS::Dir> pDir(FS::OpenDir(""));
+		// following fields are file names
+		RefPtr<FS::Dir> pDir(FS::OpenDir(GetHint()));
+		::snprintf(dirName_, sizeof(dirName_), "%s", GetHint());
+		if (!pDir) {
+			FS::SplitDirName(GetHint(), dirName_, sizeof(dirName_), &prefix_);
+			pDir.reset(FS::OpenDir(dirName_));
+		}
 		if (pDir) {
 			pDir->EnableRewind();
 			pItemProvider_.reset(new ItemProvider_Dir(pDir.release()));
 		}
 	}
-	itemNameFirst_[0] = '\0';
-	nItemsReturned_ = 0;
 }
 
 void Shell::ComplementProvider::EndComplement()
@@ -410,9 +420,10 @@ const char* Shell::ComplementProvider::NextComplement()
 	if (!pItemProvider_) return nullptr;
 	const char* itemName;
 	while (itemName = pItemProvider_->NextItemName()) {
-		if (StartsWithICase(itemName, GetHint())) {
+		if (StartsWithICase(itemName, prefix_)) {
 			nItemsReturned_++;
-			return itemName;
+			FS::JoinPathName(result_, sizeof(result_), dirName_, itemName);
+			return result_;
 		} else if (itemNameFirst_[0] == '\0') {
 			::strcpy(itemNameFirst_, itemName);
 		} else if (::strcmp(itemNameFirst_, itemName) == 0) {
