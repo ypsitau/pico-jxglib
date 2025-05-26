@@ -559,7 +559,7 @@ Terminal& Display::Terminal::Edit_Completion()
 	}
 	const char* strCompletion = pCompletionProvider_->NextCompletion();
 	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
-	if (strCompletion && GetLineEditor().Replace(strCompletion, pCompletionProvider_->GetIByte())) {
+	if (strCompletion && GetLineEditor().ReplaceWithCompletion(pCompletionProvider_->GetIByte(), strCompletion)) {
 		EraseCursor(iByteCursorPrev);
 		DrawEditorArea();
 		DrawCursor(GetLineEditor().GetIByteCursor());

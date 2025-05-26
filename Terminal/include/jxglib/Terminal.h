@@ -44,7 +44,7 @@ public:
 		int CountFollowingChars(int iByte) const { return UTF8::CountChars(GetPointer(iByte)); }
 		bool Clear();
 		bool InsertChar(char ch);
-		bool Replace(const char* str, int iByte);
+		bool ReplaceWithCompletion(int iByte, const char* str);
 		bool DeleteChar();
 		bool Back() { return MoveBackward() && DeleteChar(); }
 		bool DeleteLastChar();

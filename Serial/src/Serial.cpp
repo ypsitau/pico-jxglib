@@ -189,7 +189,7 @@ Terminal& Serial::Terminal::Edit_Completion()
 		pCompletionProvider_->Start(*this, GetLineEditor().GetIByteToCompletion());
 	}
 	const char* strCompletion = pCompletionProvider_->NextCompletion();
-	if (strCompletion && GetLineEditor().Replace(strCompletion, pCompletionProvider_->GetIByte())) {
+	if (strCompletion && GetLineEditor().ReplaceWithCompletion(pCompletionProvider_->GetIByte(), strCompletion)) {
 		VT100::RestoreCursorPosition(GetPrintable());
 		GetPrintable().Print(GetLineEditor().GetPointerBegin());
 		VT100::EraseToEndOfLine(GetPrintable());

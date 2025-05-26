@@ -177,17 +177,24 @@ bool Terminal::LineEditor::InsertChar(char ch)
 	return false;
 }
 
-bool Terminal::LineEditor::Replace(const char* str, int iByte)
+bool Terminal::LineEditor::ReplaceWithCompletion(int iByte, const char* str)
 {
 	int bytes = ::strlen(str);
-	if (iByte + bytes + 1 < sizeof(buff_)) {
-		char* p = GetPointer(iByte);
+	char* p = GetPointer(iByte);
+	if (DoesContainSpace(str)) {
+		if (iByte + bytes + 1 + 2 >= sizeof(buff_)) return false;
+		*p++ = '"';
+		::memcpy(p, str, bytes); p += bytes;
+		*p++ = '"';
+		*p++ = '\0';
+		iByteCursor_ = iByte + bytes + 2;
+	} else {
+		if (iByte + bytes + 1 >= sizeof(buff_)) return false;
 		::memcpy(p, str, bytes + 1);
 		iByteCursor_ = iByte + bytes;
-		EndHistory();
-		return true;
 	}
-	return false;
+	EndHistory();
+	return true;
 }
 
 bool Terminal::LineEditor::DeleteChar()

@@ -48,4 +48,12 @@ bool EndsWithICase(const char* str, const char* suffix)
 	return true;
 }
 
+bool DoesContainSpace(const char* str)
+{
+	for (const char* p = str; *p; p++) {
+		if (::isspace(*p)) return true;
+	}
+	return false;
+}
+
 }
