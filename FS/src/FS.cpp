@@ -252,6 +252,23 @@ const char* ExtractFileName(const char* pathName)
 	return fileName? fileName : pathName; // return the last part or the whole path if no slashes
 }
 
+void SplitDirName(const char* pathName, char* dirName, int lenMax, const char** pFileName)
+{
+	const char* pSlash = nullptr;
+	for (const char* p = pathName; *p; p++) {
+		if (*p == '/' || *p == ':') pSlash = p;
+	}
+	dirName[0] = '\0';
+	if (pFileName) *pFileName = pathName; // default to the whole path if no slashes
+	if (pSlash) {
+		int len = pSlash - pathName + 1;
+		if (len + 1 >= lenMax) ::panic("FS::SplitDirName");
+		::memcpy(dirName, pathName, len);
+		dirName[len] = '\0';
+		if (pFileName) *pFileName = pSlash + 1; // return the rest as file name
+	}
+}
+
 const char* AppendPathName(char* pathName, int lenMax, const char* pathNameSub)
 {
 	int len = ::strlen(pathName);

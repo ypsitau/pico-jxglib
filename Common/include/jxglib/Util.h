@@ -79,6 +79,8 @@ void WaitMSecSinceBoot(uint32_t msec);
 
 bool StartsWith(const char* str, const char* prefix);
 bool StartsWithICase(const char* str, const char* prefix);
+bool EndsWith(const char* str, const char* suffix);
+bool EndsWithICase(const char* str, const char* suffix);
 
 }
 

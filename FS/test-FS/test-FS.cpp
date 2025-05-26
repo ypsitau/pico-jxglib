@@ -114,10 +114,48 @@ void test_AppendPathName()
 	}
 }
 
+void test_SplitDirName()
+{
+	struct TestCase {
+		const char* pathName;
+		const char* dirNameExpected;
+		const char* fileNameExpected;
+	} testCases[] = {
+		{ "/dir/file.txt",      "/dir/",     "file.txt"   },
+		{ "/dir/sub/file.txt",  "/dir/sub/", "file.txt"   },
+		{ "/file.txt",          "/",         "file.txt"   },
+		{ "file.txt",           "",          "file.txt"   },
+		{ "/dir/",              "/dir/",     ""           },
+		{ "/",                  "/",         ""           },
+		{ "",                   "",          ""           },
+		{ "/dir/subdir/",       "/dir/subdir/", ""        },
+		{ "/dir/subdir/file",   "/dir/subdir/", "file"    },
+		{ "dir/file.txt",       "dir/",      "file.txt"   },
+		{ "dir/",               "dir/",      ""           },
+		{ "file",               "",          "file"       },
+		{ "C:/foo/bar.txt",     "C:/foo/",   "bar.txt"    },
+		{ "C:/foo/",            "C:/foo/",   ""           },
+		{ "C:/",                "C:/",       ""           },
+		{ "C:",                 "C:",        ""           },
+		{ "C:bar.txt",          "C:",        "bar.txt"    },
+		{ "C:foo/bar.txt",      "C:foo/",    "bar.txt"    },
+		{ "C:foo/bar/baz.txt",  "C:foo/bar/", "baz.txt"   },
+		{ "C:/foo/bar/baz.txt", "C:/foo/bar/", "baz.txt"  },
+	};
+	char dirName[256];
+	const char* fileName;
+	for (const auto& tc : testCases) {
+		FS::SplitDirName(tc.pathName, dirName, sizeof(dirName), &fileName);
+		bool ok = (::strcmp(dirName, tc.dirNameExpected) == 0) && (::strcmp(fileName ? fileName : "", tc.fileNameExpected) == 0);
+		::printf("%-20s -> %-12s %-12s%s\n", tc.pathName, dirName, fileName, ok ? "" : " ***");
+	}
+}
+
 int main()
 {
 	::stdio_init_all();
 	test_DoesMatchWildcard();
 	test_AppendPathName();
+	test_SplitDirName();
 	for (;;) ::tight_loop_contents();
 }

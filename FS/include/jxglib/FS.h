@@ -42,6 +42,7 @@ bool GetDirNameCur(const char** pDriveName, const char** pDirName);
 
 const char* ExtractDriveName(const char* pathName, char* driveName, int lenMax);
 const char* ExtractFileName(const char* pathName);
+void SplitDirName(const char* pathName, char* dirName, int lenMax, const char** pFileName);
 const char* AppendPathName(char* pathName, int lenMax, const char* pathNameSub);
 bool DoesMatchWildcard(const char* pattern, const char* str);
 bool DoesMatchElemName(const char* elemName1, const char* elemName2);
