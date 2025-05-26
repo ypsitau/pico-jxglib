@@ -34,7 +34,7 @@ public:
 		bool IsEmpty() const { return buff_[0] == '\0'; }
 		int GetIByteCursor() const { return iByteCursor_; }
 		int GetIByteEnd() const { return ::strlen(buff_); }
-		int GetIByteToComplement() const;
+		int GetIByteToCompletion() const;
 		char* GetPointer(int iByte) { return buff_ + iByte; }
 		const char* GetPointer(int iByte) const { return buff_ + iByte; }
 		char* GetPointerBegin() { return buff_; }
@@ -68,12 +68,12 @@ public:
 		LineBuff& GetHistoryBuff() { return historyBuff_; }
 		const LineBuff& GetHistoryBuff() const { return historyBuff_; }
 	};
-	class ComplementProvider {
+	class CompletionProvider {
 	private:
 		int iByte_;
 		char strHint_[EditBuffSize];
 	public:
-		ComplementProvider() : iByte_{-1} {}
+		CompletionProvider() : iByte_{-1} {}
 	public:
 		void Start(const Terminal& terminal, int iByte);
 		void End();
@@ -81,15 +81,15 @@ public:
 		int GetIByte() const { return iByte_; }
 		const char* GetHint() const { return strHint_; }
 	public:
-		virtual void StartComplement() = 0;
-		virtual void EndComplement() = 0;
-		virtual const char* NextComplement() = 0;
+		virtual void StartCompletion() = 0;
+		virtual void EndCompletion() = 0;
+		virtual const char* NextCompletion() = 0;
 	};
 protected:
 	LineEditor lineEditor_;
 	bool editableFlag_;
 	Keyboard* pKeyboard_;
-	ComplementProvider* pComplementProvider_;
+	CompletionProvider* pCompletionProvider_;
 public:
 	Terminal(int bytesHistoryBuff, Keyboard& keyboard);
 	Terminal& Initialize();
@@ -97,10 +97,10 @@ public:
 	bool IsEditable() const { return editableFlag_; }
 	LineEditor& GetLineEditor() { return lineEditor_; }
 	const LineEditor& GetLineEditor() const { return lineEditor_; }
-	void SetComplementProvider(ComplementProvider& complementProvider) {
-		pComplementProvider_ = &complementProvider;
+	void SetCompletionProvider(CompletionProvider& completionProvider) {
+		pCompletionProvider_ = &completionProvider;
 	}
-	void EndComplement() { if (pComplementProvider_) pComplementProvider_->End(); }
+	void EndCompletion() { if (pCompletionProvider_) pCompletionProvider_->End(); }
 	char* ReadLine(const char* prompt);
 	void ReadLine_Begin(const char* prompt);
 	char* ReadLine_Process();
@@ -129,7 +129,7 @@ public:
 	virtual Terminal& Edit_DeleteToEnd() = 0;
 	virtual Terminal& Edit_MoveHistoryPrev() = 0;
 	virtual Terminal& Edit_MoveHistoryNext() = 0;
-	virtual Terminal& Edit_Complement() = 0;
+	virtual Terminal& Edit_Completion() = 0;
 };
 
 //------------------------------------------------------------------------------
@@ -170,7 +170,7 @@ public:
 	virtual Terminal& Edit_DeleteToEnd() override { return *this; }
 	virtual Terminal& Edit_MoveHistoryPrev() override { return *this; }
 	virtual Terminal& Edit_MoveHistoryNext() override { return *this; }
-	virtual Terminal& Edit_Complement() override { return *this; }
+	virtual Terminal& Edit_Completion() override { return *this; }
 };
 
 }

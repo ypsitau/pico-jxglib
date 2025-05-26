@@ -388,7 +388,7 @@ Terminal& Display::Terminal::Edit_Finish(char chEnd)
 	DrawLatestTextLines(true);
 	ShowCursor(false);
 	GetLineEditor().Finish();
-	EndComplement();
+	EndCompletion();
 	return *this;
 }
 
@@ -406,7 +406,7 @@ Terminal& Display::Terminal::Edit_InsertChar(int ch)
 		EraseCursor(iByteCursorPrev);
 		DrawEditorArea();
 		DrawCursor(GetLineEditor().GetIByteCursor());
-		EndComplement();
+		EndCompletion();
 	}
 	return *this;
 }
@@ -419,7 +419,7 @@ Terminal& Display::Terminal::Edit_DeleteChar()
 		EraseCursor(iByteCursorPrev);
 		DrawEditorArea();
 		DrawCursor(GetLineEditor().GetIByteCursor());
-		EndComplement();
+		EndCompletion();
 	}
 	return *this;
 }
@@ -432,7 +432,7 @@ Terminal& Display::Terminal::Edit_Back()
 		EraseCursor(iByteCursorPrev);
 		DrawEditorArea();
 		DrawCursor(GetLineEditor().GetIByteCursor());
-		EndComplement();
+		EndCompletion();
 	}
 	return *this;
 }
@@ -444,7 +444,7 @@ Terminal& Display::Terminal::Edit_MoveForward()
 	if (GetLineEditor().MoveForward()) {
 		EraseCursor(iByteCursorPrev);
 		DrawCursor(GetLineEditor().GetIByteCursor());
-		EndComplement();
+		EndCompletion();
 	}
 	return *this;
 }
@@ -456,7 +456,7 @@ Terminal& Display::Terminal::Edit_MoveBackward()
 	if (GetLineEditor().MoveBackward()) {
 		EraseCursor(iByteCursorPrev);
 		DrawCursor(GetLineEditor().GetIByteCursor());
-		EndComplement();
+		EndCompletion();
 	}
 	return *this;
 }
@@ -468,7 +468,7 @@ Terminal& Display::Terminal::Edit_MoveHome()
 	if (GetLineEditor().MoveHome()) {
 		EraseCursor(iByteCursorPrev);
 		DrawCursor(GetLineEditor().GetIByteCursor());
-		EndComplement();
+		EndCompletion();
 	}
 	return *this;
 }
@@ -480,7 +480,7 @@ Terminal& Display::Terminal::Edit_MoveEnd()
 	if (GetLineEditor().MoveEnd()) {
 		EraseCursor(iByteCursorPrev);
 		DrawCursor(GetLineEditor().GetIByteCursor());
-		EndComplement();
+		EndCompletion();
 	}
 	return *this;
 }
@@ -493,7 +493,7 @@ Terminal& Display::Terminal::Edit_Clear()
 		EraseCursor(iByteCursorPrev);
 		DrawEditorArea();
 		DrawCursor(GetLineEditor().GetIByteCursor());
-		EndComplement();
+		EndCompletion();
 	}
 	return *this;
 }
@@ -506,7 +506,7 @@ Terminal& Display::Terminal::Edit_DeleteToHome()
 		EraseCursor(iByteCursorPrev);
 		DrawEditorArea();
 		DrawCursor(GetLineEditor().GetIByteCursor());
-		EndComplement();
+		EndCompletion();
 	}
 	return *this;
 }
@@ -519,7 +519,7 @@ Terminal& Display::Terminal::Edit_DeleteToEnd()
 		EraseCursor(iByteCursorPrev);
 		DrawEditorArea();
 		DrawCursor(GetLineEditor().GetIByteCursor());
-		EndComplement();
+		EndCompletion();
 	}
 	return *this;
 }
@@ -532,7 +532,7 @@ Terminal& Display::Terminal::Edit_MoveHistoryPrev()
 		EraseCursor(iByteCursorPrev);
 		DrawEditorArea();
 		DrawCursor(GetLineEditor().GetIByteCursor());
-		EndComplement();
+		EndCompletion();
 	}
 	return *this;
 }
@@ -545,21 +545,21 @@ Terminal& Display::Terminal::Edit_MoveHistoryNext()
 		EraseCursor(iByteCursorPrev);
 		DrawEditorArea();
 		DrawCursor(GetLineEditor().GetIByteCursor());
-		EndComplement();
+		EndCompletion();
 	}
 	return *this;
 }
 
-Terminal& Display::Terminal::Edit_Complement()
+Terminal& Display::Terminal::Edit_Completion()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
-	if (!pComplementProvider_) return *this;
-	if (!pComplementProvider_->IsStarted()) {
-		pComplementProvider_->Start(*this, GetLineEditor().GetIByteToComplement());
+	if (!pCompletionProvider_) return *this;
+	if (!pCompletionProvider_->IsStarted()) {
+		pCompletionProvider_->Start(*this, GetLineEditor().GetIByteToCompletion());
 	}
-	const char* strComplement = pComplementProvider_->NextComplement();
+	const char* strCompletion = pCompletionProvider_->NextCompletion();
 	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
-	if (strComplement && GetLineEditor().Replace(strComplement, pComplementProvider_->GetIByte())) {
+	if (strCompletion && GetLineEditor().Replace(strCompletion, pCompletionProvider_->GetIByte())) {
 		EraseCursor(iByteCursorPrev);
 		DrawEditorArea();
 		DrawCursor(GetLineEditor().GetIByteCursor());

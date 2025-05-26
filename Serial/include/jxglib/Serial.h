@@ -56,7 +56,7 @@ public:
 		virtual jxglib::Terminal& Edit_DeleteToEnd() override;
 		virtual jxglib::Terminal& Edit_MoveHistoryPrev() override;
 		virtual jxglib::Terminal& Edit_MoveHistoryNext() override;
-		virtual jxglib::Terminal& Edit_Complement() override;
+		virtual jxglib::Terminal& Edit_Completion() override;
 	public:
 		// virtual functions of Tickable
 		virtual const char* GetTickableName() const override { return "Serial::Terminal"; }

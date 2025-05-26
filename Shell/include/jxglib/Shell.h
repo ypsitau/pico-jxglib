@@ -144,7 +144,7 @@ public:
 	public:
 		virtual const char* NextItemName() override;
 	};
-	class ComplementProvider : public Terminal::ComplementProvider {
+	class CompletionProvider : public Terminal::CompletionProvider {
 	private:
 		std::unique_ptr<ItemProvider> pItemProvider_;
 		char dirName_[FS::MaxPath];
@@ -153,12 +153,12 @@ public:
 		int nItemsReturned_;
 		const char* prefix_;
 	public:
-		ComplementProvider() : nItemsReturned_{0}, prefix_{""} {}
+		CompletionProvider() : nItemsReturned_{0}, prefix_{""} {}
 	public:
-		// virtual functions of Terminal::ComplementProvider
-		virtual void StartComplement() override;
-		virtual void EndComplement() override;
-		virtual const char* NextComplement() override;
+		// virtual functions of Terminal::CompletionProvider
+		virtual void StartCompletion() override;
+		virtual void EndCompletion() override;
+		virtual const char* NextCompletion() override;
 	};
 	enum class Stat { Begin, Prompt, Running, };
 private:
@@ -166,7 +166,7 @@ private:
 	char prompt_[64];
 	Terminal* pTerminal_;
 	Cmd* pCmdRunning_;
-	ComplementProvider complementProvider_;
+	CompletionProvider completionProvider_;
 public:
 	static Shell Instance;
 public:

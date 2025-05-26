@@ -158,7 +158,7 @@ const char* Shell::MakePrompt(char* prompt, int lenMax)
 void Shell::AttachTerminal_(Terminal& terminal)
 {
 	pTerminal_ = &terminal;
-	pTerminal_->SetComplementProvider(complementProvider_);
+	pTerminal_->SetCompletionProvider(completionProvider_);
 }
 
 void Shell::PrintHelp(Printable& printable)
@@ -383,9 +383,9 @@ const char* Shell::ItemProvider_Dir::NextItemName()
 }
 
 //------------------------------------------------------------------------------
-// Shell::ComplementProvider
+// Shell::CompletionProvider
 //------------------------------------------------------------------------------
-void Shell::ComplementProvider::StartComplement()
+void Shell::CompletionProvider::StartCompletion()
 {
 	dirName_[0] = '\0';
 	prefix_ = "";
@@ -410,12 +410,12 @@ void Shell::ComplementProvider::StartComplement()
 	}
 }
 
-void Shell::ComplementProvider::EndComplement()
+void Shell::CompletionProvider::EndCompletion()
 {
 	pItemProvider_.reset();
 }
 
-const char* Shell::ComplementProvider::NextComplement()
+const char* Shell::CompletionProvider::NextCompletion()
 {
 	if (!pItemProvider_) return nullptr;
 	const char* itemName;

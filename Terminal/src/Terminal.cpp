@@ -11,7 +11,7 @@ namespace jxglib {
 // Terminal
 //------------------------------------------------------------------------------
 Terminal::Terminal(int bytesHistoryBuff, Keyboard& keyboard) :
-	lineEditor_{bytesHistoryBuff}, editableFlag_{true}, pKeyboard_{&keyboard}, pComplementProvider_{nullptr}
+	lineEditor_{bytesHistoryBuff}, editableFlag_{true}, pKeyboard_{&keyboard}, pCompletionProvider_{nullptr}
 {
 }
 
@@ -57,7 +57,7 @@ bool Terminal::ProcessKeyData(const KeyData& keyData)
 		case VK_RIGHT:		Edit_MoveForward();		return true;
 		case VK_DOWN:		Edit_MoveHistoryNext();	return true;
 		case VK_DELETE:		Edit_DeleteChar();		return true;
-		case VK_TAB:		Edit_Complement();		return true;
+		case VK_TAB:		Edit_Completion();		return true;
 		default: break;
 		}
 	} else if (keyData.GetChar() < 0x20) {
@@ -70,7 +70,7 @@ bool Terminal::ProcessKeyData(const KeyData& keyData)
 		case 'F':			Edit_MoveForward();		return true;
 		case 'G':			break;
 		case 'H':			Edit_Back();			return true;
-		case 'I':			Edit_Complement();		return true;
+		case 'I':			Edit_Completion();		return true;
 		case 'J':			Edit_Finish('\n');		return true;
 		case 'K':			Edit_DeleteToEnd();		return true;
 		case 'L':			break;
@@ -135,7 +135,7 @@ void Terminal::LineEditor::Finish()
 	editingFlag_ = false;
 }
 
-int Terminal::LineEditor::GetIByteToComplement() const
+int Terminal::LineEditor::GetIByteToCompletion() const
 {
 	int iByte = 0;
 	bool spaceAheadFlag = false;
@@ -333,18 +333,18 @@ void Terminal::LineEditor::ReplaceWithHistory()
 }
 
 //------------------------------------------------------------------------------
-// Terminal::ComplementProvider
+// Terminal::CompletionProvider
 //------------------------------------------------------------------------------
-void Terminal::ComplementProvider::Start(const Terminal& terminal, int iByte)
+void Terminal::CompletionProvider::Start(const Terminal& terminal, int iByte)
 {
 	iByte_ = iByte;
 	::strcpy(strHint_, terminal.GetLineEditor().GetPointer(iByte));
-	StartComplement();
+	StartCompletion();
 }
 
-void Terminal::ComplementProvider::End()
+void Terminal::CompletionProvider::End()
 {
-	EndComplement();
+	EndCompletion();
 	iByte_ = -1;
 }
 

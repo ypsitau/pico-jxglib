@@ -155,7 +155,7 @@ public:
 		virtual jxglib::Terminal& Edit_DeleteToEnd() override;
 		virtual jxglib::Terminal& Edit_MoveHistoryPrev() override;
 		virtual jxglib::Terminal& Edit_MoveHistoryNext() override;
-		virtual jxglib::Terminal& Edit_Complement() override;
+		virtual jxglib::Terminal& Edit_Completion() override;
 	};
 public:
 	Display(uint32_t capabilities, const Format& format, int width, int height) :
