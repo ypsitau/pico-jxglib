@@ -4,7 +4,7 @@
 #include "jxglib/Serial.h"
 #include "jxglib/Shell.h"
 #include "jxglib/ST7789.h"
-#include "jxglib/USBHost.h"
+#include "jxglib/USBHost/HID.h"
 #include "jxglib/FAT/Flash.h"
 #include "jxglib/FAT/SDCard.h"
 #include "jxglib/FAT/RAMDisk.h"
@@ -45,7 +45,7 @@ int main()
 	FAT::RAMDisk	drive_E("e", 0x2'0000);								// RAM Disk 128kB
 	FAT::SDCard		drive_F("f", spi0, 10'000'000, {CS: GPIO5});		// SDCard on SPI0 10MHz
 	//FAT::SDCard		drive_G("g", spi0, 10'000'000, {CS: GPIO6});	// SDCard on SPI0 10MHz
-#if 0
+#if 1
 	USBHost::Initialize();
 	USBHost::Keyboard keyboard;
 	::spi_init(spi1, 125 * 1000 * 1000);

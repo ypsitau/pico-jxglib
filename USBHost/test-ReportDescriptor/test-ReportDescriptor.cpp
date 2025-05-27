@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/Stdio.h"
-#include "jxglib/USBHost.h"
+#include "jxglib/USBHost/HID.h"
 
 using namespace jxglib;
 /*
