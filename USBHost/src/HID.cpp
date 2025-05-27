@@ -1,24 +1,55 @@
 //==============================================================================
 // HID.cpp
 //==============================================================================
-#include "jxglib/USBHost.h"
+#include "jxglib/USBHost/HID.h"
 
 #if CFG_TUH_HID > 0
-namespace jxglib {
+
+//------------------------------------------------------------------------------
+// Callback functions
+//------------------------------------------------------------------------------
+extern "C" void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descReport, uint16_t descLen)
+{
+	using namespace jxglib::USBHost;
+	::printf("tuh_hid_mount_cb(devAddr=%d, iInstance=%d)\n", devAddr, iInstance);
+	HID::MountHID(devAddr, iInstance, descReport, descLen);
+	if (!::tuh_hid_receive_report(devAddr, iInstance)) {
+		::printf("tuh_hid_receive_report() failed\n");
+	}
+}
+
+extern "C" void tuh_hid_umount_cb(uint8_t devAddr, uint8_t iInstance)
+{
+	using namespace jxglib::USBHost;
+	::printf("tuh_hid_umount_cb(%d, %d)\n", devAddr, iInstance);
+	HID::UmountHID(iInstance);
+}
+
+extern "C" void tuh_hid_report_received_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len)
+{
+	using namespace jxglib::USBHost;
+	//Dump(report, len);
+	HID* pHID = HID::LookupHID(iInstance);
+	HID::Report reportPack { report, len };
+	if (pHID) pHID->OnReport(reportPack);
+	::tuh_hid_receive_report(devAddr, iInstance);
+}
+
+namespace jxglib::USBHost {
 
 //------------------------------------------------------------------------------
 // USBHost::HID
 //------------------------------------------------------------------------------
-USBHost::HID* USBHost::HID::hidTbl_[CFG_TUH_HID] = { nullptr };
+HID* HID::hidTbl_[CFG_TUH_HID] = { nullptr };
 
-USBHost::HID::HID(uint8_t devAddr, uint8_t iInstance, HID::Application* pApplication) :
+HID::HID(uint8_t devAddr, uint8_t iInstance, HID::Application* pApplication) :
 	devAddr_{devAddr}, iInstance_{iInstance}, pApplication_{pApplication},
 	report_{reportBuff_, 0}, reportChangedFlag_{false}, pHIDDriver_{nullptr}
 {
 	::memset(reportBuff_, 0x00, sizeof(reportBuff_));
 }
 
-void USBHost::HID::OnReport(const Report& report)
+void HID::OnReport(const Report& report)
 {
 	//report.Dump();
 	if (report.len <= sizeof(reportBuff_) && (report_.len == 0 || ::memcmp(reportBuff_, report.buff, report.len) != 0)) {
@@ -29,7 +60,7 @@ void USBHost::HID::OnReport(const Report& report)
 	if (pHIDDriver_) pHIDDriver_->OnReport();
 }
 
-USBHost::HID::Application* USBHost::HID::ParseReportDescriptor(const uint8_t* descReport, uint16_t descLen)
+HID::Application* HID::ParseReportDescriptor(const uint8_t* descReport, uint16_t descLen)
 {
 	uint32_t usagePage = 0;
 	uint32_t reportOffset_Input = 0;
@@ -228,7 +259,7 @@ USBHost::HID::Application* USBHost::HID::ParseReportDescriptor(const uint8_t* de
 	return pApplicationTop.release();
 }
 
-const char* USBHost::HID::GetCollectionTypeName(CollectionType collectionType)
+const char* HID::GetCollectionTypeName(CollectionType collectionType)
 {
 	return
 		(collectionType == CollectionType::Physical)?		"Physical" :
@@ -240,7 +271,7 @@ const char* USBHost::HID::GetCollectionTypeName(CollectionType collectionType)
 		(collectionType == CollectionType::UsageModifier)?	"UsageModifier" : "none";
 }
 
-const char* USBHost::HID::GetItemTypeName(uint8_t itemType)
+const char* HID::GetItemTypeName(uint8_t itemType)
 {
 	static const struct {
 		uint8_t itemType;
@@ -286,7 +317,7 @@ const char* USBHost::HID::GetItemTypeName(uint8_t itemType)
 //-----------------------------------------------------------------------------
 // USBHost::HID::GlobalItem
 //-----------------------------------------------------------------------------
-const USBHost::HID::GlobalItem USBHost::HID::GlobalItem::None {
+const HID::GlobalItem HID::GlobalItem::None {
 	itemType:			0,
 	mainItemData:		0,
 	logicalMinimum:		0,
@@ -299,14 +330,14 @@ const USBHost::HID::GlobalItem USBHost::HID::GlobalItem::None {
 	reportCount:		0,
 };
 
-USBHost::HID::GlobalItemList* USBHost::HID::GlobalItemList::GetListLast()
+HID::GlobalItemList* HID::GlobalItemList::GetListLast()
 {
 	auto* pGlobalItemList = this;
 	for ( ; pGlobalItemList->GetListNext(); pGlobalItemList = pGlobalItemList->GetListNext()) ;
 	return pGlobalItemList;
 }
 
-void USBHost::HID::GlobalItem::Print(Printable& printable, int indentLevel) const
+void HID::GlobalItem::Print(Printable& printable, int indentLevel) const
 {
 	printable.Printf("%*slogicalMinimum:  %d\n", indentLevel * 2, "", logicalMinimum);
 	printable.Printf("%*slogicalMaximum:  %d\n", indentLevel * 2, "", logicalMaximum);
@@ -321,16 +352,16 @@ void USBHost::HID::GlobalItem::Print(Printable& printable, int indentLevel) cons
 //-----------------------------------------------------------------------------
 // USBHost::HID::UsageAccessor
 //-----------------------------------------------------------------------------
-const USBHost::HID::UsageAccessor USBHost::HID::UsageAccessor::None(0, &GlobalItem::None, 0);
+const HID::UsageAccessor HID::UsageAccessor::None(0, &GlobalItem::None, 0);
 
-USBHost::HID::UsageAccessor* USBHost::HID::UsageAccessor::GetListLast()
+HID::UsageAccessor* HID::UsageAccessor::GetListLast()
 {
 	auto* pUsageAccessor = this;
 	for ( ; pUsageAccessor->GetListNext(); pUsageAccessor = pUsageAccessor->GetListNext()) ;
 	return pUsageAccessor;
 }
 
-int32_t USBHost::HID::UsageAccessor::GetVariable(const Report& report, int idx) const
+int32_t HID::UsageAccessor::GetVariable(const Report& report, int idx) const
 {
 	if (!IsValid()) return 0;
 	uint32_t reportOffset = GetReportOffset() + GetReportSize() * idx;
@@ -344,7 +375,7 @@ int32_t USBHost::HID::UsageAccessor::GetVariable(const Report& report, int idx) 
 	return (GetLogicalMinimum() >= 0)? static_cast<int32_t>(value) : SignExtend(value, GetReportSize());
 }
 
-void USBHost::HID::UsageAccessor::Print(Printable& printable, int indentLevel) const
+void HID::UsageAccessor::Print(Printable& printable, int indentLevel) const
 {
 	printable.Printf("%*s%s(%04x'%04x)%s %s offset:%d size:%d LMin:%d LMax:%d PMin:%d PMax:%d UnitExp:%d\n",
 		indentLevel * 2, "", GetItemTypeName(GetItemType()),
@@ -356,21 +387,21 @@ void USBHost::HID::UsageAccessor::Print(Printable& printable, int indentLevel) c
 //-----------------------------------------------------------------------------
 // USBHost::HID::Collection
 //-----------------------------------------------------------------------------
-const USBHost::HID::Collection USBHost::HID::Collection::None(CollectionType::None, 0, nullptr);
+const HID::Collection HID::Collection::None(CollectionType::None, 0, nullptr);
 
-USBHost::HID::Collection* USBHost::HID::Collection::GetListLast()
+HID::Collection* HID::Collection::GetListLast()
 {
 	auto* pCollection = this;
 	for ( ; pCollection->GetListNext(); pCollection = pCollection->GetListNext()) ;
 	return pCollection;
 }
 
-int32_t USBHost::HID::Collection::GetArrayItem(const Report& report, int idx) const
+int32_t HID::Collection::GetArrayItem(const Report& report, int idx) const
 {
 	return pUsageAccessorArray_? pUsageAccessorArray_->GetVariable(report, idx) : 0;
 }
 
-void USBHost::HID::Collection::AppendUsageAccessor(UsageAccessor* pUsageAccessor)
+void HID::Collection::AppendUsageAccessor(UsageAccessor* pUsageAccessor)
 {
 	if (pUsageAccessorTop_) {
 		pUsageAccessorTop_->AppendList(pUsageAccessor);
@@ -379,7 +410,7 @@ void USBHost::HID::Collection::AppendUsageAccessor(UsageAccessor* pUsageAccessor
 	}
 }
 
-void USBHost::HID::Collection::AppendCollectionChild(Collection* pCollection)
+void HID::Collection::AppendCollectionChild(Collection* pCollection)
 {
 	if (pCollectionChildTop_) {
 		pCollectionChildTop_->AppendList(pCollection);
@@ -388,7 +419,7 @@ void USBHost::HID::Collection::AppendCollectionChild(Collection* pCollection)
 	}
 }
 
-void USBHost::HID::Collection::AddMainItem(GlobalItem* pGlobalItem, const LocalItem& localItem, uint32_t& reportOffset)
+void HID::Collection::AddMainItem(GlobalItem* pGlobalItem, const LocalItem& localItem, uint32_t& reportOffset)
 {
 	//uint32_t mainItemData = pGlobalItem->mainItemData;
 	//::printf("%s,%s,%s ReportSize:%d ReportCount:%d\n", MainItemData::IsData(mainItemData)? "Data" : "Constant",
@@ -416,7 +447,7 @@ void USBHost::HID::Collection::AddMainItem(GlobalItem* pGlobalItem, const LocalI
 	}
 }
 
-const USBHost::HID::UsageAccessor& USBHost::HID::Collection::FindUsageAccessor(uint32_t usage) const
+const HID::UsageAccessor& HID::Collection::FindUsageAccessor(uint32_t usage) const
 {
 	for (auto pUsageAccessor = pUsageAccessorTop_.get(); pUsageAccessor; pUsageAccessor = pUsageAccessor->GetListNext()) {
 		if (pUsageAccessor->GetUsage() == usage) return *pUsageAccessor;
@@ -424,7 +455,7 @@ const USBHost::HID::UsageAccessor& USBHost::HID::Collection::FindUsageAccessor(u
 	return UsageAccessor::None;
 }
 
-const USBHost::HID::UsageAccessor& USBHost::HID::Collection::FindUsageAccessorRecursive(uint32_t usage) const
+const HID::UsageAccessor& HID::Collection::FindUsageAccessorRecursive(uint32_t usage) const
 {
 	const UsageAccessor& usageAccessor = FindUsageAccessor(usage);
 	if (usageAccessor.IsValid()) return usageAccessor;
@@ -435,7 +466,7 @@ const USBHost::HID::UsageAccessor& USBHost::HID::Collection::FindUsageAccessorRe
 	return UsageAccessor::None;
 }
 
-const USBHost::HID::Collection& USBHost::HID::Collection::FindCollection(uint32_t usage) const
+const HID::Collection& HID::Collection::FindCollection(uint32_t usage) const
 {
 	for (auto pCollection = pCollectionChildTop_.get(); pCollection; pCollection = pCollection->GetListNext()) {
 		if (pCollection->GetUsage() == usage) return *pCollection;
@@ -443,7 +474,7 @@ const USBHost::HID::Collection& USBHost::HID::Collection::FindCollection(uint32_
 	return Collection::None;
 }
 
-void USBHost::HID::Collection::PrintUsage(Printable& printable, int indentLevel) const
+void HID::Collection::PrintUsage(Printable& printable, int indentLevel) const
 {
 	for (auto pUsageAccessor = pUsageAccessorTop_.get(); pUsageAccessor; pUsageAccessor = pUsageAccessor->GetListNext()) {
 		pUsageAccessor->Print(printable, indentLevel);
@@ -460,20 +491,20 @@ void USBHost::HID::Collection::PrintUsage(Printable& printable, int indentLevel)
 //------------------------------------------------------------------------------
 // USBHost::HID::Application
 //------------------------------------------------------------------------------
-USBHost::HID::Application USBHost::HID::Application::None(0);
+HID::Application HID::Application::None(0);
 
-USBHost::HID::Application::Application(uint32_t usage) : reportID_{0}, collection_(CollectionType::Application, usage, nullptr)
+HID::Application::Application(uint32_t usage) : reportID_{0}, collection_(CollectionType::Application, usage, nullptr)
 {
 }
 
-USBHost::HID::Application* USBHost::HID::Application::GetListLast()
+HID::Application* HID::Application::GetListLast()
 {
 	auto* pApplication = this;
 	for ( ; pApplication->GetListNext(); pApplication = pApplication->GetListNext()) ;
 	return pApplication;
 }
 
-void USBHost::HID::Application::AddMainItem(Collection& collection, const GlobalItem& globalItem, const LocalItem& localItem, uint32_t& reportOffset)
+void HID::Application::AddMainItem(Collection& collection, const GlobalItem& globalItem, const LocalItem& localItem, uint32_t& reportOffset)
 {
 	GlobalItemList* pGlobalItemList = new GlobalItemList(globalItem);
 	if (pGlobalItemListTop_) {
@@ -484,21 +515,21 @@ void USBHost::HID::Application::AddMainItem(Collection& collection, const Global
 	collection.AddMainItem(&pGlobalItemList->globalItem, localItem, reportOffset);
 }
 
-void USBHost::HID::Application::Print(Printable& printable, int indentLevel) const
+void HID::Application::Print(Printable& printable, int indentLevel) const
 {
 	printable.Printf("%*sApplication(%08x) {\n", indentLevel * 2, "", GetUsage());
 	GetCollection().PrintUsage(printable, indentLevel + 1);
 	printable.Printf("%*s}\n", indentLevel * 2, "");
 }
 
-void USBHost::HID::Application::PrintAll(Printable& printable, int indentLevel) const
+void HID::Application::PrintAll(Printable& printable, int indentLevel) const
 {
 	for (const Application* pApplication = this; pApplication; pApplication = pApplication->GetListNext()) {
 		pApplication->Print(printable, indentLevel);
 	}
 }
 
-void USBHost::HID::MountHID(uint8_t devAddr, uint8_t iInstance, const uint8_t* descReport, uint16_t descLen)
+void HID::MountHID(uint8_t devAddr, uint8_t iInstance, const uint8_t* descReport, uint16_t descLen)
 {
 	std::unique_ptr<HID::Application> pApplicationTop(HID::ParseReportDescriptor(descReport, descLen));
 	if (pApplicationTop) {
@@ -518,7 +549,7 @@ void USBHost::HID::MountHID(uint8_t devAddr, uint8_t iInstance, const uint8_t* d
 	}
 }
 
-void USBHost::HID::UmountHID(uint8_t iInstance)
+void HID::UmountHID(uint8_t iInstance)
 {
 	HID* pHID = hidTbl_[iInstance];
 	HIDDriver* pHIDDriver = pHID->GetHIDDriver();
@@ -533,9 +564,9 @@ void USBHost::HID::UmountHID(uint8_t iInstance)
 //------------------------------------------------------------------------------
 // USBHost::HIDDriver
 //------------------------------------------------------------------------------
-USBHost::HIDDriver* USBHost::HIDDriver::pHIDDriverRegisteredTop = nullptr;
+HIDDriver* HIDDriver::pHIDDriverRegisteredTop = nullptr;
 
-USBHost::HIDDriver::HIDDriver() : pApplication_{&USBHost::HID::Application::None}
+HIDDriver::HIDDriver() : pApplication_{&HID::Application::None}
 {
 	if (pHIDDriverRegisteredTop) {
 		pHIDDriverRegisteredTop->AppendRegisteredList(this);
@@ -544,7 +575,7 @@ USBHost::HIDDriver::HIDDriver() : pApplication_{&USBHost::HID::Application::None
 	}
 }
 
-USBHost::HIDDriver::~HIDDriver()
+HIDDriver::~HIDDriver()
 {
 	if (pHIDDriverRegisteredTop == this) {
 		pHIDDriverRegisteredTop = GetRegisteredListNext();
@@ -557,7 +588,7 @@ USBHost::HIDDriver::~HIDDriver()
 	}
 }
 
-USBHost::HIDDriver* USBHost::HIDDriver::GetRegisteredListLast()
+HIDDriver* HIDDriver::GetRegisteredListLast()
 {
 	HIDDriver* pHIDDriver = this;
 	for ( ; pHIDDriver->GetRegisteredListNext(); pHIDDriver = pHIDDriver->GetRegisteredListNext()) ;
@@ -567,7 +598,7 @@ USBHost::HIDDriver* USBHost::HIDDriver::GetRegisteredListLast()
 //------------------------------------------------------------------------------
 // USBHost::Keyboard
 //------------------------------------------------------------------------------
-const USBHost::Keyboard::UsageIdToKeyCode USBHost::Keyboard::usageIdToKeyCodeTbl[256] = {
+const Keyboard::UsageIdToKeyCode Keyboard::usageIdToKeyCodeTbl[256] = {
 	{ 0,				0,				},	// 0x00
 	{ 0,				0,				},	// 0x01
 	{ 0,				0,				},	// 0x02
@@ -826,18 +857,18 @@ const USBHost::Keyboard::UsageIdToKeyCode USBHost::Keyboard::usageIdToKeyCodeTbl
 	{ 0,				0,				},	// 0xff
 };
 
-USBHost::Keyboard::Keyboard() : capsLockAsCtrlFlag_{false}
+Keyboard::Keyboard() : capsLockAsCtrlFlag_{false}
 {
 	::memset(&reportCaptured_, 0x00, sizeof(reportCaptured_));
 }
 
-Keyboard& USBHost::Keyboard::SetCapsLockAsCtrl(bool capsLockAsCtrlFlag)
+jxglib::Keyboard& Keyboard::SetCapsLockAsCtrl(bool capsLockAsCtrlFlag)
 {
 	capsLockAsCtrlFlag_ = capsLockAsCtrlFlag;
 	return *this;
 }
 
-void USBHost::Keyboard::OnReport()
+void Keyboard::OnReport()
 {
 	const hid_keyboard_report_t& reportEx = *reinterpret_cast<const hid_keyboard_report_t*>(GetReport().buff);
 	::memset(&reportCaptured_, 0x00, sizeof(reportCaptured_));
@@ -862,7 +893,7 @@ void USBHost::Keyboard::OnReport()
 	}
 }
 
-int USBHost::Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax, bool includeModifiers)
+int Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax, bool includeModifiers)
 {
 	int nKeys = 0;
 	for (int i = 0; i < ChooseMin(static_cast<int>(count_of(reportCaptured_.keyCodeTbl)), nKeysMax); i++) {
@@ -886,26 +917,26 @@ int USBHost::Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax, bool inc
 //------------------------------------------------------------------------------
 // USBHost::Mouse
 //------------------------------------------------------------------------------
-USBHost::Mouse::Mouse() : sensibility_{.6}
+Mouse::Mouse() : sensibility_{.6}
 {
 	SetStage({0, 0, 320, 240});
 }
 
-Mouse& USBHost::Mouse::SetStage(const Rect& rcStage)
+jxglib::Mouse& Mouse::SetStage(const Rect& rcStage)
 {
 	rcStage_ = rcStage;
 	UpdateStage();
 	return *this;
 }
 
-Mouse& USBHost::Mouse::SetSensibility(float sensibility)
+jxglib::Mouse& Mouse::SetSensibility(float sensibility)
 {
 	sensibility_ = sensibility;
 	UpdateStage();
 	return *this;
 }
 
-void USBHost::Mouse::UpdateStage()
+void Mouse::UpdateStage()
 {
 	rcStageRaw_.width = static_cast<int>(rcStage_.width / sensibility_);
 	rcStageRaw_.height = static_cast<int>(rcStage_.height / sensibility_);
@@ -913,13 +944,13 @@ void USBHost::Mouse::UpdateStage()
 	status_.SetPoint(CalcPoint());	
 }
 
-Point USBHost::Mouse::CalcPoint() const
+Point Mouse::CalcPoint() const
 {
 	return Point(xRaw_ * (rcStage_.width - 1) / (rcStageRaw_.width - 1) + rcStage_.x,
 			yRaw_ * (rcStage_.height - 1) / (rcStageRaw_.height - 1) + rcStage_.y);
 }
 
-void USBHost::Mouse::OnReport()
+void Mouse::OnReport()
 {
 	const hid_mouse_report_t& reportEx = *reinterpret_cast<const hid_mouse_report_t*>(GetReport().buff);
 	int xDiff = reportEx.x, yDiff = reportEx.y;
@@ -928,47 +959,6 @@ void USBHost::Mouse::OnReport()
 	status_.Update(CalcPoint(), reportEx.x, reportEx.y, reportEx.wheel, reportEx.pan, reportEx.buttons);
 }
 
-}
-
-extern "C" void tuh_mount_cb(uint8_t devAddr)
-{
-	using namespace jxglib;
-	auto pEventHandler = USBHost::Instance.GetEventHandler();
-	if (pEventHandler) pEventHandler->OnMount(devAddr);
-}
-
-extern "C" void tuh_umount_cb(uint8_t devAddr)
-{
-	using namespace jxglib;
-	auto pEventHandler = USBHost::Instance.GetEventHandler();
-	if (pEventHandler) pEventHandler->OnUmount(devAddr);
-}
-
-extern "C" void tuh_hid_mount_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* descReport, uint16_t descLen)
-{
-	using namespace jxglib;
-	::printf("tuh_hid_mount_cb(devAddr=%d, iInstance=%d)\n", devAddr, iInstance);
-	USBHost::HID::MountHID(devAddr, iInstance, descReport, descLen);
-	if (!::tuh_hid_receive_report(devAddr, iInstance)) {
-		::printf("tuh_hid_receive_report() failed\n");
-	}
-}
-
-extern "C" void tuh_hid_umount_cb(uint8_t devAddr, uint8_t iInstance)
-{
-	using namespace jxglib;
-	::printf("tuh_hid_umount_cb(%d, %d)\n", devAddr, iInstance);
-	USBHost::HID::UmountHID(iInstance);
-}
-
-extern "C" void tuh_hid_report_received_cb(uint8_t devAddr, uint8_t iInstance, const uint8_t* report, uint16_t len)
-{
-	using namespace jxglib;
-	//Dump(report, len);
-	USBHost::HID* pHID = USBHost::HID::LookupHID(iInstance);
-	USBHost::HID::Report reportPack { report, len };
-	if (pHID) pHID->OnReport(reportPack);
-	::tuh_hid_receive_report(devAddr, iInstance);
 }
 
 #endif

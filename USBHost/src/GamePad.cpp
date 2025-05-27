@@ -1,20 +1,20 @@
 //==============================================================================
 // GamePad.cpp
 //==============================================================================
-#include "jxglib/USBHost.h"
+#include "jxglib/USBHost/HID.h"
 
 #if CFG_TUH_HID > 0
-namespace jxglib {
+namespace jxglib::USBHost {
 
 //------------------------------------------------------------------------------
 // USBHost::GamePad
 //------------------------------------------------------------------------------
-USBHost::GamePad::GamePad()
+GamePad::GamePad()
 {
 	ClearUsageAccessor();
 }
 
-void USBHost::GamePad::ClearUsageAccessor()
+void GamePad::ClearUsageAccessor()
 {
 	pUsage_Button0		= &HID::UsageAccessor::None;
 	pUsage_Button1		= &HID::UsageAccessor::None;
@@ -58,7 +58,7 @@ void USBHost::GamePad::ClearUsageAccessor()
 	pUsage_RightY		= &HID::UsageAccessor::None;
 }
 
-void USBHost::GamePad::OnMount()
+void GamePad::OnMount()
 {
 	pUsage_Button0		= &GetApplication().FindUsageAccessorRecursive(0x0009'0001);
 	pUsage_Button1		= &GetApplication().FindUsageAccessorRecursive(0x0009'0002);
@@ -150,12 +150,12 @@ void USBHost::GamePad::OnMount()
 	}
 }
 
-void USBHost::GamePad::OnUmount()
+void GamePad::OnUmount()
 {
 	ClearUsageAccessor();
 }
 
-float USBHost::GamePad::GetCookedAxis(const HID::UsageAccessor& usageAccessor) const
+float GamePad::GetCookedAxis(const HID::UsageAccessor& usageAccessor) const
 {
 	if (!usageAccessor.IsValid()) return 0.;
 	int32_t valueMin = usageAccessor.GetLogicalMinimum();

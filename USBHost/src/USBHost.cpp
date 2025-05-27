@@ -3,26 +3,45 @@
 //==============================================================================
 #include "jxglib/USBHost.h"
 
-namespace jxglib {
+namespace jxglib::USBHost {
+
+static Controller Instance;
+static EventHandler* pEventHandler = nullptr;
 
 //------------------------------------------------------------------------------
-// USBHost
+// Functions
 //------------------------------------------------------------------------------
-USBHost USBHost::Instance;
-
-USBHost::USBHost() : pEventHandler_{nullptr}
-{
-}
-
-void USBHost::Initialize(uint8_t rhport, EventHandler* pEventHandler)
+void Initialize(uint8_t rhport, EventHandler* pEventHandler)
 {
 	::tuh_init(rhport);
-	Instance.pEventHandler_ = pEventHandler;
+	pEventHandler = pEventHandler;
 }
 
-void USBHost::OnTick()
+//------------------------------------------------------------------------------
+// USBHost::Controller
+//------------------------------------------------------------------------------
+Controller::Controller()
+{
+}
+
+void Controller::OnTick()
 {
 	::tuh_task();
 }
 
+}
+
+//------------------------------------------------------------------------------
+// Callback functions
+//------------------------------------------------------------------------------
+extern "C" void tuh_mount_cb(uint8_t devAddr)
+{
+	using namespace jxglib::USBHost;
+	if (pEventHandler) pEventHandler->OnMount(devAddr);
+}
+
+extern "C" void tuh_umount_cb(uint8_t devAddr)
+{
+	using namespace jxglib::USBHost;
+	if (pEventHandler) pEventHandler->OnUmount(devAddr);
 }
