@@ -3,6 +3,7 @@
 //==============================================================================
 #include "jxglib/USBHost.h"
 
+#if CFG_TUH_HID > 0
 namespace jxglib {
 
 //------------------------------------------------------------------------------
@@ -178,3 +179,5 @@ float USBHost::GamePad::GetCookedAxis(const HID::UsageAccessor& usageAccessor) c
 }
 
 }
+
+#endif

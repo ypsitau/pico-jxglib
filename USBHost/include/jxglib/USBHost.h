@@ -18,12 +18,31 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class USBHost : public Tickable {
 public:
-	class HIDDriver;
 	class EventHandler {
 	public:
 		virtual void OnMount(uint8_t devAddr) {}
 		virtual void OnUmount(uint8_t devAddr) {}
 	};
+public:
+	static USBHost Instance;
+private:
+	EventHandler* pEventHandler_;
+public:
+	USBHost();
+public:
+	static void Initialize(uint8_t rhport = BOARD_TUH_RHPORT, EventHandler* pEventHandler = nullptr);
+public:
+	static EventHandler* GetEventHandler() { return Instance.pEventHandler_; }
+public:
+	// virtual functions of Tickable
+	virtual const char* GetTickableName() const override { return "USBHost"; }
+	virtual void OnTick() override;
+#if CFG_TUH_HID > 0
+	//-------------------------------------------------------------------------
+	// HID-related claases and functions
+	//-------------------------------------------------------------------------
+public:
+	class HIDDriver;
 	class HID : public Referable {
 	public:
 		struct Report {
@@ -315,6 +334,12 @@ public:
 	public:
 		uint16_t GetVID() const { uint16_t vid, pid; ::tuh_vid_pid_get(devAddr_, &vid, &pid); return vid; }
 		uint16_t GetPID() const { uint16_t vid, pid; ::tuh_vid_pid_get(devAddr_, &vid, &pid); return pid; }
+	private:
+		static HID* hidTbl_[CFG_TUH_HID];
+	public:
+		static void MountHID(uint8_t devAddr, uint8_t iInstance, const uint8_t* descReport, uint16_t descLen);
+		static void UmountHID(uint8_t iInstance);
+		static HID* LookupHID(uint8_t iInstance) { return hidTbl_[iInstance]; }
 	public:
 		static Application* ParseReportDescriptor(const uint8_t* descReport, uint16_t descLen);
 		static const char* GetCollectionTypeName(CollectionType collectionType);
@@ -535,25 +560,7 @@ public:
 		virtual void OnMount() override;
 		virtual void OnUmount() override;
 	};
-public:
-	static USBHost Instance;
-private:
-	HID* hidTbl_[CFG_TUH_HID];
-	EventHandler* pEventHandler_;
-public:
-	USBHost();
-public:
-	static void Initialize(uint8_t rhport = BOARD_TUH_RHPORT, EventHandler* pEventHandler = nullptr);
-public:
-	void MountHID(uint8_t devAddr, uint8_t iInstance, const uint8_t* descReport, uint16_t descLen);
-	void UmountHID(uint8_t iInstance);
-	HID* LookupHID(uint8_t iInstance) { return hidTbl_[iInstance]; }
-public:
-	static EventHandler* GetEventHandler() { return Instance.pEventHandler_; }
-public:
-	// virtual functions of Tickable
-	virtual const char* GetTickableName() const override { return "USBHost"; }
-	virtual void OnTick() override;
+#endif
 };
 
 }

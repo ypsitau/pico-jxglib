@@ -10,6 +10,7 @@ target_link_libraries(jxglib_USBHost INTERFACE
 
 target_sources(jxglib_USBHost INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/USBHost.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/HID.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/GamePad.cpp
 )
 
