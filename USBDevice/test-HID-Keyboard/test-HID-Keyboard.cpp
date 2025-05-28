@@ -21,7 +21,7 @@ class DeviceKeyboard : public USBDevice::Keyboard {
 private:
 	int nKeycodePrev_;
 public:
-	DeviceKeyboard(USBDevice& device) : USBDevice::Keyboard(device, "RaspberryPi Pico Keyboard Interface", 0x81), nKeycodePrev_{0} {}
+	DeviceKeyboard(USBDevice::Controller& deviceController) : USBDevice::Keyboard(deviceController, "RaspberryPi Pico Keyboard Interface", 0x81), nKeycodePrev_{0} {}
 public:
 	virtual void OnTick() override;
 };
@@ -32,7 +32,7 @@ public:
 int main(void)
 {
 	::stdio_init_all(); 
-	USBDevice device({
+	USBDevice::Controller deviceController({
 		bcdUSB:				0x0200,
 		bDeviceClass:		0x00,
 		bDeviceSubClass:	0x00,
@@ -43,8 +43,8 @@ int main(void)
 		bcdDevice:			0x0100,
 	}, 0x0409, "pico-jxglib sample", "RaspberryPi Pico HID Device (Keyboard)", "0123456789ABCDEF",
 		TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP);
-	DeviceKeyboard deviceKeyboard(device);
-	device.Initialize();
+	DeviceKeyboard deviceKeyboard(deviceController);
+	deviceController.Initialize();
 	deviceKeyboard.Initialize();
 	GPIO_ARROW_LEFT		.init().set_dir_IN().pull_up();
 	GPIO_ARROW_UP		.init().set_dir_IN().pull_up();
