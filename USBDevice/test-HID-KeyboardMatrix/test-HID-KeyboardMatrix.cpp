@@ -8,14 +8,14 @@
 using namespace jxglib;
 
 //-----------------------------------------------------------------------------
-// DeviceKeyboard
+// HID_Keyboard
 //-----------------------------------------------------------------------------
-class DeviceKeyboard : public USBDevice::Keyboard {
+class HID_Keyboard : public USBDevice::Keyboard {
 private:
 	int nKeycodePrev_;
 	GPIO::KeyboardMatrix keyboard_;
 public:
-	DeviceKeyboard(USBDevice::Controller& device) : USBDevice::Keyboard(device, "RaspberryPi Pico Keyboard Interface", 0x81), nKeycodePrev_{0} {}
+	HID_Keyboard(USBDevice::Controller& deviceController) : USBDevice::Keyboard(deviceController, "RaspberryPi Pico Keyboard Interface", 0x81), nKeycodePrev_{0} {}
 public:
 	GPIO::KeyboardMatrix& GetKeyboard() { return keyboard_; }
 public:
@@ -28,7 +28,7 @@ public:
 int main(void)
 {
 	::stdio_init_all();
-	USBDevice device({
+	USBDevice::Controller deviceController({
 		bcdUSB:				0x0200,
 		bDeviceClass:		0x00,
 		bDeviceSubClass:	0x00,
@@ -39,9 +39,9 @@ int main(void)
 		bcdDevice:			0x0100,
 	}, 0x0409, "pico-jxglib sample", "RaspberryPi Pico HID Device (Keyboard)", "0123456789ABCDEF",
 		TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP);
-	DeviceKeyboard deviceKeyboard(device);
-	device.Initialize();
-	deviceKeyboard.Initialize();
+	HID_Keyboard hidKeyboard(deviceController);
+	deviceController.Initialize();
+	hidKeyboard.Initialize();
 	static const Keyboard::KeySet keySetTbl[] = {
 		VK_1,    VK_2, VK_3,     VK_BACK,
 		VK_4,    VK_5, VK_6,     VK_UP,
@@ -50,14 +50,14 @@ int main(void)
 	};
 	const GPIO::KeyRow keyRowTbl[] = { GPIO16, GPIO17, GPIO18, GPIO19 };
 	const GPIO::KeyCol keyColTbl[] = { GPIO20.pull_up(), GPIO21.pull_up(), GPIO26.pull_up(), GPIO27.pull_up() };
-	deviceKeyboard.GetKeyboard().Initialize(keySetTbl, keyRowTbl, count_of(keyRowTbl), keyColTbl, count_of(keyColTbl), GPIO::LogicNeg);
+	hidKeyboard.GetKeyboard().Initialize(keySetTbl, keyRowTbl, count_of(keyRowTbl), keyColTbl, count_of(keyColTbl), GPIO::LogicNeg);
 	for (;;) Tickable::Tick();
 }
 
 //-----------------------------------------------------------------------------
-// DeviceKeyboard
+// HID_Keyboard
 //-----------------------------------------------------------------------------
-void DeviceKeyboard::OnTick()
+void HID_Keyboard::OnTick()
 {
 	uint8_t reportId = 0;
 	uint8_t modifier  = keyboard_.GetModifier();

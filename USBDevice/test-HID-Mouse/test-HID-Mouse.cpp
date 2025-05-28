@@ -15,13 +15,13 @@ auto& GPIO_LBUTTON		= GPIO20;
 auto& GPIO_RBUTTON		= GPIO21;
 
 //-----------------------------------------------------------------------------
-// DeviceMouse
+// HID_Mouse
 //-----------------------------------------------------------------------------
-class DeviceMouse : public USBDevice::Mouse {
+class HID_Mouse : public USBDevice::Mouse {
 private:
 	bool senseFlagPrev_;
 public:
-	DeviceMouse(USBDevice::Controller& device) : USBDevice::Mouse(device, "RaspberryPi Pico Mouse Interface", 0x81), senseFlagPrev_{false} {}
+	HID_Mouse(USBDevice::Controller& deviceController) : USBDevice::Mouse(deviceController, "RaspberryPi Pico Mouse Interface", 0x81), senseFlagPrev_{false} {}
 public:
 	virtual void OnTick() override;
 };
@@ -32,7 +32,7 @@ public:
 int main(void)
 {
 	::stdio_init_all(); 
-	USBDevice device({
+	USBDevice::Controller deviceController({
 		bcdUSB:				0x0200,
 		bDeviceClass:		0x00,
 		bDeviceSubClass:	0x00,
@@ -43,9 +43,9 @@ int main(void)
 		bcdDevice:			0x0100,
 	}, 0x0409, "pico-jxglib sample", "RaspberryPi Pico HID Device (Mouse)", "0123456789ABCDEF",
 		TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP);
-	DeviceMouse deviceMouse(device);
-	device.Initialize();
-	deviceMouse.Initialize();
+	HID_Mouse hidMouse(deviceController);
+	deviceController.Initialize();
+	hidMouse.Initialize();
 	GPIO_CURSOR_LEFT	.init().set_dir_IN().pull_up();
 	GPIO_CURSOR_UP		.init().set_dir_IN().pull_up();
 	GPIO_CURSOR_DOWN	.init().set_dir_IN().pull_up();
@@ -56,9 +56,9 @@ int main(void)
 }
 
 //-----------------------------------------------------------------------------
-// DeviceMouse
+// HID_Mouse
 //-----------------------------------------------------------------------------
-void DeviceMouse::OnTick()
+void HID_Mouse::OnTick()
 {
 	bool senseFlag = false;
 	uint8_t reportId = 0;

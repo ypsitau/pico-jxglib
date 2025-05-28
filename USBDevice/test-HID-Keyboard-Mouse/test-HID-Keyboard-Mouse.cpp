@@ -15,25 +15,25 @@ auto& GPIO_CURSOR_UP_LEFT		= GPIO20;
 auto& GPIO_CURSOR_DOWN_RIGHT	= GPIO21;
 
 //-----------------------------------------------------------------------------
-// DeviceKeyboard
+// HID_Keyboard
 //-----------------------------------------------------------------------------
-class DeviceKeyboard : public USBDevice::Keyboard {
+class HID_Keyboard : public USBDevice::Keyboard {
 private:
 	int nKeycodePrev_;
 public:
-	DeviceKeyboard(USBDevice::Controller& device) : USBDevice::Keyboard(device, "RaspberryPi Pico Keyboard Interface", 0x81), nKeycodePrev_{0} {}
+	HID_Keyboard(USBDevice::Controller& deviceController) : USBDevice::Keyboard(deviceController, "RaspberryPi Pico Keyboard Interface", 0x81), nKeycodePrev_{0} {}
 public:
 	virtual void OnTick() override;
 };
 
 //-----------------------------------------------------------------------------
-// DeviceMouse
+// HID_Mouse
 //-----------------------------------------------------------------------------
-class DeviceMouse : public USBDevice::Mouse {
+class HID_Mouse : public USBDevice::Mouse {
 private:
 	bool senseFlagPrev_;
 public:
-	DeviceMouse(USBDevice::Controller& device) : USBDevice::Mouse(device, "RaspberryPi Pico Mouse Interface", 0x82), senseFlagPrev_{false} {}
+	HID_Mouse(USBDevice::Controller& deviceController) : USBDevice::Mouse(deviceController, "RaspberryPi Pico Mouse Interface", 0x82), senseFlagPrev_{false} {}
 public:
 	virtual void OnTick() override;
 };
@@ -44,7 +44,7 @@ public:
 int main(void)
 {
 	::stdio_init_all(); 
-	USBDevice device({
+	USBDevice::Controller deviceController({
 		bcdUSB:				0x0200,
 		bDeviceClass:		0x00,
 		bDeviceSubClass:	0x00,
@@ -55,11 +55,11 @@ int main(void)
 		bcdDevice:			0x0100,
 	}, 0x0409, "pico-jxglib sample", "RaspberryPi Pico HMI Device (Keyboard + Mouse)", "0123456789ABCDEF",
 		TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP);
-	DeviceKeyboard deviceKeyboard(device);
-	DeviceMouse deviceMouse(device);
-	device.Initialize();
-	deviceKeyboard.Initialize();
-	deviceMouse.Initialize();
+	HID_Keyboard hidKeyboard(deviceController);
+	HID_Mouse hidMouse(deviceController);
+	deviceController.Initialize();
+	hidKeyboard.Initialize();
+	hidMouse.Initialize();
 	GPIO_ARROW_LEFT			.init().set_dir_IN().pull_up();
 	GPIO_ARROW_UP			.init().set_dir_IN().pull_up();
 	GPIO_ARROW_DOWN			.init().set_dir_IN().pull_up();
@@ -70,9 +70,9 @@ int main(void)
 }
 
 //-----------------------------------------------------------------------------
-// DeviceKeyboard
+// HID_Keyboard
 //-----------------------------------------------------------------------------
-void DeviceKeyboard::OnTick()
+void HID_Keyboard::OnTick()
 {
 	uint8_t reportId = 0;
 	uint8_t modifier  = 0;
@@ -96,9 +96,9 @@ void DeviceKeyboard::OnTick()
 }
 
 //-----------------------------------------------------------------------------
-// DeviceMouse
+// HID_Mouse
 //-----------------------------------------------------------------------------
-void DeviceMouse::OnTick()
+void HID_Mouse::OnTick()
 {
 	bool senseFlag = false;
 	uint8_t reportId = 0;
