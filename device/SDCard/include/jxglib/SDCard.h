@@ -63,6 +63,9 @@ public:
 	bool WriteBlock(int lba, const void* buf, int nBlocks);
 	bool IsInitialized() const { return initializedFlag_; }
 public:
+	spi_inst_t* GetSPI() const { return spi_; }
+	uint GetBaudrate() const { return baudrate_; }
+	const GPIO& GetCS() const { return gpio_CS_; }
 	int GetSectorCount() const { return nSectors_; }
 public:
 	static void PrintMBR(Printable& printable, const uint8_t* bufSector);

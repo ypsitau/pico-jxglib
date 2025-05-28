@@ -27,7 +27,7 @@ Flash::Flash(const char* driveName, uint32_t bytesXIP) :
 
 const char* Flash::GetRemarks(char* buff, int lenMax) const
 {
-	::snprintf(buff, lenMax, "Flash 0x%08x-0x%08x (%dkB)",
+	::snprintf(buff, lenMax, "LFS::Flash 0x%08x-0x%08x (%dkB)",
 		XIP_BASE + offsetXIP_, XIP_BASE + offsetXIP_ + cfg_.block_count * cfg_.block_size,
 		cfg_.block_count * cfg_.block_size / 1024);
 	return buff;

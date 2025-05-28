@@ -7,7 +7,7 @@
 namespace jxglib::FAT {
 
 //-----------------------------------------------------------------------------
-// RAMDisk
+// FAT::RAMDisk
 //-----------------------------------------------------------------------------
 RAMDisk::RAMDisk(const char* driveName, uint32_t bytesDisk) :
 		Drive(driveName), buffDisk_{nullptr}, bytesDisk_{bytesDisk}
@@ -21,7 +21,7 @@ RAMDisk::~RAMDisk()
 
 const char* RAMDisk::GetRemarks(char* buff, int lenMax) const
 {
-	::snprintf(buff, lenMax, "RAM 0x%08x-0x%08x (%dkB)", buffDisk_, buffDisk_ + bytesDisk_, bytesDisk_ / 1024);
+	::snprintf(buff, lenMax, "FAT::RAMDisk 0x%08x-0x%08x (%dkB)", buffDisk_, buffDisk_ + bytesDisk_, bytesDisk_ / 1024);
 	return buff;
 }
 

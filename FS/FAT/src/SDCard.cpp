@@ -15,7 +15,7 @@ SDCard::SDCard(const char* driveName, spi_inst_t* spi, uint baudrate, const jxgl
 
 const char* SDCard::GetRemarks(char* buff, int lenMax) const
 {
-	::snprintf(buff, lenMax, "SDCard on SPI");
+	::snprintf(buff, lenMax, "FAT::SDCard on SPI%d @%dHz CS:GPIO%d", ::spi_get_index(sdCard_.GetSPI()), sdCard_.GetBaudrate(), sdCard_.GetCS().pin);
 	return buff;
 }
 
