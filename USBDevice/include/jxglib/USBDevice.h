@@ -14,9 +14,6 @@ namespace jxglib {
 //-----------------------------------------------------------------------------
 class USBDevice : public Tickable {
 public:
-	static const int nInstancesMax = CFG_TUD_CDC + CFG_TUD_MSC + CFG_TUD_HID + CFG_TUD_AUDIO +
-		CFG_TUD_VIDEO + CFG_TUD_MIDI + CFG_TUD_VENDOR + CFG_TUD_BTH;
-public:
 	class Interface : public Tickable {
 		protected:
 			USBDevice& device_;
@@ -29,10 +26,9 @@ public:
 		public:
 			void Initialize() {}
 	};
-	class HID;
-	class CDC;
-	class MSC;
-#if CFG_TUD_HID > 0
+#if CFG_TUD_HID == 0
+	using HID = Interface;
+#else
 	class HID : public Interface {
 	protected:
 		const uint8_t* reportDescSaved_;
@@ -92,7 +88,9 @@ public:
 						uint8_t bytesReportDesc, uint8_t endpInterrupt, uint8_t pollingInterval);
 	};
 #endif
-#if CFG_TUD_CDC > 0
+#if CFG_TUD_CDC == 0
+	using CDC = Interface;
+#else
 	class CDC : public Interface {
 	public:
 		CDC(USBDevice& device, const char* str, uint8_t endpNotif, uint8_t bytesNotif, uint8_t endpBulkOut, uint8_t endpBulkIn, uint8_t bytesBulk, uint8_t pollingInterval);
@@ -122,7 +120,9 @@ public:
 		bool write_clear() { return ::tud_cdc_n_write_clear(iInstance_); }
 	};
 #endif
-#if CFG_TUD_MSC > 0
+#if CFG_TUD_MSC == 0
+	using MSC = Interface;
+#else
 	class MSC : public Interface {
 	public:
 		MSC(USBDevice& device, const char* str, uint8_t endpBulkOut, uint8_t endpBulkIn, uint16_t endpSize = 64);
@@ -141,21 +141,45 @@ public:
 
 	};
 #endif
-#if CFG_TUD_MIDI > 0
+#if CFG_TUD_MIDI == 0
+	using MIDI = Interface;
+#else
 	class MIDI : public Interface {
 	};
 #endif
-#if CFG_TUD_AUDIO > 0
+#if CFG_TUD_AUDIO == 0
+	using Audio = Interface;
+#else
+	class Audio : public Interface {
+	public:
+		Audio(USBDevice& device, const char* str, uint8_t endpAudioControl, uint8_t endpAudioStream, uint8_t bytesAudioStream);
+	public:
+		virtual void On_audio_control_complete() {}
+		virtual void On_audio_stream_complete() {}
+	};
 #endif
-#if CFG_TUD_VIDEO > 0
+#if CFG_TUD_VIDEO == 0
+	using Video = Interface;
+#else
+	class Video : public Interface {
+	};
 #endif
-#if CFG_TUD_BTH > 0
+#if CFG_TUD_BTH == 0
+	using BTH = Interface;
+#else
+	class BTH : public Interface {
+	};
 #endif
-#if CFG_TUD_VENDOR > 0
+#if CFG_TUD_VENDOR == 0
+	using Vendor = Interface;
+#else
 	class Vendor : public Interface {
 	};
 #endif
 public:
+	static const int nInstancesMax = CFG_TUD_CDC + CFG_TUD_MSC + CFG_TUD_HID + CFG_TUD_AUDIO +
+		CFG_TUD_VIDEO + CFG_TUD_MIDI + CFG_TUD_VENDOR + CFG_TUD_BTH;
+private:
 	tusb_desc_device_t deviceDesc_;
 	uint8_t rhport_;
 	uint8_t interfaceNumCur_;
@@ -168,6 +192,11 @@ public:
 			CDC* pCDCTbl[CFG_TUD_CDC];
 			MSC* pMSCTbl[CFG_TUD_MSC];
 			HID* pHIDTbl[CFG_TUD_HID];
+			MIDI* pMIDI[CFG_TUD_MIDI];
+			Audio* pAudio[CFG_TUD_AUDIO];
+			Video* pVideo[CFG_TUD_VIDEO];
+			Vendor* pVendor[CFG_TUD_VENDOR];
+			BTH* pBTH[CFG_TUD_BTH];
 		} specific_;
 	};
 	int offsetConfigDesc_;
