@@ -3,7 +3,7 @@
 #include <string.h>
 #include "pico/stdlib.h"
 #include "jxglib/GPIO.h"
-#include "jxglib/USBDevice.h"
+#include "jxglib/USBDevice/MSC.h"
 #include "jxglib/SDCard.h"
 
 using namespace jxglib;
@@ -18,8 +18,8 @@ private:
 	SDCard& sdCard_;
 	bool ejected_;
 public:
-	MSC_SDCard(USBDevice& device, SDCard& sdCard) :
-		USBDevice::MSC(device, "SDCard Interface", 0x01, 0x81), sdCard_{sdCard}, ejected_{false} {}
+	MSC_SDCard(USBDevice::Controller& deviceController, SDCard& sdCard) :
+		USBDevice::MSC(deviceController, "SDCard Interface", 0x01, 0x81), sdCard_{sdCard}, ejected_{false} {}
 public:
 	virtual void On_msc_inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]) override;
 	virtual bool On_msc_test_unit_ready(uint8_t lun) override;
@@ -115,7 +115,7 @@ int32_t MSC_SDCard::On_msc_scsi(uint8_t lun, uint8_t const scsi_cmd[16], void* b
 int main(void)
 {
 	::stdio_init_all(); 
-	USBDevice device({
+	USBDevice::Controller deviceController({
 		bcdUSB:				0x0200,
 		bDeviceClass:		0x00,
 		bDeviceSubClass:	0x00,
@@ -129,8 +129,8 @@ int main(void)
 	GPIO3.set_function_SPI0_TX();
 	GPIO4.set_function_SPI0_RX();
 	SDCard sdCard(spi0, 10 * 1000 * 1000, {CS: GPIO5});	// 10MHz
-	MSC_SDCard msc(device, sdCard);
-	device.Initialize();
+	MSC_SDCard msc(deviceController, sdCard);
+	deviceController.Initialize();
 	sdCard.Initialize(true);
 	msc.Initialize();
 	for (;;) Tickable::Tick();
