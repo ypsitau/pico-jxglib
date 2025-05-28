@@ -23,8 +23,11 @@ CDC::CDC(Controller& deviceController, const char* str, uint8_t endpNotif, uint8
 
 }
 
+//-----------------------------------------------------------------------------
+// Callback functions
+//-----------------------------------------------------------------------------
 // Invoked when received new data
-void tud_cdc_rx_cb(uint8_t iInstance)
+extern "C" void tud_cdc_rx_cb(uint8_t iInstance)
 {
 	using namespace jxglib;
 	USBDevice::CDC* pCDC = Controller::GetInterface_CDC(iInstance);
@@ -32,7 +35,7 @@ void tud_cdc_rx_cb(uint8_t iInstance)
 }
 
 // Invoked when received `wanted_char`
-void tud_cdc_rx_wanted_cb(uint8_t iInstance, char wanted_char)
+extern "C" void tud_cdc_rx_wanted_cb(uint8_t iInstance, char wanted_char)
 {
 	using namespace jxglib;
 	USBDevice::CDC* pCDC = Controller::GetInterface_CDC(iInstance);
@@ -40,7 +43,7 @@ void tud_cdc_rx_wanted_cb(uint8_t iInstance, char wanted_char)
 }  
 
 // Invoked when a TX is complete and therefore space becomes available in TX buffer
-void tud_cdc_tx_complete_cb(uint8_t iInstance)
+extern "C" void tud_cdc_tx_complete_cb(uint8_t iInstance)
 {
 	using namespace jxglib;
 	USBDevice::CDC* pCDC = Controller::GetInterface_CDC(iInstance);
@@ -48,7 +51,7 @@ void tud_cdc_tx_complete_cb(uint8_t iInstance)
 }  
 
 // Invoked when line state DTR & RTS are changed via SET_CONTROL_LINE_STATE
-void tud_cdc_line_state_cb(uint8_t iInstance, bool dtr, bool rts)
+extern "C" void tud_cdc_line_state_cb(uint8_t iInstance, bool dtr, bool rts)
 {
 	using namespace jxglib;
 	USBDevice::CDC* pCDC = Controller::GetInterface_CDC(iInstance);
@@ -56,7 +59,7 @@ void tud_cdc_line_state_cb(uint8_t iInstance, bool dtr, bool rts)
 }  
 
 // Invoked when line coding is change via SET_LINE_CODING
-void tud_cdc_line_coding_cb(uint8_t iInstance, const cdc_line_coding_t* p_line_coding)
+extern "C" void tud_cdc_line_coding_cb(uint8_t iInstance, const cdc_line_coding_t* p_line_coding)
 {
 	using namespace jxglib;
 	USBDevice::CDC* pCDC = Controller::GetInterface_CDC(iInstance);
@@ -64,7 +67,7 @@ void tud_cdc_line_coding_cb(uint8_t iInstance, const cdc_line_coding_t* p_line_c
 }  
 
 // Invoked when received send break
-void tud_cdc_send_break_cb(uint8_t iInstance, uint16_t duration_ms)
+extern "C" void tud_cdc_send_break_cb(uint8_t iInstance, uint16_t duration_ms)
 {
 	using namespace jxglib;
 	USBDevice::CDC* pCDC = Controller::GetInterface_CDC(iInstance);

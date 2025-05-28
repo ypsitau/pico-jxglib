@@ -4,11 +4,11 @@
 #include "jxglib/UTF8.h"
 #include "jxglib/USBDevice.h"
 
+namespace jxglib::USBDevice {
+
 //-----------------------------------------------------------------------------
 // USBDevice
 //-----------------------------------------------------------------------------
-namespace jxglib::USBDevice {
-
 Controller* Controller::Instance = nullptr;
 
 Controller::Controller(const tusb_desc_device_t& deviceDesc, uint16_t langid,
@@ -116,77 +116,61 @@ const uint16_t* Controller::On_GET_STRING_DESCRIPTOR(uint8_t idxString, uint16_t
 	return stringDesc_;
 }
 
-}
-
-void tud_mount_cb()
-{
-	jxglib::USBDevice::Controller::Instance->OnMount();
-}
-
-void tud_umount_cb()
-{
-	jxglib::USBDevice::Controller::Instance->OnUmount();
-}
-
-// remote_wakeup_en : if host allow us to perform remote wakeup
-// Within 7ms, device must draw an average of current less than 2.5 mA from bus
-void tud_suspend_cb(bool remote_wakeup_en)
-{
-	jxglib::USBDevice::Controller::Instance->OnSuspend();
-}
-
-void tud_resume_cb()
-{
-	jxglib::USBDevice::Controller::Instance->OnResume();
-}
-
-// Invoked when received GET DEVICE DESCRIPTOR
-const uint8_t* tud_descriptor_device_cb()
-{
-	return jxglib::USBDevice::Controller::Instance->On_GET_DEVICE_DESCRIPTOR();
-}
-
-// Invoked when received GET CONFIGURATION DESCRIPTOR
-const uint8_t* tud_descriptor_configuration_cb(uint8_t idxConfig)
-{
-	return jxglib::USBDevice::Controller::Instance->On_GET_CONFIGURATION_DESCRIPTOR(idxConfig);
-}
-
-// Invoked when received GET STRING DESCRIPTOR request
-const uint16_t* tud_descriptor_string_cb(uint8_t idxString, uint16_t langid)
-{
-	return jxglib::USBDevice::Controller::Instance->On_GET_STRING_DESCRIPTOR(idxString, langid);
-}
-
 //-----------------------------------------------------------------------------
 // USBDevice::Interface
 //-----------------------------------------------------------------------------
-namespace jxglib {
-
-USBDevice::Interface::Interface(Controller& deviceController, int nInterfacesToOccupy, uint32_t msecTick) :
+Interface::Interface(Controller& deviceController, int nInterfacesToOccupy, uint32_t msecTick) :
 	Tickable(msecTick), deviceController_{deviceController}, iInstance_{0}
 {
 	interfaceNum_ = deviceController.AssignInterfaceNum(nInterfacesToOccupy);
 }
 	
-void USBDevice::Interface::RegisterConfigDesc(const void* configDesc, int bytes)
+void Interface::RegisterConfigDesc(const void* configDesc, int bytes)
 {
 	deviceController_.RegisterConfigDesc(configDesc, bytes);
 }
 
 }
 
-
-
-
 //-----------------------------------------------------------------------------
-// USBDevice::MIDI
+// Callback functions
 //-----------------------------------------------------------------------------
-#if CFG_TUD_MIDI > 0
-#endif
+extern "C" void tud_mount_cb()
+{
+	jxglib::USBDevice::Controller::Instance->OnMount();
+}
 
-//-----------------------------------------------------------------------------
-// USBDevice::Vendor
-//-----------------------------------------------------------------------------
-#if CFG_TUD_VENDOR > 0
-#endif
+extern "C" void tud_umount_cb()
+{
+	jxglib::USBDevice::Controller::Instance->OnUmount();
+}
+
+// remote_wakeup_en : if host allow us to perform remote wakeup
+// Within 7ms, device must draw an average of current less than 2.5 mA from bus
+extern "C" void tud_suspend_cb(bool remote_wakeup_en)
+{
+	jxglib::USBDevice::Controller::Instance->OnSuspend();
+}
+
+extern "C" void tud_resume_cb()
+{
+	jxglib::USBDevice::Controller::Instance->OnResume();
+}
+
+// Invoked when received GET DEVICE DESCRIPTOR
+extern "C" const uint8_t* tud_descriptor_device_cb()
+{
+	return jxglib::USBDevice::Controller::Instance->On_GET_DEVICE_DESCRIPTOR();
+}
+
+// Invoked when received GET CONFIGURATION DESCRIPTOR
+extern "C" const uint8_t* tud_descriptor_configuration_cb(uint8_t idxConfig)
+{
+	return jxglib::USBDevice::Controller::Instance->On_GET_CONFIGURATION_DESCRIPTOR(idxConfig);
+}
+
+// Invoked when received GET STRING DESCRIPTOR request
+extern "C" const uint16_t* tud_descriptor_string_cb(uint8_t idxString, uint16_t langid)
+{
+	return jxglib::USBDevice::Controller::Instance->On_GET_STRING_DESCRIPTOR(idxString, langid);
+}

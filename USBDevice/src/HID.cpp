@@ -21,61 +21,9 @@ HID::HID(Controller& deviceController, uint32_t msecTick, const char* str, uint8
 	RegisterConfigDesc(configDesc, sizeof(configDesc));
 }
 
-}
-
-// Invoked when received DESCRIPTOR_REPORT control request
-const uint8_t* tud_hid_descriptor_report_cb(uint8_t iInstance)
-{
-	using namespace jxglib::USBDevice;
-	HID* pHID = Controller::GetInterface_HID(iInstance);
-	if (pHID) return pHID->On_DESCRIPTOR_REPORT();
-	return reinterpret_cast<const uint8_t*>("");
-}
-
-// Invoked when received GET_REPORT control request
-// Application must fill buffer report's content and return its length.
-// Return zero will cause the stack to STALL request
-uint16_t tud_hid_get_report_cb(uint8_t iInstance, uint8_t reportID, hid_report_type_t reportType, uint8_t* report, uint16_t reportLength)
-{
-	using namespace jxglib::USBDevice;
-	HID* pHID = Controller::GetInterface_HID(iInstance);
-	if (pHID) return pHID->On_GET_REPORT(reportID, reportType, report, reportLength);
-	return 0;
-}
-
-// Invoked when sent REPORT successfully to host
-// Application can use this to send the next report
-// Note: For composite reports, report[0] is report ID
-void tud_hid_report_complete_cb(uint8_t iInstance, uint8_t const* report, uint16_t reportLength)
-{
-	using namespace jxglib::USBDevice;
-	HID* pHID = Controller::GetInterface_HID(iInstance);
-	if (pHID) pHID->On_GET_REPORT_Complete(report, reportLength);
-}
-
-// Invoked when received SET_REPORT control request or
-// received data on OUT endpoint (Report ID = 0, Type = 0 )
-void tud_hid_set_report_cb(uint8_t iInstance, uint8_t reportID, hid_report_type_t reportType, const uint8_t* report, uint16_t reportLength)
-{
-	using namespace jxglib::USBDevice;
-	HID* pHID = Controller::GetInterface_HID(iInstance);
-	if (pHID) pHID->On_SET_REPORT(reportID, reportType, report, reportLength);
-}
-
-// Invoked when received SET_PROTOCOL request
-// protocol is either HID_PROTOCOL_BOOT (0) or HID_PROTOCOL_REPORT (1)
-void tud_hid_set_protocol_cb(uint8_t iInstance, uint8_t protocol)
-{
-	using namespace jxglib::USBDevice;
-	HID* pHID = Controller::GetInterface_HID(iInstance);
-	if (pHID) pHID->On_SET_PROTOCOL(protocol);
-}
-
 //-----------------------------------------------------------------------------
 // USBDevice::Keyboard
 //-----------------------------------------------------------------------------
-namespace jxglib::USBDevice {
-
 const uint8_t Keyboard::reportDesc_[] = { TUD_HID_REPORT_DESC_KEYBOARD() };
 
 const Keyboard::KeyCodeToUsageId Keyboard::keyCodeToUsageIdTbl[] = {
@@ -342,13 +290,9 @@ Keyboard::Keyboard(Controller& deviceController, const char* str, uint8_t endpIn
 {
 }
 
-}
-
 //-----------------------------------------------------------------------------
 // USBDevice::Mouse
 //-----------------------------------------------------------------------------
-namespace jxglib::USBDevice {
-
 const uint8_t Mouse::reportDesc_[] = { TUD_HID_REPORT_DESC_MOUSE() };
 
 Mouse::Mouse(Controller& deviceController, const char* str, uint8_t endpInterrupt, uint8_t pollingInterval) :
@@ -356,19 +300,66 @@ Mouse::Mouse(Controller& deviceController, const char* str, uint8_t endpInterrup
 {
 }
 
-}
-
 //-----------------------------------------------------------------------------
 // USBDevice::HIDCustom
 //-----------------------------------------------------------------------------
-namespace jxglib::USBDevice {
-
 HIDCustom::HIDCustom(Controller& deviceController, const char* str, const uint8_t* reportDesc,
 					uint8_t bytesReportDesc, uint8_t endpInterrupt, uint8_t pollingInterval) :
 	HID(deviceController, pollingInterval, str, HID_ITF_PROTOCOL_NONE, reportDesc, bytesReportDesc, endpInterrupt, pollingInterval)
 {
 }
-		
+
+}
+
+//-----------------------------------------------------------------------------
+// Callback functions
+//-----------------------------------------------------------------------------
+// Invoked when received DESCRIPTOR_REPORT control request
+const uint8_t* tud_hid_descriptor_report_cb(uint8_t iInstance)
+{
+	using namespace jxglib::USBDevice;
+	HID* pHID = Controller::GetInterface_HID(iInstance);
+	if (pHID) return pHID->On_DESCRIPTOR_REPORT();
+	return reinterpret_cast<const uint8_t*>("");
+}
+
+// Invoked when received GET_REPORT control request
+// Application must fill buffer report's content and return its length.
+// Return zero will cause the stack to STALL request
+uint16_t tud_hid_get_report_cb(uint8_t iInstance, uint8_t reportID, hid_report_type_t reportType, uint8_t* report, uint16_t reportLength)
+{
+	using namespace jxglib::USBDevice;
+	HID* pHID = Controller::GetInterface_HID(iInstance);
+	if (pHID) return pHID->On_GET_REPORT(reportID, reportType, report, reportLength);
+	return 0;
+}
+
+// Invoked when sent REPORT successfully to host
+// Application can use this to send the next report
+// Note: For composite reports, report[0] is report ID
+void tud_hid_report_complete_cb(uint8_t iInstance, uint8_t const* report, uint16_t reportLength)
+{
+	using namespace jxglib::USBDevice;
+	HID* pHID = Controller::GetInterface_HID(iInstance);
+	if (pHID) pHID->On_GET_REPORT_Complete(report, reportLength);
+}
+
+// Invoked when received SET_REPORT control request or
+// received data on OUT endpoint (Report ID = 0, Type = 0 )
+void tud_hid_set_report_cb(uint8_t iInstance, uint8_t reportID, hid_report_type_t reportType, const uint8_t* report, uint16_t reportLength)
+{
+	using namespace jxglib::USBDevice;
+	HID* pHID = Controller::GetInterface_HID(iInstance);
+	if (pHID) pHID->On_SET_REPORT(reportID, reportType, report, reportLength);
+}
+
+// Invoked when received SET_PROTOCOL request
+// protocol is either HID_PROTOCOL_BOOT (0) or HID_PROTOCOL_REPORT (1)
+void tud_hid_set_protocol_cb(uint8_t iInstance, uint8_t protocol)
+{
+	using namespace jxglib::USBDevice;
+	HID* pHID = Controller::GetInterface_HID(iInstance);
+	if (pHID) pHID->On_SET_PROTOCOL(protocol);
 }
 
 #endif
