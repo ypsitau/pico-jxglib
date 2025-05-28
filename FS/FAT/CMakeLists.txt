@@ -100,7 +100,7 @@ function(jxglib_configure_FAT target)
 	jxglib_set_if_undefined(_FF_PRINT_FLOAT		0)
 	jxglib_set_if_undefined(_FF_STRF_ENCODE		3)
 	jxglib_set_if_undefined(_FF_CODE_PAGE		932)
-	jxglib_set_if_undefined(_FF_USE_LFN			0)
+	jxglib_set_if_undefined(_FF_USE_LFN			1)
 	jxglib_set_if_undefined(_FF_MAX_LFN			255)
 	jxglib_set_if_undefined(_FF_LFN_UNICODE		2)	# UTF-8
 	jxglib_set_if_undefined(_FF_LFN_BUF			255)

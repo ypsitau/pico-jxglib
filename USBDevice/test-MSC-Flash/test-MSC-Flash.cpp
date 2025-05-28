@@ -3,7 +3,7 @@
 #include <string.h>
 #include "pico/stdlib.h"
 #include "jxglib/GPIO.h"
-#include "jxglib/USBDevice.h"
+#include "jxglib/USBDevice/MSC.h"
 #include "jxglib/Flash.h"
 #include "jxglib/Serial.h"
 #include "jxglib/Shell.h"
@@ -34,7 +34,7 @@ private:
 	uint32_t bytesXIP_;
 	SyncAgent syncAgent_;
 public:
-	MSC_Flash(USBDevice& device, uint32_t addrXIP, uint32_t bytesXIP);
+	MSC_Flash(USBDevice::Controller& deviceController, uint32_t addrXIP, uint32_t bytesXIP);
 public:
 	// virual functions of USBDevice::MSC
 	virtual void On_msc_inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]) override;
@@ -47,8 +47,8 @@ public:
 	virtual int32_t On_msc_scsi(uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize) override;
 };
 
-MSC_Flash::MSC_Flash(USBDevice& device, uint32_t addrXIP, uint32_t bytesXIP) :
-	USBDevice::MSC(device, "Flash Interface", 0x01, 0x81),
+MSC_Flash::MSC_Flash(USBDevice::Controller& deviceController, uint32_t addrXIP, uint32_t bytesXIP) :
+	USBDevice::MSC(deviceController, "Flash Interface", 0x01, 0x81),
 	offsetXIP_{addrXIP & 0x0fff'ffff}, bytesXIP_{bytesXIP}
 {}
 
@@ -65,7 +65,7 @@ void MSC_Flash::On_msc_inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t produc
 
 bool MSC_Flash::On_msc_test_unit_ready(uint8_t lun)
 {
-	//::printf("On_msc_test_unit_ready\n");
+	::printf("On_msc_test_unit_ready\n");
 	return true;
 }
 
@@ -141,7 +141,7 @@ void MSC_Flash::SyncAgent::OnTick()
 int main(void)
 {
 	::stdio_init_all(); 
-	USBDevice device({
+	USBDevice::Controller deviceController({
 		bcdUSB:				0x0200,
 		bDeviceClass:		0x00,
 		bDeviceSubClass:	0x00,
@@ -151,12 +151,12 @@ int main(void)
 		idProduct:			USBDevice::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
 	}, 0x0409, "RPi Flash", "RPi Flash Device", "3141592653");
-	MSC_Flash msc(device, 0x1018'0000, 0x008'0000);
-	FAT::Flash fat(0x1018'0000, 0x008'0000);
+	MSC_Flash msc(deviceController, 0x1018'0000, 0x004'0000);
+	FAT::Flash fat("flash", 0x1018'0000, 0x004'0000);
 	fat.Mount();
 	Serial::Terminal terminal;
 	Shell::AttachTerminal(terminal.Initialize());
-	device.Initialize();
+	deviceController.Initialize();
 	msc.Initialize();
 	for (;;) Tickable::Tick();
 }
