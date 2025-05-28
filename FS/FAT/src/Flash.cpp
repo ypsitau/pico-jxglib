@@ -12,12 +12,20 @@ namespace jxglib::FAT {
 Flash::Flash(const char* driveName, uint32_t addrXIP, uint32_t bytesXIP) :
 	Drive(driveName), offsetXIP_{addrXIP & 0x0fff'ffff}, bytesXIP_{bytesXIP}
 {
+	if (bytesXIP % FLASH_SECTOR_SIZE != 0) {
+		::panic("bytesXIP must be multiple of %d", FLASH_SECTOR_SIZE);
+	}
+}
+
+Flash::Flash(const char* driveName, uint32_t bytesXIP) :
+	Flash(driveName, XIP_BASE + PICO_FLASH_SIZE_BYTES - bytesXIP, bytesXIP)
+{
 }
 
 const char* Flash::GetRemarks(char* buff, int lenMax) const
 {
 	::snprintf(buff, lenMax, "Flash 0x%08x-0x%08x (%dkB)",
-		0x10000000 + offsetXIP_, 0x10000000 + offsetXIP_ + bytesXIP_, bytesXIP_ / 1024);
+		XIP_BASE + offsetXIP_, XIP_BASE + offsetXIP_ + bytesXIP_, bytesXIP_ / 1024);
 	return buff;
 }
 

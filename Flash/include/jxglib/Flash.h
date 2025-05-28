@@ -17,10 +17,6 @@ namespace jxglib {
 class Flash {
 public:
 	static const uint32_t Timeout = UINT32_MAX;
-	static const uint32_t Address = XIP_BASE;
-	static const uint32_t bytesBlock = FLASH_BLOCK_SIZE;
-	static const uint32_t bytesPage = FLASH_PAGE_SIZE;
-	static const uint32_t bytesWhole = PICO_FLASH_SIZE_BYTES;
 public:
 	struct Param_Erase { uint32_t offsetXIP; uint32_t bytes; };
 	struct Param_Program { uint32_t offsetXIP; const void* data; uint32_t bytes; };

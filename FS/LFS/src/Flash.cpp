@@ -20,10 +20,15 @@ Flash::Flash(const char* driveName, uint32_t addrXIP, uint32_t bytesXIP) :
 	cfg_.lookahead_size	= FLASH_SECTOR_SIZE;			// Size of the lookahead buffer in bytes
 }
 
+Flash::Flash(const char* driveName, uint32_t bytesXIP) :
+	Flash(driveName, XIP_BASE + PICO_FLASH_SIZE_BYTES - bytesXIP, bytesXIP)
+{
+}
+
 const char* Flash::GetRemarks(char* buff, int lenMax) const
 {
 	::snprintf(buff, lenMax, "Flash 0x%08x-0x%08x (%dkB)",
-		0x10000000 + offsetXIP_, 0x10000000 + offsetXIP_ + cfg_.block_count * cfg_.block_size,
+		XIP_BASE + offsetXIP_, XIP_BASE + offsetXIP_ + cfg_.block_count * cfg_.block_size,
 		cfg_.block_count * cfg_.block_size / 1024);
 	return buff;
 }

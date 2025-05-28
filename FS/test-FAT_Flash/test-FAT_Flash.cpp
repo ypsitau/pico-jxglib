@@ -10,8 +10,9 @@ using namespace jxglib;
 int main()
 {
 	::stdio_init_all();
-	FAT::Flash fat1("a", 0x1010'0000, 0x0004'0000); // XIP address and size
-	FAT::Flash fat2("b", 0x1014'0000, 0x0004'0000); // XIP address and size
+	FAT::Flash fat1("A", 0x1010'0000, 0x0004'0000);	// XIP address and size
+	FAT::Flash fat2("B", 0x1014'0000, 0x0004'0000);	// XIP address and size
+	FAT::Flash fat3("C", 0x0004'0000);				// XIP size
 	Serial::Terminal terminal;
 	Shell::AttachTerminal(terminal.Initialize());
 	for (;;) Tickable::Tick();

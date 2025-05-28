@@ -21,7 +21,7 @@ Drive::Drive(const char* driveName) : FS::Drive("FAT", driveName), pdrv_{0}, pDr
 	} else {
 		pDriveHead_ = this;
 	}
-	if (pdrv_ >= FF_VOLUMES) ::panic("set FF_VOLUMES to more than %d", pdrv_ + 1);
+	if (pdrv_ >= FF_VOLUMES) ::panic("set FF_VOLUMES of jxglib_configure_FAT() in CMakeLists.txt to %d or more", pdrv_ + 1);
 }
 
 const char* Drive::GetFileSystemName()

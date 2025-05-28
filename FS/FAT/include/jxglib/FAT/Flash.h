@@ -18,6 +18,7 @@ private:
 	uint32_t bytesXIP_; 	// must be multiple of bytesSector
 public:
 	Flash(const char* driveName, uint32_t addrXIP, uint32_t bytesXIP);
+	Flash(const char* driveName, uint32_t bytesXIP);
 public:
 	// virtual functions of FS::Drive
 	virtual const char* GetRemarks(char* buff, int lenMax) const override;
