@@ -1,6 +1,6 @@
 #include <ctype.h>
 #include "pico/stdlib.h"
-#include "jxglib/USBDevice.h"
+#include "jxglib/USBDevice/CDC.h"
 
 using namespace jxglib;
 
@@ -13,8 +13,8 @@ public:
 private:
 	Mode mode_;
 public:
-	EchoBack(USBDevice& device, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn, Mode mode) :
-				USBDevice::CDC(device, name, endpNotif, 8, endpBulkOut, endpBulkIn, 64, 10), mode_{mode} {}
+	EchoBack(USBDevice::Controller& deviceController, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn, Mode mode) :
+				USBDevice::CDC(deviceController, name, endpNotif, 8, endpBulkOut, endpBulkIn, 64, 10), mode_{mode} {}
 public:
 	virtual void OnTick() override;
 };
@@ -48,7 +48,7 @@ void EchoBack::OnTick()
 int main(void)
 {
 	::stdio_init_all(); 
-	USBDevice device({
+	USBDevice::Controller deviceController({
 		bcdUSB:				0x0200,
 		bDeviceClass:		TUSB_CLASS_MISC,
 		bDeviceSubClass:	MISC_SUBCLASS_COMMON,
@@ -58,10 +58,10 @@ int main(void)
 		idProduct:			USBDevice::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
 	}, 0x0409, "CDC Test", "CDC Test Product", "0123456");
-	EchoBack echoBack1(device, "EchoBack Normal", 0x81, 0x02, 0x82, EchoBack::Mode::Normal);
-	EchoBack echoBack2(device, "EchoBack Upper", 0x83, 0x04, 0x84, EchoBack::Mode::Upper);
-	EchoBack echoBack3(device, "EchoBack Crypt", 0x85, 0x06, 0x86, EchoBack::Mode::Crypt);
-	device.Initialize();
+	EchoBack echoBack1(deviceController, "EchoBack Normal", 0x81, 0x02, 0x82, EchoBack::Mode::Normal);
+	EchoBack echoBack2(deviceController, "EchoBack Upper", 0x83, 0x04, 0x84, EchoBack::Mode::Upper);
+	EchoBack echoBack3(deviceController, "EchoBack Crypt", 0x85, 0x06, 0x86, EchoBack::Mode::Crypt);
+	deviceController.Initialize();
 	echoBack1.Initialize();
 	echoBack2.Initialize();
 	echoBack3.Initialize();
