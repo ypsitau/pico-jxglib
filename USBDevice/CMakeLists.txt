@@ -8,7 +8,10 @@ target_link_libraries(jxglib_USBDevice INTERFACE
 	tinyusb_device)
 
 target_sources(jxglib_USBDevice INTERFACE
-	${CMAKE_CURRENT_LIST_DIR}/src/USBDevice.cpp)
+	${CMAKE_CURRENT_LIST_DIR}/src/USBDevice.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/HID.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/CDC.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/MSC.cpp)
 
 function(jxglib_configure_USBDevice target)
 	set(VARS
