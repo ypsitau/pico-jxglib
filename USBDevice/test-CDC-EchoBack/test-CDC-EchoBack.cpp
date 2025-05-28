@@ -1,5 +1,5 @@
 #include "pico/stdlib.h"
-#include "jxglib/USBDevice.h"
+#include "jxglib/USBDevice/CDC.h"
 
 using namespace jxglib;
 
@@ -8,8 +8,8 @@ using namespace jxglib;
 //-----------------------------------------------------------------------------
 class EchoBack : public USBDevice::CDC {
 public:
-	EchoBack(USBDevice& device, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn) :
-				USBDevice::CDC(device, name, endpNotif, 8, endpBulkOut, endpBulkIn, 64, 10) {}
+	EchoBack(USBDevice::Controller& deviceController, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn) :
+				USBDevice::CDC(deviceController, name, endpNotif, 8, endpBulkOut, endpBulkIn, 64, 10) {}
 public:
 	virtual void OnTick() override;
 };
@@ -29,7 +29,7 @@ void EchoBack::OnTick()
 int main(void)
 {
 	::stdio_init_all(); 
-	USBDevice device({
+	USBDevice::Controller deviceController({
 		bcdUSB:				0x0200,
 		bDeviceClass:		TUSB_CLASS_MISC,
 		bDeviceSubClass:	MISC_SUBCLASS_COMMON,
@@ -39,8 +39,8 @@ int main(void)
 		idProduct:			USBDevice::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
 	}, 0x0409, "CDC EchoBack", "CDC EchoBack Product", "0123456");
-	EchoBack echoBack(device, "EchoBack Normal", 0x81, 0x02, 0x82);
-	device.Initialize();
+	EchoBack echoBack(deviceController, "EchoBack Normal", 0x81, 0x02, 0x82);
+	deviceController.Initialize();
 	echoBack.Initialize();
 	for (;;) Tickable::Tick();
 }
