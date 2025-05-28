@@ -4,17 +4,17 @@
 using namespace jxglib;
 
 //-----------------------------------------------------------------------------
-// EchoBack
+// CDC_EchoBack
 //-----------------------------------------------------------------------------
-class EchoBack : public USBDevice::CDC {
+class CDC_EchoBack : public USBDevice::CDC {
 public:
-	EchoBack(USBDevice::Controller& deviceController, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn) :
+	CDC_EchoBack(USBDevice::Controller& deviceController, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn) :
 				USBDevice::CDC(deviceController, name, endpNotif, 8, endpBulkOut, endpBulkIn, 64, 10) {}
 public:
 	virtual void OnTick() override;
 };
 
-void EchoBack::OnTick()
+void CDC_EchoBack::OnTick()
 {
 	if (!cdc_available()) return;
 	char buff[64];
@@ -39,8 +39,8 @@ int main(void)
 		idProduct:			USBDevice::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
 	}, 0x0409, "CDC EchoBack", "CDC EchoBack Product", "0123456");
-	EchoBack echoBack(deviceController, "EchoBack Normal", 0x81, 0x02, 0x82);
+	CDC_EchoBack cdc(deviceController, "EchoBack Normal", 0x81, 0x02, 0x82);
 	deviceController.Initialize();
-	echoBack.Initialize();
+	cdc.Initialize();
 	for (;;) Tickable::Tick();
 }

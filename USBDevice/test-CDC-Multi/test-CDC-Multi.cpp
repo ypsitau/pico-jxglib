@@ -5,21 +5,21 @@
 using namespace jxglib;
 
 //-----------------------------------------------------------------------------
-// EchoBack
+// CDC_EchoBack
 //-----------------------------------------------------------------------------
-class EchoBack : public USBDevice::CDC {
+class CDC_EchoBack : public USBDevice::CDC {
 public:
 	enum Mode { Normal, Upper, Crypt };
 private:
 	Mode mode_;
 public:
-	EchoBack(USBDevice::Controller& deviceController, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn, Mode mode) :
+	CDC_EchoBack(USBDevice::Controller& deviceController, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn, Mode mode) :
 				USBDevice::CDC(deviceController, name, endpNotif, 8, endpBulkOut, endpBulkIn, 64, 10), mode_{mode} {}
 public:
 	virtual void OnTick() override;
 };
 
-void EchoBack::OnTick()
+void CDC_EchoBack::OnTick()
 {
 	if (!cdc_available()) return;
 	char buff[64];
@@ -58,12 +58,12 @@ int main(void)
 		idProduct:			USBDevice::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
 	}, 0x0409, "CDC Test", "CDC Test Product", "0123456");
-	EchoBack echoBack1(deviceController, "EchoBack Normal", 0x81, 0x02, 0x82, EchoBack::Mode::Normal);
-	EchoBack echoBack2(deviceController, "EchoBack Upper", 0x83, 0x04, 0x84, EchoBack::Mode::Upper);
-	EchoBack echoBack3(deviceController, "EchoBack Crypt", 0x85, 0x06, 0x86, EchoBack::Mode::Crypt);
+	CDC_EchoBack cdc1(deviceController, "EchoBack Normal", 0x81, 0x02, 0x82, CDC_EchoBack::Mode::Normal);
+	CDC_EchoBack cdc2(deviceController, "EchoBack Upper", 0x83, 0x04, 0x84, CDC_EchoBack::Mode::Upper);
+	CDC_EchoBack cdc3(deviceController, "EchoBack Crypt", 0x85, 0x06, 0x86, CDC_EchoBack::Mode::Crypt);
 	deviceController.Initialize();
-	echoBack1.Initialize();
-	echoBack2.Initialize();
-	echoBack3.Initialize();
+	cdc1.Initialize();
+	cdc2.Initialize();
+	cdc3.Initialize();
 	for (;;) Tickable::Tick();
 }
