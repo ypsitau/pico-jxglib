@@ -3,7 +3,7 @@
 #include <string.h>
 #include "pico/stdlib.h"
 #include "jxglib/GPIO.h"
-#include "jxglib/USBDevice.h"
+#include "jxglib/USBDevice/HID.h"
 
 using namespace jxglib;
 
@@ -15,9 +15,9 @@ auto& GPIO_CURSOR_UP_LEFT		= GPIO20;
 auto& GPIO_CURSOR_DOWN_RIGHT	= GPIO21;
 
 //-----------------------------------------------------------------------------
-// HIDComposite
+// HID_Composite
 //-----------------------------------------------------------------------------
-class HIDComposite : public USBDevice::HID {
+class HID_Composite : public USBDevice::HID {
 public:
 	struct ReportId {
 		static const uint8_t Keyboard	= 0;
@@ -30,7 +30,7 @@ private:
 private:
 	static const uint8_t reportDesc_[];
 public:
-	HIDComposite(USBDevice& device);
+	HID_Composite(USBDevice::Controller& deviceController);
 public:
 	void SendReport(uint8_t reportId);
 public:
@@ -38,20 +38,20 @@ public:
 	virtual void On_GET_REPORT_Complete(const uint8_t* report, uint16_t reportLength) override;
 };
 
-const uint8_t HIDComposite::reportDesc_[] = {
+const uint8_t HID_Composite::reportDesc_[] = {
 	TUD_HID_REPORT_DESC_KEYBOARD(),
 	//TUD_HID_REPORT_DESC_MOUSE()
 	//TUD_HID_REPORT_DESC_KEYBOARD(HID_REPORT_ID(ReportId::Keyboard)),
 	//TUD_HID_REPORT_DESC_MOUSE(HID_REPORT_ID(ReportId::Mouse))
 };
 
-HIDComposite::HIDComposite(USBDevice& device) : USBDevice::HID(device, 30, "RaspberryPi Pico HID Composite Interface",
+HID_Composite::HID_Composite(USBDevice::Controller& deviceController) : USBDevice::HID(deviceController, 30, "RaspberryPi Pico HID Composite Interface",
 	HID_ITF_PROTOCOL_KEYBOARD, reportDesc_, sizeof(reportDesc_), 0x81, 5), nKeycodePrev_{0}, senseFlagPrev_{false} {}
 
 //-----------------------------------------------------------------------------
-// DeviceKeyboard
+// HID_Keyboard
 //-----------------------------------------------------------------------------
-class DeviceKeyboard : public USBDevice::HID {
+class HID_Keyboard : public USBDevice::HID {
 public:
 	struct ReportId {
 		static const uint8_t Keyboard	= 1;
@@ -63,19 +63,19 @@ private:
 private:
 	static const uint8_t reportDesc_[];
 public:
-	DeviceKeyboard(USBDevice& device);
+	HID_Keyboard(USBDevice::Controller& deviceController);
 public:
 	virtual void OnTick() override;
 	virtual void On_GET_REPORT_Complete(const uint8_t* report, uint16_t reportLength) override;
 };
 
-const uint8_t DeviceKeyboard::reportDesc_[] = {
+const uint8_t HID_Keyboard::reportDesc_[] = {
 	TUD_HID_REPORT_DESC_KEYBOARD()
 	//TUD_HID_REPORT_DESC_KEYBOARD(HID_REPORT_ID(ReportId::Keyboard)),
 	//TUD_HID_REPORT_DESC_MOUSE(HID_REPORT_ID(ReportId::Mouse))
 };
 
-DeviceKeyboard::DeviceKeyboard(USBDevice& device) : USBDevice::HID(device, 30, "RaspberryPi Pico HID Composite Interface",
+HID_Keyboard::HID_Keyboard(USBDevice::Controller& deviceController) : USBDevice::HID(deviceController, 30, "RaspberryPi Pico HID Composite Interface",
 	HID_ITF_PROTOCOL_NONE, reportDesc_, sizeof(reportDesc_), 0x81, 5), nKeycodePrev_{0} {}
 
 //-----------------------------------------------------------------------------
@@ -84,7 +84,7 @@ DeviceKeyboard::DeviceKeyboard(USBDevice& device) : USBDevice::HID(device, 30, "
 int main(void)
 {
 	::stdio_init_all(); 
-	USBDevice device({
+	USBDevice::Controller deviceController({
 		bcdUSB:				0x0200,
 		bDeviceClass:		0x00,
 		bDeviceSubClass:	0x00,
@@ -95,9 +95,9 @@ int main(void)
 		bcdDevice:			0x0100,
 	}, 0x0409, "pico-jxglib sample", "RaspberryPi Pico HMI Composite Device (Keyboard + Mouse)", "0123456789ABCDEF",
 		TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP);
-	HIDComposite hidComposite(device);
-	//DeviceKeyboard keyboard(device);
-	device.Initialize();
+	HID_Composite hidComposite(deviceController);
+	//HID_Keyboard keyboard(deviceController);
+	deviceController.Initialize();
 	hidComposite.Initialize();
 	//keyboard.Initialize();
 	GPIO_ARROW_LEFT			.init().set_dir_IN().pull_up();
@@ -110,9 +110,9 @@ int main(void)
 }
 
 //-----------------------------------------------------------------------------
-// HIDComposite
+// HID_Composite
 //-----------------------------------------------------------------------------
-void HIDComposite::SendReport(uint8_t reportId)
+void HID_Composite::SendReport(uint8_t reportId)
 {
 	switch (reportId) {
 	case ReportId::Keyboard: {
@@ -158,12 +158,12 @@ void HIDComposite::SendReport(uint8_t reportId)
 	}
 }
 
-void HIDComposite::OnTick()
+void HID_Composite::OnTick()
 {
 	SendReport(ReportId::Keyboard);
 }
 
-void HIDComposite::On_GET_REPORT_Complete(const uint8_t* report, uint16_t reportLength)
+void HID_Composite::On_GET_REPORT_Complete(const uint8_t* report, uint16_t reportLength)
 {
 	::printf("On_GET_REPORT_Complete\n");
 	uint8_t reportIdNext = report[0] + 1;
@@ -171,9 +171,9 @@ void HIDComposite::On_GET_REPORT_Complete(const uint8_t* report, uint16_t report
 }
 
 //-----------------------------------------------------------------------------
-// DeviceKeyboard
+// HID_Keyboard
 //-----------------------------------------------------------------------------
-void DeviceKeyboard::OnTick()
+void HID_Keyboard::OnTick()
 {
 	uint8_t reportId = 0; //ReportId::Keyboard;
 	uint8_t modifier  = 0;
@@ -196,7 +196,7 @@ void DeviceKeyboard::OnTick()
 	nKeycodePrev_ = nKeycode;
 }
 
-void DeviceKeyboard::On_GET_REPORT_Complete(const uint8_t* report, uint16_t reportLength)
+void HID_Keyboard::On_GET_REPORT_Complete(const uint8_t* report, uint16_t reportLength)
 {
 	::printf("On_GET_REPORT_Complete\n");
 }

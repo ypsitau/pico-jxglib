@@ -3,7 +3,7 @@
 #include <string.h>
 #include "pico/stdlib.h"
 #include "jxglib/GPIO.h"
-#include "jxglib/USBDevice.h"
+#include "jxglib/USBDevice/HID.h"
 
 using namespace jxglib;
 
@@ -15,7 +15,7 @@ private:
 	int nKeycodePrev_;
 	GPIO::KeyboardMatrix keyboard_;
 public:
-	DeviceKeyboard(USBDevice& device) : USBDevice::Keyboard(device, "RaspberryPi Pico Keyboard Interface", 0x81), nKeycodePrev_{0} {}
+	DeviceKeyboard(USBDevice::Controller& device) : USBDevice::Keyboard(device, "RaspberryPi Pico Keyboard Interface", 0x81), nKeycodePrev_{0} {}
 public:
 	GPIO::KeyboardMatrix& GetKeyboard() { return keyboard_; }
 public:

@@ -3,7 +3,7 @@
 #include <string.h>
 #include "pico/stdlib.h"
 #include "jxglib/GPIO.h"
-#include "jxglib/USBDevice.h"
+#include "jxglib/USBDevice/HID.h"
 #include "jxglib/PackedNumber.h"
 
 using namespace jxglib;
@@ -16,10 +16,10 @@ auto& GPIO_BUTTON_A		= GPIO20;
 auto& GPIO_BUTTON_B		= GPIO21;
 
 //-----------------------------------------------------------------------------
-// Gamepad
+// HID_Gamepad
 // https://www.usb.org/document-library/hid-descriptor-tool
 //-----------------------------------------------------------------------------
-class Gamepad : public USBDevice::HIDCustom {
+class HID_Gamepad : public USBDevice::HIDCustom {
 public:
 	struct Report {
 		uint8_t buttons;
@@ -29,12 +29,12 @@ public:
 private:
 	static const uint8_t reportDesc_[];
 public:
-	Gamepad(USBDevice& device);
+	HID_Gamepad(USBDevice::Controller& deviceController);
 public:
 	virtual void OnTick() override;
 };
 
-const uint8_t Gamepad::reportDesc_[] = {
+const uint8_t HID_Gamepad::reportDesc_[] = {
     0x05, 0x01,                    // USAGE_PAGE (Generic Desktop)
     0x09, 0x05,                    // USAGE (Game Pad)
     0xa1, 0x01,                    // COLLECTION (Application)
@@ -67,7 +67,7 @@ const uint8_t Gamepad::reportDesc_[] = {
     0xc0                           // END_COLLECTION	
 };
 
-Gamepad::Gamepad(USBDevice& device) : USBDevice::HIDCustom(device, "RaspberryPi Pico Gamepad Interface",
+HID_Gamepad::HID_Gamepad(USBDevice::Controller& deviceController) : USBDevice::HIDCustom(deviceController, "RaspberryPi Pico Gamepad Interface",
 							reportDesc_, sizeof(reportDesc_), 0x81, 10) {}
 
 //-----------------------------------------------------------------------------
@@ -76,7 +76,7 @@ Gamepad::Gamepad(USBDevice& device) : USBDevice::HIDCustom(device, "RaspberryPi 
 int main(void)
 {
 	::stdio_init_all(); 
-	USBDevice device({
+	USBDevice::Controller deviceController({
 		bcdUSB:				0x0200,
 		bDeviceClass:		0x00,
 		bDeviceSubClass:	0x00,
@@ -87,8 +87,8 @@ int main(void)
 		bcdDevice:			0x0100,
 	}, 0x0409, "pico-jxglib sample", "RaspberryPi Pico HID Device (Gamepad)", "0123456789ABCDEF",
 		0); //TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP);
-	Gamepad gamepad(device);
-	device.Initialize();
+	HID_Gamepad gamepad(deviceController);
+	deviceController.Initialize();
 	gamepad.Initialize();
 	GPIO_ARROW_LEFT		.init().set_dir_IN().pull_up();
 	GPIO_ARROW_UP		.init().set_dir_IN().pull_up();
@@ -100,9 +100,9 @@ int main(void)
 }
 
 //-----------------------------------------------------------------------------
-// Gamepad
+// HID_Gamepad
 //-----------------------------------------------------------------------------
-void Gamepad::OnTick()
+void HID_Gamepad::OnTick()
 {
 	uint8_t reportId = 0;
 	Report report;

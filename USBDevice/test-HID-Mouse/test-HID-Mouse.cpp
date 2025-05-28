@@ -3,7 +3,7 @@
 #include <string.h>
 #include "pico/stdlib.h"
 #include "jxglib/GPIO.h"
-#include "jxglib/USBDevice.h"
+#include "jxglib/USBDevice/HID.h"
 
 using namespace jxglib;
 
@@ -21,7 +21,7 @@ class DeviceMouse : public USBDevice::Mouse {
 private:
 	bool senseFlagPrev_;
 public:
-	DeviceMouse(USBDevice& device) : USBDevice::Mouse(device, "RaspberryPi Pico Mouse Interface", 0x81), senseFlagPrev_{false} {}
+	DeviceMouse(USBDevice::Controller& device) : USBDevice::Mouse(device, "RaspberryPi Pico Mouse Interface", 0x81), senseFlagPrev_{false} {}
 public:
 	virtual void OnTick() override;
 };

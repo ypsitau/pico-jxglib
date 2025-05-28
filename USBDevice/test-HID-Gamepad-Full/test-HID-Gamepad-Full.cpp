@@ -3,7 +3,7 @@
 #include <string.h>
 #include "pico/stdlib.h"
 #include "jxglib/GPIO.h"
-#include "jxglib/USBDevice.h"
+#include "jxglib/USBDevice/HID.h"
 #include "jxglib/PackedNumber.h"
 
 using namespace jxglib;
@@ -29,7 +29,7 @@ public:
 private:
 	static const uint8_t reportDesc_[];
 public:
-	Gamepad(USBDevice& device);
+	Gamepad(USBDevice::Controller& device);
 public:
 	virtual void OnTick() override;
 };
@@ -82,7 +82,7 @@ const uint8_t Gamepad::reportDesc_[] = {
     0xc0                           // END_COLLECTION	
 };
 
-Gamepad::Gamepad(USBDevice& device) : USBDevice::HIDCustom(device, "RaspberryPi Pico Gamepad Interface",
+Gamepad::Gamepad(USBDevice::Controller& device) : USBDevice::HIDCustom(device, "RaspberryPi Pico Gamepad Interface",
 							reportDesc_, sizeof(reportDesc_), 0x81, 10) {}
 
 //-----------------------------------------------------------------------------
