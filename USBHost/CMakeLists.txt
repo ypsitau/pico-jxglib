@@ -12,6 +12,7 @@ target_sources(jxglib_USBHost INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/USBHost.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/HID.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/GamePad.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/MSC.cpp
 )
 
 function(jxglib_configure_USBHost target)
