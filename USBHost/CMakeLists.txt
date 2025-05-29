@@ -5,16 +5,28 @@ target_include_directories(jxglib_USBHost INTERFACE
 
 target_link_libraries(jxglib_USBHost INTERFACE
 	jxglib_Mouse
-	tinyusb_host
-)
+	tinyusb_host)
 
 target_sources(jxglib_USBHost INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/USBHost.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/HID.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/GamePad.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/MSC.cpp
-)
+	${CMAKE_CURRENT_LIST_DIR}/src/MSC.cpp)
 
+#------------------------------------------------------------------------------
+add_library(jxglib_ShellCmd_USBHost_MSC INTERFACE)
+
+target_include_directories(jxglib_ShellCmd_USBHost_MSC INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/include)
+
+target_link_libraries(jxglib_ShellCmd_USBHost_MSC INTERFACE
+	jxglib_ShellCmd_Basic
+	jxglib_USBHost)
+
+target_sources(jxglib_ShellCmd_USBHost_MSC INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/src/ShellCmd_USBHost_MSC.cpp)
+
+#------------------------------------------------------------------------------
 function(jxglib_configure_USBHost target)
 	set(VARS
 		CFG_TUSB_DEBUG

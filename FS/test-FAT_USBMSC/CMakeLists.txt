@@ -49,6 +49,7 @@ target_link_libraries(test-FAT_USBMSC
     pico_stdlib
     jxglib_Serial
     jxglib_ShellCmd_FS
+    jxglib_ShellCmd_USBHost_MSC
     jxglib_FAT_USBMSC)
 
 # Add the standard include files to the build

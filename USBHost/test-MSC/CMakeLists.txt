@@ -48,7 +48,7 @@ pico_enable_stdio_usb(test-MSC 0)
 target_link_libraries(test-MSC
     pico_stdlib
     jxglib_Serial
-    jxglib_ShellCmd_Basic
+    jxglib_ShellCmd_USBHost_MSC
     jxglib_USBHost)
 
 # Add the standard include files to the build

@@ -9,6 +9,8 @@ using namespace jxglib;
 
 FAT::USBMSC fat("A");
 
+USBHost::MSC& ShellCmd_USBHost_MSC_GetMSC() { return fat.GetMSC(); }
+
 int main()
 {
 	::stdio_init_all();
