@@ -1,5 +1,5 @@
 //==============================================================================
-// jxglib/FAT/USB.h
+// jxglib/FAT/USBMSC.h
 //==============================================================================
 #ifndef PICO_JXGLIB_FAT_USB_H
 #define PICO_JXGLIB_FAT_USB_H
@@ -9,13 +9,13 @@
 namespace jxglib::FAT {
 
 //-----------------------------------------------------------------------------
-// FAT::USB
+// FAT::USBMSC
 //-----------------------------------------------------------------------------
-class USB : public Drive {
+class USBMSC : public Drive {
 private:
 	jxglib::USBHost::MSC msc_;
 public:
-	USB(const char* driveName, uint8_t orderHint = UINT8_MAX);
+	USBMSC(const char* driveName, uint8_t orderHint = UINT8_MAX);
 public:
 	jxglib::USBHost::MSC& GetMSC() { return msc_; }
 public:

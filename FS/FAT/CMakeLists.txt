@@ -23,12 +23,12 @@ target_link_libraries(jxglib_FAT_SDCard INTERFACE
 	jxglib_FAT)
 
 #------------------------------------------------------------------------------
-add_library(jxglib_FAT_USB INTERFACE)
+add_library(jxglib_FAT_USBMSC INTERFACE)
 
-target_sources(jxglib_FAT_USB INTERFACE
-	${CMAKE_CURRENT_LIST_DIR}/src/USB.cpp)
+target_sources(jxglib_FAT_USBMSC INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/src/USBMSC.cpp)
 
-target_link_libraries(jxglib_FAT_USB INTERFACE
+target_link_libraries(jxglib_FAT_USBMSC INTERFACE
     jxglib_USBHost
 	jxglib_FAT)
 

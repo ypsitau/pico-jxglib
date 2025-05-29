@@ -28,38 +28,38 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-FAT_USB C CXX ASM)
+project(test-FAT_USBMSC C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-FAT_USB test-FAT_USB.cpp)
+add_executable(test-FAT_USBMSC test-FAT_USBMSC.cpp)
 
-pico_set_program_name(test-FAT_USB "test-FAT_USB")
-pico_set_program_version(test-FAT_USB "0.1")
+pico_set_program_name(test-FAT_USBMSC "test-FAT_USBMSC")
+pico_set_program_version(test-FAT_USBMSC "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-FAT_USB 1)
-pico_enable_stdio_usb(test-FAT_USB 0)
+pico_enable_stdio_uart(test-FAT_USBMSC 1)
+pico_enable_stdio_usb(test-FAT_USBMSC 0)
 
 # Add the standard library to the build
-target_link_libraries(test-FAT_USB
+target_link_libraries(test-FAT_USBMSC
     pico_stdlib
     jxglib_Serial
     jxglib_ShellCmd_FS
-    jxglib_FAT_USB)
+    jxglib_FAT_USBMSC)
 
 # Add the standard include files to the build
-target_include_directories(test-FAT_USB PRIVATE
+target_include_directories(test-FAT_USBMSC PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-FAT_USB)
+pico_add_extra_outputs(test-FAT_USBMSC)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 
-jxglib_configure_FAT(test-FAT_USB FF_VOLUMES 1)
+jxglib_configure_FAT(test-FAT_USBMSC FF_VOLUMES 1)
 
-jxglib_configure_USBHost(test-FAT_USB CFG_TUH_MSC 1)
+jxglib_configure_USBHost(test-FAT_USBMSC CFG_TUH_MSC 1)
