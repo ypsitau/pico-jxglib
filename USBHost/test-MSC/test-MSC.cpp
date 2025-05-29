@@ -12,7 +12,7 @@ ShellCmd_Named(msc_inquiry, "msc-inquiry", "Inquiry the connected MSC device")
 {
 	scsi_inquiry_resp_t inquiry_resp;
 	if (!msc.inquiry(&inquiry_resp)) {
-		tout.Printf("Inquiry failed\r\n");
+		terr.Printf("Inquiry failed\r\n");
 		return 1;
 	}
 	// Print out Vendor ID, Product ID and Rev
