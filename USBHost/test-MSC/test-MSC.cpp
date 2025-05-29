@@ -24,6 +24,27 @@ ShellCmd_Named(msc_inquiry, "msc-inquiry", "Inquiry the connected MSC device")
 	return 0;
 }
 
+ShellCmd_Named(msc_dump, "msc-dump", "Read a block from the connected MSC device")
+{
+	uint32_t lba = 0;
+	if (argc >= 2) {
+		char* p = nullptr;
+		uint32_t num = ::strtoul(argv[1], &p, 0);
+		if (*p != '\0') {
+			terr.Printf("invalid number\n");
+			return 1;
+		}
+		lba = num;
+	}
+	uint8_t buff[512];
+	if (!msc.read10(buff, lba, 1)) {
+		terr.Printf("failed in read10()\n");
+		return 1;
+	}
+	Printable::DumpT(tout).DigitsAddr(4)(buff, sizeof(buff));
+	return 0;
+}
+
 int main()
 {
 	::stdio_init_all();
