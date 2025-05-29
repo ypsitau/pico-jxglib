@@ -143,7 +143,7 @@ bool MSC::complete_cb(uint8_t dev_addr, tuh_msc_complete_data_t const* cb_data)
 {
 	bool* pCompleteFlag = reinterpret_cast<bool*>(cb_data->user_arg);
 	if (cb_data->csw->status != 0) {
-		::printf("MSC command failed with status %d\r\n", cb_data->csw->status);
+		//::printf("MSC command failed with status %d\r\n", cb_data->csw->status);
 		return false; // Indicate failure
 	}
 	*pCompleteFlag = true;
@@ -152,7 +152,7 @@ bool MSC::complete_cb(uint8_t dev_addr, tuh_msc_complete_data_t const* cb_data)
 
 extern "C" void tuh_msc_mount_cb(uint8_t dev_addr)
 {
-	printf("A MassStorage device is mounted\r\n");
+	//printf("A MassStorage device is mounted\r\n");
 	for (MSC* pMSC = MSC::pMSCTop; pMSC; pMSC = pMSC->GetNext()) {
 		if (!pMSC->IsMounted()) {
 			pMSC->SetDevAddr(dev_addr);
@@ -163,7 +163,7 @@ extern "C" void tuh_msc_mount_cb(uint8_t dev_addr)
 
 extern "C" void tuh_msc_umount_cb(uint8_t dev_addr)
 {
-	printf("A MassStorage device is unmounted\r\n");
+	//printf("A MassStorage device is unmounted\r\n");
 	for (MSC* pMSC = MSC::pMSCTop; pMSC; pMSC = pMSC->GetNext()) {
 		// If the device is mounted, we set the address to UINT8_MAX to indicate it's unmounted
 		if (pMSC->GetDevAddr() == dev_addr) {
