@@ -259,13 +259,21 @@ void SplitDirName(const char* pathName, char* dirName, int lenMax, const char** 
 		if (*p == '/' || *p == ':') pSlash = p;
 	}
 	dirName[0] = '\0';
-	if (pFileName) *pFileName = pathName; // default to the whole path if no slashes
+	int lenDirName = 0;
+	int lenFileName = 0;
 	if (pSlash) {
-		int len = pSlash - pathName + 1;
-		if (len + 1 >= lenMax) ::panic("FS::SplitDirName");
-		::memcpy(dirName, pathName, len);
-		dirName[len] = '\0';
-		if (pFileName) *pFileName = pSlash + 1; // return the rest as file name
+		lenDirName = pSlash - pathName + 1;
+		if (lenDirName + 1 > lenMax) ::panic("FS::SplitDirName");
+		::memcpy(dirName, pathName, lenDirName);
+		dirName[lenDirName] = '\0';
+	}
+	if (pFileName) {
+		const char* fileNameSrc = pathName + lenDirName;
+		char* fileNameDst = dirName + lenDirName + 1;
+		int lenFileName = ::strlen(fileNameSrc);
+		if (lenDirName + 1 + lenFileName + 1 > lenMax) ::panic("FS::SplitDirName");
+		::memcpy(fileNameDst, fileNameSrc, lenFileName + 1);
+		*pFileName = fileNameDst;
 	}
 }
 

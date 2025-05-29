@@ -9,6 +9,7 @@ using namespace jxglib;
 
 void test_DoesMatchWildcard()
 {
+	::printf("test_DoesMatchWildcard\n");
 	struct TestCase {
 		const char* pattern;
 		const char* str;
@@ -67,6 +68,7 @@ void test_DoesMatchWildcard()
 
 void test_AppendPathName()
 {
+	::printf("test_AppendPathName\n");
 	struct TestCase {
 		const char* base;
 		const char* sub;
@@ -116,6 +118,7 @@ void test_AppendPathName()
 
 void test_SplitDirName()
 {
+	::printf("test_SplitDirName\n");
 	struct TestCase {
 		const char* pathName;
 		const char* dirNameExpected;
@@ -141,6 +144,7 @@ void test_SplitDirName()
 		{ "C:foo/bar.txt",      "C:foo/",    "bar.txt"    },
 		{ "C:foo/bar/baz.txt",  "C:foo/bar/", "baz.txt"   },
 		{ "C:/foo/bar/baz.txt", "C:/foo/bar/", "baz.txt"  },
+		{ "C:/foo/bar/*",       "C:/foo/bar/", "*"        },
 	};
 	char dirName[256];
 	const char* fileName;
