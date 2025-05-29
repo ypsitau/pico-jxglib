@@ -149,6 +149,7 @@ void test_SplitDirName()
 	char dirName[256];
 	const char* fileName;
 	for (const auto& tc : testCases) {
+		::memset(dirName, 0xcc, sizeof(dirName));
 		FS::SplitDirName(tc.pathName, dirName, sizeof(dirName), &fileName);
 		bool ok = (::strcmp(dirName, tc.dirNameExpected) == 0) && (::strcmp(fileName ? fileName : "", tc.fileNameExpected) == 0);
 		::printf("%-20s -> %-12s %-12s%s\n", tc.pathName, dirName, fileName, ok ? "" : " ***");
