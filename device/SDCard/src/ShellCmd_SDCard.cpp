@@ -15,6 +15,7 @@ ShellCmd_Named(sd_init, "sd-init", "Initialize SD card")
 		terr.Printf("Failed to initialize SD card.\n");
 	}
 	return 0;
+	
 }
 
 ShellCmd_Named(sd_dump, "sd-dump", "prints SD card data at the specified sector")

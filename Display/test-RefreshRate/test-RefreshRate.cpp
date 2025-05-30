@@ -12,7 +12,7 @@ int main()
 {
 	::stdio_init_all();
 	::i2c_init(i2c0, 400 * 1000);
-	::spi_init(spi1, 125 * 1000 * 1000);
+	::spi_init(spi1, 125'000'000);
 	GPIO4.set_function_I2C0_SDA().pull_up();
 	GPIO5.set_function_I2C0_SCL().pull_up();
 	GPIO14.set_function_SPI1_SCK();

@@ -11,8 +11,8 @@ using namespace jxglib;
 int main()
 {
 	::stdio_init_all();
-	::spi_init(spi0, 125 * 1000 * 1000);
-	::spi_init(spi1, 125 * 1000 * 1000);
+	::spi_init(spi0, 125'000'000);
+	::spi_init(spi1, 125'000'000);
 	GPIO2.set_function_SPI0_SCK();
 	GPIO3.set_function_SPI0_TX();
 	GPIO14.set_function_SPI1_SCK();

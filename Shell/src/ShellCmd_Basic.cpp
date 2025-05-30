@@ -87,7 +87,7 @@ int ShellCmd_d::Run(Readable& tin, Printable& tout, Printable& terr, int argc, c
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [options] [addr [bytes]]\n", argv[0]);
+		terr.Printf("usage: %s [options] [addr [bytes]]\n", GetName());
 		arg.PrintHelp(terr);
 		return 0;
 	}

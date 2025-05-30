@@ -10,10 +10,10 @@ using namespace jxglib;
 int main()
 {
 	::stdio_init_all();
-	::spi_init(spi1, 125 * 1000 * 1000);
+	::spi_init(spi1, 125'000'000);
 	GPIO14.set_function_SPI1_SCK();
 	GPIO15.set_function_SPI1_TX();
-	//::spi_init(spi0, 125 * 1000 * 1000);
+	//::spi_init(spi0, 125'000'000);
 	//GPIO18.set_function_SPI0_SCK();
 	//GPIO19.set_function_SPI0_TX();
 	Display::Terminal terminal;

@@ -5,11 +5,11 @@
 #include "jxglib/Shell.h"
 #include "jxglib/ST7789.h"
 #include "jxglib/USBHost/HID.h"
-#include "jxglib/FAT/Flash.h"
-#include "jxglib/FAT/SDCard.h"
-#include "jxglib/FAT/RAMDisk.h"
-#include "jxglib/FAT/USBMSC.h"
 #include "jxglib/LFS/Flash.h"
+#include "jxglib/FAT/Flash.h"
+#include "jxglib/FAT/RAMDisk.h"
+#include "jxglib/FAT/SDCard.h"
+#include "jxglib/FAT/USBMSC.h"
 #include "jxglib/Font/shinonome16.h"
 
 using namespace jxglib;
@@ -29,9 +29,9 @@ int main()
 	FAT::USBMSC		drive_G("G");										// USB Mass Storage Device (MSC) on USB Host
 	//FAT::USBMSC		drive_H("H");										// USB Mass Storage Device (MSC) on USB Host
 	USBHost::Initialize();
-#if 0
+#if 1
 	USBHost::Keyboard keyboard;
-	::spi_init(spi1, 125 * 1000 * 1000);
+	::spi_init(spi1, 125'000'000);
 	GPIO14.set_function_SPI1_SCK();
 	GPIO15.set_function_SPI1_TX();
 	ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});

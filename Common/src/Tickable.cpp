@@ -97,7 +97,7 @@ void Tickable::PrintList(Printable& printable)
 		if (lenMax < len) lenMax = len;
 	}
 	for (const Tickable* pTickable = pTickableTop_; pTickable; pTickable = pTickable->GetNext()) {
-		printable.Printf("%-*s %-4s %dmsec\n", lenMax, pTickable->GetTickableName(), pTickable->GetPriorityNameShort(), pTickable->GetTick());
+		printable.Printf("%-*s %-4s %dmsec\n", lenMax, pTickable->GetTickableName(), pTickable->GetPriorityName(), pTickable->GetTick());
 	}
 }
 

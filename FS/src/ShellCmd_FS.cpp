@@ -37,7 +37,7 @@ ShellCmd(cat, "prints the contents of files")
 ShellCmd(cd, "changes the current directory")
 {
 	if (argc < 2) {
-		tout.Printf("Usage: %s <directory>\n", argv[0]);
+		tout.Printf("Usage: %s <directory>\n", GetName());
 		return 1;
 	}
 	const char* dirName = argv[1];
@@ -51,7 +51,7 @@ ShellCmd(cd, "changes the current directory")
 ShellCmd(cp, "copies files")
 {
 	if (argc < 3) {
-		tout.Printf("Usage: %s <src..> <dst>\n", argv[0]);
+		tout.Printf("Usage: %s <src..> <dst>\n", GetName());
 		return 1;
 	}
 	const char* pathNameDst = argv[argc - 1];
@@ -78,7 +78,7 @@ ShellCmdAlias(copy, cp)
 ShellCmd(format, "formats the filesystem")
 {
 	if (argc < 2) {
-		tout.Printf("Usage: %s <drivename>\n", argv[0]);
+		tout.Printf("Usage: %s <drivename>\n", GetName());
 		return 1;
 	}
 	const char* driveName = argv[1];
@@ -89,7 +89,7 @@ ShellCmd(format, "formats the filesystem")
 ShellCmd(glob, "prints files matching a glob pattern")
 {
 	if (argc < 2) {
-		tout.Printf("Usage: %s <pattern>\n", argv[0]);
+		tout.Printf("Usage: %s <pattern>\n", GetName());
 		return 1;
 	}
 	const char* pattern = argv[1];
@@ -151,7 +151,7 @@ ShellCmd_Named(ls_drive, "ls-drive", "lists availabld drives")
 ShellCmd(mkdir, "creates a directory")
 {
 	if (argc < 2) {
-		tout.Printf("Usage: %s <directory>\n", argv[0]);
+		tout.Printf("Usage: %s <directory>\n", GetName());
 		return 1;
 	}
 	const char* dirName = argv[1];
@@ -165,7 +165,7 @@ ShellCmd(mkdir, "creates a directory")
 ShellCmd(mount, "mounts a specified drive")
 {
 	if (argc < 2) {
-		tout.Printf("Usage: %s <drivename>\n", argv[0]);
+		tout.Printf("Usage: %s <drivename>\n", GetName());
 		return 1;
 	}
 	const char* driveName = argv[1];
@@ -176,7 +176,7 @@ ShellCmd(mount, "mounts a specified drive")
 ShellCmd(mv, "moves a file")
 {
 	if (argc < 3) {
-		tout.Printf("Usage: %s <src> <dst>\n", argv[0]);
+		tout.Printf("Usage: %s <src> <dst>\n", GetName());
 		return 1;
 	}
 	const char* fileNameSrc = argv[1];
@@ -202,7 +202,7 @@ ShellCmd(pwd, "prints the current directory")
 ShellCmd(rm, "removes files")
 {
 	if (argc < 2) {
-		tout.Printf("Usage: %s <filename..>", argv[0]);
+		tout.Printf("Usage: %s <filename..>", GetName());
 		return 1;
 	}
 	for (int iArg = 1; iArg < argc; iArg++) {
@@ -226,7 +226,7 @@ ShellCmd(rm, "removes files")
 ShellCmd(rmdir, "removes a directory")
 {
 	if (argc < 2) {
-		tout.Printf("Usage: %s <directory>\n", argv[0]);
+		tout.Printf("Usage: %s <directory>\n", GetName());
 		return 1;
 	}
 	const char* dirName = argv[1];
@@ -240,7 +240,7 @@ ShellCmd(rmdir, "removes a directory")
 ShellCmd(touch, "creates an empty file")
 {
 	if (argc < 2) {
-		tout.Printf("Usage: %s <filename>\n", argv[0]);
+		tout.Printf("Usage: %s <filename>\n", GetName());
 		return 1;
 	}
 	const char* fileName = argv[1];
@@ -256,7 +256,7 @@ ShellCmd(touch, "creates an empty file")
 ShellCmd(umount, "unmounts a specified drive")
 {
 	if (argc < 2) {
-		tout.Printf("Usage: %s <drivename>\n", argv[0]);
+		tout.Printf("Usage: %s <drivename>\n", GetName());
 		return 1;
 	}
 	const char* driveName = argv[1];

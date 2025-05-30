@@ -13,7 +13,7 @@ Display::Terminal terminal1, terminal2, terminal3;
 int main()
 {
 	::stdio_init_all();
-	::spi_init(spi1, 125 * 1000 * 1000);
+	::spi_init(spi1, 125'000'000);
 	GPIO14.set_function_SPI1_SCK();
 	GPIO15.set_function_SPI1_TX();
 	ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
