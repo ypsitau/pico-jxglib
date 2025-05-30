@@ -435,7 +435,6 @@ Drive::Drive(const char* formatName, const char* driveName) : formatName_{format
 	driveName_{::isalpha(*driveName)? driveName : driveName + 1}, driveNameRaw_{driveName}, pDriveNext_{nullptr}
 {
 	::strcpy(dirNameCur_, "/");
-	if (!pDriveCur || IsPrimary()) pDriveCur = this;
 	if (pDriveHead) {
 		Drive* pDrivePrev = nullptr;
 		for (Drive* pDrive = pDriveHead; pDrive; pDrive = pDrive->pDriveNext_) {
@@ -452,6 +451,7 @@ Drive::Drive(const char* formatName, const char* driveName) : formatName_{format
 	} else {
 		pDriveHead = this;
 	}
+	if (IsPrimary() || !pDriveCur || (!pDriveCur->IsPrimary() && pDriveHead == this)) pDriveCur = this;
 }
 
 bool Drive::IsDirectory(const char* pathName)
