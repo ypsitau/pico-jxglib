@@ -8,23 +8,23 @@ namespace jxglib::ShellCmd_FS {
 ShellCmd(cat, "prints the contents of files")
 {
 	if (argc < 2) {
-		tout.Printf("Usage: %s <filename>\n", argv[0]);
+		tout.Printf("Usage: %s <filename..>\n", argv[0]);
 		return 1;
 	}
-	for (int i = 1; i < argc; i++) {
-		const char* fileName = argv[i];
-		RefPtr<FS::File> pFile(FS::OpenFile(fileName, "r"));
-		if (!pFile) {
-			tout.Printf("failed to open %s\n", fileName);
-			return 1;
+	for (int iArg = 1; iArg < argc; iArg++) {
+		const char* pathName = argv[iArg];
+		if (FS::DoesContainWildcard(pathName)) {
+			RefPtr<FS::Glob> pGlob(FS::OpenGlob(pathName));
+			if (pGlob) {
+				FS::FileInfo* pFileInfo;
+				const char* pathNameGlob;
+				while (pGlob->Read(&pFileInfo, &pathNameGlob)) {
+					if (pFileInfo->IsFile() && !FS::PrintFile(terr, pathNameGlob, tout)) return 1;
+				}
+			}
+		} else {
+			if (!FS::PrintFile(terr, pathName, tout)) break;
 		}
-		int bytes;
-		char buff[128];
-		while ((bytes = pFile->Read(buff, sizeof(buff) - 1)) > 0) {
-			buff[bytes] = '\0';
-			tout.Print(buff);
-		}
-		pFile->Close();
 	}
 	return 0;
 }

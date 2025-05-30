@@ -17,16 +17,14 @@ public:
 	virtual int Read(void* buff, int bytesBuff) = 0;
 	virtual int Write(const void* buff, int bytesBuff) = 0;
 public:
-	bool WriteFrom(Stream&& streamFrom);
-	bool WriteFrom(Stream& streamFrom) { return WriteFrom(std::move(streamFrom)); }
-	bool PrintFrom(Stream&& streamFrom);
-	bool PrintFrom(Stream& streamFrom) { return PrintFrom(std::move(streamFrom)); }
-	bool WriteTo(Stream&& streamTo) { return streamTo.WriteFrom(*this); }
-	bool WriteTo(Stream& streamTo) { return streamTo.WriteFrom(*this); }
-	bool PrintTo(Stream&& streamTo) { return streamTo.PrintFrom(*this); }
-	bool PrintTo(Stream& streamTo) { return streamTo.PrintFrom(*this); }
+	bool WriteTo(Stream&& streamTo);
+	bool WriteTo(Stream& streamTo) { return WriteTo(std::move(streamTo)); }
+	bool PrintTo(Printable&& printable);
+	bool PrintTo(Printable& printable) { return PrintTo(std::move(printable)); }
 	bool WriteTo(FILE* fp);
 	bool PrintTo(FILE* fp) { return WriteTo(fp); }
+	bool WriteFrom(Stream&& streamFrom) { return streamFrom.WriteTo(*this); }
+	bool WriteFrom(Stream& streamFrom) { return streamFrom.WriteTo(*this); }
 public:
 	// virtual functions of Printable
 	virtual Printable& ClearScreen() override { /* do nothing */ return *this; }

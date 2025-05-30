@@ -9,23 +9,23 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // Stream
 //------------------------------------------------------------------------------
-bool Stream::WriteFrom(Stream&& streamFrom)
+bool Stream::WriteTo(Stream&& streamTo)
 {
 	int bytesRead;
-	char buff[1024];
-	while ((bytesRead = streamFrom.Read(buff, sizeof(buff))) > 0) {
-		if (Write(buff, bytesRead) != bytesRead) return false;
+	char buff[512];
+	while ((bytesRead = Read(buff, sizeof(buff))) > 0) {
+		if (streamTo.Write(buff, bytesRead) != bytesRead) return false;
 	}
 	return true;
 }
 
-bool Stream::PrintFrom(Stream&& streamFrom)
+bool Stream::PrintTo(Printable&& printable)
 {
 	int bytesRead;
-	char buff[1024];
-	while ((bytesRead = streamFrom.Read(buff, sizeof(buff) - 1)) > 0) {
+	char buff[512];
+	while ((bytesRead = Read(buff, sizeof(buff) - 1)) > 0) {
 		buff[bytesRead] = '\0';
-		Print(buff);
+		printable.Print(buff);
 	}
 	return true;
 }
@@ -33,7 +33,7 @@ bool Stream::PrintFrom(Stream&& streamFrom)
 bool Stream::WriteTo(FILE* fp)
 {
 	int bytesRead;
-	char buff[1024];
+	char buff[512];
 	while ((bytesRead = Read(buff, sizeof(buff))) > 0) {
 		if (::fwrite(buff, sizeof(char), bytesRead, fp) < bytesRead) return false;
 	}

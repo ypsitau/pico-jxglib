@@ -91,23 +91,34 @@ Glob* OpenGlob(const char* pattern)
 	return pGlob->Open(pattern)? pGlob.release() : nullptr;
 }
 
-bool CopyFile(Printable& tout, const char* fileNameSrc, const char* fileNameDst)
+bool PrintFile(Printable& terr, const char* fileName, Printable& tout)
+{
+	RefPtr<FS::File> pFile(FS::OpenFile(fileName, "r"));
+	if (!pFile) {
+		terr.Printf("failed to open %s\n", fileName);
+		return false;
+	}
+	pFile->PrintTo(tout);
+	return true;
+}
+
+bool CopyFile(Printable& terr, const char* fileNameSrc, const char* fileNameDst)
 {
 	RefPtr<FS::File> pFileSrc(FS::OpenFile(fileNameSrc, "r"));
 	if (!pFileSrc) {
-		tout.Printf("failed to open %s\n", fileNameSrc);
+		terr.Printf("failed to open %s\n", fileNameSrc);
 		return false;
 	}
 	RefPtr<FS::File> pFileDst(FS::OpenFileForCopy(fileNameSrc, fileNameDst));
 	if (!pFileDst) {
-		tout.Printf("failed to open %s\n", fileNameDst);
+		terr.Printf("failed to open %s\n", fileNameDst);
 		return false;
 	}
 	int bytesRead;
 	char buff[128];
 	while ((bytesRead = pFileSrc->Read(buff, sizeof(buff))) > 0) {
 		if (pFileDst->Write(buff, bytesRead) != bytesRead) {
-			tout.Printf("failed to write %s\n", fileNameDst);
+			terr.Printf("failed to write %s\n", fileNameDst);
 			return false;
 		}
 	}
@@ -180,50 +191,50 @@ bool IsDirectory(const char* pathName)
 	return pDrive->IsDirectory(pDrive->NativePathName(pathNameBuff, sizeof(pathNameBuff), pathName));
 }
 
-bool Format(Printable& out, const char* driveName)
+bool Format(Printable& terr, const char* driveName)
 {
 	if (!IsLegalDriveName(driveName)) {
-		out.Printf("illegal drive name %s\n", driveName);
+		terr.Printf("illegal drive name %s\n", driveName);
 		return false;
 	}
 	Drive* pDrive = FindDrive(driveName);
 	if (!pDrive) {
-		out.Printf("drive %s not found\n", driveName);
+		terr.Printf("drive %s not found\n", driveName);
 		return false;
 	}
 	if (pDrive->Unmount() && pDrive->Format() && pDrive->Mount()) {
-		out.Printf("drive %s formatted in %s\n", driveName, pDrive->GetFileSystemName());
+		terr.Printf("drive %s formatted in %s\n", driveName, pDrive->GetFileSystemName());
 		return true;
 	} else {
-		out.Printf("failed to format drive %s\n", driveName);
+		terr.Printf("failed to format drive %s\n", driveName);
 		return false;
 	}
 }
 
-bool Mount(Printable& out, const char* driveName)
+bool Mount(Printable& terr, const char* driveName)
 {
 	if (!IsLegalDriveName(driveName)) {
-		out.Printf("illegal drive name %s\n", driveName);
+		terr.Printf("illegal drive name %s\n", driveName);
 		return false;
 	}
 	Drive* pDrive = FindDrive(driveName);
 	if (!pDrive) {
-		out.Printf("drive %s not found\n", driveName);
+		terr.Printf("drive %s not found\n", driveName);
 		return false;
 	}
 	pDrive->Mount();
 	return true;
 }
 
-bool Unmount(Printable& out, const char* driveName)
+bool Unmount(Printable& terr, const char* driveName)
 {
 	if (!IsLegalDriveName(driveName)) {
-		out.Printf("illegal drive name %s\n", driveName);
+		terr.Printf("illegal drive name %s\n", driveName);
 		return false;
 	}
 	Drive* pDrive = FindDrive(driveName);
 	if (!pDrive) {
-		out.Printf("drive %s not found\n", driveName);
+		terr.Printf("drive %s not found\n", driveName);
 		return false;
 	}
 	pDrive->Unmount();
