@@ -29,38 +29,75 @@ ShellCmd(cat, "prints the contents of files")
 	return 0;
 }
 
-ShellCmd(cp, "copies a file")
+ShellCmd(cd, "changes the current directory")
+{
+	if (argc < 2) {
+		tout.Printf("Usage: %s <directory>\n", argv[0]);
+		return 1;
+	}
+	const char* dirName = argv[1];
+	if (!FS::ChangeCurDir(dirName)) {
+		tout.Printf("failed to change directory to %s\n", dirName);
+		return 1;
+	}
+	return 0;
+}
+
+ShellCmd(cp, "copies files")
 {
 	if (argc < 3) {
-		tout.Printf("Usage: %s <src> <dst>\n", argv[0]);
+		tout.Printf("Usage: %s <src..> <dst>\n", argv[0]);
 		return 1;
 	}
-	const char* fileNameSrc = argv[1];
-	const char* fileNameDst = argv[2];
-	RefPtr<FS::File> pFileSrc(FS::OpenFile(fileNameSrc, "r"));
-	if (!pFileSrc) {
-		tout.Printf("failed to open %s\n", fileNameSrc);
-		return 1;
-	}
-	RefPtr<FS::File> pFileDst(FS::OpenFileForCopy(fileNameSrc, fileNameDst));
-	if (!pFileDst) {
-		tout.Printf("failed to open %s\n", fileNameDst);
-		return 1;
-	}
-	int bytesRead;
-	char buff[128];
-	while ((bytesRead = pFileSrc->Read(buff, sizeof(buff))) > 0) {
-		if (pFileDst->Write(buff, bytesRead) != bytesRead) {
-			tout.Printf("failed to write %s\n", fileNameDst);
-			return 1;
+	const char* pathNameDst = argv[argc - 1];
+	for (int iArg = 1; iArg < argc - 1; iArg++) {
+		const char* pathNameSrc = argv[iArg];
+		if (FS::DoesContainWildcard(pathNameSrc)) {
+			RefPtr<FS::Glob> pGlob(FS::OpenGlob(pathNameSrc));
+			if (pGlob) {
+				FS::FileInfo* pFileInfo;
+				const char* pathNameGlob;
+				while (pGlob->Read(&pFileInfo, &pathNameGlob)) {
+					if (pFileInfo->IsFile() && !FS::CopyFile(terr, pathNameGlob, pathNameDst)) return 1;
+				}
+			}
+		} else {
+			if (!FS::CopyFile(terr, pathNameSrc, pathNameDst)) return 1;
 		}
 	}
-	pFileSrc->Close();
-	pFileDst->Close();
 	return 0;
 }
 
 ShellCmdAlias(copy, cp)
+
+ShellCmd(format, "formats the filesystem")
+{
+	if (argc < 2) {
+		tout.Printf("Usage: %s <drivename>\n", argv[0]);
+		return 1;
+	}
+	const char* driveName = argv[1];
+	FS::Format(tout, driveName);
+	return 0;
+}
+
+ShellCmd(glob, "prints files matching a glob pattern")
+{
+	if (argc < 2) {
+		tout.Printf("Usage: %s <pattern>\n", argv[0]);
+		return 1;
+	}
+	const char* pattern = argv[1];
+	RefPtr<FS::Glob> pGlob(FS::OpenGlob(pattern));
+	if (pGlob) {
+		FS::FileInfo* pFileInfo;
+		const char* pathName;
+		while (pGlob->Read(&pFileInfo, &pathName)) {
+			tout.Printf("%s\n", pathName);
+		}
+	}
+	return 0;
+}
 
 ShellCmd(ls, "lists files in the specified directory")
 {
@@ -78,7 +115,6 @@ ShellCmd(ls, "lists files in the specified directory")
 			tout.Printf("%-20s %d\n", pFileInfo->GetName(), pFileInfo->GetSize());
 		}
 	}
-	pDir->Close();
 	return 0;
 }
 
@@ -121,29 +157,27 @@ ShellCmd(mkdir, "creates a directory")
 	return 0;
 }
 
-ShellCmd(rmdir, "removes a directory")
+ShellCmd(mount, "mounts a specified drive")
 {
 	if (argc < 2) {
-		tout.Printf("Usage: %s <directory>\n", argv[0]);
+		tout.Printf("Usage: %s <drivename>\n", argv[0]);
 		return 1;
 	}
-	const char* dirName = argv[1];
-	if (!FS::RemoveDir(dirName)) {
-		tout.Printf("failed to remove %s\n", dirName);
-		return 1;
-	}
+	const char* driveName = argv[1];
+	FS::Mount(tout, driveName);
 	return 0;
 }
 
-ShellCmd(cd, "changes the current directory")
+ShellCmd(mv, "moves a file")
 {
-	if (argc < 2) {
-		tout.Printf("Usage: %s <directory>\n", argv[0]);
+	if (argc < 3) {
+		tout.Printf("Usage: %s <src> <dst>\n", argv[0]);
 		return 1;
 	}
-	const char* dirName = argv[1];
-	if (!FS::ChangeCurDir(dirName)) {
-		tout.Printf("failed to change directory to %s\n", dirName);
+	const char* fileNameSrc = argv[1];
+	const char* fileNameDst = argv[2];
+	if (!FS::RenameFile(fileNameSrc, fileNameDst)) {
+		tout.Printf("failed to rename %s to %s\n", fileNameSrc, fileNameDst);
 		return 1;
 	}
 	return 0;
@@ -160,16 +194,39 @@ ShellCmd(pwd, "prints the current directory")
 	return 0;
 }
 
-ShellCmd(mv, "moves a file")
+ShellCmd(rm, "removes files")
 {
-	if (argc < 3) {
-		tout.Printf("Usage: %s <src> <dst>\n", argv[0]);
+	if (argc < 2) {
+		tout.Printf("Usage: %s <filename..>", argv[0]);
 		return 1;
 	}
-	const char* fileNameSrc = argv[1];
-	const char* fileNameDst = argv[2];
-	if (!FS::RenameFile(fileNameSrc, fileNameDst)) {
-		tout.Printf("failed to rename %s to %s\n", fileNameSrc, fileNameDst);
+	for (int iArg = 1; iArg < argc; iArg++) {
+		const char* pathName = argv[iArg];
+		if (FS::DoesContainWildcard(pathName)) {
+			RefPtr<FS::Glob> pGlob(FS::OpenGlob(pathName));
+			if (pGlob) {
+				FS::FileInfo* pFileInfo;
+				const char* pathNameGlob;
+				while (pGlob->Read(&pFileInfo, &pathNameGlob)) {
+					if (pFileInfo->IsFile() && !FS::RemoveFile(terr, pathNameGlob)) return 1;
+				}
+			}
+		} else {
+			if (!FS::RemoveFile(terr, pathName)) return 1;
+		}
+	}
+	return 0;
+}
+
+ShellCmd(rmdir, "removes a directory")
+{
+	if (argc < 2) {
+		tout.Printf("Usage: %s <directory>\n", argv[0]);
+		return 1;
+	}
+	const char* dirName = argv[1];
+	if (!FS::RemoveDir(dirName)) {
+		tout.Printf("failed to remove %s\n", dirName);
 		return 1;
 	}
 	return 0;
@@ -191,43 +248,7 @@ ShellCmd(touch, "creates an empty file")
 	return 0;
 }
 
-ShellCmd(rm, "removes a file")
-{
-	if (argc < 2) {
-		tout.Printf("Usage: %s <filename>\n", argv[0]);
-		return 1;
-	}
-	const char* fileName = argv[1];
-	if (!FS::RemoveFile(fileName)) {
-		tout.Printf("failed to remove %s\n", fileName);
-		return 1;
-	}
-	return 0;
-}
-
-ShellCmd(format, "formats the filesystem")
-{
-	if (argc < 2) {
-		tout.Printf("Usage: %s <drivename>\n", argv[0]);
-		return 1;
-	}
-	const char* driveName = argv[1];
-	FS::Format(tout, driveName);
-	return 0;
-}
-
-ShellCmd(mount, "mounts a specified drive")
-{
-	if (argc < 2) {
-		tout.Printf("Usage: %s <drivename>\n", argv[0]);
-		return 1;
-	}
-	const char* driveName = argv[1];
-	FS::Mount(tout, driveName);
-	return 0;
-}
-
-ShellCmd(unmount, "unmounts a specified drive")
+ShellCmd(umount, "unmounts a specified drive")
 {
 	if (argc < 2) {
 		tout.Printf("Usage: %s <drivename>\n", argv[0]);

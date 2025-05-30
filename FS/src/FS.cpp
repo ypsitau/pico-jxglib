@@ -91,11 +91,41 @@ Glob* OpenGlob(const char* pattern)
 	return pGlob->Open(pattern)? pGlob.release() : nullptr;
 }
 
+bool CopyFile(Printable& tout, const char* fileNameSrc, const char* fileNameDst)
+{
+	RefPtr<FS::File> pFileSrc(FS::OpenFile(fileNameSrc, "r"));
+	if (!pFileSrc) {
+		tout.Printf("failed to open %s\n", fileNameSrc);
+		return false;
+	}
+	RefPtr<FS::File> pFileDst(FS::OpenFileForCopy(fileNameSrc, fileNameDst));
+	if (!pFileDst) {
+		tout.Printf("failed to open %s\n", fileNameDst);
+		return false;
+	}
+	int bytesRead;
+	char buff[128];
+	while ((bytesRead = pFileSrc->Read(buff, sizeof(buff))) > 0) {
+		if (pFileDst->Write(buff, bytesRead) != bytesRead) {
+			tout.Printf("failed to write %s\n", fileNameDst);
+			return false;
+		}
+	}
+	return true;
+}
+
 bool RemoveFile(const char* fileName)
 {
 	char pathName[MaxPath];
 	Drive* pDrive = FindDrive(fileName);
 	return pDrive? pDrive->RemoveFile(pDrive->NativePathName(pathName, sizeof(pathName), fileName)) : false;
+}
+
+bool RemoveFile(Printable& terr, const char* fileName)
+{
+	if (RemoveFile(fileName)) return true;
+	terr.Printf("failed to remove file %s\n", fileName);
+	return false;
 }
 
 bool RenameFile(const char* fileNameOld, const char* fileNameNew)
@@ -375,12 +405,6 @@ Glob::Glob(): pattern_{""}
 
 bool Glob::Open(const char* pattern)
 {
-	pDir_.reset(OpenDir(pattern));
-	if (pDir_) {
-		::snprintf(dirName_, sizeof(dirName_), "%s", pattern);
-		pattern_ = "";
-		return true;
-	}
 	SplitDirName(pattern, dirName_, sizeof(dirName_), &pattern_);
 	pDir_.reset(OpenDir(dirName_));
 	return !!pDir_;
