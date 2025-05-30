@@ -29,7 +29,7 @@ int main()
 	FAT::USBMSC		drive_G("G");										// USB Mass Storage Device (MSC) on USB Host
 	//FAT::USBMSC		drive_H("H");										// USB Mass Storage Device (MSC) on USB Host
 	USBHost::Initialize();
-#if 1
+#if 0
 	USBHost::Keyboard keyboard;
 	::spi_init(spi1, 125'000'000);
 	GPIO14.set_function_SPI1_SCK();
