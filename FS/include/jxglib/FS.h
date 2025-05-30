@@ -117,6 +117,7 @@ class Drive {
 private:
 	const char* formatName_;
 	const char* driveName_;
+	const char* driveNameRaw_;
 	char dirNameCur_[MaxPath];
 	Drive* pDriveNext_;
 public:
@@ -124,6 +125,7 @@ public:
 public:
 	Drive* GetNext() const { return pDriveNext_; }
 public:
+	bool IsPrimary() const { return *driveNameRaw_ == '*'; }
 	bool IsDirectory(const char* pathName);
 	const char* GetDriveName() const { return driveName_; }
 	void SetDirNameCur(const char* dirName);

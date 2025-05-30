@@ -21,10 +21,7 @@ Drive* FindDrive(const char* pathName)
 {
 	char driveName[32];
 	ExtractDriveName(pathName, driveName, sizeof(driveName));
-	if (driveName[0] == '\0') {
-		if (!pDriveCur) pDriveCur = pDriveHead;
-		return pDriveCur;
-	}
+	if (driveName[0] == '\0') return pDriveCur;
 	Drive* pDrive = pDriveHead;
 	for ( ; pDrive; pDrive = pDrive->GetNext()) {
 		if (::strcasecmp(pDrive->GetDriveName(), driveName) == 0) return pDrive;
@@ -39,7 +36,6 @@ Drive* GetDriveHead()
 
 Drive* GetDriveCur()
 {
-	if (!pDriveCur) pDriveCur = pDriveHead;
 	return pDriveCur;
 }
 
@@ -359,16 +355,23 @@ bool DoesMatchElemName(const char* elemName1, const char* elemName2)
 //------------------------------------------------------------------------------
 // FS::Drive
 //------------------------------------------------------------------------------
-Drive::Drive(const char* formatName, const char* driveName) :
-		formatName_{formatName}, driveName_{driveName}, pDriveNext_{nullptr}
+Drive::Drive(const char* formatName, const char* driveName) : formatName_{formatName},
+	driveName_{::isalpha(*driveName)? driveName : driveName + 1}, driveNameRaw_{driveName}, pDriveNext_{nullptr}
 {
 	::strcpy(dirNameCur_, "/");
+	if (!pDriveCur || IsPrimary()) pDriveCur = this;
 	if (pDriveHead) {
+		Drive* pDrivePrev = nullptr;
 		for (Drive* pDrive = pDriveHead; pDrive; pDrive = pDrive->pDriveNext_) {
-			if (!pDrive->pDriveNext_) {
-				pDrive->pDriveNext_ = this;
-				break;
-			}
+			if (::strcasecmp(GetDriveName(), pDrive->GetDriveName()) < 0) break;
+			pDrivePrev = pDrive;
+		}
+		if (pDrivePrev) {
+			pDriveNext_ = pDrivePrev->pDriveNext_;
+			pDrivePrev->pDriveNext_ = this;
+		} else {
+			pDriveNext_ = pDriveHead;
+			pDriveHead = this;
 		}
 	} else {
 		pDriveHead = this;

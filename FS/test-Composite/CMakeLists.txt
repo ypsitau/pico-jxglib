@@ -55,6 +55,7 @@ target_link_libraries(test-Composite
     jxglib_FAT_Flash
     jxglib_FAT_RAMDisk
     jxglib_FAT_SDCard
+    jxglib_FAT_USBMSC
     jxglib_LFS_Flash)
 
 # Add the standard include files to the build
@@ -66,5 +67,6 @@ pico_add_extra_outputs(test-Composite)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 
-jxglib_configure_USBHost(test-Composite CFG_TUH_HID 3)
-jxglib_configure_FAT(test-Composite FF_VOLUMES 5)
+#jxglib_configure_USBHost(test-Composite CFG_TUH_HID 3)
+jxglib_configure_USBHost(test-Composite CFG_TUH_HID 3 CFG_TUH_MSC 2)
+jxglib_configure_FAT(test-Composite FF_VOLUMES 6)
