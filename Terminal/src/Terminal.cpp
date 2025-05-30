@@ -24,6 +24,7 @@ Terminal& Terminal::Initialize()
 char* Terminal::ReadLine(const char* prompt)
 {
 	GetPrintable().Print(prompt).RefreshScreen();
+	ClearBreak();
 	Edit_Begin();
 	for (;;) {
 		Tickable::Tick();
@@ -35,6 +36,7 @@ char* Terminal::ReadLine(const char* prompt)
 void Terminal::ReadLine_Begin(const char* prompt)
 {
 	GetPrintable().Print(prompt).RefreshScreen();
+	ClearBreak();
 	Edit_Begin();
 }
 
@@ -64,7 +66,7 @@ bool Terminal::ProcessKeyData(const KeyData& keyData)
 		switch (keyData.GetChar() + '@') {
 		case 'A':			Edit_MoveHome();		return true;
 		case 'B':			Edit_MoveBackward();	return true;
-		case 'C':			break;
+		case 'C':			SignalBreak();			return true;
 		case 'D':			Edit_DeleteChar();		return true;
 		case 'E':			Edit_MoveEnd();			return true;
 		case 'F':			Edit_MoveForward();		return true;
@@ -343,6 +345,26 @@ void Terminal::CompletionProvider::End()
 {
 	EndCompletion();
 	iByte_ = -1;
+}
+
+//------------------------------------------------------------------------------
+// Terminal::ReadableKeyboard
+//------------------------------------------------------------------------------
+int Terminal::ReadableKeyboard::Read(void* buff, int bytesBuff)
+{
+	terminal_.ClearBreak();
+	terminal_.Edit_Begin();
+	for (;;) {
+		Tickable::Tick();
+		if (!terminal_.GetLineEditor().IsEditing()) break;
+		if (terminal_.IsBreak()) return -1;
+	}
+	char* str = terminal_.GetLineEditor().GetPointerBegin();
+	int bytes = ::strlen(str);
+	::memcpy(buff, str, bytes);
+	char* buffp = static_cast<char*>(buff) + bytes;
+	*buffp++ = '\n'; bytes++;
+	return bytes;
 }
 
 }

@@ -21,7 +21,8 @@ bool Shell::RunCmd(char* line)
 	char* tokenTbl[16];
 	int nToken = count_of(tokenTbl);
 	const char* errMsg;
-	Readable* ptin = &ReadableDumb::Instance;
+	Terminal::ReadableKeyboard tin(GetTerminal());
+	Readable* ptin = &tin;
 	Printable* ptout = &GetTerminal();
 	Printable* pterr = &GetTerminal();
 	if (!Tokenizer().Tokenize(line, &nToken, tokenTbl, &errMsg)) {

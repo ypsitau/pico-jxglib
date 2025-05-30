@@ -85,9 +85,18 @@ public:
 		virtual void EndCompletion() = 0;
 		virtual const char* NextCompletion() = 0;
 	};
+	class ReadableKeyboard : public Readable {
+	private:
+		Terminal& terminal_;
+	public:
+		ReadableKeyboard(Terminal& terminal) : terminal_{terminal} {}
+	public:
+		virtual int Read(void* buff, int bytesBuff) override;
+	};
 protected:
 	LineEditor lineEditor_;
 	bool editableFlag_;
+	bool breakFlag_;
 	Keyboard* pKeyboard_;
 	CompletionProvider* pCompletionProvider_;
 public:
@@ -101,7 +110,7 @@ public:
 		pCompletionProvider_ = &completionProvider;
 	}
 	void EndCompletion() { if (pCompletionProvider_) pCompletionProvider_->End(); }
-	char* ReadLine(const char* prompt);
+	char* ReadLine(const char* prompt = "");
 	void ReadLine_Begin(const char* prompt);
 	char* ReadLine_Process();
 	bool ProcessKeyData(const KeyData& keyData);
@@ -113,6 +122,9 @@ public:
 	int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) {
 		return GetKeyboard().SenseKeyData(keyDataTbl, nKeysMax);
 	}
+	void ClearBreak() { breakFlag_ = false; }
+	void SignalBreak() { breakFlag_ = true; }
+	bool IsBreak() { bool rtn = breakFlag_; breakFlag_ = false; return rtn; }
 public:
 	virtual Printable& GetPrintable() = 0;
 	virtual Terminal& Edit_Begin() = 0;

@@ -8,22 +8,27 @@ namespace jxglib::ShellCmd_FS {
 ShellCmd(cat, "prints the contents of files")
 {
 	if (argc < 2) {
-		tout.Printf("Usage: %s <filename..>\n", argv[0]);
-		return 1;
-	}
-	for (int iArg = 1; iArg < argc; iArg++) {
-		const char* pathName = argv[iArg];
-		if (FS::DoesContainWildcard(pathName)) {
-			RefPtr<FS::Glob> pGlob(FS::OpenGlob(pathName));
-			if (pGlob) {
-				FS::FileInfo* pFileInfo;
-				const char* pathNameGlob;
-				while (pGlob->Read(&pFileInfo, &pathNameGlob)) {
-					if (pFileInfo->IsFile() && !FS::PrintFile(terr, pathNameGlob, tout)) return 1;
+		int len;
+		char buff[512];
+		while ((len = tin.Read(buff, sizeof(buff) - 1)) >= 0) {
+			buff[len] = '\0'; // null-terminate the string
+			tout.Print(buff);
+		}
+	} else {
+		for (int iArg = 1; iArg < argc; iArg++) {
+			const char* pathName = argv[iArg];
+			if (FS::DoesContainWildcard(pathName)) {
+				RefPtr<FS::Glob> pGlob(FS::OpenGlob(pathName));
+				if (pGlob) {
+					FS::FileInfo* pFileInfo;
+					const char* pathNameGlob;
+					while (pGlob->Read(&pFileInfo, &pathNameGlob)) {
+						if (pFileInfo->IsFile() && !FS::PrintFile(terr, pathNameGlob, tout)) return 1;
+					}
 				}
+			} else {
+				if (!FS::PrintFile(terr, pathName, tout)) break;
 			}
-		} else {
-			if (!FS::PrintFile(terr, pathName, tout)) break;
 		}
 	}
 	return 0;
