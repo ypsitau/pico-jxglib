@@ -11,8 +11,7 @@ FAT::USBMSC fat("A");
 
 USBHost::MSC& ShellCmd_USBHost_MSC_GetMSC() { return fat.GetMSC(); }
 
-int main()
-{
+int main()5{
 	::stdio_init_all();
 	USBHost::Initialize();
 	Serial::Terminal terminal;
