@@ -11,6 +11,7 @@ namespace jxglib::FS {
 class File;
 class FileInfo;
 class Dir;
+class Glob;
 class Drive;
 
 constexpr int MaxPath = 256;
@@ -26,6 +27,7 @@ bool SetDriveCur(const char* driveName);
 File* OpenFile(const char* fileName, const char* mode, Drive* pDrive = nullptr);
 File* OpenFileForCopy(const char* fileNameSrc, const char* fileNameDst);
 Dir* OpenDir(const char* dirName);
+Glob* OpenGlob(const char* pattern);
 bool RemoveFile(const char* fileName);
 bool RenameFile(const char* fileNameOld, const char* fileNameNew);
 bool CreateDir(const char* dirName);
@@ -45,6 +47,7 @@ const char* ExtractFileName(const char* pathName);
 void SplitDirName(const char* pathName, char* dirName, int lenMax, const char** pFileName);
 const char* AppendPathName(char* pathName, int lenMax, const char* pathNameSub);
 const char* JoinPathName(char* pathName, int lenMax, const char* dirName, const char* fileName);
+bool DoesContainWildcard(const char* str);
 bool DoesMatchWildcard(const char* pattern, const char* str);
 bool DoesMatchElemName(const char* elemName1, const char* elemName2);
 
@@ -108,6 +111,27 @@ public:
 public:
 	virtual bool Read(FileInfo** ppFileInfo) = 0;
 	virtual void Close() {}
+};
+
+//------------------------------------------------------------------------------
+// FS::Glob
+//------------------------------------------------------------------------------
+class Glob : public Referable {
+public:
+	DeclareReferable(Glob);
+protected:
+	RefPtr<Dir> pDir_;
+	char dirName_[MaxPath];
+	const char* pattern_;
+	char pathName_[MaxPath];
+public:
+	Glob();
+protected:
+	~Glob() { Close(); }
+public:
+	bool Open(const char* pattern);
+	bool Read(FileInfo** ppFileInfo, const char** pPathName);
+	void Close();
 };
 
 //------------------------------------------------------------------------------

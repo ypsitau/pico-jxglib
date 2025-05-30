@@ -85,6 +85,12 @@ Dir* OpenDir(const char* dirName)
 	return pDrive? pDrive->OpenDir(pDrive->NativePathName(pathName, sizeof(pathName), dirName)) : nullptr;
 }
 
+Glob* OpenGlob(const char* pattern)
+{
+	RefPtr<Glob> pGlob(new Glob());
+	return pGlob->Open(pattern)? pGlob.release() : nullptr;
+}
+
 bool RemoveFile(const char* fileName)
 {
 	char pathName[MaxPath];
@@ -315,6 +321,14 @@ const char* JoinPathName(char* pathName, int lenMax, const char* dirName, const 
 	return pathName;
 }
 
+bool DoesContainWildcard(const char* str)
+{
+	for (const char* p = str; *p; p++) {
+		if (*p == '*' || *p == '?') return true;
+	}
+	return false;
+}
+
 bool DoesMatchWildcard(const char* pattern, const char* str)
 {
 	const char* p = pattern;
@@ -350,6 +364,44 @@ bool DoesMatchElemName(const char* elemName1, const char* elemName2)
 		elemName2++;
 	}
 	return true;
+}
+
+//------------------------------------------------------------------------------
+// FS::Glob
+//------------------------------------------------------------------------------
+Glob::Glob(): pattern_{""}
+{
+}
+
+bool Glob::Open(const char* pattern)
+{
+	pDir_.reset(OpenDir(pattern));
+	if (pDir_) {
+		::snprintf(dirName_, sizeof(dirName_), "%s", pattern);
+		pattern_ = "";
+		return true;
+	}
+	SplitDirName(pattern, dirName_, sizeof(dirName_), &pattern_);
+	pDir_.reset(OpenDir(dirName_));
+	return !!pDir_;
+}
+
+bool Glob::Read(FileInfo** ppFileInfo, const char** pPathName)
+{
+	if (!pDir_) return false;
+	while (pDir_->Read(ppFileInfo)) {
+		if (DoesMatchWildcard(pattern_, (*ppFileInfo)->GetName())) {
+			JoinPathName(pathName_, sizeof(pathName_), dirName_, (*ppFileInfo)->GetName());
+			*pPathName = pathName_;
+			return true;
+		}
+	}
+	return false;
+}
+
+void Glob::Close()
+{
+	pDir_.reset();
 }
 
 //------------------------------------------------------------------------------
