@@ -85,6 +85,7 @@ public:
 //------------------------------------------------------------------------------
 class FileInfo {
 public:
+	enum class Type { Directory, File };
 	class Cmp {
 	public:
 		virtual int Compare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const = 0;
@@ -137,6 +138,7 @@ public:
 public:
 	virtual const char* GetName() const = 0;
 	virtual uint32_t GetSize() const = 0;
+	virtual Type GetType() const = 0;
 	virtual bool IsDirectory() const = 0;
 	virtual bool IsFile() const = 0;
 	virtual FileInfo* Clone() const = 0;

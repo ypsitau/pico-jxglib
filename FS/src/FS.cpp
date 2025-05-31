@@ -109,7 +109,8 @@ bool ListFiles(Printable& terr, Printable& tout, const char* pathName)
 		terr.Printf("failed to open %s\n", pathName);
 		return false;
 	}
-	FileInfo::Cmp_Combine cmp(FileInfo::Cmp_Type::Instance, FileInfo::Cmp_Name::Instance);
+	//FileInfo::Cmp_Combine cmp(FileInfo::Cmp_Type::Instance, FileInfo::Cmp_Name::Instance);
+	FileInfo::Cmp_Combine cmp(FileInfo::Cmp_Type::Instance, FileInfo::Cmp_Size::Instance);
 	std::unique_ptr<FS::FileInfo> pFileInfo(pGlob->ReadAll(cmp));
 	if (pFileInfo) pFileInfo->PrintList(tout);
 	return true;
@@ -474,8 +475,7 @@ const FileInfo::Cmp_Type FileInfo::Cmp_Type::Instance;
 
 int FileInfo::Cmp_Type::Compare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const
 {
-	return (fileInfo1.IsDirectory() && !fileInfo2.IsDirectory())? -1 :
-			(!fileInfo1.IsDirectory() && fileInfo2.IsDirectory())? 1 : 0;
+	return static_cast<int>(fileInfo1.GetType()) - static_cast<int>(fileInfo2.GetType());
 }
 
 const FileInfo::Cmp_Name FileInfo::Cmp_Name::Instance;

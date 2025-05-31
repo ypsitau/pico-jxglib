@@ -55,6 +55,9 @@ public:
 public:
 	virtual const char* GetName() const { return filInfo_.fname; }
 	virtual uint32_t GetSize() const { return filInfo_.fsize; }
+	virtual Type GetType() const {
+		return (filInfo_.fattrib & AM_DIR) ? Type::Directory : Type::File;
+	}
 	virtual bool IsDirectory() const { return (filInfo_.fattrib & AM_DIR) != 0; }
 	virtual bool IsFile() const { return (filInfo_.fattrib & AM_DIR) == 0; }
 	virtual FS::FileInfo* Clone() const { return new FileInfo(filInfo_); }
