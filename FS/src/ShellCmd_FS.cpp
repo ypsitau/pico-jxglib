@@ -23,11 +23,11 @@ ShellCmd(cat, "prints the contents of files")
 					FS::FileInfo* pFileInfo;
 					const char* pathNameGlob;
 					while (pGlob->Read(&pFileInfo, &pathNameGlob)) {
-						if (pFileInfo->IsFile() && !FS::PrintFile(terr, pathNameGlob, tout)) return 1;
+						if (pFileInfo->IsFile() && !FS::PrintFile(terr, tout, pathNameGlob)) return 1;
 					}
 				}
 			} else {
-				if (!FS::PrintFile(terr, pathName, tout)) break;
+				if (!FS::PrintFile(terr, tout, pathName)) break;
 			}
 		}
 	}
@@ -48,7 +48,7 @@ ShellCmd(cd, "changes the current directory")
 	return 0;
 }
 
-ShellCmd(cp, "copies files")
+ShellCmd(copy, "copies files")
 {
 	if (argc < 3) {
 		tout.Printf("Usage: %s <src..> <dst>\n", GetName());
@@ -73,7 +73,7 @@ ShellCmd(cp, "copies files")
 	return 0;
 }
 
-ShellCmdAlias(copy, cp)
+ShellCmdAlias(cp, copy)
 
 ShellCmd(format, "formats the filesystem")
 {
@@ -107,22 +107,10 @@ ShellCmd(glob, "prints files matching a glob pattern")
 ShellCmd(ls, "lists files in the specified directory")
 {
 	const char* dirName = (argc < 2)? "" : argv[1];
-	RefPtr<FS::Dir> pDir(FS::OpenDir(dirName));
-	if (!pDir) {
-		tout.Printf("failed to open %s\n", dirName);
-		return 1;
-	}
-	FS::FileInfo* pFileInfo;
-	while (pDir->Read(&pFileInfo)) {
-		if (pFileInfo->IsDirectory()) {
-			tout.Printf("%-20s <DIR>\n", pFileInfo->GetName());
-		} else if (pFileInfo->IsFile()) {
-			tout.Printf("%-20s %d\n", pFileInfo->GetName(), pFileInfo->GetSize());
-		}
-	}
-	return 0;
+	return FS::ListFiles(terr, tout, dirName)? 0 : 1;
 }
 
+ShellCmdAlias(ll, ls)
 ShellCmdAlias(dir, ls)
 
 ShellCmd_Named(ls_drive, "ls-drive", "lists availabld drives")
@@ -147,6 +135,8 @@ ShellCmd_Named(ls_drive, "ls-drive", "lists availabld drives")
 	}
 	return 0;
 }
+
+ShellCmdAlias_Named(dir_drive, "dir-drive", ls_drive)
 
 ShellCmd(mkdir, "creates a directory")
 {
@@ -173,7 +163,7 @@ ShellCmd(mount, "mounts a specified drive")
 	return 0;
 }
 
-ShellCmd(mv, "moves a file")
+ShellCmd(move, "moves a file")
 {
 	if (argc < 3) {
 		tout.Printf("Usage: %s <src> <dst>\n", GetName());
@@ -181,12 +171,12 @@ ShellCmd(mv, "moves a file")
 	}
 	const char* fileNameSrc = argv[1];
 	const char* fileNameDst = argv[2];
-	if (!FS::RenameFile(fileNameSrc, fileNameDst)) {
-		tout.Printf("failed to rename %s to %s\n", fileNameSrc, fileNameDst);
-		return 1;
-	}
+	if (!FS::MoveFile(terr, fileNameSrc, fileNameDst)) return 1;
 	return 0;
 }
+
+ShellCmdAlias(mv, move)
+ShellCmdAlias(ren, move)
 
 ShellCmd(pwd, "prints the current directory")
 {
@@ -222,6 +212,8 @@ ShellCmd(rm, "removes files")
 	}
 	return 0;
 }
+
+ShellCmdAlias(del, rm)
 
 ShellCmd(rmdir, "removes a directory")
 {

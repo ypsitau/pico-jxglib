@@ -20,7 +20,8 @@ ShellCmd_##symbol ShellCmd_##symbol##_Instance; \
 int ShellCmd_##symbol::Run(Readable& tin, Printable& tout, Printable& terr, int argc, char* argv[])
 
 #define ShellCmdAlias_Named(symbolAlias, strSymbolAlias, symbolOrg) \
-ShellCmd_##symbolOrg ShellCmd_##symbolAlias##_Instance(strSymbolAlias);
+using ShellCmd_##symbolAlias = ShellCmd_##symbolOrg; \
+ShellCmd_##symbolAlias ShellCmd_##symbolAlias##_Instance(strSymbolAlias);
 
 #define ShellCmd(symbol, help) ShellCmd_Named(symbol, #symbol, help)
 #define ShellCmdAlias(symbolAlias, symbolOrg) ShellCmdAlias_Named(symbolAlias, #symbolAlias, symbolOrg)

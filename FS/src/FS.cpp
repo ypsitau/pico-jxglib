@@ -85,13 +85,13 @@ Dir* OpenDir(const char* dirName)
 	return pDrive? pDrive->OpenDir(pDrive->NativePathName(pathName, sizeof(pathName), dirName)) : nullptr;
 }
 
-Glob* OpenGlob(const char* pattern)
+Glob* OpenGlob(const char* pattern, bool patternAsDirFlag)
 {
 	RefPtr<Glob> pGlob(new Glob());
-	return pGlob->Open(pattern)? pGlob.release() : nullptr;
+	return pGlob->Open(pattern, patternAsDirFlag)? pGlob.release() : nullptr;
 }
 
-bool PrintFile(Printable& terr, const char* fileName, Printable& tout)
+bool PrintFile(Printable& terr, Printable& tout, const char* fileName)
 {
 	RefPtr<FS::File> pFile(FS::OpenFile(fileName, "r"));
 	if (!pFile) {
@@ -99,6 +99,24 @@ bool PrintFile(Printable& terr, const char* fileName, Printable& tout)
 		return false;
 	}
 	pFile->PrintTo(tout);
+	return true;
+}
+
+bool ListFiles(Printable& terr, Printable& tout, const char* pathName)
+{
+	RefPtr<FS::Glob> pGlob(FS::OpenGlob(pathName, true));
+	if (!pGlob) {
+		terr.Printf("failed to open %s\n", pathName);
+		return false;
+	}
+	FS::FileInfo* pFileInfo;
+	while (pGlob->Read(&pFileInfo)) {
+		if (pFileInfo->IsDirectory()) {
+			tout.Printf("%-20s <DIR>\n", pFileInfo->GetName());
+		} else if (pFileInfo->IsFile()) {
+			tout.Printf("%-20s %d\n", pFileInfo->GetName(), pFileInfo->GetSize());
+		}
+	}
 	return true;
 }
 
@@ -139,12 +157,27 @@ bool RemoveFile(Printable& terr, const char* fileName)
 	return false;
 }
 
-bool RenameFile(const char* fileNameOld, const char* fileNameNew)
+bool MoveFile(Printable& terr, const char* fileNameOld, const char* fileNameNew)
 {
 	char pathNameOld[MaxPath], pathNameNew[MaxPath];
-	Drive* pDrive = FindDrive(fileNameOld);
-	return pDrive? pDrive->RenameFile(pDrive->NativePathName(pathNameOld, sizeof(pathNameOld), fileNameOld),
-				pDrive->NativePathName(pathNameNew, sizeof(pathNameNew), fileNameNew)) : false;
+	Drive* pDriveOld = FindDrive(fileNameOld);
+	if (!pDriveOld) {
+		terr.Printf("drive for old file %s not found\n", fileNameOld);
+		return false; // Drive not found
+	}	
+	Drive* pDriveNew = FindDrive(fileNameNew);
+	if (!pDriveNew) {
+		terr.Printf("drive for new file %s not found\n", fileNameNew);
+		return false; // Drive not found
+	}
+	if (pDriveOld == pDriveNew) {
+		// Same drive, just rename
+		if (pDriveOld->RenameFile(pDriveOld->NativePathName(pathNameOld, sizeof(pathNameOld), fileNameOld),
+				pDriveOld->NativePathName(pathNameNew, sizeof(pathNameNew), fileNameNew))) return true;
+		terr.Printf("failed to rename file %s to %s\n", fileNameOld, fileNameNew);
+		return false; // Rename failed
+	}
+	return CopyFile(terr, fileNameOld, fileNameNew) && RemoveFile(terr, fileNameOld); // Copy and then remove old file
 }
 
 bool CreateDir(const char* dirName)
@@ -414,8 +447,17 @@ Glob::Glob(): pattern_{""}
 {
 }
 
-bool Glob::Open(const char* pattern)
+bool Glob::Open(const char* pattern, bool patternAsDirFlag)
 {
+	if (patternAsDirFlag) {
+		// If the pattern is a directory, we can use it directly
+		pDir_.reset(OpenDir(pattern));
+		if (pDir_) {
+			::snprintf(dirName_, sizeof(dirName_), "%s", pattern);
+			pattern_ = "";
+			return true;
+		}
+	}
 	SplitDirName(pattern, dirName_, sizeof(dirName_), &pattern_);
 	pDir_.reset(OpenDir(dirName_));
 	return !!pDir_;
@@ -425,9 +467,11 @@ bool Glob::Read(FileInfo** ppFileInfo, const char** pPathName)
 {
 	if (!pDir_) return false;
 	while (pDir_->Read(ppFileInfo)) {
-		if (DoesMatchWildcard(pattern_, (*ppFileInfo)->GetName())) {
-			JoinPathName(pathName_, sizeof(pathName_), dirName_, (*ppFileInfo)->GetName());
-			*pPathName = pathName_;
+		if (!*pattern_ || DoesMatchWildcard(pattern_, (*ppFileInfo)->GetName())) {
+			if (pPathName) {
+				JoinPathName(pathName_, sizeof(pathName_), dirName_, (*ppFileInfo)->GetName());
+				*pPathName = pathName_;
+			}
 			return true;
 		}
 	}

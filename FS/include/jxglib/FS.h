@@ -27,12 +27,13 @@ bool SetDriveCur(const char* driveName);
 File* OpenFile(const char* fileName, const char* mode, Drive* pDrive = nullptr);
 File* OpenFileForCopy(const char* fileNameSrc, const char* fileNameDst);
 Dir* OpenDir(const char* dirName);
-Glob* OpenGlob(const char* pattern);
-bool PrintFile(Printable& terr, const char* fileName, Printable& tout);
+Glob* OpenGlob(const char* pattern, bool patternAsDirFlag = false);
+bool PrintFile(Printable& terr, Printable& tout, const char* fileName);
+bool ListFiles(Printable& terr, Printable& tout, const char* dirName);
 bool CopyFile(Printable& terr, const char* fileNameSrc, const char* fileNameDst);
 bool RemoveFile(const char* fileName);
 bool RemoveFile(Printable& terr, const char* fileName);
-bool RenameFile(const char* fileNameOld, const char* fileNameNew);
+bool MoveFile(Printable& terr, const char* fileNameOld, const char* fileNameNew);
 bool CreateDir(const char* dirName);
 bool RemoveDir(const char* dirName);
 bool RenameDir(const char* fileNameOld, const char* fileNameNew);
@@ -132,8 +133,8 @@ public:
 protected:
 	~Glob() { Close(); }
 public:
-	bool Open(const char* pattern);
-	bool Read(FileInfo** ppFileInfo, const char** pPathName);
+	bool Open(const char* pattern, bool paternAsDirFlag = false);
+	bool Read(FileInfo** ppFileInfo, const char** pPathName = nullptr);
 	void Close();
 };
 
