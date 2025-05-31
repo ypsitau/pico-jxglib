@@ -29,7 +29,7 @@ int main()
 	FAT::SDCard		drive_F("F", spi0, 10'000'000, {CS: GPIO5});		// SDCard on SPI0 10MHz
 	FAT::USBMSC		drive_G("G");										// USB Mass Storage Device (MSC) on USB Host
 	//FAT::USBMSC		drive_H("H");										// USB Mass Storage Device (MSC) on USB Host
-#if 0
+#if 1
 	USBHost::Keyboard keyboard;
 	::spi_init(spi1, 125'000'000);
 	GPIO14.set_function_SPI1_SCK();
