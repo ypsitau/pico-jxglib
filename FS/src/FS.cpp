@@ -102,16 +102,14 @@ bool PrintFile(Printable& terr, Printable& tout, const char* fileName)
 	return true;
 }
 
-bool ListFiles(Printable& terr, Printable& tout, const char* pathName, const FileInfo::Cmp& cmp, bool ascentFlag)
+bool ListFiles(Printable& terr, Printable& tout, const char* pathName, const FileInfo::Cmp& cmp)
 {
 	RefPtr<FS::Glob> pGlob(FS::OpenGlob(pathName, true));
 	if (!pGlob) {
 		terr.Printf("failed to open %s\n", pathName);
 		return false;
 	}
-	//FileInfo::Cmp_Combine cmp(FileInfo::Cmp_Type::Instance, FileInfo::Cmp_Name::Instance);
-	//FileInfo::Cmp_Combine cmp(FileInfo::Cmp_Type::Instance, FileInfo::Cmp_Size::Instance);
-	std::unique_ptr<FS::FileInfo> pFileInfo(pGlob->ReadAll(cmp, ascentFlag));
+	std::unique_ptr<FS::FileInfo> pFileInfo(pGlob->ReadAll(cmp));
 	if (pFileInfo) pFileInfo->PrintList(tout);
 	return true;
 }
@@ -464,35 +462,33 @@ void FS::FileInfo::PrintList(Printable& tout) const
 //------------------------------------------------------------------------------
 // FS::FileInfo::Cmp
 //------------------------------------------------------------------------------
-const FileInfo::Cmp_None FileInfo::Cmp_None::Instance;
+const FileInfo::Cmp FileInfo::Cmp::Zero(0);
 
-int FileInfo::Cmp_None::Compare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const
-{
-	return 0;
-}
+const FileInfo::Cmp_Type FileInfo::Cmp_Type::Ascent(+1);
+const FileInfo::Cmp_Type FileInfo::Cmp_Type::Descent(-1);
 
-const FileInfo::Cmp_Type FileInfo::Cmp_Type::Instance;
-
-int FileInfo::Cmp_Type::Compare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const
+int FileInfo::Cmp_Type::DoCompare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const
 {
 	return static_cast<int>(fileInfo1.GetType()) - static_cast<int>(fileInfo2.GetType());
 }
 
-const FileInfo::Cmp_Name FileInfo::Cmp_Name::Instance;
+const FileInfo::Cmp_Name FileInfo::Cmp_Name::Ascent(+1);
+const FileInfo::Cmp_Name FileInfo::Cmp_Name::Descent(-1);
 
-int FileInfo::Cmp_Name::Compare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const
+int FileInfo::Cmp_Name::DoCompare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const
 {
 	return ::strcasecmp(fileInfo1.GetName(), fileInfo2.GetName());
 }
 
-const FileInfo::Cmp_Size FileInfo::Cmp_Size::Instance;
+const FileInfo::Cmp_Size FileInfo::Cmp_Size::Ascent(+1);
+const FileInfo::Cmp_Size FileInfo::Cmp_Size::Descent(-1);
 
-int FileInfo::Cmp_Size::Compare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const
+int FileInfo::Cmp_Size::DoCompare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const
 {
 	return static_cast<int>(fileInfo1.GetSize()) - static_cast<int>(fileInfo2.GetSize());
 }
 
-int FileInfo::Cmp_Combine::Compare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const
+int FileInfo::Cmp_Combine::DoCompare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const
 {
 	int rtn;
 	rtn = cmp1_.Compare(fileInfo1, fileInfo2);
@@ -506,7 +502,7 @@ int FileInfo::Cmp_Combine::Compare(const FileInfo& fileInfo1, const FileInfo& fi
 //------------------------------------------------------------------------------
 // FS::FileInfoReader
 //------------------------------------------------------------------------------
-FileInfo* FileInfoReader::ReadAll(const FileInfo::Cmp& cmp, bool ascentFlag)
+FileInfo* FileInfoReader::ReadAll(const FileInfo::Cmp& cmp)
 {
 	FileInfo* pFileInfoHead = nullptr;
 	FileInfo* pFileInfoRead;
@@ -514,8 +510,7 @@ FileInfo* FileInfoReader::ReadAll(const FileInfo::Cmp& cmp, bool ascentFlag)
 		FileInfo* pFileInfoToAdd = pFileInfoRead->Clone();
 		FileInfo* pFileInfoPrev = nullptr;
 		for (FileInfo* pFileInfo = pFileInfoHead; pFileInfo; pFileInfo = pFileInfo->GetNext()) {
-			int rtn = cmp.Compare(*pFileInfoToAdd, *pFileInfo);
-			if (ascentFlag? (rtn < 0) : (rtn > 0)) break;
+			if (cmp.Compare(*pFileInfoToAdd, *pFileInfo) < 0) break;
 			pFileInfoPrev = pFileInfo;
 		}
 		if (pFileInfoPrev) {

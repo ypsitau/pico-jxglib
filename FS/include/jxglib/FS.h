@@ -48,32 +48,45 @@ class FileInfo {
 public:
 	enum class Type { Directory, File };
 	class Cmp {
+	private:
+		int multiplier_;
 	public:
-		virtual int Compare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const = 0;
-	};
-	class Cmp_None : public Cmp {
+		static const Cmp Zero;
 	public:
-		static const Cmp_None Instance;
+		Cmp(int multiplier) : multiplier_(multiplier) {}
 	public:
-		virtual int Compare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const override;
+		int Compare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const {
+			return DoCompare(fileInfo1, fileInfo2) * multiplier_;
+		}
+	public:
+		virtual int DoCompare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const { return 0; }
 	};
 	class Cmp_Type : public Cmp {
 	public:
-		static const Cmp_Type Instance;
+		static const Cmp_Type Ascent;
+		static const Cmp_Type Descent;
 	public:
-		virtual int Compare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const override;
+		Cmp_Type(int multiplier) : Cmp(multiplier) {}
+	public:
+		virtual int DoCompare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const override;
 	};
 	class Cmp_Name : public Cmp {
 	public:
-		static const Cmp_Name Instance;
+		static const Cmp_Name Ascent;
+		static const Cmp_Name Descent;
 	public:
-		virtual int Compare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const override;
+		Cmp_Name(int multiplier) : Cmp(multiplier) {}
+	public:
+		virtual int DoCompare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const override;
 	};
 	class Cmp_Size : public Cmp {
 	public:
-		static const Cmp_Size Instance;
+		static const Cmp_Size Ascent;
+		static const Cmp_Size Descent;
 	public:
-		virtual int Compare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const override;
+		Cmp_Size(int multiplier) : Cmp(multiplier) {}
+	public:
+		virtual int DoCompare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const override;
 	};
 	class Cmp_Combine : public Cmp {
 	private:
@@ -81,9 +94,9 @@ public:
 		const Cmp& cmp2_;
 		const Cmp& cmp3_;
 	public:
-		Cmp_Combine(const Cmp& cmp1, const Cmp& cmp2, const Cmp& cmp3 = Cmp_None::Instance) : cmp1_{cmp1}, cmp2_{cmp2}, cmp3_{cmp3} {}
+		Cmp_Combine(const Cmp& cmp1, const Cmp& cmp2, const Cmp& cmp3 = Cmp::Zero) : Cmp(1), cmp1_{cmp1}, cmp2_{cmp2}, cmp3_{cmp3} {}
 	public:
-		virtual int Compare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const override;
+		virtual int DoCompare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const override;
 	};
 protected:
 	const Drive* pDrive_;
@@ -110,7 +123,7 @@ public:
 //------------------------------------------------------------------------------
 class FileInfoReader {
 public:
-	FileInfo* ReadAll(const FileInfo::Cmp& cmp = FileInfo::Cmp_None::Instance, bool ascentFlag = true);
+	FileInfo* ReadAll(const FileInfo::Cmp& cmp = FileInfo::Cmp::Zero);
 public:
 	virtual bool Read(FileInfo** ppFileInfo) = 0;
 };
@@ -214,8 +227,7 @@ File* OpenFileForCopy(const char* fileNameSrc, const char* fileNameDst);
 Dir* OpenDir(const char* dirName);
 Glob* OpenGlob(const char* pattern, bool patternAsDirFlag = false);
 bool PrintFile(Printable& terr, Printable& tout, const char* fileName);
-bool ListFiles(Printable& terr, Printable& tout, const char* pathName,
-	const FileInfo::Cmp& cmp = FileInfo::Cmp_None::Instance, bool ascentFlag = true);
+bool ListFiles(Printable& terr, Printable& tout, const char* pathName, const FileInfo::Cmp& cmp = FileInfo::Cmp::Zero);
 bool CopyFile(Printable& terr, const char* fileNameSrc, const char* fileNameDst);
 bool RemoveFile(const char* fileName);
 bool RemoveFile(Printable& terr, const char* fileName);

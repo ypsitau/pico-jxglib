@@ -48,6 +48,26 @@ ShellCmd(cd, "changes the current directory")
 	return 0;
 }
 
+ShellCmd_Named(cd_dot_dot, "cd..", "changes the current directory to the parent directory")
+{
+	const char* dirName = "..";
+	if (!FS::ChangeCurDir(dirName)) {
+		tout.Printf("failed to change directory to %s\n", dirName);
+		return 1;
+	}
+	return 0;
+}
+
+ShellCmd_Named(cd_slash, "cd/", "changes the current directory to the root directory")
+{
+	const char* dirName = "/";
+	if (!FS::ChangeCurDir(dirName)) {
+		tout.Printf("failed to change directory to %s\n", dirName);
+		return 1;
+	}
+	return 0;
+}
+
 ShellCmd(copy, "copies files")
 {
 	if (argc < 3) {
@@ -120,22 +140,19 @@ ShellCmd(ls, "lists files in the specified directory")
 		arg.PrintHelp(terr);
 		return 0;
 	}
+	bool mixedFlag = arg.GetBool("mixed");
+	bool reverseFlag = arg.GetBool("reverse");
 	const char* dirName = (argc < 2)? "" : argv[1];
-	const FS::FileInfo::Cmp* pCmp1 = &FS::FileInfo::Cmp_Type::Instance;
-	const FS::FileInfo::Cmp* pCmp2 = &FS::FileInfo::Cmp_Name::Instance;
-	bool ascentFlag = true;
-	if (arg.GetBool("mixed")) {
-		pCmp1 = &FS::FileInfo::Cmp_None::Instance;
-	}
+	const FS::FileInfo::Cmp* pCmp1 = mixedFlag? &FS::FileInfo::Cmp::Zero : &FS::FileInfo::Cmp_Type::Ascent;
+	const FS::FileInfo::Cmp* pCmp2 = reverseFlag? &FS::FileInfo::Cmp_Name::Descent : &FS::FileInfo::Cmp_Name::Ascent;
+	const FS::FileInfo::Cmp* pCmp3 = &FS::FileInfo::Cmp::Zero;
 	if (arg.GetBool("name")) {
-		pCmp2 = &FS::FileInfo::Cmp_Name::Instance;
+		// nothing to do, pCmp1 and pCmp2 are already set to name comparison
 	} else if (arg.GetBool("size")) {
-		pCmp2 = &FS::FileInfo::Cmp_Size::Instance;
-		ascentFlag = false;
+		pCmp2 = reverseFlag? &FS::FileInfo::Cmp_Size::Ascent : &FS::FileInfo::Cmp_Size::Descent;
+		pCmp3 = &FS::FileInfo::Cmp_Name::Ascent;
 	}
-	if (arg.GetBool("reverse")) ascentFlag = !ascentFlag;
-	FS::FileInfo::Cmp_Combine cmp(*pCmp1, *pCmp2);
-	return FS::ListFiles(terr, tout, dirName, cmp, ascentFlag)? 0 : 1;
+	return FS::ListFiles(terr, tout, dirName, FS::FileInfo::Cmp_Combine(*pCmp1, *pCmp2, *pCmp3))? 0 : 1;
 }
 
 ShellCmdAlias(ll, ls)
