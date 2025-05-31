@@ -117,9 +117,9 @@ public:
 	public:
 		const char* GetName() const { return name_; }
 		const char* GetHelp() const { return help_; }
-		void SetCmdNext(Cmd* pCmd) { pCmdNext_ = pCmd; }
-		Cmd* GetCmdNext() { return pCmdNext_; }
-		const Cmd* GetCmdNext() const { return pCmdNext_; }
+		void SetNext(Cmd* pCmd) { pCmdNext_ = pCmd; }
+		Cmd* GetNext() { return pCmdNext_; }
+		const Cmd* GetNext() const { return pCmdNext_; }
 	public:
 		static Cmd* GetCmdHead() { return pCmdHead_; }
 	public:
@@ -127,15 +127,15 @@ public:
 	};
 	class CandidateProvider {
 	public:
-		virtual const char* NextItemName() = 0;
+		virtual const char* NextItemName(bool* pWrappedAroundFlag) = 0;
 	};
 	class CandidateProvider_Cmd : public CandidateProvider {
 	private:
-		const Cmd* pCmd_;
+		const Cmd* pCmdCur_;
 	public:
-		CandidateProvider_Cmd() : pCmd_{Cmd::GetCmdHead()} {}
+		CandidateProvider_Cmd() : pCmdCur_{Cmd::GetCmdHead()} {}
 	public:
-		virtual const char* NextItemName() override;
+		virtual const char* NextItemName(bool* pWrappedAroundFlag) override;
 	};
 	class CandidateProvider_FileInfo : public CandidateProvider {
 	private:
@@ -145,14 +145,13 @@ public:
 		CandidateProvider_FileInfo(FS::FileInfo* pFileInfoHead) :
 				pFileInfoHead_{pFileInfoHead}, pFileInfoCur_{pFileInfoHead_.get()} {}
 	public:
-		virtual const char* NextItemName() override;
+		virtual const char* NextItemName(bool* pWrappedAroundFlag) override;
 	};
 	class CompletionProvider : public Terminal::CompletionProvider {
 	private:
 		std::unique_ptr<CandidateProvider> pCandidateProvider_;
 		char dirName_[FS::MaxPath];
 		char result_[FS::MaxPath];
-		char itemNameFirst_[FS::MaxPath];
 		int nItemsReturned_;
 		const char* prefix_;
 	public:

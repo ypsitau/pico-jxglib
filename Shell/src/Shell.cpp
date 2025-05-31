@@ -55,7 +55,7 @@ bool Shell::RunCmd(char* line)
 		}
 		ptout = pFileOut.get();
 	}
-	for (Cmd* pCmd = Cmd::GetCmdHead(); pCmd; pCmd = pCmd->GetCmdNext()) {
+	for (Cmd* pCmd = Cmd::GetCmdHead(); pCmd; pCmd = pCmd->GetNext()) {
 		if (::strcmp(argv[0], pCmd->GetName()) == 0) {
 			pCmdRunning_ = pCmd;
 			pCmd->Run(*ptin, *ptout, *pterr, argc, argv);
@@ -165,10 +165,10 @@ void Shell::AttachTerminal_(Terminal& terminal)
 void Shell::PrintHelp(Printable& printable)
 {
 	int lenMax = 1;
-	for (const Cmd* pCmd = Cmd::GetCmdHead(); pCmd; pCmd = pCmd->GetCmdNext()) {
+	for (const Cmd* pCmd = Cmd::GetCmdHead(); pCmd; pCmd = pCmd->GetNext()) {
 		lenMax = ChooseMax(lenMax, static_cast<int>(::strlen(pCmd->GetName())));
 	}
-	for (const Cmd* pCmd = Cmd::GetCmdHead(); pCmd; pCmd = pCmd->GetCmdNext()) {
+	for (const Cmd* pCmd = Cmd::GetCmdHead(); pCmd; pCmd = pCmd->GetNext()) {
 		printable.Printf("%-*s  %s\n", lenMax, pCmd->GetName(), pCmd->GetHelp());
 	}
 }
@@ -349,15 +349,15 @@ Shell::Cmd* Shell::Cmd::pCmdHead_ = nullptr;
 Shell::Cmd::Cmd(const char* name, const char* help) : name_{name}, help_{help}, pCmdNext_{nullptr}
 {
 	Cmd* pCmdPrev = nullptr;
-	for (Cmd* pCmd = pCmdHead_; pCmd; pCmd = pCmd->GetCmdNext()) {
+	for (Cmd* pCmd = pCmdHead_; pCmd; pCmd = pCmd->GetNext()) {
 		if (::strcmp(name, pCmd->GetName()) <= 0) break;
 		pCmdPrev = pCmd;
 	}
 	if (pCmdPrev) {
-		SetCmdNext(pCmdPrev->GetCmdNext());
-		pCmdPrev->SetCmdNext(this);
+		SetNext(pCmdPrev->GetNext());
+		pCmdPrev->SetNext(this);
 	} else {
-		SetCmdNext(pCmdHead_);
+		SetNext(pCmdHead_);
 		pCmdHead_ = this;
 	}
 }
@@ -365,23 +365,25 @@ Shell::Cmd::Cmd(const char* name, const char* help) : name_{name}, help_{help}, 
 //------------------------------------------------------------------------------
 // Shell::CandidateProvider_Cmd
 //------------------------------------------------------------------------------
-const char* Shell::CandidateProvider_Cmd::NextItemName()
+const char* Shell::CandidateProvider_Cmd::NextItemName(bool* pWrappedAroundFlag)
 {
-	if (!pCmd_) return nullptr;
-	const char* itemName = pCmd_->GetName();
-	pCmd_ = pCmd_->GetCmdNext();
-	if (!pCmd_) pCmd_ = Cmd::GetCmdHead(); // loop back to the head
+	if (!pCmdCur_) return nullptr;
+	const char* itemName = pCmdCur_->GetName();
+	pCmdCur_ = pCmdCur_->GetNext();
+	if (*pWrappedAroundFlag = !pCmdCur_) pCmdCur_ = Cmd::GetCmdHead(); // loop back to the head
 	return itemName;
 }
 
 //------------------------------------------------------------------------------
 // Shell::CandidateProvider_FileInfo
 //------------------------------------------------------------------------------
-const char* Shell::CandidateProvider_FileInfo::NextItemName()
+const char* Shell::CandidateProvider_FileInfo::NextItemName(bool* pWrappedAroundFlag)
 {
-	const char* rtn = pFileInfoCur_->GetName();
-	pFileInfoCur_ = pFileInfoCur_->GetNext()? pFileInfoCur_->GetNext() : pFileInfoHead_.get();
-	return rtn;
+	if (!pFileInfoCur_) return nullptr;
+	const char* itemName = pFileInfoCur_->GetName();
+	pFileInfoCur_ = pFileInfoCur_->GetNext();
+	if (*pWrappedAroundFlag = !pFileInfoCur_) pFileInfoCur_ = pFileInfoHead_.get();
+	return itemName;
 }
 
 //------------------------------------------------------------------------------
@@ -391,7 +393,6 @@ void Shell::CompletionProvider::StartCompletion()
 {
 	dirName_[0] = '\0';
 	prefix_ = "";
-	itemNameFirst_[0] = '\0';
 	nItemsReturned_ = 0;
 	if (GetIByte() == 0) {
 		// the first field is a command name
@@ -407,12 +408,7 @@ void Shell::CompletionProvider::StartCompletion()
 		}
 		if (pDir) {
 			std::unique_ptr<FS::FileInfo> pFileInfoHead(pDir->ReadAll(FS::FileInfo::CmpDefault));
-			if (pFileInfoHead) {
-				::strcpy(itemNameFirst_, pFileInfoHead->GetName());
-				pCandidateProvider_.reset(new CandidateProvider_FileInfo(pFileInfoHead.release()));
-			} else {
-				pCandidateProvider_.reset();
-			}
+			pCandidateProvider_.reset(new CandidateProvider_FileInfo(pFileInfoHead.release()));
 		}
 	}
 }
@@ -426,14 +422,13 @@ const char* Shell::CompletionProvider::NextCompletion()
 {
 	if (!pCandidateProvider_) return nullptr;
 	const char* itemName;
-	while (itemName = pCandidateProvider_->NextItemName()) {
+	bool wrappedAroundFlag = false;
+	while (itemName = pCandidateProvider_->NextItemName(&wrappedAroundFlag)) {
 		if (StartsWithICase(itemName, prefix_)) {
 			nItemsReturned_++;
 			FS::JoinPathName(result_, sizeof(result_), dirName_, itemName);
 			return result_;
-		} else if (itemNameFirst_[0] == '\0') {
-			::strcpy(itemNameFirst_, itemName);
-		} else if (::strcmp(itemNameFirst_, itemName) == 0) {
+		} else if (wrappedAroundFlag) {
 			if (nItemsReturned_ == 0) return nullptr;
 			nItemsReturned_ = 0;
 		}
