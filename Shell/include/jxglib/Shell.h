@@ -139,9 +139,11 @@ public:
 	};
 	class CandidateProvider_Dir : public CandidateProvider {
 	private:
-		RefPtr<FS::Dir> pDir_;
+		std::unique_ptr<FS::FileInfo> pFileInfoHead_;
+		FS::FileInfo* pFileInfoCur_;
 	public:
-		CandidateProvider_Dir(FS::Dir* pDir) : pDir_{pDir} {}	
+		CandidateProvider_Dir(FS::FileInfo* pFileInfoHead) :
+				pFileInfoHead_{pFileInfoHead}, pFileInfoCur_{pFileInfoHead_.get()} {}
 	public:
 		virtual const char* NextItemName() override;
 	};
