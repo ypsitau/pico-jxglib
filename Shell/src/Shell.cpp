@@ -375,9 +375,9 @@ const char* Shell::CandidateProvider_Cmd::NextItemName()
 }
 
 //------------------------------------------------------------------------------
-// Shell::CandidateProvider_Dir
+// Shell::CandidateProvider_FileInfo
 //------------------------------------------------------------------------------
-const char* Shell::CandidateProvider_Dir::NextItemName()
+const char* Shell::CandidateProvider_FileInfo::NextItemName()
 {
 	const char* rtn = pFileInfoCur_->GetName();
 	pFileInfoCur_ = pFileInfoCur_->GetNext()? pFileInfoCur_->GetNext() : pFileInfoHead_.get();
@@ -406,11 +406,10 @@ void Shell::CompletionProvider::StartCompletion()
 			pDir.reset(FS::OpenDir(dirName_));
 		}
 		if (pDir) {
-			std::unique_ptr<FS::FileInfo> pFileInfoHead(pDir->ReadAll(FS::FileInfo::Cmp_Combine(
-				FS::FileInfo::Cmp_Type::Ascent, FS::FileInfo::Cmp_Name::Ascent, FS::FileInfo::Cmp::Zero)));
+			std::unique_ptr<FS::FileInfo> pFileInfoHead(pDir->ReadAll(FS::FileInfo::CmpDefault));
 			if (pFileInfoHead) {
 				::strcpy(itemNameFirst_, pFileInfoHead->GetName());
-				pCandidateProvider_.reset(new CandidateProvider_Dir(pFileInfoHead.release()));
+				pCandidateProvider_.reset(new CandidateProvider_FileInfo(pFileInfoHead.release()));
 			} else {
 				pCandidateProvider_.reset();
 			}

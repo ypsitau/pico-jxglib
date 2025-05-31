@@ -137,12 +137,12 @@ public:
 	public:
 		virtual const char* NextItemName() override;
 	};
-	class CandidateProvider_Dir : public CandidateProvider {
+	class CandidateProvider_FileInfo : public CandidateProvider {
 	private:
 		std::unique_ptr<FS::FileInfo> pFileInfoHead_;
 		FS::FileInfo* pFileInfoCur_;
 	public:
-		CandidateProvider_Dir(FS::FileInfo* pFileInfoHead) :
+		CandidateProvider_FileInfo(FS::FileInfo* pFileInfoHead) :
 				pFileInfoHead_{pFileInfoHead}, pFileInfoCur_{pFileInfoHead_.get()} {}
 	public:
 		virtual const char* NextItemName() override;

@@ -444,6 +444,8 @@ File::File(const Drive& drive) : drive_(drive)
 //------------------------------------------------------------------------------
 // FS::FileInfo
 //------------------------------------------------------------------------------
+FileInfo::Cmp_Combine FileInfo::CmpDefault(FileInfo::Cmp_Type::Ascent, FileInfo::Cmp_Name::Ascent, FileInfo::Cmp::Zero);
+
 void FS::FileInfo::PrintList(Printable& tout) const
 {
 	int lenMax = 16;
@@ -501,11 +503,11 @@ int FileInfo::Cmp_Size::DoCompare(const FileInfo& fileInfo1, const FileInfo& fil
 int FileInfo::Cmp_Combine::DoCompare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const
 {
 	int rtn;
-	rtn = cmp1_.Compare(fileInfo1, fileInfo2);
+	rtn = pCmp1_->Compare(fileInfo1, fileInfo2);
 	if (rtn != 0) return rtn;
-	rtn = cmp2_.Compare(fileInfo1, fileInfo2);
+	rtn = pCmp2_->Compare(fileInfo1, fileInfo2);
 	if (rtn != 0) return rtn;
-	rtn = cmp3_.Compare(fileInfo1, fileInfo2);
+	rtn = pCmp3_->Compare(fileInfo1, fileInfo2);
 	return rtn;
 }
 

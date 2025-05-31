@@ -88,17 +88,21 @@ public:
 	};
 	class Cmp_Combine : public Cmp {
 	private:
-		const Cmp& cmp1_;
-		const Cmp& cmp2_;
-		const Cmp& cmp3_;
+		const Cmp* pCmp1_;
+		const Cmp* pCmp2_;
+		const Cmp* pCmp3_;
 	public:
-		Cmp_Combine(const Cmp& cmp1, const Cmp& cmp2, const Cmp& cmp3 = Cmp::Zero) : Cmp(1), cmp1_{cmp1}, cmp2_{cmp2}, cmp3_{cmp3} {}
+		Cmp_Combine(const Cmp& cmp1, const Cmp& cmp2, const Cmp& cmp3 = Cmp::Zero) : Cmp(1), pCmp1_{&cmp1}, pCmp2_{&cmp2}, pCmp3_{&cmp3} {}
+	public:
+		void Set(const Cmp* pCmp1, const Cmp* pCmp2, const Cmp* pCmp3) { pCmp1_ = pCmp1; pCmp2_ = pCmp2; pCmp3_ = pCmp3; }
 	public:
 		virtual int DoCompare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const override;
 	};
 protected:
 	const Drive* pDrive_;
 	std::unique_ptr<FileInfo> pFileInfoNext_;
+public:
+	static Cmp_Combine CmpDefault;
 public:
 	FileInfo(const Drive* pDrive = nullptr) : pDrive_(pDrive) {}
 public:

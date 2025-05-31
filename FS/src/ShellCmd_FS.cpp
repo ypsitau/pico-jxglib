@@ -152,7 +152,8 @@ ShellCmd(ls, "lists files in the specified directory")
 		pCmp2 = reverseFlag? &FS::FileInfo::Cmp_Size::Ascent : &FS::FileInfo::Cmp_Size::Descent;
 		pCmp3 = &FS::FileInfo::Cmp_Name::Ascent;
 	}
-	return FS::ListFiles(terr, tout, dirName, FS::FileInfo::Cmp_Combine(*pCmp1, *pCmp2, *pCmp3))? 0 : 1;
+	FS::FileInfo::CmpDefault.Set(pCmp1, pCmp2, pCmp3);
+	return FS::ListFiles(terr, tout, dirName, FS::FileInfo::CmpDefault)? 0 : 1;
 }
 
 ShellCmdAlias(ll, ls)
