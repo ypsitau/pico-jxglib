@@ -106,8 +106,36 @@ ShellCmd(glob, "prints files matching a glob pattern")
 
 ShellCmd(ls, "lists files in the specified directory")
 {
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		"h",	"prints this help"),
+		Arg::OptBool("mixed",		"m",	"lists files and directories in mixed order"),		
+		Arg::OptBool("name",		"n",	"sorts by name"),
+		Arg::OptBool("size",		"s",	"sorts by size from large to small"),
+		Arg::OptBool("reverse",		"r",	"reverses the order of listing"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (arg.GetBool("help")) {
+		terr.Printf("usage: %s [options] [<pathname>]\n", GetName());
+		arg.PrintHelp(terr);
+		return 0;
+	}
 	const char* dirName = (argc < 2)? "" : argv[1];
-	return FS::ListFiles(terr, tout, dirName)? 0 : 1;
+	const FS::FileInfo::Cmp* pCmp1 = &FS::FileInfo::Cmp_Type::Instance;
+	const FS::FileInfo::Cmp* pCmp2 = &FS::FileInfo::Cmp_Name::Instance;
+	bool ascentFlag = true;
+	if (arg.GetBool("mixed")) {
+		pCmp1 = &FS::FileInfo::Cmp_None::Instance;
+	}
+	if (arg.GetBool("name")) {
+		pCmp2 = &FS::FileInfo::Cmp_Name::Instance;
+	} else if (arg.GetBool("size")) {
+		pCmp2 = &FS::FileInfo::Cmp_Size::Instance;
+		ascentFlag = false;
+	}
+	if (arg.GetBool("reverse")) ascentFlag = !ascentFlag;
+	FS::FileInfo::Cmp_Combine cmp(*pCmp1, *pCmp2);
+	return FS::ListFiles(terr, tout, dirName, cmp, ascentFlag)? 0 : 1;
 }
 
 ShellCmdAlias(ll, ls)

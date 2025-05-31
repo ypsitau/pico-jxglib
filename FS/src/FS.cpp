@@ -102,7 +102,7 @@ bool PrintFile(Printable& terr, Printable& tout, const char* fileName)
 	return true;
 }
 
-bool ListFiles(Printable& terr, Printable& tout, const char* pathName)
+bool ListFiles(Printable& terr, Printable& tout, const char* pathName, const FileInfo::Cmp& cmp, bool ascentFlag)
 {
 	RefPtr<FS::Glob> pGlob(FS::OpenGlob(pathName, true));
 	if (!pGlob) {
@@ -110,8 +110,8 @@ bool ListFiles(Printable& terr, Printable& tout, const char* pathName)
 		return false;
 	}
 	//FileInfo::Cmp_Combine cmp(FileInfo::Cmp_Type::Instance, FileInfo::Cmp_Name::Instance);
-	FileInfo::Cmp_Combine cmp(FileInfo::Cmp_Type::Instance, FileInfo::Cmp_Size::Instance);
-	std::unique_ptr<FS::FileInfo> pFileInfo(pGlob->ReadAll(cmp));
+	//FileInfo::Cmp_Combine cmp(FileInfo::Cmp_Type::Instance, FileInfo::Cmp_Size::Instance);
+	std::unique_ptr<FS::FileInfo> pFileInfo(pGlob->ReadAll(cmp, ascentFlag));
 	if (pFileInfo) pFileInfo->PrintList(tout);
 	return true;
 }

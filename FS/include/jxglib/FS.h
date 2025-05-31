@@ -18,45 +18,6 @@ class Drive;
 constexpr int MaxPath = 256;
 
 //------------------------------------------------------------------------------
-// Functions
-//------------------------------------------------------------------------------
-Drive* FindDrive(const char* pathName);
-Drive* GetDriveHead();
-Drive* GetDriveCur();
-const char* SkipDriveName(const char* pathName);
-bool SetDriveCur(const char* driveName);
-File* OpenFile(const char* fileName, const char* mode, Drive* pDrive = nullptr);
-File* OpenFileForCopy(const char* fileNameSrc, const char* fileNameDst);
-Dir* OpenDir(const char* dirName);
-Glob* OpenGlob(const char* pattern, bool patternAsDirFlag = false);
-bool PrintFile(Printable& terr, Printable& tout, const char* fileName);
-bool ListFiles(Printable& terr, Printable& tout, const char* dirName);
-bool CopyFile(Printable& terr, const char* fileNameSrc, const char* fileNameDst);
-bool RemoveFile(const char* fileName);
-bool RemoveFile(Printable& terr, const char* fileName);
-bool MoveFile(Printable& terr, const char* fileNameOld, const char* fileNameNew);
-bool CreateDir(const char* dirName);
-bool RemoveDir(const char* dirName);
-bool RenameDir(const char* fileNameOld, const char* fileNameNew);
-bool ChangeCurDir(const char* dirName);
-bool IsDirectory(const char* pathName);
-bool Format(Printable& terr, const char* driveName);
-bool Mount(Printable& terr, const char* driveName);
-bool Unmount(Printable& terr, const char* driveName);
-FileInfo* GetFileInfo(const char* pathName);
-bool IsLegalDriveName(const char* driveName);
-bool GetDirNameCur(const char** pDriveName, const char** pDirName);
-
-const char* ExtractDriveName(const char* pathName, char* driveName, int lenMax);
-const char* ExtractFileName(const char* pathName);
-void SplitDirName(const char* pathName, char* dirName, int lenMax, const char** pFileName);
-const char* AppendPathName(char* pathName, int lenMax, const char* pathNameSub);
-const char* JoinPathName(char* pathName, int lenMax, const char* dirName, const char* fileName);
-bool DoesContainWildcard(const char* str);
-bool DoesMatchWildcard(const char* pattern, const char* str);
-bool DoesMatchElemName(const char* elemName1, const char* elemName2);
-
-//------------------------------------------------------------------------------
 // FS::File
 //------------------------------------------------------------------------------
 class File : public Referable, public Stream {
@@ -239,6 +200,46 @@ public:
 	virtual uint64_t GetBytesUsed() = 0;
 	virtual const char* GetRemarks(char* buff, int lenMax) const { return buff;}
 };
+
+//------------------------------------------------------------------------------
+// Functions
+//------------------------------------------------------------------------------
+Drive* FindDrive(const char* pathName);
+Drive* GetDriveHead();
+Drive* GetDriveCur();
+const char* SkipDriveName(const char* pathName);
+bool SetDriveCur(const char* driveName);
+File* OpenFile(const char* fileName, const char* mode, Drive* pDrive = nullptr);
+File* OpenFileForCopy(const char* fileNameSrc, const char* fileNameDst);
+Dir* OpenDir(const char* dirName);
+Glob* OpenGlob(const char* pattern, bool patternAsDirFlag = false);
+bool PrintFile(Printable& terr, Printable& tout, const char* fileName);
+bool ListFiles(Printable& terr, Printable& tout, const char* pathName,
+	const FileInfo::Cmp& cmp = FileInfo::Cmp_None::Instance, bool ascentFlag = true);
+bool CopyFile(Printable& terr, const char* fileNameSrc, const char* fileNameDst);
+bool RemoveFile(const char* fileName);
+bool RemoveFile(Printable& terr, const char* fileName);
+bool MoveFile(Printable& terr, const char* fileNameOld, const char* fileNameNew);
+bool CreateDir(const char* dirName);
+bool RemoveDir(const char* dirName);
+bool RenameDir(const char* fileNameOld, const char* fileNameNew);
+bool ChangeCurDir(const char* dirName);
+bool IsDirectory(const char* pathName);
+bool Format(Printable& terr, const char* driveName);
+bool Mount(Printable& terr, const char* driveName);
+bool Unmount(Printable& terr, const char* driveName);
+FileInfo* GetFileInfo(const char* pathName);
+bool IsLegalDriveName(const char* driveName);
+bool GetDirNameCur(const char** pDriveName, const char** pDirName);
+
+const char* ExtractDriveName(const char* pathName, char* driveName, int lenMax);
+const char* ExtractFileName(const char* pathName);
+void SplitDirName(const char* pathName, char* dirName, int lenMax, const char** pFileName);
+const char* AppendPathName(char* pathName, int lenMax, const char* pathNameSub);
+const char* JoinPathName(char* pathName, int lenMax, const char* dirName, const char* fileName);
+bool DoesContainWildcard(const char* str);
+bool DoesMatchWildcard(const char* pattern, const char* str);
+bool DoesMatchElemName(const char* elemName1, const char* elemName2);
 
 }
 
