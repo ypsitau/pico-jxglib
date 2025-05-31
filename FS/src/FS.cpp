@@ -464,6 +464,16 @@ void FS::FileInfo::PrintList(Printable& tout) const
 //------------------------------------------------------------------------------
 const FileInfo::Cmp FileInfo::Cmp::Zero(0);
 
+int FileInfo::Cmp::Compare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const
+{
+	return DoCompare(fileInfo1, fileInfo2) * multiplier_;
+}
+
+int FileInfo::Cmp::DoCompare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const
+{
+	return 0;
+}
+
 const FileInfo::Cmp_Type FileInfo::Cmp_Type::Ascent(+1);
 const FileInfo::Cmp_Type FileInfo::Cmp_Type::Descent(-1);
 

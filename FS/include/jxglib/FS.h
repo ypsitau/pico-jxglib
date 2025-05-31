@@ -55,11 +55,9 @@ public:
 	public:
 		Cmp(int multiplier) : multiplier_(multiplier) {}
 	public:
-		int Compare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const {
-			return DoCompare(fileInfo1, fileInfo2) * multiplier_;
-		}
+		int Compare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const;
 	public:
-		virtual int DoCompare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const { return 0; }
+		virtual int DoCompare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const;
 	};
 	class Cmp_Type : public Cmp {
 	public:
