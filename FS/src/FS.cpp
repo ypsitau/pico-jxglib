@@ -109,14 +109,9 @@ bool ListFiles(Printable& terr, Printable& tout, const char* pathName)
 		terr.Printf("failed to open %s\n", pathName);
 		return false;
 	}
-	FS::FileInfo* pFileInfo;
-	while (pGlob->Read(&pFileInfo)) {
-		if (pFileInfo->IsDirectory()) {
-			tout.Printf("%-20s <DIR>\n", pFileInfo->GetName());
-		} else if (pFileInfo->IsFile()) {
-			tout.Printf("%-20s %d\n", pFileInfo->GetName(), pFileInfo->GetSize());
-		}
-	}
+	FileInfo::Cmp_Combine cmp(FileInfo::Cmp_Type::Instance, FileInfo::Cmp_Name::Instance);
+	std::unique_ptr<FS::FileInfo> pFileInfo(pGlob->ReadAll(cmp));
+	if (pFileInfo) pFileInfo->PrintList(tout);
 	return true;
 }
 
@@ -438,6 +433,107 @@ bool DoesMatchElemName(const char* elemName1, const char* elemName2)
 		elemName2++;
 	}
 	return true;
+}
+
+//------------------------------------------------------------------------------
+// FS::File
+//------------------------------------------------------------------------------
+File::File(const Drive& drive) : drive_(drive)
+{
+}
+
+//------------------------------------------------------------------------------
+// FS::FileInfo
+//------------------------------------------------------------------------------
+void FS::FileInfo::PrintList(Printable& tout) const
+{
+	int lenMax = 16;
+	for (const FileInfo* pFileInfo = this; pFileInfo; pFileInfo = pFileInfo->GetNext()) {
+		lenMax = ChooseMax(lenMax, ::strlen(pFileInfo->GetName()));
+	}
+	for (const FileInfo* pFileInfo = this; pFileInfo; pFileInfo = pFileInfo->GetNext()) {
+		if (pFileInfo->IsDirectory()) {
+			tout.Printf("%*s <DIR>\n", -lenMax, pFileInfo->GetName());
+		} else if (pFileInfo->IsFile()) {
+			tout.Printf("%*s %d\n", -lenMax, pFileInfo->GetName(), pFileInfo->GetSize());
+		}
+	}
+}
+
+//------------------------------------------------------------------------------
+// FS::FileInfo::Cmp
+//------------------------------------------------------------------------------
+const FileInfo::Cmp_None FileInfo::Cmp_None::Instance;
+
+int FileInfo::Cmp_None::Compare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const
+{
+	return 0;
+}
+
+const FileInfo::Cmp_Type FileInfo::Cmp_Type::Instance;
+
+int FileInfo::Cmp_Type::Compare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const
+{
+	return (fileInfo1.IsDirectory() && !fileInfo2.IsDirectory())? -1 :
+			(!fileInfo1.IsDirectory() && fileInfo2.IsDirectory())? 1 : 0;
+}
+
+const FileInfo::Cmp_Name FileInfo::Cmp_Name::Instance;
+
+int FileInfo::Cmp_Name::Compare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const
+{
+	return ::strcasecmp(fileInfo1.GetName(), fileInfo2.GetName());
+}
+
+const FileInfo::Cmp_Size FileInfo::Cmp_Size::Instance;
+
+int FileInfo::Cmp_Size::Compare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const
+{
+	return static_cast<int>(fileInfo1.GetSize()) - static_cast<int>(fileInfo2.GetSize());
+}
+
+int FileInfo::Cmp_Combine::Compare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const
+{
+	int rtn;
+	rtn = cmp1_.Compare(fileInfo1, fileInfo2);
+	if (rtn != 0) return rtn;
+	rtn = cmp2_.Compare(fileInfo1, fileInfo2);
+	if (rtn != 0) return rtn;
+	rtn = cmp3_.Compare(fileInfo1, fileInfo2);
+	return rtn;
+}
+
+//------------------------------------------------------------------------------
+// FS::FileInfoReader
+//------------------------------------------------------------------------------
+FileInfo* FileInfoReader::ReadAll(const FileInfo::Cmp& cmp, bool ascentFlag)
+{
+	FileInfo* pFileInfoHead = nullptr;
+	FileInfo* pFileInfoRead;
+	while (Read(&pFileInfoRead)) {
+		FileInfo* pFileInfoToAdd = pFileInfoRead->Clone();
+		FileInfo* pFileInfoPrev = nullptr;
+		for (FileInfo* pFileInfo = pFileInfoHead; pFileInfo; pFileInfo = pFileInfo->GetNext()) {
+			int rtn = cmp.Compare(*pFileInfoToAdd, *pFileInfo);
+			if (ascentFlag? (rtn < 0) : (rtn > 0)) break;
+			pFileInfoPrev = pFileInfo;
+		}
+		if (pFileInfoPrev) {
+			pFileInfoToAdd->SetNext(pFileInfoPrev->ReleaseNext());
+			pFileInfoPrev->SetNext(pFileInfoToAdd);
+		} else {
+			pFileInfoToAdd->SetNext(pFileInfoHead);
+			pFileInfoHead = pFileInfoToAdd;
+		}
+	}
+	return pFileInfoHead;
+}
+
+//------------------------------------------------------------------------------
+// FS::Dir
+//------------------------------------------------------------------------------
+Dir::Dir(const Drive& drive) : drive_(drive), rewindFlag_{false}
+{
 }
 
 //------------------------------------------------------------------------------

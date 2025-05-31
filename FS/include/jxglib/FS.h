@@ -3,6 +3,7 @@
 //==============================================================================
 #ifndef PICO_JXGLIB_FS_H
 #define PICO_JXGLIB_FS_H
+#include <memory>
 #include "pico/stdlib.h"
 #include "jxglib/Stream.h"
 
@@ -64,7 +65,7 @@ public:
 protected:
 	const Drive& drive_;
 public:
-	File(const Drive& drive) : drive_(drive) {}
+	File(const Drive& drive);
 protected:
 	virtual ~File() { Close(); }
 public:
@@ -83,44 +84,98 @@ public:
 // FS::FileInfo
 //------------------------------------------------------------------------------
 class FileInfo {
+public:
+	class Cmp {
+	public:
+		virtual int Compare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const = 0;
+	};
+	class Cmp_None : public Cmp {
+	public:
+		static const Cmp_None Instance;
+	public:
+		virtual int Compare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const override;
+	};
+	class Cmp_Type : public Cmp {
+	public:
+		static const Cmp_Type Instance;
+	public:
+		virtual int Compare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const override;
+	};
+	class Cmp_Name : public Cmp {
+	public:
+		static const Cmp_Name Instance;
+	public:
+		virtual int Compare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const override;
+	};
+	class Cmp_Size : public Cmp {
+	public:
+		static const Cmp_Size Instance;
+	public:
+		virtual int Compare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const override;
+	};
+	class Cmp_Combine : public Cmp {
+	private:
+		const Cmp& cmp1_;
+		const Cmp& cmp2_;
+		const Cmp& cmp3_;
+	public:
+		Cmp_Combine(const Cmp& cmp1, const Cmp& cmp2, const Cmp& cmp3 = Cmp_None::Instance) : cmp1_{cmp1}, cmp2_{cmp2}, cmp3_{cmp3} {}
+	public:
+		virtual int Compare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const override;
+	};
 protected:
 	const Drive* pDrive_;
+	std::unique_ptr<FileInfo> pFileInfoNext_;
 public:
 	FileInfo(const Drive* pDrive = nullptr) : pDrive_(pDrive) {}
 public:
+	void PrintList(Printable& tout) const;
 	void SetDrive(const Drive* pDrive) { pDrive_ = pDrive; }
+	void SetNext(FileInfo* pFileInfoNext) { pFileInfoNext_.reset(pFileInfoNext); }
+	FileInfo* GetNext() const { return pFileInfoNext_.get(); }
+	FileInfo* ReleaseNext() { return pFileInfoNext_.release(); }
 public:
 	virtual const char* GetName() const = 0;
 	virtual uint32_t GetSize() const = 0;
 	virtual bool IsDirectory() const = 0;
 	virtual bool IsFile() const = 0;
+	virtual FileInfo* Clone() const = 0;
+};
+
+//------------------------------------------------------------------------------
+// FS::FileInfoReader
+//------------------------------------------------------------------------------
+class FileInfoReader {
+public:
+	FileInfo* ReadAll(const FileInfo::Cmp& cmp = FileInfo::Cmp_None::Instance, bool ascentFlag = true);
+public:
+	virtual bool Read(FileInfo** ppFileInfo) = 0;
 };
 
 //------------------------------------------------------------------------------
 // FS::Dir
 //------------------------------------------------------------------------------
-class Dir : public Referable {
+class Dir : public Referable, public FileInfoReader {
 public:
 	DeclareReferable(Dir);
 protected:
 	const Drive& drive_;
 	bool rewindFlag_;
 public:
-	Dir(const Drive& drive) : drive_(drive), rewindFlag_{false} {}
+	Dir(const Drive& drive);
 protected:
 	virtual ~Dir() { Close(); }
 public:
 	const Drive& GetDrive() const { return drive_; }
 	void EnableRewind() { rewindFlag_ = true; }
 public:
-	virtual bool Read(FileInfo** ppFileInfo) = 0;
 	virtual void Close() {}
 };
 
 //------------------------------------------------------------------------------
 // FS::Glob
 //------------------------------------------------------------------------------
-class Glob : public Referable {
+class Glob : public Referable, public FileInfoReader {
 public:
 	DeclareReferable(Glob);
 protected:
@@ -134,8 +189,11 @@ protected:
 	~Glob() { Close(); }
 public:
 	bool Open(const char* pattern, bool paternAsDirFlag = false);
-	bool Read(FileInfo** ppFileInfo, const char** pPathName = nullptr);
+	bool Read(FileInfo** ppFileInfo, const char** pPathName);
 	void Close();
+public:
+	// virtual functions of FileInfoReader
+	virtual bool Read(FileInfo** ppFileInfo) override { return Read(ppFileInfo, nullptr); }
 };
 
 //------------------------------------------------------------------------------

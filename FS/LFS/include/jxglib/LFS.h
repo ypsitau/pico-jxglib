@@ -49,6 +49,7 @@ private:
 	lfs_info info_;
 public:
 	FileInfo() {}
+	FileInfo(const lfs_info& info) : info_(info) {}
 	~FileInfo() {}
 public:
 	lfs_info& GetEntity() { return info_; }
@@ -58,6 +59,7 @@ public:
 	virtual uint32_t GetSize() const override { return info_.size; }
 	virtual bool IsDirectory() const override { return (info_.type & LFS_TYPE_DIR) != 0; }
 	virtual bool IsFile() const override { return (info_.type & LFS_TYPE_REG) != 0; }
+	virtual FS::FileInfo* Clone() const override { return new FileInfo(info_); }
 };
 
 //------------------------------------------------------------------------------

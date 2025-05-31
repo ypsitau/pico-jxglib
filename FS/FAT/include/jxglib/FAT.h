@@ -47,6 +47,7 @@ private:
 	FILINFO filInfo_;
 public:
 	FileInfo() {}
+	FileInfo(const FILINFO& filInfo) : filInfo_(filInfo) {}
 	~FileInfo() {}
 public:
 	FILINFO& GetEntity() { return filInfo_; }
@@ -56,6 +57,7 @@ public:
 	virtual uint32_t GetSize() const { return filInfo_.fsize; }
 	virtual bool IsDirectory() const { return (filInfo_.fattrib & AM_DIR) != 0; }
 	virtual bool IsFile() const { return (filInfo_.fattrib & AM_DIR) == 0; }
+	virtual FS::FileInfo* Clone() const { return new FileInfo(filInfo_); }
 };
 
 //------------------------------------------------------------------------------
