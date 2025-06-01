@@ -7,6 +7,19 @@ namespace jxglib::ShellCmd_FS {
 
 ShellCmd(cat, "prints the contents of files")
 {
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		"h",	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (arg.GetBool("help")) {
+		terr.Printf("usage: %s [options] [<filename>..]\noptions:\n", GetName());
+		arg.PrintHelp(terr);
+		terr.Printf("\n"
+			"Reads the contents of files and prints them to standard output.\n"
+			"When no filenames are given, the command reads from standard input.\n");
+		return 1;
+	}
 	if (argc < 2) {
 		int len;
 		char buff[512];
@@ -36,8 +49,14 @@ ShellCmd(cat, "prints the contents of files")
 
 ShellCmd(cd, "changes the current directory")
 {
-	if (argc < 2) {
-		tout.Printf("Usage: %s <directory>\n", GetName());
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		"h",	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (argc < 2 || arg.GetBool("help")) {
+		terr.Printf("usage: %s [options] <directory>\noptions:\n", GetName());
+		arg.PrintHelp(terr);
 		return 1;
 	}
 	const char* dirName = argv[1];
@@ -50,6 +69,16 @@ ShellCmd(cd, "changes the current directory")
 
 ShellCmd_Named(cd_dot_dot, "cd..", "changes the current directory to the parent directory")
 {
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		"h",	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (arg.GetBool("help")) {
+		terr.Printf("usage: %s [options]\noptions:\n", GetName());
+		arg.PrintHelp(terr);
+		return 1;
+	}
 	const char* dirName = "..";
 	if (!FS::ChangeCurDir(dirName)) {
 		tout.Printf("failed to change directory to %s\n", dirName);
@@ -60,6 +89,16 @@ ShellCmd_Named(cd_dot_dot, "cd..", "changes the current directory to the parent 
 
 ShellCmd_Named(cd_slash, "cd/", "changes the current directory to the root directory")
 {
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		"h",	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (arg.GetBool("help")) {
+		terr.Printf("usage: %s [options]\noptions:\n", GetName());
+		arg.PrintHelp(terr);
+		return 1;
+	}
 	const char* dirName = "/";
 	if (!FS::ChangeCurDir(dirName)) {
 		tout.Printf("failed to change directory to %s\n", dirName);
@@ -70,8 +109,14 @@ ShellCmd_Named(cd_slash, "cd/", "changes the current directory to the root direc
 
 ShellCmd(copy, "copies files")
 {
-	if (argc < 3) {
-		tout.Printf("Usage: %s <src..> <dst>\n", GetName());
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		"h",	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (argc < 3 || arg.GetBool("help")) {
+		terr.Printf("usage: %s [options] <src..> <dst>\noptions:\n", GetName());
+		arg.PrintHelp(terr);
 		return 1;
 	}
 	const char* pathNameDst = argv[argc - 1];
@@ -97,8 +142,14 @@ ShellCmdAlias(cp, copy)
 
 ShellCmd(format, "formats the filesystem")
 {
-	if (argc < 2) {
-		tout.Printf("Usage: %s <drivename>\n", GetName());
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		"h",	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (argc < 2 || arg.GetBool("help")) {
+		terr.Printf("usage: %s [drivename]\noptions:\n", GetName());
+		arg.PrintHelp(terr);
 		return 1;
 	}
 	const char* driveName = argv[1];
@@ -108,8 +159,14 @@ ShellCmd(format, "formats the filesystem")
 
 ShellCmd(glob, "prints files matching a glob pattern")
 {
-	if (argc < 2) {
-		tout.Printf("Usage: %s <pattern>\n", GetName());
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		"h",	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (argc < 2 || arg.GetBool("help")) {
+		terr.Printf("usage: %s [options] <pattern>\noptions:\n", GetName());
+		arg.PrintHelp(terr);
 		return 1;
 	}
 	const char* pattern = argv[1];
@@ -136,9 +193,9 @@ ShellCmd(ls, "lists files in the specified directory")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [options] [<pathname>]\n", GetName());
+		terr.Printf("usage: %s [options] [<pathname>]\noptions:\n", GetName());
 		arg.PrintHelp(terr);
-		return 0;
+		return 1;
 	}
 	bool mixedFlag = arg.GetBool("mixed");
 	bool reverseFlag = arg.GetBool("reverse");
@@ -168,9 +225,9 @@ ShellCmd_Named(ls_drive, "ls-drive", "lists availabld drives")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [options] [<drivename>]\n", GetName());
+		terr.Printf("usage: %s [options] [<drivename>]\noptions:\n", GetName());
 		arg.PrintHelp(terr);
-		return 0;
+		return 1;
 	}
 	bool remarksFlag = arg.GetBool("remarks");
 	const char* labelDriveName = "Drive";
@@ -200,8 +257,14 @@ ShellCmdAlias_Named(dir_drive, "dir-drive", ls_drive)
 
 ShellCmd(mkdir, "creates a directory")
 {
-	if (argc < 2) {
-		tout.Printf("Usage: %s <directory>\n", GetName());
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		"h",	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (argc < 2 || arg.GetBool("help")) {
+		terr.Printf("usage: %s [options] <directory>\noptions:\n", GetName());
+		arg.PrintHelp(terr);
 		return 1;
 	}
 	const char* dirName = argv[1];
@@ -214,8 +277,14 @@ ShellCmd(mkdir, "creates a directory")
 
 ShellCmd(mount, "mounts a specified drive")
 {
-	if (argc < 2) {
-		tout.Printf("Usage: %s <drivename>\n", GetName());
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		"h",	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (argc < 2 || arg.GetBool("help")) {
+		terr.Printf("usage: %s [options] <drivename>\noptions:\n", GetName());
+		arg.PrintHelp(terr);
 		return 1;
 	}
 	const char* driveName = argv[1];
@@ -225,8 +294,14 @@ ShellCmd(mount, "mounts a specified drive")
 
 ShellCmd(move, "moves a file")
 {
-	if (argc < 3) {
-		tout.Printf("Usage: %s <src> <dst>\n", GetName());
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		"h",	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (argc < 3 || arg.GetBool("help")) {
+		terr.Printf("usage: %s [options] <src> <dst>\noptions:\n", GetName());
+		arg.PrintHelp(terr);
 		return 1;
 	}
 	const char* fileNameSrc = argv[1];
@@ -240,6 +315,16 @@ ShellCmdAlias(ren, move)
 
 ShellCmd(pwd, "prints the current directory")
 {
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		"h",	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (arg.GetBool("help")) {
+		terr.Printf("usage: %s [options]\noptions:\n", GetName());
+		arg.PrintHelp(terr);
+		return 1;
+	}
 	FS::Drive* pDrive = FS::GetDriveCur();
 	if (!pDrive) {
 		tout.Printf("no current drive\n");
@@ -251,8 +336,14 @@ ShellCmd(pwd, "prints the current directory")
 
 ShellCmd(rm, "removes files")
 {
-	if (argc < 2) {
-		tout.Printf("Usage: %s <filename..>", GetName());
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		"h",	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (argc < 2 || arg.GetBool("help")) {
+		terr.Printf("usage: %s [options] <filename..>\noptions:\n", GetName());
+		arg.PrintHelp(terr);
 		return 1;
 	}
 	for (int iArg = 1; iArg < argc; iArg++) {
@@ -277,8 +368,14 @@ ShellCmdAlias(del, rm)
 
 ShellCmd(rmdir, "removes a directory")
 {
-	if (argc < 2) {
-		tout.Printf("Usage: %s <directory>\n", GetName());
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		"h",	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (argc < 2 || arg.GetBool("help")) {
+		terr.Printf("usage: %s [options] <directory>\noptions:\n", GetName());
+		arg.PrintHelp(terr);
 		return 1;
 	}
 	const char* dirName = argv[1];
@@ -291,8 +388,14 @@ ShellCmd(rmdir, "removes a directory")
 
 ShellCmd(touch, "creates an empty file")
 {
-	if (argc < 2) {
-		tout.Printf("Usage: %s <filename>\n", GetName());
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		"h",	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (argc < 2 || arg.GetBool("help")) {
+		terr.Printf("usage: %s [options] <filename>\noptions:\n", GetName());
+		arg.PrintHelp(terr);
 		return 1;
 	}
 	const char* fileName = argv[1];
@@ -307,8 +410,14 @@ ShellCmd(touch, "creates an empty file")
 
 ShellCmd(umount, "unmounts a specified drive")
 {
-	if (argc < 2) {
-		tout.Printf("Usage: %s <drivename>\n", GetName());
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		"h",	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (argc < 2 || arg.GetBool("help")) {
+		terr.Printf("usage: %s [options] <drivename>\noptions:\n", GetName());
+		arg.PrintHelp(terr);
 		return 1;
 	}
 	const char* driveName = argv[1];

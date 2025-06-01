@@ -86,7 +86,7 @@ public:
 	public:
 		bool Parse(Printable& terr, int& argc, const char* argv[]);
 		bool Parse(Printable& terr, int& argc, char* argv[]) { return Parse(terr, argc, const_cast<const char**>(argv)); }
-		void PrintHelp(Printable& tout) const;
+		void PrintHelp(Printable& tout, const char* lineHead = "  ") const;
 	public:
 		bool GetBool(const char* longName) const;
 		bool GetString(const char* longName, const char** pValue) const;

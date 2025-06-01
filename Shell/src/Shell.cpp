@@ -268,7 +268,7 @@ bool Shell::Arg::Parse(Printable& terr, int& argc, const char* argv[])
 	return true;	
 }
 
-void Shell::Arg::PrintHelp(Printable& tout) const
+void Shell::Arg::PrintHelp(Printable& tout, const char* lineHead) const
 {
 	int lenMax = 0;
 	char str[80];
@@ -280,8 +280,7 @@ void Shell::Arg::PrintHelp(Printable& tout) const
 	for (int iOpt = 0; iOpt < nOpts_; iOpt++) {
 		const Opt& opt = optTbl_[iOpt];
 		opt.MakeHelp(str, sizeof(str));
-		tout.Printf("%-*s %s\n", lenMax, str, opt.GetHelp());
-		//tout.Printf("%s %s\n", str, opt.GetHelp());
+		tout.Printf("%s%-*s %s\n", lineHead, lenMax, str, opt.GetHelp());
 	}
 }
 
@@ -454,7 +453,13 @@ const char* Shell::CompletionProvider::NextCompletion()
 	while (itemName = pCandidateProvider_->NextItemName(&wrappedAroundFlag)) {
 		if (StartsWithICase(itemName, prefix_)) {
 			nItemsReturned_++;
-			FS::JoinPathName(result_, sizeof(result_), dirName_, itemName);
+			if (GetIByte() == 0) {
+				// the first field is a command name
+				::snprintf(result_, sizeof(result_), "%s", itemName);
+			} else {
+				// following fields are file names
+				FS::JoinPathName(result_, sizeof(result_), dirName_, itemName);
+			}
 			return result_;
 		} else if (wrappedAroundFlag) {
 			if (nItemsReturned_ == 0) return nullptr;
