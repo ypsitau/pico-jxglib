@@ -30,14 +30,15 @@ int main()
 	FAT::USBMSC		drive_G("G");										// USB Mass Storage Device (MSC) on USB Host
 	//FAT::USBMSC		drive_H("H");										// USB Mass Storage Device (MSC) on USB Host
 #if 1
-	USBHost::Keyboard keyboard;
 	::spi_init(spi1, 125'000'000);
 	GPIO14.set_function_SPI1_SCK();
 	GPIO15.set_function_SPI1_TX();
 	ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
 	Display::Terminal terminal;
-	terminal.Initialize().AttachDisplay(display.Initialize(Display::Dir::Rotate90))
-		.AttachKeyboard(keyboard.SetCapsLockAsCtrl()).SetFont(Font::shinonome16);
+	terminal.Initialize().AttachDisplay(display.Initialize(Display::Dir::Rotate90)).SetFont(Font::shinonome16);
+	//USBHost::Keyboard keyboard;
+	//terminal.AttachKeyboard(keyboard.SetCapsLockAsCtrl());
+	terminal.AttachKeyboard(Stdio::GetKeyboard());
 	Shell::AttachTerminal(terminal);
 #else
 	Serial::Terminal terminal;

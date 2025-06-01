@@ -13,6 +13,7 @@ namespace jxglib {
 Tickable* Tickable::pTickableTop_ = nullptr;
 bool Tickable::firstFlag_ = true;
 uint32_t Tickable::msecMainStart_ = 0;
+int Tickable::tickCalledDepth_ = 0;
 
 Tickable::Tickable(uint32_t msecTick, Priority priority) :
 	msecTick_{msecTick}, priority_{priority}, msecStart_{0}, runningFlag_{true}, pTickableNext_{nullptr}
@@ -70,6 +71,7 @@ void Tickable::RemoveFromTickable()
 
 bool Tickable::Tick(uint32_t msecTick)
 {
+	tickCalledDepth_++;
 	uint32_t msecCur = GetCurrentTime();
 	if (firstFlag_) {
 		firstFlag_ = false;
@@ -78,15 +80,15 @@ bool Tickable::Tick(uint32_t msecTick)
 			pTickable->OnTick();
 		}
 		msecMainStart_ = msecCur;
-		return true;
 	} else {
 		for (Tickable* pTickable = pTickableTop_; pTickable; pTickable = pTickable->GetNext()) {
 			if (pTickable->IsExpired(msecCur)) pTickable->OnTick();
 		}
 		if (msecTick == -1 || msecCur - msecMainStart_ < msecTick) return false;
 		msecMainStart_ += msecTick;
-		return true;
 	}
+	tickCalledDepth_--;
+	return true;
 }
 
 void Tickable::PrintList(Printable& printable)

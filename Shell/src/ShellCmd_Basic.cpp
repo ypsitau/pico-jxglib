@@ -142,6 +142,7 @@ int ShellCmd_d::Run(Readable& tin, Printable& tout, Printable& terr, int argc, c
 //-----------------------------------------------------------------------------
 ShellCmd(ticks, "prints names and attributes of running Tickable instances")
 {
+	tout.Printf("Tick Called Depth: %d\n", Tickable::GetTickCalledDepth());
 	Tickable::PrintList(tout);
 	return 0;
 }
