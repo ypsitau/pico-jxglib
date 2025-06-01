@@ -33,6 +33,8 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class Shell : public Tickable {
 public:
+	static const char* StartupScriptName;
+public:
 	class Arg {
 	public:
 		class Opt {
@@ -162,7 +164,7 @@ public:
 		virtual void EndCompletion() override;
 		virtual const char* NextCompletion() override;
 	};
-	enum class Stat { Begin, Prompt, Running, };
+	enum class Stat { Startup, Begin, Prompt, Running, };
 private:
 	Stat stat_;
 	char prompt_[64];
@@ -175,6 +177,7 @@ public:
 	Shell();
 public:
 	bool RunCmd(char* line);
+	bool RunScript(Readable& readable);
 	Terminal& GetTerminal() { return *pTerminal_; }
 public:
 	static const char* GetPrompt() { return Instance.GetPrompt_(); }

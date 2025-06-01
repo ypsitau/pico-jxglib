@@ -16,7 +16,8 @@ public:
 	virtual ~Readable() = default;
 public:
 	virtual int Read(void* buff, int bytesBuff) = 0;
-	//virtual int ReadLine(char* buffer, int size) = 0;
+	virtual int ReadChar();
+	virtual int ReadLine(char* buff, int bytesBuff, bool elimEOLFlag = true);
 	//virtual int ReadUntil(char* buffer, int size, char terminator) = 0;
 };
 

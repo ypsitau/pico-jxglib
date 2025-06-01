@@ -10,8 +10,9 @@ namespace jxglib {
 // Shell
 //------------------------------------------------------------------------------
 Shell Shell::Instance;
+const char* Shell::StartupScriptName = "/autoexec.sh";
 
-Shell::Shell() : stat_{Stat::Begin}, pTerminal_{&TerminalDumb::Instance}, pCmdRunning_{nullptr}
+Shell::Shell() : stat_{Stat::Startup}, pTerminal_{&TerminalDumb::Instance}, pCmdRunning_{nullptr}
 {
 	::strcpy(prompt_, "%d%w>");
 }
@@ -66,9 +67,24 @@ bool Shell::RunCmd(char* line)
 	return false;
 }
 
+bool Shell::RunScript(Readable& readable)
+{
+	char line[256];
+	while (readable.ReadLine(line, sizeof(line)) > 0) {
+		if (!RunCmd(line)) return false;
+	}
+	return true;
+}
+
 void Shell::OnTick()
 {
 	switch (stat_) {
+	case Stat::Startup: {
+		RefPtr<FS::File> pFileScript(FS::OpenFile(StartupScriptName, "r"));
+		if (pFileScript) RunScript(*pFileScript);
+		stat_ = Stat::Begin;
+		break;
+	}
 	case Stat::Begin: {
 		char prompt[256];
 		GetTerminal().ReadLine_Begin(MakePrompt(prompt, sizeof(prompt)));
@@ -107,21 +123,21 @@ void Shell::SetPrompt_(const char* prompt)
 
 const char* Shell::MakePrompt(char* prompt, int lenMax)
 {
-	enum class State { Normal, Variable, };
-	State stat = State::Normal;
+	enum class Stat { Normal, Variable, };
+	Stat stat = Stat::Normal;
 	int i = 0;
 	for (const char* p = prompt_; *p && lenMax > 0; p++, lenMax--) {
 		char ch = *p;
 		switch (stat) {
-		case State::Normal: {
+		case Stat::Normal: {
 			if (ch == '%') {
-				stat = State::Variable;
+				stat = Stat::Variable;
 			} else {
 				if (i < lenMax) prompt[i++] = ch;
 			}
 			break;
 		}
-		case State::Variable: {
+		case Stat::Variable: {
 			if (ch == 'd') {
 				FS::Drive* pDrive = FS::GetDriveCur();
 				if (pDrive) {
@@ -144,7 +160,7 @@ const char* Shell::MakePrompt(char* prompt, int lenMax)
 			} else {
 				// nothing to do, just ignore the variable
 			}
-			stat = State::Normal;
+			stat = Stat::Normal;
 			break;
 		}
 		default:
