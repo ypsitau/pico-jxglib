@@ -138,12 +138,26 @@ int ShellCmd_d::Run(Readable& tin, Printable& tout, Printable& terr, int argc, c
 }
 
 //-----------------------------------------------------------------------------
-// ticks
+// echo
 //-----------------------------------------------------------------------------
-ShellCmd(ticks, "prints names and attributes of running Tickable instances")
+ShellCmd(echo, "prints the given text")
 {
-	tout.Printf("Tick Called Depth Max: %d\n", Tickable::GetTickCalledDepthMax());
-	Tickable::PrintList(tout);
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",	"h",	"prints this help"),
+		Arg::OptBool("no-eol",	"n",	"does not print end-of-line"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (arg.GetBool("help")) {
+		terr.Printf("usage: %s [options] [text...]\n", GetName());
+		arg.PrintHelp(terr);
+		return 0;
+	}
+	for (int i = 1; i < argc; ++i) {
+		if (i > 1) tout.Print(" ");
+		tout.Print(argv[i]);
+	}
+	if (!arg.GetBool("no-eol")) tout.Println();
 	return 0;
 }
 
@@ -166,6 +180,16 @@ ShellCmd(prompt, "changes the command line prompt")
 	} else {
 		Shell::SetPrompt(argv[1]);
 	}
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
+// ticks
+//-----------------------------------------------------------------------------
+ShellCmd(ticks, "prints names and attributes of running Tickable instances")
+{
+	tout.Printf("Tick Called Depth Max: %d\n", Tickable::GetTickCalledDepthMax());
+	Tickable::PrintList(tout);
 	return 0;
 }
 
