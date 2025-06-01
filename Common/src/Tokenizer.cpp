@@ -23,7 +23,7 @@ bool Tokenizer::Tokenize(char* str, int *pnToken, char* tokenTbl[], const char**
 	for (char* p = str; contFlag; p++) {
 		switch (stat) {
 		case Stat::Head: {
-			if (!*p) {
+			if (*p == '\0') {
 				contFlag = false;
 			} else if (isspace(*p)) {
 				// nothing to do
@@ -35,7 +35,7 @@ bool Tokenizer::Tokenize(char* str, int *pnToken, char* tokenTbl[], const char**
 				stat = Stat::Quoted;
 			} else if (*p == '\\') {
 				tokenTbl[nToken++] = p;
-				DeleteChar(p);
+				DeleteChar(p); p--;
 				stat = Stat::NoQuotedEscape;
 			} else {
 				tokenTbl[nToken++] = p;
@@ -44,11 +44,11 @@ bool Tokenizer::Tokenize(char* str, int *pnToken, char* tokenTbl[], const char**
 			break;
 		}
 		case Stat::Quoted: {
-			if (!*p) {
+			if (*p == '\0') {
 				*pErrMsg = "unmatched double quotation";
 				return false;
 			} else if (*p == '\\') {
-				DeleteChar(p);
+				DeleteChar(p); p--;
 				stat = Stat::QuotedEscape;
 			} else if (*p == '"') {
 				*p = '\0';
@@ -59,19 +59,28 @@ bool Tokenizer::Tokenize(char* str, int *pnToken, char* tokenTbl[], const char**
 			break;
 		}
 		case Stat::QuotedEscape: {
-			if (!*p) {
+			if (*p == '\0') {
 				*pErrMsg = "unmatched double quotation";
 				return false;
+			} else if (*p == 'n') {
+				*p = '\n';
+				stat = Stat::Quoted;
+			} else if (*p == 'r') {
+				*p = '\r';
+				stat = Stat::Quoted;
+			} else if (*p == 't') {
+				*p = '\t';
+				stat = Stat::Quoted;
 			} else {
 				stat = Stat::Quoted;
 			}
 			break;
 		}
 		case Stat::NoQuoted: {
-			if (!*p) {
+			if (*p == '\0') {
 				contFlag = false;
 			} else if (*p == '\\') {
-				DeleteChar(p);
+				DeleteChar(p); p--;
 				stat = Stat::NoQuotedEscape;
 			} else if (isspace(*p)) {
 				*p = '\0';
@@ -82,8 +91,17 @@ bool Tokenizer::Tokenize(char* str, int *pnToken, char* tokenTbl[], const char**
 			break;
 		}
 		case Stat::NoQuotedEscape: {
-			if (!*p) {
+			if (*p == '\0') {
 				contFlag = false;
+			} else if (*p == 'n') {
+				*p = '\n';
+				stat = Stat::NoQuoted;
+			} else if (*p == 'r') {
+				*p = '\r';
+				stat = Stat::NoQuoted;
+			} else if (*p == 't') {
+				*p = '\t';
+				stat = Stat::NoQuoted;
 			} else {
 				stat = Stat::NoQuoted;
 			}
@@ -103,7 +121,7 @@ const char* Tokenizer::FindLastToken(const char* str)
 	for (const char* p = str; contFlag; p++) {
 		switch (stat) {
 		case Stat::Head: {
-			if (!*p) {
+			if (*p == '\0') {
 				contFlag = false;
 			} else if (isspace(*p)) {
 				tokenLast = p + 1;
@@ -117,7 +135,7 @@ const char* Tokenizer::FindLastToken(const char* str)
 			break;
 		}
 		case Stat::Quoted: {
-			if (!*p) {
+			if (*p == '\0') {
 				return tokenLast;	// error: unmatched double quotation
 			} else if (*p == '\\') {
 				stat = Stat::QuotedEscape;
@@ -129,7 +147,7 @@ const char* Tokenizer::FindLastToken(const char* str)
 			break;
 		}
 		case Stat::QuotedEscape: {
-			if (!*p) {
+			if (*p == '\0') {
 				return tokenLast; // error:
 			} else {
 				stat = Stat::Quoted;
@@ -137,7 +155,7 @@ const char* Tokenizer::FindLastToken(const char* str)
 			break;
 		}
 		case Stat::NoQuoted: {
-			if (!*p) {
+			if (*p == '\0') {
 				contFlag = false;
 			} else if (*p == '\\') {
 				stat = Stat::NoQuotedEscape;
@@ -150,7 +168,7 @@ const char* Tokenizer::FindLastToken(const char* str)
 			break;
 		}
 		case Stat::NoQuotedEscape: {
-			if (!*p) {
+			if (*p == '\0') {
 				contFlag = false;
 			} else {
 				stat = Stat::NoQuoted;
