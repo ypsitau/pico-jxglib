@@ -176,8 +176,8 @@ public:
 public:
 	Shell();
 public:
-	bool RunCmd(char* line);
-	bool RunScript(Readable& readable);
+	bool RunCmd(Readable& tin, Printable& tout, Printable& terr, char* line);
+	bool RunScript(Readable& tin, Printable& tout, Printable& terr, Readable& script);
 	Terminal& GetTerminal() { return *pTerminal_; }
 public:
 	static const char* GetPrompt() { return Instance.GetPrompt_(); }

@@ -94,7 +94,6 @@ protected:
 	BYTE pdrv_;
 	Drive* pDriveNext_;
 	FATFS fatFs_;
-	bool mountedFlag_;
 private:
 	static Drive* pDriveHead_;
 public:

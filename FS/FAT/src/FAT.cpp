@@ -11,7 +11,7 @@ namespace jxglib::FAT {
 //------------------------------------------------------------------------------
 Drive* Drive::pDriveHead_ = nullptr;
 
-Drive::Drive(const char* driveName) : FS::Drive("FAT", driveName), pdrv_{0}, pDriveNext_{nullptr}, mountedFlag_{false}
+Drive::Drive(const char* driveName) : FS::Drive("FAT", driveName), pdrv_{0}, pDriveNext_{nullptr}
 {
 	if (pDriveHead_) {
 		pdrv_ = 1;

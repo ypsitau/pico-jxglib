@@ -140,7 +140,7 @@ int ShellCmd_d::Run(Readable& tin, Printable& tout, Printable& terr, int argc, c
 //-----------------------------------------------------------------------------
 // .
 //-----------------------------------------------------------------------------
-ShellCmd_Named(dot, ".", "executes the given script")
+ShellCmd_Named(dot, ".", "executes the given script file")
 {
 	if (argc < 2) {
 		tout.Println("usage: . <script>");
@@ -152,7 +152,7 @@ ShellCmd_Named(dot, ".", "executes the given script")
 		terr.Printf("cannot open file '%s'\n", fileName);
 		return 1;
 	}
-	Shell::Instance.RunScript(*pFile);
+	Shell::Instance.RunScript(tin, tout, terr, *pFile);
 	return 0;
 }
 

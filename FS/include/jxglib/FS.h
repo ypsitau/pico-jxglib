@@ -178,7 +178,8 @@ public:
 // FS::Drive
 //------------------------------------------------------------------------------
 class Drive {
-private:
+protected:
+	bool mountedFlag_;
 	const char* formatName_;
 	const char* driveName_;
 	const char* driveNameRaw_;
@@ -189,6 +190,7 @@ public:
 public:
 	Drive* GetNext() const { return pDriveNext_; }
 public:
+	bool IsMounted() const { return mountedFlag_; }
 	bool IsPrimary() const { return *driveNameRaw_ == '*'; }
 	bool IsDirectory(const char* pathName);
 	const char* GetDriveName() const { return driveName_; }

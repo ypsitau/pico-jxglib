@@ -95,7 +95,6 @@ class Drive : public FS::Drive {
 protected:
 	lfs_t lfs_;
 	lfs_config cfg_;
-	bool mountedFlag_;
 public:
 	Drive(const char* driveName = "flash");
 public:

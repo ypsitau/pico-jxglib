@@ -9,7 +9,7 @@ namespace jxglib::LFS {
 //------------------------------------------------------------------------------
 // LFS::Drive
 //------------------------------------------------------------------------------
-Drive::Drive(const char* driveName) : FS::Drive("lfs", driveName), mountedFlag_{false},
+Drive::Drive(const char* driveName) : FS::Drive("lfs", driveName),
 	cfg_ {
 		context:			this,
 		read:				Callback_read,

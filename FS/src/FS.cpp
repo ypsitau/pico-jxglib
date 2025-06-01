@@ -589,7 +589,7 @@ void Glob::Close()
 //------------------------------------------------------------------------------
 // FS::Drive
 //------------------------------------------------------------------------------
-Drive::Drive(const char* formatName, const char* driveName) : formatName_{formatName},
+Drive::Drive(const char* formatName, const char* driveName) : mountedFlag_{false}, formatName_{formatName},
 	driveName_{::isalpha(*driveName)? driveName : driveName + 1}, driveNameRaw_{driveName}, pDriveNext_{nullptr}
 {
 	::strcpy(dirNameCur_, "/");

@@ -17,15 +17,14 @@ Shell::Shell() : stat_{Stat::Startup}, pTerminal_{&TerminalDumb::Instance}, pCmd
 	::strcpy(prompt_, "%d%w>");
 }
 
-bool Shell::RunCmd(char* line)
+bool Shell::RunCmd(Readable& tin, Printable& tout, Printable& terr, char* line)
 {
 	char* tokenTbl[16];
 	int nToken = count_of(tokenTbl);
 	const char* errMsg;
-	Terminal::ReadableKeyboard tin(GetTerminal());
 	Readable* ptin = &tin;
-	Printable* ptout = &GetTerminal();
-	Printable* pterr = &GetTerminal();
+	Printable* ptout = &tout;
+	Printable* pterr = &terr;
 	if (FS::IsLegalDriveName(line)) {
 		if (FS::SetDriveCur(line)) return true;
 		pterr->Printf("failed to change drive to %s\n", line);
@@ -72,11 +71,11 @@ bool Shell::RunCmd(char* line)
 	return false;
 }
 
-bool Shell::RunScript(Readable& readable)
+bool Shell::RunScript(Readable& tin, Printable& tout, Printable& terr, Readable& script)
 {
 	char line[256];
-	while (readable.ReadLine(line, sizeof(line)) > 0) {
-		if (!RunCmd(line)) return false;
+	while (script.ReadLine(line, sizeof(line)) > 0) {
+		if (!RunCmd(tin, tout, terr, line)) return false;
 	}
 	return true;
 }
@@ -88,7 +87,12 @@ void Shell::OnTick()
 		FS::Drive* pDrive = FS::GetDriveCur();
 		if (pDrive && pDrive->IsPrimary()) {
 			RefPtr<FS::File> pFileScript(FS::OpenFile(StartupScriptName, "r"));
-			if (pFileScript) RunScript(*pFileScript);
+			if (pFileScript) {
+				Terminal::ReadableKeyboard tin(GetTerminal());
+				Printable& tout = GetTerminal();
+				Printable& terr = GetTerminal();
+				RunScript(tin, tout, terr, *pFileScript);
+			}
 		}
 		stat_ = Stat::Begin;
 		break;
@@ -103,7 +107,10 @@ void Shell::OnTick()
 		char* line = GetTerminal().ReadLine_Process();
 		if (line) {
 			stat_ = Stat::Running;
-			RunCmd(line);
+			Terminal::ReadableKeyboard tin(GetTerminal());
+			Printable& tout = GetTerminal();
+			Printable& terr = GetTerminal();
+			RunCmd(tin, tout, terr, line);
 			stat_ = Stat::Begin;
 		}
 		break;
@@ -149,7 +156,11 @@ const char* Shell::MakePrompt(char* prompt, int lenMax)
 				}
 			} else if (ch == 'w') {
 				FS::Drive* pDrive = FS::GetDriveCur();
-				if (pDrive) {
+				if (!pDrive) {
+					// nothing to do
+				} else if (!pDrive->Mount()) {
+					if (i < lenMax) prompt[i++] = '?'; // indicate unmounted drive
+				} else {
 					int len = ChooseMin(::strlen(pDrive->GetDirNameCur()), lenMax - i);
 					::memcpy(prompt + i, pDrive->GetDirNameCur(), len);
 					if (len > 1 && prompt[i + len - 1] == '/') {
