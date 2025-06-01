@@ -56,4 +56,28 @@ bool DoesContainSpace(const char* str)
 	return false;
 }
 
+const char* GetPlatformName()
+{
+#if defined(PICO_RP2040)
+	return "RP2040";
+#elif defined(PICO_RP2350)
+	return "RP2350";
+#else
+	return "Unknown";
+#endif
+}
+
+const char* GetCPUArchName()
+{
+#if defined(__riscv)
+	return "RISC-V";
+#elif defined(PICO_RP2040)
+	return "ARM Cortex-M0+";
+#elif defined(PICO_RP2350)
+	return "ARM Cortex-M33";
+#else
+	return "Unknown";
+#endif
+}
+
 }

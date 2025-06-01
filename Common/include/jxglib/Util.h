@@ -83,6 +83,9 @@ bool EndsWith(const char* str, const char* suffix);
 bool EndsWithICase(const char* str, const char* suffix);
 bool DoesContainSpace(const char* str);
 
+const char* GetPlatformName();
+const char* GetCPUArchName();
+
 }
 
 #endif

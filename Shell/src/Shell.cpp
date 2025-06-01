@@ -169,6 +169,11 @@ const char* Shell::MakePrompt(char* prompt, int lenMax)
 					}
 					i += len;
 				}
+			} else if (ch == 'p') {
+				const char* platformName = GetPlatformName();
+				int len = ChooseMin(::strlen(platformName), lenMax - i);
+				::memcpy(prompt + i, platformName, len);
+				i += len;
 			} else {
 				// nothing to do, just ignore the variable
 			}

@@ -7,14 +7,6 @@
 #include "jxglib/Shell.h"
 #include "jxglib/BinaryInfo.h"
 
-#if defined(__riscv)
-	#define CPU_ARCH "RISC-V"
-#elif defined(__arm__)
-	#define CPU_ARCH "ARM"
-#else
-	#define CPU_ARCH "Unknown"
-#endif
-
 namespace jxglib::ShellCmd_Basic {
 
 //-----------------------------------------------------------------------------
@@ -32,13 +24,7 @@ ShellCmd_Named(about_cpu, "about-platform", "prints information about the platfo
 		arg.PrintHelp(terr);
 		return 1;
 	}
-#if defined(PICO_RP2040)
-	tout.Printf("RP2040 %d MHz\n", ::clock_get_hz(clk_sys) / 1000000);
-#elif defined(PICO_RP2350)
-	tout.Printf("RP2350 (%s) %d MHz\n", CPU_ARCH, ::clock_get_hz(clk_sys) / 1000000);
-#else
-	tout.Printf("unknown %d MHz\n", ::clock_get_hz(clk_sys) / 1000000);
-#endif
+	tout.Printf("%s %s %d MHz\n", GetPlatformName(), GetCPUArchName(), ::clock_get_hz(clk_sys) / 1000000);
 	tout.Printf("Flash  0x%08X-0x%08X %7d\n", XIP_BASE, XIP_BASE + PICO_FLASH_SIZE_BYTES, PICO_FLASH_SIZE_BYTES); 
 	tout.Printf("SRAM   0x20000000-0x%p %7d\n", &__stack, &__stack - reinterpret_cast<char*>(0x20000000));
 	return 0;
