@@ -45,6 +45,10 @@ bool Tickable::IsExpired(uint32_t msecCur)
 		msecStart_ = msecCur;
 	} else if (msecCur - msecStart_ >= msecTick_) {
 		msecStart_ += msecTick_;
+		if (msecCur - msecStart_ >= msecTick_) {
+			// If the updated msecStart_ doesn't catch up with msecCur, reset msecStart_ to msecCur.
+			msecStart_ = msecCur;
+		}
 		return true;
 	}
 	return false;
