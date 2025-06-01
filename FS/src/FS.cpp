@@ -434,6 +434,19 @@ bool DoesMatchElemName(const char* elemName1, const char* elemName2)
 	return true;
 }
 
+bool DoesMatchDriveName(const char* driveName1, const char* driveName2)
+{
+	for (;;) {
+		char ch1 = (*driveName1 == ':')? '\0' : *driveName1;
+		char ch2 = (*driveName2 == ':')? '\0' : *driveName2;
+		if (::toupper(ch1) != ::toupper(ch2)) return false;
+		if (ch1 == '\0') break;
+		driveName1++;
+		driveName2++;
+	}
+	return true;
+}
+
 //------------------------------------------------------------------------------
 // FS::File
 //------------------------------------------------------------------------------

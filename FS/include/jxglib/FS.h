@@ -256,6 +256,7 @@ const char* JoinPathName(char* pathName, int lenMax, const char* dirName, const 
 bool DoesContainWildcard(const char* str);
 bool DoesMatchWildcard(const char* pattern, const char* str);
 bool DoesMatchElemName(const char* elemName1, const char* elemName2);
+bool DoesMatchDriveName(const char* driveName1, const char* driveName2);
 
 }
 

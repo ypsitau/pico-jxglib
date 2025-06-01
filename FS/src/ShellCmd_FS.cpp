@@ -161,23 +161,37 @@ ShellCmdAlias(dir, ls)
 
 ShellCmd_Named(ls_drive, "ls-drive", "lists availabld drives")
 {
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		"h",	"prints this help"),
+		Arg::OptBool("remarks",		"r",	"prints remarks for each drive"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (arg.GetBool("help")) {
+		terr.Printf("usage: %s [options] [<drivename>]\n", GetName());
+		arg.PrintHelp(terr);
+		return 0;
+	}
+	bool remarksFlag = arg.GetBool("remarks");
 	const char* labelDriveName = "Drive";
 	const char* labelFormatName = "Format";
 	int lenMaxDriveName = ::strlen(labelDriveName) + 1, lenMaxFormatName = ::strlen(labelFormatName) + 1;
 	for (FS::Drive* pDrive = FS::GetDriveHead(); pDrive; pDrive = pDrive->GetNext()) {
+		if (argc > 1 && !FS::DoesMatchDriveName(pDrive->GetDriveName(), argv[1])) continue;
 		lenMaxDriveName = ChooseMax(lenMaxDriveName, ::strlen(pDrive->GetDriveName()) + 1);
 		lenMaxFormatName = ChooseMax(lenMaxFormatName, ::strlen(pDrive->GetFileSystemName()) + 1);
 	}
 	char remarks[80];
-	tout.Printf(" %*s %*s %11s Remarks\n",
+	tout.Printf(" %*s %*s %11s%s\n",
 			-lenMaxDriveName, labelDriveName, -lenMaxFormatName, labelFormatName,
-			"Total");
+			"Total", remarksFlag? " Remarks" : "");
 	for (FS::Drive* pDrive = FS::GetDriveHead(); pDrive; pDrive = pDrive->GetNext()) {
+		if (argc > 1 && !FS::DoesMatchDriveName(pDrive->GetDriveName(), argv[1])) continue;
 		char buff[32];
 		::snprintf(buff, sizeof(buff), "%s:", pDrive->GetDriveName());
-		tout.Printf("%s%*s %*s %11lld %s\n",
+		tout.Printf("%s%*s %*s %11lld%s%s\n",
 			pDrive->IsPrimary()? "*" : " ", -lenMaxDriveName, buff, -lenMaxFormatName, pDrive->GetFileSystemName(),
-			pDrive->GetBytesTotal(), pDrive->GetRemarks(remarks, sizeof(remarks)));
+			pDrive->GetBytesTotal(), remarksFlag? " " : "", remarksFlag? pDrive->GetRemarks(remarks, sizeof(remarks)) : "");
 	}
 	return 0;
 }
