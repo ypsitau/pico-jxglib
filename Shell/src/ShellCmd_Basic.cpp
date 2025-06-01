@@ -138,6 +138,25 @@ int ShellCmd_d::Run(Readable& tin, Printable& tout, Printable& terr, int argc, c
 }
 
 //-----------------------------------------------------------------------------
+// .
+//-----------------------------------------------------------------------------
+ShellCmd_Named(dot, ".", "executes the given script")
+{
+	if (argc < 2) {
+		tout.Println("usage: . <script>");
+		return 1;
+	}
+	const char* fileName = argv[1];
+	RefPtr<FS::File> pFile(FS::OpenFile(fileName, "r"));
+	if (!pFile) {
+		terr.Printf("cannot open file '%s'\n", fileName);
+		return 1;
+	}
+	Shell::Instance.RunScript(*pFile);
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
 // echo
 //-----------------------------------------------------------------------------
 ShellCmd(echo, "prints the given text")

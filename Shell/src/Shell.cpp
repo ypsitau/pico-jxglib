@@ -26,6 +26,11 @@ bool Shell::RunCmd(char* line)
 	Readable* ptin = &tin;
 	Printable* ptout = &GetTerminal();
 	Printable* pterr = &GetTerminal();
+	if (FS::IsLegalDriveName(line)) {
+		if (FS::SetDriveCur(line)) return true;
+		pterr->Printf("failed to change drive to %s\n", line);
+		return false;
+	}
 	if (!Tokenizer().Tokenize(line, &nToken, tokenTbl, &errMsg)) {
 		pterr->Println(errMsg);
 		return false;
@@ -80,8 +85,11 @@ void Shell::OnTick()
 {
 	switch (stat_) {
 	case Stat::Startup: {
-		RefPtr<FS::File> pFileScript(FS::OpenFile(StartupScriptName, "r"));
-		if (pFileScript) RunScript(*pFileScript);
+		FS::Drive* pDrive = FS::GetDriveCur();
+		if (pDrive && pDrive->IsPrimary()) {
+			RefPtr<FS::File> pFileScript(FS::OpenFile(StartupScriptName, "r"));
+			if (pFileScript) RunScript(*pFileScript);
+		}
 		stat_ = Stat::Begin;
 		break;
 	}
@@ -93,14 +101,7 @@ void Shell::OnTick()
 	}
 	case Stat::Prompt: {
 		char* line = GetTerminal().ReadLine_Process();
-		if (!line) {
-			// nothing to do
-		} else if (FS::IsLegalDriveName(line)) {
-			if (!FS::SetDriveCur(line)) {
-				GetTerminal().Printf("failed to change drive to %s\n", line);
-			}
-			stat_ = Stat::Begin;
-		} else {
+		if (line) {
 			stat_ = Stat::Running;
 			RunCmd(line);
 			stat_ = Stat::Begin;
