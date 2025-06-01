@@ -261,7 +261,7 @@ ShellCmd(ticks, "prints names and attributes of running Tickable instances")
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
-	if (argc < 2 || arg.GetBool("help")) {
+	if (arg.GetBool("help")) {
 		terr.Printf("usage: %s [options]\noptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
