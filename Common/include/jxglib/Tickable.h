@@ -43,6 +43,7 @@ private:
 	static bool firstFlag_;
 	static uint32_t msecMainStart_;
 	static int tickCalledDepth_;
+	static int tickCalledDepthMax_;
 public:
 	Tickable(uint32_t msecTick = 0, Priority priority = Priority::Normal);
 public:
@@ -71,7 +72,7 @@ public:
 	virtual void OnTick() = 0;
 public:
 	static void PrintList(Printable& printable);
-	static int GetTickCalledDepth() { return tickCalledDepth_; }
+	static int GetTickCalledDepthMax() { return tickCalledDepthMax_; }
 	static const char* GetPriorityName(Priority priority);
 	static const char* GetPriorityNameShort(Priority priority);
 };

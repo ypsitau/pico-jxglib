@@ -24,5 +24,4 @@
 #include "UTF8.h"
 #include "Util.h"
 #include "WrappedPointer.h"
-
 #endif
