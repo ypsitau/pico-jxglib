@@ -69,12 +69,14 @@ const char* GetPlatformName()
 
 const char* GetCPUArchName()
 {
-#if defined(__riscv)
-	return "RISC-V";
-#elif defined(PICO_RP2040)
+#if defined(PICO_RP2040)
 	return "ARM Cortex-M0+";
 #elif defined(PICO_RP2350)
+#if defined(__riscv)
+	return "Hazard3 RISC-V";
+#else
 	return "ARM Cortex-M33";
+#endif
 #else
 	return "Unknown";
 #endif
