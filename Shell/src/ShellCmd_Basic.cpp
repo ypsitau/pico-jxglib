@@ -22,6 +22,16 @@ namespace jxglib::ShellCmd_Basic {
 //-----------------------------------------------------------------------------
 ShellCmd_Named(about_cpu, "about-platform", "prints information about the platform")
 {
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		"h",	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (arg.GetBool("help")) {
+		terr.Printf("usage: %s [options]\noptions:\n", GetName());
+		arg.PrintHelp(terr);
+		return 1;
+	}
 #if defined(PICO_RP2040)
 	tout.Printf("RP2040 %d MHz\n", ::clock_get_hz(clk_sys) / 1000000);
 #elif defined(PICO_RP2350)
@@ -39,6 +49,16 @@ ShellCmd_Named(about_cpu, "about-platform", "prints information about the platfo
 //-----------------------------------------------------------------------------
 ShellCmd_Named(about_me, "about-me", "prints information about this own program")
 {
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		"h",	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (arg.GetBool("help")) {
+		terr.Printf("usage: %s [options]\noptions:\n", GetName());
+		arg.PrintHelp(terr);
+		return 1;
+	}
 	BinaryInfo::PrintProgramInformation(tout);    
 	tout.Println();
 	BinaryInfo::PrintFixedPinInformation(tout);    
@@ -51,25 +71,26 @@ ShellCmd_Named(about_me, "about-me", "prints information about this own program"
 }
 
 //-----------------------------------------------------------------------------
-// d addr bytes
+// dump addr bytes
 //-----------------------------------------------------------------------------
-class ShellCmd_d : public Shell::Cmd {
+class ShellCmd_dump : public Shell::Cmd {
 private:
 	uint32_t addr_;
 	uint32_t bytes_;
 	int bytesPerRow_;
 	Printable::DumpT dump_;
 public:
-	static ShellCmd_d Instance;
+	static ShellCmd_dump Instance;
 public:
-	ShellCmd_d() : Shell::Cmd("d", "prints memory content at the specified address"), addr_{0x00000000}, bytes_{64}, bytesPerRow_{-1} {}
+	ShellCmd_dump(const char* name) : Shell::Cmd(name, "prints memory content at the specified address"),
+			addr_{0x00000000}, bytes_{64}, bytesPerRow_{-1} {}
 public:
 	virtual int Run(Readable& tin, Printable& tout, Printable& terr, int argc, char* argv[]) override;
 };
 
-ShellCmd_d ShellCmd_d::Instance;
+ShellCmd_dump ShellCmd_dump::Instance("dump");
 
-int ShellCmd_d::Run(Readable& tin, Printable& tout, Printable& terr, int argc, char* argv[])
+int ShellCmd_dump::Run(Readable& tin, Printable& tout, Printable& terr, int argc, char* argv[])
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		"h",	"prints this help"),
@@ -87,7 +108,7 @@ int ShellCmd_d::Run(Readable& tin, Printable& tout, Printable& terr, int argc, c
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [options] [addr [bytes]]\n", GetName());
+		terr.Printf("usage: %s [options] [addr [bytes]]\noptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 0;
 	}
@@ -137,13 +158,21 @@ int ShellCmd_d::Run(Readable& tin, Printable& tout, Printable& terr, int argc, c
 	return 0;
 }
 
+ShellCmdAlias(d, dump)
+
 //-----------------------------------------------------------------------------
 // .
 //-----------------------------------------------------------------------------
 ShellCmd_Named(dot, ".", "executes the given script file")
 {
-	if (argc < 2) {
-		tout.Println("usage: . <script>");
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		"h",	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (argc < 2 || arg.GetBool("help")) {
+		terr.Printf("usage: %s [options] <script>\noptions:\n", GetName());
+		arg.PrintHelp(terr);
 		return 1;
 	}
 	const char* fileName = argv[1];
@@ -168,7 +197,7 @@ ShellCmd(echo, "prints the given text")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [options] [text...]\n", GetName());
+		terr.Printf("usage: %s [options] [text...]\noptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 0;
 	}
@@ -185,6 +214,16 @@ ShellCmd(echo, "prints the given text")
 //-----------------------------------------------------------------------------
 ShellCmd(help, "prints help strings for available commands")
 {
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		"h",	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (arg.GetBool("help")) {
+		terr.Printf("usage: %s [options]\noptions:\n", GetName());
+		arg.PrintHelp(terr);
+		return 1;
+	}
 	Shell::PrintHelp(tout);
 	return 0;
 }
@@ -194,6 +233,16 @@ ShellCmd(help, "prints help strings for available commands")
 //-----------------------------------------------------------------------------
 ShellCmd(prompt, "changes the command line prompt")
 {
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		"h",	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (arg.GetBool("help")) {
+		terr.Printf("usage: %s [options] [<prompt>]\noptions:\n", GetName());
+		arg.PrintHelp(terr);
+		return 1;
+	}
 	if (argc < 2) {
 		tout.Println(Shell::GetPrompt());
 	} else {
@@ -207,6 +256,16 @@ ShellCmd(prompt, "changes the command line prompt")
 //-----------------------------------------------------------------------------
 ShellCmd(ticks, "prints names and attributes of running Tickable instances")
 {
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		"h",	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (argc < 2 || arg.GetBool("help")) {
+		terr.Printf("usage: %s [options]\noptions:\n", GetName());
+		arg.PrintHelp(terr);
+		return 1;
+	}
 	tout.Printf("Tick Called Depth Max: %d\n", Tickable::GetTickCalledDepthMax());
 	Tickable::PrintList(tout);
 	return 0;
