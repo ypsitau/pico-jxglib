@@ -1,5 +1,6 @@
+#include <stdio.h>
 #include "pico/stdlib.h"
-#include "jxglib/Tickable.h"
+#include "jxglib/Common.h"
 
 using namespace jxglib;
 
@@ -30,9 +31,10 @@ TickableEntry(TickableX, 100, Tickable::Priority::Highest) {}
 TickableEntry(TickableY, 100, Tickable::Priority::Lowest) {}
 TickableEntry(TickableZ, 100, Tickable::Priority::BelowNormal) {}
 
-int main()
+int main(int argc, char* argv[])
 {
 	::stdio_init_all();
 	::printf("--------\n");
-	Tickable::PrintList();
+	Tickable::PrintList(Stdio::Instance);
+	for (;;) ::tight_loop_contents();
 }
