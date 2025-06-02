@@ -54,7 +54,7 @@ const char* Drive::GetFileSystemName()
 FS::File* Drive::OpenFile(const char* fileName, const char* mode)
 {
 	if (!Mount()) return nullptr;
-	RefPtr<File> pFile(new File(*this, lfs_));
+	std::unique_ptr<File> pFile(new File(*this, lfs_));
 	int flags = 0;
 	if (mode[0] == 'r') {
 		flags = LFS_O_RDONLY;
@@ -75,7 +75,7 @@ FS::File* Drive::OpenFile(const char* fileName, const char* mode)
 FS::Dir* Drive::OpenDir(const char* dirName)
 {
 	if (!Mount()) return nullptr;
-	RefPtr<Dir> pDir(new Dir(*this, lfs_));
+	std::unique_ptr<Dir> pDir(new Dir(*this, lfs_));
 	return (::lfs_dir_open(&lfs_, pDir->GetEntity(), dirName) == LFS_ERR_OK)? pDir.release() : nullptr;
 }
 

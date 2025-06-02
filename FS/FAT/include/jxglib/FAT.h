@@ -15,8 +15,6 @@ namespace jxglib::FAT {
 // FAT::File
 //------------------------------------------------------------------------------
 class File : public FS::File {
-public:
-	DeclareReferable(File);
 private:
 	FIL fil_;
 public:

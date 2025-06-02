@@ -162,7 +162,7 @@ ShellCmd_Named(dot, ".", "executes the given script file")
 		return 1;
 	}
 	const char* fileName = argv[1];
-	RefPtr<FS::File> pFile(FS::OpenFile(fileName, "r"));
+	std::unique_ptr<FS::File> pFile(FS::OpenFile(fileName, "r"));
 	if (!pFile) {
 		terr.Printf("cannot open file '%s'\n", fileName);
 		return 1;

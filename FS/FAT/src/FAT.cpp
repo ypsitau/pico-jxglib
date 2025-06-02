@@ -63,7 +63,7 @@ const char* Drive::NativePathName(char* pathNameBuff, int lenBuff, const char* p
 FS::File* Drive::OpenFile(const char* fileName, const char* mode)
 {
 	if (!Mount()) return nullptr;
-	RefPtr<File> pFile(new File(*this));
+	std::unique_ptr<File> pFile(new File(*this));
 	BYTE flags = 0;
 	if (mode[0] == 'r') flags |= FA_READ;
 	if (mode[0] == 'w') flags |= FA_WRITE | FA_CREATE_ALWAYS;
@@ -74,7 +74,7 @@ FS::File* Drive::OpenFile(const char* fileName, const char* mode)
 FS::Dir* Drive::OpenDir(const char* dirName)
 {
 	if (!Mount()) return nullptr;
-	RefPtr<Dir> pDir(new Dir(*this));
+	std::unique_ptr<Dir> pDir(new Dir(*this));
 	return (::f_opendir(pDir->GetEntity(), dirName) == FR_OK)? pDir.release() : nullptr;
 }
 

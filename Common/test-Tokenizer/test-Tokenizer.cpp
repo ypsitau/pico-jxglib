@@ -7,8 +7,8 @@ using namespace jxglib;
 
 void test_Tokenizer()
 {
-	Tokenizer tokenizer;
-	const char* test_cases[20] = {
+	Tokenizer tokenizer(Tokenizer::Mode::Shell);;
+	const char* test_cases[] = {
 		"abc def ghi",
 		"abc  def   ghi",
 		"  abc def",
@@ -27,10 +27,22 @@ void test_Tokenizer()
 		"abc \"def\\tghi\" jkl",
 		"abc \"def\\\\ghi\" jkl",
 		"abc \"\" jkl",
-		"\"abc def\""
+		"\"abc def\"",
+		"abc > def",
+		"abc >> def",
+		"abc>def",
+		"abc>>def",
+		"abc> def",
+		"abc>> def",
+		"abc >def",
+		"abc >>def",
+		"abc >",
+		"abc >>",
+		"abc>",
+		"abc>>",
 	};
 
-	for (int i = 0; i < 20; ++i) {
+	for (int i = 0; i < count_of(test_cases); ++i) {
 		char buf[256];
 		strncpy(buf, test_cases[i], sizeof(buf));
 		buf[sizeof(buf) - 1] = '\0';
@@ -40,7 +52,7 @@ void test_Tokenizer()
 		const char* errMsg = nullptr;
 
 		printf("Test case %2d: \"%s\"\n", i + 1, test_cases[i]);
-		bool result = tokenizer.Tokenize(buf, &nToken, tokenTbl, &errMsg);
+		bool result = tokenizer.Tokenize(buf, sizeof(buf), tokenTbl, &nToken);
 
 		if (!result) {
 			printf("  Error: %s\n\n", errMsg ? errMsg : "unknown");
@@ -59,5 +71,5 @@ int main()
 {
 	stdio_init_all();
 	test_Tokenizer();
-	return 0;
+	for (;;) ::tight_loop_contents();
 }

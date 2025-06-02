@@ -176,7 +176,7 @@ public:
 public:
 	Shell();
 public:
-	bool RunCmd(Readable& tin, Printable& tout, Printable& terr, char* line);
+	bool RunCmd(Readable& tin, Printable& tout, Printable& terr, char* line, int bytesLine);
 	bool RunScript(Readable& tin, Printable& tout, Printable& terr, Readable& script);
 	Terminal& GetTerminal() { return *pTerminal_; }
 public:

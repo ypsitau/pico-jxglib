@@ -20,14 +20,11 @@ constexpr int MaxPath = 256;
 //------------------------------------------------------------------------------
 // FS::File
 //------------------------------------------------------------------------------
-class File : public Referable, public Stream {
-public:
-	DeclareReferable(File);
+class File : public Stream {
 protected:
 	const Drive& drive_;
 public:
 	File(const Drive& drive);
-protected:
 	virtual ~File() { Close(); }
 public:
 	const Drive& GetDrive() const { return drive_; }
@@ -134,15 +131,12 @@ public:
 //------------------------------------------------------------------------------
 // FS::Dir
 //------------------------------------------------------------------------------
-class Dir : public Referable, public FileInfoReader {
-public:
-	DeclareReferable(Dir);
+class Dir : public FileInfoReader {
 protected:
 	const Drive& drive_;
 	bool rewindFlag_;
 public:
 	Dir(const Drive& drive);
-protected:
 	virtual ~Dir() { Close(); }
 public:
 	const Drive& GetDrive() const { return drive_; }
@@ -154,17 +148,14 @@ public:
 //------------------------------------------------------------------------------
 // FS::Glob
 //------------------------------------------------------------------------------
-class Glob : public Referable, public FileInfoReader {
-public:
-	DeclareReferable(Glob);
+class Glob : public FileInfoReader {
 protected:
-	RefPtr<Dir> pDir_;
+	std::unique_ptr<Dir> pDir_;
 	char dirName_[MaxPath];
 	const char* pattern_;
 	char pathName_[MaxPath];
 public:
 	Glob();
-protected:
 	~Glob() { Close(); }
 public:
 	bool Open(const char* pattern, bool paternAsDirFlag = false);

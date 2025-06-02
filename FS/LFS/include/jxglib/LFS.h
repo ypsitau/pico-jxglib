@@ -14,8 +14,6 @@ namespace jxglib::LFS {
 // LFS::File
 //------------------------------------------------------------------------------
 class File : public FS::File {
-public:
-	DeclareReferable(File);
 private:
 	lfs_t& lfs_;
 	lfs_file_t file_;
@@ -45,8 +43,6 @@ public:
 // LFS::Dir
 //------------------------------------------------------------------------------
 class Dir : public FS::Dir {
-public:
-	DeclareReferable(Dir);
 private:
 	lfs_t& lfs_;
 	lfs_dir_t dir_;

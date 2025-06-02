@@ -87,13 +87,13 @@ Dir* OpenDir(const char* dirName)
 
 Glob* OpenGlob(const char* pattern, bool patternAsDirFlag)
 {
-	RefPtr<Glob> pGlob(new Glob());
+	std::unique_ptr<Glob> pGlob(new Glob());
 	return pGlob->Open(pattern, patternAsDirFlag)? pGlob.release() : nullptr;
 }
 
 bool PrintFile(Printable& terr, Printable& tout, const char* fileName)
 {
-	RefPtr<FS::File> pFile(FS::OpenFile(fileName, "r"));
+	std::unique_ptr<FS::File> pFile(FS::OpenFile(fileName, "r"));
 	if (!pFile) {
 		terr.Printf("failed to open %s\n", fileName);
 		return false;
@@ -104,7 +104,7 @@ bool PrintFile(Printable& terr, Printable& tout, const char* fileName)
 
 bool ListFiles(Printable& terr, Printable& tout, const char* pathName, const FileInfo::Cmp& cmp)
 {
-	RefPtr<FS::Glob> pGlob(FS::OpenGlob(pathName, true));
+	std::unique_ptr<FS::Glob> pGlob(FS::OpenGlob(pathName, true));
 	if (!pGlob) {
 		terr.Printf("failed to open %s\n", pathName);
 		return false;
@@ -116,12 +116,12 @@ bool ListFiles(Printable& terr, Printable& tout, const char* pathName, const Fil
 
 bool CopyFile(Printable& terr, const char* fileNameSrc, const char* fileNameDst)
 {
-	RefPtr<FS::File> pFileSrc(FS::OpenFile(fileNameSrc, "r"));
+	std::unique_ptr<FS::File> pFileSrc(FS::OpenFile(fileNameSrc, "r"));
 	if (!pFileSrc) {
 		terr.Printf("failed to open %s\n", fileNameSrc);
 		return false;
 	}
-	RefPtr<FS::File> pFileDst(FS::OpenFileForCopy(fileNameSrc, fileNameDst));
+	std::unique_ptr<FS::File> pFileDst(FS::OpenFileForCopy(fileNameSrc, fileNameDst));
 	if (!pFileDst) {
 		terr.Printf("failed to open %s\n", fileNameDst);
 		return false;
@@ -636,7 +636,7 @@ Drive::Drive(const char* formatName, const char* driveName) : mountedFlag_{false
 
 bool Drive::IsDirectory(const char* pathName)
 {
-	RefPtr<Dir> pDir(OpenDir(pathName));
+	std::unique_ptr<Dir> pDir(OpenDir(pathName));
 	return !!pDir;
 }
 

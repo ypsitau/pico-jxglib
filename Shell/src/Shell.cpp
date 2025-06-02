@@ -17,7 +17,7 @@ Shell::Shell() : stat_{Stat::Startup}, pTerminal_{&TerminalDumb::Instance}, pCmd
 	::strcpy(prompt_, "%d%w>");
 }
 
-bool Shell::RunCmd(Readable& tin, Printable& tout, Printable& terr, char* line)
+bool Shell::RunCmd(Readable& tin, Printable& tout, Printable& terr, char* line, int bytesLine)
 {
 	char* tokenTbl[16];
 	int nToken = count_of(tokenTbl);
@@ -30,8 +30,9 @@ bool Shell::RunCmd(Readable& tin, Printable& tout, Printable& terr, char* line)
 		pterr->Printf("failed to change drive to %s\n", line);
 		return false;
 	}
-	if (!Tokenizer().Tokenize(line, &nToken, tokenTbl, &errMsg)) {
-		pterr->Println(errMsg);
+	Tokenizer tokenizer(Tokenizer::Mode::Shell);
+	if (!tokenizer.Tokenize(line, bytesLine, &nToken, tokenTbl)) {
+		pterr->Println(tokenizer.GetErrorMsg());
 		return false;
 	}
 	if (nToken == 0) return false;
@@ -51,7 +52,7 @@ bool Shell::RunCmd(Readable& tin, Printable& tout, Printable& terr, char* line)
 			break;
 		}
 	}
-	RefPtr<FS::File> pFileOut;
+	std::unique_ptr<FS::File> pFileOut;
 	if (fileNameOut) {
 		pFileOut.reset(FS::OpenFile(fileNameOut, appendFlag? "a" : "w"));
 		if (!pFileOut) {
@@ -75,7 +76,7 @@ bool Shell::RunScript(Readable& tin, Printable& tout, Printable& terr, Readable&
 {
 	char line[256];
 	while (script.ReadLine(line, sizeof(line)) > 0) {
-		if (!RunCmd(tin, tout, terr, line)) return false;
+		if (!RunCmd(tin, tout, terr, line, sizeof(line))) return false;
 	}
 	return true;
 }
@@ -86,7 +87,7 @@ void Shell::OnTick()
 	case Stat::Startup: {
 		FS::Drive* pDrive = FS::GetDriveCur();
 		if (pDrive && pDrive->IsPrimary()) {
-			RefPtr<FS::File> pFileScript(FS::OpenFile(StartupScriptName, "r"));
+			std::unique_ptr<FS::File> pFileScript(FS::OpenFile(StartupScriptName, "r"));
 			if (pFileScript) {
 				Terminal::ReadableKeyboard tin(GetTerminal());
 				Printable& tout = GetTerminal();
@@ -110,7 +111,7 @@ void Shell::OnTick()
 			Terminal::ReadableKeyboard tin(GetTerminal());
 			Printable& tout = GetTerminal();
 			Printable& terr = GetTerminal();
-			RunCmd(tin, tout, terr, line);
+			RunCmd(tin, tout, terr, line, Terminal::EditBuffSize);
 			stat_ = Stat::Begin;
 		}
 		break;
@@ -432,7 +433,7 @@ void Shell::CompletionProvider::StartCompletion()
 		prefix_ = GetHint();
 	} else {
 		// following fields are file names
-		RefPtr<FS::Dir> pDir(FS::OpenDir(GetHint()));
+		std::unique_ptr<FS::Dir> pDir(FS::OpenDir(GetHint()));
 		::snprintf(dirName_, sizeof(dirName_), "%s", GetHint());
 		if (!pDir) {
 			FS::SplitDirName(GetHint(), dirName_, sizeof(dirName_), &prefix_);

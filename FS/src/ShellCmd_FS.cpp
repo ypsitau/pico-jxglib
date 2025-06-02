@@ -31,7 +31,7 @@ ShellCmd(cat, "prints the contents of files")
 		for (int iArg = 1; iArg < argc; iArg++) {
 			const char* pathName = argv[iArg];
 			if (FS::DoesContainWildcard(pathName)) {
-				RefPtr<FS::Glob> pGlob(FS::OpenGlob(pathName));
+				std::unique_ptr<FS::Glob> pGlob(FS::OpenGlob(pathName));
 				if (pGlob) {
 					for (;;) {
 						const char* pathNameGlob;
@@ -124,7 +124,7 @@ ShellCmd(copy, "copies files")
 	for (int iArg = 1; iArg < argc - 1; iArg++) {
 		const char* pathNameSrc = argv[iArg];
 		if (FS::DoesContainWildcard(pathNameSrc)) {
-			RefPtr<FS::Glob> pGlob(FS::OpenGlob(pathNameSrc));
+			std::unique_ptr<FS::Glob> pGlob(FS::OpenGlob(pathNameSrc));
 			if (pGlob) {
 				for (;;) {
 					const char* pathNameGlob;
@@ -172,7 +172,7 @@ ShellCmd(glob, "prints files matching a glob pattern")
 		return 1;
 	}
 	const char* pattern = argv[1];
-	RefPtr<FS::Glob> pGlob(FS::OpenGlob(pattern));
+	std::unique_ptr<FS::Glob> pGlob(FS::OpenGlob(pattern));
 	if (pGlob) {
 		for (;;) {
 			const char* pathNameGlob;
@@ -352,7 +352,7 @@ ShellCmd(rm, "removes files")
 	for (int iArg = 1; iArg < argc; iArg++) {
 		const char* pathName = argv[iArg];
 		if (FS::DoesContainWildcard(pathName)) {
-			RefPtr<FS::Glob> pGlob(FS::OpenGlob(pathName));
+			std::unique_ptr<FS::Glob> pGlob(FS::OpenGlob(pathName));
 			if (pGlob) {
 				for (;;) {
 					const char* pathNameGlob;
@@ -403,7 +403,7 @@ ShellCmd(touch, "creates an empty file")
 		return 1;
 	}
 	const char* fileName = argv[1];
-	RefPtr<FS::File> pFile(FS::OpenFile(fileName, "w"));
+	std::unique_ptr<FS::File> pFile(FS::OpenFile(fileName, "w"));
 	if (!pFile) {
 		tout.Printf("failed to create %s\n", fileName);
 		return 1;
