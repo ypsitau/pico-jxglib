@@ -17,7 +17,8 @@ target_include_directories(jxglib_ShellCmd_Flash INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/include)
 
 target_link_libraries(jxglib_ShellCmd_Flash INTERFACE
-	jxglib_Flash)
+	jxglib_Flash
+	jxglib_FS)
 
 target_sources(jxglib_ShellCmd_Flash INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/ShellCmd_Flash.cpp)

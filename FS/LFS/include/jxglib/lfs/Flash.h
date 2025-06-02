@@ -19,6 +19,7 @@ public:
 public:
 	// virtual functions of FS::Drive
 	virtual const char* GetRemarks(char* buff, int lenMax) const override;
+	virtual bool GetFlashInfo(uint32_t* pAddr, uint32_t* pBytes) override;
 public:
 	// virtual functions of LFS::Drive
 	virtual int On_read(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size) override;

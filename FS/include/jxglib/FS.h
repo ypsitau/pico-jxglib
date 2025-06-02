@@ -208,6 +208,7 @@ public:
 	virtual uint64_t GetBytesTotal() = 0;
 	virtual uint64_t GetBytesUsed() = 0;
 	virtual const char* GetRemarks(char* buff, int lenMax) const { return buff;}
+	virtual bool GetFlashInfo(uint32_t* pAddr, uint32_t* pBytes) { return false; }
 };
 
 //------------------------------------------------------------------------------

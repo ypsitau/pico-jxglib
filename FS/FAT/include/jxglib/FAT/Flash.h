@@ -22,6 +22,7 @@ public:
 public:
 	// virtual functions of FS::Drive
 	virtual const char* GetRemarks(char* buff, int lenMax) const override;
+	virtual bool GetFlashInfo(uint32_t* pAddr, uint32_t* pBytes) override;
 public:
 	// virtual functions of FAT::Drive
 	virtual DSTATUS status() override;

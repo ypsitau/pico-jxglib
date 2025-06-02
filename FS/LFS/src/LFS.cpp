@@ -139,7 +139,7 @@ FS::FileInfo* Drive::GetFileInfo(const char* pathName)
 
 uint64_t Drive::GetBytesTotal()
 {
-	return static_cast<uint64_t>(cfg_.block_count) * cfg_.block_size;
+	return Mount()? static_cast<uint64_t>(cfg_.block_count) * cfg_.block_size : 0;
 }
 
 uint64_t Drive::GetBytesUsed()

@@ -33,6 +33,13 @@ const char* Flash::GetRemarks(char* buff, int lenMax) const
 	return buff;
 }
 
+bool Flash::GetFlashInfo(uint32_t* pAddr, uint32_t* pBytes)
+{
+	if (pAddr) *pAddr = XIP_BASE + offsetXIP_;
+	if (pBytes) *pBytes = cfg_.block_count * cfg_.block_size;
+	return true;
+}
+
 int Flash::On_read(const struct lfs_config* cfg, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size)
 {
 	uint32_t offsetXIP = offsetXIP_ + block * cfg->block_size + off;

@@ -29,6 +29,13 @@ const char* Flash::GetRemarks(char* buff, int lenMax) const
 	return buff;
 }
 
+bool Flash::GetFlashInfo(uint32_t* pAddr, uint32_t* pBytes)
+{
+	if (pAddr) *pAddr = XIP_BASE + offsetXIP_;
+	if (pBytes) *pBytes = bytesXIP_;
+	return true;
+}
+
 DSTATUS Flash::status()
 {
 	//::printf("status\n");
