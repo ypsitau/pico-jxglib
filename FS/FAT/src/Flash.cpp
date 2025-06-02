@@ -24,7 +24,7 @@ Flash::Flash(const char* driveName, uint32_t bytesXIP) :
 
 const char* Flash::GetRemarks(char* buff, int lenMax) const
 {
-	::snprintf(buff, lenMax, "FAT::Flash 0x%08x-0x%08x (%dkB)",
+	::snprintf(buff, lenMax, "FAT::Flash 0x%08x-0x%08x %dkB",
 		XIP_BASE + offsetXIP_, XIP_BASE + offsetXIP_ + bytesXIP_, bytesXIP_ / 1024);
 	return buff;
 }

@@ -21,7 +21,7 @@ RAMDisk::~RAMDisk()
 
 const char* RAMDisk::GetRemarks(char* buff, int lenMax) const
 {
-	::snprintf(buff, lenMax, "FAT::RAMDisk 0x%08x-0x%08x (%dkB)", buffDisk_, buffDisk_ + bytesDisk_, bytesDisk_ / 1024);
+	::snprintf(buff, lenMax, "FAT::RAMDisk 0x%08x-0x%08x %dkB", buffDisk_, buffDisk_ + bytesDisk_, bytesDisk_ / 1024);
 	return buff;
 }
 
