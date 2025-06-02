@@ -39,39 +39,12 @@ public:
 	virtual bool Sync() override;
 };
 
-#if 0
-//------------------------------------------------------------------------------
-// FAT::FileInfo
-//------------------------------------------------------------------------------
-class FileInfo : public FS::FileInfo {
-private:
-	FILINFO filInfo_;
-public:
-	FileInfo() {}
-	FileInfo(const FILINFO& filInfo) : filInfo_(filInfo) {}
-	~FileInfo() {}
-public:
-	FILINFO& GetEntity() { return filInfo_; }
-	const FILINFO& GetEntity() const { return filInfo_; }
-public:
-	virtual const char* GetName() const { return filInfo_.fname; }
-	virtual uint32_t GetSize() const { return filInfo_.fsize; }
-	virtual Type GetType() const {
-		return (filInfo_.fattrib & AM_DIR) ? Type::Directory : Type::File;
-	}
-	virtual bool IsDirectory() const { return (filInfo_.fattrib & AM_DIR) != 0; }
-	virtual bool IsFile() const { return (filInfo_.fattrib & AM_DIR) == 0; }
-	//virtual FS::FileInfo* Clone() const { return new FileInfo(filInfo_); }
-};
-#endif
-
 //------------------------------------------------------------------------------
 // FAT::Dir
 //------------------------------------------------------------------------------
 class Dir : public FS::Dir {
 private:
 	DIR dir_;
-	//FileInfo fileInfo_;
 	BYTE fattribSkip_;
 	int nItems_;
 public:

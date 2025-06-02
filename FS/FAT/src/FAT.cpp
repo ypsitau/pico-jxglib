@@ -6,11 +6,20 @@
 
 namespace jxglib::FAT {
 
+//------------------------------------------------------------------------------
+// Functions
+//------------------------------------------------------------------------------
 FS::FileInfo* MakeFileInfo(const FILINFO& filInfo)
 {
 	return new FS::FileInfo(filInfo.fname,
 		(filInfo.fattrib & AM_DIR)? FS::FileInfo::Type::Directory : FS::FileInfo::Type::File,
 		filInfo.fsize);
+}
+
+FS::FileInfo* MakeFileInfoForRootDir()
+{
+	// Create a dummy FileInfo for the root directory
+	return new FS::FileInfo("", FS::FileInfo::Type::Directory, 0);
 }
 
 //------------------------------------------------------------------------------
@@ -142,7 +151,8 @@ FS::FileInfo* Drive::GetFileInfo(const char* pathName)
 	if (!Mount()) return nullptr;
 	FILINFO filInfo;
 	// f_stat() fails when given with a root directory. See https://elm-chan.org/fsw/ff/doc/stat.html.
-	return (::f_stat(pathName, &filInfo) == FR_OK)? MakeFileInfo(filInfo) : nullptr;
+	return (::strcmp(pathName, "/") == 0 || pathName[0] == '\0')? MakeFileInfoForRootDir() :
+		(::f_stat(pathName, &filInfo) == FR_OK)? MakeFileInfo(filInfo) : nullptr;
 }
 
 uint64_t Drive::GetBytesTotal()

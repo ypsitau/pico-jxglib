@@ -41,32 +41,6 @@ public:
 	virtual bool Sync() override;
 };
 
-#if 0
-//------------------------------------------------------------------------------
-// LFS::FileInfo
-//------------------------------------------------------------------------------
-class FileInfo : public FS::FileInfo {
-private:
-	lfs_info info_;
-public:
-	FileInfo() {}
-	FileInfo(const lfs_info& info) : info_(info) {}
-	~FileInfo() {}
-public:
-	lfs_info& GetEntity() { return info_; }
-	const lfs_info& GetEntity() const { return info_; }
-public:
-	virtual const char* GetName() const override { return info_.name; }
-	virtual uint32_t GetSize() const override { return info_.size; }
-	virtual Type GetType() const override {
-		return (info_.type & LFS_TYPE_DIR)? Type::Directory : Type::File;
-	}
-	virtual bool IsDirectory() const override { return (info_.type & LFS_TYPE_DIR) != 0; }
-	virtual bool IsFile() const override { return (info_.type & LFS_TYPE_REG) != 0; }
-	//virtual FS::FileInfo* Clone() const override { return new FileInfo(info_); }
-};
-#endif
-
 //------------------------------------------------------------------------------
 // LFS::Dir
 //------------------------------------------------------------------------------
