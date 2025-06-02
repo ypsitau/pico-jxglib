@@ -357,7 +357,10 @@ int Terminal::ReadableKeyboard::Read(void* buff, int bytesBuff)
 	for (;;) {
 		Tickable::Tick();
 		if (!terminal_.GetLineEditor().IsEditing()) break;
-		if (terminal_.IsBreak()) return -1;
+		if (terminal_.IsBreak()) {
+			terminal_.Print("^C\n");
+			return -1;
+		}
 	}
 	char* str = terminal_.GetLineEditor().GetPointerBegin();
 	int bytes = ::strlen(str);

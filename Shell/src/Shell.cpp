@@ -31,7 +31,7 @@ bool Shell::RunCmd(Readable& tin, Printable& tout, Printable& terr, char* line, 
 		return false;
 	}
 	Tokenizer tokenizer(Tokenizer::Mode::Shell);
-	if (!tokenizer.Tokenize(line, bytesLine, &nToken, tokenTbl)) {
+	if (!tokenizer.Tokenize(line, bytesLine, tokenTbl, &nToken)) {
 		pterr->Println(tokenizer.GetErrorMsg());
 		return false;
 	}
