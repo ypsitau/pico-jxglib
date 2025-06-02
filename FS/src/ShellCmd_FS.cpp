@@ -33,9 +33,10 @@ ShellCmd(cat, "prints the contents of files")
 			if (FS::DoesContainWildcard(pathName)) {
 				RefPtr<FS::Glob> pGlob(FS::OpenGlob(pathName));
 				if (pGlob) {
-					FS::FileInfo* pFileInfo;
-					const char* pathNameGlob;
-					while (pGlob->Read(&pFileInfo, &pathNameGlob)) {
+					for (;;) {
+						const char* pathNameGlob;
+						std::unique_ptr<FS::FileInfo> pFileInfo(pGlob->Read(&pathNameGlob));
+						if (!pFileInfo) break;
 						if (pFileInfo->IsFile() && !FS::PrintFile(terr, tout, pathNameGlob)) return 1;
 					}
 				}
@@ -125,9 +126,10 @@ ShellCmd(copy, "copies files")
 		if (FS::DoesContainWildcard(pathNameSrc)) {
 			RefPtr<FS::Glob> pGlob(FS::OpenGlob(pathNameSrc));
 			if (pGlob) {
-				FS::FileInfo* pFileInfo;
-				const char* pathNameGlob;
-				while (pGlob->Read(&pFileInfo, &pathNameGlob)) {
+				for (;;) {
+					const char* pathNameGlob;
+					std::unique_ptr<FS::FileInfo> pFileInfo(pGlob->Read(&pathNameGlob));
+					if (!pFileInfo) break;
 					if (pFileInfo->IsFile() && !FS::CopyFile(terr, pathNameGlob, pathNameDst)) return 1;
 				}
 			}
@@ -172,10 +174,11 @@ ShellCmd(glob, "prints files matching a glob pattern")
 	const char* pattern = argv[1];
 	RefPtr<FS::Glob> pGlob(FS::OpenGlob(pattern));
 	if (pGlob) {
-		FS::FileInfo* pFileInfo;
-		const char* pathName;
-		while (pGlob->Read(&pFileInfo, &pathName)) {
-			tout.Printf("%s\n", pathName);
+		for (;;) {
+			const char* pathNameGlob;
+			std::unique_ptr<FS::FileInfo> pFileInfo(pGlob->Read(&pathNameGlob));
+			if (!pFileInfo) break;
+			tout.Printf("%s\n", pathNameGlob);
 		}
 	}
 	return 0;
@@ -351,9 +354,10 @@ ShellCmd(rm, "removes files")
 		if (FS::DoesContainWildcard(pathName)) {
 			RefPtr<FS::Glob> pGlob(FS::OpenGlob(pathName));
 			if (pGlob) {
-				FS::FileInfo* pFileInfo;
-				const char* pathNameGlob;
-				while (pGlob->Read(&pFileInfo, &pathNameGlob)) {
+				for (;;) {
+					const char* pathNameGlob;
+					std::unique_ptr<FS::FileInfo> pFileInfo(pGlob->Read(&pathNameGlob));
+					if (!pFileInfo) break;
 					if (pFileInfo->IsFile() && !FS::RemoveFile(terr, pathNameGlob)) return 1;
 				}
 			}

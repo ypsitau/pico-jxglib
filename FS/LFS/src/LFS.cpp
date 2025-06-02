@@ -7,6 +7,16 @@
 namespace jxglib::LFS {
 
 //------------------------------------------------------------------------------
+// Functions
+//------------------------------------------------------------------------------
+FS::FileInfo* MakeFileInfo(const lfs_info& info)
+{
+	return new FS::FileInfo(info.name, 
+		(info.type == LFS_TYPE_DIR)? FS::FileInfo::Type::Directory : FS::FileInfo::Type::File, 
+		static_cast<uint32_t>(info.size));
+}
+
+//------------------------------------------------------------------------------
 // LFS::Drive
 //------------------------------------------------------------------------------
 Drive::Drive(const char* driveName) : FS::Drive("lfs", driveName),
@@ -123,8 +133,8 @@ bool Drive::Unmount()
 FS::FileInfo* Drive::GetFileInfo(const char* pathName)
 {
 	if (!Mount()) return nullptr;
-	std::unique_ptr<FileInfo> pFileInfo(new FileInfo());
-	return (::lfs_stat(&lfs_, pathName, &pFileInfo->GetEntity()) == LFS_ERR_OK)? pFileInfo.release() : nullptr;
+	lfs_info info;
+	return (::lfs_stat(&lfs_, pathName, &info) == LFS_ERR_OK)? MakeFileInfo(info) : nullptr;
 }
 
 uint64_t Drive::GetBytesTotal()
@@ -216,36 +226,31 @@ bool File::Sync()
 }
 
 //------------------------------------------------------------------------------
-// LFS::FileInfo
-//------------------------------------------------------------------------------
-
-//------------------------------------------------------------------------------
 // LFS::Dir
 //------------------------------------------------------------------------------
 Dir::Dir(FS::Drive& drive, lfs_t& lfs) : FS::Dir(drive), lfs_(lfs), openedFlag_{true}, nItems_{0}
 {
 }
 
-bool Dir::Read(FS::FileInfo** ppFileInfo)
+FS::FileInfo* Dir::Read()
 {
-	lfs_info& info = fileInfo_.GetEntity();
-	*ppFileInfo = &fileInfo_;
+	lfs_info info;
 	for (;;) {
 		int rtn = ::lfs_dir_read(&lfs_, &dir_, &info);
-		if (rtn < 0) return false;  // Error reading directory
+		if (rtn < 0) return nullptr;  // Error reading directory
 		if (rtn == 0) {  // End of directory
 			if (rewindFlag_ && nItems_ > 0) {
 				::lfs_dir_rewind(&lfs_, &dir_);
 				nItems_ = 0;
 			} else {
-				return false;  // No more items
+				return nullptr;  // No more items
 			}
 		} else if (::strcmp(info.name, ".") != 0 && ::strcmp(info.name, "..") != 0) {
 			nItems_++;
 			break;  // Found a valid file or directory entry
 		}
 	}
-	return true;
+	return MakeFileInfo(info);
 }
 
 void Dir::Close()

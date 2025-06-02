@@ -41,6 +41,7 @@ public:
 	virtual bool Sync() override;
 };
 
+#if 0
 //------------------------------------------------------------------------------
 // LFS::FileInfo
 //------------------------------------------------------------------------------
@@ -62,8 +63,9 @@ public:
 	}
 	virtual bool IsDirectory() const override { return (info_.type & LFS_TYPE_DIR) != 0; }
 	virtual bool IsFile() const override { return (info_.type & LFS_TYPE_REG) != 0; }
-	virtual FS::FileInfo* Clone() const override { return new FileInfo(info_); }
+	//virtual FS::FileInfo* Clone() const override { return new FileInfo(info_); }
 };
+#endif
 
 //------------------------------------------------------------------------------
 // LFS::Dir
@@ -74,7 +76,6 @@ public:
 private:
 	lfs_t& lfs_;
 	lfs_dir_t dir_;
-	FileInfo fileInfo_;
 	bool openedFlag_;
 	int nItems_;
 public:
@@ -84,8 +85,10 @@ public:
 	lfs_dir_t* GetEntity() { return &dir_; }
 	const lfs_dir_t* GetEntity() const { return &dir_; }
 public:
-	bool Read(FS::FileInfo** ppFileInfo) override;
-	void Close() override;
+	// virtual functions of FS::FileInfoReader
+	virtual FS::FileInfo* Read() override;
+	// virtual functions of FS::Dir
+	virtual void Close() override;
 };
 
 //------------------------------------------------------------------------------

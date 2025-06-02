@@ -46,7 +46,7 @@ public:
 //------------------------------------------------------------------------------
 class FileInfo {
 public:
-	enum class Type { Directory, File };
+	enum class Type { None, Directory, File };
 	class Cmp {
 	private:
 		int multiplier_;
@@ -99,25 +99,26 @@ public:
 		virtual int DoCompare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const override;
 	};
 protected:
-	const Drive* pDrive_;
+	std::unique_ptr<char[]> name_; // Use unique_ptr for automatic memory management
+	Type type_;
+	uint32_t size_;
 	std::unique_ptr<FileInfo> pFileInfoNext_;
 public:
 	static Cmp_Combine CmpDefault;
 public:
-	FileInfo(const Drive* pDrive = nullptr) : pDrive_(pDrive) {}
+	FileInfo();
+	FileInfo(const char* name, Type type, uint32_t size);
 public:
 	void PrintList(Printable& tout) const;
-	void SetDrive(const Drive* pDrive) { pDrive_ = pDrive; }
 	void SetNext(FileInfo* pFileInfoNext) { pFileInfoNext_.reset(pFileInfoNext); }
 	FileInfo* GetNext() const { return pFileInfoNext_.get(); }
 	FileInfo* ReleaseNext() { return pFileInfoNext_.release(); }
 public:
-	virtual const char* GetName() const = 0;
-	virtual uint32_t GetSize() const = 0;
-	virtual Type GetType() const = 0;
-	virtual bool IsDirectory() const = 0;
-	virtual bool IsFile() const = 0;
-	virtual FileInfo* Clone() const = 0;
+	virtual const char* GetName() const { return name_.get(); }
+	virtual uint32_t GetSize() const { return size_; }
+	virtual Type GetType() const { return type_; }
+	virtual bool IsDirectory() const { return type_ == Type::Directory; }
+	virtual bool IsFile() const { return type_ == Type::File; }
 };
 
 //------------------------------------------------------------------------------
@@ -127,7 +128,7 @@ class FileInfoReader {
 public:
 	FileInfo* ReadAll(const FileInfo::Cmp& cmp = FileInfo::Cmp::Zero);
 public:
-	virtual bool Read(FileInfo** ppFileInfo) = 0;
+	virtual FileInfo* Read() = 0;
 };
 
 //------------------------------------------------------------------------------
@@ -167,11 +168,11 @@ protected:
 	~Glob() { Close(); }
 public:
 	bool Open(const char* pattern, bool paternAsDirFlag = false);
-	bool Read(FileInfo** ppFileInfo, const char** pPathName);
+	FileInfo* Read(const char** pPathName);
 	void Close();
 public:
 	// virtual functions of FileInfoReader
-	virtual bool Read(FileInfo** ppFileInfo) override { return Read(ppFileInfo, nullptr); }
+	virtual FileInfo* Read() override { return Read(nullptr); }
 };
 
 //------------------------------------------------------------------------------

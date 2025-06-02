@@ -459,6 +459,13 @@ File::File(const Drive& drive) : drive_(drive)
 //------------------------------------------------------------------------------
 FileInfo::Cmp_Combine FileInfo::CmpDefault(FileInfo::Cmp_Type::Ascent, FileInfo::Cmp_Name::Ascent, FileInfo::Cmp::Zero);
 
+FileInfo::FileInfo() : name_{nullptr}, type_{Type::None}, size_{0} {}
+
+FileInfo::FileInfo(const char* name, Type type, uint32_t size) : name_{new char[::strlen(name) + 1]}, type_{type}, size_{size}
+{
+	::strcpy(name_.get(), name);
+}
+
 void FS::FileInfo::PrintList(Printable& tout) const
 {
 	int lenMax = 16;
@@ -529,24 +536,24 @@ int FileInfo::Cmp_Combine::DoCompare(const FileInfo& fileInfo1, const FileInfo& 
 //------------------------------------------------------------------------------
 FileInfo* FileInfoReader::ReadAll(const FileInfo::Cmp& cmp)
 {
-	FileInfo* pFileInfoHead = nullptr;
-	FileInfo* pFileInfoRead;
-	while (Read(&pFileInfoRead)) {
-		FileInfo* pFileInfoToAdd = pFileInfoRead->Clone();
+	std::unique_ptr<FileInfo> pFileInfoHead;
+	for (;;) {
+		std::unique_ptr<FileInfo> pFileInfoToAdd(Read());
+		if (!pFileInfoToAdd) break; // No more files to read
 		FileInfo* pFileInfoPrev = nullptr;
-		for (FileInfo* pFileInfo = pFileInfoHead; pFileInfo; pFileInfo = pFileInfo->GetNext()) {
+		for (FileInfo* pFileInfo = pFileInfoHead.get(); pFileInfo; pFileInfo = pFileInfo->GetNext()) {
 			if (cmp.Compare(*pFileInfoToAdd, *pFileInfo) < 0) break;
 			pFileInfoPrev = pFileInfo;
 		}
 		if (pFileInfoPrev) {
 			pFileInfoToAdd->SetNext(pFileInfoPrev->ReleaseNext());
-			pFileInfoPrev->SetNext(pFileInfoToAdd);
+			pFileInfoPrev->SetNext(pFileInfoToAdd.release());
 		} else {
-			pFileInfoToAdd->SetNext(pFileInfoHead);
-			pFileInfoHead = pFileInfoToAdd;
+			pFileInfoToAdd->SetNext(pFileInfoHead.release());
+			pFileInfoHead.reset(pFileInfoToAdd.release());
 		}
 	}
-	return pFileInfoHead;
+	return pFileInfoHead.release();
 }
 
 //------------------------------------------------------------------------------
@@ -579,19 +586,21 @@ bool Glob::Open(const char* pattern, bool patternAsDirFlag)
 	return !!pDir_;
 }
 
-bool Glob::Read(FileInfo** ppFileInfo, const char** pPathName)
+FileInfo* Glob::Read(const char** pPathName)
 {
-	if (!pDir_) return false;
-	while (pDir_->Read(ppFileInfo)) {
-		if (!*pattern_ || DoesMatchWildcard(pattern_, (*ppFileInfo)->GetName())) {
+	if (!pDir_) return nullptr;
+	for (;;) {
+		std::unique_ptr<FileInfo> pFileInfo(pDir_->Read());
+		if (!pFileInfo) break;
+		if (!*pattern_ || DoesMatchWildcard(pattern_, pFileInfo->GetName())) {
 			if (pPathName) {
-				JoinPathName(pathName_, sizeof(pathName_), dirName_, (*ppFileInfo)->GetName());
+				JoinPathName(pathName_, sizeof(pathName_), dirName_, pFileInfo->GetName());
 				*pPathName = pathName_;
 			}
-			return true;
+			return pFileInfo.release();
 		}
 	}
-	return false;
+	return nullptr;
 }
 
 void Glob::Close()

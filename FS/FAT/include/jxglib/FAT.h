@@ -39,6 +39,7 @@ public:
 	virtual bool Sync() override;
 };
 
+#if 0
 //------------------------------------------------------------------------------
 // FAT::FileInfo
 //------------------------------------------------------------------------------
@@ -60,8 +61,9 @@ public:
 	}
 	virtual bool IsDirectory() const { return (filInfo_.fattrib & AM_DIR) != 0; }
 	virtual bool IsFile() const { return (filInfo_.fattrib & AM_DIR) == 0; }
-	virtual FS::FileInfo* Clone() const { return new FileInfo(filInfo_); }
+	//virtual FS::FileInfo* Clone() const { return new FileInfo(filInfo_); }
 };
+#endif
 
 //------------------------------------------------------------------------------
 // FAT::Dir
@@ -69,7 +71,7 @@ public:
 class Dir : public FS::Dir {
 private:
 	DIR dir_;
-	FileInfo fileInfo_;
+	//FileInfo fileInfo_;
 	BYTE fattribSkip_;
 	int nItems_;
 public:
@@ -79,8 +81,10 @@ public:
 	DIR* GetEntity() { return &dir_; }
 	const DIR* GetEntity() const { return &dir_; }
 public:
-	bool Read(FS::FileInfo** ppFileInfo) override;
-	void Close() override;
+	// virtual functions of FS::FileInfoReader
+	virtual FS::FileInfo* Read() override;
+	// virtual functions of FS::Dir
+	virtual void Close() override;
 };
 
 //------------------------------------------------------------------------------

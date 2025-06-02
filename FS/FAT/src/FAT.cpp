@@ -6,6 +6,13 @@
 
 namespace jxglib::FAT {
 
+FS::FileInfo* MakeFileInfo(const FILINFO& filInfo)
+{
+	return new FS::FileInfo(filInfo.fname,
+		(filInfo.fattrib & AM_DIR)? FS::FileInfo::Type::Directory : FS::FileInfo::Type::File,
+		filInfo.fsize);
+}
+
 //------------------------------------------------------------------------------
 // FAT::Drive
 //------------------------------------------------------------------------------
@@ -133,9 +140,9 @@ bool Drive::Unmount()
 FS::FileInfo* Drive::GetFileInfo(const char* pathName)
 {
 	if (!Mount()) return nullptr;
-	std::unique_ptr<FileInfo> pFileInfo(new FileInfo());
+	FILINFO filInfo;
 	// f_stat() fails when given with a root directory. See https://elm-chan.org/fsw/ff/doc/stat.html.
-	return (::f_stat(pathName, &pFileInfo->GetEntity()) == FR_OK)? pFileInfo.release() : nullptr;
+	return (::f_stat(pathName, &filInfo) == FR_OK)? MakeFileInfo(filInfo) : nullptr;
 }
 
 uint64_t Drive::GetBytesTotal()
@@ -277,25 +284,24 @@ Dir::~Dir()
 	Close();
 }
 
-bool Dir::Read(FS::FileInfo** ppFileInfo)
+FS::FileInfo* Dir::Read()
 {
-	FILINFO& filInfo = fileInfo_.GetEntity();
-	*ppFileInfo = &fileInfo_;
+	FILINFO	filInfo;
 	for (;;) {
-		if (::f_readdir(&dir_, &filInfo) != FR_OK) return false;
+		if (::f_readdir(&dir_, &filInfo) != FR_OK) return nullptr;
 		if (filInfo.fname[0] == '\0') {	// end of directory
 			if (rewindFlag_ && nItems_ > 0) {
 				::f_rewinddir(&dir_);
 				nItems_ = 0;
 			} else {
-				return false;	// no more items
+				return nullptr;	// no more items
 			}
 		} else if (!(filInfo.fattrib & fattribSkip_)) {
 			nItems_++;
 			break;	// find a valid file or directory entry
 		}
 	}
-	return true;
+	return MakeFileInfo(filInfo);
 }
 
 void Dir::Close()
