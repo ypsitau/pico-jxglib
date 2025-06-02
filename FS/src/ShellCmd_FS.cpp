@@ -154,8 +154,14 @@ ShellCmd(format, "formats the filesystem")
 		arg.PrintHelp(terr);
 		return 1;
 	}
-	const char* driveName = argv[1];
-	FS::Format(tout, driveName);
+	for (int iArg = 1; iArg < argc; iArg++) {
+		const char* driveName = argv[iArg];
+		if (!FS::IsLegalDriveName(driveName)) {
+			terr.Printf("invalid drive name: %s\n", driveName);
+			return 1;
+		}
+		if (!FS::Format(terr, driveName)) return 1;
+	}
 	return 0;
 }
 

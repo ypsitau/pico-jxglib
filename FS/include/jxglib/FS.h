@@ -111,11 +111,11 @@ public:
 	FileInfo* GetNext() const { return pFileInfoNext_.get(); }
 	FileInfo* ReleaseNext() { return pFileInfoNext_.release(); }
 public:
-	virtual const char* GetName() const { return name_.get(); }
-	virtual uint32_t GetSize() const { return size_; }
-	virtual Type GetType() const { return type_; }
-	virtual bool IsDirectory() const { return type_ == Type::Directory; }
-	virtual bool IsFile() const { return type_ == Type::File; }
+	const char* GetName() const { return name_.get(); }
+	uint32_t GetSize() const { return size_; }
+	Type GetType() const { return type_; }
+	bool IsDirectory() const { return type_ == Type::Directory; }
+	bool IsFile() const { return type_ == Type::File; }
 };
 
 //------------------------------------------------------------------------------

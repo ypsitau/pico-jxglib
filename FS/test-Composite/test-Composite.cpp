@@ -29,16 +29,16 @@ int main()
 	FAT::SDCard		drive_F("F", spi0, 10'000'000, {CS: GPIO5});		// SDCard on SPI0 10MHz
 	FAT::USBMSC		drive_G("G");										// USB Mass Storage Device (MSC) on USB Host
 	//FAT::USBMSC		drive_H("H");										// USB Mass Storage Device (MSC) on USB Host
-#if 0
+#if 1
 	::spi_init(spi1, 125'000'000);
 	GPIO14.set_function_SPI1_SCK();
 	GPIO15.set_function_SPI1_TX();
 	ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
 	Display::Terminal terminal;
 	terminal.Initialize().AttachDisplay(display.Initialize(Display::Dir::Rotate90)).SetFont(Font::shinonome16);
-	//USBHost::Keyboard keyboard;
-	//terminal.AttachKeyboard(keyboard.SetCapsLockAsCtrl());
-	terminal.AttachKeyboard(Stdio::GetKeyboard());
+	USBHost::Keyboard keyboard;
+	terminal.AttachKeyboard(keyboard.SetCapsLockAsCtrl());
+	//terminal.AttachKeyboard(Stdio::GetKeyboard());
 	Shell::AttachTerminal(terminal);
 #else
 	Serial::Terminal terminal;

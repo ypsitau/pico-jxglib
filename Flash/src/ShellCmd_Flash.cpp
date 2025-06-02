@@ -34,7 +34,7 @@ ShellCmd_Named(flash_erase, "flash-erase", "erases flash memory")
 			return 1;		
 		}
 		Flash::Erase(addr & 0x0fff'ffff, bytes);
-		tout.Printf("erased flash in drive %s\n", driveName);
+		tout.Printf("erased flash of drive %s 0x%08x-0x%08x %dbytes\n", driveName, addr, addr + bytes, bytes);
 	} else {
 		const char* strAddr = argv[1];
 		const char* strBytes = argv[2];
@@ -50,7 +50,7 @@ ShellCmd_Named(flash_erase, "flash-erase", "erases flash memory")
 			return 1;
 		}
 		Flash::Erase(addr & 0x0fff'ffff, bytes);
-		tout.Printf("erased flash at %s for %s bytes\n", strAddr, strBytes);
+		tout.Printf("erased flash 0x%08x-0x%08x %dbytes\n", addr, addr + bytes, bytes);
 	}
 	return 0;
 }
