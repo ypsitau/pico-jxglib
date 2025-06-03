@@ -546,6 +546,14 @@ int FileInfo::Cmp_Size::DoCompare(const FileInfo& fileInfo1, const FileInfo& fil
 	return static_cast<int>(fileInfo1.GetSize()) - static_cast<int>(fileInfo2.GetSize());
 }
 
+const FileInfo::Cmp_DateTime FileInfo::Cmp_DateTime::Ascent(+1);
+const FileInfo::Cmp_DateTime FileInfo::Cmp_DateTime::Descent(-1);
+
+int FileInfo::Cmp_DateTime::DoCompare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const
+{
+	return DateTime::Compare(fileInfo1.GetDateTime(), fileInfo2.GetDateTime());
+}
+
 int FileInfo::Cmp_Combine::DoCompare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const
 {
 	int rtn;

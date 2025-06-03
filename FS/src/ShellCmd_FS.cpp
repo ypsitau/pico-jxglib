@@ -193,12 +193,13 @@ ShellCmd(glob, "prints files matching a glob pattern")
 ShellCmd(ls, "lists files in the specified directory")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",	"h",	"prints this help"),
-		Arg::OptBool("all",		"a",	"lists all files, including hidden ones"),
-		Arg::OptBool("mixed",	"m",	"lists files and directories in mixed order"),		
-		Arg::OptBool("name",	"n",	"sorts by name"),
-		Arg::OptBool("size",	"s",	"sorts by size from large to small"),
-		Arg::OptBool("reverse",	"r",	"reverses the order of listing"),
+		Arg::OptBool("help",		"h",	"prints this help"),
+		Arg::OptBool("all",			"a",	"lists all files, including hidden ones"),
+		Arg::OptBool("mixed",		"m",	"lists files and directories in mixed order"),		
+		Arg::OptBool("name",		"n",	"sorts by name"),
+		Arg::OptBool("size",		"s",	"sorts by size"),
+		Arg::OptBool("datetime",	"d",	"sorts by date/time"),
+		Arg::OptBool("reverse",		"r",	"reverses the order of listing"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -217,7 +218,10 @@ ShellCmd(ls, "lists files in the specified directory")
 	if (arg.GetBool("name")) {
 		// nothing to do, pCmp1 and pCmp2 are already set to name comparison
 	} else if (arg.GetBool("size")) {
-		pCmp2 = reverseFlag? &FS::FileInfo::Cmp_Size::Ascent : &FS::FileInfo::Cmp_Size::Descent;
+		pCmp2 = reverseFlag? &FS::FileInfo::Cmp_Size::Descent : &FS::FileInfo::Cmp_Size::Ascent;
+		pCmp3 = &FS::FileInfo::Cmp_Name::Ascent;
+	} else if (arg.GetBool("datetime")) {
+		pCmp2 = reverseFlag? &FS::FileInfo::Cmp_DateTime::Descent : &FS::FileInfo::Cmp_DateTime::Ascent;
 		pCmp3 = &FS::FileInfo::Cmp_Name::Ascent;
 	}
 	FS::FileInfo::CmpDefault.Set(pCmp1, pCmp2, pCmp3);

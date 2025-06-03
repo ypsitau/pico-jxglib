@@ -90,6 +90,15 @@ public:
 	public:
 		virtual int DoCompare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const override;
 	};
+	class Cmp_DateTime : public Cmp {
+	public:
+		static const Cmp_DateTime Ascent;
+		static const Cmp_DateTime Descent;
+	public:
+		Cmp_DateTime(int multiplier) : Cmp(multiplier) {}
+	public:
+		virtual int DoCompare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const override;
+	};
 	class Cmp_Combine : public Cmp {
 	private:
 		const Cmp* pCmp1_;
