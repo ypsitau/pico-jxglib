@@ -10,7 +10,7 @@ namespace jxglib {
 // Tokenizer
 //------------------------------------------------------------------------------
 Tokenizer::Tokenizer(const char** specialTokens, int nSpecialTokens) :
-	mode_{Mode::Normal}, errorMsg_{""}, specialTokens_{specialTokens}, nSpecialTokens_{nSpecialTokens}
+	errorMsg_{""}, specialTokens_{specialTokens}, nSpecialTokens_{nSpecialTokens}
 {
 }
 

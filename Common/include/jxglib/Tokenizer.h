@@ -12,12 +12,9 @@ namespace jxglib {
 // Tokenizer
 //------------------------------------------------------------------------------
 class Tokenizer {
-public:
-	enum class Mode { Normal, Shell };
 private:
 	enum class Stat { Head, Quoted, QuotedEscape, NoQuoted, NoQuotedEscape };
 private:
-	Mode mode_;
 	const char* errorMsg_;
 	const char** specialTokens_;
 	int nSpecialTokens_;
