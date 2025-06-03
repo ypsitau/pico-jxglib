@@ -7,7 +7,10 @@ using namespace jxglib;
 
 void test_Tokenizer()
 {
-	Tokenizer tokenizer(Tokenizer::Mode::Shell);;
+	static const char* specialTokens[] = {
+		">>", "<<", "||", ">", "<", "|",
+	};
+	Tokenizer tokenizer(specialTokens, count_of(specialTokens));
 	const char* test_cases[] = {
 		"abc def ghi",
 		"abc  def   ghi",
@@ -63,6 +66,9 @@ void test_Tokenizer()
 		for (int j = 0; j < nToken; ++j) {
 			printf("    Token[%d]: '%s'\n", j, tokenTbl[j]);
 		}
+		printf("\n");
+		const char* tokenLast = tokenizer.FindLastToken(test_cases[i]);
+		printf("  Last token: '%s'\n", tokenLast);
 		printf("\n");
 	}
 }
