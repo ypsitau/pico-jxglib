@@ -171,6 +171,7 @@ private:
 	Terminal* pTerminal_;
 	Cmd* pCmdRunning_;
 	CompletionProvider completionProvider_;
+	Tokenizer tokenizer_;
 public:
 	static Shell Instance;
 private:

@@ -13,7 +13,8 @@ Shell Shell::Instance;
 const char* Shell::StartupScriptName = "/autoexec.sh";
 const char* Shell::specialTokens_[] = { ">>", "||", ">", "|", };
 
-Shell::Shell() : stat_{Stat::Startup}, pTerminal_{&TerminalDumb::Instance}, pCmdRunning_{nullptr}
+Shell::Shell() : stat_{Stat::Startup}, pTerminal_{&TerminalDumb::Instance},
+			pCmdRunning_{nullptr}, tokenizer_(specialTokens_, count_of(specialTokens_))
 {
 	::strcpy(prompt_, "%d%w>");
 }
@@ -32,8 +33,7 @@ bool Shell::RunCmd(Readable& tin, Printable& tout, Printable& terr, char* line, 
 		return false;
 	}
 	const char* errorMsg;
-	Tokenizer tokenizer(specialTokens_, count_of(specialTokens_));
-	if (!tokenizer.Tokenize(line, bytesLine, tokenTbl, &nToken, &errorMsg)) {
+	if (!tokenizer_.Tokenize(line, bytesLine, tokenTbl, &nToken, &errorMsg)) {
 		pterr->Println(errorMsg);
 		return false;
 	}
