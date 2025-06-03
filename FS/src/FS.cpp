@@ -479,10 +479,12 @@ void FS::FileInfo::PrintList(Printable& tout) const
 	for (const FileInfo* pFileInfo = this; pFileInfo; pFileInfo = pFileInfo->GetNext()) {
 		if (pFileInfo->IsDirectory()) {
 			tout.Printf("%s %s %*s %s\n",
-				MakeAttrString(buff1, sizeof(buff1)), MakeDateTimeString(buff2, sizeof(buff2)), lenMax, "", pFileInfo->GetName());
+				pFileInfo->MakeAttrString(buff1, sizeof(buff1)),
+				pFileInfo->MakeDateTimeString(buff2, sizeof(buff2)), lenMax, "", pFileInfo->GetName());
 		} else if (pFileInfo->IsFile()) {
 			tout.Printf("%s %s %*d %s\n",
-				MakeAttrString(buff1, sizeof(buff1)), MakeDateTimeString(buff2, sizeof(buff2)), lenMax, pFileInfo->GetSize(), pFileInfo->GetName());
+				pFileInfo->MakeAttrString(buff1, sizeof(buff1)),
+				pFileInfo->MakeDateTimeString(buff2, sizeof(buff2)), lenMax, pFileInfo->GetSize(), pFileInfo->GetName());
 		}
 	}
 }

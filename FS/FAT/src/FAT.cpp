@@ -11,13 +11,21 @@ namespace jxglib::FAT {
 //------------------------------------------------------------------------------
 FS::FileInfo* MakeFileInfo(const FILINFO& filInfo)
 {
+	DateTime dateTime(
+		((filInfo.fdate >> 9) & 0x7f) + 1980,	// year
+		(filInfo.fdate >> 5) & 0x0f,			// month
+		filInfo.fdate & 0x1f,					// day
+		filInfo.ftime >> 11,					// hour
+		(filInfo.ftime >> 5) & 0x3F,			// minute
+		(filInfo.ftime & 0x1f) * 2,				// second
+		0);										// msec
 	return new FS::FileInfo(filInfo.fname,
 		((filInfo.fattrib & AM_DIR)? FS::FileInfo::Attr::Directory : 0) |
 		((filInfo.fattrib & AM_ARC)? FS::FileInfo::Attr::Archive : 0) |
 		((filInfo.fattrib & AM_RDO)? FS::FileInfo::Attr::ReadOnly : 0) |
 		((filInfo.fattrib & AM_HID)? FS::FileInfo::Attr::Hidden : 0) |
 		((filInfo.fattrib & AM_SYS)? FS::FileInfo::Attr::System : 0),
-		filInfo.fsize, DateTime::Empty);
+		filInfo.fsize, dateTime);
 }
 
 FS::FileInfo* MakeFileInfoForRootDir()
@@ -402,7 +410,7 @@ DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void* buff)
 
 DWORD get_fattime()
 {
-	DWORD year = 2025;
+	DWORD year = 2020;
 	DWORD month = 1;
 	DWORD dayOfMonth = 1;
 	DWORD hour = 0;
