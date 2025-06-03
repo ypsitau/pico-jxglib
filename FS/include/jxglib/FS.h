@@ -106,12 +106,13 @@ protected:
 	std::unique_ptr<char[]> name_; // Use unique_ptr for automatic memory management
 	uint8_t attr_;
 	uint32_t size_;
+	DateTime dateTime_;
 	std::unique_ptr<FileInfo> pFileInfoNext_;
 public:
 	static Cmp_Combine CmpDefault;
 public:
 	FileInfo();
-	FileInfo(const char* name, uint8_t attr, uint32_t size);
+	FileInfo(const char* name, uint8_t attr, uint32_t size, const DateTime& dateTime);
 public:
 	void PrintList(Printable& tout) const;
 	void SetNext(FileInfo* pFileInfoNext) { pFileInfoNext_.reset(pFileInfoNext); }
@@ -119,9 +120,11 @@ public:
 	FileInfo* ReleaseNext() { return pFileInfoNext_.release(); }
 public:
 	const char* GetName() const { return name_.get(); }
-	uint32_t GetSize() const { return size_; }
 	uint8_t GetAttr() const { return attr_; }
+	uint32_t GetSize() const { return size_; }
+	const DateTime& GetDateTime() const { return dateTime_; }
 	const char* MakeAttrString(char* buff, int lenBuff) const;
+	const char* MakeDateTimeString(char* buff, int lenBuff) const;
 	bool IsDirectory() const { return !!(attr_ & Attr::Directory); }
 	bool IsFile() const { return !(attr_ & Attr::Directory); }
 	bool IsArchive() const { return !!(attr_ & Attr::Archive); }

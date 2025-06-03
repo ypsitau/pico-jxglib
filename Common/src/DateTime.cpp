@@ -8,6 +8,8 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // DateTime
 //------------------------------------------------------------------------------
+const DateTime DateTime::Empty;
+
 DateTime& DateTime::operator=(const DateTime& dt)
 {
     if (this != &dt) {

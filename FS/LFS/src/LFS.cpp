@@ -13,7 +13,7 @@ FS::FileInfo* MakeFileInfo(const lfs_info& info)
 {
 	return new FS::FileInfo(info.name, 
 		(info.type == LFS_TYPE_DIR)? FS::FileInfo::Attr::Directory : FS::FileInfo::Attr::Archive, 
-		static_cast<uint32_t>(info.size));
+		static_cast<uint32_t>(info.size), DateTime::Empty);
 }
 
 //------------------------------------------------------------------------------

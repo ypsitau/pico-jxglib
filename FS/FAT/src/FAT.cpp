@@ -17,13 +17,13 @@ FS::FileInfo* MakeFileInfo(const FILINFO& filInfo)
 		((filInfo.fattrib & AM_RDO)? FS::FileInfo::Attr::ReadOnly : 0) |
 		((filInfo.fattrib & AM_HID)? FS::FileInfo::Attr::Hidden : 0) |
 		((filInfo.fattrib & AM_SYS)? FS::FileInfo::Attr::System : 0),
-		filInfo.fsize);
+		filInfo.fsize, DateTime::Empty);
 }
 
 FS::FileInfo* MakeFileInfoForRootDir()
 {
 	// Create a dummy FileInfo for the root directory
-	return new FS::FileInfo("", FS::FileInfo::Attr::Directory, 0);
+	return new FS::FileInfo("", FS::FileInfo::Attr::Directory, 0, DateTime::Empty);
 }
 
 //------------------------------------------------------------------------------

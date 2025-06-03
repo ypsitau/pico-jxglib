@@ -11,7 +11,7 @@ namespace jxglib {
 // DateTime
 //------------------------------------------------------------------------------
 struct DateTime {
-private:
+public:
 	int16_t year;
 	int8_t month;
 	int8_t day;
@@ -19,6 +19,8 @@ private:
 	int8_t minute;
 	int8_t second;
 	int16_t msec;
+public:
+	static const DateTime Empty;
 public:
 	constexpr DateTime() :
 		year{2000}, month{1}, day{1}, hour{0}, minute{0}, second{0}, msec{0} {}

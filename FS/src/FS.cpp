@@ -463,8 +463,8 @@ FileInfo::Cmp_Combine FileInfo::CmpDefault(FileInfo::Cmp_Type::Ascent, FileInfo:
 
 FileInfo::FileInfo() : name_{nullptr}, attr_{0}, size_{0} {}
 
-FileInfo::FileInfo(const char* name, uint8_t attr, uint32_t size) :
-			name_{new char[::strlen(name) + 1]}, attr_{attr}, size_{size}
+FileInfo::FileInfo(const char* name, uint8_t attr, uint32_t size, const DateTime& dateTime) :
+			name_{new char[::strlen(name) + 1]}, attr_{attr}, size_{size}, dateTime_{dateTime}
 {
 	::strcpy(name_.get(), name);
 }
@@ -472,17 +472,17 @@ FileInfo::FileInfo(const char* name, uint8_t attr, uint32_t size) :
 void FS::FileInfo::PrintList(Printable& tout) const
 {
 	int lenMax = 6;
-	char buff[32];
+	char buff1[32], buff2[64];;
 	for (const FileInfo* pFileInfo = this; pFileInfo; pFileInfo = pFileInfo->GetNext()) {
-		lenMax = ChooseMax(lenMax, ::snprintf(buff, sizeof(buff), "%d", pFileInfo->GetSize()));
+		lenMax = ChooseMax(lenMax, ::snprintf(buff1, sizeof(buff1), "%d", pFileInfo->GetSize()));
 	}
 	for (const FileInfo* pFileInfo = this; pFileInfo; pFileInfo = pFileInfo->GetNext()) {
 		if (pFileInfo->IsDirectory()) {
-			tout.Printf("%s %*s %s\n",
-				MakeAttrString(buff, sizeof(buff)), lenMax, "", pFileInfo->GetName());
+			tout.Printf("%s %s %*s %s\n",
+				MakeAttrString(buff1, sizeof(buff1)), MakeDateTimeString(buff2, sizeof(buff2)), lenMax, "", pFileInfo->GetName());
 		} else if (pFileInfo->IsFile()) {
-			tout.Printf("%s %*d %s\n",
-				MakeAttrString(buff, sizeof(buff)), lenMax, pFileInfo->GetSize(), pFileInfo->GetName());
+			tout.Printf("%s %s %*d %s\n",
+				MakeAttrString(buff1, sizeof(buff1)), MakeDateTimeString(buff2, sizeof(buff2)), lenMax, pFileInfo->GetSize(), pFileInfo->GetName());
 		}
 	}
 }
@@ -495,6 +495,13 @@ const char* FS::FileInfo::MakeAttrString(char* buff, int lenBuff) const
 		IsReadOnly()? 'r' : '-',
 		IsHidden()? 'h' : '-',
 		IsSystem()? 's' : '-');
+	return buff;
+}
+
+const char* FS::FileInfo::MakeDateTimeString(char* buff, int lenBuff) const
+{
+	::snprintf(buff, lenBuff, "%04d-%02d-%02d %02d:%02d:%02d",
+			dateTime_.year, dateTime_.month, dateTime_.day, dateTime_.hour, dateTime_.minute, dateTime_.second);
 	return buff;
 }
 
