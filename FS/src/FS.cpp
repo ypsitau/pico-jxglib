@@ -78,14 +78,16 @@ File* OpenFileForCopy(const char* fileNameSrc, const char* fileNameDst)
 	}
 }
 
-Dir* OpenDir(const char* dirName)
+Dir* OpenDir(const char* dirName, uint8_t attrExclude)
 {
 	char pathName[MaxPath];
 	Drive* pDrive = FindDrive(dirName);
-	return pDrive? pDrive->OpenDir(pDrive->NativePathName(pathName, sizeof(pathName), dirName)) : nullptr;
+	return pDrive? pDrive->OpenDir(
+			pDrive->NativePathName(pathName, sizeof(pathName), dirName),
+			attrExclude) : nullptr;
 }
 
-Glob* OpenGlob(const char* pattern, bool patternAsDirFlag)
+Glob* OpenGlob(const char* pattern, bool patternAsDirFlag, uint8_t attrExclude)
 {
 	std::unique_ptr<Glob> pGlob(new Glob());
 	return pGlob->Open(pattern, patternAsDirFlag)? pGlob.release() : nullptr;
@@ -102,9 +104,9 @@ bool PrintFile(Printable& terr, Printable& tout, const char* fileName)
 	return true;
 }
 
-bool ListFiles(Printable& terr, Printable& tout, const char* pathName, const FileInfo::Cmp& cmp)
+bool ListFiles(Printable& terr, Printable& tout, const char* pathName, const FileInfo::Cmp& cmp, uint8_t attrExclude)
 {
-	std::unique_ptr<FS::Glob> pGlob(FS::OpenGlob(pathName, true));
+	std::unique_ptr<FS::Glob> pGlob(FS::OpenGlob(pathName, true, attrExclude));
 	if (!pGlob) {
 		terr.Printf("failed to open %s\n", pathName);
 		return false;
@@ -459,26 +461,41 @@ File::File(const Drive& drive) : drive_(drive)
 //------------------------------------------------------------------------------
 FileInfo::Cmp_Combine FileInfo::CmpDefault(FileInfo::Cmp_Type::Ascent, FileInfo::Cmp_Name::Ascent, FileInfo::Cmp::Zero);
 
-FileInfo::FileInfo() : name_{nullptr}, type_{Type::None}, size_{0} {}
+FileInfo::FileInfo() : name_{nullptr}, attr_{0}, size_{0} {}
 
-FileInfo::FileInfo(const char* name, Type type, uint32_t size) : name_{new char[::strlen(name) + 1]}, type_{type}, size_{size}
+FileInfo::FileInfo(const char* name, uint8_t attr, uint32_t size) :
+			name_{new char[::strlen(name) + 1]}, attr_{attr}, size_{size}
 {
 	::strcpy(name_.get(), name);
 }
 
 void FS::FileInfo::PrintList(Printable& tout) const
 {
-	int lenMax = 16;
+	int lenMax = 6;
+	char buff[32];
 	for (const FileInfo* pFileInfo = this; pFileInfo; pFileInfo = pFileInfo->GetNext()) {
-		lenMax = ChooseMax(lenMax, ::strlen(pFileInfo->GetName()));
+		lenMax = ChooseMax(lenMax, ::snprintf(buff, sizeof(buff), "%d", pFileInfo->GetSize()));
 	}
 	for (const FileInfo* pFileInfo = this; pFileInfo; pFileInfo = pFileInfo->GetNext()) {
 		if (pFileInfo->IsDirectory()) {
-			tout.Printf("%*s <DIR>\n", -lenMax, pFileInfo->GetName());
+			tout.Printf("%s %*s %s\n",
+				MakeAttrString(buff, sizeof(buff)), lenMax, "", pFileInfo->GetName());
 		} else if (pFileInfo->IsFile()) {
-			tout.Printf("%*s %d\n", -lenMax, pFileInfo->GetName(), pFileInfo->GetSize());
+			tout.Printf("%s %*d %s\n",
+				MakeAttrString(buff, sizeof(buff)), lenMax, pFileInfo->GetSize(), pFileInfo->GetName());
 		}
 	}
+}
+
+const char* FS::FileInfo::MakeAttrString(char* buff, int lenBuff) const
+{
+	::snprintf(buff, lenBuff, "%c%c%c%c%c",
+		IsDirectory()? 'd' : '-',
+		IsArchive()? 'a' : '-',
+		IsReadOnly()? 'r' : '-',
+		IsHidden()? 'h' : '-',
+		IsSystem()? 's' : '-');
+	return buff;
 }
 
 //------------------------------------------------------------------------------
@@ -501,7 +518,7 @@ const FileInfo::Cmp_Type FileInfo::Cmp_Type::Descent(-1);
 
 int FileInfo::Cmp_Type::DoCompare(const FileInfo& fileInfo1, const FileInfo& fileInfo2) const
 {
-	return static_cast<int>(fileInfo1.GetType()) - static_cast<int>(fileInfo2.GetType());
+	return static_cast<int>(fileInfo1.IsFile()) - static_cast<int>(fileInfo2.IsFile());
 }
 
 const FileInfo::Cmp_Name FileInfo::Cmp_Name::Ascent(+1);
@@ -570,7 +587,7 @@ Glob::Glob(): pattern_{""}
 {
 }
 
-bool Glob::Open(const char* pattern, bool patternAsDirFlag)
+bool Glob::Open(const char* pattern, bool patternAsDirFlag, uint8_t attrExclude)
 {
 	if (patternAsDirFlag) {
 		// If the pattern is a directory, we can use it directly
@@ -582,7 +599,7 @@ bool Glob::Open(const char* pattern, bool patternAsDirFlag)
 		}
 	}
 	SplitDirName(pattern, dirName_, sizeof(dirName_), &pattern_);
-	pDir_.reset(OpenDir(dirName_));
+	pDir_.reset(OpenDir(dirName_, attrExclude));
 	return !!pDir_;
 }
 
@@ -636,7 +653,7 @@ Drive::Drive(const char* formatName, const char* driveName) : mountedFlag_{false
 
 bool Drive::IsDirectory(const char* pathName)
 {
-	std::unique_ptr<Dir> pDir(OpenDir(pathName));
+	std::unique_ptr<Dir> pDir(OpenDir(pathName, 0));
 	return !!pDir;
 }
 

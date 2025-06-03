@@ -46,7 +46,7 @@ private:
 	BYTE fattribSkip_;
 	int nItems_;
 public:
-	Dir(FS::Drive& drive, bool includeHidden = false, bool includeSystem = false);
+	Dir(FS::Drive& drive, uint8_t attrExclude);
 	~Dir();
 public:
 	DIR* GetEntity() { return &dir_; }
@@ -78,7 +78,7 @@ public:
 	virtual const char* GetFileSystemName() override;
 	virtual const char* NativePathName(char* pathNameBuff, int lenBuff, const char* pathName) override;
 	virtual FS::File* OpenFile(const char* fileName, const char* mode) override;
-	virtual FS::Dir* OpenDir(const char* dirName) override;
+	virtual FS::Dir* OpenDir(const char* dirName, uint8_t attrExclude) override;
 	virtual bool RemoveFile(const char* fileName) override;
 	virtual bool RenameFile(const char* fileNameOld, const char* fileNameNew) override;
 	virtual bool CreateDir(const char* dirName) override;

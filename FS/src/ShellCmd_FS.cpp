@@ -193,11 +193,12 @@ ShellCmd(glob, "prints files matching a glob pattern")
 ShellCmd(ls, "lists files in the specified directory")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		"h",	"prints this help"),
-		Arg::OptBool("mixed",		"m",	"lists files and directories in mixed order"),		
-		Arg::OptBool("name",		"n",	"sorts by name"),
-		Arg::OptBool("size",		"s",	"sorts by size from large to small"),
-		Arg::OptBool("reverse",		"r",	"reverses the order of listing"),
+		Arg::OptBool("help",	"h",	"prints this help"),
+		Arg::OptBool("all",		"a",	"lists all files, including hidden ones"),
+		Arg::OptBool("mixed",	"m",	"lists files and directories in mixed order"),		
+		Arg::OptBool("name",	"n",	"sorts by name"),
+		Arg::OptBool("size",	"s",	"sorts by size from large to small"),
+		Arg::OptBool("reverse",	"r",	"reverses the order of listing"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -208,6 +209,7 @@ ShellCmd(ls, "lists files in the specified directory")
 	}
 	bool mixedFlag = arg.GetBool("mixed");
 	bool reverseFlag = arg.GetBool("reverse");
+	bool attrExclude = arg.GetBool("all")? 0 : (FS::FileInfo::Attr::Hidden | FS::FileInfo::Attr::System);
 	const char* dirName = (argc < 2)? "" : argv[1];
 	const FS::FileInfo::Cmp* pCmp1 = mixedFlag? &FS::FileInfo::Cmp::Zero : &FS::FileInfo::Cmp_Type::Ascent;
 	const FS::FileInfo::Cmp* pCmp2 = reverseFlag? &FS::FileInfo::Cmp_Name::Descent : &FS::FileInfo::Cmp_Name::Ascent;
@@ -219,7 +221,7 @@ ShellCmd(ls, "lists files in the specified directory")
 		pCmp3 = &FS::FileInfo::Cmp_Name::Ascent;
 	}
 	FS::FileInfo::CmpDefault.Set(pCmp1, pCmp2, pCmp3);
-	return FS::ListFiles(terr, tout, dirName, FS::FileInfo::CmpDefault)? 0 : 1;
+	return FS::ListFiles(terr, tout, dirName, FS::FileInfo::CmpDefault, attrExclude)? 0 : 1;
 }
 
 ShellCmdAlias(ll, ls)

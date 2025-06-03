@@ -12,14 +12,18 @@ namespace jxglib::FAT {
 FS::FileInfo* MakeFileInfo(const FILINFO& filInfo)
 {
 	return new FS::FileInfo(filInfo.fname,
-		(filInfo.fattrib & AM_DIR)? FS::FileInfo::Type::Directory : FS::FileInfo::Type::File,
+		((filInfo.fattrib & AM_DIR)? FS::FileInfo::Attr::Directory : 0) |
+		((filInfo.fattrib & AM_ARC)? FS::FileInfo::Attr::Archive : 0) |
+		((filInfo.fattrib & AM_RDO)? FS::FileInfo::Attr::ReadOnly : 0) |
+		((filInfo.fattrib & AM_HID)? FS::FileInfo::Attr::Hidden : 0) |
+		((filInfo.fattrib & AM_SYS)? FS::FileInfo::Attr::System : 0),
 		filInfo.fsize);
 }
 
 FS::FileInfo* MakeFileInfoForRootDir()
 {
 	// Create a dummy FileInfo for the root directory
-	return new FS::FileInfo("", FS::FileInfo::Type::Directory, 0);
+	return new FS::FileInfo("", FS::FileInfo::Attr::Directory, 0);
 }
 
 //------------------------------------------------------------------------------
@@ -37,7 +41,9 @@ Drive::Drive(const char* driveName) : FS::Drive("FAT", driveName), pdrv_{0}, pDr
 	} else {
 		pDriveHead_ = this;
 	}
-	if (pdrv_ >= FF_VOLUMES) ::panic("set FF_VOLUMES of jxglib_configure_FAT() in CMakeLists.txt to %d or more", pdrv_ + 1);
+	if (pdrv_ >= FF_VOLUMES) {
+		::panic("set FF_VOLUMES of jxglib_configure_FAT() in CMakeLists.txt to %d or more", pdrv_ + 1);
+	}
 }
 
 const char* Drive::GetFileSystemName()
@@ -71,10 +77,10 @@ FS::File* Drive::OpenFile(const char* fileName, const char* mode)
 	return (::f_open(pFile->GetEntity(), fileName, flags) == FR_OK)? pFile.release() : nullptr;
 }
 
-FS::Dir* Drive::OpenDir(const char* dirName)
+FS::Dir* Drive::OpenDir(const char* dirName, uint8_t attrExclude)
 {
 	if (!Mount()) return nullptr;
-	std::unique_ptr<Dir> pDir(new Dir(*this));
+	std::unique_ptr<Dir> pDir(new Dir(*this, attrExclude));
 	return (::f_opendir(pDir->GetEntity(), dirName) == FR_OK)? pDir.release() : nullptr;
 }
 
@@ -283,8 +289,10 @@ bool File::Sync()
 //------------------------------------------------------------------------------
 // FAT::Dir
 //------------------------------------------------------------------------------
-Dir::Dir(FS::Drive& drive, bool includeHidden, bool includeSystem) : FS::Dir(drive),
-	fattribSkip_{static_cast<BYTE>((includeHidden? 0 : AM_HID) | (includeSystem? 0 : AM_SYS))},
+Dir::Dir(FS::Drive& drive, uint8_t attrExclude) : FS::Dir(drive),
+	fattribSkip_{static_cast<BYTE>(
+		((attrExclude & FS::FileInfo::Attr::Hidden)? 0 : AM_HID) |
+		((attrExclude & FS::FileInfo::Attr::System)? 0 : AM_SYS))},
 	nItems_{0}
 {
 }

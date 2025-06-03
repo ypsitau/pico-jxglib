@@ -43,7 +43,14 @@ public:
 //------------------------------------------------------------------------------
 class FileInfo {
 public:
-	enum class Type { None, Directory, File };
+	struct Attr {
+		static const uint8_t Directory	= (1u << 0);
+		static const uint8_t Archive	= (1u << 1);
+		static const uint8_t ReadOnly	= (1u << 2);
+		static const uint8_t Hidden		= (1u << 3);
+		static const uint8_t System		= (1u << 4);
+		static const uint8_t Link		= (1u << 5);
+	};
 	class Cmp {
 	private:
 		int multiplier_;
@@ -97,14 +104,14 @@ public:
 	};
 protected:
 	std::unique_ptr<char[]> name_; // Use unique_ptr for automatic memory management
-	Type type_;
+	uint8_t attr_;
 	uint32_t size_;
 	std::unique_ptr<FileInfo> pFileInfoNext_;
 public:
 	static Cmp_Combine CmpDefault;
 public:
 	FileInfo();
-	FileInfo(const char* name, Type type, uint32_t size);
+	FileInfo(const char* name, uint8_t attr, uint32_t size);
 public:
 	void PrintList(Printable& tout) const;
 	void SetNext(FileInfo* pFileInfoNext) { pFileInfoNext_.reset(pFileInfoNext); }
@@ -113,9 +120,15 @@ public:
 public:
 	const char* GetName() const { return name_.get(); }
 	uint32_t GetSize() const { return size_; }
-	Type GetType() const { return type_; }
-	bool IsDirectory() const { return type_ == Type::Directory; }
-	bool IsFile() const { return type_ == Type::File; }
+	uint8_t GetAttr() const { return attr_; }
+	const char* MakeAttrString(char* buff, int lenBuff) const;
+	bool IsDirectory() const { return !!(attr_ & Attr::Directory); }
+	bool IsFile() const { return !(attr_ & Attr::Directory); }
+	bool IsArchive() const { return !!(attr_ & Attr::Archive); }
+	bool IsReadOnly() const { return !!(attr_ & Attr::ReadOnly); }
+	bool IsHidden() const { return !!(attr_ & Attr::Hidden); }
+	bool IsSystem() const { return !!(attr_ & Attr::System); }
+	bool IsLink() const { return !!(attr_ & Attr::Link); }
 };
 
 //------------------------------------------------------------------------------
@@ -158,7 +171,7 @@ public:
 	Glob();
 	~Glob() { Close(); }
 public:
-	bool Open(const char* pattern, bool paternAsDirFlag = false);
+	bool Open(const char* pattern, bool paternAsDirFlag = false, uint8_t attrExclude = 0);
 	FileInfo* Read(const char** pPathName);
 	void Close();
 public:
@@ -195,7 +208,7 @@ public:
 		return RegulatePathName(pathNameBuff, lenBuff, pathName);
 	}
 	virtual File* OpenFile(const char* fileName, const char* mode) = 0;
-	virtual Dir* OpenDir(const char* dirName) = 0;
+	virtual Dir* OpenDir(const char* dirName, uint8_t attrExclude) = 0;
 	virtual bool RemoveFile(const char* fileName) = 0;
 	virtual bool RenameFile(const char* fileNameOld, const char* fileNameNew) = 0;
 	virtual bool CreateDir(const char* dirName) = 0;
@@ -221,10 +234,11 @@ const char* SkipDriveName(const char* pathName);
 bool SetDriveCur(const char* driveName);
 File* OpenFile(const char* fileName, const char* mode, Drive* pDrive = nullptr);
 File* OpenFileForCopy(const char* fileNameSrc, const char* fileNameDst);
-Dir* OpenDir(const char* dirName);
-Glob* OpenGlob(const char* pattern, bool patternAsDirFlag = false);
+Dir* OpenDir(const char* dirName, uint8_t attrExclude = 0);
+Glob* OpenGlob(const char* pattern, bool patternAsDirFlag = false, uint8_t attrExclude = 0);
 bool PrintFile(Printable& terr, Printable& tout, const char* fileName);
-bool ListFiles(Printable& terr, Printable& tout, const char* pathName, const FileInfo::Cmp& cmp = FileInfo::Cmp::Zero);
+bool ListFiles(Printable& terr, Printable& tout, const char* pathName,
+	const FileInfo::Cmp& cmp = FileInfo::Cmp::Zero, uint8_t attrExclude = 0);
 bool CopyFile(Printable& terr, const char* fileNameSrc, const char* fileNameDst);
 bool RemoveFile(const char* fileName);
 bool RemoveFile(Printable& terr, const char* fileName);

@@ -12,7 +12,7 @@ namespace jxglib::LFS {
 FS::FileInfo* MakeFileInfo(const lfs_info& info)
 {
 	return new FS::FileInfo(info.name, 
-		(info.type == LFS_TYPE_DIR)? FS::FileInfo::Type::Directory : FS::FileInfo::Type::File, 
+		(info.type == LFS_TYPE_DIR)? FS::FileInfo::Attr::Directory : FS::FileInfo::Attr::Archive, 
 		static_cast<uint32_t>(info.size));
 }
 
@@ -72,7 +72,7 @@ FS::File* Drive::OpenFile(const char* fileName, const char* mode)
 	return nullptr;	
 }
 
-FS::Dir* Drive::OpenDir(const char* dirName)
+FS::Dir* Drive::OpenDir(const char* dirName, uint8_t attrExclude)
 {
 	if (!Mount()) return nullptr;
 	std::unique_ptr<Dir> pDir(new Dir(*this, lfs_));
