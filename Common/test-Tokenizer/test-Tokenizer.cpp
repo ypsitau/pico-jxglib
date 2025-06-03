@@ -52,13 +52,13 @@ void test_Tokenizer()
 
 		char* tokenTbl[10];
 		int nToken = 10;
-		const char* errMsg = nullptr;
 
 		printf("Test case %2d: \"%s\"\n", i + 1, test_cases[i]);
-		bool result = tokenizer.Tokenize(buf, sizeof(buf), tokenTbl, &nToken);
+		const char* errorMsg;
+		bool result = tokenizer.Tokenize(buf, sizeof(buf), tokenTbl, &nToken, &errorMsg);
 
 		if (!result) {
-			printf("  Error: %s\n\n", errMsg ? errMsg : "unknown");
+			printf("  Error: %s\n\n", errorMsg ? errorMsg : "unknown");
 			continue;
 		}
 

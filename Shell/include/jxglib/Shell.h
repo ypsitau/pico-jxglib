@@ -173,6 +173,8 @@ private:
 	CompletionProvider completionProvider_;
 public:
 	static Shell Instance;
+private:
+	static const char* specialTokens_[];
 public:
 	Shell();
 public:

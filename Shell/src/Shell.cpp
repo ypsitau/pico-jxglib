@@ -11,6 +11,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 Shell Shell::Instance;
 const char* Shell::StartupScriptName = "/autoexec.sh";
+const char* Shell::specialTokens_[] = { ">>", "||", ">", "|", };
 
 Shell::Shell() : stat_{Stat::Startup}, pTerminal_{&TerminalDumb::Instance}, pCmdRunning_{nullptr}
 {
@@ -30,9 +31,10 @@ bool Shell::RunCmd(Readable& tin, Printable& tout, Printable& terr, char* line, 
 		pterr->Printf("failed to change drive to %s\n", line);
 		return false;
 	}
-	Tokenizer tokenizer(Tokenizer::Mode::Shell);
-	if (!tokenizer.Tokenize(line, bytesLine, tokenTbl, &nToken)) {
-		pterr->Println(tokenizer.GetErrorMsg());
+	const char* errorMsg;
+	Tokenizer tokenizer(specialTokens_, count_of(specialTokens_));
+	if (!tokenizer.Tokenize(line, bytesLine, tokenTbl, &nToken, &errorMsg)) {
+		pterr->Println(errorMsg);
 		return false;
 	}
 	if (nToken == 0) return false;

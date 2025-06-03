@@ -9,12 +9,13 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // Tokenizer
 //------------------------------------------------------------------------------
-Tokenizer::Tokenizer(const char** specialTokens, int nSpecialTokens) :
-	errorMsg_{""}, specialTokens_{specialTokens}, nSpecialTokens_{nSpecialTokens}
+const Tokenizer Tokenizer::Default;
+
+Tokenizer::Tokenizer(const char** specialTokens, int nSpecialTokens) : specialTokens_{specialTokens}, nSpecialTokens_{nSpecialTokens}
 {
 }
 
-bool Tokenizer::Tokenize(char* str, int bytesStr, char* tokenTbl[], int* pnToken)
+bool Tokenizer::Tokenize(char* str, int bytesStr, char* tokenTbl[], int* pnToken, const char** pErrorMsg) const
 {
 	Stat stat = Stat::Head;
 	int nTokenMax = *pnToken;
@@ -30,7 +31,7 @@ bool Tokenizer::Tokenize(char* str, int bytesStr, char* tokenTbl[], int* pnToken
 			} else if (isspace(*p)) {
 				// nothing to do
 			} else if (nToken >= nTokenMax - 1) {
-				errorMsg_ = "too many tokens";
+				*pErrorMsg = "too many tokens";
 				return false;
 			} else if (*p == '"') {
 				tokenTbl[nToken++] = p + 1;
@@ -56,7 +57,7 @@ bool Tokenizer::Tokenize(char* str, int bytesStr, char* tokenTbl[], int* pnToken
 		}
 		case Stat::Quoted: {
 			if (*p == '\0') {
-				errorMsg_ = "unmatched double quotation";
+				*pErrorMsg = "unmatched double quotation";
 				return false;
 			} else if (*p == '\\') {
 				DeleteChar(p); p--;
@@ -71,7 +72,7 @@ bool Tokenizer::Tokenize(char* str, int bytesStr, char* tokenTbl[], int* pnToken
 		}
 		case Stat::QuotedEscape: {
 			if (*p == '\0') {
-				errorMsg_ = "unmatched double quotation";
+				*pErrorMsg = "unmatched double quotation";
 				return false;
 			} else if (*p == 'n') {
 				*p = '\n';
@@ -130,7 +131,7 @@ bool Tokenizer::Tokenize(char* str, int bytesStr, char* tokenTbl[], int* pnToken
 	return true;
 }
 
-const char* Tokenizer::FindLastToken(const char* str)
+const char* Tokenizer::FindLastToken(const char* str) const
 {
 	Stat stat = Stat::Head;
 	bool contFlag = true;
