@@ -24,10 +24,12 @@ public:
 		UTF8::Decoder decoder_;
 		LineBuff historyBuff_;
 		const char* pLineStop_History_;
+		const Tokenizer* pTokenizer_;
 	public:
 		LineEditor(int bytesHistoryBuff);
 	public:
 		void Initialize();
+		void SetTokenizer(const Tokenizer& tokenizer) { pTokenizer_ = &tokenizer; }
 		void Begin();
 		void Finish();
 		bool IsEditing() { return editingFlag_; }
@@ -102,6 +104,7 @@ protected:
 public:
 	Terminal(int bytesHistoryBuff, Keyboard& keyboard);
 	Terminal& Initialize();
+	Terminal& SetTokenizer(const Tokenizer& tokenizer) { lineEditor_.SetTokenizer(tokenizer); return *this; }
 	void SetEditable(bool editableFlag) { editableFlag_ = editableFlag; }
 	bool IsEditable() const { return editableFlag_; }
 	LineEditor& GetLineEditor() { return lineEditor_; }

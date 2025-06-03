@@ -196,6 +196,7 @@ void Shell::AttachTerminal_(Terminal& terminal)
 {
 	pTerminal_ = &terminal;
 	pTerminal_->SetCompletionProvider(completionProvider_);
+	pTerminal_->SetTokenizer(tokenizer_);
 }
 
 void Shell::PrintHelp(Printable& printable)

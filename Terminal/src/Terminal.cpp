@@ -112,7 +112,7 @@ TerminalDumb::TerminalDumb() : Terminal(0, KeyboardDumb::Instance)
 // Terminal::LineEditor
 //------------------------------------------------------------------------------
 Terminal::LineEditor::LineEditor(int bytesHistoryBuff) :
-	editingFlag_{false}, iByteCursor_{0}, historyBuff_(bytesHistoryBuff), pLineStop_History_{nullptr}
+	editingFlag_{false}, iByteCursor_{0}, historyBuff_(bytesHistoryBuff), pLineStop_History_{nullptr}, pTokenizer_{&Tokenizer::Default}
 {
 	buff_[0] = '\0';
 }
@@ -139,7 +139,7 @@ void Terminal::LineEditor::Finish()
 
 int Terminal::LineEditor::GetIByteToCompletion() const
 {
-	int iByte = Tokenizer().FindLastToken(buff_) - buff_;
+	int iByte = pTokenizer_->FindLastToken(buff_) - buff_;
 	return iByte;
 }
 
