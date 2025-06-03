@@ -22,10 +22,12 @@ bool Tokenizer::Tokenize(char* str, int bytesStr, char* tokenTbl[], int* pnToken
 	int& nToken = *pnToken;
 	nToken = 0;
 	bool contFlag = true;
-	for (char* p = str; contFlag; p++) {
+	int nCharsFwd = 1;
+	for (char* p = str; contFlag; p += nCharsFwd) {
+		nCharsFwd = 1;
 		switch (stat) {
 		case Stat::Head: {
-			int nCharsFwd;
+			int nCharsToken;
 			if (*p == '\0') {
 				contFlag = false;
 			} else if (isspace(*p)) {
@@ -40,15 +42,10 @@ bool Tokenizer::Tokenize(char* str, int bytesStr, char* tokenTbl[], int* pnToken
 				tokenTbl[nToken++] = p;
 				DeleteChar(p); p--;
 				stat = Stat::NoQuotedEscape;
-			} else if ((nCharsFwd = FindSpecialToken(p)) > 0) {
+			} else if ((nCharsToken = FindSpecialToken(p)) > 0) {
 				tokenTbl[nToken++] = p;
-				if (*(p + nCharsFwd) == '\0') {
-					contFlag = false;
-				} else if (isspace(*(p + nCharsFwd)) || InsertChar(str, bytesStr, p + nCharsFwd)) {
-					*(p + nCharsFwd) = '\0';
-					p += nCharsFwd;
-				}
-				stat = Stat::Head;
+				nCharsFwd = nCharsToken;
+				stat = Stat::AfterSpecial;
 			} else {
 				tokenTbl[nToken++] = p;
 				stat = Stat::NoQuoted;
@@ -89,7 +86,7 @@ bool Tokenizer::Tokenize(char* str, int bytesStr, char* tokenTbl[], int* pnToken
 			break;
 		}
 		case Stat::NoQuoted: {
-			int nCharsFwd;
+			int nCharsToken;
 			if (*p == '\0') {
 				contFlag = false;
 			} else if (*p == '\\') {
@@ -98,11 +95,15 @@ bool Tokenizer::Tokenize(char* str, int bytesStr, char* tokenTbl[], int* pnToken
 			} else if (isspace(*p)) {
 				*p = '\0';
 				stat = Stat::Head;
-			} else if ((nCharsFwd = FindSpecialToken(p)) > 0) {
-				if (InsertChar(str, bytesStr, p)) {
-					*p = '\0';
-					stat = Stat::Head;
+			} else if ((nCharsToken = FindSpecialToken(p)) > 0) {
+				if (InsertChar(str, bytesStr, p)) *p++ = '\0';
+				if (nToken >= nTokenMax - 1) {
+					*pErrorMsg = "too many tokens";
+					return false;
 				}
+				tokenTbl[nToken++] = p;
+				nCharsFwd = nCharsToken;
+				stat = Stat::AfterSpecial;
 			} else {
 				// nothing to do
 			}
@@ -125,6 +126,16 @@ bool Tokenizer::Tokenize(char* str, int bytesStr, char* tokenTbl[], int* pnToken
 			}
 			break;
 		}
+		case Stat::AfterSpecial: {
+			if (*p == '\0') {
+				contFlag = false;
+			} else if (::isspace(*p) || InsertChar(str, bytesStr, p)) {
+				*p = '\0';
+				stat = Stat::Head;
+			}
+			break;
+		}
+		default: break;
 		}
 	}
 	tokenTbl[nToken] = nullptr;
@@ -136,10 +147,12 @@ const char* Tokenizer::FindLastToken(const char* str) const
 	Stat stat = Stat::Head;
 	bool contFlag = true;
 	const char* tokenLast = str;
-	for (const char* p = str; contFlag; p++) {
+	int nCharsFwd = 1;
+	for (const char* p = str; contFlag; p += nCharsFwd) {
+		nCharsFwd = 1;
 		switch (stat) {
 		case Stat::Head: {
-			int nCharsFwd;
+			int nCharsToken;
 			if (*p == '\0') {
 				contFlag = false;
 			} else if (isspace(*p)) {
@@ -148,9 +161,9 @@ const char* Tokenizer::FindLastToken(const char* str) const
 				stat = Stat::Quoted;
 			} else if (*p == '\\') {
 				stat = Stat::NoQuotedEscape;
-			} else if ((nCharsFwd = FindSpecialToken(p)) > 0) {
-				tokenLast = p + nCharsFwd;
-				p += nCharsFwd - 1; // -1 because we will increment p in the next iteration
+			} else if ((nCharsToken = FindSpecialToken(p)) > 0) {
+				tokenLast = p + nCharsToken;
+				nCharsFwd = nCharsToken;
 			} else {
 				stat = Stat::NoQuoted;
 			}
@@ -177,7 +190,7 @@ const char* Tokenizer::FindLastToken(const char* str) const
 			break;
 		}
 		case Stat::NoQuoted: {
-			int nCharsFwd;
+			int nCharsToken;
 			if (*p == '\0') {
 				contFlag = false;
 			} else if (*p == '\\') {
@@ -185,9 +198,9 @@ const char* Tokenizer::FindLastToken(const char* str) const
 			} else if (isspace(*p)) {
 				tokenLast = p + 1;
 				stat = Stat::Head;
-			} else if ((nCharsFwd = FindSpecialToken(p)) > 0) {
-				tokenLast = p + nCharsFwd;
-				p += nCharsFwd - 1; // -1 because we will increment p in the next iteration
+			} else if ((nCharsToken = FindSpecialToken(p)) > 0) {
+				tokenLast = p + nCharsToken;
+				nCharsFwd = nCharsToken;
 				stat = Stat::Head;
 			} else {
 				// nothing to do
@@ -202,6 +215,11 @@ const char* Tokenizer::FindLastToken(const char* str) const
 			}
 			break;
 		}
+		case Stat::AfterSpecial: {
+			stat = Stat::Head;
+			break;
+		}
+		default: break;
 		}
 	}
 	return tokenLast;

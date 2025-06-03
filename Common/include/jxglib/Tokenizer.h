@@ -13,7 +13,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class Tokenizer {
 private:
-	enum class Stat { Head, Quoted, QuotedEscape, NoQuoted, NoQuotedEscape };
+	enum class Stat { Head, Quoted, QuotedEscape, NoQuoted, NoQuotedEscape, AfterSpecial };
 private:
 	const char** specialTokens_;
 	int nSpecialTokens_;
