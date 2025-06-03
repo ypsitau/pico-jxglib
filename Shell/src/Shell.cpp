@@ -66,7 +66,10 @@ bool Shell::RunCmd(Readable& tin, Printable& tout, Printable& terr, char* line, 
 	for (Cmd* pCmd = Cmd::GetCmdHead(); pCmd; pCmd = pCmd->GetNext()) {
 		if (::strcmp(argv[0], pCmd->GetName()) == 0) {
 			pCmdRunning_ = pCmd;
+			bool enableHistoryFlag = GetTerminal().IsHistoryEnabled();
+			GetTerminal().EnableHistory(false); // disable history while running a command
 			pCmd->Run(*ptin, *ptout, *pterr, argc, argv);
+			GetTerminal().EnableHistory(enableHistoryFlag);
 			return true;
 		}
 	}

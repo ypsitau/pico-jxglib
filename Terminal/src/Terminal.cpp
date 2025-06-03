@@ -111,8 +111,8 @@ TerminalDumb::TerminalDumb() : Terminal(0, KeyboardDumb::Instance)
 //------------------------------------------------------------------------------
 // Terminal::LineEditor
 //------------------------------------------------------------------------------
-Terminal::LineEditor::LineEditor(int bytesHistoryBuff) :
-	editingFlag_{false}, iByteCursor_{0}, historyBuff_(bytesHistoryBuff), pLineStop_History_{nullptr}, pTokenizer_{&Tokenizer::Default}
+Terminal::LineEditor::LineEditor(int bytesHistoryBuff) : editingFlag_{false}, enableHistoryFlag_{true},
+	iByteCursor_{0}, historyBuff_(bytesHistoryBuff), pLineStop_History_{nullptr}, pTokenizer_{&Tokenizer::Default}
 {
 	buff_[0] = '\0';
 }
@@ -275,6 +275,7 @@ bool Terminal::LineEditor::DeleteToEnd(int iByte)
 
 bool Terminal::LineEditor::AddHistory(const char* str)
 {
+	if (!enableHistoryFlag_) return false;
 	const char*p = str;
 	for ( ; std::isspace(*p); p++) ;
 	if (!*p) return false;
@@ -290,6 +291,7 @@ bool Terminal::LineEditor::AddHistory(const char* str)
 
 bool Terminal::LineEditor::MoveHistoryPrev()
 {
+	if (!enableHistoryFlag_) return false;
 	bool updateFlag = false;
 	if (GetHistoryBuff().GetLineMark()) {
 		updateFlag = GetHistoryBuff().MoveLineMarkUp();
@@ -306,6 +308,7 @@ bool Terminal::LineEditor::MoveHistoryPrev()
 
 bool Terminal::LineEditor::MoveHistoryNext()
 {
+	if (!enableHistoryFlag_) return false;
 	if (GetHistoryBuff().GetLineMark() && GetHistoryBuff().MoveLineMarkDown(1, pLineStop_History_)) {
 		ReplaceWithHistory();
 		return true;
@@ -315,6 +318,7 @@ bool Terminal::LineEditor::MoveHistoryNext()
 
 void Terminal::LineEditor::EndHistory()
 {
+	if (!enableHistoryFlag_) return;
 	GetHistoryBuff().RemoveLineMark();
 }
 

@@ -19,6 +19,7 @@ public:
 	class LineEditor {
 	private:
 		bool editingFlag_;
+		bool enableHistoryFlag_;
 		int iByteCursor_;
 		char buff_[EditBuffSize];
 		UTF8::Decoder decoder_;
@@ -30,6 +31,8 @@ public:
 	public:
 		void Initialize();
 		void SetTokenizer(const Tokenizer& tokenizer) { pTokenizer_ = &tokenizer; }
+		void EnableHistory(bool enableHistoryFlag = true) { enableHistoryFlag_ = enableHistoryFlag; }
+		bool IsHistoryEnabled() const { return enableHistoryFlag_; }
 		void Begin();
 		void Finish();
 		bool IsEditing() { return editingFlag_; }
@@ -104,14 +107,14 @@ protected:
 public:
 	Terminal(int bytesHistoryBuff, Keyboard& keyboard);
 	Terminal& Initialize();
-	Terminal& SetTokenizer(const Tokenizer& tokenizer) { lineEditor_.SetTokenizer(tokenizer); return *this; }
 	void SetEditable(bool editableFlag) { editableFlag_ = editableFlag; }
 	bool IsEditable() const { return editableFlag_; }
 	LineEditor& GetLineEditor() { return lineEditor_; }
 	const LineEditor& GetLineEditor() const { return lineEditor_; }
-	void SetCompletionProvider(CompletionProvider& completionProvider) {
-		pCompletionProvider_ = &completionProvider;
-	}
+	void SetCompletionProvider(CompletionProvider& completionProvider) { pCompletionProvider_ = &completionProvider; }
+	void SetTokenizer(const Tokenizer& tokenizer) { lineEditor_.SetTokenizer(tokenizer); }
+	void EnableHistory(bool enableHistoryFlag = true) { lineEditor_.EnableHistory(enableHistoryFlag); }
+	bool IsHistoryEnabled() const { return lineEditor_.IsHistoryEnabled(); }
 	void EndCompletion() { if (pCompletionProvider_) pCompletionProvider_->End(); }
 	char* ReadLine(const char* prompt = "");
 	void ReadLine_Begin(const char* prompt);
