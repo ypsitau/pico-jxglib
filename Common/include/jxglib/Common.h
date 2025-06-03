@@ -5,6 +5,7 @@
 #define PICO_JXGLIB_COMMON_H
 #include "Color.h"
 #include "DataType.h"
+#include "DateTime.h"
 #include "Dir.h"
 #include "FIFOBuff.h"
 #include "FixedPool.h"
