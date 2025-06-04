@@ -15,9 +15,9 @@ if(WIN32)
 else()
     set(USERHOME $ENV{HOME})
 endif()
-set(sdkVersion 2.1.1)
-set(toolchainVersion 14_2_Rel1)
-set(picotoolVersion 2.1.1)
+set(sdkVersion 2.1.0)
+set(toolchainVersion 13_3_Rel1)
+set(picotoolVersion 2.1.0)
 set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
 if (EXISTS ${picoVscode})
     include(${picoVscode})
@@ -28,35 +28,38 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-MSC C CXX ASM)
+project(USBMSC-tester C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-MSC test-MSC.cpp )
+add_executable(USBMSC-tester USBMSC-tester.cpp)
 
-pico_set_program_name(test-MSC "test-MSC")
-pico_set_program_version(test-MSC "0.1")
+pico_set_program_name(USBMSC-tester "USBMSC-tester")
+pico_set_program_version(USBMSC-tester "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-MSC 1)
-pico_enable_stdio_usb(test-MSC 0)
+pico_enable_stdio_uart(USBMSC-tester 1)
+pico_enable_stdio_usb(USBMSC-tester 0)
 
 # Add the standard library to the build
-target_link_libraries(test-MSC
-    pico_stdlib
-    jxglib_Serial
-    jxglib_ShellCmd_USBHost_MSC
-    jxglib_USBHost)
+target_link_libraries(USBMSC-tester
+	pico_stdlib
+	jxglib_Serial
+	jxglib_FAT_USBMSC
+	jxglib_ShellCmd_FS
+	jxglib_ShellCmd_USBHost_MSC)
 
 # Add the standard include files to the build
-target_include_directories(test-MSC PRIVATE
-        ${CMAKE_CURRENT_LIST_DIR}
+target_include_directories(USBMSC-tester PRIVATE
+	${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-MSC)
+pico_add_extra_outputs(USBMSC-tester)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
-jxglib_configure_USBHost(test-MSC CFG_TUH_MSC 1 CFG_TUSB_DEBUG 3)
+
+jxglib_configure_FAT(USBMSC-tester FF_VOLUMES 1)
+jxglib_configure_USBHost(USBMSC-tester CFG_TUH_MSC 1)
