@@ -295,8 +295,7 @@ bool Mount(Printable& terr, const char* driveName)
 		terr.Printf("drive %s not found\n", driveName);
 		return false;
 	}
-	pDrive->Mount();
-	return true;
+	return pDrive->Mount();
 }
 
 bool Unmount(Printable& terr, const char* driveName)
@@ -310,8 +309,7 @@ bool Unmount(Printable& terr, const char* driveName)
 		terr.Printf("drive %s not found\n", driveName);
 		return false;
 	}
-	pDrive->Unmount();
-	return true;
+	return pDrive->Unmount();
 }
 
 FileInfo* GetFileInfo(const char* pathName)
