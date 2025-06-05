@@ -104,6 +104,31 @@ bool PrintFile(Printable& terr, Printable& tout, const char* fileName)
 	return true;
 }
 
+bool ListDrives(Printable& tout, const char* driveName, bool remarksFlag)
+{
+	const char* labelDriveName = "Drive";
+	const char* labelFormatName = "Format";
+	int lenMaxDriveName = ::strlen(labelDriveName) + 1, lenMaxFormatName = ::strlen(labelFormatName) + 1;
+	for (FS::Drive* pDrive = FS::GetDriveHead(); pDrive; pDrive = pDrive->GetNext()) {
+		if (driveName && !FS::DoesMatchDriveName(pDrive->GetDriveName(), driveName)) continue;
+		lenMaxDriveName = ChooseMax(lenMaxDriveName, ::strlen(pDrive->GetDriveName()) + 1);
+		lenMaxFormatName = ChooseMax(lenMaxFormatName, ::strlen(pDrive->GetFileSystemName()) + 1);
+	}
+	char remarks[80];
+	tout.Printf(" %*s %*s %11s%s\n",
+			-lenMaxDriveName, labelDriveName, -lenMaxFormatName, labelFormatName,
+			"Total", remarksFlag? " Remarks" : "");
+	for (FS::Drive* pDrive = FS::GetDriveHead(); pDrive; pDrive = pDrive->GetNext()) {
+		if (driveName && !FS::DoesMatchDriveName(pDrive->GetDriveName(), driveName)) continue;
+		char buff[32];
+		::snprintf(buff, sizeof(buff), "%s:", pDrive->GetDriveName());
+		tout.Printf("%s%*s %*s %11lld%s%s\n",
+			pDrive->IsPrimary()? "*" : " ", -lenMaxDriveName, buff, -lenMaxFormatName, pDrive->GetFileSystemName(),
+			pDrive->GetBytesTotal(), remarksFlag? " " : "", remarksFlag? pDrive->GetRemarks(remarks, sizeof(remarks)) : "");
+	}
+	return true;
+}
+
 bool ListFiles(Printable& terr, Printable& tout, const char* pathName, const FileInfo::Cmp& cmp, uint8_t attrExclude)
 {
 	std::unique_ptr<FS::Glob> pGlob(FS::OpenGlob(pathName, true, attrExclude));
@@ -139,21 +164,20 @@ bool CopyFile(Printable& terr, const char* fileNameSrc, const char* fileNameDst)
 	return true;
 }
 
-bool RemoveFile(const char* fileName)
+bool RemoveFile(Printable& terr, const char* fileName)
 {
 	char pathName[MaxPath];
 	Drive* pDrive = FindDrive(fileName);
-	return pDrive? pDrive->RemoveFile(pDrive->NativePathName(pathName, sizeof(pathName), fileName)) : false;
-}
-
-bool RemoveFile(Printable& terr, const char* fileName)
-{
-	if (RemoveFile(fileName)) return true;
-	terr.Printf("failed to remove file %s\n", fileName);
+	if (!pDrive) {
+		terr.Printf("drive for file %s not found\n", fileName);
+		return false; // Drive not found
+	}
+	if (pDrive->RemoveFile(pDrive->NativePathName(pathName, sizeof(pathName), fileName))) return true;
+	terr.Printf("failed to remove %s\n", fileName);
 	return false;
 }
 
-bool MoveFile(Printable& terr, const char* fileNameOld, const char* fileNameNew)
+bool Move(Printable& terr, const char* fileNameOld, const char* fileNameNew)
 {
 	char pathNameOld[MaxPath], pathNameNew[MaxPath];
 	Drive* pDriveOld = FindDrive(fileNameOld);
@@ -168,40 +192,51 @@ bool MoveFile(Printable& terr, const char* fileNameOld, const char* fileNameNew)
 	}
 	if (pDriveOld == pDriveNew) {
 		// Same drive, just rename
-		if (pDriveOld->RenameFile(pDriveOld->NativePathName(pathNameOld, sizeof(pathNameOld), fileNameOld),
+		if (pDriveOld->Rename(pDriveOld->NativePathName(pathNameOld, sizeof(pathNameOld), fileNameOld),
 				pDriveOld->NativePathName(pathNameNew, sizeof(pathNameNew), fileNameNew))) return true;
-		terr.Printf("failed to rename file %s to %s\n", fileNameOld, fileNameNew);
+		terr.Printf("failed to rename %s to %s\n", fileNameOld, fileNameNew);
 		return false; // Rename failed
+	}
+	if (IsDirectory(fileNameOld)) {
+		terr.Printf("cannot move directory %s to %s\n", fileNameOld, fileNameNew);
+		return false; // Cannot move directory
 	}
 	return CopyFile(terr, fileNameOld, fileNameNew) && RemoveFile(terr, fileNameOld); // Copy and then remove old file
 }
 
-bool CreateDir(const char* dirName)
+bool CreateDir(Printable& terr, const char* dirName)
 {
 	char pathName[MaxPath];
 	Drive* pDrive = FindDrive(dirName);
-	return pDrive? pDrive->CreateDir(pDrive->NativePathName(pathName, sizeof(pathName), dirName)) : false;
+	if (!pDrive) {
+		terr.Printf("drive for direcory %s not found\n", dirName);
+		return false; // Drive not found
+	}
+	if (pDrive->CreateDir(pDrive->NativePathName(pathName, sizeof(pathName), dirName))) return true;
+	terr.Printf("failed to create directory %s\n", dirName);
+	return false;
 }
 
-bool RemoveDir(const char* dirName)
+bool RemoveDir(Printable& terr, const char* dirName)
 {
 	char pathName[MaxPath];
 	Drive* pDrive = FindDrive(dirName);
-	return pDrive? pDrive->RemoveDir(pDrive->NativePathName(pathName, sizeof(pathName), dirName)) : false;
+	if (!pDrive) {
+		terr.Printf("drive for direcory %s not found\n", dirName);
+		return false; // Drive not found
+	}
+	if (pDrive->RemoveDir(pDrive->NativePathName(pathName, sizeof(pathName), dirName))) return true;
+	terr.Printf("failed to remove %s\n", dirName);
+	return false;
 }
 
-bool RenameDir(const char* dirNameOld, const char* dirNameNew)
-{
-	char pathNameOld[MaxPath], pathNameNew[MaxPath];
-	Drive* pDrive = FindDrive(dirNameOld);
-	return pDrive? pDrive->RenameDir(pDrive->NativePathName(pathNameOld, sizeof(pathNameOld), dirNameOld),
-			pDrive->NativePathName(pathNameNew, sizeof(pathNameNew), dirNameNew)) : false;
-}
-
-bool ChangeCurDir(const char* dirName)
+bool ChangeCurDir(Printable& terr, const char* dirName)
 {
 	Drive* pDrive = FindDrive(dirName);
-	if (!pDrive) return false;
+	if (!pDrive) {
+		terr.Printf("drive for direcory %s not found\n", dirName);
+		return false; // Drive not found
+	}
 	char pathName[MaxPath];
 	char pathNameNative[MaxPath];
 	dirName = pDrive->RegulatePathName(pathName, sizeof(pathName), dirName);
@@ -209,6 +244,7 @@ bool ChangeCurDir(const char* dirName)
 		pDrive->SetDirNameCur(dirName);
 		return true;
 	}
+	terr.Printf("failed to change current directory to %s\n", dirName);
 	return false;
 }
 
@@ -238,6 +274,14 @@ bool Format(Printable& terr, const char* driveName)
 		terr.Printf("failed to format drive %s\n", driveName);
 		return false;
 	}
+}
+
+bool IsMounted(const char* driveName)
+{
+	if (!IsLegalDriveName(driveName)) return false;
+	Drive* pDrive = FindDrive(driveName);
+	if (!pDrive) return false;
+	return pDrive->IsMounted();
 }
 
 bool Mount(Printable& terr, const char* driveName)

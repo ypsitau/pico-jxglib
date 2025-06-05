@@ -97,7 +97,7 @@ bool Drive::RemoveFile(const char* fileName)
 	return Mount() && ::f_unlink(fileName) == FR_OK;
 }
 
-bool Drive::RenameFile(const char* fileNameOld, const char* fileNameNew)
+bool Drive::Rename(const char* fileNameOld, const char* fileNameNew)
 {
 	return Mount() && ::f_rename(fileNameOld, fileNameNew) == FR_OK;
 }
@@ -110,11 +110,6 @@ bool Drive::CreateDir(const char* dirName)
 bool Drive::RemoveDir(const char* dirName)
 {
 	return Mount() && ::f_rmdir(dirName) == FR_OK;
-}
-
-bool Drive::RenameDir(const char* fileNameOld, const char* fileNameNew)
-{
-	return Mount() && ::f_rename(fileNameOld, fileNameNew) == FR_OK;
 }
 
 bool Drive::Format()

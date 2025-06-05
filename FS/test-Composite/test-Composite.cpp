@@ -10,7 +10,7 @@
 #include "jxglib/FAT/RAMDisk.h"
 #include "jxglib/FAT/SDCard.h"
 #include "jxglib/FAT/USBMSC.h"
-#include "jxglib/Font/shinonome16.h"
+#include "jxglib/Font/shinonome16-japanese-level2.h"
 
 using namespace jxglib;
 

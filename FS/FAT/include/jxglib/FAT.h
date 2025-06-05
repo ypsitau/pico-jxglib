@@ -80,10 +80,9 @@ public:
 	virtual FS::File* OpenFile(const char* fileName, const char* mode) override;
 	virtual FS::Dir* OpenDir(const char* dirName, uint8_t attrExclude) override;
 	virtual bool RemoveFile(const char* fileName) override;
-	virtual bool RenameFile(const char* fileNameOld, const char* fileNameNew) override;
+	virtual bool Rename(const char* fileNameOld, const char* fileNameNew) override;
 	virtual bool CreateDir(const char* dirName) override;
 	virtual bool RemoveDir(const char* dirName) override;
-	virtual bool RenameDir(const char* fileNameOld, const char* fileNameNew) override;
 	virtual bool Format() override;
 	virtual bool Mount() override;
 	virtual bool Unmount() override;

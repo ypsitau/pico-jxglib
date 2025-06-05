@@ -222,10 +222,9 @@ public:
 	virtual File* OpenFile(const char* fileName, const char* mode) = 0;
 	virtual Dir* OpenDir(const char* dirName, uint8_t attrExclude) = 0;
 	virtual bool RemoveFile(const char* fileName) = 0;
-	virtual bool RenameFile(const char* fileNameOld, const char* fileNameNew) = 0;
+	virtual bool Rename(const char* fileNameOld, const char* fileNameNew) = 0;
 	virtual bool CreateDir(const char* dirName) = 0;
 	virtual bool RemoveDir(const char* dirName) = 0;
-	virtual bool RenameDir(const char* fileNameOld, const char* fileNameNew) = 0;
 	virtual bool Format() = 0;
 	virtual bool Mount() = 0;
 	virtual bool Unmount() = 0;
@@ -249,20 +248,41 @@ File* OpenFileForCopy(const char* fileNameSrc, const char* fileNameDst);
 Dir* OpenDir(const char* dirName, uint8_t attrExclude = 0);
 Glob* OpenGlob(const char* pattern, bool patternAsDirFlag = false, uint8_t attrExclude = 0);
 bool PrintFile(Printable& terr, Printable& tout, const char* fileName);
+
+bool ListDrives(Printable& tout, const char* driveName = nullptr, bool remarksFlag = true);
+
 bool ListFiles(Printable& terr, Printable& tout, const char* pathName,
 	const FileInfo::Cmp& cmp = FileInfo::Cmp::Zero, uint8_t attrExclude = 0);
+
 bool CopyFile(Printable& terr, const char* fileNameSrc, const char* fileNameDst);
-bool RemoveFile(const char* fileName);
+inline bool CopyFile(const char* fileNameSrc, const char* fileNameDst) { return CopyFile(PrintableDumb::Instance, fileNameSrc, fileNameDst); }
+
 bool RemoveFile(Printable& terr, const char* fileName);
-bool MoveFile(Printable& terr, const char* fileNameOld, const char* fileNameNew);
-bool CreateDir(const char* dirName);
-bool RemoveDir(const char* dirName);
-bool RenameDir(const char* fileNameOld, const char* fileNameNew);
-bool ChangeCurDir(const char* dirName);
-bool IsDirectory(const char* pathName);
+inline bool RemoveFile(const char* fileName) { return RemoveFile(PrintableDumb::Instance, fileName); }
+
+bool Move(Printable& terr, const char* fileNameOld, const char* fileNameNew);
+inline bool Move(const char* fileNameOld, const char* fileNameNew) { return Move(PrintableDumb::Instance, fileNameOld, fileNameNew); }
+
+bool CreateDir(Printable& terr, const char* dirName);
+inline bool CreateDir(const char* dirName) { return CreateDir(PrintableDumb::Instance, dirName); }
+
+bool RemoveDir(Printable& terr, const char* dirName);
+inline bool RemoveDir(const char* dirName) { return RemoveDir(PrintableDumb::Instance, dirName); }
+
+bool ChangeCurDir(Printable& terr, const char* dirName);
+inline bool ChangeCurDir(const char* dirName) { return ChangeCurDir(PrintableDumb::Instance, dirName); }
+
 bool Format(Printable& terr, const char* driveName);
+inline bool Format(const char* driveName) { return Format(PrintableDumb::Instance, driveName); }
+
 bool Mount(Printable& terr, const char* driveName);
+inline bool Mount(const char* driveName) { return Mount(PrintableDumb::Instance, driveName); }
+
 bool Unmount(Printable& terr, const char* driveName);
+inline bool Unmount(const char* driveName) { return Unmount(PrintableDumb::Instance, driveName); }
+
+bool IsDirectory(const char* pathName);
+bool IsMounted(const char* driveName);
 FileInfo* GetFileInfo(const char* pathName);
 bool IsLegalDriveName(const char* driveName);
 bool GetDirNameCur(const char** pDriveName, const char** pDirName);

@@ -61,11 +61,7 @@ ShellCmd(cd, "changes the current directory")
 		return 1;
 	}
 	const char* dirName = argv[1];
-	if (!FS::ChangeCurDir(dirName)) {
-		tout.Printf("failed to change directory to %s\n", dirName);
-		return 1;
-	}
-	return 0;
+	return FS::ChangeCurDir(terr, dirName)? 0 : 1;
 }
 
 ShellCmd_Named(cd_dot_dot, "cd..", "changes the current directory to the parent directory")
@@ -81,11 +77,7 @@ ShellCmd_Named(cd_dot_dot, "cd..", "changes the current directory to the parent 
 		return 1;
 	}
 	const char* dirName = "..";
-	if (!FS::ChangeCurDir(dirName)) {
-		tout.Printf("failed to change directory to %s\n", dirName);
-		return 1;
-	}
-	return 0;
+	return FS::ChangeCurDir(terr, dirName)? 0 : 1;
 }
 
 ShellCmd_Named(cd_slash, "cd/", "changes the current directory to the root directory")
@@ -101,11 +93,7 @@ ShellCmd_Named(cd_slash, "cd/", "changes the current directory to the root direc
 		return 1;
 	}
 	const char* dirName = "/";
-	if (!FS::ChangeCurDir(dirName)) {
-		tout.Printf("failed to change directory to %s\n", dirName);
-		return 1;
-	}
-	return 0;
+	return FS::ChangeCurDir(terr, dirName)? 0 : 1;
 }
 
 ShellCmd(copy, "copies files")
@@ -244,28 +232,9 @@ ShellCmd_Named(ls_drive, "ls-drive", "lists availabld drives")
 		arg.PrintHelp(terr);
 		return 1;
 	}
+	const char* driveName = (argc < 2)? nullptr : argv[1];
 	bool remarksFlag = arg.GetBool("remarks");
-	const char* labelDriveName = "Drive";
-	const char* labelFormatName = "Format";
-	int lenMaxDriveName = ::strlen(labelDriveName) + 1, lenMaxFormatName = ::strlen(labelFormatName) + 1;
-	for (FS::Drive* pDrive = FS::GetDriveHead(); pDrive; pDrive = pDrive->GetNext()) {
-		if (argc > 1 && !FS::DoesMatchDriveName(pDrive->GetDriveName(), argv[1])) continue;
-		lenMaxDriveName = ChooseMax(lenMaxDriveName, ::strlen(pDrive->GetDriveName()) + 1);
-		lenMaxFormatName = ChooseMax(lenMaxFormatName, ::strlen(pDrive->GetFileSystemName()) + 1);
-	}
-	char remarks[80];
-	tout.Printf(" %*s %*s %11s%s\n",
-			-lenMaxDriveName, labelDriveName, -lenMaxFormatName, labelFormatName,
-			"Total", remarksFlag? " Remarks" : "");
-	for (FS::Drive* pDrive = FS::GetDriveHead(); pDrive; pDrive = pDrive->GetNext()) {
-		if (argc > 1 && !FS::DoesMatchDriveName(pDrive->GetDriveName(), argv[1])) continue;
-		char buff[32];
-		::snprintf(buff, sizeof(buff), "%s:", pDrive->GetDriveName());
-		tout.Printf("%s%*s %*s %11lld%s%s\n",
-			pDrive->IsPrimary()? "*" : " ", -lenMaxDriveName, buff, -lenMaxFormatName, pDrive->GetFileSystemName(),
-			pDrive->GetBytesTotal(), remarksFlag? " " : "", remarksFlag? pDrive->GetRemarks(remarks, sizeof(remarks)) : "");
-	}
-	return 0;
+	return FS::ListDrives(tout, driveName, remarksFlag)? 0 : 1;
 }
 
 ShellCmdAlias_Named(dir_drive, "dir-drive", ls_drive)
@@ -283,11 +252,7 @@ ShellCmd(mkdir, "creates a directory")
 		return 1;
 	}
 	const char* dirName = argv[1];
-	if (!FS::CreateDir(dirName)) {
-		tout.Printf("failed to create %s\n", dirName);
-		return 1;
-	}
-	return 0;
+	return FS::CreateDir(terr, dirName)? 0 : 1;
 }
 
 ShellCmd(mount, "mounts a specified drive")
@@ -303,8 +268,7 @@ ShellCmd(mount, "mounts a specified drive")
 		return 1;
 	}
 	const char* driveName = argv[1];
-	FS::Mount(tout, driveName);
-	return 0;
+	return FS::Mount(terr, driveName)? 0 : 1;
 }
 
 ShellCmd(move, "moves a file")
@@ -321,8 +285,7 @@ ShellCmd(move, "moves a file")
 	}
 	const char* fileNameSrc = argv[1];
 	const char* fileNameDst = argv[2];
-	if (!FS::MoveFile(terr, fileNameSrc, fileNameDst)) return 1;
-	return 0;
+	return FS::Move(terr, fileNameSrc, fileNameDst)? 0 : 1;
 }
 
 ShellCmdAlias(mv, move)
@@ -395,11 +358,7 @@ ShellCmd(rmdir, "removes a directory")
 		return 1;
 	}
 	const char* dirName = argv[1];
-	if (!FS::RemoveDir(dirName)) {
-		tout.Printf("failed to remove %s\n", dirName);
-		return 1;
-	}
-	return 0;
+	return FS::RemoveDir(terr, dirName)? 0 : 1;
 }
 
 ShellCmd(touch, "creates an empty file")
@@ -437,8 +396,7 @@ ShellCmd(umount, "unmounts a specified drive")
 		return 1;
 	}
 	const char* driveName = argv[1];
-	FS::Unmount(tout, driveName);
-	return 0;
+	return FS::Unmount(tout, driveName)? 0 : 1;
 }
 
 }

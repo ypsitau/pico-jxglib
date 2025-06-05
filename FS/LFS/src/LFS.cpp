@@ -85,7 +85,7 @@ bool Drive::RemoveFile(const char* fileName)
 	return ::lfs_remove(&lfs_, fileName) == LFS_ERR_OK;
 }
 
-bool Drive::RenameFile(const char* fileNameOld, const char* fileNameNew)
+bool Drive::Rename(const char* fileNameOld, const char* fileNameNew)
 {
 	if (!Mount()) return false;
 	return ::lfs_rename(&lfs_, fileNameOld, fileNameNew) == LFS_ERR_OK;
@@ -101,12 +101,6 @@ bool Drive::RemoveDir(const char* dirName)
 {
 	if (!Mount()) return false;
 	return ::lfs_remove(&lfs_, dirName) == LFS_ERR_OK;
-}
-
-bool Drive::RenameDir(const char* dirNameOld, const char* dirNameNew)
-{
-	if (!Mount()) return false;
-	return ::lfs_rename(&lfs_, dirNameOld, dirNameNew) == LFS_ERR_OK;
 }
 
 bool Drive::Format()
