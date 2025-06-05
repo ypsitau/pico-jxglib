@@ -17,7 +17,10 @@ MSC::MSC(uint8_t orderHint) : orderHint_{orderHint}, dev_addr_(UINT8_MAX), lun_(
     // Initialize the MSC instance
     if (pMSCTop) {
         MSC* pMSCPrev = nullptr;
-        for (MSC* pMSC = pMSCTop; pMSC && pMSC->orderHint_ < orderHint; pMSCPrev = pMSC, pMSC = pMSC->pMSCNext_) ;
+        for (MSC* pMSC = pMSCTop; pMSC; pMSC = pMSC->pMSCNext_) {
+			if (orderHint < pMSC->orderHint_) break;
+			pMSCPrev = pMSC;
+		}
         if (pMSCPrev) {
             pMSCNext_ = pMSCPrev->pMSCNext_;
             pMSCPrev->pMSCNext_ = this;
