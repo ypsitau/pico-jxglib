@@ -258,17 +258,17 @@ bool ListFiles(Printable& terr, Printable& tout, const char* pathName,
 bool CopyFile(Printable& terr, const char* fileNameSrc, const char* fileNameDst);
 inline bool CopyFile(const char* fileNameSrc, const char* fileNameDst) { return CopyFile(PrintableDumb::Instance, fileNameSrc, fileNameDst); }
 
-bool RemoveFile(Printable& terr, const char* fileName);
-inline bool RemoveFile(const char* fileName) { return RemoveFile(PrintableDumb::Instance, fileName); }
-
 bool Move(Printable& terr, const char* fileNameOld, const char* fileNameNew);
 inline bool Move(const char* fileNameOld, const char* fileNameNew) { return Move(PrintableDumb::Instance, fileNameOld, fileNameNew); }
 
-bool CreateDir(Printable& terr, const char* dirName);
-inline bool CreateDir(const char* dirName) { return CreateDir(PrintableDumb::Instance, dirName); }
+bool RemoveFile(Printable& terr, const char* fileName);
+inline bool RemoveFile(const char* fileName) { return RemoveFile(PrintableDumb::Instance, fileName); }
 
 bool RemoveDir(Printable& terr, const char* dirName);
 inline bool RemoveDir(const char* dirName) { return RemoveDir(PrintableDumb::Instance, dirName); }
+
+bool CreateDir(Printable& terr, const char* dirName);
+inline bool CreateDir(const char* dirName) { return CreateDir(PrintableDumb::Instance, dirName); }
 
 bool ChangeCurDir(Printable& terr, const char* dirName);
 inline bool ChangeCurDir(const char* dirName) { return ChangeCurDir(PrintableDumb::Instance, dirName); }
