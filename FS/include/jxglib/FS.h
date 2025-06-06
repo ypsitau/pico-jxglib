@@ -15,6 +15,7 @@ class Dir;
 class Glob;
 class Drive;
 
+constexpr int MaxDriveName = 16;
 constexpr int MaxPath = 256;
 
 //------------------------------------------------------------------------------
@@ -198,8 +199,8 @@ class Drive {
 protected:
 	bool mountedFlag_;
 	const char* formatName_;
-	const char* driveName_;
-	const char* driveNameRaw_;
+	char driveNameRaw_[MaxDriveName + 1];	// Raw drive name, e.g. "C:", "*C:"
+	const char* driveName_;	 				// Drive name that eliminates the leading '*'
 	char dirNameCur_[MaxPath];
 	Drive* pDriveNext_;
 public:
@@ -208,7 +209,7 @@ public:
 	Drive* GetNext() const { return pDriveNext_; }
 public:
 	bool IsMounted() const { return mountedFlag_; }
-	bool IsPrimary() const { return *driveNameRaw_ == '*'; }
+	bool IsPrimary() const { return driveNameRaw_[0] == '*'; }
 	bool IsDirectory(const char* pathName);
 	const char* GetDriveName() const { return driveName_; }
 	void SetDirNameCur(const char* dirName);

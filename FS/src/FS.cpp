@@ -687,9 +687,15 @@ void Glob::Close()
 //------------------------------------------------------------------------------
 // FS::Drive
 //------------------------------------------------------------------------------
-Drive::Drive(const char* formatName, const char* driveName) : mountedFlag_{false}, formatName_{formatName},
-	driveName_{::isalpha(*driveName)? driveName : driveName + 1}, driveNameRaw_{driveName}, pDriveNext_{nullptr}
+Drive::Drive(const char* formatName, const char* driveName) : mountedFlag_{false}, formatName_{formatName}, pDriveNext_{nullptr}
 {
+	do {
+		const char* driveNameEnd = ::strchr(driveName, ':');
+		int len = ChooseMin(driveNameEnd? driveNameEnd - driveName : ::strlen(driveName), MaxDriveName);
+		::memcpy(driveNameRaw_, driveName, len);
+		driveNameRaw_[len] = '\0';
+		driveName_ = ::isalpha(driveNameRaw_[0])? driveNameRaw_ : driveNameRaw_ + 1;
+	} while (0);
 	::strcpy(dirNameCur_, "/");
 	if (pDriveHead) {
 		Drive* pDrivePrev = nullptr;
