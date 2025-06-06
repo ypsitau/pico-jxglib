@@ -22,14 +22,13 @@ const char* SDCard::GetRemarks(char* buff, int lenMax) const
 DSTATUS SDCard::status()
 {
 	//::printf("status\n");
-	return 0x00;	// STA_NOINIT, STA_NODISK, STA_PROTECT
+	return sdCard_.IsCardPresent()? 0x00 : STA_NODISK;	// STA_NOINIT, STA_NODISK, STA_PROTECT
 }
 
 DSTATUS SDCard::initialize()
 {
 	//::printf("initialize\n");
-	sdCard_.Initialize();
-	return 0x00;	// STA_NOINIT, STA_NODISK, STA_PROTECT
+	return sdCard_.Initialize()? 0x00 : STA_NOINIT;	// STA_NOINIT, STA_NODISK, STA_PROTECT
 }
 
 DRESULT SDCard::read(BYTE* buff, LBA_t sector, UINT count)

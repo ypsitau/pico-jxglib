@@ -21,7 +21,6 @@ const char* USBMSC::GetRemarks(char* buff, int lenMax) const
 DSTATUS USBMSC::status()
 {
 	//::printf("status\n");
-	//return 0x00;	// STA_NOINIT, STA_NODISK, STA_PROTECT
 	return msc_.IsMounted()? 0x00 : STA_NODISK;	// STA_NOINIT, STA_NODISK, STA_PROTECT
 }
 

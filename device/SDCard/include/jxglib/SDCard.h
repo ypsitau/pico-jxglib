@@ -59,6 +59,7 @@ private:
 public:
 	SDCard(spi_inst_t* spi, uint baudrate, const PinAssign& pinAssign);
 	bool Initialize(bool debugFlag = false);
+	bool IsCardPresent();
 	bool ReadBlock(int lba, void* buf, int nBlocks);
 	bool WriteBlock(int lba, const void* buf, int nBlocks);
 	bool IsInitialized() const { return initializedFlag_; }
