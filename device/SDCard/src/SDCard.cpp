@@ -210,12 +210,12 @@ bool SDCard::WriteToken(uint8_t token)
 
 bool SDCard::IsCardPresent()
 {
-	const uint8_t crc_dummy = 0xff;
+	const uint8_t crc_ff = 0xff;
 	uint8_t status[2] = {0};
 	// CMD13: SEND_STATUS (argument is 0)
 	// If R1 response is 0 (_R1_SUCCESS) and the BUSY bit in status[0] is not set, the card is present.
 	// Normally, if the card is removed, there will be no response or an abnormal value like 0xFF.
-	return WriteCommandFrame(13, 0, crc_dummy, status, 2, true) == _R1_SUCCESS;;
+	return WriteCommandFrame(13, 0, crc_ff, status, 2, true) == _R1_SUCCESS;;
 }
 
 bool SDCard::ReadBlock(int lba, void* buf, int nBlocks)
