@@ -74,7 +74,8 @@ private:
 public:
 	Drive(const char* driveName);
 public:
-	// virtual functions of FS::Manager
+	// virtual functions of FS::Drive
+	virtual bool CheckMounted() override;
 	virtual const char* GetFileSystemName() override;
 	virtual const char* NativePathName(char* pathNameBuff, int lenBuff, const char* pathName) override;
 	virtual FS::File* OpenFile(const char* fileName, const char* mode) override;

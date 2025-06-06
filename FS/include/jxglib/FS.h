@@ -208,7 +208,6 @@ public:
 public:
 	Drive* GetNext() const { return pDriveNext_; }
 public:
-	bool IsMounted() const { return mountedFlag_; }
 	bool IsPrimary() const { return driveNameRaw_[0] == '*'; }
 	bool IsDirectory(const char* pathName);
 	const char* GetDriveName() const { return driveName_; }
@@ -216,6 +215,7 @@ public:
 	const char* GetDirNameCur() const { return dirNameCur_; }
 	const char* RegulatePathName(char* pathNameBuff, int lenBuff, const char* pathName);
 public:
+	virtual bool CheckMounted() = 0;
 	virtual const char* GetFileSystemName() = 0;
 	virtual const char* NativePathName(char* pathNameBuff, int lenBuff, const char* pathName) {
 		return RegulatePathName(pathNameBuff, lenBuff, pathName);
@@ -283,7 +283,7 @@ bool Unmount(Printable& terr, const char* driveName);
 inline bool Unmount(const char* driveName) { return Unmount(PrintableDumb::Instance, driveName); }
 
 bool IsDirectory(const char* pathName);
-bool IsMounted(const char* driveName);
+bool CheckMounted(const char* driveName);
 FileInfo* GetFileInfo(const char* pathName);
 bool IsLegalDriveName(const char* driveName);
 bool GetDirNameCur(const char** pDriveName, const char** pDirName);

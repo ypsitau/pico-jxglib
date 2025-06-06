@@ -46,6 +46,11 @@ Drive::Drive(const char* driveName) : FS::Drive("lfs", driveName),
 {
 }
 
+bool Drive::CheckMounted()
+{
+	return mountedFlag_;
+}
+
 const char* Drive::GetFileSystemName()
 {
 	return Mount()? "LittleFS" : "unmounted";
@@ -110,7 +115,7 @@ bool Drive::Format()
 
 bool Drive::Mount()
 {
-	if (mountedFlag_) return true;
+	if (CheckMounted()) return true;
 	if (::lfs_mount(&lfs_, &cfg_) != LFS_ERR_OK) return false;
 	mountedFlag_ = true;
 	return true;

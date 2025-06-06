@@ -276,12 +276,12 @@ bool Format(Printable& terr, const char* driveName)
 	}
 }
 
-bool IsMounted(const char* driveName)
+bool CheckMounted(const char* driveName)
 {
 	if (!IsLegalDriveName(driveName)) return false;
 	Drive* pDrive = FindDrive(driveName);
 	if (!pDrive) return false;
-	return pDrive->IsMounted();
+	return pDrive->CheckMounted();
 }
 
 bool Mount(Printable& terr, const char* driveName)

@@ -54,6 +54,14 @@ Drive::Drive(const char* driveName) : FS::Drive("FAT", driveName), pdrv_{0}, pDr
 	}
 }
 
+bool Drive::CheckMounted()
+{
+	if (mountedFlag_) {
+		if (status() != 0) mountedFlag_ = false;
+	}
+	return mountedFlag_;
+}
+
 const char* Drive::GetFileSystemName()
 {
 	if (!Mount()) return "unmounted";
@@ -133,7 +141,7 @@ bool Drive::Format()
 
 bool Drive::Mount()
 {
-	if (mountedFlag_) return true;
+	if (CheckMounted()) return true;
 	TCHAR path[16];
 	::snprintf(path, sizeof(path), "%d:", pdrv_);
 	if (::f_mount(&fatFs_, path, 1) == FR_OK) {	// mounts immediately
