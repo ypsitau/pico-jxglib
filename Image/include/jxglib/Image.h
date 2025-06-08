@@ -306,6 +306,9 @@ public:
 	const uint8_t* GetPointerSW(int xOffset, int yOffset) const { return GetPointer(xOffset, GetHeight() - 1 - yOffset); }
 	const uint8_t* GetPointerSE(int xOffset, int yOffset) const { return GetPointer(GetWidth() - 1 - xOffset, GetHeight() - 1 - yOffset); }
 	bool IsWritable() const { return allocatedFlag_; }
+public:
+	static void ReadFromStream(void* context, const void* data, int size);
+	static void WriteToStream(void* context, const void* data, int size);
 };
 
 template<> class Image::Getter_T<Color, Color> {

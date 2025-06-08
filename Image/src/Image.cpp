@@ -2,6 +2,7 @@
 // Image.cpp
 //==============================================================================
 #include "jxglib/Image.h"
+#include "jxglib/Stream.h"
 
 namespace jxglib {
 
@@ -43,6 +44,16 @@ void Image::Free()
 void Image::FillZero()
 {
 	::memset(data_, 0x00, GetBytesBuff());
+}
+
+void Image::ReadFromStream(void* context, const void* data, int size)
+{
+}
+
+void Image::WriteToStream(void* context, const void* data, int size)
+{
+	Stream* pStream = reinterpret_cast<Stream*>(context);
+	pStream->Write(data, size);
 }
 
 //------------------------------------------------------------------------------
