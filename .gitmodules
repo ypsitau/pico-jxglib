@@ -4,3 +4,6 @@
 [submodule "FS/LFS/littlefs"]
 	path = FS/LFS/littlefs
 	url = https://github.com/littlefs-project/littlefs
+[submodule "guest/stb"]
+	path = guest/stb
+	url = https://github.com/nothings/stb.git
