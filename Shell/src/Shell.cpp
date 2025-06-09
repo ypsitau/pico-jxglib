@@ -11,7 +11,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 Shell Shell::Instance;
 const char* Shell::StartupScriptName = "/autoexec.sh";
-const char* Shell::specialTokens_[] = { ">>", "||", ">", "|", };
+const char* Shell::specialTokens_[] = { ">>", "||", ">", "|", ";" };
 
 Shell::Shell() : stat_{Stat::Startup}, pTerminal_{&TerminalDumb::Instance},
 			pCmdRunning_{nullptr}, tokenizer_(specialTokens_, count_of(specialTokens_))
@@ -38,13 +38,12 @@ bool Shell::RunCmd(Readable& tin, Printable& tout, Printable& terr, char* line, 
 		return false;
 	}
 	if (nToken == 0) return false;
-	int argc = nToken;
-	char** argv = tokenTbl;
+	int nTokensCmd = nToken;
 	bool appendFlag = false;
 	const char* fileNameOut = nullptr;
 	for (int iToken = 0; iToken < nToken; iToken++) {
 		if ((appendFlag = (::strcmp(tokenTbl[iToken], ">>") == 0)) || ::strcmp(tokenTbl[iToken], ">") == 0) {
-			argc = iToken;
+			nTokensCmd = iToken;
 			tokenTbl[iToken] = nullptr;
 			if (iToken + 1 >= nToken) {
 				pterr->Println("missing file name");
@@ -63,17 +62,35 @@ bool Shell::RunCmd(Readable& tin, Printable& tout, Printable& terr, char* line, 
 		}
 		ptout = pFileOut.get();
 	}
+	int argc = 0;
+	char** argv = tokenTbl;
+	for (int iToken = 0; iToken < nTokensCmd; iToken++) {
+		if (::strcmp(tokenTbl[iToken], ";") == 0) {
+			tokenTbl[iToken] = nullptr;
+			if (!RunSingleCmd(*ptin, *ptout, *pterr, argc, argv)) return false;
+			argc = 0;
+			argv = tokenTbl + iToken + 1;
+		} else {
+			argc++;
+		}
+	}
+	return RunSingleCmd(*ptin, *ptout, *pterr, argc, argv);	
+}
+
+bool Shell::RunSingleCmd(Readable& tin, Printable& tout, Printable& terr, int argc, char* argv[])
+{
+	if (argc == 0) return true; // no command to run
 	for (Cmd* pCmd = Cmd::GetCmdHead(); pCmd; pCmd = pCmd->GetNext()) {
 		if (::strcmp(argv[0], pCmd->GetName()) == 0) {
 			pCmdRunning_ = pCmd;
 			bool enableHistoryFlag = GetTerminal().IsHistoryEnabled();
 			GetTerminal().EnableHistory(false); // disable history while running a command
-			pCmd->Run(*ptin, *ptout, *pterr, argc, argv);
+			pCmd->Run(tin, tout, terr, argc, argv);
 			GetTerminal().EnableHistory(enableHistoryFlag);
 			return true;
 		}
 	}
-	pterr->Printf("%s: command not found\n", argv[0]);
+	terr.Printf("%s: command not found\n", argv[0]);
 	return false;
 }
 
