@@ -63,18 +63,33 @@ File* OpenFile(const char* fileName, const char* mode, Drive* pDrive)
 	return pDrive? pDrive->OpenFile(pDrive->NativePathName(pathName, sizeof(pathName), fileName), mode) : nullptr;
 }
 
-File* OpenFileForCopy(const char* fileNameSrc, const char* fileNameDst)
+const char* CreateFileNameForMove(char* fileName, int lenMax, const char* pathNameSrc, const char* pathNameDst)
 {
-	if (FS::IsDirectory(fileNameDst)) {
+	if (FS::IsDirectory(pathNameDst)) {
+		//Drive* pDrive = FindDrive(pathNameDst);
+		//if (!pDrive) return nullptr;
+		//pathNameDst = SkipDriveName(pathNameDst);
+		//pDrive->RegulatePathName(fileName, lenMax, pathNameDst);
+		::snprintf(fileName, lenMax, "%s", pathNameDst);
+		AppendPathName(fileName, lenMax, ExtractFileName(pathNameSrc));
+	} else {
+		::snprintf(fileName, lenMax, "%s", pathNameDst);
+	}
+	return fileName;
+}
+
+File* OpenFileForCopy(const char* pathNameSrc, const char* pathNameDst)
+{
+	if (FS::IsDirectory(pathNameDst)) {
 		char fileNameBuff[MaxPath];
-		Drive* pDrive = FindDrive(fileNameDst);
+		Drive* pDrive = FindDrive(pathNameDst);
 		if (!pDrive) return nullptr;
-		fileNameDst = SkipDriveName(fileNameDst);
-		pDrive->RegulatePathName(fileNameBuff, sizeof(fileNameBuff), fileNameDst);
-		AppendPathName(fileNameBuff, sizeof(fileNameBuff), ExtractFileName(fileNameSrc));
+		pathNameDst = SkipDriveName(pathNameDst);
+		pDrive->RegulatePathName(fileNameBuff, sizeof(fileNameBuff), pathNameDst);
+		AppendPathName(fileNameBuff, sizeof(fileNameBuff), ExtractFileName(pathNameSrc));
 		return OpenFile(fileNameBuff, "w", pDrive);
 	} else {
-		return OpenFile(fileNameDst, "w");
+		return OpenFile(pathNameDst, "w");
 	}
 }
 
@@ -141,23 +156,23 @@ bool ListFiles(Printable& terr, Printable& tout, const char* pathName, const Fil
 	return true;
 }
 
-bool CopyFile(Printable& terr, const char* fileNameSrc, const char* fileNameDst)
+bool CopyFile(Printable& terr, const char* pathNameSrc, const char* pathNameDst)
 {
-	std::unique_ptr<FS::File> pFileSrc(FS::OpenFile(fileNameSrc, "r"));
+	std::unique_ptr<FS::File> pFileSrc(FS::OpenFile(pathNameSrc, "r"));
 	if (!pFileSrc) {
-		terr.Printf("failed to open %s\n", fileNameSrc);
+		terr.Printf("failed to open %s\n", pathNameSrc);
 		return false;
 	}
-	std::unique_ptr<FS::File> pFileDst(FS::OpenFileForCopy(fileNameSrc, fileNameDst));
+	std::unique_ptr<FS::File> pFileDst(OpenFileForCopy(pathNameSrc, pathNameDst));
 	if (!pFileDst) {
-		terr.Printf("failed to open %s\n", fileNameDst);
+		terr.Printf("failed to open %s\n", pathNameDst);
 		return false;
 	}
 	int bytesRead;
 	char buff[128];
 	while ((bytesRead = pFileSrc->Read(buff, sizeof(buff))) > 0) {
 		if (pFileDst->Write(buff, bytesRead) != bytesRead) {
-			terr.Printf("failed to write %s\n", fileNameDst);
+			terr.Printf("failed to write %s\n", pathNameDst);
 			return false;
 		}
 	}
@@ -177,31 +192,31 @@ bool RemoveFile(Printable& terr, const char* fileName)
 	return false;
 }
 
-bool Move(Printable& terr, const char* fileNameOld, const char* fileNameNew)
+bool Move(Printable& terr, const char* pathNameOld, const char* pathNameNew)
 {
-	char pathNameOld[MaxPath], pathNameNew[MaxPath];
-	Drive* pDriveOld = FindDrive(fileNameOld);
+	char pathNameBuffOld[MaxPath], pathNameBuffNew[MaxPath];
+	Drive* pDriveOld = FindDrive(pathNameOld);
 	if (!pDriveOld) {
-		terr.Printf("drive for old file %s not found\n", fileNameOld);
+		terr.Printf("drive for old file %s not found\n", pathNameOld);
 		return false; // Drive not found
 	}	
-	Drive* pDriveNew = FindDrive(fileNameNew);
+	Drive* pDriveNew = FindDrive(pathNameNew);
 	if (!pDriveNew) {
-		terr.Printf("drive for new file %s not found\n", fileNameNew);
+		terr.Printf("drive for new file %s not found\n", pathNameNew);
 		return false; // Drive not found
 	}
 	if (pDriveOld == pDriveNew) {
 		// Same drive, just rename
-		if (pDriveOld->Rename(pDriveOld->NativePathName(pathNameOld, sizeof(pathNameOld), fileNameOld),
-				pDriveOld->NativePathName(pathNameNew, sizeof(pathNameNew), fileNameNew))) return true;
-		terr.Printf("failed to rename %s to %s\n", fileNameOld, fileNameNew);
+		if (pDriveOld->Rename(pDriveOld->NativePathName(pathNameBuffOld, sizeof(pathNameBuffOld), pathNameOld),
+				pDriveOld->NativePathName(pathNameBuffNew, sizeof(pathNameBuffNew), pathNameNew))) return true;
+		terr.Printf("failed to rename %s to %s\n", pathNameOld, pathNameNew);
 		return false; // Rename failed
 	}
-	if (IsDirectory(fileNameOld)) {
-		terr.Printf("cannot move directory %s to %s\n", fileNameOld, fileNameNew);
+	if (IsDirectory(pathNameOld)) {
+		terr.Printf("cannot move directory %s to %s\n", pathNameOld, pathNameNew);
 		return false; // Cannot move directory
 	}
-	return CopyFile(terr, fileNameOld, fileNameNew) && RemoveFile(terr, fileNameOld); // Copy and then remove old file
+	return CopyFile(terr, pathNameOld, pathNameNew) && RemoveFile(terr, pathNameOld); // Copy and then remove old file
 }
 
 bool CreateDir(Printable& terr, const char* dirName)
@@ -246,6 +261,14 @@ bool ChangeCurDir(Printable& terr, const char* dirName)
 	}
 	terr.Printf("failed to change current directory to %s\n", dirName);
 	return false;
+}
+
+bool DoesExist(const char* pathName)
+{
+	char pathNameBuff[MaxPath];
+	Drive* pDrive = FindDrive(pathName);
+	if (!pDrive) return false;
+	return pDrive->DoesExist(pDrive->NativePathName(pathNameBuff, sizeof(pathNameBuff), pathName));
 }
 
 bool IsDirectory(const char* pathName)
@@ -714,6 +737,12 @@ Drive::Drive(const char* formatName, const char* driveName) : mountedFlag_{false
 		pDriveHead = this;
 	}
 	if (IsPrimary() || !pDriveCur || (!pDriveCur->IsPrimary() && pDriveHead == this)) pDriveCur = this;
+}
+
+bool Drive::DoesExist(const char* pathName)
+{
+	std::unique_ptr<FileInfo> pFileInfo(GetFileInfo(pathName));
+	return !!pFileInfo;
 }
 
 bool Drive::IsDirectory(const char* pathName)

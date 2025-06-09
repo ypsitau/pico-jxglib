@@ -13,7 +13,7 @@ ShellCmd(cat, "prints the contents of files")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [options] [<filename>..]\noptions:\n", GetName());
+		terr.Printf("usage: %s [OPTION]... [FILE]...\nOptions:\n", GetName());
 		arg.PrintHelp(terr);
 		terr.Printf("\n"
 			"Reads the contents of files and prints them to standard output.\n"
@@ -56,7 +56,7 @@ ShellCmd(cd, "changes the current directory")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (argc < 2 || arg.GetBool("help")) {
-		terr.Printf("usage: %s [options] <directory>\noptions:\n", GetName());
+		terr.Printf("usage: %s [OPTION]... DIRECTORY\nOptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -72,7 +72,7 @@ ShellCmd_Named(cd_dot_dot, "cd..", "changes the current directory to the parent 
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [options]\noptions:\n", GetName());
+		terr.Printf("usage: %s [OPTION]...\nOptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -88,7 +88,7 @@ ShellCmd_Named(cd_slash, "cd/", "changes the current directory to the root direc
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [options]\noptions:\n", GetName());
+		terr.Printf("usage: %s [OPTION]...\nOptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -104,7 +104,7 @@ ShellCmd(copy, "copies files")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (argc < 3 || arg.GetBool("help")) {
-		terr.Printf("usage: %s [options] <src..> <dst>\noptions:\n", GetName());
+		terr.Printf("usage: %s [OPTION]... SOURCE... DEST\nOptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -130,7 +130,7 @@ ShellCmd(copy, "copies files")
 
 ShellCmdAlias(cp, copy)
 
-ShellCmd(format, "formats the filesystem")
+ShellCmd(format, "formats drives")
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		"h",	"prints this help"),
@@ -138,7 +138,7 @@ ShellCmd(format, "formats the filesystem")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (argc < 2 || arg.GetBool("help")) {
-		terr.Printf("usage: %s [drivename]\noptions:\n", GetName());
+		terr.Printf("usage: %s DRIVE...\nOptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -161,7 +161,7 @@ ShellCmd(glob, "prints files matching a glob pattern")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (argc < 2 || arg.GetBool("help")) {
-		terr.Printf("usage: %s [options] <pattern>\noptions:\n", GetName());
+		terr.Printf("usage: %s [OPTION]... PATTERN\nOptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -192,7 +192,7 @@ ShellCmd(ls, "lists files in the specified directory")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [options] [<pathname>]\noptions:\n", GetName());
+		terr.Printf("usage: %s [OPTION]... [DIRECTORY]\nOptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -228,7 +228,7 @@ ShellCmd_Named(ls_drive, "ls-drive", "lists availabld drives")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [options] [<drivename>]\noptions:\n", GetName());
+		terr.Printf("usage: %s [OPTION]... [DRIVE]\nOptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -239,7 +239,7 @@ ShellCmd_Named(ls_drive, "ls-drive", "lists availabld drives")
 
 ShellCmdAlias_Named(dir_drive, "dir-drive", ls_drive)
 
-ShellCmd(mkdir, "creates a directory")
+ShellCmd(mkdir, "creates directories")
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		"h",	"prints this help"),
@@ -247,15 +247,20 @@ ShellCmd(mkdir, "creates a directory")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (argc < 2 || arg.GetBool("help")) {
-		terr.Printf("usage: %s [options] <directory>\noptions:\n", GetName());
+		terr.Printf("usage: %s [OPTION]... DIRECTORY...\nOptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
-	const char* dirName = argv[1];
-	return FS::CreateDir(terr, dirName)? 0 : 1;
+	for (int iArg = 1; iArg < argc; iArg++) {
+		const char* dirName = argv[iArg];
+		if (!FS::CreateDir(terr, dirName)) return 1;
+	}
+	return 0;
+	//const char* dirName = argv[1];
+	//return FS::CreateDir(terr, dirName)? 0 : 1;
 }
 
-ShellCmd(mount, "mounts a specified drive")
+ShellCmd(mount, "mounts specified drives")
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		"h",	"prints this help"),
@@ -263,12 +268,17 @@ ShellCmd(mount, "mounts a specified drive")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (argc < 2 || arg.GetBool("help")) {
-		terr.Printf("usage: %s [options] <drivename>\noptions:\n", GetName());
+		terr.Printf("usage: %s [OPTION]... DRIVE\nOptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
-	const char* driveName = argv[1];
-	return FS::Mount(terr, driveName)? 0 : 1;
+	for (int iArg = 1; iArg < argc; iArg++) {
+		const char* driveName = argv[iArg];
+		if (!FS::Mount(terr, driveName)) return 1;
+	}
+	return 0;
+	//const char* driveName = argv[1];
+	//return FS::Mount(terr, driveName)? 0 : 1;
 }
 
 ShellCmd(move, "moves a file")
@@ -279,13 +289,13 @@ ShellCmd(move, "moves a file")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (argc < 3 || arg.GetBool("help")) {
-		terr.Printf("usage: %s [options] <src> <dst>\noptions:\n", GetName());
+		terr.Printf("usage: %s [OPTION]... SOURCE DEST\nOptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
-	const char* fileNameSrc = argv[1];
-	const char* fileNameDst = argv[2];
-	return FS::Move(terr, fileNameSrc, fileNameDst)? 0 : 1;
+	const char* pathNameSrc = argv[1];
+	const char* pathNameDst = argv[2];
+	return FS::Move(terr, pathNameSrc, pathNameDst)? 0 : 1;
 }
 
 ShellCmdAlias(mv, move)
@@ -299,7 +309,7 @@ ShellCmd(pwd, "prints the current directory")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [options]\noptions:\n", GetName());
+		terr.Printf("usage: %s [OPTION]...\nOptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -320,7 +330,7 @@ ShellCmd(rm, "removes files")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (argc < 2 || arg.GetBool("help")) {
-		terr.Printf("usage: %s [options] <filename..>\noptions:\n", GetName());
+		terr.Printf("usage: %s [OPTION]... FILE...\nOptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -345,7 +355,7 @@ ShellCmd(rm, "removes files")
 
 ShellCmdAlias(del, rm)
 
-ShellCmd(rmdir, "removes a directory")
+ShellCmd(rmdir, "removes directories")
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		"h",	"prints this help"),
@@ -353,15 +363,20 @@ ShellCmd(rmdir, "removes a directory")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (argc < 2 || arg.GetBool("help")) {
-		terr.Printf("usage: %s [options] <directory>\noptions:\n", GetName());
+		terr.Printf("usage: %s [OPTION]... DIRECTORY...\nOptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
-	const char* dirName = argv[1];
-	return FS::RemoveDir(terr, dirName)? 0 : 1;
+	for (int iArg = 1; iArg < argc; iArg++) {
+		const char* dirName = argv[iArg];
+		if (!FS::RemoveDir(terr, dirName)) return 1;
+	}
+	return 0;
+	//const char* dirName = argv[1];
+	//return FS::RemoveDir(terr, dirName)? 0 : 1;
 }
 
-ShellCmd(touch, "creates an empty file")
+ShellCmd(touch, "updates time stamps or creates empty files")
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		"h",	"prints this help"),
@@ -369,21 +384,33 @@ ShellCmd(touch, "creates an empty file")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (argc < 2 || arg.GetBool("help")) {
-		terr.Printf("usage: %s [options] <filename>\noptions:\n", GetName());
+		terr.Printf("usage: %s [OPTION]... FILE...\nOptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
-	const char* fileName = argv[1];
-	std::unique_ptr<FS::File> pFile(FS::OpenFile(fileName, "w"));
-	if (!pFile) {
-		tout.Printf("failed to create %s\n", fileName);
-		return 1;
+	for (int iArg = 1; iArg < argc; iArg++) {
+		const char* fileName = argv[iArg];
+		if (FS::DoesExist(fileName)) {
+			// nothing to do
+		} else {
+			std::unique_ptr<FS::File> pFile(FS::OpenFile(fileName, "w"));
+			if (!pFile) {
+				terr.Printf("failed to create %s\n", fileName);
+				return 1;
+			}
+		}
 	}
-	pFile->Close();
+	//const char* fileName = argv[1];
+	//std::unique_ptr<FS::File> pFile(FS::OpenFile(fileName, "w"));
+	//if (!pFile) {
+	//	tout.Printf("failed to create %s\n", fileName);
+	//	return 1;
+	//}
+	//pFile->Close();
 	return 0;
 }
 
-ShellCmd(umount, "unmounts a specified drive")
+ShellCmd(umount, "unmounts specified drives")
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		"h",	"prints this help"),
@@ -391,12 +418,17 @@ ShellCmd(umount, "unmounts a specified drive")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (argc < 2 || arg.GetBool("help")) {
-		terr.Printf("usage: %s [options] <drivename>\noptions:\n", GetName());
+		terr.Printf("usage: %s [OPTION]... DRIVE...\nOptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
-	const char* driveName = argv[1];
-	return FS::Unmount(tout, driveName)? 0 : 1;
+	for (int iArg = 1; iArg < argc; iArg++) {
+		const char* driveName = argv[iArg];
+		if (!FS::Unmount(tout, driveName)) return 1;
+	}
+	return 0;
+	//const char* driveName = argv[1];
+	//return FS::Unmount(tout, driveName)? 0 : 1;
 }
 
 }
