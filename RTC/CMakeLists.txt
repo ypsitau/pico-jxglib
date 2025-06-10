@@ -8,3 +8,5 @@ target_link_libraries(jxglib_RTC INTERFACE
 
 target_sources(jxglib_RTC INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/RTC.cpp)
+
+add_subdirectory(DS323x)
