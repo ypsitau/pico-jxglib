@@ -129,12 +129,95 @@ void test_CalcDayOfWeek()
     }
 }
 
+// Test function for DateTime::Parse using a test case table
+void test_Parse()
+{
+    struct ParseTestCase {
+        const char* str;
+        DateTime expected;
+        bool expectSuccess;
+        const char* description;
+    };
+    ParseTestCase testCases[] = {
+        //{"2024-06-10 12:34:56.789", {2024,6,10,12,34,56,789}, true, "Date, time, msec"},
+#if 1
+        // Valid patterns
+        {"2024-06-10", {2024,6,10,0,0,0,0}, true, "Date only (dash)"},
+        {"2024/06/10", {2024,6,10,0,0,0,0}, true, "Date only (slash)"},
+        {"2024-06-10 12:34:56", {2024,6,10,12,34,56,0}, true, "Date and time"},
+        {"2024/06/10 01:02:03", {2024,6,10,1,2,3,0}, true, "Date and time (slash)"},
+        {"2024-06-10 12:34:56.789", {2024,6,10,12,34,56,789}, true, "Date, time, msec"},
+        {"2024/06/10 12:34:56.007", {2024,6,10,12,34,56,7}, true, "Date, time, msec (leading zero)"},
+        {"2024-06-10T23:59:59.999", {2024,6,10,23,59,59,999}, true, "ISO8601 T separator"},
+        {"2024-06-10 00:00:00.001", {2024,6,10,0,0,0,1}, true, "Midnight with msec"},
+        {"2024-06-10 23:59:59.1", {2024,6,10,23,59,59,100}, true, "One digit msec"},
+        {"2024-06-10 23:59:59.12", {2024,6,10,23,59,59,120}, true, "Two digit msec"},
+        {"2024-06-10 23:59:59,123", {2024,6,10,23,59,59,123}, true, "Comma msec"},
+        {"2024-06-10T00:00:00", {2024,6,10,0,0,0,0}, true, "ISO8601 T no msec"},
+        {"2024-06-10 12:34:56,000", {2024,6,10,12,34,56,0}, true, "Comma msec zero"},
+        {"2024-06-10 12:34:56.000", {2024,6,10,12,34,56,0}, true, "Dot msec zero"},
+        {"2024-06-10 12:34:56.099", {2024,6,10,12,34,56,99}, true, "Dot msec two digits"},
+        {"2024-06-10 12:34:56.9", {2024,6,10,12,34,56,900}, true, "Dot msec one digit"},
+        {"2024-06-10 12:34:56.090", {2024,6,10,12,34,56,90}, true, "Dot msec two digits (leading zero)"},
+        {"2024-06-10 12:34:56.009", {2024,6,10,12,34,56,9}, true, "Dot msec two digits (trailing zero)"},
+        {"2024-06-10 12:34:56.000", {2024,6,10,12,34,56,0}, true, "Dot msec all zero"},
+        {"2024-06-10 12:34:56", {2024,6,10,12,34,56,0}, true, "No msec"},
+        {"2024-06-10T12:34:56", {2024,6,10,12,34,56,0}, true, "T separator, no msec"},
+        {"2024-06-10 00:00:00", {2024,6,10,0,0,0,0}, true, "Midnight"},
+        {"2024-06-10 23:59:59", {2024,6,10,23,59,59,0}, true, "Last second of day"},
+        {"2024-06-10 12:34:56.123", {2024,6,10,12,34,56,123}, true, "Dot msec"},
+        {"2024-6-1", {2024,6,1,0,0,0,0}, true, "One-digit month and day format"},
+        {"2024-6-10", {2024,6,10,0,0,0,0}, true, "One-digit month format"},
+        {"2024-06-1", {2024,6,1,0,0,0,0}, true, "One-digit day format"},
+        {"2024-6-1 12:34:56", {2024,6,1,12,34,56,0}, true, "One-digit month and day format"},
+        {"2024-6-10 12:34:56", {2024,6,10,12,34,56,0}, true, "One-digit month format"},
+        {"2024-06-1 12:34:56", {2024,6,1,12,34,56,0}, true, "One-digit day format"},
+        {"2024-06-10 12:34", {2024,6,10,12,34,0,0}, true, "Missing seconds"},
+        // Invalid patterns
+        {"abcd-ef-gh", {}, false, "Non-numeric"},
+        {"2024-06-10 12:34:56.x", {}, false, "Invalid msec"},
+        {"", {}, false, "Empty string"},
+        {"2024-06-10 12:34:56.1234", {}, false, "Too many msec digits"},
+        {"2024-06-10 12:34:56.", {}, false, "Dot but no msec"},
+        {"2024-06-10 12:34:56,abc", {}, false, "Comma but non-numeric msec"},
+        {"2024-06-10 12:34:56.12a", {}, false, "Dot msec with trailing char"},
+#endif
+    };
+
+    int numCases = sizeof(testCases) / sizeof(testCases[0]);
+    for (int i = 0; i < numCases; ++i) {
+        DateTime dt;
+        bool success = dt.Parse(testCases[i].str);
+        bool ok = (success == testCases[i].expectSuccess);
+        if (success && testCases[i].expectSuccess) {
+            ok = ok &&
+                dt.year  == testCases[i].expected.year &&
+                dt.month == testCases[i].expected.month &&
+                dt.day   == testCases[i].expected.day &&
+                dt.hour  == testCases[i].expected.hour &&
+                dt.min   == testCases[i].expected.min &&
+                dt.sec   == testCases[i].expected.sec &&
+                dt.msec  == testCases[i].expected.msec;
+        }
+        printf("%-35s | \"%s\" | %s\n",
+            testCases[i].description, testCases[i].str, ok ? "OK" : "NG");
+        //printf("  Parsed: %d-%02d-%02d %02d:%02d:%02d.%03d\n",
+        //    dt.year, dt.month, dt.day, dt.hour, dt.min, dt.sec, dt.msec);
+        //printf("  Expected: %d-%02d-%02d %02d:%02d:%02d.%03d\n",
+        //    testCases[i].expected.year, testCases[i].expected.month,
+        //    testCases[i].expected.day, testCases[i].expected.hour,
+        //    testCases[i].expected.min, testCases[i].expected.sec,
+        //    testCases[i].expected.msec);
+    }
+}
+
 int main()
 {
     ::stdio_init_all();
 
     test_Compare();
     test_CalcDayOfWeek();
+    test_Parse();
 
     for (;;) ::tight_loop_contents();
 }

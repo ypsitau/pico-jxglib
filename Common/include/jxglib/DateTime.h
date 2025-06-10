@@ -30,6 +30,8 @@ public:
 		year{dt.year}, month{dt.month}, day{dt.day}, hour{dt.hour}, min{dt.min}, sec{dt.sec}, msec{dt.msec} {}
 public:
 	int8_t CalcDayOfWeek() const;
+	bool Parse(const char* str);
+	bool ParseTime(const char* str);
 public:
 	DateTime& operator=(const DateTime& dt);
 	static int Compare(const DateTime& dt1, const DateTime& dt2);
