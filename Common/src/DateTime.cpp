@@ -10,6 +10,21 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 const DateTime DateTime::Empty;
 
+int8_t DateTime::CalcDayOfWeek() const
+{
+    // Zeller's Congruence (0=Saturday, 1=Sunday, ..., 6=Friday)
+    int y = year;
+    int m = month;
+    if (m < 3) {
+        m += 12;
+        y -= 1;
+    }
+    int dow = (y + y/4 - y/100 + y/400 + (13 * m + 8) / 5 + day) % 7;
+    if (dow < 0) dow += 7;
+    // Convert to 0=Sunday, 1=Monday, ..., 6=Saturday
+    return dow;
+}
+
 DateTime& DateTime::operator=(const DateTime& dt)
 {
 	if (this != &dt) {
