@@ -53,3 +53,16 @@ target_link_libraries(jxglib_BinaryInfo INTERFACE
 
 target_sources(jxglib_BinaryInfo INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/BinaryInfo.cpp)
+
+#------------------------------------------------------------------------------
+add_library(jxglib_ShellCmd_I2C INTERFACE)
+
+target_include_directories(jxglib_ShellCmd_I2C INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/include)
+
+target_link_libraries(jxglib_ShellCmd_I2C INTERFACE
+	hardware_i2c
+	jxglib_Shell)
+
+target_sources(jxglib_ShellCmd_I2C INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/src/ShellCmd_I2C.cpp)
