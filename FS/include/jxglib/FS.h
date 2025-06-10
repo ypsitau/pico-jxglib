@@ -6,6 +6,7 @@
 #include <memory>
 #include "pico/stdlib.h"
 #include "jxglib/Stream.h"
+#include "jxglib/RTC.h"
 
 namespace jxglib::FS {
 

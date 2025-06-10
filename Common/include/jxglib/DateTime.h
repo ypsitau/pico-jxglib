@@ -34,6 +34,9 @@ public:
 	bool ParseDate(const char* str, const char** endPtr = nullptr);
 	bool ParseTime(const char* str);
 public:
+	uint32_t ToFATTime() const;
+	void FromFATTime(uint32_t fattime);
+public:
 	DateTime& operator=(const DateTime& dt);
 	static int Compare(const DateTime& dt1, const DateTime& dt2);
 	static bool IsLeapYear(int16_t year) {

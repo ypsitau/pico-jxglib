@@ -413,12 +413,8 @@ DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void* buff)
 
 DWORD get_fattime()
 {
-	DWORD year = 2020;
-	DWORD month = 1;
-	DWORD dayOfMonth = 1;
-	DWORD hour = 0;
-	DWORD minute = 0;
-	DWORD second = 0;
-	return ((year - 1980) << 25) | (month << 21) | (dayOfMonth << 16) |
-			(hour << 11) | (minute << 5) | (second >> 1);
+	using namespace jxglib;
+	DateTime dt;
+	RTC::Get(&dt);
+	return dt.ToFATTime();
 }

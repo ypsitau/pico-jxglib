@@ -16,6 +16,7 @@ target_include_directories(jxglib_ShellCmd_FS INTERFACE
 
 target_link_libraries(jxglib_ShellCmd_FS INTERFACE
 	jxglib_FS
+	jxglib_RTC
 	jxglib_ShellCmd_Basic)
 
 target_sources(jxglib_ShellCmd_FS INTERFACE

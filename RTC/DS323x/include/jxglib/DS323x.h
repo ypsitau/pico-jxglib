@@ -17,7 +17,7 @@ private:
 	i2c_inst_t* i2c_;
 	uint8_t addr_;
 public:
-	DS323x(i2c_inst_t* i2c, uint8_t addr);
+	DS323x(i2c_inst_t* i2c, uint8_t addr = 0x68);
 public:
 	virtual bool DoGet(DateTime* pDt) override;
 	virtual bool DoSet(const DateTime &dt) override;

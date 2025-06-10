@@ -160,4 +160,21 @@ bool DateTime::IsTime(const char* str)
 	return *p == ':';
 }
 
+uint32_t DateTime::ToFATTime() const
+{
+	return ((static_cast<uint32_t>(year) - 1980) << 25) | (static_cast<uint32_t>(month) << 21) | (static_cast<uint32_t>(day) << 16) |
+		(static_cast<uint32_t>(hour) << 11) | (static_cast<uint32_t>(min) << 5) | (static_cast<uint32_t>(sec) >> 1);
+}
+
+void DateTime::FromFATTime(uint32_t fattime)
+{
+	year	= static_cast<int16_t>(((fattime >> 25) & 0x7f) + 1980);
+	month	= static_cast<int8_t>((fattime >> 21) & 0x0f);
+	day		= static_cast<int8_t>((fattime >> 16) & 0x1f);
+	hour	= static_cast<int8_t>((fattime >> 11) & 0x1f);
+	min		= static_cast<int8_t>((fattime >> 5) & 0x3f);
+	sec		= static_cast<int8_t>((fattime & 0x1f) << 1);
+	msec	= 0;
+}
+
 }
