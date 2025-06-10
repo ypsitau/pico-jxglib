@@ -62,7 +62,7 @@ target_include_directories(jxglib_ShellCmd_I2C INTERFACE
 
 target_link_libraries(jxglib_ShellCmd_I2C INTERFACE
 	hardware_i2c
-	jxglib_Shell)
+	jxglib_ShellCmd_Basic)
 
 target_sources(jxglib_ShellCmd_I2C INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/ShellCmd_I2C.cpp)

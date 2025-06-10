@@ -5,7 +5,7 @@
 
 using namespace jxglib;
 
-ShellCmd_Named(i2c_scan, "i2c-scan", "Scan I2C bus and prints connected addresses")
+ShellCmd_Named(i2c_scan, "i2c-scan", "scans I2C bus and prints connected addresses")
 {
 	enum class Func { SDA, SCL };
 	struct Info { int iBus; Func func; };
@@ -46,7 +46,8 @@ ShellCmd_Named(i2c_scan, "i2c-scan", "Scan I2C bus and prints connected addresse
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (argc < 3 || arg.GetBool("help")) {
-		tout.Printf("usage: %s OPTION... GPIO_SDA GPIO_SCL\n", argv[0]);
+		tout.Printf("usage: %s OPTION... GPIO_SDA GPIO_SCL\n\n", argv[0]);
+        tout.Printf("scans I2C bus and prints connected addresses\n\n");
 		tout.Printf("Options:\n");
 		arg.PrintHelp(tout);
 		return 0;
