@@ -8,4 +8,4 @@ target_link_libraries(jxglib_PicoRTC INTERFACE
 	jxglib_RTC)
 
 target_sources(jxglib_PicoRTC INTERFACE
-	${CMAKE_CURRENT_LIST_DIR}/src/DS323x.cpp)
+	${CMAKE_CURRENT_LIST_DIR}/src/PicoRTC.cpp)

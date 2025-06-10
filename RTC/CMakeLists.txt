@@ -24,3 +24,4 @@ target_sources(jxglib_ShellCmd_RTC INTERFACE
 
 #------------------------------------------------------------------------------
 add_subdirectory(DS323x)
+add_subdirectory(PicoRTC)

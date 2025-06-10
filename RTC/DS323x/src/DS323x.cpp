@@ -10,7 +10,6 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 DS323x::DS323x(i2c_inst_t* i2c, uint8_t addr) : i2c_(i2c), addr_(addr)
 {
-	SetInstance(*this);
 }
 
 bool DS323x::DoGet(DateTime* pDt)

@@ -15,11 +15,10 @@ class RTC {
 private:
 	static RTC* pInstance;
 public:
-	RTC() {}
+	RTC();
 public:
 	static bool Set(const DateTime& dt) { return pInstance->DoSet(dt); }
 	static bool Get(DateTime* pDt) { return pInstance->DoGet(pDt); }
-	static void SetInstance(RTC& rtc) { pInstance = &rtc; }
 public:
 	virtual bool DoSet(const DateTime& dt) = 0;
 	virtual bool DoGet(DateTime* pDt) = 0;
