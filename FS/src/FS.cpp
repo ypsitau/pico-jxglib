@@ -568,7 +568,7 @@ const char* FS::FileInfo::MakeAttrString(char* buff, int lenBuff) const
 const char* FS::FileInfo::MakeDateTimeString(char* buff, int lenBuff) const
 {
 	::snprintf(buff, lenBuff, "%04d-%02d-%02d %02d:%02d:%02d",
-			dateTime_.year, dateTime_.month, dateTime_.day, dateTime_.hour, dateTime_.minute, dateTime_.second);
+			dateTime_.year, dateTime_.month, dateTime_.day, dateTime_.hour, dateTime_.min, dateTime_.sec);
 	return buff;
 }
 
