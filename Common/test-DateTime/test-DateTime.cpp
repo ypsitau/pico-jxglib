@@ -4,54 +4,50 @@
 
 using namespace jxglib;
 
-// Test function for DateTime::Compare (checks all date, time, and msec fields)
-void test_Compare() {
-    // Year difference
-    DateTime dt_y1 = {2024, 6, 3, 12, 0, 0, 0};
-    DateTime dt_y2 = {2025, 6, 3, 12, 0, 0, 0};
-    printf("Year: Compare(dt_y1, dt_y2) = %d (expected: -1)\n", DateTime::Compare(dt_y1, dt_y2));
-    printf("Year: Compare(dt_y2, dt_y1) = %d (expected: 1)\n", DateTime::Compare(dt_y2, dt_y1));
+// Struct for test cases
 
-    // Month difference
-    DateTime dt_m1 = {2025, 5, 3, 12, 0, 0, 0};
-    DateTime dt_m2 = {2025, 6, 3, 12, 0, 0, 0};
-    printf("Month: Compare(dt_m1, dt_m2) = %d (expected: -1)\n", DateTime::Compare(dt_m1, dt_m2));
-    printf("Month: Compare(dt_m2, dt_m1) = %d (expected: 1)\n", DateTime::Compare(dt_m2, dt_m1));
+// Test function for DateTime::Compare using a test case table
+void test_Compare()
+{
+    struct CompareTestCase {
+        DateTime dt1;
+        DateTime dt2;
+        int expected;
+        const char* description;
+    };
+    CompareTestCase testCases[] = {
+        // Year
+        {{2024,6,3,12,0,0,0}, {2025,6,3,12,0,0,0}, -1, "Year: dt1 < dt2"},
+        {{2025,6,3,12,0,0,0}, {2024,6,3,12,0,0,0},  1, "Year: dt1 > dt2"},
+        // Month
+        {{2025,5,3,12,0,0,0}, {2025,6,3,12,0,0,0}, -1, "Month: dt1 < dt2"},
+        {{2025,6,3,12,0,0,0}, {2025,5,3,12,0,0,0},  1, "Month: dt1 > dt2"},
+        // Day
+        {{2025,6,2,12,0,0,0}, {2025,6,3,12,0,0,0}, -1, "Day: dt1 < dt2"},
+        {{2025,6,3,12,0,0,0}, {2025,6,2,12,0,0,0},  1, "Day: dt1 > dt2"},
+        // Hour
+        {{2025,6,3,11,0,0,0}, {2025,6,3,12,0,0,0}, -1, "Hour: dt1 < dt2"},
+        {{2025,6,3,12,0,0,0}, {2025,6,3,11,0,0,0},  1, "Hour: dt1 > dt2"},
+        // Minute
+        {{2025,6,3,12,10,0,0}, {2025,6,3,12,11,0,0}, -1, "Minute: dt1 < dt2"},
+        {{2025,6,3,12,11,0,0}, {2025,6,3,12,10,0,0},  1, "Minute: dt1 > dt2"},
+        // Second
+        {{2025,6,3,12,0,10,0}, {2025,6,3,12,0,11,0}, -1, "Second: dt1 < dt2"},
+        {{2025,6,3,12,0,11,0}, {2025,6,3,12,0,10,0},  1, "Second: dt1 > dt2"},
+        // Millisecond
+        {{2025,6,3,12,0,0,100}, {2025,6,3,12,0,0,200}, -1, "Msec: dt1 < dt2"},
+        {{2025,6,3,12,0,0,200}, {2025,6,3,12,0,0,100},  1, "Msec: dt1 > dt2"},
+        // Identical
+        {{2025,6,3,12,0,0,123}, {2025,6,3,12,0,0,123}, 0, "Identical: dt1 == dt2"},
+    };
 
-    // Day difference
-    DateTime dt_d1 = {2025, 6, 2, 12, 0, 0, 0};
-    DateTime dt_d2 = {2025, 6, 3, 12, 0, 0, 0};
-    printf("Day: Compare(dt_d1, dt_d2) = %d (expected: -1)\n", DateTime::Compare(dt_d1, dt_d2));
-    printf("Day: Compare(dt_d2, dt_d1) = %d (expected: 1)\n", DateTime::Compare(dt_d2, dt_d1));
-
-    // Hour difference
-    DateTime dt_h1 = {2025, 6, 3, 11, 0, 0, 0};
-    DateTime dt_h2 = {2025, 6, 3, 12, 0, 0, 0};
-    printf("Hour: Compare(dt_h1, dt_h2) = %d (expected: -1)\n", DateTime::Compare(dt_h1, dt_h2));
-    printf("Hour: Compare(dt_h2, dt_h1) = %d (expected: 1)\n", DateTime::Compare(dt_h2, dt_h1));
-
-    // Minute difference
-    DateTime dt_min1 = {2025, 6, 3, 12, 10, 0, 0};
-    DateTime dt_min2 = {2025, 6, 3, 12, 11, 0, 0};
-    printf("Minute: Compare(dt_min1, dt_min2) = %d (expected: -1)\n", DateTime::Compare(dt_min1, dt_min2));
-    printf("Minute: Compare(dt_min2, dt_min1) = %d (expected: 1)\n", DateTime::Compare(dt_min2, dt_min1));
-
-    // Second difference
-    DateTime dt_s1 = {2025, 6, 3, 12, 0, 10, 0};
-    DateTime dt_s2 = {2025, 6, 3, 12, 0, 11, 0};
-    printf("Second: Compare(dt_s1, dt_s2) = %d (expected: -1)\n", DateTime::Compare(dt_s1, dt_s2));
-    printf("Second: Compare(dt_s2, dt_s1) = %d (expected: 1)\n", DateTime::Compare(dt_s2, dt_s1));
-
-    // Millisecond difference
-    DateTime dt_ms1 = {2025, 6, 3, 12, 0, 0, 100};
-    DateTime dt_ms2 = {2025, 6, 3, 12, 0, 0, 200};
-    printf("Msec: Compare(dt_ms1, dt_ms2) = %d (expected: -1)\n", DateTime::Compare(dt_ms1, dt_ms2));
-    printf("Msec: Compare(dt_ms2, dt_ms1) = %d (expected: 1)\n", DateTime::Compare(dt_ms2, dt_ms1));
-
-    // Identical
-    DateTime dt_eq1 = {2025, 6, 3, 12, 0, 0, 123};
-    DateTime dt_eq2 = {2025, 6, 3, 12, 0, 0, 123};
-    printf("Identical: Compare(dt_eq1, dt_eq2) = %d (expected: 0)\n", DateTime::Compare(dt_eq1, dt_eq2));
+    int numCases = sizeof(testCases) / sizeof(testCases[0]);
+    for (int i = 0; i < numCases; ++i) {
+        int result = DateTime::Compare(testCases[i].dt1, testCases[i].dt2);
+        printf("%-25s | result: %2d | expected: %2d | %s\n",
+            testCases[i].description, result, testCases[i].expected,
+            (result == testCases[i].expected) ? "OK" : "NG");
+    }
 }
 
 int main()
@@ -60,5 +56,5 @@ int main()
 
     test_Compare();
 
-	for (;;) ::tight_loop_contents();
+    for (;;) ::tight_loop_contents();
 }

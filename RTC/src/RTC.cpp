@@ -8,10 +8,28 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // RTC
 //------------------------------------------------------------------------------
+RTC* RTC::pInstance = &RTCDummy::Instance;
 
 //------------------------------------------------------------------------------
 // RTCDummy
 //------------------------------------------------------------------------------
 RTCDummy RTCDummy::Instance;
+
+bool RTCDummy::DoSet(const DateTime& dt)
+{
+	return true;
+
+}
+bool RTCDummy::DoGet(DateTime* pDt)
+{
+	pDt->year = 2000;
+	pDt->month = 1;
+	pDt->day = 1;
+	pDt->hour = 0;
+	pDt->minute = 0;
+	pDt->second = 0;
+	pDt->msec = 0;
+	return true;
+}
 
 }

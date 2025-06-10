@@ -17,6 +17,10 @@ private:
 public:
 	RTC() {}
 public:
+	static bool Set(const DateTime& dt) { return pInstance->DoSet(dt); }
+	static bool Get(DateTime* pDt) { return pInstance->DoGet(pDt); }
+	static void SetInstance(RTC& rtc) { pInstance = &rtc; }
+public:
 	virtual bool DoSet(const DateTime& dt) = 0;
 	virtual bool DoGet(DateTime* pDt) = 0;
 };
@@ -24,14 +28,14 @@ public:
 //------------------------------------------------------------------------------
 // RTCDummy
 //------------------------------------------------------------------------------
-class RTCDummy {
+class RTCDummy : public RTC {
 public:
 	static RTCDummy Instance;
 public:
 	RTCDummy() {}
 public:
-	virtual bool DoSet(const DateTime& dt) { return true; }
-	virtual bool DoGet(DateTime* pDt) { return true; }
+	virtual bool DoSet(const DateTime& dt) override;
+	virtual bool DoGet(DateTime* pDt) override;
 };
 
 }

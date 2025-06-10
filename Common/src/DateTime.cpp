@@ -12,27 +12,30 @@ const DateTime DateTime::Empty;
 
 DateTime& DateTime::operator=(const DateTime& dt)
 {
-    if (this != &dt) {
-        year = dt.year;
-        month = dt.month;
-        day = dt.day;
-        hour = dt.hour;
-        minute = dt.minute;
-        second = dt.second;
-        msec = dt.msec;
-    }
-    return *this;
+	if (this != &dt) {
+		year = dt.year;
+		month = dt.month;
+		day = dt.day;
+		hour = dt.hour;
+		min = dt.min;
+		sec = dt.sec;
+		msec = dt.msec;
+	}
+	return *this;
 }
 
 int DateTime::Compare(const DateTime& dt1, const DateTime& dt2)
 {
-    return (dt1.year != dt2.year)? (dt1.year - dt2.year) :
-        (dt1.month != dt2.month)? (dt1.month - dt2.month) :
-        (dt1.day != dt2.day)? (dt1.day - dt2.day) :
-        (dt1.hour != dt2.hour)? (dt1.hour - dt2.hour) :
-        (dt1.minute != dt2.minute)? (dt1.minute - dt2.minute) :
-        (dt1.second != dt2.second)? (dt1.second - dt2.second) :
-        (dt1.msec - dt2.msec);
+	auto Sign = [](int a, int b) { return (a > b) ? 1 : (a < b)? -1 : 0; };
+	int rtn;
+	if ((rtn = Sign(dt1.year, dt2.year)) != 0) return rtn;
+	if ((rtn = Sign(dt1.month, dt2.month)) != 0) return rtn;
+	if ((rtn = Sign(dt1.day, dt2.day)) != 0) return rtn;
+	if ((rtn = Sign(dt1.hour, dt2.hour)) != 0) return rtn;
+	if ((rtn = Sign(dt1.min, dt2.min)) != 0) return rtn;
+	if ((rtn = Sign(dt1.sec, dt2.sec)) != 0) return rtn;
+	if ((rtn = Sign(dt1.msec, dt2.msec)) != 0) return rtn;
+	return 0;
 }
 
 }
