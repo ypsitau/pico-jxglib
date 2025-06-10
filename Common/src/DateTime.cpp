@@ -57,37 +57,45 @@ int DateTime::Compare(const DateTime& dt1, const DateTime& dt2)
 
 bool DateTime::Parse(const char* str)
 {
+	const char* p = str;
+	if (!ParseDate(p, &p)) return false;
+	if (::isspace(*p) || *p == 'T') {	// Optional time part
+		++p;
+		if (!ParseTime(p)) return false;
+	} else {
+		hour = min = sec = msec = 0;
+	}
+	return true;
+}
+
+bool DateTime::ParseDate(const char* str, const char** endPtr)
+{
+	if (endPtr) *endPtr = nullptr;	// Initialize endPtr to nullptr
 	int16_t year_tmp = 0;
 	int8_t month_tmp = 0, day_tmp = 0;
 	const char* p = str;
-	// Skip leading spaces
-	for ( ; ::isspace(*p); ++p) ;
-	// Parse year (4 digits)
-	do {
+	for ( ; ::isspace(*p); ++p) ;	// Skip leading spaces
+	do {	// Parse year (4 digits)
 		int digits = 0;
 		for ( ; digits < 4 && ::isdigit(*p); ++digits, ++p) year_tmp = year_tmp * 10 + (*p - '0');
 		if (*p != '-' && *p != '/') return false;
 	} while (0);
 	char sep = *p++;
-	// Parse month (1 or 2 digits)
-	do {
+	do {	// Parse month (1 or 2 digits)
 		int digits = 0;
 		for ( ; digits < 2 && ::isdigit(*p); ++digits, ++p) month_tmp = month_tmp * 10 + (*p - '0');
 		if (digits == 0 || *p != sep) return false;
 		++p;
 	} while (0);
-	// Parse day (1 or 2 digits)
-	do {
+	do {	// Parse day (1 or 2 digits)
 		int digits = 0;
 		for ( ; digits < 2 && ::isdigit(*p); ++digits, ++p) day_tmp = day_tmp * 10 + (*p - '0');
 		if (digits == 0) return false;
 	} while (0);
-	// Optional time part
-	if (::isspace(*p) || *p == 'T') {
-		++p;
-		if (!ParseTime(p)) return false;
-	} else {
-		hour = min = sec = msec = 0;
+	if (endPtr) {
+		*endPtr = p;	// Set endPtr to the position after the date
+	} else if (!::isspace(*p) && *p != '\0') {
+		return false;	// If not end of string, it must be a space
 	}
 	year = year_tmp;
 	month = month_tmp;
@@ -101,8 +109,7 @@ bool DateTime::ParseTime(const char* str)
 	int8_t hour_tmp = 0, min_tmp = 0, sec_tmp = 0;
 	int16_t msec_tmp = 0;
 	const char* p = str;
-	// Skip leading spaces
-	for ( ; ::isspace(*p); ++p) ;
+	for ( ; ::isspace(*p); ++p) ;	// Skip leading spaces
 	// hour
 	do {
 		int digits = 0;
@@ -115,22 +122,23 @@ bool DateTime::ParseTime(const char* str)
 		for ( ; digits < 2 && ::isdigit(*p); ++digits, ++p) min_tmp = min_tmp * 10 + (*p - '0');
 		if (digits == 0) return false;
 	} while (0);
-	// Optional second
-	bool secondPresentFlag;
-	if (secondPresentFlag = (*p == ':')) {
+	
+	bool secondPresentFlag = false;;
+	if (secondPresentFlag = (*p == ':')) {	// Optional second, optional .msec
 		++p;
 		int digits = 0;
 		for ( ; digits < 2 && ::isdigit(*p); ++digits, ++p) sec_tmp = sec_tmp * 10 + (*p - '0');
 		if (digits == 0) return false;
 	}
-	// Optional .msec
+	
 	if (secondPresentFlag && (*p == '.' || *p == ',')) {
 		++p;
 		int digits = 0;
 		for ( ; digits < 3 && ::isdigit(*p); ++digits, ++p) msec_tmp = msec_tmp * 10 + (*p - '0');
-		if (digits == 0) return false;
-		// If less than 3 digits, scale
-		while (digits++ < 3) msec_tmp *= 10;
+		if (digits > 0) {
+			while (digits++ < 3) msec_tmp *= 10;
+			return false;
+		}
 	}
 	if (!::isspace(*p) && *p != '\0') return false;
 	hour = hour_tmp;
@@ -138,6 +146,18 @@ bool DateTime::ParseTime(const char* str)
 	sec = sec_tmp;
 	msec = msec_tmp;
 	return true;
+}
+
+bool DateTime::IsTime(const char* str)
+{
+	const char* p = str;
+	for ( ; ::isspace(*p); ++p) ;	// Skip leading spaces
+	if (!::isdigit(*p)) return false;	// Must start with a digit
+	++p;
+	if (*p == ':') return true;
+	if (!::isdigit(*p)) return false;
+	++p;
+	return *p == ':';
 }
 
 }

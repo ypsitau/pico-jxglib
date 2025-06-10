@@ -31,10 +31,15 @@ public:
 public:
 	int8_t CalcDayOfWeek() const;
 	bool Parse(const char* str);
+	bool ParseDate(const char* str, const char** endPtr = nullptr);
 	bool ParseTime(const char* str);
 public:
 	DateTime& operator=(const DateTime& dt);
 	static int Compare(const DateTime& dt1, const DateTime& dt2);
+	static bool IsLeapYear(int16_t year) {
+		return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+	}
+	static bool IsTime(const char* str);
 };
 
 }

@@ -4,7 +4,7 @@
 #ifndef PICO_JXGLIB_RTC_H
 #define PICO_JXGLIB_RTC_H
 #include "pico/stdlib.h"
-#include "jxglib/Common.h"
+#include "jxglib/DateTime.h"
 
 namespace jxglib {
 
@@ -31,6 +31,8 @@ public:
 class RTCDummy : public RTC {
 public:
 	static RTCDummy Instance;
+private:
+	DateTime dt_;
 public:
 	RTCDummy() {}
 public:
