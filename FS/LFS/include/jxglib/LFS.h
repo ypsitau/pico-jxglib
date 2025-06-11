@@ -18,10 +18,15 @@ private:
 	lfs_t& lfs_;
 	lfs_file_t file_;
 	bool openedFlag_;
+	lfs_attr attrs_[1];
+	lfs_file_config cfg_;
+	uint64_t unixtime_;
 public:
 	File(FS::Drive& drive, lfs_t& lfs);
 	~File() { Close(); }
 public:
+	void SetTimeStamp(const DateTime& dt) { unixtime_ = dt.ToUnixTime(); }
+	lfs_file_config* GetConfig() { return &cfg_; }
 	lfs_file_t* GetEntity() { return &file_; }
 	const lfs_file_t* GetEntity() const { return &file_; }
 	void SetOpenedFlag(bool openedFlag = true) { openedFlag_ = openedFlag; }
@@ -48,10 +53,12 @@ private:
 	lfs_dir_t dir_;
 	bool openedFlag_;
 	int nItems_;
+	char dirName_[LFS_NAME_MAX + 1]; // Directory name buffer
 public:
-	Dir(FS::Drive& drive, lfs_t& lfs);
+	Dir(FS::Drive& drive, lfs_t& lfs, const char* dirName);
 	~Dir() { Close(); }
 public:
+	const char* GetDirName() const { return dirName_; }
 	lfs_dir_t* GetEntity() { return &dir_; }
 	const lfs_dir_t* GetEntity() const { return &dir_; }
 public:

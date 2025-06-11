@@ -3,17 +3,25 @@
 //==============================================================================
 #include <memory>
 #include "jxglib/LFS.h"
+#include "jxglib/DateTime.h"
+
 
 namespace jxglib::LFS {
+
+struct Attr {
+	static const uint8_t TimeStamp = 0x01;
+};
 
 //------------------------------------------------------------------------------
 // Functions
 //------------------------------------------------------------------------------
-FS::FileInfo* MakeFileInfo(const lfs_info& info)
+FS::FileInfo* MakeFileInfo(const lfs_info& info, uint64_t unixtime)
 {
+	DateTime dt;
+	dt.FromUnixTime(unixtime);
 	return new FS::FileInfo(info.name, 
 		(info.type == LFS_TYPE_DIR)? FS::FileInfo::Attr::Directory : FS::FileInfo::Attr::Archive, 
-		static_cast<uint32_t>(info.size), DateTime::Empty);
+		static_cast<uint32_t>(info.size), dt);
 }
 
 //------------------------------------------------------------------------------
@@ -70,9 +78,19 @@ FS::File* Drive::OpenFile(const char* fileName, const char* mode)
 	} else {
 		flags = LFS_O_RDONLY;
 	}
-	if (::lfs_file_open(&lfs_, pFile->GetEntity(), fileName, flags) == LFS_ERR_OK) {
-		pFile->SetOpenedFlag();
-		return pFile.release();
+	if (mode[0] == 'w' || mode[0] == 'a') {
+		DateTime dt;
+		RTC::Get(&dt);
+		pFile->SetTimeStamp(dt);
+		if (::lfs_file_opencfg(&lfs_, pFile->GetEntity(), fileName, flags, pFile->GetConfig()) == LFS_ERR_OK) {
+			pFile->SetOpenedFlag();
+			return pFile.release();
+		}
+	} else {
+		if (::lfs_file_open(&lfs_, pFile->GetEntity(), fileName, flags) == LFS_ERR_OK) {
+			pFile->SetOpenedFlag();
+			return pFile.release();
+		}
 	}
 	return nullptr;	
 }
@@ -80,7 +98,7 @@ FS::File* Drive::OpenFile(const char* fileName, const char* mode)
 FS::Dir* Drive::OpenDir(const char* dirName, uint8_t attrExclude)
 {
 	if (!Mount()) return nullptr;
-	std::unique_ptr<Dir> pDir(new Dir(*this, lfs_));
+	std::unique_ptr<Dir> pDir(new Dir(*this, lfs_, dirName));
 	return (::lfs_dir_open(&lfs_, pDir->GetEntity(), dirName) == LFS_ERR_OK)? pDir.release() : nullptr;
 }
 
@@ -99,7 +117,13 @@ bool Drive::Rename(const char* fileNameOld, const char* fileNameNew)
 bool Drive::CreateDir(const char* dirName)
 {
 	if (!Mount()) return false;
-	return ::lfs_mkdir(&lfs_, dirName) == LFS_ERR_OK;
+	if (::lfs_mkdir(&lfs_, dirName) != LFS_ERR_OK) return false;
+	uint64_t unixtime = 0;
+	DateTime dt;
+	RTC::Get(&dt);
+	unixtime = dt.ToUnixTime();
+	::lfs_setattr(&lfs_, dirName, Attr::TimeStamp, &unixtime, sizeof(unixtime));
+	return true;
 }
 
 bool Drive::RemoveDir(const char* dirName)
@@ -132,8 +156,14 @@ bool Drive::Unmount()
 FS::FileInfo* Drive::GetFileInfo(const char* pathName)
 {
 	if (!Mount()) return nullptr;
+	int64_t unixtime = 0;
+	do {
+		uint64_t num = 0;
+		int bytes = ::lfs_getattr(&lfs_, pathName, Attr::TimeStamp, &num, sizeof(unixtime));
+		if (bytes == sizeof(unixtime)) unixtime = num;
+	} while (0);
 	lfs_info info;
-	return (::lfs_stat(&lfs_, pathName, &info) == LFS_ERR_OK)? MakeFileInfo(info) : nullptr;
+	return (::lfs_stat(&lfs_, pathName, &info) == LFS_ERR_OK)? MakeFileInfo(info, unixtime) : nullptr;
 }
 
 uint64_t Drive::GetBytesTotal()
@@ -171,8 +201,14 @@ int Drive::Callback_sync(const struct lfs_config* cfg)
 //------------------------------------------------------------------------------
 // LFS::File
 //------------------------------------------------------------------------------
-File::File(FS::Drive& drive, lfs_t& lfs) : FS::File(drive), lfs_(lfs), openedFlag_{false}
+File::File(FS::Drive& drive, lfs_t& lfs) : FS::File(drive), lfs_(lfs), openedFlag_{false}, unixtime_{0}
 {
+	attrs_[0].type = Attr::TimeStamp;
+	attrs_[0].buffer = &unixtime_;
+	attrs_[0].size = sizeof(unixtime_);
+	::memset(&cfg_, 0, sizeof(cfg_));
+	cfg_.attrs = attrs_;
+	cfg_.attr_count = count_of(attrs_);
 }
 
 int File::Read(void* buff, int bytesBuff)
@@ -227,8 +263,10 @@ bool File::Sync()
 //------------------------------------------------------------------------------
 // LFS::Dir
 //------------------------------------------------------------------------------
-Dir::Dir(FS::Drive& drive, lfs_t& lfs) : FS::Dir(drive), lfs_(lfs), openedFlag_{true}, nItems_{0}
+Dir::Dir(FS::Drive& drive, lfs_t& lfs, const char* dirName) :
+		FS::Dir(drive), lfs_(lfs), openedFlag_{true}, nItems_{0}
 {
+	::snprintf(dirName_, sizeof(dirName_), "%s", dirName);
 }
 
 FS::FileInfo* Dir::Read()
@@ -249,7 +287,15 @@ FS::FileInfo* Dir::Read()
 			break;  // Found a valid file or directory entry
 		}
 	}
-	return MakeFileInfo(info);
+	uint64_t unixtime = 0;
+	do {
+		uint64_t num = 0;
+		char pathName[LFS_NAME_MAX + 1];
+		FS::JoinPathName(pathName, sizeof(pathName), GetDirName(), info.name);
+		int bytes = ::lfs_getattr(&lfs_, pathName, Attr::TimeStamp, &num, sizeof(unixtime));
+		if (bytes == sizeof(unixtime)) unixtime = num;
+	} while (0);
+	return MakeFileInfo(info, unixtime);
 }
 
 void Dir::Close()
