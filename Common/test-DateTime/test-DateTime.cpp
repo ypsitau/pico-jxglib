@@ -218,10 +218,10 @@ void test_UnixTime()
 {
 	struct UnixTimeTestCase {
 		DateTime dt;
-		int64_t unixtime;
+		uint64_t unixtime;
 		const char* description;
 	};
-	UnixTimeTestCase testCases[] = {
+	static const UnixTimeTestCase testCases[] = {
 		{{1970, 1, 1, 0, 0, 0, 0}, 0, "Unix epoch"},
 		{{1970, 1, 1, 0, 0, 1, 0}, 1, "Unix epoch +1 sec"},
 		{{1970, 1, 1, 0, 1, 0, 0}, 60, "Unix epoch +1 min"},
@@ -229,22 +229,38 @@ void test_UnixTime()
 		{{1970, 1, 2, 0, 0, 0, 0}, 86400, "Unix epoch +1 day"},
 		{{1999,12,31,23,59,59,0}, 946684799, "1999-12-31 23:59:59"},
 		{{2000, 1, 1, 0, 0, 0, 0}, 946684800, "2000-01-01 00:00:00"},
-		{{2020, 2,29,12,34,56,0}, 1582989296, "2020-02-29 12:34:56 (leap year)"},
+		{{2000, 2,29,12,34,56,0}, 951827696, "2000-02-29 12:34:56 (leap year)"},
+		{{2020, 2,29,12,34,56,0}, 1582979696, "2020-02-29 12:34:56 (leap year)"},
 		{{2024, 6,11, 0, 0, 0, 0}, 1718064000, "2024-06-11 00:00:00"},
-		{{2040,12,31,23,59,59,0}, 2240582399, "2040-12-31 23:59:59"},
+		{{2040,12,31,23,59,59,0}, 2240611199, "2040-12-31 23:59:59"},
 		// Milliseconds are ignored in UnixTime (seconds only)
 		{{1970, 1, 1, 0, 0, 0, 999}, 0, "Unix epoch +999ms"},
 		{{1970, 1, 1, 0, 0, 1, 500}, 1, "Unix epoch +1.5s"},
+		// Additional edge cases
+		{{1980, 1, 1, 0, 0, 0, 0}, 315532800, "FAT epoch"},
+		{{2038, 1,19, 3,14, 7, 0}, 2147483647, "2038-01-19 03:14:07 (32bit limit)"},
+		{{2100, 1, 1, 0, 0, 0, 0}, 4102444800, "2100-01-01 00:00:00"},
+		{{1971, 1, 1, 0, 0, 0, 0}, 31536000, "1971-01-01 00:00:00"},
+		{{1972, 1, 1, 0, 0, 0, 0}, 63072000, "1972-01-01 00:00:00"},
+		{{1972, 2,28,23,59,59,0}, 68169599, "1972-02-28 23:59:59 (leap year before Feb 29)"},
+		{{1972, 2,29, 0, 0, 0, 0}, 68169600, "1972-02-29 00:00:00 (leap year Feb 29)"},
+		{{1972,12,31,23,59,59,0}, 94694399, "1972-12-31 23:59:59"},
+		{{2001, 9, 9, 1,46,40,0}, 1000000000, "2001-09-09 01:46:39 (1,000,000,000 sec)"},
+		{{2016, 2,29, 0, 0, 0, 0}, 1456704000, "2016-02-29 00:00:00 (leap year)"},
+		{{2019,12,31,23,59,59,0}, 1577836799, "2019-12-31 23:59:59"},
+		{{2023, 3,14,15, 9,26,0}, 1678806566, "2023-03-14 15:09:26 (Pi day)"},
+		{{2025,12,31,23,59,59,0}, 1767225599, "2025-12-31 23:59:59"},
+		{{2099,12,31,23,59,59,0}, 4102444799, "2099-12-31 23:59:59"},
 	};
 
 	int numCases = sizeof(testCases) / sizeof(testCases[0]);
 	for (int i = 0; i < numCases; ++i) {
 		// ToUnixTime
-		int64_t result = testCases[i].dt.ToUnixTime();
+		uint64_t result = testCases[i].dt.ToUnixTime();
 		bool ok1 = (result == testCases[i].unixtime);
 		// FromUnixTime
 		DateTime dt2;
-		dt2.FromUnixTime(testCases[i].unixtime);
+		dt2.FromUnixTime(result);
 		bool ok2 =
 			dt2.year  == testCases[i].dt.year &&
 			dt2.month == testCases[i].dt.month &&
@@ -252,7 +268,7 @@ void test_UnixTime()
 			dt2.hour  == testCases[i].dt.hour &&
 			dt2.min   == testCases[i].dt.min &&
 			dt2.sec   == testCases[i].dt.sec;
-		printf("%-35s | ToUnixTime: %lld (%s) | FromUnixTime: %04d-%02d-%02d %02d:%02d:%02d (%s)\n",
+		printf("%-40s | ToUnixTime: %llu (%s) | FromUnixTime: %04d-%02d-%02d %02d:%02d:%02d (%s)\n",
 			testCases[i].description,
 			result, ok1 ? "OK" : "NG",
 			dt2.year, dt2.month, dt2.day, dt2.hour, dt2.min, dt2.sec, ok2 ? "OK" : "NG");

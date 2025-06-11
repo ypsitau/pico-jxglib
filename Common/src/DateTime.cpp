@@ -2,6 +2,7 @@
 // DateTime.cpp
 //==============================================================================
 #include <ctype.h>
+#include <stdint.h>
 #include "jxglib/DateTime.h"
 
 namespace jxglib {
@@ -157,43 +158,51 @@ bool DateTime::IsTime(const char* str)
 	return *p == ':';
 }
 
-uint32_t DateTime::ToUnixTime() const
+uint64_t DateTime::ToUnixTime() const
 {
-	// Convert to Unix time (seconds since 1970-01-01 00:00:00 UTC)
-	uint32_t days = 0;
-	for (int16_t y = 1970; y < year; ++y) {
-		days += IsLeapYear(y) ? 366 : 365;
+	uint64_t days = 0;
+	for (int y = 1970; y < year; ++y) {
+		days += IsLeapYear(y)? 366 : 365;
 	}
-	for (int8_t m = 1; m < month; ++m) {
-		days += daysInMonth[m - 1];
-		if (m == 2 && IsLeapYear(year)) ++days; // February in a leap year
+	for (int m = 1; m < month; ++m) {
+		days += (m == 2 && IsLeapYear(year))? 29 : daysInMonth[m - 1];
 	}
-	days += day - 1; // Days in the current month
-	uint32_t seconds = days * 86400 + hour * 3600 + min * 60 + sec;
+	days += day - 1;
+	uint64_t seconds = days * 86400 + static_cast<uint64_t>(hour) * 3600 + static_cast<uint64_t>(min) * 60 + sec;
 	return seconds;
 }
 
-void DateTime::FromUnixTime(uint32_t unixtime)
+void DateTime::FromUnixTime(uint64_t unixtime)
 {
-	// Convert from Unix time (seconds since 1970-01-01 00:00:00 UTC)
-	uint32_t days = unixtime / 86400;
-	uint32_t seconds = unixtime % 86400;
+	uint64_t days = unixtime / 86400;
+	uint64_t seconds = unixtime % 86400;
 	hour = static_cast<int8_t>(seconds / 3600);
 	seconds %= 3600;
 	min = static_cast<int8_t>(seconds / 60);
 	sec = static_cast<int8_t>(seconds % 60);
-	msec = 0; // No milliseconds in Unix time
-	// Calculate year and month
-	year = 1970;
-	while (days >= (IsLeapYear(year) ? 366 : 365)) {
-		days -= IsLeapYear(year) ? 366 : 365;
-		++year;
+	msec = 0;
+	int y = 1970;
+	while (true) {
+		int yd = IsLeapYear(y) ? 366 : 365;
+		if (days >= static_cast<uint64_t>(yd)) {
+			days -= yd;
+			++y;
+		} else {
+			break;
+		}
 	}
-	month = 1;
-	while (days >= daysInMonth[month - 1] + (month == 2 && IsLeapYear(year) ? 1 : 0)) {
-		days -= daysInMonth[month - 1] + (month == 2 && IsLeapYear(year) ? 1 : 0);
-		++month;
+	year = y;
+	int m = 1;
+	while (true) {
+		int md = (m == 2 && IsLeapYear(year)) ? 29 : daysInMonth[m - 1];
+		if (days >= static_cast<uint64_t>(md)) {
+			days -= md;
+			++m;
+		} else {
+			break;
+		}
 	}
+	month = m;
 	day = static_cast<int8_t>(days + 1);
 }
 

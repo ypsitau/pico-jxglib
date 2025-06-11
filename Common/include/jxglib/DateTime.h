@@ -35,8 +35,8 @@ public:
 	bool ParseDate(const char* str, const char** endPtr = nullptr);
 	bool ParseTime(const char* str);
 public:
-	uint32_t ToUnixTime() const;
-	void FromUnixTime(uint32_t unixtime);
+	uint64_t ToUnixTime() const;
+	void FromUnixTime(uint64_t unixtime);
 	uint32_t ToFATTime() const;
 	void FromFATTime(uint32_t fattime);
 public:
