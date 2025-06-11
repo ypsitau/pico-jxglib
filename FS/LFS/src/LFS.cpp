@@ -102,6 +102,13 @@ FS::Dir* Drive::OpenDir(const char* dirName, uint8_t attrExclude)
 	return (::lfs_dir_open(&lfs_, pDir->GetEntity(), dirName) == LFS_ERR_OK)? pDir.release() : nullptr;
 }
 
+bool Drive::SetTimeStamp(const char* pathName, const DateTime& dt)
+{
+	if (!Mount()) return false;
+	uint64_t unixtime = dt.ToUnixTime();
+	return ::lfs_setattr(&lfs_, pathName, Attr::TimeStamp, &unixtime, sizeof(unixtime)) == LFS_ERR_OK;
+}
+
 bool Drive::RemoveFile(const char* fileName)
 {
 	if (!Mount()) return false;

@@ -100,6 +100,18 @@ FS::Dir* Drive::OpenDir(const char* dirName, uint8_t attrExclude)
 	return (::f_opendir(pDir->GetEntity(), dirName) == FR_OK)? pDir.release() : nullptr;
 }
 
+bool Drive::SetTimeStamp(const char* pathName, const DateTime& dt)
+{
+	if (!Mount()) return false;
+	FILINFO filInfo;
+	if (::strcmp(pathName, "/") == 0 || pathName[0] == '\0') return false;
+	// f_stat() fails when given with a root directory. See https://elm-chan.org/fsw/ff/doc/stat.html.
+	if (::f_stat(pathName, &filInfo) != FR_OK) return false;
+	filInfo.fdate = ((static_cast<WORD>(dt.year) - 1980) << 9) | (static_cast<WORD>(dt.month) << 5) | dt.day;
+	filInfo.ftime = (static_cast<WORD>(dt.hour) << 11) | (static_cast<WORD>(dt.min) << 5) | (dt.sec / 2);
+	return ::f_utime(pathName, &filInfo) == FR_OK;
+}
+
 bool Drive::RemoveFile(const char* fileName)
 {
 	return Mount() && ::f_unlink(fileName) == FR_OK;

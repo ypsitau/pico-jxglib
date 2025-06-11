@@ -224,6 +224,7 @@ public:
 	}
 	virtual File* OpenFile(const char* fileName, const char* mode) = 0;
 	virtual Dir* OpenDir(const char* dirName, uint8_t attrExclude) = 0;
+	virtual bool SetTimeStamp(const char* pathName, const DateTime& dt) = 0;
 	virtual bool RemoveFile(const char* fileName) = 0;
 	virtual bool Rename(const char* fileNameOld, const char* fileNameNew) = 0;
 	virtual bool CreateDir(const char* dirName) = 0;
