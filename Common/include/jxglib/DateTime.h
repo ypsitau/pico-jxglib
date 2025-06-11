@@ -20,6 +20,7 @@ public:
 	int8_t sec;
 	int16_t msec;
 public:
+	static const int8_t daysInMonth[12];
 	static const DateTime Empty;
 public:
 	constexpr DateTime() :
@@ -34,14 +35,14 @@ public:
 	bool ParseDate(const char* str, const char** endPtr = nullptr);
 	bool ParseTime(const char* str);
 public:
+	uint32_t ToUnixTime() const;
+	void FromUnixTime(uint32_t unixtime);
 	uint32_t ToFATTime() const;
 	void FromFATTime(uint32_t fattime);
 public:
 	DateTime& operator=(const DateTime& dt);
 	static int Compare(const DateTime& dt1, const DateTime& dt2);
-	static bool IsLeapYear(int16_t year) {
-		return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
-	}
+	static bool IsLeapYear(int16_t year) { return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0); }
 	static bool IsTime(const char* str);
 };
 
