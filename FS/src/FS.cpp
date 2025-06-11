@@ -108,6 +108,13 @@ Glob* OpenGlob(const char* pattern, bool patternAsDirFlag, uint8_t attrExclude)
 	return pGlob->Open(pattern, patternAsDirFlag)? pGlob.release() : nullptr;
 }
 
+bool SetTimeStamp(const char* pathName, const DateTime& dt)
+{
+	char pathNameBuff[MaxPath];
+	Drive* pDrive = FindDrive(pathName);
+	return pDrive? pDrive->SetTimeStamp(pDrive->NativePathName(pathNameBuff, sizeof(pathNameBuff), pathName), dt) : false;
+}
+
 bool PrintFile(Printable& terr, Printable& tout, const char* fileName)
 {
 	std::unique_ptr<FS::File> pFile(FS::OpenFile(fileName, "r"));
