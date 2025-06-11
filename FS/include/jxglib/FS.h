@@ -251,6 +251,8 @@ File* OpenFile(const char* fileName, const char* mode, Drive* pDrive = nullptr);
 File* OpenFileForCopy(const char* pathNameSrc, const char* pathNameDst);
 Dir* OpenDir(const char* dirName, uint8_t attrExclude = 0);
 Glob* OpenGlob(const char* pattern, bool patternAsDirFlag = false, uint8_t attrExclude = 0);
+bool SetTimeStamp(const char* pathName, const DateTime& dt);
+bool Touch(Printable& terr, const char* pathName);
 bool PrintFile(Printable& terr, Printable& tout, const char* fileName);
 
 bool ListDrives(Printable& tout, const char* driveName = nullptr, bool remarksFlag = true);

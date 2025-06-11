@@ -115,6 +115,25 @@ bool SetTimeStamp(const char* pathName, const DateTime& dt)
 	return pDrive? pDrive->SetTimeStamp(pDrive->NativePathName(pathNameBuff, sizeof(pathNameBuff), pathName), dt) : false;
 }
 
+bool Touch(Printable& terr, const char* pathName)
+{
+	if (FS::DoesExist(pathName)) {
+		DateTime dt;
+		RTC::Get(&dt);
+		if (!FS::SetTimeStamp(pathName, dt)) {
+			terr.Printf("failed to set time for %s\n", pathName);
+			return false;
+		}
+	} else {
+		std::unique_ptr<FS::File> pFile(FS::OpenFile(pathName, "w"));
+		if (!pFile) {
+			terr.Printf("failed to create %s\n", pathName);
+			return false;
+		}
+	}
+	return true;
+}
+
 bool PrintFile(Printable& terr, Printable& tout, const char* fileName)
 {
 	std::unique_ptr<FS::File> pFile(FS::OpenFile(fileName, "r"));

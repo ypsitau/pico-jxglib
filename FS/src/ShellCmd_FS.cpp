@@ -372,8 +372,6 @@ ShellCmd(rmdir, "removes directories")
 		if (!FS::RemoveDir(terr, dirName)) return 1;
 	}
 	return 0;
-	//const char* dirName = argv[1];
-	//return FS::RemoveDir(terr, dirName)? 0 : 1;
 }
 
 ShellCmd(touch, "updates time stamps or creates empty files")
@@ -389,24 +387,21 @@ ShellCmd(touch, "updates time stamps or creates empty files")
 		return 1;
 	}
 	for (int iArg = 1; iArg < argc; iArg++) {
-		const char* fileName = argv[iArg];
-		if (FS::DoesExist(fileName)) {
-			// nothing to do
-		} else {
-			std::unique_ptr<FS::File> pFile(FS::OpenFile(fileName, "w"));
-			if (!pFile) {
-				terr.Printf("failed to create %s\n", fileName);
-				return 1;
+		const char* pathName = argv[iArg];
+		if (FS::DoesContainWildcard(pathName)) {
+			std::unique_ptr<FS::Glob> pGlob(FS::OpenGlob(pathName));
+			if (pGlob) {
+				for (;;) {
+					const char* pathNameGlob;
+					std::unique_ptr<FS::FileInfo> pFileInfo(pGlob->Read(&pathNameGlob));
+					if (!pFileInfo) break;
+					if (!FS::Touch(terr, pathNameGlob)) return 1;
+				}
 			}
+		} else {
+			if (!FS::Touch(terr, pathName)) return 1;
 		}
 	}
-	//const char* fileName = argv[1];
-	//std::unique_ptr<FS::File> pFile(FS::OpenFile(fileName, "w"));
-	//if (!pFile) {
-	//	tout.Printf("failed to create %s\n", fileName);
-	//	return 1;
-	//}
-	//pFile->Close();
 	return 0;
 }
 
