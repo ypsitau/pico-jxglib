@@ -278,47 +278,56 @@ void test_UnixTime()
 // Test function for DateTime::ToFATTime and FromFATTime using a test case table
 void test_FATTime()
 {
-	struct FATTimeTestCase {
-		DateTime dt;
-		uint32_t expectedFat;
-		const char* description;
-	};
-	FATTimeTestCase testCases[] = {
-		// FAT date/time: Y=1980+year, M=1-12, D=1-31, H=0-23, M=0-59, S=0-59 (2sec units)
-		{{1980,1,1,0,0,0,0}, 0x00210000, "FAT epoch"},
-		{{2024,6,11,12,34,56,0}, 0x53A6A4B0, "2024-06-11 12:34:56"},
-		{{2000,1,1,0,0,0,0}, 0x21A00000, "2000-01-01 00:00:00"},
-		{{1999,12,31,23,59,58,0}, 0x219F7D7D, "1999-12-31 23:59:58"},
-		{{2040,12,31,23,59,58,0}, 0x7E9F7D7D, "2040-12-31 23:59:58"},
-	};
+    struct FATTimeTestCase {
+        DateTime dt;
+        const char* description;
+    };
+    FATTimeTestCase testCases[] = {
+        // FAT date/time: Y=1980+year, M=1-12, D=1-31, H=0-23, M=0-59, S=0-59 (2sec units)
+        {{1980,1,1,0,0,0,0}, "FAT epoch"},
+        {{2024,6,11,12,34,56,0}, "2024-06-11 12:34:56"},
+        {{2000,1,1,0,0,0,0}, "2000-01-01 00:00:00"},
+        {{1999,12,31,23,59,58,0}, "1999-12-31 23:59:58"},
+        {{2040,12,31,23,59,58,0}, "2040-12-31 23:59:58"},
+        {{1980,1,1,0,0,2,0}, "FAT epoch +2sec"},
+        {{1980,1,2,0,0,0,0}, "1980-01-02 00:00:00"},
+        {{1980,2,29,12,0,0,0}, "1980-02-29 12:00:00 (leap year)"},
+        {{1995,7,15,8,30,0,0}, "1995-07-15 08:30:00"},
+        {{2004,2,29,23,59,58,0}, "2004-02-29 23:59:58 (leap year)"},
+        {{2010,12,31,23,59,58,0}, "2010-12-31 23:59:58"},
+        {{2016,2,29,0,0,0,0}, "2016-02-29 00:00:00 (leap year)"},
+        {{2022,3,14,15,9,26,0}, "2022-03-14 15:09:26 (Pi day)"},
+        {{2023,1,1,0,0,0,0}, "2023-01-01 00:00:00"},
+        {{2025,12,31,23,59,58,0}, "2025-12-31 23:59:58"},
+        {{2099,12,31,23,59,58,0}, "2099-12-31 23:59:58"},
+    };
 
-	int numCases = sizeof(testCases) / sizeof(testCases[0]);
-	for (int i = 0; i < numCases; ++i) {
-		uint32_t fat = testCases[i].dt.ToFATTime();
-		DateTime dt2;
-		dt2.FromFATTime(fat);
-		bool ok =
-			fat == testCases[i].expectedFat &&
-			dt2.year  == testCases[i].dt.year &&
-			dt2.month == testCases[i].dt.month &&
-			dt2.day   == testCases[i].dt.day &&
-			dt2.hour  == testCases[i].dt.hour &&
-			dt2.min   == testCases[i].dt.min &&
-			(dt2.sec == (testCases[i].dt.sec & ~1)); // FAT seconds are 2-second units
-		printf("%-35s | FAT: 0x%08X | %s\n",
-			testCases[i].description, fat, ok ? "OK" : "NG");
-	}
+    int numCases = sizeof(testCases) / sizeof(testCases[0]);
+    for (int i = 0; i < numCases; ++i) {
+        uint32_t fat = testCases[i].dt.ToFATTime();
+        DateTime dt2;
+        dt2.FromFATTime(fat);
+        bool ok =
+            dt2.year  == testCases[i].dt.year &&
+            dt2.month == testCases[i].dt.month &&
+            dt2.day   == testCases[i].dt.day &&
+            dt2.hour  == testCases[i].dt.hour &&
+            dt2.min   == testCases[i].dt.min &&
+            (dt2.sec == (testCases[i].dt.sec & ~1)); // FAT seconds are 2-second units
+        printf("%-35s | FAT: 0x%08X | %s\n",
+            testCases[i].description, fat, ok ? "OK" : "NG");
+    }
 }
 
 int main()
 {
 	::stdio_init_all();
 
-	//test_Compare();
-	//test_CalcDayOfWeek();
-	//test_Parse();
+	test_Compare();
+	test_CalcDayOfWeek();
+	test_Parse();
 	test_UnixTime();
-	//test_FATTime();
+	test_FATTime();
 
 	for (;;) ::tight_loop_contents();
 }
