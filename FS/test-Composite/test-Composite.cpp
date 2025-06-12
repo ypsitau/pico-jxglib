@@ -28,14 +28,14 @@ int main()
 	RTC::DS323x rtc(i2c0);
 	//RTC::Pico rtc;
 	USBHost::Initialize();
-	LFS::Flash		drive_A("A:", 0x1010'0000, 0x0004'0000); 		// Flash address and size 256kB
-	LFS::Flash		drive_B("B:", 0x1014'0000, 0x0004'0000); 		// Flash address and size 256kB
-	FAT::Flash		drive_C("*C:", 0x1018'0000, 0x0004'0000); 		// Flash address and size 256kB
-	FAT::Flash		drive_D("D:", 0x101c'0000, 0x0004'0000); 		// Flash address and size 256kB
-	FAT::RAMDisk	drive_E("E:", 0x0002'0000);						// RAM Disk 128kB
-	FAT::SDCard		drive_F("F:", spi0, 10'000'000, {CS: GPIO5});	// SDCard on SPI0 10MHz
-	FAT::USBMSC		drive_G("G:");									// USB Mass Storage Device (MSC) on USB Host
-	FAT::USBMSC		drive_H("H:");									// USB Mass Storage Device (MSC) on USB Host
+	LFS::Flash		driveA("A:", 0x1010'0000, 0x0004'0000); 		// Flash address and size 256kB
+	LFS::Flash		driveB("B:", 0x1014'0000, 0x0004'0000); 		// Flash address and size 256kB
+	FAT::Flash		driveC("*C:", 0x1018'0000, 0x0004'0000); 		// Flash address and size 256kB
+	FAT::Flash		driveD("D:", 0x101c'0000, 0x0004'0000); 		// Flash address and size 256kB
+	FAT::RAMDisk	driveE("E:", 0x0002'0000);						// RAM Disk 128kB
+	FAT::SDCard		driveF("F:", spi0, 10'000'000, {CS: GPIO5});	// SDCard on SPI0 10MHz
+	FAT::USBMSC		driveG("G:");									// USB Mass Storage Device (MSC) on USB Host
+	FAT::USBMSC		driveH("H:");									// USB Mass Storage Device (MSC) on USB Host
 #if 0
 	::spi_init(spi1, 125'000'000);
 	GPIO14.set_function_SPI1_SCK();
