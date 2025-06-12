@@ -188,6 +188,7 @@ ShellCmd(ls, "lists files in the specified directory")
 		Arg::OptBool("size",		's',	"sorts by size"),
 		Arg::OptBool("datetime",	'd',	"sorts by date/time"),
 		Arg::OptBool("reverse",		'r',	"reverses the order of listing"),
+		Arg::OptBool("elimslash",	'e',	"eliminates trailing slashes from directory names"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -199,6 +200,7 @@ ShellCmd(ls, "lists files in the specified directory")
 	bool mixedFlag = arg.GetBool("mixed");
 	bool reverseFlag = arg.GetBool("reverse");
 	bool attrExclude = arg.GetBool("all")? 0 : (FS::FileInfo::Attr::Hidden | FS::FileInfo::Attr::System);
+	bool slashForDirFlag = !arg.GetBool("elimslash");
 	const char* dirName = (argc < 2)? "" : argv[1];
 	const FS::FileInfo::Cmp* pCmp1 = mixedFlag? &FS::FileInfo::Cmp::Zero : &FS::FileInfo::Cmp_Type::Ascent;
 	const FS::FileInfo::Cmp* pCmp2 = reverseFlag? &FS::FileInfo::Cmp_Name::Descent : &FS::FileInfo::Cmp_Name::Ascent;
@@ -213,7 +215,7 @@ ShellCmd(ls, "lists files in the specified directory")
 		pCmp3 = &FS::FileInfo::Cmp_Name::Ascent;
 	}
 	FS::FileInfo::CmpDefault.Set(pCmp1, pCmp2, pCmp3);
-	return FS::ListFiles(terr, tout, dirName, FS::FileInfo::CmpDefault, attrExclude)? 0 : 1;
+	return FS::ListFiles(terr, tout, dirName, FS::FileInfo::CmpDefault, attrExclude, slashForDirFlag)? 0 : 1;
 }
 
 ShellCmdAlias(ll, ls)

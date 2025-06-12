@@ -170,7 +170,7 @@ bool ListDrives(Printable& tout, const char* driveName, bool remarksFlag)
 	return true;
 }
 
-bool ListFiles(Printable& terr, Printable& tout, const char* pathName, const FileInfo::Cmp& cmp, uint8_t attrExclude)
+bool ListFiles(Printable& terr, Printable& tout, const char* pathName, const FileInfo::Cmp& cmp, uint8_t attrExclude, bool slashForDirFlag)
 {
 	std::unique_ptr<FS::Glob> pGlob(FS::OpenGlob(pathName, true, attrExclude));
 	if (!pGlob) {
@@ -178,7 +178,7 @@ bool ListFiles(Printable& terr, Printable& tout, const char* pathName, const Fil
 		return false;
 	}
 	std::unique_ptr<FS::FileInfo> pFileInfo(pGlob->ReadAll(cmp));
-	if (pFileInfo) pFileInfo->PrintList(tout);
+	if (pFileInfo) pFileInfo->PrintList(tout, slashForDirFlag);
 	return true;
 }
 
@@ -560,7 +560,7 @@ FileInfo::FileInfo(const char* name, uint8_t attr, uint32_t size, const DateTime
 	::strcpy(name_.get(), name);
 }
 
-void FS::FileInfo::PrintList(Printable& tout) const
+void FS::FileInfo::PrintList(Printable& tout, bool slashForDirFlag) const
 {
 	int lenMax = 6;
 	char buff1[32], buff2[64];;
@@ -569,9 +569,10 @@ void FS::FileInfo::PrintList(Printable& tout) const
 	}
 	for (const FileInfo* pFileInfo = this; pFileInfo; pFileInfo = pFileInfo->GetNext()) {
 		if (pFileInfo->IsDirectory()) {
-			tout.Printf("%s %s %*s %s\n",
+			tout.Printf("%s %s %*s %s%s\n",
 				pFileInfo->MakeAttrString(buff1, sizeof(buff1)),
-				pFileInfo->MakeDateTimeString(buff2, sizeof(buff2)), lenMax, "", pFileInfo->GetName());
+				pFileInfo->MakeDateTimeString(buff2, sizeof(buff2)), lenMax, "", pFileInfo->GetName(),
+				slashForDirFlag? "/" : "");
 		} else if (pFileInfo->IsFile()) {
 			tout.Printf("%s %s %*d %s\n",
 				pFileInfo->MakeAttrString(buff1, sizeof(buff1)),

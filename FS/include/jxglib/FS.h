@@ -125,7 +125,7 @@ public:
 	FileInfo();
 	FileInfo(const char* name, uint8_t attr, uint32_t size, const DateTime& dateTime);
 public:
-	void PrintList(Printable& tout) const;
+	void PrintList(Printable& tout, bool slashForDirFlag = true) const;
 	void SetNext(FileInfo* pFileInfoNext) { pFileInfoNext_.reset(pFileInfoNext); }
 	FileInfo* GetNext() const { return pFileInfoNext_.get(); }
 	FileInfo* ReleaseNext() { return pFileInfoNext_.release(); }
@@ -258,7 +258,7 @@ bool PrintFile(Printable& terr, Printable& tout, const char* fileName);
 bool ListDrives(Printable& tout, const char* driveName = nullptr, bool remarksFlag = true);
 
 bool ListFiles(Printable& terr, Printable& tout, const char* pathName,
-	const FileInfo::Cmp& cmp = FileInfo::Cmp::Zero, uint8_t attrExclude = 0);
+	const FileInfo::Cmp& cmp = FileInfo::Cmp::Zero, uint8_t attrExclude = 0, bool slashForDirFlag = true);
 
 bool CopyFile(Printable& terr, const char* pathNameSrc, const char* pathNameDst);
 inline bool CopyFile(const char* pathNameSrc, const char* pathNameDst) { return CopyFile(PrintableDumb::Instance, pathNameSrc, pathNameDst); }
