@@ -248,36 +248,46 @@ bool Shell::Arg::Parse(Printable& terr, int& argc, const char* argv[])
 				for (int iOpt = 0; iOpt < nOpts_; iOpt++) {
 					const Opt& opt = optTbl_[iOpt];
 					if (opt.CheckLongName(longName, &value)) {
-						if (opt.DoesRequireValue() && !value) {
-							terr.Printf("missing value for option: %s\n", argv[iArg]);
-							return false;
-						}
 						pOptFound = &opt;
 						break;
 					}
+				}
+				if (!pOptFound) {
+					terr.Printf("unknown option: --%s\n", longName);
+					return false;
+				} else if (pOptFound->DoesRequireValue() && !value) {
+					terr.Printf("missing value for option: --%s\n", longName);
+					return false;
 				}
 			} else {
 				// short option
-				char shortName = *(argv[iArg] + 1);
-				for (int iOpt = 0; iOpt < nOpts_; iOpt++) {
-					const Opt& opt = optTbl_[iOpt];
-					if (opt.CheckShortName(shortName)) {
-						if (opt.DoesRequireValue()) {
-							if (iArg + 1 >= argc) {
-								terr.Printf("missing value for option: %s\n", argv[iArg]);
-								return false;
-							}
-							value = argv[iArg + 1];
-							nArgsToRemove = 2;
-						} 
-						pOptFound = &opt;
-						break;
+				const char* p = argv[iArg] + 1;
+				for ( ; *p != '\0'; ++p) {
+					char shortName = *p;
+					for (int iOpt = 0; iOpt < nOpts_; iOpt++) {
+						const Opt& opt = optTbl_[iOpt];
+						if (opt.CheckShortName(shortName)) {
+							pOptFound = &opt;
+							break;
+						}
+					}
+					if (!pOptFound) {
+						terr.Printf("unknown option: -%c\n", shortName);
+						return false;
+					} else if (pOptFound->DoesRequireValue()) {
+						if (*(p + 1) != '\0') {
+							terr.Printf("short-name option with a value must be at the last in a series: -%c\n", shortName);
+							return false;
+						} else if (iArg + 1 >= argc) {
+							terr.Printf("missing value for option: -%c\n", shortName);
+							return false;
+						}
+						value = argv[iArg + 1];
+						nArgsToRemove = 2;
+					} else if (*(p + 1) != '\0') {
+						AddOptValue(pOptFound, nullptr);
 					}
 				}
-			}
-			if (!pOptFound) {
-				terr.Printf("unknown option: %s\n", argv[iArg]);
-				return false;
 			}
 			if (pOptFound->GetType() == Opt::Type::Int) {
 				const char* pEnd = value;

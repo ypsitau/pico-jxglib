@@ -55,6 +55,22 @@ int main()
 		test_case("help short", count_of(argv), argv);
 	} while (0);
 	do {
+		const char* argv[] = { "prog", "-h", "-f", "arg1", "arg2" };
+		test_case("help and flag short", count_of(argv), argv);
+	} while (0);
+	do {
+		const char* argv[] = { "prog", "-hf", "arg1", "arg2" };
+		test_case("help and flag short in a series", count_of(argv), argv);
+	} while (0);
+	do {
+		const char* argv[] = { "prog", "-hfp", "/tmp", "arg1", "arg2" };
+		test_case("help, flag and path short in a series", count_of(argv), argv);
+	} while (0);
+	do {
+		const char* argv[] = { "prog", "-hpf", "/tmp", "arg1", "arg2" };
+		test_case("help, flag and path short in a series (wrong order)", count_of(argv), argv);
+	} while (0);
+	do {
 		const char* argv[] = { "prog", "--flag", "arg1", "arg2" };
 		test_case("flag long", count_of(argv), argv);
 	} while (0);
