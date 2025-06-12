@@ -6,38 +6,45 @@
 #include "pico/stdlib.h"
 #include "jxglib/DateTime.h"
 
-namespace jxglib {
+namespace jxglib::RTC {
+
+class Base;
+extern Base* pInstance;
 
 //------------------------------------------------------------------------------
-// RTC
+// Base
 //------------------------------------------------------------------------------
-class RTC {
-private:
-	static RTC* pInstance;
+class Base {
 public:
-	RTC();
-public:
-	static bool Set(const DateTime& dt) { return pInstance->DoSet(dt); }
-	static bool Get(DateTime* pDt) { return pInstance->DoGet(pDt); }
+	Base();
 public:
 	virtual bool DoSet(const DateTime& dt) = 0;
 	virtual bool DoGet(DateTime* pDt) = 0;
+public:
+	static uint8_t BCD2Dec(uint8_t val) { return (val >> 4) * 10 + (val & 0x0F); }
+	static uint8_t Dec2BCD(uint8_t val) { return ((val / 10) << 4) | (val % 10); }
 };
 
 //------------------------------------------------------------------------------
-// RTCDummy
+// Dummy
 //------------------------------------------------------------------------------
-class RTCDummy : public RTC {
+class Dummy : public Base {
 public:
-	static RTCDummy Instance;
+	static Dummy Instance;
 private:
 	DateTime dt_;
 public:
-	RTCDummy() {}
+	Dummy() {}
 public:
 	virtual bool DoSet(const DateTime& dt) override;
 	virtual bool DoGet(DateTime* pDt) override;
 };
+
+//------------------------------------------------------------------------------
+// Functions
+//------------------------------------------------------------------------------
+inline bool Set(const DateTime& dt) { return pInstance->DoSet(dt); }
+inline bool Get(DateTime* pDt) { return pInstance->DoGet(pDt); }
 
 }
 

@@ -1,39 +1,44 @@
 //==============================================================================
-// PicoRTC.cpp
+// Pico.cpp
 //==============================================================================
 #include "hardware/rtc.h"
-#include "jxglib/PicoRTC.h"
+#include "jxglib/RTC/Pico.h"
 
-namespace jxglib {
+namespace jxglib::RTC {
 
 //------------------------------------------------------------------------------
-// PicoRTC
+// Pico
 //------------------------------------------------------------------------------
-PicoRTC::PicoRTC() : initializedFlag_{false}
+Pico::Pico() : initializedFlag_{false}
 {
 }
 
-bool PicoRTC::DoGet(DateTime* pDt)
+bool Pico::DoGet(DateTime* pDt)
 {
 	if (!initializedFlag_) {
 		::rtc_init();
 		initializedFlag_ = true;
 	}
 	datetime_t dtSDK;
-	if (!::rtc_get_datetime(&dtSDK)) return false;
-	*pDt = DateTime(
-		dtSDK.year,
-		dtSDK.month,
-		dtSDK.day,
-		dtSDK.hour,
-		dtSDK.min,
-		dtSDK.sec,
-		0
-	);
+	if (::rtc_get_datetime(&dtSDK)) {
+		*pDt = DateTime(
+			dtSDK.year,
+			dtSDK.month,
+			dtSDK.day,
+			dtSDK.hour,
+			dtSDK.min,
+			dtSDK.sec,
+			0
+		);
+	} else {
+		// RTC is not running. Set a default value to start with.
+		DateTime dt;
+		DoSet(dt);
+	}
 	return true;
 }
 
-bool PicoRTC::DoSet(const DateTime &dt)
+bool Pico::DoSet(const DateTime &dt)
 {
 	if (!initializedFlag_) {
 		::rtc_init();

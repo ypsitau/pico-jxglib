@@ -3,30 +3,30 @@
 //==============================================================================
 #include "jxglib/RTC.h"
 
-namespace jxglib {
+namespace jxglib::RTC {
+
+Base* pInstance = &Dummy::Instance;
 
 //------------------------------------------------------------------------------
-// RTC
+// Base
 //------------------------------------------------------------------------------
-RTC* RTC::pInstance = &RTCDummy::Instance;
-
-RTC::RTC()
+Base::Base()
 {
 	pInstance = this; // Set the static instance pointer to this instance	
 }
 
 //------------------------------------------------------------------------------
-// RTCDummy
+// Dummy
 //------------------------------------------------------------------------------
-RTCDummy RTCDummy::Instance;
+Dummy Dummy::Instance;
 
-bool RTCDummy::DoSet(const DateTime& dt)
+bool Dummy::DoSet(const DateTime& dt)
 {
 	dt_ = dt;
 	return true;
 }
 
-bool RTCDummy::DoGet(DateTime* pDt)
+bool Dummy::DoGet(DateTime* pDt)
 {
 	*pDt = dt_;
 	return true;

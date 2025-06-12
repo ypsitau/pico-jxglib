@@ -28,33 +28,33 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-PicoRTC C CXX ASM)
+project(test-Pico C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-PicoRTC test-PicoRTC.cpp )
+add_executable(test-Pico test-Pico.cpp )
 
-pico_set_program_name(test-PicoRTC "test-PicoRTC")
-pico_set_program_version(test-PicoRTC "0.1")
+pico_set_program_name(test-Pico "test-Pico")
+pico_set_program_version(test-Pico "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-PicoRTC 1)
-pico_enable_stdio_usb(test-PicoRTC 0)
+pico_enable_stdio_uart(test-Pico 1)
+pico_enable_stdio_usb(test-Pico 0)
 
 # Add the standard library to the build
-target_link_libraries(test-PicoRTC
+target_link_libraries(test-Pico
         pico_stdlib)
 
 # Add the standard include files to the build
-target_include_directories(test-PicoRTC PRIVATE
+target_include_directories(test-Pico PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
 # Add any user requested libraries
-pico_add_extra_outputs(test-PicoRTC)
+pico_add_extra_outputs(test-Pico)
 
-target_link_libraries(test-PicoRTC jxglib_Serial jxglib_ShellCmd_RTC jxglib_PicoRTC)
+target_link_libraries(test-Pico jxglib_Serial jxglib_ShellCmd_RTC jxglib_Pico)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
