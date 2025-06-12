@@ -58,7 +58,7 @@ target_link_libraries(test-Composite
     jxglib_FAT_SDCard
     jxglib_FAT_USBMSC
     jxglib_LFS_Flash
-    jxglib_DS323x)
+    jxglib_RTC_DS323x)
 
 # Add the standard include files to the build
 target_include_directories(test-Composite PRIVATE

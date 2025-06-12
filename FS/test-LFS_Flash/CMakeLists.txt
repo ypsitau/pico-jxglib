@@ -49,7 +49,7 @@ target_link_libraries(test-LFS_Flash
     pico_stdlib
     jxglib_Serial
     jxglib_LFS_Flash
-    jxglib_DS323x
+    jxglib_RTC_DS323x
     jxglib_ShellCmd_FS jxglib_ShellCmd_RTC)
 
 # Add the standard include files to the build

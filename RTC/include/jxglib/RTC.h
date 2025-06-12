@@ -15,8 +15,12 @@ extern Base* pInstance;
 // Base
 //------------------------------------------------------------------------------
 class Base {
+private:
+	const char* name_;
 public:
-	Base();
+	Base(const char* name);
+public:
+	const char* GetName() const { return name_; }
 public:
 	virtual bool DoSet(const DateTime& dt) = 0;
 	virtual bool DoGet(DateTime* pDt) = 0;
@@ -34,7 +38,7 @@ public:
 private:
 	DateTime dt_;
 public:
-	Dummy() {}
+	Dummy();
 public:
 	virtual bool DoSet(const DateTime& dt) override;
 	virtual bool DoGet(DateTime* pDt) override;
@@ -45,6 +49,7 @@ public:
 //------------------------------------------------------------------------------
 inline bool Set(const DateTime& dt) { return pInstance->DoSet(dt); }
 inline bool Get(DateTime* pDt) { return pInstance->DoGet(pDt); }
+inline const char* GetDeviceName() { return pInstance->GetName(); }
 
 }
 

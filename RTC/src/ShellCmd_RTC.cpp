@@ -9,6 +9,7 @@ ShellCmd(rtc, "set or get RTC time")
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		"h",	"prints this help"),
+		Arg::OptBool("verbose",		"v",	"verbose output"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -52,6 +53,9 @@ ShellCmd(rtc, "set or get RTC time")
 		}
 		terr.Printf("%04d-%02d-%02d %02d:%02d:%02d.%03d\n",
 					dt.year, dt.month, dt.day, dt.hour, dt.min, dt.sec, dt.msec);
+		if (arg.GetBool("verbose")) {
+			terr.Printf("Device: %s\n", RTC::GetDeviceName());
+		}
 	} while (0);
 	return 0;
 }

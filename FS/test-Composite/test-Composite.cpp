@@ -30,7 +30,7 @@ int main()
 	LFS::Flash		drive_B("B:", 0x1014'0000, 0x0004'0000); 		// Flash address and size 256kB
 	FAT::Flash		drive_C("*C:", 0x1018'0000, 0x0004'0000); 		// Flash address and size 256kB
 	FAT::Flash		drive_D("D:", 0x101c'0000, 0x0004'0000); 		// Flash address and size 256kB
-	FAT::RAMDisk	drive_E("E:", 0x2'0000);						// RAM Disk 128kB
+	FAT::RAMDisk	drive_E("E:", 0x0002'0000);						// RAM Disk 128kB
 	FAT::SDCard		drive_F("F:", spi0, 10'000'000, {CS: GPIO5});	// SDCard on SPI0 10MHz
 	FAT::USBMSC		drive_G("G:");									// USB Mass Storage Device (MSC) on USB Host
 	FAT::USBMSC		drive_H("H:");									// USB Mass Storage Device (MSC) on USB Host

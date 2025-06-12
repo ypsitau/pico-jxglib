@@ -10,7 +10,7 @@ Base* pInstance = &Dummy::Instance;
 //------------------------------------------------------------------------------
 // Base
 //------------------------------------------------------------------------------
-Base::Base()
+Base::Base(const char* name) : name_(name)
 {
 	pInstance = this; // Set the static instance pointer to this instance	
 }
@@ -19,6 +19,10 @@ Base::Base()
 // Dummy
 //------------------------------------------------------------------------------
 Dummy Dummy::Instance;
+
+Dummy::Dummy() : Base("Dummy")
+{
+}
 
 bool Dummy::DoSet(const DateTime& dt)
 {
