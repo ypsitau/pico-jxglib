@@ -56,5 +56,5 @@ target_include_directories(test-Pico PRIVATE
 # Add any user requested libraries
 pico_add_extra_outputs(test-Pico)
 
-target_link_libraries(test-Pico jxglib_Serial jxglib_ShellCmd_RTC jxglib_Pico)
+target_link_libraries(test-Pico jxglib_Serial jxglib_ShellCmd_RTC jxglib_RTC_Pico)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)

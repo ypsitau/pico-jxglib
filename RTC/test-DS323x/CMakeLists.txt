@@ -57,6 +57,6 @@ target_include_directories(test-DS323x PRIVATE
 pico_add_extra_outputs(test-DS323x)
 
 target_link_libraries(test-DS323x
-    jxglib_Serial jxglib_DS323x
+    jxglib_Serial jxglib_RTC_DS323x
     jxglib_ShellCmd_I2C jxglib_ShellCmd_RTC)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)

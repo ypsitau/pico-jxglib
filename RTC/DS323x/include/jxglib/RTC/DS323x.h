@@ -1,8 +1,8 @@
 //==============================================================================
-// jxglib/DS323x.h
+// jxglib/RTC/DS323x.h
 //==============================================================================
-#ifndef PICO_JXGLIB_DS323X_H
-#define PICO_JXGLIB_DS323X_H
+#ifndef PICO_JXGLIB_RTC_DS323X_H
+#define PICO_JXGLIB_RTC_DS323X_H
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
 #include "jxglib/RTC.h"
