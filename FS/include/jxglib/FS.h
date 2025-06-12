@@ -129,11 +129,13 @@ public:
 	void SetNext(FileInfo* pFileInfoNext) { pFileInfoNext_.reset(pFileInfoNext); }
 	FileInfo* GetNext() const { return pFileInfoNext_.get(); }
 	FileInfo* ReleaseNext() { return pFileInfoNext_.release(); }
+	void RemoveLast();
 public:
 	const char* GetName() const { return name_.get(); }
 	uint8_t GetAttr() const { return attr_; }
 	uint32_t GetSize() const { return size_; }
 	const DateTime& GetDateTime() const { return dateTime_; }
+	const char* JoinPathName(char* buff, int lenBuff) const;
 	const char* MakeAttrString(char* buff, int lenBuff) const;
 	const char* MakeDateTimeString(char* buff, int lenBuff) const;
 	bool IsDirectory() const { return !!(attr_ & Attr::Directory); }

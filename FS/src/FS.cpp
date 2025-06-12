@@ -560,7 +560,7 @@ FileInfo::FileInfo(const char* name, uint8_t attr, uint32_t size, const DateTime
 	::strcpy(name_.get(), name);
 }
 
-void FS::FileInfo::PrintList(Printable& tout, bool slashForDirFlag) const
+void FileInfo::PrintList(Printable& tout, bool slashForDirFlag) const
 {
 	int lenMax = 6;
 	char buff1[32], buff2[64];;
@@ -581,7 +581,28 @@ void FS::FileInfo::PrintList(Printable& tout, bool slashForDirFlag) const
 	}
 }
 
-const char* FS::FileInfo::MakeAttrString(char* buff, int lenBuff) const
+void FileInfo::RemoveLast()
+{
+	FileInfo* pFileInfoPrev = this;
+	for (FileInfo* pFileInfo = GetNext(); pFileInfo; pFileInfo = pFileInfo->GetNext()) {
+		if (!pFileInfo->GetNext()) {
+			pFileInfoPrev->SetNext(nullptr);
+			break;
+		}
+		pFileInfoPrev = pFileInfo;
+	}
+}
+
+const char* FileInfo::JoinPathName(char* pathName, int lenBuff) const
+{
+	pathName[0] = '\0';
+	for (const FileInfo* pFileInfo = this; pFileInfo; pFileInfo = pFileInfo->GetNext()) {
+		AppendPathName(pathName, lenBuff, pFileInfo->GetName());
+	}
+	return pathName;
+}
+
+const char* FileInfo::MakeAttrString(char* buff, int lenBuff) const
 {
 	::snprintf(buff, lenBuff, "%c%c%c%c%c",
 		IsDirectory()? 'd' : '-',
@@ -592,7 +613,7 @@ const char* FS::FileInfo::MakeAttrString(char* buff, int lenBuff) const
 	return buff;
 }
 
-const char* FS::FileInfo::MakeDateTimeString(char* buff, int lenBuff) const
+const char* FileInfo::MakeDateTimeString(char* buff, int lenBuff) const
 {
 	::snprintf(buff, lenBuff, "%04d-%02d-%02d %02d:%02d:%02d",
 			dateTime_.year, dateTime_.month, dateTime_.day, dateTime_.hour, dateTime_.min, dateTime_.sec);
