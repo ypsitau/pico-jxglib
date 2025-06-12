@@ -193,7 +193,7 @@ ShellCmd(ls, "lists files in the specified directory")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [OPTION]... [DIRECTORY]\nOptions:\n", GetName());
+		terr.Printf("usage: %s [OPTION]... [DIRECTORY]...\nOptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -201,7 +201,6 @@ ShellCmd(ls, "lists files in the specified directory")
 	bool reverseFlag = arg.GetBool("reverse");
 	bool attrExclude = arg.GetBool("all")? 0 : (FS::FileInfo::Attr::Hidden | FS::FileInfo::Attr::System);
 	bool slashForDirFlag = !arg.GetBool("elimslash");
-	const char* dirName = (argc < 2)? "" : argv[1];
 	const FS::FileInfo::Cmp* pCmp1 = mixedFlag? &FS::FileInfo::Cmp::Zero : &FS::FileInfo::Cmp_Type::Ascent;
 	const FS::FileInfo::Cmp* pCmp2 = reverseFlag? &FS::FileInfo::Cmp_Name::Descent : &FS::FileInfo::Cmp_Name::Ascent;
 	const FS::FileInfo::Cmp* pCmp3 = &FS::FileInfo::Cmp::Zero;
@@ -215,7 +214,15 @@ ShellCmd(ls, "lists files in the specified directory")
 		pCmp3 = &FS::FileInfo::Cmp_Name::Ascent;
 	}
 	FS::FileInfo::CmpDefault.Set(pCmp1, pCmp2, pCmp3);
-	return FS::ListFiles(terr, tout, dirName, FS::FileInfo::CmpDefault, attrExclude, slashForDirFlag)? 0 : 1;
+	if (argc < 2) {
+		return FS::ListFiles(terr, tout, "", FS::FileInfo::CmpDefault, attrExclude, slashForDirFlag)? 0 : 1;
+	}
+	for (int iArg = 1; iArg < argc; iArg++) {
+		const char* dirName = argv[iArg];
+		if (argc > 2) tout.Printf("%s\n", dirName);
+		if (!FS::ListFiles(terr, tout, dirName, FS::FileInfo::CmpDefault, attrExclude, slashForDirFlag)) return 1;
+	}
+	return 0;
 }
 
 ShellCmdAlias(ll, ls)
