@@ -7,11 +7,11 @@ void test_case(const char* desc, int argc, const char* argv[])
 {
 	Printable& tout = Stdio::Instance;
 	static const Shell::Cmd::Arg::Opt optTbl[] = {
-		Shell::Cmd::Arg::OptBool("help", "h", "prints this help"),
-		Shell::Cmd::Arg::OptBool("flag", "f", "a boolean flag"),
-		Shell::Cmd::Arg::OptInt("num", "n", "specifies a number", "n"),
-		Shell::Cmd::Arg::OptString("name", "", "specifies a name", "str"),
-		Shell::Cmd::Arg::OptString("path", "p", "specifies a path", "str"),
+		Shell::Cmd::Arg::OptBool("help",	'h', "prints this help"),
+		Shell::Cmd::Arg::OptBool("flag",	'f', "a boolean flag"),
+		Shell::Cmd::Arg::OptInt("num",		'n', "specifies a number", "n"),
+		Shell::Cmd::Arg::OptString("name",	0x0, "specifies a name", "str"),
+		Shell::Cmd::Arg::OptString("path",	'p', "specifies a path", "str"),
 	};
 	Shell::Cmd::Arg arg(optTbl, count_of(optTbl));
 	tout.Printf("---- %s ----\n", desc);

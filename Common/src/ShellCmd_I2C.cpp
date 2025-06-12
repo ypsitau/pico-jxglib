@@ -40,8 +40,8 @@ ShellCmd_Named(i2c_scan, "i2c-scan", "scans I2C bus and prints connected address
 		{ 1, Func::SCL }, // GPIO27 I2C1 SCL
 	};
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		"h",	"prints this help"),
-		Arg::OptString("baudrate",	"b",	"sets I2C frequency (default: 100000)", "FREQ"),
+		Arg::OptBool("help",		'h',	"prints this help"),
+		Arg::OptString("baudrate",	'b',	"sets I2C frequency (default: 100000)", "FREQ"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;

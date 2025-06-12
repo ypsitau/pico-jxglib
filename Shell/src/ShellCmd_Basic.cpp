@@ -15,7 +15,7 @@ namespace jxglib::ShellCmd_Basic {
 ShellCmd_Named(about_cpu, "about-platform", "prints information about the platform")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		"h",	"prints this help"),
+		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -36,7 +36,7 @@ ShellCmd_Named(about_cpu, "about-platform", "prints information about the platfo
 ShellCmd_Named(about_me, "about-me", "prints information about this own program")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		"h",	"prints this help"),
+		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -79,17 +79,17 @@ ShellCmd_dump ShellCmd_dump::Instance("dump");
 int ShellCmd_dump::Run(Readable& tin, Printable& tout, Printable& terr, int argc, char* argv[])
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		"h",	"prints this help"),
-		Arg::OptInt("addr-digits",	"",		"specifies address digits", "n"),
-		Arg::OptBool("ascii",		"",		"prints ASCII characters"),
-		Arg::OptBool("no-ascii",	"",		"prints no ASCII characters"),
-		Arg::OptBool("no-dump",		"",		"skips actual dump, just modifies parameters"),
-		Arg::OptInt("row-bytes",	"c",	"specifies number of bytes per row", "n"),
-		Arg::OptBool("hex8",		"",		"prints data in 16-bit hex format"),
-		Arg::OptBool("hex16",		"",		"prints data in 16-bit hex format"),
-		Arg::OptBool("hex32",		"",		"prints data in 32-bit hex format"),
-		Arg::OptBool("hex16be",		"",		"prints data in 16-bit big-endian hex format"),
-		Arg::OptBool("hex32be",		"",		"prints data in 32-bit big-endian hex format"),
+		Arg::OptBool("help",		'h',	"prints this help"),
+		Arg::OptInt("addr-digits",	0x0,	"specifies address digits", "n"),
+		Arg::OptBool("ascii",		0x0,	"prints ASCII characters"),
+		Arg::OptBool("no-ascii",	0x0,	"prints no ASCII characters"),
+		Arg::OptBool("no-dump",		0x0,	"skips actual dump, just modifies parameters"),
+		Arg::OptInt("row-bytes",	'c',	"specifies number of bytes per row", "n"),
+		Arg::OptBool("hex8",		0x0,	"prints data in 16-bit hex format"),
+		Arg::OptBool("hex16",		0x0,	"prints data in 16-bit hex format"),
+		Arg::OptBool("hex32",		0x0,	"prints data in 32-bit hex format"),
+		Arg::OptBool("hex16be",		0x0,	"prints data in 16-bit big-endian hex format"),
+		Arg::OptBool("hex32be",		0x0,	"prints data in 32-bit big-endian hex format"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -152,7 +152,7 @@ ShellCmdAlias(d, dump)
 ShellCmd_Named(dot, ".", "executes the given script file")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		"h",	"prints this help"),
+		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -177,8 +177,8 @@ ShellCmd_Named(dot, ".", "executes the given script file")
 ShellCmd(echo, "prints the given text")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",	"h",	"prints this help"),
-		Arg::OptBool("no-eol",	"n",	"does not print end-of-line"),
+		Arg::OptBool("help",	'h',	"prints this help"),
+		Arg::OptBool("no-eol",	'n',	"does not print end-of-line"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -201,7 +201,7 @@ ShellCmd(echo, "prints the given text")
 ShellCmd(help, "prints help strings for available commands")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		"h",	"prints this help"),
+		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -220,7 +220,7 @@ ShellCmd(help, "prints help strings for available commands")
 ShellCmd(prompt, "changes the command line prompt")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		"h",	"prints this help"),
+		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -243,7 +243,7 @@ ShellCmd(prompt, "changes the command line prompt")
 ShellCmd(ticks, "prints names and attributes of running Tickable instances")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		"h",	"prints this help"),
+		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;

@@ -10,7 +10,7 @@ namespace jxglib {
 ShellCmd_Named(flash_erase, "flash-erase", "erases flash memory")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		"h",	"prints this help"),
+		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;

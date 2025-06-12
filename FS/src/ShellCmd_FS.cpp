@@ -8,7 +8,7 @@ namespace jxglib::ShellCmd_FS {
 ShellCmd(cat, "prints the contents of files")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		"h",	"prints this help"),
+		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -51,7 +51,7 @@ ShellCmd(cat, "prints the contents of files")
 ShellCmd(cd, "changes the current directory")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		"h",	"prints this help"),
+		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -67,7 +67,7 @@ ShellCmd(cd, "changes the current directory")
 ShellCmd_Named(cd_dot_dot, "cd..", "changes the current directory to the parent directory")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		"h",	"prints this help"),
+		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -83,7 +83,7 @@ ShellCmd_Named(cd_dot_dot, "cd..", "changes the current directory to the parent 
 ShellCmd_Named(cd_slash, "cd/", "changes the current directory to the root directory")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		"h",	"prints this help"),
+		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -99,7 +99,7 @@ ShellCmd_Named(cd_slash, "cd/", "changes the current directory to the root direc
 ShellCmd(copy, "copies files")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		"h",	"prints this help"),
+		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -133,7 +133,7 @@ ShellCmdAlias(cp, copy)
 ShellCmd(format, "formats drives")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		"h",	"prints this help"),
+		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -156,7 +156,7 @@ ShellCmd(format, "formats drives")
 ShellCmd(glob, "prints files matching a glob pattern")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		"h",	"prints this help"),
+		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -181,13 +181,13 @@ ShellCmd(glob, "prints files matching a glob pattern")
 ShellCmd(ls, "lists files in the specified directory")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		"h",	"prints this help"),
-		Arg::OptBool("all",			"a",	"lists all files, including hidden ones"),
-		Arg::OptBool("mixed",		"m",	"lists files and directories in mixed order"),		
-		Arg::OptBool("name",		"n",	"sorts by name"),
-		Arg::OptBool("size",		"s",	"sorts by size"),
-		Arg::OptBool("datetime",	"d",	"sorts by date/time"),
-		Arg::OptBool("reverse",		"r",	"reverses the order of listing"),
+		Arg::OptBool("help",		'h',	"prints this help"),
+		Arg::OptBool("all",			'a',	"lists all files, including hidden ones"),
+		Arg::OptBool("mixed",		'm',	"lists files and directories in mixed order"),		
+		Arg::OptBool("name",		'n',	"sorts by name"),
+		Arg::OptBool("size",		's',	"sorts by size"),
+		Arg::OptBool("datetime",	'd',	"sorts by date/time"),
+		Arg::OptBool("reverse",		'r',	"reverses the order of listing"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -222,8 +222,8 @@ ShellCmdAlias(dir, ls)
 ShellCmd_Named(ls_drive, "ls-drive", "lists availabld drives")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",	"h",	"prints this help"),
-		Arg::OptBool("verbose",	"v",	"prints remarks for each drive"),
+		Arg::OptBool("help",	'h',	"prints this help"),
+		Arg::OptBool("verbose",	'v',	"prints remarks for each drive"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -242,7 +242,7 @@ ShellCmdAlias_Named(dir_drive, "dir-drive", ls_drive)
 ShellCmd(mkdir, "creates directories")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		"h",	"prints this help"),
+		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -263,7 +263,7 @@ ShellCmd(mkdir, "creates directories")
 ShellCmd(mount, "mounts specified drives")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		"h",	"prints this help"),
+		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -284,7 +284,7 @@ ShellCmd(mount, "mounts specified drives")
 ShellCmd(move, "moves a file")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		"h",	"prints this help"),
+		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -304,7 +304,7 @@ ShellCmdAlias(ren, move)
 ShellCmd(pwd, "prints the current directory")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		"h",	"prints this help"),
+		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -325,7 +325,7 @@ ShellCmd(pwd, "prints the current directory")
 ShellCmd(rm, "removes files")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		"h",	"prints this help"),
+		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -358,7 +358,7 @@ ShellCmdAlias(del, rm)
 ShellCmd(rmdir, "removes directories")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		"h",	"prints this help"),
+		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -377,7 +377,7 @@ ShellCmd(rmdir, "removes directories")
 ShellCmd(touch, "updates time stamps or creates empty files")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		"h",	"prints this help"),
+		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -408,7 +408,7 @@ ShellCmd(touch, "updates time stamps or creates empty files")
 ShellCmd(umount, "unmounts specified drives")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		"h",	"prints this help"),
+		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -422,8 +422,6 @@ ShellCmd(umount, "unmounts specified drives")
 		if (!FS::Unmount(tout, driveName)) return 1;
 	}
 	return 0;
-	//const char* driveName = argv[1];
-	//return FS::Unmount(tout, driveName)? 0 : 1;
 }
 
 }

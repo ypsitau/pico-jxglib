@@ -8,8 +8,8 @@ using namespace jxglib;
 ShellCmd(rtc, "set or get RTC time")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		"h",	"prints this help"),
-		Arg::OptBool("verbose",		"v",	"verbose output"),
+		Arg::OptBool("help",		'h',	"prints this help"),
+		Arg::OptBool("verbose",		'v',	"verbose output"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;

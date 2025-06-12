@@ -43,24 +43,24 @@ public:
 		private:
 			Type type_;
 			const char* longName_;
-			const char* shortName_;
+			char shortName_;
 			const char* strHelp_;
 			const char* helpValue_;
 		public:
-			constexpr Opt(Type type, const char* longName, const char* shortName, const char* strHelp, const char* helpValue) :
+			constexpr Opt(Type type, const char* longName, char shortName, const char* strHelp, const char* helpValue) :
 				type_{type}, longName_{longName}, shortName_{shortName}, strHelp_{strHelp}, helpValue_{helpValue} {}
 		public:
 			void MakeHelp(char* str, int len) const;
 			constexpr Type GetType() const { return type_; }
 			constexpr const char* GetLongName() const { return longName_; }
-			constexpr const char* GetShortName() const { return shortName_; }
+			constexpr char GetShortName() const { return shortName_; }
 			constexpr const char* GetHelp() const { return strHelp_; }
 			constexpr const char* GetHelpValue() const { return helpValue_; }
 			constexpr bool DoesRequireValue() const { return type_ != Type::Bool; }
 		public:
 			bool CheckLongName(const char* longName, const char** pValue) const;
 			bool CheckLongName(const char* longName) const { return CheckLongName(longName, nullptr); }
-			bool CheckShortName(const char* shortName) const;
+			bool CheckShortName(char shortName) const;
 		};
 		class OptValue {
 		private:
@@ -95,13 +95,13 @@ public:
 		void AddOptValue(const Opt* pOpt, const char* value);
 		const OptValue* FindOptValue(const char* longName) const;
 	public:
-		constexpr static Opt OptBool(const char* longName, const char* shortName, const char* strHelp = "", const char* helpValue = "") {
+		constexpr static Opt OptBool(const char* longName, char shortName, const char* strHelp = "", const char* helpValue = "") {
 			return Opt(Opt::Type::Bool, longName, shortName, strHelp, helpValue);
 		}
-		constexpr static Opt OptString(const char* longName, const char* shortName, const char* strHelp = "", const char* helpValue = "") {
+		constexpr static Opt OptString(const char* longName, char shortName, const char* strHelp = "", const char* helpValue = "") {
 			return Opt(Opt::Type::String, longName, shortName, strHelp, helpValue);
 		}
-		constexpr static Opt OptInt(const char* longName, const char* shortName, const char* strHelp = "", const char* helpValue = "") {
+		constexpr static Opt OptInt(const char* longName, char shortName, const char* strHelp = "", const char* helpValue = "") {
 			return Opt(Opt::Type::Int, longName, shortName, strHelp, helpValue);
 		}
 	};

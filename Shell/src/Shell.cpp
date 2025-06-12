@@ -258,7 +258,7 @@ bool Shell::Arg::Parse(Printable& terr, int& argc, const char* argv[])
 				}
 			} else {
 				// short option
-				const char* shortName = argv[iArg] + 1;
+				char shortName = *(argv[iArg] + 1);
 				for (int iOpt = 0; iOpt < nOpts_; iOpt++) {
 					const Opt& opt = optTbl_[iOpt];
 					if (opt.CheckShortName(shortName)) {
@@ -375,24 +375,24 @@ bool Shell::Arg::Opt::CheckLongName(const char* longName, const char** pValue) c
 	return true;
 }
 
-bool Shell::Arg::Opt::CheckShortName(const char* shortName) const
+bool Shell::Arg::Opt::CheckShortName(char shortName) const
 {
-	return ::strcmp(shortName, shortName_) == 0;
+	return shortName == shortName_;
 }
 
 void Shell::Arg::Opt::MakeHelp(char* str, int len) const
 {
 	if (type_ == Type::Bool) {
-		if (shortName_[0] == '\0') {
+		if (shortName_ == '\0') {
 			::snprintf(str, len, "--%s", longName_);
 		} else {
-			::snprintf(str, len, "--%s, -%s", longName_, shortName_);
+			::snprintf(str, len, "--%s, -%c", longName_, shortName_);
 		}
 	} else {
-		if (shortName_[0] == '\0') {
+		if (shortName_ == '\0') {
 			::snprintf(str, len, "--%s=%s", longName_, helpValue_);
 		} else {
-			::snprintf(str, len, "--%s=%s, -%s %s", longName_, helpValue_, shortName_, helpValue_);
+			::snprintf(str, len, "--%s=%s, -%c %s", longName_, helpValue_, shortName_, helpValue_);
 		}
 	}
 }
