@@ -50,15 +50,14 @@ target_link_libraries(test-Composite
     jxglib_Serial
     jxglib_ST7789
     jxglib_USBHost
-    jxglib_ShellCmd_RTC
-    jxglib_ShellCmd_FS
-    jxglib_ShellCmd_Flash
     jxglib_FAT_Flash
     jxglib_FAT_RAMDisk
     jxglib_FAT_SDCard
     jxglib_FAT_USBMSC
     jxglib_LFS_Flash
-    jxglib_RTC_DS323x)
+    jxglib_RTC_Pico
+    jxglib_RTC_DS323x
+    jxglib_ShellCmd_FS)
 
 # Add the standard include files to the build
 target_include_directories(test-Composite PRIVATE

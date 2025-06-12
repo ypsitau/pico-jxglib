@@ -10,6 +10,7 @@
 #include "jxglib/FAT/RAMDisk.h"
 #include "jxglib/FAT/SDCard.h"
 #include "jxglib/FAT/USBMSC.h"
+#include "jxglib/RTC/Pico.h"
 #include "jxglib/RTC/DS323x.h"
 #include "jxglib/Font/shinonome16-japanese-level2.h"
 
@@ -25,6 +26,7 @@ int main()
 	GPIO17.set_function_I2C0_SCL();
 	::i2c_init(i2c0, 1000'000);
 	RTC::DS323x rtc(i2c0);
+	//RTC::Pico rtc;
 	USBHost::Initialize();
 	LFS::Flash		drive_A("A:", 0x1010'0000, 0x0004'0000); 		// Flash address and size 256kB
 	LFS::Flash		drive_B("B:", 0x1014'0000, 0x0004'0000); 		// Flash address and size 256kB

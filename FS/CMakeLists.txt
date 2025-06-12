@@ -18,7 +18,8 @@ target_include_directories(jxglib_ShellCmd_FS INTERFACE
 
 target_link_libraries(jxglib_ShellCmd_FS INTERFACE
 	jxglib_FS
-	jxglib_ShellCmd_Basic)
+	jxglib_ShellCmd_Flash
+	jxglib_ShellCmd_RTC)
 
 target_sources(jxglib_ShellCmd_FS INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/ShellCmd_FS.cpp)

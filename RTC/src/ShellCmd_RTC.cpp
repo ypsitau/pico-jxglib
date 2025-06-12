@@ -14,11 +14,10 @@ ShellCmd(rtc, "set or get RTC time")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [OPTION]... [DATE-TIME]\nOptions:\n", GetName());
+		terr.Printf("usage: %s [OPTION]... [DATE] [TIME]\nOptions:\n", GetName());
 		arg.PrintHelp(terr);
-		terr.Printf("Set or get the RTC time. If no argument is given, it gets the current time.\n"
-				"If 'set' is specified, it sets the RTC to the given date and time in YYYY-MM-DD HH:MM:SS format.\n"
-				"Example: rtc set 2023-10-01 12:34:56");
+		terr.Printf("\n"
+				"Set or get the RTC time. If no argument is given, it gets the current time.\n");
 		return 1;
 	}
 	if (argc >= 2) {
@@ -40,7 +39,7 @@ ShellCmd(rtc, "set or get RTC time")
 			}
 		}
 		if (!RTC::Set(dt)) {
-			terr.Printf("Failed to set RTC time\n");
+			terr.Printf("Failed to set RTC time to %s\n", RTC::GetDeviceName());
 			return 1;
 		}
 	}
@@ -48,13 +47,13 @@ ShellCmd(rtc, "set or get RTC time")
 		// get the current RTC time
 		DateTime dt;
 		if (!RTC::Get(&dt)) {
-			terr.Printf("Failed to get RTC time\n");
+			terr.Printf("Failed to get RTC time from %s\n", RTC::GetDeviceName());
 			return 1;
 		}
 		terr.Printf("%04d-%02d-%02d %02d:%02d:%02d.%03d\n",
 					dt.year, dt.month, dt.day, dt.hour, dt.min, dt.sec, dt.msec);
 		if (arg.GetBool("verbose")) {
-			terr.Printf("Device: %s\n", RTC::GetDeviceName());
+			terr.Printf("RTC Device: %s\n", RTC::GetDeviceName());
 		}
 	} while (0);
 	return 0;
