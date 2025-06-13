@@ -5,37 +5,6 @@
 
 namespace jxglib::ShellCmd_FS {
 
-ShellCmd(walk, "walks through directories")
-{
-	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		'h',	"prints this help"),
-		Arg::OptBool("filefirst",	'f',	"walks files before directories"),
-	};
-	Arg arg(optTbl, count_of(optTbl));
-	if (!arg.Parse(terr, argc, argv)) return 1;
-	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [OPTION]... [DIRECTORY]\nOptions:\n", GetName());
-		arg.PrintHelp(terr);
-		return 1;
-	}
-	const char* dirName = (argc < 2)? "." : argv[1];
-	uint8_t attrExclude = 0;
-	bool fileFirstFlag = arg.GetBool("filefirst");
-	jxglib::FS::Walker walker(fileFirstFlag);;
-	if (!walker.Open(dirName, attrExclude)) {
-		terr.Printf("cannot open directory: %s\n", dirName);
-		return 1;
-	}
-	std::unique_ptr<jxglib::FS::FileInfo> pFileInfo;
-	for (;;) {
-		const char* pathName = nullptr;
-		pFileInfo.reset(walker.Read(&pathName));
-		if (!pFileInfo) break; // no more files
-		tout.Printf("%s%s\n", pathName, pFileInfo->IsDirectory() ? "/" : "");
-	}
-	return 0;
-}
-
 ShellCmd(cat, "prints the contents of files")
 {
 	static const Arg::Opt optTbl[] = {
@@ -268,6 +237,8 @@ ShellCmd(mkdir, "creates directories")
 	return 0;
 }
 
+ShellCmdAlias(md, mkdir)
+
 ShellCmd(mount, "mounts specified drives")
 {
 	static const Arg::Opt optTbl[] = {
@@ -407,6 +378,37 @@ ShellCmd(umount, "unmounts specified drives")
 	for (int iArg = 1; iArg < argc; iArg++) {
 		const char* driveName = argv[iArg];
 		if (!FS::Unmount(tout, driveName)) return 1;
+	}
+	return 0;
+}
+
+ShellCmd(walk, "walks through directories")
+{
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		'h',	"prints this help"),
+		Arg::OptBool("filefirst",	'f',	"walks files before directories"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (arg.GetBool("help")) {
+		terr.Printf("usage: %s [OPTION]... [DIRECTORY]\nOptions:\n", GetName());
+		arg.PrintHelp(terr);
+		return 1;
+	}
+	const char* dirName = (argc < 2)? "." : argv[1];
+	uint8_t attrExclude = 0;
+	bool fileFirstFlag = arg.GetBool("filefirst");
+	jxglib::FS::Walker walker(fileFirstFlag);;
+	if (!walker.Open(dirName, attrExclude)) {
+		terr.Printf("cannot open directory: %s\n", dirName);
+		return 1;
+	}
+	std::unique_ptr<jxglib::FS::FileInfo> pFileInfo;
+	for (;;) {
+		const char* pathName = nullptr;
+		pFileInfo.reset(walker.Read(&pathName));
+		if (!pFileInfo) break; // no more files
+		tout.Printf("%s%s\n", pathName, pFileInfo->IsDirectory() ? "/" : "");
 	}
 	return 0;
 }
