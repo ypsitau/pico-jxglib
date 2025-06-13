@@ -755,20 +755,6 @@ FileInfo* Glob::Read(const char** pPathName)
 	return nullptr;
 }
 
-const char* Glob::Next()
-{
-	const char* pathName;
-	std::unique_ptr<FileInfo> pFileInfo(Read(&pathName));
-	return pFileInfo? pathName : nullptr;
-}
-
-const char* Glob::Next(std::unique_ptr<FileInfo>& pFileInfo)
-{
-	const char* pathName;
-	pFileInfo.reset(Read(&pathName));
-	return pFileInfo? pathName : nullptr;
-}
-
 //------------------------------------------------------------------------------
 // FS::Drive
 //------------------------------------------------------------------------------

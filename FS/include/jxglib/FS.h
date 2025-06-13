@@ -192,8 +192,6 @@ public:
 	bool Open(const char* pattern, bool paternAsDirFlag = false, uint8_t attrExclude = 0);
 	void Close();
 	FileInfo* Read(const char** pPathName);
-	const char* Next();
-	const char* Next(std::unique_ptr<FileInfo>& pFileInfo);
 public:
 	// virtual functions of FileInfoReader
 	virtual FileInfo* Read() override { return Read(nullptr); }
