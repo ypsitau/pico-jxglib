@@ -236,7 +236,7 @@ bool Remove(Printable& terr, const char* pathName, bool recursiveFlag)
 {
 	if (IsDirectory(pathName)) {
 		if (recursiveFlag) {
-			Walker walker;
+			Walker walker(true); // fileFirstFlag = true: read files first
 			if (!walker.Open(pathName, 0)) {
 				terr.Printf("failed to open directory %s\n", pathName);
 				return false; // Open directory failed

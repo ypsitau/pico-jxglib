@@ -335,6 +335,7 @@ ShellCmd(rm, "removes files")
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
+		Arg::OptBool("recursive",	'r',	"removes directories recursively"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -343,9 +344,10 @@ ShellCmd(rm, "removes files")
 		arg.PrintHelp(terr);
 		return 1;
 	}
+	bool recursiveFlag = arg.GetBool("recursive");
 	Arg::Globs globs(argv[1], argv[argc]);
 	while (const char* pathName = globs.Next()) {
-		if (globs.GetFileInfo().IsFile() && !FS::RemoveFile(terr, pathName)) return 1;
+		if (!FS::Remove(terr, pathName, recursiveFlag)) return 1;
 	}
 	return 0;
 }
