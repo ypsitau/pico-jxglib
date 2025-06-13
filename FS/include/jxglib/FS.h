@@ -162,11 +162,14 @@ public:
 class Dir : public FileInfoReader {
 protected:
 	const Drive& drive_;
-	char dirName_[MaxPath];
 	bool rewindFlag_;
+protected:
+	// folllwing members are used by FS::Walker
+	char dirName_[MaxPath];
 	std::unique_ptr<Dir> pDirNext_;
+	std::unique_ptr<FileInfo> pFileInfo_;
 public:
-	Dir(const Drive& drive, const char* dirName);
+	Dir(const Drive& drive);
 	virtual ~Dir() { Close(); }
 public:
 	void SetNext(Dir* pDir) { pDirNext_.reset(pDir); }
@@ -174,9 +177,13 @@ public:
 	Dir* RemoveLast();
 public:
 	const Drive& GetDrive() const { return drive_; }
+	void EnableRewind() { rewindFlag_ = true; }
+public:
 	void SetDirName(const char* dirName) { ::snprintf(dirName_, sizeof(dirName_), "%s", dirName); }
 	const char* GetDirName() const { return dirName_; }
-	void EnableRewind() { rewindFlag_ = true; }
+	void SetFileInfo(FileInfo* pFileInfo) { pFileInfo_.reset(pFileInfo); }
+	const FileInfo& GetFileInfo() const { return *pFileInfo_; }
+	FileInfo* ReleaseFileInfo() { return pFileInfo_.release(); }
 public:
 	virtual void Close() {}
 };
@@ -207,12 +214,13 @@ public:
 //------------------------------------------------------------------------------
 class Walker {
 protected:
+	bool fileFirstFlag_;
 	std::unique_ptr<Dir> pDirTop_;
 	uint8_t attrExclude_; // attributes to exclude
 	Dir* pDirCur_;
 	char pathName_[MaxPath];
 public:
-	Walker();
+	Walker(bool removeModeFlag = false);
 	~Walker() { Close(); }
 public:
 	bool Open(const char* dirName, uint8_t attrExclude = 0);
@@ -298,6 +306,9 @@ inline bool RemoveFile(const char* fileName) { return RemoveFile(PrintableDumb::
 
 bool RemoveDir(Printable& terr, const char* dirName);
 inline bool RemoveDir(const char* dirName) { return RemoveDir(PrintableDumb::Instance, dirName); }
+
+bool Remove(Printable& terr, const char* pathName, bool recursiveFlag);
+inline bool Remove(const char* pathName, bool recursiveFlag) { return Remove(PrintableDumb::Instance, pathName, recursiveFlag); }
 
 bool CreateDir(Printable& terr, const char* dirName);
 inline bool CreateDir(const char* dirName) { return CreateDir(PrintableDumb::Instance, dirName); }

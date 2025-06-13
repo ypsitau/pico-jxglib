@@ -9,6 +9,7 @@ ShellCmd(walk, "walks through directories")
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
+		Arg::OptBool("filefirst",	'f',	"walks files before directories"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -19,7 +20,8 @@ ShellCmd(walk, "walks through directories")
 	}
 	const char* dirName = (argc < 2)? "." : argv[1];
 	uint8_t attrExclude = 0;
-	jxglib::FS::Walker walker;
+	bool fileFirstFlag = arg.GetBool("filefirst");
+	jxglib::FS::Walker walker(fileFirstFlag);;
 	if (!walker.Open(dirName, attrExclude)) {
 		terr.Printf("cannot open directory: %s\n", dirName);
 		return 1;

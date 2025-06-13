@@ -46,7 +46,7 @@ private:
 	BYTE fattribSkip_;
 	int nItems_;
 public:
-	Dir(FS::Drive& drive, const char* dirName, uint8_t attrExclude);
+	Dir(FS::Drive& drive, uint8_t attrExclude);
 	~Dir();
 public:
 	DIR* GetEntity() { return &dir_; }

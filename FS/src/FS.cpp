@@ -208,15 +208,54 @@ bool CopyFile(Printable& terr, const char* pathNameSrc, const char* pathNameDst)
 
 bool RemoveFile(Printable& terr, const char* fileName)
 {
-	char pathName[MaxPath];
+	char pathNameNative[MaxPath];
 	Drive* pDrive = FindDrive(fileName);
 	if (!pDrive) {
 		terr.Printf("drive for file %s not found\n", fileName);
 		return false; // Drive not found
 	}
-	if (pDrive->RemoveFile(pDrive->NativePathName(pathName, sizeof(pathName), fileName))) return true;
+	if (pDrive->RemoveFile(pDrive->NativePathName(pathNameNative, sizeof(pathNameNative), fileName))) return true;
 	terr.Printf("failed to remove %s\n", fileName);
 	return false;
+}
+
+bool RemoveDir(Printable& terr, const char* dirName)
+{
+	char pathName[MaxPath];
+	Drive* pDrive = FindDrive(dirName);
+	if (!pDrive) {
+		terr.Printf("drive for direcory %s not found\n", dirName);
+		return false; // Drive not found
+	}
+	if (pDrive->RemoveDir(pDrive->NativePathName(pathName, sizeof(pathName), dirName))) return true;
+	terr.Printf("failed to remove %s\n", dirName);
+	return false;
+}
+
+bool Remove(Printable& terr, const char* pathName, bool recursiveFlag)
+{
+	if (IsDirectory(pathName)) {
+		if (recursiveFlag) {
+			Walker walker;
+			if (!walker.Open(pathName, 0)) {
+				terr.Printf("failed to open directory %s\n", pathName);
+				return false; // Open directory failed
+			}
+			for (;;) {
+				const char* pathName;
+				std::unique_ptr<FileInfo> pFileInfo(walker.Read(&pathName));
+				if (!pFileInfo) break; // No more files
+				if (pFileInfo->IsDirectory()) {
+					if (!RemoveDir(pathName)) return false;
+				} else {
+					if (!RemoveFile(pathName)) return false;
+				}
+			}
+		}	
+		return RemoveDir(terr, pathName);
+	} else {
+		return RemoveFile(terr, pathName);
+	}
 }
 
 bool Move(Printable& terr, const char* pathNameOld, const char* pathNameNew)
@@ -258,19 +297,6 @@ bool CreateDir(Printable& terr, const char* dirName)
 	}
 	if (pDrive->CreateDir(pDrive->NativePathName(pathName, sizeof(pathName), dirName))) return true;
 	terr.Printf("failed to create directory %s\n", dirName);
-	return false;
-}
-
-bool RemoveDir(Printable& terr, const char* dirName)
-{
-	char pathName[MaxPath];
-	Drive* pDrive = FindDrive(dirName);
-	if (!pDrive) {
-		terr.Printf("drive for direcory %s not found\n", dirName);
-		return false; // Drive not found
-	}
-	if (pDrive->RemoveDir(pDrive->NativePathName(pathName, sizeof(pathName), dirName))) return true;
-	terr.Printf("failed to remove %s\n", dirName);
 	return false;
 }
 
@@ -697,9 +723,9 @@ FileInfo* FileInfoReader::ReadAll(const FileInfo::Cmp& cmp)
 //------------------------------------------------------------------------------
 // FS::Dir
 //------------------------------------------------------------------------------
-Dir::Dir(const Drive& drive, const char* dirName) : drive_(drive), rewindFlag_{false}
+Dir::Dir(const Drive& drive) : drive_(drive), rewindFlag_{false}
 {
-	::snprintf(dirName_, sizeof(dirName_), "%s", dirName);
+	dirName_[0] = '\0';
 }
 
 Dir* Dir::RemoveLast()
@@ -763,7 +789,7 @@ FileInfo* Glob::Read(const char** pPathName)
 //------------------------------------------------------------------------------
 // FS::Walker
 //------------------------------------------------------------------------------
-Walker::Walker() : attrExclude_{0}, pDirCur_{nullptr}
+Walker::Walker(bool fileFirstFlag) : fileFirstFlag_{fileFirstFlag}, attrExclude_{0}, pDirCur_{nullptr}
 {
 	pathName_[0] = '\0';
 }
@@ -779,20 +805,34 @@ bool Walker::Open(const char* dirName, uint8_t attrExclude)
 
 FileInfo* Walker::Read(const char** pPathName)
 {
+	if (pPathName) *pPathName = pathName_;
 	std::unique_ptr<FileInfo> pFileInfo;
 	for (;;) {
 		pFileInfo.reset(pDirCur_->Read());
-		if (pFileInfo) break;
-		if (pDirCur_ == pDirTop_.get()) return nullptr;
-		pDirCur_ = pDirTop_->RemoveLast();
-	}
-	if (pPathName) *pPathName = pathName_;
-	JoinPathName(pathName_, sizeof(pathName_), pDirCur_->GetDirName(), pFileInfo->GetName());
-	if (pFileInfo->IsDirectory()) {
-		Dir* pDir = OpenDir(pathName_, attrExclude_);
-		if (!pDir) return nullptr;
-		pDirCur_->SetNext(pDir);
-		pDirCur_ = pDir;
+		if (pFileInfo) {
+			JoinPathName(pathName_, sizeof(pathName_), pDirCur_->GetDirName(), pFileInfo->GetName());
+			if (!pFileInfo->IsDirectory()) break;
+			Dir* pDir = OpenDir(pathName_, attrExclude_);
+			if (!pDir) return nullptr;
+			pDirCur_->SetNext(pDir);
+			pDirCur_ = pDir;
+			if (fileFirstFlag_) {
+				pDir->SetFileInfo(pFileInfo.release());
+			} else {
+				break;
+			}
+		} else {
+			if (pDirCur_ == pDirTop_.get()) return nullptr;
+			if (fileFirstFlag_) {
+				pFileInfo.reset(pDirCur_->ReleaseFileInfo());
+				Dir* pDir = pDirTop_->RemoveLast();
+				JoinPathName(pathName_, sizeof(pathName_), pDir->GetDirName(), pFileInfo->GetName());
+				pDirCur_ = pDir;
+				break;
+			} else {
+				pDirCur_ = pDirTop_->RemoveLast();
+			}
+		}
 	}
 	return pFileInfo.release();
 }

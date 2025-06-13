@@ -54,7 +54,7 @@ private:
 	bool openedFlag_;
 	int nItems_;
 public:
-	Dir(FS::Drive& drive, const char* dirName, lfs_t& lfs);
+	Dir(FS::Drive& drive, lfs_t& lfs);
 	~Dir() { Close(); }
 public:
 	lfs_dir_t* GetEntity() { return &dir_; }
