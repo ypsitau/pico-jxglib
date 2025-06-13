@@ -3,7 +3,92 @@
 #include "jxglib/Shell.h"
 #include "jxglib/FS.h"
 
+namespace jxglib::FS {
+
+//------------------------------------------------------------------------------
+// FS::Walker
+//------------------------------------------------------------------------------
+class Walker {
+protected:
+	std::unique_ptr<Dir> pDirTop_;
+	uint8_t attrExclude_; // attributes to exclude
+	Dir* pDirCur_;
+	char pathName_[MaxPath];
+public:
+	Walker();
+	~Walker() { Close(); }
+public:
+	bool Open(const char* dirName, uint8_t attrExclude = 0);
+	void Close() {}
+	FileInfo* Read(const char** pPathName);
+};
+
+Walker::Walker() : attrExclude_{0}, pDirCur_{nullptr}
+{
+	pathName_[0] = '\0';
+}
+
+bool Walker::Open(const char* dirName, uint8_t attrExclude)
+{
+	attrExclude_ = attrExclude;
+	pDirTop_.reset(OpenDir(dirName, attrExclude_));
+	if (!pDirTop_) return false;
+	pDirCur_ = pDirTop_.get();
+	return true;
+}
+
+FileInfo* Walker::Read(const char** pPathName)
+{
+	std::unique_ptr<FileInfo> pFileInfo;
+	for (;;) {
+		pFileInfo.reset(pDirCur_->Read());
+		if (pFileInfo) break;
+		if (pDirCur_ == pDirTop_.get()) return nullptr;
+		pDirCur_ = pDirTop_->RemoveLast();
+	}
+	if (pPathName) *pPathName = pathName_;
+	JoinPathName(pathName_, sizeof(pathName_), pDirCur_->GetDirName(), pFileInfo->GetName());
+	if (pFileInfo->IsDirectory()) {
+		Dir* pDir = OpenDir(pathName_, attrExclude_);
+		if (!pDir) return nullptr;
+		pDirCur_->SetNext(pDir);
+		pDirCur_ = pDir;
+	}
+	return pFileInfo.release();
+}
+
+}
+
 namespace jxglib::ShellCmd_FS {
+
+ShellCmd(walk, "walks through directories")
+{
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		'h',	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (arg.GetBool("help")) {
+		terr.Printf("usage: %s [OPTION]... [DIRECTORY]\nOptions:\n", GetName());
+		arg.PrintHelp(terr);
+		return 1;
+	}
+	const char* dirName = (argc < 2)? "." : argv[1];
+	uint8_t attrExclude = 0;
+	jxglib::FS::Walker walker;
+	if (!walker.Open(dirName, attrExclude)) {
+		terr.Printf("cannot open directory: %s\n", dirName);
+		return 1;
+	}
+	std::unique_ptr<jxglib::FS::FileInfo> pFileInfo;
+	for (;;) {
+		const char* pathName = nullptr;
+		pFileInfo.reset(walker.Read(&pathName));
+		if (!pFileInfo) break; // no more files
+		tout.Printf("%s%s\n", pathName, pFileInfo->IsDirectory() ? "/" : "");
+	}
+	return 0;
+}
 
 ShellCmd(cat, "prints the contents of files")
 {

@@ -94,9 +94,13 @@ Dir* OpenDir(const char* dirName, uint8_t attrExclude)
 {
 	char pathName[MaxPath];
 	Drive* pDrive = FindDrive(dirName);
-	return pDrive? pDrive->OpenDir(
+	if (!pDrive) return nullptr;
+	std::unique_ptr<Dir> pDir(pDrive->OpenDir(
 			pDrive->NativePathName(pathName, sizeof(pathName), dirName),
-			attrExclude) : nullptr;
+			attrExclude));
+	if (pDir) pDir->SetDirName(dirName);	
+	return pDir.release();
+	
 }
 
 Glob* OpenGlob(const char* pattern, bool patternAsDirFlag, uint8_t attrExclude)
@@ -580,18 +584,6 @@ void FileInfo::PrintList(Printable& tout, bool slashForDirFlag) const
 	}
 }
 
-void FileInfo::RemoveLast()
-{
-	FileInfo* pFileInfoPrev = this;
-	for (FileInfo* pFileInfo = GetNext(); pFileInfo; pFileInfo = pFileInfo->GetNext()) {
-		if (!pFileInfo->GetNext()) {
-			pFileInfoPrev->SetNext(nullptr);
-			break;
-		}
-		pFileInfoPrev = pFileInfo;
-	}
-}
-
 const char* FileInfo::JoinPathName(char* pathName, int lenBuff) const
 {
 	pathName[0] = '\0';
@@ -708,6 +700,19 @@ FileInfo* FileInfoReader::ReadAll(const FileInfo::Cmp& cmp)
 Dir::Dir(const Drive& drive, const char* dirName) : drive_(drive), rewindFlag_{false}
 {
 	::snprintf(dirName_, sizeof(dirName_), "%s", dirName);
+}
+
+Dir* Dir::RemoveLast()
+{
+	Dir* pDirPrev = nullptr;
+	for (Dir* pDir = this; pDir->GetNext(); pDir = pDir->GetNext()) {
+		pDirPrev = pDir;
+	}
+	if (pDirPrev) {
+		pDirPrev->SetNext(nullptr);
+		return pDirPrev;
+	}
+	return this;
 }
 
 //------------------------------------------------------------------------------

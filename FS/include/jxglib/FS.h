@@ -129,7 +129,6 @@ public:
 	void SetNext(FileInfo* pFileInfoNext) { pFileInfoNext_.reset(pFileInfoNext); }
 	FileInfo* GetNext() const { return pFileInfoNext_.get(); }
 	FileInfo* ReleaseNext() { return pFileInfoNext_.release(); }
-	void RemoveLast();
 public:
 	const char* GetName() const { return name_.get(); }
 	uint8_t GetAttr() const { return attr_; }
@@ -165,11 +164,17 @@ protected:
 	const Drive& drive_;
 	char dirName_[MaxPath];
 	bool rewindFlag_;
+	std::unique_ptr<Dir> pDirNext_;
 public:
 	Dir(const Drive& drive, const char* dirName);
 	virtual ~Dir() { Close(); }
 public:
+	void SetNext(Dir* pDir) { pDirNext_.reset(pDir); }
+	Dir* GetNext() const { return pDirNext_.get(); }
+	Dir* RemoveLast();
+public:
 	const Drive& GetDrive() const { return drive_; }
+	void SetDirName(const char* dirName) { ::snprintf(dirName_, sizeof(dirName_), "%s", dirName); }
 	const char* GetDirName() const { return dirName_; }
 	void EnableRewind() { rewindFlag_ = true; }
 public:
