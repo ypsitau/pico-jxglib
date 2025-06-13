@@ -75,6 +75,17 @@ public:
 			void SetNext(OptValue* pOptValueNext) { pOptValueNext_.reset(pOptValueNext); }
 			OptValue* GetNext() const { return pOptValueNext_.get(); }
 		};	
+		class Globs {
+		private:
+			char** argv_;
+			char** argvEnd_;
+			std::unique_ptr<FS::Glob> pGlob_;
+			std::unique_ptr<FS::FileInfo> pFileInfo_;
+		public:
+			Globs(char*& argv, char*& argvEnd);
+			const char* Next();
+			const FS::FileInfo& GetFileInfo() const { return *pFileInfo_; }
+		};
 	private:
 		const Opt* optTbl_;
 		int nOpts_;

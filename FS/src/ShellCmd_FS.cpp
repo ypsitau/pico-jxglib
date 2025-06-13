@@ -22,27 +22,15 @@ ShellCmd(cat, "prints the contents of files")
 	}
 	if (argc < 2) {
 		int len;
-		char buff[512];
+		char buff[128];
 		while ((len = tin.Read(buff, sizeof(buff) - 1)) >= 0) {
 			buff[len] = '\0'; // null-terminate the string
 			tout.Print(buff);
 		}
 	} else {
-		for (int iArg = 1; iArg < argc; iArg++) {
-			const char* pathName = argv[iArg];
-			if (FS::DoesContainWildcard(pathName)) {
-				std::unique_ptr<FS::Glob> pGlob(FS::OpenGlob(pathName));
-				if (pGlob) {
-					for (;;) {
-						const char* pathNameGlob;
-						std::unique_ptr<FS::FileInfo> pFileInfo(pGlob->Read(&pathNameGlob));
-						if (!pFileInfo) break;
-						if (pFileInfo->IsFile() && !FS::PrintFile(terr, tout, pathNameGlob)) return 1;
-					}
-				}
-			} else {
-				if (!FS::PrintFile(terr, tout, pathName)) break;
-			}
+		Arg::Globs globs(argv[1], argv[argc]);
+		while (const char* pathName = globs.Next()) {
+			if (globs.GetFileInfo().IsFile() && !FS::PrintFile(terr, tout, pathName)) return 1;
 		}
 	}
 	return 0;
@@ -110,19 +98,12 @@ ShellCmd(copy, "copies files")
 	}
 	const char* pathNameDst = argv[argc - 1];
 	for (int iArg = 1; iArg < argc - 1; iArg++) {
-		const char* pathNameSrc = argv[iArg];
-		if (FS::DoesContainWildcard(pathNameSrc)) {
-			std::unique_ptr<FS::Glob> pGlob(FS::OpenGlob(pathNameSrc));
-			if (pGlob) {
-				for (;;) {
-					const char* pathNameGlob;
-					std::unique_ptr<FS::FileInfo> pFileInfo(pGlob->Read(&pathNameGlob));
-					if (!pFileInfo) break;
-					if (pFileInfo->IsFile() && !FS::CopyFile(terr, pathNameGlob, pathNameDst)) return 1;
-				}
+		std::unique_ptr<FS::Glob> pGlob(FS::OpenGlob(argv[iArg]));
+		if (pGlob) {
+			std::unique_ptr<FS::FileInfo> pFileInfo;
+			while (const char* pathNameSrc = pGlob->Next(pFileInfo)) {
+				if (pFileInfo->IsFile() && !FS::CopyFile(terr, pathNameSrc, pathNameDst)) return 1;
 			}
-		} else {
-			if (!FS::CopyFile(terr, pathNameSrc, pathNameDst)) return 1;
 		}
 	}
 	return 0;
@@ -165,15 +146,9 @@ ShellCmd(glob, "prints files matching a glob pattern")
 		arg.PrintHelp(terr);
 		return 1;
 	}
-	const char* pattern = argv[1];
-	std::unique_ptr<FS::Glob> pGlob(FS::OpenGlob(pattern));
-	if (pGlob) {
-		for (;;) {
-			const char* pathNameGlob;
-			std::unique_ptr<FS::FileInfo> pFileInfo(pGlob->Read(&pathNameGlob));
-			if (!pFileInfo) break;
-			tout.Printf("%s\n", pathNameGlob);
-		}
+	Arg::Globs globs(argv[1], argv[argc]);
+	while (const char* pathName = globs.Next()) {
+		tout.Printf("%s\n", pathName);
 	}
 	return 0;
 }
@@ -343,21 +318,9 @@ ShellCmd(rm, "removes files")
 		arg.PrintHelp(terr);
 		return 1;
 	}
-	for (int iArg = 1; iArg < argc; iArg++) {
-		const char* pathName = argv[iArg];
-		if (FS::DoesContainWildcard(pathName)) {
-			std::unique_ptr<FS::Glob> pGlob(FS::OpenGlob(pathName));
-			if (pGlob) {
-				for (;;) {
-					const char* pathNameGlob;
-					std::unique_ptr<FS::FileInfo> pFileInfo(pGlob->Read(&pathNameGlob));
-					if (!pFileInfo) break;
-					if (pFileInfo->IsFile() && !FS::RemoveFile(terr, pathNameGlob)) return 1;
-				}
-			}
-		} else {
-			if (!FS::RemoveFile(terr, pathName)) return 1;
-		}
+	Arg::Globs globs(argv[1], argv[argc]);
+	while (const char* pathName = globs.Next()) {
+		if (globs.GetFileInfo().IsFile() && !FS::RemoveFile(terr, pathName)) return 1;
 	}
 	return 0;
 }
@@ -376,9 +339,9 @@ ShellCmd(rmdir, "removes directories")
 		arg.PrintHelp(terr);
 		return 1;
 	}
-	for (int iArg = 1; iArg < argc; iArg++) {
-		const char* dirName = argv[iArg];
-		if (!FS::RemoveDir(terr, dirName)) return 1;
+	Arg::Globs globs(argv[1], argv[argc]);
+	while (const char* pathName = globs.Next()) {
+		if (globs.GetFileInfo().IsDirectory() && !FS::RemoveDir(terr, pathName)) return 1;
 	}
 	return 0;
 }
@@ -395,21 +358,9 @@ ShellCmd(touch, "updates time stamps or creates empty files")
 		arg.PrintHelp(terr);
 		return 1;
 	}
-	for (int iArg = 1; iArg < argc; iArg++) {
-		const char* pathName = argv[iArg];
-		if (FS::DoesContainWildcard(pathName)) {
-			std::unique_ptr<FS::Glob> pGlob(FS::OpenGlob(pathName));
-			if (pGlob) {
-				for (;;) {
-					const char* pathNameGlob;
-					std::unique_ptr<FS::FileInfo> pFileInfo(pGlob->Read(&pathNameGlob));
-					if (!pFileInfo) break;
-					if (!FS::Touch(terr, pathNameGlob)) return 1;
-				}
-			}
-		} else {
-			if (!FS::Touch(terr, pathName)) return 1;
-		}
+	Arg::Globs globs(argv[1], argv[argc]);
+	while (const char* pathName = globs.Next()) {
+		if (!FS::Touch(terr, pathName)) return 1;
 	}
 	return 0;
 }

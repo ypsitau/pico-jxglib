@@ -408,6 +408,37 @@ void Shell::Arg::Opt::MakeHelp(char* str, int len) const
 }
 
 //------------------------------------------------------------------------------
+// Shell::Arg::Globs
+//------------------------------------------------------------------------------
+Shell::Arg::Globs::Globs(char*& argv, char*& argvEnd) : argv_(&argv), argvEnd_(&argvEnd) {}
+
+const char* Shell::Arg::Globs::Next()
+{
+	const char* pathName = nullptr;
+	if (pGlob_) {
+		pFileInfo_.reset(pGlob_->Read(&pathName));
+		if (pFileInfo_) return pathName;
+		pGlob_.reset();
+	}
+	while (argv_ != argvEnd_) {
+		const char* arg = *argv_++;
+		if (FS::DoesContainWildcard(arg)) {
+			pGlob_.reset(FS::OpenGlob(arg));
+			if (pGlob_) {
+				pFileInfo_.reset(pGlob_->Read(&pathName));
+				if (pFileInfo_) return pathName;
+				pGlob_.reset();
+			}
+		} else {
+			pGlob_.reset();
+			pFileInfo_.reset(FS::GetFileInfo(arg));
+			return arg;
+		}
+	}
+	return nullptr;
+}
+
+//------------------------------------------------------------------------------
 // Shell::Cmd
 //------------------------------------------------------------------------------
 Shell::Cmd* Shell::Cmd::pCmdHead_ = nullptr;
