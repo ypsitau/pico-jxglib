@@ -467,8 +467,9 @@ void Shell::CompletionProvider::StartCompletion()
 	} else {
 		// following fields are file names
 		std::unique_ptr<FS::Dir> pDir(FS::OpenDir(GetHint()));
-		::snprintf(dirName_, sizeof(dirName_), "%s", GetHint());
-		if (!pDir) {
+		if (pDir) {	// if the hint is a directory name
+			::snprintf(dirName_, sizeof(dirName_), "%s", GetHint());
+		} else {
 			FS::SplitDirName(GetHint(), dirName_, sizeof(dirName_), &prefix_);
 			pDir.reset(FS::OpenDir(dirName_));
 		}

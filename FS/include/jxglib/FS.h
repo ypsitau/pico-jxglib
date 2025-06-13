@@ -163,12 +163,14 @@ public:
 class Dir : public FileInfoReader {
 protected:
 	const Drive& drive_;
+	char dirName_[MaxPath];
 	bool rewindFlag_;
 public:
-	Dir(const Drive& drive);
+	Dir(const Drive& drive, const char* dirName);
 	virtual ~Dir() { Close(); }
 public:
 	const Drive& GetDrive() const { return drive_; }
+	const char* GetDirName() const { return dirName_; }
 	void EnableRewind() { rewindFlag_ = true; }
 public:
 	virtual void Close() {}
@@ -180,7 +182,7 @@ public:
 class Glob : public FileInfoReader {
 protected:
 	std::unique_ptr<Dir> pDir_;
-	char dirName_[MaxPath];
+	char dirName_[MaxPath];	// directory name and pattern are stored
 	const char* pattern_;
 	char pathName_[MaxPath];
 public:
@@ -188,8 +190,10 @@ public:
 	~Glob() { Close(); }
 public:
 	bool Open(const char* pattern, bool paternAsDirFlag = false, uint8_t attrExclude = 0);
-	FileInfo* Read(const char** pPathName);
 	void Close();
+	FileInfo* Read(const char** pPathName);
+	const char* Next();
+	const char* Next(std::unique_ptr<FileInfo>& pFileInfo);
 public:
 	// virtual functions of FileInfoReader
 	virtual FileInfo* Read() override { return Read(nullptr); }

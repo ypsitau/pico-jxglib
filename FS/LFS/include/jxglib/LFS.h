@@ -53,12 +53,10 @@ private:
 	lfs_dir_t dir_;
 	bool openedFlag_;
 	int nItems_;
-	char dirName_[LFS_NAME_MAX + 1]; // Directory name buffer
 public:
-	Dir(FS::Drive& drive, lfs_t& lfs, const char* dirName);
+	Dir(FS::Drive& drive, const char* dirName, lfs_t& lfs);
 	~Dir() { Close(); }
 public:
-	const char* GetDirName() const { return dirName_; }
 	lfs_dir_t* GetEntity() { return &dir_; }
 	const lfs_dir_t* GetEntity() const { return &dir_; }
 public:

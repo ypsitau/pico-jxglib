@@ -98,7 +98,7 @@ FS::File* Drive::OpenFile(const char* fileName, const char* mode)
 FS::Dir* Drive::OpenDir(const char* dirName, uint8_t attrExclude)
 {
 	if (!Mount()) return nullptr;
-	std::unique_ptr<Dir> pDir(new Dir(*this, lfs_, dirName));
+	std::unique_ptr<Dir> pDir(new Dir(*this, dirName, lfs_));
 	return (::lfs_dir_open(&lfs_, pDir->GetEntity(), dirName) == LFS_ERR_OK)? pDir.release() : nullptr;
 }
 
@@ -270,10 +270,9 @@ bool File::Sync()
 //------------------------------------------------------------------------------
 // LFS::Dir
 //------------------------------------------------------------------------------
-Dir::Dir(FS::Drive& drive, lfs_t& lfs, const char* dirName) :
-		FS::Dir(drive), lfs_(lfs), openedFlag_{true}, nItems_{0}
+Dir::Dir(FS::Drive& drive, const char* dirName, lfs_t& lfs) :
+		FS::Dir(drive, dirName), lfs_(lfs), openedFlag_{true}, nItems_{0}
 {
-	::snprintf(dirName_, sizeof(dirName_), "%s", dirName);
 }
 
 FS::FileInfo* Dir::Read()

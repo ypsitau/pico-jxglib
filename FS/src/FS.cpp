@@ -706,8 +706,9 @@ FileInfo* FileInfoReader::ReadAll(const FileInfo::Cmp& cmp)
 //------------------------------------------------------------------------------
 // FS::Dir
 //------------------------------------------------------------------------------
-Dir::Dir(const Drive& drive) : drive_(drive), rewindFlag_{false}
+Dir::Dir(const Drive& drive, const char* dirName) : drive_(drive), rewindFlag_{false}
 {
+	::snprintf(dirName_, sizeof(dirName_), "%s", dirName);
 }
 
 //------------------------------------------------------------------------------
@@ -733,6 +734,11 @@ bool Glob::Open(const char* pattern, bool patternAsDirFlag, uint8_t attrExclude)
 	return !!pDir_;
 }
 
+void Glob::Close()
+{
+	pDir_.reset();
+}
+
 FileInfo* Glob::Read(const char** pPathName)
 {
 	if (!pDir_) return nullptr;
@@ -750,9 +756,18 @@ FileInfo* Glob::Read(const char** pPathName)
 	return nullptr;
 }
 
-void Glob::Close()
+const char* Glob::Next()
 {
-	pDir_.reset();
+	const char* pathName;
+	std::unique_ptr<FileInfo> pFileInfo(Read(&pathName));
+	return pFileInfo? pathName : nullptr;
+}
+
+const char* Glob::Next(std::unique_ptr<FileInfo>& pFileInfo)
+{
+	const char* pathName;
+	pFileInfo.reset(Read(&pathName));
+	return pFileInfo? pathName : nullptr;
 }
 
 //------------------------------------------------------------------------------
