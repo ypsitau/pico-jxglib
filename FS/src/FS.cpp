@@ -66,15 +66,12 @@ File* OpenFile(const char* fileName, const char* mode, Drive* pDrive)
 const char* CreateFileNameForMove(char* fileName, int lenMax, const char* pathNameSrc, const char* pathNameDst)
 {
 	if (FS::IsDirectory(pathNameDst)) {
-		//Drive* pDrive = FindDrive(pathNameDst);
-		//if (!pDrive) return nullptr;
-		//pathNameDst = SkipDriveName(pathNameDst);
-		//pDrive->RegulatePathName(fileName, lenMax, pathNameDst);
 		::snprintf(fileName, lenMax, "%s", pathNameDst);
 		AppendPathName(fileName, lenMax, ExtractFileName(pathNameSrc));
 	} else {
 		::snprintf(fileName, lenMax, "%s", pathNameDst);
 	}
+	//::snprintf(fileName, lenMax, "%s", pathNameDst);
 	return fileName;
 }
 
@@ -233,8 +230,10 @@ bool Move(Printable& terr, const char* pathNameOld, const char* pathNameNew)
 	}
 	if (pDriveOld == pDriveNew) {
 		// Same drive, just rename
+		char pathNameBuff[MaxPath];
+		CreateFileNameForMove(pathNameBuff, sizeof(pathNameBuff), pathNameOld, pathNameNew);
 		if (pDriveOld->Rename(pDriveOld->NativePathName(pathNameBuffOld, sizeof(pathNameBuffOld), pathNameOld),
-				pDriveOld->NativePathName(pathNameBuffNew, sizeof(pathNameBuffNew), pathNameNew))) return true;
+				pDriveOld->NativePathName(pathNameBuffNew, sizeof(pathNameBuffNew), pathNameBuff))) return true;
 		terr.Printf("failed to rename %s to %s\n", pathNameOld, pathNameNew);
 		return false; // Rename failed
 	}

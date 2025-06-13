@@ -97,14 +97,9 @@ ShellCmd(copy, "copies files")
 		return 1;
 	}
 	const char* pathNameDst = argv[argc - 1];
-	for (int iArg = 1; iArg < argc - 1; iArg++) {
-		std::unique_ptr<FS::Glob> pGlob(FS::OpenGlob(argv[iArg]));
-		if (pGlob) {
-			std::unique_ptr<FS::FileInfo> pFileInfo;
-			while (const char* pathNameSrc = pGlob->Next(pFileInfo)) {
-				if (pFileInfo->IsFile() && !FS::CopyFile(terr, pathNameSrc, pathNameDst)) return 1;
-			}
-		}
+	Arg::Globs globs(argv[1], argv[argc - 1]);
+	while (const char* pathNameSrc = globs.Next()) {
+		if (globs.GetFileInfo().IsFile() && !FS::CopyFile(terr, pathNameSrc, pathNameDst)) return 1;
 	}
 	return 0;
 }
@@ -240,8 +235,6 @@ ShellCmd(mkdir, "creates directories")
 		if (!FS::CreateDir(terr, dirName)) return 1;
 	}
 	return 0;
-	//const char* dirName = argv[1];
-	//return FS::CreateDir(terr, dirName)? 0 : 1;
 }
 
 ShellCmd(mount, "mounts specified drives")
@@ -261,8 +254,6 @@ ShellCmd(mount, "mounts specified drives")
 		if (!FS::Mount(terr, driveName)) return 1;
 	}
 	return 0;
-	//const char* driveName = argv[1];
-	//return FS::Mount(terr, driveName)? 0 : 1;
 }
 
 ShellCmd(move, "moves a file")
@@ -273,13 +264,16 @@ ShellCmd(move, "moves a file")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (argc < 3 || arg.GetBool("help")) {
-		terr.Printf("usage: %s [OPTION]... SOURCE DEST\nOptions:\n", GetName());
+		terr.Printf("usage: %s [OPTION]... SOURCE... DEST\nOptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
-	const char* pathNameSrc = argv[1];
-	const char* pathNameDst = argv[2];
-	return FS::Move(terr, pathNameSrc, pathNameDst)? 0 : 1;
+	const char* pathNameDst = argv[argc - 1];
+	Arg::Globs globs(argv[1], argv[argc - 1]);
+	while (const char* pathNameSrc = globs.Next()) {
+		if (!FS::Move(terr, pathNameSrc, pathNameDst)) return 1;
+	}
+	return 0;
 }
 
 ShellCmdAlias(mv, move)
