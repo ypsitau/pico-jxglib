@@ -761,6 +761,43 @@ FileInfo* Glob::Read(const char** pPathName)
 }
 
 //------------------------------------------------------------------------------
+// FS::Walker
+//------------------------------------------------------------------------------
+Walker::Walker() : attrExclude_{0}, pDirCur_{nullptr}
+{
+	pathName_[0] = '\0';
+}
+
+bool Walker::Open(const char* dirName, uint8_t attrExclude)
+{
+	attrExclude_ = attrExclude;
+	pDirTop_.reset(OpenDir(dirName, attrExclude_));
+	if (!pDirTop_) return false;
+	pDirCur_ = pDirTop_.get();
+	return true;
+}
+
+FileInfo* Walker::Read(const char** pPathName)
+{
+	std::unique_ptr<FileInfo> pFileInfo;
+	for (;;) {
+		pFileInfo.reset(pDirCur_->Read());
+		if (pFileInfo) break;
+		if (pDirCur_ == pDirTop_.get()) return nullptr;
+		pDirCur_ = pDirTop_->RemoveLast();
+	}
+	if (pPathName) *pPathName = pathName_;
+	JoinPathName(pathName_, sizeof(pathName_), pDirCur_->GetDirName(), pFileInfo->GetName());
+	if (pFileInfo->IsDirectory()) {
+		Dir* pDir = OpenDir(pathName_, attrExclude_);
+		if (!pDir) return nullptr;
+		pDirCur_->SetNext(pDir);
+		pDirCur_ = pDir;
+	}
+	return pFileInfo.release();
+}
+
+//------------------------------------------------------------------------------
 // FS::Drive
 //------------------------------------------------------------------------------
 Drive::Drive(const char* formatName, const char* driveName) : mountedFlag_{false}, formatName_{formatName}, pDriveNext_{nullptr}

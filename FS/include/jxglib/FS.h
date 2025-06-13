@@ -203,6 +203,24 @@ public:
 };
 
 //------------------------------------------------------------------------------
+// FS::Walker
+//------------------------------------------------------------------------------
+class Walker {
+protected:
+	std::unique_ptr<Dir> pDirTop_;
+	uint8_t attrExclude_; // attributes to exclude
+	Dir* pDirCur_;
+	char pathName_[MaxPath];
+public:
+	Walker();
+	~Walker() { Close(); }
+public:
+	bool Open(const char* dirName, uint8_t attrExclude = 0);
+	void Close() {}
+	FileInfo* Read(const char** pPathName);
+};
+
+//------------------------------------------------------------------------------
 // FS::Drive
 //------------------------------------------------------------------------------
 class Drive {

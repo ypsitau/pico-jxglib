@@ -3,62 +3,6 @@
 #include "jxglib/Shell.h"
 #include "jxglib/FS.h"
 
-namespace jxglib::FS {
-
-//------------------------------------------------------------------------------
-// FS::Walker
-//------------------------------------------------------------------------------
-class Walker {
-protected:
-	std::unique_ptr<Dir> pDirTop_;
-	uint8_t attrExclude_; // attributes to exclude
-	Dir* pDirCur_;
-	char pathName_[MaxPath];
-public:
-	Walker();
-	~Walker() { Close(); }
-public:
-	bool Open(const char* dirName, uint8_t attrExclude = 0);
-	void Close() {}
-	FileInfo* Read(const char** pPathName);
-};
-
-Walker::Walker() : attrExclude_{0}, pDirCur_{nullptr}
-{
-	pathName_[0] = '\0';
-}
-
-bool Walker::Open(const char* dirName, uint8_t attrExclude)
-{
-	attrExclude_ = attrExclude;
-	pDirTop_.reset(OpenDir(dirName, attrExclude_));
-	if (!pDirTop_) return false;
-	pDirCur_ = pDirTop_.get();
-	return true;
-}
-
-FileInfo* Walker::Read(const char** pPathName)
-{
-	std::unique_ptr<FileInfo> pFileInfo;
-	for (;;) {
-		pFileInfo.reset(pDirCur_->Read());
-		if (pFileInfo) break;
-		if (pDirCur_ == pDirTop_.get()) return nullptr;
-		pDirCur_ = pDirTop_->RemoveLast();
-	}
-	if (pPathName) *pPathName = pathName_;
-	JoinPathName(pathName_, sizeof(pathName_), pDirCur_->GetDirName(), pFileInfo->GetName());
-	if (pFileInfo->IsDirectory()) {
-		Dir* pDir = OpenDir(pathName_, attrExclude_);
-		if (!pDir) return nullptr;
-		pDirCur_->SetNext(pDir);
-		pDirCur_ = pDir;
-	}
-	return pFileInfo.release();
-}
-
-}
-
 namespace jxglib::ShellCmd_FS {
 
 ShellCmd(walk, "walks through directories")
