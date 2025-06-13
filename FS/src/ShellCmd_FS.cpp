@@ -28,9 +28,8 @@ ShellCmd(cat, "prints the contents of files")
 			tout.Print(buff);
 		}
 	} else {
-		Arg::Globs globs(argv[1], argv[argc]);
-		while (const char* pathName = globs.Next()) {
-			if (globs.GetFileInfo().IsFile() && !FS::PrintFile(terr, tout, pathName)) return 1;
+		for (Arg::Globs argIter(argv[1], argv[argc]); const char* pathName = argIter.Next(); ) {
+			if (argIter.GetFileInfo().IsFile() && !FS::PrintFile(terr, tout, pathName)) return 1;
 		}
 	}
 	return 0;
@@ -97,9 +96,8 @@ ShellCmd(copy, "copies files")
 		return 1;
 	}
 	const char* pathNameDst = argv[argc - 1];
-	Arg::Globs globs(argv[1], argv[argc - 1]);
-	while (const char* pathNameSrc = globs.Next()) {
-		if (globs.GetFileInfo().IsFile() && !FS::CopyFile(terr, pathNameSrc, pathNameDst)) return 1;
+	for (Arg::Globs argIter(argv[1], argv[argc - 1]); const char* pathNameSrc = argIter.Next(); ) {
+		if (argIter.GetFileInfo().IsFile() && !FS::CopyFile(terr, pathNameSrc, pathNameDst)) return 1;
 	}
 	return 0;
 }
@@ -118,8 +116,7 @@ ShellCmd(format, "formats drives")
 		arg.PrintHelp(terr);
 		return 1;
 	}
-	for (int iArg = 1; iArg < argc; iArg++) {
-		const char* driveName = argv[iArg];
+	for (Arg::Each argIter(argv[1], argv[argc]); const char* driveName = argIter.Next(); ) {
 		if (!FS::IsLegalDriveName(driveName)) {
 			terr.Printf("invalid drive name: %s\n", driveName);
 			return 1;
@@ -141,8 +138,7 @@ ShellCmd(glob, "prints files matching a glob pattern")
 		arg.PrintHelp(terr);
 		return 1;
 	}
-	Arg::Globs globs(argv[1], argv[argc]);
-	while (const char* pathName = globs.Next()) {
+	for (Arg::Globs argIter(argv[1], argv[argc]); const char* pathName = argIter.Next(); ) {
 		tout.Printf("%s\n", pathName);
 	}
 	return 0;
@@ -187,8 +183,7 @@ ShellCmd(ls, "lists files in the specified directory")
 	if (argc < 2) {
 		return FS::ListFiles(terr, tout, "", FS::FileInfo::CmpDefault, attrExclude, slashForDirFlag)? 0 : 1;
 	}
-	for (int iArg = 1; iArg < argc; iArg++) {
-		const char* dirName = argv[iArg];
+	for (Arg::Each argIter(argv[1], argv[argc]); const char* dirName = argIter.Next(); ) {
 		if (argc > 2) tout.Printf("%s\n", dirName);
 		if (!FS::ListFiles(terr, tout, dirName, FS::FileInfo::CmpDefault, attrExclude, slashForDirFlag)) return 1;
 	}
@@ -230,8 +225,7 @@ ShellCmd(mkdir, "creates directories")
 		arg.PrintHelp(terr);
 		return 1;
 	}
-	for (int iArg = 1; iArg < argc; iArg++) {
-		const char* dirName = argv[iArg];
+	for (Arg::Each argIter(argv[1], argv[argc]); const char* dirName = argIter.Next(); ) {
 		if (!FS::CreateDir(terr, dirName)) return 1;
 	}
 	return 0;
@@ -251,8 +245,7 @@ ShellCmd(mount, "mounts specified drives")
 		arg.PrintHelp(terr);
 		return 1;
 	}
-	for (int iArg = 1; iArg < argc; iArg++) {
-		const char* driveName = argv[iArg];
+	for (Arg::Each argIter(argv[1], argv[argc]); const char* driveName = argIter.Next(); ) {
 		if (!FS::Mount(terr, driveName)) return 1;
 	}
 	return 0;
@@ -271,8 +264,7 @@ ShellCmd(move, "moves a file")
 		return 1;
 	}
 	const char* pathNameDst = argv[argc - 1];
-	Arg::Globs globs(argv[1], argv[argc - 1]);
-	while (const char* pathNameSrc = globs.Next()) {
+	for (Arg::Globs argIter(argv[1], argv[argc - 1]); const char* pathNameSrc = argIter.Next(); ) {
 		if (!FS::Move(terr, pathNameSrc, pathNameDst)) return 1;
 	}
 	return 0;
@@ -316,8 +308,7 @@ ShellCmd(rm, "removes files")
 		return 1;
 	}
 	bool recursiveFlag = arg.GetBool("recursive");
-	Arg::Globs globs(argv[1], argv[argc]);
-	while (const char* pathName = globs.Next()) {
+	for (Arg::Globs argIter(argv[1], argv[argc]); const char* pathName = argIter.Next(); ) {
 		if (!FS::Remove(terr, pathName, recursiveFlag)) return 1;
 	}
 	return 0;
@@ -337,9 +328,8 @@ ShellCmd(rmdir, "removes directories")
 		arg.PrintHelp(terr);
 		return 1;
 	}
-	Arg::Globs globs(argv[1], argv[argc]);
-	while (const char* pathName = globs.Next()) {
-		if (globs.GetFileInfo().IsDirectory() && !FS::RemoveDir(terr, pathName)) return 1;
+	for (Arg::Globs argIter(argv[1], argv[argc]); const char* pathName = argIter.Next(); ) {
+		if (argIter.GetFileInfo().IsDirectory() && !FS::RemoveDir(terr, pathName)) return 1;
 	}
 	return 0;
 }
@@ -356,8 +346,7 @@ ShellCmd(touch, "updates time stamps or creates empty files")
 		arg.PrintHelp(terr);
 		return 1;
 	}
-	Arg::Globs globs(argv[1], argv[argc]);
-	while (const char* pathName = globs.Next()) {
+	for (Arg::Globs argIter(argv[1], argv[argc]); const char* pathName = argIter.Next(); ) {
 		if (!FS::Touch(terr, pathName)) return 1;
 	}
 	return 0;
@@ -375,8 +364,7 @@ ShellCmd(umount, "unmounts specified drives")
 		arg.PrintHelp(terr);
 		return 1;
 	}
-	for (int iArg = 1; iArg < argc; iArg++) {
-		const char* driveName = argv[iArg];
+	for (Arg::Each argIter(argv[1], argv[argc]); const char* driveName = argIter.Next(); ) {
 		if (!FS::Unmount(tout, driveName)) return 1;
 	}
 	return 0;

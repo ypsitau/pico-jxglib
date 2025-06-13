@@ -75,6 +75,14 @@ public:
 			void SetNext(OptValue* pOptValueNext) { pOptValueNext_.reset(pOptValueNext); }
 			OptValue* GetNext() const { return pOptValueNext_.get(); }
 		};	
+		class Each {
+		private:
+			char** argv_;
+			char** argvEnd_;
+		public:
+			Each(char*& argv, char*& argvEnd);
+			const char* Next();
+		};
 		class Globs {
 		private:
 			char** argv_;

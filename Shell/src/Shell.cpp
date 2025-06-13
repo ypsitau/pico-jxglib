@@ -408,6 +408,16 @@ void Shell::Arg::Opt::MakeHelp(char* str, int len) const
 }
 
 //------------------------------------------------------------------------------
+// Shell::Arg::Each
+//------------------------------------------------------------------------------
+Shell::Arg::Each::Each(char*& argv, char*& argvEnd) : argv_(&argv), argvEnd_(&argvEnd) {}
+
+const char* Shell::Arg::Each::Next()
+{
+	return (argv_ == argvEnd_)? nullptr : *argv_++;
+}
+
+//------------------------------------------------------------------------------
 // Shell::Arg::Globs
 //------------------------------------------------------------------------------
 Shell::Arg::Globs::Globs(char*& argv, char*& argvEnd) : argv_(&argv), argvEnd_(&argvEnd) {}
