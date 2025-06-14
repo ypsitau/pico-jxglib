@@ -63,16 +63,14 @@ File* OpenFile(const char* fileName, const char* mode, Drive* pDrive)
 	return pDrive? pDrive->OpenFile(pDrive->NativePathName(pathName, sizeof(pathName), fileName), mode) : nullptr;
 }
 
-const char* CreateFileNameForMove(char* fileName, int lenMax, const char* pathNameSrc, const char* pathNameDst)
+const char* CreatePathNameDst(char* pathName, int lenMax, const char* pathNameSrc, const char* pathNameDst)
 {
 	if (FS::IsDirectory(pathNameDst)) {
-		::snprintf(fileName, lenMax, "%s", pathNameDst);
-		AppendPathName(fileName, lenMax, ExtractFileName(pathNameSrc));
+		JoinPathName(pathName, lenMax, pathNameDst, ExtractFileName(pathNameSrc));
 	} else {
-		::snprintf(fileName, lenMax, "%s", pathNameDst);
+		::snprintf(pathName, lenMax, "%s", pathNameDst);
 	}
-	//::snprintf(fileName, lenMax, "%s", pathNameDst);
-	return fileName;
+	return pathName;
 }
 
 File* OpenFileForCopy(const char* pathNameSrc, const char* pathNameDst)
@@ -206,29 +204,8 @@ bool CopyFile(Printable& terr, const char* pathNameSrc, const char* pathNameDst)
 	return true;
 }
 
-bool RemoveFile(Printable& terr, const char* fileName)
+bool Copy(Printable& terr, const char* pathNameSrc, const char* pathNameDst)
 {
-	char pathNameNative[MaxPath];
-	Drive* pDrive = FindDrive(fileName);
-	if (!pDrive) {
-		terr.Printf("drive for file %s not found\n", fileName);
-		return false; // Drive not found
-	}
-	if (pDrive->RemoveFile(pDrive->NativePathName(pathNameNative, sizeof(pathNameNative), fileName))) return true;
-	terr.Printf("failed to remove %s\n", fileName);
-	return false;
-}
-
-bool RemoveDir(Printable& terr, const char* dirName)
-{
-	char pathName[MaxPath];
-	Drive* pDrive = FindDrive(dirName);
-	if (!pDrive) {
-		terr.Printf("drive for direcory %s not found\n", dirName);
-		return false; // Drive not found
-	}
-	if (pDrive->RemoveDir(pDrive->NativePathName(pathName, sizeof(pathName), dirName))) return true;
-	terr.Printf("failed to remove %s\n", dirName);
 	return false;
 }
 
@@ -258,6 +235,32 @@ bool Remove(Printable& terr, const char* pathName, bool recursiveFlag)
 	}
 }
 
+bool RemoveFile(Printable& terr, const char* fileName)
+{
+	char pathNameNative[MaxPath];
+	Drive* pDrive = FindDrive(fileName);
+	if (!pDrive) {
+		terr.Printf("drive for file %s not found\n", fileName);
+		return false; // Drive not found
+	}
+	if (pDrive->RemoveFile(pDrive->NativePathName(pathNameNative, sizeof(pathNameNative), fileName))) return true;
+	terr.Printf("failed to remove %s\n", fileName);
+	return false;
+}
+
+bool RemoveDir(Printable& terr, const char* dirName)
+{
+	char pathName[MaxPath];
+	Drive* pDrive = FindDrive(dirName);
+	if (!pDrive) {
+		terr.Printf("drive for direcory %s not found\n", dirName);
+		return false; // Drive not found
+	}
+	if (pDrive->RemoveDir(pDrive->NativePathName(pathName, sizeof(pathName), dirName))) return true;
+	terr.Printf("failed to remove %s\n", dirName);
+	return false;
+}
+
 bool Move(Printable& terr, const char* pathNameOld, const char* pathNameNew)
 {
 	char pathNameBuffOld[MaxPath], pathNameBuffNew[MaxPath];
@@ -274,7 +277,7 @@ bool Move(Printable& terr, const char* pathNameOld, const char* pathNameNew)
 	if (pDriveOld == pDriveNew) {
 		// Same drive, just rename
 		char pathNameBuff[MaxPath];
-		CreateFileNameForMove(pathNameBuff, sizeof(pathNameBuff), pathNameOld, pathNameNew);
+		CreatePathNameDst(pathNameBuff, sizeof(pathNameBuff), pathNameOld, pathNameNew);
 		if (pDriveOld->Rename(pDriveOld->NativePathName(pathNameBuffOld, sizeof(pathNameBuffOld), pathNameOld),
 				pDriveOld->NativePathName(pathNameBuffNew, sizeof(pathNameBuffNew), pathNameBuff))) return true;
 		terr.Printf("failed to rename %s to %s\n", pathNameOld, pathNameNew);
@@ -438,10 +441,20 @@ const char* ExtractFileName(const char* pathName)
 {
 	const char* p = pathName;
 	const char* fileName = nullptr;
-	for ( ; *p; p++) {
+	for ( ; *p != '\0'; p++) {
 		if (*p == '/') fileName = p + 1; // remember the start of the file name
 	}
 	return fileName? fileName : pathName; // return the last part or the whole path if no slashes
+}
+
+const char* ExtractBottomName(const char* pathName)
+{
+	const char* p = pathName;
+	const char* bottohName = nullptr;
+	for ( ; *p != '\0'; p++) {
+		if (*p == '/' && *(p + 1) != '\0') bottohName = p + 1; // remember the start of the bottom name
+	}
+	return bottohName? bottohName : pathName; // return the last part or the whole path if no slashes
 }
 
 void SplitDirName(const char* pathName, char* dirName, int lenMax, const char** pFileName)

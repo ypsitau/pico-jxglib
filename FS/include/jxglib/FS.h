@@ -286,6 +286,7 @@ File* OpenFile(const char* fileName, const char* mode, Drive* pDrive = nullptr);
 File* OpenFileForCopy(const char* pathNameSrc, const char* pathNameDst);
 Dir* OpenDir(const char* dirName, uint8_t attrExclude = 0);
 Glob* OpenGlob(const char* pattern, bool patternAsDirFlag = false, uint8_t attrExclude = 0);
+const char* CreatePathNameDst(char* pathName, int lenMax, const char* pathNameSrc, const char* pathNameDst);
 bool SetTimeStamp(const char* pathName, const DateTime& dt);
 bool Touch(Printable& terr, const char* pathName);
 bool PrintFile(Printable& terr, Printable& tout, const char* fileName);
@@ -295,20 +296,23 @@ bool ListDrives(Printable& tout, const char* driveName = nullptr, bool remarksFl
 bool ListFiles(Printable& terr, Printable& tout, const char* pathName,
 	const FileInfo::Cmp& cmp = FileInfo::Cmp::Zero, uint8_t attrExclude = 0, bool slashForDirFlag = true);
 
+bool Copy(Printable& terr, const char* pathNameSrc, const char* pathNameDst);
+inline bool Copy(const char* pathNameSrc, const char* pathNameDst) { return Copy(PrintableDumb::Instance, pathNameSrc, pathNameDst); }
+
 bool CopyFile(Printable& terr, const char* pathNameSrc, const char* pathNameDst);
 inline bool CopyFile(const char* pathNameSrc, const char* pathNameDst) { return CopyFile(PrintableDumb::Instance, pathNameSrc, pathNameDst); }
 
 bool Move(Printable& terr, const char* pathNameOld, const char* pathNameNew);
 inline bool Move(const char* pathNameOld, const char* pathNameNew) { return Move(PrintableDumb::Instance, pathNameOld, pathNameNew); }
 
+bool Remove(Printable& terr, const char* pathName, bool recursiveFlag);
+inline bool Remove(const char* pathName, bool recursiveFlag) { return Remove(PrintableDumb::Instance, pathName, recursiveFlag); }
+
 bool RemoveFile(Printable& terr, const char* fileName);
 inline bool RemoveFile(const char* fileName) { return RemoveFile(PrintableDumb::Instance, fileName); }
 
 bool RemoveDir(Printable& terr, const char* dirName);
 inline bool RemoveDir(const char* dirName) { return RemoveDir(PrintableDumb::Instance, dirName); }
-
-bool Remove(Printable& terr, const char* pathName, bool recursiveFlag);
-inline bool Remove(const char* pathName, bool recursiveFlag) { return Remove(PrintableDumb::Instance, pathName, recursiveFlag); }
 
 bool CreateDir(Printable& terr, const char* dirName);
 inline bool CreateDir(const char* dirName) { return CreateDir(PrintableDumb::Instance, dirName); }
@@ -334,6 +338,7 @@ bool GetDirNameCur(const char** pDriveName, const char** pDirName);
 
 const char* ExtractDriveName(const char* pathName, char* driveName, int lenMax);
 const char* ExtractFileName(const char* pathName);
+const char* ExtractBottomName(const char* pathName);
 void SplitDirName(const char* pathName, char* dirName, int lenMax, const char** pFileName);
 const char* AppendPathName(char* pathName, int lenMax, const char* pathNameSub);
 const char* JoinPathName(char* pathName, int lenMax, const char* dirName, const char* fileName);

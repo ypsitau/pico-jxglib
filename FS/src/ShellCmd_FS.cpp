@@ -308,10 +308,11 @@ ShellCmd(rm, "removes files")
 		return 1;
 	}
 	bool recursiveFlag = arg.GetBool("recursive");
+	int rtn = 0;
 	for (Arg::Globs argIter(argv[1], argv[argc]); const char* pathName = argIter.Next(); ) {
-		if (!FS::Remove(terr, pathName, recursiveFlag)) return 1;
+		if (!FS::Remove(terr, pathName, recursiveFlag)) rtn = 1;
 	}
-	return 0;
+	return rtn;
 }
 
 ShellCmdAlias(del, rm)
