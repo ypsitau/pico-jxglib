@@ -65,7 +65,7 @@ bool DateTime::Parse(const char* str)
 		++p;
 		return ParseTime(p);
 	}
-	hour = min = sec = msec = 0;
+	//hour = min = sec = msec = 0;
 	return true;
 }
 
@@ -146,16 +146,16 @@ bool DateTime::ParseTime(const char* str)
 	return true;
 }
 
-bool DateTime::IsTime(const char* str)
+bool DateTime::HasDateFormat(const char* str)
 {
-	const char* p = str;
-	for ( ; ::isspace(*p); ++p) ;	// Skip leading spaces
-	if (!::isdigit(*p)) return false;	// Must start with a digit
-	++p;
-	if (*p == ':') return true;
-	if (!::isdigit(*p)) return false;
-	++p;
-	return *p == ':';
+	DateTime dt;
+	return dt.ParseDate(str);
+}
+
+bool DateTime::HasTimeFormat(const char* str)
+{
+	DateTime dt;
+	return dt.ParseTime(str);
 }
 
 uint64_t DateTime::ToUnixTime() const

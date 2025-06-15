@@ -43,7 +43,8 @@ public:
 	DateTime& operator=(const DateTime& dt);
 	static int Compare(const DateTime& dt1, const DateTime& dt2);
 	static bool IsLeapYear(int16_t year) { return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0); }
-	static bool IsTime(const char* str);
+	static bool HasDateFormat(const char* str);
+	static bool HasTimeFormat(const char* str);
 };
 
 }

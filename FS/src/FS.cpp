@@ -105,28 +105,22 @@ Glob* OpenGlob(const char* pattern, bool patternAsDirFlag, uint8_t attrExclude)
 	return pGlob->Open(pattern, patternAsDirFlag)? pGlob.release() : nullptr;
 }
 
-bool SetTimeStamp(const char* pathName, const DateTime& dt)
+bool Touch(Printable& terr, const char* pathName, const DateTime& dt)
 {
-	char pathNameN[MaxPath];
-	Drive* pDrive = FindDrive(pathName);
-	return pDrive? pDrive->SetTimeStamp(pDrive->NativePathName(pathNameN, sizeof(pathNameN), pathName), dt) : false;
-}
-
-bool Touch(Printable& terr, const char* pathName)
-{
-	if (FS::DoesExist(pathName)) {
-		DateTime dt;
-		RTC::Get(&dt);
-		if (!FS::SetTimeStamp(pathName, dt)) {
-			terr.Printf("failed to set time for %s\n", pathName);
-			return false;
-		}
-	} else {
+	if (!FS::DoesExist(pathName)) {
 		std::unique_ptr<FS::File> pFile(FS::OpenFile(pathName, "w"));
 		if (!pFile) {
 			terr.Printf("failed to create %s\n", pathName);
 			return false;
 		}
+	}
+	//DateTime dt;
+	//RTC::Get(&dt);
+	char pathNameN[MaxPath];
+	Drive* pDrive = FindDrive(pathName);
+	if (!pDrive || !pDrive->SetTimeStamp(pDrive->NativePathName(pathNameN, sizeof(pathNameN), pathName), dt)) {
+		terr.Printf("failed to set time for %s\n", pathName);
+		return false;
 	}
 	return true;
 }
@@ -179,29 +173,6 @@ bool ListFiles(Printable& terr, Printable& tout, const char* pathName, const Fil
 	return true;
 }
 
-bool CopyFile(Printable& terr, const char* pathNameSrc, const char* pathNameDst)
-{
-	std::unique_ptr<FS::File> pFileSrc(FS::OpenFile(pathNameSrc, "r"));
-	if (!pFileSrc) {
-		terr.Printf("failed to open %s\n", pathNameSrc);
-		return false;
-	}
-	std::unique_ptr<FS::File> pFileDst(OpenFileForCopy(pathNameSrc, pathNameDst));
-	if (!pFileDst) {
-		terr.Printf("failed to open %s\n", pathNameDst);
-		return false;
-	}
-	int bytesRead;
-	char buff[128];
-	while ((bytesRead = pFileSrc->Read(buff, sizeof(buff))) > 0) {
-		if (pFileDst->Write(buff, bytesRead) != bytesRead) {
-			terr.Printf("failed to write %s\n", pathNameDst);
-			return false;
-		}
-	}
-	return true;
-}
-
 bool Copy(Printable& terr, const char* pathNameSrc, const char* pathNameDst, bool recursiveFlag)
 {
 	if (IsDirectory(pathNameSrc)) {
@@ -226,6 +197,29 @@ bool Copy(Printable& terr, const char* pathNameSrc, const char* pathNameDst, boo
 	} else {
 		return CopyFile(terr, pathNameSrc, pathNameDst);
 	}
+}
+
+bool CopyFile(Printable& terr, const char* pathNameSrc, const char* pathNameDst)
+{
+	std::unique_ptr<FS::File> pFileSrc(FS::OpenFile(pathNameSrc, "r"));
+	if (!pFileSrc) {
+		terr.Printf("failed to open %s\n", pathNameSrc);
+		return false;
+	}
+	std::unique_ptr<FS::File> pFileDst(OpenFileForCopy(pathNameSrc, pathNameDst));
+	if (!pFileDst) {
+		terr.Printf("failed to open %s\n", pathNameDst);
+		return false;
+	}
+	int bytesRead;
+	char buff[128];
+	while ((bytesRead = pFileSrc->Read(buff, sizeof(buff))) > 0) {
+		if (pFileDst->Write(buff, bytesRead) != bytesRead) {
+			terr.Printf("failed to write %s\n", pathNameDst);
+			return false;
+		}
+	}
+	return true;
 }
 
 bool Remove(Printable& terr, const char* pathName, bool recursiveFlag)

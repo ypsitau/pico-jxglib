@@ -345,6 +345,7 @@ ShellCmd(touch, "updates time stamps or creates empty files")
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
+		Arg::OptString("datetime",	'd',	"specifies the date and time to set (format: YYYY-MM-DD HH:MM:SS)", "DATETIME"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -354,8 +355,20 @@ ShellCmd(touch, "updates time stamps or creates empty files")
 		return 1;
 	}
 	int rtn = 0;
+	DateTime dt;
+	const char* value;
+	if (arg.GetString("datetime", &value)) {
+		if (DateTime::HasTimeFormat(value)) {
+			dt.ParseTime(value); // DateTime::HasTimeFormat() already ensures the validity
+		} else if (!dt.Parse(value)) {
+			terr.Printf("invalid date/time format. Use YYYY-MM-DD HH:MM:SS\n");
+			return 1;
+		}
+	} else {
+		RTC::Get(&dt);
+	}
 	for (Arg::Globs argIter(argv[1], argv[argc]); const char* pathName = argIter.Next(); ) {
-		if (!FS::Touch(terr, pathName)) rtn = 1;
+		if (!FS::Touch(terr, pathName, dt)) rtn = 1;
 	}
 	return rtn;
 }

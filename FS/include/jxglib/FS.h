@@ -287,8 +287,7 @@ File* OpenFileForCopy(const char* pathNameSrc, const char* pathNameDst);
 Dir* OpenDir(const char* dirName, uint8_t attrExclude = 0);
 Glob* OpenGlob(const char* pattern, bool patternAsDirFlag = false, uint8_t attrExclude = 0);
 const char* CreatePathNameDst(char* pathName, int lenMax, const char* pathNameSrc, const char* pathNameDst);
-bool SetTimeStamp(const char* pathName, const DateTime& dt);
-bool Touch(Printable& terr, const char* pathName);
+bool Touch(Printable& terr, const char* pathName, const DateTime& dt);
 bool PrintFile(Printable& terr, Printable& tout, const char* fileName);
 
 bool ListDrives(Printable& tout, const char* driveName = nullptr, bool remarksFlag = true);
@@ -302,9 +301,6 @@ inline bool Copy(const char* pathNameSrc, const char* pathNameDst, bool recursiv
 bool CopyFile(Printable& terr, const char* pathNameSrc, const char* pathNameDst);
 inline bool CopyFile(const char* pathNameSrc, const char* pathNameDst) { return CopyFile(PrintableDumb::Instance, pathNameSrc, pathNameDst); }
 
-bool Move(Printable& terr, const char* pathNameOld, const char* pathNameNew);
-inline bool Move(const char* pathNameOld, const char* pathNameNew) { return Move(PrintableDumb::Instance, pathNameOld, pathNameNew); }
-
 bool Remove(Printable& terr, const char* pathName, bool recursiveFlag);
 inline bool Remove(const char* pathName, bool recursiveFlag) { return Remove(PrintableDumb::Instance, pathName, recursiveFlag); }
 
@@ -313,6 +309,9 @@ inline bool RemoveFile(const char* fileName) { return RemoveFile(PrintableDumb::
 
 bool RemoveDir(Printable& terr, const char* dirName);
 inline bool RemoveDir(const char* dirName) { return RemoveDir(PrintableDumb::Instance, dirName); }
+
+bool Move(Printable& terr, const char* pathNameOld, const char* pathNameNew);
+inline bool Move(const char* pathNameOld, const char* pathNameNew) { return Move(PrintableDumb::Instance, pathNameOld, pathNameNew); }
 
 bool CreateDir(Printable& terr, const char* dirName);
 inline bool CreateDir(const char* dirName) { return CreateDir(PrintableDumb::Instance, dirName); }

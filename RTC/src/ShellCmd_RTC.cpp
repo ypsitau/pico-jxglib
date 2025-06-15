@@ -24,18 +24,11 @@ ShellCmd(rtc, "set or get RTC time")
 		DateTime dt;
 		RTC::Get(&dt);
 		for (int iArg = 1; iArg < argc; iArg++) {
-			if (DateTime::IsTime(argv[iArg])) {
-				// If the argument is a time, set it
-				if (!dt.ParseTime(argv[iArg])) {
-					terr.Printf("Invalid time format. Use HH:MM:SS\n");
-					return 1;
-				}
-			} else {
-				// Otherwise, parse the date
-				if (!dt.ParseDate(argv[iArg])) {
-					terr.Printf("Invalid date format. Use YYYY-MM-DD HH:MM:SS\n");
-					return 1;
-				}
+			if (DateTime::HasTimeFormat(argv[iArg])) {
+				dt.ParseTime(argv[iArg]); // DateTime::HasTimeFormat() already ensures the validity
+			} else if (!dt.Parse(argv[iArg])) {
+				terr.Printf("Invalid date/time format. Use YYYY-MM-DD HH:MM:SS\n");
+				return 1;
 			}
 		}
 		if (!RTC::Set(dt)) {
