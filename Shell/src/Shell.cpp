@@ -219,14 +219,20 @@ void Shell::AttachTerminal_(Terminal& terminal)
 	pTerminal_->SetTokenizer(tokenizer_);
 }
 
-void Shell::PrintHelp(Printable& printable)
+void Shell::PrintHelp(Printable& printable, bool simpleFlag)
 {
-	int lenMax = 1;
-	for (const Cmd* pCmd = Cmd::GetCmdHead(); pCmd; pCmd = pCmd->GetNext()) {
-		lenMax = ChooseMax(lenMax, static_cast<int>(::strlen(pCmd->GetName())));
-	}
-	for (const Cmd* pCmd = Cmd::GetCmdHead(); pCmd; pCmd = pCmd->GetNext()) {
-		printable.Printf("%-*s  %s\n", lenMax, pCmd->GetName(), pCmd->GetHelp());
+	if (simpleFlag) {
+		for (const Cmd* pCmd = Cmd::GetCmdHead(); pCmd; pCmd = pCmd->GetNext()) {
+			printable.Printf("%s\n", pCmd->GetName());
+		}
+	} else {
+		int lenMax = 1;
+		for (const Cmd* pCmd = Cmd::GetCmdHead(); pCmd; pCmd = pCmd->GetNext()) {
+			lenMax = ChooseMax(lenMax, static_cast<int>(::strlen(pCmd->GetName())));
+		}
+		for (const Cmd* pCmd = Cmd::GetCmdHead(); pCmd; pCmd = pCmd->GetNext()) {
+			printable.Printf("%-*s  %s\n", lenMax, pCmd->GetName(), pCmd->GetHelp());
+		}
 	}
 }
 

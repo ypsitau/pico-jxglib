@@ -216,7 +216,7 @@ public:
 	virtual const char* GetTickableName() const override { return "Shell"; }
 	virtual void OnTick() override;
 public:
-	static void PrintHelp(Printable& printable);
+	static void PrintHelp(Printable& printable, bool simpleFlag = false);
 };
 
 }

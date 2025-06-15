@@ -20,7 +20,7 @@ ShellCmd_Named(about_cpu, "about-platform", "prints information about the platfo
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [options]\noptions:\n", GetName());
+		terr.Printf("Usage: %s [OPTION]...\noptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -41,7 +41,7 @@ ShellCmd_Named(about_me, "about-me", "prints information about this own program"
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [options]\noptions:\n", GetName());
+		terr.Printf("Usage: %s [OPTION]...\noptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -94,7 +94,7 @@ int ShellCmd_dump::Run(Readable& tin, Printable& tout, Printable& terr, int argc
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [options] [addr [bytes]]\noptions:\n", GetName());
+		terr.Printf("Usage: %s [OPTION]... [addr [bytes]]\noptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 0;
 	}
@@ -157,7 +157,7 @@ ShellCmd_Named(dot, ".", "executes the given script file")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (argc < 2 || arg.GetBool("help")) {
-		terr.Printf("usage: %s [options] <script>\noptions:\n", GetName());
+		terr.Printf("Usage: %s [OPTION]... <script>\noptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -183,7 +183,7 @@ ShellCmd(echo, "prints the given text")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [options] [text...]\noptions:\n", GetName());
+		terr.Printf("Usage: %s [OPTION]... [text...]\noptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 0;
 	}
@@ -202,15 +202,17 @@ ShellCmd(help, "prints help strings for available commands")
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
+		Arg::OptBool("simple",		's',	"prints only command names"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [options]\noptions:\n", GetName());
+		terr.Printf("Usage: %s [OPTION]...\noptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
-	Shell::PrintHelp(tout);
+	bool simpleFlag = arg.GetBool("simple");
+	Shell::PrintHelp(tout, simpleFlag);
 	return 0;
 }
 
@@ -225,7 +227,7 @@ ShellCmd(prompt, "changes the command line prompt")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [options] [<prompt>]\noptions:\n", GetName());
+		terr.Printf("Usage: %s [OPTION]... [PROMPT]\noptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -248,7 +250,7 @@ ShellCmd(ticks, "prints names and attributes of running Tickable instances")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [options]\noptions:\n", GetName());
+		terr.Printf("Usage: %s [OPTION]...\noptions:\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
