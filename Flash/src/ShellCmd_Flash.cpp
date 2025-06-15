@@ -15,9 +15,8 @@ ShellCmd_Named(flash_erase, "flash-erase", "erases flash memory")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (argc < 2 || arg.GetBool("help")) {
-		terr.Printf("usage: %s [options] <address> <size>\n", GetName());
-		terr.Printf("       %s [options] <drivename>\n", GetName());
-		terr.Printf("options:\n");
+		terr.Printf("Usage: %s [OPTION]... ADDR SIZE\n", GetName());
+		terr.Printf("       %s [OPTION]... DRIVENAME\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}

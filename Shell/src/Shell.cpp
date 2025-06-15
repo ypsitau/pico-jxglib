@@ -313,8 +313,9 @@ bool Shell::Arg::Parse(Printable& terr, int& argc, const char* argv[])
 	return true;	
 }
 
-void Shell::Arg::PrintHelp(Printable& tout, const char* lineHead) const
+void Shell::Arg::PrintHelp(Printable& tout, const char* strCaption, const char* lineHead) const
 {
+	if (strCaption) tout.Printf("%s", strCaption);
 	int lenMax = 0;
 	char str[80];
 	for (int iOpt = 0; iOpt < nOpts_; iOpt++) {
@@ -398,17 +399,19 @@ bool Shell::Arg::Opt::CheckShortName(char shortName) const
 
 void Shell::Arg::Opt::MakeHelp(char* str, int len) const
 {
+	const char* strSepNoShort = " ";
+	const char* strSepShort = " ";
 	if (type_ == Type::Bool) {
 		if (shortName_ == '\0') {
-			::snprintf(str, len, "--%s", longName_);
+			::snprintf(str, len, "  %s--%s", strSepNoShort, longName_);
 		} else {
-			::snprintf(str, len, "--%s, -%c", longName_, shortName_);
+			::snprintf(str, len, "-%c%s--%s", shortName_, strSepShort, longName_);
 		}
 	} else {
 		if (shortName_ == '\0') {
-			::snprintf(str, len, "--%s=%s", longName_, helpValue_);
+			::snprintf(str, len, "  %s--%s=%s", strSepNoShort, longName_, helpValue_);
 		} else {
-			::snprintf(str, len, "--%s=%s, -%c %s", longName_, helpValue_, shortName_, helpValue_);
+			::snprintf(str, len, "-%c%s--%s=%s", shortName_, strSepShort, longName_, helpValue_);
 		}
 	}
 }

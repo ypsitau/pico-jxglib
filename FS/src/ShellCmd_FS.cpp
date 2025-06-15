@@ -13,7 +13,7 @@ ShellCmd(cat, "prints the contents of files")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [OPTION]... [FILE]...\nOptions:\n", GetName());
+		terr.Printf("Usage: %s [OPTION]... [FILE]...\n", GetName());
 		arg.PrintHelp(terr);
 		terr.Printf("\n"
 			"Reads the contents of files and prints them to standard output.\n"
@@ -43,7 +43,7 @@ ShellCmd(cd, "changes the current directory")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (argc < 2 || arg.GetBool("help")) {
-		terr.Printf("usage: %s [OPTION]... DIRECTORY\nOptions:\n", GetName());
+		terr.Printf("Usage: %s [OPTION]... DIRECTORY\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -59,7 +59,7 @@ ShellCmd_Named(cd_dot_dot, "cd..", "changes the current directory to the parent 
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [OPTION]...\nOptions:\n", GetName());
+		terr.Printf("Usage: %s [OPTION]...\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -75,7 +75,7 @@ ShellCmd_Named(cd_slash, "cd/", "changes the current directory to the root direc
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [OPTION]...\nOptions:\n", GetName());
+		terr.Printf("Usage: %s [OPTION]...\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -91,7 +91,7 @@ ShellCmd(copy, "copies files")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (argc < 3 || arg.GetBool("help")) {
-		terr.Printf("usage: %s [OPTION]... SOURCE... DEST\nOptions:\n", GetName());
+		terr.Printf("Usage: %s [OPTION]... SOURCE... DEST\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -112,7 +112,7 @@ ShellCmd(format, "formats drives")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (argc < 2 || arg.GetBool("help")) {
-		terr.Printf("usage: %s DRIVE...\nOptions:\n", GetName());
+		terr.Printf("Usage: %s DRIVE...\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -134,7 +134,7 @@ ShellCmd(glob, "prints files matching a glob pattern")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (argc < 2 || arg.GetBool("help")) {
-		terr.Printf("usage: %s [OPTION]... PATTERN\nOptions:\n", GetName());
+		terr.Printf("Usage: %s [OPTION]... PATTERN\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -159,7 +159,7 @@ ShellCmd(ls, "lists files in the specified directory")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [OPTION]... [DIRECTORY]...\nOptions:\n", GetName());
+		terr.Printf("Usage: %s [OPTION]... [DIRECTORY]...\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -202,7 +202,7 @@ ShellCmd_Named(ls_drive, "ls-drive", "lists availabld drives")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [OPTION]... [DRIVE]\nOptions:\n", GetName());
+		terr.Printf("Usage: %s [OPTION]... [DRIVE]\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -221,7 +221,7 @@ ShellCmd(mkdir, "creates directories")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (argc < 2 || arg.GetBool("help")) {
-		terr.Printf("usage: %s [OPTION]... DIRECTORY...\nOptions:\n", GetName());
+		terr.Printf("Usage: %s [OPTION]... DIRECTORY...\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -241,7 +241,7 @@ ShellCmd(mount, "mounts specified drives")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (argc < 2 || arg.GetBool("help")) {
-		terr.Printf("usage: %s [OPTION]... DRIVE\nOptions:\n", GetName());
+		terr.Printf("Usage: %s [OPTION]... DRIVE\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -259,7 +259,7 @@ ShellCmd(move, "moves a file")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (argc < 3 || arg.GetBool("help")) {
-		terr.Printf("usage: %s [OPTION]... SOURCE... DEST\nOptions:\n", GetName());
+		terr.Printf("Usage: %s [OPTION]... SOURCE... DEST\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -281,7 +281,7 @@ ShellCmd(pwd, "prints the current directory")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [OPTION]...\nOptions:\n", GetName());
+		terr.Printf("Usage: %s [OPTION]...\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -303,7 +303,7 @@ ShellCmd(rm, "removes files")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (argc < 2 || arg.GetBool("help")) {
-		terr.Printf("usage: %s [OPTION]... FILE...\nOptions:\n", GetName());
+		terr.Printf("Usage: %s [OPTION]... FILE...\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -325,7 +325,7 @@ ShellCmd(rmdir, "removes directories")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (argc < 2 || arg.GetBool("help")) {
-		terr.Printf("usage: %s [OPTION]... DIRECTORY...\nOptions:\n", GetName());
+		terr.Printf("Usage: %s [OPTION]... DIRECTORY...\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -343,7 +343,7 @@ ShellCmd(touch, "updates time stamps or creates empty files")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (argc < 2 || arg.GetBool("help")) {
-		terr.Printf("usage: %s [OPTION]... FILE...\nOptions:\n", GetName());
+		terr.Printf("Usage: %s [OPTION]... FILE...\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -361,7 +361,7 @@ ShellCmd(umount, "unmounts specified drives")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (argc < 2 || arg.GetBool("help")) {
-		terr.Printf("usage: %s [OPTION]... DRIVE...\nOptions:\n", GetName());
+		terr.Printf("Usage: %s [OPTION]... DRIVE...\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}
@@ -380,7 +380,7 @@ ShellCmd(walk, "walks through directories")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [OPTION]... [DIRECTORY]\nOptions:\n", GetName());
+		terr.Printf("Usage: %s [OPTION]... [DIRECTORY]\n", GetName());
 		arg.PrintHelp(terr);
 		return 1;
 	}

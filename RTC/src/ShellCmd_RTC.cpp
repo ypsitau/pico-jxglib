@@ -14,10 +14,10 @@ ShellCmd(rtc, "set or get RTC time")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		terr.Printf("usage: %s [OPTION]... [DATE] [TIME]\nOptions:\n", GetName());
+		terr.Printf("Usage: %s [OPTION]... [DATE] [TIME]\n", GetName());
 		arg.PrintHelp(terr);
 		terr.Printf("\n"
-				"Set or get the RTC time. If no argument is given, it gets the current time.\n");
+				"Set or get the RTC time. If no argument is given, it prints the current time.\n");
 		return 1;
 	}
 	if (argc >= 2) {
