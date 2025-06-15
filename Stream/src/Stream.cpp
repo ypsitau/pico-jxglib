@@ -15,6 +15,7 @@ bool Stream::WriteTo(Stream&& streamTo)
 	char buff[512];
 	while ((bytesRead = Read(buff, sizeof(buff))) > 0) {
 		if (streamTo.Write(buff, bytesRead) != bytesRead) return false;
+		if (Tickable::TickSub()) return false;	// check if signalled to stop
 	}
 	return true;
 }
@@ -26,6 +27,7 @@ bool Stream::PrintTo(Printable&& printable)
 	while ((bytesRead = Read(buff, sizeof(buff) - 1)) > 0) {
 		buff[bytesRead] = '\0';
 		printable.Print(buff);
+		if (Tickable::TickSub()) return false;	// check if signalled to stop
 	}
 	return true;
 }
@@ -36,6 +38,7 @@ bool Stream::WriteTo(FILE* fp)
 	char buff[512];
 	while ((bytesRead = Read(buff, sizeof(buff))) > 0) {
 		if (::fwrite(buff, sizeof(char), bytesRead, fp) < bytesRead) return false;
+		if (Tickable::TickSub()) return false;	// check if signalled to stop
 	}
 	return true;
 }

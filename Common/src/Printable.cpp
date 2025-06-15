@@ -142,7 +142,7 @@ Printable::DumpT& Printable::DumpT::operator()(const void* buff, int cnt)
 		if (iCol == nCols) {
 			if (asciiFlag_) PrintAscii(printable, asciiBuff, bytesPerElem_ * iCol);
 			printable.Println();
-			if (Tickable::TickSub()) break;
+			if (Tickable::TickSub()) break;	// check if signalled to stop
 			iCol = 0;
 		}
 	}

@@ -139,9 +139,9 @@ void Shell::OnTick()
 		break;
 	}
 	case Stat::Running: {
-		KeyData keyData;
-		GetTerminal().GetKeyDataNB(&keyData);
-		if (keyData.GetChar() == 'C' - '@') Tickable::SetSignal();
+		//KeyData keyData;
+		//GetTerminal().GetKeyDataNB(&keyData);
+		//if (keyData.GetChar() == 'C' - '@') Tickable::SetSignal();
 		break;
 	}
 	}
