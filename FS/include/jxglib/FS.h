@@ -296,8 +296,8 @@ bool ListDrives(Printable& tout, const char* driveName = nullptr, bool remarksFl
 bool ListFiles(Printable& terr, Printable& tout, const char* pathName,
 	const FileInfo::Cmp& cmp = FileInfo::Cmp::Zero, uint8_t attrExclude = 0, bool slashForDirFlag = true);
 
-bool Copy(Printable& terr, const char* pathNameSrc, const char* pathNameDst);
-inline bool Copy(const char* pathNameSrc, const char* pathNameDst) { return Copy(PrintableDumb::Instance, pathNameSrc, pathNameDst); }
+bool Copy(Printable& terr, const char* pathNameSrc, const char* pathNameDst, bool recursiveFlag);
+inline bool Copy(const char* pathNameSrc, const char* pathNameDst, bool recursiveFlag) { return Copy(PrintableDumb::Instance, pathNameSrc, pathNameDst, recursiveFlag); }
 
 bool CopyFile(Printable& terr, const char* pathNameSrc, const char* pathNameDst);
 inline bool CopyFile(const char* pathNameSrc, const char* pathNameDst) { return CopyFile(PrintableDumb::Instance, pathNameSrc, pathNameDst); }

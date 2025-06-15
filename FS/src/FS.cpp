@@ -58,9 +58,9 @@ bool SetDriveCur(const char* driveName)
 
 File* OpenFile(const char* fileName, const char* mode, Drive* pDrive)
 {
-	char pathName[MaxPath];
+	char filenameN[MaxPath];
 	if (!pDrive) pDrive = FindDrive(fileName);
-	return pDrive? pDrive->OpenFile(pDrive->NativePathName(pathName, sizeof(pathName), fileName), mode) : nullptr;
+	return pDrive? pDrive->OpenFile(pDrive->NativePathName(filenameN, sizeof(filenameN), fileName), mode) : nullptr;
 }
 
 const char* CreatePathNameDst(char* pathName, int lenMax, const char* pathNameSrc, const char* pathNameDst)
@@ -90,13 +90,11 @@ File* OpenFileForCopy(const char* pathNameSrc, const char* pathNameDst)
 
 Dir* OpenDir(const char* dirName, uint8_t attrExclude)
 {
-	char pathName[MaxPath];
+	char dirNameN[MaxPath];
 	Drive* pDrive = FindDrive(dirName);
 	if (!pDrive) return nullptr;
-	std::unique_ptr<Dir> pDir(pDrive->OpenDir(
-			pDrive->NativePathName(pathName, sizeof(pathName), dirName),
-			attrExclude));
-	if (pDir) pDir->SetDirName(dirName);	
+	std::unique_ptr<Dir> pDir(pDrive->OpenDir(pDrive->NativePathName(dirNameN, sizeof(dirNameN), dirName), attrExclude));
+	if (pDir) pDir->SetDirName(SkipDriveName(dirName));	
 	return pDir.release();
 	
 }
@@ -109,9 +107,9 @@ Glob* OpenGlob(const char* pattern, bool patternAsDirFlag, uint8_t attrExclude)
 
 bool SetTimeStamp(const char* pathName, const DateTime& dt)
 {
-	char pathNameBuff[MaxPath];
+	char pathNameN[MaxPath];
 	Drive* pDrive = FindDrive(pathName);
-	return pDrive? pDrive->SetTimeStamp(pDrive->NativePathName(pathNameBuff, sizeof(pathNameBuff), pathName), dt) : false;
+	return pDrive? pDrive->SetTimeStamp(pDrive->NativePathName(pathNameN, sizeof(pathNameN), pathName), dt) : false;
 }
 
 bool Touch(Printable& terr, const char* pathName)
@@ -204,31 +202,54 @@ bool CopyFile(Printable& terr, const char* pathNameSrc, const char* pathNameDst)
 	return true;
 }
 
-bool Copy(Printable& terr, const char* pathNameSrc, const char* pathNameDst)
+bool Copy(Printable& terr, const char* pathNameSrc, const char* pathNameDst, bool recursiveFlag)
 {
-	return false;
+	if (IsDirectory(pathNameSrc)) {
+		if (!recursiveFlag) {
+			terr.Printf("cannot copy directory %s\n", pathNameSrc);
+			return false;
+		}
+		Walker walker(true); // fileFirstFlag = true: read files first
+		if (!walker.Open(pathNameSrc, 0)) {
+			terr.Printf("failed to open directory %s\n", pathNameSrc);
+			return false; // Open directory failed
+		}
+		for (;;) {
+			const char* pathName;
+			std::unique_ptr<FileInfo> pFileInfo(walker.Read(&pathName));
+			if (!pFileInfo) break; // No more files
+			if (pFileInfo->IsDirectory()) {
+			} else {
+			}
+		}
+		return true;
+	} else {
+		return CopyFile(terr, pathNameSrc, pathNameDst);
+	}
 }
 
 bool Remove(Printable& terr, const char* pathName, bool recursiveFlag)
 {
 	if (IsDirectory(pathName)) {
-		if (recursiveFlag) {
-			Walker walker(true); // fileFirstFlag = true: read files first
-			if (!walker.Open(pathName, 0)) {
-				terr.Printf("failed to open directory %s\n", pathName);
-				return false; // Open directory failed
+		if (!recursiveFlag) {
+			terr.Printf("cannot remove directory %s as file\n", pathName);
+			return false;
+		}
+		Walker walker(true); // fileFirstFlag = true: read files first
+		if (!walker.Open(pathName, 0)) {
+			terr.Printf("failed to open directory %s\n", pathName);
+			return false; // Open directory failed
+		}
+		for (;;) {
+			const char* pathName;
+			std::unique_ptr<FileInfo> pFileInfo(walker.Read(&pathName));
+			if (!pFileInfo) break; // No more files
+			if (pFileInfo->IsDirectory()) {
+				if (!RemoveDir(pathName)) return false;
+			} else {
+				if (!RemoveFile(pathName)) return false;
 			}
-			for (;;) {
-				const char* pathName;
-				std::unique_ptr<FileInfo> pFileInfo(walker.Read(&pathName));
-				if (!pFileInfo) break; // No more files
-				if (pFileInfo->IsDirectory()) {
-					if (!RemoveDir(pathName)) return false;
-				} else {
-					if (!RemoveFile(pathName)) return false;
-				}
-			}
-		}	
+		}
 		return RemoveDir(terr, pathName);
 	} else {
 		return RemoveFile(terr, pathName);
@@ -237,33 +258,43 @@ bool Remove(Printable& terr, const char* pathName, bool recursiveFlag)
 
 bool RemoveFile(Printable& terr, const char* fileName)
 {
-	char pathNameNative[MaxPath];
+	char pathNameN[MaxPath];
 	Drive* pDrive = FindDrive(fileName);
 	if (!pDrive) {
 		terr.Printf("drive for file %s not found\n", fileName);
 		return false; // Drive not found
 	}
-	if (pDrive->RemoveFile(pDrive->NativePathName(pathNameNative, sizeof(pathNameNative), fileName))) return true;
-	terr.Printf("failed to remove %s\n", fileName);
+	pDrive->NativePathName(pathNameN, sizeof(pathNameN), fileName);
+	if (pDrive->IsDirectory(pathNameN)) {
+		terr.Printf("cannot remove directory %s as file\n", fileName);
+	} else {
+		if (pDrive->RemoveFile(pathNameN)) return true;
+		terr.Printf("failed to remove %s\n", fileName);
+	}
 	return false;
 }
 
 bool RemoveDir(Printable& terr, const char* dirName)
 {
-	char pathName[MaxPath];
+	char pathNameN[MaxPath];
 	Drive* pDrive = FindDrive(dirName);
 	if (!pDrive) {
 		terr.Printf("drive for direcory %s not found\n", dirName);
 		return false; // Drive not found
 	}
-	if (pDrive->RemoveDir(pDrive->NativePathName(pathName, sizeof(pathName), dirName))) return true;
-	terr.Printf("failed to remove %s\n", dirName);
+	pDrive->NativePathName(pathNameN, sizeof(pathNameN), dirName);
+	if (pDrive->IsDirectory(pathNameN)) {
+		if (pDrive->RemoveDir(pathNameN)) return true;
+		terr.Printf("failed to remove %s\n", dirName);
+	} else {
+		terr.Printf("cannot remove %s as directory\n", dirName);
+	}
 	return false;
 }
 
 bool Move(Printable& terr, const char* pathNameOld, const char* pathNameNew)
 {
-	char pathNameBuffOld[MaxPath], pathNameBuffNew[MaxPath];
+	char pathNameOldN[MaxPath], pathNameNewN[MaxPath];
 	Drive* pDriveOld = FindDrive(pathNameOld);
 	if (!pDriveOld) {
 		terr.Printf("drive for old file %s not found\n", pathNameOld);
@@ -276,10 +307,10 @@ bool Move(Printable& terr, const char* pathNameOld, const char* pathNameNew)
 	}
 	if (pDriveOld == pDriveNew) {
 		// Same drive, just rename
-		char pathNameBuff[MaxPath];
-		CreatePathNameDst(pathNameBuff, sizeof(pathNameBuff), pathNameOld, pathNameNew);
-		if (pDriveOld->Rename(pDriveOld->NativePathName(pathNameBuffOld, sizeof(pathNameBuffOld), pathNameOld),
-				pDriveOld->NativePathName(pathNameBuffNew, sizeof(pathNameBuffNew), pathNameBuff))) return true;
+		char pathNameDst[MaxPath];
+		CreatePathNameDst(pathNameDst, sizeof(pathNameDst), pathNameOld, pathNameNew);
+		if (pDriveOld->Rename(pDriveOld->NativePathName(pathNameOldN, sizeof(pathNameOldN), pathNameOld),
+				pDriveOld->NativePathName(pathNameNewN, sizeof(pathNameNewN), pathNameDst))) return true;
 		terr.Printf("failed to rename %s to %s\n", pathNameOld, pathNameNew);
 		return false; // Rename failed
 	}
@@ -292,13 +323,13 @@ bool Move(Printable& terr, const char* pathNameOld, const char* pathNameNew)
 
 bool CreateDir(Printable& terr, const char* dirName)
 {
-	char pathName[MaxPath];
+	char dirNameN[MaxPath];
 	Drive* pDrive = FindDrive(dirName);
 	if (!pDrive) {
 		terr.Printf("drive for direcory %s not found\n", dirName);
 		return false; // Drive not found
 	}
-	if (pDrive->CreateDir(pDrive->NativePathName(pathName, sizeof(pathName), dirName))) return true;
+	if (pDrive->CreateDir(pDrive->NativePathName(dirNameN, sizeof(dirNameN), dirName))) return true;
 	terr.Printf("failed to create directory %s\n", dirName);
 	return false;
 }
@@ -311,9 +342,9 @@ bool ChangeCurDir(Printable& terr, const char* dirName)
 		return false; // Drive not found
 	}
 	char pathName[MaxPath];
-	char pathNameNative[MaxPath];
+	char dirNameN[MaxPath];
 	dirName = pDrive->RegulatePathName(pathName, sizeof(pathName), dirName);
-	if (pDrive->IsDirectory(pDrive->NativePathName(pathNameNative, sizeof(pathNameNative), dirName))) {
+	if (pDrive->IsDirectory(pDrive->NativePathName(dirNameN, sizeof(dirNameN), dirName))) {
 		pDrive->SetDirNameCur(dirName);
 		return true;
 	}
@@ -323,18 +354,18 @@ bool ChangeCurDir(Printable& terr, const char* dirName)
 
 bool DoesExist(const char* pathName)
 {
-	char pathNameBuff[MaxPath];
+	char pathNameN[MaxPath];
 	Drive* pDrive = FindDrive(pathName);
 	if (!pDrive) return false;
-	return pDrive->DoesExist(pDrive->NativePathName(pathNameBuff, sizeof(pathNameBuff), pathName));
+	return pDrive->DoesExist(pDrive->NativePathName(pathNameN, sizeof(pathNameN), pathName));
 }
 
 bool IsDirectory(const char* pathName)
 {
-	char pathNameBuff[MaxPath];
+	char pathNameN[MaxPath];
 	Drive* pDrive = FindDrive(pathName);
 	if (!pDrive) return false;
-	return pDrive->IsDirectory(pDrive->NativePathName(pathNameBuff, sizeof(pathNameBuff), pathName));
+	return pDrive->IsDirectory(pDrive->NativePathName(pathNameN, sizeof(pathNameN), pathName));
 }
 
 bool Format(Printable& terr, const char* driveName)
@@ -395,10 +426,10 @@ bool Unmount(Printable& terr, const char* driveName)
 
 FileInfo* GetFileInfo(const char* pathName)
 {
-	char pathNameBuff[MaxPath];
+	char pathNameN[MaxPath];
 	Drive* pDrive = FindDrive(pathName);
 	if (!pDrive) return nullptr;
-	return pDrive->GetFileInfo(pDrive->NativePathName(pathNameBuff, sizeof(pathNameBuff), pathName));
+	return pDrive->GetFileInfo(pDrive->NativePathName(pathNameN, sizeof(pathNameN), pathName));
 }
 
 bool IsLegalDriveName(const char* driveName)

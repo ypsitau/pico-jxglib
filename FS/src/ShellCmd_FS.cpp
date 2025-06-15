@@ -23,10 +23,12 @@ ShellCmd(cat, "prints the contents of files")
 	if (argc < 2) {
 		int len;
 		char buff[128];
+		Shell::BeginInteractive();
 		while ((len = tin.Read(buff, sizeof(buff) - 1)) >= 0) {
 			buff[len] = '\0'; // null-terminate the string
 			tout.Print(buff);
 		}
+		Shell::EndInteractive();
 	} else {
 		for (Arg::Globs argIter(argv[1], argv[argc]); const char* pathName = argIter.Next(); ) {
 			if (argIter.GetFileInfo().IsFile() && !FS::PrintFile(terr, tout, pathName)) return 1;
@@ -87,6 +89,7 @@ ShellCmd(copy, "copies files")
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
+		Arg::OptBool("recursive",	'r',	"copies directories recursively"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -95,11 +98,13 @@ ShellCmd(copy, "copies files")
 		arg.PrintHelp(terr);
 		return 1;
 	}
+	bool recursiveFlag = arg.GetBool("recursive");
 	const char* pathNameDst = argv[argc - 1];
+	int rtn = 0;
 	for (Arg::Globs argIter(argv[1], argv[argc - 1]); const char* pathNameSrc = argIter.Next(); ) {
-		if (argIter.GetFileInfo().IsFile() && !FS::CopyFile(terr, pathNameSrc, pathNameDst)) return 1;
+		if (!FS::Copy(terr, pathNameSrc, pathNameDst, recursiveFlag)) rtn = 1;
 	}
-	return 0;
+	return rtn;
 }
 
 ShellCmdAlias(cp, copy)
@@ -329,10 +334,11 @@ ShellCmd(rmdir, "removes directories")
 		arg.PrintHelp(terr);
 		return 1;
 	}
+	int rtn = 0;
 	for (Arg::Globs argIter(argv[1], argv[argc]); const char* pathName = argIter.Next(); ) {
-		if (argIter.GetFileInfo().IsDirectory() && !FS::RemoveDir(terr, pathName)) return 1;
+		if (!FS::RemoveDir(terr, pathName)) rtn = 1;
 	}
-	return 0;
+	return rtn;
 }
 
 ShellCmd(touch, "updates time stamps or creates empty files")
@@ -347,10 +353,11 @@ ShellCmd(touch, "updates time stamps or creates empty files")
 		arg.PrintHelp(terr);
 		return 1;
 	}
+	int rtn = 0;
 	for (Arg::Globs argIter(argv[1], argv[argc]); const char* pathName = argIter.Next(); ) {
-		if (!FS::Touch(terr, pathName)) return 1;
+		if (!FS::Touch(terr, pathName)) rtn = 1;
 	}
-	return 0;
+	return rtn;
 }
 
 ShellCmd(umount, "unmounts specified drives")
@@ -365,10 +372,11 @@ ShellCmd(umount, "unmounts specified drives")
 		arg.PrintHelp(terr);
 		return 1;
 	}
+	int rtn = 0;
 	for (Arg::Each argIter(argv[1], argv[argc]); const char* driveName = argIter.Next(); ) {
-		if (!FS::Unmount(tout, driveName)) return 1;
+		if (!FS::Unmount(tout, driveName)) rtn = 1;
 	}
-	return 0;
+	return rtn;
 }
 
 ShellCmd(walk, "walks through directories")

@@ -14,7 +14,7 @@ const char* Shell::StartupScriptName = "/autoexec.sh";
 const char* Shell::specialTokens_[] = { ">>", "||", ">", "|", ";" };
 
 Shell::Shell() : stat_{Stat::Startup}, pTerminal_{&TerminalDumb::Instance},
-			pCmdRunning_{nullptr}, tokenizer_(specialTokens_, count_of(specialTokens_))
+	pCmdRunning_{nullptr}, tokenizer_(specialTokens_, count_of(specialTokens_)), interactiveFlag_{false}
 {
 	::strcpy(prompt_, "%d%w>");
 }
@@ -139,9 +139,11 @@ void Shell::OnTick()
 		break;
 	}
 	case Stat::Running: {
-		//KeyData keyData;
-		//GetTerminal().GetKeyDataNB(&keyData);
-		//if (keyData.GetChar() == 'C' - '@') Tickable::SetSignal();
+		if (!interactiveFlag_) {
+			KeyData keyData;
+			GetTerminal().GetKeyDataNB(&keyData);
+			if (keyData.GetChar() == 'C' - '@') Tickable::SetSignal();
+		}
 		break;
 	}
 	}

@@ -191,6 +191,7 @@ private:
 	Cmd* pCmdRunning_;
 	CompletionProvider completionProvider_;
 	Tokenizer tokenizer_;
+	bool interactiveFlag_;
 public:
 	static Shell Instance;
 private:
@@ -206,11 +207,15 @@ public:
 	static const char* GetPrompt() { return Instance.GetPrompt_(); }
 	static void SetPrompt(const char* prompt) { Instance.SetPrompt_(prompt); }
 	static void AttachTerminal(Terminal& terminal) { Instance.AttachTerminal_(terminal); }
+	static void BeginInteractive() { Instance.BeginInteractive_(); }
+	static void EndInteractive() { Instance.EndInteractive_(); }
 private:
 	const char* GetPrompt_() const { return prompt_; }
 	void SetPrompt_(const char* prompt);
 	const char* MakePrompt(char* prompt, int lenMax);
 	void AttachTerminal_(Terminal& terminal);
+	void BeginInteractive_() { interactiveFlag_ = true; }
+	void EndInteractive_() { interactiveFlag_ = false; }
 public:
 	// virtual functions of Tickable
 	virtual const char* GetTickableName() const override { return "Shell"; }
