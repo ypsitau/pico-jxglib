@@ -155,9 +155,7 @@ ShellCmd(ls, "lists files in the specified directory")
 		Arg::OptBool("help",		'h',	"prints this help"),
 		Arg::OptBool("all",			'a',	"lists all files, including hidden ones"),
 		Arg::OptBool("mixed",		'm',	"lists files and directories in mixed order"),		
-		Arg::OptBool("name",		'n',	"sorts by name"),
-		Arg::OptBool("size",		's',	"sorts by size"),
-		Arg::OptBool("datetime",	'd',	"sorts by date/time"),
+		Arg::OptString("sort",		0x0,	"sorts by WORD instead of name", "WORD"),
 		Arg::OptBool("reverse",		'r',	"reverses the order of listing"),
 		Arg::OptBool("elimslash",	'e',	"eliminates trailing slashes from directory names"),
 	};
@@ -175,14 +173,18 @@ ShellCmd(ls, "lists files in the specified directory")
 	const FS::FileInfo::Cmp* pCmp1 = mixedFlag? &FS::FileInfo::Cmp::Zero : &FS::FileInfo::Cmp_Type::Ascent;
 	const FS::FileInfo::Cmp* pCmp2 = reverseFlag? &FS::FileInfo::Cmp_Name::Descent : &FS::FileInfo::Cmp_Name::Ascent;
 	const FS::FileInfo::Cmp* pCmp3 = &FS::FileInfo::Cmp::Zero;
-	if (arg.GetBool("name")) {
+	const char* value;
+	if (!arg.GetString("sort", &value) || ::strcasecmp(value, "name") == 0) {
 		// nothing to do, pCmp1 and pCmp2 are already set to name comparison
-	} else if (arg.GetBool("size")) {
+	} else if (::strcasecmp(value, "size") == 0) {
 		pCmp2 = reverseFlag? &FS::FileInfo::Cmp_Size::Descent : &FS::FileInfo::Cmp_Size::Ascent;
 		pCmp3 = &FS::FileInfo::Cmp_Name::Ascent;
-	} else if (arg.GetBool("datetime")) {
+	} else if (::strcasecmp(value, "time") == 0) {
 		pCmp2 = reverseFlag? &FS::FileInfo::Cmp_DateTime::Descent : &FS::FileInfo::Cmp_DateTime::Ascent;
 		pCmp3 = &FS::FileInfo::Cmp_Name::Ascent;
+	} else {
+		terr.Printf("Unknown sort option: %s\n", value);
+		return 1;
 	}
 	FS::FileInfo::CmpDefault.Set(pCmp1, pCmp2, pCmp3);
 	if (argc < 2) {
