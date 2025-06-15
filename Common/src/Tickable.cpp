@@ -13,7 +13,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 Tickable* Tickable::pTickableTop_ = nullptr;
 bool Tickable::firstFlag_ = true;
-uint32_t Tickable::msecMainStart_ = 0;
+bool Tickable::signalledFlag_ = false;
 int Tickable::tickCalledDepth_ = 0;
 int Tickable::tickCalledDepthMax_ = 0;
 
@@ -75,27 +75,34 @@ void Tickable::RemoveFromTickable()
 	SetNext(nullptr);
 }
 
-bool Tickable::Tick(uint32_t msecTick)
+uint32_t Tickable::Tick_()
 {
+	bool expiredFlag = false;
 	tickCalledDepth_++;
 	tickCalledDepthMax_ = ChooseMax(tickCalledDepthMax_, tickCalledDepth_);
 	uint32_t msecCur = GetCurrentTime();
 	if (firstFlag_) {
-		firstFlag_ = false;
 		for (Tickable* pTickable = pTickableTop_; pTickable; pTickable = pTickable->GetNext()) {
 			pTickable->InitTick(msecCur);
 			pTickable->OnTick();
 		}
-		msecMainStart_ = msecCur;
+		firstFlag_ = false;
 	} else {
 		for (Tickable* pTickable = pTickableTop_; pTickable; pTickable = pTickable->GetNext()) {
 			if (pTickable->IsExpired(msecCur)) pTickable->OnTick();
 		}
-		if (msecTick == -1 || msecCur - msecMainStart_ < msecTick) return false;
-		msecMainStart_ += msecTick;
 	}
 	tickCalledDepth_--;
-	return true;
+	return msecCur;
+}
+
+void Tickable::Sleep(uint32_t msecTick)
+{
+	uint32_t msecStart = GetCurrentTime();
+	for (;;) {
+		uint32_t msecCur = Tick_();
+		if (IsSignalled() || msecCur - msecStart >= msecTick) break;
+	}
 }
 
 void Tickable::PrintList(Printable& printable)

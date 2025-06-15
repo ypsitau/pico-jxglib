@@ -41,14 +41,21 @@ private:
 private:
 	static Tickable* pTickableTop_;
 	static bool firstFlag_;
-	static uint32_t msecMainStart_;
+	static bool signalledFlag_;
 	static int tickCalledDepth_;
 	static int tickCalledDepthMax_;
 public:
 	Tickable(uint32_t msecTick = 0, Priority priority = Priority::Normal);
+private:
+	static uint32_t Tick_();
 public:
-	static bool Tick(uint32_t msecTick = 0);
-	static void Sleep(uint32_t msecTick = 0) { while (!Tick(msecTick)) ::tight_loop_contents(); }
+	static void SetSignal() { signalledFlag_ = true; }
+	static void ClearSignal() { signalledFlag_ = false; }
+	static bool IsSignalled() { return signalledFlag_; }
+	static bool IsFirstTick() { return firstFlag_; }
+	static void Tick() { Tick_(); ClearSignal(); }
+	static bool TickSub() { Tick_(); return IsSignalled(); }
+	static void Sleep(uint32_t msecTick);
 	static uint32_t GetCurrentTime() { return ::to_ms_since_boot(::get_absolute_time()); }
 public:
 	Priority GetPriority() const { return priority_; }
