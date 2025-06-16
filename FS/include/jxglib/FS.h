@@ -219,6 +219,7 @@ protected:
 	uint8_t attrExclude_; // attributes to exclude
 	Dir* pDirCur_;
 	char pathName_[MaxPath];
+	//char* pathNameSub_;
 public:
 	Walker(bool removeModeFlag = false);
 	~Walker() { Close(); }

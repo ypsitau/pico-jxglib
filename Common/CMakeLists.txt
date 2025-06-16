@@ -66,3 +66,15 @@ target_link_libraries(jxglib_ShellCmd_I2C INTERFACE
 
 target_sources(jxglib_ShellCmd_I2C INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/ShellCmd_I2C.cpp)
+
+#------------------------------------------------------------------------------
+add_library(jxglib_ShellCmd_GPIO INTERFACE)
+
+target_include_directories(jxglib_ShellCmd_GPIO INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/include)
+
+target_link_libraries(jxglib_ShellCmd_GPIO INTERFACE
+	jxglib_ShellCmd_Basic)
+
+target_sources(jxglib_ShellCmd_I2C INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/src/ShellCmd_GPIO.cpp)

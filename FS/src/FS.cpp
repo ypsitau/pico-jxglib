@@ -848,6 +848,9 @@ FileInfo* Walker::Read(const char** pPathName)
 	for (;;) {
 		pFileInfo.reset(pDirCur_->Read());
 		if (pFileInfo) {
+			//pathName_[0] = '\0';
+			//AppendPathName(pathName_, sizeof(pathName_), pDirCur_->GetDirName());
+			//AppendPathName(pathName_, sizeof(pathName_), pFileInfo->GetName());
 			JoinPathName(pathName_, sizeof(pathName_), pDirCur_->GetDirName(), pFileInfo->GetName());
 			if (!pFileInfo->IsDirectory()) break;
 			Dir* pDir = OpenDir(pathName_, attrExclude_);
@@ -864,6 +867,9 @@ FileInfo* Walker::Read(const char** pPathName)
 			if (fileFirstFlag_) {
 				pFileInfo.reset(pDirCur_->ReleaseFileInfo());
 				Dir* pDir = pDirTop_->RemoveLast();
+				//pathName_[0] = '\0';
+				//AppendPathName(pathName_, sizeof(pathName_), pDir->GetDirName());
+				//AppendPathName(pathName_, sizeof(pathName_), pFileInfo->GetName());
 				JoinPathName(pathName_, sizeof(pathName_), pDir->GetDirName(), pFileInfo->GetName());
 				pDirCur_ = pDir;
 				break;
