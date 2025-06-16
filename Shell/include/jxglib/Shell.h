@@ -77,12 +77,12 @@ public:
 		};	
 		class Iterator {
 		protected:
-			const char** argv_;
+			const char** argvCur_;
 			const char** argvBegin_;
 			const char** argvEnd_;
 		public:
 			Iterator(const char*& argvBegin, const char*& argvEnd) :
-				argv_{&argvBegin}, argvBegin_{&argvBegin}, argvEnd_{&argvEnd} {}
+				argvCur_{&argvBegin}, argvBegin_{&argvBegin}, argvEnd_{&argvEnd} {}
 		};
 		class Each : public Iterator {
 		public:
@@ -95,7 +95,9 @@ public:
 			const char* p_;
 			bool rangeActiveFlag_;
 			int rangeCur_, rangeEnd_, rangeStep_;
+			const char* argv_[2];
 		public:
+			EachNum(const char* str);
 			EachNum(const char*& argvBegin, const char*& argvEnd);
 			EachNum(char*& argvBegin, char*& argvEnd) : EachNum(const_cast<const char*&>(argvBegin), const_cast<const char*&>(argvEnd)) {}
 			bool Next(int* pValue);

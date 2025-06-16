@@ -103,12 +103,12 @@ void test_EachNum()
 		{ "negative numbers", 1, { "-2-2" }, "-2, -1, 0, 1, 2" },
 		{ "negative step", 1, { "5-1:2" }, "5, 3, 1" },
 		{ "zero", 1, { "0" }, "0" },
-#if 0
 		{ "large range", 1, { "10-15" }, "10, 11, 12, 13, 14, 15" },
 		{ "large reverse range", 1, { "15-10" }, "15, 14, 13, 12, 11, 10" },
 		{ "range with negative step", 1, { "10-2:2" }, "10, 8, 6, 4, 2" },
 		{ "range with positive step", 1, { "2-10:2" }, "2, 4, 6, 8, 10" },
 		{ "single negative", 1, { "-7" }, "-7" },
+#if 1
 		{ "range with zero step (invalid)", 1, { "1-5:0" }, "(none)" },
 		{ "step larger than range", 1, { "1-3:5" }, "1" },
 		{ "step larger than reverse range", 1, { "5-1:10" }, "5" },
@@ -128,7 +128,6 @@ void test_EachNum()
 		{ "multiple mixed", 4, { "1", "3-5", "7-5:-1", "9" }, "1, 3, 4, 5, 7, 6, 5, 9" },
 #endif
 	};
-
 	for (size_t i = 0; i < sizeof(cases)/sizeof(cases[0]); ++i) {
 		const EachNumTestCase& tc = cases[i];
 		tout.Printf("---- %s ----\n", tc.desc);

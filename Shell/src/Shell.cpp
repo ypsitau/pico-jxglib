@@ -428,29 +428,37 @@ Shell::Arg::Each::Each(const char*& argvBegin, const char*& argvEnd) : Iterator(
 
 const char* Shell::Arg::Each::Next()
 {
-	return (argv_ == argvEnd_)? nullptr : *argv_++;
+	return (argvCur_ == argvEnd_)? nullptr : *argvCur_++;
 }
 
 //------------------------------------------------------------------------------
 // Shell::Arg::EachNum
 //------------------------------------------------------------------------------
-Shell::Arg::EachNum::EachNum(const char*& argvBegin, const char*& argvEnd) : Iterator(argvBegin, argvEnd), p_{""} {}
+Shell::Arg::EachNum::EachNum(const char*& argvBegin, const char*& argvEnd) : Iterator(argvBegin, argvEnd),
+	p_{""}, rangeActiveFlag_{false}, rangeCur_{0}, rangeEnd_{0}, rangeStep_{1}
+{}
+
+Shell::Arg::EachNum::EachNum(const char* str) : EachNum(argv_[0], argv_[1])
+{
+	argv_[0] = str;
+	argv_[1] = nullptr;
+}
 
 bool Shell::Arg::EachNum::EachNum::Next(int* pValue)
 {
 	if (rangeActiveFlag_) {
 		*pValue = rangeCur_;
-		if (rangeCur_ == rangeEnd_) {
+		if ((rangeStep_ > 0 && rangeCur_ > rangeEnd_) || (rangeStep_ < 0 && rangeCur_ < rangeEnd_)) {
 			rangeActiveFlag_ = false;
 		} else {
 			rangeCur_ += rangeStep_;
+			return true;
 		}
-		return true;
 	}
 	for (;;) {
 		while (*p_ == '\0') {
-			if (argv_ == argvEnd_) return false; // no more arguments
-			p_ = *argv_++;
+			if (argvCur_ == argvEnd_) return false; // no more arguments
+			p_ = *argvCur_++;
 		}
 		// Parse first number
 		for ( ; ::isspace(*p_); ++p_) ;
@@ -470,7 +478,9 @@ bool Shell::Arg::EachNum::EachNum::Next(int* pValue)
 			if (*p_ == ':') {
 				++p_;
 				n3 = ::strtol(p_, &endptr, 10);
-				if (endptr == p_) return false; // invalid range step
+				if (n3 == 0) return false;
+				if (endptr == p_) n3 = 1;
+				if (n3 < 0) n3 = -n3;
 				p_ = endptr;
 			}
 			rangeStep_ = (n1 <= n2) ? n3 : -n3;
@@ -490,11 +500,11 @@ bool Shell::Arg::EachNum::EachNum::Next(int* pValue)
 
 bool Shell::Arg::EachNum::IsValid()
 {
-	argv_ = argvBegin_;
+	argvCur_ = argvBegin_;
 	int value;
 	while (Next(&value)) ;
-	bool rtn = (argv_ == argvEnd_ && *p_ == '\0');
-	argv_ = argvBegin_;
+	bool rtn = (argvCur_ == argvEnd_ && *p_ == '\0');
+	argvCur_ = argvBegin_;
 	return rtn;
 }
 
@@ -511,8 +521,8 @@ const char* Shell::Arg::Glob::Next()
 		if (pFileInfo_) return pathName;
 		pGlob_.reset();
 	}
-	while (argv_ != argvEnd_) {
-		const char* arg = *argv_++;
+	while (argvCur_ != argvEnd_) {
+		const char* arg = *argvCur_++;
 		if (FS::DoesContainWildcard(arg)) {
 			pGlob_.reset(FS::OpenGlob(arg));
 			if (pGlob_) {
