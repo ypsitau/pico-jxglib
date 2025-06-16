@@ -87,6 +87,7 @@ public:
 		class Each : public Iterator {
 		public:
 			Each(const char*& argvBegin, const char*& argvEnd);
+			Each(char*& argvBegin, char*& argvEnd) : Each(const_cast<const char*&>(argvBegin), const_cast<const char*&>(argvEnd)) {}
 			const char* Next();
 		};
 		class EachNum : public Iterator {
@@ -96,6 +97,7 @@ public:
 			int rangeCur_, rangeEnd_, rangeStep_;
 		public:
 			EachNum(const char*& argvBegin, const char*& argvEnd);
+			EachNum(char*& argvBegin, char*& argvEnd) : EachNum(const_cast<const char*&>(argvBegin), const_cast<const char*&>(argvEnd)) {}
 			bool Next(int* pValue);
 			bool IsValid();
 		};
@@ -105,6 +107,7 @@ public:
 			std::unique_ptr<FS::FileInfo> pFileInfo_;
 		public:
 			Glob(const char*& argvBegin, const char*& argvEnd);
+			Glob(char*& argvBegin, char*& argvEnd) : Glob(const_cast<const char*&>(argvBegin), const_cast<const char*&>(argvEnd)) {}
 			const char* Next();
 			const FS::FileInfo& GetFileInfo() const { return *pFileInfo_; }
 		};
