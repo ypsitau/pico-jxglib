@@ -46,7 +46,7 @@ ShellCmd_Named(i2c_scan, "i2c-scan", "scans I2C bus and prints connected address
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (argc < 3 || arg.GetBool("help")) {
-		tout.Printf("usage: %s OPTION... GPIO_SDA GPIO_SCL\n\n", argv[0]);
+		tout.Printf("Usage: %s OPTION... GPIO_SDA GPIO_SCL\n\n", argv[0]);
         tout.Printf("scans I2C bus and prints connected addresses\n\n");
 		arg.PrintHelp(tout);
 		return 0;

@@ -189,8 +189,9 @@ public:
 public:
 	uint pwm_slice_num() const								{ return ::pwm_gpio_to_slice_num(pin); }
 	uint pwm_channel() const								{ return ::pwm_gpio_to_channel(pin); }
-	const GPIO& pwm_set_wrap_slice(uint16_t wrap) const		{ ::pwm_set_wrap(pwm_slice_num(), wrap); return *this; }
 	const GPIO& pwm_set_level(uint16_t level) const			{ ::pwm_set_gpio_level(pin, level); return *this; }
+	
+	const GPIO& pwm_set_wrap_slice(uint16_t wrap) const		{ ::pwm_set_wrap(pwm_slice_num(), wrap); return *this; }
 	uint16_t pwm_slice_get_counter() const					{ return ::pwm_get_counter(pwm_slice_num()); }
 	const GPIO& pwm_set_counter_slice(uint16_t c) const		{ ::pwm_set_counter(pwm_slice_num(), c); return *this; }
 	const GPIO& pwm_advance_count_slice() const				{ ::pwm_advance_count(pwm_slice_num()); return *this; }
