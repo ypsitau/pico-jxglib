@@ -2,6 +2,7 @@
 // Shell.cpp
 //==============================================================================
 #include <stdlib.h>
+#include <ctype.h>
 #include "jxglib/Shell.h"
 
 namespace jxglib {
@@ -428,6 +429,70 @@ Shell::Arg::Each::Each(char*& argvBegin, char*& argvEnd) : Iterator(argvBegin, a
 const char* Shell::Arg::Each::Next()
 {
 	return (argv_ == argvEnd_)? nullptr : *argv_++;
+}
+
+//------------------------------------------------------------------------------
+// Shell::Arg::EachNum
+//------------------------------------------------------------------------------
+Shell::Arg::EachNum::EachNum(char*& argvBegin, char*& argvEnd) : Iterator(argvBegin, argvEnd), p_{""} {}
+
+bool Shell::Arg::EachNum::EachNum::Next(int* pValue)
+{
+	if (rangeActiveFlag_) {
+		*pValue = rangeCur_;
+		if (rangeCur_ == rangeEnd_) {
+			rangeActiveFlag_ = false;
+		} else {
+			rangeCur_ += rangeStep_;
+		}
+		return true;
+	}
+	for (;;) {
+		while (*p_ == '\0') {
+			if (argv_ == argvEnd_) return false; // no more arguments
+			p_ = *argv_++;
+		}
+		// Parse first number
+		for ( ; ::isspace(*p_); ++p_) ;
+		char* endptr = nullptr;
+		int n1 = ::strtol(p_, &endptr, 10);
+		if (endptr == p_) return false; // not a number
+		p_ = endptr;
+		// Check for range
+		if (*p_ == '-') {
+			++p_;
+			int n2 = ::strtol(p_, &endptr, 10);
+			if (endptr == p_) return false; // invalid range
+			p_ = endptr;
+			rangeCur_ = n1;
+			rangeEnd_ = n2;
+			rangeStep_ = (n1 <= n2) ? 1 : -1;
+			// Output first value of range
+			*pValue = rangeCur_;
+			if (rangeCur_ != rangeEnd_) {
+				rangeActiveFlag_ = true;
+				rangeCur_ += rangeStep_;
+			}
+			return true;
+		}
+		for ( ; ::isspace(*p_); ++p_) ;
+		if (*p_ == ',' || *p_ == '\0') {
+			*pValue = n1;
+			return true;
+		} else {
+			return false; // invalid format
+		}
+	}
+}
+
+bool Shell::Arg::EachNum::IsValid()
+{
+	argv_ = argvBegin_;
+	int value;
+	while (Next(&value)) ;
+	bool rtn = (argv_ == argvEnd_ && *p_ == '\0');
+	argv_ = argvBegin_;
+	return rtn;
 }
 
 //------------------------------------------------------------------------------

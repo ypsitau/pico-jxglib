@@ -88,6 +88,16 @@ public:
 			Each(char*& argvBegin, char*& argvEnd);
 			const char* Next();
 		};
+		class EachNum : public Iterator {
+		private:
+			const char* p_;
+			bool rangeActiveFlag_;
+			int rangeCur_, rangeEnd_, rangeStep_;
+		public:
+			EachNum(char*& argvBegin, char*& argvEnd);
+			bool Next(int* pValue);
+			bool IsValid();
+		};
 		class Glob : public Iterator {
 		private:
 			std::unique_ptr<FS::Glob> pGlob_;
@@ -96,11 +106,6 @@ public:
 			Glob(char*& argvBegin, char*& argvEnd);
 			const char* Next();
 			const FS::FileInfo& GetFileInfo() const { return *pFileInfo_; }
-		};
-		template<typename T> class EachNum : public Iterator {
-		public:
-			EachNum(char*& argvBegin, char*& argvEnd);
-			T Next();
 		};
 	private:
 		const Opt* optTbl_;
