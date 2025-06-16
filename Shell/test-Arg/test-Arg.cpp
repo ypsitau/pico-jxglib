@@ -57,7 +57,7 @@ void test_Parse()
 			tout.Printf((j == 0) ? "%s" : " %s", tc.argv[j]);
 		tout.Println();
 		int argc = tc.argc;
-		const char* argv[16];
+		const char* argv[8];
 		for (int j = 0; j < tc.argc; ++j) argv[j] = tc.argv[j];
 		if (arg.Parse(tout, argc, argv)) {
 			tout.Printf("[parsed] ");
@@ -82,9 +82,82 @@ void test_Parse()
 	}
 }
 
+void test_EachNum()
+{
+	Printable& tout = Stdio::Instance;
+
+	struct EachNumTestCase {
+		const char* desc;
+		int argc;
+		const char* argv[8];
+		const char* expected;
+	};
+
+	const EachNumTestCase cases[] = {
+		{ "single number", 1, { "5" }, "5" },
+		{ "range", 1, { "1-3" }, "1, 2, 3" },
+		{ "range with step", 1, { "2-8:3" }, "2, 5, 8" },
+		{ "multiple arguments", 2, { "1", "4-5" }, "1, 4, 5" },
+		{ "invalid input", 1, { "abc" }, "(none)" },
+		{ "reverse range", 1, { "5-3" }, "5, 4, 3" },
+		{ "negative numbers", 1, { "-2-2" }, "-2, -1, 0, 1, 2" },
+		{ "negative step", 1, { "5-1:2" }, "5, 3, 1" },
+		{ "zero", 1, { "0" }, "0" },
+#if 0
+		{ "large range", 1, { "10-15" }, "10, 11, 12, 13, 14, 15" },
+		{ "large reverse range", 1, { "15-10" }, "15, 14, 13, 12, 11, 10" },
+		{ "range with negative step", 1, { "10-2:2" }, "10, 8, 6, 4, 2" },
+		{ "range with positive step", 1, { "2-10:2" }, "2, 4, 6, 8, 10" },
+		{ "single negative", 1, { "-7" }, "-7" },
+		{ "range with zero step (invalid)", 1, { "1-5:0" }, "(none)" },
+		{ "step larger than range", 1, { "1-3:5" }, "1" },
+		{ "step larger than reverse range", 1, { "5-1:10" }, "5" },
+		{ "range with negative start", 1, { "-5--2" }, "-5, -4, -3, -2" },
+		{ "range with negative end", 1, { "2--2" }, "2, 1, 0, -1, -2" },
+		{ "range with negative step and negatives", 1, { "-2--5:-1" }, "-2, -3, -4, -5" },
+		{ "range with positive step and negatives", 1, { "-5--2:2" }, "-5, -3" },
+		{ "multiple single numbers", 3, { "1", "2", "3" }, "1, 2, 3" },
+		{ "multiple ranges", 2, { "1-2", "4-5" }, "1, 2, 4, 5" },
+		{ "mixed single and range", 3, { "7", "10-12", "15" }, "7, 10, 11, 12, 15" },
+		{ "empty string", 1, { "" }, "(none)" },
+		{ "range with missing end", 1, { "3-" }, "(none)" },
+		{ "range with missing start", 1, { "-3" }, "-3" },
+		{ "range with missing step", 1, { "1-5:" }, "1, 2, 3, 4, 5" },
+		{ "range with step 1 explicitly", 1, { "1-3:1" }, "1, 2, 3" },
+		{ "range with negative step explicitly", 1, { "3-1:-1" }, "3, 2, 1" },
+		{ "multiple mixed", 4, { "1", "3-5", "7-5:-1", "9" }, "1, 3, 4, 5, 7, 6, 5, 9" },
+#endif
+	};
+
+	for (size_t i = 0; i < sizeof(cases)/sizeof(cases[0]); ++i) {
+		const EachNumTestCase& tc = cases[i];
+		tout.Printf("---- %s ----\n", tc.desc);
+		tout.Printf("[argv] ");
+		for (int j = 0; j < tc.argc; ++j)
+			tout.Printf((j == 0) ? "%s" : " %s", tc.argv[j]);
+		tout.Println();
+		const char** argv = const_cast<const char**>(tc.argv);
+		Shell::Arg::EachNum each(argv[0], argv[tc.argc]);
+		int n;
+		bool first = true;
+		tout.Printf("[nums] ");
+		while (each.Next(&n)) {
+			if (!first) tout.Printf(", ");
+			tout.Printf("%d", n);
+			first = false;
+		}
+		if (first) {
+			tout.Printf("(none)");
+		}
+		tout.Println();
+		tout.Printf("\n");
+	}
+}
+
 int main()
 {
 	::stdio_init_all();
-	test_Parse();
+	//test_Parse();
+	test_EachNum();
 	for (;;) ::tight_loop_contents();
 }

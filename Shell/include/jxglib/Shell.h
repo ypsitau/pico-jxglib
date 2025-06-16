@@ -77,15 +77,16 @@ public:
 		};	
 		class Iterator {
 		protected:
-			char** argv_;
-			char** argvBegin_;
-			char** argvEnd_;
+			const char** argv_;
+			const char** argvBegin_;
+			const char** argvEnd_;
 		public:
-			Iterator(char*& argvBegin, char*& argvEnd) : argv_{&argvBegin}, argvBegin_{&argvBegin}, argvEnd_{&argvEnd} {}
+			Iterator(const char*& argvBegin, const char*& argvEnd) :
+				argv_{&argvBegin}, argvBegin_{&argvBegin}, argvEnd_{&argvEnd} {}
 		};
 		class Each : public Iterator {
 		public:
-			Each(char*& argvBegin, char*& argvEnd);
+			Each(const char*& argvBegin, const char*& argvEnd);
 			const char* Next();
 		};
 		class EachNum : public Iterator {
@@ -94,7 +95,7 @@ public:
 			bool rangeActiveFlag_;
 			int rangeCur_, rangeEnd_, rangeStep_;
 		public:
-			EachNum(char*& argvBegin, char*& argvEnd);
+			EachNum(const char*& argvBegin, const char*& argvEnd);
 			bool Next(int* pValue);
 			bool IsValid();
 		};
@@ -103,7 +104,7 @@ public:
 			std::unique_ptr<FS::Glob> pGlob_;
 			std::unique_ptr<FS::FileInfo> pFileInfo_;
 		public:
-			Glob(char*& argvBegin, char*& argvEnd);
+			Glob(const char*& argvBegin, const char*& argvEnd);
 			const char* Next();
 			const FS::FileInfo& GetFileInfo() const { return *pFileInfo_; }
 		};

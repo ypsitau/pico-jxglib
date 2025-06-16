@@ -424,7 +424,7 @@ void Shell::Arg::Opt::MakeHelp(char* str, int len) const
 //------------------------------------------------------------------------------
 // Shell::Arg::Each
 //------------------------------------------------------------------------------
-Shell::Arg::Each::Each(char*& argvBegin, char*& argvEnd) : Iterator(argvBegin, argvEnd) {}
+Shell::Arg::Each::Each(const char*& argvBegin, const char*& argvEnd) : Iterator(argvBegin, argvEnd) {}
 
 const char* Shell::Arg::Each::Next()
 {
@@ -434,7 +434,7 @@ const char* Shell::Arg::Each::Next()
 //------------------------------------------------------------------------------
 // Shell::Arg::EachNum
 //------------------------------------------------------------------------------
-Shell::Arg::EachNum::EachNum(char*& argvBegin, char*& argvEnd) : Iterator(argvBegin, argvEnd), p_{""} {}
+Shell::Arg::EachNum::EachNum(const char*& argvBegin, const char*& argvEnd) : Iterator(argvBegin, argvEnd), p_{""} {}
 
 bool Shell::Arg::EachNum::EachNum::Next(int* pValue)
 {
@@ -466,22 +466,25 @@ bool Shell::Arg::EachNum::EachNum::Next(int* pValue)
 			p_ = endptr;
 			rangeCur_ = n1;
 			rangeEnd_ = n2;
-			rangeStep_ = (n1 <= n2) ? 1 : -1;
+			int n3 = 1;
+			if (*p_ == ':') {
+				++p_;
+				n3 = ::strtol(p_, &endptr, 10);
+				if (endptr == p_) return false; // invalid range step
+				p_ = endptr;
+			}
+			rangeStep_ = (n1 <= n2) ? n3 : -n3;
 			// Output first value of range
 			*pValue = rangeCur_;
 			if (rangeCur_ != rangeEnd_) {
 				rangeActiveFlag_ = true;
 				rangeCur_ += rangeStep_;
 			}
-			return true;
+		} else {
+			*pValue = n1;
 		}
 		for ( ; ::isspace(*p_); ++p_) ;
-		if (*p_ == ',' || *p_ == '\0') {
-			*pValue = n1;
-			return true;
-		} else {
-			return false; // invalid format
-		}
+		return (*p_ == ',' || *p_ == '\0');
 	}
 }
 
@@ -498,7 +501,7 @@ bool Shell::Arg::EachNum::IsValid()
 //------------------------------------------------------------------------------
 // Shell::Arg::Glob
 //------------------------------------------------------------------------------
-Shell::Arg::Glob::Glob(char*& argvBegin, char*& argvEnd) :  Iterator(argvBegin, argvEnd) {}
+Shell::Arg::Glob::Glob(const char*& argvBegin, const char*& argvEnd) :  Iterator(argvBegin, argvEnd) {}
 
 const char* Shell::Arg::Glob::Next()
 {
