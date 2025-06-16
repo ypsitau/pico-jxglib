@@ -155,7 +155,7 @@ ShellCmd(ls, "lists files in the specified directory")
 		Arg::OptBool("help",		'h',	"prints this help"),
 		Arg::OptBool("all",			'a',	"lists all files, including hidden ones"),
 		Arg::OptBool("mixed",		'm',	"lists files and directories in mixed order"),		
-		Arg::OptString("sort",		0x0,	"sorts by WORD instead of name", "WORD"),
+		Arg::OptString("sort",		0x0,	"sorts by WORD instead of name. WORD: name, size, time", "WORD"),
 		Arg::OptBool("reverse",		'r',	"reverses the order of listing"),
 		Arg::OptBool("elimslash",	'e',	"eliminates trailing slashes from directory names"),
 	};
@@ -420,7 +420,7 @@ ShellCmd(walk, "walks through directories")
 		const char* pathName = nullptr;
 		pFileInfo.reset(walker.Read(&pathName));
 		if (!pFileInfo) break; // no more files
-		tout.Printf("%s%s\n", pathName, pFileInfo->IsDirectory() ? "/" : "");
+		tout.Printf("%-40s %s\n", pathName, walker.GetPathNameSub());
 	}
 	return 0;
 }

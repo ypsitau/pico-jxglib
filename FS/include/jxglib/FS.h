@@ -219,7 +219,7 @@ protected:
 	uint8_t attrExclude_; // attributes to exclude
 	Dir* pDirCur_;
 	char pathName_[MaxPath];
-	//char* pathNameSub_;
+	const char* pathNameSub_;
 public:
 	Walker(bool removeModeFlag = false);
 	~Walker() { Close(); }
@@ -227,6 +227,7 @@ public:
 	bool Open(const char* dirName, uint8_t attrExclude = 0);
 	void Close() {}
 	FileInfo* Read(const char** pPathName);
+	const char* GetPathNameSub() const { return pathNameSub_; }
 };
 
 //------------------------------------------------------------------------------

@@ -827,7 +827,7 @@ FileInfo* Glob::Read(const char** pPathName)
 //------------------------------------------------------------------------------
 // FS::Walker
 //------------------------------------------------------------------------------
-Walker::Walker(bool fileFirstFlag) : fileFirstFlag_{fileFirstFlag}, attrExclude_{0}, pDirCur_{nullptr}
+Walker::Walker(bool fileFirstFlag) : fileFirstFlag_{fileFirstFlag}, attrExclude_{0}, pDirCur_{nullptr}, pathNameSub_{""}
 {
 	pathName_[0] = '\0';
 }
@@ -838,6 +838,11 @@ bool Walker::Open(const char* dirName, uint8_t attrExclude)
 	pDirTop_.reset(OpenDir(dirName, attrExclude_));
 	if (!pDirTop_) return false;
 	pDirCur_ = pDirTop_.get();
+	pathName_[0] = '\0';
+	AppendPathName(pathName_, sizeof(pathName_) - 1, pDirCur_->GetDirName());
+	int len = ::strlen(pathName_);
+	pathName_[len + 1] = '\0';
+	pathNameSub_ = (len == 0)? pathName_ : (pathName_[len - 1] == '/')? pathName_ + len : pathName_ + len + 1;
 	return true;
 }
 
@@ -848,9 +853,6 @@ FileInfo* Walker::Read(const char** pPathName)
 	for (;;) {
 		pFileInfo.reset(pDirCur_->Read());
 		if (pFileInfo) {
-			//pathName_[0] = '\0';
-			//AppendPathName(pathName_, sizeof(pathName_), pDirCur_->GetDirName());
-			//AppendPathName(pathName_, sizeof(pathName_), pFileInfo->GetName());
 			JoinPathName(pathName_, sizeof(pathName_), pDirCur_->GetDirName(), pFileInfo->GetName());
 			if (!pFileInfo->IsDirectory()) break;
 			Dir* pDir = OpenDir(pathName_, attrExclude_);
@@ -867,9 +869,6 @@ FileInfo* Walker::Read(const char** pPathName)
 			if (fileFirstFlag_) {
 				pFileInfo.reset(pDirCur_->ReleaseFileInfo());
 				Dir* pDir = pDirTop_->RemoveLast();
-				//pathName_[0] = '\0';
-				//AppendPathName(pathName_, sizeof(pathName_), pDir->GetDirName());
-				//AppendPathName(pathName_, sizeof(pathName_), pFileInfo->GetName());
 				JoinPathName(pathName_, sizeof(pathName_), pDir->GetDirName(), pFileInfo->GetName());
 				pDirCur_ = pDir;
 				break;
