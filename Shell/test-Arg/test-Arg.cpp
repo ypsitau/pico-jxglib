@@ -90,7 +90,7 @@ void test_EachNum()
 		const char* desc;
 		int argc;
 		const char* argv[8];
-		const char* expected;
+		const char* expected; // 期待される出力例（確認用）
 	};
 
 	const EachNumTestCase cases[] = {
@@ -108,7 +108,6 @@ void test_EachNum()
 		{ "range with negative step", 1, { "10-2:2" }, "10, 8, 6, 4, 2" },
 		{ "range with positive step", 1, { "2-10:2" }, "2, 4, 6, 8, 10" },
 		{ "single negative", 1, { "-7" }, "-7" },
-#if 1
 		{ "range with zero step (invalid)", 1, { "1-5:0" }, "(none)" },
 		{ "step larger than range", 1, { "1-3:5" }, "1" },
 		{ "step larger than reverse range", 1, { "5-1:10" }, "5" },
@@ -126,8 +125,18 @@ void test_EachNum()
 		{ "range with step 1 explicitly", 1, { "1-3:1" }, "1, 2, 3" },
 		{ "range with negative step explicitly", 1, { "3-1:-1" }, "3, 2, 1" },
 		{ "multiple mixed", 4, { "1", "3-5", "7-5:-1", "9" }, "1, 3, 4, 5, 7, 6, 5, 9" },
-#endif
+		{ "comma numbers", 1, { "1,2,3" }, "1, 2, 3" },
+		{ "comma ranges", 1, { "1-3,5-7" }, "1, 2, 3, 5, 6, 7" },
+		{ "comma mixed", 1, { "1,3-5,7" }, "1, 3, 4, 5, 7" },
+		{ "comma with step", 1, { "1-5:2,10-12" }, "1, 3, 5, 10, 11, 12" },
+		{ "comma negative numbers", 1, { "-2,-1,0,1" }, "-2, -1, 0, 1" },
+		{ "comma negative ranges", 1, { "-3--1,1-2" }, "-3, -2, -1, 1, 2" },
+		{ "comma reverse ranges", 1, { "5-3,2-1" }, "5, 4, 3, 2, 1" },
+		{ "comma with invalid", 1, { "1,abc,3-4" }, "1, 3, 4" },
+		{ "comma with empty", 1, { "1,,2-3" }, "1, 2, 3" },
+		{ "comma with step and negatives", 1, { "-5--1:2,3" }, "-5, -3, -1, 3" },
 	};
+
 	for (size_t i = 0; i < sizeof(cases)/sizeof(cases[0]); ++i) {
 		const EachNumTestCase& tc = cases[i];
 		tout.Printf("---- %s ----\n", tc.desc);

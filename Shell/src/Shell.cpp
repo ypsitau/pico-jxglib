@@ -494,7 +494,13 @@ bool Shell::Arg::EachNum::EachNum::Next(int* pValue)
 			*pValue = n1;
 		}
 		for ( ; ::isspace(*p_); ++p_) ;
-		return (*p_ == ',' || *p_ == '\0');
+		if (*p_ == ',') {
+			++p_;
+			return true;
+		} else if (*p_ == '\0') {
+			return true;
+		}
+		return false;
 	}
 }
 
