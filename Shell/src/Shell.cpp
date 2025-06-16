@@ -431,11 +431,11 @@ const char* Shell::Arg::Each::Next()
 }
 
 //------------------------------------------------------------------------------
-// Shell::Arg::Globs
+// Shell::Arg::Glob
 //------------------------------------------------------------------------------
-Shell::Arg::Globs::Globs(char*& argv, char*& argvEnd) : argv_(&argv), argvEnd_(&argvEnd) {}
+Shell::Arg::Glob::Glob(char*& argv, char*& argvEnd) : argv_(&argv), argvEnd_(&argvEnd) {}
 
-const char* Shell::Arg::Globs::Next()
+const char* Shell::Arg::Glob::Next()
 {
 	const char* pathName = nullptr;
 	if (pGlob_) {

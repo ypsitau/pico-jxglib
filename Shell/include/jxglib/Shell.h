@@ -83,14 +83,14 @@ public:
 			Each(char*& argv, char*& argvEnd);
 			const char* Next();
 		};
-		class Globs {
+		class Glob {
 		private:
 			char** argv_;
 			char** argvEnd_;
 			std::unique_ptr<FS::Glob> pGlob_;
 			std::unique_ptr<FS::FileInfo> pFileInfo_;
 		public:
-			Globs(char*& argv, char*& argvEnd);
+			Glob(char*& argv, char*& argvEnd);
 			const char* Next();
 			const FS::FileInfo& GetFileInfo() const { return *pFileInfo_; }
 		};
