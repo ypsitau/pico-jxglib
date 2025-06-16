@@ -9,47 +9,10 @@ static const int GPIO_NUM = 30; // number of GPIO pins on RP2040
 static void PrintPinFunc(Printable& tout, uint pin);
 static const char* GetPinFuncName(int pinFunc, uint pin);
 
-ShellCmd(gpio, "controls GPIO pins")
+bool ProcessGPIO(Printable& terr, Printable& tout, uint pin, int argc, char* argv[])
 {
-	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		'h',	"prints this help"),
-	};
-	Arg arg(optTbl, count_of(optTbl));
-	if (!arg.Parse(terr, argc, argv)) return 1;
-	bool genericFlag = (::strcmp(GetName(), "gpio") == 0);
-	if (arg.GetBool("help")) {
-		if (genericFlag) {
-			tout.Printf("Usage: %s [OPTION]... [PIN [COMMAND]]\n", GetName());
-		} else {
-			tout.Printf("Usage: %s [OPTION]... [COMMAND]\n", GetName());
-		}
-		arg.PrintHelp(tout);
-		return 0;
-	}
-	uint pin = 0;
-	if (genericFlag) {
-		if (argc < 2) {
-			for (uint pin = 0; pin < GPIO_NUM; ++pin) PrintPinFunc(tout, pin);
-			return 0;
-		}
-		do {
-			char* endptr;
-			auto num = ::strtoul(argv[1], &endptr, 0);
-			if (*endptr != '\0' || endptr == argv[1] || num >= GPIO_NUM) {
-				tout.Printf("invalid GPIO pin number: %s\n", argv[1]);
-				return 1;
-			}
-			pin = static_cast<uint>(num);
-		} while (0);
-		for (int iArg = 1; iArg < argc; iArg++) argv[iArg] = argv[iArg + 1];
-		argc--;
-	} else if (::strncmp(GetName(), "gpio", 4) == 0) {
-		char* endptr;
-		auto num = ::strtoul(GetName() + 4, &endptr, 0);
-		if (*endptr == '\0' && num < GPIO_NUM) pin = static_cast<uint>(num);
-	}
-	if (argc > 1) {
-		const char* cmd = argv[1];
+	if (argc > 0) {
+		const char* cmd = argv[0];
 		if (::strcasecmp(cmd, "xip") == 0) {
 			::gpio_set_function(pin, GPIO_FUNC_XIP);
 		} else if (::strcasecmp(cmd, "spi") == 0) {
@@ -88,11 +51,65 @@ ShellCmd(gpio, "controls GPIO pins")
 			::gpio_put(pin, false);
 		} else {
 			terr.Printf("unknown command: %s\n", cmd);
-			return 1;
+			return false;
 		}
 	}
 	PrintPinFunc(tout, pin);
-	return 0;
+	return true;
+}
+
+ShellCmd(gpio, "controls GPIO pins")
+{
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		'h',	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	bool genericFlag = (::strcmp(GetName(), "gpio") == 0);
+	if (arg.GetBool("help")) {
+		if (genericFlag) {
+			tout.Printf("Usage: %s [OPTION]... [PIN [COMMAND]]\n", GetName());
+		} else {
+			tout.Printf("Usage: %s [OPTION]... [COMMAND]\n", GetName());
+		}
+		arg.PrintHelp(tout);
+		return 0;
+	}
+	if (genericFlag) {
+		if (argc < 2) {
+			for (uint pin = 0; pin < GPIO_NUM; ++pin) PrintPinFunc(tout, pin);
+			return 0;
+		}
+		Arg::EachNum eachNum(argv[1]);
+		int num;
+		while (eachNum.Next(&num)) {
+			if (num < 0 || num >= GPIO_NUM) {
+				terr.Printf("invalid GPIO pin number: %d\n", num);
+				return 1;
+			}
+			uint pin = static_cast<uint>(num);
+			if (!ProcessGPIO(terr, tout, pin, argc - 2, argv + 2)) return 1;
+		}
+		return 0;
+	}
+#if 0
+		uint pin = 0;
+		do {
+			char* endptr;
+			auto num = ::strtoul(argv[1], &endptr, 0);
+			if (*endptr != '\0' || endptr == argv[1] || num >= GPIO_NUM) {
+				tout.Printf("invalid GPIO pin number: %s\n", argv[1]);
+				return 1;
+			}
+			pin = static_cast<uint>(num);
+		} while (0);
+		return ProcessGPIO(terr, tout, pin, argc - 2, argv + 2);
+#endif
+	char* endptr;
+	auto num = ::strtoul(GetName() + 4, &endptr, 0);
+	uint pin = 0;
+	if (*endptr == '\0' && num < GPIO_NUM) pin = static_cast<uint>(num);
+	return ProcessGPIO(terr, tout, pin, argc - 1, argv + 1)? 0 : 1;
 }
 
 ShellCmdAlias(gpio0, gpio)
