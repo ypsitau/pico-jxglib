@@ -531,6 +531,7 @@ const char* Shell::Arg::Glob::Next()
 		const char* arg = *argvCur_++;
 		if (FS::DoesContainWildcard(arg)) {
 			pGlob_.reset(FS::OpenGlob(arg));
+			// should use ReadAll() *****
 			if (pGlob_) {
 				pFileInfo_.reset(pGlob_->Read(&pathName));
 				if (pFileInfo_) return pathName;
