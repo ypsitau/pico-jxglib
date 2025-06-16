@@ -75,24 +75,32 @@ public:
 			void SetNext(OptValue* pOptValueNext) { pOptValueNext_.reset(pOptValueNext); }
 			OptValue* GetNext() const { return pOptValueNext_.get(); }
 		};	
-		class Each {
-		private:
+		class Iterator {
+		protected:
 			char** argv_;
+			char** argvBegin_;
 			char** argvEnd_;
 		public:
-			Each(char*& argv, char*& argvEnd);
+			Iterator(char*& argvBegin, char*& argvEnd) : argv_{&argvBegin}, argvBegin_{&argvBegin}, argvEnd_{&argvEnd} {}
+		};
+		class Each : public Iterator {
+		public:
+			Each(char*& argvBegin, char*& argvEnd);
 			const char* Next();
 		};
-		class Glob {
+		class Glob : public Iterator {
 		private:
-			char** argv_;
-			char** argvEnd_;
 			std::unique_ptr<FS::Glob> pGlob_;
 			std::unique_ptr<FS::FileInfo> pFileInfo_;
 		public:
-			Glob(char*& argv, char*& argvEnd);
+			Glob(char*& argvBegin, char*& argvEnd);
 			const char* Next();
 			const FS::FileInfo& GetFileInfo() const { return *pFileInfo_; }
+		};
+		template<typename T> class EachNum : public Iterator {
+		public:
+			EachNum(char*& argvBegin, char*& argvEnd);
+			T Next();
 		};
 	private:
 		const Opt* optTbl_;

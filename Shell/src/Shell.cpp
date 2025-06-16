@@ -423,7 +423,7 @@ void Shell::Arg::Opt::MakeHelp(char* str, int len) const
 //------------------------------------------------------------------------------
 // Shell::Arg::Each
 //------------------------------------------------------------------------------
-Shell::Arg::Each::Each(char*& argv, char*& argvEnd) : argv_(&argv), argvEnd_(&argvEnd) {}
+Shell::Arg::Each::Each(char*& argvBegin, char*& argvEnd) : Iterator(argvBegin, argvEnd) {}
 
 const char* Shell::Arg::Each::Next()
 {
@@ -433,7 +433,7 @@ const char* Shell::Arg::Each::Next()
 //------------------------------------------------------------------------------
 // Shell::Arg::Glob
 //------------------------------------------------------------------------------
-Shell::Arg::Glob::Glob(char*& argv, char*& argvEnd) : argv_(&argv), argvEnd_(&argvEnd) {}
+Shell::Arg::Glob::Glob(char*& argvBegin, char*& argvEnd) :  Iterator(argvBegin, argvEnd) {}
 
 const char* Shell::Arg::Glob::Next()
 {
