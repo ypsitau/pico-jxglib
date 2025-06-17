@@ -151,7 +151,7 @@ public:
 //------------------------------------------------------------------------------
 class FileInfoReader {
 public:
-	FileInfo* ReadAll(const FileInfo::Cmp& cmp = FileInfo::Cmp::Zero);
+	FileInfo* ReadAll(const FileInfo::Cmp& cmp = FileInfo::Cmp::Zero, const char* pattern = nullptr);
 public:
 	virtual FileInfo* Read() = 0;
 };
@@ -193,16 +193,14 @@ public:
 //------------------------------------------------------------------------------
 class Glob : public FileInfoReader {
 protected:
-	std::unique_ptr<Dir> pDir_;
+	std::unique_ptr<FileInfo> pFileInfoTop_;
 	char dirName_[MaxPath];	// directory name and pattern are stored
 	const char* pattern_;
 	char pathName_[MaxPath];
 public:
 	Glob();
-	~Glob() { Close(); }
 public:
-	bool Open(const char* pattern, bool paternAsDirFlag = false, uint8_t attrExclude = 0);
-	void Close();
+	bool Open(const char* pattern, const FileInfo::Cmp& cmp, bool paternAsDirFlag = false, uint8_t attrExclude = 0);
 	FileInfo* Read(const char** pPathName);
 public:
 	// virtual functions of FileInfoReader
@@ -287,7 +285,7 @@ bool SetDriveCur(const char* driveName);
 File* OpenFile(const char* fileName, const char* mode, Drive* pDrive = nullptr);
 File* OpenFileForCopy(const char* pathNameSrc, const char* pathNameDst);
 Dir* OpenDir(const char* dirName, uint8_t attrExclude = 0);
-Glob* OpenGlob(const char* pattern, bool patternAsDirFlag = false, uint8_t attrExclude = 0);
+Glob* OpenGlob(const char* pattern, const FileInfo::Cmp& cmp = FS::FileInfo::CmpDefault, bool patternAsDirFlag = false, uint8_t attrExclude = 0);
 const char* CreatePathNameDst(char* pathName, int lenMax, const char* pathNameSrc, const char* pathNameDst);
 bool Touch(Printable& terr, const char* pathName, const DateTime& dt);
 bool PrintFile(Printable& terr, Printable& tout, const char* fileName);

@@ -99,10 +99,10 @@ Dir* OpenDir(const char* dirName, uint8_t attrExclude)
 	
 }
 
-Glob* OpenGlob(const char* pattern, bool patternAsDirFlag, uint8_t attrExclude)
+Glob* OpenGlob(const char* pathName, const FS::FileInfo::Cmp& cmp, bool patternAsDirFlag, uint8_t attrExclude)
 {
 	std::unique_ptr<Glob> pGlob(new Glob());
-	return pGlob->Open(pattern, patternAsDirFlag)? pGlob.release() : nullptr;
+	return pGlob->Open(pathName, cmp, patternAsDirFlag)? pGlob.release() : nullptr;
 }
 
 bool Touch(Printable& terr, const char* pathName, const DateTime& dt)
@@ -163,12 +163,12 @@ bool ListDrives(Printable& tout, const char* driveName, bool remarksFlag)
 
 bool ListFiles(Printable& terr, Printable& tout, const char* pathName, const FileInfo::Cmp& cmp, uint8_t attrExclude, bool slashForDirFlag)
 {
-	std::unique_ptr<FS::Glob> pGlob(FS::OpenGlob(pathName, true, attrExclude));
+	std::unique_ptr<FS::Glob> pGlob(FS::OpenGlob(pathName, cmp, true, attrExclude));
 	if (!pGlob) {
 		terr.Printf("failed to open %s\n", pathName);
 		return false;
 	}
-	std::unique_ptr<FS::FileInfo> pFileInfo(pGlob->ReadAll(cmp));
+	std::unique_ptr<FS::FileInfo> pFileInfo(pGlob->ReadAll());
 	if (pFileInfo) pFileInfo->PrintList(tout, slashForDirFlag);
 	return true;
 }
@@ -736,12 +736,14 @@ int FileInfo::Cmp_Combine::DoCompare(const FileInfo& fileInfo1, const FileInfo& 
 //------------------------------------------------------------------------------
 // FS::FileInfoReader
 //------------------------------------------------------------------------------
-FileInfo* FileInfoReader::ReadAll(const FileInfo::Cmp& cmp)
+FileInfo* FileInfoReader::ReadAll(const FileInfo::Cmp& cmp, const char* pattern)
 {
+	if (*pattern == '\0') pattern = nullptr;
 	std::unique_ptr<FileInfo> pFileInfoHead;
 	for (;;) {
 		std::unique_ptr<FileInfo> pFileInfoToAdd(Read());
 		if (!pFileInfoToAdd) break; // No more files to read
+		if (pattern && !DoesMatchWildcard(pattern, pFileInfoToAdd->GetName())) continue; // Skip files that do not match the pattern
 		FileInfo* pFileInfoPrev = nullptr;
 		for (FileInfo* pFileInfo = pFileInfoHead.get(); pFileInfo; pFileInfo = pFileInfo->GetNext()) {
 			if (cmp.Compare(*pFileInfoToAdd, *pFileInfo) < 0) break;
@@ -782,46 +784,37 @@ Dir* Dir::RemoveLast()
 //------------------------------------------------------------------------------
 // FS::Glob
 //------------------------------------------------------------------------------
-Glob::Glob(): pattern_{""}
+Glob::Glob() : pattern_{""}
 {
 }
 
-bool Glob::Open(const char* pattern, bool patternAsDirFlag, uint8_t attrExclude)
+bool Glob::Open(const char* pathName, const FileInfo::Cmp& cmp, bool patternAsDirFlag, uint8_t attrExclude)
 {
-	if (patternAsDirFlag) {
-		// If the pattern is a directory, we can use it directly
-		pDir_.reset(OpenDir(pattern));
-		if (pDir_) {
-			::snprintf(dirName_, sizeof(dirName_), "%s", pattern);
-			pattern_ = "";
-			return true;
-		}
+	std::unique_ptr<Dir> pDir;
+	if (patternAsDirFlag) pDir.reset(OpenDir(pathName));
+	if (pDir) {
+		::snprintf(dirName_, sizeof(dirName_), "%s", pathName);
+		pattern_ = "";
+	} else {
+		SplitDirName(pathName, dirName_, sizeof(dirName_), &pattern_);
+		pDir.reset(OpenDir(dirName_, attrExclude));
+		if (!pDir) return false;
 	}
-	SplitDirName(pattern, dirName_, sizeof(dirName_), &pattern_);
-	pDir_.reset(OpenDir(dirName_, attrExclude));
-	return !!pDir_;
-}
-
-void Glob::Close()
-{
-	pDir_.reset();
+	pFileInfoTop_.reset(pDir->ReadAll(cmp, pattern_));
+	return true;
 }
 
 FileInfo* Glob::Read(const char** pPathName)
 {
-	if (!pDir_) return nullptr;
-	for (;;) {
-		std::unique_ptr<FileInfo> pFileInfo(pDir_->Read());
-		if (!pFileInfo) break;
-		if (!*pattern_ || DoesMatchWildcard(pattern_, pFileInfo->GetName())) {
-			if (pPathName) {
-				JoinPathName(pathName_, sizeof(pathName_), dirName_, pFileInfo->GetName());
-				*pPathName = pathName_;
-			}
-			return pFileInfo.release();
+	std::unique_ptr<FileInfo> pFileInfo(pFileInfoTop_.release());
+	if (pFileInfo) {
+		pFileInfoTop_.reset(pFileInfo->ReleaseNext());
+		if (pPathName) {
+			JoinPathName(pathName_, sizeof(pathName_), dirName_, pFileInfo->GetName());
+			*pPathName = pathName_;
 		}
 	}
-	return nullptr;
+	return pFileInfo.release();
 }
 
 //------------------------------------------------------------------------------
