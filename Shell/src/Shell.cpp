@@ -434,15 +434,16 @@ const char* Shell::Arg::Each::Next()
 //------------------------------------------------------------------------------
 // Shell::Arg::EachNum
 //------------------------------------------------------------------------------
-Shell::Arg::EachNum::EachNum(const char*& argvBegin, const char*& argvEnd) : Iterator(argvBegin, argvEnd),
-	p_{""}, rangeActiveFlag_{false}, rangeCur_{0}, rangeEnd_{0}, rangeStep_{1}
-{}
-
 Shell::Arg::EachNum::EachNum(const char* str) : EachNum(argv_[0], argv_[1])
 {
 	argv_[0] = str;
 	argv_[1] = nullptr;
 }
+
+Shell::Arg::EachNum::EachNum(const char*& argvBegin, const char*& argvEnd) : Iterator(argvBegin, argvEnd),
+	p_{""}, rangeActiveFlag_{false}, rangeCur_{0}, rangeEnd_{0}, rangeStep_{1}, rangeLimit_{0}, hasRangeLimit_{false}
+{}
+
 
 bool Shell::Arg::EachNum::EachNum::Next(int* pValue)
 {
@@ -470,7 +471,13 @@ bool Shell::Arg::EachNum::EachNum::Next(int* pValue)
 		if (*p_ == '-') {
 			++p_;
 			int n2 = ::strtol(p_, &endptr, 10);
-			if (endptr == p_) return false; // invalid range
+			if (endptr != p_) {
+				// nothing to do
+			} else if (hasRangeLimit_) {
+				n2 = rangeLimit_;
+			} else {
+				return false; // invalid range
+			}
 			p_ = endptr;
 			rangeCur_ = n1;
 			rangeEnd_ = n2;

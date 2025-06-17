@@ -90,51 +90,53 @@ void test_EachNum()
 		const char* desc;
 		int argc;
 		const char* argv[8];
-		const char* expected; // 期待される出力例（確認用）
+		bool limitFlag;
+		const char* expected;
 	};
-
 	const EachNumTestCase cases[] = {
-		{ "single number", 1, { "5" }, "5" },
-		{ "range", 1, { "1-3" }, "1, 2, 3" },
-		{ "range with step", 1, { "2-8:3" }, "2, 5, 8" },
-		{ "multiple arguments", 2, { "1", "4-5" }, "1, 4, 5" },
-		{ "invalid input", 1, { "abc" }, "(none)" },
-		{ "reverse range", 1, { "5-3" }, "5, 4, 3" },
-		{ "negative numbers", 1, { "-2-2" }, "-2, -1, 0, 1, 2" },
-		{ "negative step", 1, { "5-1:2" }, "5, 3, 1" },
-		{ "zero", 1, { "0" }, "0" },
-		{ "large range", 1, { "10-15" }, "10, 11, 12, 13, 14, 15" },
-		{ "large reverse range", 1, { "15-10" }, "15, 14, 13, 12, 11, 10" },
-		{ "range with negative step", 1, { "10-2:2" }, "10, 8, 6, 4, 2" },
-		{ "range with positive step", 1, { "2-10:2" }, "2, 4, 6, 8, 10" },
-		{ "single negative", 1, { "-7" }, "-7" },
-		{ "range with zero step (invalid)", 1, { "1-5:0" }, "(none)" },
-		{ "step larger than range", 1, { "1-3:5" }, "1" },
-		{ "step larger than reverse range", 1, { "5-1:10" }, "5" },
-		{ "range with negative start", 1, { "-5--2" }, "-5, -4, -3, -2" },
-		{ "range with negative end", 1, { "2--2" }, "2, 1, 0, -1, -2" },
-		{ "range with negative step and negatives", 1, { "-2--5:-1" }, "-2, -3, -4, -5" },
-		{ "range with positive step and negatives", 1, { "-5--2:2" }, "-5, -3" },
-		{ "multiple single numbers", 3, { "1", "2", "3" }, "1, 2, 3" },
-		{ "multiple ranges", 2, { "1-2", "4-5" }, "1, 2, 4, 5" },
-		{ "mixed single and range", 3, { "7", "10-12", "15" }, "7, 10, 11, 12, 15" },
-		{ "empty string", 1, { "" }, "(none)" },
-		{ "range with missing end", 1, { "3-" }, "(none)" },
-		{ "range with missing start", 1, { "-3" }, "-3" },
-		{ "range with missing step", 1, { "1-5:" }, "1, 2, 3, 4, 5" },
-		{ "range with step 1 explicitly", 1, { "1-3:1" }, "1, 2, 3" },
-		{ "range with negative step explicitly", 1, { "3-1:-1" }, "3, 2, 1" },
-		{ "multiple mixed", 4, { "1", "3-5", "7-5:-1", "9" }, "1, 3, 4, 5, 7, 6, 5, 9" },
-		{ "comma numbers", 1, { "1,2,3" }, "1, 2, 3" },
-		{ "comma ranges", 1, { "1-3,5-7" }, "1, 2, 3, 5, 6, 7" },
-		{ "comma mixed", 1, { "1,3-5,7" }, "1, 3, 4, 5, 7" },
-		{ "comma with step", 1, { "1-5:2,10-12" }, "1, 3, 5, 10, 11, 12" },
-		{ "comma negative numbers", 1, { "-2,-1,0,1" }, "-2, -1, 0, 1" },
-		{ "comma negative ranges", 1, { "-3--1,1-2" }, "-3, -2, -1, 1, 2" },
-		{ "comma reverse ranges", 1, { "5-3,2-1" }, "5, 4, 3, 2, 1" },
-		{ "comma with invalid", 1, { "1,abc,3-4" }, "1, 3, 4" },
-		{ "comma with empty", 1, { "1,,2-3" }, "1, 2, 3" },
-		{ "comma with step and negatives", 1, { "-5--1:2,3" }, "-5, -3, -1, 3" },
+		{ "single number", 1, { "5" }, false, "5" },
+		{ "range", 1, { "1-3" }, false, "1, 2, 3" },
+		{ "range with step", 1, { "2-8:3" }, false, "2, 5, 8" },
+		{ "multiple arguments", 2, { "1", "4-5" }, false, "1, 4, 5" },
+		{ "invalid input", 1, { "abc" }, false, "(none)" },
+		{ "reverse range", 1, { "5-3" }, false, "5, 4, 3" },
+		{ "negative numbers", 1, { "-2-2" }, false, "-2, -1, 0, 1, 2" },
+		{ "negative step", 1, { "5-1:2" }, false, "5, 3, 1" },
+		{ "zero", 1, { "0" }, false, "0" },
+		{ "large range", 1, { "10-15" }, false, "10, 11, 12, 13, 14, 15" },
+		{ "large reverse range", 1, { "15-10" }, false, "15, 14, 13, 12, 11, 10" },
+		{ "range with negative step", 1, { "10-2:2" }, false, "10, 8, 6, 4, 2" },
+		{ "range with positive step", 1, { "2-10:2" }, false, "2, 4, 6, 8, 10" },
+		{ "single negative", 1, { "-7" }, false, "-7" },
+		{ "range with zero step (invalid)", 1, { "1-5:0" }, false, "(none)" },
+		{ "step larger than range", 1, { "1-3:5" }, false, "1" },
+		{ "step larger than reverse range", 1, { "5-1:10" }, false, "5" },
+		{ "range with negative start", 1, { "-5--2" }, false, "-5, -4, -3, -2" },
+		{ "range with negative end", 1, { "2--2" }, false, "2, 1, 0, -1, -2" },
+		{ "range with negative step and negatives", 1, { "-2--5:-1" }, false, "-2, -3, -4, -5" },
+		{ "range with positive step and negatives", 1, { "-5--2:2" }, false, "-5, -3" },
+		{ "multiple single numbers", 3, { "1", "2", "3" }, false, "1, 2, 3" },
+		{ "multiple ranges", 2, { "1-2", "4-5" }, false, "1, 2, 4, 5" },
+		{ "mixed single and range", 3, { "7", "10-12", "15" }, false, "7, 10, 11, 12, 15" },
+		{ "empty string", 1, { "" }, false, "(none)" },
+		{ "range with missing end", 1, { "3-" }, false, "(none)" },
+		{ "range with missing start", 1, { "-3" }, false, "-3" },
+		{ "range with missing step", 1, { "1-5:" }, false, "1, 2, 3, 4, 5" },
+		{ "range with step 1 explicitly", 1, { "1-3:1" }, false, "1, 2, 3" },
+		{ "range with negative step explicitly", 1, { "3-1:-1" }, false, "3, 2, 1" },
+		{ "multiple mixed", 4, { "1", "3-5", "7-5:-1", "9" }, false, "1, 3, 4, 5, 7, 6, 5, 9" },
+		{ "comma numbers", 1, { "1,2,3" }, false, "1, 2, 3" },
+		{ "comma ranges", 1, { "1-3,5-7" }, false, "1, 2, 3, 5, 6, 7" },
+		{ "comma mixed", 1, { "1,3-5,7" }, false, "1, 3, 4, 5, 7" },
+		{ "comma with step", 1, { "1-5:2,10-12" }, false, "1, 3, 5, 10, 11, 12" },
+		{ "comma negative numbers", 1, { "-2,-1,0,1" }, false, "-2, -1, 0, 1" },
+		{ "comma negative ranges", 1, { "-3--1,1-2" }, false, "-3, -2, -1, 1, 2" },
+		{ "comma reverse ranges", 1, { "5-3,2-1" }, false, "5, 4, 3, 2, 1" },
+		{ "comma with invalid", 1, { "1,abc,3-4" }, false, "1, 3, 4" },
+		{ "comma with empty", 1, { "1,,2-3" }, false, "1, 2, 3" },
+		{ "comma with step and negatives", 1, { "-5--1:2,3" }, false, "-5, -3, -1, 3" },
+		{ "range with missing end", 1, { "3-" }, true, "3, 4, 5, 6, 7, 8, 9, 10" },
+		{ "range with missing end", 1, { "13-" }, true, "13, 12, 11, 10" },
 	};
 
 	for (size_t i = 0; i < sizeof(cases)/sizeof(cases[0]); ++i) {
@@ -146,6 +148,7 @@ void test_EachNum()
 		tout.Println();
 		const char** argv = const_cast<const char**>(tc.argv);
 		Shell::Arg::EachNum each(argv[0], argv[tc.argc]);
+		if (tc.limitFlag) each.SetLimit(10); // Set a limit for the number of elements to return
 		int n;
 		bool first = true;
 		tout.Printf("[nums] ");
