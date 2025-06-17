@@ -42,12 +42,14 @@ bool ProcessGPIO(Printable& terr, Printable& tout, uint pin, int argc, char* arg
 		} else if (::strcasecmp(cmd, "pullnone") == 0 || ::strcasecmp(cmd, "pull-none") == 0) {
 			::gpio_set_pulls(pin, false, false);
 		} else if (::strcasecmp(cmd, "dir-in") == 0) {
+			::gpio_set_function(pin, GPIO_FUNC_SIO);
 			::gpio_set_dir(pin, GPIO_IN);
 		} else if (::strcasecmp(cmd, "dir-out") == 0) {
+			::gpio_set_function(pin, GPIO_FUNC_SIO);
 			::gpio_set_dir(pin, GPIO_OUT);
-		} else if (::strcasecmp(cmd, "high") == 0) {
+		} else if (::strcasecmp(cmd, "high") == 0 || ::strcasecmp(cmd, "true") == 0 || ::strcmp(cmd, "1") == 0) {
 			::gpio_put(pin, true);
-		} else if (::strcasecmp(cmd, "low") == 0) {
+		} else if (::strcasecmp(cmd, "low") == 0 || ::strcasecmp(cmd, "false") == 0 || ::strcmp(cmd, "0") == 0) {
 			::gpio_put(pin, false);
 		} else {
 			terr.Printf("unknown command: %s\n", cmd);
@@ -80,9 +82,8 @@ ShellCmd(gpio, "controls GPIO pins")
 			for (uint pin = 0; pin < GPIO_NUM; ++pin) PrintPinFunc(tout, pin);
 			return 0;
 		}
-		Arg::EachNum eachNum(argv[1]);
 		int num;
-		while (eachNum.Next(&num)) {
+		for (Arg::EachNum eachNum(argv[1], GPIO_NUM - 1); eachNum.Next(&num); ) {
 			if (num < 0 || num >= GPIO_NUM) {
 				terr.Printf("invalid GPIO pin number: %d\n", num);
 				return 1;
@@ -92,24 +93,14 @@ ShellCmd(gpio, "controls GPIO pins")
 		}
 		return 0;
 	}
-#if 0
+	if (::strncmp(GetName(), "gpio", 4) == 0) {
+		char* endptr;
+		auto num = ::strtoul(GetName() + 4, &endptr, 0);
 		uint pin = 0;
-		do {
-			char* endptr;
-			auto num = ::strtoul(argv[1], &endptr, 0);
-			if (*endptr != '\0' || endptr == argv[1] || num >= GPIO_NUM) {
-				tout.Printf("invalid GPIO pin number: %s\n", argv[1]);
-				return 1;
-			}
-			pin = static_cast<uint>(num);
-		} while (0);
-		return ProcessGPIO(terr, tout, pin, argc - 2, argv + 2);
-#endif
-	char* endptr;
-	auto num = ::strtoul(GetName() + 4, &endptr, 0);
-	uint pin = 0;
-	if (*endptr == '\0' && num < GPIO_NUM) pin = static_cast<uint>(num);
-	return ProcessGPIO(terr, tout, pin, argc - 1, argv + 1)? 0 : 1;
+		if (*endptr == '\0' && num < GPIO_NUM) pin = static_cast<uint>(num);
+		return ProcessGPIO(terr, tout, pin, argc - 1, argv + 1)? 0 : 1;
+	}
+	return 1;
 }
 
 ShellCmdAlias(gpio0, gpio)
