@@ -173,30 +173,51 @@ bool ListFiles(Printable& terr, Printable& tout, const char* pathName, const Fil
 	return true;
 }
 
-bool Copy(Printable& terr, const char* pathNameSrc, const char* pathNameDst, bool recursiveFlag)
+bool Copy(Printable& terr, const char* pathNameSrc, const char* pathNameDst, bool recursiveFlag, bool verboseFlag)
 {
+	bool rtn = true;
 	if (IsDirectory(pathNameSrc)) {
 		if (!recursiveFlag) {
 			terr.Printf("cannot copy directory %s\n", pathNameSrc);
 			return false;
 		}
-		Walker walker(true); // fileFirstFlag = true: read files first
+		if (!IsDirectory(pathNameDst)) {
+			terr.Printf("destination %s is not a directory\n", pathNameDst);
+			return false;
+		}
+		Walker walker(false); // fileFirstFlag = false: read directories first
 		if (!walker.Open(pathNameSrc, 0)) {
 			terr.Printf("failed to open directory %s\n", pathNameSrc);
 			return false; // Open directory failed
 		}
 		for (;;) {
-			const char* pathName;
-			std::unique_ptr<FileInfo> pFileInfo(walker.Read(&pathName));
+			const char* pathNameSrcEach;
+			std::unique_ptr<FileInfo> pFileInfo(walker.Read(&pathNameSrcEach));
 			if (!pFileInfo) break; // No more files
+			char pathNameDstEach[MaxPath];
+			JoinPathName(pathNameDstEach, sizeof(pathNameDstEach), pathNameDst, walker.GetPathNameSub());
 			if (pFileInfo->IsDirectory()) {
+				if (!CreateDir(terr, pathNameDstEach)) {
+					rtn = false;
+				} else if (verboseFlag) {
+					// nothing to do
+				}
 			} else {
+				if (!CopyFile(terr, pathNameSrcEach, pathNameDstEach)) {
+					rtn = false;
+				} else if (verboseFlag) {
+					terr.Printf("%s\n", pathNameSrcEach);
+				}
 			}
 		}
-		return true;
 	} else {
-		return CopyFile(terr, pathNameSrc, pathNameDst);
+		if (!CopyFile(terr, pathNameSrc, pathNameDst)) {
+			rtn = false;
+		} else if (verboseFlag) {
+			terr.Printf("%s\n", pathNameSrc);
+		}
 	}
+	return rtn;
 }
 
 bool CopyFile(Printable& terr, const char* pathNameSrc, const char* pathNameDst)

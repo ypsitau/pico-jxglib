@@ -90,6 +90,7 @@ ShellCmd(copy, "copies files")
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
 		Arg::OptBool("recursive",	'r',	"copies directories recursively"),
+		Arg::OptBool("verbose",		'v',	"prints the names of files as they are copied"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -99,10 +100,12 @@ ShellCmd(copy, "copies files")
 		return 1;
 	}
 	bool recursiveFlag = arg.GetBool("recursive");
+	bool verboseFlag = arg.GetBool("verbose");
 	const char* pathNameDst = argv[argc - 1];
 	int rtn = 0;
 	for (Arg::Glob argIter(argv[1], argv[argc - 1]); const char* pathNameSrc = argIter.Next(); ) {
-		if (!FS::Copy(terr, pathNameSrc, pathNameDst, recursiveFlag)) rtn = 1;
+		if (!FS::Copy(terr, pathNameSrc, pathNameDst, recursiveFlag, verboseFlag)) rtn = 1;
+		if (Tickable::TickSub()) return 1;
 	}
 	return rtn;
 }

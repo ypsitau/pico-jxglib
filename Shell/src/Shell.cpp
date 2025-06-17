@@ -636,7 +636,9 @@ const char* Shell::CompletionProvider::NextCompletion()
 				::snprintf(result_, sizeof(result_), "%s", itemName);
 			} else {
 				// following fields are file names
-				FS::JoinPathName(result_, sizeof(result_), dirName_, itemName);
+				//FS::JoinPathName(result_, sizeof(result_), dirName_, itemName);
+				::snprintf(result_, sizeof(result_), "%s", dirName_);
+				FS::AppendPathName(result_, sizeof(result_), itemName);
 			}
 			return result_;
 		} else if (wrappedAroundFlag) {
