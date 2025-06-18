@@ -30,7 +30,7 @@ ShellCmd(cat, "prints the contents of files")
 		}
 		Shell::EndInteractive();
 	} else {
-		for (Arg::Glob argIter(argv[1], argv[argc]); const char* pathName = argIter.Next(); ) {
+		for (Arg::EachGlob argIter(argv[1], argv[argc]); const char* pathName = argIter.Next(); ) {
 			if (argIter.GetFileInfo().IsFile() && !FS::PrintFile(terr, tout, pathName)) return 1;
 		}
 	}
@@ -103,7 +103,7 @@ ShellCmd(copy, "copies files")
 	bool verboseFlag = arg.GetBool("verbose");
 	const char* pathNameDst = argv[argc - 1];
 	int rtn = 0;
-	for (Arg::Glob argIter(argv[1], argv[argc - 1]); const char* pathNameSrc = argIter.Next(); ) {
+	for (Arg::EachGlob argIter(argv[1], argv[argc - 1]); const char* pathNameSrc = argIter.Next(); ) {
 		if (!FS::Copy(terr, pathNameSrc, pathNameDst, recursiveFlag, verboseFlag)) rtn = 1;
 		if (Tickable::TickSub()) return 1;
 	}
@@ -146,7 +146,7 @@ ShellCmd(glob, "prints files matching a glob pattern")
 		arg.PrintHelp(terr);
 		return 1;
 	}
-	for (Arg::Glob argIter(argv[1], argv[argc]); const char* pathName = argIter.Next(); ) {
+	for (Arg::EachGlob argIter(argv[1], argv[argc]); const char* pathName = argIter.Next(); ) {
 		tout.Printf("%s\n", pathName);
 	}
 	return 0;
@@ -274,7 +274,7 @@ ShellCmd(move, "moves a file")
 		return 1;
 	}
 	const char* pathNameDst = argv[argc - 1];
-	for (Arg::Glob argIter(argv[1], argv[argc - 1]); const char* pathNameSrc = argIter.Next(); ) {
+	for (Arg::EachGlob argIter(argv[1], argv[argc - 1]); const char* pathNameSrc = argIter.Next(); ) {
 		if (!FS::Move(terr, pathNameSrc, pathNameDst)) return 1;
 	}
 	return 0;
@@ -319,7 +319,7 @@ ShellCmd(rm, "removes files")
 	}
 	bool recursiveFlag = arg.GetBool("recursive");
 	int rtn = 0;
-	for (Arg::Glob argIter(argv[1], argv[argc]); const char* pathName = argIter.Next(); ) {
+	for (Arg::EachGlob argIter(argv[1], argv[argc]); const char* pathName = argIter.Next(); ) {
 		if (!FS::Remove(terr, pathName, recursiveFlag)) rtn = 1;
 	}
 	return rtn;
@@ -340,7 +340,7 @@ ShellCmd(rmdir, "removes directories")
 		return 1;
 	}
 	int rtn = 0;
-	for (Arg::Glob argIter(argv[1], argv[argc]); const char* pathName = argIter.Next(); ) {
+	for (Arg::EachGlob argIter(argv[1], argv[argc]); const char* pathName = argIter.Next(); ) {
 		if (!FS::RemoveDir(terr, pathName)) rtn = 1;
 	}
 	return rtn;
@@ -372,7 +372,7 @@ ShellCmd(touch, "updates time stamps or creates empty files")
 	} else {
 		RTC::Get(&dt);
 	}
-	for (Arg::Glob argIter(argv[1], argv[argc]); const char* pathName = argIter.Next(); ) {
+	for (Arg::EachGlob argIter(argv[1], argv[argc]); const char* pathName = argIter.Next(); ) {
 		if (!FS::Touch(terr, pathName, dt)) rtn = 1;
 	}
 	return rtn;

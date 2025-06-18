@@ -108,7 +108,7 @@ void test_EachNum()
 		{ "range with negative step", 1, { "10-2:2" }, false, "10, 8, 6, 4, 2" },
 		{ "range with positive step", 1, { "2-10:2" }, false, "2, 4, 6, 8, 10" },
 		{ "single negative", 1, { "-7" }, false, "-7" },
-		{ "range with zero step (invalid)", 1, { "1-5:0" }, false, "(none)" },
+		{ "range with zero step (invalid)", 1, { "1-5:0" }, false, "(error)" },
 		{ "step larger than range", 1, { "1-3:5" }, false, "1" },
 		{ "step larger than reverse range", 1, { "5-1:10" }, false, "5" },
 		{ "range with negative start", 1, { "-5--2" }, false, "-5, -4, -3, -2" },
@@ -132,8 +132,8 @@ void test_EachNum()
 		{ "comma negative numbers", 1, { "-2,-1,0,1" }, false, "-2, -1, 0, 1" },
 		{ "comma negative ranges", 1, { "-3--1,1-2" }, false, "-3, -2, -1, 1, 2" },
 		{ "comma reverse ranges", 1, { "5-3,2-1" }, false, "5, 4, 3, 2, 1" },
-		{ "comma with invalid", 1, { "1,abc,3-4" }, false, "1, 3, 4" },
-		{ "comma with empty", 1, { "1,,2-3" }, false, "1, 2, 3" },
+		{ "comma with invalid", 1, { "1,abc,3-4" }, false, "1(error)" },
+		{ "comma with empty", 1, { "1,,2-3" }, false, "1(error)" },
 		{ "comma with step and negatives", 1, { "-5--1:2,3" }, false, "-5, -3, -1, 3" },
 		{ "range with missing end", 1, { "3-" }, true, "3, 4, 5, 6, 7, 8, 9, 10" },
 		{ "range with missing end", 1, { "13-" }, true, "13, 12, 11, 10" },
@@ -157,10 +157,13 @@ void test_EachNum()
 			tout.Printf("%d", n);
 			first = false;
 		}
-		if (first) {
+		if (!each.IsSuccess()) {
+			tout.Printf("(%s)", each.GetErrorMsg());
+		} else if (first) {
 			tout.Printf("(none)");
 		}
 		tout.Println();
+		tout.Printf("[expt] %s\n", tc.expected);
 		tout.Printf("\n");
 	}
 }

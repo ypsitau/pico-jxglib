@@ -75,22 +75,22 @@ public:
 			void SetNext(OptValue* pOptValueNext) { pOptValueNext_.reset(pOptValueNext); }
 			OptValue* GetNext() const { return pOptValueNext_.get(); }
 		};	
-		class Iterator {
+		class EachBase {
 		protected:
 			const char** argvCur_;
 			const char** argvBegin_;
 			const char** argvEnd_;
 		public:
-			Iterator(const char*& argvBegin, const char*& argvEnd) :
+			EachBase(const char*& argvBegin, const char*& argvEnd) :
 				argvCur_{&argvBegin}, argvBegin_{&argvBegin}, argvEnd_{&argvEnd} {}
 		};
-		class Each : public Iterator {
+		class Each : public EachBase {
 		public:
 			Each(const char*& argvBegin, const char*& argvEnd);
 			Each(char*& argvBegin, char*& argvEnd) : Each(const_cast<const char*&>(argvBegin), const_cast<const char*&>(argvEnd)) {}
 			const char* Next();
 		};
-		class EachNum : public Iterator {
+		class EachNum : public EachBase {
 		private:
 			const char* p_;
 			bool rangeActiveFlag_;
@@ -98,6 +98,7 @@ public:
 			int rangeLimit_;
 			bool hasRangeLimit_;
 			const char* argv_[2];
+			const char* errorMsg_;
 		public:
 			EachNum(const char* str);
 			EachNum(const char* str, int rangeLimit) : EachNum(str) { rangeLimit_ = rangeLimit; hasRangeLimit_ = true; }
@@ -109,15 +110,17 @@ public:
 		public:
 			void SetLimit(int rangeLimit) { rangeLimit_ = rangeLimit; hasRangeLimit_ = true; }
 			bool Next(int* pValue);
-			bool IsValid();
+			bool IsSuccess() const { return errorMsg_[0] == '\0'; }
+			const char* GetErrorMsg() const { return errorMsg_; }
+			bool CheckValidity();
 		};
-		class Glob : public Iterator {
+		class EachGlob : public EachBase {
 		private:
 			std::unique_ptr<FS::Glob> pGlob_;
 			std::unique_ptr<FS::FileInfo> pFileInfo_;
 		public:
-			Glob(const char*& argvBegin, const char*& argvEnd);
-			Glob(char*& argvBegin, char*& argvEnd) : Glob(const_cast<const char*&>(argvBegin), const_cast<const char*&>(argvEnd)) {}
+			EachGlob(const char*& argvBegin, const char*& argvEnd);
+			EachGlob(char*& argvBegin, char*& argvEnd) : EachGlob(const_cast<const char*&>(argvBegin), const_cast<const char*&>(argvEnd)) {}
 			const char* Next();
 			const FS::FileInfo& GetFileInfo() const { return *pFileInfo_; }
 		};

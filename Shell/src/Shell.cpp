@@ -424,7 +424,7 @@ void Shell::Arg::Opt::MakeHelp(char* str, int len) const
 //------------------------------------------------------------------------------
 // Shell::Arg::Each
 //------------------------------------------------------------------------------
-Shell::Arg::Each::Each(const char*& argvBegin, const char*& argvEnd) : Iterator(argvBegin, argvEnd) {}
+Shell::Arg::Each::Each(const char*& argvBegin, const char*& argvEnd) : EachBase(argvBegin, argvEnd) {}
 
 const char* Shell::Arg::Each::Next()
 {
@@ -440,10 +440,9 @@ Shell::Arg::EachNum::EachNum(const char* str) : EachNum(argv_[0], argv_[1])
 	argv_[1] = nullptr;
 }
 
-Shell::Arg::EachNum::EachNum(const char*& argvBegin, const char*& argvEnd) : Iterator(argvBegin, argvEnd),
-	p_{""}, rangeActiveFlag_{false}, rangeCur_{0}, rangeEnd_{0}, rangeStep_{1}, rangeLimit_{0}, hasRangeLimit_{false}
+Shell::Arg::EachNum::EachNum(const char*& argvBegin, const char*& argvEnd) : EachBase(argvBegin, argvEnd),
+	p_{""}, rangeActiveFlag_{false}, rangeCur_{0}, rangeEnd_{0}, rangeStep_{1}, rangeLimit_{0}, hasRangeLimit_{false}, errorMsg_{""}
 {}
-
 
 bool Shell::Arg::EachNum::EachNum::Next(int* pValue)
 {
@@ -465,7 +464,10 @@ bool Shell::Arg::EachNum::EachNum::Next(int* pValue)
 		for ( ; ::isspace(*p_); ++p_) ;
 		char* endptr = nullptr;
 		int n1 = ::strtol(p_, &endptr, 10);
-		if (endptr == p_) return false; // not a number
+		if (endptr == p_) {
+			errorMsg_ = "not a number";
+			return false;
+		}
 		p_ = endptr;
 		// Check for range
 		if (*p_ == '-') {
@@ -476,7 +478,8 @@ bool Shell::Arg::EachNum::EachNum::Next(int* pValue)
 			} else if (hasRangeLimit_) {
 				n2 = rangeLimit_;
 			} else {
-				return false; // invalid range
+				errorMsg_ = "invalid range";
+				return false;
 			}
 			p_ = endptr;
 			rangeCur_ = n1;
@@ -485,8 +488,11 @@ bool Shell::Arg::EachNum::EachNum::Next(int* pValue)
 			if (*p_ == ':') {
 				++p_;
 				n3 = ::strtol(p_, &endptr, 10);
-				if (n3 == 0) return false;
 				if (endptr == p_) n3 = 1;
+				if (n3 == 0) {
+					errorMsg_ = "zero step in range";
+					return false;
+				}
 				if (n3 < 0) n3 = -n3;
 				p_ = endptr;
 			}
@@ -511,22 +517,22 @@ bool Shell::Arg::EachNum::EachNum::Next(int* pValue)
 	}
 }
 
-bool Shell::Arg::EachNum::IsValid()
+bool Shell::Arg::EachNum::CheckValidity()
 {
 	argvCur_ = argvBegin_;
 	int value;
 	while (Next(&value)) ;
-	bool rtn = (argvCur_ == argvEnd_ && *p_ == '\0');
+	bool rtn = IsSuccess();
 	argvCur_ = argvBegin_;
 	return rtn;
 }
 
 //------------------------------------------------------------------------------
-// Shell::Arg::Glob
+// Shell::Arg::EachGlob
 //------------------------------------------------------------------------------
-Shell::Arg::Glob::Glob(const char*& argvBegin, const char*& argvEnd) :  Iterator(argvBegin, argvEnd) {}
+Shell::Arg::EachGlob::EachGlob(const char*& argvBegin, const char*& argvEnd) :  EachBase(argvBegin, argvEnd) {}
 
-const char* Shell::Arg::Glob::Next()
+const char* Shell::Arg::EachGlob::Next()
 {
 	const char* pathName = nullptr;
 	if (pGlob_) {
