@@ -350,7 +350,7 @@ ShellCmd(touch, "updates time stamps or creates empty files")
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
-		Arg::OptString("datetime",	'd',	"specifies the date and time to set (format: YYYY-MM-DD HH:MM:SS)", "DATETIME"),
+		Arg::OptString("timestamp",	't',	"specifies the timestamp to set (format: YYYY-MM-DD HH:MM:SS)", "STAMP"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -362,11 +362,11 @@ ShellCmd(touch, "updates time stamps or creates empty files")
 	int rtn = 0;
 	DateTime dt;
 	const char* value;
-	if (arg.GetString("datetime", &value)) {
+	if (arg.GetString("timestamp", &value)) {
 		if (DateTime::HasTimeFormat(value)) {
 			dt.ParseTime(value); // DateTime::HasTimeFormat() already ensures the validity
 		} else if (!dt.Parse(value)) {
-			terr.Printf("invalid date/time format. Use YYYY-MM-DD HH:MM:SS\n");
+			terr.Printf("invalid timestamp format. Use YYYY-MM-DD HH:MM:SS\n");
 			return 1;
 		}
 	} else {

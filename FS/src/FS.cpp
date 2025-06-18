@@ -114,8 +114,6 @@ bool Touch(Printable& terr, const char* pathName, const DateTime& dt)
 			return false;
 		}
 	}
-	//DateTime dt;
-	//RTC::Get(&dt);
 	char pathNameN[MaxPath];
 	Drive* pDrive = FindDrive(pathName);
 	if (!pDrive || !pDrive->SetTimeStamp(pDrive->NativePathName(pathNameN, sizeof(pathNameN), pathName), dt)) {
