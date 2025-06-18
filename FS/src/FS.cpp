@@ -183,6 +183,9 @@ bool Copy(Printable& terr, const char* pathNameSrc, const char* pathNameDst, boo
 			terr.Printf("destination %s is not a directory\n", pathNameDst);
 			return false;
 		}
+		char pathNameDstBase[MaxPath];
+		JoinPathName(pathNameDstBase, sizeof(pathNameDstBase), pathNameDst, ExtractBottomName(pathNameSrc));
+		if (!CreateDir(terr, pathNameDstBase)) return false;
 		Walker walker(false); // fileFirstFlag = false: read directories first
 		if (!walker.Open(pathNameSrc, 0)) {
 			terr.Printf("failed to open directory %s\n", pathNameSrc);
@@ -193,10 +196,11 @@ bool Copy(Printable& terr, const char* pathNameSrc, const char* pathNameDst, boo
 			std::unique_ptr<FileInfo> pFileInfo(walker.Read(&pathNameSrcEach));
 			if (!pFileInfo) break; // No more files
 			char pathNameDstEach[MaxPath];
-			JoinPathName(pathNameDstEach, sizeof(pathNameDstEach), pathNameDst, walker.GetPathNameSub());
+			JoinPathName(pathNameDstEach, sizeof(pathNameDstEach), pathNameDstBase, walker.GetPathNameSub());
 			if (pFileInfo->IsDirectory()) {
 				if (!CreateDir(terr, pathNameDstEach)) {
 					rtn = false;
+					break;
 				} else if (verboseFlag) {
 					// nothing to do
 				}
