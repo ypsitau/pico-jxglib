@@ -432,4 +432,33 @@ ShellCmd(walk, "walks through directories")
 	return 0;
 }
 
+ShellCmd(tree, "prints a tree of directories")
+{
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		'h',	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (arg.GetBool("help")) {
+		terr.Printf("Usage: %s [OPTION]... [DIRECTORY]\n", GetName());
+		arg.PrintHelp(terr);
+		return 1;
+	}
+	const char* dirName = (argc < 2)? "." : argv[1];
+	std::unique_ptr<FS::Dir> pDir(FS::OpenDir(dirName));
+	if (!pDir) {
+		terr.Printf("cannot open directory: %s\n", dirName);
+		return 1;
+	}
+	bool successFlag = false;
+	std::unique_ptr<FS::FileInfo> pFileInfo(pDir->ReadAllRecursive(FS::FileInfo::CmpDefault, nullptr, &successFlag));
+	if (!successFlag) {
+		terr.Printf("cannot read directory: %s\n", dirName);
+		return 1;
+	}
+	bool slashForDirFlag = true;
+	pFileInfo->PrintTree(tout, slashForDirFlag, 0);
+	return 0;
+}
+
 }

@@ -691,6 +691,18 @@ void FileInfo::PrintList(Printable& tout, bool slashForDirFlag) const
 	}
 }
 
+void FileInfo::PrintTree(Printable& tout, bool slashForDirFlag, int depthLevel) const
+{
+	for (const FileInfo* pFileInfo = this; pFileInfo; pFileInfo = pFileInfo->GetNext()) {
+		if (pFileInfo->IsDirectory()) {
+			tout.Printf("%*s%s%s\n", depthLevel * 2, "", pFileInfo->GetName(), slashForDirFlag? "/" : "");
+			if (pFileInfoChild_) pFileInfoChild_->PrintTree(tout, slashForDirFlag, depthLevel + 1);
+		} else if (pFileInfo->IsFile()) {
+			tout.Printf("%*s%s\n", depthLevel * 2, "", pFileInfo->GetName());
+		}
+	}
+}
+
 const char* FileInfo::JoinPathName(char* pathName, int lenBuff) const
 {
 	pathName[0] = '\0';
@@ -820,6 +832,25 @@ Dir* Dir::RemoveBottomChild()
 		return pDirPrev;
 	}
 	return this;
+}
+
+FileInfo* Dir::ReadAllRecursive(const FileInfo::Cmp& cmp, const char* pattern, bool* pSuccessFlag)
+{
+	if (pSuccessFlag) *pSuccessFlag = true;
+	std::unique_ptr<FileInfo> pFileInfoTop(ReadAll(cmp, pattern));
+	for (FileInfo* pFileInfo = pFileInfoTop.get(); pFileInfo; pFileInfo = pFileInfo->GetNext()) {
+		if (pFileInfo->IsDirectory()) {
+			char pathName[MaxPath];
+			JoinPathName(pathName, sizeof(pathName), GetDirName(), pFileInfo->GetName());
+			std::unique_ptr<Dir> pDirChild(OpenDir(pathName));
+			if (!pDirChild) {
+				if (pSuccessFlag) *pSuccessFlag = false;
+				return nullptr;
+			}
+			pFileInfo->SetChild(pDirChild->ReadAllRecursive(cmp, pattern, pSuccessFlag));
+		}
+	}
+	return pFileInfoTop.release();
 }
 
 //------------------------------------------------------------------------------

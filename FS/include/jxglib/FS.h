@@ -127,6 +127,7 @@ public:
 	FileInfo(const char* name, uint8_t attr, uint32_t size, const DateTime& dateTime);
 public:
 	void PrintList(Printable& tout, bool slashForDirFlag = true) const;
+	void PrintTree(Printable& tout, bool slashForDirFlag = true, int depthLevel = 0) const;
 	void SetNext(FileInfo* pFileInfoNext) { pFileInfoNext_.reset(pFileInfoNext); }
 	FileInfo* GetNext() { return pFileInfoNext_.get(); }
 	const FileInfo* GetNext() const { return pFileInfoNext_.get(); }
@@ -181,6 +182,8 @@ public:
 	void SetChild(Dir* pDir) { pDirChild_.reset(pDir); }
 	Dir* GetChild() const { return pDirChild_.get(); }
 	Dir* RemoveBottomChild();
+public:
+	FileInfo* ReadAllRecursive(const FileInfo::Cmp& cmp = FileInfo::Cmp::Zero, const char* pattern = nullptr, bool* pSuccessFlag = nullptr);
 public:
 	const Drive& GetDrive() const { return drive_; }
 	void EnableRewind() { rewindFlag_ = true; }
