@@ -811,14 +811,12 @@ Dir::Dir(const Drive& drive) : drive_(drive), rewindFlag_{false}
 	dirName_[0] = '\0';
 }
 
-Dir* Dir::RemoveLast()
+Dir* Dir::RemoveBottomChild()
 {
 	Dir* pDirPrev = nullptr;
-	for (Dir* pDir = this; pDir->GetNext(); pDir = pDir->GetNext()) {
-		pDirPrev = pDir;
-	}
+	for (Dir* pDir = this; pDir->GetChild(); pDir = pDir->GetChild()) pDirPrev = pDir;
 	if (pDirPrev) {
-		pDirPrev->SetNext(nullptr);
+		pDirPrev->SetChild(nullptr);
 		return pDirPrev;
 	}
 	return this;
@@ -893,7 +891,7 @@ FileInfo* Walker::Read(const char** pPathName)
 			if (!pFileInfo->IsDirectory()) break;
 			Dir* pDir = OpenDir(pathName_, attrExclude_);
 			if (!pDir) return nullptr;
-			pDirCur_->SetNext(pDir);
+			pDirCur_->SetChild(pDir);
 			pDirCur_ = pDir;
 			if (fileFirstFlag_) {
 				pDir->SetFileInfo(pFileInfo.release());
@@ -904,12 +902,12 @@ FileInfo* Walker::Read(const char** pPathName)
 			if (pDirCur_ == pDirTop_.get()) return nullptr;
 			if (fileFirstFlag_) {
 				pFileInfo.reset(pDirCur_->ReleaseFileInfo());
-				Dir* pDir = pDirTop_->RemoveLast();
+				Dir* pDir = pDirTop_->RemoveBottomChild();
 				JoinPathName(pathName_, sizeof(pathName_), pDir->GetDirName(), pFileInfo->GetName());
 				pDirCur_ = pDir;
 				break;
 			} else {
-				pDirCur_ = pDirTop_->RemoveLast();
+				pDirCur_ = pDirTop_->RemoveBottomChild();
 			}
 		}
 	}

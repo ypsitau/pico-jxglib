@@ -119,6 +119,7 @@ protected:
 	uint32_t size_;
 	DateTime dateTime_;
 	std::unique_ptr<FileInfo> pFileInfoNext_;
+	std::unique_ptr<FileInfo> pFileInfoChild_;
 public:
 	static Cmp_Combine CmpDefault;
 public:
@@ -127,8 +128,13 @@ public:
 public:
 	void PrintList(Printable& tout, bool slashForDirFlag = true) const;
 	void SetNext(FileInfo* pFileInfoNext) { pFileInfoNext_.reset(pFileInfoNext); }
-	FileInfo* GetNext() const { return pFileInfoNext_.get(); }
+	FileInfo* GetNext() { return pFileInfoNext_.get(); }
+	const FileInfo* GetNext() const { return pFileInfoNext_.get(); }
 	FileInfo* ReleaseNext() { return pFileInfoNext_.release(); }
+	void SetChild(FileInfo* pFileInfoChild) { pFileInfoChild_.reset(pFileInfoChild); }
+	FileInfo* GetChild() { return pFileInfoChild_.get(); }
+	const FileInfo* GetChild() const { return pFileInfoChild_.get(); }
+	FileInfo* ReleaseChild() { return pFileInfoChild_.release(); }
 public:
 	const char* GetName() const { return name_.get(); }
 	uint8_t GetAttr() const { return attr_; }
@@ -166,15 +172,15 @@ protected:
 protected:
 	// folllwing members are used by FS::Walker
 	char dirName_[MaxPath];
-	std::unique_ptr<Dir> pDirNext_;
+	std::unique_ptr<Dir> pDirChild_;
 	std::unique_ptr<FileInfo> pFileInfo_;
 public:
 	Dir(const Drive& drive);
 	virtual ~Dir() { Close(); }
 public:
-	void SetNext(Dir* pDir) { pDirNext_.reset(pDir); }
-	Dir* GetNext() const { return pDirNext_.get(); }
-	Dir* RemoveLast();
+	void SetChild(Dir* pDir) { pDirChild_.reset(pDir); }
+	Dir* GetChild() const { return pDirChild_.get(); }
+	Dir* RemoveBottomChild();
 public:
 	const Drive& GetDrive() const { return drive_; }
 	void EnableRewind() { rewindFlag_ = true; }
