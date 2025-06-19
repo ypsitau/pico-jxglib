@@ -691,14 +691,24 @@ void FileInfo::PrintList(Printable& tout, bool slashForDirFlag) const
 	}
 }
 
-void FileInfo::PrintTree(Printable& tout, bool slashForDirFlag, int depthLevel) const
+void FileInfo::PrintTree(Printable& tout, bool slashForDirFlag, char* strBranch, int lenBranchMax) const
 {
 	for (const FileInfo* pFileInfo = this; pFileInfo; pFileInfo = pFileInfo->GetNext()) {
+		bool lastFlag = !pFileInfo->GetNext();
 		if (pFileInfo->IsDirectory()) {
-			tout.Printf("%*s%s%s\n", depthLevel * 2, "", pFileInfo->GetName(), slashForDirFlag? "/" : "");
-			if (pFileInfoChild_) pFileInfoChild_->PrintTree(tout, slashForDirFlag, depthLevel + 1);
+			tout.Printf("%s%s%s%s\n", strBranch, lastFlag? "└── " : "├── ", pFileInfo->GetName(), slashForDirFlag? "/" : "");
+			const char* strBranchAdded = lastFlag? "    " : "│   ";
+			int lenBranchAdded = ::strlen(strBranchAdded);
+			if (::strlen(strBranch) + lenBranchAdded + 1 < lenBranchMax) {
+				::strcat(strBranch, strBranchAdded);
+			} else {
+				lenBranchAdded = 0;
+			}
+			if (pFileInfoChild_) pFileInfoChild_->PrintTree(tout, slashForDirFlag, strBranch, lenBranchMax);
+			int lenBranch = ::strlen(strBranch);
+			strBranch[lenBranch - lenBranchAdded] = '\0';
 		} else if (pFileInfo->IsFile()) {
-			tout.Printf("%*s%s\n", depthLevel * 2, "", pFileInfo->GetName());
+			tout.Printf("%s%s%s\n", strBranch, lastFlag? "└── " : "├── ", pFileInfo->GetName());
 		}
 	}
 }

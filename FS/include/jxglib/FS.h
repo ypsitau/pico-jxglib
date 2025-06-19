@@ -127,7 +127,7 @@ public:
 	FileInfo(const char* name, uint8_t attr, uint32_t size, const DateTime& dateTime);
 public:
 	void PrintList(Printable& tout, bool slashForDirFlag = true) const;
-	void PrintTree(Printable& tout, bool slashForDirFlag = true, int depthLevel = 0) const;
+	void PrintTree(Printable& tout, bool slashForDirFlag, char* strBranch, int lenBranchMax) const;
 	void SetNext(FileInfo* pFileInfoNext) { pFileInfoNext_.reset(pFileInfoNext); }
 	FileInfo* GetNext() { return pFileInfoNext_.get(); }
 	const FileInfo* GetNext() const { return pFileInfoNext_.get(); }

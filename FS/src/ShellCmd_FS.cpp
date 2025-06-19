@@ -452,12 +452,16 @@ ShellCmd(tree, "prints a tree of directories")
 	}
 	bool successFlag = false;
 	std::unique_ptr<FS::FileInfo> pFileInfo(pDir->ReadAllRecursive(FS::FileInfo::CmpDefault, nullptr, &successFlag));
-	if (!successFlag) {
+	if (pFileInfo) {
+		bool slashForDirFlag = false;
+		char strBranch[128];
+		strBranch[0] = '\0';
+		tout.Printf("%s%s\n", dirName, slashForDirFlag? "/" : "");
+		pFileInfo->PrintTree(tout, slashForDirFlag, strBranch, sizeof(strBranch));
+	} else if (!successFlag) {
 		terr.Printf("cannot read directory: %s\n", dirName);
 		return 1;
 	}
-	bool slashForDirFlag = true;
-	pFileInfo->PrintTree(tout, slashForDirFlag, 0);
 	return 0;
 }
 
