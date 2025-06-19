@@ -828,7 +828,7 @@ FileInfo* FileInfoReader::ReadAll(const FileInfo::Cmp& cmp, const char* pattern)
 //------------------------------------------------------------------------------
 // FS::Dir
 //------------------------------------------------------------------------------
-Dir::Dir(const Drive& drive) : drive_(drive), rewindFlag_{false}
+Dir::Dir(Drive& drive) : drive_(drive), rewindFlag_{false}
 {
 	dirName_[0] = '\0';
 }
@@ -846,19 +846,24 @@ Dir* Dir::RemoveBottomChild()
 
 FileInfo* Dir::ReadAllRecursive(const FileInfo::Cmp& cmp, const char* pattern, bool* pSuccessFlag)
 {
+	uint8_t attrExclude = 0;
 	if (pSuccessFlag) *pSuccessFlag = true;
 	std::unique_ptr<FileInfo> pFileInfoTop(ReadAll(cmp, pattern));
 	for (FileInfo* pFileInfo = pFileInfoTop.get(); pFileInfo; pFileInfo = pFileInfo->GetNext()) {
 		if (pFileInfo->IsDirectory()) {
-			char pathName[MaxPath];
-			JoinPathName(pathName, sizeof(pathName), GetDirName(), pFileInfo->GetName());
-			std::unique_ptr<Dir> pDirChild(OpenDir(pathName));
-			if (!pDirChild) {
+			char dirName[MaxPath], dirNameN[MaxPath];
+			JoinPathName(dirName, sizeof(dirName), GetDirName(), pFileInfo->GetName());
+			//std::unique_ptr<Dir> pDirChild(GetDrive().OpenDir(dirName, attrExclude));
+			std::unique_ptr<Dir> pDirChild(drive_.OpenDir(drive_.NativePathName(dirNameN, sizeof(dirNameN), dirName), attrExclude));
+			if (pDirChild) {
+				pDirChild->SetDirName(dirName);
+			} else {
 				if (pSuccessFlag) *pSuccessFlag = false;
 				return nullptr;
 			}
 			pFileInfo->SetChild(pDirChild->ReadAllRecursive(cmp, pattern, pSuccessFlag));
 		}
+		if (Tickable::TickSub()) return nullptr; // Interrupted
 	}
 	return pFileInfoTop.release();
 }

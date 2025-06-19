@@ -168,7 +168,7 @@ public:
 //------------------------------------------------------------------------------
 class Dir : public FileInfoReader {
 protected:
-	const Drive& drive_;
+	Drive& drive_;
 	bool rewindFlag_;
 protected:
 	// folllwing members are used by FS::Walker
@@ -176,7 +176,7 @@ protected:
 	std::unique_ptr<Dir> pDirChild_;
 	std::unique_ptr<FileInfo> pFileInfo_;
 public:
-	Dir(const Drive& drive);
+	Dir(Drive& drive);
 	virtual ~Dir() { Close(); }
 public:
 	void SetChild(Dir* pDir) { pDirChild_.reset(pDir); }
@@ -185,7 +185,7 @@ public:
 public:
 	FileInfo* ReadAllRecursive(const FileInfo::Cmp& cmp = FileInfo::Cmp::Zero, const char* pattern = nullptr, bool* pSuccessFlag = nullptr);
 public:
-	const Drive& GetDrive() const { return drive_; }
+	Drive& GetDrive() const { return drive_; }
 	void EnableRewind() { rewindFlag_ = true; }
 public:
 	void SetDirName(const char* dirName) { ::snprintf(dirName_, sizeof(dirName_), "%s", dirName); }
