@@ -704,7 +704,7 @@ void FileInfo::PrintTree(Printable& tout, bool slashForDirFlag, char* strBranch,
 			} else {
 				lenBranchAdded = 0;
 			}
-			if (pFileInfoChild_) pFileInfoChild_->PrintTree(tout, slashForDirFlag, strBranch, lenBranchMax);
+			if (pFileInfo->GetChild()) pFileInfo->GetChild()->PrintTree(tout, slashForDirFlag, strBranch, lenBranchMax);
 			int lenBranch = ::strlen(strBranch);
 			strBranch[lenBranch - lenBranchAdded] = '\0';
 		} else if (pFileInfo->IsFile()) {
@@ -851,12 +851,11 @@ FileInfo* Dir::ReadAllRecursive(const FileInfo::Cmp& cmp, const char* pattern, b
 	std::unique_ptr<FileInfo> pFileInfoTop(ReadAll(cmp, pattern));
 	for (FileInfo* pFileInfo = pFileInfoTop.get(); pFileInfo; pFileInfo = pFileInfo->GetNext()) {
 		if (pFileInfo->IsDirectory()) {
-			char dirName[MaxPath], dirNameN[MaxPath];
-			JoinPathName(dirName, sizeof(dirName), GetDirName(), pFileInfo->GetName());
-			//std::unique_ptr<Dir> pDirChild(GetDrive().OpenDir(dirName, attrExclude));
-			std::unique_ptr<Dir> pDirChild(drive_.OpenDir(drive_.NativePathName(dirNameN, sizeof(dirNameN), dirName), attrExclude));
+			char dirNameChild[MaxPath], dirNameChildN[MaxPath];
+			JoinPathName(dirNameChild, sizeof(dirNameChild), GetDirName(), pFileInfo->GetName());
+			std::unique_ptr<Dir> pDirChild(drive_.OpenDir(drive_.NativePathName(dirNameChildN, sizeof(dirNameChildN), dirNameChild), attrExclude));
 			if (pDirChild) {
-				pDirChild->SetDirName(dirName);
+				pDirChild->SetDirName(dirNameChild);
 			} else {
 				if (pSuccessFlag) *pSuccessFlag = false;
 				return nullptr;

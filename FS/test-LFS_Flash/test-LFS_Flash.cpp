@@ -15,9 +15,10 @@ int main()
 	GPIO16.set_function_I2C0_SDA().pull_up();
 	GPIO17.set_function_I2C0_SCL().pull_up();
 	RTC::DS323x rtc(i2c0);
-	LFS::Flash lfs1("A", 0x1010'0000, 0x0004'0000);	// XIP address and size
-	LFS::Flash lfs2("B", 0x1014'0000, 0x0004'0000);	// XIP address and size
-	LFS::Flash lfs3("C", 0x0004'0000);				// XIP address and size
+    LFS::Flash driveA("A:", 0x1010'0000, 0x0004'0000);  // Flash address and size 256kB
+    LFS::Flash driveB("B:", 0x1014'0000, 0x0004'0000);  // Flash address and size 256kB
+    LFS::Flash driveC("*C:", 0x1018'0000, 0x0004'0000); // Flash address and size 256kB
+    LFS::Flash driveD("D:", 0x101c'0000, 0x0004'0000);  // Flash address and size 256kB
 	Serial::Terminal terminal;
 	Shell::AttachTerminal(terminal.Initialize());
 	for (;;) Tickable::Tick();
