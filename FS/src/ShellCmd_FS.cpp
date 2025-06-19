@@ -90,7 +90,7 @@ ShellCmd(copy, "copies files")
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
 		Arg::OptBool("recursive",	'r',	"copies directories recursively"),
-		Arg::OptBool("verbose",		'v',	"prints the names of files as they are copied"),
+		Arg::OptBool("verbose",		'v',	"prints what is being done"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -265,6 +265,7 @@ ShellCmd(move, "moves a file")
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
+		Arg::OptBool("verbose",		'v',	"prints what is being done"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -273,9 +274,10 @@ ShellCmd(move, "moves a file")
 		arg.PrintHelp(terr);
 		return 1;
 	}
+	bool verboseFlag = arg.GetBool("verbose");
 	const char* pathNameDst = argv[argc - 1];
 	for (Arg::EachGlob argIter(argv[1], argv[argc - 1]); const char* pathNameSrc = argIter.Next(); ) {
-		if (!FS::Move(terr, pathNameSrc, pathNameDst)) return 1;
+		if (!FS::Move(terr, pathNameSrc, pathNameDst, verboseFlag)) return 1;
 	}
 	return 0;
 }
@@ -309,6 +311,7 @@ ShellCmd(rm, "removes files")
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
 		Arg::OptBool("recursive",	'r',	"removes directories recursively"),
+		Arg::OptBool("verbose",		'v',	"prints what is being done"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -318,9 +321,10 @@ ShellCmd(rm, "removes files")
 		return 1;
 	}
 	bool recursiveFlag = arg.GetBool("recursive");
+	bool verboseFlag = arg.GetBool("verbose");
 	int rtn = 0;
 	for (Arg::EachGlob argIter(argv[1], argv[argc]); const char* pathName = argIter.Next(); ) {
-		if (!FS::Remove(terr, pathName, recursiveFlag)) rtn = 1;
+		if (!FS::Remove(terr, pathName, recursiveFlag, verboseFlag)) rtn = 1;
 	}
 	return rtn;
 }

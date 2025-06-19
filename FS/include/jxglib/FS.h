@@ -283,7 +283,6 @@ Drive* GetDriveCur();
 const char* SkipDriveName(const char* pathName);
 bool SetDriveCur(const char* driveName);
 File* OpenFile(const char* fileName, const char* mode, Drive* pDrive = nullptr);
-File* OpenFileForCopy(const char* pathNameSrc, const char* pathNameDst);
 Dir* OpenDir(const char* dirName, uint8_t attrExclude = 0);
 Glob* OpenGlob(const char* pattern, const FileInfo::Cmp& cmp = FS::FileInfo::CmpDefault, bool patternAsDirFlag = false, uint8_t attrExclude = 0);
 const char* CreatePathNameDst(char* pathName, int lenMax, const char* pathNameSrc, const char* pathNameDst);
@@ -300,11 +299,15 @@ inline bool Copy(const char* pathNameSrc, const char* pathNameDst, bool recursiv
 	return Copy(PrintableDumb::Instance, pathNameSrc, pathNameDst, recursiveFlag, verboseFlag);
 }
 
-bool CopyFile(Printable& terr, const char* pathNameSrc, const char* pathNameDst);
-inline bool CopyFile(const char* pathNameSrc, const char* pathNameDst) { return CopyFile(PrintableDumb::Instance, pathNameSrc, pathNameDst); }
+bool CopyFile(Printable& terr, const char* fileNameSrc, const char* pathNameDst);
+inline bool CopyFile(const char* fileNameSrc, const char* pathNameDst) {
+	return CopyFile(PrintableDumb::Instance, fileNameSrc, pathNameDst);
+}
 
-bool Remove(Printable& terr, const char* pathName, bool recursiveFlag);
-inline bool Remove(const char* pathName, bool recursiveFlag) { return Remove(PrintableDumb::Instance, pathName, recursiveFlag); }
+bool Remove(Printable& terr, const char* pathName, bool recursiveFlag, bool verboseFlag);
+inline bool Remove(const char* pathName, bool recursiveFlag, bool verboseFlag) {
+	return Remove(PrintableDumb::Instance, pathName, recursiveFlag, verboseFlag);
+}
 
 bool RemoveFile(Printable& terr, const char* fileName);
 inline bool RemoveFile(const char* fileName) { return RemoveFile(PrintableDumb::Instance, fileName); }
@@ -312,8 +315,10 @@ inline bool RemoveFile(const char* fileName) { return RemoveFile(PrintableDumb::
 bool RemoveDir(Printable& terr, const char* dirName);
 inline bool RemoveDir(const char* dirName) { return RemoveDir(PrintableDumb::Instance, dirName); }
 
-bool Move(Printable& terr, const char* pathNameOld, const char* pathNameNew);
-inline bool Move(const char* pathNameOld, const char* pathNameNew) { return Move(PrintableDumb::Instance, pathNameOld, pathNameNew); }
+bool Move(Printable& terr, const char* pathNameOld, const char* pathNameNew, bool verboseFlag);
+inline bool Move(const char* pathNameOld, const char* pathNameNew, bool verboseFlag) {
+	return Move(PrintableDumb::Instance, pathNameOld, pathNameNew, verboseFlag);
+}
 
 bool CreateDir(Printable& terr, const char* dirName);
 inline bool CreateDir(const char* dirName) { return CreateDir(PrintableDumb::Instance, dirName); }
