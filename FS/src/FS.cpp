@@ -174,19 +174,26 @@ bool Copy(Printable& terr, const char* pathNameSrc, const char* pathNameDst, boo
 			terr.Printf("cannot copy directory %s\n", pathNameSrc);
 			return false;
 		}
-		if (!IsDirectory(pathNameDst)) {
-			terr.Printf("destination %s is not a directory\n", pathNameDst);
-			return false;
-		}
 		char pathNameDstBase[MaxPath];
-		JoinPathName(pathNameDstBase, sizeof(pathNameDstBase), pathNameDst, ExtractBottomName(pathNameSrc));
-		std::unique_ptr<FileInfo> pFileInfoDstBase(GetFileInfo(pathNameDstBase));
-		if (!pFileInfoDstBase) {
-			// nothing to do
+		std::unique_ptr<FileInfo> pFileInfoDst(GetFileInfo(pathNameDst));
+		if (!pFileInfoDst) {
+			::snprintf(pathNameDstBase, sizeof(pathNameDstBase), "%s", pathNameDst);
+		} else if (pFileInfoDst->IsDirectory()) {
+			JoinPathName(pathNameDstBase, sizeof(pathNameDstBase), pathNameDst, ExtractBottomName(pathNameSrc));
+			std::unique_ptr<FileInfo> pFileInfoDstBase(GetFileInfo(pathNameDstBase));
+			if (!pFileInfoDstBase) {
+				// nothing to do
+			} else if (forceFlag) {
+				Remove(terr, pathNameDstBase, true, verboseFlag);
+			} else {
+				terr.Printf("already exists: %s\n", pathNameDstBase);
+				return false;
+			}
 		} else if (forceFlag) {
-			Remove(terr, pathNameDstBase, true, verboseFlag);
+			Remove(terr, pathNameDst, true, verboseFlag);
+			::snprintf(pathNameDstBase, sizeof(pathNameDstBase), "%s", pathNameDst);
 		} else {
-			terr.Printf("already exists: %s\n", pathNameDstBase);
+			terr.Printf("already exists: %s\n", pathNameDst);
 			return false;
 		}
 		if (!CreateDir(terr, pathNameDstBase)) return false;
