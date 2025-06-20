@@ -70,4 +70,4 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 
 #jxglib_configure_USBHost(test-Composite CFG_TUH_HID 3)
 jxglib_configure_USBHost(test-Composite CFG_TUH_HID 3 CFG_TUH_MSC 2)
-jxglib_configure_FAT(test-Composite FF_VOLUMES 6)
+jxglib_configure_FAT(test-Composite FF_VOLUMES 5)

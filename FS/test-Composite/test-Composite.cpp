@@ -30,7 +30,7 @@ int main()
 	USBHost::Initialize();
 	LFS::Flash		driveA("A:", 0x1010'0000, 0x0004'0000); 		// Flash address and size 256kB
 	LFS::Flash		driveB("B:", 0x1014'0000, 0x0004'0000); 		// Flash address and size 256kB
-	FAT::Flash		driveC("*C:", 0x1018'0000, 0x0004'0000); 		// Flash address and size 256kB
+	LFS::Flash		driveC("*C:", 0x1018'0000, 0x0004'0000); 		// Flash address and size 256kB
 	FAT::Flash		driveD("D:", 0x101c'0000, 0x0004'0000); 		// Flash address and size 256kB
 	FAT::RAMDisk	driveE("E:", 0x0002'0000);						// RAM Disk 128kB
 	FAT::SDCard		driveF("F:", spi0, 10'000'000, {CS: GPIO5});	// SDCard on SPI0 10MHz

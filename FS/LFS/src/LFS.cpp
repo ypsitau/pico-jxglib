@@ -297,7 +297,7 @@ FS::FileInfo* Dir::Read()
 		uint64_t num = 0;
 		char pathName[LFS_NAME_MAX + 1];
 		FS::JoinPathName(pathName, sizeof(pathName), GetDirName(), info.name);
-		int bytes = ::lfs_getattr(&lfs_, pathName, Attr::TimeStamp, &num, sizeof(unixtime));
+		int bytes = ::lfs_getattr(&lfs_, FS::SkipDriveName(pathName), Attr::TimeStamp, &num, sizeof(unixtime));
 		if (bytes == sizeof(unixtime)) unixtime = num;
 	} while (0);
 	return MakeFileInfo(info, unixtime);
