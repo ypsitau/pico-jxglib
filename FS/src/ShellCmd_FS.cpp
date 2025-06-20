@@ -91,6 +91,7 @@ ShellCmd(copy, "copies files")
 		Arg::OptBool("help",		'h',	"prints this help"),
 		Arg::OptBool("recursive",	'r',	"copies directories recursively"),
 		Arg::OptBool("verbose",		'v',	"prints what is being done"),
+		Arg::OptBool("force",		'f',	"overwrites existing files without prompting"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -101,10 +102,11 @@ ShellCmd(copy, "copies files")
 	}
 	bool recursiveFlag = arg.GetBool("recursive");
 	bool verboseFlag = arg.GetBool("verbose");
+	bool forceFlag = arg.GetBool("force");
 	const char* pathNameDst = argv[argc - 1];
 	int rtn = 0;
 	for (Arg::EachGlob argIter(argv[1], argv[argc - 1]); const char* pathNameSrc = argIter.Next(); ) {
-		if (!FS::Copy(terr, pathNameSrc, pathNameDst, recursiveFlag, verboseFlag)) rtn = 1;
+		if (!FS::Copy(terr, pathNameSrc, pathNameDst, recursiveFlag, verboseFlag, forceFlag)) rtn = 1;
 		if (Tickable::TickSub()) return 1;
 	}
 	return rtn;
@@ -266,6 +268,7 @@ ShellCmd(move, "moves a file")
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
 		Arg::OptBool("verbose",		'v',	"prints what is being done"),
+		Arg::OptBool("force",		'f',	"overwrites existing files without prompting"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -275,9 +278,10 @@ ShellCmd(move, "moves a file")
 		return 1;
 	}
 	bool verboseFlag = arg.GetBool("verbose");
+	bool forceFlag = arg.GetBool("force");
 	const char* pathNameDst = argv[argc - 1];
 	for (Arg::EachGlob argIter(argv[1], argv[argc - 1]); const char* pathNameSrc = argIter.Next(); ) {
-		if (!FS::Move(terr, pathNameSrc, pathNameDst, verboseFlag)) return 1;
+		if (!FS::Move(terr, pathNameSrc, pathNameDst, verboseFlag, forceFlag)) return 1;
 	}
 	return 0;
 }

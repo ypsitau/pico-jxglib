@@ -291,7 +291,8 @@ Drive* GetDriveHead();
 Drive* GetDriveCur();
 const char* SkipDriveName(const char* pathName);
 bool SetDriveCur(const char* driveName);
-File* OpenFile(const char* fileName, const char* mode, Drive* pDrive = nullptr);
+//File* OpenFile(const char* fileName, const char* mode, Drive* pDrive = nullptr);
+File* OpenFile(const char* fileName, const char* mode);
 Dir* OpenDir(const char* dirName, uint8_t attrExclude = 0);
 Glob* OpenGlob(const char* pattern, const FileInfo::Cmp& cmp = FS::FileInfo::CmpDefault, bool patternAsDirFlag = false, uint8_t attrExclude = 0);
 const char* CreatePathNameDst(char* pathName, int lenMax, const char* pathNameSrc, const char* pathNameDst);
@@ -303,14 +304,14 @@ bool ListDrives(Printable& tout, const char* driveName = nullptr, bool remarksFl
 bool ListFiles(Printable& terr, Printable& tout, const char* pathName,
 	const FileInfo::Cmp& cmp = FileInfo::Cmp::Zero, uint8_t attrExclude = 0, bool slashForDirFlag = true);
 
-bool Copy(Printable& terr, const char* pathNameSrc, const char* pathNameDst, bool recursiveFlag, bool verboseFlag);
-inline bool Copy(const char* pathNameSrc, const char* pathNameDst, bool recursiveFlag, bool verboseFlag) {
-	return Copy(PrintableDumb::Instance, pathNameSrc, pathNameDst, recursiveFlag, verboseFlag);
+bool Copy(Printable& terr, const char* pathNameSrc, const char* pathNameDst, bool recursiveFlag, bool verboseFlag, bool forceFlag);
+inline bool Copy(const char* pathNameSrc, const char* pathNameDst, bool recursiveFlag, bool verboseFlag, bool forceFlag) {
+	return Copy(PrintableDumb::Instance, pathNameSrc, pathNameDst, recursiveFlag, verboseFlag, forceFlag);
 }
 
-bool CopyFile(Printable& terr, const char* fileNameSrc, const char* pathNameDst);
-inline bool CopyFile(const char* fileNameSrc, const char* pathNameDst) {
-	return CopyFile(PrintableDumb::Instance, fileNameSrc, pathNameDst);
+bool CopyFile(Printable& terr, const char* fileNameSrc, const char* pathNameDst, bool forceFlag);
+inline bool CopyFile(const char* fileNameSrc, const char* pathNameDst, bool forceFlag) {
+	return CopyFile(PrintableDumb::Instance, fileNameSrc, pathNameDst, forceFlag);
 }
 
 bool Remove(Printable& terr, const char* pathName, bool recursiveFlag, bool verboseFlag);
@@ -324,9 +325,9 @@ inline bool RemoveFile(const char* fileName) { return RemoveFile(PrintableDumb::
 bool RemoveDir(Printable& terr, const char* dirName);
 inline bool RemoveDir(const char* dirName) { return RemoveDir(PrintableDumb::Instance, dirName); }
 
-bool Move(Printable& terr, const char* pathNameOld, const char* pathNameNew, bool verboseFlag);
-inline bool Move(const char* pathNameOld, const char* pathNameNew, bool verboseFlag) {
-	return Move(PrintableDumb::Instance, pathNameOld, pathNameNew, verboseFlag);
+bool Move(Printable& terr, const char* pathNameOld, const char* pathNameNew, bool verboseFlag, bool forceFlag);
+inline bool Move(const char* pathNameOld, const char* pathNameNew, bool verboseFlag, bool forceFlag) {
+	return Move(PrintableDumb::Instance, pathNameOld, pathNameNew, verboseFlag, forceFlag);
 }
 
 bool CreateDir(Printable& terr, const char* dirName);

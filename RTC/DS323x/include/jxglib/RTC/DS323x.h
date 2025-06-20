@@ -15,9 +15,10 @@ namespace jxglib::RTC {
 class DS323x : public Base {
 private:
 	i2c_inst_t* i2c_;
+	uint32_t msecTimeout_;
 	uint8_t addr_;
 public:
-	DS323x(i2c_inst_t* i2c, uint8_t addr = 0x68);
+	DS323x(i2c_inst_t* i2c, uint32_t msecTimeout = 300, uint8_t addr = 0x68);
 public:
 	virtual bool DoGet(DateTime* pDt) override;
 	virtual bool DoSet(const DateTime &dt) override;
