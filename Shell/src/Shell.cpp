@@ -275,6 +275,7 @@ bool Shell::Arg::Parse(Printable& terr, int& argc, const char* argv[])
 				const char* p = argv[iArg] + 1;
 				for ( ; *p != '\0'; ++p) {
 					char shortName = *p;
+					pOptFound = nullptr;
 					for (int iOpt = 0; iOpt < nOpts_; iOpt++) {
 						const Opt& opt = optTbl_[iOpt];
 						if (opt.CheckShortName(shortName)) {

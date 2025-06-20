@@ -316,6 +316,7 @@ ShellCmd(rm, "removes files")
 		Arg::OptBool("help",		'h',	"prints this help"),
 		Arg::OptBool("recursive",	'r',	"removes directories recursively"),
 		Arg::OptBool("verbose",		'v',	"prints what is being done"),
+		Arg::OptBool("force",		'f',	"removes files without prompting"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -440,6 +441,8 @@ ShellCmd(tree, "prints a tree of directories")
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
+		Arg::OptBool("dironly",		'd',	"lists directories only"),
+		Arg::OptBool("elimslash",	'e',	"eliminates trailing slashes from directory names"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
@@ -454,14 +457,15 @@ ShellCmd(tree, "prints a tree of directories")
 		terr.Printf("cannot open directory: %s\n", dirName);
 		return 1;
 	}
+	bool dirOnlyFlag = arg.GetBool("dironly");
+	bool slashForDirFlag = !arg.GetBool("elimslash");
 	bool successFlag = false;
 	std::unique_ptr<FS::FileInfo> pFileInfo(pDir->ReadAllRecursive(FS::FileInfo::CmpDefault, nullptr, &successFlag));
 	if (pFileInfo) {
-		bool slashForDirFlag = false;
 		char strBranch[128];
 		strBranch[0] = '\0';
 		tout.Printf("%s%s\n", dirName, slashForDirFlag? "/" : "");
-		pFileInfo->PrintTree(tout, slashForDirFlag, strBranch, sizeof(strBranch));
+		pFileInfo->PrintTree(tout, dirOnlyFlag, slashForDirFlag, strBranch, sizeof(strBranch));
 	} else if (!successFlag) {
 		terr.Printf("cannot read directory: %s\n", dirName);
 		return 1;
