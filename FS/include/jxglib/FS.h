@@ -176,7 +176,7 @@ protected:
 	std::unique_ptr<Dir> pDirChild_;
 	std::unique_ptr<FileInfo> pFileInfo_;
 public:
-	Dir(Drive& drive);
+	Dir(Drive& drive, const char* dirName);
 	virtual ~Dir() { Close(); }
 public:
 	void SetChild(Dir* pDir) { pDirChild_.reset(pDir); }
@@ -188,7 +188,6 @@ public:
 	Drive& GetDrive() const { return drive_; }
 	void EnableRewind() { rewindFlag_ = true; }
 public:
-	void SetDirName(const char* dirName) { ::snprintf(dirName_, sizeof(dirName_), "%s", dirName); }
 	const char* GetDirName() const { return dirName_; }
 	void SetFileInfo(FileInfo* pFileInfo) { pFileInfo_.reset(pFileInfo); }
 	const FileInfo& GetFileInfo() const { return *pFileInfo_; }
@@ -254,8 +253,8 @@ public:
 	Drive* GetNext() const { return pDriveNext_; }
 public:
 	bool IsPrimary() const { return driveNameRaw_[0] == '*'; }
-	bool DoesExist(const char* pathName);
-	bool IsDirectory(const char* pathName);
+	bool DoesExist(const char* pathNameN);
+	bool IsDirectory(const char* pathNameN);
 	const char* GetDriveName() const { return driveName_; }
 	void SetDirNameCur(const char* dirName);
 	const char* GetDirNameCur() const { return dirNameCur_; }
@@ -267,10 +266,10 @@ public:
 		return RegulatePathName(pathNameN, lenBuff, pathName);
 	}
 	virtual File* OpenFile(const char* fileNameN, const char* mode) = 0;
-	virtual Dir* OpenDir(const char* dirNameN, uint8_t attrExclude) = 0;
+	virtual Dir* OpenDir(const char* dirNameN, const char* dirName, uint8_t attrExclude) = 0;
 	virtual bool SetTimeStamp(const char* pathNameN, const DateTime& dt) = 0;
 	virtual bool RemoveFile(const char* fileNameN) = 0;
-	virtual bool Rename(const char* fileNameOld, const char* fileNameNew) = 0;
+	virtual bool Rename(const char* fileNameOldN, const char* fileNameNewN) = 0;
 	virtual bool CreateDir(const char* dirNameN) = 0;
 	virtual bool RemoveDir(const char* dirNameN) = 0;
 	virtual bool Format() = 0;

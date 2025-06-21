@@ -93,10 +93,10 @@ FS::File* Drive::OpenFile(const char* fileNameN, const char* mode)
 	return (::f_open(pFile->GetEntity(), fileNameN, flags) == FR_OK)? pFile.release() : nullptr;
 }
 
-FS::Dir* Drive::OpenDir(const char* dirNameN, uint8_t attrExclude)
+FS::Dir* Drive::OpenDir(const char* dirNameN, const char* dirName, uint8_t attrExclude)
 {
 	if (!Mount()) return nullptr;
-	std::unique_ptr<Dir> pDir(new Dir(*this, attrExclude));
+	std::unique_ptr<Dir> pDir(new Dir(*this, dirName, attrExclude));
 	return (::f_opendir(pDir->GetEntity(), dirNameN) == FR_OK)? pDir.release() : nullptr;
 }
 
@@ -314,7 +314,7 @@ bool File::Sync()
 //------------------------------------------------------------------------------
 // FAT::Dir
 //------------------------------------------------------------------------------
-Dir::Dir(FS::Drive& drive, uint8_t attrExclude) : FS::Dir(drive),
+Dir::Dir(FS::Drive& drive, const char* dirName, uint8_t attrExclude) : FS::Dir(drive, dirName),
 	fattribSkip_{static_cast<BYTE>(
 		((attrExclude & FS::FileInfo::Attr::Hidden)? 0 : AM_HID) |
 		((attrExclude & FS::FileInfo::Attr::System)? 0 : AM_SYS))},

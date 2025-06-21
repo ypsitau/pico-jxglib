@@ -87,9 +87,7 @@ Dir* OpenDir(const char* dirName, uint8_t attrExclude)
 	char dirNameN[MaxPath];
 	Drive* pDrive = FindDrive(dirName);
 	if (!pDrive) return nullptr;
-	std::unique_ptr<Dir> pDir(pDrive->OpenDir(pDrive->NativePathName(dirNameN, sizeof(dirNameN), dirName), attrExclude));
-	//if (pDir) pDir->SetDirName(SkipDriveName(dirName));	
-	if (pDir) pDir->SetDirName(dirName);	
+	std::unique_ptr<Dir> pDir(pDrive->OpenDir(pDrive->NativePathName(dirNameN, sizeof(dirNameN), dirName), dirName, attrExclude));
 	return pDir.release();
 	
 }
@@ -865,9 +863,9 @@ FileInfo* FileInfoReader::ReadAll(const FileInfo::Cmp& cmp, const char* pattern)
 //------------------------------------------------------------------------------
 // FS::Dir
 //------------------------------------------------------------------------------
-Dir::Dir(Drive& drive) : drive_(drive), rewindFlag_{false}
+Dir::Dir(Drive& drive, const char* dirName) : drive_(drive), rewindFlag_{false}
 {
-	dirName_[0] = '\0';
+	::snprintf(dirName_, sizeof(dirName_), "%s", dirName);
 }
 
 Dir* Dir::RemoveBottomChild()
@@ -890,10 +888,9 @@ FileInfo* Dir::ReadAllRecursive(const FileInfo::Cmp& cmp, const char* pattern, b
 		if (pFileInfo->IsDirectory()) {
 			char dirNameChild[MaxPath], dirNameChildN[MaxPath];
 			JoinPathName(dirNameChild, sizeof(dirNameChild), GetDirName(), pFileInfo->GetName());
-			std::unique_ptr<Dir> pDirChild(drive_.OpenDir(drive_.NativePathName(dirNameChildN, sizeof(dirNameChildN), dirNameChild), attrExclude));
-			if (pDirChild) {
-				pDirChild->SetDirName(dirNameChild);
-			} else {
+			std::unique_ptr<Dir> pDirChild(drive_.OpenDir(
+				drive_.NativePathName(dirNameChildN, sizeof(dirNameChildN), dirNameChild), dirNameChild, attrExclude));
+			if (!pDirChild) {
 				if (pSuccessFlag) *pSuccessFlag = false;
 				return nullptr;
 			}
@@ -1028,16 +1025,16 @@ Drive::Drive(const char* formatName, const char* driveName) : mountedFlag_{false
 	if (IsPrimary() || !pDriveCur || (!pDriveCur->IsPrimary() && pDriveHead == this)) pDriveCur = this;
 }
 
-bool Drive::DoesExist(const char* pathName)
+bool Drive::DoesExist(const char* pathNameN)
 {
-	std::unique_ptr<FileInfo> pFileInfo(GetFileInfo(pathName));
+	std::unique_ptr<FileInfo> pFileInfo(GetFileInfo(pathNameN));
 	return !!pFileInfo;
 }
 
-bool Drive::IsDirectory(const char* pathName)
+bool Drive::IsDirectory(const char* pathNameN)
 {
-	std::unique_ptr<Dir> pDir(OpenDir(pathName, 0));
-	return !!pDir;
+	std::unique_ptr<FileInfo> pFileInfo(GetFileInfo(pathNameN));
+	return pFileInfo && pFileInfo->IsDirectory();
 }
 
 void Drive::SetDirNameCur(const char* dirName)

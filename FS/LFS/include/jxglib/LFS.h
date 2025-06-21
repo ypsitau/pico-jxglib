@@ -54,7 +54,7 @@ private:
 	bool openedFlag_;
 	int nItems_;
 public:
-	Dir(FS::Drive& drive, lfs_t& lfs);
+	Dir(FS::Drive& drive, const char* dirName, lfs_t& lfs);
 	~Dir() { Close(); }
 public:
 	lfs_dir_t* GetEntity() { return &dir_; }
@@ -79,17 +79,17 @@ public:
 	// virtual functions of FS::Drive
 	virtual bool CheckMounted() override;
 	virtual const char* GetFileSystemName() override;
-	virtual FS::File* OpenFile(const char* fileName, const char* mode) override;
-	virtual FS::Dir* OpenDir(const char* dirName, uint8_t attrExclude) override;
-	virtual bool SetTimeStamp(const char* pathName, const DateTime& dt) override;
-	virtual bool RemoveFile(const char* fileName) override;
-	virtual bool Rename(const char* fileNameOld, const char* fileNameNew) override;
-	virtual bool CreateDir(const char* dirName) override;
-	virtual bool RemoveDir(const char* dirName) override;
+	virtual FS::File* OpenFile(const char* fileNameN, const char* mode) override;
+	virtual FS::Dir* OpenDir(const char* dirNameN, const char* dirName, uint8_t attrExclude) override;
+	virtual bool SetTimeStamp(const char* pathNameN, const DateTime& dt) override;
+	virtual bool RemoveFile(const char* fileNameN) override;
+	virtual bool Rename(const char* fileNameOldN, const char* fileNameNewN) override;
+	virtual bool CreateDir(const char* dirNameN) override;
+	virtual bool RemoveDir(const char* dirNameN) override;
 	virtual bool Format() override;
 	virtual bool Mount() override;
 	virtual bool Unmount() override;
-	virtual FS::FileInfo* GetFileInfo(const char* pathName) override;
+	virtual FS::FileInfo* GetFileInfo(const char* pathNameN) override;
 	virtual uint64_t GetBytesTotal() override;
 	virtual uint64_t GetBytesUsed() override;
 public:
