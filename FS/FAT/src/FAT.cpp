@@ -72,17 +72,17 @@ const char* Drive::GetFileSystemName()
 		(fatFs_.fs_type == FS_EXFAT)? "exFAT" : "unknown";
 }
 
-const char* Drive::NativePathName(char* pathNameBuff, int lenBuff, const char* pathName)
+const char* Drive::NativePathName(char* pathNameN, int lenBuff, const char* pathName)
 {
-	char* p = pathNameBuff;
+	char* p = pathNameN;
 	int len = ::snprintf(p, lenBuff, "%d:", pdrv_);
 	if (len >= lenBuff) ::panic("Drive::RegulatePathName");
 	p += len, lenBuff -= len;
 	FS::Drive::RegulatePathName(p, lenBuff, pathName);
-	return pathNameBuff;
+	return pathNameN;
 }
 
-FS::File* Drive::OpenFile(const char* fileName, const char* mode)
+FS::File* Drive::OpenFile(const char* fileNameN, const char* mode)
 {
 	if (!Mount()) return nullptr;
 	std::unique_ptr<File> pFile(new File(*this));
@@ -90,46 +90,47 @@ FS::File* Drive::OpenFile(const char* fileName, const char* mode)
 	if (mode[0] == 'r') flags |= FA_READ;
 	if (mode[0] == 'w') flags |= FA_WRITE | FA_CREATE_ALWAYS;
 	if (mode[0] == 'a') flags |= FA_WRITE | FA_OPEN_APPEND;
-	return (::f_open(pFile->GetEntity(), fileName, flags) == FR_OK)? pFile.release() : nullptr;
+	return (::f_open(pFile->GetEntity(), fileNameN, flags) == FR_OK)? pFile.release() : nullptr;
 }
 
-FS::Dir* Drive::OpenDir(const char* dirName, uint8_t attrExclude)
+FS::Dir* Drive::OpenDir(const char* dirNameN, uint8_t attrExclude)
 {
 	if (!Mount()) return nullptr;
 	std::unique_ptr<Dir> pDir(new Dir(*this, attrExclude));
-	return (::f_opendir(pDir->GetEntity(), dirName) == FR_OK)? pDir.release() : nullptr;
+	return (::f_opendir(pDir->GetEntity(), dirNameN) == FR_OK)? pDir.release() : nullptr;
 }
 
-bool Drive::SetTimeStamp(const char* pathName, const DateTime& dt)
+bool Drive::SetTimeStamp(const char* pathNameN, const DateTime& dt)
 {
 	if (!Mount()) return false;
-	FILINFO filInfo;
+	const char* pathName = FS::SkipDriveName(pathNameN);
 	if (::strcmp(pathName, "/") == 0 || pathName[0] == '\0') return false;
+	FILINFO filInfo;
 	// f_stat() fails when given with a root directory. See https://elm-chan.org/fsw/ff/doc/stat.html.
-	if (::f_stat(pathName, &filInfo) != FR_OK) return false;
+	if (::f_stat(pathNameN, &filInfo) != FR_OK) return false;
 	filInfo.fdate = ((static_cast<WORD>(dt.year) - 1980) << 9) | (static_cast<WORD>(dt.month) << 5) | dt.day;
 	filInfo.ftime = (static_cast<WORD>(dt.hour) << 11) | (static_cast<WORD>(dt.min) << 5) | (dt.sec / 2);
-	return ::f_utime(pathName, &filInfo) == FR_OK;
+	return ::f_utime(pathNameN, &filInfo) == FR_OK;
 }
 
-bool Drive::RemoveFile(const char* fileName)
+bool Drive::RemoveFile(const char* fileNameN)
 {
-	return Mount() && ::f_unlink(fileName) == FR_OK;
+	return Mount() && ::f_unlink(fileNameN) == FR_OK;
 }
 
-bool Drive::Rename(const char* fileNameOld, const char* fileNameNew)
+bool Drive::Rename(const char* fileNameOldN, const char* fileNameNewN)
 {
-	return Mount() && ::f_rename(fileNameOld, fileNameNew) == FR_OK;
+	return Mount() && ::f_rename(fileNameOldN, fileNameNewN) == FR_OK;
 }
 
-bool Drive::CreateDir(const char* dirName)
+bool Drive::CreateDir(const char* dirNameN)
 {
-	return Mount() && ::f_mkdir(dirName) == FR_OK;
+	return Mount() && ::f_mkdir(dirNameN) == FR_OK;
 }
 
-bool Drive::RemoveDir(const char* dirName)
+bool Drive::RemoveDir(const char* dirNameN)
 {
-	return Mount() && ::f_rmdir(dirName) == FR_OK;
+	return Mount() && ::f_rmdir(dirNameN) == FR_OK;
 }
 
 bool Drive::Format()
@@ -175,13 +176,14 @@ bool Drive::Unmount()
 	return false;
 }
 
-FS::FileInfo* Drive::GetFileInfo(const char* pathName)
+FS::FileInfo* Drive::GetFileInfo(const char* pathNameN)
 {
 	if (!Mount()) return nullptr;
 	FILINFO filInfo;
 	// f_stat() fails when given with a root directory. See https://elm-chan.org/fsw/ff/doc/stat.html.
+	const char* pathName = FS::SkipDriveName(pathNameN);
 	return (::strcmp(pathName, "/") == 0 || pathName[0] == '\0')? MakeFileInfoForRootDir() :
-		(::f_stat(pathName, &filInfo) == FR_OK)? MakeFileInfo(filInfo) : nullptr;
+		(::f_stat(pathNameN, &filInfo) == FR_OK)? MakeFileInfo(filInfo) : nullptr;
 }
 
 uint64_t Drive::GetBytesTotal()

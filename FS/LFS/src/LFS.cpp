@@ -64,7 +64,7 @@ const char* Drive::GetFileSystemName()
 	return Mount()? "LittleFS" : "unmounted";
 }
 
-FS::File* Drive::OpenFile(const char* fileName, const char* mode)
+FS::File* Drive::OpenFile(const char* fileNameN, const char* mode)
 {
 	if (!Mount()) return nullptr;
 	std::unique_ptr<File> pFile(new File(*this, lfs_));
@@ -82,12 +82,12 @@ FS::File* Drive::OpenFile(const char* fileName, const char* mode)
 		DateTime dt;
 		RTC::Get(&dt);
 		pFile->SetTimeStamp(dt);
-		if (::lfs_file_opencfg(&lfs_, pFile->GetEntity(), fileName, flags, pFile->GetConfig()) == LFS_ERR_OK) {
+		if (::lfs_file_opencfg(&lfs_, pFile->GetEntity(), fileNameN, flags, pFile->GetConfig()) == LFS_ERR_OK) {
 			pFile->SetOpenedFlag();
 			return pFile.release();
 		}
 	} else {
-		if (::lfs_file_open(&lfs_, pFile->GetEntity(), fileName, flags) == LFS_ERR_OK) {
+		if (::lfs_file_open(&lfs_, pFile->GetEntity(), fileNameN, flags) == LFS_ERR_OK) {
 			pFile->SetOpenedFlag();
 			return pFile.release();
 		}
@@ -95,48 +95,48 @@ FS::File* Drive::OpenFile(const char* fileName, const char* mode)
 	return nullptr;	
 }
 
-FS::Dir* Drive::OpenDir(const char* dirName, uint8_t attrExclude)
+FS::Dir* Drive::OpenDir(const char* dirNameN, uint8_t attrExclude)
 {
 	if (!Mount()) return nullptr;
 	std::unique_ptr<Dir> pDir(new Dir(*this, lfs_));
-	return (::lfs_dir_open(&lfs_, pDir->GetEntity(), dirName) == LFS_ERR_OK)? pDir.release() : nullptr;
+	return (::lfs_dir_open(&lfs_, pDir->GetEntity(), dirNameN) == LFS_ERR_OK)? pDir.release() : nullptr;
 }
 
-bool Drive::SetTimeStamp(const char* pathName, const DateTime& dt)
+bool Drive::SetTimeStamp(const char* pathNameN, const DateTime& dt)
 {
 	if (!Mount()) return false;
 	uint64_t unixtime = dt.ToUnixTime();
-	return ::lfs_setattr(&lfs_, pathName, Attr::TimeStamp, &unixtime, sizeof(unixtime)) == LFS_ERR_OK;
+	return ::lfs_setattr(&lfs_, pathNameN, Attr::TimeStamp, &unixtime, sizeof(unixtime)) == LFS_ERR_OK;
 }
 
-bool Drive::RemoveFile(const char* fileName)
+bool Drive::RemoveFile(const char* fileNameN)
 {
 	if (!Mount()) return false;
-	return ::lfs_remove(&lfs_, fileName) == LFS_ERR_OK;
+	return ::lfs_remove(&lfs_, fileNameN) == LFS_ERR_OK;
 }
 
-bool Drive::Rename(const char* fileNameOld, const char* fileNameNew)
+bool Drive::Rename(const char* fileNameOldN, const char* fileNameNewN)
 {
 	if (!Mount()) return false;
-	return ::lfs_rename(&lfs_, fileNameOld, fileNameNew) == LFS_ERR_OK;
+	return ::lfs_rename(&lfs_, fileNameOldN, fileNameNewN) == LFS_ERR_OK;
 }
 
-bool Drive::CreateDir(const char* dirName)
+bool Drive::CreateDir(const char* dirNameN)
 {
 	if (!Mount()) return false;
-	if (::lfs_mkdir(&lfs_, dirName) != LFS_ERR_OK) return false;
+	if (::lfs_mkdir(&lfs_, dirNameN) != LFS_ERR_OK) return false;
 	uint64_t unixtime = 0;
 	DateTime dt;
 	RTC::Get(&dt);
 	unixtime = dt.ToUnixTime();
-	::lfs_setattr(&lfs_, dirName, Attr::TimeStamp, &unixtime, sizeof(unixtime));
+	::lfs_setattr(&lfs_, dirNameN, Attr::TimeStamp, &unixtime, sizeof(unixtime));
 	return true;
 }
 
-bool Drive::RemoveDir(const char* dirName)
+bool Drive::RemoveDir(const char* dirNameN)
 {
 	if (!Mount()) return false;
-	return ::lfs_remove(&lfs_, dirName) == LFS_ERR_OK;
+	return ::lfs_remove(&lfs_, dirNameN) == LFS_ERR_OK;
 }
 
 bool Drive::Format()
@@ -160,17 +160,17 @@ bool Drive::Unmount()
 	return true;
 }
 
-FS::FileInfo* Drive::GetFileInfo(const char* pathName)
+FS::FileInfo* Drive::GetFileInfo(const char* pathNameN)
 {
 	if (!Mount()) return nullptr;
 	int64_t unixtime = 0;
 	do {
 		uint64_t num = 0;
-		int bytes = ::lfs_getattr(&lfs_, pathName, Attr::TimeStamp, &num, sizeof(unixtime));
+		int bytes = ::lfs_getattr(&lfs_, pathNameN, Attr::TimeStamp, &num, sizeof(unixtime));
 		if (bytes == sizeof(unixtime)) unixtime = num;
 	} while (0);
 	lfs_info info;
-	return (::lfs_stat(&lfs_, pathName, &info) == LFS_ERR_OK)? MakeFileInfo(info, unixtime) : nullptr;
+	return (::lfs_stat(&lfs_, pathNameN, &info) == LFS_ERR_OK)? MakeFileInfo(info, unixtime) : nullptr;
 }
 
 uint64_t Drive::GetBytesTotal()
@@ -295,9 +295,10 @@ FS::FileInfo* Dir::Read()
 	uint64_t unixtime = 0;
 	do {
 		uint64_t num = 0;
-		char pathName[LFS_NAME_MAX + 1];
-		FS::JoinPathName(pathName, sizeof(pathName), GetDirName(), info.name);
-		int bytes = ::lfs_getattr(&lfs_, FS::SkipDriveName(pathName), Attr::TimeStamp, &num, sizeof(unixtime));
+		char pathNameN[FS::MaxPath];
+		GetDrive().NativePathName(pathNameN, sizeof(pathNameN), GetDirName());
+		FS::AppendPathName(pathNameN, sizeof(pathNameN), info.name);
+		int bytes = ::lfs_getattr(&lfs_, pathNameN, Attr::TimeStamp, &num, sizeof(unixtime));
 		if (bytes == sizeof(unixtime)) unixtime = num;
 	} while (0);
 	return MakeFileInfo(info, unixtime);

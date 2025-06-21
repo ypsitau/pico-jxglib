@@ -263,20 +263,20 @@ public:
 public:
 	virtual bool CheckMounted() = 0;
 	virtual const char* GetFileSystemName() = 0;
-	virtual const char* NativePathName(char* pathNameBuff, int lenBuff, const char* pathName) {
-		return RegulatePathName(pathNameBuff, lenBuff, pathName);
+	virtual const char* NativePathName(char* pathNameN, int lenBuff, const char* pathName) {
+		return RegulatePathName(pathNameN, lenBuff, pathName);
 	}
-	virtual File* OpenFile(const char* fileName, const char* mode) = 0;
-	virtual Dir* OpenDir(const char* dirName, uint8_t attrExclude) = 0;
-	virtual bool SetTimeStamp(const char* pathName, const DateTime& dt) = 0;
-	virtual bool RemoveFile(const char* fileName) = 0;
+	virtual File* OpenFile(const char* fileNameN, const char* mode) = 0;
+	virtual Dir* OpenDir(const char* dirNameN, uint8_t attrExclude) = 0;
+	virtual bool SetTimeStamp(const char* pathNameN, const DateTime& dt) = 0;
+	virtual bool RemoveFile(const char* fileNameN) = 0;
 	virtual bool Rename(const char* fileNameOld, const char* fileNameNew) = 0;
-	virtual bool CreateDir(const char* dirName) = 0;
-	virtual bool RemoveDir(const char* dirName) = 0;
+	virtual bool CreateDir(const char* dirNameN) = 0;
+	virtual bool RemoveDir(const char* dirNameN) = 0;
 	virtual bool Format() = 0;
 	virtual bool Mount() = 0;
 	virtual bool Unmount() = 0;
-	virtual FileInfo* GetFileInfo(const char* pathName) = 0;
+	virtual FileInfo* GetFileInfo(const char* pathNameN) = 0;
 	virtual uint64_t GetBytesTotal() = 0;
 	virtual uint64_t GetBytesUsed() = 0;
 	virtual const char* GetRemarks(char* buff, int lenMax) const { return buff;}
