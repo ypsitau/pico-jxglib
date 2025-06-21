@@ -72,16 +72,6 @@ File* OpenFile(const char* fileName, const char* mode)
 	return pDrive? pDrive->OpenFile(pDrive->NativePathName(filenameN, sizeof(filenameN), fileName), mode) : nullptr;
 }
 
-const char* CreatePathNameDst(char* pathName, int lenMax, const char* pathNameSrc, const char* pathNameDst)
-{
-	if (FS::IsDirectory(pathNameDst)) {
-		JoinPathName(pathName, lenMax, pathNameDst, ExtractFileName(pathNameSrc));
-	} else {
-		::snprintf(pathName, lenMax, "%s", pathNameDst);
-	}
-	return pathName;
-}
-
 Dir* OpenDir(const char* dirName, uint8_t attrExclude)
 {
 	char dirNameN[MaxPath];
@@ -244,7 +234,9 @@ bool CopyFile(Printable& terr, const char* fileNameSrc, const char* pathNameDst,
 		Drive* pDriveDst = FindDrive(pathNameDst);
 		if (pDriveDst) {
 			char fileNameDst[MaxPath], fileNameDstN[MaxPath];
-			JoinPathName(fileNameDst, sizeof(fileNameDst), pathNameDst, ExtractFileName(fileNameSrc));
+			//JoinPathName(fileNameDst, sizeof(fileNameDst), pathNameDst, ExtractFileName(fileNameSrc));
+			::snprintf(fileNameDst, sizeof(fileNameDst), "%s", pathNameDst);
+			AppendPathName(fileNameDst, sizeof(fileNameDst), ExtractFileName(fileNameSrc));
 			pDriveDst->NativePathName(fileNameDstN, sizeof(fileNameDstN), fileNameDst);
 			std::unique_ptr<FileInfo> pFileInfoDst(pDriveDst->GetFileInfo(fileNameDstN));
 			if (!pFileInfoDst) {
@@ -370,11 +362,11 @@ bool Move(Printable& terr, const char* pathNameOld, const char* pathNameNew, boo
 		return false; // Drive not found
 	}
 	if (pDriveOld == pDriveNew) {
-		// Same drive, just rename
-		char pathNameDst[MaxPath];
-		CreatePathNameDst(pathNameDst, sizeof(pathNameDst), pathNameOld, pathNameNew);
-		if (pDriveOld->Rename(pDriveOld->NativePathName(pathNameOldN, sizeof(pathNameOldN), pathNameOld),
-				pDriveOld->NativePathName(pathNameNewN, sizeof(pathNameNewN), pathNameDst))) return true;
+		pDriveOld->NativePathName(pathNameNewN, sizeof(pathNameNewN), pathNameNew);
+		if (FS::IsDirectory(pathNameNew)) {
+			AppendPathName(pathNameNewN, sizeof(pathNameNewN), ExtractBottomName(pathNameOld));
+		}
+		if (pDriveOld->Rename(pDriveOld->NativePathName(pathNameOldN, sizeof(pathNameOldN), pathNameOld), pathNameNewN)) return true;
 		terr.Printf("failed to rename %s to %s\n", pathNameOld, pathNameNew);
 		return false; // Rename failed
 	}

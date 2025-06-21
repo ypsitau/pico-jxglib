@@ -294,7 +294,6 @@ bool SetDriveCur(const char* driveName);
 File* OpenFile(const char* fileName, const char* mode);
 Dir* OpenDir(const char* dirName, uint8_t attrExclude = 0);
 Glob* OpenGlob(const char* pattern, const FileInfo::Cmp& cmp = FS::FileInfo::CmpDefault, bool patternAsDirFlag = false, uint8_t attrExclude = 0);
-const char* CreatePathNameDst(char* pathName, int lenMax, const char* pathNameSrc, const char* pathNameDst);
 bool Touch(Printable& terr, const char* pathName, const DateTime& dt);
 bool PrintFile(Printable& terr, Printable& tout, const char* fileName);
 
