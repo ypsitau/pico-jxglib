@@ -161,6 +161,8 @@ const char* Shell::MakePrompt(char* prompt, int lenMax)
 {
 	enum class Stat { Normal, Variable, };
 	Stat stat = Stat::Normal;
+	bool validDTFlag = false;
+	DateTime dt;
 	int i = 0;
 	for (const char* p = prompt_; *p && lenMax > 0; p++, lenMax--) {
 		char ch = *p;
@@ -174,36 +176,85 @@ const char* Shell::MakePrompt(char* prompt, int lenMax)
 			break;
 		}
 		case Stat::Variable: {
-			if (ch == 'd') {
+			switch (ch) {
+			case 'd': {
 				FS::Drive* pDrive = FS::GetDriveCur();
 				if (pDrive) {
-					int len = ChooseMin(::strlen(pDrive->GetDriveName()), lenMax - i);
-					::memcpy(prompt + i, pDrive->GetDriveName(), len);
-					i += len;
+					i += ::snprintf(prompt + i, lenMax - i, "%s", pDrive->GetDriveName());
 					if (i < lenMax) prompt[i++] = ':';
 				}
-			} else if (ch == 'w') {
+				break;
+			}
+			case 'w': {
 				FS::Drive* pDrive = FS::GetDriveCur();
 				if (!pDrive) {
 					// nothing to do
 				} else if (!pDrive->Mount()) {
 					if (i < lenMax) prompt[i++] = '?'; // indicate unmounted drive
 				} else {
-					int len = ChooseMin(::strlen(pDrive->GetDirNameCur()), lenMax - i);
-					::memcpy(prompt + i, pDrive->GetDirNameCur(), len);
+					int len = ::snprintf(prompt + i, lenMax - i, "%s", pDrive->GetDirNameCur());
 					if (len > 1 && prompt[i + len - 1] == '/') {
 						prompt[i + len - 1] = '\0'; // remove trailing slash
 						len--;
 					}
 					i += len;
 				}
-			} else if (ch == 'p') {
-				const char* platformName = GetPlatformName();
-				int len = ChooseMin(::strlen(platformName), lenMax - i);
-				::memcpy(prompt + i, platformName, len);
-				i += len;
-			} else {
-				// nothing to do, just ignore the variable
+				break;
+			}
+			case 'p': {
+				i += ::snprintf(prompt + i, lenMax - i, "%s", GetPlatformName());
+				break;
+			}
+			case 'y': case 'Y': case 'M': case 'D':
+			case 'h': case 'H': case 'A': case 'm': case 's': {
+				if (!validDTFlag) {
+					RTC::Get(&dt);
+					validDTFlag = true;
+				}
+				switch (ch) {
+				case 'Y': {
+					i += ::snprintf(prompt + i, lenMax - i, "%04d", dt.year);
+					break;
+				}
+				case 'y': {
+					i += ::snprintf(prompt + i, lenMax - i, "%02d", dt.year % 100);
+					break;
+				}
+				case 'M': {
+					i += ::snprintf(prompt + i, lenMax - i, "%02d", dt.month);
+					break;
+				}
+				case 'D': {
+					i += ::snprintf(prompt + i, lenMax - i, "%02d", dt.day);
+					break;
+				}
+				case 'h': {
+					i += ::snprintf(prompt + i, lenMax - i, "%02d", dt.hour);
+					break;
+				}
+				case 'H': {
+					i += ::snprintf(prompt + i, lenMax - i, "%02d", dt.GetHour12());
+					break;
+				}
+				case 'A': {
+					i += ::snprintf(prompt + i, lenMax - i, "%s", dt.IsAM() ? "AM" : "PM");
+					break;
+				}
+				case 'm': {
+					i += ::snprintf(prompt + i, lenMax - i, "%02d", dt.min);
+					break;
+				}
+				case 's': {
+					i += ::snprintf(prompt + i, lenMax - i, "%02d", dt.sec);
+					break;
+				}
+				default:
+					break;
+				}
+				break;
+			}
+			default:
+				break;
 			}
 			stat = Stat::Normal;
 			break;
@@ -213,7 +264,7 @@ const char* Shell::MakePrompt(char* prompt, int lenMax)
 		}
 	}
 	if (i >= lenMax) ::panic("Shell::MakePrompt: prompt buffer overflow");
-	prompt[i++] = '\0';
+	prompt[i] = '\0';
 	return prompt;
 }
 
