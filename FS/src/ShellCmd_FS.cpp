@@ -464,7 +464,7 @@ ShellCmd(tree, "prints a tree of directories")
 	if (pFileInfo) {
 		char strBranch[128];
 		strBranch[0] = '\0';
-		tout.Printf("%s%s\n", dirName, slashForDirFlag? "/" : "");
+		tout.Printf("%s%s\n", dirName, (slashForDirFlag && !EndsWith(dirName, "/") && !EndsWith(dirName, ":"))? "/" : "");
 		pFileInfo->PrintTree(tout, dirOnlyFlag, slashForDirFlag, strBranch, sizeof(strBranch));
 	} else if (!successFlag) {
 		terr.Printf("cannot read directory: %s\n", dirName);
