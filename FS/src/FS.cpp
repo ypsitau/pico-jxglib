@@ -234,7 +234,6 @@ bool CopyFile(Printable& terr, const char* fileNameSrc, const char* pathNameDst,
 		Drive* pDriveDst = FindDrive(pathNameDst);
 		if (pDriveDst) {
 			char fileNameDst[MaxPath], fileNameDstN[MaxPath];
-			//JoinPathName(fileNameDst, sizeof(fileNameDst), pathNameDst, ExtractFileName(fileNameSrc));
 			::snprintf(fileNameDst, sizeof(fileNameDst), "%s", pathNameDst);
 			AppendPathName(fileNameDst, sizeof(fileNameDst), ExtractFileName(fileNameSrc));
 			pDriveDst->NativePathName(fileNameDstN, sizeof(fileNameDstN), fileNameDst);
