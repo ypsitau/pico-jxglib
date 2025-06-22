@@ -280,10 +280,11 @@ ShellCmd(move, "moves a file")
 	bool verboseFlag = arg.GetBool("verbose");
 	bool forceFlag = arg.GetBool("force");
 	const char* pathNameDst = argv[argc - 1];
+	int rtn = 0;
 	for (Arg::EachGlob argIter(argv[1], argv[argc - 1]); const char* pathNameSrc = argIter.Next(); ) {
-		if (!FS::Move(terr, pathNameSrc, pathNameDst, verboseFlag, forceFlag)) return 1;
+		if (!FS::Move(terr, pathNameSrc, pathNameDst, verboseFlag, forceFlag)) rtn = 1;
 	}
-	return 0;
+	return rtn;
 }
 
 ShellCmdAlias(mv, move)

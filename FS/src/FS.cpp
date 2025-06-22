@@ -349,7 +349,6 @@ bool RemoveDir(Printable& terr, const char* dirName)
 
 bool Move(Printable& terr, const char* pathNameOld, const char* pathNameNew, bool verboseFlag, bool forceFlag)
 {
-	char pathNameOldN[MaxPath], pathNameNewN[MaxPath];
 	Drive* pDriveOld = FindDrive(pathNameOld);
 	if (!pDriveOld) {
 		terr.Printf("drive for old file %s not found\n", pathNameOld);
@@ -361,13 +360,27 @@ bool Move(Printable& terr, const char* pathNameOld, const char* pathNameNew, boo
 		return false; // Drive not found
 	}
 	if (pDriveOld == pDriveNew) {
-		pDriveOld->NativePathName(pathNameNewN, sizeof(pathNameNewN), pathNameNew);
-		if (FS::IsDirectory(pathNameNew)) {
-			AppendPathName(pathNameNewN, sizeof(pathNameNewN), ExtractBottomName(pathNameOld));
+		char pathNameNewMod[MaxPath];
+		::snprintf(pathNameNewMod, sizeof(pathNameNewMod), "%s", pathNameNew);
+		if (pDriveOld->IsDirectory(pathNameNewMod)) {
+			AppendPathName(pathNameNewMod, sizeof(pathNameNewMod), ExtractBottomName(pathNameOld));			
 		}
-		if (pDriveOld->Rename(pDriveOld->NativePathName(pathNameOldN, sizeof(pathNameOldN), pathNameOld), pathNameNewN)) return true;
-		terr.Printf("failed to rename %s to %s\n", pathNameOld, pathNameNew);
-		return false; // Rename failed
+		std::unique_ptr<FileInfo> pFileInfoNew(GetFileInfo(pathNameNewMod));
+		if (!pFileInfoNew) {
+			// nothing to do
+		} else if (forceFlag) {
+			Remove(pathNameNewMod, true, false);
+		} else {
+			terr.Printf("already exists: %s\n", pathNameNewMod);
+			return false;
+		}
+		char pathNameOldN[MaxPath], pathNameNewModN[MaxPath];
+		if (!pDriveOld->Rename(pDriveOld->NativePathName(pathNameOldN, sizeof(pathNameOldN), pathNameOld),
+					pDriveNew->NativePathName(pathNameNewModN, sizeof(pathNameNewModN), pathNameNewMod))) {
+			terr.Printf("failed to rename %s to %s\n", pathNameOld, pathNameNewMod);
+			return false;
+		}
+		return true;
 	}
 	bool recursiveFlag = true;
 	return Copy(terr, pathNameOld, pathNameNew, recursiveFlag, verboseFlag, forceFlag) && Remove(terr, pathNameOld, recursiveFlag, verboseFlag);
