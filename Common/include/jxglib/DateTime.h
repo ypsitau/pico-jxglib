@@ -51,6 +51,13 @@ public:
 	static bool HasTimeFormat(const char* str);
 };
 
+inline bool operator==(const DateTime& dt1, const DateTime& dt2) { return DateTime::Compare(dt1, dt2) == 0; }
+inline bool operator!=(const DateTime& dt1, const DateTime& dt2) { return DateTime::Compare(dt1, dt2) != 0; }
+inline bool operator<(const DateTime& dt1, const DateTime& dt2) { return DateTime::Compare(dt1, dt2) < 0; }
+inline bool operator<=(const DateTime& dt1, const DateTime& dt2) { return DateTime::Compare(dt1, dt2) <= 0; }
+inline bool operator>(const DateTime& dt1, const DateTime& dt2) { return DateTime::Compare(dt1, dt2) > 0; }
+inline bool operator>=(const DateTime& dt1, const DateTime& dt2) { return DateTime::Compare(dt1, dt2) >= 0; }
+
 }
 
 #endif
