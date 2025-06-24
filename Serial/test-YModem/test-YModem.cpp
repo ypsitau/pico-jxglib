@@ -1,10 +1,13 @@
 #include <stdio.h>
+#include <memory>
+#include <cstdlib>
 #include "pico/stdlib.h"
 #include "jxglib/Serial.h"
 #include "jxglib/Shell.h"
 #include "jxglib/UART.h"
 #include "jxglib/LFS/Flash.h"
 #include "jxglib/RTC/DS323x.h"
+#include "jxglib/FS.h"
 
 using namespace jxglib;
 
@@ -19,22 +22,23 @@ private:
 		static const uint8_t CAN = 0x18;  // Cancel
 		static const uint8_t C   = 0x43;  // 'C' for CRC mode
 	};
-	
 	Stream& stream_;
-	
 	static const int TIMEOUT_MS = 10000;  // 10 seconds timeout
-	static const int MAX_RETRIES = 10;
-	
-	// Helper methods
+	static const int MAX_RETRIES = 10;	// Helper methods
 	uint16_t CalcCRC16(const uint8_t* data, size_t len);
 	bool WaitForChar(uint8_t expectedChar, int timeoutMs = TIMEOUT_MS);
 	bool SendBlock(uint8_t blockNum, const uint8_t* data, size_t dataLen, bool use1K = false);
-	
+	bool RecvBlock(uint8_t expectedBlockNum, uint8_t* data, size_t& dataLen, int msecTimeout = TIMEOUT_MS);
+	bool RecvSingleFile(const char* dirNameDst, char* fileNameOut, size_t fileNameMaxLen);
 public:
 	YModem(Stream& stream) : stream_(stream) {}
 public:
 	bool SendFile(const char* fileName);
-	bool RecvFile(const char* fileName);
+	bool SendFiles(const char* fileNames[], int nFiles);
+	bool SendSingleFile(const char* fileName, bool finalFlag = true);
+	bool SendBeginSession();
+	bool SendEndSession();
+	bool RecvFiles(const char* dirNameDst, int nFilesMax = 10);
 };
 
 uint16_t YModem::CalcCRC16(const uint8_t* data, size_t len)
@@ -55,15 +59,15 @@ uint16_t YModem::CalcCRC16(const uint8_t* data, size_t len)
 
 bool YModem::WaitForChar(uint8_t expectedChar, int timeoutMs)
 {
-	uint32_t startTime = time_us_32() / 1000;
-	while ((time_us_32() / 1000 - startTime) < timeoutMs) {
+	uint32_t startTime = ::time_us_32() / 1000;
+	while ((::time_us_32() / 1000 - startTime) < timeoutMs) {
 		uint8_t ch;
 		if (stream_.Read(&ch, 1) == 1) {
 			if (ch == expectedChar) {
 				return true;
 			}
 		}
-		sleep_ms(1);
+		if (Tickable::TickSub()) break;
 	}
 	return false;
 }
@@ -76,11 +80,10 @@ bool YModem::SendBlock(uint8_t blockNum, const uint8_t* data, size_t dataLen, bo
 	block[0] = use1K ? CtrlChar::STX : CtrlChar::SOH;
 	block[1] = blockNum;
 	block[2] = ~blockNum;
-	
-	// Copy data and pad with zeros if necessary
-	memcpy(&block[3], data, dataLen);
+		// Copy data and pad with zeros if necessary
+	::memcpy(&block[3], data, dataLen);
 	if (dataLen < blockSize) {
-		memset(&block[3 + dataLen], 0, blockSize - dataLen);
+		::memset(&block[3 + dataLen], 0, blockSize - dataLen);
 	}
 	
 	// Calculate CRC
@@ -109,14 +112,10 @@ bool YModem::SendBlock(uint8_t blockNum, const uint8_t* data, size_t dataLen, bo
 	return false;
 }
 
-bool YModem::SendFile(const char* fileName)
+bool YModem::SendSingleFile(const char* fileName, bool finalFlag)
 {
-	// Wait for receiver to send 'C' (CRC mode request)
-	if (!WaitForChar(CtrlChar::C, TIMEOUT_MS)) {
-		return false;
-	}
-	// Try to open file
-	FILE* file = fopen(fileName, "rb");
+	// Try to open file using FS::File
+	std::unique_ptr<FS::File> file(FS::OpenFile(fileName, "r"));
 	if (!file) {
 		// Send cancel
 		uint8_t cancel = CtrlChar::CAN;
@@ -125,54 +124,47 @@ bool YModem::SendFile(const char* fileName)
 	}
 	
 	// Get file size
-	fseek(file, 0, SEEK_END);
-	long fileSize = ftell(file);
-	fseek(file, 0, SEEK_SET);
+	int fileSize = file->Size();
 	
 	// Send header block (block #0) with filename and size
 	char headerData[128];
-	memset(headerData, 0, sizeof(headerData));
+	::memset(headerData, 0, sizeof(headerData));
 	
 	// Extract filename from path
-	const char* baseName = strrchr(fileName, '/');
-	if (!baseName) baseName = strrchr(fileName, '\\');
-	if (!baseName) baseName = fileName;
-	else baseName++; // skip the separator
+	const char* baseName = FS::ExtractFileName(fileName);
 	
 	// Format: filename + NUL + size + NUL + modification_time + NUL
 	int pos = 0;
-	strncpy(&headerData[pos], baseName, 127);
-	pos += strlen(baseName) + 1;
+	::strncpy(&headerData[pos], baseName, 127);
+	pos += ::strlen(baseName) + 1;
 	
 	// Add file size
-	pos += snprintf(&headerData[pos], 127 - pos, "%ld", fileSize);
+	pos += ::snprintf(&headerData[pos], 127 - pos, "%d", fileSize);
 	pos++;
 	
 	if (!SendBlock(0, (uint8_t*)headerData, 128)) {
-		fclose(file);
 		return false;
 	}
-		// Wait for ACK after header
+	
+	// Wait for ACK after header
 	if (!WaitForChar(CtrlChar::C, TIMEOUT_MS)) {
-		fclose(file);
 		return false;
 	}
 	
 	// Send file data blocks
 	uint8_t blockNum = 1;
 	uint8_t buffer[1024];
-	size_t bytesRead;
+	int bytesRead;
 	
-	while ((bytesRead = fread(buffer, 1, sizeof(buffer), file)) > 0) {
+	while ((bytesRead = file->Read(buffer, sizeof(buffer))) > 0) {
 		bool use1K = (bytesRead > 128);
 		if (!SendBlock(blockNum, buffer, bytesRead, use1K)) {
-			fclose(file);
 			return false;
 		}
 		blockNum++;
 	}
 	
-	fclose(file);		// Send EOT
+	// Send EOT
 	for (int retry = 0; retry < MAX_RETRIES; retry++) {
 		uint8_t eot = CtrlChar::EOT;
 		stream_.Write(&eot, 1);
@@ -181,21 +173,242 @@ bool YModem::SendFile(const char* fileName)
 		}
 	}
 	
-	// Send final empty block to end YModem session
-	if (!WaitForChar(CtrlChar::C, TIMEOUT_MS)) {
-		return false;
+	// If not final file, wait for 'C' for next file transfer
+	if (!finalFlag) {
+		if (!WaitForChar(CtrlChar::C, TIMEOUT_MS)) {
+			return false;
+		}
 	}
-	
-	char emptyBlock[128];
-	memset(emptyBlock, 0, sizeof(emptyBlock));
-	SendBlock(0, (uint8_t*)emptyBlock, 128);
 	
 	return true;
 }
 
-bool YModem::RecvFile(const char* fileName)
+bool YModem::SendBeginSession()
 {
-	return false;
+	// Wait for receiver to send 'C' (CRC mode request)
+	return WaitForChar(CtrlChar::C, TIMEOUT_MS);
+}
+
+bool YModem::SendEndSession()
+{
+	// Wait for receiver to request next file
+	if (!WaitForChar(CtrlChar::C, TIMEOUT_MS)) {
+		return false;
+	}
+	
+	// Send final empty block to end YModem session
+	char emptyBlock[128];
+	::memset(emptyBlock, 0, sizeof(emptyBlock));
+	return SendBlock(0, (uint8_t*)emptyBlock, 128);
+}
+
+bool YModem::SendFile(const char* fileName)
+{
+	if (!SendBeginSession()) {
+		return false;
+	}
+	
+	// Send single file
+	if (!SendSingleFile(fileName)) {
+		return false;
+	}
+	
+	// End session
+	return SendEndSession();
+}
+
+bool YModem::SendFiles(const char* fileNames[], int nFiles)
+{
+	if (!SendBeginSession()) {
+		return false;
+	}
+	
+	// Send each file
+	for (int i = 0; i < nFiles; i++) {
+		bool finalFlag = (i == nFiles - 1);
+		if (!SendSingleFile(fileNames[i], finalFlag)) {
+			return false;
+		}
+	}
+	
+	// End session
+	return SendEndSession();
+}
+
+bool YModem::RecvBlock(uint8_t expectedBlockNum, uint8_t* data, size_t& dataLen, int msecTimeout)
+{
+	uint8_t header[3];
+	uint32_t startTime = ::time_us_32() / 1000;
+	
+	// Wait for block start (SOH or STX)
+	bool timeoutFlag = true;
+	while ((::time_us_32() / 1000 - startTime) < msecTimeout) {
+		if (stream_.Read(&header[0], 1) == 1) {
+			if (header[0] == CtrlChar::SOH || header[0] == CtrlChar::STX) {
+				timeoutFlag = false;
+				break;
+			} else if (header[0] == CtrlChar::EOT) {
+				// End of transmission
+				uint8_t ack = CtrlChar::ACK;
+				stream_.Write(&ack, 1);
+				dataLen = 0;
+				return true;
+			} else if (header[0] == CtrlChar::CAN || header[0] == 0x03) {
+				// Cancel
+				return false;
+			}
+		}
+		if (Tickable::TickSub()) return false;
+	}
+	if (timeoutFlag) return false;
+	// Determine block size
+	int blockSize = (header[0] == CtrlChar::STX) ? 1024 : 128;
+	
+	// Read block number and complement
+	if (stream_.Read(&header[1], 2) != 2) {
+		return false;
+	}
+	
+	// Verify block number
+	if (header[1] != expectedBlockNum || header[2] != (uint8_t)~expectedBlockNum) {
+		// NAK - incorrect block number
+		uint8_t nak = CtrlChar::NAK;
+		stream_.Write(&nak, 1);
+		return false;
+	}
+	
+	// Read data block
+	if (stream_.Read(data, blockSize) != blockSize) {
+		uint8_t nak = CtrlChar::NAK;
+		stream_.Write(&nak, 1);
+		return false;
+	}
+	
+	// Read CRC
+	uint8_t crcBytes[2];
+	if (stream_.Read(crcBytes, 2) != 2) {
+		uint8_t nak = CtrlChar::NAK;
+		stream_.Write(&nak, 1);
+		return false;
+	}
+	
+	// Verify CRC
+	uint16_t receivedCRC = (crcBytes[0] << 8) | crcBytes[1];
+	uint16_t calculatedCRC = CalcCRC16(data, blockSize);
+	
+	if (receivedCRC != calculatedCRC) {
+		// NAK - CRC error
+		uint8_t nak = CtrlChar::NAK;
+		stream_.Write(&nak, 1);
+		return false;
+	}
+	
+	// ACK - block received successfully
+	uint8_t ack = CtrlChar::ACK;
+	stream_.Write(&ack, 1);
+	dataLen = blockSize;
+	return true;
+}
+
+bool YModem::RecvSingleFile(const char* dirNameDst, char* fileNameOut, size_t fileNameMaxLen)
+{
+	uint8_t blockData[1024];
+	size_t dataLen;
+	
+	// Send 'C' to request header block in CRC mode
+	int iRetry = 0;
+	for (int iRetry = 0; iRetry < 30; iRetry++) {
+		uint8_t c = CtrlChar::C;
+		stream_.Write(&c, 1);
+		if (RecvBlock(0, blockData, dataLen, 1000)) break;
+	}
+	if (iRetry == 30) return false;
+	// Parse header block
+	const char* fileName = (const char*)blockData;
+	if (::strlen(fileName) == 0) {
+		// Empty filename means end of batch
+		::strncpy(fileNameOut, "", fileNameMaxLen);
+		return true;
+	}
+	
+	// Extract file size from header
+	const char* sizeStr = fileName + ::strlen(fileName) + 1;
+	int fileSize = ::atoi(sizeStr);
+	
+	// Create full path for destination file
+	char fullPath[256];
+	::snprintf(fullPath, sizeof(fullPath), "%s/%s", dirNameDst, fileName);
+	
+	// Copy filename to output
+	::strncpy(fileNameOut, fileName, fileNameMaxLen);
+	fileNameOut[fileNameMaxLen - 1] = '\0';
+	
+	// Open file for writing
+	std::unique_ptr<FS::File> file(FS::OpenFile(fullPath, "w"));
+	if (!file) {
+		// Send cancel
+		uint8_t cancel = CtrlChar::CAN;
+		stream_.Write(&cancel, 1);
+		return false;
+	}
+	
+	// Send 'C' to start receiving data blocks
+	uint8_t c = CtrlChar::C;
+	stream_.Write(&c, 1);
+	
+	// Receive data blocks
+	uint8_t blockNum = 1;
+	int totalBytesReceived = 0;
+	
+	while (totalBytesReceived < fileSize) {
+		if (!RecvBlock(blockNum, blockData, dataLen)) {
+			return false;
+		}
+		
+		if (dataLen == 0) {
+			// EOT received
+			break;
+		}
+		
+		// Write data to file (only the needed bytes)
+		int bytesToWrite = (totalBytesReceived + dataLen > fileSize)? (fileSize - totalBytesReceived) : dataLen;
+		
+		if (file->Write(blockData, bytesToWrite) != bytesToWrite) {
+			// Write error - send cancel
+			uint8_t cancel = CtrlChar::CAN;
+			stream_.Write(&cancel, 1);
+			return false;
+		}
+		
+		totalBytesReceived += bytesToWrite;
+		blockNum++;
+	}
+	
+	return true;
+}
+
+bool YModem::RecvFiles(const char* dirNameDst, int nFilesMax)
+{
+	char fileName[256];
+	int nFiles = 0;
+	
+	while (nFiles < nFilesMax) {
+		if (!RecvSingleFile(dirNameDst, fileName, sizeof(fileName))) {
+			return false;
+		}
+		
+		// Check if we received an empty filename (end of batch)
+		if (::strlen(fileName) == 0) {
+			break;
+		}
+		
+		nFiles++;
+		// Printf feedback about received file
+		printf("Received file: %s\n", fileName);
+	}
+	
+	printf("Received %d files successfully\n", nFiles);
+	return true;
 }
 
 ShellCmd(ysend, "Send file via YModem protocol")
@@ -208,15 +421,60 @@ ShellCmd(ysend, "Send file via YModem protocol")
 	if (argc < 2 || arg.GetBool("help")) {
 		terr.Printf("Usage: %s [OPTION]... FILE...\n", GetName());
 		arg.PrintHelp(terr);
-		return 1;	}
-	
+		return 1;
+	}
 	Stream& stream = UART0;
 	YModem ymodem(stream);
-	for (Arg::Each each(argv[1], argv[argc]); const char* fileName = each.Next(); ) {
-		ymodem.SendFile(fileName);
-		tout.Printf("Sending file: %s\n", fileName);
+	
+	// Begin YModem session
+	if (!ymodem.SendBeginSession()) {
+		terr.Printf("Failed to begin YModem session\n");
+		return 1;
 	}
-	return 0;
+	
+	// Send each file
+	bool success = true;
+	for (int iArg = 1; iArg < argc; iArg++) {
+		const char* fileName = argv[iArg];
+		bool finalFlag = (iArg == argc - 1);
+		if (!ymodem.SendSingleFile(fileName, finalFlag)) {
+			terr.Printf("Failed to send file: %s\n", fileName);
+			success = false;
+			break;
+		} else {
+			tout.Printf("Sent: %s\n", fileName);
+		}
+	}
+	
+	// End YModem session
+	if (success) {
+		if (!ymodem.SendEndSession()) {
+			terr.Printf("Failed to end YModem session\n");
+			success = false;
+		}
+	}
+	return success? 0 : 1;
+}
+
+ShellCmd(yrecv, "Receive file(s) via YModem protocol")
+{
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		'h',	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (arg.GetBool("help")) {
+		terr.Printf("Usage: %s [OPTION]... DESTDIR\n", GetName());
+		terr.Printf("Receive file(s) via YModem protocol into the specified directory.\n");
+		arg.PrintHelp(terr);
+		return 1;
+	}
+	const char* dirNameDst = (argc < 2)? "." : argv[1];
+	Stream& stream = UART0;
+	YModem ymodem(stream);
+	tout.Printf("Receiving files to directory: %s\n", dirNameDst);
+	bool success = ymodem.RecvFiles(dirNameDst);
+	return success ? 0 : 1;
 }
 
 int main()
