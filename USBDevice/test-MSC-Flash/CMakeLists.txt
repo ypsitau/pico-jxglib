@@ -51,7 +51,6 @@ target_link_libraries(test-MSC-Flash
 	jxglib_Serial
 	jxglib_ShellCmd_FS
 	jxglib_USBDevice
-	jxglib_Stream
 	jxglib_Flash)
 
 # Add the standard include files to the build

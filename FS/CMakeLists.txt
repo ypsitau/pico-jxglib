@@ -5,7 +5,7 @@ target_include_directories(jxglib_FS INTERFACE
 
 target_link_libraries(jxglib_FS INTERFACE
 	jxglib_RTC
-	jxglib_Stream)
+	jxglib_Common)
 
 target_sources(jxglib_FS INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/FS.cpp)

@@ -47,7 +47,6 @@ pico_enable_stdio_usb(test-jpeg 0)
 # Add the standard library to the build
 target_link_libraries(test-jpeg
         pico_stdlib
-        jxglib_Stream
         jxglib_Image)
 
 # Add the standard include files to the build

@@ -47,7 +47,7 @@ pico_enable_stdio_usb(test-MSC-RAMDisk 0)
 # Add the standard library to the build
 target_link_libraries(test-MSC-RAMDisk
 	pico_stdlib
-	jxglib_USBDevice jxglib_Stream)
+	jxglib_USBDevice)
 
 # Add the standard include files to the build
 target_include_directories(test-MSC-RAMDisk PRIVATE

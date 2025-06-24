@@ -48,7 +48,6 @@ pico_enable_stdio_usb(test-MSC-SDCard 0)
 target_link_libraries(test-MSC-SDCard
 	pico_stdlib
 	jxglib_USBDevice
-	jxglib_Stream
 	jxglib_SDCard)
 
 # Add the standard include files to the build
