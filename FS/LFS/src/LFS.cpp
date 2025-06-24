@@ -236,10 +236,12 @@ void File::Close()
 	}
 }
 
-bool File::Seek(int position)
+bool File::Seek(int position, SeekStart seekStart)
 {
-	// Seek to the specified position in the file
-	return ::lfs_file_seek(&lfs_, &file_, position, LFS_SEEK_SET) == LFS_ERR_OK;
+	int whence = (seekStart == SeekStart::Begin)? LFS_SEEK_SET :
+				(seekStart == SeekStart::Current)? LFS_SEEK_CUR :
+				(seekStart == SeekStart::End)? LFS_SEEK_END : -1;
+	return (whence != -1) && (::lfs_file_seek(&lfs_, &file_, position, whence) >= 0);
 }
 
 int File::Tell()

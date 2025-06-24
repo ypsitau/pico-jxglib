@@ -23,6 +23,12 @@ constexpr int MaxPath = 256;
 // FS::File
 //------------------------------------------------------------------------------
 class File : public Stream {
+public:
+	enum class SeekStart {
+		Begin,	// Seek from the beginning of the file
+		Current, // Seek from the current position in the file
+		End,	// Seek from the end of the file
+	};
 protected:
 	const Drive& drive_;
 public:
@@ -32,7 +38,7 @@ public:
 	const Drive& GetDrive() const { return drive_; }
 public:
 	virtual void Close() {}
-	virtual bool Seek(int position) = 0;
+	virtual bool Seek(int position, SeekStart seekStart = SeekStart::Begin) = 0;
 	virtual int Tell() = 0;
 	virtual int Size() = 0;
 	virtual bool Flush() = 0;

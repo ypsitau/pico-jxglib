@@ -36,7 +36,7 @@ public:
 	virtual int Write(const void* buff, int bytesBuff) override;
 	// virtual functions of FS::File
 	virtual void Close() override;
-	virtual bool Seek(int position) override;
+	virtual bool Seek(int position, SeekStart seekStart) override;
 	virtual int Tell() override;
 	virtual int Size() override;
 	virtual bool Flush() override;
