@@ -289,10 +289,10 @@ bool File::Seek(int position, SeekStart seekStart)
 			actualPosition = position;
 			break;
 		case SeekStart::Current:
-			actualPosition = ::f_tell(&fil_) + position;
+			actualPosition = f_tell(&fil_) + position;
 			break;
 		case SeekStart::End:
-			actualPosition = ::f_size(&fil_) + position;
+			actualPosition = f_size(&fil_) + position;
 			break;
 		default:
 			return false;
