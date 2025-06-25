@@ -27,9 +27,9 @@ private:
 	static const int MAX_RETRIES = 10;
 	// Helper methods
 	uint16_t CalcCRC16(const uint8_t* data, size_t len);
-	bool WaitForChar(uint8_t expectedChar, int timeoutMs = TIMEOUT_MS);
-	int RecvBuff(uint8_t* buffer, size_t size, int msecTimeout = TIMEOUT_MS);
 	void SendCode(uint8_t code) { stream_.Write(&code, 1); }
+	bool WaitForCode(uint8_t codeExpected, int msecTimeout = TIMEOUT_MS);
+	int RecvBuff(uint8_t* buffer, size_t size, int msecTimeout = TIMEOUT_MS);
 	bool SendBlock(uint8_t blockNum, const uint8_t* data, size_t dataLen, bool use1K = false);
 	bool RecvBlock(uint8_t expectedBlockNum, uint8_t* data, size_t& dataLen, int msecTimeout = TIMEOUT_MS);
 	bool RecvSingleFile(const char* dirNameDst, char* fileNameOut, size_t fileNameMaxLen);
@@ -60,10 +60,10 @@ uint16_t YModem::CalcCRC16(const uint8_t* data, size_t len)
 	return crc;
 }
 
-bool YModem::WaitForChar(uint8_t expectedChar, int timeoutMs)
+bool YModem::WaitForCode(uint8_t codeExpected, int msecTimeout)
 {
 	uint32_t startTime = ::time_us_32() / 1000;
-	while ((::time_us_32() / 1000 - startTime) < timeoutMs) {
+	while ((::time_us_32() / 1000 - startTime) < msecTimeout) {
 		uint8_t ch;
 		int result = RecvBuff(&ch, 1, 100);
 		if (result == -1) {
@@ -71,7 +71,7 @@ bool YModem::WaitForChar(uint8_t expectedChar, int timeoutMs)
 			return false;
 		}
 		if (result == 1) {
-			if (ch == expectedChar) {
+			if (ch == codeExpected) {
 				return true;
 			}
 		}
@@ -124,7 +124,7 @@ bool YModem::SendBlock(uint8_t blockNum, const uint8_t* data, size_t dataLen, bo
 		// Send block with retries
 	for (int retry = 0; retry < MAX_RETRIES; retry++) {
 		stream_.Write(block, blockSize + 5);
-		if (WaitForChar(CtrlCode::ACK, TIMEOUT_MS)) {
+		if (WaitForCode(CtrlCode::ACK, TIMEOUT_MS)) {
 			delete[] block;
 			return true;
 		}		// Handle NAK or timeout - resend
@@ -181,7 +181,7 @@ bool YModem::SendSingleFile(const char* fileName, bool finalFlag)
 	}
 	
 	// Wait for ACK after header
-	if (!WaitForChar(CtrlCode::C, TIMEOUT_MS)) {
+	if (!WaitForCode(CtrlCode::C, TIMEOUT_MS)) {
 		return false;
 	}
 	
@@ -201,14 +201,14 @@ bool YModem::SendSingleFile(const char* fileName, bool finalFlag)
 	// Send EOT
 	for (int retry = 0; retry < MAX_RETRIES; retry++) {
 		SendCode(CtrlCode::EOT);
-		if (WaitForChar(CtrlCode::ACK, TIMEOUT_MS)) {
+		if (WaitForCode(CtrlCode::ACK, TIMEOUT_MS)) {
 			break;
 		}
 	}
 	
 	// If not final file, wait for 'C' for next file transfer
 	if (!finalFlag) {
-		if (!WaitForChar(CtrlCode::C, TIMEOUT_MS)) {
+		if (!WaitForCode(CtrlCode::C, TIMEOUT_MS)) {
 			return false;
 		}
 	}
@@ -219,13 +219,13 @@ bool YModem::SendSingleFile(const char* fileName, bool finalFlag)
 bool YModem::SendBeginSession()
 {
 	// Wait for receiver to send 'C' (CRC mode request)
-	return WaitForChar(CtrlCode::C, TIMEOUT_MS);
+	return WaitForCode(CtrlCode::C, TIMEOUT_MS);
 }
 
 bool YModem::SendEndSession()
 {
 	// Wait for receiver to request next file
-	if (!WaitForChar(CtrlCode::C, TIMEOUT_MS)) {
+	if (!WaitForCode(CtrlCode::C, TIMEOUT_MS)) {
 		return false;
 	}
 	
