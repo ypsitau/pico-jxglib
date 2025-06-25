@@ -13,7 +13,7 @@ using namespace jxglib;
 
 class YModem {
 private:
-	struct CtrlChar {
+	struct CtrlCode {
 		static const uint8_t SOH = 0x01;  // Start of 128-byte block
 		static const uint8_t STX = 0x02;  // Start of 1024-byte block
 		static const uint8_t EOT = 0x04;  // End of transmission
@@ -29,6 +29,7 @@ private:
 	uint16_t CalcCRC16(const uint8_t* data, size_t len);
 	bool WaitForChar(uint8_t expectedChar, int timeoutMs = TIMEOUT_MS);
 	int RecvBuff(uint8_t* buffer, size_t size, int msecTimeout = TIMEOUT_MS);
+	void SendCode(uint8_t code) { stream_.Write(&code, 1); }
 	bool SendBlock(uint8_t blockNum, const uint8_t* data, size_t dataLen, bool use1K = false);
 	bool RecvBlock(uint8_t expectedBlockNum, uint8_t* data, size_t& dataLen, int msecTimeout = TIMEOUT_MS);
 	bool RecvSingleFile(const char* dirNameDst, char* fileNameOut, size_t fileNameMaxLen);
@@ -107,7 +108,7 @@ bool YModem::SendBlock(uint8_t blockNum, const uint8_t* data, size_t dataLen, bo
 	int blockSize = use1K ? 1024 : 128;
 	uint8_t* block = new uint8_t[blockSize + 5]; // header + data + CRC
 		// Build block
-	block[0] = use1K ? CtrlChar::STX : CtrlChar::SOH;
+	block[0] = use1K ? CtrlCode::STX : CtrlCode::SOH;
 	block[1] = blockNum;
 	block[2] = ~blockNum;
 		// Copy data and pad with zeros if necessary
@@ -123,7 +124,7 @@ bool YModem::SendBlock(uint8_t blockNum, const uint8_t* data, size_t dataLen, bo
 		// Send block with retries
 	for (int retry = 0; retry < MAX_RETRIES; retry++) {
 		stream_.Write(block, blockSize + 5);
-		if (WaitForChar(CtrlChar::ACK, TIMEOUT_MS)) {
+		if (WaitForChar(CtrlCode::ACK, TIMEOUT_MS)) {
 			delete[] block;
 			return true;
 		}		// Handle NAK or timeout - resend
@@ -135,7 +136,7 @@ bool YModem::SendBlock(uint8_t blockNum, const uint8_t* data, size_t dataLen, bo
 			return false;
 		}
 		if (result == 1) {
-			if (response == CtrlChar::CAN) {
+			if (response == CtrlCode::CAN) {
 				delete[] block;
 				return false;
 			}
@@ -152,8 +153,7 @@ bool YModem::SendSingleFile(const char* fileName, bool finalFlag)
 	std::unique_ptr<FS::File> file(FS::OpenFile(fileName, "r"));
 	if (!file) {
 		// Send cancel
-		uint8_t cancel = CtrlChar::CAN;
-		stream_.Write(&cancel, 1);
+		SendCode(CtrlCode::CAN);
 		return false;
 	}
 	
@@ -181,7 +181,7 @@ bool YModem::SendSingleFile(const char* fileName, bool finalFlag)
 	}
 	
 	// Wait for ACK after header
-	if (!WaitForChar(CtrlChar::C, TIMEOUT_MS)) {
+	if (!WaitForChar(CtrlCode::C, TIMEOUT_MS)) {
 		return false;
 	}
 	
@@ -200,16 +200,15 @@ bool YModem::SendSingleFile(const char* fileName, bool finalFlag)
 	
 	// Send EOT
 	for (int retry = 0; retry < MAX_RETRIES; retry++) {
-		uint8_t eot = CtrlChar::EOT;
-		stream_.Write(&eot, 1);
-		if (WaitForChar(CtrlChar::ACK, TIMEOUT_MS)) {
+		SendCode(CtrlCode::EOT);
+		if (WaitForChar(CtrlCode::ACK, TIMEOUT_MS)) {
 			break;
 		}
 	}
 	
 	// If not final file, wait for 'C' for next file transfer
 	if (!finalFlag) {
-		if (!WaitForChar(CtrlChar::C, TIMEOUT_MS)) {
+		if (!WaitForChar(CtrlCode::C, TIMEOUT_MS)) {
 			return false;
 		}
 	}
@@ -220,13 +219,13 @@ bool YModem::SendSingleFile(const char* fileName, bool finalFlag)
 bool YModem::SendBeginSession()
 {
 	// Wait for receiver to send 'C' (CRC mode request)
-	return WaitForChar(CtrlChar::C, TIMEOUT_MS);
+	return WaitForChar(CtrlCode::C, TIMEOUT_MS);
 }
 
 bool YModem::SendEndSession()
 {
 	// Wait for receiver to request next file
-	if (!WaitForChar(CtrlChar::C, TIMEOUT_MS)) {
+	if (!WaitForChar(CtrlCode::C, TIMEOUT_MS)) {
 		return false;
 	}
 	
@@ -282,16 +281,15 @@ bool YModem::RecvBlock(uint8_t expectedBlockNum, uint8_t* data, size_t& dataLen,
 			return false;
 		}
 		if (result == 1) {
-			if (header[0] == CtrlChar::SOH || header[0] == CtrlChar::STX) {
+			if (header[0] == CtrlCode::SOH || header[0] == CtrlCode::STX) {
 				foundFlag = true;
 				break;
-			} else if (header[0] == CtrlChar::EOT) {
+			} else if (header[0] == CtrlCode::EOT) {
 				// End of transmission
-				uint8_t ack = CtrlChar::ACK;
-				stream_.Write(&ack, 1);
+				SendCode(CtrlCode::ACK);
 				dataLen = 0;
 				return true;
-			} else if (header[0] == CtrlChar::CAN || header[0] == 0x03) {
+			} else if (header[0] == CtrlCode::CAN || header[0] == 0x03) {
 				// Cancel
 				return false;
 			}
@@ -301,7 +299,7 @@ bool YModem::RecvBlock(uint8_t expectedBlockNum, uint8_t* data, size_t& dataLen,
 	if (!foundFlag) return false;
 	
 	// Determine block size
-	int blockSize = (header[0] == CtrlChar::STX) ? 1024 : 128;	// Read block number and complement
+	int blockSize = (header[0] == CtrlCode::STX) ? 1024 : 128;	// Read block number and complement
 	int result = RecvBuff(&header[1], 2, msecTimeout);
 	if (result == -1) return false; // User interruption
 	if (result != 2) return false;
@@ -309,8 +307,7 @@ bool YModem::RecvBlock(uint8_t expectedBlockNum, uint8_t* data, size_t& dataLen,
 	// Verify block number
 	if (header[1] != expectedBlockNum || header[2] != (uint8_t)~expectedBlockNum) {
 		// NAK - incorrect block number
-		uint8_t nak = CtrlChar::NAK;
-		stream_.Write(&nak, 1);
+		SendCode(CtrlCode::NAK);
 		return false;
 	}
 	
@@ -318,8 +315,7 @@ bool YModem::RecvBlock(uint8_t expectedBlockNum, uint8_t* data, size_t& dataLen,
 	result = RecvBuff(data, blockSize, msecTimeout);
 	if (result == -1) return false; // User interruption
 	if (result != blockSize) {
-		uint8_t nak = CtrlChar::NAK;
-		stream_.Write(&nak, 1);
+		SendCode(CtrlCode::NAK);
 		return false;
 	}
 	
@@ -328,8 +324,7 @@ bool YModem::RecvBlock(uint8_t expectedBlockNum, uint8_t* data, size_t& dataLen,
 	result = RecvBuff(crcBytes, 2, msecTimeout);
 	if (result == -1) return false; // User interruption
 	if (result != 2) {
-		uint8_t nak = CtrlChar::NAK;
-		stream_.Write(&nak, 1);
+		SendCode(CtrlCode::NAK);
 		return false;
 	}
 	
@@ -339,14 +334,12 @@ bool YModem::RecvBlock(uint8_t expectedBlockNum, uint8_t* data, size_t& dataLen,
 	
 	if (receivedCRC != calculatedCRC) {
 		// NAK - CRC error
-		uint8_t nak = CtrlChar::NAK;
-		stream_.Write(&nak, 1);
+		SendCode(CtrlCode::NAK);
 		return false;
 	}
 	
 	// ACK - block received successfully
-	uint8_t ack = CtrlChar::ACK;
-	stream_.Write(&ack, 1);
+	SendCode(CtrlCode::ACK);
 	dataLen = blockSize;
 	return true;
 }
@@ -359,8 +352,7 @@ bool YModem::RecvSingleFile(const char* dirNameDst, char* fileNameOut, size_t fi
 	// Send 'C' to request header block in CRC mode
 	int iRetry = 0;
 	for (int iRetry = 0; iRetry < 30; iRetry++) {
-		uint8_t c = CtrlChar::C;
-		stream_.Write(&c, 1);
+		SendCode(CtrlCode::C);
 		if (RecvBlock(0, blockData, dataLen, 1000)) break;
 	}
 	if (iRetry == 30) return false;
@@ -388,14 +380,12 @@ bool YModem::RecvSingleFile(const char* dirNameDst, char* fileNameOut, size_t fi
 	std::unique_ptr<FS::File> file(FS::OpenFile(fullPath, "w"));
 	if (!file) {
 		// Send cancel
-		uint8_t cancel = CtrlChar::CAN;
-		stream_.Write(&cancel, 1);
+		SendCode(CtrlCode::CAN);
 		return false;
 	}
 	
 	// Send 'C' to start receiving data blocks
-	uint8_t c = CtrlChar::C;
-	stream_.Write(&c, 1);
+	SendCode(CtrlCode::C);
 		// Receive data blocks
 	uint8_t blockNum = 1;
 	int totalBytesReceived = 0;
@@ -416,8 +406,7 @@ bool YModem::RecvSingleFile(const char* dirNameDst, char* fileNameOut, size_t fi
 		
 		if (file->Write(blockData, bytesToWrite) != bytesToWrite) {
 			// Write error - send cancel
-			uint8_t cancel = CtrlChar::CAN;
-			stream_.Write(&cancel, 1);
+			SendCode(CtrlCode::CAN);
 			return false;
 		}
 		
