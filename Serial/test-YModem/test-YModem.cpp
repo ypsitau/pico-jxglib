@@ -39,8 +39,8 @@ public:
 	bool SendFile(const char* fileName);
 	bool SendFiles(const char* fileNames[], int nFiles);
 	bool SendSingleFile(const char* fileName, bool finalFlag = true);
-	bool SendBeginSession();
-	bool SendEndSession();
+	bool BeginSendSession();
+	bool EndSendSession();
 	bool RecvFiles(const char* dirNameDst, int nFilesMax = 10);
 };
 
@@ -216,13 +216,13 @@ bool YModem::SendSingleFile(const char* fileName, bool finalFlag)
 	return true;
 }
 
-bool YModem::SendBeginSession()
+bool YModem::BeginSendSession()
 {
 	// Wait for receiver to send 'C' (CRC mode request)
 	return WaitForCode(CtrlCode::C, TIMEOUT_MS);
 }
 
-bool YModem::SendEndSession()
+bool YModem::EndSendSession()
 {
 	// Wait for receiver to request next file
 	if (!WaitForCode(CtrlCode::C, TIMEOUT_MS)) {
@@ -237,7 +237,7 @@ bool YModem::SendEndSession()
 
 bool YModem::SendFile(const char* fileName)
 {
-	if (!SendBeginSession()) {
+	if (!BeginSendSession()) {
 		return false;
 	}
 	
@@ -247,12 +247,12 @@ bool YModem::SendFile(const char* fileName)
 	}
 	
 	// End session
-	return SendEndSession();
+	return EndSendSession();
 }
 
 bool YModem::SendFiles(const char* fileNames[], int nFiles)
 {
-	if (!SendBeginSession()) {
+	if (!BeginSendSession()) {
 		return false;
 	}
 	
@@ -265,7 +265,7 @@ bool YModem::SendFiles(const char* fileNames[], int nFiles)
 	}
 	
 	// End session
-	return SendEndSession();
+	return EndSendSession();
 }
 
 bool YModem::RecvBlock(uint8_t expectedBlockNum, uint8_t* data, size_t& dataLen, int msecTimeout)
@@ -457,7 +457,7 @@ ShellCmd(ysend, "Send file via YModem protocol")
 	YModem ymodem(stream);
 	
 	// Begin YModem session
-	if (!ymodem.SendBeginSession()) {
+	if (!ymodem.BeginSendSession()) {
 		terr.Printf("Failed to begin YModem session\n");
 		return 1;
 	}
@@ -478,7 +478,7 @@ ShellCmd(ysend, "Send file via YModem protocol")
 	
 	// End YModem session
 	if (success) {
-		if (!ymodem.SendEndSession()) {
+		if (!ymodem.EndSendSession()) {
 			terr.Printf("Failed to end YModem session\n");
 			success = false;
 		}
