@@ -30,7 +30,7 @@ int UART::Write(const void* buff, int bytesBuff)
 	const uint8_t* pBuff = static_cast<const uint8_t*>(buff);
 	int i = 0;
 	for ( ; i < bytesBuff; ++i) {
-		while (!raw.IsWritable()) ::tight_loop_contents();
+		//while (!raw.IsWritable()) ::tight_loop_contents();
 		raw.get_hw()->dr = *pBuff++;
 	}
 	return i;

@@ -233,6 +233,7 @@ bool YModem::RecvBlock(uint8_t expectedBlockNum, uint8_t* data, size_t& dataLen,
 	bool foundFlag = false;
 	uint32_t startTime = ::time_us_32() / 1000;
 	while (!foundFlag && (::time_us_32() / 1000 - startTime) < msecTimeout) {
+		::printf("sending C to request block...\n");
 		SendCode(CtrlCode::C);
 		::printf("Waiting for block start...\n");
 		int result = RecvBuff(&header[0], 1, 500);
