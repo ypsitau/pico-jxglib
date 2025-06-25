@@ -42,6 +42,9 @@ public:
 		uint get_dreq(bool is_tx) const { return ::uart_get_dreq(uart_, is_tx); }
 		uart_hw_t* get_hw() const { return ::uart_get_hw(uart_); }
 	public:
+		bool IsReadable() const { return !(::uart_get_hw(uart_)->fr & UART_UARTFR_RXFE_BITS); }
+		bool IsWritable() const { return !(::uart_get_hw(uart_)->fr & UART_UARTFR_TXFF_BITS); }
+	public:
 		static void default_tx_wait_blocking() { ::uart_default_tx_wait_blocking(); }
 	} raw;
 private:

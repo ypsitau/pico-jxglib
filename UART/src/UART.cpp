@@ -17,13 +17,23 @@ UART::UART(uart_inst_t* uart) : raw(uart), chPrev_{'\0'}, addCrFlag_{true}
 
 int UART::Read(void* buff, int bytesBuff)
 {
-	return 0;
+	uint8_t* pBuff = static_cast<uint8_t*>(buff);
+	int i = 0;
+	for ( ; i < bytesBuff && raw.IsReadable(); ++i) {
+		*pBuff++ = static_cast<uint8_t>(raw.get_hw()->dr);
+	}
+	return i;
 }
 
 int UART::Write(const void* buff, int bytesBuff)
 {
-	raw.write_blocking(buff, bytesBuff);
-	return bytesBuff;
+	const uint8_t* pBuff = static_cast<const uint8_t*>(buff);
+	int i = 0;
+	for ( ; i < bytesBuff; ++i) {
+		while (!raw.IsWritable()) ::tight_loop_contents();
+		raw.get_hw()->dr = *pBuff++;
+	}
+	return i;
 }
 
 Printable& UART::ClearScreen()

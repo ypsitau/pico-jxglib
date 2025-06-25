@@ -38,6 +38,7 @@ public:
 	bool SendSingleFile(const char* fileName, bool finalFlag = true);
 	bool BeginSendSession();
 	bool EndSendSession();
+public:
 	bool RecvSingleFile(const char* dirNameDst, char* fileNameOut, size_t fileNameMaxLen);
 };
 
@@ -80,19 +81,12 @@ int YModem::RecvBuff(uint8_t* buffer, size_t size, int msecTimeout)
 {
 	size_t totalRead = 0;
 	uint32_t startTime = ::time_us_32() / 1000;
-	
 	while (totalRead < size) {
 		// Check timeout
-		if ((::time_us_32() / 1000 - startTime) >= msecTimeout) {
-			break;
-		}
-		
+		if ((::time_us_32() / 1000 - startTime) >= msecTimeout) break;
 		// Try to read available data
 		int bytesRead = stream_.Read(buffer + totalRead, size - totalRead);
-		if (bytesRead > 0) {
-			totalRead += bytesRead;
-		}
-		
+		if (bytesRead > 0) totalRead += bytesRead;
 		// Allow other tasks to run and check for user interruption
 		if (Tickable::TickSub()) return -1;  // User interruption
 	}
@@ -121,7 +115,7 @@ bool YModem::SendBlock(uint8_t blockNum, const uint8_t* data, size_t dataLen, bo
 		// Send block with retries
 	for (int retry = 0; retry < MAX_RETRIES; retry++) {
 		stream_.Write(block, blockSize + 5);
-		if (WaitForCode(CtrlCode::ACK, TIMEOUT_MS)) {
+		if (WaitForCode(CtrlCode::ACK)) {
 			delete[] block;
 			return true;
 		}		// Handle NAK or timeout - resend
@@ -178,7 +172,7 @@ bool YModem::SendSingleFile(const char* fileName, bool finalFlag)
 	}
 	
 	// Wait for ACK after header
-	if (!WaitForCode(CtrlCode::C, TIMEOUT_MS)) {
+	if (!WaitForCode(CtrlCode::C)) {
 		return false;
 	}
 	
@@ -198,14 +192,14 @@ bool YModem::SendSingleFile(const char* fileName, bool finalFlag)
 	// Send EOT
 	for (int retry = 0; retry < MAX_RETRIES; retry++) {
 		SendCode(CtrlCode::EOT);
-		if (WaitForCode(CtrlCode::ACK, TIMEOUT_MS)) {
+		if (WaitForCode(CtrlCode::ACK)) {
 			break;
 		}
 	}
 	
 	// If not final file, wait for 'C' for next file transfer
 	if (!finalFlag) {
-		if (!WaitForCode(CtrlCode::C, TIMEOUT_MS)) {
+		if (!WaitForCode(CtrlCode::C)) {
 			return false;
 		}
 	}
@@ -216,13 +210,13 @@ bool YModem::SendSingleFile(const char* fileName, bool finalFlag)
 bool YModem::BeginSendSession()
 {
 	// Wait for receiver to send 'C' (CRC mode request)
-	return WaitForCode(CtrlCode::C, TIMEOUT_MS);
+	return WaitForCode(CtrlCode::C);
 }
 
 bool YModem::EndSendSession()
 {
 	// Wait for receiver to request next file
-	if (!WaitForCode(CtrlCode::C, TIMEOUT_MS)) {
+	if (!WaitForCode(CtrlCode::C)) {
 		return false;
 	}
 	
@@ -235,11 +229,14 @@ bool YModem::EndSendSession()
 bool YModem::RecvBlock(uint8_t expectedBlockNum, uint8_t* data, size_t& dataLen, int msecTimeout)
 {
 	uint8_t header[3];
-		// Wait for block start (SOH or STX)
+	// Wait for block start (SOH or STX)
 	bool foundFlag = false;
 	uint32_t startTime = ::time_us_32() / 1000;
 	while (!foundFlag && (::time_us_32() / 1000 - startTime) < msecTimeout) {
-		int result = RecvBuff(&header[0], 1, 100);
+		SendCode(CtrlCode::C);
+		::printf("Waiting for block start...\n");
+		int result = RecvBuff(&header[0], 1, 500);
+		::printf("Received header byte: %d\n", result);
 		if (result == -1) {
 			// User interruption
 			return false;
@@ -310,16 +307,12 @@ bool YModem::RecvBlock(uint8_t expectedBlockNum, uint8_t* data, size_t& dataLen,
 
 bool YModem::RecvSingleFile(const char* dirNameDst, char* fileNameOut, size_t fileNameMaxLen)
 {
+	int cntRetries = 30;
 	uint8_t blockData[1024];
 	size_t dataLen;
-	
-	// Send 'C' to request header block in CRC mode
-	int iRetry = 0;
-	for (int iRetry = 0; iRetry < 30; iRetry++) {
-		SendCode(CtrlCode::C);
-		if (RecvBlock(0, blockData, dataLen, 1000)) break;
-	}
-	if (iRetry == 30) return false;
+	int msecTimeoutFirst = 30000; // 30 seconds for first block
+
+	if (!RecvBlock(0, blockData, dataLen, msecTimeoutFirst)) return false;
 	// Parse header block
 	const char* fileName = (const char*)blockData;
 	if (::strlen(fileName) == 0) {
@@ -341,16 +334,14 @@ bool YModem::RecvSingleFile(const char* dirNameDst, char* fileNameOut, size_t fi
 	fileNameOut[fileNameMaxLen - 1] = '\0';
 	
 	// Open file for writing
-	std::unique_ptr<FS::File> file(FS::OpenFile(fullPath, "w"));
-	if (!file) {
+	std::unique_ptr<FS::File> pFile(FS::OpenFile(fullPath, "w"));
+	if (!pFile) {
 		// Send cancel
 		SendCode(CtrlCode::CAN);
 		return false;
 	}
 	
-	// Send 'C' to start receiving data blocks
-	SendCode(CtrlCode::C);
-		// Receive data blocks
+	// Receive data blocks
 	uint8_t blockNum = 1;
 	int totalBytesReceived = 0;
 	
@@ -367,7 +358,7 @@ bool YModem::RecvSingleFile(const char* dirNameDst, char* fileNameOut, size_t fi
 		// Write data to file (only the needed bytes)
 		int bytesToWrite = (totalBytesReceived + dataLen > fileSize)? (fileSize - totalBytesReceived) : dataLen;
 		
-		if (file->Write(blockData, bytesToWrite) != bytesToWrite) {
+		if (pFile->Write(blockData, bytesToWrite) != bytesToWrite) {
 			// Write error - send cancel
 			SendCode(CtrlCode::CAN);
 			return false;
