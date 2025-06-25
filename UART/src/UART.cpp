@@ -19,7 +19,8 @@ int UART::Read(void* buff, int bytesBuff)
 {
 	uint8_t* pBuff = static_cast<uint8_t*>(buff);
 	int i = 0;
-	for ( ; i < bytesBuff && raw.IsReadable(); ++i) {
+	//for ( ; i < bytesBuff && raw.IsReadable(); ++i) {
+	for ( ; i < bytesBuff && raw.is_readable(); ++i) {
 		*pBuff++ = static_cast<uint8_t>(raw.get_hw()->dr);
 	}
 	return i;
@@ -31,6 +32,7 @@ int UART::Write(const void* buff, int bytesBuff)
 	int i = 0;
 	for ( ; i < bytesBuff; ++i) {
 		//while (!raw.IsWritable()) ::tight_loop_contents();
+		while (!raw.is_writable()) ::tight_loop_contents();
 		raw.get_hw()->dr = *pBuff++;
 	}
 	return i;
