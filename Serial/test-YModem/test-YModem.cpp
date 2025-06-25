@@ -32,16 +32,13 @@ private:
 	int RecvBuff(uint8_t* buffer, size_t size, int msecTimeout = TIMEOUT_MS);
 	bool SendBlock(uint8_t blockNum, const uint8_t* data, size_t dataLen, bool use1K = false);
 	bool RecvBlock(uint8_t expectedBlockNum, uint8_t* data, size_t& dataLen, int msecTimeout = TIMEOUT_MS);
-	bool RecvSingleFile(const char* dirNameDst, char* fileNameOut, size_t fileNameMaxLen);
 public:
 	YModem(Stream& stream) : stream_(stream) {}
 public:
-	bool SendFile(const char* fileName);
-	bool SendFiles(const char* fileNames[], int nFiles);
 	bool SendSingleFile(const char* fileName, bool finalFlag = true);
 	bool BeginSendSession();
 	bool EndSendSession();
-	bool RecvFiles(const char* dirNameDst, int nFilesMax = 10);
+	bool RecvSingleFile(const char* dirNameDst, char* fileNameOut, size_t fileNameMaxLen);
 };
 
 uint16_t YModem::CalcCRC16(const uint8_t* data, size_t len)
@@ -235,39 +232,6 @@ bool YModem::EndSendSession()
 	return SendBlock(0, (uint8_t*)emptyBlock, 128);
 }
 
-bool YModem::SendFile(const char* fileName)
-{
-	if (!BeginSendSession()) {
-		return false;
-	}
-	
-	// Send single file
-	if (!SendSingleFile(fileName)) {
-		return false;
-	}
-	
-	// End session
-	return EndSendSession();
-}
-
-bool YModem::SendFiles(const char* fileNames[], int nFiles)
-{
-	if (!BeginSendSession()) {
-		return false;
-	}
-	
-	// Send each file
-	for (int i = 0; i < nFiles; i++) {
-		bool finalFlag = (i == nFiles - 1);
-		if (!SendSingleFile(fileNames[i], finalFlag)) {
-			return false;
-		}
-	}
-	
-	// End session
-	return EndSendSession();
-}
-
 bool YModem::RecvBlock(uint8_t expectedBlockNum, uint8_t* data, size_t& dataLen, int msecTimeout)
 {
 	uint8_t header[3];
@@ -401,8 +365,7 @@ bool YModem::RecvSingleFile(const char* dirNameDst, char* fileNameOut, size_t fi
 		}
 		
 		// Write data to file (only the needed bytes)
-		int bytesToWrite = (totalBytesReceived + dataLen > fileSize) ? 
-						   (fileSize - totalBytesReceived) : dataLen;
+		int bytesToWrite = (totalBytesReceived + dataLen > fileSize)? (fileSize - totalBytesReceived) : dataLen;
 		
 		if (file->Write(blockData, bytesToWrite) != bytesToWrite) {
 			// Write error - send cancel
@@ -414,30 +377,6 @@ bool YModem::RecvSingleFile(const char* dirNameDst, char* fileNameOut, size_t fi
 		blockNum++;
 	}
 	
-	return true;
-}
-
-bool YModem::RecvFiles(const char* dirNameDst, int nFilesMax)
-{
-	char fileName[256];
-	int nFiles = 0;
-	
-	while (nFiles < nFilesMax) {
-		if (!RecvSingleFile(dirNameDst, fileName, sizeof(fileName))) {
-			return false;
-		}
-		
-		// Check if we received an empty filename (end of batch)
-		if (::strlen(fileName) == 0) {
-			break;
-		}
-		
-		nFiles++;
-		// Printf feedback about received file
-		printf("Received file: %s\n", fileName);
-	}
-	
-	printf("Received %d files successfully\n", nFiles);
 	return true;
 }
 
@@ -499,12 +438,20 @@ ShellCmd(yrecv, "Receive file(s) via YModem protocol")
 		arg.PrintHelp(terr);
 		return 1;
 	}
-	const char* dirNameDst = (argc < 2) ? "." : argv[1];
+	const char* dirNameDst = (argc < 2)? "." : argv[1];
 	Stream& stream = UART0;
 	YModem ymodem(stream);
+	char fileName[FS::MaxPath];
+	int nFilesMax = 100;
 	tout.Printf("Receiving files to directory: %s\n", dirNameDst);
-	bool success = ymodem.RecvFiles(dirNameDst);
-	return success ? 0 : 1;
+	for (int nFiles = 0; nFiles < nFilesMax; nFiles++) {
+		if (!ymodem.RecvSingleFile(dirNameDst, fileName, sizeof(fileName))) return 1;
+		// Check if we received an empty filename (end of batch)
+		if (::strlen(fileName) == 0) break;
+		// Printf feedback about received file
+		tout.Printf("Received file: %s\n", fileName);
+	}
+	return 0;
 }
 
 int main()
