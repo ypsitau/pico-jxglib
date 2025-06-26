@@ -8,8 +8,13 @@
 #include "jxglib/LFS/Flash.h"
 #include "jxglib/RTC/DS323x.h"
 #include "jxglib/FS.h"
+#include "jxglib/ST7789.h"
+#include "jxglib/USBHost/HID.h"
+#include "jxglib/Font/shinonome16.h"
 
 using namespace jxglib;
+
+Display::Terminal terminal;
 
 class YModem {
 private:
@@ -240,6 +245,7 @@ bool YModem::RecvBlock(uint8_t expectedBlockNum, uint8_t* data, size_t& dataLen,
 			return false;
 		}
 		if (result == 1) {
+			terminal.Printf("Received header: 0x%02X '%c'\n", header[0], header[0]);
 			if (header[0] == CtrlCode::SOH || header[0] == CtrlCode::STX) {
 				foundFlag = true;
 				break;
@@ -256,7 +262,7 @@ bool YModem::RecvBlock(uint8_t expectedBlockNum, uint8_t* data, size_t& dataLen,
 	}
 	
 	if (!foundFlag) return false;
-	
+
 	// Determine block size
 	int blockSize = (header[0] == CtrlCode::STX) ? 1024 : 128;	// Read block number and complement
 	int result = RecvBuff(&header[1], 2, msecTimeout);
@@ -447,8 +453,20 @@ int main()
 {
 	::stdio_init_all();
 	LFS::Flash driveA("A:",  0x1010'0000, 0x0004'0000); // Flash address and size 256kB
+#if 1
+	::spi_init(spi1, 125'000'000);
+	GPIO14.set_function_SPI1_SCK();
+	GPIO15.set_function_SPI1_TX();
+	ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
+	terminal.Initialize().AttachDisplay(display.Initialize(Display::Dir::Rotate90)).SetFont(Font::shinonome16);
+	USBHost::Initialize();
+	USBHost::Keyboard keyboard;
+	terminal.AttachKeyboard(keyboard.SetCapsLockAsCtrl());
+#endif
+#if 1
 	Serial::Terminal terminal;
 	Shell::AttachTerminal(terminal.Initialize());
+#endif
 	::i2c_init(i2c0, 400'000);
 	GPIO16.set_function_I2C0_SDA().pull_up();
 	GPIO17.set_function_I2C0_SCL().pull_up();

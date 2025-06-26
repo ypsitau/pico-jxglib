@@ -26,14 +26,22 @@ public:
 		virtual bool GetKeyCodeNB(uint8_t* pKeyCode, uint8_t* pModifier = nullptr) override;
 		virtual bool GetKeyDataNB(KeyData* pKeyData) override;
 	};
+private:
+	int bytesRead_; // Number of bytes read from the input
+	int bytesAvailable_; // Number of bytes available for reading
+	uint8_t buffRead_[256]; // Buffer for reading input
 public:
 	static Stdio Instance;
 public:
-	Stdio() {}
+	Stdio() : bytesRead_(0), bytesAvailable_(0) {}
 public:
 	// virtual functions of Stream
 	virtual int Read(void* buff, int bytesBuff) override;
 	virtual int Write(const void* buff, int bytesBuff) override;
+public:
+	// Buffer management methods
+	void ClearReadBuffer();
+	int GetAvailableBytes() const { return bytesAvailable_; }
 public:
 	// virtual functions of Printable
 	virtual Printable& ClearScreen() override { return *this; }
