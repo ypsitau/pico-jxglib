@@ -359,6 +359,13 @@ bool Shell::Arg::Parse(Printable& terr, int& argc, const char* argv[])
 					terr.Printf("invalid value for option: %s\n", argv[iArg]);
 					return false;
 				}
+			} else if (pOptFound->GetType() == Opt::Type::Float) {
+				const char* pEnd = value;
+				::strtof(value, const_cast<char**>(&pEnd));
+				if (*pEnd != '\0') {
+					terr.Printf("invalid value for option: %s\n", argv[iArg]);
+					return false;
+				}
 			}
 			AddOptValue(pOptFound, value);
 			for (int iArgIter = iArg; iArgIter + nArgsToRemove <= argc; iArgIter++) argv[iArgIter] = argv[iArgIter + nArgsToRemove];
@@ -407,6 +414,16 @@ bool Shell::Arg::GetInt(const char* longName, int* pValue) const
 	const OptValue* pOptValue = FindOptValue(longName);
 	if (pOptValue) {
 		*pValue = ::strtol(pOptValue->GetValue(), nullptr, 0);
+		return true;
+	}
+	return false;
+}
+
+bool Shell::Arg::GetFloat(const char* longName, float* pValue) const
+{
+	const OptValue* pOptValue = FindOptValue(longName);
+	if (pOptValue) {
+		*pValue = ::strtof(pOptValue->GetValue(), nullptr);
 		return true;
 	}
 	return false;

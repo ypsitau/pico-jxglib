@@ -15,6 +15,7 @@ void test_Parse()
 		Shell::Cmd::Arg::OptBool("help",	'h', "prints this help"),
 		Shell::Cmd::Arg::OptBool("flag",	'f', "a boolean flag"),
 		Shell::Cmd::Arg::OptInt("num",		'n', "specifies a number", "n"),
+		Shell::Cmd::Arg::OptFloat("float",	0x0, "specifies a floating point number", "n"),
 		Shell::Cmd::Arg::OptString("name",	0x0, "specifies a name", "str"),
 		Shell::Cmd::Arg::OptString("path",	'p', "specifies a path", "str"),
 	};
@@ -46,6 +47,11 @@ void test_Parse()
 		{ "missing int value", 4, { "prog", "--num", "arg1", "arg2" } },
 		{ "missing string value", 2, { "prog", "-p" } },
 		{ "missing int value", 2, { "prog", "-n" } },
+		{ "float long", 4, { "prog", "--float=3.14", "arg1", "arg2" } },
+		{ "float negative", 4, { "prog", "--float=-2.5", "arg1", "arg2" } },
+		{ "float zero", 4, { "prog", "--float=0.0", "arg1", "arg2" } },
+		{ "float scientific", 4, { "prog", "--float=1.23e-4", "arg1", "arg2" } },
+		{ "invalid float", 4, { "prog", "--float=notafloat", "arg1", "arg2" } },
 	};
 
 	for (size_t i = 0; i < sizeof(cases)/sizeof(cases[0]); ++i) {
@@ -69,6 +75,9 @@ void test_Parse()
 			int num = 0;
 			tout.Printf("  num:  ");
 			if (arg.GetInt("num", &num)) tout.Printf("%d\n", num); else tout.Printf("(none)\n");
+			float floatVal = 0.0f;
+			tout.Printf("  float: ");
+			if (arg.GetFloat("float", &floatVal)) tout.Printf("%.2f\n", floatVal); else tout.Printf("(none)\n");
 			const char* name = 0;
 			tout.Printf("  name: ");
 			if (arg.GetString("name", &name)) tout.Printf("%s\n", name); else tout.Printf("(none)\n");
@@ -171,7 +180,7 @@ void test_EachNum()
 int main()
 {
 	::stdio_init_all();
-	//test_Parse();
+	test_Parse();
 	test_EachNum();
 	for (;;) ::tight_loop_contents();
 }

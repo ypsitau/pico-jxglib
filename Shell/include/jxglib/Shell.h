@@ -39,7 +39,7 @@ public:
 	public:
 		class Opt {
 		public:
-			enum class Type { Bool, String, Int };
+			enum class Type { Bool, String, Int, Float };
 		private:
 			Type type_;
 			const char* longName_;
@@ -140,6 +140,7 @@ public:
 		bool GetBool(const char* longName) const;
 		bool GetString(const char* longName, const char** pValue) const;
 		bool GetInt(const char* longName, int* pValue) const;
+		bool GetFloat(const char* longName, float* pValue) const;
 	private:
 		void AddOptValue(const Opt* pOpt, const char* value);
 		const OptValue* FindOptValue(const char* longName) const;
@@ -152,6 +153,9 @@ public:
 		}
 		constexpr static Opt OptInt(const char* longName, char shortName, const char* strHelp = "", const char* helpValue = "") {
 			return Opt(Opt::Type::Int, longName, shortName, strHelp, helpValue);
+		}
+		constexpr static Opt OptFloat(const char* longName, char shortName, const char* strHelp = "", const char* helpValue = "") {
+			return Opt(Opt::Type::Float, longName, shortName, strHelp, helpValue);
 		}
 	};
 	class Cmd {
