@@ -18,9 +18,9 @@ public:
 	private:
 		pwm_config config_;
 	public:
-		Config() : config_{::pwm_get_default_config()} {}
-		Config(const pwm_config& config) : config_{config} {}
-		Config(const Config& config) : config_{config.config_} {}
+		constexpr Config() : config_{0} {}
+		constexpr Config(const pwm_config& config) : config_{config} {}
+		constexpr Config(const Config& config) : config_{config.config_} {}
 	public:
 		pwm_config& GetEntity() { return config_; }
 		const pwm_config& GetEntity() const { return config_; }
@@ -57,7 +57,7 @@ public:
 public:
 	const PWM& init(pwm_config *c, bool start) const { ::pwm_init(GetSliceNum(), c, start); return *this; }
 	const PWM& init(Config& c, bool start) const { ::pwm_init(GetSliceNum(), c.GetEntityPtr(), start); return *this; }
-	Config get_default_config() const { return Config(::pwm_get_default_config()); }
+	static Config get_default_config() { return Config(::pwm_get_default_config()); }
 public:
 	const PWM& set_phase_correct(bool phase_correct) const { ::pwm_set_phase_correct(GetSliceNum(), phase_correct); return *this; }
 	const PWM& set_clkdiv(float divider) const { ::pwm_set_clkdiv(GetSliceNum(), divider); return *this; }

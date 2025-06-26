@@ -55,6 +55,6 @@ target_include_directories(test-PWM PRIVATE
 
 pico_add_extra_outputs(test-PWM)
 
-target_link_libraries(test-PWM jxglib_ShellCmd_PWM)
+target_link_libraries(test-PWM jxglib_Serial jxglib_ShellCmd_PWM)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 
