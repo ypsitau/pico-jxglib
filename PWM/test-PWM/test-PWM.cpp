@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include "jxglib/PWM.h"
 
+using namespace jxglib;
 
 int main()
 {

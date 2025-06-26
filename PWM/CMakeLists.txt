@@ -4,6 +4,7 @@ target_include_directories(jxglib_PWM INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/include)
 
 target_link_libraries(jxglib_PWM INTERFACE
+	hardware_pwm
 	jxglib_Common)
 
 target_sources(jxglib_PWM INTERFACE
