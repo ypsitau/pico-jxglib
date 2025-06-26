@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <memory.h>
 #include "pico/stdlib.h"
-#include "jxglib/Color.h"
+#include "jxglib/Common.h"
 
 namespace jxglib {
 

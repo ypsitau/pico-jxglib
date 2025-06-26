@@ -7,7 +7,7 @@
 #include "pico/stdlib.h"
 #include "pico/flash.h"
 #include "hardware/flash.h"
-#include "jxglib/Stream.h"
+#include "jxglib/Common.h"
 
 namespace jxglib {
 

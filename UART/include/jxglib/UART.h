@@ -4,7 +4,8 @@
 #ifndef PICO_JXGLIB_UART_H
 #define PICO_JXGLIB_UART_H
 #include "pico/stdlib.h"
-#include "jxglib/Stream.h"
+#include "jxglib/Common.h"
+
 namespace jxglib {
 
 //------------------------------------------------------------------------------

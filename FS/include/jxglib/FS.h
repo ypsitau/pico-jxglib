@@ -5,7 +5,7 @@
 #define PICO_JXGLIB_FS_H
 #include <memory>
 #include "pico/stdlib.h"
-#include "jxglib/Stream.h"
+#include "jxglib/Common.h"
 #include "jxglib/RTC.h"
 
 namespace jxglib::FS {

@@ -5,7 +5,7 @@
 #define PICO_JXGLIB_LINEBUFF_H
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "jxglib/Stream.h"
+#include "jxglib/Common.h"
 
 namespace jxglib {
 

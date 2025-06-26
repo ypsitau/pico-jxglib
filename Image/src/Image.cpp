@@ -2,7 +2,6 @@
 // Image.cpp
 //==============================================================================
 #include "jxglib/Image.h"
-#include "jxglib/Stream.h"
 
 namespace jxglib {
 

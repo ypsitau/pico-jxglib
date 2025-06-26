@@ -428,7 +428,7 @@ ShellCmd(yrecv, "Receive file(s) via YModem protocol")
 		return 1;
 	}
 	const char* dirNameDst = (argc < 2)? "." : argv[1];
-	Stream& stream = UART0;
+	Stream& stream = Stdio::Instance;
 	YModem ymodem(stream);
 	char fileName[FS::MaxPath];
 	int nFilesMax = 100;
