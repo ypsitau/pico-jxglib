@@ -8,5 +8,11 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // PWM
 //------------------------------------------------------------------------------
+const PWM& PWM::SetDuty(float duty) const
+{
+	duty = (duty < 0.0f)? 0.0f : (duty > 1.0f)? 1.0f : duty;
+	set_chan_level(static_cast<uint16_t>(duty * get_wrap()));
+	return *this;
+}
 
 }

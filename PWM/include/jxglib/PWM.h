@@ -43,16 +43,17 @@ public:
 		}
 	};
 private:
-	const GPIO& gpio_;
+	uint pin_;
 public:
-	PWM(const GPIO& gpio) : gpio_{gpio} {}
+	PWM(uint pin) : pin_{pin} {}
 public:
-	const GPIO& GetGPIO() const { return gpio_; }
+	uint GetPin() const { return pin_; }
 public:
-	uint GetSliceNum() const { return ::pwm_gpio_to_slice_num(gpio_.pin); }
-	uint GetChannel() const { return ::pwm_gpio_to_channel(gpio_.pin); }
+	uint GetSliceNum() const { return ::pwm_gpio_to_slice_num(pin_); }
+	uint GetChannel() const { return ::pwm_gpio_to_channel(pin_); }
 	bool IsChannelA() const { return GetChannel() == PWM_CHAN_A; }
 	bool IsChannelB() const { return GetChannel() == PWM_CHAN_B; }
+	const PWM& SetDuty(float duty) const;
 public:
 	const PWM& init(pwm_config *c, bool start) const { ::pwm_init(GetSliceNum(), c, start); return *this; }
 	const PWM& init(Config& c, bool start) const { ::pwm_init(GetSliceNum(), c.GetEntityPtr(), start); return *this; }
@@ -65,13 +66,10 @@ public:
 	const PWM& set_output_polarity(bool inv_a, bool inv_b) const { ::pwm_set_output_polarity(GetSliceNum(), inv_a, inv_b); return *this; }
 	const PWM& set_chan_output_polarity(bool inv) const { set_chan_output_polarity(GetSliceNum(), GetChannel(), inv); return *this; }
 	const PWM& set_wrap(uint16_t wrap) const { ::pwm_set_wrap(GetSliceNum(), wrap); return *this; }
-public:
-	//const PWM& set_chan_level(uint chan, uint16_t level) const { ::pwm_set_chan_level(GetSliceNum(), chan, level); return *this; }
-	//const PWM& set_gpio_level(uint gpio, uint16_t level) const { ::pwm_set_gpio_level(gpio, level); return *this; }
-	//const PWM& set_gpio_level(uint16_t level) const { ::pwm_set_gpio_level(gpio_.pin, level); return *this; }
+	uint16_t get_wrap() const { return get_wrap(GetSliceNum()); }
 public:
 	const PWM& set_both_levels(uint16_t level_a, uint16_t level_b) const { ::pwm_set_both_levels(GetSliceNum(), level_a, level_b); return *this; }
-	const PWM& set_chan_level(uint16_t level) const { ::pwm_set_gpio_level(gpio_.pin, level); return *this; }
+	const PWM& set_chan_level(uint16_t level) const { ::pwm_set_gpio_level(pin_, level); return *this; }
 	uint16_t get_counter() const { return ::pwm_get_counter(GetSliceNum()); }
 	const PWM& set_counter(uint16_t c) const { ::pwm_set_counter(GetSliceNum(), c); return *this; }
 	const PWM& advance_count() const { ::pwm_advance_count(GetSliceNum()); return *this; }
@@ -94,6 +92,10 @@ public:
 	const PWM& force_irqn(uint irq_index) const { ::pwm_irqn_force(irq_index, GetSliceNum()); return *this; }
 	uint get_dreq() const { return ::pwm_get_dreq(GetSliceNum()); }
 public:
+	static uint16_t get_wrap(uint slice_num) {
+		check_slice_num_param(slice_num);
+		return static_cast<uint16_t>(pwm_hw->slice[slice_num].top);
+	}
 	static void set_chan_output_polarity(uint slice_num, uint chan, bool inv) {
 		check_slice_num_param(slice_num);
 		if (chan == PWM_CHAN_A) {
