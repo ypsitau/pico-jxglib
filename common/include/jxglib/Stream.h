@@ -3,9 +3,12 @@
 //==============================================================================
 #ifndef PICO_JXGLIB_STREAM_H
 #define PICO_JXGLIB_STREAM_H
+#include <stdio.h>
 #include <utility>
 #include "pico/stdlib.h"
-#include "jxglib/Common.h"
+#include "jxglib/Tickable.h"
+#include "jxglib/Printable.h"
+#include "jxglib/Readable.h"
 
 namespace jxglib {
 

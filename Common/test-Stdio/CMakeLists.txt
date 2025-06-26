@@ -55,3 +55,5 @@ target_include_directories(test-Stdio PRIVATE
 
 pico_add_extra_outputs(test-Stdio)
 
+target_link_libraries(test-Stdio jxglib_Common)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)

@@ -4,7 +4,7 @@
 #ifndef PICO_JXGLIB_STDIO_H
 #define PICO_JXGLIB_STDIO_H
 #include "pico/stdlib.h"
-#include "jxglib/Printable.h"
+#include "jxglib/Stream.h"
 #include "jxglib/Keyboard.h"
 #include "jxglib/VT100.h"
 
@@ -13,7 +13,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // Stdio
 //------------------------------------------------------------------------------
-class Stdio : public Printable {
+class Stdio : public Stream {
 public:
 	class Keyboard : public jxglib::Keyboard {
 	private:
@@ -31,6 +31,11 @@ public:
 public:
 	Stdio() {}
 public:
+	// virtual functions of Stream
+	virtual int Read(void* buff, int bytesBuff) override;
+	virtual int Write(const void* buff, int bytesBuff) override;
+public:
+	// virtual functions of Printable
 	virtual Printable& ClearScreen() override { return *this; }
 	virtual Printable& RefreshScreen() override { ::stdio_flush(); return *this; }
 	virtual Printable& Locate(int col, int row) override { return *this; }

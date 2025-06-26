@@ -10,6 +10,31 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 Stdio Stdio::Instance;
 
+int Stdio::Read(void* buff, int bytesBuff)
+{
+	if (bytesBuff <= 0) return 0;
+	int bytesRead = 0;
+	uint8_t* pBuff = static_cast<uint8_t*>(buff);
+	while (bytesRead < bytesBuff) {
+		int ch = getchar_timeout_us(0);
+		if (ch < 0) break; // no more data or error
+		pBuff[bytesRead++] = static_cast<uint8_t>(ch);
+	}
+	return bytesRead;
+}
+
+int Stdio::Write(const void* buff, int bytesBuff)
+{
+	if (bytesBuff <= 0) return 0;
+	const uint8_t* pBuff = static_cast<const uint8_t*>(buff);
+	int bytesWritten = 0;
+	while (bytesWritten < bytesBuff) {
+		int ch = putchar_raw(pBuff[bytesWritten++]);
+		if (ch < 0) break; // error
+	}
+	return bytesWritten;
+}
+
 //------------------------------------------------------------------------------
 // Stdio::Keyboard
 //------------------------------------------------------------------------------

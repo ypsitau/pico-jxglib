@@ -1,13 +1,11 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include "jxglib/Common.h"
 
+using namespace jxglib;
 
 int main()
 {
-    stdio_init_all();
-
-    while (true) {
-        printf("Hello, world!\n");
-        sleep_ms(1000);
-    }
+    ::stdio_init_all();
+    Stdio::Instance.Printf("Hello, World!\n");
 }
