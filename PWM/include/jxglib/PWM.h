@@ -29,7 +29,7 @@ public:
 	public:
 		Config& set_phase_correct(bool phase_correct) { ::pwm_config_set_phase_correct(&config_, phase_correct); return *this; }
 		Config& set_clkdiv(float div) { ::pwm_config_set_clkdiv(&config_, div); return *this; }
-		Config& set_clkdiv_int_frac(uint8_t integer, uint8_t fract) { ::pwm_config_set_clkdiv_int_frac(&config_, integer, fract); return *this; }
+		Config& set_clkdiv_int_frac(uint8_t div_int, uint8_t div_frac) { ::pwm_config_set_clkdiv_int_frac(&config_, div_int, div_frac); return *this; }
 		Config& set_clkdiv_int(uint div) { ::pwm_config_set_clkdiv_int(&config_, div); return *this; }
 		Config& set_clkdiv_mode(enum pwm_clkdiv_mode mode) { ::pwm_config_set_clkdiv_mode(&config_, mode); return *this; }
 		Config& set_output_polarity(bool a, bool b) { ::pwm_config_set_output_polarity(&config_, a, b); return *this; }
@@ -53,7 +53,9 @@ public:
 	uint GetChannel() const { return ::pwm_gpio_to_channel(pin_); }
 	bool IsChannelA() const { return GetChannel() == PWM_CHAN_A; }
 	bool IsChannelB() const { return GetChannel() == PWM_CHAN_B; }
-	const PWM& SetDuty(float duty) const;
+public:
+	const PWM& set_freq(uint32_t freq) const;
+	const PWM& set_duty(float duty) const;
 public:
 	const PWM& init(pwm_config *c, bool start) const { ::pwm_init(GetSliceNum(), c, start); return *this; }
 	const PWM& init(Config& c, bool start) const { ::pwm_init(GetSliceNum(), c.GetEntityPtr(), start); return *this; }
@@ -61,7 +63,7 @@ public:
 public:
 	const PWM& set_phase_correct(bool phase_correct) const { ::pwm_set_phase_correct(GetSliceNum(), phase_correct); return *this; }
 	const PWM& set_clkdiv(float divider) const { ::pwm_set_clkdiv(GetSliceNum(), divider); return *this; }
-	const PWM& set_clkdiv_int_frac(uint8_t integer, uint8_t fract) const { ::pwm_set_clkdiv_int_frac(GetSliceNum(), integer, fract); return *this; }
+	const PWM& set_clkdiv_int_frac(uint8_t div_int, uint8_t div_frac) const { ::pwm_set_clkdiv_int_frac(GetSliceNum(), div_int, div_frac); return *this; }
 	const PWM& set_clkdiv_mode(enum pwm_clkdiv_mode mode) const { ::pwm_set_clkdiv_mode(GetSliceNum(), mode); return *this; }
 	const PWM& set_output_polarity(bool inv_a, bool inv_b) const { ::pwm_set_output_polarity(GetSliceNum(), inv_a, inv_b); return *this; }
 	const PWM& set_chan_output_polarity(bool inv) const { set_chan_output_polarity(GetSliceNum(), GetChannel(), inv); return *this; }
@@ -92,6 +94,9 @@ public:
 	const PWM& force_irqn(uint irq_index) const { ::pwm_irqn_force(irq_index, GetSliceNum()); return *this; }
 	uint get_dreq() const { return ::pwm_get_dreq(GetSliceNum()); }
 public:
+	static void CalcClkdivAndWrap(uint32_t freq, float* pClkdiv, uint16_t* pWrap);
+	static uint32_t CalcFreq(float clkdiv, uint16_t wrap);
+	static uint32_t CalcFreq(uint8_t div_int, uint8_t div_frac, uint16_t wrap);
 	static uint16_t get_wrap(uint slice_num) {
 		check_slice_num_param(slice_num);
 		return static_cast<uint16_t>(pwm_hw->slice[slice_num].top);
