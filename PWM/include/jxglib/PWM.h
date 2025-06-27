@@ -55,7 +55,7 @@ public:
 	bool IsChannelB() const { return GetChannel() == PWM_CHAN_B; }
 public:
 	const PWM& set_freq(uint32_t freq) const;
-	uint32_t get_freq() const;
+	uint32_t get_freq() const { return CalcFreq(get_clkdiv(), get_wrap()); }
 	const PWM& set_duty(float duty) const;
 	float get_duty() const;
 public:
@@ -65,6 +65,7 @@ public:
 public:
 	const PWM& set_phase_correct(bool phase_correct) const { ::pwm_set_phase_correct(GetSliceNum(), phase_correct); return *this; }
 	const PWM& set_clkdiv(float div) const { ::pwm_set_clkdiv(GetSliceNum(), div); return *this; }
+	float get_clkdiv() const { return get_clkdiv(GetSliceNum()); }
 	const PWM& set_clkdiv_int_frac(uint8_t div_int, uint8_t div_frac) const { ::pwm_set_clkdiv_int_frac(GetSliceNum(), div_int, div_frac); return *this; }
 	const PWM& set_clkdiv_mode(enum pwm_clkdiv_mode mode) const { ::pwm_set_clkdiv_mode(GetSliceNum(), mode); return *this; }
 	const PWM& set_output_polarity(bool inv_a, bool inv_b) const { ::pwm_set_output_polarity(GetSliceNum(), inv_a, inv_b); return *this; }
@@ -79,6 +80,7 @@ public:
 	const PWM& advance_count() const { ::pwm_advance_count(GetSliceNum()); return *this; }
 	const PWM& retard_count() const { ::pwm_retard_count(GetSliceNum()); return *this; }
 	const PWM& set_enabled(bool enabled) const { ::pwm_set_enabled(GetSliceNum(), enabled); return *this; }
+	bool is_enabled() const { return is_enabled(GetSliceNum()); }
 	static void set_mask_enabled(uint32_t mask) { ::pwm_set_mask_enabled(mask); }
 public:
 	const PWM& set_irq_enabled(bool enabled) const { ::pwm_set_irq_enabled(GetSliceNum(), enabled); return *this; }
@@ -99,18 +101,10 @@ public:
 	static void CalcClkdivAndWrap(uint32_t freq, float* pClkdiv, uint16_t* pWrap);
 	static uint32_t CalcFreq(float clkdiv, uint16_t wrap);
 	static uint32_t CalcFreq(uint8_t div_int, uint8_t div_frac, uint16_t wrap);
-	static uint16_t get_wrap(uint slice_num) {
-		check_slice_num_param(slice_num);
-		return static_cast<uint16_t>(pwm_hw->slice[slice_num].top);
-	}
-	static void set_chan_output_polarity(uint slice_num, uint chan, bool inv) {
-		check_slice_num_param(slice_num);
-		if (chan == PWM_CHAN_A) {
-			hw_write_masked(&pwm_hw->slice[slice_num].csr, bool_to_bit(inv) << PWM_CH0_CSR_A_INV_LSB, PWM_CH0_CSR_A_INV_BITS);
-		} else {
-			hw_write_masked(&pwm_hw->slice[slice_num].csr, bool_to_bit(inv) << PWM_CH0_CSR_B_INV_LSB, PWM_CH0_CSR_B_INV_BITS);
-		}
-	}
+	static float get_clkdiv(uint slice_num);
+	static uint16_t get_wrap(uint slice_num);
+	static void set_chan_output_polarity(uint slice_num, uint chan, bool inv);
+	static bool is_enabled(uint slice_num);
 };
 
 }

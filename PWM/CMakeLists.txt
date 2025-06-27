@@ -18,7 +18,7 @@ target_include_directories(jxglib_ShellCmd_PWM INTERFACE
 
 target_link_libraries(jxglib_ShellCmd_PWM INTERFACE
 	jxglib_PWM
-	jxglib_ShellCmd_Basic)
+	jxglib_ShellCmd_GPIO)
 
 target_sources(jxglib_ShellCmd_PWM INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/ShellCmd_PWM.cpp)

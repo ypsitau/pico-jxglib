@@ -19,22 +19,6 @@ const PWM& PWM::set_freq(uint32_t freq) const
 	return *this;
 }
 
-uint32_t PWM::get_freq() const
-{
-	uint slice_num = GetSliceNum();
-	
-	// Read clock divider from hardware register
-	uint32_t div_reg = pwm_hw->slice[slice_num].div;
-	uint8_t div_int = (div_reg & PWM_CH0_DIV_INT_BITS) >> PWM_CH0_DIV_INT_LSB;
-	uint8_t div_frac = (div_reg & PWM_CH0_DIV_FRAC_BITS) >> PWM_CH0_DIV_FRAC_LSB;
-	
-	// Read wrap value from hardware register
-	uint16_t wrap = get_wrap();
-	
-	// Calculate frequency using the CalcFreq helper function
-	return CalcFreq(div_int, div_frac, wrap);
-}
-
 const PWM& PWM::set_duty(float duty) const
 {
 	duty = (duty < 0.0f)? 0.0f : (duty > 1.0f)? 1.0f : duty;
@@ -143,6 +127,37 @@ uint32_t PWM::CalcFreq(uint8_t div_int, uint8_t div_frac, uint16_t wrap)
 	if (div_int < 1 || div_int > 256 || div_frac >= 16 || wrap == 0) return 0;
 	float clkdiv = static_cast<float>(div_int) + static_cast<float>(div_frac) / 16.0f;
 	return CalcFreq(clkdiv, wrap);
+}
+
+float PWM::get_clkdiv(uint slice_num)
+{
+	check_slice_num_param(slice_num);
+	uint32_t div_reg = pwm_hw->slice[slice_num].div;
+	uint8_t div_int = (div_reg & PWM_CH0_DIV_INT_BITS) >> PWM_CH0_DIV_INT_LSB;
+	uint8_t div_frac = (div_reg & PWM_CH0_DIV_FRAC_BITS) >> PWM_CH0_DIV_FRAC_LSB;
+	return static_cast<float>(div_int) + static_cast<float>(div_frac) / 16.0f;
+}
+
+uint16_t PWM::get_wrap(uint slice_num)
+{
+	check_slice_num_param(slice_num);
+	return static_cast<uint16_t>(pwm_hw->slice[slice_num].top);
+}
+
+void PWM::set_chan_output_polarity(uint slice_num, uint chan, bool inv)
+{
+	check_slice_num_param(slice_num);
+	if (chan == PWM_CHAN_A) {
+		hw_write_masked(&pwm_hw->slice[slice_num].csr, bool_to_bit(inv) << PWM_CH0_CSR_A_INV_LSB, PWM_CH0_CSR_A_INV_BITS);
+	} else {
+		hw_write_masked(&pwm_hw->slice[slice_num].csr, bool_to_bit(inv) << PWM_CH0_CSR_B_INV_LSB, PWM_CH0_CSR_B_INV_BITS);
+	}
+}
+
+bool PWM::is_enabled(uint slice_num)
+{
+	check_slice_num_param(slice_num);
+	return (pwm_hw->slice[slice_num].csr & PWM_CH0_CSR_EN_BITS) != 0;
 }
 
 }
