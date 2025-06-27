@@ -449,6 +449,17 @@ const Shell::Arg::OptValue* Shell::Arg::FindOptValue(const char* longName) const
 	return nullptr;
 }
 
+bool Shell::Arg::GetAssigned(const char* str, const char* name, const char** pValue)
+{
+	*pValue = nullptr;
+	if (::strncmp(str, name, ::strlen(name)) == 0) {
+		const char* value = str + ::strlen(name);
+		if (*value == '=') *pValue = value + 1;
+		return true;
+	}
+	return false;
+}
+
 //-----------------------------------------------------------------------------
 // Shell::Arg::Opt
 //-----------------------------------------------------------------------------

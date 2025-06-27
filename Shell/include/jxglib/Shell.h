@@ -157,6 +157,8 @@ public:
 		constexpr static Opt OptFloat(const char* longName, char shortName, const char* strHelp = "", const char* helpValue = "") {
 			return Opt(Opt::Type::Float, longName, shortName, strHelp, helpValue);
 		}
+	public:
+		static bool GetAssigned(const char* str, const char* name, const char** pValue);
 	};
 	class Cmd {
 	public:

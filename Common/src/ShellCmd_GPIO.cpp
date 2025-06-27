@@ -4,11 +4,17 @@
 
 using namespace jxglib;
 
-static const int GPIO_NUM = 30; // number of GPIO pins on RP2040
-
 static void PrintPinFunc(Printable& tout, uint pin);
 static const char* GetPinFuncName(int pinFunc, uint pin);
 static bool ProcessGPIO(Printable& terr, Printable& tout, uint pin, int argc, char* argv[]);
+
+#if defined(PICO_RP2040)
+static const char* strAvailableFunction = "spi, uart, i2c, pwm, sio, pio0, pio1, clock, usb, xip, null";
+#elif defined(PICO_RP2350)
+static const char* strAvailableFunction = "spi, uart, uart-aux, i2c, pwm, sio, pio0, pio1, pio2, clock, usb, hstx, xip-cs1, coresight-trace, null";
+#endif
+static const char* strAvailableDrive = "2ma, 4ma, 8ma, 12ma, 16ma";
+static const char* strAvailableSlew = "slow, fast";
 
 ShellCmd(gpio, "controls GPIO pins")
 {
@@ -20,18 +26,15 @@ ShellCmd(gpio, "controls GPIO pins")
 	bool genericFlag = (::strcmp(GetName(), "gpio") == 0);
 	if (arg.GetBool("help")) {
 		if (genericFlag) {
-			tout.Printf("Usage: %s [OPTION]... [PIN [COMMAND]]\n", GetName());
+			tout.Printf("Usage: %s [OPTION]... [PIN [COMMAND]...]\n", GetName());
 		} else {
-			tout.Printf("Usage: %s [OPTION]... [COMMAND]\n", GetName());
+			tout.Printf("Usage: %s [OPTION]... [COMMAND]...\n", GetName());
 		}
 		arg.PrintHelp(tout);
 		tout.Printf("Commands:\n");
-#if defined(PICO_RP2040)
-		tout.Printf("  func FUNCTION  set pin function (spi, uart, i2c, pwm, sio, pio0, pio1, clock, usb, xip, null)\n");
-#elif defined(PICO_RP2350)
-		tout.Printf("  func FUNCTION  set pin function (spi, uart, uart-aux, i2c, pwm, sio, pio0, pio1, pio2, clock, usb, hstx, xip-cs1, coresight-trace, null)\n");
-#endif
-		tout.Printf("  drive STRENGTH set pin drive strength (2ma, 4ma, 8ma, 12ma, 16ma)\n");
+		tout.Printf("  func FUNCTION  set pin function (%s)\n", strAvailableFunction);
+		tout.Printf("  drive=STRENGTH set pin drive strength (%s)\n", strAvailableDrive);
+		tout.Printf("  slew=SLEW      set slew rate (%s)\n", strAvailableSlew);
 		tout.Printf("  pull-up        enable pull-up resistor\n");
 		tout.Printf("  pull-down      enable pull-down resistor\n");
 		tout.Printf("  pull-both      enable pull-up and pull-down resistor\n");
@@ -44,16 +47,16 @@ ShellCmd(gpio, "controls GPIO pins")
 	}
 	if (genericFlag) {
 		if (argc < 2) {
-			for (uint pin = 0; pin < GPIO_NUM; ++pin) PrintPinFunc(tout, pin);
+			for (uint pin = 0; pin < GPIO::NumPins; ++pin) PrintPinFunc(tout, pin);
 			return 0;
 		}
-		Arg::EachNum eachNum(argv[1], GPIO_NUM - 1);
+		Arg::EachNum eachNum(argv[1], GPIO::NumPins - 1);
 		if (!eachNum.CheckValidity()) {
 			terr.Printf("invalid GPIO pin number: %s\n", argv[1]);
 			return 1;
 		}
 		for (int num = 0; eachNum.Next(&num); ) {
-			if (num < 0 || num >= GPIO_NUM) {
+			if (num < 0 || num >= GPIO::NumPins) {
 				terr.Printf("invalid GPIO pin number: %d\n", num);
 				return 1;
 			}
@@ -65,7 +68,7 @@ ShellCmd(gpio, "controls GPIO pins")
 		char* endptr;
 		auto num = ::strtoul(GetName() + 4, &endptr, 0);
 		uint pin = 0;
-		if (*endptr == '\0' && num < GPIO_NUM) pin = static_cast<uint>(num);
+		if (*endptr == '\0' && num < GPIO::NumPins) pin = static_cast<uint>(num);
 		return ProcessGPIO(terr, tout, pin, argc - 1, argv + 1)? 0 : 1;
 	}
 	return 1;
@@ -104,83 +107,81 @@ ShellCmdAlias(gpio29, gpio)
 
 bool ProcessGPIO(Printable& terr, Printable& tout, uint pin, int argc, char* argv[])
 {
-	if (argc > 0) {
-		const char* cmd = argv[0];
-		if (::strcasecmp(cmd, "func") == 0 || ::strcasecmp(cmd, "function") == 0) {
-			if (argc < 2) {
-				terr.Printf("requires a function name argument\n");
+	for (int iArg = 0; iArg < argc; ++iArg) {
+		const char* cmd = argv[iArg];
+		const char* value = nullptr;
+		if (Shell::Arg::GetAssigned(cmd, "func", &value) || Shell::Arg::GetAssigned(cmd, "function", &value)) {
+			if (!value) {
+				terr.Printf("specify a function: %s\n", strAvailableFunction);
 				return false;
 			}
-			const char* arg = argv[1];
-			if (::strcasecmp(arg, "spi") == 0) {
+			if (::strcasecmp(value, "spi") == 0) {
 				::gpio_set_function(pin, GPIO_FUNC_SPI);
-			} else if (::strcasecmp(arg, "uart") == 0) {
+			} else if (::strcasecmp(value, "uart") == 0) {
 				::gpio_set_function(pin, GPIO_FUNC_UART);
-			} else if (::strcasecmp(arg, "i2c") == 0) {
+			} else if (::strcasecmp(value, "i2c") == 0) {
 				::gpio_set_function(pin, GPIO_FUNC_I2C);
-			} else if (::strcasecmp(arg, "pwm") == 0) {
+			} else if (::strcasecmp(value, "pwm") == 0) {
 				::gpio_set_function(pin, GPIO_FUNC_PWM);
-			} else if (::strcasecmp(arg, "sio") == 0) {
+			} else if (::strcasecmp(value, "sio") == 0) {
 				::gpio_set_function(pin, GPIO_FUNC_SIO);
-			} else if (::strcasecmp(arg, "pio0") == 0) {
+			} else if (::strcasecmp(value, "pio0") == 0) {
 				::gpio_set_function(pin, GPIO_FUNC_PIO0);
-			} else if (::strcasecmp(arg, "pio1") == 0) {
+			} else if (::strcasecmp(value, "pio1") == 0) {
 				::gpio_set_function(pin, GPIO_FUNC_PIO1);
-			} else if (::strcasecmp(arg, "clock") == 0) {
+			} else if (::strcasecmp(value, "clock") == 0) {
 				::gpio_set_function(pin, GPIO_FUNC_GPCK);
-			} else if (::strcasecmp(arg, "usb") == 0) {
+			} else if (::strcasecmp(value, "usb") == 0) {
 				::gpio_set_function(pin, GPIO_FUNC_USB);
-			} else if (::strcasecmp(arg, "null") == 0) {
+			} else if (::strcasecmp(value, "null") == 0) {
 				::gpio_set_function(pin, GPIO_FUNC_NULL);
 #if defined(PICO_RP2040)
-			} else if (::strcasecmp(arg, "xip") == 0) {
+			} else if (::strcasecmp(value, "xip") == 0) {
 				::gpio_set_function(pin, GPIO_FUNC_XIP);
 #elif defined(PICO_RP2350)
-			} else if (::strcasecmp(arg, "hstx") == 0) {
+			} else if (::strcasecmp(value, "hstx") == 0) {
 				::gpio_set_function(pin, GPIO_FUNC_HSTX);
-			} else if (::strcasecmp(arg, "pio2") == 0) {
+			} else if (::strcasecmp(value, "pio2") == 0) {
 				::gpio_set_function(pin, GPIO_FUNC_PIO2);
-			} else if (::strcasecmp(arg, "xip-cs1") == 0) {
+			} else if (::strcasecmp(value, "xip-cs1") == 0) {
 				::gpio_set_function(pin, GPIO_FUNC_XIP_CS1);
-			} else if (::strcasecmp(arg, "coresight-trace") == 0) {
+			} else if (::strcasecmp(value, "coresight-trace") == 0) {
 				::gpio_set_function(pin, GPIO_FUNC_CORESIGHT_TRACE);
-			} else if (::strcasecmp(arg, "uart-aux") == 0) {
+			} else if (::strcasecmp(value, "uart-aux") == 0) {
 				::gpio_set_function(pin, GPIO_FUNC_UART_AUX);
 #endif
 			} else {
-				terr.Printf("unknown function: %s\n", arg);
+				terr.Printf("unknown function: %s\n", value);
 				return false;
 			}
-		} else if (::strcasecmp(cmd, "drive") == 0 || ::strcasecmp(cmd, "drive-strength") == 0) {
-			if (argc < 2) {
-				terr.Printf("requires a drive strength argument\n");
+		} else if (Shell::Arg::GetAssigned(cmd, "drive", &value) || Shell::Arg::GetAssigned(cmd, "drive-strength", &value)) {
+			if (!value) {
+				terr.Printf("specify a drive strength: %s\n", strAvailableDrive);
 				return false;
 			}
-			const char* arg = argv[1];
-			if (::strcasecmp(arg, "2ma") == 0) {
+			if (::strcasecmp(value, "2ma") == 0) {
 				::gpio_set_drive_strength(pin, GPIO_DRIVE_STRENGTH_2MA);
-			} else if (::strcasecmp(arg, "4ma") == 0) {
+			} else if (::strcasecmp(value, "4ma") == 0) {
 				::gpio_set_drive_strength(pin, GPIO_DRIVE_STRENGTH_4MA);
-			} else if (::strcasecmp(arg, "8ma") == 0) {
+			} else if (::strcasecmp(value, "8ma") == 0) {
 				::gpio_set_drive_strength(pin, GPIO_DRIVE_STRENGTH_8MA);
-			} else if (::strcasecmp(arg, "12ma") == 0) {
+			} else if (::strcasecmp(value, "12ma") == 0) {
 				::gpio_set_drive_strength(pin, GPIO_DRIVE_STRENGTH_12MA);
 			} else {
-				terr.Printf("unknown drive strength: %s\n", arg);
+				terr.Printf("unknown drive strength: %s\n", value);
 				return false;
 			}
-		} else if (::strcasecmp(cmd, "slew") == 0 || ::strcasecmp(cmd, "slew-rate") == 0) {
-			if (argc < 2) {
-				terr.Printf("requires a slew rate argument\n");
+		} else if (Shell::Arg::GetAssigned(cmd, "slew", &value) || Shell::Arg::GetAssigned(cmd, "slew-rate", &value)) {
+			if (!value) {
+				terr.Printf("specifiy a slew rate: %s\n", strAvailableSlew);
 				return false;
 			}
-			const char* arg = argv[1];
-			if (::strcasecmp(arg, "slow") == 0) {
+			if (::strcasecmp(value, "slow") == 0) {
 				::gpio_set_slew_rate(pin, GPIO_SLEW_RATE_SLOW);
-			} else if (::strcasecmp(arg, "fast") == 0) {
+			} else if (::strcasecmp(value, "fast") == 0) {
 				::gpio_set_slew_rate(pin, GPIO_SLEW_RATE_FAST);
 			} else {
-				terr.Printf("unknown slew rate: %s\n", arg);
+				terr.Printf("unknown slew rate: %s\n", value);
 				return false;
 			}
 		} else if (::strcasecmp(cmd, "pullup") == 0 || ::strcasecmp(cmd, "pull-up") == 0) {

@@ -19,6 +19,7 @@ class GPIO_ADC;
 //------------------------------------------------------------------------------
 class GPIO {
 public:
+	static const int NumPins = 30;
 	static const uint32_t LogicPos	= (0 << 0);
 	static const uint32_t LogicNeg	= (1 << 0);
 public:
