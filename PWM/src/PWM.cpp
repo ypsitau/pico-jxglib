@@ -9,13 +9,6 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // PWM
 //------------------------------------------------------------------------------
-const PWM& PWM::set_duty(float duty) const
-{
-	duty = (duty < 0.0f)? 0.0f : (duty > 1.0f)? 1.0f : duty;
-	set_chan_level(static_cast<uint16_t>(duty * get_wrap()));
-	return *this;
-}
-
 const PWM& PWM::set_freq(uint32_t freq) const
 {
 	float clkdiv;
@@ -24,6 +17,50 @@ const PWM& PWM::set_freq(uint32_t freq) const
 	set_clkdiv(clkdiv);
 	set_wrap(wrap);
 	return *this;
+}
+
+uint32_t PWM::get_freq() const
+{
+	uint slice_num = GetSliceNum();
+	
+	// Read clock divider from hardware register
+	uint32_t div_reg = pwm_hw->slice[slice_num].div;
+	uint8_t div_int = (div_reg & PWM_CH0_DIV_INT_BITS) >> PWM_CH0_DIV_INT_LSB;
+	uint8_t div_frac = (div_reg & PWM_CH0_DIV_FRAC_BITS) >> PWM_CH0_DIV_FRAC_LSB;
+	
+	// Read wrap value from hardware register
+	uint16_t wrap = get_wrap();
+	
+	// Calculate frequency using the CalcFreq helper function
+	return CalcFreq(div_int, div_frac, wrap);
+}
+
+const PWM& PWM::set_duty(float duty) const
+{
+	duty = (duty < 0.0f)? 0.0f : (duty > 1.0f)? 1.0f : duty;
+	set_chan_level(static_cast<uint16_t>(duty * get_wrap()));
+	return *this;
+}
+
+float PWM::get_duty() const
+{
+	// Get current wrap and level values
+	uint16_t wrap = get_wrap();
+	if (wrap == 0) return 0.0f;
+	
+	// Get current channel level
+	uint slice_num = GetSliceNum();
+	uint channel = GetChannel();
+	
+	uint16_t level;
+	if (channel == PWM_CHAN_A) {
+		level = (pwm_hw->slice[slice_num].cc & PWM_CH0_CC_A_BITS) >> PWM_CH0_CC_A_LSB;
+	} else {
+		level = (pwm_hw->slice[slice_num].cc & PWM_CH0_CC_B_BITS) >> PWM_CH0_CC_B_LSB;
+	}
+	
+	// Calculate duty ratio
+	return static_cast<float>(level) / static_cast<float>(wrap);
 }
 
 void PWM::CalcClkdivAndWrap(uint32_t freq, float* pClkdiv, uint16_t* pWrap)

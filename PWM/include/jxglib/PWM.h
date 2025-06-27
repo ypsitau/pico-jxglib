@@ -55,14 +55,16 @@ public:
 	bool IsChannelB() const { return GetChannel() == PWM_CHAN_B; }
 public:
 	const PWM& set_freq(uint32_t freq) const;
+	uint32_t get_freq() const;
 	const PWM& set_duty(float duty) const;
+	float get_duty() const;
 public:
 	const PWM& init(pwm_config *c, bool start) const { ::pwm_init(GetSliceNum(), c, start); return *this; }
 	const PWM& init(Config& c, bool start) const { ::pwm_init(GetSliceNum(), c.GetEntityPtr(), start); return *this; }
 	static Config get_default_config() { return Config(::pwm_get_default_config()); }
 public:
 	const PWM& set_phase_correct(bool phase_correct) const { ::pwm_set_phase_correct(GetSliceNum(), phase_correct); return *this; }
-	const PWM& set_clkdiv(float divider) const { ::pwm_set_clkdiv(GetSliceNum(), divider); return *this; }
+	const PWM& set_clkdiv(float div) const { ::pwm_set_clkdiv(GetSliceNum(), div); return *this; }
 	const PWM& set_clkdiv_int_frac(uint8_t div_int, uint8_t div_frac) const { ::pwm_set_clkdiv_int_frac(GetSliceNum(), div_int, div_frac); return *this; }
 	const PWM& set_clkdiv_mode(enum pwm_clkdiv_mode mode) const { ::pwm_set_clkdiv_mode(GetSliceNum(), mode); return *this; }
 	const PWM& set_output_polarity(bool inv_a, bool inv_b) const { ::pwm_set_output_polarity(GetSliceNum(), inv_a, inv_b); return *this; }
