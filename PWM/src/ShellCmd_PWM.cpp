@@ -150,9 +150,9 @@ bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv
 				terr.Printf("invalid frequency value: %s\n", value);
 				return false;
 			}
-			float duty = pwm.get_duty();
+			float duty = pwm.get_chan_duty();
 			pwm.set_freq(freq);
-			pwm.set_duty(duty);
+			pwm.set_chan_duty(duty);
 		} else if (Shell::Arg::GetAssigned(cmd, "wrap", &value)) {
 			if (!value) {
 				terr.Printf("specify a wrap value (0-65535)\n");
@@ -185,7 +185,7 @@ bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv
 				terr.Printf("duty ratio out of range (0.0-1.0): %s\n", value);
 				return false;
 			}
-			pwm.set_duty(duty_val);
+			pwm.set_chan_duty(duty_val);
 		} else if (Shell::Arg::GetAssigned(cmd, "clkdiv", &value) || Shell::Arg::GetAssigned(cmd, "divider", &value)) {
 			if (!value) {
 				terr.Printf("specify a clock divider (1.0-256.0)\n");
@@ -221,7 +221,7 @@ void PrintPwmStatus(Printable& tout, uint pin)
 		tout.Printf("GPIO%-2u PWM%u %c %-8s freq=%uHz (clkdiv=%.1f wrap=0x%04x) duty=%.3f (level=0x%04x) counter=0x%04x\n",
 			pin, pwm.GetSliceNum(), pwm.IsChannelA()? 'A' : 'B',
 			pwm.is_enabled() ? "enabled" : "disabled",
-			pwm.get_freq(), pwm.get_clkdiv(), pwm.get_wrap(), pwm.get_duty(), pwm.get_chan_level(), pwm.get_counter());
+			pwm.get_freq(), pwm.get_clkdiv(), pwm.get_wrap(), pwm.get_chan_duty(), pwm.get_chan_level(), pwm.get_counter());
 	} else {
 		tout.Printf("GPIO%-2u %s\n", pin, GPIOInfo::GetFuncName(::gpio_get_function(pin), pin, "----"));
 	}

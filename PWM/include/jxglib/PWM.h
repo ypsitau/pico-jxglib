@@ -56,8 +56,8 @@ public:
 public:
 	const PWM& set_freq(uint32_t freq) const;
 	uint32_t get_freq() const { return CalcFreq(get_clkdiv(), get_wrap()); }
-	const PWM& set_duty(float duty) const;
-	float get_duty() const;
+	const PWM& set_chan_duty(float duty) const;
+	float get_chan_duty() const { return get_chan_duty(GetSliceNum(), GetChannel()); }
 public:
 	const PWM& init(pwm_config *c, bool start) const { ::pwm_init(GetSliceNum(), c, start); return *this; }
 	const PWM& init(Config& c, bool start) const { ::pwm_init(GetSliceNum(), c.GetEntityPtr(), start); return *this; }
@@ -75,7 +75,7 @@ public:
 public:
 	const PWM& set_both_levels(uint16_t level_a, uint16_t level_b) const { ::pwm_set_both_levels(GetSliceNum(), level_a, level_b); return *this; }
 	uint16_t get_chan_level() const { return get_chan_level(GetSliceNum(), GetChannel()); }
-	const PWM& set_chan_level(uint16_t level) const { ::pwm_set_gpio_level(pin_, level); return *this; }
+	const PWM& set_chan_level(uint16_t level) const { ::pwm_set_chan_level(GetSliceNum(), GetChannel(), level); return *this; }
 	uint16_t get_counter() const { return ::pwm_get_counter(GetSliceNum()); }
 	const PWM& set_counter(uint16_t c) const { ::pwm_set_counter(GetSliceNum(), c); return *this; }
 	const PWM& advance_count() const { ::pwm_advance_count(GetSliceNum()); return *this; }
@@ -104,9 +104,10 @@ public:
 	static uint32_t CalcFreq(uint8_t div_int, uint8_t div_frac, uint16_t wrap);
 	static float get_clkdiv(uint slice_num);
 	static uint16_t get_wrap(uint slice_num);
+	static uint16_t get_chan_level(uint slice_num, uint channel);
+	static float get_chan_duty(uint slice_num, uint channel);
 	static void set_chan_output_polarity(uint slice_num, uint chan, bool inv);
 	static bool is_enabled(uint slice_num);
-	static uint16_t get_chan_level(uint slice_num, uint channel);
 };
 
 }

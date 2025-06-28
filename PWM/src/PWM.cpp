@@ -19,32 +19,11 @@ const PWM& PWM::set_freq(uint32_t freq) const
 	return *this;
 }
 
-const PWM& PWM::set_duty(float duty) const
+const PWM& PWM::set_chan_duty(float duty) const
 {
 	duty = (duty < 0.0f)? 0.0f : (duty > 1.0f)? 1.0f : duty;
 	set_chan_level(static_cast<uint16_t>(duty * get_wrap()));
 	return *this;
-}
-
-float PWM::get_duty() const
-{
-	// Get current wrap and level values
-	uint16_t wrap = get_wrap();
-	if (wrap == 0) return 0.0f;
-	
-	// Get current channel level
-	uint slice_num = GetSliceNum();
-	uint channel = GetChannel();
-	
-	uint16_t level;
-	if (channel == PWM_CHAN_A) {
-		level = (pwm_hw->slice[slice_num].cc & PWM_CH0_CC_A_BITS) >> PWM_CH0_CC_A_LSB;
-	} else {
-		level = (pwm_hw->slice[slice_num].cc & PWM_CH0_CC_B_BITS) >> PWM_CH0_CC_B_LSB;
-	}
-	
-	// Calculate duty ratio
-	return static_cast<float>(level) / static_cast<float>(wrap);
 }
 
 void PWM::CalcClkdivAndWrap(uint32_t freq, float* pClkdiv, uint16_t* pWrap)
@@ -144,6 +123,20 @@ uint16_t PWM::get_wrap(uint slice_num)
 	return static_cast<uint16_t>(pwm_hw->slice[slice_num].top);
 }
 
+uint16_t PWM::get_chan_level(uint slice_num, uint channel)
+{
+	return (channel == PWM_CHAN_A)?
+		((pwm_hw->slice[slice_num].cc & PWM_CH0_CC_A_BITS) >> PWM_CH0_CC_A_LSB) :
+		((pwm_hw->slice[slice_num].cc & PWM_CH0_CC_B_BITS) >> PWM_CH0_CC_B_LSB);
+}
+
+float PWM::get_chan_duty(uint slice_num, uint channel)
+{
+	uint16_t wrap = get_wrap(slice_num);
+	uint16_t level = get_chan_level(slice_num, channel);
+	return (wrap == 0)? 0.0f : static_cast<float>(level) / static_cast<float>(wrap);
+}
+
 void PWM::set_chan_output_polarity(uint slice_num, uint chan, bool inv)
 {
 	check_slice_num_param(slice_num);
@@ -158,13 +151,6 @@ bool PWM::is_enabled(uint slice_num)
 {
 	check_slice_num_param(slice_num);
 	return (pwm_hw->slice[slice_num].csr & PWM_CH0_CSR_EN_BITS) != 0;
-}
-
-uint16_t PWM::get_chan_level(uint slice_num, uint channel)
-{
-	return (channel == PWM_CHAN_A)?
-		((pwm_hw->slice[slice_num].cc & PWM_CH0_CC_A_BITS) >> PWM_CH0_CC_A_LSB) :
-		((pwm_hw->slice[slice_num].cc & PWM_CH0_CC_B_BITS) >> PWM_CH0_CC_B_LSB);
 }
 
 }
