@@ -56,7 +56,7 @@ public:
 public:
 	const PWM& set_freq(uint32_t freq) const;
 	uint32_t get_freq() const { return CalcFreq(get_clkdiv(), get_wrap()); }
-	const PWM& set_chan_duty(float duty) const;
+	const PWM& set_chan_duty(float duty) const { set_chan_duty(GetSliceNum(), GetChannel(), duty); return *this; }
 	float get_chan_duty() const { return get_chan_duty(GetSliceNum(), GetChannel()); }
 public:
 	const PWM& init(pwm_config *c, bool start) const { ::pwm_init(GetSliceNum(), c, start); return *this; }
@@ -106,6 +106,7 @@ public:
 	static uint16_t get_wrap(uint slice_num);
 	static uint16_t get_chan_level(uint slice_num, uint channel);
 	static float get_chan_duty(uint slice_num, uint channel);
+	static void set_chan_duty(uint slice_num, uint channel, float duty);
 	static void set_chan_output_polarity(uint slice_num, uint chan, bool inv);
 	static bool is_enabled(uint slice_num);
 };

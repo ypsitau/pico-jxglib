@@ -150,9 +150,9 @@ bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv
 				terr.Printf("invalid frequency value: %s\n", value);
 				return false;
 			}
-			float duty = pwm.get_chan_duty();
+			//float duty = pwm.get_chan_duty();
 			pwm.set_freq(freq);
-			pwm.set_chan_duty(duty);
+			//pwm.set_chan_duty(duty);
 		} else if (Shell::Arg::GetAssigned(cmd, "wrap", &value)) {
 			if (!value) {
 				terr.Printf("specify a wrap value (0-65535)\n");

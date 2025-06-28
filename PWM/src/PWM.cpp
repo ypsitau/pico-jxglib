@@ -11,18 +11,15 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 const PWM& PWM::set_freq(uint32_t freq) const
 {
+	float dutyA = get_chan_duty(GetSliceNum(), PWM_CHAN_A);
+	float dutyB = get_chan_duty(GetSliceNum(), PWM_CHAN_B);
 	float clkdiv;
 	uint16_t wrap;
 	CalcClkdivAndWrap(freq, &clkdiv, &wrap);
 	set_clkdiv(clkdiv);
 	set_wrap(wrap);
-	return *this;
-}
-
-const PWM& PWM::set_chan_duty(float duty) const
-{
-	duty = (duty < 0.0f)? 0.0f : (duty > 1.0f)? 1.0f : duty;
-	set_chan_level(static_cast<uint16_t>(duty * get_wrap()));
+	set_chan_duty(GetSliceNum(), PWM_CHAN_A, dutyA);
+	set_chan_duty(GetSliceNum(), PWM_CHAN_B, dutyB);
 	return *this;
 }
 
@@ -135,6 +132,12 @@ float PWM::get_chan_duty(uint slice_num, uint channel)
 	uint16_t wrap = get_wrap(slice_num);
 	uint16_t level = get_chan_level(slice_num, channel);
 	return (wrap == 0)? 0.0f : static_cast<float>(level) / static_cast<float>(wrap);
+}
+
+void PWM::set_chan_duty(uint slice_num, uint channel, float duty)
+{
+	duty = (duty < 0.0f)? 0.0f : (duty > 1.0f)? 1.0f : duty;
+	::pwm_set_chan_level(slice_num, channel, static_cast<uint16_t>(duty * get_wrap(slice_num)));
 }
 
 void PWM::set_chan_output_polarity(uint slice_num, uint chan, bool inv)
