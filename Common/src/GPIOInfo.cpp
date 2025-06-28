@@ -2,6 +2,63 @@
 
 namespace jxglib::GPIOInfo {
 
+
+const char* GetHelp_AvailableFunc()
+{
+#if defined(PICO_RP2040)
+	return "spi, uart, i2c, pwm, sio, pio0, pio1, clock, usb, xip, null";
+#elif defined(PICO_RP2350)
+	return "spi, uart, uart-aux, i2c, pwm, sio, pio0, pio1, pio2, clock, usb, hstx, xip-cs1, coresight-trace, null";
+#else
+	return "(none)";
+#endif
+}
+
+
+gpio_function_t StringToFunc(const char* str, bool* pValidFlag)
+{
+	*pValidFlag = true;
+	if (::strcasecmp(str, "spi") == 0) {
+		return GPIO_FUNC_SPI;
+	} else if (::strcasecmp(str, "uart") == 0) {
+		return GPIO_FUNC_UART;
+	} else if (::strcasecmp(str, "i2c") == 0) {
+		return GPIO_FUNC_I2C;
+	} else if (::strcasecmp(str, "pwm") == 0) {
+		return GPIO_FUNC_PWM;
+	} else if (::strcasecmp(str, "sio") == 0) {
+		return GPIO_FUNC_SIO;
+	} else if (::strcasecmp(str, "pio0") == 0) {
+		return GPIO_FUNC_PIO0;
+	} else if (::strcasecmp(str, "pio1") == 0) {
+		return GPIO_FUNC_PIO1;
+	} else if (::strcasecmp(str, "clock") == 0) {
+		return GPIO_FUNC_GPCK;
+	} else if (::strcasecmp(str, "usb") == 0) {
+		return GPIO_FUNC_USB;
+	} else if (::strcasecmp(str, "null") == 0) {
+		return GPIO_FUNC_NULL;
+#if defined(PICO_RP2040)
+	} else if (::strcasecmp(str, "xip") == 0) {
+		return GPIO_FUNC_XIP;
+#elif defined(PICO_RP2350)
+	} else if (::strcasecmp(str, "hstx") == 0) {
+		return GPIO_FUNC_HSTX;
+	} else if (::strcasecmp(str, "pio2") == 0) {
+		return GPIO_FUNC_PIO2;
+	} else if (::strcasecmp(str, "xip-cs1") == 0) {
+		return GPIO_FUNC_XIP_CS1;
+	} else if (::strcasecmp(str, "coresight-trace") == 0) {
+		return GPIO_FUNC_CORESIGHT_TRACE;
+	} else if (::strcasecmp(str, "uart-aux") == 0) {
+		return GPIO_FUNC_UART_AUX;
+#endif
+	}
+	*pValidFlag = false;	
+	return GPIO_FUNC_NULL;
+}
+
+
 const char* GetFuncName(int pinFunc, const char* funcNameNull)
 {
 	if (pinFunc == GPIO_FUNC_NULL) return funcNameNull;

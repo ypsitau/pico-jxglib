@@ -74,6 +74,7 @@ public:
 	uint16_t get_wrap() const { return get_wrap(GetSliceNum()); }
 public:
 	const PWM& set_both_levels(uint16_t level_a, uint16_t level_b) const { ::pwm_set_both_levels(GetSliceNum(), level_a, level_b); return *this; }
+	uint16_t get_chan_level() const { return get_chan_level(GetSliceNum(), GetChannel()); }
 	const PWM& set_chan_level(uint16_t level) const { ::pwm_set_gpio_level(pin_, level); return *this; }
 	uint16_t get_counter() const { return ::pwm_get_counter(GetSliceNum()); }
 	const PWM& set_counter(uint16_t c) const { ::pwm_set_counter(GetSliceNum(), c); return *this; }
@@ -105,6 +106,7 @@ public:
 	static uint16_t get_wrap(uint slice_num);
 	static void set_chan_output_polarity(uint slice_num, uint chan, bool inv);
 	static bool is_enabled(uint slice_num);
+	static uint16_t get_chan_level(uint slice_num, uint channel);
 };
 
 }

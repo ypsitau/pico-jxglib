@@ -8,11 +8,6 @@ using namespace jxglib;
 static void PrintPinFunc(Printable& tout, uint pin);
 static bool ProcessGPIO(Printable& terr, Printable& tout, uint pin, int argc, char* argv[]);
 
-#if defined(PICO_RP2040)
-static const char* strAvailableFunction = "spi, uart, i2c, pwm, sio, pio0, pio1, clock, usb, xip, null";
-#elif defined(PICO_RP2350)
-static const char* strAvailableFunction = "spi, uart, uart-aux, i2c, pwm, sio, pio0, pio1, pio2, clock, usb, hstx, xip-cs1, coresight-trace, null";
-#endif
 static const char* strAvailableDrive = "2ma, 4ma, 8ma, 12ma, 16ma";
 static const char* strAvailableSlew = "slow, fast";
 
@@ -32,7 +27,7 @@ ShellCmd(gpio, "controls GPIO pins")
 		}
 		arg.PrintHelp(tout);
 		tout.Printf("Commands:\n");
-		tout.Printf("  func FUNCTION  set pin function (%s)\n", strAvailableFunction);
+		tout.Printf("  func=FUNCTION  set pin function (%s)\n", GPIOInfo::GetHelp_AvailableFunc());
 		tout.Printf("  drive=STRENGTH set pin drive strength (%s)\n", strAvailableDrive);
 		tout.Printf("  slew=SLEW      set slew rate (%s)\n", strAvailableSlew);
 		tout.Printf("  pull-up        enable pull-up resistor\n");
@@ -110,51 +105,19 @@ bool ProcessGPIO(Printable& terr, Printable& tout, uint pin, int argc, char* arg
 	for (int iArg = 0; iArg < argc; ++iArg) {
 		const char* cmd = argv[iArg];
 		const char* value = nullptr;
-		if (Shell::Arg::GetAssigned(cmd, "func", &value) || Shell::Arg::GetAssigned(cmd, "function", &value)) {
+		if (Shell::Arg::GetAssigned(cmd, "func", &value)) {
 			if (!value) {
-				terr.Printf("specify a function: %s\n", strAvailableFunction);
+				terr.Printf("specify a function: %s\n", GPIOInfo::GetHelp_AvailableFunc());
 				return false;
 			}
-			if (::strcasecmp(value, "spi") == 0) {
-				::gpio_set_function(pin, GPIO_FUNC_SPI);
-			} else if (::strcasecmp(value, "uart") == 0) {
-				::gpio_set_function(pin, GPIO_FUNC_UART);
-			} else if (::strcasecmp(value, "i2c") == 0) {
-				::gpio_set_function(pin, GPIO_FUNC_I2C);
-			} else if (::strcasecmp(value, "pwm") == 0) {
-				::gpio_set_function(pin, GPIO_FUNC_PWM);
-			} else if (::strcasecmp(value, "sio") == 0) {
-				::gpio_set_function(pin, GPIO_FUNC_SIO);
-			} else if (::strcasecmp(value, "pio0") == 0) {
-				::gpio_set_function(pin, GPIO_FUNC_PIO0);
-			} else if (::strcasecmp(value, "pio1") == 0) {
-				::gpio_set_function(pin, GPIO_FUNC_PIO1);
-			} else if (::strcasecmp(value, "clock") == 0) {
-				::gpio_set_function(pin, GPIO_FUNC_GPCK);
-			} else if (::strcasecmp(value, "usb") == 0) {
-				::gpio_set_function(pin, GPIO_FUNC_USB);
-			} else if (::strcasecmp(value, "null") == 0) {
-				::gpio_set_function(pin, GPIO_FUNC_NULL);
-#if defined(PICO_RP2040)
-			} else if (::strcasecmp(value, "xip") == 0) {
-				::gpio_set_function(pin, GPIO_FUNC_XIP);
-#elif defined(PICO_RP2350)
-			} else if (::strcasecmp(value, "hstx") == 0) {
-				::gpio_set_function(pin, GPIO_FUNC_HSTX);
-			} else if (::strcasecmp(value, "pio2") == 0) {
-				::gpio_set_function(pin, GPIO_FUNC_PIO2);
-			} else if (::strcasecmp(value, "xip-cs1") == 0) {
-				::gpio_set_function(pin, GPIO_FUNC_XIP_CS1);
-			} else if (::strcasecmp(value, "coresight-trace") == 0) {
-				::gpio_set_function(pin, GPIO_FUNC_CORESIGHT_TRACE);
-			} else if (::strcasecmp(value, "uart-aux") == 0) {
-				::gpio_set_function(pin, GPIO_FUNC_UART_AUX);
-#endif
-			} else {
+			bool validFlag = false;
+			gpio_function_t pinFunc = GPIOInfo::StringToFunc(value, &validFlag);
+			if (!validFlag) {
 				terr.Printf("unknown function: %s\n", value);
 				return false;
 			}
-		} else if (Shell::Arg::GetAssigned(cmd, "drive", &value) || Shell::Arg::GetAssigned(cmd, "drive-strength", &value)) {
+			::gpio_set_function(pin, pinFunc);
+		} else if (Shell::Arg::GetAssigned(cmd, "drive", &value)) {
 			if (!value) {
 				terr.Printf("specify a drive strength: %s\n", strAvailableDrive);
 				return false;
@@ -171,7 +134,7 @@ bool ProcessGPIO(Printable& terr, Printable& tout, uint pin, int argc, char* arg
 				terr.Printf("unknown drive strength: %s\n", value);
 				return false;
 			}
-		} else if (Shell::Arg::GetAssigned(cmd, "slew", &value) || Shell::Arg::GetAssigned(cmd, "slew-rate", &value)) {
+		} else if (Shell::Arg::GetAssigned(cmd, "slew", &value)) {
 			if (!value) {
 				terr.Printf("specifiy a slew rate: %s\n", strAvailableSlew);
 				return false;

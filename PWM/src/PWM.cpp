@@ -160,4 +160,11 @@ bool PWM::is_enabled(uint slice_num)
 	return (pwm_hw->slice[slice_num].csr & PWM_CH0_CSR_EN_BITS) != 0;
 }
 
+uint16_t PWM::get_chan_level(uint slice_num, uint channel)
+{
+	return (channel == PWM_CHAN_A)?
+		((pwm_hw->slice[slice_num].cc & PWM_CH0_CC_A_BITS) >> PWM_CH0_CC_A_LSB) :
+		((pwm_hw->slice[slice_num].cc & PWM_CH0_CC_B_BITS) >> PWM_CH0_CC_B_LSB);
+}
+
 }

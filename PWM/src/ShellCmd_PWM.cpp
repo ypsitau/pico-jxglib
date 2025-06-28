@@ -7,23 +7,25 @@
 #include "jxglib/Shell.h"
 #include "jxglib/PWM.h"
 #include "jxglib/GPIO.h"
+#include "jxglib/GPIOInfo.h"
 
 using namespace jxglib;
 
 static void PrintPwmStatus(Printable& tout, uint pin);
 static bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv[]);
-static bool IsPWMFunction(uint pin) { return ::gpio_get_function(pin) == GPIO_FUNC_PWM; }
 
-static const char* strAvailableCommands = "init, freq, wrap, level, duty, clkdiv, enable, disable, counter";
+static const char* strAvailableCommands = "set, freq, wrap, level, duty, clkdiv, enable, disable, counter";
 
 ShellCmd(pwm, "controls PWM pins")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help", 'h', "prints this help"),
+		Arg::OptBool("help",	'h', "prints this help"),
+		Arg::OptBool("onlypwm",	'n', "only show PWM-capable pins"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	bool genericFlag = (::strcmp(GetName(), "pwm") == 0);
+	bool onlyPWMFlag = arg.GetBool("onlypwm");
 	if (arg.GetBool("help")) {
 		if (genericFlag) {
 			tout.Printf("Usage: %s [OPTION]... [PIN [COMMAND]...]\n", GetName());
@@ -32,7 +34,7 @@ ShellCmd(pwm, "controls PWM pins")
 		}
 		arg.PrintHelp(tout);
 		tout.Printf("Commands:\n");
-		tout.Printf("  set-func          set GPIO function to PWM\n");
+		tout.Printf("  func=FUNCTION     set pin function (%s)\n", GPIOInfo::GetHelp_AvailableFunc());
 		tout.Printf("  freq=FREQUENCY    set PWM frequency in Hz\n");
 		tout.Printf("  wrap=VALUE        set PWM wrap value (0-65535)\n");
 		tout.Printf("  level=VALUE       set PWM level (0-65535)\n");
@@ -45,10 +47,8 @@ ShellCmd(pwm, "controls PWM pins")
 	}
 	if (genericFlag) {
 		if (argc < 2) {
-			// Show all PWM-capable pins
 			for (uint pin = 0; pin < GPIO::NumPins; ++pin) {
-				// Check if pin can be used for PWM
-				if (pwm_gpio_to_slice_num(pin) < NUM_PWM_SLICES) {
+				if (!onlyPWMFlag || ::gpio_get_function(pin) == GPIO_FUNC_PWM) {
 					PrintPwmStatus(tout, pin);
 				}
 			}
@@ -128,8 +128,18 @@ bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv
 		const char* cmd = argv[iArg];
 		const char* value = nullptr;
 		
-		if (::strcasecmp(cmd, "set-func") == 0 || ::strcasecmp(cmd, "set-function") == 0) {
-			GPIO(pin).set_function_PWM();
+		if (Shell::Arg::GetAssigned(cmd, "func", &value)) {
+			if (!value) {
+				terr.Printf("specify a function: %s\n", GPIOInfo::GetHelp_AvailableFunc());
+				return false;
+			}
+			bool validFlag = false;
+			gpio_function_t pinFunc = GPIOInfo::StringToFunc(value, &validFlag);
+			if (!validFlag) {
+				terr.Printf("unknown function: %s\n", value);
+				return false;
+			}
+			::gpio_set_function(pin, pinFunc);
 		} else if (Shell::Arg::GetAssigned(cmd, "freq", &value) || Shell::Arg::GetAssigned(cmd, "frequency", &value)) {
 			if (!value) {
 				terr.Printf("specify a frequency value in Hz (8-1000000)\n");
@@ -205,19 +215,14 @@ bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv
 
 void PrintPwmStatus(Printable& tout, uint pin)
 {
-	if (!IsPWMFunction(pin)) {
-		tout.Printf("GPIO%-2u ----\n", pin);
-		return;
+	gpio_function_t pinFunc = ::gpio_get_function(pin);
+	if (pinFunc == GPIO_FUNC_PWM) {
+		PWM pwm(pin);
+		tout.Printf("GPIO%-2u PWM%u %c %-8s freq=%uHz (clkdiv=%.1f wrap=0x%04x) duty=%.3f (level=0x%04x) counter=0x%04x\n",
+			pin, pwm.GetSliceNum(), pwm.IsChannelA()? 'A' : 'B',
+			pwm.is_enabled() ? "enabled" : "disabled",
+			pwm.get_freq(), pwm.get_clkdiv(), pwm.get_wrap(), pwm.get_duty(), pwm.get_chan_level(), pwm.get_counter());
+	} else {
+		tout.Printf("GPIO%-2u %s\n", pin, GPIOInfo::GetFuncName(::gpio_get_function(pin), pin, "----"));
 	}
-	PWM pwm(pin);
-	uint32_t freq = pwm.get_freq();
-	float duty = pwm.get_duty();
-	float clkdiv = pwm.get_clkdiv();
-	uint16_t wrap = pwm.get_wrap();
-	uint16_t counter = pwm.get_counter();
-	uint slice_num = pwm.GetSliceNum();
-	bool is_channel_a = pwm.IsChannelA();
-	tout.Printf("GPIO%-2u [%u%c] %-8s freq=%uHz (clkdiv=%.1f wrap=%u) duty=%.3f counter=%u\n",
-		pin, slice_num, is_channel_a ? 'A' : 'B',
-		pwm.is_enabled() ? "enabled" : "disabled", freq, clkdiv, wrap, duty, counter);
 }

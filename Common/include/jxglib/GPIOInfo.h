@@ -8,6 +8,8 @@
 
 namespace jxglib::GPIOInfo {
 
+const char* GetHelp_AvailableFunc();
+gpio_function_t StringToFunc(const char* str, bool* pValidFlag);
 const char* GetFuncName(int pinFunc, const char* funcNameNull = "NULL");
 const char* GetFuncName(int pinFunc, uint pin, const char* funcNameNull = "NULL");
 
