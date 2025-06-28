@@ -32,6 +32,18 @@ target_sources(jxglib_Common INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/WrappedPointer.cpp)
 
 #------------------------------------------------------------------------------
+add_library(jxglib_GPIOInfo INTERFACE)
+
+target_include_directories(jxglib_GPIOInfo INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/include)
+
+target_link_libraries(jxglib_GPIOInfo INTERFACE
+	jxglib_Common)
+
+target_sources(jxglib_GPIOInfo INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/src/GPIOInfo.cpp)
+
+#------------------------------------------------------------------------------
 add_library(jxglib_KeyboardTest INTERFACE)
 
 target_include_directories(jxglib_KeyboardTest INTERFACE
@@ -50,7 +62,7 @@ target_include_directories(jxglib_BinaryInfo INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/include)
 
 target_link_libraries(jxglib_BinaryInfo INTERFACE
-	jxglib_Common)
+	jxglib_GPIOInfo)
 
 target_sources(jxglib_BinaryInfo INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/BinaryInfo.cpp)
