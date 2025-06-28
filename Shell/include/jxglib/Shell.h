@@ -112,7 +112,7 @@ public:
 			bool Next(int* pValue);
 			bool IsSuccess() const { return errorMsg_[0] == '\0'; }
 			const char* GetErrorMsg() const { return errorMsg_; }
-			bool CheckValidity();
+			bool CheckValidity(int* pCount = nullptr);
 		};
 		class EachGlob : public EachBase {
 		private:

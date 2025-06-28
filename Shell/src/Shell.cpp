@@ -597,12 +597,14 @@ bool Shell::Arg::EachNum::EachNum::Next(int* pValue)
 	}
 }
 
-bool Shell::Arg::EachNum::CheckValidity()
+bool Shell::Arg::EachNum::CheckValidity(int* pCount)
 {
 	argvCur_ = argvBegin_;
 	int value;
-	while (Next(&value)) ;
+	int count = 0;
+	while (Next(&value)) count++;
 	bool rtn = IsSuccess();
+	if (pCount) *pCount = count;
 	argvCur_ = argvBegin_;
 	return rtn;
 }

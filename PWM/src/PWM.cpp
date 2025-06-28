@@ -15,7 +15,7 @@ const PWM& PWM::set_freq(uint32_t freq) const
 	float dutyB = get_chan_duty(GetSliceNum(), PWM_CHAN_B);
 	float clkdiv;
 	uint16_t wrap;
-	CalcClkdivAndWrap(freq, &clkdiv, &wrap);
+	CalcClkdivAndWrap(get_phase_correct(), freq, &clkdiv, &wrap);
 	set_clkdiv(clkdiv);
 	set_wrap(wrap);
 	set_chan_duty(GetSliceNum(), PWM_CHAN_A, dutyA);
@@ -23,7 +23,7 @@ const PWM& PWM::set_freq(uint32_t freq) const
 	return *this;
 }
 
-void PWM::CalcClkdivAndWrap(uint32_t freq, float* pClkdiv, uint16_t* pWrap)
+void PWM::CalcClkdivAndWrap(bool phaseCorrect, uint32_t freq, float* pClkdiv, uint16_t* pWrap)
 {
 	// Get system clock frequency from Pico SDK
 	const uint32_t clk_sys_freq = clock_get_hz(clk_sys);
@@ -31,14 +31,15 @@ void PWM::CalcClkdivAndWrap(uint32_t freq, float* pClkdiv, uint16_t* pWrap)
 	*pClkdiv = 1.0f;
 	*pWrap = 65535;
 	
+	uint32_t freqAdj = phaseCorrect? freq * 2 : freq;
 	// Do nothing if target frequency is 0
-	if (freq == 0) return;
+	if (freqAdj == 0) return;
 	
 	// Find optimal combination of wrap and clkdiv
-	// PWM frequency: freq = clk_sys / (clkdiv * (wrap + 1))
-	// Target: clkdiv * (wrap + 1) = clk_sys / freq
+	// PWM frequency: freqAdj = clk_sys / (clkdiv * (wrap + 1))
+	// Target: clkdiv * (wrap + 1) = clk_sys / freqAdj
 	
-	uint32_t target_divisor = clk_sys_freq / freq;
+	uint32_t target_divisor = clk_sys_freq / freqAdj;
 	float best_clkdiv = 1.0f;
 	uint16_t best_wrap = 65535;
 	uint32_t best_error = UINT32_MAX;
@@ -55,7 +56,7 @@ void PWM::CalcClkdivAndWrap(uint32_t freq, float* pClkdiv, uint16_t* pWrap)
 		uint32_t actual_freq = clk_sys_freq / actual_divisor;
 		
 		// Calculate error (absolute difference)
-		uint32_t error = (actual_freq > freq) ? (actual_freq - freq) : (freq - actual_freq);
+		uint32_t error = (actual_freq > freqAdj) ? (actual_freq - freqAdj) : (freqAdj - actual_freq);
 		
 		if (error < best_error) {
 			best_error = error;
@@ -75,7 +76,7 @@ void PWM::CalcClkdivAndWrap(uint32_t freq, float* pClkdiv, uint16_t* pWrap)
 			uint16_t wrap = static_cast<uint16_t>(wrap_plus_1 - 1);
 			uint32_t actual_freq = static_cast<uint32_t>(clk_sys_freq / (clkdiv_frac * (wrap + 1)));
 			
-			uint32_t error = (actual_freq > freq) ? (actual_freq - freq) : (freq - actual_freq);
+			uint32_t error = (actual_freq > freqAdj) ? (actual_freq - freqAdj) : (freqAdj - actual_freq);
 			
 			if (error < best_error) {
 				best_error = error;
@@ -90,19 +91,31 @@ void PWM::CalcClkdivAndWrap(uint32_t freq, float* pClkdiv, uint16_t* pWrap)
 	*pWrap = best_wrap;
 }
 
-uint32_t PWM::CalcFreq(float clkdiv, uint16_t wrap)
+uint32_t PWM::CalcFreq(bool phaseCorrect, float clkdiv, uint16_t wrap)
 {
 	// Get system clock frequency from Pico SDK
 	const uint32_t clk_sys_freq = clock_get_hz(clk_sys);
 	if (clkdiv < 1.0f || clkdiv >= 256.0f || wrap == 0) return 0;
-	return clk_sys_freq / (static_cast<uint32_t>(clkdiv * (wrap + 1)));
+	uint32_t freq = clk_sys_freq / (static_cast<uint32_t>(clkdiv * (wrap + 1)));
+	return phaseCorrect? freq / 2 : freq;
 }
 
-uint32_t PWM::CalcFreq(uint8_t div_int, uint8_t div_frac, uint16_t wrap)
+uint32_t PWM::CalcFreq(bool phaseCorrect, uint8_t div_int, uint8_t div_frac, uint16_t wrap)
 {
 	if (div_int < 1 || div_int > 256 || div_frac >= 16 || wrap == 0) return 0;
 	float clkdiv = static_cast<float>(div_int) + static_cast<float>(div_frac) / 16.0f;
-	return CalcFreq(clkdiv, wrap);
+	return CalcFreq(phaseCorrect, clkdiv, wrap);
+}
+
+uint32_t PWM::get_mask_enabled()
+{
+	return pwm_hw->en;
+}
+
+bool PWM::get_phase_correct(uint slice_num)
+{
+	check_slice_num_param(slice_num);
+	return (pwm_hw->slice[slice_num].csr & PWM_CH0_CSR_PH_CORRECT_BITS) != 0;
 }
 
 float PWM::get_clkdiv(uint slice_num)
@@ -154,6 +167,24 @@ bool PWM::is_enabled(uint slice_num)
 {
 	check_slice_num_param(slice_num);
 	return (pwm_hw->slice[slice_num].csr & PWM_CH0_CSR_EN_BITS) != 0;
+}
+
+//------------------------------------------------------------------------------
+// PWM::Config
+//------------------------------------------------------------------------------
+bool PWM::Config::get_phase_correct() const
+{
+	return (config_.csr & PWM_CH0_CSR_PH_CORRECT_BITS) != 0;
+}
+
+PWM::Config& PWM::Config::set_freq(uint32_t freq)
+{
+	float clkdiv;
+	uint16_t wrap;
+	PWM::CalcClkdivAndWrap(get_phase_correct(), freq, &clkdiv, &wrap);
+	::pwm_config_set_clkdiv(&config_, clkdiv);
+	::pwm_config_set_wrap(&config_, wrap);
+	return *this;
 }
 
 }
