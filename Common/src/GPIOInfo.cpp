@@ -38,6 +38,9 @@ gpio_function_t StringToFunc(const char* str, bool* pValidFlag)
 		return GPIO_FUNC_USB;
 	} else if (::strcasecmp(str, "null") == 0) {
 		return GPIO_FUNC_NULL;
+	} else if (*str == '\0' || ::strcasecmp(str, "-") == 0 || ::strcasecmp(str, "--") == 0 ||
+			::strcasecmp(str, "---") == 0 || ::strcasecmp(str, "----") == 0) {
+		return GPIO_FUNC_NULL;
 #if defined(PICO_RP2040)
 	} else if (::strcasecmp(str, "xip") == 0) {
 		return GPIO_FUNC_XIP;
