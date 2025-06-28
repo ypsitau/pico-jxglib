@@ -87,6 +87,7 @@ target_include_directories(jxglib_ShellCmd_GPIO INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/include)
 
 target_link_libraries(jxglib_ShellCmd_GPIO INTERFACE
+	jxglib_GPIOInfo
 	jxglib_ShellCmd_Basic)
 
 target_sources(jxglib_ShellCmd_GPIO INTERFACE
