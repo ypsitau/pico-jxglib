@@ -14,7 +14,7 @@ using namespace jxglib;
 static void PrintPWMStatus(Printable& tout, uint pin, bool onlyPWMFlag);
 static bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv[], bool hasEnableProcessed);
 
-static const char* strAvailableCommands = "func, enable, disable, freq, wrap, level, duty, clkdiv, phase-correct, counter";
+static const char* strAvailableCommands = "func, enable, disable, freq, wrap, level, duty, clkdiv, phase-correct, invert, counter";
 
 ShellCmd(pwm, "controls PWM pins")
 {
@@ -43,6 +43,7 @@ ShellCmd(pwm, "controls PWM pins")
 		tout.Printf("  wrap=VALUE         set PWM wrap value (0-65535)\n");
 		tout.Printf("  level=VALUE        set PWM level (0-65535)\n");
 		tout.Printf("  phase-correct=BOOL enable/disable phase-correct (1 or 0)\n");
+		tout.Printf("  invert=BOOL        enable/disable inverted output (1 or 0)\n");
 		tout.Printf("  counter=VALUE      set PWM counter value (0-65535)\n");
 		return 0;
 	}
@@ -236,6 +237,21 @@ bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv
 			uint32_t freq = pwm.get_freq();
 			pwm.set_phase_correct(phaseCorrect);
 			pwm.set_freq(freq); // Recalculate frequency after changing phase-correct
+		} else if (Shell::Arg::GetAssigned(cmd, "invert", &value)) {
+			if (!value) {
+				terr.Printf("specify a boolean (1 or 0)\n");
+				return false;
+			}
+			bool inv;
+			if (::strcasecmp(value, "1") == 0 || ::strcasecmp(value, "true") == 0) {
+				inv = true;
+			} else if (::strcasecmp(value, "0") == 0 || ::strcasecmp(value, "false") == 0) {
+				inv = false;
+			} else {
+				terr.Printf("invalid value for phase-correct: %s (use 1 or 0)\n", value);
+				return false;
+			}
+			pwm.set_chan_output_polarity(inv);
 		} else if (::strcasecmp(cmd, "counter") == 0) {
 			if (!value) {
 				terr.Printf("specify a counter value (0-65535)\n");
@@ -262,10 +278,12 @@ void PrintPWMStatus(Printable& tout, uint pin, bool onlyPWMFlag)
 	const char* funcName = GPIOInfo::GetFuncName(::gpio_get_function(pin), pin, "----");
 	if (pinFunc == GPIO_FUNC_PWM) {
 		PWM pwm(pin);
-		tout.Printf("GPIO%-2u %s %-8s freq=%uHz (clkdiv=%.1f wrap=0x%04x) duty=%.3f (level=0x%04x)%s counter=0x%04x\n",
+		tout.Printf("GPIO%-2u %s %-8s freq=%uHz (clkdiv=%.1f wrap=0x%04x) duty=%.3f (level=0x%04x)%s%s counter=0x%04x\n",
 			pin, funcName, pwm.is_enabled()? "enabled" : "disabled",
 			pwm.get_freq(), pwm.get_clkdiv(), pwm.get_wrap(), pwm.get_chan_duty(), pwm.get_chan_level(),
-			pwm.get_phase_correct()? " phase-correct" : "", pwm.get_counter());
+			pwm.get_phase_correct()? " phase-correct" : "",
+			pwm.get_chan_output_polarity() ? " inverted" : "",
+			pwm.get_counter());
 	} else if (!onlyPWMFlag) {
 		tout.Printf("GPIO%-2u %s\n", pin, funcName);
 	}

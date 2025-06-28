@@ -153,6 +153,11 @@ void PWM::set_chan_duty(uint slice_num, uint channel, float duty)
 	::pwm_set_chan_level(slice_num, channel, static_cast<uint16_t>(duty * get_wrap(slice_num)));
 }
 
+bool PWM::get_chan_output_polarity(uint slice_num, uint chan)
+{
+	return (pwm_hw->slice[slice_num].csr & (chan == PWM_CHAN_A? PWM_CH0_CSR_A_INV_BITS : PWM_CH0_CSR_B_INV_BITS)) != 0;
+}
+
 void PWM::set_chan_output_polarity(uint slice_num, uint chan, bool inv)
 {
 	check_slice_num_param(slice_num);
@@ -185,6 +190,13 @@ PWM::Config& PWM::Config::set_freq(uint32_t freq)
 	::pwm_config_set_clkdiv(&config_, clkdiv);
 	::pwm_config_set_wrap(&config_, wrap);
 	return *this;
+}
+
+void PWM::Config::set_chan_output_polarity(pwm_config *c, uint chan, bool inv)
+{
+	c->csr = (chan == PWM_CHAN_A)?
+		(c->csr & ~PWM_CH0_CSR_A_INV_BITS) | (bool_to_bit(inv) << PWM_CH0_CSR_A_INV_LSB) :
+		(c->csr & ~PWM_CH0_CSR_B_INV_BITS) | (bool_to_bit(inv) << PWM_CH0_CSR_B_INV_LSB);
 }
 
 }

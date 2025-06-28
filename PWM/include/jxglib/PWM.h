@@ -38,11 +38,7 @@ public:
 		Config& set_chan_output_polarity(uint chan, bool inv) { set_chan_output_polarity(&config_, chan, inv); return *this; }
 		Config& set_wrap(uint16_t wrap) { ::pwm_config_set_wrap(&config_, wrap); return *this; }
 	public:
-		static void set_chan_output_polarity(pwm_config *c, uint chan, bool inv) {
-			c->csr = (chan == PWM_CHAN_A)?
-				(c->csr & ~PWM_CH0_CSR_A_INV_BITS) | (bool_to_bit(inv) << PWM_CH0_CSR_A_INV_LSB) :
-				(c->csr & ~PWM_CH0_CSR_B_INV_BITS) | (bool_to_bit(inv) << PWM_CH0_CSR_B_INV_LSB);
-		}
+		static void set_chan_output_polarity(pwm_config *c, uint chan, bool inv);
 	};
 private:
 	uint pin_;
@@ -73,6 +69,7 @@ public:
 	const PWM& set_clkdiv_int_frac(uint8_t div_int, uint8_t div_frac) const { ::pwm_set_clkdiv_int_frac(GetSliceNum(), div_int, div_frac); return *this; }
 	const PWM& set_clkdiv_mode(enum pwm_clkdiv_mode mode) const { ::pwm_set_clkdiv_mode(GetSliceNum(), mode); return *this; }
 	const PWM& set_output_polarity(bool inv_a, bool inv_b) const { ::pwm_set_output_polarity(GetSliceNum(), inv_a, inv_b); return *this; }
+	bool get_chan_output_polarity() const { return get_chan_output_polarity(GetSliceNum(), GetChannel()); }
 	const PWM& set_chan_output_polarity(bool inv) const { set_chan_output_polarity(GetSliceNum(), GetChannel(), inv); return *this; }
 	const PWM& set_wrap(uint16_t wrap) const { ::pwm_set_wrap(GetSliceNum(), wrap); return *this; }
 	uint16_t get_wrap() const { return get_wrap(GetSliceNum()); }
@@ -126,6 +123,7 @@ public:
 	static uint16_t get_chan_level(uint slice_num, uint channel);
 	static float get_chan_duty(uint slice_num, uint channel);
 	static void set_chan_duty(uint slice_num, uint channel, float duty);
+	static bool get_chan_output_polarity(uint slice_num, uint chan);
 	static void set_chan_output_polarity(uint slice_num, uint chan, bool inv);
 	static bool is_enabled(uint slice_num);
 };
