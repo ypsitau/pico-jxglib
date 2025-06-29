@@ -146,6 +146,26 @@ void test_EachNum()
 		{ "comma with step and negatives", 1, { "-5--1:2,3" }, false, "-5, -3, -1, 3" },
 		{ "range with missing end", 1, { "3-" }, true, "3, 4, 5, 6, 7, 8, 9, 10" },
 		{ "range with missing end", 1, { "13-" }, true, "13, 12, 11, 10" },
+		{ "quoted string A", 1, { "\"A\"" }, false, "65" },
+		{ "quoted string AB", 1, { "\"AB\"" }, false, "65, 66" },
+		{ "quoted string ABC", 1, { "\"ABC\"" }, false, "65, 66, 67" },
+		{ "quoted string ABCD", 1, { "\"ABCD\"" }, false, "65, 66, 67, 68" },
+		{ "quoted string hello", 1, { "\"hello\"" }, false, "104, 101, 108, 108, 111" },
+		{ "quoted string with space", 1, { "\"A B\"" }, false, "65, 32, 66" },
+		{ "quoted string with numbers", 1, { "\"123\"" }, false, "49, 50, 51" },
+		{ "quoted string mixed with numbers", 2, { "\"AB\"", "1-2" }, false, "65, 66, 1, 2" },
+		{ "comma with quoted string", 1, { "1,\"X\",3" }, false, "1, 88, 3" },
+		{ "empty quoted string", 1, { "\"\"" }, false, "(none)" },
+		{ "comma with multiple strings", 1, { "\"A\",\"B\",\"C\"" }, false, "65, 66, 67" },
+		{ "comma string and numbers", 1, { "\"AB\",1,2" }, false, "65, 66, 1, 2" },
+		{ "comma numbers and string", 1, { "1,2,\"XY\"" }, false, "1, 2, 88, 89" },
+		{ "comma string and range", 1, { "\"Hi\",5-6" }, false, "72, 105, 5, 6" },
+		{ "comma range and string", 1, { "1-2,\"OK\"" }, false, "1, 2, 79, 75" },
+		{ "comma mixed strings ranges numbers", 1, { "\"A\",3-4,\"B\",7" }, false, "65, 3, 4, 66, 7" },
+		{ "comma string with special chars", 1, { "\"!\",\"@\",\"#\"" }, false, "33, 64, 35" },
+		{ "comma empty and non-empty strings", 1, { "\"\",\"A\",\"\"" }, false, "65" },
+		{ "comma string with escape sequences", 1, { "\"\\n\",\"\\t\"" }, false, "92, 110, 92, 116" },
+		{ "comma long string with numbers", 1, { "\"TEST\",100-101" }, false, "84, 69, 83, 84, 100, 101" },
 	};
 
 	for (size_t i = 0; i < sizeof(cases)/sizeof(cases[0]); ++i) {
@@ -157,7 +177,7 @@ void test_EachNum()
 		tout.Println();
 		const char** argv = const_cast<const char**>(tc.argv);
 		Shell::Arg::EachNum each(argv[0], argv[tc.argc]);
-		if (tc.limitFlag) each.SetLimit(10); // Set a limit for the number of elements to return
+		if (tc.limitFlag) each.SetLimit(10);
 		int n;
 		bool first = true;
 		tout.Printf("[nums] ");
