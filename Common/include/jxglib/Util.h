@@ -77,6 +77,7 @@ template<typename T = int32_t> T SignExtend(uint32_t value, int nBits)
 
 void WaitMSecSinceBoot(uint32_t msec);
 
+char ParseEscape(const char** pp, bool* pValidFlag);
 bool StartsWith(const char* str, const char* prefix);
 bool StartsWithICase(const char* str, const char* prefix);
 bool EndsWith(const char* str, const char* suffix);

@@ -12,6 +12,52 @@ void WaitMSecSinceBoot(uint32_t msec)
 	while (::to_ms_since_boot(::get_absolute_time()) < msec) ;
 }
 
+char ParseEscape(const char** pp, bool* pValidFlag)
+{
+	*pValidFlag = true;
+	const char*& p = *pp;
+	if (*p == '\0') return '\0';
+	char ch = *p++;
+	if (ch != '\\') return ch;
+	if (*p == '\0') {
+		*pValidFlag = false; // invalid escape sequence
+		return '\0';
+	}
+	ch = *p++;
+	if (ch == 'n') {
+		return '\n';
+	} else if (ch == 't') {
+		return '\t';
+	} else if (ch == 'r') {
+		return '\r';
+	} else if (ch == '"') {
+		return '"';
+	} else if (ch >= '0' && ch <= '7') {
+		int rtn = ch - '0';
+		for (int i = 0; i < 3 && *p >= '0' && *p <= '7'; ++p) {
+			rtn = (rtn << 3) + (*p - '0');
+		}
+		if (rtn > 255) {
+			*pValidFlag = false; // invalid escape sequence
+			return '\0';
+		}
+		return static_cast<uint8_t>(rtn);
+	} else if (ch == 'x') {
+		int rtn = 0;
+		int i = 0;
+		for ( ; i < 2 && ::isxdigit(*p); ++p) {
+			char ch = ::toupper(*p);
+			rtn = (rtn << 4) + ::isdigit(ch)? (ch - '0') : (ch - 'A' + 10);
+		}
+		if (i == 0) {
+			*pValidFlag = false; // invalid escape sequence
+			return '\0';
+		}
+		return static_cast<uint8_t>(rtn);
+	}
+	return ch;
+}
+
 bool StartsWith(const char* str, const char* prefix)
 {
 	for ( ; *prefix; str++, prefix++) {

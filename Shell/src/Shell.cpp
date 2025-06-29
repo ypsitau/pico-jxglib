@@ -556,7 +556,12 @@ bool Shell::Arg::EachNum::Next(int* pValue)
 				errorMsg_ = "unexpected end of string";
 				return false;
 			} else {
-				char ch = *p_++;
+				bool validFlag = false;
+				char ch = ParseEscape(&p_, &validFlag);
+				if (!validFlag) {
+					errorMsg_ = "invalid escape sequence in string";
+					return false;
+				}
 				*pValue = static_cast<unsigned char>(ch);
 				return true;
 			}
