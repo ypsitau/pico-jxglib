@@ -45,9 +45,9 @@ char ParseEscape(const char** pp, bool* pValidFlag)
 	} else if (ch == 'x') {
 		int rtn = 0;
 		int i = 0;
-		for ( ; i < 2 && ::isxdigit(*p); ++p) {
+		for ( ; i < 2 && ::isxdigit(*p); ++p, ++i) {
 			char ch = ::toupper(*p);
-			rtn = (rtn << 4) + ::isdigit(ch)? (ch - '0') : (ch - 'A' + 10);
+			rtn = (rtn << 4) + (::isdigit(ch)? (ch - '0') : (ch - 'A' + 10));
 		}
 		if (i == 0) {
 			*pValidFlag = false; // invalid escape sequence
