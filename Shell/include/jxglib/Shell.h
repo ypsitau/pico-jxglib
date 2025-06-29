@@ -91,28 +91,33 @@ public:
 			const char* Next();
 		};
 		class EachNum : public EachBase {
-		private:
-			const char* p_;
-			bool rangeActiveFlag_;
-			int rangeCur_, rangeEnd_, rangeStep_;
-			int rangeLimit_;
-			bool hasRangeLimit_;
-			const char* argv_[2];
-			const char* errorMsg_;
-		public:
-			EachNum(const char* str);
-			EachNum(const char* str, int rangeLimit) : EachNum(str) { rangeLimit_ = rangeLimit; hasRangeLimit_ = true; }
-			EachNum(const char*& argvBegin, const char*& argvEnd);
-			EachNum(const char*& argvBegin, const char*& argvEnd, int rangeLimit) : EachNum(argvBegin, argvEnd)
-				{ rangeLimit_ = rangeLimit; hasRangeLimit_ = true; }
-			EachNum(char*& argvBegin, char*& argvEnd) : EachNum(const_cast<const char*&>(argvBegin), const_cast<const char*&>(argvEnd)) {}
-			EachNum(char*& argvBegin, char*& argvEnd, int rangeLimit) : EachNum(const_cast<const char*&>(argvBegin), const_cast<const char*&>(argvEnd), rangeLimit) {}
-		public:
-			void SetLimit(int rangeLimit) { rangeLimit_ = rangeLimit; hasRangeLimit_ = true; }
-			bool Next(int* pValue);
-			bool IsSuccess() const { return errorMsg_[0] == '\0'; }
-			const char* GetErrorMsg() const { return errorMsg_; }
-			bool CheckValidity(int* pCount = nullptr);
+	private:
+		const char* argv_[2]; // 追加
+		const char* p_;
+		bool rangeActiveFlag_;
+		int rangeCur_, rangeEnd_, rangeStep_;
+		int rangeLimit_;
+		bool hasRangeLimit_;
+		const char* errorMsg_;
+		bool stringActiveFlag_;
+		const char* stringPtr_;
+		int stringBytes_;
+		int stringIndex_;
+		
+	public:
+		EachNum(const char* str);
+		EachNum(const char* str, int rangeLimit) : EachNum(str) { rangeLimit_ = rangeLimit; hasRangeLimit_ = true; }
+		EachNum(const char*& argvBegin, const char*& argvEnd);
+		EachNum(const char*& argvBegin, const char*& argvEnd, int rangeLimit) : EachNum(argvBegin, argvEnd)
+			{ rangeLimit_ = rangeLimit; hasRangeLimit_ = true; }
+		EachNum(char*& argvBegin, char*& argvEnd) : EachNum(const_cast<const char*&>(argvBegin), const_cast<const char*&>(argvEnd)) {}
+		EachNum(char*& argvBegin, char*& argvEnd, int rangeLimit) : EachNum(const_cast<const char*&>(argvBegin), const_cast<const char*&>(argvEnd), rangeLimit) {}
+	public:
+		void SetLimit(int rangeLimit) { rangeLimit_ = rangeLimit; hasRangeLimit_ = true; }
+		bool Next(int* pValue);
+		bool IsSuccess() const { return errorMsg_[0] == '\0'; }
+		const char* GetErrorMsg() const { return errorMsg_; }
+		bool CheckValidity(int* pCount = nullptr);
 		};
 		class EachGlob : public EachBase {
 		private:

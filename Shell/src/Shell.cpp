@@ -516,85 +516,132 @@ const char* Shell::Arg::Each::Next()
 //------------------------------------------------------------------------------
 Shell::Arg::EachNum::EachNum(const char* str) : EachNum(argv_[0], argv_[1])
 {
-	argv_[0] = str;
-	argv_[1] = nullptr;
+    argv_[0] = str;
+    argv_[1] = nullptr;
 }
 
 Shell::Arg::EachNum::EachNum(const char*& argvBegin, const char*& argvEnd) : EachBase(argvBegin, argvEnd),
-	p_{""}, rangeActiveFlag_{false}, rangeCur_{0}, rangeEnd_{0}, rangeStep_{1}, rangeLimit_{0}, hasRangeLimit_{false}, errorMsg_{""}
+    p_{""}, rangeActiveFlag_{false}, rangeCur_{0}, rangeEnd_{0}, rangeStep_{1}, 
+    rangeLimit_{0}, hasRangeLimit_{false}, errorMsg_{""},
+    stringActiveFlag_{false}, stringPtr_{nullptr}, stringBytes_{0}, stringIndex_{0}
 {}
 
-bool Shell::Arg::EachNum::EachNum::Next(int* pValue)
+bool Shell::Arg::EachNum::Next(int* pValue)
 {
-	if (rangeActiveFlag_) {
-		*pValue = rangeCur_;
-		if ((rangeStep_ > 0 && rangeCur_ > rangeEnd_) || (rangeStep_ < 0 && rangeCur_ < rangeEnd_)) {
-			rangeActiveFlag_ = false;
-		} else {
-			rangeCur_ += rangeStep_;
-			return true;
-		}
-	}
-	for (;;) {
-		while (*p_ == '\0') {
-			if (argvCur_ == argvEnd_) return false; // no more arguments
-			p_ = *argvCur_++;
-		}
-		// Parse first number
-		for ( ; ::isspace(*p_); ++p_) ;
-		char* endptr = nullptr;
-		int n1 = ::strtol(p_, &endptr, 10);
-		if (endptr == p_) {
-			errorMsg_ = "not a number";
-			return false;
-		}
-		p_ = endptr;
-		// Check for range
-		if (*p_ == '-') {
-			++p_;
-			int n2 = ::strtol(p_, &endptr, 10);
-			if (endptr != p_) {
-				// nothing to do
-			} else if (hasRangeLimit_) {
-				n2 = rangeLimit_;
-			} else {
-				errorMsg_ = "invalid range";
-				return false;
-			}
-			p_ = endptr;
-			rangeCur_ = n1;
-			rangeEnd_ = n2;
-			int n3 = 1;
-			if (*p_ == ':') {
-				++p_;
-				n3 = ::strtol(p_, &endptr, 10);
-				if (endptr == p_) n3 = 1;
-				if (n3 == 0) {
-					errorMsg_ = "zero step in range";
-					return false;
-				}
-				if (n3 < 0) n3 = -n3;
-				p_ = endptr;
-			}
-			rangeStep_ = (n1 <= n2) ? n3 : -n3;
-			// Output first value of range
-			*pValue = rangeCur_;
-			if (rangeCur_ != rangeEnd_) {
-				rangeActiveFlag_ = true;
-				rangeCur_ += rangeStep_;
-			}
-		} else {
-			*pValue = n1;
-		}
-		for ( ; ::isspace(*p_); ++p_) ;
-		if (*p_ == ',') {
-			++p_;
-			return true;
-		} else if (*p_ == '\0') {
-			return true;
-		}
-		return false;
-	}
+    if (rangeActiveFlag_) {
+        *pValue = rangeCur_;
+        if ((rangeStep_ > 0 && rangeCur_ > rangeEnd_) || (rangeStep_ < 0 && rangeCur_ < rangeEnd_)) {
+            rangeActiveFlag_ = false;
+        } else {
+            rangeCur_ += rangeStep_;
+            return true;
+        }
+    }
+    for (;;) {
+        while (*p_ == '\0') {
+            if (argvCur_ == argvEnd_) return false; // no more arguments
+            p_ = *argvCur_++;
+        }
+        // Skip whitespace
+        for ( ; ::isspace(*p_); ++p_) ;
+        
+        // Check for quoted string
+        if (*p_ == '"') {
+            ++p_; // skip opening quote
+            const char* strStart = p_;
+            // Find closing quote
+            while (*p_ != '\0' && *p_ != '"') ++p_;
+            if (*p_ != '"') {
+                errorMsg_ = "missing closing quote";
+                return false;
+            }
+            // Setup string processing
+            stringBytes_ = p_ - strStart;
+            stringPtr_ = strStart;
+            stringIndex_ = 0;
+            stringActiveFlag_ = true;
+            ++p_; // skip closing quote
+            
+            // Return first character as number
+            if (stringIndex_ < stringBytes_) {
+                *pValue = static_cast<unsigned char>(stringPtr_[stringIndex_++]);
+                return true;
+            }
+        }
+        
+        // Handle string processing continuation
+        if (stringActiveFlag_) {
+            if (stringIndex_ < stringBytes_) {
+                *pValue = static_cast<unsigned char>(stringPtr_[stringIndex_++]);
+                return true;
+            } else {
+                stringActiveFlag_ = false;
+                // Continue to parse next element
+                for ( ; ::isspace(*p_); ++p_) ;
+                if (*p_ == ',') {
+                    ++p_;
+                    continue;
+                } else if (*p_ == '\0') {
+                    continue;
+                }
+                return false;
+            }
+        }
+        
+        // Parse number (existing logic)
+        char* endptr = nullptr;
+        int n1 = ::strtol(p_, &endptr, 10);
+        if (endptr == p_) {
+            errorMsg_ = "not a number";
+            return false;
+        }
+        p_ = endptr;
+        // Check for range
+        if (*p_ == '-') {
+            ++p_;
+            int n2 = ::strtol(p_, &endptr, 10);
+            if (endptr != p_) {
+                // nothing to do
+            } else if (hasRangeLimit_) {
+                n2 = rangeLimit_;
+            } else {
+                errorMsg_ = "invalid range";
+                return false;
+            }
+            p_ = endptr;
+            rangeCur_ = n1;
+            rangeEnd_ = n2;
+            int n3 = 1;
+            if (*p_ == ':') {
+                ++p_;
+                n3 = ::strtol(p_, &endptr, 10);
+                if (endptr == p_) n3 = 1;
+                if (n3 == 0) {
+                    errorMsg_ = "zero step in range";
+                    return false;
+                }
+                if (n3 < 0) n3 = -n3;
+                p_ = endptr;
+            }
+            rangeStep_ = (n1 <= n2) ? n3 : -n3;
+            // Output first value of range
+            *pValue = rangeCur_;
+            if (rangeCur_ != rangeEnd_) {
+                rangeActiveFlag_ = true;
+                rangeCur_ += rangeStep_;
+            }
+        } else {
+            *pValue = n1;
+        }
+        for ( ; ::isspace(*p_); ++p_) ;
+        if (*p_ == ',') {
+            ++p_;
+            return true;
+        } else if (*p_ == '\0') {
+            return true;
+        }
+        return false;
+    }
 }
 
 bool Shell::Arg::EachNum::CheckValidity(int* pCount)
