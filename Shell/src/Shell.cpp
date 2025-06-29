@@ -515,14 +515,14 @@ const char* Shell::Arg::Each::Next()
 // Shell::Arg::EachNum
 //------------------------------------------------------------------------------
 Shell::Arg::EachNum::EachNum(const char* str) : EachBase(const_cast<const char*&>(argv_[0]), const_cast<const char*&>(argv_[1])),
-	p_{""}, mode_{Mode::None}, range_{0, 0, 1, 0, false}, string_{nullptr, 0, 0}, errorMsg_{""}
+    p_{""}, mode_{Mode::None}, rangeLimit_{0}, hasRangeLimit_{false}, range_{0, 0, 1}, errorMsg_{""}
 {
-	argv_[0] = str;
-	argv_[1] = nullptr;
+    argv_[0] = str;
+    argv_[1] = nullptr;
 }
 
 Shell::Arg::EachNum::EachNum(const char*& argvBegin, const char*& argvEnd) : EachBase(argvBegin, argvEnd),
-	p_{""}, mode_{Mode::None}, range_{0, 0, 1, 0, false}, string_{nullptr, 0, 0}, errorMsg_{""}
+    p_{""}, mode_{Mode::None}, rangeLimit_{0}, hasRangeLimit_{false}, range_{0, 0, 1}, errorMsg_{""}
 {}
 
 bool Shell::Arg::EachNum::Next(int* pValue)
@@ -610,8 +610,8 @@ bool Shell::Arg::EachNum::Next(int* pValue)
 			int n2 = ::strtol(p_, &endptr, 10);
 			if (endptr != p_) {
 				// nothing to do
-			} else if (range_.hasLimit) {
-				n2 = range_.limit;
+			} else if (hasRangeLimit_) {
+				n2 = rangeLimit_;
 			} else {
 				errorMsg_ = "invalid range";
 				return false;

@@ -98,30 +98,33 @@ public:
 			enum class Mode { None, String, Range };
 			Mode mode_;
 			
-			struct {
-				int cur, end, step;
-				int limit;
-				bool hasLimit;
-			} range_;
-			
-			struct {
-				const char* ptr;
-				int bytes;
-				int index;
-			} string_;
+			int rangeLimit_;
+			bool hasRangeLimit_;
+			union {
+				struct {
+					int cur, end, step;
+				} range_;
+				
+				struct {
+					const char* ptr;
+					int bytes;
+					int index;
+				} string_;
+			};
 			
 			const char* errorMsg_;
 			
 		public:
 			EachNum(const char* str);
-			EachNum(const char* str, int rangeLimit) : EachNum(str) { range_.limit = rangeLimit; range_.hasLimit = true; }
+			EachNum(const char* str, int rangeLimit) : EachNum(str) { rangeLimit_ = rangeLimit; hasRangeLimit_ = true; }
 			EachNum(const char*& argvBegin, const char*& argvEnd);
-			EachNum(const char*& argvBegin, const char*& argvEnd, int rangeLimit) : EachNum(argvBegin, argvEnd)
-				{ range_.limit = rangeLimit; range_.hasLimit = true; }
+			EachNum(const char*& argvBegin, const char*& argvEnd, int rangeLimit) : EachNum(argvBegin, argvEnd) {
+				rangeLimit_ = rangeLimit; hasRangeLimit_ = true;
+			}
 			EachNum(char*& argvBegin, char*& argvEnd) : EachNum(const_cast<const char*&>(argvBegin), const_cast<const char*&>(argvEnd)) {}
 			EachNum(char*& argvBegin, char*& argvEnd, int rangeLimit) : EachNum(const_cast<const char*&>(argvBegin), const_cast<const char*&>(argvEnd), rangeLimit) {}
 		public:
-			void SetLimit(int rangeLimit) { range_.limit = rangeLimit; range_.hasLimit = true; }
+			void SetLimit(int rangeLimit) { rangeLimit_ = rangeLimit; hasRangeLimit_ = true; }
 			bool Next(int* pValue);
 			bool IsSuccess() const { return errorMsg_[0] == '\0'; }
 			const char* GetErrorMsg() const { return errorMsg_; }
