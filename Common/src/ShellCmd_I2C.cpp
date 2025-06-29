@@ -5,7 +5,19 @@
 
 using namespace jxglib;
 
-ShellCmd_Named(i2c_scan, "i2c-scan", "scans I2C bus and prints connected addresses")
+struct {
+	uint SDA = -1;
+	uint SCL = -1;
+} pinAssign;
+
+uint freq = 100'000;
+uint32_t msecTimeout = 300;
+
+void ScanBus(Printable& tout, Printable& terr, i2c_inst_t* i2c);
+bool SendData(Printable& tout, Printable& terr, i2c_inst_t* i2c, uint8_t addr, const char* value, bool nostop);
+bool RecvData(Printable& tout, Printable& terr, i2c_inst_t* i2c, uint8_t addr, const char* value, bool nostop);
+
+ShellCmd(i2c, "scans I2C bus and prints connected addresses")
 {
 	enum class Func { SDA, SCL };
 	struct Info { int iBus; Func func; };
@@ -41,53 +53,105 @@ ShellCmd_Named(i2c_scan, "i2c-scan", "scans I2C bus and prints connected address
 	};
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
-		Arg::OptString("baudrate",	'b',	"sets I2C frequency (default: 100000)", "FREQ"),
+		Arg::OptString("pin",		'p',	"sets GPIO pins for I2C", "SDA,SCL"),
+		Arg::OptString("freq",		'f',	"sets I2C frequency (default: 100000)", "FREQ"),
+		Arg::OptString("timeout",	't',	"sets timeout for I2C operations (default: 300)", "MSEC"),
+		Arg::OptBool("dumb",		0x0,	"no I2C operations, just remember the pins and frequency"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
-	if (argc < 3 || arg.GetBool("help")) {
-		tout.Printf("Usage: %s OPTION... GPIO_SDA GPIO_SCL\n\n", argv[0]);
-        tout.Printf("scans I2C bus and prints connected addresses\n\n");
+	if (arg.GetBool("help")) {
+		tout.Printf("Usage: %s [OPTION]... [CMD]...\n", argv[0]);
 		arg.PrintHelp(tout);
 		return 0;
 	}
-	uint baudrate = 100'000; // default frequency
 	const char* value = nullptr;
-	if (arg.GetString("baudrate", &value)) {
+	if (arg.GetString("freq", &value)) {
 		char* endptr;
 		long num = ::strtol(value, &endptr, 0);
 		if (*endptr != '\0' || num <= 0 || num > 1'000'000) {
 			tout.Printf("Invalid frequency: %s\n", value);
 			return 1;
 		}
-		baudrate = static_cast<uint>(num);
+		freq = static_cast<uint>(num);
 	}
-	uint gpioSDA = -1, gpioSCL = -1;
-	for (int iArg = 1; iArg <= 2; iArg++) {
+	if (arg.GetString("timeout", &value)) {
 		char* endptr;
-		long num = ::strtol(argv[iArg], &endptr, 0);
-		if (*endptr != '\0' || num < 0 || num > 27) {
-			tout.Printf("Invalid GPIO number: %s\n", argv[iArg]);
+		long num = ::strtol(value, &endptr, 0);
+		if (*endptr != '\0' || num <= 0 || num > 10'000) {
+			tout.Printf("Invalid timeout: %s\n", value);
 			return 1;
 		}
-		if (infoTbl[num].func == Func::SCL) {
-			gpioSCL = static_cast<uint>(num);
-		} else { // Func::SDA
-			gpioSDA = static_cast<uint>(num);
+		msecTimeout = static_cast<uint32_t>(num);
+	}
+	if (arg.GetString("pin", &value)) {
+		Arg::EachNum each(value);
+		int nNums;
+		if (!each.CheckValidity(&nNums) || nNums != 2) {
+			tout.Printf("Invalid pin specification: %s\n", value);
+			return 1;
+		}
+		int num;
+		while (each.Next(&num)) {
+			if (num < 0 || num > 27) {
+				tout.Printf("Invalid GPIO number\n");
+				return 1;
+			}
+			if (infoTbl[num].func == Func::SCL) {
+				pinAssign.SCL = static_cast<uint>(num);
+			} else { // Func::SDA
+				pinAssign.SDA = static_cast<uint>(num);
+			}
 		}
 	}
-	if (gpioSDA == -1 || gpioSCL == -1 || infoTbl[gpioSDA].iBus != infoTbl[gpioSCL].iBus) {
-		tout.Printf("Invalid pair of GPIOs for I2C: %s %s\n", argv[1], argv[2]);
+	if (pinAssign.SDA == -1 || pinAssign.SCL == -1) {
+		tout.Printf("use -p option to specify a valid pair of GPIOs for I2C\n");
+		return 1;
+	} else if (infoTbl[pinAssign.SDA].iBus != infoTbl[pinAssign.SCL].iBus) {
+		tout.Printf("Invalid pair of GPIOs for I2C\n");
 		return 1;
 	}
-	int iBus = infoTbl[gpioSDA].iBus;
+	if (arg.GetBool("dumb")) return 0;
+	int iBus = infoTbl[pinAssign.SDA].iBus;
 	i2c_inst_t* i2c = (iBus == 0) ? i2c0 : i2c1;
-	::i2c_init(i2c, baudrate);
-	::gpio_set_function(gpioSDA, GPIO_FUNC_I2C);
-	::gpio_set_function(gpioSCL, GPIO_FUNC_I2C);
-	::gpio_pull_up(gpioSDA);
-	::gpio_pull_up(gpioSCL);
-	tout.Printf("Bus Scan on I2C %d (SDA:GPIO%d SCL:GPIO%d) @ %d Hz\n", iBus, gpioSDA, gpioSCL, baudrate);
+	::i2c_init(i2c, freq);
+	::gpio_set_function(pinAssign.SDA, GPIO_FUNC_I2C);
+	::gpio_set_function(pinAssign.SCL, GPIO_FUNC_I2C);
+	::gpio_pull_up(pinAssign.SDA);
+	::gpio_pull_up(pinAssign.SCL);
+	int rtn = 0;
+	if (argc < 2) {
+		ScanBus(tout, terr, i2c);
+	} else {
+		int num = ::strtol(argv[1], nullptr, 0);
+		if (num < 0 || num > 127) {
+			tout.Printf("Invalid I2C address: %s\n", argv[1]);
+			return 1;
+		}
+		uint8_t addr = static_cast<uint8_t>(num);
+		for (int iArg = 2; iArg < argc; ++iArg) {
+			bool nostop = (iArg + 1 < argc);
+			const char* arg = argv[iArg];
+			const char* value;
+			if (Arg::GetAssigned(arg, "send", &value)) {
+				if (!SendData(tout, terr, i2c, addr, value, nostop)) {
+					rtn = 1;
+					break;
+				}
+			} else if (Arg::GetAssigned(arg, "recv", &value)) {
+				if (!RecvData(tout, terr, i2c, addr, value, nostop)) {
+					rtn = 1;
+					break;
+				}
+			}
+		}
+	}
+	return rtn;
+}
+
+void ScanBus(Printable& tout, Printable& terr, i2c_inst_t* i2c)
+{
+	tout.Printf("Bus Scan on I2C %d (SDA:GPIO%d SCL:GPIO%d) @ %d Hz\n", ::i2c_get_index(i2c), pinAssign.SDA, pinAssign.SCL, freq);
 	tout.Printf("   0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F\n");
 	int iCol = 0;
 	for (int addr = 0; addr < (1 << 7); ++addr) {
@@ -96,7 +160,7 @@ ShellCmd_Named(i2c_scan, "i2c-scan", "scans I2C bus and prints connected address
 			tout.Printf("-- ");
 		} else {
 			uint8_t rxdata;
-			int rtn = i2c_read_blocking(i2c, addr, &rxdata, sizeof(rxdata), false);
+			int rtn = ::i2c_read_blocking(i2c, addr, &rxdata, sizeof(rxdata), false);
 			if (rtn < 0) {
 				tout.Printf("-- ");
 			} else {
@@ -109,5 +173,60 @@ ShellCmd_Named(i2c_scan, "i2c-scan", "scans I2C bus and prints connected address
 			iCol = 0;
 		}
 	}
-	return 0;
+}
+
+bool SendData(Printable& tout, Printable& terr, i2c_inst_t* i2c, uint8_t addr, const char* value, bool nostop)
+{
+	if (!value) {
+		terr.Printf("No data to send\n");
+		return false;
+	}
+	uint8_t data[128];
+	int bytesToWrite = 0;
+	Shell::Arg::EachNum each(value);
+	if (!each.CheckValidity(&bytesToWrite)) {
+		terr.Printf("Invalid data format: %s\n", value);
+		return false;
+	} else if (bytesToWrite == 0) {
+		terr.Printf("No data to send\n");
+		return false;
+	} else if (bytesToWrite > sizeof(data)) {
+		terr.Printf("Data size exceeds buffer limit (%zu bytes)\n", sizeof(data));
+		return false;
+	}
+	int num;
+	for (int i = 0; each.Next(&num); ++i) {
+		if (num < 0 || num > 255) {
+			terr.Printf("Invalid data value: %d\n", num);
+			return false;
+		}
+		data[i] = static_cast<uint8_t>(num);
+	}
+	int bytesWritten = ::i2c_write_blocking_until(i2c, addr, data, bytesToWrite, nostop, ::make_timeout_time_ms(msecTimeout));
+	if (bytesWritten < 0) {
+		terr.Printf("Failed to send data to address 0x%02x\n", addr);
+		return false;
+	}
+	return true;
+}
+
+bool RecvData(Printable& tout, Printable& terr, i2c_inst_t* i2c, uint8_t addr, const char* value, bool nostop)
+{
+	uint8_t data[128];
+	int bytesToRead = sizeof(data);
+	if (value) {
+		int num = ::strtol(value, nullptr, 0);
+		if (num < 1 || num > sizeof(data)) {
+			terr.Printf("Invalid number of bytes to read: %s\n", value);
+			return false;
+		}
+		bytesToRead = static_cast<int>(num);
+	}
+	int bytesRead = ::i2c_read_blocking_until(i2c, addr, data, bytesToRead, nostop, ::make_timeout_time_ms(msecTimeout));
+	if (bytesRead < 0) {
+		terr.Printf("Failed to receive data from address 0x%02x\n", addr);
+		return false;
+	}
+	Printable::DumpT().DigitsAddr(0)(data, bytesRead);
+	return true;
 }

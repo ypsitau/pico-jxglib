@@ -454,7 +454,7 @@ bool Shell::Arg::GetAssigned(const char* str, const char* name, const char** pVa
 	*pValue = nullptr;
 	if (::strncmp(str, name, ::strlen(name)) == 0) {
 		const char* value = str + ::strlen(name);
-		if (*value == '=') *pValue = value + 1;
+		if (*value == '=' || *value == ':') *pValue = value + 1;
 		return true;
 	}
 	return false;
@@ -581,7 +581,7 @@ bool Shell::Arg::EachNum::Next(int* pValue)
 		
 			// Parse number (existing logic continues...)
 			char* endptr = nullptr;
-			int n1 = ::strtol(p_, &endptr, 10);
+			int n1 = ::strtol(p_, &endptr, 0);
 			if (endptr == p_) {
 				errorMsg_ = "not a number";
 				return false;
@@ -590,7 +590,7 @@ bool Shell::Arg::EachNum::Next(int* pValue)
 			// Check for range
 			if (*p_ == '-') {
 				++p_;
-				int n2 = ::strtol(p_, &endptr, 10);
+				int n2 = ::strtol(p_, &endptr, 0);
 				if (endptr != p_) {
 					// nothing to do
 				} else if (hasRangeLimit_) {
@@ -605,7 +605,7 @@ bool Shell::Arg::EachNum::Next(int* pValue)
 				int n3 = 1;
 				if (*p_ == ':') {
 					++p_;
-					n3 = ::strtol(p_, &endptr, 10);
+					n3 = ::strtol(p_, &endptr, 0);
 					if (endptr == p_) n3 = 1;
 					if (n3 == 0) {
 						errorMsg_ = "zero step in range";
