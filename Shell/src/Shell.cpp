@@ -514,44 +514,42 @@ const char* Shell::Arg::Each::Next()
 //------------------------------------------------------------------------------
 // Shell::Arg::EachNum
 //------------------------------------------------------------------------------
-Shell::Arg::EachNum::EachNum(const char* str) : EachNum(argv_[0], argv_[1])
+Shell::Arg::EachNum::EachNum(const char* str) : EachBase(const_cast<const char*&>(argv_[0]), const_cast<const char*&>(argv_[1])),
+	p_{""}, mode_{Mode::None}, range_{0, 0, 1, 0, false}, string_{nullptr, 0, 0}, errorMsg_{""}
 {
 	argv_[0] = str;
 	argv_[1] = nullptr;
 }
 
 Shell::Arg::EachNum::EachNum(const char*& argvBegin, const char*& argvEnd) : EachBase(argvBegin, argvEnd),
-	p_{""}, rangeActiveFlag_{false}, rangeCur_{0}, rangeEnd_{0}, rangeStep_{1}, 
-	rangeLimit_{0}, hasRangeLimit_{false}, errorMsg_{""},
-	stringActiveFlag_{false}, stringPtr_{nullptr}, stringBytes_{0}, stringIndex_{0}
+	p_{""}, mode_{Mode::None}, range_{0, 0, 1, 0, false}, string_{nullptr, 0, 0}, errorMsg_{""}
 {}
 
 bool Shell::Arg::EachNum::Next(int* pValue)
 {
 	// Handle string processing continuation first
-	if (stringActiveFlag_) {
-		if (stringIndex_ < stringBytes_) {
-			*pValue = static_cast<unsigned char>(stringPtr_[stringIndex_++]);
+	if (mode_ == Mode::String) {
+		if (string_.index < string_.bytes) {
+			*pValue = static_cast<unsigned char>(string_.ptr[string_.index++]);
 			return true;
 		} else {
-			stringActiveFlag_ = false;
+			mode_ = Mode::None;
 			// Continue to parse next element
 			for ( ; ::isspace(*p_); ++p_) ;
 			if (*p_ == ',') {
 				++p_;
-				// Continue parsing
 			} else if (*p_ == '\0') {
 				// Continue to next argument
 			}
 		}
 	}
 
-	if (rangeActiveFlag_) {
-		*pValue = rangeCur_;
-		if ((rangeStep_ > 0 && rangeCur_ > rangeEnd_) || (rangeStep_ < 0 && rangeCur_ < rangeEnd_)) {
-			rangeActiveFlag_ = false;
+	if (mode_ == Mode::Range) {
+		*pValue = range_.cur;
+		if ((range_.step > 0 && range_.cur > range_.end) || (range_.step < 0 && range_.cur < range_.end)) {
+			mode_ = Mode::None;
 		} else {
-			rangeCur_ += rangeStep_;
+			range_.cur += range_.step;
 			return true;
 		}
 	}
@@ -575,19 +573,19 @@ bool Shell::Arg::EachNum::Next(int* pValue)
 				return false;
 			}
 			// Setup string processing
-			stringBytes_ = p_ - strStart;
-			stringPtr_ = strStart;
-			stringIndex_ = 0;
-			stringActiveFlag_ = true;
+			string_.bytes = p_ - strStart;
+			string_.ptr = strStart;
+			string_.index = 0;
+			mode_ = Mode::String;
 			++p_; // skip closing quote
 			
 			// Return first character as number if string is not empty
-			if (stringBytes_ > 0) {
-				*pValue = static_cast<unsigned char>(stringPtr_[stringIndex_++]);
+			if (string_.bytes > 0) {
+				*pValue = static_cast<unsigned char>(string_.ptr[string_.index++]);
 				return true;
 			} else {
 				// Empty string, continue parsing
-				stringActiveFlag_ = false;
+				mode_ = Mode::None;
 				for ( ; ::isspace(*p_); ++p_) ;
 				if (*p_ == ',') {
 					++p_;
@@ -612,15 +610,15 @@ bool Shell::Arg::EachNum::Next(int* pValue)
 			int n2 = ::strtol(p_, &endptr, 10);
 			if (endptr != p_) {
 				// nothing to do
-			} else if (hasRangeLimit_) {
-				n2 = rangeLimit_;
+			} else if (range_.hasLimit) {
+				n2 = range_.limit;
 			} else {
 				errorMsg_ = "invalid range";
 				return false;
 			}
 			p_ = endptr;
-			rangeCur_ = n1;
-			rangeEnd_ = n2;
+			range_.cur = n1;
+			range_.end = n2;
 			int n3 = 1;
 			if (*p_ == ':') {
 				++p_;
@@ -633,12 +631,12 @@ bool Shell::Arg::EachNum::Next(int* pValue)
 				if (n3 < 0) n3 = -n3;
 				p_ = endptr;
 			}
-			rangeStep_ = (n1 <= n2) ? n3 : -n3;
+			range_.step = (n1 <= n2) ? n3 : -n3;
 			// Output first value of range
-			*pValue = rangeCur_;
-			if (rangeCur_ != rangeEnd_) {
-				rangeActiveFlag_ = true;
-				rangeCur_ += rangeStep_;
+			*pValue = range_.cur;
+			if (range_.cur != range_.end) {
+				mode_ = Mode::Range;
+				range_.cur += range_.step;
 			}
 		} else {
 			*pValue = n1;
