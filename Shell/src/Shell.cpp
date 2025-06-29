@@ -514,36 +514,21 @@ const char* Shell::Arg::Each::Next()
 //------------------------------------------------------------------------------
 // Shell::Arg::EachNum
 //------------------------------------------------------------------------------
-Shell::Arg::EachNum::EachNum(const char* str) : EachBase(const_cast<const char*&>(argv_[0]), const_cast<const char*&>(argv_[1])),
-    p_{""}, mode_{Mode::None}, rangeLimit_{0}, hasRangeLimit_{false}, range_{0, 0, 1}, errorMsg_{""}
+Shell::Arg::EachNum::EachNum(const char* str) :
+	EachBase(const_cast<const char*&>(argvInternal_[0]), const_cast<const char*&>(argvInternal_[1])),
+	mode_{Mode::None}, p_{""}, rangeLimit_{0}, hasRangeLimit_{false}, range_{0, 0, 1}, errorMsg_{""}
 {
-    argv_[0] = str;
-    argv_[1] = nullptr;
+	argvInternal_[0] = str;
+	argvInternal_[1] = nullptr;
 }
 
-Shell::Arg::EachNum::EachNum(const char*& argvBegin, const char*& argvEnd) : EachBase(argvBegin, argvEnd),
-    p_{""}, mode_{Mode::None}, rangeLimit_{0}, hasRangeLimit_{false}, range_{0, 0, 1}, errorMsg_{""}
+Shell::Arg::EachNum::EachNum(const char*& argvBegin, const char*& argvEnd) :
+	EachBase(argvBegin, argvEnd),
+	mode_{Mode::None}, p_{""}, rangeLimit_{0}, hasRangeLimit_{false}, range_{0, 0, 1}, errorMsg_{""}
 {}
 
 bool Shell::Arg::EachNum::Next(int* pValue)
 {
-	// Handle string processing continuation first
-	if (mode_ == Mode::String) {
-		if (string_.index < string_.bytes) {
-			*pValue = static_cast<unsigned char>(string_.ptr[string_.index++]);
-			return true;
-		} else {
-			mode_ = Mode::None;
-			// Continue to parse next element
-			for ( ; ::isspace(*p_); ++p_) ;
-			if (*p_ == ',') {
-				++p_;
-			} else if (*p_ == '\0') {
-				// Continue to next argument
-			}
-		}
-	}
-
 	if (mode_ == Mode::Range) {
 		*pValue = range_.cur;
 		if ((range_.step > 0 && range_.cur > range_.end) || (range_.step < 0 && range_.cur < range_.end)) {
@@ -553,8 +538,29 @@ bool Shell::Arg::EachNum::Next(int* pValue)
 			return true;
 		}
 	}
-
 	for (;;) {
+		if (mode_ == Mode::String) {
+			if (*p_ == '"') {
+				++p_;
+				mode_ = Mode::None;
+				for ( ; ::isspace(*p_); ++p_) ;
+				if (*p_ == ',') {
+					++p_;
+				} else if (*p_ == '\0') {
+					// Continue to next argument
+				} else {
+					errorMsg_ = "unexpected character after string";
+					return false;
+				}
+			} else if (*p_ == '\0') {
+				errorMsg_ = "unexpected end of string";
+				return false;
+			} else {
+				char ch = *p_++;
+				*pValue = static_cast<unsigned char>(ch);
+				return true;
+			}
+		}
 		while (*p_ == '\0') {
 			if (argvCur_ == argvEnd_) return false; // no more arguments
 			p_ = *argvCur_++;
@@ -565,90 +571,65 @@ bool Shell::Arg::EachNum::Next(int* pValue)
 		// Check for quoted string
 		if (*p_ == '"') {
 			++p_; // skip opening quote
-			const char* strStart = p_;
-			// Find closing quote
-			while (*p_ != '\0' && *p_ != '"') ++p_;
-			if (*p_ != '"') {
-				errorMsg_ = "missing closing quote";
-				return false;
-			}
-			// Setup string processing
-			string_.bytes = p_ - strStart;
-			string_.ptr = strStart;
-			string_.index = 0;
 			mode_ = Mode::String;
-			++p_; // skip closing quote
-			
-			// Return first character as number if string is not empty
-			if (string_.bytes > 0) {
-				*pValue = static_cast<unsigned char>(string_.ptr[string_.index++]);
-				return true;
-			} else {
-				// Empty string, continue parsing
-				mode_ = Mode::None;
-				for ( ; ::isspace(*p_); ++p_) ;
-				if (*p_ == ',') {
-					++p_;
-					continue;
-				} else if (*p_ == '\0') {
-					continue;
-				}
-			}
-		}
+		} else {
 		
-		// Parse number (existing logic continues...)
-		char* endptr = nullptr;
-		int n1 = ::strtol(p_, &endptr, 10);
-		if (endptr == p_) {
-			errorMsg_ = "not a number";
-			return false;
-		}
-		p_ = endptr;
-		// Check for range
-		if (*p_ == '-') {
-			++p_;
-			int n2 = ::strtol(p_, &endptr, 10);
-			if (endptr != p_) {
-				// nothing to do
-			} else if (hasRangeLimit_) {
-				n2 = rangeLimit_;
-			} else {
-				errorMsg_ = "invalid range";
+			// Parse number (existing logic continues...)
+			char* endptr = nullptr;
+			int n1 = ::strtol(p_, &endptr, 10);
+			if (endptr == p_) {
+				errorMsg_ = "not a number";
 				return false;
 			}
 			p_ = endptr;
-			range_.cur = n1;
-			range_.end = n2;
-			int n3 = 1;
-			if (*p_ == ':') {
+			// Check for range
+			if (*p_ == '-') {
 				++p_;
-				n3 = ::strtol(p_, &endptr, 10);
-				if (endptr == p_) n3 = 1;
-				if (n3 == 0) {
-					errorMsg_ = "zero step in range";
+				int n2 = ::strtol(p_, &endptr, 10);
+				if (endptr != p_) {
+					// nothing to do
+				} else if (hasRangeLimit_) {
+					n2 = rangeLimit_;
+				} else {
+					errorMsg_ = "invalid range";
 					return false;
 				}
-				if (n3 < 0) n3 = -n3;
 				p_ = endptr;
+				range_.cur = n1;
+				range_.end = n2;
+				int n3 = 1;
+				if (*p_ == ':') {
+					++p_;
+					n3 = ::strtol(p_, &endptr, 10);
+					if (endptr == p_) n3 = 1;
+					if (n3 == 0) {
+						errorMsg_ = "zero step in range";
+						return false;
+					}
+					if (n3 < 0) n3 = -n3;
+					p_ = endptr;
+				}
+				range_.step = (n1 <= n2) ? n3 : -n3;
+				// Output first value of range
+				*pValue = range_.cur;
+				if (range_.cur != range_.end) {
+					mode_ = Mode::Range;
+					range_.cur += range_.step;
+				}
+			} else {
+				*pValue = n1;
 			}
-			range_.step = (n1 <= n2) ? n3 : -n3;
-			// Output first value of range
-			*pValue = range_.cur;
-			if (range_.cur != range_.end) {
-				mode_ = Mode::Range;
-				range_.cur += range_.step;
+			for ( ; ::isspace(*p_); ++p_) ;
+			if (*p_ == ',') {
+				++p_;
+				return true;
+			} else if (*p_ == '\0') {
+				return true;
+			} else {
+				errorMsg_ = "unexpected character after number";
+				return false;
 			}
-		} else {
-			*pValue = n1;
 		}
-		for ( ; ::isspace(*p_); ++p_) ;
-		if (*p_ == ',') {
-			++p_;
-			return true;
-		} else if (*p_ == '\0') {
-			return true;
-		}
-		return false;
 	}
 }
 

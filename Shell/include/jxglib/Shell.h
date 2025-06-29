@@ -92,26 +92,16 @@ public:
 		};
 		class EachNum : public EachBase {
 		private:
-			const char* argv_[2];
-			const char* p_;
-			
 			enum class Mode { None, String, Range };
+		private:
 			Mode mode_;
-			
+			const char* argvInternal_[2];
+			const char* p_;
 			int rangeLimit_;
 			bool hasRangeLimit_;
-			union {
-				struct {
-					int cur, end, step;
-				} range_;
-				
-				struct {
-					const char* ptr;
-					int bytes;
-					int index;
-				} string_;
-			};
-			
+			struct {
+				int cur, end, step;
+			} range_;
 			const char* errorMsg_;
 			
 		public:
