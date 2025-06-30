@@ -24,6 +24,7 @@ public:
 		uint32_t addrStart_;
 		int bytesPerElem_;
 		bool bigEndianFlag_;
+		bool addrFlag_;
 		bool asciiFlag_;
 	public:
 		DumpT(Printable* pPrintable = nullptr);
@@ -32,9 +33,8 @@ public:
 		DumpT& SetPrintable(Printable& printable) { pPrintable_ = &printable; return *this; }
 		DumpT& UpperCase() { upperCaseFlag_ = true; return *this; }
 		DumpT& LowerCase() { upperCaseFlag_ = false; return *this; }
-		DumpT& NoAddr() { nDigitsAddr_ = 0; return *this; }
 		DumpT& DigitsAddr(int nDigitsAddr) { nDigitsAddr_ = nDigitsAddr; return *this; }
-		DumpT& DigitsAddr_Auto() { nDigitsAddr_ = -1; return *this; }
+		DumpT& AutoDigitsAddr() { nDigitsAddr_ = -1; return *this; }
 		DumpT& BytesPerRow(int bytesPerRow) { bytesPerRow_ = bytesPerRow; return *this; }
 		DumpT& AddrStart(uint32_t addrStart) { addrStart_ = addrStart; return *this; }
 		DumpT& Data8Bit() { bytesPerElem_ = 1; bigEndianFlag_ = false; return *this; } 
@@ -44,7 +44,14 @@ public:
 		DumpT& Data16BitBE() { bytesPerElem_ = 2; bigEndianFlag_ = true; return *this; } 
 		DumpT& Data32BitBE() { bytesPerElem_ = 4; bigEndianFlag_ = true; return *this; } 
 		DumpT& Data64BitBE() { bytesPerElem_ = 8; bigEndianFlag_ = true; return *this; } 
+		DumpT& Addr(bool addrFlag = true) { addrFlag_ = addrFlag; return *this; }
 		DumpT& Ascii(bool asciiFlag = true) { asciiFlag_ = asciiFlag; return *this; }
+	public:
+		int GetBytesPerRow() const { return bytesPerRow_; }
+		int GetBytesPerElem() const { return bytesPerElem_; }
+		bool IsUpperCase() const { return upperCaseFlag_; }
+		bool IsBigEndian() const { return bigEndianFlag_; }
+		bool HasAscii() const { return asciiFlag_; }
 	public:
 		DumpT& operator()(const void* buff, int bytes);
 	private:

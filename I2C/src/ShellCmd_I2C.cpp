@@ -192,7 +192,7 @@ bool WriteData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const c
 		terr.Printf("No data to write\n");
 		return false;
 	}
-	uint8_t data[128];
+	uint8_t data[512];
 	int bytesToWrite = 0;
 	Shell::Arg::EachNum each(value);
 	if (!each.CheckValidity(&bytesToWrite)) {
@@ -223,7 +223,7 @@ bool WriteData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const c
 
 bool ReadData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const char* value, bool nostop)
 {
-	uint8_t data[128];
+	uint8_t data[512];
 	int bytesToRead = sizeof(data);
 	if (value) {
 		int num = ::strtol(value, nullptr, 0);
@@ -238,6 +238,7 @@ bool ReadData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const ch
 		terr.Printf("Failed to receive data from address 0x%02x\n", addr);
 		return false;
 	}
-	Printable::DumpT().DigitsAddr(0)(data, bytesRead);
+	Printable::DumpT dump(tout);
+	dump.Addr(bytesToRead > dump.GetBytesPerRow())(data, bytesRead);
 	return true;
 }

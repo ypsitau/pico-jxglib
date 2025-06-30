@@ -46,7 +46,8 @@ pico_enable_stdio_usb(test-I2C 0)
 
 # Add the standard library to the build
 target_link_libraries(test-I2C
-        pico_stdlib)
+        pico_stdlib
+        hardware_i2c)
 
 # Add the standard include files to the build
 target_include_directories(test-I2C PRIVATE

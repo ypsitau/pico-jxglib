@@ -104,7 +104,7 @@ Printable::DumpT& Printable::DumpT::operator()(const void* buff, int cnt)
 	int nCols = (bytesPerRow_ + bytesPerElem_ - 1) / bytesPerElem_;
 	for (int i = 0; i < cnt; i++, pElem += bytesPerElem_) {
 		if (iCol == 0) {
-			if (nDigitsAddr > 0) {
+			if (addrFlag_ && nDigitsAddr > 0) {
 				printable.Printf(formatAddr, addr + i * bytesPerElem_);
 			}
 			pAsciiBuff = asciiBuff;
