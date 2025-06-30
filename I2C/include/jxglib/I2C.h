@@ -25,7 +25,7 @@ public:
 	uint set_baudrate(uint baudrate) { return ::i2c_set_baudrate(i2c_, baudrate); }
 	void set_slave_mode(uint8_t addr, bool slave = true) { ::i2c_set_slave_mode(i2c_, slave, addr); }
 	void set_master_mode() { ::i2c_set_slave_mode(i2c_, false, 0x00); }
-	uint i2c_get_index() const { return ::i2c_get_index(i2c_); }
+	uint get_index() const { return ::i2c_get_index(i2c_); }
 	i2c_hw_t *get_hw() const { return ::i2c_get_hw(i2c_); }
 	static I2C& get_instance(uint num);
 	uint get_dreq(bool is_tx) const { return ::i2c_get_dreq(i2c_, is_tx); }

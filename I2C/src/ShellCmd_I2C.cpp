@@ -1,4 +1,7 @@
-#include "hardware/i2c.h"
+//==============================================================================
+// ShellCmd_I2C.cpp
+//==============================================================================
+#include "jxglib/I2C.h"
 #include "jxglib/Common.h"
 #include "jxglib/Serial.h"
 #include "jxglib/Shell.h"
@@ -13,9 +16,9 @@ struct {
 uint freq = 100'000;
 uint32_t msecTimeout = 300;
 
-void ScanBus(Printable& tout, Printable& terr, i2c_inst_t* i2c);
-bool SendData(Printable& tout, Printable& terr, i2c_inst_t* i2c, uint8_t addr, const char* value, bool nostop);
-bool RecvData(Printable& tout, Printable& terr, i2c_inst_t* i2c, uint8_t addr, const char* value, bool nostop);
+void ScanBus(Printable& tout, Printable& terr, I2C& i2c);
+bool WriteData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const char* value, bool nostop);
+bool ReadData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const char* value, bool nostop);
 
 ShellCmd(i2c, "scans I2C bus and prints connected addresses")
 {
@@ -61,8 +64,12 @@ ShellCmd(i2c, "scans I2C bus and prints connected addresses")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return 1;
 	if (arg.GetBool("help")) {
-		tout.Printf("Usage: %s [OPTION]... [CMD]...\n", argv[0]);
+		tout.Printf("Usage: %s [OPTION]... [COMMAND]...\n", argv[0]);
 		arg.PrintHelp(tout);
+		tout.Printf("Usage: %s [OPTION]... [COMMAND]...\n", argv[0]);
+		tout.Printf("Commands:\n");
+		tout.Printf("  read[:N]     read N bytes of data\n");
+		tout.Printf("  write:data   write data\n");
 		return 0;
 	}
 	const char* value = nullptr;
@@ -113,8 +120,8 @@ ShellCmd(i2c, "scans I2C bus and prints connected addresses")
 	}
 	if (arg.GetBool("dumb")) return 0;
 	int iBus = infoTbl[pinAssign.SDA].iBus;
-	i2c_inst_t* i2c = (iBus == 0) ? i2c0 : i2c1;
-	::i2c_init(i2c, freq);
+	I2C& i2c = (iBus == 0)? I2C0 : I2C1;
+	i2c.init(freq);
 	::gpio_set_function(pinAssign.SDA, GPIO_FUNC_I2C);
 	::gpio_set_function(pinAssign.SCL, GPIO_FUNC_I2C);
 	::gpio_pull_up(pinAssign.SDA);
@@ -133,25 +140,29 @@ ShellCmd(i2c, "scans I2C bus and prints connected addresses")
 			bool nostop = (iArg + 1 < argc);
 			const char* arg = argv[iArg];
 			const char* value;
-			if (Arg::GetAssigned(arg, "send", &value)) {
-				if (!SendData(tout, terr, i2c, addr, value, nostop)) {
+			if (Arg::GetAssigned(arg, "write", &value)) {
+				if (!WriteData(tout, terr, i2c, addr, value, nostop)) {
 					rtn = 1;
 					break;
 				}
-			} else if (Arg::GetAssigned(arg, "recv", &value)) {
-				if (!RecvData(tout, terr, i2c, addr, value, nostop)) {
+			} else if (Arg::GetAssigned(arg, "read", &value)) {
+				if (!ReadData(tout, terr, i2c, addr, value, nostop)) {
 					rtn = 1;
 					break;
 				}
+			} else {
+				terr.Printf("Unknown command: %s\n", arg);
+				rtn = 1;
+				break;
 			}
 		}
 	}
 	return rtn;
 }
 
-void ScanBus(Printable& tout, Printable& terr, i2c_inst_t* i2c)
+void ScanBus(Printable& tout, Printable& terr, I2C& i2c)
 {
-	tout.Printf("Bus Scan on I2C %d (SDA:GPIO%d SCL:GPIO%d) @ %d Hz\n", ::i2c_get_index(i2c), pinAssign.SDA, pinAssign.SCL, freq);
+	tout.Printf("Bus Scan on I2C %d (SDA:GPIO%d SCL:GPIO%d) @ %d Hz\n", i2c.get_index(), pinAssign.SDA, pinAssign.SCL, freq);
 	tout.Printf("   0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F\n");
 	int iCol = 0;
 	for (int addr = 0; addr < (1 << 7); ++addr) {
@@ -160,7 +171,7 @@ void ScanBus(Printable& tout, Printable& terr, i2c_inst_t* i2c)
 			tout.Printf("-- ");
 		} else {
 			uint8_t rxdata;
-			int rtn = ::i2c_read_blocking(i2c, addr, &rxdata, sizeof(rxdata), false);
+			int rtn = i2c.read_blocking(addr, &rxdata, sizeof(rxdata), false);
 			if (rtn < 0) {
 				tout.Printf("-- ");
 			} else {
@@ -175,10 +186,10 @@ void ScanBus(Printable& tout, Printable& terr, i2c_inst_t* i2c)
 	}
 }
 
-bool SendData(Printable& tout, Printable& terr, i2c_inst_t* i2c, uint8_t addr, const char* value, bool nostop)
+bool WriteData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const char* value, bool nostop)
 {
 	if (!value) {
-		terr.Printf("No data to send\n");
+		terr.Printf("No data to write\n");
 		return false;
 	}
 	uint8_t data[128];
@@ -188,7 +199,7 @@ bool SendData(Printable& tout, Printable& terr, i2c_inst_t* i2c, uint8_t addr, c
 		terr.Printf("Invalid data format: %s\n", value);
 		return false;
 	} else if (bytesToWrite == 0) {
-		terr.Printf("No data to send\n");
+		terr.Printf("No data to write\n");
 		return false;
 	} else if (bytesToWrite > sizeof(data)) {
 		terr.Printf("Data size exceeds buffer limit (%zu bytes)\n", sizeof(data));
@@ -202,15 +213,15 @@ bool SendData(Printable& tout, Printable& terr, i2c_inst_t* i2c, uint8_t addr, c
 		}
 		data[i] = static_cast<uint8_t>(num);
 	}
-	int bytesWritten = ::i2c_write_blocking_until(i2c, addr, data, bytesToWrite, nostop, ::make_timeout_time_ms(msecTimeout));
+	int bytesWritten = i2c.write_blocking_until(addr, data, bytesToWrite, nostop, ::make_timeout_time_ms(msecTimeout));
 	if (bytesWritten < 0) {
-		terr.Printf("Failed to send data to address 0x%02x\n", addr);
+		terr.Printf("Failed to write data to address 0x%02x\n", addr);
 		return false;
 	}
 	return true;
 }
 
-bool RecvData(Printable& tout, Printable& terr, i2c_inst_t* i2c, uint8_t addr, const char* value, bool nostop)
+bool ReadData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const char* value, bool nostop)
 {
 	uint8_t data[128];
 	int bytesToRead = sizeof(data);
@@ -222,7 +233,7 @@ bool RecvData(Printable& tout, Printable& terr, i2c_inst_t* i2c, uint8_t addr, c
 		}
 		bytesToRead = static_cast<int>(num);
 	}
-	int bytesRead = ::i2c_read_blocking_until(i2c, addr, data, bytesToRead, nostop, ::make_timeout_time_ms(msecTimeout));
+	int bytesRead = i2c.read_blocking_until(addr, data, bytesToRead, nostop, ::make_timeout_time_ms(msecTimeout));
 	if (bytesRead < 0) {
 		terr.Printf("Failed to receive data from address 0x%02x\n", addr);
 		return false;

@@ -20,10 +20,12 @@ I2C& I2C::get_instance(uint num)
 
 int I2C::Read(uint8_t addr, void* dst, size_t len, bool nostop, uint usecTimeout)
 {
+    return 0;
 }
 
 int I2C::Write(uint8_t addr, const void* src, size_t len, bool nostop)
 {
+    return 0;
 }
 
 }
