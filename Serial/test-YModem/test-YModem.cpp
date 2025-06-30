@@ -9,7 +9,7 @@
 #include "jxglib/RTC/DS323x.h"
 #include "jxglib/FS.h"
 #include "jxglib/ST7789.h"
-#include "jxglib/USBHost/HID.h"
+//#include "jxglib/USBHost/HID.h"
 #include "jxglib/Font/shinonome16.h"
 
 using namespace jxglib;
@@ -453,7 +453,7 @@ int main()
 {
 	::stdio_init_all();
 	LFS::Flash driveA("A:",  0x1010'0000, 0x0004'0000); // Flash address and size 256kB
-#if 1
+#if 0
 	::spi_init(spi1, 125'000'000);
 	GPIO14.set_function_SPI1_SCK();
 	GPIO15.set_function_SPI1_TX();
