@@ -759,7 +759,8 @@ const char* Shell::Arg::EachCmd::CmdProc::GetProc() const
 
 Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdProc::Advance()
 {
-	return GetNext()? GetNext() : GetParent()? GetParent()->Advance() : nullptr;
+	if (GetNext()) return GetNext();
+	return GetParent()? GetParent()->Advance() : nullptr;
 }
 
 void Shell::Arg::EachCmd::CmdProc::Print(int indentLevel) const
@@ -793,7 +794,8 @@ Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdGroup::Advance()
 		firstFlag_ = false;
 		if (pHead_) return pHead_->Advance();
 	}
-	return GetNext()? GetNext() : GetParent()? GetParent()->Advance() : nullptr;
+	if (GetNext()) return GetNext();
+	return GetParent()? GetParent()->Advance() : nullptr;
 }
 
 void Shell::Arg::EachCmd::CmdGroup::Print(int indentLevel) const
