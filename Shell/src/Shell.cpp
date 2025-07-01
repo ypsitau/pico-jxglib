@@ -756,6 +756,11 @@ Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdProc::Rewind()
 	return this;
 }
 
+void Shell::Arg::EachCmd::CmdProc::Print(int indentLevel) const
+{
+	::printf("%*s%s\n", indentLevel * 2, "", proc_);
+}
+
 //------------------------------------------------------------------------------
 // Shell::Arg::EachCmd::CmdGroup
 //------------------------------------------------------------------------------
@@ -776,21 +781,29 @@ void Shell::Arg::EachCmd::CmdGroup::AddCmd(Cmd* pCmd)
 
 const char* Shell::Arg::EachCmd::CmdGroup::GetProc() const
 {
-	return pCur_? pCur_->GetProc() : nullptr;
+	return pCur_? pCur_->GetProc() : GetNext()? GetNext()->GetProc() : nullptr;
 }
 
 Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdGroup::Advance()
 {
-	if (!pCur_) return nullptr;
+	if (!pCur_) return GetNext();
 	pCur_ = pCur_->Advance();
-	if (pCur_) return pCur_;
-	return GetNext();
+	return pCur_? pCur_ : GetNext();
 }
 
 Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdGroup::Rewind()
 {
 	pCur_ = pHead_.get();
 	return pCur_;
+}
+
+void Shell::Arg::EachCmd::CmdGroup::Print(int indentLevel) const
+{
+	::printf("%*s{\n", indentLevel * 2, "");
+	for (Cmd* pCmd = pHead_.get(); pCmd; pCmd = pCmd->GetNext()) {
+		pCmd->Print(indentLevel + 1);
+	}
+	::printf("%*s}\n", indentLevel * 2, "");
 }
 
 //------------------------------------------------------------------------------
@@ -823,6 +836,11 @@ Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdRepeat::Rewind()
 	Cmd* pChild = GetNext();
 	nCur_ = 0;
 	return pChild? pChild->Rewind() : nullptr;
+}
+
+void Shell::Arg::EachCmd::CmdRepeat::Print(int indentLevel) const
+{
+	::printf("%*srepeat %d\n", indentLevel * 2, "", nRepeats_);
 }
 
 //------------------------------------------------------------------------------

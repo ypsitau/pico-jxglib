@@ -223,10 +223,11 @@ void test_EachCmd()
 	char* argv[10];
 	int argc = count_of(argv);
 	const char* errorMsg = nullptr;
-	::strcpy(str, "{cmd1 cmd2 cmd3} cmd4 cmd5 {cmd6}");
+	::strcpy(str, "{cmd1 cmd2} cmd4 cmd5 {cmd6}");
 	tokenizer.Tokenize(str, sizeof(str), argv, &argc, &errorMsg);
 	Shell::Arg::EachCmd each(argv[0], argv[argc]);
 	each.Initialize();
+	each.Print();
 	while (const char* proc = each.Next()) {
 		::printf("%s\n", proc);
 	}

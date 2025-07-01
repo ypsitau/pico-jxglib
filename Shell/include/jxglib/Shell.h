@@ -144,6 +144,7 @@ public:
 				virtual const char* GetProc() const = 0;
 				virtual Cmd* Advance() = 0;
 				virtual Cmd* Rewind() = 0;
+				virtual void Print(int indentLevel = 0) const = 0;
 			};
 			class CmdProc : public Cmd {
 			protected:
@@ -154,6 +155,7 @@ public:
 				virtual const char* GetProc() const override;
 				virtual Cmd* Advance() override;
 				virtual Cmd* Rewind() override;
+				virtual void Print(int indentLevel = 0) const override;
 			};
 			class CmdGroup : public Cmd {
 			protected:
@@ -170,6 +172,7 @@ public:
 				virtual const char* GetProc() const override;
 				virtual Cmd* Advance() override;
 				virtual Cmd* Rewind() override;
+				virtual void Print(int indentLevel = 0) const override;
 			};
 			class CmdRepeat : public Cmd {
 			private:
@@ -181,6 +184,7 @@ public:
 				virtual const char* GetProc() const override;
 				virtual Cmd* Advance() override;
 				virtual Cmd* Rewind() override;
+				virtual void Print(int indentLevel = 0) const override;
 			};
 		private:
 			CmdGroup cmdGroup_;
@@ -191,6 +195,8 @@ public:
 		public:
 			bool Initialize();
 			const char* Next();
+		public:
+			void Print(int indentLevel = 0) const { cmdGroup_.Print(indentLevel); }
 		};
 	private:
 		const Opt* optTbl_;
