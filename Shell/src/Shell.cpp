@@ -720,6 +720,14 @@ const char* Shell::Arg::EachTask::Next()
 //------------------------------------------------------------------------------
 // Shell::Arg::EachTask::TaskProc
 //------------------------------------------------------------------------------
+Shell::Arg::EachTask::TaskProc::TaskProc(const char* proc) : proc_{proc}
+{}
+
+const char* Shell::Arg::EachTask::TaskProc::GetProc() const 
+{
+	return proc_;
+}
+
 Shell::Arg::EachTask::Task* Shell::Arg::EachTask::TaskProc::Advance()
 {
 	return GetNext();
@@ -728,6 +736,9 @@ Shell::Arg::EachTask::Task* Shell::Arg::EachTask::TaskProc::Advance()
 //------------------------------------------------------------------------------
 // Shell::Arg::EachTask::TaskGroup
 //------------------------------------------------------------------------------
+Shell::Arg::EachTask::TaskGroup::TaskGroup(TaskGroup* pParent) : pParent_{pParent}, pCur_{nullptr}
+{}
+
 void Shell::Arg::EachTask::TaskGroup::AddTask(Task* pTask)
 {
 	if (!pHead_) {
@@ -737,6 +748,11 @@ void Shell::Arg::EachTask::TaskGroup::AddTask(Task* pTask)
 		for ( ; pLast->GetNext(); pLast = pLast->GetNext()) ;
 		pLast->SetNext(pTask);
 	}
+}
+
+const char* Shell::Arg::EachTask::TaskGroup::GetProc() const
+{
+	return pCur_? pCur_->GetProc() : nullptr;
 }
 
 Shell::Arg::EachTask::Task* Shell::Arg::EachTask::TaskGroup::Advance()

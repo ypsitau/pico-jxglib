@@ -148,9 +148,9 @@ public:
 			protected:
 				const char* proc_;
 			public:
-				TaskProc(const char* proc) : proc_{proc} {}
+				TaskProc(const char* proc);
 			public:
-				virtual const char* GetProc() const override { return proc_; }
+				virtual const char* GetProc() const override;
 				virtual Task* Advance() override;
 			};
 			class TaskGroup : public Task {
@@ -159,11 +159,12 @@ public:
 				Task* pCur_;
 				std::unique_ptr<Task> pHead_;
 			public:
-				TaskGroup(TaskGroup* pParent = nullptr) : pParent_{pParent}, pCur_{nullptr} {}
+				TaskGroup(TaskGroup* pParent = nullptr);
 			public:
 				Task* GetHead() const { return pHead_.get(); }
 				TaskGroup* GetParent() const { return pParent_; }
 				void AddTask(Task* pTask);
+			public:
 				virtual const char* GetProc() const override;
 				virtual Task* Advance() override;
 			};
