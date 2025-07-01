@@ -216,10 +216,15 @@ void test_EachNum()
 	}
 }
 
+void test_EachTask()
+{
+}
+
 int main()
 {
 	::stdio_init_all();
-	test_Parse();
-	test_EachNum();
+	//test_Parse();
+	//test_EachNum();
+	test_EachTask();
 	for (;;) ::tight_loop_contents();
 }

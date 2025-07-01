@@ -130,6 +130,53 @@ public:
 			const char* Next();
 			const FS::FileInfo& GetFileInfo() const { return *pFileInfo_; }
 		};
+		class EachTask : public EachBase {
+		private:
+			class Task {
+			protected:
+				Task* pNext_;
+			public:
+				Task() : pNext_{nullptr} {}
+			public:
+				void SetNext(Task* pNext) { pNext_ = pNext; }
+				Task* GetNext() const { return pNext_; }
+			public:
+				virtual const char* GetProc() const = 0;
+				virtual Task* Advance() = 0;
+			};
+			class TaskProc : public Task {
+			protected:
+				const char* proc_;
+			public:
+				TaskProc(const char* proc) : proc_{proc} {}
+			public:
+				virtual const char* GetProc() const override { return proc_; }
+				virtual Task* Advance() override;
+			};
+			class TaskGroup : public Task {
+			protected:
+				TaskGroup* pParent_;
+				Task* pCur_;
+				std::unique_ptr<Task> pHead_;
+			public:
+				TaskGroup(TaskGroup* pParent = nullptr) : pParent_{pParent}, pCur_{nullptr} {}
+			public:
+				Task* GetHead() const { return pHead_.get(); }
+				TaskGroup* GetParent() const { return pParent_; }
+				void AddTask(Task* pTask);
+				virtual const char* GetProc() const override;
+				virtual Task* Advance() override;
+			};
+		private:
+			TaskGroup taskGroup_;
+			Task* pTaskCur_;
+		public:
+			EachTask(const char*& argvBegin, const char*& argvEnd);
+			EachTask(char*& argvBegin, char*& argvEnd) : EachTask(const_cast<const char*&>(argvBegin), const_cast<const char*&>(argvEnd)) {}
+		public:
+			bool Initialize();
+			const char* Next();
+		};
 	private:
 		const Opt* optTbl_;
 		int nOpts_;

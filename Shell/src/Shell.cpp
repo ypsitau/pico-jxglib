@@ -12,7 +12,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 Shell Shell::Instance;
 const char* Shell::StartupScriptName = "/autoexec.sh";
-const char* Shell::specialTokens_[] = { ">>", "||", ">", "|", ";" };
+const char* Shell::specialTokens_[] = { ">>", "||", ">", "|", ";", "{", "}", "(", ")", "[", "]" };
 
 Shell::Shell() : stat_{Stat::Startup}, pTerminal_{&TerminalDumb::Instance},
 	pCmdRunning_{nullptr}, tokenizer_(specialTokens_, count_of(specialTokens_)), interactiveFlag_{false}
@@ -679,6 +679,71 @@ const char* Shell::Arg::EachGlob::Next()
 		}
 	}
 	return nullptr;
+}
+
+//------------------------------------------------------------------------------
+// Shell::Arg::EachTask
+//------------------------------------------------------------------------------
+Shell::Arg::EachTask::EachTask(const char*& argvBegin, const char*& argvEnd) : EachBase(argvBegin, argvEnd), pTaskCur_{nullptr} {}
+
+bool Shell::Arg::EachTask::Initialize()
+{
+	const char** argv = argvBegin_;
+	TaskGroup* pTaskGroup = &taskGroup_;
+	for ( ; argv != argvEnd_; ++argv) {
+		const char* arg = *argv;
+		if (::strcmp(arg, "{") == 0) {
+			TaskGroup* pTaskGroupNew = new TaskGroup(pTaskGroup);
+			pTaskGroup->AddTask(pTaskGroupNew);
+			pTaskGroup = pTaskGroupNew;
+		} else if (::strcmp(arg, "}") == 0) {
+			pTaskGroup = pTaskGroup->GetParent();
+			if (!pTaskGroup) {
+				// unmatched closing brace
+				return false;
+			}
+		} else {
+			TaskProc* pTask = new TaskProc(arg);
+			pTaskGroup->AddTask(pTask);
+		}
+	}
+	pTaskCur_ = &taskGroup_;
+	return true;
+}
+
+const char* Shell::Arg::EachTask::Next()
+{
+	pTaskCur_ = pTaskCur_->Advance();
+	return nullptr;
+}
+
+//------------------------------------------------------------------------------
+// Shell::Arg::EachTask::TaskProc
+//------------------------------------------------------------------------------
+Shell::Arg::EachTask::Task* Shell::Arg::EachTask::TaskProc::Advance()
+{
+	return GetNext();
+}
+
+//------------------------------------------------------------------------------
+// Shell::Arg::EachTask::TaskGroup
+//------------------------------------------------------------------------------
+void Shell::Arg::EachTask::TaskGroup::AddTask(Task* pTask)
+{
+	if (!pHead_) {
+		pHead_.reset(pTask);
+	} else {
+		Task* pLast = pHead_.get();
+		for ( ; pLast->GetNext(); pLast = pLast->GetNext()) ;
+		pLast->SetNext(pTask);
+	}
+}
+
+Shell::Arg::EachTask::Task* Shell::Arg::EachTask::TaskGroup::Advance()
+{
+	Task* pTask = pCur_? pCur_ : pHead_.get();
+	pCur_ = pTask->Advance();
+	return pTask;
 }
 
 //------------------------------------------------------------------------------
