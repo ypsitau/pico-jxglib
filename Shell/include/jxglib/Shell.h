@@ -140,6 +140,7 @@ public:
 			public:
 				Cmd(CmdGroup* pParent) : pParent_{pParent}, pNext_{nullptr} {}
 			public:
+				CmdGroup* GetParent() const { return pParent_; }
 				void SetNext(Cmd* pNext) { pNext_ = pNext; }
 				Cmd* GetNext() const { return pNext_; }
 			public:
@@ -166,7 +167,6 @@ public:
 				CmdGroup(CmdGroup* pParent);
 			public:
 				Cmd* GetHead() const { return pHead_.get(); }
-				CmdGroup* GetParent() const { return pParent_; }
 				void AddCmd(Cmd* pCmd);
 			public:
 				virtual const char* GetProc() const override;

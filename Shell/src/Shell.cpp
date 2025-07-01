@@ -749,7 +749,10 @@ const char* Shell::Arg::EachCmd::CmdProc::GetProc() const
 
 Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdProc::Advance()
 {
-	return GetNext()? GetNext() : pParent_? pParent_->GetNext() : nullptr;
+	for (Cmd* pCmd = this; pCmd; pCmd = pCmd->GetParent()) {
+		if (pCmd->GetNext()) return pCmd->GetNext();
+	}
+	return nullptr;
 }
 
 Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdProc::Rewind()
