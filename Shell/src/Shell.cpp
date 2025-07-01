@@ -687,24 +687,24 @@ const char* Shell::Arg::EachGlob::Next()
 }
 
 //------------------------------------------------------------------------------
-// Shell::Arg::EachTask
+// Shell::Arg::EachCmd
 //------------------------------------------------------------------------------
-Shell::Arg::EachTask::EachTask(const char*& argvBegin, const char*& argvEnd) : EachBase(argvBegin, argvEnd), pTaskCur_{nullptr} {}
+Shell::Arg::EachCmd::EachCmd(const char*& argvBegin, const char*& argvEnd) : EachBase(argvBegin, argvEnd), pCmdCur_{nullptr} {}
 
-bool Shell::Arg::EachTask::Initialize()
+bool Shell::Arg::EachCmd::Initialize()
 {
 	const char** argv = argvBegin_;
-	TaskGroup* pTaskGroup = &taskGroup_;
+	CmdGroup* pCmdGroup = &cmdGroup_;
 	for ( ; argv != argvEnd_; ++argv) {
 		const char* arg = *argv;
 		const char* value = nullptr;
 		if (::strcmp(arg, "{") == 0) {
-			TaskGroup* pTaskGroupNew = new TaskGroup(pTaskGroup);
-			pTaskGroup->AddTask(pTaskGroupNew);
-			pTaskGroup = pTaskGroupNew;
+			CmdGroup* pCmdGroupNew = new CmdGroup(pCmdGroup);
+			pCmdGroup->AddCmd(pCmdGroupNew);
+			pCmdGroup = pCmdGroupNew;
 		} else if (::strcmp(arg, "}") == 0) {
-			pTaskGroup = pTaskGroup->GetParent();
-			if (!pTaskGroup) {
+			pCmdGroup = pCmdGroup->GetParent();
+			if (!pCmdGroup) {
 				// unmatched closing brace
 				return false;
 			}
@@ -718,68 +718,68 @@ bool Shell::Arg::EachTask::Initialize()
 					return false;
 				}
 			}
-			pTaskGroup->AddTask(new TaskRepeat(nRepeats));
+			pCmdGroup->AddCmd(new CmdRepeat(nRepeats));
 		} else {
-			pTaskGroup->AddTask(new TaskProc(arg));
+			pCmdGroup->AddCmd(new CmdProc(arg));
 		}
 	}
-	pTaskCur_ = &taskGroup_;
+	pCmdCur_ = &cmdGroup_;
 	return true;
 }
 
-const char* Shell::Arg::EachTask::Next()
+const char* Shell::Arg::EachCmd::Next()
 {
-	if (!pTaskCur_) return nullptr;
-	const char* proc = pTaskCur_->GetProc();
-	pTaskCur_ = pTaskCur_->Advance();
+	if (!pCmdCur_) return nullptr;
+	const char* proc = pCmdCur_->GetProc();
+	pCmdCur_ = pCmdCur_->Advance();
 	return proc;
 }
 
 //------------------------------------------------------------------------------
-// Shell::Arg::EachTask::TaskProc
+// Shell::Arg::EachCmd::CmdProc
 //------------------------------------------------------------------------------
-Shell::Arg::EachTask::TaskProc::TaskProc(const char* proc) : proc_{proc}
+Shell::Arg::EachCmd::CmdProc::CmdProc(const char* proc) : proc_{proc}
 {}
 
-const char* Shell::Arg::EachTask::TaskProc::GetProc() const 
+const char* Shell::Arg::EachCmd::CmdProc::GetProc() const 
 {
 	return proc_;
 }
 
-Shell::Arg::EachTask::Task* Shell::Arg::EachTask::TaskProc::Advance()
+Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdProc::Advance()
 {
 	return GetNext();
 }
 
-Shell::Arg::EachTask::Task* Shell::Arg::EachTask::TaskProc::Rewind()
+Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdProc::Rewind()
 {
 	return this;
 }
 
 //------------------------------------------------------------------------------
-// Shell::Arg::EachTask::TaskGroup
+// Shell::Arg::EachCmd::CmdGroup
 //------------------------------------------------------------------------------
-Shell::Arg::EachTask::TaskGroup::TaskGroup(TaskGroup* pParent) : pParent_{pParent}, pCur_{nullptr}
+Shell::Arg::EachCmd::CmdGroup::CmdGroup(CmdGroup* pParent) : pParent_{pParent}, pCur_{nullptr}
 {}
 
-void Shell::Arg::EachTask::TaskGroup::AddTask(Task* pTask)
+void Shell::Arg::EachCmd::CmdGroup::AddCmd(Cmd* pCmd)
 {
 	if (pHead_) {
-		Task* pLast = pHead_.get();
+		Cmd* pLast = pHead_.get();
 		for ( ; pLast->GetNext(); pLast = pLast->GetNext()) ;
-		pLast->SetNext(pTask);
+		pLast->SetNext(pCmd);
 	} else {
-		pHead_.reset(pTask);
+		pHead_.reset(pCmd);
 		pCur_ = pHead_.get();
 	}
 }
 
-const char* Shell::Arg::EachTask::TaskGroup::GetProc() const
+const char* Shell::Arg::EachCmd::CmdGroup::GetProc() const
 {
 	return pCur_? pCur_->GetProc() : nullptr;
 }
 
-Shell::Arg::EachTask::Task* Shell::Arg::EachTask::TaskGroup::Advance()
+Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdGroup::Advance()
 {
 	if (!pCur_) return nullptr;
 	pCur_ = pCur_->Advance();
@@ -787,30 +787,30 @@ Shell::Arg::EachTask::Task* Shell::Arg::EachTask::TaskGroup::Advance()
 	return GetNext();
 }
 
-Shell::Arg::EachTask::Task* Shell::Arg::EachTask::TaskGroup::Rewind()
+Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdGroup::Rewind()
 {
 	pCur_ = pHead_.get();
 	return pCur_;
 }
 
 //------------------------------------------------------------------------------
-// Shell::Arg::EachTask::TaskRepeat
+// Shell::Arg::EachCmd::CmdRepeat
 //------------------------------------------------------------------------------
-Shell::Arg::EachTask::TaskRepeat::TaskRepeat(int nRepeats) : nRepeats_{nRepeats}, nCur_{0}
+Shell::Arg::EachCmd::CmdRepeat::CmdRepeat(int nRepeats) : nRepeats_{nRepeats}, nCur_{0}
 {}
 
-const char* Shell::Arg::EachTask::TaskRepeat::GetProc() const
+const char* Shell::Arg::EachCmd::CmdRepeat::GetProc() const
 {
-	Task* pChild = GetNext();
+	Cmd* pChild = GetNext();
 	return pChild? pChild->GetProc() : nullptr;
 }
 
-Shell::Arg::EachTask::Task* Shell::Arg::EachTask::TaskRepeat::Advance()
+Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdRepeat::Advance()
 {
-	Task* pChild = GetNext();
+	Cmd* pChild = GetNext();
 	if (!pChild) return nullptr;
-	Task* pTask = pChild->Advance();
-	if (pTask) return pTask;
+	Cmd* pCmd = pChild->Advance();
+	if (pCmd) return pCmd;
 	if (nCur_ < nRepeats_) {
 		nCur_++;
 		return Rewind();
@@ -818,9 +818,9 @@ Shell::Arg::EachTask::Task* Shell::Arg::EachTask::TaskRepeat::Advance()
 	return pChild->GetNext();
 }
 
-Shell::Arg::EachTask::Task* Shell::Arg::EachTask::TaskRepeat::Rewind()
+Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdRepeat::Rewind()
 {
-	Task* pChild = GetNext();
+	Cmd* pChild = GetNext();
 	nCur_ = 0;
 	return pChild? pChild->Rewind() : nullptr;
 }

@@ -130,64 +130,64 @@ public:
 			const char* Next();
 			const FS::FileInfo& GetFileInfo() const { return *pFileInfo_; }
 		};
-		class EachTask : public EachBase {
+		class EachCmd : public EachBase {
 		private:
-			class Task {
+			class Cmd {
 			protected:
-				Task* pNext_;
+				Cmd* pNext_;
 			public:
-				Task() : pNext_{nullptr} {}
+				Cmd() : pNext_{nullptr} {}
 			public:
-				void SetNext(Task* pNext) { pNext_ = pNext; }
-				Task* GetNext() const { return pNext_; }
+				void SetNext(Cmd* pNext) { pNext_ = pNext; }
+				Cmd* GetNext() const { return pNext_; }
 			public:
 				virtual const char* GetProc() const = 0;
-				virtual Task* Advance() = 0;
-				virtual Task* Rewind() = 0;
+				virtual Cmd* Advance() = 0;
+				virtual Cmd* Rewind() = 0;
 			};
-			class TaskProc : public Task {
+			class CmdProc : public Cmd {
 			protected:
 				const char* proc_;
 			public:
-				TaskProc(const char* proc);
+				CmdProc(const char* proc);
 			public:
 				virtual const char* GetProc() const override;
-				virtual Task* Advance() override;
-				virtual Task* Rewind() override;
+				virtual Cmd* Advance() override;
+				virtual Cmd* Rewind() override;
 			};
-			class TaskGroup : public Task {
+			class CmdGroup : public Cmd {
 			protected:
-				TaskGroup* pParent_;
-				Task* pCur_;
-				std::unique_ptr<Task> pHead_;
+				CmdGroup* pParent_;
+				Cmd* pCur_;
+				std::unique_ptr<Cmd> pHead_;
 			public:
-				TaskGroup(TaskGroup* pParent = nullptr);
+				CmdGroup(CmdGroup* pParent = nullptr);
 			public:
-				Task* GetHead() const { return pHead_.get(); }
-				TaskGroup* GetParent() const { return pParent_; }
-				void AddTask(Task* pTask);
+				Cmd* GetHead() const { return pHead_.get(); }
+				CmdGroup* GetParent() const { return pParent_; }
+				void AddCmd(Cmd* pCmd);
 			public:
 				virtual const char* GetProc() const override;
-				virtual Task* Advance() override;
-				virtual Task* Rewind() override;
+				virtual Cmd* Advance() override;
+				virtual Cmd* Rewind() override;
 			};
-			class TaskRepeat : public Task {
+			class CmdRepeat : public Cmd {
 			private:
 				int nRepeats_;
 				int nCur_;
 			public:
-				TaskRepeat(int nRepeats);
+				CmdRepeat(int nRepeats);
 			public:
 				virtual const char* GetProc() const override;
-				virtual Task* Advance() override;
-				virtual Task* Rewind() override;
+				virtual Cmd* Advance() override;
+				virtual Cmd* Rewind() override;
 			};
 		private:
-			TaskGroup taskGroup_;
-			Task* pTaskCur_;
+			CmdGroup cmdGroup_;
+			Cmd* pCmdCur_;
 		public:
-			EachTask(const char*& argvBegin, const char*& argvEnd);
-			EachTask(char*& argvBegin, char*& argvEnd) : EachTask(const_cast<const char*&>(argvBegin), const_cast<const char*&>(argvEnd)) {}
+			EachCmd(const char*& argvBegin, const char*& argvEnd);
+			EachCmd(char*& argvBegin, char*& argvEnd) : EachCmd(const_cast<const char*&>(argvBegin), const_cast<const char*&>(argvEnd)) {}
 		public:
 			bool Initialize();
 			const char* Next();

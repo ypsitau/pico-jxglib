@@ -216,16 +216,16 @@ void test_EachNum()
 	}
 }
 
-void test_EachTask()
+void test_EachCmd()
 {
 	char str[100];
 	Tokenizer tokenizer = Shell::CreateTokenizer();
 	char* argv[10];
 	int argc = count_of(argv);
 	const char* errorMsg = nullptr;
-	::strcpy(str, "{task1 task2 task3} task4 task5 {task6}");
+	::strcpy(str, "{cmd1 cmd2 cmd3} cmd4 cmd5 {cmd6}");
 	tokenizer.Tokenize(str, sizeof(str), argv, &argc, &errorMsg);
-	Shell::Arg::EachTask each(argv[0], argv[argc]);
+	Shell::Arg::EachCmd each(argv[0], argv[argc]);
 	each.Initialize();
 	while (const char* proc = each.Next()) {
 		::printf("%s\n", proc);
@@ -238,6 +238,6 @@ int main()
 	::stdio_init_all();
 	//test_Parse();
 	//test_EachNum();
-	test_EachTask();
+	test_EachCmd();
 	for (;;) ::tight_loop_contents();
 }
