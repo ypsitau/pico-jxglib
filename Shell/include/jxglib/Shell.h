@@ -143,10 +143,10 @@ public:
 				CmdGroup* GetParent() const { return pParent_; }
 				void SetNext(Cmd* pNext) { pNext_ = pNext; }
 				Cmd* GetNext() const { return pNext_; }
+				Cmd* GetLast();
 			public:
 				virtual const char* GetProc() const = 0;
 				virtual Cmd* Advance() = 0;
-				virtual Cmd* Rewind() = 0;
 				virtual void Print(int indentLevel = 0) const = 0;
 			};
 			class CmdProc : public Cmd {
@@ -157,12 +157,12 @@ public:
 			public:
 				virtual const char* GetProc() const override;
 				virtual Cmd* Advance() override;
-				virtual Cmd* Rewind() override;
 				virtual void Print(int indentLevel = 0) const override;
 			};
 			class CmdGroup : public Cmd {
 			protected:
 				std::unique_ptr<Cmd> pHead_;
+				bool firstFlag_;
 			public:
 				CmdGroup(CmdGroup* pParent);
 			public:
@@ -171,7 +171,6 @@ public:
 			public:
 				virtual const char* GetProc() const override;
 				virtual Cmd* Advance() override;
-				virtual Cmd* Rewind() override;
 				virtual void Print(int indentLevel = 0) const override;
 			};
 			class CmdRepeat : public Cmd {
@@ -183,7 +182,6 @@ public:
 			public:
 				virtual const char* GetProc() const override;
 				virtual Cmd* Advance() override;
-				virtual Cmd* Rewind() override;
 				virtual void Print(int indentLevel = 0) const override;
 			};
 		private:
