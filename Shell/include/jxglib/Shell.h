@@ -175,7 +175,6 @@ public:
 			private:
 				int nRepeats_;
 				int nCur_;
-				std::unique_ptr<Task> pChild_;
 			public:
 				TaskRepeat(int nRepeats);
 			public:
@@ -326,6 +325,7 @@ public:
 	virtual const char* GetTickableName() const override { return "Shell"; }
 	virtual void OnTick() override;
 public:
+	static Tokenizer CreateTokenizer();
 	static void PrintHelp(Printable& printable, bool simpleFlag = false);
 };
 

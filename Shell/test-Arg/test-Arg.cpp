@@ -218,6 +218,19 @@ void test_EachNum()
 
 void test_EachTask()
 {
+	char str[100];
+	Tokenizer tokenizer = Shell::CreateTokenizer();
+	char* argv[10];
+	int argc = count_of(argv);
+	const char* errorMsg = nullptr;
+	::strcpy(str, "{task1 task2 task3} task4 task5 {task6}");
+	tokenizer.Tokenize(str, sizeof(str), argv, &argc, &errorMsg);
+	Shell::Arg::EachTask each(argv[0], argv[argc]);
+	each.Initialize();
+	while (const char* proc = each.Next()) {
+		::printf("%s\n", proc);
+	}
+	::printf("----\n");
 }
 
 int main()

@@ -275,6 +275,11 @@ void Shell::AttachTerminal_(Terminal& terminal)
 	pTerminal_->SetTokenizer(tokenizer_);
 }
 
+Tokenizer Shell::CreateTokenizer()
+{
+	return Tokenizer(specialTokens_, count_of(specialTokens_));
+}
+
 void Shell::PrintHelp(Printable& printable, bool simpleFlag)
 {
 	if (simpleFlag) {
@@ -692,6 +697,7 @@ bool Shell::Arg::EachTask::Initialize()
 	TaskGroup* pTaskGroup = &taskGroup_;
 	for ( ; argv != argvEnd_; ++argv) {
 		const char* arg = *argv;
+		const char* value = nullptr;
 		if (::strcmp(arg, "{") == 0) {
 			TaskGroup* pTaskGroupNew = new TaskGroup(pTaskGroup);
 			pTaskGroup->AddTask(pTaskGroupNew);
@@ -702,9 +708,19 @@ bool Shell::Arg::EachTask::Initialize()
 				// unmatched closing brace
 				return false;
 			}
+		} else if (GetAssigned(arg, "repeat", &value)) {
+			int nRepeats = 1;
+			if (value) {
+				char* pEnd = nullptr;
+				nRepeats = ::strtol(value, &pEnd, 0);
+				if (*pEnd != '\0' || nRepeats < 1) {
+					// invalid repeat value
+					return false;
+				}
+			}
+			pTaskGroup->AddTask(new TaskRepeat(nRepeats));
 		} else {
-			TaskProc* pTask = new TaskProc(arg);
-			pTaskGroup->AddTask(pTask);
+			pTaskGroup->AddTask(new TaskProc(arg));
 		}
 	}
 	pTaskCur_ = &taskGroup_;
@@ -783,22 +799,30 @@ Shell::Arg::EachTask::Task* Shell::Arg::EachTask::TaskGroup::Rewind()
 Shell::Arg::EachTask::TaskRepeat::TaskRepeat(int nRepeats) : nRepeats_{nRepeats}, nCur_{0}
 {}
 
+const char* Shell::Arg::EachTask::TaskRepeat::GetProc() const
+{
+	Task* pChild = GetNext();
+	return pChild? pChild->GetProc() : nullptr;
+}
+
 Shell::Arg::EachTask::Task* Shell::Arg::EachTask::TaskRepeat::Advance()
 {
-	if (!pChild_) return nullptr;
-	Task* pTask = pChild_->Advance();
+	Task* pChild = GetNext();
+	if (!pChild) return nullptr;
+	Task* pTask = pChild->Advance();
 	if (pTask) return pTask;
 	if (nCur_ < nRepeats_) {
 		nCur_++;
-		Rewind();
+		return Rewind();
 	}
-	return pTask;
+	return pChild->GetNext();
 }
 
 Shell::Arg::EachTask::Task* Shell::Arg::EachTask::TaskRepeat::Rewind()
 {
+	Task* pChild = GetNext();
 	nCur_ = 0;
-	return pChild_? pChild_->Rewind() : nullptr;
+	return pChild? pChild->Rewind() : nullptr;
 }
 
 //------------------------------------------------------------------------------
