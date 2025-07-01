@@ -146,7 +146,7 @@ public:
 				Cmd* GetLast();
 			public:
 				virtual const char* GetProc() const = 0;
-				virtual Cmd* Advance() = 0;
+				virtual Cmd* Advance(bool *pWrapFlag) = 0;
 				virtual void Print(int indentLevel = 0) const = 0;
 			};
 			class CmdProc : public Cmd {
@@ -156,7 +156,7 @@ public:
 				CmdProc(CmdGroup* pParent, const char* proc);
 			public:
 				virtual const char* GetProc() const override;
-				virtual Cmd* Advance() override;
+				virtual Cmd* Advance(bool *pWrapFlag) override;
 				virtual void Print(int indentLevel = 0) const override;
 			};
 			class CmdGroup : public Cmd {
@@ -170,7 +170,7 @@ public:
 				void AddCmd(Cmd* pCmd);
 			public:
 				virtual const char* GetProc() const override;
-				virtual Cmd* Advance() override;
+				virtual Cmd* Advance(bool *pWrapFlag) override;
 				virtual void Print(int indentLevel = 0) const override;
 			};
 			class CmdRepeat : public Cmd {
@@ -181,7 +181,7 @@ public:
 				CmdRepeat(CmdGroup* pParent, int nRepeats);
 			public:
 				virtual const char* GetProc() const override;
-				virtual Cmd* Advance() override;
+				virtual Cmd* Advance(bool *pWrapFlag) override;
 				virtual void Print(int indentLevel = 0) const override;
 			};
 		private:
