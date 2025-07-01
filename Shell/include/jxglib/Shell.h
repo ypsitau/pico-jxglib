@@ -143,6 +143,7 @@ public:
 			public:
 				virtual const char* GetProc() const = 0;
 				virtual Task* Advance() = 0;
+				virtual Task* Rewind() = 0;
 			};
 			class TaskProc : public Task {
 			protected:
@@ -152,6 +153,7 @@ public:
 			public:
 				virtual const char* GetProc() const override;
 				virtual Task* Advance() override;
+				virtual Task* Rewind() override;
 			};
 			class TaskGroup : public Task {
 			protected:
@@ -167,6 +169,19 @@ public:
 			public:
 				virtual const char* GetProc() const override;
 				virtual Task* Advance() override;
+				virtual Task* Rewind() override;
+			};
+			class TaskRepeat : public Task {
+			private:
+				int nRepeats_;
+				int nCur_;
+				std::unique_ptr<Task> pChild_;
+			public:
+				TaskRepeat(int nRepeats);
+			public:
+				virtual const char* GetProc() const override;
+				virtual Task* Advance() override;
+				virtual Task* Rewind() override;
 			};
 		private:
 			TaskGroup taskGroup_;

@@ -713,8 +713,10 @@ bool Shell::Arg::EachTask::Initialize()
 
 const char* Shell::Arg::EachTask::Next()
 {
+	if (!pTaskCur_) return nullptr;
+	const char* proc = pTaskCur_->GetProc();
 	pTaskCur_ = pTaskCur_->Advance();
-	return nullptr;
+	return proc;
 }
 
 //------------------------------------------------------------------------------
@@ -733,6 +735,11 @@ Shell::Arg::EachTask::Task* Shell::Arg::EachTask::TaskProc::Advance()
 	return GetNext();
 }
 
+Shell::Arg::EachTask::Task* Shell::Arg::EachTask::TaskProc::Rewind()
+{
+	return this;
+}
+
 //------------------------------------------------------------------------------
 // Shell::Arg::EachTask::TaskGroup
 //------------------------------------------------------------------------------
@@ -741,12 +748,13 @@ Shell::Arg::EachTask::TaskGroup::TaskGroup(TaskGroup* pParent) : pParent_{pParen
 
 void Shell::Arg::EachTask::TaskGroup::AddTask(Task* pTask)
 {
-	if (!pHead_) {
-		pHead_.reset(pTask);
-	} else {
+	if (pHead_) {
 		Task* pLast = pHead_.get();
 		for ( ; pLast->GetNext(); pLast = pLast->GetNext()) ;
 		pLast->SetNext(pTask);
+	} else {
+		pHead_.reset(pTask);
+		pCur_ = pHead_.get();
 	}
 }
 
@@ -757,9 +765,40 @@ const char* Shell::Arg::EachTask::TaskGroup::GetProc() const
 
 Shell::Arg::EachTask::Task* Shell::Arg::EachTask::TaskGroup::Advance()
 {
-	Task* pTask = pCur_? pCur_ : pHead_.get();
-	pCur_ = pTask->Advance();
+	if (!pCur_) return nullptr;
+	pCur_ = pCur_->Advance();
+	if (pCur_) return pCur_;
+	return GetNext();
+}
+
+Shell::Arg::EachTask::Task* Shell::Arg::EachTask::TaskGroup::Rewind()
+{
+	pCur_ = pHead_.get();
+	return pCur_;
+}
+
+//------------------------------------------------------------------------------
+// Shell::Arg::EachTask::TaskRepeat
+//------------------------------------------------------------------------------
+Shell::Arg::EachTask::TaskRepeat::TaskRepeat(int nRepeats) : nRepeats_{nRepeats}, nCur_{0}
+{}
+
+Shell::Arg::EachTask::Task* Shell::Arg::EachTask::TaskRepeat::Advance()
+{
+	if (!pChild_) return nullptr;
+	Task* pTask = pChild_->Advance();
+	if (pTask) return pTask;
+	if (nCur_ < nRepeats_) {
+		nCur_++;
+		Rewind();
+	}
 	return pTask;
+}
+
+Shell::Arg::EachTask::Task* Shell::Arg::EachTask::TaskRepeat::Rewind()
+{
+	nCur_ = 0;
+	return pChild_? pChild_->Rewind() : nullptr;
 }
 
 //------------------------------------------------------------------------------
