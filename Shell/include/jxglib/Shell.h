@@ -132,11 +132,13 @@ public:
 		};
 		class EachCmd : public EachBase {
 		private:
+			class CmdGroup;
 			class Cmd {
 			protected:
+				CmdGroup* pParent_;
 				Cmd* pNext_;
 			public:
-				Cmd() : pNext_{nullptr} {}
+				Cmd(CmdGroup* pParent) : pParent_{pParent}, pNext_{nullptr} {}
 			public:
 				void SetNext(Cmd* pNext) { pNext_ = pNext; }
 				Cmd* GetNext() const { return pNext_; }
@@ -150,7 +152,7 @@ public:
 			protected:
 				const char* proc_;
 			public:
-				CmdProc(const char* proc);
+				CmdProc(CmdGroup* pParent, const char* proc);
 			public:
 				virtual const char* GetProc() const override;
 				virtual Cmd* Advance() override;
@@ -159,11 +161,9 @@ public:
 			};
 			class CmdGroup : public Cmd {
 			protected:
-				CmdGroup* pParent_;
-				Cmd* pCur_;
 				std::unique_ptr<Cmd> pHead_;
 			public:
-				CmdGroup(CmdGroup* pParent = nullptr);
+				CmdGroup(CmdGroup* pParent);
 			public:
 				Cmd* GetHead() const { return pHead_.get(); }
 				CmdGroup* GetParent() const { return pParent_; }
@@ -179,7 +179,7 @@ public:
 				int nRepeats_;
 				int nCur_;
 			public:
-				CmdRepeat(int nRepeats);
+				CmdRepeat(CmdGroup* pParent, int nRepeats);
 			public:
 				virtual const char* GetProc() const override;
 				virtual Cmd* Advance() override;
