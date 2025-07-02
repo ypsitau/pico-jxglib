@@ -135,18 +135,20 @@ public:
 			class CmdGroup;
 			class Cmd {
 			protected:
-				CmdGroup* pParent_;
-				Cmd* pNext_;
+				CmdGroup* pCmdGroupParent_;
+				Cmd* pCmdNext_;
 			public:
-				Cmd(CmdGroup* pParent) : pParent_{pParent}, pNext_{nullptr} {}
+				Cmd(CmdGroup* pParent) : pCmdGroupParent_{pParent}, pCmdNext_{nullptr} {}
 			public:
-				CmdGroup* GetParent() const { return pParent_; }
-				void SetNext(Cmd* pNext) { pNext_ = pNext; }
-				Cmd* GetNext() const { return pNext_; }
+				CmdGroup* GetParent() const { return pCmdGroupParent_; }
+				void SetNext(Cmd* pNext) { pCmdNext_ = pNext; }
+				Cmd* GetNext() const { return pCmdNext_; }
 				Cmd* GetLast();
+				Cmd* GetNextNonEmpty();
 			public:
+				virtual bool IsEmpty() const = 0;
 				virtual const char* GetProc() const = 0;
-				virtual Cmd* Advance(bool *pWrapFlag) = 0;
+				virtual Cmd* Advance() = 0;
 				virtual void Print(int indentLevel = 0) const = 0;
 			};
 			class CmdProc : public Cmd {
@@ -155,22 +157,24 @@ public:
 			public:
 				CmdProc(CmdGroup* pParent, const char* proc);
 			public:
+				virtual bool IsEmpty() const override { return false; }
 				virtual const char* GetProc() const override;
-				virtual Cmd* Advance(bool *pWrapFlag) override;
+				virtual Cmd* Advance() override;
 				virtual void Print(int indentLevel = 0) const override;
 			};
 			class CmdGroup : public Cmd {
 			protected:
-				std::unique_ptr<Cmd> pHead_;
-				bool firstFlag_;
+				std::unique_ptr<Cmd> pCmdHead_;
 			public:
 				CmdGroup(CmdGroup* pParent);
 			public:
-				Cmd* GetHead() const { return pHead_.get(); }
+				Cmd* GetHead() const { return pCmdHead_.get(); }
 				void AddCmd(Cmd* pCmd);
+				Cmd* AdvanceAtEnd();
 			public:
+				virtual bool IsEmpty() const override { return !GetHead() || GetHead()->IsEmpty(); }
 				virtual const char* GetProc() const override;
-				virtual Cmd* Advance(bool *pWrapFlag) override;
+				virtual Cmd* Advance() override;
 				virtual void Print(int indentLevel = 0) const override;
 			};
 			class CmdRepeat : public Cmd {
@@ -180,8 +184,9 @@ public:
 			public:
 				CmdRepeat(CmdGroup* pParent, int nRepeats);
 			public:
+				virtual bool IsEmpty() const override { return false; }
 				virtual const char* GetProc() const override;
-				virtual Cmd* Advance(bool *pWrapFlag) override;
+				virtual Cmd* Advance() override;
 				virtual void Print(int indentLevel = 0) const override;
 			};
 		private:

@@ -695,17 +695,17 @@ Shell::Arg::EachCmd::EachCmd(const char*& argvBegin, const char*& argvEnd) :
 bool Shell::Arg::EachCmd::Initialize()
 {
 	const char** argv = argvBegin_;
-	CmdGroup* pCmdGroup = &cmdGroup_;
+	CmdGroup* pCmdGroupParent = &cmdGroup_;
 	for ( ; argv != argvEnd_; ++argv) {
 		const char* arg = *argv;
 		const char* value = nullptr;
 		if (::strcmp(arg, "{") == 0) {
-			CmdGroup* pCmdGroupNew = new CmdGroup(pCmdGroup);
-			pCmdGroup->AddCmd(pCmdGroupNew);
-			pCmdGroup = pCmdGroupNew;
+			CmdGroup* pCmdGroupNew = new CmdGroup(pCmdGroupParent);
+			pCmdGroupParent->AddCmd(pCmdGroupNew);
+			pCmdGroupParent = pCmdGroupNew;
 		} else if (::strcmp(arg, "}") == 0) {
-			pCmdGroup = pCmdGroup->GetParent();
-			if (!pCmdGroup) {
+			pCmdGroupParent = pCmdGroupParent->GetParent();
+			if (!pCmdGroupParent) {
 				// unmatched closing brace
 				return false;
 			}
@@ -719,9 +719,9 @@ bool Shell::Arg::EachCmd::Initialize()
 					return false;
 				}
 			}
-			pCmdGroup->AddCmd(new CmdRepeat(pCmdGroup, nRepeats));
+			pCmdGroupParent->AddCmd(new CmdRepeat(pCmdGroupParent, nRepeats));
 		} else {
-			pCmdGroup->AddCmd(new CmdProc(pCmdGroup, arg));
+			pCmdGroupParent->AddCmd(new CmdProc(pCmdGroupParent, arg));
 		}
 	}
 	pCmdCur_ = &cmdGroup_;
@@ -732,8 +732,7 @@ const char* Shell::Arg::EachCmd::Next()
 {
 	if (!pCmdCur_) return nullptr;
 	const char* proc = pCmdCur_->GetProc();
-	bool wrapFlag;
-	pCmdCur_ = pCmdCur_->Advance(&wrapFlag);
+	pCmdCur_ = pCmdCur_->Advance();
 	return proc;
 }
 
@@ -744,6 +743,13 @@ Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::Cmd::GetLast()
 {
 	Cmd* pCmd = this;
 	for ( ; pCmd->GetNext(); pCmd = pCmd->GetNext()) ;
+	return pCmd;
+}
+
+Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::Cmd::GetNextNonEmpty()
+{
+	Cmd* pCmd = GetNext();
+	for ( ; pCmd && pCmd->IsEmpty(); pCmd = pCmd->GetNext()) ;
 	return pCmd;
 }
 
@@ -758,12 +764,10 @@ const char* Shell::Arg::EachCmd::CmdProc::GetProc() const
 	return proc_;
 }
 
-Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdProc::Advance(bool *pWrapFlag)
+Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdProc::Advance()
 {
-	*pWrapFlag = true;
-	bool wrapFlag;
-	if (GetNext()) return GetNext();
-	return GetParent()? GetParent()->Advance(&wrapFlag) : nullptr;
+	Cmd* pCmdNext = GetNextNonEmpty();
+	return pCmdNext? pCmdNext : GetParent()? GetParent()->AdvanceAtEnd() : nullptr;
 }
 
 void Shell::Arg::EachCmd::CmdProc::Print(int indentLevel) const
@@ -774,39 +778,38 @@ void Shell::Arg::EachCmd::CmdProc::Print(int indentLevel) const
 //------------------------------------------------------------------------------
 // Shell::Arg::EachCmd::CmdGroup
 //------------------------------------------------------------------------------
-Shell::Arg::EachCmd::CmdGroup::CmdGroup(CmdGroup* pParent) : Cmd(pParent), firstFlag_{true}
+Shell::Arg::EachCmd::CmdGroup::CmdGroup(CmdGroup* pParent) : Cmd(pParent)
 {}
 
 void Shell::Arg::EachCmd::CmdGroup::AddCmd(Cmd* pCmd)
 {
-	if (pHead_) {
-		pHead_->GetLast()->SetNext(pCmd);
+	if (GetHead()) {
+		GetHead()->GetLast()->SetNext(pCmd);
 	} else {
-		pHead_.reset(pCmd);
+		pCmdHead_.reset(pCmd);
 	}
+}
+
+Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdGroup::AdvanceAtEnd()
+{
+	Cmd* pCmdNext = GetNextNonEmpty();
+	return pCmdNext? pCmdNext : GetParent()? GetParent()->AdvanceAtEnd() : nullptr;;
 }
 
 const char* Shell::Arg::EachCmd::CmdGroup::GetProc() const
 {
-	return pHead_? pHead_->GetProc() : nullptr;
+	return GetHead()? GetHead()->GetProc() : nullptr;
 }
 
-Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdGroup::Advance(bool *pWrapFlag)
+Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdGroup::Advance()
 {
-	bool wrapFlag;
-	if (firstFlag_) {
-		firstFlag_ = false;
-		if (pHead_) return pHead_->Advance(&wrapFlag);
-	}
-	*pWrapFlag = true;
-	if (GetNext()) return GetNext();
-	return GetParent()? GetParent()->Advance(&wrapFlag) : nullptr;
+	return GetHead()? GetHead()->Advance() : GetNext();
 }
 
 void Shell::Arg::EachCmd::CmdGroup::Print(int indentLevel) const
 {
 	::printf("%*s{\n", indentLevel * 2, "");
-	for (Cmd* pCmd = pHead_.get(); pCmd; pCmd = pCmd->GetNext()) {
+	for (Cmd* pCmd = GetHead(); pCmd; pCmd = pCmd->GetNext()) {
 		pCmd->Print(indentLevel + 1);
 	}
 	::printf("%*s}\n", indentLevel * 2, "");
@@ -824,12 +827,11 @@ const char* Shell::Arg::EachCmd::CmdRepeat::GetProc() const
 	return pChild? pChild->GetProc() : nullptr;
 }
 
-Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdRepeat::Advance(bool *pWrapFlag)
+Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdRepeat::Advance()
 {
 	Cmd* pChild = GetNext();
 	if (!pChild) return nullptr;
-	bool wrapFlag;
-	Cmd* pCmd = pChild->Advance(&wrapFlag);
+	Cmd* pCmd = pChild->Advance();
 	if (pCmd) return pCmd;
 	if (nCur_ < nRepeats_) {
 		nCur_++;
