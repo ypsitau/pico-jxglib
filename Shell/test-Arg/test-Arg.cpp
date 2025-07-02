@@ -218,6 +218,85 @@ void test_EachNum()
 
 void test_EachCmd()
 {
+    Printable& tout = Stdio::Instance;
+    Tokenizer tokenizer = Shell::CreateTokenizer();
+
+    struct EachCmdTestCase {
+        const char* desc;
+        const char* input;
+        const char* expected;
+    };
+    
+    const EachCmdTestCase cases[] = {
+        { "simple command sequence", "cmd1 cmd2 cmd3", "cmd1, cmd2, cmd3" },
+        { "command with braces", "{cmd1 cmd2 cmd3}", "cmd1, cmd2, cmd3" },
+        { "nested braces", "{cmd1 {cmd2 cmd3} cmd4}", "cmd1, cmd2, cmd3, cmd4" },
+        { "empty braces", "{}", "(none)" },
+        { "multiple empty braces", "{} {} {}", "(none)" },
+        { "nested empty braces", "{{{}}} cmd1", "cmd1" },
+        { "simple repeat", "repeat:3 cmd1", "cmd1, cmd1, cmd1" },
+        { "repeat with braces", "repeat:3 {cmd1}", "cmd1, cmd1, cmd1" },
+        { "repeat multiple commands", "repeat:3 {cmd1 cmd2}", "cmd1, cmd2, cmd1, cmd2, cmd1, cmd2" },
+        { "repeat with surrounding commands", "cmd0 repeat:3 {cmd1 cmd2} cmd3", "cmd0, cmd1, cmd2, cmd1, cmd2, cmd1, cmd2, cmd3" },
+        { "repeat with empty braces", "repeat:3 {}", "(none)" },
+        { "repeat zero times", "repeat:0 cmd1", "(none)" },
+        { "repeat one time", "repeat:1 cmd1", "cmd1" },
+        { "complex nesting", "{cmd1 cmd2 cmd3 {cmd4 cmd5} cmd6} cmd7 cmd8", "cmd1, cmd2, cmd3, cmd4, cmd5, cmd6, cmd7, cmd8" },
+        { "multiple repeat commands", "repeat:2 cmd1 repeat:2 cmd2", "cmd1, cmd1, cmd2, cmd2" },
+        { "repeat with nested braces", "repeat:2 {cmd1 {cmd2} cmd3}", "cmd1, cmd2, cmd3, cmd1, cmd2, cmd3" },
+        { "single command", "cmd1", "cmd1" },
+        { "empty input", "", "(none)" },
+        { "whitespace only", "   ", "(none)" },
+        { "nested repeat", "repeat:2 {repeat:2 cmd1}", "cmd1, cmd1, cmd1, cmd1" },
+        { "mixed empty and commands", "cmd1 {} cmd2", "cmd1, cmd2" },
+        { "deep nesting", "{{{cmd1}}}", "cmd1" }
+    };
+
+    for (size_t i = 0; i < sizeof(cases)/sizeof(cases[0]); ++i) {
+        const EachCmdTestCase& tc = cases[i];
+        tout.Printf("---- %s ----\n", tc.desc);
+        tout.Printf("[input] %s\n", tc.input);
+        
+        char str[256];
+        ::strcpy(str, tc.input);
+        char* argv[32];
+        int argc = count_of(argv);
+        const char* errorMsg = nullptr;
+        
+        tokenizer.Tokenize(str, sizeof(str), argv, &argc, &errorMsg);
+        
+        if (errorMsg) {
+            tout.Printf("[error] %s\n", errorMsg);
+        } else if (argc == 0) {
+            tout.Printf("[cmds] (none)\n");
+        } else {
+            Shell::Arg::EachCmd each(argv[0], argv[argc]);
+            
+            if (!each.Initialize()) {
+                tout.Printf("[error] %s\n", each.GetErrorMsg());
+            } else {
+                tout.Printf("[cmds] ");
+                const char* cmd;
+                bool first = true;
+                while ((cmd = each.Next()) != nullptr) {
+                    if (!first) tout.Printf(", ");
+                    tout.Printf("%s", cmd);
+                    first = false;
+                }
+                if (first) {
+                    tout.Printf("(none)");
+                }
+                tout.Println();
+            }
+        }
+        
+        tout.Printf("[expt] %s\n", tc.expected);
+        tout.Printf("\n");
+    }
+}
+
+void try_EachCmd()
+{
 	char str[100];
 	Tokenizer tokenizer = Shell::CreateTokenizer();
 	char* argv[32];
