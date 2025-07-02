@@ -817,7 +817,9 @@ Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdGroup::AdvanceAtEnd()
 
 const char* Shell::Arg::EachCmd::CmdGroup::GetProc() const
 {
-	return GetChild()? GetChild()->GetProc() : nullptr;
+	Cmd* pCmd = GetChild();
+	for ( ; pCmd && pCmd->IsEmpty(); pCmd = pCmd->GetNext()) ;
+	return pCmd? pCmd->GetProc() : nullptr;
 }
 
 Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdGroup::Advance()
