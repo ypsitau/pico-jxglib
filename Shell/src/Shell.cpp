@@ -690,7 +690,7 @@ const char* Shell::Arg::EachGlob::Next()
 // Shell::Arg::EachCmd
 //------------------------------------------------------------------------------
 Shell::Arg::EachCmd::EachCmd(const char*& argvBegin, const char*& argvEnd) :
-			EachBase(argvBegin, argvEnd), cmdGroup_(nullptr), pCmdCur_{nullptr} {}
+			EachBase(argvBegin, argvEnd), cmdGroup_(nullptr), pCmdCur_{nullptr}, errorMsg_{""} {}
 
 bool Shell::Arg::EachCmd::Initialize()
 {
@@ -698,38 +698,40 @@ bool Shell::Arg::EachCmd::Initialize()
 	Cmd* pCmdPrev = nullptr;
 	CmdGroup* pCmdGroupParent = &cmdGroup_;
 	for ( ; argv != argvEnd_; ++argv) {
-		const char* arg = *argv;
+		const char* proc = *argv;
 		const char* value = nullptr;
-		if (::strcmp(arg, "{") == 0) {
+		if (::strcmp(proc, "{") == 0) {
 			CmdGroup* pCmdGroupNew = new CmdGroup(pCmdGroupParent);
-			pCmdGroupParent->AddChild(pCmdGroupNew);
+			((pCmdPrev && pCmdPrev->DoesRequireChild())? pCmdPrev : pCmdGroupParent)->AddChild(pCmdGroupNew);
 			pCmdGroupParent = pCmdGroupNew;
 			pCmdPrev = nullptr;
-		} else if (::strcmp(arg, "}") == 0) {
+			continue;
+		} else if (::strcmp(proc, "}") == 0) {
 			pCmdPrev = pCmdGroupParent;
 			pCmdGroupParent = pCmdGroupParent->GetParent();
 			if (!pCmdGroupParent) {
-				// unmatched closing brace
+				errorMsg_ = "unmatched closing brace";
 				return false;
 			}
-		} else if (GetAssigned(arg, "repeat", &value)) {
+			continue;
+		}
+		Cmd* pCmd;
+		if (GetAssigned(proc, "repeat", &value)) {
 			int nRepeats = 1;
 			if (value) {
 				char* pEnd = nullptr;
 				nRepeats = ::strtol(value, &pEnd, 0);
 				if (*pEnd != '\0' || nRepeats < 1) {
-					// invalid repeat value
+					errorMsg_ = "invalid repeat value";
 					return false;
 				}
 			}
-			Cmd* pCmd = new CmdRepeat(pCmdGroupParent, nRepeats);
-			pCmdGroupParent->AddChild(pCmd);
-			pCmdPrev = pCmd;
+			pCmd = new CmdRepeat(pCmdGroupParent, nRepeats);
 		} else {
-			Cmd* pCmd = new CmdProc(pCmdGroupParent, arg);
-			pCmdGroupParent->AddChild(pCmd);
-			pCmdPrev = pCmd;
+			pCmd = new CmdProc(pCmdGroupParent, proc);
 		}
+		((pCmdPrev && pCmdPrev->DoesRequireChild())? pCmdPrev : pCmdGroupParent)->AddChild(pCmd);
+		pCmdPrev = pCmd;
 	}
 	pCmdCur_ = &cmdGroup_;
 	return true;
@@ -844,7 +846,6 @@ void Shell::Arg::EachCmd::CmdRepeat::Print(int indentLevel) const
 	} else {
 		::printf("%*srepeat:%d {\n", indentLevel * 2, "", nRepeats_);
 	}
-	::printf("%*srepeat:%d {\n", indentLevel * 2, "", nRepeats_);
 	for (Cmd* pCmd = GetChild(); pCmd; pCmd = pCmd->GetNext()) pCmd->Print(indentLevel + 1);
 	::printf("%*s}\n", indentLevel * 2, "");
 }

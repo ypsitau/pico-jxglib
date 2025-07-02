@@ -224,7 +224,8 @@ void test_EachCmd()
 	int argc = count_of(argv);
 	const char* errorMsg = nullptr;
 	//::strcpy(str, "{cmd1 cmd2 cmd3 {cmd4 cmd5} cmd6} cmd7 cmd8");
-	::strcpy(str, "{cmd1 cmd2 cmd3 {} {} {} {{{}}} cmd6} cmd7 cmd8");
+	//::strcpy(str, "{cmd1 cmd2 cmd3 {} {} {} {{{}}} cmd6} cmd7 cmd8");
+	::strcpy(str, "repeat:3 cmd1");
 	tokenizer.Tokenize(str, sizeof(str), argv, &argc, &errorMsg);
 	Shell::Arg::EachCmd each(argv[0], argv[argc]);
 	each.Initialize();

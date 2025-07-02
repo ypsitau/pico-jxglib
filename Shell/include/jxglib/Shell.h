@@ -146,6 +146,7 @@ public:
 				Cmd* GetLast();
 				Cmd* GetNextNonEmpty();
 			public:
+				virtual void AddChild(Cmd* pCmdChild) {}
 				virtual bool DoesRequireChild() const { return false; }
 				virtual void SetChild(Cmd* pCmdChild) {}
 				virtual bool IsEmpty() const = 0;
@@ -171,10 +172,10 @@ public:
 				CmdGroup(CmdGroup* pParent);
 			public:
 				Cmd* GetChild() const { return pCmdChild_.get(); }
-				void AddChild(Cmd* pCmdChild);
 			public:
 				virtual Cmd* AdvanceAtEnd();
 			public:
+				virtual void AddChild(Cmd* pCmdChild) override;
 				virtual bool IsEmpty() const override { return !GetChild() || GetChild()->IsEmpty(); }
 				virtual const char* GetProc() const override;
 				virtual Cmd* Advance() override;
@@ -196,11 +197,13 @@ public:
 		private:
 			CmdGroup cmdGroup_;
 			Cmd* pCmdCur_;
+			const char* errorMsg_;
 		public:
 			EachCmd(const char*& argvBegin, const char*& argvEnd);
 			EachCmd(char*& argvBegin, char*& argvEnd) : EachCmd(const_cast<const char*&>(argvBegin), const_cast<const char*&>(argvEnd)) {}
 		public:
 			bool Initialize();
+			const char* GetErrorMsg() const { return errorMsg_; }
 			const char* Next();
 		public:
 			void Print(int indentLevel = 0) const { cmdGroup_.Print(indentLevel); }
