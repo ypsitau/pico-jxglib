@@ -146,6 +146,8 @@ public:
 				Cmd* GetLast();
 				Cmd* GetNextNonEmpty();
 			public:
+				virtual bool DoesRequireChild() const { return false; }
+				virtual void SetChild(Cmd* pCmdChild) {}
 				virtual bool IsEmpty() const = 0;
 				virtual const char* GetProc() const = 0;
 				virtual Cmd* Advance() = 0;
@@ -164,28 +166,30 @@ public:
 			};
 			class CmdGroup : public Cmd {
 			protected:
-				std::unique_ptr<Cmd> pCmdHead_;
+				std::unique_ptr<Cmd> pCmdChild_;
 			public:
 				CmdGroup(CmdGroup* pParent);
 			public:
-				Cmd* GetHead() const { return pCmdHead_.get(); }
-				void AddCmd(Cmd* pCmd);
-				Cmd* AdvanceAtEnd();
+				Cmd* GetChild() const { return pCmdChild_.get(); }
+				void AddChild(Cmd* pCmdChild);
 			public:
-				virtual bool IsEmpty() const override { return !GetHead() || GetHead()->IsEmpty(); }
+				virtual Cmd* AdvanceAtEnd();
+			public:
+				virtual bool IsEmpty() const override { return !GetChild() || GetChild()->IsEmpty(); }
 				virtual const char* GetProc() const override;
 				virtual Cmd* Advance() override;
 				virtual void Print(int indentLevel = 0) const override;
 			};
-			class CmdRepeat : public Cmd {
+			class CmdRepeat : public CmdGroup {
 			private:
 				int nRepeats_;
 				int nCur_;
 			public:
 				CmdRepeat(CmdGroup* pParent, int nRepeats);
 			public:
-				virtual bool IsEmpty() const override { return false; }
-				virtual const char* GetProc() const override;
+				virtual Cmd* AdvanceAtEnd();
+			public:
+				virtual bool DoesRequireChild() const override { return true; }
 				virtual Cmd* Advance() override;
 				virtual void Print(int indentLevel = 0) const override;
 			};

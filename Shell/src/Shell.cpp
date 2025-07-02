@@ -695,15 +695,18 @@ Shell::Arg::EachCmd::EachCmd(const char*& argvBegin, const char*& argvEnd) :
 bool Shell::Arg::EachCmd::Initialize()
 {
 	const char** argv = argvBegin_;
+	Cmd* pCmdPrev = nullptr;
 	CmdGroup* pCmdGroupParent = &cmdGroup_;
 	for ( ; argv != argvEnd_; ++argv) {
 		const char* arg = *argv;
 		const char* value = nullptr;
 		if (::strcmp(arg, "{") == 0) {
 			CmdGroup* pCmdGroupNew = new CmdGroup(pCmdGroupParent);
-			pCmdGroupParent->AddCmd(pCmdGroupNew);
+			pCmdGroupParent->AddChild(pCmdGroupNew);
 			pCmdGroupParent = pCmdGroupNew;
+			pCmdPrev = nullptr;
 		} else if (::strcmp(arg, "}") == 0) {
+			pCmdPrev = pCmdGroupParent;
 			pCmdGroupParent = pCmdGroupParent->GetParent();
 			if (!pCmdGroupParent) {
 				// unmatched closing brace
@@ -719,9 +722,13 @@ bool Shell::Arg::EachCmd::Initialize()
 					return false;
 				}
 			}
-			pCmdGroupParent->AddCmd(new CmdRepeat(pCmdGroupParent, nRepeats));
+			Cmd* pCmd = new CmdRepeat(pCmdGroupParent, nRepeats);
+			pCmdGroupParent->AddChild(pCmd);
+			pCmdPrev = pCmd;
 		} else {
-			pCmdGroupParent->AddCmd(new CmdProc(pCmdGroupParent, arg));
+			Cmd* pCmd = new CmdProc(pCmdGroupParent, arg);
+			pCmdGroupParent->AddChild(pCmd);
+			pCmdPrev = pCmd;
 		}
 	}
 	pCmdCur_ = &cmdGroup_;
@@ -781,12 +788,12 @@ void Shell::Arg::EachCmd::CmdProc::Print(int indentLevel) const
 Shell::Arg::EachCmd::CmdGroup::CmdGroup(CmdGroup* pParent) : Cmd(pParent)
 {}
 
-void Shell::Arg::EachCmd::CmdGroup::AddCmd(Cmd* pCmd)
+void Shell::Arg::EachCmd::CmdGroup::AddChild(Cmd* pCmd)
 {
-	if (GetHead()) {
-		GetHead()->GetLast()->SetNext(pCmd);
+	if (GetChild()) {
+		GetChild()->GetLast()->SetNext(pCmd);
 	} else {
-		pCmdHead_.reset(pCmd);
+		pCmdChild_.reset(pCmd);
 	}
 }
 
@@ -798,50 +805,48 @@ Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdGroup::AdvanceAtEnd()
 
 const char* Shell::Arg::EachCmd::CmdGroup::GetProc() const
 {
-	return GetHead()? GetHead()->GetProc() : nullptr;
+	return GetChild()? GetChild()->GetProc() : nullptr;
 }
 
 Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdGroup::Advance()
 {
-	return GetHead()? GetHead()->Advance() : GetNext();
+	return GetChild()? GetChild()->Advance() : GetNext();
 }
 
 void Shell::Arg::EachCmd::CmdGroup::Print(int indentLevel) const
 {
 	::printf("%*s{\n", indentLevel * 2, "");
-	for (Cmd* pCmd = GetHead(); pCmd; pCmd = pCmd->GetNext()) {
-		pCmd->Print(indentLevel + 1);
-	}
+	for (Cmd* pCmd = GetChild(); pCmd; pCmd = pCmd->GetNext()) pCmd->Print(indentLevel + 1);
 	::printf("%*s}\n", indentLevel * 2, "");
 }
 
 //------------------------------------------------------------------------------
 // Shell::Arg::EachCmd::CmdRepeat
 //------------------------------------------------------------------------------
-Shell::Arg::EachCmd::CmdRepeat::CmdRepeat(CmdGroup* pParent, int nRepeats) : Cmd{pParent}, nRepeats_{nRepeats}, nCur_{0}
+Shell::Arg::EachCmd::CmdRepeat::CmdRepeat(CmdGroup* pParent, int nRepeats) : CmdGroup{pParent}, nRepeats_{nRepeats}, nCur_{0}
 {}
 
-const char* Shell::Arg::EachCmd::CmdRepeat::GetProc() const
+Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdRepeat::AdvanceAtEnd()
 {
-	Cmd* pChild = GetNext();
-	return pChild? pChild->GetProc() : nullptr;
+	Cmd* pCmdNext = GetNextNonEmpty();
+	return pCmdNext? pCmdNext : GetParent()? GetParent()->AdvanceAtEnd() : nullptr;;
 }
 
 Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdRepeat::Advance()
 {
-	Cmd* pChild = GetNext();
-	if (!pChild) return nullptr;
-	Cmd* pCmd = pChild->Advance();
-	if (pCmd) return pCmd;
-	if (nCur_ < nRepeats_) {
-		nCur_++;
-	}
-	return pChild->GetNext();
+	return GetChild()? GetChild()->Advance() : GetNext();
 }
 
 void Shell::Arg::EachCmd::CmdRepeat::Print(int indentLevel) const
 {
-	::printf("%*srepeat %d\n", indentLevel * 2, "", nRepeats_);
+	if (nRepeats_ < 0) {
+		::printf("%*srepeat {\n", indentLevel * 2, "");
+	} else {
+		::printf("%*srepeat:%d {\n", indentLevel * 2, "", nRepeats_);
+	}
+	::printf("%*srepeat:%d {\n", indentLevel * 2, "", nRepeats_);
+	for (Cmd* pCmd = GetChild(); pCmd; pCmd = pCmd->GetNext()) pCmd->Print(indentLevel + 1);
+	::printf("%*s}\n", indentLevel * 2, "");
 }
 
 //------------------------------------------------------------------------------
