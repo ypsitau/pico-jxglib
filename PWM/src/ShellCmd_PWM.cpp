@@ -143,9 +143,12 @@ ShellCmdAlias(pwm29, pwm)
 bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv[], bool hasEnableProcessed)
 {
 	PWM pwm(pin);
-	
-	for (int iArg = 0; iArg < argc; ++iArg) {
-		const char* cmd = argv[iArg];
+	Shell::Arg::EachCmd each(argv[0], argv[argc]);
+	if (!each.Initialize()) {
+		terr.Printf("%s\n", each.GetErrorMsg());
+		return false;
+	}
+	while (const char* cmd = each.Next()) {
 		const char* value = nullptr;
 		
 		if (Shell::Arg::GetAssigned(cmd, "func", &value)) {
@@ -263,11 +266,19 @@ bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv
 				return false;
 			}
 			pwm.set_counter(static_cast<uint16_t>(counter_val));
+		} else if (Shell::Arg::GetAssigned(cmd, "sleep", &value)) {
+			int msec = ::strtol(value, nullptr, 0);
+			if (msec <= 0) {
+				terr.Printf("Invalid sleep duration: %s\n", value);
+				return false;
+			}
+			Tickable::Sleep(msec);
 		} else {
 			terr.Printf("unknown command: %s\n", cmd);
 			terr.Printf("available commands: %s\n", strAvailableCommands);
 			return false;
 		}
+		if (Tickable::TickSub()) break;
 	}
 	return true;
 }

@@ -102,8 +102,12 @@ ShellCmdAlias(gpio29, gpio)
 
 bool ProcessGPIO(Printable& terr, Printable& tout, uint pin, int argc, char* argv[])
 {
-	for (int iArg = 0; iArg < argc; ++iArg) {
-		const char* cmd = argv[iArg];
+	Shell::Arg::EachCmd each(argv[0], argv[argc]);
+	if (!each.Initialize()) {
+		terr.Printf("%s\n", each.GetErrorMsg());
+		return false;
+	}
+	while (const char* cmd = each.Next()) {
 		const char* value = nullptr;
 		if (Shell::Arg::GetAssigned(cmd, "func", &value)) {
 			if (!value) {
@@ -167,10 +171,18 @@ bool ProcessGPIO(Printable& terr, Printable& tout, uint pin, int argc, char* arg
 		} else if (::strcasecmp(cmd, "lo") == 0 || ::strcasecmp(cmd, "low") == 0 ||
 					::strcasecmp(cmd, "false") == 0 || ::strcmp(cmd, "0") == 0) {
 			::gpio_put(pin, false);
+		} else if (Shell::Arg::GetAssigned(cmd, "sleep", &value)) {
+			int msec = ::strtol(value, nullptr, 0);
+			if (msec <= 0) {
+				terr.Printf("Invalid sleep duration: %s\n", value);
+				return false;
+			}
+			Tickable::Sleep(msec);
 		} else {
 			terr.Printf("unknown command: %s\n", cmd);
 			return false;
 		}
+		if (Tickable::TickSub()) return true;
 	}
 	PrintPinFunc(tout, pin);
 	return true;
