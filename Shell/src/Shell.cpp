@@ -22,7 +22,7 @@ Shell::Shell() : stat_{Stat::Startup}, pTerminal_{&TerminalDumb::Instance},
 
 bool Shell::RunCmd(Readable& tin, Printable& tout, Printable& terr, char* line, int bytesLine)
 {
-	char* tokenTbl[16];
+	char* tokenTbl[128];
 	int nToken = count_of(tokenTbl);
 	const char* errMsg;
 	Readable* ptin = &tin;

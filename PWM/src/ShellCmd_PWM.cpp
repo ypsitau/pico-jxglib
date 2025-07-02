@@ -12,7 +12,7 @@
 using namespace jxglib;
 
 static void PrintPWMStatus(Printable& tout, uint pin, bool onlyPWMFlag);
-static bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv[], bool hasEnableProcessed);
+static bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv[], bool hasEnableProcessed, bool onlyPWMFlag);
 
 static const char* strAvailableCommands = "func, enable, disable, freq, wrap, level, duty, clkdiv, phase-correct, invert, counter";
 
@@ -87,8 +87,7 @@ ShellCmd(pwm, "controls PWM pins")
 				return Result::Error;
 			}
 			uint pin = static_cast<uint>(num);
-			if (!ProcessPWM(terr, tout, pin, argc - 2, argv + 2, hasEnableProcessed)) return Result::Error;
-			PrintPWMStatus(tout, pin, onlyPWMFlag);
+			if (!ProcessPWM(terr, tout, pin, argc - 2, argv + 2, hasEnableProcessed, onlyPWMFlag)) return Result::Error;
 		}
 		return Result::Success;
 	} else if (::strncmp(GetName(), "pwm", 3) == 0) {
@@ -101,8 +100,7 @@ ShellCmd(pwm, "controls PWM pins")
 			terr.Printf("GPIO pin %u does not support PWM\n", pin);
 			return Result::Error;
 		}
-		if (!ProcessPWM(terr, tout, pin, argc - 1, argv + 1, false)) return Result::Error;
-		PrintPWMStatus(tout, pin, onlyPWMFlag);
+		if (!ProcessPWM(terr, tout, pin, argc - 1, argv + 1, false, onlyPWMFlag)) return Result::Error;
 		return Result::Success;
 	}
 	return Result::Error;
@@ -140,7 +138,7 @@ ShellCmdAlias(pwm27, pwm)
 ShellCmdAlias(pwm28, pwm)
 ShellCmdAlias(pwm29, pwm)
 
-bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv[], bool hasEnableProcessed)
+bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv[], bool hasEnableProcessed, bool onlyPWMFlag)
 {
 	PWM pwm(pin);
 	Shell::Arg::EachCmd each(argv[0], argv[argc]);
@@ -278,8 +276,9 @@ bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv
 			terr.Printf("available commands: %s\n", strAvailableCommands);
 			return false;
 		}
-		if (Tickable::TickSub()) break;
+		if (Tickable::TickSub()) return true;
 	}
+	PrintPWMStatus(tout, pin, onlyPWMFlag);
 	return true;
 }
 
