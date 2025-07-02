@@ -11,14 +11,14 @@ ShellCmd(cat, "prints the contents of files")
 		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
-	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (arg.GetBool("help")) {
 		terr.Printf("Usage: %s [OPTION]... [FILE]...\n", GetName());
 		arg.PrintHelp(terr);
 		terr.Printf("\n"
 			"Reads the contents of files and prints them to standard output.\n"
 			"When no filenames are given, the command reads from standard input.\n");
-		return 1;
+		return Result::Success;
 	}
 	if (argc < 2) {
 		int len;
@@ -31,10 +31,10 @@ ShellCmd(cat, "prints the contents of files")
 		Shell::EndInteractive();
 	} else {
 		for (Arg::EachGlob argIter(argv[1], argv[argc]); const char* pathName = argIter.Next(); ) {
-			if (argIter.GetFileInfo().IsFile() && !FS::PrintFile(terr, tout, pathName)) return 1;
+			if (argIter.GetFileInfo().IsFile() && !FS::PrintFile(terr, tout, pathName)) return Result::Error;
 		}
 	}
-	return 0;
+	return Result::Success;
 }
 
 ShellCmd(cd, "changes the current directory")
@@ -43,11 +43,11 @@ ShellCmd(cd, "changes the current directory")
 		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
-	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (argc < 2 || arg.GetBool("help")) {
 		terr.Printf("Usage: %s [OPTION]... DIRECTORY\n", GetName());
 		arg.PrintHelp(terr);
-		return 1;
+		return Result::Error;
 	}
 	const char* dirName = argv[1];
 	return FS::ChangeCurDir(terr, dirName)? 0 : 1;
@@ -59,11 +59,11 @@ ShellCmd_Named(cd_dot_dot, "cd..", "changes the current directory to the parent 
 		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
-	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (arg.GetBool("help")) {
 		terr.Printf("Usage: %s [OPTION]...\n", GetName());
 		arg.PrintHelp(terr);
-		return 1;
+		return Result::Error;
 	}
 	const char* dirName = "..";
 	return FS::ChangeCurDir(terr, dirName)? 0 : 1;
@@ -75,11 +75,11 @@ ShellCmd_Named(cd_slash, "cd/", "changes the current directory to the root direc
 		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
-	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (arg.GetBool("help")) {
 		terr.Printf("Usage: %s [OPTION]...\n", GetName());
 		arg.PrintHelp(terr);
-		return 1;
+		return Result::Error;
 	}
 	const char* dirName = "/";
 	return FS::ChangeCurDir(terr, dirName)? 0 : 1;
@@ -94,11 +94,11 @@ ShellCmd(copy, "copies files")
 		Arg::OptBool("force",		'f',	"overwrites existing files without prompting"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
-	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (argc < 3 || arg.GetBool("help")) {
 		terr.Printf("Usage: %s [OPTION]... SOURCE... DEST\n", GetName());
 		arg.PrintHelp(terr);
-		return 1;
+		return Result::Error;
 	}
 	bool recursiveFlag = arg.GetBool("recursive");
 	bool verboseFlag = arg.GetBool("verbose");
@@ -107,7 +107,7 @@ ShellCmd(copy, "copies files")
 	int rtn = 0;
 	for (Arg::EachGlob argIter(argv[1], argv[argc - 1]); const char* pathNameSrc = argIter.Next(); ) {
 		if (!FS::Copy(terr, pathNameSrc, pathNameDst, recursiveFlag, verboseFlag, forceFlag)) rtn = 1;
-		if (Tickable::TickSub()) return 1;
+		if (Tickable::TickSub()) return Result::Error;
 	}
 	return rtn;
 }
@@ -120,20 +120,20 @@ ShellCmd(format, "formats drives")
 		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
-	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (argc < 2 || arg.GetBool("help")) {
 		terr.Printf("Usage: %s DRIVE...\n", GetName());
 		arg.PrintHelp(terr);
-		return 1;
+		return Result::Error;
 	}
 	for (Arg::Each argIter(argv[1], argv[argc]); const char* driveName = argIter.Next(); ) {
 		if (!FS::IsLegalDriveName(driveName)) {
 			terr.Printf("invalid drive name: %s\n", driveName);
-			return 1;
+			return Result::Error;
 		}
-		if (!FS::Format(terr, driveName)) return 1;
+		if (!FS::Format(terr, driveName)) return Result::Error;
 	}
-	return 0;
+	return Result::Success;
 }
 
 ShellCmd(glob, "prints files matching a glob pattern")
@@ -142,16 +142,16 @@ ShellCmd(glob, "prints files matching a glob pattern")
 		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
-	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (argc < 2 || arg.GetBool("help")) {
 		terr.Printf("Usage: %s [OPTION]... PATTERN\n", GetName());
 		arg.PrintHelp(terr);
-		return 1;
+		return Result::Error;
 	}
 	for (Arg::EachGlob argIter(argv[1], argv[argc]); const char* pathName = argIter.Next(); ) {
 		tout.Printf("%s\n", pathName);
 	}
-	return 0;
+	return Result::Success;
 }
 
 ShellCmd(ls, "lists files in the specified directory")
@@ -165,11 +165,11 @@ ShellCmd(ls, "lists files in the specified directory")
 		Arg::OptBool("elimslash",	'e',	"eliminates trailing slashes from directory names"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
-	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (arg.GetBool("help")) {
 		terr.Printf("Usage: %s [OPTION]... [DIRECTORY]...\n", GetName());
 		arg.PrintHelp(terr);
-		return 1;
+		return Result::Error;
 	}
 	bool mixedFlag = arg.GetBool("mixed");
 	bool reverseFlag = arg.GetBool("reverse");
@@ -189,7 +189,7 @@ ShellCmd(ls, "lists files in the specified directory")
 		pCmp3 = &FS::FileInfo::Cmp_Name::Ascent;
 	} else {
 		terr.Printf("Unknown sort option: %s\n", value);
-		return 1;
+		return Result::Error;
 	}
 	FS::FileInfo::CmpDefault.Set(pCmp1, pCmp2, pCmp3);
 	if (argc < 2) {
@@ -197,9 +197,9 @@ ShellCmd(ls, "lists files in the specified directory")
 	}
 	for (Arg::Each argIter(argv[1], argv[argc]); const char* dirName = argIter.Next(); ) {
 		if (argc > 2) tout.Printf("%s\n", dirName);
-		if (!FS::ListFiles(terr, tout, dirName, FS::FileInfo::CmpDefault, attrExclude, slashForDirFlag)) return 1;
+		if (!FS::ListFiles(terr, tout, dirName, FS::FileInfo::CmpDefault, attrExclude, slashForDirFlag)) return Result::Error;
 	}
-	return 0;
+	return Result::Success;
 }
 
 ShellCmdAlias(ll, ls)
@@ -212,11 +212,11 @@ ShellCmd_Named(ls_drive, "ls-drive", "lists availabld drives")
 		Arg::OptBool("verbose",	'v',	"prints remarks for each drive"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
-	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (arg.GetBool("help")) {
 		terr.Printf("Usage: %s [OPTION]... [DRIVE]\n", GetName());
 		arg.PrintHelp(terr);
-		return 1;
+		return Result::Error;
 	}
 	const char* driveName = (argc < 2)? nullptr : argv[1];
 	bool remarksFlag = arg.GetBool("verbose");
@@ -231,16 +231,16 @@ ShellCmd(mkdir, "creates directories")
 		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
-	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (argc < 2 || arg.GetBool("help")) {
 		terr.Printf("Usage: %s [OPTION]... DIRECTORY...\n", GetName());
 		arg.PrintHelp(terr);
-		return 1;
+		return Result::Error;
 	}
 	for (Arg::Each argIter(argv[1], argv[argc]); const char* dirName = argIter.Next(); ) {
-		if (!FS::CreateDir(terr, dirName)) return 1;
+		if (!FS::CreateDir(terr, dirName)) return Result::Error;
 	}
-	return 0;
+	return Result::Success;
 }
 
 ShellCmdAlias(md, mkdir)
@@ -251,16 +251,16 @@ ShellCmd(mount, "mounts specified drives")
 		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
-	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (argc < 2 || arg.GetBool("help")) {
 		terr.Printf("Usage: %s [OPTION]... DRIVE\n", GetName());
 		arg.PrintHelp(terr);
-		return 1;
+		return Result::Error;
 	}
 	for (Arg::Each argIter(argv[1], argv[argc]); const char* driveName = argIter.Next(); ) {
-		if (!FS::Mount(terr, driveName)) return 1;
+		if (!FS::Mount(terr, driveName)) return Result::Error;
 	}
-	return 0;
+	return Result::Success;
 }
 
 ShellCmd(move, "moves a file")
@@ -271,11 +271,11 @@ ShellCmd(move, "moves a file")
 		Arg::OptBool("force",		'f',	"overwrites existing files without prompting"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
-	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (argc < 3 || arg.GetBool("help")) {
 		terr.Printf("Usage: %s [OPTION]... SOURCE... DEST\n", GetName());
 		arg.PrintHelp(terr);
-		return 1;
+		return Result::Error;
 	}
 	bool verboseFlag = arg.GetBool("verbose");
 	bool forceFlag = arg.GetBool("force");
@@ -296,19 +296,19 @@ ShellCmd(pwd, "prints the current directory")
 		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
-	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (arg.GetBool("help")) {
 		terr.Printf("Usage: %s [OPTION]...\n", GetName());
 		arg.PrintHelp(terr);
-		return 1;
+		return Result::Error;
 	}
 	FS::Drive* pDrive = FS::GetDriveCur();
 	if (!pDrive) {
 		tout.Printf("no current drive\n");
-		return 1;
+		return Result::Error;
 	}
 	tout.Printf("%s:%s\n", pDrive->GetDriveName(), pDrive->GetDirNameCur());
-	return 0;
+	return Result::Success;
 }
 
 ShellCmd(rm, "removes files")
@@ -320,11 +320,11 @@ ShellCmd(rm, "removes files")
 		Arg::OptBool("force",		'f',	"removes files without prompting"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
-	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (argc < 2 || arg.GetBool("help")) {
 		terr.Printf("Usage: %s [OPTION]... FILE...\n", GetName());
 		arg.PrintHelp(terr);
-		return 1;
+		return Result::Error;
 	}
 	bool recursiveFlag = arg.GetBool("recursive");
 	bool verboseFlag = arg.GetBool("verbose");
@@ -343,11 +343,11 @@ ShellCmd(rmdir, "removes directories")
 		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
-	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (argc < 2 || arg.GetBool("help")) {
 		terr.Printf("Usage: %s [OPTION]... DIRECTORY...\n", GetName());
 		arg.PrintHelp(terr);
-		return 1;
+		return Result::Error;
 	}
 	int rtn = 0;
 	for (Arg::EachGlob argIter(argv[1], argv[argc]); const char* pathName = argIter.Next(); ) {
@@ -363,11 +363,11 @@ ShellCmd(touch, "updates time stamps or creates empty files")
 		Arg::OptString("timestamp",	't',	"specifies the timestamp to set (format: YYYY-MM-DD HH:MM:SS)", "STAMP"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
-	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (argc < 2 || arg.GetBool("help")) {
 		terr.Printf("Usage: %s [OPTION]... FILE...\n", GetName());
 		arg.PrintHelp(terr);
-		return 1;
+		return Result::Error;
 	}
 	int rtn = 0;
 	DateTime dt;
@@ -377,7 +377,7 @@ ShellCmd(touch, "updates time stamps or creates empty files")
 			dt.ParseTime(value); // DateTime::HasTimeFormat() already ensures the validity
 		} else if (!dt.Parse(value)) {
 			terr.Printf("invalid timestamp format. Use YYYY-MM-DD HH:MM:SS\n");
-			return 1;
+			return Result::Error;
 		}
 	} else {
 		RTC::Get(&dt);
@@ -394,11 +394,11 @@ ShellCmd(umount, "unmounts specified drives")
 		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
-	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (argc < 2 || arg.GetBool("help")) {
 		terr.Printf("Usage: %s [OPTION]... DRIVE...\n", GetName());
 		arg.PrintHelp(terr);
-		return 1;
+		return Result::Error;
 	}
 	int rtn = 0;
 	for (Arg::Each argIter(argv[1], argv[argc]); const char* driveName = argIter.Next(); ) {
@@ -414,11 +414,11 @@ ShellCmd(walk, "walks through directories")
 		Arg::OptBool("filefirst",	'f',	"walks files before directories"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
-	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (arg.GetBool("help")) {
 		terr.Printf("Usage: %s [OPTION]... [DIRECTORY]\n", GetName());
 		arg.PrintHelp(terr);
-		return 1;
+		return Result::Error;
 	}
 	const char* dirName = (argc < 2)? "." : argv[1];
 	uint8_t attrExclude = 0;
@@ -426,7 +426,7 @@ ShellCmd(walk, "walks through directories")
 	jxglib::FS::Walker walker(fileFirstFlag);;
 	if (!walker.Open(dirName, attrExclude)) {
 		terr.Printf("cannot open directory: %s\n", dirName);
-		return 1;
+		return Result::Error;
 	}
 	std::unique_ptr<jxglib::FS::FileInfo> pFileInfo;
 	for (;;) {
@@ -435,7 +435,7 @@ ShellCmd(walk, "walks through directories")
 		if (!pFileInfo) break; // no more files
 		tout.Printf("%-40s %s\n", pathName, walker.GetPathNameSub());
 	}
-	return 0;
+	return Result::Success;
 }
 
 ShellCmd(tree, "prints a tree of directories")
@@ -446,17 +446,17 @@ ShellCmd(tree, "prints a tree of directories")
 		Arg::OptBool("elimslash",	'e',	"eliminates trailing slashes from directory names"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
-	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (arg.GetBool("help")) {
 		terr.Printf("Usage: %s [OPTION]... [DIRECTORY]\n", GetName());
 		arg.PrintHelp(terr);
-		return 1;
+		return Result::Error;
 	}
 	const char* dirName = (argc < 2)? "." : argv[1];
 	std::unique_ptr<FS::Dir> pDir(FS::OpenDir(dirName));
 	if (!pDir) {
 		terr.Printf("cannot open directory: %s\n", dirName);
-		return 1;
+		return Result::Error;
 	}
 	bool dirOnlyFlag = arg.GetBool("dironly");
 	bool slashForDirFlag = !arg.GetBool("elimslash");
@@ -469,9 +469,9 @@ ShellCmd(tree, "prints a tree of directories")
 		pFileInfo->PrintTree(tout, dirOnlyFlag, slashForDirFlag, strBranch, sizeof(strBranch));
 	} else if (!successFlag) {
 		terr.Printf("cannot read directory: %s\n", dirName);
-		return 1;
+		return Result::Error;
 	}
-	return 0;
+	return Result::Success;
 }
 
 }

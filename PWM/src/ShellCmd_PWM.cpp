@@ -23,7 +23,7 @@ ShellCmd(pwm, "controls PWM pins")
 		Arg::OptBool("onlypwm",	'n', "only show PWM-capable pins"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
-	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	bool genericFlag = (::strcmp(GetName(), "pwm") == 0);
 	bool onlyPWMFlag = arg.GetBool("onlypwm");
 	if (arg.GetBool("help")) {
@@ -45,20 +45,20 @@ ShellCmd(pwm, "controls PWM pins")
 		tout.Printf("  phase-correct=BOOL enable/disable phase-correct (1 or 0)\n");
 		tout.Printf("  invert=BOOL        enable/disable inverted output (1 or 0)\n");
 		tout.Printf("  counter=VALUE      set PWM counter value (0-65535)\n");
-		return 0;
+		return Result::Success;
 	}
 	if (genericFlag) {
 		if (argc < 2) {
 			for (uint pin = 0; pin < GPIO::NumPins; ++pin) {
 				PrintPWMStatus(tout, pin, onlyPWMFlag);
 			}
-			return 0;
+			return Result::Success;
 		}
 		Arg::EachNum eachNum(argv[1], GPIO::NumPins - 1);
 		int nPins = 0;
 		if (!eachNum.CheckValidity(&nPins)) {
 			terr.Printf("invalid GPIO pin number: %s\n", argv[1]);
-			return 1;
+			return Result::Error;
 		}
 		bool hasEnableProcessed = false;
 		if (nPins > 1) {
@@ -70,7 +70,7 @@ ShellCmd(pwm, "controls PWM pins")
 					for (int num = 0; eachNum.Next(&num); ) {
 						if (num < 0 || num >= GPIO::NumPins) {
 							terr.Printf("invalid GPIO pin number: %d\n", num);
-							return 1;
+							return Result::Error;
 						}
 						uint pin = static_cast<uint>(num);
 						PWM pwm(pin);
@@ -84,13 +84,13 @@ ShellCmd(pwm, "controls PWM pins")
 		for (int num = 0; eachNum.Next(&num); ) {
 			if (num < 0 || num >= GPIO::NumPins) {
 				terr.Printf("invalid GPIO pin number: %d\n", num);
-				return 1;
+				return Result::Error;
 			}
 			uint pin = static_cast<uint>(num);
-			if (!ProcessPWM(terr, tout, pin, argc - 2, argv + 2, hasEnableProcessed)) return 1;
+			if (!ProcessPWM(terr, tout, pin, argc - 2, argv + 2, hasEnableProcessed)) return Result::Error;
 			PrintPWMStatus(tout, pin, onlyPWMFlag);
 		}
-		return 0;
+		return Result::Success;
 	} else if (::strncmp(GetName(), "pwm", 3) == 0) {
 		char* endptr;
 		auto num = ::strtoul(GetName() + 3, &endptr, 0);
@@ -99,13 +99,13 @@ ShellCmd(pwm, "controls PWM pins")
 		// Check if pin supports PWM
 		if (pwm_gpio_to_slice_num(pin) >= NUM_PWM_SLICES) {
 			terr.Printf("GPIO pin %u does not support PWM\n", pin);
-			return 1;
+			return Result::Error;
 		}
-		if (!ProcessPWM(terr, tout, pin, argc - 1, argv + 1, false)) return 1;
+		if (!ProcessPWM(terr, tout, pin, argc - 1, argv + 1, false)) return Result::Error;
 		PrintPWMStatus(tout, pin, onlyPWMFlag);
-		return 0;
+		return Result::Success;
 	}
-	return 1;
+	return Result::Error;
 }
 
 // Create PWM pin aliases similar to GPIO

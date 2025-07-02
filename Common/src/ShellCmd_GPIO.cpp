@@ -17,7 +17,7 @@ ShellCmd(gpio, "controls GPIO pins")
 		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
-	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	bool genericFlag = (::strcmp(GetName(), "gpio") == 0);
 	if (arg.GetBool("help")) {
 		if (genericFlag) {
@@ -38,35 +38,35 @@ ShellCmd(gpio, "controls GPIO pins")
 		tout.Printf("  dir-out        set pin direction to output\n");
 		tout.Printf("  lo (or 0)      set pin to low (effective for SIO OUT)\n");
 		tout.Printf("  hi (or 1)      set pin to high (effective for SIO OUT)\n");
-		return 0;
+		return Result::Success;
 	}
 	if (genericFlag) {
 		if (argc < 2) {
 			for (uint pin = 0; pin < GPIO::NumPins; ++pin) PrintPinFunc(tout, pin);
-			return 0;
+			return Result::Success;
 		}
 		Arg::EachNum eachNum(argv[1], GPIO::NumPins - 1);
 		if (!eachNum.CheckValidity()) {
 			terr.Printf("invalid GPIO pin number: %s\n", argv[1]);
-			return 1;
+			return Result::Error;
 		}
 		for (int num = 0; eachNum.Next(&num); ) {
 			if (num < 0 || num >= GPIO::NumPins) {
 				terr.Printf("invalid GPIO pin number: %d\n", num);
-				return 1;
+				return Result::Error;
 			}
 			uint pin = static_cast<uint>(num);
-			if (!ProcessGPIO(terr, tout, pin, argc - 2, argv + 2)) return 1;
+			if (!ProcessGPIO(terr, tout, pin, argc - 2, argv + 2)) return Result::Error;
 		}
-		return 0;
+		return Result::Success;
 	} else if (::strncmp(GetName(), "gpio", 4) == 0) {
 		char* endptr;
 		auto num = ::strtoul(GetName() + 4, &endptr, 0);
 		uint pin = 0;
 		if (*endptr == '\0' && num < GPIO::NumPins) pin = static_cast<uint>(num);
-		return ProcessGPIO(terr, tout, pin, argc - 1, argv + 1)? 0 : 1;
+		return ProcessGPIO(terr, tout, pin, argc - 1, argv + 1)? Result::Success : Result::Error;
 	}
-	return 1;
+	return Result::Error;
 }
 
 ShellCmdAlias(gpio0, gpio)

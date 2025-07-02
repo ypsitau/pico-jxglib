@@ -232,9 +232,15 @@ public:
 	public:
 		static bool GetAssigned(const char* str, const char* name, const char** pValue);
 	};
+	struct Result {
+		static const int Success	= 0;
+		static const int Error		= -1;
+		static const int SignalExit	= -2;
+	};
 	class Cmd {
 	public:
 		using Arg = Shell::Arg;
+		using Result = Shell::Result;
 	private:
 		const char* name_;
 		const char* help_;

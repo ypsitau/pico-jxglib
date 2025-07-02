@@ -62,7 +62,7 @@ ShellCmd(i2c, "scans I2C bus and prints connected addresses")
 		Arg::OptBool("dumb",		0x0,	"no I2C operations, just remember the pins and frequency"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
-	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (arg.GetBool("help")) {
 		tout.Printf("Usage: %s [OPTION]... [COMMAND]...\n", argv[0]);
 		arg.PrintHelp(tout);
@@ -70,7 +70,7 @@ ShellCmd(i2c, "scans I2C bus and prints connected addresses")
 		tout.Printf("Commands:\n");
 		tout.Printf("  read[:N]     read N bytes of data\n");
 		tout.Printf("  write:data   write data\n");
-		return 0;
+		return Result::Success;
 	}
 	const char* value = nullptr;
 	if (arg.GetString("freq", &value)) {
@@ -78,7 +78,7 @@ ShellCmd(i2c, "scans I2C bus and prints connected addresses")
 		long num = ::strtol(value, &endptr, 0);
 		if (*endptr != '\0' || num <= 0 || num > 1'000'000) {
 			tout.Printf("Invalid frequency: %s\n", value);
-			return 1;
+			return Result::Error;
 		}
 		freq = static_cast<uint>(num);
 	}
@@ -87,7 +87,7 @@ ShellCmd(i2c, "scans I2C bus and prints connected addresses")
 		long num = ::strtol(value, &endptr, 0);
 		if (*endptr != '\0' || num <= 0 || num > 10'000) {
 			tout.Printf("Invalid timeout: %s\n", value);
-			return 1;
+			return Result::Error;
 		}
 		msecTimeout = static_cast<uint32_t>(num);
 	}
@@ -96,13 +96,13 @@ ShellCmd(i2c, "scans I2C bus and prints connected addresses")
 		int nNums;
 		if (!each.CheckValidity(&nNums) || nNums != 2) {
 			tout.Printf("Invalid pin specification: %s\n", value);
-			return 1;
+			return Result::Error;
 		}
 		int num;
 		while (each.Next(&num)) {
 			if (num < 0 || num > 27) {
 				tout.Printf("Invalid GPIO number\n");
-				return 1;
+				return Result::Error;
 			}
 			if (infoTbl[num].func == Func::SCL) {
 				pinAssign.SCL = static_cast<uint>(num);
@@ -113,12 +113,12 @@ ShellCmd(i2c, "scans I2C bus and prints connected addresses")
 	}
 	if (pinAssign.SDA == -1 || pinAssign.SCL == -1) {
 		tout.Printf("use -p option to specify a valid pair of GPIOs for I2C\n");
-		return 1;
+		return Result::Error;
 	} else if (infoTbl[pinAssign.SDA].iBus != infoTbl[pinAssign.SCL].iBus) {
 		tout.Printf("Invalid pair of GPIOs for I2C\n");
-		return 1;
+		return Result::Error;
 	}
-	if (arg.GetBool("dumb")) return 0;
+	if (arg.GetBool("dumb")) return Result::Success;
 	int iBus = infoTbl[pinAssign.SDA].iBus;
 	I2C& i2c = (iBus == 0)? I2C0 : I2C1;
 	i2c.init(freq);
@@ -133,7 +133,7 @@ ShellCmd(i2c, "scans I2C bus and prints connected addresses")
 		int num = ::strtol(argv[1], nullptr, 0);
 		if (num < 0 || num > 127) {
 			tout.Printf("Invalid I2C address: %s\n", argv[1]);
-			return 1;
+			return Result::Error;
 		}
 		uint8_t addr = static_cast<uint8_t>(num);
 		for (int iArg = 2; iArg < argc; ++iArg) {

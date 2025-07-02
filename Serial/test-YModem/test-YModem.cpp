@@ -381,11 +381,11 @@ ShellCmd(ysend, "Send file via YModem protocol")
 		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
-	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (argc < 2 || arg.GetBool("help")) {
 		terr.Printf("Usage: %s [OPTION]... FILE...\n", GetName());
 		arg.PrintHelp(terr);
-		return 1;
+		return Result::Error;
 	}
 	Stream& stream = UART0;
 	YModem ymodem(stream);
@@ -393,7 +393,7 @@ ShellCmd(ysend, "Send file via YModem protocol")
 	// Begin YModem session
 	if (!ymodem.BeginSendSession()) {
 		terr.Printf("Failed to begin YModem session\n");
-		return 1;
+		return Result::Error;
 	}
 	
 	// Send each file
@@ -417,7 +417,7 @@ ShellCmd(ysend, "Send file via YModem protocol")
 			success = false;
 		}
 	}
-	return success ? 0 : 1;
+	return success? Result::Success : Result::Error;
 }
 
 ShellCmd(yrecv, "Receive file(s) via YModem protocol")
@@ -426,12 +426,12 @@ ShellCmd(yrecv, "Receive file(s) via YModem protocol")
 		Arg::OptBool("help",		'h',	"prints this help"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
-	if (!arg.Parse(terr, argc, argv)) return 1;
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (arg.GetBool("help")) {
 		terr.Printf("Usage: %s [OPTION]... DESTDIR\n", GetName());
 		terr.Printf("Receive file(s) via YModem protocol into the specified directory.\n");
 		arg.PrintHelp(terr);
-		return 1;
+		return Result::Error;
 	}
 	const char* dirNameDst = (argc < 2)? "." : argv[1];
 	Stream& stream = Stdio::Instance;
@@ -440,13 +440,13 @@ ShellCmd(yrecv, "Receive file(s) via YModem protocol")
 	int nFilesMax = 100;
 	tout.Printf("Receiving files to directory: %s\n", dirNameDst);
 	for (int nFiles = 0; nFiles < nFilesMax; nFiles++) {
-		if (!ymodem.RecvSingleFile(dirNameDst, fileName, sizeof(fileName))) return 1;
+		if (!ymodem.RecvSingleFile(dirNameDst, fileName, sizeof(fileName))) return Result::Error;
 		// Check if we received an empty filename (end of batch)
 		if (::strlen(fileName) == 0) break;
 		// Printf feedback about received file
 		tout.Printf("Received file: %s\n", fileName);
 	}
-	return 0;
+	return Result::Success;
 }
 
 int main()
