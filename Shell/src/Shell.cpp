@@ -694,23 +694,31 @@ Shell::Arg::EachCmd::EachCmd(const char*& argvBegin, const char*& argvEnd) :
 
 bool Shell::Arg::EachCmd::Initialize()
 {
+	CmdGroup* pCmdGroupStack[16];
 	const char** argv = argvBegin_;
 	Cmd* pCmdPrev = nullptr;
-	CmdGroup* pCmdGroupParent = &cmdGroup_;
+	int iCmdGroupStack = 0;
+	pCmdGroupStack[iCmdGroupStack] = &cmdGroup_;
 	for ( ; argv != argvEnd_; ++argv) {
+		CmdGroup* pCmdGroupCur = pCmdGroupStack[iCmdGroupStack];
 		const char* proc = *argv;
 		const char* value = nullptr;
 		if (::strcmp(proc, "{") == 0) {
-			CmdGroup* pCmdGroupNew = new CmdGroup();
-			((pCmdPrev && pCmdPrev->DoesRequireChild())? pCmdPrev : pCmdGroupParent)->AddChild(pCmdGroupNew);
-			pCmdGroupParent = pCmdGroupNew;
+			CmdGroup* pCmdGroup = new CmdGroup();
+			((pCmdPrev && pCmdPrev->DoesRequireChild())? pCmdPrev : pCmdGroupCur)->AddChild(pCmdGroup);
+			if (iCmdGroupStack >= count_of(pCmdGroupStack) - 1) {
+				errorMsg_ = "too many nested command groups";
+				return false;
+			}
+			iCmdGroupStack++;
+			pCmdGroupStack[iCmdGroupStack] = pCmdGroup;
 			pCmdPrev = nullptr;
 			continue;
 		} else if (::strcmp(proc, "}") == 0) {
-			pCmdPrev = pCmdGroupParent;
-			pCmdGroupParent = pCmdGroupParent->GetParent();
-			if (!pCmdGroupParent) {
-				errorMsg_ = "unmatched closing brace";
+			pCmdPrev = pCmdGroupCur;
+			iCmdGroupStack--;
+			if (iCmdGroupStack < 0) {
+				errorMsg_ = "unmatched opening brace";			
 				return false;
 			}
 			continue;
@@ -730,7 +738,7 @@ bool Shell::Arg::EachCmd::Initialize()
 		} else {
 			pCmd = new CmdProc(proc);
 		}
-		((pCmdPrev && pCmdPrev->DoesRequireChild())? pCmdPrev : pCmdGroupParent)->AddChild(pCmd);
+		((pCmdPrev && pCmdPrev->DoesRequireChild())? pCmdPrev : pCmdGroupCur)->AddChild(pCmd);
 		pCmdPrev = pCmd;
 	}
 	pCmdCur_ = &cmdGroup_;

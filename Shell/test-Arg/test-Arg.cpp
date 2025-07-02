@@ -225,10 +225,17 @@ void test_EachCmd()
 	const char* errorMsg = nullptr;
 	//::strcpy(str, "{cmd1 cmd2 cmd3 {cmd4 cmd5} cmd6} cmd7 cmd8");
 	//::strcpy(str, "{cmd1 cmd2 cmd3 {} {} {} {{{}}} cmd6} cmd7 cmd8");
-	::strcpy(str, "repeat:3 cmd1");
+	//::strcpy(str, "repeat:3 cmd1");
+	//::strcpy(str, "repeat:3 {cmd1}");
+	//::strcpy(str, "repeat:3 {cmd1 cmd2 cmd3}");
+	//::strcpy(str, "cmd0 repeat:3 {cmd1 cmd2 cmd3} cmd4 cmd5");
+	::strcpy(str, "cmd1 cmd2 repeat:3 {} cmd3 cmd4");
 	tokenizer.Tokenize(str, sizeof(str), argv, &argc, &errorMsg);
 	Shell::Arg::EachCmd each(argv[0], argv[argc]);
-	each.Initialize();
+	if (!each.Initialize()) {
+		::printf("%s\n", each.GetErrorMsg());
+		return;
+	}
 	each.Print();
 	while (const char* proc = each.Next()) {
 		::printf("%s\n", proc);

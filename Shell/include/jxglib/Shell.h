@@ -191,7 +191,7 @@ public:
 			public:
 				virtual Cmd* AdvanceAtEnd();
 			public:
-				virtual bool DoesRequireChild() const override { return true; }
+				virtual bool DoesRequireChild() const override { return !GetChild(); }
 				virtual Cmd* Advance() override;
 				virtual void Print(int indentLevel = 0) const override;
 			};
