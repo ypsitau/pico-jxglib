@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <memory.h>
 #include "pico/stdlib.h"
+#include "pico/binary_info.h"
 #include "jxglib/Serial.h"
 #include "jxglib/Shell.h"
 #include "jxglib/ST7789.h"
@@ -19,6 +20,18 @@ using namespace jxglib;
 int main()
 {
 	::stdio_init_all();
+	bi_decl(bi_1pin_with_name(GPIO2,	"SD Card SCL"));
+	bi_decl(bi_1pin_with_name(GPIO3,	"SD Card MOSI"));
+	bi_decl(bi_1pin_with_name(GPIO4,	"SD Card MISO"));
+	bi_decl(bi_1pin_with_name(GPIO5,	"SD Card CS"));
+	bi_decl(bi_1pin_with_name(GPIO10,	"ST7789 RST"));
+	bi_decl(bi_1pin_with_name(GPIO11,	"ST7789 DC"));
+	bi_decl(bi_1pin_with_name(GPIO12,	"ST7789 CS"));
+	bi_decl(bi_1pin_with_name(GPIO13,	"ST7789 BL"));
+	bi_decl(bi_1pin_with_name(GPIO14,	"ST7789 SCL"));
+	bi_decl(bi_1pin_with_name(GPIO15,	"ST7789 MOSI"));
+	bi_decl(bi_1pin_with_name(GPIO16,	"RTC SDA"));
+	bi_decl(bi_1pin_with_name(GPIO17,	"RTC SCL"));
 	GPIO2.set_function_SPI0_SCK();
 	GPIO3.set_function_SPI0_TX();
 	GPIO4.set_function_SPI0_RX();
