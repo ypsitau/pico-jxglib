@@ -464,7 +464,7 @@ bool Shell::Arg::GetAssigned(const char* str, const char* name, const char** pVa
 		*pValue = value + 1;
 		return true;
 	}
-	return !(::isalnum(*value) || *value == '_' || *value == '-' || ::isspace(*value) || *value == '\0');
+	return ::isspace(*value) || *value == '\0';
 }
 
 //-----------------------------------------------------------------------------
@@ -727,7 +727,7 @@ bool Shell::Arg::EachCmd::Initialize()
 		}
 		Cmd* pCmd;
 		if (GetAssigned(proc, "repeat", &value)) {
-			int nRepeats = 1;
+			int nRepeats = -1;
 			if (value) {
 				char* pEnd = nullptr;
 				nRepeats = ::strtol(value, &pEnd, 0);

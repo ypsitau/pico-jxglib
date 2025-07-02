@@ -96,13 +96,11 @@ uint32_t Tickable::Tick_()
 	return msecCur;
 }
 
-void Tickable::Sleep(uint32_t msecTick)
+bool Tickable::Sleep(uint32_t msecTick)
 {
 	uint32_t msecStart = GetCurrentTime();
-	for (;;) {
-		uint32_t msecCur = Tick_();
-		if (IsSignalled() || msecCur - msecStart >= msecTick) break;
-	}
+	while (Tick_() - msecStart < msecTick) if (IsSignalled()) return true;
+	return false;
 }
 
 void Tickable::PrintList(Printable& printable)

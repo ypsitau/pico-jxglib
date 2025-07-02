@@ -163,11 +163,20 @@ ShellCmd(i2c, "scans I2C bus and prints connected addresses")
 					rtn = 1;
 					break;
 				}
+			} else if (Arg::GetAssigned(arg, "sleep", &value)) {
+				int msec = ::strtol(value, nullptr, 0);
+				if (msec <= 0) {
+					terr.Printf("Invalid sleep duration: %s\n", value);
+					rtn = 1;
+					break;
+				}
+				Tickable::Sleep(msec);
 			} else {
 				terr.Printf("Unknown command: %s\n", arg);
 				rtn = 1;
 				break;
 			}
+			if (Tickable::TickSub()) break;
 		}
 	}
 	return rtn;

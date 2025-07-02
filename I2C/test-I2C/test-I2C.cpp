@@ -21,8 +21,8 @@ using namespace jxglib;
 #define MPU6050_REG_GYRO_XOUT_H 0x43
 
 // I2Cピン設定（Raspberry Pi Picoの場合）
-#define I2C_SDA_PIN 4
-#define I2C_SCL_PIN 5
+#define I2C_SDA_PIN 16
+#define I2C_SCL_PIN 17
 
 // センサーデータ構造体
 struct MPU6050_RawData {
@@ -369,21 +369,13 @@ int main()
 {
     ::stdio_init_all();
     
+#if 0
     // シリアル出力の安定化を待つ
     sleep_ms(2000);
-    
-    printf("MPU6050 (MCU6050) テストプログラム開始\n");
-    printf("I2C設定: SDA=%d, SCL=%d\n", I2C_SDA_PIN, I2C_SCL_PIN);
-    
     // MPU6050テストの実行
     test_mpu6050();
-    
-    // ターミナルセットアップ
+#endif    
     Serial::Terminal terminal;
     Shell::AttachTerminal(terminal.Initialize());
-    
-    printf("\nシェルモードに移行しました。\n");
-    printf("MPU6050コマンドが利用可能です。\n");
-    
     for (;;) Tickable::Tick();
 }
