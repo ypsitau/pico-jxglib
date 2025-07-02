@@ -330,7 +330,7 @@ int main()
 	::stdio_init_all();
 	//test_Parse();
 	//test_EachNum();
-	//test_EachCmd();
-	try_EachCmd();
+	test_EachCmd();
+	//try_EachCmd();
 	for (;;) ::tight_loop_contents();
 }
