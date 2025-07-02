@@ -741,7 +741,8 @@ bool Shell::Arg::EachCmd::Initialize()
 		((pCmdPrev && pCmdPrev->DoesRequireChild())? pCmdPrev : pCmdGroupCur)->AddChild(pCmd);
 		pCmdPrev = pCmd;
 	}
-	pCmdCur_ = &cmdGroup_;
+	pCmdCur_ = cmdGroup_.GetChild();
+	for ( ; pCmdCur_ && pCmdCur_->IsEmpty(); pCmdCur_ = pCmdCur_->GetNext()) ;
 	return true;
 }
 
@@ -821,7 +822,7 @@ const char* Shell::Arg::EachCmd::CmdGroup::GetProc() const
 
 Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdGroup::Advance()
 {
-	return GetChild()? GetChild()->Advance() : GetNext();
+	return GetChild()? GetChild()->Advance() : GetNextNonEmpty();
 }
 
 void Shell::Arg::EachCmd::CmdGroup::Print(int indentLevel) const
