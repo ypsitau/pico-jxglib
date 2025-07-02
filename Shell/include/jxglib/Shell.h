@@ -138,8 +138,9 @@ public:
 				CmdGroup* pCmdGroupParent_;
 				Cmd* pCmdNext_;
 			public:
-				Cmd(CmdGroup* pParent) : pCmdGroupParent_{pParent}, pCmdNext_{nullptr} {}
+				Cmd() : pCmdGroupParent_{nullptr}, pCmdNext_{nullptr} {}
 			public:
+				void SetParent(CmdGroup* pCmdGroupParent) { pCmdGroupParent_ = pCmdGroupParent; }
 				CmdGroup* GetParent() const { return pCmdGroupParent_; }
 				void SetNext(Cmd* pNext) { pCmdNext_ = pNext; }
 				Cmd* GetNext() const { return pCmdNext_; }
@@ -158,7 +159,7 @@ public:
 			protected:
 				const char* proc_;
 			public:
-				CmdProc(CmdGroup* pParent, const char* proc);
+				CmdProc(const char* proc);
 			public:
 				virtual bool IsEmpty() const override { return false; }
 				virtual const char* GetProc() const override;
@@ -169,7 +170,7 @@ public:
 			protected:
 				std::unique_ptr<Cmd> pCmdChild_;
 			public:
-				CmdGroup(CmdGroup* pParent);
+				CmdGroup();
 			public:
 				Cmd* GetChild() const { return pCmdChild_.get(); }
 			public:
@@ -186,7 +187,7 @@ public:
 				int nRepeats_;
 				int nCur_;
 			public:
-				CmdRepeat(CmdGroup* pParent, int nRepeats);
+				CmdRepeat(int nRepeats);
 			public:
 				virtual Cmd* AdvanceAtEnd();
 			public:

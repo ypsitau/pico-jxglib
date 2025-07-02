@@ -690,7 +690,7 @@ const char* Shell::Arg::EachGlob::Next()
 // Shell::Arg::EachCmd
 //------------------------------------------------------------------------------
 Shell::Arg::EachCmd::EachCmd(const char*& argvBegin, const char*& argvEnd) :
-			EachBase(argvBegin, argvEnd), cmdGroup_(nullptr), pCmdCur_{nullptr}, errorMsg_{""} {}
+			EachBase(argvBegin, argvEnd), pCmdCur_{nullptr}, errorMsg_{""} {}
 
 bool Shell::Arg::EachCmd::Initialize()
 {
@@ -701,7 +701,7 @@ bool Shell::Arg::EachCmd::Initialize()
 		const char* proc = *argv;
 		const char* value = nullptr;
 		if (::strcmp(proc, "{") == 0) {
-			CmdGroup* pCmdGroupNew = new CmdGroup(pCmdGroupParent);
+			CmdGroup* pCmdGroupNew = new CmdGroup();
 			((pCmdPrev && pCmdPrev->DoesRequireChild())? pCmdPrev : pCmdGroupParent)->AddChild(pCmdGroupNew);
 			pCmdGroupParent = pCmdGroupNew;
 			pCmdPrev = nullptr;
@@ -726,9 +726,9 @@ bool Shell::Arg::EachCmd::Initialize()
 					return false;
 				}
 			}
-			pCmd = new CmdRepeat(pCmdGroupParent, nRepeats);
+			pCmd = new CmdRepeat(nRepeats);
 		} else {
-			pCmd = new CmdProc(pCmdGroupParent, proc);
+			pCmd = new CmdProc(proc);
 		}
 		((pCmdPrev && pCmdPrev->DoesRequireChild())? pCmdPrev : pCmdGroupParent)->AddChild(pCmd);
 		pCmdPrev = pCmd;
@@ -765,7 +765,7 @@ Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::Cmd::GetNextNonEmpty()
 //------------------------------------------------------------------------------
 // Shell::Arg::EachCmd::CmdProc
 //------------------------------------------------------------------------------
-Shell::Arg::EachCmd::CmdProc::CmdProc(CmdGroup* pParent, const char* proc) : Cmd(pParent), proc_{proc}
+Shell::Arg::EachCmd::CmdProc::CmdProc(const char* proc) : proc_{proc}
 {}
 
 const char* Shell::Arg::EachCmd::CmdProc::GetProc() const 
@@ -787,11 +787,12 @@ void Shell::Arg::EachCmd::CmdProc::Print(int indentLevel) const
 //------------------------------------------------------------------------------
 // Shell::Arg::EachCmd::CmdGroup
 //------------------------------------------------------------------------------
-Shell::Arg::EachCmd::CmdGroup::CmdGroup(CmdGroup* pParent) : Cmd(pParent)
+Shell::Arg::EachCmd::CmdGroup::CmdGroup()
 {}
 
 void Shell::Arg::EachCmd::CmdGroup::AddChild(Cmd* pCmd)
 {
+	pCmd->SetParent(this);
 	if (GetChild()) {
 		GetChild()->GetLast()->SetNext(pCmd);
 	} else {
@@ -825,18 +826,25 @@ void Shell::Arg::EachCmd::CmdGroup::Print(int indentLevel) const
 //------------------------------------------------------------------------------
 // Shell::Arg::EachCmd::CmdRepeat
 //------------------------------------------------------------------------------
-Shell::Arg::EachCmd::CmdRepeat::CmdRepeat(CmdGroup* pParent, int nRepeats) : CmdGroup{pParent}, nRepeats_{nRepeats}, nCur_{0}
+Shell::Arg::EachCmd::CmdRepeat::CmdRepeat(int nRepeats) : nRepeats_{nRepeats}, nCur_{0}
 {}
 
 Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdRepeat::AdvanceAtEnd()
 {
+	nCur_++;
+	if (!GetChild()) {
+		// nothing to do
+	} else if (nRepeats_ < 0 || nCur_ < nRepeats_) {
+		return GetChild();
+	}
 	Cmd* pCmdNext = GetNextNonEmpty();
 	return pCmdNext? pCmdNext : GetParent()? GetParent()->AdvanceAtEnd() : nullptr;;
 }
 
 Shell::Arg::EachCmd::Cmd* Shell::Arg::EachCmd::CmdRepeat::Advance()
 {
-	return GetChild()? GetChild()->Advance() : GetNext();
+	nCur_ = 0;
+	return CmdGroup::Advance();
 }
 
 void Shell::Arg::EachCmd::CmdRepeat::Print(int indentLevel) const
