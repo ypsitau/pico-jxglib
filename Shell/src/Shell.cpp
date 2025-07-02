@@ -457,12 +457,14 @@ const Shell::Arg::OptValue* Shell::Arg::FindOptValue(const char* longName) const
 bool Shell::Arg::GetAssigned(const char* str, const char* name, const char** pValue)
 {
 	*pValue = nullptr;
-	if (::strncmp(str, name, ::strlen(name)) == 0) {
-		const char* value = str + ::strlen(name);
-		if (*value == '=' || *value == ':') *pValue = value + 1;
+	int len = ::strlen(name);
+	if (::strncmp(str, name, len) != 0) return false;
+	const char* value = str + len;
+	if (*value == '=' || *value == ':') {
+		*pValue = value + 1;
 		return true;
 	}
-	return false;
+	return !(::isalnum(*value) || *value == '_' || *value == '-' || ::isspace(*value) || *value == '\0');
 }
 
 //-----------------------------------------------------------------------------

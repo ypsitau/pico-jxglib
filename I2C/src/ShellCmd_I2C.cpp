@@ -136,17 +136,30 @@ ShellCmd(i2c, "scans I2C bus and prints connected addresses")
 			return Result::Error;
 		}
 		uint8_t addr = static_cast<uint8_t>(num);
-		for (int iArg = 2; iArg < argc; ++iArg) {
-			bool nostop = (iArg + 1 < argc);
-			const char* arg = argv[iArg];
+		Shell::Arg::EachCmd each(argv[2], argv[argc]);
+		if (!each.Initialize()) {
+			terr.Printf("%s\n", each.GetErrorMsg());
+			return Result::Error;
+		}
+		while (const char* arg = each.Next()) {
 			const char* value;
 			if (Arg::GetAssigned(arg, "write", &value)) {
-				if (!WriteData(tout, terr, i2c, addr, value, nostop)) {
+				if (!WriteData(tout, terr, i2c, addr, value, false)) {
+					rtn = 1;
+					break;
+				}
+			} else if (Arg::GetAssigned(arg, "write-nostop", &value)) {
+				if (!WriteData(tout, terr, i2c, addr, value, true)) {
 					rtn = 1;
 					break;
 				}
 			} else if (Arg::GetAssigned(arg, "read", &value)) {
-				if (!ReadData(tout, terr, i2c, addr, value, nostop)) {
+				if (!ReadData(tout, terr, i2c, addr, value, false)) {
+					rtn = 1;
+					break;
+				}
+			} else if (Arg::GetAssigned(arg, "read-nostop", &value)) {
+				if (!ReadData(tout, terr, i2c, addr, value, true)) {
 					rtn = 1;
 					break;
 				}
