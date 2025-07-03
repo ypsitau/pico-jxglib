@@ -43,7 +43,9 @@ bool Shell::RunCmd(Readable& tin, Printable& tout, Printable& terr, char* line, 
 	bool appendFlag = false;
 	const char* fileNameOut = nullptr;
 	for (int iToken = 0; iToken < nToken; iToken++) {
-		if ((appendFlag = (::strcmp(tokenTbl[iToken], ">>") == 0)) || ::strcmp(tokenTbl[iToken], ">") == 0) {
+		const char* token = tokenTbl[iToken];
+		if (!Tokenizer::IsQuoted(line, token) &&
+				((appendFlag = (::strcmp(token, ">>") == 0)) || ::strcmp(token, ">") == 0)) {
 			nTokensCmd = iToken;
 			tokenTbl[iToken] = nullptr;
 			if (iToken + 1 >= nToken) {
@@ -66,7 +68,8 @@ bool Shell::RunCmd(Readable& tin, Printable& tout, Printable& terr, char* line, 
 	int argc = 0;
 	char** argv = tokenTbl;
 	for (int iToken = 0; iToken < nTokensCmd; iToken++) {
-		if (::strcmp(tokenTbl[iToken], ";") == 0) {
+		const char* token = tokenTbl[iToken];
+		if (!Tokenizer::IsQuoted(line, token) && ::strcmp(token, ";") == 0) {
 			tokenTbl[iToken] = nullptr;
 			if (!RunSingleCmd(*ptin, *ptout, *pterr, argc, argv)) return false;
 			argc = 0;

@@ -28,7 +28,8 @@ private:
 	int FindSpecialToken(const char* p) const;
 	static void DeleteChar(char* p);
 	static bool InsertChar(char* str, int bytesStr, char* p);
-
+public:
+	static bool IsQuoted(const char* str, const char* token) { return (token > str) && token[-1] == '"'; }
 };
 
 }

@@ -43,6 +43,7 @@ void test_Tokenizer()
 		"abc >>",
 		"abc>",
 		"abc>>",
+		"abc \">\"",
 	};
 
 	for (int i = 0; i < count_of(test_cases); ++i) {
@@ -64,7 +65,7 @@ void test_Tokenizer()
 
 		printf("  Token count: %d\n", nToken);
 		for (int j = 0; j < nToken; ++j) {
-			printf("    Token[%d]: '%s'\n", j, tokenTbl[j]);
+			printf("    Token[%d]: '%s'%s\n", j, tokenTbl[j], Tokenizer::IsQuoted(buf, tokenTbl[j]) ? " (quoted)" : "");
 		}
 		printf("\n");
 		const char* tokenLast = tokenizer.FindLastToken(test_cases[i]);
