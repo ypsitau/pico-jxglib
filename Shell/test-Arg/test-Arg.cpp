@@ -239,6 +239,8 @@ void test_EachSubcmd()
 		{ "repeat multiple commands", "repeat:3 {cmd1 cmd2}", "cmd1, cmd2, cmd1, cmd2, cmd1, cmd2" },
 		{ "repeat with surrounding commands", "cmd0 repeat:3 {cmd1 cmd2} cmd3", "cmd0, cmd1, cmd2, cmd1, cmd2, cmd1, cmd2, cmd3" },
 		{ "repeat with empty braces", "repeat:3 {}", "(none)" },
+		{ "repeat with empty braces with deep nest", "repeat:3 {{{{}} {}}}", "(none)" },
+		{ "repeat with empty braces with deep nest", "repeat:3 {{{{}} {cmd1}}} cmd2", "cmd1, cmd1, cmd1, cmd2" },
 		{ "repeat zero times", "repeat:0 cmd1", "(none)" },
 		{ "repeat one time", "repeat:1 cmd1", "cmd1" },
 		{ "complex nesting", "{cmd1 cmd2 cmd3 {cmd4 cmd5} cmd6} cmd7 cmd8", "cmd1, cmd2, cmd3, cmd4, cmd5, cmd6, cmd7, cmd8" },
