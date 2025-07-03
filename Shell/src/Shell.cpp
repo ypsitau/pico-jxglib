@@ -731,7 +731,7 @@ bool Shell::Arg::EachSubcmd::Initialize()
 			if (value) {
 				char* pEnd = nullptr;
 				nRepeats = ::strtol(value, &pEnd, 0);
-				if (*pEnd != '\0' || nRepeats < 1) {
+				if (*pEnd != '\0' || nRepeats < 0) {
 					errorMsg_ = "invalid repeat value";
 					return false;
 				}
@@ -815,7 +815,8 @@ Shell::Arg::Subcmd* Shell::Arg::SubcmdGroup::AdvanceAtEnd()
 
 Shell::Arg::Subcmd* Shell::Arg::SubcmdGroup::Advance()
 {
-	return GetChild()? GetChild() : AdvanceAtEnd();
+	//return GetChild()? GetChild() : AdvanceAtEnd();
+	return IsEmpty()? AdvanceAtEnd() : GetChild();
 }
 
 void Shell::Arg::SubcmdGroup::Print(int indentLevel) const
@@ -845,7 +846,7 @@ Shell::Arg::Subcmd* Shell::Arg::SubcmdRepeat::AdvanceAtEnd()
 Shell::Arg::Subcmd* Shell::Arg::SubcmdRepeat::Advance()
 {
 	nCur_ = 0;
-	return SubcmdGroup::Advance();
+	return (IsEmpty() || nRepeats_ == 0)? SubcmdGroup::AdvanceAtEnd() : GetChild();
 }
 
 void Shell::Arg::SubcmdRepeat::Print(int indentLevel) const
