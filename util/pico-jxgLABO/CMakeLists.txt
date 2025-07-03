@@ -28,34 +28,36 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(pico-jxglabo C CXX ASM)
+project(pico-jxgLABO C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(pico-jxglabo pico-jxglabo.cpp )
+add_executable(pico-jxgLABO pico-jxgLABO.cpp )
 
-pico_set_program_name(pico-jxglabo "pico-jxglabo")
-pico_set_program_version(pico-jxglabo "0.1")
+pico_set_program_name(pico-jxgLABO "pico-jxgLABO")
+pico_set_program_version(pico-jxgLABO "0.0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(pico-jxglabo 1)
-pico_enable_stdio_usb(pico-jxglabo 1)
+pico_enable_stdio_uart(pico-jxgLABO 0)
+pico_enable_stdio_usb(pico-jxgLABO 1)
 
 # Add the standard library to the build
-target_link_libraries(pico-jxglabo
+target_link_libraries(pico-jxgLABO
         pico_stdlib)
 
 # Add the standard include files to the build
-target_include_directories(pico-jxglabo PRIVATE
+target_include_directories(pico-jxgLABO PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(pico-jxglabo)
+pico_add_extra_outputs(pico-jxgLABO)
 
-target_link_libraries(pico-jxglabo
+target_link_libraries(pico-jxgLABO
     jxglib_Shell jxglib_Serial
+    jxglib_LFS_Flash jxglib_FAT_Flash jxglib_RTC_DS323x
     jxglib_ShellCmd_FS jxglib_ShellCmd_GPIO jxglib_ShellCmd_PWM jxglib_ShellCmd_I2C)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../../ pico-jxglib)
+jxglib_configure_FAT(pico-jxgLABO FF_VOLUMES 1)
