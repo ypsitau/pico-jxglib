@@ -143,7 +143,6 @@ public:
 			void SetNext(Subcmd* pNext) { pSubcmdNext_ = pNext; }
 			Subcmd* GetNext() const { return pSubcmdNext_; }
 			Subcmd* GetLast();
-			Subcmd* GetNextNonEmpty();
 		public:
 			virtual void AddChild(Subcmd* pSubcmdChild) {}
 			virtual bool DoesRequireChild() const { return false; }
@@ -160,7 +159,7 @@ public:
 			SubcmdProc(const char* proc);
 		public:
 			virtual bool IsEmpty() const override { return false; }
-			virtual const char* GetProc() const override;
+			virtual const char* GetProc() const override { return proc_; }
 			virtual Subcmd* Advance() override;
 			virtual void Print(int indentLevel = 0) const override;
 		};
@@ -176,7 +175,7 @@ public:
 		public:
 			virtual void AddChild(Subcmd* pSubcmdChild) override;
 			virtual bool IsEmpty() const override;
-			virtual const char* GetProc() const override;
+			virtual const char* GetProc() const override { return nullptr; }
 			virtual Subcmd* Advance() override;
 			virtual void Print(int indentLevel = 0) const override;
 		};

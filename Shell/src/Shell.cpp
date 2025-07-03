@@ -750,10 +750,16 @@ bool Shell::Arg::EachSubcmd::Initialize()
 
 const char* Shell::Arg::EachSubcmd::Next()
 {
-	if (!pSubcmdCur_) return nullptr;
-	const char* proc = pSubcmdCur_->GetProc();
-	pSubcmdCur_ = pSubcmdCur_->Advance();
-	return proc;
+	//if (!pSubcmdCur_) return nullptr;
+	//const char* proc = pSubcmdCur_->GetProc();
+	//pSubcmdCur_ = pSubcmdCur_->Advance();
+	//return proc;
+	while (pSubcmdCur_) {
+		const char* proc = pSubcmdCur_->GetProc();
+		pSubcmdCur_ = pSubcmdCur_->Advance();
+		if (proc) return proc;
+	}
+	return nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -766,28 +772,15 @@ Shell::Arg::Subcmd* Shell::Arg::Subcmd::GetLast()
 	return pSubcmd;
 }
 
-Shell::Arg::Subcmd* Shell::Arg::Subcmd::GetNextNonEmpty()
-{
-	Subcmd* pSubcmd = GetNext();
-	for ( ; pSubcmd && pSubcmd->IsEmpty(); pSubcmd = pSubcmd->GetNext()) ;
-	return pSubcmd;
-}
-
 //------------------------------------------------------------------------------
 // Shell::Arg::SubcmdProc
 //------------------------------------------------------------------------------
 Shell::Arg::SubcmdProc::SubcmdProc(const char* proc) : proc_{proc}
 {}
 
-const char* Shell::Arg::SubcmdProc::GetProc() const 
-{
-	return proc_;
-}
-
 Shell::Arg::Subcmd* Shell::Arg::SubcmdProc::Advance()
 {
-	Subcmd* pSubcmdNext = GetNextNonEmpty();
-	return pSubcmdNext? pSubcmdNext : GetParent()? GetParent()->AdvanceAtEnd() : nullptr;
+	return GetNext()? GetNext() : GetParent()? GetParent()->AdvanceAtEnd() : nullptr;
 }
 
 void Shell::Arg::SubcmdProc::Print(int indentLevel) const
@@ -821,20 +814,12 @@ bool Shell::Arg::SubcmdGroup::IsEmpty() const
 
 Shell::Arg::Subcmd* Shell::Arg::SubcmdGroup::AdvanceAtEnd()
 {
-	Subcmd* pSubcmdNext = GetNextNonEmpty();
-	return pSubcmdNext? pSubcmdNext : GetParent()? GetParent()->AdvanceAtEnd() : nullptr;;
-}
-
-const char* Shell::Arg::SubcmdGroup::GetProc() const
-{
-	Subcmd* pSubcmd = GetChild();
-	for ( ; pSubcmd && pSubcmd->IsEmpty(); pSubcmd = pSubcmd->GetNext()) ;
-	return pSubcmd? pSubcmd->GetProc() : nullptr;
+	return GetNext()? GetNext() : GetParent()? GetParent()->AdvanceAtEnd() : nullptr;;
 }
 
 Shell::Arg::Subcmd* Shell::Arg::SubcmdGroup::Advance()
 {
-	return GetChild()? GetChild()->Advance() : GetNextNonEmpty();
+	return GetChild()? GetChild() : GetNext();
 }
 
 void Shell::Arg::SubcmdGroup::Print(int indentLevel) const
@@ -858,8 +843,7 @@ Shell::Arg::Subcmd* Shell::Arg::SubcmdRepeat::AdvanceAtEnd()
 	} else if (nRepeats_ < 0 || nCur_ < nRepeats_) {
 		return GetChild();
 	}
-	Subcmd* pSubcmdNext = GetNextNonEmpty();
-	return pSubcmdNext? pSubcmdNext : GetParent()? GetParent()->AdvanceAtEnd() : nullptr;;
+	return SubcmdGroup::AdvanceAtEnd();
 }
 
 Shell::Arg::Subcmd* Shell::Arg::SubcmdRepeat::Advance()
