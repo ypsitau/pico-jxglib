@@ -135,21 +135,21 @@ public:
 			class SubcmdGroup;
 			class Subcmd {
 			protected:
-				SubcmdGroup* pCmdGroupParent_;
-				Subcmd* pCmdNext_;
+				SubcmdGroup* pSubcmdGroupParent_;
+				Subcmd* pSubcmdNext_;
 			public:
-				Subcmd() : pCmdGroupParent_{nullptr}, pCmdNext_{nullptr} {}
+				Subcmd() : pSubcmdGroupParent_{nullptr}, pSubcmdNext_{nullptr} {}
 			public:
-				void SetParent(SubcmdGroup* pCmdGroupParent) { pCmdGroupParent_ = pCmdGroupParent; }
-				SubcmdGroup* GetParent() const { return pCmdGroupParent_; }
-				void SetNext(Subcmd* pNext) { pCmdNext_ = pNext; }
-				Subcmd* GetNext() const { return pCmdNext_; }
+				void SetParent(SubcmdGroup* pSubcmdGroupParent) { pSubcmdGroupParent_ = pSubcmdGroupParent; }
+				SubcmdGroup* GetParent() const { return pSubcmdGroupParent_; }
+				void SetNext(Subcmd* pNext) { pSubcmdNext_ = pNext; }
+				Subcmd* GetNext() const { return pSubcmdNext_; }
 				Subcmd* GetLast();
 				Subcmd* GetNextNonEmpty();
 			public:
-				virtual void AddChild(Subcmd* pCmdChild) {}
+				virtual void AddChild(Subcmd* pSubcmdChild) {}
 				virtual bool DoesRequireChild() const { return false; }
-				virtual void SetChild(Subcmd* pCmdChild) {}
+				virtual void SetChild(Subcmd* pSubcmdChild) {}
 				virtual bool IsEmpty() const = 0;
 				virtual const char* GetProc() const = 0;
 				virtual Subcmd* Advance() = 0;
@@ -168,15 +168,15 @@ public:
 			};
 			class SubcmdGroup : public Subcmd {
 			protected:
-				std::unique_ptr<Subcmd> pCmdChild_;
+				std::unique_ptr<Subcmd> pSubcmdChild_;
 			public:
 				SubcmdGroup();
 			public:
-				Subcmd* GetChild() const { return pCmdChild_.get(); }
+				Subcmd* GetChild() const { return pSubcmdChild_.get(); }
 			public:
 				virtual Subcmd* AdvanceAtEnd();
 			public:
-				virtual void AddChild(Subcmd* pCmdChild) override;
+				virtual void AddChild(Subcmd* pSubcmdChild) override;
 				virtual bool IsEmpty() const override { return !GetChild() || GetChild()->IsEmpty(); }
 				virtual const char* GetProc() const override;
 				virtual Subcmd* Advance() override;
@@ -196,8 +196,8 @@ public:
 				virtual void Print(int indentLevel = 0) const override;
 			};
 		private:
-			SubcmdGroup cmdGroup_;
-			Subcmd* pCmdCur_;
+			SubcmdGroup subcmdGroup_;
+			Subcmd* pSubcmdCur_;
 			const char* errorMsg_;
 		public:
 			EachSubcmd(const char*& argvBegin, const char*& argvEnd);
@@ -207,7 +207,7 @@ public:
 			const char* GetErrorMsg() const { return errorMsg_; }
 			const char* Next();
 		public:
-			void Print(int indentLevel = 0) const { cmdGroup_.Print(indentLevel); }
+			void Print(int indentLevel = 0) const { subcmdGroup_.Print(indentLevel); }
 		};
 	private:
 		const Opt* optTbl_;

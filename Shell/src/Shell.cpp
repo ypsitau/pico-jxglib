@@ -692,32 +692,32 @@ const char* Shell::Arg::EachGlob::Next()
 // Shell::Arg::EachSubcmd
 //------------------------------------------------------------------------------
 Shell::Arg::EachSubcmd::EachSubcmd(const char*& argvBegin, const char*& argvEnd) :
-			EachBase(argvBegin, argvEnd), pCmdCur_{nullptr}, errorMsg_{""} {}
+			EachBase(argvBegin, argvEnd), pSubcmdCur_{nullptr}, errorMsg_{""} {}
 
 bool Shell::Arg::EachSubcmd::Initialize()
 {
-	SubcmdGroup* pCmdGroupStack[16];
+	SubcmdGroup* pSubcmdGroupStack[16];
 	const char** argv = argvBegin_;
-	Subcmd* pCmdPrev = nullptr;
+	Subcmd* pSubcmdPrev = nullptr;
 	int iCmdGroupStack = 0;
-	pCmdGroupStack[iCmdGroupStack] = &cmdGroup_;
+	pSubcmdGroupStack[iCmdGroupStack] = &subcmdGroup_;
 	for ( ; argv != argvEnd_; ++argv) {
-		SubcmdGroup* pCmdGroupCur = pCmdGroupStack[iCmdGroupStack];
+		SubcmdGroup* pSubcmdGroupCur = pSubcmdGroupStack[iCmdGroupStack];
 		const char* proc = *argv;
 		const char* value = nullptr;
 		if (::strcmp(proc, "{") == 0) {
-			SubcmdGroup* pCmdGroup = new SubcmdGroup();
-			((pCmdPrev && pCmdPrev->DoesRequireChild())? pCmdPrev : pCmdGroupCur)->AddChild(pCmdGroup);
-			if (iCmdGroupStack >= count_of(pCmdGroupStack) - 1) {
+			SubcmdGroup* pSubcmdGroup = new SubcmdGroup();
+			((pSubcmdPrev && pSubcmdPrev->DoesRequireChild())? pSubcmdPrev : pSubcmdGroupCur)->AddChild(pSubcmdGroup);
+			if (iCmdGroupStack >= count_of(pSubcmdGroupStack) - 1) {
 				errorMsg_ = "too many nested command groups";
 				return false;
 			}
 			iCmdGroupStack++;
-			pCmdGroupStack[iCmdGroupStack] = pCmdGroup;
-			pCmdPrev = nullptr;
+			pSubcmdGroupStack[iCmdGroupStack] = pSubcmdGroup;
+			pSubcmdPrev = nullptr;
 			continue;
 		} else if (::strcmp(proc, "}") == 0) {
-			pCmdPrev = pCmdGroupCur;
+			pSubcmdPrev = pSubcmdGroupCur;
 			iCmdGroupStack--;
 			if (iCmdGroupStack < 0) {
 				errorMsg_ = "unmatched opening brace";			
@@ -725,7 +725,7 @@ bool Shell::Arg::EachSubcmd::Initialize()
 			}
 			continue;
 		}
-		Subcmd* pCmd;
+		Subcmd* pSubcmd;
 		if (GetAssigned(proc, "repeat", &value)) {
 			int nRepeats = -1;
 			if (value) {
@@ -736,23 +736,23 @@ bool Shell::Arg::EachSubcmd::Initialize()
 					return false;
 				}
 			}
-			pCmd = new SubcmdRepeat(nRepeats);
+			pSubcmd = new SubcmdRepeat(nRepeats);
 		} else {
-			pCmd = new SubcmdProc(proc);
+			pSubcmd = new SubcmdProc(proc);
 		}
-		((pCmdPrev && pCmdPrev->DoesRequireChild())? pCmdPrev : pCmdGroupCur)->AddChild(pCmd);
-		pCmdPrev = pCmd;
+		((pSubcmdPrev && pSubcmdPrev->DoesRequireChild())? pSubcmdPrev : pSubcmdGroupCur)->AddChild(pSubcmd);
+		pSubcmdPrev = pSubcmd;
 	}
-	pCmdCur_ = cmdGroup_.GetChild();
-	for ( ; pCmdCur_ && pCmdCur_->IsEmpty(); pCmdCur_ = pCmdCur_->GetNext()) ;
+	pSubcmdCur_ = subcmdGroup_.GetChild();
+	for ( ; pSubcmdCur_ && pSubcmdCur_->IsEmpty(); pSubcmdCur_ = pSubcmdCur_->GetNext()) ;
 	return true;
 }
 
 const char* Shell::Arg::EachSubcmd::Next()
 {
-	if (!pCmdCur_) return nullptr;
-	const char* proc = pCmdCur_->GetProc();
-	pCmdCur_ = pCmdCur_->Advance();
+	if (!pSubcmdCur_) return nullptr;
+	const char* proc = pSubcmdCur_->GetProc();
+	pSubcmdCur_ = pSubcmdCur_->Advance();
 	return proc;
 }
 
@@ -761,16 +761,16 @@ const char* Shell::Arg::EachSubcmd::Next()
 //------------------------------------------------------------------------------
 Shell::Arg::EachSubcmd::Subcmd* Shell::Arg::EachSubcmd::Subcmd::GetLast()
 {
-	Subcmd* pCmd = this;
-	for ( ; pCmd->GetNext(); pCmd = pCmd->GetNext()) ;
-	return pCmd;
+	Subcmd* pSubcmd = this;
+	for ( ; pSubcmd->GetNext(); pSubcmd = pSubcmd->GetNext()) ;
+	return pSubcmd;
 }
 
 Shell::Arg::EachSubcmd::Subcmd* Shell::Arg::EachSubcmd::Subcmd::GetNextNonEmpty()
 {
-	Subcmd* pCmd = GetNext();
-	for ( ; pCmd && pCmd->IsEmpty(); pCmd = pCmd->GetNext()) ;
-	return pCmd;
+	Subcmd* pSubcmd = GetNext();
+	for ( ; pSubcmd && pSubcmd->IsEmpty(); pSubcmd = pSubcmd->GetNext()) ;
+	return pSubcmd;
 }
 
 //------------------------------------------------------------------------------
@@ -786,8 +786,8 @@ const char* Shell::Arg::EachSubcmd::SubcmdProc::GetProc() const
 
 Shell::Arg::EachSubcmd::Subcmd* Shell::Arg::EachSubcmd::SubcmdProc::Advance()
 {
-	Subcmd* pCmdNext = GetNextNonEmpty();
-	return pCmdNext? pCmdNext : GetParent()? GetParent()->AdvanceAtEnd() : nullptr;
+	Subcmd* pSubcmdNext = GetNextNonEmpty();
+	return pSubcmdNext? pSubcmdNext : GetParent()? GetParent()->AdvanceAtEnd() : nullptr;
 }
 
 void Shell::Arg::EachSubcmd::SubcmdProc::Print(int indentLevel) const
@@ -801,27 +801,27 @@ void Shell::Arg::EachSubcmd::SubcmdProc::Print(int indentLevel) const
 Shell::Arg::EachSubcmd::SubcmdGroup::SubcmdGroup()
 {}
 
-void Shell::Arg::EachSubcmd::SubcmdGroup::AddChild(Subcmd* pCmd)
+void Shell::Arg::EachSubcmd::SubcmdGroup::AddChild(Subcmd* pSubcmd)
 {
-	pCmd->SetParent(this);
+	pSubcmd->SetParent(this);
 	if (GetChild()) {
-		GetChild()->GetLast()->SetNext(pCmd);
+		GetChild()->GetLast()->SetNext(pSubcmd);
 	} else {
-		pCmdChild_.reset(pCmd);
+		pSubcmdChild_.reset(pSubcmd);
 	}
 }
 
 Shell::Arg::EachSubcmd::Subcmd* Shell::Arg::EachSubcmd::SubcmdGroup::AdvanceAtEnd()
 {
-	Subcmd* pCmdNext = GetNextNonEmpty();
-	return pCmdNext? pCmdNext : GetParent()? GetParent()->AdvanceAtEnd() : nullptr;;
+	Subcmd* pSubcmdNext = GetNextNonEmpty();
+	return pSubcmdNext? pSubcmdNext : GetParent()? GetParent()->AdvanceAtEnd() : nullptr;;
 }
 
 const char* Shell::Arg::EachSubcmd::SubcmdGroup::GetProc() const
 {
-	Subcmd* pCmd = GetChild();
-	for ( ; pCmd && pCmd->IsEmpty(); pCmd = pCmd->GetNext()) ;
-	return pCmd? pCmd->GetProc() : nullptr;
+	Subcmd* pSubcmd = GetChild();
+	for ( ; pSubcmd && pSubcmd->IsEmpty(); pSubcmd = pSubcmd->GetNext()) ;
+	return pSubcmd? pSubcmd->GetProc() : nullptr;
 }
 
 Shell::Arg::EachSubcmd::Subcmd* Shell::Arg::EachSubcmd::SubcmdGroup::Advance()
@@ -832,7 +832,7 @@ Shell::Arg::EachSubcmd::Subcmd* Shell::Arg::EachSubcmd::SubcmdGroup::Advance()
 void Shell::Arg::EachSubcmd::SubcmdGroup::Print(int indentLevel) const
 {
 	::printf("%*s{\n", indentLevel * 2, "");
-	for (Subcmd* pCmd = GetChild(); pCmd; pCmd = pCmd->GetNext()) pCmd->Print(indentLevel + 1);
+	for (Subcmd* pSubcmd = GetChild(); pSubcmd; pSubcmd = pSubcmd->GetNext()) pSubcmd->Print(indentLevel + 1);
 	::printf("%*s}\n", indentLevel * 2, "");
 }
 
@@ -850,8 +850,8 @@ Shell::Arg::EachSubcmd::Subcmd* Shell::Arg::EachSubcmd::SubcmdRepeat::AdvanceAtE
 	} else if (nRepeats_ < 0 || nCur_ < nRepeats_) {
 		return GetChild();
 	}
-	Subcmd* pCmdNext = GetNextNonEmpty();
-	return pCmdNext? pCmdNext : GetParent()? GetParent()->AdvanceAtEnd() : nullptr;;
+	Subcmd* pSubcmdNext = GetNextNonEmpty();
+	return pSubcmdNext? pSubcmdNext : GetParent()? GetParent()->AdvanceAtEnd() : nullptr;;
 }
 
 Shell::Arg::EachSubcmd::Subcmd* Shell::Arg::EachSubcmd::SubcmdRepeat::Advance()
@@ -867,7 +867,7 @@ void Shell::Arg::EachSubcmd::SubcmdRepeat::Print(int indentLevel) const
 	} else {
 		::printf("%*srepeat:%d {\n", indentLevel * 2, "", nRepeats_);
 	}
-	for (Subcmd* pCmd = GetChild(); pCmd; pCmd = pCmd->GetNext()) pCmd->Print(indentLevel + 1);
+	for (Subcmd* pSubcmd = GetChild(); pSubcmd; pSubcmd = pSubcmd->GetNext()) pSubcmd->Print(indentLevel + 1);
 	::printf("%*s}\n", indentLevel * 2, "");
 }
 
