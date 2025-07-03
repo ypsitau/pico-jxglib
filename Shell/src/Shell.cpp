@@ -750,10 +750,6 @@ bool Shell::Arg::EachSubcmd::Initialize()
 
 const char* Shell::Arg::EachSubcmd::Next()
 {
-	//if (!pSubcmdCur_) return nullptr;
-	//const char* proc = pSubcmdCur_->GetProc();
-	//pSubcmdCur_ = pSubcmdCur_->Advance();
-	//return proc;
 	while (pSubcmdCur_) {
 		const char* proc = pSubcmdCur_->GetProc();
 		pSubcmdCur_ = pSubcmdCur_->Advance();
@@ -819,7 +815,7 @@ Shell::Arg::Subcmd* Shell::Arg::SubcmdGroup::AdvanceAtEnd()
 
 Shell::Arg::Subcmd* Shell::Arg::SubcmdGroup::Advance()
 {
-	return GetChild()? GetChild() : GetNext();
+	return GetChild()? GetChild() : AdvanceAtEnd();
 }
 
 void Shell::Arg::SubcmdGroup::Print(int indentLevel) const

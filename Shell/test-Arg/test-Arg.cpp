@@ -312,7 +312,7 @@ void try_EachSubcmd()
 	//::strcpy(str, "repeat:3 {cmd1 cmd2 cmd3}");
 	//::strcpy(str, "cmd0 repeat:3 {cmd1 cmd2 cmd3} cmd4 cmd5");
 	//::strcpy(str, "cmd1 cmd2 repeat:3 {} cmd3 cmd4");
-	::strcpy(str, "{{} cmd1} cmd2 cmd3");
+	::strcpy(str, "cmd1 {{}} cmd2");
 	tokenizer.Tokenize(str, sizeof(str), argv, &argc, &errorMsg);
 	Shell::Arg::EachSubcmd each(argv[0], argv[argc]);
 	if (!each.Initialize()) {
