@@ -811,6 +811,14 @@ void Shell::Arg::SubcmdGroup::AddChild(Subcmd* pSubcmd)
 	}
 }
 
+bool Shell::Arg::SubcmdGroup::IsEmpty() const
+{
+	for (Subcmd* pSubcmd = GetChild(); pSubcmd; pSubcmd = pSubcmd->GetNext()) {
+		if (!pSubcmd->IsEmpty()) return false;
+	}
+	return true;
+}
+
 Shell::Arg::Subcmd* Shell::Arg::SubcmdGroup::AdvanceAtEnd()
 {
 	Subcmd* pSubcmdNext = GetNextNonEmpty();

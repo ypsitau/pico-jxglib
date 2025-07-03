@@ -175,7 +175,7 @@ public:
 			virtual Subcmd* AdvanceAtEnd();
 		public:
 			virtual void AddChild(Subcmd* pSubcmdChild) override;
-			virtual bool IsEmpty() const override { return !GetChild() || GetChild()->IsEmpty(); }
+			virtual bool IsEmpty() const override;
 			virtual const char* GetProc() const override;
 			virtual Subcmd* Advance() override;
 			virtual void Print(int indentLevel = 0) const override;
