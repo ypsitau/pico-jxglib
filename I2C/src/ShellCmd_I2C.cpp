@@ -136,7 +136,7 @@ ShellCmd(i2c, "scans I2C bus and prints connected addresses")
 			return Result::Error;
 		}
 		uint8_t addr = static_cast<uint8_t>(num);
-		Shell::Arg::EachCmd each(argv[2], argv[argc]);
+		Shell::Arg::EachSubcmd each(argv[2], argv[argc]);
 		if (!each.Initialize()) {
 			terr.Printf("%s\n", each.GetErrorMsg());
 			return Result::Error;

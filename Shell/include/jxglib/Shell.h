@@ -130,78 +130,78 @@ public:
 			const char* Next();
 			const FS::FileInfo& GetFileInfo() const { return *pFileInfo_; }
 		};
-		class EachCmd : public EachBase {
+		class EachSubcmd : public EachBase {
 		private:
-			class CmdGroup;
-			class Cmd {
+			class SubcmdGroup;
+			class Subcmd {
 			protected:
-				CmdGroup* pCmdGroupParent_;
-				Cmd* pCmdNext_;
+				SubcmdGroup* pCmdGroupParent_;
+				Subcmd* pCmdNext_;
 			public:
-				Cmd() : pCmdGroupParent_{nullptr}, pCmdNext_{nullptr} {}
+				Subcmd() : pCmdGroupParent_{nullptr}, pCmdNext_{nullptr} {}
 			public:
-				void SetParent(CmdGroup* pCmdGroupParent) { pCmdGroupParent_ = pCmdGroupParent; }
-				CmdGroup* GetParent() const { return pCmdGroupParent_; }
-				void SetNext(Cmd* pNext) { pCmdNext_ = pNext; }
-				Cmd* GetNext() const { return pCmdNext_; }
-				Cmd* GetLast();
-				Cmd* GetNextNonEmpty();
+				void SetParent(SubcmdGroup* pCmdGroupParent) { pCmdGroupParent_ = pCmdGroupParent; }
+				SubcmdGroup* GetParent() const { return pCmdGroupParent_; }
+				void SetNext(Subcmd* pNext) { pCmdNext_ = pNext; }
+				Subcmd* GetNext() const { return pCmdNext_; }
+				Subcmd* GetLast();
+				Subcmd* GetNextNonEmpty();
 			public:
-				virtual void AddChild(Cmd* pCmdChild) {}
+				virtual void AddChild(Subcmd* pCmdChild) {}
 				virtual bool DoesRequireChild() const { return false; }
-				virtual void SetChild(Cmd* pCmdChild) {}
+				virtual void SetChild(Subcmd* pCmdChild) {}
 				virtual bool IsEmpty() const = 0;
 				virtual const char* GetProc() const = 0;
-				virtual Cmd* Advance() = 0;
+				virtual Subcmd* Advance() = 0;
 				virtual void Print(int indentLevel = 0) const = 0;
 			};
-			class CmdProc : public Cmd {
+			class SubcmdProc : public Subcmd {
 			protected:
 				const char* proc_;
 			public:
-				CmdProc(const char* proc);
+				SubcmdProc(const char* proc);
 			public:
 				virtual bool IsEmpty() const override { return false; }
 				virtual const char* GetProc() const override;
-				virtual Cmd* Advance() override;
+				virtual Subcmd* Advance() override;
 				virtual void Print(int indentLevel = 0) const override;
 			};
-			class CmdGroup : public Cmd {
+			class SubcmdGroup : public Subcmd {
 			protected:
-				std::unique_ptr<Cmd> pCmdChild_;
+				std::unique_ptr<Subcmd> pCmdChild_;
 			public:
-				CmdGroup();
+				SubcmdGroup();
 			public:
-				Cmd* GetChild() const { return pCmdChild_.get(); }
+				Subcmd* GetChild() const { return pCmdChild_.get(); }
 			public:
-				virtual Cmd* AdvanceAtEnd();
+				virtual Subcmd* AdvanceAtEnd();
 			public:
-				virtual void AddChild(Cmd* pCmdChild) override;
+				virtual void AddChild(Subcmd* pCmdChild) override;
 				virtual bool IsEmpty() const override { return !GetChild() || GetChild()->IsEmpty(); }
 				virtual const char* GetProc() const override;
-				virtual Cmd* Advance() override;
+				virtual Subcmd* Advance() override;
 				virtual void Print(int indentLevel = 0) const override;
 			};
-			class CmdRepeat : public CmdGroup {
+			class SubcmdRepeat : public SubcmdGroup {
 			private:
 				int nRepeats_;
 				int nCur_;
 			public:
-				CmdRepeat(int nRepeats);
+				SubcmdRepeat(int nRepeats);
 			public:
-				virtual Cmd* AdvanceAtEnd();
+				virtual Subcmd* AdvanceAtEnd();
 			public:
 				virtual bool DoesRequireChild() const override { return !GetChild(); }
-				virtual Cmd* Advance() override;
+				virtual Subcmd* Advance() override;
 				virtual void Print(int indentLevel = 0) const override;
 			};
 		private:
-			CmdGroup cmdGroup_;
-			Cmd* pCmdCur_;
+			SubcmdGroup cmdGroup_;
+			Subcmd* pCmdCur_;
 			const char* errorMsg_;
 		public:
-			EachCmd(const char*& argvBegin, const char*& argvEnd);
-			EachCmd(char*& argvBegin, char*& argvEnd) : EachCmd(const_cast<const char*&>(argvBegin), const_cast<const char*&>(argvEnd)) {}
+			EachSubcmd(const char*& argvBegin, const char*& argvEnd);
+			EachSubcmd(char*& argvBegin, char*& argvEnd) : EachSubcmd(const_cast<const char*&>(argvBegin), const_cast<const char*&>(argvEnd)) {}
 		public:
 			bool Initialize();
 			const char* GetErrorMsg() const { return errorMsg_; }

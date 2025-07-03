@@ -141,7 +141,7 @@ ShellCmdAlias(pwm29, pwm)
 bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv[], bool hasEnableProcessed, bool onlyPWMFlag)
 {
 	PWM pwm(pin);
-	Shell::Arg::EachCmd each(argv[0], argv[argc]);
+	Shell::Arg::EachSubcmd each(argv[0], argv[argc]);
 	if (!each.Initialize()) {
 		terr.Printf("%s\n", each.GetErrorMsg());
 		return false;

@@ -102,7 +102,7 @@ ShellCmdAlias(gpio29, gpio)
 
 bool ProcessGPIO(Printable& terr, Printable& tout, uint pin, int argc, char* argv[])
 {
-	Shell::Arg::EachCmd each(argv[0], argv[argc]);
+	Shell::Arg::EachSubcmd each(argv[0], argv[argc]);
 	if (!each.Initialize()) {
 		terr.Printf("%s\n", each.GetErrorMsg());
 		return false;
