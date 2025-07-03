@@ -41,7 +41,7 @@ pico_set_program_name(pico-jxgLABO "pico-jxgLABO")
 pico_set_program_version(pico-jxgLABO "0.0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(pico-jxgLABO 1)
+pico_enable_stdio_uart(pico-jxgLABO 0)
 pico_enable_stdio_usb(pico-jxgLABO 1)
 
 # Add the standard library to the build
