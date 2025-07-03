@@ -17,7 +17,7 @@ const char* Shell::specialTokens_[] = { ">>", "||", ">", "|", ";", "{", "}", "("
 Shell::Shell() : stat_{Stat::Startup}, pTerminal_{&TerminalDumb::Instance},
 	pCmdRunning_{nullptr}, tokenizer_(specialTokens_, count_of(specialTokens_)), interactiveFlag_{false}
 {
-	::strcpy(prompt_, "%d%w>");
+	SetPrompt_("%d%w>");
 }
 
 bool Shell::RunCmd(Readable& tin, Printable& tout, Printable& terr, char* line, int bytesLine)
@@ -123,7 +123,7 @@ void Shell::OnTick()
 	}
 	case Stat::Begin: {
 		char prompt[256];
-		GetTerminal().ReadLine_Begin(MakePrompt(prompt, sizeof(prompt)));
+		GetTerminal().ReadLine_Begin(EvalPrompt(prompt, sizeof(prompt)));
 		stat_ = Stat::Prompt;
 		break;
 	}
@@ -150,21 +150,14 @@ void Shell::OnTick()
 	}
 }
 
-void Shell::SetPrompt_(const char* prompt)
-{
-	size_t len = ChooseMin(sizeof(prompt_) - 1, ::strlen(prompt));
-	::memcpy(prompt_, prompt, len);
-	prompt_[len] = '\0';
-}
-
-const char* Shell::MakePrompt(char* prompt, int lenMax)
+const char* Shell::EvalPrompt(char* prompt, int lenMax)
 {
 	enum class Stat { Normal, Variable, };
 	Stat stat = Stat::Normal;
 	bool validDTFlag = false;
 	DateTime dt;
 	int i = 0;
-	for (const char* p = prompt_; *p && lenMax > 0; p++, lenMax--) {
+	for (const char* p = GetPrompt(); *p && lenMax > 0; p++, lenMax--) {
 		char ch = *p;
 		switch (stat) {
 		case Stat::Normal: {
@@ -263,7 +256,7 @@ const char* Shell::MakePrompt(char* prompt, int lenMax)
 			break;
 		}
 	}
-	if (i >= lenMax) ::panic("Shell::MakePrompt: prompt buffer overflow");
+	if (i >= lenMax) ::panic("Shell::EvalPrompt: prompt buffer overflow");
 	prompt[i] = '\0';
 	return prompt;
 }

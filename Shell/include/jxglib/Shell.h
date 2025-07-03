@@ -312,7 +312,8 @@ public:
 	enum class Stat { Startup, Begin, Prompt, Running, };
 private:
 	Stat stat_;
-	char prompt_[64];
+	std::unique_ptr<char[]> banner_;
+	std::unique_ptr<char[]> prompt_;
 	Terminal* pTerminal_;
 	Cmd* pCmdRunning_;
 	CompletionProvider completionProvider_;
@@ -330,15 +331,19 @@ public:
 	bool RunScript(Readable& tin, Printable& tout, Printable& terr, Readable& script);
 	Terminal& GetTerminal() { return *pTerminal_; }
 public:
-	static const char* GetPrompt() { return Instance.GetPrompt_(); }
+	static void SetBanner(const char* banner) { Instance.SetBanner_(banner); }
+	static const char* GetBanner() { return Instance.GetBanner_(); }
 	static void SetPrompt(const char* prompt) { Instance.SetPrompt_(prompt); }
+	static const char* GetPrompt() { return Instance.GetPrompt_(); }
 	static void AttachTerminal(Terminal& terminal) { Instance.AttachTerminal_(terminal); }
 	static void BeginInteractive() { Instance.BeginInteractive_(); }
 	static void EndInteractive() { Instance.EndInteractive_(); }
 private:
-	const char* GetPrompt_() const { return prompt_; }
-	void SetPrompt_(const char* prompt);
-	const char* MakePrompt(char* prompt, int lenMax);
+	void SetBanner_(const char* banner) { banner_.reset(new char[::strlen(banner) + 1]); ::strcpy(banner_.get(), banner); }
+	const char* GetBanner_() const { return banner_? banner_.get() : ""; }
+	void SetPrompt_(const char* prompt) { prompt_.reset(new char[::strlen(prompt) + 1]); ::strcpy(prompt_.get(), prompt); }
+	const char* GetPrompt_() const { return prompt_? prompt_.get() : ""; }
+	const char* EvalPrompt(char* prompt, int lenMax);
 	void AttachTerminal_(Terminal& terminal);
 	void BeginInteractive_() { interactiveFlag_ = true; }
 	void EndInteractive_() { interactiveFlag_ = false; }
