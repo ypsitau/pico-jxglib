@@ -23,6 +23,7 @@ bool Tokenizer::Tokenize(char* str, int bytesStr, char* tokenTbl[], int* pnToken
 	nToken = 0;
 	bool contFlag = true;
 	int nCharsFwd = 1;
+	char chQuoteInNoQuoted = '\0';
 	for (char* p = str; contFlag; p += nCharsFwd) {
 		nCharsFwd = 1;
 		switch (stat) {
@@ -46,6 +47,10 @@ bool Tokenizer::Tokenize(char* str, int bytesStr, char* tokenTbl[], int* pnToken
 				tokenTbl[nToken++] = p;
 				nCharsFwd = nCharsToken;
 				stat = Stat::AfterSpecial;
+			} else if (*p == '\'') {
+				tokenTbl[nToken++] = p;
+				chQuoteInNoQuoted = *p;
+				stat = Stat::QuotedInNoQuoted;
 			} else {
 				tokenTbl[nToken++] = p;
 				stat = Stat::NoQuoted;
@@ -92,7 +97,8 @@ bool Tokenizer::Tokenize(char* str, int bytesStr, char* tokenTbl[], int* pnToken
 			} else if (*p == '\\') {
 				DeleteChar(p); p--;
 				stat = Stat::NoQuotedEscape;
-			} else if (*p == '"') {
+			} else if (*p == '"' || *p == '\'') {
+				chQuoteInNoQuoted = *p;
 				stat = Stat::QuotedInNoQuoted;
 			} else if (isspace(*p)) {
 				*p = '\0';
@@ -133,7 +139,7 @@ bool Tokenizer::Tokenize(char* str, int bytesStr, char* tokenTbl[], int* pnToken
 				contFlag = false;
 			} else if (*p == '\\') {
 				stat = Stat::QuotedInNoQuotedEscape;
-			} else if (*p == '"') {
+			} else if (*p == chQuoteInNoQuoted) {
 				stat = Stat::NoQuoted;
 			}
 			break;
@@ -168,6 +174,7 @@ const char* Tokenizer::FindLastToken(const char* str) const
 	bool contFlag = true;
 	const char* tokenLast = str;
 	int nCharsFwd = 1;
+	char chQuoteInNoQuoted = '\0';
 	for (const char* p = str; contFlag; p += nCharsFwd) {
 		nCharsFwd = 1;
 		switch (stat) {
@@ -184,6 +191,9 @@ const char* Tokenizer::FindLastToken(const char* str) const
 			} else if ((nCharsToken = FindSpecialToken(p)) > 0) {
 				tokenLast = p + nCharsToken;
 				nCharsFwd = nCharsToken;
+			} else if (*p == '\'') {
+				chQuoteInNoQuoted = *p;
+				stat = Stat::QuotedInNoQuoted;
 			} else {
 				stat = Stat::NoQuoted;
 			}
@@ -215,7 +225,8 @@ const char* Tokenizer::FindLastToken(const char* str) const
 				contFlag = false;
 			} else if (*p == '\\') {
 				stat = Stat::NoQuotedEscape;
-			} else if (*p == '"') {
+			} else if (*p == '"' || *p == '\'') {
+				chQuoteInNoQuoted = *p;
 				stat = Stat::QuotedInNoQuoted;
 			} else if (isspace(*p)) {
 				tokenLast = p + 1;
@@ -242,7 +253,7 @@ const char* Tokenizer::FindLastToken(const char* str) const
 				contFlag = false;
 			} else if (*p == '\\') {
 				stat = Stat::QuotedInNoQuotedEscape;
-			} else if (*p == '"') {
+			} else if (*p == chQuoteInNoQuoted) {
 				stat = Stat::NoQuoted;
 			}
 			break;

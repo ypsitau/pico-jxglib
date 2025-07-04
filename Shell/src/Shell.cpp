@@ -532,6 +532,7 @@ Shell::Arg::EachNum::EachNum(const char*& argvBegin, const char*& argvEnd) :
 
 bool Shell::Arg::EachNum::Next(int* pValue)
 {
+	char chQuote = '\0';
 	if (mode_ == Mode::Range) {
 		*pValue = range_.cur;
 		if ((range_.step > 0 && range_.cur > range_.end) || (range_.step < 0 && range_.cur < range_.end)) {
@@ -543,7 +544,7 @@ bool Shell::Arg::EachNum::Next(int* pValue)
 	}
 	for (;;) {
 		if (mode_ == Mode::String) {
-			if (*p_ == '"') {
+			if (*p_ == chQuote) {
 				++p_;
 				mode_ = Mode::None;
 				for ( ; ::isspace(*p_); ++p_) ;
@@ -575,9 +576,9 @@ bool Shell::Arg::EachNum::Next(int* pValue)
 		}
 		// Skip whitespace
 		for ( ; ::isspace(*p_); ++p_) ;
-		
 		// Check for quoted string
-		if (*p_ == '"') {
+		if (*p_ == '"' || *p_ == '\'') {
+			chQuote = *p_;
 			++p_; // skip opening quote
 			mode_ = Mode::String;
 		} else {
