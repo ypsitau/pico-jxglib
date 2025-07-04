@@ -30,9 +30,9 @@ Terminal& Serial::Terminal::Edit_InsertChar(int ch)
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (GetLineEditor().InsertChar(ch)) {
-		RestoreCursorPosition();
+		MoveToBegin();
 		GetPrintable().Print(GetLineEditor().GetPointerBegin());
-		VT100::CursorBackward(GetPrintable(), GetLineEditor().CountFollowingChars());
+		MoveToEnd();
 		GetPrintable().RefreshScreen();
 		EndCompletion();
 	}
@@ -43,10 +43,10 @@ Terminal& Serial::Terminal::Edit_DeleteChar()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (GetLineEditor().DeleteChar()) {
-		RestoreCursorPosition();
+		MoveToBegin();
 		GetPrintable().Print(GetLineEditor().GetPointerBegin());
 		VT100::EraseToEndOfLine(GetPrintable());
-		VT100::CursorBackward(GetPrintable(), GetLineEditor().CountFollowingChars());
+		MoveToEnd();
 		GetPrintable().RefreshScreen();
 		EndCompletion();
 	}
@@ -57,10 +57,10 @@ Terminal& Serial::Terminal::Edit_Back()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (GetLineEditor().Back()) {
-		RestoreCursorPosition();
+		MoveToBegin();
 		GetPrintable().Print(GetLineEditor().GetPointerBegin());
 		VT100::EraseToEndOfLine(GetPrintable());
-		VT100::CursorBackward(GetPrintable(), GetLineEditor().CountFollowingChars());
+		MoveToEnd();
 		GetPrintable().RefreshScreen();
 		EndCompletion();
 	}
@@ -93,7 +93,7 @@ Terminal& Serial::Terminal::Edit_MoveHome()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (GetLineEditor().MoveHome()) {
-		RestoreCursorPosition();
+		MoveToBegin();
 		GetPrintable().RefreshScreen();
 		EndCompletion();
 	}
@@ -104,7 +104,7 @@ Terminal& Serial::Terminal::Edit_MoveEnd()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (GetLineEditor().MoveEnd()) {
-		RestoreCursorPosition();
+		MoveToBegin();
 		GetPrintable().Print(GetLineEditor().GetPointerBegin());
 		GetPrintable().RefreshScreen();
 		EndCompletion();
@@ -116,10 +116,10 @@ Terminal& Serial::Terminal::Edit_Clear()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (GetLineEditor().Clear()) {
-		RestoreCursorPosition();
+		MoveToBegin();
 		GetPrintable().Print(GetLineEditor().GetPointerBegin());
 		VT100::EraseToEndOfLine(GetPrintable());
-		RestoreCursorPosition();
+		MoveToBegin();
 		GetPrintable().RefreshScreen();
 		EndCompletion();
 	}
@@ -130,10 +130,10 @@ Terminal& Serial::Terminal::Edit_DeleteToHome()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (GetLineEditor().DeleteToHome()) {
-		RestoreCursorPosition();
+		MoveToBegin();
 		GetPrintable().Print(GetLineEditor().GetPointerBegin());
 		VT100::EraseToEndOfLine(GetPrintable());
-		RestoreCursorPosition();
+		MoveToBegin();
 		GetPrintable().RefreshScreen();
 		EndCompletion();
 	}
@@ -144,7 +144,7 @@ Terminal& Serial::Terminal::Edit_DeleteToEnd()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (GetLineEditor().DeleteToEnd()) {
-		RestoreCursorPosition();
+		MoveToBegin();
 		GetPrintable().Print(GetLineEditor().GetPointerBegin());
 		VT100::EraseToEndOfLine(GetPrintable());
 		GetPrintable().RefreshScreen();
@@ -157,10 +157,10 @@ Terminal& Serial::Terminal::Edit_MoveHistoryPrev()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (GetLineEditor().MoveHistoryPrev()) {
-		RestoreCursorPosition();
+		MoveToBegin();
 		GetPrintable().Print(GetLineEditor().GetPointerBegin());
 		VT100::EraseToEndOfLine(GetPrintable());
-		VT100::CursorBackward(GetPrintable(), GetLineEditor().CountFollowingChars());
+		MoveToEnd();
 		GetPrintable().RefreshScreen();
 		EndCompletion();
 	}
@@ -171,10 +171,10 @@ Terminal& Serial::Terminal::Edit_MoveHistoryNext()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (GetLineEditor().MoveHistoryNext()) {
-		RestoreCursorPosition();
+		MoveToBegin();
 		GetPrintable().Print(GetLineEditor().GetPointerBegin());
 		VT100::EraseToEndOfLine(GetPrintable());
-		VT100::CursorBackward(GetPrintable(), GetLineEditor().CountFollowingChars());
+		MoveToEnd();
 		GetPrintable().RefreshScreen();
 		EndCompletion();
 	}
@@ -190,10 +190,10 @@ Terminal& Serial::Terminal::Edit_Completion()
 	}
 	const char* strCompletion = pCompletionProvider_->NextCompletion();
 	if (strCompletion && GetLineEditor().ReplaceWithCompletion(pCompletionProvider_->GetIByte(), strCompletion)) {
-		RestoreCursorPosition();
+		MoveToBegin();
 		GetPrintable().Print(GetLineEditor().GetPointerBegin());
 		VT100::EraseToEndOfLine(GetPrintable());
-		VT100::CursorBackward(GetPrintable(), GetLineEditor().CountFollowingChars());
+		MoveToEnd();
 		GetPrintable().RefreshScreen();
 	}
 	return *this;

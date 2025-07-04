@@ -58,7 +58,8 @@ public:
 		virtual jxglib::Terminal& Edit_MoveHistoryNext() override;
 		virtual jxglib::Terminal& Edit_Completion() override;
 	public:
-		void RestoreCursorPosition() { VT100::RestoreCursorPosition(*pPrintable_); }
+		void MoveToBegin() { VT100::RestoreCursorPosition(GetPrintable()); }
+		void MoveToEnd() { VT100::CursorBackward(GetPrintable(), GetLineEditor().CountFollowingChars()); }
 	public:
 		// virtual functions of Tickable
 		virtual const char* GetTickableName() const override { return "Serial::Terminal"; }
