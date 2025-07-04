@@ -78,7 +78,7 @@ Printable& Printable::PrintfRaw(const char* format, ...)
 //------------------------------------------------------------------------------
 Printable::DumpT::DumpT(Printable* pPrintable) : pPrintable_(pPrintable),
 	upperCaseFlag_{true}, nDigitsAddr_{-1}, bytesPerRow_{16}, addrStart_{0}, bytesPerElem_{1},
-	bigEndianFlag_{false}, asciiFlag_{false}
+	bigEndianFlag_{false}, addrFlag_{true}, asciiFlag_{false}
 {}
 
 Printable::DumpT& Printable::DumpT::operator()(const void* buff, int cnt)

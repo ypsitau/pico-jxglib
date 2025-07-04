@@ -81,7 +81,9 @@ int ShellCmd_dump::Run(Readable& tin, Printable& tout, Printable& terr, int argc
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
 		Arg::OptInt("addr-digits",	0x0,	"specifies address digits", "n"),
+		Arg::OptBool("addr",		0x0,	"prints address"),
 		Arg::OptBool("ascii",		0x0,	"prints ASCII characters"),
+		Arg::OptBool("no-addr",		0x0,	"prints no address"),
 		Arg::OptBool("no-ascii",	0x0,	"prints no ASCII characters"),
 		Arg::OptBool("no-dump",		0x0,	"skips actual dump, just modifies parameters"),
 		Arg::OptInt("row-bytes",	'c',	"specifies number of bytes per row", "n"),
@@ -99,6 +101,8 @@ int ShellCmd_dump::Run(Readable& tin, Printable& tout, Printable& terr, int argc
 		arg.PrintHelp(terr);
 		return Result::Success;
 	}
+	if (arg.GetBool("addr")) dump_.Addr();
+	if (arg.GetBool("no-addr")) dump_.Addr(false);
 	if (arg.GetBool("ascii")) dump_.Ascii();
 	if (arg.GetBool("no-ascii")) dump_.Ascii(false);
 	int num;
@@ -142,17 +146,19 @@ int ShellCmd_dump::Run(Readable& tin, Printable& tout, Printable& terr, int argc
 		// nothing to do
 	} else if (readFromFile) {
 		uint8_t buff[512];
-		std::unique_ptr<FS::File> pFile(FS::OpenFile(argv[1], "r"));
-		if (!pFile) {
-			terr.Printf("cannot open file '%s'\n", argv[1]);
-			return Result::Error;
-		}
-		int bytesToRead = sizeof(buff) / bytesPerRow * bytesPerRow;
-		int bytesRead;
-		uint32_t addr = 0;
-		while ((bytesRead = pFile->Read(buff, bytesToRead)) > 0) {
-			dump_.AddrStart(addr)(buff, bytesRead);
-			addr += bytesRead;
+		for (Arg::EachGlob argIter(argv[1], argv[argc]); const char* fileName = argIter.Next(); ) {
+			std::unique_ptr<FS::File> pFile(FS::OpenFile(fileName, "r"));
+			if (!pFile) {
+				terr.Printf("cannot open file '%s'\n", argv[1]);
+				return Result::Error;
+			}
+			int bytesToRead = sizeof(buff) / bytesPerRow * bytesPerRow;
+			int bytesRead;
+			uint32_t addr = 0;
+			while ((bytesRead = pFile->Read(buff, bytesToRead)) > 0) {
+				dump_.AddrStart(addr)(buff, bytesRead);
+				addr += bytesRead;
+			}
 		}
 	} else {
 		dump_.AddrStart(addr_)(reinterpret_cast<const void*>(addr_), bytes_);
