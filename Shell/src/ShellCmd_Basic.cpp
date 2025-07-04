@@ -225,6 +225,17 @@ ShellCmd_Named(echo_bin, "echo-bin", "generates binary data from the given argum
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
+		Arg::OptBool("hex",			'x',	"prints data in hex format"),
+		//Arg::OptBool("int8",		0x0,	"generates data in 8-bit integer format"),
+		//Arg::OptBool("int16",		0x0,	"generates data in 16-bit integer format"),
+		//Arg::OptBool("int32",		0x0,	"generates data in 32-bit integer format"),
+		//Arg::OptBool("int16be",	0x0,	"generates data in 16-bit big-endian integer format"),
+		//Arg::OptBool("int32be",	0x0,	"generates data in 32-bit big-endian integer format"),
+		//Arg::OptBool("uint8",		0x0,	"generates data in unsinged 8-bit integer format"),
+		//Arg::OptBool("uint16",	0x0,	"generates data in unsinged 16-bit integer format"),
+		//Arg::OptBool("uint32",	0x0,	"generates data in unsinged 32-bit integer format"),
+		//Arg::OptBool("uint16be",	0x0,	"generates data in unsinged 16-bit big-endian integer format"),
+		//Arg::OptBool("uint32be",	0x0,	"generates data in unsinged 32-bit big-endian integer format"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
@@ -233,18 +244,32 @@ ShellCmd_Named(echo_bin, "echo-bin", "generates binary data from the given argum
 		arg.PrintHelp(terr);
 		return Result::Success;
 	}
+	bool hexFlag = arg.GetBool("hex");
 	Arg::EachNum eachNum(argv[1], argv[argc]);
 	if (!eachNum.CheckValidity()) {
 		terr.Printf("%s\n", eachNum.GetErrorMsg());
 		return Result::Error;
 	}
 	int value;
-	while (eachNum.Next(&value)) {
-		if (value < 0 || value > 255) {
-			terr.Printf("value out of range: %d\n", value);
-			return Result::Error;
+	if (hexFlag) {
+		int iCol = 0;
+		while (eachNum.Next(&value)) {
+			if (value < 0 || value > 255) {
+				terr.Printf("value out of range: %d\n", value);
+				return Result::Error;
+			}
+			tout.Printf("%s%02X%s", (iCol == 0)? "" : " ", value, (iCol == 15)? "\n" : "");
+			if (++iCol >= 16) iCol = 0;
 		}
-		tout.PutChar(value);
+		if (iCol > 0 && hexFlag) tout.Println();
+	} else {
+		while (eachNum.Next(&value)) {
+			if (value < 0 || value > 255) {
+				terr.Printf("value out of range: %d\n", value);
+				return Result::Error;
+			}
+			tout.PutChar(value);
+		}
 	}
 	return Result::Success;
 }
