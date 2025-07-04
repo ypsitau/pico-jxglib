@@ -92,6 +92,8 @@ bool Tokenizer::Tokenize(char* str, int bytesStr, char* tokenTbl[], int* pnToken
 			} else if (*p == '\\') {
 				DeleteChar(p); p--;
 				stat = Stat::NoQuotedEscape;
+			} else if (*p == '"') {
+				stat = Stat::QuotedInNoQuoted;
 			} else if (isspace(*p)) {
 				*p = '\0';
 				stat = Stat::Head;
@@ -123,6 +125,24 @@ bool Tokenizer::Tokenize(char* str, int bytesStr, char* tokenTbl[], int* pnToken
 				stat = Stat::NoQuoted;
 			} else {
 				stat = Stat::NoQuoted;
+			}
+			break;
+		}
+		case Stat::QuotedInNoQuoted: {
+			if (*p == '\0') {
+				contFlag = false;
+			} else if (*p == '\\') {
+				stat = Stat::QuotedInNoQuotedEscape;
+			} else if (*p == '"') {
+				stat = Stat::NoQuoted;
+			}
+			break;
+		}
+		case Stat::QuotedInNoQuotedEscape: {
+			if (*p == '\0') {
+				contFlag = false;
+			} else {
+				stat = Stat::QuotedInNoQuoted;
 			}
 			break;
 		}
@@ -195,6 +215,8 @@ const char* Tokenizer::FindLastToken(const char* str) const
 				contFlag = false;
 			} else if (*p == '\\') {
 				stat = Stat::NoQuotedEscape;
+			} else if (*p == '"') {
+				stat = Stat::QuotedInNoQuoted;
 			} else if (isspace(*p)) {
 				tokenLast = p + 1;
 				stat = Stat::Head;
@@ -215,8 +237,30 @@ const char* Tokenizer::FindLastToken(const char* str) const
 			}
 			break;
 		}
-		case Stat::AfterSpecial: {
-			stat = Stat::Head;
+		case Stat::QuotedInNoQuoted: {
+			if (*p == '\0') {
+				contFlag = false;
+			} else if (*p == '\\') {
+				stat = Stat::QuotedInNoQuotedEscape;
+			} else if (*p == '"') {
+				stat = Stat::NoQuoted;
+			}
+			break;
+		}
+		case Stat::QuotedInNoQuotedEscape: {
+			if (*p == '\0') {
+				contFlag = false;
+			} else {
+				stat = Stat::QuotedInNoQuoted;
+			}
+			break;
+		}
+		case Stat::AfterSpecial: {	// this case never occurs in FindLastToken
+			if (*p == '\0') {
+				contFlag = false;
+			} else {
+				stat = Stat::Head;
+			}
 			break;
 		}
 		default: break;

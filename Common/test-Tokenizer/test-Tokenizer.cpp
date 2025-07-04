@@ -44,6 +44,10 @@ void test_Tokenizer()
 		"abc>",
 		"abc>>",
 		"abc \">\"",
+		"abc def:\"hoge\" ghi",
+		"abc def:\"hoge fuga\" ghi",
+		"abc def:\"hoge fuga > aaaa.txt\" ghi",
+		"abc def:\"hoge \\\" fuga\" ghi",
 	};
 
 	for (int i = 0; i < count_of(test_cases); ++i) {
