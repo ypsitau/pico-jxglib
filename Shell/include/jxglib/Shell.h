@@ -102,8 +102,8 @@ public:
 			struct {
 				int cur, end, step;
 			} range_;
+			char chQuote_;
 			const char* errorMsg_;
-			
 		public:
 			EachNum(const char* str);
 			EachNum(const char* str, int rangeLimit) : EachNum(str) { rangeLimit_ = rangeLimit; hasRangeLimit_ = true; }

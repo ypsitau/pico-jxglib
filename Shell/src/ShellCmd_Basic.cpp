@@ -219,30 +219,9 @@ ShellCmd(echo, "prints the given text")
 }
 
 //-----------------------------------------------------------------------------
-// help
+// echo-bin
 //-----------------------------------------------------------------------------
-ShellCmd(help, "prints help strings for available commands")
-{
-	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		'h',	"prints this help"),
-		Arg::OptBool("simple",		's',	"prints only command names"),
-	};
-	Arg arg(optTbl, count_of(optTbl));
-	if (!arg.Parse(terr, argc, argv)) return Result::Error;
-	if (arg.GetBool("help")) {
-		terr.Printf("Usage: %s [OPTION]...\n", GetName());
-		arg.PrintHelp(terr);
-		return Result::Error;
-	}
-	bool simpleFlag = arg.GetBool("simple");
-	Shell::PrintHelp(tout, simpleFlag);
-	return Result::Success;
-}
-
-//-----------------------------------------------------------------------------
-// genbin
-//-----------------------------------------------------------------------------
-ShellCmd(genbin, "generates binary data from the given numbers")
+ShellCmd_Named(echo_bin, "echo-bin", "generates binary data from the given arguments")
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
@@ -267,6 +246,27 @@ ShellCmd(genbin, "generates binary data from the given numbers")
 		}
 		tout.PutChar(value);
 	}
+	return Result::Success;
+}
+
+//-----------------------------------------------------------------------------
+// help
+//-----------------------------------------------------------------------------
+ShellCmd(help, "prints help strings for available commands")
+{
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		'h',	"prints this help"),
+		Arg::OptBool("simple",		's',	"prints only command names"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
+	if (arg.GetBool("help")) {
+		terr.Printf("Usage: %s [OPTION]...\n", GetName());
+		arg.PrintHelp(terr);
+		return Result::Error;
+	}
+	bool simpleFlag = arg.GetBool("simple");
+	Shell::PrintHelp(tout, simpleFlag);
 	return Result::Success;
 }
 

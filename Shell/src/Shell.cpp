@@ -519,7 +519,7 @@ const char* Shell::Arg::Each::Next()
 //------------------------------------------------------------------------------
 Shell::Arg::EachNum::EachNum(const char* str) :
 	EachBase(const_cast<const char*&>(argvInternal_[0]), const_cast<const char*&>(argvInternal_[1])),
-	mode_{Mode::None}, p_{""}, rangeLimit_{0}, hasRangeLimit_{false}, range_{0, 0, 1}, errorMsg_{""}
+	mode_{Mode::None}, p_{""}, rangeLimit_{0}, hasRangeLimit_{false}, range_{0, 0, 1}, chQuote_{'\0'}, errorMsg_{""}
 {
 	argvInternal_[0] = str;
 	argvInternal_[1] = nullptr;
@@ -532,7 +532,6 @@ Shell::Arg::EachNum::EachNum(const char*& argvBegin, const char*& argvEnd) :
 
 bool Shell::Arg::EachNum::Next(int* pValue)
 {
-	char chQuote = '\0';
 	if (mode_ == Mode::Range) {
 		*pValue = range_.cur;
 		if ((range_.step > 0 && range_.cur > range_.end) || (range_.step < 0 && range_.cur < range_.end)) {
@@ -544,7 +543,7 @@ bool Shell::Arg::EachNum::Next(int* pValue)
 	}
 	for (;;) {
 		if (mode_ == Mode::String) {
-			if (*p_ == chQuote) {
+			if (*p_ == chQuote_) {
 				++p_;
 				mode_ = Mode::None;
 				for ( ; ::isspace(*p_); ++p_) ;
@@ -553,6 +552,7 @@ bool Shell::Arg::EachNum::Next(int* pValue)
 				} else if (*p_ == '\0') {
 					// Continue to next argument
 				} else {
+					::printf("%02x\n", *p_);
 					errorMsg_ = "unexpected character after string";
 					return false;
 				}
@@ -578,11 +578,10 @@ bool Shell::Arg::EachNum::Next(int* pValue)
 		for ( ; ::isspace(*p_); ++p_) ;
 		// Check for quoted string
 		if (*p_ == '"' || *p_ == '\'') {
-			chQuote = *p_;
+			chQuote_ = *p_;
 			++p_; // skip opening quote
 			mode_ = Mode::String;
 		} else {
-		
 			// Parse number (existing logic continues...)
 			char* endptr = nullptr;
 			int n1 = ::strtol(p_, &endptr, 0);
