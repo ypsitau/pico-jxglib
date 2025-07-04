@@ -95,6 +95,7 @@ int ShellCmd_dump::Run(Readable& tin, Printable& tout, Printable& terr, int argc
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (arg.GetBool("help")) {
 		terr.Printf("Usage: %s [OPTION]... [ADDR [BYTES]]\n", GetName());
+		terr.Printf("       %s [OPTION]... FILE\n", GetName());
 		arg.PrintHelp(terr);
 		return Result::Success;
 	}
@@ -118,27 +119,43 @@ int ShellCmd_dump::Run(Readable& tin, Printable& tout, Printable& terr, int argc
 	nColsOut -= 8 + 2;
 	int bytesPerRow = (bytesPerRow_ > 0)? bytesPerRow_ : ((nColsOut + 1) / 3) / 8 * 8;
 	if (bytesPerRow == 0) bytesPerRow = 8;
+	bool readFromFile = false;
 	if (argc >= 2) {
 		char* p = nullptr;
 		uint32_t num = ::strtoul(argv[1], &p, 0);
-		if (*p != '\0') {
-			terr.Printf("invalid number\n");
+		if (*p == '\0') {
+			addr_ = num;
+			if (argc >= 3) {
+				uint32_t num = ::strtoul(argv[2], &p, 0);
+				if (*p != '\0') {
+					terr.Printf("invalid number\n");
+					return Result::Error;
+				}
+				bytes_ = num;
+			}
+		} else {
+			readFromFile = true;;
+		}
+	}
+	dump_.SetPrintable(tout).BytesPerRow(bytesPerRow);
+	if (arg.GetBool("no-dump")) {
+		// nothing to do
+	} else if (readFromFile) {
+		uint8_t buff[512];
+		std::unique_ptr<FS::File> pFile(FS::OpenFile(argv[1], "r"));
+		if (!pFile) {
+			terr.Printf("cannot open file '%s'\n", argv[1]);
 			return Result::Error;
 		}
-		addr_ = num;
-	}
-	if (argc >= 3) {
-		char* p = nullptr;
-		uint32_t num = ::strtoul(argv[2], &p, 0);
-		if (*p != '\0') {
-			terr.Printf("invalid number\n");
-			return Result::Error;
+		int bytesToRead = sizeof(buff) / bytesPerRow * bytesPerRow;
+		int bytesRead;
+		uint32_t addr = 0;
+		while ((bytesRead = pFile->Read(buff, bytesToRead)) > 0) {
+			dump_.AddrStart(addr)(buff, bytesRead);
+			addr += bytesRead;
 		}
-		bytes_ = num;
-	}
-	dump_.SetPrintable(tout).BytesPerRow(bytesPerRow).AddrStart(addr_);
-	if (!arg.GetBool("no-dump")) {
-		dump_(reinterpret_cast<const void*>(addr_), bytes_);
+	} else {
+		dump_.AddrStart(addr_)(reinterpret_cast<const void*>(addr_), bytes_);
 		addr_ += bytes_;
 	}
 	return Result::Success;
@@ -213,6 +230,37 @@ ShellCmd(help, "prints help strings for available commands")
 	}
 	bool simpleFlag = arg.GetBool("simple");
 	Shell::PrintHelp(tout, simpleFlag);
+	return Result::Success;
+}
+
+//-----------------------------------------------------------------------------
+// genbin
+//-----------------------------------------------------------------------------
+ShellCmd(genbin, "generates binary data from the given numbers")
+{
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		'h',	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
+	if (arg.GetBool("help")) {
+		terr.Printf("Usage: %s [OPTION]... [NUMBER]...\n", GetName());
+		arg.PrintHelp(terr);
+		return Result::Success;
+	}
+	Arg::EachNum eachNum(argv[1], argv[argc]);
+	if (!eachNum.CheckValidity()) {
+		terr.Printf("%s\n", eachNum.GetErrorMsg());
+		return Result::Error;
+	}
+	int value;
+	while (eachNum.Next(&value)) {
+		if (value < 0 || value > 255) {
+			terr.Printf("value out of range: %d\n", value);
+			return Result::Error;
+		}
+		tout.PutChar(value);
+	}
 	return Result::Success;
 }
 
