@@ -519,7 +519,8 @@ const char* Shell::Arg::Each::Next()
 //------------------------------------------------------------------------------
 Shell::Arg::EachNum::EachNum(const char* str) :
 	EachBase(const_cast<const char*&>(argvInternal_[0]), const_cast<const char*&>(argvInternal_[1])),
-	mode_{Mode::None}, p_{""}, rangeLimit_{0}, hasRangeLimit_{false}, range_{0, 0, 1}, chQuote_{'\0'}, errorMsg_{""}
+	mode_{Mode::None}, p_{""}, rangeLimit_{0}, hasRangeLimit_{false}, range_{0, 0, 1}, repeat_{0, 0, 0}, 
+	chQuote_{'\0'}, errorMsg_{""}
 {
 	argvInternal_[0] = str;
 	argvInternal_[1] = nullptr;
@@ -527,11 +528,20 @@ Shell::Arg::EachNum::EachNum(const char* str) :
 
 Shell::Arg::EachNum::EachNum(const char*& argvBegin, const char*& argvEnd) :
 	EachBase(argvBegin, argvEnd),
-	mode_{Mode::None}, p_{""}, rangeLimit_{0}, hasRangeLimit_{false}, range_{0, 0, 1}, chQuote_{'\0'}, errorMsg_{""}
+	mode_{Mode::None}, p_{""}, rangeLimit_{0}, hasRangeLimit_{false}, range_{0, 0, 1}, repeat_{0, 0, 0},
+	chQuote_{'\0'}, errorMsg_{""}
 {}
 
 bool Shell::Arg::EachNum::Next(int* pValue)
 {
+	if (mode_ == Mode::Repeat) {
+		*pValue = repeat_.value;
+		repeat_.cur++;
+		if (repeat_.cur >= repeat_.count) {
+			mode_ = Mode::None;
+		}
+		return true;
+	}
 	if (mode_ == Mode::Range) {
 		*pValue = range_.cur;
 		if ((range_.step > 0 && range_.cur > range_.end) || (range_.step < 0 && range_.cur < range_.end)) {
@@ -667,6 +677,26 @@ bool Shell::Arg::EachNum::Next(int* pValue)
 				if (range_.cur != range_.end) {
 					mode_ = Mode::Range;
 					range_.cur += range_.step;
+				}
+			} else if (*p_ == '*') {
+				// Check for repeat format: value*count
+				++p_;
+				int count = ::strtol(p_, &endptr, 0);
+				if (endptr == p_) {
+					errorMsg_ = "missing count after *";
+					return false;
+				}
+				if (count <= 0) {
+					errorMsg_ = "repeat count must be positive";
+					return false;
+				}
+				p_ = endptr;
+				repeat_.value = n1;
+				repeat_.count = count;
+				repeat_.cur = 1; // First value is returned immediately
+				*pValue = repeat_.value;
+				if (repeat_.cur < repeat_.count) {
+					mode_ = Mode::Repeat;
 				}
 			} else {
 				*pValue = n1;

@@ -92,7 +92,7 @@ public:
 		};
 		class EachNum : public EachBase {
 		private:
-			enum class Mode { None, String, Range, File };
+			enum class Mode { None, String, Range, File, Repeat };
 		private:
 			Mode mode_;
 			const char* argvInternal_[2];
@@ -102,6 +102,9 @@ public:
 			struct {
 				int cur, end, step;
 			} range_;
+			struct {
+				int value, count, cur;
+			} repeat_;
 			char chQuote_;
 			const char* errorMsg_;
 			std::unique_ptr<FS::File> pFile_;

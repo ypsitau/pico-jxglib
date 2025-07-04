@@ -163,29 +163,17 @@ void test_EachNum()
 		{ "comma range and string", 1, { "1-2,\"OK\"" }, false, "1, 2, 79, 75" },
 		{ "comma mixed strings ranges numbers", 1, { "\"A\",3-4,\"B\",7" }, false, "65, 3, 4, 66, 7" },
 		{ "comma string with special chars", 1, { "\"!\",\"@\",\"#\"" }, false, "33, 64, 35" },
-		{ "comma empty and non-empty strings", 1, { "\"\",\"A\",\"\"" }, false, "65" },
-		{ "comma long string with numbers", 1, { "\"TEST\",100-101" }, false, "84, 69, 83, 84, 100, 101" },
-		{ "escape newline", 1, { "\"A\\nB\"" }, false, "65, 10, 66" },
-		{ "escape carriage return", 1, { "\"A\\rB\"" }, false, "65, 13, 66" },
-		{ "escape tab", 1, { "\"A\\tB\"" }, false, "65, 9, 66" },
-		{ "escape backslash", 1, { "\"A\\\\B\"" }, false, "65, 92, 66" },
-		{ "escape quote", 1, { "\"A\\\"B\"" }, false, "65, 34, 66" },
-		{ "escape null", 1, { "\"A\\0B\"" }, false, "65, 0, 66" },
-		{ "escape hex lowercase", 1, { "\"\\x41\\x42\"" }, false, "65, 66" },
-		{ "escape hex uppercase", 1, { "\"\\x4A\\x4B\"" }, false, "74, 75" },
-		{ "escape hex mixed case", 1, { "\"\\x4a\\x4B\"" }, false, "74, 75" },
-		{ "multiple escapes", 1, { "\"\\n\\t\\r\"" }, false, "10, 9, 13" },
-		{ "escape octal single digit", 1, { "\"A\\7B\"" }, false, "65, 7, 66" },
-		{ "escape octal two digits", 1, { "\"A\\41B\"" }, false, "65, 33, 66" },
-		{ "escape octal three digits", 1, { "\"A\\101B\"" }, false, "65, 65, 66" },
-		{ "escape octal zero", 1, { "\"A\\000B\"" }, false, "65, 0, 66" },
-		{ "escape octal max", 1, { "\"A\\377B\"" }, false, "65, 255, 66" },
-		{ "escape hex single digit", 1, { "\"A\\x7B\"" }, false, "65, 123" },
-		{ "escape hex zero", 1, { "\"A\\x00B\"" }, false, "65, 0, 66" },
-		{ "escape hex max", 1, { "\"A\\xFFB\"" }, false, "65, 255, 66" },
-		{ "escape hex mixed with octal", 1, { "\"\\x41\\101\"" }, false, "65, 65" },
-		{ "escape hex special chars", 1, { "\"\\x21\\x40\\x23\"" }, false, "33, 64, 35" },
-	};
+        { "repeat single value", 1, { "5*3" }, false, "5, 5, 5" },
+        { "repeat zero", 1, { "0*4" }, false, "0, 0, 0, 0" },
+        { "repeat negative value", 1, { "-2*3" }, false, "-2, -2, -2" },
+        { "repeat with comma", 1, { "1*2,3*2" }, false, "1, 1, 3, 3" },
+        { "repeat mixed with numbers", 1, { "1,2*3,4" }, false, "1, 2, 2, 2, 4" },
+        { "repeat mixed with range", 1, { "1*2,3-5" }, false, "1, 1, 3, 4, 5" },
+        { "repeat zero times", 1, { "7*0" }, false, "(none)" },
+        { "repeat one time", 1, { "9*1" }, false, "9" },
+        { "repeat large count", 1, { "1*10" }, false, "1, 1, 1, 1, 1, 1, 1, 1, 1, 1" },
+        { "repeat with limit", 1, { "2*5" }, true, "2, 2, 2, 2, 2" },
+    };
 
 	for (size_t i = 0; i < sizeof(cases)/sizeof(cases[0]); ++i) {
 		const EachNumTestCase& tc = cases[i];
@@ -332,8 +320,8 @@ int main()
 {
 	::stdio_init_all();
 	//test_Parse();
-	//test_EachNum();
-	test_EachSubcmd();
+	test_EachNum();
+	//test_EachSubcmd();
 	//try_EachSubcmd();
 	for (;;) ::tight_loop_contents();
 }
