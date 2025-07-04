@@ -527,7 +527,7 @@ Shell::Arg::EachNum::EachNum(const char* str) :
 
 Shell::Arg::EachNum::EachNum(const char*& argvBegin, const char*& argvEnd) :
 	EachBase(argvBegin, argvEnd),
-	mode_{Mode::None}, p_{""}, rangeLimit_{0}, hasRangeLimit_{false}, range_{0, 0, 1}, errorMsg_{""}
+	mode_{Mode::None}, p_{""}, rangeLimit_{0}, hasRangeLimit_{false}, range_{0, 0, 1}, chQuote_{'\0'}, errorMsg_{""}
 {}
 
 bool Shell::Arg::EachNum::Next(int* pValue)
@@ -542,7 +542,30 @@ bool Shell::Arg::EachNum::Next(int* pValue)
 		}
 	}
 	for (;;) {
-		if (mode_ == Mode::String) {
+		if (mode_ == Mode::File) {
+			if (pFile_) {
+				unsigned char byte;
+				if (pFile_->Read(&byte, 1) == 1) {
+					*pValue = static_cast<int>(byte);
+					return true;
+				} else {
+					// End of file reached
+					pFile_.reset();
+					mode_ = Mode::None;
+					for ( ; ::isspace(*p_); ++p_) ;
+					if (*p_ == ',') {
+						++p_;
+					} else if (*p_ == '\0') {
+						// Continue to next argument
+					} else {
+						errorMsg_ = "unexpected character after file";
+						return false;
+					}
+				}
+			} else {
+				mode_ = Mode::None;
+			}
+		} else if (mode_ == Mode::String) {
 			if (*p_ == chQuote_) {
 				++p_;
 				mode_ = Mode::None;
@@ -576,8 +599,29 @@ bool Shell::Arg::EachNum::Next(int* pValue)
 		}
 		// Skip whitespace
 		for ( ; ::isspace(*p_); ++p_) ;
-		// Check for quoted string
-		if (*p_ == '"' || *p_ == '\'') {
+		if (*p_ == '@') {
+			++p_; // skip '@'
+			const char* fileNameStart = p_;
+			for ( ; *p_ != '\0' && !::isspace(*p_) && *p_ != ','; ++p_) ;
+			if (p_ == fileNameStart) {
+				errorMsg_ = "missing filename after @";
+				return false;
+			}
+			char fileName[FS::MaxPath];
+			int fileNameLen = p_ - fileNameStart;
+			if (fileNameLen >= sizeof(fileName)) {
+				errorMsg_ = "filename too long";
+				return false;
+			}
+			::strncpy(fileName, fileNameStart, fileNameLen);
+			fileName[fileNameLen] = '\0';
+			pFile_.reset(FS::OpenFile(fileName, "rb"));
+			if (!pFile_) {
+				errorMsg_ = "cannot open file";
+				return false;
+			}
+			mode_ = Mode::File;
+		} else if (*p_ == '"' || *p_ == '\'') {
 			chQuote_ = *p_;
 			++p_; // skip opening quote
 			mode_ = Mode::String;

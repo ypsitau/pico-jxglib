@@ -92,7 +92,7 @@ public:
 		};
 		class EachNum : public EachBase {
 		private:
-			enum class Mode { None, String, Range };
+			enum class Mode { None, String, Range, File };
 		private:
 			Mode mode_;
 			const char* argvInternal_[2];
@@ -104,6 +104,7 @@ public:
 			} range_;
 			char chQuote_;
 			const char* errorMsg_;
+			std::unique_ptr<FS::File> pFile_;
 		public:
 			EachNum(const char* str);
 			EachNum(const char* str, int rangeLimit) : EachNum(str) { rangeLimit_ = rangeLimit; hasRangeLimit_ = true; }
