@@ -43,8 +43,11 @@ public:
 		char* GetPointer(int iByte) { return buff_ + iByte; }
 		const char* GetPointer(int iByte) const { return buff_ + iByte; }
 		char* GetPointerBegin() { return buff_; }
+		const char* GetPointerBegin() const { return buff_; }
 		char* GetPointerEnd() { return buff_ + GetIByteEnd(); }
 		const char* GetPointerAtCursor() const { return buff_ + iByteCursor_; }
+		int CountAheadChars(int iByte) const { return UTF8::CountChars(GetPointerBegin(), GetPointer(iByte)); }
+		int CountAheadChars() const { return CountAheadChars(iByteCursor_); }
 		int CountFollowingChars() const { return CountFollowingChars(iByteCursor_); }
 		int CountFollowingChars(int iByte) const { return UTF8::CountChars(GetPointer(iByte)); }
 		bool Clear();

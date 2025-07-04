@@ -29,6 +29,15 @@ int UTF8::CountChars(const char* str)
 	return nChars;
 }
 
+int UTF8::CountChars(const char* str, const char* strEnd)
+{
+	int nChars = 0;
+	for (auto p = reinterpret_cast<const uint8_t*>(str); *p && p != reinterpret_cast<const uint8_t*>(strEnd); p++) {
+		if ((*p & 0xc0) != 0x80) nChars++; // Check if it's not a continuation byte
+	}
+	return nChars;
+}
+
 //------------------------------------------------------------------------------
 // UTF8::Decoder
 //------------------------------------------------------------------------------

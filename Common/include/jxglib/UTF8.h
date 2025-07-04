@@ -26,6 +26,7 @@ public:
 public:
 	static uint32_t ToUTF32(const char* str, int* pBytes = nullptr);
 	static int CountChars(const char* str);
+	static int CountChars(const char* str, const char* strEnd);
 };
 
 }
