@@ -28,18 +28,16 @@ public:
 void CDCStream::OnTick()
 {
 	uint8_t buff[64];
-	if (cdc_available()) {
-		int bytesToRead = buffRead_.GetRoomLength();
-		int bytesRead = cdc_read(buff, bytesToRead);
-		if (bytesRead > 0) buffRead_.WriteBuff(buff, bytesRead);
-		
-		int bytesToWrite = buffWrite_.ReadBuff(buff, sizeof(buff));
-		bytesToWrite = ChooseMin(bytesToWrite, cdc_write_available());
-		if (bytesToWrite > 0) {
-			cdc_write(buff, bytesToWrite);
-			cdc_write_flush();
-		}
-	}
+	if (!cdc_available()) return;
+	int bytesToRead = buffRead_.GetRoomLength();
+	int bytesRead = cdc_read(buff, bytesToRead);
+	if (bytesRead > 0) buffRead_.WriteBuff(buff, bytesRead);
+	//int bytesToWrite = buffWrite_.ReadBuff(buff, sizeof(buff));
+	//bytesToWrite = ChooseMin(bytesToWrite, cdc_write_available());
+	//if (bytesToWrite > 0) {
+	//	cdc_write(buff, bytesToWrite);
+	//	cdc_write_flush();
+	//}
 }
 
 int CDCStream::Read(void* buff, int bytesBuff)
@@ -75,8 +73,7 @@ int main(void)
 	}, 0x0409, "CDC Stream", "CDC Stream Product", "0123456");
 	CDCStream cdcStream(deviceController, "CDC Stream", 0x81, 0x02, 0x82);
 	deviceController.Initialize();
-	//KeyboardWithReadable keyboard(cdcStream);
-	VT100::Keyboard keyboard(Stdio::Instance);
+	VT100::Keyboard keyboard(cdcStream);
 	cdcStream.Initialize();
 	Serial::Terminal terminal;
 	//terminal.AttachKeyboard(keyboard).AttachPrintable(cdcStream);
