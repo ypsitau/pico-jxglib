@@ -1,29 +1,58 @@
 #include "pico/stdlib.h"
 #include "jxglib/USBDevice/CDC.h"
+#include "jxglib/Shell.h"
+#include "jxglib/Serial.h"
 
 using namespace jxglib;
 
 //-----------------------------------------------------------------------------
-// CDC_EchoBack
+// CDCStream
 //-----------------------------------------------------------------------------
-class CDC_EchoBack : public USBDevice::CDC {
+class CDCStream : public USBDevice::CDC, public Stream {
 private:
 	FIFOBuff<uint8_t, 64> buffRead_;
 	FIFOBuff<uint8_t, 64> buffWrite_;
 public:
-	CDC_EchoBack(USBDevice::Controller& deviceController, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn) :
+	CDCStream(USBDevice::Controller& deviceController, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn) :
 				USBDevice::CDC(deviceController, name, endpNotif, 8, endpBulkOut, endpBulkIn, 64, 10) {}
 public:
+	// virtual functions of USBDevice::CDC
 	virtual void OnTick() override;
+public:
+	// virtual functions of Stream
+	virtual int Read(void* buff, int bytesBuff) override;
+	virtual int Write(const void* buff, int bytesBuff) override;
 };
 
-void CDC_EchoBack::OnTick()
+void CDCStream::OnTick()
 {
-	if (!cdc_available()) return;
 	uint8_t buff[64];
-	int bytes = cdc_read(buff, sizeof(buff));
-	cdc_write(buff, bytes);
-	cdc_write_flush();
+	if (cdc_available()) {
+		int bytesToRead = buffRead_.GetRoomLength();
+		int bytesRead = cdc_read(buff, bytesToRead);
+		if (bytesRead > 0) buffRead_.WriteBuff(buff, bytesRead);
+	}
+	int bytesToWrite = buffWrite_.ReadBuff(buff, sizeof(buff));
+	bytesToWrite = ChooseMin(bytesToWrite, cdc_write_available());
+	if (bytesToWrite > 0) {
+		cdc_write(buff, bytesToWrite);
+		cdc_write_flush();
+	}
+}
+
+int CDCStream::Read(void* buff, int bytesBuff)
+{
+	return buffRead_.ReadBuff(static_cast<uint8_t*>(buff), bytesBuff);
+}
+
+int CDCStream::Write(const void* buff, int bytesBuff)
+{
+	int bytesWritten = 0;
+	while (bytesWritten < bytesBuff) {
+		bytesWritten += buffWrite_.WriteBuff(static_cast<const uint8_t*>(buff) + bytesWritten, bytesBuff - bytesWritten);
+		Tickable::Tick();
+	}
+	return bytesWritten;
 }
 
 //-----------------------------------------------------------------------------
@@ -41,9 +70,21 @@ int main(void)
 		idVendor:			0xcafe,
 		idProduct:			USBDevice::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
-	}, 0x0409, "CDC EchoBack", "CDC EchoBack Product", "0123456");
-	CDC_EchoBack cdc(deviceController, "EchoBack Normal", 0x81, 0x02, 0x82);
+	}, 0x0409, "CDC Stream", "CDC Stream Product", "0123456");
+	CDCStream cdcStream(deviceController, "CDC Stream", 0x81, 0x02, 0x82);
 	deviceController.Initialize();
-	cdc.Initialize();
-	for (;;) Tickable::Tick();
+	cdcStream.Initialize();
+	Serial::Terminal terminal;
+	//terminal.AttachKeyboard(Stdio::Keyboard::Instance).AttachPrintable(cdcStream);
+	Shell::AttachTerminal(terminal.Initialize());
+	for (;;) {
+		char buff[64];
+		int bytesRead = cdcStream.Read(buff, sizeof(buff) - 1);
+		if (bytesRead > 0) {
+			buff[bytesRead] = '\0'; // Null-terminate the string
+			cdcStream.Print(buff);
+			//::printf("%s", buff);
+		}
+		Tickable::Tick();
+	}
 }
