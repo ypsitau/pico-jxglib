@@ -11,7 +11,7 @@ namespace jxglib {
 int Readable::ReadChar()
 {
 	char ch;
-	return (Read(&ch, sizeof(ch)) > 0) ? ch : -1; // Return -1 if no character is read
+	return (Read(&ch, sizeof(ch)) > 0)? ch : -1; // Return -1 if no character is read
 }
 
 int Readable::ReadLine(char* buff, int bytesBuff, bool elimEOLFlag)

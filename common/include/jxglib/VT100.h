@@ -4,7 +4,8 @@
 #ifndef PICO_JXGLIB_VT100_H
 #define PICO_JXGLIB_VT100_H
 #include "pico/stdlib.h"
-#include "jxglib/KeyData.h"
+#include "jxglib/Readable.h"
+#include "jxglib/Keyboard.h"
 #include "jxglib/FIFOBuff.h"
 
 namespace jxglib {
@@ -45,6 +46,18 @@ public:
 		bool GetKeyData(KeyData* pKeyData);
 	public:
 		bool FeedChar(char ch);
+	};
+	class Keyboard : public jxglib::Keyboard {
+	private:
+		Readable& readable_;
+		Decoder decoder_;
+	public:
+		Keyboard(Readable& readable) : readable_{readable} {}
+	public:
+		virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1, bool includeModifiers = false) override;
+		virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) override;
+		virtual bool GetKeyCodeNB(uint8_t* pKeyCode, uint8_t* pModifier = nullptr) override;
+		virtual bool GetKeyDataNB(KeyData* pKeyData) override;
 	};
 public:
 	// Cursor movement

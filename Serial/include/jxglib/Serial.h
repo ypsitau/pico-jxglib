@@ -19,7 +19,7 @@ public:
 	private:
 		Printable* pPrintable_;
 	public:
-		Terminal(int bytesHistoryBuff = 512) : jxglib::Terminal(bytesHistoryBuff, Stdio::Keyboard::Instance),
+		Terminal(int bytesHistoryBuff = 512) : jxglib::Terminal(bytesHistoryBuff, Stdio::Instance.GetKeyboard()),
 				Tickable(0), pPrintable_{&Stdio::Instance} {}
 	public:
 		Terminal& Initialize() { jxglib::Terminal::Initialize(); return *this; }

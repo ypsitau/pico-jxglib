@@ -64,6 +64,7 @@ void Stdio::ClearReadBuffer()
 	bytesAvailable_ = 0;
 }
 
+#if 0
 //------------------------------------------------------------------------------
 // Stdio::Keyboard
 //------------------------------------------------------------------------------
@@ -110,5 +111,7 @@ bool Stdio::Keyboard::GetKeyDataNB(KeyData* pKeyData)
 	while ((ch = ::stdio_getchar_timeout_us(0)) > 0 && !decoder_.FeedChar(ch)) ;
 	return decoder_.GetKeyData(pKeyData);
 }
+
+#endif
 
 }

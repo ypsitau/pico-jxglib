@@ -9,6 +9,7 @@ using namespace jxglib;
 // CDCStream
 //-----------------------------------------------------------------------------
 class CDCStream : public USBDevice::CDC, public Stream {
+public:
 private:
 	FIFOBuff<uint8_t, 64> buffRead_;
 	FIFOBuff<uint8_t, 64> buffWrite_;
@@ -31,12 +32,13 @@ void CDCStream::OnTick()
 		int bytesToRead = buffRead_.GetRoomLength();
 		int bytesRead = cdc_read(buff, bytesToRead);
 		if (bytesRead > 0) buffRead_.WriteBuff(buff, bytesRead);
-	}
-	int bytesToWrite = buffWrite_.ReadBuff(buff, sizeof(buff));
-	bytesToWrite = ChooseMin(bytesToWrite, cdc_write_available());
-	if (bytesToWrite > 0) {
-		cdc_write(buff, bytesToWrite);
-		cdc_write_flush();
+		
+		int bytesToWrite = buffWrite_.ReadBuff(buff, sizeof(buff));
+		bytesToWrite = ChooseMin(bytesToWrite, cdc_write_available());
+		if (bytesToWrite > 0) {
+			cdc_write(buff, bytesToWrite);
+			cdc_write_flush();
+		}
 	}
 }
 
@@ -73,18 +75,21 @@ int main(void)
 	}, 0x0409, "CDC Stream", "CDC Stream Product", "0123456");
 	CDCStream cdcStream(deviceController, "CDC Stream", 0x81, 0x02, 0x82);
 	deviceController.Initialize();
+	//KeyboardWithReadable keyboard(cdcStream);
+	VT100::Keyboard keyboard(Stdio::Instance);
 	cdcStream.Initialize();
 	Serial::Terminal terminal;
-	//terminal.AttachKeyboard(Stdio::Keyboard::Instance).AttachPrintable(cdcStream);
+	//terminal.AttachKeyboard(keyboard).AttachPrintable(cdcStream);
+	terminal.AttachKeyboard(keyboard);
 	Shell::AttachTerminal(terminal.Initialize());
 	for (;;) {
-		char buff[64];
-		int bytesRead = cdcStream.Read(buff, sizeof(buff) - 1);
-		if (bytesRead > 0) {
-			buff[bytesRead] = '\0'; // Null-terminate the string
-			cdcStream.Print(buff);
-			//::printf("%s", buff);
-		}
+		//char buff[64];
+		//int bytesRead = cdcStream.Read(buff, sizeof(buff) - 1);
+		//if (bytesRead > 0) {
+		//	buff[bytesRead] = '\0'; // Null-terminate the string
+		//	cdcStream.Print(buff);
+		//	//::printf("%s", buff);
+		//}
 		Tickable::Tick();
 	}
 }

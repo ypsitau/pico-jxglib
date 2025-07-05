@@ -14,26 +14,15 @@ namespace jxglib {
 // Stdio
 //------------------------------------------------------------------------------
 class Stdio : public Stream {
-public:
-	class Keyboard : public jxglib::Keyboard {
-	private:
-		VT100::Decoder decoder_;
-	public:
-		static Keyboard Instance;
-	public:
-		virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1, bool includeModifiers = false) override;
-		virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) override;
-		virtual bool GetKeyCodeNB(uint8_t* pKeyCode, uint8_t* pModifier = nullptr) override;
-		virtual bool GetKeyDataNB(KeyData* pKeyData) override;
-	};
 private:
 	int bytesRead_; // Number of bytes read from the input
 	int bytesAvailable_; // Number of bytes available for reading
 	uint8_t buffRead_[256]; // Buffer for reading input
+	VT100::Keyboard keyboard_;
 public:
 	static Stdio Instance;
 public:
-	Stdio() : bytesRead_(0), bytesAvailable_(0) {}
+	Stdio() : bytesRead_(0), bytesAvailable_(0), keyboard_(*this) {}
 public:
 	// virtual functions of Stream
 	virtual int Read(void* buff, int bytesBuff) override;
@@ -55,7 +44,7 @@ public:
 	virtual Printable& PrintlnRaw(const char* str = "") override { ::stdio_put_string(str, ::strlen(str), true, false); return *this; }
 public:
 	static Printable& GetPrintable() { return Instance; }
-	static Keyboard& GetKeyboard() { return Keyboard::Instance; }
+	static Keyboard& GetKeyboard() { return Instance.keyboard_; }
 public:
 	static bool init_all() { return ::stdio_init_all(); }
 	static bool deinit_all() { return ::stdio_deinit_all(); }
