@@ -60,3 +60,13 @@ target_link_libraries(jxglib_USBDevice_Serial INTERFACE
 
 target_sources(jxglib_USBDevice_Serial INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/Serial.cpp)
+
+#------------------------------------------------------------------------------
+add_library(jxglib_USBDevice_Flash INTERFACE)
+
+target_link_libraries(jxglib_USBDevice_Flash INTERFACE
+	jxglib_Flash
+	jxglib_USBDevice)
+
+target_sources(jxglib_USBDevice_Flash INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/src/Flash.cpp)
