@@ -61,4 +61,4 @@ pico_add_extra_outputs(test-CDC-Stream)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 
-jxglib_configure_USBDevice(test-CDC-Stream CFG_TUD_CDC 1)
+jxglib_configure_USBDevice(test-CDC-Stream CFG_TUD_CDC 1 CFG_TUD_MSC 1)
