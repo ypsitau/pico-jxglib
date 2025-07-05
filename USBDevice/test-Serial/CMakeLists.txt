@@ -48,8 +48,9 @@ pico_enable_stdio_usb(test-Serial 0)
 target_link_libraries(test-Serial
 	pico_stdlib
 	tinyusb_device
-	jxglib_Shell
-	jxglib_ShellCmd_Basic
+	jxglib_FAT_Flash
+	jxglib_ShellCmd_FS
+	jxglib_USBDevice_Flash
 	jxglib_USBDevice_Serial)
 
 # Add the standard include files to the build
@@ -62,3 +63,4 @@ pico_add_extra_outputs(test-Serial)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 
 jxglib_configure_USBDevice(test-Serial CFG_TUD_CDC 1 CFG_TUD_MSC 1)
+jxglib_configure_FAT(test-Serial FF_VOLUME 1)
