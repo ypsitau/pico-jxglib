@@ -9,35 +9,42 @@ using namespace jxglib;
 // CDCStream
 //-----------------------------------------------------------------------------
 class CDCStream : public USBDevice::CDC, public Stream {
-public:
 private:
+	char chPrev_;
+	bool addCrFlag_;
 	FIFOBuff<uint8_t, 64> buffRead_;
 	FIFOBuff<uint8_t, 64> buffWrite_;
 public:
-	CDCStream(USBDevice::Controller& deviceController, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn) :
-				USBDevice::CDC(deviceController, name, endpNotif, 8, endpBulkOut, endpBulkIn, 64, 10) {}
+	CDCStream(USBDevice::Controller& deviceController, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn);
 public:
 	// virtual functions of USBDevice::CDC
 	virtual void OnTick() override;
 public:
+	CDCStream& AddCr(bool addCrFlag) { addCrFlag_ = addCrFlag; return* this; }
+public:
 	// virtual functions of Stream
 	virtual int Read(void* buff, int bytesBuff) override;
 	virtual int Write(const void* buff, int bytesBuff) override;
+	Printable& PutChar(char ch);
 };
+
+CDCStream::CDCStream(USBDevice::Controller& deviceController, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn) :
+		USBDevice::CDC(deviceController, name, endpNotif, 8, endpBulkOut, endpBulkIn, 64, 10), chPrev_{'\0'}, addCrFlag_{true} {}
 
 void CDCStream::OnTick()
 {
 	uint8_t buff[64];
-	if (!cdc_available()) return;
-	int bytesToRead = buffRead_.GetRoomLength();
-	int bytesRead = cdc_read(buff, bytesToRead);
-	if (bytesRead > 0) buffRead_.WriteBuff(buff, bytesRead);
-	//int bytesToWrite = buffWrite_.ReadBuff(buff, sizeof(buff));
-	//bytesToWrite = ChooseMin(bytesToWrite, cdc_write_available());
-	//if (bytesToWrite > 0) {
-	//	cdc_write(buff, bytesToWrite);
-	//	cdc_write_flush();
-	//}
+	if (cdc_available()) {
+		int bytesToRead = buffRead_.GetRoomLength();
+		int bytesRead = cdc_read(buff, bytesToRead);
+		if (bytesRead > 0) buffRead_.WriteBuff(buff, bytesRead);
+	}
+	int bytesToWrite = buffWrite_.ReadBuff(buff, sizeof(buff));
+	bytesToWrite = ChooseMin(bytesToWrite, cdc_write_available());
+	if (bytesToWrite > 0) {
+		cdc_write(buff, bytesToWrite);
+		cdc_write_flush();
+	}
 }
 
 int CDCStream::Read(void* buff, int bytesBuff)
@@ -47,12 +54,21 @@ int CDCStream::Read(void* buff, int bytesBuff)
 
 int CDCStream::Write(const void* buff, int bytesBuff)
 {
-	int bytesWritten = 0;
-	while (bytesWritten < bytesBuff) {
-		bytesWritten += buffWrite_.WriteBuff(static_cast<const uint8_t*>(buff) + bytesWritten, bytesBuff - bytesWritten);
-		Tickable::Tick();
-	}
-	return bytesWritten;
+	return buffWrite_.WriteBuff(static_cast<const uint8_t*>(buff), bytesBuff);
+	//int bytesWritten = 0;
+	//while (bytesWritten < bytesBuff) {
+	//	bytesWritten += buffWrite_.WriteBuff(static_cast<const uint8_t*>(buff) + bytesWritten, bytesBuff - bytesWritten);
+	////	Tickable::Tick();
+	//}
+	//return bytesWritten;
+}
+
+Printable& CDCStream::PutChar(char ch)
+{
+	if (addCrFlag_ && chPrev_ != '\r' && ch == '\n') PutCharRaw('\r');
+	PutCharRaw(ch);
+	chPrev_ = ch;
+	return *this;
 }
 
 //-----------------------------------------------------------------------------
@@ -76,8 +92,8 @@ int main(void)
 	VT100::Keyboard keyboard(cdcStream);
 	cdcStream.Initialize();
 	Serial::Terminal terminal;
-	//terminal.AttachKeyboard(keyboard).AttachPrintable(cdcStream);
-	terminal.AttachKeyboard(keyboard);
+	terminal.AttachKeyboard(keyboard).AttachPrintable(cdcStream);
+	//terminal.AttachKeyboard(keyboard);
 	Shell::AttachTerminal(terminal.Initialize());
 	for (;;) {
 		//char buff[64];

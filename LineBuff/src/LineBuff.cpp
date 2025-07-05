@@ -123,7 +123,7 @@ void LineBuff::PrintInfo(Printable& printable) const
 	printable.Printf(" pLineLast:%s\n", ToString(buff, pLineLast_));
 }
 
-Printable& LineBuff::PutChar(char ch)
+Printable& LineBuff::PutCharRaw(char ch)
 {
 	*pBuffLast_ = ch;
 	WrappedPointer<char*> pointer(pBuffLast_, GetBuffBegin(), GetBuffEnd());

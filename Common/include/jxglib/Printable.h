@@ -68,8 +68,8 @@ public:
 	virtual Printable& RefreshScreen() = 0;
 	virtual Printable& Locate(int col, int row) = 0;
 	virtual Printable& GetSize(int* pnCols, int* pnRows) { *pnCols = 80, *pnRows = 25; return *this; }
-	virtual Printable& PutChar(char ch) = 0;
-	virtual Printable& PutCharRaw(char ch) { return PutChar(ch); }
+	virtual Printable& PutChar(char ch) { return PutCharRaw(ch); };
+	virtual Printable& PutCharRaw(char ch) = 0;
 	virtual Printable& Print(const char* str);
 	virtual Printable& PrintRaw(const char* str);
 	virtual Printable& Println(const char* str = "");
@@ -93,7 +93,7 @@ public:
 	virtual Printable& ClearScreen() override { return *this; }
 	virtual Printable& RefreshScreen() override { return *this; }
 	virtual Printable& Locate(int col, int row) override { return *this; }
-	virtual Printable& PutChar(char ch) override { return *this; }
+	virtual Printable& PutCharRaw(char ch) override { return *this; }
 };
 
 //------------------------------------------------------------------------------

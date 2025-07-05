@@ -74,7 +74,7 @@ public:
 	virtual Printable& ClearScreen() override { Clear(); return *this; }
 	virtual Printable& RefreshScreen() override { /* do nothing */ return *this; }
 	virtual Printable& Locate(int col, int row) override { /* do nothing */ return *this; }
-	virtual Printable& PutChar(char ch) override;
+	virtual Printable& PutCharRaw(char ch) override;
 };
 
 }
