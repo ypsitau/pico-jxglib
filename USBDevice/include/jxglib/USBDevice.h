@@ -4,7 +4,7 @@
 #ifndef PICO_JXGLIB_USBDEVICE_H
 #define PICO_JXGLIB_USBDEVICE_H
 #include "pico/stdlib.h"
-#include "jxglib/Tickable.h"
+#include "jxglib/Common.h"
 #include "tusb.h"
 
 namespace jxglib::USBDevice {

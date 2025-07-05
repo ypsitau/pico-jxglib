@@ -37,24 +37,30 @@ public:
 	T_Size GetLength() const {
 		return (posRead_ <= posWrite_)? posWrite_ - posRead_ : buffSize - posRead_ + posWrite_;
 	}
-	void WriteData(T_Elem data) {
+	int GetRoomLength() const { return sizeMinusOne - GetLength(); }
+	bool WriteData(T_Elem data) {
 		T_Size posWriteNext = (posWrite_ == sizeMinusOne)? 0 : posWrite_ + 1;
-		if (posWriteNext == posRead_) return;
+		if (posWriteNext == posRead_) return false;
 		buff_[posWrite_] = data;
 		posWrite_ = posWriteNext;
+		return true;
 	}
 	T_Elem ReadData() {
 		T_Elem data = buff_[posRead_];
 		posRead_ = (posRead_ == sizeMinusOne)? 0 : posRead_ + 1;
 		return data;
 	}
-	void WriteBuff(const T_Elem* buff, T_Size len) {
-		for ( ; len > 0; len--, buff++) WriteData(*buff);
+	T_Size WriteBuff(const T_Elem* buff, T_Size len) {
+		const T_Elem* p = buff;
+		int lenWritten = 0;
+		for ( ; lenWritten < len && WriteData(*p); lenWritten++, p++) ;
+		return lenWritten;
 	}
-	void ReadBuff(T_Elem* buff, T_Size len, T_Size* pLenRead = nullptr) {
+	T_Size ReadBuff(T_Elem* buff, T_Size len) {
 		T_Elem* p = buff;
-		for ( ; len > 0 && HasData(); len--, p++) *p = ReadData();
-		if (pLenRead) *pLenRead = p - buff;
+		int lenRead = 0;
+		for ( ; lenRead < len && HasData(); lenRead++, p++) *p = ReadData();
+		return lenRead;
 	}
 };
 
