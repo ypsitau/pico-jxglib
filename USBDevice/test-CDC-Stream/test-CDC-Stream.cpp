@@ -54,13 +54,13 @@ int CDCStream::Read(void* buff, int bytesBuff)
 
 int CDCStream::Write(const void* buff, int bytesBuff)
 {
-	return buffWrite_.WriteBuff(static_cast<const uint8_t*>(buff), bytesBuff);
-	//int bytesWritten = 0;
-	//while (bytesWritten < bytesBuff) {
-	//	bytesWritten += buffWrite_.WriteBuff(static_cast<const uint8_t*>(buff) + bytesWritten, bytesBuff - bytesWritten);
-	////	Tickable::Tick();
-	//}
-	//return bytesWritten;
+	::printf("CDCStream::Write: %d bytes %d\n", bytesBuff, Tickable::GetTickCalledDepth());
+	int bytesWritten = 0;
+	while (bytesWritten < bytesBuff) {
+		bytesWritten += buffWrite_.WriteBuff(static_cast<const uint8_t*>(buff) + bytesWritten, bytesBuff - bytesWritten);
+		Tickable::Tick();
+	}
+	return bytesWritten;
 }
 
 Printable& CDCStream::PutChar(char ch)

@@ -18,7 +18,7 @@ int Tickable::tickCalledDepth_ = 0;
 int Tickable::tickCalledDepthMax_ = 0;
 
 Tickable::Tickable(uint32_t msecTick, Priority priority) :
-	msecTick_{msecTick}, priority_{priority}, msecStart_{0}, runningFlag_{true}, pTickableNext_{nullptr}
+	msecTick_{msecTick}, priority_{priority}, msecStart_{0}, runningFlag_{true}, tickCalledFlag_{false}, pTickableNext_{nullptr}
 {
 	Tickable* pTickablePrev = nullptr;
 	for (Tickable* pTickable = pTickableTop_; pTickable; pTickable = pTickable->GetNext()) {
@@ -84,12 +84,20 @@ uint32_t Tickable::Tick_()
 	if (firstFlag_) {
 		for (Tickable* pTickable = pTickableTop_; pTickable; pTickable = pTickable->GetNext()) {
 			pTickable->InitTick(msecCur);
-			pTickable->OnTick();
+			if (!pTickable->IsTickCalled()) {
+				pTickable->SetTickCalled();
+				pTickable->OnTick();
+				pTickable->ClearTickCalled();
+			}
 		}
 		firstFlag_ = false;
 	} else {
 		for (Tickable* pTickable = pTickableTop_; pTickable; pTickable = pTickable->GetNext()) {
-			if (pTickable->IsExpired(msecCur)) pTickable->OnTick();
+			if (pTickable->IsExpired(msecCur) && !pTickable->IsTickCalled()) {
+				pTickable->SetTickCalled();
+				pTickable->OnTick();
+				pTickable->ClearTickCalled();
+			}
 		}
 	}
 	tickCalledDepth_--;

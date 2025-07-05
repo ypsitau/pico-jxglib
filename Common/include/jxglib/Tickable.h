@@ -37,6 +37,7 @@ private:
 	uint32_t msecTick_;
 	uint32_t msecStart_;
 	bool runningFlag_;
+	bool tickCalledFlag_;
 	Tickable* pTickableNext_;
 private:
 	static Tickable* pTickableTop_;
@@ -68,6 +69,9 @@ public:
 	bool IsRunning() const { return runningFlag_; }
 	void Resume() { runningFlag_ = true; }
 	void Suspend() { runningFlag_ = false; }
+	bool IsTickCalled() const { return tickCalledFlag_; }
+	void SetTickCalled() { tickCalledFlag_ = true; }
+	void ClearTickCalled() { tickCalledFlag_ = false; }
 	void SetTick(uint32_t msecTick) { msecTick_ = msecTick; }
 	uint32_t GetTick() const { return msecTick_; }
 	void InitTick(uint32_t msecStart) { msecStart_ = msecStart; }
@@ -79,6 +83,7 @@ public:
 	virtual void OnTick() = 0;
 public:
 	static void PrintList(Printable& printable);
+	static int GetTickCalledDepth() { return tickCalledDepth_; }
 	static int GetTickCalledDepthMax() { return tickCalledDepthMax_; }
 	static const char* GetPriorityName(Priority priority);
 	static const char* GetPriorityNameShort(Priority priority);
