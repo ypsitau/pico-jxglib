@@ -364,7 +364,7 @@ Printable& Display::Terminal::GetSize(int* pnCols, int* pnRows)
 	return *this;
 }
 
-Printable& Display::Terminal::PutChar(char ch)
+Printable& Display::Terminal::PutCharRaw(char ch)
 {
 	AppendChar(ch, !suppressFlag_);
 	return *this;

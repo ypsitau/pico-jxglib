@@ -137,7 +137,7 @@ public:
 		virtual Printable& RefreshScreen() override;
 		virtual Printable& Locate(int col, int row) override;
 		virtual Printable& GetSize(int* pnCols, int* pnRows) override;
-		virtual Printable& PutChar(char ch) override;
+		virtual Printable& PutCharRaw(char ch) override;
 	public:
 		// virtual functions of jxglib::Terminal
 		virtual Printable& GetPrintable() override { return *this; }
