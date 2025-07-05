@@ -50,3 +50,13 @@ function(jxglib_configure_USBDevice target)
 	configure_file(${JXGLIB_DIR}/USBDevice/tusb_config.h.in ${CMAKE_CURRENT_BINARY_DIR}/tusb_config.h)
 		target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 endfunction()
+
+#------------------------------------------------------------------------------
+add_library(jxglib_USBDevice_Serial INTERFACE)
+
+target_link_libraries(jxglib_USBDevice_Serial INTERFACE
+	jxglib_Serial
+	jxglib_USBDevice)
+
+target_sources(jxglib_USBDevice_Serial INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/src/Serial.cpp)

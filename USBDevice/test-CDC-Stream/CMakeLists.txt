@@ -50,8 +50,7 @@ target_link_libraries(test-CDC-Stream
 	tinyusb_device
 	jxglib_Shell
 	jxglib_ShellCmd_Basic
-	jxglib_Serial
-	jxglib_USBDevice)
+	jxglib_USBDevice_Serial)
 
 # Add the standard include files to the build
 target_include_directories(test-CDC-Stream PRIVATE
