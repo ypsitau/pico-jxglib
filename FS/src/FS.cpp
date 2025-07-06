@@ -56,15 +56,6 @@ bool SetDriveCur(const char* driveName)
 	return true;
 }
 
-#if 0
-File* OpenFile(const char* fileName, const char* mode, Drive* pDrive)
-{
-	char filenameN[MaxPath];
-	if (!pDrive) pDrive = FindDrive(fileName);
-	return pDrive? pDrive->OpenFile(pDrive->NativePathName(filenameN, sizeof(filenameN), fileName), mode) : nullptr;
-}
-#endif
-
 File* OpenFile(const char* fileName, const char* mode)
 {
 	char filenameN[MaxPath];
@@ -1000,7 +991,8 @@ FileInfo* Walker::Read(const char** pPathName)
 //------------------------------------------------------------------------------
 // FS::Drive
 //------------------------------------------------------------------------------
-Drive::Drive(const char* formatName, const char* driveName) : mountedFlag_{false}, formatName_{formatName}, pDriveNext_{nullptr}
+Drive::Drive(const char* formatName, const char* driveName) :
+	mountedFlag_{false}, formatName_{formatName}, pDriveNext_{nullptr}, pEventHandler_{nullptr}
 {
 	do {
 		const char* driveNameEnd = ::strchr(driveName, ':');

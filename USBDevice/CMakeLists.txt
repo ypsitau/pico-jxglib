@@ -4,8 +4,9 @@ target_include_directories(jxglib_USBDevice INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/include)
 
 target_link_libraries(jxglib_USBDevice INTERFACE
+	tinyusb_device
 	jxglib_Common
-	tinyusb_device)
+	jxglib_FS)
 
 target_sources(jxglib_USBDevice INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/USBDevice.cpp

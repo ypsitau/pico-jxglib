@@ -37,6 +37,9 @@ public:
 public:
 	const Drive& GetDrive() const { return drive_; }
 public:
+	void Close(File* pFile) { pFile->Close(); delete pFile; }
+	void Close(std::unique_ptr<File>& pFile) { pFile->Close(); pFile.reset(); }
+public:
 	virtual void Close() {}
 	virtual bool Seek(int position, SeekStart seekStart = SeekStart::Begin) = 0;
 	virtual int Tell() = 0;
@@ -184,6 +187,9 @@ public:
 	Dir(Drive& drive, const char* dirName);
 	virtual ~Dir() { Close(); }
 public:
+	void Close(Dir* pDir) { pDir->Close(); delete pDir; }
+	void Close(std::unique_ptr<Dir>& pDir) { pDir->Close(); pDir.reset(); }
+public:
 	void SetChild(Dir* pDir) { pDirChild_.reset(pDir); }
 	Dir* GetChild() const { return pDirChild_.get(); }
 	Dir* RemoveBottomChild();
@@ -245,6 +251,11 @@ public:
 // FS::Drive
 //------------------------------------------------------------------------------
 class Drive {
+public:
+	class EventHandler {
+	public:
+		virtual void OnContentChanged() = 0;
+	};
 protected:
 	bool mountedFlag_;
 	const char* formatName_;
@@ -252,6 +263,7 @@ protected:
 	const char* driveName_;	 				// Drive name that eliminates the leading '*'
 	char dirNameCur_[MaxPath];
 	Drive* pDriveNext_;
+	EventHandler* pEventHandler_;
 public:
 	Drive(const char* formatName, const char* driveName);
 public:
@@ -264,6 +276,9 @@ public:
 	void SetDirNameCur(const char* dirName);
 	const char* GetDirNameCur() const { return dirNameCur_; }
 	const char* RegulatePathName(char* pathNameBuff, int lenBuff, const char* pathName);
+public:
+	void SetEventHandler(EventHandler* pEventHandler) { pEventHandler_ = pEventHandler; }
+	void NotifyContentChanged() { if (pEventHandler_) pEventHandler_->OnContentChanged(); }
 public:
 	virtual bool CheckMounted() = 0;
 	virtual const char* GetFileSystemName() = 0;

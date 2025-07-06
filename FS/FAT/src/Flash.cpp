@@ -66,6 +66,7 @@ DRESULT Flash::ioctl_CTRL_SYNC()
 {
 	//::printf("ioctl(CTRL_SYNC)\n");
 	jxglib::Flash::Sync();
+	NotifyContentChanged();
 	return RES_OK;
 }
 
