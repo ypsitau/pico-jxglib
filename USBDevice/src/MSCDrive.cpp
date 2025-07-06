@@ -7,17 +7,19 @@ namespace jxglib::USBDevice {
 
 MSCDrive::MSCDrive(USBDevice::Controller& deviceController, uint8_t endpBulkOut, uint8_t endpBulkIn) :
 	USBDevice::MSC(deviceController, "Flash Interface", endpBulkOut, endpBulkIn),
-	pDriveAssociated_{nullptr}, offsetXIP_{0}, bytesXIP_{0}, syncAgent_(*this), unitReadyFlag_{true}
+	pDriveAttached_{nullptr}, offsetXIP_{0}, bytesXIP_{0}, syncAgent_(*this, 0), unitReadyFlag_{true}
 {}
 
-void MSCDrive::AssociateDrive(FS::Drive& drive)
+void MSCDrive::Initialize(FS::Drive& drive, int msecTimeoutSync)
 {
-	pDriveAssociated_ = &drive;
+	pDriveAttached_ = &drive;
 	if (!drive.GetFlashInfo(&offsetXIP_, &bytesXIP_)) {
-		::panic("MSCDrive::AssociateDrive: Drive does not support flash info");
+		::panic("MSCDrive::AttachDrive: Drive does not support flash info");
 	}
 	drive.SetEventHandler(this);
+	syncAgent_.SetTimeoutSync(msecTimeoutSync);
 	offsetXIP_ &= 0x0fff'ffff;
+	MSC::Initialize();
 }
 
 void MSCDrive::On_msc_inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4])
@@ -99,16 +101,16 @@ int32_t MSCDrive::On_msc_scsi(uint8_t lun, uint8_t const scsi_cmd[16], void* buf
 
 void MSCDrive::SyncAgent::OnTick()
 {
-	if (secCntDevice_ > 0) {
-		--secCntDevice_;
-		if (secCntDevice_ == 0) {
+	if (timeoutCntDevice_ > 0) {
+		--timeoutCntDevice_;
+		if (timeoutCntDevice_ == 0) {
 			Flash::Sync();
-			mscDrive_.GetDriveAssociated().Unmount();
+			mscDrive_.GetDriveAttached().Unmount();
 		}
 	}
-	if (secCntHost_ > 0) {
-		--secCntHost_;
-		if (secCntHost_ == 0) {
+	if (timeoutCntHost_ > 0) {
+		--timeoutCntHost_;
+		if (timeoutCntHost_ == 0) {
 			mscDrive_.NotifyContentChanged();
 		}
 	}

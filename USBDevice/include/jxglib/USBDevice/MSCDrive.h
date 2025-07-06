@@ -20,15 +20,16 @@ public:
 	class SyncAgent : public Tickable {
 	private:
 		MSCDrive& mscDrive_;
-		int secUntilSync_;
-		int secCntDevice_ ;
-		int secCntHost_;
+		int timeoutCntInit_;
+		int timeoutCntDevice_ ;
+		int timeoutCntHost_;
 	public:
-		SyncAgent(MSCDrive& mscDrive) : Tickable(1000, Tickable::Priority::Lowest),
-				mscDrive_{mscDrive}, secUntilSync_{2}, secCntDevice_{0}, secCntHost_{0} {}
+		SyncAgent(MSCDrive& mscDrive, int msecTimeoutSync) : Tickable(100, Tickable::Priority::Lowest),
+				mscDrive_{mscDrive}, timeoutCntInit_{msecTimeoutSync / 100}, timeoutCntDevice_{0}, timeoutCntHost_{0} {}
 	public:
-		void StartDevice() { secCntDevice_ = secUntilSync_; }
-		void StartHost() { secCntHost_ = secUntilSync_; }
+		void SetTimeoutSync(int msecTimeoutSync) { timeoutCntInit_ = msecTimeoutSync / 100; }
+		void StartDevice() { timeoutCntDevice_ = timeoutCntInit_; }
+		void StartHost() { timeoutCntHost_ = timeoutCntInit_; }
 	public:
 		// virual functions of Tickable
 		virtual void OnTick() override;
@@ -36,7 +37,7 @@ public:
 public:
 	static const int BlockSize = 512;
 private:
-	FS::Drive* pDriveAssociated_;
+	FS::Drive* pDriveAttached_;
 	uint32_t offsetXIP_;
 	uint32_t bytesXIP_;
 	SyncAgent syncAgent_;
@@ -44,8 +45,8 @@ private:
 public:
 	MSCDrive(USBDevice::Controller& deviceController, uint8_t endpBulkOut, uint8_t endpBulkIn);
 public:
-	void AssociateDrive(FS::Drive& drive);
-	FS::Drive& GetDriveAssociated() { return *pDriveAssociated_; }
+	void Initialize(FS::Drive& drive, int msecTimeoutSync = 2000);
+	FS::Drive& GetDriveAttached() { return *pDriveAttached_; }
 public:
 	void NotifyContentChanged() { unitReadyFlag_ = false; }
 public:

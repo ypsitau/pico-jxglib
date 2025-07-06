@@ -6,9 +6,6 @@
 
 using namespace jxglib;
 
-//-----------------------------------------------------------------------------
-// main
-//-----------------------------------------------------------------------------
 int main(void)
 {
 	::stdio_init_all(); 
@@ -21,13 +18,13 @@ int main(void)
 		idVendor:			0xcafe,
 		idProduct:			USBDevice::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
-	}, 0x0409, "CDC Stream", "CDC Stream Product", "0123456");
-	USBDevice::MSCDrive mscDrive(deviceController, 0x03, 0x83);
-	USBDevice::CDCSerial cdcSerial(deviceController, "CDC Stream", 0x81, 0x02, 0x82);
+	}, 0x0409, "jxglib", "MSCDrive-CDCSerial", "0123456");
+	FAT::Flash fat("*G:", 0x1010'0000, 0x010'0000);
+	USBDevice::MSCDrive mscDrive(deviceController, 0x01, 0x81);
+	USBDevice::CDCSerial cdcSerial(deviceController, "CDCSerial", 0x82, 0x03, 0x83);
 	deviceController.Initialize();
+	mscDrive.Initialize(fat);
 	cdcSerial.Initialize();
-	FAT::Flash fat("*C:", 0x1010'0000, 0x010'0000);
-	mscDrive.AssociateDrive(fat);
 	Serial::Terminal terminal;
 	terminal.AttachKeyboard(cdcSerial.GetKeyboard()).AttachPrintable(cdcSerial);
 	Shell::AttachTerminal(terminal.Initialize());

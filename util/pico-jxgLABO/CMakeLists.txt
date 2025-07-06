@@ -58,7 +58,7 @@ pico_add_extra_outputs(pico-jxgLABO)
 target_link_libraries(pico-jxgLABO
     jxglib_Shell jxglib_Serial
     jxglib_LFS_Flash jxglib_FAT_Flash jxglib_RTC_DS323x
-	jxglib_USBDevice_Flash jxglib_USBDevice_Serial
+	jxglib_USBDevice_MSCDrive jxglib_USBDevice_CDCSerial
     jxglib_ShellCmd_FS jxglib_ShellCmd_GPIO jxglib_ShellCmd_PWM jxglib_ShellCmd_I2C)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../../ pico-jxglib)
 jxglib_configure_USBDevice(pico-jxgLABO CFG_TUD_CDC 1 CFG_TUD_MSC 1)

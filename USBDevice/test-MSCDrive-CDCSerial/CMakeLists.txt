@@ -46,12 +46,7 @@ pico_enable_stdio_usb(test-MSCDrive-CDCSerial 0)
 
 # Add the standard library to the build
 target_link_libraries(test-MSCDrive-CDCSerial
-	pico_stdlib
-	jxglib_Serial
-	jxglib_FAT_Flash
-	jxglib_ShellCmd_FS
-	jxglib_USBDevice_MSCDrive
-	jxglib_USBDevice_CDCSerial)
+	pico_stdlib)
 
 # Add the standard include files to the build
 target_include_directories(test-MSCDrive-CDCSerial PRIVATE
@@ -62,6 +57,7 @@ pico_add_extra_outputs(test-MSCDrive-CDCSerial)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 
-#jxglib_configure_USBDevice(test-MSCDrive-CDCSerial CFG_TUD_MSC 1)
+target_link_libraries(test-MSCDrive-CDCSerial
+	jxglib_Serial jxglib_FAT_Flash jxglib_ShellCmd_FS jxglib_USBDevice_MSCDrive jxglib_USBDevice_CDCSerial)
 jxglib_configure_USBDevice(test-MSCDrive-CDCSerial CFG_TUD_CDC 1 CFG_TUD_MSC 1)
 jxglib_configure_FAT(test-MSCDrive-CDCSerial FF_VOLUME 1)
