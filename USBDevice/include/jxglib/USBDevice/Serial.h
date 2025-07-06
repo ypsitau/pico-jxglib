@@ -31,6 +31,7 @@ public:
 	// virtual functions of Stream
 	virtual int Read(void* buff, int bytesBuff) override;
 	virtual int Write(const void* buff, int bytesBuff) override;
+	virtual bool Flush() override;
 	Printable& PutChar(char ch);
 };
 

@@ -30,8 +30,13 @@ int Serial::Write(const void* buff, int bytesBuff)
 		bytesWritten += cdc_write(static_cast<const uint8_t*>(buff) + bytesWritten, bytesBuff - bytesWritten);
 		Tickable::Tick();
 	}
-	//cdc_write_flush();
 	return bytesWritten;
+}
+
+bool Serial::Flush()
+{
+	cdc_write_flush();
+	return true;
 }
 
 Printable& Serial::PutChar(char ch)
