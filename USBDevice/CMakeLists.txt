@@ -52,21 +52,21 @@ function(jxglib_configure_USBDevice target)
 endfunction()
 
 #------------------------------------------------------------------------------
-add_library(jxglib_USBDevice_Serial INTERFACE)
+add_library(jxglib_USBDevice_CDCSerial INTERFACE)
 
-target_link_libraries(jxglib_USBDevice_Serial INTERFACE
+target_link_libraries(jxglib_USBDevice_CDCSerial INTERFACE
 	jxglib_Serial
 	jxglib_USBDevice)
 
-target_sources(jxglib_USBDevice_Serial INTERFACE
-	${CMAKE_CURRENT_LIST_DIR}/src/Serial.cpp)
+target_sources(jxglib_USBDevice_CDCSerial INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/src/CDCSerial.cpp)
 
 #------------------------------------------------------------------------------
-add_library(jxglib_USBDevice_Flash INTERFACE)
+add_library(jxglib_USBDevice_MSCDrive INTERFACE)
 
-target_link_libraries(jxglib_USBDevice_Flash INTERFACE
+target_link_libraries(jxglib_USBDevice_MSCDrive INTERFACE
 	jxglib_Flash
 	jxglib_USBDevice)
 
-target_sources(jxglib_USBDevice_Flash INTERFACE
-	${CMAKE_CURRENT_LIST_DIR}/src/Flash.cpp)
+target_sources(jxglib_USBDevice_MSCDrive INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/src/MSCDrive.cpp)

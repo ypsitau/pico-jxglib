@@ -50,8 +50,8 @@ target_link_libraries(test-Flash-Serial
 	jxglib_Serial
 	jxglib_FAT_Flash
 	jxglib_ShellCmd_FS
-	jxglib_USBDevice_Flash
-	jxglib_USBDevice_Serial)
+	jxglib_USBDevice_MSCDrive
+	jxglib_USBDevice_CDCSerial)
 
 # Add the standard include files to the build
 target_include_directories(test-Flash-Serial PRIVATE

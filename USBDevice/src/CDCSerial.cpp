@@ -1,14 +1,14 @@
 //==============================================================================
-// Serial.cpp
+// CDCSerial.cpp
 //==============================================================================
-#include "jxglib/USBDevice/Serial.h"
+#include "jxglib/USBDevice/CDCSerial.h"
 
 namespace jxglib::USBDevice {
 
-Serial::Serial(USBDevice::Controller& deviceController, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn) :
+CDCSerial::CDCSerial(USBDevice::Controller& deviceController, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn) :
 	USBDevice::CDC(deviceController, name, endpNotif, 8, endpBulkOut, endpBulkIn, 64, 10), chPrev_{'\0'}, addCrFlag_{true}, keyboard_{*this} {}
 
-void Serial::OnTick()
+void CDCSerial::OnTick()
 {
 	uint8_t buff[64];
 	if (cdc_available()) {
@@ -18,12 +18,12 @@ void Serial::OnTick()
 	}
 }
 
-int Serial::Read(void* buff, int bytesBuff)
+int CDCSerial::Read(void* buff, int bytesBuff)
 {
 	return buffRead_.ReadBuff(static_cast<uint8_t*>(buff), bytesBuff);
 }
 
-int Serial::Write(const void* buff, int bytesBuff)
+int CDCSerial::Write(const void* buff, int bytesBuff)
 {
 	int bytesWritten = 0;
 	while (bytesWritten < bytesBuff) {
@@ -33,13 +33,13 @@ int Serial::Write(const void* buff, int bytesBuff)
 	return bytesWritten;
 }
 
-bool Serial::Flush()
+bool CDCSerial::Flush()
 {
 	cdc_write_flush();
 	return true;
 }
 
-Printable& Serial::PutChar(char ch)
+Printable& CDCSerial::PutChar(char ch)
 {
 	if (addCrFlag_ && chPrev_ != '\r' && ch == '\n') PutCharRaw('\r');
 	PutCharRaw(ch);

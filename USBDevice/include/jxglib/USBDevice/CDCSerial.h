@@ -1,8 +1,8 @@
 //==============================================================================
-// jxglib/USBDevice/Serial.h
+// jxglib/USBDevice/CDCSerial.h
 //==============================================================================
-#ifndef PICO_JXGLIB_USBDEVICE_SERIAL_H
-#define PICO_JXGLIB_USBDEVICE_SERIAL_H
+#ifndef PICO_JXGLIB_USBDEVICE_CDCSERIAL_H
+#define PICO_JXGLIB_USBDEVICE_CDCSERIAL_H
 #include "jxglib/USBDevice/CDC.h"
 #include "jxglib/Serial.h"
 
@@ -11,21 +11,21 @@
 namespace jxglib::USBDevice {
 
 //-----------------------------------------------------------------------------
-// Serial
+// CDCSerial
 //-----------------------------------------------------------------------------
-class Serial : public USBDevice::CDC, public Stream {
+class CDCSerial : public USBDevice::CDC, public Stream {
 private:
 	char chPrev_;
 	bool addCrFlag_;
 	FIFOBuff<uint8_t, 64> buffRead_;
 	VT100::Keyboard keyboard_;
 public:
-	Serial(USBDevice::Controller& deviceController, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn);
+	CDCSerial(USBDevice::Controller& deviceController, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn);
 public:
 	// virtual functions of USBDevice::CDC
 	virtual void OnTick() override;
 public:
-	Serial& AddCr(bool addCrFlag) { addCrFlag_ = addCrFlag; return* this; }
+	CDCSerial& AddCr(bool addCrFlag) { addCrFlag_ = addCrFlag; return* this; }
     Keyboard& GetKeyboard() { return keyboard_; }
 public:
 	// virtual functions of Stream

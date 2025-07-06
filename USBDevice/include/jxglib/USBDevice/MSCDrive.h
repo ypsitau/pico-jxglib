@@ -1,8 +1,8 @@
 //==============================================================================
-// jxglib/USBDevice/Flash.h
+// jxglib/USBDevice/MSCDrive.h
 //==============================================================================
-#ifndef PICO_JXdGLIB_USBDEVICE_FLASH_H
-#define PICO_JXGLIB_USBDEVICE_FLASH_H
+#ifndef PICO_JXdGLIB_USBDEVICE_MSCDRIVE_H
+#define PICO_JXGLIB_USBDEVICE_MSCDRIVE_H
 #include "pico/stdlib.h"
 #include "jxglib/USBDevice/MSC.h"
 #include "jxglib/Flash.h"
@@ -12,9 +12,9 @@
 namespace jxglib::USBDevice {
 
 //-----------------------------------------------------------------------------
-// Flash
+// MSCDrive
 //-----------------------------------------------------------------------------
-class Flash : public USBDevice::MSC {
+class MSCDrive : public USBDevice::MSC {
 public:
 	class SyncAgent : public Tickable {
 	private:
@@ -33,8 +33,11 @@ private:
 	uint32_t offsetXIP_;
 	uint32_t bytesXIP_;
 	SyncAgent syncAgent_;
+	bool unitReadyFlag_;
 public:
-	Flash(USBDevice::Controller& deviceController, uint32_t addrXIP, uint32_t bytesXIP, uint8_t endpBulkOut, uint8_t endpBulkIn);
+	MSCDrive(USBDevice::Controller& deviceController, uint32_t addrXIP, uint32_t bytesXIP, uint8_t endpBulkOut, uint8_t endpBulkIn);
+public:
+	void NotifyMediaChange() { unitReadyFlag_ = false; }
 public:
 	// virual functions of USBDevice::MSC
 	virtual void On_msc_inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]) override;
