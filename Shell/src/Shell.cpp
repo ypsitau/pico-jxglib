@@ -15,7 +15,8 @@ const char* Shell::StartupScriptName = "/autoexec.sh";
 const char* Shell::specialTokens_[] = { ">>", "||", ">", "|", ";", "{", "}", "(", ")", "[", "]" };
 
 Shell::Shell() : stat_{Stat::Startup}, pTerminal_{&TerminalDumb::Instance},
-	pCmdRunning_{nullptr}, tokenizer_(specialTokens_, count_of(specialTokens_)), interactiveFlag_{false}
+	pCmdRunning_{nullptr}, tokenizer_(specialTokens_, count_of(specialTokens_)), interactiveFlag_{false},
+	breakDetector_(*this)
 {
 	SetPrompt_("%d%w>");
 }
@@ -143,11 +144,7 @@ void Shell::OnTick()
 		break;
 	}
 	case Stat::Running: {
-		if (!interactiveFlag_) {
-			KeyData keyData;
-			GetTerminal().GetKeyDataNB(&keyData);
-			if (keyData.GetChar() == 'C' - '@') Tickable::SetSignal();
-		}
+		// nothing to do
 		break;
 	}
 	}
@@ -290,6 +287,17 @@ void Shell::PrintHelp(Printable& printable, bool simpleFlag)
 		for (const Cmd* pCmd = Cmd::GetCmdHead(); pCmd; pCmd = pCmd->GetNext()) {
 			printable.Printf("%-*s  %s\n", lenMax, pCmd->GetName(), pCmd->GetHelp());
 		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Shell::BreakDetector
+//-----------------------------------------------------------------------------
+void Shell::BreakDetector::OnTick()
+{
+	if (shell_.IsRunning() && !shell_.IsInteractive()) {
+		//KeyData keyData;
+		//if (shell_.GetTerminal().GetKeyDataNB(&keyData) && keyData.GetChar() == 'C' - '@') Tickable::SetSignal();
 	}
 }
 

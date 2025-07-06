@@ -35,6 +35,14 @@ class Shell : public Tickable {
 public:
 	static const char* StartupScriptName;
 public:
+	class BreakDetector : public Tickable {
+	private:
+		Shell& shell_;
+	public:
+		BreakDetector(Shell& shell) : Tickable(500, Priority::Lowest), shell_{shell} {}
+		virtual const char* GetTickableName() const override { return "Shell::BreakDetector"; }
+		virtual void OnTick() override;
+	};
 	class Arg {
 	public:
 		class Opt {
@@ -323,6 +331,7 @@ private:
 	CompletionProvider completionProvider_;
 	Tokenizer tokenizer_;
 	bool interactiveFlag_;
+	BreakDetector breakDetector_;
 public:
 	static Shell Instance;
 private:
@@ -351,6 +360,8 @@ private:
 	void AttachTerminal_(Terminal& terminal);
 	void BeginInteractive_() { interactiveFlag_ = true; }
 	void EndInteractive_() { interactiveFlag_ = false; }
+	bool IsInteractive() const { return interactiveFlag_; }
+	bool IsRunning() const { return stat_ == Stat::Running; }
 public:
 	// virtual functions of Tickable
 	virtual const char* GetTickableName() const override { return "Shell"; }
