@@ -72,7 +72,7 @@ public:
 public:
 	// virtual functions of Printable
 	virtual Printable& ClearScreen() override { Clear(); return *this; }
-	virtual Printable& RefreshScreen() override { /* do nothing */ return *this; }
+	virtual bool Flush() override { /* do nothing */ return true; }
 	virtual Printable& Locate(int col, int row) override { /* do nothing */ return *this; }
 	virtual Printable& PutCharRaw(char ch) override;
 };

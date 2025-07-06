@@ -23,7 +23,7 @@ Terminal& Terminal::Initialize()
 
 char* Terminal::ReadLine(const char* prompt)
 {
-	GetPrintable().Print(prompt).RefreshScreen();
+	GetPrintable().Print(prompt).Flush();
 	ClearBreak();
 	Edit_Begin();
 	for (;;) {
@@ -35,7 +35,7 @@ char* Terminal::ReadLine(const char* prompt)
 
 void Terminal::ReadLine_Begin(const char* prompt)
 {
-	GetPrintable().Print(prompt).RefreshScreen();
+	GetPrintable().Print(prompt).Flush();
 	ClearBreak();
 	Edit_Begin();
 }

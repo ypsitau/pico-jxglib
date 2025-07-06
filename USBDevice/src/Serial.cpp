@@ -16,12 +16,6 @@ void Serial::OnTick()
 		int bytesRead = cdc_read(buff, bytesToRead);
 		if (bytesRead > 0) buffRead_.WriteBuff(buff, bytesRead);
 	}
-	int bytesToWrite = buffWrite_.ReadBuff(buff, sizeof(buff));
-	bytesToWrite = ChooseMin(bytesToWrite, cdc_write_available());
-	if (bytesToWrite > 0) {
-		cdc_write(buff, bytesToWrite);
-		cdc_write_flush();
-	}
 }
 
 int Serial::Read(void* buff, int bytesBuff)
@@ -31,12 +25,12 @@ int Serial::Read(void* buff, int bytesBuff)
 
 int Serial::Write(const void* buff, int bytesBuff)
 {
-	::printf("Serial::Write: %d bytes %d\n", bytesBuff, Tickable::GetTickCalledDepth());
 	int bytesWritten = 0;
 	while (bytesWritten < bytesBuff) {
-		bytesWritten += buffWrite_.WriteBuff(static_cast<const uint8_t*>(buff) + bytesWritten, bytesBuff - bytesWritten);
+		bytesWritten += cdc_write(static_cast<const uint8_t*>(buff) + bytesWritten, bytesBuff - bytesWritten);
 		Tickable::Tick();
 	}
+	//cdc_write_flush();
 	return bytesWritten;
 }
 

@@ -341,10 +341,10 @@ Printable& Display::Terminal::ClearScreen()
 	return *this;
 }
 
-Printable& Display::Terminal::RefreshScreen()
+bool Display::Terminal::Flush()
 {
 	GetDrawable().Refresh();
-	return *this;
+	return true;
 }
 
 Printable& Display::Terminal::Locate(int col, int row)

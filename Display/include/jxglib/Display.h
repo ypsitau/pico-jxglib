@@ -134,7 +134,7 @@ public:
 	public:
 		// Virtual functions of Printable
 		virtual Printable& ClearScreen() override;
-		virtual Printable& RefreshScreen() override;
+		virtual bool Flush() override;
 		virtual Printable& Locate(int col, int row) override;
 		virtual Printable& GetSize(int* pnCols, int* pnRows) override;
 		virtual Printable& PutCharRaw(char ch) override;

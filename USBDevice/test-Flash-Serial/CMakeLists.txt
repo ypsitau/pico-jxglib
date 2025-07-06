@@ -28,39 +28,40 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-Serial C CXX ASM)
+project(test-Flash-Serial C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-Serial test-Serial.cpp)
+add_executable(test-Flash-Serial test-Flash-Serial.cpp)
 
-pico_set_program_name(test-Serial "test-Serial")
-pico_set_program_version(test-Serial "0.1")
+pico_set_program_name(test-Flash-Serial "test-Flash-Serial")
+pico_set_program_version(test-Flash-Serial "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-Serial 1)
-pico_enable_stdio_usb(test-Serial 0)
+pico_enable_stdio_uart(test-Flash-Serial 1)
+pico_enable_stdio_usb(test-Flash-Serial 0)
 
 # Add the standard library to the build
-target_link_libraries(test-Serial
+target_link_libraries(test-Flash-Serial
 	pico_stdlib
-	tinyusb_device
+	jxglib_Serial
 	jxglib_FAT_Flash
 	jxglib_ShellCmd_FS
 	jxglib_USBDevice_Flash
 	jxglib_USBDevice_Serial)
 
 # Add the standard include files to the build
-target_include_directories(test-Serial PRIVATE
+target_include_directories(test-Flash-Serial PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-Serial)
+pico_add_extra_outputs(test-Flash-Serial)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 
-jxglib_configure_USBDevice(test-Serial CFG_TUD_CDC 1 CFG_TUD_MSC 1)
-jxglib_configure_FAT(test-Serial FF_VOLUME 1)
+#jxglib_configure_USBDevice(test-Flash-Serial CFG_TUD_MSC 1)
+jxglib_configure_USBDevice(test-Flash-Serial CFG_TUD_CDC 1 CFG_TUD_MSC 1)
+jxglib_configure_FAT(test-Flash-Serial FF_VOLUME 1)

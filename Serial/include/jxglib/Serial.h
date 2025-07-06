@@ -29,7 +29,7 @@ public:
 	public:
 		// virtual functions of Printable
 		virtual Printable& ClearScreen() { return pPrintable_->ClearScreen(); }
-		virtual Printable& RefreshScreen() { return pPrintable_->RefreshScreen(); }
+		virtual bool Flush() { return pPrintable_->Flush(); }
 		virtual Printable& Locate(int col, int row) { return pPrintable_->Locate(col, row); }
 		virtual Printable& PutChar(char ch) { return pPrintable_->PutChar(ch); }
 		virtual Printable& PutCharRaw(char ch) { return pPrintable_->PutCharRaw(ch); }

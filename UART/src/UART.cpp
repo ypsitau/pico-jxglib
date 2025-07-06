@@ -44,10 +44,10 @@ Printable& UART::ClearScreen()
 	return Stream::ClearScreen();
 }
 
-Printable& UART::RefreshScreen()
+Printable& UART::Flush()
 {
 	chPrev_ = '\0';
-	return Stream::RefreshScreen();
+	return Stream::Flush();
 }
 
 Printable& UART::PutChar(char ch)

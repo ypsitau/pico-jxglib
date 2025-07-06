@@ -18,7 +18,6 @@ private:
 	char chPrev_;
 	bool addCrFlag_;
 	FIFOBuff<uint8_t, 64> buffRead_;
-	FIFOBuff<uint8_t, 64> buffWrite_;
 	VT100::Keyboard keyboard_;
 public:
 	Serial(USBDevice::Controller& deviceController, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn);

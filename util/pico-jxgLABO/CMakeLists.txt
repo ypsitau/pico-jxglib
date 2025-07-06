@@ -41,8 +41,8 @@ pico_set_program_name(pico-jxgLABO "pico-jxgLABO")
 pico_set_program_version(pico-jxgLABO "0.0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(pico-jxgLABO 1)
-pico_enable_stdio_usb(pico-jxgLABO 1)
+pico_enable_stdio_uart(pico-jxgLABO 0)
+pico_enable_stdio_usb(pico-jxgLABO 0)
 
 # Add the standard library to the build
 target_link_libraries(pico-jxgLABO
@@ -58,6 +58,8 @@ pico_add_extra_outputs(pico-jxgLABO)
 target_link_libraries(pico-jxgLABO
     jxglib_Shell jxglib_Serial
     jxglib_LFS_Flash jxglib_FAT_Flash jxglib_RTC_DS323x
+	jxglib_USBDevice_Flash jxglib_USBDevice_Serial
     jxglib_ShellCmd_FS jxglib_ShellCmd_GPIO jxglib_ShellCmd_PWM jxglib_ShellCmd_I2C)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../../ pico-jxglib)
+jxglib_configure_USBDevice(pico-jxgLABO CFG_TUD_CDC 1 CFG_TUD_MSC 1)
 jxglib_configure_FAT(pico-jxgLABO FF_VOLUMES 1)

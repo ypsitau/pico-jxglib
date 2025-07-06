@@ -1,4 +1,5 @@
 #include "jxglib/Shell.h"
+#include "jxglib/Serial.h"
 #include "jxglib/USBDevice/Flash.h"
 #include "jxglib/USBDevice/Serial.h"
 #include "jxglib/FAT/Flash.h"

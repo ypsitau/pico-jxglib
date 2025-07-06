@@ -164,7 +164,7 @@ public:
 public:
 	// virtual functions of Printable
 	virtual Printable& ClearScreen() override { return *this; }
-	virtual Printable& RefreshScreen() override { return *this; }
+	virtual bool Flush() override { return true; }
 	virtual Printable& Locate(int col, int row) override { return *this; }
 	virtual Printable& PutChar(char ch) override { return *this; }
 	virtual Printable& PutCharRaw(char ch) override { return *this; }

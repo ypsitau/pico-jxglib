@@ -41,7 +41,6 @@ public:
 	virtual bool Seek(int position, SeekStart seekStart = SeekStart::Begin) = 0;
 	virtual int Tell() = 0;
 	virtual int Size() = 0;
-	virtual bool Flush() = 0;
 	virtual bool Truncate(int bytes) = 0;
 	virtual bool Sync() = 0;
 };

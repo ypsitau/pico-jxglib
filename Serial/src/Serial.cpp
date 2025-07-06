@@ -33,7 +33,7 @@ Terminal& Serial::Terminal::Edit_InsertChar(int ch)
 		MoveToBegin();
 		GetPrintable().Print(GetLineEditor().GetPointerBegin());
 		MoveToEnd();
-		GetPrintable().RefreshScreen();
+		GetPrintable().Flush();
 		EndCompletion();
 	}
 	return *this;
@@ -47,7 +47,7 @@ Terminal& Serial::Terminal::Edit_DeleteChar()
 		GetPrintable().Print(GetLineEditor().GetPointerBegin());
 		VT100::EraseToEndOfLine(GetPrintable());
 		MoveToEnd();
-		GetPrintable().RefreshScreen();
+		GetPrintable().Flush();
 		EndCompletion();
 	}
 	return *this;
@@ -61,7 +61,7 @@ Terminal& Serial::Terminal::Edit_Back()
 		GetPrintable().Print(GetLineEditor().GetPointerBegin());
 		VT100::EraseToEndOfLine(GetPrintable());
 		MoveToEnd();
-		GetPrintable().RefreshScreen();
+		GetPrintable().Flush();
 		EndCompletion();
 	}
 	return *this;
@@ -72,7 +72,7 @@ Terminal& Serial::Terminal::Edit_MoveForward()
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (GetLineEditor().MoveForward()) {
 		VT100::CursorForward(GetPrintable());
-		GetPrintable().RefreshScreen();
+		GetPrintable().Flush();
 		EndCompletion();
 	}
 	return *this;
@@ -83,7 +83,7 @@ Terminal& Serial::Terminal::Edit_MoveBackward()
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (GetLineEditor().MoveBackward()) {
 		VT100::CursorBackward(GetPrintable());
-		GetPrintable().RefreshScreen();
+		GetPrintable().Flush();
 		EndCompletion();
 	}
 	return *this;
@@ -94,7 +94,7 @@ Terminal& Serial::Terminal::Edit_MoveHome()
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (GetLineEditor().MoveHome()) {
 		MoveToBegin();
-		GetPrintable().RefreshScreen();
+		GetPrintable().Flush();
 		EndCompletion();
 	}
 	return *this;
@@ -106,7 +106,7 @@ Terminal& Serial::Terminal::Edit_MoveEnd()
 	if (GetLineEditor().MoveEnd()) {
 		MoveToBegin();
 		GetPrintable().Print(GetLineEditor().GetPointerBegin());
-		GetPrintable().RefreshScreen();
+		GetPrintable().Flush();
 		EndCompletion();
 	}
 	return *this;
@@ -120,7 +120,7 @@ Terminal& Serial::Terminal::Edit_Clear()
 		GetPrintable().Print(GetLineEditor().GetPointerBegin());
 		VT100::EraseToEndOfLine(GetPrintable());
 		MoveToBegin();
-		GetPrintable().RefreshScreen();
+		GetPrintable().Flush();
 		EndCompletion();
 	}
 	return *this;
@@ -134,7 +134,7 @@ Terminal& Serial::Terminal::Edit_DeleteToHome()
 		GetPrintable().Print(GetLineEditor().GetPointerBegin());
 		VT100::EraseToEndOfLine(GetPrintable());
 		MoveToBegin();
-		GetPrintable().RefreshScreen();
+		GetPrintable().Flush();
 		EndCompletion();
 	}
 	return *this;
@@ -147,7 +147,7 @@ Terminal& Serial::Terminal::Edit_DeleteToEnd()
 		MoveToBegin();
 		GetPrintable().Print(GetLineEditor().GetPointerBegin());
 		VT100::EraseToEndOfLine(GetPrintable());
-		GetPrintable().RefreshScreen();
+		GetPrintable().Flush();
 		EndCompletion();
 	}
 	return *this;
@@ -161,7 +161,7 @@ Terminal& Serial::Terminal::Edit_MoveHistoryPrev()
 		GetPrintable().Print(GetLineEditor().GetPointerBegin());
 		VT100::EraseToEndOfLine(GetPrintable());
 		MoveToEnd();
-		GetPrintable().RefreshScreen();
+		GetPrintable().Flush();
 		EndCompletion();
 	}
 	return *this;
@@ -175,7 +175,7 @@ Terminal& Serial::Terminal::Edit_MoveHistoryNext()
 		GetPrintable().Print(GetLineEditor().GetPointerBegin());
 		VT100::EraseToEndOfLine(GetPrintable());
 		MoveToEnd();
-		GetPrintable().RefreshScreen();
+		GetPrintable().Flush();
 		EndCompletion();
 	}
 	return *this;
@@ -194,7 +194,7 @@ Terminal& Serial::Terminal::Edit_Completion()
 		GetPrintable().Print(GetLineEditor().GetPointerBegin());
 		VT100::EraseToEndOfLine(GetPrintable());
 		MoveToEnd();
-		GetPrintable().RefreshScreen();
+		GetPrintable().Flush();
 	}
 	return *this;
 }

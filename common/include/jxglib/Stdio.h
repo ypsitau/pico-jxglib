@@ -34,7 +34,7 @@ public:
 public:
 	// virtual functions of Printable
 	virtual Printable& ClearScreen() override { return *this; }
-	virtual Printable& RefreshScreen() override { ::stdio_flush(); return *this; }
+	virtual bool Flush() override { ::stdio_flush(); return true; }
 	virtual Printable& Locate(int col, int row) override { return *this; }
 	virtual Printable& PutChar(char ch) override { ::stdio_putchar(ch); return *this; }
 	virtual Printable& PutCharRaw(char ch) override { ::stdio_putchar_raw(ch); return *this; }

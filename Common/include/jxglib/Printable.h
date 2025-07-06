@@ -65,7 +65,7 @@ public:
 	Printable() : Dump(this) {}
 public:
 	virtual Printable& ClearScreen() = 0;
-	virtual Printable& RefreshScreen() = 0;
+	virtual bool Flush() = 0;
 	virtual Printable& Locate(int col, int row) = 0;
 	virtual Printable& GetSize(int* pnCols, int* pnRows) { *pnCols = 80, *pnRows = 25; return *this; }
 	virtual Printable& PutChar(char ch) { return PutCharRaw(ch); };
@@ -91,7 +91,7 @@ public:
 	static PrintableDumb Instance;
 public:
 	virtual Printable& ClearScreen() override { return *this; }
-	virtual Printable& RefreshScreen() override { return *this; }
+	virtual bool Flush() override { return true; }
 	virtual Printable& Locate(int col, int row) override { return *this; }
 	virtual Printable& PutCharRaw(char ch) override { return *this; }
 };
@@ -102,7 +102,7 @@ public:
 extern Printable::DumpT Dump;
 
 inline Printable& ClearScreen() { return Printable::GetStandardOutput().ClearScreen(); }
-inline Printable& RefreshScreen() { return Printable::GetStandardOutput().RefreshScreen(); }
+inline bool Flush() { return Printable::GetStandardOutput().Flush(); }
 inline Printable& Locate(int col, int row) { return Printable::GetStandardOutput().Locate(col, row); }
 inline Printable& PutChar(char ch) { return Printable::GetStandardOutput().PutChar(ch); }
 inline Printable& PutCharRaw(char ch) { return Printable::GetStandardOutput().PutCharRaw(ch); }
