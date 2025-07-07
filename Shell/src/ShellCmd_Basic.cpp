@@ -319,6 +319,35 @@ ShellCmd(prompt, "changes the command line prompt")
 }
 
 //-----------------------------------------------------------------------------
+// sleep
+//-----------------------------------------------------------------------------
+ShellCmd(sleep, "sleeps for the specified time in milliseconds")
+{
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		'h',	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
+	if (arg.GetBool("help")) {
+		terr.Printf("Usage: %s [OPTION]... [MS]\n", GetName());
+		arg.PrintHelp(terr);
+		return Result::Error;
+	}
+	if (argc < 2) {
+		terr.Printf("missing sleep time in milliseconds\n");
+		return Result::Error;
+	}
+	char* endptr;
+	int msec = ::strtol(argv[1], &endptr, 10);
+	if (*endptr != '\0' || msec < 0) {
+		terr.Printf("invalid sleep time: %s\n", argv[1]);
+		return Result::Error;
+	}
+	Shell::Sleep(msec);
+	return Result::Success;
+}
+
+//-----------------------------------------------------------------------------
 // ticks
 //-----------------------------------------------------------------------------
 ShellCmd(ticks, "prints names and attributes of running Tickable instances")
