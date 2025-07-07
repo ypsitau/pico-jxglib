@@ -296,8 +296,8 @@ void Shell::PrintHelp(Printable& printable, bool simpleFlag)
 void Shell::BreakDetector::OnTick()
 {
 	if (shell_.IsRunning() && !shell_.IsInteractive()) {
-		//KeyData keyData;
-		//if (shell_.GetTerminal().GetKeyDataNB(&keyData) && keyData.GetChar() == 'C' - '@') Tickable::SetSignal();
+		KeyData keyData;
+		if (shell_.GetTerminal().GetKeyDataNB(&keyData) && keyData.GetChar() == 'C' - '@') Tickable::SetSignal();
 	}
 }
 

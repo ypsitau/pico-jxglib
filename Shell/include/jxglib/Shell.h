@@ -39,7 +39,7 @@ public:
 	private:
 		Shell& shell_;
 	public:
-		BreakDetector(Shell& shell) : Tickable(500, Priority::Lowest), shell_{shell} {}
+		BreakDetector(Shell& shell) : Tickable(100, Priority::Lowest), shell_{shell} {}
 		virtual const char* GetTickableName() const override { return "Shell::BreakDetector"; }
 		virtual void OnTick() override;
 	};

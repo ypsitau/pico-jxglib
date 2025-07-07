@@ -24,8 +24,10 @@ public:
 public:
 	Stdio() : bytesRead_(0), bytesAvailable_(0), keyboard_(*this) {}
 public:
-	// virtual functions of Stream
+	// virtual functions of Readable
+	virtual int ReadChar();
 	virtual int Read(void* buff, int bytesBuff) override;
+	// virtual functions of Printable
 	virtual int Write(const void* buff, int bytesBuff) override;
 public:
 	// Buffer management methods
