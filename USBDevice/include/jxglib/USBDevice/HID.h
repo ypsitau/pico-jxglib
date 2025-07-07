@@ -9,7 +9,7 @@
 
 namespace jxglib::USBDevice {
 
-class HID : public Interface {
+class HID : public Interface, public Tickable {
 protected:
 	const uint8_t* reportDescSaved_;
 public:

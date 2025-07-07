@@ -11,7 +11,7 @@ namespace jxglib::USBDevice {
 // USBDevice::HID
 //-----------------------------------------------------------------------------
 HID::HID(Controller& deviceController, uint32_t msecTick, const char* str, uint8_t protocol, const uint8_t* reportDesc, uint8_t bytesReportDesc,
-	uint8_t endpInterrupt, uint8_t pollingInterval) : Interface(deviceController, 1, msecTick), reportDescSaved_{reportDesc}
+	uint8_t endpInterrupt, uint8_t pollingInterval) : Interface(deviceController, 1), Tickable(msecTick), reportDescSaved_{reportDesc}
 {
 	uint8_t configDesc[] = {
 		TUD_HID_DESCRIPTOR(interfaceNum_, deviceController.RegisterStringDesc(str), protocol,
