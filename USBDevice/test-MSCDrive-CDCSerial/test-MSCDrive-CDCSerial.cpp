@@ -16,7 +16,7 @@ int main(void)
 		bDeviceProtocol:	MISC_PROTOCOL_IAD,
 		bMaxPacketSize0:	CFG_TUD_ENDPOINT0_SIZE,
 		idVendor:			0xcafe,
-		idProduct:			USBDevice::GenerateSpecificProductId(0x4000),
+		idProduct:			USBDevice::GenerateSpecificProductId(0x4100),
 		bcdDevice:			0x0100,
 	}, 0x0409, "jxglib", "MSCDrive-CDCSerial", "0123456");
 	FAT::Flash fat("*G:", 0x1010'0000, 0x010'0000);
