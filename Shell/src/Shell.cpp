@@ -818,7 +818,7 @@ bool Shell::Arg::EachSubcmd::Initialize()
 			}
 			pSubcmd = new SubcmdRepeat(nRepeats);
 		} else {
-			pSubcmd = new SubcmdProc(proc);
+			pSubcmd = new SubcmdCustom(proc);
 		}
 		((pSubcmdPrev && pSubcmdPrev->DoesRequireChild())? pSubcmdPrev : pSubcmdGroupCur)->AddChild(pSubcmd);
 		pSubcmdPrev = pSubcmd;
@@ -849,17 +849,17 @@ Shell::Arg::Subcmd* Shell::Arg::Subcmd::GetLast()
 }
 
 //------------------------------------------------------------------------------
-// Shell::Arg::SubcmdProc
+// Shell::Arg::SubcmdCustom
 //------------------------------------------------------------------------------
-Shell::Arg::SubcmdProc::SubcmdProc(const char* proc) : proc_{proc}
+Shell::Arg::SubcmdCustom::SubcmdCustom(const char* proc) : proc_{proc}
 {}
 
-Shell::Arg::Subcmd* Shell::Arg::SubcmdProc::Advance()
+Shell::Arg::Subcmd* Shell::Arg::SubcmdCustom::Advance()
 {
 	return GetNext()? GetNext() : GetParent()? GetParent()->AdvanceAtEnd() : nullptr;
 }
 
-void Shell::Arg::SubcmdProc::Print(int indentLevel) const
+void Shell::Arg::SubcmdCustom::Print(int indentLevel) const
 {
 	::printf("%*s%s\n", indentLevel * 2, "", proc_);
 }

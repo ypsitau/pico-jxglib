@@ -164,11 +164,11 @@ public:
 			virtual Subcmd* Advance() = 0;
 			virtual void Print(int indentLevel = 0) const = 0;
 		};
-		class SubcmdProc : public Subcmd {
+		class SubcmdCustom : public Subcmd {
 		protected:
 			const char* proc_;
 		public:
-			SubcmdProc(const char* proc);
+			SubcmdCustom(const char* proc);
 		public:
 			virtual bool IsEmpty() const override { return false; }
 			virtual const char* GetProc() const override { return proc_; }
