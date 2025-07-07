@@ -10,7 +10,7 @@ namespace jxglib::USBDevice {
 //-----------------------------------------------------------------------------
 // USBDevice::MSC
 //-----------------------------------------------------------------------------
-MSC::MSC(Controller& deviceController, const char* str, uint8_t endpBulkOut, uint8_t endpBulkIn, uint16_t endpSize) : Interface(deviceController, 1, 0)
+MSC::MSC(Controller& deviceController, const char* str, uint8_t endpBulkOut, uint8_t endpBulkIn, uint16_t endpSize) : Interface(deviceController, 1)
 {
 	uint8_t configDesc[] = {
 		// Interface number, string index, EP Out & EP In address, EP size

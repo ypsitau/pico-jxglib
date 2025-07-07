@@ -11,7 +11,7 @@ namespace jxglib::USBDevice {
 
 class CDC : public Interface {
 public:
-	CDC(Controller& deviceController, const char* str, uint8_t endpNotif, uint8_t bytesNotif, uint8_t endpBulkOut, uint8_t endpBulkIn, uint8_t bytesBulk, uint8_t pollingInterval);
+	CDC(Controller& deviceController, const char* str, uint8_t endpNotif, uint8_t bytesNotif, uint8_t endpBulkOut, uint8_t endpBulkIn, uint8_t bytesBulk);
 public:
 	virtual void On_cdc_rx() {}
 	virtual void On_cdc_rx_wanted(char wanted_char) {}

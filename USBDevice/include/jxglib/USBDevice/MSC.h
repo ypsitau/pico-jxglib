@@ -13,9 +13,6 @@ class MSC : public Interface {
 public:
 	MSC(Controller& deviceController, const char* str, uint8_t endpBulkOut, uint8_t endpBulkIn, uint16_t endpSize = 64);
 public:
-	virtual const char* GetTickableName() const override { return "USBDevice::MSC"; }
-	virtual void OnTick() override {}
-public:
 	virtual void On_msc_inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]) = 0;
 	virtual bool On_msc_test_unit_ready(uint8_t lun) = 0;
 	virtual void On_msc_capacity(uint8_t lun, uint32_t* block_count, uint16_t* block_size) = 0;

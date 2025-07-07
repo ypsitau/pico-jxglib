@@ -6,21 +6,18 @@
 namespace jxglib::USBDevice {
 
 CDCSerial::CDCSerial(USBDevice::Controller& deviceController, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn) :
-	USBDevice::CDC(deviceController, name, endpNotif, 8, endpBulkOut, endpBulkIn, 64, 10), chPrev_{'\0'}, addCrFlag_{true}, keyboard_{*this} {}
-
-void CDCSerial::OnTick()
-{
-	uint8_t buff[64];
-	if (cdc_available()) {
-		int bytesToRead = buffRead_.GetRoomLength();
-		int bytesRead = cdc_read(buff, bytesToRead);
-		if (bytesRead > 0) buffRead_.WriteBuff(buff, bytesRead);
-	}
-}
+	USBDevice::CDC(deviceController, name, endpNotif, 8, endpBulkOut, endpBulkIn, 64), chPrev_{'\0'}, addCrFlag_{true}, keyboard_{*this} {}
 
 int CDCSerial::Read(void* buff, int bytesBuff)
 {
-	return buffRead_.ReadBuff(static_cast<uint8_t*>(buff), bytesBuff);
+	int bytesRead = 0;
+	while (bytesRead < bytesBuff) {
+		int bytes = cdc_read(static_cast<uint8_t*>(buff) + bytesRead, bytesBuff - bytesRead);
+		if (bytes <= 0) break; // no more data available
+		bytesRead += bytes;
+		Tickable::Tick();
+	}
+	return bytesRead;
 }
 
 int CDCSerial::Write(const void* buff, int bytesBuff)

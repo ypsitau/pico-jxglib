@@ -10,8 +10,8 @@
 //-----------------------------------------------------------------------------
 namespace jxglib::USBDevice {
 
-CDC::CDC(Controller& deviceController, const char* str, uint8_t endpNotif, uint8_t bytesNotif, uint8_t endpBulkOut, uint8_t endpBulkIn, uint8_t bytesBulk, uint8_t pollingInterval) :
-				Interface(deviceController, 2, pollingInterval)
+CDC::CDC(Controller& deviceController, const char* str, uint8_t endpNotif, uint8_t bytesNotif, uint8_t endpBulkOut, uint8_t endpBulkIn, uint8_t bytesBulk) :
+				Interface(deviceController, 2)
 {
 	uint8_t configDesc[] = {
 		// Interface number, string index, EP notification address and size, EP data address (out, in) and size.

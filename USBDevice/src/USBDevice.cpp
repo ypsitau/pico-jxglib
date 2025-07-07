@@ -119,8 +119,8 @@ const uint16_t* Controller::On_GET_STRING_DESCRIPTOR(uint8_t idxString, uint16_t
 //-----------------------------------------------------------------------------
 // USBDevice::Interface
 //-----------------------------------------------------------------------------
-Interface::Interface(Controller& deviceController, int nInterfacesToOccupy, uint32_t msecTick) :
-	Tickable(msecTick), deviceController_{deviceController}, iInstance_{0}
+Interface::Interface(Controller& deviceController, int nInterfacesToOccupy) :
+		deviceController_{deviceController}, iInstance_{0}
 {
 	interfaceNum_ = deviceController.AssignInterfaceNum(nInterfacesToOccupy);
 }

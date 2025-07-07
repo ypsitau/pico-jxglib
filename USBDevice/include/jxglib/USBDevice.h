@@ -11,19 +11,17 @@ namespace jxglib::USBDevice {
 
 class Controller;
 
-class Interface : public Tickable {
+class Interface {
 	protected:
 		Controller& deviceController_;
 		uint8_t interfaceNum_;
 		uint8_t iInstance_;
 	public:
-		Interface(Controller& deviceController, int nInterfacesToOccupy, uint32_t msecTick);
+		Interface(Controller& deviceController, int nInterfacesToOccupy);
 	public:
 		void RegisterConfigDesc(const void* configDesc, int bytes);
 	public:
 		void Initialize() {}
-	public:
-		virtual const char* GetTickableName() const override { return "USBDevice::Interface"; }
 };
 
 #if CFG_TUD_HID == 0

@@ -17,14 +17,9 @@ class CDCSerial : public USBDevice::CDC, public Stream {
 private:
 	char chPrev_;
 	bool addCrFlag_;
-	FIFOBuff<uint8_t, 64> buffRead_;
 	VT100::Keyboard keyboard_;
 public:
 	CDCSerial(USBDevice::Controller& deviceController, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn);
-public:
-	// virtual functions of USBDevice::CDC
-	virtual const char* GetTickableName() const override { return "USBDevice::CDCSerial"; }
-	virtual void OnTick() override;
 public:
 	CDCSerial& AddCr(bool addCrFlag) { addCrFlag_ = addCrFlag; return* this; }
     Keyboard& GetKeyboard() { return keyboard_; }
