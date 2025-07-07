@@ -23,6 +23,7 @@ public:
 	CDCSerial(USBDevice::Controller& deviceController, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn);
 public:
 	// virtual functions of USBDevice::CDC
+	virtual const char* GetTickableName() const override { return "USBDevice::CDCSerial"; }
 	virtual void OnTick() override;
 public:
 	CDCSerial& AddCr(bool addCrFlag) { addCrFlag_ = addCrFlag; return* this; }

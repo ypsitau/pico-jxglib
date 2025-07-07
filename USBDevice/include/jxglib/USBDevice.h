@@ -22,6 +22,8 @@ class Interface : public Tickable {
 		void RegisterConfigDesc(const void* configDesc, int bytes);
 	public:
 		void Initialize() {}
+	public:
+		virtual const char* GetTickableName() const override { return "USBDevice::Interface"; }
 };
 
 #if CFG_TUD_HID == 0
@@ -142,7 +144,7 @@ public:
 	static HID* GetInterface_HID(uint8_t iInstance = 0) { return Instance->specific_.pHIDTbl[iInstance]; }
 public:
 	// virtual functions of Tickable
-	virtual const char* GetTickableName() const override { return "Controller"; }
+	virtual const char* GetTickableName() const override { return "USBDevice::Controller"; }
 	virtual void OnTick() override { ::tud_task(); }
 public:
 	virtual void OnMount() {}

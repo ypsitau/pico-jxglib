@@ -9,6 +9,7 @@ class TickableEx : public Tickable {
 public:
 	static TickableEx Instance;
 public:
+	virtual const char* GetTickableName() const override { return "LVGL::TickableEx"; }
 	virtual void OnTick() override { ::lv_timer_handler(); }
 };
 

@@ -33,6 +33,7 @@ public:
 	public:
 		// virual functions of Tickable
 		virtual void OnTick() override;
+		virtual const char* GetTickableName() const override { return "USBDevice::MSCDrive::SyncAgent"; }
 	};
 public:
 	static const int BlockSize = 512;
