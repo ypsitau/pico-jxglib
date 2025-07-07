@@ -91,10 +91,11 @@ public:
 	void Initialize();
 public:
 	// Virtual functions of Printable
-	Printable& Clear() override;
-	Printable& Flush() override;
+	Printable& ClearScreen() override;
+	bool Flush() override;
 	Printable& Locate(int x, int y) override;
 	Printable& Print(const char* str) override;
+	Printable& PutCharRaw(char ch) override;
 public:
 	static uint8_t CalcAddr(int x, int y) { return static_cast<uint8_t>((y << 6) | x); }
 };

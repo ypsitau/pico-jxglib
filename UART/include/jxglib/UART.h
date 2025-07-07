@@ -64,7 +64,7 @@ public:
 	virtual int Write(const void* buff, int bytesBuff) override;
 	// virtual functions of Printable
 	virtual Printable& ClearScreen() override;
-	virtual Printable& Flush() override;
+	virtual bool Flush() override;
 	virtual Printable& PutChar(char ch) override;
 	virtual Printable& PutCharRaw(char ch) override;
 public:

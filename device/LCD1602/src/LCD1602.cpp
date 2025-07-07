@@ -22,7 +22,7 @@ void LCD1602::Initialize()
 	::memset(vram_, ' ', sizeof(vram_));
 }
 
-Printable& LCD1602::Clear()
+Printable& LCD1602::ClearScreen()
 {
 	x_ = 0, y_ = 0;
 	chPrev_ = '\0';
@@ -31,12 +31,12 @@ Printable& LCD1602::Clear()
 	return *this;
 }
 
-Printable& LCD1602::Flush()
+bool LCD1602::Flush()
 {
 	raw.SetDisplayDataRAMAddress(CalcAddr(0, 0));
 	const uint8_t* p = vram_;
 	for (int i = 0; i < sizeof(vram_); i++, p++) raw.WriteData(*p);
-	return *this;
+	return true;
 }
 
 Printable& LCD1602::Locate(int x, int y)
@@ -76,6 +76,11 @@ Printable& LCD1602::Print(const char* str)
 		chPrev_ = ch;
 	}
 	return *this;
+}
+
+Printable& LCD1602::PutCharRaw(char ch)
+{
+	raw.WriteData(static_cast<uint8_t>(ch));
 }
 
 }

@@ -22,7 +22,7 @@ void test_PrintAllChars(LCD1602& lcd)
 	};
 	for (;;) {
 		for (int i = 0; i < count_of(strTbl); i++) {
-			lcd.Clear();
+			lcd.ClearScreen();
 			lcd.Print(strTbl[i]);
 			::sleep_ms(1000);
 		}
@@ -31,7 +31,7 @@ void test_PrintAllChars(LCD1602& lcd)
 
 void test_Scroll(LCD1602& lcd)
 {
-	lcd.Clear();
+	lcd.ClearScreen();
 	for (int i = 0; i < 100; i++) {
 		lcd.Printf("Hello %d\n", i);
 		::sleep_ms(100);
@@ -40,7 +40,7 @@ void test_Scroll(LCD1602& lcd)
 
 void test_Indicator(LCD1602& lcd)
 {
-	lcd.Clear();
+	lcd.ClearScreen();
 	for (int i = 0; i <= 16; i++) {
 		lcd.Printf("%d\n", 16 - i);
 		::sleep_ms(100);

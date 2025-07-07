@@ -44,7 +44,7 @@ Printable& UART::ClearScreen()
 	return Stream::ClearScreen();
 }
 
-Printable& UART::Flush()
+bool UART::Flush()
 {
 	chPrev_ = '\0';
 	return Stream::Flush();
