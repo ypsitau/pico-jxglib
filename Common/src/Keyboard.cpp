@@ -17,7 +17,7 @@ char Keyboard::GetChar()
 	KeyData keyData;
 	for (;;) {
 		if (GetKeyDataNB(&keyData) && keyData.IsChar()) break;
-		Tickable::Tick();
+		Tickable::TickSub();
 	}
 	return keyData.GetChar();
 }
@@ -26,7 +26,7 @@ bool Keyboard::GetKeyCode(uint8_t* pKeyCode, uint8_t* pModifier)
 {
 	for (;;) {
 		if (GetKeyCodeNB(pKeyCode, pModifier)) break;
-		Tickable::Tick();
+		Tickable::TickSub();
 	}
 	return true;
 }
@@ -36,7 +36,7 @@ bool Keyboard::GetKeyData(KeyData* pKeyData)
 	KeyData keyData;
 	for (;;) {
 		if (GetKeyDataNB(pKeyData)) break;
-		Tickable::Tick();
+		Tickable::TickSub();
 	}
 	return true;
 }

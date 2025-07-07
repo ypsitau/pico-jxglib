@@ -297,7 +297,9 @@ void Shell::BreakDetector::OnTick()
 {
 	if (shell_.IsRunning() && !shell_.IsInteractive()) {
 		KeyData keyData;
-		if (shell_.GetTerminal().GetKeyDataNB(&keyData) && keyData.GetChar() == 'C' - '@') Tickable::SetSignal();
+		if (shell_.GetTerminal().GetKeyDataNB(&keyData) && keyData.GetChar() == 'C' - '@') {
+			Tickable::SetSignal();
+		}
 	}
 }
 

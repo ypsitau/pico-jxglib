@@ -56,7 +56,7 @@ bool MSC::scsi_command(msc_cbw_t const* cbw, void* data)
 {
 	bool completeFlag = false;
 	if (!scsi_command_NB(cbw, data, &completeFlag)) return false;
-	while (!completeFlag) Tickable::Tick();
+	while (!completeFlag) Tickable::TickSub();
 	return true;
 }
 
@@ -69,7 +69,7 @@ bool MSC::inquiry(scsi_inquiry_resp_t* response)
 {
 	bool completeFlag = false;
 	if (!inquiry_NB(response, &completeFlag)) return false;
-	while (!completeFlag) Tickable::Tick();
+	while (!completeFlag) Tickable::TickSub();
 	return true;
 }
 
@@ -82,7 +82,7 @@ bool MSC::test_unit_ready()
 {
 	bool completeFlag = false;
 	if (!test_unit_ready_NB(&completeFlag)) return false;
-	while (!completeFlag) Tickable::Tick();
+	while (!completeFlag) Tickable::TickSub();
 	return true;
 }
 
@@ -96,7 +96,7 @@ bool MSC::request_sense(void* response)
 {
 	bool completeFlag = false;
 	if (!request_sense_NB(response, &completeFlag)) return false;
-	while (!completeFlag) Tickable::Tick();
+	while (!completeFlag) Tickable::TickSub();
 	return true;
 }
 
@@ -110,7 +110,7 @@ bool MSC::read10(void* buffer, uint32_t lba, uint16_t block_count)
 {
 	bool completeFlag = false;
 	if (!read10_NB(buffer, lba, block_count, &completeFlag)) return false;
-	while (!completeFlag) Tickable::Tick();
+	while (!completeFlag) Tickable::TickSub();
 	return true;
 }
 
@@ -124,7 +124,7 @@ bool MSC::write10(void const* buffer, uint32_t lba, uint16_t block_count)
 {
 	bool completeFlag = false;
 	if (!write10_NB(buffer, lba, block_count, &completeFlag)) return false;
-	while (!completeFlag) Tickable::Tick();
+	while (!completeFlag) Tickable::TickSub();
 	return true;
 }
 
@@ -138,7 +138,7 @@ bool MSC::read_capacity(scsi_read_capacity10_resp_t* response)
 {
 	bool completeFlag = false;
 	if (!read_capacity_NB(response, &completeFlag)) return false;
-	while (!completeFlag) Tickable::Tick();
+	while (!completeFlag) Tickable::TickSub();
 	return true;
 }
 
