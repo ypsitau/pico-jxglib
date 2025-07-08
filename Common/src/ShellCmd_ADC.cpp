@@ -56,6 +56,13 @@ ShellCmd(adc, "controls ADC (Analog-to-Digital Converter)")
 	}
 	int inputTbl[8];
 	int nInputs = eachNum.GetAll(inputTbl, count_of(inputTbl));
+	for (int i = 0; i < nInputs; ++i) {
+		int input = inputTbl[i];
+		if (input < 0 || input >= 5) {
+			terr.Printf("invalid ADC input number: %d\n", input);
+			return Result::Error;
+		}
+	}
 	return ProcessADC(terr, tout, inputTbl, nInputs,
 		argc - nArgsToSkip, argv + nArgsToSkip, rawFlag)? Result::Success : Result::Error;
 }

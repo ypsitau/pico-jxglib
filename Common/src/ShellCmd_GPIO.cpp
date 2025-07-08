@@ -5,8 +5,8 @@
 
 using namespace jxglib;
 
+static bool ProcessGPIO(Printable& terr, Printable& tout, const int pinTbl[], int nPins, int argc, char* argv[]);
 static void PrintPinFunc(Printable& tout, uint pin);
-static bool ProcessGPIO(Printable& terr, Printable& tout, uint pin, int argc, char* argv[]);
 
 static const char* strAvailableDrive = "2ma, 4ma, 8ma, 12ma";
 static const char* strAvailableSlew = "slow, fast";
@@ -39,6 +39,9 @@ ShellCmd(gpio, "controls GPIO pins")
 		tout.Printf("  hi (or 1)      set pin to high (effective for SIO OUT)\n");
 		return Result::Success;
 	}
+	int nArgsSkip = 0;
+	int pinTbl[GPIO::NumPins];
+	int nPins = 0;
 	if (genericFlag) {
 		if (argc < 2) {
 			for (uint pin = 0; pin < GPIO::NumPins; ++pin) PrintPinFunc(tout, pin);
@@ -49,23 +52,21 @@ ShellCmd(gpio, "controls GPIO pins")
 			terr.Printf("invalid GPIO pin number: %s\n", argv[1]);
 			return Result::Error;
 		}
-		for (int num = 0; eachNum.Next(&num); ) {
-			if (num < 0 || num >= GPIO::NumPins) {
-				terr.Printf("invalid GPIO pin number: %d\n", num);
+		nPins = eachNum.GetAll(pinTbl, count_of(pinTbl));
+		for (int i = 0; i < nPins; ++i) {
+			int pin = pinTbl[i];
+			if (pin < 0 || pin >= GPIO::NumPins) {
+				terr.Printf("invalid GPIO pin number: %d\n", pin);
 				return Result::Error;
 			}
-			uint pin = static_cast<uint>(num);
-			if (!ProcessGPIO(terr, tout, pin, argc - 2, argv + 2)) return Result::Error;
 		}
-		return Result::Success;
+		nArgsSkip = 2;
 	} else if (::strncmp(GetName(), "gpio", 4) == 0) {
-		char* endptr;
-		auto num = ::strtoul(GetName() + 4, &endptr, 0);
-		uint pin = 0;
-		if (*endptr == '\0' && num < GPIO::NumPins) pin = static_cast<uint>(num);
-		return ProcessGPIO(terr, tout, pin, argc - 1, argv + 1)? Result::Success : Result::Error;
+		pinTbl[0] = ::strtoul(GetName() + 4, nullptr, 0);
+		nPins = 1;
+		nArgsSkip = 1;
 	}
-	return Result::Error;
+	return ProcessGPIO(terr, tout, pinTbl, nPins, argc - nArgsSkip, argv + nArgsSkip)? Result::Success : Result::Error;
 }
 
 ShellCmdAlias(gpio0, gpio)
@@ -99,8 +100,9 @@ ShellCmdAlias(gpio27, gpio)
 ShellCmdAlias(gpio28, gpio)
 ShellCmdAlias(gpio29, gpio)
 
-bool ProcessGPIO(Printable& terr, Printable& tout, uint pin, int argc, char* argv[])
+bool ProcessGPIO(Printable& terr, Printable& tout, const int pinTbl[], int nPins, int argc, char* argv[])
 {
+	//uint pin = pinTbl[0];
 	Shell::Arg::EachSubcmd each(argv[0], argv[argc]);
 	if (!each.Initialize()) {
 		terr.Printf("%s\n", each.GetErrorMsg());
@@ -119,20 +121,35 @@ bool ProcessGPIO(Printable& terr, Printable& tout, uint pin, int argc, char* arg
 				terr.Printf("unknown function: %s\n", value);
 				return false;
 			}
-			::gpio_set_function(pin, pinFunc);
+			for (int i = 0; i < nPins; ++i) {
+				uint pin = pinTbl[i];
+				::gpio_set_function(pin, pinFunc);
+			}
 		} else if (Shell::Arg::GetAssigned(subcmd, "drive", &value)) {
 			if (!value) {
 				terr.Printf("specify a drive strength: %s\n", strAvailableDrive);
 				return false;
 			}
 			if (::strcasecmp(value, "2ma") == 0) {
-				::gpio_set_drive_strength(pin, GPIO_DRIVE_STRENGTH_2MA);
+				for (int i = 0; i < nPins; ++i) {
+					uint pin = pinTbl[i];
+					::gpio_set_drive_strength(pin, GPIO_DRIVE_STRENGTH_2MA);
+				}
 			} else if (::strcasecmp(value, "4ma") == 0) {
-				::gpio_set_drive_strength(pin, GPIO_DRIVE_STRENGTH_4MA);
+				for (int i = 0; i < nPins; ++i) {
+					uint pin = pinTbl[i];
+					::gpio_set_drive_strength(pin, GPIO_DRIVE_STRENGTH_4MA);
+				}
 			} else if (::strcasecmp(value, "8ma") == 0) {
-				::gpio_set_drive_strength(pin, GPIO_DRIVE_STRENGTH_8MA);
+				for (int i = 0; i < nPins; ++i) {
+					uint pin = pinTbl[i];
+					::gpio_set_drive_strength(pin, GPIO_DRIVE_STRENGTH_8MA);
+				}
 			} else if (::strcasecmp(value, "12ma") == 0) {
-				::gpio_set_drive_strength(pin, GPIO_DRIVE_STRENGTH_12MA);
+				for (int i = 0; i < nPins; ++i) {
+					uint pin = pinTbl[i];
+					::gpio_set_drive_strength(pin, GPIO_DRIVE_STRENGTH_12MA);
+				}
 			} else {
 				terr.Printf("unknown drive strength: %s\n", value);
 				return false;
@@ -143,39 +160,69 @@ bool ProcessGPIO(Printable& terr, Printable& tout, uint pin, int argc, char* arg
 				return false;
 			}
 			if (::strcasecmp(value, "slow") == 0) {
-				::gpio_set_slew_rate(pin, GPIO_SLEW_RATE_SLOW);
+				for (int i = 0; i < nPins; ++i) {
+					uint pin = pinTbl[i];
+					::gpio_set_slew_rate(pin, GPIO_SLEW_RATE_SLOW);
+				}
 			} else if (::strcasecmp(value, "fast") == 0) {
-				::gpio_set_slew_rate(pin, GPIO_SLEW_RATE_FAST);
+				for (int i = 0; i < nPins; ++i) {
+					uint pin = pinTbl[i];
+					::gpio_set_slew_rate(pin, GPIO_SLEW_RATE_FAST);
+				}
 			} else {
 				terr.Printf("unknown slew rate: %s\n", value);
 				return false;
 			}
 		} else if (::strcasecmp(subcmd, "pullup") == 0 || ::strcasecmp(subcmd, "pull-up") == 0) {
-			::gpio_pull_up(pin);
+			for (int i = 0; i < nPins; ++i) {
+				uint pin = pinTbl[i];
+				::gpio_pull_up(pin);
+			}
 		} else if (::strcasecmp(subcmd, "pulldown") == 0 || ::strcasecmp(subcmd, "pull-down") == 0) {
-			::gpio_pull_down(pin);
+			for (int i = 0; i < nPins; ++i) {
+				uint pin = pinTbl[i];
+				::gpio_pull_down(pin);
+			}
 		} else if (::strcasecmp(subcmd, "pullboth") == 0 || ::strcasecmp(subcmd, "pull-both") == 0) {
-			::gpio_set_pulls(pin, true, true);
+			for (int i = 0; i < nPins; ++i) {
+				uint pin = pinTbl[i];
+				::gpio_set_pulls(pin, true, true);
+			}
 		} else if (::strcasecmp(subcmd, "pullnone") == 0 || ::strcasecmp(subcmd, "pull-none") == 0) {
-			::gpio_set_pulls(pin, false, false);
+			for (int i = 0; i < nPins; ++i) {
+				uint pin = pinTbl[i];
+				::gpio_set_pulls(pin, false, false);
+			}
 		} else if (Shell::Arg::GetAssigned(subcmd, "dir", &value)) {
 			if (!value) {
 				terr.Printf("specify a direction: in or out\n");
 				return false;
 			} else if (::strcasecmp(value, "in") == 0) {
-				::gpio_set_dir(pin, GPIO_IN);
+				for (int i = 0; i < nPins; ++i) {
+					uint pin = pinTbl[i];
+					::gpio_set_dir(pin, GPIO_IN);
+				}
 			} else if (::strcasecmp(value, "out") == 0) {
-				::gpio_set_dir(pin, GPIO_OUT);
+				for (int i = 0; i < nPins; ++i) {
+					uint pin = pinTbl[i];
+					::gpio_set_dir(pin, GPIO_OUT);
+				}
 			} else {
 				terr.Printf("unknown direction: %s\n", value);
 				return false;
 			}
 		} else if (::strcasecmp(subcmd, "hi") == 0 || ::strcasecmp(subcmd, "high") == 0 ||
 					::strcasecmp(subcmd, "true") == 0 || ::strcmp(subcmd, "1") == 0) {
-			::gpio_put(pin, true);
+			for (int i = 0; i < nPins; ++i) {
+				uint pin = pinTbl[i];
+				::gpio_put(pin, true);
+			}
 		} else if (::strcasecmp(subcmd, "lo") == 0 || ::strcasecmp(subcmd, "low") == 0 ||
 					::strcasecmp(subcmd, "false") == 0 || ::strcmp(subcmd, "0") == 0) {
-			::gpio_put(pin, false);
+			for (int i = 0; i < nPins; ++i) {
+				uint pin = pinTbl[i];
+				::gpio_put(pin, false);
+			}
 		} else if (Shell::Arg::GetAssigned(subcmd, "sleep", &value)) {
 			if (!value) {
 				terr.Printf("specify a sleep duration in milliseconds\n");
@@ -193,7 +240,10 @@ bool ProcessGPIO(Printable& terr, Printable& tout, uint pin, int argc, char* arg
 		}
 		if (Tickable::TickSub()) return true;
 	}
-	PrintPinFunc(tout, pin);
+	for (int i = 0; i < nPins; ++i) {
+		uint pin = pinTbl[i];
+		PrintPinFunc(tout, pin);
+	}
 	return true;
 }
 
