@@ -324,7 +324,7 @@ ShellCmd(spi, "controls SPI bus communication")
 			} else if (::strcasecmp(arg, "cs-low") == 0) {
 				if (pinAssign.CS != -1) {
 					::gpio_put(pinAssign.CS, false);
-					tout.Printf("CS set low\n");
+					//tout.Printf("CS set low\n");
 				} else {
 					terr.Printf("CS pin not configured\n");
 					rtn = 1;
@@ -333,7 +333,7 @@ ShellCmd(spi, "controls SPI bus communication")
 			} else if (::strcasecmp(arg, "cs-high") == 0) {
 				if (pinAssign.CS != -1) {
 					::gpio_put(pinAssign.CS, true);
-					tout.Printf("CS set high\n");
+					//tout.Printf("CS set high\n");
 				} else {
 					terr.Printf("CS pin not configured\n");
 					rtn = 1;
