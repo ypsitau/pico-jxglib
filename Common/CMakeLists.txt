@@ -79,3 +79,15 @@ target_link_libraries(jxglib_ShellCmd_GPIO INTERFACE
 
 target_sources(jxglib_ShellCmd_GPIO INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/ShellCmd_GPIO.cpp)
+
+#------------------------------------------------------------------------------
+add_library(jxglib_ShellCmd_ADC INTERFACE)
+
+target_include_directories(jxglib_ShellCmd_ADC INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/include)
+
+target_link_libraries(jxglib_ShellCmd_ADC INTERFACE
+	jxglib_ShellCmd_GPIO)
+
+target_sources(jxglib_ShellCmd_ADC INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/src/ShellCmd_ADC.cpp)

@@ -58,6 +58,7 @@ pico_add_extra_outputs(test-MSCDrive-CDCSerial)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 
 target_link_libraries(test-MSCDrive-CDCSerial
-	jxglib_Serial jxglib_FAT_Flash jxglib_ShellCmd_FS jxglib_USBDevice_MSCDrive jxglib_USBDevice_CDCSerial)
+	jxglib_Serial jxglib_FAT_Flash jxglib_USBDevice_MSCDrive jxglib_USBDevice_CDCSerial
+	jxglib_ShellCmd_FS jxglib_ShellCmd_GPIO jxglib_ShellCmd_PWM jxglib_ShellCmd_I2C)
 jxglib_configure_USBDevice(test-MSCDrive-CDCSerial CFG_TUD_CDC 1 CFG_TUD_MSC 1)
 jxglib_configure_FAT(test-MSCDrive-CDCSerial FF_VOLUME 1)

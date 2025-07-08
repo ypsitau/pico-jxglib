@@ -204,6 +204,94 @@ void test_EachNum()
 	}
 }
 
+void test_EachNum_Rewind()
+{
+    Printable& tout = Stdio::Instance;
+
+    struct EachNumRewindTestCase {
+        const char* desc;
+        int argc;
+        const char* argv[8];
+        bool limitFlag;
+        const char* expected_first;
+        const char* expected_second;
+    };
+    
+    const EachNumRewindTestCase cases[] = {
+        { "single number rewind", 1, { "5" }, false, "5", "5" },
+        { "range rewind", 1, { "1-3" }, false, "1, 2, 3", "1, 2, 3" },
+        { "range with step rewind", 1, { "2-8:3" }, false, "2, 5, 8", "2, 5, 8" },
+        { "multiple arguments rewind", 2, { "1", "4-5" }, false, "1, 4, 5", "1, 4, 5" },
+        { "reverse range rewind", 1, { "5-3" }, false, "5, 4, 3", "5, 4, 3" },
+        { "negative numbers rewind", 1, { "-2-2" }, false, "-2, -1, 0, 1, 2", "-2, -1, 0, 1, 2" },
+        { "comma numbers rewind", 1, { "1,2,3" }, false, "1, 2, 3", "1, 2, 3" },
+        { "comma ranges rewind", 1, { "1-3,5-7" }, false, "1, 2, 3, 5, 6, 7", "1, 2, 3, 5, 6, 7" },
+        { "comma mixed rewind", 1, { "1,3-5,7" }, false, "1, 3, 4, 5, 7", "1, 3, 4, 5, 7" },
+        { "quoted string rewind", 1, { "\"AB\"" }, false, "65, 66", "65, 66" },
+        { "comma string and range rewind", 1, { "\"Hi\",5-6" }, false, "72, 105, 5, 6", "72, 105, 5, 6" },
+        { "repeat single value rewind", 1, { "5*3" }, false, "5, 5, 5", "5, 5, 5" },
+        { "repeat with comma rewind", 1, { "1*2,3*2" }, false, "1, 1, 3, 3", "1, 1, 3, 3" },
+        { "repeat mixed with range rewind", 1, { "1*2,3-5" }, false, "1, 1, 3, 4, 5", "1, 1, 3, 4, 5" },
+        { "empty string rewind", 1, { "" }, false, "(none)", "(none)" },
+        { "range with limit rewind", 1, { "3-" }, true, "3, 4, 5, 6, 7, 8, 9, 10", "3, 4, 5, 6, 7, 8, 9, 10" },
+        { "complex mixed rewind", 1, { "\"A\",3-4,\"B\",7" }, false, "65, 3, 4, 66, 7", "65, 3, 4, 66, 7" },
+        { "repeat zero times rewind", 1, { "7*0" }, false, "(none)", "(none)" },
+        { "repeat large count rewind", 1, { "1*5" }, false, "1, 1, 1, 1, 1", "1, 1, 1, 1, 1" },
+        { "invalid input rewind", 1, { "abc" }, false, "(none)", "(none)" }
+    };
+
+    for (size_t i = 0; i < sizeof(cases)/sizeof(cases[0]); ++i) {
+        const EachNumRewindTestCase& tc = cases[i];
+        tout.Printf("---- %s ----\n", tc.desc);
+        tout.Printf("[argv] ");
+        for (int j = 0; j < tc.argc; ++j)
+            tout.Printf((j == 0) ? "%s" : " %s", tc.argv[j]);
+        tout.Println();
+        
+        const char** argv = const_cast<const char**>(tc.argv);
+        Shell::Arg::EachNum each(argv[0], argv[tc.argc]);
+        if (tc.limitFlag) each.SetLimit(10);
+        
+        // First iteration
+        tout.Printf("[nums1] ");
+        int n;
+        bool first = true;
+        while (each.Next(&n)) {
+            if (!first) tout.Printf(", ");
+            tout.Printf("%d", n);
+            first = false;
+        }
+        if (!each.IsSuccess()) {
+            tout.Printf("(%s)", each.GetErrorMsg());
+        } else if (first) {
+            tout.Printf("(none)");
+        }
+        tout.Println();
+        
+        // Rewind
+        each.Rewind();
+        
+        // Second iteration
+        tout.Printf("[nums2] ");
+        first = true;
+        while (each.Next(&n)) {
+            if (!first) tout.Printf(", ");
+            tout.Printf("%d", n);
+            first = false;
+        }
+        if (!each.IsSuccess()) {
+            tout.Printf("(%s)", each.GetErrorMsg());
+        } else if (first) {
+            tout.Printf("(none)");
+        }
+        tout.Println();
+        
+        tout.Printf("[expt1] %s\n", tc.expected_first);
+        tout.Printf("[expt2] %s\n", tc.expected_second);
+        tout.Printf("\n");
+    }
+}
+
 void test_EachSubcmd()
 {
 	Printable& tout = Stdio::Instance;
@@ -316,12 +404,113 @@ void try_EachSubcmd()
 	::printf("----\n");
 }
 
+void test_EachSubcmd_Rewind()
+{
+    Printable& tout = Stdio::Instance;
+    Tokenizer tokenizer = Shell::CreateTokenizer();
+
+    struct EachSubcmdRewindTestCase {
+        const char* desc;
+        const char* input;
+        const char* expected_first;
+        const char* expected_second;
+    };
+    
+    const EachSubcmdRewindTestCase cases[] = {
+        { "simple command sequence rewind", "cmd1 cmd2 cmd3", "cmd1, cmd2, cmd3", "cmd1, cmd2, cmd3" },
+        { "command with braces rewind", "{cmd1 cmd2 cmd3}", "cmd1, cmd2, cmd3", "cmd1, cmd2, cmd3" },
+        { "nested braces rewind", "{cmd1 {cmd2 cmd3} cmd4}", "cmd1, cmd2, cmd3, cmd4", "cmd1, cmd2, cmd3, cmd4" },
+        { "empty braces rewind", "{}", "(none)", "(none)" },
+        { "multiple empty braces rewind", "{} {} {}", "(none)", "(none)" },
+        { "nested empty braces rewind", "{{{}}} cmd1", "cmd1", "cmd1" },
+        { "simple repeat rewind", "repeat:3 cmd1", "cmd1, cmd1, cmd1", "cmd1, cmd1, cmd1" },
+        { "repeat with braces rewind", "repeat:3 {cmd1}", "cmd1, cmd1, cmd1", "cmd1, cmd1, cmd1" },
+        { "repeat multiple commands rewind", "repeat:3 {cmd1 cmd2}", "cmd1, cmd2, cmd1, cmd2, cmd1, cmd2", "cmd1, cmd2, cmd1, cmd2, cmd1, cmd2" },
+        { "repeat with surrounding commands rewind", "cmd0 repeat:3 {cmd1 cmd2} cmd3", "cmd0, cmd1, cmd2, cmd1, cmd2, cmd1, cmd2, cmd3", "cmd0, cmd1, cmd2, cmd1, cmd2, cmd1, cmd2, cmd3" },
+        { "repeat with empty braces rewind", "repeat:3 {}", "(none)", "(none)" },
+        { "repeat zero times rewind", "repeat:0 cmd1", "(none)", "(none)" },
+        { "repeat one time rewind", "repeat:1 cmd1", "cmd1", "cmd1" },
+        { "complex nesting rewind", "{cmd1 cmd2 cmd3 {cmd4 cmd5} cmd6} cmd7 cmd8", "cmd1, cmd2, cmd3, cmd4, cmd5, cmd6, cmd7, cmd8", "cmd1, cmd2, cmd3, cmd4, cmd5, cmd6, cmd7, cmd8" },
+        { "multiple repeat commands rewind", "repeat:2 cmd1 repeat:2 cmd2", "cmd1, cmd1, cmd2, cmd2", "cmd1, cmd1, cmd2, cmd2" },
+        { "repeat with nested braces rewind", "repeat:2 {cmd1 {cmd2} cmd3}", "cmd1, cmd2, cmd3, cmd1, cmd2, cmd3", "cmd1, cmd2, cmd3, cmd1, cmd2, cmd3" },
+        { "single command rewind", "cmd1", "cmd1", "cmd1" },
+        { "empty input rewind", "", "(none)", "(none)" },
+        { "whitespace only rewind", "   ", "(none)", "(none)" },
+        { "nested repeat rewind", "repeat:2 {repeat:2 cmd1}", "cmd1, cmd1, cmd1, cmd1", "cmd1, cmd1, cmd1, cmd1" },
+        { "mixed empty and commands rewind", "cmd1 {} cmd2", "cmd1, cmd2", "cmd1, cmd2" },
+        { "deep nesting rewind", "{{{cmd1}}}", "cmd1", "cmd1" }
+    };
+
+    for (size_t i = 0; i < sizeof(cases)/sizeof(cases[0]); ++i) {
+        const EachSubcmdRewindTestCase& tc = cases[i];
+        tout.Printf("---- %s ----\n", tc.desc);
+        tout.Printf("[input] %s\n", tc.input);
+        
+        char str[256];
+        ::strcpy(str, tc.input);
+        char* argv[32];
+        int argc = count_of(argv);
+        const char* errorMsg = nullptr;
+        
+        tokenizer.Tokenize(str, sizeof(str), argv, &argc, &errorMsg);
+        
+        if (errorMsg) {
+            tout.Printf("[error] %s\n", errorMsg);
+        } else if (argc == 0) {
+            tout.Printf("[cmds1] (none)\n");
+            tout.Printf("[cmds2] (none)\n");
+        } else {
+            Shell::Arg::EachSubcmd each(argv[0], argv[argc]);
+            
+            if (!each.Initialize()) {
+                tout.Printf("[error] %s\n", each.GetErrorMsg());
+            } else {
+                // First iteration
+                tout.Printf("[cmds1] ");
+                const char* cmd;
+                bool first = true;
+                while ((cmd = each.Next()) != nullptr) {
+                    if (!first) tout.Printf(", ");
+                    tout.Printf("%s", cmd);
+                    first = false;
+                }
+                if (first) {
+                    tout.Printf("(none)");
+                }
+                tout.Println();
+                
+                // Rewind
+                each.Rewind();
+                
+                // Second iteration
+                tout.Printf("[cmds2] ");
+                first = true;
+                while ((cmd = each.Next()) != nullptr) {
+                    if (!first) tout.Printf(", ");
+                    tout.Printf("%s", cmd);
+                    first = false;
+                }
+                if (first) {
+                    tout.Printf("(none)");
+                }
+                tout.Println();
+            }
+        }
+        
+        tout.Printf("[expt1] %s\n", tc.expected_first);
+        tout.Printf("[expt2] %s\n", tc.expected_second);
+        tout.Printf("\n");
+    }
+}
+
 int main()
 {
 	::stdio_init_all();
 	//test_Parse();
-	test_EachNum();
+	//test_EachNum();
+	//test_EachNum_Rewind();
 	//test_EachSubcmd();
+	test_EachSubcmd_Rewind();
 	//try_EachSubcmd();
 	for (;;) ::tight_loop_contents();
 }

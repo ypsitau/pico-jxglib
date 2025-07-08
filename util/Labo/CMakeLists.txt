@@ -28,32 +28,38 @@ set(PICO_BOARD pico2 CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-Arg C CXX ASM)
+project(Labo C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-Arg test-Arg.cpp )
+add_executable(Labo Labo.cpp )
 
-pico_set_program_name(test-Arg "test-Arg")
-pico_set_program_version(test-Arg "0.1")
+pico_set_program_name(Labo "Labo")
+pico_set_program_version(Labo "0.0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-Arg 1)
-pico_enable_stdio_usb(test-Arg 0)
+pico_enable_stdio_uart(Labo 1)
+pico_enable_stdio_usb(Labo 0)
 
 # Add the standard library to the build
-target_link_libraries(test-Arg
-        pico_stdlib
-        jxglib_Shell)
+target_link_libraries(Labo
+        pico_stdlib)
 
 # Add the standard include files to the build
-target_include_directories(test-Arg PRIVATE
+target_include_directories(Labo PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-Arg)
+pico_add_extra_outputs(Labo)
 
+target_link_libraries(Labo
+    jxglib_Shell jxglib_Serial
+    jxglib_LFS_Flash jxglib_FAT_Flash jxglib_RTC_DS323x
+	jxglib_USBDevice_MSCDrive jxglib_USBDevice_CDCSerial
+    jxglib_ShellCmd_FS jxglib_ShellCmd_GPIO jxglib_ShellCmd_ADC jxglib_ShellCmd_PWM jxglib_ShellCmd_I2C)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+jxglib_configure_USBDevice(Labo CFG_TUD_CDC 1 CFG_TUD_MSC 1)
+jxglib_configure_FAT(Labo FF_VOLUMES 1)

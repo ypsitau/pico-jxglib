@@ -97,6 +97,7 @@ public:
 			Each(const char*& argvBegin, const char*& argvEnd);
 			Each(char*& argvBegin, char*& argvEnd) : Each(const_cast<const char*&>(argvBegin), const_cast<const char*&>(argvEnd)) {}
 			const char* Next();
+			void Rewind();
 		};
 		class EachNum : public EachBase {
 		private:
@@ -131,6 +132,7 @@ public:
 			bool IsSuccess() const { return errorMsg_[0] == '\0'; }
 			const char* GetErrorMsg() const { return errorMsg_; }
 			bool CheckValidity(int* pCount = nullptr);
+			void Rewind();
 		};
 		class EachGlob : public EachBase {
 		private:
@@ -141,6 +143,7 @@ public:
 			EachGlob(char*& argvBegin, char*& argvEnd) : EachGlob(const_cast<const char*&>(argvBegin), const_cast<const char*&>(argvEnd)) {}
 			const char* Next();
 			const FS::FileInfo& GetFileInfo() const { return *pFileInfo_; }
+			void Rewind();
 		};
 		class SubcmdGroup;
 		class Subcmd {
@@ -217,6 +220,7 @@ public:
 			bool Initialize();
 			const char* GetErrorMsg() const { return errorMsg_; }
 			const char* Next();
+			void Rewind();
 		public:
 			void Print(int indentLevel = 0) const { subcmdGroup_.Print(indentLevel); }
 		};

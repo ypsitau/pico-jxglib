@@ -524,6 +524,11 @@ const char* Shell::Arg::Each::Next()
 	return (argvCur_ == argvEnd_)? nullptr : *argvCur_++;
 }
 
+void Shell::Arg::Each::Rewind()
+{
+	argvCur_ = argvBegin_;
+}
+
 //------------------------------------------------------------------------------
 // Shell::Arg::EachNum
 //------------------------------------------------------------------------------
@@ -737,6 +742,22 @@ bool Shell::Arg::EachNum::CheckValidity(int* pCount)
 	return rtn;
 }
 
+void Shell::Arg::EachNum::Rewind()
+{
+	argvCur_ = argvBegin_;
+	mode_ = Mode::None;
+	p_ = "";
+	range_.cur = 0;
+	range_.end = 0;
+	range_.step = 1;
+	repeat_.value = 0;
+	repeat_.count = 0;
+	repeat_.cur = 0;
+	chQuote_ = '\0';
+	errorMsg_ = "";
+	pFile_.reset();
+}
+
 //------------------------------------------------------------------------------
 // Shell::Arg::EachGlob
 //------------------------------------------------------------------------------
@@ -766,6 +787,13 @@ const char* Shell::Arg::EachGlob::Next()
 		}
 	}
 	return nullptr;
+}
+
+void Shell::Arg::EachGlob::Rewind()
+{
+	argvCur_ = argvBegin_;
+	pGlob_.reset();
+	pFileInfo_.reset();
 }
 
 //------------------------------------------------------------------------------
@@ -836,6 +864,12 @@ const char* Shell::Arg::EachSubcmd::Next()
 		if (proc) return proc;
 	}
 	return nullptr;
+}
+
+void Shell::Arg::EachSubcmd::Rewind()
+{
+	pSubcmdCur_ = subcmdGroup_.GetChild();
+	for ( ; pSubcmdCur_ && pSubcmdCur_->IsEmpty(); pSubcmdCur_ = pSubcmdCur_->GetNext()) ;
 }
 
 //------------------------------------------------------------------------------
