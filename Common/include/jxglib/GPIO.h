@@ -177,6 +177,7 @@ public:
 	static void put_masked(uint32_t mask, uint32_t value)	{ ::gpio_put_masked(mask, value); }
 	static void put_all(uint32_t value)						{ ::gpio_put_all(value); }
 	const GPIO& put(bool value) const						{ ::gpio_put(pin, value); return *this; }
+	const GPIO& toggle() const								{ ::gpio_xor_mask(1 << pin); return *this; }
 	bool get_out_level() const								{ return ::gpio_get_out_level(pin); }
 	static void set_dir_out_masked(uint32_t mask)			{ ::gpio_set_dir_out_masked(mask); }
 	static void set_dir_in_masked(uint32_t mask)			{ ::gpio_set_dir_in_masked(mask); }

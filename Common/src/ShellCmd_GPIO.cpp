@@ -37,6 +37,7 @@ ShellCmd(gpio, "controls GPIO pins")
 		tout.Printf("  dir=DIR        set pin direction (in or out)\n");
 		tout.Printf("  lo (or 0)      set pin to low (effective for SIO OUT)\n");
 		tout.Printf("  hi (or 1)      set pin to high (effective for SIO OUT)\n");
+		tout.Printf("  toggle         toggle pin state (effective for SIO OUT)\n");
 		return Result::Success;
 	}
 	int nArgsSkip = 0;
@@ -213,16 +214,18 @@ bool ProcessGPIO(Printable& terr, Printable& tout, const int pinTbl[], int nPins
 			}
 		} else if (::strcasecmp(subcmd, "hi") == 0 || ::strcasecmp(subcmd, "high") == 0 ||
 					::strcasecmp(subcmd, "true") == 0 || ::strcmp(subcmd, "1") == 0) {
-			for (int i = 0; i < nPins; ++i) {
-				uint pin = pinTbl[i];
-				::gpio_put(pin, true);
-			}
+			uint32_t mask = 0;
+			for (int i = 0; i < nPins; ++i) mask |= (1 << pinTbl[i]);
+			::gpio_set_mask(mask);
 		} else if (::strcasecmp(subcmd, "lo") == 0 || ::strcasecmp(subcmd, "low") == 0 ||
 					::strcasecmp(subcmd, "false") == 0 || ::strcmp(subcmd, "0") == 0) {
-			for (int i = 0; i < nPins; ++i) {
-				uint pin = pinTbl[i];
-				::gpio_put(pin, false);
-			}
+			uint32_t mask = 0;
+			for (int i = 0; i < nPins; ++i) mask |= (1 << pinTbl[i]);
+			::gpio_clr_mask(mask);
+		} else if (::strcasecmp(subcmd, "toggle") == 0) {
+			uint32_t mask = 0;
+			for (int i = 0; i < nPins; ++i) mask |= (1 << pinTbl[i]);
+			::gpio_xor_mask(mask);
 		} else if (Shell::Arg::GetAssigned(subcmd, "sleep", &value)) {
 			if (!value) {
 				terr.Printf("specify a sleep duration in milliseconds\n");
