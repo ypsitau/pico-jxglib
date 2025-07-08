@@ -133,6 +133,7 @@ public:
 			const char* GetErrorMsg() const { return errorMsg_; }
 			bool CheckValidity(int* pCount = nullptr);
 			void Rewind();
+			int GetAll(int valueTbl[], int cntMax);
 		};
 		class EachGlob : public EachBase {
 		private:

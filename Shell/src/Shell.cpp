@@ -758,6 +758,15 @@ void Shell::Arg::EachNum::Rewind()
 	pFile_.reset();
 }
 
+int Shell::Arg::EachNum::GetAll(int valueTbl[], int cntMax)
+{
+	int cnt = 0;
+	int value;
+	Rewind();
+	for ( ; cnt < cntMax && Next(&value); cnt++) valueTbl[cnt] = value;
+	return cnt;
+}
+
 //------------------------------------------------------------------------------
 // Shell::Arg::EachGlob
 //------------------------------------------------------------------------------
