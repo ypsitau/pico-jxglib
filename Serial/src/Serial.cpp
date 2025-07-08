@@ -23,6 +23,7 @@ Terminal& Serial::Terminal::Edit_Finish(char chEnd)
 {
 	GetPrintable().PutChar(chEnd);
 	GetLineEditor().Finish();
+	GetPrintable().Flush();
 	return *this;
 }
 
