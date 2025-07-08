@@ -64,6 +64,7 @@ ShellCmd(spi, "controls SPI bus communication")
 		Arg::OptString("pin",		'p',	"sets GPIO pins for SPI (function auto-detected)", "PIN1,PIN2,..."),
 		Arg::OptString("freq",		'f',	"sets SPI frequency (default: 1000000)", "FREQ"),
 		Arg::OptString("timeout",	't',	"sets timeout for SPI operations (default: 300)", "MSEC"),
+		Arg::OptString("mode",		'm',	"sets SPI mode (0-3, default: 0)", "MODE"),
 		Arg::OptString("cpol",		0x0,	"sets clock polarity (0 or 1, default: 0)", "CPOL"),
 		Arg::OptString("cpha",		0x0,	"sets clock phase (0 or 1, default: 0)", "CPHA"),
 		Arg::OptString("order",		0x0,	"sets bit order (msb or lsb, default: msb)", "ORDER"),
@@ -84,6 +85,11 @@ ShellCmd(spi, "controls SPI bus communication")
 		tout.Printf("\nSPI Pin Functions:\n");
 		tout.Printf("SPI0: SCK(2,6,18), MOSI(3,7,19), MISO(0,4,16), CS(1,5,17)\n");
 		tout.Printf("SPI1: SCK(10,14,26), MOSI(11,15,27), MISO(8,12,24), CS(9,13,25)\n");
+		tout.Printf("\nSPI Modes:\n");
+		tout.Printf("Mode 0: CPOL=0, CPHA=0\n");
+		tout.Printf("Mode 1: CPOL=0, CPHA=1\n");
+		tout.Printf("Mode 2: CPOL=1, CPHA=0\n");
+		tout.Printf("Mode 3: CPOL=1, CPHA=1\n");
 		return Result::Success;
 	}
 	const char* value = nullptr;
@@ -106,6 +112,21 @@ ShellCmd(spi, "controls SPI bus communication")
 			return Result::Error;
 		}
 		msecTimeout = static_cast<uint32_t>(num);
+	}
+	if (arg.GetString("mode", &value)) {
+		int mode = ::strtol(value, nullptr, 0);
+		if (mode < 0 || mode > 3) {
+			terr.Printf("Invalid SPI mode: %s (must be 0-3)\n", value);
+			return Result::Error;
+		}
+		// Set CPOL and CPHA based on mode using bit operations
+		// Mode 0: CPOL=0, CPHA=0
+		// Mode 1: CPOL=0, CPHA=1
+		// Mode 2: CPOL=1, CPHA=0
+		// Mode 3: CPOL=1, CPHA=1
+		cpol = (mode & 2) ? SPI_CPOL_1 : SPI_CPOL_0;
+		cpha = (mode & 1) ? SPI_CPHA_1 : SPI_CPHA_0;
+		showInitMsg = true;
 	}
 	if (arg.GetString("cpol", &value)) {
 		int pol = ::strtol(value, nullptr, 0);
@@ -243,7 +264,8 @@ ShellCmd(spi, "controls SPI bus communication")
 	}
 	
 	// Show initialization message only if options were specified
-	if (showInitMsg || argc < 2) {
+	if (showInitMsg) {
+		int mode = (cpol << 1) | cpha;
 		tout.Printf("SPI%d: SCK:GPIO%d MOSI:GPIO%d", 
 			iBus, pinAssign.SCK, pinAssign.MOSI);
 		if (pinAssign.MISO != -1) {
@@ -252,8 +274,8 @@ ShellCmd(spi, "controls SPI bus communication")
 		if (pinAssign.CS != -1) {
 			tout.Printf(" CS:GPIO%d", pinAssign.CS);
 		}
-		tout.Printf(" @ %d Hz, CPOL:%d CPHA:%d %s\n", 
-			freq, cpol, cpha, (order == SPI_MSB_FIRST) ? "MSB" : "LSB");
+		tout.Printf(" @ %d Hz, Mode%d (CPOL:%d CPHA:%d) %s\n", 
+			freq, mode, cpol, cpha, (order == SPI_MSB_FIRST) ? "MSB" : "LSB");
 	}
 	
 	int rtn = 0;
