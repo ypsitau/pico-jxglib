@@ -59,7 +59,7 @@ target_link_libraries(Labo
     jxglib_Shell jxglib_Serial
     jxglib_LFS_Flash jxglib_FAT_Flash jxglib_RTC_DS323x
 	jxglib_USBDevice_MSCDrive jxglib_USBDevice_CDCSerial
-    jxglib_ShellCmd_FS jxglib_ShellCmd_GPIO jxglib_ShellCmd_ADC jxglib_ShellCmd_PWM jxglib_ShellCmd_I2C)
+    jxglib_ShellCmd_FS jxglib_ShellCmd_GPIO jxglib_ShellCmd_ADC jxglib_ShellCmd_PWM jxglib_ShellCmd_I2C jxglib_ShellCmd_SPI)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 jxglib_configure_USBDevice(Labo CFG_TUD_CDC 1 CFG_TUD_MSC 1)
 jxglib_configure_FAT(Labo FF_VOLUMES 1)

@@ -6,7 +6,7 @@
 #include "jxglib/Serial.h"
 #include "jxglib/Shell.h"
 
-using namespace jxglib;
+namespace jxglib::ShellCmd_I2C {
 
 struct {
 	uint SDA = -1;
@@ -263,4 +263,6 @@ bool ReadData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const ch
 	Printable::DumpT dump(tout);
 	dump.Addr(bytesToRead > dump.GetBytesPerRow())(data, bytesRead);
 	return true;
+}
+
 }
