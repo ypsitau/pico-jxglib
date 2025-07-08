@@ -27,41 +27,42 @@ bool TransferData(Printable& tout, Printable& terr, SPI& spi, const char* value)
 
 ShellCmd(spi, "controls SPI bus communication")
 {
-	enum class Func { SCK, MOSI, MISO, CS };
+	enum class Func { None, SCK, MOSI, MISO };
 	struct Info { int iBus; Func func; };
 	static const Info infoTbl[] = {
 		{ 0, Func::MISO}, // GPIO0  SPI0 RX
-		{ 0, Func::CS   }, // GPIO1  SPI0 CSn
+		{ -1, Func::None }, // GPIO1  (not SPI function)
 		{ 0, Func::SCK  }, // GPIO2  SPI0 SCK
 		{ 0, Func::MOSI }, // GPIO3  SPI0 TX
 		{ 0, Func::MISO }, // GPIO4  SPI0 RX
-		{ 0, Func::CS   }, // GPIO5  SPI0 CSn
+		{ -1, Func::None }, // GPIO5  (not SPI function)
 		{ 0, Func::SCK  }, // GPIO6  SPI0 SCK
 		{ 0, Func::MOSI }, // GPIO7  SPI0 TX
 		{ 1, Func::MISO }, // GPIO8  SPI1 RX
-		{ 1, Func::CS   }, // GPIO9  SPI1 CSn
+		{ -1, Func::None }, // GPIO9  (not SPI function)
 		{ 1, Func::SCK  }, // GPIO10 SPI1 SCK
 		{ 1, Func::MOSI }, // GPIO11 SPI1 TX
 		{ 1, Func::MISO }, // GPIO12 SPI1 RX
-		{ 1, Func::CS   }, // GPIO13 SPI1 CSn
+		{ -1, Func::None }, // GPIO13 (not SPI function)
 		{ 1, Func::SCK  }, // GPIO14 SPI1 SCK
 		{ 1, Func::MOSI }, // GPIO15 SPI1 TX
 		{ 0, Func::MISO }, // GPIO16 SPI0 RX
-		{ 0, Func::CS   }, // GPIO17 SPI0 CSn
+		{ -1, Func::None }, // GPIO17 (not SPI function)
 		{ 0, Func::SCK  }, // GPIO18 SPI0 SCK
 		{ 0, Func::MOSI }, // GPIO19 SPI0 TX
-		{ 0, Func::MISO }, // GPIO20 SPI0 RX - duplicate entry for completeness
-		{ 0, Func::CS   }, // GPIO21 SPI0 CSn - duplicate entry for completeness
-		{ 0, Func::SCK  }, // GPIO22 SPI0 SCK - duplicate entry for completeness
-		{ 0, Func::MOSI }, // GPIO23 SPI0 TX - duplicate entry for completeness
-		{ 1, Func::MISO }, // GPIO24 SPI1 RX - duplicate entry for completeness
-		{ 1, Func::CS   }, // GPIO25 SPI1 CSn - duplicate entry for completeness
-		{ 1, Func::SCK  }, // GPIO26 SPI1 SCK - duplicate entry for completeness
-		{ 1, Func::MOSI }, // GPIO27 SPI1 TX - duplicate entry for completeness
+		{ 0, Func::MISO }, // GPIO20 SPI0 RX
+		{ -1, Func::None }, // GPIO21 (not SPI function)
+		{ 0, Func::SCK  }, // GPIO22 SPI0 SCK
+		{ 0, Func::MOSI }, // GPIO23 SPI0 TX
+		{ 1, Func::MISO }, // GPIO24 SPI1 RX
+		{ -1, Func::None }, // GPIO25 (not SPI function)
+		{ 1, Func::SCK  }, // GPIO26 SPI1 SCK
+		{ 1, Func::MOSI }, // GPIO27 SPI1 TX
 	};
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
-		Arg::OptString("pin",		'p',	"sets GPIO pins for SPI (function auto-detected)", "PIN1,PIN2,..."),
+		Arg::OptString("pin",		'p',	"sets GPIO pins for SPI (function auto-detected)", "SCK,MOSI[,MISO]"),
+		Arg::OptString("pin-cs",	'c',	"sets CS pin (any GPIO)", "CS"),
 		Arg::OptString("freq",		'f',	"sets SPI frequency (default: 1000000)", "FREQ"),
 		Arg::OptString("timeout",	't',	"sets timeout for SPI operations (default: 300)", "MSEC"),
 		Arg::OptString("mode",		'm',	"sets SPI mode (0-3, default: 0)", "MODE"),
@@ -83,8 +84,9 @@ ShellCmd(spi, "controls SPI bus communication")
 		tout.Printf("  cs-high      set CS pin high\n");
 		tout.Printf("  sleep:MSEC   sleep for specified milliseconds\n");
 		tout.Printf("\nSPI Pin Functions:\n");
-		tout.Printf("SPI0: SCK(2,6,18), MOSI(3,7,19), MISO(0,4,16), CS(1,5,17)\n");
-		tout.Printf("SPI1: SCK(10,14,26), MOSI(11,15,27), MISO(8,12,24), CS(9,13,25)\n");
+		tout.Printf("SPI0: SCK(2,6,18), MOSI(3,7,19), MISO(0,4,16)\n");
+		tout.Printf("SPI1: SCK(10,14,26), MOSI(11,15,27), MISO(8,12,24)\n");
+		tout.Printf("CS can be any GPIO pin (specified with --pin-cs)\n");
 		tout.Printf("\nSPI Modes:\n");
 		tout.Printf("Mode 0: CPOL=0, CPHA=0\n");
 		tout.Printf("Mode 1: CPOL=0, CPHA=1\n");
@@ -166,16 +168,15 @@ ShellCmd(spi, "controls SPI bus communication")
 	if (arg.GetString("pin", &value)) {
 		Arg::EachNum each(value);
 		int nNums;
-		if (!each.CheckValidity(&nNums) || nNums < 2 || nNums > 4) {
-			terr.Printf("Invalid pin specification: %s (expected valid SPI pins)\n", value);
+		if (!each.CheckValidity(&nNums) || nNums < 2 || nNums > 3) {
+			terr.Printf("Invalid pin specification: %s (expected 2-3 SPI pins: SCK,MOSI[,MISO])\n", value);
 			return Result::Error;
 		}
 		
-		// Reset pin assignments
+		// Reset SPI pin assignments (not CS)
 		pinAssign.SCK = -1;
 		pinAssign.MOSI = -1;
 		pinAssign.MISO = -1;
-		pinAssign.CS = -1;
 		
 		// Parse each pin and assign based on function
 		int num;
@@ -187,6 +188,12 @@ ShellCmd(spi, "controls SPI bus communication")
 			}
 			
 			const Info& info = infoTbl[num];
+			
+			// Check if pin has a valid SPI function
+			if (info.func == Func::None) {
+				terr.Printf("GPIO%d does not have SPI function\n", num);
+				return Result::Error;
+			}
 			
 			// Check if all pins belong to the same SPI bus
 			if (iBus == -1) {
@@ -220,15 +227,17 @@ ShellCmd(spi, "controls SPI bus communication")
 				}
 				pinAssign.MISO = num;
 				break;
-			case Func::CS:
-				if (pinAssign.CS != -1) {
-					terr.Printf("CS pin already assigned (GPIO%d), cannot assign GPIO%d\n", pinAssign.CS, num);
-					return Result::Error;
-				}
-				pinAssign.CS = num;
-				break;
 			}
 		}
+		showInitMsg = true;
+	}
+	if (arg.GetString("pin-cs", &value)) {
+		int csPin = ::strtol(value, nullptr, 0);
+		if (csPin < 0 || csPin > 27) {
+			terr.Printf("Invalid CS pin: %s (must be 0-27)\n", value);
+			return Result::Error;
+		}
+		pinAssign.CS = csPin;
 		showInitMsg = true;
 	}
 	if (pinAssign.SCK == -1 || pinAssign.MOSI == -1) {
@@ -264,7 +273,7 @@ ShellCmd(spi, "controls SPI bus communication")
 	}
 	
 	// Show initialization message only if options were specified
-	if (showInitMsg) {
+	if (showInitMsg || argc < 2) {
 		int mode = (cpol << 1) | cpha;
 		tout.Printf("SPI%d: SCK:GPIO%d MOSI:GPIO%d", 
 			iBus, pinAssign.SCK, pinAssign.MOSI);
