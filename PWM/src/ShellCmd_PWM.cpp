@@ -11,8 +11,8 @@
 
 using namespace jxglib;
 
+static bool ProcessPWM(Printable& terr, Printable& tout, const int pinTbl[], int nPins, int argc, char* argv[], bool onlyPWMFlag);
 static void PrintPWMStatus(Printable& tout, uint pin, bool onlyPWMFlag);
-static bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv[], bool hasEnableProcessed, bool onlyPWMFlag);
 
 static const char* strAvailableCommands = "func, enable, disable, freq, wrap, level, duty, clkdiv, phase-correct, invert, counter";
 
@@ -47,6 +47,9 @@ ShellCmd(pwm, "controls PWM pins")
 		tout.Printf("  counter=VALUE      set PWM counter value (0-65535)\n");
 		return Result::Success;
 	}
+	int pinTbl[GPIO::NumPins];
+	int nPins = 0;
+	int nArgsSkip = 0;
 	if (genericFlag) {
 		if (argc < 2) {
 			for (uint pin = 0; pin < GPIO::NumPins; ++pin) {
@@ -55,55 +58,25 @@ ShellCmd(pwm, "controls PWM pins")
 			return Result::Success;
 		}
 		Arg::EachNum eachNum(argv[1], GPIO::NumPins - 1);
-		int nPins = 0;
 		if (!eachNum.CheckValidity(&nPins)) {
 			terr.Printf("invalid GPIO pin number: %s\n", argv[1]);
 			return Result::Error;
 		}
-		bool hasEnableProcessed = false;
-		if (nPins > 1) {
-			for (int iArg = 2; iArg < argc; ++iArg) {
-				const char* cmd = argv[iArg];
-				if (::strcasecmp(cmd, "enable") == 0) {
-					// Enable all PWM slices for the specified pins simultaneously
-					uint32_t mask = 0;
-					for (int num = 0; eachNum.Next(&num); ) {
-						if (num < 0 || num >= GPIO::NumPins) {
-							terr.Printf("invalid GPIO pin number: %d\n", num);
-							return Result::Error;
-						}
-						uint pin = static_cast<uint>(num);
-						PWM pwm(pin);
-						mask |= pwm.GetSliceMask();
-					}
-					PWM::set_mask_enabled(PWM::get_mask_enabled() | mask);
-					hasEnableProcessed = true;
-				}
-			}
-		}
-		for (int num = 0; eachNum.Next(&num); ) {
-			if (num < 0 || num >= GPIO::NumPins) {
-				terr.Printf("invalid GPIO pin number: %d\n", num);
+		nPins = eachNum.GetAll(pinTbl, count_of(pinTbl));
+		for (int i = 0; i < nPins; ++i) {
+			int pin = pinTbl[i];
+			if (pin < 0 || pin >= GPIO::NumPins) {
+				terr.Printf("invalid GPIO pin number: %d\n", pin);
 				return Result::Error;
 			}
-			uint pin = static_cast<uint>(num);
-			if (!ProcessPWM(terr, tout, pin, argc - 2, argv + 2, hasEnableProcessed, onlyPWMFlag)) return Result::Error;
 		}
-		return Result::Success;
+		nArgsSkip = 2;
 	} else if (::strncmp(GetName(), "pwm", 3) == 0) {
-		char* endptr;
-		auto num = ::strtoul(GetName() + 3, &endptr, 0);
-		uint pin = 0;
-		if (*endptr == '\0' && num < GPIO::NumPins) pin = static_cast<uint>(num);
-		// Check if pin supports PWM
-		if (pwm_gpio_to_slice_num(pin) >= NUM_PWM_SLICES) {
-			terr.Printf("GPIO pin %u does not support PWM\n", pin);
-			return Result::Error;
-		}
-		if (!ProcessPWM(terr, tout, pin, argc - 1, argv + 1, false, onlyPWMFlag)) return Result::Error;
-		return Result::Success;
+		pinTbl[0] = ::strtoul(GetName() + 3, nullptr, 0);
+		nPins = 1;
+		nArgsSkip = 1;
 	}
-	return Result::Error;
+	return ProcessPWM(terr, tout, pinTbl, nPins, argc - 2, argv + 2, onlyPWMFlag)? Result::Success : Result::Error;
 }
 
 // Create PWM pin aliases similar to GPIO
@@ -138,9 +111,8 @@ ShellCmdAlias(pwm27, pwm)
 ShellCmdAlias(pwm28, pwm)
 ShellCmdAlias(pwm29, pwm)
 
-bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv[], bool hasEnableProcessed, bool onlyPWMFlag)
+bool ProcessPWM(Printable& terr, Printable& tout, const int pinTbl[], int nPins, int argc, char* argv[], bool onlyPWMFlag)
 {
-	PWM pwm(pin);
 	Shell::Arg::EachSubcmd each(argv[0], argv[argc]);
 	if (!each.Initialize()) {
 		terr.Printf("%s\n", each.GetErrorMsg());
@@ -148,7 +120,6 @@ bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv
 	}
 	while (const char* cmd = each.Next()) {
 		const char* value = nullptr;
-		
 		if (Shell::Arg::GetAssigned(cmd, "func", &value)) {
 			if (!value) {
 				terr.Printf("specify a function: %s\n", GPIOInfo::GetHelp_AvailableFunc());
@@ -160,11 +131,15 @@ bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv
 				terr.Printf("unknown function: %s\n", value);
 				return false;
 			}
-			::gpio_set_function(pin, pinFunc);
-		} else if (::strcasecmp(cmd, "enable") == 0 && !hasEnableProcessed) {
-			pwm.set_enabled(true);
+			for (int i = 0; i < nPins; ++i) ::gpio_set_function(pinTbl[i], pinFunc);
+		} else if (::strcasecmp(cmd, "enable") == 0) {
+			uint32_t mask = PWM::get_mask_enabled();
+			for (int i = 0; i < nPins; ++i) mask |= PWM(pinTbl[i]).GetSliceMask();
+			PWM::set_mask_enabled(mask);
 		} else if (::strcasecmp(cmd, "disable") == 0) {
-			pwm.set_enabled(false);
+			uint32_t mask = PWM::get_mask_enabled();
+			for (int i = 0; i < nPins; ++i) mask &= ~PWM(pinTbl[i]).GetSliceMask();
+			PWM::set_mask_enabled(mask);
 		} else if (Shell::Arg::GetAssigned(cmd, "freq", &value) || Shell::Arg::GetAssigned(cmd, "frequency", &value)) {
 			if (!value) {
 				terr.Printf("specify a frequency value in Hz\n");
@@ -176,7 +151,7 @@ bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv
 				terr.Printf("invalid frequency value: %s\n", value);
 				return false;
 			}
-			pwm.set_freq(freq);
+			for (int i = 0; i < nPins; ++i) PWM(pinTbl[i]).set_freq(freq);
 		} else if (Shell::Arg::GetAssigned(cmd, "wrap", &value)) {
 			if (!value) {
 				terr.Printf("specify a wrap value (0-65535)\n");
@@ -187,7 +162,7 @@ bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv
 				terr.Printf("wrap value out of range (0-65535): %s\n", value);
 				return false;
 			}
-			pwm.set_wrap(static_cast<uint16_t>(wrap_val));
+			for (int i = 0; i < nPins; ++i) PWM(pinTbl[i]).set_wrap(static_cast<uint16_t>(wrap_val));
 		} else if (Shell::Arg::GetAssigned(cmd, "level", &value)) {
 			if (!value) {
 				terr.Printf("specify a level value (0-65535)\n");
@@ -198,7 +173,7 @@ bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv
 				terr.Printf("level value out of range (0-65535): %s\n", value);
 				return false;
 			}
-			pwm.set_chan_level(static_cast<uint16_t>(level_val));
+			for (int i = 0; i < nPins; ++i) PWM(pinTbl[i]).set_chan_level(static_cast<uint16_t>(level_val));
 		} else if (Shell::Arg::GetAssigned(cmd, "duty", &value)) {
 			if (!value) {
 				terr.Printf("specify a duty ratio (0.0-1.0)\n");
@@ -209,7 +184,7 @@ bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv
 				terr.Printf("duty ratio out of range (0.0-1.0): %s\n", value);
 				return false;
 			}
-			pwm.set_chan_duty(duty_val);
+			for (int i = 0; i < nPins; ++i) PWM(pinTbl[i]).set_chan_duty(duty_val);
 		} else if (Shell::Arg::GetAssigned(cmd, "clkdiv", &value)) {
 			if (!value) {
 				terr.Printf("specify a clock divider (1.0-256.0)\n");
@@ -220,7 +195,7 @@ bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv
 				terr.Printf("clock divider out of range (1.0-256.0): %s\n", value);
 				return false;
 			}
-			pwm.set_clkdiv(div_val);
+			for (int i = 0; i < nPins; ++i) PWM(pinTbl[i]).set_clkdiv(div_val);
 		} else if (Shell::Arg::GetAssigned(cmd, "phase-correct", &value)) {
 			if (!value) {
 				terr.Printf("specify a boolean (1 or 0)\n");
@@ -235,9 +210,12 @@ bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv
 				terr.Printf("invalid value for phase-correct: %s (use 1 or 0)\n", value);
 				return false;
 			}
-			uint32_t freq = pwm.get_freq();
-			pwm.set_phase_correct(phaseCorrect);
-			pwm.set_freq(freq); // Recalculate frequency after changing phase-correct
+			for (int i = 0; i < nPins; ++i) {
+				PWM pwm(pinTbl[i]);
+				uint32_t freq = pwm.get_freq();
+				pwm.set_phase_correct(phaseCorrect);
+				pwm.set_freq(freq); // Recalculate frequency after changing phase-correct
+			}
 		} else if (Shell::Arg::GetAssigned(cmd, "invert", &value)) {
 			if (!value) {
 				terr.Printf("specify a boolean (1 or 0)\n");
@@ -252,8 +230,8 @@ bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv
 				terr.Printf("invalid value for phase-correct: %s (use 1 or 0)\n", value);
 				return false;
 			}
-			pwm.set_chan_output_polarity(inv);
-		} else if (::strcasecmp(cmd, "counter") == 0) {
+			for (int i = 0; i < nPins; ++i) PWM(pinTbl[i]).set_chan_output_polarity(inv);
+		} else if (Shell::Arg::GetAssigned(cmd, "counter", &value)) {
 			if (!value) {
 				terr.Printf("specify a counter value (0-65535)\n");
 				return false;
@@ -263,7 +241,7 @@ bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv
 				terr.Printf("counter value out of range (0-65535): %s\n", value);
 				return false;
 			}
-			pwm.set_counter(static_cast<uint16_t>(counter_val));
+			for (int i = 0; i < nPins; ++i) PWM(pinTbl[i]).set_counter(static_cast<uint16_t>(counter_val));
 		} else if (Shell::Arg::GetAssigned(cmd, "sleep", &value)) {
 			int msec = ::strtol(value, nullptr, 0);
 			if (msec <= 0) {
@@ -278,7 +256,7 @@ bool ProcessPWM(Printable& terr, Printable& tout, uint pin, int argc, char* argv
 		}
 		if (Tickable::TickSub()) return true;
 	}
-	PrintPWMStatus(tout, pin, onlyPWMFlag);
+	for (int i = 0; i < nPins; ++i) PrintPWMStatus(tout, pinTbl[i], onlyPWMFlag);
 	return true;
 }
 
