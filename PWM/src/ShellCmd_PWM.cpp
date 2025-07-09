@@ -76,7 +76,7 @@ ShellCmd(pwm, "controls PWM pins")
 		nPins = 1;
 		nArgsSkip = 1;
 	}
-	return ProcessPWM(terr, tout, pinTbl, nPins, argc - 2, argv + 2, onlyPWMFlag)? Result::Success : Result::Error;
+	return ProcessPWM(terr, tout, pinTbl, nPins, argc - nArgsSkip, argv + nArgsSkip, onlyPWMFlag)? Result::Success : Result::Error;
 }
 
 // Create PWM pin aliases similar to GPIO
@@ -263,7 +263,7 @@ bool ProcessPWM(Printable& terr, Printable& tout, const int pinTbl[], int nPins,
 void PrintPWMStatus(Printable& tout, uint pin, bool onlyPWMFlag)
 {
 	gpio_function_t pinFunc = ::gpio_get_function(pin);
-	const char* funcName = GPIOInfo::GetFuncName(::gpio_get_function(pin), pin, "----");
+	const char* funcName = GPIOInfo::GetFuncName(::gpio_get_function(pin), pin, "------");
 	if (pinFunc == GPIO_FUNC_PWM) {
 		PWM pwm(pin);
 		tout.Printf("GPIO%-2u %s %-8s freq=%uHz (clkdiv=%.1f wrap=0x%04x) duty=%.3f (level=0x%04x)%s%s counter=0x%04x\n",
