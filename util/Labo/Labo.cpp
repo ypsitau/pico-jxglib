@@ -19,7 +19,8 @@ int main(void)
 		idProduct:			USBDevice::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
 	}, 0x0409, "jxglib", "pico-jxgLABO", "000000000000");
-	FAT::Flash fat("*G:", 0x010'0000);	// allocate 1MB at the end of the flash memory
+	FAT::Flash fat("*G:", PICO_FLASH_SIZE_BYTES - 0x010'0000);
+	if (!fat.Mount()) fat.Format();
 	USBDevice::MSCDrive mscDrive(deviceController, 0x01, 0x81);
 	USBDevice::CDCSerial cdcSerial(deviceController, "CDCSerial", 0x82, 0x03, 0x83);
 	deviceController.Initialize();
