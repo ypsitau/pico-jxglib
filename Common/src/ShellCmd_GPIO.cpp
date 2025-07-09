@@ -257,7 +257,7 @@ void PrintPinFunc(Printable& tout, uint pin)
 	gpio_slew_rate slewRate = ::gpio_get_slew_rate(pin);
 	tout.Printf("GPIO%-2u %-10s %-2s %-9s %4s %-4s\n",
 		pin,
-		(pinFunc == GPIO_FUNC_SIO)? ((::gpio_get_dir(pin) == GPIO_OUT)? "SIO OUT" : "SIO IN") : GPIOInfo::GetFuncName(pinFunc, pin, "----"),
+		(pinFunc == GPIO_FUNC_SIO)? ((::gpio_get_dir(pin) == GPIO_OUT)? "SIO OUT" : "SIO IN") : GPIOInfo::GetFuncName(pinFunc, pin, "------"),
 		::gpio_get(pin)? "hi" : "lo",
 		(!::gpio_is_pulled_down(pin) && !::gpio_is_pulled_up(pin))? "pull-none" :
 		(::gpio_is_pulled_down(pin) && ::gpio_is_pulled_up(pin))? "pull-both" :

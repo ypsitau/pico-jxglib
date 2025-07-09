@@ -8,19 +8,21 @@
 
 namespace jxglib::ShellCmd_I2C {
 
-struct {
+struct Config {
 	uint SDA = -1;
 	uint SCL = -1;
-} pinAssign;
+	uint freq = 100'000;
+	uint32_t msecTimeout = 300;
+};
 
-uint freq = 100'000;
-uint32_t msecTimeout = 300;
+static Config configTbl[2];  // I2C0 and I2C1 configurations
 
-void ScanBus(Printable& tout, Printable& terr, I2C& i2c);
-bool WriteData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const char* value, bool nostop);
-bool ReadData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const char* value, bool nostop);
+static void ScanBus(Printable& tout, Printable& terr, I2C& i2c, int iBus, const Config& config);
+static bool WriteData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const char* value, bool nostop, uint32_t msecTimeout);
+static bool ReadData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const char* value, bool nostop, uint32_t msecTimeout);
+static void PrintConfig(Printable& tout, int iBus, const char* formatGPIO);
 
-ShellCmd(i2c, "scans I2C bus and prints connected addresses")
+ShellCmd_Named(i2c_, "i2c", "controls I2C bus communication")
 {
 	enum class Func { SDA, SCL };
 	struct Info { int iBus; Func func; };
@@ -60,83 +62,153 @@ ShellCmd(i2c, "scans I2C bus and prints connected addresses")
 		Arg::OptString("freq",		'f',	"sets I2C frequency (default: 100000)", "FREQ"),
 		Arg::OptString("timeout",	't',	"sets timeout for I2C operations (default: 300)", "MSEC"),
 		Arg::OptBool("dumb",		0x0,	"no I2C operations, just remember the pins and frequency"),
+		Arg::OptBool("verbose",		'v',	"verbose output for debugging"),
 	};
+	bool hasArgs = (argc > 1);
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
+	bool genericFlag = (::strcmp(GetName(), "i2c") == 0);
 	if (arg.GetBool("help")) {
-		tout.Printf("Usage: %s [OPTION]... [COMMAND]...\n", argv[0]);
+		if (genericFlag) {
+			tout.Printf("Usage: %s BUS [OPTION]... scan\n", GetName());
+			tout.Printf("       %s BUS [OPTION]... ADDR [COMMAND]...\n", GetName());
+			tout.Printf("  BUS: I2C bus number (0 or 1)\n");
+		} else {
+			tout.Printf("Usage: %s [OPTION]... scane\n", GetName());
+			tout.Printf("       %s [OPTION]... ADDR [COMMAND]...\n", GetName());
+		}
 		arg.PrintHelp(tout);
-		tout.Printf("Usage: %s [OPTION]... [COMMAND]...\n", argv[0]);
 		tout.Printf("Commands:\n");
-		tout.Printf("  read[:N]     read N bytes of data\n");
-		tout.Printf("  write:data   write data\n");
+		tout.Printf("  scan          scan I2C bus for connected devices\n");
+		tout.Printf("  write:DATA    write DATA to I2C address ADDR\n");
+		tout.Printf("  read:N        read N bytes from I2C address ADDR\n");
+		tout.Printf("  sleep:MSEC    sleep for specified milliseconds\n");
 		return Result::Success;
 	}
+	int nArgsSkip = 0;
+	int iBus = -1;
+	if (genericFlag) {
+		if (argc >= 2) {
+			// nothing to do
+		} else if (hasArgs) {
+			terr.Printf("I2C bus number is required\n");
+			return Result::Error;		
+		} else {
+			for (int iBus = 0; iBus < 2; iBus++) PrintConfig(tout, iBus, "GPIO%-2d");
+			return Result::Success;
+		}
+		iBus = ::strtol(argv[1], nullptr, 0);
+		if (iBus < 0 || iBus > 1) {
+			terr.Printf("Invalid I2C bus number: %s (must be 0 or 1)\n", argv[1]);
+			return Result::Error;
+		}
+		nArgsSkip = 2;
+	} else if (::strncmp(GetName(), "i2c", 3) == 0) {
+		iBus = ::strtoul(GetName() + 3, nullptr, 0);
+		if (iBus < 0 || iBus > 1) {
+			terr.Printf("Invalid I2C bus number in command name: %s\n", GetName());
+			return Result::Error;
+		}
+		nArgsSkip = 1;
+	}
+	Config& config = configTbl[iBus];
+	argc -= nArgsSkip;
+	argv += nArgsSkip;
 	const char* value = nullptr;
 	if (arg.GetString("freq", &value)) {
 		char* endptr;
 		long num = ::strtol(value, &endptr, 0);
 		if (*endptr != '\0' || num <= 0 || num > 1'000'000) {
-			tout.Printf("Invalid frequency: %s\n", value);
+			terr.Printf("Invalid frequency: %s\n", value);
 			return Result::Error;
 		}
-		freq = static_cast<uint>(num);
+		config.freq = static_cast<uint>(num);
 	}
 	if (arg.GetString("timeout", &value)) {
 		char* endptr;
 		long num = ::strtol(value, &endptr, 0);
 		if (*endptr != '\0' || num <= 0 || num > 10'000) {
-			tout.Printf("Invalid timeout: %s\n", value);
+			terr.Printf("Invalid timeout: %s\n", value);
 			return Result::Error;
 		}
-		msecTimeout = static_cast<uint32_t>(num);
+		config.msecTimeout = static_cast<uint32_t>(num);
 	}
 	if (arg.GetString("pin", &value)) {
 		Arg::EachNum each(value);
 		int nNums;
 		if (!each.CheckValidity(&nNums) || nNums != 2) {
-			tout.Printf("Invalid pin specification: %s\n", value);
+			terr.Printf("Invalid pin specification: %s (expected 2 I2C pins: SDA,SCL)\n", value);
 			return Result::Error;
 		}
+		
+		// Reset I2C pin assignments
+		config.SDA = -1;
+		config.SCL = -1;
+		
+		// Parse each pin and assign based on function
 		int num;
 		while (each.Next(&num)) {
 			if (num < 0 || num > 27) {
-				tout.Printf("Invalid GPIO number\n");
+				terr.Printf("Invalid GPIO number: %d\n", num);
 				return Result::Error;
 			}
-			if (infoTbl[num].func == Func::SCL) {
-				pinAssign.SCL = static_cast<uint>(num);
+			
+			const Info& info = infoTbl[num];
+			
+			// Check if pin belongs to the specified I2C bus
+			if (info.iBus != iBus) {
+				terr.Printf("GPIO%d belongs to I2C%d, but I2C%d was specified\n", 
+					num, info.iBus, iBus);
+				return Result::Error;
+			}
+			
+			// Assign pin based on function
+			if (info.func == Func::SCL) {
+				if (config.SCL != -1) {
+					terr.Printf("SCL pin already assigned (GPIO%d), cannot assign GPIO%d\n", config.SCL, num);
+					return Result::Error;
+				}
+				config.SCL = static_cast<uint>(num);
 			} else { // Func::SDA
-				pinAssign.SDA = static_cast<uint>(num);
+				if (config.SDA != -1) {
+					terr.Printf("SDA pin already assigned (GPIO%d), cannot assign GPIO%d\n", config.SDA, num);
+					return Result::Error;
+				}
+				config.SDA = static_cast<uint>(num);
 			}
 		}
 	}
-	if (pinAssign.SDA == -1 || pinAssign.SCL == -1) {
-		tout.Printf("use -p option to specify a valid pair of GPIOs for I2C\n");
-		return Result::Error;
-	} else if (infoTbl[pinAssign.SDA].iBus != infoTbl[pinAssign.SCL].iBus) {
-		tout.Printf("Invalid pair of GPIOs for I2C\n");
-		return Result::Error;
-	}
 	if (arg.GetBool("dumb")) return Result::Success;
-	int iBus = infoTbl[pinAssign.SDA].iBus;
+	if (config.SDA == -1 || config.SCL == -1 || argc < 1) {
+		PrintConfig(tout, iBus, "GPIO%d");
+		return Result::Success;
+	}
+	
 	I2C& i2c = (iBus == 0)? I2C0 : I2C1;
-	i2c.init(freq);
-	::gpio_set_function(pinAssign.SDA, GPIO_FUNC_I2C);
-	::gpio_set_function(pinAssign.SCL, GPIO_FUNC_I2C);
-	::gpio_pull_up(pinAssign.SDA);
-	::gpio_pull_up(pinAssign.SCL);
+	i2c.init(config.freq);
+	::gpio_set_function(config.SDA, GPIO_FUNC_I2C);
+	::gpio_set_function(config.SCL, GPIO_FUNC_I2C);
+	::gpio_pull_up(config.SDA);
+	::gpio_pull_up(config.SCL);
+	
 	int rtn = 0;
-	if (argc < 2) {
-		ScanBus(tout, terr, i2c);
+	bool verboseFlag = arg.GetBool("verbose");
+	if (argc < 1) {
+		ScanBus(tout, terr, i2c, iBus, config);
+	} else if (::strcasecmp(argv[0], "scan") == 0) {
+		ScanBus(tout, terr, i2c, iBus, config);
 	} else {
-		int num = ::strtol(argv[1], nullptr, 0);
-		if (num < 0 || num > 127) {
-			tout.Printf("Invalid I2C address: %s\n", argv[1]);
+		char* endptr;
+		int num = ::strtol(argv[0], &endptr, 0);
+		if (*endptr != '\0') {
+			terr.Printf("specify I2C address\n");
+			return Result::Error;
+		} else if (num < 0 || num > 127) {
+			terr.Printf("Invalid I2C address: %s\n", argv[0]);
 			return Result::Error;
 		}
 		uint8_t addr = static_cast<uint8_t>(num);
-		Shell::Arg::EachSubcmd each(argv[2], argv[argc]);
+		Shell::Arg::EachSubcmd each(argv[1], argv[argc]);
 		if (!each.Initialize()) {
 			terr.Printf("%s\n", each.GetErrorMsg());
 			return Result::Error;
@@ -144,26 +216,31 @@ ShellCmd(i2c, "scans I2C bus and prints connected addresses")
 		while (const char* arg = each.Next()) {
 			const char* value;
 			if (Arg::GetAssigned(arg, "write", &value)) {
-				if (!WriteData(tout, terr, i2c, addr, value, false)) {
+				if (verboseFlag) tout.Printf("write: %s\n", value);
+				if (!WriteData(tout, terr, i2c, addr, value, false, config.msecTimeout)) {
 					rtn = 1;
 					break;
 				}
-			} else if (Arg::GetAssigned(arg, "write-nostop", &value)) {
-				if (!WriteData(tout, terr, i2c, addr, value, true)) {
+			} else if (Arg::GetAssigned(arg, "write-c", &value)) {
+				if (verboseFlag) tout.Printf("write-c: %s\n", value);
+				if (!WriteData(tout, terr, i2c, addr, value, true, config.msecTimeout)) {
 					rtn = 1;
 					break;
 				}
 			} else if (Arg::GetAssigned(arg, "read", &value)) {
-				if (!ReadData(tout, terr, i2c, addr, value, false)) {
+				if (verboseFlag) tout.Printf("read: %s\n", value);
+				if (!ReadData(tout, terr, i2c, addr, value, false, config.msecTimeout)) {
 					rtn = 1;
 					break;
 				}
-			} else if (Arg::GetAssigned(arg, "read-nostop", &value)) {
-				if (!ReadData(tout, terr, i2c, addr, value, true)) {
+			} else if (Arg::GetAssigned(arg, "read-c", &value)) {
+				if (verboseFlag) tout.Printf("read-c: %s\n", value);
+				if (!ReadData(tout, terr, i2c, addr, value, true, config.msecTimeout)) {
 					rtn = 1;
 					break;
 				}
 			} else if (Arg::GetAssigned(arg, "sleep", &value)) {
+				if (verboseFlag) tout.Printf("sleep: %s\n", value);
 				int msec = ::strtol(value, nullptr, 0);
 				if (msec <= 0) {
 					terr.Printf("Invalid sleep duration: %s\n", value);
@@ -182,9 +259,9 @@ ShellCmd(i2c, "scans I2C bus and prints connected addresses")
 	return rtn;
 }
 
-void ScanBus(Printable& tout, Printable& terr, I2C& i2c)
+void ScanBus(Printable& tout, Printable& terr, I2C& i2c, int iBus, const Config& config)
 {
-	tout.Printf("Bus Scan on I2C %d (SDA:GPIO%d SCL:GPIO%d) @ %d Hz\n", i2c.get_index(), pinAssign.SDA, pinAssign.SCL, freq);
+	tout.Printf("Bus Scan on I2C%d (SDA:GPIO%d SCL:GPIO%d) @ %d Hz\n", i2c.get_index(), config.SDA, config.SCL, config.freq);
 	tout.Printf("   0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F\n");
 	int iCol = 0;
 	for (int addr = 0; addr < (1 << 7); ++addr) {
@@ -208,7 +285,7 @@ void ScanBus(Printable& tout, Printable& terr, I2C& i2c)
 	}
 }
 
-bool WriteData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const char* value, bool nostop)
+bool WriteData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const char* value, bool nostop, uint32_t msecTimeout)
 {
 	if (!value) {
 		terr.Printf("No data to write\n");
@@ -243,7 +320,7 @@ bool WriteData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const c
 	return true;
 }
 
-bool ReadData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const char* value, bool nostop)
+bool ReadData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const char* value, bool nostop, uint32_t msecTimeout)
 {
 	uint8_t data[512];
 	int bytesToRead = sizeof(data);
@@ -257,7 +334,7 @@ bool ReadData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const ch
 	}
 	int bytesRead = i2c.read_blocking_until(addr, data, bytesToRead, nostop, ::make_timeout_time_ms(msecTimeout));
 	if (bytesRead < 0) {
-		terr.Printf("Failed to receive data from address 0x%02x\n", addr);
+		terr.Printf("Failed to read data from address 0x%02x\n", addr);
 		return false;
 	}
 	Printable::DumpT dump(tout);
@@ -265,4 +342,26 @@ bool ReadData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const ch
 	return true;
 }
 
+void PrintConfig(Printable& tout, int iBus, const char* formatGPIO)
+{
+	auto printPin = [&](const char* name, uint pin) {
+		tout.Printf(" %s:", name);
+		if (pin != -1) {
+			tout.Printf(formatGPIO, pin);
+		} else {
+			tout.Printf("------");
+		}
+	};
+	const Config& config = configTbl[iBus];
+	tout.Printf("I2C%d:", iBus);
+	printPin("SDA", config.SDA);
+	printPin("SCL", config.SCL);
+	tout.Printf(" @ %d Hz\n", config.freq);
 }
+
+}
+
+using namespace jxglib::ShellCmd_I2C;
+
+ShellCmdAlias_Named(i2c0_, "i2c0", i2c_)
+ShellCmdAlias_Named(i2c1_, "i2c1", i2c_)
