@@ -13,6 +13,7 @@ struct Config {
 	uint SCL = -1;
 	uint freq = 100'000;
 	uint32_t msecTimeout = 300;
+	bool pullupFlag = true;  // Enable pull-up resistors by default
 };
 
 static Config configTbl[2];  // I2C0 and I2C1 configurations
@@ -63,6 +64,7 @@ ShellCmd_Named(i2c_, "i2c", "controls I2C bus communication")
 		Arg::OptString("timeout",	't',	"sets timeout for I2C operations (default: 300)", "MSEC"),
 		Arg::OptBool("dumb",		0x0,	"no I2C operations, just remember the pins and frequency"),
 		Arg::OptBool("verbose",		'v',	"verbose output for debugging"),
+		Arg::OptString("pullup",	0x0,	"enables/disables internal pull-up resistors (default: enabled)", "on|off"),
 	};
 	bool hasArgs = (argc > 1);
 	Arg arg(optTbl, count_of(optTbl));
@@ -91,14 +93,18 @@ ShellCmd_Named(i2c_, "i2c", "controls I2C bus communication")
 		if (argc >= 2) {
 			// nothing to do
 		} else if (hasArgs) {
-			terr.Printf("I2C bus number is required\n");
+			terr.Printf("I2C bus number or scan command is required\n");
 			return Result::Error;		
 		} else {
 			for (int iBus = 0; iBus < 2; iBus++) PrintConfig(tout, iBus, "GPIO%-2d");
 			return Result::Success;
 		}
-		iBus = ::strtol(argv[1], nullptr, 0);
-		if (iBus < 0 || iBus > 1) {
+		char* endptr;
+		iBus = ::strtol(argv[1], &endptr, 0);
+		if (*endptr != '\0') {
+			terr.Printf("Specify I2C bus number (0 or 1)\n");
+			return Result::Error;
+		} else if (iBus < 0 || iBus > 1) {
 			terr.Printf("Invalid I2C bus number: %s (must be 0 or 1)\n", argv[1]);
 			return Result::Error;
 		}
@@ -116,6 +122,10 @@ ShellCmd_Named(i2c_, "i2c", "controls I2C bus communication")
 	argv += nArgsSkip;
 	const char* value = nullptr;
 	if (arg.GetString("freq", &value)) {
+		if (!value) {
+			terr.Printf("Frequency value is required\n");
+			return Result::Error;
+		}
 		char* endptr;
 		long num = ::strtol(value, &endptr, 0);
 		if (*endptr != '\0' || num <= 0 || num > 1'000'000) {
@@ -125,6 +135,10 @@ ShellCmd_Named(i2c_, "i2c", "controls I2C bus communication")
 		config.freq = static_cast<uint>(num);
 	}
 	if (arg.GetString("timeout", &value)) {
+		if (!value) {
+			terr.Printf("Timeout value is required\n");
+			return Result::Error;
+		}
 		char* endptr;
 		long num = ::strtol(value, &endptr, 0);
 		if (*endptr != '\0' || num <= 0 || num > 10'000) {
@@ -134,6 +148,10 @@ ShellCmd_Named(i2c_, "i2c", "controls I2C bus communication")
 		config.msecTimeout = static_cast<uint32_t>(num);
 	}
 	if (arg.GetString("pin", &value)) {
+		if (!value) {
+			terr.Printf("Pin specification is required (use 'SDA,SCL')\n");
+			return Result::Error;
+		}
 		Arg::EachNum each(value);
 		int nNums;
 		if (!each.CheckValidity(&nNums) || nNums != 2) {
@@ -178,30 +196,46 @@ ShellCmd_Named(i2c_, "i2c", "controls I2C bus communication")
 			}
 		}
 	}
+	if (arg.GetString("pullup", &value)) {
+		if (!value) {
+			terr.Printf("Pull-up option is required (use 'on' or 'off')\n");
+			return Result::Error;
+		} else if (::strcasecmp(value, "on") == 0 || ::strcasecmp(value, "yes") == 0 || ::strcasecmp(value, "true") == 0) {
+			config.pullupFlag = true;
+		} else if (::strcasecmp(value, "off") == 0 || ::strcasecmp(value, "no") == 0 || ::strcasecmp(value, "false") == 0) {
+			config.pullupFlag = false;
+		} else {
+			terr.Printf("Invalid pull-up option: %s (expected 'on' or 'off')\n", value);
+			return Result::Error;
+		}
+	}
 	if (arg.GetBool("dumb")) return Result::Success;
-	if (config.SDA == -1 || config.SCL == -1 || argc < 1) {
-		PrintConfig(tout, iBus, "GPIO%d");
-		return Result::Success;
+	if (config.SDA == -1 || config.SCL == -1) {
+		terr.Printf("I2C pins are not set (use 'pin' option to specify SDA and SCL)\n");
+		return Result::Error;
 	}
 	
 	I2C& i2c = (iBus == 0)? I2C0 : I2C1;
 	i2c.init(config.freq);
 	::gpio_set_function(config.SDA, GPIO_FUNC_I2C);
 	::gpio_set_function(config.SCL, GPIO_FUNC_I2C);
-	::gpio_pull_up(config.SDA);
-	::gpio_pull_up(config.SCL);
+	if (config.pullupFlag) {
+		::gpio_pull_up(config.SDA);
+		::gpio_pull_up(config.SCL);
+	} else {
+		::gpio_disable_pulls(config.SDA);
+		::gpio_disable_pulls(config.SCL);
+	}
 	
 	int rtn = 0;
 	bool verboseFlag = arg.GetBool("verbose");
-	if (argc < 1) {
-		ScanBus(tout, terr, i2c, iBus, config);
-	} else if (::strcasecmp(argv[0], "scan") == 0) {
+	if (::strcasecmp(argv[0], "scan") == 0) {
 		ScanBus(tout, terr, i2c, iBus, config);
 	} else {
 		char* endptr;
 		int num = ::strtol(argv[0], &endptr, 0);
 		if (*endptr != '\0') {
-			terr.Printf("specify I2C address\n");
+			terr.Printf("Specify I2C address\n");
 			return Result::Error;
 		} else if (num < 0 || num > 127) {
 			terr.Printf("Invalid I2C address: %s\n", argv[0]);
@@ -261,7 +295,7 @@ ShellCmd_Named(i2c_, "i2c", "controls I2C bus communication")
 
 void ScanBus(Printable& tout, Printable& terr, I2C& i2c, int iBus, const Config& config)
 {
-	tout.Printf("Bus Scan on I2C%d (SDA:GPIO%d SCL:GPIO%d) @ %d Hz\n", i2c.get_index(), config.SDA, config.SCL, config.freq);
+	tout.Printf("Bus Scan on I2C%d\n", i2c.get_index());
 	tout.Printf("   0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F\n");
 	int iCol = 0;
 	for (int addr = 0; addr < (1 << 7); ++addr) {
@@ -356,7 +390,7 @@ void PrintConfig(Printable& tout, int iBus, const char* formatGPIO)
 	tout.Printf("I2C%d:", iBus);
 	printPin("SDA", config.SDA);
 	printPin("SCL", config.SCL);
-	tout.Printf(" @ %d Hz\n", config.freq);
+	tout.Printf(" @ %d Hz, pullup:%s\n", config.freq, config.pullupFlag ? "on" : "off");
 }
 
 }
