@@ -78,16 +78,16 @@ ShellCmd_Named(spi_, "spi", "controls SPI bus communication")
 	bool genericFlag = (::strcmp(GetName(), "spi") == 0);
 	if (arg.GetBool("help")) {
 		if (genericFlag) {
-			tout.Printf("Usage: %s <bus> [OPTION]... [COMMAND]...\n", GetName());
-			tout.Printf("  bus: SPI bus number (0 or 1)\n");
+			tout.Printf("Usage: %s BUS [OPTION]... [COMMAND]...\n", GetName());
+			tout.Printf("  BUS: SPI bus number (0 or 1)\n");
 		} else {
 			tout.Printf("Usage: %s [OPTION]... [COMMAND]...\n", GetName());
 		}
 		arg.PrintHelp(tout);
 		tout.Printf("Commands:\n");
-		tout.Printf("  write:data    write data to SPI\n");
+		tout.Printf("  write:DATA    write DATA to SPI\n");
 		tout.Printf("  read:N        read N bytes from SPI (requires MISO)\n");
-		tout.Printf("  transfer:data transfer data (write and read simultaneously, requires MISO)\n");
+		tout.Printf("  transfer:DATA transfer DATA (write and read simultaneously, requires MISO)\n");
 		tout.Printf("  cs-lo         set CS pin low\n");
 		tout.Printf("  cs-hi         set CS pin high\n");
 		tout.Printf("  sleep:MSEC    sleep for specified milliseconds\n");
