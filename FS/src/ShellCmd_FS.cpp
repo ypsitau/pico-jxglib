@@ -209,7 +209,7 @@ ShellCmd_Named(ls_drive, "ls-drive", "lists availabld drives")
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",	'h',	"prints this help"),
-		Arg::OptBool("verbose",	'v',	"prints remarks for each drive"),
+		Arg::OptBool("remarks",	'r',	"prints remarks for each drive"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
@@ -219,7 +219,7 @@ ShellCmd_Named(ls_drive, "ls-drive", "lists availabld drives")
 		return Result::Error;
 	}
 	const char* driveName = (argc < 2)? nullptr : argv[1];
-	bool remarksFlag = arg.GetBool("verbose");
+	bool remarksFlag = arg.GetBool("remarks");
 	return FS::ListDrives(tout, driveName, remarksFlag)? 0 : 1;
 }
 

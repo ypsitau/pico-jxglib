@@ -144,13 +144,18 @@ int LineBuff::Reader::Read(void* buff, int bytesBuff)
 {
 	int bytesRead = 0;
 	char* pDst = reinterpret_cast<char*>(buff);
+	char chPrev = '\0';
 	for ( ; bytesRead < bytesBuff; charFeeder_.Forward()) {
 		const char* pBuffCur = charFeeder_.GetPointer();
 		if (pBuffCur == pBuffLast_) break;
 		if (*pBuffCur) {
 			bytesRead++;
 			*pDst++ = *pBuffCur;
+		} else if (chPrev) {
+			bytesRead++;
+			*pDst++ = '\n';
 		}
+		chPrev = *pBuffCur;
 	}
 	return bytesRead;
 }

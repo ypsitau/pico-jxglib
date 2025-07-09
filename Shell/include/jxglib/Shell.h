@@ -373,6 +373,7 @@ public:
 	virtual void OnTick() override;
 public:
 	static Tokenizer CreateTokenizer();
+	static void PrintHistory(Printable& printable);
 	static void PrintHelp(Printable& printable, bool simpleFlag = false);
 };
 

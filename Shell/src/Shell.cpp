@@ -273,6 +273,14 @@ Tokenizer Shell::CreateTokenizer()
 	return Tokenizer(specialTokens_, count_of(specialTokens_));
 }
 
+void Shell::PrintHistory(Printable& printable)
+{
+	Terminal& terminal = Instance.GetTerminal();
+	const LineBuff& historyBuff = terminal.GetLineEditor().GetHistoryBuff();
+	LineBuff::Reader reader(historyBuff.CreateReader());
+	reader.PrintTo(printable);
+}
+
 void Shell::PrintHelp(Printable& printable, bool simpleFlag)
 {
 	if (simpleFlag) {

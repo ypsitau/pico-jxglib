@@ -296,6 +296,25 @@ ShellCmd(help, "prints help strings for available commands")
 }
 
 //-----------------------------------------------------------------------------
+// history
+//-----------------------------------------------------------------------------
+ShellCmd(history, "prints the command history")
+{
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		'h',	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
+	if (arg.GetBool("help")) {
+		terr.Printf("Usage: %s [OPTION]...\n", GetName());
+		arg.PrintHelp(terr);
+		return Result::Error;
+	}
+	Shell::PrintHistory(tout);
+	return Result::Success;
+}
+
+//-----------------------------------------------------------------------------
 // prompt
 //-----------------------------------------------------------------------------
 ShellCmd(prompt, "changes the command line prompt")
@@ -308,6 +327,19 @@ ShellCmd(prompt, "changes the command line prompt")
 	if (arg.GetBool("help")) {
 		terr.Printf("Usage: %s [OPTION]... [PROMPT]\n", GetName());
 		arg.PrintHelp(terr);
+		terr.Printf("Variables:\n");
+		terr.Printf("  %%d - current drive\n");
+		terr.Printf("  %%w - current directory\n");
+		terr.Printf("  %%p - platform name\n");
+		terr.Printf("  %%Y - year (4 digits)\n");
+		terr.Printf("  %%y - year (2 digits)\n");
+		terr.Printf("  %%M - month (1-12)\n");
+		terr.Printf("  %%D - day (1-31)\n");
+		terr.Printf("  %%h - hour (0-23)\n");
+		terr.Printf("  %%H - hour (1-12)\n");
+		terr.Printf("  %%m - minute (0-59)\n");
+		terr.Printf("  %%s - second (0-59)\n");
+		terr.Printf("  %%A - AM/PM\n");
 		return Result::Error;
 	}
 	if (argc < 2) {
