@@ -262,7 +262,12 @@ ShellCmd_Named(spi_, "spi", "controls SPI bus communication")
 		config.CS = csPin;
 	}
 	if (arg.GetBool("dumb")) return Result::Success;
-	if (config.SCK == -1 || config.MOSI == -1 || argc < 1) {
+	if (config.SCK != -1 && config.MOSI != -1) {
+		// nothing to do
+	} else if (hasArgs) {
+		terr.Printf("SCK and MOSI pins must be configured for SPI bus %d\n", iBus);
+		return Result::Error;
+	} else {
 		PrintConfig(tout, iBus, "GPIO%d");
 		return Result::Success;
 	}
@@ -284,6 +289,10 @@ ShellCmd_Named(spi_, "spi", "controls SPI bus communication")
 		::gpio_init(config.CS);
 		::gpio_set_dir(config.CS, GPIO_OUT);
 		::gpio_put(config.CS, true); // CS hi (inactive)
+	}
+	if (argc == 0) {
+		PrintConfig(tout, iBus, "GPIO%d");
+		return Result::Success;
 	}
 	int rtn = 0;
 	Shell::Arg::EachSubcmd each(argv[0], argv[argc]);

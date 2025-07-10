@@ -223,7 +223,7 @@ ShellCmd_Named(i2c_, "i2c", "controls I2C bus communication")
 	if (config.SDA != -1 && config.SCL != -1) {
 		// nothing to do
 	} else if (hasArgs) {
-		terr.Printf("I2C pins are not set (use '--pin' option to specify SDA and SCL)\n");
+		terr.Printf("SCL and SDA pins must be configured for I2C bus %d\n", iBus);
 		return Result::Error;
 	} else {
 		PrintConfig(tout, iBus, "GPIO%d");
