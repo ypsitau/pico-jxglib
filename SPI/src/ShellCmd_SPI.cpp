@@ -88,11 +88,12 @@ ShellCmd_Named(spi_, "spi", "controls SPI bus communication")
 		}
 		arg.PrintHelp(tout);
 		tout.Printf("Sub Commands:\n");
-		tout.Printf("  write:DATA     write DATA to SPI\n");
-		tout.Printf("  read:N         read N bytes from SPI (requires MISO)\n");
-		tout.Printf("  transfer:DATA  transfer DATA (write and read simultaneously, requires MISO)\n");
-		tout.Printf("  cs:VALUE       set CS pin value (0, 1, lo, hi)\n");
-		tout.Printf("  sleep:MSEC     sleep for specified milliseconds\n");
+		tout.Printf("  repeat[:N] {CMD...}  repeat the commands N times (default: infinite)\n");
+		tout.Printf("  sleep:MSEC           sleep for specified milliseconds\n");
+		tout.Printf("  write:DATA           write DATA to SPI\n");
+		tout.Printf("  read:N               read N bytes from SPI (requires MISO)\n");
+		tout.Printf("  transfer:DATA        transfer DATA (write and read simultaneously, requires MISO)\n");
+		tout.Printf("  cs:VALUE             set CS pin value (0, 1, lo, hi)\n");
 		return Result::Success;
 	}
 	int nArgsSkip = 0;

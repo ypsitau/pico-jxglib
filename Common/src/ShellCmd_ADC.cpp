@@ -7,7 +7,7 @@ using namespace jxglib;
 
 static bool ProcessADC(Printable& terr, Printable& tout, const int inputTbl[], int nInputs,
 					int argc, char* argv[], bool rawFlag);
-static void PrintADC(Printable& tout, const int inputTbl[], int nInputs, bool rawFlag);
+static void PrintADC(Printable& tout, const int inputTbl[], int nInputs, bool labelFlag, bool rawFlag);
 
 static const char* strAvailableInputs = "0, 1, 2, 3, 4 (temp sensor)";
 
@@ -27,10 +27,10 @@ ShellCmd(adc, "controls ADC (Analog-to-Digital Converter)")
 			tout.Printf("Usage: %s [OPTION]... [COMMAND]...\n", GetName());
 		}
 		arg.PrintHelp(tout);
-		tout.Printf("Commands:\n");
+		tout.Printf("Sub Commands:\n");
 		tout.Printf("  repeat[:N] {CMD...}  repeat the commands N times (default: infinite)\n");
 		tout.Printf("  sleep:MSEC           sleep for specified milliseconds\n");
-		tout.Printf("  read                 read ADC value (raw 12-bit value)\n");
+		tout.Printf("  read                 read ADC value\n");
 		tout.Printf("Available inputs: %s\n", strAvailableInputs);
 		return Result::Success;
 	}
@@ -90,7 +90,7 @@ bool ProcessADC(Printable& terr, Printable& tout, const int inputTbl[], int nInp
 				::adc_gpio_init(26 + input);
 			}
         } else if (::strcasecmp(subcmd, "read") == 0) {
-			PrintADC(tout, inputTbl, nInputs, rawFlag);
+			PrintADC(tout, inputTbl, nInputs, false, rawFlag);
 			readFlag = true;
 		} else if (Shell::Arg::GetAssigned(subcmd, "sleep", &value)) {
 			if (!value) {
@@ -109,19 +109,21 @@ bool ProcessADC(Printable& terr, Printable& tout, const int inputTbl[], int nInp
 		}
 		if (Tickable::TickSub()) return true;
 	}
-	if (!readFlag) PrintADC(tout, inputTbl, nInputs, rawFlag);
+	if (!readFlag) PrintADC(tout, inputTbl, nInputs, true, rawFlag);
 	return true;
 }
 
-void PrintADC(Printable& tout, const int inputTbl[], int nInputs, bool rawFlag)
+void PrintADC(Printable& tout, const int inputTbl[], int nInputs, bool labelFlag, bool rawFlag)
 {
-	tout.Printf("ADC ");
-	for (int i = 0; i < nInputs; i++) {
-		uint input = inputTbl[i];
-		if (i > 0) tout.Printf(",");
-		tout.Printf("%d", input);
+	if (labelFlag) {
+		tout.Printf("ADC ");
+		for (int i = 0; i < nInputs; i++) {
+			uint input = inputTbl[i];
+			if (i > 0) tout.Printf(",");
+			tout.Printf("%d", input);
+		}
+		tout.Printf(": ");
 	}
-	tout.Printf(": ");
 	for (int i = 0; i < nInputs; i++) {
 		uint input = inputTbl[i];
 		if (i > 0) tout.Printf(" ");
@@ -139,5 +141,5 @@ void PrintADC(Printable& tout, const int inputTbl[], int nInputs, bool rawFlag)
 			}
 		}
 	}
-	tout.Printf("\n");
+	tout.Println();
 }
