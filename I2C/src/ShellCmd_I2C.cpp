@@ -56,6 +56,8 @@ ShellCmd_Named(i2c_, "i2c", "controls I2C bus communication")
 		{ 0, Func::SCL }, // GPIO25 I2C0 SCL
 		{ 1, Func::SDA }, // GPIO26 I2C1 SDA
 		{ 1, Func::SCL }, // GPIO27 I2C1 SCL
+		{ 0, Func::SDA }, // GPIO28 I2C0 SDA
+		{ 0, Func::SCL }, // GPIO29 I2C0 SCL
 	};
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
@@ -123,7 +125,7 @@ ShellCmd_Named(i2c_, "i2c", "controls I2C bus communication")
 	argc -= nArgsSkip;
 	argv += nArgsSkip;
 	if (arg.GetBool("help-pin")) {
-		for (uint pin = 0; pin < GPIO::NumPins; ++pin) {
+		for (uint pin = 0; pin < count_of(infoTbl); ++pin) {
 			const Info& info = infoTbl[pin];
 			if (info.iBus == iBus) {
 				tout.Printf("GPIO%-2d I2C%d %s\n", pin, info.iBus, (info.func == Func::SDA)? "SDA" : "SCL");

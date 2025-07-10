@@ -60,6 +60,8 @@ ShellCmd_Named(spi_, "spi", "controls SPI bus communication")
 		{ -1, Func::None },	// GPIO25 (not SPI function)
 		{  1, Func::SCK  },	// GPIO26 SPI1 SCK
 		{  1, Func::MOSI },	// GPIO27 SPI1 TX
+		{  1, Func::MISO },	// GPIO28 SPI1 RX
+		{ -1, Func::None },	// GPIO29 (not SPI function)
 	};
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
@@ -126,7 +128,7 @@ ShellCmd_Named(spi_, "spi", "controls SPI bus communication")
 	argc -= nArgsSkip;
 	argv += nArgsSkip;
 	if (arg.GetBool("help-pin")) {
-		for (uint pin = 0; pin < GPIO::NumPins; ++pin) {
+		for (uint pin = 0; pin < count_of(infoTbl); ++pin) {
 			const Info& info = infoTbl[pin];
 			if (info.iBus == iBus) {
 				tout.Printf("GPIO%-2d SPI%d %s\n", pin, info.iBus,
