@@ -17,12 +17,13 @@ struct Config {
 	spi_cpol_t cpol = SPI_CPOL_0;
 	spi_cpha_t cpha = SPI_CPHA_0;
 	spi_order_t order = SPI_MSB_FIRST;
+	uint8_t byteDummy = 0x00;
 };
 
 static Config configTbl[2];  // SPI0 and SPI1 configurations
 
 static bool WriteData(Printable& tout, Printable& terr, SPI& spi, const char* value);
-static bool ReadData(Printable& tout, Printable& terr, SPI& spi, const char* value);
+static bool ReadData(Printable& tout, Printable& terr, SPI& spi, const char* value, uint8_t byteDummy);
 static bool TransferData(Printable& tout, Printable& terr, SPI& spi, const char* value);
 static void PrintConfig(Printable& tout, int iBus, const char* formatGPIO);
 
@@ -70,6 +71,7 @@ ShellCmd_Named(spi_, "spi", "controls SPI bus communication")
 		Arg::OptString("cpol",		0x0,	"sets clock polarity (0 or 1, default: 0)", "CPOL"),
 		Arg::OptString("cpha",		0x0,	"sets clock phase (0 or 1, default: 0)", "CPHA"),
 		Arg::OptString("order",		0x0,	"sets bit order (msb or lsb, default: msb)", "ORDER"),
+		Arg::OptString("dummy",		0x0,	"sets dummy byte for read operations (default: 0x00)", "BYTE"),
 		Arg::OptBool("dumb",		0x0,	"no SPI operations, just remember the pins and settings"),
 		Arg::OptBool("verbose",		'v',	"verbose output for debugging"),
 	};
@@ -191,6 +193,15 @@ ShellCmd_Named(spi_, "spi", "controls SPI bus communication")
 			return Result::Error;
 		}
 	}
+	if (arg.GetString("dummy", &value)) {
+		char* endptr;
+		long num = ::strtol(value, &endptr, 0);
+		if (*endptr != '\0' || num < 0 || num > 255) {
+			terr.Printf("Invalid dummy byte: %s (must be 0-255)\n", value);
+			return Result::Error;
+		}
+		config.byteDummy = static_cast<uint8_t>(num);
+	}
 	if (arg.GetString("pin", &value)) {
 		Arg::EachNum each(value);
 		int nNums;
@@ -264,7 +275,7 @@ ShellCmd_Named(spi_, "spi", "controls SPI bus communication")
 	if (arg.GetBool("dumb")) return Result::Success;
 	if (config.SCK != -1 && config.MOSI != -1) {
 		// nothing to do
-	} else if (hasArgs) {
+	} else if (argc > 0) {
 		terr.Printf("SCK and MOSI pins must be configured for SPI bus %d\n", iBus);
 		return Result::Error;
 	} else {
@@ -316,7 +327,7 @@ ShellCmd_Named(spi_, "spi", "controls SPI bus communication")
 				break;
 			}
 			if (verboseFlag) tout.Printf("read: %s\n", value);
-			if (!ReadData(tout, terr, spi, value)) {
+			if (!ReadData(tout, terr, spi, value, config.byteDummy)) {
 				rtn = 1;
 				break;
 			}
@@ -403,7 +414,7 @@ bool WriteData(Printable& tout, Printable& terr, SPI& spi, const char* value)
 	return true;
 }
 
-bool ReadData(Printable& tout, Printable& terr, SPI& spi, const char* value)
+bool ReadData(Printable& tout, Printable& terr, SPI& spi, const char* value, uint8_t byteDummy)
 {
 	uint8_t data[512];
 	int bytesToRead = sizeof(data);
@@ -420,8 +431,7 @@ bool ReadData(Printable& tout, Printable& terr, SPI& spi, const char* value)
 	}
 	
 	// For read operation, we need to send dummy bytes
-	uint8_t dummy = 0xFF;
-	int bytesRead = spi.read_blocking(dummy, data, bytesToRead);
+	int bytesRead = spi.read_blocking(byteDummy, data, bytesToRead);
 	if (bytesRead != bytesToRead) {
 		terr.Printf("Failed to read all data (%d/%d bytes read)\n", bytesRead, bytesToRead);
 		return false;
@@ -486,8 +496,8 @@ void PrintConfig(Printable& tout, int iBus, const char* formatGPIO)
 	printPin("MOSI", config.MOSI);
 	printPin("MISO", config.MISO);
 	printPin("CS", config.CS);
-	tout.Printf(" @ %d Hz, Mode%d (CPOL:%d CPHA:%d) %s\n", 
-		config.freq, mode, config.cpol, config.cpha, (config.order == SPI_MSB_FIRST) ? "MSB" : "LSB");
+	tout.Printf(" @ %d Hz, Mode%d (CPOL:%d CPHA:%d) %s Dummy:0x%02x\n",
+		config.freq, mode, config.cpol, config.cpha, (config.order == SPI_MSB_FIRST)? "MSB" : "LSB", config.byteDummy);
 }
 
 ShellCmdAlias_Named(spi0_, "spi0", spi_)

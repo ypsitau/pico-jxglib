@@ -222,7 +222,7 @@ ShellCmd_Named(i2c_, "i2c", "controls I2C bus communication")
 	if (arg.GetBool("dumb")) return Result::Success;
 	if (config.SDA != -1 && config.SCL != -1) {
 		// nothing to do
-	} else if (hasArgs) {
+	} else if (argc > 0) {
 		terr.Printf("SCL and SDA pins must be configured for I2C bus %d\n", iBus);
 		return Result::Error;
 	} else {
