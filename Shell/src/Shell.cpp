@@ -50,7 +50,7 @@ bool Shell::RunCmd(Readable& tin, Printable& tout, Printable& terr, char* line, 
 			nTokensCmd = iToken;
 			tokenTbl[iToken] = nullptr;
 			if (iToken + 1 >= nToken) {
-				pterr->Println("missing file name");
+				pterr->Println("missing a file name for output redirection");
 				return false;
 			}
 			fileNameOut = tokenTbl[iToken + 1];
@@ -90,9 +90,9 @@ bool Shell::RunSingleCmd(Readable& tin, Printable& tout, Printable& terr, int ar
 			pCmdRunning_ = pCmd;
 			bool enableHistoryFlag = GetTerminal().IsHistoryEnabled();
 			GetTerminal().EnableHistory(false); // disable history while running a command
-			pCmd->Run(tin, tout, terr, argc, argv);
+			bool rtn = (pCmd->Run(tin, tout, terr, argc, argv) >= 0);
 			GetTerminal().EnableHistory(enableHistoryFlag);
-			return true;
+			return rtn;
 		}
 	}
 	terr.Printf("%s: command not found\n", argv[0]);

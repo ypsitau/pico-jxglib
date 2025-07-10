@@ -93,7 +93,7 @@ ShellCmd_Named(i2c_, "i2c", "controls I2C bus communication")
 		if (argc >= 2) {
 			// nothing to do
 		} else if (hasArgs) {
-			terr.Printf("I2C bus number or scan command is required\n");
+			terr.Printf("I2C bus number is required\n");
 			return Result::Error;		
 		} else {
 			for (int iBus = 0; iBus < 2; iBus++) PrintConfig(tout, iBus, "GPIO%-2d");
@@ -210,9 +210,14 @@ ShellCmd_Named(i2c_, "i2c", "controls I2C bus communication")
 		}
 	}
 	if (arg.GetBool("dumb")) return Result::Success;
-	if (config.SDA == -1 || config.SCL == -1) {
-		terr.Printf("I2C pins are not set (use 'pin' option to specify SDA and SCL)\n");
+	if (config.SDA != -1 && config.SCL != -1) {
+		// nothing to do
+	} else if (hasArgs) {
+		terr.Printf("I2C pins are not set (use '--pin' option to specify SDA and SCL)\n");
 		return Result::Error;
+	} else {
+		PrintConfig(tout, iBus, "GPIO%d");
+		return Result::Success;
 	}
 	
 	I2C& i2c = (iBus == 0)? I2C0 : I2C1;
@@ -229,7 +234,10 @@ ShellCmd_Named(i2c_, "i2c", "controls I2C bus communication")
 	
 	int rtn = 0;
 	bool verboseFlag = arg.GetBool("verbose");
-	if (::strcasecmp(argv[0], "scan") == 0) {
+	if (argc == 0) {
+		PrintConfig(tout, iBus, "GPIO%d");
+		return Result::Success;
+	} else if (::strcasecmp(argv[0], "scan") == 0) {
 		ScanBus(tout, terr, i2c, iBus, config);
 	} else {
 		char* endptr;
