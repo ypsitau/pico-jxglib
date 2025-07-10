@@ -59,6 +59,7 @@ ShellCmd_Named(i2c_, "i2c", "controls I2C bus communication")
 	};
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
+		Arg::OptBool("help-pin",	0x0,	"prints help for pin assignment"),
 		Arg::OptString("pin",		'p',	"sets GPIO pins for I2C", "SDA,SCL"),
 		Arg::OptString("freq",		'f',	"sets I2C frequency (default: 100000)", "FREQ"),
 		Arg::OptString("timeout",	't',	"sets timeout for I2C operations (default: 300)", "MSEC"),
@@ -120,6 +121,15 @@ ShellCmd_Named(i2c_, "i2c", "controls I2C bus communication")
 	Config& config = configTbl[iBus];
 	argc -= nArgsSkip;
 	argv += nArgsSkip;
+	if (arg.GetBool("help-pin")) {
+		for (uint pin = 0; pin < GPIO::NumPins; ++pin) {
+			const Info& info = infoTbl[pin];
+			if (info.iBus == iBus) {
+				tout.Printf("GPIO%-2d I2C%d %s\n", pin, info.iBus, (info.func == Func::SDA)? "SDA" : "SCL");
+			}
+		}
+		return Result::Success;
+	}
 	const char* value = nullptr;
 	if (arg.GetString("freq", &value)) {
 		if (!value) {

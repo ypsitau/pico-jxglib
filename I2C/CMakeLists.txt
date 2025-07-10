@@ -18,6 +18,7 @@ target_include_directories(jxglib_ShellCmd_I2C INTERFACE
 
 target_link_libraries(jxglib_ShellCmd_I2C INTERFACE
 	jxglib_I2C
+	jxglib_GPIOInfo
 	jxglib_ShellCmd_Basic)
 
 target_sources(jxglib_ShellCmd_I2C INTERFACE

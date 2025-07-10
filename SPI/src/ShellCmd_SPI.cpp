@@ -31,37 +31,38 @@ ShellCmd_Named(spi_, "spi", "controls SPI bus communication")
 	enum class Func { None, SCK, MOSI, MISO };
 	struct Info { int iBus; Func func; };
 	static const Info infoTbl[] = {
-		{ 0, Func::MISO}, // GPIO0  SPI0 RX
-		{ -1, Func::None }, // GPIO1  (not SPI function)
-		{ 0, Func::SCK  }, // GPIO2  SPI0 SCK
-		{ 0, Func::MOSI }, // GPIO3  SPI0 TX
-		{ 0, Func::MISO }, // GPIO4  SPI0 RX
-		{ -1, Func::None }, // GPIO5  (not SPI function)
-		{ 0, Func::SCK  }, // GPIO6  SPI0 SCK
-		{ 0, Func::MOSI }, // GPIO7  SPI0 TX
-		{ 1, Func::MISO }, // GPIO8  SPI1 RX
-		{ -1, Func::None }, // GPIO9  (not SPI function)
-		{ 1, Func::SCK  }, // GPIO10 SPI1 SCK
-		{ 1, Func::MOSI }, // GPIO11 SPI1 TX
-		{ 1, Func::MISO }, // GPIO12 SPI1 RX
-		{ -1, Func::None }, // GPIO13 (not SPI function)
-		{ 1, Func::SCK  }, // GPIO14 SPI1 SCK
-		{ 1, Func::MOSI }, // GPIO15 SPI1 TX
-		{ 0, Func::MISO }, // GPIO16 SPI0 RX
-		{ -1, Func::None }, // GPIO17 (not SPI function)
-		{ 0, Func::SCK  }, // GPIO18 SPI0 SCK
-		{ 0, Func::MOSI }, // GPIO19 SPI0 TX
-		{ 0, Func::MISO }, // GPIO20 SPI0 RX
-		{ -1, Func::None }, // GPIO21 (not SPI function)
-		{ 0, Func::SCK  }, // GPIO22 SPI0 SCK
-		{ 0, Func::MOSI }, // GPIO23 SPI0 TX
-		{ 1, Func::MISO }, // GPIO24 SPI1 RX
-		{ -1, Func::None }, // GPIO25 (not SPI function)
-		{ 1, Func::SCK  }, // GPIO26 SPI1 SCK
-		{ 1, Func::MOSI }, // GPIO27 SPI1 TX
+		{  0, Func::MISO},	// GPIO0  SPI0 RX
+		{ -1, Func::None },	// GPIO1  (not SPI function)
+		{  0, Func::SCK  },	// GPIO2  SPI0 SCK
+		{  0, Func::MOSI },	// GPIO3  SPI0 TX
+		{  0, Func::MISO },	// GPIO4  SPI0 RX
+		{ -1, Func::None },	// GPIO5  (not SPI function)
+		{  0, Func::SCK  },	// GPIO6  SPI0 SCK
+		{  0, Func::MOSI },	// GPIO7  SPI0 TX
+		{  1, Func::MISO },	// GPIO8  SPI1 RX
+		{ -1, Func::None },	// GPIO9  (not SPI function)
+		{  1, Func::SCK  },	// GPIO10 SPI1 SCK
+		{  1, Func::MOSI },	// GPIO11 SPI1 TX
+		{  1, Func::MISO },	// GPIO12 SPI1 RX
+		{ -1, Func::None },	// GPIO13 (not SPI function)
+		{  1, Func::SCK  },	// GPIO14 SPI1 SCK
+		{  1, Func::MOSI },	// GPIO15 SPI1 TX
+		{  0, Func::MISO },	// GPIO16 SPI0 RX
+		{ -1, Func::None },	// GPIO17 (not SPI function)
+		{  0, Func::SCK  },	// GPIO18 SPI0 SCK
+		{  0, Func::MOSI },	// GPIO19 SPI0 TX
+		{  0, Func::MISO },	// GPIO20 SPI0 RX
+		{ -1, Func::None },	// GPIO21 (not SPI function)
+		{  0, Func::SCK  },	// GPIO22 SPI0 SCK
+		{  0, Func::MOSI },	// GPIO23 SPI0 TX
+		{  1, Func::MISO },	// GPIO24 SPI1 RX
+		{ -1, Func::None },	// GPIO25 (not SPI function)
+		{  1, Func::SCK  },	// GPIO26 SPI1 SCK
+		{  1, Func::MOSI },	// GPIO27 SPI1 TX
 	};
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
+		Arg::OptBool("help-pin",	0x0,	"prints help for pin assignment"),
 		Arg::OptString("pin",		'p',	"sets GPIO pins for SPI (function auto-detected)", "SCK,MOSI[,MISO]"),
 		Arg::OptString("pin-cs",	'c',	"sets CS pin (any GPIO)", "CS_PIN"),
 		Arg::OptString("freq",		'f',	"sets SPI frequency (default: 1000000)", "FREQ"),
@@ -122,6 +123,18 @@ ShellCmd_Named(spi_, "spi", "controls SPI bus communication")
 	Config& config = configTbl[iBus];
 	argc -= nArgsSkip;
 	argv += nArgsSkip;
+	if (arg.GetBool("help-pin")) {
+		for (uint pin = 0; pin < GPIO::NumPins; ++pin) {
+			const Info& info = infoTbl[pin];
+			if (info.iBus == iBus) {
+				tout.Printf("GPIO%-2d SPI%d %s\n", pin, info.iBus,
+					(info.func == Func::SCK)? "SCK" :
+					(info.func == Func::MOSI)? "MOSI" :
+					(info.func == Func::MISO)? "MISO" : "None");
+			}
+		}
+		return Result::Success;
+	}
 	const char* value = nullptr;
 	if (arg.GetString("freq", &value)) {
 		char* endptr;
