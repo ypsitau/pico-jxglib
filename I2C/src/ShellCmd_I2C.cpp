@@ -81,11 +81,11 @@ ShellCmd_Named(i2c_, "i2c", "controls I2C bus communication")
 			tout.Printf("       %s [OPTION]... ADDR [COMMAND]...\n", GetName());
 		}
 		arg.PrintHelp(tout);
-		tout.Printf("Commands:\n");
-		tout.Printf("  scan          scan I2C bus for connected devices\n");
-		tout.Printf("  write:DATA    write DATA to I2C address ADDR\n");
-		tout.Printf("  read:N        read N bytes from I2C address ADDR\n");
-		tout.Printf("  sleep:MSEC    sleep for specified milliseconds\n");
+		tout.Printf("Sub Commands:\n");
+		tout.Printf("  scan        scan I2C bus for connected devices\n");
+		tout.Printf("  write:DATA  write DATA to I2C address ADDR\n");
+		tout.Printf("  read:N      read N bytes from I2C address ADDR\n");
+		tout.Printf("  sleep:MSEC  sleep for specified milliseconds\n");
 		return Result::Success;
 	}
 	int nArgsSkip = 0;

@@ -87,13 +87,12 @@ ShellCmd_Named(spi_, "spi", "controls SPI bus communication")
 			tout.Printf("Usage: %s [OPTION]... [COMMAND]...\n", GetName());
 		}
 		arg.PrintHelp(tout);
-		tout.Printf("Commands:\n");
-		tout.Printf("  write:DATA    write DATA to SPI\n");
-		tout.Printf("  read:N        read N bytes from SPI (requires MISO)\n");
-		tout.Printf("  transfer:DATA transfer DATA (write and read simultaneously, requires MISO)\n");
-		tout.Printf("  cs-lo         set CS pin low\n");
-		tout.Printf("  cs-hi         set CS pin high\n");
-		tout.Printf("  sleep:MSEC    sleep for specified milliseconds\n");
+		tout.Printf("Sub Commands:\n");
+		tout.Printf("  write:DATA     write DATA to SPI\n");
+		tout.Printf("  read:N         read N bytes from SPI (requires MISO)\n");
+		tout.Printf("  transfer:DATA  transfer DATA (write and read simultaneously, requires MISO)\n");
+		tout.Printf("  cs:VALUE       set CS pin value (0, 1, lo, hi)\n");
+		tout.Printf("  sleep:MSEC     sleep for specified milliseconds\n");
 		return Result::Success;
 	}
 	int nArgsSkip = 0;
@@ -342,24 +341,25 @@ ShellCmd_Named(spi_, "spi", "controls SPI bus communication")
 				rtn = 1;
 				break;
 			}
-		} else if (::strcasecmp(arg, "cs-lo") == 0) {
-			if (config.CS != -1) {
-				if (verboseFlag) tout.Printf("cs-lo\n");
-				::gpio_put(config.CS, false);
-			} else {
+		} else if (Arg::GetAssigned(arg, "cs", &value)) {
+			if (config.CS == -1) {
 				terr.Printf("CS pin not configured\n");
 				rtn = 1;
 				break;
 			}
-		} else if (::strcasecmp(arg, "cs-hi") == 0) {
-			if (config.CS != -1) {
-				if (verboseFlag) tout.Printf("cs-hi\n");
-				::gpio_put(config.CS, true);
+			bool flag = false;
+			if (::strcasecmp(value, "hi") == 0 || ::strcasecmp(value, "high") == 0 ||
+				::strcasecmp(value, "true") == 0 || ::strcmp(value, "1") == 0) {
+				flag = true;
+			} else if (::strcasecmp(value, "lo") == 0 || ::strcasecmp(value, "low") == 0 ||
+						::strcasecmp(value, "false") == 0 || ::strcmp(value, "0") == 0) {
+				flag = false;
 			} else {
-				terr.Printf("CS pin not configured\n");
-				rtn = 1;
-				break;
+				terr.Printf("unknown value: %s\n", value);
+				return false;
 			}
+			if (verboseFlag) tout.Printf("cs: %s\n", flag? "hi" : "lo");
+			::gpio_put(config.CS, flag);
 		} else if (Arg::GetAssigned(arg, "sleep", &value)) {
 			int msec = ::strtol(value, nullptr, 0);
 			if (msec <= 0) {
