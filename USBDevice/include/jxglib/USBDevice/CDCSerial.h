@@ -28,7 +28,8 @@ public:
 	virtual int Read(void* buff, int bytesBuff) override;
 	virtual int Write(const void* buff, int bytesBuff) override;
 	virtual bool Flush() override;
-	Printable& PutChar(char ch);
+	virtual Printable& PutChar(char ch) override;
+	virtual Printable& PutCharRaw(char ch) override;
 };
 
 }

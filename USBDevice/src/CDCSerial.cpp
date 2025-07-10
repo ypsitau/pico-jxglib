@@ -17,7 +17,6 @@ int CDCSerial::Read(void* buff, int bytesBuff)
 		bytesRead += bytes;
 		Tickable::TickSub();
 	}
-	//if (bytesRead > 0) ::printf("CDCSerial::Read: %d bytes read 0x%02x\n", bytesRead, static_cast<const uint8_t*>(buff)[bytesRead - 1]);
 	return bytesRead;
 }
 
@@ -42,6 +41,13 @@ Printable& CDCSerial::PutChar(char ch)
 	if (addCrFlag_ && chPrev_ != '\r' && ch == '\n') PutCharRaw('\r');
 	PutCharRaw(ch);
 	chPrev_ = ch;
+	return *this;
+}
+
+Printable& CDCSerial::PutCharRaw(char ch)
+{
+	Stream::PutCharRaw(ch);
+	if (ch == '\n') cdc_write_flush();
 	return *this;
 }
 
