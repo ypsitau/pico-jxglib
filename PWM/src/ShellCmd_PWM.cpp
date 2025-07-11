@@ -154,7 +154,7 @@ bool ProcessPWM(Printable& terr, Printable& tout, const int pinTbl[], int nPins,
 			for (int i = 0; i < nPins; ++i) PWM(pinTbl[i]).set_freq(freq);
 		} else if (Shell::Arg::GetAssigned(cmd, "wrap", &value)) {
 			if (!value) {
-				terr.Printf("specify a wrap value (0-65535)\n");
+				terr.Printf("specify a wrap value: 0-65535\n");
 				return false;
 			}
 			uint32_t wrap_val = ::strtoul(value, nullptr, 0);
@@ -165,7 +165,7 @@ bool ProcessPWM(Printable& terr, Printable& tout, const int pinTbl[], int nPins,
 			for (int i = 0; i < nPins; ++i) PWM(pinTbl[i]).set_wrap(static_cast<uint16_t>(wrap_val));
 		} else if (Shell::Arg::GetAssigned(cmd, "level", &value)) {
 			if (!value) {
-				terr.Printf("specify a level value (0-65535)\n");
+				terr.Printf("specify a level value: 0-65535\n");
 				return false;
 			}
 			uint32_t level_val = ::strtoul(value, nullptr, 0);
@@ -176,7 +176,7 @@ bool ProcessPWM(Printable& terr, Printable& tout, const int pinTbl[], int nPins,
 			for (int i = 0; i < nPins; ++i) PWM(pinTbl[i]).set_chan_level(static_cast<uint16_t>(level_val));
 		} else if (Shell::Arg::GetAssigned(cmd, "duty", &value)) {
 			if (!value) {
-				terr.Printf("specify a duty ratio (0.0-1.0)\n");
+				terr.Printf("specify a duty ratio: 0.0-1.0\n");
 				return false;
 			}
 			float duty_val = ::strtof(value, nullptr);
@@ -187,7 +187,7 @@ bool ProcessPWM(Printable& terr, Printable& tout, const int pinTbl[], int nPins,
 			for (int i = 0; i < nPins; ++i) PWM(pinTbl[i]).set_chan_duty(duty_val);
 		} else if (Shell::Arg::GetAssigned(cmd, "clkdiv", &value)) {
 			if (!value) {
-				terr.Printf("specify a clock divider (1.0-256.0)\n");
+				terr.Printf("specify a clock divider: 1.0-256.0\n");
 				return false;
 			}
 			float div_val = ::strtof(value, nullptr);
@@ -198,7 +198,7 @@ bool ProcessPWM(Printable& terr, Printable& tout, const int pinTbl[], int nPins,
 			for (int i = 0; i < nPins; ++i) PWM(pinTbl[i]).set_clkdiv(div_val);
 		} else if (Shell::Arg::GetAssigned(cmd, "phase-correct", &value)) {
 			if (!value) {
-				terr.Printf("specify a boolean (1 or 0)\n");
+				terr.Printf("specify a boolean: false, true, 0, 1\n");
 				return false;
 			}
 			bool phaseCorrect;
@@ -207,7 +207,7 @@ bool ProcessPWM(Printable& terr, Printable& tout, const int pinTbl[], int nPins,
 			} else if (::strcasecmp(value, "0") == 0 || ::strcasecmp(value, "false") == 0) {
 				phaseCorrect = false;
 			} else {
-				terr.Printf("invalid value for phase-correct: %s (use 1 or 0)\n", value);
+				terr.Printf("invalid value for phase-correct (false, true, 0, 1)\n");
 				return false;
 			}
 			for (int i = 0; i < nPins; ++i) {
@@ -218,7 +218,7 @@ bool ProcessPWM(Printable& terr, Printable& tout, const int pinTbl[], int nPins,
 			}
 		} else if (Shell::Arg::GetAssigned(cmd, "invert", &value)) {
 			if (!value) {
-				terr.Printf("specify a boolean (1 or 0)\n");
+				terr.Printf("specify a boolean: false, true, 0, 1\n");
 				return false;
 			}
 			bool inv;
@@ -227,13 +227,13 @@ bool ProcessPWM(Printable& terr, Printable& tout, const int pinTbl[], int nPins,
 			} else if (::strcasecmp(value, "0") == 0 || ::strcasecmp(value, "false") == 0) {
 				inv = false;
 			} else {
-				terr.Printf("invalid value for phase-correct: %s (use 1 or 0)\n", value);
+				terr.Printf("invalid value for phase-correct (false, true, 0, 1)\n");
 				return false;
 			}
 			for (int i = 0; i < nPins; ++i) PWM(pinTbl[i]).set_chan_output_polarity(inv);
 		} else if (Shell::Arg::GetAssigned(cmd, "counter", &value)) {
 			if (!value) {
-				terr.Printf("specify a counter value (0-65535)\n");
+				terr.Printf("specify a counter value: 0-65535\n");
 				return false;
 			}
 			uint32_t counter_val = ::strtoul(value, nullptr, 0);

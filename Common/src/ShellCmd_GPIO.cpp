@@ -197,7 +197,7 @@ bool ProcessGPIO(Printable& terr, Printable& tout, const int pinTbl[], int nPins
 			}
 		} else if (Shell::Arg::GetAssigned(subcmd, "dir", &value)) {
 			if (!value) {
-				terr.Printf("specify a direction: in or out\n");
+				terr.Printf("specify a direction: in, out\n");
 				return false;
 			} else if (::strcasecmp(value, "in") == 0) {
 				for (int i = 0; i < nPins; ++i) {
@@ -221,7 +221,7 @@ bool ProcessGPIO(Printable& terr, Printable& tout, const int pinTbl[], int nPins
 			}
 		} else if (Shell::Arg::GetAssigned(subcmd, "put", &value)) {
 			if (!value) {
-				terr.Printf("specify a value: hi or lo (or 1 or 0)\n");
+				terr.Printf("specify a value: lo, hi, 0, 1\n");
 				return false;
 			}
 			uint32_t mask = 0;
