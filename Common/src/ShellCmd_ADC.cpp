@@ -30,6 +30,7 @@ ShellCmd(adc, "controls ADC (Analog-to-Digital Converter)")
 		tout.Printf("Sub Commands:\n");
 		tout.Printf("  repeat[:N] {CMD...}  repeat the commands N times (default: infinite)\n");
 		tout.Printf("  sleep:MSEC           sleep for specified milliseconds\n");
+		tout.Printf("  init                 Prepare a GPIO for use with ADC by disabling all digital functions\n");
 		tout.Printf("  read                 read ADC value\n");
 		tout.Printf("Available inputs: %s\n", strAvailableInputs);
 		return Result::Success;
@@ -116,13 +117,13 @@ bool ProcessADC(Printable& terr, Printable& tout, const int inputTbl[], int nInp
 void PrintADC(Printable& tout, const int inputTbl[], int nInputs, bool labelFlag, bool rawFlag)
 {
 	if (labelFlag) {
-		tout.Printf("ADC ");
+		tout.Printf("ADC");
 		for (int i = 0; i < nInputs; i++) {
 			uint input = inputTbl[i];
 			if (i > 0) tout.Printf(",");
 			tout.Printf("%d", input);
 		}
-		tout.Printf(": ");
+		tout.Printf(" ");
 	}
 	for (int i = 0; i < nInputs; i++) {
 		uint input = inputTbl[i];

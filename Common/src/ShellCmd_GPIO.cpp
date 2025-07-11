@@ -8,7 +8,7 @@ namespace jxglib::ShellCmd_GPIO {
 static bool ProcessGPIO(Printable& terr, Printable& tout, const int pinTbl[], int nPins, int argc, char* argv[], bool quietFlag);
 static void PrintPinFunc(Printable& tout, uint pin);
 
-static const char* strAvailableDrive = "2ma, 4ma, 8ma, 12ma";
+static const char* strAvailableDrive = "2mA, 4mA, 8mA, 12mA";
 static const char* strAvailableSlew = "slow, fast";
 
 ShellCmd(gpio, "controls GPIO pins")
@@ -30,13 +30,13 @@ ShellCmd(gpio, "controls GPIO pins")
 		tout.Printf("Sub Commands:\n");
 		tout.Printf("  sleep:MSEC           sleep for specified milliseconds\n");
 		tout.Printf("  repeat[:N] {CMD...}  repeat the commands N times (default: infinite)\n");
+		tout.Printf("  put:VALUE            drive the pin (0, 1, lo, hi)\n");;
+		tout.Printf("  toggle               toggle pin value\n");
 		tout.Printf("  func:FUNCTION        set pin function (%s)\n", GPIOInfo::GetHelp_AvailableFunc());
+		tout.Printf("  dir:DIR              set pin direction (in, out)\n");
+		tout.Printf("  pull:DIR             set pull direction (up, down, both, none)\n");
 		tout.Printf("  drive:STRENGTH       set pin drive strength (%s)\n", strAvailableDrive);
 		tout.Printf("  slew:SLEW            set slew rate (%s)\n", strAvailableSlew);
-		tout.Printf("  pull:DIR             set pull direction (up, down, both, none)\n");
-		tout.Printf("  dir:DIR              set pin direction (in, out)\n");
-		tout.Printf("  put:VALUE            set pin value (0, 1, lo, hi)\n");;
-		tout.Printf("  toggle               toggle pin value\n");
 		return Result::Success;
 	}
 	int nArgsSkip = 0;
@@ -209,6 +209,12 @@ bool ProcessGPIO(Printable& terr, Printable& tout, const int pinTbl[], int nPins
 					uint pin = pinTbl[i];
 					::gpio_set_dir(pin, GPIO_OUT);
 				}
+			} else if (::strcmp(value, "-") == 0 || ::strcmp(value, "--") == 0 || ::strcmp(value, "---") == 0) {
+				for (int i = 0; i < nPins; ++i) {
+					uint pin = pinTbl[i];
+					::gpio_set_dir(pin, GPIO_IN);
+					::gpio_set_input_enabled(pin, false);
+				}
 			} else {
 				terr.Printf("unknown direction: %s\n", value);
 				return false;
@@ -272,10 +278,12 @@ void PrintPinFunc(Printable& tout, uint pin)
 	gpio_function_t pinFunc = ::gpio_get_function(pin);
 	gpio_drive_strength driveStrength = ::gpio_get_drive_strength(pin);
 	gpio_slew_rate slewRate = ::gpio_get_slew_rate(pin);
-	tout.Printf("GPIO%-2u %-10s %-2s pull:%-4s %4s %-4s\n",
+	tout.Printf("GPIO%-2u %s%s func:%-10s dir:%-3s pull:%-4s drive:%s slew:%s\n",
 		pin,
-		(pinFunc == GPIO_FUNC_SIO)? ((::gpio_get_dir(pin) == GPIO_OUT)? "SIO OUT" : "SIO IN") : GPIOInfo::GetFuncName(pinFunc, pin, "------"),
 		::gpio_get(pin)? "hi" : "lo",
+		(::gpio_get(pin) == ::gpio_get_out_level(pin))? " " : "~",
+		GPIOInfo::GetFuncName(pinFunc, pin, "------"),
+		(::gpio_get_dir(pin) == GPIO_OUT)? "out" : "in",
 		(!::gpio_is_pulled_down(pin) && !::gpio_is_pulled_up(pin))? "none" :
 		(::gpio_is_pulled_down(pin) && ::gpio_is_pulled_up(pin))? "both" :
 		::gpio_is_pulled_down(pin)? "down" : "up",

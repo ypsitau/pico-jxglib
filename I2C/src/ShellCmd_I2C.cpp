@@ -62,12 +62,12 @@ ShellCmd_Named(i2c_, "i2c", "controls I2C bus communication")
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
 		Arg::OptBool("help-pin",	0x0,	"prints help for pin assignment"),
-		Arg::OptString("pin",		'p',	"sets GPIO pins for I2C", "SDA,SCL"),
-		Arg::OptString("freq",		'f',	"sets I2C frequency (default: 100000)", "FREQ"),
-		Arg::OptString("timeout",	't',	"sets timeout for I2C operations (default: 300)", "MSEC"),
 		Arg::OptBool("dumb",		0x0,	"no I2C operations, just remember the pins and frequency"),
 		Arg::OptBool("verbose",		'v',	"verbose output for debugging"),
+		Arg::OptString("pin",		'p',	"sets GPIO pins for I2C", "SDA,SCL"),
+		Arg::OptString("freq",		'f',	"sets I2C frequency (default: 100000)", "FREQ"),
 		Arg::OptString("pullup",	0x0,	"enables/disables internal pull-up resistors (default: enabled)", "on|off"),
+		Arg::OptString("timeout",	't',	"sets timeout for I2C operations (default: 300)", "MSEC"),
 	};
 	bool hasArgs = (argc > 1);
 	Arg arg(optTbl, count_of(optTbl));
@@ -411,7 +411,7 @@ void PrintConfig(Printable& tout, int iBus, const char* formatGPIO)
 	tout.Printf("I2C%d:", iBus);
 	printPin("SDA", config.SDA);
 	printPin("SCL", config.SCL);
-	tout.Printf(" @ %d Hz, pullup:%s\n", config.freq, config.pullupFlag ? "on" : "off");
+	tout.Printf(" freq:%dHz pullup:%s timeout:%dmsec\n", config.freq, config.pullupFlag ? "on" : "off", config.msecTimeout);
 }
 
 }

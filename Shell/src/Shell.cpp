@@ -489,12 +489,12 @@ bool Shell::Arg::Opt::CheckLongName(const char* longName, const char** pValue) c
 	const char* p1 = longName;
 	const char* p2 = longName_;
 	for ( ; ; p1++, p2++) {
-		char ch1 = (*p1 == '=')? '\0' : *p1;
+		char ch1 = (*p1 == '=' || *p1 == ':')? '\0' : *p1;
 		char ch2 = *p2;
 		if (ch1 != ch2) return false;
 		if (ch1 == '\0') break;
 	}
-	if (pValue && *p1 == '=') *pValue = p1 + 1;
+	if (pValue && (*p1 == '=' || *p1 == ':')) *pValue = p1 + 1;
 	return true;
 }
 

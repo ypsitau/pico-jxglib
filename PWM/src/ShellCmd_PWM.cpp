@@ -20,12 +20,12 @@ ShellCmd(pwm, "controls PWM pins")
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",	'h', "prints this help"),
-		Arg::OptBool("onlypwm",	'n', "only show PWM-capable pins"),
+		Arg::OptBool("only-pwm",	'n', "only show PWM-capable pins"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	bool genericFlag = (::strcmp(GetName(), "pwm") == 0);
-	bool onlyPWMFlag = arg.GetBool("onlypwm");
+	bool onlyPWMFlag = arg.GetBool("only-pwm");
 	if (arg.GetBool("help")) {
 		if (genericFlag) {
 			tout.Printf("Usage: %s [OPTION]... [PIN [COMMAND]...]\n", GetName());
@@ -33,18 +33,18 @@ ShellCmd(pwm, "controls PWM pins")
 			tout.Printf("Usage: %s [OPTION]... [COMMAND]...\n", GetName());
 		}
 		arg.PrintHelp(tout);
-		tout.Printf("Commands:\n");
-		tout.Printf("  func=FUNCTION      set pin function (%s)\n", GPIOInfo::GetHelp_AvailableFunc());
+		tout.Printf("Sub Commands:\n");
+		tout.Printf("  func:FUNCTION      set pin function (%s)\n", GPIOInfo::GetHelp_AvailableFunc());
 		tout.Printf("  enable             start PWM output\n");
 		tout.Printf("  disable            stop PWM output\n");
-		tout.Printf("  freq=FREQUENCY     set PWM frequency in Hz\n");
-		tout.Printf("  duty=RATIO         set PWM duty ratio (0.0-1.0)\n");
-		tout.Printf("  clkdiv=DIVIDER     set PWM clock divider (1.0-256.0)\n");
-		tout.Printf("  wrap=VALUE         set PWM wrap value (0-65535)\n");
-		tout.Printf("  level=VALUE        set PWM level (0-65535)\n");
-		tout.Printf("  phase-correct=BOOL enable/disable phase-correct (1 or 0)\n");
-		tout.Printf("  invert=BOOL        enable/disable inverted output (1 or 0)\n");
-		tout.Printf("  counter=VALUE      set PWM counter value (0-65535)\n");
+		tout.Printf("  freq:FREQUENCY     set PWM frequency in Hz\n");
+		tout.Printf("  duty:RATIO         set PWM duty ratio (0.0-1.0)\n");
+		tout.Printf("  clkdiv:DIVIDER     set PWM clock divider (1.0-256.0)\n");
+		tout.Printf("  wrap:VALUE         set PWM wrap value (0-65535)\n");
+		tout.Printf("  level:VALUE        set PWM level (0-65535)\n");
+		tout.Printf("  phase-correct:BOOL enable/disable phase-correct (0, 1)\n");
+		tout.Printf("  invert:BOOL        enable/disable inverted output (0, 1)\n");
+		tout.Printf("  counter:VALUE      set PWM counter value (0-65535)\n");
 		return Result::Success;
 	}
 	int pinTbl[GPIO::NumPins];
@@ -266,13 +266,13 @@ void PrintPWMStatus(Printable& tout, uint pin, bool onlyPWMFlag)
 	const char* funcName = GPIOInfo::GetFuncName(::gpio_get_function(pin), pin, "------");
 	if (pinFunc == GPIO_FUNC_PWM) {
 		PWM pwm(pin);
-		tout.Printf("GPIO%-2u %s %-8s freq=%uHz (clkdiv=%.1f wrap=0x%04x) duty=%.3f (level=0x%04x)%s%s counter=0x%04x\n",
+		tout.Printf("GPIO%-2u func:%-10s %-8s freq:%uHz (clkdiv:%.1f wrap:0x%04x) duty:%.3f (level:0x%04x)%s%s counter:0x%04x\n",
 			pin, funcName, pwm.is_enabled()? "enabled" : "disabled",
 			pwm.get_freq(), pwm.get_clkdiv(), pwm.get_wrap(), pwm.get_chan_duty(), pwm.get_chan_level(),
 			pwm.get_phase_correct()? " phase-correct" : "",
 			pwm.get_chan_output_polarity() ? " inverted" : "",
 			pwm.get_counter());
 	} else if (!onlyPWMFlag) {
-		tout.Printf("GPIO%-2u %s\n", pin, funcName);
+		tout.Printf("GPIO%-2u func:%s\n", pin, funcName);
 	}
 }

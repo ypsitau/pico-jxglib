@@ -66,6 +66,8 @@ ShellCmd_Named(spi_, "spi", "controls SPI bus communication")
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
 		Arg::OptBool("help-pin",	0x0,	"prints help for pin assignment"),
+		Arg::OptBool("dumb",		0x0,	"no SPI operations, just remember the pins and settings"),
+		Arg::OptBool("verbose",		'v',	"verbose output for debugging"),
 		Arg::OptString("pin",		'p',	"sets GPIO pins for SPI (function auto-detected)", "SCK,MOSI[,MISO]"),
 		Arg::OptString("pin-cs",	'c',	"sets CS pin (any GPIO)", "CS_PIN"),
 		Arg::OptString("freq",		'f',	"sets SPI frequency (default: 1000000)", "FREQ"),
@@ -74,8 +76,6 @@ ShellCmd_Named(spi_, "spi", "controls SPI bus communication")
 		Arg::OptString("cpha",		0x0,	"sets clock phase (0 or 1, default: 0)", "CPHA"),
 		Arg::OptString("order",		0x0,	"sets bit order (msb or lsb, default: msb)", "ORDER"),
 		Arg::OptString("dummy",		0x0,	"sets dummy byte for read operations (default: 0x00)", "BYTE"),
-		Arg::OptBool("dumb",		0x0,	"no SPI operations, just remember the pins and settings"),
-		Arg::OptBool("verbose",		'v',	"verbose output for debugging"),
 	};
 	bool hasArgs = (argc > 1);
 	Arg arg(optTbl, count_of(optTbl));
@@ -499,7 +499,7 @@ void PrintConfig(Printable& tout, int iBus, const char* formatGPIO)
 	printPin("MOSI", config.MOSI);
 	printPin("MISO", config.MISO);
 	printPin("CS", config.CS);
-	tout.Printf(" @ %d Hz, Mode%d (CPOL:%d CPHA:%d) %s Dummy:0x%02x\n",
+	tout.Printf(" freq:%dHz mode:%d (cpol:%d cpha:%d) order:%s dummy:0x%02x\n",
 		config.freq, mode, config.cpol, config.cpha, (config.order == SPI_MSB_FIRST)? "MSB" : "LSB", config.byteDummy);
 }
 
