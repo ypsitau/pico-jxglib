@@ -101,7 +101,7 @@ bool Shell::RunSingleCmd(Readable& tin, Printable& tout, Printable& terr, int ar
 
 bool Shell::RunScript(Readable& tin, Printable& tout, Printable& terr, Readable& script)
 {
-	char line[256];
+	char line[Terminal::EditBuffSize];
 	while (script.ReadLine(line, sizeof(line)) > 0) {
 		if (!RunCmd(tin, tout, terr, line, sizeof(line))) return false;
 	}

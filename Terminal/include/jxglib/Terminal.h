@@ -14,7 +14,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class Terminal : public Printable {
 public:
-	static const int EditBuffSize = 128;
+	static const int EditBuffSize = 256;
 public:
 	class LineEditor {
 	private:
