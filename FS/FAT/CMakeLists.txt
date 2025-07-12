@@ -52,7 +52,7 @@ target_link_libraries(jxglib_FAT_RAMDisk INTERFACE
 	jxglib_FAT)
 
 #------------------------------------------------------------------------------
-function(jxglib_configure_FAT target)
+function(jxglib_configure_FAT TARGET)
 	set(VARS
 		FF_FS_READONLY
 		FF_FS_MINIMIZE
@@ -136,5 +136,5 @@ function(jxglib_configure_FAT target)
 	jxglib_set_if_undefined(_FF_FS_REENTRANT	0)
 	jxglib_set_if_undefined(_FF_FS_TIMEOUT		1000)
 	configure_file(${JXGLIB_DIR}/FS/FAT/ffconf.h.in ${CMAKE_CURRENT_BINARY_DIR}/ffconf.h)
-	target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+	target_include_directories(${TARGET} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 endfunction()

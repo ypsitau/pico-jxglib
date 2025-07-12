@@ -14,7 +14,7 @@ target_sources(jxglib_USBDevice INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/CDC.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/MSC.cpp)
 
-function(jxglib_configure_USBDevice target)
+function(jxglib_configure_USBDevice TARGET)
 	set(VARS
 		CFG_TUSB_OS
 		CFG_TUSB_DEBUG
@@ -49,7 +49,7 @@ function(jxglib_configure_USBDevice target)
 	jxglib_set_if_undefined(_CFG_TUD_HID_EP_BUFSIZE				64)
 	jxglib_set_if_undefined(_CFG_TUD_MSC_EP_BUFSIZE				512)
 	configure_file(${JXGLIB_DIR}/USBDevice/tusb_config.h.in ${CMAKE_CURRENT_BINARY_DIR}/tusb_config.h)
-		target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+		target_include_directories(${TARGET} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 endfunction()
 
 #------------------------------------------------------------------------------
