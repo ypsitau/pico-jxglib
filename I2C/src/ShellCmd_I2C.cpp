@@ -18,6 +18,9 @@ struct Config {
 
 static Config configTbl[2];  // I2C0 and I2C1 configurations
 
+const int bytesDataBuff = 8192;
+static uint8_t* dataBuff = nullptr;
+
 static void ScanBus(Printable& tout, Printable& terr, I2C& i2c, int iBus, const Config& config);
 static bool WriteData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const char* value, bool nostop, uint32_t msecTimeout);
 static bool ReadData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const char* value, bool nostop, uint32_t msecTimeout);
@@ -340,13 +343,19 @@ void ScanBus(Printable& tout, Printable& terr, I2C& i2c, int iBus, const Config&
 	}
 }
 
+void AllocDataBuff()
+{
+	if (!dataBuff) dataBuff = new uint8_t[bytesDataBuff];
+	if (!dataBuff) ::panic("Failed to allocate data buffer for I2C operations");
+}
+
 bool WriteData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const char* value, bool nostop, uint32_t msecTimeout)
 {
 	if (!value) {
 		terr.Printf("No data to write\n");
 		return false;
 	}
-	uint8_t data[512];
+	AllocDataBuff();
 	int bytesToWrite = 0;
 	Shell::Arg::EachNum each(value);
 	if (!each.CheckValidity(&bytesToWrite)) {
@@ -355,8 +364,8 @@ bool WriteData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const c
 	} else if (bytesToWrite == 0) {
 		terr.Printf("No data to write\n");
 		return false;
-	} else if (bytesToWrite > sizeof(data)) {
-		terr.Printf("Data size exceeds buffer limit (%zu bytes)\n", sizeof(data));
+	} else if (bytesToWrite > bytesDataBuff) {
+		terr.Printf("Data size exceeds buffer limit (%zu bytes)\n", bytesDataBuff);
 		return false;
 	}
 	int num;
@@ -365,9 +374,9 @@ bool WriteData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const c
 			terr.Printf("Invalid data value: %d\n", num);
 			return false;
 		}
-		data[i] = static_cast<uint8_t>(num);
+		dataBuff[i] = static_cast<uint8_t>(num);
 	}
-	int bytesWritten = i2c.write_blocking_until(addr, data, bytesToWrite, nostop, ::make_timeout_time_ms(msecTimeout));
+	int bytesWritten = i2c.write_blocking_until(addr, dataBuff, bytesToWrite, nostop, ::make_timeout_time_ms(msecTimeout));
 	if (bytesWritten < 0) {
 		terr.Printf("Failed to write data to address 0x%02x\n", addr);
 		return false;
@@ -377,23 +386,23 @@ bool WriteData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const c
 
 bool ReadData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const char* value, bool nostop, uint32_t msecTimeout)
 {
-	uint8_t data[512];
-	int bytesToRead = sizeof(data);
+	AllocDataBuff();
+	int bytesToRead = bytesDataBuff;
 	if (value) {
 		int num = ::strtol(value, nullptr, 0);
-		if (num < 1 || num > sizeof(data)) {
+		if (num < 1 || num > bytesDataBuff) {
 			terr.Printf("Invalid number of bytes to read: %s\n", value);
 			return false;
 		}
 		bytesToRead = static_cast<int>(num);
 	}
-	int bytesRead = i2c.read_blocking_until(addr, data, bytesToRead, nostop, ::make_timeout_time_ms(msecTimeout));
+	int bytesRead = i2c.read_blocking_until(addr, dataBuff, bytesToRead, nostop, ::make_timeout_time_ms(msecTimeout));
 	if (bytesRead < 0) {
 		terr.Printf("Failed to read data from address 0x%02x\n", addr);
 		return false;
 	}
 	Printable::DumpT dump(tout);
-	dump.Addr(bytesToRead > dump.GetBytesPerRow())(data, bytesRead);
+	dump.Addr(bytesToRead > dump.GetBytesPerRow())(dataBuff, bytesRead);
 	return true;
 }
 

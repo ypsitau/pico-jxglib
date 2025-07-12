@@ -13,6 +13,7 @@ int main()
 	GPIO5.set_function_I2C0_SCL().pull_up();
 	SSD1306 display(i2c0);
 	display.Initialize();
+	::printf("----\n");
 	DrawableTest::DrawString(display);
 	//DrawableTest::RotateImage(display);
 	//DrawableTest::DrawFonts(display);
