@@ -29,9 +29,13 @@ public:
 	LABOPlatform(int bytesFlash = PICO_FLASH_SIZE_BYTES - 0x010'0000);
 public:
 	void Initialize();
+	LABOPlatform& AttachStdio() { attachStdioFlag_ = true; return *this; }
+public:
 	USBDevice::Controller& GetDeviceController() { return deviceController_; }
 	FAT::Flash& GetFAT() { return fat_; }
-	LABOPlatform& AttachStdio() { attachStdioFlag_ = true; return *this; }
+	USBDevice::MSCDrive& GetMSCDrive() { return mscDrive_; }
+	USBDevice::CDCSerial& GetCDCSerial() { return cdcSerial_; }
+	Serial::Terminal& GetTerminal() { return terminal_; }
 };
 
 }
