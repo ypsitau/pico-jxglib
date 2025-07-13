@@ -1,39 +1,42 @@
 //==============================================================================
 // PIO.cpp
 //==============================================================================
+#include <stdlib.h>
 #include "jxglib/PIO.h"
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// PIOIf
+// PIO::Instance
 //------------------------------------------------------------------------------
-PIOIf PIO0(pio0);
-PIOIf PIO1(pio1);
+PIO::Instance PIO0(pio0);
+PIO::Instance PIO1(pio1);
+
+namespace PIO {
 
 //------------------------------------------------------------------------------
-// PIOProgram
+// PIO::Program
 //------------------------------------------------------------------------------
-PIOProgram::PIOProgram() : addrRelCur_{0}, addrRel_wrap_{AddrRelInvalid}, addrRel_wrap_target_{AddrRelInvalid}, sideSet_{0, false, false}
+Program::Program() : addrRelCur_{0}, addrRel_wrap_{AddrRelInvalid}, addrRel_wrap_target_{AddrRelInvalid}, sideSet_{0, false, false}
 {
 	for (int i = 0; i < count_of(instTbl_); ++i) instTbl_[i] = 0x0000;
 }
 
-void PIOProgram::AddVariable(const char* label, uint16_t addrRel)
+void Program::AddVariable(const char* label, uint16_t addrRel)
 {
 	Variable* pVariable = new Variable(label, addrRel);
 	pVariable->SetNext(pVariableHead_.release());
 	pVariableHead_.reset(pVariable);
 }
 
-void PIOProgram::AddVariableRef(const char* label, uint16_t addrRel)
+void Program::AddVariableRef(const char* label, uint16_t addrRel)
 {
 	Variable* pVariable = new Variable(label, addrRel);
 	pVariable->SetNext(pVariableRefHead_.release());
 	pVariableRefHead_.reset(pVariable);
 }
 
-const PIOProgram::Variable* PIOProgram::LookupVariable(const char* label) const
+const Program::Variable* Program::LookupVariable(const char* label) const
 {
 	for (const Variable* pVariable = pVariableHead_.get(); pVariable; pVariable = pVariable->GetNext()) {
 		if (::strcmp(pVariable->GetLabel(), label) == 0) return pVariable;
@@ -41,7 +44,7 @@ const PIOProgram::Variable* PIOProgram::LookupVariable(const char* label) const
 	return nullptr;
 }
 
-void PIOProgram::Resolve()
+void Program::Resolve()
 {
 	for (Variable* pVariableRef = pVariableRefHead_.get(); pVariableRef; pVariableRef = pVariableRef->GetNext()) {
 		const Variable* pVariable = LookupVariable(pVariableRef->GetLabel());
@@ -49,47 +52,40 @@ void PIOProgram::Resolve()
 			uint16_t& inst = instTbl_[pVariableRef->GetAddrRel()];
 			inst = inst & 0xffe0 | pVariable->GetAddrRel();
 		} else {
-			::panic("PIOProgram::ResolveLabelRef: label '%s' not found\n", pVariableRef->GetLabel());
+			::panic("Program::ResolveLabelRef: label '%s' not found\n", pVariableRef->GetLabel());
 		}
 	}
 }
 
-PIOProgram& PIOProgram::AddInst(uint16_t inst)
+Program& Program::AddInst(uint16_t inst)
 {
+	// error check here
 	if (addrRelCur_ < count_of(instTbl_)) {
 		instTbl_[addrRelCur_++] = inst;
 	} else {
-		::panic("PIOProgram::AddInst: too many PIO instructions\n");
+		::panic("Program::AddInst: too many PIO instructions\n");
 	}
 	return *this;
 }
 
-PIOProgram& PIOProgram::L(const char* label)
+Program& Program::L(const char* label)
 {
 	return *this;
 }
 
-PIOProgram& PIOProgram::wrap_target()
+Program& Program::wrap_target()
 {
 	addrRel_wrap_target_ = addrRelCur_;
 	return *this;
 }
 
-PIOProgram& PIOProgram::wrap()
+Program& Program::wrap()
 {
 	addrRel_wrap_ = addrRelCur_;
 	return *this;
 }
 
-PIOProgram& PIOProgram::side_set(int count, bool optFlag, bool pindirsFlag)
-{
-	sideSet_.count = count;
-	sideSet_.optFlag = optFlag;
-	sideSet_.pindirsFlag = pindirsFlag;
-	return *this;
-}
-
-PIOProgram& PIOProgram::jmp(const char* cond, uint16_t addr)
+Program& Program::jmp(const char* cond, uint16_t addr)
 {
 	if (::strcasecmp(cond, "!x") == 0) return jmp_not_x(addr);
 	if (::strcasecmp(cond, "x--") == 0) return jmp_x_dec(addr);
@@ -98,44 +94,183 @@ PIOProgram& PIOProgram::jmp(const char* cond, uint16_t addr)
 	if (::strcasecmp(cond, "x!=y") == 0 || ::strcasecmp(cond, "x != y") == 0) return jmp_x_ne_y(addr);
 	if (::strcasecmp(cond, "pin") == 0) return jmp_pin(addr);
 	if (::strcasecmp(cond, "!osre") == 0) return jmp_not_osre(addr);
-	::panic("PIOProgram::jmp: invalid condition '%s'\n", cond);
+	::panic("Program::jmp: invalid condition '%s'\n", cond);
 	return *this;
 }
 
-PIOProgram& PIOProgram::irq(const char* op, uint16_t irq_n, bool relative)
+Program& Program::wait(const char* src, uint16_t index)
 {
+	bool polarity = true;
+	if (*src == '!') {
+		polarity = false;
+		src++;
+	}
+	if (::strcasecmp(src, "gpio") == 0)		return wait_gpio(polarity, index);
+	if (::strcasecmp(src, "pin") == 0)		return wait_pin(polarity, index);
+	if (::strcasecmp(src, "irq") == 0)		return wait_irq(polarity, false, index);
+	::panic("Program::wait: invalid source '%s'\n", src);
+	return *this;
+}
+
+Program& Program::mov(const char* dest, const char* src)
+{
+	if (StartsWithICase(dest, "rxfifo[")) {
+		dest += 7;
+		if (::strcasecmp(src, "isr") != 0) {
+			::panic("Program::mov: invalid source '%s'\n", src);
+		}
+		uint16_t inst = 0;
+		if (::strcasecmp(dest, "y]") == 0) {
+			inst = 0b10000000'00010000;
+		} else {
+			char* endptr;
+			int index = ::strtol(dest, &endptr, 0);
+			if (::strcmp(endptr, "]") != 0) {
+				::panic("Program::mov: invalid destination '%s'\n", dest);
+			}
+			if (index < 0 || index > 7) {
+				::panic("Program::mov: index out of range %d\n", index);
+			}
+			inst = 0b10000000'00010000 | static_cast<uint16_t>(index);
+		}
+		return word(inst);
+	} else if (StartsWithICase(src, "rxfifo[")) {
+		src += 7;
+		if (::strcasecmp(dest, "osr") != 0) {
+			::panic("Program::mov: invalid destination '%s'\n", dest);
+		}
+		uint16_t inst = 0;
+		if (::strcasecmp(src, "y]") == 0) {
+			inst = 0b10000000'10010000;
+		} else {
+			char* endptr;
+			int index = ::strtol(src, &endptr, 0);
+			if (::strcmp(endptr, "]") != 0) {
+				::panic("Program::mov: invalid source '%s'\n", src);
+			}
+			if (index < 0 || index > 7) {
+				::panic("Program::mov: index out of range %d\n", index);
+			}
+			inst = 0b10000000'10010000 | static_cast<uint16_t>(index);
+		}
+		return word(inst);
+	} else {
+		if (*src == '!' || *src == '~') return mov_not(StrToSrcDest(dest), StrToSrcDest(src + 1));
+		if (*src == ':' && *(src + 1) == ':') return mov_reverse(StrToSrcDest(dest), StrToSrcDest(src + 2));
+		return mov(StrToSrcDest(dest), StrToSrcDest(src));
+	}
+}
+
+Program& Program::irq(const char* op, uint16_t irq_n)
+{
+	bool relative = false;
 	if (::strcasecmp(op, "set") == 0) return irq_set(irq_n, relative);
+	if (::strcasecmp(op, "nowait") == 0) return irq_set(irq_n, relative);
 	if (::strcasecmp(op, "wait") == 0) return irq_wait(irq_n, relative);
 	if (::strcasecmp(op, "clear") == 0) return irq_clear(irq_n, relative);
-	::panic("PIOProgram::irq: invalid operation '%s'\n", op);
+	::panic("Program::irq: invalid operation '%s'\n", op);
 	return *this;
 }
 
-PIOProgram& PIOProgram::side(uint16_t bits)
+Program& Program::side(uint16_t bits)
 {
-	if (sideSet_.count == 0) ::panic("PIOProgram::side: side-set not defined\n");
+	if (sideSet_.count == 0) ::panic("Program::side: side-set not defined\n");
 	uint16_t& inst = instTbl_[addrRelCur_ - 1];
 	int lsb = 13 - sideSet_.count;
 	inst = inst | (bits << lsb);
 	return *this;
 }
 
-PIOProgram& PIOProgram::delay(uint16_t cycles)
+Program& Program::delay(uint16_t cycles)
 {
 	uint16_t& inst = instTbl_[addrRelCur_ - 1];
 	inst = inst | (cycles << 8);
 	return *this;
 }
 
-//------------------------------------------------------------------------------
-// PIOBox
-//------------------------------------------------------------------------------
-bool PIOBox::ClaimResource()
+Program& Program::rel()
 {
-	PIO pio_;
+	uint16_t& inst = instTbl_[addrRelCur_ - 1];
+	if (Is_IRQ(inst)) {
+		inst |= (2 << 3);
+	} else if (Is_WAIT(inst) && ((inst >> 5) & 0x3) == 2) {	// wait irq
+		inst |= (2 << 3);
+	} else {
+		::panic("Program::rel: rel() is not applicable\n");
+	}
+	return *this;
+}
+
+Program& Program::iffull()
+{
+	uint16_t& inst = instTbl_[addrRelCur_ - 1];
+	if (Is_PUSH(inst)) {
+		inst |= (1 << 6);
+	} else {
+		::panic("Program::iffull: iffull() is not applicable\n");
+	}
+	return *this;
+}
+
+Program& Program::ifempty()
+{
+	uint16_t& inst = instTbl_[addrRelCur_ - 1];
+	if (Is_PULL(inst)) {
+		inst |= (1 << 6);
+	} else {
+		::panic("Program::iffull: iffull() is not applicable\n");
+	}
+	return *this;
+}
+
+Program& Program::block()
+{
+	uint16_t& inst = instTbl_[addrRelCur_ - 1];
+	if (Is_PUSHorPULL(inst)) {
+		inst |= (1 << 5);
+	} else {
+		::panic("Program::block: block() is not applicable\n");
+	}
+	return *this;
+}
+
+Program& Program::noblock()
+{
+	uint16_t& inst = instTbl_[addrRelCur_ - 1];
+	if (Is_PUSHorPULL(inst)) {
+		inst &= ~(1 << 5);
+	} else {
+		::panic("Program::block: block() is not applicable\n");
+	}
+	return *this;
+}
+
+pio_src_dest Program::StrToSrcDest(const char* str)
+{
+	if (::strcasecmp(str, "pins") == 0)		return pio_pins;
+	if (::strcasecmp(str, "x") == 0)		return pio_x;
+	if (::strcasecmp(str, "y") == 0)		return pio_y;
+	if (::strcasecmp(str, "null") == 0)		return pio_null;
+	if (::strcasecmp(str, "pindirs") == 0)	return pio_pindirs;
+	if (::strcasecmp(str, "exec_mov") == 0)	return pio_exec_mov;
+	if (::strcasecmp(str, "status") == 0)	return pio_status;
+	if (::strcasecmp(str, "pc") == 0)		return pio_pc;
+	if (::strcasecmp(str, "isr") == 0)		return pio_isr;
+	if (::strcasecmp(str, "osr") == 0)		return pio_osr;
+	if (::strcasecmp(str, "exec_out") == 0)	return pio_exec_out;
+	::panic("Program::StrToSrcDest: invalid source/destination '%s'\n", str);
+	return pio_pins;
+}
+
+//------------------------------------------------------------------------------
+// PIO::Controller
+//------------------------------------------------------------------------------
+bool Controller::ClaimResource()
+{
+	pio_t pio_;
 	uint sm_;
-	if (!PIOIf::claim_free_sm_and_add_program(program, &pio_, &sm_, &offset)) return false;
-	pio = PIOIf(pio_);
+	if (!Instance::claim_free_sm_and_add_program(program, &pio_, &sm_, &offset)) return false;
+	pio = Instance(pio_);
 	sm.SetResource(pio_, sm_);
 	cfg = get_default_config(offset);
 	uint pin = 0;
@@ -146,15 +281,17 @@ bool PIOBox::ClaimResource()
 	return true;
 }
 
-void PIOBox::UnclaimResource()
+void Controller::UnclaimResource()
 {
-	PIOIf::remove_program_and_unclaim_sm(program, sm.GetPIO(), sm.GetSM(), offset);
+	Instance::remove_program_and_unclaim_sm(program, sm.GetPIO(), sm.GetSM(), offset);
 	sm.Invalidate();
 }
 
-int PIOBox::InitSM()
+int Controller::InitSM()
 {
 	return sm.init(offset, cfg);
+}
+
 }
 
 }

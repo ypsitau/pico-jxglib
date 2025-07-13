@@ -10,16 +10,18 @@ using namespace jxglib;
 int main()
 {
 	::stdio_init_all();
-	PIOProgram program;
+	PIO::Program program;
 	program
-	.side_set(4)
+	.side_set(4).opt().pindirs()
 	.wrap_target()
-		.jmp	("")			[1]
-		.set	(pio_x, 0)		.side(0b1)	[0]
-		.mov	(pio_x, pio_y)
+		.jmp	("")							[1]
+		.set	(pio_x,		0)		.side(0b1)	[0]
+		.mov	(pio_x,		pio_y)
 	.L("loop")
 		.nop	()
-		.jmp	("")
+		.mov	("x",		"y")
+		.mov	("x",		"!y")
+		.mov	("x",		"::y")
 		.jmp	("!x",		"loop")
 		.jmp	("x--",		"loop")
 		.jmp	("!y",		"loop")
@@ -27,17 +29,25 @@ int main()
 		.jmp	("x!=y",	"loop")
 		.jmp	("pin",		"loop")
 		.jmp	("!osre",	"loop")
+		.wait	("gpio",	0)
+		.wait	("!gpio",	0)
+		.wait	("pin",		0)
+		.wait	("!pin",	0)
+		.wait	("irq",		0)
+		.wait	("!irq",	0)
+		.wait	("irq",		0).rel()
+		.wait	("!irq",	0).rel()
 	.wrap();
-	PIOBox pioBox(PIOVAR_program(blink), PIOVAR_get_default_config(blink));
-	pioBox.SetGPIO_out(GPIO3);
-	pioBox.SetGPIO_in(GPIO4);
-	pioBox.SetGPIO_set(GPIO5);
-	pioBox.SetGPIO_sideset(GPIO6);
-	pioBox.ClaimResource();
-	pioBox.InitSM();
-	pioBox.sm.put(0);
-	pioBox.sm.get();
-	pioBox.sm.is_rx_fifo_empty();
+	PIO::Controller pioCtrl(PIOVAR_program(blink), PIOVAR_get_default_config(blink));
+	pioCtrl.SetGPIO_out(GPIO3);
+	pioCtrl.SetGPIO_in(GPIO4);
+	pioCtrl.SetGPIO_set(GPIO5);
+	pioCtrl.SetGPIO_sideset(GPIO6);
+	pioCtrl.ClaimResource();
+	pioCtrl.InitSM();
+	pioCtrl.sm.put(0);
+	pioCtrl.sm.get();
+	pioCtrl.sm.is_rx_fifo_empty();
 	while (true) {
 		printf("Hello, world!\n");
 		sleep_ms(1000);
