@@ -28,33 +28,33 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-PIOBox C CXX ASM)
+project(test-PIO C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-PIOBox test-PIOBox.cpp )
+add_executable(test-PIO test-PIO.cpp )
 
-pico_set_program_name(test-PIOBox "test-PIOBox")
-pico_set_program_version(test-PIOBox "0.1")
-pico_generate_pio_header(test-PIOBox ${CMAKE_CURRENT_LIST_DIR}/blink.pio)
+pico_set_program_name(test-PIO "test-PIO")
+pico_set_program_version(test-PIO "0.1")
+pico_generate_pio_header(test-PIO ${CMAKE_CURRENT_LIST_DIR}/blink.pio)
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-PIOBox 1)
-pico_enable_stdio_usb(test-PIOBox 0)
+pico_enable_stdio_uart(test-PIO 1)
+pico_enable_stdio_usb(test-PIO 0)
 
 # Add the standard library to the build
-target_link_libraries(test-PIOBox
+target_link_libraries(test-PIO
 	pico_stdlib
-	jxglib_PIOBox)
+	jxglib_PIO)
 
 # Add the standard include files to the build
-target_include_directories(test-PIOBox PRIVATE
+target_include_directories(test-PIO PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-PIOBox)
+pico_add_extra_outputs(test-PIO)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)

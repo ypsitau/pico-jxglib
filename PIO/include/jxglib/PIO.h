@@ -17,7 +17,10 @@
 #define PIOVAR_program(progName)				progName##_program
 #define PIOVAR_get_default_config(progName)		progName##_program_get_default_config
 
+using pio_t = PIO;
+
 namespace jxglib {
+
 
 //------------------------------------------------------------------------------
 // PIOIf
