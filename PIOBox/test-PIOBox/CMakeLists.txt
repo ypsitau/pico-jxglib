@@ -1,45 +1,3 @@
-# == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
-if(WIN32)
-    set(USERHOME $ENV{USERPROFILE})
-else()
-    set(USERHOME $ENV{HOME})
-endif()
-set(sdkVersion 2.1.0)
-set(toolchainVersion 13_3_Rel1)
-set(picotoolVersion 2.1.0)
-set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
-if (EXISTS ${picoVscode})
-    include(${picoVscode})
-endif()
-# ====================================================================================
-# == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
-if(WIN32)
-    set(USERHOME $ENV{USERPROFILE})
-else()
-    set(USERHOME $ENV{HOME})
-endif()
-set(sdkVersion 2.1.0)
-set(toolchainVersion 13_3_Rel1)
-set(picotoolVersion 2.1.0)
-set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
-if (EXISTS ${picoVscode})
-    include(${picoVscode})
-endif()
-# ====================================================================================
-# == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
-if(WIN32)
-    set(USERHOME $ENV{USERPROFILE})
-else()
-    set(USERHOME $ENV{HOME})
-endif()
-set(sdkVersion 2.1.0)
-set(toolchainVersion 13_3_Rel1)
-set(picotoolVersion 2.1.0)
-set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
-if (EXISTS ${picoVscode})
-    include(${picoVscode})
-endif()
-# ====================================================================================
 # Generated Cmake Pico project file
 
 cmake_minimum_required(VERSION 3.13)
@@ -53,16 +11,16 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
 if(WIN32)
-	set(USERHOME $ENV{USERPROFILE})
+    set(USERHOME $ENV{USERPROFILE})
 else()
-	set(USERHOME $ENV{HOME})
+    set(USERHOME $ENV{HOME})
 endif()
-set(sdkVersion 2.1.0)
-set(toolchainVersion 13_3_Rel1)
-set(picotoolVersion 2.1.0)
+set(sdkVersion 2.1.1)
+set(toolchainVersion 14_2_Rel1)
+set(picotoolVersion 2.1.1)
 set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
 if (EXISTS ${picoVscode})
-	include(${picoVscode})
+    include(${picoVscode})
 endif()
 # ====================================================================================
 set(PICO_BOARD pico CACHE STRING "Board type")
@@ -70,34 +28,34 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-PIO C CXX ASM)
+project(test-PIOBox C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
-
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-PIO test-PIO.cpp )
+add_executable(test-PIOBox test-PIOBox.cpp )
 
-pico_set_program_name(test-PIO "test-PIO")
-pico_set_program_version(test-PIO "0.1")
-pico_generate_pio_header(test-PIO ${CMAKE_CURRENT_LIST_DIR}/blink.pio)
+pico_set_program_name(test-PIOBox "test-PIOBox")
+pico_set_program_version(test-PIOBox "0.1")
+pico_generate_pio_header(test-PIOBox ${CMAKE_CURRENT_LIST_DIR}/blink.pio)
 
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-PIO 1)
-pico_enable_stdio_usb(test-PIO 0)
+pico_enable_stdio_uart(test-PIOBox 1)
+pico_enable_stdio_usb(test-PIOBox 0)
 
 # Add the standard library to the build
-target_link_libraries(test-PIO
+target_link_libraries(test-PIOBox
 	pico_stdlib
-	jxglib_PIO)
+	jxglib_PIOBox)
 
 # Add the standard include files to the build
-target_include_directories(test-PIO PRIVATE
+target_include_directories(test-PIOBox PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-PIO)
+pico_add_extra_outputs(test-PIOBox)
+
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)

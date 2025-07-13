@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "jxglib/PIO.h"
+#include "jxglib/PIOBox.h"
 #include "blink.pio.h"
 
 using namespace jxglib;
