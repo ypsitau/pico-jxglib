@@ -146,7 +146,7 @@ Program& Program::mov(const char* dest, const char* src)
 			if (index < 0 || index > 7) {
 				::panic("Program::mov: index out of range %d\n", index);
 			}
-			inst = 0b10000000'00010000 | static_cast<uint16_t>(index);
+			inst = 0b10000000'00011000 | static_cast<uint16_t>(index);
 		}
 		return word(inst);
 	} else if (StartsWithICase(src, "rxfifo[")) {
@@ -166,7 +166,7 @@ Program& Program::mov(const char* dest, const char* src)
 			if (index < 0 || index > 7) {
 				::panic("Program::mov: index out of range %d\n", index);
 			}
-			inst = 0b10000000'10010000 | static_cast<uint16_t>(index);
+			inst = 0b10000000'10011000 | static_cast<uint16_t>(index);
 		}
 		return word(inst);
 	} else {
