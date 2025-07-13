@@ -3,13 +3,16 @@
 //==============================================================================
 #ifndef PICO_JXGLIB_PIO_H
 #define PICO_JXGLIB_PIO_H
+#include <string.h>
+#include <memory>
+#include <cstddef>
 #include "pico/stdlib.h"
 #include "hardware/pio.h"
 #include "jxglib/GPIO.h"
 
 #define PIOVAR_wrap_target(progName) 			progName##_wrap_target
 #define PIOVAR_wrap(progName)					progName##_wrap
-#define PIOVAR_pio_version(progName)			progName##_pio_version 0
+#define PIOVAR_pio_version(progName)			progName##_pio_version
 #define PIOVAR_offset(progName, label)			progName##_offset_##label
 #define PIOVAR_program(progName)				progName##_program
 #define PIOVAR_get_default_config(progName)		progName##_program_get_default_config
@@ -163,34 +166,92 @@ public:
 	static pio_interrupt_source_t get_rx_fifo_not_empty_interrupt_source(uint sm) { return ::pio_get_rx_fifo_not_empty_interrupt_source(sm); }
 };
 
-struct PIOEncode {
+class PIOProgram {
 public:
-	static uint delay(uint cycles) { return ::pio_encode_delay(cycles); }
-	static uint sideset(uint sideset_bit_count, uint value) { return ::pio_encode_sideset(sideset_bit_count, value); }
-	static uint sideset_opt(uint sideset_bit_count, uint value) { return ::pio_encode_sideset_opt(sideset_bit_count, value); }
-	static uint jmp(uint addr) { return ::pio_encode_jmp(addr); }
-	static uint jmp_not_x(uint addr) { return ::pio_encode_jmp_not_x(addr); }
-	static uint jmp_x_dec(uint addr) { return ::pio_encode_jmp_x_dec(addr); }
-	static uint jmp_not_y(uint addr) { return ::pio_encode_jmp_not_y(addr); }
-	static uint jmp_y_dec(uint addr) { return ::pio_encode_jmp_y_dec(addr); }
-	static uint jmp_x_ne_y(uint addr) { return ::pio_encode_jmp_x_ne_y(addr); }
-	static uint jmp_pin(uint addr) { return ::pio_encode_jmp_pin(addr); }
-	static uint jmp_not_osre(uint addr) { return ::pio_encode_jmp_not_osre(addr); }
-	static uint wait_gpio(bool polarity, uint gpio) { return ::pio_encode_wait_gpio(polarity, gpio); }
-	static uint wait_pin(bool polarity, uint pin) { return ::pio_encode_wait_pin(polarity, pin); }
-	static uint wait_irq(bool polarity, bool relative, uint irq) { return ::pio_encode_wait_irq(polarity, relative, irq); }
-	static uint in(enum pio_src_dest src, uint count) { return ::pio_encode_in(src, count); }
-	static uint out(enum pio_src_dest dest, uint count) { return ::pio_encode_out(dest, count); }
-	static uint push(bool if_full, bool block) { return ::pio_encode_push(if_full, block); }
-	static uint pull(bool if_empty, bool block) { return ::pio_encode_pull(if_empty, block); }
-	static uint mov(enum pio_src_dest dest, enum pio_src_dest src) { return ::pio_encode_mov(dest, src); }
-	static uint mov_not(enum pio_src_dest dest, enum pio_src_dest src) { return ::pio_encode_mov_not(dest, src); }
-	static uint mov_reverse(enum pio_src_dest dest, enum pio_src_dest src) { return ::pio_encode_mov_reverse(dest, src); }
-	static uint irq_set(bool relative, uint irq) { return ::pio_encode_irq_set(relative, irq); }
-	static uint irq_wait(bool relative, uint irq) { return ::pio_encode_irq_wait(relative, irq); }
-	static uint irq_clear(bool relative, uint irq) { return ::pio_encode_irq_clear(relative, irq); }
-	static uint set(enum pio_src_dest dest, uint value) { return ::pio_encode_set(dest, value); }
-	static uint nop(void) { return ::pio_encode_nop(); }
+	class Variable {
+		const char* label_;
+		uint16_t addrRel_;
+		std::unique_ptr<Variable> pVariableNext_;
+	public:
+		Variable(const char* label, uint16_t addrRel) : label_{label}, addrRel_{addrRel} {};
+		const char* GetLabel() const { return label_; }
+		uint16_t GetAddrRel() const { return addrRel_; }
+		void SetNext(Variable* pVariableNext) { pVariableNext_.reset(pVariableNext); }
+		Variable* GetNext() const { return pVariableNext_.get(); }
+	};
+	struct SideSet {
+		uint16_t count;
+		bool optFlag;
+		bool pindirsFlag;
+	};
+	static const uint16_t AddrRelInvalid = 0xffff;
+private:
+	uint16_t instTbl_[PIO_INSTRUCTION_COUNT];
+	uint16_t addrRelCur_;
+	uint16_t addrRel_wrap_target_;
+	uint16_t addrRel_wrap_;
+	SideSet sideSet_;
+	std::unique_ptr<Variable> pVariableHead_;
+	std::unique_ptr<Variable> pVariableRefHead_;
+public:
+	PIOProgram();
+public:
+	PIOProgram& AddInst(uint16_t inst);
+	PIOProgram& L(const char* label);
+public:
+	void AddVariable(const char* label, uint16_t addrRel);
+	void AddVariableRef(const char* label, uint16_t addrRel);
+	const Variable* LookupVariable(const char* label) const;
+	void Resolve();
+public:
+	// Directives
+	PIOProgram& wrap_target();
+	PIOProgram& wrap();
+	PIOProgram& side_set(int count, bool optFlag = false, bool pindirsFlag = false);
+	PIOProgram& side_set_opt(int count) { return side_set(count, true, false); }
+	PIOProgram& side_set_pindirs(int count) { return side_set(count, false, true); }
+	PIOProgram& side_set_opt_pindirs(int count) { return side_set(count, true, true); }
+public:
+	PIOProgram& word(uint16_t inst) { return AddInst(inst); }
+	PIOProgram& jmp(uint16_t addr) { return AddInst(::pio_encode_jmp(addr)); }
+	PIOProgram& jmp(const char* label) { AddVariable(label, addrRelCur_); return jmp(static_cast<uint16_t>(0)); }
+	PIOProgram& jmp_not_x(uint16_t addr) { return AddInst(::pio_encode_jmp_not_x(addr)); }
+	PIOProgram& jmp_not_x(const char* label) { AddVariable(label, addrRelCur_); return jmp_not_x(static_cast<uint16_t>(0)); }
+	PIOProgram& jmp_x_dec(uint16_t addr) { return AddInst(::pio_encode_jmp_x_dec(addr)); }
+	PIOProgram& jmp_x_dec(const char* label) { AddVariable(label, addrRelCur_); return jmp_x_dec(static_cast<uint16_t>(0)); }
+	PIOProgram& jmp_not_y(uint16_t addr) { return AddInst(::pio_encode_jmp_not_y(addr)); }
+	PIOProgram& jmp_not_y(const char* label) { AddVariable(label, addrRelCur_); return jmp_not_y(static_cast<uint16_t>(0)); }
+	PIOProgram& jmp_y_dec(uint16_t addr) { return AddInst(::pio_encode_jmp_y_dec(addr)); }
+	PIOProgram& jmp_y_dec(const char* label) { AddVariable(label, addrRelCur_); return jmp_y_dec(static_cast<uint16_t>(0)); }
+	PIOProgram& jmp_x_ne_y(uint16_t addr) { return AddInst(::pio_encode_jmp_x_ne_y(addr)); }
+	PIOProgram& jmp_x_ne_y(const char* label) { AddVariable(label, addrRelCur_); return jmp_x_ne_y(static_cast<uint16_t>(0)); }
+	PIOProgram& jmp_pin(uint16_t addr) { return AddInst(::pio_encode_jmp_pin(addr)); }
+	PIOProgram& jmp_pin(const char* label) { AddVariable(label, addrRelCur_); return jmp_pin(static_cast<uint16_t>(0)); }
+	PIOProgram& jmp_not_osre(uint16_t addr) { return AddInst(::pio_encode_jmp_not_osre(addr)); }
+	PIOProgram& jmp_not_osre(const char* label) { AddVariable(label, addrRelCur_); return AddInst(::pio_encode_jmp_not_osre(0)); }
+	PIOProgram& jmp(const char* cond, uint16_t addr);
+	PIOProgram& jmp(const char* cond, const char* label) { AddVariable(label, addrRelCur_); return jmp(cond, static_cast<uint16_t>(0)); }
+	PIOProgram& wait_gpio(bool polarity, uint16_t gpio) { return AddInst(::pio_encode_wait_gpio(polarity, gpio)); }
+	PIOProgram& wait_pin(bool polarity, uint16_t pin) { return AddInst(::pio_encode_wait_pin(polarity, pin)); }
+	PIOProgram& wait_irq(bool polarity, bool relative, uint16_t irq) { return AddInst(::pio_encode_wait_irq(polarity, relative, irq)); }
+	PIOProgram& in(enum pio_src_dest src, uint16_t count) { return AddInst(::pio_encode_in(src, count)); }
+	PIOProgram& out(enum pio_src_dest dest, uint16_t count) { return AddInst(::pio_encode_out(dest, count)); }
+	PIOProgram& push(bool if_full, bool block) { return AddInst(::pio_encode_push(if_full, block)); }
+	PIOProgram& pull(bool if_empty, bool block) { return AddInst(::pio_encode_pull(if_empty, block)); }
+	PIOProgram& mov(enum pio_src_dest dest, enum pio_src_dest src) { return AddInst(::pio_encode_mov(dest, src)); }
+	PIOProgram& mov_not(enum pio_src_dest dest, enum pio_src_dest src) { return AddInst(::pio_encode_mov_not(dest, src)); }
+	PIOProgram& mov_reverse(enum pio_src_dest dest, enum pio_src_dest src) { return AddInst(::pio_encode_mov_reverse(dest, src)); }
+	PIOProgram& irq_set(uint16_t irq_n, bool relative = false) { return AddInst(::pio_encode_irq_set(relative, irq_n)); }
+	PIOProgram& irq_wait(uint16_t irq_n, bool relative = false) { return AddInst(::pio_encode_irq_wait(relative, irq_n)); }
+	PIOProgram& irq_clear(uint16_t irq_n, bool relative = false) { return AddInst(::pio_encode_irq_clear(relative, irq_n)); }
+	PIOProgram& irq(const char* op, uint16_t irq_n, bool relative = false);
+	PIOProgram& irq_rel(const char* op, uint16_t irq_n) { return irq(op, irq_n, true); }
+	PIOProgram& set(enum pio_src_dest dest, uint16_t value) { return AddInst(::pio_encode_set(dest, value)); }
+	PIOProgram& nop(void) { return AddInst(::pio_encode_nop()); }
+public:
+	PIOProgram& side(uint16_t bits);
+	PIOProgram& delay(uint16_t cycles);
+	PIOProgram& operator[](uint16_t cycles) { return delay(cycles); }
 };
 
 class PIOBox {
