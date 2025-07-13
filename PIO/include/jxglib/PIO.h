@@ -224,6 +224,7 @@ public:
 	Program& wrap_target();
 	Program& wrap();
 	Program& side_set(int count) { sideSet_.count = count; return *this; }
+	Program& end() { return wrap().Resolve(); }
 public:
 	Program& word(uint16_t inst) { return AddInst(inst); }
 	Program& jmp(uint16_t addr) { return AddInst(::pio_encode_jmp(addr)); }
@@ -256,7 +257,9 @@ public:
 	Program& jmp(const char* cond, const char* label) { AddVariableRef(label, addrRelCur_); return jmp(cond, static_cast<uint16_t>(0)); }
 	Program& wait(const char* src, uint16_t index);
 	Program& in(const char* src, uint16_t count) { return in(StrToSrcDest(src), count); }
-	Program& out(const char* dest, uint16_t count) { return out(StrToSrcDest(dest), count); }
+	Program& out(const char* dest, uint16_t count) { return out(StrToSrcDest_out(dest), count); }
+	Program& push() { return push(false, false); }
+	Program& pull() { return pull(false, false); }
 	Program& mov(const char* dest, const char* src);
 	Program& irq(const char* op, uint16_t irq_n);
 	Program& set(const char* dest, uint16_t value) { return set(StrToSrcDest(dest), value); }
@@ -285,7 +288,8 @@ public:
 	static bool Is_MOV(uint16_t inst)		{ return (inst >> 13) == 5; }
 	static bool Is_IRQ(uint16_t inst)		{ return (inst >> 13) == 6; }
 	static bool Is_SET(uint16_t inst)		{ return (inst >> 13) == 7; }
-	static pio_src_dest StrToSrcDest(const char* str);
+	static pio_src_dest StrToSrcDest(const char* str, bool outFlag = false);
+	static pio_src_dest StrToSrcDest_out(const char* str) { return StrToSrcDest(str, true); }
 };
 
 //------------------------------------------------------------------------------

@@ -60,9 +60,10 @@ Program& Program::Resolve()
 
 const Program& Program::Dump() const
 {
-	for (uint16_t i = 0; i < addrRelCur_; ++i) {
-		uint16_t inst = instTbl_[i];
-		::printf("%03b %05b %03b %05b\n", (inst >> 13) & 0b111, (inst >> 8) & 0b11111, (inst >> 5) & 0b111, (inst >> 0) & 0b11111);
+	for (uint16_t addrRel = 0; addrRel < addrRelCur_; ++addrRel) {
+		uint16_t inst = instTbl_[addrRel];
+		::printf("%02x  %03b %05b %03b %05b\n", addrRel,
+			(inst >> 13) & 0b111, (inst >> 8) & 0b11111, (inst >> 5) & 0b111, (inst >> 0) & 0b11111);
 	}
 	return *this;
 }
@@ -259,19 +260,18 @@ Program& Program::noblock()
 	return *this;
 }
 
-pio_src_dest Program::StrToSrcDest(const char* str)
+pio_src_dest Program::StrToSrcDest(const char* str, bool outFlag)
 {
 	if (::strcasecmp(str, "pins") == 0)		return pio_pins;
 	if (::strcasecmp(str, "x") == 0)		return pio_x;
 	if (::strcasecmp(str, "y") == 0)		return pio_y;
 	if (::strcasecmp(str, "null") == 0)		return pio_null;
 	if (::strcasecmp(str, "pindirs") == 0)	return pio_pindirs;
-	if (::strcasecmp(str, "exec_mov") == 0)	return pio_exec_mov;
+	if (::strcasecmp(str, "exec") == 0)		return outFlag? pio_exec_out : pio_exec_mov;
 	if (::strcasecmp(str, "status") == 0)	return pio_status;
 	if (::strcasecmp(str, "pc") == 0)		return pio_pc;
 	if (::strcasecmp(str, "isr") == 0)		return pio_isr;
 	if (::strcasecmp(str, "osr") == 0)		return pio_osr;
-	if (::strcasecmp(str, "exec_out") == 0)	return pio_exec_out;
 	::panic("Program::StrToSrcDest: invalid source/destination '%s'\n", str);
 	return pio_pins;
 }
