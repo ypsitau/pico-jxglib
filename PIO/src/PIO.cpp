@@ -36,7 +36,7 @@ void Program::AddVariableRef(const char* label, uint16_t addrRel)
 	pVariableRefHead_.reset(pVariable);
 }
 
-const Program::Variable* Program::LookupVariable(const char* label) const
+const Program::Variable* Program::Lookup(const char* label) const
 {
 	for (const Variable* pVariable = pVariableHead_.get(); pVariable; pVariable = pVariable->GetNext()) {
 		if (::strcmp(pVariable->GetLabel(), label) == 0) return pVariable;
@@ -44,17 +44,27 @@ const Program::Variable* Program::LookupVariable(const char* label) const
 	return nullptr;
 }
 
-void Program::Resolve()
+Program& Program::Resolve()
 {
 	for (Variable* pVariableRef = pVariableRefHead_.get(); pVariableRef; pVariableRef = pVariableRef->GetNext()) {
-		const Variable* pVariable = LookupVariable(pVariableRef->GetLabel());
+		const Variable* pVariable = Lookup(pVariableRef->GetLabel());
 		if (pVariable) {
-			uint16_t& inst = instTbl_[pVariableRef->GetAddrRel()];
-			inst = inst & 0xffe0 | pVariable->GetAddrRel();
+			uint16_t& inst = instTbl_[pVariableRef->GetValue()];
+			inst = inst & 0xffe0 | pVariable->GetValue();
 		} else {
 			::panic("Program::ResolveLabelRef: label '%s' not found\n", pVariableRef->GetLabel());
 		}
 	}
+	return *this;
+}
+
+const Program& Program::Dump() const
+{
+	for (uint16_t i = 0; i < addrRelCur_; ++i) {
+		uint16_t inst = instTbl_[i];
+		::printf("%03b %05b %03b %05b\n", (inst >> 13) & 0b111, (inst >> 8) & 0b11111, (inst >> 5) & 0b111, (inst >> 0) & 0b11111);
+	}
+	return *this;
 }
 
 Program& Program::AddInst(uint16_t inst)

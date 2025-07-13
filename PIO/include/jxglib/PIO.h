@@ -185,12 +185,12 @@ class Program {
 public:
 	class Variable {
 		const char* label_;
-		uint16_t addrRel_;
+		uint16_t value_;
 		std::unique_ptr<Variable> pVariableNext_;
 	public:
-		Variable(const char* label, uint16_t addrRel) : label_{label}, addrRel_{addrRel} {};
+		Variable(const char* label, uint16_t addrRel) : label_{label}, value_{addrRel} {};
 		const char* GetLabel() const { return label_; }
-		uint16_t GetAddrRel() const { return addrRel_; }
+		uint16_t GetValue() const { return value_; }
 		void SetNext(Variable* pVariableNext) { pVariableNext_.reset(pVariableNext); }
 		Variable* GetNext() const { return pVariableNext_.get(); }
 	};
@@ -216,8 +216,9 @@ public:
 public:
 	void AddVariable(const char* label, uint16_t addrRel);
 	void AddVariableRef(const char* label, uint16_t addrRel);
-	const Variable* LookupVariable(const char* label) const;
-	void Resolve();
+	const Variable* Lookup(const char* label) const;
+	Program& Resolve();
+	const Program& Dump() const;
 public:
 	// Directives
 	Program& wrap_target();
