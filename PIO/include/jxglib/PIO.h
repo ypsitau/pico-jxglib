@@ -251,9 +251,9 @@ public:
 	Program& nop(void) { return AddInst(::pio_encode_nop()); }
 public:
 	// Human-readable version of instructions
-	Program& jmp(const char* label) { AddVariable(label, addrRelCur_); return jmp(static_cast<uint16_t>(0)); }
+	Program& jmp(const char* label) { AddVariableRef(label, addrRelCur_); return jmp(static_cast<uint16_t>(0)); }
 	Program& jmp(const char* cond, uint16_t addr);
-	Program& jmp(const char* cond, const char* label) { AddVariable(label, addrRelCur_); return jmp(cond, static_cast<uint16_t>(0)); }
+	Program& jmp(const char* cond, const char* label) { AddVariableRef(label, addrRelCur_); return jmp(cond, static_cast<uint16_t>(0)); }
 	Program& wait(const char* src, uint16_t index);
 	Program& in(const char* src, uint16_t count) { return in(StrToSrcDest(src), count); }
 	Program& out(const char* dest, uint16_t count) { return out(StrToSrcDest(dest), count); }

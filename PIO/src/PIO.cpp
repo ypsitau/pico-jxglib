@@ -80,6 +80,10 @@ Program& Program::AddInst(uint16_t inst)
 
 Program& Program::L(const char* label)
 {
+	if (Lookup(label)) {
+		::panic("Program::L: label '%s' already defined\n", label);
+	}
+	AddVariable(label, addrRelCur_);
 	return *this;
 }
 
