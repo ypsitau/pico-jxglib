@@ -3,23 +3,38 @@
 //==============================================================================
 #include <stdlib.h>
 #include "jxglib/PIO.h"
+#include "hardware/clocks.h"
 
 namespace jxglib {
 
-//------------------------------------------------------------------------------
-// PIO::Instance
-//------------------------------------------------------------------------------
 PIO::Instance PIO0(pio0);
 PIO::Instance PIO1(pio1);
 
 namespace PIO {
 
 //------------------------------------------------------------------------------
+// PIO::StatemMachine
+//------------------------------------------------------------------------------
+const StateMachine& StateMachine::set_freq(uint freq) const
+{
+	const uint32_t clk_sys_freq = ::clock_get_hz(clk_sys);
+	float clkdiv = static_cast<float>(clk_sys_freq) / (2 * freq);
+	return set_clkdiv(clkdiv);
+}
+
+//------------------------------------------------------------------------------
 // PIO::Program
 //------------------------------------------------------------------------------
-Program::Program() : addrRelCur_{0}, addrRel_wrap_{AddrRelInvalid}, addrRel_wrap_target_{AddrRelInvalid}, sideSet_{0, false, false}
+Program::Program() : addrRelCur_{0}, wrap_{0, 0}, sideSet_{0, false, false}
 {
 	for (int i = 0; i < count_of(instTbl_); ++i) instTbl_[i] = 0x0000;
+	program_.instructions = instTbl_;;
+	program_.length = 0;
+	program_.origin = -1; // required instruction memory origin or -1
+	program_.pio_version = 0;
+#if PICO_PIO_VERSION > 0
+	program_.used_gpio_ranges = 0; // bitmap with one bit per 16 pins
+#endif
 }
 
 void Program::AddVariable(const char* label, uint16_t addrRel)
@@ -44,7 +59,7 @@ const Program::Variable* Program::Lookup(const char* label) const
 	return nullptr;
 }
 
-Program& Program::Resolve()
+Program& Program::Complete()
 {
 	for (Variable* pVariableRef = pVariableRefHead_.get(); pVariableRef; pVariableRef = pVariableRef->GetNext()) {
 		const Variable* pVariable = Lookup(pVariableRef->GetLabel());
@@ -55,7 +70,17 @@ Program& Program::Resolve()
 			::panic("Program::ResolveLabelRef: label '%s' not found\n", pVariableRef->GetLabel());
 		}
 	}
+	program_.length = addrRelCur_;
+	if (wrap_.addrRel_wrap == 0) wrap_.addrRel_wrap = addrRelCur_;
 	return *this;
+}
+
+pio_sm_config Program::GenerateConfig(uint offset) const
+{
+	pio_sm_config config = ::pio_get_default_sm_config();
+	::sm_config_set_sideset(&config, sideSet_.bit_count, sideSet_.optional, sideSet_.pindirs);
+	::sm_config_set_wrap(&config, offset + wrap_.addrRel_target, offset + wrap_.addrRel_wrap);
+	return config;	
 }
 
 const Program& Program::Dump() const
@@ -90,13 +115,13 @@ Program& Program::L(const char* label)
 
 Program& Program::wrap_target()
 {
-	addrRel_wrap_target_ = addrRelCur_;
+	wrap_.addrRel_target = addrRelCur_;
 	return *this;
 }
 
 Program& Program::wrap()
 {
-	addrRel_wrap_ = addrRelCur_;
+	wrap_.addrRel_wrap = addrRelCur_;
 	return *this;
 }
 
@@ -281,29 +306,30 @@ pio_src_dest Program::StrToSrcDest(const char* str, bool outFlag)
 //------------------------------------------------------------------------------
 bool Controller::ClaimResource()
 {
-	pio_t pio_;
-	uint sm_;
-	if (!Instance::claim_free_sm_and_add_program(program, &pio_, &sm_, &offset)) return false;
-	pio = Instance(pio_);
-	sm.SetResource(pio_, sm_);
-	cfg = get_default_config(offset);
-	uint pin = 0;
-	pio.gpio_init(pin);
-	sm.set_consecutive_pindirs_in(pin, 1);
-	sm.set_consecutive_pindirs_out(pin, 1);
-	cfg.set_set_pins(pin, 1);
+	pio_t pioClaimed;
+	uint smClaimed;
+	uint offset;
+	if (!Instance::claim_free_sm_and_add_program(program, &pioClaimed, &smClaimed, &offset)) return false;
+	pio_ = Instance(pioClaimed);
+	config_ = configGenerator_.GenerateConfig(offset);
+	sm.SetResource(pioClaimed, smClaimed, offset, config_);
+	//uint pin = 0;
+	//pio_.gpio_init(pin);
+	//sm.set_consecutive_pindirs_in(pin, 1);
+	//sm.set_consecutive_pindirs_out(pin, 1);
+	//config_.set_set_pins(pin, 1);
 	return true;
 }
 
 void Controller::UnclaimResource()
 {
-	Instance::remove_program_and_unclaim_sm(program, sm.GetPIO(), sm.GetSM(), offset);
+	Instance::remove_program_and_unclaim_sm(program, sm.GetPIO(), sm.GetSM(), sm.GetOffset());
 	sm.Invalidate();
 }
 
 int Controller::InitSM()
 {
-	return sm.init(offset, cfg);
+	return sm.init();
 }
 
 }

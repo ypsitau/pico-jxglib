@@ -310,12 +310,12 @@ int main()
 	test_MOV();
 	test_IRQ();
 	test_SET();
-#if 0
+#if 1
 	PIO::Controller pioCtrl(PIOVAR_program(blink), PIOVAR_get_default_config(blink));
-	pioCtrl.SetGPIO_out(GPIO3);
-	pioCtrl.SetGPIO_in(GPIO4);
-	pioCtrl.SetGPIO_set(GPIO5);
-	pioCtrl.SetGPIO_sideset(GPIO6);
+	pioCtrl.Set_out(GPIO3);
+	pioCtrl.Set_in(GPIO4);
+	pioCtrl.Set_set(GPIO5);
+	pioCtrl.Set_sideset(GPIO6);
 	pioCtrl.ClaimResource();
 	pioCtrl.InitSM();
 	pioCtrl.sm.put(0);
