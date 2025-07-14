@@ -151,7 +151,7 @@ void test_PULL()
 
 void test_MOV()
 {
-	::printf("MOV:\n");
+	::printf("MOV rxfifo[], isr:\n");
 	do {
 		PIO::Program program;
 		program
@@ -159,9 +159,13 @@ void test_MOV()
 			.mov		("rxfifo[0]",	"isr")
 			.mov		("rxfifo[1]",	"isr")
 			.mov		("rxfifo[7]",	"isr")
+			.mov		("rxfifo[]", 0,	"isr")
+			.mov		("rxfifo[]", 1,	"isr")
+			.mov		("rxfifo[]", 7,	"isr")
 		.end();
 		program.Dump();
 	} while (0);
+	::printf("MOV osr, rxfifo[]:\n");
 	do {
 		PIO::Program program;
 		program
@@ -169,9 +173,13 @@ void test_MOV()
 			.mov		("osr",		"rxfifo[0]")
 			.mov		("osr",		"rxfifo[1]")
 			.mov		("osr",		"rxfifo[7]")
+			.mov		("osr",		"rxfifo[]", 0)
+			.mov		("osr",		"rxfifo[]", 1)
+			.mov		("osr",		"rxfifo[]", 7)
 		.end();
 		program.Dump();
 	} while (0);
+	::printf("MOV pins, src:\n");
 	do {
 		PIO::Program program;
 		program
@@ -185,6 +193,7 @@ void test_MOV()
 		.end();
 		program.Dump();
 	} while (0);
+	::printf("MOV x, src:\n");
 	do {
 		PIO::Program program;
 		program
@@ -198,6 +207,7 @@ void test_MOV()
 		.end();
 		program.Dump();
 	} while (0);
+	::printf("MOV y, src:\n");
 	do {
 		PIO::Program program;
 		program
@@ -211,6 +221,7 @@ void test_MOV()
 		.end();
 		program.Dump();
 	} while (0);
+	::printf("MOV pindirs, src:\n");
 	do {
 		PIO::Program program;
 		program
@@ -224,6 +235,7 @@ void test_MOV()
 		.end();
 		program.Dump();
 	} while (0);
+	::printf("MOV exec, src:\n");
 	do {
 		PIO::Program program;
 		program
@@ -237,6 +249,7 @@ void test_MOV()
 		.end();
 		program.Dump();
 	} while (0);
+	::printf("MOV pc, src:\n");
 	do {
 		PIO::Program program;
 		program
@@ -250,6 +263,7 @@ void test_MOV()
 		.end();
 		program.Dump();
 	} while (0);
+	::printf("MOV isr, src:\n");
 	do {
 		PIO::Program program;
 		program
@@ -263,6 +277,7 @@ void test_MOV()
 		.end();
 		program.Dump();
 	} while (0);
+	::printf("MOV osr, src:\n");
 	do {
 		PIO::Program program;
 		program
@@ -276,6 +291,7 @@ void test_MOV()
 		.end();
 		program.Dump();
 	} while (0);
+	::printf("MOV pins, src:\n");
 	do {
 		PIO::Program program;
 		program
@@ -327,6 +343,24 @@ void test_IRQ()
 void test_SET()
 {
 	::printf("SET:\n");
+	do {
+		PIO::Program program;
+		program
+			.set		("pins",		0)
+			.set		("x",			0)
+			.set		("y",			0)
+			.set		("pindirs",		0)
+			.set		("pins",		1)
+			.set		("x",			1)
+			.set		("y",			1)
+			.set		("pindirs",		1)
+			.set		("pins",		31)
+			.set		("x",			31)
+			.set		("y",			31)
+			.set		("pindirs",		31)
+		.end();
+		program.Dump();
+	} while (0);
 }
 
 int main()

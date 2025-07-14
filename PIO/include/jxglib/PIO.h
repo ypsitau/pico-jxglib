@@ -292,6 +292,7 @@ public:
 	Program& push() { return push(false, false); }
 	Program& pull() { return pull(false, false); }
 	Program& mov(const char* dest, const char* src, uint16_t index = 0);
+	Program& mov(const char* dest, uint16_t index, const char* src) { return mov(dest, src, index); }
 	Program& irq(const char* op, uint16_t irq_n);
 	Program& irq(uint16_t irq_n) { return irq("set", irq_n); }
 	Program& set(const char* dest, uint16_t value) { return set(StrToSrcDest(dest), value); }
