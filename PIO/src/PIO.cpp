@@ -224,7 +224,33 @@ Program& Program::rel()
 	} else if (Is_WAIT(inst) && ((inst >> 5) & 0x3) == 2) {	// wait irq
 		inst |= (2 << 3);
 	} else {
-		::panic("Program::rel: rel() is not applicable\n");
+		::panic("rel() is not applicable for %s\n", GetInstName(inst));
+	}
+	return *this;
+}
+
+Program& Program::prev()
+{
+	uint16_t& inst = instTbl_[addrRelCur_ - 1];
+	if (Is_IRQ(inst)) {
+		inst |= (1 << 3);
+	} else if (Is_WAIT(inst) && ((inst >> 5) & 0x3) == 2) {	// wait irq
+		inst |= (1 << 3);
+	} else {
+		::panic("prev() is not applicable for %s\n", GetInstName(inst));
+	}
+	return *this;
+}
+
+Program& Program::next()
+{
+	uint16_t& inst = instTbl_[addrRelCur_ - 1];
+	if (Is_IRQ(inst)) {
+		inst |= (3 << 3);
+	} else if (Is_WAIT(inst) && ((inst >> 5) & 0x3) == 2) {	// wait irq
+		inst |= (3 << 3);
+	} else {
+		::panic("next() is not applicable for %s\n", GetInstName(inst));
 	}
 	return *this;
 }
@@ -235,7 +261,7 @@ Program& Program::iffull()
 	if (Is_PUSH(inst)) {
 		inst |= (1 << 6);
 	} else {
-		::panic("Program::iffull: iffull() is not applicable\n");
+		::panic("iffull() is not applicable for %s\n", GetInstName(inst));
 	}
 	return *this;
 }
@@ -246,7 +272,7 @@ Program& Program::ifempty()
 	if (Is_PULL(inst)) {
 		inst |= (1 << 6);
 	} else {
-		::panic("Program::iffull: iffull() is not applicable\n");
+		::panic("iffull() is not applicable for %s\n", GetInstName(inst));
 	}
 	return *this;
 }
@@ -257,7 +283,7 @@ Program& Program::block()
 	if (Is_PUSHorPULL(inst)) {
 		inst |= (1 << 5);
 	} else {
-		::panic("Program::block: block() is not applicable\n");
+		::panic("block() is not applicable for %s\n", GetInstName(inst));
 	}
 	return *this;
 }
@@ -268,9 +294,25 @@ Program& Program::noblock()
 	if (Is_PUSHorPULL(inst)) {
 		inst &= ~(1 << 5);
 	} else {
-		::panic("Program::block: block() is not applicable\n");
+		::panic("block() is not applicable for %s\n", GetInstName(inst));
 	}
 	return *this;
+}
+
+const char* Program::GetInstName(uint16_t inst)
+{
+	if (Is_JMP(inst))		return "JMP";
+	if (Is_WAIT(inst))		return "WAIT";
+	if (Is_IN(inst))		return "IN";
+	if (Is_OUT(inst))		return "OUT";
+	if (Is_PUSH(inst))		return "PUSH";
+	if (Is_PULL(inst))		return "PULL";
+	if (Is_MOVtoRX(inst))	return "MOV (to RX)";
+	if (Is_MOVfromRX(inst))	return "MOV (from RX)";
+	if (Is_MOV(inst))		return "MOV";
+	if (Is_IRQ(inst))		return "IRQ";
+	if (Is_SET(inst))		return "SET";
+	return "unknown";
 }
 
 pio_src_dest Program::StrToSrcDest(const char* str, bool outFlag)

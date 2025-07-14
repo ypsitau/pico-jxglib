@@ -291,6 +291,37 @@ void test_MOV()
 void test_IRQ()
 {
 	::printf("IRQ:\n");
+	do {
+		PIO::Program program;
+		program
+			.irq		(0)
+			.irq		("set", 		0)
+			.irq		("nowait",		0)
+			.irq		("wait",		0)
+			.irq		("clear",		0)
+			.irq		("set", 		1)
+			.irq		("nowait",		1)
+			.irq		("wait",		1)
+			.irq		("clear",		1)
+			.irq		("set", 		7)
+			.irq		("nowait",		7)
+			.irq		("wait",		7)
+			.irq		("clear",		7)
+			.irq		("set", 		0).rel()
+			.irq		("nowait",		0).rel()
+			.irq		("wait",		0).rel()
+			.irq		("clear",		0).rel()
+			.irq		("set", 		0).prev()
+			.irq		("nowait",		0).prev()
+			.irq		("wait",		0).prev()
+			.irq		("clear",		0).prev()
+			.irq		("set", 		0).next()
+			.irq		("nowait",		0).next()
+			.irq		("wait",		0).next()
+			.irq		("clear",		0).next()
+		.end();
+		program.Dump();
+	} while (0);
 }
 
 void test_SET()

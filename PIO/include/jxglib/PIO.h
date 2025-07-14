@@ -293,6 +293,7 @@ public:
 	Program& pull() { return pull(false, false); }
 	Program& mov(const char* dest, const char* src, uint16_t index = 0);
 	Program& irq(const char* op, uint16_t irq_n);
+	Program& irq(uint16_t irq_n) { return irq("set", irq_n); }
 	Program& set(const char* dest, uint16_t value) { return set(StrToSrcDest(dest), value); }
 public:
 	// Attributes
@@ -302,6 +303,8 @@ public:
 	Program& delay(uint16_t cycles);
 	Program& operator[](uint16_t cycles) { return delay(cycles); }
 	Program& rel();
+	Program& prev();
+	Program& next();
 	Program& iffull();
 	Program& ifempty();
 	Program& block();
@@ -319,6 +322,7 @@ public:
 	static bool Is_MOV(uint16_t inst)		{ return (inst >> 13) == 5; }
 	static bool Is_IRQ(uint16_t inst)		{ return (inst >> 13) == 6; }
 	static bool Is_SET(uint16_t inst)		{ return (inst >> 13) == 7; }
+	static const char* GetInstName(uint16_t inst);
 	static pio_src_dest StrToSrcDest(const char* str, bool outFlag = false);
 	static pio_src_dest StrToSrcDest_out(const char* str) { return StrToSrcDest(str, true); }
 };
