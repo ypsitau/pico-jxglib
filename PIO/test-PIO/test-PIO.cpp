@@ -45,7 +45,9 @@ void test_WAIT()
 			.wait	(1, "irq", 	3)
 			.wait	(1, "gpio",	31)
 			.wait	(1, "pin", 	31)
-			.wait	(1, "irq", 	1)		.rel()
+			.wait	(1, "irq", 	1).rel()
+			.wait	(1, "irq", 	1).prev()
+			.wait	(1, "irq", 	1).next()
 		.end();
 		program.Dump();
 	} while (0);

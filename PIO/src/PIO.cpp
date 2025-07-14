@@ -42,9 +42,9 @@ Program::Program() : addrRelCur_{0}, sideSpecifiedFlag_{false}, wrap_{0, 0}, sid
 Program& Program::AddInst(uint16_t inst)
 {
 	if (addrRelCur_ > 0 && IsSideMust() && !sideSpecifiedFlag_) {
-		::panic("Program::AddInst: side-set must be specified for each instruction\n");
+		::panic("side-set must be specified for each instruction\n");
 	}
-	if (addrRelCur_ >= count_of(instTbl_)) ::panic("Program::AddInst: too many PIO instructions\n");
+	if (addrRelCur_ >= count_of(instTbl_)) ::panic("too many PIO instructions\n");
 	instTbl_[addrRelCur_++] = inst;
 	sideSpecifiedFlag_ = false;
 	return *this;
@@ -52,7 +52,7 @@ Program& Program::AddInst(uint16_t inst)
 
 Program& Program::L(const char* label)
 {
-	if (Lookup(label)) ::panic("Program::L: label '%s' already defined\n", label);
+	if (Lookup(label)) ::panic("label '%s' already defined\n", label);
 	AddVariable(label, addrRelCur_);
 	return *this;
 }
@@ -87,7 +87,7 @@ Program& Program::Complete()
 			uint16_t& inst = instTbl_[pVariableRef->GetValue()];
 			inst = inst & 0xffe0 | pVariable->GetValue();
 		} else {
-			::panic("Program::ResolveLabelRef: label '%s' not found\n", pVariableRef->GetLabel());
+			::panic("label '%s' not found\n", pVariableRef->GetLabel());
 		}
 	}
 	program_.length = addrRelCur_;
@@ -134,7 +134,7 @@ Program& Program::jmp(const char* cond, uint16_t addr)
 	if (::strcasecmp(cond, "x!=y") == 0 || ::strcasecmp(cond, "x != y") == 0) return jmp_x_ne_y(addr);
 	if (::strcasecmp(cond, "pin") == 0) return jmp_pin(addr);
 	if (::strcasecmp(cond, "!osre") == 0) return jmp_not_osre(addr);
-	::panic("Program::jmp: invalid condition '%s'\n", cond);
+	::panic("jmp(): invalid condition '%s'\n", cond);
 	return *this;
 }
 
@@ -143,7 +143,8 @@ Program& Program::wait(bool polarity, const char* src, uint16_t index)
 	if (::strcasecmp(src, "gpio") == 0)		return wait_gpio(polarity, index);
 	if (::strcasecmp(src, "pin") == 0)		return wait_pin(polarity, index);
 	if (::strcasecmp(src, "irq") == 0)		return wait_irq(polarity, false, index);
-	::panic("Program::wait: invalid source '%s'\n", src);
+	//if (::strcasecmp(src, "jumppin") == 0)	return wait_jumppin(polarity, false, index);
+	::panic("wait(): invalid source '%s'\n", src);
 	return *this;
 }
 
@@ -151,7 +152,7 @@ Program& Program::mov(const char* dest, const char* src, uint16_t index)
 {
 	if (StartsWithICase(dest, "rxfifo[")) {
 		dest += 7;
-		if (::strcasecmp(src, "isr") != 0) ::panic("Program::mov: invalid source '%s'\n", src);
+		if (::strcasecmp(src, "isr") != 0) ::panic("mov(): invalid source '%s'\n", src);
 		uint16_t inst = 0;
 		if (::strcasecmp(dest, "y]") == 0) {
 			inst = 0b10000000'00010000;
@@ -160,14 +161,14 @@ Program& Program::mov(const char* dest, const char* src, uint16_t index)
 		} else {
 			char* endptr;
 			int index = ::strtol(dest, &endptr, 0);
-			if (::strcmp(endptr, "]") != 0) ::panic("Program::mov: invalid destination '%s'\n", dest);
-			if (index < 0 || index > 7) ::panic("Program::mov: index out of range %d\n", index);
+			if (::strcmp(endptr, "]") != 0) ::panic("mov(): invalid destination '%s'\n", dest);
+			if (index < 0 || index > 7) ::panic("mov(): index out of range %d\n", index);
 			inst = 0b10000000'00011000 | static_cast<uint16_t>(index);
 		}
 		return word(inst);
 	} else if (StartsWithICase(src, "rxfifo[")) {
 		src += 7;
-		if (::strcasecmp(dest, "osr") != 0) ::panic("Program::mov: invalid destination '%s'\n", dest);
+		if (::strcasecmp(dest, "osr") != 0) ::panic("mov(): invalid destination '%s'\n", dest);
 		uint16_t inst = 0;
 		if (::strcasecmp(src, "y]") == 0) {
 			inst = 0b10000000'10010000;
@@ -176,8 +177,8 @@ Program& Program::mov(const char* dest, const char* src, uint16_t index)
 		} else {
 			char* endptr;
 			int index = ::strtol(src, &endptr, 0);
-			if (::strcmp(endptr, "]") != 0) ::panic("Program::mov: invalid source '%s'\n", src);
-			if (index < 0 || index > 7) ::panic("Program::mov: index out of range %d\n", index);
+			if (::strcmp(endptr, "]") != 0) ::panic("mov(): invalid source '%s'\n", src);
+			if (index < 0 || index > 7) ::panic("mov(): index out of range %d\n", index);
 			inst = 0b10000000'10011000 | static_cast<uint16_t>(index);
 		}
 		return word(inst);
@@ -195,13 +196,13 @@ Program& Program::irq(const char* op, uint16_t irq_n)
 	if (::strcasecmp(op, "nowait") == 0) return irq_set(irq_n, relative);
 	if (::strcasecmp(op, "wait") == 0) return irq_wait(irq_n, relative);
 	if (::strcasecmp(op, "clear") == 0) return irq_clear(irq_n, relative);
-	::panic("Program::irq: invalid operation '%s'\n", op);
+	::panic("irq(): invalid operation '%s'\n", op);
 	return *this;
 }
 
 Program& Program::side(uint16_t bits)
 {
-	if (sideSet_.bit_count == 0) ::panic("Program::side: side-set not defined\n");
+	if (sideSet_.bit_count == 0) ::panic("side(): side-set not defined\n");
 	uint16_t& inst = instTbl_[addrRelCur_ - 1];
 	int lsb = 13 - sideSet_.bit_count;
 	inst = inst | (bits << lsb);
@@ -327,7 +328,7 @@ pio_src_dest Program::StrToSrcDest(const char* str, bool outFlag)
 	if (::strcasecmp(str, "pc") == 0)		return pio_pc;
 	if (::strcasecmp(str, "isr") == 0)		return pio_isr;
 	if (::strcasecmp(str, "osr") == 0)		return pio_osr;
-	::panic("Program::StrToSrcDest: invalid source/destination '%s'\n", str);
+	::panic("invalid source/destination '%s'\n", str);
 	return pio_pins;
 }
 

@@ -269,6 +269,7 @@ public:
 	Program& wait_gpio(bool polarity, uint16_t gpio) { return AddInst(::pio_encode_wait_gpio(polarity, gpio)); }
 	Program& wait_pin(bool polarity, uint16_t pin) { return AddInst(::pio_encode_wait_pin(polarity, pin)); }
 	Program& wait_irq(bool polarity, bool relative, uint16_t irq) { return AddInst(::pio_encode_wait_irq(polarity, relative, irq)); }
+	//Program& wait_jumppin(bool polarity, bool relative, uint16_t pin_offset) { return AddInst(::pio_encode_wait_jumppin(polarity, relative, pin_offsets)); }
 	Program& in(enum pio_src_dest src, uint16_t count) { return AddInst(::pio_encode_in(src, count)); }
 	Program& out(enum pio_src_dest dest, uint16_t count) { return AddInst(::pio_encode_out(dest, count)); }
 	Program& push(bool if_full, bool block) { return AddInst(::pio_encode_push(if_full, block)); }
