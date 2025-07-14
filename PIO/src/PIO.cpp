@@ -27,7 +27,7 @@ namespace PIO {
 //------------------------------------------------------------------------------
 // PIO::Program
 //------------------------------------------------------------------------------
-Program::Program() : addrRelCur_{0}, wrap_{0, 0}, sideSet_{0, false, false}
+Program::Program() : addrRelCur_{0}, sideSpecifiedFlag_{false}, wrap_{0, 0}, sideSet_{0, false, false}
 {
 	for (int i = 0; i < count_of(instTbl_); ++i) instTbl_[i] = 0x0000;
 	program_.instructions = instTbl_;;
@@ -37,6 +37,24 @@ Program::Program() : addrRelCur_{0}, wrap_{0, 0}, sideSet_{0, false, false}
 #if PICO_PIO_VERSION > 0
 	program_.used_gpio_ranges = 0; // bitmap with one bit per 16 pins
 #endif
+}
+
+Program& Program::AddInst(uint16_t inst)
+{
+	if (addrRelCur_ > 0 && IsSideMust() && !sideSpecifiedFlag_) {
+		::panic("Program::AddInst: side-set must be specified for each instruction\n");
+	}
+	if (addrRelCur_ >= count_of(instTbl_)) ::panic("Program::AddInst: too many PIO instructions\n");
+	instTbl_[addrRelCur_++] = inst;
+	sideSpecifiedFlag_ = false;
+	return *this;
+}
+
+Program& Program::L(const char* label)
+{
+	if (Lookup(label)) ::panic("Program::L: label '%s' already defined\n", label);
+	AddVariable(label, addrRelCur_);
+	return *this;
 }
 
 void Program::AddVariable(const char* label, uint16_t addrRel)
@@ -95,26 +113,6 @@ const Program& Program::Dump() const
 	return *this;
 }
 
-Program& Program::AddInst(uint16_t inst)
-{
-	// error check here
-	if (addrRelCur_ < count_of(instTbl_)) {
-		instTbl_[addrRelCur_++] = inst;
-	} else {
-		::panic("Program::AddInst: too many PIO instructions\n");
-	}
-	return *this;
-}
-
-Program& Program::L(const char* label)
-{
-	if (Lookup(label)) {
-		::panic("Program::L: label '%s' already defined\n", label);
-	}
-	AddVariable(label, addrRelCur_);
-	return *this;
-}
-
 Program& Program::wrap_target()
 {
 	wrap_.addrRel_target = addrRelCur_;
@@ -149,45 +147,37 @@ Program& Program::wait(bool polarity, const char* src, uint16_t index)
 	return *this;
 }
 
-Program& Program::mov(const char* dest, const char* src)
+Program& Program::mov(const char* dest, const char* src, uint16_t index)
 {
 	if (StartsWithICase(dest, "rxfifo[")) {
 		dest += 7;
-		if (::strcasecmp(src, "isr") != 0) {
-			::panic("Program::mov: invalid source '%s'\n", src);
-		}
+		if (::strcasecmp(src, "isr") != 0) ::panic("Program::mov: invalid source '%s'\n", src);
 		uint16_t inst = 0;
 		if (::strcasecmp(dest, "y]") == 0) {
 			inst = 0b10000000'00010000;
+		} else if (::strcasecmp(dest, "]") == 0) {
+			inst = 0b10000000'00011000 | index;
 		} else {
 			char* endptr;
 			int index = ::strtol(dest, &endptr, 0);
-			if (::strcmp(endptr, "]") != 0) {
-				::panic("Program::mov: invalid destination '%s'\n", dest);
-			}
-			if (index < 0 || index > 7) {
-				::panic("Program::mov: index out of range %d\n", index);
-			}
+			if (::strcmp(endptr, "]") != 0) ::panic("Program::mov: invalid destination '%s'\n", dest);
+			if (index < 0 || index > 7) ::panic("Program::mov: index out of range %d\n", index);
 			inst = 0b10000000'00011000 | static_cast<uint16_t>(index);
 		}
 		return word(inst);
 	} else if (StartsWithICase(src, "rxfifo[")) {
 		src += 7;
-		if (::strcasecmp(dest, "osr") != 0) {
-			::panic("Program::mov: invalid destination '%s'\n", dest);
-		}
+		if (::strcasecmp(dest, "osr") != 0) ::panic("Program::mov: invalid destination '%s'\n", dest);
 		uint16_t inst = 0;
 		if (::strcasecmp(src, "y]") == 0) {
 			inst = 0b10000000'10010000;
+		} else if (::strcasecmp(src, "]") == 0) {
+			inst = 0b10000000'10011000 | index;
 		} else {
 			char* endptr;
 			int index = ::strtol(src, &endptr, 0);
-			if (::strcmp(endptr, "]") != 0) {
-				::panic("Program::mov: invalid source '%s'\n", src);
-			}
-			if (index < 0 || index > 7) {
-				::panic("Program::mov: index out of range %d\n", index);
-			}
+			if (::strcmp(endptr, "]") != 0) ::panic("Program::mov: invalid source '%s'\n", src);
+			if (index < 0 || index > 7) ::panic("Program::mov: index out of range %d\n", index);
 			inst = 0b10000000'10011000 | static_cast<uint16_t>(index);
 		}
 		return word(inst);
@@ -215,6 +205,7 @@ Program& Program::side(uint16_t bits)
 	uint16_t& inst = instTbl_[addrRelCur_ - 1];
 	int lsb = 13 - sideSet_.bit_count;
 	inst = inst | (bits << lsb);
+	sideSpecifiedFlag_ = true;
 	return *this;
 }
 

@@ -226,6 +226,7 @@ public:
 private:
 	uint16_t instTbl_[PIO_INSTRUCTION_COUNT];
 	uint16_t addrRelCur_;
+	bool sideSpecifiedFlag_;
 	Wrap wrap_;
 	SideSet sideSet_;
 	pio_program_t program_;
@@ -237,6 +238,7 @@ public:
 	Program& AddInst(uint16_t inst);
 	Program& L(const char* label);
 public:
+	bool IsSideMust() const { return sideSet_.bit_count > 0 && !sideSet_.optional; }
 	const pio_program_t* GetProgram() const { return &program_; }
 	void AddVariable(const char* label, uint16_t addrRel);
 	void AddVariableRef(const char* label, uint16_t addrRel);
@@ -289,7 +291,7 @@ public:
 	Program& out(const char* dest, uint16_t count) { return out(StrToSrcDest_out(dest), count); }
 	Program& push() { return push(false, false); }
 	Program& pull() { return pull(false, false); }
-	Program& mov(const char* dest, const char* src);
+	Program& mov(const char* dest, const char* src, uint16_t index = 0);
 	Program& irq(const char* op, uint16_t irq_n);
 	Program& set(const char* dest, uint16_t value) { return set(StrToSrcDest(dest), value); }
 public:
