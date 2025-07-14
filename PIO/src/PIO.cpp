@@ -189,9 +189,9 @@ Program& Program::irq(const char* op, uint16_t irq_n)
 
 Program& Program::side(uint16_t bits)
 {
-	if (sideSet_.count == 0) ::panic("Program::side: side-set not defined\n");
+	if (sideSet_.bit_count == 0) ::panic("Program::side: side-set not defined\n");
 	uint16_t& inst = instTbl_[addrRelCur_ - 1];
-	int lsb = 13 - sideSet_.count;
+	int lsb = 13 - sideSet_.bit_count;
 	inst = inst | (bits << lsb);
 	return *this;
 }

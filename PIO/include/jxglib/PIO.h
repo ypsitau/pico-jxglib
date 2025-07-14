@@ -195,9 +195,9 @@ public:
 		Variable* GetNext() const { return pVariableNext_.get(); }
 	};
 	struct SideSet {
-		uint16_t count;
-		bool optFlag;
-		bool pindirsFlag;
+		uint bit_count;
+		bool optional;
+		bool pindirs;
 	};
 	static const uint16_t AddrRelInvalid = 0xffff;
 private:
@@ -206,10 +206,14 @@ private:
 	uint16_t addrRel_wrap_target_;
 	uint16_t addrRel_wrap_;
 	SideSet sideSet_;
+	Config config_;
 	std::unique_ptr<Variable> pVariableHead_;
 	std::unique_ptr<Variable> pVariableRefHead_;
 public:
 	Program();
+public:
+	Config& GetConfig() { return config_; }
+	const Config& GetConfig() const { return config_; }
 public:
 	Program& AddInst(uint16_t inst);
 	Program& L(const char* label);
@@ -223,7 +227,7 @@ public:
 	// Directives
 	Program& wrap_target();
 	Program& wrap();
-	Program& side_set(int count) { sideSet_.count = count; return *this; }
+	Program& side_set(int bit_count) { sideSet_.bit_count = bit_count; return *this; }
 	Program& end() { return wrap().Resolve(); }
 public:
 	Program& word(uint16_t inst) { return AddInst(inst); }
@@ -265,8 +269,8 @@ public:
 	Program& set(const char* dest, uint16_t value) { return set(StrToSrcDest(dest), value); }
 public:
 	// Attributes
-	Program& opt() { sideSet_.optFlag = true; return *this; }
-	Program& pindirs() { sideSet_.pindirsFlag = true; return *this; }
+	Program& opt() { sideSet_.optional = true; return *this; }
+	Program& pindirs() { sideSet_.pindirs = true; return *this; }
 	Program& side(uint16_t bits);
 	Program& delay(uint16_t cycles);
 	Program& operator[](uint16_t cycles) { return delay(cycles); }
