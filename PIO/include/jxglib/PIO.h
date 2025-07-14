@@ -136,8 +136,6 @@ public:
 	const StateMachine& claim() const { ::pio_sm_claim(pio_, sm_); return *this; }
 	const StateMachine& unclaim() const { ::pio_sm_unclaim(pio_, sm_); return *this; }
 	bool is_claimed() const { return ::pio_sm_is_claimed(pio_, sm_); }
-public:
-	const StateMachine& set_freq(uint freq) const;
 };
 
 //------------------------------------------------------------------------------
@@ -286,7 +284,7 @@ public:
 	Program& jmp(const char* label) { AddVariableRef(label, addrRelCur_); return jmp(static_cast<uint16_t>(0)); }
 	Program& jmp(const char* cond, uint16_t addr);
 	Program& jmp(const char* cond, const char* label) { AddVariableRef(label, addrRelCur_); return jmp(cond, static_cast<uint16_t>(0)); }
-	Program& wait(const char* src, uint16_t index);
+	Program& wait(bool polarity, const char* src, uint16_t index);
 	Program& in(const char* src, uint16_t count) { return in(StrToSrcDest(src), count); }
 	Program& out(const char* dest, uint16_t count) { return out(StrToSrcDest_out(dest), count); }
 	Program& push() { return push(false, false); }

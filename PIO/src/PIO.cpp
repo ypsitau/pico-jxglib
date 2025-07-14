@@ -13,14 +13,16 @@ PIO::Instance PIO1(pio1);
 namespace PIO {
 
 //------------------------------------------------------------------------------
+// PIO::Config
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
 // PIO::StatemMachine
 //------------------------------------------------------------------------------
-const StateMachine& StateMachine::set_freq(uint freq) const
-{
-	const uint32_t clk_sys_freq = ::clock_get_hz(clk_sys);
-	float clkdiv = static_cast<float>(clk_sys_freq) / (2 * freq);
-	return set_clkdiv(clkdiv);
-}
+
+//------------------------------------------------------------------------------
+// PIO::Instance
+//------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
 // PIO::Program
@@ -138,13 +140,8 @@ Program& Program::jmp(const char* cond, uint16_t addr)
 	return *this;
 }
 
-Program& Program::wait(const char* src, uint16_t index)
+Program& Program::wait(bool polarity, const char* src, uint16_t index)
 {
-	bool polarity = true;
-	if (*src == '!') {
-		polarity = false;
-		src++;
-	}
 	if (::strcasecmp(src, "gpio") == 0)		return wait_gpio(polarity, index);
 	if (::strcasecmp(src, "pin") == 0)		return wait_pin(polarity, index);
 	if (::strcasecmp(src, "irq") == 0)		return wait_irq(polarity, false, index);
