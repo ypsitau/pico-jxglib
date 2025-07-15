@@ -236,6 +236,7 @@ public:
 	Block(const Block& pioIf) : pio_{pioIf.pio_} {}
 public:
 	operator pio_t() const { return pio_; }
+	pio_t operator->() { return pio_; }
 public:
 	void Invalidate() { pio_ = nullptr; }
 	bool IsValid() const { return !!pio_; }

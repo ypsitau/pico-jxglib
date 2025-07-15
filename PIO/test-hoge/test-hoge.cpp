@@ -29,10 +29,13 @@ int main()
 	uint pin = 15;
 	uint freq = 5;
 	// PIO Blinking example
-	pio_t pio = pio0;
+	PIO::Block pio = pio0;
 	uint offset = pio_add_program(pio, blink_program_jxg);
 	printf("Loaded program at %d\n", offset);
-	
+
+#if 0
+	PIO::StateMachine sm0(blink_program_jxg);
+#else
 	pio_gpio_init(pio, pin);
 	pio_sm_set_consecutive_pindirs(pio, sm, pin, 1, true);
     pio_sm_config c = pio_get_default_sm_config();
@@ -41,14 +44,8 @@ int main()
 	sm_config_set_set_pins(&c, pin, 1);
 	pio_sm_init(pio, sm, offset, &c);
 	pio_sm_set_enabled(pio, sm, true);
-
-	printf("Blinking pin %d at %d Hz\n", pin, freq);
-
-	// PIO counter program takes 3 more cycles in total than we pass as
-	// input (wait for n + 1; mov; jmp)
+#endif
 	pio->txf[sm] = (125000000 / (2 * freq)) - 3;
-	// For more pio examples see https://github.com/raspberrypi/pico-examples/tree/master/pio
-
 	while (true) {
 		printf("Hello, world!\n");
 		sleep_ms(1000);
