@@ -6,10 +6,10 @@ using namespace jxglib;
 
 void test_JMP()
 {
-	::printf("JMP:\n");
 	do {
 		PIO::Program program;
 		program
+		.program("JMP Test")
 			.jmp	("label")
 			.jmp	("!x",		"label")
 			.jmp	("x--",		"label")
@@ -20,16 +20,17 @@ void test_JMP()
 			.jmp	("!osre",	"label")
 		.L("label")
 		.end();
+		::printf("%s\n", program.GetName());
 		program.Dump();
 	} while (0);
 }
 
 void test_WAIT()
 {
-	::printf("WAIT:\n");
 	do {
 		PIO::Program program;
 		program
+		.program("WAIT Test")
 		.pio_version(1)
 			.wait	(1, "gpio",		0)
 			.wait	(1, "pin", 		0)
@@ -51,16 +52,18 @@ void test_WAIT()
 			.wait	(1, "irq", 		1).prev()
 			.wait	(1, "irq", 		1).next()
 		.end();
+		::printf("%s\n", program.GetName());
+		::printf("%s\n", program.GetName());
 		program.Dump();
 	} while (0);
 }
 
 void test_IN()
 {
-	::printf("IN:\n");
 	do {
 		PIO::Program program;
 		program
+		.program("IN Test")
 			.in		("pins",	0)
 			.in		("x",		0)
 			.in		("y",		0)
@@ -80,16 +83,17 @@ void test_IN()
 			.in		("isr",		31)
 			.in		("osr",		31)
 		.end();
+		::printf("%s\n", program.GetName());
 		program.Dump();
 	} while (0);
 }
 
 void test_OUT()
 {
-	::printf("OUT:\n");
 	do {
 		PIO::Program program;
 		program
+		.program("OUT Test")
 			.out	("pins",	0)
 			.out	("x",		0)
 			.out	("y",		0)
@@ -115,16 +119,17 @@ void test_OUT()
 			.out	("isr",		31)
 			.out	("exec",	31)
 		.end();
+		::printf("%s\n", program.GetName());
 		program.Dump();
 	} while (0);
 }
 
 void test_PUSH()
 {
-	::printf("PUSH:\n");
 	do {
 		PIO::Program program;
 		program
+		.program("PUSH Test")
 			.push	()
 			.push	().iffull()
 			.push	().block()
@@ -132,16 +137,17 @@ void test_PUSH()
 			.push	().iffull().block()
 			.push	().iffull().noblock()
 		.end();
+		::printf("%s\n", program.GetName());
 		program.Dump();
 	} while (0);
 }
 
 void test_PULL()
 {
-	::printf("PULL:\n");
 	do {
 		PIO::Program program;
 		program
+		.program("PULL Test")
 			.pull	()
 			.pull	().ifempty()
 			.pull	().block()
@@ -149,16 +155,17 @@ void test_PULL()
 			.pull	().ifempty().block()
 			.pull	().ifempty().noblock()
 		.end();
+		::printf("%s\n", program.GetName());
 		program.Dump();
 	} while (0);
 }
 
 void test_MOV()
 {
-	::printf("MOV rxfifo[], isr:\n");
 	do {
 		PIO::Program program;
 		program
+		.program("MOV rxfifo[] Test")
 		.pio_version(1)
 			.mov	("rxfifo[y]",	"isr")
 			.mov	("rxfifo[0]",	"isr")
@@ -168,12 +175,13 @@ void test_MOV()
 			.mov	("rxfifo[]", 1,	"isr")
 			.mov	("rxfifo[]", 7,	"isr")
 		.end();
+		::printf("%s\n", program.GetName());
 		program.Dump();
 	} while (0);
-	::printf("MOV osr, rxfifo[]:\n");
 	do {
 		PIO::Program program;
 		program
+		.program("MOV rxfifo[] Test")
 		.pio_version(1)
 			.mov	("osr",		"rxfifo[y]")
 			.mov	("osr",		"rxfifo[0]")
@@ -183,12 +191,13 @@ void test_MOV()
 			.mov	("osr",		"rxfifo[]", 1)
 			.mov	("osr",		"rxfifo[]", 7)
 		.end();
+		::printf("%s\n", program.GetName());
 		program.Dump();
 	} while (0);
-	::printf("MOV pins, src:\n");
 	do {
 		PIO::Program program;
 		program
+		.program("MOV pins Test")
 			.mov	("pins",		"pins")
 			.mov	("pins",		"x")
 			.mov	("pins",		"y")
@@ -197,12 +206,13 @@ void test_MOV()
 			.mov	("pins",		"isr")
 			.mov	("pins",		"osr")
 		.end();
+		::printf("%s\n", program.GetName());
 		program.Dump();
 	} while (0);
-	::printf("MOV x, src:\n");
 	do {
 		PIO::Program program;
 		program
+		.program("MOV x Test")
 			.mov	("x",			"pins")
 			.mov	("x",			"x")
 			.mov	("x",			"y")
@@ -211,12 +221,13 @@ void test_MOV()
 			.mov	("x",			"isr")
 			.mov	("x",			"osr")
 		.end();
+		::printf("%s\n", program.GetName());
 		program.Dump();
 	} while (0);
-	::printf("MOV y, src:\n");
 	do {
 		PIO::Program program;
 		program
+		.program("MOV y Test")
 			.mov	("y",			"pins")
 			.mov	("y",			"x")
 			.mov	("y",			"y")
@@ -225,12 +236,13 @@ void test_MOV()
 			.mov	("y",			"isr")
 			.mov	("y",			"osr")
 		.end();
+		::printf("%s\n", program.GetName());
 		program.Dump();
 	} while (0);
-	::printf("MOV pindirs, src:\n");
 	do {
 		PIO::Program program;
 		program
+		.program("MOV pindirs Test")
 			.mov	("pindirs",		"pins")
 			.mov	("pindirs",		"x")
 			.mov	("pindirs",		"y")
@@ -239,12 +251,13 @@ void test_MOV()
 			.mov	("pindirs",		"isr")
 			.mov	("pindirs",		"osr")
 		.end();
+		::printf("%s\n", program.GetName());
 		program.Dump();
 	} while (0);
-	::printf("MOV exec, src:\n");
 	do {
 		PIO::Program program;
 		program
+		.program("MOV exec Test")
 			.mov	("exec",		"pins")
 			.mov	("exec",		"x")
 			.mov	("exec",		"y")
@@ -253,12 +266,13 @@ void test_MOV()
 			.mov	("exec",		"isr")
 			.mov	("exec",		"osr")
 		.end();
+		::printf("%s\n", program.GetName());
 		program.Dump();
 	} while (0);
-	::printf("MOV pc, src:\n");
 	do {
 		PIO::Program program;
 		program
+		.program("MOV pc Test")
 			.mov	("pc",			"pins")
 			.mov	("pc",			"x")
 			.mov	("pc",			"y")
@@ -267,12 +281,13 @@ void test_MOV()
 			.mov	("pc",			"isr")
 			.mov	("pc",			"osr")
 		.end();
+		::printf("%s\n", program.GetName());
 		program.Dump();
 	} while (0);
-	::printf("MOV isr, src:\n");
 	do {
 		PIO::Program program;
 		program
+		.program("MOV isr Test")
 			.mov	("isr",			"pins")
 			.mov	("isr",			"x")
 			.mov	("isr",			"y")
@@ -281,12 +296,13 @@ void test_MOV()
 			.mov	("isr",			"isr")
 			.mov	("isr",			"osr")
 		.end();
+		::printf("%s\n", program.GetName());
 		program.Dump();
 	} while (0);
-	::printf("MOV osr, src:\n");
 	do {
 		PIO::Program program;
 		program
+		.program("MOV osr Test")
 			.mov	("osr",			"pins")
 			.mov	("osr",			"x")
 			.mov	("osr",			"y")
@@ -295,27 +311,29 @@ void test_MOV()
 			.mov	("osr",			"isr")
 			.mov	("osr",			"osr")
 		.end();
+		::printf("%s\n", program.GetName());
 		program.Dump();
 	} while (0);
-	::printf("MOV pins, src:\n");
 	do {
 		PIO::Program program;
 		program
+		.program("MOV operator Test")
 			.mov	("pins",		"x")
 			.mov	("pins",		"!x")
 			.mov	("pins",		"~x")
 			.mov	("pins",		"::x")
 		.end();
+		::printf("%s\n", program.GetName());
 		program.Dump();
 	} while (0);
 }
 
 void test_IRQ()
 {
-	::printf("IRQ:\n");
 	do {
 		PIO::Program program;
 		program
+		.program("IRQ Test")
 			.irq	(0)
 			.irq	("set", 		0)
 			.irq	("nowait",		0)
@@ -342,16 +360,17 @@ void test_IRQ()
 			.irq	("wait",		0).next()
 			.irq	("clear",		0).next()
 		.end();
+		::printf("%s\n", program.GetName());
 		program.Dump();
 	} while (0);
 }
 
 void test_SET()
 {
-	::printf("SET:\n");
 	do {
 		PIO::Program program;
 		program
+		.program("SET Test")
 			.set	("pins",		0)
 			.set	("x",			0)
 			.set	("y",			0)
@@ -365,6 +384,7 @@ void test_SET()
 			.set	("y",			31)
 			.set	("pindirs",		31)
 		.end();
+		::printf("%s\n", program.GetName());
 		program.Dump();
 	} while (0);
 }

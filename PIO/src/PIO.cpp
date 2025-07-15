@@ -27,7 +27,8 @@ namespace PIO {
 //------------------------------------------------------------------------------
 // PIO::Program
 //------------------------------------------------------------------------------
-Program::Program() : addrRelCur_{0}, sideSpecifiedFlag_{false}, wrap_{0, 0}, sideSet_{0, false, false}
+Program::Program() : name_{""}, addrRelCur_{0}, directive_{Directive::None},
+		sideSpecifiedFlag_{false}, wrap_{0, 0}, sideSet_{0, false, false}
 {
 	for (int i = 0; i < count_of(instTbl_); ++i) instTbl_[i] = 0x0000;
 	program_.instructions = instTbl_;;
@@ -41,6 +42,7 @@ Program::Program() : addrRelCur_{0}, sideSpecifiedFlag_{false}, wrap_{0, 0}, sid
 
 Program& Program::AddInst(uint16_t inst)
 {
+	directive_ = Directive::None; // reset directive
 	if (addrRelCur_ > 0 && IsSideMust() && !sideSpecifiedFlag_) {
 		::panic("addr%02x: side-set must be specified for each instruction\n", addrRelCur_);
 	}
@@ -110,18 +112,6 @@ const Program& Program::Dump() const
 		::printf("%02x  %03b %05b %03b %05b\n", addrRel,
 			(inst >> 13) & 0b111, (inst >> 8) & 0b11111, (inst >> 5) & 0b111, (inst >> 0) & 0b11111);
 	}
-	return *this;
-}
-
-Program& Program::wrap_target()
-{
-	wrap_.addrRel_target = addrRelCur_;
-	return *this;
-}
-
-Program& Program::wrap()
-{
-	wrap_.addrRel_wrap = addrRelCur_;
 	return *this;
 }
 
@@ -205,6 +195,26 @@ Program& Program::irq(const char* op, uint16_t irq_n)
 	return *this;
 }
 
+Program& Program::opt()
+{
+	if (directive_ == Directive::side_set) {
+		sideSet_.optional = true;
+	} else {
+		::panic("addr%02x: opt() is only applicable for side_set\n", addrRelCur_);
+	}
+	return *this;
+}
+
+Program& Program::pindirs()
+{
+	if (directive_ == Directive::side_set) {
+		sideSet_.pindirs = true;
+	} else {
+		::panic("addr%02x: pindirs() is only applicable for side_set\n", addrRelCur_);
+	}
+	return *this;
+}
+
 Program& Program::side(uint16_t bits)
 {
 	if (sideSet_.bit_count == 0) ::panic("addr%02x: side(): side-set not defined\n", addrRelCur_);
@@ -217,6 +227,7 @@ Program& Program::side(uint16_t bits)
 
 Program& Program::delay(uint16_t cycles)
 {
+	if (addrRelCur_ == 0 || directive_ != Directive::None) ::panic("addr%02x: no proceeding instruction\n", addrRelCur_);
 	uint16_t& inst = instTbl_[addrRelCur_ - 1];
 	inst = inst | (cycles << 8);
 	return *this;
@@ -224,6 +235,7 @@ Program& Program::delay(uint16_t cycles)
 
 Program& Program::rel()
 {
+	if (addrRelCur_ == 0 || directive_ != Directive::None) ::panic("addr%02x: no proceeding instruction\n", addrRelCur_);
 	uint16_t& inst = instTbl_[addrRelCur_ - 1];
 	if (Is_IRQ(inst)) {
 		inst |= (2 << 3);
@@ -237,6 +249,7 @@ Program& Program::rel()
 
 Program& Program::prev()
 {
+	if (addrRelCur_ == 0 || directive_ != Directive::None) ::panic("addr%02x: no proceeding instruction\n", addrRelCur_);
 	uint16_t& inst = instTbl_[addrRelCur_ - 1];
 	if (Is_IRQ(inst)) {
 		inst |= (1 << 3);
@@ -250,6 +263,7 @@ Program& Program::prev()
 
 Program& Program::next()
 {
+	if (addrRelCur_ == 0 || directive_ != Directive::None) ::panic("addr%02x: no proceeding instruction\n", addrRelCur_);
 	uint16_t& inst = instTbl_[addrRelCur_ - 1];
 	if (Is_IRQ(inst)) {
 		inst |= (3 << 3);
@@ -263,6 +277,7 @@ Program& Program::next()
 
 Program& Program::iffull()
 {
+	if (addrRelCur_ == 0 || directive_ != Directive::None) ::panic("addr%02x: no proceeding instruction\n", addrRelCur_);
 	uint16_t& inst = instTbl_[addrRelCur_ - 1];
 	if (Is_PUSH(inst)) {
 		inst |= (1 << 6);
@@ -274,6 +289,7 @@ Program& Program::iffull()
 
 Program& Program::ifempty()
 {
+	if (addrRelCur_ == 0 || directive_ != Directive::None) ::panic("addr%02x: no proceeding instruction\n", addrRelCur_);
 	uint16_t& inst = instTbl_[addrRelCur_ - 1];
 	if (Is_PULL(inst)) {
 		inst |= (1 << 6);
@@ -285,6 +301,7 @@ Program& Program::ifempty()
 
 Program& Program::block()
 {
+	if (addrRelCur_ == 0 || directive_ != Directive::None) ::panic("addr%02x: no proceeding instruction\n", addrRelCur_);
 	uint16_t& inst = instTbl_[addrRelCur_ - 1];
 	if (Is_PUSHorPULL(inst)) {
 		inst |= (1 << 5);
@@ -296,6 +313,7 @@ Program& Program::block()
 
 Program& Program::noblock()
 {
+	if (addrRelCur_ == 0 || directive_ != Directive::None) ::panic("addr%02x: no proceeding instruction\n", addrRelCur_);
 	uint16_t& inst = instTbl_[addrRelCur_ - 1];
 	if (Is_PUSHorPULL(inst)) {
 		inst &= ~(1 << 5);

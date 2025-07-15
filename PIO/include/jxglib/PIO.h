@@ -222,10 +222,22 @@ public:
 		bool optional;
 		bool pindirs;
 	};
+	enum class Directive {
+		None,
+		program,
+		origin,
+		pio_version,
+		side_set,
+		wrap_target,
+		wrap,
+		end,
+	};
 	static const uint16_t AddrRelInvalid = 0xffff;
 private:
+	const char* name_;
 	uint16_t instTbl_[PIO_INSTRUCTION_COUNT];
 	uint16_t addrRelCur_;
+	Directive directive_;
 	bool sideSpecifiedFlag_;
 	Wrap wrap_;
 	SideSet sideSet_;
@@ -235,6 +247,7 @@ private:
 public:
 	Program();
 public:
+	const char* GetName() const { return name_; }
 	Program& AddInst(uint16_t inst);
 	Program& L(const char* label);
 public:
@@ -250,12 +263,13 @@ public:
 	virtual pio_sm_config GenerateConfig(uint offset) const override;
 public:
 	// Directives
-	Program& origin(uint offset) { program_.origin = offset; return *this; }
-	Program& pio_version(uint version) { program_.pio_version = version; return *this; }
-	Program& side_set(int bit_count) { sideSet_.bit_count = bit_count; return *this; }
-	Program& wrap_target();
-	Program& wrap();
-	Program& end() { return Complete(); }
+	Program& program(const char* name)	{ directive_ = Directive::program; name_ = name; return *this; }
+	Program& origin(uint offset)		{ directive_ = Directive::origin; program_.origin = offset; return *this; }
+	Program& pio_version(uint version)	{ directive_ = Directive::pio_version; program_.pio_version = version; return *this; }
+	Program& side_set(int bit_count)	{ directive_ = Directive::side_set; sideSet_.bit_count = bit_count; return *this; }
+	Program& wrap_target()				{ directive_ = Directive::wrap_target; wrap_.addrRel_target = addrRelCur_; return *this; }
+	Program& wrap()						{ directive_ = Directive::wrap; wrap_.addrRel_wrap = addrRelCur_; return *this; }
+	Program& end()						{ directive_ = Directive::end; return Complete(); }
 public:
 	Program& word(uint16_t inst) { return AddInst(inst); }
 	Program& jmp(uint16_t addr) { return AddInst(::pio_encode_jmp(addr)); }
@@ -304,8 +318,8 @@ public:
 	Program& set(const char* dest, uint16_t value) { return set(StrToSrcDest(dest), value); }
 public:
 	// Attributes
-	Program& opt() { sideSet_.optional = true; return *this; }
-	Program& pindirs() { sideSet_.pindirs = true; return *this; }
+	Program& opt();
+	Program& pindirs();
 	Program& side(uint16_t bits);
 	Program& delay(uint16_t cycles);
 	Program& operator[](uint16_t cycles) { return delay(cycles); }
