@@ -48,6 +48,7 @@ public:
 	Config(const pio_sm_config& c) : c_{c} {}
 	Config(const Config& config) : c_{config.c_} {}
 public:
+	operator pio_sm_config*() { return &c_; }
 	operator const pio_sm_config*() const { return &c_; }
 public:
 	Config& set_out_pin_base(uint out_base) { ::sm_config_set_out_pin_base(&c_, out_base); return *this; }

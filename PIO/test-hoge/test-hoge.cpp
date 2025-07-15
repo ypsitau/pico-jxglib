@@ -38,16 +38,16 @@ int main()
 	sm0.SetResource(pio, sm, offset);
 	pio.gpio_init(pin);
 	sm0.set_consecutive_pindirs(pin, 1, true);
-    pio_sm_config c = pio_get_default_sm_config();
-    sm_config_set_wrap(&c, offset + blink_wrap_target, offset + blink_wrap);
-	sm_config_set_set_pins(&c, pin, 1);
-	pio_sm_init(pio, sm, offset, &c);
+	//pio_sm_config c = pio_get_default_sm_config();
+	sm_config_set_wrap(sm0.config, offset + blink_wrap_target, offset + blink_wrap);
+	sm_config_set_set_pins(sm0.config, pin, 1);
+	pio_sm_init(pio, sm, offset, sm0.config);
 	pio_sm_set_enabled(pio, sm, true);
 #else
 	pio_gpio_init(pio, pin);
 	pio_sm_set_consecutive_pindirs(pio, sm, pin, 1, true);
-    pio_sm_config c = pio_get_default_sm_config();
-    sm_config_set_wrap(&c, offset + blink_wrap_target, offset + blink_wrap);
+	pio_sm_config c = pio_get_default_sm_config();
+	sm_config_set_wrap(&c, offset + blink_wrap_target, offset + blink_wrap);
 	sm_config_set_set_pins(&c, pin, 1);
 	pio_sm_init(pio, sm, offset, &c);
 	pio_sm_set_enabled(pio, sm, true);
