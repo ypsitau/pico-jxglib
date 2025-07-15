@@ -61,8 +61,7 @@ void StateMachine::UnclaimResource()
 //------------------------------------------------------------------------------
 // PIO::Program
 //------------------------------------------------------------------------------
-Program::Program() : name_{""}, addrRelCur_{0}, directive_{Directive::None},
-		sideSpecifiedFlag_{false}, wrap_{0, 0}, sideSet_{0, false, false}
+Program::Program() : name_{""}, addrRelCur_{0}, directive_{Directive::None}, sideSpecifiedFlag_{false}, wrap_{0, 0}, sideSet_{0, false, false}
 {
 	for (int i = 0; i < count_of(instTbl_); ++i) instTbl_[i] = 0x0000;
 	program_.instructions = instTbl_;;
@@ -127,7 +126,7 @@ Program& Program::Complete(bool keepLabelFlag)
 		}
 	}
 	program_.length = addrRelCur_;
-	if (wrap_.addrRel_wrap == 0) wrap_.addrRel_wrap = addrRelCur_;
+	if (wrap_.addrRel_wrapPlus == 0) wrap_.addrRel_wrapPlus = addrRelCur_;
 	if (!keepLabelFlag) pVariableHead_.reset();
 	pVariableRefHead_.reset();
 	return *this;
@@ -137,7 +136,10 @@ pio_sm_config Program::GenerateConfig(uint offset) const
 {
 	pio_sm_config config = ::pio_get_default_sm_config();
 	::sm_config_set_sideset(&config, sideSet_.bit_count, sideSet_.optional, sideSet_.pindirs);
-	::sm_config_set_wrap(&config, offset + wrap_.addrRel_target, offset + wrap_.addrRel_wrap);
+	if (wrap_.addrRel_wrapPlus > 0) {
+		::sm_config_set_wrap(&config, offset + wrap_.addrRel_target, offset + wrap_.addrRel_wrapPlus - 1);
+		::printf("wrap: %d %d\n", offset + wrap_.addrRel_target, offset + wrap_.addrRel_wrapPlus - 1);
+	}
 	return config;	
 }
 

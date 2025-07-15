@@ -91,7 +91,7 @@ public:
 	};
 	struct Wrap {
 		uint16_t addrRel_target;
-		uint16_t addrRel_wrap;
+		uint16_t addrRel_wrapPlus;
 	};
 	struct SideSet {
 		uint bit_count;
@@ -143,7 +143,7 @@ public:
 	Program& pio_version(uint version)	{ directive_ = Directive::pio_version; program_.pio_version = version; return *this; }
 	Program& side_set(int bit_count)	{ directive_ = Directive::side_set; sideSet_.bit_count = bit_count; return *this; }
 	Program& wrap_target()				{ directive_ = Directive::wrap_target; wrap_.addrRel_target = addrRelCur_; return *this; }
-	Program& wrap()						{ directive_ = Directive::wrap; wrap_.addrRel_wrap = addrRelCur_; return *this; }
+	Program& wrap()						{ directive_ = Directive::wrap; wrap_.addrRel_wrapPlus = addrRelCur_; return *this; }
 	Program& end()						{ directive_ = Directive::end; return Complete(false); }
 	Program& end_keep()					{ directive_ = Directive::end; return Complete(true); }
 public:
@@ -302,7 +302,7 @@ public:
 	int set_config(const pio_sm_config *config) const { return ::pio_sm_set_config(pio, sm, config); }
 	int init(uint initial_pc, const pio_sm_config* config) { return ::pio_sm_init(pio, sm, initial_pc, config); }
 	int init() { return ::pio_sm_init(pio, sm, offset, config); }
-	const StateMachine& set_enabled(bool enabled) const { ::pio_sm_set_enabled(pio, sm, enabled); return *this; }
+	const StateMachine& set_enabled(bool enabled = true) const { ::pio_sm_set_enabled(pio, sm, enabled); return *this; }
 	const StateMachine& restart() const { ::pio_sm_restart(pio, sm); return *this; }
 	const StateMachine& clkdiv_restart() const { ::pio_sm_clkdiv_restart(pio, sm); return *this; }
 	uint8_t get_pc() const {return  ::pio_sm_get_pc(pio, sm); }
