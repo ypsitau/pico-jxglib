@@ -16,25 +16,30 @@ PIO::Block PIO2(pio2);
 namespace PIO {
 
 //------------------------------------------------------------------------------
+// PIO::Config
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
 // PIO::Resource
 //------------------------------------------------------------------------------
-bool Resource::Claim(const Program& program)
+bool Resource::Claim()
 {
-	return ::pio_claim_free_sm_and_add_program(program, &pio, &sm, &offset);
+	if (!::pio_claim_free_sm_and_add_program(program, &pio, &sm, &offset)) return false;
+	config = program.GenerateConfig(offset);
+	return true;
 }
 
-bool Resource::Claim(const Program& program, uint gpio_base, uint gpio_count, bool set_gpio_base)
+bool Resource::Claim(uint gpio_base, uint gpio_count, bool set_gpio_base)
 {
-	return ::pio_claim_free_sm_and_add_program_for_gpio_range(program, &pio, &sm, &offset, gpio_base, gpio_count, set_gpio_base);
+	if (!::pio_claim_free_sm_and_add_program_for_gpio_range(program, &pio, &sm, &offset, gpio_base, gpio_count, set_gpio_base)) return false;
+	config = program.GenerateConfig(offset);
+	return true;
 }
 
 void Resource::Remove()
 {
+	::pio_remove_program_and_unclaim_sm(program, pio, sm, offset);
 }
-
-//------------------------------------------------------------------------------
-// PIO::Config
-//------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
 // PIO::StatemMachine

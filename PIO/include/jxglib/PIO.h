@@ -26,29 +26,6 @@ namespace PIO {
 class Program;
 
 //------------------------------------------------------------------------------
-// PIO::Resource
-//------------------------------------------------------------------------------
-class Resource {
-public:
-	pio_t pio;
-	uint sm;
-	uint offset;
-public:
-	Resource() : pio{nullptr}, sm{static_cast<uint>(-1)}, offset{0} {}
-	Resource(pio_t pio, uint sm, uint offset) : pio{pio}, sm{sm}, offset{offset} {}
-	Resource(const Resource& resource) : pio{resource.pio}, sm{resource.sm}, offset{resource.offset}{}
-public:
-	bool IsValid() const { return !!pio && sm != static_cast<uint>(-1); }
-	void Invalidate() { pio = nullptr, sm = static_cast<uint>(-1), offset = 0; }
-public:
-	operator bool() const { return !!pio && sm != static_cast<uint>(-1); }
-public:
-	bool Claim(const Program& program);
-	bool Claim(const Program& program, uint gpio_base, uint gpio_count, bool set_gpio_base);
-	void Remove();
-};
-
-//------------------------------------------------------------------------------
 // PIO::Config
 //------------------------------------------------------------------------------
 class Config {
@@ -98,22 +75,40 @@ public:
 };
 
 //------------------------------------------------------------------------------
+// PIO::Resource
+//------------------------------------------------------------------------------
+class Resource {
+public:
+	const Program& program;
+	pio_t pio;
+	uint sm;
+	uint offset;
+	Config config;
+public:
+	Resource(const Program& program) : program{program}, pio{nullptr}, sm{static_cast<uint>(-1)}, offset{0} {}
+	Resource(const Resource& resource) : program{resource.program}, pio{resource.pio}, sm{resource.sm}, offset{resource.offset}, config{resource.config} {}
+public:
+	bool IsValid() const { return !!pio && sm != static_cast<uint>(-1); }
+	void Invalidate() { pio = nullptr, sm = static_cast<uint>(-1), offset = 0; }
+public:
+	bool Claim();
+	bool Claim(uint gpio_base, uint gpio_count, bool set_gpio_base);
+	void Remove();
+};
+
+//------------------------------------------------------------------------------
 // PIO::StateMachine
 //------------------------------------------------------------------------------
 class StateMachine {
 private:
-	Resource resource_;
-	Config config_;
+	Resource& resource_;
 public:
-	StateMachine() {}
-	StateMachine(const StateMachine& stateMachine) : resource_(stateMachine.resource_), config_{stateMachine.config_} {}
+	StateMachine(Resource& resource) : resource_{resource} {}
+	StateMachine(const StateMachine& stateMachine) : resource_(stateMachine.resource_) {}
 public:
 	operator uint() { return resource_.sm; }
 public:
-	void SetResource(const Resource& resource) { resource_ = resource; }
 	const Resource& GetResource() const { return resource_; }
-	void SetConfig(const Config& config) { config_ = config; }
-	const Config& GetConfig() const { return config_; }
 	void Invalidate() { resource_.Invalidate(); }	
 	bool IsValid() const { return resource_.IsValid(); }
 public:
@@ -122,7 +117,7 @@ public:
 	uint get_dreq_rx() const { return ::pio_get_dreq(resource_.pio, resource_.sm, false); }
 	int set_config(const pio_sm_config *config) const { return ::pio_sm_set_config(resource_.pio, resource_.sm, config); }
 	int init(uint initial_pc, const pio_sm_config* config) { return ::pio_sm_init(resource_.pio, resource_.sm, initial_pc, config); }
-	int init() { return ::pio_sm_init(resource_.pio, resource_.sm, resource_.offset, config_); }
+	int init() { return ::pio_sm_init(resource_.pio, resource_.sm, resource_.offset, resource_.config); }
 	const StateMachine& set_enabled(bool enabled) const { ::pio_sm_set_enabled(resource_.pio, resource_.sm, enabled); return *this; }
 	const StateMachine& restart() const { ::pio_sm_restart(resource_.pio, resource_.sm); return *this; }
 	const StateMachine& clkdiv_restart() const { ::pio_sm_clkdiv_restart(resource_.pio, resource_.sm); return *this; }
