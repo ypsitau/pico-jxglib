@@ -20,30 +20,31 @@ namespace PIO {
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-// PIO::Resource
+// PIO::StateMachine
 //------------------------------------------------------------------------------
-bool Resource::Claim()
+bool StateMachine::ClaimResource()
 {
-	if (!::pio_claim_free_sm_and_add_program(program, &pio, &sm, &offset)) return false;
+	pio_t pioRaw;
+	if (!::pio_claim_free_sm_and_add_program(program, &pioRaw, &sm, &offset)) return false;
+	pio = pioRaw;
 	config = program.GenerateConfig(offset);
 	return true;
 }
 
-bool Resource::Claim(uint gpio_base, uint gpio_count, bool set_gpio_base)
+bool StateMachine::ClaimResource(uint gpio_base, uint gpio_count, bool set_gpio_base)
 {
-	if (!::pio_claim_free_sm_and_add_program_for_gpio_range(program, &pio, &sm, &offset, gpio_base, gpio_count, set_gpio_base)) return false;
+	pio_t pioRaw;
+	if (!::pio_claim_free_sm_and_add_program_for_gpio_range(program, &pioRaw, &sm, &offset, gpio_base, gpio_count, set_gpio_base)) return false;
+	pio = pioRaw;
 	config = program.GenerateConfig(offset);
 	return true;
 }
 
-void Resource::Remove()
+void StateMachine::UnclaimResource()
 {
 	::pio_remove_program_and_unclaim_sm(program, pio, sm, offset);
+	Invalidate();
 }
-
-//------------------------------------------------------------------------------
-// PIO::StatemMachine
-//------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
 // PIO::Block
@@ -106,7 +107,7 @@ const Program::Variable* Program::Lookup(const char* label) const
 	return nullptr;
 }
 
-Program& Program::Complete()
+Program& Program::Complete(bool keepLabelFlag)
 {
 	for (Variable* pVariableRef = pVariableRefHead_.get(); pVariableRef; pVariableRef = pVariableRef->GetNext()) {
 		const Variable* pVariable = Lookup(pVariableRef->GetLabel());
@@ -119,6 +120,8 @@ Program& Program::Complete()
 	}
 	program_.length = addrRelCur_;
 	if (wrap_.addrRel_wrap == 0) wrap_.addrRel_wrap = addrRelCur_;
+	if (!keepLabelFlag) pVariableHead_.reset();
+	pVariableRefHead_.reset();
 	return *this;
 }
 
