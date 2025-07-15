@@ -15,9 +15,9 @@ if(WIN32)
 else()
     set(USERHOME $ENV{HOME})
 endif()
-set(sdkVersion 2.1.0)
-set(toolchainVersion 13_3_Rel1)
-set(picotoolVersion 2.1.0)
+set(sdkVersion 2.1.1)
+set(toolchainVersion 14_2_Rel1)
+set(picotoolVersion 2.1.1)
 set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
 if (EXISTS ${picoVscode})
     include(${picoVscode})
@@ -28,26 +28,32 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-PIO-blink C CXX ASM)
+project(test-blink C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
-
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-PIO-blink)
+add_executable(test-blink test-blink.cpp )
 
-# by default the header is generated into the build dir
-pico_generate_pio_header(test-PIO-blink ${CMAKE_CURRENT_LIST_DIR}/test-PIO-blink.pio)
-# however, alternatively you can choose to generate it somewhere else (in this case in the source tree for check in)
-#pico_generate_pio_header(test-PIO-blink ${CMAKE_CURRENT_LIST_DIR}/blink.pio OUTPUT_DIR ${CMAKE_CURRENT_LIST_DIR})
+pico_set_program_name(test-blink "test-blink")
+pico_set_program_version(test-blink "0.1")
 
-target_sources(test-PIO-blink PRIVATE test-PIO-blink.cpp)
+# Modify the below lines to enable/disable output over UART/USB
+pico_enable_stdio_uart(test-blink 1)
+pico_enable_stdio_usb(test-blink 0)
 
-target_link_libraries(test-PIO-blink PRIVATE pico_stdlib hardware_pio jxglib_PIO)
+# Add the standard library to the build
+target_link_libraries(test-blink
+	pico_stdlib
+	jxglib_PIO)
 
-pico_add_extra_outputs(test-PIO-blink)
+# Add the standard include files to the build
+target_include_directories(test-blink PRIVATE
+	${CMAKE_CURRENT_LIST_DIR}
+)
 
-# add url via pico_set_program_url
+pico_add_extra_outputs(test-blink)
+
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)

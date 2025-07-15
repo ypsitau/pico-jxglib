@@ -7,10 +7,30 @@
 
 namespace jxglib {
 
-PIO::Instance PIO0(pio0);
-PIO::Instance PIO1(pio1);
+PIO::Block PIO0(pio0);
+PIO::Block PIO1(pio1);
+#if PICO_PIO_VERSION > 0
+PIO::Block PIO2(pio2);
+#endif
 
 namespace PIO {
+
+//------------------------------------------------------------------------------
+// PIO::Resource
+//------------------------------------------------------------------------------
+bool Resource::Claim(const Program& program)
+{
+	return ::pio_claim_free_sm_and_add_program(program, &pio, &sm, &offset);
+}
+
+bool Resource::Claim(const Program& program, uint gpio_base, uint gpio_count, bool set_gpio_base)
+{
+	return ::pio_claim_free_sm_and_add_program_for_gpio_range(program, &pio, &sm, &offset, gpio_base, gpio_count, set_gpio_base);
+}
+
+void Resource::Remove()
+{
+}
 
 //------------------------------------------------------------------------------
 // PIO::Config
@@ -21,7 +41,7 @@ namespace PIO {
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-// PIO::Instance
+// PIO::Block
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
@@ -353,37 +373,6 @@ pio_src_dest Program::StrToSrcDest(const char* str, bool outFlag) const
 	if (::strcasecmp(str, "osr") == 0)		return pio_osr;
 	::panic("addr%02x: invalid source/destination '%s'\n", addrRelCur_, str);
 	return pio_pins;
-}
-
-//------------------------------------------------------------------------------
-// PIO::Controller
-//------------------------------------------------------------------------------
-bool Controller::ClaimResource()
-{
-	pio_t pioClaimed;
-	uint smClaimed;
-	uint offset;
-	if (!Instance::claim_free_sm_and_add_program(program, &pioClaimed, &smClaimed, &offset)) return false;
-	pio_ = Instance(pioClaimed);
-	config_ = configGenerator_.GenerateConfig(offset);
-	sm.SetResource(pioClaimed, smClaimed, offset, config_);
-	//uint pin = 0;
-	//pio_.gpio_init(pin);
-	//sm.set_consecutive_pindirs_in(pin, 1);
-	//sm.set_consecutive_pindirs_out(pin, 1);
-	//config_.set_set_pins(pin, 1);
-	return true;
-}
-
-void Controller::UnclaimResource()
-{
-	Instance::remove_program_and_unclaim_sm(program, sm.GetPIO(), sm.GetSM(), sm.GetOffset());
-	sm.Invalidate();
-}
-
-int Controller::InitSM()
-{
-	return sm.init();
 }
 
 }
