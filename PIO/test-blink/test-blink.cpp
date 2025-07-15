@@ -6,26 +6,23 @@ using namespace jxglib;
 
 int main()
 {
+	const GPIO& gpioLED = GPIO15;
 	::stdio_init_all();
 	PIO::Program program;
 	program
 	.program("hello")
 	.L("loop")
-		.set("pins", 1)
-		//.pull()
-		//.out("pins",	1)
+		.pull()
+		.out("pins",	1)
 		.jmp("loop")
 	.end();
 	PIO::StateMachine sm(program);
-	if (!sm.ClaimResource()) {
-		::printf("Failed to claim PIO resource\n");
-		return 1;
-	}
-	sm.config.set_out_pins(GPIO15, 1);
-	sm.pio.gpio_init(GPIO15);
-	sm.set_consecutive_pindirs(GPIO15, 1, true);
+	sm.ClaimResource();
+	sm.config.set_out_pin(gpioLED);
+	sm.pio.gpio_init(gpioLED);
+	sm.set_pindir_out(gpioLED);
 	sm.init();
-	sm.set_enabled(true);
+	sm.set_enabled();
 	while (::getchar_timeout_us(0) == PICO_ERROR_TIMEOUT) {
 		sm.put_blocking(1);
 		::sleep_ms(500);
