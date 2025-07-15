@@ -138,7 +138,7 @@ pio_sm_config Program::GenerateConfig(uint offset) const
 	::sm_config_set_sideset(&config, sideSet_.bit_count, sideSet_.optional, sideSet_.pindirs);
 	if (wrap_.addrRel_wrapPlus > 0) {
 		::sm_config_set_wrap(&config, offset + wrap_.addrRel_target, offset + wrap_.addrRel_wrapPlus - 1);
-		::printf("wrap: %d %d\n", offset + wrap_.addrRel_target, offset + wrap_.addrRel_wrapPlus - 1);
+		//::printf("wrap: %d %d\n", offset + wrap_.addrRel_target, offset + wrap_.addrRel_wrapPlus - 1);
 	}
 	return config;	
 }

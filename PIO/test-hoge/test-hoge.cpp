@@ -1,15 +1,14 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/PIO.h"
-#include "blink.pio.h"
 
 using namespace jxglib;
 
 int main()
 {
 	::stdio_init_all();
-	PIO::Program blink_program_jxg;
-	blink_program_jxg
+	PIO::Program blink_program;
+	blink_program
 	.program("blink")
 		.pull().block()
 		.out("y", 32)
@@ -27,22 +26,19 @@ int main()
 
 	uint sm = 0;
 	uint pin = 15;
-	uint freq = 5;
+	uint freq = 1;
 	// PIO Blinking example
 	PIO::Block pio = pio0;
-	uint offset = pio_add_program(pio, blink_program_jxg);
+	uint offset = pio.add_program(blink_program);
 	printf("Loaded program at %d\n", offset);
-
 #if 1
-	PIO::StateMachine sm0(blink_program_jxg);
+	PIO::StateMachine sm0(blink_program);
 	sm0.SetResource(pio, sm, offset);
 	pio.gpio_init(pin);
 	sm0.set_consecutive_pindirs(pin, 1, true);
-	//sm0.config.set_wrap(offset + blink_wrap_target, offset + blink_wrap);
-	::printf("wrap-correct: %d %d\n", offset + blink_wrap_target, offset + blink_wrap);
 	sm0.config.set_set_pins(pin, 1);
 	sm0.init();
-	sm0.set_enabled(true);
+	sm0.set_enabled();
 #else
 	pio_gpio_init(pio, pin);
 	pio_sm_set_consecutive_pindirs(pio, sm, pin, 1, true);
