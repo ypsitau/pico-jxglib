@@ -6,51 +6,34 @@ using namespace jxglib;
 
 int main()
 {
+	const GPIO& gpioLED = GPIO15;
+	const uint freq = 2;
 	::stdio_init_all();
 	PIO::Program blink_program;
 	blink_program
 	.program("blink")
 		.pull().block()
-		.out("y", 32)
+		.out("y",		32)			// y <- osr[31:0], osr >>= 32
 	.wrap_target()
-		.mov("x", "y")
-		.set("pins", 1)		// Turn LED on
-	.L("lp1")
-		.jmp("x--", "lp1")	// Delay for (x + 1) cycles, x is a 32 bit number
-		.mov("x", "y")
-		.set("pins", 0)		// Turn LED off
-	.L("lp2")
-		.jmp("x--", "lp2")	// Delay for the same number of cycles again
-	.wrap()				// Blink forever!
+		.mov("x",		"y")
+		.set("pins",	0b1)
+	.L("loop1")
+		.jmp("x--",		"loop1")	// Delay for (x + 1) cycles
+		.mov("x",		"y")
+		.set("pins",	0b0)
+	.L("loop2")
+		.jmp("x--",		"loop2")	// Delay for (x + 1) cycles
+	.wrap()
 	.end();
-
-	uint sm = 0;
-	uint pin = 15;
-	uint freq = 1;
-	// PIO Blinking example
-	PIO::Block pio = pio0;
-	uint offset = pio.add_program(blink_program);
-	printf("Loaded program at %d\n", offset);
-#if 1
-	PIO::StateMachine sm0(blink_program);
-	sm0.SetResource(pio, sm, offset);
-	pio.gpio_init(pin);
-	sm0.set_consecutive_pindirs(pin, 1, true);
-	sm0.config.set_set_pins(pin, 1);
-	sm0.init();
-	sm0.set_enabled();
-#else
-	pio_gpio_init(pio, pin);
-	pio_sm_set_consecutive_pindirs(pio, sm, pin, 1, true);
-	pio_sm_config c = pio_get_default_sm_config();
-	sm_config_set_wrap(&c, offset + blink_wrap_target, offset + blink_wrap);
-	sm_config_set_set_pins(&c, pin, 1);
-	pio_sm_init(pio, sm, offset, &c);
-	pio_sm_set_enabled(pio, sm, true);
-#endif
-	pio->txf[sm] = (125000000 / (2 * freq)) - 3;
-	while (true) {
-		printf("Hello, world!\n");
-		sleep_ms(1000);
-	}
+	PIO::StateMachine sm(blink_program);
+	//sm.SetResource(pio1, 3);
+	sm.ClaimResource();
+	::printf("Running at pio%d sm%d offset:%d\n", sm.pio.get_index(), sm.sm, sm.offset);
+	sm.config.set_set_pin(gpioLED);
+	sm.pio.gpio_init(gpioLED);
+	sm.set_pindir_out(gpioLED);
+	sm.init();
+	sm.set_enabled();
+	sm.put((125000000 / (2 * freq)) - 3);
+	for (;;) ::tight_loop_contents();
 }

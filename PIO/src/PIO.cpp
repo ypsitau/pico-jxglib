@@ -22,28 +22,28 @@ namespace PIO {
 //------------------------------------------------------------------------------
 // PIO::StateMachine
 //------------------------------------------------------------------------------
-void StateMachine::SetResource(pio_t pio, uint sm, uint offset)
+void StateMachine::SetResource(pio_t pio, uint sm)
 {
 	this->pio = pio;
 	this->sm = sm;
-	this->offset = offset;
+	offset = ::pio_add_program(pio, program);
 	config = program.GenerateConfig(offset);	
 }
 
 bool StateMachine::ClaimResource()
 {
-	pio_t pioRaw;
-	if (!::pio_claim_free_sm_and_add_program(program, &pioRaw, &sm, &offset)) return false;
-	pio = pioRaw;
+	pio_t pioClaimed;
+	if (!::pio_claim_free_sm_and_add_program(program, &pioClaimed, &sm, &offset)) return false;
+	pio = pioClaimed;
 	config = program.GenerateConfig(offset);
 	return true;
 }
 
 bool StateMachine::ClaimResource(uint gpio_base, uint gpio_count, bool set_gpio_base)
 {
-	pio_t pioRaw;
-	if (!::pio_claim_free_sm_and_add_program_for_gpio_range(program, &pioRaw, &sm, &offset, gpio_base, gpio_count, set_gpio_base)) return false;
-	pio = pioRaw;
+	pio_t pioClaimed;
+	if (!::pio_claim_free_sm_and_add_program_for_gpio_range(program, &pioClaimed, &sm, &offset, gpio_base, gpio_count, set_gpio_base)) return false;
+	pio = pioClaimed;
 	config = program.GenerateConfig(offset);
 	return true;
 }
