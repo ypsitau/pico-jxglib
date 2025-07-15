@@ -290,6 +290,7 @@ public:
 	bool IsValid() const { return !!pio && sm != static_cast<uint>(-1); }
 	void Invalidate() { pio = nullptr, sm = static_cast<uint>(-1), offset = 0; }
 public:
+	void SetResource(pio_t pio, uint sm, uint offset);
 	bool ClaimResource();
 	bool ClaimResource(uint gpio_base, uint gpio_count, bool set_gpio_base);
 	void UnclaimResource();

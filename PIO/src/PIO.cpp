@@ -22,6 +22,14 @@ namespace PIO {
 //------------------------------------------------------------------------------
 // PIO::StateMachine
 //------------------------------------------------------------------------------
+void StateMachine::SetResource(pio_t pio, uint sm, uint offset)
+{
+	this->pio = pio;
+	this->sm = sm;
+	this->offset = offset;
+	config = program.GenerateConfig(offset);	
+}
+
 bool StateMachine::ClaimResource()
 {
 	pio_t pioRaw;
