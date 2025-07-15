@@ -9,18 +9,16 @@ int main()
 	const GPIO& gpioLED = GPIO15;
 	::stdio_init_all();
 	PIO::Program program;
-#if 0
+#if 1
 	program
-	.program("hello")
-	.L("loop")
-		.pull()
-		.out("pins",	1)
-		.jmp("loop")
+	.program("manual-blink")
+		.pull().block()				// osr <- txfifo
+		.out("pins",	1)			// pins <- osr[0], osr >>= 1
 	.end();
 #else
 	program
-	.program("blink")
-		.pull().block()
+	.program("auto-blink")
+		.pull().block()				// osr <- txfifo
 		.out("y",		32)			// y <- osr[31:0], osr >>= 32
 	.wrap_target()
 		.mov("x",		"y")
@@ -42,7 +40,7 @@ int main()
 	sm.set_pindir_out(gpioLED);
 	sm.init();
 	sm.set_enabled();
-#if 0
+#if 1
 	while (::getchar_timeout_us(0) == PICO_ERROR_TIMEOUT) {
 		sm.put_blocking(1);
 		::sleep_ms(500);
