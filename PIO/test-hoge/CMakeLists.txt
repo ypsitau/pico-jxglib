@@ -63,3 +63,5 @@ target_link_libraries(test-hoge
 
 pico_add_extra_outputs(test-hoge)
 
+target_link_libraries(test-hoge jxglib_PIO)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
