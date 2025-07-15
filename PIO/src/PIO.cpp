@@ -42,9 +42,9 @@ Program::Program() : addrRelCur_{0}, sideSpecifiedFlag_{false}, wrap_{0, 0}, sid
 Program& Program::AddInst(uint16_t inst)
 {
 	if (addrRelCur_ > 0 && IsSideMust() && !sideSpecifiedFlag_) {
-		::panic("side-set must be specified for each instruction\n");
+		::panic("addr%02x: side-set must be specified for each instruction\n", addrRelCur_);
 	}
-	if (addrRelCur_ >= count_of(instTbl_)) ::panic("too many PIO instructions\n");
+	if (addrRelCur_ >= count_of(instTbl_)) ::panic("addr%02x: too many PIO instructions\n", addrRelCur_);
 	instTbl_[addrRelCur_++] = inst;
 	sideSpecifiedFlag_ = false;
 	return *this;
@@ -52,7 +52,7 @@ Program& Program::AddInst(uint16_t inst)
 
 Program& Program::L(const char* label)
 {
-	if (Lookup(label)) ::panic("label '%s' already defined\n", label);
+	if (Lookup(label)) ::panic("addr%02x: label '%s' already defined\n", addrRelCur_, label);
 	AddVariable(label, addrRelCur_);
 	return *this;
 }
@@ -87,7 +87,7 @@ Program& Program::Complete()
 			uint16_t& inst = instTbl_[pVariableRef->GetValue()];
 			inst = inst & 0xffe0 | pVariable->GetValue();
 		} else {
-			::panic("label '%s' not found\n", pVariableRef->GetLabel());
+			::panic("addr%02x: label '%s' not found\n", addrRelCur_, pVariableRef->GetLabel());
 		}
 	}
 	program_.length = addrRelCur_;
@@ -134,7 +134,7 @@ Program& Program::jmp(const char* cond, uint16_t addr)
 	if (::strcasecmp(cond, "x!=y") == 0 || ::strcasecmp(cond, "x != y") == 0) return jmp_x_ne_y(addr);
 	if (::strcasecmp(cond, "pin") == 0) return jmp_pin(addr);
 	if (::strcasecmp(cond, "!osre") == 0) return jmp_not_osre(addr);
-	::panic("jmp(): invalid condition '%s'\n", cond);
+	::panic("addr%02x: jmp(): invalid condition '%s'\n", addrRelCur_, cond);
 	return *this;
 }
 
@@ -143,16 +143,20 @@ Program& Program::wait(bool polarity, const char* src, uint16_t index)
 	if (::strcasecmp(src, "gpio") == 0)		return wait_gpio(polarity, index);
 	if (::strcasecmp(src, "pin") == 0)		return wait_pin(polarity, index);
 	if (::strcasecmp(src, "irq") == 0)		return wait_irq(polarity, false, index);
-	//if (::strcasecmp(src, "jumppin") == 0)	return wait_jumppin(polarity, false, index);
-	::panic("wait(): invalid source '%s'\n", src);
+	if (::strcasecmp(src, "jmppin") == 0) {
+		if (program_.pio_version < 1) ::panic("addr%02x: wait(): jmppin is not supported in PIO version %d\n", addrRelCur_, program_.pio_version);
+		return wait_jmppin(polarity, index);
+	}
+	::panic("addr%02x: wait(): invalid source '%s'\n", addrRelCur_, src);
 	return *this;
 }
 
 Program& Program::mov(const char* dest, const char* src, uint16_t index)
 {
 	if (StartsWithICase(dest, "rxfifo[")) {
+		if (program_.pio_version < 1) ::panic("addr%02x: mov(): rxfifo[] is not supported in PIO version %d\n", addrRelCur_, program_.pio_version);
 		dest += 7;
-		if (::strcasecmp(src, "isr") != 0) ::panic("mov(): invalid source '%s'\n", src);
+		if (::strcasecmp(src, "isr") != 0) ::panic("addr%02x: mov(): invalid source '%s'\n", addrRelCur_, src);
 		uint16_t inst = 0;
 		if (::strcasecmp(dest, "y]") == 0) {
 			inst = 0b10000000'00010000;
@@ -161,14 +165,15 @@ Program& Program::mov(const char* dest, const char* src, uint16_t index)
 		} else {
 			char* endptr;
 			int index = ::strtol(dest, &endptr, 0);
-			if (::strcmp(endptr, "]") != 0) ::panic("mov(): invalid destination '%s'\n", dest);
-			if (index < 0 || index > 7) ::panic("mov(): index out of range %d\n", index);
+			if (::strcmp(endptr, "]") != 0) ::panic("addr%02x: mov(): invalid destination '%s'\n", addrRelCur_, dest);
+			if (index < 0 || index > 7) ::panic("addr%02x: mov(): index out of range %d\n", addrRelCur_, index);
 			inst = 0b10000000'00011000 | static_cast<uint16_t>(index);
 		}
 		return word(inst);
 	} else if (StartsWithICase(src, "rxfifo[")) {
+		if (program_.pio_version < 1) ::panic("addr%02x: mov(): rxfifo[] is not supported in PIO version %d\n", addrRelCur_, program_.pio_version);
 		src += 7;
-		if (::strcasecmp(dest, "osr") != 0) ::panic("mov(): invalid destination '%s'\n", dest);
+		if (::strcasecmp(dest, "osr") != 0) ::panic("addr%02x: mov(): invalid destination '%s'\n", addrRelCur_, dest);
 		uint16_t inst = 0;
 		if (::strcasecmp(src, "y]") == 0) {
 			inst = 0b10000000'10010000;
@@ -177,8 +182,8 @@ Program& Program::mov(const char* dest, const char* src, uint16_t index)
 		} else {
 			char* endptr;
 			int index = ::strtol(src, &endptr, 0);
-			if (::strcmp(endptr, "]") != 0) ::panic("mov(): invalid source '%s'\n", src);
-			if (index < 0 || index > 7) ::panic("mov(): index out of range %d\n", index);
+			if (::strcmp(endptr, "]") != 0) ::panic("addr%02x: mov(): invalid source '%s'\n", addrRelCur_, src);
+			if (index < 0 || index > 7) ::panic("addr%02x: mov(): index out of range %d\n", addrRelCur_, index);
 			inst = 0b10000000'10011000 | static_cast<uint16_t>(index);
 		}
 		return word(inst);
@@ -196,13 +201,13 @@ Program& Program::irq(const char* op, uint16_t irq_n)
 	if (::strcasecmp(op, "nowait") == 0) return irq_set(irq_n, relative);
 	if (::strcasecmp(op, "wait") == 0) return irq_wait(irq_n, relative);
 	if (::strcasecmp(op, "clear") == 0) return irq_clear(irq_n, relative);
-	::panic("irq(): invalid operation '%s'\n", op);
+	::panic("addr%02x: irq(): invalid operation '%s'\n", addrRelCur_, op);
 	return *this;
 }
 
 Program& Program::side(uint16_t bits)
 {
-	if (sideSet_.bit_count == 0) ::panic("side(): side-set not defined\n");
+	if (sideSet_.bit_count == 0) ::panic("addr%02x: side(): side-set not defined\n", addrRelCur_);
 	uint16_t& inst = instTbl_[addrRelCur_ - 1];
 	int lsb = 13 - sideSet_.bit_count;
 	inst = inst | (bits << lsb);
@@ -225,7 +230,7 @@ Program& Program::rel()
 	} else if (Is_WAIT(inst) && ((inst >> 5) & 0x3) == 2) {	// wait irq
 		inst |= (2 << 3);
 	} else {
-		::panic("rel() is not applicable for %s\n", GetInstName(inst));
+		::panic("addr%02x: rel() is not applicable for %s\n", addrRelCur_, GetInstName(inst));
 	}
 	return *this;
 }
@@ -238,7 +243,7 @@ Program& Program::prev()
 	} else if (Is_WAIT(inst) && ((inst >> 5) & 0x3) == 2) {	// wait irq
 		inst |= (1 << 3);
 	} else {
-		::panic("prev() is not applicable for %s\n", GetInstName(inst));
+		::panic("addr%02x: prev() is not applicable for %s\n", addrRelCur_, GetInstName(inst));
 	}
 	return *this;
 }
@@ -251,7 +256,7 @@ Program& Program::next()
 	} else if (Is_WAIT(inst) && ((inst >> 5) & 0x3) == 2) {	// wait irq
 		inst |= (3 << 3);
 	} else {
-		::panic("next() is not applicable for %s\n", GetInstName(inst));
+		::panic("addr%02x: next() is not applicable for %s\n", addrRelCur_, GetInstName(inst));
 	}
 	return *this;
 }
@@ -262,7 +267,7 @@ Program& Program::iffull()
 	if (Is_PUSH(inst)) {
 		inst |= (1 << 6);
 	} else {
-		::panic("iffull() is not applicable for %s\n", GetInstName(inst));
+		::panic("addr%02x: iffull() is not applicable for %s\n", addrRelCur_, GetInstName(inst));
 	}
 	return *this;
 }
@@ -273,7 +278,7 @@ Program& Program::ifempty()
 	if (Is_PULL(inst)) {
 		inst |= (1 << 6);
 	} else {
-		::panic("iffull() is not applicable for %s\n", GetInstName(inst));
+		::panic("addr%02x: iffull() is not applicable for %s\n", addrRelCur_, GetInstName(inst));
 	}
 	return *this;
 }
@@ -284,7 +289,7 @@ Program& Program::block()
 	if (Is_PUSHorPULL(inst)) {
 		inst |= (1 << 5);
 	} else {
-		::panic("block() is not applicable for %s\n", GetInstName(inst));
+		::panic("addr%02x: block() is not applicable for %s\n", addrRelCur_, GetInstName(inst));
 	}
 	return *this;
 }
@@ -295,7 +300,7 @@ Program& Program::noblock()
 	if (Is_PUSHorPULL(inst)) {
 		inst &= ~(1 << 5);
 	} else {
-		::panic("block() is not applicable for %s\n", GetInstName(inst));
+		::panic("addr%02x: block() is not applicable for %s\n", addrRelCur_, GetInstName(inst));
 	}
 	return *this;
 }
@@ -316,7 +321,7 @@ const char* Program::GetInstName(uint16_t inst)
 	return "unknown";
 }
 
-pio_src_dest Program::StrToSrcDest(const char* str, bool outFlag)
+pio_src_dest Program::StrToSrcDest(const char* str, bool outFlag) const
 {
 	if (::strcasecmp(str, "pins") == 0)		return pio_pins;
 	if (::strcasecmp(str, "x") == 0)		return pio_x;
@@ -328,7 +333,7 @@ pio_src_dest Program::StrToSrcDest(const char* str, bool outFlag)
 	if (::strcasecmp(str, "pc") == 0)		return pio_pc;
 	if (::strcasecmp(str, "isr") == 0)		return pio_isr;
 	if (::strcasecmp(str, "osr") == 0)		return pio_osr;
-	::panic("invalid source/destination '%s'\n", str);
+	::panic("addr%02x: invalid source/destination '%s'\n", addrRelCur_, str);
 	return pio_pins;
 }
 

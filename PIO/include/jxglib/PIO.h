@@ -269,7 +269,7 @@ public:
 	Program& wait_gpio(bool polarity, uint16_t gpio) { return AddInst(::pio_encode_wait_gpio(polarity, gpio)); }
 	Program& wait_pin(bool polarity, uint16_t pin) { return AddInst(::pio_encode_wait_pin(polarity, pin)); }
 	Program& wait_irq(bool polarity, bool relative, uint16_t irq) { return AddInst(::pio_encode_wait_irq(polarity, relative, irq)); }
-	//Program& wait_jumppin(bool polarity, bool relative, uint16_t pin_offset) { return AddInst(::pio_encode_wait_jumppin(polarity, relative, pin_offsets)); }
+	Program& wait_jmppin(bool polarity, uint16_t pin_offset) { return AddInst(pio_encode_wait_jmppin(polarity, pin_offset)); }
 	Program& in(enum pio_src_dest src, uint16_t count) { return AddInst(::pio_encode_in(src, count)); }
 	Program& out(enum pio_src_dest dest, uint16_t count) { return AddInst(::pio_encode_out(dest, count)); }
 	Program& push(bool if_full, bool block) { return AddInst(::pio_encode_push(if_full, block)); }
@@ -281,9 +281,14 @@ public:
 	Program& irq_wait(uint16_t irq_n, bool relative = false) { return AddInst(::pio_encode_irq_wait(relative, irq_n)); }
 	Program& irq_clear(uint16_t irq_n, bool relative = false) { return AddInst(::pio_encode_irq_clear(relative, irq_n)); }
 	Program& set(enum pio_src_dest dest, uint16_t value) { return AddInst(::pio_encode_set(dest, value)); }
-	Program& nop(void) { return AddInst(::pio_encode_nop()); }
+	Program& nop() { return AddInst(::pio_encode_nop()); }
+private:
+	static uint pio_encode_wait_jmppin(bool polarity, uint pin_offset) {
+		valid_params_if(PIO_INSTRUCTIONS, pin_offset <= 3);
+		return _pio_encode_instr_and_args(pio_instr_bits_wait, 3u | (polarity ? 4u : 0u), pin_offset);
+	}
 public:
-	// Human-readable version of instructions
+	// Assembler-style instructions
 	Program& jmp(const char* label) { AddVariableRef(label, addrRelCur_); return jmp(static_cast<uint16_t>(0)); }
 	Program& jmp(const char* cond, uint16_t addr);
 	Program& jmp(const char* cond, const char* label) { AddVariableRef(label, addrRelCur_); return jmp(cond, static_cast<uint16_t>(0)); }
@@ -312,6 +317,9 @@ public:
 	Program& block();
 	Program& noblock();
 public:
+	pio_src_dest StrToSrcDest(const char* str, bool outFlag = false) const;
+	pio_src_dest StrToSrcDest_out(const char* str) const { return StrToSrcDest(str, true); }
+public:
 	static bool Is_JMP(uint16_t inst)		{ return (inst >> 13) == 0; }
 	static bool Is_WAIT(uint16_t inst)		{ return (inst >> 13) == 1; }
 	static bool Is_IN(uint16_t inst)		{ return (inst >> 13) == 2; }
@@ -325,8 +333,6 @@ public:
 	static bool Is_IRQ(uint16_t inst)		{ return (inst >> 13) == 6; }
 	static bool Is_SET(uint16_t inst)		{ return (inst >> 13) == 7; }
 	static const char* GetInstName(uint16_t inst);
-	static pio_src_dest StrToSrcDest(const char* str, bool outFlag = false);
-	static pio_src_dest StrToSrcDest_out(const char* str) { return StrToSrcDest(str, true); }
 };
 
 //------------------------------------------------------------------------------
