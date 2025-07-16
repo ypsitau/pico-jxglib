@@ -44,10 +44,11 @@ pico_set_program_version(test-blink "0.1")
 pico_enable_stdio_uart(test-blink 1)
 pico_enable_stdio_usb(test-blink 0)
 
-# Add the standard library to the build
+# Add the standard libr ary to the build
 target_link_libraries(test-blink
 	pico_stdlib
-	jxglib_PIO)
+    jxglib_LABOPlatform
+    jxglib_ShellCmd_PIO)
 
 # Add the standard include files to the build
 target_include_directories(test-blink PRIVATE
@@ -57,3 +58,4 @@ target_include_directories(test-blink PRIVATE
 pico_add_extra_outputs(test-blink)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+jxglib_configure_LABOPlatform(test-blink)

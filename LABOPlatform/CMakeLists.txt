@@ -14,3 +14,16 @@ function(jxglib_configure_LABOPlatform TARGET)
 	jxglib_configure_USBDevice(${TARGET} CFG_TUD_CDC 1 CFG_TUD_MSC 1)
 	jxglib_configure_FAT(${TARGET} FF_VOLUMES 1)
 endfunction()
+
+#------------------------------------------------------------------------------
+add_library(jxglib_LABOPlatform_FullCmd INTERFACE)
+
+target_link_libraries(jxglib_LABOPlatform_FullCmd INTERFACE
+	jxglib_LABOPlatform
+    jxglib_ShellCmd_FS
+	jxglib_ShellCmd_GPIO
+	jxglib_ShellCmd_ADC
+	jxglib_ShellCmd_PWM
+	jxglib_ShellCmd_I2C
+	jxglib_ShellCmd_SPI
+)	

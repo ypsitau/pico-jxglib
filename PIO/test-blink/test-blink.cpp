@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include "jxglib/LABOPlatform.h"
 #include "jxglib/PIO.h"
 
 using namespace jxglib;
@@ -51,5 +52,7 @@ int main()
 #else
 	sm.put((125000000 / (2 * 2)) - 3);
 #endif
-	for (;;) ::tight_loop_contents();
+	LABOPlatform laboPlatform;
+	laboPlatform.AttachStdio().Initialize();
+	for (;;) Tickable::Tick();
 }
