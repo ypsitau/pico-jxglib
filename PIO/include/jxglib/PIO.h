@@ -175,24 +175,10 @@ public:
 	Program& program(const char* name)	{ Reset(); directive_ = Directive::program; name_ = name; return *this; }
 	Program& origin(uint offset)		{ directive_ = Directive::origin; program_.origin = offset; return *this; }
 	Program& pio_version(uint version)	{ directive_ = Directive::pio_version; program_.pio_version = version; return *this; }
-	Program& side_set(int bit_count)	{ directive_ = Directive::side_set; sideSet_.bit_count = bit_count; return *this; }
-	Program& wrap_target(uint* pAddrRel = nullptr) {
-		directive_ = Directive::wrap_target;
-		wrap_.addrRel_target = addrRelCur_;
-		if (pAddrRel) *pAddrRel = addrRelCur_;
-		return *this;
-	}
-	Program& wrap(uint* pAddrRel = nullptr) {
-		directive_ = Directive::wrap;
-		wrap_.addrRel_wrapPlus = addrRelCur_;
-		if (pAddrRel) *pAddrRel = addrRelCur_;
-		return *this;
-	}
-	Program& end(uint* pAddrRel = nullptr) {
-		directive_ = Directive::end;
-		if (pAddrRel) *pAddrRel = addrRelCur_;
-		return Complete();
-	}
+	Program& side_set(int bit_count);
+	Program& wrap_target(uint* pAddrRel = nullptr);
+	Program& wrap(uint* pAddrRel = nullptr);
+	Program& end(uint* pAddrRel = nullptr);
 public:
 	Program& word(uint16_t inst) { return AddInst(inst); }
 	Program& jmp(uint16_t addr) { return AddInst(::pio_encode_jmp(addr)); }

@@ -185,6 +185,40 @@ const Program& Program::Dump() const
 	return *this;
 }
 
+Program& Program::side_set(int bit_count)
+{
+	if (bit_count < 0 || bit_count > 5) ::panic("addr%02x: side_set(): bit count out of range\n", addrRelCur_);
+	directive_ = Directive::side_set;
+	sideSet_.bit_count = bit_count;
+	return *this;
+}
+
+Program& Program::wrap_target(uint* pAddrRel)
+{
+	directive_ = Directive::wrap_target;
+	wrap_.addrRel_target = addrRelCur_;
+	if (pAddrRel) *pAddrRel = addrRelCur_;
+	return *this;
+}
+
+Program& Program::wrap(uint* pAddrRel)
+{
+	directive_ = Directive::wrap;
+	wrap_.addrRel_wrapPlus = addrRelCur_;
+	if (pAddrRel) *pAddrRel = addrRelCur_;
+	return *this;
+}
+
+Program& Program::end(uint* pAddrRel)
+{
+	directive_ = Directive::end;
+	if (addrRelCur_ > 0 && IsSideMust() && !sideSpecifiedFlag_) {
+		::panic("addr%02x: side-set must be specified for each instruction\n", addrRelCur_);
+	}
+	if (pAddrRel) *pAddrRel = addrRelCur_;
+	return Complete();
+}
+
 Program& Program::jmp(const char* cond, uint16_t addr)
 {
 	if (::strcasecmp(cond, "!x") == 0) return jmp_not_x(addr);
@@ -268,6 +302,7 @@ Program& Program::irq(const char* op, uint16_t irq_n)
 Program& Program::opt()
 {
 	if (directive_ == Directive::side_set) {
+		if (sideSet_.bit_count >= 5) ::panic("addr%02x: opt(): side-set bit count out of range\n", addrRelCur_);
 		sideSet_.optional = true;
 	} else {
 		::panic("addr%02x: opt() is only applicable for side_set\n", addrRelCur_);
@@ -289,8 +324,13 @@ Program& Program::side(uint16_t bits)
 {
 	if (sideSet_.bit_count == 0) ::panic("addr%02x: side(): side-set not defined\n", addrRelCur_);
 	uint16_t& inst = instTbl_[addrRelCur_ - 1];
-	int lsb = 13 - sideSet_.bit_count;
-	inst = inst | (bits << lsb);
+	if (sideSet_.optional) {
+		int lsb = 12 - sideSet_.bit_count;
+		inst = inst | (1 << 12) | (bits << lsb);
+	} else {
+		int lsb = 13 - sideSet_.bit_count;
+		inst = inst | (bits << lsb);
+	}
 	sideSpecifiedFlag_ = true;
 	return *this;
 }
@@ -299,6 +339,9 @@ Program& Program::delay(uint16_t cycles)
 {
 	if (addrRelCur_ == 0 || directive_ != Directive::None) ::panic("addr%02x: no proceeding instruction\n", addrRelCur_);
 	uint16_t& inst = instTbl_[addrRelCur_ - 1];
+	int nBits = 5 - sideSet_.bit_count;
+	uint16_t cyclesMax = (1 << nBits) - 1;
+	if (cycles > cyclesMax) ::panic("addr%02x: delay(): cycles out of range %d (max %d)\n", addrRelCur_, cycles, cyclesMax);
 	inst = inst | (cycles << 8);
 	return *this;
 }

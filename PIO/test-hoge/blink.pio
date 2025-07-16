@@ -7,6 +7,12 @@
 ; SET pin 0 should be mapped to your LED GPIO
 
 .program blink
+.side_set 4 opt
+    pull block side 0
+    pull block side 1
+    pull block side 2
+    pull block side 4
+    pull block side 8
     pull block
     out y, 32
 .wrap_target

@@ -389,6 +389,70 @@ void test_SET()
 	} while (0);
 }
 
+void test_SIDE_SET()
+{
+	do {
+		PIO::Program program;
+		program
+		.program("SIDE_SET(1) Test")
+		.side_set(1)
+			.jmp	("label").side(0b0)
+			.jmp	("label").side(0b1)
+		.L("label")
+		.end();
+		::printf("%s\n", program.GetName());
+		program.Dump();
+	} while (0);
+	do {
+		PIO::Program program;
+		program
+		.program("SIDE_SET(2) Test")
+		.side_set(2)
+			.jmp	("label").side(0b00)
+			.jmp	("label").side(0b01)
+			.jmp	("label").side(0b10)
+			.jmp	("label").side(0b11)
+		.L("label")
+		.end();
+		::printf("%s\n", program.GetName());
+		program.Dump();
+	} while (0);
+	do {
+		PIO::Program program;
+		program
+		.program("SIDE_SET(5) Test")
+		.side_set(5)
+			.jmp	("label").side(0b00000)
+			.jmp	("label").side(0b00001)
+			.jmp	("label").side(0b00010)
+			.jmp	("label").side(0b00100)
+			.jmp	("label").side(0b01000)
+			.jmp	("label").side(0b10000)
+		.L("label")
+		.end();
+		::printf("%s\n", program.GetName());
+		program.Dump();
+	} while (0);
+	do {
+		PIO::Program program;
+		program
+		.program("SIDE_SET(2) optional Test")
+		.side_set(2).opt()
+			.jmp	("label").side(0b00)
+			.jmp	("label")
+			.jmp	("label").side(0b01)
+			.jmp	("label")
+			.jmp	("label").side(0b10)
+			.jmp	("label")
+			.jmp	("label").side(0b11)
+			.jmp	("label")
+		.L("label")
+		.end();
+		::printf("%s\n", program.GetName());
+		program.Dump();
+	} while (0);
+}
+
 int main()
 {
 	::stdio_init_all();
@@ -401,6 +465,7 @@ int main()
 	test_MOV();
 	test_IRQ();
 	test_SET();
+	test_SIDE_SET();
 	::printf("done\n");
 	for (;;) ::tight_loop_contents();
 }
