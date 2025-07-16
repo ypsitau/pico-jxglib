@@ -27,25 +27,36 @@ void StateMachine::SetResource(pio_t pio, uint sm)
 	this->pio = pio;
 	this->sm = sm;
 	offset = ::pio_add_program(pio, program);
-	config = program.GenerateConfig(offset);	
+	program.Configure(config, offset);	
 }
 
-bool StateMachine::ClaimResource()
+void StateMachine::ClaimResource()
 {
 	pio_t pioClaimed;
-	if (!::pio_claim_free_sm_and_add_program(program, &pioClaimed, &sm, &offset)) return false;
+	if (!::pio_claim_free_sm_and_add_program(program, &pioClaimed, &sm, &offset)) {
+		::panic("failed to claim free state machine and add program");
+	}
 	pio = pioClaimed;
-	config = program.GenerateConfig(offset);
-	return true;
+	program.Configure(config, offset);
 }
 
-bool StateMachine::ClaimResource(uint gpio_base, uint gpio_count, bool set_gpio_base)
+void StateMachine::ClaimResource(StateMachine& smToShareProgram)
+{
+	if (&program != &smToShareProgram.program) ::panic("same program must be shared");
+	pio = smToShareProgram.pio;
+	offset = smToShareProgram.offset;
+	sm = ::pio_claim_unused_sm(pio, true);
+	program.Configure(config, offset);
+}
+
+void StateMachine::ClaimResource(uint gpio_base, uint gpio_count, bool set_gpio_base)
 {
 	pio_t pioClaimed;
-	if (!::pio_claim_free_sm_and_add_program_for_gpio_range(program, &pioClaimed, &sm, &offset, gpio_base, gpio_count, set_gpio_base)) return false;
+	if (!::pio_claim_free_sm_and_add_program_for_gpio_range(program, &pioClaimed, &sm, &offset, gpio_base, gpio_count, set_gpio_base)) {
+		::panic("failed to claim free state machine and add program for GPIO range");
+	}
 	pio = pioClaimed;
-	config = program.GenerateConfig(offset);
-	return true;
+	program.Configure(config, offset);
 }
 
 void StateMachine::UnclaimResource()
@@ -61,16 +72,38 @@ void StateMachine::UnclaimResource()
 //------------------------------------------------------------------------------
 // PIO::Program
 //------------------------------------------------------------------------------
+const Program Program::None;
+
 Program::Program() : name_{""}, addrRelCur_{0}, directive_{Directive::None}, sideSpecifiedFlag_{false}, wrap_{0, 0}, sideSet_{0, false, false}
 {
 	for (int i = 0; i < count_of(instTbl_); ++i) instTbl_[i] = 0x0000;
-	program_.instructions = instTbl_;;
+	program_.instructions = instTbl_;
 	program_.length = 0;
 	program_.origin = -1; // required instruction memory origin or -1
 	program_.pio_version = 0;
 #if PICO_PIO_VERSION > 0
 	program_.used_gpio_ranges = 0; // bitmap with one bit per 16 pins
 #endif
+}
+
+void Program::Reset()
+{
+	name_ = "";
+	addrRelCur_ = 0;
+	directive_ = Directive::None;
+	sideSpecifiedFlag_ = false;
+	wrap_ = {0, 0};
+	sideSet_ = {0, false, false};
+	for (int i = 0; i < count_of(instTbl_); ++i) instTbl_[i] = 0x0000;
+	program_.instructions = instTbl_;
+	program_.length = 0;
+	program_.origin = -1; // required instruction memory origin or -1
+	program_.pio_version = 0;
+#if PICO_PIO_VERSION > 0
+	program_.used_gpio_ranges = 0; // bitmap with one bit per 16 pins
+#endif
+	pVariableHead_.reset();
+	pVariableRefHead_.reset();
 }
 
 Program& Program::AddInst(uint16_t inst)
@@ -85,10 +118,11 @@ Program& Program::AddInst(uint16_t inst)
 	return *this;
 }
 
-Program& Program::L(const char* label)
+Program& Program::L(const char* label, uint* pAddrRel)
 {
-	if (Lookup(label)) ::panic("addr%02x: label '%s' already defined\n", addrRelCur_, label);
+	if (LookupVariable(label)) ::panic("addr%02x: label '%s' already defined\n", addrRelCur_, label);
 	AddVariable(label, addrRelCur_);
+	if (pAddrRel) *pAddrRel = addrRelCur_;
 	return *this;
 }
 
@@ -106,7 +140,7 @@ void Program::AddVariableRef(const char* label, uint16_t addrRel)
 	pVariableRefHead_.reset(pVariable);
 }
 
-const Program::Variable* Program::Lookup(const char* label) const
+const Program::Variable* Program::LookupVariable(const char* label) const
 {
 	for (const Variable* pVariable = pVariableHead_.get(); pVariable; pVariable = pVariable->GetNext()) {
 		if (::strcmp(pVariable->GetLabel(), label) == 0) return pVariable;
@@ -114,10 +148,10 @@ const Program::Variable* Program::Lookup(const char* label) const
 	return nullptr;
 }
 
-Program& Program::Complete(bool keepLabelFlag)
+Program& Program::Complete()
 {
 	for (Variable* pVariableRef = pVariableRefHead_.get(); pVariableRef; pVariableRef = pVariableRef->GetNext()) {
-		const Variable* pVariable = Lookup(pVariableRef->GetLabel());
+		const Variable* pVariable = LookupVariable(pVariableRef->GetLabel());
 		if (pVariable) {
 			uint16_t& inst = instTbl_[pVariableRef->GetValue()];
 			inst = inst & 0xffe0 | pVariable->GetValue();
@@ -127,20 +161,18 @@ Program& Program::Complete(bool keepLabelFlag)
 	}
 	program_.length = addrRelCur_;
 	if (wrap_.addrRel_wrapPlus == 0) wrap_.addrRel_wrapPlus = addrRelCur_;
-	if (!keepLabelFlag) pVariableHead_.reset();
+	pVariableHead_.reset();
 	pVariableRefHead_.reset();
 	return *this;
 }
 
-pio_sm_config Program::GenerateConfig(uint offset) const
+void Program::Configure(pio_sm_config* config, uint offset) const
 {
-	pio_sm_config config = ::pio_get_default_sm_config();
-	::sm_config_set_sideset(&config, sideSet_.bit_count, sideSet_.optional, sideSet_.pindirs);
+	::sm_config_set_sideset(config, sideSet_.bit_count, sideSet_.optional, sideSet_.pindirs);
 	if (wrap_.addrRel_wrapPlus > 0) {
-		::sm_config_set_wrap(&config, offset + wrap_.addrRel_target, offset + wrap_.addrRel_wrapPlus - 1);
+		::sm_config_set_wrap(config, offset + wrap_.addrRel_target, offset + wrap_.addrRel_wrapPlus - 1);
 		//::printf("wrap: %d %d\n", offset + wrap_.addrRel_target, offset + wrap_.addrRel_wrapPlus - 1);
 	}
-	return config;	
 }
 
 const Program& Program::Dump() const

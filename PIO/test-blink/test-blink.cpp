@@ -7,16 +7,10 @@ using namespace jxglib;
 
 int main()
 {
-	const GPIO& gpioLED = GPIO15;
+	const GPIO& gpioLED1 = GPIO14;
+	const GPIO& gpioLED2 = GPIO15;
 	::stdio_init_all();
 	PIO::Program program;
-#if 1
-	program
-	.program("manual-blink")
-		.pull().block()				// osr <- txfifo
-		.out("pins",	1)			// pins <- osr[0], osr >>= 1
-	.end();
-#else
 	program
 	.program("auto-blink")
 		.pull().block()				// osr <- txfifo
@@ -32,26 +26,22 @@ int main()
 		.jmp("x--",		"loop2")	// Delay for (x + 1) cycles
 	.wrap()
 	.end();
-#endif
-	PIO::StateMachine sm(program);
-	sm.ClaimResource();
-	sm.config.set_set_pin(gpioLED);
-	sm.config.set_out_pin(gpioLED);
-	sm.pio.gpio_init(gpioLED);
-	sm.set_pindir_out(gpioLED);
-	sm.init();
-	sm.set_enabled();
-#if 1
-	while (::getchar_timeout_us(0) == PICO_ERROR_TIMEOUT) {
-		sm.put_blocking(1);
-		::sleep_ms(500);
-		sm.put_blocking(0);
-		::sleep_ms(500);
-	}
-	sm.UnclaimResource();
-#else
-	sm.put((125000000 / (2 * 2)) - 3);
-#endif
+	PIO::StateMachine sm1(program);
+	PIO::StateMachine sm2(program);
+	sm1.ClaimResource();
+	sm2.ClaimResource(sm1);
+	sm1.config.set_set_pin(gpioLED1);
+	sm2.config.set_set_pin(gpioLED2);
+	sm1.pio.gpio_init(gpioLED1);
+	sm2.pio.gpio_init(gpioLED2);
+	sm1.set_pindir_out(gpioLED1);
+	sm2.set_pindir_out(gpioLED2);
+	sm1.init();
+	sm2.init();
+	sm1.set_enabled();
+	sm2.set_enabled();
+	sm1.put((::clock_get_hz(clk_sys) / (1 * 2)) - 3);
+	sm2.put((::clock_get_hz(clk_sys) / (2 * 2)) - 3);
 	LABOPlatform laboPlatform;
 	laboPlatform.AttachStdio().Initialize();
 	for (;;) Tickable::Tick();

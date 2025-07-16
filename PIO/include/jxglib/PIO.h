@@ -8,6 +8,7 @@
 #include <cstddef>
 #include "pico/stdlib.h"
 #include "hardware/pio.h"
+#include "hardware/clocks.h"
 #include "jxglib/Common.h"
 
 #define PIOVAR_wrap_target(progName) 			progName##_wrap_target
@@ -23,24 +24,16 @@ namespace jxglib {
 
 namespace PIO {
 
+inline void CheckAdjacent(uint pin1, uint pin2) { if (pin2 != pin1 + 1) ::panic("pins must be adjacent\n"); }
+inline void CheckAdjacent(uint pin1, uint pin2, uint pin3) { if (pin3 != pin2 + 1 || pin2 != pin1 + 1) ::panic("pins must be adjacent\n"); }
+inline void CheckAdjacent(uint pin1, uint pin2, uint pin3, uint pin4) { if (pin4 != pin3 + 1 || pin3 != pin2 + 1 || pin2 != pin1 + 1) ::panic("pins must be adjacent\n"); }
+
 //------------------------------------------------------------------------------
 // PIO::Config
 //------------------------------------------------------------------------------
 class Config {
 public:
 	using T_get_default_config = pio_sm_config (*)(uint offset);
-	class Generator {
-	public:
-		virtual pio_sm_config GenerateConfig(uint offset) const = 0;
-	};
-	class GeneratorPIOASM : public Generator {
-	private:
-		T_get_default_config get_default_config_;
-	public:
-		GeneratorPIOASM(T_get_default_config get_default_config) : get_default_config_{get_default_config} {}
-	public:
-		virtual pio_sm_config GenerateConfig(uint offset) const override { return get_default_config_(offset); }
-	};
 private:
 	pio_sm_config c_;
 public:
@@ -54,25 +47,59 @@ public:
 	Config& set_out_pin_base(uint out_base) { ::sm_config_set_out_pin_base(&c_, out_base); return *this; }
 	Config& set_out_pin_count(uint out_count) { ::sm_config_set_out_pin_count(&c_, out_count); return *this; }
 	Config& set_out_pins(uint out_base, uint out_count) { ::sm_config_set_out_pins(&c_, out_base, out_count); return *this; }
-	Config& set_out_pin(uint pin) { ::sm_config_set_out_pins(&c_, pin, 1); return *this; }
+	Config& set_out_pin(uint pin) { return set_out_pins(pin, 1); }
+	Config& set_out_pin(uint pin1, uint pin2) { CheckAdjacent(pin1, pin2); return set_out_pins(pin1, 2); }
+	Config& set_out_pin(uint pin1, uint pin2, uint pin3) { CheckAdjacent(pin1, pin2, pin3); return set_out_pins(pin1, 3); }
+	Config& set_out_pin(uint pin1, uint pin2, uint pin3, uint pin4) { CheckAdjacent(pin1, pin2, pin3, pin4); return set_out_pins(pin1, 4); }
+public:
 	Config& set_set_pin_base(uint set_base) { ::sm_config_set_set_pin_base(&c_, set_base); return *this; }
 	Config& set_set_pin_count(uint set_count) { ::sm_config_set_set_pin_count(&c_, set_count); return *this; }
 	Config& set_set_pins(uint set_base, uint set_count) { ::sm_config_set_set_pins(&c_, set_base, set_count); return *this; }
-	Config& set_set_pin(uint pin) { ::sm_config_set_set_pins(&c_, pin, 1); return *this; }
+	Config& set_set_pin(uint pin) { return set_set_pins(pin, 1); }
+	Config& set_set_pin(uint pin1, uint pin2) { CheckAdjacent(pin1, pin2); return set_set_pins(pin1, 2); }
+	Config& set_set_pin(uint pin1, uint pin2, uint pin3) { CheckAdjacent(pin1, pin2, pin3); return set_set_pins(pin1, 3); }
+	Config& set_set_pin(uint pin1, uint pin2, uint pin3, uint pin4) { CheckAdjacent(pin1, pin2, pin3, pin4); return set_set_pins(pin1, 4); }
+public:
 	Config& set_in_pin_base(uint in_base) { ::sm_config_set_in_pin_base(&c_, in_base); return *this; }
 	Config& set_in_pins(uint in_base) { ::sm_config_set_in_pins(&c_, in_base); return *this; }
-	Config& set_in_pin(uint pin) { ::sm_config_set_in_pins(&c_, pin); return *this; }
+	Config& set_in_pin(uint pin) { return set_in_pins(pin); }
+	Config& set_in_pin(uint pin1, uint pin2) { CheckAdjacent(pin1, pin2); return set_in_pins(pin1); }
+	Config& set_in_pin(uint pin1, uint pin2, uint pin3) { CheckAdjacent(pin1, pin2, pin3); return set_in_pins(pin1); }
+	Config& set_in_pin(uint pin1, uint pin2, uint pin3, uint pin4) { CheckAdjacent(pin1, pin2, pin3, pin4); return set_in_pins(pin1); }
+public:
 	Config& set_sideset_pin_base(uint sideset_base) { ::sm_config_set_sideset_pin_base(&c_, sideset_base); return *this; }
 	Config& set_sideset_pins(uint sideset_base) { ::sm_config_set_sideset_pins(&c_, sideset_base); return *this; }
-	Config& set_sideset_pin(uint pin) { ::sm_config_set_sideset_pins(&c_, pin); return *this; }
-	Config& set_sideset(uint bit_count, bool optional, bool pindirs) { ::sm_config_set_sideset(&c_, bit_count, optional, pindirs); return *this; }
+	Config& set_sideset_pin(uint pin) { return set_sideset_pins(pin); }
+	Config& set_sideset_pin(uint pin1, uint pin2) { CheckAdjacent(pin1, pin2); return set_sideset_pins(pin1); }
+	Config& set_sideset_pin(uint pin1, uint pin2, uint pin3) { CheckAdjacent(pin1, pin2, pin3); return set_sideset_pins(pin1); }
+	Config& set_sideset_pin(uint pin1, uint pin2, uint pin3, uint pin4) { CheckAdjacent(pin1, pin2, pin3, pin4); return set_sideset_pins(pin1); }
+public:
+	Config& set_jmp_pin(uint pin) { ::sm_config_set_jmp_pin(&c_, pin); return *this; }
+public:
 	Config& set_clkdiv_int_frac(uint16_t div_int, uint8_t div_frac) { ::sm_config_set_clkdiv_int_frac(&c_, div_int, div_frac); return *this; }
 	Config& set_clkdiv(float div) { ::sm_config_set_clkdiv(&c_, div); return *this; }
+public:
+	Config& set_sideset(uint bit_count, bool optional, bool pindirs) { ::sm_config_set_sideset(&c_, bit_count, optional, pindirs); return *this; }
 	Config& set_wrap(uint wrap_target, uint wrap) { ::sm_config_set_wrap(&c_, wrap_target, wrap); return *this; }
-	Config& set_jmp_pin(uint pin) { ::sm_config_set_jmp_pin(&c_, pin); return *this; }
-	Config& set_in_shift(bool shift_right, bool autopush, uint push_threshold) { ::sm_config_set_in_shift(&c_, shift_right, autopush, push_threshold); return *this; }
-	Config& set_out_shift(bool shift_right, bool autopull, uint pull_threshold) { ::sm_config_set_out_shift(&c_, shift_right, autopull, pull_threshold); return *this; }
+public:
+	Config& set_in_shift(bool shift_right, bool autopush = false, uint push_threshold = 32) { ::sm_config_set_in_shift(&c_, shift_right, autopush, push_threshold); return *this; }
+	Config& set_in_shift_left(bool autopush = false, uint push_threshold = 32) { return set_in_shift(false, autopush, push_threshold); }
+	Config& set_in_shift_right(bool autopush = false, uint push_threshold = 32) { return set_in_shift(true, autopush, push_threshold); }
+public:
+	Config& set_out_shift(bool shift_right, bool autopull = false, uint pull_threshold = 32) { ::sm_config_set_out_shift(&c_, shift_right, autopull, pull_threshold); return *this; }
+	Config& set_out_shift_left(bool autopull = false, uint pull_threshold = 32) { return set_out_shift(false, autopull, pull_threshold); }
+	Config& set_out_shift_right(bool autopull = false, uint pull_threshold = 32) { return set_out_shift(true, autopull, pull_threshold); }
+public:
 	Config& set_fifo_join(enum pio_fifo_join join) { ::sm_config_set_fifo_join(&c_, join); return *this; }
+	Config& set_fifo_join_none() { return set_fifo_join(PIO_FIFO_JOIN_NONE); }
+	Config& set_fifo_join_tx() { return set_fifo_join(PIO_FIFO_JOIN_TX); }
+	Config& set_fifo_join_rx() { return set_fifo_join(PIO_FIFO_JOIN_RX); }
+#if PICO_PIO_VERSION > 0
+	Config& set_fifo_join_txput() { return set_fifo_join(PIO_FIFO_JOIN_TXPUT); }
+	Config& set_fifo_join_txget() { return set_fifo_join(PIO_FIFO_JOIN_TXGET); }
+	Config& set_fifo_join_putget() { return set_fifo_join(PIO_FIFO_JOIN_PUTGET); }
+#endif
+public:
 	Config& set_out_special(bool sticky, bool has_enable_pin, uint enable_pin_index) { ::sm_config_set_out_special(&c_, sticky, has_enable_pin, enable_pin_index); return *this; }
 	Config& set_mov_status(enum pio_mov_status_type status_sel, uint status_n) { ::sm_config_set_mov_status(&c_, status_sel, status_n); return *this; }
 };
@@ -125,31 +152,47 @@ private:
 	std::unique_ptr<Variable> pVariableHead_;
 	std::unique_ptr<Variable> pVariableRefHead_;
 public:
+	static const Program None;
+public:
 	Program();
 public:
+	void Reset();
 	const char* GetName() const { return name_; }
 	Program& AddInst(uint16_t inst);
-	Program& L(const char* label);
+	Program& L(const char* label, uint* pAddrRel = nullptr);
 public:
 	bool IsSideMust() const { return sideSet_.bit_count > 0 && !sideSet_.optional; }
 	void AddVariable(const char* label, uint16_t addrRel);
 	void AddVariableRef(const char* label, uint16_t addrRel);
-	const Variable* Lookup(const char* label) const;
-	Program& Complete(bool keepLabelFlag = false);
-	pio_sm_config GenerateConfig(uint offset) const;
+	const Variable* LookupVariable(const char* label) const;
+	Program& Complete();
+	void Configure(pio_sm_config* config, uint offset) const;
 	const Program& Dump() const;
 public:
 	operator const pio_program_t*() const { return &program_; }
 public:
 	// Directives
-	Program& program(const char* name)	{ directive_ = Directive::program; name_ = name; return *this; }
+	Program& program(const char* name)	{ Reset(); directive_ = Directive::program; name_ = name; return *this; }
 	Program& origin(uint offset)		{ directive_ = Directive::origin; program_.origin = offset; return *this; }
 	Program& pio_version(uint version)	{ directive_ = Directive::pio_version; program_.pio_version = version; return *this; }
 	Program& side_set(int bit_count)	{ directive_ = Directive::side_set; sideSet_.bit_count = bit_count; return *this; }
-	Program& wrap_target()				{ directive_ = Directive::wrap_target; wrap_.addrRel_target = addrRelCur_; return *this; }
-	Program& wrap()						{ directive_ = Directive::wrap; wrap_.addrRel_wrapPlus = addrRelCur_; return *this; }
-	Program& end()						{ directive_ = Directive::end; return Complete(false); }
-	Program& end_keep()					{ directive_ = Directive::end; return Complete(true); }
+	Program& wrap_target(uint* pAddrRel = nullptr) {
+		directive_ = Directive::wrap_target;
+		wrap_.addrRel_target = addrRelCur_;
+		if (pAddrRel) *pAddrRel = addrRelCur_;
+		return *this;
+	}
+	Program& wrap(uint* pAddrRel = nullptr) {
+		directive_ = Directive::wrap;
+		wrap_.addrRel_wrapPlus = addrRelCur_;
+		if (pAddrRel) *pAddrRel = addrRelCur_;
+		return *this;
+	}
+	Program& end(uint* pAddrRel = nullptr) {
+		directive_ = Directive::end;
+		if (pAddrRel) *pAddrRel = addrRelCur_;
+		return Complete();
+	}
 public:
 	Program& word(uint16_t inst) { return AddInst(inst); }
 	Program& jmp(uint16_t addr) { return AddInst(::pio_encode_jmp(addr)); }
@@ -291,7 +334,7 @@ public:
 	uint offset;
 	Config config;
 public:
-	StateMachine(const Program& program) : program{program}, pio{nullptr}, sm{static_cast<uint>(-1)}, offset{0} {}
+	StateMachine(const Program& program, pio_t pio = nullptr, uint sm = static_cast<uint>(-1), uint offset = 0) : program{program}, pio{pio}, sm{sm}, offset{offset} {}
 	StateMachine(const StateMachine& stateMachine) : program{stateMachine.program}, pio{stateMachine.pio}, sm{stateMachine.sm}, offset{stateMachine.offset}, config{stateMachine.config} {}
 public:
 	operator uint() { return sm; }
@@ -300,24 +343,42 @@ public:
 	void Invalidate() { pio = nullptr, sm = static_cast<uint>(-1), offset = 0; }
 public:
 	void SetResource(pio_t pio, uint sm);
-	bool ClaimResource();
-	bool ClaimResource(uint gpio_base, uint gpio_count, bool set_gpio_base);
+	void ClaimResource();
+	void ClaimResource(StateMachine& smToShareProgram);
+	void ClaimResource(uint gpio_base, uint gpio_count, bool set_gpio_base);
 	void UnclaimResource();
 public:
 	const StateMachine& set_out_pins(uint out_base, uint out_count) const { ::pio_sm_set_out_pins(pio, sm, out_base, out_count); return *this; }
-	const StateMachine& set_out_pin(uint pin) const { ::pio_sm_set_out_pins(pio, sm, pin, 1); return *this; }
+	const StateMachine& set_out_pin(uint pin) const { return set_out_pins(pin, 1); }
+	const StateMachine& set_out_pin(uint pin1, uint pin2) const { CheckAdjacent(pin1, pin2); return set_out_pins(pin1, 2); }
+	const StateMachine& set_out_pin(uint pin1, uint pin2, uint pin3) const { CheckAdjacent(pin1, pin2, pin3); return set_out_pins(pin1, 3); }
+	const StateMachine& set_out_pin(uint pin1, uint pin2, uint pin3, uint pin4) const { CheckAdjacent(pin1, pin2, pin3, pin4); return set_out_pins(pin1, 4); }
+public:
 	const StateMachine& set_set_pins(uint set_base, uint set_count) const { ::pio_sm_set_set_pins(pio, sm, set_base, set_count); return *this; }
-	const StateMachine& set_set_pin(uint pin) const { ::pio_sm_set_set_pins(pio, sm, pin, 1); return *this; }
+	const StateMachine& set_set_pin(uint pin) const { return set_set_pins(pin, 1); }
+	const StateMachine& set_set_pin(uint pin1, uint pin2) const { CheckAdjacent(pin1, pin2); return set_set_pins(pin1, 2); }
+	const StateMachine& set_set_pin(uint pin1, uint pin2, uint pin3) const { CheckAdjacent(pin1, pin2, pin3); return set_set_pins(pin1, 3); }
+	const StateMachine& set_set_pin(uint pin1, uint pin2, uint pin3, uint pin4) const { CheckAdjacent(pin1, pin2, pin3, pin4); return set_set_pins(pin1, 4); }
+public:
 	const StateMachine& set_in_pins(uint in_base) const { ::pio_sm_set_in_pins(pio, sm, in_base); return *this; }
-	const StateMachine& set_in_pin(uint pin) const { ::pio_sm_set_in_pins(pio, sm, pin); return *this; }
+	const StateMachine& set_in_pin(uint pin) const { return set_in_pins(pin); }
+	const StateMachine& set_in_pin(uint pin1, uint pin2) const { CheckAdjacent(pin1, pin2); return set_in_pins(pin1); }
+	const StateMachine& set_in_pin(uint pin1, uint pin2, uint pin3) const { CheckAdjacent(pin1, pin2, pin3); return set_in_pins(pin1); }
+	const StateMachine& set_in_pin(uint pin1, uint pin2, uint pin3, uint pin4) const { CheckAdjacent(pin1, pin2, pin3, pin4); return set_in_pins(pin1); }
+public:
 	const StateMachine& set_sideset_pins(uint sideset_base) const { ::pio_sm_set_sideset_pins(pio, sm, sideset_base); return *this; }
-	const StateMachine& set_sideset_pin(uint pin) const { ::pio_sm_set_sideset_pins(pio, sm, pin); return *this; }
+	const StateMachine& set_sideset_pin(uint pin) const { return set_sideset_pins(pin); }
+	const StateMachine& set_sideset_pin(uint pin1, uint pin2) const { CheckAdjacent(pin1, pin2); return set_sideset_pins(pin1); }
+	const StateMachine& set_sideset_pin(uint pin1, uint pin2, uint pin3) const { CheckAdjacent(pin1, pin2, pin3); return set_sideset_pins(pin1); }
+	const StateMachine& set_sideset_pin(uint pin1, uint pin2, uint pin3, uint pin4) const { CheckAdjacent(pin1, pin2, pin3, pin4); return set_sideset_pins(pin1); }
+public:
+	const StateMachine& set_jmp_pin(uint pin) const { ::pio_sm_set_jmp_pin(pio, sm, pin); return *this; }
+public:
 	const StateMachine& set_clkdiv_int_frac(uint16_t div_int, uint8_t div_frac) const { ::pio_sm_set_clkdiv_int_frac(pio, sm, div_int, div_frac); return *this; }
 	const StateMachine& set_clkdiv(float div) const { ::pio_sm_set_clkdiv(pio, sm, div); return *this; }
 	const StateMachine& set_wrap(uint wrap_target, uint wrap) const { ::pio_sm_set_wrap(pio, sm, wrap_target, wrap); return *this; }
-	const StateMachine& set_jmp_pin(uint pin) const { ::pio_sm_set_jmp_pin(pio, sm, pin); return *this; }
 public:
-	int init(uint initial_pc, const pio_sm_config* config) { return ::pio_sm_init(pio, sm, initial_pc, config); }
+	int init(uint addrRel_entry, const pio_sm_config* config) { return ::pio_sm_init(pio, sm, offset + addrRel_entry, config); }
 	int init() { return ::pio_sm_init(pio, sm, offset, config); }
 	int set_config(const pio_sm_config *config) const { return ::pio_sm_set_config(pio, sm, config); }
 	const StateMachine& set_enabled(bool enabled = true) const { ::pio_sm_set_enabled(pio, sm, enabled); return *this; }
@@ -328,16 +389,23 @@ public:
 	const StateMachine& exec_wait_blocking(uint instr) const { ::pio_sm_exec_wait_blocking(pio, sm, instr); return *this; }
 public:
 	int set_consecutive_pindirs(uint pins_base, uint pin_count, bool is_out) const { return ::pio_sm_set_consecutive_pindirs(pio, sm, pins_base, pin_count, is_out); }
-	int set_consecutive_pindirs_out(uint pins_base, uint pin_count) const { return ::pio_sm_set_consecutive_pindirs(pio, sm, pins_base, pin_count, true); }
-	int set_consecutive_pindirs_in(uint pins_base, uint pin_count) const { return ::pio_sm_set_consecutive_pindirs(pio, sm, pins_base, pin_count, false); }
-	int set_pindir(uint pin, bool is_out) const { return ::pio_sm_set_consecutive_pindirs(pio, sm, pin, 1, is_out); }
-	int set_pindir_out(uint pin) const { return ::pio_sm_set_consecutive_pindirs(pio, sm, pin, 1, true); }
-	int set_pindir_in(uint pin) const { return ::pio_sm_set_consecutive_pindirs(pio, sm, pin, 1, false); }
+	int set_pindirs(uint pins_base, uint pin_count, bool is_out) const { return ::pio_sm_set_consecutive_pindirs(pio, sm, pins_base, pin_count, is_out); }
+	int set_pindirs_out(uint pins_base, uint pin_count) const { return ::pio_sm_set_consecutive_pindirs(pio, sm, pins_base, pin_count, true); }
+	int set_pindirs_in(uint pins_base, uint pin_count) const { return ::pio_sm_set_consecutive_pindirs(pio, sm, pins_base, pin_count, false); }
+	int set_pindir(uint pin, bool is_out) const { return set_pindirs(pin, 1, is_out); }
+	int set_pindir_out(uint pin) const { return set_pindirs(pin, 1, true); }
+	int set_pindir_out(uint pin1, uint pin2) const { CheckAdjacent(pin1, pin2); return set_pindirs(pin1, 2, true); }
+	int set_pindir_out(uint pin1, uint pin2, uint pin3) const { CheckAdjacent(pin1, pin2, pin3); return set_pindirs(pin1, 3, true); }
+	int set_pindir_out(uint pin1, uint pin2, uint pin3, uint pin4) const { CheckAdjacent(pin1, pin2, pin3, pin4); return set_pindirs(pin1, 4, true); }
+	int set_pindir_in(uint pin) const { return set_pindirs(pin, 1, false); }
+	int set_pindir_in(uint pin1, uint pin2) const { CheckAdjacent(pin1, pin2); return set_pindirs(pin1, 2, false); }
+	int set_pindir_in(uint pin1, uint pin2, uint pin3) const { CheckAdjacent(pin1, pin2, pin3); return set_pindirs(pin1, 3, false); }
+	int set_pindir_in(uint pin1, uint pin2, uint pin3, uint pin4) const { CheckAdjacent(pin1, pin2, pin3, pin4); return set_pindirs(pin1, 4, false); }
 public:
 	uint get_dreq(bool is_tx) const { return ::pio_get_dreq(pio, sm, is_tx); }
 	uint get_dreq_tx() const { return ::pio_get_dreq(pio, sm, true); }
 	uint get_dreq_rx() const { return ::pio_get_dreq(pio, sm, false); }
-	uint8_t get_pc() const {return  ::pio_sm_get_pc(pio, sm); }
+	uint8_t get_pc() const { return  ::pio_sm_get_pc(pio, sm); }
 public:
 	bool is_rx_fifo_full() const { return ::pio_sm_is_rx_fifo_full(pio, sm); }
 	bool is_rx_fifo_empty() const { return ::pio_sm_is_rx_fifo_empty(pio, sm); }

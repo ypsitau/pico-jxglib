@@ -47,7 +47,7 @@ pico_enable_stdio_usb(test-blink 0)
 # Add the standard libr ary to the build
 target_link_libraries(test-blink
 	pico_stdlib
-    jxglib_LABOPlatform
+    jxglib_LABOPlatform_FullCmd
     jxglib_ShellCmd_PIO)
 
 # Add the standard include files to the build
