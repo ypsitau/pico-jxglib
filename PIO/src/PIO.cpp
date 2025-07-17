@@ -272,9 +272,9 @@ Program& Program::mov(const char* dest, const char* src, uint16_t index)
 		}
 		return word(inst);
 	} else {
-		if (*src == '!' || *src == '~') return mov_not(StrToSrcDest(dest), StrToSrcDest(src + 1));
-		if (*src == ':' && *(src + 1) == ':') return mov_reverse(StrToSrcDest(dest), StrToSrcDest(src + 2));
-		return mov(StrToSrcDest(dest), StrToSrcDest(src));
+		if (*src == '!' || *src == '~') return mov_not(StrToDest(pio_instr_bits_mov, dest), StrToSrc(pio_instr_bits_mov, src + 1));
+		if (*src == ':' && *(src + 1) == ':') return mov_reverse(StrToDest(pio_instr_bits_mov, dest), StrToSrc(pio_instr_bits_mov, src + 2));
+		return mov(StrToDest(pio_instr_bits_mov, dest), StrToSrc(pio_instr_bits_mov, src));
 	}
 }
 
@@ -442,14 +442,26 @@ const char* Program::GetInstName(uint16_t inst)
 	return "unknown";
 }
 
-pio_src_dest Program::StrToSrcDest(const char* str, bool outFlag) const
+pio_src_dest Program::StrToSrc(uint16_t inst, const char* str) const
+{
+	pio_src_dest src = StrToSrcDest(inst, str);
+	return src;
+}
+
+pio_src_dest Program::StrToDest(uint16_t inst, const char* str) const
+{
+	pio_src_dest dest = StrToSrcDest(inst, str);
+	return dest;
+}
+
+pio_src_dest Program::StrToSrcDest(uint16_t inst, const char* str) const
 {
 	if (::strcasecmp(str, "pins") == 0)		return pio_pins;
 	if (::strcasecmp(str, "x") == 0)		return pio_x;
 	if (::strcasecmp(str, "y") == 0)		return pio_y;
-	if (::strcasecmp(str, "null") == 0)		return pio_null;
 	if (::strcasecmp(str, "pindirs") == 0)	return pio_pindirs;
-	if (::strcasecmp(str, "exec") == 0)		return outFlag? pio_exec_out : pio_exec_mov;
+	if (::strcasecmp(str, "null") == 0)		return pio_null;
+	if (::strcasecmp(str, "exec") == 0)		return Is_OUT(inst)? pio_exec_out : pio_exec_mov;
 	if (::strcasecmp(str, "status") == 0)	return pio_status;
 	if (::strcasecmp(str, "pc") == 0)		return pio_pc;
 	if (::strcasecmp(str, "isr") == 0)		return pio_isr;

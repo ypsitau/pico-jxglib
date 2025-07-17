@@ -217,15 +217,15 @@ public:
 	Program& jmp(const char* cond, uint16_t addr);
 	Program& jmp(const char* cond, const char* label) { AddVariableRef(label, addrRelCur_); return jmp(cond, static_cast<uint16_t>(0)); }
 	Program& wait(bool polarity, const char* src, uint16_t index);
-	Program& in(const char* src, uint16_t count) { return in(StrToSrcDest(src), count); }
-	Program& out(const char* dest, uint16_t count) { return out(StrToSrcDest_out(dest), count); }
-	Program& push() { return push(false, false); }
-	Program& pull() { return pull(false, false); }
+	Program& in(const char* src, uint16_t count) { return in(StrToSrc(pio_instr_bits_in, src), count); }
+	Program& out(const char* dest, uint16_t count) { return out(StrToDest(pio_instr_bits_out, dest), count); }
+	Program& push() { return push(false, true); }
+	Program& pull() { return pull(false, true); }
 	Program& mov(const char* dest, const char* src, uint16_t index = 0);
 	Program& mov(const char* dest, uint16_t index, const char* src) { return mov(dest, src, index); }
 	Program& irq(const char* op, uint16_t irq_n);
 	Program& irq(uint16_t irq_n) { return irq("set", irq_n); }
-	Program& set(const char* dest, uint16_t value) { return set(StrToSrcDest(dest), value); }
+	Program& set(const char* dest, uint16_t value) { return set(StrToDest(pio_instr_bits_set, dest), value); }
 public:
 	// Attributes
 	Program& opt();
@@ -241,8 +241,9 @@ public:
 	Program& block();
 	Program& noblock();
 public:
-	pio_src_dest StrToSrcDest(const char* str, bool outFlag = false) const;
-	pio_src_dest StrToSrcDest_out(const char* str) const { return StrToSrcDest(str, true); }
+	pio_src_dest StrToSrc(uint16_t inst, const char* str) const;
+	pio_src_dest StrToDest(uint16_t inst, const char* str) const;
+	pio_src_dest StrToSrcDest(uint16_t inst, const char* str) const;
 public:
 	static bool Is_JMP(uint16_t inst)		{ return (inst >> 13) == 0; }
 	static bool Is_WAIT(uint16_t inst)		{ return (inst >> 13) == 1; }
