@@ -194,8 +194,8 @@ public:
 	Program& wait_pin(bool polarity, uint16_t pin) { return AddInst(::pio_encode_wait_pin(polarity, pin)); }
 	Program& wait_irq(bool polarity, bool relative, uint16_t irq) { return AddInst(::pio_encode_wait_irq(polarity, relative, irq)); }
 	Program& wait_jmppin(bool polarity, uint16_t pin_offset) { return AddInst(pio_encode_wait_jmppin(polarity, pin_offset)); }
-	Program& in(enum pio_src_dest src, uint16_t count) { return AddInst(::pio_encode_in(src, count)); }
-	Program& out(enum pio_src_dest dest, uint16_t count) { return AddInst(::pio_encode_out(dest, count)); }
+	Program& in(enum pio_src_dest src, uint16_t count) { return AddInst(::pio_encode_in(src, count & 0x1f)); }
+	Program& out(enum pio_src_dest dest, uint16_t count) { return AddInst(::pio_encode_out(dest, count & 0x1f)); }
 	Program& push(bool if_full, bool block) { return AddInst(::pio_encode_push(if_full, block)); }
 	Program& pull(bool if_empty, bool block) { return AddInst(::pio_encode_pull(if_empty, block)); }
 	Program& mov(enum pio_src_dest dest, enum pio_src_dest src) { return AddInst(::pio_encode_mov(dest, src)); }
