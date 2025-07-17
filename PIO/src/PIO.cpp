@@ -22,15 +22,26 @@ namespace PIO {
 //------------------------------------------------------------------------------
 // PIO::StateMachine
 //------------------------------------------------------------------------------
-void StateMachine::SetResource(pio_t pio, uint sm)
+StateMachine& StateMachine::SetResource(pio_t pio, uint sm)
 {
 	this->pio = pio;
 	this->sm = sm;
 	offset = ::pio_add_program(pio, program.GetProgramPtr());
-	program.Configure(config, offset);	
+	program.Configure(config, offset);
+	return *this;
 }
 
-void StateMachine::ClaimResource()
+StateMachine& StateMachine::SetResource(pio_t pio, uint sm, StateMachine& smToShareProgram)
+{
+	this->pio = pio;
+	this->sm = sm;
+	offset = smToShareProgram.offset;
+	pSmToShareProgram_ = &smToShareProgram;
+	program.Configure(config, offset);
+	return *this;
+}
+
+StateMachine& StateMachine::ClaimResource()
 {
 	pio_t pioClaimed;
 	if (!::pio_claim_free_sm_and_add_program(program.GetProgramPtr(), &pioClaimed, &sm, &offset)) {
@@ -38,18 +49,21 @@ void StateMachine::ClaimResource()
 	}
 	pio = pioClaimed;
 	program.Configure(config, offset);
+	return *this;
 }
 
-void StateMachine::ClaimResource(StateMachine& smToShareProgram)
+StateMachine& StateMachine::ClaimResource(StateMachine& smToShareProgram)
 {
 	if (&program != &smToShareProgram.program) ::panic("same program must be shared");
 	pio = smToShareProgram.pio;
 	offset = smToShareProgram.offset;
 	sm = ::pio_claim_unused_sm(pio, true);
+	pSmToShareProgram_ = &smToShareProgram;
 	program.Configure(config, offset);
+	return *this;
 }
 
-void StateMachine::ClaimResource(uint gpio_base, uint gpio_count, bool set_gpio_base)
+StateMachine& StateMachine::ClaimResource(uint gpio_base, uint gpio_count, bool set_gpio_base)
 {
 	pio_t pioClaimed;
 	if (!::pio_claim_free_sm_and_add_program_for_gpio_range(program.GetProgramPtr(), &pioClaimed, &sm, &offset, gpio_base, gpio_count, set_gpio_base)) {
@@ -57,12 +71,18 @@ void StateMachine::ClaimResource(uint gpio_base, uint gpio_count, bool set_gpio_
 	}
 	pio = pioClaimed;
 	program.Configure(config, offset);
+	return *this;
 }
 
-void StateMachine::UnclaimResource()
+StateMachine& StateMachine::UnclaimResource()
 {
-	::pio_remove_program_and_unclaim_sm(program.GetProgramPtr(), pio, sm, offset);
+	if (pSmToShareProgram_) {
+		::pio_sm_unclaim(pio, sm);
+	} else {
+		::pio_remove_program_and_unclaim_sm(program.GetProgramPtr(), pio, sm, offset);
+	}
 	Invalidate();
+	return *this;
 }
 
 //------------------------------------------------------------------------------

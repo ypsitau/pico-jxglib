@@ -15,7 +15,7 @@ void test_JMP()
 	do {
 		PIO::Program program;
 		program
-		.program("JMP Test")
+		.program("JMP_Test")
 			.jmp	("label")
 			.jmp	("!x",		"label")
 			.jmp	("x--",		"label")
@@ -36,7 +36,7 @@ void test_WAIT()
 	do {
 		PIO::Program program;
 		program
-		.program("WAIT Test")
+		.program("WAIT_Test")
 		.pio_version(1)
 			.wait	(1, "gpio",		0)
 			.wait	(1, "pin", 		0)
@@ -67,7 +67,7 @@ void test_IN()
 	do {
 		PIO::Program program;
 		program
-		.program("IN Test")
+		.program("IN_Test")
 			.in		("pins",	32)
 			.in		("x",		32)
 			.in		("y",		32)
@@ -96,7 +96,7 @@ void test_OUT()
 	do {
 		PIO::Program program;
 		program
-		.program("OUT Test")
+		.program("OUT_Test")
 			.out	("pins",	32)
 			.out	("x",		32)
 			.out	("y",		32)
@@ -131,7 +131,7 @@ void test_PUSH()
 	do {
 		PIO::Program program;
 		program
-		.program("PUSH Test")
+		.program("PUSH_Test")
 			.push	()
 			.push	().iffull()
 			.push	().block()
@@ -148,7 +148,7 @@ void test_PULL()
 	do {
 		PIO::Program program;
 		program
-		.program("PULL Test")
+		.program("PULL_Test")
 			.pull	()
 			.pull	().ifempty()
 			.pull	().block()
@@ -166,7 +166,7 @@ void test_MOV()
 	do {
 		PIO::Program program;
 		program
-		.program("MOV rxfifo isr Test")
+		.program("MOV rxfifo_isr_Test")
 		.pio_version(1)
 			.mov	("rxfifo[y]",	"isr")
 			.mov	("rxfifo[0]",	"isr")
@@ -183,7 +183,7 @@ void test_MOV()
 	do {
 		PIO::Program program;
 		program
-		.program("MOV osr rxfifo Test")
+		.program("MOV_osr_rxfifo_Test")
 		.pio_version(1)
 			.mov	("osr",		"rxfifo[y]")
 			.mov	("osr",		"rxfifo[0]")
@@ -199,7 +199,7 @@ void test_MOV()
 	do {
 		PIO::Program program;
 		program
-		.program("MOV pins Test")
+		.program("MOV_pins_Test")
 			.mov	("pins",		"pins")
 			.mov	("pins",		"x")
 			.mov	("pins",		"y")
@@ -213,7 +213,7 @@ void test_MOV()
 	do {
 		PIO::Program program;
 		program
-		.program("MOV x Test")
+		.program("MOV_x_Test")
 			.mov	("x",			"pins")
 			.mov	("x",			"x")
 			.mov	("x",			"y")
@@ -227,7 +227,7 @@ void test_MOV()
 	do {
 		PIO::Program program;
 		program
-		.program("MOV y Test")
+		.program("MOV_y_Test")
 			.mov	("y",			"pins")
 			.mov	("y",			"x")
 			.mov	("y",			"y")
@@ -241,7 +241,7 @@ void test_MOV()
 	do {
 		PIO::Program program;
 		program
-		.program("MOV pindirs Test")
+		.program("MOV_pindirs_Test")
 		.pio_version(1)
 			.mov	("pindirs",		"pins")
 			.mov	("pindirs",		"x")
@@ -256,7 +256,7 @@ void test_MOV()
 	do {
 		PIO::Program program;
 		program
-		.program("MOV exec Test")
+		.program("MOV_exec_Test")
 			.mov	("exec",		"pins")
 			.mov	("exec",		"x")
 			.mov	("exec",		"y")
@@ -270,7 +270,7 @@ void test_MOV()
 	do {
 		PIO::Program program;
 		program
-		.program("MOV pc Test")
+		.program("MOV_pc_Test")
 			.mov	("pc",			"pins")
 			.mov	("pc",			"x")
 			.mov	("pc",			"y")
@@ -284,7 +284,7 @@ void test_MOV()
 	do {
 		PIO::Program program;
 		program
-		.program("MOV isr Test")
+		.program("MOV_isr_Test")
 			.mov	("isr",			"pins")
 			.mov	("isr",			"x")
 			.mov	("isr",			"y")
@@ -298,7 +298,7 @@ void test_MOV()
 	do {
 		PIO::Program program;
 		program
-		.program("MOV osr Test")
+		.program("MOV_osr_Test")
 			.mov	("osr",			"pins")
 			.mov	("osr",			"x")
 			.mov	("osr",			"y")
@@ -312,7 +312,7 @@ void test_MOV()
 	do {
 		PIO::Program program;
 		program
-		.program("MOV operator Test")
+		.program("MOV_operator_Test")
 			.mov	("pins",		"x")
 			.mov	("pins",		"!x")
 			.mov	("pins",		"~x")
@@ -327,7 +327,7 @@ void test_IRQ()
 	do {
 		PIO::Program program;
 		program
-		.program("IRQ Test")
+		.program("IRQ_Test")
 			.irq	(0)
 			.irq	("set", 		0)
 			.irq	("nowait",		0)
@@ -363,7 +363,7 @@ void test_SET()
 	do {
 		PIO::Program program;
 		program
-		.program("SET Test")
+		.program("SET_Test")
 			.set	("pins",		0)
 			.set	("x",			0)
 			.set	("y",			0)
@@ -386,7 +386,7 @@ void test_SIDE_SET()
 	do {
 		PIO::Program program;
 		program
-		.program("SIDE_SET_1 Test")
+		.program("SIDE_SET_1_Test")
 		.side_set(1)
 			.nop().side(0b0)
 			.nop().side(0b1)
@@ -396,7 +396,7 @@ void test_SIDE_SET()
 	do {
 		PIO::Program program;
 		program
-		.program("SIDE_SET_2 Test")
+		.program("SIDE_SET_2_Test")
 		.side_set(2)
 			.nop().side(0b00)
 			.nop().side(0b01)
@@ -408,7 +408,7 @@ void test_SIDE_SET()
 	do {
 		PIO::Program program;
 		program
-		.program("SIDE_SET_5 Test")
+		.program("SIDE_SET_5_Test")
 		.side_set(5)
 			.nop().side(0b00000)
 			.nop().side(0b00001)
@@ -422,7 +422,7 @@ void test_SIDE_SET()
 	do {
 		PIO::Program program;
 		program
-		.program("SIDE_SET_2 optional Test")
+		.program("SIDE_SET_2_optional_Test")
 		.side_set(2).opt()
 			.nop().side(0b00)
 			.nop()
@@ -438,7 +438,7 @@ void test_SIDE_SET()
 	do {
 		PIO::Program program;
 		program
-		.program("SIDE_SET_4 optional Test")
+		.program("SIDE_SET_4_optional_Test")
 		.side_set(4).opt()
 			.nop().side(0b0000)
 			.nop()
@@ -460,7 +460,7 @@ void test_DELAY()
 	do {
 		PIO::Program program;
 		program
-		.program("DELAY Test")
+		.program("DELAY_Test")
 			.nop()		[0]
 			.nop()		[1]
 			.nop()		[31]
@@ -470,7 +470,7 @@ void test_DELAY()
 	do {
 		PIO::Program program;
 		program
-		.program("DELAY SIDE_SET_2 Test")
+		.program("DELAY_SIDE_SET_2_Test")
 		.side_set(2)
 			.nop()		.side(0b11)	[0]
 			.nop()		.side(0b11)	[1]
@@ -481,7 +481,7 @@ void test_DELAY()
 	do {
 		PIO::Program program;
 		program
-		.program("DELAY SIDE_SET_4 Test")
+		.program("DELAY_SIDE_SET_4_Test")
 		.side_set(4)
 			.nop()		.side(0b1111)	[0]
 			.nop()		.side(0b1111)	[1]
@@ -491,7 +491,7 @@ void test_DELAY()
 	do {
 		PIO::Program program;
 		program
-		.program("DELAY SIDE_SET_3_optional Test")
+		.program("DELAY_SIDE_SET_3_optional_Test")
 		.side_set(3).opt()
 			.nop()		.side(0b111)	[0]
 			.nop()						[0]

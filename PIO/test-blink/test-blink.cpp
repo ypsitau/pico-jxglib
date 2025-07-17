@@ -12,7 +12,7 @@ int main()
 	::stdio_init_all();
 	PIO::Program program;
 	program
-	.program("auto-blink")
+	.program("auto_blink")
 		.pull().block()				// osr <- txfifo
 		.out("y",		32)			// y <- osr[31:0], osr >>= 32
 	.wrap_target()

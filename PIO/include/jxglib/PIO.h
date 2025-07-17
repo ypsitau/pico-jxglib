@@ -322,20 +322,25 @@ public:
 	uint sm;
 	uint offset;
 	Config config;
+private:
+	StateMachine* pSmToShareProgram_;
 public:
-	StateMachine(const Program& program, pio_t pio = nullptr, uint sm = static_cast<uint>(-1), uint offset = 0) : program{program}, pio{pio}, sm{sm}, offset{offset} {}
-	StateMachine(const StateMachine& stateMachine) : program{stateMachine.program}, pio{stateMachine.pio}, sm{stateMachine.sm}, offset{stateMachine.offset}, config{stateMachine.config} {}
+	StateMachine(const Program& program, pio_t pio = nullptr, uint sm = static_cast<uint>(-1), uint offset = 0) :
+		program{program}, pio{pio}, sm{sm}, offset{offset}, pSmToShareProgram_{nullptr} {}
+	StateMachine(const StateMachine& stateMachine) : program{stateMachine.program}, pio{stateMachine.pio}, sm{stateMachine.sm},
+		offset{stateMachine.offset}, config{stateMachine.config}, pSmToShareProgram_{stateMachine.pSmToShareProgram_} {}
 public:
 	operator uint() { return sm; }
 public:
 	bool IsValid() const { return !!pio && sm != static_cast<uint>(-1); }
 	void Invalidate() { pio = nullptr, sm = static_cast<uint>(-1), offset = 0; }
 public:
-	void SetResource(pio_t pio, uint sm);
-	void ClaimResource();
-	void ClaimResource(StateMachine& smToShareProgram);
-	void ClaimResource(uint gpio_base, uint gpio_count, bool set_gpio_base);
-	void UnclaimResource();
+	StateMachine& SetResource(pio_t pio, uint sm);
+	StateMachine& SetResource(pio_t pio, uint sm, StateMachine& smToShareProgram);
+	StateMachine& ClaimResource();
+	StateMachine& ClaimResource(StateMachine& smToShareProgram);
+	StateMachine& ClaimResource(uint gpio_base, uint gpio_count, bool set_gpio_base);
+	StateMachine& UnclaimResource();
 public:
 	const StateMachine& set_out_pins(uint out_base, uint out_count) const { ::pio_sm_set_out_pins(pio, sm, out_base, out_count); return *this; }
 	const StateMachine& set_out_pin(uint pin) const { return set_out_pins(pin, 1); }
