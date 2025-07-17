@@ -26,14 +26,14 @@ void StateMachine::SetResource(pio_t pio, uint sm)
 {
 	this->pio = pio;
 	this->sm = sm;
-	offset = ::pio_add_program(pio, program);
+	offset = ::pio_add_program(pio, program.GetProgramPtr());
 	program.Configure(config, offset);	
 }
 
 void StateMachine::ClaimResource()
 {
 	pio_t pioClaimed;
-	if (!::pio_claim_free_sm_and_add_program(program, &pioClaimed, &sm, &offset)) {
+	if (!::pio_claim_free_sm_and_add_program(program.GetProgramPtr(), &pioClaimed, &sm, &offset)) {
 		::panic("failed to claim free state machine and add program");
 	}
 	pio = pioClaimed;
@@ -52,7 +52,7 @@ void StateMachine::ClaimResource(StateMachine& smToShareProgram)
 void StateMachine::ClaimResource(uint gpio_base, uint gpio_count, bool set_gpio_base)
 {
 	pio_t pioClaimed;
-	if (!::pio_claim_free_sm_and_add_program_for_gpio_range(program, &pioClaimed, &sm, &offset, gpio_base, gpio_count, set_gpio_base)) {
+	if (!::pio_claim_free_sm_and_add_program_for_gpio_range(program.GetProgramPtr(), &pioClaimed, &sm, &offset, gpio_base, gpio_count, set_gpio_base)) {
 		::panic("failed to claim free state machine and add program for GPIO range");
 	}
 	pio = pioClaimed;
@@ -61,7 +61,7 @@ void StateMachine::ClaimResource(uint gpio_base, uint gpio_count, bool set_gpio_
 
 void StateMachine::UnclaimResource()
 {
-	::pio_remove_program_and_unclaim_sm(program, pio, sm, offset);
+	::pio_remove_program_and_unclaim_sm(program.GetProgramPtr(), pio, sm, offset);
 	Invalidate();
 }
 
@@ -445,12 +445,23 @@ const char* Program::GetInstName(uint16_t inst)
 pio_src_dest Program::StrToSrc(uint16_t inst, const char* str) const
 {
 	pio_src_dest src = StrToSrcDest(inst, str);
+	if (Is_IN(inst) && (src & _PIO_INVALID_IN_SRC) != 0) ::panic("addr%02x: invalid source '%s' for IN instruction\n", addrRelCur_, str);
+	if (Is_MOV(inst) && (src & _PIO_INVALID_MOV_SRC) != 0) ::panic("addr%02x: invalid source '%s' for MOV instruction\n", addrRelCur_, str);
 	return src;
 }
 
 pio_src_dest Program::StrToDest(uint16_t inst, const char* str) const
 {
+	pio_src_dest pio_pindirs_mov_dest = static_cast<pio_src_dest>(3u |
+		_PIO_INVALID_IN_SRC | _PIO_INVALID_OUT_DEST | _PIO_INVALID_SET_DEST | _PIO_INVALID_MOV_SRC);
+	if (Is_MOV(inst) && ::strcasecmp(str, "pindirs") == 0) {
+		if (program_.pio_version < 1) ::panic("addr%02x: pindirs is not supported in PIO version %d\n", addrRelCur_, program_.pio_version);
+		return pio_pindirs_mov_dest;
+	}
 	pio_src_dest dest = StrToSrcDest(inst, str);
+	if (Is_MOV(inst) && (dest & _PIO_INVALID_MOV_DEST) != 0) ::panic("addr%02x: invalid destination '%s' for MOV instruction\n", addrRelCur_, str);
+	if (Is_OUT(inst) && (dest & _PIO_INVALID_OUT_DEST) != 0) ::panic("addr%02x: invalid destination '%s' for OUT instruction\n", addrRelCur_, str);
+	if (Is_SET(inst) && (dest & _PIO_INVALID_SET_DEST) != 0) ::panic("addr%02x: invalid destination '%s' for SET instruction\n", addrRelCur_, str);
 	return dest;
 }
 

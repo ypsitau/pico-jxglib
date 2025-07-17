@@ -392,8 +392,6 @@ void test_SIDE_SET()
 			.nop().side(0b1)
 		.end();
 		CheckProgram(program, SIDE_SET_1_Test_program);
-		::printf("%s\n", program.GetName());
-		DumpInst(program);
 	} while (0);
 	do {
 		PIO::Program program;
@@ -406,8 +404,6 @@ void test_SIDE_SET()
 			.nop().side(0b11)
 		.end();
 		CheckProgram(program, SIDE_SET_2_Test_program);
-		::printf("%s\n", program.GetName());
-		DumpInst(program);
 	} while (0);
 	do {
 		PIO::Program program;
@@ -422,8 +418,6 @@ void test_SIDE_SET()
 			.nop().side(0b10000)
 		.end();
 		CheckProgram(program, SIDE_SET_5_Test_program);
-		::printf("%s\n", program.GetName());
-		DumpInst(program);
 	} while (0);
 	do {
 		PIO::Program program;
@@ -440,8 +434,20 @@ void test_SIDE_SET()
 			.nop()
 		.end();
 		CheckProgram(program, SIDE_SET_2_optional_Test_program);
-		::printf("%s\n", program.GetName());
-		DumpInst(program);
+	} while (0);
+}
+
+void test_DELAY()
+{
+	do {
+		PIO::Program program;
+		program
+		.program("DELAY Test")
+			.nop()		[0]
+			.nop()		[1]
+			.nop()		[31]
+		.end();
+		CheckProgram(program, DELAY_Test_program);
 	} while (0);
 }
 
@@ -458,6 +464,7 @@ int main()
 	test_IRQ();
 	test_SET();
 	test_SIDE_SET();
+	test_DELAY();
 	::printf("done\n");
 	for (;;) ::tight_loop_contents();
 }

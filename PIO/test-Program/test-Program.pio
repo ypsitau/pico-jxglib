@@ -266,5 +266,10 @@ label:
 	nop		side 3
 	nop	
 
+.program DELAY_Test
+	nop		[0]
+	nop		[1]
+	nop		[31]
+
 % c-sdk {
 %}
