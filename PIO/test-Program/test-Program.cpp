@@ -435,6 +435,24 @@ void test_SIDE_SET()
 		.end();
 		CheckProgram(program, SIDE_SET_2_optional_Test_program);
 	} while (0);
+	do {
+		PIO::Program program;
+		program
+		.program("SIDE_SET_4 optional Test")
+		.side_set(4).opt()
+			.nop().side(0b0000)
+			.nop()
+			.nop().side(0b0001)
+			.nop()
+			.nop().side(0b0010)
+			.nop()
+			.nop().side(0b0100)
+			.nop()
+			.nop().side(0b1000)
+			.nop()
+		.end();
+		CheckProgram(program, SIDE_SET_4_optional_Test_program);
+	} while (0);
 }
 
 void test_DELAY()
@@ -448,6 +466,39 @@ void test_DELAY()
 			.nop()		[31]
 		.end();
 		CheckProgram(program, DELAY_Test_program);
+	} while (0);
+	do {
+		PIO::Program program;
+		program
+		.program("DELAY SIDE_SET_2 Test")
+		.side_set(2)
+			.nop()		.side(0b11)	[0]
+			.nop()		.side(0b11)	[1]
+			.nop()		.side(0b11)	[7]
+		.end();
+		CheckProgram(program, DELAY_SIDE_SET_2_Test_program);
+	} while (0);
+	do {
+		PIO::Program program;
+		program
+		.program("DELAY SIDE_SET_4 Test")
+		.side_set(4)
+			.nop()		.side(0b1111)	[0]
+			.nop()		.side(0b1111)	[1]
+		.end();
+		CheckProgram(program, DELAY_SIDE_SET_4_Test_program);
+	} while (0);
+	do {
+		PIO::Program program;
+		program
+		.program("DELAY SIDE_SET_3_optional Test")
+		.side_set(3).opt()
+			.nop()		.side(0b111)	[0]
+			.nop()						[0]
+			.nop()		.side(0b111)	[1]
+			.nop()						[1]
+		.end();
+		CheckProgram(program, DELAY_SIDE_SET_3_optional_Test_program);
 	} while (0);
 }
 

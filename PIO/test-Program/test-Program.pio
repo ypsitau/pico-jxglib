@@ -236,40 +236,71 @@ label:
 
 .program SIDE_SET_1_Test
 .side_set 1
-	nop		side 0
-	nop		side 1
+	nop		side 0b0
+	nop		side 0b1
 
 .program SIDE_SET_2_Test
 .side_set 2
-	nop		side 0
-	nop		side 1
-	nop		side 2
-	nop		side 3
+	nop		side 0b00
+	nop		side 0b01
+	nop		side 0b10
+	nop		side 0b11
 
 .program SIDE_SET_5_Test
 .side_set 5
-	nop		side 0
-	nop		side 1
-	nop		side 2
-	nop		side 4
-	nop		side 8
-	nop		side 16
+	nop		side 0b00000
+	nop		side 0b00001
+	nop		side 0b00010
+	nop		side 0b00100
+	nop		side 0b01000
+	nop		side 0b10000
 
 .program SIDE_SET_2_optional_Test
 .side_set 2 opt
-	nop		side 0
+	nop		side 0b00
 	nop	
-	nop		side 1
+	nop		side 0b01
 	nop	
-	nop		side 2
+	nop		side 0b10
 	nop	
-	nop		side 3
+	nop		side 0b11
+	nop	
+
+.program SIDE_SET_4_optional_Test
+.side_set 4 opt
+	nop		side 0b0000
+	nop	
+	nop		side 0b0001
+	nop	
+	nop		side 0b0010
+	nop	
+	nop		side 0b0100
+	nop	
+	nop		side 0b1000
 	nop	
 
 .program DELAY_Test
 	nop		[0]
 	nop		[1]
 	nop		[31]
+
+.program DELAY_SIDE_SET_2_Test
+.side_set 2
+	nop		side 0b11	[0]
+	nop		side 0b11	[1]
+	nop		side 0b11	[7]
+
+.program DELAY_SIDE_SET_4_Test
+.side_set 4
+	nop		side 0b1111	[0]
+	nop		side 0b1111	[1]
+
+.program DELAY_SIDE_SET_3_optional_Test
+.side_set 3 opt
+	nop		side 0b111	[0]
+	nop					[0]
+	nop		side 0b111	[1]
+	nop					[1]
 
 % c-sdk {
 %}
