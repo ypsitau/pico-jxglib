@@ -1,0 +1,36 @@
+.program JMP_Test
+	jmp	    label
+	jmp	    !x		label
+	jmp	    x--		label
+	jmp	    !y		label
+	jmp	    y--		label
+	jmp	    x!=y	label
+	jmp	    pin		label
+	jmp	    !osre	label
+label:
+	nop
+
+.program WAIT_Test
+.pio_version 1
+	wait	1 gpio	0
+	wait	1 pin 	0
+	wait	1 irq 	0
+;	wait	1 jmppin 	0
+	wait	0 gpio	0
+	wait	0 pin 	0
+	wait	0 irq 	0
+;	wait	0 jmppin 	0
+	wait	1 gpio	1
+	wait	1 pin 	1
+	wait	1 irq 	1
+;	wait	1 jmppin 	1
+	wait	1 gpio	31
+	wait	1 pin 	31
+	wait	1 irq 	7
+;	wait	1 jmppin 	3
+	wait	1 irq 	1	rel
+;	wait	1 irq 	1	prev
+;	wait	1 irq 	1	next
+
+% c-sdk {
+%}

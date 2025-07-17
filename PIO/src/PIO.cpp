@@ -175,16 +175,6 @@ void Program::Configure(pio_sm_config* config, uint offset) const
 	}
 }
 
-const Program& Program::Dump() const
-{
-	for (uint16_t addrRel = 0; addrRel < addrRelCur_; ++addrRel) {
-		uint16_t inst = instTbl_[addrRel];
-		::printf("%02x  %03b %05b %03b %05b\n", addrRel,
-			(inst >> 13) & 0b111, (inst >> 8) & 0b11111, (inst >> 5) & 0b111, (inst >> 0) & 0b11111);
-	}
-	return *this;
-}
-
 Program& Program::side_set(int bit_count)
 {
 	if (bit_count < 0 || bit_count > 5) ::panic("addr%02x: side_set(): bit count out of range\n", addrRelCur_);

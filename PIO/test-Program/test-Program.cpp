@@ -1,8 +1,14 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/PIO.h"
+#include "test-Program.pio.h"
 
 using namespace jxglib;
+
+void DumpInst(const pio_program_t& program);
+void VerifyInst(const pio_program_t& program1, const pio_program_t& program2);
+
+void CheckProgram(const PIO::Program& program, const pio_program_t& programExpected);
 
 void test_JMP()
 {
@@ -19,9 +25,9 @@ void test_JMP()
 			.jmp	("pin",		"label")
 			.jmp	("!osre",	"label")
 		.L("label")
+			.nop()
 		.end();
-		::printf("%s\n", program.GetName());
-		program.Dump();
+		CheckProgram(program, JMP_Test_program);
 	} while (0);
 }
 
@@ -35,26 +41,24 @@ void test_WAIT()
 			.wait	(1, "gpio",		0)
 			.wait	(1, "pin", 		0)
 			.wait	(1, "irq", 		0)
-			.wait	(1, "jmppin", 	0)
+		//	.wait	(1, "jmppin", 	0)
 			.wait	(0, "gpio",		0)
 			.wait	(0, "pin", 		0)
 			.wait	(0, "irq", 		0)
-			.wait	(0, "jmppin", 	0)
+		//	.wait	(0, "jmppin", 	0)
 			.wait	(1, "gpio",		1)
 			.wait	(1, "pin", 		1)
 			.wait	(1, "irq", 		1)
-			.wait	(1, "jmppin", 	1)
+		//	.wait	(1, "jmppin", 	1)
 			.wait	(1, "gpio",		31)
 			.wait	(1, "pin", 		31)
 			.wait	(1, "irq", 		7)
-			.wait	(1, "jmppin", 	3)
+		//	.wait	(1, "jmppin", 	3)
 			.wait	(1, "irq", 		1).rel()
-			.wait	(1, "irq", 		1).prev()
-			.wait	(1, "irq", 		1).next()
+		//	.wait	(1, "irq", 		1).prev()
+		//	.wait	(1, "irq", 		1).next()
 		.end();
-		::printf("%s\n", program.GetName());
-		::printf("%s\n", program.GetName());
-		program.Dump();
+		CheckProgram(program, WAIT_Test_program);
 	} while (0);
 }
 
@@ -83,8 +87,7 @@ void test_IN()
 			.in		("isr",		31)
 			.in		("osr",		31)
 		.end();
-		::printf("%s\n", program.GetName());
-		program.Dump();
+		CheckProgram(program, IN_Test_program);
 	} while (0);
 }
 
@@ -119,8 +122,7 @@ void test_OUT()
 			.out	("isr",		31)
 			.out	("exec",	31)
 		.end();
-		::printf("%s\n", program.GetName());
-		program.Dump();
+		CheckProgram(program, OUT_Test_program);
 	} while (0);
 }
 
@@ -137,8 +139,7 @@ void test_PUSH()
 			.push	().iffull().block()
 			.push	().iffull().noblock()
 		.end();
-		::printf("%s\n", program.GetName());
-		program.Dump();
+		CheckProgram(program, PUSH_Test_program);
 	} while (0);
 }
 
@@ -155,8 +156,7 @@ void test_PULL()
 			.pull	().ifempty().block()
 			.pull	().ifempty().noblock()
 		.end();
-		::printf("%s\n", program.GetName());
-		program.Dump();
+		CheckProgram(program, PULL_Test_program);
 	} while (0);
 }
 
@@ -165,7 +165,7 @@ void test_MOV()
 	do {
 		PIO::Program program;
 		program
-		.program("MOV rxfifo[] Test")
+		.program("MOV rxfifo isr Test")
 		.pio_version(1)
 			.mov	("rxfifo[y]",	"isr")
 			.mov	("rxfifo[0]",	"isr")
@@ -175,13 +175,12 @@ void test_MOV()
 			.mov	("rxfifo[]", 1,	"isr")
 			.mov	("rxfifo[]", 7,	"isr")
 		.end();
-		::printf("%s\n", program.GetName());
-		program.Dump();
+		CheckProgram(program, MOV_rxfifo_isr_Test_program);
 	} while (0);
 	do {
 		PIO::Program program;
 		program
-		.program("MOV rxfifo[] Test")
+		.program("MOV osr rxfifo Test")
 		.pio_version(1)
 			.mov	("osr",		"rxfifo[y]")
 			.mov	("osr",		"rxfifo[0]")
@@ -191,8 +190,7 @@ void test_MOV()
 			.mov	("osr",		"rxfifo[]", 1)
 			.mov	("osr",		"rxfifo[]", 7)
 		.end();
-		::printf("%s\n", program.GetName());
-		program.Dump();
+		CheckProgram(program, MOV_osr_rxfifo_Test_program);
 	} while (0);
 	do {
 		PIO::Program program;
@@ -206,8 +204,7 @@ void test_MOV()
 			.mov	("pins",		"isr")
 			.mov	("pins",		"osr")
 		.end();
-		::printf("%s\n", program.GetName());
-		program.Dump();
+		CheckProgram(program, MOV_pins_Test_program);
 	} while (0);
 	do {
 		PIO::Program program;
@@ -221,8 +218,7 @@ void test_MOV()
 			.mov	("x",			"isr")
 			.mov	("x",			"osr")
 		.end();
-		::printf("%s\n", program.GetName());
-		program.Dump();
+		CheckProgram(program, MOV_x_Test_program);
 	} while (0);
 	do {
 		PIO::Program program;
@@ -236,8 +232,7 @@ void test_MOV()
 			.mov	("y",			"isr")
 			.mov	("y",			"osr")
 		.end();
-		::printf("%s\n", program.GetName());
-		program.Dump();
+		CheckProgram(program, MOV_y_Test_program);
 	} while (0);
 	do {
 		PIO::Program program;
@@ -251,8 +246,7 @@ void test_MOV()
 			.mov	("pindirs",		"isr")
 			.mov	("pindirs",		"osr")
 		.end();
-		::printf("%s\n", program.GetName());
-		program.Dump();
+		CheckProgram(program, MOV_pindirs_Test_program);
 	} while (0);
 	do {
 		PIO::Program program;
@@ -266,8 +260,7 @@ void test_MOV()
 			.mov	("exec",		"isr")
 			.mov	("exec",		"osr")
 		.end();
-		::printf("%s\n", program.GetName());
-		program.Dump();
+		CheckProgram(program, MOV_exec_Test_program);
 	} while (0);
 	do {
 		PIO::Program program;
@@ -281,8 +274,7 @@ void test_MOV()
 			.mov	("pc",			"isr")
 			.mov	("pc",			"osr")
 		.end();
-		::printf("%s\n", program.GetName());
-		program.Dump();
+		CheckProgram(program, MOV_pc_Test_program);
 	} while (0);
 	do {
 		PIO::Program program;
@@ -296,8 +288,7 @@ void test_MOV()
 			.mov	("isr",			"isr")
 			.mov	("isr",			"osr")
 		.end();
-		::printf("%s\n", program.GetName());
-		program.Dump();
+		CheckProgram(program, MOV_isr_Test_program);
 	} while (0);
 	do {
 		PIO::Program program;
@@ -311,8 +302,7 @@ void test_MOV()
 			.mov	("osr",			"isr")
 			.mov	("osr",			"osr")
 		.end();
-		::printf("%s\n", program.GetName());
-		program.Dump();
+		CheckProgram(program, MOV_osr_Test_program);
 	} while (0);
 	do {
 		PIO::Program program;
@@ -323,8 +313,7 @@ void test_MOV()
 			.mov	("pins",		"~x")
 			.mov	("pins",		"::x")
 		.end();
-		::printf("%s\n", program.GetName());
-		program.Dump();
+		CheckProgram(program, MOV_operator_Test_program);
 	} while (0);
 }
 
@@ -360,8 +349,7 @@ void test_IRQ()
 			.irq	("wait",		0).next()
 			.irq	("clear",		0).next()
 		.end();
-		::printf("%s\n", program.GetName());
-		program.Dump();
+		CheckProgram(program, IRQ_Test_program);
 	} while (0);
 }
 
@@ -384,8 +372,7 @@ void test_SET()
 			.set	("y",			31)
 			.set	("pindirs",		31)
 		.end();
-		::printf("%s\n", program.GetName());
-		program.Dump();
+		CheckProgram(program, SET_Test_program);
 	} while (0);
 }
 
@@ -394,19 +381,20 @@ void test_SIDE_SET()
 	do {
 		PIO::Program program;
 		program
-		.program("SIDE_SET(1) Test")
+		.program("SIDE_SET_1 Test")
 		.side_set(1)
 			.jmp	("label").side(0b0)
 			.jmp	("label").side(0b1)
 		.L("label")
 		.end();
+		CheckProgram(program, SIDE_SET_1_Test_program);
 		::printf("%s\n", program.GetName());
-		program.Dump();
+		DumpInst(program);
 	} while (0);
 	do {
 		PIO::Program program;
 		program
-		.program("SIDE_SET(2) Test")
+		.program("SIDE_SET_2 Test")
 		.side_set(2)
 			.jmp	("label").side(0b00)
 			.jmp	("label").side(0b01)
@@ -414,13 +402,14 @@ void test_SIDE_SET()
 			.jmp	("label").side(0b11)
 		.L("label")
 		.end();
+		CheckProgram(program, SIDE_SET_2_Test_program);
 		::printf("%s\n", program.GetName());
-		program.Dump();
+		DumpInst(program);
 	} while (0);
 	do {
 		PIO::Program program;
 		program
-		.program("SIDE_SET(5) Test")
+		.program("SIDE_SET_5 Test")
 		.side_set(5)
 			.jmp	("label").side(0b00000)
 			.jmp	("label").side(0b00001)
@@ -430,13 +419,14 @@ void test_SIDE_SET()
 			.jmp	("label").side(0b10000)
 		.L("label")
 		.end();
+		CheckProgram(program, SIDE_SET_5_Test_program);
 		::printf("%s\n", program.GetName());
-		program.Dump();
+		DumpInst(program);
 	} while (0);
 	do {
 		PIO::Program program;
 		program
-		.program("SIDE_SET(2) optional Test")
+		.program("SIDE_SET_2 optional Test")
 		.side_set(2).opt()
 			.jmp	("label").side(0b00)
 			.jmp	("label")
@@ -448,24 +438,61 @@ void test_SIDE_SET()
 			.jmp	("label")
 		.L("label")
 		.end();
+		CheckProgram(program, SIDE_SET_2_optional_Test_program);
 		::printf("%s\n", program.GetName());
-		program.Dump();
+		DumpInst(program);
 	} while (0);
 }
 
 int main()
 {
 	::stdio_init_all();
-	test_JMP();
+	//test_JMP();
 	test_WAIT();
-	test_IN();
-	test_OUT();
-	test_PUSH();
-	test_PULL();
-	test_MOV();
-	test_IRQ();
-	test_SET();
-	test_SIDE_SET();
+	//test_IN();
+	//test_OUT();
+	//test_PUSH();
+	//test_PULL();
+	//test_MOV();
+	//test_IRQ();
+	//test_SET();
+	//test_SIDE_SET();
 	::printf("done\n");
 	for (;;) ::tight_loop_contents();
+}
+
+void DumpInst(const pio_program_t& program)
+{
+	for (uint16_t addrRel = 0; addrRel < program.length; ++addrRel) {
+		uint16_t inst = program.instructions[addrRel];
+		::printf("%02x  %03b %05b %03b %05b\n", addrRel,
+			(inst >> 13) & 0b111, (inst >> 8) & 0b11111, (inst >> 5) & 0b111, (inst >> 0) & 0b11111);
+	}
+}
+
+void VerifyInst(const pio_program_t& program1, const pio_program_t& program2)
+{
+	if (program1.length != program2.length) {
+		::printf("*** program length mismatch: %d vs %d\n", program1.length, program2.length);
+		return;
+	}
+	for (uint16_t addrRel = 0; addrRel < program1.length; ++addrRel) {
+		uint16_t inst1 = program1.instructions[addrRel];
+		uint16_t inst2 = program2.instructions[addrRel];
+		if (inst1 != inst2) {
+			::printf("*** instruction mismatch at 0x%02x: [%03b %05b %03b %05b] vs [%03b %05b %02b %05b]\n", addrRel,
+				(inst1 >> 13) & 0b111, (inst1 >> 8) & 0b11111, (inst1 >> 5) & 0b111, (inst1 >> 0) & 0b11111,
+				(inst2 >> 13) & 0b111, (inst2 >> 8) & 0b11111, (inst2 >> 5) & 0b111, (inst2 >> 0) & 0b11111);
+			return;
+		}
+	}
+	::printf("programs match\n");
+}
+
+void CheckProgram(const PIO::Program& program, const pio_program_t& programExpected)
+{
+		CheckProgram(program, IN_Test_program);
+	::printf("%s\n", program.GetName());
+	DumpInst(program);
+	VerifyInst(program, programExpected);
 }

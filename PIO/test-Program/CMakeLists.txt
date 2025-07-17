@@ -40,6 +40,9 @@ add_executable(test-Program test-Program.cpp )
 pico_set_program_name(test-Program "test-Program")
 pico_set_program_version(test-Program "0.1")
 
+# Generate PIO header
+pico_generate_pio_header(test-Program ${CMAKE_CURRENT_LIST_DIR}/test-Program.pio)
+
 # Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(test-Program 1)
 pico_enable_stdio_usb(test-Program 0)

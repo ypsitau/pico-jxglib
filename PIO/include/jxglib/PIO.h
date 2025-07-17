@@ -158,6 +158,7 @@ public:
 public:
 	void Reset();
 	const char* GetName() const { return name_; }
+	const pio_program_t& GetProgram() const { return program_; }
 	Program& AddInst(uint16_t inst);
 	Program& L(const char* label, uint* pAddrRel = nullptr);
 public:
@@ -167,8 +168,8 @@ public:
 	const Variable* LookupVariable(const char* label) const;
 	Program& Complete();
 	void Configure(pio_sm_config* config, uint offset) const;
-	const Program& Dump() const;
 public:
+	operator const pio_program_t&() const { return program_; }
 	operator const pio_program_t*() const { return &program_; }
 public:
 	// Directives
