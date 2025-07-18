@@ -34,6 +34,35 @@ int main()
 	do {
 		PIO::Program program;
 		program
+		.program("apa102_mini")
+		.side_set(1)
+			.out("pins", 1)		.side(0)			// Stall here when no data (still asserts clock low)
+			.nop()				.side(1)
+		.end();
+		CheckProgram(program, apa102_mini_program);
+	} while (0);
+	do {
+		PIO::Program program;
+		program
+		.program("blink")
+			.pull().block()							// pull block
+			.out("y", 32)							// out y, 32
+		.wrap_target()
+			.mov("x", "y")							// mov x, y
+			.set("pins", 1)							// set pins, 1   ; Turn LED on
+		.L("lp1")
+			.jmp("x--", "lp1")						// jmp x-- lp1   ; Delay for (x + 1) cycles, x is a 32 bit number
+			.mov("x", "y")							// mov x, y
+			.set("pins", 0)							// set pins, 0   ; Turn LED off
+		.L("lp2")
+			.jmp("x--", "lp2")						// jmp x-- lp2   ; Delay for the same number of cycles again
+		.wrap()										// .wrap             ; Blink forever!
+		.end();
+		CheckProgram(program, blink_program);
+	} while (0); 
+	do {
+		PIO::Program program;
+		program
 		.program("blink")
 			.pull().block()							// pull block
 			.out("y", 32)							// out y, 32
@@ -118,6 +147,49 @@ int main()
 		.wrap()
 		.end();
 		CheckProgram(program, i2c_program);
+	} while (0);
+	do {
+		PIO::Program program;
+		program
+		.program("hub75_data_rgb888")
+		.side_set(1)
+		.L("entry_point")							// public entry_point:
+		.wrap_target()
+		.L("shift0")								// public shift0:
+			.pull()				.side(0)			// gets patched to `out null, n` if n nonzero (otherwise the PULL is required for fencing)
+			.in("osr", 1)		.side(0)			// shuffle shuffle shuffle
+			.out("null", 8)		.side(0)
+			.in("osr", 1)		.side(0)
+			.out("null", 8)		.side(0)
+			.in("osr", 1)		.side(0)
+			.out("null", 32)	.side(0)			// Discard remainder of OSR contents
+		.L("shift1")								// public shift1:
+			.pull()				.side(0)			// gets patched to out null, n if n is nonzero (otherwise PULL required)
+			.in("osr", 1)		.side(1)			// Note this posedge clocks in the data from the previous iteration
+			.out("null", 8)		.side(1)
+			.in("osr", 1)		.side(1)
+			.out("null", 8)		.side(1)
+			.in("osr", 1)		.side(1)
+			.out("null", 32)	.side(1)
+			.in("null", 26)		.side(1)			// Note we are just doing this little manoeuvre here to get GPIOs in the order
+			.mov("pins", "::isr").side(1)			// R0, G0, B0, R1, G1, B1. Can go 1 cycle faster if reversed
+		.wrap()
+		.end();
+		CheckProgram(program, hub75_data_rgb888_program);
+	} while (0);
+	do {
+		PIO::Program program;
+		program
+		.program("hub75_row")
+		.side_set(2)
+		.wrap_target()
+			.out("pins", 5)		.side(0x2)	[7]		// Deassert OEn, output row select
+			.out("x", 27)		.side(0x3)	[7]		// Pulse LATCH, get OEn pulse width
+		.L("pulse_loop")
+			.jmp("x--", "pulse_loop").side(0x0)		// Assert OEn for x+1 cycles
+		.wrap()
+		.end();
+		CheckProgram(program, hub75_row_program);
 	} while (0);
 	do {
 		PIO::Program program;
@@ -378,6 +450,54 @@ int main()
 			.in("pins", 1)		.side(0)		// Input data, deassert SCK
 		.end();
 		CheckProgram(program, spi_cpha1_program);
+	} while (0);
+	do {
+		PIO::Program program;
+		program
+		.program("squarewave")
+			.set("pindirs", 1)						// Set pin to output
+		.L("again")
+			.set("pins", 1)					[1]		// Drive pin high and then delay for one cycle
+			.set("pins", 0)							// Drive pin low
+			.jmp("again")							// Set PC to label `again`
+		.end();
+		CheckProgram(program, squarewave_program);
+	} while (0);
+	do {
+		PIO::Program program;
+		program
+		.program("squarewave_fast")
+			.set("pindirs", 1)						// Set pin to output
+		.wrap_target()
+			.set("pins", 1)							// Drive pin high
+			.set("pins", 0)							// Drive pin low
+		.wrap()
+		.end();
+		CheckProgram(program, squarewave_fast_program);
+	} while (0);
+	do {
+		PIO::Program program;
+		program
+		.program("squarewave_wrap")
+			.set("pindirs", 1)						// Set pin to output
+		.wrap_target()
+			.set("pins", 1)					[1]		// Drive pin high and then delay for one cycle
+			.set("pins", 0)					[1]		// Drive pin low and then delay for one cycle
+		.wrap()
+		.end();
+		CheckProgram(program, squarewave_wrap_program);
+	} while (0);
+	do {
+		PIO::Program program;
+		program
+		.program("st7789_lcd")
+		.side_set(1)
+		.wrap_target()
+			.out("pins", 1)		.side(0)			// stall here if no data (clock low)
+			.nop()				.side(1)
+		.wrap()
+		.end();
+		CheckProgram(program, st7789_lcd_program);
 	} while (0);
 	do {
 		PIO::Program program;

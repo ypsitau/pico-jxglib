@@ -13,6 +13,12 @@ test:               ; This has the effect of subtracting y from x, eventually.
 	push
 
 ;------------------------------------------------------------------------------
+.program apa102_mini
+.side_set 1
+    out pins, 1   side 0   ; Stall here when no data (still asserts clock low)
+    nop           side 1
+
+;------------------------------------------------------------------------------
 .program blink
     pull block
     out y, 32
@@ -55,6 +61,40 @@ low_1:
 low_0:
     jmp initial_high         [7] ; the initial line state is flipped!
 
+;------------------------------------------------------------------------------
+.program hub75_row
+.side_set 2
+.wrap_target
+    out pins, 5 [7]    side 0x2 ; Deassert OEn, output row select
+    out x, 27   [7]    side 0x3 ; Pulse LATCH, get OEn pulse width
+pulse_loop:
+    jmp x-- pulse_loop side 0x0 ; Assert OEn for x+1 cycles
+.wrap
+
+;------------------------------------------------------------------------------
+.program hub75_data_rgb888
+.side_set 1
+public entry_point:
+.wrap_target
+public shift0:
+    pull             side 0 ; gets patched to `out null, n` if n nonzero (otherwise the PULL is required for fencing)
+    in osr, 1        side 0 ; shuffle shuffle shuffle
+    out null, 8      side 0
+    in osr, 1        side 0
+    out null, 8      side 0
+    in osr, 1        side 0
+    out null, 32     side 0 ; Discard remainder of OSR contents
+public shift1:
+    pull             side 0 ; gets patched to out null, n if n is nonzero (otherwise PULL required)
+    in osr, 1        side 1 ; Note this posedge clocks in the data from the previous iteration
+    out null, 8      side 1
+    in osr, 1        side 1
+    out null, 8      side 1
+    in osr, 1        side 1
+    out null, 32     side 1
+    in null, 26      side 1 ; Note we are just doing this little manoeuvre here to get GPIOs in the order
+    mov pins, ::isr  side 1 ; R0, G0, B0, R1, G1, B1. Can go 1 cycle faster if reversed
+.wrap
 
 ;------------------------------------------------------------------------------
 .program i2c
@@ -333,6 +373,38 @@ invalid:
     out x, 1    side 0     ; Stall here on empty (keep SCK deasserted)
     mov pins, x side 1 [1] ; Output data, assert SCK (mov pins uses OUT mapping)
     in pins, 1  side 0     ; Input data, deassert SCK
+
+;------------------------------------------------------------------------------
+.program squarewave
+    set pindirs, 1   ; Set pin to output
+again:
+    set pins, 1 [1]  ; Drive pin high and then delay for one cycle
+    set pins, 0      ; Drive pin low
+    jmp again        ; Set PC to label `again`
+
+;------------------------------------------------------------------------------
+.program squarewave_fast
+    set pindirs, 1   ; Set pin to output
+.wrap_target
+	set pins, 1      ; Drive pin high
+	set pins, 0      ; Drive pin low
+.wrap
+
+;------------------------------------------------------------------------------
+.program squarewave_wrap
+    set pindirs, 1   ; Set pin to output
+.wrap_target
+	set pins, 1 [1]  ; Drive pin high and then delay for one cycle
+	set pins, 0 [1]  ; Drive pin low and then delay for one cycle
+.wrap
+
+;------------------------------------------------------------------------------
+.program st7789_lcd
+.side_set 1
+.wrap_target
+    out pins, 1   side 0 ; stall here if no data (clock low)
+    nop           side 1
+.wrap
 
 ;------------------------------------------------------------------------------
 .program uart_rx
