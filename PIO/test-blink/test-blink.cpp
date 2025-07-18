@@ -13,8 +13,8 @@ int main()
 	PIO::Program program;
 	program
 	.program("auto_blink")
-		.pull().block()				// osr <- txfifo
-		.out("y",		32)			// y <- osr[31:0], osr >>= 32
+		.pull()						// osr <- txfifo
+		.out("y",		32)			// y[31:0] <- osr[31:0], osr[31:0] <- 0
 	.wrap_target()
 		.mov("x",		"y")
 		.set("pins",	0b1)
