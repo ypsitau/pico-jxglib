@@ -129,15 +129,15 @@ public:
 		uint16_t value_;
 		std::unique_ptr<Variable> pVariableNext_;
 	public:
-		Variable(const char* label, uint16_t addrRel) : label_{label}, value_{addrRel} {};
+		Variable(const char* label, uint16_t relAddr) : label_{label}, value_{relAddr} {};
 		const char* GetLabel() const { return label_; }
 		uint16_t GetValue() const { return value_; }
 		void SetNext(Variable* pVariableNext) { pVariableNext_.reset(pVariableNext); }
 		Variable* GetNext() const { return pVariableNext_.get(); }
 	};
 	struct Wrap {
-		uint16_t addrRel_target;
-		uint16_t addrRel_wrapPlus;
+		uint16_t relAddr_target;
+		uint16_t relAddr_wrapPlus;
 	};
 	struct SideSet {
 		uint bit_count;
@@ -147,6 +147,7 @@ public:
 	enum class Directive {
 		None,
 		program,
+		entry,
 		origin,
 		pio_version,
 		side_set,
@@ -154,11 +155,12 @@ public:
 		wrap,
 		end,
 	};
-	static const uint16_t AddrRelInvalid = 0xffff;
+	static const uint16_t RelAddrInvalid = 0xffff;
 private:
 	const char* name_;
 	uint16_t instTbl_[PIO_INSTRUCTION_COUNT];
-	uint16_t addrRelCur_;
+	uint16_t relAddrCur_;
+	uint16_t relAddrEntry_;
 	Wrap wrap_;
 	SideSet sideSet_;
 	pio_program_t program_;
@@ -173,31 +175,35 @@ public:
 	Program();
 public:
 	void Reset();
+	uint GetRelAddrCur() const { return relAddrCur_; }
+	Program& SetRelAddrEntry(uint16_t relAddrEntry) { relAddrEntry_ = relAddrEntry; return *this; }
+	uint GetRelAddrEntry() const { return relAddrEntry_; }
 	const char* GetName() const { return name_; }
 	const Wrap& GetWrap() const { return wrap_; }
 	const SideSet& GetSideSet() const { return sideSet_; }
 	const pio_program_t& GetEntity() const { return program_; }
 	const pio_program_t* GetEntityPtr() const { return &program_; }
 	Program& AddInst(uint16_t inst);
-	Program& L(const char* label, uint* pAddrRel = nullptr);
+	Program& L(const char* label, uint* pRelAddr = nullptr);
 public:
 	bool IsSideMust() const { return sideSet_.bit_count > 0 && !sideSet_.optional; }
-	void AddVariable(const char* label, uint16_t addrRel);
-	void AddVariableRef(const char* label, uint16_t addrRel);
+	void AddVariable(const char* label, uint16_t relAddr);
+	void AddVariableRef(const char* label, uint16_t relAddr);
 	const Variable* LookupVariable(const char* label) const;
 	Program& Complete();
 public:
 	operator const pio_program_t&() const { return program_; }
-	//operator const pio_program_t*() const { return &program_; }
+	//operator const pio_program_t*() const { return &program_; }	// conflicts with [] operator
 public:
 	// Directives
 	Program& program(const char* name)	{ Reset(); directive_ = Directive::program; name_ = name; return *this; }
+	Program& entry()					{ directive_ = Directive::entry; relAddrEntry_ = relAddrCur_; return *this; }
 	Program& origin(uint offset)		{ directive_ = Directive::origin; program_.origin = offset; return *this; }
 	Program& pio_version(uint version)	{ directive_ = Directive::pio_version; program_.pio_version = version; return *this; }
 	Program& side_set(int bit_count);
-	Program& wrap_target(uint* pAddrRel = nullptr);
-	Program& wrap(uint* pAddrRel = nullptr);
-	Program& end(uint* pAddrRel = nullptr);
+	Program& wrap_target(uint* pRelAddr = nullptr);
+	Program& wrap(uint* pRelAddr = nullptr);
+	Program& end(uint* pRelAddr = nullptr);
 public:
 	Program& word(uint16_t inst) { return AddInst(inst); }
 	Program& jmp(uint16_t addr) { return AddInst(::pio_encode_jmp(addr)); }
@@ -231,9 +237,9 @@ private:
 	}
 public:
 	// Assembler-style instructions
-	Program& jmp(const char* label) { AddVariableRef(label, addrRelCur_); return jmp(static_cast<uint16_t>(0)); }
+	Program& jmp(const char* label) { AddVariableRef(label, relAddrCur_); return jmp(static_cast<uint16_t>(0)); }
 	Program& jmp(const char* cond, uint16_t addr);
-	Program& jmp(const char* cond, const char* label) { AddVariableRef(label, addrRelCur_); return jmp(cond, static_cast<uint16_t>(0)); }
+	Program& jmp(const char* cond, const char* label) { AddVariableRef(label, relAddrCur_); return jmp(cond, static_cast<uint16_t>(0)); }
 	Program& wait(bool polarity, const char* src, uint16_t index);
 	Program& in(const char* src, uint16_t count) { return in(StrToSrc(pio_instr_bits_in, src), count); }
 	Program& out(const char* dest, uint16_t count) { return out(StrToDest(pio_instr_bits_out, dest), count); }
@@ -397,8 +403,8 @@ public:
 	const StateMachine& set_clkdiv(float div) const { ::pio_sm_set_clkdiv(pio, sm, div); return *this; }
 	const StateMachine& set_wrap(uint wrap_target, uint wrap) const { ::pio_sm_set_wrap(pio, sm, wrap_target, wrap); return *this; }
 public:
-	int init(uint addrRel_entry, const pio_sm_config* config) { return ::pio_sm_init(pio, sm, offset + addrRel_entry, config); }
-	int init() { return ::pio_sm_init(pio, sm, offset, config); }
+	int init(uint initial_pc, const pio_sm_config* config) { return ::pio_sm_init(pio, sm, initial_pc, config); }
+	int init() { return ::pio_sm_init(pio, sm, offset + GetProgram().GetRelAddrEntry(), config); }
 	int set_config(const pio_sm_config *config) const { return ::pio_sm_set_config(pio, sm, config); }
 	const StateMachine& set_enabled(bool enabled = true) const { ::pio_sm_set_enabled(pio, sm, enabled); return *this; }
 	const StateMachine& restart() const { ::pio_sm_restart(pio, sm); return *this; }

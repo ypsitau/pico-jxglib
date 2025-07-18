@@ -23,8 +23,8 @@ void Config::Configure(const Program& program, uint offset)
 	const Program::Wrap& wrap = program.GetWrap();
 	const Program::SideSet& sideSet = program.GetSideSet();
 	::sm_config_set_sideset(&c_, sideSet.bit_count, sideSet.optional, sideSet.pindirs);
-	if (wrap.addrRel_wrapPlus > 0) {
-		::sm_config_set_wrap(&c_, offset + wrap.addrRel_target, offset + wrap.addrRel_wrapPlus - 1);
+	if (wrap.relAddr_wrapPlus > 0) {
+		::sm_config_set_wrap(&c_, offset + wrap.relAddr_target, offset + wrap.relAddr_wrapPlus - 1);
 	}
 }
 
@@ -108,7 +108,7 @@ StateMachine& StateMachine::UnclaimResource()
 //------------------------------------------------------------------------------
 const Program Program::None;
 
-Program::Program() : name_{""}, addrRelCur_{0}, wrap_{0, 0}, sideSet_{0, false, false}, directive_{Directive::None}, sideSpecifiedFlag_{false}
+Program::Program() : name_{""}, relAddrCur_{0}, relAddrEntry_{0}, wrap_{0, 0}, sideSet_{0, false, false}, directive_{Directive::None}, sideSpecifiedFlag_{false}
 {
 	for (int i = 0; i < count_of(instTbl_); ++i) instTbl_[i] = 0x0000;
 	program_.instructions = instTbl_;
@@ -123,7 +123,7 @@ Program::Program() : name_{""}, addrRelCur_{0}, wrap_{0, 0}, sideSet_{0, false, 
 void Program::Reset()
 {
 	name_ = "";
-	addrRelCur_ = 0;
+	relAddrCur_ = 0;
 	wrap_ = {0, 0};
 	sideSet_ = {0, false, false};
 	for (int i = 0; i < count_of(instTbl_); ++i) instTbl_[i] = 0x0000;
@@ -143,33 +143,33 @@ void Program::Reset()
 Program& Program::AddInst(uint16_t inst)
 {
 	directive_ = Directive::None; // reset directive
-	if (addrRelCur_ > 0 && IsSideMust() && !sideSpecifiedFlag_) {
-		::panic("addr%02x: side-set must be specified for each instruction\n", addrRelCur_);
+	if (relAddrCur_ > 0 && IsSideMust() && !sideSpecifiedFlag_) {
+		::panic("addr%02x: side-set must be specified for each instruction\n", relAddrCur_);
 	}
-	if (addrRelCur_ >= count_of(instTbl_)) ::panic("addr%02x: too many PIO instructions\n", addrRelCur_);
-	instTbl_[addrRelCur_++] = inst;
+	if (relAddrCur_ >= count_of(instTbl_)) ::panic("addr%02x: too many PIO instructions\n", relAddrCur_);
+	instTbl_[relAddrCur_++] = inst;
 	sideSpecifiedFlag_ = false;
 	return *this;
 }
 
-Program& Program::L(const char* label, uint* pAddrRel)
+Program& Program::L(const char* label, uint* pRelAddr)
 {
-	if (LookupVariable(label)) ::panic("addr%02x: label '%s' already defined\n", addrRelCur_, label);
-	AddVariable(label, addrRelCur_);
-	if (pAddrRel) *pAddrRel = addrRelCur_;
+	if (LookupVariable(label)) ::panic("addr%02x: label '%s' already defined\n", relAddrCur_, label);
+	AddVariable(label, relAddrCur_);
+	if (pRelAddr) *pRelAddr = relAddrCur_;
 	return *this;
 }
 
-void Program::AddVariable(const char* label, uint16_t addrRel)
+void Program::AddVariable(const char* label, uint16_t relAddr)
 {
-	Variable* pVariable = new Variable(label, addrRel);
+	Variable* pVariable = new Variable(label, relAddr);
 	pVariable->SetNext(pVariableHead_.release());
 	pVariableHead_.reset(pVariable);
 }
 
-void Program::AddVariableRef(const char* label, uint16_t addrRel)
+void Program::AddVariableRef(const char* label, uint16_t relAddr)
 {
-	Variable* pVariable = new Variable(label, addrRel);
+	Variable* pVariable = new Variable(label, relAddr);
 	pVariable->SetNext(pVariableRefHead_.release());
 	pVariableRefHead_.reset(pVariable);
 }
@@ -190,11 +190,11 @@ Program& Program::Complete()
 			uint16_t& inst = instTbl_[pVariableRef->GetValue()];
 			inst = inst & 0xffe0 | pVariable->GetValue();
 		} else {
-			::panic("addr%02x: label '%s' not found\n", addrRelCur_, pVariableRef->GetLabel());
+			::panic("addr%02x: label '%s' not found\n", relAddrCur_, pVariableRef->GetLabel());
 		}
 	}
-	program_.length = addrRelCur_;
-	if (wrap_.addrRel_wrapPlus == 0) wrap_.addrRel_wrapPlus = addrRelCur_;
+	program_.length = relAddrCur_;
+	if (wrap_.relAddr_wrapPlus == 0) wrap_.relAddr_wrapPlus = relAddrCur_;
 	pVariableHead_.reset();
 	pVariableRefHead_.reset();
 	return *this;
@@ -202,35 +202,35 @@ Program& Program::Complete()
 
 Program& Program::side_set(int bit_count)
 {
-	if (bit_count < 0 || bit_count > 5) ::panic("addr%02x: side_set(): bit count out of range\n", addrRelCur_);
+	if (bit_count < 0 || bit_count > 5) ::panic("addr%02x: side_set(): bit count out of range\n", relAddrCur_);
 	directive_ = Directive::side_set;
 	sideSet_.bit_count = bit_count;
 	return *this;
 }
 
-Program& Program::wrap_target(uint* pAddrRel)
+Program& Program::wrap_target(uint* pRelAddr)
 {
 	directive_ = Directive::wrap_target;
-	wrap_.addrRel_target = addrRelCur_;
-	if (pAddrRel) *pAddrRel = addrRelCur_;
+	wrap_.relAddr_target = relAddrCur_;
+	if (pRelAddr) *pRelAddr = relAddrCur_;
 	return *this;
 }
 
-Program& Program::wrap(uint* pAddrRel)
+Program& Program::wrap(uint* pRelAddr)
 {
 	directive_ = Directive::wrap;
-	wrap_.addrRel_wrapPlus = addrRelCur_;
-	if (pAddrRel) *pAddrRel = addrRelCur_;
+	wrap_.relAddr_wrapPlus = relAddrCur_;
+	if (pRelAddr) *pRelAddr = relAddrCur_;
 	return *this;
 }
 
-Program& Program::end(uint* pAddrRel)
+Program& Program::end(uint* pRelAddr)
 {
 	directive_ = Directive::end;
-	if (addrRelCur_ > 0 && IsSideMust() && !sideSpecifiedFlag_) {
-		::panic("addr%02x: side-set must be specified for each instruction\n", addrRelCur_);
+	if (relAddrCur_ > 0 && IsSideMust() && !sideSpecifiedFlag_) {
+		::panic("addr%02x: side-set must be specified for each instruction\n", relAddrCur_);
 	}
-	if (pAddrRel) *pAddrRel = addrRelCur_;
+	if (pRelAddr) *pRelAddr = relAddrCur_;
 	return Complete();
 }
 
@@ -243,7 +243,7 @@ Program& Program::jmp(const char* cond, uint16_t addr)
 	if (::strcasecmp(cond, "x!=y") == 0 || ::strcasecmp(cond, "x != y") == 0) return jmp_x_ne_y(addr);
 	if (::strcasecmp(cond, "pin") == 0) return jmp_pin(addr);
 	if (::strcasecmp(cond, "!osre") == 0) return jmp_not_osre(addr);
-	::panic("addr%02x: jmp(): invalid condition '%s'\n", addrRelCur_, cond);
+	::panic("addr%02x: jmp(): invalid condition '%s'\n", relAddrCur_, cond);
 	return *this;
 }
 
@@ -253,19 +253,19 @@ Program& Program::wait(bool polarity, const char* src, uint16_t index)
 	if (::strcasecmp(src, "pin") == 0)		return wait_pin(polarity, index);
 	if (::strcasecmp(src, "irq") == 0)		return wait_irq(polarity, false, index);
 	if (::strcasecmp(src, "jmppin") == 0) {
-		if (program_.pio_version < 1) ::panic("addr%02x: wait(): jmppin is not supported in PIO version %d\n", addrRelCur_, program_.pio_version);
+		if (program_.pio_version < 1) ::panic("addr%02x: wait(): jmppin is not supported in PIO version %d\n", relAddrCur_, program_.pio_version);
 		return wait_jmppin(polarity, index);
 	}
-	::panic("addr%02x: wait(): invalid source '%s'\n", addrRelCur_, src);
+	::panic("addr%02x: wait(): invalid source '%s'\n", relAddrCur_, src);
 	return *this;
 }
 
 Program& Program::mov(const char* dest, const char* src, uint16_t index)
 {
 	if (StartsWithICase(dest, "rxfifo[")) {
-		if (program_.pio_version < 1) ::panic("addr%02x: mov(): rxfifo[] is not supported in PIO version %d\n", addrRelCur_, program_.pio_version);
+		if (program_.pio_version < 1) ::panic("addr%02x: mov(): rxfifo[] is not supported in PIO version %d\n", relAddrCur_, program_.pio_version);
 		dest += 7;
-		if (::strcasecmp(src, "isr") != 0) ::panic("addr%02x: mov(): invalid source '%s'\n", addrRelCur_, src);
+		if (::strcasecmp(src, "isr") != 0) ::panic("addr%02x: mov(): invalid source '%s'\n", relAddrCur_, src);
 		uint16_t inst = 0;
 		if (::strcasecmp(dest, "y]") == 0) {
 			inst = 0b10000000'00010000;
@@ -274,15 +274,15 @@ Program& Program::mov(const char* dest, const char* src, uint16_t index)
 		} else {
 			char* endptr;
 			int index = ::strtol(dest, &endptr, 0);
-			if (::strcmp(endptr, "]") != 0) ::panic("addr%02x: mov(): invalid destination '%s'\n", addrRelCur_, dest);
-			if (index < 0 || index > 7) ::panic("addr%02x: mov(): index out of range %d\n", addrRelCur_, index);
+			if (::strcmp(endptr, "]") != 0) ::panic("addr%02x: mov(): invalid destination '%s'\n", relAddrCur_, dest);
+			if (index < 0 || index > 7) ::panic("addr%02x: mov(): index out of range %d\n", relAddrCur_, index);
 			inst = 0b10000000'00011000 | static_cast<uint16_t>(index);
 		}
 		return word(inst);
 	} else if (StartsWithICase(src, "rxfifo[")) {
-		if (program_.pio_version < 1) ::panic("addr%02x: mov(): rxfifo[] is not supported in PIO version %d\n", addrRelCur_, program_.pio_version);
+		if (program_.pio_version < 1) ::panic("addr%02x: mov(): rxfifo[] is not supported in PIO version %d\n", relAddrCur_, program_.pio_version);
 		src += 7;
-		if (::strcasecmp(dest, "osr") != 0) ::panic("addr%02x: mov(): invalid destination '%s'\n", addrRelCur_, dest);
+		if (::strcasecmp(dest, "osr") != 0) ::panic("addr%02x: mov(): invalid destination '%s'\n", relAddrCur_, dest);
 		uint16_t inst = 0;
 		if (::strcasecmp(src, "y]") == 0) {
 			inst = 0b10000000'10010000;
@@ -291,8 +291,8 @@ Program& Program::mov(const char* dest, const char* src, uint16_t index)
 		} else {
 			char* endptr;
 			int index = ::strtol(src, &endptr, 0);
-			if (::strcmp(endptr, "]") != 0) ::panic("addr%02x: mov(): invalid source '%s'\n", addrRelCur_, src);
-			if (index < 0 || index > 7) ::panic("addr%02x: mov(): index out of range %d\n", addrRelCur_, index);
+			if (::strcmp(endptr, "]") != 0) ::panic("addr%02x: mov(): invalid source '%s'\n", relAddrCur_, src);
+			if (index < 0 || index > 7) ::panic("addr%02x: mov(): index out of range %d\n", relAddrCur_, index);
 			inst = 0b10000000'10011000 | static_cast<uint16_t>(index);
 		}
 		return word(inst);
@@ -310,17 +310,17 @@ Program& Program::irq(const char* op, uint16_t irq_n)
 	if (::strcasecmp(op, "nowait") == 0) return irq_set(irq_n, relative);
 	if (::strcasecmp(op, "wait") == 0) return irq_wait(irq_n, relative);
 	if (::strcasecmp(op, "clear") == 0) return irq_clear(irq_n, relative);
-	::panic("addr%02x: irq(): invalid operation '%s'\n", addrRelCur_, op);
+	::panic("addr%02x: irq(): invalid operation '%s'\n", relAddrCur_, op);
 	return *this;
 }
 
 Program& Program::opt()
 {
 	if (directive_ == Directive::side_set) {
-		if (sideSet_.bit_count >= 5) ::panic("addr%02x: opt(): side-set bit count out of range\n", addrRelCur_);
+		if (sideSet_.bit_count >= 5) ::panic("addr%02x: opt(): side-set bit count out of range\n", relAddrCur_);
 		sideSet_.optional = true;
 	} else {
-		::panic("addr%02x: opt() is only applicable for side_set\n", addrRelCur_);
+		::panic("addr%02x: opt() is only applicable for side_set\n", relAddrCur_);
 	}
 	return *this;
 }
@@ -330,15 +330,15 @@ Program& Program::pindirs()
 	if (directive_ == Directive::side_set) {
 		sideSet_.pindirs = true;
 	} else {
-		::panic("addr%02x: pindirs() is only applicable for side_set\n", addrRelCur_);
+		::panic("addr%02x: pindirs() is only applicable for side_set\n", relAddrCur_);
 	}
 	return *this;
 }
 
 Program& Program::side(uint16_t bits)
 {
-	if (sideSet_.bit_count == 0) ::panic("addr%02x: side(): side-set not defined\n", addrRelCur_);
-	uint16_t& inst = instTbl_[addrRelCur_ - 1];
+	if (sideSet_.bit_count == 0) ::panic("addr%02x: side(): side-set not defined\n", relAddrCur_);
+	uint16_t& inst = instTbl_[relAddrCur_ - 1];
 	if (sideSet_.optional) {
 		int lsb = 12 - sideSet_.bit_count;
 		inst = inst | (1 << 12) | (bits << lsb);
@@ -352,101 +352,101 @@ Program& Program::side(uint16_t bits)
 
 Program& Program::delay(uint16_t cycles)
 {
-	if (addrRelCur_ == 0 || directive_ != Directive::None) ::panic("addr%02x: no proceeding instruction\n", addrRelCur_);
-	uint16_t& inst = instTbl_[addrRelCur_ - 1];
+	if (relAddrCur_ == 0 || directive_ != Directive::None) ::panic("addr%02x: no proceeding instruction\n", relAddrCur_);
+	uint16_t& inst = instTbl_[relAddrCur_ - 1];
 	int nBits = 5 - sideSet_.bit_count;
 	uint16_t cyclesMax = (1 << nBits) - 1;
-	if (cycles > cyclesMax) ::panic("addr%02x: delay(): cycles out of range %d (max %d)\n", addrRelCur_, cycles, cyclesMax);
+	if (cycles > cyclesMax) ::panic("addr%02x: delay(): cycles out of range %d (max %d)\n", relAddrCur_, cycles, cyclesMax);
 	inst = inst | (cycles << 8);
 	return *this;
 }
 
 Program& Program::rel()
 {
-	if (addrRelCur_ == 0 || directive_ != Directive::None) ::panic("addr%02x: no proceeding instruction\n", addrRelCur_);
-	uint16_t& inst = instTbl_[addrRelCur_ - 1];
+	if (relAddrCur_ == 0 || directive_ != Directive::None) ::panic("addr%02x: no proceeding instruction\n", relAddrCur_);
+	uint16_t& inst = instTbl_[relAddrCur_ - 1];
 	if (Is_IRQ(inst)) {
 		inst |= (2 << 3);
 	} else if (Is_WAIT(inst) && ((inst >> 5) & 0x3) == 2) {	// wait irq
 		inst |= (2 << 3);
 	} else {
-		::panic("addr%02x: rel() is not applicable for %s\n", addrRelCur_, GetInstName(inst));
+		::panic("addr%02x: rel() is not applicable for %s\n", relAddrCur_, GetInstName(inst));
 	}
 	return *this;
 }
 
 Program& Program::prev()
 {
-	if (addrRelCur_ == 0 || directive_ != Directive::None) ::panic("addr%02x: no proceeding instruction\n", addrRelCur_);
-	uint16_t& inst = instTbl_[addrRelCur_ - 1];
+	if (relAddrCur_ == 0 || directive_ != Directive::None) ::panic("addr%02x: no proceeding instruction\n", relAddrCur_);
+	uint16_t& inst = instTbl_[relAddrCur_ - 1];
 	if (Is_IRQ(inst)) {
 		inst |= (1 << 3);
 	} else if (Is_WAIT(inst) && ((inst >> 5) & 0x3) == 2) {	// wait irq
 		inst |= (1 << 3);
 	} else {
-		::panic("addr%02x: prev() is not applicable for %s\n", addrRelCur_, GetInstName(inst));
+		::panic("addr%02x: prev() is not applicable for %s\n", relAddrCur_, GetInstName(inst));
 	}
 	return *this;
 }
 
 Program& Program::next()
 {
-	if (addrRelCur_ == 0 || directive_ != Directive::None) ::panic("addr%02x: no proceeding instruction\n", addrRelCur_);
-	uint16_t& inst = instTbl_[addrRelCur_ - 1];
+	if (relAddrCur_ == 0 || directive_ != Directive::None) ::panic("addr%02x: no proceeding instruction\n", relAddrCur_);
+	uint16_t& inst = instTbl_[relAddrCur_ - 1];
 	if (Is_IRQ(inst)) {
 		inst |= (3 << 3);
 	} else if (Is_WAIT(inst) && ((inst >> 5) & 0x3) == 2) {	// wait irq
 		inst |= (3 << 3);
 	} else {
-		::panic("addr%02x: next() is not applicable for %s\n", addrRelCur_, GetInstName(inst));
+		::panic("addr%02x: next() is not applicable for %s\n", relAddrCur_, GetInstName(inst));
 	}
 	return *this;
 }
 
 Program& Program::iffull()
 {
-	if (addrRelCur_ == 0 || directive_ != Directive::None) ::panic("addr%02x: no proceeding instruction\n", addrRelCur_);
-	uint16_t& inst = instTbl_[addrRelCur_ - 1];
+	if (relAddrCur_ == 0 || directive_ != Directive::None) ::panic("addr%02x: no proceeding instruction\n", relAddrCur_);
+	uint16_t& inst = instTbl_[relAddrCur_ - 1];
 	if (Is_PUSH(inst)) {
 		inst |= (1 << 6);
 	} else {
-		::panic("addr%02x: iffull() is not applicable for %s\n", addrRelCur_, GetInstName(inst));
+		::panic("addr%02x: iffull() is not applicable for %s\n", relAddrCur_, GetInstName(inst));
 	}
 	return *this;
 }
 
 Program& Program::ifempty()
 {
-	if (addrRelCur_ == 0 || directive_ != Directive::None) ::panic("addr%02x: no proceeding instruction\n", addrRelCur_);
-	uint16_t& inst = instTbl_[addrRelCur_ - 1];
+	if (relAddrCur_ == 0 || directive_ != Directive::None) ::panic("addr%02x: no proceeding instruction\n", relAddrCur_);
+	uint16_t& inst = instTbl_[relAddrCur_ - 1];
 	if (Is_PULL(inst)) {
 		inst |= (1 << 6);
 	} else {
-		::panic("addr%02x: iffull() is not applicable for %s\n", addrRelCur_, GetInstName(inst));
+		::panic("addr%02x: iffull() is not applicable for %s\n", relAddrCur_, GetInstName(inst));
 	}
 	return *this;
 }
 
 Program& Program::block()
 {
-	if (addrRelCur_ == 0 || directive_ != Directive::None) ::panic("addr%02x: no proceeding instruction\n", addrRelCur_);
-	uint16_t& inst = instTbl_[addrRelCur_ - 1];
+	if (relAddrCur_ == 0 || directive_ != Directive::None) ::panic("addr%02x: no proceeding instruction\n", relAddrCur_);
+	uint16_t& inst = instTbl_[relAddrCur_ - 1];
 	if (Is_PUSHorPULL(inst)) {
 		inst |= (1 << 5);
 	} else {
-		::panic("addr%02x: block() is not applicable for %s\n", addrRelCur_, GetInstName(inst));
+		::panic("addr%02x: block() is not applicable for %s\n", relAddrCur_, GetInstName(inst));
 	}
 	return *this;
 }
 
 Program& Program::noblock()
 {
-	if (addrRelCur_ == 0 || directive_ != Directive::None) ::panic("addr%02x: no proceeding instruction\n", addrRelCur_);
-	uint16_t& inst = instTbl_[addrRelCur_ - 1];
+	if (relAddrCur_ == 0 || directive_ != Directive::None) ::panic("addr%02x: no proceeding instruction\n", relAddrCur_);
+	uint16_t& inst = instTbl_[relAddrCur_ - 1];
 	if (Is_PUSHorPULL(inst)) {
 		inst &= ~(1 << 5);
 	} else {
-		::panic("addr%02x: block() is not applicable for %s\n", addrRelCur_, GetInstName(inst));
+		::panic("addr%02x: block() is not applicable for %s\n", relAddrCur_, GetInstName(inst));
 	}
 	return *this;
 }
@@ -470,8 +470,8 @@ const char* Program::GetInstName(uint16_t inst)
 pio_src_dest Program::StrToSrc(uint16_t inst, const char* str) const
 {
 	pio_src_dest src = StrToSrcDest(inst, str);
-	if (Is_IN(inst) && (src & _PIO_INVALID_IN_SRC) != 0) ::panic("addr%02x: invalid source '%s' for IN instruction\n", addrRelCur_, str);
-	if (Is_MOV(inst) && (src & _PIO_INVALID_MOV_SRC) != 0) ::panic("addr%02x: invalid source '%s' for MOV instruction\n", addrRelCur_, str);
+	if (Is_IN(inst) && (src & _PIO_INVALID_IN_SRC) != 0) ::panic("addr%02x: invalid source '%s' for IN instruction\n", relAddrCur_, str);
+	if (Is_MOV(inst) && (src & _PIO_INVALID_MOV_SRC) != 0) ::panic("addr%02x: invalid source '%s' for MOV instruction\n", relAddrCur_, str);
 	return src;
 }
 
@@ -480,13 +480,13 @@ pio_src_dest Program::StrToDest(uint16_t inst, const char* str) const
 	pio_src_dest pio_pindirs_mov_dest = static_cast<pio_src_dest>(3u |
 		_PIO_INVALID_IN_SRC | _PIO_INVALID_OUT_DEST | _PIO_INVALID_SET_DEST | _PIO_INVALID_MOV_SRC);
 	if (Is_MOV(inst) && ::strcasecmp(str, "pindirs") == 0) {
-		if (program_.pio_version < 1) ::panic("addr%02x: pindirs is not supported in PIO version %d\n", addrRelCur_, program_.pio_version);
+		if (program_.pio_version < 1) ::panic("addr%02x: pindirs is not supported in PIO version %d\n", relAddrCur_, program_.pio_version);
 		return pio_pindirs_mov_dest;
 	}
 	pio_src_dest dest = StrToSrcDest(inst, str);
-	if (Is_MOV(inst) && (dest & _PIO_INVALID_MOV_DEST) != 0) ::panic("addr%02x: invalid destination '%s' for MOV instruction\n", addrRelCur_, str);
-	if (Is_OUT(inst) && (dest & _PIO_INVALID_OUT_DEST) != 0) ::panic("addr%02x: invalid destination '%s' for OUT instruction\n", addrRelCur_, str);
-	if (Is_SET(inst) && (dest & _PIO_INVALID_SET_DEST) != 0) ::panic("addr%02x: invalid destination '%s' for SET instruction\n", addrRelCur_, str);
+	if (Is_MOV(inst) && (dest & _PIO_INVALID_MOV_DEST) != 0) ::panic("addr%02x: invalid destination '%s' for MOV instruction\n", relAddrCur_, str);
+	if (Is_OUT(inst) && (dest & _PIO_INVALID_OUT_DEST) != 0) ::panic("addr%02x: invalid destination '%s' for OUT instruction\n", relAddrCur_, str);
+	if (Is_SET(inst) && (dest & _PIO_INVALID_SET_DEST) != 0) ::panic("addr%02x: invalid destination '%s' for SET instruction\n", relAddrCur_, str);
 	return dest;
 }
 
@@ -502,7 +502,7 @@ pio_src_dest Program::StrToSrcDest(uint16_t inst, const char* str) const
 	if (::strcasecmp(str, "pc") == 0)		return pio_pc;
 	if (::strcasecmp(str, "isr") == 0)		return pio_isr;
 	if (::strcasecmp(str, "osr") == 0)		return pio_osr;
-	::panic("addr%02x: invalid source/destination '%s'\n", addrRelCur_, str);
+	::panic("addr%02x: invalid source/destination '%s'\n", relAddrCur_, str);
 	return pio_pins;
 }
 
