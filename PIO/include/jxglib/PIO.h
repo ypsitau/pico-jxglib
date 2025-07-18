@@ -24,9 +24,16 @@ namespace jxglib {
 
 namespace PIO {
 
-inline void CheckAdjacent(uint pin1, uint pin2) { if (pin2 != pin1 + 1) ::panic("pins must be adjacent\n"); }
-inline void CheckAdjacent(uint pin1, uint pin2, uint pin3) { if (pin3 != pin2 + 1 || pin2 != pin1 + 1) ::panic("pins must be adjacent\n"); }
-inline void CheckAdjacent(uint pin1, uint pin2, uint pin3, uint pin4) { if (pin4 != pin3 + 1 || pin3 != pin2 + 1 || pin2 != pin1 + 1) ::panic("pins must be adjacent\n"); }
+template<typename... Pins>
+inline void CheckAdjacent(uint pin1, Pins... pins) {
+	if constexpr (sizeof...(pins) > 0) {
+		auto check_sequence = [](uint first, auto... rest) {
+			uint expected = first + 1;
+			return ((rest == expected++) && ...);
+		};
+		if (!check_sequence(pin1, pins...)) ::panic("pins must be adjacent\n");
+	}
+}
 
 class Program;
 
@@ -51,32 +58,36 @@ public:
 	Config& set_out_pin_base(uint out_base) { ::sm_config_set_out_pin_base(&c_, out_base); return *this; }
 	Config& set_out_pin_count(uint out_count) { ::sm_config_set_out_pin_count(&c_, out_count); return *this; }
 	Config& set_out_pins(uint out_base, uint out_count) { ::sm_config_set_out_pins(&c_, out_base, out_count); return *this; }
-	Config& set_out_pin(uint pin) { return set_out_pins(pin, 1); }
-	Config& set_out_pin(uint pin1, uint pin2) { CheckAdjacent(pin1, pin2); return set_out_pins(pin1, 2); }
-	Config& set_out_pin(uint pin1, uint pin2, uint pin3) { CheckAdjacent(pin1, pin2, pin3); return set_out_pins(pin1, 3); }
-	Config& set_out_pin(uint pin1, uint pin2, uint pin3, uint pin4) { CheckAdjacent(pin1, pin2, pin3, pin4); return set_out_pins(pin1, 4); }
+	template<typename... Pins>
+	Config& set_out_pin(uint pin1, Pins... pins) {
+		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
+		return set_out_pins(pin1, 1 + sizeof...(pins));
+	}
 public:
 	Config& set_set_pin_base(uint set_base) { ::sm_config_set_set_pin_base(&c_, set_base); return *this; }
 	Config& set_set_pin_count(uint set_count) { ::sm_config_set_set_pin_count(&c_, set_count); return *this; }
 	Config& set_set_pins(uint set_base, uint set_count) { ::sm_config_set_set_pins(&c_, set_base, set_count); return *this; }
-	Config& set_set_pin(uint pin) { return set_set_pins(pin, 1); }
-	Config& set_set_pin(uint pin1, uint pin2) { CheckAdjacent(pin1, pin2); return set_set_pins(pin1, 2); }
-	Config& set_set_pin(uint pin1, uint pin2, uint pin3) { CheckAdjacent(pin1, pin2, pin3); return set_set_pins(pin1, 3); }
-	Config& set_set_pin(uint pin1, uint pin2, uint pin3, uint pin4) { CheckAdjacent(pin1, pin2, pin3, pin4); return set_set_pins(pin1, 4); }
+	template<typename... Pins>
+	Config& set_set_pin(uint pin1, Pins... pins) {
+		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
+		return set_set_pins(pin1, 1 + sizeof...(pins));
+	}
 public:
 	Config& set_in_pin_base(uint in_base) { ::sm_config_set_in_pin_base(&c_, in_base); return *this; }
 	Config& set_in_pins(uint in_base) { ::sm_config_set_in_pins(&c_, in_base); return *this; }
-	Config& set_in_pin(uint pin) { return set_in_pins(pin); }
-	Config& set_in_pin(uint pin1, uint pin2) { CheckAdjacent(pin1, pin2); return set_in_pins(pin1); }
-	Config& set_in_pin(uint pin1, uint pin2, uint pin3) { CheckAdjacent(pin1, pin2, pin3); return set_in_pins(pin1); }
-	Config& set_in_pin(uint pin1, uint pin2, uint pin3, uint pin4) { CheckAdjacent(pin1, pin2, pin3, pin4); return set_in_pins(pin1); }
+	template<typename... Pins>
+	Config& set_in_pin(uint pin1, Pins... pins) {
+		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
+		return set_in_pins(pin1);
+	}
 public:
 	Config& set_sideset_pin_base(uint sideset_base) { ::sm_config_set_sideset_pin_base(&c_, sideset_base); return *this; }
 	Config& set_sideset_pins(uint sideset_base) { ::sm_config_set_sideset_pins(&c_, sideset_base); return *this; }
-	Config& set_sideset_pin(uint pin) { return set_sideset_pins(pin); }
-	Config& set_sideset_pin(uint pin1, uint pin2) { CheckAdjacent(pin1, pin2); return set_sideset_pins(pin1); }
-	Config& set_sideset_pin(uint pin1, uint pin2, uint pin3) { CheckAdjacent(pin1, pin2, pin3); return set_sideset_pins(pin1); }
-	Config& set_sideset_pin(uint pin1, uint pin2, uint pin3, uint pin4) { CheckAdjacent(pin1, pin2, pin3, pin4); return set_sideset_pins(pin1); }
+	template<typename... Pins>
+	Config& set_sideset_pin(uint pin1, Pins... pins) {
+		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
+		return set_sideset_pins(pin1);
+	}
 public:
 	Config& set_jmp_pin(uint pin) { ::sm_config_set_jmp_pin(&c_, pin); return *this; }
 public:
@@ -352,28 +363,32 @@ public:
 	bool is_claimed() const { return ::pio_sm_is_claimed(pio, sm); }
 public:
 	const StateMachine& set_out_pins(uint out_base, uint out_count) const { ::pio_sm_set_out_pins(pio, sm, out_base, out_count); return *this; }
-	const StateMachine& set_out_pin(uint pin) const { return set_out_pins(pin, 1); }
-	const StateMachine& set_out_pin(uint pin1, uint pin2) const { CheckAdjacent(pin1, pin2); return set_out_pins(pin1, 2); }
-	const StateMachine& set_out_pin(uint pin1, uint pin2, uint pin3) const { CheckAdjacent(pin1, pin2, pin3); return set_out_pins(pin1, 3); }
-	const StateMachine& set_out_pin(uint pin1, uint pin2, uint pin3, uint pin4) const { CheckAdjacent(pin1, pin2, pin3, pin4); return set_out_pins(pin1, 4); }
+	template<typename... Pins>
+	const StateMachine& set_out_pin(uint pin1, Pins... pins) const {
+		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
+		return set_out_pins(pin1, 1 + sizeof...(pins));
+	}
 public:
 	const StateMachine& set_set_pins(uint set_base, uint set_count) const { ::pio_sm_set_set_pins(pio, sm, set_base, set_count); return *this; }
-	const StateMachine& set_set_pin(uint pin) const { return set_set_pins(pin, 1); }
-	const StateMachine& set_set_pin(uint pin1, uint pin2) const { CheckAdjacent(pin1, pin2); return set_set_pins(pin1, 2); }
-	const StateMachine& set_set_pin(uint pin1, uint pin2, uint pin3) const { CheckAdjacent(pin1, pin2, pin3); return set_set_pins(pin1, 3); }
-	const StateMachine& set_set_pin(uint pin1, uint pin2, uint pin3, uint pin4) const { CheckAdjacent(pin1, pin2, pin3, pin4); return set_set_pins(pin1, 4); }
+	template<typename... Pins>
+	const StateMachine& set_set_pin(uint pin1, Pins... pins) const {
+		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
+		return set_set_pins(pin1, 1 + sizeof...(pins));
+	}
 public:
 	const StateMachine& set_in_pins(uint in_base) const { ::pio_sm_set_in_pins(pio, sm, in_base); return *this; }
-	const StateMachine& set_in_pin(uint pin) const { return set_in_pins(pin); }
-	const StateMachine& set_in_pin(uint pin1, uint pin2) const { CheckAdjacent(pin1, pin2); return set_in_pins(pin1); }
-	const StateMachine& set_in_pin(uint pin1, uint pin2, uint pin3) const { CheckAdjacent(pin1, pin2, pin3); return set_in_pins(pin1); }
-	const StateMachine& set_in_pin(uint pin1, uint pin2, uint pin3, uint pin4) const { CheckAdjacent(pin1, pin2, pin3, pin4); return set_in_pins(pin1); }
+	template<typename... Pins>
+	const StateMachine& set_in_pin(uint pin1, Pins... pins) const {
+		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
+		return set_in_pins(pin1);
+	}
 public:
 	const StateMachine& set_sideset_pins(uint sideset_base) const { ::pio_sm_set_sideset_pins(pio, sm, sideset_base); return *this; }
-	const StateMachine& set_sideset_pin(uint pin) const { return set_sideset_pins(pin); }
-	const StateMachine& set_sideset_pin(uint pin1, uint pin2) const { CheckAdjacent(pin1, pin2); return set_sideset_pins(pin1); }
-	const StateMachine& set_sideset_pin(uint pin1, uint pin2, uint pin3) const { CheckAdjacent(pin1, pin2, pin3); return set_sideset_pins(pin1); }
-	const StateMachine& set_sideset_pin(uint pin1, uint pin2, uint pin3, uint pin4) const { CheckAdjacent(pin1, pin2, pin3, pin4); return set_sideset_pins(pin1); }
+	template<typename... Pins>
+	const StateMachine& set_sideset_pin(uint pin1, Pins... pins) const {
+		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
+		return set_sideset_pins(pin1);
+	}
 public:
 	const StateMachine& set_jmp_pin(uint pin) const { ::pio_sm_set_jmp_pin(pio, sm, pin); return *this; }
 public:
@@ -396,14 +411,16 @@ public:
 	int set_pindirs_out(uint pins_base, uint pin_count) const { return ::pio_sm_set_consecutive_pindirs(pio, sm, pins_base, pin_count, true); }
 	int set_pindirs_in(uint pins_base, uint pin_count) const { return ::pio_sm_set_consecutive_pindirs(pio, sm, pins_base, pin_count, false); }
 	int set_pindir(uint pin, bool is_out) const { return set_pindirs(pin, 1, is_out); }
-	int set_pindir_out(uint pin) const { return set_pindirs(pin, 1, true); }
-	int set_pindir_out(uint pin1, uint pin2) const { CheckAdjacent(pin1, pin2); return set_pindirs(pin1, 2, true); }
-	int set_pindir_out(uint pin1, uint pin2, uint pin3) const { CheckAdjacent(pin1, pin2, pin3); return set_pindirs(pin1, 3, true); }
-	int set_pindir_out(uint pin1, uint pin2, uint pin3, uint pin4) const { CheckAdjacent(pin1, pin2, pin3, pin4); return set_pindirs(pin1, 4, true); }
-	int set_pindir_in(uint pin) const { return set_pindirs(pin, 1, false); }
-	int set_pindir_in(uint pin1, uint pin2) const { CheckAdjacent(pin1, pin2); return set_pindirs(pin1, 2, false); }
-	int set_pindir_in(uint pin1, uint pin2, uint pin3) const { CheckAdjacent(pin1, pin2, pin3); return set_pindirs(pin1, 3, false); }
-	int set_pindir_in(uint pin1, uint pin2, uint pin3, uint pin4) const { CheckAdjacent(pin1, pin2, pin3, pin4); return set_pindirs(pin1, 4, false); }
+	template<typename... Pins>
+	int set_pindir_out(uint pin1, Pins... pins) const {
+		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
+		return set_pindirs(pin1, 1 + sizeof...(pins), true);
+	}
+	template<typename... Pins>
+	int set_pindir_in(uint pin1, Pins... pins) const {
+		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
+		return set_pindirs(pin1, 1 + sizeof...(pins), false);
+	}
 public:
 	const StateMachine& set_pins(uint32_t pin_values) const { ::pio_sm_set_pins(pio, sm, pin_values); return *this; }
 	const StateMachine& set_pins_with_mask(uint32_t pin_values, uint32_t pin_mask) const { ::pio_sm_set_pins_with_mask(pio, sm, pin_values, pin_mask); return *this; }
