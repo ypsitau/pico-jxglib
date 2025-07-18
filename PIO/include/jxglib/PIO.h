@@ -28,6 +28,8 @@ inline void CheckAdjacent(uint pin1, uint pin2) { if (pin2 != pin1 + 1) ::panic(
 inline void CheckAdjacent(uint pin1, uint pin2, uint pin3) { if (pin3 != pin2 + 1 || pin2 != pin1 + 1) ::panic("pins must be adjacent\n"); }
 inline void CheckAdjacent(uint pin1, uint pin2, uint pin3, uint pin4) { if (pin4 != pin3 + 1 || pin3 != pin2 + 1 || pin2 != pin1 + 1) ::panic("pins must be adjacent\n"); }
 
+class Program;
+
 //------------------------------------------------------------------------------
 // PIO::Config
 //------------------------------------------------------------------------------
@@ -43,6 +45,8 @@ public:
 public:
 	operator pio_sm_config*() { return &c_; }
 	operator const pio_sm_config*() const { return &c_; }
+public:
+	void Configure(const Program& program, uint offset);
 public:
 	Config& set_out_pin_base(uint out_base) { ::sm_config_set_out_pin_base(&c_, out_base); return *this; }
 	Config& set_out_pin_count(uint out_count) { ::sm_config_set_out_pin_count(&c_, out_count); return *this; }
@@ -158,6 +162,8 @@ public:
 public:
 	void Reset();
 	const char* GetName() const { return name_; }
+	const Wrap& GetWrap() const { return wrap_; }
+	const SideSet& GetSideSet() const { return sideSet_; }
 	const pio_program_t& GetEntity() const { return program_; }
 	const pio_program_t* GetEntityPtr() const { return &program_; }
 	Program& AddInst(uint16_t inst);
@@ -168,7 +174,6 @@ public:
 	void AddVariableRef(const char* label, uint16_t addrRel);
 	const Variable* LookupVariable(const char* label) const;
 	Program& Complete();
-	void Configure(pio_sm_config* config, uint offset) const;
 public:
 	operator const pio_program_t&() const { return program_; }
 	//operator const pio_program_t*() const { return &program_; }

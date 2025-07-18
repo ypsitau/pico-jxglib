@@ -18,6 +18,15 @@ namespace PIO {
 //------------------------------------------------------------------------------
 // PIO::Config
 //------------------------------------------------------------------------------
+void Config::Configure(const Program& program, uint offset)
+{
+	const Program::Wrap& wrap = program.GetWrap();
+	const Program::SideSet& sideSet = program.GetSideSet();
+	::sm_config_set_sideset(&c_, sideSet.bit_count, sideSet.optional, sideSet.pindirs);
+	if (wrap.addrRel_wrapPlus > 0) {
+		::sm_config_set_wrap(&c_, offset + wrap.addrRel_target, offset + wrap.addrRel_wrapPlus - 1);
+	}
+}
 
 //------------------------------------------------------------------------------
 // PIO::StateMachine
@@ -29,7 +38,7 @@ StateMachine& StateMachine::SetResource(const Program& program, pio_t pio, uint 
 	offset = ::pio_add_program(pio, program.GetEntityPtr());
 	pProgram_ = &program;
 	pSmToShareProgram_ = nullptr;
-	GetProgram().Configure(config, offset);
+	config.Configure(GetProgram(), offset);
 	return *this;
 }
 
@@ -40,7 +49,7 @@ StateMachine& StateMachine::SetResource(StateMachine& smToShareProgram, pio_t pi
 	offset = smToShareProgram.offset;
 	pProgram_ = smToShareProgram.pProgram_;
 	pSmToShareProgram_ = &smToShareProgram;
-	GetProgram().Configure(config, offset);
+	config.Configure(GetProgram(), offset);
 	return *this;
 }
 
@@ -53,7 +62,7 @@ StateMachine& StateMachine::ClaimResource(const Program& program)
 		::panic("failed to claim free state machine and add program");
 	}
 	pio = pioClaimed;
-	GetProgram().Configure(config, offset);
+	config.Configure(GetProgram(), offset);
 	return *this;
 }
 
@@ -64,7 +73,7 @@ StateMachine& StateMachine::ClaimResource(StateMachine& smToShareProgram)
 	sm = ::pio_claim_unused_sm(pio, true);
 	pProgram_ = smToShareProgram.pProgram_;
 	pSmToShareProgram_ = &smToShareProgram;
-	GetProgram().Configure(config, offset);
+	config.Configure(GetProgram(), offset);
 	return *this;
 }
 
@@ -75,7 +84,7 @@ StateMachine& StateMachine::ClaimResource(uint gpio_base, uint gpio_count, bool 
 		::panic("failed to claim free state machine and add program for GPIO range");
 	}
 	pio = pioClaimed;
-	GetProgram().Configure(config, offset);
+	config.Configure(GetProgram(), offset);
 	return *this;
 }
 
@@ -189,15 +198,6 @@ Program& Program::Complete()
 	pVariableHead_.reset();
 	pVariableRefHead_.reset();
 	return *this;
-}
-
-void Program::Configure(pio_sm_config* config, uint offset) const
-{
-	::sm_config_set_sideset(config, sideSet_.bit_count, sideSet_.optional, sideSet_.pindirs);
-	if (wrap_.addrRel_wrapPlus > 0) {
-		::sm_config_set_wrap(config, offset + wrap_.addrRel_target, offset + wrap_.addrRel_wrapPlus - 1);
-		//::printf("wrap: %d %d\n", offset + wrap_.addrRel_target, offset + wrap_.addrRel_wrapPlus - 1);
-	}
 }
 
 Program& Program::side_set(int bit_count)
