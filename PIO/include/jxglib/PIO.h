@@ -347,6 +347,10 @@ public:
 	StateMachine& ClaimResource(uint gpio_base, uint gpio_count, bool set_gpio_base);
 	StateMachine& UnclaimResource();
 public:
+	const StateMachine& claim() const { ::pio_sm_claim(pio, sm); return *this; }
+	const StateMachine& unclaim() const { ::pio_sm_unclaim(pio, sm); return *this; }
+	bool is_claimed() const { return ::pio_sm_is_claimed(pio, sm); }
+public:
 	const StateMachine& set_out_pins(uint out_base, uint out_count) const { ::pio_sm_set_out_pins(pio, sm, out_base, out_count); return *this; }
 	const StateMachine& set_out_pin(uint pin) const { return set_out_pins(pin, 1); }
 	const StateMachine& set_out_pin(uint pin1, uint pin2) const { CheckAdjacent(pin1, pin2); return set_out_pins(pin1, 2); }
@@ -401,9 +405,14 @@ public:
 	int set_pindir_in(uint pin1, uint pin2, uint pin3) const { CheckAdjacent(pin1, pin2, pin3); return set_pindirs(pin1, 3, false); }
 	int set_pindir_in(uint pin1, uint pin2, uint pin3, uint pin4) const { CheckAdjacent(pin1, pin2, pin3, pin4); return set_pindirs(pin1, 4, false); }
 public:
+	const StateMachine& set_pins(uint32_t pin_values) const { ::pio_sm_set_pins(pio, sm, pin_values); return *this; }
+	const StateMachine& set_pins_with_mask(uint32_t pin_values, uint32_t pin_mask) const { ::pio_sm_set_pins_with_mask(pio, sm, pin_values, pin_mask); return *this; }
+	const StateMachine& set_pindirs_with_mask(uint32_t pin_dirs, uint32_t pin_mask) const { ::pio_sm_set_pindirs_with_mask(pio, sm, pin_dirs, pin_mask); return *this; }
+public:
 	uint get_dreq(bool is_tx) const { return ::pio_get_dreq(pio, sm, is_tx); }
 	uint get_dreq_tx() const { return ::pio_get_dreq(pio, sm, true); }
 	uint get_dreq_rx() const { return ::pio_get_dreq(pio, sm, false); }
+public:
 	uint8_t get_pc() const { return  ::pio_sm_get_pc(pio, sm); }
 public:
 	bool is_rx_fifo_full() const { return ::pio_sm_is_rx_fifo_full(pio, sm); }
@@ -421,14 +430,6 @@ public:
 	uint32_t get() const { return ::pio_sm_get(pio, sm); }
 	const StateMachine& put_blocking(uint32_t data) const { ::pio_sm_put_blocking(pio, sm, data); return *this; }
 	uint32_t get_blocking() const { return ::pio_sm_get_blocking(pio, sm); }
-public:
-	const StateMachine& set_pins(uint32_t pin_values) const { ::pio_sm_set_pins(pio, sm, pin_values); return *this; }
-	const StateMachine& set_pins_with_mask(uint32_t pin_values, uint32_t pin_mask) const { ::pio_sm_set_pins_with_mask(pio, sm, pin_values, pin_mask); return *this; }
-	const StateMachine& set_pindirs_with_mask(uint32_t pin_dirs, uint32_t pin_mask) const { ::pio_sm_set_pindirs_with_mask(pio, sm, pin_dirs, pin_mask); return *this; }
-public:
-	const StateMachine& claim() const { ::pio_sm_claim(pio, sm); return *this; }
-	const StateMachine& unclaim() const { ::pio_sm_unclaim(pio, sm); return *this; }
-	bool is_claimed() const { return ::pio_sm_is_claimed(pio, sm); }
 };
 
 }

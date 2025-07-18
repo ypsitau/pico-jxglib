@@ -26,9 +26,9 @@ int main()
 		.jmp("x--",		"loop2")	// Delay for (x + 1) cycles
 	.wrap()
 	.end();
-	PIO::StateMachine sm1(program);
-	PIO::StateMachine sm2(program);
-	sm1.ClaimResource();
+	PIO::StateMachine sm1;
+	PIO::StateMachine sm2;
+	sm1.ClaimResource(program);
 	sm2.ClaimResource(sm1);
 	sm1.config.set_set_pin(gpioLED1);
 	sm2.config.set_set_pin(gpioLED2);
