@@ -28,35 +28,35 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-Examples C CXX ASM)
+project(test-Program-Insts C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-Examples test-Examples.cpp )
+add_executable(test-Program-Insts test-Program-Insts.cpp )
 
-pico_set_program_name(test-Examples "test-Examples")
-pico_set_program_version(test-Examples "0.1")
+pico_set_program_name(test-Program-Insts "test-Program-Insts")
+pico_set_program_version(test-Program-Insts "0.1")
 
 # Generate PIO header
-pico_generate_pio_header(test-Examples ${CMAKE_CURRENT_LIST_DIR}/test-Examples.pio)
+pico_generate_pio_header(test-Program-Insts ${CMAKE_CURRENT_LIST_DIR}/test-Program-Insts.pio)
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-Examples 1)
-pico_enable_stdio_usb(test-Examples 0)
+pico_enable_stdio_uart(test-Program-Insts 1)
+pico_enable_stdio_usb(test-Program-Insts 0)
 
 # Add the standard library to the build
-target_link_libraries(test-Examples
+target_link_libraries(test-Program-Insts
 	pico_stdlib
 	jxglib_PIO)
 
 # Add the standard include files to the build
-target_include_directories(test-Examples PRIVATE
+target_include_directories(test-Program-Insts PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-Examples)
+pico_add_extra_outputs(test-Program-Insts)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
