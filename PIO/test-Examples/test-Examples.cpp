@@ -252,6 +252,49 @@ int main()
 		.end();
 		CheckProgram(program, i2c_program);
 	} while (0);
+	do {
+		PIO::Program program;
+		program
+		.program("differential_manchester_tx")
+		.side_set(1).opt()
+		.L("start")									// public start:
+		.L("initial_high")
+			.out("x", 1)							// Start of bit period: always assert transition
+			.jmp("!x", "high_0")	.side(1)	[6]	// Test the data bit we just shifted out of OSR
+		.L("high_1")
+			.nop()
+			.jmp("initial_high")	.side(0)	[6]	// For `1` bits, also transition in the middle
+		.L("high_0")
+			.jmp("initial_low")					[7]	// Otherwise, the line is stable in the middle
+		.L("initial_low")
+			.out("x", 1)							// Always shift 1 bit from OSR to X so we can
+			.jmp("!x", "low_0")		.side(0)	[6]	// branch on it. Autopull refills OSR for us.
+		.L("low_1")
+			.nop()
+			.jmp("initial_low")		.side(1)	[6]	// If there are two transitions, return to
+		.L("low_0")
+			.jmp("initial_high")				[7]	// the initial line state is flipped!
+		.end();
+		CheckProgram(program, differential_manchester_tx_program);
+	} while (0);
+	do {
+		PIO::Program program;
+		program
+		.program("addition")
+			.pull()									// Pull first operand
+			.mov("x", "~osr")						// Store complement of first operand in x
+			.pull()									// Pull second operand
+			.mov("y", "osr")						// Store second operand in y
+			.jmp("test")							// this loop is equivalent to the following C code:
+		.L("incr")									// while (y--)
+			.jmp("x--", "test")						//     x--;
+		.L("test")									// This has the effect of subtracting y from x, eventually.
+			.jmp("y--", "incr")
+			.mov("isr", "~x")						// Store result (complement of x) in ISR
+			.push()									// Push result to FIFO
+		.end();
+		CheckProgram(program, addition_program);
+	} while (0);
 	::printf("done\n");
 	for (;;) ::tight_loop_contents();
 }
