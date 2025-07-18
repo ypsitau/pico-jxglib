@@ -53,6 +53,16 @@ int main()
 	do {
 		PIO::Program program;
 		program
+			.program("clocked_input")
+			.wait(0, "pin", 1)
+			.wait(1, "pin", 1)
+			.in("pins", 1)
+		.end();
+		CheckProgram(program, clocked_input_program);
+	} while (0);
+	do {
+		PIO::Program program;
+		program
 		.program("differential_manchester_tx")
 		.side_set(1).opt()
 		.L("start")									// public start:
