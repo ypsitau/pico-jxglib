@@ -16,8 +16,8 @@ int main()
 			.mov("isr", "osr")
 			.push()
 		.end();
-		PIO::StateMachine sm(program);
-		sm.ClaimResource().init();
+		PIO::StateMachine sm;
+		sm.ClaimResource(program).init();
 		sm.set_enabled();
 		uint32_t num;
 		::printf("program: %s\n", program.GetName());
@@ -33,8 +33,8 @@ int main()
 			.out("isr", 32)
 			.push()
 		.end();
-		PIO::StateMachine sm(program);
-		sm.ClaimResource().init();
+		PIO::StateMachine sm;
+		sm.ClaimResource(program).init();
 		sm.set_enabled();
 		uint32_t num;
 		::printf("program: %s\n", program.GetName());
@@ -51,8 +51,8 @@ int main()
 			.mov("isr", "::osr")
 			.push()
 		.end();
-		PIO::StateMachine sm(program);
-		sm.ClaimResource().init();
+		PIO::StateMachine sm;
+		sm.ClaimResource(program).init();
 		sm.set_enabled();
 		uint32_t num;
 		::printf("program: %s\n", program.GetName());
@@ -71,8 +71,8 @@ int main()
 			.mov("isr", "!osr")
 			.push()
 		.end();
-		PIO::StateMachine sm(program);
-		sm.ClaimResource().init();
+		PIO::StateMachine sm;
+		sm.ClaimResource(program).init();
 		sm.set_enabled();
 		uint32_t num;
 		::printf("program: %s\n", program.GetName());
@@ -91,8 +91,8 @@ int main()
 			.in("null", 6)	// 6 bits shift right
 			.push()
 		.end();
-		PIO::StateMachine sm(program);
-		sm.ClaimResource().init();
+		PIO::StateMachine sm;
+		sm.ClaimResource(program).init();
 		sm.set_enabled();
 		uint32_t num;
 		::printf("program: %s\n", program.GetName());
@@ -111,9 +111,9 @@ int main()
 			.in("null", 6)	// 6 bits shift left
 			.push()
 		.end();
-		PIO::StateMachine sm(program);
+		PIO::StateMachine sm;
 		sm.config.set_in_shift_left();
-		sm.ClaimResource().init();
+		sm.ClaimResource(program).init();
 		sm.set_enabled();
 		uint32_t num;
 		::printf("program: %s\n", program.GetName());
@@ -133,9 +133,9 @@ int main()
 			.in("null", 6)	// 6 bits shift left
 			.push()
 		.end();
-		PIO::StateMachine sm(program);
+		PIO::StateMachine sm;
 		sm.config.set_in_shift_left();
-		sm.ClaimResource().init();
+		sm.ClaimResource(program).init();
 		sm.set_enabled();
 		uint32_t num;
 		::printf("program: %s\n", program.GetName());

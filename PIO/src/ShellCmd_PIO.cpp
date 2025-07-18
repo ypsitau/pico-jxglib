@@ -9,8 +9,6 @@
 
 using namespace jxglib;
 
-void PrintStateMachineStatus(Printable& tout, pio_t pio, uint sm);
-
 ShellCmd(pio, "controls PIO pins")
 {
 	static const Arg::Opt optTbl[] = {
@@ -24,17 +22,5 @@ ShellCmd(pio, "controls PIO pins")
 		tout.Printf("Sub Commands:\n");
 		return Result::Success;
 	}
-	for (uint iPIO = 0; iPIO < 2; ++iPIO) {
-		pio_t pio = PIO::Block::get_instance(iPIO);
-		for (uint smIdx = 0; smIdx < 4; ++smIdx) {
-			PrintStateMachineStatus(tout, pio, smIdx);
-		}
-	}
 	return Result::Success;
-}
-
-void PrintStateMachineStatus(Printable& tout, pio_t pio, uint smIdx)
-{
-	PIO::StateMachine sm(PIO::Program::None, pio, smIdx);
-	tout.Printf("PIO%d:SM%d:\n", sm.pio.get_index(), smIdx);
 }

@@ -22,55 +22,60 @@ namespace PIO {
 //------------------------------------------------------------------------------
 // PIO::StateMachine
 //------------------------------------------------------------------------------
-StateMachine& StateMachine::SetResource(pio_t pio, uint sm)
+StateMachine& StateMachine::SetResource(const Program& program, pio_t pio, uint sm)
 {
 	this->pio = pio;
 	this->sm = sm;
-	offset = ::pio_add_program(pio, program.GetProgramPtr());
-	program.Configure(config, offset);
+	offset = ::pio_add_program(pio, program.GetEntityPtr());
+	pProgram_ = &program;
+	pSmToShareProgram_ = nullptr;
+	GetProgram().Configure(config, offset);
 	return *this;
 }
 
-StateMachine& StateMachine::SetResource(pio_t pio, uint sm, StateMachine& smToShareProgram)
+StateMachine& StateMachine::SetResource(StateMachine& smToShareProgram, pio_t pio, uint sm)
 {
 	this->pio = pio;
 	this->sm = sm;
 	offset = smToShareProgram.offset;
+	pProgram_ = smToShareProgram.pProgram_;
 	pSmToShareProgram_ = &smToShareProgram;
-	program.Configure(config, offset);
+	GetProgram().Configure(config, offset);
 	return *this;
 }
 
-StateMachine& StateMachine::ClaimResource()
+StateMachine& StateMachine::ClaimResource(const Program& program)
 {
 	pio_t pioClaimed;
-	if (!::pio_claim_free_sm_and_add_program(program.GetProgramPtr(), &pioClaimed, &sm, &offset)) {
+	pProgram_ = &program;
+	pSmToShareProgram_ = nullptr;
+	if (!::pio_claim_free_sm_and_add_program(pProgram_->GetEntityPtr(), &pioClaimed, &sm, &offset)) {
 		::panic("failed to claim free state machine and add program");
 	}
 	pio = pioClaimed;
-	program.Configure(config, offset);
+	GetProgram().Configure(config, offset);
 	return *this;
 }
 
 StateMachine& StateMachine::ClaimResource(StateMachine& smToShareProgram)
 {
-	if (&program != &smToShareProgram.program) ::panic("same program must be shared");
 	pio = smToShareProgram.pio;
 	offset = smToShareProgram.offset;
 	sm = ::pio_claim_unused_sm(pio, true);
+	pProgram_ = smToShareProgram.pProgram_;
 	pSmToShareProgram_ = &smToShareProgram;
-	program.Configure(config, offset);
+	GetProgram().Configure(config, offset);
 	return *this;
 }
 
 StateMachine& StateMachine::ClaimResource(uint gpio_base, uint gpio_count, bool set_gpio_base)
 {
 	pio_t pioClaimed;
-	if (!::pio_claim_free_sm_and_add_program_for_gpio_range(program.GetProgramPtr(), &pioClaimed, &sm, &offset, gpio_base, gpio_count, set_gpio_base)) {
+	if (!::pio_claim_free_sm_and_add_program_for_gpio_range(GetProgram().GetEntityPtr(), &pioClaimed, &sm, &offset, gpio_base, gpio_count, set_gpio_base)) {
 		::panic("failed to claim free state machine and add program for GPIO range");
 	}
 	pio = pioClaimed;
-	program.Configure(config, offset);
+	GetProgram().Configure(config, offset);
 	return *this;
 }
 
@@ -79,7 +84,7 @@ StateMachine& StateMachine::UnclaimResource()
 	if (pSmToShareProgram_) {
 		::pio_sm_unclaim(pio, sm);
 	} else {
-		::pio_remove_program_and_unclaim_sm(program.GetProgramPtr(), pio, sm, offset);
+		::pio_remove_program_and_unclaim_sm(GetProgram().GetEntityPtr(), pio, sm, offset);
 	}
 	Invalidate();
 	return *this;

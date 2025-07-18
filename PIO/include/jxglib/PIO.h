@@ -158,8 +158,8 @@ public:
 public:
 	void Reset();
 	const char* GetName() const { return name_; }
-	const pio_program_t& GetProgram() const { return program_; }
-	const pio_program_t* GetProgramPtr() const { return &program_; }
+	const pio_program_t& GetEntity() const { return program_; }
+	const pio_program_t* GetEntityPtr() const { return &program_; }
 	Program& AddInst(uint16_t inst);
 	Program& L(const char* label, uint* pAddrRel = nullptr);
 public:
@@ -317,27 +317,27 @@ public:
 //------------------------------------------------------------------------------
 class StateMachine {
 public:
-	const Program& program;
 	Block pio;
 	uint sm;
 	uint offset;
 	Config config;
 private:
+	const Program* pProgram_;
 	StateMachine* pSmToShareProgram_;
 public:
-	StateMachine(const Program& program, pio_t pio = nullptr, uint sm = static_cast<uint>(-1), uint offset = 0) :
-		program{program}, pio{pio}, sm{sm}, offset{offset}, pSmToShareProgram_{nullptr} {}
-	StateMachine(const StateMachine& stateMachine) : program{stateMachine.program}, pio{stateMachine.pio}, sm{stateMachine.sm},
-		offset{stateMachine.offset}, config{stateMachine.config}, pSmToShareProgram_{stateMachine.pSmToShareProgram_} {}
+	StateMachine() : pio{nullptr}, sm{static_cast<uint>(-1)}, offset{0}, pProgram_{&Program::None}, pSmToShareProgram_{nullptr} {}
+	StateMachine(const StateMachine& stateMachine) : pio{stateMachine.pio}, sm{stateMachine.sm},
+		offset{stateMachine.offset}, config{stateMachine.config}, pProgram_{stateMachine.pProgram_}, pSmToShareProgram_{stateMachine.pSmToShareProgram_} {}
 public:
 	operator uint() { return sm; }
 public:
 	bool IsValid() const { return !!pio && sm != static_cast<uint>(-1); }
 	void Invalidate() { pio = nullptr, sm = static_cast<uint>(-1), offset = 0; }
+	const Program& GetProgram() const { return *pProgram_; }
 public:
-	StateMachine& SetResource(pio_t pio, uint sm);
-	StateMachine& SetResource(pio_t pio, uint sm, StateMachine& smToShareProgram);
-	StateMachine& ClaimResource();
+	StateMachine& SetResource(const Program& program, pio_t pio, uint sm);
+	StateMachine& SetResource(StateMachine& smToShareProgram, pio_t pio, uint sm);
+	StateMachine& ClaimResource(const Program& program);
 	StateMachine& ClaimResource(StateMachine& smToShareProgram);
 	StateMachine& ClaimResource(uint gpio_base, uint gpio_count, bool set_gpio_base);
 	StateMachine& UnclaimResource();
