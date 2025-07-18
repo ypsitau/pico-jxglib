@@ -124,6 +124,134 @@ int main()
 		.end();
 		CheckProgram(program, pwm_program);
 	} while (0);
+	do {
+		PIO::Program program;
+		program
+		.program("quadrature_encoder")
+		.origin(0)
+		// 00 state
+			.jmp("update")							// read 00
+			.jmp("decrement")						// read 01
+			.jmp("increment")						// read 10
+			.jmp("update")							// read 11
+		// 01 state
+			.jmp("increment")						// read 00
+			.jmp("update")							// read 01
+			.jmp("update")							// read 10
+			.jmp("decrement")						// read 11
+		// 10 state
+			.jmp("decrement")						// read 00
+			.jmp("update")							// read 01
+			.jmp("update")							// read 10
+			.jmp("increment")						// read 11
+		// 11 state
+			.jmp("update")							// read 00
+			.jmp("increment")						// read 01
+		.L("decrement")
+			.jmp("y--", "update")					// read 10
+		.wrap_target()
+		.L("update")
+			.mov("isr", "y")						// read 11
+			.push().noblock()
+		.L("sample_pins")
+			.out("isr", 2)
+			.in("pins", 2)
+			.mov("osr", "isr")
+			.mov("pc", "isr")
+		.L("increment")
+			.mov("y", "~y")
+			.jmp("y--", "increment_cont")
+		.L("increment_cont")
+			.mov("y", "~y")
+		.wrap()										// the .wrap here avoids one jump instruction and saves a cycle too
+		.end();
+		CheckProgram(program, quadrature_encoder_program);
+	} while (0);
+	do {
+		PIO::Program program;
+		program
+		.program("quadrature_encoder_substep")
+		.origin(0)
+			.in("x", 32)
+			.in("y", 32)
+		.L("update_state")
+			.out("isr", 2)
+			.in("pins", 2)
+			.mov("osr", "~isr")
+			.mov("pc", "osr")
+		.L("decrement")
+			.jmp("y--", "decrement_cont")
+		.L("decrement_cont")
+			.set("x", 1)
+			.mov("x", "::x")
+		.L("check_fifo")
+		.wrap_target()
+			.jmp("x--", "check_fifo_cont")
+		.L("check_fifo_cont")
+			.mov("pc", "~status")
+		.L("increment")
+			.mov("y", "~y")
+			.jmp("y--", "increment_cont")
+		.L("increment_cont")
+			.mov("y", "~y")
+			.set("x", 0)
+		.wrap()
+		.L("invalid")
+			.jmp("update_state")
+		// Jump table follows
+			.jmp("invalid")
+			.jmp("increment")					[0]
+			.jmp("decrement")					[1]
+			.jmp("check_fifo")					[4]
+			.jmp("decrement")					[1]
+			.jmp("invalid")
+			.jmp("check_fifo")					[4]
+			.jmp("increment")					[0]
+			.jmp("increment")					[0]
+			.jmp("check_fifo")					[4]
+			.jmp("invalid")
+			.jmp("decrement")					[1]
+			.jmp("check_fifo")					[4]
+			.jmp("decrement")					[1]
+			.jmp("increment")					[0]
+			.jmp("update_state")				[1]
+		.end();
+		CheckProgram(program, quadrature_encoder_substep_program);
+	} while (0);
+	do {
+		PIO::Program program;
+		program
+		.program("i2c")
+		.side_set(1).opt().pindirs()
+		.L("do_nack")
+			.jmp("y--", "entry_point")				// Continue if NAK was expected
+			.irq("wait", 0).rel()					// Otherwise stop, ask for help
+		.L("do_byte")
+			.set("x", 7)							// Loop 8 times
+		.L("bitloop")
+			.out("pindirs", 1)				[7]		// Serialise write data (all-ones if reading)
+			.nop()					.side(1)[2]		// SCL rising edge
+			.wait(1, "pin", 1)				[4]		// Allow clock to be stretched
+			.in("pins", 1)					[7]		// Sample read data in middle of SCL pulse
+			.jmp("x--", "bitloop")	.side(0)[7]		// SCL falling edge
+		// Handle ACK pulse
+			.out("pindirs", 1)				[7]		// On reads, we provide the ACK.
+			.nop()					.side(1)[7]		// SCL rising edge
+			.wait(1, "pin", 1)				[7]		// Allow clock to be stretched
+			.jmp("pin", "do_nack")	.side(0)[2]		// Test SDA for ACK/NAK, fall through if ACK
+		.L("entry_point")							// public entry_point:
+		.wrap_target()
+			.out("x", 6)							// Unpack Instr count
+			.out("y", 1)							// Unpack the NAK ignore bit
+			.jmp("!x", "do_byte")					// Instr == 0, this is a data record.
+			.out("null", 32)						// Instr > 0, remainder of this OSR is invalid
+		.L("do_exec")
+			.out("exec", 16)						// Execute one instruction per FIFO word
+			.jmp("x--", "do_exec")					// Repeat n + 1 times
+		.wrap()
+		.end();
+		CheckProgram(program, i2c_program);
+	} while (0);
 	::printf("done\n");
 	for (;;) ::tight_loop_contents();
 }
