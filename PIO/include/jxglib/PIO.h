@@ -11,12 +11,12 @@
 #include "hardware/clocks.h"
 #include "jxglib/Common.h"
 
+#define PIOVAR_program(progName)				progName##_program
+#define PIOVAR_get_default_config(progName)		progName##_program_get_default_config
 #define PIOVAR_wrap_target(progName) 			progName##_wrap_target
 #define PIOVAR_wrap(progName)					progName##_wrap
 #define PIOVAR_pio_version(progName)			progName##_pio_version
 #define PIOVAR_offset(progName, label)			progName##_offset_##label
-#define PIOVAR_program(progName)				progName##_program
-#define PIOVAR_get_default_config(progName)		progName##_program_get_default_config
 
 using pio_t = PIO;
 
@@ -159,11 +159,12 @@ private:
 	const char* name_;
 	uint16_t instTbl_[PIO_INSTRUCTION_COUNT];
 	uint16_t addrRelCur_;
-	Directive directive_;
-	bool sideSpecifiedFlag_;
 	Wrap wrap_;
 	SideSet sideSet_;
 	pio_program_t program_;
+private:
+	Directive directive_;
+	bool sideSpecifiedFlag_;
 	std::unique_ptr<Variable> pVariableHead_;
 	std::unique_ptr<Variable> pVariableRefHead_;
 public:

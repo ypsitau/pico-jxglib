@@ -58,7 +58,7 @@ StateMachine& StateMachine::ClaimResource(const Program& program)
 	pio_t pioClaimed;
 	pProgram_ = &program;
 	pSmToShareProgram_ = nullptr;
-	if (!::pio_claim_free_sm_and_add_program(pProgram_->GetEntityPtr(), &pioClaimed, &sm, &offset)) {
+	if (!::pio_claim_free_sm_and_add_program(GetProgram().GetEntityPtr(), &pioClaimed, &sm, &offset)) {
 		::panic("failed to claim free state machine and add program");
 	}
 	pio = pioClaimed;
@@ -108,7 +108,7 @@ StateMachine& StateMachine::UnclaimResource()
 //------------------------------------------------------------------------------
 const Program Program::None;
 
-Program::Program() : name_{""}, addrRelCur_{0}, directive_{Directive::None}, sideSpecifiedFlag_{false}, wrap_{0, 0}, sideSet_{0, false, false}
+Program::Program() : name_{""}, addrRelCur_{0}, wrap_{0, 0}, sideSet_{0, false, false}, directive_{Directive::None}, sideSpecifiedFlag_{false}
 {
 	for (int i = 0; i < count_of(instTbl_); ++i) instTbl_[i] = 0x0000;
 	program_.instructions = instTbl_;
@@ -124,8 +124,6 @@ void Program::Reset()
 {
 	name_ = "";
 	addrRelCur_ = 0;
-	directive_ = Directive::None;
-	sideSpecifiedFlag_ = false;
 	wrap_ = {0, 0};
 	sideSet_ = {0, false, false};
 	for (int i = 0; i < count_of(instTbl_); ++i) instTbl_[i] = 0x0000;
@@ -136,6 +134,8 @@ void Program::Reset()
 #if PICO_PIO_VERSION > 0
 	program_.used_gpio_ranges = 0; // bitmap with one bit per 16 pins
 #endif
+	directive_ = Directive::None;
+	sideSpecifiedFlag_ = false;
 	pVariableHead_.reset();
 	pVariableRefHead_.reset();
 }
