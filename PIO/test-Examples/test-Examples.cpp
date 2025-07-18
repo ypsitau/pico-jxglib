@@ -34,6 +34,25 @@ int main()
 	do {
 		PIO::Program program;
 		program
+		.program("blink")
+			.pull().block()							// pull block
+			.out("y", 32)							// out y, 32
+		.wrap_target()
+			.mov("x", "y")							// mov x, y
+			.set("pins", 1)							// set pins, 1   ; Turn LED on
+		.L("lp1")
+			.jmp("x--", "lp1")						// jmp x-- lp1   ; Delay for (x + 1) cycles, x is a 32 bit number
+			.mov("x", "y")							// mov x, y
+			.set("pins", 0)							// set pins, 0   ; Turn LED off
+		.L("lp2")
+			.jmp("x--", "lp2")						// jmp x-- lp2   ; Delay for the same number of cycles again
+		.wrap()										// .wrap             ; Blink forever!
+		.end();
+		CheckProgram(program, blink_program);
+	} while (0);
+	do {
+		PIO::Program program;
+		program
 		.program("differential_manchester_tx")
 		.side_set(1).opt()
 		.L("start")									// public start:
@@ -109,6 +128,113 @@ int main()
 		.wrap()
 		.end();
 		CheckProgram(program, manchester_tx_program);
+	} while (0);
+	do {
+		const uint NUM_CYCLES = 21;				// how many carrier cycles to generate
+		const uint BURST_IRQ = 7;				// which IRQ should trigger a carrier burst
+		const uint TICKS_PER_LOOP = 4;			// the number of instructions in the loop (for timing)
+		PIO::Program program;
+		program
+		.program("nec_carrier_burst")
+		.wrap_target()
+			.set("x", NUM_CYCLES - 1)				// initialise the loop counter
+			.wait(1, "irq", BURST_IRQ)				// wait for the IRQ then clear it
+		.L("cycle_loop")
+			.set("pins", 1)							// set the pin high (1 cycle)
+			.set("pins", 0)					[1]		// set the pin low (2 cycles)
+			.jmp("x--", "cycle_loop")				// (1 more cycle)
+		.wrap()
+		.end();
+		CheckProgram(program, nec_carrier_burst_program);
+	} while (0);
+	do {
+		const uint BURST_IRQ = 7;				// the IRQ used to trigger a carrier burst
+		const uint NUM_INITIAL_BURSTS = 16;	// how many bursts to transmit for a 'sync burst'
+		PIO::Program program;
+		program
+		.program("nec_carrier_control")
+		.wrap_target()
+			.pull()									// fetch a data word from the transmit FIFO into the
+													// output shift register, blocking if the FIFO is empty
+			.set("x", NUM_INITIAL_BURSTS - 1)		// send a sync burst (9ms)
+		.L("long_burst")
+			.irq(BURST_IRQ)
+			.jmp("x--", "long_burst")
+			.nop()							[15]	// send a 4.5ms space
+			.irq(BURST_IRQ)					[1]		// send a 562.5us burst to begin the first data bit
+		.L("data_bit")
+			.out("x", 1)							// shift the least-significant bit from the OSR
+			.jmp("!x", "burst")						// send a short delay for a '0' bit
+			.nop()							[3]		// send an additional delay for a '1' bit
+		.L("burst")
+			.irq(BURST_IRQ)							// send a 562.5us burst to end the data bit
+			.jmp("!osre", "data_bit")				// continue sending bits until the OSR is empty
+		.wrap()										// fetch another data word from the FIFO
+		.end();
+		CheckProgram(program, nec_carrier_control_program);
+	} while (0);
+	do {
+		const uint BURST_LOOP_COUNTER = 30;	// the detection threshold for a 'frame sync' burst
+		const uint BIT_SAMPLE_DELAY = 15;		// how long to wait after the end of the burst before sampling
+		PIO::Program program;
+		program
+		.program("nec_receive")
+		.wrap_target()
+		.L("next_burst")
+			.set("x", BURST_LOOP_COUNTER)
+			.wait(0, "pin", 0)						// wait for the next burst to start
+		.L("burst_loop")
+			.jmp("pin", "data_bit")					// the burst ended before the counter expired
+			.jmp("x--", "burst_loop")				// wait for the burst to end
+													// the counter expired - this is a sync burst
+			.mov("isr", "null")						// reset the Input Shift Register
+			.wait(1, "pin", 0)						// wait for the sync burst to finish
+			.jmp("next_burst")						// wait for the first data bit
+		.L("data_bit")
+			.nop()					[BIT_SAMPLE_DELAY - 1]	// wait for 1.5 burst periods before sampling the bit value
+			.in("pins", 1)							// if the next burst has started then detect a '0' (short gap)
+													// otherwise detect a '1' (long gap)
+													// after 32 bits the ISR will autopush to the receive FIFO
+		.wrap()
+		.end();
+		CheckProgram(program, nec_receive_program);
+	} while (0);
+	do {
+		uint reset_bus = 0, fetch_bit = 0;
+		PIO::Program program;
+		program
+		.program("onewire")
+		.side_set(1).pindirs()
+		.L("reset_bus", &reset_bus)						// PUBLIC reset_bus:
+			.set("x", 28)			.side(1)	[15]	// pull bus low                          16
+		.L("loop_a")
+			.jmp("x--", "loop_a")	.side(1)	[15]	//                                  29 x 16
+			.set("x", 8)			.side(0)	[6]		// release bus                            7
+		.L("loop_b")
+			.jmp("x--", "loop_b")	.side(0)	[6]		//                                    9 x 7
+			.mov("isr", "pins")		.side(0)			// read all pins to ISR (avoids autopush) 1
+			.push()					.side(0)			// push result manually                   1
+			.set("x", 24)			.side(0)	[7]		//                                        8
+		.L("loop_c")
+			.jmp("x--", "loop_c")	.side(0)	[15]	//                                  25 x 16
+		.wrap_target()
+		.L("fetch_bit", &fetch_bit)						// PUBLIC fetch_bit:
+			.out("x", 1)			.side(0)			// shift next bit from OSR (autopull)     1
+			.jmp("!x", "send_0")	.side(1)	[5]		// pull bus low, branch if sending '0'    6
+		.L("send_1")									// send a '1' bit
+			.set("x", 2)			.side(0)	[8]		// release bus, wait for slave response   9
+			.in("pins", 1)			.side(0)	[4]		// read bus, shift bit to ISR (autopush)  5
+		.L("loop_e")
+			.jmp("x--", "loop_e")	.side(0)	[15]	//                                   3 x 16
+			.jmp("fetch_bit")		.side(0)			//                                        1
+		.L("send_0")									// send a '0' bit
+			.set("x", 2)			.side(1)	[5]		// continue pulling bus low               6
+		.L("loop_d")
+			.jmp("x--", "loop_d")	.side(1)	[15]	//                                   3 x 16
+			.in("null", 1)			.side(0)	[8]		// release bus, shift 0 to ISR (autopush) 9
+		.wrap()
+		.end();
+		CheckProgram(program, onewire_program);
 	} while (0);
 	do {
 		PIO::Program program;
