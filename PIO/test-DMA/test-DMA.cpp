@@ -5,6 +5,17 @@
 
 using namespace jxglib;
 
+PIO::StateMachine sm;
+
+TickableEntry(MonitorSM)
+{
+	if (!sm.is_rx_fifo_empty()) {
+		uint32_t timeStamp = sm.get();
+		uint32_t bits = sm.get();
+		::printf("%08x: %08x\n", timeStamp, bits);
+	}
+}
+
 int main()
 {
 	::stdio_init_all();
@@ -30,12 +41,11 @@ int main()
 		.jmp("x!=y", "do_report")	// if pins state changed, report it
 		.jmp("loop")		[2]
 	.L("do_report")
-		.push()						// push current pins state
-		.in("osr", 32)				// push osr (counter)
+		.in("osr", 32)				// auto-push osr (counter)
+		.in("x", 32)				// auto-push x (current pins state)
 		.mov("y", "x")				// save current pins state in y
 	.wrap()
 	.end();
-	PIO::StateMachine sm;
 	sm.config.set_in_shift_left(true, 32);	// shift left, autopush enabled, push threshold 32
 	sm.config.set_in_pins(gpio);			// set input pins base
 	sm.ClaimResource(program).init();
@@ -43,12 +53,5 @@ int main()
 	//-------------------------------------------------------------------------
 	LABOPlatform laboPlatform;
 	laboPlatform.AttachStdio().Initialize();
-	for (;;) {
-		if (!sm.is_rx_fifo_empty()) {
-			uint32_t data = sm.get();
-			uint32_t timeStamp = sm.get();
-			::printf("%08x: %08x\n", timeStamp, data);
-		}
-		Tickable::Tick();
-	}
+	for (;;) Tickable::Tick();
 }
