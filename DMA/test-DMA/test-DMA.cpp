@@ -514,11 +514,12 @@ int main()
 {
 	::stdio_init_all();
 	::printf("----\n");
-	//test_MemoryToMemory();
-	//test_MemoryToPeripheral();
-	//test_MemoryToPeripheral_Chain();
-	//test_MemoryToMemory_SnifferCalcCRC();
-	//test_MemoryToPeripheral_SnifferCalcCRC();
-	test_Interrupt();
-	//test_Benchmark();
+	test_MemoryToMemory();
+	test_MemoryToPeripheral();
+	test_MemoryToPeripheral_Chain();
+	test_MemoryToMemory_SnifferCalcCRC();
+	test_MemoryToPeripheral_SnifferCalcCRC();
+	//test_Interrupt();
+	test_Benchmark();
+	for (;;) ::tight_loop_contents();
 }
