@@ -223,7 +223,7 @@ void TFT_LCD::DispatcherRGB565::DrawImageFast(int x, int y, const Image& image, 
 			.set_write_increment(false)
 			.set_dreq(::spi_get_dreq(spi, true))	// see RP2040 Datasheet 2.5.3.1 System DREQ Table
 			.set_chain_to(channel)					// disable chain_to by setting it to the own channel
-			.set_ring_to_read(0)
+			.set_ring_read(0)
 			.set_bswap(image.GetFormat().IsRGB565BE())
 			.set_irq_quiet(false)
 			.set_sniff_enable(false)
