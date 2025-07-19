@@ -240,6 +240,10 @@ public:
 	}
 	bool get_raw_interrupt_status() const { return !!(dma_hw->intr & (1u << channel_)); }
 public:
+	const volatile void* get_read_addr() const { return reinterpret_cast<const volatile void*>(dma_channel_hw_addr(channel_)->read_addr); }
+	const volatile void* get_write_addr() const { return reinterpret_cast<const volatile void*>(dma_channel_hw_addr(channel_)->write_addr); }
+	uint32_t get_transfer_count() const { return dma_channel_hw_addr(channel_)->transfer_count; }
+public:
 	Channel& SetSharedIRQHandler(uint irq_index, IRQHandler& irqHandler, uint8_t order_priority = PICO_SHARED_IRQ_HANDLER_DEFAULT_ORDER_PRIORITY) {
 		pIRQHandler = &irqHandler;
 		RegisterSharedIRQHandlerStub(irq_index, order_priority);
