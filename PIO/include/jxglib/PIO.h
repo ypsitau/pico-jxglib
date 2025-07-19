@@ -18,8 +18,6 @@
 #define PIOVAR_pio_version(progName)			progName##_pio_version
 #define PIOVAR_offset(progName, label)			progName##_offset_##label
 
-using pio_t = PIO;
-
 namespace jxglib {
 
 namespace PIO {
@@ -233,7 +231,7 @@ public:
 private:
 	static uint pio_encode_wait_jmppin(bool polarity, uint pin_offset) {
 		valid_params_if(PIO_INSTRUCTIONS, pin_offset <= 3);
-		return _pio_encode_instr_and_args(pio_instr_bits_wait, 3u | (polarity ? 4u : 0u), pin_offset);
+		return _pio_encode_instr_and_args(pio_instr_bits_wait, 3u | (polarity? 4u : 0u), pin_offset);
 	}
 public:
 	// Assembler-style instructions
@@ -288,51 +286,47 @@ public:
 // PIO::Block
 //------------------------------------------------------------------------------
 class Block {
-private:
-	pio_t pio_;
 public:
-	Block() : pio_{nullptr} {}
-	Block(pio_t pio) : pio_{pio} {}
-	Block(const Block& pioIf) : pio_{pioIf.pio_} {}
+	pio_hw_t* pio;
 public:
-	operator pio_t() const { return pio_; }
-	pio_t operator->() { return pio_; }
+	Block(pio_hw_t* pio = nullptr) : pio{pio} {}
+	Block(const Block& block) : pio{block.pio} {}
 public:
-	void Invalidate() { pio_ = nullptr; }
-	bool IsValid() const { return !!pio_; }
+	void Invalidate() { pio = nullptr; }
+	bool IsValid() const { return !!pio; }
 public:
-	const Block& gpio_init(uint pin) const { ::pio_gpio_init(pio_, pin); return *this; }
-	uint get_gpio_base() const { return ::pio_get_gpio_base(pio_); }
-	uint get_index() const { return ::pio_get_index(pio_); }
-	uint get_funcsel() const { return ::pio_get_funcsel(pio_); }
-	int set_gpio_base(uint gpio_base) const { return ::pio_set_gpio_base(pio_, gpio_base); }
+	const Block& gpio_init(uint pin) const { ::pio_gpio_init(pio, pin); return *this; }
+	uint get_gpio_base() const { return ::pio_get_gpio_base(pio); }
+	uint get_index() const { return ::pio_get_index(pio); }
+	uint get_funcsel() const { return ::pio_get_funcsel(pio); }
+	int set_gpio_base(uint gpio_base) const { return ::pio_set_gpio_base(pio, gpio_base); }
 public:
-	bool can_add_program(const pio_program_t* program) const { return ::pio_can_add_program(pio_, program); }
-	bool can_add_program_at_offset(const pio_program_t* program, uint offset) const { return ::pio_can_add_program_at_offset(pio_, program, offset); }
-	int add_program(const pio_program_t* program) const { return ::pio_add_program(pio_, program); }
-	int add_program_at_offset(const pio_program_t* program, uint offset) const { return ::pio_add_program_at_offset(pio_, program, offset); }
-	const Block& remove_program(const pio_program_t* program, uint loaded_offset) const { ::pio_remove_program(pio_, program, loaded_offset); return *this; }
-	const Block& clear_instruction_memory() const { ::pio_clear_instruction_memory(pio_); return *this; }
+	bool can_add_program(const pio_program_t* program) const { return ::pio_can_add_program(pio, program); }
+	bool can_add_program_at_offset(const pio_program_t* program, uint offset) const { return ::pio_can_add_program_at_offset(pio, program, offset); }
+	int add_program(const pio_program_t* program) const { return ::pio_add_program(pio, program); }
+	int add_program_at_offset(const pio_program_t* program, uint offset) const { return ::pio_add_program_at_offset(pio, program, offset); }
+	const Block& remove_program(const pio_program_t* program, uint loaded_offset) const { ::pio_remove_program(pio, program, loaded_offset); return *this; }
+	const Block& clear_instruction_memory() const { ::pio_clear_instruction_memory(pio); return *this; }
 public:
-	const Block& set_sm_mask_enabled(uint32_t mask, bool enabled) const { ::pio_set_sm_mask_enabled(pio_, mask, enabled); return *this; }
-	const Block& restart_sm_mask(uint32_t mask) const { ::pio_restart_sm_mask(pio_, mask); return *this; }
-	const Block& clkdiv_restart_sm_mask(uint32_t mask) const { ::pio_clkdiv_restart_sm_mask(pio_, mask); return *this; }
-	const Block& enable_sm_mask_in_sync(uint32_t mask) const { ::pio_enable_sm_mask_in_sync(pio_, mask); return *this; }
+	const Block& set_sm_mask_enabled(uint32_t mask, bool enabled) const { ::pio_set_sm_mask_enabled(pio, mask, enabled); return *this; }
+	const Block& restart_sm_mask(uint32_t mask) const { ::pio_restart_sm_mask(pio, mask); return *this; }
+	const Block& clkdiv_restart_sm_mask(uint32_t mask) const { ::pio_clkdiv_restart_sm_mask(pio, mask); return *this; }
+	const Block& enable_sm_mask_in_sync(uint32_t mask) const { ::pio_enable_sm_mask_in_sync(pio, mask); return *this; }
 public:
-	const Block& set_irq0_source_enabled(pio_interrupt_source_t source, bool enabled) const { ::pio_set_irq0_source_enabled(pio_, source, enabled); return *this; }
-	const Block& set_irq1_source_enabled(pio_interrupt_source_t source, bool enabled) const { ::pio_set_irq1_source_enabled(pio_, source, enabled); return *this; }
-	const Block& set_irq0_source_mask_enabled(uint32_t source_mask, bool enabled) const { ::pio_set_irq0_source_mask_enabled(pio_, source_mask, enabled); return *this; }
-	const Block& set_irq1_source_mask_enabled(uint32_t source_mask, bool enabled) const { ::pio_set_irq1_source_mask_enabled(pio_, source_mask, enabled); return *this; }
-	const Block& set_irqn_source_enabled(uint irq_index, pio_interrupt_source_t source, bool enabled) const { ::pio_set_irqn_source_enabled(pio_, irq_index, source, enabled); return *this; }
-	const Block& set_irqn_source_mask_enabled(uint irq_index, uint32_t source_mask, bool enabled) const { ::pio_set_irqn_source_mask_enabled(pio_, irq_index, source_mask, enabled); return *this; }
-	bool interrupt_get(uint pio_interrupt_num) const { return ::pio_interrupt_get(pio_, pio_interrupt_num); }
-	const Block& interrupt_clear(uint pio_interrupt_num) const { ::pio_interrupt_clear(pio_, pio_interrupt_num); return *this; }
-	int get_irq_num(uint irqn) const { return ::pio_get_irq_num(pio_, irqn); }
+	const Block& set_irq0_source_enabled(pio_interrupt_source_t source, bool enabled) const { ::pio_set_irq0_source_enabled(pio, source, enabled); return *this; }
+	const Block& set_irq1_source_enabled(pio_interrupt_source_t source, bool enabled) const { ::pio_set_irq1_source_enabled(pio, source, enabled); return *this; }
+	const Block& set_irq0_source_mask_enabled(uint32_t source_mask, bool enabled) const { ::pio_set_irq0_source_mask_enabled(pio, source_mask, enabled); return *this; }
+	const Block& set_irq1_source_mask_enabled(uint32_t source_mask, bool enabled) const { ::pio_set_irq1_source_mask_enabled(pio, source_mask, enabled); return *this; }
+	const Block& set_irqn_source_enabled(uint irq_index, pio_interrupt_source_t source, bool enabled) const { ::pio_set_irqn_source_enabled(pio, irq_index, source, enabled); return *this; }
+	const Block& set_irqn_source_mask_enabled(uint irq_index, uint32_t source_mask, bool enabled) const { ::pio_set_irqn_source_mask_enabled(pio, irq_index, source_mask, enabled); return *this; }
+	bool interrupt_get(uint pio_interrupt_num) const { return ::pio_interrupt_get(pio, pio_interrupt_num); }
+	const Block& interrupt_clear(uint pio_interrupt_num) const { ::pio_interrupt_clear(pio, pio_interrupt_num); return *this; }
+	int get_irq_num(uint irqn) const { return ::pio_get_irq_num(pio, irqn); }
 public:
-	const Block& claim_sm_mask(uint sm_mask) const { ::pio_claim_sm_mask(pio_, sm_mask); return *this; }
-	int claim_unused_sm(bool required) const { return ::pio_claim_unused_sm(pio_, required); }
+	const Block& claim_sm_mask(uint sm_mask) const { ::pio_claim_sm_mask(pio, sm_mask); return *this; }
+	int claim_unused_sm(bool required) const { return ::pio_claim_unused_sm(pio, required); }
 public:	
-	static pio_t get_instance(uint instance) { return ::pio_get_instance(instance); }
+	static pio_hw_t* get_instance(uint instance) { return ::pio_get_instance(instance); }
 };
 
 //------------------------------------------------------------------------------
@@ -340,7 +334,7 @@ public:
 //------------------------------------------------------------------------------
 class StateMachine {
 public:
-	Block pio;
+	Block block;
 	uint sm;
 	uint offset;
 	Config config;
@@ -348,75 +342,75 @@ private:
 	const Program* pProgram_;
 	StateMachine* pSmToShareProgram_;
 public:
-	StateMachine() : pio{nullptr}, sm{static_cast<uint>(-1)}, offset{0}, pProgram_{&Program::None}, pSmToShareProgram_{nullptr} {}
-	StateMachine(const StateMachine& stateMachine) : pio{stateMachine.pio}, sm{stateMachine.sm},
+	StateMachine() : sm{static_cast<uint>(-1)}, offset{0}, pProgram_{&Program::None}, pSmToShareProgram_{nullptr} {}
+	StateMachine(const StateMachine& stateMachine) : block{stateMachine.block}, sm{stateMachine.sm},
 		offset{stateMachine.offset}, config{stateMachine.config}, pProgram_{stateMachine.pProgram_}, pSmToShareProgram_{stateMachine.pSmToShareProgram_} {}
 public:
 	operator uint() { return sm; }
 public:
-	bool IsValid() const { return !!pio && sm != static_cast<uint>(-1); }
-	void Invalidate() { pio = nullptr, sm = static_cast<uint>(-1), offset = 0; }
+	bool IsValid() const { return !!block.pio && sm != static_cast<uint>(-1); }
+	void Invalidate() { block.pio = nullptr, sm = static_cast<uint>(-1), offset = 0; }
 	const Program& GetProgram() const { return *pProgram_; }
 public:
-	StateMachine& SetResource(const Program& program, pio_t pio, uint sm);
-	StateMachine& SetResource(StateMachine& smToShareProgram, pio_t pio, uint sm);
+	StateMachine& SetResource(const Program& program, pio_hw_t* pio, uint sm);
+	StateMachine& SetResource(StateMachine& smToShareProgram, pio_hw_t* pio, uint sm);
 	StateMachine& ClaimResource(const Program& program);
 	StateMachine& ClaimResource(StateMachine& smToShareProgram);
 	StateMachine& ClaimResource(uint gpio_base, uint gpio_count, bool set_gpio_base);
 	StateMachine& UnclaimResource();
 public:
-	const StateMachine& claim() const { ::pio_sm_claim(pio, sm); return *this; }
-	const StateMachine& unclaim() const { ::pio_sm_unclaim(pio, sm); return *this; }
-	bool is_claimed() const { return ::pio_sm_is_claimed(pio, sm); }
+	const StateMachine& claim() const { ::pio_sm_claim(block.pio, sm); return *this; }
+	const StateMachine& unclaim() const { ::pio_sm_unclaim(block.pio, sm); return *this; }
+	bool is_claimed() const { return ::pio_sm_is_claimed(block.pio, sm); }
 public:
-	const StateMachine& set_out_pins(uint out_base, uint out_count) const { ::pio_sm_set_out_pins(pio, sm, out_base, out_count); return *this; }
+	const StateMachine& set_out_pins(uint out_base, uint out_count) const { ::pio_sm_set_out_pins(block.pio, sm, out_base, out_count); return *this; }
 	template<typename... Pins>
 	const StateMachine& set_out_pin(uint pin1, Pins... pins) const {
 		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
 		return set_out_pins(pin1, 1 + sizeof...(pins));
 	}
 public:
-	const StateMachine& set_set_pins(uint set_base, uint set_count) const { ::pio_sm_set_set_pins(pio, sm, set_base, set_count); return *this; }
+	const StateMachine& set_set_pins(uint set_base, uint set_count) const { ::pio_sm_set_set_pins(block.pio, sm, set_base, set_count); return *this; }
 	template<typename... Pins>
 	const StateMachine& set_set_pin(uint pin1, Pins... pins) const {
 		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
 		return set_set_pins(pin1, 1 + sizeof...(pins));
 	}
 public:
-	const StateMachine& set_in_pins(uint in_base) const { ::pio_sm_set_in_pins(pio, sm, in_base); return *this; }
+	const StateMachine& set_in_pins(uint in_base) const { ::pio_sm_set_in_pins(block.pio, sm, in_base); return *this; }
 	template<typename... Pins>
 	const StateMachine& set_in_pin(uint pin1, Pins... pins) const {
 		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
 		return set_in_pins(pin1);
 	}
 public:
-	const StateMachine& set_sideset_pins(uint sideset_base) const { ::pio_sm_set_sideset_pins(pio, sm, sideset_base); return *this; }
+	const StateMachine& set_sideset_pins(uint sideset_base) const { ::pio_sm_set_sideset_pins(block.pio, sm, sideset_base); return *this; }
 	template<typename... Pins>
 	const StateMachine& set_sideset_pin(uint pin1, Pins... pins) const {
 		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
 		return set_sideset_pins(pin1);
 	}
 public:
-	const StateMachine& set_jmp_pin(uint pin) const { ::pio_sm_set_jmp_pin(pio, sm, pin); return *this; }
+	const StateMachine& set_jmp_pin(uint pin) const { ::pio_sm_set_jmp_pin(block.pio, sm, pin); return *this; }
 public:
-	const StateMachine& set_clkdiv_int_frac(uint16_t div_int, uint8_t div_frac) const { ::pio_sm_set_clkdiv_int_frac(pio, sm, div_int, div_frac); return *this; }
-	const StateMachine& set_clkdiv(float div) const { ::pio_sm_set_clkdiv(pio, sm, div); return *this; }
-	const StateMachine& set_wrap(uint wrap_target, uint wrap) const { ::pio_sm_set_wrap(pio, sm, wrap_target, wrap); return *this; }
+	const StateMachine& set_clkdiv_int_frac(uint16_t div_int, uint8_t div_frac) const { ::pio_sm_set_clkdiv_int_frac(block.pio, sm, div_int, div_frac); return *this; }
+	const StateMachine& set_clkdiv(float div) const { ::pio_sm_set_clkdiv(block.pio, sm, div); return *this; }
+	const StateMachine& set_wrap(uint wrap_target, uint wrap) const { ::pio_sm_set_wrap(block.pio, sm, wrap_target, wrap); return *this; }
 public:
-	int init(uint initial_pc, const pio_sm_config* config) { return ::pio_sm_init(pio, sm, initial_pc, config); }
-	int init() { return ::pio_sm_init(pio, sm, offset + GetProgram().GetRelAddrEntry(), config); }
-	int set_config(const pio_sm_config *config) const { return ::pio_sm_set_config(pio, sm, config); }
-	const StateMachine& set_enabled(bool enabled = true) const { ::pio_sm_set_enabled(pio, sm, enabled); return *this; }
-	const StateMachine& restart() const { ::pio_sm_restart(pio, sm); return *this; }
-	const StateMachine& clkdiv_restart() const { ::pio_sm_clkdiv_restart(pio, sm); return *this; }
-	const StateMachine& exec(uint instr) const { ::pio_sm_exec(pio, sm, instr); return *this; }
-	bool is_exec_stalled() const { return ::pio_sm_is_exec_stalled(pio, sm); }
-	const StateMachine& exec_wait_blocking(uint instr) const { ::pio_sm_exec_wait_blocking(pio, sm, instr); return *this; }
+	int init(uint initial_pc, const pio_sm_config* config) { return ::pio_sm_init(block.pio, sm, initial_pc, config); }
+	int init() { return ::pio_sm_init(block.pio, sm, offset + GetProgram().GetRelAddrEntry(), config); }
+	int set_config(const pio_sm_config *config) const { return ::pio_sm_set_config(block.pio, sm, config); }
+	const StateMachine& set_enabled(bool enabled = true) const { ::pio_sm_set_enabled(block.pio, sm, enabled); return *this; }
+	const StateMachine& restart() const { ::pio_sm_restart(block.pio, sm); return *this; }
+	const StateMachine& clkdiv_restart() const { ::pio_sm_clkdiv_restart(block.pio, sm); return *this; }
+	const StateMachine& exec(uint instr) const { ::pio_sm_exec(block.pio, sm, instr); return *this; }
+	bool is_exec_stalled() const { return ::pio_sm_is_exec_stalled(block.pio, sm); }
+	const StateMachine& exec_wait_blocking(uint instr) const { ::pio_sm_exec_wait_blocking(block.pio, sm, instr); return *this; }
 public:
-	int set_consecutive_pindirs(uint pins_base, uint pin_count, bool is_out) const { return ::pio_sm_set_consecutive_pindirs(pio, sm, pins_base, pin_count, is_out); }
-	int set_pindirs(uint pins_base, uint pin_count, bool is_out) const { return ::pio_sm_set_consecutive_pindirs(pio, sm, pins_base, pin_count, is_out); }
-	int set_pindirs_out(uint pins_base, uint pin_count) const { return ::pio_sm_set_consecutive_pindirs(pio, sm, pins_base, pin_count, true); }
-	int set_pindirs_in(uint pins_base, uint pin_count) const { return ::pio_sm_set_consecutive_pindirs(pio, sm, pins_base, pin_count, false); }
+	int set_consecutive_pindirs(uint pins_base, uint pin_count, bool is_out) const { return ::pio_sm_set_consecutive_pindirs(block.pio, sm, pins_base, pin_count, is_out); }
+	int set_pindirs(uint pins_base, uint pin_count, bool is_out) const { return ::pio_sm_set_consecutive_pindirs(block.pio, sm, pins_base, pin_count, is_out); }
+	int set_pindirs_out(uint pins_base, uint pin_count) const { return ::pio_sm_set_consecutive_pindirs(block.pio, sm, pins_base, pin_count, true); }
+	int set_pindirs_in(uint pins_base, uint pin_count) const { return ::pio_sm_set_consecutive_pindirs(block.pio, sm, pins_base, pin_count, false); }
 	int set_pindir(uint pin, bool is_out) const { return set_pindirs(pin, 1, is_out); }
 	template<typename... Pins>
 	int set_pindir_out(uint pin1, Pins... pins) const {
@@ -429,31 +423,32 @@ public:
 		return set_pindirs(pin1, 1 + sizeof...(pins), false);
 	}
 public:
-	const StateMachine& set_pins(uint32_t pin_values) const { ::pio_sm_set_pins(pio, sm, pin_values); return *this; }
-	const StateMachine& set_pins_with_mask(uint32_t pin_values, uint32_t pin_mask) const { ::pio_sm_set_pins_with_mask(pio, sm, pin_values, pin_mask); return *this; }
-	const StateMachine& set_pindirs_with_mask(uint32_t pin_dirs, uint32_t pin_mask) const { ::pio_sm_set_pindirs_with_mask(pio, sm, pin_dirs, pin_mask); return *this; }
+	const StateMachine& set_pins(uint32_t pin_values) const { ::pio_sm_set_pins(block.pio, sm, pin_values); return *this; }
+	const StateMachine& set_pins_with_mask(uint32_t pin_values, uint32_t pin_mask) const { ::pio_sm_set_pins_with_mask(block.pio, sm, pin_values, pin_mask); return *this; }
+	const StateMachine& set_pindirs_with_mask(uint32_t pin_dirs, uint32_t pin_mask) const { ::pio_sm_set_pindirs_with_mask(block.pio, sm, pin_dirs, pin_mask); return *this; }
 public:
-	uint get_dreq(bool is_tx) const { return ::pio_get_dreq(pio, sm, is_tx); }
-	uint get_dreq_tx() const { return ::pio_get_dreq(pio, sm, true); }
-	uint get_dreq_rx() const { return ::pio_get_dreq(pio, sm, false); }
+	uint get_dreq(bool is_tx) const { return ::pio_get_dreq(block.pio, sm, is_tx); }
+	uint get_dreq_tx() const { return ::pio_get_dreq(block.pio, sm, true); }
+	uint get_dreq_rx() const { return ::pio_get_dreq(block.pio, sm, false); }
+	//io_wo_32 get_txf() const { return block.pio->txf[sm]; }
 public:
-	uint8_t get_pc() const { return  ::pio_sm_get_pc(pio, sm); }
+	uint8_t get_pc() const { return  ::pio_sm_get_pc(block.pio, sm); }
 public:
-	bool is_rx_fifo_full() const { return ::pio_sm_is_rx_fifo_full(pio, sm); }
-	bool is_rx_fifo_empty() const { return ::pio_sm_is_rx_fifo_empty(pio, sm); }
-	uint get_rx_fifo_level() const { return ::pio_sm_get_rx_fifo_level(pio, sm); }
-	bool is_tx_fifo_full() const { return ::pio_sm_is_tx_fifo_full(pio, sm); }
-	bool is_tx_fifo_empty() const { return ::pio_sm_is_tx_fifo_empty(pio, sm); }
-	uint get_tx_fifo_level() const { return ::pio_sm_get_tx_fifo_level(pio, sm); }
-	const StateMachine& drain_tx_fifo() const { ::pio_sm_drain_tx_fifo(pio, sm); return *this; }
-	const StateMachine& clear_fifos() const { ::pio_sm_clear_fifos(pio, sm); return *this; }
+	bool is_rx_fifo_full() const { return ::pio_sm_is_rx_fifo_full(block.pio, sm); }
+	bool is_rx_fifo_empty() const { return ::pio_sm_is_rx_fifo_empty(block.pio, sm); }
+	uint get_rx_fifo_level() const { return ::pio_sm_get_rx_fifo_level(block.pio, sm); }
+	bool is_tx_fifo_full() const { return ::pio_sm_is_tx_fifo_full(block.pio, sm); }
+	bool is_tx_fifo_empty() const { return ::pio_sm_is_tx_fifo_empty(block.pio, sm); }
+	uint get_tx_fifo_level() const { return ::pio_sm_get_tx_fifo_level(block.pio, sm); }
+	const StateMachine& drain_tx_fifo() const { ::pio_sm_drain_tx_fifo(block.pio, sm); return *this; }
+	const StateMachine& clear_fifos() const { ::pio_sm_clear_fifos(block.pio, sm); return *this; }
 	pio_interrupt_source_t get_tx_fifo_not_full_interrupt_source() { return ::pio_get_tx_fifo_not_full_interrupt_source(sm); }
 	pio_interrupt_source_t get_rx_fifo_not_empty_interrupt_source() { return ::pio_get_rx_fifo_not_empty_interrupt_source(sm); }
 public:
-	const StateMachine& put(uint32_t data) const { ::pio_sm_put(pio, sm, data); return *this; }
-	uint32_t get() const { return ::pio_sm_get(pio, sm); }
-	const StateMachine& put_blocking(uint32_t data) const { ::pio_sm_put_blocking(pio, sm, data); return *this; }
-	uint32_t get_blocking() const { return ::pio_sm_get_blocking(pio, sm); }
+	const StateMachine& put(uint32_t data) const { ::pio_sm_put(block.pio, sm, data); return *this; }
+	uint32_t get() const { return ::pio_sm_get(block.pio, sm); }
+	const StateMachine& put_blocking(uint32_t data) const { ::pio_sm_put_blocking(block.pio, sm, data); return *this; }
+	uint32_t get_blocking() const { return ::pio_sm_get_blocking(block.pio, sm); }
 };
 
 }
