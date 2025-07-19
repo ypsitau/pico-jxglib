@@ -430,7 +430,8 @@ public:
 	uint get_dreq(bool is_tx) const { return ::pio_get_dreq(block.pio, sm, is_tx); }
 	uint get_dreq_tx() const { return ::pio_get_dreq(block.pio, sm, true); }
 	uint get_dreq_rx() const { return ::pio_get_dreq(block.pio, sm, false); }
-	//io_wo_32 get_txf() const { return block.pio->txf[sm]; }
+	io_wo_32 get_txf() const { return block.pio->txf[sm]; }
+	io_ro_32 get_rxf() const { return block.pio->rxf[sm]; }
 public:
 	uint8_t get_pc() const { return  ::pio_sm_get_pc(block.pio, sm); }
 public:
