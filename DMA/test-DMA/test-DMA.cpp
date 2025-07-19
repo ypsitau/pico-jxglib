@@ -45,7 +45,7 @@ void test_MemoryToMemory()
 		.set_write_increment(true)
 		.set_dreq(DREQ_FORCE) // see RP2040 Datasheet 2.5.3.1 System DREQ Table
 		.set_chain_to(channel) // disable by setting chain_to to itself
-		.set_ring_to_read(0)
+		.set_ring_read(0)
 		.set_bswap(false)
 		.set_irq_quiet(false)
 		.set_sniff_enable(false)
@@ -72,7 +72,7 @@ void test_MemoryToPeripheral()
 		.set_write_increment(false)
 		.set_dreq(::uart_get_dreq(uart_default, true)) // set DREQ of uart_default's tx
 		.set_chain_to(channel) // disable by setting chain_to to itself
-		.set_ring_to_read(0)
+		.set_ring_read(0)
 		.set_bswap(false)
 		.set_irq_quiet(false)
 		.set_sniff_enable(false)
@@ -124,8 +124,8 @@ void test_MemoryToPeripheral_Chain()
 			.set_read_increment(true)
 			.set_write_increment(true)
 			.set_dreq(DREQ_FORCE)
-			.set_chain_to(channelCtrl) // disable by setting chain_to to itself
-			.set_ring_to_write(3) // Wrap round by 8 (= 1 << 3) bytes
+			.set_chain_to(channelCtrl)	// disable by setting chain_to to itself
+			.set_ring_write(3)			// Wrap round by 8 (= 1 << 3) bytes
 			.set_bswap(false)
 			.set_irq_quiet(false)
 			.set_sniff_enable(false)
@@ -149,7 +149,7 @@ void test_MemoryToPeripheral_Chain()
 			.set_write_increment(false)
 			.set_dreq(::uart_get_dreq(uart_default, true))
 			.set_chain_to(channelCtrl)
-			.set_ring_to_read(0)
+			.set_ring_read(0)
 			.set_bswap(false)
 			// In QUIET mode, the channel does not generate IRQs at the end of every transfer block.
 			// Instead, an IRQ is raised when NULL is written to a trigger register, indicating the
@@ -196,7 +196,7 @@ void test_MemoryToMemory_SnifferCalcCRC()
 		.set_write_increment(true)
 		.set_dreq(DREQ_FORCE)		// see RP2040 Datasheet 2.5.3.1 System DREQ Table
 		.set_chain_to(channel)		// disable by setting chain_to to itself
-		.set_ring_to_read(0)
+		.set_ring_read(0)
 		.set_bswap(false)
 		.set_irq_quiet(false)
 		.set_sniff_enable(true)		// enable sniff hardware
@@ -231,7 +231,7 @@ void test_MemoryToPeripheral_SnifferCalcCRC()
 		.set_write_increment(false)
 		.set_dreq(::uart_get_dreq(uart_default, true)) // set DREQ of uart_default's tx
 		.set_chain_to(channel) // disable by setting chain_to to itself
-		.set_ring_to_read(0)
+		.set_ring_read(0)
 		.set_bswap(false)
 		.set_irq_quiet(false)
 		.set_sniff_enable(true) // enable sniff
@@ -277,7 +277,7 @@ void test_Interrupt()
 			.set_write_increment(true)
 			.set_dreq(DREQ_FORCE) // see RP2040 Datasheet 2.5.3.1 System DREQ Table
 			.set_chain_to(channel) // disable by setting chain_to to itself
-			.set_ring_to_read(0)
+			.set_ring_read(0)
 			.set_bswap(false)
 			.set_irq_quiet(false)
 			.set_sniff_enable(false)
@@ -335,7 +335,7 @@ void test_Benchmark()
 				.set_write_increment(true)
 				.set_dreq(DREQ_FORCE) // see RP2040 Datasheet 2.5.3.1 System DREQ Table
 				.set_chain_to(channel) // disable by setting chain_to to itself
-				.set_ring_to_read(0)
+				.set_ring_read(0)
 				.set_bswap(false)
 				.set_irq_quiet(false)
 				.set_sniff_enable(false)
@@ -357,7 +357,7 @@ void test_Benchmark()
 				.set_write_increment(true)
 				.set_dreq(DREQ_FORCE) // see RP2040 Datasheet 2.5.3.1 System DREQ Table
 				.set_chain_to(channel) // disable by setting chain_to to itself
-				.set_ring_to_read(0)
+				.set_ring_read(0)
 				.set_bswap(false)
 				.set_irq_quiet(false)
 				.set_sniff_enable(false)
@@ -381,7 +381,7 @@ void test_Benchmark()
 				.set_write_increment(true)
 				.set_dreq(DREQ_FORCE) // see RP2040 Datasheet 2.5.3.1 System DREQ Table
 				.set_chain_to(channel) // disable by setting chain_to to itself
-				.set_ring_to_read(0)
+				.set_ring_read(0)
 				.set_bswap(false)
 				.set_irq_quiet(false)
 				.set_sniff_enable(false)
@@ -403,7 +403,7 @@ void test_Benchmark()
 				.set_write_increment(true)
 				.set_dreq(DREQ_FORCE) // see RP2040 Datasheet 2.5.3.1 System DREQ Table
 				.set_chain_to(channel) // disable by setting chain_to to itself
-				.set_ring_to_read(0)
+				.set_ring_read(0)
 				.set_bswap(false)
 				.set_irq_quiet(false)
 				.set_sniff_enable(false)
@@ -427,7 +427,7 @@ void test_Benchmark()
 				.set_write_increment(true)
 				.set_dreq(DREQ_FORCE) // see RP2040 Datasheet 2.5.3.1 System DREQ Table
 				.set_chain_to(channel) // disable by setting chain_to to itself
-				.set_ring_to_read(0)
+				.set_ring_read(0)
 				.set_bswap(false)
 				.set_irq_quiet(false)
 				.set_sniff_enable(false)
@@ -449,7 +449,7 @@ void test_Benchmark()
 				.set_write_increment(true)
 				.set_dreq(DREQ_FORCE) // see RP2040 Datasheet 2.5.3.1 System DREQ Table
 				.set_chain_to(channel) // disable by setting chain_to to itself
-				.set_ring_to_read(0)
+				.set_ring_read(0)
 				.set_bswap(false)
 				.set_irq_quiet(false)
 				.set_sniff_enable(false)
