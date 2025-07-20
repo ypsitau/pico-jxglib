@@ -88,6 +88,49 @@ void test_MemoryToPeripheral()
 	channel.unclaim();
 }
 
+void test_PeripheralToMemory()
+{
+	::printf("\ntest_PeripheralToMemory\n");
+	PIO::Program program;
+	program
+	.program("test_PeripheralToMemory")
+	.entry()
+	.pio_version(0)
+		.jmp("x--", "next")
+	.L("next")
+		.mov("isr", "~x")
+		.push()
+	.end();
+	PIO::StateMachine sm;
+	sm.set_program(program).init().set_enabled();
+	DMA::Channel& channel = *DMA::claim_unused_channel();
+	DMA::ChannelConfig config;
+	uint32_t dst[32];
+	config.set_enable(true)
+		.set_transfer_data_size(DMA_SIZE_32)
+		.set_read_increment(false)
+		.set_write_increment(true)
+		.set_dreq(sm.get_dreq_rx()) // set DREQ of StateMachine's rx
+		.set_chain_to(channel)		// disable by setting chain_to to itself
+		.set_ring_read(0)
+		.set_bswap(false)
+		.set_irq_quiet(false)
+		.set_sniff_enable(false)
+		.set_high_priority(false);
+	::printf("Transferred by DMA#%d: ", static_cast<uint>(channel));
+	channel.set_config(config)
+		.set_read_addr(sm.get_rxf())
+		.set_write_addr(dst)
+		.set_trans_count_trig(count_of(dst))
+		.wait_for_finish_blocking();
+	::printf("\n");
+	for (uint i = 0; i < count_of(dst); i++) {
+		::printf("%08x ", dst[i]);
+		if ((i & 7) == 7) ::printf("\n");
+	}
+	channel.unclaim();
+}
+
 void test_MemoryToPeripheral_Chain()
 {
 	::printf("\ntest_MemoryToPeripheral_Chain\n");
@@ -511,57 +554,13 @@ void test_Benchmark()
 	::free(dst);
 }
 
-void test_PeriphetalToMemory()
-{
-	::printf("\ntest_PeripheralToMemory\n");
-	DMA::Channel& channel = *DMA::claim_unused_channel();
-	DMA::ChannelConfig config;
-	uint32_t dst[32];
-	PIO::Program program;
-	program
-	.program("test_PeripheralToMemory")
-	.entry()
-	.pio_version(0)
-		.jmp("x--", "next")
-	.L("next")
-		.mov("isr", "~x")
-		.push()
-	.end();
-	PIO::StateMachine sm;
-	sm.set_program(program).init().set_enabled();
-	config.set_enable(true)
-		.set_transfer_data_size(DMA_SIZE_32)
-		.set_read_increment(false)
-		.set_write_increment(true)
-		.set_dreq(sm.get_dreq_rx()) // set DREQ of sm's rx
-		.set_chain_to(channel) // disable by setting chain_to to itself
-		.set_ring_read(0)
-		.set_bswap(false)
-		.set_irq_quiet(false)
-		.set_sniff_enable(false)
-		.set_high_priority(false);
-	::printf("Transferred by DMA#%d: ", static_cast<uint>(channel));
-	channel.set_config(config)
-		.set_read_addr(sm.get_rxf())
-		.set_write_addr(dst)
-		.set_trans_count_trig(count_of(dst))
-		.wait_for_finish_blocking();
-	::printf("\n");
-	for (uint i = 0; i < count_of(dst); i++) {
-		::printf("%08x ", dst[i]);
-		if ((i & 7) == 7) ::printf("\n");
-	}
-	channel.unclaim();
-}
-
 int main()
 {
 	::stdio_init_all();
 	::printf("----\n");
-	test_PeriphetalToMemory();
-	for (;;) ::tight_loop_contents();
 	test_MemoryToMemory();
 	test_MemoryToPeripheral();
+	test_PeripheralToMemory();
 	test_MemoryToPeripheral_Chain();
 	test_MemoryToMemory_SnifferCalcCRC();
 	test_MemoryToPeripheral_SnifferCalcCRC();
