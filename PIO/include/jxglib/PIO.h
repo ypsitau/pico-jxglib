@@ -348,41 +348,58 @@ public:
 	StateMachine& claim_resource(uint gpio_base, uint gpio_count, bool set_gpio_base);
 	StateMachine& free_resource();
 public:
-	template<typename... Pins> StateMachine& set_out_pin(uint pin1, Pins... pins) {
-		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
-		uint count = 1 + sizeof...(pins);
-		uint32_t pinMask = MakePinMask(pin1, count);
+	StateMachine& set_out_pins(uint base, uint count) {
+		uint32_t pinMask = MakePinMask(base, count);
 		pin_mask_ |= pinMask;
 		pin_dirs_ |= pinMask;
-		config.set_out_pins(pin1, count);
+		config.set_out_pins(base, count);
+		return *this;
+	}
+	template<typename... Pins> StateMachine& set_out_pin(uint pin1, Pins... pins) {
+		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
+		return set_out_pins(pin1, 1 + sizeof...(pins));
+	}
+	StateMachine& set_set_pins(uint base, uint count) {
+		uint32_t pinMask = MakePinMask(base, count);
+		pin_mask_ |= pinMask;
+		pin_dirs_ |= pinMask;
+		config.set_set_pins(base, count);
 		return *this;
 	}
 	template<typename... Pins> StateMachine& set_set_pin(uint pin1, Pins... pins) {
 		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
-		uint count = 1 + sizeof...(pins);
-		uint32_t pinMask = MakePinMask(pin1, count);
+		return set_set_pins(pin1, 1 + sizeof...(pins));
+	}
+	StateMachine& set_in_pins(uint base, uint count) {
+		uint32_t pinMask = MakePinMask(base, count);
 		pin_mask_ |= pinMask;
-		pin_dirs_ |= pinMask;
-		config.set_set_pins(pin1, count);
+		pin_dirs_ &= ~pinMask;
+		config.set_in_pins(base);
 		return *this;
 	}
 	template<typename... Pins> StateMachine& set_in_pin(uint pin1, Pins... pins) {
 		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
-		uint count = 1 + sizeof...(pins);
-		uint32_t pinMask = MakePinMask(pin1, count);
+		return set_in_pins(pin1, 1 + sizeof...(pins));
+	}
+	StateMachine& set_listen_pins(uint base, uint count = 0) { // count is not used, just for compatibility with set_in_pins()
+		config.set_in_pins(base);
+		return *this;
+	}
+	template<typename... Pins> StateMachine& set_listen_pin(uint pin1, Pins... pins) {
+		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
+		set_listen_pins(pin1);
+		return *this;
+	}
+	StateMachine& set_sideset_pins(uint base, uint count) {
+		uint32_t pinMask = MakePinMask(base, count);
 		pin_mask_ |= pinMask;
 		pin_dirs_ &= ~pinMask;
-		config.set_in_pins(pin1);
+		config.set_sideset_pins(base);
 		return *this;
 	}
 	template<typename... Pins> StateMachine& set_sideset_pin(uint pin1, Pins... pins) {
 		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
-		uint count = 1 + sizeof...(pins);
-		uint32_t pinMask = MakePinMask(pin1, count);
-		pin_mask_ |= pinMask;
-		pin_dirs_ |= pinMask;
-		config.set_sideset_pins(pin1);
-		return *this;
+		return set_sideset_pins(pin1, 1 + sizeof...(pins));
 	}
 public:
 	const StateMachine& claim() const { ::pio_sm_claim(pio, sm); return *this; }

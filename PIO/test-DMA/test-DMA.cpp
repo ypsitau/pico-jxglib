@@ -47,9 +47,7 @@ int main()
 	.wrap()
 	.end();
 	sm.config.set_in_shift_left(true, 32);	// shift left, autopush enabled, push threshold 32
-	sm.config.set_in_pins(gpio);			// set input pins base
-	sm.ClaimResource(program).init();
-	sm.set_enabled();
+	sm.set_program(program).set_listen_pins(gpio, -1).init().set_enabled();
 	//-------------------------------------------------------------------------
 	LABOPlatform laboPlatform;
 	laboPlatform.AttachStdio().Initialize();
