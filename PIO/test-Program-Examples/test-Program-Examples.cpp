@@ -287,7 +287,7 @@ int main()
 		program
 		.program("onewire")
 		.side_set(1).pindirs()
-		.L("reset_bus", &reset_bus)						// PUBLIC reset_bus:
+		.L("reset_bus").pub(&reset_bus)					// PUBLIC reset_bus:
 			.set("x", 28)			.side(1)	[15]	// pull bus low                          16
 		.L("loop_a")
 			.jmp("x--", "loop_a")	.side(1)	[15]	//                                  29 x 16
@@ -300,7 +300,7 @@ int main()
 		.L("loop_c")
 			.jmp("x--", "loop_c")	.side(0)	[15]	//                                  25 x 16
 		.wrap_target()
-		.L("fetch_bit", &fetch_bit)						// PUBLIC fetch_bit:
+		.L("fetch_bit").pub(&fetch_bit)					// PUBLIC fetch_bit:
 			.out("x", 1)			.side(0)			// shift next bit from OSR (autopull)     1
 			.jmp("!x", "send_0")	.side(1)	[5]		// pull bus low, branch if sending '0'    6
 		.L("send_1")									// send a '1' bit
