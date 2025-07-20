@@ -31,52 +31,48 @@ void Config::Configure(const Program& program, uint offset)
 //------------------------------------------------------------------------------
 // PIO::StateMachine
 //------------------------------------------------------------------------------
-StateMachine& StateMachine::set_program(const Program& program, pio_hw_t* pio, uint sm)
+StateMachine::~StateMachine()
 {
-	this->pio = pio;
-	this->sm = sm;
-	offset = ::pio_add_program(this->pio, program.GetEntityPtr());
-	pProgram_ = &program;
-	pSmToShareProgram_ = nullptr;
-	config.Configure(GetProgram(), offset);
-	return *this;
+	if (IsValid()) remove_program();
 }
 
-StateMachine& StateMachine::share_program(StateMachine& smToShareProgram, pio_hw_t* pio, uint sm)
+StateMachine& StateMachine::set_program(const Program& program, pio_hw_t* pio, uint sm)
 {
-	this->pio = pio;
-	this->sm = sm;
-	offset = smToShareProgram.offset;
-	pProgram_ = smToShareProgram.pProgram_;
-	pSmToShareProgram_ = &smToShareProgram;
-	config.Configure(GetProgram(), offset);
+	uint offsetClaimed = ::pio_add_program(pio, program.GetEntityPtr());
+	pProgram_ = &program;
+	pSmToShareProgram_ = nullptr;
+	setup_resource_(pio, sm, offsetClaimed);
 	return *this;
 }
 
 StateMachine& StateMachine::set_program(const Program& program)
 {
 	pio_hw_t* pioClaimed;
-	pProgram_ = &program;
-	pSmToShareProgram_ = nullptr;
-	if (!::pio_claim_free_sm_and_add_program(GetProgram().GetEntityPtr(), &pioClaimed, &sm, &offset)) {
+	uint smClaimed;
+	uint offsetClaimed;
+	if (!::pio_claim_free_sm_and_add_program(program.GetEntityPtr(), &pioClaimed, &smClaimed, &offsetClaimed)) {
 		::panic("failed to claim free state machine and add program");
 	}
-	pio = pioClaimed;
-	config.Configure(GetProgram(), offset);
+	pProgram_ = &program;
+	pSmToShareProgram_ = nullptr;
+	setup_resource_(pioClaimed, smClaimed, offsetClaimed);
+	return *this;
+}
+
+StateMachine& StateMachine::share_program(StateMachine& smToShareProgram, pio_hw_t* pio, uint sm)
+{
+	pProgram_ = smToShareProgram.pProgram_;
+	pSmToShareProgram_ = &smToShareProgram;
+	setup_resource_(pio, sm, smToShareProgram.offset);
 	return *this;
 }
 
 StateMachine& StateMachine::share_program(StateMachine& smToShareProgram)
 {
-	pio = smToShareProgram.pio;
-	offset = smToShareProgram.offset;
-	sm = ::pio_claim_unused_sm(pio, true);
-	pProgram_ = smToShareProgram.pProgram_;
-	pSmToShareProgram_ = &smToShareProgram;
-	config.Configure(GetProgram(), offset);
-	return *this;
+	return share_program(smToShareProgram, smToShareProgram.pio, ::pio_claim_unused_sm(smToShareProgram.pio, true));
 }
 
+#if 0
 StateMachine& StateMachine::claim_resource(uint gpio_base, uint gpio_count, bool set_gpio_base)
 {
 	pio_hw_t* pioClaimed;
@@ -87,8 +83,9 @@ StateMachine& StateMachine::claim_resource(uint gpio_base, uint gpio_count, bool
 	config.Configure(GetProgram(), offset);
 	return *this;
 }
+#endif
 
-StateMachine& StateMachine::free_resource()
+StateMachine& StateMachine::remove_program()
 {
 	if (pSmToShareProgram_) {
 		::pio_sm_unclaim(pio, sm);
@@ -99,12 +96,28 @@ StateMachine& StateMachine::free_resource()
 	return *this;
 }
 
+void StateMachine::setup_resource_(pio_hw_t* pio, uint sm, uint offset)
+{
+	this->pio = pio;
+	this->sm = sm;
+	this->offset = offset;
+	config.Configure(GetProgram(), offset);
+	init_pins();
+	init();
+}
+
 const StateMachine& StateMachine::init(uint initial_pc, const pio_sm_config* config) const
+{
+	init_pins();
+	if (::pio_sm_init(pio, sm, initial_pc, config) < 0) ::panic("failed to initialize PIO's state machine");
+	return *this;
+}
+
+const StateMachine& StateMachine::init_pins() const
 {
 	uint32_t pinBits = pin_mask_;
 	for (uint pin = 0; pinBits; pinBits >>= 1, ++pin) if (pinBits & 1) ::pio_gpio_init(pio, pin);
 	set_pindirs_with_mask(pin_dirs_, pin_mask_);
-	if (::pio_sm_init(pio, sm, initial_pc, config) < 0) ::panic("failed to initialize PIO's state machine");
 	return *this;
 }
 

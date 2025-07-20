@@ -335,6 +335,7 @@ public:
 	StateMachine(const StateMachine& stateMachine) : pio{stateMachine.pio}, sm{stateMachine.sm},
 		offset{stateMachine.offset}, config{stateMachine.config}, pin_dirs_{stateMachine.pin_dirs_}, pin_mask_{stateMachine.pin_mask_},
 		pProgram_{stateMachine.pProgram_}, pSmToShareProgram_{stateMachine.pSmToShareProgram_} {}
+	~StateMachine();
 public:
 	operator uint() { return sm; }
 public:
@@ -343,11 +344,13 @@ public:
 	const Program& GetProgram() const { return *pProgram_; }
 public:
 	StateMachine& set_program(const Program& program, pio_hw_t* pio, uint sm);
-	StateMachine& share_program(StateMachine& smToShareProgram, pio_hw_t* pio, uint sm);
 	StateMachine& set_program(const Program& program);
+	StateMachine& share_program(StateMachine& smToShareProgram, pio_hw_t* pio, uint sm);
 	StateMachine& share_program(StateMachine& smToShareProgram);
-	StateMachine& claim_resource(uint gpio_base, uint gpio_count, bool set_gpio_base);
-	StateMachine& free_resource();
+	//StateMachine& claim_resource(uint gpio_base, uint gpio_count, bool set_gpio_base);
+	StateMachine& remove_program();
+private:
+	void setup_resource_(pio_hw_t* pio, uint sm, uint offset);
 public:
 	StateMachine& set_out_pins(uint base, uint count);
 	template<typename... Pins> StateMachine& set_out_pin(uint pin1, Pins... pins) {
@@ -418,6 +421,7 @@ public:
 public:
 	const StateMachine& init(uint initial_pc, const pio_sm_config* config) const;
 	const StateMachine& init() const { return init(offset + GetProgram().GetRelAddrEntry(), config); }
+	const StateMachine& init_pins() const;
 	int set_config(const pio_sm_config *config) const { return ::pio_sm_set_config(pio, sm, config); }
 	const StateMachine& set_enabled(bool enabled = true) const { ::pio_sm_set_enabled(pio, sm, enabled); return *this; }
 	const StateMachine& restart() const { ::pio_sm_restart(pio, sm); return *this; }
