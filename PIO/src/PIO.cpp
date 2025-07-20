@@ -108,6 +108,48 @@ const StateMachine& StateMachine::init(uint initial_pc, const pio_sm_config* con
 	return *this;
 }
 
+StateMachine& StateMachine::set_out_pins(uint base, uint count)
+{
+	uint32_t pinMask = MakePinMask(base, count);
+	pin_mask_ |= pinMask;
+	pin_dirs_ |= pinMask;
+	config.set_out_pins(base, count);
+	return *this;
+}
+
+StateMachine& StateMachine::set_set_pins(uint base, uint count)
+{
+	uint32_t pinMask = MakePinMask(base, count);
+	pin_mask_ |= pinMask;
+	pin_dirs_ |= pinMask;
+	config.set_set_pins(base, count);
+	return *this;
+}
+
+StateMachine& StateMachine::set_in_pins(uint base, uint count)
+{
+	uint32_t pinMask = MakePinMask(base, count);
+	pin_mask_ |= pinMask;
+	pin_dirs_ &= ~pinMask;
+	config.set_in_pins(base);
+	return *this;
+}
+
+StateMachine& StateMachine::set_listen_pins(uint base, uint count)
+{
+	config.set_in_pins(base);
+	return *this;
+}
+
+StateMachine& StateMachine::set_sideset_pins(uint base, uint count)
+{
+	uint32_t pinMask = MakePinMask(base, count);
+	pin_mask_ |= pinMask;
+	pin_dirs_ &= ~pinMask;
+	config.set_sideset_pins(base);
+	return *this;
+}
+
 //------------------------------------------------------------------------------
 // PIO::Block
 //------------------------------------------------------------------------------
@@ -161,11 +203,10 @@ Program& Program::AddInst(uint16_t inst)
 	return *this;
 }
 
-Program& Program::L(const char* label, uint* pRelAddr)
+Program& Program::L(const char* label)
 {
 	if (LookupVariable(label)) ::panic("addr%02x: label '%s' already defined\n", relAddrCur_, label);
 	AddVariable(label, relAddrCur_);
-	if (pRelAddr) *pRelAddr = relAddrCur_;
 	return *this;
 }
 
