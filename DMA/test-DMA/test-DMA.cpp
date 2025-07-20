@@ -3,6 +3,7 @@
 #include <memory.h>
 #include "pico/stdlib.h"
 #include "jxglib/DMA.h"
+#include "jxglib/PIO.h"
 
 #if defined(NDEBUG)
 static const char* compileVariant = "Release";
@@ -510,10 +511,68 @@ void test_Benchmark()
 	::free(dst);
 }
 
+void test_PeriphetalToMemory()
+{
+	::printf("\ntest_PeripheralToMemory\n");
+	DMA::Channel& channel = *DMA::claim_unused_channel();
+	DMA::ChannelConfig config;
+	int nDst = 4;
+	uint32_t* dst = reinterpret_cast<uint32_t*>(::malloc(sizeof(uint32_t) * nDst));
+	::memset(dst, 0x00, sizeof(uint32_t) * nDst);
+	PIO::Program program;
+	program
+	.program("test_PeripheralToMemory")
+	.entry()
+	.pio_version(0)
+		.set("x", 8)
+	.L("loop")
+		.mov("isr", "x")
+		.push()
+		.jmp("x--", "loop")
+	.L("terminate")
+		.jmp("terminate")
+	.end();
+	PIO::StateMachine sm;
+	sm.set_program(program).init();
+#if 0
+	for (int i = 0; i < 100; i++) {
+		::printf("%08x\n", sm.get());
+	}
+#else
+	config.set_enable(true)
+		.set_transfer_data_size(DMA_SIZE_32)
+		.set_read_increment(false)
+		.set_write_increment(true)
+		.set_dreq(sm.get_dreq_rx()) // set DREQ of sm's rx
+		.set_chain_to(channel) // disable by setting chain_to to itself
+		.set_ring_read(0)
+		.set_bswap(false)
+		.set_irq_quiet(false)
+		.set_sniff_enable(false)
+		.set_high_priority(false);
+	::printf("Transferred by DMA#%d: ", static_cast<uint>(channel));
+	channel.set_config(config)
+		.set_read_addr(sm.get_rxf())
+		.set_write_addr(dst)
+		.set_trans_count_trig(nDst);
+	sm.clear_fifos();
+	sm.set_enabled();
+	channel.wait_for_finish_blocking();
+	::printf("\n");
+	for (uint i = 0; i < nDst; i++) {
+		::printf("%08x ", dst[i]);
+		if ((i & 7) == 7) ::printf("\n");
+	}
+	channel.unclaim();
+#endif
+}
+
 int main()
 {
 	::stdio_init_all();
 	::printf("----\n");
+	test_PeriphetalToMemory();
+	for (;;) ::tight_loop_contents();
 	test_MemoryToMemory();
 	test_MemoryToPeripheral();
 	test_MemoryToPeripheral_Chain();
