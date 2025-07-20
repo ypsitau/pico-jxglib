@@ -27,6 +27,7 @@ public:
 	void Start();
 	void Stop();
 	int GetEventCount() const;
+	void PrintWave(Printable& tout) const;
 };
 
 LogicAnalyzer::LogicAnalyzer() : pChannel_{nullptr}
@@ -104,11 +105,21 @@ int LogicAnalyzer::GetEventCount() const
 	return (reinterpret_cast<uint32_t>(pChannel_->get_write_addr()) - reinterpret_cast<uint32_t>(eventBuff_.get())) / sizeof(Event);
 }
 
+void LogicAnalyzer::PrintWave(Printable& tout) const
+{
+	uint32_t clockPIO = ::clock_get_hz(clk_sys) / 10;
+	int nEvents = GetEventCount();
+	for (int iEvent = 0; iEvent < nEvents; ++iEvent) {
+		const Event& event = eventBuff_.get()[iEvent];
+		tout.Printf("%.2fusec %032b\n", static_cast<float>(event.timeStamp) * 1000000 / clockPIO, event.bits);
+	}
+}
+
 LogicAnalyzer logicAnalyzer;
 
 ShellCmd(check, "check logic analyzer")
 {
-	printf("Recorded %d events:\n", logicAnalyzer.GetEventCount());
+	logicAnalyzer.PrintWave(tout);
 	return Result::Success;
 }
 
