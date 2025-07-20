@@ -516,29 +516,19 @@ void test_PeriphetalToMemory()
 	::printf("\ntest_PeripheralToMemory\n");
 	DMA::Channel& channel = *DMA::claim_unused_channel();
 	DMA::ChannelConfig config;
-	int nDst = 4;
-	uint32_t* dst = reinterpret_cast<uint32_t*>(::malloc(sizeof(uint32_t) * nDst));
-	::memset(dst, 0x00, sizeof(uint32_t) * nDst);
+	uint32_t dst[32];
 	PIO::Program program;
 	program
 	.program("test_PeripheralToMemory")
 	.entry()
 	.pio_version(0)
-		.set("x", 8)
-	.L("loop")
-		.mov("isr", "x")
+		.jmp("x--", "next")
+	.L("next")
+		.mov("isr", "~x")
 		.push()
-		.jmp("x--", "loop")
-	.L("terminate")
-		.jmp("terminate")
 	.end();
 	PIO::StateMachine sm;
-	sm.set_program(program).init();
-#if 0
-	for (int i = 0; i < 100; i++) {
-		::printf("%08x\n", sm.get());
-	}
-#else
+	sm.set_program(program).init().set_enabled();
 	config.set_enable(true)
 		.set_transfer_data_size(DMA_SIZE_32)
 		.set_read_increment(false)
@@ -554,17 +544,14 @@ void test_PeriphetalToMemory()
 	channel.set_config(config)
 		.set_read_addr(sm.get_rxf())
 		.set_write_addr(dst)
-		.set_trans_count_trig(nDst);
-	sm.clear_fifos();
-	sm.set_enabled();
-	channel.wait_for_finish_blocking();
+		.set_trans_count_trig(count_of(dst))
+		.wait_for_finish_blocking();
 	::printf("\n");
-	for (uint i = 0; i < nDst; i++) {
+	for (uint i = 0; i < count_of(dst); i++) {
 		::printf("%08x ", dst[i]);
 		if ((i & 7) == 7) ::printf("\n");
 	}
 	channel.unclaim();
-#endif
 }
 
 int main()
