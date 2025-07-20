@@ -22,8 +22,12 @@ namespace jxglib {
 
 namespace PIO {
 
-template<typename... Pins>
-inline void CheckAdjacent(uint pin1, Pins... pins) {
+class Program;
+
+//------------------------------------------------------------------------------
+// Utility functions
+//------------------------------------------------------------------------------
+template<typename... Pins> void CheckAdjacent(uint pin1, Pins... pins) {
 	if constexpr (sizeof...(pins) > 0) {
 		auto check_sequence = [](uint first, auto... rest) {
 			uint expected = first + 1;
@@ -33,7 +37,7 @@ inline void CheckAdjacent(uint pin1, Pins... pins) {
 	}
 }
 
-class Program;
+inline uint MakePinMask(uint base, uint count) { return ((1u << count) - 1) << base; }
 
 //------------------------------------------------------------------------------
 // PIO::Config
@@ -56,36 +60,16 @@ public:
 	Config& set_out_pin_base(uint out_base) { ::sm_config_set_out_pin_base(&c_, out_base); return *this; }
 	Config& set_out_pin_count(uint out_count) { ::sm_config_set_out_pin_count(&c_, out_count); return *this; }
 	Config& set_out_pins(uint out_base, uint out_count) { ::sm_config_set_out_pins(&c_, out_base, out_count); return *this; }
-	template<typename... Pins>
-	Config& set_out_pin(uint pin1, Pins... pins) {
-		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
-		return set_out_pins(pin1, 1 + sizeof...(pins));
-	}
 public:
 	Config& set_set_pin_base(uint set_base) { ::sm_config_set_set_pin_base(&c_, set_base); return *this; }
 	Config& set_set_pin_count(uint set_count) { ::sm_config_set_set_pin_count(&c_, set_count); return *this; }
 	Config& set_set_pins(uint set_base, uint set_count) { ::sm_config_set_set_pins(&c_, set_base, set_count); return *this; }
-	template<typename... Pins>
-	Config& set_set_pin(uint pin1, Pins... pins) {
-		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
-		return set_set_pins(pin1, 1 + sizeof...(pins));
-	}
 public:
 	Config& set_in_pin_base(uint in_base) { ::sm_config_set_in_pin_base(&c_, in_base); return *this; }
 	Config& set_in_pins(uint in_base) { ::sm_config_set_in_pins(&c_, in_base); return *this; }
-	template<typename... Pins>
-	Config& set_in_pin(uint pin1, Pins... pins) {
-		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
-		return set_in_pins(pin1);
-	}
 public:
 	Config& set_sideset_pin_base(uint sideset_base) { ::sm_config_set_sideset_pin_base(&c_, sideset_base); return *this; }
 	Config& set_sideset_pins(uint sideset_base) { ::sm_config_set_sideset_pins(&c_, sideset_base); return *this; }
-	template<typename... Pins>
-	Config& set_sideset_pin(uint pin1, Pins... pins) {
-		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
-		return set_sideset_pins(pin1);
-	}
 public:
 	Config& set_jmp_pin(uint pin) { ::sm_config_set_jmp_pin(&c_, pin); return *this; }
 public:
@@ -234,7 +218,7 @@ private:
 		return _pio_encode_instr_and_args(pio_instr_bits_wait, 3u | (polarity? 4u : 0u), pin_offset);
 	}
 public:
-	// Assembler-style instructions
+	// Method-Chain Assembler instructions
 	Program& jmp(const char* label) { AddVariableRef(label, relAddrCur_); return jmp(static_cast<uint16_t>(0)); }
 	Program& jmp(const char* cond, uint16_t addr);
 	Program& jmp(const char* cond, const char* label) { AddVariableRef(label, relAddrCur_); return jmp(cond, static_cast<uint16_t>(0)); }
@@ -341,12 +325,15 @@ public:
 	uint offset;
 	Config config;
 private:
+	uint32_t pin_dirs_;
+	uint32_t pin_mask_;
 	const Program* pProgram_;
 	StateMachine* pSmToShareProgram_;
 public:
-	StateMachine() : sm{static_cast<uint>(-1)}, offset{0}, pProgram_{&Program::None}, pSmToShareProgram_{nullptr} {}
+	StateMachine() : sm{static_cast<uint>(-1)}, offset{0}, pin_dirs_{0}, pin_mask_{0}, pProgram_{&Program::None}, pSmToShareProgram_{nullptr} {}
 	StateMachine(const StateMachine& stateMachine) : pio{stateMachine.pio}, sm{stateMachine.sm},
-		offset{stateMachine.offset}, config{stateMachine.config}, pProgram_{stateMachine.pProgram_}, pSmToShareProgram_{stateMachine.pSmToShareProgram_} {}
+		offset{stateMachine.offset}, config{stateMachine.config}, pin_dirs_{stateMachine.pin_dirs_}, pin_mask_{stateMachine.pin_mask_},
+		pProgram_{stateMachine.pProgram_}, pSmToShareProgram_{stateMachine.pSmToShareProgram_} {}
 public:
 	operator uint() { return sm; }
 public:
@@ -354,16 +341,62 @@ public:
 	void Invalidate() { pio = nullptr, sm = static_cast<uint>(-1), offset = 0; }
 	const Program& GetProgram() const { return *pProgram_; }
 public:
-	StateMachine& SetResource(const Program& program, pio_hw_t* pio, uint sm);
-	StateMachine& SetResource(StateMachine& smToShareProgram, pio_hw_t* pio, uint sm);
-	StateMachine& ClaimResource(const Program& program);
-	StateMachine& ClaimResource(StateMachine& smToShareProgram);
-	StateMachine& ClaimResource(uint gpio_base, uint gpio_count, bool set_gpio_base);
-	StateMachine& UnclaimResource();
+	StateMachine& set_program(const Program& program, pio_hw_t* pio, uint sm);
+	StateMachine& share_program(StateMachine& smToShareProgram, pio_hw_t* pio, uint sm);
+	StateMachine& set_program(const Program& program);
+	StateMachine& share_program(StateMachine& smToShareProgram);
+	StateMachine& claim_resource(uint gpio_base, uint gpio_count, bool set_gpio_base);
+	StateMachine& free_resource();
+public:
+	template<typename... Pins> StateMachine& set_out_pin(uint pin1, Pins... pins) {
+		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
+		uint count = 1 + sizeof...(pins);
+		uint32_t pinMask = MakePinMask(pin1, count);
+		pin_mask_ |= pinMask;
+		pin_dirs_ |= pinMask;
+		config.set_out_pins(pin1, count);
+		return *this;
+	}
+	template<typename... Pins> StateMachine& set_set_pin(uint pin1, Pins... pins) {
+		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
+		uint count = 1 + sizeof...(pins);
+		uint32_t pinMask = MakePinMask(pin1, count);
+		pin_mask_ |= pinMask;
+		pin_dirs_ |= pinMask;
+		config.set_set_pins(pin1, count);
+		return *this;
+	}
+	template<typename... Pins> StateMachine& set_in_pin(uint pin1, Pins... pins) {
+		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
+		uint count = 1 + sizeof...(pins);
+		uint32_t pinMask = MakePinMask(pin1, count);
+		pin_mask_ |= pinMask;
+		pin_dirs_ &= ~pinMask;
+		config.set_in_pins(pin1);
+		return *this;
+	}
+	template<typename... Pins> StateMachine& set_sideset_pin(uint pin1, Pins... pins) {
+		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
+		uint count = 1 + sizeof...(pins);
+		uint32_t pinMask = MakePinMask(pin1, count);
+		pin_mask_ |= pinMask;
+		pin_dirs_ |= pinMask;
+		config.set_sideset_pins(pin1);
+		return *this;
+	}
 public:
 	const StateMachine& claim() const { ::pio_sm_claim(pio, sm); return *this; }
 	const StateMachine& unclaim() const { ::pio_sm_unclaim(pio, sm); return *this; }
 	bool is_claimed() const { return ::pio_sm_is_claimed(pio, sm); }
+public:
+	const StateMachine& gpio_init(uint pin) const { pio.gpio_init(pin); return *this; }
+public:
+	const StateMachine& set_in_pins(uint in_base) const { ::pio_sm_set_in_pins(pio, sm, in_base); return *this; }
+	template<typename... Pins>
+	const StateMachine& set_in_pin(uint pin1, Pins... pins) const {
+		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
+		return set_in_pins(pin1);
+	}
 public:
 	const StateMachine& set_out_pins(uint out_base, uint out_count) const { ::pio_sm_set_out_pins(pio, sm, out_base, out_count); return *this; }
 	template<typename... Pins>
@@ -379,13 +412,6 @@ public:
 		return set_set_pins(pin1, 1 + sizeof...(pins));
 	}
 public:
-	const StateMachine& set_in_pins(uint in_base) const { ::pio_sm_set_in_pins(pio, sm, in_base); return *this; }
-	template<typename... Pins>
-	const StateMachine& set_in_pin(uint pin1, Pins... pins) const {
-		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
-		return set_in_pins(pin1);
-	}
-public:
 	const StateMachine& set_sideset_pins(uint sideset_base) const { ::pio_sm_set_sideset_pins(pio, sm, sideset_base); return *this; }
 	template<typename... Pins>
 	const StateMachine& set_sideset_pin(uint pin1, Pins... pins) const {
@@ -399,8 +425,8 @@ public:
 	const StateMachine& set_clkdiv(float div) const { ::pio_sm_set_clkdiv(pio, sm, div); return *this; }
 	const StateMachine& set_wrap(uint wrap_target, uint wrap) const { ::pio_sm_set_wrap(pio, sm, wrap_target, wrap); return *this; }
 public:
-	int init(uint initial_pc, const pio_sm_config* config) { return ::pio_sm_init(pio, sm, initial_pc, config); }
-	int init() { return ::pio_sm_init(pio, sm, offset + GetProgram().GetRelAddrEntry(), config); }
+	const StateMachine& init(uint initial_pc, const pio_sm_config* config) const;
+	const StateMachine& init() const { return init(offset + GetProgram().GetRelAddrEntry(), config); }
 	int set_config(const pio_sm_config *config) const { return ::pio_sm_set_config(pio, sm, config); }
 	const StateMachine& set_enabled(bool enabled = true) const { ::pio_sm_set_enabled(pio, sm, enabled); return *this; }
 	const StateMachine& restart() const { ::pio_sm_restart(pio, sm); return *this; }
@@ -409,25 +435,34 @@ public:
 	bool is_exec_stalled() const { return ::pio_sm_is_exec_stalled(pio, sm); }
 	const StateMachine& exec_wait_blocking(uint instr) const { ::pio_sm_exec_wait_blocking(pio, sm, instr); return *this; }
 public:
-	int set_consecutive_pindirs(uint pins_base, uint pin_count, bool is_out) const { return ::pio_sm_set_consecutive_pindirs(pio, sm, pins_base, pin_count, is_out); }
-	int set_pindirs(uint pins_base, uint pin_count, bool is_out) const { return ::pio_sm_set_consecutive_pindirs(pio, sm, pins_base, pin_count, is_out); }
-	int set_pindirs_out(uint pins_base, uint pin_count) const { return ::pio_sm_set_consecutive_pindirs(pio, sm, pins_base, pin_count, true); }
-	int set_pindirs_in(uint pins_base, uint pin_count) const { return ::pio_sm_set_consecutive_pindirs(pio, sm, pins_base, pin_count, false); }
-	int set_pindir(uint pin, bool is_out) const { return set_pindirs(pin, 1, is_out); }
-	template<typename... Pins>
-	int set_pindir_out(uint pin1, Pins... pins) const {
-		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
-		return set_pindirs(pin1, 1 + sizeof...(pins), true);
+	const StateMachine& set_consecutive_pindirs(uint pins_base, uint pin_count, bool is_out) const { ::pio_sm_set_consecutive_pindirs(pio, sm, pins_base, pin_count, is_out); return *this; }
+	const StateMachine& set_consecutive_pindirs_out(uint pins_base, uint pin_count) const { ::pio_sm_set_consecutive_pindirs(pio, sm, pins_base, pin_count, true); return *this; }
+	const StateMachine& set_consecutive_pindirs_in(uint pins_base, uint pin_count) const { ::pio_sm_set_consecutive_pindirs(pio, sm, pins_base, pin_count, false); return *this; }
+public:
+	const StateMachine& set_pindirs_with_mask(uint32_t pin_dirs, uint32_t pin_mask) const { ::pio_sm_set_pindirs_with_mask(pio, sm, pin_dirs, pin_mask); return *this; }
+	template<typename... Pins> const StateMachine& set_pindir_out(uint pin1, Pins... pins) const {
+		uint32_t pin_mask = (1u << pin1);
+		((pin_mask |= (1u << pins)), ...);
+		set_pindirs_with_mask(pin_mask, pin_mask);  // Set directions to output (1)
+		return *this;
 	}
-	template<typename... Pins>
-	int set_pindir_in(uint pin1, Pins... pins) const {
-		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
-		return set_pindirs(pin1, 1 + sizeof...(pins), false);
+	template<typename... Pins> const StateMachine& set_pindir_in(uint pin1, Pins... pins) const {
+		uint32_t pin_mask = (1u << pin1);
+		((pin_mask |= (1u << pins)), ...);
+		set_pindirs_with_mask(0, pin_mask);  // Set directions to input (0)
+		return *this;
 	}
+	const StateMachine& set_pindir_out_mask(uint32_t pin_mask) const { set_pindirs_with_mask(pin_mask, pin_mask); return *this; }
+	const StateMachine& set_pindir_in_mask(uint32_t pin_mask) const { set_pindirs_with_mask(0, pin_mask); return *this; }
 public:
 	const StateMachine& set_pins(uint32_t pin_values) const { ::pio_sm_set_pins(pio, sm, pin_values); return *this; }
 	const StateMachine& set_pins_with_mask(uint32_t pin_values, uint32_t pin_mask) const { ::pio_sm_set_pins_with_mask(pio, sm, pin_values, pin_mask); return *this; }
-	const StateMachine& set_pindirs_with_mask(uint32_t pin_dirs, uint32_t pin_mask) const { ::pio_sm_set_pindirs_with_mask(pio, sm, pin_dirs, pin_mask); return *this; }
+	template<typename... Pins> int set_pin(bool value, uint pin1, Pins... pins) const {
+		uint32_t pin_mask = (1u << pin1);
+		((pin_mask |= (1u << pins)), ...);
+		set_pins_with_mask(value? pin_mask : 0, pin_mask);
+		return 0;
+	}
 public:
 	uint get_dreq(bool is_tx) const { return ::pio_get_dreq(pio, sm, is_tx); }
 	uint get_dreq_tx() const { return ::pio_get_dreq(pio, sm, true); }
@@ -438,15 +473,15 @@ public:
 	uint8_t get_pc() const { return  ::pio_sm_get_pc(pio, sm); }
 public:
 	bool is_rx_fifo_full() const { return ::pio_sm_is_rx_fifo_full(pio, sm); }
-	bool is_rx_fifo_empty() const { return ::pio_sm_is_rx_fifo_empty(pio, sm); }
-	uint get_rx_fifo_level() const { return ::pio_sm_get_rx_fifo_level(pio, sm); }
 	bool is_tx_fifo_full() const { return ::pio_sm_is_tx_fifo_full(pio, sm); }
+	bool is_rx_fifo_empty() const { return ::pio_sm_is_rx_fifo_empty(pio, sm); }
 	bool is_tx_fifo_empty() const { return ::pio_sm_is_tx_fifo_empty(pio, sm); }
+	uint get_rx_fifo_level() const { return ::pio_sm_get_rx_fifo_level(pio, sm); }
 	uint get_tx_fifo_level() const { return ::pio_sm_get_tx_fifo_level(pio, sm); }
+	pio_interrupt_source_t get_rx_fifo_not_empty_interrupt_source() { return ::pio_get_rx_fifo_not_empty_interrupt_source(sm); }
+	pio_interrupt_source_t get_tx_fifo_not_full_interrupt_source() { return ::pio_get_tx_fifo_not_full_interrupt_source(sm); }
 	const StateMachine& drain_tx_fifo() const { ::pio_sm_drain_tx_fifo(pio, sm); return *this; }
 	const StateMachine& clear_fifos() const { ::pio_sm_clear_fifos(pio, sm); return *this; }
-	pio_interrupt_source_t get_tx_fifo_not_full_interrupt_source() { return ::pio_get_tx_fifo_not_full_interrupt_source(sm); }
-	pio_interrupt_source_t get_rx_fifo_not_empty_interrupt_source() { return ::pio_get_rx_fifo_not_empty_interrupt_source(sm); }
 public:
 	const StateMachine& put(uint32_t data) const { ::pio_sm_put(pio, sm, data); return *this; }
 	uint32_t get() const { return ::pio_sm_get(pio, sm); }

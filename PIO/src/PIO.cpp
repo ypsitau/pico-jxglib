@@ -31,7 +31,7 @@ void Config::Configure(const Program& program, uint offset)
 //------------------------------------------------------------------------------
 // PIO::StateMachine
 //------------------------------------------------------------------------------
-StateMachine& StateMachine::SetResource(const Program& program, pio_hw_t* pio, uint sm)
+StateMachine& StateMachine::set_program(const Program& program, pio_hw_t* pio, uint sm)
 {
 	this->pio = pio;
 	this->sm = sm;
@@ -42,7 +42,7 @@ StateMachine& StateMachine::SetResource(const Program& program, pio_hw_t* pio, u
 	return *this;
 }
 
-StateMachine& StateMachine::SetResource(StateMachine& smToShareProgram, pio_hw_t* pio, uint sm)
+StateMachine& StateMachine::share_program(StateMachine& smToShareProgram, pio_hw_t* pio, uint sm)
 {
 	this->pio = pio;
 	this->sm = sm;
@@ -53,7 +53,7 @@ StateMachine& StateMachine::SetResource(StateMachine& smToShareProgram, pio_hw_t
 	return *this;
 }
 
-StateMachine& StateMachine::ClaimResource(const Program& program)
+StateMachine& StateMachine::set_program(const Program& program)
 {
 	pio_hw_t* pioClaimed;
 	pProgram_ = &program;
@@ -66,7 +66,7 @@ StateMachine& StateMachine::ClaimResource(const Program& program)
 	return *this;
 }
 
-StateMachine& StateMachine::ClaimResource(StateMachine& smToShareProgram)
+StateMachine& StateMachine::share_program(StateMachine& smToShareProgram)
 {
 	pio = smToShareProgram.pio;
 	offset = smToShareProgram.offset;
@@ -77,7 +77,7 @@ StateMachine& StateMachine::ClaimResource(StateMachine& smToShareProgram)
 	return *this;
 }
 
-StateMachine& StateMachine::ClaimResource(uint gpio_base, uint gpio_count, bool set_gpio_base)
+StateMachine& StateMachine::claim_resource(uint gpio_base, uint gpio_count, bool set_gpio_base)
 {
 	pio_hw_t* pioClaimed;
 	if (!::pio_claim_free_sm_and_add_program_for_gpio_range(GetProgram().GetEntityPtr(), &pioClaimed, &sm, &offset, gpio_base, gpio_count, set_gpio_base)) {
@@ -88,7 +88,7 @@ StateMachine& StateMachine::ClaimResource(uint gpio_base, uint gpio_count, bool 
 	return *this;
 }
 
-StateMachine& StateMachine::UnclaimResource()
+StateMachine& StateMachine::free_resource()
 {
 	if (pSmToShareProgram_) {
 		::pio_sm_unclaim(pio, sm);
@@ -96,6 +96,15 @@ StateMachine& StateMachine::UnclaimResource()
 		::pio_remove_program_and_unclaim_sm(GetProgram().GetEntityPtr(), pio, sm, offset);
 	}
 	Invalidate();
+	return *this;
+}
+
+const StateMachine& StateMachine::init(uint initial_pc, const pio_sm_config* config) const
+{
+	uint32_t pinBits = pin_mask_;
+	for (uint pin = 0; pinBits; pinBits >>= 1, ++pin) if (pinBits & 1) ::pio_gpio_init(pio, pin);
+	set_pindirs_with_mask(pin_dirs_, pin_mask_);
+	if (::pio_sm_init(pio, sm, initial_pc, config) < 0) ::panic("failed to initialize PIO's state machine");
 	return *this;
 }
 

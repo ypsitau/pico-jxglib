@@ -7,8 +7,6 @@ using namespace jxglib;
 
 int main()
 {
-	const GPIO& gpioLED1 = GPIO14;
-	const GPIO& gpioLED2 = GPIO15;
 	::stdio_init_all();
 	PIO::Program program;
 	program
@@ -28,18 +26,8 @@ int main()
 	.end();
 	PIO::StateMachine sm1;
 	PIO::StateMachine sm2;
-	sm1.ClaimResource(program);
-	sm2.ClaimResource(sm1);
-	sm1.config.set_set_pin(gpioLED1);
-	sm2.config.set_set_pin(gpioLED2);
-	sm1.pio.gpio_init(gpioLED1);
-	sm2.pio.gpio_init(gpioLED2);
-	sm1.set_pindir_out(gpioLED1);
-	sm2.set_pindir_out(gpioLED2);
-	sm1.init();
-	sm2.init();
-	sm1.set_enabled();
-	sm2.set_enabled();
+	sm1.set_program(program).set_set_pin(GPIO14).init().set_enabled();
+	sm2.share_program(sm1).set_set_pin(GPIO15).init().set_enabled();
 	sm1.put((::clock_get_hz(clk_sys) / (1 * 2)) - 3);
 	sm2.put((::clock_get_hz(clk_sys) / (2 * 2)) - 3);
 	LABOPlatform laboPlatform;
