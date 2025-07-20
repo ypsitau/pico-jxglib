@@ -23,7 +23,7 @@ int main()
 	uint nPins = 2;
 	PIO::Program program;
 	program
-	.program("gen_seq_number")
+	.program("logic_analyzer")
 	.L("loop").wrap_target()
 		.mov("x", "~osr")
 		.jmp("x--", "no_wrap_around")
