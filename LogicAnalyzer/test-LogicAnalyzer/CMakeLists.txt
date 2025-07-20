@@ -28,35 +28,35 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-DMA C CXX ASM)
+project(test-LogicAnalyzer C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-DMA test-DMA.cpp )
+add_executable(test-LogicAnalyzer test-LogicAnalyzer.cpp )
 
-pico_set_program_name(test-DMA "test-DMA")
-pico_set_program_version(test-DMA "0.1")
+pico_set_program_name(test-LogicAnalyzer "test-LogicAnalyzer")
+pico_set_program_version(test-LogicAnalyzer "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-DMA 1)
-pico_enable_stdio_usb(test-DMA 0)
+pico_enable_stdio_uart(test-LogicAnalyzer 1)
+pico_enable_stdio_usb(test-LogicAnalyzer 0)
 
 # Add the standard libr ary to the build
-target_link_libraries(test-DMA
+target_link_libraries(test-LogicAnalyzer
 	pico_stdlib
     jxglib_DMA
     jxglib_LABOPlatform_FullCmd
     jxglib_ShellCmd_PIO)
 
 # Add the standard include files to the build
-target_include_directories(test-DMA PRIVATE
+target_include_directories(test-LogicAnalyzer PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-DMA)
+pico_add_extra_outputs(test-LogicAnalyzer)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
-jxglib_configure_LABOPlatform(test-DMA)
+jxglib_configure_LABOPlatform(test-LogicAnalyzer)
