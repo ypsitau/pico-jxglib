@@ -23,6 +23,7 @@ namespace jxglib {
 namespace PIO {
 
 class Program;
+class StateMachine;
 
 //------------------------------------------------------------------------------
 // Utility functions
@@ -177,6 +178,8 @@ public:
 public:
 	operator const pio_program_t&() const { return program_; }
 	//operator const pio_program_t*() const { return &program_; }	// conflicts with [] operator
+public:
+	const Program& exec(const StateMachine& sm) const;
 public:
 	// Directives
 	Program& program(const char* name)	{ Reset(); directive_ = Directive::program; name_ = name; return *this; }
@@ -427,6 +430,7 @@ public:
 	const StateMachine& restart() const { ::pio_sm_restart(pio, sm); return *this; }
 	const StateMachine& clkdiv_restart() const { ::pio_sm_clkdiv_restart(pio, sm); return *this; }
 	const StateMachine& exec(uint instr) const { ::pio_sm_exec(pio, sm, instr); return *this; }
+	const StateMachine& exec(const Program& program) const;
 	bool is_exec_stalled() const { return ::pio_sm_is_exec_stalled(pio, sm); }
 	const StateMachine& exec_wait_blocking(uint instr) const { ::pio_sm_exec_wait_blocking(pio, sm, instr); return *this; }
 public:

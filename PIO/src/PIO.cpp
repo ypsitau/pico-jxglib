@@ -163,6 +163,12 @@ StateMachine& StateMachine::set_sideset_pins(uint base, uint count)
 	return *this;
 }
 
+const StateMachine& StateMachine::exec(const Program& program) const
+{
+	program.exec(*this);
+	return *this;
+}
+
 //------------------------------------------------------------------------------
 // PIO::Block
 //------------------------------------------------------------------------------
@@ -510,6 +516,15 @@ Program& Program::noblock()
 		inst &= ~(1 << 5);
 	} else {
 		::panic("addr%02x: block() is not applicable for %s\n", relAddrCur_, GetInstName(inst));
+	}
+	return *this;
+}
+
+const Program& Program::exec(const StateMachine& sm) const
+{
+	for (uint relAddr = 0; relAddr < relAddrCur_; ++relAddr) {
+		sm.exec(instTbl_[relAddr]);
+		while (sm.is_exec_stalled()) Tickable::Tick();
 	}
 	return *this;
 }
