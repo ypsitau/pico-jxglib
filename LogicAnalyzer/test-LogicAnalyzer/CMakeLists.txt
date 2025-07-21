@@ -47,7 +47,6 @@ pico_enable_stdio_usb(test-LogicAnalyzer 0)
 # Add the standard libr ary to the build
 target_link_libraries(test-LogicAnalyzer
 	pico_stdlib
-    jxglib_DMA
     jxglib_LABOPlatform_FullCmd
     jxglib_ShellCmd_PIO)
 

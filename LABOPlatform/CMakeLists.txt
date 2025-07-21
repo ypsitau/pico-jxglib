@@ -26,4 +26,5 @@ target_link_libraries(jxglib_LABOPlatform_FullCmd INTERFACE
 	jxglib_ShellCmd_PWM
 	jxglib_ShellCmd_I2C
 	jxglib_ShellCmd_SPI
+	jxglib_ShellCmd_LogicAnalyzer
 )	
