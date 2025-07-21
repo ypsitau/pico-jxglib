@@ -115,7 +115,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 	const Event& eventStart = GetEvent(iEventStart);
 	do {
 		// Print header
-		tout.Printf("%14s ", "");
+		tout.Printf("%14s ", "Time [usec]");
 		uint32_t pinBitmap = pinBitmap_;
 		for (int iBit = 0; pinBitmap; ++iBit, pinBitmap >>= 1) {
 			if (pinBitmap & 1) tout.Printf(formatHeader,iBit + pinMin_);
