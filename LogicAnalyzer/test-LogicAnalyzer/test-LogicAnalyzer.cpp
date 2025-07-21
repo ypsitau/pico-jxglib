@@ -55,9 +55,10 @@ LogicAnalyzer::~LogicAnalyzer()
 
 LogicAnalyzer& LogicAnalyzer::Start()
 {
+	if (pinBitmap_ == 0) return *this;
 	eventBuff_.reset(new Event[nEventsMax]);
-	const GPIO& gpio = GPIO2;
-	uint nPins = 28;
+	uint nPins = 0;	// nPins must be less than 32 to avoid auto-push during sampling
+	for (uint32_t pinBitmap = pinBitmap_; pinBitmap != 0; pinBitmap >>= 1, ++nPins) ;
 	program_
 	.program("logic_analyzer")
 	.L("loop").wrap_target()
@@ -66,25 +67,25 @@ LogicAnalyzer& LogicAnalyzer::Start()
 		.mov("osr", "~x")
 	.entry()
 		.mov("isr", "null")
-		.in("pins", nPins)			// save current pins state in isr (no auto-push)
+		.in("pins", nPins)				// save current pins state in isr (no auto-push)
 		.mov("x", "isr")
 		.jmp("do_report")	[1]
 	.L("no_wrap_around")
-		.mov("osr", "~x")			// increment osr (counter) by 1
+		.mov("osr", "~x")				// increment osr (counter) by 1
 		.mov("isr", "null")
-		.in("pins", nPins)			// save current pins state in isr (no auto-push)
+		.in("pins", nPins)				// save current pins state in isr (no auto-push)
 		.mov("x", "isr")
-		.jmp("x!=y", "do_report")	// if pins state changed, report it
-		.jmp("loop")				[2]
+		.jmp("x!=y", "do_report")		// if pins state changed, report it
+		.jmp("loop")		[2]
 	.L("do_report")
-		.in("osr", 32)				// auto-push osr (counter)
-		.in("x", 32)				// auto-push x (current pins state)
-		.mov("y", "x")				// save current pins state in y
+		.in("osr", 32)					// auto-push osr (counter)
+		.in("x", 32)					// auto-push x (current pins state)
+		.mov("y", "x")					// save current pins state in y
 	.wrap()
 	.end();
 	nClocksPerLoop_ = 10;
 	sm_.config.set_in_shift_left(true, 32); // shift left, autopush enabled, push threshold 32
-	sm_.set_program(program_).set_listen_pins(gpio, -1).init().set_enabled();
+	sm_.set_program(program_).set_listen_pins(pinMin_, -1).init().set_enabled();
 	pChannel_ = DMA::claim_unused_channel();
 	config_.set_enable(true)
 		.set_transfer_data_size(DMA_SIZE_32)
@@ -100,7 +101,7 @@ LogicAnalyzer& LogicAnalyzer::Start()
 	pChannel_->set_config(config_)
 		.set_read_addr(sm_.get_rxf())
 		.set_write_addr(eventBuff_.get())
-		.set_trans_count_trig(nEventsMax);
+		.set_trans_count_trig(nEventsMax * sizeof(Event) / sizeof(uint32_t));
 	return *this;
 }
 
@@ -134,17 +135,28 @@ int LogicAnalyzer::GetEventCount() const
 
 const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 {
-	int nBitsToDisp = 16;
+	//int nBitsToDisp = 16;
 	float clockPIOProgram = static_cast<float>(::clock_get_hz(clk_sys) / nClocksPerLoop_);
 	int nEvents = ChooseMin(GetEventCount(), nEventsToPrint_);
 	if (nEvents == 0) return *this;
 	int iEventStart = GetEventCount() - nEvents;
 	const Event& eventStart = GetEvent(iEventStart);
-	tout.Printf("%14.3f", 0.);
-	for (int iBit = 0; iBit < nBitsToDisp; ++iBit) {
-		tout.Print((eventStart.bits & (1 << iBit))? "   |" : " |  ");
-	}
-	tout.Println();
+	do {
+		tout.Printf("%14s", "");
+		uint32_t pinBitmap = pinBitmap_;
+		for (int iBit = 0; pinBitmap; ++iBit, pinBitmap >>= 1) {
+			if (pinBitmap & 1) tout.Printf(" P%-2d", iBit + pinMin_);
+		}
+		tout.Println();
+	} while (0);
+	do {
+		tout.Printf("%14.3f", 0.);
+		uint32_t pinBitmap = pinBitmap_;
+		for (int iBit = 0; pinBitmap; ++iBit, pinBitmap >>= 1) {
+			if (pinBitmap & 1) tout.Print((eventStart.bits & (1 << iBit))? "   |" : " |  ");
+		}
+		tout.Println();
+	} while (0);
 	for (int i = 1; i < nEvents; ++i) {
 		const Event& eventPrev = GetEvent(iEventStart + i - 1);
 		const Event& event = GetEvent(iEventStart + i);
@@ -154,25 +166,28 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		int nDelta = static_cast<int>(delta / usecReso_);
 		if (nDelta < 40) {
 			for (int i = 0; i < nDelta; ++i) {
-				tout.Printf("%*s", 14, "");
-				for (int iBit = 0; iBit < nBitsToDisp; ++iBit) {
-					tout.Print((eventPrev.bits & (1 << iBit))? "   |" : " |  ");
+				tout.Printf("%14s", "");
+				uint32_t pinBitmap = pinBitmap_;
+				for (int iBit = 0; pinBitmap; ++iBit, pinBitmap >>= 1) {
+					if (pinBitmap & 1) tout.Print((eventPrev.bits & (1 << iBit))? "   |" : " |  ");
 				}
 				tout.Println();
 			}
 		} else {
 			tout.Println();
-			tout.Printf("%*s", 14, "");
-			for (int iBit = 0; iBit < nBitsToDisp; ++iBit) {
-				tout.Print((eventPrev.bits & (1 << iBit))? "   :" : " :  ");
+			tout.Printf("%14s", "");
+			uint32_t pinBitmap = pinBitmap_;
+			for (int iBit = 0; pinBitmap; ++iBit, pinBitmap >>= 1) {
+				if (pinBitmap & 1) tout.Print((eventPrev.bits & (1 << iBit))? "   :" : " :  ");
 			}
 			tout.Println();
 			tout.Println();
 		}
 		uint32_t bitsTransition = event.bits ^ eventPrev.bits;	
 		tout.Printf("%14.3f", static_cast<float>(event.timeStamp - eventStart.timeStamp) * 1000'000 / clockPIOProgram);
-		for (int iBit = 0; iBit < nBitsToDisp; ++iBit) {
-			tout.Print((bitsTransition & (1 << iBit))? " +-+" : (event.bits & (1 << iBit))? "   |" : " |  ");
+		uint32_t pinBitmap = pinBitmap_;
+		for (int iBit = 0; pinBitmap; ++iBit, pinBitmap >>= 1) {
+			if (pinBitmap & 1) tout.Print((bitsTransition & (1 << iBit))? " +-+" : (event.bits & (1 << iBit))? "   |" : " |  ");
 		}
 		tout.Println();
 		if (Tickable::TickSub()) break;
@@ -281,8 +296,6 @@ ShellCmd(la, "Logic Analyzer")
 int main()
 {
 	::stdio_init_all();
-	logicAnalyzer.Start();
-
 	//-------------------------------------------------------------------------
 	LABOPlatform laboPlatform;
 	laboPlatform.AttachStdio().Initialize();
