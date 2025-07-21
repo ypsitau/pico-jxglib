@@ -19,6 +19,8 @@ private:
 	DMA::ChannelConfig config_;
 	DMA::Channel* pChannel_;
 	std::unique_ptr<Event> eventBuff_;
+	uint32_t pinBitmap_;
+	uint pinMin_;
 	float usecReso_;
 	int nEventsToPrint_;
 	int nClocksPerLoop_;
@@ -30,11 +32,13 @@ public:
 	LogicAnalyzer& Restart();
 	LogicAnalyzer& Stop();
 	LogicAnalyzer& Clear();
+	LogicAnalyzer& SetPins(uint32_t pinBitmap, uint32_t pinMin) { pinBitmap_ = pinBitmap; pinMin_ = pinMin; return *this; }
 	LogicAnalyzer& SetResolution(float usecReso) { usecReso_ = usecReso; return *this; }
 	LogicAnalyzer& SetEventCountToPrint(int nEventsToPrint) { nEventsToPrint_ = nEventsToPrint; return *this; }
 	float GetResolution() const { return usecReso_; }
 	int GetEventCount() const;
-	void PrintWave(Printable& tout) const;
+	const LogicAnalyzer& PrintWave(Printable& tout) const;
+	const LogicAnalyzer& PrintSettings(Printable& tout) const;
 	const Event& GetEvent(int iEvent) const { return eventBuff_.get()[iEvent]; }
 };
 
@@ -128,15 +132,15 @@ int LogicAnalyzer::GetEventCount() const
 	return (reinterpret_cast<uint32_t>(pChannel_->get_write_addr()) - reinterpret_cast<uint32_t>(eventBuff_.get())) / sizeof(Event);
 }
 
-void LogicAnalyzer::PrintWave(Printable& tout) const
+const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 {
 	int nBitsToDisp = 16;
 	float clockPIOProgram = static_cast<float>(::clock_get_hz(clk_sys) / nClocksPerLoop_);
 	int nEvents = ChooseMin(GetEventCount(), nEventsToPrint_);
-	if (nEvents == 0) return;
+	if (nEvents == 0) return *this;
 	int iEventStart = GetEventCount() - nEvents;
 	const Event& eventStart = GetEvent(iEventStart);
-	tout.Printf("%*s", 14, "");
+	tout.Printf("%14.3f", 0.);
 	for (int iBit = 0; iBit < nBitsToDisp; ++iBit) {
 		tout.Print((eventStart.bits & (1 << iBit))? "   |" : " |  ");
 	}
@@ -173,6 +177,24 @@ void LogicAnalyzer::PrintWave(Printable& tout) const
 		tout.Println();
 		if (Tickable::TickSub()) break;
 	}
+	return *this;
+}
+
+const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
+{
+	tout.Printf("pins:");
+	if (pinBitmap_ == 0) {
+		tout.Printf("none");
+	} else {
+	int i = 0;
+		for (uint32_t pinBitmap = pinBitmap_; pinBitmap; pinBitmap >>= 1, ++i) {
+			if (pinBitmap & 1) {
+				tout.Printf((i == 0)? "%d" : ",%d", pinMin_ + i);
+			}
+		}
+	}
+	tout.Printf(" reso:%.2fusec recorded-events:%d\n", usecReso_, GetEventCount());
+	return *this;
 }
 
 LogicAnalyzer logicAnalyzer;
@@ -181,6 +203,7 @@ ShellCmd(la, "Logic Analyzer")
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h', "prints this help"),
+		Arg::OptString("pins",		'p', "pins to monitor", "PINS"),
 		Arg::OptString("reso",		'r', "resolution in microseconds (default 1000)", "RESO"),
 		Arg::OptString("events",	'e', "number of events to print (default 80)", "NUM"),
 	};
@@ -194,6 +217,26 @@ ShellCmd(la, "Logic Analyzer")
 		return Result::Success;
 	}
 	const char* value;
+	if (arg.GetString("pins", &value)) {
+		Arg::EachNum eachNum(value, GPIO::NumPins - 1);
+		if (!eachNum.CheckValidity()) {
+			terr.Printf("invalid GPIO pin number: %s\n", value);
+			return Result::Error;
+		}
+		uint pinMin = GPIO::NumPins;
+		uint32_t pinBitmap = 0;
+		int pin;
+		while (eachNum.Next(&pin)) {
+			if (pin < 0 || pin >= GPIO::NumPins) {
+				terr.Printf("invalid GPIO pin number: %d\n", pin);
+				return Result::Error;
+			}
+			pinBitmap |= (1 << pin);
+			if (pinMin > pin) pinMin = pin;
+		}
+		pinBitmap >>= pinMin;
+		logicAnalyzer.SetPins(pinBitmap, pinMin);
+	}
 	if (arg.GetString("reso", &value)) {
 		char* endptr = nullptr;
 		float usecReso = ::strtod(value, &endptr);
@@ -213,8 +256,7 @@ ShellCmd(la, "Logic Analyzer")
 		logicAnalyzer.SetEventCountToPrint(nEventsToPrint);
 	}
 	if (argc < 2) {
-		tout.Printf("reso:%.2fusec recorded-events:%d\n",
-					logicAnalyzer.GetResolution(), logicAnalyzer.GetEventCount());
+		logicAnalyzer.PrintSettings(tout);
 		return Result::Success;
 	}
 	const char* subCmd = argv[1];
