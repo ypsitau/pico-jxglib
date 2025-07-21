@@ -23,9 +23,10 @@ public:
 	LogicAnalyzer();
 	~LogicAnalyzer();
 public:
-	void Initialize();
-	void Start();
-	void Stop();
+	LogicAnalyzer& Start();
+	LogicAnalyzer& Restart();
+	LogicAnalyzer& Stop();
+	LogicAnalyzer& Clear();
 	int GetEventCount() const;
 	void PrintWave(Printable& tout) const;
 };
@@ -41,7 +42,7 @@ LogicAnalyzer::~LogicAnalyzer()
 	}
 }
 
-void LogicAnalyzer::Initialize()
+LogicAnalyzer& LogicAnalyzer::Start()
 {
 	eventBuff_.reset(new Event[nEventsMax]);
 	const GPIO& gpio = GPIO2;
@@ -84,20 +85,34 @@ void LogicAnalyzer::Initialize()
 		.set_irq_quiet(false)
 		.set_sniff_enable(false)
 		.set_high_priority(false);
-	Start();
-}
-
-void LogicAnalyzer::Start()
-{
 	pChannel_->set_config(config_)
 		.set_read_addr(sm_.get_rxf())
 		.set_write_addr(eventBuff_.get())
 		.set_trans_count_trig(nEventsMax);
+	return *this;
 }
 
-void LogicAnalyzer::Stop()
+LogicAnalyzer& LogicAnalyzer::Restart()
+{
+	sm_.remove_program();
+	pChannel_->unclaim();
+	Start();
+	return *this;
+}
+
+LogicAnalyzer& LogicAnalyzer::Stop()
 {
 	pChannel_->abort();
+	return *this;
+}
+
+LogicAnalyzer& LogicAnalyzer::Clear()
+{
+	pChannel_->set_config(config_)
+		.set_read_addr(sm_.get_rxf())
+		.set_write_addr(eventBuff_.get())
+		.set_trans_count(nEventsMax);
+	return *this;
 }
 
 int LogicAnalyzer::GetEventCount() const
@@ -107,26 +122,92 @@ int LogicAnalyzer::GetEventCount() const
 
 void LogicAnalyzer::PrintWave(Printable& tout) const
 {
-	uint32_t clockPIO = ::clock_get_hz(clk_sys) / 10;
+	int nBitsToDisp = 16;
+	float tick = 1'000; // usec
+	float clockPIO = static_cast<float>(::clock_get_hz(clk_sys) / 10);
 	int nEvents = GetEventCount();
-	for (int iEvent = 0; iEvent < nEvents; ++iEvent) {
+	const Event& event = eventBuff_.get()[0];
+	tout.Printf("%*s", 14, "");
+	for (int iBit = 0; iBit < nBitsToDisp; ++iBit) {
+		tout.Print((event.bits & (1 << iBit))? "   |" : " |  ");
+	}
+	tout.Println();
+	uint32_t timeStampStart = eventBuff_.get()[1].timeStamp;
+	for (int iEvent = 1; iEvent < nEvents; ++iEvent) {
+		const Event& eventPrev = eventBuff_.get()[iEvent - 1];
 		const Event& event = eventBuff_.get()[iEvent];
-		tout.Printf("%.2fusec %032b\n", static_cast<float>(event.timeStamp) * 1000000 / clockPIO, event.bits);
+		if (eventPrev.bits == event.bits) continue; // skip if no change
+		float delta = static_cast<float>(event.timeStamp - eventPrev.timeStamp) * 1000'000 / clockPIO;
+		if (delta == 0) continue; // skip if no time difference
+		int nDelta = static_cast<int>(delta / tick);
+		if (nDelta < 40) {
+			for (int i = 0; i < nDelta; ++i) {
+				tout.Printf("%*s", 14, "");
+				for (int iBit = 0; iBit < nBitsToDisp; ++iBit) {
+					tout.Print((eventPrev.bits & (1 << iBit))? "   |" : " |  ");
+				}
+				tout.Println();
+			}
+		} else {
+			tout.Printf("%*s", 14, "");
+			for (int iBit = 0; iBit < nBitsToDisp; ++iBit) {
+				tout.Print((eventPrev.bits & (1 << iBit))? "   :" : " :  ");
+			}
+			tout.Println();
+		}
+		uint32_t bitsTransition = event.bits ^ eventPrev.bits;	
+		tout.Printf("%14.3f", static_cast<float>(event.timeStamp - timeStampStart) * 1000'000 / clockPIO);
+		for (int iBit = 0; iBit < nBitsToDisp; ++iBit) {
+			tout.Print((bitsTransition & (1 << iBit))? " +-+" : (event.bits & (1 << iBit))? "   |" : " |  ");
+		}
+		tout.Println();
 	}
 }
 
 LogicAnalyzer logicAnalyzer;
 
-ShellCmd(check, "check logic analyzer")
+ShellCmd(la, "Logic Analyzer")
 {
-	logicAnalyzer.PrintWave(tout);
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",	'h', "prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
+	bool genericFlag = (::strcmp(GetName(), "pwm") == 0);
+	if (arg.GetBool("help")) {
+		tout.Printf("Usage: %s [OPTION]... [COMMAND]...\n", GetName());
+		arg.PrintHelp(tout);
+		tout.Printf("Sub Commands:\n");
+		return Result::Success;
+	}
+	if (argc < 2) {
+		int nEvents = logicAnalyzer.GetEventCount();
+		tout.Printf("Number of events: %d\n", nEvents);
+		return Result::Success;
+	}
+	const char* subCmd = argv[1];
+	if (::strcasecmp(subCmd, "start") == 0) {
+		logicAnalyzer.Start();
+		tout.Println("Logic Analyzer started.");
+	} else if (::strcasecmp(subCmd, "restart") == 0) {
+		logicAnalyzer.Restart();
+		tout.Println("Logic Analyzer restarted.");
+	} else if (::strcmp(subCmd, "stop") == 0) {
+		logicAnalyzer.Stop();
+		tout.Println("Logic Analyzer stopped.");
+	} else if (::strcmp(subCmd, "wave") == 0) {
+		logicAnalyzer.PrintWave(tout);
+	} else {
+		tout.Printf("Unknown command: %s\n", subCmd);
+		return Result::Error;
+	}
 	return Result::Success;
 }
 
 int main()
 {
 	::stdio_init_all();
-	logicAnalyzer.Initialize();
+	logicAnalyzer.Start();
 
 	//-------------------------------------------------------------------------
 	LABOPlatform laboPlatform;
