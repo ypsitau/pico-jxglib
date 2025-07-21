@@ -4,11 +4,11 @@
 
 using namespace jxglib;
 
+LABOPlatform laboPlatform;
+
 int main()
 {
 	::stdio_init_all();
-	//-------------------------------------------------------------------------
-	LABOPlatform laboPlatform;
 	laboPlatform.AttachStdio().Initialize();
 	for (;;) Tickable::Tick();
 }

@@ -1,3 +1,4 @@
+
 //==============================================================================
 // LogicAnalyzer.cpp
 //==============================================================================
@@ -101,17 +102,23 @@ int LogicAnalyzer::GetEventCount() const
 
 const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 {
-	//int nBitsToDisp = 16;
+	const char* strHigh			= "    |";
+	const char* strHighIdle		= "    :";
+	const char* strLow			= "  |  ";
+	const char* strLowIdle		= "  :  ";
+	const char* strTransition	= "  +-+";
+	const char* formatHeader	= " GP%-2d";
 	float clockPIOProgram = static_cast<float>(::clock_get_hz(clk_sys) / nClocksPerLoop_);
 	int nEvents = ChooseMin(GetEventCount(), nEventsToPrint_);
 	if (nEvents == 0) return *this;
 	int iEventStart = GetEventCount() - nEvents;
 	const Event& eventStart = GetEvent(iEventStart);
 	do {
-		tout.Printf("%14s", "");
+		// Print header
+		tout.Printf("%14s ", "");
 		uint32_t pinBitmap = pinBitmap_;
 		for (int iBit = 0; pinBitmap; ++iBit, pinBitmap >>= 1) {
-			if (pinBitmap & 1) tout.Printf(" P%-2d", iBit + pinMin_);
+			if (pinBitmap & 1) tout.Printf(formatHeader,iBit + pinMin_);
 		}
 		tout.Println();
 	} while (0);
@@ -119,7 +126,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		tout.Printf("%14.3f", 0.);
 		uint32_t pinBitmap = pinBitmap_;
 		for (int iBit = 0; pinBitmap; ++iBit, pinBitmap >>= 1) {
-			if (pinBitmap & 1) tout.Print((eventStart.bits & (1 << iBit))? "   |" : " |  ");
+			if (pinBitmap & 1) tout.Print((eventStart.bits & (1 << iBit))? strHigh : strLow);
 		}
 		tout.Println();
 	} while (0);
@@ -135,7 +142,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 				tout.Printf("%14s", "");
 				uint32_t pinBitmap = pinBitmap_;
 				for (int iBit = 0; pinBitmap; ++iBit, pinBitmap >>= 1) {
-					if (pinBitmap & 1) tout.Print((eventPrev.bits & (1 << iBit))? "   |" : " |  ");
+					if (pinBitmap & 1) tout.Print((eventPrev.bits & (1 << iBit))? strHigh : strLow);
 				}
 				tout.Println();
 			}
@@ -144,7 +151,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 			tout.Printf("%14s", "");
 			uint32_t pinBitmap = pinBitmap_;
 			for (int iBit = 0; pinBitmap; ++iBit, pinBitmap >>= 1) {
-				if (pinBitmap & 1) tout.Print((eventPrev.bits & (1 << iBit))? "   :" : " :  ");
+				if (pinBitmap & 1) tout.Print((eventPrev.bits & (1 << iBit))? strHighIdle : strLowIdle);
 			}
 			tout.Println();
 			tout.Println();
@@ -153,7 +160,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		tout.Printf("%14.3f", static_cast<float>(event.timeStamp - eventStart.timeStamp) * 1000'000 / clockPIOProgram);
 		uint32_t pinBitmap = pinBitmap_;
 		for (int iBit = 0; pinBitmap; ++iBit, pinBitmap >>= 1) {
-			if (pinBitmap & 1) tout.Print((bitsTransition & (1 << iBit))? " +-+" : (event.bits & (1 << iBit))? "   |" : " |  ");
+			if (pinBitmap & 1) tout.Print((bitsTransition & (1 << iBit))? strTransition : (event.bits & (1 << iBit))? strHigh : strLow);
 		}
 		tout.Println();
 		if (Tickable::TickSub()) break;
