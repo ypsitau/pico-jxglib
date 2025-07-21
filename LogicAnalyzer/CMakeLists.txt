@@ -4,6 +4,7 @@ target_include_directories(jxglib_LogicAnalyzer INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/include)
 
 target_link_libraries(jxglib_LogicAnalyzer INTERFACE
+	jxglib_PIO
 	jxglib_DMA)
 
 target_sources(jxglib_LogicAnalyzer INTERFACE

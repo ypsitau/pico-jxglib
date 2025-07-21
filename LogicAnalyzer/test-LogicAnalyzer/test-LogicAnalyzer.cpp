@@ -4,8 +4,6 @@
 
 using namespace jxglib;
 
-
-
 int main()
 {
 	::stdio_init_all();

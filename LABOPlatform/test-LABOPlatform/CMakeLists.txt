@@ -55,7 +55,6 @@ target_include_directories(test-LABOPlatform PRIVATE
 
 pico_add_extra_outputs(test-LABOPlatform)
 
-target_link_libraries(test-LABOPlatform jxglib_LABOPlatform
-    jxglib_ShellCmd_FS jxglib_ShellCmd_GPIO jxglib_ShellCmd_ADC jxglib_ShellCmd_PWM jxglib_ShellCmd_I2C jxglib_ShellCmd_SPI)
+target_link_libraries(test-LABOPlatform jxglib_LABOPlatform_FullCmd)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 jxglib_configure_LABOPlatform(test-LABOPlatform)
