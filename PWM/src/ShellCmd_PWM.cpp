@@ -11,7 +11,7 @@
 
 using namespace jxglib;
 
-static bool ProcessPWM(Printable& terr, Printable& tout, const int pinTbl[], int nPins, int argc, char* argv[], bool onlyPWMFlag);
+static bool ProcessPWM(Printable& terr, Printable& tout, const int pinTbl[], int nPins, int argc, char* argv[], bool onlyPWMFlag, bool dumbFlag);
 static void PrintPWMStatus(Printable& tout, uint pin, bool onlyPWMFlag);
 
 static const char* strAvailableCommands = "func, enable, disable, freq, wrap, level, duty, clkdiv, phase-correct, invert, counter";
@@ -19,13 +19,15 @@ static const char* strAvailableCommands = "func, enable, disable, freq, wrap, le
 ShellCmd(pwm, "controls PWM pins")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",	'h', "prints this help"),
+		Arg::OptBool("help",		'h', "prints this help"),
 		Arg::OptBool("only-pwm",	'n', "only show PWM-capable pins"),
+		Arg::OptBool("quiet",		'Q', "do not print any status information"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	bool genericFlag = (::strcmp(GetName(), "pwm") == 0);
 	bool onlyPWMFlag = arg.GetBool("only-pwm");
+	bool quietFlag = arg.GetBool("quiet");
 	if (arg.GetBool("help")) {
 		if (genericFlag) {
 			tout.Printf("Usage: %s [OPTION]... [PIN [COMMAND]...]\n", GetName());
@@ -76,7 +78,7 @@ ShellCmd(pwm, "controls PWM pins")
 		nPins = 1;
 		nArgsSkip = 1;
 	}
-	return ProcessPWM(terr, tout, pinTbl, nPins, argc - nArgsSkip, argv + nArgsSkip, onlyPWMFlag)? Result::Success : Result::Error;
+	return ProcessPWM(terr, tout, pinTbl, nPins, argc - nArgsSkip, argv + nArgsSkip, onlyPWMFlag, quietFlag)? Result::Success : Result::Error;
 }
 
 // Create PWM pin aliases similar to GPIO
@@ -111,7 +113,7 @@ ShellCmdAlias(pwm27, pwm)
 ShellCmdAlias(pwm28, pwm)
 ShellCmdAlias(pwm29, pwm)
 
-bool ProcessPWM(Printable& terr, Printable& tout, const int pinTbl[], int nPins, int argc, char* argv[], bool onlyPWMFlag)
+bool ProcessPWM(Printable& terr, Printable& tout, const int pinTbl[], int nPins, int argc, char* argv[], bool onlyPWMFlag, bool quietFlag)
 {
 	Shell::Arg::EachSubcmd each(argv[0], argv[argc]);
 	if (!each.Initialize()) {
@@ -256,7 +258,9 @@ bool ProcessPWM(Printable& terr, Printable& tout, const int pinTbl[], int nPins,
 		}
 		if (Tickable::TickSub()) return true;
 	}
-	for (int i = 0; i < nPins; ++i) PrintPWMStatus(tout, pinTbl[i], onlyPWMFlag);
+	if (!quietFlag) {
+		for (int i = 0; i < nPins; ++i) PrintPWMStatus(tout, pinTbl[i], onlyPWMFlag);
+	}
 	return true;
 }
 

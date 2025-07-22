@@ -14,6 +14,8 @@ ShellCmd(la, "Logic Analyzer")
 		Arg::OptString("pins",		'p', "pins to monitor", "PINS"),
 		Arg::OptString("reso",		'r', "resolution in microseconds (default 1000)", "RESO"),
 		Arg::OptString("events",	'e', "number of events to print (default 80)", "NUM"),
+		Arg::OptString("pos",		'o', "print position (head, tail)", "POS"),
+		Arg::OptString("style",		's', "waveform style (fancy1, fancy2, fancy3, fancy4, simple1, simple2, simple3, simple4)", "STYLE"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
@@ -24,10 +26,9 @@ ShellCmd(la, "Logic Analyzer")
 		tout.Printf("Sub Commands:\n");
 		tout.Printf("  sleep:MSEC           sleep for specified milliseconds\n");
 		tout.Printf("  repeat[:N] {CMD...}  repeat the commands N times (default: infinite)\n");
-		tout.Printf("  start                start the logic analyzer\n");
-		tout.Printf("  restart              restart the logic analyzer\n");
-		tout.Printf("  stop                 stop the logic analyzer\n");
-		tout.Printf("  print                print the captured waveforms\n");
+		tout.Printf("  enable               enable sampling of the logic analyzer\n");
+		tout.Printf("  disable              disable sampling of the logic analyzer\n");
+		tout.Printf("  print                print the sampled waveforms\n");
 		return Result::Success;
 	}
 	const char* value;
@@ -69,6 +70,40 @@ ShellCmd(la, "Logic Analyzer")
 		}
 		logicAnalyzer.SetEventCountToPrint(nEventsToPrint);
 	}
+	if (arg.GetString("pos", &value)) {
+		if (::strcmp(value, "head") == 0) {
+			logicAnalyzer.SetPrintPos(LogicAnalyzer::PrintPos::Head);
+		} else if (::strcmp(value, "tail") == 0) {
+			logicAnalyzer.SetPrintPos(LogicAnalyzer::PrintPos::Tail);
+		} else {
+			terr.Printf("Invalid print position: %s\n", value);
+			return Result::Error;
+		}
+	}
+	if (arg.GetString("style", &value)) {
+		const LogicAnalyzer::WaveStyle* pWaveStyle = nullptr;
+		if (::strcasecmp(value, "fancy1") == 0) {
+			pWaveStyle = &LogicAnalyzer::waveStyle_fancy1;
+		} else if (::strcasecmp(value, "fancy2") == 0) {
+			pWaveStyle = &LogicAnalyzer::waveStyle_fancy2;
+		} else if (::strcasecmp(value, "fancy3") == 0) {
+			pWaveStyle = &LogicAnalyzer::waveStyle_fancy3;
+		} else if (::strcasecmp(value, "fancy4") == 0) {
+			pWaveStyle = &LogicAnalyzer::waveStyle_fancy4;
+		} else if (::strcasecmp(value, "simple1") == 0) {
+			pWaveStyle = &LogicAnalyzer::waveStyle_simple1;
+		} else if (::strcasecmp(value, "simple2") == 0) {
+			pWaveStyle = &LogicAnalyzer::waveStyle_simple2;
+		} else if (::strcasecmp(value, "simple3") == 0) {
+			pWaveStyle = &LogicAnalyzer::waveStyle_simple3;
+		} else if (::strcasecmp(value, "simple4") == 0) {
+			pWaveStyle = &LogicAnalyzer::waveStyle_simple4;
+		} else {
+			terr.Printf("Invalid waveform style: %s\n", value);
+			return Result::Error;
+		}
+		logicAnalyzer.SetWaveStyle(*pWaveStyle);
+	}
 	if (argc < 2) {
 		logicAnalyzer.PrintSettings(tout);
 		return Result::Success;
@@ -79,14 +114,11 @@ ShellCmd(la, "Logic Analyzer")
 		return Result::Error;
 	}
 	while (const char* subcmd = each.Next()) {
-		if (::strcasecmp(subcmd, "start") == 0) {
-			logicAnalyzer.Start();
+		if (::strcasecmp(subcmd, "enable") == 0) {
+			logicAnalyzer.Enable();
 			tout.Println("Logic Analyzer started.");
-		} else if (::strcasecmp(subcmd, "restart") == 0) {
-			logicAnalyzer.Restart();
-			tout.Println("Logic Analyzer restarted.");
-		} else if (::strcmp(subcmd, "stop") == 0) {
-			logicAnalyzer.Stop();
+		} else if (::strcmp(subcmd, "disable") == 0) {
+			logicAnalyzer.Disable();
 			tout.Println("Logic Analyzer stopped.");
 		} else if (::strcmp(subcmd, "print") == 0) {
 			logicAnalyzer.PrintWave(tout);

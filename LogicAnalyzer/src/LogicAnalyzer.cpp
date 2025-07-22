@@ -9,27 +9,96 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // LogicAnalyzer
 //------------------------------------------------------------------------------
-const LogicAnalyzer::WavePattern LogicAnalyzer::wavePattern_Fancy = {
+const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_fancy1 = {
+	name:			"fancy1",
+	strHigh:		"  │",
+	strHighIdle:	"  :",
+	strLow:			" │ ",
+	strLowIdle:		" : ",
+	strLowToHigh:	" └┐",
+	strHighToLow:	" ┌┘",
+	formatHeader:	"P%-2d",
+};
+
+const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_fancy2 = {
+	name:			"fancy2",
+	strHigh:		"   │",
+	strHighIdle:	"   :",
+	strLow:			" │  ",
+	strLowIdle:		" :  ",
+	strLowToHigh:	" └─┐",
+	strHighToLow:	" ┌─┘",
+	formatHeader:	"GP%-2d",
+};
+
+const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_fancy3 = {
+	name:			"fancy3",
 	strHigh:		"    │",
 	strHighIdle:	"    :",
-	strLow:			"  │  ",
-	strLowIdle:		"  :  ",
-	strLowToHigh:	"  └─┐",
-	strHighToLow:	"  ┌─┘",
+	strLow:			" │   ",
+	strLowIdle:		" :   ",
+	strLowToHigh:	" └──┐",
+	strHighToLow:	" ┌──┘",
 	formatHeader:	" GP%-2d",
 };
 
-const LogicAnalyzer::WavePattern LogicAnalyzer::wavePattern_Simple = {
+const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_fancy4 = {
+	name:			"fancy4",
+	strHigh:		"     │",
+	strHighIdle:	"     :",
+	strLow:			" │    ",
+	strLowIdle:		" :    ",
+	strLowToHigh:	" └───┐",
+	strHighToLow:	" ┌───┘",
+	formatHeader:	" GP%-2d ",
+};
+
+const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple1 = {
+	name:			"simple1",
+	strHigh:		"  |",
+	strHighIdle:	"  :",
+	strLow:			" | ",
+	strLowIdle:		" : ",
+	strLowToHigh:	" ++",
+	strHighToLow:	" ++",
+	formatHeader:	"P%-2d",
+};
+
+const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple2 = {
+	name:			"simple2",
+	strHigh:		"   |",
+	strHighIdle:	"   :",
+	strLow:			" |  ",
+	strLowIdle:		" :  ",
+	strLowToHigh:	" +-+",
+	strHighToLow:	" +-+",
+	formatHeader:	"GP%-2d",
+};
+
+const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple3 = {
+	name:			"simple3",
 	strHigh:		"    |",
 	strHighIdle:	"    :",
-	strLow:			"  |  ",
-	strLowIdle:		"  :  ",
-	strLowToHigh:	"  +-+",
-	strHighToLow:	"  +-+",
+	strLow:			" |   ",
+	strLowIdle:		" :   ",
+	strLowToHigh:	" +--+",
+	strHighToLow:	" +--+",
 	formatHeader:	" GP%-2d",
 };
 
-LogicAnalyzer::LogicAnalyzer() : pChannel_{nullptr}, usecReso_{1'000}, nEventsToPrint_{80}, nClocksPerLoop_{1}
+const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple4 = {
+	name:			"simple4",
+	strHigh:		"     |",
+	strHighIdle:	"     :",
+	strLow:			" |    ",
+	strLowIdle:		" :    ",
+	strLowToHigh:	" +---+",
+	strHighToLow:	" +---+",
+	formatHeader:	" GP%-2d ",
+};
+
+LogicAnalyzer::LogicAnalyzer() : pChannel_{nullptr}, enabledFlag_{false}, pinBitmap_{0}, pinMin_{0},
+	usecReso_{1'000}, printInfo_{80, PrintPos::Head, &waveStyle_fancy2}, nClocksPerLoop_{1}
 {}
 
 LogicAnalyzer::~LogicAnalyzer()
@@ -40,9 +109,10 @@ LogicAnalyzer::~LogicAnalyzer()
 	}
 }
 
-LogicAnalyzer& LogicAnalyzer::Start()
+LogicAnalyzer& LogicAnalyzer::Enable()
 {
 	if (pinBitmap_ == 0) return *this;
+	if (enabledFlag_) Disable(); // disable if already enabled
 	eventBuff_.reset(new Event[nEventsMax]);
 	uint nPins = 0;	// nPins must be less than 32 to avoid auto-push during sampling
 	for (uint32_t pinBitmap = pinBitmap_; pinBitmap != 0; pinBitmap >>= 1, ++nPins) ;
@@ -89,29 +159,17 @@ LogicAnalyzer& LogicAnalyzer::Start()
 		.set_read_addr(sm_.get_rxf())
 		.set_write_addr(eventBuff_.get())
 		.set_trans_count_trig(nEventsMax * sizeof(Event) / sizeof(uint32_t));
+	enabledFlag_ = true;
 	return *this;
 }
 
-LogicAnalyzer& LogicAnalyzer::Restart()
+LogicAnalyzer& LogicAnalyzer::Disable()
 {
+	sm_.set_enabled(false);
 	sm_.remove_program();
-	pChannel_->unclaim();
-	Start();
-	return *this;
-}
-
-LogicAnalyzer& LogicAnalyzer::Stop()
-{
 	pChannel_->abort();
-	return *this;
-}
-
-LogicAnalyzer& LogicAnalyzer::Clear()
-{
-	pChannel_->set_config(config_)
-		.set_read_addr(sm_.get_rxf())
-		.set_write_addr(eventBuff_.get())
-		.set_trans_count(nEventsMax);
+	pChannel_->unclaim();
+	enabledFlag_ = false;
 	return *this;
 }
 
@@ -122,19 +180,19 @@ int LogicAnalyzer::GetEventCount() const
 
 const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 {
-	//const WavePattern* pWavePattern = &wavePattern_Simple;
-	const WavePattern* pWavePattern = &wavePattern_Fancy;
+	const WaveStyle& waveStyle = *printInfo_.pWaveStyle;
 	float clockPIOProgram = static_cast<float>(::clock_get_hz(clk_sys) / nClocksPerLoop_);
-	int nEvents = ChooseMin(GetEventCount(), nEventsToPrint_);
+	int nEvents = ChooseMin(GetEventCount(), printInfo_.nEvents);
 	if (nEvents == 0) return *this;
-	int iEventStart = GetEventCount() - nEvents;
+	int iEventStart = (printInfo_.pos == PrintPos::Tail)? GetEventCount() - nEvents : 0;
 	const Event& eventStart = GetEvent(iEventStart);
+	const Event& eventBase = GetEvent((iEventStart == 0 && nEvents > 1)? 1 : iEventStart);
 	do {
 		// Print header
 		tout.Printf("%14s ", "Time [usec]");
 		uint32_t pinBitmap = pinBitmap_;
 		for (int iBit = 0; pinBitmap; ++iBit, pinBitmap >>= 1) {
-			if (pinBitmap & 1) tout.Printf(pWavePattern->formatHeader, iBit + pinMin_);
+			if (pinBitmap & 1) tout.Printf(waveStyle.formatHeader, iBit + pinMin_);
 		}
 		tout.Println();
 	} while (0);
@@ -142,7 +200,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		tout.Printf("%14.3f", 0.);
 		uint32_t pinBitmap = pinBitmap_;
 		for (int iBit = 0; pinBitmap; ++iBit, pinBitmap >>= 1) {
-			if (pinBitmap & 1) tout.Print((eventStart.bits & (1 << iBit))? pWavePattern->strHigh : pWavePattern->strLow);
+			if (pinBitmap & 1) tout.Print((eventStart.bits & (1 << iBit))? waveStyle.strHigh : waveStyle.strLow);
 		}
 		tout.Println();
 	} while (0);
@@ -158,7 +216,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 				tout.Printf("%14s", "");
 				uint32_t pinBitmap = pinBitmap_;
 				for (int iBit = 0; pinBitmap; ++iBit, pinBitmap >>= 1) {
-					if (pinBitmap & 1) tout.Print((eventPrev.bits & (1 << iBit))? pWavePattern->strHigh : pWavePattern->strLow);
+					if (pinBitmap & 1) tout.Print((eventPrev.bits & (1 << iBit))? waveStyle.strHigh : waveStyle.strLow);
 				}
 				tout.Println();
 			}
@@ -167,21 +225,21 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 			tout.Printf("%14s", "");
 			uint32_t pinBitmap = pinBitmap_;
 			for (int iBit = 0; pinBitmap; ++iBit, pinBitmap >>= 1) {
-				if (pinBitmap & 1) tout.Print((eventPrev.bits & (1 << iBit))? pWavePattern->strHighIdle : pWavePattern->strLowIdle);
+				if (pinBitmap & 1) tout.Print((eventPrev.bits & (1 << iBit))? waveStyle.strHighIdle : waveStyle.strLowIdle);
 			}
 			tout.Println();
 			tout.Println();
 		}
 		uint32_t bitsTransition = event.bits ^ eventPrev.bits;	
-		tout.Printf("%14.3f", static_cast<float>(event.timeStamp - eventStart.timeStamp) * 1000'000 / clockPIOProgram);
+		tout.Printf("%14.3f", static_cast<float>(event.timeStamp - eventBase.timeStamp) * 1000'000 / clockPIOProgram);
 		uint32_t pinBitmap = pinBitmap_;
 		for (int iBit = 0; pinBitmap; ++iBit, pinBitmap >>= 1) {
 			if (!(pinBitmap & 1)) {
 				// nothing to do
 			} else if (bitsTransition & (1 << iBit)) {
-				tout.Print((event.bits & (1 << iBit))? pWavePattern->strLowToHigh : pWavePattern->strHighToLow);
+				tout.Print((event.bits & (1 << iBit))? waveStyle.strLowToHigh : waveStyle.strHighToLow);
 			} else {
-				tout.Print((event.bits & (1 << iBit))? pWavePattern->strHigh : pWavePattern->strLow);
+				tout.Print((event.bits & (1 << iBit))? waveStyle.strHigh : waveStyle.strLow);
 			}
 		}
 		tout.Println();
@@ -196,14 +254,14 @@ const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 	if (pinBitmap_ == 0) {
 		tout.Printf("none");
 	} else {
-	int i = 0;
+		int i = 0;
 		for (uint32_t pinBitmap = pinBitmap_; pinBitmap; pinBitmap >>= 1, ++i) {
 			if (pinBitmap & 1) {
 				tout.Printf((i == 0)? "%d" : ",%d", pinMin_ + i);
 			}
 		}
 	}
-	tout.Printf(" reso:%.2fusec recorded-events:%d\n", usecReso_, GetEventCount());
+	tout.Printf(" reso:%.2fusec style:%s recorded-events:%d\n", usecReso_, GetWaveStyle().name, GetEventCount());
 	return *this;
 }
 
