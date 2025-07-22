@@ -13,8 +13,8 @@ ShellCmd(la, "Logic Analyzer")
 		Arg::OptBool("help",		'h', "prints this help"),
 		Arg::OptString("pins",		'p', "pins to monitor", "PINS"),
 		Arg::OptString("reso",		'r', "resolution in microseconds (default 1000)", "RESO"),
+		Arg::OptString("part",		't', "printed part of the waveform (head, tail, all)", "PART"),
 		Arg::OptString("events",	'e', "number of events to print (default 80)", "NUM"),
-		Arg::OptString("pos",		'o', "print position (head, tail)", "POS"),
 		Arg::OptString("style",		's', "waveform style (fancy1, fancy2, fancy3, fancy4, simple1, simple2, simple3, simple4)", "STYLE"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
@@ -61,6 +61,18 @@ ShellCmd(la, "Logic Analyzer")
 		}
 		logicAnalyzer.SetResolution(usecReso);
 	}
+	if (arg.GetString("part", &value)) {
+		if (::strcmp(value, "head") == 0) {
+			logicAnalyzer.SetPrintPart(LogicAnalyzer::PrintPart::Head);
+		} else if (::strcmp(value, "tail") == 0) {
+			logicAnalyzer.SetPrintPart(LogicAnalyzer::PrintPart::Tail);
+		} else if (::strcmp(value, "all") == 0) {
+			logicAnalyzer.SetPrintPart(LogicAnalyzer::PrintPart::All);
+		} else {
+			terr.Printf("Invalid print position: %s\n", value);
+			return Result::Error;
+		}
+	}
 	if (arg.GetString("events", &value)) {
 		char* endptr = nullptr;
 		int nEventsToPrint = ::strtol(value, &endptr, 10);
@@ -69,16 +81,6 @@ ShellCmd(la, "Logic Analyzer")
 			return Result::Error;
 		}
 		logicAnalyzer.SetEventCountToPrint(nEventsToPrint);
-	}
-	if (arg.GetString("pos", &value)) {
-		if (::strcmp(value, "head") == 0) {
-			logicAnalyzer.SetPrintPos(LogicAnalyzer::PrintPos::Head);
-		} else if (::strcmp(value, "tail") == 0) {
-			logicAnalyzer.SetPrintPos(LogicAnalyzer::PrintPos::Tail);
-		} else {
-			terr.Printf("Invalid print position: %s\n", value);
-			return Result::Error;
-		}
 	}
 	if (arg.GetString("style", &value)) {
 		const LogicAnalyzer::WaveStyle* pWaveStyle = nullptr;

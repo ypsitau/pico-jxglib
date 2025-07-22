@@ -28,10 +28,10 @@ public:
 		const char* strHighToLow;
 		const char* formatHeader;
 	};
-	enum class PrintPos { Head, Tail };
+	enum class PrintPart { Head, Tail, All };
 	struct PrintInfo {
 		int nEvents;
-		PrintPos pos;
+		PrintPart part;
 		const WaveStyle* pWaveStyle;
 	};
 public:
@@ -65,8 +65,8 @@ public:
 	LogicAnalyzer& SetPins(uint32_t pinBitmap, uint32_t pinMin) { pinBitmap_ = pinBitmap; pinMin_ = pinMin; return *this; }
 	LogicAnalyzer& SetResolution(float usecReso) { usecReso_ = usecReso; return *this; }
 	LogicAnalyzer& SetEventCountToPrint(int nEvents) { printInfo_.nEvents = nEvents; return *this; }
-	LogicAnalyzer& SetPrintPos(PrintPos pos) { printInfo_.pos = pos; return *this; }
-	PrintPos GetPrintPos() const { return printInfo_.pos; }
+	LogicAnalyzer& SetPrintPart(PrintPart part) { printInfo_.part = part; return *this; }
+	PrintPart GetPrintPart() const { return printInfo_.part; }
 	LogicAnalyzer& SetWaveStyle(const WaveStyle& waveStyle) { printInfo_.pWaveStyle = &waveStyle; return *this; }
 	const WaveStyle& GetWaveStyle() const { return *printInfo_.pWaveStyle; }
 	float GetResolution() const { return usecReso_; }
