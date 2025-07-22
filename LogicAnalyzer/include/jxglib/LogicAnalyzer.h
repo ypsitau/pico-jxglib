@@ -35,7 +35,6 @@ public:
 		const WaveStyle* pWaveStyle;
 	};
 public:
-	static const uint nEventsMax = 2048;
 	static const WaveStyle waveStyle_fancy1;
 	static const WaveStyle waveStyle_fancy2;
 	static const WaveStyle waveStyle_fancy3;
@@ -46,18 +45,19 @@ public:
 	static const WaveStyle waveStyle_simple4;
 private:
 	PIO::Program program_;
-	PIO::StateMachine sm_;
+	PIO::StateMachine smTbl_[4];
 	DMA::ChannelConfig config_;
 	DMA::Channel* pChannel_;
 	std::unique_ptr<Event> eventBuff_;
+	int nEventsMax_;
 	bool enabledFlag_;
 	uint32_t pinBitmap_;
 	uint pinMin_;
-	float usecReso_;
 	int nClocksPerLoop_;
+	float usecReso_;
 	PrintInfo printInfo_;
 public:
-	LogicAnalyzer();
+	LogicAnalyzer(int nEventsMax = 8192);
 	~LogicAnalyzer();
 public:
 	LogicAnalyzer& Enable();

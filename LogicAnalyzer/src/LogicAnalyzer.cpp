@@ -97,8 +97,9 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple4 = {
 	formatHeader:	" GP%-2d ",
 };
 
-LogicAnalyzer::LogicAnalyzer() : pChannel_{nullptr}, enabledFlag_{false}, pinBitmap_{0}, pinMin_{0},
-	usecReso_{1'000}, printInfo_{80, PrintPart::Head, &waveStyle_fancy2}, nClocksPerLoop_{1}
+LogicAnalyzer::LogicAnalyzer(int nEventsMax) : pChannel_{nullptr}, nEventsMax_{nEventsMax},
+		enabledFlag_{false}, pinBitmap_{0}, pinMin_{0}, nClocksPerLoop_{1}, usecReso_{1'000},
+		printInfo_{80, PrintPart::Head, &waveStyle_fancy2}
 {}
 
 LogicAnalyzer::~LogicAnalyzer()
@@ -113,7 +114,7 @@ LogicAnalyzer& LogicAnalyzer::Enable()
 {
 	if (pinBitmap_ == 0) return *this;
 	if (enabledFlag_) Disable(); // disable if already enabled
-	eventBuff_.reset(new Event[nEventsMax]);
+	eventBuff_.reset(new Event[nEventsMax_]);
 	uint nPins = 0;	// nPins must be less than 32 to avoid auto-push during sampling
 	for (uint32_t pinBitmap = pinBitmap_; pinBitmap != 0; pinBitmap >>= 1, ++nPins) ;
 	program_
@@ -141,14 +142,14 @@ LogicAnalyzer& LogicAnalyzer::Enable()
 	.wrap()
 	.end();
 	nClocksPerLoop_ = 10;
-	sm_.config.set_in_shift_left(true, 32); // shift left, autopush enabled, push threshold 32
-	sm_.set_program(program_).set_listen_pins(pinMin_, -1).init().set_enabled();
+	smTbl_[0].config.set_in_shift_left(true, 32); // shift left, autopush enabled, push threshold 32
+	smTbl_[0].set_program(program_).set_listen_pins(pinMin_, -1).init().set_enabled();
 	pChannel_ = DMA::claim_unused_channel();
 	config_.set_enable(true)
 		.set_transfer_data_size(DMA_SIZE_32)
 		.set_read_increment(false)
 		.set_write_increment(true)
-		.set_dreq(sm_.get_dreq_rx()) // set DREQ of StateMachine's rx
+		.set_dreq(smTbl_[0].get_dreq_rx()) // set DREQ of StateMachine's rx
 		.set_chain_to(*pChannel_)    // disable by setting chain_to to itself
 		.set_ring_read(0)
 		.set_bswap(false)
@@ -156,17 +157,17 @@ LogicAnalyzer& LogicAnalyzer::Enable()
 		.set_sniff_enable(false)
 		.set_high_priority(false);
 	pChannel_->set_config(config_)
-		.set_read_addr(sm_.get_rxf())
+		.set_read_addr(smTbl_[0].get_rxf())
 		.set_write_addr(eventBuff_.get())
-		.set_trans_count_trig(nEventsMax * sizeof(Event) / sizeof(uint32_t));
+		.set_trans_count_trig(nEventsMax_ * sizeof(Event) / sizeof(uint32_t));
 	enabledFlag_ = true;
 	return *this;
 }
 
 LogicAnalyzer& LogicAnalyzer::Disable()
 {
-	sm_.set_enabled(false);
-	sm_.remove_program();
+	smTbl_[0].set_enabled(false);
+	smTbl_[0].remove_program();
 	pChannel_->abort();
 	pChannel_->unclaim();
 	enabledFlag_ = false;
