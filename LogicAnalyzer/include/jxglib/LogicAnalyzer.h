@@ -46,9 +46,9 @@ public:
 private:
 	PIO::Program program_;
 	PIO::StateMachine smTbl_[4];
-	DMA::ChannelConfig config_;
-	DMA::Channel* pChannel_;
-	std::unique_ptr<Event> eventBuff_;
+	DMA::ChannelConfig configTbl_[4];
+	DMA::Channel* pChannelTbl_[4];
+	std::unique_ptr<Event> eventBuffTbl_[4];
 	int nEventsMax_;
 	bool enabledFlag_;
 	uint32_t pinBitmap_;
@@ -71,9 +71,9 @@ public:
 	const WaveStyle& GetWaveStyle() const { return *printInfo_.pWaveStyle; }
 	float GetResolution() const { return usecReso_; }
 	int GetEventCount() const;
+	const Event& GetEvent(int iEvent) const;
 	const LogicAnalyzer& PrintWave(Printable& tout) const;
 	const LogicAnalyzer& PrintSettings(Printable& tout) const;
-	const Event& GetEvent(int iEvent) const { return eventBuff_.get()[iEvent]; }
 };
 
 }

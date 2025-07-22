@@ -97,16 +97,18 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple4 = {
 	formatHeader:	" GP%-2d ",
 };
 
-LogicAnalyzer::LogicAnalyzer(int nEventsMax) : pChannel_{nullptr}, nEventsMax_{nEventsMax},
+LogicAnalyzer::LogicAnalyzer(int nEventsMax) : pChannelTbl_{nullptr}, nEventsMax_{nEventsMax},
 		enabledFlag_{false}, pinBitmap_{0}, pinMin_{0}, nClocksPerLoop_{1}, usecReso_{1'000},
 		printInfo_{80, PrintPart::Head, &waveStyle_fancy2}
 {}
 
 LogicAnalyzer::~LogicAnalyzer()
 {
-	if (pChannel_) {
-		pChannel_->unclaim();
-		pChannel_ = nullptr;
+	for (auto& pChannel : pChannelTbl_) {
+		if (pChannel) {
+			pChannel->unclaim();
+			pChannel = nullptr;
+		}
 	}
 }
 
@@ -114,7 +116,7 @@ LogicAnalyzer& LogicAnalyzer::Enable()
 {
 	if (pinBitmap_ == 0) return *this;
 	if (enabledFlag_) Disable(); // disable if already enabled
-	eventBuff_.reset(new Event[nEventsMax_]);
+	eventBuffTbl_[0].reset(new Event[nEventsMax_]);
 	uint nPins = 0;	// nPins must be less than 32 to avoid auto-push during sampling
 	for (uint32_t pinBitmap = pinBitmap_; pinBitmap != 0; pinBitmap >>= 1, ++nPins) ;
 	program_
@@ -144,21 +146,21 @@ LogicAnalyzer& LogicAnalyzer::Enable()
 	nClocksPerLoop_ = 10;
 	smTbl_[0].config.set_in_shift_left(true, 32); // shift left, autopush enabled, push threshold 32
 	smTbl_[0].set_program(program_).set_listen_pins(pinMin_, -1).init().set_enabled();
-	pChannel_ = DMA::claim_unused_channel();
-	config_.set_enable(true)
+	pChannelTbl_[0] = DMA::claim_unused_channel();
+	configTbl_[0].set_enable(true)
 		.set_transfer_data_size(DMA_SIZE_32)
 		.set_read_increment(false)
 		.set_write_increment(true)
 		.set_dreq(smTbl_[0].get_dreq_rx()) // set DREQ of StateMachine's rx
-		.set_chain_to(*pChannel_)    // disable by setting chain_to to itself
+		.set_chain_to(*pChannelTbl_[0])    // disable by setting chain_to to itself
 		.set_ring_read(0)
 		.set_bswap(false)
 		.set_irq_quiet(false)
 		.set_sniff_enable(false)
 		.set_high_priority(false);
-	pChannel_->set_config(config_)
+	pChannelTbl_[0]->set_config(configTbl_[0])
 		.set_read_addr(smTbl_[0].get_rxf())
-		.set_write_addr(eventBuff_.get())
+		.set_write_addr(eventBuffTbl_[0].get())
 		.set_trans_count_trig(nEventsMax_ * sizeof(Event) / sizeof(uint32_t));
 	enabledFlag_ = true;
 	return *this;
@@ -166,22 +168,38 @@ LogicAnalyzer& LogicAnalyzer::Enable()
 
 LogicAnalyzer& LogicAnalyzer::Disable()
 {
-	smTbl_[0].set_enabled(false);
-	smTbl_[0].remove_program();
-	pChannel_->abort();
-	pChannel_->unclaim();
-	enabledFlag_ = false;
+	if (enabledFlag_) {
+		smTbl_[0].set_enabled(false);
+		smTbl_[0].remove_program();
+		pChannelTbl_[0]->abort();
+		pChannelTbl_[0]->unclaim();
+		enabledFlag_ = false;
+	}
 	return *this;
 }
 
 int LogicAnalyzer::GetEventCount() const
 {
-	return (reinterpret_cast<uint32_t>(pChannel_->get_write_addr()) - reinterpret_cast<uint32_t>(eventBuff_.get())) / sizeof(Event);
+	return (reinterpret_cast<uint32_t>(pChannelTbl_[0]->get_write_addr()) - reinterpret_cast<uint32_t>(eventBuffTbl_[0].get())) / sizeof(Event);
+}
+
+const LogicAnalyzer::Event& LogicAnalyzer::GetEvent(int iEvent) const
+{
+	return eventBuffTbl_[0].get()[iEvent];
 }
 
 const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 {
 	const WaveStyle& waveStyle = *printInfo_.pWaveStyle;
+	auto printHeader = [&]() {
+		// Print header
+		tout.Printf("%14s ", "Time [usec]");
+		uint32_t pinBitmap = pinBitmap_;
+		for (int iBit = 0; pinBitmap; ++iBit, pinBitmap >>= 1) {
+			if (pinBitmap & 1) tout.Printf(waveStyle.formatHeader, iBit + pinMin_);
+		}
+		tout.Println();
+	};
 	float clockPIOProgram = static_cast<float>(::clock_get_hz(clk_sys) / nClocksPerLoop_);
 	int nEvents =
 		(printInfo_.part == PrintPart::Head)? ChooseMin(GetEventCount(), printInfo_.nEvents) :
@@ -194,15 +212,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		(printInfo_.part == PrintPart::All)? 0 : 0;
 	int iEventBase = (iEventStart == 0 && nEvents > 1)? 1 : iEventStart;
 	const Event& eventStart = GetEvent(iEventStart);
-	do {
-		// Print header
-		tout.Printf("%14s ", "Time [usec]");
-		uint32_t pinBitmap = pinBitmap_;
-		for (int iBit = 0; pinBitmap; ++iBit, pinBitmap >>= 1) {
-			if (pinBitmap & 1) tout.Printf(waveStyle.formatHeader, iBit + pinMin_);
-		}
-		tout.Println();
-	} while (0);
+	printHeader();
 	do {
 		if (iEventStart == iEventBase) {
 			tout.Printf("%14.3f", 0.);
@@ -256,6 +266,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		tout.Println();
 		if (Tickable::TickSub()) break;
 	}
+	printHeader();
 	return *this;
 }
 
