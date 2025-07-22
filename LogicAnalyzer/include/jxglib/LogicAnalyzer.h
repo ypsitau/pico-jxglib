@@ -18,7 +18,19 @@ public:
 		uint32_t timeStamp;
 		uint32_t bits;
 	};
+	struct WavePattern {
+		const char* strHigh;
+		const char* strHighIdle;
+		const char* strLow;
+		const char* strLowIdle;
+		const char* strLowToHigh;
+		const char* strHighToLow;
+		const char* formatHeader;
+	};
+public:
 	static const uint nEventsMax = 2048;
+	static const WavePattern wavePattern_Fancy;
+	static const WavePattern wavePattern_Simple;
 private:
 	PIO::Program program_;
 	PIO::StateMachine sm_;

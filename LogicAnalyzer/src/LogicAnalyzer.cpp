@@ -9,6 +9,26 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // LogicAnalyzer
 //------------------------------------------------------------------------------
+const LogicAnalyzer::WavePattern LogicAnalyzer::wavePattern_Fancy = {
+	strHigh:		"    │",
+	strHighIdle:	"    :",
+	strLow:			"  │  ",
+	strLowIdle:		"  :  ",
+	strLowToHigh:	"  └─┐",
+	strHighToLow:	"  ┌─┘",
+	formatHeader:	" GP%-2d",
+};
+
+const LogicAnalyzer::WavePattern LogicAnalyzer::wavePattern_Simple = {
+	strHigh:		"    |",
+	strHighIdle:	"    :",
+	strLow:			"  |  ",
+	strLowIdle:		"  :  ",
+	strLowToHigh:	"  +-+",
+	strHighToLow:	"  +-+",
+	formatHeader:	" GP%-2d",
+};
+
 LogicAnalyzer::LogicAnalyzer() : pChannel_{nullptr}, usecReso_{1'000}, nEventsToPrint_{80}, nClocksPerLoop_{1}
 {}
 
@@ -102,33 +122,6 @@ int LogicAnalyzer::GetEventCount() const
 
 const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 {
-	struct WavePattern {
-		const char* strHigh;
-		const char* strHighIdle;
-		const char* strLow;
-		const char* strLowIdle;
-		const char* strLowToHigh;
-		const char* strHighToLow;
-		const char* formatHeader;
-	};
-	static const WavePattern wavePattern_Fancy = {
-		strHigh:		"    │",
-		strHighIdle:	"    :",
-		strLow:			"  │  ",
-		strLowIdle:		"  :  ",
-		strLowToHigh:	"  └─┐",
-		strHighToLow:	"  ┌─┘",
-		formatHeader:	" GP%-2d",
-	};
-	static const WavePattern wavePattern_Simple = {
-		strHigh:		"    |",
-		strHighIdle:	"    :",
-		strLow:			"  |  ",
-		strLowIdle:		"  :  ",
-		strLowToHigh:	"  +-+",
-		strHighToLow:	"  +-+",
-		formatHeader:	" GP%-2d",
-	};
 	//const WavePattern* pWavePattern = &wavePattern_Simple;
 	const WavePattern* pWavePattern = &wavePattern_Fancy;
 	float clockPIOProgram = static_cast<float>(::clock_get_hz(clk_sys) / nClocksPerLoop_);

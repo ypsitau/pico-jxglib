@@ -22,6 +22,12 @@ ShellCmd(la, "Logic Analyzer")
 		tout.Printf("Usage: %s [OPTION]... [COMMAND]...\n", GetName());
 		arg.PrintHelp(tout);
 		tout.Printf("Sub Commands:\n");
+		tout.Printf("  sleep:MSEC           sleep for specified milliseconds\n");
+		tout.Printf("  repeat[:N] {CMD...}  repeat the commands N times (default: infinite)\n");
+		tout.Printf("  start                start the logic analyzer\n");
+		tout.Printf("  restart              restart the logic analyzer\n");
+		tout.Printf("  stop                 stop the logic analyzer\n");
+		tout.Printf("  print                print the captured waveforms\n");
 		return Result::Success;
 	}
 	const char* value;
@@ -67,21 +73,27 @@ ShellCmd(la, "Logic Analyzer")
 		logicAnalyzer.PrintSettings(tout);
 		return Result::Success;
 	}
-	const char* subCmd = argv[1];
-	if (::strcasecmp(subCmd, "start") == 0) {
-		logicAnalyzer.Start();
-		tout.Println("Logic Analyzer started.");
-	} else if (::strcasecmp(subCmd, "restart") == 0) {
-		logicAnalyzer.Restart();
-		tout.Println("Logic Analyzer restarted.");
-	} else if (::strcmp(subCmd, "stop") == 0) {
-		logicAnalyzer.Stop();
-		tout.Println("Logic Analyzer stopped.");
-	} else if (::strcmp(subCmd, "wave") == 0) {
-		logicAnalyzer.PrintWave(tout);
-	} else {
-		tout.Printf("Unknown command: %s\n", subCmd);
+	Shell::Arg::EachSubcmd each(argv[1], argv[argc]);
+	if (!each.Initialize()) {
+		terr.Printf("%s\n", each.GetErrorMsg());
 		return Result::Error;
+	}
+	while (const char* subcmd = each.Next()) {
+		if (::strcasecmp(subcmd, "start") == 0) {
+			logicAnalyzer.Start();
+			tout.Println("Logic Analyzer started.");
+		} else if (::strcasecmp(subcmd, "restart") == 0) {
+			logicAnalyzer.Restart();
+			tout.Println("Logic Analyzer restarted.");
+		} else if (::strcmp(subcmd, "stop") == 0) {
+			logicAnalyzer.Stop();
+			tout.Println("Logic Analyzer stopped.");
+		} else if (::strcmp(subcmd, "print") == 0) {
+			logicAnalyzer.PrintWave(tout);
+		} else {
+			tout.Printf("Unknown command: %s\n", subcmd);
+			return Result::Error;
+		}
 	}
 	return Result::Success;
 }
