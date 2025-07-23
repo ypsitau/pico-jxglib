@@ -20,6 +20,7 @@ public:
 	};
 	struct WaveStyle {
 		const char* name;
+		const char* strBlank;
 		const char* strHigh;
 		const char* strHighIdle;
 		const char* strLow;
