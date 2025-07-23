@@ -192,8 +192,10 @@ LogicAnalyzer& LogicAnalyzer::SetPins(const int pinTbl[], int nPins)
 		for (int i = 0; i < nPins; ++i) {
 			int pin = pinTbl[i];
 			printInfo_.pinTbl[i] = pin;
-			if (pinMin > pin) pinMin = pin;
-			pinBitmap |= (1 << pin);
+			if (pin >= 0) {
+				if (pinMin > pin) pinMin = pin;
+				pinBitmap |= (1 << pin);
+			}
 		}
 	}
 	pinBitmap_ = pinBitmap >> pinMin; pinMin_ = pinMin; return *this;
