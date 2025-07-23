@@ -53,9 +53,11 @@ private:
 	DMA::Channel* pChannelTbl_[4];
 	std::unique_ptr<Event> eventBuffTbl_[4];
 	int nEventsMax_;
-	bool enabledFlag_;
-	uint32_t pinBitmap_;
-	uint pinMin_;
+	struct {
+		bool flag;
+		uint32_t pinBitmap;
+		uint pinMin;
+	} enabled_;
 	int nClocksPerLoop_;
 	float usecReso_;
 	PrintInfo printInfo_;
@@ -75,7 +77,7 @@ public:
 	float GetResolution() const { return usecReso_; }
 	int GetEventCount() const;
 	const Event& GetEvent(int iEvent) const;
-	bool IsPinEnabled(uint pin) const { return ((pinBitmap_ << pinMin_) & (1 << pin)) != 0; }
+	bool IsPinEnabled(uint pin) const { return ((enabled_.pinBitmap << enabled_.pinMin) & (1 << pin)) != 0; }
 	const LogicAnalyzer& PrintWave(Printable& tout) const;
 	const LogicAnalyzer& PrintSettings(Printable& tout) const;
 };

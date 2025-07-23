@@ -106,7 +106,7 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple4 = {
 };
 
 LogicAnalyzer::LogicAnalyzer(int nEventsMax) : pChannelTbl_{nullptr}, nEventsMax_{nEventsMax},
-		enabledFlag_{false}, pinBitmap_{0}, pinMin_{0}, nClocksPerLoop_{1}, usecReso_{1'000},
+		enabled_{false, 0, 0}, nClocksPerLoop_{1}, usecReso_{1'000},
 		printInfo_{0, nullptr, 80, PrintPart::Head, &waveStyle_fancy2}
 {}
 
@@ -122,20 +122,20 @@ LogicAnalyzer::~LogicAnalyzer()
 
 LogicAnalyzer& LogicAnalyzer::Enable()
 {
-	if (enabledFlag_) Disable(); // disable if already enabled
-	pinMin_ = GPIO::NumPins;
+	if (enabled_.flag) Disable(); // disable if already enabled
+	enabled_.pinMin = GPIO::NumPins;
 	for (int i = 0; i < printInfo_.nPins; ++i) {
 		uint pin = printInfo_.pinTbl[i];
 		if (pin != -1) {
-			if (pinMin_ > pin) pinMin_ = pin;
-			pinBitmap_ |= (1 << pin);
+			if (enabled_.pinMin > pin) enabled_.pinMin = pin;
+			enabled_.pinBitmap |= (1 << pin);
 		}
 	}
-	if (pinBitmap_ == 0) return *this;
-	pinBitmap_ >>= pinMin_;
+	if (enabled_.pinBitmap == 0) return *this;
+	enabled_.pinBitmap >>= enabled_.pinMin;
 	eventBuffTbl_[0].reset(new Event[nEventsMax_]);
 	uint nPins = 0;	// nPins must be less than 32 to avoid auto-push during sampling
-	for (uint32_t pinBitmap = pinBitmap_; pinBitmap != 0; pinBitmap >>= 1, ++nPins) ;
+	for (uint32_t pinBitmap = enabled_.pinBitmap; pinBitmap != 0; pinBitmap >>= 1, ++nPins) ;
 	program_
 	.program("logic_analyzer")
 	.L("loop").wrap_target()
@@ -162,7 +162,7 @@ LogicAnalyzer& LogicAnalyzer::Enable()
 	.end();
 	nClocksPerLoop_ = 10;
 	smTbl_[0].config.set_in_shift_left(true, 32); // shift left, autopush enabled, push threshold 32
-	smTbl_[0].set_program(program_).set_listen_pins(pinMin_, -1).init().set_enabled();
+	smTbl_[0].set_program(program_).set_listen_pins(enabled_.pinMin, -1).init().set_enabled();
 	pChannelTbl_[0] = DMA::claim_unused_channel();
 	configTbl_[0].set_enable(true)
 		.set_transfer_data_size(DMA_SIZE_32)
@@ -179,20 +179,20 @@ LogicAnalyzer& LogicAnalyzer::Enable()
 		.set_read_addr(smTbl_[0].get_rxf())
 		.set_write_addr(eventBuffTbl_[0].get())
 		.set_trans_count_trig(nEventsMax_ * sizeof(Event) / sizeof(uint32_t));
-	enabledFlag_ = true;
+	enabled_.flag = true;
 	return *this;
 }
 
 LogicAnalyzer& LogicAnalyzer::Disable()
 {
-	if (enabledFlag_) {
+	if (enabled_.flag) {
 		smTbl_[0].set_enabled(false);
 		smTbl_[0].remove_program();
 		pChannelTbl_[0]->abort();
 		pChannelTbl_[0]->unclaim();
-		enabledFlag_ = false;
-		pinMin_ = 0;
-		pinBitmap_ = 0;
+		enabled_.flag = false;
+		enabled_.pinMin = 0;
+		enabled_.pinBitmap = 0;
 	}
 	return *this;
 }
@@ -262,8 +262,8 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 				tout.Print(strBlank);
 				continue;
 			}
-			if ((pinBitmap_ << pinMin_) & (1 << pin)) {
-				tout.Print(((eventStart.bits << pinMin_) & (1 << pin))? waveStyle.strHigh : waveStyle.strLow);
+			if ((enabled_.pinBitmap << enabled_.pinMin) & (1 << pin)) {
+				tout.Print(((eventStart.bits << enabled_.pinMin) & (1 << pin))? waveStyle.strHigh : waveStyle.strLow);
 			} else {
 				tout.Print(waveStyle.strBlank);
 			}
@@ -286,8 +286,8 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 						tout.Print(strBlank);
 						continue;
 					}
-					if ((pinBitmap_ << pinMin_) & (1 << pin)) {
-						tout.Print((eventPrev.bits << pinMin_) & (1 << pin)? waveStyle.strHigh : waveStyle.strLow);
+					if ((enabled_.pinBitmap << enabled_.pinMin) & (1 << pin)) {
+						tout.Print((eventPrev.bits << enabled_.pinMin) & (1 << pin)? waveStyle.strHigh : waveStyle.strLow);
 					} else {
 						tout.Print(waveStyle.strBlank);
 					}
@@ -303,8 +303,8 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 					tout.Print(strBlank);
 					continue;
 				}
-				if ((pinBitmap_ << pinMin_) & (1 << pin)) {
-					tout.Print((eventPrev.bits << pinMin_) & (1 << pin)? waveStyle.strHighIdle : waveStyle.strLowIdle);
+				if ((enabled_.pinBitmap << enabled_.pinMin) & (1 << pin)) {
+					tout.Print((eventPrev.bits << enabled_.pinMin) & (1 << pin)? waveStyle.strHighIdle : waveStyle.strLowIdle);
 				} else {
 					tout.Print(waveStyle.strBlank);
 				}
@@ -320,12 +320,12 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 				tout.Print(strBlank);
 				continue;
 			}
-			if (!((pinBitmap_ << pinMin_) & (1 << pin))) {
+			if (!((enabled_.pinBitmap << enabled_.pinMin) & (1 << pin))) {
 				tout.Print(waveStyle.strBlank);
-			} else if ((bitsTransition << pinMin_) & (1 << pin)) {
-				tout.Print(((event.bits << pinMin_) & (1 << pin))? waveStyle.strLowToHigh : waveStyle.strHighToLow);
+			} else if ((bitsTransition << enabled_.pinMin) & (1 << pin)) {
+				tout.Print(((event.bits << enabled_.pinMin) & (1 << pin))? waveStyle.strLowToHigh : waveStyle.strHighToLow);
 			} else {
-				tout.Print(((event.bits << pinMin_) & (1 << pin))? waveStyle.strHigh : waveStyle.strLow);
+				tout.Print(((event.bits << enabled_.pinMin) & (1 << pin))? waveStyle.strHigh : waveStyle.strLow);
 			}
 		}
 		tout.Println();
