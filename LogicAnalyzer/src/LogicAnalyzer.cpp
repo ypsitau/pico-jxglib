@@ -216,33 +216,30 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 	const char* strBlank = "    ";
 	const WaveStyle& waveStyle = *printInfo_.pWaveStyle;
 	auto printHeader = [&]() {
-		// Print header
 		tout.Printf("%14s ", "Time [usec]");
 		for (int iPin = 0; iPin < printInfo_.nPins; ++iPin) {
 			uint pin = printInfo_.pinTbl[iPin];
 			if (pin == -1) {
 				tout.Print(strBlank);
-				continue;
+			} else {
+				tout.Printf(waveStyle.formatHeader, pin);
 			}
-			int iBit = pin - pinMin_;
-			if (pinBitmap_ & (1 << iBit)) tout.Printf(waveStyle.formatHeader, pin);
 		}
 		tout.Println();
 	};
+	printHeader();
 	float clockPIOProgram = static_cast<float>(::clock_get_hz(clk_sys) / nClocksPerLoop_);
 	int nEvents =
 		(printInfo_.part == PrintPart::Head)? ChooseMin(GetEventCount(), printInfo_.nEvents) :
 		(printInfo_.part == PrintPart::Tail)?  ChooseMin(GetEventCount(), printInfo_.nEvents) :
 		(printInfo_.part == PrintPart::All)? GetEventCount() : 0;
-	if (nEvents == 0) return *this;
 	int iEventStart =
 		(printInfo_.part == PrintPart::Head)? 0 :
 		(printInfo_.part == PrintPart::Tail)? GetEventCount() - nEvents :
 		(printInfo_.part == PrintPart::All)? 0 : 0;
 	int iEventBase = (iEventStart == 0 && nEvents > 1)? 1 : iEventStart;
 	const Event& eventStart = GetEvent(iEventStart);
-	printHeader();
-	do {
+	if (nEvents > 0) {
 		if (iEventStart == iEventBase) {
 			tout.Printf("%14.3f", 0.);
 		} else {
@@ -258,7 +255,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 			if (pinBitmap_ & (1 << iBit)) tout.Print((eventStart.bits & (1 << iBit))? waveStyle.strHigh : waveStyle.strLow);
 		}
 		tout.Println();
-	} while (0);
+	}
 	for (int i = 1; i < nEvents; ++i) {
 		const Event& eventPrev = GetEvent(iEventStart + i - 1);
 		const Event& event = GetEvent(iEventStart + i);
@@ -319,7 +316,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		tout.Println();
 		if (Tickable::TickSub()) break;
 	}
-	printHeader();
+	if (nEvents > 0) printHeader();
 	return *this;
 }
 
