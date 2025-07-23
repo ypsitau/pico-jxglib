@@ -116,7 +116,7 @@ ShellCmd(la, "Logic Analyzer")
 	while (const char* subcmd = each.Next()) {
 		if (::strcasecmp(subcmd, "enable") == 0) {
 			logicAnalyzer.Enable();
-			tout.Print("enabled on pins: ");
+			tout.Print("enabled pins: ");
 			bool firstFlag = true;
 			for (uint pin = 0; pin < GPIO::NumPins; ++pin) {
 				if (logicAnalyzer.IsPinEnabled(pin)) {
