@@ -116,14 +116,23 @@ ShellCmd(la, "Logic Analyzer")
 	while (const char* subcmd = each.Next()) {
 		if (::strcasecmp(subcmd, "enable") == 0) {
 			logicAnalyzer.Enable();
-			tout.Println("Logic Analyzer started.");
+			tout.Print("enabled on pins: ");
+			bool firstFlag = true;
+			for (uint pin = 0; pin < GPIO::NumPins; ++pin) {
+				if (logicAnalyzer.IsPinEnabled(pin)) {
+					tout.Printf(firstFlag? "%d" : ",%d", pin);
+					firstFlag = false;
+				}
+			}
+			if (firstFlag) tout.Print("none");
+			tout.Println();
 		} else if (::strcmp(subcmd, "disable") == 0) {
 			logicAnalyzer.Disable();
-			tout.Println("Logic Analyzer stopped.");
+			tout.Println("disabled");
 		} else if (::strcmp(subcmd, "print") == 0) {
 			logicAnalyzer.PrintWave(tout);
 		} else {
-			tout.Printf("Unknown command: %s\n", subcmd);
+			tout.Printf("unknown command: %s\n", subcmd);
 			return Result::Error;
 		}
 	}

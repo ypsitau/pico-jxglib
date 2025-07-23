@@ -11,7 +11,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_fancy1 = {
 	name:			"fancy1",
-	strBlank:		" . ",
+	strBlank:		"   ",
 	strHigh:		"  │",
 	strHighIdle:	"  :",
 	strLow:			" │ ",
@@ -23,7 +23,7 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_fancy1 = {
 
 const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_fancy2 = {
 	name:			"fancy2",
-	strBlank:		" .  ",
+	strBlank:		"    ",
 	strHigh:		"   │",
 	strHighIdle:	"   :",
 	strLow:			" │  ",
@@ -35,7 +35,7 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_fancy2 = {
 
 const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_fancy3 = {
 	name:			"fancy3",
-	strBlank:		" .   ",
+	strBlank:		"     ",
 	strHigh:		"    │",
 	strHighIdle:	"    :",
 	strLow:			" │   ",
@@ -47,7 +47,7 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_fancy3 = {
 
 const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_fancy4 = {
 	name:			"fancy4",
-	strBlank:		" .    ",
+	strBlank:		"      ",
 	strHigh:		"     │",
 	strHighIdle:	"     :",
 	strLow:			" │    ",
@@ -338,19 +338,14 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 {
 	tout.Printf("pins:");
-	if (printInfo_.nPins == 0) {
-		tout.Printf("none");
-	} else {
-		for (int i = 0; i < printInfo_.nPins; ++i) {
-			if (i > 0) tout.Print(",");
-			uint pin = printInfo_.pinTbl[i];
-			if (pin == -1) {
-				tout.Print("_");
-			} else {
-				tout.Printf("%d", pin);
-			}
+	bool firstFlag = true;
+	for (uint pin = 0; pin < GPIO::NumPins; ++pin) {
+		if (IsPinEnabled(pin)) {
+			tout.Printf(firstFlag? "%d" : ",%d", pin);
+			firstFlag = false;
 		}
 	}
+	if (firstFlag) tout.Printf("none");
 	tout.Printf(" reso:%.2fusec style:%s recorded-events:%d\n", usecReso_, GetWaveStyle().name, GetEventCount());
 	return *this;
 }

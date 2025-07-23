@@ -75,6 +75,7 @@ public:
 	float GetResolution() const { return usecReso_; }
 	int GetEventCount() const;
 	const Event& GetEvent(int iEvent) const;
+	bool IsPinEnabled(uint pin) const { return ((pinBitmap_ << pinMin_) & (1 << pin)) != 0; }
 	const LogicAnalyzer& PrintWave(Printable& tout) const;
 	const LogicAnalyzer& PrintSettings(Printable& tout) const;
 };
