@@ -662,7 +662,7 @@ bool Shell::Arg::EachNum::Next(int* pValue)
 			mode_ = Mode::String;
 		} else {
 			// Parse number (existing logic continues...)
-			if (*p_ == '*' && blank_.enableFlag_) {
+			if (*p_ == '_' && blank_.enableFlag_) {
 				*pValue = blank_.value;
 				++p_;
 			} else {

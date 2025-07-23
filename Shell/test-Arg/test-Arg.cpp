@@ -173,8 +173,8 @@ void test_EachNum()
         { "repeat one time", 1, { "9*1" }, false, "9" },
         { "repeat large count", 1, { "1*10" }, false, "1, 1, 1, 1, 1, 1, 1, 1, 1, 1" },
         { "repeat with limit", 1, { "2*5" }, true, "2, 2, 2, 2, 2" },
-        { "blank value", 1, { "1,*,2,*,*,3" }, false, "1, -1, 2, -1, -1, 3" },
-		{ "blank with range", 1, { "1-3,*,4-5,*,6,7" }, false, "1, 2, 3, -1, 4, 5, -1, 6, 7" },
+        { "blank value", 1, { "1,_,2,_,_,3" }, false, "1, -1, 2, -1, -1, 3" },
+		{ "blank with range", 1, { "1-3,_,4-5,_,6,7" }, false, "1, 2, 3, -1, 4, 5, -1, 6, 7" },
     };
 
 	for (size_t i = 0; i < sizeof(cases)/sizeof(cases[0]); ++i) {
