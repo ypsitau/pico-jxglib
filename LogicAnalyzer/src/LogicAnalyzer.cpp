@@ -39,7 +39,7 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_fancy3 = {
 	strLowIdle:		" :   ",
 	strLowToHigh:	" └──┐",
 	strHighToLow:	" ┌──┘",
-	formatHeader:	" GP%-2d",
+	formatHeader:	"GP%-2d ",
 };
 
 const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_fancy4 = {
@@ -50,7 +50,7 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_fancy4 = {
 	strLowIdle:		" :    ",
 	strLowToHigh:	" └───┐",
 	strHighToLow:	" ┌───┘",
-	formatHeader:	" GP%-2d ",
+	formatHeader:	"GPIO%-2d",
 };
 
 const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple1 = {
@@ -83,7 +83,7 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple3 = {
 	strLowIdle:		" :   ",
 	strLowToHigh:	" +--+",
 	strHighToLow:	" +--+",
-	formatHeader:	" GP%-2d",
+	formatHeader:	"GP%-2d ",
 };
 
 const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple4 = {
@@ -94,7 +94,7 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple4 = {
 	strLowIdle:		" :    ",
 	strLowToHigh:	" +---+",
 	strHighToLow:	" +---+",
-	formatHeader:	" GP%-2d ",
+	formatHeader:	"GPIO%-2d",
 };
 
 LogicAnalyzer::LogicAnalyzer(int nEventsMax) : pChannelTbl_{nullptr}, nEventsMax_{nEventsMax},
@@ -237,7 +237,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		(printInfo_.part == PrintPart::Head)? 0 :
 		(printInfo_.part == PrintPart::Tail)? GetEventCount() - nEvents :
 		(printInfo_.part == PrintPart::All)? 0 : 0;
-	int iEventBase = (iEventStart == 0 && nEvents > 1)? 1 : iEventStart;
+	int iEventBase = (nEvents == 0)? 0 : 1;
 	const Event& eventStart = GetEvent(iEventStart);
 	if (nEvents > 0) {
 		if (iEventStart == iEventBase) {
