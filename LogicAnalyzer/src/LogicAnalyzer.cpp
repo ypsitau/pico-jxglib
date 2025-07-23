@@ -99,7 +99,7 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple4 = {
 
 LogicAnalyzer::LogicAnalyzer(int nEventsMax) : pChannelTbl_{nullptr}, nEventsMax_{nEventsMax},
 		enabledFlag_{false}, pinBitmap_{0}, pinMin_{0}, nClocksPerLoop_{1}, usecReso_{1'000},
-		printInfo_{80, PrintPart::Head, &waveStyle_fancy2}
+		printInfo_{0, nullptr, 80, PrintPart::Head, &waveStyle_fancy2}
 {}
 
 LogicAnalyzer::~LogicAnalyzer()
@@ -178,6 +178,27 @@ LogicAnalyzer& LogicAnalyzer::Disable()
 	return *this;
 }
 
+LogicAnalyzer& LogicAnalyzer::SetPins(const int pinTbl[], int nPins)
+{
+	int pinMin = 0;
+	uint32_t pinBitmap = 0;
+	printInfo_.nPins = nPins;
+	if (nPins == 0) {
+		printInfo_.pinTbl.reset();
+	} else {
+		printInfo_.pinTbl.reset(new uint[nPins]);
+		pinMin = pinTbl[0];
+		pinBitmap = 0;
+		for (int i = 0; i < nPins; ++i) {
+			int pin = pinTbl[i];
+			printInfo_.pinTbl[i] = pin;
+			if (pinMin > pin) pinMin = pin;
+			pinBitmap |= (1 << pin);
+		}
+	}
+	pinBitmap_ = pinBitmap >> pinMin; pinMin_ = pinMin; return *this;
+}
+
 int LogicAnalyzer::GetEventCount() const
 {
 	return (reinterpret_cast<uint32_t>(pChannelTbl_[0]->get_write_addr()) - reinterpret_cast<uint32_t>(eventBuffTbl_[0].get())) / sizeof(Event);
@@ -190,13 +211,19 @@ const LogicAnalyzer::Event& LogicAnalyzer::GetEvent(int iEvent) const
 
 const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 {
+	const char* strBlank = "    ";
 	const WaveStyle& waveStyle = *printInfo_.pWaveStyle;
 	auto printHeader = [&]() {
 		// Print header
 		tout.Printf("%14s ", "Time [usec]");
-		uint32_t pinBitmap = pinBitmap_;
-		for (int iBit = 0; pinBitmap; ++iBit, pinBitmap >>= 1) {
-			if (pinBitmap & 1) tout.Printf(waveStyle.formatHeader, iBit + pinMin_);
+		for (int iPin = 0; iPin < printInfo_.nPins; ++iPin) {
+			uint pin = printInfo_.pinTbl[iPin];
+			if (pin == -1) {
+				tout.Print(strBlank);
+				continue;
+			}
+			int iBit = pin - pinMin_;
+			if (pinBitmap_ & (1 << iBit)) tout.Printf(waveStyle.formatHeader, pin);
 		}
 		tout.Println();
 	};
@@ -219,9 +246,14 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		} else {
 			tout.Printf("%14s", "");
 		}
-		uint32_t pinBitmap = pinBitmap_;
-		for (int iBit = 0; pinBitmap; ++iBit, pinBitmap >>= 1) {
-			if (pinBitmap & 1) tout.Print((eventStart.bits & (1 << iBit))? waveStyle.strHigh : waveStyle.strLow);
+		for (int iPin = 0; iPin < printInfo_.nPins; ++iPin) {
+			uint pin = printInfo_.pinTbl[iPin];
+			if (pin == -1) {
+				tout.Print(strBlank);
+				continue;
+			}
+			int iBit = pin - pinMin_;
+			if (pinBitmap_ & (1 << iBit)) tout.Print((eventStart.bits & (1 << iBit))? waveStyle.strHigh : waveStyle.strLow);
 		}
 		tout.Println();
 	} while (0);
@@ -235,27 +267,46 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		if (nDelta < 40) {
 			for (int i = 0; i < nDelta; ++i) {
 				tout.Printf("%14s", "");
-				uint32_t pinBitmap = pinBitmap_;
-				for (int iBit = 0; pinBitmap; ++iBit, pinBitmap >>= 1) {
-					if (pinBitmap & 1) tout.Print((eventPrev.bits & (1 << iBit))? waveStyle.strHigh : waveStyle.strLow);
+				for (int iPin = 0; iPin < printInfo_.nPins; ++iPin) {
+					uint pin = printInfo_.pinTbl[iPin];
+					if (pin == -1) {
+						tout.Print(strBlank);
+						continue;
+					}
+					int iBit = pin - pinMin_;
+					if (pinBitmap_ & (1 << iBit)) {
+						tout.Print((eventPrev.bits & (1 << iBit))? waveStyle.strHigh : waveStyle.strLow);
+					}
 				}
 				tout.Println();
 			}
 		} else {
 			//tout.Println();
 			tout.Printf("%14s", "");
-			uint32_t pinBitmap = pinBitmap_;
-			for (int iBit = 0; pinBitmap; ++iBit, pinBitmap >>= 1) {
-				if (pinBitmap & 1) tout.Print((eventPrev.bits & (1 << iBit))? waveStyle.strHighIdle : waveStyle.strLowIdle);
+			for (int iPin = 0; iPin < printInfo_.nPins; ++iPin) {
+				uint pin = printInfo_.pinTbl[iPin];
+				if (pin == -1) {
+					tout.Print(strBlank);
+					continue;
+				}
+				int iBit = pin - pinMin_;
+				if (pinBitmap_ & (1 << iBit)) {
+					tout.Print((eventPrev.bits & (1 << iBit))? waveStyle.strHighIdle : waveStyle.strLowIdle);
+				}
 			}
 			tout.Println();
 			//tout.Println();
 		}
 		uint32_t bitsTransition = event.bits ^ eventPrev.bits;	
 		tout.Printf("%14.3f", static_cast<float>(event.timeStamp - GetEvent(iEventBase).timeStamp) * 1000'000 / clockPIOProgram);
-		uint32_t pinBitmap = pinBitmap_;
-		for (int iBit = 0; pinBitmap; ++iBit, pinBitmap >>= 1) {
-			if (!(pinBitmap & 1)) {
+		for (int iPin = 0; iPin < printInfo_.nPins; ++iPin) {
+			uint pin = printInfo_.pinTbl[iPin];
+			if (pin == -1) {
+				tout.Print(strBlank);
+				continue;
+			}
+			int iBit = pin - pinMin_;
+			if (!(pinBitmap_ & (1 << iBit))) {
 				// nothing to do
 			} else if (bitsTransition & (1 << iBit)) {
 				tout.Print((event.bits & (1 << iBit))? waveStyle.strLowToHigh : waveStyle.strHighToLow);
@@ -276,10 +327,12 @@ const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 	if (pinBitmap_ == 0) {
 		tout.Printf("none");
 	} else {
-		int i = 0;
-		for (uint32_t pinBitmap = pinBitmap_; pinBitmap; pinBitmap >>= 1, ++i) {
+		bool firstFlag = true;
+		uint pin = pinMin_;
+		for (uint32_t pinBitmap = pinBitmap_; pinBitmap; pinBitmap >>= 1, ++pin) {
 			if (pinBitmap & 1) {
-				tout.Printf((i == 0)? "%d" : ",%d", pinMin_ + i);
+				tout.Printf(firstFlag? "%d" : ",%d", pin);
+				firstFlag = false;
 			}
 		}
 	}

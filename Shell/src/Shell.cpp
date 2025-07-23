@@ -779,7 +779,7 @@ int Shell::Arg::EachNum::GetAll(int valueTbl[], int cntMax)
 	int value;
 	Rewind();
 	for ( ; cnt < cntMax && Next(&value); cnt++) valueTbl[cnt] = value;
-	return cnt;
+	return IsSuccess()? cnt : -1;
 }
 
 //------------------------------------------------------------------------------

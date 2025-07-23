@@ -33,24 +33,22 @@ ShellCmd(la, "Logic Analyzer")
 	}
 	const char* value;
 	if (arg.GetString("pins", &value)) {
+		int pinTbl[GPIO::NumPins * 2];
 		Arg::EachNum eachNum(value, GPIO::NumPins - 1);
-		if (!eachNum.CheckValidity()) {
+		eachNum.SetBlankValue(-1);
+		int nPins = eachNum.GetAll(pinTbl, count_of(pinTbl));
+		if (nPins <= 0) {
 			terr.Printf("invalid GPIO pin number: %s\n", value);
 			return Result::Error;
 		}
-		uint pinMin = GPIO::NumPins;
-		uint32_t pinBitmap = 0;
-		int pin;
-		while (eachNum.Next(&pin)) {
-			if (pin < 0 || pin >= GPIO::NumPins) {
+		for (int i = 0; i < nPins; i++) {
+			int pin = pinTbl[i];
+			if (pin < -1 || pin >= GPIO::NumPins) {	// -1 is allowed for "blank" value
 				terr.Printf("invalid GPIO pin number: %d\n", pin);
 				return Result::Error;
 			}
-			pinBitmap |= (1 << pin);
-			if (pinMin > pin) pinMin = pin;
 		}
-		pinBitmap >>= pinMin;
-		logicAnalyzer.SetPins(pinBitmap, pinMin);
+		logicAnalyzer.SetPins(pinTbl, nPins);
 	}
 	if (arg.GetString("reso", &value)) {
 		char* endptr = nullptr;

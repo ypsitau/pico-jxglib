@@ -30,6 +30,8 @@ public:
 	};
 	enum class PrintPart { Head, Tail, All };
 	struct PrintInfo {
+		int nPins;
+		std::unique_ptr<uint[]> pinTbl;
 		int nEvents;
 		PrintPart part;
 		const WaveStyle* pWaveStyle;
@@ -62,7 +64,7 @@ public:
 public:
 	LogicAnalyzer& Enable();
 	LogicAnalyzer& Disable();
-	LogicAnalyzer& SetPins(uint32_t pinBitmap, uint32_t pinMin) { pinBitmap_ = pinBitmap; pinMin_ = pinMin; return *this; }
+	LogicAnalyzer& SetPins(const int pinTbl[], int nPins);
 	LogicAnalyzer& SetResolution(float usecReso) { usecReso_ = usecReso; return *this; }
 	LogicAnalyzer& SetEventCountToPrint(int nEvents) { printInfo_.nEvents = nEvents; return *this; }
 	LogicAnalyzer& SetPrintPart(PrintPart part) { printInfo_.part = part; return *this; }
