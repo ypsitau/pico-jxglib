@@ -114,6 +114,10 @@ public:
 			struct {
 				int value, count, cur;
 			} repeat_;
+			struct {
+				int value;
+				bool enableFlag_;
+			} blank_;
 			char chQuote_;
 			const char* errorMsg_;
 			std::unique_ptr<FS::File> pFile_;
@@ -132,6 +136,7 @@ public:
 			bool IsSuccess() const { return errorMsg_[0] == '\0'; }
 			const char* GetErrorMsg() const { return errorMsg_; }
 			bool CheckValidity(int* pCount = nullptr);
+			void SetBlankValue(int value, bool enableFlag = true) { blank_.value = value; blank_.enableFlag_ = enableFlag; }
 			void Rewind();
 			int GetAll(int valueTbl[], int cntMax);
 		};

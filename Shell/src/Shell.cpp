@@ -541,18 +541,20 @@ void Shell::Arg::Each::Rewind()
 // Shell::Arg::EachNum
 //------------------------------------------------------------------------------
 Shell::Arg::EachNum::EachNum(const char* str) :
-	EachBase(const_cast<const char*&>(argvInternal_[0]), const_cast<const char*&>(argvInternal_[1])),
-	mode_{Mode::None}, p_{""}, rangeLimit_{0}, hasRangeLimit_{false}, range_{0, 0, 1}, repeat_{0, 0, 0}, 
-	chQuote_{'\0'}, errorMsg_{""}
+		EachBase(const_cast<const char*&>(argvInternal_[0]), const_cast<const char*&>(argvInternal_[1])),
+		mode_{Mode::None}, p_{""}, rangeLimit_{0}, hasRangeLimit_{false},
+		range_{0, 0, 1}, repeat_{0, 0, 0}, blank_{-1, false},
+		chQuote_{'\0'}, errorMsg_{""}
 {
 	argvInternal_[0] = str;
 	argvInternal_[1] = nullptr;
 }
 
 Shell::Arg::EachNum::EachNum(const char*& argvBegin, const char*& argvEnd) :
-	EachBase(argvBegin, argvEnd),
-	mode_{Mode::None}, p_{""}, rangeLimit_{0}, hasRangeLimit_{false}, range_{0, 0, 1}, repeat_{0, 0, 0},
-	chQuote_{'\0'}, errorMsg_{""}
+		EachBase(argvBegin, argvEnd),
+		mode_{Mode::None}, p_{""}, rangeLimit_{0}, hasRangeLimit_{false},
+		range_{0, 0, 1}, repeat_{0, 0, 0}, blank_{-1, false},
+		chQuote_{'\0'}, errorMsg_{""}
 {}
 
 bool Shell::Arg::EachNum::Next(int* pValue)
@@ -660,69 +662,74 @@ bool Shell::Arg::EachNum::Next(int* pValue)
 			mode_ = Mode::String;
 		} else {
 			// Parse number (existing logic continues...)
-			char* endptr = nullptr;
-			int n1 = ::strtol(p_, &endptr, 0);
-			if (endptr == p_) {
-				errorMsg_ = "not a number";
-				return false;
-			}
-			p_ = endptr;
-			// Check for range
-			if (*p_ == '-') {
+			if (*p_ == '*' && blank_.enableFlag_) {
+				*pValue = blank_.value;
 				++p_;
-				int n2 = ::strtol(p_, &endptr, 0);
-				if (endptr != p_) {
-					// nothing to do
-				} else if (hasRangeLimit_) {
-					n2 = rangeLimit_;
-				} else {
-					errorMsg_ = "invalid range";
+			} else {
+				char* endptr = nullptr;
+				int n1 = ::strtol(p_, &endptr, 0);
+				if (endptr == p_) {
+					errorMsg_ = "not a number";
 					return false;
 				}
 				p_ = endptr;
-				range_.cur = n1;
-				range_.end = n2;
-				int n3 = 1;
-				if (*p_ == ':') {
+				// Check for range
+				if (*p_ == '-') {
 					++p_;
-					n3 = ::strtol(p_, &endptr, 0);
-					if (endptr == p_) n3 = 1;
-					if (n3 == 0) {
-						errorMsg_ = "zero step in range";
+					int n2 = ::strtol(p_, &endptr, 0);
+					if (endptr != p_) {
+						// nothing to do
+					} else if (hasRangeLimit_) {
+						n2 = rangeLimit_;
+					} else {
+						errorMsg_ = "invalid range";
 						return false;
 					}
-					if (n3 < 0) n3 = -n3;
 					p_ = endptr;
+					range_.cur = n1;
+					range_.end = n2;
+					int n3 = 1;
+					if (*p_ == ':') {
+						++p_;
+						n3 = ::strtol(p_, &endptr, 0);
+						if (endptr == p_) n3 = 1;
+						if (n3 == 0) {
+							errorMsg_ = "zero step in range";
+							return false;
+						}
+						if (n3 < 0) n3 = -n3;
+						p_ = endptr;
+					}
+					range_.step = (n1 <= n2) ? n3 : -n3;
+					// Output first value of range
+					*pValue = range_.cur;
+					if (range_.cur != range_.end) {
+						mode_ = Mode::Range;
+						range_.cur += range_.step;
+					}
+				} else if (*p_ == '*') {
+					// Check for repeat format: value*count
+					++p_;
+					int count = ::strtol(p_, &endptr, 0);
+					if (endptr == p_) {
+						errorMsg_ = "missing count after *";
+						return false;
+					}
+					if (count <= 0) {
+						errorMsg_ = "repeat count must be positive";
+						return false;
+					}
+					p_ = endptr;
+					repeat_.value = n1;
+					repeat_.count = count;
+					repeat_.cur = 1; // First value is returned immediately
+					*pValue = repeat_.value;
+					if (repeat_.cur < repeat_.count) {
+						mode_ = Mode::Repeat;
+					}
+				} else {
+					*pValue = n1;
 				}
-				range_.step = (n1 <= n2) ? n3 : -n3;
-				// Output first value of range
-				*pValue = range_.cur;
-				if (range_.cur != range_.end) {
-					mode_ = Mode::Range;
-					range_.cur += range_.step;
-				}
-			} else if (*p_ == '*') {
-				// Check for repeat format: value*count
-				++p_;
-				int count = ::strtol(p_, &endptr, 0);
-				if (endptr == p_) {
-					errorMsg_ = "missing count after *";
-					return false;
-				}
-				if (count <= 0) {
-					errorMsg_ = "repeat count must be positive";
-					return false;
-				}
-				p_ = endptr;
-				repeat_.value = n1;
-				repeat_.count = count;
-				repeat_.cur = 1; // First value is returned immediately
-				*pValue = repeat_.value;
-				if (repeat_.cur < repeat_.count) {
-					mode_ = Mode::Repeat;
-				}
-			} else {
-				*pValue = n1;
 			}
 			for ( ; ::isspace(*p_); ++p_) ;
 			if (*p_ == ',') {

@@ -173,6 +173,8 @@ void test_EachNum()
         { "repeat one time", 1, { "9*1" }, false, "9" },
         { "repeat large count", 1, { "1*10" }, false, "1, 1, 1, 1, 1, 1, 1, 1, 1, 1" },
         { "repeat with limit", 1, { "2*5" }, true, "2, 2, 2, 2, 2" },
+        { "blank value", 1, { "1,*,2,*,*,3" }, false, "1, -1, 2, -1, -1, 3" },
+		{ "blank with range", 1, { "1-3,*,4-5,*,6,7" }, false, "1, 2, 3, -1, 4, 5, -1, 6, 7" },
     };
 
 	for (size_t i = 0; i < sizeof(cases)/sizeof(cases[0]); ++i) {
@@ -184,6 +186,7 @@ void test_EachNum()
 		tout.Println();
 		const char** argv = const_cast<const char**>(tc.argv);
 		Shell::Arg::EachNum each(argv[0], argv[tc.argc]);
+		each.SetBlankValue(-1); // Set blank value
 		if (tc.limitFlag) each.SetLimit(10);
 		int n;
 		bool first = true;
@@ -507,10 +510,10 @@ int main()
 {
 	::stdio_init_all();
 	//test_Parse();
-	//test_EachNum();
+	test_EachNum();
 	//test_EachNum_Rewind();
 	//test_EachSubcmd();
-	test_EachSubcmd_Rewind();
+	//test_EachSubcmd_Rewind();
 	//try_EachSubcmd();
 	for (;;) ::tight_loop_contents();
 }
