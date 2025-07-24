@@ -242,7 +242,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		tout.Println();
 	};
 	printHeader();
-	float clockPIOProgram = static_cast<float>(::clock_get_hz(clk_sys) / nClocksPerLoop_);
+	double clockPIOProgram = static_cast<double>(::clock_get_hz(clk_sys) / nClocksPerLoop_);
 	int nEvents =
 		(printInfo_.part == PrintPart::Head)? ChooseMin(GetEventCount(), printInfo_.nEvents) :
 		(printInfo_.part == PrintPart::Tail)?  ChooseMin(GetEventCount(), printInfo_.nEvents) :
@@ -255,7 +255,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 	const Event& eventStart = GetEvent(iEventStart);
 	if (nEvents > 0) {
 		if (iEventStart == iEventBase) {
-			tout.Printf("%12.3f", 0.);
+			tout.Printf("%12.2f", 0.);
 		} else {
 			tout.Printf("%12s", "");
 		}
@@ -277,7 +277,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		const Event& eventPrev = GetEvent(iEventStart + i - 1);
 		const Event& event = GetEvent(iEventStart + i);
 		if (eventPrev.bits == event.bits) continue; // skip if no change
-		float delta = static_cast<float>(event.timeStamp - eventPrev.timeStamp) * 1000'000 / clockPIOProgram;
+		double delta = static_cast<double>(event.timeStamp - eventPrev.timeStamp) * 1000'000 / clockPIOProgram;
 		if (delta == 0) continue; // skip if no time difference
 		int nDelta = static_cast<int>(delta / usecReso_);
 		if (nDelta < 40) {
@@ -316,7 +316,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 			//tout.Println();
 		}
 		uint32_t bitsTransition = event.bits ^ eventPrev.bits;	
-		tout.Printf("%12.3f", static_cast<float>(event.timeStamp - GetEvent(iEventBase).timeStamp) * 1000'000 / clockPIOProgram);
+		tout.Printf("%12.2f", static_cast<double>(event.timeStamp - GetEvent(iEventBase).timeStamp) * 1000'000 / clockPIOProgram);
 		for (int iPin = 0; iPin < printInfo_.nPins; ++iPin) {
 			uint pin = printInfo_.pinTbl[iPin];
 			if (pin == -1) {
