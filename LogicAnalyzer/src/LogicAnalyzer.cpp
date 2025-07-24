@@ -105,7 +105,7 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple4 = {
 	formatHeader:	"GP%-2d  ",
 };
 
-LogicAnalyzer::LogicAnalyzer(int nEventsMax) : pChannelTbl_{nullptr}, target_{Target::Core}, nEventsMax_{nEventsMax},
+LogicAnalyzer::LogicAnalyzer(int nEventsMax) : pChannelTbl_{nullptr}, target_{Target::Internal}, nEventsMax_{nEventsMax},
 		samplingInfo_{false, 0, 0}, nClocksPerLoop_{1}, usecReso_{1'000},
 		printInfo_{0, nullptr, 80, PrintPart::Head, &waveStyle_fancy2}
 {}
@@ -171,7 +171,7 @@ bool LogicAnalyzer::Enable()
 	PIO::StateMachine& sm = smTbl_[0];
 	sm.config.set_in_shift_left(true, 32); // shift left, autopush enabled, push threshold 32
 	sm.set_program(program_);
-	if (target_ == Target::Pin) {
+	if (target_ == Target::External) {
 		sm.set_in_pins(samplingInfo_.pinMin, nPinsConsecutive);
 	} else {
 		sm.set_listen_pins(samplingInfo_.pinMin, nPinsConsecutive);
@@ -362,7 +362,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 	} else {
 		tout.Printf("disabled ----");
 	}
-	tout.Printf(" target:%s", (target_ == Target::Core)? "core" : "pin");
+	tout.Printf(" target:%s", (target_ == Target::Internal)? "internal" : "external");
 	do {
 		bool firstFlag = true;
 		tout.Printf(" pins:");

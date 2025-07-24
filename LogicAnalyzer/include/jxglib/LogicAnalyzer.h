@@ -18,7 +18,7 @@ public:
 		uint32_t timeStamp;
 		uint32_t bits;
 	};
-	enum class Target { Core, Pin };
+	enum class Target { Internal, External };
 	struct WaveStyle {
 		const char* name;
 		const char* strBlank;

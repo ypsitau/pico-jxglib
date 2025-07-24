@@ -52,10 +52,10 @@ ShellCmd(la, "Logic Analyzer")
 		logicAnalyzer.SetPins(pinTbl, nPins);
 	}
 	if (arg.GetString("target", &value)) {
-		if (::strcasecmp(value, "core") == 0) {
-			logicAnalyzer.SetTarget(LogicAnalyzer::Target::Core);
-		} else if (::strcasecmp(value, "pin") == 0) {
-			logicAnalyzer.SetTarget(LogicAnalyzer::Target::Pin);
+		if (::strcasecmp(value, "internal") == 0) {
+			logicAnalyzer.SetTarget(LogicAnalyzer::Target::Internal);
+		} else if (::strcasecmp(value, "external") == 0) {
+			logicAnalyzer.SetTarget(LogicAnalyzer::Target::External);
 		} else {
 			terr.Printf("Invalid target: %s\n", value);
 			return Result::Error;
