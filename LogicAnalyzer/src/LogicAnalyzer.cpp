@@ -346,10 +346,14 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 {
 	int nEvents = GetEventCount();
-	tout.Printf("%s", !samplingInfo_.enabledFlag? "disabled" : (nEvents < nEventsMax_)? "enabled" : "enabled(full)");
+	if (samplingInfo_.enabledFlag) {
+		tout.Printf("enabled%s pio%d", (nEvents == nEventsMax_)? "(full)" : "", smTbl_[0].pio.get_index());
+	} else {
+		tout.Printf("disabled ----");
+	}
 	do {
 		bool firstFlag = true;
-		tout.Printf(" - pins:");
+		tout.Printf(" pins:");
 		for (uint pin = 0; pin < GPIO::NumPins; ++pin) {
 			if (IsPinEnabled(pin)) {
 				tout.Printf(firstFlag? "%d" : ",%d", pin);
