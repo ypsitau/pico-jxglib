@@ -227,6 +227,11 @@ const LogicAnalyzer::Event& LogicAnalyzer::GetEvent(int iEvent) const
 
 const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 {
+	int nEventsAll = GetEventCount();
+	if (nEventsAll == 0) {
+		tout.Printf("no events to print\n");
+		return *this;
+	}
 	const char* strBlank = "    ";
 	const WaveStyle& waveStyle = *printInfo_.pWaveStyle;
 	auto printHeader = [&]() {
@@ -243,17 +248,17 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 	};
 	printHeader();
 	double clockPIOProgram = static_cast<double>(::clock_get_hz(clk_sys) / nClocksPerLoop_);
-	int nEvents =
-		(printInfo_.part == PrintPart::Head)? ChooseMin(GetEventCount(), printInfo_.nEvents) :
-		(printInfo_.part == PrintPart::Tail)?  ChooseMin(GetEventCount(), printInfo_.nEvents) :
-		(printInfo_.part == PrintPart::All)? GetEventCount() : 0;
+	int nEventsToPrint =
+		(printInfo_.part == PrintPart::Head)? ChooseMin(nEventsAll, printInfo_.nEvents) :
+		(printInfo_.part == PrintPart::Tail)?  ChooseMin(nEventsAll, printInfo_.nEvents) :
+		(printInfo_.part == PrintPart::All)? nEventsAll : 0;
 	int iEventStart =
 		(printInfo_.part == PrintPart::Head)? 0 :
-		(printInfo_.part == PrintPart::Tail)? GetEventCount() - nEvents :
+		(printInfo_.part == PrintPart::Tail)? nEventsAll - nEventsToPrint :
 		(printInfo_.part == PrintPart::All)? 0 : 0;
-	int iEventBase = (nEvents == 0)? 0 : 1;
+	int iEventBase = (nEventsToPrint == 0)? 0 : 1;
 	const Event& eventStart = GetEvent(iEventStart);
-	if (nEvents > 0) {
+	if (nEventsToPrint > 0) {
 		if (iEventStart == iEventBase) {
 			tout.Printf("%12.2f", 0.);
 		} else {
@@ -273,7 +278,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		}
 		tout.Println();
 	}
-	for (int i = 1; i < nEvents; ++i) {
+	for (int i = 1; i < nEventsToPrint; ++i) {
 		const Event& eventPrev = GetEvent(iEventStart + i - 1);
 		const Event& event = GetEvent(iEventStart + i);
 		if (eventPrev.bits == event.bits) continue; // skip if no change
@@ -334,7 +339,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		tout.Println();
 		if (Tickable::TickSub()) break;
 	}
-	if (nEvents > 0) printHeader();
+	if (nEventsToPrint > 0) printHeader();
 	return *this;
 }
 

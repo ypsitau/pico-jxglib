@@ -117,12 +117,12 @@ ShellCmd(la, "Logic Analyzer")
 	while (const char* subcmd = each.Next()) {
 		if (::strcasecmp(subcmd, "enable") == 0) {
 			logicAnalyzer.UpdateSamplingInfo();
-			if (!logicAnalyzer.HasSamplingPins()) {
+			if (logicAnalyzer.HasSamplingPins()) {
+				logicAnalyzer.Enable();
+				logicAnalyzer.PrintSettings(tout);
+			} else {
 				terr.Printf("use -p option to specify pins to sample\n");
-				return Result::Error;
 			}
-			logicAnalyzer.Enable();
-			logicAnalyzer.PrintSettings(tout);
 		} else if (::strcmp(subcmd, "disable") == 0) {
 			logicAnalyzer.Disable();
 			logicAnalyzer.PrintSettings(tout);
