@@ -134,11 +134,12 @@ LogicAnalyzer& LogicAnalyzer::UpdateSamplingInfo()
 	return *this;
 }
 
-LogicAnalyzer& LogicAnalyzer::Enable()
+bool LogicAnalyzer::Enable()
 {
 	if (samplingInfo_.enabledFlag) Disable(); // disable if already enabled
-	if (samplingInfo_.pinBitmap == 0) return *this;
+	if (samplingInfo_.pinBitmap == 0) return true;
 	eventBuffTbl_[0].reset(new Event[nEventsMax_]);
+	if (!eventBuffTbl_[0]) return false;
 	uint nPins = 0;	// nPins must be less than 32 to avoid auto-push during sampling
 	for (uint32_t pinBitmap = samplingInfo_.pinBitmap; pinBitmap != 0; pinBitmap >>= 1, ++nPins) ;
 	program_
@@ -166,14 +167,18 @@ LogicAnalyzer& LogicAnalyzer::Enable()
 	.wrap()
 	.end();
 	nClocksPerLoop_ = 10;
-	smTbl_[0].config.set_in_shift_left(true, 32); // shift left, autopush enabled, push threshold 32
-	smTbl_[0].set_program(program_).set_listen_pins(samplingInfo_.pinMin, -1).init().set_enabled();
+	PIO::StateMachine& sm = smTbl_[0];
+	sm.config.set_in_shift_left(true, 32); // shift left, autopush enabled, push threshold 32
+	sm.set_program(program_);
+	sm.set_listen_pins(samplingInfo_.pinMin, -1);
+	//sm.set_in_pins(samplingInfo_.pinMin, -1);
+	sm.init().set_enabled();
 	pChannelTbl_[0] = DMA::claim_unused_channel();
 	configTbl_[0].set_enable(true)
 		.set_transfer_data_size(DMA_SIZE_32)
 		.set_read_increment(false)
 		.set_write_increment(true)
-		.set_dreq(smTbl_[0].get_dreq_rx()) // set DREQ of StateMachine's rx
+		.set_dreq(sm.get_dreq_rx()) // set DREQ of StateMachine's rx
 		.set_chain_to(*pChannelTbl_[0])    // disable by setting chain_to to itself
 		.set_ring_read(0)
 		.set_bswap(false)
@@ -181,18 +186,19 @@ LogicAnalyzer& LogicAnalyzer::Enable()
 		.set_sniff_enable(false)
 		.set_high_priority(false);
 	pChannelTbl_[0]->set_config(configTbl_[0])
-		.set_read_addr(smTbl_[0].get_rxf())
+		.set_read_addr(sm.get_rxf())
 		.set_write_addr(eventBuffTbl_[0].get())
 		.set_trans_count_trig(nEventsMax_ * sizeof(Event) / sizeof(uint32_t));
 	samplingInfo_.enabledFlag = true;
-	return *this;
+	return true;
 }
 
 LogicAnalyzer& LogicAnalyzer::Disable()
 {
 	if (samplingInfo_.enabledFlag) {
-		smTbl_[0].set_enabled(false);
-		smTbl_[0].remove_program();
+		PIO::StateMachine& sm = smTbl_[0];
+		sm.set_enabled(false);
+		sm.remove_program();
 		pChannelTbl_[0]->abort();
 		pChannelTbl_[0]->unclaim();
 		samplingInfo_.enabledFlag = false;
@@ -347,7 +353,8 @@ const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 {
 	int nEvents = GetEventCount();
 	if (samplingInfo_.enabledFlag) {
-		tout.Printf("enabled%s pio%d", (nEvents == nEventsMax_)? "(full)" : "", smTbl_[0].pio.get_index());
+		const PIO::StateMachine& sm = smTbl_[0];
+		tout.Printf("enabled%s pio%d", (nEvents == nEventsMax_)? "(full)" : "", sm.pio.get_index());
 	} else {
 		tout.Printf("disabled ----");
 	}

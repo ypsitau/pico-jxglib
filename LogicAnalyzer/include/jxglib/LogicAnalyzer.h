@@ -66,7 +66,7 @@ public:
 	~LogicAnalyzer();
 public:
 	LogicAnalyzer& UpdateSamplingInfo();
-	LogicAnalyzer& Enable();
+	bool Enable();
 	LogicAnalyzer& Disable();
 	LogicAnalyzer& SetPins(const int pinTbl[], int nPins);
 	LogicAnalyzer& SetResolution(float usecReso) { usecReso_ = usecReso; return *this; }
