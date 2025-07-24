@@ -105,7 +105,7 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple4 = {
 	formatHeader:	"GP%-2d  ",
 };
 
-LogicAnalyzer::LogicAnalyzer(int nEventsMax) : pChannelTbl_{nullptr}, nEventsMax_{nEventsMax},
+LogicAnalyzer::LogicAnalyzer(int nEventsMax) : pChannelTbl_{nullptr}, target_{Target::Core}, nEventsMax_{nEventsMax},
 		samplingInfo_{false, 0, 0}, nClocksPerLoop_{1}, usecReso_{1'000},
 		printInfo_{0, nullptr, 80, PrintPart::Head, &waveStyle_fancy2}
 {}
@@ -140,8 +140,8 @@ bool LogicAnalyzer::Enable()
 	if (samplingInfo_.pinBitmap == 0) return true;
 	eventBuffTbl_[0].reset(new Event[nEventsMax_]);
 	if (!eventBuffTbl_[0]) return false;
-	uint nPins = 0;	// nPins must be less than 32 to avoid auto-push during sampling
-	for (uint32_t pinBitmap = samplingInfo_.pinBitmap; pinBitmap != 0; pinBitmap >>= 1, ++nPins) ;
+	uint nPinsConsecutive = 0;	// nPinsConsecutive must be less than 32 to avoid auto-push during sampling
+	for (uint32_t pinBitmap = samplingInfo_.pinBitmap; pinBitmap != 0; pinBitmap >>= 1, ++nPinsConsecutive) ;
 	program_
 	.program("logic_analyzer")
 	.L("loop").wrap_target()
@@ -150,13 +150,13 @@ bool LogicAnalyzer::Enable()
 		.mov("osr", "~x")
 	.entry()
 		.mov("isr", "null")
-		.in("pins", nPins)				// save current pins state in isr (no auto-push)
+		.in("pins", nPinsConsecutive)				// save current pins state in isr (no auto-push)
 		.mov("x", "isr")
 		.jmp("do_report")	[1]
 	.L("no_wrap_around")
 		.mov("osr", "~x")				// increment osr (counter) by 1
 		.mov("isr", "null")
-		.in("pins", nPins)				// save current pins state in isr (no auto-push)
+		.in("pins", nPinsConsecutive)				// save current pins state in isr (no auto-push)
 		.mov("x", "isr")
 		.jmp("x!=y", "do_report")		// if pins state changed, report it
 		.jmp("loop")		[2]
@@ -170,8 +170,11 @@ bool LogicAnalyzer::Enable()
 	PIO::StateMachine& sm = smTbl_[0];
 	sm.config.set_in_shift_left(true, 32); // shift left, autopush enabled, push threshold 32
 	sm.set_program(program_);
-	sm.set_listen_pins(samplingInfo_.pinMin, -1);
-	//sm.set_in_pins(samplingInfo_.pinMin, -1);
+	if (target_ == Target::Pin) {
+		sm.set_in_pins(samplingInfo_.pinMin, nPinsConsecutive);
+	} else {
+		sm.set_listen_pins(samplingInfo_.pinMin, nPinsConsecutive);
+	}
 	sm.init().set_enabled();
 	pChannelTbl_[0] = DMA::claim_unused_channel();
 	configTbl_[0].set_enable(true)
@@ -358,6 +361,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 	} else {
 		tout.Printf("disabled ----");
 	}
+	tout.Printf(" target:%s", (target_ == Target::Core)? "core" : "pin");
 	do {
 		bool firstFlag = true;
 		tout.Printf(" pins:");

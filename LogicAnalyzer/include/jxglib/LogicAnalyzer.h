@@ -18,6 +18,7 @@ public:
 		uint32_t timeStamp;
 		uint32_t bits;
 	};
+	enum class Target { Core, Pin };
 	struct WaveStyle {
 		const char* name;
 		const char* strBlank;
@@ -52,6 +53,7 @@ private:
 	DMA::ChannelConfig configTbl_[4];
 	DMA::Channel* pChannelTbl_[4];
 	std::unique_ptr<Event> eventBuffTbl_[4];
+	Target target_;
 	int nEventsMax_;
 	struct {
 		bool enabledFlag;
@@ -69,6 +71,7 @@ public:
 	bool Enable();
 	LogicAnalyzer& Disable();
 	LogicAnalyzer& SetPins(const int pinTbl[], int nPins);
+	LogicAnalyzer& SetTarget(Target target) { target_ = target; return *this; }
 	LogicAnalyzer& SetResolution(float usecReso) { usecReso_ = usecReso; return *this; }
 	LogicAnalyzer& SetEventCountToPrint(int nEvents) { printInfo_.nEvents = nEvents; return *this; }
 	LogicAnalyzer& SetPrintPart(PrintPart part) { printInfo_.part = part; return *this; }
