@@ -65,6 +65,7 @@ public:
 	LogicAnalyzer(int nEventsMax = 8192);
 	~LogicAnalyzer();
 public:
+	LogicAnalyzer& UpdateSamplingInfo();
 	LogicAnalyzer& Enable();
 	LogicAnalyzer& Disable();
 	LogicAnalyzer& SetPins(const int pinTbl[], int nPins);
@@ -75,9 +76,11 @@ public:
 	LogicAnalyzer& SetWaveStyle(const WaveStyle& waveStyle) { printInfo_.pWaveStyle = &waveStyle; return *this; }
 	const WaveStyle& GetWaveStyle() const { return *printInfo_.pWaveStyle; }
 	float GetResolution() const { return usecReso_; }
+	bool HasSamplingPins() const { return samplingInfo_.pinBitmap != 0; }
 	int GetEventCount() const;
 	const Event& GetEvent(int iEvent) const;
-	bool IsPinEnabled(uint pin) const { return ((samplingInfo_.pinBitmap << samplingInfo_.pinMin) & (1 << pin)) != 0; }
+	bool IsPinAsserted(uint32_t pinBitmap, uint pin) const { return ((pinBitmap << samplingInfo_.pinMin) & (1 << pin)) != 0; }
+	bool IsPinEnabled(uint pin) const { return IsPinAsserted(samplingInfo_.pinBitmap, pin); }
 	const LogicAnalyzer& PrintWave(Printable& tout) const;
 	const LogicAnalyzer& PrintSettings(Printable& tout) const;
 };
