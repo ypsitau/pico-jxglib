@@ -122,6 +122,7 @@ LogicAnalyzer::~LogicAnalyzer()
 
 LogicAnalyzer& LogicAnalyzer::UpdateSamplingInfo()
 {
+	samplingInfo_.pinBitmap = 0;
 	samplingInfo_.pinMin = GPIO::NumPins;
 	for (int i = 0; i < printInfo_.nPins; ++i) {
 		uint pin = printInfo_.pinTbl[i];
@@ -365,10 +366,28 @@ const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 	do {
 		bool firstFlag = true;
 		tout.Printf(" pins:");
-		for (uint pin = 0; pin < GPIO::NumPins; ++pin) {
-			if (IsPinEnabled(pin)) {
-				tout.Printf(firstFlag? "%d" : ",%d", pin);
-				firstFlag = false;
+		uint pinStart = -1;
+		uint pinEnd = -1;
+		bool inSequence = false;	
+		for (uint pin = 0; pin <= GPIO::NumPins; ++pin) {
+			if (pin < GPIO::NumPins && IsPinEnabled(pin)) {
+				if (inSequence) {
+					pinEnd = pin;
+				} else {
+					pinStart = pinEnd = pin;
+					inSequence = true;
+				}
+			} else if (inSequence) {
+				if (pinEnd - pinStart < 2) {
+					for (uint pin = pinStart; pin <= pinEnd; ++pin) {
+						tout.Printf(firstFlag? "%d" : ",%d", pin);
+						firstFlag = false;
+					}
+				} else {
+					tout.Printf(firstFlag? "%d-%d" : ",%d-%d", pinStart, pinEnd);
+					firstFlag = false;
+				}
+				inSequence = false;
 			}
 		}
 		if (firstFlag) tout.Print("none");
