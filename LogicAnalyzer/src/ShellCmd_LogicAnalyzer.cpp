@@ -12,7 +12,7 @@ ShellCmd(la, "Logic Analyzer")
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h', "prints this help"),
 		Arg::OptString("pins",		'p', "pins to monitor", "PINS"),
-		Arg::OptString("target",	't', "target (core, pin)", "TARGET"),
+		Arg::OptString("target",	't', "target (internal, external)", "TARGET"),
 		Arg::OptString("reso",		'r', "resolution in microseconds (default 1000)", "RESO"),
 		Arg::OptString("part",		't', "printed part of the waveform (head, tail, all)", "PART"),
 		Arg::OptString("events",	'e', "number of events to print (default 80)", "NUM"),
