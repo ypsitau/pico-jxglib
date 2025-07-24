@@ -247,7 +247,6 @@ ShellCmd_Named(i2c_, "i2c", "controls I2C bus communication")
 		::gpio_disable_pulls(config.SDA);
 		::gpio_disable_pulls(config.SCL);
 	}
-	
 	int rtn = 0;
 	bool verboseFlag = arg.GetBool("verbose");
 	if (argc == 0) {
@@ -319,21 +318,18 @@ ShellCmd_Named(i2c_, "i2c", "controls I2C bus communication")
 
 void ScanBus(Printable& tout, Printable& terr, I2C& i2c, int iBus, const Config& config)
 {
+	bool nostop = false;
 	tout.Printf("Bus Scan on I2C%d\n", i2c.get_index());
 	tout.Printf("   0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F\n");
 	int iCol = 0;
-	for (int addr = 0; addr < (1 << 7); ++addr) {
+	for (uint8_t addr = 0; addr <= 0x7f; ++addr) {
 		if (iCol == 0) tout.Printf("%02x ", addr);
-		if ((addr & 0x78) == 0 || (addr & 0x78) == 0x78) {
+		uint8_t rxdata;
+		int bytesRead = i2c.read_blocking(addr, &rxdata, sizeof(rxdata), nostop);
+		if (bytesRead <= 0) {
 			tout.Printf("-- ");
 		} else {
-			uint8_t rxdata;
-			int rtn = i2c.read_blocking(addr, &rxdata, sizeof(rxdata), false);
-			if (rtn < 0) {
-				tout.Printf("-- ");
-			} else {
-				tout.Printf("%02x ", addr);
-			}
+			tout.Printf("%02x ", addr);
 		}
 		iCol++;
 		if (iCol == 16) {
