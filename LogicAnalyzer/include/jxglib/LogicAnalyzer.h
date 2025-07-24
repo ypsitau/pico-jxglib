@@ -54,10 +54,10 @@ private:
 	std::unique_ptr<Event> eventBuffTbl_[4];
 	int nEventsMax_;
 	struct {
-		bool flag;
+		bool enabledFlag;
 		uint32_t pinBitmap;
 		uint pinMin;
-	} enabled_;
+	} samplingInfo_;
 	int nClocksPerLoop_;
 	float usecReso_;
 	PrintInfo printInfo_;
@@ -77,7 +77,7 @@ public:
 	float GetResolution() const { return usecReso_; }
 	int GetEventCount() const;
 	const Event& GetEvent(int iEvent) const;
-	bool IsPinEnabled(uint pin) const { return ((enabled_.pinBitmap << enabled_.pinMin) & (1 << pin)) != 0; }
+	bool IsPinEnabled(uint pin) const { return ((samplingInfo_.pinBitmap << samplingInfo_.pinMin) & (1 << pin)) != 0; }
 	const LogicAnalyzer& PrintWave(Printable& tout) const;
 	const LogicAnalyzer& PrintSettings(Printable& tout) const;
 };

@@ -116,19 +116,10 @@ ShellCmd(la, "Logic Analyzer")
 	while (const char* subcmd = each.Next()) {
 		if (::strcasecmp(subcmd, "enable") == 0) {
 			logicAnalyzer.Enable();
-			tout.Print("enabled pins: ");
-			bool firstFlag = true;
-			for (uint pin = 0; pin < GPIO::NumPins; ++pin) {
-				if (logicAnalyzer.IsPinEnabled(pin)) {
-					tout.Printf(firstFlag? "%d" : ",%d", pin);
-					firstFlag = false;
-				}
-			}
-			if (firstFlag) tout.Print("none");
-			tout.Println();
+			logicAnalyzer.PrintSettings(tout);
 		} else if (::strcmp(subcmd, "disable") == 0) {
 			logicAnalyzer.Disable();
-			tout.Println("disabled");
+			logicAnalyzer.PrintSettings(tout);
 		} else if (::strcmp(subcmd, "print") == 0) {
 			logicAnalyzer.PrintWave(tout);
 		} else {
