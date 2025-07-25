@@ -106,7 +106,9 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple4 = {
 };
 
 LogicAnalyzer::LogicAnalyzer(int nRawEventMax) : nSampler_{1}, target_{Target::Internal}, nRawEventMax_{nRawEventMax}, clocksPerLoop_{1}, usecReso_{1'000}
-{}
+{
+	SetSamplerCount(1);
+}
 
 LogicAnalyzer::~LogicAnalyzer()
 {}
@@ -123,6 +125,13 @@ LogicAnalyzer& LogicAnalyzer::UpdateSamplingInfo()
 		}
 	}
 	samplingInfo_.pinBitmap >>= samplingInfo_.pinMin;
+	return *this;
+}
+
+LogicAnalyzer& LogicAnalyzer::SetSamplerCount(int nSampler)
+{
+	nSampler_ = nSampler;
+	clocksPerLoop_ = (nSampler_ <= 2)? 10 : 12;
 	return *this;
 }
 
@@ -172,7 +181,6 @@ bool LogicAnalyzer::Enable()
 										// save current pins state in y
 	.wrap()
 	.end();
-	clocksPerLoop_ = (nSampler_ <= 2)? 10 : 12;
 	samplerTbl_[0].SetProgram(program_, relAddrEntryTbl[0], samplingInfo_.pinMin, nPinsConsecutive);
 	for (int iSampler = 1; iSampler < nSampler_; ++iSampler) {
 		samplerTbl_[iSampler].ShareProgram(samplerTbl_[0], relAddrEntryTbl[iSampler], samplingInfo_.pinMin, nPinsConsecutive);
@@ -262,7 +270,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		tout.Println();
 	};
 	printHeader();
-	double clockPIOProgram = static_cast<double>(::clock_get_hz(clk_sys) / clocksPerLoop_);
+	double clockPIOProgram = CalcClockPIOProgram();
 	int nEventsToPrint =
 		(printInfo_.part == PrintPart::Head)? ChooseMin(nEventsAll, printInfo_.nEventsToPrint) :
 		(printInfo_.part == PrintPart::Tail)?  ChooseMin(nEventsAll, printInfo_.nEventsToPrint) :
@@ -364,9 +372,10 @@ const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 		const PIO::StateMachine& sm = samplerTbl_[0].GetSM();
 		tout.Printf("enabled%s pio%d", (nEvents == nRawEventMax_)? "(full)" : "", sm.pio.get_index());
 	} else {
-		tout.Printf("disabled ----");
+		tout.Printf("disabled ---");
 	}
-	tout.Printf(" sampler:%d target:%s", nSampler_, (target_ == Target::Internal)? "internal" : "external");
+	tout.Printf(" %.1fMHz (sampler:%d) target:%s", CalcClockPIOProgram() * nSampler_ / 1000'000.,
+		nSampler_, (target_ == Target::Internal)? "internal" : "external");
 	do {
 		bool firstFlag = true;
 		tout.Printf(" pins:");

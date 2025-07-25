@@ -109,7 +109,7 @@ public:
 	bool Enable();
 	LogicAnalyzer& Disable();
 	LogicAnalyzer& SetPins(const int pinTbl[], int nPins);
-	LogicAnalyzer& SetSamplerCount(int nSampler) { nSampler_ = nSampler; return *this; }
+	LogicAnalyzer& SetSamplerCount(int nSampler);
 	LogicAnalyzer& SetTarget(Target target) { target_ = target; return *this; }
 	LogicAnalyzer& SetResolution(float usecReso) { usecReso_ = usecReso; return *this; }
 	LogicAnalyzer& SetEventCountToPrint(int nEventsToPrint) { printInfo_.nEventsToPrint = nEventsToPrint; return *this; }
@@ -117,6 +117,7 @@ public:
 	PrintPart GetPrintPart() const { return printInfo_.part; }
 	LogicAnalyzer& SetWaveStyle(const WaveStyle& waveStyle) { printInfo_.pWaveStyle = &waveStyle; return *this; }
 	const WaveStyle& GetWaveStyle() const { return *printInfo_.pWaveStyle; }
+	double CalcClockPIOProgram() const { return static_cast<double>(::clock_get_hz(clk_sys) / clocksPerLoop_); }
 	float GetResolution() const { return usecReso_; }
 	bool HasSamplingPins() const { return samplingInfo_.pinBitmap != 0; }
 	int GetEventCount() const;
