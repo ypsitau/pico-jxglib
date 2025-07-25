@@ -4,6 +4,7 @@
 //==============================================================================
 #include <stdlib.h>
 #include <memory.h>
+#include "jxglib/BinaryInfo.h"
 #include "jxglib/LogicAnalyzer.h"
 
 namespace jxglib {
@@ -107,8 +108,10 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple4 = {
 	formatHeader:	"GP%-2d  ",
 };
 
-LogicAnalyzer::LogicAnalyzer(int nRawEventMax) : nSampler_{1}, target_{Target::Internal}, nRawEventMax_{nRawEventMax}, clocksPerLoop_{1}, usecReso_{1'000}
+LogicAnalyzer::LogicAnalyzer() : nSampler_{1}, target_{Target::Internal}, clocksPerLoop_{1}, usecReso_{1'000}
 {
+	float ratioRawEventBuff = .7;
+	nRawEventMax_ = static_cast<int>((ratioRawEventBuff * GetFreeHeapBytes() / sizeof(RawEvent)));
 	SetSamplerCount(1);
 }
 
@@ -380,7 +383,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 	} else {
 		tout.Printf("disabled ---");
 	}
-	tout.Printf(" %.1fMHz (sampler:%d) target:%s", CalcClockPIOProgram() * nSampler_ / 1000'000.,
+	tout.Printf(" %.1fMHz (samplers:%d) target:%s", CalcClockPIOProgram() * nSampler_ / 1000'000.,
 		nSampler_, (target_ == Target::Internal)? "internal" : "external");
 	do {
 		bool firstFlag = true;
@@ -436,6 +439,11 @@ bool LogicAnalyzer::NextEvent(Event& event)
 	return true;
 }
 
+size_t LogicAnalyzer::GetFreeHeapBytes()
+{
+    return &__stack - &__bss_end__;
+}
+
 //------------------------------------------------------------------------------
 // LogicAnalyzer::Sampler
 //------------------------------------------------------------------------------
@@ -451,10 +459,13 @@ LogicAnalyzer::Sampler::~Sampler()
 
 bool LogicAnalyzer::Sampler::AllocBuff(int nRawEventPerSampler)
 {
-	nRawEventPerSampler_ = nRawEventPerSampler;
 	::free(rawEventBuff_);
 	rawEventBuff_ = reinterpret_cast<RawEvent*>(::malloc(sizeof(RawEvent) * nRawEventPerSampler));
-	return !!rawEventBuff_;
+	if (!rawEventBuff_) {
+		nRawEventPerSampler_ = 0;
+		return false;
+	}
+	return true;
 }
 
 void LogicAnalyzer::Sampler::FreeBuff()

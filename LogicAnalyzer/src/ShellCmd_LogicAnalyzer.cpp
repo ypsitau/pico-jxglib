@@ -10,14 +10,15 @@ LogicAnalyzer logicAnalyzer;
 ShellCmd(la, "Logic Analyzer")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		'h', "prints this help"),
-		Arg::OptString("pins",		'p', "pins to monitor", "PINS"),
-		Arg::OptString("target",	't', "target (internal, external)", "TARGET"),
-		Arg::OptString("sampler",	'S', "number of samplers (1-4)", "NUM"),
-		Arg::OptString("reso",		'r', "resolution in microseconds (default 1000)", "RESO"),
-		Arg::OptString("part",		't', "printed part of the waveform (head, tail, all)", "PART"),
-		Arg::OptString("events",	'e', "number of events to print (default 80)", "NUM"),
-		Arg::OptString("style",		's', "waveform style (fancy1, fancy2, fancy3, fancy4, simple1, simple2, simple3, simple4)", "STYLE"),
+		Arg::OptBool("help",			'h', "prints this help"),
+		Arg::OptString("pins",			'p', "pins to monitor", "PINS"),
+		Arg::OptString("target",		't', "target (internal, external)", "TARGET"),
+		Arg::OptString("samplers",		'S', "number of samplers (1-4)", "NUM"),
+		Arg::OptString("max-events",	'M', "maximum number of events to capture", "NUM"),
+		Arg::OptString("reso",			'r', "resolution in microseconds (default 1000)", "RESO"),
+		Arg::OptString("part",			't', "printed part of the waveform (head, tail, all)", "PART"),
+		Arg::OptString("events",		'e', "number of events to print (default 80)", "NUM"),
+		Arg::OptString("style",			's', "waveform style (fancy1, fancy2, fancy3, fancy4, simple1, simple2, simple3, simple4)", "STYLE"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
@@ -62,7 +63,7 @@ ShellCmd(la, "Logic Analyzer")
 			return Result::Error;
 		}
 	}
-	if (arg.GetString("sampler", &value)) {
+	if (arg.GetString("samplers", &value)) {
 		char* endptr = nullptr;
 		int nSampler = ::strtol(value, &endptr, 10);
 		if (endptr == value || *endptr != '\0' || nSampler < 1 || nSampler > 4) {
@@ -70,6 +71,15 @@ ShellCmd(la, "Logic Analyzer")
 			return Result::Error;
 		}
 		logicAnalyzer.SetSamplerCount(nSampler);
+	}
+	if (arg.GetString("max-events", &value)) {
+		char* endptr = nullptr;
+		int nRawEventMax = ::strtol(value, &endptr, 10);
+		if (endptr == value || *endptr != '\0' || nRawEventMax <= 0) {
+			terr.Printf("Invalid maximum event count: %s\n", value);
+			return Result::Error;
+		}
+		logicAnalyzer.SetRawEventMaxCount(nRawEventMax);
 	}
 	if (arg.GetString("reso", &value)) {
 		char* endptr = nullptr;

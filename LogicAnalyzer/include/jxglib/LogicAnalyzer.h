@@ -102,7 +102,7 @@ private:
 	int clocksPerLoop_;
 	float usecReso_;
 public:
-	LogicAnalyzer(int nRawEventMax = 16384);
+	LogicAnalyzer();
 	~LogicAnalyzer();
 public:
 	LogicAnalyzer& UpdateSamplingInfo();
@@ -110,6 +110,7 @@ public:
 	LogicAnalyzer& Disable();
 	LogicAnalyzer& SetPins(const int pinTbl[], int nPins);
 	LogicAnalyzer& SetSamplerCount(int nSampler);
+	LogicAnalyzer& SetRawEventMaxCount(int nRawEventMax) { nRawEventMax_ = nRawEventMax; return *this; }
 	LogicAnalyzer& SetTarget(Target target) { target_ = target; return *this; }
 	LogicAnalyzer& SetResolution(float usecReso) { usecReso_ = usecReso; return *this; }
 	LogicAnalyzer& SetEventCountToPrint(int nEventsToPrint) { printInfo_.nEventsToPrint = nEventsToPrint; return *this; }
@@ -127,6 +128,8 @@ public:
 	const LogicAnalyzer& PrintWave(Printable& tout) const;
 	const LogicAnalyzer& PrintSettings(Printable& tout) const;
 	bool NextEvent(Event& event);
+public:
+	static size_t GetFreeHeapBytes();
 };
 
 }
