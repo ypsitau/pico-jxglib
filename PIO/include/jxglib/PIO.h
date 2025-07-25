@@ -423,7 +423,8 @@ public:
 	const StateMachine& set_wrap(uint wrap_target, uint wrap) const { ::pio_sm_set_wrap(pio, sm, wrap_target, wrap); return *this; }
 public:
 	const StateMachine& init(uint initial_pc, const pio_sm_config* config) const;
-	const StateMachine& init() const { return init(offset + GetProgram().GetRelAddrEntry(), config); }
+	const StateMachine& init_with_entry(uint relAddrEntry) const { return init(offset + relAddrEntry, config); }
+	const StateMachine& init() const { return init_with_entry(GetProgram().GetRelAddrEntry()); }
 	const StateMachine& init_pins() const;
 	int set_config(const pio_sm_config *config) const { return ::pio_sm_set_config(pio, sm, config); }
 	const StateMachine& set_enabled(bool enabled = true) const { ::pio_sm_set_enabled(pio, sm, enabled); return *this; }

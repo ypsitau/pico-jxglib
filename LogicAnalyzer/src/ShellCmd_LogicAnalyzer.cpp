@@ -128,11 +128,12 @@ ShellCmd(la, "Logic Analyzer")
 	while (const char* subcmd = each.Next()) {
 		if (::strcasecmp(subcmd, "enable") == 0) {
 			logicAnalyzer.UpdateSamplingInfo();
-			if (logicAnalyzer.HasSamplingPins()) {
-				logicAnalyzer.Enable();
+			if (!logicAnalyzer.HasSamplingPins()) {
+				terr.Printf("use -p option to specify pins to sample\n");
+			} else if (logicAnalyzer.Enable()) {
 				logicAnalyzer.PrintSettings(tout);
 			} else {
-				terr.Printf("use -p option to specify pins to sample\n");
+				terr.Printf("failed to enable Logic Analyzer\n");
 			}
 		} else if (::strcmp(subcmd, "disable") == 0) {
 			logicAnalyzer.Disable();

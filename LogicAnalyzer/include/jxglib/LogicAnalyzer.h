@@ -21,6 +21,8 @@ public:
 	struct Event{
 		uint64_t timeStamp;
 		uint32_t pinBitmap;
+	public:
+		Event(uint64_t timeStamp = 0, uint32_t pinBitmap = 0) : timeStamp{timeStamp}, pinBitmap{pinBitmap} {}
 	};
 	enum class Target { Internal, External };
 	struct WaveStyle {
@@ -35,19 +37,27 @@ public:
 		const char* formatHeader;
 	};
 	enum class PrintPart { Head, Tail, All };
-	struct Processor {
-		PIO::StateMachine sm;
-		DMA::ChannelConfig config;
-		DMA::Channel* pChannel;
-		std::unique_ptr<RawEvent> rawEventBuff;
+	class Processor {
+	private:
+		PIO::StateMachine sm_;
+		DMA::Channel* pChannel_;
+		DMA::ChannelConfig channelConfig_;
+		int nRawEventMax_;
+		int iEvent_;
+		std::unique_ptr<RawEvent> rawEventBuff_;
 	public:
-		Processor() : pChannel{nullptr} {}
-		~Processor() { if (pChannel) { pChannel->unclaim(); } }
-		int GetRawEventCount() const {
-			return (reinterpret_cast<uint32_t>(pChannel->get_write_addr()) -
-					reinterpret_cast<uint32_t>(rawEventBuff.get())) / sizeof(RawEvent);
-		}
-		const RawEvent& GetRawEvent(int iRawEvent) const { return rawEventBuff.get()[iRawEvent]; }
+		Processor() : pChannel_{nullptr}, nRawEventMax_{0}, iEvent_{0} {}
+		~Processor() { if (pChannel_) { pChannel_->unclaim(); } }
+	public:
+		bool AllocBuff(int nRawEventMax);
+		const PIO::StateMachine& GetSM() const { return sm_; }
+		void SetProgram(const PIO::Program& program, uint relAddrEntry, uint pinMin, int nPinsConsecutive);
+		void EnableSM() { sm_.set_enabled(); }
+		void DisableSM() { sm_.set_enabled(false); sm_.remove_program(); }
+		void EnableDMA();
+		void DisableDMA();
+		int GetRawEventCount() const;
+		const RawEvent& GetRawEvent(int iRawEvent) const { return rawEventBuff_.get()[iRawEvent]; }
 	};
 	struct SamplingInfo {
 		bool enabledFlag;

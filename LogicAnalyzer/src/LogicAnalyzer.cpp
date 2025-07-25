@@ -130,18 +130,17 @@ bool LogicAnalyzer::Enable()
 {
 	if (samplingInfo_.enabledFlag) Disable(); // disable if already enabled
 	if (samplingInfo_.pinBitmap == 0) return true;
-	processorTbl_[0].rawEventBuff.reset();
-	processorTbl_[0].rawEventBuff.reset(new RawEvent[nRawEventMax_]);
-	if (!processorTbl_[0].rawEventBuff) return false;
+	if (!processorTbl_[0].AllocBuff(nRawEventMax_)) return false;
 	uint nPinsConsecutive = 0;	// nPinsConsecutive must be less than 32 to avoid auto-push during sampling
 	for (uint32_t pinBitmap = samplingInfo_.pinBitmap; pinBitmap != 0; pinBitmap >>= 1, ++nPinsConsecutive) ;
+	uint relAddrEntry;
 	program_
 	.program("logic_analyzer")
 	.L("loop").wrap_target()
 		.mov("x", "~osr")
 		.jmp("x--", "no_wrap_around")
 		.mov("osr", "~x")
-	.entry()
+	.pub(&relAddrEntry)
 		.mov("isr", "null")
 		.in("pins", nPinsConsecutive)	// save current pins state in isr (no auto-push)
 		.mov("x", "isr")
@@ -160,35 +159,18 @@ bool LogicAnalyzer::Enable()
 	.wrap()
 	.end();
 	nClocksPerLoop_ = 10;
-	PIO::StateMachine& sm = processorTbl_[0].sm;
-	sm.config.set_in_shift_left(true, 32); // shift left, autopush enabled, push threshold 32
-	sm.set_program(program_).set_listen_pins(samplingInfo_.pinMin, nPinsConsecutive).init();
+	processorTbl_[0].SetProgram(program_, relAddrEntry, samplingInfo_.pinMin, nPinsConsecutive);
 	if (target_ == Target::External) {
 		uint pin = samplingInfo_.pinMin;
 		for (uint32_t pinBitmap = samplingInfo_.pinBitmap; pinBitmap != 0; pinBitmap >>= 1, ++pin) {
 			if (pinBitmap & 1) {
-				::pio_gpio_init(sm.pio, pin);
+				::pio_gpio_init(processorTbl_[0].GetSM().pio, pin);
 				::gpio_disable_pulls(pin);
 			}
 		}
 	}
-	sm.set_enabled();
-	processorTbl_[0].pChannel = DMA::claim_unused_channel();
-	processorTbl_[0].config.set_enable(true)
-		.set_transfer_data_size(DMA_SIZE_32)
-		.set_read_increment(false)
-		.set_write_increment(true)
-		.set_dreq(sm.get_dreq_rx()) // set DREQ of StateMachine's rx
-		.set_chain_to(*processorTbl_[0].pChannel)    // disable by setting chain_to to itself
-		.set_ring_read(0)
-		.set_bswap(false)
-		.set_irq_quiet(false)
-		.set_sniff_enable(false)
-		.set_high_priority(false);
-	processorTbl_[0].pChannel->set_config(processorTbl_[0].config)
-		.set_read_addr(sm.get_rxf())
-		.set_write_addr(processorTbl_[0].rawEventBuff.get())
-		.set_trans_count_trig(nRawEventMax_ * sizeof(RawEvent) / sizeof(uint32_t));
+	processorTbl_[0].EnableSM();
+	processorTbl_[0].EnableDMA();
 	samplingInfo_.enabledFlag = true;
 	return true;
 }
@@ -197,13 +179,8 @@ LogicAnalyzer& LogicAnalyzer::Disable()
 {
 	if (samplingInfo_.enabledFlag) {
 		samplingInfo_.enabledFlag = false;
-		PIO::StateMachine& sm = processorTbl_[0].sm;
-		sm.set_enabled(false);
-		sm.remove_program();
-		processorTbl_[0].pChannel->abort();
-		processorTbl_[0].pChannel->unclaim();
-		processorTbl_[0].pChannel = nullptr;
-		processorTbl_[0].rawEventBuff.reset();
+		processorTbl_[0].DisableSM();
+		processorTbl_[0].DisableDMA();
 		if (target_ == Target::External) {
 			uint pin = samplingInfo_.pinMin;
 			for (uint32_t pinBitmap = samplingInfo_.pinBitmap; pinBitmap != 0; pinBitmap >>= 1, ++pin) {
@@ -365,7 +342,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 {
 	int nEvents = GetEventCount();
 	if (samplingInfo_.enabledFlag) {
-		const PIO::StateMachine& sm = processorTbl_[0].sm;
+		const PIO::StateMachine& sm = processorTbl_[0].GetSM();
 		tout.Printf("enabled%s pio%d", (nEvents == nRawEventMax_)? "(full)" : "", sm.pio.get_index());
 	} else {
 		tout.Printf("disabled ----");
@@ -403,6 +380,57 @@ const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 	tout.Printf(" events:%d/%d", nEvents, nRawEventMax_);
 	tout.Println();
 	return *this;
+}
+
+//------------------------------------------------------------------------------
+// LogicAnalyzer::Processor
+//------------------------------------------------------------------------------
+bool LogicAnalyzer::Processor::AllocBuff(int nRawEventMax)
+{
+	nRawEventMax_ = nRawEventMax;
+	rawEventBuff_.reset();
+	rawEventBuff_.reset(new RawEvent[nRawEventMax]);
+	return !!rawEventBuff_;
+}
+
+void LogicAnalyzer::Processor::SetProgram(const PIO::Program& program, uint relAddrEntry, uint pinMin, int nPinsConsecutive)
+{
+	sm_.config.set_in_shift_left(true, 32); // shift left, autopush enabled, push threshold 32
+	sm_.set_program(program).set_listen_pins(pinMin, nPinsConsecutive).init_with_entry(relAddrEntry);
+}
+
+void LogicAnalyzer::Processor::EnableDMA()
+{
+	pChannel_ = DMA::claim_unused_channel();
+	channelConfig_.set_enable(true)
+		.set_transfer_data_size(DMA_SIZE_32)
+		.set_read_increment(false)
+		.set_write_increment(true)
+		.set_dreq(sm_.get_dreq_rx()) // set DREQ of StateMachine's rx
+		.set_chain_to(*pChannel_)    // disable by setting chain_to to itself
+		.set_ring_read(0)
+		.set_bswap(false)
+		.set_irq_quiet(false)
+		.set_sniff_enable(false)
+		.set_high_priority(false);
+	pChannel_->set_config(channelConfig_)
+		.set_read_addr(sm_.get_rxf())
+		.set_write_addr(rawEventBuff_.get())
+		.set_trans_count_trig(nRawEventMax_ * sizeof(RawEvent) / sizeof(uint32_t));
+}
+
+void LogicAnalyzer::Processor::DisableDMA()
+{
+	pChannel_->abort();
+	pChannel_->unclaim();
+	pChannel_ = nullptr;
+	rawEventBuff_.reset();
+}
+
+int LogicAnalyzer::Processor::GetRawEventCount() const
+{
+	return (reinterpret_cast<uint32_t>(pChannel_->get_write_addr()) -
+			reinterpret_cast<uint32_t>(rawEventBuff_.get())) / sizeof(RawEvent);
 }
 
 }
