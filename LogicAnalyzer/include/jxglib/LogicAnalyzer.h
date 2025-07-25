@@ -35,13 +35,6 @@ public:
 		const char* formatHeader;
 	};
 	enum class PrintPart { Head, Tail, All };
-	struct PrintInfo {
-		int nPins;
-		std::unique_ptr<uint[]> pinTbl;
-		int nEvents;
-		PrintPart part;
-		const WaveStyle* pWaveStyle;
-	};
 	struct Processor {
 		PIO::StateMachine sm;
 		DMA::ChannelConfig config;
@@ -50,6 +43,27 @@ public:
 	public:
 		Processor() : pChannel{nullptr} {}
 		~Processor() { if (pChannel) { pChannel->unclaim(); } }
+		int GetRawEventCount() const {
+			return (reinterpret_cast<uint32_t>(pChannel->get_write_addr()) -
+					reinterpret_cast<uint32_t>(rawEventBuff.get())) / sizeof(RawEvent);
+		}
+		const RawEvent& GetRawEvent(int iRawEvent) const { return rawEventBuff.get()[iRawEvent]; }
+	};
+	struct SamplingInfo {
+		bool enabledFlag;
+		uint32_t pinBitmap;
+		uint pinMin;
+	public:
+		SamplingInfo() : enabledFlag{false}, pinBitmap{0}, pinMin{0} {}
+	};
+	struct PrintInfo {
+		int nPins;
+		std::unique_ptr<uint[]> pinTbl;
+		int nEventsToPrint;
+		PrintPart part;
+		const WaveStyle* pWaveStyle;
+	public:
+		PrintInfo() : nPins{0}, nEventsToPrint{80}, part{PrintPart::Head}, pWaveStyle{&waveStyle_fancy2} {}
 	};
 public:
 	static const WaveStyle waveStyle_fancy1;
@@ -63,20 +77,12 @@ public:
 private:
 	PIO::Program program_;
 	Processor processorTbl_[4];
-	//PIO::StateMachine smTbl_[4];
-	//DMA::ChannelConfig configTbl_[4];
-	//DMA::Channel* pChannelTbl_[4];
-	//std::unique_ptr<RawEvent> rawEventBuffTbl_[4];
+	SamplingInfo samplingInfo_;
+	PrintInfo printInfo_;
 	Target target_;
 	int nRawEventMax_;
-	struct {
-		bool enabledFlag;
-		uint32_t pinBitmap;
-		uint pinMin;
-	} samplingInfo_;
 	int nClocksPerLoop_;
 	float usecReso_;
-	PrintInfo printInfo_;
 public:
 	LogicAnalyzer(int nRawEventMax = 8192);
 	~LogicAnalyzer();
@@ -87,7 +93,7 @@ public:
 	LogicAnalyzer& SetPins(const int pinTbl[], int nPins);
 	LogicAnalyzer& SetTarget(Target target) { target_ = target; return *this; }
 	LogicAnalyzer& SetResolution(float usecReso) { usecReso_ = usecReso; return *this; }
-	LogicAnalyzer& SetEventCountToPrint(int nEvents) { printInfo_.nEvents = nEvents; return *this; }
+	LogicAnalyzer& SetEventCountToPrint(int nEventsToPrint) { printInfo_.nEventsToPrint = nEventsToPrint; return *this; }
 	LogicAnalyzer& SetPrintPart(PrintPart part) { printInfo_.part = part; return *this; }
 	PrintPart GetPrintPart() const { return printInfo_.part; }
 	LogicAnalyzer& SetWaveStyle(const WaveStyle& waveStyle) { printInfo_.pWaveStyle = &waveStyle; return *this; }
@@ -95,7 +101,7 @@ public:
 	float GetResolution() const { return usecReso_; }
 	bool HasSamplingPins() const { return samplingInfo_.pinBitmap != 0; }
 	int GetEventCount() const;
-	const RawEvent& GetRawEvent(int iRawEvent) const;
+	const RawEvent& GetRawEvent(int iProcessor, int iRawEvent) const;
 	bool IsPinAsserted(uint32_t pinBitmap, uint pin) const { return ((pinBitmap << samplingInfo_.pinMin) & (1 << pin)) != 0; }
 	bool IsPinEnabled(uint pin) const { return IsPinAsserted(samplingInfo_.pinBitmap, pin); }
 	const LogicAnalyzer& PrintWave(Printable& tout) const;

@@ -105,14 +105,11 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple4 = {
 	formatHeader:	"GP%-2d  ",
 };
 
-LogicAnalyzer::LogicAnalyzer(int nRawEventMax) : target_{Target::Internal}, nRawEventMax_{nRawEventMax},
-		samplingInfo_{false, 0, 0}, nClocksPerLoop_{1}, usecReso_{1'000},
-		printInfo_{0, nullptr, 80, PrintPart::Head, &waveStyle_fancy2}
+LogicAnalyzer::LogicAnalyzer(int nRawEventMax) : target_{Target::Internal}, nRawEventMax_{nRawEventMax}, nClocksPerLoop_{1}, usecReso_{1'000}
 {}
 
 LogicAnalyzer::~LogicAnalyzer()
-{
-}
+{}
 
 LogicAnalyzer& LogicAnalyzer::UpdateSamplingInfo()
 {
@@ -146,13 +143,13 @@ bool LogicAnalyzer::Enable()
 		.mov("osr", "~x")
 	.entry()
 		.mov("isr", "null")
-		.in("pins", nPinsConsecutive)				// save current pins state in isr (no auto-push)
+		.in("pins", nPinsConsecutive)	// save current pins state in isr (no auto-push)
 		.mov("x", "isr")
 		.jmp("do_report")	[1]
 	.L("no_wrap_around")
 		.mov("osr", "~x")				// increment osr (counter) by 1
 		.mov("isr", "null")
-		.in("pins", nPinsConsecutive)				// save current pins state in isr (no auto-push)
+		.in("pins", nPinsConsecutive)	// save current pins state in isr (no auto-push)
 		.mov("x", "isr")
 		.jmp("x!=y", "do_report")		// if pins state changed, report it
 		.jmp("loop")		[2]
@@ -224,14 +221,12 @@ LogicAnalyzer& LogicAnalyzer::SetPins(const int pinTbl[], int nPins)
 
 int LogicAnalyzer::GetEventCount() const
 {
-	if (!samplingInfo_.enabledFlag) return 0;
-	return (reinterpret_cast<uint32_t>(processorTbl_[0].pChannel->get_write_addr()) -
-			reinterpret_cast<uint32_t>(processorTbl_[0].rawEventBuff.get())) / sizeof(RawEvent);
+	return samplingInfo_.enabledFlag? processorTbl_[0].GetRawEventCount() : 0;
 }
 
-const LogicAnalyzer::RawEvent& LogicAnalyzer::GetRawEvent(int iRawEvent) const
+const LogicAnalyzer::RawEvent& LogicAnalyzer::GetRawEvent(int iProcessor, int iRawEvent) const
 {
-	return processorTbl_[0].rawEventBuff.get()[iRawEvent];
+	return processorTbl_[iProcessor].GetRawEvent(iRawEvent);
 }
 
 const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
@@ -258,16 +253,16 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 	printHeader();
 	double clockPIOProgram = static_cast<double>(::clock_get_hz(clk_sys) / nClocksPerLoop_);
 	int nEventsToPrint =
-		(printInfo_.part == PrintPart::Head)? ChooseMin(nEventsAll, printInfo_.nEvents) :
-		(printInfo_.part == PrintPart::Tail)?  ChooseMin(nEventsAll, printInfo_.nEvents) :
+		(printInfo_.part == PrintPart::Head)? ChooseMin(nEventsAll, printInfo_.nEventsToPrint) :
+		(printInfo_.part == PrintPart::Tail)?  ChooseMin(nEventsAll, printInfo_.nEventsToPrint) :
 		(printInfo_.part == PrintPart::All)? nEventsAll : 0;
 	int iEventStart =
 		(printInfo_.part == PrintPart::Head)? 0 :
 		(printInfo_.part == PrintPart::Tail)? nEventsAll - nEventsToPrint :
 		(printInfo_.part == PrintPart::All)? 0 : 0;
 	int iEventBase = (nEventsToPrint == 0)? 0 : 1;
-	const RawEvent& eventStart = GetRawEvent(iEventStart);
-	const RawEvent& eventBase = GetRawEvent(iEventBase);
+	const RawEvent& eventStart = GetRawEvent(0, iEventStart);
+	const RawEvent& eventBase = GetRawEvent(0, iEventBase);
 	if (nEventsToPrint > 0) {
 		if (iEventStart == iEventBase) {
 			tout.Printf("%12.2f", 0.);
@@ -288,12 +283,11 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		}
 		tout.Println();
 	}
+	const RawEvent* pEventPrev = &eventStart;
 	for (int i = 1; i < nEventsToPrint; ++i) {
-		const RawEvent& eventPrev = GetRawEvent(iEventStart + i - 1);
-		const RawEvent& event = GetRawEvent(iEventStart + i);
-		if (eventPrev.pinBitmap == event.pinBitmap) continue; // skip if no change
-		double delta = static_cast<double>(event.timeStamp - eventPrev.timeStamp) * 1000'000 / clockPIOProgram;
-		if (delta == 0) continue; // skip if no time difference
+		const RawEvent& event = GetRawEvent(0, iEventStart + i);
+		if (pEventPrev->pinBitmap == event.pinBitmap) continue; // skip if no change
+		double delta = static_cast<double>(event.timeStamp - pEventPrev->timeStamp) * 1000'000 / clockPIOProgram;
 		int nDelta = static_cast<int>(delta / usecReso_);
 		if (nDelta < 40) {
 			for (int i = 0; i < nDelta; ++i) {
@@ -305,7 +299,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 						continue;
 					}
 					if (IsPinEnabled(pin)) {
-						tout.Print(IsPinAsserted(eventPrev.pinBitmap, pin)? waveStyle.strHigh : waveStyle.strLow);
+						tout.Print(IsPinAsserted(pEventPrev->pinBitmap, pin)? waveStyle.strHigh : waveStyle.strLow);
 					} else {
 						tout.Print(waveStyle.strBlank);
 					}
@@ -321,14 +315,14 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 					continue;
 				}
 				if (IsPinEnabled(pin)) {
-					tout.Print(IsPinAsserted(eventPrev.pinBitmap, pin)? waveStyle.strHighIdle : waveStyle.strLowIdle);
+					tout.Print(IsPinAsserted(pEventPrev->pinBitmap, pin)? waveStyle.strHighIdle : waveStyle.strLowIdle);
 				} else {
 					tout.Print(waveStyle.strBlank);
 				}
 			}
 			tout.Println();
 		}
-		uint32_t bitsTransition = event.pinBitmap ^ eventPrev.pinBitmap;
+		uint32_t bitsTransition = event.pinBitmap ^ pEventPrev->pinBitmap;
 		tout.Printf("%12.2f", static_cast<double>(event.timeStamp - eventBase.timeStamp) * 1000'000 / clockPIOProgram);
 		for (int iPin = 0; iPin < printInfo_.nPins; ++iPin) {
 			uint pin = printInfo_.pinTbl[iPin];
@@ -346,6 +340,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		}
 		tout.Println();
 		if (Tickable::TickSub()) break;
+		pEventPrev = &event;
 	}
 	if (nEventsToPrint > 0) printHeader();
 	return *this;
