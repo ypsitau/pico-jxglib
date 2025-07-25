@@ -50,12 +50,15 @@ public:
 		~Sampler() { if (pChannel_) { pChannel_->unclaim(); } }
 	public:
 		bool AllocBuff(int nRawEventMax);
+		void FreeBuff() { rawEventBuff_.reset(); }
+		PIO::StateMachine& GetSM() { return sm_; }
 		const PIO::StateMachine& GetSM() const { return sm_; }
 		void SetProgram(const PIO::Program& program, uint relAddrEntry, uint pinMin, int nPinsConsecutive);
-		void EnableSM() { sm_.set_enabled(); }
-		void DisableSM() { sm_.set_enabled(false); sm_.remove_program(); }
-		void EnableDMA();
-		void DisableDMA();
+		void ShareProgram(Sampler& sampler, uint relAddrEntry, uint pinMin, int nPinsConsecutive);
+		Sampler& EnableSM() { sm_.set_enabled(); return *this; }
+		Sampler& DisableSM() { sm_.set_enabled(false); sm_.remove_program(); return *this; }
+		Sampler& EnableDMA();
+		Sampler& DisableDMA();
 	public:
 		int GetRawEventCount() const;
 		void RewindRawEvent() { iRawEventCur_ = 0; }
