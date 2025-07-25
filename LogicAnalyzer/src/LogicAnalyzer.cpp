@@ -105,7 +105,7 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple4 = {
 	formatHeader:	"GP%-2d  ",
 };
 
-LogicAnalyzer::LogicAnalyzer(int nRawEventMax) : target_{Target::Internal}, nRawEventMax_{nRawEventMax}, nClocksPerLoop_{1}, usecReso_{1'000}
+LogicAnalyzer::LogicAnalyzer(int nRawEventMax) : nSampler_{1}, target_{Target::Internal}, nRawEventMax_{nRawEventMax}, nClocksPerLoop_{1}, usecReso_{1'000}
 {}
 
 LogicAnalyzer::~LogicAnalyzer()
@@ -380,6 +380,25 @@ const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 	tout.Printf(" events:%d/%d", nEvents, nRawEventMax_);
 	tout.Println();
 	return *this;
+}
+
+bool LogicAnalyzer::NextEvent(Event& event)
+{
+	int iSamplerToPick = -1;
+	const RawEvent* pRawEventToPick = nullptr;
+	for (int iSampler = nSampler_ - 1; iSampler >= 0; --iSampler) {
+		const RawEvent* pRawEvent = samplerTbl_[iSampler].GetRawEventCur();
+		if (!pRawEvent) {
+			// nothing to do
+		} else if (!pRawEventToPick || pRawEventToPick->timeStamp >= pRawEvent->timeStamp) {
+			pRawEventToPick = pRawEvent;
+			iSamplerToPick = iSampler;
+		}
+	}
+	if (!pRawEventToPick) return false; // no more events
+	event.timeStamp = pRawEventToPick->timeStamp;
+	event.pinBitmap = pRawEventToPick->pinBitmap;
+	return true;
 }
 
 //------------------------------------------------------------------------------

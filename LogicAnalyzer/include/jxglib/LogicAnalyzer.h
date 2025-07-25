@@ -90,6 +90,7 @@ public:
 	static const WaveStyle waveStyle_simple4;
 private:
 	PIO::Program program_;
+	int nSampler_;
 	Sampler samplerTbl_[4];
 	SamplingInfo samplingInfo_;
 	PrintInfo printInfo_;
@@ -120,6 +121,7 @@ public:
 	bool IsPinEnabled(uint pin) const { return IsPinAsserted(samplingInfo_.pinBitmap, pin); }
 	const LogicAnalyzer& PrintWave(Printable& tout) const;
 	const LogicAnalyzer& PrintSettings(Printable& tout) const;
+	bool NextEvent(Event& event);
 };
 
 }
