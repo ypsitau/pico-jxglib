@@ -42,15 +42,15 @@ public:
 		PIO::StateMachine sm_;
 		DMA::Channel* pChannel_;
 		DMA::ChannelConfig channelConfig_;
-		int nRawEventMax_;
+		int nRawEventPerSampler_;
 		int iRawEventCur_;
-		std::unique_ptr<RawEvent> rawEventBuff_;
+		RawEvent* rawEventBuff_;
 	public:
-		Sampler() : pChannel_{nullptr}, nRawEventMax_{0}, iRawEventCur_{0} {}
-		~Sampler() { if (pChannel_) { pChannel_->unclaim(); } }
+		Sampler();
+		~Sampler();
 	public:
-		bool AllocBuff(int nRawEventMax);
-		void FreeBuff() { rawEventBuff_.reset(); }
+		bool AllocBuff(int nRawEventPerSampler);
+		void FreeBuff();
 		PIO::StateMachine& GetSM() { return sm_; }
 		const PIO::StateMachine& GetSM() const { return sm_; }
 		void SetProgram(const PIO::Program& program, uint relAddrEntry, uint pinMin, int nPinsConsecutive);
@@ -62,9 +62,9 @@ public:
 	public:
 		int GetRawEventCount() const;
 		void RewindRawEvent() { iRawEventCur_ = 0; }
-		const RawEvent* GetRawEventCur() const { return (iRawEventCur_ < GetRawEventCount())? &rawEventBuff_.get()[iRawEventCur_] : nullptr; }
+		const RawEvent* GetRawEventCur() const { return (iRawEventCur_ < GetRawEventCount())? &rawEventBuff_[iRawEventCur_] : nullptr; }
 		void ForwardRawEvent() { if (iRawEventCur_ < GetRawEventCount()) ++iRawEventCur_; }
-		const RawEvent& GetRawEvent(int iRawEvent) const { return rawEventBuff_.get()[iRawEvent]; }
+		const RawEvent& GetRawEvent(int iRawEvent) const { return rawEventBuff_[iRawEvent]; }
 	};
 	struct SamplingInfo {
 		bool enabledFlag;
@@ -102,7 +102,7 @@ private:
 	int clocksPerLoop_;
 	float usecReso_;
 public:
-	LogicAnalyzer(int nRawEventMax = 8192);
+	LogicAnalyzer(int nRawEventMax = 16384);
 	~LogicAnalyzer();
 public:
 	LogicAnalyzer& UpdateSamplingInfo();
