@@ -55,12 +55,13 @@ public:
 		const PIO::StateMachine& GetSM() const { return sm_; }
 		void SetProgram(const PIO::Program& program, uint relAddrEntry, uint pinMin, int nPinsConsecutive);
 		void ShareProgram(Sampler& sampler, uint relAddrEntry, uint pinMin, int nPinsConsecutive);
-		Sampler& EnableSM() { sm_.set_enabled(); return *this; }
-		Sampler& DisableSM() { sm_.set_enabled(false); sm_.remove_program(); return *this; }
+		Sampler& EnableSM();
+		Sampler& DisableSM();
 		Sampler& EnableDMA();
 		Sampler& DisableDMA();
 	public:
 		int GetRawEventCount() const;
+		bool IsFull() const { return GetRawEventCount() >= nRawEventPerSampler_; }
 		void RewindRawEvent() { iRawEventCur_ = 0; }
 		const RawEvent* GetRawEventCur() const { return (iRawEventCur_ < GetRawEventCount())? &rawEventBuff_[iRawEventCur_] : nullptr; }
 		void ForwardRawEvent() { if (iRawEventCur_ < GetRawEventCount()) ++iRawEventCur_; }
@@ -98,7 +99,7 @@ private:
 	SamplingInfo samplingInfo_;
 	PrintInfo printInfo_;
 	Target target_;
-	int nRawEventMax_;
+	float memoryRatio_;
 	int clocksPerLoop_;
 	float usecReso_;
 public:
@@ -110,7 +111,7 @@ public:
 	LogicAnalyzer& Disable();
 	LogicAnalyzer& SetPins(const int pinTbl[], int nPins);
 	LogicAnalyzer& SetSamplerCount(int nSampler);
-	LogicAnalyzer& SetRawEventMaxCount(int nRawEventMax) { nRawEventMax_ = nRawEventMax; return *this; }
+	LogicAnalyzer& SetMemoryRatio(float memoryRatio) { memoryRatio_ = memoryRatio; return *this; };
 	LogicAnalyzer& SetTarget(Target target) { target_ = target; return *this; }
 	LogicAnalyzer& SetResolution(float usecReso) { usecReso_ = usecReso; return *this; }
 	LogicAnalyzer& SetEventCountToPrint(int nEventsToPrint) { printInfo_.nEventsToPrint = nEventsToPrint; return *this; }
@@ -118,6 +119,7 @@ public:
 	PrintPart GetPrintPart() const { return printInfo_.part; }
 	LogicAnalyzer& SetWaveStyle(const WaveStyle& waveStyle) { printInfo_.pWaveStyle = &waveStyle; return *this; }
 	const WaveStyle& GetWaveStyle() const { return *printInfo_.pWaveStyle; }
+	int CalcRawEventMax() const { return static_cast<int>(memoryRatio_ * GetFreeHeapBytes() / sizeof(RawEvent)); }
 	double CalcClockPIOProgram() const { return static_cast<double>(::clock_get_hz(clk_sys) / clocksPerLoop_); }
 	float GetResolution() const { return usecReso_; }
 	bool HasSamplingPins() const { return samplingInfo_.pinBitmap != 0; }

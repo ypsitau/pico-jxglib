@@ -108,10 +108,8 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple4 = {
 	formatHeader:	"GP%-2d  ",
 };
 
-LogicAnalyzer::LogicAnalyzer() : nSampler_{1}, target_{Target::Internal}, clocksPerLoop_{1}, usecReso_{1'000}
+LogicAnalyzer::LogicAnalyzer() : nSampler_{1}, target_{Target::Internal}, memoryRatio_{.7}, clocksPerLoop_{1}, usecReso_{1'000}
 {
-	float ratioRawEventBuff = .7;
-	nRawEventMax_ = static_cast<int>((ratioRawEventBuff * GetFreeHeapBytes() / sizeof(RawEvent)));
 	SetSamplerCount(1);
 }
 
@@ -144,7 +142,7 @@ bool LogicAnalyzer::Enable()
 {
 	if (samplingInfo_.enabledFlag) Disable(); // disable if already enabled
 	if (samplingInfo_.pinBitmap == 0) return true;
-	int nRawEventPerSampler = nRawEventMax_ / nSampler_;
+	int nRawEventPerSampler = CalcRawEventMax() / nSampler_;
 	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) {
 		if (!samplerTbl_[iSampler].AllocBuff(nRawEventPerSampler)) {
 			for (int iSampler = 0; iSampler < nSampler_; ++iSampler) {
@@ -379,7 +377,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 	int nEvents = GetEventCount();
 	if (samplingInfo_.enabledFlag) {
 		const PIO::StateMachine& sm = samplerTbl_[0].GetSM();
-		tout.Printf("enabled%s pio%d", (nEvents == nRawEventMax_)? "(full)" : "", sm.pio.get_index());
+		tout.Printf("enabled%s pio%d", samplerTbl_[0].IsFull()? "(full)" : "", sm.pio.get_index());
 	} else {
 		tout.Printf("disabled ---");
 	}
@@ -414,7 +412,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 		}
 		if (firstFlag) tout.Print("none");
 	} while (0);
-	tout.Printf(" events:%d/%d", nEvents, nRawEventMax_);
+	tout.Printf(" events:%d/%d", nEvents, CalcRawEventMax());
 	tout.Println();
 	return *this;
 }
@@ -465,6 +463,7 @@ bool LogicAnalyzer::Sampler::AllocBuff(int nRawEventPerSampler)
 		nRawEventPerSampler_ = 0;
 		return false;
 	}
+	nRawEventPerSampler_ = nRawEventPerSampler;
 	return true;
 }
 
@@ -485,6 +484,19 @@ void LogicAnalyzer::Sampler::ShareProgram(Sampler& sampler, uint relAddrEntry, u
 {
 	sm_.config.set_in_shift_left(true, 32); // shift left, autopush enabled, push threshold 32
 	sm_.share_program(sampler.GetSM()).set_listen_pins(pinMin, nPinsConsecutive).init_with_entry(relAddrEntry);
+}
+
+LogicAnalyzer::Sampler& LogicAnalyzer::Sampler::EnableSM()
+{
+	sm_.set_enabled();
+	return *this;
+}
+
+LogicAnalyzer::Sampler& LogicAnalyzer::Sampler::DisableSM()
+{
+	sm_.set_enabled(false);
+	sm_.remove_program();
+	return *this;
 }
 
 LogicAnalyzer::Sampler& LogicAnalyzer::Sampler::EnableDMA()
