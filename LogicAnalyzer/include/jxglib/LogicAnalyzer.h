@@ -99,7 +99,7 @@ private:
 	PrintInfo printInfo_;
 	Target target_;
 	int nRawEventMax_;
-	int nClocksPerLoop_;
+	int clocksPerLoop_;
 	float usecReso_;
 public:
 	LogicAnalyzer(int nRawEventMax = 8192);

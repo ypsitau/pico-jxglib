@@ -105,7 +105,7 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple4 = {
 	formatHeader:	"GP%-2d  ",
 };
 
-LogicAnalyzer::LogicAnalyzer(int nRawEventMax) : nSampler_{1}, target_{Target::Internal}, nRawEventMax_{nRawEventMax}, nClocksPerLoop_{1}, usecReso_{1'000}
+LogicAnalyzer::LogicAnalyzer(int nRawEventMax) : nSampler_{1}, target_{Target::Internal}, nRawEventMax_{nRawEventMax}, clocksPerLoop_{1}, usecReso_{1'000}
 {}
 
 LogicAnalyzer::~LogicAnalyzer()
@@ -143,8 +143,12 @@ bool LogicAnalyzer::Enable()
 	uint relAddrEntryTbl[4];
 	program_
 	.program("logic_analyzer")
+	.pub(&relAddrEntryTbl[3])
+		.jmp("entry")		[(nSampler_ == 4)? (9 - 1) : 0]
+	.pub(&relAddrEntryTbl[2])
+		.jmp("entry")		[(nSampler_ == 4)? (6 - 1) : (nSampler_ == 3)? (8 - 1) :  0]
 	.pub(&relAddrEntryTbl[1])
-		.jmp("entry")		[4]
+		.jmp("entry")		[(nSampler_ == 4)? (3 - 1) : (nSampler_ == 3)? (4 - 1) : (nSampler_ == 2)? (5 - 1) :  0]
 	.L("loop").wrap_target()
 		.mov("x", "~osr")
 		.jmp("x--", "no_wrap_around")
@@ -160,14 +164,15 @@ bool LogicAnalyzer::Enable()
 		.in("pins", nPinsConsecutive)	// save current pins state in isr (no auto-push)
 		.mov("x", "isr")
 		.jmp("x!=y", "do_report")		// if pins state changed, report it
-		.jmp("loop")		[2]
+		.jmp("loop")		[(nSampler_ <= 2)? 2 : 4]
 	.L("do_report")
 		.in("osr", 32)					// auto-push osr (counter)
 		.in("x", 32)					// auto-push x (current pins state)
-		.mov("y", "x")					// save current pins state in y
+		.mov("y", "x")		[(nSampler_ <= 2)? 0 : 2]
+										// save current pins state in y
 	.wrap()
 	.end();
-	nClocksPerLoop_ = 10;
+	clocksPerLoop_ = (nSampler_ <= 2)? 10 : 12;
 	samplerTbl_[0].SetProgram(program_, relAddrEntryTbl[0], samplingInfo_.pinMin, nPinsConsecutive);
 	for (int iSampler = 1; iSampler < nSampler_; ++iSampler) {
 		samplerTbl_[iSampler].ShareProgram(samplerTbl_[0], relAddrEntryTbl[iSampler], samplingInfo_.pinMin, nPinsConsecutive);
@@ -257,7 +262,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		tout.Println();
 	};
 	printHeader();
-	double clockPIOProgram = static_cast<double>(::clock_get_hz(clk_sys) / nClocksPerLoop_);
+	double clockPIOProgram = static_cast<double>(::clock_get_hz(clk_sys) / clocksPerLoop_);
 	int nEventsToPrint =
 		(printInfo_.part == PrintPart::Head)? ChooseMin(nEventsAll, printInfo_.nEventsToPrint) :
 		(printInfo_.part == PrintPart::Tail)?  ChooseMin(nEventsAll, printInfo_.nEventsToPrint) :
