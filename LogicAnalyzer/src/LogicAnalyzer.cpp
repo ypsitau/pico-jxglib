@@ -412,7 +412,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 		}
 		if (firstFlag) tout.Print("none");
 	} while (0);
-	tout.Printf(" events:%d/%d", nEvents, CalcRawEventMax());
+	tout.Printf(" events:%d/%d (mem-ratio:%.1f)", nEvents, CalcRawEventMax(), memoryRatio_);
 	tout.Println();
 	return *this;
 }
