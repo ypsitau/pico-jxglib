@@ -109,6 +109,7 @@ public:
 	bool Enable();
 	LogicAnalyzer& Disable();
 	LogicAnalyzer& SetPins(const int pinTbl[], int nPins);
+	LogicAnalyzer& SetSamplerCount(int nSampler) { nSampler_ = nSampler; return *this; }
 	LogicAnalyzer& SetTarget(Target target) { target_ = target; return *this; }
 	LogicAnalyzer& SetResolution(float usecReso) { usecReso_ = usecReso; return *this; }
 	LogicAnalyzer& SetEventCountToPrint(int nEventsToPrint) { printInfo_.nEventsToPrint = nEventsToPrint; return *this; }

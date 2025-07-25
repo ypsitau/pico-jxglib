@@ -13,6 +13,7 @@ ShellCmd(la, "Logic Analyzer")
 		Arg::OptBool("help",		'h', "prints this help"),
 		Arg::OptString("pins",		'p', "pins to monitor", "PINS"),
 		Arg::OptString("target",	't', "target (internal, external)", "TARGET"),
+		Arg::OptString("sampler",	'S', "number of samplers (1-4)", "NUM"),
 		Arg::OptString("reso",		'r', "resolution in microseconds (default 1000)", "RESO"),
 		Arg::OptString("part",		't', "printed part of the waveform (head, tail, all)", "PART"),
 		Arg::OptString("events",	'e', "number of events to print (default 80)", "NUM"),
@@ -60,6 +61,15 @@ ShellCmd(la, "Logic Analyzer")
 			terr.Printf("Invalid target: %s\n", value);
 			return Result::Error;
 		}
+	}
+	if (arg.GetString("sampler", &value)) {
+		char* endptr = nullptr;
+		int nSampler = ::strtol(value, &endptr, 10);
+		if (endptr == value || *endptr != '\0' || nSampler < 1 || nSampler > 4) {
+			terr.Printf("Invalid sampler count: %s\n", value);
+			return Result::Error;
+		}
+		logicAnalyzer.SetSamplerCount(nSampler);
 	}
 	if (arg.GetString("reso", &value)) {
 		char* endptr = nullptr;

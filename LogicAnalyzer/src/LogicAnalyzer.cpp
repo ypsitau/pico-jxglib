@@ -366,7 +366,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 	} else {
 		tout.Printf("disabled ----");
 	}
-	tout.Printf(" target:%s", (target_ == Target::Internal)? "internal" : "external");
+	tout.Printf(" sampler:%d target:%s", nSampler_, (target_ == Target::Internal)? "internal" : "external");
 	do {
 		bool firstFlag = true;
 		tout.Printf(" pins:");
