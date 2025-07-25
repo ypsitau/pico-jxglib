@@ -105,19 +105,13 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple4 = {
 	formatHeader:	"GP%-2d  ",
 };
 
-LogicAnalyzer::LogicAnalyzer(int nEventsMax) : pChannelTbl_{nullptr}, target_{Target::Internal}, nEventsMax_{nEventsMax},
+LogicAnalyzer::LogicAnalyzer(int nRawEventMax) : target_{Target::Internal}, nRawEventMax_{nRawEventMax},
 		samplingInfo_{false, 0, 0}, nClocksPerLoop_{1}, usecReso_{1'000},
 		printInfo_{0, nullptr, 80, PrintPart::Head, &waveStyle_fancy2}
 {}
 
 LogicAnalyzer::~LogicAnalyzer()
 {
-	for (auto& pChannel : pChannelTbl_) {
-		if (pChannel) {
-			pChannel->unclaim();
-			pChannel = nullptr;
-		}
-	}
 }
 
 LogicAnalyzer& LogicAnalyzer::UpdateSamplingInfo()
@@ -139,9 +133,9 @@ bool LogicAnalyzer::Enable()
 {
 	if (samplingInfo_.enabledFlag) Disable(); // disable if already enabled
 	if (samplingInfo_.pinBitmap == 0) return true;
-	eventBuffTbl_[0].reset();
-	eventBuffTbl_[0].reset(new Event[nEventsMax_]);
-	if (!eventBuffTbl_[0]) return false;
+	processorTbl_[0].rawEventBuff.reset();
+	processorTbl_[0].rawEventBuff.reset(new RawEvent[nRawEventMax_]);
+	if (!processorTbl_[0].rawEventBuff) return false;
 	uint nPinsConsecutive = 0;	// nPinsConsecutive must be less than 32 to avoid auto-push during sampling
 	for (uint32_t pinBitmap = samplingInfo_.pinBitmap; pinBitmap != 0; pinBitmap >>= 1, ++nPinsConsecutive) ;
 	program_
@@ -169,7 +163,7 @@ bool LogicAnalyzer::Enable()
 	.wrap()
 	.end();
 	nClocksPerLoop_ = 10;
-	PIO::StateMachine& sm = smTbl_[0];
+	PIO::StateMachine& sm = processorTbl_[0].sm;
 	sm.config.set_in_shift_left(true, 32); // shift left, autopush enabled, push threshold 32
 	sm.set_program(program_);
 	if (target_ == Target::External) {
@@ -178,22 +172,22 @@ bool LogicAnalyzer::Enable()
 		sm.set_listen_pins(samplingInfo_.pinMin, nPinsConsecutive);
 	}
 	sm.init().set_enabled();
-	pChannelTbl_[0] = DMA::claim_unused_channel();
-	configTbl_[0].set_enable(true)
+	processorTbl_[0].pChannel = DMA::claim_unused_channel();
+	processorTbl_[0].config.set_enable(true)
 		.set_transfer_data_size(DMA_SIZE_32)
 		.set_read_increment(false)
 		.set_write_increment(true)
 		.set_dreq(sm.get_dreq_rx()) // set DREQ of StateMachine's rx
-		.set_chain_to(*pChannelTbl_[0])    // disable by setting chain_to to itself
+		.set_chain_to(*processorTbl_[0].pChannel)    // disable by setting chain_to to itself
 		.set_ring_read(0)
 		.set_bswap(false)
 		.set_irq_quiet(false)
 		.set_sniff_enable(false)
 		.set_high_priority(false);
-	pChannelTbl_[0]->set_config(configTbl_[0])
+	processorTbl_[0].pChannel->set_config(processorTbl_[0].config)
 		.set_read_addr(sm.get_rxf())
-		.set_write_addr(eventBuffTbl_[0].get())
-		.set_trans_count_trig(nEventsMax_ * sizeof(Event) / sizeof(uint32_t));
+		.set_write_addr(processorTbl_[0].rawEventBuff.get())
+		.set_trans_count_trig(nRawEventMax_ * sizeof(RawEvent) / sizeof(uint32_t));
 	samplingInfo_.enabledFlag = true;
 	return true;
 }
@@ -202,13 +196,13 @@ LogicAnalyzer& LogicAnalyzer::Disable()
 {
 	if (samplingInfo_.enabledFlag) {
 		samplingInfo_.enabledFlag = false;
-		PIO::StateMachine& sm = smTbl_[0];
+		PIO::StateMachine& sm = processorTbl_[0].sm;
 		sm.set_enabled(false);
 		sm.remove_program();
-		pChannelTbl_[0]->abort();
-		pChannelTbl_[0]->unclaim();
-		pChannelTbl_[0] = nullptr;
-		eventBuffTbl_[0].reset();
+		processorTbl_[0].pChannel->abort();
+		processorTbl_[0].pChannel->unclaim();
+		processorTbl_[0].pChannel = nullptr;
+		processorTbl_[0].rawEventBuff.reset();
 	}
 	return *this;
 }
@@ -230,13 +224,14 @@ LogicAnalyzer& LogicAnalyzer::SetPins(const int pinTbl[], int nPins)
 
 int LogicAnalyzer::GetEventCount() const
 {
-	if (!samplingInfo_.enabledFlag || !pChannelTbl_[0] || !eventBuffTbl_[0]) return 0;
-	return (reinterpret_cast<uint32_t>(pChannelTbl_[0]->get_write_addr()) - reinterpret_cast<uint32_t>(eventBuffTbl_[0].get())) / sizeof(Event);
+	if (!samplingInfo_.enabledFlag) return 0;
+	return (reinterpret_cast<uint32_t>(processorTbl_[0].pChannel->get_write_addr()) -
+			reinterpret_cast<uint32_t>(processorTbl_[0].rawEventBuff.get())) / sizeof(RawEvent);
 }
 
-const LogicAnalyzer::Event& LogicAnalyzer::GetEvent(int iEvent) const
+const LogicAnalyzer::RawEvent& LogicAnalyzer::GetRawEvent(int iRawEvent) const
 {
-	return eventBuffTbl_[0].get()[iEvent];
+	return processorTbl_[0].rawEventBuff.get()[iRawEvent];
 }
 
 const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
@@ -271,7 +266,8 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		(printInfo_.part == PrintPart::Tail)? nEventsAll - nEventsToPrint :
 		(printInfo_.part == PrintPart::All)? 0 : 0;
 	int iEventBase = (nEventsToPrint == 0)? 0 : 1;
-	const Event& eventStart = GetEvent(iEventStart);
+	const RawEvent& eventStart = GetRawEvent(iEventStart);
+	const RawEvent& eventBase = GetRawEvent(iEventBase);
 	if (nEventsToPrint > 0) {
 		if (iEventStart == iEventBase) {
 			tout.Printf("%12.2f", 0.);
@@ -285,7 +281,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 				continue;
 			}
 			if (IsPinEnabled(pin)) {
-				tout.Print(IsPinAsserted(eventStart.bits, pin)? waveStyle.strHigh : waveStyle.strLow);
+				tout.Print(IsPinAsserted(eventStart.pinBitmap, pin)? waveStyle.strHigh : waveStyle.strLow);
 			} else {
 				tout.Print(waveStyle.strBlank);
 			}
@@ -293,9 +289,9 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		tout.Println();
 	}
 	for (int i = 1; i < nEventsToPrint; ++i) {
-		const Event& eventPrev = GetEvent(iEventStart + i - 1);
-		const Event& event = GetEvent(iEventStart + i);
-		if (eventPrev.bits == event.bits) continue; // skip if no change
+		const RawEvent& eventPrev = GetRawEvent(iEventStart + i - 1);
+		const RawEvent& event = GetRawEvent(iEventStart + i);
+		if (eventPrev.pinBitmap == event.pinBitmap) continue; // skip if no change
 		double delta = static_cast<double>(event.timeStamp - eventPrev.timeStamp) * 1000'000 / clockPIOProgram;
 		if (delta == 0) continue; // skip if no time difference
 		int nDelta = static_cast<int>(delta / usecReso_);
@@ -309,7 +305,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 						continue;
 					}
 					if (IsPinEnabled(pin)) {
-						tout.Print(IsPinAsserted(eventPrev.bits, pin)? waveStyle.strHigh : waveStyle.strLow);
+						tout.Print(IsPinAsserted(eventPrev.pinBitmap, pin)? waveStyle.strHigh : waveStyle.strLow);
 					} else {
 						tout.Print(waveStyle.strBlank);
 					}
@@ -317,7 +313,6 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 				tout.Println();
 			}
 		} else {
-			//tout.Println();
 			tout.Printf("%12s", "");
 			for (int iPin = 0; iPin < printInfo_.nPins; ++iPin) {
 				uint pin = printInfo_.pinTbl[iPin];
@@ -326,16 +321,15 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 					continue;
 				}
 				if (IsPinEnabled(pin)) {
-					tout.Print(IsPinAsserted(eventPrev.bits, pin)? waveStyle.strHighIdle : waveStyle.strLowIdle);
+					tout.Print(IsPinAsserted(eventPrev.pinBitmap, pin)? waveStyle.strHighIdle : waveStyle.strLowIdle);
 				} else {
 					tout.Print(waveStyle.strBlank);
 				}
 			}
 			tout.Println();
-			//tout.Println();
 		}
-		uint32_t bitsTransition = event.bits ^ eventPrev.bits;	
-		tout.Printf("%12.2f", static_cast<double>(event.timeStamp - GetEvent(iEventBase).timeStamp) * 1000'000 / clockPIOProgram);
+		uint32_t bitsTransition = event.pinBitmap ^ eventPrev.pinBitmap;
+		tout.Printf("%12.2f", static_cast<double>(event.timeStamp - eventBase.timeStamp) * 1000'000 / clockPIOProgram);
 		for (int iPin = 0; iPin < printInfo_.nPins; ++iPin) {
 			uint pin = printInfo_.pinTbl[iPin];
 			if (pin == -1) {
@@ -344,8 +338,8 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 			}
 			if (IsPinEnabled(pin)) {
 				tout.Print(IsPinAsserted(bitsTransition, pin)?
-					(IsPinAsserted(event.bits, pin)? waveStyle.strLowToHigh : waveStyle.strHighToLow) :
-					(IsPinAsserted(event.bits, pin)? waveStyle.strHigh : waveStyle.strLow));
+					(IsPinAsserted(event.pinBitmap, pin)? waveStyle.strLowToHigh : waveStyle.strHighToLow) :
+					(IsPinAsserted(event.pinBitmap, pin)? waveStyle.strHigh : waveStyle.strLow));
 			} else {
 				tout.Print(waveStyle.strBlank);
 			}
@@ -361,8 +355,8 @@ const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 {
 	int nEvents = GetEventCount();
 	if (samplingInfo_.enabledFlag) {
-		const PIO::StateMachine& sm = smTbl_[0];
-		tout.Printf("enabled%s pio%d", (nEvents == nEventsMax_)? "(full)" : "", sm.pio.get_index());
+		const PIO::StateMachine& sm = processorTbl_[0].sm;
+		tout.Printf("enabled%s pio%d", (nEvents == nRawEventMax_)? "(full)" : "", sm.pio.get_index());
 	} else {
 		tout.Printf("disabled ----");
 	}
@@ -396,7 +390,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 		}
 		if (firstFlag) tout.Print("none");
 	} while (0);
-	tout.Printf(" events:%d/%d", nEvents, nEventsMax_);
+	tout.Printf(" events:%d/%d", nEvents, nRawEventMax_);
 	tout.Println();
 	return *this;
 }
