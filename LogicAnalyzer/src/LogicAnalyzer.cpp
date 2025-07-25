@@ -139,6 +139,7 @@ bool LogicAnalyzer::Enable()
 {
 	if (samplingInfo_.enabledFlag) Disable(); // disable if already enabled
 	if (samplingInfo_.pinBitmap == 0) return true;
+	eventBuffTbl_[0].reset();
 	eventBuffTbl_[0].reset(new Event[nEventsMax_]);
 	if (!eventBuffTbl_[0]) return false;
 	uint nPinsConsecutive = 0;	// nPinsConsecutive must be less than 32 to avoid auto-push during sampling
@@ -200,12 +201,14 @@ bool LogicAnalyzer::Enable()
 LogicAnalyzer& LogicAnalyzer::Disable()
 {
 	if (samplingInfo_.enabledFlag) {
+		samplingInfo_.enabledFlag = false;
 		PIO::StateMachine& sm = smTbl_[0];
 		sm.set_enabled(false);
 		sm.remove_program();
 		pChannelTbl_[0]->abort();
 		pChannelTbl_[0]->unclaim();
-		samplingInfo_.enabledFlag = false;
+		pChannelTbl_[0] = nullptr;
+		eventBuffTbl_[0].reset();
 	}
 	return *this;
 }
@@ -227,6 +230,7 @@ LogicAnalyzer& LogicAnalyzer::SetPins(const int pinTbl[], int nPins)
 
 int LogicAnalyzer::GetEventCount() const
 {
+	if (!samplingInfo_.enabledFlag || !pChannelTbl_[0] || !eventBuffTbl_[0]) return 0;
 	return (reinterpret_cast<uint32_t>(pChannelTbl_[0]->get_write_addr()) - reinterpret_cast<uint32_t>(eventBuffTbl_[0].get())) / sizeof(Event);
 }
 
