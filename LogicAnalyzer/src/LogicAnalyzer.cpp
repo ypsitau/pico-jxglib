@@ -396,7 +396,8 @@ bool LogicAnalyzer::NextEvent(Event& event)
 		}
 	}
 	if (!pRawEventToPick) return false; // no more events
-	event.timeStamp = pRawEventToPick->timeStamp;
+	samplerTbl_[iSamplerToPick].ForwardRawEvent();
+	event.timeStamp = static_cast<uint64_t>(pRawEventToPick->timeStamp) * nSampler_ + iSamplerToPick;;
 	event.pinBitmap = pRawEventToPick->pinBitmap;
 	return true;
 }
