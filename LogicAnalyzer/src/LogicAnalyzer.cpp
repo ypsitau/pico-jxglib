@@ -162,13 +162,17 @@ bool LogicAnalyzer::Enable()
 	nClocksPerLoop_ = 10;
 	PIO::StateMachine& sm = processorTbl_[0].sm;
 	sm.config.set_in_shift_left(true, 32); // shift left, autopush enabled, push threshold 32
-	sm.set_program(program_);
+	sm.set_program(program_).set_listen_pins(samplingInfo_.pinMin, nPinsConsecutive).init();
 	if (target_ == Target::External) {
-		sm.set_in_pins(samplingInfo_.pinMin, nPinsConsecutive);
-	} else {
-		sm.set_listen_pins(samplingInfo_.pinMin, nPinsConsecutive);
+		uint pin = samplingInfo_.pinMin;
+		for (uint32_t pinBitmap = samplingInfo_.pinBitmap; pinBitmap != 0; pinBitmap >>= 1, ++pin) {
+			if (pinBitmap & 1) {
+				::pio_gpio_init(sm.pio, pin);
+				::gpio_disable_pulls(pin);
+			}
+		}
 	}
-	sm.init().set_enabled();
+	sm.set_enabled();
 	processorTbl_[0].pChannel = DMA::claim_unused_channel();
 	processorTbl_[0].config.set_enable(true)
 		.set_transfer_data_size(DMA_SIZE_32)
@@ -200,6 +204,17 @@ LogicAnalyzer& LogicAnalyzer::Disable()
 		processorTbl_[0].pChannel->unclaim();
 		processorTbl_[0].pChannel = nullptr;
 		processorTbl_[0].rawEventBuff.reset();
+		if (target_ == Target::External) {
+			uint pin = samplingInfo_.pinMin;
+			for (uint32_t pinBitmap = samplingInfo_.pinBitmap; pinBitmap != 0; pinBitmap >>= 1, ++pin) {
+				if (pinBitmap & 1) {
+					::gpio_set_dir(pin, GPIO_IN);
+					::gpio_put(pin, 0);
+					::gpio_pull_down(pin);
+					::gpio_set_function(pin, GPIO_FUNC_NULL);
+				}
+			}
+		}
 	}
 	return *this;
 }
