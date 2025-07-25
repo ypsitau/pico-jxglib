@@ -37,17 +37,17 @@ public:
 		const char* formatHeader;
 	};
 	enum class PrintPart { Head, Tail, All };
-	class Processor {
+	class Sampler {
 	private:
 		PIO::StateMachine sm_;
 		DMA::Channel* pChannel_;
 		DMA::ChannelConfig channelConfig_;
 		int nRawEventMax_;
-		int iEvent_;
+		int iRawEventCur_;
 		std::unique_ptr<RawEvent> rawEventBuff_;
 	public:
-		Processor() : pChannel_{nullptr}, nRawEventMax_{0}, iEvent_{0} {}
-		~Processor() { if (pChannel_) { pChannel_->unclaim(); } }
+		Sampler() : pChannel_{nullptr}, nRawEventMax_{0}, iRawEventCur_{0} {}
+		~Sampler() { if (pChannel_) { pChannel_->unclaim(); } }
 	public:
 		bool AllocBuff(int nRawEventMax);
 		const PIO::StateMachine& GetSM() const { return sm_; }
@@ -56,7 +56,11 @@ public:
 		void DisableSM() { sm_.set_enabled(false); sm_.remove_program(); }
 		void EnableDMA();
 		void DisableDMA();
+	public:
 		int GetRawEventCount() const;
+		void RewindRawEvent() { iRawEventCur_ = 0; }
+		const RawEvent* GetRawEventCur() const { return (iRawEventCur_ < GetRawEventCount())? &rawEventBuff_.get()[iRawEventCur_] : nullptr; }
+		void ForwardRawEvent() { if (iRawEventCur_ < GetRawEventCount()) ++iRawEventCur_; }
 		const RawEvent& GetRawEvent(int iRawEvent) const { return rawEventBuff_.get()[iRawEvent]; }
 	};
 	struct SamplingInfo {
@@ -86,7 +90,7 @@ public:
 	static const WaveStyle waveStyle_simple4;
 private:
 	PIO::Program program_;
-	Processor processorTbl_[4];
+	Sampler samplerTbl_[4];
 	SamplingInfo samplingInfo_;
 	PrintInfo printInfo_;
 	Target target_;
@@ -111,7 +115,7 @@ public:
 	float GetResolution() const { return usecReso_; }
 	bool HasSamplingPins() const { return samplingInfo_.pinBitmap != 0; }
 	int GetEventCount() const;
-	const RawEvent& GetRawEvent(int iProcessor, int iRawEvent) const;
+	const RawEvent& GetRawEvent(int iSampler, int iRawEvent) const;
 	bool IsPinAsserted(uint32_t pinBitmap, uint pin) const { return ((pinBitmap << samplingInfo_.pinMin) & (1 << pin)) != 0; }
 	bool IsPinEnabled(uint pin) const { return IsPinAsserted(samplingInfo_.pinBitmap, pin); }
 	const LogicAnalyzer& PrintWave(Printable& tout) const;
