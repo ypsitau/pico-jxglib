@@ -273,10 +273,10 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		tout.Printf("no events to print\n");
 		return *this;
 	}
-	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) {
-		const Sampler& sampler = samplerTbl_[iSampler];
-		tout.Dump.Data32Bit()(sampler.GetRawEventBuff(), sampler.GetRawEventCount() * 2);
-	}
+	//for (int iSampler = 0; iSampler < nSampler_; ++iSampler) {
+	//	const Sampler& sampler = samplerTbl_[iSampler];
+	//	tout.Dump.Data32Bit()(sampler.GetRawEventBuff(), sampler.GetRawEventCount() * 2);
+	//}
 	const char* strBlank = "    ";
 	const WaveStyle& waveStyle = *printInfo_.pWaveStyle;
 	auto printHeader = [&]() {
