@@ -142,7 +142,7 @@ bool LogicAnalyzer::Enable()
 {
 	if (samplingInfo_.enabledFlag) Disable(); // disable if already enabled
 	if (samplingInfo_.pinBitmap == 0) return true;
-	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) samplerTbl_[iSampler].FreeBuff();
+	for (int iSampler = 0; iSampler < count_of(samplerTbl_); ++iSampler) samplerTbl_[iSampler].FreeBuff();
 	int nRawEventPerSampler = CalcRawEventMax() / nSampler_;
 	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) {
 		if (!samplerTbl_[iSampler].AllocBuff(nRawEventPerSampler)) {
