@@ -36,15 +36,6 @@ StateMachine::~StateMachine()
 	if (IsValid()) remove_program();
 }
 
-StateMachine& StateMachine::set_program(const Program& program, pio_hw_t* pio, uint sm)
-{
-	uint offsetClaimed = ::pio_add_program(pio, program.GetEntityPtr());
-	pProgram_ = &program;
-	pSmToShareProgram_ = nullptr;
-	setup_resource_(pio, sm, offsetClaimed);
-	return *this;
-}
-
 StateMachine& StateMachine::set_program(const Program& program)
 {
 	pio_hw_t* pioClaimed;
@@ -59,17 +50,49 @@ StateMachine& StateMachine::set_program(const Program& program)
 	return *this;
 }
 
-StateMachine& StateMachine::share_program(StateMachine& smToShareProgram, pio_hw_t* pio, uint sm)
+StateMachine& StateMachine::set_program(const Program& program, pio_hw_t* pio)
 {
-	pProgram_ = smToShareProgram.pProgram_;
-	pSmToShareProgram_ = &smToShareProgram;
-	setup_resource_(pio, sm, smToShareProgram.offset);
+	uint offsetClaimed = ::pio_add_program(pio, program.GetEntityPtr());
+	pProgram_ = &program;
+	pSmToShareProgram_ = nullptr;
+	setup_resource_(pio, ::pio_claim_unused_sm(pio, true), offsetClaimed);
+	return *this;
+}
+
+StateMachine& StateMachine::set_program(const Program& program, pio_hw_t* pio, uint sm)
+{
+	uint offsetClaimed = ::pio_add_program(pio, program.GetEntityPtr());
+	pProgram_ = &program;
+	pSmToShareProgram_ = nullptr;
+	::pio_sm_claim(pio, sm);
+	setup_resource_(pio, sm, offsetClaimed);
 	return *this;
 }
 
 StateMachine& StateMachine::share_program(StateMachine& smToShareProgram)
 {
-	return share_program(smToShareProgram, smToShareProgram.pio, ::pio_claim_unused_sm(smToShareProgram.pio, true));
+	pProgram_ = smToShareProgram.pProgram_;
+	pSmToShareProgram_ = &smToShareProgram;
+	setup_resource_(smToShareProgram.pio, ::pio_claim_unused_sm(smToShareProgram.pio, true), smToShareProgram.offset);
+	return *this;
+	//return share_program(smToShareProgram, smToShareProgram.pio, ::pio_claim_unused_sm(smToShareProgram.pio, true));
+}
+
+StateMachine& StateMachine::share_program(StateMachine& smToShareProgram, pio_hw_t* pio)
+{
+	pProgram_ = smToShareProgram.pProgram_;
+	pSmToShareProgram_ = &smToShareProgram;
+	setup_resource_(pio, ::pio_claim_unused_sm(pio, true), smToShareProgram.offset);
+	return *this;
+}
+
+StateMachine& StateMachine::share_program(StateMachine& smToShareProgram, pio_hw_t* pio, uint sm)
+{
+	pProgram_ = smToShareProgram.pProgram_;
+	pSmToShareProgram_ = &smToShareProgram;
+	::pio_sm_claim(pio, sm);
+	setup_resource_(pio, sm, smToShareProgram.offset);
+	return *this;
 }
 
 #if 0

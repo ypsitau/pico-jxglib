@@ -154,14 +154,18 @@ bool LogicAnalyzer::Enable()
 	uint nPinsConsecutive = 0;	// nPinsConsecutive must be less than 32 to avoid auto-push during sampling
 	for (uint32_t pinBitmap = samplingInfo_.pinBitmap; pinBitmap != 0; pinBitmap >>= 1, ++nPinsConsecutive) ;
 	uint relAddrEntryTbl[4];
-	program_
-	.program("logic_analyzer")
-	.pub(&relAddrEntryTbl[3])
-		.jmp("entry")		[(nSampler_ == 4)? (9 - 1) : 0]
-	.pub(&relAddrEntryTbl[2])
-		.jmp("entry")		[(nSampler_ == 4)? (6 - 1) : (nSampler_ == 3)? (8 - 1) :  0]
+	programSamplerInit_
+	.program("SamplerInit")
+		.mov("osr", "null")				// clear osr (counter)
+	.end();
+	programSamplerMain_
+	.program("SamplerMain")
 	.pub(&relAddrEntryTbl[1])
 		.jmp("entry")		[(nSampler_ == 4)? (3 - 1) : (nSampler_ == 3)? (4 - 1) : (nSampler_ == 2)? (5 - 1) :  0]
+	.pub(&relAddrEntryTbl[2])
+		.jmp("entry")		[(nSampler_ == 4)? (6 - 1) : (nSampler_ == 3)? (8 - 1) :  0]
+	.pub(&relAddrEntryTbl[3])
+		.jmp("entry")		[(nSampler_ == 4)? (9 - 1) : 0]
 	.L("loop").wrap_target()
 		.mov("x", "~osr")
 		.jmp("x--", "no_wrap_around")
@@ -185,9 +189,10 @@ bool LogicAnalyzer::Enable()
 										// save current pins state in y
 	.wrap()
 	.end();
-	samplerTbl_[0].SetProgram(program_, relAddrEntryTbl[0], samplingInfo_.pinMin, nPinsConsecutive);
+	pio_hw_t* pio = pio0;
+	samplerTbl_[0].SetProgram(programSamplerMain_, pio, 0, relAddrEntryTbl[0], samplingInfo_.pinMin, nPinsConsecutive);
 	for (int iSampler = 1; iSampler < nSampler_; ++iSampler) {
-		samplerTbl_[iSampler].ShareProgram(samplerTbl_[0], relAddrEntryTbl[iSampler], samplingInfo_.pinMin, nPinsConsecutive);
+		samplerTbl_[iSampler].ShareProgram(samplerTbl_[0], pio, iSampler, relAddrEntryTbl[iSampler], samplingInfo_.pinMin, nPinsConsecutive);
 	}
 	if (target_ == Target::External) {
 		uint pin = samplingInfo_.pinMin;
@@ -198,9 +203,12 @@ bool LogicAnalyzer::Enable()
 			}
 		}
 	}
+	uint32_t mask = 0;
 	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) {
-		samplerTbl_[iSampler].Enable();
+		samplerTbl_[iSampler].EnableDMA();
+		mask |= (1 << samplerTbl_[iSampler].GetSM().sm);
 	}
+	::pio_enable_sm_mask_in_sync(pio, mask);
 	samplingInfo_.enabledFlag = true;
 	return true;
 }
@@ -458,21 +466,21 @@ void LogicAnalyzer::Sampler::FreeBuff()
 	nRawEventPerSampler_ = 0;
 }
 
-void LogicAnalyzer::Sampler::SetProgram(const PIO::Program& program, uint relAddrEntry, uint pinMin, int nPinsConsecutive)
+void LogicAnalyzer::Sampler::SetProgram(const PIO::Program& program, pio_hw_t* pio, uint sm, uint relAddrEntry, uint pinMin, int nPinsConsecutive)
 {
 	sm_.config.set_in_shift_left(true, 32); // shift left, autopush enabled, push threshold 32
-	sm_.set_program(program).set_listen_pins(pinMin, nPinsConsecutive).init_with_entry(relAddrEntry);
+	sm_.set_program(program, pio, sm).set_listen_pins(pinMin, nPinsConsecutive).init_with_entry(relAddrEntry);
 }
 
-void LogicAnalyzer::Sampler::ShareProgram(Sampler& sampler, uint relAddrEntry, uint pinMin, int nPinsConsecutive)
+void LogicAnalyzer::Sampler::ShareProgram(Sampler& sampler, pio_hw_t* pio, uint sm, uint relAddrEntry, uint pinMin, int nPinsConsecutive)
 {
 	sm_.config.set_in_shift_left(true, 32); // shift left, autopush enabled, push threshold 32
-	sm_.share_program(sampler.GetSM()).set_listen_pins(pinMin, nPinsConsecutive).init_with_entry(relAddrEntry);
+	sm_.share_program(sampler.GetSM(), pio, sm).set_listen_pins(pinMin, nPinsConsecutive).init_with_entry(relAddrEntry);
 }
 
-LogicAnalyzer::Sampler& LogicAnalyzer::Sampler::Enable()
+LogicAnalyzer::Sampler& LogicAnalyzer::Sampler::EnableDMA()
 {
-	sm_.set_enabled();
+	//sm_.set_enabled();
 	pChannel_ = DMA::claim_unused_channel();
 	channelConfig_.set_enable(true)
 		.set_transfer_data_size(DMA_SIZE_32)

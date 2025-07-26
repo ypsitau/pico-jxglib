@@ -52,9 +52,9 @@ public:
 		void FreeBuff();
 		PIO::StateMachine& GetSM() { return sm_; }
 		const PIO::StateMachine& GetSM() const { return sm_; }
-		void SetProgram(const PIO::Program& program, uint relAddrEntry, uint pinMin, int nPinsConsecutive);
-		void ShareProgram(Sampler& sampler, uint relAddrEntry, uint pinMin, int nPinsConsecutive);
-		Sampler& Enable();
+		void SetProgram(const PIO::Program& program, pio_hw_t* pio, uint sm, uint relAddrEntry, uint pinMin, int nPinsConsecutive);
+		void ShareProgram(Sampler& sampler, pio_hw_t* pio, uint sm, uint relAddrEntry, uint pinMin, int nPinsConsecutive);
+		Sampler& EnableDMA();
 		Sampler& Disable();
 	public:
 		int GetRawEventCount() const;
@@ -104,7 +104,8 @@ public:
 	static const WaveStyle waveStyle_simple3;
 	static const WaveStyle waveStyle_simple4;
 private:
-	PIO::Program program_;
+	PIO::Program programSamplerInit_;
+	PIO::Program programSamplerMain_;
 	int nSampler_;
 	Sampler samplerTbl_[4];
 	SamplingInfo samplingInfo_;

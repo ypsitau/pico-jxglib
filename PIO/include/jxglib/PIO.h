@@ -346,10 +346,12 @@ public:
 	void Invalidate() { pio = nullptr, sm = static_cast<uint>(-1), offset = 0; }
 	const Program& GetProgram() const { return *pProgram_; }
 public:
-	StateMachine& set_program(const Program& program, pio_hw_t* pio, uint sm);
 	StateMachine& set_program(const Program& program);
-	StateMachine& share_program(StateMachine& smToShareProgram, pio_hw_t* pio, uint sm);
+	StateMachine& set_program(const Program& program, pio_hw_t* pio);
+	StateMachine& set_program(const Program& program, pio_hw_t* pio, uint sm);
 	StateMachine& share_program(StateMachine& smToShareProgram);
+	StateMachine& share_program(StateMachine& smToShareProgram, pio_hw_t* pio);
+	StateMachine& share_program(StateMachine& smToShareProgram, pio_hw_t* pio, uint sm);
 	//StateMachine& claim_resource(uint gpio_base, uint gpio_count, bool set_gpio_base);
 	StateMachine& remove_program();
 private:
