@@ -54,10 +54,8 @@ public:
 		const PIO::StateMachine& GetSM() const { return sm_; }
 		void SetProgram(const PIO::Program& program, uint relAddrEntry, uint pinMin, int nPinsConsecutive);
 		void ShareProgram(Sampler& sampler, uint relAddrEntry, uint pinMin, int nPinsConsecutive);
-		Sampler& EnableSM();
-		Sampler& DisableSM();
-		Sampler& EnableDMA();
-		Sampler& DisableDMA();
+		Sampler& Enable();
+		Sampler& Disable();
 	public:
 		int GetRawEventCount() const;
 		bool IsFull() const { return GetRawEventCount() >= nRawEventPerSampler_; }

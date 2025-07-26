@@ -199,7 +199,7 @@ bool LogicAnalyzer::Enable()
 		}
 	}
 	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) {
-		samplerTbl_[iSampler].EnableSM().EnableDMA();
+		samplerTbl_[iSampler].Enable();
 	}
 	samplingInfo_.enabledFlag = true;
 	return true;
@@ -209,8 +209,8 @@ LogicAnalyzer& LogicAnalyzer::Disable()
 {
 	if (samplingInfo_.enabledFlag) {
 		samplingInfo_.enabledFlag = false;
-		for (int iSampler = 0; iSampler < nSampler_; ++iSampler) {
-			samplerTbl_[iSampler].DisableSM().DisableDMA();
+		for (int iSampler = 0; iSampler < count_of(samplerTbl_); ++iSampler) {
+			samplerTbl_[iSampler].Disable();
 		}
 		if (target_ == Target::External) {
 			uint pin = samplingInfo_.pinMin;
@@ -470,21 +470,9 @@ void LogicAnalyzer::Sampler::ShareProgram(Sampler& sampler, uint relAddrEntry, u
 	sm_.share_program(sampler.GetSM()).set_listen_pins(pinMin, nPinsConsecutive).init_with_entry(relAddrEntry);
 }
 
-LogicAnalyzer::Sampler& LogicAnalyzer::Sampler::EnableSM()
+LogicAnalyzer::Sampler& LogicAnalyzer::Sampler::Enable()
 {
 	sm_.set_enabled();
-	return *this;
-}
-
-LogicAnalyzer::Sampler& LogicAnalyzer::Sampler::DisableSM()
-{
-	sm_.set_enabled(false);
-	sm_.remove_program();
-	return *this;
-}
-
-LogicAnalyzer::Sampler& LogicAnalyzer::Sampler::EnableDMA()
-{
 	pChannel_ = DMA::claim_unused_channel();
 	channelConfig_.set_enable(true)
 		.set_transfer_data_size(DMA_SIZE_32)
@@ -504,8 +492,11 @@ LogicAnalyzer::Sampler& LogicAnalyzer::Sampler::EnableDMA()
 	return *this;
 }
 
-LogicAnalyzer::Sampler& LogicAnalyzer::Sampler::DisableDMA()
+LogicAnalyzer::Sampler& LogicAnalyzer::Sampler::Disable()
 {
+	if (!pChannel_) return *this; // already disabled
+	sm_.set_enabled(false);
+	sm_.remove_program();
 	pChannel_->abort();
 	pChannel_->unclaim();
 	pChannel_ = nullptr;
