@@ -142,8 +142,8 @@ bool LogicAnalyzer::Enable()
 {
 	if (samplingInfo_.enabledFlag) Disable(); // disable if already enabled
 	if (samplingInfo_.pinBitmap == 0) return true;
-	int nRawEventPerSampler = CalcRawEventMax() / nSampler_;
 	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) samplerTbl_[iSampler].FreeBuff();
+	int nRawEventPerSampler = CalcRawEventMax() / nSampler_;
 	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) {
 		if (!samplerTbl_[iSampler].AllocBuff(nRawEventPerSampler)) {
 			for (int iSampler = 0; iSampler < nSampler_; ++iSampler) {
@@ -272,6 +272,10 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 	if (nEventsAll == 0) {
 		tout.Printf("no events to print\n");
 		return *this;
+	}
+	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) {
+		const Sampler& sampler = samplerTbl_[iSampler];
+		tout.Dump.Data32Bit()(sampler.GetRawEventBuff(), sampler.GetRawEventCount() * 2);
 	}
 	const char* strBlank = "    ";
 	const WaveStyle& waveStyle = *printInfo_.pWaveStyle;

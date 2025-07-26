@@ -60,6 +60,7 @@ public:
 		int GetRawEventCount() const;
 		bool IsFull() const { return GetRawEventCount() >= nRawEventPerSampler_; }
 		const RawEvent& GetRawEvent(int iRawEvent) const { return rawEventBuff_[iRawEvent]; }
+		const RawEvent* GetRawEventBuff() const { return rawEventBuff_; }
 	};
 	class EventIterator {
 	private:
