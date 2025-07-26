@@ -108,7 +108,7 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple4 = {
 	formatHeader:	"GP%-2d  ",
 };
 
-LogicAnalyzer::LogicAnalyzer() : nSampler_{1}, target_{Target::Internal}, memoryRatio_{.7}, clocksPerLoop_{1}, usecReso_{1'000}
+LogicAnalyzer::LogicAnalyzer() : nSampler_{1}, target_{Target::Internal}, heapRatio_{.7}, clocksPerLoop_{1}, usecReso_{1'000}
 {
 	SetSamplerCount(1);
 }
@@ -242,7 +242,7 @@ LogicAnalyzer& LogicAnalyzer::SetPins(const int pinTbl[], int nPins)
 	return *this;
 }
 
-int LogicAnalyzer::GetEventCount() const
+int LogicAnalyzer::GetRawEventCount() const
 {
 	if (!samplingInfo_.enabledFlag) return 0;
 	int nEvent = 0;
@@ -257,7 +257,7 @@ const LogicAnalyzer::RawEvent& LogicAnalyzer::GetRawEvent(int iSampler, int iRaw
 
 const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 {
-	int nEventsAll = GetEventCount();
+	int nEventsAll = GetRawEventCount();
 	if (nEventsAll == 0) {
 		tout.Printf("no events to print\n");
 		return *this;
@@ -287,7 +287,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		(printInfo_.part == PrintPart::Tail)? nEventsAll - nEventsToPrint :
 		(printInfo_.part == PrintPart::All)? 0 : 0;
 	int iEventBase = (nEventsToPrint == 0)? 0 : 1;
-	const RawEvent& eventStart = GetRawEvent(0, iEventStart);
+	const RawEvent& eventInitial = GetRawEvent(0, iEventStart);
 	const RawEvent& eventBase = GetRawEvent(0, iEventBase);
 	if (nEventsToPrint > 0) {
 		if (iEventStart == iEventBase) {
@@ -302,14 +302,14 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 				continue;
 			}
 			if (IsPinEnabled(pin)) {
-				tout.Print(IsPinAsserted(eventStart.pinBitmap, pin)? waveStyle.strHigh : waveStyle.strLow);
+				tout.Print(IsPinAsserted(eventInitial.pinBitmap, pin)? waveStyle.strHigh : waveStyle.strLow);
 			} else {
 				tout.Print(waveStyle.strBlank);
 			}
 		}
 		tout.Println();
 	}
-	const RawEvent* pEventPrev = &eventStart;
+	const RawEvent* pEventPrev = &eventInitial;
 	for (int i = 1; i < nEventsToPrint; ++i) {
 		const RawEvent& event = GetRawEvent(0, iEventStart + i);
 		if (pEventPrev->pinBitmap == event.pinBitmap) continue; // skip if no change
@@ -374,7 +374,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 
 const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 {
-	int nEvents = GetEventCount();
+	int nRawEvents = GetRawEventCount();
 	if (samplingInfo_.enabledFlag) {
 		const PIO::StateMachine& sm = samplerTbl_[0].GetSM();
 		tout.Printf("enabled%s pio%d", samplerTbl_[0].IsFull()? "(full)" : "", sm.pio.get_index());
@@ -412,29 +412,9 @@ const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 		}
 		if (firstFlag) tout.Print("none");
 	} while (0);
-	tout.Printf(" events:%d/%d (mem-ratio:%.1f)", nEvents, CalcRawEventMax(), memoryRatio_);
+	tout.Printf(" events:%d/%d (heap-ratio:%.1f)", nRawEvents, CalcRawEventMax(), heapRatio_);
 	tout.Println();
 	return *this;
-}
-
-bool LogicAnalyzer::NextEvent(Event& event)
-{
-	int iSamplerToPick = -1;
-	const RawEvent* pRawEventToPick = nullptr;
-	for (int iSampler = nSampler_ - 1; iSampler >= 0; --iSampler) {
-		const RawEvent* pRawEvent = samplerTbl_[iSampler].GetRawEventCur();
-		if (!pRawEvent) {
-			// nothing to do
-		} else if (!pRawEventToPick || pRawEventToPick->timeStamp >= pRawEvent->timeStamp) {
-			pRawEventToPick = pRawEvent;
-			iSamplerToPick = iSampler;
-		}
-	}
-	if (!pRawEventToPick) return false; // no more events
-	samplerTbl_[iSamplerToPick].ForwardRawEvent();
-	event.timeStamp = static_cast<uint64_t>(pRawEventToPick->timeStamp) * nSampler_ + iSamplerToPick;;
-	event.pinBitmap = pRawEventToPick->pinBitmap;
-	return true;
 }
 
 size_t LogicAnalyzer::GetFreeHeapBytes()
@@ -445,7 +425,7 @@ size_t LogicAnalyzer::GetFreeHeapBytes()
 //------------------------------------------------------------------------------
 // LogicAnalyzer::Sampler
 //------------------------------------------------------------------------------
-LogicAnalyzer::Sampler::Sampler() : pChannel_{nullptr}, nRawEventPerSampler_{0}, iRawEventCur_{0}, rawEventBuff_{nullptr}
+LogicAnalyzer::Sampler::Sampler() : pChannel_{nullptr}, nRawEventPerSampler_{0}, rawEventBuff_{nullptr}
 {
 }
 
@@ -533,6 +513,77 @@ int LogicAnalyzer::Sampler::GetRawEventCount() const
 {
 	return (reinterpret_cast<uint32_t>(pChannel_->get_write_addr()) -
 			reinterpret_cast<uint32_t>(rawEventBuff_)) / sizeof(RawEvent);
+}
+
+//------------------------------------------------------------------------------
+// LogicAnalyzer::EventIterator
+//------------------------------------------------------------------------------
+LogicAnalyzer::EventIterator::EventIterator(const LogicAnalyzer& logicAnalyzer) :
+				logicAnalyzer_{logicAnalyzer}, pRawEventPrev_{nullptr}
+{
+	Rewind();
+}
+
+void LogicAnalyzer::EventIterator::GetInitial(Event& event) const
+{
+	int iSampler = 0;
+	const Sampler& sampler = logicAnalyzer_.GetSampler(iSampler);
+	const RawEvent& rawEvent = sampler.GetRawEvent(0);
+	event.timeStamp = static_cast<uint64_t>(rawEvent.timeStamp) * logicAnalyzer_.GetSamplerCount() + iSampler;;
+	event.pinBitmap = rawEvent.pinBitmap;
+}
+
+void LogicAnalyzer::EventIterator::GetBase(Event& event) const
+{
+	int iSampler = 0;
+	const Sampler& sampler = logicAnalyzer_.GetSampler(iSampler);
+	const RawEvent& rawEvent = sampler.GetRawEvent((sampler.GetRawEventCount() < 2)? 0 : 1);
+	event.timeStamp = static_cast<uint64_t>(rawEvent.timeStamp) * logicAnalyzer_.GetSamplerCount() + iSampler;;
+	event.pinBitmap = rawEvent.pinBitmap;
+}
+
+bool LogicAnalyzer::EventIterator::Next(Event& event)
+{
+	int iSamplerToPick = -1;
+	const RawEvent* pRawEventToPick = nullptr;
+	for (;;) {
+		for (int iSampler = logicAnalyzer_.GetSamplerCount() - 1; iSampler >= 0; --iSampler) {
+			int iRawEvent = iRawEventTbl_[iSampler];
+			const Sampler& sampler = logicAnalyzer_.GetSampler(iSampler);
+			if (iRawEvent < sampler.GetRawEventCount()) {
+				const RawEvent& rawEvent = sampler.GetRawEvent(iRawEvent);
+				if (!pRawEventToPick || pRawEventToPick->timeStamp >= rawEvent.timeStamp) {
+					pRawEventToPick = &rawEvent;
+					iSamplerToPick = iSampler;
+				}
+			}
+		}
+		if (!pRawEventToPick) return false; // no more events
+		iRawEventTbl_[iSamplerToPick]++;
+		if (!pRawEventPrev_ || pRawEventPrev_->pinBitmap != pRawEventToPick->pinBitmap) break;
+	}
+	event.timeStamp = static_cast<uint64_t>(pRawEventToPick->timeStamp) * logicAnalyzer_.GetSamplerCount() + iSamplerToPick;;
+	event.pinBitmap = pRawEventToPick->pinBitmap;
+	pRawEventPrev_ = pRawEventToPick;
+	return true;
+}
+
+void LogicAnalyzer::EventIterator::Rewind()
+{
+	for (int iSampler = 0; iSampler < logicAnalyzer_.GetSamplerCount(); ++iSampler) {
+		iRawEventTbl_[iSampler] = 0;
+	}
+	pRawEventPrev_ = nullptr;
+}
+
+int LogicAnalyzer::EventIterator::Count()
+{
+	Event event;
+	int nEvent = 0;
+	Rewind();
+	while (Next(event)) ++nEvent;
+	Rewind();
+	return nEvent;
 }
 
 }

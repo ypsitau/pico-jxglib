@@ -14,7 +14,7 @@ ShellCmd(la, "Logic Analyzer")
 		Arg::OptString("pins",			'p', "pins to monitor", "PINS"),
 		Arg::OptString("target",		't', "target (internal, external)", "TARGET"),
 		Arg::OptString("samplers",		'S', "number of samplers (1-4)", "NUM"),
-		Arg::OptString("mem-ratio",		'M', "maximum memory ratio (0.0 - 1.0)", "RATIO"),
+		Arg::OptString("heap-ratio",	'R', "heap ratio to use as event buffer (0.0-1.0)", "RATIO"),
 		Arg::OptString("reso",			'r', "resolution in microseconds (default 1000)", "RESO"),
 		Arg::OptString("part",			't', "printed part of the waveform (head, tail, all)", "PART"),
 		Arg::OptString("events",		'e', "number of events to print (default 80)", "NUM"),
@@ -72,14 +72,14 @@ ShellCmd(la, "Logic Analyzer")
 		}
 		logicAnalyzer.SetSamplerCount(nSampler);
 	}
-	if (arg.GetString("mem-ratio", &value)) {
+	if (arg.GetString("heap-ratio", &value)) {
 		char* endptr = nullptr;
-		float ratio = ::strtof(value, &endptr);
-		if (endptr == value || *endptr != '\0' || ratio <= 0.0f || ratio > 1.0f) {
-			terr.Printf("Invalid memory ratio: %s\n", value);
+		float heapRatio = ::strtof(value, &endptr);
+		if (endptr == value || *endptr != '\0' || heapRatio <= 0.0f || heapRatio > 1.0f) {
+			terr.Printf("Invalid heap ratio: %s\n", value);
 			return Result::Error;
 		}
-		logicAnalyzer.SetMemoryRatio(ratio);
+		logicAnalyzer.SetHeapRatio(heapRatio);
 	}
 	if (arg.GetString("reso", &value)) {
 		char* endptr = nullptr;
@@ -153,7 +153,7 @@ ShellCmd(la, "Logic Analyzer")
 			} else if (logicAnalyzer.Enable()) {
 				logicAnalyzer.PrintSettings(tout);
 			} else {
-				terr.Printf("failed to enable Logic Analyzer\n");
+				terr.Printf("failed to enable logic analyzer. reduce the number of heap-ratio\n");
 			}
 		} else if (::strcmp(subcmd, "disable") == 0) {
 			logicAnalyzer.Disable();
