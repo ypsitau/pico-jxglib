@@ -143,6 +143,7 @@ bool LogicAnalyzer::Enable()
 	if (samplingInfo_.enabledFlag) Disable(); // disable if already enabled
 	if (samplingInfo_.pinBitmap == 0) return true;
 	int nRawEventPerSampler = CalcRawEventMax() / nSampler_;
+	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) samplerTbl_[iSampler].FreeBuff();
 	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) {
 		if (!samplerTbl_[iSampler].AllocBuff(nRawEventPerSampler)) {
 			for (int iSampler = 0; iSampler < nSampler_; ++iSampler) {
@@ -155,11 +156,11 @@ bool LogicAnalyzer::Enable()
 	for (uint32_t pinBitmap = samplingInfo_.pinBitmap; pinBitmap != 0; pinBitmap >>= 1, ++nPinsConsecutive) ;
 	uint relAddrEntryTbl[4];
 	programSamplerInit_
-	.program("SamplerInit")
+	.program("sampler_init")
 		.mov("osr", "null")				// clear osr (counter)
 	.end();
 	programSamplerMain_
-	.program("SamplerMain")
+	.program("sampler_main")
 	.pub(&relAddrEntryTbl[1])
 		.jmp("entry")		[(nSampler_ == 4)? (3 - 1) : (nSampler_ == 3)? (4 - 1) : (nSampler_ == 2)? (5 - 1) :  0]
 	.pub(&relAddrEntryTbl[2])
@@ -168,7 +169,7 @@ bool LogicAnalyzer::Enable()
 		.jmp("entry")		[(nSampler_ == 4)? (9 - 1) : 0]
 	.L("loop").wrap_target()
 		.mov("x", "~osr")
-		.jmp("x--", "no_wrap_around")
+		.jmp("x--", "no_wrap_around")	// increment osr (counter) by 1
 		.mov("osr", "~x")
 	.L("entry").pub(&relAddrEntryTbl[0])
 		.mov("isr", "null")
@@ -176,7 +177,7 @@ bool LogicAnalyzer::Enable()
 		.mov("x", "isr")
 		.jmp("do_report")	[1]
 	.L("no_wrap_around")
-		.mov("osr", "~x")				// increment osr (counter) by 1
+		.mov("osr", "~x")
 		.mov("isr", "null")
 		.in("pins", nPinsConsecutive)	// save current pins state in isr (no auto-push)
 		.mov("x", "isr")
@@ -206,6 +207,7 @@ bool LogicAnalyzer::Enable()
 	uint32_t mask = 0;
 	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) {
 		samplerTbl_[iSampler].EnableDMA();
+		samplerTbl_[iSampler].GetSM().exec(programSamplerInit_);
 		mask |= (1 << samplerTbl_[iSampler].GetSM().sm);
 	}
 	::pio_enable_sm_mask_in_sync(pio, mask);
