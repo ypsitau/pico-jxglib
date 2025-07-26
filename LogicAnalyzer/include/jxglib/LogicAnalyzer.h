@@ -68,14 +68,17 @@ public:
 		const LogicAnalyzer& logicAnalyzer_;
 		int iRawEventTbl_[4];
 		const RawEvent* pRawEventPrev_;
+		bool doneFlag_;
 	public:
 		EventIterator(const LogicAnalyzer& logicAnalyzer);
 	public:
-		void GetInitial(Event& event) const;
-		void GetBase(Event& event) const;
+		bool IsDone() const { return doneFlag_; }
 		bool Next(Event& event);
 		void Rewind();
+		void Skip(int nEvents);
 		int Count();
+	private:
+		const RawEvent* NextRawEvent(int* piSampler = nullptr);
 	};
 	struct SamplingInfo {
 		bool enabledFlag;
