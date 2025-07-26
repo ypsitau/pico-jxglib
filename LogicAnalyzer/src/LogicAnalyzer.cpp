@@ -567,9 +567,11 @@ int LogicAnalyzer::EventIterator::Count()
 
 const LogicAnalyzer::RawEvent* LogicAnalyzer::EventIterator::NextRawEvent(int* piSampler)
 {
-	int iSamplerRtn = -1;
+	int iSamplerRtn = 0;
 	const RawEvent* pRawEventRtn = nullptr;
 	for (;;) {
+		iSamplerRtn = 0;
+		pRawEventRtn = nullptr;
 		for (int iSampler = logicAnalyzer_.GetSamplerCount() - 1; iSampler >= 0; --iSampler) {
 			int iRawEvent = iRawEventTbl_[iSampler];
 			const Sampler& sampler = logicAnalyzer_.GetSampler(iSampler);
