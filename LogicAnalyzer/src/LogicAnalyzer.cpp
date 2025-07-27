@@ -148,7 +148,7 @@ bool LogicAnalyzer::Enable()
 	uint relAddrEntryTbl[4];
 	program_SamplerInit_
 	.program("sampler_init")
-		.mov("osr", "~null")			// initialize osr (counter) to 0xffffffff
+		.mov("osr", "~null")				// initialize osr (counter) to 0xffffffff
 	.end();
 	program_SamplerMain_
 	.program("sampler_main")
@@ -158,11 +158,14 @@ bool LogicAnalyzer::Enable()
 		.jmp("entry")		[(nSampler_ == 4)? (6 - 1) : (nSampler_ == 3)? (8 - 1) :  0]
 	.pub(&relAddrEntryTbl[3])
 		.jmp("entry")		[(nSampler_ == 4)? (9 - 1) : 0]
+	.L("entry").pub(&relAddrEntryTbl[0])
+		
+		.jmp("wrap_around")
 	.L("loop").wrap_target()
 		.out("x", 16)						// x[15:0] <- osr[15:0]
 		.jmp("x--", "no_wrap_around")		// if (x == 0) {x--} else {x--; goto no_wrap_around}
 		.mov("osr", "x")					// osr <- x
-	.L("entry").pub(&relAddrEntryTbl[0])
+	.L("wrap_around")
 		.mov("isr", "null")					// isr <- 0x00000000
 		.in("pins", nBitsPinBitmap)			// isr <- pins[nBitsPinBitmap-1:0] (no auto-push)
 		.mov("x", "isr")					// x <- isr
