@@ -147,7 +147,7 @@ bool LogicAnalyzer::Enable()
 	uint relAddrEntryTbl[4];
 	program_SamplerInit_
 	.program("sampler_init")
-		.mov("osr", "null")				// clear osr (counter)
+		.mov("osr", "null")				// initialize osr (counter) to 0x00000000
 	.end();
 	program_SamplerMain_
 	.program("sampler_main")
@@ -158,26 +158,26 @@ bool LogicAnalyzer::Enable()
 	.pub(&relAddrEntryTbl[3])
 		.jmp("entry")		[(nSampler_ == 4)? (9 - 1) : 0]
 	.L("loop").wrap_target()
-		.mov("x", "~osr")
-		.jmp("x--", "no_wrap_around")	// increment osr (counter) by 1
-		.mov("osr", "~x")
+		.mov("x", "~osr")				// x <- ~osr
+		.jmp("x--", "no_wrap_around")	// if (x == 0) { x-- } else { x--; goto no_wrap_around }
+		.mov("osr", "~x")				// osr <- ~x
 	.L("entry").pub(&relAddrEntryTbl[0])
-		.mov("isr", "null")
-		.in("pins", nConsecutivePins)	// save current pins state in isr (no auto-push)
-		.mov("x", "isr")
-		.jmp("do_report")	[1]
+		.mov("isr", "null")				// isr <- 0x00000000
+		.in("pins", nConsecutivePins)	// isr <- pins[nConsecutivePins-1:0] (no auto-push)
+		.mov("x", "isr")				// x <- isr
+		.jmp("do_report")	[1]			// goto do_report
 	.L("no_wrap_around")
-		.mov("osr", "~x")
-		.mov("isr", "null")
-		.in("pins", nConsecutivePins)	// save current pins state in isr (no auto-push)
-		.mov("x", "isr")
-		.jmp("x!=y", "do_report")		// if pins state changed, report it
+		.mov("osr", "~x")				// osr <- ~x
+		.mov("isr", "null")				// isr <- 0x00000000
+		.in("pins", nConsecutivePins)	// isr <- pins[nConsecutivePins-1:0] (no auto-push)
+		.mov("x", "isr")				// x <- isr
+		.jmp("x!=y", "do_report")		// if (x != y) goto do_report
 		.jmp("loop")		[(nSampler_ <= 2)? 2 : 4]
 	.L("do_report")
-		.in("osr", 32)					// auto-push osr (counter)
-		.in("x", 32)					// auto-push x (current pins state)
+		.in("osr", 32)					// isr[31:0] <- osr[31:0] (auto-push)
+		.in("x", 32)					// isr[31:0] <- x[31:0] (auto-push)
 		.mov("y", "x")		[(nSampler_ <= 2)? 0 : 2]
-										// save current pins state in y
+										// y <- x
 	.wrap()
 	.end();
 	pio_hw_t* pio = ::pio_get_instance(iPIO_);
