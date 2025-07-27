@@ -109,21 +109,15 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple4 = {
 };
 
 LogicAnalyzer::LogicAnalyzer() : rawEventBuffWhole_{nullptr}, iPIO_{PIO::Num - 1}, nSampler_{1}, target_{Target::Internal},
-		heapRatio_{.7}, heapRatioRequested_{.7}, clocksPerLoop_{1}, usecReso_{1'000}
+		heapRatio_{.7}, heapRatioRequested_{.7}, usecReso_{1'000}
 {
+	clocksPerLoop_ = 12; // program_SampleMain_ takes 12 clocks in the loop
 	SetSamplerCount(1);
 }
 
 LogicAnalyzer::~LogicAnalyzer()
 {
 	if (rawEventBuffWhole_) ::free(rawEventBuffWhole_);
-}
-
-LogicAnalyzer& LogicAnalyzer::SetSamplerCount(int nSampler)
-{
-	nSampler_ = nSampler;
-	clocksPerLoop_ = (nSampler_ <= 2)? 10 : 12;
-	return *this;
 }
 
 bool LogicAnalyzer::Enable()
@@ -144,9 +138,9 @@ bool LogicAnalyzer::Enable()
 		samplerTbl_[iSampler].AssignBuff(rawEventBuffWhole_ + iSampler * nRawEventPerSampler, nRawEventPerSampler);
 	}
 	uint nBitsPinBitmap = samplingInfo_.CountBits();
-	//uint nBitsTimeStamp = 32 - nBitsPinBitmap;
-	uint nBitsTimeStamp = 16;
-	uint nBitsPinBitmap_tmp = 16;
+	uint nBitsTimeStamp = 32 - nBitsPinBitmap;
+	//uint nBitsTimeStamp = 16;
+	//uint nBitsPinBitmap_tmp = 16;
 	uint relAddrEntryTbl[4];
 	program_SamplerInit_
 	.program("sampler_init")
@@ -166,32 +160,32 @@ bool LogicAnalyzer::Enable()
 		.jmp("entry")		[(nSampler_ == 4)? (3 - 1) : (nSampler_ == 3)? (4 - 1) : (nSampler_ == 2)? (5 - 1) :  0]
 	.L("entry").pub(&relAddrEntryTbl[0])
 	.L("wait_for_first_event")
-		.mov("isr", "null")							// isr <- 0x00000000
-		.in("pins", nBitsPinBitmap)					// isr <- pins[nBitsPinBitmap-1:0] (no auto-push)
-		.mov("x", "isr")							// x <- isr
+		.mov("isr", "null")							// isr = 0x00000000
+		.in("pins", nBitsPinBitmap)					// isr = pins[nBitsPinBitmap-1:0]
+		.mov("x", "isr")							// x = isr
 		.jmp("x!=y", "report_event")				// if (x != y) goto report_event
 		.jmp("wait_for_first_event")				// goto wait_for_first_event
 	.L("loop").wrap_target()
-		.out("x", nBitsTimeStamp)					// x[nBitsTimeStamp-1:0] <- osr[nBitsTimeStamp-1:0]
+		.out("x", nBitsTimeStamp)					// x[nBitsTimeStamp-1:0] = osr[nBitsTimeStamp-1:0]
 		.jmp("x--", "no_wrap_around")				// if (x == 0) {x--} else {x--; goto no_wrap_around}
-		.mov("osr", "x")							// osr <- x
-	.L("wrap_around")
-		.mov("isr", "null")							// isr <- 0x00000000
-		.in("pins", nBitsPinBitmap)					// isr <- pins[nBitsPinBitmap-1:0] (no auto-push)
-		.mov("x", "isr")							// x <- isr
+		.mov("osr", "x")							// osr = x
+		.mov("isr", "null")							// isr = 0x00000000
+		.in("pins", nBitsPinBitmap)					// isr = pins[nBitsPinBitmap-1:0]
+		.mov("x", "isr")							// x = isr
 		.jmp("report_event") [1]					// goto report_event
 	.L("no_wrap_around")
-		.mov("osr", "x")							// osr <- x
-		.mov("isr", "null")							// isr <- 0x00000000
-		.in("pins", nBitsPinBitmap)					// isr <- pins[nBitsPinBitmap-1:0] (no auto-push)
-		.mov("x", "isr")							// x <- isr
+		.mov("osr", "x")							// osr = x
+		.mov("isr", "null")							// isr = 0x00000000
+		.in("pins", nBitsPinBitmap)					// isr = pins[nBitsPinBitmap-1:0]
+		.mov("x", "isr")							// x = isr
 		.jmp("x!=y", "report_event")				// if (x != y) goto report_event
-		.jmp("loop") [(nSampler_ <= 2)? 2 : 4]		// goto loop
+		.jmp("loop") [4]							// goto loop
 	.L("report_event")
-		.in("osr", nBitsTimeStamp)					// isr[nBitsTimeStamp-1:0] <- osr[nBitsTimeStamp-1:0]
-		.in("x", nBitsPinBitmap_tmp)				// isr[31:nBitsPinBitmap] <- isr[nBitsTimeStamp-1:0]
-													// isr[nBitsPinBitmap-1:0] <- x[nBitsPinBitmap-1:0] (auto-push)
-		.mov("y", "x") [(nSampler_ <= 2)? 0 : 2]	// y <- x
+		.in("osr", nBitsTimeStamp)					// isr[nBitsTimeStamp-1:0] = osr[nBitsTimeStamp-1:0]
+		.in("x", nBitsPinBitmap)					// isr[31:nBitsPinBitmap] = isr[nBitsTimeStamp-1:0]
+													// isr[nBitsPinBitmap-1:0] = x[nBitsPinBitmap-1:0] (auto-push)
+		.push()
+		.mov("y", "x") [1]							// y = x
 	.wrap()
 	.end();
 	pio_hw_t* pio = ::pio_get_instance(iPIO_);
@@ -285,8 +279,8 @@ const LogicAnalyzer::RawEvent& LogicAnalyzer::GetRawEvent(int iSampler, int iRaw
 
 const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 {
-	//uint nBitsPinBitmap = samplingInfo_.CountBits();
-	uint nBitsPinBitmap = 16;
+	uint nBitsPinBitmap = samplingInfo_.CountBits();
+	//uint nBitsPinBitmap = 16;
 	EventIterator eventIter(*this, nBitsPinBitmap);
 	int nEventsRelevant = eventIter.CountRelevant();
 	if (nEventsRelevant == 0) {
@@ -471,13 +465,13 @@ LogicAnalyzer::Sampler::~Sampler()
 
 void LogicAnalyzer::Sampler::SetProgram(const PIO::Program& program, pio_hw_t* pio, uint sm, uint relAddrEntry, uint pinMin, int nBitsPinBitmap)
 {
-	sm_.config.set_in_shift_left(true, 32); // shift left, autopush enabled, push threshold 32
+	sm_.config.set_in_shift_left(false, 32); // shift left, autopush disabled, push threshold 32
 	sm_.set_program(program, pio, sm).set_listen_pins(pinMin, nBitsPinBitmap).init_with_entry(relAddrEntry);
 }
 
 void LogicAnalyzer::Sampler::ShareProgram(Sampler& sampler, pio_hw_t* pio, uint sm, uint relAddrEntry, uint pinMin, int nBitsPinBitmap)
 {
-	sm_.config.set_in_shift_left(true, 32); // shift left, autopush enabled, push threshold 32
+	sm_.config.set_in_shift_left(false, 32); // shift left, autopush disabled, push threshold 32
 	sm_.share_program(sampler.GetSM(), pio, sm).set_listen_pins(pinMin, nBitsPinBitmap).init_with_entry(relAddrEntry);
 }
 
@@ -524,7 +518,7 @@ int LogicAnalyzer::Sampler::GetRawEventCount() const
 
 void LogicAnalyzer::Sampler::DumpRawEventBuff(Printable& tout) const
 {
-	Printable::DumpT(tout).Data32Bit()(rawEventBuff_, GetRawEventCount() * 2);
+	Printable::DumpT(tout).Data32Bit()(rawEventBuff_, GetRawEventCount() * sizeof(RawEvent) / sizeof(uint32_t));
 }
 
 //------------------------------------------------------------------------------

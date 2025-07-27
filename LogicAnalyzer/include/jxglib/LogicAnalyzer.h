@@ -148,7 +148,7 @@ public:
 	LogicAnalyzer& SetPIO(uint iPIO) { iPIO_ = iPIO; return *this; }
 	LogicAnalyzer& ReleaseResource();
 	LogicAnalyzer& SetPins(const int pinTbl[], int nPins);
-	LogicAnalyzer& SetSamplerCount(int nSampler);
+	LogicAnalyzer& SetSamplerCount(int nSampler) { nSampler_ = nSampler; return *this; }
 	int GetSamplerCount() const { return nSampler_; }
 	Sampler& GetSampler(int iSampler) { return samplerTbl_[iSampler]; }
 	const Sampler& GetSampler(int iSampler) const { return samplerTbl_[iSampler]; }
