@@ -149,18 +149,26 @@ bool LogicAnalyzer::Enable()
 	program_SamplerInit_
 	.program("sampler_init")
 		.mov("osr", "~null")				// initialize osr (counter) to 0xffffffff
+		.mov("isr", "null")
+		.in("pins", nBitsPinBitmap)
+		.mov("y", "isr")
+		.push() 
 	.end();
 	program_SamplerMain_
 	.program("sampler_main")
-	.pub(&relAddrEntryTbl[1])
-		.jmp("entry")		[(nSampler_ == 4)? (3 - 1) : (nSampler_ == 3)? (4 - 1) : (nSampler_ == 2)? (5 - 1) :  0]
-	.pub(&relAddrEntryTbl[2])
-		.jmp("entry")		[(nSampler_ == 4)? (6 - 1) : (nSampler_ == 3)? (8 - 1) :  0]
 	.pub(&relAddrEntryTbl[3])
 		.jmp("entry")		[(nSampler_ == 4)? (9 - 1) : 0]
+	.pub(&relAddrEntryTbl[2])
+		.jmp("entry")		[(nSampler_ == 4)? (6 - 1) : (nSampler_ == 3)? (8 - 1) :  0]
+	.pub(&relAddrEntryTbl[1])
+		.jmp("entry")		[(nSampler_ == 4)? (3 - 1) : (nSampler_ == 3)? (4 - 1) : (nSampler_ == 2)? (5 - 1) :  0]
 	.L("entry").pub(&relAddrEntryTbl[0])
-		
-		.jmp("wrap_around")
+	.L("wait_for_first_event")
+		.mov("isr", "null")					// isr <- 0x00000000
+		.in("pins", nBitsPinBitmap)
+		.mov("x", "isr")
+		.jmp("x!=y", "report_event")		// if (x != y) goto report_event
+		.jmp("wait_for_first_event")
 	.L("loop").wrap_target()
 		.out("x", 16)						// x[15:0] <- osr[15:0]
 		.jmp("x--", "no_wrap_around")		// if (x == 0) {x--} else {x--; goto no_wrap_around}
@@ -169,15 +177,15 @@ bool LogicAnalyzer::Enable()
 		.mov("isr", "null")					// isr <- 0x00000000
 		.in("pins", nBitsPinBitmap)			// isr <- pins[nBitsPinBitmap-1:0] (no auto-push)
 		.mov("x", "isr")					// x <- isr
-		.jmp("do_report")	[1]				// goto do_report
+		.jmp("report_event")	[1]			// goto report_event
 	.L("no_wrap_around")
 		.mov("osr", "x")					// osr <- x
 		.mov("isr", "null")					// isr <- 0x00000000
 		.in("pins", nBitsPinBitmap)			// isr <- pins[nBitsPinBitmap-1:0] (no auto-push)
 		.mov("x", "isr")					// x <- isr
-		.jmp("x!=y", "do_report")			// if (x != y) goto do_report
+		.jmp("x!=y", "report_event")		// if (x != y) goto report_event
 		.jmp("loop")		[(nSampler_ <= 2)? 2 : 4]
-	.L("do_report")
+	.L("report_event")
 		.in("osr", 16)						// isr[15:0] <- osr[15:0]
 		.in("x", 16)						// isr[31:16] <- isr[15:0], isr[15:0] <- x[15:0] (auto-push)
 		.mov("y", "x")		[(nSampler_ <= 2)? 0 : 2]
