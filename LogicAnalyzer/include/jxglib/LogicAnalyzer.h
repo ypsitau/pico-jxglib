@@ -14,12 +14,18 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class LogicAnalyzer {
 public:
-	struct RawEvent {
+	struct RawEventLarge {
 		uint32_t value1_;
 		uint32_t value2_;
 	public:
-		uint32_t GetTimeStamp() const { return value1_; }
+		uint32_t GetTimeStamp() const { return ~value1_; }
 		uint32_t GetPinBitmap() const { return value2_; }
+	};
+	struct RawEvent {
+		uint32_t value_;
+	public:
+		uint32_t GetTimeStamp() const { return (~(value_ >> 16)) & 0xffff; }
+		uint32_t GetPinBitmap() const { return value_ & 0xffff; }
 	};
 	class Event{
 	private:
@@ -74,8 +80,10 @@ public:
 	private:
 		const LogicAnalyzer& logicAnalyzer_;
 		int iRawEventTbl_[4];
+		uint64_t timeStampOffsetTbl_[4];
 		const RawEvent* pRawEventPrev_;
 		bool doneFlag_;
+		uint64_t timeStampOffsetIncr_;
 	public:
 		EventIterator(const LogicAnalyzer& logicAnalyzer);
 	public:

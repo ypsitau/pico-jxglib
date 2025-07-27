@@ -147,7 +147,7 @@ bool LogicAnalyzer::Enable()
 	uint relAddrEntryTbl[4];
 	program_SamplerInit_
 	.program("sampler_init")
-		.mov("osr", "null")				// initialize osr (counter) to 0x00000000
+		.mov("osr", "~null")			// initialize osr (counter) to 0xffffffff
 	.end();
 	program_SamplerMain_
 	.program("sampler_main")
@@ -158,26 +158,27 @@ bool LogicAnalyzer::Enable()
 	.pub(&relAddrEntryTbl[3])
 		.jmp("entry")		[(nSampler_ == 4)? (9 - 1) : 0]
 	.L("loop").wrap_target()
-		.mov("x", "~osr")				// x <- ~osr
-		.jmp("x--", "no_wrap_around")	// if (x == 0) { x-- } else { x--; goto no_wrap_around }
-		.mov("osr", "~x")				// osr <- ~x
+		.out("x", 16)						// x[15:0] <- osr[15:0]
+		.jmp("x--", "no_wrap_around")		// if (x == 0) {x--} else {x--; goto no_wrap_around}
+		.mov("osr", "x")					// osr <- x
+
 	.L("entry").pub(&relAddrEntryTbl[0])
-		.mov("isr", "null")				// isr <- 0x00000000
-		.in("pins", nConsecutivePins)	// isr <- pins[nConsecutivePins-1:0] (no auto-push)
-		.mov("x", "isr")				// x <- isr
-		.jmp("do_report")	[1]			// goto do_report
+		.mov("isr", "null")					// isr <- 0x00000000
+		.in("pins", nConsecutivePins)		// isr <- pins[nConsecutivePins-1:0] (no auto-push)
+		.mov("x", "isr")					// x <- isr
+		.jmp("do_report")	[1]				// goto do_report
 	.L("no_wrap_around")
-		.mov("osr", "~x")				// osr <- ~x
-		.mov("isr", "null")				// isr <- 0x00000000
-		.in("pins", nConsecutivePins)	// isr <- pins[nConsecutivePins-1:0] (no auto-push)
-		.mov("x", "isr")				// x <- isr
-		.jmp("x!=y", "do_report")		// if (x != y) goto do_report
+		.mov("osr", "x")					// osr <- x
+		.mov("isr", "null")					// isr <- 0x00000000
+		.in("pins", nConsecutivePins)		// isr <- pins[nConsecutivePins-1:0] (no auto-push)
+		.mov("x", "isr")					// x <- isr
+		.jmp("x!=y", "do_report")			// if (x != y) goto do_report
 		.jmp("loop")		[(nSampler_ <= 2)? 2 : 4]
 	.L("do_report")
-		.in("osr", 32)					// isr[31:0] <- osr[31:0] (auto-push)
-		.in("x", 32)					// isr[31:0] <- x[31:0] (auto-push)
+		.in("osr", 16)						// isr[15:0] <- osr[15:0]
+		.in("x", 16)						// isr[31:16] <- isr[15:0], isr[15:0] <- x[15:0] (auto-push)
 		.mov("y", "x")		[(nSampler_ <= 2)? 0 : 2]
-										// y <- x
+											// y <- x
 	.wrap()
 	.end();
 	pio_hw_t* pio = ::pio_get_instance(iPIO_);
@@ -539,7 +540,7 @@ int LogicAnalyzer::SamplingInfo::CountConsecutivePins() const
 // LogicAnalyzer::EventIterator
 //------------------------------------------------------------------------------
 LogicAnalyzer::EventIterator::EventIterator(const LogicAnalyzer& logicAnalyzer) :
-				logicAnalyzer_{logicAnalyzer}, pRawEventPrev_{nullptr}, doneFlag_{false}
+	logicAnalyzer_{logicAnalyzer}, pRawEventPrev_{nullptr}, doneFlag_{false}, timeStampOffsetIncr_{1LL << 16}
 {
 	Rewind();
 }
@@ -553,7 +554,8 @@ bool LogicAnalyzer::EventIterator::Next(Event& event)
 		doneFlag_ = true;
 		return false;
 	}
-	event = Event(static_cast<uint64_t>(pRawEvent->GetTimeStamp()) * logicAnalyzer_.GetSamplerCount() + iSampler, pRawEvent->GetPinBitmap());
+	uint64_t timeStamp = (timeStampOffsetTbl_[iSampler] + pRawEvent->GetTimeStamp()) * logicAnalyzer_.GetSamplerCount() + iSampler;
+	event = Event(timeStamp, pRawEvent->GetPinBitmap());
 	pRawEventPrev_ = pRawEvent;
 	return true;
 }
@@ -562,6 +564,7 @@ void LogicAnalyzer::EventIterator::Rewind()
 {
 	for (int iSampler = 0; iSampler < logicAnalyzer_.GetSamplerCount(); ++iSampler) {
 		iRawEventTbl_[iSampler] = 0;
+		timeStampOffsetTbl_[iSampler] = 0;
 	}
 	pRawEventPrev_ = nullptr;
 	doneFlag_ = false;
@@ -582,28 +585,35 @@ int LogicAnalyzer::EventIterator::Count()
 
 const LogicAnalyzer::RawEvent* LogicAnalyzer::EventIterator::NextRawEvent(int* piSampler)
 {
-	int iSamplerRtn = 0;
-	const RawEvent* pRawEventRtn = nullptr;
 	for (;;) {
-		iSamplerRtn = 0;
-		pRawEventRtn = nullptr;
+		int iSamplerRtn = -1;
+		uint64_t timeStampAdjRtn = 0;
 		for (int iSampler = logicAnalyzer_.GetSamplerCount() - 1; iSampler >= 0; --iSampler) {
 			int iRawEvent = iRawEventTbl_[iSampler];
 			const Sampler& sampler = logicAnalyzer_.GetSampler(iSampler);
 			if (iRawEvent < sampler.GetRawEventCount()) {
 				const RawEvent& rawEvent = sampler.GetRawEvent(iRawEvent);
-				if (!pRawEventRtn || pRawEventRtn->GetTimeStamp() >= rawEvent.GetTimeStamp()) {
-					pRawEventRtn = &rawEvent;
+				uint64_t timeStampAdj = timeStampOffsetTbl_[iSampler] + rawEvent.GetTimeStamp();
+				if (iRawEvent > 0 && rawEvent.GetTimeStamp() == 0) timeStampAdj += timeStampOffsetIncr_; // wrap-around
+				if (iSamplerRtn < 0 || timeStampAdjRtn >= timeStampAdj) {
 					iSamplerRtn = iSampler;
+					timeStampAdjRtn = timeStampAdj;
 				}
 			}
 		}
-		if (!pRawEventRtn) return nullptr; // no more events
-		iRawEventTbl_[iSamplerRtn]++;
-		if (!pRawEventPrev_ || pRawEventPrev_->GetPinBitmap() != pRawEventRtn->GetPinBitmap()) break;
+		if (iSamplerRtn < 0) return nullptr; // no more events
+		int iRawEvent = iRawEventTbl_[iSamplerRtn]++;
+		const Sampler& sampler = logicAnalyzer_.GetSampler(iSamplerRtn);
+		const RawEvent& rawEvent = sampler.GetRawEvent(iRawEvent);
+		if (iRawEvent > 0 && rawEvent.GetTimeStamp() == 0) {
+			timeStampOffsetTbl_[iSamplerRtn] += timeStampOffsetIncr_; // wrap-around
+		}
+		if (!pRawEventPrev_ || pRawEventPrev_->GetPinBitmap() != rawEvent.GetPinBitmap()) {
+			if (piSampler) *piSampler = iSamplerRtn;
+			return &rawEvent;
+		}
 	}
-	if (piSampler) *piSampler = iSamplerRtn;
-	return pRawEventRtn;
+	return nullptr;	// never reached
 }
 
 }
