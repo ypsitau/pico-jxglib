@@ -49,23 +49,23 @@ public:
 		PIO::StateMachine sm_;
 		DMA::Channel* pChannel_;
 		DMA::ChannelConfig channelConfig_;
-		int nRawEventPerSampler_;
 		RawEvent* rawEventBuff_;
+		int nRawEventMax_;
 	public:
 		Sampler();
 		~Sampler();
 	public:
-		bool AllocBuff(int nRawEventPerSampler);
-		void FreeBuff();
+		void AssignBuff(RawEvent* rawEventBuff, int nRawEventMax) { rawEventBuff_ = rawEventBuff; nRawEventMax_ = nRawEventMax; }
 		PIO::StateMachine& GetSM() { return sm_; }
 		const PIO::StateMachine& GetSM() const { return sm_; }
 		void SetProgram(const PIO::Program& program, pio_hw_t* pio, uint sm, uint relAddrEntry, uint pinMin, int nPinsConsecutive);
 		void ShareProgram(Sampler& sampler, pio_hw_t* pio, uint sm, uint relAddrEntry, uint pinMin, int nPinsConsecutive);
 		Sampler& EnableDMA();
-		Sampler& Disable();
+		Sampler& ReleaseResource();
 	public:
 		int GetRawEventCount() const;
-		bool IsFull() const { return GetRawEventCount() >= nRawEventPerSampler_; }
+		int GetRawEventCountMax() const { return nRawEventMax_; }
+		bool IsFull() const { return GetRawEventCount() >= nRawEventMax_; }
 		const RawEvent& GetRawEvent(int iRawEvent) const { return rawEventBuff_[iRawEvent]; }
 		const RawEvent* GetRawEventBuff() const { return rawEventBuff_; }
 		void DumpRawEventBuff(Printable& tout) const;
@@ -124,12 +124,14 @@ public:
 private:
 	PIO::Program programSamplerInit_;
 	PIO::Program programSamplerMain_;
+	RawEvent* rawEventBuffWhole_;
 	int nSampler_;
 	Sampler samplerTbl_[4];
 	SamplingInfo samplingInfo_;
 	PrintInfo printInfo_;
 	Target target_;
 	float heapRatio_;
+	float heapRatioRequested_;
 	int clocksPerLoop_;
 	float usecReso_;
 public:
@@ -138,12 +140,13 @@ public:
 public:
 	bool Enable();
 	LogicAnalyzer& Disable();
+	LogicAnalyzer& ReleaseResource();
 	LogicAnalyzer& SetPins(const int pinTbl[], int nPins);
 	LogicAnalyzer& SetSamplerCount(int nSampler);
 	int GetSamplerCount() const { return nSampler_; }
 	Sampler& GetSampler(int iSampler) { return samplerTbl_[iSampler]; }
 	const Sampler& GetSampler(int iSampler) const { return samplerTbl_[iSampler]; }
-	LogicAnalyzer& SetHeapRatio(float heapRatio) { heapRatio_ = heapRatio; return *this; };
+	LogicAnalyzer& SetHeapRatio(float heapRatio) { heapRatioRequested_ = heapRatio; return *this; }
 	LogicAnalyzer& SetTarget(Target target) { target_ = target; return *this; }
 	LogicAnalyzer& SetResolution(float usecReso) { usecReso_ = usecReso; return *this; }
 	LogicAnalyzer& SetEventCountToPrint(int nEventsToPrint) { printInfo_.nEventsToPrint = nEventsToPrint; return *this; }
@@ -151,15 +154,13 @@ public:
 	PrintPart GetPrintPart() const { return printInfo_.part; }
 	LogicAnalyzer& SetWaveStyle(const WaveStyle& waveStyle) { printInfo_.pWaveStyle = &waveStyle; return *this; }
 	const WaveStyle& GetWaveStyle() const { return *printInfo_.pWaveStyle; }
-	int CalcRawEventMax() const { return static_cast<int>(heapRatio_ * GetFreeHeapBytes() / sizeof(RawEvent)); }
 	double CalcClockPIOProgram() const { return static_cast<double>(::clock_get_hz(clk_sys) / clocksPerLoop_); }
 	float GetResolution() const { return usecReso_; }
 	LogicAnalyzer& UpdateSamplingInfo() { samplingInfo_.Update(printInfo_); return *this; }
 	bool HasEnabledPins() const { return samplingInfo_.HasEnabledPins(); }
 	int GetRawEventCount() const;
+	int GetRawEventCountMax() const;
 	const RawEvent& GetRawEvent(int iSampler, int iRawEvent) const;
-	//bool IsPinAsserted(uint32_t pinBitmap, uint pin) const { return ((pinBitmap << samplingInfo_.pinMin) & (1 << pin)) != 0; }
-	//bool IsPinEnabled(uint pin) const { return IsPinAsserted(samplingInfo_.pinBitmap, pin); }
 	const LogicAnalyzer& PrintWave(Printable& tout) const;
 	const LogicAnalyzer& PrintSettings(Printable& tout) const;
 public:

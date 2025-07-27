@@ -108,13 +108,16 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple4 = {
 	formatHeader:	"GP%-2d  ",
 };
 
-LogicAnalyzer::LogicAnalyzer() : nSampler_{1}, target_{Target::Internal}, heapRatio_{.7}, clocksPerLoop_{1}, usecReso_{1'000}
+LogicAnalyzer::LogicAnalyzer() : rawEventBuffWhole_{nullptr}, nSampler_{1}, target_{Target::Internal},
+		heapRatio_{.7}, heapRatioRequested_{.7}, clocksPerLoop_{1}, usecReso_{1'000}
 {
 	SetSamplerCount(1);
 }
 
 LogicAnalyzer::~LogicAnalyzer()
-{}
+{
+	if (rawEventBuffWhole_) ::free(rawEventBuffWhole_);
+}
 
 LogicAnalyzer& LogicAnalyzer::SetSamplerCount(int nSampler)
 {
@@ -125,17 +128,20 @@ LogicAnalyzer& LogicAnalyzer::SetSamplerCount(int nSampler)
 
 bool LogicAnalyzer::Enable()
 {
-	if (samplingInfo_.IsEnabled()) Disable(); // disable if already enabled
+	ReleaseResource();
 	if (!samplingInfo_.HasEnabledPins()) return true;
-	for (int iSampler = 0; iSampler < count_of(samplerTbl_); ++iSampler) samplerTbl_[iSampler].FreeBuff();
-	int nRawEventPerSampler = CalcRawEventMax() / nSampler_;
+	if (heapRatio_ != heapRatioRequested_ && rawEventBuffWhole_) {
+		::free(rawEventBuffWhole_);
+		rawEventBuffWhole_ = nullptr;
+	}
+	int nRawEventPerSampler = static_cast<int>(heapRatioRequested_ * GetFreeHeapBytes()) / (nSampler_ * sizeof(RawEvent));
+	if (!rawEventBuffWhole_) {
+		rawEventBuffWhole_ = reinterpret_cast<RawEvent*>(::malloc(nRawEventPerSampler * nSampler_  * sizeof(RawEvent)));
+		if (!rawEventBuffWhole_) return false;
+	}
+	heapRatio_ = heapRatioRequested_;
 	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) {
-		if (!samplerTbl_[iSampler].AllocBuff(nRawEventPerSampler)) {
-			for (int iSampler = 0; iSampler < nSampler_; ++iSampler) {
-				samplerTbl_[iSampler].FreeBuff();
-			}
-			return false;
-		}
+		samplerTbl_[iSampler].AssignBuff(rawEventBuffWhole_ + iSampler * nRawEventPerSampler, nRawEventPerSampler);
 	}
 	uint nPinsConsecutive = 0;	// nPinsConsecutive must be less than 32 to avoid auto-push during sampling
 	for (uint32_t pinBitmap = samplingInfo_.GetPinBitmapEnabled(); pinBitmap != 0; pinBitmap >>= 1, ++nPinsConsecutive) ;
@@ -202,20 +208,26 @@ bool LogicAnalyzer::Enable()
 
 LogicAnalyzer& LogicAnalyzer::Disable()
 {
-	if (samplingInfo_.IsEnabled()) {
-		samplingInfo_.SetEnabled(false);
-		for (int iSampler = 0; iSampler < count_of(samplerTbl_); ++iSampler) {
-			samplerTbl_[iSampler].Disable();
-		}
-		if (target_ == Target::External) {
-			uint pin = samplingInfo_.GetPinMin();
-			for (uint32_t pinBitmap = samplingInfo_.GetPinBitmapEnabled(); pinBitmap != 0; pinBitmap >>= 1, ++pin) {
-				if (pinBitmap & 1) {
-					::gpio_set_dir(pin, GPIO_IN);
-					::gpio_put(pin, 0);
-					::gpio_pull_down(pin);
-					::gpio_set_function(pin, GPIO_FUNC_NULL);
-				}
+	::free(rawEventBuffWhole_);
+	rawEventBuffWhole_ = nullptr;
+	return ReleaseResource();
+}
+
+LogicAnalyzer& LogicAnalyzer::ReleaseResource()
+{
+	if (!samplingInfo_.IsEnabled()) return *this;
+	samplingInfo_.SetEnabled(false);
+	for (int iSampler = 0; iSampler < count_of(samplerTbl_); ++iSampler) {
+		samplerTbl_[iSampler].ReleaseResource();
+	}
+	if (target_ == Target::External) {
+		uint pin = samplingInfo_.GetPinMin();
+		for (uint32_t pinBitmap = samplingInfo_.GetPinBitmapEnabled(); pinBitmap != 0; pinBitmap >>= 1, ++pin) {
+			if (pinBitmap & 1) {
+				::gpio_set_dir(pin, GPIO_IN);
+				::gpio_put(pin, 0);
+				::gpio_pull_down(pin);
+				::gpio_set_function(pin, GPIO_FUNC_NULL);
 			}
 		}
 	}
@@ -242,6 +254,14 @@ int LogicAnalyzer::GetRawEventCount() const
 	if (!samplingInfo_.IsEnabled()) return 0;
 	int nEvent = 0;
 	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) nEvent += samplerTbl_[iSampler].GetRawEventCount();
+	return nEvent;
+}
+
+int LogicAnalyzer::GetRawEventCountMax() const
+{
+	if (!samplingInfo_.IsEnabled()) return 0;
+	int nEvent = 0;
+	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) nEvent += samplerTbl_[iSampler].GetRawEventCountMax();
 	return nEvent;
 }
 
@@ -412,7 +432,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 		}
 		if (firstFlag) tout.Print("none");
 	} while (0);
-	tout.Printf(" events:%d/%d (heap-ratio:%.1f)", nRawEvents, CalcRawEventMax(), heapRatio_);
+	tout.Printf(" events:%d/%d (heap-ratio:%.1f)", nRawEvents, GetRawEventCountMax(), heapRatio_);
 	tout.Println();
 	return *this;
 }
@@ -425,33 +445,13 @@ size_t LogicAnalyzer::GetFreeHeapBytes()
 //------------------------------------------------------------------------------
 // LogicAnalyzer::Sampler
 //------------------------------------------------------------------------------
-LogicAnalyzer::Sampler::Sampler() : pChannel_{nullptr}, nRawEventPerSampler_{0}, rawEventBuff_{nullptr}
+LogicAnalyzer::Sampler::Sampler() : pChannel_{nullptr}, nRawEventMax_{0}, rawEventBuff_{nullptr}
 {
 }
 
 LogicAnalyzer::Sampler::~Sampler()
 {
 	if (pChannel_) pChannel_->unclaim();
-	::free(rawEventBuff_);
-}
-
-bool LogicAnalyzer::Sampler::AllocBuff(int nRawEventPerSampler)
-{
-	::free(rawEventBuff_);
-	rawEventBuff_ = reinterpret_cast<RawEvent*>(::malloc(sizeof(RawEvent) * nRawEventPerSampler));
-	if (!rawEventBuff_) {
-		nRawEventPerSampler_ = 0;
-		return false;
-	}
-	nRawEventPerSampler_ = nRawEventPerSampler;
-	return true;
-}
-
-void LogicAnalyzer::Sampler::FreeBuff()
-{
-	::free(rawEventBuff_);
-	rawEventBuff_ = nullptr;
-	nRawEventPerSampler_ = 0;
 }
 
 void LogicAnalyzer::Sampler::SetProgram(const PIO::Program& program, pio_hw_t* pio, uint sm, uint relAddrEntry, uint pinMin, int nPinsConsecutive)
@@ -484,11 +484,11 @@ LogicAnalyzer::Sampler& LogicAnalyzer::Sampler::EnableDMA()
 	pChannel_->set_config(channelConfig_)
 		.set_read_addr(sm_.get_rxf())
 		.set_write_addr(rawEventBuff_)
-		.set_trans_count_trig(nRawEventPerSampler_ * sizeof(RawEvent) / sizeof(uint32_t));
+		.set_trans_count_trig(nRawEventMax_ * sizeof(RawEvent) / sizeof(uint32_t));
 	return *this;
 }
 
-LogicAnalyzer::Sampler& LogicAnalyzer::Sampler::Disable()
+LogicAnalyzer::Sampler& LogicAnalyzer::Sampler::ReleaseResource()
 {
 	if (!pChannel_) return *this; // already disabled
 	sm_.set_enabled(false);
@@ -496,7 +496,8 @@ LogicAnalyzer::Sampler& LogicAnalyzer::Sampler::Disable()
 	pChannel_->abort();
 	pChannel_->unclaim();
 	pChannel_ = nullptr;
-	FreeBuff();
+	rawEventBuff_ = nullptr;
+	nRawEventMax_ = 0;
 	return *this;
 }
 
