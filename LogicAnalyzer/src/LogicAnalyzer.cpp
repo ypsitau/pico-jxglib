@@ -143,10 +143,10 @@ bool LogicAnalyzer::Enable()
 	program_SamplerInit_
 	.program("sampler_init")
 		.mov("osr", "~null")						// osr = 0xffffffff
-		.mov("isr", "null")							// isr = 0x00000000
-		.in("pins", nBitsPinBitmap)					// isr[nBitsPinBitmap-1:0] = pins[nBitsPinBitmap-1:0]
-		.mov("y", "isr")							// y = isr
-		.push() 									// push isr
+	//	.mov("isr", "null")							// isr = 0x00000000
+	//	.in("pins", nBitsPinBitmap)					// isr[nBitsPinBitmap-1:0] = pins[nBitsPinBitmap-1:0]
+	//	.mov("y", "isr")							// y = isr
+	//	.push() 									// push isr
 	.end();
 	program_SamplerMain_
 	.program("sampler_main")
@@ -156,17 +156,18 @@ bool LogicAnalyzer::Enable()
 		.jmp("entry")		[(nSampler_ == 4)? (6 - 1) : (nSampler_ == 3)? (8 - 1) :  0]
 	.pub(&relAddrEntryTbl[1])
 		.jmp("entry")		[(nSampler_ == 4)? (3 - 1) : (nSampler_ == 3)? (4 - 1) : (nSampler_ == 2)? (6 - 1) :  0]
-	.L("entry").pub(&relAddrEntryTbl[0])
-	.L("wait_for_first_event")
-		.mov("isr", "null")							// isr = 0x00000000
-		.in("pins", nBitsPinBitmap)					// isr = pins[nBitsPinBitmap-1:0]
-		.mov("x", "isr")							// x = isr
-		.jmp("x!=y", "report_event")				// if (x != y) goto report_event
-		.jmp("wait_for_first_event")				// goto wait_for_first_event
+	//.L("entry").pub(&relAddrEntryTbl[0])
+	//.L("wait_for_first_event")
+	//	.mov("isr", "null")							// isr = 0x00000000
+	//	.in("pins", nBitsPinBitmap)					// isr = pins[nBitsPinBitmap-1:0]
+	//	.mov("x", "isr")							// x = isr
+	//	.jmp("x!=y", "report_event")				// if (x != y) goto report_event
+	//	.jmp("wait_for_first_event")				// goto wait_for_first_event
 	.L("loop").wrap_target()
 		.out("x", nBitsTimeStamp)					// x[nBitsTimeStamp-1:0] = osr[nBitsTimeStamp-1:0]
 		.jmp("x--", "no_wrap_around")				// if (x == 0) {x--} else {x--; goto no_wrap_around}
 		.mov("osr", "x")							// osr = x
+	.L("entry").pub(&relAddrEntryTbl[0])
 		.mov("isr", "null")							// isr = 0x00000000
 		.in("pins", nBitsPinBitmap)					// isr = pins[nBitsPinBitmap-1:0]
 		.mov("x", "isr")							// x = isr
