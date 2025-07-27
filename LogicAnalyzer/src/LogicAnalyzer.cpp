@@ -116,21 +116,6 @@ LogicAnalyzer::LogicAnalyzer() : nSampler_{1}, target_{Target::Internal}, heapRa
 LogicAnalyzer::~LogicAnalyzer()
 {}
 
-LogicAnalyzer& LogicAnalyzer::UpdateSamplingInfo()
-{
-	samplingInfo_.pinBitmap = 0;
-	samplingInfo_.pinMin = GPIO::NumPins;
-	for (int i = 0; i < printInfo_.nPins; ++i) {
-		uint pin = printInfo_.pinTbl[i];
-		if (pin != -1) {
-			if (samplingInfo_.pinMin > pin) samplingInfo_.pinMin = pin;
-			samplingInfo_.pinBitmap |= (1 << pin);
-		}
-	}
-	samplingInfo_.pinBitmap >>= samplingInfo_.pinMin;
-	return *this;
-}
-
 LogicAnalyzer& LogicAnalyzer::SetSamplerCount(int nSampler)
 {
 	nSampler_ = nSampler;
@@ -140,8 +125,8 @@ LogicAnalyzer& LogicAnalyzer::SetSamplerCount(int nSampler)
 
 bool LogicAnalyzer::Enable()
 {
-	if (samplingInfo_.enabledFlag) Disable(); // disable if already enabled
-	if (samplingInfo_.pinBitmap == 0) return true;
+	if (samplingInfo_.IsEnabled()) Disable(); // disable if already enabled
+	if (!samplingInfo_.HasEnabledPins()) return true;
 	for (int iSampler = 0; iSampler < count_of(samplerTbl_); ++iSampler) samplerTbl_[iSampler].FreeBuff();
 	int nRawEventPerSampler = CalcRawEventMax() / nSampler_;
 	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) {
@@ -153,7 +138,7 @@ bool LogicAnalyzer::Enable()
 		}
 	}
 	uint nPinsConsecutive = 0;	// nPinsConsecutive must be less than 32 to avoid auto-push during sampling
-	for (uint32_t pinBitmap = samplingInfo_.pinBitmap; pinBitmap != 0; pinBitmap >>= 1, ++nPinsConsecutive) ;
+	for (uint32_t pinBitmap = samplingInfo_.GetPinBitmapEnabled(); pinBitmap != 0; pinBitmap >>= 1, ++nPinsConsecutive) ;
 	uint relAddrEntryTbl[4];
 	programSamplerInit_
 	.program("sampler_init")
@@ -191,13 +176,13 @@ bool LogicAnalyzer::Enable()
 	.wrap()
 	.end();
 	pio_hw_t* pio = pio0;
-	samplerTbl_[0].SetProgram(programSamplerMain_, pio, 0, relAddrEntryTbl[0], samplingInfo_.pinMin, nPinsConsecutive);
+	samplerTbl_[0].SetProgram(programSamplerMain_, pio, 0, relAddrEntryTbl[0], samplingInfo_.GetPinMin(), nPinsConsecutive);
 	for (int iSampler = 1; iSampler < nSampler_; ++iSampler) {
-		samplerTbl_[iSampler].ShareProgram(samplerTbl_[0], pio, iSampler, relAddrEntryTbl[iSampler], samplingInfo_.pinMin, nPinsConsecutive);
+		samplerTbl_[iSampler].ShareProgram(samplerTbl_[0], pio, iSampler, relAddrEntryTbl[iSampler], samplingInfo_.GetPinMin(), nPinsConsecutive);
 	}
 	if (target_ == Target::External) {
-		uint pin = samplingInfo_.pinMin;
-		for (uint32_t pinBitmap = samplingInfo_.pinBitmap; pinBitmap != 0; pinBitmap >>= 1, ++pin) {
+		uint pin = samplingInfo_.GetPinMin();
+		for (uint32_t pinBitmap = samplingInfo_.GetPinBitmapEnabled(); pinBitmap != 0; pinBitmap >>= 1, ++pin) {
 			if (pinBitmap & 1) {
 				::pio_gpio_init(samplerTbl_[0].GetSM().pio, pin);
 				::gpio_disable_pulls(pin);
@@ -211,20 +196,20 @@ bool LogicAnalyzer::Enable()
 		mask |= (1 << samplerTbl_[iSampler].GetSM().sm);
 	}
 	::pio_enable_sm_mask_in_sync(pio, mask);
-	samplingInfo_.enabledFlag = true;
+	samplingInfo_.SetEnabled(true);
 	return true;
 }
 
 LogicAnalyzer& LogicAnalyzer::Disable()
 {
-	if (samplingInfo_.enabledFlag) {
-		samplingInfo_.enabledFlag = false;
+	if (samplingInfo_.IsEnabled()) {
+		samplingInfo_.SetEnabled(false);
 		for (int iSampler = 0; iSampler < count_of(samplerTbl_); ++iSampler) {
 			samplerTbl_[iSampler].Disable();
 		}
 		if (target_ == Target::External) {
-			uint pin = samplingInfo_.pinMin;
-			for (uint32_t pinBitmap = samplingInfo_.pinBitmap; pinBitmap != 0; pinBitmap >>= 1, ++pin) {
+			uint pin = samplingInfo_.GetPinMin();
+			for (uint32_t pinBitmap = samplingInfo_.GetPinBitmapEnabled(); pinBitmap != 0; pinBitmap >>= 1, ++pin) {
 				if (pinBitmap & 1) {
 					::gpio_set_dir(pin, GPIO_IN);
 					::gpio_put(pin, 0);
@@ -254,7 +239,7 @@ LogicAnalyzer& LogicAnalyzer::SetPins(const int pinTbl[], int nPins)
 
 int LogicAnalyzer::GetRawEventCount() const
 {
-	if (!samplingInfo_.enabledFlag) return 0;
+	if (!samplingInfo_.IsEnabled()) return 0;
 	int nEvent = 0;
 	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) nEvent += samplerTbl_[iSampler].GetRawEventCount();
 	return nEvent;
@@ -273,10 +258,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		tout.Printf("no events to print\n");
 		return *this;
 	}
-	//for (int iSampler = 0; iSampler < nSampler_; ++iSampler) {
-	//	const Sampler& sampler = samplerTbl_[iSampler];
-	//	tout.Dump.Data32Bit()(sampler.GetRawEventBuff(), sampler.GetRawEventCount() * 2);
-	//}
+	//for (int iSampler = 0; iSampler < nSampler_; ++iSampler) samplerTbl_[iSampler].DumpRawEventBuff(tout);
 	const char* strBlank = "    ";
 	const WaveStyle& waveStyle = *printInfo_.pWaveStyle;
 	auto printHeader = [&]() {
@@ -319,8 +301,8 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 				tout.Print(strBlank);
 				continue;
 			}
-			if (IsPinEnabled(pin)) {
-				tout.Print(IsPinAsserted(eventInitial.pinBitmap, pin)? waveStyle.strHigh : waveStyle.strLow);
+			if (samplingInfo_.IsPinEnabled(pin)) {
+				tout.Print(samplingInfo_.IsPinAsserted(eventInitial.GetPinBitmap(), pin)? waveStyle.strHigh : waveStyle.strLow);
 			} else {
 				tout.Print(waveStyle.strBlank);
 			}
@@ -331,7 +313,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 	Event event = eventBase;
 	double timeStampFactor = 1000'000. / clockPIOProgram / nSampler_;
 	for (int iEvent = 0; iEvent < nEventsToPrint && !eventIter.IsDone(); ++iEvent, eventIter.Next(event)) {
-		double delta = static_cast<double>(event.timeStamp - eventPrev.timeStamp) * timeStampFactor;
+		double delta = static_cast<double>(event.GetTimeStamp() - eventPrev.GetTimeStamp()) * timeStampFactor;
 		int nDelta = static_cast<int>(delta / usecReso_);
 		if (nDelta < 40) {
 			for (int i = 0; i < nDelta; ++i) {
@@ -342,8 +324,8 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 						tout.Print(strBlank);
 						continue;
 					}
-					if (IsPinEnabled(pin)) {
-						tout.Print(IsPinAsserted(eventPrev.pinBitmap, pin)? waveStyle.strHigh : waveStyle.strLow);
+					if (samplingInfo_.IsPinEnabled(pin)) {
+						tout.Print(samplingInfo_.IsPinAsserted(eventPrev.GetPinBitmap(), pin)? waveStyle.strHigh : waveStyle.strLow);
 					} else {
 						tout.Print(waveStyle.strBlank);
 					}
@@ -358,26 +340,26 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 					tout.Print(strBlank);
 					continue;
 				}
-				if (IsPinEnabled(pin)) {
-					tout.Print(IsPinAsserted(eventPrev.pinBitmap, pin)? waveStyle.strHighIdle : waveStyle.strLowIdle);
+				if (samplingInfo_.IsPinEnabled(pin)) {
+					tout.Print(samplingInfo_.IsPinAsserted(eventPrev.GetPinBitmap(), pin)? waveStyle.strHighIdle : waveStyle.strLowIdle);
 				} else {
 					tout.Print(waveStyle.strBlank);
 				}
 			}
 			tout.Println();
 		}
-		uint32_t bitsTransition = event.pinBitmap ^ eventPrev.pinBitmap;
-		tout.Printf("%12.2f", static_cast<double>(event.timeStamp - eventBase.timeStamp) * timeStampFactor);
+		uint32_t bitsTransition = event.GetPinBitmap() ^ eventPrev.GetPinBitmap();
+		tout.Printf("%12.2f", static_cast<double>(event.GetTimeStamp() - eventBase.GetTimeStamp()) * timeStampFactor);
 		for (int iPin = 0; iPin < printInfo_.nPins; ++iPin) {
 			uint pin = printInfo_.pinTbl[iPin];
 			if (pin == -1) {
 				tout.Print(strBlank);
 				continue;
 			}
-			if (IsPinEnabled(pin)) {
-				tout.Print(IsPinAsserted(bitsTransition, pin)?
-					(IsPinAsserted(event.pinBitmap, pin)? waveStyle.strLowToHigh : waveStyle.strHighToLow) :
-					(IsPinAsserted(event.pinBitmap, pin)? waveStyle.strHigh : waveStyle.strLow));
+			if (samplingInfo_.IsPinEnabled(pin)) {
+				tout.Print(samplingInfo_.IsPinAsserted(bitsTransition, pin)?
+					(samplingInfo_.IsPinAsserted(event.GetPinBitmap(), pin)? waveStyle.strLowToHigh : waveStyle.strHighToLow) :
+					(samplingInfo_.IsPinAsserted(event.GetPinBitmap(), pin)? waveStyle.strHigh : waveStyle.strLow));
 			} else {
 				tout.Print(waveStyle.strBlank);
 			}
@@ -393,7 +375,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 {
 	int nRawEvents = GetRawEventCount();
-	if (samplingInfo_.enabledFlag) {
+	if (samplingInfo_.IsEnabled()) {
 		const PIO::StateMachine& sm = samplerTbl_[0].GetSM();
 		tout.Printf("enabled%s pio%d", samplerTbl_[0].IsFull()? "(full)" : "", sm.pio.get_index());
 	} else {
@@ -408,7 +390,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 		uint pinEnd = -1;
 		bool inSequence = false;	
 		for (uint pin = 0; pin <= GPIO::NumPins; ++pin) {
-			if (pin < GPIO::NumPins && IsPinEnabled(pin)) {
+			if (pin < GPIO::NumPins && samplingInfo_.IsPinEnabled(pin)) {
 				if (inSequence) {
 					pinEnd = pin;
 				} else {
@@ -524,6 +506,28 @@ int LogicAnalyzer::Sampler::GetRawEventCount() const
 			reinterpret_cast<uint32_t>(rawEventBuff_)) / sizeof(RawEvent);
 }
 
+void LogicAnalyzer::Sampler::DumpRawEventBuff(Printable& tout) const
+{
+	Printable::DumpT(tout).Data32Bit()(rawEventBuff_, GetRawEventCount() * 2);
+}
+
+//------------------------------------------------------------------------------
+// LogicAnalyzer::SamplingInfo
+//------------------------------------------------------------------------------
+void LogicAnalyzer::SamplingInfo::Update(const PrintInfo& printInfo)
+{
+	pinBitmapEnabled_ = 0;
+	pinMin_ = GPIO::NumPins;
+	for (int i = 0; i < printInfo.nPins; ++i) {
+		uint pin = printInfo.pinTbl[i];
+		if (pin != -1) {
+			if (pinMin_ > pin) pinMin_ = pin;
+			pinBitmapEnabled_ |= (1 << pin);
+		}
+	}
+	pinBitmapEnabled_ >>= pinMin_;
+}
+
 //------------------------------------------------------------------------------
 // LogicAnalyzer::EventIterator
 //------------------------------------------------------------------------------
@@ -542,8 +546,7 @@ bool LogicAnalyzer::EventIterator::Next(Event& event)
 		doneFlag_ = true;
 		return false;
 	}
-	event.timeStamp = static_cast<uint64_t>(pRawEvent->timeStamp) * logicAnalyzer_.GetSamplerCount() + iSampler;
-	event.pinBitmap = pRawEvent->pinBitmap;
+	event = Event(static_cast<uint64_t>(pRawEvent->GetTimeStamp()) * logicAnalyzer_.GetSamplerCount() + iSampler, pRawEvent->GetPinBitmap());
 	pRawEventPrev_ = pRawEvent;
 	return true;
 }
@@ -582,7 +585,7 @@ const LogicAnalyzer::RawEvent* LogicAnalyzer::EventIterator::NextRawEvent(int* p
 			const Sampler& sampler = logicAnalyzer_.GetSampler(iSampler);
 			if (iRawEvent < sampler.GetRawEventCount()) {
 				const RawEvent& rawEvent = sampler.GetRawEvent(iRawEvent);
-				if (!pRawEventRtn || pRawEventRtn->timeStamp >= rawEvent.timeStamp) {
+				if (!pRawEventRtn || pRawEventRtn->GetTimeStamp() >= rawEvent.GetTimeStamp()) {
 					pRawEventRtn = &rawEvent;
 					iSamplerRtn = iSampler;
 				}
@@ -590,7 +593,7 @@ const LogicAnalyzer::RawEvent* LogicAnalyzer::EventIterator::NextRawEvent(int* p
 		}
 		if (!pRawEventRtn) return nullptr; // no more events
 		iRawEventTbl_[iSamplerRtn]++;
-		if (!pRawEventPrev_ || pRawEventPrev_->pinBitmap != pRawEventRtn->pinBitmap) break;
+		if (!pRawEventPrev_ || pRawEventPrev_->GetPinBitmap() != pRawEventRtn->GetPinBitmap()) break;
 	}
 	if (piSampler) *piSampler = iSamplerRtn;
 	return pRawEventRtn;

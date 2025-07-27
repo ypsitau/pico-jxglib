@@ -15,14 +15,21 @@ namespace jxglib {
 class LogicAnalyzer {
 public:
 	struct RawEvent {
-		uint32_t timeStamp;
-		uint32_t pinBitmap;;
-	};
-	struct Event{
-		uint64_t timeStamp;
-		uint32_t pinBitmap;
+		uint32_t value1_;
+		uint32_t value2_;
 	public:
-		Event(uint64_t timeStamp = 0, uint32_t pinBitmap = 0) : timeStamp{timeStamp}, pinBitmap{pinBitmap} {}
+		uint32_t GetTimeStamp() const { return value1_; }
+		uint32_t GetPinBitmap() const { return value2_; }
+	};
+	class Event{
+	private:
+		uint64_t timeStamp_;
+		uint32_t pinBitmap_;
+	public:
+		Event(uint64_t timeStamp = 0, uint32_t pinBitmap = 0) : timeStamp_{timeStamp}, pinBitmap_{pinBitmap} {}
+	public:
+		uint64_t GetTimeStamp() const { return timeStamp_; }
+		uint32_t GetPinBitmap() const { return pinBitmap_; }
 	};
 	enum class Target { Internal, External };
 	struct WaveStyle {
@@ -61,6 +68,7 @@ public:
 		bool IsFull() const { return GetRawEventCount() >= nRawEventPerSampler_; }
 		const RawEvent& GetRawEvent(int iRawEvent) const { return rawEventBuff_[iRawEvent]; }
 		const RawEvent* GetRawEventBuff() const { return rawEventBuff_; }
+		void DumpRawEventBuff(Printable& tout) const;
 	};
 	class EventIterator {
 	private:
@@ -79,13 +87,6 @@ public:
 	private:
 		const RawEvent* NextRawEvent(int* piSampler = nullptr);
 	};
-	struct SamplingInfo {
-		bool enabledFlag;
-		uint32_t pinBitmap;
-		uint pinMin;
-	public:
-		SamplingInfo() : enabledFlag{false}, pinBitmap{0}, pinMin{0} {}
-	};
 	struct PrintInfo {
 		int nPins;
 		std::unique_ptr<uint[]> pinTbl;
@@ -94,6 +95,22 @@ public:
 		const WaveStyle* pWaveStyle;
 	public:
 		PrintInfo() : nPins{0}, nEventsToPrint{80}, part{PrintPart::Head}, pWaveStyle{&waveStyle_fancy2} {}
+	};
+	class SamplingInfo {
+	private:
+		bool enabledFlag_;
+		uint32_t pinBitmapEnabled_;
+		uint pinMin_;
+	public:
+		SamplingInfo() : enabledFlag_{false}, pinBitmapEnabled_{0}, pinMin_{0} {}
+		void SetEnabled(bool enabledFlag) { enabledFlag_ = enabledFlag; }
+		bool IsEnabled() const { return enabledFlag_; }
+		uint32_t GetPinBitmapEnabled() const { return pinBitmapEnabled_; }
+		uint GetPinMin() const { return pinMin_; }	
+		bool HasEnabledPins() const { return pinBitmapEnabled_ != 0; }
+		bool IsPinAsserted(uint32_t pinBitmap, uint pin) const { return ((pinBitmap << pinMin_) & (1 << pin)) != 0; }
+		bool IsPinEnabled(uint pin) const { return IsPinAsserted(pinBitmapEnabled_, pin); }
+		void Update(const PrintInfo& printInfo);
 	};
 public:
 	static const WaveStyle waveStyle_fancy1;
@@ -119,7 +136,6 @@ public:
 	LogicAnalyzer();
 	~LogicAnalyzer();
 public:
-	LogicAnalyzer& UpdateSamplingInfo();
 	bool Enable();
 	LogicAnalyzer& Disable();
 	LogicAnalyzer& SetPins(const int pinTbl[], int nPins);
@@ -138,11 +154,12 @@ public:
 	int CalcRawEventMax() const { return static_cast<int>(heapRatio_ * GetFreeHeapBytes() / sizeof(RawEvent)); }
 	double CalcClockPIOProgram() const { return static_cast<double>(::clock_get_hz(clk_sys) / clocksPerLoop_); }
 	float GetResolution() const { return usecReso_; }
-	bool HasSamplingPins() const { return samplingInfo_.pinBitmap != 0; }
+	LogicAnalyzer& UpdateSamplingInfo() { samplingInfo_.Update(printInfo_); return *this; }
+	bool HasEnabledPins() const { return samplingInfo_.HasEnabledPins(); }
 	int GetRawEventCount() const;
 	const RawEvent& GetRawEvent(int iSampler, int iRawEvent) const;
-	bool IsPinAsserted(uint32_t pinBitmap, uint pin) const { return ((pinBitmap << samplingInfo_.pinMin) & (1 << pin)) != 0; }
-	bool IsPinEnabled(uint pin) const { return IsPinAsserted(samplingInfo_.pinBitmap, pin); }
+	//bool IsPinAsserted(uint32_t pinBitmap, uint pin) const { return ((pinBitmap << samplingInfo_.pinMin) & (1 << pin)) != 0; }
+	//bool IsPinEnabled(uint pin) const { return IsPinAsserted(samplingInfo_.pinBitmap, pin); }
 	const LogicAnalyzer& PrintWave(Printable& tout) const;
 	const LogicAnalyzer& PrintSettings(Printable& tout) const;
 public:
