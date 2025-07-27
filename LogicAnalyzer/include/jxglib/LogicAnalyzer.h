@@ -126,6 +126,7 @@ private:
 	PIO::Program program_SamplerInit_;
 	PIO::Program program_SamplerMain_;
 	RawEvent* rawEventBuffWhole_;
+	uint iPIO_;
 	int nSampler_;
 	Sampler samplerTbl_[4];
 	SamplingInfo samplingInfo_;
@@ -141,6 +142,7 @@ public:
 public:
 	bool Enable();
 	LogicAnalyzer& Disable();
+	LogicAnalyzer& SetPIO(uint iPIO) { iPIO_ = iPIO; return *this; }
 	LogicAnalyzer& ReleaseResource();
 	LogicAnalyzer& SetPins(const int pinTbl[], int nPins);
 	LogicAnalyzer& SetSamplerCount(int nSampler);

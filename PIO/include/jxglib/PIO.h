@@ -491,6 +491,12 @@ public:
 	uint32_t get_blocking() const { return ::pio_sm_get_blocking(pio, sm); }
 };
 
+#if PICO_PIO_VERSION > 0
+constexpr uint Num = 3;
+#else
+constexpr uint Num = 2;
+#endif
+
 }
 
 extern PIO::Block PIO0;

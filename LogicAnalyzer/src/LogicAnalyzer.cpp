@@ -108,7 +108,7 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple4 = {
 	formatHeader:	"GP%-2d  ",
 };
 
-LogicAnalyzer::LogicAnalyzer() : rawEventBuffWhole_{nullptr}, nSampler_{1}, target_{Target::Internal},
+LogicAnalyzer::LogicAnalyzer() : rawEventBuffWhole_{nullptr}, iPIO_{PIO::Num - 1}, nSampler_{1}, target_{Target::Internal},
 		heapRatio_{.7}, heapRatioRequested_{.7}, clocksPerLoop_{1}, usecReso_{1'000}
 {
 	SetSamplerCount(1);
@@ -180,7 +180,7 @@ bool LogicAnalyzer::Enable()
 										// save current pins state in y
 	.wrap()
 	.end();
-	pio_hw_t* pio = pio0;
+	pio_hw_t* pio = ::pio_get_instance(iPIO_);
 	samplerTbl_[0].SetProgram(program_SamplerMain_, pio, 0, relAddrEntryTbl[0], samplingInfo_.GetPinMin(), nConsecutivePins);
 	for (int iSampler = 1; iSampler < nSampler_; ++iSampler) {
 		samplerTbl_[iSampler].ShareProgram(samplerTbl_[0], pio, iSampler, relAddrEntryTbl[iSampler], samplingInfo_.GetPinMin(), nConsecutivePins);

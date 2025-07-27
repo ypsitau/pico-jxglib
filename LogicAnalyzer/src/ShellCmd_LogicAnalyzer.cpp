@@ -11,6 +11,7 @@ ShellCmd(la, "Logic Analyzer")
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",			'h', "prints this help"),
+		Arg::OptString("pio",			'P', (PIO::Num == 3)? "PIO to use (0-2)" : "PIO to use (0-1)", "PIO"),
 		Arg::OptString("pins",			'p', "pins to monitor", "PINS"),
 		Arg::OptString("target",		't', "target (internal, external)", "TARGET"),
 		Arg::OptString("samplers",		'S', "number of samplers (1-4)", "NUM"),
@@ -19,6 +20,7 @@ ShellCmd(la, "Logic Analyzer")
 		Arg::OptString("part",			't', "printed part of the waveform (head, tail, all)", "PART"),
 		Arg::OptString("events",		'e', "number of events to print (default 80)", "NUM"),
 		Arg::OptString("style",			's', "waveform style (fancy1, fancy2, fancy3, fancy4, simple1, simple2, simple3, simple4)", "STYLE"),
+
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
@@ -35,6 +37,14 @@ ShellCmd(la, "Logic Analyzer")
 		return Result::Success;
 	}
 	const char* value;
+	if (arg.GetString("pio", &value)) {
+		int iPIO = ::strtol(value, nullptr, 10);
+		if (iPIO < 0 || iPIO >= PIO::Num) {
+			terr.Printf("Invalid PIO number: %s\n", value);
+			return Result::Error;
+		}
+		logicAnalyzer.SetPIO(iPIO);
+	}
 	if (arg.GetString("pins", &value)) {
 		int pinTbl[GPIO::NumPins * 2];
 		Arg::EachNum eachNum(value, GPIO::NumPins - 1);
