@@ -396,9 +396,9 @@ const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 	int nRawEvents = GetRawEventCount();
 	if (samplingInfo_.IsEnabled()) {
 		const PIO::StateMachine& sm = samplerTbl_[0].GetSM();
-		tout.Printf("enabled%s pio%d", samplerTbl_[0].IsFull()? "(full)" : "", sm.pio.get_index());
+		tout.Printf("enabled%s pio:%d", samplerTbl_[0].IsFull()? "(full)" : "", sm.pio.get_index());
 	} else {
-		tout.Printf("disabled ---");
+		tout.Printf("disabled ----");
 	}
 	tout.Printf(" %.1fMHz (samplers:%d) target:%s", CalcClockPIOProgram() * nSampler_ / 1000'000.,
 		nSampler_, (target_ == Target::Internal)? "internal" : "external");
