@@ -559,7 +559,7 @@ LogicAnalyzer::EventIterator::EventIterator(const LogicAnalyzer& logicAnalyzer, 
 		timeStampOffsetIncr_{0}, nBitsPinBitmap_{nBitsPinBitmap}
 {
 	int nBitsTimeStamp = 32 - nBitsPinBitmap;
-	timeStampOffsetIncr_ = 1LL < nBitsTimeStamp;
+	timeStampOffsetIncr_ = 1LL << nBitsTimeStamp;
 	Rewind();
 }
 
@@ -631,13 +631,14 @@ const LogicAnalyzer::RawEvent* LogicAnalyzer::EventIterator::NextRawEvent(int* p
 			}
 		}
 		if (iSamplerRtn < 0) return nullptr; // no more events
-		int iRawEvent = iRawEventTbl_[iSamplerRtn]++;
+		int iRawEvent = iRawEventTbl_[iSamplerRtn];
+		iRawEventTbl_[iSamplerRtn]++;
 		const Sampler& sampler = logicAnalyzer_.GetSampler(iSamplerRtn);
 		const RawEvent& rawEvent = sampler.GetRawEvent(iRawEvent);
 		if (iRawEvent > 0 && rawEvent.GetTimeStamp(nBitsPinBitmap_) == 0) {
 			timeStampOffsetTbl_[iSamplerRtn] += timeStampOffsetIncr_; // wrap-around
 		}
-		if (!pRawEventPrev_ || pRawEventPrev_->GetPinBitmap(nBitsPinBitmap_) != rawEvent.GetPinBitmap(nBitsPinBitmap_)) {
+		if (!pRawEventPrev_ || rawEvent.GetPinBitmap(nBitsPinBitmap_) != pRawEventPrev_->GetPinBitmap(nBitsPinBitmap_)) {
 			if (piSampler) *piSampler = iSamplerRtn;
 			return &rawEvent;
 		}
