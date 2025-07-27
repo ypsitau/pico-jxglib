@@ -139,16 +139,14 @@ bool LogicAnalyzer::Enable()
 	}
 	uint nBitsPinBitmap = samplingInfo_.CountBits();
 	uint nBitsTimeStamp = 32 - nBitsPinBitmap;
-	//uint nBitsTimeStamp = 16;
-	//uint nBitsPinBitmap_tmp = 16;
 	uint relAddrEntryTbl[4];
 	program_SamplerInit_
 	.program("sampler_init")
-		.mov("osr", "~null")				// initialize osr (counter) to 0xffffffff
-		.mov("isr", "null")
-		.in("pins", nBitsPinBitmap)
-		.mov("y", "isr")
-		.push() 
+		.mov("osr", "~null")						// osr = 0xffffffff
+		.mov("isr", "null")							// isr = 0x00000000
+		.in("pins", nBitsPinBitmap)					// isr[nBitsPinBitmap-1:0] = pins[nBitsPinBitmap-1:0]
+		.mov("y", "isr")							// y = isr
+		.push() 									// push isr
 	.end();
 	program_SamplerMain_
 	.program("sampler_main")
@@ -157,7 +155,7 @@ bool LogicAnalyzer::Enable()
 	.pub(&relAddrEntryTbl[2])
 		.jmp("entry")		[(nSampler_ == 4)? (6 - 1) : (nSampler_ == 3)? (8 - 1) :  0]
 	.pub(&relAddrEntryTbl[1])
-		.jmp("entry")		[(nSampler_ == 4)? (3 - 1) : (nSampler_ == 3)? (4 - 1) : (nSampler_ == 2)? (5 - 1) :  0]
+		.jmp("entry")		[(nSampler_ == 4)? (3 - 1) : (nSampler_ == 3)? (4 - 1) : (nSampler_ == 2)? (6 - 1) :  0]
 	.L("entry").pub(&relAddrEntryTbl[0])
 	.L("wait_for_first_event")
 		.mov("isr", "null")							// isr = 0x00000000
@@ -184,7 +182,7 @@ bool LogicAnalyzer::Enable()
 		.in("osr", nBitsTimeStamp)					// isr[nBitsTimeStamp-1:0] = osr[nBitsTimeStamp-1:0]
 		.in("x", nBitsPinBitmap)					// isr[31:nBitsPinBitmap] = isr[nBitsTimeStamp-1:0]
 													// isr[nBitsPinBitmap-1:0] = x[nBitsPinBitmap-1:0] (auto-push)
-		.push()
+		.push()										// push isr
 		.mov("y", "x") [1]							// y = x
 	.wrap()
 	.end();
