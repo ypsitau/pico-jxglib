@@ -14,18 +14,11 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class LogicAnalyzer {
 public:
-	struct RawEventLarge {
-		uint32_t value1_;
-		uint32_t value2_;
-	public:
-		uint32_t GetTimeStamp() const { return ~value1_; }
-		uint32_t GetPinBitmap() const { return value2_; }
-	};
 	struct RawEvent {
 		uint32_t value_;
 	public:
-		uint32_t GetTimeStamp() const { return (~(value_ >> 16)) & 0xffff; }
-		uint32_t GetPinBitmap() const { return value_ & 0xffff; }
+		uint32_t GetTimeStamp(uint nBitsPinBitmap) const { return (~(value_ >> nBitsPinBitmap)) & ((1 << (32 - nBitsPinBitmap)) - 1); }
+		uint32_t GetPinBitmap(uint nBitsPinBitmap) const { return value_ & ((1 << nBitsPinBitmap) - 1); }
 	};
 	class Event{
 	private:
@@ -64,8 +57,8 @@ public:
 		void AssignBuff(RawEvent* rawEventBuff, int nRawEventMax) { rawEventBuff_ = rawEventBuff; nRawEventMax_ = nRawEventMax; }
 		PIO::StateMachine& GetSM() { return sm_; }
 		const PIO::StateMachine& GetSM() const { return sm_; }
-		void SetProgram(const PIO::Program& program, pio_hw_t* pio, uint sm, uint relAddrEntry, uint pinMin, int nPinsConsecutive);
-		void ShareProgram(Sampler& sampler, pio_hw_t* pio, uint sm, uint relAddrEntry, uint pinMin, int nPinsConsecutive);
+		void SetProgram(const PIO::Program& program, pio_hw_t* pio, uint sm, uint relAddrEntry, uint pinMin, int nBitsPinBitmap);
+		void ShareProgram(Sampler& sampler, pio_hw_t* pio, uint sm, uint relAddrEntry, uint pinMin, int nBitsPinBitmap);
 		Sampler& EnableDMA();
 		Sampler& ReleaseResource();
 	public:
@@ -79,13 +72,14 @@ public:
 	class EventIterator {
 	private:
 		const LogicAnalyzer& logicAnalyzer_;
+		int nBitsPinBitmap_;
 		int iRawEventTbl_[4];
 		uint64_t timeStampOffsetTbl_[4];
 		const RawEvent* pRawEventPrev_;
 		bool doneFlag_;
 		uint64_t timeStampOffsetIncr_;
 	public:
-		EventIterator(const LogicAnalyzer& logicAnalyzer);
+		EventIterator(const LogicAnalyzer& logicAnalyzer, int nBitsPinBitmap);
 	public:
 		bool IsDone() const { return doneFlag_; }
 		bool Next(Event& event);
@@ -119,7 +113,7 @@ public:
 		bool IsPinAsserted(uint32_t pinBitmap, uint pin) const { return ((pinBitmap << pinMin_) & (1 << pin)) != 0; }
 		bool IsPinEnabled(uint pin) const { return IsPinAsserted(pinBitmapEnabled_, pin); }
 		void Update(const PrintInfo& printInfo);
-		int CountConsecutivePins() const;
+		int CountBits() const;
 	};
 public:
 	static const WaveStyle waveStyle_fancy1;
