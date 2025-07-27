@@ -111,6 +111,7 @@ public:
 		bool IsPinAsserted(uint32_t pinBitmap, uint pin) const { return ((pinBitmap << pinMin_) & (1 << pin)) != 0; }
 		bool IsPinEnabled(uint pin) const { return IsPinAsserted(pinBitmapEnabled_, pin); }
 		void Update(const PrintInfo& printInfo);
+		int CountConsecutivePins() const;
 	};
 public:
 	static const WaveStyle waveStyle_fancy1;
@@ -122,8 +123,8 @@ public:
 	static const WaveStyle waveStyle_simple3;
 	static const WaveStyle waveStyle_simple4;
 private:
-	PIO::Program programSamplerInit_;
-	PIO::Program programSamplerMain_;
+	PIO::Program program_SamplerInit_;
+	PIO::Program program_SamplerMain_;
 	RawEvent* rawEventBuffWhole_;
 	int nSampler_;
 	Sampler samplerTbl_[4];
