@@ -86,6 +86,7 @@ public:
 		void Rewind();
 		void Skip(int nEvents);
 		int Count();
+		int CountRelevant();
 	private:
 		const RawEvent* NextRawEvent(int* piSampler = nullptr);
 	};
