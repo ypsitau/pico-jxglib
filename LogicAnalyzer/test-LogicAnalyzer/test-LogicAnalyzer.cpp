@@ -7,6 +7,7 @@ using namespace jxglib;
 
 //------------------------------------------------------------------------------
 // SUMP Protocol Handler
+// https://firmware.buspirate.com/binmode-reference/protocol-sump
 //------------------------------------------------------------------------------
 class SUMPProtocol {
 public:
@@ -19,9 +20,9 @@ public:
 		static const uint8_t SetDivider			= 0x80;
 		static const uint8_t SetReadDelayCount	= 0x81;
 		static const uint8_t SetFlags			= 0x82;
-		static const uint8_t SetTriggerMask		= 0xC0;
-		static const uint8_t SetTriggerValues	= 0xC1;
-		static const uint8_t SetTriggerConfig	= 0xC2;
+		static const uint8_t SetTriggerMask		= 0xc0;
+		static const uint8_t SetTriggerValues	= 0xc1;
+		static const uint8_t SetTriggerConfig	= 0xc2;
 	};
 	// SUMP Metadata tokens
 	struct TokenKey {
@@ -44,24 +45,24 @@ private:
 	
 public:
 	SUMPProtocol(LogicAnalyzer& logicAnalyzer, Stream& stream);
-	void ProcessCommand(uint8_t cmd);
-	void SendMetadata();
-	void SendID();
+	void ProcessCommand(uint8_t cmd, uint32_t arg);
 	void RunCapture();
-	void SendSamples();
 private:
+	void SendValue(uint32_t value);
 	void SendMetadata(uint8_t tokenKey);
 	void SendMetadata(uint8_t tokenKey, const char* str);
 	void SendMetadata(uint8_t tokenKey, uint32_t value);
+	void Flush() { stream_.Flush(); }
 };
 
 SUMPProtocol::SUMPProtocol(LogicAnalyzer& logicAnalyzer, Stream& stream) : 
 	logicAnalyzer_(logicAnalyzer), stream_(stream), sampleRate_(1000000), readCount_(1024), delayCount_(0), flags_(0)
 {}
 
-void SUMPProtocol::ProcessCommand(uint8_t cmd)
+void SUMPProtocol::ProcessCommand(uint8_t cmd, uint32_t arg)
 {
-	switch (cmd) {
+	uint8_t iStage = (cmd & 0x0c) >> 2;
+	switch (cmd & 0xf3) {
 	case Command::Reset: {
 		//Run->Disable();
 		break;
@@ -74,47 +75,54 @@ void SUMPProtocol::ProcessCommand(uint8_t cmd)
 		stream_.Print("1ALS").Flush();
 		break;
 	}
-	case Command::GetMetadata:
+	case Command::GetMetadata: {
 		SendMetadata(TokenKey::DeviceName,		"pico-jxgLABO Logic Analyzer");
 		SendMetadata(TokenKey::ProtocolVersion,	2);
 		SendMetadata(TokenKey::SampleMemory,	8192);
 		SendMetadata(TokenKey::MaxSampleRate,	100000000);
 		SendMetadata(TokenKey::NumberProbes,	8);
 		SendMetadata(TokenKey::END);
-		stream_.Flush();
+		Flush();
 		break;
+	}
+	case Command::SetTriggerMask: {
+		::printf("triggerMask: %u\n", arg);
+		break;
+	}
+	case Command::SetTriggerValues: {
+		::printf("triggerValues: %u\n", arg);
+		break;
+	}
+	case Command::SetTriggerConfig: {
+		::printf("triggerConfig: %u\n", arg);
+		break;
+	}
 	case Command::SetDivider: {
-		// Read 4 bytes for divider value
-		uint8_t data[4];
-		for (int i = 0; i < 4; i++) {
-			data[i] = getchar();
-		}
-		uint32_t divider = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3];
-		sampleRate_ = 100000000 / (divider + 1); // Assuming 100MHz base clock
+		::printf("divider: %u\n", arg);
 		break;
 	}
 	case Command::SetReadDelayCount: {
-		// Read 4 bytes for read and delay count
-		uint8_t data[4];
-		for (int i = 0; i < 4; i++) {
-			data[i] = getchar();
-		}
-		readCount_ = (data[0] << 8) | data[1];
-		delayCount_ = (data[2] << 8) | data[3];
+		delayCount_ = arg >> 16;
+		readCount_ = arg & 0xffff;
+		::printf("Read count set to %u, delay count set to %u\n", readCount_, delayCount_);
 		break;
 	}
 	case Command::SetFlags: {
-		// Read 4 bytes for flags
-		uint8_t data[4];
-		for (int i = 0; i < 4; i++) {
-			data[i] = getchar();
-		}
-		flags_ = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3];
+		flags_ = arg;
+		::printf("Flags set to 0x%08X\n", flags_);
 		break;
 	}
 	default:
 		break;
 	}
+}
+
+void SUMPProtocol::SendValue(uint32_t value)
+{
+	stream_.PutCharRaw((value >> 24) & 0xff);
+	stream_.PutCharRaw((value >> 16) & 0xff);
+	stream_.PutCharRaw((value >> 8) & 0xff);
+	stream_.PutCharRaw(value & 0xff);
 }
 
 void SUMPProtocol::SendMetadata(uint8_t tokenKey)
@@ -132,10 +140,7 @@ void SUMPProtocol::SendMetadata(uint8_t tokenKey, const char* str)
 void SUMPProtocol::SendMetadata(uint8_t tokenKey, uint32_t value)
 {
 	stream_.PutCharRaw(tokenKey);
-	stream_.PutCharRaw((value >> 24) & 0xFF);
-	stream_.PutCharRaw((value >> 16) & 0xFF);
-	stream_.PutCharRaw((value >> 8) & 0xFF);
-	stream_.PutCharRaw(value & 0xFF);
+	SendValue(value);
 }
 
 void SUMPProtocol::RunCapture()
@@ -157,23 +162,11 @@ void SUMPProtocol::RunCapture()
 	//	pLogicAnalyzer_->Disable();
 	//	SendSamples();
 	//}
-}
-
-void SUMPProtocol::SendSamples()
-{
-	//int eventCount = pLogicAnalyzer_->GetRawEventCount();
-	//
-	//// Send samples in reverse order (SUMP requirement)  
-	//for (int i = eventCount - 1; i >= 0; i--) {
-	//	const auto& rawEvent = pLogicAnalyzer_->GetRawEvent(0, i);
-	//	
-	//	// Get pin bitmap using the correct method
-	//	uint32_t sample = rawEvent.GetPinBitmap(8) & 0xFF; // Assuming 8-bit pin bitmap
-	//	putchar((sample >> 24) & 0xFF);
-	//	putchar((sample >> 16) & 0xFF);
-	//	putchar((sample >> 8) & 0xFF);
-	//	putchar(sample & 0xFF);
-	//}
+	for (int j = 0; j < 50; ++j) {
+		SendValue(0xff);
+		SendValue(0x00);
+	}
+	Flush();
 }
 
 LABOPlatform laboPlatform;
@@ -186,9 +179,31 @@ int main()
 	Stream& cdcApplication = laboPlatform.GetCDCApplication();
 	SUMPProtocol sumpProtocol(logicAnalyzer, cdcApplication);
 	//printf("SUMP Logic Analyzer Ready\n");
+	enum class Stat { Cmd, Arg };
+	Stat stat = Stat::Cmd;
+	uint8_t cmd = 0;
+	uint32_t arg = 0;
+	int byteArg = 0;
 	for (;;) {
 		int c = cdcApplication.ReadChar();
-		if (c >= 0) sumpProtocol.ProcessCommand(static_cast<uint8_t>(c));
+		if (c < 0) {
+			// nothing to do
+		} else if (stat == Stat::Cmd) {
+			cmd = static_cast<uint8_t>(c);
+			if (cmd & 0x80) {
+				byteArg = 0;
+				stat = Stat::Arg;
+			} else {
+				sumpProtocol.ProcessCommand(cmd, 0);
+			}
+		} else if (stat == Stat::Arg) {
+			arg = arg | static_cast<uint32_t>(static_cast<uint8_t>(c)) << (byteArg * 8);
+			byteArg++;
+			if (byteArg == 4) {
+				sumpProtocol.ProcessCommand(cmd, arg);
+				stat = Stat::Cmd;
+			}
+		}
 		Tickable::Tick();
 	}
 }
