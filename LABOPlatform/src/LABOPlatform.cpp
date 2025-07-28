@@ -25,7 +25,8 @@ LABOPlatform::LABOPlatform(int bytesFlash) :
 	}, 0x0409, "jxglib", "pico-jxgLABO", "000000000000"),
 	fat_("*G:", bytesFlash),
 	mscDrive_(deviceController_, 0x01, 0x81),
-	cdcSerial_(deviceController_, "CDCSerial", 0x82, 0x03, 0x83),
+	cdcTerminal_(deviceController_, "CDCSerial", 0x82, 0x03, 0x83),
+	cdcApplication_(deviceController_, "CDCApplication", 0x84, 0x05, 0x85),
 	attachStdioFlag_{false}
 {}
 
@@ -33,8 +34,9 @@ void LABOPlatform::Initialize()
 {
 	deviceController_.Initialize();
 	mscDrive_.Initialize(fat_);
-	cdcSerial_.Initialize();
-	if (!attachStdioFlag_) terminal_.AttachKeyboard(cdcSerial_.GetKeyboard()).AttachPrintable(cdcSerial_);
+	cdcTerminal_.Initialize();
+	cdcApplication_.Initialize();
+	if (!attachStdioFlag_) terminal_.AttachKeyboard(cdcTerminal_.GetKeyboard()).AttachPrintable(cdcTerminal_);
 	Shell::AttachTerminal(terminal_.Initialize());
 	if (!fat_.Mount()) {
 		fat_.Format();

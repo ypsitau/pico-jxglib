@@ -20,7 +20,8 @@ private:
 	USBDevice::Controller deviceController_;
 	FAT::Flash fat_;
 	USBDevice::MSCDrive mscDrive_;
-	USBDevice::CDCSerial cdcSerial_;
+	USBDevice::CDCSerial cdcTerminal_;
+	USBDevice::CDCSerial cdcApplication_;
 	Serial::Terminal terminal_;
 	bool attachStdioFlag_;
 private:
@@ -34,7 +35,8 @@ public:
 	USBDevice::Controller& GetDeviceController() { return deviceController_; }
 	FAT::Flash& GetFAT() { return fat_; }
 	USBDevice::MSCDrive& GetMSCDrive() { return mscDrive_; }
-	USBDevice::CDCSerial& GetCDCSerial() { return cdcSerial_; }
+	USBDevice::CDCSerial& GetCDCSerial() { return cdcTerminal_; }
+	USBDevice::CDCSerial& GetCDCApplication() { return cdcApplication_; }
 	Serial::Terminal& GetTerminal() { return terminal_; }
 };
 
