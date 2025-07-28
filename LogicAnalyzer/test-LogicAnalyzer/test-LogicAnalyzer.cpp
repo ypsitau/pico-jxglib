@@ -12,25 +12,26 @@ class SUMPProtocol {
 public:
 	// SUMP Commands
 	struct Command {
-		static const uint8_t RESET				= 0x00;
-		static const uint8_t RUN				= 0x01;
+		static const uint8_t Reset				= 0x00;
+		static const uint8_t Run				= 0x01;
 		static const uint8_t ID					= 0x02;
-		static const uint8_t GET_METADATA		= 0x04;
-		static const uint8_t SET_DIVIDER		= 0x80;
-		static const uint8_t SET_READ_DELAY_COUNT	= 0x81;
-		static const uint8_t SET_FLAGS			= 0x82;
-		static const uint8_t SET_TRIGGER_MASK	= 0xC0;
-		static const uint8_t SET_TRIGGER_VALUES	= 0xC1;
-		static const uint8_t SET_TRIGGER_CONFIG	= 0xC2;
+		static const uint8_t GetMetadata		= 0x04;
+		static const uint8_t SetDivider			= 0x80;
+		static const uint8_t SetReadDelayCount	= 0x81;
+		static const uint8_t SetFlags			= 0x82;
+		static const uint8_t SetTriggerMask		= 0xC0;
+		static const uint8_t SetTriggerValues	= 0xC1;
+		static const uint8_t SetTriggerConfig	= 0xC2;
 	};
 	// SUMP Metadata tokens
-	struct MetaToken {
-		static const uint8_t DEVICE_NAME		= 0x01;
-		static const uint8_t FPGA_VERSION		= 0x02;
-		static const uint8_t PROTOCOL_VERSION	= 0x03;
-		static const uint8_t SAMPLE_MEMORY		= 0x21;
-		static const uint8_t SAMPLE_RATE		= 0x23;
-		static const uint8_t NUMBER_PROBES		= 0x40;
+	struct TokenKey {
+		static const uint8_t DeviceName			= 0x01;
+		static const uint8_t FPGAVersion		= 0x02;
+		static const uint8_t NumberProbes		= 0x20;
+		static const uint8_t SampleMemory		= 0x21;
+		static const uint8_t DynamicMemory		= 0x22;
+		static const uint8_t MaxSampleRate		= 0x23;
+		static const uint8_t ProtocolVersion	= 0x24;
 		static const uint8_t END				= 0x00;
 	};
 private:
@@ -42,42 +43,47 @@ private:
 	uint32_t flags_;
 	
 public:
-	SUMPProtocol(LogicAnalyzer& logicAnalyzer, Stream& stream) : 
-			logicAnalyzer_(logicAnalyzer), stream_(stream),
-			sampleRate_(1000000), readCount_(1024), delayCount_(0), flags_(0) {}
+	SUMPProtocol(LogicAnalyzer& logicAnalyzer, Stream& stream);
 	void ProcessCommand(uint8_t cmd);
 	void SendMetadata();
 	void SendID();
 	void RunCapture();
 	void SendSamples();
 private:
-	void SendMetaData(uint8_t token);
-	void SendMetaData(uint8_t token, const char* str);
-	void SendMetaData(uint8_t token, uint32_t value);
+	void SendMetadata(uint8_t tokenKey);
+	void SendMetadata(uint8_t tokenKey, const char* str);
+	void SendMetadata(uint8_t tokenKey, uint32_t value);
 };
+
+SUMPProtocol::SUMPProtocol(LogicAnalyzer& logicAnalyzer, Stream& stream) : 
+	logicAnalyzer_(logicAnalyzer), stream_(stream), sampleRate_(1000000), readCount_(1024), delayCount_(0), flags_(0)
+{}
 
 void SUMPProtocol::ProcessCommand(uint8_t cmd)
 {
 	switch (cmd) {
-	case Command::RESET:
-		//pLogicAnalyzer_->Disable();
+	case Command::Reset: {
+		//Run->Disable();
 		break;
-	case Command::RUN:
+	}
+	case Command::Run: {
 		RunCapture();
 		break;
-	case Command::ID:
+	}
+	case Command::ID: {
 		stream_.Print("1ALS").Flush();
 		break;
-	case Command::GET_METADATA:
-		SendMetaData(MetaToken::DEVICE_NAME,		"pico-jxgLABO Logic Analyzer");
-		SendMetaData(MetaToken::PROTOCOL_VERSION,	2);
-		SendMetaData(MetaToken::SAMPLE_MEMORY,		8192);
-		SendMetaData(MetaToken::SAMPLE_RATE,		100000000);
-		SendMetaData(MetaToken::NUMBER_PROBES,		8);
-		SendMetaData(MetaToken::END);
+	}
+	case Command::GetMetadata:
+		SendMetadata(TokenKey::DeviceName,		"pico-jxgLABO Logic Analyzer");
+		SendMetadata(TokenKey::ProtocolVersion,	2);
+		SendMetadata(TokenKey::SampleMemory,	8192);
+		SendMetadata(TokenKey::MaxSampleRate,	100000000);
+		SendMetadata(TokenKey::NumberProbes,	8);
+		SendMetadata(TokenKey::END);
 		stream_.Flush();
 		break;
-	case Command::SET_DIVIDER: {
+	case Command::SetDivider: {
 		// Read 4 bytes for divider value
 		uint8_t data[4];
 		for (int i = 0; i < 4; i++) {
@@ -87,7 +93,7 @@ void SUMPProtocol::ProcessCommand(uint8_t cmd)
 		sampleRate_ = 100000000 / (divider + 1); // Assuming 100MHz base clock
 		break;
 	}
-	case Command::SET_READ_DELAY_COUNT: {
+	case Command::SetReadDelayCount: {
 		// Read 4 bytes for read and delay count
 		uint8_t data[4];
 		for (int i = 0; i < 4; i++) {
@@ -97,7 +103,7 @@ void SUMPProtocol::ProcessCommand(uint8_t cmd)
 		delayCount_ = (data[2] << 8) | data[3];
 		break;
 	}
-	case Command::SET_FLAGS: {
+	case Command::SetFlags: {
 		// Read 4 bytes for flags
 		uint8_t data[4];
 		for (int i = 0; i < 4; i++) {
@@ -107,26 +113,25 @@ void SUMPProtocol::ProcessCommand(uint8_t cmd)
 		break;
 	}
 	default:
-		// Unknown command, ignore
 		break;
 	}
 }
 
-void SUMPProtocol::SendMetaData(uint8_t token)
+void SUMPProtocol::SendMetadata(uint8_t tokenKey)
 {
-	stream_.PutCharRaw(token);
+	stream_.PutCharRaw(tokenKey);
 }
 
-void SUMPProtocol::SendMetaData(uint8_t token, const char* str)
+void SUMPProtocol::SendMetadata(uint8_t tokenKey, const char* str)
 {
-	stream_.PutCharRaw(token);
+	stream_.PutCharRaw(tokenKey);
 	stream_.PrintRaw(str);
 	stream_.PutCharRaw(0);
 }
 
-void SUMPProtocol::SendMetaData(uint8_t token, uint32_t value)
+void SUMPProtocol::SendMetadata(uint8_t tokenKey, uint32_t value)
 {
-	stream_.PutCharRaw(token);
+	stream_.PutCharRaw(tokenKey);
 	stream_.PutCharRaw((value >> 24) & 0xFF);
 	stream_.PutCharRaw((value >> 16) & 0xFF);
 	stream_.PutCharRaw((value >> 8) & 0xFF);
