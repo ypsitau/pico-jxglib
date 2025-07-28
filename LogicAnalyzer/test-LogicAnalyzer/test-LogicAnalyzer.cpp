@@ -208,13 +208,13 @@ int main()
 	::stdio_init_all();
 	laboPlatform.AttachStdio().Initialize();
 	
-	printf("SUMP Logic Analyzer Ready\n");
+	//printf("SUMP Logic Analyzer Ready\n");
 	
 	for (;;) {
-		int c = getchar_timeout_us(0);
-		if (c != PICO_ERROR_TIMEOUT) {
-			sumpProtocol.ProcessCommand(static_cast<uint8_t>(c));
-		}
+		//int c = getchar_timeout_us(0);
+		//if (c != PICO_ERROR_TIMEOUT) {
+		//	sumpProtocol.ProcessCommand(static_cast<uint8_t>(c));
+		//}
 		Tickable::Tick();
 	}
 }

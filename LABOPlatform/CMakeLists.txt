@@ -20,11 +20,12 @@ add_library(jxglib_LABOPlatform_FullCmd INTERFACE)
 
 target_link_libraries(jxglib_LABOPlatform_FullCmd INTERFACE
 	jxglib_LABOPlatform
+	jxglib_ShellCmd_ADC
     jxglib_ShellCmd_FS
 	jxglib_ShellCmd_GPIO
-	jxglib_ShellCmd_ADC
-	jxglib_ShellCmd_PWM
 	jxglib_ShellCmd_I2C
-	jxglib_ShellCmd_SPI
 	jxglib_ShellCmd_LogicAnalyzer
+	jxglib_ShellCmd_PWM
+	jxglib_ShellCmd_SPI
+	jxglib_ShellCmd_UART
 )	

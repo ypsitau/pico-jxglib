@@ -5,6 +5,7 @@
 #include "jxglib/Common.h"
 #include "jxglib/Serial.h"
 #include "jxglib/Shell.h"
+#include <cctype>
 
 namespace jxglib::ShellCmd_UART {
 
@@ -12,8 +13,8 @@ struct Config {
 	uint TX = -1;
 	uint RX = -1;
 	uint baudrate = 115200;
-	uint data_bits = 8;
-	uint stop_bits = 1;
+	uint dataBits = 8;
+	uint stopBits = 1;
 	uart_parity_t parity = UART_PARITY_NONE;
 	bool flow_control = false;
 	uint32_t msecTimeout = 1000;
@@ -30,39 +31,39 @@ static void PrintConfig(Printable& tout, int iUART, const char* formatGPIO);
 
 ShellCmd_Named(uart_, "uart", "controls UART communication")
 {
-	enum class Func { TX, RX };
+	enum class Func { TX, RX, CTS, RTS };
 	struct Info { int iUART; Func func; };
 	static const Info infoTbl[] = {
-		{ 0, Func::TX }, // GPIO0  UART0 TX
-		{ 0, Func::RX }, // GPIO1  UART0 RX
-		{ 1, Func::TX }, // GPIO2  UART1 TX
-		{ 1, Func::RX }, // GPIO3  UART1 RX
-		{ 0, Func::TX }, // GPIO4  UART0 TX
-		{ 0, Func::RX }, // GPIO5  UART0 RX
-		{ 1, Func::TX }, // GPIO6  UART1 TX
-		{ 1, Func::RX }, // GPIO7  UART1 RX
-		{ 0, Func::TX }, // GPIO8  UART0 TX
-		{ 0, Func::RX }, // GPIO9  UART0 RX
-		{ 1, Func::TX }, // GPIO10 UART1 TX
-		{ 1, Func::RX }, // GPIO11 UART1 RX
-		{ 0, Func::TX }, // GPIO12 UART0 TX
-		{ 0, Func::RX }, // GPIO13 UART0 RX
-		{ 1, Func::TX }, // GPIO14 UART1 TX
-		{ 1, Func::RX }, // GPIO15 UART1 RX
-		{ 0, Func::TX }, // GPIO16 UART0 TX
-		{ 0, Func::RX }, // GPIO17 UART0 RX
-		{ 1, Func::TX }, // GPIO18 UART1 TX
-		{ 1, Func::RX }, // GPIO19 UART1 RX
-		{ 0, Func::TX }, // GPIO20 UART0 TX
-		{ 0, Func::RX }, // GPIO21 UART0 RX
-		{ 1, Func::TX }, // GPIO22 UART1 TX
-		{ 1, Func::RX }, // GPIO23 UART1 RX
-		{ 0, Func::TX }, // GPIO24 UART0 TX
-		{ 0, Func::RX }, // GPIO25 UART0 RX
-		{ 1, Func::TX }, // GPIO26 UART1 TX
-		{ 1, Func::RX }, // GPIO27 UART1 RX
-		{ 0, Func::TX }, // GPIO28 UART0 TX
-		{ 0, Func::RX }, // GPIO29 UART0 RX
+		{ 0, Func::TX },   // GPIO0  UART0 TX
+		{ 0, Func::RX },   // GPIO1  UART0 RX
+		{ 0, Func::CTS },  // GPIO2  UART0 CTS
+		{ 0, Func::RTS },  // GPIO3  UART0 RTS
+		{ 1, Func::TX },   // GPIO4  UART1 TX
+		{ 1, Func::RX },   // GPIO5  UART1 RX
+		{ 1, Func::CTS },  // GPIO6  UART1 CTS
+		{ 1, Func::RTS },  // GPIO7  UART1 RTS
+		{ 1, Func::TX },   // GPIO8  UART1 TX
+		{ 1, Func::RX },   // GPIO9  UART1 RX
+		{ 1, Func::CTS },  // GPIO10 UART1 CTS
+		{ 1, Func::RTS },  // GPIO11 UART1 RTS
+		{ 0, Func::TX },   // GPIO12 UART0 TX
+		{ 0, Func::RX },   // GPIO13 UART0 RX
+		{ 0, Func::CTS },  // GPIO14 UART0 CTS
+		{ 0, Func::RTS },  // GPIO15 UART0 RTS
+		{ 0, Func::TX },   // GPIO16 UART0 TX
+		{ 0, Func::RX },   // GPIO17 UART0 RX
+		{ 0, Func::CTS },  // GPIO18 UART0 CTS
+		{ 0, Func::RTS },  // GPIO19 UART0 RTS
+		{ 1, Func::TX },   // GPIO20 UART1 TX
+		{ 1, Func::RX },   // GPIO21 UART1 RX
+		{ 1, Func::CTS },  // GPIO22 UART1 CTS
+		{ 1, Func::RTS },  // GPIO23 UART1 RTS
+		{ 1, Func::TX },   // GPIO24 UART1 TX
+		{ 1, Func::RX },   // GPIO25 UART1 RX
+		{ 1, Func::CTS },  // GPIO26 UART1 CTS
+		{ 1, Func::RTS },  // GPIO27 UART1 RTS
+		{ 0, Func::TX },   // GPIO28 UART0 TX
+		{ 0, Func::RX },   // GPIO29 UART0 RX
 	};
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
@@ -70,10 +71,8 @@ ShellCmd_Named(uart_, "uart", "controls UART communication")
 		Arg::OptBool("dumb",		0x0,	"no UART operations, just remember the pins and settings"),
 		Arg::OptBool("verbose",		'v',	"verbose output for debugging"),
 		Arg::OptString("pin",		'p',	"sets GPIO pins for UART", "TX,RX"),
-		Arg::OptString("baudrate",	'b',	"sets UART baudrate (default: 115200)", "RATE"),
-		Arg::OptString("data-bits",	'd',	"sets data bits (default: 8)", "BITS"),
-		Arg::OptString("stop-bits",	's',	"sets stop bits (default: 1)", "BITS"),
-		Arg::OptString("parity",	0x0,	"sets parity (default: none)", "none|even|odd"),
+		Arg::OptString("baudrate",    'b',	"sets UART baudrate (default: 115200)", "RATE"),
+		Arg::OptString("frame",		'f',	"sets frame format in DPS where D (5-8), P (n,e,o) and S (1,2) (default: 8n1)", "FRAME"),
 		Arg::OptBool("flow-control", 0x0,	"enables hardware flow control"),
 		Arg::OptString("timeout",	't',	"sets timeout for UART operations (default: 1000)", "MSEC"),
 	};
@@ -134,7 +133,10 @@ ShellCmd_Named(uart_, "uart", "controls UART communication")
 		for (uint pin = 0; pin < count_of(infoTbl); ++pin) {
 			const Info& info = infoTbl[pin];
 			if (info.iUART == iUART) {
-				tout.Printf("GPIO%-2d UART%d %s\n", pin, info.iUART, (info.func == Func::TX)? "TX" : "RX");
+				const char* funcName = (info.func == Func::TX) ? "TX" :
+									   (info.func == Func::RX) ? "RX" :
+									   (info.func == Func::CTS) ? "CTS" : "RTS";
+				tout.Printf("GPIO%-2d UART%d %s\n", pin, info.iUART, funcName);
 			}
 		}
 		return Result::Success;
@@ -153,46 +155,48 @@ ShellCmd_Named(uart_, "uart", "controls UART communication")
 		}
 		config.baudrate = static_cast<uint>(num);
 	}
-	if (arg.GetString("data-bits", &value)) {
+	if (arg.GetString("frame", &value)) {
 		if (!value) {
-			terr.Printf("Data bits value is required\n");
+			terr.Printf("Frame format is required (e.g., 8n1, 7e1, 8o2)\n");
 			return Result::Error;
 		}
-		char* endptr;
-		long num = ::strtol(value, &endptr, 0);
-		if (*endptr != '\0' || num < 5 || num > 8) {
-			terr.Printf("Invalid data bits: %s (must be 5-8)\n", value);
+		if (::strlen(value) != 3) {
+			terr.Printf("Invalid frame format: %s (expected format: DBSParity, e.g., 8n1)\n", value);
 			return Result::Error;
 		}
-		config.data_bits = static_cast<uint>(num);
-	}
-	if (arg.GetString("stop-bits", &value)) {
-		if (!value) {
-			terr.Printf("Stop bits value is required\n");
+		
+		// Parse data bits (first character)
+		int dataBits = value[0] - '0';
+		if (dataBits < 5 || dataBits > 8) {
+			terr.Printf("Invalid data bits: %c (must be 5-8)\n", value[0]);
 			return Result::Error;
 		}
-		char* endptr;
-		long num = ::strtol(value, &endptr, 0);
-		if (*endptr != '\0' || (num != 1 && num != 2)) {
-			terr.Printf("Invalid stop bits: %s (must be 1 or 2)\n", value);
+		config.dataBits = static_cast<uint>(dataBits);
+		
+		// Parse parity (second character)
+		char parity_char = ::tolower(value[1]);
+		switch (parity_char) {
+			case 'n':
+				config.parity = UART_PARITY_NONE;
+				break;
+			case 'e':
+				config.parity = UART_PARITY_EVEN;
+				break;
+			case 'o':
+				config.parity = UART_PARITY_ODD;
+				break;
+			default:
+				terr.Printf("Invalid parity: %c (must be n, e, or o)\n", value[1]);
+				return Result::Error;
+		}
+		
+		// Parse stop bits (third character)
+		int stopBits = value[2] - '0';
+		if (stopBits != 1 && stopBits != 2) {
+			terr.Printf("Invalid stop bits: %c (must be 1 or 2)\n", value[2]);
 			return Result::Error;
 		}
-		config.stop_bits = static_cast<uint>(num);
-	}
-	if (arg.GetString("parity", &value)) {
-		if (!value) {
-			terr.Printf("Parity value is required\n");
-			return Result::Error;
-		} else if (::strcasecmp(value, "none") == 0) {
-			config.parity = UART_PARITY_NONE;
-		} else if (::strcasecmp(value, "even") == 0) {
-			config.parity = UART_PARITY_EVEN;
-		} else if (::strcasecmp(value, "odd") == 0) {
-			config.parity = UART_PARITY_ODD;
-		} else {
-			terr.Printf("Invalid parity: %s (expected 'none', 'even', or 'odd')\n", value);
-			return Result::Error;
-		}
+		config.stopBits = static_cast<uint>(stopBits);
 	}
 	if (arg.GetString("timeout", &value)) {
 		if (!value) {
@@ -250,12 +254,16 @@ ShellCmd_Named(uart_, "uart", "controls UART communication")
 					return Result::Error;
 				}
 				config.TX = static_cast<uint>(num);
-			} else { // Func::RX
+			} else if (info.func == Func::RX) {
 				if (config.RX != -1) {
 					terr.Printf("RX pin already assigned (GPIO%d), cannot assign GPIO%d\n", config.RX, num);
 					return Result::Error;
 				}
 				config.RX = static_cast<uint>(num);
+			} else {
+				terr.Printf("GPIO%d is a %s pin, only TX and RX pins are supported for basic UART operation\n", 
+					num, (info.func == Func::CTS) ? "CTS" : "RTS");
+				return Result::Error;
 			}
 		}
 	}
@@ -272,7 +280,7 @@ ShellCmd_Named(uart_, "uart", "controls UART communication")
 	
 	UART& uart = (iUART == 0)? UART0 : UART1;
 	uart.raw.init(config.baudrate);
-	uart.raw.set_format(config.data_bits, config.stop_bits, config.parity);
+	uart.raw.set_format(config.dataBits, config.stopBits, config.parity);
 	uart.raw.set_hw_flow(config.flow_control, config.flow_control);
 	uart.raw.set_fifo_enabled(true);
 	::gpio_set_function(config.TX, GPIO_FUNC_UART);
@@ -414,19 +422,17 @@ void PrintConfig(Printable& tout, int iUART, const char* formatGPIO)
 		}
 	};
 	const Config& config = configTbl[iUART];
-	const char* parityStr = (config.parity == UART_PARITY_NONE)? "none" :
-							(config.parity == UART_PARITY_EVEN)? "even" : "odd";
+	char parityChar = (config.parity == UART_PARITY_NONE)? 'n' :
+                    (config.parity == UART_PARITY_EVEN)? 'e' : 'o';
 	tout.Printf("UART%d:", iUART);
 	printPin("TX", config.TX);
 	printPin("RX", config.RX);
-	tout.Printf(" baud:%d %d%c%d flow:%s timeout:%dmsec\n", 
-		config.baudrate, config.data_bits, parityStr[0], config.stop_bits,
+	tout.Printf(" baudrate:%d frame:%d%c%d flow-control:%s timeout:%dmsec\n", 
+		config.baudrate, config.dataBits, parityChar, config.stopBits,
 		config.flow_control ? "on" : "off", config.msecTimeout);
 }
 
-}
-
-using namespace jxglib::ShellCmd_UART;
-
 ShellCmdAlias_Named(uart0_, "uart0", uart_)
 ShellCmdAlias_Named(uart1_, "uart1", uart_)
+
+}
