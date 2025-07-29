@@ -732,11 +732,11 @@ void LogicAnalyzer::SUMPAdapter::RunCapture()
 
 void LogicAnalyzer::SUMPAdapter::OnTick()
 {
-	int data = stream_.ReadChar();
-	if (data < 0) {
+	uint8_t data;
+	if (stream_.Read(&data, 1) == 0) {
 		// nothing to do
 	} else if (comm_.stat == Stat::Cmd) {
-		comm_.cmd = static_cast<uint8_t>(data);
+		comm_.cmd = data;
 		if (comm_.cmd & 0x80) {
 			comm_.byteArg = 0;
 			comm_.stat = Stat::Arg;
@@ -744,8 +744,8 @@ void LogicAnalyzer::SUMPAdapter::OnTick()
 			ProcessCommand(comm_.cmd, 0);
 		}
 	} else if (comm_.stat == Stat::Arg) {
-		//comm_.arg = comm_.arg | (static_cast<uint32_t>(static_cast<uint8_t>(data)) << (comm_.byteArg * 8));
-		comm_.arg = (comm_.arg << 8) | static_cast<uint8_t>(data);
+		//comm_.arg = comm_.arg | (static_cast<uint32_t>(data) << (comm_.byteArg * 8));
+		comm_.arg = (comm_.arg << 8) | data;
 		comm_.byteArg++;
 		if (comm_.byteArg == 4) {
 			ProcessCommand(comm_.cmd, comm_.arg);
