@@ -685,10 +685,17 @@ void LogicAnalyzer::SUMPAdapter::ProcessCommand(uint8_t cmd, uint32_t arg)
 
 void LogicAnalyzer::SUMPAdapter::SendValue(uint32_t value)
 {
+#if 1
 	stream_.PutByte((value >> 24) & 0xff);
 	stream_.PutByte((value >> 16) & 0xff);
 	stream_.PutByte((value >> 8) & 0xff);
 	stream_.PutByte(value & 0xff);
+#else
+	stream_.PutByte(value & 0xff);
+	stream_.PutByte((value >> 8) & 0xff);
+	stream_.PutByte((value >> 16) & 0xff);
+	stream_.PutByte((value >> 24) & 0xff);
+#endif
 }
 
 void LogicAnalyzer::SUMPAdapter::SendMeta(uint8_t tokenKey)
@@ -737,7 +744,7 @@ void LogicAnalyzer::SUMPAdapter::OnTick()
 			ProcessCommand(comm_.cmd, 0);
 		}
 	} else if (comm_.stat == Stat::Arg) {
-		//comm_.arg = comm_.arg | static_cast<uint32_t>(static_cast<uint8_t>(data)) << (comm_.byteArg * 8);
+		//comm_.arg = comm_.arg | (static_cast<uint32_t>(static_cast<uint8_t>(data)) << (comm_.byteArg * 8));
 		comm_.arg = (comm_.arg << 8) | static_cast<uint8_t>(data);
 		comm_.byteArg++;
 		if (comm_.byteArg == 4) {
@@ -754,23 +761,31 @@ void LogicAnalyzer::SUMPAdapter::Config::Print(Printable& tout) const
 {
 	for (int iStage = 0; iStage < count_of(trigger); ++iStage) {
 		tout.Printf("Trigger Stage#%d\n", iStage);
-		tout.Printf("  Mask:           0x%08x\n", trigger[iStage].mask);
-		tout.Printf("  Value:          0x%08x\n", trigger[iStage].value);
-		tout.Printf("  Delay:          %d\n", GetTrigger_Delay(iStage));
-		tout.Printf("  Level:          %d\n", GetTrigger_Level(iStage));
-		tout.Printf("  Channel:        %d\n", GetTrigger_Channel(iStage));
-		tout.Printf("  Serial:         %d\n", GetTrigger_Serial(iStage));
-		tout.Printf("  Start:          %d\n", GetTrigger_Start(iStage));
+		tout.Printf("  Mask:                    0x%08x\n", trigger[iStage].mask);
+		tout.Printf("  Value:                   0x%08x\n", trigger[iStage].value);
+		tout.Printf("  Delay:                   %d\n", GetTrigger_Delay(iStage));
+		tout.Printf("  Level:                   %d\n", GetTrigger_Level(iStage));
+		tout.Printf("  Channel:                 %d\n", GetTrigger_Channel(iStage));
+		tout.Printf("  Serial:                  %d\n", GetTrigger_Serial(iStage));
+		tout.Printf("  Start:                   %d\n", GetTrigger_Start(iStage));
 	}
-	tout.Printf("Divider:          %d\n", divider);
-	tout.Printf("Delay Count:      %d\n", delayCount);
-	tout.Printf("Read Count:       %d\n", readCount);
-	tout.Printf("Flags\n");
-	tout.Printf("  Demux:          %d\n", GetFlags_Demux());
-	tout.Printf("  Filter:         %d\n", GetFlags_Filter());
-	tout.Printf("  Channel Groups: %d\n", GetFlags_ChannelGroups());
-	tout.Printf("  External:       %d\n", GetFlags_External());
-	tout.Printf("  Inverted:       %d\n", GetFlags_Inverted());
+	tout.Printf("Divider:                   %d\n", divider);
+	tout.Printf("Delay Count:               %d\n", delayCount);
+	tout.Printf("Read Count:                %d\n", readCount);
+	tout.Printf("Demux Mode:                %d\n", GetFlags_DemuxMode());
+	tout.Printf("Noise Filter:              %d\n", GetFlags_NoiseFilter());
+	tout.Printf("Disable Channel Groups1:   %d\n", GetFlags_DisableChannelGroup1());
+	tout.Printf("Disable Channel Groups2:   %d\n", GetFlags_DisableChannelGroup2());
+	tout.Printf("Disable Channel Groups3:   %d\n", GetFlags_DisableChannelGroup3());
+	tout.Printf("Disable Channel Groups4:   %d\n", GetFlags_DisableChannelGroup4());
+	tout.Printf("External Clock:            %d\n", GetFlags_ExternalClock());
+	tout.Printf("Inv External Clock:        %d\n", GetFlags_InvExternalClock());
+	tout.Printf("Run Length Encoding:       %d\n", GetFlags_RunLengthEncoding());
+	tout.Printf("Swap Channels:             %d\n", GetFlags_SwapChannels());
+	tout.Printf("External Test Mode:        %d\n", GetFlags_ExternalTestMode());
+	tout.Printf("Internal Test Mode:        %d\n", GetFlags_InternalTestMode());
+	tout.Printf("Run Length Encoding Mode0: %d\n", GetFlags_RunLengthEncodingMode0());
+	tout.Printf("Run Length Encoding Mode1: %d\n", GetFlags_RunLengthEncodingMode1());
 }
 
 }

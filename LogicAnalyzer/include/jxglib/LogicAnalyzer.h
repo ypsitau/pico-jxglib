@@ -161,12 +161,21 @@ public:
 			uint8_t GetTrigger_Channel(int iStage) const { return static_cast<uint8_t>((trigger[iStage].config >> 20) & 0x1f); }
 			bool GetTrigger_Serial(int iStage) const { return (trigger[iStage].config & (1 << 26)) != 0; }
 			bool GetTrigger_Start(int iStage) const { return (trigger[iStage].config & (1 << 27)) != 0; }
-		public:
-			bool GetFlags_Demux() const { return (flags & (1 << 0)) != 0; }
-			bool GetFlags_Filter() const { return (flags & (1 << 1)) != 0; }
-			uint8_t GetFlags_ChannelGroups() const { return static_cast<uint8_t>((flags >> 2) & 0x0f); }
-			bool GetFlags_External() const { return (flags & (1 << 6)) != 0; }
-			bool GetFlags_Inverted() const { return (flags & (1 << 7)) != 0; }
+		public:	
+			bool GetFlags_DemuxMode() const					{ return (flags & (1 << 0)) != 0; }
+			bool GetFlags_NoiseFilter() const				{ return (flags & (1 << 1)) != 0; }
+			bool GetFlags_DisableChannelGroup1() const		{ return (flags & (1 << 2)) != 0; }
+			bool GetFlags_DisableChannelGroup2() const		{ return (flags & (1 << 3)) != 0; }
+			bool GetFlags_DisableChannelGroup3() const		{ return (flags & (1 << 4)) != 0; }
+			bool GetFlags_DisableChannelGroup4() const		{ return (flags & (1 << 5)) != 0; }
+			bool GetFlags_ExternalClock() const				{ return (flags & (1 << 6)) != 0; }
+			bool GetFlags_InvExternalClock() const			{ return (flags & (1 << 7)) != 0; }
+			bool GetFlags_RunLengthEncoding() const			{ return (flags & (1 << 8)) != 0; }
+			bool GetFlags_SwapChannels() const				{ return (flags & (1 << 9)) != 0; }
+			bool GetFlags_ExternalTestMode() const			{ return (flags & (1 << 10)) != 0; }
+			bool GetFlags_InternalTestMode() const			{ return (flags & (1 << 11)) != 0; }
+			bool GetFlags_RunLengthEncodingMode0() const	{ return (flags & (1 << 14)) != 0; }
+			bool GetFlags_RunLengthEncodingMode1() const	{ return (flags & (1 << 15)) != 0; }
 		public:
 			void Print(Printable& tout = Stdio::Instance) const;
 		};
