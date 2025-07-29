@@ -6,7 +6,7 @@ using namespace jxglib;
 int main(void)
 {
 	::stdio_init_all();
-	LABOPlatform laboPlatform;
+	LABOPlatform& laboPlatform = LABOPlatform::Instance;
 	laboPlatform.AttachStdio().Initialize();
 	::adc_init();
 	::adc_set_temp_sensor_enabled(true);
