@@ -146,19 +146,21 @@ public:
 			static const uint8_t EndOfMetadata			= 0x00;
 		};
 		struct Config {
-			uint32_t triggerMask	= 0;
-			uint32_t triggerValues	= 0;
-			uint32_t triggerConfig	= 0;
+			struct {
+				uint32_t mask		= 0;
+				uint32_t value		= 0;
+				uint32_t config		= 0; 
+			} trigger[4];
 			uint32_t divider		= 1;
 			uint32_t delayCount		= 0;
 			uint32_t readCount		= 0;
 			uint32_t flags			= 0;
 		public:
-			uint16_t GetTriggerConfig_Delay() const { return static_cast<uint16_t>(triggerConfig & 0xffff); }
-			uint8_t GetTriggerConfig_Level() const { return static_cast<uint8_t>((triggerConfig >> 16) & 0x03); }
-			uint8_t GetTriggerConfig_Channel() const { return static_cast<uint8_t>((triggerConfig >> 20) & 0x1f); }
-			bool GetTriggerConfig_Serial() const { return (triggerConfig & (1 << 26)) != 0; }
-			bool GetTriggerConfig_Start() const { return (triggerConfig & (1 << 27)) != 0; }
+			uint16_t GetTrigger_Delay(int iStage) const { return static_cast<uint16_t>(trigger[iStage].config & 0xffff); }
+			uint8_t GetTrigger_Level(int iStage) const { return static_cast<uint8_t>((trigger[iStage].config >> 16) & 0x03); }
+			uint8_t GetTrigger_Channel(int iStage) const { return static_cast<uint8_t>((trigger[iStage].config >> 20) & 0x1f); }
+			bool GetTrigger_Serial(int iStage) const { return (trigger[iStage].config & (1 << 26)) != 0; }
+			bool GetTrigger_Start(int iStage) const { return (trigger[iStage].config & (1 << 27)) != 0; }
 		public:
 			bool GetFlags_Demux() const { return (flags & (1 << 0)) != 0; }
 			bool GetFlags_Filter() const { return (flags & (1 << 1)) != 0; }

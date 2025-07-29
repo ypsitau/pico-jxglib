@@ -642,6 +642,7 @@ const LogicAnalyzer::RawEvent* LogicAnalyzer::EventIterator::NextRawEvent(int* p
 //------------------------------------------------------------------------------
 // LogicAnalyzer::SUMPAdapter
 // https://firmware.buspirate.com/binmode-reference/protocol-sump
+// http://dangerousprototypes.com/docs/The_Logic_Sniffer%27s_extended_SUMP_protocol
 //------------------------------------------------------------------------------
 LogicAnalyzer::SUMPAdapter::SUMPAdapter(LogicAnalyzer& logicAnalyzer, Stream& stream) : logicAnalyzer_(logicAnalyzer), stream_(stream)
 {}
@@ -664,11 +665,14 @@ void LogicAnalyzer::SUMPAdapter::ProcessCommand(uint8_t cmd, uint32_t arg)
 		SendMeta(TokenKey::EndOfMetadata);
 		Flush();
 	} else if ((cmd & 0xf3) == Command::SetTriggerMask) {
-		cfg_.triggerMask = arg;
+		int iStage = (cmd & 0x0c) >> 2;
+		cfg_.trigger[iStage].mask = arg;
 	} else if ((cmd & 0xf3) == Command::SetTriggerValues) {
-		cfg_.triggerValues = arg;
+		int iStage = (cmd & 0x0c) >> 2;
+		cfg_.trigger[iStage].value = arg;
 	} else if ((cmd & 0xf3) == Command::SetTriggerConfig) {
-		cfg_.triggerConfig = arg;
+		int iStage = (cmd & 0x0c) >> 2;
+		cfg_.trigger[iStage].config = arg;
 	} else if (cmd == Command::SetDivider) {
 		cfg_.divider = arg & 0x00ffffff;
 	} else if (cmd == Command::SetReadDelayCount) {
@@ -748,14 +752,16 @@ void LogicAnalyzer::SUMPAdapter::OnTick()
 //------------------------------------------------------------------------------
 void LogicAnalyzer::SUMPAdapter::Config::Print(Printable& tout) const
 {
-	tout.Printf("Trigger Mask:     0x%08x\n", triggerMask);
-	tout.Printf("Trigger Values:   0x%08x\n", triggerValues);
-	tout.Printf("Trigger Config\n");
-	tout.Printf("  Delay:          %d\n", GetTriggerConfig_Delay());
-	tout.Printf("  Level:          %d\n", GetTriggerConfig_Level());
-	tout.Printf("  Channel:        %d\n", GetTriggerConfig_Channel());
-	tout.Printf("  Serial:         %d\n", GetTriggerConfig_Serial());
-	tout.Printf("  Start:          %d\n", GetTriggerConfig_Start());
+	for (int iStage = 0; iStage < count_of(trigger); ++iStage) {
+		tout.Printf("Trigger Stage#%d\n", iStage);
+		tout.Printf("  Mask:           0x%08x\n", trigger[iStage].mask);
+		tout.Printf("  Value:          0x%08x\n", trigger[iStage].value);
+		tout.Printf("  Delay:          %d\n", GetTrigger_Delay(iStage));
+		tout.Printf("  Level:          %d\n", GetTrigger_Level(iStage));
+		tout.Printf("  Channel:        %d\n", GetTrigger_Channel(iStage));
+		tout.Printf("  Serial:         %d\n", GetTrigger_Serial(iStage));
+		tout.Printf("  Start:          %d\n", GetTrigger_Start(iStage));
+	}
 	tout.Printf("Divider:          %d\n", divider);
 	tout.Printf("Delay Count:      %d\n", delayCount);
 	tout.Printf("Read Count:       %d\n", readCount);
