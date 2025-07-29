@@ -150,8 +150,8 @@ public:
 			uint32_t triggerValues	= 0;
 			uint32_t triggerConfig	= 0;
 			uint32_t divider		= 1;
-			uint16_t delayCount		= 0;
-			uint16_t readCount		= 0;
+			uint32_t delayCount		= 0;
+			uint32_t readCount		= 0;
 			uint32_t flags			= 0;
 		public:
 			uint16_t GetTriggerConfig_Delay() const { return static_cast<uint16_t>(triggerConfig & 0xffff); }

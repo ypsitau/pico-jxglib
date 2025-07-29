@@ -657,7 +657,7 @@ void LogicAnalyzer::SUMPAdapter::ProcessCommand(uint8_t cmd, uint32_t arg)
 	} else if (cmd == Command::GetMetadata) {
 		SendMeta_String(TokenKey::DeviceName,			"jxgLABO Logic Analyzer");
 		SendMeta_String(TokenKey::FirmwareVersion,		"0.0.1");
-		SendMeta_32bit(TokenKey::SampleMemory,			8192);
+		SendMeta_32bit(TokenKey::SampleMemory,			700);
 		SendMeta_32bit(TokenKey::SampleRate,			10'000'000);
 		SendMeta_32bit(TokenKey::ProtocolVersion,		2);
 		SendMeta_32bit(TokenKey::NumberOfProbes,		8);
@@ -672,8 +672,8 @@ void LogicAnalyzer::SUMPAdapter::ProcessCommand(uint8_t cmd, uint32_t arg)
 	} else if (cmd == Command::SetDivider) {
 		cfg_.divider = arg & 0x00ffffff;
 	} else if (cmd == Command::SetReadDelayCount) {
-		cfg_.delayCount = static_cast<uint16_t>(arg >> 16);
-		cfg_.readCount = static_cast<uint16_t>(arg & 0xffff);
+		cfg_.delayCount = 4 * (((arg >> 16) & 0xffff) + 1);
+		cfg_.readCount = 4 * ((arg & 0xffff) + 1);
 	} else if (cmd == Command::SetFlags) {
 		cfg_.flags = arg;
 	}
@@ -709,20 +709,23 @@ void LogicAnalyzer::SUMPAdapter::RunCapture()
 {
 	Stdio::Instance.Println();
 	cfg_.Print();
-	for (int j = 0; j < 50; ++j) {
-		SendValue(0xff);
-		SendValue(0x00);
+	uint8_t buff[700];
+	for (int i = 0; i < count_of(buff); ++i) {
+		buff[i] = 1 << (i % 8); // fill with some data		
+	}
+	for (int j = count_of(buff) - 1; j >= 0; --j) {
+		stream_.PutByte(buff[j]);
 	}
 	Flush();
 }
 
 void LogicAnalyzer::SUMPAdapter::OnTick()
 {
-	int c = stream_.ReadChar();
-	if (c < 0) {
+	int data = stream_.ReadChar();
+	if (data < 0) {
 		// nothing to do
 	} else if (comm_.stat == Stat::Cmd) {
-		comm_.cmd = static_cast<uint8_t>(c);
+		comm_.cmd = static_cast<uint8_t>(data);
 		if (comm_.cmd & 0x80) {
 			comm_.byteArg = 0;
 			comm_.stat = Stat::Arg;
@@ -730,7 +733,8 @@ void LogicAnalyzer::SUMPAdapter::OnTick()
 			ProcessCommand(comm_.cmd, 0);
 		}
 	} else if (comm_.stat == Stat::Arg) {
-		comm_.arg = comm_.arg | static_cast<uint32_t>(static_cast<uint8_t>(c)) << (comm_.byteArg * 8);
+		//comm_.arg = comm_.arg | static_cast<uint32_t>(static_cast<uint8_t>(data)) << (comm_.byteArg * 8);
+		comm_.arg = (comm_.arg << 8) | static_cast<uint8_t>(data);
 		comm_.byteArg++;
 		if (comm_.byteArg == 4) {
 			ProcessCommand(comm_.cmd, comm_.arg);
