@@ -17,7 +17,6 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class Stream : public Printable, public Readable {
 public:
-	//virtual int Read(void* buff, int bytesBuff) = 0;
 	virtual int Write(const void* buff, int bytesBuff) = 0;
 public:
 	bool WriteTo(Stream&& streamTo);

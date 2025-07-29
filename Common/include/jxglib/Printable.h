@@ -76,6 +76,7 @@ public:
 	virtual Printable& PrintlnRaw(const char* str = "");
 	virtual Printable& VPrintf(const char* format, va_list args);
 	virtual Printable& VPrintfRaw(const char* format, va_list args);
+	Printable& PutByte(uint8_t data) { return PutCharRaw(static_cast<uint8_t>(data)); }
 	Printable& Printf(const char* format, ...);
 	Printable& PrintfRaw(const char* format, ...);
 public:

@@ -26,14 +26,16 @@ public:
 	};
 	// SUMP Metadata tokens
 	struct TokenKey {
-		static const uint8_t DeviceName			= 0x01;
-		static const uint8_t FPGAVersion		= 0x02;
-		static const uint8_t NumberProbes		= 0x20;
-		static const uint8_t SampleMemory		= 0x21;
-		static const uint8_t DynamicMemory		= 0x22;
-		static const uint8_t MaxSampleRate		= 0x23;
-		static const uint8_t ProtocolVersion	= 0x24;
-		static const uint8_t END				= 0x00;
+		static const uint8_t DeviceName				= 0x01;
+		static const uint8_t FirmwareVersion		= 0x02;
+		static const uint8_t NumberOfProbes			= 0x20;
+		static const uint8_t SampleMemory			= 0x21;
+		static const uint8_t DynamicMemory			= 0x22;
+		static const uint8_t SampleRate				= 0x23;
+		static const uint8_t ProtocolVersion		= 0x24;
+		static const uint8_t NumberOfProbes_Short	= 0x40;
+		static const uint8_t ProtocolVersion_Short	= 0x41;
+		static const uint8_t EndOfMetadata			= 0x00;
 	};
 private:
 	LogicAnalyzer& logicAnalyzer_;
@@ -49,9 +51,10 @@ public:
 	void RunCapture();
 private:
 	void SendValue(uint32_t value);
-	void SendMetadata(uint8_t tokenKey);
-	void SendMetadata(uint8_t tokenKey, const char* str);
-	void SendMetadata(uint8_t tokenKey, uint32_t value);
+	void SendMeta(uint8_t tokenKey);
+	void SendMeta_String(uint8_t tokenKey, const char* str);
+	void SendMeta_8bit(uint8_t tokenKey, uint8_t value);
+	void SendMeta_32bit(uint8_t tokenKey, uint32_t value);
 	void Flush() { stream_.Flush(); }
 };
 
@@ -61,85 +64,69 @@ SUMPProtocol::SUMPProtocol(LogicAnalyzer& logicAnalyzer, Stream& stream) :
 
 void SUMPProtocol::ProcessCommand(uint8_t cmd, uint32_t arg)
 {
-	uint8_t iStage = (cmd & 0x0c) >> 2;
-	switch (cmd & 0xf3) {
-	case Command::Reset: {
+	if (cmd == Command::Reset) {
 		//Run->Disable();
-		break;
-	}
-	case Command::Run: {
+	} else if (cmd == Command::Run) {
 		RunCapture();
-		break;
-	}
-	case Command::ID: {
+	} else if (cmd == Command::ID) {
 		stream_.Print("1ALS").Flush();
-		break;
-	}
-	case Command::GetMetadata: {
-		SendMetadata(TokenKey::DeviceName,		"pico-jxgLABO Logic Analyzer");
-		SendMetadata(TokenKey::ProtocolVersion,	2);
-		SendMetadata(TokenKey::SampleMemory,	8192);
-		SendMetadata(TokenKey::MaxSampleRate,	100000000);
-		SendMetadata(TokenKey::NumberProbes,	8);
-		SendMetadata(TokenKey::END);
+	} else if (cmd == Command::GetMetadata) {
+		SendMeta_String(TokenKey::DeviceName,			"jxgLABO Logic Analyzer");
+		SendMeta_String(TokenKey::FirmwareVersion,		"0.01");
+		SendMeta_32bit(TokenKey::SampleMemory,			8192);
+		SendMeta_32bit(TokenKey::SampleRate,			sampleRate_);
+		SendMeta_32bit(TokenKey::ProtocolVersion,		2);
+		SendMeta_32bit(TokenKey::NumberOfProbes,		8);
+		SendMeta(TokenKey::EndOfMetadata);
 		Flush();
-		break;
-	}
-	case Command::SetTriggerMask: {
-		::printf("triggerMask: %u\n", arg);
-		break;
-	}
-	case Command::SetTriggerValues: {
-		::printf("triggerValues: %u\n", arg);
-		break;
-	}
-	case Command::SetTriggerConfig: {
-		::printf("triggerConfig: %u\n", arg);
-		break;
-	}
-	case Command::SetDivider: {
-		::printf("divider: %u\n", arg);
-		break;
-	}
-	case Command::SetReadDelayCount: {
+	} else if ((cmd & 0xf3) == Command::SetTriggerMask) {
+		::printf("triggerMask: 0x%08x\n", arg);
+	} else if ((cmd & 0xf3) == Command::SetTriggerValues) {
+		::printf("triggerValues: 0x%08x\n", arg);
+	} else if ((cmd & 0xf3) == Command::SetTriggerConfig) {
+		::printf("triggerConfig: 0x%08x\n", arg);
+	} else if (cmd == Command::SetDivider) {
+		sampleRate_ = arg;
+		::printf("divider: %u\n", sampleRate_);
+	} else if (cmd == Command::SetReadDelayCount) {
 		delayCount_ = arg >> 16;
 		readCount_ = arg & 0xffff;
 		::printf("Read count set to %u, delay count set to %u\n", readCount_, delayCount_);
-		break;
-	}
-	case Command::SetFlags: {
+	} else if (cmd == Command::SetFlags) {
 		flags_ = arg;
-		::printf("Flags set to 0x%08X\n", flags_);
-		break;
-	}
-	default:
-		break;
+		::printf("Flags set to 0x%08x\n", flags_);
 	}
 }
 
 void SUMPProtocol::SendValue(uint32_t value)
 {
-	stream_.PutCharRaw((value >> 24) & 0xff);
-	stream_.PutCharRaw((value >> 16) & 0xff);
-	stream_.PutCharRaw((value >> 8) & 0xff);
-	stream_.PutCharRaw(value & 0xff);
+	stream_.PutByte((value >> 24) & 0xff);
+	stream_.PutByte((value >> 16) & 0xff);
+	stream_.PutByte((value >> 8) & 0xff);
+	stream_.PutByte(value & 0xff);
 }
 
-void SUMPProtocol::SendMetadata(uint8_t tokenKey)
+void SUMPProtocol::SendMeta(uint8_t tokenKey)
 {
-	stream_.PutCharRaw(tokenKey);
+	stream_.PutByte(tokenKey);
 }
 
-void SUMPProtocol::SendMetadata(uint8_t tokenKey, const char* str)
+void SUMPProtocol::SendMeta_String(uint8_t tokenKey, const char* str)
 {
-	stream_.PutCharRaw(tokenKey);
+	stream_.PutByte(tokenKey);
 	stream_.PrintRaw(str);
-	stream_.PutCharRaw(0);
+	stream_.PutByte(0);
 }
 
-void SUMPProtocol::SendMetadata(uint8_t tokenKey, uint32_t value)
+void SUMPProtocol::SendMeta_8bit(uint8_t tokenKey, uint8_t value)
 {
-	stream_.PutCharRaw(tokenKey);
+	stream_.PutByte(tokenKey);
+	stream_.PutByte(value);
+}
+
+void SUMPProtocol::SendMeta_32bit(uint8_t tokenKey, uint32_t value)
+{
+	stream_.PutByte(tokenKey);
 	SendValue(value);
 }
 
