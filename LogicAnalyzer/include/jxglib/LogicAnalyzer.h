@@ -153,6 +153,20 @@ public:
 			uint16_t delayCount		= 0;
 			uint16_t readCount		= 0;
 			uint32_t flags			= 0;
+		public:
+			uint16_t GetTriggerConfig_Delay() const { return static_cast<uint16_t>(triggerConfig & 0xffff); }
+			uint8_t GetTriggerConfig_Level() const { return static_cast<uint8_t>((triggerConfig >> 16) & 0x03); }
+			uint8_t GetTriggerConfig_Channel() const { return static_cast<uint8_t>((triggerConfig >> 20) & 0x1f); }
+			bool GetTriggerConfig_Serial() const { return (triggerConfig & (1 << 26)) != 0; }
+			bool GetTriggerConfig_Start() const { return (triggerConfig & (1 << 27)) != 0; }
+		public:
+			bool GetFlags_Demux() const { return (flags & (1 << 0)) != 0; }
+			bool GetFlags_Filter() const { return (flags & (1 << 1)) != 0; }
+			uint8_t GetFlags_ChannelGroups() const { return static_cast<uint8_t>((flags >> 2) & 0x0f); }
+			bool GetFlags_External() const { return (flags & (1 << 6)) != 0; }
+			bool GetFlags_Inverted() const { return (flags & (1 << 7)) != 0; }
+		public:
+			void Print(Printable& tout = Stdio::Instance) const;
 		};
 		enum class Stat { Cmd, Arg };
 	private:
@@ -167,6 +181,9 @@ public:
 		Config cfg_;
 	public:
 		SUMPAdapter(LogicAnalyzer& logicAnalyzer, Stream& stream);
+	public:
+		const Config& GetConfig() const { return cfg_; }
+	public:
 		void ProcessCommand(uint8_t cmd, uint32_t arg);
 		void RunCapture();
 	private:

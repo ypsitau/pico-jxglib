@@ -640,7 +640,7 @@ const LogicAnalyzer::RawEvent* LogicAnalyzer::EventIterator::NextRawEvent(int* p
 }
 
 //------------------------------------------------------------------------------
-// SUMP Protocol Adapter
+// LogicAnalyzer::SUMPAdapter
 // https://firmware.buspirate.com/binmode-reference/protocol-sump
 //------------------------------------------------------------------------------
 LogicAnalyzer::SUMPAdapter::SUMPAdapter(LogicAnalyzer& logicAnalyzer, Stream& stream) : logicAnalyzer_(logicAnalyzer), stream_(stream)
@@ -670,10 +670,10 @@ void LogicAnalyzer::SUMPAdapter::ProcessCommand(uint8_t cmd, uint32_t arg)
 	} else if ((cmd & 0xf3) == Command::SetTriggerConfig) {
 		cfg_.triggerConfig = arg;
 	} else if (cmd == Command::SetDivider) {
-		cfg_.divider = arg;
+		cfg_.divider = arg & 0x00ffffff;
 	} else if (cmd == Command::SetReadDelayCount) {
-		cfg_.delayCount = arg >> 16;
-		cfg_.readCount = arg & 0xffff;
+		cfg_.delayCount = static_cast<uint16_t>(arg >> 16);
+		cfg_.readCount = static_cast<uint16_t>(arg & 0xffff);
 	} else if (cmd == Command::SetFlags) {
 		cfg_.flags = arg;
 	}
@@ -707,6 +707,7 @@ void LogicAnalyzer::SUMPAdapter::SendMeta_32bit(uint8_t tokenKey, uint32_t value
 
 void LogicAnalyzer::SUMPAdapter::RunCapture()
 {
+	cfg_.Print();
 	for (int j = 0; j < 50; ++j) {
 		SendValue(0xff);
 		SendValue(0x00);
@@ -735,6 +736,30 @@ void LogicAnalyzer::SUMPAdapter::OnTick()
 			comm_.stat = Stat::Cmd;
 		}
 	}
+}
+
+//------------------------------------------------------------------------------
+// LogicAnalyzer::SUMPAdapter::Config
+//------------------------------------------------------------------------------
+void LogicAnalyzer::SUMPAdapter::Config::Print(Printable& tout) const
+{
+	tout.Printf("Trigger Mask:     0x%08x\n", triggerMask);
+	tout.Printf("Trigger Values:   0x%08x\n", triggerValues);
+	tout.Printf("Trigger Config\n");
+	tout.Printf("  Delay:          %d\n", GetTriggerConfig_Delay());
+	tout.Printf("  Level:          %d\n", GetTriggerConfig_Level());
+	tout.Printf("  Channel:        %d\n", GetTriggerConfig_Channel());
+	tout.Printf("  Serial:         %d\n", GetTriggerConfig_Serial());
+	tout.Printf("  Start:          %d\n", GetTriggerConfig_Start());
+	tout.Printf("Divider:          %d\n", divider);
+	tout.Printf("Delay Count:      %d\n", delayCount);
+	tout.Printf("Read Count:       %d\n", readCount);
+	tout.Printf("Flags\n");
+	tout.Printf("  Demux:          %d\n", GetFlags_Demux());
+	tout.Printf("  Filter:         %d\n", GetFlags_Filter());
+	tout.Printf("  Channel Groups: %d\n", GetFlags_ChannelGroups());
+	tout.Printf("  External:       %d\n", GetFlags_External());
+	tout.Printf("  Inverted:       %d\n", GetFlags_Inverted());
 }
 
 }
