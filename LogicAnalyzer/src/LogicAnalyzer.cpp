@@ -707,6 +707,7 @@ void LogicAnalyzer::SUMPAdapter::SendMeta_32bit(uint8_t tokenKey, uint32_t value
 
 void LogicAnalyzer::SUMPAdapter::RunCapture()
 {
+	Stdio::Instance.Println();
 	cfg_.Print();
 	for (int j = 0; j < 50; ++j) {
 		SendValue(0xff);
