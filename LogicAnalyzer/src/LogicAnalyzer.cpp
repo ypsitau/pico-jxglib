@@ -639,4 +639,102 @@ const LogicAnalyzer::RawEvent* LogicAnalyzer::EventIterator::NextRawEvent(int* p
 	return nullptr;	// never reached
 }
 
+//------------------------------------------------------------------------------
+// SUMP Protocol Adapter
+// https://firmware.buspirate.com/binmode-reference/protocol-sump
+//------------------------------------------------------------------------------
+LogicAnalyzer::SUMPAdapter::SUMPAdapter(LogicAnalyzer& logicAnalyzer, Stream& stream) : logicAnalyzer_(logicAnalyzer), stream_(stream)
+{}
+
+void LogicAnalyzer::SUMPAdapter::ProcessCommand(uint8_t cmd, uint32_t arg)
+{
+	if (cmd == Command::Reset) {
+		//Run->Disable();
+	} else if (cmd == Command::Run) {
+		RunCapture();
+	} else if (cmd == Command::ID) {
+		stream_.Print("1ALS").Flush();
+	} else if (cmd == Command::GetMetadata) {
+		SendMeta_String(TokenKey::DeviceName,			"jxgLABO Logic Analyzer");
+		SendMeta_String(TokenKey::FirmwareVersion,		"0.0.1");
+		SendMeta_32bit(TokenKey::SampleMemory,			8192);
+		SendMeta_32bit(TokenKey::SampleRate,			10'000'000);
+		SendMeta_32bit(TokenKey::ProtocolVersion,		2);
+		SendMeta_32bit(TokenKey::NumberOfProbes,		8);
+		SendMeta(TokenKey::EndOfMetadata);
+		Flush();
+	} else if ((cmd & 0xf3) == Command::SetTriggerMask) {
+		cfg_.triggerMask = arg;
+	} else if ((cmd & 0xf3) == Command::SetTriggerValues) {
+		cfg_.triggerValues = arg;
+	} else if ((cmd & 0xf3) == Command::SetTriggerConfig) {
+		cfg_.triggerConfig = arg;
+	} else if (cmd == Command::SetDivider) {
+		cfg_.divider = arg;
+	} else if (cmd == Command::SetReadDelayCount) {
+		cfg_.delayCount = arg >> 16;
+		cfg_.readCount = arg & 0xffff;
+	} else if (cmd == Command::SetFlags) {
+		cfg_.flags = arg;
+	}
+}
+
+void LogicAnalyzer::SUMPAdapter::SendValue(uint32_t value)
+{
+	stream_.PutByte((value >> 24) & 0xff);
+	stream_.PutByte((value >> 16) & 0xff);
+	stream_.PutByte((value >> 8) & 0xff);
+	stream_.PutByte(value & 0xff);
+}
+
+void LogicAnalyzer::SUMPAdapter::SendMeta(uint8_t tokenKey)
+{
+	stream_.PutByte(tokenKey);
+}
+
+void LogicAnalyzer::SUMPAdapter::SendMeta_String(uint8_t tokenKey, const char* str)
+{
+	stream_.PutByte(tokenKey);
+	stream_.PrintRaw(str);
+	stream_.PutByte(0);
+}
+
+void LogicAnalyzer::SUMPAdapter::SendMeta_32bit(uint8_t tokenKey, uint32_t value)
+{
+	stream_.PutByte(tokenKey);
+	SendValue(value);
+}
+
+void LogicAnalyzer::SUMPAdapter::RunCapture()
+{
+	for (int j = 0; j < 50; ++j) {
+		SendValue(0xff);
+		SendValue(0x00);
+	}
+	Flush();
+}
+
+void LogicAnalyzer::SUMPAdapter::OnTick()
+{
+	int c = stream_.ReadChar();
+	if (c < 0) {
+		// nothing to do
+	} else if (comm_.stat == Stat::Cmd) {
+		comm_.cmd = static_cast<uint8_t>(c);
+		if (comm_.cmd & 0x80) {
+			comm_.byteArg = 0;
+			comm_.stat = Stat::Arg;
+		} else {
+			ProcessCommand(comm_.cmd, 0);
+		}
+	} else if (comm_.stat == Stat::Arg) {
+		comm_.arg = comm_.arg | static_cast<uint32_t>(static_cast<uint8_t>(c)) << (comm_.byteArg * 8);
+		comm_.byteArg++;
+		if (comm_.byteArg == 4) {
+			ProcessCommand(comm_.cmd, comm_.arg);
+			comm_.stat = Stat::Cmd;
+		}
+	}
+}
+
 }

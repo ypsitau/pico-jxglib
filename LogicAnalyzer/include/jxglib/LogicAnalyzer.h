@@ -117,6 +117,70 @@ public:
 		int CountBits() const;
 	};
 public:
+	class SUMPAdapter : public Tickable {
+	public:
+		// SUMP Commands
+		struct Command {
+			static const uint8_t Reset				= 0x00;
+			static const uint8_t Run				= 0x01;
+			static const uint8_t ID					= 0x02;
+			static const uint8_t GetMetadata		= 0x04;
+			static const uint8_t SetDivider			= 0x80;
+			static const uint8_t SetReadDelayCount	= 0x81;
+			static const uint8_t SetFlags			= 0x82;
+			static const uint8_t SetTriggerMask		= 0xc0;
+			static const uint8_t SetTriggerValues	= 0xc1;
+			static const uint8_t SetTriggerConfig	= 0xc2;
+		};
+		// SUMP Metadata tokens
+		struct TokenKey {
+			static const uint8_t DeviceName				= 0x01;
+			static const uint8_t FirmwareVersion		= 0x02;
+			static const uint8_t NumberOfProbes			= 0x20;
+			static const uint8_t SampleMemory			= 0x21;
+			static const uint8_t DynamicMemory			= 0x22;
+			static const uint8_t SampleRate				= 0x23;
+			static const uint8_t ProtocolVersion		= 0x24;
+			static const uint8_t NumberOfProbes_Short	= 0x40;
+			static const uint8_t ProtocolVersion_Short	= 0x41;
+			static const uint8_t EndOfMetadata			= 0x00;
+		};
+		struct Config {
+			uint32_t triggerMask	= 0;
+			uint32_t triggerValues	= 0;
+			uint32_t triggerConfig	= 0;
+			uint32_t divider		= 1;
+			uint16_t delayCount		= 0;
+			uint16_t readCount		= 0;
+			uint32_t flags			= 0;
+		};
+		enum class Stat { Cmd, Arg };
+	private:
+		LogicAnalyzer& logicAnalyzer_;
+		Stream& stream_;
+		struct {
+			Stat stat = Stat::Cmd;
+			uint8_t cmd = 0;
+			uint32_t arg = 0;
+			int byteArg = 0;
+		} comm_;
+		Config cfg_;
+	public:
+		SUMPAdapter(LogicAnalyzer& logicAnalyzer, Stream& stream);
+		void ProcessCommand(uint8_t cmd, uint32_t arg);
+		void RunCapture();
+	private:
+		void SendValue(uint32_t value);
+		void SendMeta(uint8_t tokenKey);
+		void SendMeta_String(uint8_t tokenKey, const char* str);
+		void SendMeta_32bit(uint8_t tokenKey, uint32_t value);
+		void Flush() { stream_.Flush(); }
+	public:
+		// virtual functions of Tickable
+		virtual const char* GetTickableName() const override { return "SUMPAdapter"; }
+		virtual void OnTick() override;
+	};
+public:
 	static const WaveStyle waveStyle_fancy1;
 	static const WaveStyle waveStyle_fancy2;
 	static const WaveStyle waveStyle_fancy3;
