@@ -3,7 +3,12 @@
 //==============================================================================
 #include "jxglib/LABOPlatform.h"
 
-namespace jxglib {
+using namespace jxglib;
+
+LogicAnalyzer& ShellCmd_LogicAnalyzer_GetLogicAnalyzer()
+{
+	return LABOPlatform::Instance.GetLogicAnalyzer();
+}
 
 //------------------------------------------------------------------------------
 // LABOPlatform
@@ -11,6 +16,8 @@ namespace jxglib {
 const char* LABOPlatform::textREADME_ = R"(Welcome to pico-jxgLABO!
 Type 'help' in the shell to see available commands.
 )";
+
+LABOPlatform LABOPlatform::Instance;
 
 LABOPlatform::LABOPlatform(int bytesFlash) :
 	deviceController_({
@@ -43,6 +50,4 @@ void LABOPlatform::Initialize()
 		std::unique_ptr<FS::File> pFile(fat_.OpenFile("/README.txt", "w"));
 		if (pFile) pFile->Print(textREADME_);
 	}
-}
-
 }

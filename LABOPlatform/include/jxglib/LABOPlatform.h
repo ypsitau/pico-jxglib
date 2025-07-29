@@ -9,6 +9,7 @@
 #include "jxglib/USBDevice/MSCDrive.h"
 #include "jxglib/USBDevice/CDCSerial.h"
 #include "jxglib/FAT/Flash.h"
+#include "jxglib/LogicAnalyzer.h"
 
 namespace jxglib {
 
@@ -24,8 +25,11 @@ private:
 	USBDevice::CDCSerial cdcApplication_;
 	Serial::Terminal terminal_;
 	bool attachStdioFlag_;
+	LogicAnalyzer logicAnalyzer_;
 private:
 	static const char* textREADME_;
+public:
+	static LABOPlatform Instance;
 public:
 	LABOPlatform(int bytesFlash = PICO_FLASH_SIZE_BYTES - 0x010'0000);
 public:
@@ -38,6 +42,7 @@ public:
 	USBDevice::CDCSerial& GetCDCSerial() { return cdcTerminal_; }
 	USBDevice::CDCSerial& GetCDCApplication() { return cdcApplication_; }
 	Serial::Terminal& GetTerminal() { return terminal_; }
+	LogicAnalyzer& GetLogicAnalyzer() { return logicAnalyzer_; }
 };
 
 }

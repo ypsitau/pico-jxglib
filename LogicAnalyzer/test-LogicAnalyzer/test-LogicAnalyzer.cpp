@@ -6,10 +6,10 @@
 using namespace jxglib;
 
 //------------------------------------------------------------------------------
-// SUMP Protocol Handler
+// SUMP Protocol Adapter
 // https://firmware.buspirate.com/binmode-reference/protocol-sump
 //------------------------------------------------------------------------------
-class SUMPProtocol {
+class SUMPAdapter : public Tickable {
 public:
 	// SUMP Commands
 	struct Command {
@@ -37,32 +37,47 @@ public:
 		static const uint8_t ProtocolVersion_Short	= 0x41;
 		static const uint8_t EndOfMetadata			= 0x00;
 	};
+	struct Config {
+		uint32_t triggerMask	= 0;
+		uint32_t triggerValues	= 0;
+		uint32_t triggerConfig	= 0;
+		uint32_t divider		= 1;
+		uint16_t delayCount		= 0;
+		uint16_t readCount		= 0;
+		uint32_t flags			= 0;
+	};
+	enum class Stat { Cmd, Arg };
 private:
 	LogicAnalyzer& logicAnalyzer_;
 	Stream& stream_;
-	uint32_t sampleRate_;
-	uint32_t readCount_;
-	uint32_t delayCount_;
-	uint32_t flags_;
-	
+	struct {
+		Stat stat = Stat::Cmd;
+		uint8_t cmd = 0;
+		uint32_t arg = 0;
+		int byteArg = 0;
+	} comm_;
+	Config cfg_;
 public:
-	SUMPProtocol(LogicAnalyzer& logicAnalyzer, Stream& stream);
+	SUMPAdapter(LogicAnalyzer& logicAnalyzer, Stream& stream);
 	void ProcessCommand(uint8_t cmd, uint32_t arg);
 	void RunCapture();
 private:
 	void SendValue(uint32_t value);
 	void SendMeta(uint8_t tokenKey);
 	void SendMeta_String(uint8_t tokenKey, const char* str);
-	void SendMeta_8bit(uint8_t tokenKey, uint8_t value);
 	void SendMeta_32bit(uint8_t tokenKey, uint32_t value);
 	void Flush() { stream_.Flush(); }
+public:
+	// virtual functions of Tickable
+	virtual const char* GetTickableName() const override { return "SUMPAdapter"; }
+	virtual void OnTick() override;
 };
 
-SUMPProtocol::SUMPProtocol(LogicAnalyzer& logicAnalyzer, Stream& stream) : 
-	logicAnalyzer_(logicAnalyzer), stream_(stream), sampleRate_(1000000), readCount_(1024), delayCount_(0), flags_(0)
+SUMPAdapter::SUMPAdapter(LogicAnalyzer& logicAnalyzer, Stream& stream) :
+	logicAnalyzer_(logicAnalyzer), stream_(stream)
 {}
 
-void SUMPProtocol::ProcessCommand(uint8_t cmd, uint32_t arg)
+void SUMPAdapter::ProcessCommand(uint8_t cmd, uint32_t arg)
 {
 	if (cmd == Command::Reset) {
 		//Run->Disable();
@@ -74,31 +89,28 @@ void SUMPProtocol::ProcessCommand(uint8_t cmd, uint32_t arg)
 		SendMeta_String(TokenKey::DeviceName,			"jxgLABO Logic Analyzer");
 		SendMeta_String(TokenKey::FirmwareVersion,		"0.01");
 		SendMeta_32bit(TokenKey::SampleMemory,			8192);
-		SendMeta_32bit(TokenKey::SampleRate,			sampleRate_);
+		SendMeta_32bit(TokenKey::SampleRate,			10'000'000);
 		SendMeta_32bit(TokenKey::ProtocolVersion,		2);
 		SendMeta_32bit(TokenKey::NumberOfProbes,		8);
 		SendMeta(TokenKey::EndOfMetadata);
 		Flush();
 	} else if ((cmd & 0xf3) == Command::SetTriggerMask) {
-		::printf("triggerMask: 0x%08x\n", arg);
+		cfg_.triggerMask = arg;
 	} else if ((cmd & 0xf3) == Command::SetTriggerValues) {
-		::printf("triggerValues: 0x%08x\n", arg);
+		cfg_.triggerValues = arg;
 	} else if ((cmd & 0xf3) == Command::SetTriggerConfig) {
-		::printf("triggerConfig: 0x%08x\n", arg);
+		cfg_.triggerConfig = arg;
 	} else if (cmd == Command::SetDivider) {
-		sampleRate_ = arg;
-		::printf("divider: %u\n", sampleRate_);
+		cfg_.divider = arg;
 	} else if (cmd == Command::SetReadDelayCount) {
-		delayCount_ = arg >> 16;
-		readCount_ = arg & 0xffff;
-		::printf("Read count set to %u, delay count set to %u\n", readCount_, delayCount_);
+		cfg_.delayCount = arg >> 16;
+		cfg_.readCount = arg & 0xffff;
 	} else if (cmd == Command::SetFlags) {
-		flags_ = arg;
-		::printf("Flags set to 0x%08x\n", flags_);
+		cfg_.flags = arg;
 	}
 }
 
-void SUMPProtocol::SendValue(uint32_t value)
+void SUMPAdapter::SendValue(uint32_t value)
 {
 	stream_.PutByte((value >> 24) & 0xff);
 	stream_.PutByte((value >> 16) & 0xff);
@@ -106,31 +118,25 @@ void SUMPProtocol::SendValue(uint32_t value)
 	stream_.PutByte(value & 0xff);
 }
 
-void SUMPProtocol::SendMeta(uint8_t tokenKey)
+void SUMPAdapter::SendMeta(uint8_t tokenKey)
 {
 	stream_.PutByte(tokenKey);
 }
 
-void SUMPProtocol::SendMeta_String(uint8_t tokenKey, const char* str)
+void SUMPAdapter::SendMeta_String(uint8_t tokenKey, const char* str)
 {
 	stream_.PutByte(tokenKey);
 	stream_.PrintRaw(str);
 	stream_.PutByte(0);
 }
 
-void SUMPProtocol::SendMeta_8bit(uint8_t tokenKey, uint8_t value)
-{
-	stream_.PutByte(tokenKey);
-	stream_.PutByte(value);
-}
-
-void SUMPProtocol::SendMeta_32bit(uint8_t tokenKey, uint32_t value)
+void SUMPAdapter::SendMeta_32bit(uint8_t tokenKey, uint32_t value)
 {
 	stream_.PutByte(tokenKey);
 	SendValue(value);
 }
 
-void SUMPProtocol::RunCapture()
+void SUMPAdapter::RunCapture()
 {
 	// Configure and start capture
 	//int pins[] = {0, 1, 2, 3, 4, 5, 6, 7}; // Default 8 pins
@@ -156,41 +162,35 @@ void SUMPProtocol::RunCapture()
 	Flush();
 }
 
-LABOPlatform laboPlatform;
-LogicAnalyzer logicAnalyzer;
+void SUMPAdapter::OnTick()
+{
+	int c = stream_.ReadChar();
+	if (c < 0) {
+		// nothing to do
+	} else if (comm_.stat == Stat::Cmd) {
+		comm_.cmd = static_cast<uint8_t>(c);
+		if (comm_.cmd & 0x80) {
+			comm_.byteArg = 0;
+			comm_.stat = Stat::Arg;
+		} else {
+			ProcessCommand(comm_.cmd, 0);
+		}
+	} else if (comm_.stat == Stat::Arg) {
+		comm_.arg = comm_.arg | static_cast<uint32_t>(static_cast<uint8_t>(c)) << (comm_.byteArg * 8);
+		comm_.byteArg++;
+		if (comm_.byteArg == 4) {
+			ProcessCommand(comm_.cmd, comm_.arg);
+			comm_.stat = Stat::Cmd;
+		}
+	}
+}
 
 int main()
 {
 	::stdio_init_all();
+	LABOPlatform& laboPlatform = LABOPlatform::Instance;
 	laboPlatform.AttachStdio().Initialize();
 	Stream& cdcApplication = laboPlatform.GetCDCApplication();
-	SUMPProtocol sumpProtocol(logicAnalyzer, cdcApplication);
-	//printf("SUMP Logic Analyzer Ready\n");
-	enum class Stat { Cmd, Arg };
-	Stat stat = Stat::Cmd;
-	uint8_t cmd = 0;
-	uint32_t arg = 0;
-	int byteArg = 0;
-	for (;;) {
-		int c = cdcApplication.ReadChar();
-		if (c < 0) {
-			// nothing to do
-		} else if (stat == Stat::Cmd) {
-			cmd = static_cast<uint8_t>(c);
-			if (cmd & 0x80) {
-				byteArg = 0;
-				stat = Stat::Arg;
-			} else {
-				sumpProtocol.ProcessCommand(cmd, 0);
-			}
-		} else if (stat == Stat::Arg) {
-			arg = arg | static_cast<uint32_t>(static_cast<uint8_t>(c)) << (byteArg * 8);
-			byteArg++;
-			if (byteArg == 4) {
-				sumpProtocol.ProcessCommand(cmd, arg);
-				stat = Stat::Cmd;
-			}
-		}
-		Tickable::Tick();
-	}
+	SUMPAdapter sumpProtocol(laboPlatform.GetLogicAnalyzer(), cdcApplication);
+	for (;;) Tickable::Tick();
 }

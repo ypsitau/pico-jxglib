@@ -5,7 +5,8 @@ target_include_directories(jxglib_LABOPlatform INTERFACE
 
 target_link_libraries(jxglib_LABOPlatform INTERFACE
     jxglib_Shell jxglib_Serial jxglib_FAT_Flash jxglib_RTC_DS323x
-	jxglib_USBDevice_MSCDrive jxglib_USBDevice_CDCSerial)
+	jxglib_USBDevice_MSCDrive jxglib_USBDevice_CDCSerial
+	jxglib_LogicAnalyzer)
 
 target_sources(jxglib_LABOPlatform INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/LABOPlatform.cpp)

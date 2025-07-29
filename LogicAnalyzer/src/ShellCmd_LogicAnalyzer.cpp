@@ -3,12 +3,15 @@
 #include "jxglib/Shell.h"
 #include "jxglib/LogicAnalyzer.h"
 
-namespace jxglib::ShellCmd_LogicAnalyzer {
+using namespace jxglib;
 
-LogicAnalyzer logicAnalyzer;
+LogicAnalyzer& ShellCmd_LogicAnalyzer_GetLogicAnalyzer();
+
+namespace ShellCmd_LogicAnalyzer {
 
 ShellCmd(la, "Logic Analyzer")
 {
+	LogicAnalyzer& logicAnalyzer = ShellCmd_LogicAnalyzer_GetLogicAnalyzer();
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",			'h', "prints this help"),
 		Arg::OptString("pio",			'P', (PIO::Num == 3)? "PIO to use (0-2)" : "PIO to use (0-1)", "PIO"),
