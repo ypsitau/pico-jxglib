@@ -67,8 +67,8 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple1 = {
 	strHighIdle:	"  :",
 	strLow:			" | ",
 	strLowIdle:		" : ",
-	strLowToHigh:	" ++",
-	strHighToLow:	" ++",
+	strLowToHigh:	" ',",
+	strHighToLow:	" ,'",
 	formatHeader:	"P%-2d",
 };
 
@@ -79,8 +79,8 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple2 = {
 	strHighIdle:	"   :",
 	strLow:			" |  ",
 	strLowIdle:		" :  ",
-	strLowToHigh:	" +-+",
-	strHighToLow:	" +-+",
+	strLowToHigh:	" '-,",
+	strHighToLow:	" ,-'",
 	formatHeader:	"P%-2d ",
 };
 
@@ -91,8 +91,8 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple3 = {
 	strHighIdle:	"    :",
 	strLow:			" |   ",
 	strLowIdle:		" :   ",
-	strLowToHigh:	" +--+",
-	strHighToLow:	" +--+",
+	strLowToHigh:	" '--,",
+	strHighToLow:	" ,--'",
 	formatHeader:	"GP%-2d ",
 };
 
@@ -103,8 +103,8 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple4 = {
 	strHighIdle:	"     :",
 	strLow:			" |    ",
 	strLowIdle:		" :    ",
-	strLowToHigh:	" +---+",
-	strHighToLow:	" +---+",
+	strLowToHigh:	" '---,",
+	strHighToLow:	" ,---'",
 	formatHeader:	"GP%-2d  ",
 };
 

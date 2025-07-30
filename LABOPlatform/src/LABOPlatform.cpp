@@ -30,7 +30,7 @@ LABOPlatform::LABOPlatform(int bytesFlash) :
 		idProduct:			0x1ab0,
 		bcdDevice:			0x0100,
 	}, 0x0409, "jxglib", "pico-jxgLABO", "000000000000"),
-	fat_("*G:", bytesFlash),
+	fat_("*L:", bytesFlash),
 	mscDrive_(deviceController_, 0x01, 0x81),
 	streamTerminal_(deviceController_, "StreamSerial", 0x82, 0x03, 0x83),
 	streamApplication_(deviceController_, "StreamApplication", 0x84, 0x05, 0x85),
