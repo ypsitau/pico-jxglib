@@ -3,7 +3,7 @@
 #include "hardware/adc.h"
 #include "jxglib/Shell.h"
 
-using namespace jxglib;
+namespace jxglib::ShellCmd_ADC {
 
 static bool ProcessADC(Printable& terr, Printable& tout, const int inputTbl[], int nInputs,
 					int argc, char* argv[], bool rawFlag);
@@ -143,4 +143,6 @@ void PrintADC(Printable& tout, const int inputTbl[], int nInputs, bool labelFlag
 		}
 	}
 	tout.Println();
+}
+
 }

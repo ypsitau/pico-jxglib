@@ -1,9 +1,9 @@
 #include "jxglib/Shell.h"
 #include "jxglib/USBHost/MSC.h"
 
-using namespace jxglib;
+jxglib::USBHost::MSC& ShellCmd_USBHost_MSC_GetMSC();
 
-USBHost::MSC& ShellCmd_USBHost_MSC_GetMSC();
+namespace jxglib::ShellCmd_USBHost_MSC {
 
 ShellCmd_Named(msc_inquiry, "msc-inquiry", "Inquiry the connected MSC device")
 {
@@ -42,4 +42,6 @@ ShellCmd_Named(msc_dump, "msc-dump", "Read a block from the connected MSC device
 	}
 	Printable::DumpT(tout).DigitsAddr(4)(buff, sizeof(buff));
 	return Result::Success;
+}
+
 }

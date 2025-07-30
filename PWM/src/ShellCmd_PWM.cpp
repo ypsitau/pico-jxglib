@@ -9,7 +9,7 @@
 #include "jxglib/GPIO.h"
 #include "jxglib/GPIOInfo.h"
 
-using namespace jxglib;
+namespace jxglib::ShellCmd_PWM {
 
 static bool ProcessPWM(Printable& terr, Printable& tout, const int pinTbl[], int nPins, int argc, char* argv[], bool onlyPWMFlag, bool dumbFlag);
 static void PrintPWMStatus(Printable& tout, uint pin, bool onlyPWMFlag);
@@ -279,4 +279,6 @@ void PrintPWMStatus(Printable& tout, uint pin, bool onlyPWMFlag)
 	} else if (!onlyPWMFlag) {
 		tout.Printf("GPIO%-2u func:%s\n", pin, funcName);
 	}
+}
+
 }

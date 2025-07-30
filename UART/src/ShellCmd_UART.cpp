@@ -22,11 +22,12 @@ struct Config {
 
 static Config configTbl[2];  // UART0 and UART1 configurations
 
-const int bytesDataBuff = 8192;
+static const int bytesDataBuff = 8192;
 static uint8_t* dataBuff = nullptr;
 
 static bool WriteData(Printable& tout, Printable& terr, UART& uart, const char* value, uint32_t msecTimeout);
 static bool ReadData(Printable& tout, Printable& terr, UART& uart, const char* value, uint32_t msecTimeout);
+static void AllocDataBuff();
 static void PrintConfig(Printable& tout, int iUART, const char* formatGPIO);
 
 ShellCmd_Named(uart_, "uart", "controls UART communication")

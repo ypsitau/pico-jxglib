@@ -5,7 +5,7 @@
 #include "jxglib/Flash.h"
 #include "jxglib/FS.h"
 
-namespace jxglib {
+namespace jxglib::ShellCmd_Flash {
 
 ShellCmd_Named(flash_erase, "flash-erase", "erases flash memory")
 {

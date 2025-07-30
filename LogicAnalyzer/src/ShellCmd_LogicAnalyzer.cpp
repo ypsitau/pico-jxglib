@@ -3,11 +3,9 @@
 #include "jxglib/Shell.h"
 #include "jxglib/LogicAnalyzer.h"
 
-using namespace jxglib;
+jxglib::LogicAnalyzer& ShellCmd_LogicAnalyzer_GetLogicAnalyzer();
 
-LogicAnalyzer& ShellCmd_LogicAnalyzer_GetLogicAnalyzer();
-
-namespace ShellCmd_LogicAnalyzer {
+namespace jxglib::ShellCmd_LogicAnalyzer {
 
 ShellCmd(la, "Logic Analyzer")
 {

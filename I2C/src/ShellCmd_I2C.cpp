@@ -18,9 +18,10 @@ struct Config {
 
 static Config configTbl[2];  // I2C0 and I2C1 configurations
 
-const int bytesDataBuff = 8192;
+static const int bytesDataBuff = 8192;
 static uint8_t* dataBuff = nullptr;
 
+static void AllocDataBuff();
 static void ScanBus(Printable& tout, Printable& terr, I2C& i2c, int iBus, const Config& config);
 static bool WriteData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const char* value, bool nostop, uint32_t msecTimeout);
 static bool ReadData(Printable& tout, Printable& terr, I2C& i2c, uint8_t addr, const char* value, bool nostop, uint32_t msecTimeout);
@@ -419,9 +420,7 @@ void PrintConfig(Printable& tout, int iBus, const char* formatGPIO)
 	tout.Printf(" freq:%dHz pullup:%s timeout:%dmsec\n", config.freq, config.pullupFlag ? "on" : "off", config.msecTimeout);
 }
 
-}
-
-using namespace jxglib::ShellCmd_I2C;
-
 ShellCmdAlias_Named(i2c0_, "i2c0", i2c_)
 ShellCmdAlias_Named(i2c1_, "i2c1", i2c_)
+
+}

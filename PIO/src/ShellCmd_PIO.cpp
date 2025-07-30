@@ -7,7 +7,7 @@
 #include "jxglib/Shell.h"
 #include "jxglib/PIO.h"
 
-using namespace jxglib;
+namespace jxglib::ShellCmd_PIO {
 
 ShellCmd(pio, "controls PIO pins")
 {
@@ -23,4 +23,6 @@ ShellCmd(pio, "controls PIO pins")
 		return Result::Success;
 	}
 	return Result::Success;
+}
+
 }

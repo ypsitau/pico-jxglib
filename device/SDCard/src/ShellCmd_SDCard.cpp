@@ -1,9 +1,8 @@
 #include "jxglib/SDCard.h"
 #include "jxglib/Shell.h"
 
-using namespace jxglib;
-
-SDCard& ShellCmd_SDCard_GetSDCard();
+jxglib::SDCard& ShellCmd_SDCard_GetSDCard();
+namespace jxglib::ShellCmd_SDCard {
 
 ShellCmd_Named(sd_init, "sd-init", "Initialize SD card")
 {
@@ -69,4 +68,6 @@ ShellCmd_Named(sd_write, "sd-write", "Write SD card sector")
 	for (int i = 0; i < sizeof(buff); i++) buff[i] = static_cast<uint8_t>(i);
 	sdCard.WriteBlock(lba, buff, 1);
 	return Result::Success;
+}
+
 }

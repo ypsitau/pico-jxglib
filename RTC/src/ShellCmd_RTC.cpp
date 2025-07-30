@@ -3,7 +3,7 @@
 #include "jxglib/RTC.h"
 #include "jxglib/Shell.h"
 
-using namespace jxglib;
+namespace jxglib::ShellCmd_RTC {
 
 ShellCmd(rtc, "set or get RTC time")
 {
@@ -50,4 +50,6 @@ ShellCmd(rtc, "set or get RTC time")
 		}
 	} while (0);
 	return Result::Success;
+}
+
 }
