@@ -108,8 +108,8 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple4 = {
 	formatHeader:	"GP%-2d  ",
 };
 
-LogicAnalyzer::LogicAnalyzer() : rawEventBuffWhole_{nullptr}, iPIO_{PIO::Num - 1}, nSampler_{1}, target_{Target::Internal},
-		heapRatio_{.7}, heapRatioRequested_{.7}, usecReso_{1'000}
+LogicAnalyzer::LogicAnalyzer() : pTelePlot_{nullptr}, rawEventBuffWhole_{nullptr}, iPIO_{PIO::Num - 1},
+		nSampler_{1}, target_{Target::Internal}, heapRatio_{.7}, heapRatioRequested_{.7}, usecReso_{1'000}
 {
 	clocksPerLoop_ = 12; // program_SampleMain_ takes 12 clocks in the loop
 	SetSamplerCount(1);
@@ -279,7 +279,6 @@ const LogicAnalyzer::RawEvent& LogicAnalyzer::GetRawEvent(int iSampler, int iRaw
 const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 {
 	uint nBitsPinBitmap = samplingInfo_.CountBits();
-	//uint nBitsPinBitmap = 16;
 	EventIterator eventIter(*this, nBitsPinBitmap);
 	int nEventsRelevant = eventIter.CountRelevant();
 	if (nEventsRelevant == 0) {
@@ -302,7 +301,6 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		tout.Println();
 	};
 	printHeader();
-	double clockPIOProgram = CalcClockPIOProgram();
 	int nEventsToPrint =
 		(printInfo_.part == PrintPart::Head)? ChooseMin(nEventsRelevant, printInfo_.nEventsToPrint) :
 		(printInfo_.part == PrintPart::Tail)?  ChooseMin(nEventsRelevant, printInfo_.nEventsToPrint) :
@@ -339,7 +337,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 	}
 	Event eventPrev = eventInitial;
 	Event event = eventBase;
-	double timeStampFactor = 1000'000. / clockPIOProgram / nSampler_;
+	double timeStampFactor = 1000'000. / CalcClockPIOProgram() / nSampler_;
 	for (int iEvent = 0; iEvent < nEventsToPrint && !eventIter.IsDone(); ++iEvent, eventIter.Next(event)) {
 		double delta = static_cast<double>(event.GetTimeStamp() - eventPrev.GetTimeStamp()) * timeStampFactor;
 		int nDelta = static_cast<int>(delta / usecReso_);
@@ -397,6 +395,39 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		eventPrev = event;
 	}
 	if (nEventsToPrint > 0) printHeader();
+	return *this;
+}
+
+const LogicAnalyzer& LogicAnalyzer::PlotWave() const
+{
+	if (!pTelePlot_) return *this;
+	TelePlot& tp = *pTelePlot_;
+	uint nBitsPinBitmap = samplingInfo_.CountBits();
+	EventIterator eventIter(*this, nBitsPinBitmap);
+	int nEventsRelevant = eventIter.CountRelevant();
+	if (nEventsRelevant == 0) return *this;
+	double timeStampFactor = 1000'000. / CalcClockPIOProgram() / nSampler_;
+	Event eventInitial, eventBase;
+	eventIter.Next(eventInitial);
+	if (!eventIter.Next(eventBase)) eventBase = eventInitial;
+	Event eventPrev = eventBase;
+	Event event = eventBase;
+	TelePlot::Telemetry t = tp.Add("GPIO1");
+	for (int iEvent = 0; iEvent < 50 && !eventIter.IsDone(); ++iEvent, eventIter.Next(event)) {
+		double delta = static_cast<double>(event.GetTimeStamp() - eventPrev.GetTimeStamp()) * timeStampFactor;
+		int nDelta = static_cast<int>(delta * 10 / usecReso_);
+		if (nDelta > 100) nDelta = 100;
+		for (int iPin = 0; iPin < printInfo_.nPins; ++iPin) {
+			uint pin = printInfo_.pinTbl[iPin];
+			if (pin == -1) continue;
+			if (samplingInfo_.IsPinEnabled(pin)) {
+				float value = samplingInfo_.IsPinAsserted(eventPrev.GetPinBitmap(), pin)? .2 : 0;
+				for (int i = 0; i < nDelta; ++i) t.Plot(value);
+			}
+		}
+		if (Tickable::TickSub()) break;
+		eventPrev = event;
+	}
 	return *this;
 }
 

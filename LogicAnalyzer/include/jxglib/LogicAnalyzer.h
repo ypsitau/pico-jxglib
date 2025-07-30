@@ -6,6 +6,7 @@
 #include "pico/stdlib.h"
 #include "jxglib/PIO.h"
 #include "jxglib/DMA.h"
+#include "jxglib/TelePlot.h"
 
 namespace jxglib {
 
@@ -218,6 +219,7 @@ public:
 	static const WaveStyle waveStyle_simple3;
 	static const WaveStyle waveStyle_simple4;
 private:
+	TelePlot* pTelePlot_;
 	PIO::Program program_SamplerInit_;
 	PIO::Program program_SamplerMain_;
 	RawEvent* rawEventBuffWhole_;
@@ -234,6 +236,8 @@ private:
 public:
 	LogicAnalyzer();
 	~LogicAnalyzer();
+public:
+	LogicAnalyzer& AttachTelePlot(TelePlot& telePlot) { pTelePlot_ = &telePlot; return *this; }
 public:
 	bool Enable();
 	LogicAnalyzer& Disable();
@@ -260,6 +264,7 @@ public:
 	int GetRawEventCountMax() const;
 	const RawEvent& GetRawEvent(int iSampler, int iRawEvent) const;
 	const LogicAnalyzer& PrintWave(Printable& tout) const;
+	const LogicAnalyzer& PlotWave() const;
 	const LogicAnalyzer& PrintSettings(Printable& tout) const;
 public:
 	static size_t GetFreeHeapBytes();

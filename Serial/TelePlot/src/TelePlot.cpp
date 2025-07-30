@@ -282,7 +282,7 @@ const char* TelePlot::Telemetry::MakeValueHorzAxis(char* buff, int len)
 {
 	switch (horzAxis_) {
 	case HorzAxis::Sequence:
-		::snprintf(buff, len, ":%d", cnt_ * sequenceStep_);
+		::snprintf(buff, len, ":%lld", static_cast<uint64_t>(cnt_) * sequenceStep_);
 		break;
 	case HorzAxis::ProgramTime_usec:
 		::snprintf(buff, len, ":%lld", GetProgramTime_usec());

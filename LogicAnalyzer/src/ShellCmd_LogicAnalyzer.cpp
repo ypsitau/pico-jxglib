@@ -173,6 +173,8 @@ ShellCmd(la, "Logic Analyzer")
 			logicAnalyzer.PrintSettings(tout);
 		} else if (::strcmp(subcmd, "print") == 0) {
 			logicAnalyzer.PrintWave(tout);
+		} else if (::strcmp(subcmd, "plot") == 0) {
+			logicAnalyzer.PlotWave();
 		} else {
 			tout.Printf("unknown command: %s\n", subcmd);
 			return Result::Error;
