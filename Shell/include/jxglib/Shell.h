@@ -294,6 +294,16 @@ public:
 	public:
 		virtual int Run(Readable& tin, Printable& tout, Printable& terr, int argc, char* argv[]) = 0;
 	};
+	class Cmd_CAdaptor : Cmd {
+	public:
+		using Func = int (*)(int argc, char* argv[]);
+	private:
+		Func func_;
+	public:
+		Cmd_CAdaptor(const char* name, const char* help, Func func) : Cmd(name, help), func_{func} {}
+	public:
+		virtual int Run(Readable& tin, Printable& tout, Printable& terr, int argc, char* argv[]) override { return func_(argc, argv); }
+	};
 	class CandidateProvider {
 	public:
 		virtual const char* NextItemName(bool* pWrappedAroundFlag) = 0;
