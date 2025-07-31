@@ -56,11 +56,23 @@ LABOPlatform::LABOPlatform(int bytesFlash) :
 	streamTerminal_(deviceController_, "StreamSerial", 0x82, 0x03, 0x83),
 	streamApplication_(deviceController_, "StreamApplication", 0x84, 0x05, 0x85),
 	telePlot_(streamApplication_),
-	attachStdioFlag_{false}
+	attachStdioFlag_{false},
+	stdio_driver_ {
+		out_chars:						func_out_chars,
+		out_flush:						func_out_flush,
+		in_chars:						func_in_chars,
+		set_chars_available_callback:	func_set_chars_available_callback,
+		next:							nullptr,
+#if PICO_STDIO_ENABLE_CRLF_SUPPORT
+		last_ended_with_cr:				false,
+		crlf_enabled:					true
+#endif
+	}
 {}
 
 void LABOPlatform::Initialize()
 {
+	::stdio_set_driver_enabled(&stdio_driver_, true);
 	deviceController_.Initialize();
 	mscDrive_.Initialize(fat_);
 	streamTerminal_.Initialize();
@@ -72,4 +84,23 @@ void LABOPlatform::Initialize()
 		std::unique_ptr<FS::File> pFile(fat_.OpenFile("/README.txt", "w"));
 		if (pFile) pFile->Print(textREADME_);
 	}
+}
+
+void LABOPlatform::func_out_chars(const char* buf, int len)
+{
+	Instance.GetStreamTerminal().Write(buf, len);
+}
+
+void LABOPlatform::func_out_flush(void)
+{
+	Instance.GetStreamTerminal().Flush();
+}
+
+int LABOPlatform::func_in_chars(char* buf, int len)
+{
+	return Instance.GetStreamTerminal().Read(buf, len);
+}
+
+void LABOPlatform::func_set_chars_available_callback(void (*fn)(void*), void* param)
+{
 }

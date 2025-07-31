@@ -4,6 +4,7 @@
 #ifndef PICO_JXGLIB_LABOPLATFORM_H
 #define PICO_JXGLIB_LABOPLATFORM_H
 #include "pico/stdlib.h"
+#include "pico/stdio/driver.h"
 #if defined (__cplusplus)
 #include "jxglib/Shell.h"
 #include "jxglib/Serial.h"
@@ -29,6 +30,7 @@ private:
 	Serial::Terminal terminal_;
 	bool attachStdioFlag_;
 	LogicAnalyzer logicAnalyzer_;
+	stdio_driver_t stdio_driver_;
 private:
 	static const char* textREADME_;
 public:
@@ -47,6 +49,11 @@ public:
 	Serial::Terminal& GetTerminal() { return terminal_; }
 	TelePlot& GetTelePlot() { return telePlot_; }
 	LogicAnalyzer& GetLogicAnalyzer() { return logicAnalyzer_; }
+private:
+	static void func_out_chars(const char* buf, int len);
+	static void func_out_flush(void);
+	static int func_in_chars(char* buf, int len);
+	static void func_set_chars_available_callback(void (*fn)(void*), void *param);
 };
 
 }
