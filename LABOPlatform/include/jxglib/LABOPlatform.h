@@ -4,6 +4,7 @@
 #ifndef PICO_JXGLIB_LABOPLATFORM_H
 #define PICO_JXGLIB_LABOPLATFORM_H
 #include "pico/stdlib.h"
+#if defined (__cplusplus)
 #include "jxglib/Shell.h"
 #include "jxglib/Serial.h"
 #include "jxglib/TelePlot.h"
@@ -49,5 +50,19 @@ public:
 };
 
 }
+
+#endif
+
+#if defined (__cplusplus)
+extern "C"{
+#endif
+
+void jxglib_labo_init();
+void jxglib_tick();
+void jxglib_sleep(int msec);
+
+#if defined (__cplusplus)
+}
+#endif
 
 #endif

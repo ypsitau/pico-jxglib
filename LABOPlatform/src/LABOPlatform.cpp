@@ -5,6 +5,27 @@
 
 using namespace jxglib;
 
+//------------------------------------------------------------------------------
+// C functions
+//------------------------------------------------------------------------------
+void jxglib_labo_init()
+{
+	LABOPlatform::Instance.Initialize();
+}
+
+void jxglib_tick()
+{
+	Tickable::Tick();
+}
+
+void jxglib_sleep(int msec)
+{
+	Tickable::Sleep(msec);
+}
+
+//------------------------------------------------------------------------------
+// Callback function for the LogicAnalyzer
+//------------------------------------------------------------------------------
 LogicAnalyzer& ShellCmd_LogicAnalyzer_GetLogicAnalyzer()
 {
 	return LABOPlatform::Instance.GetLogicAnalyzer();
