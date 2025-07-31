@@ -20,7 +20,7 @@ ShellCmd(la, "Logic Analyzer")
 		Arg::OptString("reso",			'r', "resolution in microseconds (default 1000)", "RESO"),
 		Arg::OptString("part",			't', "printed part of the waveform (head, tail, all)", "PART"),
 		Arg::OptString("events",		'e', "number of events to print (default 80)", "NUM"),
-		Arg::OptString("style",			's', "waveform style (fancy1, fancy2, fancy3, fancy4, simple1, simple2, simple3, simple4)", "STYLE"),
+		Arg::OptString("style",			's', "waveform style (unicode1, unicode2, unicode3, unicode4, ascii1, ascii2, ascii3, ascii4)", "STYLE"),
 
 	};
 	Arg arg(optTbl, count_of(optTbl));
@@ -124,22 +124,22 @@ ShellCmd(la, "Logic Analyzer")
 	}
 	if (arg.GetString("style", &value)) {
 		const LogicAnalyzer::WaveStyle* pWaveStyle = nullptr;
-		if (::strcasecmp(value, "fancy1") == 0) {
-			pWaveStyle = &LogicAnalyzer::waveStyle_fancy1;
-		} else if (::strcasecmp(value, "fancy2") == 0) {
-			pWaveStyle = &LogicAnalyzer::waveStyle_fancy2;
-		} else if (::strcasecmp(value, "fancy3") == 0) {
-			pWaveStyle = &LogicAnalyzer::waveStyle_fancy3;
-		} else if (::strcasecmp(value, "fancy4") == 0) {
-			pWaveStyle = &LogicAnalyzer::waveStyle_fancy4;
-		} else if (::strcasecmp(value, "simple1") == 0) {
-			pWaveStyle = &LogicAnalyzer::waveStyle_simple1;
-		} else if (::strcasecmp(value, "simple2") == 0) {
-			pWaveStyle = &LogicAnalyzer::waveStyle_simple2;
-		} else if (::strcasecmp(value, "simple3") == 0) {
-			pWaveStyle = &LogicAnalyzer::waveStyle_simple3;
-		} else if (::strcasecmp(value, "simple4") == 0) {
-			pWaveStyle = &LogicAnalyzer::waveStyle_simple4;
+		if (::strcasecmp(value, "unicode1") == 0) {
+			pWaveStyle = &LogicAnalyzer::waveStyle_unicode1;
+		} else if (::strcasecmp(value, "unicode2") == 0) {
+			pWaveStyle = &LogicAnalyzer::waveStyle_unicode2;
+		} else if (::strcasecmp(value, "unicode3") == 0) {
+			pWaveStyle = &LogicAnalyzer::waveStyle_unicode3;
+		} else if (::strcasecmp(value, "unicode4") == 0) {
+			pWaveStyle = &LogicAnalyzer::waveStyle_unicode4;
+		} else if (::strcasecmp(value, "ascii1") == 0) {
+			pWaveStyle = &LogicAnalyzer::waveStyle_ascii1;
+		} else if (::strcasecmp(value, "ascii2") == 0) {
+			pWaveStyle = &LogicAnalyzer::waveStyle_ascii2;
+		} else if (::strcasecmp(value, "ascii3") == 0) {
+			pWaveStyle = &LogicAnalyzer::waveStyle_ascii3;
+		} else if (::strcasecmp(value, "ascii4") == 0) {
+			pWaveStyle = &LogicAnalyzer::waveStyle_ascii4;
 		} else {
 			terr.Printf("Invalid waveform style: %s\n", value);
 			return Result::Error;

@@ -98,7 +98,7 @@ public:
 		PrintPart part;
 		const WaveStyle* pWaveStyle;
 	public:
-		PrintInfo() : nPins{0}, nEventsToPrint{80}, part{PrintPart::Head}, pWaveStyle{&waveStyle_fancy2} {}
+		PrintInfo() : nPins{0}, nEventsToPrint{80}, part{PrintPart::Head}, pWaveStyle{&waveStyle_unicode2} {}
 	};
 	class SamplingInfo {
 	private:
@@ -210,14 +210,14 @@ public:
 		virtual void OnTick() override;
 	};
 public:
-	static const WaveStyle waveStyle_fancy1;
-	static const WaveStyle waveStyle_fancy2;
-	static const WaveStyle waveStyle_fancy3;
-	static const WaveStyle waveStyle_fancy4;
-	static const WaveStyle waveStyle_simple1;
-	static const WaveStyle waveStyle_simple2;
-	static const WaveStyle waveStyle_simple3;
-	static const WaveStyle waveStyle_simple4;
+	static const WaveStyle waveStyle_unicode1;
+	static const WaveStyle waveStyle_unicode2;
+	static const WaveStyle waveStyle_unicode3;
+	static const WaveStyle waveStyle_unicode4;
+	static const WaveStyle waveStyle_ascii1;
+	static const WaveStyle waveStyle_ascii2;
+	static const WaveStyle waveStyle_ascii3;
+	static const WaveStyle waveStyle_ascii4;
 private:
 	TelePlot* pTelePlot_;
 	PIO::Program program_SamplerInit_;

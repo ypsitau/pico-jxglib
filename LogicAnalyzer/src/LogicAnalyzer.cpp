@@ -12,8 +12,8 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // LogicAnalyzer
 //------------------------------------------------------------------------------
-const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_fancy1 = {
-	name:			"fancy1",
+const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_unicode1 = {
+	name:			"unicode1",
 	strBlank:		"   ",
 	strHigh:		"  │",
 	strHighIdle:	"  :",
@@ -24,8 +24,8 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_fancy1 = {
 	formatHeader:	"P%-2d",
 };
 
-const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_fancy2 = {
-	name:			"fancy2",
+const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_unicode2 = {
+	name:			"unicode2",
 	strBlank:		"    ",
 	strHigh:		"   │",
 	strHighIdle:	"   :",
@@ -36,8 +36,8 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_fancy2 = {
 	formatHeader:	"P%-2d ",
 };
 
-const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_fancy3 = {
-	name:			"fancy3",
+const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_unicode3 = {
+	name:			"unicode3",
 	strBlank:		"     ",
 	strHigh:		"    │",
 	strHighIdle:	"    :",
@@ -48,8 +48,8 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_fancy3 = {
 	formatHeader:	"GP%-2d ",
 };
 
-const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_fancy4 = {
-	name:			"fancy4",
+const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_unicode4 = {
+	name:			"unicode4",
 	strBlank:		"      ",
 	strHigh:		"     │",
 	strHighIdle:	"     :",
@@ -60,8 +60,8 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_fancy4 = {
 	formatHeader:	"GP%-2d  ",
 };
 
-const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple1 = {
-	name:			"simple1",
+const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_ascii1 = {
+	name:			"ascii1",
 	strBlank:		"   ",
 	strHigh:		"  |",
 	strHighIdle:	"  :",
@@ -72,38 +72,38 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple1 = {
 	formatHeader:	"P%-2d",
 };
 
-const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple2 = {
-	name:			"simple2",
+const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_ascii2 = {
+	name:			"ascii2",
 	strBlank:		"    ",
 	strHigh:		"   |",
 	strHighIdle:	"   :",
 	strLow:			" |  ",
 	strLowIdle:		" :  ",
-	strLowToHigh:	" '-,",
+	strLowToHigh:	" `-,",
 	strHighToLow:	" ,-'",
 	formatHeader:	"P%-2d ",
 };
 
-const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple3 = {
-	name:			"simple3",
+const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_ascii3 = {
+	name:			"ascii3",
 	strBlank:		"     ",
 	strHigh:		"    |",
 	strHighIdle:	"    :",
 	strLow:			" |   ",
 	strLowIdle:		" :   ",
-	strLowToHigh:	" '--,",
+	strLowToHigh:	" `--,",
 	strHighToLow:	" ,--'",
 	formatHeader:	"GP%-2d ",
 };
 
-const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_simple4 = {
-	name:			"simple4",
+const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_ascii4 = {
+	name:			"ascii4",
 	strBlank:		"      ",
 	strHigh:		"     |",
 	strHighIdle:	"     :",
 	strLow:			" |    ",
 	strLowIdle:		" :    ",
-	strLowToHigh:	" '---,",
+	strLowToHigh:	" `---,",
 	strHighToLow:	" ,---'",
 	formatHeader:	"GP%-2d  ",
 };
