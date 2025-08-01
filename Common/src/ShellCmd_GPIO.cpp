@@ -11,6 +11,8 @@ static void PrintPinFunc(Printable& tout, uint pin);
 static const char* strAvailableDrive = "2mA, 4mA, 8mA, 12mA";
 static const char* strAvailableSlew = "slow, fast";
 
+inline bool IsAccessiblePin(uint pin) { return !(pin == 23 || pin == 24 || pin == 25 || pin == 29); }
+
 ShellCmd(gpio, "controls GPIO pins")
 {
 	static const Arg::Opt optTbl[] = {
@@ -124,7 +126,7 @@ bool ProcessGPIO(Printable& terr, Printable& tout, const int pinTbl[], int nPins
 			}
 			for (int i = 0; i < nPins; ++i) {
 				uint pin = pinTbl[i];
-				::gpio_set_function(pin, pinFunc);
+				if (IsAccessiblePin(pin)) ::gpio_set_function(pin, pinFunc);
 			}
 		} else if (Shell::Arg::GetAssigned(subcmd, "drive", &value)) {
 			if (!value) {
@@ -134,22 +136,22 @@ bool ProcessGPIO(Printable& terr, Printable& tout, const int pinTbl[], int nPins
 			if (::strcasecmp(value, "2ma") == 0) {
 				for (int i = 0; i < nPins; ++i) {
 					uint pin = pinTbl[i];
-					::gpio_set_drive_strength(pin, GPIO_DRIVE_STRENGTH_2MA);
+					if (IsAccessiblePin(pin)) ::gpio_set_drive_strength(pin, GPIO_DRIVE_STRENGTH_2MA);
 				}
 			} else if (::strcasecmp(value, "4ma") == 0) {
 				for (int i = 0; i < nPins; ++i) {
 					uint pin = pinTbl[i];
-					::gpio_set_drive_strength(pin, GPIO_DRIVE_STRENGTH_4MA);
+					if (IsAccessiblePin(pin)) ::gpio_set_drive_strength(pin, GPIO_DRIVE_STRENGTH_4MA);
 				}
 			} else if (::strcasecmp(value, "8ma") == 0) {
 				for (int i = 0; i < nPins; ++i) {
 					uint pin = pinTbl[i];
-					::gpio_set_drive_strength(pin, GPIO_DRIVE_STRENGTH_8MA);
+					if (IsAccessiblePin(pin)) ::gpio_set_drive_strength(pin, GPIO_DRIVE_STRENGTH_8MA);
 				}
 			} else if (::strcasecmp(value, "12ma") == 0) {
 				for (int i = 0; i < nPins; ++i) {
 					uint pin = pinTbl[i];
-					::gpio_set_drive_strength(pin, GPIO_DRIVE_STRENGTH_12MA);
+					if (IsAccessiblePin(pin)) ::gpio_set_drive_strength(pin, GPIO_DRIVE_STRENGTH_12MA);
 				}
 			} else {
 				terr.Printf("unknown drive strength: %s\n", value);
@@ -163,12 +165,12 @@ bool ProcessGPIO(Printable& terr, Printable& tout, const int pinTbl[], int nPins
 			if (::strcasecmp(value, "slow") == 0) {
 				for (int i = 0; i < nPins; ++i) {
 					uint pin = pinTbl[i];
-					::gpio_set_slew_rate(pin, GPIO_SLEW_RATE_SLOW);
+					if (IsAccessiblePin(pin)) ::gpio_set_slew_rate(pin, GPIO_SLEW_RATE_SLOW);
 				}
 			} else if (::strcasecmp(value, "fast") == 0) {
 				for (int i = 0; i < nPins; ++i) {
 					uint pin = pinTbl[i];
-					::gpio_set_slew_rate(pin, GPIO_SLEW_RATE_FAST);
+					if (IsAccessiblePin(pin)) ::gpio_set_slew_rate(pin, GPIO_SLEW_RATE_FAST);
 				}
 			} else {
 				terr.Printf("unknown slew rate: %s\n", value);
@@ -193,7 +195,7 @@ bool ProcessGPIO(Printable& terr, Printable& tout, const int pinTbl[], int nPins
 			}
 			for (int i = 0; i < nPins; ++i) {
 				uint pin = pinTbl[i];
-				::gpio_set_pulls(pin, up, down);
+				if (IsAccessiblePin(pin)) ::gpio_set_pulls(pin, up, down);
 			}
 		} else if (Shell::Arg::GetAssigned(subcmd, "dir", &value)) {
 			if (!value) {
@@ -202,18 +204,20 @@ bool ProcessGPIO(Printable& terr, Printable& tout, const int pinTbl[], int nPins
 			} else if (::strcasecmp(value, "in") == 0) {
 				for (int i = 0; i < nPins; ++i) {
 					uint pin = pinTbl[i];
-					::gpio_set_dir(pin, GPIO_IN);
+					if (IsAccessiblePin(pin)) ::gpio_set_dir(pin, GPIO_IN);
 				}
 			} else if (::strcasecmp(value, "out") == 0) {
 				for (int i = 0; i < nPins; ++i) {
 					uint pin = pinTbl[i];
-					::gpio_set_dir(pin, GPIO_OUT);
+					if (IsAccessiblePin(pin)) ::gpio_set_dir(pin, GPIO_OUT);
 				}
 			} else if (::strcmp(value, "-") == 0 || ::strcmp(value, "--") == 0 || ::strcmp(value, "---") == 0) {
 				for (int i = 0; i < nPins; ++i) {
 					uint pin = pinTbl[i];
-					::gpio_set_dir(pin, GPIO_IN);
-					::gpio_set_input_enabled(pin, false);
+					if (IsAccessiblePin(pin)) {
+						::gpio_set_dir(pin, GPIO_IN);
+						::gpio_set_input_enabled(pin, false);
+					}
 				}
 			} else {
 				terr.Printf("unknown direction: %s\n", value);
@@ -278,8 +282,8 @@ void PrintPinFunc(Printable& tout, uint pin)
 	gpio_function_t pinFunc = ::gpio_get_function(pin);
 	gpio_drive_strength driveStrength = ::gpio_get_drive_strength(pin);
 	gpio_slew_rate slewRate = ::gpio_get_slew_rate(pin);
-	tout.Printf("GPIO%-2u %s%s func:%-10s dir:%-3s pull:%-4s drive:%s slew:%s\n",
-		pin,
+	tout.Printf("GPIO%-2u%s%s%s func:%-10s dir:%-3s pull:%-4s drive:%s slew:%s\n",
+		pin, IsAccessiblePin(pin)? " " : "*",
 		::gpio_get(pin)? "hi" : "lo",
 		(::gpio_get(pin) == ::gpio_get_out_level(pin))? " " : "~",
 		GPIOInfo::GetFuncName(pinFunc, pin, "------"),

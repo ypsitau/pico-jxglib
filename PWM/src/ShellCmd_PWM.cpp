@@ -16,6 +16,8 @@ static void PrintPWMStatus(Printable& tout, uint pin, bool onlyPWMFlag);
 
 static const char* strAvailableCommands = "func, enable, disable, freq, wrap, level, duty, clkdiv, phase-correct, invert, counter";
 
+inline bool IsAccessiblePin(uint pin) { return !(pin == 23 || pin == 24 || pin == 25 || pin == 29); }
+
 ShellCmd(pwm, "controls PWM pins")
 {
 	static const Arg::Opt optTbl[] = {
@@ -133,7 +135,10 @@ bool ProcessPWM(Printable& terr, Printable& tout, const int pinTbl[], int nPins,
 				terr.Printf("unknown function: %s\n", value);
 				return false;
 			}
-			for (int i = 0; i < nPins; ++i) ::gpio_set_function(pinTbl[i], pinFunc);
+			for (int i = 0; i < nPins; ++i) {
+				uint pin = pinTbl[i];
+				if (IsAccessiblePin(pin)) ::gpio_set_function(pin, pinFunc);
+			}
 		} else if (::strcasecmp(cmd, "enable") == 0) {
 			uint32_t mask = PWM::get_mask_enabled();
 			for (int i = 0; i < nPins; ++i) mask |= PWM(pinTbl[i]).GetSliceMask();
@@ -270,14 +275,14 @@ void PrintPWMStatus(Printable& tout, uint pin, bool onlyPWMFlag)
 	const char* funcName = GPIOInfo::GetFuncName(::gpio_get_function(pin), pin, "------");
 	if (pinFunc == GPIO_FUNC_PWM) {
 		PWM pwm(pin);
-		tout.Printf("GPIO%-2u func:%-10s %-8s freq:%uHz (clkdiv:%.1f wrap:0x%04x) duty:%.3f (level:0x%04x)%s%s counter:0x%04x\n",
-			pin, funcName, pwm.is_enabled()? "enabled" : "disabled",
+		tout.Printf("GPIO%-2u%sfunc:%-10s %-8s freq:%uHz (clkdiv:%.1f wrap:0x%04x) duty:%.3f (level:0x%04x)%s%s counter:0x%04x\n",
+			pin, IsAccessiblePin(pin) ? " " : "*", funcName, pwm.is_enabled()? "enabled" : "disabled",
 			pwm.get_freq(), pwm.get_clkdiv(), pwm.get_wrap(), pwm.get_chan_duty(), pwm.get_chan_level(),
 			pwm.get_phase_correct()? " phase-correct" : "",
 			pwm.get_chan_output_polarity() ? " inverted" : "",
 			pwm.get_counter());
 	} else if (!onlyPWMFlag) {
-		tout.Printf("GPIO%-2u func:%s\n", pin, funcName);
+		tout.Printf("GPIO%-2u%sfunc:%s\n", pin, IsAccessiblePin(pin) ? " " : "*", funcName);
 	}
 }
 
