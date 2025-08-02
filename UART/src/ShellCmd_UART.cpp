@@ -135,8 +135,7 @@ ShellCmd_Named(uart_, "uart", "controls UART communication")
 			const Info& info = infoTbl[pin];
 			if (info.iUART == iUART) {
 				const char* funcName = (info.func == Func::TX) ? "TX" :
-									   (info.func == Func::RX) ? "RX" :
-									   (info.func == Func::CTS) ? "CTS" : "RTS";
+						(info.func == Func::RX) ? "RX" : (info.func == Func::CTS) ? "CTS" : "RTS";
 				tout.Printf("GPIO%-2d UART%d %s\n", pin, info.iUART, funcName);
 			}
 		}
@@ -286,7 +285,8 @@ ShellCmd_Named(uart_, "uart", "controls UART communication")
 	uart.raw.set_fifo_enabled(true);
 	::gpio_set_function(config.TX, GPIO_FUNC_UART);
 	::gpio_set_function(config.RX, GPIO_FUNC_UART);
-	
+	while (uart.raw.is_readable()) uart.raw.getc();	// Clear any existing data in the RX buffer
+
 	int rtn = 0;
 	bool verboseFlag = arg.GetBool("verbose");
 	if (argc == 0) {
@@ -398,7 +398,7 @@ bool ReadData(Printable& tout, Printable& terr, UART& uart, const char* value, u
 			dataBuff[bytesRead] = static_cast<uint8_t>(uart.raw.getc());
 			bytesRead++;
 		} else {
-			::tight_loop_contents();
+			Tickable::TickSub();
 		}
 	}
 	
