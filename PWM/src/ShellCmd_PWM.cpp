@@ -11,12 +11,12 @@
 
 namespace jxglib::ShellCmd_PWM {
 
-static bool ProcessPWM(Printable& terr, Printable& tout, const int pinTbl[], int nPins, int argc, char* argv[], bool onlyPWMFlag, bool dumbFlag);
-static void PrintPWMStatus(Printable& tout, uint pin, bool onlyPWMFlag);
+static bool ProcessPWM(Printable& terr, Printable& tout, const int pinTbl[], int nPins, int argc, char* argv[], bool onlyPWMFlag, bool dumbFlag, bool builtinLEDFlag);
+static void PrintPWMStatus(Printable& tout, uint pin, bool onlyPWMFlag, bool builtinLEDFlag);
 
 static const char* strAvailableCommands = "func, enable, disable, freq, wrap, level, duty, clkdiv, phase-correct, invert, counter";
 
-inline bool IsAccessiblePin(uint pin) { return !(pin == 23 || pin == 24 || pin == 25 || pin == 29); }
+inline bool IsAccessiblePin(uint pin, bool builtinLEDFlag) { return pin != 23 && pin != 24 && pin != 29 && (pin != 25 || builtinLEDFlag); }
 
 ShellCmd(pwm, "controls PWM pins")
 {
@@ -24,12 +24,14 @@ ShellCmd(pwm, "controls PWM pins")
 		Arg::OptBool("help",		'h', "prints this help"),
 		Arg::OptBool("only-pwm",	'n', "only show PWM-capable pins"),
 		Arg::OptBool("quiet",		'Q', "do not print any status information"),
+		Arg::OptBool("builtin-led",	'B', "use the built-in LED (GPIO 25)"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	bool genericFlag = (::strcmp(GetName(), "pwm") == 0);
 	bool onlyPWMFlag = arg.GetBool("only-pwm");
 	bool quietFlag = arg.GetBool("quiet");
+	bool builtinLEDFlag = arg.GetBool("builtin-led");
 	if (arg.GetBool("help")) {
 		if (genericFlag) {
 			tout.Printf("Usage: %s [OPTION]... [PIN [COMMAND]...]\n", GetName());
@@ -57,7 +59,7 @@ ShellCmd(pwm, "controls PWM pins")
 	if (genericFlag) {
 		if (argc < 2) {
 			for (uint pin = 0; pin < GPIO::NumPins; ++pin) {
-				PrintPWMStatus(tout, pin, onlyPWMFlag);
+				PrintPWMStatus(tout, pin, onlyPWMFlag, builtinLEDFlag);
 			}
 			return Result::Success;
 		}
@@ -80,7 +82,7 @@ ShellCmd(pwm, "controls PWM pins")
 		nPins = 1;
 		nArgsSkip = 1;
 	}
-	return ProcessPWM(terr, tout, pinTbl, nPins, argc - nArgsSkip, argv + nArgsSkip, onlyPWMFlag, quietFlag)? Result::Success : Result::Error;
+	return ProcessPWM(terr, tout, pinTbl, nPins, argc - nArgsSkip, argv + nArgsSkip, onlyPWMFlag, quietFlag, builtinLEDFlag)? Result::Success : Result::Error;
 }
 
 // Create PWM pin aliases similar to GPIO
@@ -115,7 +117,7 @@ ShellCmdAlias(pwm27, pwm)
 ShellCmdAlias(pwm28, pwm)
 ShellCmdAlias(pwm29, pwm)
 
-bool ProcessPWM(Printable& terr, Printable& tout, const int pinTbl[], int nPins, int argc, char* argv[], bool onlyPWMFlag, bool quietFlag)
+bool ProcessPWM(Printable& terr, Printable& tout, const int pinTbl[], int nPins, int argc, char* argv[], bool onlyPWMFlag, bool quietFlag, bool builtinLEDFlag)
 {
 	Shell::Arg::EachSubcmd each(argv[0], argv[argc]);
 	if (!each.Initialize()) {
@@ -137,7 +139,7 @@ bool ProcessPWM(Printable& terr, Printable& tout, const int pinTbl[], int nPins,
 			}
 			for (int i = 0; i < nPins; ++i) {
 				uint pin = pinTbl[i];
-				if (IsAccessiblePin(pin)) ::gpio_set_function(pin, pinFunc);
+				if (IsAccessiblePin(pin, builtinLEDFlag)) ::gpio_set_function(pin, pinFunc);
 			}
 		} else if (::strcasecmp(cmd, "enable") == 0) {
 			uint32_t mask = PWM::get_mask_enabled();
@@ -264,25 +266,25 @@ bool ProcessPWM(Printable& terr, Printable& tout, const int pinTbl[], int nPins,
 		if (Tickable::TickSub()) return true;
 	}
 	if (!quietFlag) {
-		for (int i = 0; i < nPins; ++i) PrintPWMStatus(tout, pinTbl[i], onlyPWMFlag);
+		for (int i = 0; i < nPins; ++i) PrintPWMStatus(tout, pinTbl[i], onlyPWMFlag, builtinLEDFlag);
 	}
 	return true;
 }
 
-void PrintPWMStatus(Printable& tout, uint pin, bool onlyPWMFlag)
+void PrintPWMStatus(Printable& tout, uint pin, bool onlyPWMFlag, bool builtinLEDFlag)
 {
 	gpio_function_t pinFunc = ::gpio_get_function(pin);
 	const char* funcName = GPIOInfo::GetFuncName(::gpio_get_function(pin), pin, "------");
 	if (pinFunc == GPIO_FUNC_PWM) {
 		PWM pwm(pin);
 		tout.Printf("GPIO%-2u%sfunc:%-10s %-8s freq:%uHz (clkdiv:%.1f wrap:0x%04x) duty:%.3f (level:0x%04x)%s%s counter:0x%04x\n",
-			pin, IsAccessiblePin(pin) ? " " : "*", funcName, pwm.is_enabled()? "enabled" : "disabled",
+			pin, IsAccessiblePin(pin, builtinLEDFlag) ? " " : "*", funcName, pwm.is_enabled()? "enabled" : "disabled",
 			pwm.get_freq(), pwm.get_clkdiv(), pwm.get_wrap(), pwm.get_chan_duty(), pwm.get_chan_level(),
 			pwm.get_phase_correct()? " phase-correct" : "",
 			pwm.get_chan_output_polarity() ? " inverted" : "",
 			pwm.get_counter());
 	} else if (!onlyPWMFlag) {
-		tout.Printf("GPIO%-2u%sfunc:%s\n", pin, IsAccessiblePin(pin) ? " " : "*", funcName);
+		tout.Printf("GPIO%-2u%sfunc:%s\n", pin, IsAccessiblePin(pin, builtinLEDFlag) ? " " : "*", funcName);
 	}
 }
 
