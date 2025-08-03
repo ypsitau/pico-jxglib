@@ -40,6 +40,7 @@ ShellCmd(gpio, "controls GPIO pins")
 		tout.Printf("  pull:DIR             set pull direction (up, down, both, none)\n");
 		tout.Printf("  drive:STRENGTH       set pin drive strength (%s)\n", strAvailableDrive);
 		tout.Printf("  slew:SLEW            set slew rate (%s)\n", strAvailableSlew);
+		tout.Printf("  hyst:STATE           set hysteresis state (on, off)\n");
 		return Result::Success;
 	}
 	bool quietFlag = arg.GetBool("quiet");
@@ -157,6 +158,25 @@ bool ProcessGPIO(Printable& terr, Printable& tout, const int pinTbl[], int nPins
 				}
 			} else {
 				terr.Printf("unknown drive strength: %s\n", value);
+				return false;
+			}
+		} else if (Shell::Arg::GetAssigned(subcmd, "hyst", &value)) {
+			if (!value) {
+				terr.Printf("specify a hysteresis state: on, off\n");
+				return false;
+			}
+			if (::strcasecmp(value, "on") == 0) {
+				for (int i = 0; i < nPins; ++i) {
+					uint pin = pinTbl[i];
+					if (IsAccessiblePin(pin, builtinLEDFlag)) ::gpio_set_input_hysteresis_enabled(pin, true);
+				}
+			} else if (::strcasecmp(value, "off") == 0) {
+				for (int i = 0; i < nPins; ++i) {
+					uint pin = pinTbl[i];
+					if (IsAccessiblePin(pin, builtinLEDFlag)) ::gpio_set_input_hysteresis_enabled(pin, false);
+				}
+			} else {
+				terr.Printf("unknown hysteresis state: %s\n", value);
 				return false;
 			}
 		} else if (Shell::Arg::GetAssigned(subcmd, "slew", &value)) {
@@ -284,7 +304,7 @@ void PrintPinFunc(Printable& tout, uint pin, bool builtinLEDFlag)
 	gpio_function_t pinFunc = ::gpio_get_function(pin);
 	gpio_drive_strength driveStrength = ::gpio_get_drive_strength(pin);
 	gpio_slew_rate slewRate = ::gpio_get_slew_rate(pin);
-	tout.Printf("GPIO%-2u%s%s%s func:%-10s dir:%-3s pull:%-4s drive:%s slew:%s\n",
+	tout.Printf("GPIO%-2u%s%s%s func:%-10s dir:%-3s pull:%-4s drive:%s slew:%s hyst:%s\n",
 		pin, IsAccessiblePin(pin, builtinLEDFlag)? " " : "*",
 		::gpio_get(pin)? "hi" : "lo",
 		(::gpio_get(pin) == ::gpio_get_out_level(pin))? " " : "~",
@@ -298,7 +318,8 @@ void PrintPinFunc(Printable& tout, uint pin, bool builtinLEDFlag)
 		(driveStrength == GPIO_DRIVE_STRENGTH_8MA)? "8mA" :
 		(driveStrength == GPIO_DRIVE_STRENGTH_12MA)? "12mA" : "",
 		(slewRate == GPIO_SLEW_RATE_SLOW)? "slow" :
-		(slewRate == GPIO_SLEW_RATE_FAST)? "fast" : "");
+		(slewRate == GPIO_SLEW_RATE_FAST)? "fast" : "",
+		::gpio_is_input_hysteresis_enabled(pin)? "on" : "off");
 }
 
 }
