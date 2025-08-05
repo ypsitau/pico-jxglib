@@ -1,0 +1,53 @@
+;
+; fx2lafw compatible logic analyzer PIO program
+; Copyright (c) 2025
+;
+; This PIO program samples GPIO pins at high speed for logic analysis
+;
+
+.program logic_analyzer_8bit
+.side_set 1
+
+; Sample 8 GPIO pins continuously
+; Pins are expected to be consecutive starting from pin 0
+; Side-set pin can be used for trigger output
+
+public start:
+    wait 1 pin 0 side 0      ; Wait for start trigger (optional)
+sample_loop:
+    in pins, 8 side 1        ; Sample 8 pins, assert side-set pin
+    push noblock side 0      ; Push data to FIFO, clear side-set pin
+    jmp sample_loop side 0   ; Continue sampling
+
+% c-sdk {
+#include "hardware/clocks.h"
+
+static inline void logic_analyzer_8bit_program_init(PIO pio, uint sm, uint offset, uint pin_base, uint pin_count, float freq) {
+    pio_sm_config c = logic_analyzer_8bit_program_get_default_config(offset);
+    
+    // Set up the input pins
+    sm_config_set_in_pins(&c, pin_base);
+    sm_config_set_in_shift(&c, false, true, 8); // Shift right, autopush at 8 bits
+    
+    // Set up the side-set pin (for debugging/trigger)
+    sm_config_set_sideset_pins(&c, pin_base + pin_count);
+    
+    // Set the clock divider
+    float div = (float)clock_get_hz(clk_sys) / freq;
+    sm_config_set_clkdiv(&c, div);
+    
+    // Initialize the pins
+    for (uint i = pin_base; i < pin_base + pin_count; i++) {
+        pio_gpio_init(pio, i);
+        gpio_set_dir(i, GPIO_IN);
+    }
+    
+    // Initialize side-set pin
+    pio_gpio_init(pio, pin_base + pin_count);
+    gpio_set_dir(pin_base + pin_count, GPIO_OUT);
+    
+    // Load the program and start the state machine
+    pio_sm_init(pio, sm, offset, &c);
+    pio_sm_set_enabled(pio, sm, true);
+}
+%}
