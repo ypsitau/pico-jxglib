@@ -31,6 +31,7 @@ public:
 		Config& set_phase_correct(bool phase_correct) { ::pwm_config_set_phase_correct(&config_, phase_correct); return *this; }
 		Config& set_freq(uint32_t freq);
 		Config& set_clkdiv(float div) { ::pwm_config_set_clkdiv(&config_, div); return *this; }
+		Config& set_clkdiv_int_frac4(uint32_t div_int, uint8_t div_frac4) { ::pwm_config_set_clkdiv_int_frac4(&config_, div_int, div_frac4); return *this; }
 		Config& set_clkdiv_int_frac(uint8_t div_int, uint8_t div_frac) { ::pwm_config_set_clkdiv_int_frac(&config_, div_int, div_frac); return *this; }
 		Config& set_clkdiv_int(uint div) { ::pwm_config_set_clkdiv_int(&config_, div); return *this; }
 		Config& set_clkdiv_mode(enum pwm_clkdiv_mode mode) { ::pwm_config_set_clkdiv_mode(&config_, mode); return *this; }
