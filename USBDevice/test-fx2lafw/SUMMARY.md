@@ -67,6 +67,7 @@ void vendor_task(void) {
    - Driver: "fx2lafw"を選択
    - デバイスが自動認識される
    - サンプリング設定後、Startボタンでテストデータ取得
+   - **注意**: GPIO 2-9 がサンプリングチャンネル (GPIO 0,1 はUART用)
 
 3. **デバッグ**:
    - UART (GPIO 0/1) でデバッグ情報出力

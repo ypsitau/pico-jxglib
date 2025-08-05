@@ -26,8 +26,8 @@
 #define CMD_START_FLAGS_CLK_30MHZ       (0 << CMD_START_FLAGS_CLK_SRC_POS)
 #define CMD_START_FLAGS_CLK_48MHZ       (1 << CMD_START_FLAGS_CLK_SRC_POS)
 
-// GPIO pins for sampling
-#define SAMPLE_PIN_BASE         0
+// GPIO pins for sampling (avoiding GPIO 0,1 used by UART)
+#define SAMPLE_PIN_BASE         2
 #define SAMPLE_PIN_COUNT        8
 
 // Buffer configuration
@@ -228,7 +228,7 @@ int main() {
     printf("======================================\n");
     printf("Version: %d.%d\n", FX2LAFW_VERSION_MAJOR, FX2LAFW_VERSION_MINOR);
     printf("USB VID:PID = 1D50:608C (fx2lafw compatible)\n");
-    printf("GPIO pins: %d-%d\n", SAMPLE_PIN_BASE, SAMPLE_PIN_BASE + SAMPLE_PIN_COUNT - 1);
+    printf("GPIO pins: %d-%d (GPIO 0,1 reserved for UART)\n", SAMPLE_PIN_BASE, SAMPLE_PIN_BASE + SAMPLE_PIN_COUNT - 1);
     printf("\n");
     
     // Setup GPIO pins for sampling
