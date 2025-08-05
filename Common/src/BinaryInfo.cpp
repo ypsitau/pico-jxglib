@@ -166,7 +166,7 @@ void PrintMemoryMap(Printable& tout)
 {
 	tout.Printf("Memory Map\n");
 	tout.Printf(" flash binary:      0x%08x-0x%08x %7d\n", &__flash_binary_start, &__flash_binary_end, &__flash_binary_end - &__flash_binary_start);
-#if defined(__arm__)
+#if 0
 	tout.Printf(" ram vector table:  0x%08x-0x%08x %7d\n", &ram_vector_table, &ram_vector_table + PICO_RAM_VECTOR_TABLE_SIZE, PICO_RAM_VECTOR_TABLE_SIZE * sizeof(void*));
 #endif
 	tout.Printf(" data:              0x%08x-0x%08x %7d\n", &__data_start__, &__data_end__, &__data_end__ - &__data_start__);
