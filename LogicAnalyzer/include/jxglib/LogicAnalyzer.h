@@ -21,6 +21,10 @@ public:
 		uint32_t GetTimeStamp(uint nBitsPinBitmap) const { return (~(value_ >> nBitsPinBitmap)) & ((1 << (32 - nBitsPinBitmap)) - 1); }
 		uint32_t GetPinBitmap(uint nBitsPinBitmap) const { return value_ & ((1 << nBitsPinBitmap) - 1); }
 	};
+	struct PinBitmapSeries {
+		uint32_t count;
+		uint32_t pinBitmap;
+	};
 	class Event{
 	private:
 		uint64_t timeStamp_;
@@ -55,7 +59,7 @@ public:
 		Sampler();
 		~Sampler();
 	public:
-		void AssignBuff(RawEvent* rawEventBuff, int nRawEventMax) { rawEventBuff_ = rawEventBuff; nRawEventMax_ = nRawEventMax; }
+		void AssignBuff(void* rawEventBuff, int nRawEventMax) { rawEventBuff_ = reinterpret_cast<RawEvent*>(rawEventBuff); nRawEventMax_ = nRawEventMax; }
 		PIO::StateMachine& GetSM() { return sm_; }
 		const PIO::StateMachine& GetSM() const { return sm_; }
 		void SetProgram(const PIO::Program& program, pio_hw_t* pio, uint sm, uint relAddrEntry, uint pinMin, int nBitsPinBitmap);
@@ -210,6 +214,7 @@ public:
 		virtual void OnTick() override;
 	};
 public:
+	static const int bytesHeadMargin = 128;
 	static const WaveStyle waveStyle_unicode1;
 	static const WaveStyle waveStyle_unicode2;
 	static const WaveStyle waveStyle_unicode3;
@@ -222,7 +227,7 @@ private:
 	TelePlot* pTelePlot_;
 	PIO::Program program_SamplerInit_;
 	PIO::Program program_SamplerMain_;
-	RawEvent* rawEventBuffWhole_;
+	uint8_t* rawEventBuffWhole_;
 	uint iPIO_;
 	int nSampler_;
 	Sampler samplerTbl_[4];

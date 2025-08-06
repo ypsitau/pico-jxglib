@@ -130,12 +130,12 @@ bool LogicAnalyzer::Enable()
 	}
 	int nRawEventPerSampler = static_cast<int>(heapRatioRequested_ * GetFreeHeapBytes()) / (nSampler_ * sizeof(RawEvent));
 	if (!rawEventBuffWhole_) {
-		rawEventBuffWhole_ = reinterpret_cast<RawEvent*>(::malloc(nRawEventPerSampler * nSampler_  * sizeof(RawEvent)));
+		rawEventBuffWhole_ = reinterpret_cast<uint8_t*>(::malloc(bytesHeadMargin + nSampler_ * nRawEventPerSampler * sizeof(RawEvent)));
 		if (!rawEventBuffWhole_) return false;
 	}
 	heapRatio_ = heapRatioRequested_;
 	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) {
-		samplerTbl_[iSampler].AssignBuff(rawEventBuffWhole_ + iSampler * nRawEventPerSampler, nRawEventPerSampler);
+		samplerTbl_[iSampler].AssignBuff(rawEventBuffWhole_ + bytesHeadMargin + iSampler * nRawEventPerSampler * sizeof(RawEvent), nRawEventPerSampler);
 	}
 	uint nBitsPinBitmap = samplingInfo_.CountBits();
 	uint nBitsTimeStamp = 32 - nBitsPinBitmap;
@@ -542,8 +542,8 @@ LogicAnalyzer::Sampler& LogicAnalyzer::Sampler::ReleaseResource()
 
 int LogicAnalyzer::Sampler::GetRawEventCount() const
 {
-	return (reinterpret_cast<uint32_t>(pChannel_->get_write_addr()) -
-			reinterpret_cast<uint32_t>(rawEventBuff_)) / sizeof(RawEvent);
+	return pChannel_? (reinterpret_cast<uint32_t>(pChannel_->get_write_addr()) -
+			reinterpret_cast<uint32_t>(rawEventBuff_)) / sizeof(RawEvent) : 0;
 }
 
 void LogicAnalyzer::Sampler::DumpRawEventBuff(Printable& tout) const
