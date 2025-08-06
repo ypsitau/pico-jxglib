@@ -10,8 +10,8 @@ int main()
 	::stdio_init_all();
 	LABOPlatform& laboPlatform = LABOPlatform::Instance;
 	laboPlatform.AttachStdio().Initialize();
-	laboPlatform.GetLogicAnalyzer().AttachTelePlot(laboPlatform.GetTelePlot());
-	//Stream& streamApplication = laboPlatform.GetStreamApplication();
-	//LogicAnalyzer::SUMPAdapter sumpProtocol(laboPlatform.GetLogicAnalyzer(), streamApplication);
+	//laboPlatform.GetLogicAnalyzer().AttachTelePlot(laboPlatform.GetTelePlot());
+	Stream& streamApplication = laboPlatform.GetStreamApplication();
+	LogicAnalyzer::SUMPAdapter sumpProtocol(laboPlatform.GetLogicAnalyzer(), streamApplication);
 	for (;;) Tickable::Tick();
 }

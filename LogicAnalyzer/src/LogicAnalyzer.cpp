@@ -687,9 +687,9 @@ void LogicAnalyzer::SUMPAdapter::ProcessCommand(uint8_t cmd, uint32_t arg)
 	} else if (cmd == Command::ID) {
 		stream_.Print("1ALS").Flush();
 	} else if (cmd == Command::GetMetadata) {
-		SendMeta_String(TokenKey::DeviceName,			"jxgLABO Logic Analyzer");
-		SendMeta_String(TokenKey::FirmwareVersion,		"0.0.1");
-		SendMeta_32bit(TokenKey::SampleMemory,			700);
+		SendMeta_String(TokenKey::DeviceName,			PICO_PROGRAM_NAME);
+		SendMeta_String(TokenKey::FirmwareVersion,		PICO_PROGRAM_VERSION_STRING);
+		SendMeta_32bit(TokenKey::SampleMemory,			32768);
 		SendMeta_32bit(TokenKey::SampleRate,			10'000'000);
 		SendMeta_32bit(TokenKey::ProtocolVersion,		2);
 		SendMeta_32bit(TokenKey::NumberOfProbes,		8);
@@ -717,6 +717,7 @@ void LogicAnalyzer::SUMPAdapter::ProcessCommand(uint8_t cmd, uint32_t arg)
 void LogicAnalyzer::SUMPAdapter::SendValue(uint32_t value)
 {
 #if 1
+	// send in big-endian order
 	stream_.PutByte((value >> 24) & 0xff);
 	stream_.PutByte((value >> 16) & 0xff);
 	stream_.PutByte((value >> 8) & 0xff);
@@ -751,7 +752,7 @@ void LogicAnalyzer::SUMPAdapter::RunCapture()
 {
 	Stdio::Instance.Println();
 	cfg_.Print();
-	uint8_t buff[700];
+	uint8_t buff[2048];
 	for (int i = 0; i < count_of(buff); ++i) {
 		buff[i] = 1 << (i % 8); // fill with some data		
 	}
@@ -775,8 +776,9 @@ void LogicAnalyzer::SUMPAdapter::OnTick()
 			ProcessCommand(comm_.cmd, 0);
 		}
 	} else if (comm_.stat == Stat::Arg) {
-		//comm_.arg = comm_.arg | (static_cast<uint32_t>(data) << (comm_.byteArg * 8));
-		comm_.arg = (comm_.arg << 8) | data;
+		// receive in little-endian order
+		comm_.arg = comm_.arg | (static_cast<uint32_t>(data) << (comm_.byteArg * 8));
+		//comm_.arg = (comm_.arg << 8) | data;
 		comm_.byteArg++;
 		if (comm_.byteArg == 4) {
 			ProcessCommand(comm_.cmd, comm_.arg);

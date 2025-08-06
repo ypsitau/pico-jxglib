@@ -424,6 +424,7 @@ void vendor_task(void) {
         }
         
         // Try to send data if any USB condition is met
+#if 0
         if (vendor_available || mounted) {
             uint32_t bytes_to_send = buffer_pos;
             if (bytes_to_send > USB_EP_SIZE) {
@@ -494,6 +495,7 @@ void vendor_task(void) {
                 last_unavailable_msg = current_time;
             }
         }
+#endif
     }
 }
 
@@ -585,7 +587,25 @@ int main() {
         
         // Generate test data when sampling is active
         if (sampling_active) {
-            generate_test_data();
+            //==================================================================================================================
+            printf("--------------------------------------------------\n");
+            printf("Generating test data...\n");
+            for (int i = 0; i < 256; i++) {
+                sample_buffer[i * 2] = 0xff;
+                sample_buffer[i * 2 + 1] = 0x00;
+            }
+            for (int bytes = 0; bytes < 512; ) {
+                int bytes_sent = tud_vendor_write(sample_buffer + bytes, 512 - bytes);
+                printf("Sent %d bytes of test data\n", bytes_sent);
+                if (bytes_sent <= 0) {
+                    printf("ERROR: Failed to send test data, stopping sampling\n");
+                    sampling_active = false;
+                    break;
+                }
+                bytes += bytes_sent;
+            }
+            sampling_active = false; // Reset sampling after sending data
+            //generate_test_data();
             sleep_ms(1); // 1ms delay for test data generation
         } else {
             // Check if we should start sampling based on pending_cmd
