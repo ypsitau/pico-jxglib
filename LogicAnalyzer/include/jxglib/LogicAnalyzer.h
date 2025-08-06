@@ -256,7 +256,7 @@ public:
 	PrintPart GetPrintPart() const { return printInfo_.part; }
 	LogicAnalyzer& SetWaveStyle(const WaveStyle& waveStyle) { printInfo_.pWaveStyle = &waveStyle; return *this; }
 	const WaveStyle& GetWaveStyle() const { return *printInfo_.pWaveStyle; }
-	double CalcClockPIOProgram() const { return static_cast<double>(::clock_get_hz(clk_sys) / clocksPerLoop_); }
+	double GetSampleRate() const { return static_cast<double>(::clock_get_hz(clk_sys) / clocksPerLoop_); }
 	float GetResolution() const { return usecReso_; }
 	LogicAnalyzer& UpdateSamplingInfo() { samplingInfo_.Update(printInfo_); return *this; }
 	bool HasEnabledPins() const { return samplingInfo_.HasEnabledPins(); }

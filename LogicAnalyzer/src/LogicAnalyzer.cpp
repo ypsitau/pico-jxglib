@@ -337,7 +337,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 	}
 	Event eventPrev = eventInitial;
 	Event event = eventBase;
-	double timeStampFactor = 1000'000. / CalcClockPIOProgram() / nSampler_;
+	double timeStampFactor = 1000'000. / GetSampleRate() / nSampler_;
 	for (int iEvent = 0; iEvent < nEventsToPrint && !eventIter.IsDone(); ++iEvent, eventIter.Next(event)) {
 		double delta = static_cast<double>(event.GetTimeStamp() - eventPrev.GetTimeStamp()) * timeStampFactor;
 		int nDelta = static_cast<int>(delta / usecReso_);
@@ -406,7 +406,7 @@ const LogicAnalyzer& LogicAnalyzer::PlotWave() const
 	EventIterator eventIter(*this, nBitsPinBitmap);
 	int nEventsRelevant = eventIter.CountRelevant();
 	if (nEventsRelevant == 0) return *this;
-	double timeStampFactor = 1000'000. / CalcClockPIOProgram() / nSampler_;
+	double timeStampFactor = 1000'000. / GetSampleRate() / nSampler_;
 	Event eventInitial, eventBase;
 	eventIter.Next(eventInitial);
 	if (!eventIter.Next(eventBase)) eventBase = eventInitial;
@@ -440,7 +440,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 	} else {
 		tout.Printf("disabled ----");
 	}
-	tout.Printf(" %.1fMHz (samplers:%d) target:%s", CalcClockPIOProgram() * nSampler_ / 1000'000.,
+	tout.Printf(" %.1fMHz (samplers:%d) target:%s", GetSampleRate() * nSampler_ / 1000'000.,
 		nSampler_, (target_ == Target::Internal)? "internal" : "external");
 	do {
 		bool firstFlag = true;
@@ -689,8 +689,8 @@ void LogicAnalyzer::SUMPAdapter::ProcessCommand(uint8_t cmd, uint32_t arg)
 	} else if (cmd == Command::GetMetadata) {
 		SendMeta_String(TokenKey::DeviceName,			PICO_PROGRAM_NAME);
 		SendMeta_String(TokenKey::FirmwareVersion,		PICO_PROGRAM_VERSION_STRING);
-		SendMeta_32bit(TokenKey::SampleMemory,			32768);
-		SendMeta_32bit(TokenKey::SampleRate,			10'000'000);
+		SendMeta_32bit(TokenKey::SampleMemory,			2048);
+		SendMeta_32bit(TokenKey::SampleRate,			static_cast<uint32_t>(logicAnalyzer_.GetSampleRate()));
 		SendMeta_32bit(TokenKey::ProtocolVersion,		2);
 		SendMeta_32bit(TokenKey::NumberOfProbes,		8);
 		SendMeta(TokenKey::EndOfMetadata);
@@ -707,14 +707,12 @@ void LogicAnalyzer::SUMPAdapter::ProcessCommand(uint8_t cmd, uint32_t arg)
 	} else if (cmd == Command::SetDivider) {
 		cfg_.divider = arg & 0x00ffffff;
 	} else if (cmd == Command::SetReadDelayCount) {
-		::printf("%08x\n", arg);
 		cfg_.delayCount = 4 * (((arg >> 16) & 0xffff) + 1);
 		cfg_.readCount = 4 * ((arg & 0xffff) + 1);
 	} else if (cmd == Command::SetFlags) {
-		::printf("%08x\n", arg);
 		cfg_.flags = arg;
 	} else {
-		::printf("Unknown command: 0x%02x, arg:0x%08x\n", cmd, arg);
+		//::printf("Unknown command: 0x%02x, arg:0x%08x\n", cmd, arg);
 	}
 }
 
@@ -747,13 +745,15 @@ void LogicAnalyzer::SUMPAdapter::SendMeta_32bit(uint8_t tokenKey, uint32_t value
 
 void LogicAnalyzer::SUMPAdapter::RunCapture()
 {
+	double samplePeriod = 1. / (logicAnalyzer_.GetSampleRate() / (cfg_.divider + 1) * 10);
+	::printf("RunCapture: samplePeriod=%.3fms, readCount=%d\n", samplePeriod * 1000, cfg_.readCount);
 	Stdio::Instance.Println();
 	cfg_.Print();
 	uint8_t buff[2048];
-	for (int i = 0; i < count_of(buff); ++i) {
+	for (int i = 0; i < cfg_.readCount; ++i) {
 		buff[i] = 1 << (i % 8); // fill with some data		
 	}
-	for (int j = count_of(buff) - 1; j >= 0; --j) {
+	for (int j = cfg_.readCount - 1; j >= 0; --j) {
 		stream_.PutByte(buff[j]);
 	}
 	Flush();
