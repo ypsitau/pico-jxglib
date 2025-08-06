@@ -12,6 +12,6 @@ int main()
 	laboPlatform.AttachStdio().Initialize();
 	//laboPlatform.GetLogicAnalyzer().AttachTelePlot(laboPlatform.GetTelePlot());
 	Stream& streamApplication = laboPlatform.GetStreamApplication();
-	LogicAnalyzer::SUMPAdapter sumpProtocol(laboPlatform.GetLogicAnalyzer(), streamApplication);
+	LogicAnalyzer::SUMPAdapter sumpAdapter(laboPlatform.GetLogicAnalyzer(), streamApplication);
 	for (;;) Tickable::Tick();
 }

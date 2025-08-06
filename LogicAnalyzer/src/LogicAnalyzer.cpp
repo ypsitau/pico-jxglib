@@ -707,27 +707,24 @@ void LogicAnalyzer::SUMPAdapter::ProcessCommand(uint8_t cmd, uint32_t arg)
 	} else if (cmd == Command::SetDivider) {
 		cfg_.divider = arg & 0x00ffffff;
 	} else if (cmd == Command::SetReadDelayCount) {
+		::printf("%08x\n", arg);
 		cfg_.delayCount = 4 * (((arg >> 16) & 0xffff) + 1);
 		cfg_.readCount = 4 * ((arg & 0xffff) + 1);
 	} else if (cmd == Command::SetFlags) {
+		::printf("%08x\n", arg);
 		cfg_.flags = arg;
+	} else {
+		::printf("Unknown command: 0x%02x, arg:0x%08x\n", cmd, arg);
 	}
 }
 
 void LogicAnalyzer::SUMPAdapter::SendValue(uint32_t value)
 {
-#if 1
 	// send in big-endian order
 	stream_.PutByte((value >> 24) & 0xff);
 	stream_.PutByte((value >> 16) & 0xff);
 	stream_.PutByte((value >> 8) & 0xff);
 	stream_.PutByte(value & 0xff);
-#else
-	stream_.PutByte(value & 0xff);
-	stream_.PutByte((value >> 8) & 0xff);
-	stream_.PutByte((value >> 16) & 0xff);
-	stream_.PutByte((value >> 24) & 0xff);
-#endif
 }
 
 void LogicAnalyzer::SUMPAdapter::SendMeta(uint8_t tokenKey)
@@ -771,6 +768,7 @@ void LogicAnalyzer::SUMPAdapter::OnTick()
 		comm_.cmd = data;
 		if (comm_.cmd & 0x80) {
 			comm_.byteArg = 0;
+			comm_.arg = 0;
 			comm_.stat = Stat::Arg;
 		} else {
 			ProcessCommand(comm_.cmd, 0);
