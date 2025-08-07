@@ -398,6 +398,44 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 	return *this;
 }
 
+// This method destroys the RawEvent buffers and creates a set of SignalReport. 
+const LogicAnalyzer::SignalReport* LogicAnalyzer::CreateSignalReport(int nSamples, double samplePeriod, int* pnSignalReports)
+{
+	SignalReport* signalReportTbl = reinterpret_cast<SignalReport*>(GetRawEventBuffWhole());
+	*pnSignalReports = 0;
+	uint nBitsPinBitmap = samplingInfo_.CountBits();
+	EventIterator eventIter(*this, nBitsPinBitmap);
+	int nEventsRelevant = eventIter.CountRelevant();
+	Event event, eventPrev;
+	double timeStampFactor = 1000'000. / GetSampleRate() / GetSamplerCount();
+	int iEvent = 0;
+	int nSamplesCaptured = 0;
+	if (eventIter.Next(eventPrev)) {
+		int iSignalReport = 0;
+		iEvent++;
+		signalReportTbl[iSignalReport++] = SignalReport {1, eventPrev.GetPinBitmap()};
+		nSamplesCaptured++;
+		uint32_t pinBitmap = 0;
+		for ( ; eventIter.Next(event) && iEvent < nEventsRelevant && nSamplesCaptured < nSamples; ++iEvent) {
+			pinBitmap = event.GetPinBitmap();
+			if (pinBitmap == eventPrev.GetPinBitmap()) continue;
+			double timeDelta = (event.GetTimeStamp() - eventPrev.GetTimeStamp()) * timeStampFactor;
+			if (timeDelta < samplePeriod) continue;
+			uint32_t nSamples = static_cast<uint32_t>(timeDelta / samplePeriod);
+			signalReportTbl[iSignalReport++] = SignalReport { nSamples, pinBitmap };
+			nSamplesCaptured += nSamples;
+			eventPrev = event;
+		}
+		if (nSamplesCaptured > nSamples) {
+			signalReportTbl[iSignalReport - 1].nSamples -= nSamplesCaptured - nSamples; // trim the last sample
+		} else if (nSamplesCaptured < nSamples) {
+			signalReportTbl[iSignalReport - 1].nSamples += nSamples - nSamplesCaptured; // fill the rest with the last sample
+		}
+		*pnSignalReports = iSignalReport;
+	}
+	return signalReportTbl;
+}
+
 const LogicAnalyzer& LogicAnalyzer::PlotWave() const
 {
 	if (!pTelePlot_) return *this;
@@ -746,9 +784,16 @@ void LogicAnalyzer::SUMPAdapter::SendMeta_32bit(uint8_t tokenKey, uint32_t value
 void LogicAnalyzer::SUMPAdapter::RunCapture()
 {
 	double samplePeriod = 1. / (logicAnalyzer_.GetSampleRate() / (cfg_.divider + 1) * 10);
-	::printf("RunCapture: samplePeriod=%.3fms, readCount=%d\n", samplePeriod * 1000, cfg_.readCount);
-	Stdio::Instance.Println();
-	cfg_.Print();
+	logicAnalyzer_.Enable();
+	absolute_time_t elapsedTime = ::make_timeout_time_ms(samplePeriod * cfg_.readCount * 1000);
+	while (!::time_reached(elapsedTime) && !logicAnalyzer_.IsRawEventFull()) {
+		Tickable::TickSub();
+	}
+#if 0
+	for (int iSignalReport = nSignalReports - 1; iSignalReport >= 0; --iSignalReport) {
+		SignalReport& signalReport = signalReportTbl[iSignalReport];
+		signalReport.sigBitmap
+	}
 	uint8_t buff[2048];
 	for (int i = 0; i < cfg_.readCount; ++i) {
 		buff[i] = 1 << (i % 8); // fill with some data		
@@ -756,6 +801,7 @@ void LogicAnalyzer::SUMPAdapter::RunCapture()
 	for (int j = cfg_.readCount - 1; j >= 0; --j) {
 		stream_.PutByte(buff[j]);
 	}
+#endif
 	Flush();
 }
 

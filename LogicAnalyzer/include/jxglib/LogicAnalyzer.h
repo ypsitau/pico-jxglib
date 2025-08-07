@@ -21,11 +21,7 @@ public:
 		uint32_t GetTimeStamp(uint nBitsPinBitmap) const { return (~(value_ >> nBitsPinBitmap)) & ((1 << (32 - nBitsPinBitmap)) - 1); }
 		uint32_t GetPinBitmap(uint nBitsPinBitmap) const { return value_ & ((1 << nBitsPinBitmap) - 1); }
 	};
-	struct PinBitmapSeries {
-		uint32_t count;
-		uint32_t pinBitmap;
-	};
-	class Event{
+	class Event {
 	private:
 		uint64_t timeStamp_;
 		uint32_t pinBitmap_;
@@ -34,6 +30,10 @@ public:
 	public:
 		uint64_t GetTimeStamp() const { return timeStamp_; }
 		uint32_t GetPinBitmap() const { return pinBitmap_; }
+	};
+	struct SignalReport {
+		uint32_t nSamples;
+		uint32_t sigBitmap;
 	};
 	enum class Target { Internal, External };
 	struct WaveStyle {
@@ -246,10 +246,13 @@ public:
 public:
 	bool Enable();
 	LogicAnalyzer& Disable();
+	const SignalReport* CreateSignalReport(int nSignals, double samplePeriod, int* pnSignalReport);
 	LogicAnalyzer& SetPIO(uint iPIO) { iPIO_ = iPIO; return *this; }
+	void* GetRawEventBuffWhole() { return rawEventBuffWhole_; }
 	LogicAnalyzer& ReleaseResource();
 	LogicAnalyzer& SetPins(const int pinTbl[], int nPins);
 	LogicAnalyzer& SetSamplerCount(int nSampler) { nSampler_ = nSampler; return *this; }
+	const SamplingInfo& GetSamplingInfo() const { return samplingInfo_; }
 	int GetSamplerCount() const { return nSampler_; }
 	Sampler& GetSampler(int iSampler) { return samplerTbl_[iSampler]; }
 	const Sampler& GetSampler(int iSampler) const { return samplerTbl_[iSampler]; }
@@ -265,6 +268,7 @@ public:
 	float GetResolution() const { return usecReso_; }
 	LogicAnalyzer& UpdateSamplingInfo() { samplingInfo_.Update(printInfo_); return *this; }
 	bool HasEnabledPins() const { return samplingInfo_.HasEnabledPins(); }
+	bool IsRawEventFull() const { return samplerTbl_[0].IsFull(); }
 	int GetRawEventCount() const;
 	int GetRawEventCountMax() const;
 	const RawEvent& GetRawEvent(int iSampler, int iRawEvent) const;
