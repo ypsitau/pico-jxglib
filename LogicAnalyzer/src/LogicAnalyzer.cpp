@@ -138,7 +138,7 @@ bool LogicAnalyzer::Enable()
 	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) {
 		samplerTbl_[iSampler].AssignBuff(samplingBuffWhole_ + bytesHeadMargin + iSampler * bytesSamplingBuffPerSampler, bytesSamplingBuffPerSampler);
 	}
-	uint nBitsPinToSample = samplingInfo_.CountBits();
+	uint nBitsPinToSample = samplingInfo_.CountBits(); // must be less than 32 to avoid auto-push
 	uint nBitsTimeStamp = 32 - nBitsPinToSample;
 	uint relAddrEntryTbl[4];
 	program_SamplerInit_
@@ -159,21 +159,21 @@ bool LogicAnalyzer::Enable()
 		.mov("osr", "x")							// osr = x
 	.L("entry").pub(&relAddrEntryTbl[0])
 		.mov("isr", "null")							// isr = 0x00000000
-		.in("pins", nBitsPinToSample)				// isr = pins[nBitsPinToSample-1:0]
+		.in("pins", nBitsPinToSample)				// isr = pins[nBitsPinToSample-1:0] (no auto-push)
 		.mov("x", "isr")							// x = isr
 		.jmp("report_event") [1]					// goto report_event
 	.L("no_wrap_around")
 		.mov("osr", "x")							// osr = x
 		.mov("isr", "null")							// isr = 0x00000000
-		.in("pins", nBitsPinToSample)				// isr = pins[nBitsPinToSample-1:0]
+		.in("pins", nBitsPinToSample)				// isr = pins[nBitsPinToSample-1:0] (no auto-push)
 		.mov("x", "isr")							// x = isr
 		.jmp("x!=y", "report_event")				// if (x != y) goto report_event
 		.jmp("loop") [4]							// goto loop
 	.L("report_event")
+		.mov("isr", "null")							// isr = 0x00000000
 		.in("osr", nBitsTimeStamp)					// isr[nBitsTimeStamp-1:0] = osr[nBitsTimeStamp-1:0]
 		.in("x", nBitsPinToSample)					// isr[31:nBitsPinToSample] = isr[nBitsTimeStamp-1:0]
 													// isr[nBitsPinToSample-1:0] = x[nBitsPinToSample-1:0] (auto-push)
-		.push()										// push isr
 		.mov("y", "x") [1]							// y = x
 	.wrap()
 	.end();
@@ -526,13 +526,13 @@ LogicAnalyzer::Sampler::~Sampler()
 
 void LogicAnalyzer::Sampler::SetProgram(const PIO::Program& program, pio_hw_t* pio, uint sm, uint relAddrEntry, uint pinMin, int nBitsPinBitmap)
 {
-	sm_.config.set_in_shift_left(false, 32); // shift left, autopush disabled, push threshold 32
+	sm_.config.set_in_shift_left(true, 32); // shift left, autopush enabled, push threshold 32
 	sm_.set_program(program, pio, sm).set_listen_pins(pinMin, nBitsPinBitmap).init_with_entry(relAddrEntry);
 }
 
 void LogicAnalyzer::Sampler::ShareProgram(Sampler& sampler, pio_hw_t* pio, uint sm, uint relAddrEntry, uint pinMin, int nBitsPinBitmap)
 {
-	sm_.config.set_in_shift_left(false, 32); // shift left, autopush disabled, push threshold 32
+	sm_.config.set_in_shift_left(true, 32); // shift left, autopush enabled, push threshold 32
 	sm_.share_program(sampler.GetSM(), pio, sm).set_listen_pins(pinMin, nBitsPinBitmap).init_with_entry(relAddrEntry);
 }
 
