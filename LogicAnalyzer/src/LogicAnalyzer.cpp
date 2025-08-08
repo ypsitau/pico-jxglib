@@ -740,7 +740,7 @@ void LogicAnalyzer::SUMPAdapter::ProcessCommand(uint8_t cmd, uint32_t arg)
 	} else if (cmd == Command::GetMetadata) {
 		SendMeta_String(TokenKey::DeviceName,			PICO_PROGRAM_NAME);
 		SendMeta_String(TokenKey::FirmwareVersion,		PICO_PROGRAM_VERSION_STRING);
-		SendMeta_32bit(TokenKey::SampleMemory,			1024 * 1024);
+		SendMeta_32bit(TokenKey::SampleMemory,			1024);
 		SendMeta_32bit(TokenKey::SampleRate,			static_cast<uint32_t>(logicAnalyzer_.GetSampleRate()));
 		SendMeta_32bit(TokenKey::ProtocolVersion,		2);
 		SendMeta_32bit(TokenKey::NumberOfProbes,		logicAnalyzer_.GetPrintInfo().nPins);
@@ -796,19 +796,30 @@ void LogicAnalyzer::SUMPAdapter::SendMeta_32bit(uint8_t tokenKey, uint32_t value
 
 void LogicAnalyzer::SUMPAdapter::RunCapture()
 {
+	::printf("start capture\n");
 	double samplePeriod = 1. / (logicAnalyzer_.GetSampleRate() / (cfg_.divider + 1) * 10);
 	logicAnalyzer_.Enable();
-	absolute_time_t elapsedTime = ::make_timeout_time_ms(samplePeriod * cfg_.readCount * 1000);
+	//absolute_time_t elapsedTime = ::make_timeout_time_ms(samplePeriod * cfg_.readCount * 1000);
+	absolute_time_t elapsedTime = ::make_timeout_time_ms(1'000);
 	while (!::time_reached(elapsedTime) && !logicAnalyzer_.IsRawEventFull()) {
+	//while (!logicAnalyzer_.IsRawEventFull()) {
 		Tickable::TickSub();
 	}
 	int nSignalReports = 0;
 	const SignalReport* signalReportTbl = logicAnalyzer_.CreateSignalReport(cfg_.readCount, samplePeriod, &nSignalReports);
+	::printf("end capture: %d reports\n", nSignalReports);
+#if 0
 	for (int iSignalReport = nSignalReports - 1; iSignalReport >= 0; --iSignalReport) {
 		const SignalReport& signalReport = signalReportTbl[iSignalReport];
 		for (int i = 0; i < signalReport.nSamples; ++i) {
+			::printf("%02x\n", signalReport.sigBitmap);
 			stream_.PutByte(static_cast<uint8_t>(signalReport.sigBitmap));
 		}
+	}
+#endif
+	for (int i = 0; i < cfg_.readCount / 2; ++i) {
+		stream_.PutByte(0x00);
+		stream_.PutByte(0xff);
 	}
 	Flush();
 }
