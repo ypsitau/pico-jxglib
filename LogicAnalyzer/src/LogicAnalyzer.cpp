@@ -740,10 +740,10 @@ void LogicAnalyzer::SUMPAdapter::ProcessCommand(uint8_t cmd, uint32_t arg)
 	} else if (cmd == Command::GetMetadata) {
 		SendMeta_String(TokenKey::DeviceName,			PICO_PROGRAM_NAME);
 		SendMeta_String(TokenKey::FirmwareVersion,		PICO_PROGRAM_VERSION_STRING);
-		SendMeta_32bit(TokenKey::SampleMemory,			2048);
+		SendMeta_32bit(TokenKey::SampleMemory,			1024 * 1024);
 		SendMeta_32bit(TokenKey::SampleRate,			static_cast<uint32_t>(logicAnalyzer_.GetSampleRate()));
 		SendMeta_32bit(TokenKey::ProtocolVersion,		2);
-		SendMeta_32bit(TokenKey::NumberOfProbes,		8);
+		SendMeta_32bit(TokenKey::NumberOfProbes,		logicAnalyzer_.GetPrintInfo().nPins);
 		SendMeta(TokenKey::EndOfMetadata);
 		Flush();
 	} else if ((cmd & 0xf3) == Command::SetTriggerMask) {
@@ -802,19 +802,14 @@ void LogicAnalyzer::SUMPAdapter::RunCapture()
 	while (!::time_reached(elapsedTime) && !logicAnalyzer_.IsRawEventFull()) {
 		Tickable::TickSub();
 	}
-#if 0
+	int nSignalReports = 0;
+	const SignalReport* signalReportTbl = logicAnalyzer_.CreateSignalReport(cfg_.readCount, samplePeriod, &nSignalReports);
 	for (int iSignalReport = nSignalReports - 1; iSignalReport >= 0; --iSignalReport) {
-		SignalReport& signalReport = signalReportTbl[iSignalReport];
-		signalReport.sigBitmap
+		const SignalReport& signalReport = signalReportTbl[iSignalReport];
+		for (int i = 0; i < signalReport.nSamples; ++i) {
+			stream_.PutByte(static_cast<uint8_t>(signalReport.sigBitmap));
+		}
 	}
-	uint8_t buff[2048];
-	for (int i = 0; i < cfg_.readCount; ++i) {
-		buff[i] = 1 << (i % 8); // fill with some data		
-	}
-	for (int j = cfg_.readCount - 1; j >= 0; --j) {
-		stream_.PutByte(buff[j]);
-	}
-#endif
 	Flush();
 }
 

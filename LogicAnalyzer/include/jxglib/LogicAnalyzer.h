@@ -293,6 +293,7 @@ public:
 	LogicAnalyzer& SetPins(const int pinTbl[], int nPins);
 	LogicAnalyzer& SetSamplerCount(int nSampler) { nSampler_ = nSampler; return *this; }
 	const SamplingInfo& GetSamplingInfo() const { return samplingInfo_; }
+	const PrintInfo& GetPrintInfo() const { return printInfo_; }
 	int GetSamplerCount() const { return nSampler_; }
 	Sampler& GetSampler(int iSampler) { return samplerTbl_[iSampler]; }
 	const Sampler& GetSampler(int iSampler) const { return samplerTbl_[iSampler]; }
