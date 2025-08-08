@@ -688,9 +688,8 @@ const LogicAnalyzer::RawEvent* LogicAnalyzer::EventIterator::NextRawEvent(int* p
 		uint64_t timeStampAdjRtn = 0;
 		for (int iSampler = logicAnalyzer_.GetSamplerCount() - 1; iSampler >= 0; --iSampler) {
 			int iRawEvent = iRawEventTbl_[iSampler];
-			//const Sampler& sampler = logicAnalyzer_.GetSampler(iSampler);
 			if (iRawEvent < logicAnalyzer_.GetRawEventCount(iSampler)) {
-				const RawEvent& rawEvent = logicAnalyzer_.GetRawEvent(iSampler, iRawEvent); //sampler.GetRawEvent(iRawEvent);
+				const RawEvent& rawEvent = logicAnalyzer_.GetRawEvent(iSampler, iRawEvent);
 				uint64_t timeStampAdj = timeStampOffsetTbl_[iSampler] + rawEvent.GetTimeStamp(nBitsPinBitmap_);
 				if (iRawEvent > 0 && rawEvent.GetTimeStamp(nBitsPinBitmap_) == 0) timeStampAdj += timeStampOffsetIncr_; // wrap-around
 				if (iSamplerRtn < 0 || timeStampAdjRtn >= timeStampAdj) {
@@ -702,8 +701,7 @@ const LogicAnalyzer::RawEvent* LogicAnalyzer::EventIterator::NextRawEvent(int* p
 		if (iSamplerRtn < 0) return nullptr; // no more events
 		int iRawEvent = iRawEventTbl_[iSamplerRtn];
 		iRawEventTbl_[iSamplerRtn]++;
-		//const Sampler& sampler = logicAnalyzer_.GetSampler(iSamplerRtn);
-		const RawEvent& rawEvent = logicAnalyzer_.GetRawEvent(iSamplerRtn, iRawEvent); //sampler.GetRawEvent(iRawEvent);
+		const RawEvent& rawEvent = logicAnalyzer_.GetRawEvent(iSamplerRtn, iRawEvent);
 		if (iRawEvent > 0 && rawEvent.GetTimeStamp(nBitsPinBitmap_) == 0) {
 			timeStampOffsetTbl_[iSamplerRtn] += timeStampOffsetIncr_; // wrap-around
 		}
