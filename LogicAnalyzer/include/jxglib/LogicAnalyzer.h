@@ -65,13 +65,13 @@ public:
 		PIO::StateMachine sm_;
 		DMA::Channel* pChannel_;
 		DMA::ChannelConfig channelConfig_;
-		void* rawEventBuff_;
-		int bytesRawEventBuff_;
+		void* samplingBuff_;
+		int bytesSamplingBuff_;
 	public:
 		Sampler();
 		~Sampler();
 	public:
-		void AssignBuff(void* rawEventBuff, int bytesRawEventBuff) { rawEventBuff_ = rawEventBuff; bytesRawEventBuff_ = bytesRawEventBuff; }
+		void AssignBuff(void* samplingBuff, int bytesSamplingBuff) { samplingBuff_ = samplingBuff; bytesSamplingBuff_ = bytesSamplingBuff; }
 		PIO::StateMachine& GetSM() { return sm_; }
 		const PIO::StateMachine& GetSM() const { return sm_; }
 		void SetProgram(const PIO::Program& program, pio_hw_t* pio, uint sm, uint relAddrEntry, uint pinMin, int nBitsPinBitmap);
@@ -79,13 +79,11 @@ public:
 		Sampler& EnableDMA();
 		Sampler& ReleaseResource();
 	public:
-		const void* GetSamplingBuff() const { return rawEventBuff_; }
+		const void* GetSamplingBuff() const { return samplingBuff_; }
 		int GetBytesSampled() const;
-		int GetBytesRawEventBuff() const { return bytesRawEventBuff_; }
-		//int GetRawEventCountMax() const { return nRawEventMax_; }
-		bool IsFull() const { return GetBytesSampled() >= bytesRawEventBuff_; }
-		//const RawEvent& GetRawEvent2(int iRawEvent) const { return rawEventBuff_[iRawEvent]; }
-		void DumpRawEventBuff(Printable& tout) const;
+		int GetBytesSamplingBuff() const { return bytesSamplingBuff_; }
+		bool IsFull() const { return GetBytesSampled() >= bytesSamplingBuff_; }
+		void DumpSamplingBuff(Printable& tout) const;
 	};
 	class EventIterator {
 	private:

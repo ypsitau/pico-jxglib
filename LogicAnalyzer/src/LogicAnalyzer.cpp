@@ -273,9 +273,9 @@ int LogicAnalyzer::GetRawEventCount() const
 int LogicAnalyzer::GetRawEventCountMax() const
 {
 	if (!samplingInfo_.IsEnabled()) return 0;
-	int bytesRawEventBuff = 0;
-	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) bytesRawEventBuff += samplerTbl_[iSampler].GetBytesRawEventBuff();
-	return bytesRawEventBuff / sizeof(RawEvent);
+	int bytesSamplingBuff = 0;
+	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) bytesSamplingBuff += samplerTbl_[iSampler].GetBytesSamplingBuff();
+	return bytesSamplingBuff / sizeof(RawEvent);
 }
 
 const LogicAnalyzer::RawEvent& LogicAnalyzer::GetRawEvent(int iSampler, int iRawEvent) const
@@ -293,7 +293,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		tout.Printf("no events to print\n");
 		return *this;
 	}
-	//for (int iSampler = 0; iSampler < nSampler_; ++iSampler) samplerTbl_[iSampler].DumpRawEventBuff(tout);
+	//for (int iSampler = 0; iSampler < nSampler_; ++iSampler) samplerTbl_[iSampler].DumpSamplingBuff(tout);
 	const char* strBlank = "    ";
 	const WaveStyle& waveStyle = *printInfo_.pWaveStyle;
 	auto printHeader = [&]() {
@@ -530,7 +530,7 @@ size_t LogicAnalyzer::GetFreeHeapBytes()
 //------------------------------------------------------------------------------
 // LogicAnalyzer::Sampler
 //------------------------------------------------------------------------------
-LogicAnalyzer::Sampler::Sampler() : pChannel_{nullptr}, bytesRawEventBuff_{0}, rawEventBuff_{nullptr}
+LogicAnalyzer::Sampler::Sampler() : pChannel_{nullptr}, bytesSamplingBuff_{0}, samplingBuff_{nullptr}
 {
 }
 
@@ -568,8 +568,8 @@ LogicAnalyzer::Sampler& LogicAnalyzer::Sampler::EnableDMA()
 		.set_high_priority(false);
 	pChannel_->set_config(channelConfig_)
 		.set_read_addr(sm_.get_rxf())
-		.set_write_addr(rawEventBuff_)
-		.set_trans_count_trig(bytesRawEventBuff_ / sizeof(uint32_t));
+		.set_write_addr(samplingBuff_)
+		.set_trans_count_trig(bytesSamplingBuff_ / sizeof(uint32_t));
 	return *this;
 }
 
@@ -581,19 +581,19 @@ LogicAnalyzer::Sampler& LogicAnalyzer::Sampler::ReleaseResource()
 	pChannel_->abort();
 	pChannel_->unclaim();
 	pChannel_ = nullptr;
-	rawEventBuff_ = nullptr;
-	bytesRawEventBuff_ = 0;
+	samplingBuff_ = nullptr;
+	bytesSamplingBuff_ = 0;
 	return *this;
 }
 
 int LogicAnalyzer::Sampler::GetBytesSampled() const
 {
-	return pChannel_? (reinterpret_cast<uint32_t>(pChannel_->get_write_addr()) - reinterpret_cast<uint32_t>(rawEventBuff_)) : 0;
+	return pChannel_? (reinterpret_cast<uint32_t>(pChannel_->get_write_addr()) - reinterpret_cast<uint32_t>(samplingBuff_)) : 0;
 }
 
-void LogicAnalyzer::Sampler::DumpRawEventBuff(Printable& tout) const
+void LogicAnalyzer::Sampler::DumpSamplingBuff(Printable& tout) const
 {
-	Printable::DumpT(tout).Data32Bit()(rawEventBuff_, GetBytesSampled() / sizeof(uint32_t));
+	Printable::DumpT(tout).Data32Bit()(samplingBuff_, GetBytesSampled() / sizeof(uint32_t));
 }
 
 //------------------------------------------------------------------------------
