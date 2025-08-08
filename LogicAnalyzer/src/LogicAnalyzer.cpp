@@ -138,16 +138,12 @@ bool LogicAnalyzer::Enable()
 	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) {
 		samplerTbl_[iSampler].AssignBuff(samplingBuffWhole_ + bytesHeadMargin + iSampler * bytesSamplingBuffPerSampler, bytesSamplingBuffPerSampler);
 	}
-	uint nBitsPinBitmap = samplingInfo_.CountBits();
-	uint nBitsTimeStamp = 32 - nBitsPinBitmap;
+	uint nBitsPinToSample = samplingInfo_.CountBits();
+	uint nBitsTimeStamp = 32 - nBitsPinToSample;
 	uint relAddrEntryTbl[4];
 	program_SamplerInit_
 	.program("sampler_init")
 		.mov("osr", "~null")						// osr = 0xffffffff
-	//	.mov("isr", "null")							// isr = 0x00000000
-	//	.in("pins", nBitsPinBitmap)					// isr[nBitsPinBitmap-1:0] = pins[nBitsPinBitmap-1:0]
-	//	.mov("y", "isr")							// y = isr
-	//	.push() 									// push isr
 	.end();
 	program_SamplerMain_
 	.program("sampler_main")
@@ -157,41 +153,34 @@ bool LogicAnalyzer::Enable()
 		.jmp("entry")		[(nSampler_ == 4)? (6 - 1) : (nSampler_ == 3)? (8 - 1) :  0]
 	.pub(&relAddrEntryTbl[1])
 		.jmp("entry")		[(nSampler_ == 4)? (3 - 1) : (nSampler_ == 3)? (4 - 1) : (nSampler_ == 2)? (6 - 1) :  0]
-	//.L("entry").pub(&relAddrEntryTbl[0])
-	//.L("wait_for_first_event")
-	//	.mov("isr", "null")							// isr = 0x00000000
-	//	.in("pins", nBitsPinBitmap)					// isr = pins[nBitsPinBitmap-1:0]
-	//	.mov("x", "isr")							// x = isr
-	//	.jmp("x!=y", "report_event")				// if (x != y) goto report_event
-	//	.jmp("wait_for_first_event")				// goto wait_for_first_event
 	.L("loop").wrap_target()
 		.out("x", nBitsTimeStamp)					// x[nBitsTimeStamp-1:0] = osr[nBitsTimeStamp-1:0]
 		.jmp("x--", "no_wrap_around")				// if (x == 0) {x--} else {x--; goto no_wrap_around}
 		.mov("osr", "x")							// osr = x
 	.L("entry").pub(&relAddrEntryTbl[0])
 		.mov("isr", "null")							// isr = 0x00000000
-		.in("pins", nBitsPinBitmap)					// isr = pins[nBitsPinBitmap-1:0]
+		.in("pins", nBitsPinToSample)				// isr = pins[nBitsPinToSample-1:0]
 		.mov("x", "isr")							// x = isr
 		.jmp("report_event") [1]					// goto report_event
 	.L("no_wrap_around")
 		.mov("osr", "x")							// osr = x
 		.mov("isr", "null")							// isr = 0x00000000
-		.in("pins", nBitsPinBitmap)					// isr = pins[nBitsPinBitmap-1:0]
+		.in("pins", nBitsPinToSample)				// isr = pins[nBitsPinToSample-1:0]
 		.mov("x", "isr")							// x = isr
 		.jmp("x!=y", "report_event")				// if (x != y) goto report_event
 		.jmp("loop") [4]							// goto loop
 	.L("report_event")
 		.in("osr", nBitsTimeStamp)					// isr[nBitsTimeStamp-1:0] = osr[nBitsTimeStamp-1:0]
-		.in("x", nBitsPinBitmap)					// isr[31:nBitsPinBitmap] = isr[nBitsTimeStamp-1:0]
-													// isr[nBitsPinBitmap-1:0] = x[nBitsPinBitmap-1:0] (auto-push)
+		.in("x", nBitsPinToSample)					// isr[31:nBitsPinToSample] = isr[nBitsTimeStamp-1:0]
+													// isr[nBitsPinToSample-1:0] = x[nBitsPinToSample-1:0] (auto-push)
 		.push()										// push isr
 		.mov("y", "x") [1]							// y = x
 	.wrap()
 	.end();
 	pio_hw_t* pio = ::pio_get_instance(iPIO_);
-	samplerTbl_[0].SetProgram(program_SamplerMain_, pio, 0, relAddrEntryTbl[0], samplingInfo_.GetPinMin(), nBitsPinBitmap);
+	samplerTbl_[0].SetProgram(program_SamplerMain_, pio, 0, relAddrEntryTbl[0], samplingInfo_.GetPinMin(), nBitsPinToSample);
 	for (int iSampler = 1; iSampler < nSampler_; ++iSampler) {
-		samplerTbl_[iSampler].ShareProgram(samplerTbl_[0], pio, iSampler, relAddrEntryTbl[iSampler], samplingInfo_.GetPinMin(), nBitsPinBitmap);
+		samplerTbl_[iSampler].ShareProgram(samplerTbl_[0], pio, iSampler, relAddrEntryTbl[iSampler], samplingInfo_.GetPinMin(), nBitsPinToSample);
 	}
 	if (target_ == Target::External) {
 		uint pin = samplingInfo_.GetPinMin();
