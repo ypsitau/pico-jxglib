@@ -139,7 +139,12 @@ bool LogicAnalyzer::Enable()
 		samplerTbl_[iSampler].AssignBuff(samplingBuffWhole_ + bytesHeadMargin + iSampler * bytesSamplingBuffPerSampler, bytesSamplingBuffPerSampler);
 	}
 	uint nBitsPinToSample = samplingInfo_.CountBits(); // must be less than 32 to avoid auto-push
-	uint nBitsTimeStamp = 32 - nBitsPinToSample;
+	uint nBitsTimeStamp = 32;
+	uint nBitsPinToReport = 32;
+	if (IsRawEventTypeShort()) {
+		nBitsTimeStamp = 32 - nBitsPinToSample;
+		nBitsPinToReport = nBitsPinToSample;
+	}
 	uint relAddrEntryTbl[4];
 	program_SamplerInit_
 	.program("sampler_init")
@@ -172,8 +177,8 @@ bool LogicAnalyzer::Enable()
 	.L("report_event")
 		.mov("isr", "null")							// isr = 0x00000000
 		.in("osr", nBitsTimeStamp)					// isr[nBitsTimeStamp-1:0] = osr[nBitsTimeStamp-1:0]
-		.in("x", nBitsPinToSample)					// isr[31:nBitsPinToSample] = isr[nBitsTimeStamp-1:0]
-													// isr[nBitsPinToSample-1:0] = x[nBitsPinToSample-1:0] (auto-push)
+		.in("x", nBitsPinToReport)					// isr[31:nBitsPinToReport] = isr[nBitsTimeStamp-1:0]
+													// isr[nBitsPinToReport-1:0] = x[nBitsPinToReport-1:0] (auto-push)
 		.mov("y", "x") [1]							// y = x
 	.wrap()
 	.end();
