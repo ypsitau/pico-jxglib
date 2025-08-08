@@ -128,14 +128,15 @@ bool LogicAnalyzer::Enable()
 		::free(rawEventBuffWhole_);
 		rawEventBuffWhole_ = nullptr;
 	}
-	int nRawEventPerSampler = static_cast<int>(heapRatioRequested_ * GetFreeHeapBytes()) / (nSampler_ * sizeof(RawEvent));
+	int bytesRawEventBuffPerSampler = static_cast<int>(heapRatioRequested_ * GetFreeHeapBytes()) /
+						nSampler_ / sizeof(RawEvent_Long::Entity) * sizeof(RawEvent_Long::Entity);
 	if (!rawEventBuffWhole_) {
-		rawEventBuffWhole_ = reinterpret_cast<uint8_t*>(::malloc(bytesHeadMargin + nSampler_ * nRawEventPerSampler * sizeof(RawEvent)));
+		rawEventBuffWhole_ = reinterpret_cast<uint8_t*>(::malloc(bytesHeadMargin + nSampler_ * bytesRawEventBuffPerSampler));
 		if (!rawEventBuffWhole_) return false;
 	}
 	heapRatio_ = heapRatioRequested_;
 	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) {
-		samplerTbl_[iSampler].AssignBuff(rawEventBuffWhole_ + bytesHeadMargin + iSampler * nRawEventPerSampler * sizeof(RawEvent), nRawEventPerSampler);
+		samplerTbl_[iSampler].AssignBuff(rawEventBuffWhole_ + bytesHeadMargin + iSampler * bytesRawEventBuffPerSampler, bytesRawEventBuffPerSampler);
 	}
 	uint nBitsPinBitmap = samplingInfo_.CountBits();
 	uint nBitsTimeStamp = 32 - nBitsPinBitmap;
@@ -255,25 +256,32 @@ LogicAnalyzer& LogicAnalyzer::SetPins(const int pinTbl[], int nPins)
 	return *this;
 }
 
+int LogicAnalyzer::GetRawEventCount(int iSampler) const
+{
+	if (!samplingInfo_.IsEnabled()) return 0;
+	return samplerTbl_[iSampler].GetBytesSampled() / sizeof(RawEvent);
+}
+
 int LogicAnalyzer::GetRawEventCount() const
 {
 	if (!samplingInfo_.IsEnabled()) return 0;
 	int nEvent = 0;
-	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) nEvent += samplerTbl_[iSampler].GetRawEventCount();
+	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) nEvent += GetRawEventCount(iSampler); //samplerTbl_[iSampler].GetRawEventCount();
 	return nEvent;
 }
 
 int LogicAnalyzer::GetRawEventCountMax() const
 {
 	if (!samplingInfo_.IsEnabled()) return 0;
-	int nEvent = 0;
-	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) nEvent += samplerTbl_[iSampler].GetRawEventCountMax();
-	return nEvent;
+	int bytesRawEventBuff = 0;
+	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) bytesRawEventBuff += samplerTbl_[iSampler].GetBytesRawEventBuff();
+	return bytesRawEventBuff / sizeof(RawEvent);
 }
 
 const LogicAnalyzer::RawEvent& LogicAnalyzer::GetRawEvent(int iSampler, int iRawEvent) const
 {
-	return samplerTbl_[iSampler].GetRawEvent(iRawEvent);
+	return reinterpret_cast<const RawEvent*>(samplerTbl_[iSampler].GetSamplingBuff())[iRawEvent];
+	//return samplerTbl_[iSampler].GetRawEvent2(iRawEvent);
 }
 
 const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
@@ -522,7 +530,7 @@ size_t LogicAnalyzer::GetFreeHeapBytes()
 //------------------------------------------------------------------------------
 // LogicAnalyzer::Sampler
 //------------------------------------------------------------------------------
-LogicAnalyzer::Sampler::Sampler() : pChannel_{nullptr}, nRawEventMax_{0}, rawEventBuff_{nullptr}
+LogicAnalyzer::Sampler::Sampler() : pChannel_{nullptr}, bytesRawEventBuff_{0}, rawEventBuff_{nullptr}
 {
 }
 
@@ -561,7 +569,7 @@ LogicAnalyzer::Sampler& LogicAnalyzer::Sampler::EnableDMA()
 	pChannel_->set_config(channelConfig_)
 		.set_read_addr(sm_.get_rxf())
 		.set_write_addr(rawEventBuff_)
-		.set_trans_count_trig(nRawEventMax_ * sizeof(RawEvent) / sizeof(uint32_t));
+		.set_trans_count_trig(bytesRawEventBuff_ / sizeof(uint32_t));
 	return *this;
 }
 
@@ -574,19 +582,18 @@ LogicAnalyzer::Sampler& LogicAnalyzer::Sampler::ReleaseResource()
 	pChannel_->unclaim();
 	pChannel_ = nullptr;
 	rawEventBuff_ = nullptr;
-	nRawEventMax_ = 0;
+	bytesRawEventBuff_ = 0;
 	return *this;
 }
 
-int LogicAnalyzer::Sampler::GetRawEventCount() const
+int LogicAnalyzer::Sampler::GetBytesSampled() const
 {
-	return pChannel_? (reinterpret_cast<uint32_t>(pChannel_->get_write_addr()) -
-			reinterpret_cast<uint32_t>(rawEventBuff_)) / sizeof(RawEvent) : 0;
+	return pChannel_? (reinterpret_cast<uint32_t>(pChannel_->get_write_addr()) - reinterpret_cast<uint32_t>(rawEventBuff_)) : 0;
 }
 
 void LogicAnalyzer::Sampler::DumpRawEventBuff(Printable& tout) const
 {
-	Printable::DumpT(tout).Data32Bit()(rawEventBuff_, GetRawEventCount() * sizeof(RawEvent) / sizeof(uint32_t));
+	Printable::DumpT(tout).Data32Bit()(rawEventBuff_, GetBytesSampled() / sizeof(uint32_t));
 }
 
 //------------------------------------------------------------------------------
@@ -681,9 +688,9 @@ const LogicAnalyzer::RawEvent* LogicAnalyzer::EventIterator::NextRawEvent(int* p
 		uint64_t timeStampAdjRtn = 0;
 		for (int iSampler = logicAnalyzer_.GetSamplerCount() - 1; iSampler >= 0; --iSampler) {
 			int iRawEvent = iRawEventTbl_[iSampler];
-			const Sampler& sampler = logicAnalyzer_.GetSampler(iSampler);
-			if (iRawEvent < sampler.GetRawEventCount()) {
-				const RawEvent& rawEvent = sampler.GetRawEvent(iRawEvent);
+			//const Sampler& sampler = logicAnalyzer_.GetSampler(iSampler);
+			if (iRawEvent < logicAnalyzer_.GetRawEventCount(iSampler)) {
+				const RawEvent& rawEvent = logicAnalyzer_.GetRawEvent(iSampler, iRawEvent); //sampler.GetRawEvent(iRawEvent);
 				uint64_t timeStampAdj = timeStampOffsetTbl_[iSampler] + rawEvent.GetTimeStamp(nBitsPinBitmap_);
 				if (iRawEvent > 0 && rawEvent.GetTimeStamp(nBitsPinBitmap_) == 0) timeStampAdj += timeStampOffsetIncr_; // wrap-around
 				if (iSamplerRtn < 0 || timeStampAdjRtn >= timeStampAdj) {
@@ -695,8 +702,8 @@ const LogicAnalyzer::RawEvent* LogicAnalyzer::EventIterator::NextRawEvent(int* p
 		if (iSamplerRtn < 0) return nullptr; // no more events
 		int iRawEvent = iRawEventTbl_[iSamplerRtn];
 		iRawEventTbl_[iSamplerRtn]++;
-		const Sampler& sampler = logicAnalyzer_.GetSampler(iSamplerRtn);
-		const RawEvent& rawEvent = sampler.GetRawEvent(iRawEvent);
+		//const Sampler& sampler = logicAnalyzer_.GetSampler(iSamplerRtn);
+		const RawEvent& rawEvent = logicAnalyzer_.GetRawEvent(iSamplerRtn, iRawEvent); //sampler.GetRawEvent(iRawEvent);
 		if (iRawEvent > 0 && rawEvent.GetTimeStamp(nBitsPinBitmap_) == 0) {
 			timeStampOffsetTbl_[iSamplerRtn] += timeStampOffsetIncr_; // wrap-around
 		}

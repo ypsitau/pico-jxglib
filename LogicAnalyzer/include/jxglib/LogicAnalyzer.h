@@ -15,7 +15,19 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class LogicAnalyzer {
 public:
-	struct RawEvent {
+	class RawEvent_Long {
+	public:
+		struct Entity {
+			uint32_t timeStamp;
+			uint32_t pinBitmap;
+		};
+	};
+	class RawEvent {
+	public:
+		struct Entity {
+			uint32_t value;
+		};
+	private:
 		uint32_t value_;
 	public:
 		uint32_t GetTimeStamp(uint nBitsPinBitmap) const { return (~(value_ >> nBitsPinBitmap)) & ((1 << (32 - nBitsPinBitmap)) - 1); }
@@ -53,13 +65,13 @@ public:
 		PIO::StateMachine sm_;
 		DMA::Channel* pChannel_;
 		DMA::ChannelConfig channelConfig_;
-		RawEvent* rawEventBuff_;
-		int nRawEventMax_;
+		void* rawEventBuff_;
+		int bytesRawEventBuff_;
 	public:
 		Sampler();
 		~Sampler();
 	public:
-		void AssignBuff(void* rawEventBuff, int nRawEventMax) { rawEventBuff_ = reinterpret_cast<RawEvent*>(rawEventBuff); nRawEventMax_ = nRawEventMax; }
+		void AssignBuff(void* rawEventBuff, int bytesRawEventBuff) { rawEventBuff_ = rawEventBuff; bytesRawEventBuff_ = bytesRawEventBuff; }
 		PIO::StateMachine& GetSM() { return sm_; }
 		const PIO::StateMachine& GetSM() const { return sm_; }
 		void SetProgram(const PIO::Program& program, pio_hw_t* pio, uint sm, uint relAddrEntry, uint pinMin, int nBitsPinBitmap);
@@ -67,11 +79,12 @@ public:
 		Sampler& EnableDMA();
 		Sampler& ReleaseResource();
 	public:
-		int GetRawEventCount() const;
-		int GetRawEventCountMax() const { return nRawEventMax_; }
-		bool IsFull() const { return GetRawEventCount() >= nRawEventMax_; }
-		const RawEvent& GetRawEvent(int iRawEvent) const { return rawEventBuff_[iRawEvent]; }
-		const RawEvent* GetRawEventBuff() const { return rawEventBuff_; }
+		const void* GetSamplingBuff() const { return rawEventBuff_; }
+		int GetBytesSampled() const;
+		int GetBytesRawEventBuff() const { return bytesRawEventBuff_; }
+		//int GetRawEventCountMax() const { return nRawEventMax_; }
+		bool IsFull() const { return GetBytesSampled() >= bytesRawEventBuff_; }
+		//const RawEvent& GetRawEvent2(int iRawEvent) const { return rawEventBuff_[iRawEvent]; }
 		void DumpRawEventBuff(Printable& tout) const;
 	};
 	class EventIterator {
@@ -269,6 +282,7 @@ public:
 	LogicAnalyzer& UpdateSamplingInfo() { samplingInfo_.Update(printInfo_); return *this; }
 	bool HasEnabledPins() const { return samplingInfo_.HasEnabledPins(); }
 	bool IsRawEventFull() const { return samplerTbl_[0].IsFull(); }
+	int GetRawEventCount(int iSampler) const;
 	int GetRawEventCount() const;
 	int GetRawEventCountMax() const;
 	const RawEvent& GetRawEvent(int iSampler, int iRawEvent) const;
