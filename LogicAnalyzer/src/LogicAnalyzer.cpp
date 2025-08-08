@@ -108,7 +108,7 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_ascii4 = {
 	formatHeader:	"GP%-2d  ",
 };
 
-LogicAnalyzer::LogicAnalyzer() : pTelePlot_{nullptr}, rawEventBuffWhole_{nullptr}, iPIO_{PIO::Num - 1},
+LogicAnalyzer::LogicAnalyzer() : pTelePlot_{nullptr}, samplingBuffWhole_{nullptr}, iPIO_{PIO::Num - 1},
 		nSampler_{1}, target_{Target::Internal}, heapRatio_{.7}, heapRatioRequested_{.7}, usecReso_{1'000}
 {
 	clocksPerLoop_ = 12; // program_SampleMain_ takes 12 clocks in the loop
@@ -117,26 +117,26 @@ LogicAnalyzer::LogicAnalyzer() : pTelePlot_{nullptr}, rawEventBuffWhole_{nullptr
 
 LogicAnalyzer::~LogicAnalyzer()
 {
-	if (rawEventBuffWhole_) ::free(rawEventBuffWhole_);
+	if (samplingBuffWhole_) ::free(samplingBuffWhole_);
 }
 
 bool LogicAnalyzer::Enable()
 {
 	ReleaseResource();
 	if (!samplingInfo_.HasEnabledPins()) return true;
-	if (heapRatio_ != heapRatioRequested_ && rawEventBuffWhole_) {
-		::free(rawEventBuffWhole_);
-		rawEventBuffWhole_ = nullptr;
+	if (heapRatio_ != heapRatioRequested_ && samplingBuffWhole_) {
+		::free(samplingBuffWhole_);
+		samplingBuffWhole_ = nullptr;
 	}
-	int bytesRawEventBuffPerSampler = static_cast<int>(heapRatioRequested_ * GetFreeHeapBytes()) /
+	int bytesSamplingBuffPerSampler = static_cast<int>(heapRatioRequested_ * GetFreeHeapBytes()) /
 						nSampler_ / sizeof(RawEvent_Long::Entity) * sizeof(RawEvent_Long::Entity);
-	if (!rawEventBuffWhole_) {
-		rawEventBuffWhole_ = reinterpret_cast<uint8_t*>(::malloc(bytesHeadMargin + nSampler_ * bytesRawEventBuffPerSampler));
-		if (!rawEventBuffWhole_) return false;
+	if (!samplingBuffWhole_) {
+		samplingBuffWhole_ = reinterpret_cast<uint8_t*>(::malloc(bytesHeadMargin + nSampler_ * bytesSamplingBuffPerSampler));
+		if (!samplingBuffWhole_) return false;
 	}
 	heapRatio_ = heapRatioRequested_;
 	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) {
-		samplerTbl_[iSampler].AssignBuff(rawEventBuffWhole_ + bytesHeadMargin + iSampler * bytesRawEventBuffPerSampler, bytesRawEventBuffPerSampler);
+		samplerTbl_[iSampler].AssignBuff(samplingBuffWhole_ + bytesHeadMargin + iSampler * bytesSamplingBuffPerSampler, bytesSamplingBuffPerSampler);
 	}
 	uint nBitsPinBitmap = samplingInfo_.CountBits();
 	uint nBitsTimeStamp = 32 - nBitsPinBitmap;
@@ -215,8 +215,8 @@ bool LogicAnalyzer::Enable()
 
 LogicAnalyzer& LogicAnalyzer::Disable()
 {
-	::free(rawEventBuffWhole_);
-	rawEventBuffWhole_ = nullptr;
+	::free(samplingBuffWhole_);
+	samplingBuffWhole_ = nullptr;
 	return ReleaseResource();
 }
 
@@ -259,7 +259,7 @@ LogicAnalyzer& LogicAnalyzer::SetPins(const int pinTbl[], int nPins)
 int LogicAnalyzer::GetRawEventCount(int iSampler) const
 {
 	if (!samplingInfo_.IsEnabled()) return 0;
-	return samplerTbl_[iSampler].GetBytesSampled() / sizeof(RawEvent);
+	return samplerTbl_[iSampler].GetBytesSampled() / sizeof(RawEvent_Short);
 }
 
 int LogicAnalyzer::GetRawEventCount() const
@@ -275,12 +275,12 @@ int LogicAnalyzer::GetRawEventCountMax() const
 	if (!samplingInfo_.IsEnabled()) return 0;
 	int bytesSamplingBuff = 0;
 	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) bytesSamplingBuff += samplerTbl_[iSampler].GetBytesSamplingBuff();
-	return bytesSamplingBuff / sizeof(RawEvent);
+	return bytesSamplingBuff / sizeof(RawEvent_Short);
 }
 
-const LogicAnalyzer::RawEvent& LogicAnalyzer::GetRawEvent(int iSampler, int iRawEvent) const
+const LogicAnalyzer::RawEvent_Short& LogicAnalyzer::GetRawEvent(int iSampler, int iRawEvent) const
 {
-	return reinterpret_cast<const RawEvent*>(samplerTbl_[iSampler].GetSamplingBuff())[iRawEvent];
+	return reinterpret_cast<const RawEvent_Short*>(samplerTbl_[iSampler].GetSamplingBuff())[iRawEvent];
 	//return samplerTbl_[iSampler].GetRawEvent2(iRawEvent);
 }
 
@@ -406,10 +406,10 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 	return *this;
 }
 
-// This method destroys the RawEvent buffers and creates a set of SignalReport. 
+// This method destroys the sampling buffers and creates a set of SignalReport. 
 const LogicAnalyzer::SignalReport* LogicAnalyzer::CreateSignalReport(int nSamples, double samplePeriod, int* pnSignalReports)
 {
-	SignalReport* signalReportTbl = reinterpret_cast<SignalReport*>(GetRawEventBuffWhole());
+	SignalReport* signalReportTbl = reinterpret_cast<SignalReport*>(GetSamplingBuffWhole());
 	*pnSignalReports = 0;
 	uint nBitsPinBitmap = samplingInfo_.CountBits();
 	EventIterator eventIter(*this, nBitsPinBitmap);
@@ -636,7 +636,7 @@ bool LogicAnalyzer::EventIterator::Next(Event& event)
 {
 	if (doneFlag_) return false;
 	int iSampler;
-	const RawEvent* pRawEvent = NextRawEvent(&iSampler);
+	const RawEvent_Short* pRawEvent = NextRawEvent(&iSampler);
 	if (!pRawEvent) {
 		doneFlag_ = true;
 		return false;
@@ -673,7 +673,7 @@ int LogicAnalyzer::EventIterator::Count()
 int LogicAnalyzer::EventIterator::CountRelevant()
 {
 	int nEvent = 0, nEventRtn = 0;;
-	while (const RawEvent* pRawEvent = NextRawEvent()) {
+	while (const RawEvent_Short* pRawEvent = NextRawEvent()) {
 		if (pRawEvent->GetTimeStamp(nBitsPinBitmap_) != 0) nEventRtn = nEvent;
 		++nEvent;
 	}
@@ -681,7 +681,7 @@ int LogicAnalyzer::EventIterator::CountRelevant()
 	return nEventRtn;
 }
 
-const LogicAnalyzer::RawEvent* LogicAnalyzer::EventIterator::NextRawEvent(int* piSampler)
+const LogicAnalyzer::RawEvent_Short* LogicAnalyzer::EventIterator::NextRawEvent(int* piSampler)
 {
 	for (;;) {
 		int iSamplerRtn = -1;
@@ -689,7 +689,7 @@ const LogicAnalyzer::RawEvent* LogicAnalyzer::EventIterator::NextRawEvent(int* p
 		for (int iSampler = logicAnalyzer_.GetSamplerCount() - 1; iSampler >= 0; --iSampler) {
 			int iRawEvent = iRawEventTbl_[iSampler];
 			if (iRawEvent < logicAnalyzer_.GetRawEventCount(iSampler)) {
-				const RawEvent& rawEvent = logicAnalyzer_.GetRawEvent(iSampler, iRawEvent);
+				const RawEvent_Short& rawEvent = logicAnalyzer_.GetRawEvent(iSampler, iRawEvent);
 				uint64_t timeStampAdj = timeStampOffsetTbl_[iSampler] + rawEvent.GetTimeStamp(nBitsPinBitmap_);
 				if (iRawEvent > 0 && rawEvent.GetTimeStamp(nBitsPinBitmap_) == 0) timeStampAdj += timeStampOffsetIncr_; // wrap-around
 				if (iSamplerRtn < 0 || timeStampAdjRtn >= timeStampAdj) {
@@ -701,7 +701,7 @@ const LogicAnalyzer::RawEvent* LogicAnalyzer::EventIterator::NextRawEvent(int* p
 		if (iSamplerRtn < 0) return nullptr; // no more events
 		int iRawEvent = iRawEventTbl_[iSamplerRtn];
 		iRawEventTbl_[iSamplerRtn]++;
-		const RawEvent& rawEvent = logicAnalyzer_.GetRawEvent(iSamplerRtn, iRawEvent);
+		const RawEvent_Short& rawEvent = logicAnalyzer_.GetRawEvent(iSamplerRtn, iRawEvent);
 		if (iRawEvent > 0 && rawEvent.GetTimeStamp(nBitsPinBitmap_) == 0) {
 			timeStampOffsetTbl_[iSamplerRtn] += timeStampOffsetIncr_; // wrap-around
 		}

@@ -22,7 +22,7 @@ public:
 			uint32_t pinBitmap;
 		};
 	};
-	class RawEvent {
+	class RawEvent_Short {
 	public:
 		struct Entity {
 			uint32_t value;
@@ -91,7 +91,7 @@ public:
 		int nBitsPinBitmap_;
 		int iRawEventTbl_[4];
 		uint64_t timeStampOffsetTbl_[4];
-		const RawEvent* pRawEventPrev_;
+		const RawEvent_Short* pRawEventPrev_;
 		bool doneFlag_;
 		uint64_t timeStampOffsetIncr_;
 	public:
@@ -104,7 +104,7 @@ public:
 		int Count();
 		int CountRelevant();
 	private:
-		const RawEvent* NextRawEvent(int* piSampler = nullptr);
+		const RawEvent_Short* NextRawEvent(int* piSampler = nullptr);
 	};
 	struct PrintInfo {
 		int nPins;
@@ -238,7 +238,7 @@ private:
 	TelePlot* pTelePlot_;
 	PIO::Program program_SamplerInit_;
 	PIO::Program program_SamplerMain_;
-	uint8_t* rawEventBuffWhole_;
+	uint8_t* samplingBuffWhole_;
 	uint iPIO_;
 	int nSampler_;
 	Sampler samplerTbl_[4];
@@ -259,7 +259,7 @@ public:
 	LogicAnalyzer& Disable();
 	const SignalReport* CreateSignalReport(int nSignals, double samplePeriod, int* pnSignalReport);
 	LogicAnalyzer& SetPIO(uint iPIO) { iPIO_ = iPIO; return *this; }
-	void* GetRawEventBuffWhole() { return rawEventBuffWhole_; }
+	void* GetSamplingBuffWhole() { return samplingBuffWhole_; }
 	LogicAnalyzer& ReleaseResource();
 	LogicAnalyzer& SetPins(const int pinTbl[], int nPins);
 	LogicAnalyzer& SetSamplerCount(int nSampler) { nSampler_ = nSampler; return *this; }
@@ -283,7 +283,7 @@ public:
 	int GetRawEventCount(int iSampler) const;
 	int GetRawEventCount() const;
 	int GetRawEventCountMax() const;
-	const RawEvent& GetRawEvent(int iSampler, int iRawEvent) const;
+	const RawEvent_Short& GetRawEvent(int iSampler, int iRawEvent) const;
 	const LogicAnalyzer& PrintWave(Printable& tout) const;
 	const LogicAnalyzer& PlotWave() const;
 	const LogicAnalyzer& PrintSettings(Printable& tout) const;
