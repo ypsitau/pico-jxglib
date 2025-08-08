@@ -15,23 +15,42 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class LogicAnalyzer {
 public:
-	class RawEvent_Long {
+	enum class RawEventType { Long, Short };
+	class RawEvent {
+	protected:
+		const void* pEntity_;
+	public:
+		RawEvent() : pEntity_{nullptr} {}
+	public:
+		void SetEntity(const void* pEntity) { pEntity_ = pEntity; }
+	public:
+		virtual uint32_t GetTimeStamp(uint nBitsPinBitmap) const = 0;
+		virtual uint32_t GetPinBitmap(uint nBitsPinBitmap) const = 0;
+	};
+	class RawEvent_Short : public RawEvent {
+	public:
+		struct Entity {
+			uint32_t value;
+		};
+	public:
+		RawEvent_Short() {}
+	public:
+		const Entity& GetEntity() const { return *reinterpret_cast<const Entity*>(pEntity_); }
+		uint32_t GetTimeStamp(uint nBitsPinBitmap) const override { return (~(GetEntity().value >> nBitsPinBitmap)) & ((1 << (32 - nBitsPinBitmap)) - 1); }
+		uint32_t GetPinBitmap(uint nBitsPinBitmap) const override { return GetEntity().value & ((1 << nBitsPinBitmap) - 1); }
+	};
+	class RawEvent_Long : public RawEvent {
 	public:
 		struct Entity {
 			uint32_t timeStamp;
 			uint32_t pinBitmap;
 		};
-	};
-	class RawEvent_Short {
 	public:
-		struct Entity {
-			uint32_t value;
-		};
-	private:
-		uint32_t value_;
+		RawEvent_Long() {}
 	public:
-		uint32_t GetTimeStamp(uint nBitsPinBitmap) const { return (~(value_ >> nBitsPinBitmap)) & ((1 << (32 - nBitsPinBitmap)) - 1); }
-		uint32_t GetPinBitmap(uint nBitsPinBitmap) const { return value_ & ((1 << nBitsPinBitmap) - 1); }
+		const Entity& GetEntity() const { return *reinterpret_cast<const Entity*>(pEntity_); }
+		uint32_t GetTimeStamp(uint nBitsPinBitmap) const { return GetEntity().timeStamp; }
+		uint32_t GetPinBitmap(uint nBitsPinBitmap) const { return GetEntity().pinBitmap; }
 	};
 	class Event {
 	private:
@@ -65,13 +84,15 @@ public:
 		PIO::StateMachine sm_;
 		DMA::Channel* pChannel_;
 		DMA::ChannelConfig channelConfig_;
-		void* samplingBuff_;
+		uint8_t* samplingBuff_;
 		int bytesSamplingBuff_;
 	public:
 		Sampler();
 		~Sampler();
 	public:
-		void AssignBuff(void* samplingBuff, int bytesSamplingBuff) { samplingBuff_ = samplingBuff; bytesSamplingBuff_ = bytesSamplingBuff; }
+		void AssignBuff(void* samplingBuff, int bytesSamplingBuff) {
+			samplingBuff_ = reinterpret_cast<uint8_t*>(samplingBuff); bytesSamplingBuff_ = bytesSamplingBuff;
+		}
 		PIO::StateMachine& GetSM() { return sm_; }
 		const PIO::StateMachine& GetSM() const { return sm_; }
 		void SetProgram(const PIO::Program& program, pio_hw_t* pio, uint sm, uint relAddrEntry, uint pinMin, int nBitsPinBitmap);
@@ -79,7 +100,7 @@ public:
 		Sampler& EnableDMA();
 		Sampler& ReleaseResource();
 	public:
-		const void* GetSamplingBuff() const { return samplingBuff_; }
+		const uint8_t* GetSamplingBuff() const { return samplingBuff_; }
 		int GetBytesSampled() const;
 		int GetBytesSamplingBuff() const { return bytesSamplingBuff_; }
 		bool IsFull() const { return GetBytesSampled() >= bytesSamplingBuff_; }
@@ -87,15 +108,18 @@ public:
 	};
 	class EventIterator {
 	private:
-		const LogicAnalyzer& logicAnalyzer_;
+		LogicAnalyzer& logicAnalyzer_;
 		int nBitsPinBitmap_;
 		int iRawEventTbl_[4];
 		uint64_t timeStampOffsetTbl_[4];
-		const RawEvent_Short* pRawEventPrev_;
+		uint32_t pinBitmapPrev_;
+		bool firstFlag_;
 		bool doneFlag_;
 		uint64_t timeStampOffsetIncr_;
+		RawEvent_Short rawEvent_Short_;
+		RawEvent_Long rawEvent_Long_;
 	public:
-		EventIterator(const LogicAnalyzer& logicAnalyzer, int nBitsPinBitmap);
+		EventIterator(LogicAnalyzer& logicAnalyzer, int nBitsPinBitmap);
 	public:
 		bool IsDone() const { return doneFlag_; }
 		bool Next(Event& event);
@@ -104,7 +128,8 @@ public:
 		int Count();
 		int CountRelevant();
 	private:
-		const RawEvent_Short* NextRawEvent(int* piSampler = nullptr);
+		const RawEvent* NextRawEvent(int* piSampler = nullptr);
+		const RawEvent& GetRawEvent(int iSampler, int iRawEvent);
 	};
 	struct PrintInfo {
 		int nPins;
@@ -235,6 +260,7 @@ public:
 	static const WaveStyle waveStyle_ascii3;
 	static const WaveStyle waveStyle_ascii4;
 private:
+	RawEventType rawEventType_;
 	TelePlot* pTelePlot_;
 	PIO::Program program_SamplerInit_;
 	PIO::Program program_SamplerMain_;
@@ -257,9 +283,11 @@ public:
 public:
 	bool Enable();
 	LogicAnalyzer& Disable();
+	bool IsRawEventTypeShort() const { return rawEventType_ == RawEventType::Short; }
+	bool IsRawEventTypeLong() const { return rawEventType_ == RawEventType::Long; }
 	const SignalReport* CreateSignalReport(int nSignals, double samplePeriod, int* pnSignalReport);
 	LogicAnalyzer& SetPIO(uint iPIO) { iPIO_ = iPIO; return *this; }
-	void* GetSamplingBuffWhole() { return samplingBuffWhole_; }
+	uint8_t* GetSamplingBuffWhole() { return samplingBuffWhole_; }
 	LogicAnalyzer& ReleaseResource();
 	LogicAnalyzer& SetPins(const int pinTbl[], int nPins);
 	LogicAnalyzer& SetSamplerCount(int nSampler) { nSampler_ = nSampler; return *this; }
@@ -283,9 +311,8 @@ public:
 	int GetRawEventCount(int iSampler) const;
 	int GetRawEventCount() const;
 	int GetRawEventCountMax() const;
-	const RawEvent_Short& GetRawEvent(int iSampler, int iRawEvent) const;
-	const LogicAnalyzer& PrintWave(Printable& tout) const;
-	const LogicAnalyzer& PlotWave() const;
+	const LogicAnalyzer& PrintWave(Printable& tout);
+	const LogicAnalyzer& PlotWave();
 	const LogicAnalyzer& PrintSettings(Printable& tout) const;
 public:
 	static size_t GetFreeHeapBytes();
