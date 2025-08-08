@@ -15,7 +15,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class LogicAnalyzer {
 public:
-	enum class RawEventType { Long, Short };
+	enum class RawEventFormat { Auto, Long, Short };
 	class RawEvent {
 	protected:
 		const void* pEntity_;
@@ -49,7 +49,7 @@ public:
 		RawEvent_Long() {}
 	public:
 		const Entity& GetEntity() const { return *reinterpret_cast<const Entity*>(pEntity_); }
-		uint32_t GetTimeStamp(uint nBitsPinBitmap) const { return GetEntity().timeStamp; }
+		uint32_t GetTimeStamp(uint nBitsPinBitmap) const { return ~GetEntity().timeStamp; }
 		uint32_t GetPinBitmap(uint nBitsPinBitmap) const { return GetEntity().pinBitmap; }
 	};
 	class Event {
@@ -260,7 +260,8 @@ public:
 	static const WaveStyle waveStyle_ascii3;
 	static const WaveStyle waveStyle_ascii4;
 private:
-	RawEventType rawEventType_;
+	RawEventFormat rawEventFormat_;
+	RawEventFormat rawEventFormatRequested_;
 	TelePlot* pTelePlot_;
 	PIO::Program program_SamplerInit_;
 	PIO::Program program_SamplerMain_;
@@ -283,8 +284,8 @@ public:
 public:
 	bool Enable();
 	LogicAnalyzer& Disable();
-	bool IsRawEventTypeShort() const { return rawEventType_ == RawEventType::Short; }
-	bool IsRawEventTypeLong() const { return rawEventType_ == RawEventType::Long; }
+	bool IsRawEventFormatShort() const { return rawEventFormat_ == RawEventFormat::Short; }
+	bool IsRawEventFormatLong() const { return rawEventFormat_ == RawEventFormat::Long; }
 	const SignalReport* CreateSignalReport(int nSignals, double samplePeriod, int* pnSignalReport);
 	LogicAnalyzer& SetPIO(uint iPIO) { iPIO_ = iPIO; return *this; }
 	uint8_t* GetSamplingBuffWhole() { return samplingBuffWhole_; }
@@ -303,6 +304,7 @@ public:
 	PrintPart GetPrintPart() const { return printInfo_.part; }
 	LogicAnalyzer& SetWaveStyle(const WaveStyle& waveStyle) { printInfo_.pWaveStyle = &waveStyle; return *this; }
 	const WaveStyle& GetWaveStyle() const { return *printInfo_.pWaveStyle; }
+	LogicAnalyzer& SetEventFormat(RawEventFormat rawEventFormat) { rawEventFormatRequested_ = rawEventFormat; return *this; }
 	double GetSampleRate() const { return static_cast<double>(::clock_get_hz(clk_sys) / clocksPerLoop_); }
 	float GetResolution() const { return usecReso_; }
 	LogicAnalyzer& UpdateSamplingInfo() { samplingInfo_.Update(printInfo_); return *this; }

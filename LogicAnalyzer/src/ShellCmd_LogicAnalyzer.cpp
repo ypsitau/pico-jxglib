@@ -21,7 +21,7 @@ ShellCmd(la, "Logic Analyzer")
 		Arg::OptString("part",			't', "printed part of the waveform (head, tail, all)", "PART"),
 		Arg::OptString("events",		'e', "number of events to print (default 80)", "NUM"),
 		Arg::OptString("style",			's', "waveform style (unicode1, unicode2, unicode3, unicode4, ascii1, ascii2, ascii3, ascii4)", "STYLE"),
-
+		Arg::OptString("event-format",	'f', "event format (auto, short, long)", "FORMAT"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
@@ -145,6 +145,20 @@ ShellCmd(la, "Logic Analyzer")
 			return Result::Error;
 		}
 		logicAnalyzer.SetWaveStyle(*pWaveStyle);
+	}
+	if (arg.GetString("event-format", &value)) {
+		LogicAnalyzer::RawEventFormat rawEventFormat = LogicAnalyzer::RawEventFormat::Auto;
+		if (::strcasecmp(value, "auto") == 0) {
+			rawEventFormat = LogicAnalyzer::RawEventFormat::Auto;
+		} else if (::strcasecmp(value, "short") == 0) {
+			rawEventFormat = LogicAnalyzer::RawEventFormat::Short;
+		} else if (::strcasecmp(value, "long") == 0) {
+			rawEventFormat = LogicAnalyzer::RawEventFormat::Long;
+		} else {
+			terr.Printf("Invalid event format: %s\n", value);
+			return Result::Error;
+		}
+		logicAnalyzer.SetEventFormat(rawEventFormat);
 	}
 	if (argc < 2) {
 		logicAnalyzer.UpdateSamplingInfo();

@@ -108,7 +108,8 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_ascii4 = {
 	formatHeader:	"GP%-2d  ",
 };
 
-LogicAnalyzer::LogicAnalyzer() : rawEventType_{RawEventType::Short}, pTelePlot_{nullptr}, samplingBuffWhole_{nullptr}, iPIO_{PIO::Num - 1},
+LogicAnalyzer::LogicAnalyzer() : rawEventFormat_{RawEventFormat::Short}, rawEventFormatRequested_{RawEventFormat::Auto},
+		pTelePlot_{nullptr}, samplingBuffWhole_{nullptr}, iPIO_{PIO::Num - 1},
 		nSampler_{1}, target_{Target::Internal}, heapRatio_{.7}, heapRatioRequested_{.7}, usecReso_{1'000}
 {
 	clocksPerLoop_ = 12; // program_SampleMain_ takes 12 clocks in the loop
@@ -138,10 +139,12 @@ bool LogicAnalyzer::Enable()
 	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) {
 		samplerTbl_[iSampler].AssignBuff(samplingBuffWhole_ + bytesHeadMargin + iSampler * bytesSamplingBuffPerSampler, bytesSamplingBuffPerSampler);
 	}
-	uint nBitsPinToSample = samplingInfo_.CountBits(); // must be less than 32 to avoid auto-push
 	uint nBitsTimeStamp = 32;
 	uint nBitsPinToReport = 32;
-	if (IsRawEventTypeShort()) {
+	uint nBitsPinToSample = samplingInfo_.CountBits(); // must be less than 32 to avoid auto-push
+	rawEventFormat_ = (rawEventFormatRequested_ != RawEventFormat::Auto)? rawEventFormatRequested_ :
+					(nBitsPinToSample <= 8)? RawEventFormat::Short : RawEventFormat::Long;
+	if (rawEventFormat_ == RawEventFormat::Short) {
 		nBitsTimeStamp = 32 - nBitsPinToSample;
 		nBitsPinToReport = nBitsPinToSample;
 	}
@@ -153,11 +156,11 @@ bool LogicAnalyzer::Enable()
 	program_SamplerMain_
 	.program("sampler_main")
 	.pub(&relAddrEntryTbl[3])
-		.jmp("entry")		[(nSampler_ == 4)? (9 - 1) : 0]
+		.jmp("entry") [(nSampler_ == 4)? (9 - 1) : 0]
 	.pub(&relAddrEntryTbl[2])
-		.jmp("entry")		[(nSampler_ == 4)? (6 - 1) : (nSampler_ == 3)? (8 - 1) :  0]
+		.jmp("entry") [(nSampler_ == 4)? (6 - 1) : (nSampler_ == 3)? (8 - 1) :  0]
 	.pub(&relAddrEntryTbl[1])
-		.jmp("entry")		[(nSampler_ == 4)? (3 - 1) : (nSampler_ == 3)? (4 - 1) : (nSampler_ == 2)? (6 - 1) :  0]
+		.jmp("entry") [(nSampler_ == 4)? (3 - 1) : (nSampler_ == 3)? (4 - 1) : (nSampler_ == 2)? (6 - 1) :  0]
 	.L("loop").wrap_target()
 		.out("x", nBitsTimeStamp)					// x[nBitsTimeStamp-1:0] = osr[nBitsTimeStamp-1:0]
 		.jmp("x--", "no_wrap_around")				// if (x == 0) {x--} else {x--; goto no_wrap_around}
@@ -254,7 +257,7 @@ int LogicAnalyzer::GetRawEventCount(int iSampler) const
 {
 	if (!samplingInfo_.IsEnabled()) return 0;
 	return samplerTbl_[iSampler].GetBytesSampled() /
-		((rawEventType_ == RawEventType::Short)? sizeof(RawEvent_Short::Entity) : sizeof(RawEvent_Long::Entity));
+		((rawEventFormat_ == RawEventFormat::Short)? sizeof(RawEvent_Short::Entity) : sizeof(RawEvent_Long::Entity));
 }
 
 int LogicAnalyzer::GetRawEventCount() const
@@ -271,7 +274,7 @@ int LogicAnalyzer::GetRawEventCountMax() const
 	int bytesSamplingBuff = 0;
 	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) bytesSamplingBuff += samplerTbl_[iSampler].GetBytesSamplingBuff();
 	return bytesSamplingBuff /
-		((rawEventType_ == RawEventType::Short)? sizeof(RawEvent_Short::Entity) : sizeof(RawEvent_Long::Entity));
+		((rawEventFormat_ == RawEventFormat::Short)? sizeof(RawEvent_Short::Entity) : sizeof(RawEvent_Long::Entity));
 }
 
 const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout)
@@ -507,7 +510,8 @@ const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 		}
 		if (firstFlag) tout.Print("none");
 	} while (0);
-	tout.Printf(" events:%d/%d (heap-ratio:%.1f)", nRawEvents, GetRawEventCountMax(), heapRatio_);
+	tout.Printf(" events:%d/%d%s (heap-ratio:%.1f)", nRawEvents, GetRawEventCountMax(),
+						(rawEventFormatRequested_ == RawEventFormat::Long)? "L" : "", heapRatio_);
 	tout.Println();
 	return *this;
 }
@@ -708,7 +712,7 @@ const LogicAnalyzer::RawEvent* LogicAnalyzer::EventIterator::NextRawEvent(int* p
 
 const LogicAnalyzer::RawEvent& LogicAnalyzer::EventIterator::GetRawEvent(int iSampler, int iRawEvent)
 {
-	if (logicAnalyzer_.IsRawEventTypeShort()) {
+	if (logicAnalyzer_.IsRawEventFormatShort()) {
 		rawEvent_Short_.SetEntity(logicAnalyzer_.GetSampler(iSampler).GetSamplingBuff() + iRawEvent * sizeof(RawEvent_Short::Entity));
 		return rawEvent_Short_;
 	} else {
