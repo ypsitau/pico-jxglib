@@ -144,13 +144,13 @@ float PWM::get_chan_duty(uint slice_num, uint channel)
 {
 	uint16_t wrap = get_wrap(slice_num);
 	uint16_t level = get_chan_level(slice_num, channel);
-	return (wrap == 0)? 0.0f : static_cast<float>(level) / static_cast<float>(wrap);
+	return (level <= wrap + 1)? static_cast<float>(level) / (static_cast<float>(wrap) + 1) : 1.0f;
 }
 
 void PWM::set_chan_duty(uint slice_num, uint channel, float duty)
 {
 	duty = (duty < 0.0f)? 0.0f : (duty > 1.0f)? 1.0f : duty;
-	::pwm_set_chan_level(slice_num, channel, static_cast<uint16_t>(duty * get_wrap(slice_num)));
+	::pwm_set_chan_level(slice_num, channel, static_cast<uint16_t>(duty * (get_wrap(slice_num) + 1)));
 }
 
 bool PWM::get_chan_output_polarity(uint slice_num, uint chan)

@@ -45,7 +45,7 @@ ShellCmd(pwm, "controls PWM pins")
 		tout.Printf("  disable            stop PWM output\n");
 		tout.Printf("  freq:FREQUENCY     set PWM frequency in Hz\n");
 		tout.Printf("  duty:RATIO         set PWM duty ratio (0.0-1.0)\n");
-		tout.Printf("  clkdiv:DIVIDER     set PWM clock divider (1.0-256.0)\n");
+		tout.Printf("  clkdiv:DIVIDER     set PWM clock divider (1.0-255.9)\n");
 		tout.Printf("  wrap:VALUE         set PWM wrap value (0-65535)\n");
 		tout.Printf("  level:VALUE        set PWM level (0-65535)\n");
 		tout.Printf("  phase-correct:BOOL enable/disable phase-correct (0, 1)\n");
@@ -196,12 +196,12 @@ bool ProcessPWM(Printable& terr, Printable& tout, const int pinTbl[], int nPins,
 			for (int i = 0; i < nPins; ++i) PWM(pinTbl[i]).set_chan_duty(duty_val);
 		} else if (Shell::Arg::GetAssigned(cmd, "clkdiv", &value)) {
 			if (!value) {
-				terr.Printf("specify a clock divider: 1.0-256.0\n");
+				terr.Printf("specify a clock divider: 1.0-255.9\n");
 				return false;
 			}
 			float div_val = ::strtof(value, nullptr);
-			if (div_val < 1.0f || div_val > 256.0f) {
-				terr.Printf("clock divider out of range (1.0-256.0): %s\n", value);
+			if (div_val < 1.0f || div_val > 255.9f) {
+				terr.Printf("clock divider out of range (1.0-255.9): %s\n", value);
 				return false;
 			}
 			for (int i = 0; i < nPins; ++i) PWM(pinTbl[i]).set_clkdiv(div_val);
