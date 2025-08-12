@@ -154,8 +154,7 @@ public:
 		uint32_t GetPinBitmapEnabled() const { return pinBitmapEnabled_; }
 		uint GetPinMin() const { return pinMin_; }	
 		bool HasEnabledPins() const { return pinBitmapEnabled_ != 0; }
-		bool IsPinAsserted(uint32_t pinBitmap, uint pin) const { return ((pinBitmap << pinMin_) & (1 << pin)) != 0; }
-		bool IsPinEnabled(uint pin) const { return IsPinAsserted(pinBitmapEnabled_, pin); }
+		bool IsPinEnabled(uint pin) const { return ((pinBitmapEnabled_ << pinMin_) & (1u << pin)) != 0; }
 		void Update(const PrintInfo& printInfo);
 		int CountBits() const;
 	};

@@ -370,7 +370,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 				continue;
 			}
 			if (samplingInfo_.IsPinEnabled(pin)) {
-				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", samplingInfo_.IsPinAsserted(eventInitial.GetPinBitmap(), pin)? waveStyle.strHigh : waveStyle.strLow);
+				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", eventInitial.IsPinAsserted(pin)? waveStyle.strHigh : waveStyle.strLow);
 			} else {
 				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", waveStyle.strBlank);
 			}
@@ -392,7 +392,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 					continue;
 				}
 				if (samplingInfo_.IsPinEnabled(pin)) {
-					iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", samplingInfo_.IsPinAsserted(eventPrev.GetPinBitmap(), pin)? waveStyle.strHighIdle : waveStyle.strLowIdle);
+					iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", eventPrev.IsPinAsserted(pin)? waveStyle.strHighIdle : waveStyle.strLowIdle);
 				} else {
 					iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", waveStyle.strBlank);
 				}
@@ -408,7 +408,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 						continue;
 					}
 					if (samplingInfo_.IsPinEnabled(pin)) {
-						iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", samplingInfo_.IsPinAsserted(eventPrev.GetPinBitmap(), pin)? waveStyle.strHigh : waveStyle.strLow);
+						iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", eventPrev.IsPinAsserted(pin)? waveStyle.strHigh : waveStyle.strLow);
 					} else {
 						iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", waveStyle.strBlank);
 					}
@@ -425,9 +425,9 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 				continue;
 			}
 			if (samplingInfo_.IsPinEnabled(pin)) {
-				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", samplingInfo_.IsPinAsserted(bitsTransition, pin)?
-					(samplingInfo_.IsPinAsserted(event.GetPinBitmap(), pin)? waveStyle.strLowToHigh : waveStyle.strHighToLow) :
-					(samplingInfo_.IsPinAsserted(event.GetPinBitmap(), pin)? waveStyle.strHigh : waveStyle.strLow));
+				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", (bitsTransition & (1u << pin))?
+					(event.IsPinAsserted(pin)? waveStyle.strLowToHigh : waveStyle.strHighToLow) :
+					(event.IsPinAsserted(pin)? waveStyle.strHigh : waveStyle.strLow));
 			} else {
 				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", waveStyle.strBlank);
 			}
@@ -499,7 +499,7 @@ const LogicAnalyzer& LogicAnalyzer::PlotWave() const
 			uint pin = printInfo_.pinTbl[iPin];
 			if (pin == -1) continue;
 			if (samplingInfo_.IsPinEnabled(pin)) {
-				float value = samplingInfo_.IsPinAsserted(eventPrev.GetPinBitmap(), pin)? .2 : 0;
+				float value = eventPrev.IsPinAsserted(pin)? .2 : 0;
 				for (int i = 0; i < nDelta; ++i) t.Plot(value);
 			}
 		}
@@ -660,7 +660,6 @@ LogicAnalyzer::EventIterator::EventIterator(const LogicAnalyzer& logicAnalyzer) 
 	logicAnalyzer_{logicAnalyzer}, pinBitmapPrev_{0}, firstFlag_{true}, doneFlag_{false}, timeStampOffsetIncr_{0},
 	pinMin_{logicAnalyzer.GetSamplingInfo().GetPinMin()}, nBitsPinBitmap_{logicAnalyzer.GetSamplingInfo().CountBits()}
 {
-	pinMin_ = 0;
 	int nBitsTimeStamp = 32 - nBitsPinBitmap_;
 	timeStampOffsetIncr_ = 1LL << nBitsTimeStamp;
 	Rewind();
