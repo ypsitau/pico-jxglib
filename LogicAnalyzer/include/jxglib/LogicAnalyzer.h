@@ -108,7 +108,7 @@ public:
 	};
 	class EventIterator {
 	private:
-		LogicAnalyzer& logicAnalyzer_;
+		const LogicAnalyzer& logicAnalyzer_;
 		int nBitsPinBitmap_;
 		int iRawEventTbl_[4];
 		uint64_t timeStampOffsetTbl_[4];
@@ -119,7 +119,7 @@ public:
 		RawEvent_Short rawEvent_Short_;
 		RawEvent_Long rawEvent_Long_;
 	public:
-		EventIterator(LogicAnalyzer& logicAnalyzer);
+		EventIterator(const LogicAnalyzer& logicAnalyzer);
 	public:
 		bool IsDone() const { return doneFlag_; }
 		bool Next(Event& event);
@@ -319,8 +319,8 @@ public:
 	int GetRawEventCount(int iSampler) const;
 	int GetRawEventCount() const;
 	int GetRawEventCountMax() const;
-	const LogicAnalyzer& PrintWave(Printable& tout);
-	const LogicAnalyzer& PlotWave();
+	const LogicAnalyzer& PrintWave(Printable& tout) const;
+	const LogicAnalyzer& PlotWave() const;
 	const LogicAnalyzer& PrintSettings(Printable& tout) const;
 	void Analyze() const;
 public:

@@ -279,9 +279,10 @@ int LogicAnalyzer::GetRawEventCountMax() const
 
 void LogicAnalyzer::Analyze() const
 {
+	EventIterator eventIter(*this);
 }
 
-const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout)
+const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 {
 	int iCol = 0;
 	char buffLine[256];
@@ -445,7 +446,7 @@ const LogicAnalyzer::SignalReport* LogicAnalyzer::CreateSignalReport(int nSample
 	return signalReportTbl;
 }
 
-const LogicAnalyzer& LogicAnalyzer::PlotWave()
+const LogicAnalyzer& LogicAnalyzer::PlotWave() const
 {
 	if (!pTelePlot_) return *this;
 	TelePlot& tp = *pTelePlot_;
@@ -624,7 +625,7 @@ int LogicAnalyzer::SamplingInfo::CountBits() const
 //------------------------------------------------------------------------------
 // LogicAnalyzer::EventIterator
 //------------------------------------------------------------------------------
-LogicAnalyzer::EventIterator::EventIterator(LogicAnalyzer& logicAnalyzer) :
+LogicAnalyzer::EventIterator::EventIterator(const LogicAnalyzer& logicAnalyzer) :
 		logicAnalyzer_{logicAnalyzer}, pinBitmapPrev_{0}, firstFlag_{true}, doneFlag_{false},
 		timeStampOffsetIncr_{0}, nBitsPinBitmap_{logicAnalyzer.GetSamplingInfo().CountBits()}
 {
