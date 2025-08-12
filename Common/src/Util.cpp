@@ -102,6 +102,14 @@ bool DoesContainSpace(const char* str)
 	return false;
 }
 
+const char* CutTrailingSpace(char* str)
+{
+	char* p = str + ::strlen(str) - 1;
+	for ( ; p >= str && ::isspace(*p); --p) ;
+	*(p + 1) = '\0';
+	return str;
+}
+
 const char* GetPlatformName()
 {
 #if defined(PICO_RP2040)

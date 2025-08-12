@@ -186,6 +186,12 @@ public:
 			static const uint8_t ProtocolVersion_Short	= 0x41;
 			static const uint8_t EndOfMetadata			= 0x00;
 		};
+		enum class RLEMode {
+			PairInclusive	= 0,
+			PairExclusive	= 1,
+			Periodic		= 2,
+			Unlimited		= 3,
+		};
 		struct Config {
 			struct {
 				uint32_t mask		= 0;
@@ -215,8 +221,7 @@ public:
 			bool GetFlags_SwapChannels() const				{ return (flags & (1 << 9)) != 0; }
 			bool GetFlags_ExternalTestMode() const			{ return (flags & (1 << 10)) != 0; }
 			bool GetFlags_InternalTestMode() const			{ return (flags & (1 << 11)) != 0; }
-			bool GetFlags_RunLengthEncodingMode0() const	{ return (flags & (1 << 14)) != 0; }
-			bool GetFlags_RunLengthEncodingMode1() const	{ return (flags & (1 << 15)) != 0; }
+			RLEMode GetFlags_RunLengthEncodingMode() const	{ return static_cast<RLEMode>((flags >> 14) & 0x03); }
 		public:
 			void Print(Printable& tout = Stdio::Instance) const;
 		};

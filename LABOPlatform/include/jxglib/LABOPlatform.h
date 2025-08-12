@@ -30,6 +30,7 @@ private:
 	Serial::Terminal terminal_;
 	bool attachStdioFlag_;
 	LogicAnalyzer logicAnalyzer_;
+	LogicAnalyzer::SUMPAdapter sumpAdapter_;
 	stdio_driver_t stdio_driver_;
 private:
 	static const char* textREADME_;

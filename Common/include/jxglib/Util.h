@@ -83,6 +83,7 @@ bool StartsWithICase(const char* str, const char* prefix);
 bool EndsWith(const char* str, const char* suffix);
 bool EndsWithICase(const char* str, const char* suffix);
 bool DoesContainSpace(const char* str);
+const char* CutTrailingSpace(char* str);
 
 const char* GetPlatformName();
 const char* GetCPUArchName();

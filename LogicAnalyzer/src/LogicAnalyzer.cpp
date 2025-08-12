@@ -279,6 +279,8 @@ int LogicAnalyzer::GetRawEventCountMax() const
 
 const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout)
 {
+	int iCol = 0;
+	char buffLine[256];
 	uint nBitsPinBitmap = samplingInfo_.CountBits();
 	EventIterator eventIter(*this, nBitsPinBitmap);
 	int nEventsRelevant = eventIter.CountRelevant();
@@ -289,17 +291,21 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout)
 	//for (int iSampler = 0; iSampler < nSampler_; ++iSampler) samplerTbl_[iSampler].DumpSamplingBuff(tout);
 	const char* strBlank = "    ";
 	const WaveStyle& waveStyle = *printInfo_.pWaveStyle;
+	auto flushLine = [&]() {
+		tout.Println(CutTrailingSpace(buffLine));
+		iCol = 0;
+	};
 	auto printHeader = [&]() {
-		tout.Printf("%12s ", "Time [usec]");
+		iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%12s ", "Time [usec]");
 		for (int iPin = 0; iPin < printInfo_.nPins; ++iPin) {
 			uint pin = printInfo_.pinTbl[iPin];
 			if (pin == -1) {
-				tout.Print(strBlank);
+				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", strBlank);
 			} else {
-				tout.Printf(waveStyle.formatHeader, pin);
+				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, waveStyle.formatHeader, pin);
 			}
 		}
-		tout.Println();
+		flushLine();
 	};
 	printHeader();
 	int nEventsToPrint =
@@ -321,20 +327,20 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout)
 		eventBase = eventInitial;
 	}
 	if (nEventsToPrint > 0) {
-		tout.Printf("%12s", "");
+		iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%12s", "");
 		for (int iPin = 0; iPin < printInfo_.nPins; ++iPin) {
 			uint pin = printInfo_.pinTbl[iPin];
 			if (pin == -1) {
-				tout.Print(strBlank);
+				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", strBlank);
 				continue;
 			}
 			if (samplingInfo_.IsPinEnabled(pin)) {
-				tout.Print(samplingInfo_.IsPinAsserted(eventInitial.GetPinBitmap(), pin)? waveStyle.strHigh : waveStyle.strLow);
+				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", samplingInfo_.IsPinAsserted(eventInitial.GetPinBitmap(), pin)? waveStyle.strHigh : waveStyle.strLow);
 			} else {
-				tout.Print(waveStyle.strBlank);
+				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", waveStyle.strBlank);
 			}
 		}
-		tout.Println();
+		flushLine();
 	}
 	Event eventPrev = eventInitial;
 	Event event = eventBase;
@@ -344,54 +350,54 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout)
 		int nDelta = static_cast<int>(delta / usecReso_);
 		if (nDelta < 40) {
 			for (int i = 0; i < nDelta; ++i) {
-				tout.Printf("%12s", "");
+				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%12s", "");
 				for (int iPin = 0; iPin < printInfo_.nPins; ++iPin) {
 					uint pin = printInfo_.pinTbl[iPin];
 					if (pin == -1) {
-						tout.Print(strBlank);
+						iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", strBlank);
 						continue;
 					}
 					if (samplingInfo_.IsPinEnabled(pin)) {
-						tout.Print(samplingInfo_.IsPinAsserted(eventPrev.GetPinBitmap(), pin)? waveStyle.strHigh : waveStyle.strLow);
+						iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", samplingInfo_.IsPinAsserted(eventPrev.GetPinBitmap(), pin)? waveStyle.strHigh : waveStyle.strLow);
 					} else {
-						tout.Print(waveStyle.strBlank);
+						iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", waveStyle.strBlank);
 					}
 				}
-				tout.Println();
+				flushLine();
 			}
 		} else {
-			tout.Printf("%12s", "");
+			iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%12s", "");
 			for (int iPin = 0; iPin < printInfo_.nPins; ++iPin) {
 				uint pin = printInfo_.pinTbl[iPin];
 				if (pin == -1) {
-					tout.Print(strBlank);
+					iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", strBlank);
 					continue;
 				}
 				if (samplingInfo_.IsPinEnabled(pin)) {
-					tout.Print(samplingInfo_.IsPinAsserted(eventPrev.GetPinBitmap(), pin)? waveStyle.strHighIdle : waveStyle.strLowIdle);
+					iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", samplingInfo_.IsPinAsserted(eventPrev.GetPinBitmap(), pin)? waveStyle.strHighIdle : waveStyle.strLowIdle);
 				} else {
-					tout.Print(waveStyle.strBlank);
+					iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", waveStyle.strBlank);
 				}
 			}
-			tout.Println();
+			flushLine();
 		}
 		uint32_t bitsTransition = event.GetPinBitmap() ^ eventPrev.GetPinBitmap();
-		tout.Printf("%12.2f", static_cast<double>(event.GetTimeStamp() - eventBase.GetTimeStamp()) * timeStampFactor);
+		iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%12.2f", static_cast<double>(event.GetTimeStamp() - eventBase.GetTimeStamp()) * timeStampFactor);
 		for (int iPin = 0; iPin < printInfo_.nPins; ++iPin) {
 			uint pin = printInfo_.pinTbl[iPin];
 			if (pin == -1) {
-				tout.Print(strBlank);
+				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", strBlank);
 				continue;
 			}
 			if (samplingInfo_.IsPinEnabled(pin)) {
-				tout.Print(samplingInfo_.IsPinAsserted(bitsTransition, pin)?
+				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", samplingInfo_.IsPinAsserted(bitsTransition, pin)?
 					(samplingInfo_.IsPinAsserted(event.GetPinBitmap(), pin)? waveStyle.strLowToHigh : waveStyle.strHighToLow) :
 					(samplingInfo_.IsPinAsserted(event.GetPinBitmap(), pin)? waveStyle.strHigh : waveStyle.strLow));
 			} else {
-				tout.Print(waveStyle.strBlank);
+				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", waveStyle.strBlank);
 			}
 		}
-		tout.Println();
+		flushLine();
 		if (Tickable::TickSub()) break;
 		eventPrev = event;
 	}
@@ -743,7 +749,7 @@ void LogicAnalyzer::SUMPAdapter::ProcessCommand(uint8_t cmd, uint32_t arg)
 		SendMeta_32bit(TokenKey::SampleMemory,			1024);
 		SendMeta_32bit(TokenKey::SampleRate,			static_cast<uint32_t>(logicAnalyzer_.GetSampleRate()));
 		SendMeta_32bit(TokenKey::ProtocolVersion,		2);
-		SendMeta_32bit(TokenKey::NumberOfProbes,		logicAnalyzer_.GetPrintInfo().nPins);
+		SendMeta_32bit(TokenKey::NumberOfProbes,		16); //logicAnalyzer_.GetPrintInfo().nPins);
 		SendMeta(TokenKey::EndOfMetadata);
 		Flush();
 	} else if ((cmd & 0xf3) == Command::SetTriggerMask) {
@@ -796,6 +802,22 @@ void LogicAnalyzer::SUMPAdapter::SendMeta_32bit(uint8_t tokenKey, uint32_t value
 
 void LogicAnalyzer::SUMPAdapter::RunCapture()
 {
+	Tickable::Sleep(1000);
+	::printf("%d samples\n", cfg_.readCount);
+	for (int i = 0; i < cfg_.readCount; ++i) {
+		stream_.PutByte(1 << (i % 8));		// Probe 0-7
+		stream_.PutByte(~(1 << (i % 8)));	// Probe 8-15
+	}
+#if 0
+	for (int i = 0; i < cfg_.readCount; ++i) {
+		stream_.PutByte(1 << (i % 8));	// Probe 0-7
+		stream_.PutByte(0x00);			// Probe 8-15
+		stream_.PutByte(0xff);			// Probe 16-23
+		stream_.PutByte(0xaa);			// Probe 24-31
+	}
+#endif
+	Flush();
+#if 0
 	::printf("start capture\n");
 	double samplePeriod = 1. / (logicAnalyzer_.GetSampleRate() / (cfg_.divider + 1) * 10);
 	logicAnalyzer_.Enable();
@@ -821,6 +843,7 @@ void LogicAnalyzer::SUMPAdapter::RunCapture()
 		stream_.PutByte(0x00);
 		stream_.PutByte(0xff);
 	}
+#endif
 	Flush();
 }
 
@@ -880,8 +903,7 @@ void LogicAnalyzer::SUMPAdapter::Config::Print(Printable& tout) const
 	tout.Printf("Swap Channels:             %d\n", GetFlags_SwapChannels());
 	tout.Printf("External Test Mode:        %d\n", GetFlags_ExternalTestMode());
 	tout.Printf("Internal Test Mode:        %d\n", GetFlags_InternalTestMode());
-	tout.Printf("Run Length Encoding Mode0: %d\n", GetFlags_RunLengthEncodingMode0());
-	tout.Printf("Run Length Encoding Mode1: %d\n", GetFlags_RunLengthEncodingMode1());
+	tout.Printf("Run Length Encoding Mode:  %d\n", GetFlags_RunLengthEncodingMode());
 }
 
 }
