@@ -280,31 +280,55 @@ int LogicAnalyzer::GetRawEventCountMax() const
 void LogicAnalyzer::Analyze() const
 {
 	enum class Stat {
-		WaitForStable, Start, Data, Ack, Stop,
+		WaitForStable, Start_SDA_Fall, BitAccum_SCL_Fall, BitAccum_SCL_Rise, Stop_SCL_Fall, Stop_SDA_Rise
 	};
 	EventIterator eventIter(*this);
 	Event event, eventPrev;
+	uint pinSCL = 3, pinSDA = 2;
 	if (!eventIter.Next(eventPrev)) return;
-	Stat stat = Stat::WaitForStable;
+	Stat stat = eventPrev.IsPinHigh(pinSCL, pinSDA)? Stat::Start_SDA_Fall : Stat::WaitForStable;
+	int nBitsAccum = 0;
+	uint16_t bitAccum = 0;
 	while (eventIter.Next(event)) {
 		switch (stat) {
 		case Stat::WaitForStable: {
+			if (event.IsPinHigh(pinSCL, pinSDA)) {
+				stat = Stat::Start_SDA_Fall;
+			}
 			break;
 		}
-		case Stat::Start: {
-
+		case Stat::Start_SDA_Fall: {
+			if (event.IsPinLow(pinSDA)) {
+				nBitsAccum = 0;
+				bitAccum = 0x000;
+				stat = Stat::BitAccum_SCL_Fall;
+			}
 			break;
 		}
-		case Stat::Data: {
-
+		case Stat::BitAccum_SCL_Fall: {
+			if (event.IsPinLow(pinSCL)) {
+				stat = Stat::BitAccum_SCL_Rise;
+			}
 			break;
 		}
-		case Stat::Ack: {
-
+		case Stat::BitAccum_SCL_Rise: {
+			if (event.IsPinHigh(pinSCL)) {
+				bitAccum = (bitAccum << 1) | (event.IsPinHigh(pinSDA)? 1 : 0);
+				nBitsAccum++;
+				stat = (nBitsAccum < 9)? Stat::BitAccum_SCL_Fall : Stat::Stop_SCL_Fall;
+			}
 			break;
 		}
-		case Stat::Stop: {
-
+		case Stat::Stop_SCL_Fall: {
+			if (event.IsPinLow(pinSCL)) {
+				stat = Stat::Stop_SDA_Rise;
+			}
+			break;
+		}
+		case Stat::Stop_SDA_Rise: {
+			if (event.IsPinHigh(pinSDA)) {
+				stat = Stat::Start_SDA_Fall;
+			}
 			break;
 		}
 		default:break;
@@ -370,7 +394,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 				continue;
 			}
 			if (samplingInfo_.IsPinEnabled(pin)) {
-				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", eventInitial.IsPinAsserted(pin)? waveStyle.strHigh : waveStyle.strLow);
+				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", eventInitial.IsPinHigh(pin)? waveStyle.strHigh : waveStyle.strLow);
 			} else {
 				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", waveStyle.strBlank);
 			}
@@ -392,7 +416,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 					continue;
 				}
 				if (samplingInfo_.IsPinEnabled(pin)) {
-					iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", eventPrev.IsPinAsserted(pin)? waveStyle.strHighIdle : waveStyle.strLowIdle);
+					iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", eventPrev.IsPinHigh(pin)? waveStyle.strHighIdle : waveStyle.strLowIdle);
 				} else {
 					iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", waveStyle.strBlank);
 				}
@@ -408,7 +432,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 						continue;
 					}
 					if (samplingInfo_.IsPinEnabled(pin)) {
-						iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", eventPrev.IsPinAsserted(pin)? waveStyle.strHigh : waveStyle.strLow);
+						iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", eventPrev.IsPinHigh(pin)? waveStyle.strHigh : waveStyle.strLow);
 					} else {
 						iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", waveStyle.strBlank);
 					}
@@ -426,8 +450,8 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 			}
 			if (samplingInfo_.IsPinEnabled(pin)) {
 				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", (bitsTransition & (1u << pin))?
-					(event.IsPinAsserted(pin)? waveStyle.strLowToHigh : waveStyle.strHighToLow) :
-					(event.IsPinAsserted(pin)? waveStyle.strHigh : waveStyle.strLow));
+					(event.IsPinHigh(pin)? waveStyle.strLowToHigh : waveStyle.strHighToLow) :
+					(event.IsPinHigh(pin)? waveStyle.strHigh : waveStyle.strLow));
 			} else {
 				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", waveStyle.strBlank);
 			}
@@ -499,7 +523,7 @@ const LogicAnalyzer& LogicAnalyzer::PlotWave() const
 			uint pin = printInfo_.pinTbl[iPin];
 			if (pin == -1) continue;
 			if (samplingInfo_.IsPinEnabled(pin)) {
-				float value = eventPrev.IsPinAsserted(pin)? .2 : 0;
+				float value = eventPrev.IsPinHigh(pin)? .2 : 0;
 				for (int i = 0; i < nDelta; ++i) t.Plot(value);
 			}
 		}

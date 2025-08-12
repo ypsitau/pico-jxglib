@@ -61,7 +61,16 @@ public:
 	public:
 		uint64_t GetTimeStamp() const { return timeStamp_; }
 		uint32_t GetPinBitmap() const { return pinBitmap_; }
-		bool IsPinAsserted(uint pin) const { return (pinBitmap_ & (1 << pin)) != 0; }
+		template<typename... Pins> static uint32_t MakeMask(Pins... pins) {
+			return ((1u << pins) | ...);
+		}
+		template<typename... Pins> bool IsPinHigh(Pins... pins) const {
+			uint32_t mask = MakeMask(pins...);
+			return (pinBitmap_ & mask) == mask;
+		}
+		template<typename... Pins> bool IsPinLow(Pins... pins) const {
+			return (pinBitmap_ & MakeMask(pins...)) == 0;
+		}
 	};
 	struct SignalReport {
 		uint32_t nSamples;
