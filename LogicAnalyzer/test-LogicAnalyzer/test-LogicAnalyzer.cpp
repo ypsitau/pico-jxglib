@@ -5,7 +5,7 @@
 using namespace jxglib;
 
 int main()
-{
+{	
 	::stdio_init_all();
 	LABOPlatform& laboPlatform = LABOPlatform::Instance;
 	laboPlatform.AttachStdio().Initialize();

@@ -119,7 +119,7 @@ public:
 		RawEvent_Short rawEvent_Short_;
 		RawEvent_Long rawEvent_Long_;
 	public:
-		EventIterator(LogicAnalyzer& logicAnalyzer, int nBitsPinBitmap);
+		EventIterator(LogicAnalyzer& logicAnalyzer);
 	public:
 		bool IsDone() const { return doneFlag_; }
 		bool Next(Event& event);
@@ -322,6 +322,7 @@ public:
 	const LogicAnalyzer& PrintWave(Printable& tout);
 	const LogicAnalyzer& PlotWave();
 	const LogicAnalyzer& PrintSettings(Printable& tout) const;
+	void Analyze() const;
 public:
 	static size_t GetFreeHeapBytes();
 };

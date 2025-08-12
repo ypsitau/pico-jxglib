@@ -277,12 +277,15 @@ int LogicAnalyzer::GetRawEventCountMax() const
 		((rawEventFormat_ == RawEventFormat::Short)? sizeof(RawEvent_Short::Entity) : sizeof(RawEvent_Long::Entity));
 }
 
+void LogicAnalyzer::Analyze() const
+{
+}
+
 const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout)
 {
 	int iCol = 0;
 	char buffLine[256];
-	uint nBitsPinBitmap = samplingInfo_.CountBits();
-	EventIterator eventIter(*this, nBitsPinBitmap);
+	EventIterator eventIter(*this);
 	int nEventsRelevant = eventIter.CountRelevant();
 	if (nEventsRelevant == 0) {
 		tout.Printf("no events to print\n");
@@ -348,7 +351,22 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout)
 	for (int iEvent = 0; iEvent < nEventsToPrint && !eventIter.IsDone(); ++iEvent, eventIter.Next(event)) {
 		double delta = static_cast<double>(event.GetTimeStamp() - eventPrev.GetTimeStamp()) * timeStampFactor;
 		int nDelta = static_cast<int>(delta / usecReso_);
-		if (nDelta < 40) {
+		if (iEvent == 0 || nDelta >= 40) {
+			iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%12s", "");
+			for (int iPin = 0; iPin < printInfo_.nPins; ++iPin) {
+				uint pin = printInfo_.pinTbl[iPin];
+				if (pin == -1) {
+					iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", strBlank);
+					continue;
+				}
+				if (samplingInfo_.IsPinEnabled(pin)) {
+					iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", samplingInfo_.IsPinAsserted(eventPrev.GetPinBitmap(), pin)? waveStyle.strHighIdle : waveStyle.strLowIdle);
+				} else {
+					iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", waveStyle.strBlank);
+				}
+			}
+			flushLine();
+		} else {
 			for (int i = 0; i < nDelta; ++i) {
 				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%12s", "");
 				for (int iPin = 0; iPin < printInfo_.nPins; ++iPin) {
@@ -365,21 +383,6 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout)
 				}
 				flushLine();
 			}
-		} else {
-			iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%12s", "");
-			for (int iPin = 0; iPin < printInfo_.nPins; ++iPin) {
-				uint pin = printInfo_.pinTbl[iPin];
-				if (pin == -1) {
-					iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", strBlank);
-					continue;
-				}
-				if (samplingInfo_.IsPinEnabled(pin)) {
-					iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", samplingInfo_.IsPinAsserted(eventPrev.GetPinBitmap(), pin)? waveStyle.strHighIdle : waveStyle.strLowIdle);
-				} else {
-					iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", waveStyle.strBlank);
-				}
-			}
-			flushLine();
 		}
 		uint32_t bitsTransition = event.GetPinBitmap() ^ eventPrev.GetPinBitmap();
 		iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%12.2f", static_cast<double>(event.GetTimeStamp() - eventBase.GetTimeStamp()) * timeStampFactor);
@@ -410,8 +413,7 @@ const LogicAnalyzer::SignalReport* LogicAnalyzer::CreateSignalReport(int nSample
 {
 	SignalReport* signalReportTbl = reinterpret_cast<SignalReport*>(GetSamplingBuffWhole());
 	*pnSignalReports = 0;
-	uint nBitsPinBitmap = samplingInfo_.CountBits();
-	EventIterator eventIter(*this, nBitsPinBitmap);
+	EventIterator eventIter(*this);
 	int nEventsRelevant = eventIter.CountRelevant();
 	Event event, eventPrev;
 	double timeStampFactor = 1000'000. / GetSampleRate() / GetSamplerCount();
@@ -447,8 +449,7 @@ const LogicAnalyzer& LogicAnalyzer::PlotWave()
 {
 	if (!pTelePlot_) return *this;
 	TelePlot& tp = *pTelePlot_;
-	uint nBitsPinBitmap = samplingInfo_.CountBits();
-	EventIterator eventIter(*this, nBitsPinBitmap);
+	EventIterator eventIter(*this);
 	int nEventsRelevant = eventIter.CountRelevant();
 	if (nEventsRelevant == 0) return *this;
 	double timeStampFactor = 1000'000. / GetSampleRate() / nSampler_;
@@ -623,11 +624,11 @@ int LogicAnalyzer::SamplingInfo::CountBits() const
 //------------------------------------------------------------------------------
 // LogicAnalyzer::EventIterator
 //------------------------------------------------------------------------------
-LogicAnalyzer::EventIterator::EventIterator(LogicAnalyzer& logicAnalyzer, int nBitsPinBitmap) :
+LogicAnalyzer::EventIterator::EventIterator(LogicAnalyzer& logicAnalyzer) :
 		logicAnalyzer_{logicAnalyzer}, pinBitmapPrev_{0}, firstFlag_{true}, doneFlag_{false},
-		timeStampOffsetIncr_{0}, nBitsPinBitmap_{nBitsPinBitmap}
+		timeStampOffsetIncr_{0}, nBitsPinBitmap_{logicAnalyzer.GetSamplingInfo().CountBits()}
 {
-	int nBitsTimeStamp = 32 - nBitsPinBitmap;
+	int nBitsTimeStamp = 32 - nBitsPinBitmap_;
 	timeStampOffsetIncr_ = 1LL << nBitsTimeStamp;
 	Rewind();
 }
