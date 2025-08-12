@@ -279,7 +279,38 @@ int LogicAnalyzer::GetRawEventCountMax() const
 
 void LogicAnalyzer::Analyze() const
 {
+	enum class Stat {
+		WaitForStable, Start, Data, Ack, Stop,
+	};
 	EventIterator eventIter(*this);
+	Event event, eventPrev;
+	if (!eventIter.Next(eventPrev)) return;
+	Stat stat = Stat::WaitForStable;
+	while (eventIter.Next(event)) {
+		switch (stat) {
+		case Stat::WaitForStable: {
+			break;
+		}
+		case Stat::Start: {
+
+			break;
+		}
+		case Stat::Data: {
+
+			break;
+		}
+		case Stat::Ack: {
+
+			break;
+		}
+		case Stat::Stop: {
+
+			break;
+		}
+		default:break;
+		}
+		eventPrev = event;
+	}
 }
 
 const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
@@ -626,9 +657,10 @@ int LogicAnalyzer::SamplingInfo::CountBits() const
 // LogicAnalyzer::EventIterator
 //------------------------------------------------------------------------------
 LogicAnalyzer::EventIterator::EventIterator(const LogicAnalyzer& logicAnalyzer) :
-		logicAnalyzer_{logicAnalyzer}, pinBitmapPrev_{0}, firstFlag_{true}, doneFlag_{false},
-		timeStampOffsetIncr_{0}, nBitsPinBitmap_{logicAnalyzer.GetSamplingInfo().CountBits()}
+	logicAnalyzer_{logicAnalyzer}, pinBitmapPrev_{0}, firstFlag_{true}, doneFlag_{false}, timeStampOffsetIncr_{0},
+	pinMin_{logicAnalyzer.GetSamplingInfo().GetPinMin()}, nBitsPinBitmap_{logicAnalyzer.GetSamplingInfo().CountBits()}
 {
+	pinMin_ = 0;
 	int nBitsTimeStamp = 32 - nBitsPinBitmap_;
 	timeStampOffsetIncr_ = 1LL << nBitsTimeStamp;
 	Rewind();
@@ -644,7 +676,7 @@ bool LogicAnalyzer::EventIterator::Next(Event& event)
 		return false;
 	}
 	uint64_t timeStamp = (timeStampOffsetTbl_[iSampler] + pRawEvent->GetTimeStamp(nBitsPinBitmap_)) * logicAnalyzer_.GetSamplerCount() + iSampler;
-	uint32_t pinBitmap = pRawEvent->GetPinBitmap(nBitsPinBitmap_);
+	uint32_t pinBitmap = pRawEvent->GetPinBitmap(nBitsPinBitmap_) << pinMin_;
 	event = Event(timeStamp, pinBitmap);
 	pinBitmapPrev_ = pinBitmap;
 	firstFlag_= false;
@@ -710,7 +742,7 @@ const LogicAnalyzer::RawEvent* LogicAnalyzer::EventIterator::NextRawEvent(int* p
 		if (iRawEvent > 0 && rawEvent.GetTimeStamp(nBitsPinBitmap_) == 0) {
 			timeStampOffsetTbl_[iSamplerRtn] += timeStampOffsetIncr_; // wrap-around
 		}
-		if (firstFlag_ || rawEvent.GetPinBitmap(nBitsPinBitmap_) != pinBitmapPrev_) {
+		if (firstFlag_ || (rawEvent.GetPinBitmap(nBitsPinBitmap_) << pinMin_) != pinBitmapPrev_) {
 			if (piSampler) *piSampler = iSamplerRtn;
 			return &rawEvent;
 		}

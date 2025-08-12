@@ -61,6 +61,7 @@ public:
 	public:
 		uint64_t GetTimeStamp() const { return timeStamp_; }
 		uint32_t GetPinBitmap() const { return pinBitmap_; }
+		bool IsPinAsserted(uint pin) const { return (pinBitmap_ & (1 << pin)) != 0; }
 	};
 	struct SignalReport {
 		uint32_t nSamples;
@@ -109,6 +110,7 @@ public:
 	class EventIterator {
 	private:
 		const LogicAnalyzer& logicAnalyzer_;
+		uint pinMin_;
 		int nBitsPinBitmap_;
 		int iRawEventTbl_[4];
 		uint64_t timeStampOffsetTbl_[4];
