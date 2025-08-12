@@ -280,8 +280,9 @@ int LogicAnalyzer::GetRawEventCountMax() const
 void LogicAnalyzer::Analyze() const
 {
 	enum class Stat {
-		WaitForStable, Start_SDA_Fall, BitAccum_SCL_Fall, BitAccum_SCL_Rise, Stop_SCL_Fall, Stop_SDA_Rise
+		WaitForStable, Start_SDA_Fall, BitAccum_SCL_Fall, BitAccum_SCL_Rise, Stop_SCL_Fall,
 	};
+	enum class Field { Address, Data };
 	EventIterator eventIter(*this);
 	Event event, eventPrev;
 	uint pinSCL = 3, pinSDA = 2;
@@ -289,6 +290,8 @@ void LogicAnalyzer::Analyze() const
 	Stat stat = eventPrev.IsPinHigh(pinSCL, pinSDA)? Stat::Start_SDA_Fall : Stat::WaitForStable;
 	int nBitsAccum = 0;
 	uint16_t bitAccum = 0;
+	bool signalSDAPrev = false;
+	Field field = Field::Address;
 	while (eventIter.Next(event)) {
 		switch (stat) {
 		case Stat::WaitForStable: {
@@ -298,37 +301,39 @@ void LogicAnalyzer::Analyze() const
 			break;
 		}
 		case Stat::Start_SDA_Fall: {
-			if (event.IsPinLow(pinSDA)) {
+			if (event.IsPinLow(pinSDA)) {							// SDA falls while SCL high: Start Condition
 				nBitsAccum = 0;
 				bitAccum = 0x000;
+				field = Field::Address;
 				stat = Stat::BitAccum_SCL_Fall;
 			}
+			signalSDAPrev = event.IsPinHigh(pinSDA);
 			break;
 		}
 		case Stat::BitAccum_SCL_Fall: {
-			if (event.IsPinLow(pinSCL)) {
+			if (!signalSDAPrev && event.IsPinHigh(pinSDA)) {		// SDA rises while SCL high: Stop Condition
+				stat = Stat::Start_SDA_Fall;
+			} else if (signalSDAPrev && event.IsPinLow(pinSDA)) {	// SDA falls while SCL high: repeated start Condition
+				nBitsAccum = 0;
+				bitAccum = 0x000;
+				field = Field::Address;
+			} else if (event.IsPinLow(pinSCL)) {
 				stat = Stat::BitAccum_SCL_Rise;
 			}
+			signalSDAPrev = event.IsPinHigh(pinSDA);
 			break;
 		}
 		case Stat::BitAccum_SCL_Rise: {
 			if (event.IsPinHigh(pinSCL)) {
 				bitAccum = (bitAccum << 1) | (event.IsPinHigh(pinSDA)? 1 : 0);
 				nBitsAccum++;
-				stat = (nBitsAccum < 9)? Stat::BitAccum_SCL_Fall : Stat::Stop_SCL_Fall;
+				if (nBitsAccum == 9) {
+					nBitsAccum = 0;
+					bitAccum = 0x000;
+				}
+				stat = Stat::BitAccum_SCL_Fall;
 			}
-			break;
-		}
-		case Stat::Stop_SCL_Fall: {
-			if (event.IsPinLow(pinSCL)) {
-				stat = Stat::Stop_SDA_Rise;
-			}
-			break;
-		}
-		case Stat::Stop_SDA_Rise: {
-			if (event.IsPinHigh(pinSDA)) {
-				stat = Stat::Start_SDA_Fall;
-			}
+			signalSDAPrev = event.IsPinHigh(pinSDA);
 			break;
 		}
 		default:break;
