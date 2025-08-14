@@ -188,23 +188,19 @@ ShellCmd(la, "Logic Analyzer")
 			logicAnalyzer.PrintWave(tout);
 		} else if (::strcmp(subcmd, "plot") == 0) {
 			logicAnalyzer.PlotWave();
-		} else if (Arg::GetAssigned(subcmd, "analyze", &value) == 0) {
+		} else if (Arg::GetAssigned(subcmd, "analyze", &value)) {
 			if (!value) {
 				terr.Printf("specify a valid protocol name\n");
 				return false;
 			}
 			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
+				const char* subcmd = pSubcmdChild->GetProc();
 				const char* childProc = pSubcmdChild->GetProc();
-				if (::strcasecmp(childProc, "enable") == 0) {
-					logicAnalyzer.EnableProtocol(value);
-				} else if (::strcasecmp(childProc, "disable") == 0) {
-					logicAnalyzer.DisableProtocol(value);
-				} else if (::strcasecmp(childProc, "print") == 0) {
-					logicAnalyzer.PrintProtocol(value, tout);
-				} else if (::strcasecmp(childProc, "plot") == 0) {
-					logicAnalyzer.PlotProtocol(value);
+				if (Arg::GetAssigned(subcmd, "scl", &value)) {
+
+				} else if (Arg::GetAssigned(subcmd, "sda", &value)) {
 				} else {
-					tout.Printf("unknown command: %s\n", childProc);
+					tout.Printf("unknown command: %s\n", subcmd);
 					return Result::Error;
 				}
 			}
