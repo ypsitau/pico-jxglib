@@ -15,6 +15,15 @@ Dict::Dict()
 {
 }
 
+void Dict::Add(Entry* pEntry)
+{
+	if (pDictEntry_) {
+		pDictEntry_->Add(pEntry);
+	} else {
+		pDictEntry_.reset(pEntry);
+	}
+}
+
 Dict::Entry* Dict::SetValue(const char* key, const char* value)
 {
 	if (pDictEntry_) {
@@ -43,6 +52,17 @@ Dict::Entry::Entry(const char* key, const char* value)
 	value_.reset(new char[lenValue + 1]);
 	if (!key_ || !value_) ::panic("failed to allocate memory for Dict::Entry");
 	::memcpy(key_.get(), key, lenKey + 1);
+	::memcpy(value_.get(), value, lenValue + 1);
+}
+
+Dict::Entry::Entry(const char* key, int lenKey, const char* value)
+{
+	int lenValue = ::strlen(value);
+	key_.reset(new char[lenKey + 1]);
+	value_.reset(new char[lenValue + 1]);
+	if (!key_ || !value_) ::panic("failed to allocate memory for Dict::Entry");
+	::memcpy(key_.get(), key, lenKey);
+	key_[lenKey] = '\0'; // Ensure null-termination
 	::memcpy(value_.get(), value, lenValue + 1);
 }
 

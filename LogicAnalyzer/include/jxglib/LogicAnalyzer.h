@@ -330,9 +330,9 @@ public:
 	int GetRawEventCount() const;
 	int GetRawEventCountMax() const;
 	const LogicAnalyzer& PrintWave(Printable& tout) const;
+	bool AnalyzeWave(Printable& tout, Printable& terr, const char* protocolName, const Dict& dict) const;
 	const LogicAnalyzer& PlotWave() const;
 	const LogicAnalyzer& PrintSettings(Printable& tout) const;
-	void Analyze() const;
 public:
 	static size_t GetFreeHeapBytes();
 };

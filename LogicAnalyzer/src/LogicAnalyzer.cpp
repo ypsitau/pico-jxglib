@@ -277,71 +277,6 @@ int LogicAnalyzer::GetRawEventCountMax() const
 		((rawEventFormat_ == RawEventFormat::Short)? sizeof(RawEvent_Short::Entity) : sizeof(RawEvent_Long::Entity));
 }
 
-void LogicAnalyzer::Analyze() const
-{
-	enum class Stat {
-		WaitForStable, Start_SDA_Fall, BitAccum_SCL_Fall, BitAccum_SCL_Rise, Stop_SCL_Fall,
-	};
-	enum class Field { Address, Data };
-	EventIterator eventIter(*this);
-	Event event, eventPrev;
-	uint pinSCL = 3, pinSDA = 2;
-	if (!eventIter.Next(eventPrev)) return;
-	Stat stat = eventPrev.IsPinHigh(pinSCL, pinSDA)? Stat::Start_SDA_Fall : Stat::WaitForStable;
-	int nBitsAccum = 0;
-	uint16_t bitAccum = 0;
-	bool signalSDAPrev = false;
-	Field field = Field::Address;
-	while (eventIter.Next(event)) {
-		switch (stat) {
-		case Stat::WaitForStable: {
-			if (event.IsPinHigh(pinSCL, pinSDA)) {
-				stat = Stat::Start_SDA_Fall;
-			}
-			break;
-		}
-		case Stat::Start_SDA_Fall: {
-			if (event.IsPinLow(pinSDA)) {							// SDA falls while SCL high: Start Condition
-				nBitsAccum = 0;
-				bitAccum = 0x000;
-				field = Field::Address;
-				stat = Stat::BitAccum_SCL_Fall;
-			}
-			signalSDAPrev = event.IsPinHigh(pinSDA);
-			break;
-		}
-		case Stat::BitAccum_SCL_Fall: {
-			if (!signalSDAPrev && event.IsPinHigh(pinSDA)) {		// SDA rises while SCL high: Stop Condition
-				stat = Stat::Start_SDA_Fall;
-			} else if (signalSDAPrev && event.IsPinLow(pinSDA)) {	// SDA falls while SCL high: repeated start Condition
-				nBitsAccum = 0;
-				bitAccum = 0x000;
-				field = Field::Address;
-			} else if (event.IsPinLow(pinSCL)) {
-				stat = Stat::BitAccum_SCL_Rise;
-			}
-			signalSDAPrev = event.IsPinHigh(pinSDA);
-			break;
-		}
-		case Stat::BitAccum_SCL_Rise: {
-			if (event.IsPinHigh(pinSCL)) {
-				bitAccum = (bitAccum << 1) | (event.IsPinHigh(pinSDA)? 1 : 0);
-				nBitsAccum++;
-				if (nBitsAccum == 9) {
-					nBitsAccum = 0;
-					bitAccum = 0x000;
-				}
-				stat = Stat::BitAccum_SCL_Fall;
-			}
-			signalSDAPrev = event.IsPinHigh(pinSDA);
-			break;
-		}
-		default:break;
-		}
-		eventPrev = event;
-	}
-}
-
 const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 {
 	int iCol = 0;
@@ -467,6 +402,86 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 	}
 	if (nEventsToPrint > 0) printHeader();
 	return *this;
+}
+
+bool LogicAnalyzer::AnalyzeWave(Printable& tout, Printable& terr, const char* protocolName, const Dict& dict) const
+{
+	int iCol = 0;
+	char buffLine[256];
+	enum class Stat {
+		WaitForStable, Start_SDA_Fall, BitAccum_SCL_Fall, BitAccum_SCL_Rise, Stop_SCL_Fall,
+	};
+	enum class Field { Address, Data };
+	EventIterator eventIter(*this);
+	Event eventBase, eventPrev;
+	uint pinSCL = 3, pinSDA = 2;
+	if (!eventIter.Next(eventPrev)) return true;
+	if (!eventIter.Next(eventBase)) eventBase = eventPrev;
+	Stat stat = eventPrev.IsPinHigh(pinSCL, pinSDA)? Stat::Start_SDA_Fall : Stat::WaitForStable;
+	int nBitsAccum = 0;
+	uint16_t bitAccum = 0;
+	bool signalSDAPrev = false;
+	Field field = Field::Address;
+	Event event = eventBase;
+	double timeStampFactor = 1000'000. / GetSampleRate() / nSampler_;
+	for (int iEvent = 0; !eventIter.IsDone(); ++iEvent, eventIter.Next(event)) {
+		iCol = 0;
+		iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%12.2f", static_cast<double>(event.GetTimeStamp() - eventBase.GetTimeStamp()) * timeStampFactor);
+		switch (stat) {
+		case Stat::WaitForStable: {
+			if (event.IsPinHigh(pinSCL, pinSDA)) {
+				stat = Stat::Start_SDA_Fall;
+			}
+			break;
+		}
+		case Stat::Start_SDA_Fall: {
+			if (event.IsPinLow(pinSDA)) {							// SDA falls while SCL high: Start Condition
+				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, " Start");
+				nBitsAccum = 0;
+				bitAccum = 0x000;
+				field = Field::Address;
+				stat = Stat::BitAccum_SCL_Fall;
+			}
+			signalSDAPrev = event.IsPinHigh(pinSDA);
+			break;
+		}
+		case Stat::BitAccum_SCL_Fall: {
+			if (!signalSDAPrev && event.IsPinHigh(pinSDA)) {		// SDA rises while SCL high: Stop Condition
+				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, " Stop");
+				stat = Stat::Start_SDA_Fall;
+			} else if (signalSDAPrev && event.IsPinLow(pinSDA)) {	// SDA falls while SCL high: repeated start Condition
+				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, " Repeated Start");
+				nBitsAccum = 0;
+				bitAccum = 0x000;
+				field = Field::Address;
+			} else if (event.IsPinLow(pinSCL)) {
+				stat = Stat::BitAccum_SCL_Rise;
+			}
+			signalSDAPrev = event.IsPinHigh(pinSDA);
+			break;
+		}
+		case Stat::BitAccum_SCL_Rise: {
+			if (event.IsPinHigh(pinSCL)) {
+				uint bitValue = event.IsPinHigh(pinSDA)? 1 : 0;
+				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, " %d", bitValue);
+				bitAccum = (bitAccum << 1) | bitValue;
+				nBitsAccum++;
+				if (nBitsAccum == 9) {
+					nBitsAccum = 0;
+					bitAccum = 0x000;
+				}
+				stat = Stat::BitAccum_SCL_Fall;
+			}
+			signalSDAPrev = event.IsPinHigh(pinSDA);
+			break;
+		}
+		default:break;
+		}
+		tout.Println(buffLine);
+		eventPrev = event;
+		if (Tickable::TickSub()) break;
+	}
+	return true;
 }
 
 // This method destroys the sampling buffers and creates a set of SignalReport. 

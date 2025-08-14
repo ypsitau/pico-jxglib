@@ -6,6 +6,7 @@
 #include "Color.h"
 #include "DataType.h"
 #include "DateTime.h"
+#include "Dict.h"
 #include "Dir.h"
 #include "FIFOBuff.h"
 #include "FixedPool.h"

@@ -481,6 +481,19 @@ bool Shell::Arg::GetAssigned(const char* str, const char* name, const char** pVa
 	return ::isspace(*value) || *value == '\0';
 }
 
+Dict::Entry* Shell::Arg::CreateDictEntry(const char* str)
+{
+	const char* p = str;
+	for ( ; *p && !(*p == ':' || *p == '='); p++) ;
+	if (*p) {
+		int lenKey = p - str;
+		const char* value = p + 1;
+		return new Dict::Entry(str, lenKey, value);
+	} else{
+		return new Dict::Entry(str);
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Shell::Arg::Opt
 //-----------------------------------------------------------------------------

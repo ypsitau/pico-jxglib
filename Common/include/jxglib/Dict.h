@@ -22,6 +22,7 @@ public:
 		Entry();
 		Entry(const char* key);
 		Entry(const char* key, const char* value);
+		Entry(const char* key, int lenKey, const char* value);
 	public:
 		void SetNext(Entry* pNext) { pNext_.reset(pNext); }
 		Entry* GetNext() { return pNext_.get(); }
@@ -47,6 +48,7 @@ public:
 public:
 	Dict();
 public:
+	void Add(Entry* pEntry);
 	Entry* Find(const char* key) { return pDictEntry_? pDictEntry_->Find(key) : nullptr; }
 	const Entry* Find(const char* key) const { return pDictEntry_? pDictEntry_->Find(key) : nullptr; }
 	const char* Lookup(const char* key) const { return pDictEntry_? pDictEntry_->Lookup(key) : nullptr; }

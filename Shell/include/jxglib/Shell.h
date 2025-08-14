@@ -250,6 +250,7 @@ public:
 		}
 	public:
 		static bool GetAssigned(const char* str, const char* name, const char** pValue);
+		static Dict::Entry* CreateDictEntry(const char* str);
 	};
 	struct Result {
 		static const int Success	= 0;

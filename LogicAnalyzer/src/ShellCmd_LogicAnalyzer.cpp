@@ -189,21 +189,23 @@ ShellCmd(la, "Logic Analyzer")
 		} else if (::strcmp(subcmd, "plot") == 0) {
 			logicAnalyzer.PlotWave();
 		} else if (Arg::GetAssigned(subcmd, "analyze", &value)) {
-			if (!value) {
+			const char* protocolName = value;
+			if (!protocolName) {
 				terr.Printf("specify a valid protocol name\n");
 				return false;
 			}
+			Dict dict;
 			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
 				const char* subcmd = pSubcmdChild->GetProc();
-				const char* childProc = pSubcmdChild->GetProc();
-				if (Arg::GetAssigned(subcmd, "scl", &value)) {
-
-				} else if (Arg::GetAssigned(subcmd, "sda", &value)) {
+				std::unique_ptr<Dict::Entry> pEntry(Arg::CreateDictEntry(subcmd));
+				if (pEntry) {
+					dict.Add(pEntry.release());
 				} else {
-					tout.Printf("unknown command: %s\n", subcmd);
+					tout.Printf("invalid format of argument: %s\n", subcmd);
 					return Result::Error;
 				}
 			}
+			logicAnalyzer.AnalyzeWave(tout, terr, protocolName, dict);
 		} else {
 			tout.Printf("unknown command: %s\n", subcmd);
 			return Result::Error;
