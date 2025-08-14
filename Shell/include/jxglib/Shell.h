@@ -151,27 +151,28 @@ public:
 			const FS::FileInfo& GetFileInfo() const { return *pFileInfo_; }
 			void Rewind();
 		};
-		class SubcmdGroup;
 		class Subcmd {
 		protected:
-			SubcmdGroup* pSubcmdGroupParent_;
+			Subcmd* pSubcmdGroupParent_;
 			Subcmd* pSubcmdNext_;
+			std::unique_ptr<Subcmd> pSubcmdChild_;
 		public:
-			Subcmd() : pSubcmdGroupParent_{nullptr}, pSubcmdNext_{nullptr} {}
+			Subcmd();
 		public:
-			void SetParent(SubcmdGroup* pSubcmdGroupParent) { pSubcmdGroupParent_ = pSubcmdGroupParent; }
-			SubcmdGroup* GetParent() const { return pSubcmdGroupParent_; }
+			void SetParent(Subcmd* pSubcmdGroupParent) { pSubcmdGroupParent_ = pSubcmdGroupParent; }
+			Subcmd* GetParent() const { return pSubcmdGroupParent_; }
+			Subcmd* GetChild() const { return pSubcmdChild_.get(); }
 			void SetNext(Subcmd* pNext) { pSubcmdNext_ = pNext; }
 			Subcmd* GetNext() const { return pSubcmdNext_; }
 			Subcmd* GetLast();
 		public:
-			virtual void AddChild(Subcmd* pSubcmdChild) {}
-			virtual bool DoesRequireChild() const { return false; }
-			virtual void SetChild(Subcmd* pSubcmdChild) {}
-			virtual bool IsEmpty() const = 0;
-			virtual const char* GetProc() const = 0;
-			virtual Subcmd* Advance() = 0;
-			virtual void Print(int indentLevel = 0) const = 0;
+			virtual void AddChild(Subcmd* pSubcmdChild);
+			virtual bool IsEmpty() const;
+			virtual const char* GetProc() const { return nullptr; }
+			virtual Subcmd* Advance();
+			virtual void Print(int indentLevel = 0) const;
+		public:
+			virtual Subcmd* AdvanceAtEnd();
 		};
 		class SubcmdCustom : public Subcmd {
 		protected:
@@ -184,23 +185,7 @@ public:
 			virtual Subcmd* Advance() override;
 			virtual void Print(int indentLevel = 0) const override;
 		};
-		class SubcmdGroup : public Subcmd {
-		protected:
-			std::unique_ptr<Subcmd> pSubcmdChild_;
-		public:
-			SubcmdGroup();
-		public:
-			Subcmd* GetChild() const { return pSubcmdChild_.get(); }
-		public:
-			virtual Subcmd* AdvanceAtEnd();
-		public:
-			virtual void AddChild(Subcmd* pSubcmdChild) override;
-			virtual bool IsEmpty() const override;
-			virtual const char* GetProc() const override { return nullptr; }
-			virtual Subcmd* Advance() override;
-			virtual void Print(int indentLevel = 0) const override;
-		};
-		class SubcmdRepeat : public SubcmdGroup {
+		class SubcmdRepeat : public Subcmd {
 		private:
 			int nRepeats_;
 			int nCur_;
@@ -209,14 +194,13 @@ public:
 		public:
 			virtual Subcmd* AdvanceAtEnd();
 		public:
-			virtual bool DoesRequireChild() const override { return !GetChild(); }
 			virtual Subcmd* Advance() override;
 			virtual void Print(int indentLevel = 0) const override;
 		};
 		class EachSubcmd : public EachBase {
 		private:
 		private:
-			SubcmdGroup subcmdGroup_;
+			Subcmd subcmdGroup_;
 			Subcmd* pSubcmdCur_;
 			const char* errorMsg_;
 		public:
@@ -226,6 +210,7 @@ public:
 			bool Initialize();
 			const char* GetErrorMsg() const { return errorMsg_; }
 			const char* Next();
+			const Subcmd* NextSubcmd();
 			void Rewind();
 		public:
 			void Print(int indentLevel = 0) const { subcmdGroup_.Print(indentLevel); }

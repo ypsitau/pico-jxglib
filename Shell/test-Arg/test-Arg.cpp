@@ -308,31 +308,29 @@ void test_EachSubcmd()
 	
 	const EachSubcmdTestCase cases[] = {
 		{ "simple command sequence", "cmd1 cmd2 cmd3", "cmd1, cmd2, cmd3" },
-		{ "command with braces", "{cmd1 cmd2 cmd3}", "cmd1, cmd2, cmd3" },
-		{ "nested braces", "{cmd1 {cmd2 cmd3} cmd4}", "cmd1, cmd2, cmd3, cmd4" },
-		{ "empty braces", "{}", "(none)" },
-		{ "multiple empty braces", "{} {} {}", "(none)" },
-		{ "nested empty braces", "{{{}}} cmd1", "cmd1" },
-		{ "simple repeat", "repeat:3 cmd1", "cmd1, cmd1, cmd1" },
+		{ "command with braces", "repeat:1 {cmd1 cmd2 cmd3}", "cmd1, cmd2, cmd3" },
+		{ "nested braces", "repeat:1 {cmd1 repeat:1 {cmd2 cmd3} cmd4}", "cmd1, cmd2, cmd3, cmd4" },
+		{ "empty braces", "repeat:1 {}", "(none)" },
+		{ "multiple empty braces", "repeat:1 {} repeat:1 {} repeat:1 {}", "(none)" },
+		{ "nested empty braces", "repeat:1 {} cmd1", "cmd1" },
 		{ "repeat with braces", "repeat:3 {cmd1}", "cmd1, cmd1, cmd1" },
 		{ "repeat multiple commands", "repeat:3 {cmd1 cmd2}", "cmd1, cmd2, cmd1, cmd2, cmd1, cmd2" },
 		{ "repeat with surrounding commands", "cmd0 repeat:3 {cmd1 cmd2} cmd3", "cmd0, cmd1, cmd2, cmd1, cmd2, cmd1, cmd2, cmd3" },
 		{ "repeat with empty braces", "repeat:3 {}", "(none)" },
-		{ "repeat with empty braces with deep nest", "repeat:3 {{{{}} {}}}", "(none)" },
-		{ "repeat with empty braces with deep nest", "repeat:3 {{{{}} {cmd1}}} cmd2", "cmd1, cmd1, cmd1, cmd2" },
-		{ "repeat zero times", "repeat:0 cmd1", "(none)" },
-		{ "repeat one time", "repeat:1 cmd1", "cmd1" },
-		{ "complex nesting", "{cmd1 cmd2 cmd3 {cmd4 cmd5} cmd6} cmd7 cmd8", "cmd1, cmd2, cmd3, cmd4, cmd5, cmd6, cmd7, cmd8" },
-		{ "multiple repeat commands", "repeat:2 cmd1 repeat:2 cmd2", "cmd1, cmd1, cmd2, cmd2" },
+		{ "repeat with empty braces with deep nest", "repeat:3 {repeat:1 {repeat:1 {repeat:1 {}} repeat:1 {}}}", "(none)" },
+		{ "repeat with empty braces with deep nest", "repeat:3 {repeat:1 {repeat:1 {repeat:1 {}} {cmd1}}} cmd2", "cmd1, cmd1, cmd1, cmd2" },
+		{ "repeat zero times", "repeat:0 {cmd1}", "(none)" },
+		{ "repeat one time", "repeat:1 {cmd1}", "cmd1" },
+		{ "complex nesting", "repeat:1 {cmd1 cmd2 cmd3 repeat:1 {cmd4 cmd5} cmd6} cmd7 cmd8", "cmd1, cmd2, cmd3, cmd4, cmd5, cmd6, cmd7, cmd8" },
+		{ "multiple repeat commands", "repeat:2 {cmd1} repeat:2 {cmd2}", "cmd1, cmd1, cmd2, cmd2" },
 		{ "repeat with nested braces", "repeat:2 {cmd1 {cmd2} cmd3}", "cmd1, cmd2, cmd3, cmd1, cmd2, cmd3" },
 		{ "single command", "cmd1", "cmd1" },
 		{ "empty input", "", "(none)" },
 		{ "whitespace only", "   ", "(none)" },
-		{ "nested repeat", "repeat:2 {repeat:2 cmd1}", "cmd1, cmd1, cmd1, cmd1" },
-		{ "mixed empty and commands", "cmd1 {} cmd2", "cmd1, cmd2" },
-		{ "mixed empty and commands", "cmd1 {} cmd2 {} cmd3 {} cmd4", "cmd1, cmd2, cmd3, cmd4" },
-		{ "mixed empty and commands", "cmd1 {{{}}} {{cmd2}} {{}} {{} {cmd3} {}} {} cmd4", "cmd1, cmd2, cmd3, cmd4" },
-		{ "deep nesting", "{{{cmd1}}}", "cmd1" }
+		{ "nested repeat", "repeat:2 {repeat:2 {cmd1}}", "cmd1, cmd1, cmd1, cmd1" },
+		{ "mixed blocked command", "cmd1 {cmd1-1 cmd1-2} cmd2", "cmd1, cmd2" },
+		{ "mixed blocked commands", "cmd1 {cmd1-1 cmd1-2} cmd2 {cmd2-2 cmd2-3} cmd3 {cmd3-1 cmd3-2} cmd4", "cmd1, cmd2, cmd3, cmd4" },
+		{ "deep nesting", "repeat:1 {repeat:1 {repeat:1 {cmd1}}}", "cmd1" }
 	};
 
 	for (size_t i = 0; i < sizeof(cases)/sizeof(cases[0]); ++i) {
@@ -440,7 +438,7 @@ void test_EachSubcmd_Rewind()
         { "empty input rewind", "", "(none)", "(none)" },
         { "whitespace only rewind", "   ", "(none)", "(none)" },
         { "nested repeat rewind", "repeat:2 {repeat:2 cmd1}", "cmd1, cmd1, cmd1, cmd1", "cmd1, cmd1, cmd1, cmd1" },
-        { "mixed empty and commands rewind", "cmd1 {} cmd2", "cmd1, cmd2", "cmd1, cmd2" },
+        { "mixed empty and commands rewind", "cmd1 {cmd1-1 cmd1-2} cmd2", "cmd1, cmd2", "cmd1, cmd2" },
         { "deep nesting rewind", "{{{cmd1}}}", "cmd1", "cmd1" }
     };
 
@@ -510,9 +508,9 @@ int main()
 {
 	::stdio_init_all();
 	//test_Parse();
-	test_EachNum();
+	//test_EachNum();
 	//test_EachNum_Rewind();
-	//test_EachSubcmd();
+	test_EachSubcmd();
 	//test_EachSubcmd_Rewind();
 	//try_EachSubcmd();
 	for (;;) ::tight_loop_contents();

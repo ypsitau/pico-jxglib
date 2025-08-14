@@ -165,12 +165,13 @@ ShellCmd(la, "Logic Analyzer")
 		logicAnalyzer.PrintSettings(tout);
 		return Result::Success;
 	}
-	Shell::Arg::EachSubcmd each(argv[1], argv[argc]);
+	Arg::EachSubcmd each(argv[1], argv[argc]);
 	if (!each.Initialize()) {
 		terr.Printf("%s\n", each.GetErrorMsg());
 		return Result::Error;
 	}
-	while (const char* subcmd = each.Next()) {
+	while (const Arg::Subcmd* pSubcmd = each.NextSubcmd()) {
+		const char* subcmd = pSubcmd->GetProc();
 		if (::strcasecmp(subcmd, "enable") == 0) {
 			logicAnalyzer.UpdateSamplingInfo();
 			if (!logicAnalyzer.HasEnabledPins()) {
@@ -187,6 +188,26 @@ ShellCmd(la, "Logic Analyzer")
 			logicAnalyzer.PrintWave(tout);
 		} else if (::strcmp(subcmd, "plot") == 0) {
 			logicAnalyzer.PlotWave();
+		} else if (Arg::GetAssigned(subcmd, "analyze", &value) == 0) {
+			if (!value) {
+				terr.Printf("specify a valid protocol name\n");
+				return false;
+			}
+			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
+				const char* childProc = pSubcmdChild->GetProc();
+				if (::strcasecmp(childProc, "enable") == 0) {
+					logicAnalyzer.EnableProtocol(value);
+				} else if (::strcasecmp(childProc, "disable") == 0) {
+					logicAnalyzer.DisableProtocol(value);
+				} else if (::strcasecmp(childProc, "print") == 0) {
+					logicAnalyzer.PrintProtocol(value, tout);
+				} else if (::strcasecmp(childProc, "plot") == 0) {
+					logicAnalyzer.PlotProtocol(value);
+				} else {
+					tout.Printf("unknown command: %s\n", childProc);
+					return Result::Error;
+				}
+			}
 		} else {
 			tout.Printf("unknown command: %s\n", subcmd);
 			return Result::Error;
