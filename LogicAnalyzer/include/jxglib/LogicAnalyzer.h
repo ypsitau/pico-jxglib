@@ -132,7 +132,7 @@ public:
 		RawEvent_Short rawEvent_Short_;
 		RawEvent_Long rawEvent_Long_;
 	public:
-		EventIterator(const EventIterator& iter);
+		EventIterator(const EventIterator& eventIter);
 		EventIterator(const LogicAnalyzer& logicAnalyzer);
 	public:
 		bool IsDone() const { return doneFlag_; }
@@ -157,12 +157,12 @@ public:
 	public:
 		virtual bool SetParam(Printable& terr, const char* subcmd) { return false; }
 		virtual bool FinishParam(Printable& terr) { return false; }
-		virtual void ProcessEvent(const Event& event, char* buffLine, int lenBuffLine, int *piCol) = 0;
+		virtual void ProcessEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol) = 0;
 	};
 	class Analyzer_I2C : public Analyzer {
 	public:
 		enum class Stat {
-			WaitForStable, Start_SDA_Fall, BitAccum_SCL_Fall, BitAccum_SCL_Rise, Stop_SCL_Fall,
+			Done, WaitForStable, Start_SDA_Fall, BitAccum_SCL_Fall, BitAccum_SCL_Rise, Stop_SCL_Fall,
 		};
 		enum class Field { Address, Data };
 	private:
@@ -178,7 +178,7 @@ public:
 	public:
 		virtual bool SetParam(Printable& terr, const char* subcmd);
 		virtual bool FinishParam(Printable& terr);
-		virtual void ProcessEvent(const Event& event, char* buffLine, int lenBuffLine, int *piCol) override;
+		virtual void ProcessEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol) override;
 	};
 	struct PrintInfo {
 		int nPins;
