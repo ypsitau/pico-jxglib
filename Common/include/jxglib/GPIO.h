@@ -103,12 +103,13 @@ public:
 	uint pin;
 public:
 	static const GPIO None;
+	static const uint InvalidPin = static_cast<uint>(-1);
 public:
 	explicit constexpr GPIO(uint pin) : pin{pin} {}
 	constexpr GPIO(const GPIO& gpio) : pin{gpio.pin} {}
 	operator uint() const { return pin; }
-	bool IsValid() const { return pin != static_cast<uint>(-1); }
-	bool IsInvalid() const { return pin == static_cast<uint>(-1); }
+	bool IsValid() const { return pin != InvalidPin; }
+	bool IsInvalid() const { return pin == InvalidPin; }
 public:
 	const GPIO& set_function(gpio_function_t fn) const		{ ::gpio_set_function(pin, fn); return *this; }
 #if defined(GPIO_FUNC_XIP)

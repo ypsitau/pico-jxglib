@@ -277,6 +277,104 @@ int LogicAnalyzer::GetRawEventCountMax() const
 		((rawEventFormat_ == RawEventFormat::Short)? sizeof(RawEvent_Short::Entity) : sizeof(RawEvent_Long::Entity));
 }
 
+LogicAnalyzer::Analyzer_I2C::Analyzer_I2C(const LogicAnalyzer& logicAnalyzer) :
+	Analyzer(logicAnalyzer, "i2c"), stat_{Stat::WaitForStable}, field_{Field::Address},
+	nBitsAccum_{0}, bitAccum_{0}, signalSDAPrev_{false}, pinSDA_{GPIO::InvalidPin}, pinSCL_{GPIO::InvalidPin}
+{}
+
+bool LogicAnalyzer::Analyzer_I2C::SetParam(Printable& terr, const char* subcmd)
+{
+	char* endptr = nullptr;;
+	const char* value = nullptr;
+	if (Shell::Arg::GetAssigned(subcmd, "sda", &value)) {
+		int num = ::strtol(value, &endptr, 10);
+		if (endptr == value || *endptr != '\0' || num < 0 || num >= GPIO::NumPins) {
+			terr.Printf("invalid SDA pin number\n");
+			return false;
+		}
+		pinSDA_ = static_cast<uint>(num);
+		return true;
+	} else if (Shell::Arg::GetAssigned(subcmd, "scl", &value)) {
+		int num = ::strtol(value, &endptr, 10);
+		if (endptr == value || *endptr != '\0' || num < 0 || num >= GPIO::NumPins) {
+			terr.Printf("invalid SCL pin number\n");
+			return false;
+		}
+		pinSCL_ = static_cast<uint>(num);
+		return true;
+	}
+	terr.Printf("unknown parameter: %s\n", subcmd);
+	return false;
+}
+
+bool LogicAnalyzer::Analyzer_I2C::FinishParam(Printable& terr)
+{
+	if (pinSDA_ == GPIO::InvalidPin) {
+		terr.Printf("specify SDA pin number\n");
+		return false;
+	}
+	if (pinSCL_ == GPIO::InvalidPin) {
+		terr.Printf("specify SCL pin number\n");
+		return false;
+	}
+	return true;
+}
+
+void LogicAnalyzer::Analyzer_I2C::ProcessEvent(const Event& event, char* buffLine, int lenBuffLine, int *piCol)
+{
+	int& iCol = *piCol;
+	switch (stat_) {
+	case Stat::WaitForStable: {
+		if (event.IsPinHigh(pinSCL_, pinSDA_)) {
+			stat_ = Stat::Start_SDA_Fall;
+		}
+		break;
+	}
+	case Stat::Start_SDA_Fall: {
+		if (event.IsPinLow(pinSDA_)) {		// SDA falls while SCL high: Start Condition
+			iCol += ::snprintf(buffLine + iCol, lenBuffLine - iCol, " Start");
+			nBitsAccum_ = 0;
+			bitAccum_ = 0x000;
+			field_ = Field::Address;
+			stat_ = Stat::BitAccum_SCL_Fall;
+		}
+		signalSDAPrev_ = event.IsPinHigh(pinSDA_);
+		break;
+	}
+	case Stat::BitAccum_SCL_Fall: {
+		if (!signalSDAPrev_ && event.IsPinHigh(pinSDA_)) {		// SDA rises while SCL high: Stop Condition
+			iCol += ::snprintf(buffLine + iCol, lenBuffLine - iCol, " Stop");
+			stat_ = Stat::Start_SDA_Fall;
+		} else if (signalSDAPrev_ && event.IsPinLow(pinSDA_)) {	// SDA falls while SCL high: repeated start Condition
+			iCol += ::snprintf(buffLine + iCol, lenBuffLine - iCol, " Repeated Start");
+			nBitsAccum_ = 0;
+			bitAccum_ = 0x000;
+			field_ = Field::Address;
+		} else if (event.IsPinLow(pinSCL_)) {
+			stat_ = Stat::BitAccum_SCL_Rise;
+		}
+		signalSDAPrev_ = event.IsPinHigh(pinSDA_);
+		break;
+	}
+	case Stat::BitAccum_SCL_Rise: {
+		if (event.IsPinHigh(pinSCL_)) {
+			uint bitValue = event.IsPinHigh(pinSDA_)? 1 : 0;
+			iCol += ::snprintf(buffLine + iCol, lenBuffLine - iCol, " %d", bitValue);
+			bitAccum_ = (bitAccum_ << 1) | bitValue;
+			nBitsAccum_++;
+			if (nBitsAccum_ == 9) {
+				nBitsAccum_ = 0;
+				bitAccum_ = 0x000;
+			}
+			stat_ = Stat::BitAccum_SCL_Fall;
+		}
+		signalSDAPrev_ = event.IsPinHigh(pinSDA_);
+		break;
+	}
+	default:break;
+	}
+}
+
 const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 {
 	int iCol = 0;
@@ -293,6 +391,10 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 	auto flushLine = [&]() {
 		tout.Println(CutTrailingSpace(buffLine));
 		iCol = 0;
+	};
+	auto flushLineWithEvent = [&](const Event& event) {
+		if (pAnalyzer_) pAnalyzer_->ProcessEvent(event, buffLine, sizeof(buffLine), &iCol);
+		flushLine();
 	};
 	auto printHeader = [&]() {
 		iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%12s ", "Time [usec]");
@@ -339,7 +441,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", waveStyle.strBlank);
 			}
 		}
-		flushLine();
+		flushLineWithEvent(eventInitial);
 	}
 	Event eventPrev = eventInitial;
 	Event event = eventBase;
@@ -396,7 +498,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", waveStyle.strBlank);
 			}
 		}
-		flushLine();
+		flushLineWithEvent(event);
 		if (Tickable::TickSub()) break;
 		eventPrev = event;
 	}
@@ -404,84 +506,17 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 	return *this;
 }
 
-bool LogicAnalyzer::AnalyzeWave(Printable& tout, Printable& terr, const char* protocolName, const Dict& dict) const
+LogicAnalyzer::Analyzer* LogicAnalyzer::SetAnalyzer(const char* protocolName)
 {
-	int iCol = 0;
-	char buffLine[256];
-	enum class Stat {
-		WaitForStable, Start_SDA_Fall, BitAccum_SCL_Fall, BitAccum_SCL_Rise, Stop_SCL_Fall,
-	};
-	enum class Field { Address, Data };
-	EventIterator eventIter(*this);
-	Event eventBase, eventPrev;
-	uint pinSCL = 3, pinSDA = 2;
-	if (!eventIter.Next(eventPrev)) return true;
-	if (!eventIter.Next(eventBase)) eventBase = eventPrev;
-	Stat stat = eventPrev.IsPinHigh(pinSCL, pinSDA)? Stat::Start_SDA_Fall : Stat::WaitForStable;
-	int nBitsAccum = 0;
-	uint16_t bitAccum = 0;
-	bool signalSDAPrev = false;
-	Field field = Field::Address;
-	Event event = eventBase;
-	double timeStampFactor = 1000'000. / GetSampleRate() / nSampler_;
-	for (int iEvent = 0; !eventIter.IsDone(); ++iEvent, eventIter.Next(event)) {
-		iCol = 0;
-		iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%12.2f", static_cast<double>(event.GetTimeStamp() - eventBase.GetTimeStamp()) * timeStampFactor);
-		switch (stat) {
-		case Stat::WaitForStable: {
-			if (event.IsPinHigh(pinSCL, pinSDA)) {
-				stat = Stat::Start_SDA_Fall;
-			}
-			break;
+	if (pAnalyzer_ && ::strcasecmp(pAnalyzer_->GetName(), protocolName) == 0) {
+		// nothing to do
+	} else {
+		pAnalyzer_.reset();
+		if (::strcasecmp(protocolName, "i2c") == 0) {
+			pAnalyzer_.reset(new Analyzer_I2C(*this));
 		}
-		case Stat::Start_SDA_Fall: {
-			if (event.IsPinLow(pinSDA)) {							// SDA falls while SCL high: Start Condition
-				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, " Start");
-				nBitsAccum = 0;
-				bitAccum = 0x000;
-				field = Field::Address;
-				stat = Stat::BitAccum_SCL_Fall;
-			}
-			signalSDAPrev = event.IsPinHigh(pinSDA);
-			break;
-		}
-		case Stat::BitAccum_SCL_Fall: {
-			if (!signalSDAPrev && event.IsPinHigh(pinSDA)) {		// SDA rises while SCL high: Stop Condition
-				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, " Stop");
-				stat = Stat::Start_SDA_Fall;
-			} else if (signalSDAPrev && event.IsPinLow(pinSDA)) {	// SDA falls while SCL high: repeated start Condition
-				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, " Repeated Start");
-				nBitsAccum = 0;
-				bitAccum = 0x000;
-				field = Field::Address;
-			} else if (event.IsPinLow(pinSCL)) {
-				stat = Stat::BitAccum_SCL_Rise;
-			}
-			signalSDAPrev = event.IsPinHigh(pinSDA);
-			break;
-		}
-		case Stat::BitAccum_SCL_Rise: {
-			if (event.IsPinHigh(pinSCL)) {
-				uint bitValue = event.IsPinHigh(pinSDA)? 1 : 0;
-				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, " %d", bitValue);
-				bitAccum = (bitAccum << 1) | bitValue;
-				nBitsAccum++;
-				if (nBitsAccum == 9) {
-					nBitsAccum = 0;
-					bitAccum = 0x000;
-				}
-				stat = Stat::BitAccum_SCL_Fall;
-			}
-			signalSDAPrev = event.IsPinHigh(pinSDA);
-			break;
-		}
-		default:break;
-		}
-		tout.Println(buffLine);
-		eventPrev = event;
-		if (Tickable::TickSub()) break;
 	}
-	return true;
+	return pAnalyzer_.get();
 }
 
 // This method destroys the sampling buffers and creates a set of SignalReport. 

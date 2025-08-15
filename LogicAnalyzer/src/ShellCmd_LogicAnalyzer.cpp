@@ -194,20 +194,17 @@ ShellCmd(la, "Logic Analyzer")
 				terr.Printf("specify a valid protocol name\n");
 				return false;
 			}
-			Dict dict;
-			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
-				const char* subcmd = pSubcmdChild->GetProc();
-				std::unique_ptr<Dict::Entry> pEntry(Arg::CreateDictEntry(subcmd));
-				if (pEntry) {
-					dict.Add(pEntry.release());
-				} else {
-					tout.Printf("invalid format of argument: %s\n", subcmd);
-					return Result::Error;
-				}
+			LogicAnalyzer::Analyzer* pAnalyzer = logicAnalyzer.SetAnalyzer(protocolName);
+			if (!pAnalyzer) {
+				terr.Printf("unknown protocol: %s\n", protocolName);
+				return false;
 			}
-			logicAnalyzer.AnalyzeWave(tout, terr, protocolName, dict);
+			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
+				if (!pAnalyzer->SetParam(terr, pSubcmdChild->GetProc())) return false;
+			}
+			if (!pAnalyzer->FinishParam(terr)) return false;
 		} else {
-			tout.Printf("unknown command: %s\n", subcmd);
+			tout.Printf("unknown subcommand: %s\n", subcmd);
 			return Result::Error;
 		}
 	}

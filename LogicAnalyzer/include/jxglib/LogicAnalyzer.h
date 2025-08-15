@@ -7,6 +7,7 @@
 #include "jxglib/PIO.h"
 #include "jxglib/DMA.h"
 #include "jxglib/TelePlot.h"
+#include "jxglib/Shell.h"
 
 namespace jxglib {
 
@@ -143,6 +144,41 @@ public:
 	private:
 		const RawEvent* NextRawEvent(int* piSampler = nullptr);
 		const RawEvent& GetRawEvent(int iSampler, int iRawEvent);
+	};
+	class Analyzer {
+	private:
+		const LogicAnalyzer& logicAnalyzer_;
+		const char* name_;
+	public:
+		Analyzer(const LogicAnalyzer& logicAnalyzer, const char* name) : logicAnalyzer_{logicAnalyzer}, name_{name} {}
+		virtual ~Analyzer() = default;
+	public:
+		const char* GetName() const { return name_; }
+	public:
+		virtual bool SetParam(Printable& terr, const char* subcmd) { return false; }
+		virtual bool FinishParam(Printable& terr) { return false; }
+		virtual void ProcessEvent(const Event& event, char* buffLine, int lenBuffLine, int *piCol) = 0;
+	};
+	class Analyzer_I2C : public Analyzer {
+	public:
+		enum class Stat {
+			WaitForStable, Start_SDA_Fall, BitAccum_SCL_Fall, BitAccum_SCL_Rise, Stop_SCL_Fall,
+		};
+		enum class Field { Address, Data };
+	private:
+		Stat stat_;
+		Field field_;
+		int nBitsAccum_;
+		uint16_t bitAccum_;
+		bool signalSDAPrev_;
+	private:
+		uint pinSDA_, pinSCL_;
+	public:
+		Analyzer_I2C(const LogicAnalyzer& logicAnalyzer);
+	public:
+		virtual bool SetParam(Printable& terr, const char* subcmd);
+		virtual bool FinishParam(Printable& terr);
+		virtual void ProcessEvent(const Event& event, char* buffLine, int lenBuffLine, int *piCol) override;
 	};
 	struct PrintInfo {
 		int nPins;
@@ -293,6 +329,7 @@ private:
 	float heapRatioRequested_;
 	int clocksPerLoop_;
 	float usecReso_;
+	std::unique_ptr<Analyzer> pAnalyzer_;
 public:
 	LogicAnalyzer();
 	~LogicAnalyzer();
@@ -332,7 +369,7 @@ public:
 	int GetRawEventCount() const;
 	int GetRawEventCountMax() const;
 	const LogicAnalyzer& PrintWave(Printable& tout) const;
-	bool AnalyzeWave(Printable& tout, Printable& terr, const char* protocolName, const Dict& dict) const;
+	Analyzer* SetAnalyzer(const char* protocolName);
 	const LogicAnalyzer& PlotWave() const;
 	const LogicAnalyzer& PrintSettings(Printable& tout) const;
 public:
