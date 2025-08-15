@@ -700,9 +700,25 @@ int LogicAnalyzer::SamplingInfo::CountBits() const
 //------------------------------------------------------------------------------
 // LogicAnalyzer::EventIterator
 //------------------------------------------------------------------------------
+LogicAnalyzer::EventIterator::EventIterator(const EventIterator& iter) :
+	logicAnalyzer_{iter.logicAnalyzer_},
+	pinMin_{iter.pinMin_},
+	nBitsPinBitmap_{iter.nBitsPinBitmap_},
+	iRawEventTbl_{},
+	timeStampOffsetTbl_{},
+	pinBitmapPrev_{iter.pinBitmapPrev_},
+	firstFlag_{iter.firstFlag_},
+	doneFlag_{iter.doneFlag_},
+	timeStampOffsetIncr_{iter.timeStampOffsetIncr_}
+{
+	::memcpy(iRawEventTbl_, iter.iRawEventTbl_, sizeof(iRawEventTbl_));
+	::memcpy(timeStampOffsetTbl_, iter.timeStampOffsetTbl_, sizeof(timeStampOffsetTbl_));
+}
+
 LogicAnalyzer::EventIterator::EventIterator(const LogicAnalyzer& logicAnalyzer) :
-	logicAnalyzer_{logicAnalyzer}, pinBitmapPrev_{0}, firstFlag_{true}, doneFlag_{false}, timeStampOffsetIncr_{0},
-	pinMin_{logicAnalyzer.GetSamplingInfo().GetPinMin()}, nBitsPinBitmap_{logicAnalyzer.GetSamplingInfo().CountBits()}
+	logicAnalyzer_{logicAnalyzer},
+	pinMin_{logicAnalyzer.GetSamplingInfo().GetPinMin()}, nBitsPinBitmap_{logicAnalyzer.GetSamplingInfo().CountBits()},
+	pinBitmapPrev_{0}, firstFlag_{true}, doneFlag_{false}, timeStampOffsetIncr_{0}
 {
 	int nBitsTimeStamp = 32 - nBitsPinBitmap_;
 	timeStampOffsetIncr_ = 1LL << nBitsTimeStamp;

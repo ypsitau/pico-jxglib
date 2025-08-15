@@ -127,9 +127,11 @@ public:
 		bool firstFlag_;
 		bool doneFlag_;
 		uint64_t timeStampOffsetIncr_;
+	private:
 		RawEvent_Short rawEvent_Short_;
 		RawEvent_Long rawEvent_Long_;
 	public:
+		EventIterator(const EventIterator& iter);
 		EventIterator(const LogicAnalyzer& logicAnalyzer);
 	public:
 		bool IsDone() const { return doneFlag_; }
