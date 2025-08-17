@@ -8,8 +8,43 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // ProtocolAnalyzer_I2C
 //------------------------------------------------------------------------------
-ProtocolAnalyzer_I2C::ProtocolAnalyzer_I2C(const LogicAnalyzer& logicAnalyzer) :
-	ProtocolAnalyzer(logicAnalyzer, "i2c"), stat_{Stat::WaitForStable}, field_{Field::Address},
+class ProtocolAnalyzer_I2C : public ProtocolAnalyzer {
+public:
+	class Factory : public ProtocolAnalyzer::Factory {
+	public:
+		Factory() : ProtocolAnalyzer::Factory("I2C") {}
+	public:
+		virtual ProtocolAnalyzer* Create(const LogicAnalyzer& logicAnalyzer) override {
+			return new ProtocolAnalyzer_I2C(logicAnalyzer, name_);
+		}
+	};
+public:
+	enum class Stat {
+		Done, WaitForStable, Start_SDA_Fall, BitAccum_SCL_Fall, BitAccum_SCL_Rise, Stop_SCL_Fall,
+	};
+	enum class Field { Address, Data };
+private:
+	Stat stat_;
+	Field field_;
+	int nBitsAccum_;
+	uint16_t bitAccum_;
+	bool signalSDAPrev_;
+private:
+	uint pinSDA_, pinSCL_;
+private:
+	static Factory factory_;
+public:
+	ProtocolAnalyzer_I2C(const LogicAnalyzer& logicAnalyzer, const char* name);
+public:
+	virtual bool EvalSubcmd(Printable& terr, const char* subcmd);
+	virtual bool FinishSubcmd(Printable& terr);
+	virtual void OnPrintWave(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol) override;
+};
+
+ProtocolAnalyzer_I2C::Factory ProtocolAnalyzer_I2C::factory_;
+
+ProtocolAnalyzer_I2C::ProtocolAnalyzer_I2C(const LogicAnalyzer& logicAnalyzer, const char* name) :
+	ProtocolAnalyzer(logicAnalyzer, name), stat_{Stat::WaitForStable}, field_{Field::Address},
 	nBitsAccum_{0}, bitAccum_{0}, signalSDAPrev_{false}, pinSDA_{GPIO::InvalidPin}, pinSCL_{GPIO::InvalidPin}
 {}
 

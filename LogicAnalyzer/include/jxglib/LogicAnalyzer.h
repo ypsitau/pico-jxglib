@@ -298,7 +298,7 @@ private:
 	float heapRatioRequested_;
 	int clocksPerLoop_;
 	float usecReso_;
-	std::unique_ptr<ProtocolAnalyzer> pAnalyzer_;
+	std::unique_ptr<ProtocolAnalyzer> pProtocolAnalyzer_;
 public:
 	LogicAnalyzer();
 	~LogicAnalyzer();
@@ -351,8 +351,26 @@ public:
 class ProtocolAnalyzer {
 public:
 	using EventIterator = LogicAnalyzer::EventIterator;
-	using Event = LogicAnalyzer::Event;	
-private:
+	using Event = LogicAnalyzer::Event;
+public:
+	class Factory {
+	protected:
+		const char* name_;
+		Factory* pFactoryNext_;
+	private:
+		static Factory* pFactoryTop_;
+	public:
+		Factory(const char* name);
+	public:
+		const char* GetName() const { return name_; }
+		void SetNext(Factory* pFactory) { pFactoryNext_ = pFactory; }
+		Factory* GetNext() const { return pFactoryNext_; }
+	public:
+		static Factory* Find(const char* name);
+	public:
+		virtual ProtocolAnalyzer* Create(const LogicAnalyzer& logicAnalyzer) = 0;
+	};
+protected:
 	const LogicAnalyzer& logicAnalyzer_;
 	const char* name_;
 public:
@@ -364,28 +382,6 @@ public:
 	virtual bool EvalSubcmd(Printable& terr, const char* subcmd) { return false; }
 	virtual bool FinishSubcmd(Printable& terr) { return false; }
 	virtual void OnPrintWave(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol) = 0;
-};
-
-class ProtocolAnalyzer_I2C : public ProtocolAnalyzer {
-public:
-	enum class Stat {
-		Done, WaitForStable, Start_SDA_Fall, BitAccum_SCL_Fall, BitAccum_SCL_Rise, Stop_SCL_Fall,
-	};
-	enum class Field { Address, Data };
-private:
-	Stat stat_;
-	Field field_;
-	int nBitsAccum_;
-	uint16_t bitAccum_;
-	bool signalSDAPrev_;
-private:
-	uint pinSDA_, pinSCL_;
-public:
-	ProtocolAnalyzer_I2C(const LogicAnalyzer& logicAnalyzer);
-public:
-	virtual bool EvalSubcmd(Printable& terr, const char* subcmd);
-	virtual bool FinishSubcmd(Printable& terr);
-	virtual void OnPrintWave(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol) override;
 };
 
 }

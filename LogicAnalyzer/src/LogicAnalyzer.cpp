@@ -292,7 +292,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		iCol = 0;
 	};
 	auto flushLineWithEvent = [&](const Event& event) {
-		if (pAnalyzer_) pAnalyzer_->OnPrintWave(eventIter, event, buffLine, sizeof(buffLine), &iCol);
+		if (pProtocolAnalyzer_) pProtocolAnalyzer_->OnPrintWave(eventIter, event, buffLine, sizeof(buffLine), &iCol);
 		flushLine();
 	};
 	auto printHeader = [&]() {
@@ -407,15 +407,16 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 
 ProtocolAnalyzer* LogicAnalyzer::SetProtocolAnalyzer(const char* protocolName)
 {
-	if (pAnalyzer_ && ::strcasecmp(pAnalyzer_->GetName(), protocolName) == 0) {
+	if (pProtocolAnalyzer_ && ::strcasecmp(pProtocolAnalyzer_->GetName(), protocolName) == 0) {
 		// nothing to do
 	} else {
-		pAnalyzer_.reset();
-		if (::strcasecmp(protocolName, "i2c") == 0) {
-			pAnalyzer_.reset(new ProtocolAnalyzer_I2C(*this));
+		pProtocolAnalyzer_.reset();
+		ProtocolAnalyzer::Factory* pFactory = ProtocolAnalyzer::Factory::Find(protocolName);
+		if (pFactory) {
+			pProtocolAnalyzer_.reset(pFactory->Create(*this));
 		}
 	}
-	return pAnalyzer_.get();
+	return pProtocolAnalyzer_.get();
 }
 
 // This method destroys the sampling buffers and creates a set of SignalReport. 
