@@ -62,8 +62,11 @@ public:
 		uint64_t timeStamp_;
 		uint32_t pinBitmap_;
 	public:
+		static const Event None;
+	public:
 		Event(uint64_t timeStamp = 0, uint32_t pinBitmap = 0) : timeStamp_{timeStamp}, pinBitmap_{pinBitmap} {}
 	public:
+		bool IsNone() const { return this == &None; }
 		uint64_t GetTimeStamp() const { return timeStamp_; }
 		uint32_t GetPinBitmap() const { return pinBitmap_; }
 		template<typename... Pins> static uint32_t MakeMask(Pins... pins) {
@@ -381,7 +384,8 @@ public:
 public:
 	virtual bool EvalSubcmd(Printable& terr, const char* subcmd) { return false; }
 	virtual bool FinishSubcmd(Printable& terr) { return false; }
-	virtual void AnnotateWave(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol) = 0;
+	virtual void AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol) = 0;
+	virtual void AnnotateWaveStreak(char* buffLine, int lenBuffLine, int *piCol) = 0;
 };
 
 }

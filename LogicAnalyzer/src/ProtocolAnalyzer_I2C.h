@@ -43,11 +43,11 @@ public:
 		void ProcessEvent(const EventIterator& eventIter, const Event& event);
 	public:
 		virtual void OnStart() {}
-		virtual void OnBeginBitAccum(const EventIterator& eventIter) {}
+		virtual void OnBitAccumBegin(const EventIterator& eventIter) {}
 		virtual void OnStop() {}
 		virtual void OnRepeatedStart() {}
 		virtual void OnBit(Field field, int iBit, bool bitValue) {}
-		virtual void OnBitAccum(Field field, uint16_t bitAccum) {}
+		virtual void OnBitAccumComplete(Field field, uint16_t bitAccum) {}
 	};
 	class Core_Annotator : public Core {
 	private:
@@ -64,11 +64,11 @@ public:
 		void ProcessEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int* piCol);
 	public:
 		virtual void OnStart() override;
-		virtual void OnBeginBitAccum(const EventIterator& eventIter) override;
+		virtual void OnBitAccumBegin(const EventIterator& eventIter) override;
 		virtual void OnStop() override;
 		virtual void OnRepeatedStart() override;
 		virtual void OnBit(Field field, int iBit, bool bitValue) override;
-		virtual void OnBitAccum(Field field, uint16_t bitAccum) override;
+		virtual void OnBitAccumComplete(Field field, uint16_t bitAccum) override;
 	};
 	class Core_BitAccumAdv : public Core {
 	private:
@@ -80,7 +80,7 @@ public:
 		bool IsComplete() const { return completeFlag_; }
 		uint16_t GetBitAccumAdv() const { return bitAccumAdv_; }
 	public:
-		virtual void OnBitAccum(Field field, uint16_t bitAccum) override { completeFlag_ = true; bitAccumAdv_ = bitAccum;}
+		virtual void OnBitAccumComplete(Field field, uint16_t bitAccum) override { completeFlag_ = true; bitAccumAdv_ = bitAccum;}
 	};
 private:
 	Core_Annotator annotator_;
@@ -93,7 +93,8 @@ public:
 public:
 	virtual bool EvalSubcmd(Printable& terr, const char* subcmd);
 	virtual bool FinishSubcmd(Printable& terr);
-	virtual void AnnotateWave(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int* piCol) override;
+	virtual void AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int* piCol) override;
+	virtual void AnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol) override;
 };
 
 }

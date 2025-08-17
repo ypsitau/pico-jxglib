@@ -52,9 +52,14 @@ bool ProtocolAnalyzer_I2C::FinishSubcmd(Printable& terr)
 	return true;
 }
 
-void ProtocolAnalyzer_I2C::AnnotateWave(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol)
+void ProtocolAnalyzer_I2C::AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol)
 {
 	annotator_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
+}
+
+void ProtocolAnalyzer_I2C::AnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol)
+{
+	//annotator_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
 }
 
 //------------------------------------------------------------------------------
@@ -85,7 +90,7 @@ void ProtocolAnalyzer_I2C::Core::ProcessEvent(const EventIterator& eventIter, co
 			field_ = Field::Address;
 			stat_ = Stat::BitAccum_SCL_Fall;
 			signalSDAPrev_ = event.IsPinHigh(prop_.pinSDA);
-			OnBeginBitAccum(eventIter);
+			OnBitAccumBegin(eventIter);
 		} else {
 			signalSDAPrev_ = event.IsPinHigh(prop_.pinSDA);
 		}
@@ -114,7 +119,7 @@ void ProtocolAnalyzer_I2C::Core::ProcessEvent(const EventIterator& eventIter, co
 			bitAccum_ = (bitAccum_ << 1) | bitValue;
 			nBitsAccum_++;
 			if (nBitsAccum_ == 9) {
-				OnBitAccum(field_, bitAccum_);
+				OnBitAccumComplete(field_, bitAccum_);
 				nBitsAccum_ = 0;
 				bitAccum_ = 0x000;
 				field_ = Field::Data;
@@ -149,7 +154,7 @@ void ProtocolAnalyzer_I2C::Core_Annotator::OnStart()
 	iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " Start");
 }
 
-void ProtocolAnalyzer_I2C::Core_Annotator::OnBeginBitAccum(const EventIterator& eventIter)
+void ProtocolAnalyzer_I2C::Core_Annotator::OnBitAccumBegin(const EventIterator& eventIter)
 {
 	Core_BitAccumAdv coreAdv(*this);
 	EventIterator eventIterAdv(eventIter);
@@ -178,27 +183,24 @@ void ProtocolAnalyzer_I2C::Core_Annotator::OnBit(Field field, int iBit, bool bit
 {
 	int& iCol = *piCol_;
 	if (iBit == 7 && field == Field::Address) {
-		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %s", bitValue? "Read" : "Write");
+		//iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %s", bitValue? "Read" : "Write");
 	} else if (iBit == 8) {
 		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %s", bitValue? "Nack" : "Ack");
 	} else if (iBit == 3 && adv_.validFlag) {
 		if (field == Field::Address) {
-			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %d Addr:0x%02X", bitValue, adv_.bitAccum >> 2);
+			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " Addr:0x%02X:%s", adv_.bitAccum >> 2,
+					(adv_.bitAccum & (1 << 1))? "Read" : "Write");
 		} else { // field == Field::Data
-			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %d Data:0x%02X", bitValue, adv_.bitAccum >> 1);
+			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " Data:0x%02X", adv_.bitAccum >> 1);
 		}
 	} else {
-		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %d", bitValue);
+		//iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %d", bitValue);
 	}
 }
 
-void ProtocolAnalyzer_I2C::Core_Annotator::OnBitAccum(Field field, uint16_t bitAccum)
+void ProtocolAnalyzer_I2C::Core_Annotator::OnBitAccumComplete(Field field, uint16_t bitAccum)
 {
 	adv_.validFlag = false;
 }
-
-//------------------------------------------------------------------------------
-// ProtocolAnalyzer_I2C::Core_BitAccumAdv
-//------------------------------------------------------------------------------
 
 }

@@ -292,7 +292,11 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		iCol = 0;
 	};
 	auto flushLineWithEvent = [&](const Event& event) {
-		if (pProtocolAnalyzer_) pProtocolAnalyzer_->AnnotateWave(eventIter, event, buffLine, sizeof(buffLine), &iCol);
+		if (pProtocolAnalyzer_) pProtocolAnalyzer_->AnnotateWaveEvent(eventIter, event, buffLine, sizeof(buffLine), &iCol);
+		flushLine();
+	};
+	auto flushLineWithStreak = [&]() {
+		if (pProtocolAnalyzer_) pProtocolAnalyzer_->AnnotateWaveStreak(buffLine, sizeof(buffLine), &iCol);
 		flushLine();
 	};
 	auto printHeader = [&]() {
@@ -362,7 +366,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 					iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", waveStyle.strBlank);
 				}
 			}
-			flushLine();
+			flushLineWithStreak();
 		} else {
 			for (int i = 0; i < nDelta; ++i) {
 				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%12s", "");
@@ -378,7 +382,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 						iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", waveStyle.strBlank);
 					}
 				}
-				flushLine();
+				flushLineWithStreak();
 			}
 		}
 		uint32_t bitsTransition = event.GetPinBitmap() ^ eventPrev.GetPinBitmap();
@@ -631,6 +635,11 @@ int LogicAnalyzer::SamplingInfo::CountBits() const
 	for (uint32_t pinBitmap = pinBitmapEnabled_; pinBitmap != 0; pinBitmap >>= 1, ++nBits) ;
 	return nBits;
 }
+
+//------------------------------------------------------------------------------
+// LogicAnalyzer::Event
+//------------------------------------------------------------------------------
+const LogicAnalyzer::Event LogicAnalyzer::Event::None;
 
 //------------------------------------------------------------------------------
 // LogicAnalyzer::EventIterator
