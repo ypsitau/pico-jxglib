@@ -185,13 +185,17 @@ ShellCmd(la, "Logic ProtocolAnalyzer")
 			logicAnalyzer.Disable();
 			logicAnalyzer.PrintSettings(tout);
 		} else if (::strcmp(subcmd, "print") == 0) {
-			logicAnalyzer.PrintWave(tout);
+			logicAnalyzer.PrintWave(tout, terr);
 		} else if (::strcmp(subcmd, "plot") == 0) {
 			logicAnalyzer.PlotWave();
 		} else if (Arg::GetAssigned(subcmd, "protocol", &value)) {
 			const char* protocolName = value;
 			if (!protocolName) {
-				terr.Printf("specify a valid protocol name\n");
+				terr.Printf("available protocols:");
+				for (const ProtocolAnalyzer::Factory* pFactory = ProtocolAnalyzer::Factory::GetHead(); pFactory; pFactory = pFactory->GetNext()) {
+					terr.Printf(" %s", pFactory->GetName());
+				}
+				terr.Println();
 				return false;
 			}
 			ProtocolAnalyzer* pProtocolAnalyzer = logicAnalyzer.SetProtocolAnalyzer(protocolName);
@@ -202,7 +206,6 @@ ShellCmd(la, "Logic ProtocolAnalyzer")
 			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
 				if (!pProtocolAnalyzer->EvalSubcmd(terr, pSubcmdChild->GetProc())) return false;
 			}
-			if (!pProtocolAnalyzer->FinishSubcmd(terr)) return false;
 		} else {
 			tout.Printf("unknown subcommand: %s\n", subcmd);
 			return Result::Error;

@@ -39,7 +39,7 @@ bool ProtocolAnalyzer_I2C::EvalSubcmd(Printable& terr, const char* subcmd)
 	return false;
 }
 
-bool ProtocolAnalyzer_I2C::FinishSubcmd(Printable& terr)
+bool ProtocolAnalyzer_I2C::CheckValidity(Printable& terr)
 {
 	if (prop_.pinSDA == GPIO::InvalidPin) {
 		terr.Printf("specify SDA pin number\n");

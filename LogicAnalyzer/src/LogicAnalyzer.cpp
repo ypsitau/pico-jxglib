@@ -274,8 +274,9 @@ int LogicAnalyzer::GetRawEventCountMax() const
 		((rawEventFormat_ == RawEventFormat::Short)? sizeof(RawEvent_Short::Entity) : sizeof(RawEvent_Long::Entity));
 }
 
-const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
+const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr) const
 {
+	if (pProtocolAnalyzer_ && !pProtocolAnalyzer_->CheckValidity(terr)) return *this;
 	int iCol = 0;
 	char buffLine[256];
 	EventIterator eventIter(*this);

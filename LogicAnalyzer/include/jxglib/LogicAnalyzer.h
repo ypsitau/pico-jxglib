@@ -340,7 +340,7 @@ public:
 	int GetRawEventCount(int iSampler) const;
 	int GetRawEventCount() const;
 	int GetRawEventCountMax() const;
-	const LogicAnalyzer& PrintWave(Printable& tout) const;
+	const LogicAnalyzer& PrintWave(Printable& tout, Printable& terr) const;
 	ProtocolAnalyzer* SetProtocolAnalyzer(const char* protocolName);
 	const LogicAnalyzer& PlotWave() const;
 	const LogicAnalyzer& PrintSettings(Printable& tout) const;
@@ -361,7 +361,7 @@ public:
 		const char* name_;
 		Factory* pFactoryNext_;
 	private:
-		static Factory* pFactoryTop_;
+		static Factory* pFactoryHead_;
 	public:
 		Factory(const char* name);
 	public:
@@ -369,6 +369,7 @@ public:
 		void SetNext(Factory* pFactory) { pFactoryNext_ = pFactory; }
 		Factory* GetNext() const { return pFactoryNext_; }
 	public:
+		static Factory* GetHead() { return pFactoryHead_; }
 		static Factory* Find(const char* name);
 	public:
 		virtual ProtocolAnalyzer* Create(const LogicAnalyzer& logicAnalyzer) = 0;
@@ -383,7 +384,7 @@ public:
 	const char* GetName() const { return name_; }
 public:
 	virtual bool EvalSubcmd(Printable& terr, const char* subcmd) { return false; }
-	virtual bool FinishSubcmd(Printable& terr) { return false; }
+	virtual bool CheckValidity(Printable& terr) { return false; }
 	virtual void AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol) = 0;
 	virtual void AnnotateWaveStreak(char* buffLine, int lenBuffLine, int *piCol) = 0;
 };

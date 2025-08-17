@@ -12,7 +12,7 @@ class ProtocolAnalyzer_I2C : public ProtocolAnalyzer {
 public:
 	class Factory : public ProtocolAnalyzer::Factory {
 	public:
-		Factory() : ProtocolAnalyzer::Factory("I2C") {}
+		Factory() : ProtocolAnalyzer::Factory("i2c") {}
 	public:
 		virtual ProtocolAnalyzer* Create(const LogicAnalyzer& logicAnalyzer) override {
 			return new ProtocolAnalyzer_I2C(logicAnalyzer, name_);
@@ -92,7 +92,7 @@ public:
 	ProtocolAnalyzer_I2C(const LogicAnalyzer& logicAnalyzer, const char* name);
 public:
 	virtual bool EvalSubcmd(Printable& terr, const char* subcmd);
-	virtual bool FinishSubcmd(Printable& terr);
+	virtual bool CheckValidity(Printable& terr);
 	virtual void AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int* piCol) override;
 	virtual void AnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol) override;
 };
