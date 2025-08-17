@@ -183,9 +183,9 @@ void ProtocolAnalyzer_I2C::Core_Annotator::OnBit(Field field, int iBit, bool bit
 		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %s", bitValue? "Nack" : "Ack");
 	} else if (iBit == 3 && adv_.validFlag) {
 		if (field == Field::Address) {
-			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %d Addr:0x%02x", bitValue, adv_.bitAccum >> 2);
+			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %d Addr:0x%02X", bitValue, adv_.bitAccum >> 2);
 		} else { // field == Field::Data
-			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %d Data:0x%02x", bitValue, adv_.bitAccum >> 1);
+			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %d Data:0x%02X", bitValue, adv_.bitAccum >> 1);
 		}
 	} else {
 		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %d", bitValue);
