@@ -1,0 +1,88 @@
+//==============================================================================
+// ProtocolAnalyzer_UART.h
+//==============================================================================
+#pragma once
+#include "jxglib/LogicAnalyzer.h"
+
+namespace jxglib {
+
+//------------------------------------------------------------------------------
+// ProtocolAnalyzer_UART
+//------------------------------------------------------------------------------
+class ProtocolAnalyzer_UART : public ProtocolAnalyzer {
+public:
+	class Factory : public ProtocolAnalyzer::Factory {
+	public:
+		Factory() : ProtocolAnalyzer::Factory("uart") {}
+	public:
+		virtual ProtocolAnalyzer* Create(const LogicAnalyzer& logicAnalyzer) override {
+			return new ProtocolAnalyzer_UART(logicAnalyzer, name_);
+		}
+	};
+public:
+	enum class Stat {
+		Done, WaitForIdle, StartBit, BitAccum, StopBit
+	};
+	enum class Field { Data };
+	struct Property {
+		uint pinRX;
+		int baudrate;
+		int dataBits;
+		bool parityEnable;
+		bool parityOdd;
+		int stopBits;
+	};
+	class Core {
+	private:
+		Stat stat_;
+		Field field_;
+		int nBitsAccum_;
+		uint16_t bitAccum_;
+		int bitIdx_;
+		const Property& prop_;
+		bool lastRX_;
+		int sampleCounter_;
+	public:
+		Core(const Core& core);
+		Core(const Property& prop);
+	public:
+		Stat GetStat() const { return stat_; }
+	public:
+		void ProcessEvent(const EventIterator& eventIter, const Event& event);
+	public:
+		virtual void OnStartBit() {}
+		virtual void OnBit(Field field, int iBit, bool bitValue) {}
+		virtual void OnStopBit(bool valid) {}
+		virtual void OnByte(uint8_t data, bool parityErr) {}
+	};
+	class Core_Annotator : public Core {
+	private:
+		char* buffLine_;
+		int lenBuffLine_;
+		int* piCol_;
+	public:
+		Core_Annotator(const Property& prop);
+	public:
+		void ProcessEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int* piCol);
+	public:
+		virtual void OnStartBit() override;
+		virtual void OnBit(Field field, int iBit, bool bitValue) override;
+		virtual void OnStopBit(bool valid) override;
+		virtual void OnByte(uint8_t data, bool parityErr) override;
+	};
+private:
+	Core_Annotator annotator_;
+private:
+	Property prop_;
+private:
+	static Factory factory_;
+public:
+	ProtocolAnalyzer_UART(const LogicAnalyzer& logicAnalyzer, const char* name);
+public:
+	virtual bool EvalSubcmd(Printable& terr, const char* subcmd);
+	virtual bool CheckValidity(Printable& terr);
+	virtual void AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int* piCol) override;
+	virtual void AnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol) override;
+};
+
+}
