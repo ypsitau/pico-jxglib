@@ -41,15 +41,16 @@ bool ProtocolAnalyzer_I2C::EvalSubcmd(Printable& terr, const char* subcmd)
 
 bool ProtocolAnalyzer_I2C::CheckValidity(Printable& terr)
 {
+	bool rtn = true;
 	if (prop_.pinSDA == GPIO::InvalidPin) {
 		terr.Printf("specify SDA pin number\n");
-		return false;
+		rtn = false;
 	}
 	if (prop_.pinSCL == GPIO::InvalidPin) {
 		terr.Printf("specify SCL pin number\n");
-		return false;
+		rtn = false;
 	}
-	return true;
+	return rtn;
 }
 
 void ProtocolAnalyzer_I2C::AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol)

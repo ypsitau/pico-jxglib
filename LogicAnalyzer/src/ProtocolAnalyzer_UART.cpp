@@ -81,15 +81,16 @@ bool ProtocolAnalyzer_UART::EvalSubcmd(Printable& terr, const char* subcmd)
 
 bool ProtocolAnalyzer_UART::CheckValidity(Printable& terr)
 {
+    bool rtn = true;
 	if (prop_.pinRX == GPIO::InvalidPin) {
 		terr.Printf("specify RX pin number\n");
-		return false;
+		rtn = false;
 	}
 	if (prop_.baudrate <= 0) {
 		terr.Printf("specify baudrate\n");
-		return false;
+		rtn = false;
 	}
-	return true;
+	return rtn;
 }
 
 void ProtocolAnalyzer_UART::AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol)

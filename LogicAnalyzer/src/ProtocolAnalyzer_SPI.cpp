@@ -58,23 +58,24 @@ bool ProtocolAnalyzer_SPI::EvalSubcmd(Printable& terr, const char* subcmd)
 
 bool ProtocolAnalyzer_SPI::CheckValidity(Printable& terr)
 {
+    bool rtn = true;
 	if (prop_.pinMOSI == GPIO::InvalidPin) {
 		terr.Printf("specify MOSI pin number\n");
-		return false;
+		rtn = false;
 	}
 	if (prop_.pinMISO == GPIO::InvalidPin) {
 		terr.Printf("specify MISO pin number\n");
-		return false;
+		rtn = false;
 	}
 	if (prop_.pinSCK == GPIO::InvalidPin) {
 		terr.Printf("specify SCK pin number\n");
-		return false;
+		rtn = false;
 	}
 	if (prop_.pinCS == GPIO::InvalidPin) {
 		terr.Printf("specify CS pin number\n");
-		return false;
+		rtn = false;
 	}
-	return true;
+	return rtn;
 }
 
 void ProtocolAnalyzer_SPI::AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol)
