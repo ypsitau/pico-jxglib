@@ -52,7 +52,7 @@ bool ProtocolAnalyzer_SPI::EvalSubcmd(Printable& terr, const char* subcmd)
 		prop_.pinCS = static_cast<uint>(num);
 		return true;
 	}
-	terr.Printf("unknown parameter: %s\n", subcmd);
+	terr.Printf("unknown sub-command: %s\n", subcmd);
 	return false;
 }
 

@@ -35,7 +35,7 @@ bool ProtocolAnalyzer_I2C::EvalSubcmd(Printable& terr, const char* subcmd)
 		prop_.pinSCL = static_cast<uint>(num);
 		return true;
 	}
-	terr.Printf("unknown parameter: %s\n", subcmd);
+	terr.Printf("unknown sub-command: %s\n", subcmd);
 	return false;
 }
 

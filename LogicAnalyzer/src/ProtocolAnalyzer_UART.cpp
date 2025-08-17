@@ -75,7 +75,7 @@ bool ProtocolAnalyzer_UART::EvalSubcmd(Printable& terr, const char* subcmd)
 		}
 		return true;
 	}
-	terr.Printf("unknown parameter: %s\n", subcmd);
+	terr.Printf("unknown sub-command: %s\n", subcmd);
 	return false;
 }
 
