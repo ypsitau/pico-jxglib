@@ -8,7 +8,8 @@ target_link_libraries(jxglib_LogicAnalyzer INTERFACE
 	jxglib_DMA)
 
 target_sources(jxglib_LogicAnalyzer INTERFACE
-	${CMAKE_CURRENT_LIST_DIR}/src/LogicAnalyzer.cpp)
+	${CMAKE_CURRENT_LIST_DIR}/src/LogicAnalyzer.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ProtocolAnalyzer_I2C.cpp)
 
 #------------------------------------------------------------------------------
 add_library(jxglib_ShellCmd_LogicAnalyzer INTERFACE)

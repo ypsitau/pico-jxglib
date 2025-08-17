@@ -7,7 +7,7 @@ jxglib::LogicAnalyzer& ShellCmd_LogicAnalyzer_GetLogicAnalyzer();
 
 namespace jxglib::ShellCmd_LogicAnalyzer {
 
-ShellCmd(la, "Logic Analyzer")
+ShellCmd(la, "Logic ProtocolAnalyzer")
 {
 	LogicAnalyzer& logicAnalyzer = ShellCmd_LogicAnalyzer_GetLogicAnalyzer();
 	static const Arg::Opt optTbl[] = {
@@ -188,21 +188,21 @@ ShellCmd(la, "Logic Analyzer")
 			logicAnalyzer.PrintWave(tout);
 		} else if (::strcmp(subcmd, "plot") == 0) {
 			logicAnalyzer.PlotWave();
-		} else if (Arg::GetAssigned(subcmd, "analyze", &value)) {
+		} else if (Arg::GetAssigned(subcmd, "protocol", &value)) {
 			const char* protocolName = value;
 			if (!protocolName) {
 				terr.Printf("specify a valid protocol name\n");
 				return false;
 			}
-			LogicAnalyzer::Analyzer* pAnalyzer = logicAnalyzer.SetAnalyzer(protocolName);
-			if (!pAnalyzer) {
+			ProtocolAnalyzer* pProtocolAnalyzer = logicAnalyzer.SetProtocolAnalyzer(protocolName);
+			if (!pProtocolAnalyzer) {
 				terr.Printf("unknown protocol: %s\n", protocolName);
 				return false;
 			}
 			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
-				if (!pAnalyzer->SetParam(terr, pSubcmdChild->GetProc())) return false;
+				if (!pProtocolAnalyzer->EvalSubcmd(terr, pSubcmdChild->GetProc())) return false;
 			}
-			if (!pAnalyzer->FinishParam(terr)) return false;
+			if (!pProtocolAnalyzer->FinishSubcmd(terr)) return false;
 		} else {
 			tout.Printf("unknown subcommand: %s\n", subcmd);
 			return Result::Error;

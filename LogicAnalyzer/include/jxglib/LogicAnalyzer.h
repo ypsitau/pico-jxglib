@@ -3,6 +3,8 @@
 //==============================================================================
 #ifndef PICO_JXGLIB_LOGICANALYZER_H
 #define PICO_JXGLIB_LOGICANALYZER_H
+#include <stdlib.h>
+#include <memory.h>
 #include "pico/stdlib.h"
 #include "jxglib/PIO.h"
 #include "jxglib/DMA.h"
@@ -10,6 +12,8 @@
 #include "jxglib/Shell.h"
 
 namespace jxglib {
+
+class ProtocolAnalyzer;
 
 //------------------------------------------------------------------------------
 // LogicAnalyzer
@@ -144,41 +148,6 @@ public:
 	private:
 		const RawEvent* NextRawEvent(int* piSampler = nullptr);
 		const RawEvent& GetRawEvent(int iSampler, int iRawEvent);
-	};
-	class Analyzer {
-	private:
-		const LogicAnalyzer& logicAnalyzer_;
-		const char* name_;
-	public:
-		Analyzer(const LogicAnalyzer& logicAnalyzer, const char* name) : logicAnalyzer_{logicAnalyzer}, name_{name} {}
-		virtual ~Analyzer() = default;
-	public:
-		const char* GetName() const { return name_; }
-	public:
-		virtual bool SetParam(Printable& terr, const char* subcmd) { return false; }
-		virtual bool FinishParam(Printable& terr) { return false; }
-		virtual void ProcessEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol) = 0;
-	};
-	class Analyzer_I2C : public Analyzer {
-	public:
-		enum class Stat {
-			Done, WaitForStable, Start_SDA_Fall, BitAccum_SCL_Fall, BitAccum_SCL_Rise, Stop_SCL_Fall,
-		};
-		enum class Field { Address, Data };
-	private:
-		Stat stat_;
-		Field field_;
-		int nBitsAccum_;
-		uint16_t bitAccum_;
-		bool signalSDAPrev_;
-	private:
-		uint pinSDA_, pinSCL_;
-	public:
-		Analyzer_I2C(const LogicAnalyzer& logicAnalyzer);
-	public:
-		virtual bool SetParam(Printable& terr, const char* subcmd);
-		virtual bool FinishParam(Printable& terr);
-		virtual void ProcessEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol) override;
 	};
 	struct PrintInfo {
 		int nPins;
@@ -329,7 +298,7 @@ private:
 	float heapRatioRequested_;
 	int clocksPerLoop_;
 	float usecReso_;
-	std::unique_ptr<Analyzer> pAnalyzer_;
+	std::unique_ptr<ProtocolAnalyzer> pAnalyzer_;
 public:
 	LogicAnalyzer();
 	~LogicAnalyzer();
@@ -369,11 +338,54 @@ public:
 	int GetRawEventCount() const;
 	int GetRawEventCountMax() const;
 	const LogicAnalyzer& PrintWave(Printable& tout) const;
-	Analyzer* SetAnalyzer(const char* protocolName);
+	ProtocolAnalyzer* SetProtocolAnalyzer(const char* protocolName);
 	const LogicAnalyzer& PlotWave() const;
 	const LogicAnalyzer& PrintSettings(Printable& tout) const;
 public:
 	static size_t GetFreeHeapBytes();
+};
+
+//------------------------------------------------------------------------------
+// ProtocolAnalyzer
+//------------------------------------------------------------------------------
+class ProtocolAnalyzer {
+public:
+	using EventIterator = LogicAnalyzer::EventIterator;
+	using Event = LogicAnalyzer::Event;	
+private:
+	const LogicAnalyzer& logicAnalyzer_;
+	const char* name_;
+public:
+	ProtocolAnalyzer(const LogicAnalyzer& logicAnalyzer, const char* name) : logicAnalyzer_{logicAnalyzer}, name_{name} {}
+	virtual ~ProtocolAnalyzer() = default;
+public:
+	const char* GetName() const { return name_; }
+public:
+	virtual bool EvalSubcmd(Printable& terr, const char* subcmd) { return false; }
+	virtual bool FinishSubcmd(Printable& terr) { return false; }
+	virtual void OnPrintWave(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol) = 0;
+};
+
+class ProtocolAnalyzer_I2C : public ProtocolAnalyzer {
+public:
+	enum class Stat {
+		Done, WaitForStable, Start_SDA_Fall, BitAccum_SCL_Fall, BitAccum_SCL_Rise, Stop_SCL_Fall,
+	};
+	enum class Field { Address, Data };
+private:
+	Stat stat_;
+	Field field_;
+	int nBitsAccum_;
+	uint16_t bitAccum_;
+	bool signalSDAPrev_;
+private:
+	uint pinSDA_, pinSCL_;
+public:
+	ProtocolAnalyzer_I2C(const LogicAnalyzer& logicAnalyzer);
+public:
+	virtual bool EvalSubcmd(Printable& terr, const char* subcmd);
+	virtual bool FinishSubcmd(Printable& terr);
+	virtual void OnPrintWave(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol) override;
 };
 
 }
