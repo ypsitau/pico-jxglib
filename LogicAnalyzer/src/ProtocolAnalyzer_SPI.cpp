@@ -100,22 +100,26 @@ ProtocolAnalyzer_SPI::Core::Core(const Property& prop) : prop_{prop}, stat_{Stat
 
 void ProtocolAnalyzer_SPI::Core::ProcessEvent(const EventIterator& eventIter, const Event& event)
 {
+	// Read current SPI pin states
 	bool cs = event.IsPinHigh(prop_.pinCS);
 	bool sck = event.IsPinHigh(prop_.pinSCK);
 	bool mosi = event.IsPinHigh(prop_.pinMOSI);
 	bool miso = event.IsPinHigh(prop_.pinMISO);
 	switch (stat_) {
 	case Stat::WaitForStable: {
+		// Wait for CS to go low (start of SPI transaction)
 		if (!cs) {
 			stat_ = Stat::Start_CS_Fall;
 		}
 		break;
 	}
 	case Stat::Start_CS_Fall: {
+		// If CS goes high, stop transaction
 		if (!csPrev_ && cs) {
 			OnStop();
 			stat_ = Stat::WaitForStable;
 		} else if (!cs && sck && !sckPrev_) {
+			// On SCK high (rising edge) with CS low, start bit accumulation
 			OnStart();
 			nBitsAccum_ = 0;
 			bitAccum_ = 0x000;
@@ -125,16 +129,18 @@ void ProtocolAnalyzer_SPI::Core::ProcessEvent(const EventIterator& eventIter, co
 		break;
 	}
 	case Stat::BitAccum_SCK_Edge: {
+		// If CS goes high, stop transaction
 		if (cs) {
 			OnStop();
 			stat_ = Stat::WaitForStable;
 		} else if (sck && !sckPrev_) {
-			// SCK rising edge: sample data
+			// On SCK rising edge, sample MOSI/MISO and accumulate bits
 			OnBit(field_, nBitsAccum_, mosi, miso);
 			bitAccum_ = (bitAccum_ << 1) | (mosi ? 1 : 0);
 			nBitsAccum_++;
 			if (nBitsAccum_ == 8) {
-				OnBitAccumComplete(field_, bitAccum_, 0); // TODO: MISOデータも必要なら追加
+				// 8 bits accumulated, call completion handler
+				OnBitAccumComplete(field_, bitAccum_, 0); // TODO: Add MISO data if needed
 				nBitsAccum_ = 0;
 				bitAccum_ = 0x000;
 			}
@@ -143,6 +149,7 @@ void ProtocolAnalyzer_SPI::Core::ProcessEvent(const EventIterator& eventIter, co
 	}
 	default: break;
 	}
+	// Store previous pin states for edge detection
 	csPrev_ = cs;
 	sckPrev_ = sck;
 }

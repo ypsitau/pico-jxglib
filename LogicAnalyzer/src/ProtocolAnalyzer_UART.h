@@ -34,14 +34,20 @@ public:
 	};
 	class Core {
 	private:
-		Stat stat_;
-		Field field_;
-		int nBitsAccum_;
-		uint16_t bitAccum_;
-		int bitIdx_;
-		const Property& prop_;
-		bool lastRX_;
-		int sampleCounter_;
+		Stat stat_;                // Current state of the UART state machine
+		Field field_;              // Current field (data, parity, etc.)
+		int nBitsAccum_;           // Number of bits accumulated
+		uint16_t bitAccum_;        // Accumulated bits (data)
+		int bitIdx_;               // Current bit index
+		const Property& prop_;     // UART configuration properties
+		bool lastRX_;              // Last RX pin state
+		int sampleCounter_;        // Sample counter (not always used)
+		// UART sampling timing variables
+		uint64_t lastStartTime_ = 0;      // Timestamp of the last detected start bit
+		uint64_t bitSampleTime_ = 0;      // Timestamp for the next bit sample
+		int bitsToSample_ = 0;            // Number of bits to sample in the current frame
+		uint64_t bitPeriod_ = 0;          // Bit period in microseconds
+		uint64_t stopBitSampleTime_ = 0;  // Timestamp to sample the stop bit
 	public:
 		Core(const Core& core);
 		Core(const Property& prop);

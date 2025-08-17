@@ -20,22 +20,30 @@ public:
 		}
 	};
 public:
-	enum class Stat {
-		Done, WaitForStable, Start_CS_Fall, BitAccum_SCK_Edge, BitAccum_SCK_Idle
-	};
-	enum class Field { Data };
-	struct Property {
-		uint pinMOSI, pinMISO, pinSCK, pinCS;
-	};
-	class Core {
-	private:
-		Stat stat_;
-		Field field_;
-		int nBitsAccum_;
-		uint16_t bitAccum_;
-		bool csPrev_;
-		bool sckPrev_;
-		const Property& prop_;
+	   // SPI protocol state machine states
+	   enum class Stat {
+		   Done,              // Analysis complete
+		   WaitForStable,     // Waiting for CS to go low (start of transaction)
+		   Start_CS_Fall,     // Detected CS falling edge, waiting for SCK
+		   BitAccum_SCK_Edge, // Accumulating bits on SCK edge
+		   BitAccum_SCK_Idle  // Idle between SCK edges
+	   };
+	   // SPI data field (expandable for future use)
+	   enum class Field { Data };
+	   // SPI pin configuration
+	   struct Property {
+		   uint pinMOSI, pinMISO, pinSCK, pinCS;
+	   };
+	   // Core SPI analyzer logic
+	   class Core {
+	   private:
+		   Stat stat_;            // Current state of the SPI state machine
+		   Field field_;          // Current field (data, etc.)
+		   int nBitsAccum_;       // Number of bits accumulated in current byte
+		   uint16_t bitAccum_;    // Accumulated bits (MOSI)
+		   bool csPrev_;          // Previous CS pin state
+		   bool sckPrev_;         // Previous SCK pin state
+		   const Property& prop_; // SPI pin configuration
 	public:
 		Core(const Core& core);
 		Core(const Property& prop);

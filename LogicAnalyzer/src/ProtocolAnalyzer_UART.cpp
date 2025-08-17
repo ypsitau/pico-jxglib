@@ -106,49 +106,70 @@ void ProtocolAnalyzer_UART::AnnotateWaveStreak(char* buffLine, int lenBuffLine, 
 // ProtocolAnalyzer_UART::Core
 //------------------------------------------------------------------------------
 ProtocolAnalyzer_UART::Core::Core(const Core& core) : prop_{core.prop_}, stat_{core.stat_}, field_{core.field_},
-	nBitsAccum_{core.nBitsAccum_}, bitAccum_{core.bitAccum_}, bitIdx_{core.bitIdx_}, lastRX_{core.lastRX_}, sampleCounter_{core.sampleCounter_}
+	nBitsAccum_{core.nBitsAccum_}, bitAccum_{core.bitAccum_}, bitIdx_{core.bitIdx_}, lastRX_{core.lastRX_}, sampleCounter_{core.sampleCounter_},
+	lastStartTime_{core.lastStartTime_}, bitSampleTime_{core.bitSampleTime_}, bitsToSample_{core.bitsToSample_}, bitPeriod_{core.bitPeriod_}, stopBitSampleTime_{core.stopBitSampleTime_}
 {}
 
 ProtocolAnalyzer_UART::Core::Core(const Property& prop) : prop_{prop}, stat_{Stat::WaitForIdle}, field_{Field::Data},
-	nBitsAccum_{0}, bitAccum_{0}, bitIdx_{0}, lastRX_{true}, sampleCounter_{0}
+	nBitsAccum_{0}, bitAccum_{0}, bitIdx_{0}, lastRX_{true}, sampleCounter_{0},
+	lastStartTime_{0}, bitSampleTime_{0}, bitsToSample_{0}, bitPeriod_{0}, stopBitSampleTime_{0}
 {}
 
 void ProtocolAnalyzer_UART::Core::ProcessEvent(const EventIterator& eventIter, const Event& event)
 {
+	// Get the current RX pin state
 	bool rx = event.IsPinHigh(prop_.pinRX);
 	switch (stat_) {
 	case Stat::WaitForIdle: {
+		// Wait for the line to go low (start bit)
 		if (!rx) {
 			stat_ = Stat::StartBit;
 			OnStartBit();
 			bitIdx_ = 0;
 			bitAccum_ = 0;
+			// Initialize sampling timing variables
+			lastStartTime_ = event.GetTimeStamp();
+			bitPeriod_ = 1000000ULL / prop_.baudrate; // Bit period in microseconds
+			// First data bit is sampled at 1.5 bit periods after start
+			bitSampleTime_ = lastStartTime_ + bitPeriod_ + bitPeriod_/2;
+			bitsToSample_ = prop_.dataBits;
+			stopBitSampleTime_ = bitSampleTime_ + bitPeriod_ * bitsToSample_;
 		}
 		break;
 	}
 	case Stat::StartBit: {
-		// サンプリングタイミング調整は省略（実装例）
+		// Immediately transition to BitAccum state
 		stat_ = Stat::BitAccum;
 		break;
 	}
 	case Stat::BitAccum: {
-		// 1ビットごとにサンプリング（実際はボーレートに合わせてサンプリングすべき）
-		OnBit(field_, bitIdx_, rx);
-		bitAccum_ |= (rx ? 1 : 0) << bitIdx_;
-		bitIdx_++;
-		if (bitIdx_ >= prop_.dataBits) {
-			stat_ = Stat::StopBit;
+		// Sample each data bit at the calculated sampling time
+		if (event.GetTimeStamp() >= bitSampleTime_ && bitIdx_ < prop_.dataBits) {
+			bool rxSample = event.IsPinHigh(prop_.pinRX);
+			OnBit(field_, bitIdx_, rxSample);
+			bitAccum_ |= (rxSample ? 1 : 0) << bitIdx_;
+			bitIdx_++;
+			bitSampleTime_ += bitPeriod_;
+			if (bitIdx_ >= prop_.dataBits) {
+				stat_ = Stat::StopBit;
+			}
 		}
 		break;
 	}
 	case Stat::StopBit: {
-		OnStopBit(rx);
-		OnByte(static_cast<uint8_t>(bitAccum_ & 0xFF), false); // パリティ未実装
-		stat_ = Stat::WaitForIdle;
+		// Wait until the stop bit sampling time, then sample and finish the frame
+		if (event.GetTimeStamp() >= stopBitSampleTime_) {
+			bool rxSample = event.IsPinHigh(prop_.pinRX);
+			OnStopBit(rxSample);
+			// Parity is not implemented yet
+			OnByte(static_cast<uint8_t>(bitAccum_ & 0xFF), false);
+			stat_ = Stat::WaitForIdle;
+		}
 		break;
 	}
 	default: break;
 	}
+	// Store the last RX state
 	lastRX_ = rx;
 }
 
