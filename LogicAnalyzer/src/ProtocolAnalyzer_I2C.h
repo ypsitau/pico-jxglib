@@ -35,43 +35,54 @@ public:
 		bool signalSDAPrev_;
 		const Property& prop_;
 	public:
-		Core(const Property& prop) : prop_{prop}, stat_{Stat::WaitForStable}, field_{Field::Address}, nBitsAccum_{0}, bitAccum_{0}, signalSDAPrev_{false} {}
+		Core(const Core& core);
+		Core(const Property& prop);
 	public:
-		void ProcessEvent(const Event& event);
+		Stat GetStat() const { return stat_; }
+	public:
+		void ProcessEvent(const EventIterator& eventIter, const Event& event);
 	public:
 		virtual void OnStart() {}
+		virtual void OnBeginBitAccum(const EventIterator& eventIter) {}
 		virtual void OnStop() {}
 		virtual void OnRepeatedStart() {}
 		virtual void OnBit(Field field, int iBit, bool bitValue) {}
-		virtual void OnByte(Field field, uint8_t byte, bool bitAck) {}
+		virtual void OnBitAccum(Field field, uint16_t bitAccum) {}
 	};
 	class Core_Annotator : public Core {
 	private:
 		char* buffLine_;
 		int lenBuffLine_;
 		int* piCol_;
+		struct {
+			bool validFlag;
+			uint16_t bitAccum;
+		} adv_;
 	public:
-		Core_Annotator(const Property& prop) : Core(prop), buffLine_{nullptr}, lenBuffLine_{0}, piCol_{nullptr} {}
+		Core_Annotator(const Property& prop);
 	public:
-		void ProcessEvent(const Event& event, char* buffLine, int lenBuffLine, int* piCol) {
-			buffLine_ = buffLine;
-			lenBuffLine_ = lenBuffLine;
-			piCol_ = piCol;
-			Core::ProcessEvent(event);
-		}
+		void ProcessEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int* piCol);
 	public:
 		virtual void OnStart() override;
+		virtual void OnBeginBitAccum(const EventIterator& eventIter) override;
 		virtual void OnStop() override;
 		virtual void OnRepeatedStart() override;
 		virtual void OnBit(Field field, int iBit, bool bitValue) override;
-		virtual void OnByte(Field field, uint8_t byte, bool bitAck) override;
+		virtual void OnBitAccum(Field field, uint16_t bitAccum) override;
+	};
+	class Core_BitAccumAdv : public Core {
+	private:
+		bool completeFlag_;
+		uint16_t bitAccumAdv_;
+	public:
+		Core_BitAccumAdv(const Core& core) : Core(core), completeFlag_{false}, bitAccumAdv_{0} {}
+	public:
+		bool IsComplete() const { return completeFlag_; }
+		uint16_t GetBitAccumAdv() const { return bitAccumAdv_; }
+	public:
+		virtual void OnBitAccum(Field field, uint16_t bitAccum) override { completeFlag_ = true; bitAccumAdv_ = bitAccum;}
 	};
 private:
-	Stat stat_;
-	Field field_;
-	int nBitsAccum_;
-	uint16_t bitAccum_;
-	bool signalSDAPrev_;
 	Core_Annotator annotator_;
 private:
 	Property prop_;

@@ -11,8 +11,7 @@ namespace jxglib {
 ProtocolAnalyzer_I2C::Factory ProtocolAnalyzer_I2C::factory_;
 
 ProtocolAnalyzer_I2C::ProtocolAnalyzer_I2C(const LogicAnalyzer& logicAnalyzer, const char* name) :
-	ProtocolAnalyzer(logicAnalyzer, name), stat_{Stat::WaitForStable}, field_{Field::Address},
-	nBitsAccum_{0}, bitAccum_{0}, signalSDAPrev_{false}, prop_{GPIO::InvalidPin, GPIO::InvalidPin}, annotator_(prop_)
+	ProtocolAnalyzer(logicAnalyzer, name), annotator_(prop_), prop_{GPIO::InvalidPin, GPIO::InvalidPin}
 {}
 
 bool ProtocolAnalyzer_I2C::EvalSubcmd(Printable& terr, const char* subcmd)
@@ -55,76 +54,21 @@ bool ProtocolAnalyzer_I2C::FinishSubcmd(Printable& terr)
 
 void ProtocolAnalyzer_I2C::AnnotateWave(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol)
 {
-	annotator_.ProcessEvent(event, buffLine, lenBuffLine, piCol);
-#if 0
-
-	int& iCol = *piCol;
-
-	switch (stat_) {
-	case Stat::WaitForStable: {
-		if (event.IsPinHigh(prop_.pinSCL, prop_.pinSDA)) {
-			stat_ = Stat::Start_SDA_Fall;
-		}
-		break;
-	}
-	case Stat::Start_SDA_Fall: {
-		if (event.IsPinLow(prop_.pinSDA)) {		// SDA falls while SCL high: Start Condition
-			iCol += ::snprintf(buffLine + iCol, lenBuffLine - iCol, " Start");
-			nBitsAccum_ = 0;
-			bitAccum_ = 0x000;
-			field_ = Field::Address;
-			stat_ = Stat::BitAccum_SCL_Fall;
-		}
-		signalSDAPrev_ = event.IsPinHigh(prop_.pinSDA);
-		break;
-	}
-	case Stat::BitAccum_SCL_Fall: {
-		if (!signalSDAPrev_ && event.IsPinHigh(prop_.pinSDA)) {		// SDA rises while SCL high: Stop Condition
-			iCol += ::snprintf(buffLine + iCol, lenBuffLine - iCol, " Stop");
-			stat_ = Stat::Start_SDA_Fall;
-		} else if (signalSDAPrev_ && event.IsPinLow(prop_.pinSDA)) {	// SDA falls while SCL high: repeated start Condition
-			iCol += ::snprintf(buffLine + iCol, lenBuffLine - iCol, " Repeated Start");
-			nBitsAccum_ = 0;
-			bitAccum_ = 0x000;
-			field_ = Field::Address;
-		} else if (event.IsPinLow(prop_.pinSCL)) {
-			stat_ = Stat::BitAccum_SCL_Rise;
-		}
-		signalSDAPrev_ = event.IsPinHigh(prop_.pinSDA);
-		break;
-	}
-	case Stat::BitAccum_SCL_Rise: {
-		if (event.IsPinHigh(prop_.pinSCL)) {
-			int iBit = nBitsAccum_;
-			uint bitValue = event.IsPinHigh(prop_.pinSDA)? 1 : 0;
-			if (iBit == 7 && field_ == Field::Address) {
-				iCol += ::snprintf(buffLine + iCol, lenBuffLine - iCol, " %s", bitValue? "Read" : "Write");
-			} else if (iBit == 8) {
-				iCol += ::snprintf(buffLine + iCol, lenBuffLine - iCol, " %s", bitValue? "Nack" : "Ack");
-			} else {
-				iCol += ::snprintf(buffLine + iCol, lenBuffLine - iCol, " %d", bitValue);
-			}
-			bitAccum_ = (bitAccum_ << 1) | bitValue;
-			nBitsAccum_++;
-			if (nBitsAccum_ == 9) {
-				nBitsAccum_ = 0;
-				bitAccum_ = 0x000;
-				field_ = Field::Data;
-			}
-			stat_ = Stat::BitAccum_SCL_Fall;
-		}
-		signalSDAPrev_ = event.IsPinHigh(prop_.pinSDA);
-		break;
-	}
-	default:break;
-	}
-#endif
+	annotator_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
 }
 
 //------------------------------------------------------------------------------
 // ProtocolAnalyzer_I2C::Core
 //------------------------------------------------------------------------------
-void ProtocolAnalyzer_I2C::Core::ProcessEvent(const Event& event)
+ProtocolAnalyzer_I2C::Core::Core(const Core& core) : prop_{core.prop_}, stat_{core.stat_}, field_{core.field_},
+	nBitsAccum_{core.nBitsAccum_}, bitAccum_{core.bitAccum_}, signalSDAPrev_{core.signalSDAPrev_}
+{}
+
+ProtocolAnalyzer_I2C::Core::Core(const Property& prop) : prop_{prop}, stat_{Stat::WaitForStable}, field_{Field::Address},
+	nBitsAccum_{0}, bitAccum_{0}, signalSDAPrev_{false}
+{}
+
+void ProtocolAnalyzer_I2C::Core::ProcessEvent(const EventIterator& eventIter, const Event& event)
 {
 	switch (stat_) {
 	case Stat::WaitForStable: {
@@ -140,8 +84,11 @@ void ProtocolAnalyzer_I2C::Core::ProcessEvent(const Event& event)
 			bitAccum_ = 0x000;
 			field_ = Field::Address;
 			stat_ = Stat::BitAccum_SCL_Fall;
+			signalSDAPrev_ = event.IsPinHigh(prop_.pinSDA);
+			OnBeginBitAccum(eventIter);
+		} else {
+			signalSDAPrev_ = event.IsPinHigh(prop_.pinSDA);
 		}
-		signalSDAPrev_ = event.IsPinHigh(prop_.pinSDA);
 		break;
 	}
 	case Stat::BitAccum_SCL_Fall: {
@@ -167,7 +114,7 @@ void ProtocolAnalyzer_I2C::Core::ProcessEvent(const Event& event)
 			bitAccum_ = (bitAccum_ << 1) | bitValue;
 			nBitsAccum_++;
 			if (nBitsAccum_ == 9) {
-				OnByte(field_, static_cast<uint8_t>(bitAccum_ >> 1), bitAccum_ & 0x01);
+				OnBitAccum(field_, bitAccum_);
 				nBitsAccum_ = 0;
 				bitAccum_ = 0x000;
 				field_ = Field::Data;
@@ -182,12 +129,37 @@ void ProtocolAnalyzer_I2C::Core::ProcessEvent(const Event& event)
 }
 
 //------------------------------------------------------------------------------
-// ProtocolAnalyzer_I2C::Core
+// ProtocolAnalyzer_I2C::Core_Annotator
 //------------------------------------------------------------------------------
+ProtocolAnalyzer_I2C::Core_Annotator::Core_Annotator(const Property& prop) :
+		Core(prop), buffLine_{nullptr}, lenBuffLine_{0}, piCol_{nullptr}, adv_{false, 0}
+{}
+
+void ProtocolAnalyzer_I2C::Core_Annotator::ProcessEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int* piCol)
+{
+	buffLine_ = buffLine;
+	lenBuffLine_ = lenBuffLine;
+	piCol_ = piCol;
+	Core::ProcessEvent(eventIter, event);
+}
+
 void ProtocolAnalyzer_I2C::Core_Annotator::OnStart()
 {
 	int& iCol = *piCol_;
 	iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " Start");
+}
+
+void ProtocolAnalyzer_I2C::Core_Annotator::OnBeginBitAccum(const EventIterator& eventIter)
+{
+	Core_BitAccumAdv coreAdv(*this);
+	EventIterator eventIterAdv(eventIter);
+	Event eventAdv;
+	while (eventIterAdv.Next(eventAdv)) {
+		coreAdv.ProcessEvent(eventIterAdv, eventAdv);
+		if (coreAdv.IsComplete()) break;
+	}
+	adv_.validFlag = coreAdv.IsComplete();
+	adv_.bitAccum = coreAdv.GetBitAccumAdv();
 }
 
 void ProtocolAnalyzer_I2C::Core_Annotator::OnStop()
@@ -209,13 +181,20 @@ void ProtocolAnalyzer_I2C::Core_Annotator::OnBit(Field field, int iBit, bool bit
 		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %s", bitValue? "Read" : "Write");
 	} else if (iBit == 8) {
 		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %s", bitValue? "Nack" : "Ack");
+	} else if (iBit == 4 && adv_.validFlag) {
+		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " 0x%02x", adv_.bitAccum >> 1);
 	} else {
-		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %d", bitValue);
+		//iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %d", bitValue);
 	}
 }
 
-void ProtocolAnalyzer_I2C::Core_Annotator::OnByte(Field field, uint8_t byte, bool bitAck)
+void ProtocolAnalyzer_I2C::Core_Annotator::OnBitAccum(Field field, uint16_t bitAccum)
 {
+	adv_.validFlag = false;
 }
+
+//------------------------------------------------------------------------------
+// ProtocolAnalyzer_I2C::Core_BitAccumAdv
+//------------------------------------------------------------------------------
 
 }
