@@ -381,7 +381,7 @@ public:
 public:
 	virtual bool EvalSubcmd(Printable& terr, const char* subcmd) { return false; }
 	virtual bool FinishSubcmd(Printable& terr) { return false; }
-	virtual void OnPrintWave(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol) = 0;
+	virtual void AnnotateWave(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol) = 0;
 };
 
 }

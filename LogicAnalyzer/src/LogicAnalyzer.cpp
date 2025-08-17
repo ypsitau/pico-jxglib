@@ -292,7 +292,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout) const
 		iCol = 0;
 	};
 	auto flushLineWithEvent = [&](const Event& event) {
-		if (pProtocolAnalyzer_) pProtocolAnalyzer_->OnPrintWave(eventIter, event, buffLine, sizeof(buffLine), &iCol);
+		if (pProtocolAnalyzer_) pProtocolAnalyzer_->AnnotateWave(eventIter, event, buffLine, sizeof(buffLine), &iCol);
 		flushLine();
 	};
 	auto printHeader = [&]() {
