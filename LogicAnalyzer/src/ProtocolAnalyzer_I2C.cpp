@@ -83,17 +83,17 @@ void ProtocolAnalyzer_I2C::Core::ProcessEvent(const EventIterator& eventIter, co
 		break;
 	}
 	case Stat::Start_SDA_Fall: {
+		bool bitAccumBeginFlag = false;
 		if (event.IsPinLow(prop_.pinSDA)) {		// SDA falls while SCL high: Start Condition
 			OnStart();
 			nBitsAccum_ = 0;
 			bitAccum_ = 0x000;
 			field_ = Field::Address;
 			stat_ = Stat::BitAccum_SCL_Fall;
-			signalSDAPrev_ = event.IsPinHigh(prop_.pinSDA);
-			OnBitAccumBegin(eventIter);
-		} else {
-			signalSDAPrev_ = event.IsPinHigh(prop_.pinSDA);
+			bitAccumBeginFlag = true;
 		}
+		signalSDAPrev_ = event.IsPinHigh(prop_.pinSDA);
+		if (bitAccumBeginFlag) OnBitAccumBegin(eventIter);
 		break;
 	}
 	case Stat::BitAccum_SCL_Fall: {
@@ -112,6 +112,7 @@ void ProtocolAnalyzer_I2C::Core::ProcessEvent(const EventIterator& eventIter, co
 		break;
 	}
 	case Stat::BitAccum_SCL_Rise: {
+		bool bitAccumBeginFlag = false;
 		if (event.IsPinHigh(prop_.pinSCL)) {
 			int iBit = nBitsAccum_;
 			uint bitValue = event.IsPinHigh(prop_.pinSDA)? 1 : 0;
@@ -123,10 +124,12 @@ void ProtocolAnalyzer_I2C::Core::ProcessEvent(const EventIterator& eventIter, co
 				nBitsAccum_ = 0;
 				bitAccum_ = 0x000;
 				field_ = Field::Data;
+				bitAccumBeginFlag = true;
 			}
 			stat_ = Stat::BitAccum_SCL_Fall;
 		}
 		signalSDAPrev_ = event.IsPinHigh(prop_.pinSDA);
+		if (bitAccumBeginFlag) OnBitAccumBegin(eventIter);
 		break;
 	}
 	default:break;
