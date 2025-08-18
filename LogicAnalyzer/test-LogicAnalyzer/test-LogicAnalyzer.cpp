@@ -14,6 +14,8 @@ public:
 		SampleLimit,
 		AnalogChannelEnable, AnalogChannelEnable_Channel,
 		DigitalChannelEnable, DigitalChannelEnable_Channel,
+		FixedSampleMode,
+		ContinuousSampleMode,
 	};
 private:
 	Stream& stream_;
@@ -22,15 +24,20 @@ private:
 	int nDigitalChannels_;
 	static const int versionNumber_ = 2;
 	int uvoltScale_, uvoltOffset_;
+	bool enableChannelFlag_;
+	int iChannel_;
+	int sampleRate_;
+	int nSamples_;
 public:
 	SigrokPico(Stream& stream);
 public:
 	bool FeedChar(char ch);
 };
 
-SigrokPico::SigrokPico(Stream& stream) : stream_{stream}, stat_{Stat::Initial}, nAnalogChannels_{0}, nDigitalChannels_{0}, uvoltScale_{0}, uvoltOffset_{0}
+SigrokPico::SigrokPico(Stream& stream) : stream_{stream}, stat_{Stat::Initial}, nAnalogChannels_{0}, nDigitalChannels_{0}, uvoltScale_{0}, uvoltOffset_{0},
+	enableChannelFlag_{false}, iChannel_{0}, sampleRate_{0}, nSamples_{0}
 {
-	nDigitalChannels_ = 8;
+	nDigitalChannels_ = 4;
 }
 
 bool SigrokPico::FeedChar(char ch)
@@ -44,15 +51,19 @@ bool SigrokPico::FeedChar(char ch)
 		} else if (ch == 'a') {		// Analog Scale and Offset
 			stat_ = Stat::AnalogScaleAndOffset;
 		} else if (ch == 'R') {		// Sample rate
+			sampleRate_ = 0;
 			stat_ = Stat::SampleRate;
 		} else if (ch == 'L') {		// Sample limit
+			nSamples_ = 0;
 			stat_ = Stat::SampleLimit;
 		} else if (ch == 'A') {		// Analog Channel Enable
 			stat_ = Stat::AnalogChannelEnable;
 		} else if (ch == 'D') {		// Digital Channel Enable
 			stat_ = Stat::DigitalChannelEnable;
 		} else if (ch == 'F') {		// Fixed Sample Mode
+			stat_ = Stat::FixedSampleMode;
 		} else if (ch == 'C') {		// Continuous Sample Mode
+			stat_ = Stat::ContinuousSampleMode;
 		}
 		break;
 	}
@@ -79,7 +90,7 @@ bool SigrokPico::FeedChar(char ch)
 	}
 	case Stat::SampleRate: {
 		if ('0' <= ch && ch <= '9') {
-
+			sampleRate_ = sampleRate_ * 10 + (ch - '0');
 		} else if (ch == '\n') {
 			stream_.Printf("*").Flush();
 			stat_ = Stat::Initial;
@@ -90,7 +101,7 @@ bool SigrokPico::FeedChar(char ch)
 	}
 	case Stat::SampleLimit: {
 		if ('0' <= ch && ch <= '9') {
-
+			nSamples_ = nSamples_ * 10 + (ch - '0');
 		} else if (ch == '\n') {
 			stream_.Printf("*").Flush();
 			stat_ = Stat::Initial;
@@ -101,7 +112,8 @@ bool SigrokPico::FeedChar(char ch)
 	}
 	case Stat::AnalogChannelEnable: {
 		if (ch == '0' || ch == '1') {
-
+			enableChannelFlag_ = (ch == '1');
+			iChannel_ = 0;
 			stat_ = Stat::AnalogChannelEnable_Channel;
 		} else {
 			stat_ = Stat::Recover;
@@ -110,7 +122,7 @@ bool SigrokPico::FeedChar(char ch)
 	}
 	case Stat::AnalogChannelEnable_Channel: {
 		if ('0' <= ch && ch <= '9') {
-
+			iChannel_ = iChannel_ * 10 + (ch - '0');
 		} else if (ch == '\n') {
 			stream_.Printf("*").Flush();
 			stat_ = Stat::Initial;
@@ -121,7 +133,8 @@ bool SigrokPico::FeedChar(char ch)
 	}
 	case Stat::DigitalChannelEnable: {
 		if (ch == '0' || ch == '1') {
-
+			enableChannelFlag_ = (ch == '1');
+			iChannel_ = 0;
 			stat_ = Stat::DigitalChannelEnable_Channel;
 		} else {
 			stat_ = Stat::Recover;
@@ -130,13 +143,24 @@ bool SigrokPico::FeedChar(char ch)
 	}
 	case Stat::DigitalChannelEnable_Channel: {
 		if ('0' <= ch && ch <= '9') {
-
+			iChannel_ = iChannel_ * 10 + (ch - '0');
 		} else if (ch == '\n') {
 			stream_.Printf("*").Flush();
 			stat_ = Stat::Initial;
 		} else {
 			stat_ = Stat::Recover;
 		}
+		break;
+	}
+	case Stat::FixedSampleMode: {
+		for (int i = 0; i < nSamples_; i++) {
+			uint8_t data = 0x80 | (1 << (i % 4));
+			stream_.Write(&data, 1);
+		}
+		stat_ = Stat::Initial;
+		break;
+	}
+	case Stat::ContinuousSampleMode: {
 		break;
 	}
 	default:
