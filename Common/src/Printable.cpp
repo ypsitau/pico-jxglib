@@ -140,7 +140,7 @@ Printable::DumpT& Printable::DumpT::operator()(const void* buff, int cnt)
 		for (int i = 0; i < bytesPerElem_; i++) *pAsciiBuff++ = pElem[i];
 		iCol++;
 		if (iCol == nCols) {
-			if (asciiFlag_) PrintAscii(printable, asciiBuff, bytesPerElem_ * iCol);
+			if (asciiFlag_) PrintAscii(printable, asciiBuff, bytesPerElem_ * nCols);
 			printable.Println();
 			if (Tickable::TickSub()) break;	// check if signalled to stop
 			iCol = 0;
@@ -148,11 +148,12 @@ Printable::DumpT& Printable::DumpT::operator()(const void* buff, int cnt)
 	}
 	if (iCol > 0) {
 		if (asciiFlag_) {
+			int nColsLast = iCol;
 			for ( ; iCol < nCols; iCol++) {
 				printable.Print((iCol % 8 == 0)? "  " : " ");
 				for (int i = 0; i < bytesPerElem_ * 2; i++) printable.PutChar(' ');
 			}
-			PrintAscii(printable, asciiBuff, bytesPerElem_ * iCol);
+			PrintAscii(printable, asciiBuff, bytesPerElem_ * nColsLast);
 		}
 		printable.Println();
 	}
