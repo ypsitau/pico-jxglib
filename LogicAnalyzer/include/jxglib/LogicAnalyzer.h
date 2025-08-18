@@ -178,6 +178,38 @@ public:
 		int CountBits() const;
 	};
 public:
+	class SigrokAdapter : public Tickable {
+	public:
+		enum class Stat {
+			Initial, Recover,
+			Identify,
+			AnalogScaleAndOffset,
+			SampleRate,
+			SampleLimit,
+			AnalogChannelEnable, AnalogChannelEnable_Channel,
+			DigitalChannelEnable, DigitalChannelEnable_Channel,
+			FixedSampleMode,
+			ContinuousSampleMode,
+		};
+	private:
+		LogicAnalyzer& logicAnalyzer_;
+		Stream& stream_;
+		Stat stat_;
+		int nAnalogChannels_;
+		static const int versionNumber_ = 2;
+		int uvoltScale_, uvoltOffset_;
+		bool enableChannelFlag_;
+		int iChannel_;
+		int sampleRate_;
+		int nSamples_;
+	public:
+		SigrokAdapter(LogicAnalyzer& logicAnalyzer, Stream& stream);
+	public:
+		// virtual functions of Tickable
+		virtual const char* GetTickableName() const override { return "LogicAnalyzer::SigrokAdapter"; }
+		virtual void OnTick() override;
+	};
+public:
 	class SUMPAdapter : public Tickable {
 	public:
 		// SUMP Commands

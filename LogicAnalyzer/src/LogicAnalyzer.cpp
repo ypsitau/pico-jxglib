@@ -766,6 +766,148 @@ const LogicAnalyzer::RawEvent& LogicAnalyzer::EventIterator::GetRawEvent(int iSa
 }
 
 //------------------------------------------------------------------------------
+// LogicAnalyzer::SigrokAdapter
+//------------------------------------------------------------------------------
+LogicAnalyzer::SigrokAdapter::SigrokAdapter(LogicAnalyzer& logicAnalyzer, Stream& stream) :
+		logicAnalyzer_{logicAnalyzer}, stream_{stream}, stat_{Stat::Initial},
+		nAnalogChannels_{0}, uvoltScale_{0}, uvoltOffset_{0},
+		enableChannelFlag_{false}, iChannel_{0}, sampleRate_{0}, nSamples_{0}
+{
+}
+
+void LogicAnalyzer::SigrokAdapter::OnTick()
+{
+	char ch;
+	if (stream_.Read(&ch, 1) == 0) return;
+	//::printf("%c\n", ch);
+	switch (stat_) {
+	case Stat::Initial: {
+		if (ch == '*') {			// Reset
+		} else if (ch == '+') {		// Abort
+		} else if (ch == 'i') {		// Identify
+			stat_ = Stat::Identify;
+		} else if (ch == 'a') {		// Analog Scale and Offset
+			stat_ = Stat::AnalogScaleAndOffset;
+		} else if (ch == 'R') {		// Sample rate
+			sampleRate_ = 0;
+			stat_ = Stat::SampleRate;
+		} else if (ch == 'L') {		// Sample limit
+			nSamples_ = 0;
+			stat_ = Stat::SampleLimit;
+		} else if (ch == 'A') {		// Analog Channel Enable
+			stat_ = Stat::AnalogChannelEnable;
+		} else if (ch == 'D') {		// Digital Channel Enable
+			stat_ = Stat::DigitalChannelEnable;
+		} else if (ch == 'F') {		// Fixed Sample Mode
+			stat_ = Stat::FixedSampleMode;
+		} else if (ch == 'C') {		// Continuous Sample Mode
+			stat_ = Stat::ContinuousSampleMode;
+		}
+		break;
+	}
+	case Stat::Recover: {
+		if (ch == '*') {
+			stat_ = Stat::Initial;
+		}
+		break;
+	}
+	case Stat::Identify: {
+		if (ch == '\n') {
+			int nDigitalChannels = logicAnalyzer_.GetSamplingInfo().CountBits();
+			stream_.Printf("SRPICO,A%02d1D%02d,%02d", nAnalogChannels_, nDigitalChannels, versionNumber_).Flush();
+		}
+		stat_ = Stat::Initial;
+		break;
+	}
+	case Stat::AnalogScaleAndOffset: {
+		int channel = ch - '0';
+		if (channel >= 0 && channel < nAnalogChannels_) {
+			stream_.Printf("%04dx%05d", uvoltScale_, uvoltOffset_);
+		}
+		stat_ = Stat::Initial;
+		break;
+	}
+	case Stat::SampleRate: {
+		if ('0' <= ch && ch <= '9') {
+			sampleRate_ = sampleRate_ * 10 + (ch - '0');
+		} else if (ch == '\n') {
+			stream_.Printf("*").Flush();
+			stat_ = Stat::Initial;
+		} else {
+			stat_ = Stat::Recover;
+		}
+		break;
+	}
+	case Stat::SampleLimit: {
+		if ('0' <= ch && ch <= '9') {
+			nSamples_ = nSamples_ * 10 + (ch - '0');
+		} else if (ch == '\n') {
+			stream_.Printf("*").Flush();
+			stat_ = Stat::Initial;
+		} else {
+			stat_ = Stat::Recover;
+		}
+		break;
+	}
+	case Stat::AnalogChannelEnable: {
+		if (ch == '0' || ch == '1') {
+			enableChannelFlag_ = (ch == '1');
+			iChannel_ = 0;
+			stat_ = Stat::AnalogChannelEnable_Channel;
+		} else {
+			stat_ = Stat::Recover;
+		}
+		break;
+	}
+	case Stat::AnalogChannelEnable_Channel: {
+		if ('0' <= ch && ch <= '9') {
+			iChannel_ = iChannel_ * 10 + (ch - '0');
+		} else if (ch == '\n') {
+			stream_.Printf("*").Flush();
+			stat_ = Stat::Initial;
+		} else {
+			stat_ = Stat::Recover;
+		}
+		break;
+	}
+	case Stat::DigitalChannelEnable: {
+		if (ch == '0' || ch == '1') {
+			enableChannelFlag_ = (ch == '1');
+			iChannel_ = 0;
+			stat_ = Stat::DigitalChannelEnable_Channel;
+		} else {
+			stat_ = Stat::Recover;
+		}
+		break;
+	}
+	case Stat::DigitalChannelEnable_Channel: {
+		if ('0' <= ch && ch <= '9') {
+			iChannel_ = iChannel_ * 10 + (ch - '0');
+		} else if (ch == '\n') {
+			stream_.Printf("*").Flush();
+			stat_ = Stat::Initial;
+		} else {
+			stat_ = Stat::Recover;
+		}
+		break;
+	}
+	case Stat::FixedSampleMode: {
+		for (int i = 0; i < nSamples_; i++) {
+			uint8_t data = 0x80 | (1 << (i % 4));
+			stream_.Write(&data, 1);
+		}
+		stat_ = Stat::Initial;
+		break;
+	}
+	case Stat::ContinuousSampleMode: {
+		break;
+	}
+	default:
+		break;
+	}
+}
+
+//------------------------------------------------------------------------------
 // LogicAnalyzer::SUMPAdapter
 // https://firmware.buspirate.com/binmode-reference/protocol-sump
 // http://dangerousprototypes.com/docs/The_Logic_Sniffer%27s_extended_SUMP_protocol
