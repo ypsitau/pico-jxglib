@@ -133,7 +133,6 @@ public:
 		uint64_t timeStampOffsetTbl_[4];
 		uint32_t pinBitmapPrev_;
 		bool firstFlag_;
-		bool doneFlag_;
 		uint64_t timeStampOffsetIncr_;
 	private:
 		RawEvent_Short rawEvent_Short_;
@@ -142,7 +141,7 @@ public:
 		EventIterator(const EventIterator& eventIter);
 		EventIterator(const LogicAnalyzer& logicAnalyzer);
 	public:
-		bool IsDone() const { return doneFlag_; }
+		bool HasMore() const;
 		bool Next(Event& event);
 		void Rewind();
 		void Skip(int nEvents);
@@ -193,6 +192,7 @@ public:
 		};
 	private:
 		LogicAnalyzer& logicAnalyzer_;
+		
 		Stream& stream_;
 		Stat stat_;
 		int nAnalogChannels_;

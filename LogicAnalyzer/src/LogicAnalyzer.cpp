@@ -350,7 +350,8 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr) 
 	Event eventPrev = eventInitial;
 	Event event = eventBase;
 	double timeStampFactor = 1000'000. / GetSampleRate() / nSampler_;
-	for (int iEvent = 0; iEvent < nEventsToPrint && !eventIter.IsDone(); ++iEvent, eventIter.Next(event)) {
+	bool contFlag = true;
+	for (int iEvent = 0; iEvent < nEventsToPrint && contFlag; ++iEvent, contFlag = eventIter.Next(event)) {
 		double delta = static_cast<double>(event.GetTimeStamp() - eventPrev.GetTimeStamp()) * timeStampFactor;
 		int nDelta = static_cast<int>(delta / usecReso_);
 		if (iEvent == 0 || nDelta >= 40) {
@@ -475,7 +476,8 @@ const LogicAnalyzer& LogicAnalyzer::PlotWave() const
 	Event eventPrev = eventBase;
 	Event event = eventBase;
 	TelePlot::Telemetry t = tp.Add("GPIO1");
-	for (int iEvent = 0; iEvent < 50 && !eventIter.IsDone(); ++iEvent, eventIter.Next(event)) {
+	bool contFlag = true;
+	for (int iEvent = 0; iEvent < 50 && contFlag; ++iEvent, contFlag = eventIter.Next(event)) {
 		double delta = static_cast<double>(event.GetTimeStamp() - eventPrev.GetTimeStamp()) * timeStampFactor;
 		int nDelta = static_cast<int>(delta * 10 / usecReso_);
 		if (nDelta > 100) nDelta = 100;
@@ -653,7 +655,6 @@ LogicAnalyzer::EventIterator::EventIterator(const EventIterator& eventIter) :
 	timeStampOffsetTbl_{},
 	pinBitmapPrev_{eventIter.pinBitmapPrev_},
 	firstFlag_{eventIter.firstFlag_},
-	doneFlag_{eventIter.doneFlag_},
 	timeStampOffsetIncr_{eventIter.timeStampOffsetIncr_}
 {
 	::memcpy(iRawEventTbl_, eventIter.iRawEventTbl_, sizeof(iRawEventTbl_));
@@ -663,22 +664,26 @@ LogicAnalyzer::EventIterator::EventIterator(const EventIterator& eventIter) :
 LogicAnalyzer::EventIterator::EventIterator(const LogicAnalyzer& logicAnalyzer) :
 	logicAnalyzer_{logicAnalyzer},
 	pinMin_{logicAnalyzer.GetSamplingInfo().GetPinMin()}, nBitsPinBitmap_{logicAnalyzer.GetSamplingInfo().CountBits()},
-	pinBitmapPrev_{0}, firstFlag_{true}, doneFlag_{false}, timeStampOffsetIncr_{0}
+	pinBitmapPrev_{0}, firstFlag_{true}, timeStampOffsetIncr_{0}
 {
 	int nBitsTimeStamp = 32 - nBitsPinBitmap_;
 	timeStampOffsetIncr_ = 1LL << nBitsTimeStamp;
 	Rewind();
 }
 
+bool LogicAnalyzer::EventIterator::HasMore() const
+{
+	for (int iSampler = 0; iSampler < logicAnalyzer_.GetSamplerCount(); ++iSampler) {
+		if (iRawEventTbl_[iSampler] < logicAnalyzer_.GetRawEventCount(iSampler)) return true; // at least one sampler has more events
+	}
+	return false;
+}
+
 bool LogicAnalyzer::EventIterator::Next(Event& event)
 {
-	if (doneFlag_) return false;
 	int iSampler;
 	const RawEvent* pRawEvent = NextRawEvent(&iSampler);
-	if (!pRawEvent) {
-		doneFlag_ = true;
-		return false;
-	}
+	if (!pRawEvent) return false;
 	uint64_t timeStamp = (timeStampOffsetTbl_[iSampler] + pRawEvent->GetTimeStamp(nBitsPinBitmap_)) * logicAnalyzer_.GetSamplerCount() + iSampler;
 	uint32_t pinBitmap = pRawEvent->GetPinBitmap(nBitsPinBitmap_) << pinMin_;
 	event = Event(timeStamp, pinBitmap);
@@ -695,7 +700,6 @@ void LogicAnalyzer::EventIterator::Rewind()
 	}
 	pinBitmapPrev_ = 0;
 	firstFlag_= true;
-	doneFlag_ = false;
 }
 
 void LogicAnalyzer::EventIterator::Skip(int nEvents)
@@ -767,6 +771,8 @@ const LogicAnalyzer::RawEvent& LogicAnalyzer::EventIterator::GetRawEvent(int iSa
 
 //------------------------------------------------------------------------------
 // LogicAnalyzer::SigrokAdapter
+// see git://sigrok.org/libsigrok.git
+//   /src/hardware/raspberrypi-pico/protocol.c
 //------------------------------------------------------------------------------
 LogicAnalyzer::SigrokAdapter::SigrokAdapter(LogicAnalyzer& logicAnalyzer, Stream& stream) :
 		logicAnalyzer_{logicAnalyzer}, stream_{stream}, stat_{Stat::Initial},
