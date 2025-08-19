@@ -1,20 +1,20 @@
 //==============================================================================
-// ProtocolAnalyzer_I2C.cpp
+// ProtocolDecoder_I2C.cpp
 //==============================================================================
-#include "ProtocolAnalyzer_I2C.h"
+#include "ProtocolDecoder_I2C.h"
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// ProtocolAnalyzer_I2C
+// ProtocolDecoder_I2C
 //------------------------------------------------------------------------------
-ProtocolAnalyzer_I2C::Factory ProtocolAnalyzer_I2C::factory_;
+ProtocolDecoder_I2C::Factory ProtocolDecoder_I2C::factory_;
 
-ProtocolAnalyzer_I2C::ProtocolAnalyzer_I2C(const LogicAnalyzer& logicAnalyzer, const char* name) :
-	ProtocolAnalyzer(logicAnalyzer, name), annotator_(prop_), prop_{GPIO::InvalidPin, GPIO::InvalidPin}
+ProtocolDecoder_I2C::ProtocolDecoder_I2C(const LogicAnalyzer& logicAnalyzer, const char* name) :
+	ProtocolDecoder(logicAnalyzer, name), annotator_(prop_), prop_{GPIO::InvalidPin, GPIO::InvalidPin}
 {}
 
-bool ProtocolAnalyzer_I2C::EvalSubcmd(Printable& terr, const char* subcmd)
+bool ProtocolDecoder_I2C::EvalSubcmd(Printable& terr, const char* subcmd)
 {
 	char* endptr = nullptr;;
 	const char* value = nullptr;
@@ -39,7 +39,7 @@ bool ProtocolAnalyzer_I2C::EvalSubcmd(Printable& terr, const char* subcmd)
 	return false;
 }
 
-bool ProtocolAnalyzer_I2C::CheckValidity(Printable& terr)
+bool ProtocolDecoder_I2C::CheckValidity(Printable& terr)
 {
 	bool rtn = true;
 	if (prop_.pinSDA == GPIO::InvalidPin) {
@@ -53,28 +53,28 @@ bool ProtocolAnalyzer_I2C::CheckValidity(Printable& terr)
 	return rtn;
 }
 
-void ProtocolAnalyzer_I2C::AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol)
+void ProtocolDecoder_I2C::AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol)
 {
 	annotator_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
 }
 
-void ProtocolAnalyzer_I2C::AnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol)
+void ProtocolDecoder_I2C::AnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol)
 {
 	//annotator_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
 }
 
 //------------------------------------------------------------------------------
-// ProtocolAnalyzer_I2C::Core
+// ProtocolDecoder_I2C::Core
 //------------------------------------------------------------------------------
-ProtocolAnalyzer_I2C::Core::Core(const Core& core) : prop_{core.prop_}, stat_{core.stat_}, field_{core.field_},
+ProtocolDecoder_I2C::Core::Core(const Core& core) : prop_{core.prop_}, stat_{core.stat_}, field_{core.field_},
 	nBitsAccum_{core.nBitsAccum_}, bitAccum_{core.bitAccum_}, signalSDAPrev_{core.signalSDAPrev_}
 {}
 
-ProtocolAnalyzer_I2C::Core::Core(const Property& prop) : prop_{prop}, stat_{Stat::WaitForStable}, field_{Field::Address},
+ProtocolDecoder_I2C::Core::Core(const Property& prop) : prop_{prop}, stat_{Stat::WaitForStable}, field_{Field::Address},
 	nBitsAccum_{0}, bitAccum_{0}, signalSDAPrev_{false}
 {}
 
-void ProtocolAnalyzer_I2C::Core::ProcessEvent(const EventIterator& eventIter, const Event& event)
+void ProtocolDecoder_I2C::Core::ProcessEvent(const EventIterator& eventIter, const Event& event)
 {
 	switch (stat_) {
 	case Stat::WaitForStable: {
@@ -138,13 +138,13 @@ void ProtocolAnalyzer_I2C::Core::ProcessEvent(const EventIterator& eventIter, co
 }
 
 //------------------------------------------------------------------------------
-// ProtocolAnalyzer_I2C::Core_Annotator
+// ProtocolDecoder_I2C::Core_Annotator
 //------------------------------------------------------------------------------
-ProtocolAnalyzer_I2C::Core_Annotator::Core_Annotator(const Property& prop) :
+ProtocolDecoder_I2C::Core_Annotator::Core_Annotator(const Property& prop) :
 		Core(prop), buffLine_{nullptr}, lenBuffLine_{0}, piCol_{nullptr}, adv_{false, 0}
 {}
 
-void ProtocolAnalyzer_I2C::Core_Annotator::ProcessEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int* piCol)
+void ProtocolDecoder_I2C::Core_Annotator::ProcessEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int* piCol)
 {
 	buffLine_ = buffLine;
 	lenBuffLine_ = lenBuffLine;
@@ -152,13 +152,13 @@ void ProtocolAnalyzer_I2C::Core_Annotator::ProcessEvent(const EventIterator& eve
 	Core::ProcessEvent(eventIter, event);
 }
 
-void ProtocolAnalyzer_I2C::Core_Annotator::OnStart()
+void ProtocolDecoder_I2C::Core_Annotator::OnStart()
 {
 	int& iCol = *piCol_;
 	iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " Start");
 }
 
-void ProtocolAnalyzer_I2C::Core_Annotator::OnBitAccumBegin(const EventIterator& eventIter)
+void ProtocolDecoder_I2C::Core_Annotator::OnBitAccumBegin(const EventIterator& eventIter)
 {
 	Core_BitAccumAdv coreAdv(*this);
 	EventIterator eventIterAdv(eventIter);
@@ -171,19 +171,19 @@ void ProtocolAnalyzer_I2C::Core_Annotator::OnBitAccumBegin(const EventIterator& 
 	adv_.bitAccum = coreAdv.GetBitAccumAdv();
 }
 
-void ProtocolAnalyzer_I2C::Core_Annotator::OnStop()
+void ProtocolDecoder_I2C::Core_Annotator::OnStop()
 {
 	int& iCol = *piCol_;
 	iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " Stop");
 }
 
-void ProtocolAnalyzer_I2C::Core_Annotator::OnRepeatedStart()
+void ProtocolDecoder_I2C::Core_Annotator::OnRepeatedStart()
 {
 	int& iCol = *piCol_;
 	iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " Repeated Start");
 }
 
-void ProtocolAnalyzer_I2C::Core_Annotator::OnBit(Field field, int iBit, bool bitValue)
+void ProtocolDecoder_I2C::Core_Annotator::OnBit(Field field, int iBit, bool bitValue)
 {
 	int& iCol = *piCol_;
 	if (iBit == 7 && field == Field::Address) {
@@ -202,7 +202,7 @@ void ProtocolAnalyzer_I2C::Core_Annotator::OnBit(Field field, int iBit, bool bit
 	}
 }
 
-void ProtocolAnalyzer_I2C::Core_Annotator::OnBitAccumComplete(Field field, uint16_t bitAccum)
+void ProtocolDecoder_I2C::Core_Annotator::OnBitAccumComplete(Field field, uint16_t bitAccum)
 {
 	adv_.validFlag = false;
 }

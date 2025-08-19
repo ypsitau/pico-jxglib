@@ -276,7 +276,7 @@ int LogicAnalyzer::GetRawEventCountMax() const
 
 const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr) const
 {
-	if (pProtocolAnalyzer_ && !pProtocolAnalyzer_->CheckValidity(terr)) return *this;
+	if (pProtocolDecoder_ && !pProtocolDecoder_->CheckValidity(terr)) return *this;
 	int iCol = 0;
 	char buffLine[256];
 	EventIterator eventIter(*this);
@@ -293,11 +293,11 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr) 
 		iCol = 0;
 	};
 	auto flushLineWithEvent = [&](const Event& event) {
-		if (pProtocolAnalyzer_) pProtocolAnalyzer_->AnnotateWaveEvent(eventIter, event, buffLine, sizeof(buffLine), &iCol);
+		if (pProtocolDecoder_) pProtocolDecoder_->AnnotateWaveEvent(eventIter, event, buffLine, sizeof(buffLine), &iCol);
 		flushLine();
 	};
 	auto flushLineWithStreak = [&]() {
-		if (pProtocolAnalyzer_) pProtocolAnalyzer_->AnnotateWaveStreak(buffLine, sizeof(buffLine), &iCol);
+		if (pProtocolDecoder_) pProtocolDecoder_->AnnotateWaveStreak(buffLine, sizeof(buffLine), &iCol);
 		flushLine();
 	};
 	auto printHeader = [&]() {
@@ -410,18 +410,18 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr) 
 	return *this;
 }
 
-ProtocolAnalyzer* LogicAnalyzer::SetProtocolAnalyzer(const char* protocolName)
+ProtocolDecoder* LogicAnalyzer::SetProtocolDecoder(const char* protocolName)
 {
-	if (pProtocolAnalyzer_ && ::strcasecmp(pProtocolAnalyzer_->GetName(), protocolName) == 0) {
+	if (pProtocolDecoder_ && ::strcasecmp(pProtocolDecoder_->GetName(), protocolName) == 0) {
 		// nothing to do
 	} else {
-		pProtocolAnalyzer_.reset();
-		ProtocolAnalyzer::Factory* pFactory = ProtocolAnalyzer::Factory::Find(protocolName);
+		pProtocolDecoder_.reset();
+		ProtocolDecoder::Factory* pFactory = ProtocolDecoder::Factory::Find(protocolName);
 		if (pFactory) {
-			pProtocolAnalyzer_.reset(pFactory->Create(*this));
+			pProtocolDecoder_.reset(pFactory->Create(*this));
 		}
 	}
-	return pProtocolAnalyzer_.get();
+	return pProtocolDecoder_.get();
 }
 
 // This method destroys the sampling buffers and creates a set of SignalReport. 

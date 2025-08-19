@@ -1,21 +1,21 @@
 //==============================================================================
-// ProtocolAnalyzer_I2C.h
+// ProtocolDecoder_I2C.h
 //==============================================================================
 #include "jxglib/LogicAnalyzer.h"
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// ProtocolAnalyzer_I2C
+// ProtocolDecoder_I2C
 //------------------------------------------------------------------------------
-class ProtocolAnalyzer_I2C : public ProtocolAnalyzer {
+class ProtocolDecoder_I2C : public ProtocolDecoder {
 public:
-	class Factory : public ProtocolAnalyzer::Factory {
+	class Factory : public ProtocolDecoder::Factory {
 	public:
-		Factory() : ProtocolAnalyzer::Factory("i2c") {}
+		Factory() : ProtocolDecoder::Factory("i2c") {}
 	public:
-		virtual ProtocolAnalyzer* Create(const LogicAnalyzer& logicAnalyzer) override {
-			return new ProtocolAnalyzer_I2C(logicAnalyzer, name_);
+		virtual ProtocolDecoder* Create(const LogicAnalyzer& logicAnalyzer) override {
+			return new ProtocolDecoder_I2C(logicAnalyzer, name_);
 		}
 	};
 public:
@@ -89,7 +89,7 @@ private:
 private:
 	static Factory factory_;
 public:
-	ProtocolAnalyzer_I2C(const LogicAnalyzer& logicAnalyzer, const char* name);
+	ProtocolDecoder_I2C(const LogicAnalyzer& logicAnalyzer, const char* name);
 public:
 	virtual bool EvalSubcmd(Printable& terr, const char* subcmd);
 	virtual bool CheckValidity(Printable& terr);

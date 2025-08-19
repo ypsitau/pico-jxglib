@@ -1,5 +1,5 @@
 //==============================================================================
-// ProtocolAnalyzer_SPI.h
+// ProtocolDecoder_SPI.h
 //==============================================================================
 #pragma once
 #include "jxglib/LogicAnalyzer.h"
@@ -7,16 +7,16 @@
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// ProtocolAnalyzer_SPI
+// ProtocolDecoder_SPI
 //------------------------------------------------------------------------------
-class ProtocolAnalyzer_SPI : public ProtocolAnalyzer {
+class ProtocolDecoder_SPI : public ProtocolDecoder {
 public:
-	class Factory : public ProtocolAnalyzer::Factory {
+	class Factory : public ProtocolDecoder::Factory {
 	public:
-		Factory() : ProtocolAnalyzer::Factory("spi") {}
+		Factory() : ProtocolDecoder::Factory("spi") {}
 	public:
-		virtual ProtocolAnalyzer* Create(const LogicAnalyzer& logicAnalyzer) override {
-			return new ProtocolAnalyzer_SPI(logicAnalyzer, name_);
+		virtual ProtocolDecoder* Create(const LogicAnalyzer& logicAnalyzer) override {
+			return new ProtocolDecoder_SPI(logicAnalyzer, name_);
 		}
 	};
 public:
@@ -100,7 +100,7 @@ private:
 private:
 	static Factory factory_;
 public:
-	ProtocolAnalyzer_SPI(const LogicAnalyzer& logicAnalyzer, const char* name);
+	ProtocolDecoder_SPI(const LogicAnalyzer& logicAnalyzer, const char* name);
 public:
 	virtual bool EvalSubcmd(Printable& terr, const char* subcmd);
 	virtual bool CheckValidity(Printable& terr);

@@ -13,7 +13,7 @@
 
 namespace jxglib {
 
-class ProtocolAnalyzer;
+class ProtocolDecoder;
 
 //------------------------------------------------------------------------------
 // LogicAnalyzer
@@ -333,7 +333,7 @@ private:
 	float heapRatioRequested_;
 	int clocksPerLoop_;
 	float usecReso_;
-	std::unique_ptr<ProtocolAnalyzer> pProtocolAnalyzer_;
+	std::unique_ptr<ProtocolDecoder> pProtocolDecoder_;
 public:
 	LogicAnalyzer();
 	~LogicAnalyzer();
@@ -373,7 +373,7 @@ public:
 	int GetRawEventCount() const;
 	int GetRawEventCountMax() const;
 	const LogicAnalyzer& PrintWave(Printable& tout, Printable& terr) const;
-	ProtocolAnalyzer* SetProtocolAnalyzer(const char* protocolName);
+	ProtocolDecoder* SetProtocolDecoder(const char* protocolName);
 	const LogicAnalyzer& PlotWave() const;
 	const LogicAnalyzer& PrintSettings(Printable& tout) const;
 public:
@@ -381,9 +381,9 @@ public:
 };
 
 //------------------------------------------------------------------------------
-// ProtocolAnalyzer
+// ProtocolDecoder
 //------------------------------------------------------------------------------
-class ProtocolAnalyzer {
+class ProtocolDecoder {
 public:
 	using EventIterator = LogicAnalyzer::EventIterator;
 	using Event = LogicAnalyzer::Event;
@@ -404,14 +404,14 @@ public:
 		static Factory* GetHead() { return pFactoryHead_; }
 		static Factory* Find(const char* name);
 	public:
-		virtual ProtocolAnalyzer* Create(const LogicAnalyzer& logicAnalyzer) = 0;
+		virtual ProtocolDecoder* Create(const LogicAnalyzer& logicAnalyzer) = 0;
 	};
 protected:
 	const LogicAnalyzer& logicAnalyzer_;
 	const char* name_;
 public:
-	ProtocolAnalyzer(const LogicAnalyzer& logicAnalyzer, const char* name) : logicAnalyzer_{logicAnalyzer}, name_{name} {}
-	virtual ~ProtocolAnalyzer() = default;
+	ProtocolDecoder(const LogicAnalyzer& logicAnalyzer, const char* name) : logicAnalyzer_{logicAnalyzer}, name_{name} {}
+	virtual ~ProtocolDecoder() = default;
 public:
 	const char* GetName() const { return name_; }
 public:

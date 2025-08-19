@@ -7,7 +7,7 @@ jxglib::LogicAnalyzer& ShellCmd_LogicAnalyzer_GetLogicAnalyzer();
 
 namespace jxglib::ShellCmd_LogicAnalyzer {
 
-ShellCmd(la, "Logic ProtocolAnalyzer")
+ShellCmd(la, "Logic ProtocolDecoder")
 {
 	LogicAnalyzer& logicAnalyzer = ShellCmd_LogicAnalyzer_GetLogicAnalyzer();
 	static const Arg::Opt optTbl[] = {
@@ -192,19 +192,19 @@ ShellCmd(la, "Logic ProtocolAnalyzer")
 			const char* protocolName = value;
 			if (!protocolName) {
 				terr.Printf("available protocols:");
-				for (const ProtocolAnalyzer::Factory* pFactory = ProtocolAnalyzer::Factory::GetHead(); pFactory; pFactory = pFactory->GetNext()) {
+				for (const ProtocolDecoder::Factory* pFactory = ProtocolDecoder::Factory::GetHead(); pFactory; pFactory = pFactory->GetNext()) {
 					terr.Printf(" %s", pFactory->GetName());
 				}
 				terr.Println();
 				return false;
 			}
-			ProtocolAnalyzer* pProtocolAnalyzer = logicAnalyzer.SetProtocolAnalyzer(protocolName);
-			if (!pProtocolAnalyzer) {
+			ProtocolDecoder* pProtocolDecoder = logicAnalyzer.SetProtocolDecoder(protocolName);
+			if (!pProtocolDecoder) {
 				terr.Printf("unknown protocol: %s\n", protocolName);
 				return false;
 			}
 			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
-				if (!pProtocolAnalyzer->EvalSubcmd(terr, pSubcmdChild->GetProc())) return false;
+				if (!pProtocolDecoder->EvalSubcmd(terr, pSubcmdChild->GetProc())) return false;
 			}
 		} else {
 			tout.Printf("unknown subcommand: %s\n", subcmd);

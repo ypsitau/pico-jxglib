@@ -1,5 +1,5 @@
 //==============================================================================
-// ProtocolAnalyzer_UART.h
+// ProtocolDecoder_UART.h
 //==============================================================================
 #pragma once
 #include "jxglib/LogicAnalyzer.h"
@@ -7,16 +7,16 @@
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// ProtocolAnalyzer_UART
+// ProtocolDecoder_UART
 //------------------------------------------------------------------------------
-class ProtocolAnalyzer_UART : public ProtocolAnalyzer {
+class ProtocolDecoder_UART : public ProtocolDecoder {
 public:
-	class Factory : public ProtocolAnalyzer::Factory {
+	class Factory : public ProtocolDecoder::Factory {
 	public:
-		Factory() : ProtocolAnalyzer::Factory("uart") {}
+		Factory() : ProtocolDecoder::Factory("uart") {}
 	public:
-		virtual ProtocolAnalyzer* Create(const LogicAnalyzer& logicAnalyzer) override {
-			return new ProtocolAnalyzer_UART(logicAnalyzer, name_);
+		virtual ProtocolDecoder* Create(const LogicAnalyzer& logicAnalyzer) override {
+			return new ProtocolDecoder_UART(logicAnalyzer, name_);
 		}
 	};
 public:
@@ -83,7 +83,7 @@ private:
 private:
 	static Factory factory_;
 public:
-	ProtocolAnalyzer_UART(const LogicAnalyzer& logicAnalyzer, const char* name);
+	ProtocolDecoder_UART(const LogicAnalyzer& logicAnalyzer, const char* name);
 public:
 	virtual bool EvalSubcmd(Printable& terr, const char* subcmd);
 	virtual bool CheckValidity(Printable& terr);

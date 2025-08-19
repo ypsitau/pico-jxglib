@@ -1,21 +1,21 @@
 //==============================================================================
-// ProtocolAnalyzer_SPI.cpp
+// ProtocolDecoder_SPI.cpp
 //==============================================================================
-#include "ProtocolAnalyzer_SPI.h"
+#include "ProtocolDecoder_SPI.h"
 #include <cstdlib>
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// ProtocolAnalyzer_SPI
+// ProtocolDecoder_SPI
 //------------------------------------------------------------------------------
-ProtocolAnalyzer_SPI::Factory ProtocolAnalyzer_SPI::factory_;
+ProtocolDecoder_SPI::Factory ProtocolDecoder_SPI::factory_;
 
-ProtocolAnalyzer_SPI::ProtocolAnalyzer_SPI(const LogicAnalyzer& logicAnalyzer, const char* name) :
-	ProtocolAnalyzer(logicAnalyzer, name), annotator_(prop_), prop_{GPIO::InvalidPin, GPIO::InvalidPin, GPIO::InvalidPin, GPIO::InvalidPin}
+ProtocolDecoder_SPI::ProtocolDecoder_SPI(const LogicAnalyzer& logicAnalyzer, const char* name) :
+	ProtocolDecoder(logicAnalyzer, name), annotator_(prop_), prop_{GPIO::InvalidPin, GPIO::InvalidPin, GPIO::InvalidPin, GPIO::InvalidPin}
 {}
 
-bool ProtocolAnalyzer_SPI::EvalSubcmd(Printable& terr, const char* subcmd)
+bool ProtocolDecoder_SPI::EvalSubcmd(Printable& terr, const char* subcmd)
 {
 	char* endptr = nullptr;
 	const char* value = nullptr;
@@ -56,7 +56,7 @@ bool ProtocolAnalyzer_SPI::EvalSubcmd(Printable& terr, const char* subcmd)
 	return false;
 }
 
-bool ProtocolAnalyzer_SPI::CheckValidity(Printable& terr)
+bool ProtocolDecoder_SPI::CheckValidity(Printable& terr)
 {
     bool rtn = true;
 	if (prop_.pinMOSI == GPIO::InvalidPin) {
@@ -78,28 +78,28 @@ bool ProtocolAnalyzer_SPI::CheckValidity(Printable& terr)
 	return rtn;
 }
 
-void ProtocolAnalyzer_SPI::AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol)
+void ProtocolDecoder_SPI::AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol)
 {
 	annotator_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
 }
 
-void ProtocolAnalyzer_SPI::AnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol)
+void ProtocolDecoder_SPI::AnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol)
 {
 	//annotator_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
 }
 
 //------------------------------------------------------------------------------
-// ProtocolAnalyzer_SPI::Core
+// ProtocolDecoder_SPI::Core
 //------------------------------------------------------------------------------
-ProtocolAnalyzer_SPI::Core::Core(const Core& core) : prop_{core.prop_}, stat_{core.stat_}, field_{core.field_},
+ProtocolDecoder_SPI::Core::Core(const Core& core) : prop_{core.prop_}, stat_{core.stat_}, field_{core.field_},
 	nBitsAccum_{core.nBitsAccum_}, bitAccum_{core.bitAccum_}, csPrev_{core.csPrev_}, sckPrev_{core.sckPrev_}
 {}
 
-ProtocolAnalyzer_SPI::Core::Core(const Property& prop) : prop_{prop}, stat_{Stat::WaitForStable}, field_{Field::Data},
+ProtocolDecoder_SPI::Core::Core(const Property& prop) : prop_{prop}, stat_{Stat::WaitForStable}, field_{Field::Data},
 	nBitsAccum_{0}, bitAccum_{0}, csPrev_{true}, sckPrev_{false}
 {}
 
-void ProtocolAnalyzer_SPI::Core::ProcessEvent(const EventIterator& eventIter, const Event& event)
+void ProtocolDecoder_SPI::Core::ProcessEvent(const EventIterator& eventIter, const Event& event)
 {
 	// Read current SPI pin states
 	bool cs = event.IsPinHigh(prop_.pinCS);
@@ -156,13 +156,13 @@ void ProtocolAnalyzer_SPI::Core::ProcessEvent(const EventIterator& eventIter, co
 }
 
 //------------------------------------------------------------------------------
-// ProtocolAnalyzer_SPI::Core_Annotator
+// ProtocolDecoder_SPI::Core_Annotator
 //------------------------------------------------------------------------------
-ProtocolAnalyzer_SPI::Core_Annotator::Core_Annotator(const Property& prop) :
+ProtocolDecoder_SPI::Core_Annotator::Core_Annotator(const Property& prop) :
 		Core(prop), buffLine_{nullptr}, lenBuffLine_{0}, piCol_{nullptr}, adv_{false, 0, 0}
 {}
 
-void ProtocolAnalyzer_SPI::Core_Annotator::ProcessEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int* piCol)
+void ProtocolDecoder_SPI::Core_Annotator::ProcessEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int* piCol)
 {
 	buffLine_ = buffLine;
 	lenBuffLine_ = lenBuffLine;
@@ -170,24 +170,24 @@ void ProtocolAnalyzer_SPI::Core_Annotator::ProcessEvent(const EventIterator& eve
 	Core::ProcessEvent(eventIter, event);
 }
 
-void ProtocolAnalyzer_SPI::Core_Annotator::OnStart()
+void ProtocolDecoder_SPI::Core_Annotator::OnStart()
 {
 	int& iCol = *piCol_;
 	iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " Start");
 }
 
-void ProtocolAnalyzer_SPI::Core_Annotator::OnBitAccumBegin(const EventIterator& eventIter)
+void ProtocolDecoder_SPI::Core_Annotator::OnBitAccumBegin(const EventIterator& eventIter)
 {
 	// 省略: 必要に応じて実装
 }
 
-void ProtocolAnalyzer_SPI::Core_Annotator::OnStop()
+void ProtocolDecoder_SPI::Core_Annotator::OnStop()
 {
 	int& iCol = *piCol_;
 	iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " Stop");
 }
 
-void ProtocolAnalyzer_SPI::Core_Annotator::OnBit(Field field, int iBit, bool bitMOSI, bool bitMISO)
+void ProtocolDecoder_SPI::Core_Annotator::OnBit(Field field, int iBit, bool bitMOSI, bool bitMISO)
 {
 	int& iCol = *piCol_;
 	if (iBit == 7) {
@@ -196,7 +196,7 @@ void ProtocolAnalyzer_SPI::Core_Annotator::OnBit(Field field, int iBit, bool bit
 	// 必要に応じてMISOも表示
 }
 
-void ProtocolAnalyzer_SPI::Core_Annotator::OnBitAccumComplete(Field field, uint16_t bitAccumMOSI, uint16_t bitAccumMISO)
+void ProtocolDecoder_SPI::Core_Annotator::OnBitAccumComplete(Field field, uint16_t bitAccumMOSI, uint16_t bitAccumMISO)
 {
 	adv_.validFlag = false;
 	int& iCol = *piCol_;
