@@ -147,7 +147,7 @@ LABOPlatform::LABOPlatform(int bytesFlash) :
 	streamApplication_(deviceController_, "StreamApplication", 0x84, 0x05, 0x85),
 	telePlot_(streamApplication_),
 	attachStdioFlag_{false},
-	sigrokAdapter_(logicAnalyzer_, streamApplication_),
+	sigrokAdapter_(logicAnalyzer_, streamTerminal_, streamApplication_),
 	stdio_driver_ {
 		out_chars:						func_out_chars,
 		out_flush:						func_out_flush,

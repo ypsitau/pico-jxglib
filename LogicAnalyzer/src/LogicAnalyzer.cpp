@@ -622,6 +622,7 @@ void LogicAnalyzer::SamplingInfo::Update(const PrintInfo& printInfo)
 {
 	pinBitmapEnabled_ = 0;
 	pinMin_ = GPIO::NumPins;
+	nPins_ = printInfo.nPins;
 	for (int i = 0; i < printInfo.nPins; ++i) {
 		uint pin = printInfo.pinTbl[i];
 		if (pin != -1) {
@@ -788,8 +789,8 @@ const LogicAnalyzer::RawEvent& LogicAnalyzer::EventIterator::GetRawEvent(int iSa
 // see git://sigrok.org/libsigrok.git
 //   /src/hardware/raspberrypi-pico/protocol.c
 //------------------------------------------------------------------------------
-LogicAnalyzer::SigrokAdapter::SigrokAdapter(LogicAnalyzer& logicAnalyzer, Stream& stream) :
-	logicAnalyzer_{logicAnalyzer}, eventIter_{logicAnalyzer_}, stream_{stream}, stat_{Stat::Initial},
+LogicAnalyzer::SigrokAdapter::SigrokAdapter(LogicAnalyzer& logicAnalyzer, Stream& streamTerminal, Stream& streamApplication) :
+	logicAnalyzer_{logicAnalyzer}, eventIter_{logicAnalyzer_}, terr_{streamTerminal}, stream_{streamApplication}, stat_{Stat::Initial},
 	nAnalogChannels_{0}, uvoltScale_{0}, uvoltOffset_{0},
 	enableChannelFlag_{false}, iChannel_{0}, sampleRate_{0}, nSamples_{0}
 {
@@ -806,6 +807,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 			// nothing to do
 		} else if (ch == '*') {		// Reset
 			eventIter_.Rewind();
+			event_.Invalidate();
 		} else if (ch == '+') {		// Abort
 			// nothing to do
 		} else if (ch == 'i') {		// Identify
@@ -823,6 +825,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		} else if (ch == 'D') {		// Digital Channel Enable
 			stat_ = Stat::DigitalChannelEnable;
 		} else if (ch == 'F') {		// Fixed Sample Mode
+			logicAnalyzer_.Enable();
 			stat_ = Stat::FixedSampleMode;
 		} else if (ch == 'C') {		// Continuous Sample Mode
 			stat_ = Stat::ContinuousSampleMode;
@@ -841,7 +844,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		if (periodicFlag) {
 			// nothing to do
 		} else if (ch == '\n') {
-			int nDigitalChannels = logicAnalyzer_.GetSamplingInfo().CountBits();
+			int nDigitalChannels = logicAnalyzer_.GetSamplingInfo().CountPins();
 			stream_.Printf("SRPICO,A%02d1D%02d,%02d", nAnalogChannels_, nDigitalChannels, versionNumber_).Flush();
 		}
 		stat_ = Stat::Initial;
@@ -939,13 +942,19 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 	}
 	case Stat::FixedSampleMode: {
 		if (periodicFlag) {
-			Event event;
-			while (eventIter_.Next(event)) {
-				//uint8_t data = 0x80 | (1 << (i % 4));
-				//stream_.Write(&data, 1);
-				eventPrev_ = event;
+			Event eventNext;
+			while (eventIter_.Next(eventNext)) {
+				if (event_.IsValid()) {
+					SendRLEReport(event_, eventNext);
+					SendSignalReport(event_);
+				}
+				event_ = eventNext;
 			}
 		} else if (ch == '+') {		// abort
+			if (event_.IsValid()) {
+				SendSignalReport(event_);
+			}
+			stream_.Flush();
 			stat_ = Stat::Initial;
 		}
 		break;
@@ -955,6 +964,22 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 	}
 	default:
 		break;
+	}
+}
+
+void LogicAnalyzer::SigrokAdapter::SendRLEReport(const Event& event, const Event& eventNext)
+{
+	uint8_t data = 4 + 0x2f;
+	stream_.Write(&data, 1);
+}
+
+void LogicAnalyzer::SigrokAdapter::SendSignalReport(const Event& event)
+{
+	uint32_t bitmap = event.GetPackedBitmap(logicAnalyzer_.GetSamplingInfo());
+	int nPins = logicAnalyzer_.GetSamplingInfo().CountPins();
+	for ( ; nPins > 0; nPins -= 7, bitmap >>= 7) {
+		uint8_t data = 0x80 | static_cast<uint8_t>(bitmap & 0x7f);
+		stream_.Write(&data, 1);
 	}
 }
 

@@ -68,6 +68,7 @@ public:
 		Event(const Event& event) : timeStamp_{event.timeStamp_}, pinBitmap_{event.pinBitmap_} {}
 		Event(uint64_t timeStamp = static_cast<uint64_t>(-1), uint32_t pinBitmap = 0) : timeStamp_{timeStamp}, pinBitmap_{pinBitmap} {}
 	public:
+		void Invalidate() { timeStamp_ = static_cast<uint64_t>(-1); pinBitmap_ = 0; }
 		bool IsValid() const { return timeStamp_ != static_cast<uint64_t>(-1); }
 		uint64_t GetTimeStamp() const { return timeStamp_; }
 		uint32_t GetPinBitmap() const { return pinBitmap_; }
@@ -168,12 +169,15 @@ public:
 		bool enabledFlag_;
 		uint32_t pinBitmapEnabled_;
 		uint pinMin_;
+		int nPins_;
 	public:
-		SamplingInfo() : enabledFlag_{false}, pinBitmapEnabled_{0}, pinMin_{0} {}
+		SamplingInfo() : enabledFlag_{false}, pinBitmapEnabled_{0}, pinMin_{0}, nPins_{0} {}
+	public:
 		void SetEnabled(bool enabledFlag) { enabledFlag_ = enabledFlag; }
 		bool IsEnabled() const { return enabledFlag_; }
 		uint32_t GetPinBitmapEnabled() const { return pinBitmapEnabled_; }
 		uint GetPinMin() const { return pinMin_; }	
+		int CountPins() const { return nPins_; }
 		bool HasEnabledPins() const { return pinBitmapEnabled_ != 0; }
 		bool IsPinEnabled(uint pin) const { return ((pinBitmapEnabled_ << pinMin_) & (1u << pin)) != 0; }
 		void Update(const PrintInfo& printInfo);
@@ -196,7 +200,8 @@ public:
 	private:
 		LogicAnalyzer& logicAnalyzer_;
 		EventIterator eventIter_;
-		Event eventPrev_;
+		Event event_;
+		Stream& terr_;
 		Stream& stream_;
 		Stat stat_;
 		int nAnalogChannels_;
@@ -207,11 +212,14 @@ public:
 		int sampleRate_;
 		int nSamples_;
 	public:
-		SigrokAdapter(LogicAnalyzer& logicAnalyzer, Stream& stream);
+		SigrokAdapter(LogicAnalyzer& logicAnalyzer, Stream& streamTerminal, Stream& streamApplication);
 	public:
 		// virtual functions of Tickable
 		virtual const char* GetTickableName() const override { return "LogicAnalyzer::SigrokAdapter"; }
 		virtual void OnTick() override;
+	private:
+		void SendRLEReport(const Event& event, const Event& eventNext);
+		void SendSignalReport(const Event& event);
 	};
 public:
 	class SUMPAdapter : public Tickable {
