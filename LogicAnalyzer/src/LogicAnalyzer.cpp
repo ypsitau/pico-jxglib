@@ -644,6 +644,20 @@ int LogicAnalyzer::SamplingInfo::CountBits() const
 //------------------------------------------------------------------------------
 const LogicAnalyzer::Event LogicAnalyzer::Event::None;
 
+uint32_t LogicAnalyzer::Event::GetPackedBitmap(const SamplingInfo& samplingInfo) const
+{
+	uint32_t bitmap = 0;
+	int iBit = 0;
+	uint32_t pinBitmapEnabled = samplingInfo.GetPinBitmapEnabled();
+	for (uint pin = 0; pinBitmapEnabled; pinBitmapEnabled >>= 1, ++pin) {
+		if (pinBitmapEnabled & 1) {
+			if (IsPinHigh(pin)) bitmap |= 1u << iBit;
+			iBit++;
+		}
+	}
+	return bitmap;
+}
+
 //------------------------------------------------------------------------------
 // LogicAnalyzer::EventIterator
 //------------------------------------------------------------------------------
@@ -662,13 +676,23 @@ LogicAnalyzer::EventIterator::EventIterator(const EventIterator& eventIter) :
 }
 
 LogicAnalyzer::EventIterator::EventIterator(const LogicAnalyzer& logicAnalyzer) :
-	logicAnalyzer_{logicAnalyzer},
-	pinMin_{logicAnalyzer.GetSamplingInfo().GetPinMin()}, nBitsPinBitmap_{logicAnalyzer.GetSamplingInfo().CountBits()},
+	logicAnalyzer_{logicAnalyzer}, pinMin_{logicAnalyzer.GetSamplingInfo().GetPinMin()}, nBitsPinBitmap_{0},
 	pinBitmapPrev_{0}, firstFlag_{true}, timeStampOffsetIncr_{0}
 {
+	Rewind();
+}
+
+void LogicAnalyzer::EventIterator::Rewind()
+{
+	nBitsPinBitmap_ = logicAnalyzer_.GetSamplingInfo().CountBits();
 	int nBitsTimeStamp = 32 - nBitsPinBitmap_;
 	timeStampOffsetIncr_ = 1LL << nBitsTimeStamp;
-	Rewind();
+	for (int iSampler = 0; iSampler < logicAnalyzer_.GetSamplerCount(); ++iSampler) {
+		iRawEventTbl_[iSampler] = 0;
+		timeStampOffsetTbl_[iSampler] = 0;
+	}
+	pinBitmapPrev_ = 0;
+	firstFlag_= true;
 }
 
 bool LogicAnalyzer::EventIterator::HasMore() const
@@ -690,16 +714,6 @@ bool LogicAnalyzer::EventIterator::Next(Event& event)
 	pinBitmapPrev_ = pinBitmap;
 	firstFlag_= false;
 	return true;
-}
-
-void LogicAnalyzer::EventIterator::Rewind()
-{
-	for (int iSampler = 0; iSampler < logicAnalyzer_.GetSamplerCount(); ++iSampler) {
-		iRawEventTbl_[iSampler] = 0;
-		timeStampOffsetTbl_[iSampler] = 0;
-	}
-	pinBitmapPrev_ = 0;
-	firstFlag_= true;
 }
 
 void LogicAnalyzer::EventIterator::Skip(int nEvents)
@@ -775,21 +789,25 @@ const LogicAnalyzer::RawEvent& LogicAnalyzer::EventIterator::GetRawEvent(int iSa
 //   /src/hardware/raspberrypi-pico/protocol.c
 //------------------------------------------------------------------------------
 LogicAnalyzer::SigrokAdapter::SigrokAdapter(LogicAnalyzer& logicAnalyzer, Stream& stream) :
-		logicAnalyzer_{logicAnalyzer}, stream_{stream}, stat_{Stat::Initial},
-		nAnalogChannels_{0}, uvoltScale_{0}, uvoltOffset_{0},
-		enableChannelFlag_{false}, iChannel_{0}, sampleRate_{0}, nSamples_{0}
+	logicAnalyzer_{logicAnalyzer}, eventIter_{logicAnalyzer_}, stream_{stream}, stat_{Stat::Initial},
+	nAnalogChannels_{0}, uvoltScale_{0}, uvoltOffset_{0},
+	enableChannelFlag_{false}, iChannel_{0}, sampleRate_{0}, nSamples_{0}
 {
 }
 
 void LogicAnalyzer::SigrokAdapter::OnTick()
 {
 	char ch;
-	if (stream_.Read(&ch, 1) == 0) return;
+	bool periodicFlag = (stream_.Read(&ch, 1) == 0);
 	//::printf("%c\n", ch);
 	switch (stat_) {
 	case Stat::Initial: {
-		if (ch == '*') {			// Reset
+		if (periodicFlag) {
+			// nothing to do
+		} else if (ch == '*') {		// Reset
+			eventIter_.Rewind();
 		} else if (ch == '+') {		// Abort
+			// nothing to do
 		} else if (ch == 'i') {		// Identify
 			stat_ = Stat::Identify;
 		} else if (ch == 'a') {		// Analog Scale and Offset
@@ -812,13 +830,17 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		break;
 	}
 	case Stat::Recover: {
-		if (ch == '*') {
+		if (periodicFlag) {
+			// nothing to do
+		} else if (ch == '*') {
 			stat_ = Stat::Initial;
 		}
 		break;
 	}
 	case Stat::Identify: {
-		if (ch == '\n') {
+		if (periodicFlag) {
+			// nothing to do
+		} else if (ch == '\n') {
 			int nDigitalChannels = logicAnalyzer_.GetSamplingInfo().CountBits();
 			stream_.Printf("SRPICO,A%02d1D%02d,%02d", nAnalogChannels_, nDigitalChannels, versionNumber_).Flush();
 		}
@@ -826,15 +848,23 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		break;
 	}
 	case Stat::AnalogScaleAndOffset: {
-		int channel = ch - '0';
-		if (channel >= 0 && channel < nAnalogChannels_) {
-			stream_.Printf("%04dx%05d", uvoltScale_, uvoltOffset_);
+		if (periodicFlag) {
+			// nothing to do
+		} else if ('0' <= ch && ch <= '9') {
+			int channel = ch - '0';
+			if (channel >= 0 && channel < nAnalogChannels_) {
+				stream_.Printf("%04dx%05d", uvoltScale_, uvoltOffset_);
+			}
+			stat_ = Stat::Initial;
+		} else {
+			stat_ = Stat::Recover;
 		}
-		stat_ = Stat::Initial;
 		break;
 	}
 	case Stat::SampleRate: {
-		if ('0' <= ch && ch <= '9') {
+		if (periodicFlag) {
+			// nothing to do
+		} else if ('0' <= ch && ch <= '9') {
 			sampleRate_ = sampleRate_ * 10 + (ch - '0');
 		} else if (ch == '\n') {
 			stream_.Printf("*").Flush();
@@ -845,7 +875,9 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		break;
 	}
 	case Stat::SampleLimit: {
-		if ('0' <= ch && ch <= '9') {
+		if (periodicFlag) {
+			// nothing to do
+		} else if ('0' <= ch && ch <= '9') {
 			nSamples_ = nSamples_ * 10 + (ch - '0');
 		} else if (ch == '\n') {
 			stream_.Printf("*").Flush();
@@ -856,7 +888,9 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		break;
 	}
 	case Stat::AnalogChannelEnable: {
-		if (ch == '0' || ch == '1') {
+		if (periodicFlag) {
+			// nothing to do
+		} else if (ch == '0' || ch == '1') {
 			enableChannelFlag_ = (ch == '1');
 			iChannel_ = 0;
 			stat_ = Stat::AnalogChannelEnable_Channel;
@@ -866,7 +900,9 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		break;
 	}
 	case Stat::AnalogChannelEnable_Channel: {
-		if ('0' <= ch && ch <= '9') {
+		if (periodicFlag) {
+			// nothing to do
+		} else if ('0' <= ch && ch <= '9') {
 			iChannel_ = iChannel_ * 10 + (ch - '0');
 		} else if (ch == '\n') {
 			stream_.Printf("*").Flush();
@@ -877,7 +913,9 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		break;
 	}
 	case Stat::DigitalChannelEnable: {
-		if (ch == '0' || ch == '1') {
+		if (periodicFlag) {
+			// nothing to do
+		} else if (ch == '0' || ch == '1') {
 			enableChannelFlag_ = (ch == '1');
 			iChannel_ = 0;
 			stat_ = Stat::DigitalChannelEnable_Channel;
@@ -887,7 +925,9 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		break;
 	}
 	case Stat::DigitalChannelEnable_Channel: {
-		if ('0' <= ch && ch <= '9') {
+		if (periodicFlag) {
+			// nothing to do
+		} else if ('0' <= ch && ch <= '9') {
 			iChannel_ = iChannel_ * 10 + (ch - '0');
 		} else if (ch == '\n') {
 			stream_.Printf("*").Flush();
@@ -898,11 +938,16 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		break;
 	}
 	case Stat::FixedSampleMode: {
-		for (int i = 0; i < nSamples_; i++) {
-			uint8_t data = 0x80 | (1 << (i % 4));
-			stream_.Write(&data, 1);
+		if (periodicFlag) {
+			Event event;
+			while (eventIter_.Next(event)) {
+				//uint8_t data = 0x80 | (1 << (i % 4));
+				//stream_.Write(&data, 1);
+				eventPrev_ = event;
+			}
+		} else if (ch == '+') {		// abort
+			stat_ = Stat::Initial;
 		}
-		stat_ = Stat::Initial;
 		break;
 	}
 	case Stat::ContinuousSampleMode: {

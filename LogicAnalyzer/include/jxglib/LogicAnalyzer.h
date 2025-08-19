@@ -20,6 +20,7 @@ class ProtocolDecoder;
 //------------------------------------------------------------------------------
 class LogicAnalyzer {
 public:
+	class SamplingInfo;
 	enum class RawEventFormat { Auto, Long, Short };
 	class RawEvent {
 	protected:
@@ -64,11 +65,13 @@ public:
 	public:
 		static const Event None;
 	public:
-		Event(uint64_t timeStamp = 0, uint32_t pinBitmap = 0) : timeStamp_{timeStamp}, pinBitmap_{pinBitmap} {}
+		Event(const Event& event) : timeStamp_{event.timeStamp_}, pinBitmap_{event.pinBitmap_} {}
+		Event(uint64_t timeStamp = static_cast<uint64_t>(-1), uint32_t pinBitmap = 0) : timeStamp_{timeStamp}, pinBitmap_{pinBitmap} {}
 	public:
-		bool IsNone() const { return this == &None; }
+		bool IsValid() const { return timeStamp_ != static_cast<uint64_t>(-1); }
 		uint64_t GetTimeStamp() const { return timeStamp_; }
 		uint32_t GetPinBitmap() const { return pinBitmap_; }
+		uint32_t GetPackedBitmap(const SamplingInfo& samplingInfo) const;
 		template<typename... Pins> static uint32_t MakeMask(Pins... pins) {
 			return ((1u << pins) | ...);
 		}
@@ -141,9 +144,9 @@ public:
 		EventIterator(const EventIterator& eventIter);
 		EventIterator(const LogicAnalyzer& logicAnalyzer);
 	public:
+		void Rewind();
 		bool HasMore() const;
 		bool Next(Event& event);
-		void Rewind();
 		void Skip(int nEvents);
 		int Count();
 		int CountRelevant();
@@ -192,7 +195,8 @@ public:
 		};
 	private:
 		LogicAnalyzer& logicAnalyzer_;
-		
+		EventIterator eventIter_;
+		Event eventPrev_;
 		Stream& stream_;
 		Stat stat_;
 		int nAnalogChannels_;
