@@ -789,25 +789,34 @@ const LogicAnalyzer::RawEvent& LogicAnalyzer::EventIterator::GetRawEvent(int iSa
 // see git://sigrok.org/libsigrok.git
 //   /src/hardware/raspberrypi-pico/protocol.c
 //------------------------------------------------------------------------------
-LogicAnalyzer::SigrokAdapter::SigrokAdapter(LogicAnalyzer& logicAnalyzer, Stream& streamTerminal, Stream& streamApplication) :
-	logicAnalyzer_{logicAnalyzer}, eventIter_{logicAnalyzer_}, terr_{streamTerminal}, stream_{streamApplication}, stat_{Stat::Initial},
+LogicAnalyzer::SigrokAdapter::SigrokAdapter(LogicAnalyzer& logicAnalyzer, Printable& terr, Stream& streamApplication) :
+	logicAnalyzer_{logicAnalyzer}, eventIter_{logicAnalyzer_}, pTerr_{&terr}, stream_{streamApplication}, stat_{Stat::Initial},
 	nAnalogChannels_{0}, uvoltScale_{0}, uvoltOffset_{0},
-	enableChannelFlag_{false}, iChannel_{0}, sampleRate_{0}, nSamples_{0}
+	enableChannelFlag_{false}, iChannel_{0}, sampleRate_{1}, nSamples_{0}, timeStampFactor_{1.0}, sampleDelta_{1.0}, iEvent_{0}
 {
+}
+
+void LogicAnalyzer::SigrokAdapter::Reset()
+{
+	eventIter_.Rewind();
+	event_.Invalidate();
+	timeStampFactor_ = 1000'000. / logicAnalyzer_.GetSampleRate() / logicAnalyzer_.GetSamplerCount();
+	sampleDelta_ = (sampleRate_ == 0)? 1. : 1. / sampleRate_;
+	iEvent_ = 0;
 }
 
 void LogicAnalyzer::SigrokAdapter::OnTick()
 {
+	Printable& terr = *pTerr_;
 	char ch;
-	bool periodicFlag = (stream_.Read(&ch, 1) == 0);
+	bool pollingFlag = (stream_.Read(&ch, 1) == 0);
 	//::printf("%c\n", ch);
 	switch (stat_) {
 	case Stat::Initial: {
-		if (periodicFlag) {
+		if (pollingFlag) {
 			// nothing to do
 		} else if (ch == '*') {		// Reset
-			eventIter_.Rewind();
-			event_.Invalidate();
+			Reset();
 		} else if (ch == '+') {		// Abort
 			// nothing to do
 		} else if (ch == 'i') {		// Identify
@@ -833,25 +842,31 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		break;
 	}
 	case Stat::Recover: {
-		if (periodicFlag) {
+		if (pollingFlag) {
 			// nothing to do
 		} else if (ch == '*') {
+			Reset();
 			stat_ = Stat::Initial;
 		}
 		break;
 	}
 	case Stat::Identify: {
-		if (periodicFlag) {
+		if (pollingFlag) {
 			// nothing to do
 		} else if (ch == '\n') {
 			int nDigitalChannels = logicAnalyzer_.GetSamplingInfo().CountPins();
 			stream_.Printf("SRPICO,A%02d1D%02d,%02d", nAnalogChannels_, nDigitalChannels, versionNumber_).Flush();
+			if (nDigitalChannels == 0) {
+				terr.Printf(
+					"PulseView is connected, but no digital channels are enabled.\n"
+					"Please run the 'la' command (e.g., la -p 2,3) to enable channels, then reopen PulseView.\n");
+			}
 		}
 		stat_ = Stat::Initial;
 		break;
 	}
 	case Stat::AnalogScaleAndOffset: {
-		if (periodicFlag) {
+		if (pollingFlag) {
 			// nothing to do
 		} else if ('0' <= ch && ch <= '9') {
 			int channel = ch - '0';
@@ -865,7 +880,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		break;
 	}
 	case Stat::SampleRate: {
-		if (periodicFlag) {
+		if (pollingFlag) {
 			// nothing to do
 		} else if ('0' <= ch && ch <= '9') {
 			sampleRate_ = sampleRate_ * 10 + (ch - '0');
@@ -878,7 +893,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		break;
 	}
 	case Stat::SampleLimit: {
-		if (periodicFlag) {
+		if (pollingFlag) {
 			// nothing to do
 		} else if ('0' <= ch && ch <= '9') {
 			nSamples_ = nSamples_ * 10 + (ch - '0');
@@ -891,7 +906,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		break;
 	}
 	case Stat::AnalogChannelEnable: {
-		if (periodicFlag) {
+		if (pollingFlag) {
 			// nothing to do
 		} else if (ch == '0' || ch == '1') {
 			enableChannelFlag_ = (ch == '1');
@@ -903,7 +918,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		break;
 	}
 	case Stat::AnalogChannelEnable_Channel: {
-		if (periodicFlag) {
+		if (pollingFlag) {
 			// nothing to do
 		} else if ('0' <= ch && ch <= '9') {
 			iChannel_ = iChannel_ * 10 + (ch - '0');
@@ -916,7 +931,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		break;
 	}
 	case Stat::DigitalChannelEnable: {
-		if (periodicFlag) {
+		if (pollingFlag) {
 			// nothing to do
 		} else if (ch == '0' || ch == '1') {
 			enableChannelFlag_ = (ch == '1');
@@ -928,7 +943,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		break;
 	}
 	case Stat::DigitalChannelEnable_Channel: {
-		if (periodicFlag) {
+		if (pollingFlag) {
 			// nothing to do
 		} else if ('0' <= ch && ch <= '9') {
 			iChannel_ = iChannel_ * 10 + (ch - '0');
@@ -941,18 +956,19 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		break;
 	}
 	case Stat::FixedSampleMode: {
-		if (periodicFlag) {
+		if (pollingFlag) {
 			Event eventNext;
 			while (eventIter_.Next(eventNext)) {
 				if (event_.IsValid()) {
-					SendRLEReport(event_, eventNext);
-					SendSignalReport(event_);
+					int nSamples = (iEvent_ == 1)? nSamplesHead_ : CountSamplesBetweenEvents(event_, eventNext);
+					SendSignalReport(event_, nSamples);
 				}
 				event_ = eventNext;
+				iEvent_++;
 			}
 		} else if (ch == '+') {		// abort
 			if (event_.IsValid()) {
-				SendSignalReport(event_);
+				SendSignalReport(event_, nSamplesTail_);
 			}
 			stream_.Flush();
 			stat_ = Stat::Initial;
@@ -967,16 +983,44 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 	}
 }
 
-void LogicAnalyzer::SigrokAdapter::SendRLEReport(const Event& event, const Event& eventNext)
+int LogicAnalyzer::SigrokAdapter::CountSamplesBetweenEvents(const Event& event1, const Event& event2) const
 {
-	uint8_t data = 4 + 0x2f;
-	stream_.Write(&data, 1);
+	int64_t iSample1 = static_cast<int64_t>(event1.GetTimeStamp() * timeStampFactor_ / sampleDelta_);
+	int64_t iSample2 = static_cast<int64_t>(event2.GetTimeStamp() * timeStampFactor_ / sampleDelta_);
+	return static_cast<int>(iSample2 - iSample1);
 }
 
-void LogicAnalyzer::SigrokAdapter::SendSignalReport(const Event& event)
+void LogicAnalyzer::SigrokAdapter::SendSignalReport(const Event& event, int nSamples)
 {
 	uint32_t bitmap = event.GetPackedBitmap(logicAnalyzer_.GetSamplingInfo());
 	int nPins = logicAnalyzer_.GetSamplingInfo().CountPins();
+	for ( ; nSamples >= 1568; nSamples -= 1568) {
+		uint8_t data = 1568 / 32 + 78; // = 127 (0x7f)
+		stream_.Write(&data, 1);
+		SendBitmap(bitmap, nPins);
+	}
+	if (nSamples >= 65) {
+		int nBlocksToSend = nSamples / 32;
+		uint8_t data = nBlocksToSend + 78;
+		stream_.Write(&data, 1);
+		SendBitmap(bitmap, nPins);
+		nSamples -= nBlocksToSend * 32;
+	}
+	if (nSamples >= 33) {
+		uint8_t data = 32 + 47; // = 79 (0x4f)
+		stream_.Write(&data, 1);
+		SendBitmap(bitmap, nPins);
+		nSamples -= 32;
+	}
+	if (nSamples > 0) {
+		uint8_t data = nSamples + 47; // = 79 (0x4f)
+		stream_.Write(&data, 1);
+		SendBitmap(bitmap, nPins);
+	}
+}
+
+void LogicAnalyzer::SigrokAdapter::SendBitmap(uint32_t bitmap, int nPins)
+{
 	for ( ; nPins > 0; nPins -= 7, bitmap >>= 7) {
 		uint8_t data = 0x80 | static_cast<uint8_t>(bitmap & 0x7f);
 		stream_.Write(&data, 1);

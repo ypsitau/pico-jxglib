@@ -9,6 +9,7 @@ int main()
 	::stdio_init_all();
 	LABOPlatform& laboPlatform = LABOPlatform::Instance;
 	laboPlatform.AttachStdio().Initialize();
+	//laboPlatform.Initialize();
 	for (;;) {
 		Tickable::Tick();
 	}

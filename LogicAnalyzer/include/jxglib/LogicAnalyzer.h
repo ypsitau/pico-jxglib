@@ -201,7 +201,7 @@ public:
 		LogicAnalyzer& logicAnalyzer_;
 		EventIterator eventIter_;
 		Event event_;
-		Stream& terr_;
+		Printable* pTerr_;
 		Stream& stream_;
 		Stat stat_;
 		int nAnalogChannels_;
@@ -211,15 +211,25 @@ public:
 		int iChannel_;
 		int sampleRate_;
 		int nSamples_;
+		double timeStampFactor_;
+		double sampleDelta_;
+		int iEvent_;
+	private:
+		static const int nSamplesHead_ = 10;	// number of samples to report at the beginning of a fixed sample mode
+		static const int nSamplesTail_ = 10;	// number of samples to report at the end of a fixed sample mode
 	public:
-		SigrokAdapter(LogicAnalyzer& logicAnalyzer, Stream& streamTerminal, Stream& streamApplication);
+		SigrokAdapter(LogicAnalyzer& logicAnalyzer, Printable& terr, Stream& streamApplication);
+	public:
+		void SetPrintableErr(Printable& terr) { pTerr_ = &terr; }
 	public:
 		// virtual functions of Tickable
 		virtual const char* GetTickableName() const override { return "LogicAnalyzer::SigrokAdapter"; }
 		virtual void OnTick() override;
 	private:
-		void SendRLEReport(const Event& event, const Event& eventNext);
-		void SendSignalReport(const Event& event);
+		void Reset();
+		int CountSamplesBetweenEvents(const Event& event1, const Event& event2) const;
+		void SendSignalReport(const Event& event, int nSamples);
+		void SendBitmap(uint32_t bitmap, int nPins);
 	};
 public:
 	class SUMPAdapter : public Tickable {

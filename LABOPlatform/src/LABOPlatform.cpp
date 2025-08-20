@@ -177,6 +177,17 @@ void LABOPlatform::Initialize()
 	}
 }
 
+LABOPlatform& LABOPlatform::AttachStdio(bool attachStdioFlag)
+{
+	attachStdioFlag_ = attachStdioFlag;
+	if (attachStdioFlag_) {
+		sigrokAdapter_.SetPrintableErr(Stdio::Instance);
+	} else {
+		sigrokAdapter_.SetPrintableErr(streamTerminal_);
+	}
+	return *this;
+}
+
 void LABOPlatform::func_out_chars(const char* buf, int len)
 {
 	Instance.GetStreamTerminal().Write(buf, len);
