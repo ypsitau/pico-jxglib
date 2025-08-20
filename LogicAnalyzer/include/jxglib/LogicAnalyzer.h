@@ -226,7 +226,7 @@ public:
 		virtual const char* GetTickableName() const override { return "LogicAnalyzer::SigrokAdapter"; }
 		virtual void OnTick() override;
 	private:
-		void Reset();
+		void StartSampling();
 		int CountSamplesBetweenEvents(const Event& event1, const Event& event2) const;
 		void SendSignalReport(const Event& event, int nSamples);
 		void SendBitmap(uint32_t bitmap, int nPins);

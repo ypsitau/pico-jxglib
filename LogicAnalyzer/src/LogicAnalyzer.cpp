@@ -796,11 +796,11 @@ LogicAnalyzer::SigrokAdapter::SigrokAdapter(LogicAnalyzer& logicAnalyzer, Printa
 {
 }
 
-void LogicAnalyzer::SigrokAdapter::Reset()
+void LogicAnalyzer::SigrokAdapter::StartSampling()
 {
 	eventIter_.Rewind();
 	event_.Invalidate();
-	timeStampFactor_ = 1000'000. / logicAnalyzer_.GetSampleRate() / logicAnalyzer_.GetSamplerCount();
+	timeStampFactor_ = 1. / (static_cast<double>(logicAnalyzer_.GetSampleRate()) * logicAnalyzer_.GetSamplerCount());
 	sampleDelta_ = (sampleRate_ == 0)? 1. : 1. / sampleRate_;
 	iEvent_ = 0;
 }
@@ -816,7 +816,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		if (pollingFlag) {
 			// nothing to do
 		} else if (ch == '*') {		// Reset
-			Reset();
+			// nothing to do
 		} else if (ch == '+') {		// Abort
 			// nothing to do
 		} else if (ch == 'i') {		// Identify
@@ -834,6 +834,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		} else if (ch == 'D') {		// Digital Channel Enable
 			stat_ = Stat::DigitalChannelEnable;
 		} else if (ch == 'F') {		// Fixed Sample Mode
+			StartSampling();
 			logicAnalyzer_.Enable();
 			stat_ = Stat::FixedSampleMode;
 		} else if (ch == 'C') {		// Continuous Sample Mode
@@ -845,7 +846,6 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		if (pollingFlag) {
 			// nothing to do
 		} else if (ch == '*') {
-			Reset();
 			stat_ = Stat::Initial;
 		}
 		break;
@@ -985,38 +985,58 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 
 int LogicAnalyzer::SigrokAdapter::CountSamplesBetweenEvents(const Event& event1, const Event& event2) const
 {
-	int64_t iSample1 = static_cast<int64_t>(event1.GetTimeStamp() * timeStampFactor_ / sampleDelta_);
-	int64_t iSample2 = static_cast<int64_t>(event2.GetTimeStamp() * timeStampFactor_ / sampleDelta_);
+	int64_t iSample1 = static_cast<int64_t>(timeStampFactor_ * static_cast<double>(event1.GetTimeStamp()) / sampleDelta_);
+	int64_t iSample2 = static_cast<int64_t>(timeStampFactor_ * static_cast<double>(event2.GetTimeStamp()) / sampleDelta_);
 	return static_cast<int>(iSample2 - iSample1);
 }
 
 void LogicAnalyzer::SigrokAdapter::SendSignalReport(const Event& event, int nSamples)
 {
+	Printable& terr = *pTerr_;
 	uint32_t bitmap = event.GetPackedBitmap(logicAnalyzer_.GetSamplingInfo());
 	int nPins = logicAnalyzer_.GetSamplingInfo().CountPins();
-	for ( ; nSamples >= 1568; nSamples -= 1568) {
-		uint8_t data = 1568 / 32 + 78; // = 127 (0x7f)
-		stream_.Write(&data, 1);
+	//terr.Printf("%08x %d\n", bitmap, nSamples);
+#if 0
+	//do {
+	//	if (nSamples > 30) nSamples = 30;
+	//	uint8_t rleData = nSamples + 47;
+	//	stream_.Write(&rleData, 1);
+	//} while (0);
+	if (nSamples > 100) nSamples = 100;
+	for (int iSample = 0; iSample < nSamples; ++iSample) {
 		SendBitmap(bitmap, nPins);
+	}
+	stream_.Flush();
+#else
+	while (nSamples >= 1568) {
+		uint8_t rleData = 1568 / 32 + 78; // = 127 (0x7f)
+		//terr.Printf("  %02x\n", rleData);
+		stream_.Write(&rleData, 1);
+		SendBitmap(bitmap, nPins);
+		nSamples -= 1568;
 	}
 	if (nSamples >= 65) {
-		int nBlocksToSend = nSamples / 32;
-		uint8_t data = nBlocksToSend + 78;
-		stream_.Write(&data, 1);
+		int nChunksToSend = nSamples / 32;
+		uint8_t rleData = nChunksToSend + 78;
+		//terr.Printf("  %02x\n", rleData);
+		stream_.Write(&rleData, 1);
 		SendBitmap(bitmap, nPins);
-		nSamples -= nBlocksToSend * 32;
+		nSamples -= nChunksToSend * 32;
 	}
 	if (nSamples >= 33) {
-		uint8_t data = 32 + 47; // = 79 (0x4f)
-		stream_.Write(&data, 1);
+		uint8_t rleData = 32 + 47; // = 79 (0x4f)
+		//terr.Printf("  %02x\n", rleData);
+		stream_.Write(&rleData, 1);
 		SendBitmap(bitmap, nPins);
 		nSamples -= 32;
 	}
 	if (nSamples > 0) {
-		uint8_t data = nSamples + 47; // = 79 (0x4f)
-		stream_.Write(&data, 1);
+		uint8_t rleData = nSamples + 47;
+		//terr.Printf("  %02x\n", rleData);
+		stream_.Write(&rleData, 1);
 		SendBitmap(bitmap, nPins);
 	}
+#endif
 }
 
 void LogicAnalyzer::SigrokAdapter::SendBitmap(uint32_t bitmap, int nPins)
