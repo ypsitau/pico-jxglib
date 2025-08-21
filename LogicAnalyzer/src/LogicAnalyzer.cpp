@@ -645,13 +645,22 @@ int LogicAnalyzer::SamplingInfo::CountBits() const
 //------------------------------------------------------------------------------
 const LogicAnalyzer::Event LogicAnalyzer::Event::None;
 
+LogicAnalyzer::Event& LogicAnalyzer::Event::operator=(const Event& event)
+{
+	if (this != &event) {
+		timeStamp_ = event.timeStamp_;
+		pinBitmap_ = event.pinBitmap_;
+	}
+	return *this;
+}
+
 uint32_t LogicAnalyzer::Event::GetPackedBitmap(const SamplingInfo& samplingInfo) const
 {
 	uint32_t bitmap = 0;
 	int iBit = 0;
-	uint32_t pinBitmapEnabled = samplingInfo.GetPinBitmapEnabled();
-	for (uint pin = 0; pinBitmapEnabled; pinBitmapEnabled >>= 1, ++pin) {
-		if (pinBitmapEnabled & 1) {
+	uint pin = samplingInfo.GetPinMin();
+	for (uint32_t pinBitmap = samplingInfo.GetPinBitmapEnabled(); pinBitmap != 0; pinBitmap >>= 1, ++pin) {
+		if (pinBitmap & 1) {
 			if (IsPinHigh(pin)) bitmap |= 1u << iBit;
 			iBit++;
 		}
@@ -677,7 +686,7 @@ LogicAnalyzer::EventIterator::EventIterator(const EventIterator& eventIter) :
 }
 
 LogicAnalyzer::EventIterator::EventIterator(const LogicAnalyzer& logicAnalyzer) :
-	logicAnalyzer_{logicAnalyzer}, pinMin_{logicAnalyzer.GetSamplingInfo().GetPinMin()}, nBitsPinBitmap_{0},
+	logicAnalyzer_{logicAnalyzer}, pinMin_{0}, nBitsPinBitmap_{0},
 	pinBitmapPrev_{0}, firstFlag_{true}, timeStampOffsetIncr_{0}
 {
 	Rewind();
@@ -685,6 +694,7 @@ LogicAnalyzer::EventIterator::EventIterator(const LogicAnalyzer& logicAnalyzer) 
 
 void LogicAnalyzer::EventIterator::Rewind()
 {
+	pinMin_ = logicAnalyzer_.GetSamplingInfo().GetPinMin();
 	nBitsPinBitmap_ = logicAnalyzer_.GetSamplingInfo().CountBits();
 	int nBitsTimeStamp = 32 - nBitsPinBitmap_;
 	timeStampOffsetIncr_ = 1LL << nBitsTimeStamp;
@@ -791,7 +801,7 @@ const LogicAnalyzer::RawEvent& LogicAnalyzer::EventIterator::GetRawEvent(int iSa
 //------------------------------------------------------------------------------
 LogicAnalyzer::SigrokAdapter::SigrokAdapter(LogicAnalyzer& logicAnalyzer, Printable& terr, Stream& streamApplication) :
 	logicAnalyzer_{logicAnalyzer}, eventIter_{logicAnalyzer_}, pTerr_{&terr}, stream_{streamApplication}, stat_{Stat::Initial},
-	nAnalogChannels_{0}, uvoltScale_{0}, uvoltOffset_{0},
+	nDigitalChToReport_{0}, nAnalogChToReport_{0}, uvoltScale_{0}, uvoltOffset_{0},
 	enableChannelFlag_{false}, iChannel_{0}, sampleRate_{1}, nSamples_{0}, timeStampFactor_{1.0}, sampleDelta_{1.0}, iEvent_{0}
 {
 }
@@ -801,7 +811,7 @@ void LogicAnalyzer::SigrokAdapter::StartSampling()
 	eventIter_.Rewind();
 	event_.Invalidate();
 	timeStampFactor_ = 1. / (static_cast<double>(logicAnalyzer_.GetSampleRate()) * logicAnalyzer_.GetSamplerCount());
-	sampleDelta_ = (sampleRate_ == 0)? 1. : 1. / sampleRate_;
+	sampleDelta_ = (sampleRate_ == 0)? 1. : 1. / static_cast<double>(sampleRate_);
 	iEvent_ = 0;
 }
 
@@ -854,16 +864,18 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		if (pollingFlag) {
 			// nothing to do
 		} else if (ch == '\n') {
-			int nDigitalChannels = logicAnalyzer_.GetSamplingInfo().CountPins();
-			if (nDigitalChannels == 0) {
+			nDigitalChToReport_ = logicAnalyzer_.GetSamplingInfo().CountPins();
+			if (nDigitalChToReport_ == 0) {
 				terr.Printf(
 					"PulseView is connected, but no digital channels are enalbed.\n"
-					"Eight channels are assumed by default, but for proper operation,\n"
+					"%d channels are assumed by default, but for proper operation,\n"
 					"please run the 'la' command (e.g., la -p 2,3) to specify which channels to enable,\n"
-					"and then reopen PulseView.\n");
-				nDigitalChannels = 8;
+					"and then reopen PulseView.\n", nDigitalChToReport_);
+				nDigitalChToReport_ = nDigitalChToReportDefault_;
+			} else if (nDigitalChToReport_ < 5) {
+				nDigitalChToReport_ = 5;	// it seems PulseView doesn't work well with less than 5 channels
 			}
-			stream_.Printf("SRPICO,A%02d1D%02d,%02d", nAnalogChannels_, nDigitalChannels, versionNumber_).Flush();
+			stream_.Printf("SRPICO,A%02d1D%02d,%02d", nAnalogChToReport_, nDigitalChToReport_, versionNumber_).Flush();
 		}
 		stat_ = Stat::Initial;
 		break;
@@ -873,7 +885,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 			// nothing to do
 		} else if ('0' <= ch && ch <= '9') {
 			int channel = ch - '0';
-			if (channel >= 0 && channel < nAnalogChannels_) {
+			if (channel >= 0 && channel < nAnalogChToReport_) {
 				stream_.Printf("%04dx%05d", uvoltScale_, uvoltOffset_);
 			}
 			stat_ = Stat::Initial;
@@ -964,14 +976,14 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 			while (eventIter_.Next(eventNext)) {
 				if (event_.IsValid()) {
 					int nSamples = (iEvent_ == 1)? nSamplesHead_ : CountSamplesBetweenEvents(event_, eventNext);
-					SendSignalReport(event_, nSamples);
+					SendReport(event_, nSamples);
 				}
 				event_ = eventNext;
 				iEvent_++;
 			}
 		} else if (ch == '+') {		// abort
 			if (event_.IsValid()) {
-				SendSignalReport(event_, nSamplesTail_);
+				SendReport(event_, nSamplesTail_);
 			}
 			stream_.Flush();
 			stat_ = Stat::Initial;
@@ -988,66 +1000,46 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 
 int LogicAnalyzer::SigrokAdapter::CountSamplesBetweenEvents(const Event& event1, const Event& event2) const
 {
-	int64_t iSample1 = static_cast<int64_t>(timeStampFactor_ * static_cast<double>(event1.GetTimeStamp()) / sampleDelta_);
-	int64_t iSample2 = static_cast<int64_t>(timeStampFactor_ * static_cast<double>(event2.GetTimeStamp()) / sampleDelta_);
-	return static_cast<int>(iSample2 - iSample1);
+	double timeStamp1 = timeStampFactor_ * static_cast<double>(event1.GetTimeStamp());
+	double timeStamp2 = timeStampFactor_ * static_cast<double>(event2.GetTimeStamp());
+	int nSamples = static_cast<int>((timeStamp2 - timeStamp1) / sampleDelta_);
+	//::printf("%.2f-%.2f %.2f %dsamples\n", timeStamp1 * 1000'000, timeStamp2 * 1000'000, sampleDelta_ * 1000'000, nSamples);
+	return nSamples;
 }
 
-void LogicAnalyzer::SigrokAdapter::SendSignalReport(const Event& event, int nSamples)
+void LogicAnalyzer::SigrokAdapter::SendReport(const Event& event, int nSamples)
 {
-	Printable& terr = *pTerr_;
+	int iBuff = 0;
+	uint8_t buff[32];
+	if (nSamples <= 0) return;
 	uint32_t bitmap = event.GetPackedBitmap(logicAnalyzer_.GetSamplingInfo());
-	int nPins = logicAnalyzer_.GetSamplingInfo().CountPins();
-	//terr.Printf("%08x %d\n", bitmap, nSamples);
-#if 0
-	//do {
-	//	if (nSamples > 30) nSamples = 30;
-	//	uint8_t rleData = nSamples + 47;
-	//	stream_.Write(&rleData, 1);
-	//} while (0);
-	if (nSamples > 100) nSamples = 100;
-	for (int iSample = 0; iSample < nSamples; ++iSample) {
-		SendBitmap(bitmap, nPins);
+	//::printf("%08x %08x * %dsamples\n", event.GetPinBitmap(), bitmap, nSamples);
+	for (int n = nDigitalChToReport_; n > 0; n -= 7, bitmap >>= 7) {
+		buff[iBuff++] = 0x80 | static_cast<uint8_t>(bitmap & 0x7f);
 	}
-	stream_.Flush();
-#else
-	while (nSamples >= 1568) {
-		uint8_t rleData = 1568 / 32 + 78; // = 127 (0x7f)
-		//terr.Printf("  %02x\n", rleData);
-		stream_.Write(&rleData, 1);
-		SendBitmap(bitmap, nPins);
-		nSamples -= 1568;
-	}
-	if (nSamples >= 65) {
-		int nChunksToSend = nSamples / 32;
-		uint8_t rleData = nChunksToSend + 78;
-		//terr.Printf("  %02x\n", rleData);
-		stream_.Write(&rleData, 1);
-		SendBitmap(bitmap, nPins);
-		nSamples -= nChunksToSend * 32;
-	}
-	if (nSamples >= 33) {
-		uint8_t rleData = 32 + 47; // = 79 (0x4f)
-		//terr.Printf("  %02x\n", rleData);
-		stream_.Write(&rleData, 1);
-		SendBitmap(bitmap, nPins);
-		nSamples -= 32;
-	}
+	nSamples--;
 	if (nSamples > 0) {
-		uint8_t rleData = nSamples + 47;
-		//terr.Printf("  %02x\n", rleData);
-		stream_.Write(&rleData, 1);
-		SendBitmap(bitmap, nPins);
+		while (nSamples >= 32 * 49) {				// 32 * 49 <= nSamples
+			buff[iBuff++] = (32 * 49) / 32 + 78;	// = 127 (0x7f)
+			nSamples -= 32 * 49;
+		}
+		if (nSamples >= 64) {						// 64 <= nSamples < 32 * 49
+			int nChunksToSend = nSamples / 32;
+			buff[iBuff++] = nChunksToSend + 78;
+			nSamples -= 32 * nChunksToSend;
+		}
+		if (nSamples >= 32) {						// 32 <= nSamples < 64
+			buff[iBuff++] = 32 + 47;				// = 79 (0x4f)
+			nSamples -= 32;
+		}
+		if (nSamples > 32) nSamples = 32;
+		if (nSamples > 0) {							// 0 < nSamples < 32
+			buff[iBuff++] = nSamples + 47;
+		}
 	}
-#endif
-}
-
-void LogicAnalyzer::SigrokAdapter::SendBitmap(uint32_t bitmap, int nPins)
-{
-	for ( ; nPins > 0; nPins -= 7, bitmap >>= 7) {
-		uint8_t data = 0x80 | static_cast<uint8_t>(bitmap & 0x7f);
-		stream_.Write(&data, 1);
-	}
+	//Dump(buff, iBuff);
+	stream_.Write(buff, iBuff);
+	stream_.Flush();
 }
 
 //------------------------------------------------------------------------------

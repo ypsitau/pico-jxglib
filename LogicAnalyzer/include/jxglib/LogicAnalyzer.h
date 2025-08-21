@@ -68,6 +68,8 @@ public:
 		Event(const Event& event) : timeStamp_{event.timeStamp_}, pinBitmap_{event.pinBitmap_} {}
 		Event(uint64_t timeStamp = static_cast<uint64_t>(-1), uint32_t pinBitmap = 0) : timeStamp_{timeStamp}, pinBitmap_{pinBitmap} {}
 	public:
+		Event& operator=(const Event& event);
+	public:
 		void Invalidate() { timeStamp_ = static_cast<uint64_t>(-1); pinBitmap_ = 0; }
 		bool IsValid() const { return timeStamp_ != static_cast<uint64_t>(-1); }
 		uint64_t GetTimeStamp() const { return timeStamp_; }
@@ -204,7 +206,8 @@ public:
 		Printable* pTerr_;
 		Stream& stream_;
 		Stat stat_;
-		int nAnalogChannels_;
+		int nDigitalChToReport_;
+		int nAnalogChToReport_;
 		static const int versionNumber_ = 2;
 		int uvoltScale_, uvoltOffset_;
 		bool enableChannelFlag_;
@@ -215,6 +218,7 @@ public:
 		double sampleDelta_;
 		int iEvent_;
 	private:
+		static const int nDigitalChToReportDefault_ = 8;
 		static const int nSamplesHead_ = 10;	// number of samples to report at the beginning of a fixed sample mode
 		static const int nSamplesTail_ = 10;	// number of samples to report at the end of a fixed sample mode
 	public:
@@ -228,8 +232,7 @@ public:
 	private:
 		void StartSampling();
 		int CountSamplesBetweenEvents(const Event& event1, const Event& event2) const;
-		void SendSignalReport(const Event& event, int nSamples);
-		void SendBitmap(uint32_t bitmap, int nPins);
+		void SendReport(const Event& event, int nSamples);
 	};
 public:
 	class SUMPAdapter : public Tickable {
