@@ -976,9 +976,11 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 			while (eventIter_.Next(eventNext)) {
 				if (event_.IsValid()) {
 					int nSamples = (iEvent_ == 1)? nSamplesHead_ : CountSamplesBetweenEvents(event_, eventNext);
-					SendReport(event_, nSamples);
+					if (nSamples > 0) {
+						SendReport(event_, nSamples);
+						event_ = eventNext;
+					}
 				}
-				event_ = eventNext;
 				iEvent_++;
 			}
 		} else if (ch == '+') {		// abort
@@ -1000,10 +1002,13 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 
 int LogicAnalyzer::SigrokAdapter::CountSamplesBetweenEvents(const Event& event1, const Event& event2) const
 {
-	double timeStamp1 = timeStampFactor_ * static_cast<double>(event1.GetTimeStamp());
-	double timeStamp2 = timeStampFactor_ * static_cast<double>(event2.GetTimeStamp());
-	int nSamples = static_cast<int>((timeStamp2 - timeStamp1) / sampleDelta_);
+	//double timeStamp1 = timeStampFactor_ * static_cast<double>(event1.GetTimeStamp());
+	//double timeStamp2 = timeStampFactor_ * static_cast<double>(event2.GetTimeStamp());
+	//int nSamples = static_cast<int>((timeStamp2 - timeStamp1) / sampleDelta_);
 	//::printf("%.2f-%.2f %.2f %dsamples\n", timeStamp1 * 1000'000, timeStamp2 * 1000'000, sampleDelta_ * 1000'000, nSamples);
+	int64_t iSample1 = static_cast<int64_t>(timeStampFactor_ * static_cast<double>(event1.GetTimeStamp()) / sampleDelta_);
+	int64_t iSample2 = static_cast<int64_t>(timeStampFactor_ * static_cast<double>(event2.GetTimeStamp()) / sampleDelta_);
+	int nSamples = static_cast<int>(iSample2 - iSample1);
 	return nSamples;
 }
 
@@ -1017,8 +1022,8 @@ void LogicAnalyzer::SigrokAdapter::SendReport(const Event& event, int nSamples)
 	for (int n = nDigitalChToReport_; n > 0; n -= 7, bitmap >>= 7) {
 		buff[iBuff++] = 0x80 | static_cast<uint8_t>(bitmap & 0x7f);
 	}
-	nSamples--;
-	if (nSamples > 0) {
+	if (nSamples > 1) {
+		nSamples--;
 		while (nSamples >= 32 * 49) {				// 32 * 49 <= nSamples
 			buff[iBuff++] = (32 * 49) / 32 + 78;	// = 127 (0x7f)
 			nSamples -= 32 * 49;
