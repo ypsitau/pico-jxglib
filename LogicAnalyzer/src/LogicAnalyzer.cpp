@@ -1039,7 +1039,7 @@ void LogicAnalyzer::SigrokAdapter::SendReport(const Event& event, int nSamples)
 	}
 	//Dump(buff, iBuff);
 	stream_.Write(buff, iBuff);
-	stream_.Flush();
+	//stream_.Flush();
 }
 
 //------------------------------------------------------------------------------
