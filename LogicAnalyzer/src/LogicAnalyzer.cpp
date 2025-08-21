@@ -855,12 +855,15 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 			// nothing to do
 		} else if (ch == '\n') {
 			int nDigitalChannels = logicAnalyzer_.GetSamplingInfo().CountPins();
-			stream_.Printf("SRPICO,A%02d1D%02d,%02d", nAnalogChannels_, nDigitalChannels, versionNumber_).Flush();
 			if (nDigitalChannels == 0) {
 				terr.Printf(
-					"PulseView is connected, but no digital channels are enabled.\n"
-					"Please run the 'la' command (e.g., la -p 2,3) to enable channels, then reopen PulseView.\n");
+					"PulseView is connected, but no digital channels are enalbed.\n"
+					"Eight channels are assumed by default, but for proper operation,\n"
+					"please run the 'la' command (e.g., la -p 2,3) to specify which channels to enable,\n"
+					"and then reopen PulseView.\n");
+				nDigitalChannels = 8;
 			}
+			stream_.Printf("SRPICO,A%02d1D%02d,%02d", nAnalogChannels_, nDigitalChannels, versionNumber_).Flush();
 		}
 		stat_ = Stat::Initial;
 		break;
