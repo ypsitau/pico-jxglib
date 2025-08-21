@@ -872,8 +872,8 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 					"please run the 'la' command (e.g., la -p 2,3) to specify which channels to enable,\n"
 					"and then reopen PulseView.\n", nDigitalChToReport_);
 				nDigitalChToReport_ = nDigitalChToReportDefault_;
-			} else if (nDigitalChToReport_ < 5) {
-				nDigitalChToReport_ = 5;	// it seems PulseView doesn't work well with less than 5 channels
+			} else if (nDigitalChToReport_ < 7) {
+				nDigitalChToReport_ = 7;	// it seems PulseView doesn't work well with less than 5 channels
 			}
 			stream_.Printf("SRPICO,A%02d1D%02d,%02d", nAnalogChToReport_, nDigitalChToReport_, versionNumber_).Flush();
 		}
@@ -980,6 +980,8 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 						SendReport(event_, nSamples);
 						event_ = eventNext;
 					}
+				} else {
+					event_ = eventNext;
 				}
 				iEvent_++;
 			}
