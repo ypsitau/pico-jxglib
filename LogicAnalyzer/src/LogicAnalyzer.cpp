@@ -972,6 +972,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 			iChannel_ = iChannel_ * 10 + (ch - '0');
 		} else if (ch == '\n') {
 			if (enableChannelFlag_) {
+				nAnalogChEnabled_++;
 				analogChBitmapEnabled_ |= (1u << iChannel_);
 			} else {
 				analogChBitmapEnabled_ &= ~(1u << iChannel_);
@@ -1002,6 +1003,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 			iChannel_ = iChannel_ * 10 + (ch - '0');
 		} else if (ch == '\n') {
 			if (enableChannelFlag_) {
+				nDigitalChEnabled_++;
 				digitalChBitmapEnabled_ |= (1u << iChannel_);
 			} else {
 				digitalChBitmapEnabled_ &= ~(1u << iChannel_);
@@ -1102,9 +1104,10 @@ void LogicAnalyzer::SigrokAdapter::SendReport(const Event& event, int nSamples)
 		// Normal mode
 		int iBit = 0;
 		uint8_t data = 0;
+		//::printf("%032b\n", packedBitmap);
 		for (uint32_t bitmapEnabled = digitalChBitmapEnabled_; bitmapEnabled != 0; bitmapEnabled >>= 1, packedBitmap >>= 1) {
 			if (bitmapEnabled & 1) {
-				data |= (packedBitmap & 1) << iBit;
+				data |= ((packedBitmap & 1) << iBit);
 				iBit++;
 				if (iBit == 7) {
 					buff[iBuff++] = 0x80 | data;
@@ -1114,9 +1117,6 @@ void LogicAnalyzer::SigrokAdapter::SendReport(const Event& event, int nSamples)
 			}
 		}
 		if (iBit > 0) buff[iBuff++] = 0x80 | data;
-		for (int n = nDigitalChEnabled_; n > 0; n -= 7, packedBitmap >>= 7) {
-			buff[iBuff++] = 0x80 | static_cast<uint8_t>(packedBitmap & 0x7f);
-		}
 		nSamples--;
 		if (nSamples > 0) {
 			while (nSamples >= 32 * 49) {				// 32 * 49 <= nSamples
