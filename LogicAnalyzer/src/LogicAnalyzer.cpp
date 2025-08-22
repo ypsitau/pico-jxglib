@@ -192,7 +192,7 @@ bool LogicAnalyzer::Enable()
 		for (uint32_t pinBitmap = samplingInfo_.GetPinBitmapEnabled(); pinBitmap != 0; pinBitmap >>= 1, ++pin) {
 			if (pinBitmap & 1) {
 				::pio_gpio_init(samplerTbl_[0].GetSM().pio, pin);
-				::gpio_disable_pulls(pin);
+				//::gpio_disable_pulls(pin);
 			}
 		}
 	}
