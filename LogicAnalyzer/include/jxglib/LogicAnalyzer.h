@@ -206,14 +206,19 @@ public:
 		Printable* pTerr_;
 		Stream& stream_;
 		Stat stat_;
-		int nDigitalChToReport_;
-		int nAnalogChToReport_;
+		int nDigitalChAvailable_;
+		int nAnalogChAvailable_;
+		int nDigitalChEnabled_;
+		int nAnalogChEnabled_;
+		uint32_t digitalChBitmapEnabled_;
+		uint32_t analogChBitmapEnabled_;
 		static const int versionNumber_ = 2;
 		int uvoltScale_, uvoltOffset_;
 		bool enableChannelFlag_;
 		int iChannel_;
 		int sampleRate_;
 		int nSamples_;
+		uint8_t embeddedRLEData_;
 		double timeStampFactor_;
 		double sampleDelta_;
 		int iEvent_;
@@ -230,6 +235,7 @@ public:
 		virtual const char* GetTickableName() const override { return "LogicAnalyzer::SigrokAdapter"; }
 		virtual void OnTick() override;
 	private:
+		void Reset();
 		void StartSampling();
 		int CountSamplesBetweenEvents(const Event& event1, const Event& event2) const;
 		void SendReport(const Event& event, int nSamples);

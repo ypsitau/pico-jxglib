@@ -801,7 +801,8 @@ const LogicAnalyzer::RawEvent& LogicAnalyzer::EventIterator::GetRawEvent(int iSa
 //------------------------------------------------------------------------------
 LogicAnalyzer::SigrokAdapter::SigrokAdapter(LogicAnalyzer& logicAnalyzer, Printable& terr, Stream& streamApplication) :
 	logicAnalyzer_{logicAnalyzer}, eventIter_{logicAnalyzer_}, pTerr_{&terr}, stream_{streamApplication}, stat_{Stat::Initial},
-	nDigitalChToReport_{0}, nAnalogChToReport_{0}, uvoltScale_{0}, uvoltOffset_{0},
+	nDigitalChAvailable_{0}, nAnalogChAvailable_{0}, nDigitalChEnabled_{0}, nAnalogChEnabled_{0},
+	digitalChBitmapEnabled_{0}, analogChBitmapEnabled_{0}, uvoltScale_{0}, uvoltOffset_{0},
 	enableChannelFlag_{false}, iChannel_{0}, sampleRate_{1}, nSamples_{0}, timeStampFactor_{1.0}, sampleDelta_{1.0}, iEvent_{0}
 {
 }
@@ -813,6 +814,7 @@ void LogicAnalyzer::SigrokAdapter::StartSampling()
 	timeStampFactor_ = 1. / (static_cast<double>(logicAnalyzer_.GetSampleRate()) * logicAnalyzer_.GetSamplerCount());
 	sampleDelta_ = (sampleRate_ == 0)? 1. : 1. / static_cast<double>(sampleRate_);
 	iEvent_ = 0;
+	embeddedRLEData_ = 0x00;
 }
 
 void LogicAnalyzer::SigrokAdapter::OnTick()
@@ -826,7 +828,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		if (pollingFlag) {
 			// nothing to do
 		} else if (ch == '*') {		// Reset
-			// nothing to do
+			Reset();
 		} else if (ch == '+') {		// Abort
 			// nothing to do
 		} else if (ch == 'i') {		// Identify
@@ -844,6 +846,13 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		} else if (ch == 'D') {		// Digital Channel Enable
 			stat_ = Stat::DigitalChannelEnable;
 		} else if (ch == 'F') {		// Fixed Sample Mode
+			//uint8_t buff[8];
+			//buff[0] = 0x80 | (7 << 4) | 0x0f;
+			//buff[1] = 47 + 2;
+			//buff[2] = 0x80 | (3 << 4) | 0x05;
+			//buff[3] = 47 + 3;
+			//stream_.Write(buff, 4);
+			//stream_.Flush();
 			StartSampling();
 			logicAnalyzer_.Enable();
 			stat_ = Stat::FixedSampleMode;
@@ -856,6 +865,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		if (pollingFlag) {
 			// nothing to do
 		} else if (ch == '*') {
+			Reset();
 			stat_ = Stat::Initial;
 		}
 		break;
@@ -864,18 +874,17 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		if (pollingFlag) {
 			// nothing to do
 		} else if (ch == '\n') {
-			nDigitalChToReport_ = logicAnalyzer_.GetSamplingInfo().CountPins();
-			if (nDigitalChToReport_ == 0) {
+			nDigitalChAvailable_ = logicAnalyzer_.GetSamplingInfo().CountPins();
+			//nDigitalChAvailable_ = 4;
+			if (nDigitalChAvailable_ == 0) {
 				terr.Printf(
 					"PulseView is connected, but no digital channels are enalbed.\n"
 					"%d channels are assumed by default, but for proper operation,\n"
 					"please run the 'la' command (e.g., la -p 2,3) to specify which channels to enable,\n"
-					"and then reopen PulseView.\n", nDigitalChToReport_);
-				nDigitalChToReport_ = nDigitalChToReportDefault_;
-			} else if (nDigitalChToReport_ < 7) {
-				nDigitalChToReport_ = 7;	// it seems PulseView doesn't work well with less than 5 channels
+					"and then reopen PulseView.\n", nDigitalChAvailable_);
+				nDigitalChAvailable_ = nDigitalChToReportDefault_;
 			}
-			stream_.Printf("SRPICO,A%02d1D%02d,%02d", nAnalogChToReport_, nDigitalChToReport_, versionNumber_).Flush();
+			stream_.Printf("SRPICO,A%02d1D%02d,%02d", nAnalogChAvailable_, nDigitalChAvailable_, versionNumber_).Flush();
 		}
 		stat_ = Stat::Initial;
 		break;
@@ -885,7 +894,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 			// nothing to do
 		} else if ('0' <= ch && ch <= '9') {
 			int channel = ch - '0';
-			if (channel >= 0 && channel < nAnalogChToReport_) {
+			if (channel >= 0 && channel < nAnalogChAvailable_) {
 				stream_.Printf("%04dx%05d", uvoltScale_, uvoltOffset_);
 			}
 			stat_ = Stat::Initial;
@@ -938,6 +947,11 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		} else if ('0' <= ch && ch <= '9') {
 			iChannel_ = iChannel_ * 10 + (ch - '0');
 		} else if (ch == '\n') {
+			if (enableChannelFlag_) {
+				analogChBitmapEnabled_ |= (1u << iChannel_);
+			} else {
+				analogChBitmapEnabled_ &= ~(1u << iChannel_);
+			}
 			stream_.Printf("*").Flush();
 			stat_ = Stat::Initial;
 		} else {
@@ -963,6 +977,11 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		} else if ('0' <= ch && ch <= '9') {
 			iChannel_ = iChannel_ * 10 + (ch - '0');
 		} else if (ch == '\n') {
+			if (enableChannelFlag_) {
+				digitalChBitmapEnabled_ |= (1u << iChannel_);
+			} else {
+				digitalChBitmapEnabled_ &= ~(1u << iChannel_);
+			}
 			stream_.Printf("*").Flush();
 			stat_ = Stat::Initial;
 		} else {
@@ -1002,6 +1021,14 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 	}
 }
 
+void LogicAnalyzer::SigrokAdapter::Reset()
+{
+	nDigitalChEnabled_ = 0;
+	nAnalogChEnabled_ = 0;
+	digitalChBitmapEnabled_ = 0;
+	analogChBitmapEnabled_ = 0;
+}
+
 int LogicAnalyzer::SigrokAdapter::CountSamplesBetweenEvents(const Event& event1, const Event& event2) const
 {
 	//double timeStamp1 = timeStampFactor_ * static_cast<double>(event1.GetTimeStamp());
@@ -1019,29 +1046,72 @@ void LogicAnalyzer::SigrokAdapter::SendReport(const Event& event, int nSamples)
 	int iBuff = 0;
 	uint8_t buff[32];
 	if (nSamples <= 0) return;
-	uint32_t bitmap = event.GetPackedBitmap(logicAnalyzer_.GetSamplingInfo());
-	//::printf("%08x %08x * %dsamples\n", event.GetPinBitmap(), bitmap, nSamples);
-	for (int n = nDigitalChToReport_; n > 0; n -= 7, bitmap >>= 7) {
-		buff[iBuff++] = 0x80 | static_cast<uint8_t>(bitmap & 0x7f);
-	}
-	if (nSamples > 1) {
+	if (nSamples > 640 * (count_of(buff) - 4)) nSamples = 640 * (count_of(buff) - 4);	// prevent overflow of buff
+	uint32_t packedBitmap = event.GetPackedBitmap(logicAnalyzer_.GetSamplingInfo());
+	//::printf("%08x * %dsamples\n", packedBitmap, nSamples);
+	if (nDigitalChEnabled_ <= 4) {
+		// D4 mode
+		int iBit = 0;
+		uint8_t data = 0;
+		for (uint32_t bitmapEnabled = digitalChBitmapEnabled_; bitmapEnabled != 0; bitmapEnabled >>= 1, packedBitmap >>= 1) {
+			if (bitmapEnabled & 1) {
+				data |= (packedBitmap & 1) << iBit;
+				iBit++;
+			}
+		}
+		buff[iBuff++] = 0x80 | data | embeddedRLEData_;
+		embeddedRLEData_ = 0x00;
 		nSamples--;
-		while (nSamples >= 32 * 49) {				// 32 * 49 <= nSamples
-			buff[iBuff++] = (32 * 49) / 32 + 78;	// = 127 (0x7f)
-			nSamples -= 32 * 49;
+		if (nSamples > 0) {
+			while (nSamples >= 8 * 80) {				// 8 * 80 <= nSamples
+				buff[iBuff++] = (8 * 80) / 8 + 47;		// = 127 (0x7f)
+				nSamples -= 8 * 80;
+			}
+			if (nSamples >= 8) {
+				int nChunksToSend = nSamples / 8;
+				buff[iBuff++] = (8 * nChunksToSend) / 8 + 47;
+				nSamples -= nChunksToSend * 8;
+			}
+			embeddedRLEData_ = static_cast<uint8_t>(nSamples << 4);
 		}
-		if (nSamples >= 64) {						// 64 <= nSamples < 32 * 49
-			int nChunksToSend = nSamples / 32;
-			buff[iBuff++] = nChunksToSend + 78;
-			nSamples -= 32 * nChunksToSend;
+	} else {
+		// Normal mode
+		int iBit = 0;
+		uint8_t data = 0;
+		for (uint32_t bitmapEnabled = digitalChBitmapEnabled_; bitmapEnabled != 0; bitmapEnabled >>= 1, packedBitmap >>= 1) {
+			if (bitmapEnabled & 1) {
+				data |= (packedBitmap & 1) << iBit;
+				iBit++;
+				if (iBit == 7) {
+					buff[iBuff++] = 0x80 | data;
+					data = 0;
+					iBit = 0;
+				}
+			}
 		}
-		if (nSamples >= 32) {						// 32 <= nSamples < 64
-			buff[iBuff++] = 32 + 47;				// = 79 (0x4f)
-			nSamples -= 32;
+		if (iBit > 0) buff[iBuff++] = 0x80 | data;
+		for (int n = nDigitalChEnabled_; n > 0; n -= 7, packedBitmap >>= 7) {
+			buff[iBuff++] = 0x80 | static_cast<uint8_t>(packedBitmap & 0x7f);
 		}
-		if (nSamples > 32) nSamples = 32;
-		if (nSamples > 0) {							// 0 < nSamples < 32
-			buff[iBuff++] = nSamples + 47;
+		nSamples--;
+		if (nSamples > 0) {
+			while (nSamples >= 32 * 49) {				// 32 * 49 <= nSamples
+				buff[iBuff++] = (32 * 49) / 32 + 78;	// = 127 (0x7f)
+				nSamples -= 32 * 49;
+			}
+			if (nSamples >= 64) {						// 64 <= nSamples < 32 * 49
+				int nChunksToSend = nSamples / 32;
+				buff[iBuff++] = nChunksToSend + 78;
+				nSamples -= 32 * nChunksToSend;
+			}
+			if (nSamples >= 32) {						// 32 <= nSamples < 64
+				buff[iBuff++] = 32 + 47;				// = 79 (0x4f)
+				nSamples -= 32;
+			}
+			if (nSamples > 32) nSamples = 32;
+			if (nSamples > 0) {							// 0 < nSamples < 32
+				buff[iBuff++] = nSamples + 47;
+			}
 		}
 	}
 	//Dump(buff, iBuff);
