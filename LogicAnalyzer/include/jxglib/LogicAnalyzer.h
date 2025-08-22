@@ -165,6 +165,7 @@ public:
 		const WaveStyle* pWaveStyle;
 	public:
 		PrintInfo() : nPins{0}, nEventsToPrint{80}, part{PrintPart::Head}, pWaveStyle{&waveStyle_unicode2} {}
+		int CountValidPins() const;
 	};
 	class SamplingInfo {
 	private:
@@ -409,6 +410,9 @@ public:
 	const LogicAnalyzer& PrintSettings(Printable& tout) const;
 public:
 	static size_t GetFreeHeapBytes();
+	static bool IsBlankPin(uint pin) { return pin == static_cast<uint>(-1); }
+	static bool IsValidPin(uint pin) { return pin < GPIO::NumPins; }
+	static bool IsAnnotationPin(uint pin) { return !IsBlankPin(pin) && pin >= GPIO::NumPins; }
 };
 
 //------------------------------------------------------------------------------
