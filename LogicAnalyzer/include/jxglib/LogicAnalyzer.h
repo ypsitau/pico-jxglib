@@ -20,6 +20,7 @@ class ProtocolDecoder;
 //------------------------------------------------------------------------------
 class LogicAnalyzer {
 public:
+	class PrintInfo;
 	class SamplingInfo;
 	enum class RawEventFormat { Auto, Long, Short };
 	class RawEvent {
@@ -74,7 +75,7 @@ public:
 		bool IsValid() const { return timeStamp_ != static_cast<uint64_t>(-1); }
 		uint64_t GetTimeStamp() const { return timeStamp_; }
 		uint32_t GetPinBitmap() const { return pinBitmap_; }
-		uint32_t GetPackedBitmap(const SamplingInfo& samplingInfo) const;
+		uint32_t GetPackedBitmap(const PrintInfo& printInfo) const;
 		template<typename... Pins> static uint32_t MakeMask(Pins... pins) {
 			return ((1u << pins) | ...);
 		}

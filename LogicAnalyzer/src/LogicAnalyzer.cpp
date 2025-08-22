@@ -667,9 +667,18 @@ LogicAnalyzer::Event& LogicAnalyzer::Event::operator=(const Event& event)
 	return *this;
 }
 
-uint32_t LogicAnalyzer::Event::GetPackedBitmap(const SamplingInfo& samplingInfo) const
+uint32_t LogicAnalyzer::Event::GetPackedBitmap(const PrintInfo& printInfo) const
 {
+	int iBit = 0;
 	uint32_t bitmap = 0;
+	for (int iPin = 0; iPin < printInfo.nPins; ++iPin) {
+		uint pin = printInfo.pinTbl[iPin];
+		if (IsValidPin(pin)) {
+			if (IsPinHigh(pin)) bitmap |= (1u << iBit);
+			iBit++;
+		}
+	}
+#if 0
 	int iBit = 0;
 	uint pin = samplingInfo.GetPinMin();
 	for (uint32_t pinBitmap = samplingInfo.GetPinBitmapEnabled(); pinBitmap != 0; pinBitmap >>= 1, ++pin) {
@@ -678,6 +687,7 @@ uint32_t LogicAnalyzer::Event::GetPackedBitmap(const SamplingInfo& samplingInfo)
 			iBit++;
 		}
 	}
+#endif
 	return bitmap;
 }
 
@@ -887,7 +897,8 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		if (pollingFlag) {
 			// nothing to do
 		} else if (ch == '\n') {
-			nDigitalChAvailable_ = logicAnalyzer_.GetSamplingInfo().CountPins();
+			nDigitalChAvailable_ = logicAnalyzer_.GetPrintInfo().CountValidPins();
+			//nDigitalChAvailable_ = logicAnalyzer_.GetSamplingInfo().CountPins();
 			//nDigitalChAvailable_ = 4;
 			if (nDigitalChAvailable_ == 0) {
 				terr.Printf(
@@ -1060,7 +1071,7 @@ void LogicAnalyzer::SigrokAdapter::SendReport(const Event& event, int nSamples)
 	uint8_t buff[32];
 	if (nSamples <= 0) return;
 	if (nSamples > 640 * (count_of(buff) - 4)) nSamples = 640 * (count_of(buff) - 4);	// prevent overflow of buff
-	uint32_t packedBitmap = event.GetPackedBitmap(logicAnalyzer_.GetSamplingInfo());
+	uint32_t packedBitmap = event.GetPackedBitmap(logicAnalyzer_.GetPrintInfo());
 	//::printf("%08x * %dsamples\n", packedBitmap, nSamples);
 	if (nDigitalChEnabled_ <= 4) {
 		// D4 mode
