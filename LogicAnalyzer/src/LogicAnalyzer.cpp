@@ -129,12 +129,12 @@ bool LogicAnalyzer::Enable()
 	int bytesSamplingBuffPerSampler = static_cast<int>(heapRatioRequested_ * GetFreeHeapBytes()) /
 						nSampler_ / sizeof(RawEvent_Long::Entity) * sizeof(RawEvent_Long::Entity);
 	if (!samplingBuffWhole_) {
-		samplingBuffWhole_ = reinterpret_cast<uint8_t*>(::malloc(bytesHeadMargin + nSampler_ * bytesSamplingBuffPerSampler));
+		samplingBuffWhole_ = reinterpret_cast<uint8_t*>(::malloc(nSampler_ * bytesSamplingBuffPerSampler));
 		if (!samplingBuffWhole_) return false;
 	}
 	heapRatio_ = heapRatioRequested_;
 	for (int iSampler = 0; iSampler < nSampler_; ++iSampler) {
-		samplerTbl_[iSampler].AssignBuff(samplingBuffWhole_ + bytesHeadMargin + iSampler * bytesSamplingBuffPerSampler, bytesSamplingBuffPerSampler);
+		samplerTbl_[iSampler].AssignBuff(samplingBuffWhole_ + iSampler * bytesSamplingBuffPerSampler, bytesSamplingBuffPerSampler);
 	}
 	uint nBitsTimeStamp = 32;
 	uint nBitsPinToReport = 32;

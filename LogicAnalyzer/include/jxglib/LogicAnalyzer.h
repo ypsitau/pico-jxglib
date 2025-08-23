@@ -340,7 +340,6 @@ public:
 		virtual void OnTick() override;
 	};
 public:
-	static const int bytesHeadMargin = 128;
 	static const WaveStyle waveStyle_unicode1;
 	static const WaveStyle waveStyle_unicode2;
 	static const WaveStyle waveStyle_unicode3;
