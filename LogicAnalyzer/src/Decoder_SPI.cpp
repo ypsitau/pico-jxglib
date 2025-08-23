@@ -111,7 +111,6 @@ void Decoder_SPI::Core::ProcessEvent(const EventIterator& eventIter, const Event
 {
 	bool bitAccumBeginFlag = false;
 	bool signalSCK = event.IsPinHigh(prop_.pinSCK);
-	::printf("%p %08x %04b SCK %d -> %d MOSI %d\n", this, static_cast<uint32_t>(event.GetTimeStamp()), event.GetPinBitmap(), signalSCKPrev_, signalSCK, event.IsPinHigh(prop_.pinMOSI));
 	switch (stat_) {
 	case Stat::WaitForIdle: {
 		if (((prop_.mode == 0 || prop_.mode == 1) && !signalSCK) || ((prop_.mode == 2 || prop_.mode == 3) && signalSCK)) {
@@ -167,7 +166,6 @@ void Decoder_SPI::Core_Annotator::ProcessEvent(const EventIterator& eventIter, c
 
 void Decoder_SPI::Core_Annotator::OnBitAccumBegin(const EventIterator& eventIter)
 {
-	::printf("----\n");
 	Core_BitAccumAdv coreAdv(*this);
 	EventIterator eventIterAdv(eventIter);
 	Event eventAdv;
