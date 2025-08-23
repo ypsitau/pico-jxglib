@@ -85,8 +85,9 @@ private:
 public:
 	Decoder_UART(const LogicAnalyzer& logicAnalyzer, const char* name);
 public:
-	virtual bool EvalSubcmd(Printable& terr, const char* subcmd);
-	virtual bool CheckValidity(Printable& terr);
+	virtual bool EvalSubcmd(Printable& terr, const char* subcmd) override;
+	virtual bool CheckValidity(Printable& terr) override;
+	virtual void Reset() override;
 	virtual void AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int* piCol) override;
 	virtual void AnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol) override;
 };

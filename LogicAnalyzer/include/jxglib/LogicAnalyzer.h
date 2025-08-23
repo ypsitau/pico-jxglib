@@ -221,6 +221,7 @@ public:
 	public:
 		virtual bool EvalSubcmd(Printable& terr, const char* subcmd) { return false; }
 		virtual bool CheckValidity(Printable& terr) { return false; }
+		virtual void Reset() = 0;
 		virtual void AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol) = 0;
 		virtual void AnnotateWaveStreak(char* buffLine, int lenBuffLine, int *piCol) = 0;
 	public:

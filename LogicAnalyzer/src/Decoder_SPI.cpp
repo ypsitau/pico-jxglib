@@ -21,7 +21,7 @@ bool Decoder_SPI::EvalSubcmd(Printable& terr, const char* subcmd)
 	const char* value = nullptr;
 	if (Shell::Arg::GetAssigned(subcmd, "mode", &value)) {
 		int num = ::strtol(value, &endptr, 10);
-		if (endptr == value || *endptr != '\0' || num < 0 || num >= 3) {
+		if (endptr == value || *endptr != '\0' || num < 0 || num > 3) {
 			terr.Printf("invalid SPI mode\n");
 			return false;
 		}
@@ -43,7 +43,10 @@ bool Decoder_SPI::EvalSubcmd(Printable& terr, const char* subcmd)
 		}
 		prop_.pinMISO = static_cast<uint>(num);
 		return true;
-	} else if (Shell::Arg::GetAssigned(subcmd, "sck", &value)) {
+	} else if (Shell::Arg::GetAssigned(subcmd, "sck", &value) ||
+				Shell::Arg::GetAssigned(subcmd, "scl", &value) ||
+				Shell::Arg::GetAssigned(subcmd, "sclk", &value) ||
+				Shell::Arg::GetAssigned(subcmd, "clk", &value)) {
 		int num = ::strtol(value, &endptr, 10);
 		if (endptr == value || *endptr != '\0' || num < 0 || num >= GPIO::NumPins) {
 			terr.Printf("invalid SCK pin number\n");
@@ -95,6 +98,15 @@ Decoder_SPI::Core::Core(const Property& prop) : prop_{prop}, stat_{Stat::WaitFor
 	nBitsAccum_{0}, bitAccumMOSI_{0}, bitAccumMISO_{0}, signalSCKPrev_{false}
 {}
 
+void Decoder_SPI::Core::Reset()
+{
+	stat_ = Stat::WaitForIdle;
+	nBitsAccum_ = 0;
+	bitAccumMOSI_ = 0;
+	bitAccumMISO_ = 0;
+	signalSCKPrev_ = false;
+}
+
 void Decoder_SPI::Core::ProcessEvent(const EventIterator& eventIter, const Event& event)
 {
 	bool bitAccumBeginFlag = false;
@@ -111,17 +123,16 @@ void Decoder_SPI::Core::ProcessEvent(const EventIterator& eventIter, const Event
 		break;
 	}
 	case Stat::BitAccum_SCK: {
-		bool bitAccumBeginFlag = false;
 		bool signalSCK = event.IsPinHigh(prop_.pinSCK);
 		if (signalSCK != signalSCKPrev_ && (((prop_.mode == 0 || prop_.mode == 3) & signalSCK)) ||
 											((prop_.mode == 1 || prop_.mode == 2) & !signalSCK)) {
-			OnBit(nBitsAccum_, event);
 			if (IsValidPin(prop_.pinMOSI)) {
 				bitAccumMOSI_ = (bitAccumMOSI_ << 1) | (event.IsPinHigh(prop_.pinMOSI)? 1 : 0);
 			}
 			if (IsValidPin(prop_.pinMISO)) {
 				bitAccumMISO_ = (bitAccumMISO_ << 1) | (event.IsPinHigh(prop_.pinMISO)? 1 : 0);
 			}
+			OnBit(nBitsAccum_, event);
 			nBitsAccum_++;
 			if (nBitsAccum_ == 8) {
 				OnBitAccumComplete();
@@ -177,7 +188,11 @@ void Decoder_SPI::Core_Annotator::OnBit(int iBit, const Event& event)
 	if (IsValidPin(prop_.pinMISO)) {
 		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %d", event.IsPinHigh(prop_.pinMISO)? 1 : 0);
 	}
-	if (iBit == 3 && adv_.validFlag) {
+	if (iBit == 0) {
+		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " msb");
+	} else if (iBit == 7) {
+		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " lsb");
+	} else if (iBit == 3 && adv_.validFlag) {
 		if (IsValidPin(prop_.pinMOSI)) {
 			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " MOSI:0x%02x", adv_.bitAccumMOSI);
 		}
@@ -190,6 +205,16 @@ void Decoder_SPI::Core_Annotator::OnBit(int iBit, const Event& event)
 void Decoder_SPI::Core_Annotator::OnBitAccumComplete()
 {
 	adv_.validFlag = false;
+}
+
+//------------------------------------------------------------------------------
+// Decoder_SPI::Core_BitAccumAdv
+//------------------------------------------------------------------------------
+void Decoder_SPI::Core_BitAccumAdv::OnBitAccumComplete()
+{
+	completeFlag_ = true;
+	saved_.bitAccumMOSI = bitAccumMOSI_;
+	saved_.bitAccumMISO = bitAccumMISO_;
 }
 
 }

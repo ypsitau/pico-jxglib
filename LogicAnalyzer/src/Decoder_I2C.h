@@ -10,6 +10,8 @@ namespace jxglib::LogicAnalyzerExt {
 //------------------------------------------------------------------------------
 class Decoder_I2C : public LogicAnalyzer::Decoder {
 public:
+	static const int nColsAnnotation = 13;
+public:
 	class Factory : public LogicAnalyzer::Decoder::Factory {
 	public:
 		Factory() : LogicAnalyzer::Decoder::Factory("i2c") {}
@@ -23,13 +25,15 @@ public:
 		Done, WaitForStable, Start_SDA_Fall, BitAccum_SCL_Fall, BitAccum_SCL_Rise, Stop_SCL_Fall,
 	};
 	enum class Field { Address, Data };
+	enum class Direction { Read, Write };
 	struct Property {
 		uint pinSDA, pinSCL;
 	};
 	class Core {
-	private:
+	protected:
 		Stat stat_;
 		Field field_;
+		Direction direction_;
 		int nBitsAccum_;
 		uint16_t bitAccum_;
 		bool signalSDAPrev_;
@@ -37,6 +41,8 @@ public:
 	public:
 		Core(const Core& core);
 		Core(const Property& prop);
+	public:
+		void Reset();
 	public:
 		Stat GetStat() const { return stat_; }
 	public:
@@ -91,8 +97,9 @@ private:
 public:
 	Decoder_I2C(const LogicAnalyzer& logicAnalyzer, const char* name);
 public:
-	virtual bool EvalSubcmd(Printable& terr, const char* subcmd);
-	virtual bool CheckValidity(Printable& terr);
+	virtual bool EvalSubcmd(Printable& terr, const char* subcmd) override;
+	virtual bool CheckValidity(Printable& terr) override;
+	virtual void Reset() override { annotator_.Reset(); }
 	virtual void AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int* piCol) override;
 	virtual void AnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol) override;
 };

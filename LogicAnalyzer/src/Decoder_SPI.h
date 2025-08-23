@@ -20,29 +20,31 @@ public:
 		}
 	};
 public:
-	   // SPI protocol state machine states
-		enum class Stat {
-			Done,				// Analysis complete
-			WaitForIdle,		// Waiting for SCK to go high (mode = 2 or 3) or low (mode = 0 or 1)
-			BitAccum_SCK,		// Accumulating bits on SCK edge
-		};
-		// SPI pin configuration
-		struct Property {
-			int mode;
-			uint pinMOSI, pinMISO, pinSCK;
-		};
-		// Core SPI analyzer logic
-		class Core {
-		protected:
-		   Stat stat_;				// Current state of the SPI state machine
-		   int nBitsAccum_;			// Number of bits accumulated in current byte
-		   uint16_t bitAccumMOSI_;	// Accumulated bits (MOSI)
-		   uint16_t bitAccumMISO_;	// Accumulated bits (MISO)
-		   bool signalSCKPrev_;		// Previous SCK pin state
-		   const Property& prop_;	// SPI pin configuration
+	// SPI protocol state machine states
+	enum class Stat {
+		Done,				// Analysis complete
+		WaitForIdle,		// Waiting for SCK to go high (mode = 2 or 3) or low (mode = 0 or 1)
+		BitAccum_SCK,		// Accumulating bits on SCK edge
+	};
+	// SPI pin configuration
+	struct Property {
+		int mode;
+		uint pinMOSI, pinMISO, pinSCK;
+	};
+	// Core SPI analyzer logic
+	class Core {
+	protected:
+		const Property& prop_;	// SPI pin configuration
+		Stat stat_;				// Current state of the SPI state machine
+		int nBitsAccum_;		// Number of bits accumulated in current byte
+		uint16_t bitAccumMOSI_;	// Accumulated bits (MOSI)
+		uint16_t bitAccumMISO_;	// Accumulated bits (MISO)
+		bool signalSCKPrev_;	// Previous SCK pin state
 	public:
 		Core(const Core& core);
 		Core(const Property& prop);
+	public:
+		void Reset();
 	public:
 		Stat GetStat() const { return stat_; }
 	public:
@@ -85,9 +87,7 @@ public:
 		uint16_t GetBitAccumMOSI() const { return saved_.bitAccumMOSI; }
 		uint16_t GetBitAccumMISO() const { return saved_.bitAccumMISO; }
 	public:
-		virtual void OnBitAccumComplete() override {
-			completeFlag_ = true; saved_.bitAccumMOSI = bitAccumMOSI_; saved_.bitAccumMISO = bitAccumMISO_;
-		}
+		virtual void OnBitAccumComplete() override;
 	};
 private:
 	Core_Annotator annotator_;
@@ -98,8 +98,9 @@ private:
 public:
 	Decoder_SPI(const LogicAnalyzer& logicAnalyzer, const char* name);
 public:
-	virtual bool EvalSubcmd(Printable& terr, const char* subcmd);
-	virtual bool CheckValidity(Printable& terr);
+	virtual bool EvalSubcmd(Printable& terr, const char* subcmd) override;
+	virtual bool CheckValidity(Printable& terr) override;
+	virtual void Reset() override { annotator_.Reset(); }
 	virtual void AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int* piCol) override;
 	virtual void AnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol) override;
 };

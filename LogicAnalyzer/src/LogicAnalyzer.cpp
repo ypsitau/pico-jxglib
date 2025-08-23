@@ -276,7 +276,10 @@ int LogicAnalyzer::GetRawEventCountMax() const
 
 const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr) const
 {
-	if (pDecoder_ && !pDecoder_->CheckValidity(terr)) return *this;
+	if (pDecoder_) {
+		if (!pDecoder_->CheckValidity(terr)) return *this;
+		pDecoder_->Reset();
+	}
 	int iCol = 0;
 	char buffLine[256];
 	EventIterator eventIter(*this);

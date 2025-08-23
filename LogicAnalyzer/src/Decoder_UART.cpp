@@ -93,6 +93,10 @@ bool Decoder_UART::CheckValidity(Printable& terr)
 	return rtn;
 }
 
+void Decoder_UART::Reset()
+{
+}
+
 void Decoder_UART::AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol)
 {
 	annotator_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
