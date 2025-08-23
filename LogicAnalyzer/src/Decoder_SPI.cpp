@@ -183,20 +183,29 @@ void Decoder_SPI::Core_Annotator::OnBit(int iBit, const Event& event)
 	int& iCol = *piCol_;
 	if (IsValidPin(prop_.pinMOSI)) {
 		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %d", event.IsPinHigh(prop_.pinMOSI)? 1 : 0);
+		if (iBit == 0) {
+			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " msb      ");
+		} else if (iBit == 7) {
+			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " lsb      ");
+		} else if (iBit == 3 && adv_.validFlag) {
+			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " MOSI:0x%02x", adv_.bitAccumMOSI);
+		} else {
+			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, "          ");
+		}
 	}
 	if (IsValidPin(prop_.pinMISO)) {
-		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %d", event.IsPinHigh(prop_.pinMISO)? 1 : 0);
-	}
-	if (iBit == 0) {
-		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " msb");
-	} else if (iBit == 7) {
-		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " lsb");
-	} else if (iBit == 3 && adv_.validFlag) {
 		if (IsValidPin(prop_.pinMOSI)) {
-			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " MOSI:0x%02x", adv_.bitAccumMOSI);
+			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " ");
 		}
-		if (IsValidPin(prop_.pinMISO)) {
+		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %d", event.IsPinHigh(prop_.pinMISO)? 1 : 0);
+		if (iBit == 0) {
+			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " msb      ");
+		} else if (iBit == 7) {
+			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " lsb      ");
+		} else if (iBit == 3 && adv_.validFlag) {
 			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " MISO:0x%02x", adv_.bitAccumMISO);
+		} else {
+			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, "          ");
 		}
 	}
 }
