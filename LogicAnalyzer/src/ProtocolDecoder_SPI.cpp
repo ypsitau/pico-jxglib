@@ -12,7 +12,7 @@ namespace jxglib {
 ProtocolDecoder_SPI::Factory ProtocolDecoder_SPI::factory_;
 
 ProtocolDecoder_SPI::ProtocolDecoder_SPI(const LogicAnalyzer& logicAnalyzer, const char* name) :
-	ProtocolDecoder(logicAnalyzer, name), annotator_(prop_), prop_{GPIO::InvalidPin, GPIO::InvalidPin, GPIO::InvalidPin, GPIO::InvalidPin}
+	ProtocolDecoder(logicAnalyzer, name), annotator_(prop_), prop_{GPIO::InvalidPin, GPIO::InvalidPin, GPIO::InvalidPin}
 {}
 
 bool ProtocolDecoder_SPI::EvalSubcmd(Printable& terr, const char* subcmd)
@@ -43,14 +43,6 @@ bool ProtocolDecoder_SPI::EvalSubcmd(Printable& terr, const char* subcmd)
 		}
 		prop_.pinSCK = static_cast<uint>(num);
 		return true;
-	} else if (Shell::Arg::GetAssigned(subcmd, "cs", &value)) {
-		int num = ::strtol(value, &endptr, 10);
-		if (endptr == value || *endptr != '\0' || num < 0 || num >= GPIO::NumPins) {
-			terr.Printf("invalid CS pin number\n");
-			return false;
-		}
-		prop_.pinCS = static_cast<uint>(num);
-		return true;
 	}
 	terr.Printf("unknown sub-command: %s\n", subcmd);
 	return false;
@@ -59,20 +51,8 @@ bool ProtocolDecoder_SPI::EvalSubcmd(Printable& terr, const char* subcmd)
 bool ProtocolDecoder_SPI::CheckValidity(Printable& terr)
 {
     bool rtn = true;
-	if (prop_.pinMOSI == GPIO::InvalidPin) {
-		terr.Printf("specify MOSI pin number\n");
-		rtn = false;
-	}
-	if (prop_.pinMISO == GPIO::InvalidPin) {
-		terr.Printf("specify MISO pin number\n");
-		rtn = false;
-	}
 	if (prop_.pinSCK == GPIO::InvalidPin) {
 		terr.Printf("specify SCK pin number\n");
-		rtn = false;
-	}
-	if (prop_.pinCS == GPIO::InvalidPin) {
-		terr.Printf("specify CS pin number\n");
 		rtn = false;
 	}
 	return rtn;
@@ -92,49 +72,31 @@ void ProtocolDecoder_SPI::AnnotateWaveStreak(char* buffLine, int lenBuffLine, in
 // ProtocolDecoder_SPI::Core
 //------------------------------------------------------------------------------
 ProtocolDecoder_SPI::Core::Core(const Core& core) : prop_{core.prop_}, stat_{core.stat_}, field_{core.field_},
-	nBitsAccum_{core.nBitsAccum_}, bitAccum_{core.bitAccum_}, csPrev_{core.csPrev_}, sckPrev_{core.sckPrev_}
+	nBitsAccum_{core.nBitsAccum_}, bitAccum_{core.bitAccum_}, sckPrev_{core.sckPrev_}
 {}
 
 ProtocolDecoder_SPI::Core::Core(const Property& prop) : prop_{prop}, stat_{Stat::WaitForStable}, field_{Field::Data},
-	nBitsAccum_{0}, bitAccum_{0}, csPrev_{true}, sckPrev_{false}
+	nBitsAccum_{0}, bitAccum_{0}, sckPrev_{false}
 {}
 
 void ProtocolDecoder_SPI::Core::ProcessEvent(const EventIterator& eventIter, const Event& event)
 {
 	// Read current SPI pin states
-	bool cs = event.IsPinHigh(prop_.pinCS);
 	bool sck = event.IsPinHigh(prop_.pinSCK);
 	bool mosi = event.IsPinHigh(prop_.pinMOSI);
 	bool miso = event.IsPinHigh(prop_.pinMISO);
 	switch (stat_) {
 	case Stat::WaitForStable: {
 		// Wait for CS to go low (start of SPI transaction)
-		if (!cs) {
-			stat_ = Stat::Start_CS_Fall;
-		}
 		break;
 	}
 	case Stat::Start_CS_Fall: {
 		// If CS goes high, stop transaction
-		if (!csPrev_ && cs) {
-			OnStop();
-			stat_ = Stat::WaitForStable;
-		} else if (!cs && sck && !sckPrev_) {
-			// On SCK high (rising edge) with CS low, start bit accumulation
-			OnStart();
-			nBitsAccum_ = 0;
-			bitAccum_ = 0x000;
-			field_ = Field::Data;
-			stat_ = Stat::BitAccum_SCK_Edge;
-		}
 		break;
 	}
 	case Stat::BitAccum_SCK_Edge: {
 		// If CS goes high, stop transaction
-		if (cs) {
-			OnStop();
-			stat_ = Stat::WaitForStable;
-		} else if (sck && !sckPrev_) {
+		if (sck && !sckPrev_) {
 			// On SCK rising edge, sample MOSI/MISO and accumulate bits
 			OnBit(field_, nBitsAccum_, mosi, miso);
 			bitAccum_ = (bitAccum_ << 1) | (mosi ? 1 : 0);
@@ -151,7 +113,6 @@ void ProtocolDecoder_SPI::Core::ProcessEvent(const EventIterator& eventIter, con
 	default: break;
 	}
 	// Store previous pin states for edge detection
-	csPrev_ = cs;
 	sckPrev_ = sck;
 }
 

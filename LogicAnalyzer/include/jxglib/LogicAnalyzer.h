@@ -454,6 +454,8 @@ public:
 	virtual bool CheckValidity(Printable& terr) { return false; }
 	virtual void AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol) = 0;
 	virtual void AnnotateWaveStreak(char* buffLine, int lenBuffLine, int *piCol) = 0;
+public:
+	static bool IsValidPin(uint pin) { return LogicAnalyzer::IsValidPin(pin); }
 };
 
 }
