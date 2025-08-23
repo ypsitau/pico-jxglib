@@ -12,7 +12,7 @@ namespace jxglib {
 ProtocolDecoder_SPI::Factory ProtocolDecoder_SPI::factory_;
 
 ProtocolDecoder_SPI::ProtocolDecoder_SPI(const LogicAnalyzer& logicAnalyzer, const char* name) :
-	ProtocolDecoder(logicAnalyzer, name), annotator_(prop_), prop_{-1, GPIO::InvalidPin, GPIO::InvalidPin, GPIO::InvalidPin}
+	LogicAnalyzer::Decoder(logicAnalyzer, name), annotator_(prop_), prop_{-1, GPIO::InvalidPin, GPIO::InvalidPin, GPIO::InvalidPin}
 {}
 
 bool ProtocolDecoder_SPI::EvalSubcmd(Printable& terr, const char* subcmd)

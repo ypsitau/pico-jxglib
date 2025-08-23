@@ -9,13 +9,13 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // ProtocolDecoder_UART
 //------------------------------------------------------------------------------
-class ProtocolDecoder_UART : public ProtocolDecoder {
+class ProtocolDecoder_UART : public LogicAnalyzer::Decoder {
 public:
-	class Factory : public ProtocolDecoder::Factory {
+	class Factory : public LogicAnalyzer::Decoder::Factory {
 	public:
-		Factory() : ProtocolDecoder::Factory("uart") {}
+		Factory() : LogicAnalyzer::Decoder::Factory("uart") {}
 	public:
-		virtual ProtocolDecoder* Create(const LogicAnalyzer& logicAnalyzer) override {
+		virtual LogicAnalyzer::Decoder* Create(const LogicAnalyzer& logicAnalyzer) override {
 			return new ProtocolDecoder_UART(logicAnalyzer, name_);
 		}
 	};

@@ -11,7 +11,7 @@ namespace jxglib {
 ProtocolDecoder_I2C::Factory ProtocolDecoder_I2C::factory_;
 
 ProtocolDecoder_I2C::ProtocolDecoder_I2C(const LogicAnalyzer& logicAnalyzer, const char* name) :
-	ProtocolDecoder(logicAnalyzer, name), annotator_(prop_), prop_{GPIO::InvalidPin, GPIO::InvalidPin}
+	Decoder(logicAnalyzer, name), annotator_(prop_), prop_{GPIO::InvalidPin, GPIO::InvalidPin}
 {}
 
 bool ProtocolDecoder_I2C::EvalSubcmd(Printable& terr, const char* subcmd)

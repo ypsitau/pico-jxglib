@@ -13,7 +13,7 @@
 
 namespace jxglib {
 
-class ProtocolDecoder;
+class Decoder;
 
 //------------------------------------------------------------------------------
 // LogicAnalyzer
@@ -186,6 +186,45 @@ public:
 		bool IsPinEnabled(uint pin) const { return ((pinBitmapEnabled_ << pinMin_) & (1u << pin)) != 0; }
 		void Update(const PrintInfo& printInfo);
 		int CountBits() const;
+	};
+	class Decoder {
+	public:
+		using EventIterator = LogicAnalyzer::EventIterator;
+		using Event = LogicAnalyzer::Event;
+	public:
+		class Factory {
+		protected:
+			const char* name_;
+			Factory* pFactoryNext_;
+		private:
+			static Factory* pFactoryHead_;
+		public:
+			Factory(const char* name);
+		public:
+			const char* GetName() const { return name_; }
+			void SetNext(Factory* pFactory) { pFactoryNext_ = pFactory; }
+			Factory* GetNext() const { return pFactoryNext_; }
+		public:
+			static Factory* GetHead() { return pFactoryHead_; }
+			static Factory* Find(const char* name);
+		public:
+			virtual Decoder* Create(const LogicAnalyzer& logicAnalyzer) = 0;
+		};
+	protected:
+		const LogicAnalyzer& logicAnalyzer_;
+		const char* name_;
+	public:
+		Decoder(const LogicAnalyzer& logicAnalyzer, const char* name) : logicAnalyzer_{logicAnalyzer}, name_{name} {}
+		virtual ~Decoder() = default;
+	public:
+		const char* GetName() const { return name_; }
+	public:
+		virtual bool EvalSubcmd(Printable& terr, const char* subcmd) { return false; }
+		virtual bool CheckValidity(Printable& terr) { return false; }
+		virtual void AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol) = 0;
+		virtual void AnnotateWaveStreak(char* buffLine, int lenBuffLine, int *piCol) = 0;
+	public:
+		static bool IsValidPin(uint pin) { return LogicAnalyzer::IsValidPin(pin); }
 	};
 public:
 	class SigrokAdapter : public Tickable {
@@ -365,7 +404,7 @@ private:
 	float heapRatioRequested_;
 	int clocksPerLoop_;
 	float usecReso_;
-	std::unique_ptr<ProtocolDecoder> pDecoder_;
+	std::unique_ptr<Decoder> pDecoder_;
 public:
 	LogicAnalyzer();
 	~LogicAnalyzer();
@@ -405,7 +444,7 @@ public:
 	int GetRawEventCount() const;
 	int GetRawEventCountMax() const;
 	const LogicAnalyzer& PrintWave(Printable& tout, Printable& terr) const;
-	ProtocolDecoder* SetDecoder(const char* decoderName);
+	Decoder* SetDecoder(const char* decoderName);
 	const LogicAnalyzer& PlotWave() const;
 	const LogicAnalyzer& PrintSettings(Printable& tout) const;
 public:
@@ -415,48 +454,6 @@ public:
 	static bool IsAnnotationPin(uint pin) { return !IsBlankPin(pin) && pin >= GPIO::NumPins; }
 };
 
-//------------------------------------------------------------------------------
-// ProtocolDecoder
-//------------------------------------------------------------------------------
-class ProtocolDecoder {
-public:
-	using EventIterator = LogicAnalyzer::EventIterator;
-	using Event = LogicAnalyzer::Event;
-public:
-	class Factory {
-	protected:
-		const char* name_;
-		Factory* pFactoryNext_;
-	private:
-		static Factory* pFactoryHead_;
-	public:
-		Factory(const char* name);
-	public:
-		const char* GetName() const { return name_; }
-		void SetNext(Factory* pFactory) { pFactoryNext_ = pFactory; }
-		Factory* GetNext() const { return pFactoryNext_; }
-	public:
-		static Factory* GetHead() { return pFactoryHead_; }
-		static Factory* Find(const char* name);
-	public:
-		virtual ProtocolDecoder* Create(const LogicAnalyzer& logicAnalyzer) = 0;
-	};
-protected:
-	const LogicAnalyzer& logicAnalyzer_;
-	const char* name_;
-public:
-	ProtocolDecoder(const LogicAnalyzer& logicAnalyzer, const char* name) : logicAnalyzer_{logicAnalyzer}, name_{name} {}
-	virtual ~ProtocolDecoder() = default;
-public:
-	const char* GetName() const { return name_; }
-public:
-	virtual bool EvalSubcmd(Printable& terr, const char* subcmd) { return false; }
-	virtual bool CheckValidity(Printable& terr) { return false; }
-	virtual void AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol) = 0;
-	virtual void AnnotateWaveStreak(char* buffLine, int lenBuffLine, int *piCol) = 0;
-public:
-	static bool IsValidPin(uint pin) { return LogicAnalyzer::IsValidPin(pin); }
-};
 
 }
 

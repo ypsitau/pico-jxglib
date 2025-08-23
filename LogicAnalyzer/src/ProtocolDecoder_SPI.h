@@ -9,13 +9,13 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // ProtocolDecoder_SPI
 //------------------------------------------------------------------------------
-class ProtocolDecoder_SPI : public ProtocolDecoder {
+class ProtocolDecoder_SPI : public LogicAnalyzer::Decoder {
 public:
-	class Factory : public ProtocolDecoder::Factory {
+	class Factory : public LogicAnalyzer::Decoder::Factory {
 	public:
-		Factory() : ProtocolDecoder::Factory("spi") {}
+		Factory() : LogicAnalyzer::Decoder::Factory("spi") {}
 	public:
-		virtual ProtocolDecoder* Create(const LogicAnalyzer& logicAnalyzer) override {
+		virtual LogicAnalyzer::Decoder* Create(const LogicAnalyzer& logicAnalyzer) override {
 			return new ProtocolDecoder_SPI(logicAnalyzer, name_);
 		}
 	};

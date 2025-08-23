@@ -192,19 +192,19 @@ ShellCmd(la, "Logic Analyzer")
 			const char* decoderName = value;
 			if (!decoderName) {
 				terr.Printf("available decoders:");
-				for (const ProtocolDecoder::Factory* pFactory = ProtocolDecoder::Factory::GetHead(); pFactory; pFactory = pFactory->GetNext()) {
+				for (const LogicAnalyzer::Decoder::Factory* pFactory = LogicAnalyzer::Decoder::Factory::GetHead(); pFactory; pFactory = pFactory->GetNext()) {
 					terr.Printf(" %s", pFactory->GetName());
 				}
 				terr.Println();
 				return false;
 			}
-			ProtocolDecoder* pProtocolDecoder = logicAnalyzer.SetDecoder(decoderName);
-			if (!pProtocolDecoder) {
+			LogicAnalyzer::Decoder* pDecoder = logicAnalyzer.SetDecoder(decoderName);
+			if (!pDecoder) {
 				terr.Printf("unknown decoder: %s\n", decoderName);
 				return false;
 			}
 			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
-				if (!pProtocolDecoder->EvalSubcmd(terr, pSubcmdChild->GetProc())) return false;
+				if (!pDecoder->EvalSubcmd(terr, pSubcmdChild->GetProc())) return false;
 			}
 		} else {
 			tout.Printf("unknown subcommand: %s\n", subcmd);

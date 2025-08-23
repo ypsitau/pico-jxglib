@@ -8,13 +8,13 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // ProtocolDecoder_I2C
 //------------------------------------------------------------------------------
-class ProtocolDecoder_I2C : public ProtocolDecoder {
+class ProtocolDecoder_I2C : public LogicAnalyzer::Decoder {
 public:
-	class Factory : public ProtocolDecoder::Factory {
+	class Factory : public LogicAnalyzer::Decoder::Factory {
 	public:
-		Factory() : ProtocolDecoder::Factory("i2c") {}
+		Factory() : LogicAnalyzer::Decoder::Factory("i2c") {}
 	public:
-		virtual ProtocolDecoder* Create(const LogicAnalyzer& logicAnalyzer) override {
+		virtual LogicAnalyzer::Decoder* Create(const LogicAnalyzer& logicAnalyzer) override {
 			return new ProtocolDecoder_I2C(logicAnalyzer, name_);
 		}
 	};

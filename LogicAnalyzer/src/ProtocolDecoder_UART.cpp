@@ -12,7 +12,7 @@ namespace jxglib {
 ProtocolDecoder_UART::Factory ProtocolDecoder_UART::factory_;
 
 ProtocolDecoder_UART::ProtocolDecoder_UART(const LogicAnalyzer& logicAnalyzer, const char* name) :
-	ProtocolDecoder(logicAnalyzer, name), annotator_(prop_), prop_{GPIO::InvalidPin, 9600, 8, false, false, 1}
+	LogicAnalyzer::Decoder(logicAnalyzer, name), annotator_(prop_), prop_{GPIO::InvalidPin, 9600, 8, false, false, 1}
 {}
 
 bool ProtocolDecoder_UART::EvalSubcmd(Printable& terr, const char* subcmd)

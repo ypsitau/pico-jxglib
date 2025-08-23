@@ -411,13 +411,13 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr) 
 	return *this;
 }
 
-ProtocolDecoder* LogicAnalyzer::SetDecoder(const char* decoderName)
+LogicAnalyzer::Decoder* LogicAnalyzer::SetDecoder(const char* decoderName)
 {
 	if (pDecoder_ && ::strcasecmp(pDecoder_->GetName(), decoderName) == 0) {
 		// nothing to do
 	} else {
 		pDecoder_.reset();
-		ProtocolDecoder::Factory* pFactory = ProtocolDecoder::Factory::Find(decoderName);
+		Decoder::Factory* pFactory = Decoder::Factory::Find(decoderName);
 		if (pFactory) {
 			pDecoder_.reset(pFactory->Create(*this));
 		}
