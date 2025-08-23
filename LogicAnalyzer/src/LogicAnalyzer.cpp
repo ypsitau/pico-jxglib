@@ -324,56 +324,15 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr) 
 		(printInfo_.part == PrintPart::Head)? 0 :
 		(printInfo_.part == PrintPart::Tail)? nEventsRelevant - nEventsToPrint :
 		(printInfo_.part == PrintPart::All)? 0 : 0;
-	int iEventBase = (nEventsToPrint == 0)? 0 : 1;
-	Event eventInitial, eventBase;
-	if (nEventsToSkip == 0) {
-		eventIter.Next(eventInitial);
-		if (!eventIter.Next(eventBase)) eventBase = eventInitial;
-	} else {
-		eventIter.Skip(nEventsToSkip);
-		eventIter.Next(eventInitial);
-		eventBase = eventInitial;
-	}
-	if (nEventsToPrint > 0) {
-		iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%12s", "");
-		for (int iPin = 0; iPin < printInfo_.nPins; ++iPin) {
-			uint pin = printInfo_.pinTbl[iPin];
-			if (IsBlankPin(pin)) {
-				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", strBlank);
-			} else if (IsAnnotationPin(pin)) {
-				// annotation jobs
-			} else if (samplingInfo_.IsPinEnabled(pin)) {
-				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", eventInitial.IsPinHigh(pin)? waveStyle.strHigh : waveStyle.strLow);
-			} else {
-				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", waveStyle.strBlank);
-			}
-		}
-		flushLineWithEvent(eventInitial);
-	}
-	Event eventPrev = eventInitial;
-	Event event = eventBase;
 	double timeStampFactor = 1000'000. / GetSampleRate() / nSampler_;
-	bool contFlag = true;
-	for (int iEvent = 0; iEvent < nEventsToPrint && contFlag; ++iEvent, contFlag = eventIter.Next(event)) {
-		double delta = static_cast<double>(event.GetTimeStamp() - eventPrev.GetTimeStamp()) * timeStampFactor;
-		int nDelta = static_cast<int>(delta / usecReso_);
-		if (iEvent == 0 || nDelta >= 40) {
-			iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%12s", "");
-			for (int iPin = 0; iPin < printInfo_.nPins; ++iPin) {
-				uint pin = printInfo_.pinTbl[iPin];
-				if (IsBlankPin(pin)) {
-					iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", strBlank);
-				} else if (IsAnnotationPin(pin)) {
-					// annotation jobs
-				} else if (samplingInfo_.IsPinEnabled(pin)) {
-					iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", eventPrev.IsPinHigh(pin)? waveStyle.strHighIdle : waveStyle.strLowIdle);
-				} else {
-					iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", waveStyle.strBlank);
-				}
-			}
-			flushLineWithStreak();
-		} else {
-			for (int i = 0; i < nDelta; ++i) {
+	Event event, eventBase, eventPrev;
+	for (int iEvent = 0; iEvent < nEventsToPrint && eventIter.Next(event); ++iEvent) {
+		if (iEvent == 1) eventBase = event;
+		uint32_t bitsTransition = 0;
+		if (eventPrev.IsValid()) {
+			double delta = static_cast<double>(event.GetTimeStamp() - eventPrev.GetTimeStamp()) * timeStampFactor;
+			int nDelta = static_cast<int>(delta / usecReso_);
+			if (iEvent == 0 || nDelta >= 40) {
 				iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%12s", "");
 				for (int iPin = 0; iPin < printInfo_.nPins; ++iPin) {
 					uint pin = printInfo_.pinTbl[iPin];
@@ -382,16 +341,37 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr) 
 					} else if (IsAnnotationPin(pin)) {
 						// annotation jobs
 					} else if (samplingInfo_.IsPinEnabled(pin)) {
-						iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", eventPrev.IsPinHigh(pin)? waveStyle.strHigh : waveStyle.strLow);
+						iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", eventPrev.IsPinHigh(pin)? waveStyle.strHighIdle : waveStyle.strLowIdle);
 					} else {
 						iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", waveStyle.strBlank);
 					}
 				}
 				flushLineWithStreak();
+			} else {
+				for (int i = 0; i < nDelta; ++i) {
+					iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%12s", "");
+					for (int iPin = 0; iPin < printInfo_.nPins; ++iPin) {
+						uint pin = printInfo_.pinTbl[iPin];
+						if (IsBlankPin(pin)) {
+							iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", strBlank);
+						} else if (IsAnnotationPin(pin)) {
+							// annotation jobs
+						} else if (samplingInfo_.IsPinEnabled(pin)) {
+							iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", eventPrev.IsPinHigh(pin)? waveStyle.strHigh : waveStyle.strLow);
+						} else {
+							iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", waveStyle.strBlank);
+						}
+					}
+					flushLineWithStreak();
+				}
 			}
+			bitsTransition = event.GetPinBitmap() ^ eventPrev.GetPinBitmap();
 		}
-		uint32_t bitsTransition = event.GetPinBitmap() ^ eventPrev.GetPinBitmap();
-		iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%12.2f", static_cast<double>(event.GetTimeStamp() - eventBase.GetTimeStamp()) * timeStampFactor);
+		if (eventBase.IsValid()) {
+			iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%12.2f", static_cast<double>(event.GetTimeStamp() - eventBase.GetTimeStamp()) * timeStampFactor);
+		} else {
+			iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%12s", "");
+		}
 		for (int iPin = 0; iPin < printInfo_.nPins; ++iPin) {
 			uint pin = printInfo_.pinTbl[iPin];
 			if (IsBlankPin(pin)) {
