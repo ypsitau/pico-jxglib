@@ -1,39 +1,45 @@
 //==============================================================================
-// ProtocolDecoder_I2C.h
+// Decoder_SPI.h
 //==============================================================================
+#pragma once
 #include "jxglib/LogicAnalyzer.h"
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// ProtocolDecoder_I2C
+// Decoder_SPI
 //------------------------------------------------------------------------------
-class ProtocolDecoder_I2C : public LogicAnalyzer::Decoder {
+class Decoder_SPI : public LogicAnalyzer::Decoder {
 public:
 	class Factory : public LogicAnalyzer::Decoder::Factory {
 	public:
-		Factory() : LogicAnalyzer::Decoder::Factory("i2c") {}
+		Factory() : LogicAnalyzer::Decoder::Factory("spi") {}
 	public:
 		virtual LogicAnalyzer::Decoder* Create(const LogicAnalyzer& logicAnalyzer) override {
-			return new ProtocolDecoder_I2C(logicAnalyzer, name_);
+			return new Decoder_SPI(logicAnalyzer, name_);
 		}
 	};
 public:
-	enum class Stat {
-		Done, WaitForStable, Start_SDA_Fall, BitAccum_SCL_Fall, BitAccum_SCL_Rise, Stop_SCL_Fall,
-	};
-	enum class Field { Address, Data };
-	struct Property {
-		uint pinSDA, pinSCL;
-	};
-	class Core {
-	private:
-		Stat stat_;
-		Field field_;
-		int nBitsAccum_;
-		uint16_t bitAccum_;
-		bool signalSDAPrev_;
-		const Property& prop_;
+	   // SPI protocol state machine states
+		enum class Stat {
+			Done,				// Analysis complete
+			WaitForIdle,		// Waiting for SCK to go high (mode = 2 or 3) or low (mode = 0 or 1)
+			BitAccum_SCK,		// Accumulating bits on SCK edge
+		};
+		// SPI pin configuration
+		struct Property {
+			int mode;
+			uint pinMOSI, pinMISO, pinSCK;
+		};
+		// Core SPI analyzer logic
+		class Core {
+		protected:
+		   Stat stat_;				// Current state of the SPI state machine
+		   int nBitsAccum_;			// Number of bits accumulated in current byte
+		   uint16_t bitAccumMOSI_;	// Accumulated bits (MOSI)
+		   uint16_t bitAccumMISO_;	// Accumulated bits (MISO)
+		   bool signalSCKPrev_;		// Previous SCK pin state
+		   const Property& prop_;	// SPI pin configuration
 	public:
 		Core(const Core& core);
 		Core(const Property& prop);
@@ -42,12 +48,9 @@ public:
 	public:
 		void ProcessEvent(const EventIterator& eventIter, const Event& event);
 	public:
-		virtual void OnStart() {}
 		virtual void OnBitAccumBegin(const EventIterator& eventIter) {}
-		virtual void OnStop() {}
-		virtual void OnRepeatedStart() {}
-		virtual void OnBit(Field field, int iBit, bool bitValue) {}
-		virtual void OnBitAccumComplete(Field field, uint16_t bitAccum) {}
+		virtual void OnBit(int iBit, const Event& event) {}
+		virtual void OnBitAccumComplete() {}
 	};
 	class Core_Annotator : public Core {
 	private:
@@ -56,31 +59,35 @@ public:
 		int* piCol_;
 		struct {
 			bool validFlag;
-			uint16_t bitAccum;
+			uint16_t bitAccumMOSI;
+			uint16_t bitAccumMISO;
 		} adv_;
 	public:
 		Core_Annotator(const Property& prop);
 	public:
 		void ProcessEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int* piCol);
 	public:
-		virtual void OnStart() override;
 		virtual void OnBitAccumBegin(const EventIterator& eventIter) override;
-		virtual void OnStop() override;
-		virtual void OnRepeatedStart() override;
-		virtual void OnBit(Field field, int iBit, bool bitValue) override;
-		virtual void OnBitAccumComplete(Field field, uint16_t bitAccum) override;
+		virtual void OnBit(int iBit, const Event& event) override;
+		virtual void OnBitAccumComplete() override;
 	};
 	class Core_BitAccumAdv : public Core {
 	private:
 		bool completeFlag_;
-		uint16_t bitAccumAdv_;
+		struct {
+			uint16_t bitAccumMOSI;
+			uint16_t bitAccumMISO;
+		} saved_;
 	public:
-		Core_BitAccumAdv(const Core& core) : Core(core), completeFlag_{false}, bitAccumAdv_{0} {}
+		Core_BitAccumAdv(const Core& core) : Core(core), completeFlag_{false}, saved_{0, 0} {}
 	public:
 		bool IsComplete() const { return completeFlag_; }
-		uint16_t GetBitAccumAdv() const { return bitAccumAdv_; }
+		uint16_t GetBitAccumMOSI() const { return saved_.bitAccumMOSI; }
+		uint16_t GetBitAccumMISO() const { return saved_.bitAccumMISO; }
 	public:
-		virtual void OnBitAccumComplete(Field field, uint16_t bitAccum) override { completeFlag_ = true; bitAccumAdv_ = bitAccum;}
+		virtual void OnBitAccumComplete() override {
+			completeFlag_ = true; saved_.bitAccumMOSI = bitAccumMOSI_; saved_.bitAccumMISO = bitAccumMISO_;
+		}
 	};
 private:
 	Core_Annotator annotator_;
@@ -89,7 +96,7 @@ private:
 private:
 	static Factory factory_;
 public:
-	ProtocolDecoder_I2C(const LogicAnalyzer& logicAnalyzer, const char* name);
+	Decoder_SPI(const LogicAnalyzer& logicAnalyzer, const char* name);
 public:
 	virtual bool EvalSubcmd(Printable& terr, const char* subcmd);
 	virtual bool CheckValidity(Printable& terr);

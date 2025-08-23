@@ -1,21 +1,21 @@
 //==============================================================================
-// ProtocolDecoder_UART.cpp
+// Decoder_UART.cpp
 //==============================================================================
-#include "ProtocolDecoder_UART.h"
+#include "Decoder_UART.h"
 #include <cstdlib>
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// ProtocolDecoder_UART
+// Decoder_UART
 //------------------------------------------------------------------------------
-ProtocolDecoder_UART::Factory ProtocolDecoder_UART::factory_;
+Decoder_UART::Factory Decoder_UART::factory_;
 
-ProtocolDecoder_UART::ProtocolDecoder_UART(const LogicAnalyzer& logicAnalyzer, const char* name) :
+Decoder_UART::Decoder_UART(const LogicAnalyzer& logicAnalyzer, const char* name) :
 	LogicAnalyzer::Decoder(logicAnalyzer, name), annotator_(prop_), prop_{GPIO::InvalidPin, 9600, 8, false, false, 1}
 {}
 
-bool ProtocolDecoder_UART::EvalSubcmd(Printable& terr, const char* subcmd)
+bool Decoder_UART::EvalSubcmd(Printable& terr, const char* subcmd)
 {
 	char* endptr = nullptr;
 	const char* value = nullptr;
@@ -79,7 +79,7 @@ bool ProtocolDecoder_UART::EvalSubcmd(Printable& terr, const char* subcmd)
 	return false;
 }
 
-bool ProtocolDecoder_UART::CheckValidity(Printable& terr)
+bool Decoder_UART::CheckValidity(Printable& terr)
 {
     bool rtn = true;
 	if (prop_.pinRX == GPIO::InvalidPin) {
@@ -93,30 +93,30 @@ bool ProtocolDecoder_UART::CheckValidity(Printable& terr)
 	return rtn;
 }
 
-void ProtocolDecoder_UART::AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol)
+void Decoder_UART::AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol)
 {
 	annotator_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
 }
 
-void ProtocolDecoder_UART::AnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol)
+void Decoder_UART::AnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol)
 {
 	//annotator_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
 }
 
 //------------------------------------------------------------------------------
-// ProtocolDecoder_UART::Core
+// Decoder_UART::Core
 //------------------------------------------------------------------------------
-ProtocolDecoder_UART::Core::Core(const Core& core) : prop_{core.prop_}, stat_{core.stat_}, field_{core.field_},
+Decoder_UART::Core::Core(const Core& core) : prop_{core.prop_}, stat_{core.stat_}, field_{core.field_},
 	nBitsAccum_{core.nBitsAccum_}, bitAccum_{core.bitAccum_}, bitIdx_{core.bitIdx_}, lastRX_{core.lastRX_}, sampleCounter_{core.sampleCounter_},
 	lastStartTime_{core.lastStartTime_}, bitSampleTime_{core.bitSampleTime_}, bitsToSample_{core.bitsToSample_}, bitPeriod_{core.bitPeriod_}, stopBitSampleTime_{core.stopBitSampleTime_}
 {}
 
-ProtocolDecoder_UART::Core::Core(const Property& prop) : prop_{prop}, stat_{Stat::WaitForIdle}, field_{Field::Data},
+Decoder_UART::Core::Core(const Property& prop) : prop_{prop}, stat_{Stat::WaitForIdle}, field_{Field::Data},
 	nBitsAccum_{0}, bitAccum_{0}, bitIdx_{0}, lastRX_{true}, sampleCounter_{0},
 	lastStartTime_{0}, bitSampleTime_{0}, bitsToSample_{0}, bitPeriod_{0}, stopBitSampleTime_{0}
 {}
 
-void ProtocolDecoder_UART::Core::ProcessEvent(const EventIterator& eventIter, const Event& event)
+void Decoder_UART::Core::ProcessEvent(const EventIterator& eventIter, const Event& event)
 {
 	// Get the current RX pin state
 	bool rx = event.IsPinHigh(prop_.pinRX);
@@ -175,13 +175,13 @@ void ProtocolDecoder_UART::Core::ProcessEvent(const EventIterator& eventIter, co
 }
 
 //------------------------------------------------------------------------------
-// ProtocolDecoder_UART::Core_Annotator
+// Decoder_UART::Core_Annotator
 //------------------------------------------------------------------------------
-ProtocolDecoder_UART::Core_Annotator::Core_Annotator(const Property& prop) :
+Decoder_UART::Core_Annotator::Core_Annotator(const Property& prop) :
 		Core(prop), buffLine_{nullptr}, lenBuffLine_{0}, piCol_{nullptr}
 {}
 
-void ProtocolDecoder_UART::Core_Annotator::ProcessEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int* piCol)
+void Decoder_UART::Core_Annotator::ProcessEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int* piCol)
 {
 	buffLine_ = buffLine;
 	lenBuffLine_ = lenBuffLine;
@@ -189,13 +189,13 @@ void ProtocolDecoder_UART::Core_Annotator::ProcessEvent(const EventIterator& eve
 	Core::ProcessEvent(eventIter, event);
 }
 
-void ProtocolDecoder_UART::Core_Annotator::OnStartBit()
+void Decoder_UART::Core_Annotator::OnStartBit()
 {
 	int& iCol = *piCol_;
 	iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " Start");
 }
 
-void ProtocolDecoder_UART::Core_Annotator::OnBit(Field field, int iBit, bool bitValue)
+void Decoder_UART::Core_Annotator::OnBit(Field field, int iBit, bool bitValue)
 {
 	int& iCol = *piCol_;
 	if (iBit == 0) {
@@ -206,13 +206,13 @@ void ProtocolDecoder_UART::Core_Annotator::OnBit(Field field, int iBit, bool bit
 	}
 }
 
-void ProtocolDecoder_UART::Core_Annotator::OnStopBit(bool valid)
+void Decoder_UART::Core_Annotator::OnStopBit(bool valid)
 {
 	int& iCol = *piCol_;
 	iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " Stop");
 }
 
-void ProtocolDecoder_UART::Core_Annotator::OnByte(uint8_t data, bool parityErr)
+void Decoder_UART::Core_Annotator::OnByte(uint8_t data, bool parityErr)
 {
 	int& iCol = *piCol_;
 	iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " 0x%02X", data);

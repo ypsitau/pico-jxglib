@@ -9,10 +9,10 @@ target_link_libraries(jxglib_LogicAnalyzer INTERFACE
 
 target_sources(jxglib_LogicAnalyzer INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/LogicAnalyzer.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ProtocolDecoder.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ProtocolDecoder_I2C.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ProtocolDecoder_SPI.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ProtocolDecoder_UART.cpp)
+	${CMAKE_CURRENT_LIST_DIR}/src/Decoder.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/Decoder_I2C.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/Decoder_SPI.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/Decoder_UART.cpp)
 
 #------------------------------------------------------------------------------
 add_library(jxglib_ShellCmd_LogicAnalyzer INTERFACE)

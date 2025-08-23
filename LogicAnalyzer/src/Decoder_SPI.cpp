@@ -1,21 +1,21 @@
 //==============================================================================
-// ProtocolDecoder_SPI.cpp
+// Decoder_SPI.cpp
 //==============================================================================
-#include "ProtocolDecoder_SPI.h"
+#include "Decoder_SPI.h"
 #include <cstdlib>
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// ProtocolDecoder_SPI
+// Decoder_SPI
 //------------------------------------------------------------------------------
-ProtocolDecoder_SPI::Factory ProtocolDecoder_SPI::factory_;
+Decoder_SPI::Factory Decoder_SPI::factory_;
 
-ProtocolDecoder_SPI::ProtocolDecoder_SPI(const LogicAnalyzer& logicAnalyzer, const char* name) :
+Decoder_SPI::Decoder_SPI(const LogicAnalyzer& logicAnalyzer, const char* name) :
 	LogicAnalyzer::Decoder(logicAnalyzer, name), annotator_(prop_), prop_{-1, GPIO::InvalidPin, GPIO::InvalidPin, GPIO::InvalidPin}
 {}
 
-bool ProtocolDecoder_SPI::EvalSubcmd(Printable& terr, const char* subcmd)
+bool Decoder_SPI::EvalSubcmd(Printable& terr, const char* subcmd)
 {
 	char* endptr = nullptr;
 	const char* value = nullptr;
@@ -56,7 +56,7 @@ bool ProtocolDecoder_SPI::EvalSubcmd(Printable& terr, const char* subcmd)
 	return false;
 }
 
-bool ProtocolDecoder_SPI::CheckValidity(Printable& terr)
+bool Decoder_SPI::CheckValidity(Printable& terr)
 {
     bool rtn = true;
 	if (prop_.mode < 0) {
@@ -74,28 +74,28 @@ bool ProtocolDecoder_SPI::CheckValidity(Printable& terr)
 	return rtn;
 }
 
-void ProtocolDecoder_SPI::AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol)
+void Decoder_SPI::AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol)
 {
 	annotator_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
 }
 
-void ProtocolDecoder_SPI::AnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol)
+void Decoder_SPI::AnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol)
 {
 	//annotator_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
 }
 
 //------------------------------------------------------------------------------
-// ProtocolDecoder_SPI::Core
+// Decoder_SPI::Core
 //------------------------------------------------------------------------------
-ProtocolDecoder_SPI::Core::Core(const Core& core) : prop_{core.prop_}, stat_{core.stat_},
+Decoder_SPI::Core::Core(const Core& core) : prop_{core.prop_}, stat_{core.stat_},
 	nBitsAccum_{core.nBitsAccum_}, bitAccumMOSI_{core.bitAccumMOSI_}, bitAccumMISO_{core.bitAccumMISO_}, signalSCKPrev_{core.signalSCKPrev_}
 {}
 
-ProtocolDecoder_SPI::Core::Core(const Property& prop) : prop_{prop}, stat_{Stat::WaitForIdle},
+Decoder_SPI::Core::Core(const Property& prop) : prop_{prop}, stat_{Stat::WaitForIdle},
 	nBitsAccum_{0}, bitAccumMOSI_{0}, bitAccumMISO_{0}, signalSCKPrev_{false}
 {}
 
-void ProtocolDecoder_SPI::Core::ProcessEvent(const EventIterator& eventIter, const Event& event)
+void Decoder_SPI::Core::ProcessEvent(const EventIterator& eventIter, const Event& event)
 {
 	bool bitAccumBeginFlag = false;
 	bool signalSCK = event.IsPinHigh(prop_.pinSCK);
@@ -140,13 +140,13 @@ void ProtocolDecoder_SPI::Core::ProcessEvent(const EventIterator& eventIter, con
 }
 
 //------------------------------------------------------------------------------
-// ProtocolDecoder_SPI::Core_Annotator
+// Decoder_SPI::Core_Annotator
 //------------------------------------------------------------------------------
-ProtocolDecoder_SPI::Core_Annotator::Core_Annotator(const Property& prop) :
+Decoder_SPI::Core_Annotator::Core_Annotator(const Property& prop) :
 		Core(prop), buffLine_{nullptr}, lenBuffLine_{0}, piCol_{nullptr}, adv_{false, 0, 0}
 {}
 
-void ProtocolDecoder_SPI::Core_Annotator::ProcessEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int* piCol)
+void Decoder_SPI::Core_Annotator::ProcessEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int* piCol)
 {
 	buffLine_ = buffLine;
 	lenBuffLine_ = lenBuffLine;
@@ -154,7 +154,7 @@ void ProtocolDecoder_SPI::Core_Annotator::ProcessEvent(const EventIterator& even
 	Core::ProcessEvent(eventIter, event);
 }
 
-void ProtocolDecoder_SPI::Core_Annotator::OnBitAccumBegin(const EventIterator& eventIter)
+void Decoder_SPI::Core_Annotator::OnBitAccumBegin(const EventIterator& eventIter)
 {
 	Core_BitAccumAdv coreAdv(*this);
 	EventIterator eventIterAdv(eventIter);
@@ -168,7 +168,7 @@ void ProtocolDecoder_SPI::Core_Annotator::OnBitAccumBegin(const EventIterator& e
 	adv_.bitAccumMISO = coreAdv.GetBitAccumMISO();
 }
 
-void ProtocolDecoder_SPI::Core_Annotator::OnBit(int iBit, const Event& event)
+void Decoder_SPI::Core_Annotator::OnBit(int iBit, const Event& event)
 {
 	int& iCol = *piCol_;
 	if (IsValidPin(prop_.pinMOSI)) {
@@ -187,7 +187,7 @@ void ProtocolDecoder_SPI::Core_Annotator::OnBit(int iBit, const Event& event)
 	}
 }
 
-void ProtocolDecoder_SPI::Core_Annotator::OnBitAccumComplete()
+void Decoder_SPI::Core_Annotator::OnBitAccumComplete()
 {
 	adv_.validFlag = false;
 }
