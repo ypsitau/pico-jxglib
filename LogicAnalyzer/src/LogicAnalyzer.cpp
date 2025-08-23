@@ -276,7 +276,7 @@ int LogicAnalyzer::GetRawEventCountMax() const
 
 const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr) const
 {
-	if (pProtocolDecoder_ && !pProtocolDecoder_->CheckValidity(terr)) return *this;
+	if (pDecoder_ && !pDecoder_->CheckValidity(terr)) return *this;
 	int iCol = 0;
 	char buffLine[256];
 	EventIterator eventIter(*this);
@@ -293,11 +293,11 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr) 
 		iCol = 0;
 	};
 	auto flushLineWithEvent = [&](const Event& event) {
-		if (pProtocolDecoder_) pProtocolDecoder_->AnnotateWaveEvent(eventIter, event, buffLine, sizeof(buffLine), &iCol);
+		if (pDecoder_) pDecoder_->AnnotateWaveEvent(eventIter, event, buffLine, sizeof(buffLine), &iCol);
 		flushLine();
 	};
 	auto flushLineWithStreak = [&]() {
-		if (pProtocolDecoder_) pProtocolDecoder_->AnnotateWaveStreak(buffLine, sizeof(buffLine), &iCol);
+		if (pDecoder_) pDecoder_->AnnotateWaveStreak(buffLine, sizeof(buffLine), &iCol);
 		flushLine();
 	};
 	auto printHeader = [&]() {
@@ -411,18 +411,18 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr) 
 	return *this;
 }
 
-ProtocolDecoder* LogicAnalyzer::SetProtocolDecoder(const char* protocolName)
+ProtocolDecoder* LogicAnalyzer::SetDecoder(const char* decoderName)
 {
-	if (pProtocolDecoder_ && ::strcasecmp(pProtocolDecoder_->GetName(), protocolName) == 0) {
+	if (pDecoder_ && ::strcasecmp(pDecoder_->GetName(), decoderName) == 0) {
 		// nothing to do
 	} else {
-		pProtocolDecoder_.reset();
-		ProtocolDecoder::Factory* pFactory = ProtocolDecoder::Factory::Find(protocolName);
+		pDecoder_.reset();
+		ProtocolDecoder::Factory* pFactory = ProtocolDecoder::Factory::Find(decoderName);
 		if (pFactory) {
-			pProtocolDecoder_.reset(pFactory->Create(*this));
+			pDecoder_.reset(pFactory->Create(*this));
 		}
 	}
-	return pProtocolDecoder_.get();
+	return pDecoder_.get();
 }
 
 // This method destroys the sampling buffers and creates a set of SignalReport. 

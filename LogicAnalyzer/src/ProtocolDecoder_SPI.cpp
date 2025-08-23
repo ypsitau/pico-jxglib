@@ -12,14 +12,22 @@ namespace jxglib {
 ProtocolDecoder_SPI::Factory ProtocolDecoder_SPI::factory_;
 
 ProtocolDecoder_SPI::ProtocolDecoder_SPI(const LogicAnalyzer& logicAnalyzer, const char* name) :
-	ProtocolDecoder(logicAnalyzer, name), annotator_(prop_), prop_{GPIO::InvalidPin, GPIO::InvalidPin, GPIO::InvalidPin}
+	ProtocolDecoder(logicAnalyzer, name), annotator_(prop_), prop_{-1, GPIO::InvalidPin, GPIO::InvalidPin, GPIO::InvalidPin}
 {}
 
 bool ProtocolDecoder_SPI::EvalSubcmd(Printable& terr, const char* subcmd)
 {
 	char* endptr = nullptr;
 	const char* value = nullptr;
-	if (Shell::Arg::GetAssigned(subcmd, "mosi", &value)) {
+	if (Shell::Arg::GetAssigned(subcmd, "mode", &value)) {
+		int num = ::strtol(value, &endptr, 10);
+		if (endptr == value || *endptr != '\0' || num < 0 || num >= 3) {
+			terr.Printf("invalid SPI mode\n");
+			return false;
+		}
+		prop_.mode = num;
+		return true;
+	} else if (Shell::Arg::GetAssigned(subcmd, "mosi", &value)) {
 		int num = ::strtol(value, &endptr, 10);
 		if (endptr == value || *endptr != '\0' || num < 0 || num >= GPIO::NumPins) {
 			terr.Printf("invalid MOSI pin number\n");
@@ -51,6 +59,14 @@ bool ProtocolDecoder_SPI::EvalSubcmd(Printable& terr, const char* subcmd)
 bool ProtocolDecoder_SPI::CheckValidity(Printable& terr)
 {
     bool rtn = true;
+	if (prop_.mode < 0) {
+		terr.Printf("specify SPI mode (0-3)\n");
+		rtn = false;
+	}
+	if (prop_.pinMOSI == GPIO::InvalidPin && prop_.pinMISO == GPIO::InvalidPin) {
+		terr.Printf("specify MOSI or MISO pin number\n");
+		rtn = false;
+	}
 	if (prop_.pinSCK == GPIO::InvalidPin) {
 		terr.Printf("specify SCK pin number\n");
 		rtn = false;
@@ -71,49 +87,56 @@ void ProtocolDecoder_SPI::AnnotateWaveStreak(char* buffLine, int lenBuffLine, in
 //------------------------------------------------------------------------------
 // ProtocolDecoder_SPI::Core
 //------------------------------------------------------------------------------
-ProtocolDecoder_SPI::Core::Core(const Core& core) : prop_{core.prop_}, stat_{core.stat_}, field_{core.field_},
-	nBitsAccum_{core.nBitsAccum_}, bitAccum_{core.bitAccum_}, sckPrev_{core.sckPrev_}
+ProtocolDecoder_SPI::Core::Core(const Core& core) : prop_{core.prop_}, stat_{core.stat_},
+	nBitsAccum_{core.nBitsAccum_}, bitAccumMOSI_{core.bitAccumMOSI_}, bitAccumMISO_{core.bitAccumMISO_}, signalSCKPrev_{core.signalSCKPrev_}
 {}
 
-ProtocolDecoder_SPI::Core::Core(const Property& prop) : prop_{prop}, stat_{Stat::WaitForStable}, field_{Field::Data},
-	nBitsAccum_{0}, bitAccum_{0}, sckPrev_{false}
+ProtocolDecoder_SPI::Core::Core(const Property& prop) : prop_{prop}, stat_{Stat::WaitForIdle},
+	nBitsAccum_{0}, bitAccumMOSI_{0}, bitAccumMISO_{0}, signalSCKPrev_{false}
 {}
 
 void ProtocolDecoder_SPI::Core::ProcessEvent(const EventIterator& eventIter, const Event& event)
 {
-	// Read current SPI pin states
-	bool sck = event.IsPinHigh(prop_.pinSCK);
-	bool mosi = event.IsPinHigh(prop_.pinMOSI);
-	bool miso = event.IsPinHigh(prop_.pinMISO);
+	bool bitAccumBeginFlag = false;
+	bool signalSCK = event.IsPinHigh(prop_.pinSCK);
 	switch (stat_) {
-	case Stat::WaitForStable: {
-		// Wait for CS to go low (start of SPI transaction)
+	case Stat::WaitForIdle: {
+		if (((prop_.mode == 0 || prop_.mode == 1) && !signalSCK) || ((prop_.mode == 2 || prop_.mode == 3) && signalSCK)) {
+			nBitsAccum_ = 0;
+			bitAccumMOSI_ = 0x00;
+			bitAccumMISO_ = 0x00;
+			bitAccumBeginFlag = true;
+			stat_ = Stat::BitAccum_SCK;
+		}
 		break;
 	}
-	case Stat::Start_CS_Fall: {
-		// If CS goes high, stop transaction
-		break;
-	}
-	case Stat::BitAccum_SCK_Edge: {
-		// If CS goes high, stop transaction
-		if (sck && !sckPrev_) {
-			// On SCK rising edge, sample MOSI/MISO and accumulate bits
-			OnBit(field_, nBitsAccum_, mosi, miso);
-			bitAccum_ = (bitAccum_ << 1) | (mosi ? 1 : 0);
+	case Stat::BitAccum_SCK: {
+		bool bitAccumBeginFlag = false;
+		bool signalSCK = event.IsPinHigh(prop_.pinSCK);
+		if (signalSCK != signalSCKPrev_ && (((prop_.mode == 0 || prop_.mode == 3) & signalSCK)) ||
+											((prop_.mode == 1 || prop_.mode == 2) & !signalSCK)) {
+			OnBit(nBitsAccum_, event);
+			if (IsValidPin(prop_.pinMOSI)) {
+				bitAccumMOSI_ = (bitAccumMOSI_ << 1) | (event.IsPinHigh(prop_.pinMOSI)? 1 : 0);
+			}
+			if (IsValidPin(prop_.pinMISO)) {
+				bitAccumMISO_ = (bitAccumMISO_ << 1) | (event.IsPinHigh(prop_.pinMISO)? 1 : 0);
+			}
 			nBitsAccum_++;
 			if (nBitsAccum_ == 8) {
-				// 8 bits accumulated, call completion handler
-				OnBitAccumComplete(field_, bitAccum_, 0); // TODO: Add MISO data if needed
+				OnBitAccumComplete();
 				nBitsAccum_ = 0;
-				bitAccum_ = 0x000;
+				bitAccumMOSI_ = 0x00;
+				bitAccumMISO_ = 0x00;
+				bitAccumBeginFlag = true;
 			}
 		}
 		break;
 	}
 	default: break;
 	}
-	// Store previous pin states for edge detection
-	sckPrev_ = sck;
+	signalSCKPrev_ = signalSCK;
+	if (bitAccumBeginFlag) OnBitAccumBegin(eventIter);
 }
 
 //------------------------------------------------------------------------------
@@ -131,38 +154,42 @@ void ProtocolDecoder_SPI::Core_Annotator::ProcessEvent(const EventIterator& even
 	Core::ProcessEvent(eventIter, event);
 }
 
-void ProtocolDecoder_SPI::Core_Annotator::OnStart()
-{
-	int& iCol = *piCol_;
-	iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " Start");
-}
-
 void ProtocolDecoder_SPI::Core_Annotator::OnBitAccumBegin(const EventIterator& eventIter)
 {
-	// 省略: 必要に応じて実装
-}
-
-void ProtocolDecoder_SPI::Core_Annotator::OnStop()
-{
-	int& iCol = *piCol_;
-	iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " Stop");
-}
-
-void ProtocolDecoder_SPI::Core_Annotator::OnBit(Field field, int iBit, bool bitMOSI, bool bitMISO)
-{
-	int& iCol = *piCol_;
-	if (iBit == 7) {
-		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " MOSI:0x%02X", bitMOSI ? 1 : 0);
+	Core_BitAccumAdv coreAdv(*this);
+	EventIterator eventIterAdv(eventIter);
+	Event eventAdv;
+	while (eventIterAdv.Next(eventAdv)) {
+		coreAdv.ProcessEvent(eventIterAdv, eventAdv);
+		if (coreAdv.IsComplete()) break;
 	}
-	// 必要に応じてMISOも表示
+	adv_.validFlag = coreAdv.IsComplete();
+	adv_.bitAccumMOSI = coreAdv.GetBitAccumMOSI();
+	adv_.bitAccumMISO = coreAdv.GetBitAccumMISO();
 }
 
-void ProtocolDecoder_SPI::Core_Annotator::OnBitAccumComplete(Field field, uint16_t bitAccumMOSI, uint16_t bitAccumMISO)
+void ProtocolDecoder_SPI::Core_Annotator::OnBit(int iBit, const Event& event)
+{
+	int& iCol = *piCol_;
+	if (IsValidPin(prop_.pinMOSI)) {
+		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %d", event.IsPinHigh(prop_.pinMOSI)? 1 : 0);
+	}
+	if (IsValidPin(prop_.pinMISO)) {
+		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %d", event.IsPinHigh(prop_.pinMISO)? 1 : 0);
+	}
+	if (iBit == 3 && adv_.validFlag) {
+		if (IsValidPin(prop_.pinMOSI)) {
+			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " MOSI:0x%02x", adv_.bitAccumMOSI);
+		}
+		if (IsValidPin(prop_.pinMISO)) {
+			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " MISO:0x%02x", adv_.bitAccumMISO);
+		}
+	}
+}
+
+void ProtocolDecoder_SPI::Core_Annotator::OnBitAccumComplete()
 {
 	adv_.validFlag = false;
-	int& iCol = *piCol_;
-	iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " MOSI:0x%02X", bitAccumMOSI & 0xFF);
-	// 必要に応じてMISOも表示
 }
 
 }

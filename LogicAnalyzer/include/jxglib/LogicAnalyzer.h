@@ -365,7 +365,7 @@ private:
 	float heapRatioRequested_;
 	int clocksPerLoop_;
 	float usecReso_;
-	std::unique_ptr<ProtocolDecoder> pProtocolDecoder_;
+	std::unique_ptr<ProtocolDecoder> pDecoder_;
 public:
 	LogicAnalyzer();
 	~LogicAnalyzer();
@@ -405,7 +405,7 @@ public:
 	int GetRawEventCount() const;
 	int GetRawEventCountMax() const;
 	const LogicAnalyzer& PrintWave(Printable& tout, Printable& terr) const;
-	ProtocolDecoder* SetProtocolDecoder(const char* protocolName);
+	ProtocolDecoder* SetDecoder(const char* decoderName);
 	const LogicAnalyzer& PlotWave() const;
 	const LogicAnalyzer& PrintSettings(Printable& tout) const;
 public:

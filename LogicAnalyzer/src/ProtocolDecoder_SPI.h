@@ -22,27 +22,24 @@ public:
 public:
 	   // SPI protocol state machine states
 		enum class Stat {
-			Done,              // Analysis complete
-			WaitForStable,     // Waiting for CS to go low (start of transaction)
-			Start_CS_Fall,     // Detected CS falling edge, waiting for SCK
-			BitAccum_SCK_Edge, // Accumulating bits on SCK edge
-			BitAccum_SCK_Idle  // Idle between SCK edges
+			Done,				// Analysis complete
+			WaitForIdle,		// Waiting for SCK to go high (mode = 2 or 3) or low (mode = 0 or 1)
+			BitAccum_SCK,		// Accumulating bits on SCK edge
 		};
-		// SPI data field (expandable for future use)
-		enum class Field { Data };
 		// SPI pin configuration
 		struct Property {
+			int mode;
 			uint pinMOSI, pinMISO, pinSCK;
 		};
 		// Core SPI analyzer logic
 		class Core {
-		private:
-		   Stat stat_;            // Current state of the SPI state machine
-		   Field field_;          // Current field (data, etc.)
-		   int nBitsAccum_;       // Number of bits accumulated in current byte
-		   uint16_t bitAccum_;    // Accumulated bits (MOSI)
-		   bool sckPrev_;         // Previous SCK pin state
-		   const Property& prop_; // SPI pin configuration
+		protected:
+		   Stat stat_;				// Current state of the SPI state machine
+		   int nBitsAccum_;			// Number of bits accumulated in current byte
+		   uint16_t bitAccumMOSI_;	// Accumulated bits (MOSI)
+		   uint16_t bitAccumMISO_;	// Accumulated bits (MISO)
+		   bool signalSCKPrev_;		// Previous SCK pin state
+		   const Property& prop_;	// SPI pin configuration
 	public:
 		Core(const Core& core);
 		Core(const Property& prop);
@@ -51,11 +48,9 @@ public:
 	public:
 		void ProcessEvent(const EventIterator& eventIter, const Event& event);
 	public:
-		virtual void OnStart() {}
 		virtual void OnBitAccumBegin(const EventIterator& eventIter) {}
-		virtual void OnStop() {}
-		virtual void OnBit(Field field, int iBit, bool bitMOSI, bool bitMISO) {}
-		virtual void OnBitAccumComplete(Field field, uint16_t bitAccumMOSI, uint16_t bitAccumMISO) {}
+		virtual void OnBit(int iBit, const Event& event) {}
+		virtual void OnBitAccumComplete() {}
 	};
 	class Core_Annotator : public Core {
 	private:
@@ -72,25 +67,27 @@ public:
 	public:
 		void ProcessEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int* piCol);
 	public:
-		virtual void OnStart() override;
 		virtual void OnBitAccumBegin(const EventIterator& eventIter) override;
-		virtual void OnStop() override;
-		virtual void OnBit(Field field, int iBit, bool bitMOSI, bool bitMISO) override;
-		virtual void OnBitAccumComplete(Field field, uint16_t bitAccumMOSI, uint16_t bitAccumMISO) override;
+		virtual void OnBit(int iBit, const Event& event) override;
+		virtual void OnBitAccumComplete() override;
 	};
 	class Core_BitAccumAdv : public Core {
 	private:
 		bool completeFlag_;
-		uint16_t bitAccumMOSI_;
-		uint16_t bitAccumMISO_;
+		struct {
+			uint16_t bitAccumMOSI;
+			uint16_t bitAccumMISO;
+		} saved_;
 	public:
-		Core_BitAccumAdv(const Core& core) : Core(core), completeFlag_{false}, bitAccumMOSI_{0}, bitAccumMISO_{0} {}
+		Core_BitAccumAdv(const Core& core) : Core(core), completeFlag_{false}, saved_{0, 0} {}
 	public:
 		bool IsComplete() const { return completeFlag_; }
-		uint16_t GetBitAccumMOSI() const { return bitAccumMOSI_; }
-		uint16_t GetBitAccumMISO() const { return bitAccumMISO_; }
+		uint16_t GetBitAccumMOSI() const { return saved_.bitAccumMOSI; }
+		uint16_t GetBitAccumMISO() const { return saved_.bitAccumMISO; }
 	public:
-		virtual void OnBitAccumComplete(Field field, uint16_t bitAccumMOSI, uint16_t bitAccumMISO) override { completeFlag_ = true; bitAccumMOSI_ = bitAccumMOSI; bitAccumMISO_ = bitAccumMISO; }
+		virtual void OnBitAccumComplete() override {
+			completeFlag_ = true; saved_.bitAccumMOSI = bitAccumMOSI_; saved_.bitAccumMISO = bitAccumMISO_;
+		}
 	};
 private:
 	Core_Annotator annotator_;

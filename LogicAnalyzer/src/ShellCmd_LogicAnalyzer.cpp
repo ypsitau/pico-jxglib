@@ -7,7 +7,7 @@ jxglib::LogicAnalyzer& ShellCmd_LogicAnalyzer_GetLogicAnalyzer();
 
 namespace jxglib::ShellCmd_LogicAnalyzer {
 
-ShellCmd(la, "Logic ProtocolDecoder")
+ShellCmd(la, "Logic Analyzer")
 {
 	LogicAnalyzer& logicAnalyzer = ShellCmd_LogicAnalyzer_GetLogicAnalyzer();
 	static const Arg::Opt optTbl[] = {
@@ -188,19 +188,19 @@ ShellCmd(la, "Logic ProtocolDecoder")
 			logicAnalyzer.PrintWave(tout, terr);
 		} else if (::strcmp(subcmd, "plot") == 0) {
 			logicAnalyzer.PlotWave();
-		} else if (Arg::GetAssigned(subcmd, "protocol", &value)) {
-			const char* protocolName = value;
-			if (!protocolName) {
-				terr.Printf("available protocols:");
+		} else if (Arg::GetAssigned(subcmd, "decoder", &value)) {
+			const char* decoderName = value;
+			if (!decoderName) {
+				terr.Printf("available decoders:");
 				for (const ProtocolDecoder::Factory* pFactory = ProtocolDecoder::Factory::GetHead(); pFactory; pFactory = pFactory->GetNext()) {
 					terr.Printf(" %s", pFactory->GetName());
 				}
 				terr.Println();
 				return false;
 			}
-			ProtocolDecoder* pProtocolDecoder = logicAnalyzer.SetProtocolDecoder(protocolName);
+			ProtocolDecoder* pProtocolDecoder = logicAnalyzer.SetDecoder(decoderName);
 			if (!pProtocolDecoder) {
-				terr.Printf("unknown protocol: %s\n", protocolName);
+				terr.Printf("unknown decoder: %s\n", decoderName);
 				return false;
 			}
 			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
