@@ -4,7 +4,7 @@
 #include "Decoder_SPI.h"
 #include <cstdlib>
 
-namespace jxglib {
+namespace jxglib::LogicAnalyzerExt {
 
 //------------------------------------------------------------------------------
 // Decoder_SPI

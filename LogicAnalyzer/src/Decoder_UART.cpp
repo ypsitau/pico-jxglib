@@ -4,7 +4,7 @@
 #include "Decoder_UART.h"
 #include <cstdlib>
 
-namespace jxglib {
+namespace jxglib::LogicAnalyzerExt {
 
 //------------------------------------------------------------------------------
 // Decoder_UART

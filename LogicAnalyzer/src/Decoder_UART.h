@@ -4,7 +4,7 @@
 #pragma once
 #include "jxglib/LogicAnalyzer.h"
 
-namespace jxglib {
+namespace jxglib::LogicAnalyzerExt {
 
 //------------------------------------------------------------------------------
 // Decoder_UART
