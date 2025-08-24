@@ -158,7 +158,6 @@ bool JSON::FeedChar(char ch)
 				stat_ = Stat::String_Escape;
 			} else if (ch == '"') {
 				if (context_ == Context::ObjectName) {
-					//ReportObjectName(TerminateBuff());
 					::strcpy(objectName_, TerminateBuff());
 					stat_ = Stat::SeekObjectValue;
 				} else {
