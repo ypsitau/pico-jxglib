@@ -87,10 +87,6 @@ public:
 			return (pinBitmap_ & MakeMask(pins...)) == 0;
 		}
 	};
-	struct SignalReport {
-		uint32_t nSamples;
-		uint32_t sigBitmap;
-	};
 	enum class Target { Internal, External };
 	struct WaveStyle {
 		const char* name;
@@ -316,7 +312,6 @@ public:
 	LogicAnalyzer& Disable();
 	bool IsRawEventFormatShort() const { return rawEventFormat_ == RawEventFormat::Short; }
 	bool IsRawEventFormatLong() const { return rawEventFormat_ == RawEventFormat::Long; }
-	const SignalReport* CreateSignalReport(int nSignals, double samplePeriod, int* pnSignalReport);
 	LogicAnalyzer& SetPIO(uint iPIO) { iPIO_ = iPIO; return *this; }
 	uint8_t* GetSamplingBuffWhole() { return samplingBuffWhole_; }
 	LogicAnalyzer& ReleaseResource();

@@ -25,7 +25,6 @@ ShellCmd(la, "Logic Analyzer")
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
-	bool genericFlag = (::strcmp(GetName(), "pwm") == 0);
 	if (arg.GetBool("help")) {
 		tout.Printf("Usage: %s [OPTION]... [COMMAND]...\n", GetName());
 		arg.PrintHelp(tout);
@@ -35,8 +34,8 @@ ShellCmd(la, "Logic Analyzer")
 		tout.Printf("  enable               enable sampling of the logic analyzer\n");
 		tout.Printf("  disable              disable sampling of the logic analyzer\n");
 		tout.Printf("  print                print the sampled waveforms\n");
-		tout.Printf("  write[:FILE]         write the sampled data in JSON format\n");
-		tout.Printf("  read:FILE            read the sampled data in JSON format\n");
+		//tout.Printf("  write[:FILE]         write sampled data to file\n");
+		//tout.Printf("  read:FILE            read sampled data from file\n");
 		return Result::Success;
 	}
 	const char* value;

@@ -423,43 +423,6 @@ LogicAnalyzer::Decoder* LogicAnalyzer::SetDecoder(const char* decoderName)
 	return pDecoder_.get();
 }
 
-// This method destroys the sampling buffers and creates a set of SignalReport. 
-const LogicAnalyzer::SignalReport* LogicAnalyzer::CreateSignalReport(int nSamples, double samplePeriod, int* pnSignalReports)
-{
-	SignalReport* signalReportTbl = reinterpret_cast<SignalReport*>(GetSamplingBuffWhole());
-	*pnSignalReports = 0;
-	EventIterator eventIter(*this);
-	int nEventsRelevant = eventIter.CountRelevant();
-	Event event, eventPrev;
-	double timeStampFactor = 1000'000. / GetSampleRate();
-	int iEvent = 0;
-	int nSamplesCaptured = 0;
-	if (eventIter.Next(eventPrev)) {
-		int iSignalReport = 0;
-		iEvent++;
-		signalReportTbl[iSignalReport++] = SignalReport {1, eventPrev.GetPinBitmap()};
-		nSamplesCaptured++;
-		uint32_t pinBitmap = 0;
-		for ( ; eventIter.Next(event) && iEvent < nEventsRelevant && nSamplesCaptured < nSamples; ++iEvent) {
-			pinBitmap = event.GetPinBitmap();
-			if (pinBitmap == eventPrev.GetPinBitmap()) continue;
-			double timeDelta = (event.GetTimeStamp() - eventPrev.GetTimeStamp()) * timeStampFactor;
-			if (timeDelta < samplePeriod) continue;
-			uint32_t nSamples = static_cast<uint32_t>(timeDelta / samplePeriod);
-			signalReportTbl[iSignalReport++] = SignalReport { nSamples, pinBitmap };
-			nSamplesCaptured += nSamples;
-			eventPrev = event;
-		}
-		if (nSamplesCaptured > nSamples) {
-			signalReportTbl[iSignalReport - 1].nSamples -= nSamplesCaptured - nSamples; // trim the last sample
-		} else if (nSamplesCaptured < nSamples) {
-			signalReportTbl[iSignalReport - 1].nSamples += nSamples - nSamplesCaptured; // fill the rest with the last sample
-		}
-		*pnSignalReports = iSignalReport;
-	}
-	return signalReportTbl;
-}
-
 const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 {
 	int nRawEvents = GetRawEventCount();
