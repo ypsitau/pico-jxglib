@@ -12,8 +12,8 @@ namespace jxglib::LogicAnalyzerExt {
 Decoder_UART::Factory Decoder_UART::factory_;
 
 Decoder_UART::Decoder_UART(const LogicAnalyzer& logicAnalyzer, const char* name) :
-		LogicAnalyzer::Decoder(logicAnalyzer, name), annotator_(prop_),
-		prop_{GPIO::InvalidPin, GPIO::InvalidPin, 115200, 8, Parity::None, 1}
+		LogicAnalyzer::Decoder(logicAnalyzer, name), annotatorTX_(prop_), annotatorRX_{prop_},
+		prop_{115200, 8, Parity::None, 1}
 {}
 
 bool Decoder_UART::EvalSubcmd(Printable& terr, const char* subcmd)
@@ -26,7 +26,7 @@ bool Decoder_UART::EvalSubcmd(Printable& terr, const char* subcmd)
 			terr.Printf("invalid TX pin number\n");
 			return false;
 		}
-		prop_.pinTX = static_cast<uint>(num);
+		annotatorTX_.SetPin(static_cast<uint>(num));
 		return true;
 	} else if (Shell::Arg::GetAssigned(subcmd, "rx", &value)) {
 		int num = ::strtol(value, &endptr, 10);
@@ -34,7 +34,7 @@ bool Decoder_UART::EvalSubcmd(Printable& terr, const char* subcmd)
 			terr.Printf("invalid RX pin number\n");
 			return false;
 		}
-		prop_.pinRX = static_cast<uint>(num);
+		annotatorRX_.SetPin(static_cast<uint>(num));
 		return true;
 	} else if (Shell::Arg::GetAssigned(subcmd, "baud", &value)) {
 		int num = ::strtol(value, &endptr, 10);
@@ -91,7 +91,7 @@ bool Decoder_UART::EvalSubcmd(Printable& terr, const char* subcmd)
 bool Decoder_UART::CheckValidity(Printable& terr)
 {
     bool rtn = true;
-	if (prop_.pinTX == GPIO::InvalidPin && prop_.pinRX == GPIO::InvalidPin) {
+	if (annotatorTX_.GetPin() == GPIO::InvalidPin && annotatorRX_.GetPin() == GPIO::InvalidPin) {
 		terr.Printf("specify TX or RX pin number\n");
 		rtn = false;
 	}
@@ -100,87 +100,81 @@ bool Decoder_UART::CheckValidity(Printable& terr)
 
 void Decoder_UART::Reset()
 {
+	prop_.timeStampFactor = 1.0 / logicAnalyzer_.GetSampleRate();
+	annotatorTX_.Reset();
+	annotatorRX_.Reset();
 }
 
 void Decoder_UART::AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol)
 {
-	annotator_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
+	annotatorTX_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
+	annotatorRX_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
 }
 
 void Decoder_UART::AnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol)
 {
-	//annotator_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
 }
 
 //------------------------------------------------------------------------------
 // Decoder_UART::Core
 //------------------------------------------------------------------------------
-Decoder_UART::Core::Core(const Core& core) : prop_{core.prop_}, stat_{core.stat_}, field_{core.field_},
-	nBitsAccum_{core.nBitsAccum_}, bitAccum_{core.bitAccum_}, bitIdx_{core.bitIdx_}, lastRX_{core.lastRX_}, sampleCounter_{core.sampleCounter_},
-	lastStartTime_{core.lastStartTime_}, bitSampleTime_{core.bitSampleTime_}, bitsToSample_{core.bitsToSample_}, bitPeriod_{core.bitPeriod_}, stopBitSampleTime_{core.stopBitSampleTime_}
+Decoder_UART::Core::Core(const Core& core) : prop_{core.prop_}, pin_{core.pin_}, stat_{core.stat_},
+			signalPrev_{core.signalPrev_}, timeStartNext_{core.timeStartNext_}
 {}
 
-Decoder_UART::Core::Core(const Property& prop) : prop_{prop}, stat_{Stat::WaitForIdle}, field_{Field::Data},
-	nBitsAccum_{0}, bitAccum_{0}, bitIdx_{0}, lastRX_{true}, sampleCounter_{0},
-	lastStartTime_{0}, bitSampleTime_{0}, bitsToSample_{0}, bitPeriod_{0}, stopBitSampleTime_{0}
+Decoder_UART::Core::Core(const Property& prop) : prop_{prop}, pin_{GPIO::InvalidPin}, stat_{Stat::WaitForIdle},
+			signalPrev_{false}, timeStartNext_{0.}
 {}
+
+void Decoder_UART::Core::Reset()
+{
+	stat_ = Stat::WaitForIdle;
+	signalPrev_ = false;
+	timeStartNext_ = 0.0;
+}
 
 void Decoder_UART::Core::ProcessEvent(const EventIterator& eventIter, const Event& event)
 {
-	// Get the current RX pin state
-	bool rx = event.IsPinHigh(prop_.pinRX);
+	bool rx = event.IsPinHigh(pin_);
 	switch (stat_) {
 	case Stat::WaitForIdle: {
-		// Wait for the line to go low (start bit)
-		if (!rx) {
-			stat_ = Stat::StartBit;
-			OnStartBit();
-			bitIdx_ = 0;
-			bitAccum_ = 0;
-			// Initialize sampling timing variables
-			lastStartTime_ = event.GetTimeStamp();
-			bitPeriod_ = 1000000ULL / prop_.baudrate; // Bit period in microseconds
-			// First data bit is sampled at 1.5 bit periods after start
-			bitSampleTime_ = lastStartTime_ + bitPeriod_ + bitPeriod_/2;
-			bitsToSample_ = prop_.dataBits;
-			stopBitSampleTime_ = bitSampleTime_ + bitPeriod_ * bitsToSample_;
+		if (event.IsPinHigh(pin_)) {
+			signalPrev_ = true;
+			stat_ = Stat::DataAccum;
 		}
 		break;
 	}
-	case Stat::StartBit: {
-		// Immediately transition to BitAccum state
-		stat_ = Stat::BitAccum;
-		break;
-	}
-	case Stat::BitAccum: {
-		// Sample each data bit at the calculated sampling time
-		if (event.GetTimeStamp() >= bitSampleTime_ && bitIdx_ < prop_.dataBits) {
-			bool rxSample = event.IsPinHigh(prop_.pinRX);
-			OnBit(field_, bitIdx_, rxSample);
-			bitAccum_ |= (rxSample ? 1 : 0) << bitIdx_;
-			bitIdx_++;
-			bitSampleTime_ += bitPeriod_;
-			if (bitIdx_ >= prop_.dataBits) {
-				stat_ = Stat::StopBit;
+	case Stat::DataAccum: {
+		double timeEvent = event.GetTimeStamp() * prop_.timeStampFactor;
+		if (!signalPrev_ && event.IsPinLow(pin_) && timeEvent > timeStartNext_) {
+			double timePerBit = 1.0 / prop_.baudrate;
+			timeStartNext_ = timeEvent + timePerBit * (prop_.dataBits + 1.5);
+			if (prop_.parity != Parity::None) timeStartNext_ += timePerBit;	// skip parity bit
+			EventIterator eventIterAdv(eventIter);
+			Event eventAdv;
+			uint16_t bitAccum = 0;
+			int nBitsAccum = 0;
+			int nBitsTotal = prop_.dataBits;
+			if (prop_.parity != Parity::None) nBitsTotal++;
+			uint8_t bitValue = 0;
+			double timeProbe = timeEvent + timePerBit * 1.5;
+			while (eventIterAdv.Next(eventAdv)) {
+				double timeEvent = eventAdv.GetTimeStamp() * prop_.timeStampFactor;
+				for ( ; timeProbe < timeEvent && nBitsAccum < nBitsTotal; timeProbe += timePerBit) {
+					bitAccum |= (bitValue << nBitsAccum);
+					nBitsAccum++;
+				}
+				bitValue = eventAdv.IsPinHigh(pin_)? 1 : 0;
 			}
+			uint8_t data = static_cast<uint8_t>(bitAccum & ((1 << prop_.dataBits) - 1));
+			uint8_t parity = (bitAccum >> prop_.dataBits) & 1;
+			OnStartBit(data, parity);
 		}
-		break;
-	}
-	case Stat::StopBit: {
-		// Wait until the stop bit sampling time, then sample and finish the frame
-		if (event.GetTimeStamp() >= stopBitSampleTime_) {
-			bool rxSample = event.IsPinHigh(prop_.pinRX);
-			OnStopBit(rxSample);
-			// Parity is not implemented yet
-			OnByte(static_cast<uint8_t>(bitAccum_ & 0xFF), false);
-			stat_ = Stat::WaitForIdle;
-		}
+		signalPrev_ = event.IsPinHigh(pin_);
 		break;
 	}
 	default: break;
 	}
-	// Store the last RX state
-	lastRX_ = rx;
 }
 
 //------------------------------------------------------------------------------
@@ -198,36 +192,10 @@ void Decoder_UART::Core_Annotator::ProcessEvent(const EventIterator& eventIter, 
 	Core::ProcessEvent(eventIter, event);
 }
 
-void Decoder_UART::Core_Annotator::OnStartBit()
+void Decoder_UART::Core_Annotator::OnStartBit(uint8_t data, uint8_t parity)
 {
 	int& iCol = *piCol_;
-	iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " Start");
-}
-
-void Decoder_UART::Core_Annotator::OnBit(Field field, int iBit, bool bitValue)
-{
-	int& iCol = *piCol_;
-	if (iBit == 0) {
-		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " Data:");
-	}
-	if (iBit < 8) {
-		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, "%d", bitValue ? 1 : 0);
-	}
-}
-
-void Decoder_UART::Core_Annotator::OnStopBit(bool valid)
-{
-	int& iCol = *piCol_;
-	iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " Stop");
-}
-
-void Decoder_UART::Core_Annotator::OnByte(uint8_t data, bool parityErr)
-{
-	int& iCol = *piCol_;
-	iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " 0x%02X", data);
-	if (parityErr) {
-		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " ParityErr");
-	}
+	iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " Data:0x%02x", data);
 }
 
 }

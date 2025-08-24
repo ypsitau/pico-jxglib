@@ -21,46 +21,35 @@ public:
 	};
 public:
 	enum class Stat {
-		Done, WaitForIdle, StartBit, BitAccum, StopBit
+		WaitForIdle, DataAccum,
 	};
 	enum class Parity { None, Even, Odd };
-	enum class Field { Data };
 	struct Property {
-		uint pinTX;
-		uint pinRX;
 		int baudrate;
 		int dataBits;
 		Parity parity;
 		int stopBits;
+		double timeStampFactor;
 	};
 	class Core {
 	private:
-		Stat stat_;                // Current state of the UART state machine
-		Field field_;              // Current field (data, parity, etc.)
-		int nBitsAccum_;           // Number of bits accumulated
-		uint16_t bitAccum_;        // Accumulated bits (data)
-		int bitIdx_;               // Current bit index
-		const Property& prop_;     // UART configuration properties
-		bool lastRX_;              // Last RX pin state
-		int sampleCounter_;        // Sample counter (not always used)
-		// UART sampling timing variables
-		uint64_t lastStartTime_ = 0;      // Timestamp of the last detected start bit
-		uint64_t bitSampleTime_ = 0;      // Timestamp for the next bit sample
-		int bitsToSample_ = 0;            // Number of bits to sample in the current frame
-		uint64_t bitPeriod_ = 0;          // Bit period in microseconds
-		uint64_t stopBitSampleTime_ = 0;  // Timestamp to sample the stop bit
+		const Property& prop_;
+		uint pin_;
+		Stat stat_;
+		bool signalPrev_;
+		double timeStartNext_;
 	public:
 		Core(const Core& core);
 		Core(const Property& prop);
 	public:
+		void SetPin(uint pin) { pin_ = pin; }
+		uint GetPin() const { return pin_; }
 		Stat GetStat() const { return stat_; }
 	public:
+		void Reset();
 		void ProcessEvent(const EventIterator& eventIter, const Event& event);
 	public:
-		virtual void OnStartBit() {}
-		virtual void OnBit(Field field, int iBit, bool bitValue) {}
-		virtual void OnStopBit(bool valid) {}
-		virtual void OnByte(uint8_t data, bool parityErr) {}
+		virtual void OnStartBit(uint8_t data, uint8_t parity) {}
 	};
 	class Core_Annotator : public Core {
 	private:
@@ -72,13 +61,11 @@ public:
 	public:
 		void ProcessEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int* piCol);
 	public:
-		virtual void OnStartBit() override;
-		virtual void OnBit(Field field, int iBit, bool bitValue) override;
-		virtual void OnStopBit(bool valid) override;
-		virtual void OnByte(uint8_t data, bool parityErr) override;
+		virtual void OnStartBit(uint8_t data, uint8_t parity) override;
 	};
 private:
-	Core_Annotator annotator_;
+	Core_Annotator annotatorTX_;
+	Core_Annotator annotatorRX_;
 private:
 	Property prop_;
 private:
