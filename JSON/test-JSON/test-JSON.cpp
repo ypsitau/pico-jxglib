@@ -36,7 +36,7 @@ void test_JSON()
 		"{\"s\":\"\\\\\\/\\b\\f\"}",
 		"{\"emoji\":\"\\uD83D\\uDE00\"}",
 		"{\"long\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}",
-		"{\"escape\":\"\\\\\"\\n\"}",
+		"{\"escape\":\"\\\\\\\"\\n\"}",
 		"{\"multi\":\"line\ntext\"}",
 		// 31-40: Arrays, numbers, boundaries
 		"[0]",

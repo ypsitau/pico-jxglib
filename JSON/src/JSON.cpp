@@ -292,7 +292,7 @@ bool JSON::FeedChar(char ch)
 				stat_ = Stat::Number_Fraction;
 			} else if (ch == 'e' || ch == 'E') {
 				if (!AddBuff(ch)) return false;
-				stat_ = Stat::Number_Exponent;
+				stat_ = Stat::Number_ExponentSign;
 			} else {
 				ReportNumber();
 				contFlag = true;
@@ -312,7 +312,7 @@ bool JSON::FeedChar(char ch)
 		case Stat::Number_AfterFraction: {
 			if (ch == 'e' || ch == 'E') {
 				if (!AddBuff(ch)) return false;
-				stat_ = Stat::Number_Exponent;
+				stat_ = Stat::Number_ExponentSign;
 			} else {
 				ReportNumber();
 				contFlag = true;
