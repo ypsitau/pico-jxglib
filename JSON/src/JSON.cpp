@@ -10,7 +10,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // JSON
 //------------------------------------------------------------------------------
-JSON::JSON() : stat_{Stat::Value}, strictFlag_{false},
+JSON::JSON() : stat_{Stat::Value}, strictFlag_{false}, context_{Context::ArrayValue},
 	iLine_{0}, iBuff_{0}, iGroupStack_{0}, nCodeDigits_{0}, codeAccum_{0},
 	errorMsg_{""}, pHandler_{nullptr}
 {
@@ -19,6 +19,7 @@ JSON::JSON() : stat_{Stat::Value}, strictFlag_{false},
 void JSON::Reset()
 {
 	stat_ = Stat::Value;
+	context_ = Context::ArrayValue;
 	iLine_ = 0;
 	iBuff_ = 0;
 	iGroupStack_ = 0;
@@ -46,6 +47,8 @@ bool JSON::Parse(Stream& stream)
 
 bool JSON::FeedChar(char ch)
 {
+	const char* errorMsg_ObjectName = "Object name must be a string";
+
 	bool contFlag = true;
 	while (contFlag) {
 		contFlag = false;
@@ -54,45 +57,100 @@ bool JSON::FeedChar(char ch)
 			if (IsWhitespace(ch)) {
 				// skip
 			} else if (ch == '"') {
+				ClearBuff();
 				stat_ = Stat::String;
 			} else if (ch == '-' || IsDigit(ch)) {
+				if (context_ == Context::ObjectName) {
+					errorMsg_ = errorMsg_ObjectName;
+					return false;
+				}
 				ClearBuff();
 				contFlag = true;
 				stat_ = Stat::Number;
 			} else if (ch == '{') {
+				if (context_ == Context::ObjectName) {
+					errorMsg_ = errorMsg_ObjectName;
+					return false;
+				}
 				if (iGroupStack_ >= count_of(groupStack_)) {
 					errorMsg_ = "object/array stack overflow";
 					return false;
 				}
 				groupStack_[iGroupStack_++] = '{';
-				if (pHandler_) pHandler_->OnObjectStart();
+				ReportObjectStart();
+				context_ = Context::ObjectName;
 			} else if (ch == '}') {
 				if (iGroupStack_ > 0 && groupStack_[iGroupStack_ - 1] == '{') {
 					iGroupStack_--;
-					if (pHandler_) pHandler_->OnObjectEnd();
+					ReportObjectEnd();
+					context_ = (iGroupStack_ > 0 && groupStack_[iGroupStack_ - 1] == '{')?
+														Context::ObjectValue : Context::ArrayValue;
+					stat_ = Stat::SeekNextValue;
 				} else {
 					errorMsg_ = "Unmatched closing brace";
 					return false;
 				}
 			} else if (ch == '[') {
+				if (context_ == Context::ObjectName) {
+					errorMsg_ = errorMsg_ObjectName;
+					return false;
+				}
 				if (iGroupStack_ >= count_of(groupStack_)) {
 					errorMsg_ = "object/array stack overflow";
 					return false;
 				}
 				groupStack_[iGroupStack_++] = '[';
-				if (pHandler_) pHandler_->OnArrayStart();
+				ReportArrayStart();
+				context_ = Context::ArrayValue;
 			} else if (ch == ']') {
 				if (iGroupStack_ > 0 && groupStack_[iGroupStack_ - 1] == '[') {
 					iGroupStack_--;
-					if (pHandler_) pHandler_->OnArrayEnd();
+					ReportArrayEnd();
+					context_ = (iGroupStack_ > 0 && groupStack_[iGroupStack_ - 1] == '{')?
+														Context::ObjectValue : Context::ArrayValue;
+					stat_ = Stat::SeekNextValue;
 				} else {
 					errorMsg_ = "Unmatched closing bracket";
 					return false;
 				}
 			} else if (IsSymbolCharFirst(ch)) {
+				if (context_ == Context::ObjectName) {
+					errorMsg_ = errorMsg_ObjectName;
+					return false;
+				}
 				ClearBuff();
 				if (!AddBuff(ch)) return false;
 				stat_ = Stat::Symbol;
+			}
+			break;
+		}
+		case Stat::SeekNextValue: {
+			if (IsWhitespace(ch)) {
+				// skip
+			} else if (ch == ',') {
+				context_ = (context_ == Context::ObjectValue)? Context::ObjectName : Context::ArrayValue;
+				stat_ = Stat::Value;
+			} else if (ch == '}') {
+				contFlag = true;
+				stat_ = Stat::Value;
+			} else if (ch == ']') {
+				contFlag = true;
+				stat_ = Stat::Value;
+			} else {
+				errorMsg_ = "Unexpected character";
+				return false;
+			}
+			break;
+		}
+		case Stat::SeekObjectValue: {
+			if (IsWhitespace(ch)) {
+				// skip
+			} else if (ch == ':') {
+				context_ = Context::ObjectValue;
+				stat_ = Stat::Value;
+			} else {
+				errorMsg_ = "Colon is expected";
+				return false;
 			}
 			break;
 		}
@@ -100,8 +158,16 @@ bool JSON::FeedChar(char ch)
 			if (ch == '\\') {
 				stat_ = Stat::String_Escape;
 			} else if (ch == '"') {
-				if (pHandler_) pHandler_->OnString(TerminateBuff());				
-				stat_ = Stat::Value;
+				if (context_ == Context::ObjectName) {
+					//ReportObjectName(TerminateBuff());
+					::strcpy(objectName_, TerminateBuff());
+					stat_ = Stat::SeekObjectValue;
+				} else {
+					ReportString();
+					stat_ = Stat::SeekNextValue;
+				}
+			} else {
+				if (!AddBuff(ch)) return false;
 			}
 			break;
 		}
@@ -229,9 +295,9 @@ bool JSON::FeedChar(char ch)
 				if (!AddBuff(ch)) return false;
 				stat_ = Stat::Number_Exponent;
 			} else {
-				if (pHandler_) pHandler_->OnNumber(::strtod(TerminateBuff(), nullptr));
+				ReportNumber();
 				contFlag = true;
-				stat_ = Stat::Value;
+				stat_ = Stat::SeekNextValue;
 			}
 			break;
 		}
@@ -249,9 +315,9 @@ bool JSON::FeedChar(char ch)
 				if (!AddBuff(ch)) return false;
 				stat_ = Stat::Number_Exponent;
 			} else {
-				if (pHandler_) pHandler_->OnNumber(::strtod(TerminateBuff(), nullptr));
+				ReportNumber();
 				contFlag = true;
-				stat_ = Stat::Value;
+				stat_ = Stat::SeekNextValue;
 			}
 			break;
 		}
@@ -279,9 +345,9 @@ bool JSON::FeedChar(char ch)
 			if (IsDigit(ch)) {
 				if (!AddBuff(ch)) return false;
 			} else {
-				if (pHandler_) pHandler_->OnNumber(::strtod(TerminateBuff(), nullptr));
+				ReportNumber();
 				contFlag = true;
-				stat_ = Stat::Value;
+				stat_ = Stat::SeekNextValue;
 			}
 			break;
 		}
@@ -289,9 +355,9 @@ bool JSON::FeedChar(char ch)
 			if (IsSymbolChar(ch)) {
 				if (!AddBuff(ch)) return false;
 			} else {
-				if (pHandler_) pHandler_->OnSymbol(TerminateBuff());
+				ReportSymbol();
 				contFlag = true;
-				stat_ = Stat::Value;
+				stat_ = Stat::SeekNextValue;
 			}
 			break;
 		}
@@ -299,6 +365,71 @@ bool JSON::FeedChar(char ch)
 	}
 	if (ch == '\n') iLine_++;
 	return true;
+}
+
+void JSON::ReportString()
+{
+	if (!pHandler_) {
+		// nothing to do
+	} else if (context_ == Context::ObjectValue) {
+		pHandler_->OnStringNamed(objectName_, TerminateBuff());
+	} else {
+		pHandler_->OnString(TerminateBuff());
+	}
+}
+
+void JSON::ReportNumber()
+{
+	if (!pHandler_) {
+		// nothing to do
+	} else if (context_ == Context::ObjectValue) {
+		pHandler_->OnNumberNamed(objectName_, ::strtod(TerminateBuff(), nullptr));
+	} else {
+		pHandler_->OnNumber(::strtod(TerminateBuff(), nullptr));
+	}
+}
+
+void JSON::ReportSymbol()
+{
+	if (!pHandler_) {
+		// nothing to do
+	} else if (context_ == Context::ObjectValue) {
+		pHandler_->OnSymbolNamed(objectName_, TerminateBuff());
+	} else {
+		pHandler_->OnSymbol(TerminateBuff());
+	}
+}
+
+void JSON::ReportObjectStart()
+{
+	if (!pHandler_) {
+		// nothing to do
+	} else if (context_ == Context::ObjectValue) {
+		pHandler_->OnObjectStartNamed(objectName_);
+	} else {
+		pHandler_->OnObjectStart();
+	}
+}
+
+void JSON::ReportObjectEnd()
+{
+	if (pHandler_) pHandler_->OnObjectEnd();
+}
+
+void JSON::ReportArrayStart()
+{
+	if (!pHandler_) {
+		// nothing to do
+	} else if (context_ == Context::ObjectValue) {
+		pHandler_->OnArrayStartNamed(objectName_);
+	} else {
+		pHandler_->OnArrayStart();
+	}
+}
+
+void JSON::ReportArrayEnd()
+{
+	if (pHandler_) pHandler_->OnArrayEnd();
 }
 
 bool JSON::AddBuff(char ch)
@@ -316,17 +447,43 @@ bool JSON::AddBuff(char ch)
 //------------------------------------------------------------------------------
 void JSON::Handler_Debug::OnString(const char* str)
 {
-	::printf("%*sString: %s\n", indentLevel_ * 2, "", str);
+	::printf("%*s\"%s\"\n", indentLevel_ * 2, "", str);
+}
+
+void JSON::Handler_Debug::OnStringNamed(const char* objectName, const char* str)
+{
+	::printf("%*s\"%s\" : \"%s\"\n", indentLevel_ * 2, "", objectName, str);
 }
 
 void JSON::Handler_Debug::OnNumber(double num)
 {
-	::printf("%*sNumber: %f\n", indentLevel_ * 2, "", num);
+	::printf("%*s%f\n", indentLevel_ * 2, "", num);
+}
+
+void JSON::Handler_Debug::OnNumberNamed(const char* objectName, double num)
+{
+	::printf("%*s\"%s\" : %f\n", indentLevel_ * 2, "", objectName, num);
+}
+
+void JSON::Handler_Debug::OnSymbol(const char* symbol)
+{
+	::printf("%*s`%s`\n", indentLevel_ * 2, "", symbol);
+}
+
+void JSON::Handler_Debug::OnSymbolNamed(const char* objectName, const char* symbol)
+{
+	::printf("%*s\"%s\" : `%s`\n", indentLevel_ * 2, "", objectName, symbol);
 }
 
 void JSON::Handler_Debug::OnObjectStart()
 {
 	::printf("%*s{\n", indentLevel_ * 2, "");
+	indentLevel_++;
+}
+
+void JSON::Handler_Debug::OnObjectStartNamed(const char* objectName)
+{
+	::printf("%*s\"%s\" : {\n", indentLevel_ * 2, "", objectName);
 	indentLevel_++;
 }
 
@@ -342,16 +499,16 @@ void JSON::Handler_Debug::OnArrayStart()
 	indentLevel_++;
 }
 
+void JSON::Handler_Debug::OnArrayStartNamed(const char* objectName)
+{
+	::printf("%*s\"%s\" : [\n", indentLevel_ * 2, "", objectName);
+	indentLevel_++;
+}
+
 void JSON::Handler_Debug::OnArrayEnd()
 {
 	indentLevel_--;
 	::printf("%*s]\n", indentLevel_ * 2, "");
 }
-
-void JSON::Handler_Debug::OnSymbol(const char* symbol)
-{
-	::printf("%*sSymbol: %s\n", indentLevel_ * 2, "", symbol);
-}
-
 
 }
