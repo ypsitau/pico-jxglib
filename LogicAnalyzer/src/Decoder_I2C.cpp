@@ -80,13 +80,13 @@ Decoder_I2C::Core::Core(const Core& core) : prop_{core.prop_}, stat_{core.stat_}
 	nBitsAccum_{core.nBitsAccum_}, bitAccum_{core.bitAccum_}, signalSDAPrev_{core.signalSDAPrev_}
 {}
 
-Decoder_I2C::Core::Core(const Property& prop) : prop_{prop}, stat_{Stat::WaitForStable}, field_{Field::Address}, direction_{Direction::Read},
+Decoder_I2C::Core::Core(const Property& prop) : prop_{prop}, stat_{Stat::WaitForIdle}, field_{Field::Address}, direction_{Direction::Read},
 	nBitsAccum_{0}, bitAccum_{0}, signalSDAPrev_{false}
 {}
 
 void Decoder_I2C::Core::Reset()
 {
-	stat_ = Stat::WaitForStable;
+	stat_ = Stat::WaitForIdle;
 	field_ = Field::Address;
 	direction_ = Direction::Read;
 	nBitsAccum_ = 0;
@@ -97,7 +97,7 @@ void Decoder_I2C::Core::Reset()
 void Decoder_I2C::Core::ProcessEvent(const EventIterator& eventIter, const Event& event)
 {
 	switch (stat_) {
-	case Stat::WaitForStable: {
+	case Stat::WaitForIdle: {
 		if (event.IsPinHigh(prop_.pinSCL, prop_.pinSDA)) {
 			stat_ = Stat::Start_SDA_Fall;
 		}

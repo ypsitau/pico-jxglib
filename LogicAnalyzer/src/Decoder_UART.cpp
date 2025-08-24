@@ -12,14 +12,23 @@ namespace jxglib::LogicAnalyzerExt {
 Decoder_UART::Factory Decoder_UART::factory_;
 
 Decoder_UART::Decoder_UART(const LogicAnalyzer& logicAnalyzer, const char* name) :
-	LogicAnalyzer::Decoder(logicAnalyzer, name), annotator_(prop_), prop_{GPIO::InvalidPin, 9600, 8, false, false, 1}
+		LogicAnalyzer::Decoder(logicAnalyzer, name), annotator_(prop_),
+		prop_{GPIO::InvalidPin, GPIO::InvalidPin, 115200, 8, Parity::None, 1}
 {}
 
 bool Decoder_UART::EvalSubcmd(Printable& terr, const char* subcmd)
 {
 	char* endptr = nullptr;
 	const char* value = nullptr;
-	if (Shell::Arg::GetAssigned(subcmd, "rx", &value)) {
+	if (Shell::Arg::GetAssigned(subcmd, "tx", &value)) {
+		int num = ::strtol(value, &endptr, 10);
+		if (endptr == value || *endptr != '\0' || num < 0 || num >= GPIO::NumPins) {
+			terr.Printf("invalid TX pin number\n");
+			return false;
+		}
+		prop_.pinTX = static_cast<uint>(num);
+		return true;
+	} else if (Shell::Arg::GetAssigned(subcmd, "rx", &value)) {
 		int num = ::strtol(value, &endptr, 10);
 		if (endptr == value || *endptr != '\0' || num < 0 || num >= GPIO::NumPins) {
 			terr.Printf("invalid RX pin number\n");
@@ -64,11 +73,11 @@ bool Decoder_UART::EvalSubcmd(Printable& terr, const char* subcmd)
 		prop_.dataBits = databits;
 		prop_.stopBits = stopbits;
 		if (parity == 'n' || parity == 'N') {
-			prop_.parityEnable = false;
+			prop_.parity = Parity::None;
 		} else if (parity == 'e' || parity == 'E') {
-			prop_.parityEnable = true; prop_.parityOdd = false;
+			prop_.parity = Parity::Even;
 		} else if (parity == 'o' || parity == 'O') {
-			prop_.parityEnable = true; prop_.parityOdd = true;
+			prop_.parity = Parity::Odd;
 		} else {
 			terr.Printf("invalid parity in frame\n");
 			return false;
@@ -82,12 +91,8 @@ bool Decoder_UART::EvalSubcmd(Printable& terr, const char* subcmd)
 bool Decoder_UART::CheckValidity(Printable& terr)
 {
     bool rtn = true;
-	if (prop_.pinRX == GPIO::InvalidPin) {
-		terr.Printf("specify RX pin number\n");
-		rtn = false;
-	}
-	if (prop_.baudrate <= 0) {
-		terr.Printf("specify baudrate\n");
+	if (prop_.pinTX == GPIO::InvalidPin && prop_.pinRX == GPIO::InvalidPin) {
+		terr.Printf("specify TX or RX pin number\n");
 		rtn = false;
 	}
 	return rtn;

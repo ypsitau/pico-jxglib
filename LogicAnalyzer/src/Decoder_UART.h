@@ -23,13 +23,14 @@ public:
 	enum class Stat {
 		Done, WaitForIdle, StartBit, BitAccum, StopBit
 	};
+	enum class Parity { None, Even, Odd };
 	enum class Field { Data };
 	struct Property {
+		uint pinTX;
 		uint pinRX;
 		int baudrate;
 		int dataBits;
-		bool parityEnable;
-		bool parityOdd;
+		Parity parity;
 		int stopBits;
 	};
 	class Core {

@@ -22,7 +22,7 @@ public:
 	};
 public:
 	enum class Stat {
-		Done, WaitForStable, Start_SDA_Fall, BitAccum_SCL_Fall, BitAccum_SCL_Rise, Stop_SCL_Fall,
+		Done, WaitForIdle, Start_SDA_Fall, BitAccum_SCL_Fall, BitAccum_SCL_Rise, Stop_SCL_Fall,
 	};
 	enum class Field { Address, Data };
 	enum class Direction { Read, Write };
