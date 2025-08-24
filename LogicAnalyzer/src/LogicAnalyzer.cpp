@@ -402,7 +402,7 @@ const LogicAnalyzer& LogicAnalyzer::WriteJSON(Printable& tout) const
 	Event event;
 	tout.Printf("{\"sample-rate\":%f, \"events\":[", GetSampleRate());
 	for (int iEvent = 0; eventIter.Next(event); ++iEvent) {
-		tout.Printf("%s\t[%u,%u]", (iEvent == 0)? "\n" : ",\n", event.GetTimeStamp(), event.GetPinBitmap());
+		tout.Printf("%s [%llu,%u]", (iEvent == 0)? "\n" : ",\n", event.GetTimeStamp(), event.GetPinBitmap());
 		if (Tickable::TickSub()) break;
 	}
 	tout.Printf("\n]}\n");

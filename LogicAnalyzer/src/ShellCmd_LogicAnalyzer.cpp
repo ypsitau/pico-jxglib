@@ -35,7 +35,8 @@ ShellCmd(la, "Logic Analyzer")
 		tout.Printf("  enable               enable sampling of the logic analyzer\n");
 		tout.Printf("  disable              disable sampling of the logic analyzer\n");
 		tout.Printf("  print                print the sampled waveforms\n");
-		tout.Printf("  write-json           write the sampled data in JSON format\n");
+		tout.Printf("  write-json[:FILE]    write the sampled data in JSON format\n");
+		tout.Printf("  read-json:FILE       read the sampled data in JSON format\n");
 		return Result::Success;
 	}
 	const char* value;
@@ -187,6 +188,9 @@ ShellCmd(la, "Logic Analyzer")
 			logicAnalyzer.PrintSettings(tout);
 		} else if (::strcmp(subcmd, "print") == 0) {
 			logicAnalyzer.PrintWave(tout, terr);
+		} else if (Arg::GetAssigned(subcmd, "write-json", &value)) {
+			logicAnalyzer.WriteJSON(tout);
+		} else if (Arg::GetAssigned(subcmd, "read-json", &value)) {
 		} else if (Arg::GetAssigned(subcmd, "decoder", &value)) {
 			const char* decoderName = value;
 			if (!decoderName) {
