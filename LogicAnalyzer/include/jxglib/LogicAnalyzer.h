@@ -283,103 +283,6 @@ public:
 		void SendReport(const Event& event, int nSamples);
 	};
 public:
-	class SUMPAdapter : public Tickable {
-	public:
-		// SUMP Commands
-		struct Command {
-			static const uint8_t Reset				= 0x00;
-			static const uint8_t Run				= 0x01;
-			static const uint8_t ID					= 0x02;
-			static const uint8_t GetMetadata		= 0x04;
-			static const uint8_t SetDivider			= 0x80;
-			static const uint8_t SetReadDelayCount	= 0x81;
-			static const uint8_t SetFlags			= 0x82;
-			static const uint8_t SetTriggerMask		= 0xc0;
-			static const uint8_t SetTriggerValues	= 0xc1;
-			static const uint8_t SetTriggerConfig	= 0xc2;
-		};
-		// SUMP Metadata tokens
-		struct TokenKey {
-			static const uint8_t DeviceName				= 0x01;
-			static const uint8_t FirmwareVersion		= 0x02;
-			static const uint8_t NumberOfProbes			= 0x20;
-			static const uint8_t SampleMemory			= 0x21;
-			static const uint8_t DynamicMemory			= 0x22;
-			static const uint8_t SampleRate				= 0x23;
-			static const uint8_t ProtocolVersion		= 0x24;
-			static const uint8_t NumberOfProbes_Short	= 0x40;
-			static const uint8_t ProtocolVersion_Short	= 0x41;
-			static const uint8_t EndOfMetadata			= 0x00;
-		};
-		enum class RLEMode {
-			PairInclusive	= 0,
-			PairExclusive	= 1,
-			Periodic		= 2,
-			Unlimited		= 3,
-		};
-		struct Config {
-			struct {
-				uint32_t mask		= 0;
-				uint32_t value		= 0;
-				uint32_t config		= 0; 
-			} trigger[4];
-			uint32_t divider		= 1;
-			uint32_t delayCount		= 0;
-			uint32_t readCount		= 0;
-			uint32_t flags			= 0;
-		public:
-			uint16_t GetTrigger_Delay(int iStage) const { return static_cast<uint16_t>(trigger[iStage].config & 0xffff); }
-			uint8_t GetTrigger_Level(int iStage) const { return static_cast<uint8_t>((trigger[iStage].config >> 16) & 0x03); }
-			uint8_t GetTrigger_Channel(int iStage) const { return static_cast<uint8_t>((trigger[iStage].config >> 20) & 0x1f); }
-			bool GetTrigger_Serial(int iStage) const { return (trigger[iStage].config & (1 << 26)) != 0; }
-			bool GetTrigger_Start(int iStage) const { return (trigger[iStage].config & (1 << 27)) != 0; }
-		public:	
-			bool GetFlags_DemuxMode() const					{ return (flags & (1 << 0)) != 0; }
-			bool GetFlags_NoiseFilter() const				{ return (flags & (1 << 1)) != 0; }
-			bool GetFlags_DisableChannelGroup1() const		{ return (flags & (1 << 2)) != 0; }
-			bool GetFlags_DisableChannelGroup2() const		{ return (flags & (1 << 3)) != 0; }
-			bool GetFlags_DisableChannelGroup3() const		{ return (flags & (1 << 4)) != 0; }
-			bool GetFlags_DisableChannelGroup4() const		{ return (flags & (1 << 5)) != 0; }
-			bool GetFlags_ExternalClock() const				{ return (flags & (1 << 6)) != 0; }
-			bool GetFlags_InvExternalClock() const			{ return (flags & (1 << 7)) != 0; }
-			bool GetFlags_RunLengthEncoding() const			{ return (flags & (1 << 8)) != 0; }
-			bool GetFlags_SwapChannels() const				{ return (flags & (1 << 9)) != 0; }
-			bool GetFlags_ExternalTestMode() const			{ return (flags & (1 << 10)) != 0; }
-			bool GetFlags_InternalTestMode() const			{ return (flags & (1 << 11)) != 0; }
-			RLEMode GetFlags_RunLengthEncodingMode() const	{ return static_cast<RLEMode>((flags >> 14) & 0x03); }
-		public:
-			void Print(Printable& tout = Stdio::Instance) const;
-		};
-		enum class Stat { Cmd, Arg };
-	private:
-		LogicAnalyzer& logicAnalyzer_;
-		Stream& stream_;
-		struct {
-			Stat stat = Stat::Cmd;
-			uint8_t cmd = 0;
-			uint32_t arg = 0;
-			int byteArg = 0;
-		} comm_;
-		Config cfg_;
-	public:
-		SUMPAdapter(LogicAnalyzer& logicAnalyzer, Stream& stream);
-	public:
-		const Config& GetConfig() const { return cfg_; }
-	public:
-		void ProcessCommand(uint8_t cmd, uint32_t arg);
-		void RunCapture();
-	private:
-		void SendValue(uint32_t value);
-		void SendMeta(uint8_t tokenKey);
-		void SendMeta_String(uint8_t tokenKey, const char* str);
-		void SendMeta_32bit(uint8_t tokenKey, uint32_t value);
-		void Flush() { stream_.Flush(); }
-	public:
-		// virtual functions of Tickable
-		virtual const char* GetTickableName() const override { return "SUMPAdapter"; }
-		virtual void OnTick() override;
-	};
-public:
 	static const WaveStyle waveStyle_unicode1;
 	static const WaveStyle waveStyle_unicode2;
 	static const WaveStyle waveStyle_unicode3;
@@ -442,7 +345,7 @@ public:
 	int GetRawEventCount() const;
 	int GetRawEventCountMax() const;
 	const LogicAnalyzer& PrintWave(Printable& tout, Printable& terr) const;
-	const LogicAnalyzer& WriteJSON(Printable& tout) const;
+	const LogicAnalyzer& WriteFileJSON(Printable& tout) const;
 	Decoder* SetDecoder(const char* decoderName);
 	const LogicAnalyzer& PrintSettings(Printable& tout) const;
 public:

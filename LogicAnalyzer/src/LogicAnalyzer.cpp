@@ -396,7 +396,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr) 
 	return *this;
 }
 
-const LogicAnalyzer& LogicAnalyzer::WriteJSON(Printable& tout) const
+const LogicAnalyzer& LogicAnalyzer::WriteFileJSON(Printable& tout) const
 {
 	EventIterator eventIter(*this);
 	Event event;
@@ -640,16 +640,6 @@ uint32_t LogicAnalyzer::Event::GetPackedBitmap(const PrintInfo& printInfo) const
 			iBit++;
 		}
 	}
-#if 0
-	int iBit = 0;
-	uint pin = samplingInfo.GetPinMin();
-	for (uint32_t pinBitmap = samplingInfo.GetPinBitmapEnabled(); pinBitmap != 0; pinBitmap >>= 1, ++pin) {
-		if (pinBitmap & 1) {
-			if (IsPinHigh(pin)) bitmap |= 1u << iBit;
-			iBit++;
-		}
-	}
-#endif
 	return bitmap;
 }
 
@@ -1103,185 +1093,6 @@ void LogicAnalyzer::SigrokAdapter::SendReport(const Event& event, int nSamples)
 	//Dump(buff, iBuff);
 	stream_.Write(buff, iBuff);
 	//stream_.Flush();
-}
-
-//------------------------------------------------------------------------------
-// LogicAnalyzer::SUMPAdapter
-// https://firmware.buspirate.com/binmode-reference/protocol-sump
-// http://dangerousprototypes.com/docs/The_Logic_Sniffer%27s_extended_SUMP_protocol
-//------------------------------------------------------------------------------
-LogicAnalyzer::SUMPAdapter::SUMPAdapter(LogicAnalyzer& logicAnalyzer, Stream& stream) : logicAnalyzer_(logicAnalyzer), stream_(stream)
-{}
-
-void LogicAnalyzer::SUMPAdapter::ProcessCommand(uint8_t cmd, uint32_t arg)
-{
-	if (cmd == Command::Reset) {
-		//Run->Disable();
-	} else if (cmd == Command::Run) {
-		RunCapture();
-	} else if (cmd == Command::ID) {
-		stream_.Print("1ALS").Flush();
-	} else if (cmd == Command::GetMetadata) {
-		SendMeta_String(TokenKey::DeviceName,			PICO_PROGRAM_NAME);
-		SendMeta_String(TokenKey::FirmwareVersion,		PICO_PROGRAM_VERSION_STRING);
-		SendMeta_32bit(TokenKey::SampleMemory,			1024);
-		SendMeta_32bit(TokenKey::SampleRate,			static_cast<uint32_t>(logicAnalyzer_.GetSampleRate()));
-		SendMeta_32bit(TokenKey::ProtocolVersion,		2);
-		SendMeta_32bit(TokenKey::NumberOfProbes,		16); //logicAnalyzer_.GetPrintInfo().nPins);
-		SendMeta(TokenKey::EndOfMetadata);
-		Flush();
-	} else if ((cmd & 0xf3) == Command::SetTriggerMask) {
-		int iStage = (cmd & 0x0c) >> 2;
-		cfg_.trigger[iStage].mask = arg;
-	} else if ((cmd & 0xf3) == Command::SetTriggerValues) {
-		int iStage = (cmd & 0x0c) >> 2;
-		cfg_.trigger[iStage].value = arg;
-	} else if ((cmd & 0xf3) == Command::SetTriggerConfig) {
-		int iStage = (cmd & 0x0c) >> 2;
-		cfg_.trigger[iStage].config = arg;
-	} else if (cmd == Command::SetDivider) {
-		cfg_.divider = arg & 0x00ffffff;
-	} else if (cmd == Command::SetReadDelayCount) {
-		cfg_.delayCount = 4 * (((arg >> 16) & 0xffff) + 1);
-		cfg_.readCount = 4 * ((arg & 0xffff) + 1);
-	} else if (cmd == Command::SetFlags) {
-		cfg_.flags = arg;
-	} else {
-		//::printf("Unknown command: 0x%02x, arg:0x%08x\n", cmd, arg);
-	}
-}
-
-void LogicAnalyzer::SUMPAdapter::SendValue(uint32_t value)
-{
-	// send in big-endian order
-	stream_.PutByte((value >> 24) & 0xff);
-	stream_.PutByte((value >> 16) & 0xff);
-	stream_.PutByte((value >> 8) & 0xff);
-	stream_.PutByte(value & 0xff);
-}
-
-void LogicAnalyzer::SUMPAdapter::SendMeta(uint8_t tokenKey)
-{
-	stream_.PutByte(tokenKey);
-}
-
-void LogicAnalyzer::SUMPAdapter::SendMeta_String(uint8_t tokenKey, const char* str)
-{
-	stream_.PutByte(tokenKey);
-	stream_.PrintRaw(str);
-	stream_.PutByte(0);
-}
-
-void LogicAnalyzer::SUMPAdapter::SendMeta_32bit(uint8_t tokenKey, uint32_t value)
-{
-	stream_.PutByte(tokenKey);
-	SendValue(value);
-}
-
-void LogicAnalyzer::SUMPAdapter::RunCapture()
-{
-	Tickable::Sleep(1000);
-	::printf("%d samples\n", cfg_.readCount);
-	for (int i = 0; i < cfg_.readCount; ++i) {
-		stream_.PutByte(1 << (i % 8));		// Probe 0-7
-		stream_.PutByte(~(1 << (i % 8)));	// Probe 8-15
-	}
-#if 0
-	for (int i = 0; i < cfg_.readCount; ++i) {
-		stream_.PutByte(1 << (i % 8));	// Probe 0-7
-		stream_.PutByte(0x00);			// Probe 8-15
-		stream_.PutByte(0xff);			// Probe 16-23
-		stream_.PutByte(0xaa);			// Probe 24-31
-	}
-#endif
-	Flush();
-#if 0
-	::printf("start capture\n");
-	double samplePeriod = 1. / (logicAnalyzer_.GetSampleRate() / (cfg_.divider + 1) * 10);
-	logicAnalyzer_.Enable();
-	//absolute_time_t elapsedTime = ::make_timeout_time_ms(samplePeriod * cfg_.readCount * 1000);
-	absolute_time_t elapsedTime = ::make_timeout_time_ms(1'000);
-	while (!::time_reached(elapsedTime) && !logicAnalyzer_.IsRawEventFull()) {
-	//while (!logicAnalyzer_.IsRawEventFull()) {
-		Tickable::TickSub();
-	}
-	int nSignalReports = 0;
-	const SignalReport* signalReportTbl = logicAnalyzer_.CreateSignalReport(cfg_.readCount, samplePeriod, &nSignalReports);
-	::printf("end capture: %d reports\n", nSignalReports);
-#if 0
-	for (int iSignalReport = nSignalReports - 1; iSignalReport >= 0; --iSignalReport) {
-		const SignalReport& signalReport = signalReportTbl[iSignalReport];
-		for (int i = 0; i < signalReport.nSamples; ++i) {
-			::printf("%02x\n", signalReport.sigBitmap);
-			stream_.PutByte(static_cast<uint8_t>(signalReport.sigBitmap));
-		}
-	}
-#endif
-	for (int i = 0; i < cfg_.readCount / 2; ++i) {
-		stream_.PutByte(0x00);
-		stream_.PutByte(0xff);
-	}
-#endif
-	Flush();
-}
-
-void LogicAnalyzer::SUMPAdapter::OnTick()
-{
-	uint8_t data;
-	if (stream_.Read(&data, 1) == 0) {
-		// nothing to do
-	} else if (comm_.stat == Stat::Cmd) {
-		comm_.cmd = data;
-		if (comm_.cmd & 0x80) {
-			comm_.byteArg = 0;
-			comm_.arg = 0;
-			comm_.stat = Stat::Arg;
-		} else {
-			ProcessCommand(comm_.cmd, 0);
-		}
-	} else if (comm_.stat == Stat::Arg) {
-		// receive in little-endian order
-		comm_.arg = comm_.arg | (static_cast<uint32_t>(data) << (comm_.byteArg * 8));
-		//comm_.arg = (comm_.arg << 8) | data;
-		comm_.byteArg++;
-		if (comm_.byteArg == 4) {
-			ProcessCommand(comm_.cmd, comm_.arg);
-			comm_.stat = Stat::Cmd;
-		}
-	}
-}
-
-//------------------------------------------------------------------------------
-// LogicAnalyzer::SUMPAdapter::Config
-//------------------------------------------------------------------------------
-void LogicAnalyzer::SUMPAdapter::Config::Print(Printable& tout) const
-{
-	for (int iStage = 0; iStage < count_of(trigger); ++iStage) {
-		tout.Printf("Trigger Stage#%d\n", iStage);
-		tout.Printf("  Mask:                    0x%08x\n", trigger[iStage].mask);
-		tout.Printf("  Value:                   0x%08x\n", trigger[iStage].value);
-		tout.Printf("  Delay:                   %d\n", GetTrigger_Delay(iStage));
-		tout.Printf("  Level:                   %d\n", GetTrigger_Level(iStage));
-		tout.Printf("  Channel:                 %d\n", GetTrigger_Channel(iStage));
-		tout.Printf("  Serial:                  %d\n", GetTrigger_Serial(iStage));
-		tout.Printf("  Start:                   %d\n", GetTrigger_Start(iStage));
-	}
-	tout.Printf("Divider:                   %d\n", divider);
-	tout.Printf("Delay Count:               %d\n", delayCount);
-	tout.Printf("Read Count:                %d\n", readCount);
-	tout.Printf("Demux Mode:                %d\n", GetFlags_DemuxMode());
-	tout.Printf("Noise Filter:              %d\n", GetFlags_NoiseFilter());
-	tout.Printf("Disable Channel Groups1:   %d\n", GetFlags_DisableChannelGroup1());
-	tout.Printf("Disable Channel Groups2:   %d\n", GetFlags_DisableChannelGroup2());
-	tout.Printf("Disable Channel Groups3:   %d\n", GetFlags_DisableChannelGroup3());
-	tout.Printf("Disable Channel Groups4:   %d\n", GetFlags_DisableChannelGroup4());
-	tout.Printf("External Clock:            %d\n", GetFlags_ExternalClock());
-	tout.Printf("Inv External Clock:        %d\n", GetFlags_InvExternalClock());
-	tout.Printf("Run Length Encoding:       %d\n", GetFlags_RunLengthEncoding());
-	tout.Printf("Swap Channels:             %d\n", GetFlags_SwapChannels());
-	tout.Printf("External Test Mode:        %d\n", GetFlags_ExternalTestMode());
-	tout.Printf("Internal Test Mode:        %d\n", GetFlags_InternalTestMode());
-	tout.Printf("Run Length Encoding Mode:  %d\n", GetFlags_RunLengthEncodingMode());
 }
 
 }
