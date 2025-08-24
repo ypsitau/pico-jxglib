@@ -25,6 +25,20 @@ public:
 		virtual void OnArrayEnd() = 0;
 		virtual void OnSymbol(const char* symbol) = 0;
 	};
+	class Handler_Debug : public Handler {
+	private:
+		int indentLevel_;
+	public:
+		Handler_Debug() : indentLevel_{0} {}
+	public:
+		virtual void OnString(const char* str) override;
+		virtual void OnNumber(double num) override;
+		virtual void OnObjectStart() override;
+		virtual void OnObjectEnd() override;
+		virtual void OnArrayStart() override;
+		virtual void OnArrayEnd() override;
+		virtual void OnSymbol(const char* symbol) override;
+	};
 public:
 	enum class Stat {
 		Value,
@@ -60,7 +74,9 @@ public:
 	void Reset();
 public:
 	const char* GetErrorMsg() const { return errorMsg_; }
+	void SetHandler(Handler& handler) { pHandler_ = &handler; }
 public:
+	bool Parse(const char* str);
 	bool Parse(Stream& stream);
 	bool FeedChar(char ch);
 private:

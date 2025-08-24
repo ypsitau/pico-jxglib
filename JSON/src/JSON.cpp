@@ -27,6 +27,14 @@ void JSON::Reset()
 	errorMsg_ = "";
 }
 
+bool JSON::Parse(const char* str)
+{
+	for (const char* p = str; *p; p++) {
+		if (!FeedChar(*p)) return false;
+	}
+	return true;
+}
+
 bool JSON::Parse(Stream& stream)
 {
 	while (int ch = stream.ReadChar()) {
@@ -302,5 +310,48 @@ bool JSON::AddBuff(char ch)
 	buff_[iBuff_++] = ch;
 	return true;
 }
+
+//------------------------------------------------------------------------------
+// JSON::Handler_Debug
+//------------------------------------------------------------------------------
+void JSON::Handler_Debug::OnString(const char* str)
+{
+	::printf("%*sString: %s\n", indentLevel_ * 2, "", str);
+}
+
+void JSON::Handler_Debug::OnNumber(double num)
+{
+	::printf("%*sNumber: %f\n", indentLevel_ * 2, "", num);
+}
+
+void JSON::Handler_Debug::OnObjectStart()
+{
+	::printf("%*s{\n", indentLevel_ * 2, "");
+	indentLevel_++;
+}
+
+void JSON::Handler_Debug::OnObjectEnd()
+{
+	indentLevel_--;
+	::printf("%*s}\n", indentLevel_ * 2, "");
+}
+
+void JSON::Handler_Debug::OnArrayStart()
+{
+	::printf("%*s[\n", indentLevel_ * 2, "");
+	indentLevel_++;
+}
+
+void JSON::Handler_Debug::OnArrayEnd()
+{
+	indentLevel_--;
+	::printf("%*s]\n", indentLevel_ * 2, "");
+}
+
+void JSON::Handler_Debug::OnSymbol(const char* symbol)
+{
+	::printf("%*sSymbol: %s\n", indentLevel_ * 2, "", symbol);
+}
+
 
 }
