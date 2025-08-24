@@ -146,7 +146,7 @@ void Decoder_UART::Core::ProcessEvent(const EventIterator& eventIter, const Even
 	}
 	case Stat::DataAccum: {
 		double timeEvent = event.GetTimeStamp() * prop_.timeStampFactor;
-		if (!signalPrev_ && event.IsPinLow(pin_) && timeEvent > timeStartNext_) {
+		if (signalPrev_ && event.IsPinLow(pin_) && timeEvent > timeStartNext_) {
 			double timePerBit = 1.0 / prop_.baudrate;
 			timeStartNext_ = timeEvent + timePerBit * (prop_.dataBits + 1.5);
 			if (prop_.parity != Parity::None) timeStartNext_ += timePerBit;	// skip parity bit
