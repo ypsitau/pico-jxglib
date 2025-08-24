@@ -1,8 +1,10 @@
 //==============================================================================
 // jxglib/JSON.h
+// https://www.json.org/json-en.html
 //==============================================================================
 #ifndef PICO_JXGLIB_JSON_H
 #define PICO_JXGLIB_JSON_H
+#include <ctype.h>
 #include "pico/stdlib.h"
 #include "jxglib/Common.h"
 
@@ -13,7 +15,64 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class JSON {
 public:
-	JSON() {}
+	class Handler {
+	public:
+		virtual void OnString(const char* str) = 0;
+		virtual void OnNumber(double num) = 0;
+		virtual void OnObjectStart() = 0;
+		virtual void OnObjectEnd() = 0;
+		virtual void OnArrayStart() = 0;
+		virtual void OnArrayEnd() = 0;
+		virtual void OnSymbol(const char* symbol) = 0;
+	};
+public:
+	enum class Stat {
+		Value,
+		String,
+		String_Escape,
+		String_Unicode,
+		Number,
+		Number_IntegerTop,
+		Number_Integer,
+		Number_AfterInteger,
+		Number_Fraction,
+		Number_AfterFraction,
+		Number_ExponentSign,
+		Number_ExponentTop,
+		Number_Exponent,
+		Symbol,
+	};
+protected:
+	Stat stat_;
+	bool strictFlag_;
+	int iLine_;
+	int iBuff_;
+	char buff_[256];
+	int iGroupStack_;
+	char groupStack_[32];
+	int nCodeDigits_;
+	uint32_t codeAccum_;
+	const char* errorMsg_;
+	Handler* pHandler_;
+public:
+	JSON();
+public:
+	void Reset();
+public:
+	const char* GetErrorMsg() const { return errorMsg_; }
+public:
+	bool Parse(Stream& stream);
+	bool FeedChar(char ch);
+private:
+	void ClearBuff() { iBuff_ = 0; buff_[0] = '\0'; }
+	bool AddBuff(char ch);
+	const char* TerminateBuff() { buff_[iBuff_] = '\0'; return buff_; }
+public:
+	static bool IsSymbolCharFirst(char ch) { return ::isalpha(ch) || ch == '_'; }
+	static bool IsSymbolChar(char ch) { return ::isalnum(ch) || ch == '_'; }
+	static bool IsDigit(char ch) { return ::isdigit(ch); }
+	static bool IsDigit1_9(char ch) { return ch >= '1' && ch <= '9'; }
+	static bool IsWhitespace(char ch) { return ch == ' ' || ch == '\n' || ch == '\r' || ch == '\t'; }
 };
 
 }
