@@ -11,8 +11,7 @@ namespace jxglib {
 // JSON
 //------------------------------------------------------------------------------
 JSON::JSON() : stat_{Stat::Value}, strictFlag_{false}, context_{Context::ArrayValue},
-	iLine_{0}, iBuff_{0}, iGroupStack_{0}, nCodeDigits_{0}, codeAccum_{0},
-	errorMsg_{""}, pHandler_{nullptr}
+	iLine_{0}, iBuff_{0}, iGroupStack_{0}, nCodeDigits_{0}, codeAccum_{0}, errorMsg_{""}
 {
 }
 
@@ -369,67 +368,57 @@ bool JSON::FeedChar(char ch)
 
 void JSON::ReportString()
 {
-	if (!pHandler_) {
-		// nothing to do
-	} else if (context_ == Context::ObjectValue) {
-		pHandler_->OnStringNamed(objectName_, TerminateBuff());
+	if (context_ == Context::ObjectValue) {
+		OnStringNamed(objectName_, TerminateBuff());
 	} else {
-		pHandler_->OnString(TerminateBuff());
+		OnString(TerminateBuff());
 	}
 }
 
 void JSON::ReportNumber()
 {
-	if (!pHandler_) {
-		// nothing to do
-	} else if (context_ == Context::ObjectValue) {
-		pHandler_->OnNumberNamed(objectName_, ::strtod(TerminateBuff(), nullptr));
+	if (context_ == Context::ObjectValue) {
+		OnNumberNamed(objectName_, ::strtod(TerminateBuff(), nullptr));
 	} else {
-		pHandler_->OnNumber(::strtod(TerminateBuff(), nullptr));
+		OnNumber(::strtod(TerminateBuff(), nullptr));
 	}
 }
 
 void JSON::ReportSymbol()
 {
-	if (!pHandler_) {
-		// nothing to do
-	} else if (context_ == Context::ObjectValue) {
-		pHandler_->OnSymbolNamed(objectName_, TerminateBuff());
+	if (context_ == Context::ObjectValue) {
+		OnSymbolNamed(objectName_, TerminateBuff());
 	} else {
-		pHandler_->OnSymbol(TerminateBuff());
+		OnSymbol(TerminateBuff());
 	}
 }
 
 void JSON::ReportObjectStart()
 {
-	if (!pHandler_) {
-		// nothing to do
-	} else if (context_ == Context::ObjectValue) {
-		pHandler_->OnObjectStartNamed(objectName_);
+	if (context_ == Context::ObjectValue) {
+		OnObjectStartNamed(objectName_);
 	} else {
-		pHandler_->OnObjectStart();
+		OnObjectStart();
 	}
 }
 
 void JSON::ReportObjectEnd()
 {
-	if (pHandler_) pHandler_->OnObjectEnd();
+	OnObjectEnd();
 }
 
 void JSON::ReportArrayStart()
 {
-	if (!pHandler_) {
-		// nothing to do
-	} else if (context_ == Context::ObjectValue) {
-		pHandler_->OnArrayStartNamed(objectName_);
+	if (context_ == Context::ObjectValue) {
+		OnArrayStartNamed(objectName_);
 	} else {
-		pHandler_->OnArrayStart();
+		OnArrayStart();
 	}
 }
 
 void JSON::ReportArrayEnd()
 {
-	if (pHandler_) pHandler_->OnArrayEnd();
+	OnArrayEnd();
 }
 
 bool JSON::AddBuff(char ch)
@@ -443,69 +432,69 @@ bool JSON::AddBuff(char ch)
 }
 
 //------------------------------------------------------------------------------
-// JSON::Handler_Debug
+// JSON_Debug
 //------------------------------------------------------------------------------
-void JSON::Handler_Debug::OnString(const char* str)
+void JSON_Debug::OnString(const char* str)
 {
 	::printf("%*s\"%s\"\n", indentLevel_ * 2, "", str);
 }
 
-void JSON::Handler_Debug::OnStringNamed(const char* objectName, const char* str)
+void JSON_Debug::OnStringNamed(const char* objectName, const char* str)
 {
 	::printf("%*s\"%s\" : \"%s\"\n", indentLevel_ * 2, "", objectName, str);
 }
 
-void JSON::Handler_Debug::OnNumber(double num)
+void JSON_Debug::OnNumber(double num)
 {
 	::printf("%*s%f\n", indentLevel_ * 2, "", num);
 }
 
-void JSON::Handler_Debug::OnNumberNamed(const char* objectName, double num)
+void JSON_Debug::OnNumberNamed(const char* objectName, double num)
 {
 	::printf("%*s\"%s\" : %f\n", indentLevel_ * 2, "", objectName, num);
 }
 
-void JSON::Handler_Debug::OnSymbol(const char* symbol)
+void JSON_Debug::OnSymbol(const char* symbol)
 {
 	::printf("%*s`%s`\n", indentLevel_ * 2, "", symbol);
 }
 
-void JSON::Handler_Debug::OnSymbolNamed(const char* objectName, const char* symbol)
+void JSON_Debug::OnSymbolNamed(const char* objectName, const char* symbol)
 {
 	::printf("%*s\"%s\" : `%s`\n", indentLevel_ * 2, "", objectName, symbol);
 }
 
-void JSON::Handler_Debug::OnObjectStart()
+void JSON_Debug::OnObjectStart()
 {
 	::printf("%*s{\n", indentLevel_ * 2, "");
 	indentLevel_++;
 }
 
-void JSON::Handler_Debug::OnObjectStartNamed(const char* objectName)
+void JSON_Debug::OnObjectStartNamed(const char* objectName)
 {
 	::printf("%*s\"%s\" : {\n", indentLevel_ * 2, "", objectName);
 	indentLevel_++;
 }
 
-void JSON::Handler_Debug::OnObjectEnd()
+void JSON_Debug::OnObjectEnd()
 {
 	indentLevel_--;
 	::printf("%*s}\n", indentLevel_ * 2, "");
 }
 
-void JSON::Handler_Debug::OnArrayStart()
+void JSON_Debug::OnArrayStart()
 {
 	::printf("%*s[\n", indentLevel_ * 2, "");
 	indentLevel_++;
 }
 
-void JSON::Handler_Debug::OnArrayStartNamed(const char* objectName)
+void JSON_Debug::OnArrayStartNamed(const char* objectName)
 {
 	::printf("%*s\"%s\" : [\n", indentLevel_ * 2, "", objectName);
 	indentLevel_++;
 }
 
-void JSON::Handler_Debug::OnArrayEnd()
+void JSON_Debug::OnArrayEnd()
 {
 	indentLevel_--;
 	::printf("%*s]\n", indentLevel_ * 2, "");

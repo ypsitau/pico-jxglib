@@ -15,43 +15,6 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class JSON {
 public:
-	class Handler {
-	public:
-		virtual void OnString(const char* str) = 0;
-		virtual void OnStringNamed(const char* objectName, const char* str) = 0;
-		virtual void OnNumber(double num) = 0;
-		virtual void OnNumberNamed(const char* objectName, double num) = 0;
-		virtual void OnSymbol(const char* symbol) = 0;
-		virtual void OnSymbolNamed(const char* objectName, const char* symbol) = 0;
-		virtual void OnObjectStart() = 0;
-		virtual void OnObjectStartNamed(const char* objectName) = 0;
-		virtual void OnObjectEnd() = 0;
-		virtual void OnArrayStart() = 0;
-		virtual void OnArrayStartNamed(const char* objectName) = 0;
-		virtual void OnArrayEnd() = 0;
-	};
-	class Handler_Debug : public Handler {
-	private:
-		int indentLevel_;
-	public:
-		Handler_Debug() : indentLevel_{0} {}
-	public:
-		void Reset() { indentLevel_ = 0; }
-	public:
-		virtual void OnString(const char* str) override;
-		virtual void OnStringNamed(const char* objectName, const char* str) override;
-		virtual void OnNumber(double num) override;
-		virtual void OnNumberNamed(const char* objectName, double num) override;
-		virtual void OnSymbol(const char* symbol) override;
-		virtual void OnSymbolNamed(const char* objectName, const char* symbol) override;
-		virtual void OnObjectStart() override;
-		virtual void OnObjectStartNamed(const char* objectName) override;
-		virtual void OnObjectEnd() override;
-		virtual void OnArrayStart() override;
-		virtual void OnArrayStartNamed(const char* objectName) override;
-		virtual void OnArrayEnd() override;
-	};
-public:
 	enum class Stat {
 		Value,
 		SeekNextValue,
@@ -88,14 +51,12 @@ protected:
 	int nCodeDigits_;
 	uint32_t codeAccum_;
 	const char* errorMsg_;
-	Handler* pHandler_;
 public:
 	JSON();
 public:
 	void Reset();
 public:
 	const char* GetErrorMsg() const { return errorMsg_; }
-	void SetHandler(Handler& handler) { pHandler_ = &handler; }
 public:
 	bool Parse(const char* str);
 	bool Parse(Stream& stream);
@@ -118,6 +79,41 @@ public:
 	static bool IsDigit(char ch) { return ::isdigit(ch); }
 	static bool IsDigit1_9(char ch) { return ch >= '1' && ch <= '9'; }
 	static bool IsWhitespace(char ch) { return ch == ' ' || ch == '\n' || ch == '\r' || ch == '\t'; }
+public:
+	virtual void OnString(const char* str) = 0;
+	virtual void OnStringNamed(const char* objectName, const char* str) = 0;
+	virtual void OnNumber(double num) = 0;
+	virtual void OnNumberNamed(const char* objectName, double num) = 0;
+	virtual void OnSymbol(const char* symbol) = 0;
+	virtual void OnSymbolNamed(const char* objectName, const char* symbol) = 0;
+	virtual void OnObjectStart() = 0;
+	virtual void OnObjectStartNamed(const char* objectName) = 0;
+	virtual void OnObjectEnd() = 0;
+	virtual void OnArrayStart() = 0;
+	virtual void OnArrayStartNamed(const char* objectName) = 0;
+	virtual void OnArrayEnd() = 0;
+};
+
+class JSON_Debug : public JSON {
+private:
+	int indentLevel_;
+public:
+	JSON_Debug() : indentLevel_{0} {}
+public:
+	void Reset() { indentLevel_ = 0; JSON::Reset();}
+public:
+	virtual void OnString(const char* str) override;
+	virtual void OnStringNamed(const char* objectName, const char* str) override;
+	virtual void OnNumber(double num) override;
+	virtual void OnNumberNamed(const char* objectName, double num) override;
+	virtual void OnSymbol(const char* symbol) override;
+	virtual void OnSymbolNamed(const char* objectName, const char* symbol) override;
+	virtual void OnObjectStart() override;
+	virtual void OnObjectStartNamed(const char* objectName) override;
+	virtual void OnObjectEnd() override;
+	virtual void OnArrayStart() override;
+	virtual void OnArrayStartNamed(const char* objectName) override;
+	virtual void OnArrayEnd() override;
 };
 
 }
