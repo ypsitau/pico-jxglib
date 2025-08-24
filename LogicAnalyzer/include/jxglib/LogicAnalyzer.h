@@ -8,8 +8,8 @@
 #include "pico/stdlib.h"
 #include "jxglib/PIO.h"
 #include "jxglib/DMA.h"
-#include "jxglib/TelePlot.h"
 #include "jxglib/Shell.h"
+#include "jxglib/JSON.h"
 
 namespace jxglib {
 
@@ -391,7 +391,6 @@ public:
 private:
 	RawEventFormat rawEventFormat_;
 	RawEventFormat rawEventFormatRequested_;
-	TelePlot* pTelePlot_;
 	PIO::Program program_SamplerInit_;
 	PIO::Program program_SamplerMain_;
 	uint8_t* samplingBuffWhole_;
@@ -409,8 +408,6 @@ private:
 public:
 	LogicAnalyzer();
 	~LogicAnalyzer();
-public:
-	LogicAnalyzer& AttachTelePlot(TelePlot& telePlot) { pTelePlot_ = &telePlot; return *this; }
 public:
 	bool Enable();
 	LogicAnalyzer& Disable();
@@ -436,7 +433,7 @@ public:
 	LogicAnalyzer& SetWaveStyle(const WaveStyle& waveStyle) { printInfo_.pWaveStyle = &waveStyle; return *this; }
 	const WaveStyle& GetWaveStyle() const { return *printInfo_.pWaveStyle; }
 	LogicAnalyzer& SetEventFormat(RawEventFormat rawEventFormat) { rawEventFormatRequested_ = rawEventFormat; return *this; }
-	double GetSampleRate() const { return static_cast<double>(::clock_get_hz(clk_sys) / clocksPerLoop_); }
+	double GetSampleRate() const { return static_cast<double>(::clock_get_hz(clk_sys) / clocksPerLoop_) * nSampler_; }
 	float GetResolution() const { return usecReso_; }
 	LogicAnalyzer& UpdateSamplingInfo() { samplingInfo_.Update(printInfo_); return *this; }
 	bool HasEnabledPins() const { return samplingInfo_.HasEnabledPins(); }
@@ -445,8 +442,8 @@ public:
 	int GetRawEventCount() const;
 	int GetRawEventCountMax() const;
 	const LogicAnalyzer& PrintWave(Printable& tout, Printable& terr) const;
+	const LogicAnalyzer& WriteJSON(Printable& tout) const;
 	Decoder* SetDecoder(const char* decoderName);
-	const LogicAnalyzer& PlotWave() const;
 	const LogicAnalyzer& PrintSettings(Printable& tout) const;
 public:
 	static size_t GetFreeHeapBytes();
@@ -454,7 +451,6 @@ public:
 	static bool IsValidPin(uint pin) { return pin < GPIO::NumPins; }
 	static bool IsAnnotationPin(uint pin) { return !IsBlankPin(pin) && pin >= GPIO::NumPins; }
 };
-
 
 }
 

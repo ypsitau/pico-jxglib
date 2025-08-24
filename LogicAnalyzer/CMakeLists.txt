@@ -5,7 +5,8 @@ target_include_directories(jxglib_LogicAnalyzer INTERFACE
 
 target_link_libraries(jxglib_LogicAnalyzer INTERFACE
 	jxglib_PIO
-	jxglib_DMA)
+	jxglib_DMA
+	jxglib_JSON)
 
 target_sources(jxglib_LogicAnalyzer INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/LogicAnalyzer.cpp

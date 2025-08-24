@@ -106,7 +106,7 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_ascii4 = {
 };
 
 LogicAnalyzer::LogicAnalyzer() : rawEventFormat_{RawEventFormat::Short}, rawEventFormatRequested_{RawEventFormat::Auto},
-		pTelePlot_{nullptr}, samplingBuffWhole_{nullptr}, iPIO_{PIO::Num - 1},
+		samplingBuffWhole_{nullptr}, iPIO_{PIO::Num - 1},
 		nSampler_{1}, target_{Target::Internal}, heapRatio_{.7}, heapRatioRequested_{.7}, usecReso_{1'000}
 {
 	clocksPerLoop_ = 12; // program_SampleMain_ takes 12 clocks in the loop
@@ -326,7 +326,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr) 
 		(printInfo_.part == PrintPart::Head)? 0 :
 		(printInfo_.part == PrintPart::Tail)? nEventsRelevant - nEventsToPrint :
 		(printInfo_.part == PrintPart::All)? 0 : 0;
-	double timeStampFactor = 1000'000. / GetSampleRate() / nSampler_;
+	double timeStampFactor = 1000'000. / GetSampleRate();
 	Event event, eventBase, eventPrev;
 	for (int iEvent = 0; iEvent < nEventsToPrint && eventIter.Next(event); ++iEvent) {
 		if (iEvent == 1) eventBase = event;
@@ -396,6 +396,19 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr) 
 	return *this;
 }
 
+const LogicAnalyzer& LogicAnalyzer::WriteJSON(Printable& tout) const
+{
+	EventIterator eventIter(*this);
+	Event event;
+	tout.Printf("{\"sample-rate\":%f, \"events\":[", GetSampleRate());
+	for (int iEvent = 0; eventIter.Next(event); ++iEvent) {
+		tout.Printf("%s\t[%u,%u]", (iEvent == 0)? "\n" : ",\n", event.GetTimeStamp(), event.GetPinBitmap());
+		if (Tickable::TickSub()) break;
+	}
+	tout.Printf("\n]}\n");
+	return *this;
+}
+
 LogicAnalyzer::Decoder* LogicAnalyzer::SetDecoder(const char* decoderName)
 {
 	if (pDecoder_ && ::strcasecmp(pDecoder_->GetName(), decoderName) == 0) {
@@ -418,7 +431,7 @@ const LogicAnalyzer::SignalReport* LogicAnalyzer::CreateSignalReport(int nSample
 	EventIterator eventIter(*this);
 	int nEventsRelevant = eventIter.CountRelevant();
 	Event event, eventPrev;
-	double timeStampFactor = 1000'000. / GetSampleRate() / GetSamplerCount();
+	double timeStampFactor = 1000'000. / GetSampleRate();
 	int iEvent = 0;
 	int nSamplesCaptured = 0;
 	if (eventIter.Next(eventPrev)) {
@@ -447,42 +460,6 @@ const LogicAnalyzer::SignalReport* LogicAnalyzer::CreateSignalReport(int nSample
 	return signalReportTbl;
 }
 
-const LogicAnalyzer& LogicAnalyzer::PlotWave() const
-{
-	if (!pTelePlot_) return *this;
-	TelePlot& tp = *pTelePlot_;
-	EventIterator eventIter(*this);
-	int nEventsRelevant = eventIter.CountRelevant();
-	if (nEventsRelevant == 0) return *this;
-	double timeStampFactor = 1000'000. / GetSampleRate() / nSampler_;
-	Event eventInitial, eventBase;
-	eventIter.Next(eventInitial);
-	if (!eventIter.Next(eventBase)) eventBase = eventInitial;
-	Event eventPrev = eventBase;
-	Event event = eventBase;
-	TelePlot::Telemetry t = tp.Add("GPIO1");
-	bool contFlag = true;
-	for (int iEvent = 0; iEvent < 50 && contFlag; ++iEvent, contFlag = eventIter.Next(event)) {
-		double delta = static_cast<double>(event.GetTimeStamp() - eventPrev.GetTimeStamp()) * timeStampFactor;
-		int nDelta = static_cast<int>(delta * 10 / usecReso_);
-		if (nDelta > 100) nDelta = 100;
-		for (int iPin = 0; iPin < printInfo_.nPins; ++iPin) {
-			uint pin = printInfo_.pinTbl[iPin];
-			if (IsBlankPin(pin)) {
-				// nothing to do
-			} else if (IsAnnotationPin(pin)) {
-				// annotation jobs
-			} else if (samplingInfo_.IsPinEnabled(pin)) {
-				float value = eventPrev.IsPinHigh(pin)? .2 : 0;
-				for (int i = 0; i < nDelta; ++i) t.Plot(value);
-			}
-		}
-		if (Tickable::TickSub()) break;
-		eventPrev = event;
-	}
-	return *this;
-}
-
 const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 {
 	int nRawEvents = GetRawEventCount();
@@ -492,7 +469,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 	} else {
 		tout.Printf("disabled ----");
 	}
-	tout.Printf(" %.1fMHz (samplers:%d) target:%s", GetSampleRate() * nSampler_ / 1000'000.,
+	tout.Printf(" %.1fMHz (samplers:%d) target:%s", GetSampleRate() / 1000'000.,
 		nSampler_, (target_ == Target::Internal)? "internal" : "external");
 	do {
 		bool firstFlag = true;
@@ -819,7 +796,7 @@ void LogicAnalyzer::SigrokAdapter::StartSampling()
 {
 	eventIter_.Rewind();
 	event_.Invalidate();
-	timeStampFactor_ = 1. / (static_cast<double>(logicAnalyzer_.GetSampleRate()) * logicAnalyzer_.GetSamplerCount());
+	timeStampFactor_ = 1. / logicAnalyzer_.GetSampleRate();
 	sampleDelta_ = (sampleRate_ == 0)? 1. : 1. / static_cast<double>(sampleRate_);
 	iEvent_ = 0;
 	embeddedRLEData_ = 0x00;
