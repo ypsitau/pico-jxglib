@@ -60,17 +60,19 @@ void Decoder_I2C::AnnotateWaveEvent(const EventIterator& eventIter, const Event&
 {
 	int& iCol = *piCol;
 	int iColOrg = iCol;
+	
 	annotator_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
+	
 	int nColsAdded = iCol - iColOrg;
 	if (nColsAdded < nColsAnnotation) {
-		iCol += ::snprintf(buffLine + iCol, lenBuffLine - iCol, " %-*s", nColsAnnotation - nColsAdded, "");
+		iCol += ::snprintf(buffLine + iCol, lenBuffLine - iCol, "%-*s", nColsAnnotation - nColsAdded, "");
 	}
 }
 
 void Decoder_I2C::AnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol)
 {
 	int& iCol = *piCol;
-	iCol += ::snprintf(buffLine + iCol, lenBuffLine - iCol, " %-*s", nColsAnnotation, "");
+	iCol += ::snprintf(buffLine + iCol, lenBuffLine - iCol, "%-*s", nColsAnnotation, "");
 }
 
 //------------------------------------------------------------------------------
@@ -176,7 +178,7 @@ void Decoder_I2C::Core_Annotator::ProcessEvent(const EventIterator& eventIter, c
 void Decoder_I2C::Core_Annotator::OnStart()
 {
 	int& iCol = *piCol_;
-	iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %s", "Start");
+	iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, "%s", "Start");
 }
 
 void Decoder_I2C::Core_Annotator::OnBitAccumBegin(const EventIterator& eventIter)
@@ -195,32 +197,32 @@ void Decoder_I2C::Core_Annotator::OnBitAccumBegin(const EventIterator& eventIter
 void Decoder_I2C::Core_Annotator::OnStop()
 {
 	int& iCol = *piCol_;
-	iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %s", "Stop");
+	iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, "%s", "Stop");
 }
 
 void Decoder_I2C::Core_Annotator::OnRepeatedStart()
 {
 	int& iCol = *piCol_;
-	iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %s", "Rep Start");
+	iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, "%s", "Rep Start");
 }
 
 void Decoder_I2C::Core_Annotator::OnBit(Field field, int iBit, bool bitValue)
 {
 	int& iCol = *piCol_;
 	if (iBit == 7 && field == Field::Address) {
-		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %s", bitValue? "Read" : "Write");
+		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, "%s", bitValue? "Read" : "Write");
 	} else if (iBit == 8) {
-		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %s", bitValue? "Nack" : "Ack");
+		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, "%s", bitValue? "Nack" : "Ack");
 	} else if (iBit == 3 && adv_.validFlag) {
 		if (field == Field::Address) {
-			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %d Addr:0x%02X:%s",
+			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, "%d Addr:0x%02X:%s",
 					bitValue, adv_.bitAccum >> 2, (adv_.bitAccum & (1 << 1))? "R" : "W");
 		} else { // field == Field::Data
-			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %d Data:0x%02X:%s",
+			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, "%d Data:0x%02X:%s",
 					bitValue, adv_.bitAccum >> 1, (direction_ == Direction::Read)? "R" : "W");
 		}
 	} else {
-		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %d", bitValue);
+		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, "%d", bitValue);
 	}
 }
 

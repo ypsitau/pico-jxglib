@@ -182,7 +182,7 @@ void Decoder_SPI::Core_Annotator::OnBit(int iBit, const Event& event)
 {
 	int& iCol = *piCol_;
 	if (IsValidPin(prop_.pinMOSI)) {
-		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %d", event.IsPinHigh(prop_.pinMOSI)? 1 : 0);
+		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, "%d", event.IsPinHigh(prop_.pinMOSI)? 1 : 0);
 		if (iBit == 0) {
 			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " msb      ");
 		} else if (iBit == 7) {
@@ -195,9 +195,9 @@ void Decoder_SPI::Core_Annotator::OnBit(int iBit, const Event& event)
 	}
 	if (IsValidPin(prop_.pinMISO)) {
 		if (IsValidPin(prop_.pinMOSI)) {
-			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " ");
+			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, "  ");
 		}
-		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %d", event.IsPinHigh(prop_.pinMISO)? 1 : 0);
+		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, "%d", event.IsPinHigh(prop_.pinMISO)? 1 : 0);
 		if (iBit == 0) {
 			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " msb      ");
 		} else if (iBit == 7) {

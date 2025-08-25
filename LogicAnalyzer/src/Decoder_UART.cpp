@@ -107,8 +107,14 @@ void Decoder_UART::Reset()
 
 void Decoder_UART::AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol)
 {
-	if (annotatorTX_.IsValid()) annotatorTX_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
-	if (annotatorRX_.IsValid()) annotatorRX_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
+	int& iCol = *piCol;
+	if (annotatorTX_.IsValid()) {
+		annotatorTX_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
+	}
+	if (annotatorRX_.IsValid()) {
+		if (annotatorTX_.IsValid()) iCol += ::snprintf(buffLine + iCol, lenBuffLine - iCol, " ");
+		annotatorRX_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
+	}
 }
 
 void Decoder_UART::AnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol)
@@ -189,7 +195,7 @@ void Decoder_UART::Core_Annotator::ProcessEvent(const EventIterator& eventIter, 
 void Decoder_UART::Core_Annotator::OnStartBit(uint8_t data, uint8_t parity)
 {
 	int& iCol = *piCol_;
-	iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %s:0x%02x", name_, data);
+	iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, "%s:0x%02x", name_, data);
 }
 
 }

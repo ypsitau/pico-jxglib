@@ -296,12 +296,18 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr) 
 		iCol = 0;
 	};
 	auto flushLineWithEvent = [&](const Event& event) {
-		if (pDecoder_) pDecoder_->AnnotateWaveEvent(eventIter, event, buffLine, sizeof(buffLine), &iCol);
+		if (pDecoder_) {
+			iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, " ");
+			pDecoder_->AnnotateWaveEvent(eventIter, event, buffLine, sizeof(buffLine), &iCol);
+		}
 		//::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "|");
 		flushLine();
 	};
 	auto flushLineWithStreak = [&]() {
-		if (pDecoder_) pDecoder_->AnnotateWaveStreak(buffLine, sizeof(buffLine), &iCol);
+		if (pDecoder_) {
+			iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, " ");
+			pDecoder_->AnnotateWaveStreak(buffLine, sizeof(buffLine), &iCol);
+		}
 		//::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "|");
 		flushLine();
 	};
