@@ -105,7 +105,12 @@ void Decoder_UART::Reset()
 	if (annotatorRX_.IsValid()) annotatorRX_.Reset();
 }
 
-void Decoder_UART::AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol)
+int Decoder_UART::GetColsAnnotation() const
+{
+	return 16;
+}
+
+void Decoder_UART::DoAnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol)
 {
 	int& iCol = *piCol;
 	if (annotatorTX_.IsValid()) {
@@ -117,7 +122,7 @@ void Decoder_UART::AnnotateWaveEvent(const EventIterator& eventIter, const Event
 	}
 }
 
-void Decoder_UART::AnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol)
+void Decoder_UART::DoAnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol)
 {
 }
 

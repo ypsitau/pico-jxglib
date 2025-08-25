@@ -1064,4 +1064,35 @@ void LogicAnalyzer::SigrokAdapter::SendReport(const Event& event, int nSamples)
 	//stream_.Flush();
 }
 
+//------------------------------------------------------------------------------
+// LogicAnalyzer::Decoder
+//------------------------------------------------------------------------------
+LogicAnalyzer::Decoder::Decoder(const LogicAnalyzer& logicAnalyzer, const char* name) :
+			logicAnalyzer_{logicAnalyzer}, name_{name}
+{}
+
+void LogicAnalyzer::Decoder::AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol)
+{
+	int nColsAnnotation = GetColsAnnotation();
+	int& iCol = *piCol;
+	int iColOrg = iCol;
+	DoAnnotateWaveEvent(eventIter, event, buffLine, lenBuffLine, piCol);
+	int nColsAdded = iCol - iColOrg;
+	if (nColsAdded < nColsAnnotation) {
+		iCol += ::snprintf(buffLine + iCol, lenBuffLine - iCol, "%-*s", nColsAnnotation - nColsAdded, "");
+	}
+}
+
+void LogicAnalyzer::Decoder::AnnotateWaveStreak(char* buffLine, int lenBuffLine, int *piCol)
+{
+	int nColsAnnotation = GetColsAnnotation();
+	int& iCol = *piCol;
+	int iColOrg = iCol;
+	DoAnnotateWaveStreak(buffLine, lenBuffLine, piCol);
+	int nColsAdded = iCol - iColOrg;
+	if (nColsAdded < nColsAnnotation) {
+		iCol += ::snprintf(buffLine + iCol, lenBuffLine - iCol, "%-*s", nColsAnnotation - nColsAdded, "");
+	}
+}
+
 }

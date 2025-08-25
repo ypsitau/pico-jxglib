@@ -77,12 +77,17 @@ bool Decoder_SPI::CheckValidity(Printable& terr)
 	return rtn;
 }
 
-void Decoder_SPI::AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol)
+int Decoder_SPI::GetColsAnnotation() const
+{
+	return 16;
+}
+
+void Decoder_SPI::DoAnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol)
 {
 	annotator_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
 }
 
-void Decoder_SPI::AnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol)
+void Decoder_SPI::DoAnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol)
 {
 	//annotator_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
 }

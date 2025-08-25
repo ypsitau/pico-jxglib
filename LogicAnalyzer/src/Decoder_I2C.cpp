@@ -56,23 +56,18 @@ bool Decoder_I2C::CheckValidity(Printable& terr)
 	return rtn;
 }
 
-void Decoder_I2C::AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol)
+int Decoder_I2C::GetColsAnnotation() const
 {
-	int& iCol = *piCol;
-	int iColOrg = iCol;
-	
-	annotator_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
-	
-	int nColsAdded = iCol - iColOrg;
-	if (nColsAdded < nColsAnnotation) {
-		iCol += ::snprintf(buffLine + iCol, lenBuffLine - iCol, "%-*s", nColsAnnotation - nColsAdded, "");
-	}
+	return 16;
 }
 
-void Decoder_I2C::AnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol)
+void Decoder_I2C::DoAnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol)
 {
-	int& iCol = *piCol;
-	iCol += ::snprintf(buffLine + iCol, lenBuffLine - iCol, "%-*s", nColsAnnotation, "");
+	annotator_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
+}
+
+void Decoder_I2C::DoAnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol)
+{
 }
 
 //------------------------------------------------------------------------------
