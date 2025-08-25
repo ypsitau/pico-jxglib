@@ -12,7 +12,7 @@ namespace jxglib::LogicAnalyzerExt {
 Decoder_UART::Factory Decoder_UART::factory_;
 
 Decoder_UART::Decoder_UART(const LogicAnalyzer& logicAnalyzer, const char* name) :
-		LogicAnalyzer::Decoder(logicAnalyzer, name), annotatorTX_(prop_), annotatorRX_{prop_},
+		LogicAnalyzer::Decoder(logicAnalyzer, name), annotatorTX_(prop_, "TX"), annotatorRX_{prop_, "RX"},
 		prop_{115200, 8, Parity::None, 1}
 {}
 
@@ -91,7 +91,7 @@ bool Decoder_UART::EvalSubcmd(Printable& terr, const char* subcmd)
 bool Decoder_UART::CheckValidity(Printable& terr)
 {
     bool rtn = true;
-	if (annotatorTX_.GetPin() == GPIO::InvalidPin && annotatorRX_.GetPin() == GPIO::InvalidPin) {
+	if (!annotatorTX_.IsValid() && !annotatorRX_.IsValid()) {
 		terr.Printf("specify TX or RX pin number\n");
 		rtn = false;
 	}
@@ -101,14 +101,14 @@ bool Decoder_UART::CheckValidity(Printable& terr)
 void Decoder_UART::Reset()
 {
 	prop_.timeStampFactor = 1.0 / logicAnalyzer_.GetSampleRate();
-	annotatorTX_.Reset();
-	annotatorRX_.Reset();
+	if (annotatorTX_.IsValid()) annotatorTX_.Reset();
+	if (annotatorRX_.IsValid()) annotatorRX_.Reset();
 }
 
 void Decoder_UART::AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol)
 {
-	annotatorTX_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
-	annotatorRX_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
+	if (annotatorTX_.IsValid()) annotatorTX_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
+	if (annotatorRX_.IsValid()) annotatorRX_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
 }
 
 void Decoder_UART::AnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol)
@@ -135,30 +135,24 @@ void Decoder_UART::Core::Reset()
 
 void Decoder_UART::Core::ProcessEvent(const EventIterator& eventIter, const Event& event)
 {
-	bool rx = event.IsPinHigh(pin_);
 	switch (stat_) {
 	case Stat::WaitForIdle: {
-		if (event.IsPinHigh(pin_)) {
-			signalPrev_ = true;
-			stat_ = Stat::DataAccum;
-		}
+		if (event.IsPinHigh(pin_)) stat_ = Stat::DataAccum;
 		break;
 	}
 	case Stat::DataAccum: {
 		double timeEvent = event.GetTimeStamp() * prop_.timeStampFactor;
 		if (signalPrev_ && event.IsPinLow(pin_) && timeEvent > timeStartNext_) {
 			double timePerBit = 1.0 / prop_.baudrate;
-			timeStartNext_ = timeEvent + timePerBit * (prop_.dataBits + 1.5);
-			if (prop_.parity != Parity::None) timeStartNext_ += timePerBit;	// skip parity bit
 			EventIterator eventIterAdv(eventIter);
-			Event eventAdv;
 			uint16_t bitAccum = 0;
-			int nBitsAccum = 0;
+			uint8_t bitValue = 0;
 			int nBitsTotal = prop_.dataBits;
 			if (prop_.parity != Parity::None) nBitsTotal++;
-			uint8_t bitValue = 0;
+			timeStartNext_ = timeEvent + timePerBit * (nBitsTotal + .5);
 			double timeProbe = timeEvent + timePerBit * 1.5;
-			while (eventIterAdv.Next(eventAdv)) {
+			int nBitsAccum = 0;
+			for (Event eventAdv; eventIterAdv.Next(eventAdv); ) {
 				double timeEvent = eventAdv.GetTimeStamp() * prop_.timeStampFactor;
 				for ( ; timeProbe < timeEvent && nBitsAccum < nBitsTotal; timeProbe += timePerBit) {
 					bitAccum |= (bitValue << nBitsAccum);
@@ -170,18 +164,18 @@ void Decoder_UART::Core::ProcessEvent(const EventIterator& eventIter, const Even
 			uint8_t parity = (bitAccum >> prop_.dataBits) & 1;
 			OnStartBit(data, parity);
 		}
-		signalPrev_ = event.IsPinHigh(pin_);
 		break;
 	}
 	default: break;
 	}
+	signalPrev_ = event.IsPinHigh(pin_);
 }
 
 //------------------------------------------------------------------------------
 // Decoder_UART::Core_Annotator
 //------------------------------------------------------------------------------
-Decoder_UART::Core_Annotator::Core_Annotator(const Property& prop) :
-		Core(prop), buffLine_{nullptr}, lenBuffLine_{0}, piCol_{nullptr}
+Decoder_UART::Core_Annotator::Core_Annotator(const Property& prop, const char* name) :
+		Core(prop), name_{name}, buffLine_{nullptr}, lenBuffLine_{0}, piCol_{nullptr}
 {}
 
 void Decoder_UART::Core_Annotator::ProcessEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int* piCol)
@@ -195,7 +189,7 @@ void Decoder_UART::Core_Annotator::ProcessEvent(const EventIterator& eventIter, 
 void Decoder_UART::Core_Annotator::OnStartBit(uint8_t data, uint8_t parity)
 {
 	int& iCol = *piCol_;
-	iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " Data:0x%02x", data);
+	iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, " %s:0x%02x", name_, data);
 }
 
 }

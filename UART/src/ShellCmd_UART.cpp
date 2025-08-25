@@ -10,8 +10,8 @@
 namespace jxglib::ShellCmd_UART {
 
 struct Config {
-	uint TX = -1;
-	uint RX = -1;
+	uint pinTX = GPIO::InvalidPin;
+	uint pinRX = GPIO::InvalidPin;
 	uint baudrate = 115200;
 	uint dataBits = 8;
 	uint stopBits = 1;
@@ -220,16 +220,13 @@ ShellCmd_Named(uart_, "uart", "controls UART communication")
 			return Result::Error;
 		}
 		Arg::EachNum each(value);
-		int nNums;
-		if (!each.CheckValidity(&nNums) || nNums != 2) {
-			terr.Printf("Invalid pin specification: %s (expected 2 UART pins: TX,RX)\n", value);
+		if (!each.CheckValidity()) {
+			terr.Printf("Invalid pin specification: %s\n", value);
 			return Result::Error;
 		}
-		
 		// Reset UART pin assignments
-		config.TX = -1;
-		config.RX = -1;
-		
+		config.pinTX = GPIO::InvalidPin;
+		config.pinRX = GPIO::InvalidPin;
 		// Parse each pin and assign based on function
 		int num;
 		while (each.Next(&num)) {
@@ -237,29 +234,26 @@ ShellCmd_Named(uart_, "uart", "controls UART communication")
 				terr.Printf("Invalid GPIO number: %d\n", num);
 				return Result::Error;
 			}
-			
 			const Info& info = infoTbl[num];
-			
 			// Check if pin belongs to the specified UART
 			if (info.iUART != iUART) {
 				terr.Printf("GPIO%d belongs to UART%d, but UART%d was specified\n", 
 					num, info.iUART, iUART);
 				return Result::Error;
 			}
-			
 			// Assign pin based on function
 			if (info.func == Func::TX) {
-				if (config.TX != -1) {
-					terr.Printf("TX pin already assigned (GPIO%d), cannot assign GPIO%d\n", config.TX, num);
+				if (config.pinTX != GPIO::InvalidPin) {
+					terr.Printf("TX pin already assigned (GPIO%d), cannot assign GPIO%d\n", config.pinTX, num);
 					return Result::Error;
 				}
-				config.TX = static_cast<uint>(num);
+				config.pinTX = static_cast<uint>(num);
 			} else if (info.func == Func::RX) {
-				if (config.RX != -1) {
-					terr.Printf("RX pin already assigned (GPIO%d), cannot assign GPIO%d\n", config.RX, num);
+				if (config.pinRX != GPIO::InvalidPin) {
+					terr.Printf("RX pin already assigned (GPIO%d), cannot assign GPIO%d\n", config.pinRX, num);
 					return Result::Error;
 				}
-				config.RX = static_cast<uint>(num);
+				config.pinRX = static_cast<uint>(num);
 			} else {
 				terr.Printf("GPIO%d is a %s pin, only TX and RX pins are supported for basic UART operation\n", 
 					num, (info.func == Func::CTS) ? "CTS" : "RTS");
@@ -268,25 +262,25 @@ ShellCmd_Named(uart_, "uart", "controls UART communication")
 		}
 	}
 	if (arg.GetBool("dumb")) return Result::Success;
-	if (config.TX != -1 && config.RX != -1) {
+	if (config.pinTX != GPIO::InvalidPin || config.pinRX != GPIO::InvalidPin) {
 		// nothing to do
 	} else if (argc > 0) {
-		terr.Printf("TX and RX pins must be configured for UART %d\n", iUART);
+		terr.Printf("TX or RX pins must be configured for UART %d\n", iUART);
 		return Result::Error;
 	} else {
 		PrintConfig(tout, iUART, "GPIO%d");
 		return Result::Success;
 	}
-	
 	UART& uart = (iUART == 0)? UART0 : UART1;
 	uart.raw.init(config.baudrate);
 	uart.raw.set_format(config.dataBits, config.stopBits, config.parity);
 	uart.raw.set_hw_flow(config.flow_control, config.flow_control);
 	uart.raw.set_fifo_enabled(true);
-	::gpio_set_function(config.TX, GPIO_FUNC_UART);
-	::gpio_set_function(config.RX, GPIO_FUNC_UART);
-	while (uart.raw.is_readable()) uart.raw.getc();	// Clear any existing data in the RX buffer
-
+	if (config.pinTX != GPIO::InvalidPin) ::gpio_set_function(config.pinTX, GPIO_FUNC_UART);
+	if (config.pinRX != GPIO::InvalidPin) {
+		::gpio_set_function(config.pinRX, GPIO_FUNC_UART);
+		while (uart.raw.is_readable()) uart.raw.getc();	// Clear any existing data in the RX buffer
+	}
 	int rtn = 0;
 	bool verboseFlag = arg.GetBool("verbose");
 	if (argc == 0) {
@@ -301,18 +295,33 @@ ShellCmd_Named(uart_, "uart", "controls UART communication")
 		while (const char* arg = each.Next()) {
 			const char* value;
 			if (Arg::GetAssigned(arg, "write", &value)) {
+				if (config.pinTX == GPIO::InvalidPin) {
+					terr.Printf("TX pin is not configured for UART%d\n", iUART);
+					rtn = 1;
+					break;
+				}
 				if (verboseFlag) tout.Printf("write: %s\n", value);
 				if (!WriteData(tout, terr, uart, value, config.msecTimeout)) {
 					rtn = 1;
 					break;
 				}
 			} else if (Arg::GetAssigned(arg, "read", &value)) {
+				if (config.pinRX == GPIO::InvalidPin) {
+					terr.Printf("RX pin is not configured for UART%d\n", iUART);
+					rtn = 1;
+					break;
+				}
 				if (verboseFlag) tout.Printf("read: %s\n", value? value : "all");
 				if (!ReadData(tout, terr, uart, value, config.msecTimeout)) {
 					rtn = 1;
 					break;
 				}
 			} else if (::strcmp(arg, "flush") == 0) {
+				if (config.pinTX == GPIO::InvalidPin) {
+					terr.Printf("TX pin is not configured for UART%d\n", iUART);
+					rtn = 1;
+					break;
+				}
 				if (verboseFlag) tout.Printf("flush\n");
 				uart.raw.tx_wait_blocking();
 				uart.Flush();
@@ -389,10 +398,8 @@ bool ReadData(Printable& tout, Printable& terr, UART& uart, const char* value, u
 		}
 		bytesToRead = static_cast<int>(num);
 	}
-	
 	absolute_time_t timeout = ::make_timeout_time_ms(msecTimeout);
 	int bytesRead = 0;
-	
 	while (bytesRead < bytesToRead && !::time_reached(timeout)) {
 		if (uart.raw.is_readable()) {
 			dataBuff[bytesRead] = static_cast<uint8_t>(uart.raw.getc());
@@ -401,12 +408,10 @@ bool ReadData(Printable& tout, Printable& terr, UART& uart, const char* value, u
 			Tickable::TickSub();
 		}
 	}
-	
 	if (bytesRead == 0) {
 		terr.Printf("No data received within timeout\n");
 		return false;
 	}
-	
 	Printable::DumpT dump(tout);
 	dump.Addr(bytesRead > dump.GetBytesPerRow())(dataBuff, bytesRead);
 	return true;
@@ -416,18 +421,18 @@ void PrintConfig(Printable& tout, int iUART, const char* formatGPIO)
 {
 	auto printPin = [&](const char* name, uint pin) {
 		tout.Printf(" %s:", name);
-		if (pin != -1) {
-			tout.Printf(formatGPIO, pin);
-		} else {
+		if (pin == GPIO::InvalidPin) {
 			tout.Printf("------");
+		} else {
+			tout.Printf(formatGPIO, pin);
 		}
 	};
 	const Config& config = configTbl[iUART];
 	char parityChar = (config.parity == UART_PARITY_NONE)? 'n' :
                     (config.parity == UART_PARITY_EVEN)? 'e' : 'o';
 	tout.Printf("UART%d:", iUART);
-	printPin("TX", config.TX);
-	printPin("RX", config.RX);
+	printPin("TX", config.pinTX);
+	printPin("RX", config.pinRX);
 	tout.Printf(" baudrate:%d frame:%d%c%d flow-control:%s timeout:%dmsec\n", 
 		config.baudrate, config.dataBits, parityChar, config.stopBits,
 		config.flow_control ? "on" : "off", config.msecTimeout);

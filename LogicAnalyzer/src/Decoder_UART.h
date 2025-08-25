@@ -42,6 +42,7 @@ public:
 		Core(const Core& core);
 		Core(const Property& prop);
 	public:
+		bool IsValid() const { return pin_ != GPIO::InvalidPin; }
 		void SetPin(uint pin) { pin_ = pin; }
 		uint GetPin() const { return pin_; }
 		Stat GetStat() const { return stat_; }
@@ -53,11 +54,12 @@ public:
 	};
 	class Core_Annotator : public Core {
 	private:
+		const char* name_;
 		char* buffLine_;
 		int lenBuffLine_;
 		int* piCol_;
 	public:
-		Core_Annotator(const Property& prop);
+		Core_Annotator(const Property& prop, const char* name);
 	public:
 		void ProcessEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int* piCol);
 	public:
