@@ -58,7 +58,7 @@ bool Decoder_I2C::CheckValidity(Printable& terr)
 
 int Decoder_I2C::GetColsAnnotation() const
 {
-	return 16;
+	return 13;
 }
 
 void Decoder_I2C::DoAnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol)

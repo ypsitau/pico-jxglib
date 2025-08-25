@@ -30,9 +30,10 @@ ShellCmd(la, "Logic Analyzer")
 		arg.PrintHelp(tout);
 		tout.Printf("Sub Commands:\n");
 		tout.Printf("  sleep:MSEC           sleep for specified milliseconds\n");
-		tout.Printf("  repeat[:N] {CMD...}  repeat the commands N times (default: infinite)\n");
+		tout.Printf("  sleep:MSEC           sleep for specified milliseconds\n");
 		tout.Printf("  enable               enable sampling of the logic analyzer\n");
 		tout.Printf("  disable              disable sampling of the logic analyzer\n");
+		tout.Printf("  dec:DECODER          specify the decoder to use\n");
 		tout.Printf("  print                print the sampled waveforms\n");
 		//tout.Printf("  write[:FILE]         write sampled data to file\n");
 		//tout.Printf("  read:FILE            read sampled data from file\n");
@@ -196,7 +197,7 @@ ShellCmd(la, "Logic Analyzer")
 				logicAnalyzer.WriteFileJSON(tout);
 			}
 		} else if (Arg::GetAssigned(subcmd, "read", &value)) {
-		} else if (Arg::GetAssigned(subcmd, "decoder", &value)) {
+		} else if (Arg::GetAssigned(subcmd, "dec", &value) || Arg::GetAssigned(subcmd, "decoder", &value)) {
 			const char* decoderName = value;
 			if (!decoderName) {
 				terr.Printf("available decoders:");

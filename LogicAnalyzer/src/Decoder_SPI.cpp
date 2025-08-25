@@ -79,7 +79,7 @@ bool Decoder_SPI::CheckValidity(Printable& terr)
 
 int Decoder_SPI::GetColsAnnotation() const
 {
-	return 16;
+	return (prop_.pinMOSI != GPIO::InvalidPin && prop_.pinMISO != GPIO::InvalidPin)? 10 + 2 + 10 : 10;
 }
 
 void Decoder_SPI::DoAnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol)
@@ -89,7 +89,6 @@ void Decoder_SPI::DoAnnotateWaveEvent(const EventIterator& eventIter, const Even
 
 void Decoder_SPI::DoAnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol)
 {
-	//annotator_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
 }
 
 //------------------------------------------------------------------------------
