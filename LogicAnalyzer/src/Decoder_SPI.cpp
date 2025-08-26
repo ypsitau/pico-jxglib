@@ -15,18 +15,19 @@ Decoder_SPI::Decoder_SPI(const LogicAnalyzer& logicAnalyzer, const char* name) :
 	LogicAnalyzer::Decoder(logicAnalyzer, name), annotator_(prop_), prop_{-1, GPIO::InvalidPin, GPIO::InvalidPin, GPIO::InvalidPin}
 {}
 
-bool Decoder_SPI::EvalSubcmd(Printable& terr, const char* subcmd)
+bool Decoder_SPI::EvalSubcmd(Printable& tout, Printable& terr, const char* subcmd)
 {
 	char* endptr = nullptr;
 	const char* value = nullptr;
-	if (Shell::Arg::GetAssigned(subcmd, "mode", &value)) {
+	if (::strcasecmp(subcmd, "print") == 0) {
+		if (CheckValidity(terr)) PrintEvent(tout);
+	} else if (Shell::Arg::GetAssigned(subcmd, "mode", &value)) {
 		int num = ::strtol(value, &endptr, 10);
 		if (endptr == value || *endptr != '\0' || num < 0 || num > 3) {
 			terr.Printf("invalid SPI mode\n");
 			return false;
 		}
 		prop_.mode = num;
-		return true;
 	} else if (Shell::Arg::GetAssigned(subcmd, "mosi", &value)) {
 		int num = ::strtol(value, &endptr, 10);
 		if (endptr == value || *endptr != '\0' || num < 0 || num >= GPIO::NumPins) {
@@ -34,7 +35,6 @@ bool Decoder_SPI::EvalSubcmd(Printable& terr, const char* subcmd)
 			return false;
 		}
 		prop_.pinMOSI = static_cast<uint>(num);
-		return true;
 	} else if (Shell::Arg::GetAssigned(subcmd, "miso", &value)) {
 		int num = ::strtol(value, &endptr, 10);
 		if (endptr == value || *endptr != '\0' || num < 0 || num >= GPIO::NumPins) {
@@ -42,7 +42,6 @@ bool Decoder_SPI::EvalSubcmd(Printable& terr, const char* subcmd)
 			return false;
 		}
 		prop_.pinMISO = static_cast<uint>(num);
-		return true;
 	} else if (Shell::Arg::GetAssigned(subcmd, "sck", &value) ||
 				Shell::Arg::GetAssigned(subcmd, "scl", &value) ||
 				Shell::Arg::GetAssigned(subcmd, "sclk", &value) ||
@@ -53,10 +52,11 @@ bool Decoder_SPI::EvalSubcmd(Printable& terr, const char* subcmd)
 			return false;
 		}
 		prop_.pinSCK = static_cast<uint>(num);
-		return true;
+	} else {
+		terr.Printf("unknown sub-command: %s\n", subcmd);
+		return false;
 	}
-	terr.Printf("unknown sub-command: %s\n", subcmd);
-	return false;
+	return true;
 }
 
 bool Decoder_SPI::CheckValidity(Printable& terr)
@@ -87,7 +87,7 @@ void Decoder_SPI::DoAnnotateWaveEvent(const EventIterator& eventIter, const Even
 	annotator_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
 }
 
-void Decoder_SPI::DoAnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol)
+void Decoder_SPI::DoAnnotateWaveStreak(double timeStamp, char* buffLine, int lenBuffLine, int* piCol)
 {
 }
 

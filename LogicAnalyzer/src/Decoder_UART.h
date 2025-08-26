@@ -75,12 +75,12 @@ private:
 public:
 	Decoder_UART(const LogicAnalyzer& logicAnalyzer, const char* name);
 public:
-	virtual bool EvalSubcmd(Printable& terr, const char* subcmd) override;
+	virtual bool EvalSubcmd(Printable& tout, Printable& terr, const char* subcmd) override;
 	virtual bool CheckValidity(Printable& terr) override;
 	virtual void Reset() override;
 	virtual int GetColsAnnotation() const override;
 	virtual void DoAnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int* piCol) override;
-	virtual void DoAnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol) override;
+	virtual void DoAnnotateWaveStreak(double timeStamp, char* buffLine, int lenBuffLine, int* piCol) override;
 };
 
 }

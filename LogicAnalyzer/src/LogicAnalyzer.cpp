@@ -303,10 +303,10 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr) 
 		//::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "|");
 		flushLine();
 	};
-	auto flushLineWithStreak = [&]() {
+	auto flushLineWithStreak = [&](double timeStamp) {
 		if (pDecoder_) {
 			iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, " ");
-			pDecoder_->AnnotateWaveStreak(buffLine, sizeof(buffLine), &iCol);
+			pDecoder_->AnnotateWaveStreak(timeStamp, buffLine, sizeof(buffLine), &iCol);
 		}
 		//::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "|");
 		flushLine();
@@ -354,8 +354,9 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr) 
 						iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", waveStyle.strBlank);
 					}
 				}
-				flushLineWithStreak();
+				flushLine();
 			} else {
+				double timeStampPrev = static_cast<double>(eventPrev.GetTimeStamp()) * timeStampFactor;
 				for (int i = 0; i < nDelta; ++i) {
 					iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%12s", "");
 					for (int iPin = 0; iPin < printInfo_.nPins; ++iPin) {
@@ -370,7 +371,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr) 
 							iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, "%s", waveStyle.strBlank);
 						}
 					}
-					flushLineWithStreak();
+					flushLineWithStreak(timeStampPrev + delta * (i + 1) / (nDelta + 1));
 				}
 			}
 			bitsTransition = event.GetPinBitmap() ^ eventPrev.GetPinBitmap();
@@ -1071,6 +1072,29 @@ LogicAnalyzer::Decoder::Decoder(const LogicAnalyzer& logicAnalyzer, const char* 
 			logicAnalyzer_{logicAnalyzer}, name_{name}
 {}
 
+void LogicAnalyzer::Decoder::PrintEvent(Printable& tout)
+{
+	char buffLine[256];
+	double timeStampFactor = 1000'000. / logicAnalyzer_.GetSampleRate();
+	EventIterator eventIter(logicAnalyzer_);
+	Event event, eventBase;
+	for (int iEvent = 0; eventIter.Next(event); ++iEvent) {
+		if (iEvent == 1) eventBase = event;
+		int iCol = 0;
+		AnnotateWaveEvent(eventIter, event, buffLine, sizeof(buffLine), &iCol);
+		CutTrailingSpace(buffLine);
+		if (buffLine[0] == '\0') {
+			// nothing to do
+		} else if (eventBase.IsValid()) {
+			tout.Printf("%12.2f %s\n", static_cast<double>(event.GetTimeStamp() - eventBase.GetTimeStamp()) * timeStampFactor, buffLine);
+		} else {
+			tout.Printf("%12s %s\n", "", buffLine);
+		}
+		if (Tickable::TickSub()) break;
+	}
+
+}
+
 void LogicAnalyzer::Decoder::AnnotateWaveEvent(const EventIterator& eventIter, const Event& event, char* buffLine, int lenBuffLine, int *piCol)
 {
 	int nColsAnnotation = GetColsAnnotation();
@@ -1083,12 +1107,12 @@ void LogicAnalyzer::Decoder::AnnotateWaveEvent(const EventIterator& eventIter, c
 	}
 }
 
-void LogicAnalyzer::Decoder::AnnotateWaveStreak(char* buffLine, int lenBuffLine, int *piCol)
+void LogicAnalyzer::Decoder::AnnotateWaveStreak(double timeStamp, char* buffLine, int lenBuffLine, int *piCol)
 {
 	int nColsAnnotation = GetColsAnnotation();
 	int& iCol = *piCol;
 	int iColOrg = iCol;
-	DoAnnotateWaveStreak(buffLine, lenBuffLine, piCol);
+	DoAnnotateWaveStreak(timeStamp, buffLine, lenBuffLine, piCol);
 	int nColsAdded = iCol - iColOrg;
 	if (nColsAdded < nColsAnnotation) {
 		iCol += ::snprintf(buffLine + iCol, lenBuffLine - iCol, "%-*s", nColsAnnotation - nColsAdded, "");

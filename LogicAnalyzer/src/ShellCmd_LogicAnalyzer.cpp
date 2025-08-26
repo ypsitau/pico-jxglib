@@ -213,7 +213,7 @@ ShellCmd(la, "Logic Analyzer")
 				return false;
 			}
 			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
-				if (!pDecoder->EvalSubcmd(terr, pSubcmdChild->GetProc())) return false;
+				if (!pDecoder->EvalSubcmd(tout, terr, pSubcmdChild->GetProc())) return false;
 			}
 		} else {
 			tout.Printf("unknown subcommand: %s\n", subcmd);

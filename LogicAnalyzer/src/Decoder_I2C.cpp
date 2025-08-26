@@ -14,18 +14,19 @@ Decoder_I2C::Decoder_I2C(const LogicAnalyzer& logicAnalyzer, const char* name) :
 	Decoder(logicAnalyzer, name), annotator_(prop_), prop_{GPIO::InvalidPin, GPIO::InvalidPin}
 {}
 
-bool Decoder_I2C::EvalSubcmd(Printable& terr, const char* subcmd)
+bool Decoder_I2C::EvalSubcmd(Printable& tout, Printable& terr, const char* subcmd)
 {
 	char* endptr = nullptr;;
 	const char* value = nullptr;
-	if (Shell::Arg::GetAssigned(subcmd, "sda", &value)) {
+	if (::strcasecmp(subcmd, "print") == 0) {
+		if (CheckValidity(terr)) PrintEvent(tout);
+	} else if (Shell::Arg::GetAssigned(subcmd, "sda", &value)) {
 		int num = ::strtol(value, &endptr, 10);
 		if (endptr == value || *endptr != '\0' || num < 0 || num >= GPIO::NumPins) {
 			terr.Printf("invalid SDA pin number\n");
 			return false;
 		}
 		prop_.pinSDA = static_cast<uint>(num);
-		return true;
 	} else if (Shell::Arg::GetAssigned(subcmd, "sck", &value) ||
 				Shell::Arg::GetAssigned(subcmd, "scl", &value) ||
 				Shell::Arg::GetAssigned(subcmd, "sclk", &value) ||
@@ -36,10 +37,11 @@ bool Decoder_I2C::EvalSubcmd(Printable& terr, const char* subcmd)
 			return false;
 		}
 		prop_.pinSCL = static_cast<uint>(num);
-		return true;
+	} else {
+		terr.Printf("unknown sub-command: %s\n", subcmd);
+		return false;
 	}
-	terr.Printf("unknown sub-command: %s\n", subcmd);
-	return false;
+	return true;
 }
 
 bool Decoder_I2C::CheckValidity(Printable& terr)
@@ -66,7 +68,7 @@ void Decoder_I2C::DoAnnotateWaveEvent(const EventIterator& eventIter, const Even
 	annotator_.ProcessEvent(eventIter, event, buffLine, lenBuffLine, piCol);
 }
 
-void Decoder_I2C::DoAnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol)
+void Decoder_I2C::DoAnnotateWaveStreak(double timeStamp, char* buffLine, int lenBuffLine, int* piCol)
 {
 }
 

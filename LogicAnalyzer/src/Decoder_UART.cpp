@@ -16,18 +16,19 @@ Decoder_UART::Decoder_UART(const LogicAnalyzer& logicAnalyzer, const char* name)
 		prop_{115200, 8, Parity::None, 1}
 {}
 
-bool Decoder_UART::EvalSubcmd(Printable& terr, const char* subcmd)
+bool Decoder_UART::EvalSubcmd(Printable& tout, Printable& terr, const char* subcmd)
 {
 	char* endptr = nullptr;
 	const char* value = nullptr;
-	if (Shell::Arg::GetAssigned(subcmd, "tx", &value)) {
+	if (::strcasecmp(subcmd, "print") == 0) {
+		if (CheckValidity(terr)) PrintEvent(tout);
+	} else if (Shell::Arg::GetAssigned(subcmd, "tx", &value)) {
 		int num = ::strtol(value, &endptr, 10);
 		if (endptr == value || *endptr != '\0' || num < 0 || num >= GPIO::NumPins) {
 			terr.Printf("invalid TX pin number\n");
 			return false;
 		}
 		annotatorTX_.SetPin(static_cast<uint>(num));
-		return true;
 	} else if (Shell::Arg::GetAssigned(subcmd, "rx", &value)) {
 		int num = ::strtol(value, &endptr, 10);
 		if (endptr == value || *endptr != '\0' || num < 0 || num >= GPIO::NumPins) {
@@ -35,7 +36,6 @@ bool Decoder_UART::EvalSubcmd(Printable& terr, const char* subcmd)
 			return false;
 		}
 		annotatorRX_.SetPin(static_cast<uint>(num));
-		return true;
 	} else if (Shell::Arg::GetAssigned(subcmd, "baud", &value)) {
 		int num = ::strtol(value, &endptr, 10);
 		if (endptr == value || *endptr != '\0' || num <= 0) {
@@ -43,49 +43,43 @@ bool Decoder_UART::EvalSubcmd(Printable& terr, const char* subcmd)
 			return false;
 		}
 		prop_.baudrate = num;
-		return true;
 	} else if (Shell::Arg::GetAssigned(subcmd, "frame", &value)) {
 		// frame: e.g. 8n1, 7e2, 8o1
-		int len = (int)strlen(value);
-		if (len < 3 || len > 4) {
+		int len = ::strlen(value);
+		if (len != 3) {
 			terr.Printf("invalid frame format\n");
 			return false;
 		}
-		int databits = value[0] - '0';
-		if (databits < 5 || databits > 9) {
+		char ch = value[0];
+		if ('5' <= ch && ch <= '9') {
+			prop_.dataBits = ch - '0';
+		} else {
 			terr.Printf("invalid data bits in frame\n");
 			return false;
 		}
-		char parity = value[1];
-		int stopbits = 1;
-		if (len == 3) {
-			stopbits = value[2] - '0';
-		} else if (len == 4) {
-			// e.g. 10n1
-			databits = (value[0] - '0') * 10 + (value[1] - '0');
-			parity = value[2];
-			stopbits = value[3] - '0';
-		}
-		if (stopbits != 1 && stopbits != 2) {
-			terr.Printf("invalid stop bits in frame\n");
-			return false;
-		}
-		prop_.dataBits = databits;
-		prop_.stopBits = stopbits;
-		if (parity == 'n' || parity == 'N') {
+		ch = ::tolower(value[1]);
+		if (ch == 'n') {
 			prop_.parity = Parity::None;
-		} else if (parity == 'e' || parity == 'E') {
+		} else if (ch == 'e') {
 			prop_.parity = Parity::Even;
-		} else if (parity == 'o' || parity == 'O') {
+		} else if (ch == 'o') {
 			prop_.parity = Parity::Odd;
 		} else {
 			terr.Printf("invalid parity in frame\n");
 			return false;
 		}
-		return true;
+		ch = value[2];
+		if ('1' <= ch && ch <= '2') {
+			prop_.stopBits = ch - '0';
+		} else {
+			terr.Printf("invalid stop bits in frame\n");
+			return false;
+		}
+	} else {
+		terr.Printf("unknown sub-command: %s\n", subcmd);
+		return false;
 	}
-	terr.Printf("unknown sub-command: %s\n", subcmd);
-	return false;
+	return true;
 }
 
 bool Decoder_UART::CheckValidity(Printable& terr)
@@ -122,7 +116,7 @@ void Decoder_UART::DoAnnotateWaveEvent(const EventIterator& eventIter, const Eve
 	}
 }
 
-void Decoder_UART::DoAnnotateWaveStreak(char* buffLine, int lenBuffLine, int* piCol)
+void Decoder_UART::DoAnnotateWaveStreak(double timeStamp, char* buffLine, int lenBuffLine, int* piCol)
 {
 }
 
