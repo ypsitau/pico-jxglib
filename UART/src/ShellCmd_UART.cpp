@@ -161,10 +161,39 @@ ShellCmd_Named(uart_, "uart", "controls UART communication")
 			return Result::Error;
 		}
 		if (::strlen(value) != 3) {
+			terr.Printf("invalid frame format\n");
+			return false;
+		}
+		char ch = value[0];
+		if ('5' <= ch && ch <= '9') {
+			config.dataBits = ch - '0';
+		} else {
+			terr.Printf("invalid data bits in frame\n");
+			return false;
+		}
+		ch = ::tolower(value[1]);
+		if (ch == 'n') {
+			config.parity = UART_PARITY_NONE;
+		} else if (ch == 'e') {
+			config.parity = UART_PARITY_EVEN;
+		} else if (ch == 'o') {
+			config.parity = UART_PARITY_ODD;
+		} else {
+			terr.Printf("invalid parity in frame\n");
+			return false;
+		}
+		ch = value[2];
+		if ('1' <= ch && ch <= '2') {
+			config.stopBits = ch - '0';
+		} else {
+			terr.Printf("invalid stop bits in frame\n");
+			return false;
+		}
+#if 0
+		if (::strlen(value) != 3) {
 			terr.Printf("Invalid frame format: %s (expected format: DBSParity, e.g., 8n1)\n", value);
 			return Result::Error;
 		}
-		
 		// Parse data bits (first character)
 		int dataBits = value[0] - '0';
 		if (dataBits < 5 || dataBits > 8) {
@@ -172,7 +201,6 @@ ShellCmd_Named(uart_, "uart", "controls UART communication")
 			return Result::Error;
 		}
 		config.dataBits = static_cast<uint>(dataBits);
-		
 		// Parse parity (second character)
 		char parity_char = ::tolower(value[1]);
 		switch (parity_char) {
@@ -197,6 +225,7 @@ ShellCmd_Named(uart_, "uart", "controls UART communication")
 			return Result::Error;
 		}
 		config.stopBits = static_cast<uint>(stopBits);
+#endif
 	}
 	if (arg.GetString("timeout", &value)) {
 		if (!value) {

@@ -36,7 +36,7 @@ bool Decoder_UART::EvalSubcmd(Printable& tout, Printable& terr, const char* subc
 			return false;
 		}
 		annotatorRX_.SetPin(static_cast<uint>(num));
-	} else if (Shell::Arg::GetAssigned(subcmd, "baud", &value)) {
+	} else if (Shell::Arg::GetAssigned(subcmd, "baudrate", &value)) {
 		int num = ::strtol(value, &endptr, 10);
 		if (endptr == value || *endptr != '\0' || num <= 0) {
 			terr.Printf("invalid baudrate\n");
@@ -45,8 +45,7 @@ bool Decoder_UART::EvalSubcmd(Printable& tout, Printable& terr, const char* subc
 		prop_.baudrate = num;
 	} else if (Shell::Arg::GetAssigned(subcmd, "frame", &value)) {
 		// frame: e.g. 8n1, 7e2, 8o1
-		int len = ::strlen(value);
-		if (len != 3) {
+		if (::strlen(value) != 3) {
 			terr.Printf("invalid frame format\n");
 			return false;
 		}
