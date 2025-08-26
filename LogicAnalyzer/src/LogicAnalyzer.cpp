@@ -689,8 +689,8 @@ int LogicAnalyzer::EventIterator::CountRelevant()
 {
 	int nEvent = 0, nEventRtn = 0;;
 	while (const RawEvent* pRawEvent = NextRawEvent()) {
-		if (pRawEvent->GetTimeStamp(nBitsPinBitmap_) != 0) nEventRtn = nEvent;
 		++nEvent;
+		if (pRawEvent->GetTimeStamp(nBitsPinBitmap_) != 0) nEventRtn = nEvent;
 	}
 	Rewind();
 	return nEventRtn;

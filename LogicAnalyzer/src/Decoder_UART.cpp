@@ -164,6 +164,9 @@ void Decoder_UART::Core::ProcessEvent(const EventIterator& eventIter, const Even
 				}
 				bitValue = eventAdv.IsPinHigh(pin_)? 1 : 0;
 			}
+			for ( ; nBitsAccum < nBitsTotal; nBitsAccum++) {
+				bitAccum |= (bitValue << nBitsAccum);
+			}
 			uint8_t data = static_cast<uint8_t>(bitAccum & ((1 << prop_.dataBits) - 1));
 			uint8_t parity = (bitAccum >> prop_.dataBits) & 1;
 			OnStartBit(data, parity);
