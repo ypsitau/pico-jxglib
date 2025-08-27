@@ -107,8 +107,9 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_ascii4 = {
 
 LogicAnalyzer::LogicAnalyzer() : rawEventFormat_{RawEventFormat::Short}, rawEventFormatRequested_{RawEventFormat::Auto},
 		samplingBuffWhole_{nullptr}, iPIO_{PIO::Num - 1},
-		nSampler_{1}, target_{Target::Internal}, heapRatio_{.7}, heapRatioRequested_{.7}, usecReso_{1'000}
+		nSampler_{1}, pinTargetGlobal_{PinTarget::Internal}, heapRatio_{.7}, heapRatioRequested_{.7}, usecReso_{1'000}
 {
+	for (uint pin = 0; pin < count_of(pinTargetTbl_); ++pin) pinTargetTbl_[pin] = PinTarget::Inherit;
 	clocksPerLoop_ = 12; // program_SampleMain_ takes 12 clocks in the loop
 	SetSamplerCount(1);
 }
@@ -187,13 +188,11 @@ bool LogicAnalyzer::Enable()
 	for (int iSampler = 1; iSampler < nSampler_; ++iSampler) {
 		samplerTbl_[iSampler].ShareProgram(samplerTbl_[0], pio, iSampler, relAddrEntryTbl[iSampler], samplingInfo_.GetPinMin(), nBitsPinToSample);
 	}
-	if (target_ == Target::External) {
-		uint pin = samplingInfo_.GetPinMin();
-		for (uint32_t pinBitmap = samplingInfo_.GetPinBitmapEnabled(); pinBitmap != 0; pinBitmap >>= 1, ++pin) {
-			if (pinBitmap & 1) {
-				::pio_gpio_init(samplerTbl_[0].GetSM().pio, pin);
-				//::gpio_disable_pulls(pin);
-			}
+	uint pin = samplingInfo_.GetPinMin();
+	for (uint32_t pinBitmap = samplingInfo_.GetPinBitmapEnabled(); pinBitmap != 0; pinBitmap >>= 1, ++pin) {
+		if ((pinBitmap & 1) && GetPinTarget(pin) == PinTarget::External) {
+			::pio_gpio_init(samplerTbl_[0].GetSM().pio, pin);
+			//::gpio_disable_pulls(pin);
 		}
 	}
 	uint32_t mask = 0;
@@ -221,15 +220,13 @@ LogicAnalyzer& LogicAnalyzer::ReleaseResource()
 	for (int iSampler = 0; iSampler < count_of(samplerTbl_); ++iSampler) {
 		samplerTbl_[iSampler].ReleaseResource();
 	}
-	if (target_ == Target::External) {
-		uint pin = samplingInfo_.GetPinMin();
-		for (uint32_t pinBitmap = samplingInfo_.GetPinBitmapEnabled(); pinBitmap != 0; pinBitmap >>= 1, ++pin) {
-			if (pinBitmap & 1) {
-				::gpio_set_dir(pin, GPIO_IN);
-				::gpio_put(pin, 0);
-				::gpio_pull_down(pin);
-				::gpio_set_function(pin, GPIO_FUNC_NULL);
-			}
+	uint pin = samplingInfo_.GetPinMin();
+	for (uint32_t pinBitmap = samplingInfo_.GetPinBitmapEnabled(); pinBitmap != 0; pinBitmap >>= 1, ++pin) {
+		if ((pinBitmap & 1) && GetPinTarget(pin) == PinTarget::External) {
+			::gpio_set_dir(pin, GPIO_IN);
+			::gpio_put(pin, 0);
+			::gpio_pull_down(pin);
+			::gpio_set_function(pin, GPIO_FUNC_NULL);
 		}
 	}
 	return *this;
@@ -439,9 +436,9 @@ const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 	} else {
 		tout.Printf("disabled ----");
 	}
-	tout.Printf(" %.1fMHz (samplers:%d) target:%s", GetSampleRate() / 1000'000.,
-		nSampler_, (target_ == Target::Internal)? "internal" : "external");
+	tout.Printf(" %.1fMHz (samplers:%d)", GetSampleRate() / 1000'000., nSampler_);
 	do {
+		static const char* markExternal = "`";
 		bool firstFlag = true;
 		tout.Printf(" pins:");
 		uint pinStart = -1;
@@ -458,11 +455,14 @@ const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 			} else if (inSequence) {
 				if (pinEnd - pinStart < 2) {
 					for (uint pin = pinStart; pin <= pinEnd; ++pin) {
-						tout.Printf(firstFlag? "%d" : ",%d", pin);
+						tout.Printf(firstFlag? "%s%d" : ",%s%d",
+							(GetPinTarget(pin) == PinTarget::External)? markExternal : "", pin);
 						firstFlag = false;
 					}
 				} else {
-					tout.Printf(firstFlag? "%d-%d" : ",%d-%d", pinStart, pinEnd);
+					tout.Printf(firstFlag? "%s%d-%s%d" : ",%s%d-%s%d",
+						(GetPinTarget(pinStart) == PinTarget::External)? markExternal : "", pinStart,
+						(GetPinTarget(pinEnd) == PinTarget::External)? markExternal : "", pinEnd);
 					firstFlag = false;
 				}
 				inSequence = false;

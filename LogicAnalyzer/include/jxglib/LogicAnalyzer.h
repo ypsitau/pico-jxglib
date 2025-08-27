@@ -87,7 +87,7 @@ public:
 			return (pinBitmap_ & MakeMask(pins...)) == 0;
 		}
 	};
-	enum class Target { Internal, External };
+	enum class PinTarget : uint8_t { Inherit, Internal, External };
 	struct WaveStyle {
 		const char* name;
 		const char* strBlank;
@@ -302,7 +302,8 @@ private:
 	Sampler samplerTbl_[4];
 	SamplingInfo samplingInfo_;
 	PrintInfo printInfo_;
-	Target target_;
+	PinTarget pinTargetGlobal_;
+	PinTarget pinTargetTbl_[GPIO::NumPins];
 	float heapRatio_;
 	float heapRatioRequested_;
 	int clocksPerLoop_;
@@ -327,7 +328,11 @@ public:
 	Sampler& GetSampler(int iSampler) { return samplerTbl_[iSampler]; }
 	const Sampler& GetSampler(int iSampler) const { return samplerTbl_[iSampler]; }
 	LogicAnalyzer& SetHeapRatio(float heapRatio) { heapRatioRequested_ = heapRatio; return *this; }
-	LogicAnalyzer& SetTarget(Target target) { target_ = target; return *this; }
+	LogicAnalyzer& SetPinTargetGlobal(PinTarget pinTarget) { pinTargetGlobal_ = pinTarget; return *this; }
+	LogicAnalyzer& SetPinTarget(uint pin, PinTarget pinTarget) { pinTargetTbl_[pin] = pinTarget; return *this; }
+	PinTarget GetPinTarget(uint pin) const {
+		PinTarget pinTarget = pinTargetTbl_[pin]; return (pinTarget == PinTarget::Inherit)? pinTargetGlobal_ : pinTarget;
+	}
 	LogicAnalyzer& SetResolution(float usecReso) { usecReso_ = usecReso; return *this; }
 	LogicAnalyzer& SetEventCountToPrint(int nEventsToPrint) { printInfo_.nEventsToPrint = nEventsToPrint; return *this; }
 	LogicAnalyzer& SetPrintPart(PrintPart part) { printInfo_.part = part; return *this; }

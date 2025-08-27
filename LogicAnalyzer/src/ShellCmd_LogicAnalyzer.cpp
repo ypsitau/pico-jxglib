@@ -14,7 +14,9 @@ ShellCmd(la, "Logic Analyzer")
 		Arg::OptBool("help",			'h', "prints this help"),
 		Arg::OptString("pio",			'P', (PIO::Num == 3)? "PIO to use (0-2)" : "PIO to use (0-1)", "PIO"),
 		Arg::OptString("pins",			'p', "pins to monitor", "PINS"),
-		Arg::OptString("target",		't', "target (internal, external)", "TARGET"),
+		Arg::OptString("external",		'E', "pins specified as external", "PINS"),
+		Arg::OptString("internal",		'I', "pins specified as internal", "PINS"),
+		Arg::OptString("target",		't', "default pin target (internal, external)", "TARGET"),
 		Arg::OptString("samplers",		'S', "number of samplers (1-4)", "NUM"),
 		Arg::OptString("heap-ratio",	'R', "heap ratio to use as event buffer (0.0-1.0)", "RATIO"),
 		Arg::OptString("reso",			'r', "resolution in microseconds (default 1000)", "RESO"),
@@ -66,11 +68,31 @@ ShellCmd(la, "Logic Analyzer")
 		}
 		logicAnalyzer.SetPins(pinTbl, nPins);
 	}
+	if (arg.GetString("external", &value)) {
+		Arg::EachNum eachNum(value, GPIO::NumPins - 1);
+		if (!eachNum.CheckValidity()) {
+			terr.Printf("invalid GPIO pin number: %s\n", value);
+			return Result::Error;
+		}
+		for (int num = 0; eachNum.Next(&num); ) {
+			logicAnalyzer.SetPinTarget(static_cast<uint>(num), LogicAnalyzer::PinTarget::External);
+		}
+	}
+	if (arg.GetString("internal", &value)) {
+		Arg::EachNum eachNum(value, GPIO::NumPins - 1);
+		if (!eachNum.CheckValidity()) {
+			terr.Printf("invalid GPIO pin number: %s\n", value);
+			return Result::Error;
+		}
+		for (int num = 0; eachNum.Next(&num); ) {
+			logicAnalyzer.SetPinTarget(static_cast<uint>(num), LogicAnalyzer::PinTarget::Internal);
+		}
+	}
 	if (arg.GetString("target", &value)) {
 		if (::strcasecmp(value, "internal") == 0) {
-			logicAnalyzer.SetTarget(LogicAnalyzer::Target::Internal);
+			logicAnalyzer.SetPinTargetGlobal(LogicAnalyzer::PinTarget::Internal);
 		} else if (::strcasecmp(value, "external") == 0) {
-			logicAnalyzer.SetTarget(LogicAnalyzer::Target::External);
+			logicAnalyzer.SetPinTargetGlobal(LogicAnalyzer::PinTarget::External);
 		} else {
 			terr.Printf("Invalid target: %s\n", value);
 			return Result::Error;
