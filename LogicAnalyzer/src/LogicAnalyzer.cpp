@@ -443,6 +443,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 		tout.Printf(" pins:");
 		uint pinStart = -1;
 		uint pinEnd = -1;
+		PinTarget pinTargetPrev = PinTarget::Inherit;
 		bool inSequence = false;	
 		for (uint pin = 0; pin <= GPIO::NumPins; ++pin) {
 			if (pin < GPIO::NumPins && samplingInfo_.IsPinEnabled(pin)) {
