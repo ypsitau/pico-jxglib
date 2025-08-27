@@ -218,6 +218,12 @@ void Decoder_I2C::Core_Annotator::OnBit(Field field, int iBit, bool bitValue)
 			iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, "%d Data:0x%02X:%s",
 					bitValue, adv_.bitAccum >> 1, (direction_ == Direction::Read)? "R" : "W");
 		}
+	} else if (iBit == 0) {
+		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, "%d msb", bitValue);
+	} else if (iBit == 7) {
+		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, "%d lsb", bitValue);
+	} else if (iBit == 6 && field == Field::Address) {
+		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, "%d lsb", bitValue);
 	} else {
 		iCol += ::snprintf(buffLine_ + iCol, lenBuffLine_ - iCol, "%d", bitValue);
 	}

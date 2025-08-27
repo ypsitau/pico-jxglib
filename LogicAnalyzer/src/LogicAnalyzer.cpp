@@ -293,6 +293,13 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr, 
 		tout.Println(CutTrailingSpace(buffLine));
 		iCol = 0;
 	};
+	auto consumeEvent = [&](const Event& event) {
+		if (pDecoder_) {
+			iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, " ");
+			pDecoder_->AnnotateWaveEvent(eventIter, event, buffLine, sizeof(buffLine), &iCol);
+		}
+		iCol = 0;
+	};
 	auto flushLineWithEvent = [&](const Event& event) {
 		if (pDecoder_) {
 			iCol += ::snprintf(buffLine + iCol, sizeof(buffLine) - iCol, " ");
@@ -339,6 +346,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr, 
 			if (!eventIter.Next(event)) break;
 			if (iEvent + printInfo_.nEventsToPrint < nEventsRelevant) {
 				if (iEvent == 1) eventBase = event;
+				consumeEvent(event);
 				eventPrev = event;
 				continue;
 			}
