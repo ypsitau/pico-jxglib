@@ -326,22 +326,23 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr, 
 		tout.Printf("no events to print\n");
 		return *this;
 	}
-	int nEventsToPrint =
-		(printInfo_.part == PrintPart::Head)? ChooseMin(nEventsRelevant, printInfo_.nEventsToPrint) :
-		(printInfo_.part == PrintPart::Tail)?  ChooseMin(nEventsRelevant, printInfo_.nEventsToPrint) :
-		(printInfo_.part == PrintPart::All)? nEventsRelevant : 0;
-	int nEventsToSkip =
-		(printInfo_.part == PrintPart::Head)? 0 :
-		(printInfo_.part == PrintPart::Tail)? nEventsRelevant - nEventsToPrint :
-		(printInfo_.part == PrintPart::All)? 0 : 0;
 	double timeStampFactor = 1000'000. / GetSampleRate();
 	Event event, eventBase, eventPrev;
 	printHeader();
 	for (int iEvent = 0; ; ++iEvent) {
 		if (liveFlag) {
 			while (!eventIter.Next(event)) if (Tickable::TickSub()) goto done;
-		} else {
-			if (iEvent >= nEventsToPrint) break;
+		} else if (printInfo_.part == PrintPart::Head) {
+			if (iEvent >= ChooseMin(nEventsRelevant, printInfo_.nEventsToPrint)) break;
+			if (!eventIter.Next(event)) break;
+		} else if (printInfo_.part == PrintPart::Tail) {
+			if (!eventIter.Next(event)) break;
+			if (iEvent + printInfo_.nEventsToPrint < nEventsRelevant) {
+				if (iEvent == 1) eventBase = event;
+				eventPrev = event;
+				continue;
+			}
+		} else { // printInfo_.part == PrintPart::All
 			if (!eventIter.Next(event)) break;
 		}
 		if (iEvent == 1) eventBase = event;
@@ -409,7 +410,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr, 
 		eventPrev = event;
 	}
 done:
-	if (nEventsToPrint > 0) printHeader();
+	printHeader();
 	return *this;
 }
 
