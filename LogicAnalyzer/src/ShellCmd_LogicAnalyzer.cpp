@@ -220,7 +220,9 @@ ShellCmd(la, "Logic Analyzer")
 			logicAnalyzer.Disable();
 			logicAnalyzer.PrintSettings(tout);
 		} else if (::strcmp(subcmd, "print") == 0) {
-			logicAnalyzer.PrintWave(tout, terr);
+			logicAnalyzer.PrintWave(tout, terr, false);
+		} else if (::strcmp(subcmd, "print-live") == 0) {
+			logicAnalyzer.PrintWave(tout, terr, true);
 		} else if (Arg::GetAssigned(subcmd, "write", &value)) {
 			if (value) {
 				std::unique_ptr<FS::File> pFile(FS::OpenFile(value, "w"));

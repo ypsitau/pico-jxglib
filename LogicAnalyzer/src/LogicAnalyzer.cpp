@@ -277,7 +277,7 @@ int LogicAnalyzer::GetRawEventCountMax() const
 		((rawEventFormat_ == RawEventFormat::Short)? sizeof(RawEvent_Short::Entity) : sizeof(RawEvent_Long::Entity));
 }
 
-const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr) const
+const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr, bool liveFlag) const
 {
 	if (pDecoder_) {
 		if (!pDecoder_->CheckValidity(terr)) return *this;
@@ -286,11 +286,6 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr) 
 	int iCol = 0;
 	char buffLine[256];
 	EventIterator eventIter(*this);
-	int nEventsRelevant = eventIter.CountRelevant();
-	if (nEventsRelevant == 0) {
-		tout.Printf("no events to print\n");
-		return *this;
-	}
 	//for (int iSampler = 0; iSampler < nSampler_; ++iSampler) samplerTbl_[iSampler].DumpSamplingBuff(tout);
 	const char* strBlank = "    ";
 	const WaveStyle& waveStyle = *printInfo_.pWaveStyle;
@@ -326,7 +321,11 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr) 
 		}
 		flushLine();
 	};
-	printHeader();
+	int nEventsRelevant = eventIter.CountRelevant();
+	if (!liveFlag && nEventsRelevant == 0) {
+		tout.Printf("no events to print\n");
+		return *this;
+	}
 	int nEventsToPrint =
 		(printInfo_.part == PrintPart::Head)? ChooseMin(nEventsRelevant, printInfo_.nEventsToPrint) :
 		(printInfo_.part == PrintPart::Tail)?  ChooseMin(nEventsRelevant, printInfo_.nEventsToPrint) :
@@ -337,7 +336,14 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr) 
 		(printInfo_.part == PrintPart::All)? 0 : 0;
 	double timeStampFactor = 1000'000. / GetSampleRate();
 	Event event, eventBase, eventPrev;
-	for (int iEvent = 0; iEvent < nEventsToPrint && eventIter.Next(event); ++iEvent) {
+	printHeader();
+	for (int iEvent = 0; ; ++iEvent) {
+		if (liveFlag) {
+			while (!eventIter.Next(event)) if (Tickable::TickSub()) goto done;
+		} else {
+			if (iEvent >= nEventsToPrint) break;
+			if (!eventIter.Next(event)) break;
+		}
 		if (iEvent == 1) eventBase = event;
 		uint32_t bitsTransition = 0;
 		if (eventPrev.IsValid()) {
@@ -402,6 +408,7 @@ const LogicAnalyzer& LogicAnalyzer::PrintWave(Printable& tout, Printable& terr) 
 		if (Tickable::TickSub()) break;
 		eventPrev = event;
 	}
+done:
 	if (nEventsToPrint > 0) printHeader();
 	return *this;
 }

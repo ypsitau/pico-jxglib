@@ -346,7 +346,7 @@ public:
 	int GetRawEventCount(int iSampler) const;
 	int GetRawEventCount() const;
 	int GetRawEventCountMax() const;
-	const LogicAnalyzer& PrintWave(Printable& tout, Printable& terr) const;
+	const LogicAnalyzer& PrintWave(Printable& tout, Printable& terr, bool liveFlag = false) const;
 	const LogicAnalyzer& WriteFileJSON(Printable& tout) const;
 	Decoder* SetDecoder(const char* decoderName);
 	const LogicAnalyzer& PrintSettings(Printable& tout) const;
