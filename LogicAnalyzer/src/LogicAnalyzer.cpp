@@ -109,7 +109,7 @@ LogicAnalyzer::LogicAnalyzer() : rawEventFormat_{RawEventFormat::Short}, rawEven
 		samplingBuffWhole_{nullptr}, iPIO_{PIO::Num - 1},
 		nSampler_{1}, pinTargetGlobal_{PinTarget::Internal}, heapRatio_{.7}, heapRatioRequested_{.7}, usecReso_{1'000}
 {
-	for (uint pin = 0; pin < count_of(pinTargetTbl_); ++pin) pinTargetTbl_[pin] = PinTarget::Inherit;
+	for (uint pin = 0; pin < count_of(pinTargetTbl_); ++pin) pinTargetTbl_[pin] = PinTarget::Inherited;
 	clocksPerLoop_ = 12; // program_SampleMain_ takes 12 clocks in the loop
 	SetSamplerCount(1);
 }
@@ -245,6 +245,12 @@ LogicAnalyzer& LogicAnalyzer::SetPins(const int pinTbl[], int nPins)
 		}
 	}
 	return *this;
+}
+
+LogicAnalyzer::PinTarget LogicAnalyzer::GetPinTarget(uint pin) const
+{
+	PinTarget pinTarget = pinTargetTbl_[pin];
+	return (pinTarget == PinTarget::Inherited)? pinTargetGlobal_ : pinTarget;
 }
 
 int LogicAnalyzer::GetRawEventCount(int iSampler) const
@@ -429,6 +435,21 @@ LogicAnalyzer::Decoder* LogicAnalyzer::SetDecoder(const char* decoderName)
 
 const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 {
+	static const char* markExternal = "`";
+	auto printPinSequence = [&](bool firstFlag, uint pinStart, uint pinEnd) {
+		if (pinEnd - pinStart < 2) {
+			for (uint pin = pinStart; pin <= pinEnd; ++pin) {
+				tout.Printf(firstFlag? "%s%d" : ",%s%d",
+					(GetPinTarget(pin) == PinTarget::External)? markExternal : "", pin);
+				firstFlag = false;
+			}
+		} else {
+			tout.Printf(firstFlag? "%s%d-%s%d" : ",%s%d-%s%d",
+				(GetPinTarget(pinStart) == PinTarget::External)? markExternal : "", pinStart,
+				(GetPinTarget(pinEnd) == PinTarget::External)? markExternal : "", pinEnd);
+			firstFlag = false;
+		}
+	};
 	int nRawEvents = GetRawEventCount();
 	if (samplingInfo_.IsEnabled()) {
 		const PIO::StateMachine& sm = samplerTbl_[0].GetSM();
@@ -438,38 +459,34 @@ const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 	}
 	tout.Printf(" %.1fMHz (samplers:%d)", GetSampleRate() / 1000'000., nSampler_);
 	do {
-		static const char* markExternal = "`";
 		bool firstFlag = true;
 		tout.Printf(" pins:");
-		uint pinStart = -1;
-		uint pinEnd = -1;
-		PinTarget pinTargetPrev = PinTarget::Inherit;
-		bool inSequence = false;	
-		for (uint pin = 0; pin <= GPIO::NumPins; ++pin) {
-			if (pin < GPIO::NumPins && samplingInfo_.IsPinEnabled(pin)) {
-				if (inSequence) {
+		uint pinStart = GPIO::InvalidPin;
+		uint pinEnd = GPIO::InvalidPin;
+		PinTarget pinTargetPrev = PinTarget::Inherited;
+		for (uint pin = 0; pin < GPIO::NumPins; ++pin) {
+			PinTarget pinTarget = GetPinTarget(pin);
+			if (samplingInfo_.IsPinEnabled(pin)) {
+				if (pinStart == GPIO::InvalidPin) {
+					pinStart = pinEnd = pin;
+				} else if (pin == pinEnd + 1 && pinTarget == pinTargetPrev) {
 					pinEnd = pin;
 				} else {
+					printPinSequence(firstFlag, pinStart, pinEnd);
 					pinStart = pinEnd = pin;
-					inSequence = true;
 				}
-			} else if (inSequence) {
-				if (pinEnd - pinStart < 2) {
-					for (uint pin = pinStart; pin <= pinEnd; ++pin) {
-						tout.Printf(firstFlag? "%s%d" : ",%s%d",
-							(GetPinTarget(pin) == PinTarget::External)? markExternal : "", pin);
-						firstFlag = false;
-					}
-				} else {
-					tout.Printf(firstFlag? "%s%d-%s%d" : ",%s%d-%s%d",
-						(GetPinTarget(pinStart) == PinTarget::External)? markExternal : "", pinStart,
-						(GetPinTarget(pinEnd) == PinTarget::External)? markExternal : "", pinEnd);
-					firstFlag = false;
-				}
-				inSequence = false;
+			} else if (pinStart != GPIO::InvalidPin) {
+				printPinSequence(firstFlag, pinStart, pinEnd);
+				pinStart = pinEnd = GPIO::InvalidPin;
+				firstFlag = false;
 			}
+			pinTargetPrev = pinTarget;
 		}
-		if (firstFlag) tout.Print("none");
+		if (pinStart != GPIO::InvalidPin) {
+			printPinSequence(firstFlag, pinStart, pinEnd);
+		} else if (firstFlag) {
+			tout.Print("none");
+		}
 	} while (0);
 	tout.Printf(" events:%d/%d%s (heap-ratio:%.1f)", nRawEvents, GetRawEventCountMax(),
 						(rawEventFormatRequested_ == RawEventFormat::Long)? "L" : "", heapRatio_);

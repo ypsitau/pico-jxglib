@@ -16,6 +16,7 @@ ShellCmd(la, "Logic Analyzer")
 		Arg::OptString("pins",			'p', "pins to monitor", "PINS"),
 		Arg::OptString("external",		'E', "pins specified as external", "PINS"),
 		Arg::OptString("internal",		'I', "pins specified as internal", "PINS"),
+		Arg::OptString("inherited",		'H', "pins specified as inherited", "PINS"),
 		Arg::OptString("target",		't', "default pin target (internal, external)", "TARGET"),
 		Arg::OptString("samplers",		'S', "number of samplers (1-4)", "NUM"),
 		Arg::OptString("heap-ratio",	'R', "heap ratio to use as event buffer (0.0-1.0)", "RATIO"),
@@ -86,6 +87,16 @@ ShellCmd(la, "Logic Analyzer")
 		}
 		for (int num = 0; eachNum.Next(&num); ) {
 			logicAnalyzer.SetPinTarget(static_cast<uint>(num), LogicAnalyzer::PinTarget::Internal);
+		}
+	}
+	if (arg.GetString("inherited", &value)) {
+		Arg::EachNum eachNum(value, GPIO::NumPins - 1);
+		if (!eachNum.CheckValidity()) {
+			terr.Printf("invalid GPIO pin number: %s\n", value);
+			return Result::Error;
+		}
+		for (int num = 0; eachNum.Next(&num); ) {
+			logicAnalyzer.SetPinTarget(static_cast<uint>(num), LogicAnalyzer::PinTarget::Inherited);
 		}
 	}
 	if (arg.GetString("target", &value)) {

@@ -87,7 +87,7 @@ public:
 			return (pinBitmap_ & MakeMask(pins...)) == 0;
 		}
 	};
-	enum class PinTarget : uint8_t { Inherit, Internal, External };
+	enum class PinTarget : uint8_t { Inherited, Internal, External };
 	struct WaveStyle {
 		const char* name;
 		const char* strBlank;
@@ -330,9 +330,7 @@ public:
 	LogicAnalyzer& SetHeapRatio(float heapRatio) { heapRatioRequested_ = heapRatio; return *this; }
 	LogicAnalyzer& SetPinTargetGlobal(PinTarget pinTarget) { pinTargetGlobal_ = pinTarget; return *this; }
 	LogicAnalyzer& SetPinTarget(uint pin, PinTarget pinTarget) { pinTargetTbl_[pin] = pinTarget; return *this; }
-	PinTarget GetPinTarget(uint pin) const {
-		PinTarget pinTarget = pinTargetTbl_[pin]; return (pinTarget == PinTarget::Inherit)? pinTargetGlobal_ : pinTarget;
-	}
+	PinTarget GetPinTarget(uint pin) const;
 	LogicAnalyzer& SetResolution(float usecReso) { usecReso_ = usecReso; return *this; }
 	LogicAnalyzer& SetEventCountToPrint(int nEventsToPrint) { printInfo_.nEventsToPrint = nEventsToPrint; return *this; }
 	LogicAnalyzer& SetPrintPart(PrintPart part) { printInfo_.part = part; return *this; }
