@@ -817,15 +817,9 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		} else if (ch == 'D') {		// Digital Channel Enable
 			stat_ = Stat::DigitalChannelEnable;
 		} else if (ch == 'F') {		// Fixed Sample Mode
-			//uint8_t buff[8];
-			//buff[0] = 0x80 | (7 << 4) | 0x0f;
-			//buff[1] = 47 + 2;
-			//buff[2] = 0x80 | (3 << 4) | 0x05;
-			//buff[3] = 47 + 3;
-			//stream_.Write(buff, 4);
-			//stream_.Flush();
 			StartSampling();
 			logicAnalyzer_.Enable();
+			logicAnalyzer_.PrintSettings(terr);
 			stat_ = Stat::FixedSampleMode;
 		} else if (ch == 'C') {		// Continuous Sample Mode
 			stat_ = Stat::ContinuousSampleMode;
@@ -846,17 +840,12 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 			// nothing to do
 		} else if (ch == '\n') {
 			nDigitalChAvailable_ = logicAnalyzer_.GetPrintInfo().CountValidPins();
-			//nDigitalChAvailable_ = logicAnalyzer_.GetSamplingInfo().CountPins();
-			//nDigitalChAvailable_ = 4;
+			terr.Printf("PulseView/sigrok-cli connected%s\n", (nDigitalChAvailable_ == 0) ? " (no digital channels enabled)" : "");
 			if (nDigitalChAvailable_ == 0) {
-				terr.Printf(
-					"PulseView is connected, but no digital channels are enalbed.\n"
-					"%d channels are assumed by default, but for proper operation,\n"
-					"please run the 'la' command (e.g., la -p 2,3) to specify which channels to enable,\n"
-					"and then reopen PulseView.\n", nDigitalChAvailable_);
 				nDigitalChAvailable_ = nDigitalChToReportDefault_;
 			}
 			stream_.Printf("SRPICO,A%02d1D%02d,%02d", nAnalogChAvailable_, nDigitalChAvailable_, versionNumber_).Flush();
+			logicAnalyzer_.PrintSettings(terr);
 		}
 		stat_ = Stat::Initial;
 		break;
