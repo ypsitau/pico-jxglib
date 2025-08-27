@@ -107,7 +107,8 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_ascii4 = {
 
 LogicAnalyzer::LogicAnalyzer() : rawEventFormat_{RawEventFormat::Short}, rawEventFormatRequested_{RawEventFormat::Auto},
 		samplingBuffWhole_{nullptr}, iPIO_{PIO::Num - 1},
-		nSampler_{1}, pinTargetGlobal_{PinTarget::Internal}, heapRatio_{.7}, heapRatioRequested_{.7}, usecReso_{1'000}
+		nSampler_{1}, pinTargetGlobal_{PinTarget::Internal}, heapRatio_{.7}, heapRatioRequested_{.7}, usecReso_{1'000},
+		suppressPrintSettingsFlag_{false}
 {
 	for (uint pin = 0; pin < count_of(pinTargetTbl_); ++pin) pinTargetTbl_[pin] = PinTarget::Inherited;
 	clocksPerLoop_ = 12; // program_SampleMain_ takes 12 clocks in the loop
@@ -451,6 +452,7 @@ LogicAnalyzer::Decoder* LogicAnalyzer::SetDecoder(const char* decoderName)
 
 const LogicAnalyzer& LogicAnalyzer::PrintSettings(Printable& tout) const
 {
+	if (suppressPrintSettingsFlag_) return *this;
 	static const char* markExternal = "`";
 	auto printPinSequence = [&](bool firstFlag, uint pinStart, uint pinEnd) {
 		if (pinEnd - pinStart < 2) {

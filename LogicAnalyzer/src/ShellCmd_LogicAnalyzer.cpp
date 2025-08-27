@@ -12,6 +12,8 @@ ShellCmd(la, "Logic Analyzer")
 	LogicAnalyzer& logicAnalyzer = ShellCmd_LogicAnalyzer_GetLogicAnalyzer();
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",			'h', "prints this help"),
+		Arg::OptBool("quiet",			'q', "suppresses print of settings"),
+		Arg::OptBool("no-quiet",		'\0', "enables print of settings"),
 		Arg::OptString("pio",			'P', (PIO::Num == 3)? "PIO to use (0-2)" : "PIO to use (0-1)", "PIO"),
 		Arg::OptString("pins",			'p', "pins to monitor", "PINS"),
 		Arg::OptString("external",		'E', "pins specified as external", "PINS"),
@@ -42,6 +44,8 @@ ShellCmd(la, "Logic Analyzer")
 		//tout.Printf("  read:FILE            read sampled data from file\n");
 		return Result::Success;
 	}
+	if (arg.GetBool("quiet")) logicAnalyzer.SuppressPrintSettings(true);
+	if (arg.GetBool("no-quiet")) logicAnalyzer.SuppressPrintSettings(false);
 	const char* value;
 	if (arg.GetString("pio", &value)) {
 		int iPIO = ::strtol(value, nullptr, 10);

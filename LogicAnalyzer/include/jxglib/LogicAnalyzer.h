@@ -309,6 +309,7 @@ private:
 	int clocksPerLoop_;
 	float usecReso_;
 	std::unique_ptr<Decoder> pDecoder_;
+	bool suppressPrintSettingsFlag_;
 public:
 	LogicAnalyzer();
 	~LogicAnalyzer();
@@ -350,6 +351,7 @@ public:
 	const LogicAnalyzer& WriteFileJSON(Printable& tout) const;
 	Decoder* SetDecoder(const char* decoderName);
 	const LogicAnalyzer& PrintSettings(Printable& tout) const;
+	void SuppressPrintSettings(bool suppressPrintSettingsFlag = true) { suppressPrintSettingsFlag_ = suppressPrintSettingsFlag; }
 public:
 	static size_t GetFreeHeapBytes();
 	static bool IsBlankPin(uint pin) { return pin == static_cast<uint>(-1); }
