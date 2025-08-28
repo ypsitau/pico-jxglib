@@ -829,7 +829,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		} else if (ch == 'F') {		// Fixed Sample Mode
 			StartSampling();
 			logicAnalyzer_.Enable();
-			logicAnalyzer_.PrintSettings(terr);
+			//logicAnalyzer_.PrintSettings(terr);
 			stat_ = Stat::FixedSampleMode;
 		} else if (ch == 'C') {		// Continuous Sample Mode
 			stat_ = Stat::ContinuousSampleMode;
@@ -855,7 +855,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 				nDigitalChAvailable_ = nDigitalChToReportDefault_;
 			}
 			stream_.Printf("SRPICO,A%02d1D%02d,%02d", nAnalogChAvailable_, nDigitalChAvailable_, versionNumber_).Flush();
-			logicAnalyzer_.PrintSettings(terr);
+			//logicAnalyzer_.PrintSettings(terr);
 		}
 		stat_ = Stat::Initial;
 		break;
