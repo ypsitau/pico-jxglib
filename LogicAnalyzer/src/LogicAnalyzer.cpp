@@ -850,7 +850,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 			// nothing to do
 		} else if (ch == '\n') {
 			nDigitalChAvailable_ = logicAnalyzer_.GetPrintInfo().CountValidPins();
-			terr.Printf("PulseView/sigrok-cli connected%s\n", (nDigitalChAvailable_ == 0) ? " (no digital channels enabled)" : "");
+			//terr.Printf("PulseView/sigrok-cli connected%s\n", (nDigitalChAvailable_ == 0) ? " (no digital channels enabled)" : "");
 			if (nDigitalChAvailable_ == 0) {
 				nDigitalChAvailable_ = nDigitalChToReportDefault_;
 			}
