@@ -280,6 +280,8 @@ public:
 		void Reset();
 		void StartSampling();
 		int CountSamplesBetweenEvents(const Event& event1, const Event& event2) const;
+		void SendBitmap(const Event& event);
+		void SendRLE(int nSamples);
 		void SendReport(const Event& event, int nSamples);
 	};
 public:

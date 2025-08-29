@@ -969,18 +969,17 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 				if (event_.IsValid()) {
 					int nSamples = (iEvent_ == 1)? nSamplesHead_ : CountSamplesBetweenEvents(event_, eventNext);
 					if (nSamples > 0) {
-						SendReport(event_, nSamples);
+						//SendReport(event_, nSamples);
+						SendRLE(nSamples);
 						event_ = eventNext;
 					}
 				} else {
 					event_ = eventNext;
 				}
+				SendBitmap(event_);
 				iEvent_++;
 			}
 		} else if (ch == '+') {		// abort
-			if (event_.IsValid()) {
-				SendReport(event_, nSamplesTail_);
-			}
 			stream_.Flush();
 			stat_ = Stat::Initial;
 		}
@@ -1012,6 +1011,91 @@ int LogicAnalyzer::SigrokAdapter::CountSamplesBetweenEvents(const Event& event1,
 	int64_t iSample2 = static_cast<int64_t>(timeStampFactor_ * static_cast<double>(event2.GetTimeStamp()) / sampleDelta_);
 	int nSamples = static_cast<int>(iSample2 - iSample1);
 	return nSamples;
+}
+
+void LogicAnalyzer::SigrokAdapter::SendBitmap(const Event& event)
+{
+	int iBuff = 0;
+	uint8_t buff[32];
+	uint32_t packedBitmap = event.GetPackedBitmap(logicAnalyzer_.GetPrintInfo());
+	if (nDigitalChEnabled_ <= 4) {
+		// D4 mode
+		int iBit = 0;
+		uint8_t data = 0;
+		for (uint32_t bitmapEnabled = digitalChBitmapEnabled_; bitmapEnabled != 0; bitmapEnabled >>= 1, packedBitmap >>= 1) {
+			if (bitmapEnabled & 1) {
+				data |= (packedBitmap & 1) << iBit;
+				iBit++;
+			}
+		}
+		buff[iBuff++] = 0x80 | data | embeddedRLEData_;
+		embeddedRLEData_ = 0x00;
+	} else {
+		// Normal mode
+		int iBit = 0;
+		uint8_t data = 0;
+		for (uint32_t bitmapEnabled = digitalChBitmapEnabled_; bitmapEnabled != 0; bitmapEnabled >>= 1, packedBitmap >>= 1) {
+			if (bitmapEnabled & 1) {
+				data |= ((packedBitmap & 1) << iBit);
+				iBit++;
+				if (iBit == 7) {
+					buff[iBuff++] = 0x80 | data;
+					data = 0;
+					iBit = 0;
+				}
+			}
+		}
+		if (iBit > 0) buff[iBuff++] = 0x80 | data;
+	}
+	stream_.Write(buff, iBuff);
+}
+
+void LogicAnalyzer::SigrokAdapter::SendRLE(int nSamples)
+{
+	int iBuff = 0;
+	uint8_t buff[32];
+	if (nSamples <= 0) return;
+	if (nSamples > 640 * (count_of(buff) - 4)) nSamples = 640 * (count_of(buff) - 4);	// prevent overflow of buff
+	if (nDigitalChEnabled_ <= 4) {
+		// D4 mode
+		embeddedRLEData_ = 0x00;
+		nSamples--;
+		if (nSamples > 0) {
+			while (nSamples >= 8 * 80) {				// 8 * 80 <= nSamples
+				buff[iBuff++] = (8 * 80) / 8 + 47;		// = 127 (0x7f)
+				nSamples -= 8 * 80;
+			}
+			if (nSamples >= 8) {
+				int nChunksToSend = nSamples / 8;
+				buff[iBuff++] = (8 * nChunksToSend) / 8 + 47;
+				nSamples -= nChunksToSend * 8;
+			}
+			embeddedRLEData_ = static_cast<uint8_t>(nSamples << 4);
+		}
+	} else {
+		// Normal mode
+		nSamples--;
+		if (nSamples > 0) {
+			while (nSamples >= 32 * 49) {				// 32 * 49 <= nSamples
+				buff[iBuff++] = (32 * 49) / 32 + 78;	// = 127 (0x7f)
+				nSamples -= 32 * 49;
+			}
+			if (nSamples >= 64) {						// 64 <= nSamples < 32 * 49
+				int nChunksToSend = nSamples / 32;
+				buff[iBuff++] = nChunksToSend + 78;
+				nSamples -= 32 * nChunksToSend;
+			}
+			if (nSamples >= 32) {						// 32 <= nSamples < 64
+				buff[iBuff++] = 32 + 47;				// = 79 (0x4f)
+				nSamples -= 32;
+			}
+			if (nSamples > 32) nSamples = 32;
+			if (nSamples > 0) {							// 0 < nSamples < 32
+				buff[iBuff++] = nSamples + 47;
+			}
+		}
+	}
+	stream_.Write(buff, iBuff);
 }
 
 void LogicAnalyzer::SigrokAdapter::SendReport(const Event& event, int nSamples)
