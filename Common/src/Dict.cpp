@@ -86,9 +86,23 @@ Dict::Entry* Dict::Entry::Find(const char* key)
 	return nullptr;
 }
 
+Dict::Entry* Dict::Entry::Find(const char* key, int len)
+{
+	for (Dict::Entry* pDictEntry = this; pDictEntry; pDictEntry = pDictEntry->GetNext()) {
+		if (::strncmp(pDictEntry->GetKey(), key, len) == 0) return pDictEntry;
+	}
+	return nullptr;
+}
+
 const char* Dict::Entry::Lookup(const char* key) const
 {
 	const Dict::Entry * pDictEntry = Find(key);
+	return pDictEntry? pDictEntry->GetValue() : nullptr;
+}
+
+const char* Dict::Entry::Lookup(const char* key, int len) const
+{
+	const Dict::Entry * pDictEntry = Find(key, len);
 	return pDictEntry? pDictEntry->GetValue() : nullptr;
 }
 

@@ -338,6 +338,7 @@ private:
 	Tokenizer tokenizer_;
 	bool interactiveFlag_;
 	BreakDetector breakDetector_;
+	Dict dict_;
 public:
 	static Shell Instance;
 private:
@@ -345,10 +346,13 @@ private:
 public:
 	Shell();
 public:
+	bool Startup();
 	bool RunCmd(Readable& tin, Printable& tout, Printable& terr, char* line, int bytesLine);
 	bool RunSingleCmd(Readable& tin, Printable& tout, Printable& terr, int argc, char* argv[]);
 	bool RunScript(Readable& tin, Printable& tout, Printable& terr, Readable& script);
 	Terminal& GetTerminal() { return *pTerminal_; }
+	Dict& GetDict() { return dict_; }
+	bool ExpandEnvVariables(char* line, int bytesLine, const char** errorMsg);
 public:
 	static void SetBanner(const char* banner) { Instance.SetBanner_(banner); }
 	static const char* GetBanner() { return Instance.GetBanner_(); }

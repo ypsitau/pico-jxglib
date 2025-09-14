@@ -175,6 +175,7 @@ void LABOPlatform::Initialize()
 		std::unique_ptr<FS::File> pFile(fat_.OpenFile("/README.txt", "w"));
 		if (pFile) pFile->Print(textREADME_);
 	}
+	Shell::Instance.Startup();
 }
 
 LABOPlatform& LABOPlatform::AttachStdio(bool attachStdioFlag)

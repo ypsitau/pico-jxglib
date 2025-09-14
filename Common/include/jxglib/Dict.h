@@ -30,8 +30,11 @@ public:
 		Entry* GetLast();
 		void Add(Entry* pDictEntry);
 		Entry* Find(const char* key);
+		Entry* Find(const char* key, int len);
 		const Entry* Find(const char* key) const { return const_cast<Entry*>(this)->Find(key); }
+		const Entry* Find(const char* key, int len) const { return const_cast<Entry*>(this)->Find(key); }
 		const char* Lookup(const char* key) const;
+		const char* Lookup(const char* key, int len) const;
 		void SetValue(const char* value);
 		Entry* SetValue(const char* key, const char* value);
 	public:

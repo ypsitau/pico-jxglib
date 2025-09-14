@@ -21,6 +21,23 @@ Shell::Shell() : stat_{Stat::Startup}, pTerminal_{&TerminalDumb::Instance},
 	SetPrompt_("%d%w>");
 }
 
+bool Shell::Startup()
+{
+	if (stat_ != Stat::Startup) return false;
+	FS::Drive* pDrive = FS::GetDriveCur();
+	if (pDrive && pDrive->IsPrimary()) {
+		std::unique_ptr<FS::File> pFileScript(FS::OpenFile(StartupScriptName, "r"));
+		if (pFileScript) {
+			Terminal::ReadableKeyboard tin(GetTerminal());
+			Printable& tout = GetTerminal();
+			Printable& terr = GetTerminal();
+			RunScript(tin, tout, terr, *pFileScript);
+		}
+	}
+	stat_ = Stat::Begin;
+	return true;
+}
+
 bool Shell::RunCmd(Readable& tin, Printable& tout, Printable& terr, char* line, int bytesLine)
 {
 	char* tokenTbl[128];
@@ -35,7 +52,8 @@ bool Shell::RunCmd(Readable& tin, Printable& tout, Printable& terr, char* line, 
 		return false;
 	}
 	const char* errorMsg;
-	if (!tokenizer_.Tokenize(line, bytesLine, tokenTbl, &nToken, &errorMsg)) {
+	if (!ExpandEnvVariables(line, bytesLine, &errorMsg) ||
+		!tokenizer_.Tokenize(line, bytesLine, tokenTbl, &nToken, &errorMsg)) {
 		pterr->Println(errorMsg);
 		return false;
 	}
@@ -108,10 +126,25 @@ bool Shell::RunScript(Readable& tin, Printable& tout, Printable& terr, Readable&
 	return true;
 }
 
+bool Shell::ExpandEnvVariables(char* line, int bytesLine, const char** errorMsg)
+{
+	enum class Stat {
+		Neutral, 
+	} stat;
+	for (char* p = line; *p; p++) {
+		char ch = *p;
+		if (ch == '$') {
+		}
+	}
+	return true;
+}
+
 void Shell::OnTick()
 {
 	switch (stat_) {
 	case Stat::Startup: {
+		Startup();
+#if 0
 		FS::Drive* pDrive = FS::GetDriveCur();
 		if (pDrive && pDrive->IsPrimary()) {
 			std::unique_ptr<FS::File> pFileScript(FS::OpenFile(StartupScriptName, "r"));
@@ -123,6 +156,7 @@ void Shell::OnTick()
 			}
 		}
 		stat_ = Stat::Begin;
+#endif
 		break;
 	}
 	case Stat::Begin: {
