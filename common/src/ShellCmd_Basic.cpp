@@ -190,6 +190,11 @@ ShellCmd_Named(dot, ".", "executes the given script file")
 		terr.Printf("cannot open file '%s'\n", fileName);
 		return Result::Error;
 	}
+	for (int iArg = 1; iArg < argc; ++iArg) {
+		char key[32];
+		::snprintf(key, sizeof(key), "%d", iArg - 1);
+		Shell::Instance.GetDict().SetValue(key, argv[iArg]);
+	}
 	Shell::Instance.RunScript(tin, tout, terr, *pFile);
 	return Result::Success;
 }

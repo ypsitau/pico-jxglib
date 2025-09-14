@@ -225,19 +225,6 @@ void Shell::OnTick()
 	switch (stat_) {
 	case Stat::Startup: {
 		Startup();
-#if 0
-		FS::Drive* pDrive = FS::GetDriveCur();
-		if (pDrive && pDrive->IsPrimary()) {
-			std::unique_ptr<FS::File> pFileScript(FS::OpenFile(StartupScriptName, "r"));
-			if (pFileScript) {
-				Terminal::ReadableKeyboard tin(GetTerminal());
-				Printable& tout = GetTerminal();
-				Printable& terr = GetTerminal();
-				RunScript(tin, tout, terr, *pFileScript);
-			}
-		}
-		stat_ = Stat::Begin;
-#endif
 		break;
 	}
 	case Stat::Begin: {
