@@ -179,6 +179,9 @@ bool Shell::ExpandEnvVariables(char* line, int bytesLine, const char** errorMsg)
 				varName = p;
 				p++;
 				stat = Stat::BaredVarName;
+			} else if (ch == '$') {
+				p++;
+				stat = Stat::Neutral;
 			} else {
 				stat = Stat::Neutral;
 			}
