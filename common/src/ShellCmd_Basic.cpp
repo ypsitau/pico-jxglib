@@ -315,6 +315,40 @@ ShellCmd(history, "prints the command history")
 }
 
 //-----------------------------------------------------------------------------
+// set
+//-----------------------------------------------------------------------------
+ShellCmd(set, "set environment variable")
+{
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		'h',	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
+	if (arg.GetBool("help")) {
+		terr.Printf("Usage: %s [OPTION]... [KEY [VALUE]]\n", GetName());
+		arg.PrintHelp(terr);
+		return Result::Error;
+	}
+	Dict& dict = Shell::Instance.GetDict();
+	if (argc < 2) {
+		for (const Dict::Entry* pEntry = dict.GetFirst(); pEntry; pEntry = pEntry->GetNext()) {
+			tout.Printf("%s=%s\n", pEntry->GetKey(), pEntry->GetValue());
+		}
+	} else if (argc < 3) {
+		const char* value = dict.Lookup(argv[1]);
+		if (value) {
+			tout.Printf("%s\n", value);
+		} else {
+			terr.Printf("no such variable: %s\n", argv[1]);
+			return Result::Error;
+		}
+	} else {
+		dict.SetValue(argv[1], argv[2]);
+	}
+	return Result::Success;
+}
+
+//-----------------------------------------------------------------------------
 // prompt
 //-----------------------------------------------------------------------------
 ShellCmd(prompt, "changes the command line prompt")

@@ -46,14 +46,17 @@ bool Shell::RunCmd(Readable& tin, Printable& tout, Printable& terr, char* line, 
 	Readable* ptin = &tin;
 	Printable* ptout = &tout;
 	Printable* pterr = &terr;
+	const char* errorMsg;
+	if (!ExpandEnvVariables(line, bytesLine, &errorMsg)) {
+		pterr->Println(errorMsg);
+		return false;
+	}
 	if (FS::IsLegalDriveName(line)) {
 		if (FS::SetDriveCur(line)) return true;
 		pterr->Printf("failed to change drive to %s\n", line);
 		return false;
 	}
-	const char* errorMsg;
-	if (!ExpandEnvVariables(line, bytesLine, &errorMsg) ||
-		!tokenizer_.Tokenize(line, bytesLine, tokenTbl, &nToken, &errorMsg)) {
+	if (!tokenizer_.Tokenize(line, bytesLine, tokenTbl, &nToken, &errorMsg)) {
 		pterr->Println(errorMsg);
 		return false;
 	}
@@ -128,12 +131,87 @@ bool Shell::RunScript(Readable& tin, Printable& tout, Printable& terr, Readable&
 
 bool Shell::ExpandEnvVariables(char* line, int bytesLine, const char** errorMsg)
 {
-	enum class Stat {
-		Neutral, 
-	} stat;
-	for (char* p = line; *p; p++) {
+	auto expandVar = [&](char* varBegin, char* varName, int lenVarName, char*& p) -> bool {
+		const char* value = dict_.Lookup(varName, lenVarName);
+		if (value) {
+			int lenVarWhole = p - varBegin;
+			int lenValue = ::strlen(value);
+			int lenRest = ::strlen(p);
+			int lenLine = p - line + lenRest;
+			if (lenLine - lenVarWhole + lenValue + 1 > bytesLine) {
+				*errorMsg = "line buffer overflow expanding environment variable";
+				return false;
+			}
+			::memmove(varBegin + lenValue, p, lenRest + 1);
+			::memcpy(varBegin, value, lenValue);
+			p = varBegin + lenValue;
+			return true;
+		} else {
+			*errorMsg = "undefined variable";
+			return false;
+		}
+	};
+	enum class Stat { Neutral, VarBegin, BaredVarName, BracketedVarName, } stat = Stat::Neutral;
+	*errorMsg = "";
+	char* varBegin = line;
+	char* varName = line;
+	for (char* p = line; ; ) {
 		char ch = *p;
-		if (ch == '$') {
+		switch (stat) {
+		case Stat::Neutral: {
+			if (ch == '\0') {
+				return true;
+			} else if (ch == '$') {
+				varBegin = p;
+				p++;
+				stat = Stat::VarBegin;
+			} else {
+				p++;
+			}
+			break;
+		}
+		case Stat::VarBegin: {
+			if (ch == '{') {
+				varName = p + 1;
+				p++;
+				stat = Stat::BracketedVarName;
+			} else if (isalnum(ch) || ch == '_') {
+				varName = p;
+				p++;
+				stat = Stat::BaredVarName;
+			} else {
+				stat = Stat::Neutral;
+			}
+			break;
+		}
+		case Stat::BaredVarName: {
+			if (isalnum(ch) || ch == '_') {
+				p++;
+			} else {
+				int lenVarName = p - varName;
+				if (!expandVar(varBegin, varName, lenVarName, p)) return false;
+				stat = Stat::Neutral;
+			}
+			if (ch == '\0') return true;
+			break;
+		}
+		case Stat::BracketedVarName: {
+			if (ch == '}') {
+				int lenVarName = p - varName;
+				p++;
+				if (!expandVar(varBegin, varName, lenVarName, p)) return false;
+				stat = Stat::Neutral;
+			} else if (isalnum(ch) || ch == '_') {
+				p++;
+			} else if (ch == '\0') {
+				*errorMsg = "missing '}' for variable";
+				return false;
+			} else {
+				*errorMsg = "invalid character in variable name";
+				return false;
+			}
+		}
+		default: break;
 		}
 	}
 	return true;

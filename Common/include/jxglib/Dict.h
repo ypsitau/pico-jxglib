@@ -32,7 +32,7 @@ public:
 		Entry* Find(const char* key);
 		Entry* Find(const char* key, int len);
 		const Entry* Find(const char* key) const { return const_cast<Entry*>(this)->Find(key); }
-		const Entry* Find(const char* key, int len) const { return const_cast<Entry*>(this)->Find(key); }
+		const Entry* Find(const char* key, int len) const { return const_cast<Entry*>(this)->Find(key, len); }
 		const char* Lookup(const char* key) const;
 		const char* Lookup(const char* key, int len) const;
 		void SetValue(const char* value);
@@ -52,9 +52,14 @@ public:
 	Dict();
 public:
 	void Add(Entry* pEntry);
+	Entry* GetFirst() { return pDictEntry_.get(); }
+	const Entry* GetFirst() const { return pDictEntry_.get(); }
 	Entry* Find(const char* key) { return pDictEntry_? pDictEntry_->Find(key) : nullptr; }
+	Entry* Find(const char* key, int len) { return pDictEntry_? pDictEntry_->Find(key, len) : nullptr; }
 	const Entry* Find(const char* key) const { return pDictEntry_? pDictEntry_->Find(key) : nullptr; }
+	const Entry* Find(const char* key, int len) const { return pDictEntry_? pDictEntry_->Find(key, len) : nullptr; }
 	const char* Lookup(const char* key) const { return pDictEntry_? pDictEntry_->Lookup(key) : nullptr; }
+	const char* Lookup(const char* key, int len) const { return pDictEntry_? pDictEntry_->Lookup(key, len) : nullptr; }
 	Entry* SetValue(const char* key, const char* value);
 };
 
