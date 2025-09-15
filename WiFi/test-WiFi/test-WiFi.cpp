@@ -120,28 +120,6 @@ err_t callback_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *pbuf, err_t er
 		::tcp_recved(tpcb, pbuf->tot_len);
 	}
 	::pbuf_free(pbuf);
-#if 0
-	// Have we have received the whole buffer
-	if (state->recv_len == BUF_SIZE) {
-
-		// check it matches
-		if (memcmp(state->buffer_sent, state->buffer_recv, BUF_SIZE) != 0) {
-			DEBUG_printf("buffer mismatch\n");
-			return tcp_server_result(arg, -1);
-		}
-		DEBUG_printf("callback_recv buffer ok\n");
-
-		// Test complete?
-		state->run_count++;
-		if (state->run_count >= TEST_ITERATIONS) {
-			tcp_server_result(arg, 0);
-			return ERR_OK;
-		}
-
-		// Send another buffer
-		return tcp_server_send_data(arg, state->client_pcb);
-	}
-#endif
 	return ERR_OK;
 }
 
