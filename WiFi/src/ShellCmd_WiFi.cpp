@@ -83,6 +83,7 @@ ShellCmd(wifi, "controls WiFi")
 			wifi.Scan(tout);
 		} else if (::strcasecmp(subcmd, "connect") == 0) {
 			const char* ssid = nullptr;
+			const uint8_t* bssid = nullptr;
 			const char* password = nullptr;
 			uint32_t auth = CYW43_AUTH_WPA2_AES_PSK;
 			//CYW43_AUTH_WPA_TKIP_PSK
@@ -94,6 +95,8 @@ ShellCmd(wifi, "controls WiFi")
 				const char* subcmd = pSubcmdChild->GetProc();
 				if (Arg::GetAssigned(subcmd, "ssid", &value)) {
 					ssid = value;
+				} else if (Arg::GetAssigned(subcmd, "bssid", &value)) {
+					//bssid = value;
 				} else if (Arg::GetAssigned(subcmd, "password", &value)) {
 					password = value;
 				} else {
@@ -109,8 +112,22 @@ ShellCmd(wifi, "controls WiFi")
 				terr.Printf("Password is required for access_point mode\n");
 				return Result::Error;
 			}
-			tout.Printf("'%s' '%s'\n", ssid, password);
-			wifi.Connect(tout, ssid, password, auth);
+			//tout.Printf("'%s' '%s'\n", ssid, password);
+			int status = wifi.Connect(tout, ssid, bssid, password, auth);
+			if (status == CYW43_LINK_UP) {
+				terr.Printf("Connected\n");
+				printf("IP: %s\n", ip4addr_ntoa(netif_ip_addr4(netif_default))) ;
+				printf("Mask: %s\n", ip4addr_ntoa(netif_ip_netmask4(netif_default))) ;
+				printf("Gateway: %s\n", ip4addr_ntoa(netif_ip_gw4(netif_default))) ;
+			} else if (status == CYW43_LINK_FAIL) {
+				terr.Printf("Connection failed\n");
+			} else if (status == CYW43_LINK_NONET) {
+				terr.Printf("No network available\n");
+			} else if (status == CYW43_LINK_BADAUTH) {
+				terr.Printf("Authentication failure\n");
+			} else {
+				terr.Printf("unknown error\n");
+			}
 		} else {
 			terr.Printf("Unknown command: %s\n", subcmd);
 			return Result::Error;

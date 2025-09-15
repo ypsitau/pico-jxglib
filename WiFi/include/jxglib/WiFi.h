@@ -35,7 +35,7 @@ public:
 	void Deinit();
 	void Poll();
 	void Scan(Printable& tout);
-	int Connect(Printable& tout, const char* ssid, const char* password, uint32_t auth);
+	int Connect(Printable& tout, const char* ssid, const uint8_t* bssid, const char* password, uint32_t auth);
 };
 
 }

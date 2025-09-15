@@ -57,46 +57,33 @@ void WiFi::Scan(Printable& tout)
 	}
 }
 
-int WiFi::Connect(Printable& tout, const char* ssid, const char* password, uint32_t auth)
+int WiFi::Connect(Printable& tout, const char* ssid, const uint8_t* bssid, const char* password, uint32_t auth)
 {
-	if (!InitAsStation()) return false;
-	//::cyw43_arch_wifi_connect_async(ssid, password, auth);
-	return ::cyw43_arch_wifi_connect_blocking(ssid, password, auth);
-#if 0
-	int status = 0;
+	int status = CYW43_LINK_FAIL;
+	if (!InitAsStation()) return status;
+	if (::cyw43_arch_wifi_connect_bssid_async(ssid, bssid, password, auth) != 0) return status;
 	for (;;) {
-		status = ::cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA);
+		status = ::cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA);
 		if (status == CYW43_LINK_DOWN) {
 			// nothing to do
 		} else if (status == CYW43_LINK_JOIN) {
 			// nothing to do
-			//tout.Printf("Connected to access point, waiting for IP address...\n");
 		} else if (status == CYW43_LINK_NOIP) {
-			tout.Printf("Connection failed\n");
-			break;
+			// nothing to do
 		} else if (status == CYW43_LINK_UP) {
-			tout.Printf("Connected to access point and got an IP address.\n");
 			break;
 		} else if (status == CYW43_LINK_FAIL) {
-			tout.Printf("Connection failed\n");
 			break;
 		} else if (status == CYW43_LINK_NONET) {
-			tout.Printf("No matching SSID found\n");
 			break;
 		} else if (status == CYW43_LINK_BADAUTH) {
-			tout.Printf("Authentication failure\n");
-			break;
-		} else if (status == CYW43_LINK_DOWN) {
-			tout.Printf("Link down\n");
 			break;
 		} else {
-			tout.Printf("Unknown status: %d\n", status);
 			break;
 		}
 		if (Tickable::Sleep(100)) break;
 	}
 	return status;
-#endif
 }
 
 //------------------------------------------------------------------------------
