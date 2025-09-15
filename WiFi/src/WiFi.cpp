@@ -8,6 +8,10 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // WiFi
 //------------------------------------------------------------------------------
+WiFi::WiFi(uint32_t country) : country_(country), initializedFlag_(false), connectedFlag_{false}, polling_(*this)
+{
+}
+
 bool WiFi::InitAsStation()
 {
 	if (initializedFlag_) return true;
@@ -71,6 +75,7 @@ int WiFi::Connect(Printable& tout, const char* ssid, const uint8_t* bssid, const
 		} else if (status == CYW43_LINK_NOIP) {
 			// nothing to do
 		} else if (status == CYW43_LINK_UP) {
+			connectedFlag_ = true;
 			break;
 		} else if (status == CYW43_LINK_FAIL) {
 			break;
@@ -85,6 +90,15 @@ int WiFi::Connect(Printable& tout, const char* ssid, const uint8_t* bssid, const
 	}
 	return status;
 }
+
+void WiFi::Disconnect()
+{
+	::cyw43_arch_disable_ap_mode();
+	::cyw43_arch_deinit();
+	initializedFlag_ = false;
+	connectedFlag_ = false;
+}
+
 
 //------------------------------------------------------------------------------
 // WiFi::Polling

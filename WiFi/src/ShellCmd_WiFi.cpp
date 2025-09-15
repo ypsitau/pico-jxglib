@@ -115,10 +115,11 @@ ShellCmd(wifi, "controls WiFi")
 			//tout.Printf("'%s' '%s'\n", ssid, password);
 			int status = wifi.Connect(tout, ssid, bssid, password, auth);
 			if (status == CYW43_LINK_UP) {
-				terr.Printf("Connected\n");
-				printf("IP: %s\n", ip4addr_ntoa(netif_ip_addr4(netif_default))) ;
-				printf("Mask: %s\n", ip4addr_ntoa(netif_ip_netmask4(netif_default))) ;
-				printf("Gateway: %s\n", ip4addr_ntoa(netif_ip_gw4(netif_default))) ;
+				char bufIPAddr[16], bufMask[16], bufGateway[16];
+				terr.Printf("Connected IP:%s Mask:%s Gateway:%s\n",
+						WiFi::GetIPAddrStr(bufIPAddr, sizeof(bufIPAddr)),
+						WiFi::GetNetmaskStr(bufMask, sizeof(bufMask)),
+						WiFi::GetGatewayStr(bufGateway, sizeof(bufGateway)));
 			} else if (status == CYW43_LINK_FAIL) {
 				terr.Printf("Connection failed\n");
 			} else if (status == CYW43_LINK_NONET) {
@@ -128,6 +129,8 @@ ShellCmd(wifi, "controls WiFi")
 			} else {
 				terr.Printf("unknown error\n");
 			}
+		//} else if (::strcasecmp(subcmd, "disconnect") == 0) {
+		//	wifi.Disconnect();
 		} else {
 			terr.Printf("Unknown command: %s\n", subcmd);
 			return Result::Error;
