@@ -3,94 +3,61 @@
 //==============================================================================
 #include "jxglib/WiFi.h"
 
+namespace jxglib {
+
 //------------------------------------------------------------------------------
 // WiFi
 //------------------------------------------------------------------------------
-namespace jxglib::WiFi {
-
-static bool initializedFlag = false;
-
-bool InitAsStation()
+bool WiFi::InitAsStation()
 {
-	if (initializedFlag) return true;
-	if (::cyw43_arch_init() != 0) return false;
+	if (initializedFlag_) return true;
+	if (::cyw43_arch_init_with_country(country_) != 0) return false;
 	::cyw43_arch_enable_sta_mode();
-	initializedFlag = true;
+	initializedFlag_ = true;
 	return true;
 }
 
-bool InitAsAccessPoint(const char* ssid, const char* password, uint32_t auth)
+bool WiFi::InitAsAccessPoint(const char* ssid, const char* password, uint32_t auth)
 {
-	if (initializedFlag) return true;
-	if (::cyw43_arch_init() != 0) return false;
+	if (initializedFlag_) return true;
+	if (::cyw43_arch_init_with_country(country_) != 0) return false;
 	::cyw43_arch_enable_ap_mode(ssid, password, auth);
-	initializedFlag = true;
+	initializedFlag_ = true;
 	return true;
 }
 
-void Deinit()
+void WiFi::Deinit()
 {
 	::cyw43_arch_deinit();
-	initializedFlag = false;
+	initializedFlag_ = false;
 }
 
-void Poll()
+void WiFi::Poll()
 {
-	if (initializedFlag) ::cyw43_arch_poll();
+	if (initializedFlag_) ::cyw43_arch_poll();
 }
 
-class ScanEnv {
-public:
-	Printable& tout_;
-public:
-	ScanEnv(Printable& tout) : tout_(tout) {}
-public:
-	static int result_cb(void* env, const cyw43_ev_scan_result_t* result);
-};
-
-int ScanEnv::result_cb(void* env, const cyw43_ev_scan_result_t* result)
+void WiFi::Scan(Printable& tout)
 {
-	return 0;
-}
-
-static int scan_result(void *env, const cyw43_ev_scan_result_t *result) {
-    if (result) {
-        printf("ssid: %-32s rssi: %4d chan: %3d mac: %02x:%02x:%02x:%02x:%02x:%02x sec: %u\n",
-            result->ssid, result->rssi, result->channel,
-            result->bssid[0], result->bssid[1], result->bssid[2], result->bssid[3], result->bssid[4], result->bssid[5],
-            result->auth_mode);
-    }
-    return 0;
-}
-
-// Start a wifi scan
-static void scan_worker_fn(async_context_t *context, async_at_time_worker_t *worker) {
-    cyw43_wifi_scan_options_t scan_options = {0};
-    int err = cyw43_wifi_scan(&cyw43_state, &scan_options, NULL, scan_result);
-    if (err == 0) {
-        bool *scan_started = (bool*)worker->user_data;
-        *scan_started = true;
-        printf("\nPerforming wifi scan\n");
-    } else {
-        printf("Failed to start scan: %d\n", err);
-    }
-}
-
-void Scan(Printable& tout)
-{
+	auto result_cb = [](void* env, const cyw43_ev_scan_result_t* result) -> int {
+		if (!result) return 0;
+		Printable& tout = *reinterpret_cast<Printable*>(env);
+		tout.Printf("ssid: %-32s rssi: %4d channel: %3d mac: %02x:%02x:%02x:%02x:%02x:%02x auth_mode: %u\n",
+			result->ssid, result->rssi, result->channel,
+			result->bssid[0], result->bssid[1], result->bssid[2], result->bssid[3], result->bssid[4], result->bssid[5],
+			result->auth_mode);
+		return 0;
+	};
+	cyw43_wifi_scan_options_t scan_options = {0};
 	if (!InitAsStation()) return;
-    // Start a scan immediately
-    bool scan_started = false;
-    async_at_time_worker_t scan_worker = { .do_work = scan_worker_fn, .user_data = &scan_started };
-    hard_assert(async_context_add_at_time_worker_in_ms(cyw43_arch_async_context(), &scan_worker, 0));
-    if (!cyw43_wifi_scan_active(&cyw43_state) && scan_started) {
-        // Start a scan in 10s
-        scan_started = false;
-        hard_assert(async_context_add_at_time_worker_in_ms(cyw43_arch_async_context(), &scan_worker, 10000));
-    }
+	if (::cyw43_wifi_scan(&cyw43_state, &scan_options, &tout, result_cb) == 0) {
+		while (::cyw43_wifi_scan_active(&cyw43_state)) {
+			Tickable::Tick();
+		}
+	}
 }
 
-int Connect(Printable& tout, const char* ssid, const char* password, uint32_t auth)
+int WiFi::Connect(Printable& tout, const char* ssid, const char* password, uint32_t auth)
 {
 	if (!InitAsStation()) return false;
 	::cyw43_arch_wifi_connect_async(ssid, password, auth);
@@ -130,16 +97,5 @@ int Connect(Printable& tout, const char* ssid, const char* password, uint32_t au
 //------------------------------------------------------------------------------
 // WiFi::Polling
 //------------------------------------------------------------------------------
-class Polling : public Tickable {
-private:
-	static Polling polling_;
-public:
-	Polling() {}
-public:
-	virtual const char* GetTickableName() const override { return "WiFi::Polling"; }
-	virtual void OnTick() override { Poll(); }
-};
-
-Polling Polling::polling_;
 
 }

@@ -5,11 +5,9 @@
 
 using namespace jxglib;
 
-ShellCmd(scan, "Scan for WiFi networks")
-{
-    WiFi::Scan(tout);
-    return Result::Success;
-}
+WiFi wifi;
+
+WiFi& ShellCmd_WiFi_GetWiFi() { return wifi; }
 
 int main()
 {

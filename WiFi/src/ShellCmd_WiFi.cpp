@@ -6,10 +6,14 @@
 #include "jxglib/Serial.h"
 #include "jxglib/Shell.h"
 
+jxglib::WiFi& ShellCmd_WiFi_GetWiFi();
+
 namespace jxglib::ShellCmd_WiFi {
+
 
 ShellCmd(wifi, "controls WiFi")
 {
+	WiFi& wifi = ShellCmd_WiFi_GetWiFi();
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
 	};
@@ -33,7 +37,7 @@ ShellCmd(wifi, "controls WiFi")
 		const char* value;
 		if (Arg::GetAssigned(subcmd, "init", &value)) {
 			if (::strcasecmp(value, "station") == 0 || ::strcasecmp(value, "sta") == 0){
-				if (!WiFi::InitAsStation()) {
+				if (!wifi.InitAsStation()) {
 					printf("failed to initialise WiFi module\n");
 					return Result::Error;
 				}
@@ -61,7 +65,7 @@ ShellCmd(wifi, "controls WiFi")
 					terr.Printf("Password is required for access_point mode\n");
 					return Result::Error;
 				}
-				if (!WiFi::InitAsAccessPoint(ssid, password, auth)) {
+				if (!wifi.InitAsAccessPoint(ssid, password, auth)) {
 					printf("failed to initialise WiFi module\n");
 					return Result::Error;
 				}
@@ -70,9 +74,9 @@ ShellCmd(wifi, "controls WiFi")
 				return Result::Error;
 			}
 		} else if (::strcasecmp(subcmd, "deinit") == 0) {
-			WiFi::Deinit();
+			wifi.Deinit();
 		} else if (::strcasecmp(subcmd, "scan") == 0) {
-			WiFi::Scan(tout);
+			wifi.Scan(tout);
 		} else if (::strcasecmp(subcmd, "connect") == 0) {
 			const char* ssid = nullptr;
 			const char* password = nullptr;
@@ -93,7 +97,7 @@ ShellCmd(wifi, "controls WiFi")
 				terr.Printf("SSID is required for connect\n");
 				return Result::Error;
 			}
-			WiFi::Connect(tout, ssid, password, auth);
+			wifi.Connect(tout, ssid, password, auth);
 		} else {
 			terr.Printf("Unknown command: %s\n", subcmd);
 			return Result::Error;
