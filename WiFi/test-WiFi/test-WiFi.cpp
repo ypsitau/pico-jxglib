@@ -106,26 +106,20 @@ err_t callback_sent(void *arg, struct tcp_pcb *tpcb, u16_t len)
 	return ERR_OK;
 }
 
-err_t callback_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
+err_t callback_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *pbuf, err_t err)
 {
 	TCP_SERVER_T *state = (TCP_SERVER_T*)arg;
-	if (!p) {
-		return tcp_server_result(arg, -1);
-	}
-	// this method is callback from lwIP, so cyw43_arch_lwip_begin is not required, however you
-	// can use this method to cause an assertion in debug mode, if this method is called when
-	// cyw43_arch_lwip_begin IS needed
+	if (!pbuf) return ERR_OK;
 	cyw43_arch_lwip_check();
-	if (p->tot_len > 0) {
-		DEBUG_printf("callback_recv %d/%d err %d\n", p->tot_len, state->recv_len, err);
-
+	::printf("callback_recv %d bytes\n", pbuf->tot_len);
+	if (pbuf->tot_len > 0) {
 		// Receive the buffer
 		const uint16_t buffer_left = BUF_SIZE - state->recv_len;
-		state->recv_len += ::pbuf_copy_partial(p, state->buffer_recv + state->recv_len,
-											p->tot_len > buffer_left ? buffer_left : p->tot_len, 0);
-		tcp_recved(tpcb, p->tot_len);
+		state->recv_len += ::pbuf_copy_partial(pbuf, state->buffer_recv + state->recv_len,
+											pbuf->tot_len > buffer_left ? buffer_left : pbuf->tot_len, 0);
+		::tcp_recved(tpcb, pbuf->tot_len);
 	}
-	::pbuf_free(p);
+	::pbuf_free(pbuf);
 #if 0
 	// Have we have received the whole buffer
 	if (state->recv_len == BUF_SIZE) {
@@ -153,8 +147,9 @@ err_t callback_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
 
 err_t callback_poll(void *arg, struct tcp_pcb *tpcb)
 {
-	DEBUG_printf("callback_poll\n");
-	return tcp_server_result(arg, -1); // no response is an error?
+	//DEBUG_printf("callback_poll\n");
+	//return tcp_server_result(arg, -1); // no response is an error?
+	return ERR_OK;
 }
 
 void callback_err(void *arg, err_t err)
