@@ -6,171 +6,188 @@
 #include "lwip/pbuf.h"
 #include "lwip/tcp.h"
 
-#define TCP_PORT 23
-#define DEBUG_printf printf
-#define BUF_SIZE 2048
-#define TEST_ITERATIONS 10
-#define POLL_TIME_S 5
-
 using namespace jxglib;
 
-typedef struct TCP_SERVER_T_ {
-	struct tcp_pcb *server_pcb;
-	struct tcp_pcb *client_pcb;
-} TCP_SERVER_T;
+class TCPCommon {
+protected:
+	struct tcp_pcb *pcb_;
+public:
+	TCPCommon();
+protected:
+	void SetPCB(struct tcp_pcb* pcb);
+public:
+	bool Send(const void* data, size_t len);
+	void Close();
+public:
+	virtual void OnSent(size_t len);
+	virtual void OnRecv(const uint8_t* data, size_t len);
+	virtual void OnDisconnect() {}
+private:
+	static err_t callback_sent(void* arg, struct tcp_pcb* pcb, u16_t len);
+	static err_t callback_recv(void* arg, struct tcp_pcb* pcb, struct pbuf* pbuf, err_t err);
+	static err_t callback_poll(void* arg, struct tcp_pcb* pcb);
+	static void callback_err(void* arg, err_t err);
+};
 
-err_t callback_accept(void *arg, struct tcp_pcb *client_pcb, err_t err);
-err_t callback_sent(void *arg, struct tcp_pcb *tpcb, u16_t len);
-err_t callback_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err);
-err_t callback_poll(void *arg, struct tcp_pcb *tpcb);
-void callback_err(void *arg, err_t err);
-
-err_t tcp_server_close(void *arg)
+TCPCommon::TCPCommon() : pcb_{nullptr}
 {
-	TCP_SERVER_T *state = (TCP_SERVER_T*)arg;
-	err_t err = ERR_OK;
-	if (state->client_pcb != NULL) {
-		::tcp_arg(state->client_pcb, NULL);
-		::tcp_poll(state->client_pcb, NULL, 0);
-		::tcp_sent(state->client_pcb, NULL);
-		::tcp_recv(state->client_pcb, NULL);
-		::tcp_err(state->client_pcb, NULL);
-		err = ::tcp_close(state->client_pcb);
-		if (err != ERR_OK) {
-			DEBUG_printf("close failed %d, calling abort\n", err);
-			::tcp_abort(state->client_pcb);
-			err = ERR_ABRT;
-		}
-		state->client_pcb = NULL;
-	}
-	if (state->server_pcb) {
-		::tcp_arg(state->server_pcb, NULL);
-		::tcp_close(state->server_pcb);
-		state->server_pcb = NULL;
-	}
-	return err;
 }
 
-err_t tcp_server_result(void *arg, int status)
+void TCPCommon::SetPCB(struct tcp_pcb* pcb)
 {
-	TCP_SERVER_T *state = (TCP_SERVER_T*)arg;
-	if (status == 0) {
-		DEBUG_printf("test success\n");
-	} else {
-		DEBUG_printf("test failed %d\n", status);
-	}
-	return tcp_server_close(arg);
+	pcb_ = pcb;
+	::tcp_arg(pcb_, this);
+	::tcp_sent(pcb_, callback_sent);
+	::tcp_recv(pcb_, callback_recv);
+	//::tcp_poll(pcb_, callback_poll, POLL_TIME_S * 2);
+	::tcp_err(pcb_, callback_err);
 }
 
-err_t callback_accept(void *arg, struct tcp_pcb *client_pcb, err_t err)
+bool TCPCommon::Send(const void* data, size_t len)
 {
-	TCP_SERVER_T *state = (TCP_SERVER_T*)arg;
-	if (err != ERR_OK || client_pcb == NULL) {
-		DEBUG_printf("Failure in accept\n");
-		tcp_server_result(arg, err);
-		return ERR_VAL;
-	}
-	DEBUG_printf("Client connected\n");
-
-	state->client_pcb = client_pcb;
-	::tcp_arg(client_pcb, state);
-	::tcp_sent(client_pcb, callback_sent);
-	::tcp_recv(client_pcb, callback_recv);
-	::tcp_poll(client_pcb, callback_poll, POLL_TIME_S * 2);
-	::tcp_err(client_pcb, callback_err);
-	return ERR_OK;
-}
-
-err_t callback_sent(void *arg, struct tcp_pcb *tpcb, u16_t len)
-{
-	return ERR_OK;
-}
-
-err_t callback_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *pbuf, err_t err)
-{
-	static bool firstFlag = true;
-	TCP_SERVER_T *state = (TCP_SERVER_T*)arg;
-	if (!pbuf) return ERR_OK;
-	cyw43_arch_lwip_check();
-	::printf("callback_recv %d bytes\n", pbuf->tot_len);
-	if (pbuf->tot_len > 0) {
-		// Receive the buffer
-		uint8_t buff[128];
-		int len = ::pbuf_copy_partial(pbuf, buff, ChooseMin(pbuf->tot_len, sizeof(buff)), 0);
-		Dump(buff, len);
-		::tcp_recved(tpcb, pbuf->tot_len);
-		static const uint8_t buffSend[] = {
-			0xff, 0xfb, 0x01,
-			0xff, 0xfb, 0x03,
-			0xff, 0xfd, 0x18,
-			0xff, 0xfd, 0x1f,
-			0xff, 0xfd, 0x20,
-		};
-		if (buff[0] == 0xff && firstFlag) {
-			// telnet negotiation
-			::tcp_write(tpcb, buffSend, sizeof(buffSend), TCP_WRITE_FLAG_COPY);
+	if (pcb_ && data && len > 0) {
+		::cyw43_arch_lwip_check();
+		err_t err = ::tcp_write(pcb_, data, len, TCP_WRITE_FLAG_COPY);
+		if (err == ERR_OK) {
+			::tcp_output(pcb_);
 		} else {
-			// echo back
-			::tcp_write(tpcb, buff, len, TCP_WRITE_FLAG_COPY);
+			return false;
 		}
-		firstFlag = false;
-		//::tcp_write(tpcb, buffSend, sizeof(buffSend), TCP_WRITE_FLAG_COPY);
 	}
-	::pbuf_free(pbuf);
+	return true;
+}
+
+void TCPCommon::Close()
+{
+	if (pcb_) {
+		::tcp_arg(pcb_, nullptr);
+		::tcp_sent(pcb_, nullptr);
+		::tcp_recv(pcb_, nullptr);
+		::tcp_poll(pcb_, nullptr, 0);
+		::tcp_err(pcb_, nullptr);
+		::tcp_close(pcb_);
+		pcb_ = nullptr;
+	}
+}
+
+void TCPCommon::OnSent(size_t len)
+{
+	::printf("Sent %u bytes\n", len);
+}
+
+void TCPCommon::OnRecv(const uint8_t* data, size_t len)
+{
+	::printf("Received %u bytes\n", len);
+}
+
+err_t TCPCommon::callback_sent(void* arg, struct tcp_pcb* pcb, u16_t len)
+{
+	TCPCommon* pCommon = reinterpret_cast<TCPCommon*>(arg);
+	pCommon->OnSent(len);
 	return ERR_OK;
 }
 
-err_t callback_poll(void *arg, struct tcp_pcb *tpcb)
+err_t TCPCommon::callback_recv(void* arg, struct tcp_pcb* pcb, struct pbuf* pbuf, err_t err)
+{
+	TCPCommon* pCommon = reinterpret_cast<TCPCommon*>(arg);
+	if (!pbuf) {
+		// connection closed
+		pCommon->OnDisconnect();
+		return ERR_OK;
+	}
+	uint8_t buff[128];
+	for (int lenRest = pbuf->tot_len; lenRest > 0; ) {
+		int lenCopied = ::pbuf_copy_partial(pbuf, buff, ChooseMin(pbuf->tot_len, sizeof(buff)), pbuf->tot_len - lenRest);
+		pCommon->OnRecv(buff, lenCopied);
+		lenRest -= lenCopied;
+	}
+	::tcp_recved(pcb, pbuf->tot_len);
+	return ERR_OK;
+}
+
+err_t TCPCommon::callback_poll(void* arg, struct tcp_pcb* pcb)
 {
 	return ERR_OK;
 }
 
-void callback_err(void *arg, err_t err)
+void TCPCommon::callback_err(void* arg, err_t err)
 {
 }
 
-void run_tcp_server_test(void)
+class TCPServer : public TCPCommon {
+private:
+	uint16_t port_;
+	struct tcp_pcb *pcbListener_;
+public:
+	TCPServer(uint16_t port);
+public:
+	bool Start();
+public:
+	void Close();
+private:
+	static err_t callback_accept(void* arg, struct tcp_pcb* pcb, err_t err);
+public:
+	virtual void OnDisconnect() override;
+};
+
+TCPServer::TCPServer(uint16_t port) : port_{port}, pcbListener_{nullptr}
 {
-	TCP_SERVER_T *state = reinterpret_cast<TCP_SERVER_T*>(calloc(1, sizeof(TCP_SERVER_T)));
-	if (!state) {
-		DEBUG_printf("failed to allocate state\n");
-		return;
-	}
-	DEBUG_printf("Starting server at %s on port %u\n", ip4addr_ntoa(netif_ip4_addr(netif_list)), TCP_PORT);
+}
 
-	struct tcp_pcb *pcb = ::tcp_new_ip_type(IPADDR_TYPE_ANY);
-	if (!pcb) {
-		DEBUG_printf("failed to create pcb\n");
-		return;
+bool TCPServer::Start()
+{
+	pcb_ = ::tcp_new_ip_type(IPADDR_TYPE_ANY);
+	if (!pcb_) return false;
+	if (::tcp_bind(pcb_, nullptr, port_) != 0) return false;
+	uint8_t backlog = 1;
+	pcbListener_ = ::tcp_listen_with_backlog(pcb_, backlog);
+	if (!pcbListener_) {
+		::tcp_close(pcb_);
+		pcb_ = nullptr;
+		return false;
 	}
+	::tcp_arg(pcbListener_, this);
+	::tcp_accept(pcbListener_, callback_accept);
+	return true;
+}
 
-	err_t err = ::tcp_bind(pcb, NULL, TCP_PORT);
-	if (err) {
-		DEBUG_printf("failed to bind to port %u\n", TCP_PORT);
-		return;
+void TCPServer::Close()
+{
+	TCPCommon::Close();
+	if (pcbListener_) {
+		::tcp_arg(pcbListener_, nullptr);
+		::tcp_accept(pcbListener_, nullptr);
+		::tcp_close(pcbListener_);
+		pcbListener_ = nullptr;
 	}
+}
 
-	state->server_pcb = ::tcp_listen_with_backlog(pcb, 1);
-	if (!state->server_pcb) {
-		DEBUG_printf("failed to listen\n");
-		if (pcb) {
-			::tcp_close(pcb);
-		}
-		return;
-	}
+err_t TCPServer::callback_accept(void* arg, struct tcp_pcb* pcb, err_t err)
+{
+	TCPServer* pServer = reinterpret_cast<TCPServer*>(arg);
+	if (err != ERR_OK || !pcb) return ERR_VAL;
+	::printf("Connected\n");
+	pServer->SetPCB(pcb);
+	return ERR_OK;
+}
 
-	::tcp_arg(state->server_pcb, state);
-	::tcp_accept(state->server_pcb, callback_accept);
-	//free(state);
+void TCPServer::OnDisconnect()
+{
+	::printf("Disconnected\n");
+	Close();
+	Start();
 }
 
 WiFi wifi;
+
+TCPServer tcpServer(23);
 
 WiFi& ShellCmd_WiFi_GetWiFi() { return wifi; }
 
 ShellCmd(server, "start tcp echo server")
 {
-	run_tcp_server_test();
+	//run_tcp_server_test();
+	tcpServer.Start();
 	return Result::Success;
 }
 
