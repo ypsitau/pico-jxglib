@@ -1,7 +1,7 @@
 //==============================================================================
 // TCP.cpp
 //==============================================================================
-#include "jxglib/TCP.h"
+#include "jxglib/Net/TCP.h"
 
 namespace jxglib::Net::TCP {
 
@@ -36,7 +36,7 @@ bool Common::Send(const void* data, size_t len)
 	return true;
 }
 
-void Common::Close()
+void Common::DiscardPCB()
 {
 	if (pcb_) {
 		::tcp_arg(pcb_, nullptr);
@@ -71,6 +71,7 @@ err_t Common::callback_recv(void* arg, struct tcp_pcb* pcb, struct pbuf* pbuf, e
 	Common* pCommon = reinterpret_cast<Common*>(arg);
 	if (!pbuf) {
 		// connection closed
+		pCommon->DiscardPCB();
 		pCommon->OnDisconnect();
 		return ERR_OK;
 	}
@@ -96,36 +97,25 @@ void Common::callback_err(void* arg, err_t err)
 //------------------------------------------------------------------------------
 // Server
 //------------------------------------------------------------------------------
-Server::Server(uint16_t port) : port_{port}, pcbListener_{nullptr}
+Server::Server(uint16_t port) : port_{port}, pcbListener_{nullptr}, pcbAccepter_{nullptr}
 {
 }
 
 bool Server::Start()
 {
-	pcb_ = ::tcp_new_ip_type(IPADDR_TYPE_ANY);
-	if (!pcb_) return false;
-	if (::tcp_bind(pcb_, nullptr, port_) != 0) return false;
+	pcbListener_ = ::tcp_new_ip_type(IPADDR_TYPE_ANY);
+	if (!pcbListener_) return false;
+	if (::tcp_bind(pcbListener_, nullptr, port_) != 0) return false;
 	uint8_t backlog = 1;
-	pcbListener_ = ::tcp_listen_with_backlog(pcb_, backlog);
-	if (!pcbListener_) {
-		::tcp_close(pcb_);
-		pcb_ = nullptr;
-		return false;
-	}
-	::tcp_arg(pcbListener_, this);
-	::tcp_accept(pcbListener_, callback_accept);
-	return true;
-}
-
-void Server::Close()
-{
-	Common::Close();
-	if (pcbListener_) {
-		::tcp_arg(pcbListener_, nullptr);
-		::tcp_accept(pcbListener_, nullptr);
+	pcbAccepter_ = ::tcp_listen_with_backlog(pcbListener_, backlog);
+	if (!pcbAccepter_) {
 		::tcp_close(pcbListener_);
 		pcbListener_ = nullptr;
+		return false;
 	}
+	::tcp_arg(pcbAccepter_, this);
+	::tcp_accept(pcbAccepter_, callback_accept);
+	return true;
 }
 
 err_t Server::callback_accept(void* arg, struct tcp_pcb* pcb, err_t err)
@@ -140,7 +130,6 @@ err_t Server::callback_accept(void* arg, struct tcp_pcb* pcb, err_t err)
 void Server::OnDisconnect()
 {
 	::printf("Disconnected\n");
-	Close();
 	Start();
 }
 

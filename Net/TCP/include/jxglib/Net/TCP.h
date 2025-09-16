@@ -1,8 +1,8 @@
 //==============================================================================
-// jxglib/TCP.h
+// jxglib/Net/TCP.h
 //==============================================================================
-#ifndef PICO_JXGLIB_TCP_H
-#define PICO_JXGLIB_TCP_H
+#ifndef PICO_JXGLIB_NET_TCP_H
+#define PICO_JXGLIB_NET_TCP_H
 #include "pico/stdlib.h"
 #include "jxglib/WiFi.h"
 #include "lwip/pbuf.h"
@@ -22,7 +22,7 @@ protected:
 	void SetPCB(struct tcp_pcb* pcb);
 public:
 	bool Send(const void* data, size_t len);
-	void Close();
+	void DiscardPCB();
 public:
 	virtual void OnSent(size_t len);
 	virtual void OnRecv(const uint8_t* data, size_t len);
@@ -41,12 +41,13 @@ class Server : public Common {
 private:
 	uint16_t port_;
 	struct tcp_pcb *pcbListener_;
+	struct tcp_pcb *pcbAccepter_;
 public:
 	Server(uint16_t port);
 public:
-	bool Start();
+	uint16_t GetPort() const { return port_; }
 public:
-	void Close();
+	bool Start();
 private:
 	static err_t callback_accept(void* arg, struct tcp_pcb* pcb, err_t err);
 public:

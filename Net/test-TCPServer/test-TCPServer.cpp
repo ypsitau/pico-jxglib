@@ -14,8 +14,9 @@ WiFi& ShellCmd_WiFi_GetWiFi() { return wifi; }
 
 ShellCmd(server, "start tcp echo server")
 {
-	//run_tcp_server_test();
-	tcpServer.Start();
+	if (tcpServer.Start()) {
+		terr.Printf("TCP server started on port %u\n", tcpServer.GetPort());
+	}
 	return Result::Success;
 }
 
