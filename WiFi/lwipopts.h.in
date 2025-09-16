@@ -1,17 +1,16 @@
-#ifndef _LWIPOPTS_EXAMPLE_COMMONH_H
-#define _LWIPOPTS_EXAMPLE_COMMONH_H
-
+#ifndef __LWIPOPTS_H__
+#define __LWIPOPTS_H__
 
 // Common settings used in most of the pico_w examples
 // (see https://www.nongnu.org/lwip/2_1_x/group__lwip__opts.html for details)
 
 // allow override in some examples
 #ifndef NO_SYS
-#define NO_SYS                      1
+#define NO_SYS                      ${_NO_SYS}
 #endif
 // allow override in some examples
 #ifndef LWIP_SOCKET
-#define LWIP_SOCKET                 0
+#define LWIP_SOCKET                 ${_LWIP_SOCKET}
 #endif
 #if PICO_CYW43_ARCH_POLL
 #define MEM_LIBC_MALLOC             1
@@ -19,74 +18,74 @@
 // MEM_LIBC_MALLOC is incompatible with non polling versions
 #define MEM_LIBC_MALLOC             0
 #endif
-#define MEM_ALIGNMENT               4
+#define MEM_ALIGNMENT               ${_MEM_ALIGNMENT}
 #ifndef MEM_SIZE
-#define MEM_SIZE                    4000
+#define MEM_SIZE                    ${_MEM_SIZE}
 #endif
-#define MEMP_NUM_TCP_SEG            32
-#define MEMP_NUM_ARP_QUEUE          10
-#define PBUF_POOL_SIZE              24
-#define LWIP_ARP                    1
-#define LWIP_ETHERNET               1
-#define LWIP_ICMP                   1
-#define LWIP_RAW                    1
-#define TCP_WND                     (8 * TCP_MSS)
-#define TCP_MSS                     1460
-#define TCP_SND_BUF                 (8 * TCP_MSS)
-#define TCP_SND_QUEUELEN            ((4 * (TCP_SND_BUF) + (TCP_MSS - 1)) / (TCP_MSS))
-#define LWIP_NETIF_STATUS_CALLBACK  1
-#define LWIP_NETIF_LINK_CALLBACK    1
-#define LWIP_NETIF_HOSTNAME         1
-#define LWIP_NETCONN                0
-#define MEM_STATS                   0
-#define SYS_STATS                   0
-#define MEMP_STATS                  0
-#define LINK_STATS                  0
-// #define ETH_PAD_SIZE                2
-#define LWIP_CHKSUM_ALGORITHM       3
-#define LWIP_DHCP                   1
-#define LWIP_IPV4                   1
-#define LWIP_TCP                    1
-#define LWIP_UDP                    1
-#define LWIP_DNS                    1
-#define LWIP_TCP_KEEPALIVE          1
-#define LWIP_NETIF_TX_SINGLE_PBUF   1
-#define DHCP_DOES_ARP_CHECK         0
-#define LWIP_DHCP_DOES_ACD_CHECK    0
+#define MEMP_NUM_TCP_SEG            ${_MEMP_NUM_TCP_SEG}
+#define MEMP_NUM_ARP_QUEUE          ${_MEMP_NUM_ARP_QUEUE}
+#define PBUF_POOL_SIZE              ${_PBUF_POOL_SIZE}
+#define LWIP_ARP                    ${_LWIP_ARP}
+#define LWIP_ETHERNET               ${_LWIP_ETHERNET}
+#define LWIP_ICMP                   ${_LWIP_ICMP}
+#define LWIP_RAW                    ${_LWIP_RAW}
+#define TCP_WND                     ${_TCP_WND}
+#define TCP_MSS                     ${_TCP_MSS}
+#define TCP_SND_BUF                 ${_TCP_SND_BUF}
+#define TCP_SND_QUEUELEN            ${_TCP_SND_QUEUELEN}
+#define LWIP_NETIF_STATUS_CALLBACK  ${_LWIP_NETIF_STATUS_CALLBACK}
+#define LWIP_NETIF_LINK_CALLBACK    ${_LWIP_NETIF_LINK_CALLBACK}
+#define LWIP_NETIF_HOSTNAME         ${_LWIP_NETIF_HOSTNAME}
+#define LWIP_NETCONN                ${_LWIP_NETCONN}
+#define MEM_STATS                   ${_MEM_STATS}
+#define SYS_STATS                   ${_SYS_STATS}
+#define MEMP_STATS                  ${_MEMP_STATS}
+#define LINK_STATS                  ${_LINK_STATS}
+// #define ETH_PAD_SIZE             ${_ETH_PAD_SIZE}
+#define LWIP_CHKSUM_ALGORITHM       ${_LWIP_CHKSUM_ALGORITHM}
+#define LWIP_DHCP                   ${_LWIP_DHCP}
+#define LWIP_IPV4                   ${_LWIP_IPV4}
+#define LWIP_TCP                    ${_LWIP_TCP}
+#define LWIP_UDP                    ${_LWIP_UDP}
+#define LWIP_DNS                    ${_LWIP_DNS}
+#define LWIP_TCP_KEEPALIVE          ${_LWIP_TCP_KEEPALIVE}
+#define LWIP_NETIF_TX_SINGLE_PBUF   ${_LWIP_NETIF_TX_SINGLE_PBUF}
+#define DHCP_DOES_ARP_CHECK         ${_DHCP_DOES_ARP_CHECK}
+#define LWIP_DHCP_DOES_ACD_CHECK    ${_LWIP_DHCP_DOES_ACD_CHECK}
 
 #ifndef NDEBUG
-#define LWIP_DEBUG                  1
-#define LWIP_STATS                  1
-#define LWIP_STATS_DISPLAY          1
+#define LWIP_DEBUG                  ${_LWIP_DEBUG}
+#define LWIP_STATS                  ${_LWIP_STATS}
+#define LWIP_STATS_DISPLAY          ${_LWIP_STATS_DISPLAY}
 #endif
 
-#define ETHARP_DEBUG                LWIP_DBG_OFF
-#define NETIF_DEBUG                 LWIP_DBG_OFF
-#define PBUF_DEBUG                  LWIP_DBG_OFF
-#define API_LIB_DEBUG               LWIP_DBG_OFF
-#define API_MSG_DEBUG               LWIP_DBG_OFF
-#define SOCKETS_DEBUG               LWIP_DBG_OFF
-#define ICMP_DEBUG                  LWIP_DBG_OFF
-#define INET_DEBUG                  LWIP_DBG_OFF
-#define IP_DEBUG                    LWIP_DBG_OFF
-#define IP_REASS_DEBUG              LWIP_DBG_OFF
-#define RAW_DEBUG                   LWIP_DBG_OFF
-#define MEM_DEBUG                   LWIP_DBG_OFF
-#define MEMP_DEBUG                  LWIP_DBG_OFF
-#define SYS_DEBUG                   LWIP_DBG_OFF
-#define TCP_DEBUG                   LWIP_DBG_OFF
-#define TCP_INPUT_DEBUG             LWIP_DBG_OFF
-#define TCP_OUTPUT_DEBUG            LWIP_DBG_OFF
-#define TCP_RTO_DEBUG               LWIP_DBG_OFF
-#define TCP_CWND_DEBUG              LWIP_DBG_OFF
-#define TCP_WND_DEBUG               LWIP_DBG_OFF
-#define TCP_FR_DEBUG                LWIP_DBG_OFF
-#define TCP_QLEN_DEBUG              LWIP_DBG_OFF
-#define TCP_RST_DEBUG               LWIP_DBG_OFF
-#define UDP_DEBUG                   LWIP_DBG_OFF
-#define TCPIP_DEBUG                 LWIP_DBG_OFF
-#define PPP_DEBUG                   LWIP_DBG_OFF
-#define SLIP_DEBUG                  LWIP_DBG_OFF
-#define DHCP_DEBUG                  LWIP_DBG_OFF
+#define ETHARP_DEBUG                ${_ETHARP_DEBUG}
+#define NETIF_DEBUG                 ${_NETIF_DEBUG}
+#define PBUF_DEBUG                  ${_PBUF_DEBUG}
+#define API_LIB_DEBUG               ${_API_LIB_DEBUG}
+#define API_MSG_DEBUG               ${_API_MSG_DEBUG}
+#define SOCKETS_DEBUG               ${_SOCKETS_DEBUG}
+#define ICMP_DEBUG                  ${_ICMP_DEBUG}
+#define INET_DEBUG                  ${_INET_DEBUG}
+#define IP_DEBUG                    ${_IP_DEBUG}
+#define IP_REASS_DEBUG              ${_IP_REASS_DEBUG}
+#define RAW_DEBUG                   ${_RAW_DEBUG}
+#define MEM_DEBUG                   ${_MEM_DEBUG}
+#define MEMP_DEBUG                  ${_MEMP_DEBUG}
+#define SYS_DEBUG                   ${_SYS_DEBUG}
+#define TCP_DEBUG                   ${_TCP_DEBUG}
+#define TCP_INPUT_DEBUG             ${_TCP_INPUT_DEBUG}
+#define TCP_OUTPUT_DEBUG            ${_TCP_OUTPUT_DEBUG}
+#define TCP_RTO_DEBUG               ${_TCP_RTO_DEBUG}
+#define TCP_CWND_DEBUG              ${_TCP_CWND_DEBUG}
+#define TCP_WND_DEBUG               ${_TCP_WND_DEBUG}
+#define TCP_FR_DEBUG                ${_TCP_FR_DEBUG}
+#define TCP_QLEN_DEBUG              ${_TCP_QLEN_DEBUG}
+#define TCP_RST_DEBUG               ${_TCP_RST_DEBUG}
+#define UDP_DEBUG                   ${_UDP_DEBUG}
+#define TCPIP_DEBUG                 ${_TCPIP_DEBUG}
+#define PPP_DEBUG                   ${_PPP_DEBUG}
+#define SLIP_DEBUG                  ${_SLIP_DEBUG}
+#define DHCP_DEBUG                  ${_DHCP_DEBUG}
 
 #endif /* __LWIPOPTS_H__ */
