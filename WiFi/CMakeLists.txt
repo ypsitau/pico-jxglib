@@ -22,3 +22,12 @@ target_link_libraries(jxglib_ShellCmd_WiFi INTERFACE
 
 target_sources(jxglib_ShellCmd_WiFi INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/ShellCmd_WiFi.cpp)
+
+#------------------------------------------------------------------------------
+function(jxglib_configure_WiFi TARGET)
+	set(VARS
+	)
+	cmake_parse_arguments("" ""  "${VARS}" "" ${ARGN})
+	configure_file(${JXGLIB_DIR}/Wifi/lwipopts.h.in ${CMAKE_CURRENT_BINARY_DIR}/lwipopts.h)
+	target_include_directories(${TARGET} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+endfunction()
