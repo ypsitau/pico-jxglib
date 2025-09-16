@@ -59,4 +59,5 @@ pico_add_extra_outputs(test-TCPServer)
 
 target_link_libraries(test-TCPServer jxglib_LABOPlatform_FullCmd)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+jxglib_configure_WiFi(test-TCPServer)
 jxglib_configure_LABOPlatform(test-TCPServer)
