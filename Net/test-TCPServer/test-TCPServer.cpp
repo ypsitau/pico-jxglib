@@ -6,14 +6,37 @@
 
 using namespace jxglib;
 
+class Handler : public Net::TCP::Handler {
+public:
+	virtual void OnRecv(const uint8_t* data, size_t len);
+	virtual void OnConnect();
+	virtual void OnDisconnect();
+};
+
 WiFi wifi;
-
+Handler tcpHandler;
 Net::TCP::Server tcpServer(23);
-
 WiFi& ShellCmd_WiFi_GetWiFi() { return wifi; }
+
+void Handler::OnRecv(const uint8_t* data, size_t len)
+{
+	::printf("Received %u bytes\n", len);
+}
+
+void Handler::OnConnect()
+{
+	::printf("Connected\n");
+}
+
+void Handler::OnDisconnect()
+{
+	::printf("Disconnected\n");
+	tcpServer.Start();
+}
 
 ShellCmd(server, "start tcp echo server")
 {
+	tcpServer.SetHandler(tcpHandler);
 	if (tcpServer.Start()) {
 		terr.Printf("TCP server started on port %u\n", tcpServer.GetPort());
 	}

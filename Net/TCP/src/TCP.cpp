@@ -8,7 +8,7 @@ namespace jxglib::Net::TCP {
 //------------------------------------------------------------------------------
 // Common
 //------------------------------------------------------------------------------
-Common::Common() : pcb_{nullptr}
+Common::Common() : pcb_{nullptr}, pHandler_{&handlerDummy_}
 {
 }
 
@@ -49,20 +49,10 @@ void Common::DiscardPCB()
 	}
 }
 
-void Common::OnSent(size_t len)
-{
-	::printf("Sent %u bytes\n", len);
-}
-
-void Common::OnRecv(const uint8_t* data, size_t len)
-{
-	::printf("Received %u bytes\n", len);
-}
-
 err_t Common::callback_sent(void* arg, struct tcp_pcb* pcb, u16_t len)
 {
 	Common* pCommon = reinterpret_cast<Common*>(arg);
-	pCommon->OnSent(len);
+	pCommon->GetHandler().OnSent(len);
 	return ERR_OK;
 }
 
@@ -72,13 +62,13 @@ err_t Common::callback_recv(void* arg, struct tcp_pcb* pcb, struct pbuf* pbuf, e
 	if (!pbuf) {
 		// connection closed
 		pCommon->DiscardPCB();
-		pCommon->OnDisconnect();
+		pCommon->GetHandler().OnDisconnect();
 		return ERR_OK;
 	}
 	uint8_t buff[128];
 	for (int lenRest = pbuf->tot_len; lenRest > 0; ) {
 		int lenCopied = ::pbuf_copy_partial(pbuf, buff, ChooseMin(pbuf->tot_len, sizeof(buff)), pbuf->tot_len - lenRest);
-		pCommon->OnRecv(buff, lenCopied);
+		pCommon->GetHandler().OnRecv(buff, lenCopied);
 		lenRest -= lenCopied;
 	}
 	::tcp_recved(pcb, pbuf->tot_len);
@@ -122,15 +112,9 @@ err_t Server::callback_accept(void* arg, struct tcp_pcb* pcb, err_t err)
 {
 	Server* pServer = reinterpret_cast<Server*>(arg);
 	if (err != ERR_OK || !pcb) return ERR_VAL;
-	::printf("Connected\n");
 	pServer->SetPCB(pcb);
+	pServer->GetHandler().OnConnect();
 	return ERR_OK;
-}
-
-void Server::OnDisconnect()
-{
-	::printf("Disconnected\n");
-	Start();
 }
 
 //------------------------------------------------------------------------------
