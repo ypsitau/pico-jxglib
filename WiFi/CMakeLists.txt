@@ -10,6 +10,9 @@ target_link_libraries(jxglib_WiFi INTERFACE
 target_sources(jxglib_WiFi INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/WiFi.cpp)
 
+target_compile_definitions(cyw43_driver INTERFACE
+	NDEBUG=1)
+
 #------------------------------------------------------------------------------
 add_library(jxglib_ShellCmd_WiFi INTERFACE)
 
