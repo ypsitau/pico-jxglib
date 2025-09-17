@@ -12,11 +12,18 @@ Common::Common() : pcb_{nullptr}, pHandler_{&handlerDummy_}
 {
 }
 
-bool Common::Initialize()
+Common::~Common()
 {
+    DiscardPCB();
+}
+
+bool Common::Initialize(Handler& handler)
+{
+    if (pcb_) return true;
 	pcb_ = ::udp_new_ip_type(IPADDR_TYPE_ANY);
 	if (!pcb_) return false;
 	::udp_recv(pcb_, callback_recv, this);
+	pHandler_ = &handler;
 	return true;
 }
 

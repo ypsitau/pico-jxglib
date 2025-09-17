@@ -7,7 +7,8 @@ target_link_libraries(jxglib_Net INTERFACE
 	jxglib_WiFi)
 
 target_sources(jxglib_Net INTERFACE
-	${CMAKE_CURRENT_LIST_DIR}/src/Net.cpp)
+	${CMAKE_CURRENT_LIST_DIR}/src/Net.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/NetUtil.cpp)
 
 #------------------------------------------------------------------------------
 add_library(jxglib_ShellCmd_Net INTERFACE)
