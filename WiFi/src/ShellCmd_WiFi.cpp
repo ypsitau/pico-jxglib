@@ -79,16 +79,47 @@ ShellCmd(wifi, "controls WiFi")
 			wifi.Deinit();
 		} else if (::strcasecmp(subcmd, "scan") == 0) {
 			wifi.Scan(tout);
+		} else if (::strcasecmp(subcmd, "static") == 0) {
+			const char* strAddr = nullptr;
+			const char* strNetmask = nullptr;
+			const char* strGateway = nullptr;
+			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
+				const char* subcmd = pSubcmdChild->GetProc();
+				if (Arg::GetAssigned(subcmd, "addr", &value)) {
+					strAddr = value;
+				} else if (Arg::GetAssigned(subcmd, "netmask", &value)) {
+					strNetmask = value;
+				} else if (Arg::GetAssigned(subcmd, "gateway", &value)) {
+					strGateway = value;
+				} else {
+					terr.Printf("Unknown option: %s\n", subcmd);
+					return Result::Error;
+				}
+			}
+			if (strAddr && strNetmask && strGateway) {
+				ip4_addr_t addr, netmask, gateway;
+				if (!::ip4addr_aton(strAddr, &addr)) {
+					terr.Printf("Invalid IP address: %s\n", strAddr);
+					return Result::Error;
+				}
+				if (!::ip4addr_aton(strNetmask, &netmask)) {
+					terr.Printf("Invalid netmask: %s\n", strNetmask);
+					return Result::Error;
+				}
+				if (!::ip4addr_aton(strGateway, &gateway)) {
+					terr.Printf("Invalid gateway: %s\n", strGateway);
+					return Result::Error;
+				}
+				wifi.SetStatic(addr, netmask, gateway);
+			} else if (strAddr || strNetmask || strGateway) {
+				terr.Printf("addr, netmask and gateway must be specified together\n");
+				return Result::Error;
+			}
 		} else if (::strcasecmp(subcmd, "connect") == 0) {
 			const char* ssid = nullptr;
 			const uint8_t* bssid = nullptr;
 			const char* password = nullptr;
 			uint32_t auth = CYW43_AUTH_WPA2_AES_PSK;
-			//CYW43_AUTH_WPA_TKIP_PSK
-			//CYW43_AUTH_WPA2_AES_PSK
-			//CYW43_AUTH_WPA2_MIXED_PSK
-			//CYW43_AUTH_WPA3_SAE_AES_PSK
-			//CYW43_AUTH_WPA3_WPA2_AES_PSK
 			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
 				const char* subcmd = pSubcmdChild->GetProc();
 				if (Arg::GetAssigned(subcmd, "ssid", &value)) {
@@ -97,6 +128,22 @@ ShellCmd(wifi, "controls WiFi")
 					//bssid = value;
 				} else if (Arg::GetAssigned(subcmd, "password", &value)) {
 					password = value;
+				} else if (Arg::GetAssigned(subcmd, "auth", &value)) {
+					if (::strcasecmp(value, "WPA2") == 0) {
+						auth = CYW43_AUTH_WPA2_AES_PSK;
+					} else if (::strcasecmp(value, "WPA") == 0) {
+						auth = CYW43_AUTH_WPA_TKIP_PSK;
+					} else if (::strcasecmp(value, "WPA3") == 0) {
+						auth = CYW43_AUTH_WPA3_SAE_AES_PSK;
+					} else if (::strcasecmp(value, "WPA2/WPA3") == 0 ||
+								::strcasecmp(value, "WPA2+WPA3") == 0) {
+						auth = CYW43_AUTH_WPA3_WPA2_AES_PSK;
+					} else if (::strcasecmp(value, "OPEN") == 0) {
+						auth = CYW43_AUTH_OPEN;
+					} else {
+						terr.Printf("Invalid auth: %s\n", value);
+						return Result::Error;
+					}
 				} else {
 					terr.Printf("Unknown option: %s\n", subcmd);
 					return Result::Error;
@@ -114,7 +161,7 @@ ShellCmd(wifi, "controls WiFi")
 			int status = wifi.Connect(tout, ssid, bssid, password, auth);
 			if (status == CYW43_LINK_UP) {
 				char bufIPAddr[16], bufMask[16], bufGateway[16];
-				terr.Printf("Connected IP:%s Mask:%s Gateway:%s\n",
+				terr.Printf("Connected addr:%s netmask:%s gateway:%s\n",
 						WiFi::GetIPAddrStr(bufIPAddr, sizeof(bufIPAddr)),
 						WiFi::GetNetmaskStr(bufMask, sizeof(bufMask)),
 						WiFi::GetGatewayStr(bufGateway, sizeof(bufGateway)));

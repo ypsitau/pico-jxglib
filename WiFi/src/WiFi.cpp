@@ -8,8 +8,17 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // WiFi
 //------------------------------------------------------------------------------
-WiFi::WiFi(uint32_t country) : country_(country), initializedFlag_(false), connectedFlag_{false}, polling_(*this)
+WiFi::WiFi(uint32_t country) : country_(country), initializedFlag_(false), connectedFlag_{false}, polling_(*this), static_{false}
 {
+}
+
+WiFi& WiFi::SetStatic(const ip4_addr_t& addr, const ip4_addr_t& netmask, const ip4_addr_t& gateway)
+{
+	static_.validFlag = true;
+	static_.addr = addr;
+	static_.netmask = netmask;
+	static_.gw = gateway;
+	return *this;
 }
 
 bool WiFi::InitAsStation()
@@ -17,6 +26,10 @@ bool WiFi::InitAsStation()
 	if (initializedFlag_) return true;
 	if (::cyw43_arch_init_with_country(country_) != 0) return false;
 	::cyw43_arch_enable_sta_mode();
+	if (static_.validFlag) {
+		::dhcp_stop(netif_default);
+		::netif_set_addr(netif_default, &static_.addr, &static_.netmask, &static_.gw);
+	}
 	initializedFlag_ = true;
 	return true;
 }
@@ -26,6 +39,10 @@ bool WiFi::InitAsAccessPoint(const char* ssid, const char* password, uint32_t au
 	if (initializedFlag_) return true;
 	if (::cyw43_arch_init_with_country(country_) != 0) return false;
 	::cyw43_arch_enable_ap_mode(ssid, password, auth);
+	if (static_.validFlag) {
+		::dhcp_stop(netif_default);
+		::netif_set_addr(netif_default, &static_.addr, &static_.netmask, &static_.gw);
+	}
 	initializedFlag_ = true;
 	return true;
 }

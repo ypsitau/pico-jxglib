@@ -28,9 +28,16 @@ private:
 	bool initializedFlag_;
 	bool connectedFlag_;
 	Polling polling_;
+	struct Static {
+		bool validFlag;
+		ip4_addr_t addr;
+		ip4_addr_t netmask;
+		ip4_addr_t gw;
+	} static_;
 public:
 	WiFi(uint32_t country = PICO_CYW43_ARCH_DEFAULT_COUNTRY_CODE);
 public:
+	WiFi& SetStatic(const ip4_addr_t& addr, const ip4_addr_t& netmask, const ip4_addr_t& gateway);
 	bool InitAsStation();
 	bool InitAsAccessPoint(const char* ssid, const char* password, uint32_t auth = CYW43_AUTH_WPA2_AES_PSK);
 	void Deinit();
