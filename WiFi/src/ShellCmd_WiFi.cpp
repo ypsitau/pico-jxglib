@@ -2,8 +2,6 @@
 // ShellCmd_WiFi.cpp
 //==============================================================================
 #include "jxglib/WiFi.h"
-#include "jxglib/Common.h"
-#include "jxglib/Serial.h"
 #include "jxglib/Shell.h"
 
 jxglib::WiFi& ShellCmd_WiFi_GetWiFi();
