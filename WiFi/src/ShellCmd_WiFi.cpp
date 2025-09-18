@@ -127,7 +127,8 @@ ShellCmd(wifi, "controls WiFi")
 			char ssid[33] = {0};
 			char password[65] = {0};
 			const uint8_t* bssid = nullptr;
-			uint32_t auth = CYW43_AUTH_WPA2_AES_PSK;
+			//uint32_t auth = CYW43_AUTH_WPA2_AES_PSK;
+			uint32_t auth = CYW43_AUTH_WPA2_MIXED_PSK;
 			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
 				const char* subcmd = pSubcmdChild->GetProc();
 				if (Arg::GetAssigned(subcmd, "ssid", &value)) {

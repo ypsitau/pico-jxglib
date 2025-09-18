@@ -27,10 +27,6 @@ bool WiFi::InitAsStation()
 	if (initializedFlag_) return true;
 	if (::cyw43_arch_init_with_country(country_) != 0) return false;
 	::cyw43_arch_enable_sta_mode();
-	if (connectInfo_.staticFlag) {
-		::dhcp_stop(netif_default);
-		::netif_set_addr(netif_default, &connectInfo_.addr, &connectInfo_.netmask, &connectInfo_.gateway);
-	}
 	initializedFlag_ = true;
 	return true;
 }
@@ -40,10 +36,6 @@ bool WiFi::InitAsAccessPoint(const char* ssid, const char* password, uint32_t au
 	if (initializedFlag_) return true;
 	if (::cyw43_arch_init_with_country(country_) != 0) return false;
 	::cyw43_arch_enable_ap_mode(ssid, password, auth);
-	if (connectInfo_.staticFlag) {
-		::dhcp_stop(netif_default);
-		::netif_set_addr(netif_default, &connectInfo_.addr, &connectInfo_.netmask, &connectInfo_.gateway);
-	}
 	initializedFlag_ = true;
 	return true;
 }
@@ -82,6 +74,10 @@ int WiFi::Connect(const char* ssid, const uint8_t* bssid, const char* password, 
 	int& linkStat = connectInfo_.linkStat;
 	linkStat = CYW43_LINK_FAIL;
 	if (!InitAsStation()) return linkStat;
+	if (connectInfo_.staticFlag) {
+		::dhcp_stop(cyw43_state.netif);
+		::netif_set_addr(cyw43_state.netif, &connectInfo_.addr, &connectInfo_.netmask, &connectInfo_.gateway);
+	}
 	if (::cyw43_arch_wifi_connect_bssid_async(ssid, bssid, password, auth) != 0) return linkStat;
 	::snprintf(connectInfo_.ssid, sizeof(connectInfo_.ssid), "%s", ssid);
 	connectInfo_.auth = auth;
@@ -94,9 +90,9 @@ int WiFi::Connect(const char* ssid, const uint8_t* bssid, const char* password, 
 		} else if (linkStat == CYW43_LINK_NOIP) {
 			// nothing to do
 		} else if (linkStat == CYW43_LINK_UP) {
-			connectInfo_.addr = *netif_ip_addr4(netif_default);
-			connectInfo_.netmask = *netif_ip_netmask4(netif_default);
-			connectInfo_.gateway = *netif_ip_gw4(netif_default);
+			connectInfo_.addr = *netif_ip_addr4(cyw43_state.netif);
+			connectInfo_.netmask = *netif_ip_netmask4(cyw43_state.netif);
+			connectInfo_.gateway = *netif_ip_gw4(cyw43_state.netif);
 			break;
 		} else if (linkStat == CYW43_LINK_FAIL) {
 			break;
