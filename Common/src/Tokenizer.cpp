@@ -303,4 +303,15 @@ bool Tokenizer::InsertChar(char* str, int bytesStr, char* p)
 	return true;
 }
 
+void Tokenizer::RemoveSurroundingQuotes(char* token)
+{
+	int len = ::strlen(token);
+	if (len < 2) return;
+	char chFirst = token[0];
+	if ((chFirst == '"' || chFirst == '\'') && token[len - 1] == chFirst) {
+		token[len - 1] = '\0';
+		::memmove(token, token + 1, len - 2 + 1);
+	}
+}
+
 }

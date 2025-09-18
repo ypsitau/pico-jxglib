@@ -25,8 +25,14 @@ ShellCmd(wifi, "controls WiFi")
 		tout.Printf("  init[:type]          initialize WiFi module (type:station|access_point, default:station)\n");
 		tout.Printf("  deinit               deinitialize WiFi module\n");
 		tout.Printf("  scan                 scan for WiFi networks\n");
-		tout.Printf("  connect {ssid:SSID password:PASSWORD}\n");
+		tout.Printf("  static {addr:ADDR netmask:NETMASK gateway:GATEWAY}\n");
+		tout.Printf("                       set static IP configuration\n");
+		tout.Printf("  connect {ssid:SSID password:PASSWORD [auth:AUTH]}\n");
 		tout.Printf("                       connect to a WiFi network\n");
+		return Result::Success;
+	}
+	if (argc < 2) {
+		WiFi::PrintConnectInfo(tout, wifi.GetConnectInfo());
 		return Result::Success;
 	}
 	Shell::Arg::EachSubcmd each(argv[1], argv[argc]);
@@ -40,7 +46,7 @@ ShellCmd(wifi, "controls WiFi")
 		if (Arg::GetAssigned(subcmd, "init", &value)) {
 			if (!value || ::strcasecmp(value, "station") == 0 || ::strcasecmp(value, "sta") == 0){
 				if (!wifi.InitAsStation()) {
-					printf("failed to initialise WiFi module\n");
+					printf("Failed to initialise WiFi module\n");
 					return Result::Error;
 				}
 			} else if (::strcasecmp(value, "access_point") == 0 || ::strcasecmp(value, "ap") == 0) {
@@ -68,7 +74,7 @@ ShellCmd(wifi, "controls WiFi")
 					return Result::Error;
 				}
 				if (!wifi.InitAsAccessPoint(ssid, password, auth)) {
-					printf("failed to initialise WiFi module\n");
+					printf("Failed to initialise WiFi module\n");
 					return Result::Error;
 				}
 			} else {
@@ -79,6 +85,8 @@ ShellCmd(wifi, "controls WiFi")
 			wifi.Deinit();
 		} else if (::strcasecmp(subcmd, "scan") == 0) {
 			wifi.Scan(tout);
+		} else if (::strcasecmp(subcmd, "dhcp") == 0) {
+			wifi.SetDHCP();
 		} else if (::strcasecmp(subcmd, "static") == 0) {
 			const char* strAddr = nullptr;
 			const char* strNetmask = nullptr;
@@ -116,31 +124,22 @@ ShellCmd(wifi, "controls WiFi")
 				return Result::Error;
 			}
 		} else if (::strcasecmp(subcmd, "connect") == 0) {
-			const char* ssid = nullptr;
+			char ssid[33] = {0};
+			char password[65] = {0};
 			const uint8_t* bssid = nullptr;
-			const char* password = nullptr;
 			uint32_t auth = CYW43_AUTH_WPA2_AES_PSK;
 			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
 				const char* subcmd = pSubcmdChild->GetProc();
 				if (Arg::GetAssigned(subcmd, "ssid", &value)) {
-					ssid = value;
+					::snprintf(ssid, sizeof(ssid), "%s", value);
+					Tokenizer::RemoveSurroundingQuotes(ssid);
 				} else if (Arg::GetAssigned(subcmd, "bssid", &value)) {
 					//bssid = value;
 				} else if (Arg::GetAssigned(subcmd, "password", &value)) {
-					password = value;
+					::snprintf(password, sizeof(password), "%s", value);
+					Tokenizer::RemoveSurroundingQuotes(password);
 				} else if (Arg::GetAssigned(subcmd, "auth", &value)) {
-					if (::strcasecmp(value, "WPA2") == 0) {
-						auth = CYW43_AUTH_WPA2_AES_PSK;
-					} else if (::strcasecmp(value, "WPA") == 0) {
-						auth = CYW43_AUTH_WPA_TKIP_PSK;
-					} else if (::strcasecmp(value, "WPA3") == 0) {
-						auth = CYW43_AUTH_WPA3_SAE_AES_PSK;
-					} else if (::strcasecmp(value, "WPA2/WPA3") == 0 ||
-								::strcasecmp(value, "WPA2+WPA3") == 0) {
-						auth = CYW43_AUTH_WPA3_WPA2_AES_PSK;
-					} else if (::strcasecmp(value, "OPEN") == 0) {
-						auth = CYW43_AUTH_OPEN;
-					} else {
+					if (!WiFi::StringToAuth(value, &auth)) {
 						terr.Printf("Invalid auth: %s\n", value);
 						return Result::Error;
 					}
@@ -149,33 +148,25 @@ ShellCmd(wifi, "controls WiFi")
 					return Result::Error;
 				}
 			}
-			if (!ssid) {
+			if (ssid[0] == '\0') {
 				terr.Printf("SSID is required for connect\n");
 				return Result::Error;
 			}
-			if (!password) {
+			if (password[0] == '\0') {
 				terr.Printf("Password is required for access_point mode\n");
 				return Result::Error;
 			}
-			//tout.Printf("'%s' '%s'\n", ssid, password);
-			int status = wifi.Connect(tout, ssid, bssid, password, auth);
-			if (status == CYW43_LINK_UP) {
-				char bufIPAddr[16], bufMask[16], bufGateway[16];
-				terr.Printf("Connected addr:%s netmask:%s gateway:%s\n",
-						WiFi::GetIPAddrStr(bufIPAddr, sizeof(bufIPAddr)),
-						WiFi::GetNetmaskStr(bufMask, sizeof(bufMask)),
-						WiFi::GetGatewayStr(bufGateway, sizeof(bufGateway)));
-			} else if (status == CYW43_LINK_FAIL) {
-				terr.Printf("Connection failed\n");
-			} else if (status == CYW43_LINK_NONET) {
-				terr.Printf("No network available\n");
-			} else if (status == CYW43_LINK_BADAUTH) {
-				terr.Printf("Authentication failure\n");
+			int linkStat = wifi.Connect(ssid, bssid, password, auth);
+			if (linkStat == CYW43_LINK_UP) {
+				WiFi::PrintConnectInfo(terr, wifi.GetConnectInfo());
+			} else if (linkStat == CYW43_LINK_BADAUTH) {
+				terr.Printf("Authentication failure for '%s'\n", ssid);
 			} else {
-				terr.Printf("unknown error\n");
+				terr.Printf("Failed to connect to '%s'\n", ssid);
 			}
-		//} else if (::strcasecmp(subcmd, "disconnect") == 0) {
-		//	wifi.Disconnect();
+		} else if (::strcasecmp(subcmd, "disconnect") == 0) {
+			wifi.Disconnect();
+			terr.Printf("Disconnected\n");
 		} else {
 			terr.Printf("Unknown command: %s\n", subcmd);
 			return Result::Error;

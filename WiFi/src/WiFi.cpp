@@ -8,16 +8,17 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // WiFi
 //------------------------------------------------------------------------------
-WiFi::WiFi(uint32_t country) : country_(country), initializedFlag_(false), connectedFlag_{false}, polling_(*this), static_{false}
+WiFi::WiFi(uint32_t country) : country_(country), initializedFlag_(false), polling_(*this),
+	connectInfo_{CYW43_LINK_DOWN, false, "", CYW43_AUTH_OPEN, {0}, {0}, {0}}
 {
 }
 
 WiFi& WiFi::SetStatic(const ip4_addr_t& addr, const ip4_addr_t& netmask, const ip4_addr_t& gateway)
 {
-	static_.validFlag = true;
-	static_.addr = addr;
-	static_.netmask = netmask;
-	static_.gw = gateway;
+	connectInfo_.staticFlag = true;
+	connectInfo_.addr = addr;
+	connectInfo_.netmask = netmask;
+	connectInfo_.gateway = gateway;
 	return *this;
 }
 
@@ -26,9 +27,9 @@ bool WiFi::InitAsStation()
 	if (initializedFlag_) return true;
 	if (::cyw43_arch_init_with_country(country_) != 0) return false;
 	::cyw43_arch_enable_sta_mode();
-	if (static_.validFlag) {
+	if (connectInfo_.staticFlag) {
 		::dhcp_stop(netif_default);
-		::netif_set_addr(netif_default, &static_.addr, &static_.netmask, &static_.gw);
+		::netif_set_addr(netif_default, &connectInfo_.addr, &connectInfo_.netmask, &connectInfo_.gateway);
 	}
 	initializedFlag_ = true;
 	return true;
@@ -39,9 +40,9 @@ bool WiFi::InitAsAccessPoint(const char* ssid, const char* password, uint32_t au
 	if (initializedFlag_) return true;
 	if (::cyw43_arch_init_with_country(country_) != 0) return false;
 	::cyw43_arch_enable_ap_mode(ssid, password, auth);
-	if (static_.validFlag) {
+	if (connectInfo_.staticFlag) {
 		::dhcp_stop(netif_default);
-		::netif_set_addr(netif_default, &static_.addr, &static_.netmask, &static_.gw);
+		::netif_set_addr(netif_default, &connectInfo_.addr, &connectInfo_.netmask, &connectInfo_.gateway);
 	}
 	initializedFlag_ = true;
 	return true;
@@ -72,50 +73,99 @@ void WiFi::Scan(Printable& tout)
 	cyw43_wifi_scan_options_t scan_options = {0};
 	if (!InitAsStation()) return;
 	if (::cyw43_wifi_scan(&cyw43_state, &scan_options, &tout, result_cb) == 0) {
-		while (::cyw43_wifi_scan_active(&cyw43_state)) {
-			Tickable::Tick();
-		}
+		while (::cyw43_wifi_scan_active(&cyw43_state)) Tickable::Tick();
 	}
 }
 
-int WiFi::Connect(Printable& tout, const char* ssid, const uint8_t* bssid, const char* password, uint32_t auth)
+int WiFi::Connect(const char* ssid, const uint8_t* bssid, const char* password, uint32_t auth)
 {
-	int status = CYW43_LINK_FAIL;
-	if (!InitAsStation()) return status;
-	if (::cyw43_arch_wifi_connect_bssid_async(ssid, bssid, password, auth) != 0) return status;
+	int& linkStat = connectInfo_.linkStat;
+	linkStat = CYW43_LINK_FAIL;
+	if (!InitAsStation()) return linkStat;
+	if (::cyw43_arch_wifi_connect_bssid_async(ssid, bssid, password, auth) != 0) return linkStat;
+	::snprintf(connectInfo_.ssid, sizeof(connectInfo_.ssid), "%s", ssid);
+	connectInfo_.auth = auth;
 	for (;;) {
-		status = ::cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA);
-		if (status == CYW43_LINK_DOWN) {
+		linkStat = ::cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA);
+		if (linkStat == CYW43_LINK_DOWN) {
 			// nothing to do
-		} else if (status == CYW43_LINK_JOIN) {
+		} else if (linkStat == CYW43_LINK_JOIN) {
 			// nothing to do
-		} else if (status == CYW43_LINK_NOIP) {
+		} else if (linkStat == CYW43_LINK_NOIP) {
 			// nothing to do
-		} else if (status == CYW43_LINK_UP) {
-			connectedFlag_ = true;
+		} else if (linkStat == CYW43_LINK_UP) {
+			connectInfo_.addr = *netif_ip_addr4(netif_default);
+			connectInfo_.netmask = *netif_ip_netmask4(netif_default);
+			connectInfo_.gateway = *netif_ip_gw4(netif_default);
 			break;
-		} else if (status == CYW43_LINK_FAIL) {
+		} else if (linkStat == CYW43_LINK_FAIL) {
 			break;
-		} else if (status == CYW43_LINK_NONET) {
+		} else if (linkStat == CYW43_LINK_NONET) {
 			break;
-		} else if (status == CYW43_LINK_BADAUTH) {
+		} else if (linkStat == CYW43_LINK_BADAUTH) {
 			break;
 		} else {
 			break;
 		}
 		if (Tickable::Sleep(100)) break;
 	}
-	return status;
+	return linkStat;
 }
 
 void WiFi::Disconnect()
 {
-	::cyw43_arch_disable_ap_mode();
-	::cyw43_arch_deinit();
-	initializedFlag_ = false;
-	connectedFlag_ = false;
+	::cyw43_wifi_leave(&cyw43_state, CYW43_ITF_STA);
+	connectInfo_.linkStat = CYW43_LINK_DOWN;
 }
 
+void WiFi::PrintConnectInfo(Printable& tout, const ConnectInfo& connectInfo)
+{
+	if (connectInfo.linkStat == CYW43_LINK_UP) {
+		char strAddr[16], strNetmask[16], strGateway[16];
+		tout.Printf("Connected {ssid:'%s' auth:%s} %s {addr:%s netmask:%s gateway:%s}\n",
+			connectInfo.ssid[0]? connectInfo.ssid : "(none)",
+			AuthToString(connectInfo.auth),
+			connectInfo.staticFlag? "static" : "dhcp",
+			::ip4addr_ntoa_r(&connectInfo.addr, strAddr, sizeof(strAddr)),
+			::ip4addr_ntoa_r(&connectInfo.netmask, strNetmask, sizeof(strNetmask)),
+			::ip4addr_ntoa_r(&connectInfo.gateway, strGateway, sizeof(strGateway)));
+	} else {
+		tout.Printf("Not connected\n");
+	}
+}
+
+bool WiFi::StringToAuth(const char* str, uint32_t* pAuth)
+{
+	if (::strcasecmp(str, "wpa") == 0) {
+		*pAuth = CYW43_AUTH_WPA_TKIP_PSK;
+	} else if (::strcasecmp(str, "wpa2") == 0) {
+		*pAuth = CYW43_AUTH_WPA2_AES_PSK;
+	} else if (::strcasecmp(str, "wpa3") == 0) {
+		*pAuth = CYW43_AUTH_WPA3_SAE_AES_PSK;
+	} else if (::strcasecmp(str, "wpa/wpa2") == 0 || ::strcasecmp(str, "wpa+wpa2") == 0) {
+		*pAuth = CYW43_AUTH_WPA2_MIXED_PSK;
+	} else if (::strcasecmp(str, "wpa2/wpa3") == 0 || ::strcasecmp(str, "wpa2+wpa3") == 0) {
+		*pAuth = CYW43_AUTH_WPA3_WPA2_AES_PSK;
+	} else if (::strcasecmp(str, "open") == 0) {
+		*pAuth = CYW43_AUTH_OPEN;
+	} else {
+		return false;
+	}
+	return true;
+}
+
+const char* WiFi::AuthToString(uint32_t auth)
+{
+	switch (auth) {
+	case CYW43_AUTH_WPA_TKIP_PSK: return "wpa";
+	case CYW43_AUTH_WPA2_AES_PSK: return "wpa2";
+	case CYW43_AUTH_WPA3_SAE_AES_PSK: return "wpa3";
+	case CYW43_AUTH_WPA2_MIXED_PSK: return "wpa/wpa2";
+	case CYW43_AUTH_WPA3_WPA2_AES_PSK: return "wpa2/wpa3";
+	case CYW43_AUTH_OPEN: return "open";
+	default: return "unknown";
+	}
+}
 
 //------------------------------------------------------------------------------
 // WiFi::Polling

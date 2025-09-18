@@ -30,6 +30,7 @@ private:
 	static bool InsertChar(char* str, int bytesStr, char* p);
 public:
 	static bool IsQuoted(const char* str, const char* token) { return (token > str) && token[-1] == '"'; }
+	static void RemoveSurroundingQuotes(char* token);
 };
 
 }
