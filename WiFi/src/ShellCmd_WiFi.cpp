@@ -60,6 +60,11 @@ ShellCmd(wifi, "controls WiFi")
 						ssid = value;
 					} else if (Arg::GetAssigned(subcmd, "password", &value)) {
 						password = value;
+					} else if (Arg::GetAssigned(subcmd, "auth", &value)) {
+						if (!WiFi::StringToAuth(value, &auth)) {
+							terr.Printf("Invalid auth: %s\n", value);
+							return Result::Error;
+						}
 					} else {
 						terr.Printf("Unknown option: %s\n", subcmd);
 						return Result::Error;
