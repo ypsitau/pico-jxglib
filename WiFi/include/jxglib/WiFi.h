@@ -44,8 +44,7 @@ public:
 	WiFi& Configure(const ip4_addr_t& addr, const ip4_addr_t& netmask, const ip4_addr_t& gateway);
 	void Disconnect();
 public:
-	void PrintConnectInfo(Printable& tout) const { PrintConnectInfo(tout, connectInfo_); }
-	static void PrintConnectInfo(Printable& tout, const ConnectInfo& connectInfo);
+	void PrintStatus(Printable& tout) const;
 	static bool StringToAuth(const char* str, uint32_t* pAuth);
 	static const char* AuthToString(uint32_t auth);
 public:

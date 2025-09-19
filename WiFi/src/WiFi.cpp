@@ -102,14 +102,14 @@ void WiFi::Disconnect()
 	::cyw43_wifi_leave(&cyw43_state, CYW43_ITF_STA);
 }
 
-void WiFi::PrintConnectInfo(Printable& tout, const ConnectInfo& connectInfo)
+void WiFi::PrintStatus(Printable& tout) const
 {
 	int linkStat = ::cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA);
 	if (linkStat == CYW43_LINK_UP) {
 		char strAddr[16], strNetmask[16], strGateway[16];
 		tout.Printf("Connected ssid:'%s' auth:%s addr:%s netmask:%s gateway:%s\n",
-			connectInfo.ssid[0]? connectInfo.ssid : "(none)",
-			AuthToString(connectInfo.auth),
+			connectInfo_.ssid[0]? connectInfo_.ssid : "(none)",
+			AuthToString(connectInfo_.auth),
 			::ip4addr_ntoa_r(&GetAddr(), strAddr, sizeof(strAddr)),
 			::ip4addr_ntoa_r(&GetNetmask(), strNetmask, sizeof(strNetmask)),
 			::ip4addr_ntoa_r(&GetGateway(), strGateway, sizeof(strGateway)));

@@ -32,7 +32,7 @@ ShellCmd(wifi, "controls WiFi")
 		return Result::Success;
 	}
 	if (argc < 2) {
-		WiFi::PrintConnectInfo(tout, wifi.GetConnectInfo());
+		wifi.PrintStatus(tout);
 		return Result::Success;
 	}
 	Shell::Arg::EachSubcmd each(argv[1], argv[argc]);
@@ -168,7 +168,7 @@ ShellCmd(wifi, "controls WiFi")
 			return Result::Error;
 		}
 	}
-	if (printConnectInfoFlag) wifi.PrintConnectInfo(terr);
+	if (printConnectInfoFlag) wifi.PrintStatus(terr);
 	return Result::Success;
 }
 
