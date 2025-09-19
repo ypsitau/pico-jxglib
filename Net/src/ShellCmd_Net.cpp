@@ -38,11 +38,12 @@ ShellCmd(ntp, "requests time from NTP server")
 		return Result::Success;
 	}
 	DateTime dt;
-	if (Net::NTP().GetTime(dt)) {
+	Net::NTP ntp;
+	if (ntp.GetTime(dt)) {
 		tout.Printf("NTP time: %04d-%02d-%02d %02d:%02d:%02d\n",
 				dt.year, dt.month, dt.day, dt.hour, dt.min, dt.sec);
 	} else {
-		tout.Printf("NTP request failed\n");
+		tout.Printf("NTP request failed: %s\n", ntp.GetErrorMsg());
 	}
 	return Result::Success;
 }

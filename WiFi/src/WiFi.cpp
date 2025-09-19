@@ -9,17 +9,8 @@ namespace jxglib {
 // WiFi
 //------------------------------------------------------------------------------
 WiFi::WiFi(uint32_t country) : country_(country), initializedFlag_(false), polling_(*this),
-	connectInfo_{CYW43_LINK_DOWN, false, "", CYW43_AUTH_OPEN, {0}, {0}, {0}}
+		connectInfo_{"", CYW43_AUTH_OPEN}
 {
-}
-
-WiFi& WiFi::SetStatic(const ip4_addr_t& addr, const ip4_addr_t& netmask, const ip4_addr_t& gateway)
-{
-	connectInfo_.staticFlag = true;
-	connectInfo_.addr = addr;
-	connectInfo_.netmask = netmask;
-	connectInfo_.gateway = gateway;
-	return *this;
 }
 
 bool WiFi::InitAsStation()
@@ -71,13 +62,8 @@ void WiFi::Scan(Printable& tout)
 
 int WiFi::Connect(const char* ssid, const uint8_t* bssid, const char* password, uint32_t auth)
 {
-	int& linkStat = connectInfo_.linkStat;
-	linkStat = CYW43_LINK_FAIL;
+	int linkStat = CYW43_LINK_FAIL;
 	if (!InitAsStation()) return linkStat;
-	if (connectInfo_.staticFlag) {
-		::dhcp_stop(cyw43_state.netif);
-		::netif_set_addr(cyw43_state.netif, &connectInfo_.addr, &connectInfo_.netmask, &connectInfo_.gateway);
-	}
 	if (::cyw43_arch_wifi_connect_bssid_async(ssid, bssid, password, auth) != 0) return linkStat;
 	::snprintf(connectInfo_.ssid, sizeof(connectInfo_.ssid), "%s", ssid);
 	connectInfo_.auth = auth;
@@ -90,9 +76,6 @@ int WiFi::Connect(const char* ssid, const uint8_t* bssid, const char* password, 
 		} else if (linkStat == CYW43_LINK_NOIP) {
 			// nothing to do
 		} else if (linkStat == CYW43_LINK_UP) {
-			connectInfo_.addr = *netif_ip_addr4(cyw43_state.netif);
-			connectInfo_.netmask = *netif_ip_netmask4(cyw43_state.netif);
-			connectInfo_.gateway = *netif_ip_gw4(cyw43_state.netif);
 			break;
 		} else if (linkStat == CYW43_LINK_FAIL) {
 			break;
@@ -108,23 +91,28 @@ int WiFi::Connect(const char* ssid, const uint8_t* bssid, const char* password, 
 	return linkStat;
 }
 
+WiFi& WiFi::Configure(const ip4_addr_t& addr, const ip4_addr_t& netmask, const ip4_addr_t& gateway)
+{
+	::netif_set_addr(cyw43_state.netif, &addr, &netmask, &gateway);
+	return *this;
+}
+
 void WiFi::Disconnect()
 {
 	::cyw43_wifi_leave(&cyw43_state, CYW43_ITF_STA);
-	connectInfo_.linkStat = CYW43_LINK_DOWN;
 }
 
 void WiFi::PrintConnectInfo(Printable& tout, const ConnectInfo& connectInfo)
 {
-	if (connectInfo.linkStat == CYW43_LINK_UP) {
+	int linkStat = ::cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA);
+	if (linkStat == CYW43_LINK_UP) {
 		char strAddr[16], strNetmask[16], strGateway[16];
-		tout.Printf("Connected {ssid:'%s' auth:%s} %s {addr:%s netmask:%s gateway:%s}\n",
+		tout.Printf("Connected ssid:'%s' auth:%s addr:%s netmask:%s gateway:%s\n",
 			connectInfo.ssid[0]? connectInfo.ssid : "(none)",
 			AuthToString(connectInfo.auth),
-			connectInfo.staticFlag? "static" : "dhcp",
-			::ip4addr_ntoa_r(&connectInfo.addr, strAddr, sizeof(strAddr)),
-			::ip4addr_ntoa_r(&connectInfo.netmask, strNetmask, sizeof(strNetmask)),
-			::ip4addr_ntoa_r(&connectInfo.gateway, strGateway, sizeof(strGateway)));
+			::ip4addr_ntoa_r(&GetAddr(), strAddr, sizeof(strAddr)),
+			::ip4addr_ntoa_r(&GetNetmask(), strNetmask, sizeof(strNetmask)),
+			::ip4addr_ntoa_r(&GetGateway(), strGateway, sizeof(strGateway)));
 	} else {
 		tout.Printf("Not connected\n");
 	}

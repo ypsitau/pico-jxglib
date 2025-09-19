@@ -25,10 +25,10 @@ ShellCmd(wifi, "controls WiFi")
 		tout.Printf("  init[:type]          initialize WiFi module (type:station|access_point, default:station)\n");
 		tout.Printf("  deinit               deinitialize WiFi module\n");
 		tout.Printf("  scan                 scan for WiFi networks\n");
-		tout.Printf("  static {addr:ADDR netmask:NETMASK gateway:GATEWAY}\n");
-		tout.Printf("                       set static IP configuration\n");
 		tout.Printf("  connect {ssid:SSID password:PASSWORD [auth:AUTH]}\n");
 		tout.Printf("                       connect to a WiFi network\n");
+		tout.Printf("  config {[addr:ADDR] [netmask:NETMASK] [gateway:GATEWAY]}\n");
+		tout.Printf("                       modify IP configuration\n");
 		return Result::Success;
 	}
 	if (argc < 2) {
@@ -40,6 +40,7 @@ ShellCmd(wifi, "controls WiFi")
 		terr.Printf("%s\n", each.GetErrorMsg());
 		return Result::Error;
 	}
+	bool printConnectInfoFlag = false;
 	while (const Arg::Subcmd* pSubcmd = each.NextSubcmd()) {
 		const char* subcmd = pSubcmd->GetProc();
 		const char* value;
@@ -63,7 +64,6 @@ ShellCmd(wifi, "controls WiFi")
 						terr.Printf("Unknown option: %s\n", subcmd);
 						return Result::Error;
 					}
-					
 				}
 				if (!ssid) {
 					terr.Printf("SSID is required for access_point mode\n");
@@ -85,44 +85,6 @@ ShellCmd(wifi, "controls WiFi")
 			wifi.Deinit();
 		} else if (::strcasecmp(subcmd, "scan") == 0) {
 			wifi.Scan(tout);
-		} else if (::strcasecmp(subcmd, "dhcp") == 0) {
-			wifi.SetDHCP();
-		} else if (::strcasecmp(subcmd, "static") == 0) {
-			const char* strAddr = nullptr;
-			const char* strNetmask = nullptr;
-			const char* strGateway = nullptr;
-			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
-				const char* subcmd = pSubcmdChild->GetProc();
-				if (Arg::GetAssigned(subcmd, "addr", &value)) {
-					strAddr = value;
-				} else if (Arg::GetAssigned(subcmd, "netmask", &value)) {
-					strNetmask = value;
-				} else if (Arg::GetAssigned(subcmd, "gateway", &value)) {
-					strGateway = value;
-				} else {
-					terr.Printf("Unknown option: %s\n", subcmd);
-					return Result::Error;
-				}
-			}
-			if (strAddr && strNetmask && strGateway) {
-				ip4_addr_t addr, netmask, gateway;
-				if (!::ip4addr_aton(strAddr, &addr)) {
-					terr.Printf("Invalid IP address: %s\n", strAddr);
-					return Result::Error;
-				}
-				if (!::ip4addr_aton(strNetmask, &netmask)) {
-					terr.Printf("Invalid netmask: %s\n", strNetmask);
-					return Result::Error;
-				}
-				if (!::ip4addr_aton(strGateway, &gateway)) {
-					terr.Printf("Invalid gateway: %s\n", strGateway);
-					return Result::Error;
-				}
-				wifi.SetStatic(addr, netmask, gateway);
-			} else if (strAddr || strNetmask || strGateway) {
-				terr.Printf("addr, netmask and gateway must be specified together\n");
-				return Result::Error;
-			}
 		} else if (::strcasecmp(subcmd, "connect") == 0) {
 			char ssid[33] = {0};
 			char password[65] = {0};
@@ -159,20 +121,54 @@ ShellCmd(wifi, "controls WiFi")
 			}
 			int linkStat = wifi.Connect(ssid, bssid, password, auth);
 			if (linkStat == CYW43_LINK_UP) {
-				WiFi::PrintConnectInfo(terr, wifi.GetConnectInfo());
+				printConnectInfoFlag = true;
 			} else if (linkStat == CYW43_LINK_BADAUTH) {
 				terr.Printf("Authentication failure for '%s'\n", ssid);
+				printConnectInfoFlag = true;
 			} else {
 				terr.Printf("Failed to connect to '%s'\n", ssid);
 			}
+		} else if (::strcasecmp(subcmd, "config") == 0) {
+			ip4_addr_t addr = wifi.GetAddr();
+			ip4_addr_t netmask = wifi.GetNetmask();
+			ip4_addr_t gateway = wifi.GetGateway();
+			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
+				const char* subcmd = pSubcmdChild->GetProc();
+				if (Arg::GetAssigned(subcmd, "addr", &value)) {
+					if (!::ip4addr_aton(value, &addr)) {
+						terr.Printf("Invalid IP address: %s\n", value);
+						return Result::Error;
+					}
+				} else if (Arg::GetAssigned(subcmd, "netmask", &value)) {
+					if (!::ip4addr_aton(value, &netmask)) {
+						terr.Printf("Invalid netmask: %s\n", value);
+						return Result::Error;
+					}
+				} else if (Arg::GetAssigned(subcmd, "gateway", &value)) {
+					if (!::ip4addr_aton(value, &gateway)) {
+						terr.Printf("Invalid gateway: %s\n", value);
+						return Result::Error;
+					}
+				} else {
+					terr.Printf("Unknown option: %s\n", subcmd);
+					return Result::Error;
+				}
+			}
+			if (ip4_addr_isany_val(addr) ||	ip4_addr_isany_val(netmask) || ip4_addr_isany_val(gateway)) {
+				terr.Printf("addr, netmask and gateway are required for configuration\n");
+				return Result::Error;
+			}
+			wifi.Configure(addr, netmask, gateway);
+			printConnectInfoFlag = true;
 		} else if (::strcasecmp(subcmd, "disconnect") == 0) {
 			wifi.Disconnect();
-			terr.Printf("Disconnected\n");
+			printConnectInfoFlag = true;
 		} else {
 			terr.Printf("Unknown command: %s\n", subcmd);
 			return Result::Error;
 		}
 	}
+	if (printConnectInfoFlag) wifi.PrintConnectInfo(terr);
 	return Result::Success;
 }
 

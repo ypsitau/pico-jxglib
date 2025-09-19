@@ -39,7 +39,7 @@ void DNS::callback_found(const char*hostname, const ip_addr_t* addr, void* arg)
 //------------------------------------------------------------------------------
 // NTP: Network Time Protocol
 //------------------------------------------------------------------------------
-NTP::NTP() : completeFlag_(false), unixtime_(0)
+NTP::NTP() : completeFlag_(false), unixtime_(0), errorMsg_("")
 {
 }
 
@@ -52,20 +52,30 @@ bool NTP::GetTime(DateTime& dt, uint32_t msecTimeout)
 			dt.FromUnixTime(unixtime_);	
 			return true;
 		}
-		if (Tickable::TickSub()) return false;
+		if (Tickable::TickSub()) {
+			errorMsg_ = "user interrupt";
+			return false;
+		}
 	}
+	errorMsg_ = "timeout";
 	return false;
 }
 
 bool NTP::GetTimeAsync()
 {
+	ip_addr_t addr;
+	const uint16_t port = 123; // NTP port
+	if (!Net::DNS().GetHostByName("pool.ntp.org", &addr)) {
+		errorMsg_ = "DNS lookup failed";
+		return false;
+	}
 	completeFlag_ = false;
 	unixtime_ = 0;
-	if (!udpClient_.Initialize(*this)) return false;
-	uint16_t port = 123; // NTP port
+	if (!udpClient_.Initialize(*this)) {
+		errorMsg_ = "UDP client initialization failed";
+		return false;
+	}
 	uint8_t msg[48] = { 0x1b }; // NTP request message
-	ip_addr_t addr;
-	Net::DNS().GetHostByName("pool.ntp.org", &addr);
 	udpClient_.Send(msg, sizeof(msg), addr, port);
 	return true;
 }

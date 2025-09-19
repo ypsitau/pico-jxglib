@@ -34,12 +34,14 @@ private:
 	Net::UDP::Client udpClient_;
 	bool completeFlag_;
 	uint64_t unixtime_;
+	const char* errorMsg_;
 public:
 	NTP();
 public:
 	bool GetTime(DateTime& dt, uint32_t msecTimeout = 3000);
 	bool GetTimeAsync();
 	bool IsComplete() const { return completeFlag_; }
+	const char* GetErrorMsg() const { return errorMsg_; }
 public:
 	void OnRecv(const uint8_t* data, size_t len, const ip_addr_t& addr, uint16_t port) override;
 };
