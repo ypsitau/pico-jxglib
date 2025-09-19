@@ -30,10 +30,9 @@ void DNS::GetHostByNameAsync(const char* hostname)
 
 void DNS::callback_found(const char*hostname, const ip_addr_t* addr, void* arg)
 {
-	DNS* pDNS = static_cast<DNS*>(arg);
-	if (pDNS->completeFlag_ = (addr != nullptr)) {
-		pDNS->addr_ = *addr;
-	}
+	DNS* pDNS = reinterpret_cast<DNS*>(arg);
+	pDNS->completeFlag_ = !!addr;
+	if (pDNS->completeFlag_) pDNS->addr_ = *addr;
 }
 
 //------------------------------------------------------------------------------
