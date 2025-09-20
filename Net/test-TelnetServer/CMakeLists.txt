@@ -48,7 +48,7 @@ pico_enable_stdio_usb(test-TelnetServer 0)
 target_link_libraries(test-TelnetServer
         pico_stdlib
         jxglib_Net_Telnet
-        jxglib_ShellCmd_WiFi)
+        jxglib_ShellCmd_NetUtil)
 
 # Add the standard include files to the build
 target_include_directories(test-TelnetServer PRIVATE

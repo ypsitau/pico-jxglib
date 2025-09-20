@@ -25,7 +25,7 @@ void Common::SetPCB(struct tcp_pcb* pcb)
 bool Common::Send(const void* data, size_t len)
 {
 	if (pcb_ && data && len > 0) {
-		::cyw43_arch_lwip_check();
+		//::cyw43_arch_lwip_check();
 		err_t err = ::tcp_write(pcb_, data, len, TCP_WRITE_FLAG_COPY);
 		if (err == ERR_OK) {
 			::tcp_output(pcb_);
