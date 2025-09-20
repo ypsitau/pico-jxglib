@@ -35,6 +35,7 @@ private:
 	bool completeFlag_;
 	uint64_t unixtime_;
 	const char* errorMsg_;
+	ip_addr_t addr_;
 public:
 	NTP();
 public:
