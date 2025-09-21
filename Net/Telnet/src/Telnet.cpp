@@ -78,7 +78,7 @@ void Server::OnRecv(const uint8_t* data, size_t len)
 		case Stat::Command: {
 			switch (ch) {
 			case Code::SubnegotiationBegin:
-				::printf("SubnegotiationBegin\n");
+				//::printf("SubnegotiationBegin\n");
 				stat_ = Stat::Subnegotiation;
 				break;
 			case Code::DO:
@@ -97,7 +97,7 @@ void Server::OnRecv(const uint8_t* data, size_t len)
 			break;
 		}
 		case Stat::Option: {
-			::printf("Option: %s %s\n", CodeToString(code_), OptionToString(ch));
+			//::printf("Option: %s %s\n", CodeToString(code_), OptionToString(ch));
 			pMark = p + 1;
 			stat_ = Stat::Neutral;
 			break;
@@ -114,7 +114,7 @@ void Server::OnRecv(const uint8_t* data, size_t len)
 		case Stat::Subnegotiation_Command: {
 			switch (ch) {
 			case Code::SubnegotiationEnd: {
-				::printf("SubnegotiationEnd\n");
+				//::printf("SubnegotiationEnd\n");
 				pMark = p + 1;
 				stat_ = Stat::Neutral;
 			}
