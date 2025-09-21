@@ -11,10 +11,10 @@ namespace jxglib {
 // Shell
 //------------------------------------------------------------------------------
 Shell Shell::Instance;
-const char* Shell::StartupScriptName = "/autoexec.sh";
+const char* Shell::StartupScriptName = "/startup.sh";
 const char* Shell::specialTokens_[] = { ">>", "||", ">", "|", ";", "{", "}", "(", ")", "[", "]" };
 
-Shell::Shell() : stat_{Stat::Startup}, pTerminal_{&TerminalDumb::Instance},
+Shell::Shell() : stat_{Stat::Startup}, enableStartupScriptFlag_{true}, pTerminal_{&TerminalDumb::Instance},
 	pCmdRunning_{nullptr}, tokenizer_(specialTokens_, count_of(specialTokens_)), interactiveFlag_{false},
 	breakDetector_(*this)
 {
@@ -25,7 +25,7 @@ bool Shell::Startup()
 {
 	if (stat_ != Stat::Startup) return false;
 	FS::Drive* pDrive = FS::GetDriveCur();
-	if (pDrive && pDrive->IsPrimary()) {
+	if (enableStartupScriptFlag_ && pDrive && pDrive->IsPrimary()) {
 		std::unique_ptr<FS::File> pFileScript(FS::OpenFile(StartupScriptName, "r"));
 		if (pFileScript) {
 			Terminal::ReadableKeyboard tin(GetTerminal());

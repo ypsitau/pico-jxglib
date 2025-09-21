@@ -114,7 +114,7 @@ err_t Server::callback_accept(void* arg, struct tcp_pcb* pcb, err_t err)
 	Server* pServer = reinterpret_cast<Server*>(arg);
 	if (err != ERR_OK || !pcb) return ERR_VAL;
 	pServer->SetPCB(pcb);
-	pServer->GetHandler().OnConnect();
+	pServer->GetHandler().OnConnect(pcb->remote_ip, pcb->remote_port);
 	return ERR_OK;
 }
 

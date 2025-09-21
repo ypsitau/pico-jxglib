@@ -330,6 +330,7 @@ public:
 	enum class Stat { Startup, Begin, Prompt, Running, };
 private:
 	Stat stat_;
+	bool enableStartupScriptFlag_;
 	std::unique_ptr<char[]> banner_;
 	std::unique_ptr<char[]> prompt_;
 	Terminal* pTerminal_;
@@ -354,6 +355,7 @@ public:
 	Dict& GetDict() { return dict_; }
 	bool ExpandEnvVariables(char* line, int bytesLine, const char** errorMsg);
 public:
+	static void EnableStartupScript(bool enableFlag) { Instance.EnableStartupScript_(enableFlag); }
 	static void SetBanner(const char* banner) { Instance.SetBanner_(banner); }
 	static const char* GetBanner() { return Instance.GetBanner_(); }
 	static void SetPrompt(const char* prompt) { Instance.SetPrompt_(prompt); }
@@ -362,6 +364,7 @@ public:
 	static void BeginInteractive() { Instance.BeginInteractive_(); }
 	static void EndInteractive() { Instance.EndInteractive_(); }
 private:
+	void EnableStartupScript_(bool enableFlag) { enableStartupScriptFlag_ = enableFlag; }
 	void SetBanner_(const char* banner) { banner_.reset(new char[::strlen(banner) + 1]); ::strcpy(banner_.get(), banner); }
 	const char* GetBanner_() const { return banner_? banner_.get() : ""; }
 	void SetPrompt_(const char* prompt) { prompt_.reset(new char[::strlen(prompt) + 1]); ::strcpy(prompt_.get(), prompt); }

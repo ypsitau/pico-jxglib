@@ -135,7 +135,7 @@ void Server::OnRecv(const uint8_t* data, size_t len)
 	if (p != pMark) WriteToRecvBuff(pMark, p - pMark);
 }
 
-void Server::OnConnect()
+void Server::OnConnect(const ip_addr_t& addr, uint16_t port)
 {
 	static const uint8_t buffNegotiation[] = {
 		Code::InterpretAsCommand, Code::WILL, Option::Echo,
@@ -145,14 +145,12 @@ void Server::OnConnect()
 		//Code::InterpretAsCommand, Code::DO,   Option::NegotiateAboutWindowSize,
 		//Code::InterpretAsCommand, Code::DO,   Option::TerminalSpeed,
 	};
-	::printf("Telnet::Server::OnConnect()\n");
 	tcpServer_.Send(buffNegotiation, sizeof(buffNegotiation));
-	GetHandler().OnConnect();
+	GetHandler().OnConnect(addr, port);
 }
 
 void Server::OnDisconnect()
 {
-	::printf("Telnet::Server::OnDisconnect()\n");
 	GetHandler().OnDisconnect();
 	tcpServer_.Start();
 }
@@ -194,16 +192,11 @@ bool Stream::Flush()
 
 Printable& Stream::PutChar(char ch)
 {
-	if (addCrFlag_ && chPrev_ != '\r' && ch == '\n') PutCharRaw('\r');
-	PutCharRaw(ch);
+	if (ch != '\r') {
+		if (addCrFlag_ && ch == '\n') PutCharRaw('\r');
+		PutCharRaw(ch);
+	}
 	chPrev_ = ch;
-	return *this;
-}
-
-Printable& Stream::PutCharRaw(char ch)
-{
-	Stream::PutCharRaw(ch);
-	//if (ch == '\n') cdc_write_flush();
 	return *this;
 }
 
@@ -221,7 +214,7 @@ const char* CodeToString(uint8_t code)
 	case Code::AbortOutput:				return "AbortOutput";
 	case Code::AreYouThere:				return "AreYouThere";
 	case Code::EraseCharacter:			return "EraseCharacter";
-	case Code::EraseLine:				return "EraseLine";
+		case Code::EraseLine:				return "EraseLine";
 	case Code::GoAhead:					return "GoAhead";
 	case Code::SubnegotiationBegin:		return "SubnegotiationBegin";
 	case Code::WILL:					return "WILL";

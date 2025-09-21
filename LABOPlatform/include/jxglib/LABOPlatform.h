@@ -71,6 +71,7 @@ void jxglib_tick();
 bool jxglib_ticksub();
 void jxglib_sleep(int msec);
 void jxglib_shellcmd(const char* name, const char* help, int (*func)(int argc, char* argv[]));
+void jxglib_enable_startup_script(bool enableFlag);
 
 #if defined (__cplusplus)
 }

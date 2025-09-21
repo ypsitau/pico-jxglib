@@ -94,7 +94,7 @@ class Handler {
 public:
 	virtual void OnSent(size_t len) {}
 	//virtual void OnRecv(const uint8_t* data, size_t len) {}
-	virtual void OnConnect() {}
+	virtual void OnConnect(const ip_addr_t& addr, uint16_t port) {}
 	virtual void OnDisconnect() {}
 };
 
@@ -118,7 +118,6 @@ public:
 	virtual int Write(const void* buff, int bytesBuff) override;
 	virtual bool Flush() override;
 	virtual Printable& PutChar(char ch) override;
-	virtual Printable& PutCharRaw(char ch) override;
 };
 
 
@@ -136,8 +135,8 @@ public:
 	};
 private:
 	TCP::Server tcpServer_;
-	Handler* pHandler_;
-	Handler handlerDummy_;
+	Telnet::Handler* pHandler_;
+	Telnet::Handler handlerDummy_;
 	Stat stat_;
 	uint8_t code_;
 	FIFOBuff<uint8_t, 1024> buffRecv_;
@@ -145,8 +144,8 @@ public:
 	Server(uint16_t port = 23);
 	~Server();
 public:
-	void SetHandler(Handler& handler) { pHandler_ = &handler; }
-	Handler& GetHandler() { return *pHandler_; }
+	void SetHandler(Telnet::Handler& handler) { pHandler_ = &handler; }
+	Telnet::Handler& GetHandler() { return *pHandler_; }
 public:
 	bool Start();
 	void Stop();
@@ -160,7 +159,7 @@ public:
 	// virtual functions of TCP::Handler
 	void OnSent(size_t len) override;
 	void OnRecv(const uint8_t* data, size_t len) override;
-	void OnConnect() override;
+	void OnConnect(const ip_addr_t& addr, uint16_t port) override;
 	void OnDisconnect() override;
 };
 

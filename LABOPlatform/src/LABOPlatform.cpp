@@ -36,6 +36,11 @@ void jxglib_shellcmd(const char* name, const char* help, int (*func)(int argc, c
 	new Shell::Cmd_CAdaptor(name, help, func);
 }
 
+void jxglib_enable_startup_script(bool enableFlag)
+{
+	Shell::EnableStartupScript(enableFlag);
+}
+
 //------------------------------------------------------------------------------
 // File handlers
 //------------------------------------------------------------------------------

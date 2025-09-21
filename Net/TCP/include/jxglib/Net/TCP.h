@@ -17,7 +17,7 @@ class Handler {
 public:
 	virtual void OnSent(size_t len) {}
 	virtual void OnRecv(const uint8_t* data, size_t len) {}
-	virtual void OnConnect() {}
+	virtual void OnConnect(const ip_addr_t& addr, uint16_t port) {}
 	virtual void OnDisconnect() {}
 };
 
