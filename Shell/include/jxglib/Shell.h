@@ -33,7 +33,8 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 class Shell : public Tickable {
 public:
-	static const char* StartupScriptName;
+	static const char* FileNameStartup;
+	static const char* FileNamePassword;
 public:
 	class BreakDetector : public Tickable {
 	private:
@@ -327,7 +328,7 @@ public:
 		virtual void EndCompletion() override;
 		virtual const char* NextCompletion() override;
 	};
-	enum class Stat { Startup, Begin, Prompt, Running, };
+	enum class Stat { Startup, PromptPassword, Password, PromptCmdLine, CmdLine, Running, };
 private:
 	Stat stat_;
 	bool enableStartupScriptFlag_;

@@ -18,22 +18,15 @@ void Common::SetPCB(struct tcp_pcb* pcb)
 	::tcp_arg(pcb_, this);
 	::tcp_sent(pcb_, callback_sent);
 	::tcp_recv(pcb_, callback_recv);
-	//::tcp_poll(pcb_, callback_poll, POLL_TIME_S * 2);
 	::tcp_err(pcb_, callback_err);
 }
 
 bool Common::Send(const void* data, size_t len)
 {
-	if (pcb_ && data && len > 0) {
-		//::cyw43_arch_lwip_check();
-		err_t err = ::tcp_write(pcb_, data, len, TCP_WRITE_FLAG_COPY);
-		if (err == ERR_OK) {
-			::tcp_output(pcb_);
-		} else {
-			return false;
-		}
-	}
-	return true;
+	Net::lwip_begin();
+	err_t err = ::tcp_write(pcb_, data, len, TCP_WRITE_FLAG_COPY);
+	Net::lwip_end();
+	return err == ERR_OK;
 }
 
 void Common::DiscardPCB()
@@ -73,11 +66,6 @@ err_t Common::callback_recv(void* arg, struct tcp_pcb* pcb, struct pbuf* pbuf, e
 	}
 	::tcp_recved(pcb, pbuf->tot_len);
 	::pbuf_free(pbuf);
-	return ERR_OK;
-}
-
-err_t Common::callback_poll(void* arg, struct tcp_pcb* pcb)
-{
 	return ERR_OK;
 }
 

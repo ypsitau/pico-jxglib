@@ -20,7 +20,7 @@ public:
 	class Decoder {
 	public:
 		enum class Stat {
-			First, Escape,
+			First, AfterCR, Escape,
 			SS2,
 			SS3,
 			DCS,

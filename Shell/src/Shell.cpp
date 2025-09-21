@@ -11,7 +11,8 @@ namespace jxglib {
 // Shell
 //------------------------------------------------------------------------------
 Shell Shell::Instance;
-const char* Shell::StartupScriptName = "/startup.sh";
+const char* Shell::FileNameStartup = "/.startup";
+const char* Shell::FileNamePassword = "/.password";
 const char* Shell::specialTokens_[] = { ">>", "||", ">", "|", ";", "{", "}", "(", ")", "[", "]" };
 
 Shell::Shell() : stat_{Stat::Startup}, enableStartupScriptFlag_{true}, pTerminal_{&TerminalDumb::Instance},
@@ -26,7 +27,7 @@ bool Shell::Startup()
 	if (stat_ != Stat::Startup) return false;
 	FS::Drive* pDrive = FS::GetDriveCur();
 	if (enableStartupScriptFlag_ && pDrive && pDrive->IsPrimary()) {
-		std::unique_ptr<FS::File> pFileScript(FS::OpenFile(StartupScriptName, "r"));
+		std::unique_ptr<FS::File> pFileScript(FS::OpenFile(FileNameStartup, "r"));
 		if (pFileScript) {
 			Terminal::ReadableKeyboard tin(GetTerminal());
 			Printable& tout = GetTerminal();
@@ -34,7 +35,8 @@ bool Shell::Startup()
 			RunScript(tin, tout, terr, *pFileScript);
 		}
 	}
-	stat_ = Stat::Begin;
+	//stat_ = Stat::PromptPassword;
+	stat_ = Stat::PromptCmdLine;
 	return true;
 }
 
@@ -227,13 +229,28 @@ void Shell::OnTick()
 		Startup();
 		break;
 	}
-	case Stat::Begin: {
-		char prompt[256];
-		GetTerminal().ReadLine_Begin(EvalPrompt(prompt, sizeof(prompt)));
-		stat_ = Stat::Prompt;
+	case Stat::PromptPassword: {
+		GetTerminal().ReadLine_Begin("password:");
+		stat_ = Stat::Password;
 		break;
 	}
-	case Stat::Prompt: {
+	case Stat::Password: {
+		char* line = GetTerminal().ReadLine_Process();
+		if (!line) {
+		} else if (::strcmp(line, "hoge") == 0) {
+			stat_ = Stat::PromptCmdLine;
+		} else {
+			stat_ = Stat::PromptPassword;
+		}
+		break;
+	}
+	case Stat::PromptCmdLine: {
+		char prompt[256];
+		GetTerminal().ReadLine_Begin(EvalPrompt(prompt, sizeof(prompt)));
+		stat_ = Stat::CmdLine;
+		break;
+	}
+	case Stat::CmdLine: {
 		char* line = GetTerminal().ReadLine_Process();
 		if (line) {
 			stat_ = Stat::Running;
@@ -241,7 +258,7 @@ void Shell::OnTick()
 			Printable& tout = GetTerminal();
 			Printable& terr = GetTerminal();
 			RunCmd(tin, tout, terr, line, Terminal::EditBuffSize);
-			stat_ = Stat::Begin;
+			stat_ = Stat::PromptCmdLine;
 		}
 		break;
 	}

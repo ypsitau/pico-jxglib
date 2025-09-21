@@ -36,6 +36,7 @@ bool VT100::Decoder::FeedChar(char ch)
 			case 0x0d: {
 				buff_.WriteData(VK_RETURN);
 				rtn = true;
+				stat_ = Stat::AfterCR;
 				break;
 			}
 			case 0x1b: {
@@ -50,6 +51,21 @@ bool VT100::Decoder::FeedChar(char ch)
 			default: {
 				buff_.WriteData(OffsetForAscii + ch);
 				rtn = true;
+				break;
+			}
+			}
+			break;
+		}
+		case Stat::AfterCR: {
+			switch (ch) {
+			case 0x0a: {
+				// ignore LF after CR
+				stat_ = Stat::First;
+				break;
+			}
+			default: {
+				contFlag = true;
+				stat_ = Stat::First;
 				break;
 			}
 			}

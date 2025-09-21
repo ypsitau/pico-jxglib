@@ -50,10 +50,6 @@ int Server::ReadFromRecvBuff(void* buff, int bytesBuff)
 
 int Server::WriteToRecvBuff(const uint8_t* data, size_t len)
 {
-	//Dump(data, len);
-	//tcpServer_.Send(data, len);
-	//return len;
-	//return buffRecv_.WriteBuff(data, len);
 	buffRecv_.WriteBuff(data, len);
 	return len;
 }
@@ -66,7 +62,7 @@ void Server::OnSent(size_t len)
 void Server::OnRecv(const uint8_t* data, size_t len)
 {
 	//::printf("Telnet::Server::OnRecv(len=%d)\n", len);
-	//Dump(data, len);
+	//Stdio::Instance.Dump(data, len);
 	const uint8_t* p = data;
 	const uint8_t* pMark = data;
 	for (size_t i = 0; i < len; i++, p++) {
@@ -141,9 +137,7 @@ void Server::OnConnect(const ip_addr_t& addr, uint16_t port)
 		Code::InterpretAsCommand, Code::WILL, Option::Echo,
 		Code::InterpretAsCommand, Code::WILL, Option::SuppressGoAhead,
 		Code::InterpretAsCommand, Code::DO,   Option::SuppressGoAhead,
-		Code::InterpretAsCommand, Code::DO,   Option::TerminalType,
-		//Code::InterpretAsCommand, Code::DO,   Option::NegotiateAboutWindowSize,
-		//Code::InterpretAsCommand, Code::DO,   Option::TerminalSpeed,
+		//Code::InterpretAsCommand, Code::DO,   Option::TerminalType,
 	};
 	tcpServer_.Send(buffNegotiation, sizeof(buffNegotiation));
 	GetHandler().OnConnect(addr, port);

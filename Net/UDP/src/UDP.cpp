@@ -29,12 +29,12 @@ bool Common::Initialize(Handler& handler)
 
 bool Common::Send(const void* data, size_t len, const ip_addr_t& addr, uint16_t port)
 {
-	::cyw43_arch_lwip_begin();
+	Net::lwip_begin();
 	struct pbuf *pbuf = ::pbuf_alloc(PBUF_TRANSPORT, len, PBUF_RAM);
 	::memcpy(pbuf->payload, data, len);
 	::udp_sendto(pcb_, pbuf, &addr, port);
 	::pbuf_free(pbuf);
-	::cyw43_arch_lwip_end();
+	Net::lwip_end();
 	return true;
 }
 

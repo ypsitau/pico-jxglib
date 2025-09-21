@@ -4,9 +4,7 @@
 #ifndef PICO_JXGLIB_NET_TCP_H
 #define PICO_JXGLIB_NET_TCP_H
 #include "pico/stdlib.h"
-#include "jxglib/WiFi.h"
-#include "lwip/pbuf.h"
-#include "lwip/tcp.h"
+#include "jxglib/Net.h"
 
 namespace jxglib::Net::TCP {
 
@@ -42,7 +40,6 @@ public:
 private:
 	static err_t callback_sent(void* arg, struct tcp_pcb* pcb, u16_t len);
 	static err_t callback_recv(void* arg, struct tcp_pcb* pcb, struct pbuf* pbuf, err_t err);
-	static err_t callback_poll(void* arg, struct tcp_pcb* pcb);
 	static void callback_err(void* arg, err_t err);
 };
 
