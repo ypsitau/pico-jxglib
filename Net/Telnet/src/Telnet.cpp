@@ -50,10 +50,12 @@ int Server::ReadFromRecvBuff(void* buff, int bytesBuff)
 
 int Server::WriteToRecvBuff(const uint8_t* data, size_t len)
 {
-	tcpServer_.Send(data, len);
-	Dump(data, len);
-	return len;
+	//Dump(data, len);
+	//tcpServer_.Send(data, len);
+	//return len;
 	//return buffRecv_.WriteBuff(data, len);
+	buffRecv_.WriteBuff(data, len);
+	return len;
 }
 
 void Server::OnSent(size_t len)
@@ -63,8 +65,8 @@ void Server::OnSent(size_t len)
 
 void Server::OnRecv(const uint8_t* data, size_t len)
 {
-	::printf("Telnet::Server::OnRecv(len=%d)\n", len);
-	Dump(data, len);
+	//::printf("Telnet::Server::OnRecv(len=%d)\n", len);
+	//Dump(data, len);
 	const uint8_t* p = data;
 	const uint8_t* pMark = data;
 	for (size_t i = 0; i < len; i++, p++) {
