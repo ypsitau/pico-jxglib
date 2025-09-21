@@ -9,6 +9,8 @@
 
 namespace jxglib::Net::Telnet {
 
+class Server;
+
 struct Code {
 	static constexpr uint8_t SubnegotiationEnd		= 0xf0;
 	static constexpr uint8_t NoOperation			= 0xf1;
@@ -91,10 +93,34 @@ struct Option {
 class Handler {
 public:
 	virtual void OnSent(size_t len) {}
-	virtual void OnRecv(const uint8_t* data, size_t len) {}
+	//virtual void OnRecv(const uint8_t* data, size_t len) {}
 	virtual void OnConnect() {}
 	virtual void OnDisconnect() {}
 };
+
+//------------------------------------------------------------------------------
+// Stream
+//------------------------------------------------------------------------------
+class Stream : public jxglib::Stream {
+private:
+	char chPrev_;
+	bool addCrFlag_;
+	Server& telnetServer_;
+	VT100::Keyboard keyboard_;
+public:
+	Stream(Server& telnetServer);
+public:
+	Stream& AddCr(bool addCrFlag) { addCrFlag_ = addCrFlag; return* this; }
+	VT100::Keyboard& GetKeyboard() { return keyboard_; }
+public:
+	// virtual functions of Stream
+	virtual int Read(void* buff, int bytesBuff) override;
+	virtual int Write(const void* buff, int bytesBuff) override;
+	virtual bool Flush() override;
+	virtual Printable& PutChar(char ch) override;
+	virtual Printable& PutCharRaw(char ch) override;
+};
+
 
 //------------------------------------------------------------------------------
 // Server
@@ -114,6 +140,7 @@ private:
 	Handler handlerDummy_;
 	Stat stat_;
 	uint8_t code_;
+	FIFOBuff<uint8_t, 1024> buffRecv_;
 public:
 	Server(uint16_t port = 23);
 	~Server();
@@ -121,11 +148,14 @@ public:
 	void SetHandler(Handler& handler) { pHandler_ = &handler; }
 	Handler& GetHandler() { return *pHandler_; }
 public:
-	bool Start(Handler* handler);
+	bool Start();
 	void Stop();
 	bool IsRunning() const;
 	bool Send(const uint8_t* data, size_t len);
 	bool Send(const char* str);
+public:
+	int ReadFromRecvBuff(void* buff, int bytesBuff);
+	int WriteToRecvBuff(const uint8_t* data, size_t len);
 public:
 	// virtual functions of TCP::Handler
 	void OnSent(size_t len) override;
@@ -133,6 +163,9 @@ public:
 	void OnConnect() override;
 	void OnDisconnect() override;
 };
+
+const char* CodeToString(uint8_t code);
+const char* OptionToString(uint8_t option);
 
 }
 

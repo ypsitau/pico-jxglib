@@ -72,6 +72,7 @@ err_t Common::callback_recv(void* arg, struct tcp_pcb* pcb, struct pbuf* pbuf, e
 		lenRest -= lenCopied;
 	}
 	::tcp_recved(pcb, pbuf->tot_len);
+	::pbuf_free(pbuf);
 	return ERR_OK;
 }
 
