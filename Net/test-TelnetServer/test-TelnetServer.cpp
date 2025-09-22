@@ -1,14 +1,13 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/LABOPlatform.h"
-#include "jxglib/WiFi.h"
 #include "jxglib/Net/Telnet.h"
 
 using namespace jxglib;
 
-WiFi wifi;
+Net::WiFi wifi;
 
-WiFi& ShellCmd_WiFi_GetWiFi() { return wifi; }
+Net::WiFi& ShellCmd_Net_GetWiFi() { return wifi; }
 
 Net::Telnet::Server telnetServer;
 Net::Telnet::Stream telnetStream(telnetServer);

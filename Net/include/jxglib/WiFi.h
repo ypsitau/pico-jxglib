@@ -8,10 +8,10 @@
 #include "jxglib/Common.h"
 
 //------------------------------------------------------------------------------
-// WiFi
+// Net::WiFi
 //------------------------------------------------------------------------------
-namespace jxglib {
-	
+namespace jxglib::Net {
+
 class WiFi {
 public:
 	class Polling : public Tickable {
@@ -20,7 +20,7 @@ public:
 	public:
 		Polling(WiFi& wifi) : wifi_(wifi) {}
 	public:
-		virtual const char* GetTickableName() const override { return "WiFi::Polling"; }
+		virtual const char* GetTickableName() const override { return "Net::WiFi::Polling"; }
 		virtual void OnTick() override { wifi_.Poll(); }
 	};
 private:

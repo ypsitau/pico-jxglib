@@ -48,7 +48,7 @@ pico_enable_stdio_usb(test-TCPServer 0)
 target_link_libraries(test-TCPServer
         pico_stdlib
         jxglib_Net_TCP
-        jxglib_ShellCmd_WiFi)
+        jxglib_ShellCmd_NetUtil)
 
 # Add the standard include files to the build
 target_include_directories(test-TCPServer PRIVATE
@@ -59,5 +59,5 @@ pico_add_extra_outputs(test-TCPServer)
 
 target_link_libraries(test-TCPServer jxglib_LABOPlatform_FullCmd)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
-jxglib_configure_WiFi(test-TCPServer)
+jxglib_configure_Net(test-TCPServer)
 jxglib_configure_LABOPlatform(test-TCPServer)

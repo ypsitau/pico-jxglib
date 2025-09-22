@@ -4,7 +4,6 @@
 #ifndef PICO_JXGLIB_NET_TELNET_H
 #define PICO_JXGLIB_NET_TELNET_H
 #include "pico/stdlib.h"
-#include "jxglib/WiFi.h"
 #include "jxglib/Net/TCP.h"
 
 namespace jxglib::Net::Telnet {

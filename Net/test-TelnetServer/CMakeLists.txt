@@ -59,5 +59,5 @@ pico_add_extra_outputs(test-TelnetServer)
 
 target_link_libraries(test-TelnetServer jxglib_LABOPlatform_FullCmd)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
-jxglib_configure_WiFi(test-TelnetServer)
+jxglib_configure_Net(test-TelnetServer)
 jxglib_configure_LABOPlatform(test-TelnetServer)

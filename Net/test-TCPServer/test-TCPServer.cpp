@@ -13,10 +13,10 @@ public:
 	virtual void OnDisconnect();
 };
 
-WiFi wifi;
+Net::WiFi wifi;
 Handler tcpHandler;
 Net::TCP::Server tcpServer(23);
-WiFi& ShellCmd_WiFi_GetWiFi() { return wifi; }
+Net::WiFi& ShellCmd_Net_GetWiFi() { return wifi; }
 
 void Handler::OnRecv(const uint8_t* data, size_t len)
 {
