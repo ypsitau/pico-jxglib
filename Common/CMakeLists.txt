@@ -76,6 +76,7 @@ target_include_directories(jxglib_ShellCmd_Basic INTERFACE
 
 target_link_libraries(jxglib_ShellCmd_Basic INTERFACE
 	jxglib_Shell
+	jxglib_Hash
 	jxglib_BinaryInfo)
 
 target_sources(jxglib_ShellCmd_Basic INTERFACE

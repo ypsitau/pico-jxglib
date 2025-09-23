@@ -121,7 +121,7 @@ void MD5::transform_(const uint8_t block[64])
 	state_[3] += D;
 }
 
-void MD5::Update(const void* data, size_t size)
+void MD5::Put(const void* data, size_t size)
 {
 	if (finalized_) return;
 	
@@ -150,7 +150,7 @@ void MD5::Update(const void* data, size_t size)
 	std::memcpy(&buffer_[index], &input[i], size - i);
 }
 
-const char* MD5::Finish()
+const char* MD5::Complete()
 {
 	if (finalized_) return hexString_;
 	
@@ -168,8 +168,8 @@ const char* MD5::Finish()
 	padding[0] = 0x80;
 	std::memset(padding + 1, 0, padLen - 1);
 	
-	Update(padding, padLen);
-	Update(bits, 8);
+	Put(padding, padLen);
+	Put(bits, 8);
 	
 	// Store digest in byte array (little-endian)
 	for (int i = 0; i < 4; i++) {
@@ -279,7 +279,7 @@ void SHA1::transform_(const uint8_t block[64])
 	state_[4] += E;
 }
 
-void SHA1::Update(const void* data, size_t size)
+void SHA1::Put(const void* data, size_t size)
 {
 	if (finalized_) return;
 	
@@ -311,7 +311,7 @@ void SHA1::Update(const void* data, size_t size)
 	std::memcpy(&buffer_[index], &input[i], size - i);
 }
 
-const char* SHA1::Finish()
+const char* SHA1::Complete()
 {
 	if (finalized_) return hexString_;
 	
@@ -330,8 +330,8 @@ const char* SHA1::Finish()
 	padding[0] = 0x80;
 	std::memset(padding + 1, 0, padLen - 1);
 	
-	Update(padding, padLen);
-	Update(bits, 8);
+	Put(padding, padLen);
+	Put(bits, 8);
 	
 	// Store digest in byte array
 	for (int i = 0; i < 5; i++) {
@@ -474,7 +474,7 @@ void SHA256::transform_(const uint8_t block[64])
 	state_[7] += H;
 }
 
-void SHA256::Update(const void* data, size_t size)
+void SHA256::Put(const void* data, size_t size)
 {
 	if (finalized_) return;
 	
@@ -503,7 +503,7 @@ void SHA256::Update(const void* data, size_t size)
 	std::memcpy(&buffer_[index], &input[i], size - i);
 }
 
-const char* SHA256::Finish()
+const char* SHA256::Complete()
 {
 	if (finalized_) return hexString_;
 	
@@ -521,8 +521,8 @@ const char* SHA256::Finish()
 	padding[0] = 0x80;
 	std::memset(padding + 1, 0, padLen - 1);
 	
-	Update(padding, padLen);
-	Update(bits, 8);
+	Put(padding, padLen);
+	Put(bits, 8);
 	
 	// Store digest in byte array
 	for (int i = 0; i < 8; i++) {

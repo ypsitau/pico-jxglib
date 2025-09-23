@@ -9,9 +9,23 @@
 namespace jxglib::Hash {
 
 //------------------------------------------------------------------------------
+// Base
+//------------------------------------------------------------------------------
+class Base {
+public:
+	void PutString(const char* str) { Put(str, ::strlen(str)); }
+public:
+	virtual void Reset() = 0;
+	virtual void Put(const void* data, size_t size) = 0;
+	virtual const char* Complete() = 0;
+};
+
+//------------------------------------------------------------------------------
 // MD5
 //------------------------------------------------------------------------------
-class MD5 {
+class MD5 : public Base {
+public:
+	static const size_t HexSize = 32;
 private:
 	uint32_t state_[4];    // Hash state (A, B, C, D)
 	uint64_t count_;       // Message length in bits
@@ -30,15 +44,17 @@ private:
 	uint32_t I_(uint32_t x, uint32_t y, uint32_t z);
 public:
 	MD5();
-	void Reset();
-	void Update(const void* data, size_t size);
-	const char* Finish();
+	virtual void Reset() override;
+	virtual void Put(const void* data, size_t size) override;
+	virtual const char* Complete() override;
 };
 
 //------------------------------------------------------------------------------
 // SHA1
 //------------------------------------------------------------------------------
-class SHA1 {
+class SHA1 : public Base {
+public:
+	static const size_t HexSize = 40;
 private:
 	uint32_t state_[5];    // Hash state (A, B, C, D, E)
 	uint32_t count_[2];    // Message length in bits (lo, hi)
@@ -53,15 +69,17 @@ private:
 	uint32_t rotateLeft_(uint32_t value, uint32_t amount);
 public:
 	SHA1();
-	void Reset();
-	void Update(const void* data, size_t size);
-	const char* Finish();
+	virtual void Reset() override;
+	virtual void Put(const void* data, size_t size) override;
+	virtual const char* Complete() override;
 };
 
 //------------------------------------------------------------------------------
 // SHA256 (SHA-2 family)
 //------------------------------------------------------------------------------
-class SHA256 {
+class SHA256 : public Base {
+public:
+	static const size_t HexSize = 64;
 private:
 	uint32_t state_[8];    // Hash state (A, B, C, D, E, F, G, H)
 	uint64_t count_;       // Message length in bits
@@ -82,9 +100,9 @@ private:
 	uint32_t gamma1_(uint32_t x);
 public:
 	SHA256();
-	void Reset();
-	void Update(const void* data, size_t size);
-	const char* Finish();
+	virtual void Reset() override;
+	virtual void Put(const void* data, size_t size) override;
+	virtual const char* Complete() override;
 };
 
 }

@@ -8,6 +8,7 @@
 #include "pico/stdlib.h"
 #include "jxglib/Terminal.h"
 #include "jxglib/FS.h"
+#include "jxglib/Hash.h"
 
 #define ShellCmd_Named(symbol, strSymbol, help) \
 class ShellCmd_##symbol : public Shell::Cmd { \
@@ -341,6 +342,7 @@ private:
 	bool interactiveFlag_;
 	BreakDetector breakDetector_;
 	Dict dict_;
+	char hashPassword_[Hash::SHA256::HexSize + 1]; // SHA-256
 public:
 	static Shell Instance;
 private:
@@ -384,6 +386,7 @@ public:
 	static Tokenizer CreateTokenizer();
 	static void PrintHistory(Printable& printable);
 	static void PrintHelp(Printable& printable, bool simpleFlag = false);
+	static const char* HashPassword(Hash::SHA256& sha256, const char* password);
 };
 
 }

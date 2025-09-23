@@ -5,6 +5,7 @@
 #include "pico/binary_info.h"
 #include "hardware/clocks.h"
 #include "jxglib/Shell.h"
+#include "jxglib/Hash.h"
 #include "jxglib/BinaryInfo.h"
 
 namespace jxglib::ShellCmd_Basic {
@@ -350,6 +351,34 @@ ShellCmd(set, "set environment variable")
 	} else {
 		dict.SetValue(argv[1], argv[2]);
 	}
+	return Result::Success;
+}
+
+//-----------------------------------------------------------------------------
+// password
+//-----------------------------------------------------------------------------
+ShellCmd(password, "changes the password file")
+{
+	const char* fileName = Shell::FileNamePassword;
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		'h',	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
+	if (arg.GetBool("help") || argc < 2) {
+		terr.Printf("Usage: %s [OPTION]... [PASSWORD]\n", GetName());
+		arg.PrintHelp(terr);
+		return Result::Error;
+	}
+	const char* password = argv[1];
+	std::unique_ptr<FS::File> pFile(FS::OpenFile(fileName, "w"));
+	if (!pFile) {
+		terr.Printf("cannot open file '%s'\n", fileName);
+		return Result::Error;
+	}
+	Hash::SHA256 sha256;
+	pFile->Println(Shell::HashPassword(sha256, password));
+	terr.Printf("password changed\n");
 	return Result::Success;
 }
 

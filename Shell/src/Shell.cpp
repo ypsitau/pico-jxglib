@@ -17,7 +17,7 @@ const char* Shell::specialTokens_[] = { ">>", "||", ">", "|", ";", "{", "}", "("
 
 Shell::Shell() : stat_{Stat::Startup}, enableStartupScriptFlag_{true}, pTerminal_{&TerminalDumb::Instance},
 	pCmdRunning_{nullptr}, tokenizer_(specialTokens_, count_of(specialTokens_)), interactiveFlag_{false},
-	breakDetector_(*this)
+	breakDetector_(*this), hashPassword_{""}
 {
 	SetPrompt_("%d%w>");
 }
@@ -25,18 +25,32 @@ Shell::Shell() : stat_{Stat::Startup}, enableStartupScriptFlag_{true}, pTerminal
 bool Shell::Startup()
 {
 	if (stat_ != Stat::Startup) return false;
-	FS::Drive* pDrive = FS::GetDriveCur();
-	if (enableStartupScriptFlag_ && pDrive && pDrive->IsPrimary()) {
-		std::unique_ptr<FS::File> pFileScript(FS::OpenFile(FileNameStartup, "r"));
-		if (pFileScript) {
-			Terminal::ReadableKeyboard tin(GetTerminal());
-			Printable& tout = GetTerminal();
-			Printable& terr = GetTerminal();
-			RunScript(tin, tout, terr, *pFileScript);
-		}
-	}
-	//stat_ = Stat::PromptPassword;
+	::strcpy(hashPassword_, "");
 	stat_ = Stat::PromptCmdLine;
+	FS::Drive* pDrive = FS::GetDriveCur();
+	if (pDrive && pDrive->IsPrimary()) {
+		if (enableStartupScriptFlag_) {
+			std::unique_ptr<FS::File> pFileScript(FS::OpenFile(FileNameStartup, "r"));
+			if (pFileScript) {
+				Terminal::ReadableKeyboard tin(GetTerminal());
+				Printable& tout = GetTerminal();
+				Printable& terr = GetTerminal();
+				RunScript(tin, tout, terr, *pFileScript);
+			}
+		}
+		do {
+			std::unique_ptr<FS::File> pFilePassword(FS::OpenFile(FileNamePassword, "r"));
+			if (pFilePassword) {
+				int bytesRead = pFilePassword->Read(hashPassword_, sizeof(hashPassword_));
+				if (bytesRead >= Hash::SHA256::HexSize) {
+					hashPassword_[Hash::SHA256::HexSize] = '\0';
+					stat_ = Stat::PromptPassword;
+				} else {
+					::strcpy(hashPassword_, "");
+				}
+			}
+		} while (0);
+	}
 	return true;
 }
 
@@ -237,10 +251,17 @@ void Shell::OnTick()
 	case Stat::Password: {
 		char* line = GetTerminal().ReadLine_Process();
 		if (!line) {
-		} else if (::strcmp(line, "hoge") == 0) {
-			stat_ = Stat::PromptCmdLine;
-		} else {
+			// nothing to do
+		} else if (line[0] == '\0') {
 			stat_ = Stat::PromptPassword;
+		} else {
+			Hash::SHA256 sha256;
+			if (::strcmp(HashPassword(sha256, line), hashPassword_) == 0) {
+				stat_ = Stat::PromptCmdLine;
+			} else {
+				GetTerminal().Println("incorrect password");
+				stat_ = Stat::PromptPassword;
+			}
 		}
 		break;
 	}
@@ -415,6 +436,14 @@ void Shell::PrintHelp(Printable& printable, bool simpleFlag)
 			printable.Printf("%-*s  %s\n", lenMax, pCmd->GetName(), pCmd->GetHelp());
 		}
 	}
+}
+
+const char* Shell::HashPassword(Hash::SHA256& sha256, const char* password)
+{
+	sha256.Reset();
+	sha256.PutString(password);
+	sha256.PutString("5f4c8b7e-9a3d-4c1f-8e2a-1b0d9f8c6a7e");
+	return sha256.Complete();
 }
 
 //-----------------------------------------------------------------------------
