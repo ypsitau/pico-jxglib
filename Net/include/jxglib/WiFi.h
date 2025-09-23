@@ -77,9 +77,12 @@ public:
 	static const ip_addr_t& GetNetmask() { return *netif_ip_netmask4(netif_default); }
 	static const ip_addr_t& GetGateway() { return *netif_ip_gw4(netif_default); }
 public:
-	static void PutLED(bool value) { ::cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, value); }
-	static void PutSMPS(bool value) { ::cyw43_arch_gpio_put(CYW43_WL_GPIO_SMPS_PIN, value); }
-	static void PutVBUS(bool value) { ::cyw43_arch_gpio_put(CYW43_WL_GPIO_VBUS_PIN, value); }
+	static void PutGPIO(int gpio, bool value) {
+		if (::cyw43_is_initialized(&cyw43_state)) ::cyw43_arch_gpio_put(gpio, value); }
+	
+	static void PutLED(bool value) { PutGPIO(CYW43_WL_GPIO_LED_PIN, value); }
+	static void PutSMPS(bool value) { PutGPIO(CYW43_WL_GPIO_SMPS_PIN, value); }
+	static void PutVBUS(bool value) { PutGPIO(CYW43_WL_GPIO_VBUS_PIN, value); }
 };
 
 }
