@@ -46,7 +46,10 @@ ShellCmd(net, "controls Network")
 		const char* subcmd = pSubcmd->GetProc();
 		const char* value;
 		if (::strcasecmp(subcmd, "wifi-scan") == 0) {
-			wifi.Scan(tout);
+			const Net::WiFi::ScanResult* pScanResult = wifi.Scan();
+			for ( ; pScanResult; pScanResult = pScanResult->GetNext()) {
+				pScanResult->Print(tout);
+			}
 		} else if (Arg::GetAssigned(subcmd, "wifi-ap", &value)) {
 			const char* ssid = nullptr;
 			const char* password = nullptr;

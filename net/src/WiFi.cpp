@@ -6,7 +6,7 @@
 namespace jxglib::Net {
 
 //------------------------------------------------------------------------------
-// WiFi
+// Net::WiFi
 //------------------------------------------------------------------------------
 WiFi::WiFi(uint32_t country) : country_(country), initializedFlag_(false), polling_(*this),
 		connectInfo_{"", CYW43_AUTH_OPEN}
@@ -42,22 +42,49 @@ void WiFi::Poll()
 	if (initializedFlag_) ::cyw43_arch_poll();
 }
 
-void WiFi::Scan(Printable& tout)
+const WiFi::ScanResult* WiFi::Scan()
 {
 	auto result_cb = [](void* env, const cyw43_ev_scan_result_t* result) -> int {
-		if (!result) return 0;
-		Printable& tout = *reinterpret_cast<Printable*>(env);
-		tout.Printf("ssid: %-32s rssi: %4d channel: %3d mac: %02x:%02x:%02x:%02x:%02x:%02x auth_mode: %u\n",
-			result->ssid, result->rssi, result->channel,
-			result->bssid[0], result->bssid[1], result->bssid[2], result->bssid[3], result->bssid[4], result->bssid[5],
-			result->auth_mode);
+		WiFi* pWiFi = reinterpret_cast<WiFi*>(env);
+		if (result) pWiFi->AddScanResult(*result);
 		return 0;
 	};
 	cyw43_wifi_scan_options_t scan_options = {0};
-	if (!InitAsStation()) return;
-	if (::cyw43_wifi_scan(&cyw43_state, &scan_options, &tout, result_cb) == 0) {
+	pScanResult_.reset();
+	if (!InitAsStation()) return nullptr;
+	if (::cyw43_wifi_scan(&cyw43_state, &scan_options, this, result_cb) == 0) {
 		while (::cyw43_wifi_scan_active(&cyw43_state)) Tickable::Tick();
 	}
+	return pScanResult_.get();
+}
+
+void WiFi::AddScanResult(const cyw43_ev_scan_result_t& entity)
+{
+	if (!pScanResult_) {
+		pScanResult_.reset(new ScanResult(entity));
+		return;
+	}
+	for (ScanResult* pScanResult = pScanResult_.get(); pScanResult; pScanResult = pScanResult->GetNext()) {
+		if (pScanResult->IsIdentical(entity)) {
+			//if (entity.rssi > pScanResult->GetRSSI()) pScanResult->Update(entity);
+			return;
+		}
+	}
+	std::unique_ptr<ScanResult> pScanResultNew(new ScanResult(entity));
+	if (entity.rssi > pScanResult_->GetRSSI()) {
+		pScanResultNew->SetNext(pScanResult_.release());
+		pScanResult_.reset(pScanResultNew.release());
+		return;
+	}
+	ScanResult* pScanResultIter = pScanResult_.get();
+	for (; pScanResultIter->GetNext(); pScanResultIter = pScanResultIter->GetNext()) {
+		if (entity.rssi > pScanResultIter->GetNext()->GetRSSI()) {
+			pScanResultNew->SetNext(pScanResultIter->ReleaseNext());
+			pScanResultIter->SetNext(pScanResultNew.release());
+			return;
+		}
+	}
+	pScanResultIter->SetNext(pScanResultNew.release());
 }
 
 int WiFi::Connect(const char* ssid, const uint8_t* bssid, const char* password, uint32_t auth)
@@ -152,7 +179,18 @@ const char* WiFi::AuthToString(uint32_t auth)
 }
 
 //------------------------------------------------------------------------------
-// WiFi::Polling
+// Net::WiFi::ScanResult
+//------------------------------------------------------------------------------
+void WiFi::ScanResult::Print(Printable& tout) const
+{
+	tout.Printf("ssid:%-32s rssi:%4d channel:%3d mac:%02x:%02x:%02x:%02x:%02x:%02x security:%u\n",
+		entity_.ssid, entity_.rssi, entity_.channel,
+		entity_.bssid[0], entity_.bssid[1], entity_.bssid[2], entity_.bssid[3], entity_.bssid[4], entity_.bssid[5],
+		entity_.auth_mode);
+}
+
+//------------------------------------------------------------------------------
+// Net::WiFi::Polling
 //------------------------------------------------------------------------------
 
 }

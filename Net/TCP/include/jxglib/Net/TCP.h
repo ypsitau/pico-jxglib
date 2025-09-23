@@ -32,7 +32,8 @@ public:
 protected:
 	void SetPCB(struct tcp_pcb* pcb);
 public:
-	bool Send(const void* data, size_t len);
+	bool Send(const void* data, size_t len, bool immediateFlag = false);
+	bool Flush();
 	void DiscardPCB();
 public:
 	void SetHandler(Handler& handler) { pHandler_ = &handler; }

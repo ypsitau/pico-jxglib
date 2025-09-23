@@ -21,10 +21,20 @@ void Common::SetPCB(struct tcp_pcb* pcb)
 	::tcp_err(pcb_, callback_err);
 }
 
-bool Common::Send(const void* data, size_t len)
+bool Common::Send(const void* data, size_t len, bool immediateFlag)
+{
+	bool rtn = true;
+	Net::lwip_begin();
+	rtn = (::tcp_write(pcb_, data, len, TCP_WRITE_FLAG_COPY) == ERR_OK);
+	if (rtn && immediateFlag) rtn = (::tcp_output(pcb_) == ERR_OK);
+	Net::lwip_end();
+	return rtn;
+}
+
+bool Common::Flush()
 {
 	Net::lwip_begin();
-	err_t err = ::tcp_write(pcb_, data, len, TCP_WRITE_FLAG_COPY);
+	err_t err = ::tcp_output(pcb_);
 	Net::lwip_end();
 	return err == ERR_OK;
 }

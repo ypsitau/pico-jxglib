@@ -35,12 +35,17 @@ bool Server::IsRunning() const
 
 bool Server::Send(const uint8_t* data, size_t len)
 {
-	return tcpServer_.Send(data, len);
+	return tcpServer_.Send(data, len, true);
 }
 
 bool Server::Send(const char* str)
 {
 	return Send(reinterpret_cast<const uint8_t*>(str), strlen(str));
+}
+
+bool Server::Flush()
+{
+	return tcpServer_.Flush();
 }
 
 int Server::ReadFromRecvBuff(void* buff, int bytesBuff)
@@ -180,7 +185,7 @@ int Stream::Write(const void* buff, int bytesBuff)
 
 bool Stream::Flush()
 {
-	//cdc_write_flush();
+	telnetServer_.Flush();
 	return true;
 }
 

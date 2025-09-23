@@ -151,6 +151,7 @@ public:
 	bool IsRunning() const;
 	bool Send(const uint8_t* data, size_t len);
 	bool Send(const char* str);
+	bool Flush();
 public:
 	int ReadFromRecvBuff(void* buff, int bytesBuff);
 	int WriteToRecvBuff(const uint8_t* data, size_t len);

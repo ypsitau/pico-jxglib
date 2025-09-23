@@ -14,6 +14,28 @@ namespace jxglib::Net {
 
 class WiFi {
 public:
+	class ScanResult {
+	private:
+		cyw43_ev_scan_result_t entity_;
+		std::unique_ptr<ScanResult> pNext_;
+	public:
+		ScanResult(const cyw43_ev_scan_result_t& entity) : entity_(entity), pNext_(nullptr) {}
+	public:
+		const cyw43_ev_scan_result_t& GetEntity() const { return entity_; }
+		ScanResult* GetNext() { return pNext_.get(); }
+		const ScanResult* GetNext() const { return pNext_.get(); }
+		ScanResult* ReleaseNext() { return pNext_.release(); }
+		void SetNext(ScanResult* pNext) { pNext_.reset(pNext); }
+	public:
+		bool IsIdentical(const cyw43_ev_scan_result_t& entity) const {
+			return ::memcmp(entity_.bssid, entity.bssid, sizeof(entity_.bssid)) == 0;
+		}
+		int16_t GetRSSI() const { return entity_.rssi; }
+	public:
+		void Update(const cyw43_ev_scan_result_t& entity) { entity_ = entity; }
+	public:
+		void Print(Printable& tout) const;
+	};
 	class Polling : public Tickable {
 	private:
 		WiFi& wifi_;
@@ -31,6 +53,7 @@ private:
 		char ssid[33];
 		uint32_t auth;
 	} connectInfo_;
+	std::unique_ptr<ScanResult> pScanResult_;
 public:
 	WiFi(uint32_t country = PICO_CYW43_ARCH_DEFAULT_COUNTRY_CODE);
 public:
@@ -39,7 +62,8 @@ public:
 	bool InitAsAccessPoint(const char* ssid, const char* password, uint32_t auth = CYW43_AUTH_WPA2_AES_PSK);
 	void Deinit();
 	void Poll();
-	void Scan(Printable& tout);
+	const ScanResult* Scan();
+	void AddScanResult(const cyw43_ev_scan_result_t& entity);
 	int Connect(const char* ssid, const uint8_t* bssid, const char* password, uint32_t auth);
 	WiFi& Configure(const ip4_addr_t& addr, const ip4_addr_t& netmask, const ip4_addr_t& gateway);
 	void Disconnect();

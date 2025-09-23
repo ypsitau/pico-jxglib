@@ -42,7 +42,6 @@ int main()
 	stdio_init_all();
 	//jxglib_enable_startup_script(false);
 	jxglib_labo_init(false);
-	Printable& tout = LABOPlatform::Instance.GetTerminal();
 	while (true) {
 		jxglib_tick();
 	}
