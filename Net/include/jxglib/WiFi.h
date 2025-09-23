@@ -35,6 +35,7 @@ public:
 		void Update(const cyw43_ev_scan_result_t& entity) { entity_ = entity; }
 	public:
 		void Print(Printable& tout) const;
+		void PrintSingle(Printable& tout) const;
 	};
 	class Polling : public Tickable {
 	private:
@@ -62,7 +63,7 @@ public:
 	bool InitAsAccessPoint(const char* ssid, const char* password, uint32_t auth = CYW43_AUTH_WPA2_AES_PSK);
 	void Deinit();
 	void Poll();
-	const ScanResult* Scan();
+	ScanResult* Scan();
 	void AddScanResult(const cyw43_ev_scan_result_t& entity);
 	int Connect(const char* ssid, const uint8_t* bssid, const char* password, uint32_t auth);
 	WiFi& Configure(const ip4_addr_t& addr, const ip4_addr_t& netmask, const ip4_addr_t& gateway);

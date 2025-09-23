@@ -16,12 +16,13 @@ class Handler : public Net::Telnet::Handler {
 public:
 	virtual void OnConnect(const ip_addr_t& addr, uint16_t port) override {
 		Printable& tout = Stdio::Instance;
-		tout.Printf("Telnet client connected: %s:%d\n", ipaddr_ntoa(&addr), port);
 		LABOPlatform::Instance.GetTerminal().AttachKeyboard(telnetStream.GetKeyboard());
 		LABOPlatform::Instance.GetTerminal().AttachPrintable(telnetStream);
+		tout.Printf("Telnet client connected: %s:%d\n", ipaddr_ntoa(&addr), port);
 	}
 	virtual void OnDisconnect() override {
 		Printable& tout = Stdio::Instance;
+		Shell::Logout();
 		tout.Printf("Telnet client disconnected\n");
 	}
 };

@@ -358,6 +358,7 @@ public:
 	Dict& GetDict() { return dict_; }
 	bool ExpandEnvVariables(char* line, int bytesLine, const char** errorMsg);
 public:
+	static void Logout() { Instance.Logout_(); }
 	static void EnableStartupScript(bool enableFlag) { Instance.EnableStartupScript_(enableFlag); }
 	static void SetBanner(const char* banner) { Instance.SetBanner_(banner); }
 	static const char* GetBanner() { return Instance.GetBanner_(); }
@@ -367,6 +368,7 @@ public:
 	static void BeginInteractive() { Instance.BeginInteractive_(); }
 	static void EndInteractive() { Instance.EndInteractive_(); }
 private:
+	void Logout_() { stat_ = Stat::PromptPassword; }
 	void EnableStartupScript_(bool enableFlag) { enableStartupScriptFlag_ = enableFlag; }
 	void SetBanner_(const char* banner) { banner_.reset(new char[::strlen(banner) + 1]); ::strcpy(banner_.get(), banner); }
 	const char* GetBanner_() const { return banner_? banner_.get() : ""; }

@@ -11,7 +11,7 @@ namespace jxglib {
 // Terminal
 //------------------------------------------------------------------------------
 Terminal::Terminal(int bytesHistoryBuff, Keyboard& keyboard) :
-	lineEditor_{bytesHistoryBuff}, editableFlag_{true}, pKeyboard_{&keyboard}, pCompletionProvider_{nullptr}
+	lineEditor_{bytesHistoryBuff}, enableEchoBackFlag_{true}, editableFlag_{true}, pKeyboard_{&keyboard}, pCompletionProvider_{nullptr}
 {
 }
 
@@ -21,9 +21,15 @@ Terminal& Terminal::Initialize()
 	return *this;
 }
 
+void Terminal::EnableEchoBack(bool enableEchoBackFlag)
+{
+	enableEchoBackFlag_ = enableEchoBackFlag;
+	EnableHistory(enableEchoBackFlag);
+}
+
 char* Terminal::ReadLine(const char* prompt)
 {
-	GetPrintable().Print(prompt).Flush();
+	GetPrintableAlways().Print(prompt).Flush();
 	ClearBreak();
 	Edit_Begin();
 	for (;;) {
@@ -35,7 +41,7 @@ char* Terminal::ReadLine(const char* prompt)
 
 void Terminal::ReadLine_Begin(const char* prompt)
 {
-	GetPrintable().Print(prompt).Flush();
+	GetPrintableAlways().Print(prompt).Flush();
 	ClearBreak();
 	Edit_Begin();
 }

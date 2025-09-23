@@ -63,6 +63,8 @@ bool Shell::RunCmd(Readable& tin, Printable& tout, Printable& terr, char* line, 
 	Printable* ptout = &tout;
 	Printable* pterr = &terr;
 	const char* errorMsg;
+	for ( ; ::isspace(*line); line++) ;
+	if (*line == '#') return true; // comment line
 	if (!ExpandEnvVariables(line, bytesLine, &errorMsg)) {
 		pterr->Println(errorMsg);
 		return false;
@@ -127,9 +129,9 @@ bool Shell::RunSingleCmd(Readable& tin, Printable& tout, Printable& terr, int ar
 			pCmdRunning_ = pCmd;
 			bool enableHistoryFlag = GetTerminal().IsHistoryEnabled();
 			GetTerminal().EnableHistory(false); // disable history while running a command
-			bool rtn = (pCmd->Run(tin, tout, terr, argc, argv) >= 0);
+			int result = pCmd->Run(tin, tout, terr, argc, argv);
 			GetTerminal().EnableHistory(enableHistoryFlag);
-			return rtn;
+			return result >= 0;
 		}
 	}
 	terr.Printf("%s: command not found\n", argv[0]);
@@ -244,6 +246,7 @@ void Shell::OnTick()
 		break;
 	}
 	case Stat::PromptPassword: {
+		GetTerminal().EnableEchoBack(false);
 		GetTerminal().ReadLine_Begin("password:");
 		stat_ = Stat::Password;
 		break;
@@ -257,6 +260,7 @@ void Shell::OnTick()
 		} else {
 			Hash::SHA256 sha256;
 			if (::strcmp(HashPassword(sha256, line), hashPassword_) == 0) {
+				GetTerminal().EnableEchoBack(true);
 				stat_ = Stat::PromptCmdLine;
 			} else {
 				GetTerminal().Println("incorrect password");

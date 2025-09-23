@@ -41,7 +41,8 @@ public:
 		virtual Printable& VPrintfRaw(const char* format, va_list args) { return pPrintable_->VPrintfRaw(format, args); }
 	public:
 		// virtual functions of jxglib::Terminal
-		virtual Printable& GetPrintable() override { return *pPrintable_; }
+		virtual Printable& GetPrintable() override { return enableEchoBackFlag_? *pPrintable_ : PrintableDumb::Instance; }
+		virtual Printable& GetPrintableAlways() override { return *pPrintable_; }
 		virtual jxglib::Terminal& Edit_Begin() override;
 		virtual jxglib::Terminal& Edit_Finish(char chEnd = '\0') override;
 		virtual jxglib::Terminal& Edit_InsertChar(int ch) override;

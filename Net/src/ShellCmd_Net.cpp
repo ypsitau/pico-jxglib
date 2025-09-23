@@ -46,10 +46,8 @@ ShellCmd(net, "controls Network")
 		const char* subcmd = pSubcmd->GetProc();
 		const char* value;
 		if (::strcasecmp(subcmd, "wifi-scan") == 0) {
-			const Net::WiFi::ScanResult* pScanResult = wifi.Scan();
-			for ( ; pScanResult; pScanResult = pScanResult->GetNext()) {
-				pScanResult->Print(tout);
-			}
+			std::unique_ptr<Net::WiFi::ScanResult> pScanResult(wifi.Scan());
+			pScanResult->Print(tout);
 		} else if (Arg::GetAssigned(subcmd, "wifi-ap", &value)) {
 			const char* ssid = nullptr;
 			const char* password = nullptr;
@@ -121,9 +119,10 @@ ShellCmd(net, "controls Network")
 				printConnectInfoFlag = true;
 			} else if (linkStat == CYW43_LINK_BADAUTH) {
 				terr.Printf("Authentication failure for '%s'\n", ssid);
-				printConnectInfoFlag = true;
+				return Result::Error;
 			} else {
 				terr.Printf("Failed to connect to '%s'\n", ssid);
+				return Result::Error;
 			}
 		} else if (::strcasecmp(subcmd, "wifi-disconnect") == 0) {
 			wifi.Disconnect();

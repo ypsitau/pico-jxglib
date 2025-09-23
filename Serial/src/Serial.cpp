@@ -21,9 +21,9 @@ Terminal& Serial::Terminal::Edit_Begin()
 
 Terminal& Serial::Terminal::Edit_Finish(char chEnd)
 {
-	GetPrintable().PutChar(chEnd);
+	GetPrintableAlways().PutChar(chEnd);
 	GetLineEditor().Finish();
-	GetPrintable().Flush();
+	GetPrintableAlways().Flush();
 	return *this;
 }
 

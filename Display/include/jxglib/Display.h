@@ -140,7 +140,10 @@ public:
 		virtual Printable& PutCharRaw(char ch) override;
 	public:
 		// virtual functions of jxglib::Terminal
-		virtual Printable& GetPrintable() override { return *this; }
+		virtual Printable& GetPrintable() override {
+			return enableEchoBackFlag_? reinterpret_cast<Printable&>(*this) : PrintableDumb::Instance;
+		}
+		virtual Printable& GetPrintableAlways() override { return *this; }
 		virtual jxglib::Terminal& Edit_Begin() override;
 		virtual jxglib::Terminal& Edit_Finish(char chEnd = '\0') override;
 		virtual jxglib::Terminal& Edit_InsertChar(int ch) override;

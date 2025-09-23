@@ -103,6 +103,7 @@ public:
 	};
 protected:
 	LineEditor lineEditor_;
+	bool enableEchoBackFlag_;
 	bool editableFlag_;
 	bool breakFlag_;
 	Keyboard* pKeyboard_;
@@ -110,6 +111,7 @@ protected:
 public:
 	Terminal(int bytesHistoryBuff, Keyboard& keyboard);
 	Terminal& Initialize();
+	void EnableEchoBack(bool enableEchoBackFlag = true);
 	void SetEditable(bool editableFlag) { editableFlag_ = editableFlag; }
 	bool IsEditable() const { return editableFlag_; }
 	LineEditor& GetLineEditor() { return lineEditor_; }
@@ -136,6 +138,7 @@ public:
 	bool IsBreak() { bool rtn = breakFlag_; breakFlag_ = false; return rtn; }
 public:
 	virtual Printable& GetPrintable() = 0;
+	virtual Printable& GetPrintableAlways() = 0;
 	virtual Terminal& Edit_Begin() = 0;
 	virtual Terminal& Edit_Finish(char chEnd = '\0') = 0;
 	virtual Terminal& Edit_InsertChar(int ch) = 0;
@@ -177,6 +180,7 @@ public:
 public:
 	// virtual functions of Terminal
 	virtual Printable& GetPrintable() override { return *this; }
+	virtual Printable& GetPrintableAlways() override { return *this; }
 	virtual Terminal& Edit_Begin() override { return *this; }
 	virtual Terminal& Edit_Finish(char chEnd = '\0') override { return *this; }
 	virtual Terminal& Edit_InsertChar(int ch) override { return *this; }

@@ -42,7 +42,7 @@ void WiFi::Poll()
 	if (initializedFlag_) ::cyw43_arch_poll();
 }
 
-const WiFi::ScanResult* WiFi::Scan()
+WiFi::ScanResult* WiFi::Scan()
 {
 	auto result_cb = [](void* env, const cyw43_ev_scan_result_t* result) -> int {
 		WiFi* pWiFi = reinterpret_cast<WiFi*>(env);
@@ -55,7 +55,7 @@ const WiFi::ScanResult* WiFi::Scan()
 	if (::cyw43_wifi_scan(&cyw43_state, &scan_options, this, result_cb) == 0) {
 		while (::cyw43_wifi_scan_active(&cyw43_state)) Tickable::Tick();
 	}
-	return pScanResult_.get();
+	return pScanResult_.release();
 }
 
 void WiFi::AddScanResult(const cyw43_ev_scan_result_t& entity)
@@ -182,6 +182,13 @@ const char* WiFi::AuthToString(uint32_t auth)
 // Net::WiFi::ScanResult
 //------------------------------------------------------------------------------
 void WiFi::ScanResult::Print(Printable& tout) const
+{
+	for (const ScanResult* pScanResult = this; pScanResult; pScanResult = pScanResult->GetNext()) {
+		pScanResult->PrintSingle(tout);
+	}
+}
+
+void WiFi::ScanResult::PrintSingle(Printable& tout) const
 {
 	tout.Printf("ssid:%-32s rssi:%4d channel:%3d mac:%02x:%02x:%02x:%02x:%02x:%02x security:%u\n",
 		entity_.ssid, entity_.rssi, entity_.channel,
