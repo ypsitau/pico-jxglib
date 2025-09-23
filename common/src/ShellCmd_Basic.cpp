@@ -2,6 +2,7 @@
 // ShellCmd_Basic.cpp
 //==============================================================================
 #include <stdlib.h>
+#include "pico/unique_id.h"
 #include "pico/binary_info.h"
 #include "hardware/clocks.h"
 #include "jxglib/Shell.h"
@@ -26,8 +27,11 @@ ShellCmd_Named(about_cpu, "about-platform", "prints information about the platfo
 		return Result::Error;
 	}
 	tout.Printf("%s %s %d MHz\n", GetPlatformName(), GetCPUArchName(), ::clock_get_hz(clk_sys) / 1000000);
-	tout.Printf("Flash  0x%08X-0x%08X %7d\n", XIP_BASE, XIP_BASE + PICO_FLASH_SIZE_BYTES, PICO_FLASH_SIZE_BYTES); 
-	tout.Printf("SRAM   0x20000000-0x%p %7d\n", &__stack, &__stack - reinterpret_cast<char*>(0x20000000));
+	tout.Printf("Flash     0x%08X-0x%08X %7d\n", XIP_BASE, XIP_BASE + PICO_FLASH_SIZE_BYTES, PICO_FLASH_SIZE_BYTES); 
+	tout.Printf("SRAM      0x20000000-0x%p %7d\n", &__stack, &__stack - reinterpret_cast<char*>(0x20000000));
+	char unique_id_str[PICO_UNIQUE_BOARD_ID_SIZE_BYTES * 2 + 1];
+	::pico_get_unique_board_id_string(unique_id_str, sizeof(unique_id_str));
+	tout.Printf("Unique ID %s\n", unique_id_str);
 	return Result::Success;
 }
 

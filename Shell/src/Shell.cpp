@@ -3,6 +3,7 @@
 //==============================================================================
 #include <stdlib.h>
 #include <ctype.h>
+#include "pico/unique_id.h"
 #include "jxglib/Shell.h"
 
 namespace jxglib {
@@ -17,7 +18,7 @@ const char* Shell::specialTokens_[] = { ">>", "||", ">", "|", ";", "{", "}", "("
 
 Shell::Shell() : stat_{Stat::Startup}, enableStartupScriptFlag_{true}, pTerminal_{&TerminalDumb::Instance},
 	pCmdRunning_{nullptr}, tokenizer_(specialTokens_, count_of(specialTokens_)), interactiveFlag_{false},
-	breakDetector_(*this), hashPassword_{""}
+	breakDetector_(*this), hashedPassword_{""}
 {
 	SetPrompt_("%d%w>");
 }
@@ -25,7 +26,7 @@ Shell::Shell() : stat_{Stat::Startup}, enableStartupScriptFlag_{true}, pTerminal
 bool Shell::Startup()
 {
 	if (stat_ != Stat::Startup) return false;
-	::strcpy(hashPassword_, "");
+	::strcpy(hashedPassword_, "");
 	stat_ = Stat::PromptCmdLine;
 	FS::Drive* pDrive = FS::GetDriveCur();
 	if (pDrive && pDrive->IsPrimary()) {
@@ -41,12 +42,12 @@ bool Shell::Startup()
 		do {
 			std::unique_ptr<FS::File> pFilePassword(FS::OpenFile(FileNamePassword, "r"));
 			if (pFilePassword) {
-				int bytesRead = pFilePassword->Read(hashPassword_, sizeof(hashPassword_));
+				int bytesRead = pFilePassword->Read(hashedPassword_, sizeof(hashedPassword_));
 				if (bytesRead >= Hash::SHA256::HexSize) {
-					hashPassword_[Hash::SHA256::HexSize] = '\0';
+					hashedPassword_[Hash::SHA256::HexSize] = '\0';
 					stat_ = Stat::PromptPassword;
 				} else {
-					::strcpy(hashPassword_, "");
+					::strcpy(hashedPassword_, "");
 				}
 			}
 		} while (0);
@@ -259,7 +260,7 @@ void Shell::OnTick()
 			stat_ = Stat::PromptPassword;
 		} else {
 			Hash::SHA256 sha256;
-			if (::strcmp(HashPassword(sha256, line), hashPassword_) == 0) {
+			if (::strcmp(HashPassword(sha256, line), hashedPassword_) == 0) {
 				GetTerminal().EnableEchoBack(true);
 				stat_ = Stat::PromptCmdLine;
 			} else {
@@ -444,9 +445,11 @@ void Shell::PrintHelp(Printable& printable, bool simpleFlag)
 
 const char* Shell::HashPassword(Hash::SHA256& sha256, const char* password)
 {
+	pico_unique_board_id_t board_id;
+	::pico_get_unique_board_id(&board_id);
 	sha256.Reset();
+	sha256.Put(board_id.id, sizeof(board_id.id));
 	sha256.PutString(password);
-	sha256.PutString("5f4c8b7e-9a3d-4c1f-8e2a-1b0d9f8c6a7e");
 	return sha256.Complete();
 }
 

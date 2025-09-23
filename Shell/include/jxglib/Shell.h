@@ -342,7 +342,7 @@ private:
 	bool interactiveFlag_;
 	BreakDetector breakDetector_;
 	Dict dict_;
-	char hashPassword_[Hash::SHA256::HexSize + 1]; // SHA-256
+	char hashedPassword_[Hash::SHA256::HexSize + 1]; // SHA-256
 public:
 	static Shell Instance;
 private:
