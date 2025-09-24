@@ -8,8 +8,6 @@ using namespace jxglib;
 Net::Telnet::Server telnetServer;
 Net::Telnet::Stream telnetStream(telnetServer);
 
-PeriodicToggle<Net::WiFi::PutLED> blinkLED;
-
 class Handler : public Net::Telnet::Handler {
 public:
 	virtual void OnConnect(const ip_addr_t& addr, uint16_t port) override {
@@ -17,10 +15,10 @@ public:
 		LABOPlatform::Instance.GetTerminal().AttachKeyboard(telnetStream.GetKeyboard());
 		LABOPlatform::Instance.GetTerminal().AttachPrintable(telnetStream);
 		tout.Printf("Telnet client connected: %s:%d\n", ipaddr_ntoa(&addr), port);
+		Shell::Logout();
 	}
 	virtual void OnDisconnect() override {
 		Printable& tout = Stdio::Instance;
-		Shell::Logout();
 		tout.Printf("Telnet client disconnected\n");
 	}
 };
@@ -35,6 +33,8 @@ ShellCmd_Named(telnet_server, "telnet-server", "start telnet server")
 	}
 	return Result::Success;
 }
+
+static PeriodicToggle<Net::WiFi::PutLED> blinkLED;
 
 ShellCmd_Named(blink_led, "blink-led", "control blinking LED")
 {
