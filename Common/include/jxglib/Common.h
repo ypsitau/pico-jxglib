@@ -14,6 +14,7 @@
 #include "KeyCode.h"
 #include "KeyData.h"
 #include "Keyboard.h"
+#include "PeriodicToggle.h"
 #include "Point.h"
 #include "Printable.h"
 #include "Readable.h"

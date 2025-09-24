@@ -56,12 +56,16 @@ private:
 	} connectInfo_;
 	std::unique_ptr<ScanResult> pScanResult_;
 public:
-	WiFi(uint32_t country = PICO_CYW43_ARCH_DEFAULT_COUNTRY_CODE);
+	static WiFi Instance;
 public:
+	WiFi();
+public:
+	WiFi& SetCouytrn(uint32_t country) { country_ = country; return *this; }
 	const ConnectInfo& GetConnectInfo() const { return connectInfo_; }
+	bool Initialize();
 	bool InitAsStation();
 	bool InitAsAccessPoint(const char* ssid, const char* password, uint32_t auth = CYW43_AUTH_WPA2_AES_PSK);
-	void Deinit();
+	void Deinitialize();
 	void Poll();
 	ScanResult* Scan();
 	void AddScanResult(const cyw43_ev_scan_result_t& entity);
@@ -78,8 +82,9 @@ public:
 	static const ip_addr_t& GetGateway() { return *netif_ip_gw4(netif_default); }
 public:
 	static void PutGPIO(int gpio, bool value) {
-		if (::cyw43_is_initialized(&cyw43_state)) ::cyw43_arch_gpio_put(gpio, value); }
-	
+		if (::cyw43_is_initialized(&cyw43_state)) ::cyw43_arch_gpio_put(gpio, value);
+	}
+	static void InitLED() { ::cyw43_arch_init(); }
 	static void PutLED(bool value) { PutGPIO(CYW43_WL_GPIO_LED_PIN, value); }
 	static void PutSMPS(bool value) { PutGPIO(CYW43_WL_GPIO_SMPS_PIN, value); }
 	static void PutVBUS(bool value) { PutGPIO(CYW43_WL_GPIO_VBUS_PIN, value); }

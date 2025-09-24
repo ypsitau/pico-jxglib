@@ -45,6 +45,7 @@ private:
 	static bool signalledFlag_;
 	static int tickCalledDepth_;
 	static int tickCalledDepthMax_;
+	static uint32_t msecCurSaved_;
 public:
 	Tickable(uint32_t msecTick = 0, Priority priority = Priority::Normal);
 private:
@@ -58,6 +59,7 @@ public:
 	static bool TickSub() { Tick_(); return IsSignalled(); }
 	static bool Sleep(uint32_t msecTick);
 	static uint32_t GetCurrentTime() { return ::to_ms_since_boot(::get_absolute_time()); }
+	static uint32_t GetCurrentTimeSaved() { return msecCurSaved_; }
 public:
 	Priority GetPriority() const { return priority_; }
 	const char* GetPriorityName() const { return GetPriorityName(GetPriority()); }

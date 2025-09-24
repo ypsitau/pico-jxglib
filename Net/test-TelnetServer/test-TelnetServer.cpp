@@ -5,54 +5,10 @@
 
 using namespace jxglib;
 
-Net::WiFi wifi;
-
-Net::WiFi& ShellCmd_Net_GetWiFi() { return wifi; }
-
 Net::Telnet::Server telnetServer;
 Net::Telnet::Stream telnetStream(telnetServer);
 
-class BlinkLED : public Tickable {
-private:
-	bool value_;
-	uint32_t msecStart_;
-	uint32_t msecOn_;
-	uint32_t msecOff_;
-public:
-	static BlinkLED Instance;
-public:
-	BlinkLED() : Tickable(0, Priority::Lowest), value_{false}, msecStart_{0}, msecOn_{500}, msecOff_{500} { Suspend(); }
-public:
-	void SetDurations(uint32_t msecOn, uint32_t msecOff) { msecOn_ = msecOn; msecOff_ = msecOff; }
-	void Enable(bool enableFlag);
-	virtual const char* GetTickableName() const override { return "BlinkLED"; }
-	virtual void OnTick() override;
-};
-
-BlinkLED BlinkLED::Instance;
-
-void BlinkLED::Enable(bool enableFlag)
-{
-	if (enableFlag) {
-		value_ = true;
-		Net::WiFi::PutLED(value_);
-		msecStart_ = Tickable::GetCurrentTime();
-		Resume();
-	} else {
-		Suspend();
-		value_ = false;
-		Net::WiFi::PutLED(value_);
-	}
-}
-
-void BlinkLED::OnTick()
-{
-	uint32_t msecCur = Tickable::GetCurrentTime();
-	if (Tickable::GetCurrentTime() - msecStart_ < (value_? msecOn_ : msecOff_)) return;
-	value_ = !value_;
-	Net::WiFi::PutLED(value_);
-	msecStart_ = msecCur;
-}
+PeriodicToggle<Net::WiFi::PutLED> blinkLED;
 
 class Handler : public Net::Telnet::Handler {
 public:
@@ -104,14 +60,14 @@ ShellCmd_Named(blink_led, "blink-led", "control blinking LED")
 		}
 		uint32_t msecOn = valueTbl[0];
 		uint32_t msecOff = (n < 2)? msecOn : valueTbl[1];
-		BlinkLED::Instance.SetDurations(msecOn, msecOff);
+		blinkLED.SetDurations(msecOn, msecOff);
 	}
 	if (argc < 2) {
 		// nothing to do
 	} else if (::strcasecmp(argv[1], "on") == 0) {
-		BlinkLED::Instance.Enable(true);
+		blinkLED.Enable(true);
 	} else if (::strcasecmp(argv[1], "off") == 0) {
-		BlinkLED::Instance.Enable(false);
+		blinkLED.Enable(false);
 	} else {
 		terr.Printf("Invalid argument: %s\n", argv[1]);
 		return Result::Error;
@@ -123,7 +79,7 @@ int main()
 {
 	stdio_init_all();
 	//jxglib_enable_startup_script(false);
-	jxglib_labo_init(true);
+	jxglib_labo_init(false);
 	while (true) {
 		jxglib_tick();
 	}

@@ -8,30 +8,33 @@ namespace jxglib::Net {
 //------------------------------------------------------------------------------
 // Net::WiFi
 //------------------------------------------------------------------------------
-WiFi::WiFi(uint32_t country) : country_(country), initializedFlag_(false), polling_(*this),
-		connectInfo_{"", CYW43_AUTH_OPEN}
+WiFi WiFi::Instance;
+
+WiFi::WiFi() : country_{PICO_CYW43_ARCH_DEFAULT_COUNTRY_CODE}, initializedFlag_{false}, polling_(*this), connectInfo_{"", CYW43_AUTH_OPEN}
 {
+}
+
+bool WiFi::Initialize()
+{
+	if (!initializedFlag_) initializedFlag_ = (::cyw43_arch_init_with_country(country_) == 0);
+	return initializedFlag_;
 }
 
 bool WiFi::InitAsStation()
 {
-	if (initializedFlag_) return true;
-	if (::cyw43_arch_init_with_country(country_) != 0) return false;
+	if (!Initialize()) return false;
 	::cyw43_arch_enable_sta_mode();
-	initializedFlag_ = true;
 	return true;
 }
 
 bool WiFi::InitAsAccessPoint(const char* ssid, const char* password, uint32_t auth)
 {
-	if (initializedFlag_) return true;
-	if (::cyw43_arch_init_with_country(country_) != 0) return false;
+	if (!Initialize()) return false;
 	::cyw43_arch_enable_ap_mode(ssid, password, auth);
-	initializedFlag_ = true;
 	return true;
 }
 
-void WiFi::Deinit()
+void WiFi::Deinitialize()
 {
 	::cyw43_arch_deinit();
 	initializedFlag_ = false;

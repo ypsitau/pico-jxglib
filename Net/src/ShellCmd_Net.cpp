@@ -4,13 +4,11 @@
 #include "jxglib/WiFi.h"
 #include "jxglib/Shell.h"
 
-jxglib::Net::WiFi& ShellCmd_Net_GetWiFi();
-
 namespace jxglib::ShellCmd_Net {
 
 ShellCmd(net, "controls Network")
 {
-	Net::WiFi& wifi = ShellCmd_Net_GetWiFi();
+	Net::WiFi& wifi = Net::WiFi::Instance;
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
 	};

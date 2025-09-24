@@ -221,6 +221,9 @@ public:
 	static inline void adc_set_round_robin(const GPIO_ADC& gpio1, const GPIO_ADC& gpio2, bool tempSensor = false);
 	static inline void adc_set_round_robin(const GPIO_ADC& gpio1, const GPIO_ADC& gpio2, const GPIO_ADC& gpio3, bool tempSensor = false);
 	static inline void adc_set_round_robin(const GPIO_ADC& gpio1, const GPIO_ADC& gpio2, const GPIO_ADC& gpio3, const GPIO_ADC& gpio4, bool tempSensor = false);
+public:
+	static void InitLED() { ::gpio_init(25); ::gpio_set_dir(25, GPIO_OUT); }
+	static void PutLED(bool value) { ::gpio_put(25, value); }
 };
 
 class GPIO_ADC : public GPIO {
