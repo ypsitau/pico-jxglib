@@ -284,7 +284,7 @@ void Shell::OnTick()
 			Printable& tout = GetTerminal();
 			Printable& terr = GetTerminal();
 			RunCmd(tin, tout, terr, line, Terminal::EditBuffSize);
-			stat_ = Stat::PromptCmdLine;
+			if (stat_ == Stat::Running) stat_ = Stat::PromptCmdLine;
 		}
 		break;
 	}

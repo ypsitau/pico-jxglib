@@ -14,7 +14,7 @@ namespace jxglib::ShellCmd_Basic {
 //-----------------------------------------------------------------------------
 // about-platform
 //-----------------------------------------------------------------------------
-ShellCmd_Named(about_cpu, "about-platform", "prints information about the platform")
+ShellCmd_Named(about_platform, "about-platform", "prints information about the platform")
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
@@ -325,6 +325,25 @@ ShellCmd(history, "prints the command history")
 }
 
 //-----------------------------------------------------------------------------
+// logout
+//-----------------------------------------------------------------------------
+ShellCmd(logout, "logs out the current user")
+{
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		'h',	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
+	if (arg.GetBool("help")) {
+		terr.Printf("Usage: %s [OPTION]...\n", GetName());
+		arg.PrintHelp(terr);
+		return Result::Error;
+	}
+	Shell::Logout();
+	return Result::Success;
+}
+
+//-----------------------------------------------------------------------------
 // set
 //-----------------------------------------------------------------------------
 ShellCmd(set, "set environment variable")
@@ -369,20 +388,49 @@ ShellCmd(password, "changes the password file")
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
-	if (arg.GetBool("help") || argc < 2) {
-		terr.Printf("Usage: %s [OPTION]... [PASSWORD]\n", GetName());
+	if (arg.GetBool("help")) {
+		terr.Printf("Usage: %s [OPTION]...\n", GetName());
 		arg.PrintHelp(terr);
 		return Result::Error;
 	}
-	const char* password = argv[1];
-	std::unique_ptr<FS::File> pFile(FS::OpenFile(fileName, "w"));
-	if (!pFile) {
-		terr.Printf("cannot open file '%s'\n", fileName);
-		return Result::Error;
+	char password[128];
+	bool validFlag = false;
+	do {
+		char passwordReenter[128];
+		Shell::BeginInteractive();
+		Shell::Instance.GetTerminal().EnableEchoBack(false);;
+		int len;
+		terr.Printf("New password:").Flush();
+		while ((len = tin.Read(password, sizeof(password) - 1)) == 0) ;
+		if (len > 0) {
+			if (password[len - 1] == '\n') --len;
+			password[len] = '\0';
+			terr.Printf("Reenter password:").Flush();
+			while ((len = tin.Read(passwordReenter, sizeof(passwordReenter) - 1)) == 0) ;
+			if (len > 0) {
+				if (passwordReenter[len - 1] == '\n') --len;
+				passwordReenter[len] = '\0';
+				validFlag = (::strcmp(password, passwordReenter) == 0);
+				if (!validFlag) {
+					terr.Printf("passwords do not match\n");
+				}
+			}
+		}
+		Shell::Instance.GetTerminal().EnableEchoBack(true);;
+		Shell::EndInteractive();
+	} while (0);
+	if (validFlag) {
+		std::unique_ptr<FS::File> pFile(FS::OpenFile(fileName, "w"));
+		if (!pFile) {
+			terr.Printf("cannot open file '%s'\n", fileName);
+			return Result::Error;
+		}
+		Hash::SHA256 sha256;
+		const char* hashedPassword = Shell::HashPassword(sha256, password);
+		Shell::UpdateHashedPassword(hashedPassword);
+		pFile->Println(hashedPassword);
+		terr.Printf("password changed\n");
 	}
-	Hash::SHA256 sha256;
-	pFile->Println(Shell::HashPassword(sha256, password));
-	terr.Printf("password changed\n");
 	return Result::Success;
 }
 
