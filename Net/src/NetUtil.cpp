@@ -118,9 +118,4 @@ bool ICMP::EchoAsync(const char* hostName)
 	return true;
 }
 
-void ICMP::OnRecv(const uint8_t* data, size_t len, const ip_addr_t& addr, uint16_t port)
-{
-	completeFlag_ = true;
-}	
-
 }

@@ -44,15 +44,14 @@ public:
 	bool IsComplete() const { return completeFlag_; }
 	const char* GetErrorMsg() const { return errorMsg_; }
 public:
-	void OnRecv(const uint8_t* data, size_t len, const ip_addr_t& addr, uint16_t port) override;
+	virtual void OnRecv(const uint8_t* data, size_t len, const ip_addr_t& addr, uint16_t port) override;
 };
 
 //------------------------------------------------------------------------------
 // ICMP: Internet Control Message Protocol
 //------------------------------------------------------------------------------
-class ICMP : public Net::UDP::Handler {
+class ICMP {
 private:
-	Net::UDP::Client udpClient_;
 	bool completeFlag_;
 	const char* errorMsg_;
 	ip_addr_t addr_;
@@ -63,8 +62,6 @@ public:
 	bool EchoAsync(const char* hostName);
 	bool IsComplete() const { return completeFlag_; }
 	const char* GetErrorMsg() const { return errorMsg_; }
-public:
-	void OnRecv(const uint8_t* data, size_t len, const ip_addr_t& addr, uint16_t port) override;
 };
 
 }
