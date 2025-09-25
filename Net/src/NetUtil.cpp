@@ -146,11 +146,6 @@ bool ICMP::EchoAsync(const ip_addr_t& addr)
 	errorMsg_ = "";
 	addr_ = addr;
 	seqNum_++;
-	return SendEchoRequest(&addr);
-}
-
-bool ICMP::SendEchoRequest(const ip_addr_t* destAddr)
-{
 	// Allocate pbuf for ICMP echo request
 	struct pbuf* pbuf = ::pbuf_alloc(PBUF_IP, sizeof(struct icmp_echo_hdr) + 32, PBUF_RAM);
 	if (pbuf == nullptr) {
@@ -171,7 +166,7 @@ bool ICMP::SendEchoRequest(const ip_addr_t* destAddr)
 	pEchoHdr->chksum = ::inet_chksum(pEchoHdr, pbuf->len);
 	// Send the packet
 	timeSent_ = Tickable::GetCurrentTime();
-	err_t err = ::raw_sendto(pcb_, pbuf, destAddr);
+	err_t err = ::raw_sendto(pcb_, pbuf, &addr);
 	::pbuf_free(pbuf);
 	if (err != ERR_OK) {
 		errorMsg_ = "Failed to send ICMP packet";

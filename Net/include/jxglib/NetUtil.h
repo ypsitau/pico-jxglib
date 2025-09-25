@@ -73,7 +73,6 @@ public:
 	bool IsComplete() const { return completeFlag_; }
 	const char* GetErrorMsg() const { return errorMsg_; }
 private:
-	bool SendEchoRequest(const ip_addr_t* destAddr);
 	uint8_t OnRecv(struct raw_pcb* pcb, struct pbuf* pbuf, const ip_addr_t* addr);
 private:
 	static uint8_t callback_recv(void* arg, struct raw_pcb* pcb, struct pbuf* pbuf, const ip_addr_t* addr);

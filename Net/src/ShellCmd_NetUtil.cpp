@@ -74,9 +74,13 @@ ShellCmd(ping, "performs ping")
 	uint32_t msecTimeout = 3000;
 	Net::ICMP icmp;
 	uint32_t msecEcho;
-	if (!icmp.Echo(addr, &msecEcho, msecTimeout)) {
-		terr.Printf("ping failed: %s\n", icmp.GetErrorMsg());
-		return Result::Error;
+	for (int i = 0; i < 3; i++) {
+		if (icmp.Echo(addr, &msecEcho, msecTimeout)) {
+			tout.Printf("Reply from %s: time=%ums\n", ::ip4addr_ntoa(&addr), msecEcho);
+		} else {
+			terr.Printf("ping failed: %s\n", icmp.GetErrorMsg());
+			return Result::Error;
+		}
 	}
 	return Result::Success;
 }
