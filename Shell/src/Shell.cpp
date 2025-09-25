@@ -45,7 +45,7 @@ bool Shell::Startup()
 				int bytesRead = pFilePassword->Read(hashedPassword_, sizeof(hashedPassword_));
 				if (bytesRead >= Hash::SHA256::HexSize) {
 					hashedPassword_[Hash::SHA256::HexSize] = '\0';
-					stat_ = Stat::PromptPassword;
+					//stat_ = Stat::PromptPassword;
 				} else {
 					::strcpy(hashedPassword_, "");
 				}

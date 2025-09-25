@@ -8,33 +8,47 @@ using namespace jxglib;
 Net::Telnet::Server telnetServer;
 Net::Telnet::Stream telnetStream(telnetServer);
 
-class Handler : public Net::Telnet::Handler {
+class TelnetHandler : public Net::Telnet::Handler {
+private:
+	LABOPlatform& laboPlatform_;
 public:
-	virtual void OnConnect(const ip_addr_t& addr, uint16_t port) override {
-		Printable& tout = Stdio::Instance;
-		Shell::Logout();
-		LABOPlatform::Instance.SetTerminalInterface(telnetStream, telnetStream.GetKeyboard());
-		tout.Printf("Telnet client connected: %s:%d\n", ipaddr_ntoa(&addr), port);
-	}
-	virtual void OnDisconnect() override {
-		Printable& tout = Stdio::Instance;
-		LABOPlatform::Instance.RestoreTerminalInterface();
-		tout.Printf("Telnet client disconnected\n");
-	}
+	TelnetHandler(LABOPlatform& laboPlatform) : laboPlatform_{laboPlatform} {}
+public:
+	virtual void OnConnect(const ip_addr_t& addr, uint16_t port) override;
+	virtual void OnDisconnect() override;
 };
 
-Handler handler;
+void TelnetHandler::OnConnect(const ip_addr_t& addr, uint16_t port)
+{
+	Printable& tout = laboPlatform_.GetTerminal();
+	tout.Printf("Telnet client connected: %s:%u\n", ::ipaddr_ntoa(&addr), port);
+	Shell::Logout();
+	laboPlatform_.SetTerminalInterface(telnetStream, telnetStream.GetKeyboard());
+}
+
+void TelnetHandler::OnDisconnect()
+{
+	laboPlatform_.RestoreTerminalInterface();
+	Printable& tout = laboPlatform_.GetTerminal();
+	tout.Printf("Telnet client disconnected\n");
+}
+
+TelnetHandler telnetHandler(LABOPlatform::Instance);
 
 ShellCmd_Named(telnet_server, "telnet-server", "start telnet server")
 {
 	if (telnetServer.Start()) {
 		terr.Printf("Telnet server started\n");
-		telnetServer.SetHandler(handler);
+		telnetServer.SetHandler(telnetHandler);
 	}
 	return Result::Success;
 }
 
-static PeriodicToggle<Net::WiFi::PutLED> blinkLED;
+#if defined(CYW43_WL_GPIO_LED_PIN)
+static PeriodicToggle<Net::WiFi::Initialize, Net::WiFi::PutLED> blinkLED;
+#else
+static PeriodicGPIO::InitializeLED, GPIO::PutLED> blinkLED;
+#endif
 
 ShellCmd_Named(blink_led, "blink-led", "control blinking LED")
 {

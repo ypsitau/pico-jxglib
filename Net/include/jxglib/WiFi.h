@@ -62,7 +62,8 @@ public:
 public:
 	WiFi& SetCouytrn(uint32_t country) { country_ = country; return *this; }
 	const ConnectInfo& GetConnectInfo() const { return connectInfo_; }
-	bool Initialize();
+	static void Initialize() { Instance.Initialize_(); }
+	bool Initialize_();
 	bool InitAsStation();
 	bool InitAsAccessPoint(const char* ssid, const char* password, uint32_t auth = CYW43_AUTH_WPA2_AES_PSK);
 	void Deinitialize();

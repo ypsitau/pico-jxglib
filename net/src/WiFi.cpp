@@ -14,7 +14,7 @@ WiFi::WiFi() : country_{PICO_CYW43_ARCH_DEFAULT_COUNTRY_CODE}, initializedFlag_{
 {
 }
 
-bool WiFi::Initialize()
+bool WiFi::Initialize_()
 {
 	if (!initializedFlag_) initializedFlag_ = (::cyw43_arch_init_with_country(country_) == 0);
 	return initializedFlag_;
@@ -22,14 +22,14 @@ bool WiFi::Initialize()
 
 bool WiFi::InitAsStation()
 {
-	if (!Initialize()) return false;
+	if (!Initialize_()) return false;
 	::cyw43_arch_enable_sta_mode();
 	return true;
 }
 
 bool WiFi::InitAsAccessPoint(const char* ssid, const char* password, uint32_t auth)
 {
-	if (!Initialize()) return false;
+	if (!Initialize_()) return false;
 	::cyw43_arch_enable_ap_mode(ssid, password, auth);
 	return true;
 }
