@@ -148,11 +148,11 @@ LABOPlatform::LABOPlatform(int bytesFlash) :
 	}, 0x0409, "jxglib", "pico-jxgLABO", "000000000000"),
 	fat_("*L:", bytesFlash),
 	mscDrive_(deviceController_, 0x01, 0x81),
-	streamTerminal_(deviceController_, "StreamSerial", 0x82, 0x03, 0x83),
-	streamApplication_(deviceController_, "StreamApplication", 0x84, 0x05, 0x85),
-	telePlot_(streamApplication_),
+	streamCDC_Terminal_(deviceController_, "StreamSerial", 0x82, 0x03, 0x83),
+	streamCDC_Application_(deviceController_, "StreamApplication", 0x84, 0x05, 0x85),
+	telePlot_(streamCDC_Application_),
 	attachStdioFlag_{false},
-	sigrokAdapter_(logicAnalyzer_, streamTerminal_, streamApplication_),
+	sigrokAdapter_(logicAnalyzer_, streamCDC_Terminal_, streamCDC_Application_),
 	stdio_driver_ {
 		out_chars:						func_out_chars,
 		out_flush:						func_out_flush,
@@ -171,9 +171,9 @@ void LABOPlatform::Initialize()
 	::stdio_set_driver_enabled(&stdio_driver_, true);
 	deviceController_.Initialize();
 	mscDrive_.Initialize(fat_);
-	streamTerminal_.Initialize();
-	streamApplication_.Initialize();
-	if (!attachStdioFlag_) terminal_.AttachKeyboard(streamTerminal_.GetKeyboard()).AttachPrintable(streamTerminal_);
+	streamCDC_Terminal_.Initialize();
+	streamCDC_Application_.Initialize();
+	if (!attachStdioFlag_) terminal_.AttachKeyboard(streamCDC_Terminal_.GetKeyboard()).AttachPrintable(streamCDC_Terminal_);
 	Shell::AttachTerminal(terminal_.Initialize());
 	if (!fat_.Mount()) {
 		fat_.Format();
@@ -189,24 +189,42 @@ LABOPlatform& LABOPlatform::AttachStdio(bool attachStdioFlag)
 	if (attachStdioFlag_) {
 		sigrokAdapter_.SetPrintableErr(Stdio::Instance);
 	} else {
-		sigrokAdapter_.SetPrintableErr(streamTerminal_);
+		sigrokAdapter_.SetPrintableErr(streamCDC_Terminal_);
 	}
 	return *this;
 }
 
+void LABOPlatform::SetTerminalInterface(Printable& printable, Keyboard& keyboard)
+{
+	terminal_.AttachPrintable(printable).AttachKeyboard(keyboard);
+	sigrokAdapter_.SetPrintableErr(printable);
+}
+
+void LABOPlatform::RestoreTerminalInterface()
+{
+	if (attachStdioFlag_) {
+		terminal_.AttachKeyboard(Stdio::GetKeyboard()).AttachPrintable(Stdio::Instance);
+		sigrokAdapter_.SetPrintableErr(Stdio::Instance);
+	} else {
+		terminal_.AttachKeyboard(streamCDC_Terminal_.GetKeyboard()).AttachPrintable(streamCDC_Terminal_);
+		sigrokAdapter_.SetPrintableErr(streamCDC_Terminal_);
+	}
+}
+
 void LABOPlatform::func_out_chars(const char* buf, int len)
 {
-	Instance.GetStreamTerminal().Write(buf, len);
+	Printable& printable = Instance.GetTerminal().GetPrintable();
+	for (int i = 0; i < len; ++i, ++buf) printable.PutChar(*buf);
 }
 
 void LABOPlatform::func_out_flush(void)
 {
-	Instance.GetStreamTerminal().Flush();
+	Instance.GetTerminal().GetPrintable().Flush();
 }
 
 int LABOPlatform::func_in_chars(char* buf, int len)
 {
-	return Instance.GetStreamTerminal().Read(buf, len);
+	return 0;
 }
 
 void LABOPlatform::func_set_chars_available_callback(void (*fn)(void*), void* param)

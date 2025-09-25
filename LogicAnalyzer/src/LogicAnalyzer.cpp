@@ -781,7 +781,7 @@ const LogicAnalyzer::RawEvent& LogicAnalyzer::EventIterator::GetRawEvent(int iSa
 //   /src/hardware/raspberrypi-pico/protocol.c
 //------------------------------------------------------------------------------
 LogicAnalyzer::SigrokAdapter::SigrokAdapter(LogicAnalyzer& logicAnalyzer, Printable& terr, Stream& streamApplication) :
-	logicAnalyzer_{logicAnalyzer}, eventIter_{logicAnalyzer_}, pTerr_{&terr}, stream_{streamApplication}, stat_{Stat::Initial},
+	logicAnalyzer_{logicAnalyzer}, eventIter_{logicAnalyzer_}, pTerr_{&terr}, pStream_{&streamApplication}, stat_{Stat::Initial},
 	nDigitalChAvailable_{0}, nAnalogChAvailable_{0}, nDigitalChEnabled_{0}, nAnalogChEnabled_{0},
 	digitalChBitmapEnabled_{0}, analogChBitmapEnabled_{0}, uvoltScale_{0}, uvoltOffset_{0},
 	enableChannelFlag_{false}, iChannel_{0}, sampleRate_{1}, nSamples_{0}, timeStampFactor_{1.0}, sampleDelta_{1.0}, iEvent_{0}
@@ -802,7 +802,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 {
 	Printable& terr = *pTerr_;
 	char ch;
-	bool pollingFlag = (stream_.Read(&ch, 1) == 0);
+	bool pollingFlag = (GetStream().Read(&ch, 1) == 0);
 	//::printf("%c\n", ch);
 	switch (stat_) {
 	case Stat::Initial: {
@@ -854,7 +854,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 			if (nDigitalChAvailable_ == 0) {
 				nDigitalChAvailable_ = nDigitalChToReportDefault_;
 			}
-			stream_.Printf("SRPICO,A%02d1D%02d,%02d", nAnalogChAvailable_, nDigitalChAvailable_, versionNumber_).Flush();
+			GetStream().Printf("SRPICO,A%02d1D%02d,%02d", nAnalogChAvailable_, nDigitalChAvailable_, versionNumber_).Flush();
 			//logicAnalyzer_.PrintSettings(terr);
 		}
 		stat_ = Stat::Initial;
@@ -866,7 +866,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		} else if ('0' <= ch && ch <= '9') {
 			int channel = ch - '0';
 			if (channel >= 0 && channel < nAnalogChAvailable_) {
-				stream_.Printf("%04dx%05d", uvoltScale_, uvoltOffset_);
+				GetStream().Printf("%04dx%05d", uvoltScale_, uvoltOffset_);
 			}
 			stat_ = Stat::Initial;
 		} else {
@@ -880,7 +880,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		} else if ('0' <= ch && ch <= '9') {
 			sampleRate_ = sampleRate_ * 10 + (ch - '0');
 		} else if (ch == '\n') {
-			stream_.Printf("*").Flush();
+			GetStream().Printf("*").Flush();
 			stat_ = Stat::Initial;
 		} else {
 			stat_ = Stat::Recover;
@@ -893,7 +893,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 		} else if ('0' <= ch && ch <= '9') {
 			nSamples_ = nSamples_ * 10 + (ch - '0');
 		} else if (ch == '\n') {
-			stream_.Printf("*").Flush();
+			GetStream().Printf("*").Flush();
 			stat_ = Stat::Initial;
 		} else {
 			stat_ = Stat::Recover;
@@ -924,7 +924,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 			} else {
 				analogChBitmapEnabled_ &= ~(1u << iChannel_);
 			}
-			stream_.Printf("*").Flush();
+			GetStream().Printf("*").Flush();
 			stat_ = Stat::Initial;
 		} else {
 			stat_ = Stat::Recover;
@@ -955,7 +955,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 			} else {
 				digitalChBitmapEnabled_ &= ~(1u << iChannel_);
 			}
-			stream_.Printf("*").Flush();
+			GetStream().Printf("*").Flush();
 			stat_ = Stat::Initial;
 		} else {
 			stat_ = Stat::Recover;
@@ -980,7 +980,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 				iEvent_++;
 			}
 		} else if (ch == '+') {		// abort
-			stream_.Flush();
+			GetStream().Flush();
 			stat_ = Stat::Initial;
 		}
 		break;
@@ -1047,7 +1047,7 @@ void LogicAnalyzer::SigrokAdapter::SendBitmap(const Event& event)
 		}
 		if (iBit > 0) buff[iBuff++] = 0x80 | data;
 	}
-	stream_.Write(buff, iBuff);
+	GetStream().Write(buff, iBuff);
 }
 
 void LogicAnalyzer::SigrokAdapter::SendRLE(int nSamples)
@@ -1095,7 +1095,7 @@ void LogicAnalyzer::SigrokAdapter::SendRLE(int nSamples)
 			}
 		}
 	}
-	stream_.Write(buff, iBuff);
+	GetStream().Write(buff, iBuff);
 }
 
 void LogicAnalyzer::SigrokAdapter::SendReport(const Event& event, int nSamples)
@@ -1170,8 +1170,8 @@ void LogicAnalyzer::SigrokAdapter::SendReport(const Event& event, int nSamples)
 		}
 	}
 	//Dump(buff, iBuff);
-	stream_.Write(buff, iBuff);
-	//stream_.Flush();
+	GetStream().Write(buff, iBuff);
+	//GetStream().Flush();
 }
 
 //------------------------------------------------------------------------------

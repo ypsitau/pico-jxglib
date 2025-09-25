@@ -246,7 +246,7 @@ public:
 		EventIterator eventIter_;
 		Event event_;
 		Printable* pTerr_;
-		Stream& stream_;
+		Stream* pStream_;
 		Stat stat_;
 		int nDigitalChAvailable_;
 		int nAnalogChAvailable_;
@@ -272,6 +272,7 @@ public:
 		SigrokAdapter(LogicAnalyzer& logicAnalyzer, Printable& terr, Stream& streamApplication);
 	public:
 		void SetPrintableErr(Printable& terr) { pTerr_ = &terr; }
+		Stream& GetStream() { return *pStream_; }
 	public:
 		// virtual functions of Tickable
 		virtual const char* GetTickableName() const override { return "LogicAnalyzer::SigrokAdapter"; }

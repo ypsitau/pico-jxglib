@@ -24,13 +24,12 @@ private:
 	USBDevice::Controller deviceController_;
 	FAT::Flash fat_;
 	USBDevice::MSCDrive mscDrive_;
-	USBDevice::CDCSerial streamTerminal_;
-	USBDevice::CDCSerial streamApplication_;
+	USBDevice::CDCSerial streamCDC_Terminal_;
+	USBDevice::CDCSerial streamCDC_Application_;
 	TelePlot telePlot_;
 	Serial::Terminal terminal_;
 	bool attachStdioFlag_;
 	LogicAnalyzer logicAnalyzer_;
-	//LogicAnalyzer::SUMPAdapter sumpAdapter_;
 	LogicAnalyzer::SigrokAdapter sigrokAdapter_;
 	stdio_driver_t stdio_driver_;
 private:
@@ -42,12 +41,12 @@ public:
 public:
 	void Initialize();
 	LABOPlatform& AttachStdio(bool attachStdioFlag = true);
+	void SetTerminalInterface(Printable& printable, Keyboard& keyboard);
+	void RestoreTerminalInterface();
 public:
 	USBDevice::Controller& GetDeviceController() { return deviceController_; }
 	FAT::Flash& GetFAT() { return fat_; }
 	USBDevice::MSCDrive& GetMSCDrive() { return mscDrive_; }
-	USBDevice::CDCSerial& GetStreamTerminal() { return streamTerminal_; }
-	USBDevice::CDCSerial& GetStreamApplication() { return streamApplication_; }
 	Serial::Terminal& GetTerminal() { return terminal_; }
 	TelePlot& GetTelePlot() { return telePlot_; }
 	LogicAnalyzer& GetLogicAnalyzer() { return logicAnalyzer_; }
