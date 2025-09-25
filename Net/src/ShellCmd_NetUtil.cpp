@@ -73,8 +73,8 @@ ShellCmd(ping, "performs ping")
 	}
 	uint32_t msecTimeout = 3000;
 	Net::ICMP icmp;
-	uint32_t msecEcho;
 	for (int i = 0; i < 3; i++) {
+		uint32_t msecEcho;
 		if (icmp.Echo(addr, &msecEcho, msecTimeout)) {
 			tout.Printf("Reply from %s: time=%ums\n", ::ip4addr_ntoa(&addr), msecEcho);
 		} else {
