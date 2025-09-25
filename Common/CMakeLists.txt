@@ -4,6 +4,7 @@ target_include_directories(jxglib_Common INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/include)
 
 target_link_libraries(jxglib_Common INTERFACE
+	pico_unique_id
 	hardware_adc
 	hardware_pio
 	hardware_pwm)
