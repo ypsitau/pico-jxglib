@@ -55,4 +55,30 @@ ShellCmd(ntp, "requests time from NTP server")
 	return Result::Success;
 }
 
+ShellCmd(ping, "performs ping")
+{
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		'h',	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
+	if (arg.GetBool("help") || argc < 2) {
+		terr.Printf("Usage: %s URL\n", GetName());
+		return Result::Success;
+	}
+	ip_addr_t addr;
+	if (!Net::DNS().GetHostByName(argv[1], &addr)) {
+		terr.Printf("nslookup failed: %s\n", argv[1]);
+		return Result::Error;
+	}
+	uint32_t msecTimeout = 3000;
+	Net::ICMP icmp;
+	uint32_t msecEcho;
+	if (!icmp.Echo(addr, &msecEcho, msecTimeout)) {
+		terr.Printf("ping failed: %s\n", icmp.GetErrorMsg());
+		return Result::Error;
+	}
+	return Result::Success;
+}
+
 }

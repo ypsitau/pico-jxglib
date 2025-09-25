@@ -6,6 +6,10 @@
 #include "jxglib/Net.h"
 #include "jxglib/Net/UDP.h"
 
+// Forward declarations for lwIP types
+struct raw_pcb;
+struct pbuf;
+
 namespace jxglib::Net {
 
 //------------------------------------------------------------------------------
@@ -52,16 +56,27 @@ public:
 //------------------------------------------------------------------------------
 class ICMP {
 private:
+	struct raw_pcb* pcb_;
 	bool completeFlag_;
 	const char* errorMsg_;
 	ip_addr_t addr_;
+	uint16_t seqNum_;
+	uint16_t identifier_;
+	uint32_t timeSent_;
+	uint32_t timeRecv_;
 public:
 	ICMP();
+	~ICMP();
 public:
-	bool Echo(const char* hostName, uint32_t msecTimeout = 3000);
-	bool EchoAsync(const char* hostName);
+	bool Echo(const ip_addr_t& addr, uint32_t* pMsecEcho, uint32_t msecTimeout = 3000);
+	bool EchoAsync(const ip_addr_t& addr);
 	bool IsComplete() const { return completeFlag_; }
 	const char* GetErrorMsg() const { return errorMsg_; }
+private:
+	bool SendEchoRequest(const ip_addr_t* destAddr);
+	uint8_t OnRecv(struct raw_pcb* pcb, struct pbuf* pbuf, const ip_addr_t* addr);
+private:
+	static uint8_t callback_recv(void* arg, struct raw_pcb* pcb, struct pbuf* pbuf, const ip_addr_t* addr);
 };
 
 }
