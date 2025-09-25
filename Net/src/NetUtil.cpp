@@ -91,4 +91,36 @@ void NTP::OnRecv(const uint8_t* data, size_t len, const ip_addr_t& addr, uint16_
 	completeFlag_ = true;
 }	
 
+//------------------------------------------------------------------------------
+// ICMP: Internet Control Message Protocol
+//------------------------------------------------------------------------------
+ICMP::ICMP() : completeFlag_(false), errorMsg_(""), addr_{ip_addr_any}
+{
+}
+
+bool ICMP::Echo(const char* hostName, uint32_t msecTimeout)
+{
+	if (!EchoAsync(hostName)) return false;
+	uint32_t msecStart = Tickable::GetCurrentTime();
+	while (Tickable::GetCurrentTime() - msecStart < msecTimeout) {
+		if (IsComplete()) return true;
+		if (Tickable::TickSub()) {
+			errorMsg_ = "user interrupt";
+			return false;
+		}
+	}
+	errorMsg_ = "timeout";
+	return false;
+}
+
+bool ICMP::EchoAsync(const char* hostName)
+{
+	return true;
+}
+
+void ICMP::OnRecv(const uint8_t* data, size_t len, const ip_addr_t& addr, uint16_t port)
+{
+	completeFlag_ = true;
+}	
+
 }
