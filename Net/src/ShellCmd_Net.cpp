@@ -23,7 +23,7 @@ ShellCmd(net, "controls Network")
 		tout.Printf("  wifi-scan            scan for WiFi networks\n");
 		tout.Printf("  wifi-ap  {ssid:SSID password:PASSWORD [auth:AUTH]}\n");
 		tout.Printf("                       initialise as a WiFi access point\n");
-		tout.Printf("  wifi-connect {ssid:SSID password:PASSWORD [auth:AUTH]}\n");
+		tout.Printf("  wifi-connect {ssid:SSID password:PASSWORD [timeout:SEC] [auth:AUTH]}\n");
 		tout.Printf("                       connect to a WiFi access point\n");
 		tout.Printf("  wifi-disconnect      disconnect from the current WiFi access point\n");
 		tout.Printf("  config {[addr:ADDR] [netmask:NETMASK] [gateway:GATEWAY]}\n");
@@ -84,6 +84,7 @@ ShellCmd(net, "controls Network")
 			const uint8_t* bssid = nullptr;
 			uint32_t auth = CYW43_AUTH_WPA2_AES_PSK;
 			//uint32_t auth = CYW43_AUTH_WPA2_MIXED_PSK;
+			uint32_t msecTimeout = 15000; // 15 seconds
 			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
 				const char* subcmd = pSubcmdChild->GetProc();
 				if (Arg::GetAssigned(subcmd, "ssid", &value)) {
@@ -94,6 +95,13 @@ ShellCmd(net, "controls Network")
 				} else if (Arg::GetAssigned(subcmd, "password", &value)) {
 					::snprintf(password, sizeof(password), "%s", value);
 					Tokenizer::RemoveSurroundingQuotes(password);
+				} else if (Arg::GetAssigned(subcmd, "timeout", &value)) {
+					int num = ::strtol(value, nullptr, 10);
+					if (num <= 0) {
+						terr.Printf("Invalid timeout: %s\n", value);
+						return Result::Error;
+					}
+					msecTimeout = static_cast<uint32_t>(num) * 1000;
 				} else if (Arg::GetAssigned(subcmd, "auth", &value)) {
 					if (!Net::WiFi::StringToAuth(value, &auth)) {
 						terr.Printf("Invalid auth: %s\n", value);
@@ -112,7 +120,7 @@ ShellCmd(net, "controls Network")
 				terr.Printf("Password is required for access_point mode\n");
 				return Result::Error;
 			}
-			int errorCode = wifi.Connect(ssid, bssid, password, auth);
+			int errorCode = wifi.Connect(ssid, bssid, password, auth, msecTimeout);
 			if (errorCode == PICO_ERROR_NONE) {
 				printConnectInfoFlag = true;
 			} else if (errorCode == PICO_ERROR_BADAUTH) {

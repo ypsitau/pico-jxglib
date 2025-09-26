@@ -90,7 +90,7 @@ void WiFi::AddScanResult(const cyw43_ev_scan_result_t& entity)
 	pScanResultIter->SetNext(pScanResultNew.release());
 }
 
-int WiFi::Connect(const char* ssid, const uint8_t* bssid, const char* password, uint32_t auth)
+int WiFi::Connect(const char* ssid, const uint8_t* bssid, const char* password, uint32_t auth, uint32_t msecTimeout)
 {
 	int errorCode = PICO_ERROR_CONNECT_FAILED;
 	if (!InitAsStation()) return errorCode;
@@ -100,7 +100,8 @@ int WiFi::Connect(const char* ssid, const uint8_t* bssid, const char* password, 
 	if (::cyw43_arch_wifi_connect_bssid_async(ssid, bssid, password, auth) != 0) return errorCode;
 	::snprintf(connectInfo_.ssid, sizeof(connectInfo_.ssid), "%s", ssid);
 	connectInfo_.auth = auth;
-	for (;;) {
+	for (uint32_t msecStart = Tickable::GetCurrentTime();
+								Tickable::GetCurrentTime() - msecStart < msecTimeout; ) {
 		int linkStat = ::cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA);
 		if (linkStat == CYW43_LINK_DOWN) {
 			// nothing to do
@@ -118,8 +119,7 @@ int WiFi::Connect(const char* ssid, const uint8_t* bssid, const char* password, 
 			errorCode = PICO_ERROR_CONNECT_FAILED;
 			break;
 		} else if (linkStat == CYW43_LINK_BADAUTH) {
-			errorCode = PICO_ERROR_BADAUTH;
-			break;
+			errorCode = PICO_ERROR_BADAUTH; // keep the error code, but not break here
 		} else {
 			errorCode = PICO_ERROR_CONNECT_FAILED;
 			break;
