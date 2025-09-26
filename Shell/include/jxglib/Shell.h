@@ -140,7 +140,14 @@ public:
 			bool CheckValidity(int* pCount = nullptr);
 			void SetBlankValue(int value, bool enableFlag = true) { blank_.value = value; blank_.enableFlag_ = enableFlag; }
 			void Rewind();
-			int GetAll(int valueTbl[], int cntMax);
+			template<typename T> int GetAll(T valueTbl[], int cntMax) {
+				int cnt = 0;
+				int value;
+				Rewind();
+				for ( ; cnt < cntMax && Next(&value); cnt++) valueTbl[cnt] = static_cast<T>(value);
+				return IsSuccess()? cnt : -1;
+			}
+
 		};
 		class EachGlob : public EachBase {
 		private:
@@ -356,6 +363,7 @@ public:
 	bool RunScript(Readable& tin, Printable& tout, Printable& terr, Readable& script);
 	Terminal& GetTerminal() { return *pTerminal_; }
 	Dict& GetDict() { return dict_; }
+	bool HasPassword() const { return hashedPassword_[0] != '\0'; }
 	bool ExpandEnvVariables(char* line, int bytesLine, const char** errorMsg);
 public:
 	static void UpdateHashedPassword(const char* hashedPassword) { Instance.UpdateHashedPassword_(hashedPassword); }

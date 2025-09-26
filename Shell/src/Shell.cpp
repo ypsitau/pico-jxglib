@@ -256,6 +256,9 @@ void Shell::OnTick()
 		char* line = GetTerminal().ReadLine_Process();
 		if (!line) {
 			// nothing to do
+		} else if (!HasPassword()) {
+			GetTerminal().EnableEchoBack(true);
+			stat_ = Stat::PromptCmdLine;
 		} else if (line[0] == '\0') {
 			stat_ = Stat::PromptPassword;
 		} else {
@@ -939,15 +942,6 @@ void Shell::Arg::EachNum::Rewind()
 	chQuote_ = '\0';
 	errorMsg_ = "";
 	pFile_.reset();
-}
-
-int Shell::Arg::EachNum::GetAll(int valueTbl[], int cntMax)
-{
-	int cnt = 0;
-	int value;
-	Rewind();
-	for ( ; cnt < cntMax && Next(&value); cnt++) valueTbl[cnt] = value;
-	return IsSuccess()? cnt : -1;
 }
 
 //------------------------------------------------------------------------------

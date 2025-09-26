@@ -31,6 +31,19 @@ target_sources(jxglib_NetUtil INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/NetUtil.cpp)
 
 #------------------------------------------------------------------------------
+add_library(jxglib_ShellCmd_LED INTERFACE)
+
+target_include_directories(jxglib_ShellCmd_LED INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/include)
+
+target_link_libraries(jxglib_ShellCmd_LED INTERFACE
+	jxglib_Net
+	jxglib_ShellCmd_Basic)
+
+target_sources(jxglib_ShellCmd_LED INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/src/ShellCmd_LED.cpp)
+
+#------------------------------------------------------------------------------
 add_library(jxglib_ShellCmd_Net INTERFACE)
 
 target_include_directories(jxglib_ShellCmd_Net INTERFACE
