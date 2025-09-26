@@ -168,12 +168,14 @@ LABOPlatform::LABOPlatform(int bytesFlash) :
 
 void LABOPlatform::Initialize()
 {
-	::stdio_set_driver_enabled(&stdio_driver_, true);
 	deviceController_.Initialize();
 	mscDrive_.Initialize(fat_);
 	streamCDC_Terminal_.Initialize();
 	streamCDC_Application_.Initialize();
-	if (!attachStdioFlag_) terminal_.AttachKeyboard(streamCDC_Terminal_.GetKeyboard()).AttachPrintable(streamCDC_Terminal_);
+	if (!attachStdioFlag_) {
+		terminal_.AttachKeyboard(streamCDC_Terminal_.GetKeyboard()).AttachPrintable(streamCDC_Terminal_);
+		::stdio_set_driver_enabled(&stdio_driver_, true);
+	}
 	Shell::AttachTerminal(terminal_.Initialize());
 	if (!fat_.Mount()) {
 		fat_.Format();

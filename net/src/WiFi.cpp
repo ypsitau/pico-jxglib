@@ -92,8 +92,12 @@ void WiFi::AddScanResult(const cyw43_ev_scan_result_t& entity)
 
 int WiFi::Connect(const char* ssid, const uint8_t* bssid, const char* password, uint32_t auth)
 {
-	int linkStat = CYW43_LINK_FAIL;
-	if (!InitAsStation()) return linkStat;
+	int errorCode = PICO_ERROR_CONNECT_FAILED;
+	if (!InitAsStation()) return errorCode;
+
+	errorCode = ::cyw43_arch_wifi_connect_blocking(ssid, password, auth);
+
+#if 0
 	if (::cyw43_arch_wifi_connect_bssid_async(ssid, bssid, password, auth) != 0) return linkStat;
 	::snprintf(connectInfo_.ssid, sizeof(connectInfo_.ssid), "%s", ssid);
 	connectInfo_.auth = auth;
@@ -106,19 +110,22 @@ int WiFi::Connect(const char* ssid, const uint8_t* bssid, const char* password, 
 		} else if (linkStat == CYW43_LINK_NOIP) {
 			// nothing to do
 		} else if (linkStat == CYW43_LINK_UP) {
+			errorCode = PICO_ERROR_NONE;
 			break;
 		} else if (linkStat == CYW43_LINK_FAIL) {
 			break;
 		} else if (linkStat == CYW43_LINK_NONET) {
 			break;
 		} else if (linkStat == CYW43_LINK_BADAUTH) {
+			errorCode = PICO_ERROR_BADAUTH;
 			break;
 		} else {
 			break;
 		}
 		if (Tickable::Sleep(100)) break;
 	}
-	return linkStat;
+#endif
+	return errorCode;
 }
 
 WiFi& WiFi::Configure(const ip4_addr_t& addr, const ip4_addr_t& netmask, const ip4_addr_t& gateway)

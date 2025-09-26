@@ -12,8 +12,8 @@ target_sources(jxglib_Net INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/WiFi.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Net.cpp)
 
-target_compile_definitions(cyw43_driver INTERFACE
-	NDEBUG=1)
+#target_compile_definitions(cyw43_driver INTERFACE
+#	NDEBUG=1)
 
 #------------------------------------------------------------------------------
 add_library(jxglib_NetUtil INTERFACE)

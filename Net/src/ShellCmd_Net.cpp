@@ -82,8 +82,8 @@ ShellCmd(net, "controls Network")
 			char ssid[33] = {0};
 			char password[65] = {0};
 			const uint8_t* bssid = nullptr;
-			//uint32_t auth = CYW43_AUTH_WPA2_AES_PSK;
-			uint32_t auth = CYW43_AUTH_WPA2_MIXED_PSK;
+			uint32_t auth = CYW43_AUTH_WPA2_AES_PSK;
+			//uint32_t auth = CYW43_AUTH_WPA2_MIXED_PSK;
 			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
 				const char* subcmd = pSubcmdChild->GetProc();
 				if (Arg::GetAssigned(subcmd, "ssid", &value)) {
@@ -112,10 +112,10 @@ ShellCmd(net, "controls Network")
 				terr.Printf("Password is required for access_point mode\n");
 				return Result::Error;
 			}
-			int linkStat = wifi.Connect(ssid, bssid, password, auth);
-			if (linkStat == CYW43_LINK_UP) {
+			int errorCode = wifi.Connect(ssid, bssid, password, auth);
+			if (errorCode == PICO_ERROR_NONE) {
 				printConnectInfoFlag = true;
-			} else if (linkStat == CYW43_LINK_BADAUTH) {
+			} else if (errorCode == PICO_ERROR_BADAUTH) {
 				terr.Printf("Authentication failure for '%s'\n", ssid);
 				return Result::Error;
 			} else {
