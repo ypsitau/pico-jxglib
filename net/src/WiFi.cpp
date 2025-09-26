@@ -94,15 +94,14 @@ int WiFi::Connect(const char* ssid, const uint8_t* bssid, const char* password, 
 {
 	int errorCode = PICO_ERROR_CONNECT_FAILED;
 	if (!InitAsStation()) return errorCode;
-
-	errorCode = ::cyw43_arch_wifi_connect_blocking(ssid, password, auth);
-
 #if 0
-	if (::cyw43_arch_wifi_connect_bssid_async(ssid, bssid, password, auth) != 0) return linkStat;
+	errorCode = ::cyw43_arch_wifi_connect_blocking(ssid, password, auth);
+#else
+	if (::cyw43_arch_wifi_connect_bssid_async(ssid, bssid, password, auth) != 0) return errorCode;
 	::snprintf(connectInfo_.ssid, sizeof(connectInfo_.ssid), "%s", ssid);
 	connectInfo_.auth = auth;
 	for (;;) {
-		linkStat = ::cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA);
+		int linkStat = ::cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA);
 		if (linkStat == CYW43_LINK_DOWN) {
 			// nothing to do
 		} else if (linkStat == CYW43_LINK_JOIN) {
@@ -113,13 +112,16 @@ int WiFi::Connect(const char* ssid, const uint8_t* bssid, const char* password, 
 			errorCode = PICO_ERROR_NONE;
 			break;
 		} else if (linkStat == CYW43_LINK_FAIL) {
+			errorCode = PICO_ERROR_CONNECT_FAILED;
 			break;
 		} else if (linkStat == CYW43_LINK_NONET) {
+			errorCode = PICO_ERROR_CONNECT_FAILED;
 			break;
 		} else if (linkStat == CYW43_LINK_BADAUTH) {
 			errorCode = PICO_ERROR_BADAUTH;
 			break;
 		} else {
+			errorCode = PICO_ERROR_CONNECT_FAILED;
 			break;
 		}
 		if (Tickable::Sleep(100)) break;
