@@ -46,9 +46,7 @@ pico_enable_stdio_usb(test-TelnetServer 0)
 
 # Add the standard library to the build
 target_link_libraries(test-TelnetServer
-        pico_stdlib
-        jxglib_Net_Telnet
-        jxglib_ShellCmd_NetUtil)
+        pico_stdlib)
 
 # Add the standard include files to the build
 target_include_directories(test-TelnetServer PRIVATE
@@ -59,5 +57,4 @@ pico_add_extra_outputs(test-TelnetServer)
 
 target_link_libraries(test-TelnetServer jxglib_LABOPlatform_FullCmd)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
-jxglib_configure_Net(test-TelnetServer)
 jxglib_configure_LABOPlatform(test-TelnetServer)

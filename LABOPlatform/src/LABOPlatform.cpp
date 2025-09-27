@@ -5,6 +5,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include "jxglib/LABOPlatform.h"
+#if defined(CYW43_WL_GPIO_LED_PIN)
+#include "jxglib/Net/Telnet.h"
+#endif
 
 using namespace jxglib;
 
@@ -232,3 +235,47 @@ int LABOPlatform::func_in_chars(char* buf, int len)
 void LABOPlatform::func_set_chars_available_callback(void (*fn)(void*), void* param)
 {
 }
+
+//------------------------------------------------------------------------------
+// Telnet Support
+//------------------------------------------------------------------------------
+#if defined(CYW43_WL_GPIO_LED_PIN)
+
+class TelnetHandler : public Net::Telnet::Handler {
+private:
+	LABOPlatform& laboPlatform_;
+public:
+	TelnetHandler(LABOPlatform& laboPlatform) : laboPlatform_{laboPlatform} {}
+public:
+	virtual void OnConnect(const ip_addr_t& addr, uint16_t port) override;
+	virtual void OnDisconnect() override;
+};
+
+TelnetHandler telnetHandler(LABOPlatform::Instance);
+Net::Telnet::Server telnetServer(telnetHandler);
+Net::Telnet::Stream telnetStream(telnetServer);
+
+void TelnetHandler::OnConnect(const ip_addr_t& addr, uint16_t port)
+{
+	Printable& tout = laboPlatform_.GetTerminal();
+	tout.Printf("Telnet client connected: %s:%u\n", ::ipaddr_ntoa(&addr), port);
+	Shell::Logout();
+	laboPlatform_.SetTerminalInterface(telnetStream, telnetStream.GetKeyboard());
+}
+
+void TelnetHandler::OnDisconnect()
+{
+	laboPlatform_.RestoreTerminalInterface();
+	Printable& tout = laboPlatform_.GetTerminal();
+	tout.Printf("Telnet client disconnected\n");
+}
+
+ShellCmd_Named(telnet_server, "telnet-server", "start telnet server")
+{
+	if (telnetServer.Start()) {
+		terr.Printf("Telnet server started\n");
+	}
+	return Result::Success;
+}
+
+#endif

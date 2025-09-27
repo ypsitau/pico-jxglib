@@ -8,6 +8,11 @@ target_link_libraries(jxglib_LABOPlatform INTERFACE
 	jxglib_USBDevice_MSCDrive jxglib_USBDevice_CDCSerial
 	jxglib_TelePlot jxglib_LogicAnalyzer)
 
+if(PICO_BOARD MATCHES ".*_w$")
+	target_link_libraries(jxglib_LABOPlatform INTERFACE
+		jxglib_Net_Telnet)
+endif()
+
 target_sources(jxglib_LABOPlatform INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/LABOPlatform.cpp)
 
@@ -39,5 +44,6 @@ target_link_libraries(jxglib_LABOPlatform_FullCmd INTERFACE
 if(PICO_BOARD MATCHES ".*_w$")
 	target_link_libraries(jxglib_LABOPlatform_FullCmd INTERFACE
 		jxglib_ShellCmd_Net
-		jxglib_ShellCmd_NetUtil)
+		jxglib_ShellCmd_NetUtil
+	)
 endif()

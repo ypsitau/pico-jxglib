@@ -141,6 +141,7 @@ private:
 	FIFOBuff<uint8_t, 1024> buffRecv_;
 public:
 	Server(uint16_t port = 23);
+	Server(Telnet::Handler& handler, uint16_t port = 23) : Server(port) { SetHandler(handler); }
 	~Server();
 public:
 	void SetHandler(Telnet::Handler& handler) { pHandler_ = &handler; }
