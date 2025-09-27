@@ -255,6 +255,8 @@ TelnetHandler telnetHandler(LABOPlatform::Instance);
 Net::Telnet::Server telnetServer(telnetHandler);
 Net::Telnet::Stream telnetStream(telnetServer);
 
+Net::Telnet::Server& ShellCmd_Net_Telnet_GetTelnetServer() { return telnetServer; }
+
 void TelnetHandler::OnConnect(const ip_addr_t& addr, uint16_t port)
 {
 	Printable& tout = laboPlatform_.GetTerminal();
@@ -268,14 +270,6 @@ void TelnetHandler::OnDisconnect()
 	laboPlatform_.RestoreTerminalInterface();
 	Printable& tout = laboPlatform_.GetTerminal();
 	tout.Printf("Telnet client disconnected\n");
-}
-
-ShellCmd_Named(telnet_server, "telnet-server", "start telnet server")
-{
-	if (telnetServer.Start()) {
-		terr.Printf("Telnet server started\n");
-	}
-	return Result::Success;
 }
 
 #endif

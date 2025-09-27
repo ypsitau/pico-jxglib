@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/LABOPlatform.h"
-#include "jxglib/WiFi.h"
+#include "jxglib/Net/WiFi.h"
 #include "jxglib/Net/TCP.h"
 
 using namespace jxglib;

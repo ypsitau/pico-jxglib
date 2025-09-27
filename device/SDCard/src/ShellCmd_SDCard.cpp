@@ -2,6 +2,7 @@
 #include "jxglib/Shell.h"
 
 jxglib::SDCard& ShellCmd_SDCard_GetSDCard();
+
 namespace jxglib::ShellCmd_SDCard {
 
 ShellCmd_Named(sd_init, "sd-init", "Initialize SD card")

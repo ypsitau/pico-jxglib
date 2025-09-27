@@ -1,8 +1,8 @@
 //==============================================================================
-// jxglib/WiFi.h
+// jxglib/Net/WiFi.h
 //==============================================================================
-#ifndef PICO_JXGLIB_WIFI_H
-#define PICO_JXGLIB_WIFI_H
+#ifndef PICO_JXGLIB_NET_WIFI_H
+#define PICO_JXGLIB_NET_WIFI_H
 #include "pico/stdlib.h"
 #include "pico/cyw43_arch.h"
 #include "jxglib/Common.h"

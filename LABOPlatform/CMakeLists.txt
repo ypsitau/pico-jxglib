@@ -45,5 +45,6 @@ if(PICO_BOARD MATCHES ".*_w$")
 	target_link_libraries(jxglib_LABOPlatform_FullCmd INTERFACE
 		jxglib_ShellCmd_Net
 		jxglib_ShellCmd_NetUtil
+		jxglib_ShellCmd_Net_Telnet
 	)
 endif()

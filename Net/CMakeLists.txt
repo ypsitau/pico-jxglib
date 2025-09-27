@@ -12,8 +12,8 @@ target_sources(jxglib_Net INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/WiFi.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Net.cpp)
 
-target_compile_definitions(cyw43_driver INTERFACE
-	NDEBUG=1)
+#target_compile_definitions(cyw43_driver INTERFACE
+#	NDEBUG=1)
 
 #------------------------------------------------------------------------------
 add_library(jxglib_NetUtil INTERFACE)
@@ -29,23 +29,6 @@ target_link_libraries(jxglib_NetUtil INTERFACE
 
 target_sources(jxglib_NetUtil INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/NetUtil.cpp)
-
-#------------------------------------------------------------------------------
-add_library(jxglib_ShellCmd_LED INTERFACE)
-
-target_include_directories(jxglib_ShellCmd_LED INTERFACE
-	${CMAKE_CURRENT_LIST_DIR}/include)
-
-target_link_libraries(jxglib_ShellCmd_LED INTERFACE
-	jxglib_ShellCmd_Basic)
-
-if(PICO_BOARD MATCHES ".*_w$")
-	target_link_libraries(jxglib_ShellCmd_LED INTERFACE
-		jxglib_Net)
-endif()
-
-target_sources(jxglib_ShellCmd_LED INTERFACE
-	${CMAKE_CURRENT_LIST_DIR}/src/ShellCmd_LED.cpp)
 
 #------------------------------------------------------------------------------
 add_library(jxglib_ShellCmd_Net INTERFACE)
@@ -72,6 +55,36 @@ target_link_libraries(jxglib_ShellCmd_NetUtil INTERFACE
 
 target_sources(jxglib_ShellCmd_NetUtil INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/ShellCmd_NetUtil.cpp)
+
+#------------------------------------------------------------------------------
+add_library(jxglib_ShellCmd_Net_Telnet INTERFACE)
+
+target_include_directories(jxglib_ShellCmd_Net_Telnet INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/include)
+
+target_link_libraries(jxglib_ShellCmd_Net_Telnet INTERFACE
+	jxglib_Net_Telnet
+	jxglib_ShellCmd_NetUtil)
+
+target_sources(jxglib_ShellCmd_Net_Telnet INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/src/ShellCmd_Net_Telnet.cpp)
+
+#------------------------------------------------------------------------------
+add_library(jxglib_ShellCmd_LED INTERFACE)
+
+target_include_directories(jxglib_ShellCmd_LED INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/include)
+
+target_link_libraries(jxglib_ShellCmd_LED INTERFACE
+	jxglib_ShellCmd_Basic)
+
+if(PICO_BOARD MATCHES ".*_w$")
+	target_link_libraries(jxglib_ShellCmd_LED INTERFACE
+		jxglib_Net)
+endif()
+
+target_sources(jxglib_ShellCmd_LED INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/src/ShellCmd_LED.cpp)
 
 #------------------------------------------------------------------------------
 add_subdirectory(TCP)

@@ -1,7 +1,7 @@
 //==============================================================================
 // ShellCmd_Net.cpp
 //==============================================================================
-#include "jxglib/WiFi.h"
+#include "jxglib/Net/WiFi.h"
 #include "jxglib/Shell.h"
 
 namespace jxglib::ShellCmd_Net {
