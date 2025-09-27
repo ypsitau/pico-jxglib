@@ -382,10 +382,10 @@ ShellCmd(ysend, "Send file via YModem protocol")
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
-	if (argc < 2 || arg.GetBool("help")) {
+	if (arg.GetBool("help") || argc < 2) {
 		terr.Printf("Usage: %s [OPTION]... FILE...\n", GetName());
 		arg.PrintHelp(terr);
-		return Result::Error;
+		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
 	Stream& stream = UART0;
 	YModem ymodem(stream);

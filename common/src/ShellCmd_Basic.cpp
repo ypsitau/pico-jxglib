@@ -184,10 +184,10 @@ ShellCmd_Named(dot, ".", "executes the given script file")
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
-	if (argc < 2 || arg.GetBool("help")) {
+	if ( arg.GetBool("help") || argc < 2) {
 		terr.Printf("Usage: %s [OPTION]... [SCRIPT]\n", GetName());
 		arg.PrintHelp(terr);
-		return Result::Error;
+		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
 	const char* fileName = argv[1];
 	std::unique_ptr<FS::File> pFile(FS::OpenFile(fileName, "r"));

@@ -44,10 +44,10 @@ ShellCmd(cd, "changes the current directory")
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
-	if (argc < 2 || arg.GetBool("help")) {
+	if (arg.GetBool("help") || argc < 2) {
 		terr.Printf("Usage: %s [OPTION]... DIRECTORY\n", GetName());
 		arg.PrintHelp(terr);
-		return Result::Error;
+		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
 	const char* dirName = argv[1];
 	return FS::ChangeCurDir(terr, dirName)? 0 : 1;
@@ -95,10 +95,10 @@ ShellCmd(copy, "copies files")
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
-	if (argc < 3 || arg.GetBool("help")) {
+	if (arg.GetBool("help") || argc < 3) {
 		terr.Printf("Usage: %s [OPTION]... SOURCE... DEST\n", GetName());
 		arg.PrintHelp(terr);
-		return Result::Error;
+		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
 	bool recursiveFlag = arg.GetBool("recursive");
 	bool verboseFlag = arg.GetBool("verbose");
@@ -121,7 +121,7 @@ ShellCmd(format, "formats drives")
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
-	if (argc < 2 || arg.GetBool("help")) {
+	if (arg.GetBool("help") || argc < 2) {
 		terr.Printf("Usage: %s DRIVE...\n", GetName());
 		arg.PrintHelp(terr);
 		return Result::Error;
@@ -143,7 +143,7 @@ ShellCmd(glob, "prints files matching a glob pattern")
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
-	if (argc < 2 || arg.GetBool("help")) {
+	if (arg.GetBool("help") || argc < 2) {
 		terr.Printf("Usage: %s [OPTION]... PATTERN\n", GetName());
 		arg.PrintHelp(terr);
 		return Result::Error;
@@ -232,10 +232,10 @@ ShellCmd(mkdir, "creates directories")
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
-	if (argc < 2 || arg.GetBool("help")) {
+	if (arg.GetBool("help") || argc < 2) {
 		terr.Printf("Usage: %s [OPTION]... DIRECTORY...\n", GetName());
 		arg.PrintHelp(terr);
-		return Result::Error;
+		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
 	for (Arg::Each argIter(argv[1], argv[argc]); const char* dirName = argIter.Next(); ) {
 		if (!FS::CreateDir(terr, dirName)) return Result::Error;
@@ -252,10 +252,10 @@ ShellCmd(mount, "mounts specified drives")
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
-	if (argc < 2 || arg.GetBool("help")) {
+	if (arg.GetBool("help") || argc < 2) {
 		terr.Printf("Usage: %s [OPTION]... DRIVE\n", GetName());
 		arg.PrintHelp(terr);
-		return Result::Error;
+		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
 	for (Arg::Each argIter(argv[1], argv[argc]); const char* driveName = argIter.Next(); ) {
 		if (!FS::Mount(terr, driveName)) return Result::Error;
@@ -272,10 +272,10 @@ ShellCmd(move, "moves a file")
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
-	if (argc < 3 || arg.GetBool("help")) {
+	if (arg.GetBool("help") || argc < 3) {
 		terr.Printf("Usage: %s [OPTION]... SOURCE... DEST\n", GetName());
 		arg.PrintHelp(terr);
-		return Result::Error;
+		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
 	bool verboseFlag = arg.GetBool("verbose");
 	bool forceFlag = arg.GetBool("force");
@@ -321,10 +321,10 @@ ShellCmd(rm, "removes files")
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
-	if (argc < 2 || arg.GetBool("help")) {
+	if (arg.GetBool("help") || argc < 2) {
 		terr.Printf("Usage: %s [OPTION]... FILE...\n", GetName());
 		arg.PrintHelp(terr);
-		return Result::Error;
+		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
 	bool recursiveFlag = arg.GetBool("recursive");
 	bool verboseFlag = arg.GetBool("verbose");
@@ -344,10 +344,10 @@ ShellCmd(rmdir, "removes directories")
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
-	if (argc < 2 || arg.GetBool("help")) {
+	if (arg.GetBool("help") || argc < 2) {
 		terr.Printf("Usage: %s [OPTION]... DIRECTORY...\n", GetName());
 		arg.PrintHelp(terr);
-		return Result::Error;
+		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
 	int rtn = 0;
 	for (Arg::EachGlob argIter(argv[1], argv[argc]); const char* pathName = argIter.Next(); ) {
@@ -364,10 +364,10 @@ ShellCmd(touch, "updates time stamps or creates empty files")
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
-	if (argc < 2 || arg.GetBool("help")) {
+	if (arg.GetBool("help") || argc < 2) {
 		terr.Printf("Usage: %s [OPTION]... FILE...\n", GetName());
 		arg.PrintHelp(terr);
-		return Result::Error;
+		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
 	int rtn = 0;
 	DateTime dt;
@@ -395,10 +395,10 @@ ShellCmd(umount, "unmounts specified drives")
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
-	if (argc < 2 || arg.GetBool("help")) {
+	if (arg.GetBool("help") || argc < 2) {
 		terr.Printf("Usage: %s [OPTION]... DRIVE...\n", GetName());
 		arg.PrintHelp(terr);
-		return Result::Error;
+		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
 	int rtn = 0;
 	for (Arg::Each argIter(argv[1], argv[argc]); const char* driveName = argIter.Next(); ) {

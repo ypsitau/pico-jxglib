@@ -15,11 +15,11 @@ ShellCmd_Named(flash_erase, "flash-erase", "erases flash memory")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	bool driveNameFlag = (argc > 1 && FS::IsLegalDriveName(argv[1]));
-	if ((!driveNameFlag && argc != 3) || arg.GetBool("help")) {
+	if (arg.GetBool("help") || (!driveNameFlag && argc != 3)) {
 		terr.Printf("Usage: %s [OPTION]... ADDR SIZE\n", GetName());
 		terr.Printf("       %s [OPTION]... DRIVENAME...\n", GetName());
 		arg.PrintHelp(terr);
-		return Result::Error;
+		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
 	if (driveNameFlag) {
 		for (Arg::Each each(argv[1], argv[argc]); const char* driveName = each.Next(); ) {

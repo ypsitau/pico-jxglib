@@ -100,7 +100,7 @@ ShellCmd(reset, "resets specified blocks")
 			tout.Printf(" %s", block.name);
 		}
 		tout.Println();
-		return Result::Success;
+		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
 	Arg::Each each(argv[1], argv[argc]);
 	bool quietFlag = arg.GetBool("quiet");

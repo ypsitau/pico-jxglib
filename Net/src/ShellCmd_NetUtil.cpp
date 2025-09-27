@@ -16,7 +16,7 @@ ShellCmd(nslookup, "performs DNS lookup")
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (arg.GetBool("help") || argc < 2) {
 		terr.Printf("Usage: %s URL\n", GetName());
-		return Result::Success;
+		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
 	ip_addr_t addr;
 	if (!Net::DNS().GetHostByName(argv[1], &addr)) {
@@ -64,7 +64,7 @@ ShellCmd(ping, "performs ping")
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (arg.GetBool("help") || argc < 2) {
 		terr.Printf("Usage: %s URL\n", GetName());
-		return Result::Success;
+		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
 	ip_addr_t addr;
 	if (!Net::DNS().GetHostByName(argv[1], &addr)) {

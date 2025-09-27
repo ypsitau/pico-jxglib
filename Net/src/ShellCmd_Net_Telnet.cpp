@@ -19,11 +19,9 @@ ShellCmd_Named(telnet_server, "telnet-server", "start telnet server")
 		tout.Printf("Usage: %s [OPTION]... [CMD]...\n", GetName());
 		arg.PrintHelp(tout);
 		tout.Printf("Sub Commands:\n");
-		tout.Printf("  repeat[:N] {CMD...}  repeat the commands N times (default: infinite)\n");
-		tout.Printf("  sleep:MSEC           sleep for specified milliseconds\n");
 		tout.Printf("  start			    start telnet server\n");
 		tout.Printf("  stop			        stop telnet server\n");
-		return Result::Success;
+		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
 	Net::Telnet::Server& telnetServer = ShellCmd_Net_Telnet_GetTelnetServer();
 	for (int iArg = 1; iArg < argc; ++iArg) {

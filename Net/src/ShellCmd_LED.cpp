@@ -30,7 +30,7 @@ ShellCmd(led, "control LED")
 		tout.Printf("  flip:MS...  start blinking LED with specified durations (in msec)\n");
 		tout.Printf("              e.g. flip:500,500 (500 msec ON, 500 msec OFF)\n");
 		tout.Printf("              specifies * to end the blinking (eg. flip:100,500,100,*)\n");
-		return Result::Success;
+		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
 	for (int iArg = 1; iArg < argc; iArg++) {
 		const char* subcmd = argv[iArg];
