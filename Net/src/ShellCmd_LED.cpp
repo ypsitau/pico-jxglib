@@ -9,9 +9,9 @@
 namespace jxglib::ShellCmd_LED {
 
 #if defined(CYW43_WL_GPIO_LED_PIN)
-static PeriodicToggle<Net::WiFi::Initialize, Net::WiFi::PutLED> blinkLED;
+static Flipper<Net::WiFi::Initialize, Net::WiFi::PutLED> flipperLED;
 #else
-static PeriodicGPIO::InitializeLED, GPIO::PutLED> blinkLED;
+static Flipper<GPIO::InitializeLED, GPIO::PutLED> flipperLED;
 #endif
 
 ShellCmd(led, "control LED")
@@ -27,25 +27,28 @@ ShellCmd(led, "control LED")
 		tout.Printf("Sub Commands:\n");
 		tout.Printf("  on          turn on LED\n");
 		tout.Printf("  off         turn off LED\n");
-		tout.Printf("  flip=MS...  start blinking LED with specified durations (in msec)\n");
+		tout.Printf("  flip:MS...  start blinking LED with specified durations (in msec)\n");
+		tout.Printf("              e.g. flip:500,500 (500 msec ON, 500 msec OFF)\n");
+		tout.Printf("              specifies * to end the blinking (eg. flip:100,500,100,*)\n");
 		return Result::Success;
 	}
 	for (int iArg = 1; iArg < argc; iArg++) {
 		const char* subcmd = argv[iArg];
 		const char* value = nullptr;
 		if (::strcasecmp(subcmd, "on") == 0) {
-			blinkLED.Put(true);
+			flipperLED.Put(true);
 		} else if (::strcasecmp(subcmd, "off") == 0) {
-			blinkLED.Put(false);
+			flipperLED.Put(false);
 		} else if (Arg::GetAssigned(subcmd, "flip", &value)) {
 			Arg::EachNum each(value);
 			uint32_t msecPeriodTbl[32];
+			each.SetBlankValue(-1);
 			int nPeriod = each.GetAll(msecPeriodTbl, count_of(msecPeriodTbl));
 			if (nPeriod <= 0) {
 				terr.Printf("Invalid duration: %s\n", value);
 				return Result::Error;
 			}
-			blinkLED.StartFlip(msecPeriodTbl, nPeriod);
+			flipperLED.StartFlip(msecPeriodTbl, nPeriod);
 		} else {
 			terr.Printf("Invalid sub-command: %s\n", subcmd);
 			return Result::Error;

@@ -14,6 +14,9 @@ target_sources(jxglib_LABOPlatform INTERFACE
 function(jxglib_configure_LABOPlatform TARGET)
 	jxglib_configure_USBDevice(${TARGET} CFG_TUD_CDC 2 CFG_TUD_MSC 1)
 	jxglib_configure_FAT(${TARGET} FF_VOLUMES 1)
+	if(PICO_BOARD MATCHES ".*_w$")
+		jxglib_configure_Net(${TARGET})
+	endif()
 endfunction()
 
 #------------------------------------------------------------------------------
@@ -25,9 +28,16 @@ target_link_libraries(jxglib_LABOPlatform_FullCmd INTERFACE
     jxglib_ShellCmd_FS
 	jxglib_ShellCmd_GPIO
 	jxglib_ShellCmd_I2C
+	jxglib_ShellCmd_LED
 	jxglib_ShellCmd_LogicAnalyzer
 	jxglib_ShellCmd_PWM
 	jxglib_ShellCmd_Resets
 	jxglib_ShellCmd_SPI
 	jxglib_ShellCmd_UART
 )	
+
+if(PICO_BOARD MATCHES ".*_w$")
+	target_link_libraries(jxglib_LABOPlatform_FullCmd INTERFACE
+		jxglib_ShellCmd_Net
+		jxglib_ShellCmd_NetUtil)
+endif()

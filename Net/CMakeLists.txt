@@ -12,8 +12,8 @@ target_sources(jxglib_Net INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/WiFi.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Net.cpp)
 
-#target_compile_definitions(cyw43_driver INTERFACE
-#	NDEBUG=1)
+target_compile_definitions(cyw43_driver INTERFACE
+	NDEBUG=1)
 
 #------------------------------------------------------------------------------
 add_library(jxglib_NetUtil INTERFACE)
@@ -37,8 +37,12 @@ target_include_directories(jxglib_ShellCmd_LED INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/include)
 
 target_link_libraries(jxglib_ShellCmd_LED INTERFACE
-	jxglib_Net
 	jxglib_ShellCmd_Basic)
+
+if(PICO_BOARD MATCHES ".*_w$")
+	target_link_libraries(jxglib_ShellCmd_LED INTERFACE
+		jxglib_Net)
+endif()
 
 target_sources(jxglib_ShellCmd_LED INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/ShellCmd_LED.cpp)

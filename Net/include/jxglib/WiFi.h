@@ -87,7 +87,6 @@ public:
 	}
 	static void InitLED() { ::cyw43_arch_init(); }
 	static void PutLED(bool value) { PutGPIO(CYW43_WL_GPIO_LED_PIN, value); }
-	static void PutSMPS(bool value) { PutGPIO(CYW43_WL_GPIO_SMPS_PIN, value); }
 	static void PutVBUS(bool value) { PutGPIO(CYW43_WL_GPIO_VBUS_PIN, value); }
 };
 
