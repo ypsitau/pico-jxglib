@@ -241,28 +241,37 @@ void LABOPlatform::func_set_chars_available_callback(void (*fn)(void*), void* pa
 //------------------------------------------------------------------------------
 #if defined(CYW43_WL_GPIO_LED_PIN)
 
-class TelnetHandler : public Net::Telnet::Handler {
+class TelnetHandler : public Net::EventHandler {
 private:
 	LABOPlatform& laboPlatform_;
+	Net::Telnet::Server telnetServer_;
+	Net::Telnet::Stream telnetStream_;
 public:
-	TelnetHandler(LABOPlatform& laboPlatform) : laboPlatform_{laboPlatform} {}
+	TelnetHandler(LABOPlatform& laboPlatform);
+public:
+	Net::Telnet::Server& GetTelnetServer() { return telnetServer_; }
+	Net::Telnet::Stream& GetTelnetStream() { return telnetStream_; }
 public:
 	virtual void OnConnect(const ip_addr_t& addr, uint16_t port) override;
 	virtual void OnDisconnect() override;
 };
 
 TelnetHandler telnetHandler(LABOPlatform::Instance);
-Net::Telnet::Server telnetServer(telnetHandler);
-Net::Telnet::Stream telnetStream(telnetServer);
 
-Net::Telnet::Server& ShellCmd_Net_Telnet_GetTelnetServer() { return telnetServer; }
+Net::Telnet::Server& ShellCmd_Net_Telnet_GetTelnetServer() { return telnetHandler.GetTelnetServer(); }
+
+TelnetHandler::TelnetHandler(LABOPlatform& laboPlatform) :
+					laboPlatform_{laboPlatform}, telnetStream_{telnetServer_}
+{
+	telnetServer_.SetEventHandler(*this);
+}
 
 void TelnetHandler::OnConnect(const ip_addr_t& addr, uint16_t port)
 {
 	Printable& tout = laboPlatform_.GetTerminal();
 	tout.Printf("Telnet client connected: %s:%u\n", ::ipaddr_ntoa(&addr), port);
 	Shell::Logout();
-	laboPlatform_.SetTerminalInterface(telnetStream, telnetStream.GetKeyboard());
+	laboPlatform_.SetTerminalInterface(telnetStream_, telnetStream_.GetKeyboard());
 }
 
 void TelnetHandler::OnDisconnect()

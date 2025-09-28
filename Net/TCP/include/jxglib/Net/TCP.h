@@ -9,24 +9,13 @@
 namespace jxglib::Net::TCP {
 
 //------------------------------------------------------------------------------
-// Handler
-//------------------------------------------------------------------------------
-class Handler {
-public:
-	virtual void OnSent(size_t len) {}
-	virtual void OnRecv(const uint8_t* data, size_t len) {}
-	virtual void OnConnect(const ip_addr_t& addr, uint16_t port) {}
-	virtual void OnDisconnect() {}
-};
-
-//------------------------------------------------------------------------------
 // Common
 //------------------------------------------------------------------------------
 class Common {
 protected:
 	struct tcp_pcb *pcb_;
-	Handler* pHandler_;
-	Handler handlerDummy_;
+	Transmitter* pTransmitter_;
+	EventHandler* pEventHandler_;
 public:
 	Common();
 protected:
@@ -36,8 +25,11 @@ public:
 	bool Flush();
 	void DiscardPCB();
 public:
-	void SetHandler(Handler& handler) { pHandler_ = &handler; }
-	Handler& GetHandler() { return *pHandler_; }
+	void SetTransmitter(Transmitter& transmitter) { pTransmitter_ = &transmitter; }
+	Transmitter& GetTransmitter() { return *pTransmitter_; }
+public:
+	void SetEventHandler(EventHandler& handler) { pEventHandler_ = &handler; }
+	EventHandler& GetEventHandler() { return *pEventHandler_; }
 private:
 	static err_t callback_sent(void* arg, struct tcp_pcb* pcb, u16_t len);
 	static err_t callback_recv(void* arg, struct tcp_pcb* pcb, struct pbuf* pbuf, err_t err);
@@ -54,11 +46,12 @@ private:
 	struct tcp_pcb *pcbAccepter_;
 public:
 	Server(uint16_t port);
-	Server(uint16_t port, Handler& handler) : Server(port) { SetHandler(handler); }
 public:
 	uint16_t GetPort() const { return port_; }
 public:
 	bool Start();
+	void Stop();
+	bool IsRunning() const { return !!pcbAccepter_; }
 private:
 	static err_t callback_accept(void* arg, struct tcp_pcb* pcb, err_t err);
 };

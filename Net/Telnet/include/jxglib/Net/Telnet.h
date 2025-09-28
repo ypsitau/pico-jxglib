@@ -87,30 +87,24 @@ struct Option {
 };
 
 //------------------------------------------------------------------------------
-// Handler
-//------------------------------------------------------------------------------
-class Handler {
-public:
-	virtual void OnSent(size_t len) {}
-	//virtual void OnRecv(const uint8_t* data, size_t len) {}
-	virtual void OnConnect(const ip_addr_t& addr, uint16_t port) {}
-	virtual void OnDisconnect() {}
-};
-
-//------------------------------------------------------------------------------
 // Stream
 //------------------------------------------------------------------------------
-class Stream : public jxglib::Stream {
+class Stream : public jxglib::Stream, public Transmitter {
 private:
 	char chPrev_;
 	bool addCrFlag_;
 	Server& telnetServer_;
 	VT100::Keyboard keyboard_;
+	FIFOBuff<uint8_t, 1024> buffRecv_;
 public:
 	Stream(Server& telnetServer);
 public:
 	Stream& AddCr(bool addCrFlag) { addCrFlag_ = addCrFlag; return* this; }
 	VT100::Keyboard& GetKeyboard() { return keyboard_; }
+public:
+	// virtual functions of Transmitter
+	void OnSent(size_t len) override;
+	void OnRecv(const uint8_t* data, size_t len) override;
 public:
 	// virtual functions of Stream
 	virtual int Read(void* buff, int bytesBuff) override;
@@ -119,11 +113,10 @@ public:
 	virtual Printable& PutChar(char ch) override;
 };
 
-
 //------------------------------------------------------------------------------
 // Server
 //------------------------------------------------------------------------------
-class Server : public TCP::Handler {
+class Server : public Transmitter, public EventHandler {
 public:
 	enum class Stat {
 		Neutral,
@@ -134,32 +127,33 @@ public:
 	};
 private:
 	TCP::Server tcpServer_;
-	Telnet::Handler* pHandler_;
-	Telnet::Handler handlerDummy_;
 	Stat stat_;
 	uint8_t code_;
-	FIFOBuff<uint8_t, 1024> buffRecv_;
+private:
+	Transmitter* pTransmitter_;
+	EventHandler* pEventHandler_;
 public:
 	Server(uint16_t port = 23);
-	Server(Telnet::Handler& handler, uint16_t port = 23) : Server(port) { SetHandler(handler); }
 	~Server();
 public:
-	void SetHandler(Telnet::Handler& handler) { pHandler_ = &handler; }
-	Telnet::Handler& GetHandler() { return *pHandler_; }
+	void SetTransmitter(Transmitter& transmitter) { pTransmitter_ = &transmitter; }
+	Transmitter& GetTransmitter() { return *pTransmitter_; }
+public:
+	void SetEventHandler(EventHandler& handler) { pEventHandler_ = &handler; }
+	EventHandler& GetEventHandler() { return *pEventHandler_; }
 public:
 	bool Start();
 	void Stop();
 	bool IsRunning() const;
-	bool Send(const uint8_t* data, size_t len);
 	bool Send(const char* str);
+	bool Send(const uint8_t* data, size_t len);
 	bool Flush();
 public:
-	int ReadFromRecvBuff(void* buff, int bytesBuff);
-	int WriteToRecvBuff(const uint8_t* data, size_t len);
-public:
-	// virtual functions of TCP::Handler
+	// virtual functions of Transmitter
 	void OnSent(size_t len) override;
 	void OnRecv(const uint8_t* data, size_t len) override;
+public:
+	// virtual functions of EventHandler
 	void OnConnect(const ip_addr_t& addr, uint16_t port) override;
 	void OnDisconnect() override;
 };

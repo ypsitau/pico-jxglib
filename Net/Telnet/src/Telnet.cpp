@@ -5,13 +5,14 @@
 
 namespace jxglib::Net::Telnet {
 
-
 //------------------------------------------------------------------------------
 // Server
 //------------------------------------------------------------------------------
-Server::Server(uint16_t port) : tcpServer_(port), pHandler_(&handlerDummy_), stat_{Stat::Neutral}, code_{Code::NoOperation}
+Server::Server(uint16_t port) : tcpServer_(port), pEventHandler_(&EventHandler::Dummy),
+					stat_{Stat::Neutral}, code_{Code::NoOperation}
 {
-	tcpServer_.SetHandler(*this);
+	tcpServer_.SetTransmitter(*this);
+	tcpServer_.SetEventHandler(*this);
 }
 
 Server::~Server()
@@ -25,12 +26,12 @@ bool Server::Start()
 
 void Server::Stop()
 {
+	tcpServer_.Stop();
 }
 
 bool Server::IsRunning() const
 {
-	//return tcpServer_.IsRunning();
-	return false;
+	return tcpServer_.IsRunning();
 }
 
 bool Server::Send(const uint8_t* data, size_t len)
@@ -48,20 +49,9 @@ bool Server::Flush()
 	return tcpServer_.Flush();
 }
 
-int Server::ReadFromRecvBuff(void* buff, int bytesBuff)
-{
-	return buffRecv_.ReadBuff(static_cast<uint8_t*>(buff), bytesBuff);
-}
-
-int Server::WriteToRecvBuff(const uint8_t* data, size_t len)
-{
-	buffRecv_.WriteBuff(data, len);
-	return len;
-}
-
 void Server::OnSent(size_t len)
 {
-	GetHandler().OnSent(len);
+	GetTransmitter().OnSent(len);
 }
 
 void Server::OnRecv(const uint8_t* data, size_t len)
@@ -75,7 +65,7 @@ void Server::OnRecv(const uint8_t* data, size_t len)
 		switch (stat_) {
 		case Stat::Neutral: {
 			if (ch == Code::InterpretAsCommand) {
-				if (p != pMark) WriteToRecvBuff(pMark, p - pMark);
+				if (p != pMark) GetTransmitter().OnRecv(pMark, p - pMark);
 				stat_ = Stat::Command;
 			}
 			break;
@@ -133,7 +123,7 @@ void Server::OnRecv(const uint8_t* data, size_t len)
 		default: break;
 		}
 	}
-	if (p != pMark) WriteToRecvBuff(pMark, p - pMark);
+	if (p != pMark) GetTransmitter().OnRecv(pMark, p - pMark);
 }
 
 void Server::OnConnect(const ip_addr_t& addr, uint16_t port)
@@ -145,12 +135,12 @@ void Server::OnConnect(const ip_addr_t& addr, uint16_t port)
 		//Code::InterpretAsCommand, Code::DO,   Option::TerminalType,
 	};
 	tcpServer_.Send(buffNegotiation, sizeof(buffNegotiation));
-	GetHandler().OnConnect(addr, port);
+	GetEventHandler().OnConnect(addr, port);
 }
 
 void Server::OnDisconnect()
 {
-	GetHandler().OnDisconnect();
+	GetEventHandler().OnDisconnect();
 	tcpServer_.Start();
 }
 
@@ -159,13 +149,14 @@ void Server::OnDisconnect()
 //------------------------------------------------------------------------------
 Stream::Stream(Server& telnetServer) : telnetServer_(telnetServer), chPrev_{'\0'}, addCrFlag_{true}, keyboard_{*this}
 {
+	telnetServer_.SetTransmitter(*this);
 }
 
 int Stream::Read(void* buff, int bytesBuff)
 {
 	int bytesRead = 0;
 	while (bytesRead < bytesBuff) {
-		int bytes = telnetServer_.ReadFromRecvBuff(static_cast<uint8_t*>(buff) + bytesRead, bytesBuff - bytesRead);
+		int bytes = buffRecv_.ReadBuff(static_cast<uint8_t*>(buff) + bytesRead, bytesBuff - bytesRead);
 		if (bytes <= 0) break; // no more data available
 		bytesRead += bytes;
 		Tickable::TickSub();
@@ -197,6 +188,16 @@ Printable& Stream::PutChar(char ch)
 	}
 	chPrev_ = ch;
 	return *this;
+}
+
+void Stream::OnSent(size_t len)
+{
+	// nothing to do
+}
+
+void Stream::OnRecv(const uint8_t* data, size_t len)
+{
+	buffRecv_.WriteBuff(data, len);
 }
 
 //------------------------------------------------------------------------------
