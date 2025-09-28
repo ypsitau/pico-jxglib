@@ -278,7 +278,8 @@ public:
 	pio_hw_t* pio;
 public:
 	Block(pio_hw_t* pio = nullptr) : pio{pio} {}
-	Block(const Block& block) : pio{pio} {}
+	Block(uint iPIO) : Block{::pio_get_instance(iPIO)} {}
+	Block(const Block& block) : pio{block.pio} {}
 public:
 	void Invalidate() { pio = nullptr; }
 	bool IsValid() const { return !!pio; }
@@ -315,6 +316,8 @@ public:
 public:
 	const Block& claim_sm_mask(uint sm_mask) const { ::pio_claim_sm_mask(pio, sm_mask); return *this; }
 	int claim_unused_sm(bool required) const { return ::pio_claim_unused_sm(pio, required); }
+public:
+	bool is_vacant() const { return !(::pio_sm_is_claimed(pio, 0) || ::pio_sm_is_claimed(pio, 1) || ::pio_sm_is_claimed(pio, 2) || ::pio_sm_is_claimed(pio, 3)); }
 public:	
 	static pio_hw_t* get_instance(uint instance) { return ::pio_get_instance(instance); }
 };

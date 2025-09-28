@@ -218,7 +218,7 @@ ShellCmd(la, "Logic Analyzer")
 			} else if (logicAnalyzer.Enable()) {
 				logicAnalyzer.PrintSettings(tout);
 			} else {
-				terr.Printf("failed to enable logic analyzer. reduce the number of heap-ratio\n");
+				terr.Printf("failed to enable logic analyzer\n");
 			}
 		} else if (::strcmp(subcmd, "disable") == 0) {
 			logicAnalyzer.Disable();

@@ -106,7 +106,7 @@ const LogicAnalyzer::WaveStyle LogicAnalyzer::waveStyle_ascii4 = {
 };
 
 LogicAnalyzer::LogicAnalyzer() : rawEventFormat_{RawEventFormat::Short}, rawEventFormatRequested_{RawEventFormat::Auto},
-		samplingBuffWhole_{nullptr}, iPIO_{PIO::Num - 1},
+		samplingBuffWhole_{nullptr}, iPIORequested_{static_cast<uint>(-1)},
 		nSampler_{1}, pinTargetGlobal_{PinTarget::Internal}, heapRatio_{.7}, heapRatioRequested_{.7}, usecReso_{1'000},
 		suppressPrintSettingsFlag_{false}
 {
@@ -184,7 +184,14 @@ bool LogicAnalyzer::Enable()
 		.mov("y", "x") [1]							// y = x
 	.wrap()
 	.end();
-	pio_hw_t* pio = ::pio_get_instance(iPIO_);
+	uint iPIO = iPIORequested_;
+	if (iPIO == static_cast<uint>(-1)) {
+		iPIO = PIO::Num - 1;
+		int i = 0;
+		for (i = 0; i < PIO::Num; i++, iPIO--) if (PIO::Block(iPIO).is_vacant()) break;
+		if (i == PIO::Num) return false; // all PIO blocks are in use
+	}
+	pio_hw_t* pio = ::pio_get_instance(iPIO);
 	samplerTbl_[0].SetProgram(program_SamplerMain_, pio, 0, relAddrEntryTbl[0], samplingInfo_.GetPinMin(), nBitsPinToSample);
 	for (int iSampler = 1; iSampler < nSampler_; ++iSampler) {
 		samplerTbl_[iSampler].ShareProgram(samplerTbl_[0], pio, iSampler, relAddrEntryTbl[iSampler], samplingInfo_.GetPinMin(), nBitsPinToSample);
@@ -828,9 +835,12 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 			stat_ = Stat::DigitalChannelEnable;
 		} else if (ch == 'F') {		// Fixed Sample Mode
 			StartSampling();
-			logicAnalyzer_.Enable();
-			//logicAnalyzer_.PrintSettings(terr);
-			stat_ = Stat::FixedSampleMode;
+			if (logicAnalyzer_.Enable()) {
+				//logicAnalyzer_.PrintSettings(terr);
+				stat_ = Stat::FixedSampleMode;
+			} else {
+				terr.Printf("failed to enable logic analyzer\n");
+			}
 		} else if (ch == 'C') {		// Continuous Sample Mode
 			stat_ = Stat::ContinuousSampleMode;
 		}

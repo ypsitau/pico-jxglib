@@ -300,7 +300,7 @@ private:
 	PIO::Program program_SamplerInit_;
 	PIO::Program program_SamplerMain_;
 	uint8_t* samplingBuffWhole_;
-	uint iPIO_;
+	uint iPIORequested_;
 	int nSampler_;
 	Sampler samplerTbl_[4];
 	SamplingInfo samplingInfo_;
@@ -321,7 +321,7 @@ public:
 	LogicAnalyzer& Disable();
 	bool IsRawEventFormatShort() const { return rawEventFormat_ == RawEventFormat::Short; }
 	bool IsRawEventFormatLong() const { return rawEventFormat_ == RawEventFormat::Long; }
-	LogicAnalyzer& SetPIO(uint iPIO) { iPIO_ = iPIO; return *this; }
+	LogicAnalyzer& SetPIO(uint iPIO) { iPIORequested_ = iPIO; return *this; }
 	uint8_t* GetSamplingBuffWhole() { return samplingBuffWhole_; }
 	LogicAnalyzer& ReleaseResource();
 	LogicAnalyzer& SetPins(const int pinTbl[], int nPins);
