@@ -216,6 +216,16 @@ void LABOPlatform::RestoreTerminalInterface()
 	}
 }
 
+void LABOPlatform::SetSigrokInterface(Stream& stream)
+{
+	sigrokAdapter_.SetStream(stream);
+}
+
+void LABOPlatform::RestoreSigrokInterface()
+{
+	sigrokAdapter_.SetStream(streamCDC_Application_);
+}
+
 void LABOPlatform::func_out_chars(const char* buf, int len)
 {
 	Printable& printable = Instance.GetTerminal().GetPrintable();
@@ -237,7 +247,7 @@ void LABOPlatform::func_set_chars_available_callback(void (*fn)(void*), void* pa
 }
 
 //------------------------------------------------------------------------------
-// Telnet Support
+// TelnetHandler
 //------------------------------------------------------------------------------
 #if defined(CYW43_WL_GPIO_LED_PIN)
 
@@ -250,7 +260,6 @@ public:
 	TelnetHandler(LABOPlatform& laboPlatform);
 public:
 	Net::Telnet::Server& GetTelnetServer() { return telnetServer_; }
-	Net::Telnet::Stream& GetTelnetStream() { return telnetStream_; }
 public:
 	virtual void OnConnect(const ip_addr_t& addr, uint16_t port) override;
 	virtual void OnDisconnect() override;
@@ -279,6 +288,79 @@ void TelnetHandler::OnDisconnect()
 	laboPlatform_.RestoreTerminalInterface();
 	Printable& tout = laboPlatform_.GetTerminal();
 	tout.Printf("Telnet client disconnected\n");
+}
+
+#endif
+
+//------------------------------------------------------------------------------
+// SigrokHandler
+//------------------------------------------------------------------------------
+#if defined(CYW43_WL_GPIO_LED_PIN)
+
+class SigrokHandler : public Net::EventHandler {
+private:
+	LABOPlatform& laboPlatform_;
+	Net::TCP::Server tcpServer_;
+	Net::TCP::Stream tcpStream_;
+public:
+	SigrokHandler(LABOPlatform& laboPlatform);
+public:
+	Net::TCP::Server& GetTCPServer() { return tcpServer_; }
+public:
+	virtual void OnConnect(const ip_addr_t& addr, uint16_t port) override;
+	virtual void OnDisconnect() override;
+};
+
+SigrokHandler sigrokHandler(LABOPlatform::Instance);
+
+SigrokHandler::SigrokHandler(LABOPlatform& laboPlatform) :
+					laboPlatform_{laboPlatform}, tcpServer_(5555), tcpStream_(tcpServer_)
+{
+	tcpServer_.SetEventHandler(*this);
+}
+
+void SigrokHandler::OnConnect(const ip_addr_t& addr, uint16_t port)
+{
+	Printable& tout = laboPlatform_.GetTerminal();
+	laboPlatform_.SetSigrokInterface(tcpStream_);
+	tout.Printf("Sigrok client connected: %s:%u\n", ::ipaddr_ntoa(&addr), port);
+}
+
+void SigrokHandler::OnDisconnect()
+{
+	Printable& tout = laboPlatform_.GetTerminal();
+	laboPlatform_.RestoreSigrokInterface();
+	tout.Printf("Sigrok client disconnected\n");
+}
+
+ShellCmd_Named(sigrok_server, "sigrok-server", "controls sigrok server")
+{
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		'h',	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
+	if (arg.GetBool("help") || argc < 2) {
+		tout.Printf("Usage: %s [OPTION]... [CMD]...\n", GetName());
+		arg.PrintHelp(tout);
+		tout.Printf("Sub Commands:\n");
+		tout.Printf("  start   start sigrok server\n");
+		tout.Printf("  stop    stop sigrok server\n");
+		return arg.GetBool("help")? Result::Success : Result::Error;
+	}
+	for (int iArg = 1; iArg < argc; ++iArg) {
+		const char* subcmd = argv[iArg];
+		if (::strcasecmp(subcmd, "start") == 0) {
+			if (sigrokHandler.GetTCPServer().Start()) terr.Printf("Sigrok server started\n");
+		} else if (::strcasecmp(subcmd, "stop") == 0) {
+			sigrokHandler.GetTCPServer().Stop();
+			terr.Printf("Sigrok server stopped\n");
+		} else {
+			terr.Printf("Unknown sub command: %s\n", subcmd);
+			return Result::Error;
+		}
+	}
+	return Result::Success;
 }
 
 #endif

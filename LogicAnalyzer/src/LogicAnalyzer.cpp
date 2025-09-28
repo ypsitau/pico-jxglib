@@ -810,7 +810,7 @@ void LogicAnalyzer::SigrokAdapter::OnTick()
 	Printable& terr = *pTerr_;
 	char ch;
 	bool pollingFlag = (GetStream().Read(&ch, 1) == 0);
-	//::printf("%c\n", ch);
+	//if (!pollingFlag) ::printf("Command: %c\n", ch);
 	switch (stat_) {
 	case Stat::Initial: {
 		if (pollingFlag) {

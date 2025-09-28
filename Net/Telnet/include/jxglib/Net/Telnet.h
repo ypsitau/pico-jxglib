@@ -8,8 +8,6 @@
 
 namespace jxglib::Net::Telnet {
 
-class Server;
-
 struct Code {
 	static constexpr uint8_t SubnegotiationEnd		= 0xf0;
 	static constexpr uint8_t NoOperation			= 0xf1;
@@ -87,33 +85,6 @@ struct Option {
 };
 
 //------------------------------------------------------------------------------
-// Stream
-//------------------------------------------------------------------------------
-class Stream : public jxglib::Stream, public Transmitter {
-private:
-	char chPrev_;
-	bool addCrFlag_;
-	Server& telnetServer_;
-	VT100::Keyboard keyboard_;
-	FIFOBuff<uint8_t, 1024> buffRecv_;
-public:
-	Stream(Server& telnetServer);
-public:
-	Stream& AddCr(bool addCrFlag) { addCrFlag_ = addCrFlag; return* this; }
-	VT100::Keyboard& GetKeyboard() { return keyboard_; }
-public:
-	// virtual functions of Transmitter
-	void OnSent(size_t len) override;
-	void OnRecv(const uint8_t* data, size_t len) override;
-public:
-	// virtual functions of Stream
-	virtual int Read(void* buff, int bytesBuff) override;
-	virtual int Write(const void* buff, int bytesBuff) override;
-	virtual bool Flush() override;
-	virtual Printable& PutChar(char ch) override;
-};
-
-//------------------------------------------------------------------------------
 // Server
 //------------------------------------------------------------------------------
 class Server : public Transmitter, public EventHandler {
@@ -156,6 +127,33 @@ public:
 	// virtual functions of EventHandler
 	void OnConnect(const ip_addr_t& addr, uint16_t port) override;
 	void OnDisconnect() override;
+};
+
+//------------------------------------------------------------------------------
+// Stream
+//------------------------------------------------------------------------------
+class Stream : public jxglib::Stream, public Transmitter {
+private:
+	char chPrev_;
+	bool addCrFlag_;
+	Server& telnetServer_;
+	VT100::Keyboard keyboard_;
+	FIFOBuff<uint8_t, 1024> buffRecv_;
+public:
+	Stream(Server& telnetServer);
+public:
+	Stream& AddCr(bool addCrFlag) { addCrFlag_ = addCrFlag; return* this; }
+	VT100::Keyboard& GetKeyboard() { return keyboard_; }
+public:
+	// virtual functions of Transmitter
+	void OnSent(size_t len) override;
+	void OnRecv(const uint8_t* data, size_t len) override;
+public:
+	// virtual functions of Stream
+	virtual int Read(void* buff, int bytesBuff) override;
+	virtual int Write(const void* buff, int bytesBuff) override;
+	virtual bool Flush() override;
+	virtual Printable& PutChar(char ch) override;
 };
 
 const char* CodeToString(uint8_t code);

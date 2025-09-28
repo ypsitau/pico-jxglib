@@ -8,7 +8,7 @@ jxglib::Net::Telnet::Server& ShellCmd_Net_Telnet_GetTelnetServer();
 
 namespace jxglib::ShellCmd_Net_Telnet {
 
-ShellCmd_Named(telnet_server, "telnet-server", "start telnet server")
+ShellCmd_Named(telnet_server, "telnet-server", "controls telnet server")
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),

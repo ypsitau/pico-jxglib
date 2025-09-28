@@ -6,13 +6,13 @@
 namespace jxglib::Net::TCP {
 
 //------------------------------------------------------------------------------
-// Common
+// Base
 //------------------------------------------------------------------------------
-Common::Common() : pcb_{nullptr}, pTransmitter_{&Transmitter::Dummy}, pEventHandler_{&EventHandler::Dummy}
+Base::Base() : pcb_{nullptr}, pTransmitter_{&Transmitter::Dummy}, pEventHandler_{&EventHandler::Dummy}
 {
 }
 
-void Common::SetPCB(struct tcp_pcb* pcb)
+void Base::SetPCB(struct tcp_pcb* pcb)
 {
 	pcb_ = pcb;
 	::tcp_arg(pcb_, this);
@@ -21,7 +21,7 @@ void Common::SetPCB(struct tcp_pcb* pcb)
 	::tcp_err(pcb_, callback_err);
 }
 
-bool Common::Send(const void* data, size_t len, bool immediateFlag)
+bool Base::Send(const void* data, size_t len, bool immediateFlag)
 {
 	bool rtn = true;
 	Net::lwip_begin();
@@ -31,7 +31,7 @@ bool Common::Send(const void* data, size_t len, bool immediateFlag)
 	return rtn;
 }
 
-bool Common::Flush()
+bool Base::Flush()
 {
 	Net::lwip_begin();
 	err_t err = ::tcp_output(pcb_);
@@ -39,7 +39,7 @@ bool Common::Flush()
 	return err == ERR_OK;
 }
 
-void Common::DiscardPCB()
+void Base::DiscardPCB()
 {
 	if (pcb_) {
 		::tcp_arg(pcb_, nullptr);
@@ -52,23 +52,23 @@ void Common::DiscardPCB()
 	}
 }
 
-err_t Common::callback_sent(void* arg, struct tcp_pcb* pcb, u16_t len)
+err_t Base::callback_sent(void* arg, struct tcp_pcb* pcb, u16_t len)
 {
-	Common* pCommon = reinterpret_cast<Common*>(arg);
+	Base* pCommon = reinterpret_cast<Base*>(arg);
 	pCommon->GetTransmitter().OnSent(len);
 	return ERR_OK;
 }
 
-err_t Common::callback_recv(void* arg, struct tcp_pcb* pcb, struct pbuf* pbuf, err_t err)
+err_t Base::callback_recv(void* arg, struct tcp_pcb* pcb, struct pbuf* pbuf, err_t err)
 {
-	Common* pCommon = reinterpret_cast<Common*>(arg);
+	Base* pCommon = reinterpret_cast<Base*>(arg);
 	if (!pbuf) {
 		// connection closed
 		pCommon->DiscardPCB();
 		pCommon->GetEventHandler().OnDisconnect();
 		return ERR_OK;
 	}
-	uint8_t buff[128];
+	uint8_t buff[512];
 	for (int lenRest = pbuf->tot_len; lenRest > 0; ) {
 		int lenCopied = ::pbuf_copy_partial(pbuf, buff, ChooseMin(pbuf->tot_len, sizeof(buff)), pbuf->tot_len - lenRest);
 		pCommon->GetTransmitter().OnRecv(buff, lenCopied);
@@ -79,7 +79,7 @@ err_t Common::callback_recv(void* arg, struct tcp_pcb* pcb, struct pbuf* pbuf, e
 	return ERR_OK;
 }
 
-void Common::callback_err(void* arg, err_t err)
+void Base::callback_err(void* arg, err_t err)
 {
 }
 
@@ -134,5 +134,53 @@ err_t Server::callback_accept(void* arg, struct tcp_pcb* pcb, err_t err)
 //------------------------------------------------------------------------------
 // Client
 //------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+// Stream
+//------------------------------------------------------------------------------
+Stream::Stream(Base& base) : base_(base)
+{
+	base_.SetTransmitter(*this);
+}
+
+int Stream::Read(void* buff, int bytesBuff)
+{
+	int bytesRead = 0;
+	while (bytesRead < bytesBuff) {
+		int bytes = buffRecv_.ReadBuff(static_cast<uint8_t*>(buff) + bytesRead, bytesBuff - bytesRead);
+		if (bytes <= 0) break; // no more data available
+		bytesRead += bytes;
+		Tickable::TickSub();
+	}
+	return bytesRead;
+}
+
+int Stream::Write(const void* buff, int bytesBuff)
+{
+	//::printf("Write %dbytes\n", bytesBuff);
+	int bytesWritten = 0;
+	while (bytesWritten < bytesBuff) {
+		bytesWritten += base_.Send(static_cast<const uint8_t*>(buff) + bytesWritten, bytesBuff - bytesWritten);
+		Tickable::TickSub();
+	}
+	return bytesWritten;
+}
+
+bool Stream::Flush()
+{
+	base_.Flush();
+	return true;
+}
+
+void Stream::OnSent(size_t len)
+{
+	// nothing to do
+}
+
+void Stream::OnRecv(const uint8_t* data, size_t len)
+{
+	//::printf("OnRecv(len=%d)\n", len);
+	buffRecv_.WriteBuff(data, len);
+}
 
 }

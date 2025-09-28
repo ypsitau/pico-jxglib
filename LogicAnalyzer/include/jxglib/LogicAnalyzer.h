@@ -272,6 +272,7 @@ public:
 		SigrokAdapter(LogicAnalyzer& logicAnalyzer, Printable& terr, Stream& streamApplication);
 	public:
 		void SetPrintableErr(Printable& terr) { pTerr_ = &terr; }
+		void SetStream(Stream& stream) { pStream_ = &stream; }
 		Stream& GetStream() { return *pStream_; }
 	public:
 		// virtual functions of Tickable

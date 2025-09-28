@@ -43,6 +43,8 @@ public:
 	LABOPlatform& AttachStdio(bool attachStdioFlag = true);
 	void SetTerminalInterface(Printable& printable, Keyboard& keyboard);
 	void RestoreTerminalInterface();
+	void SetSigrokInterface(Stream& stream);
+	void RestoreSigrokInterface();
 public:
 	USBDevice::Controller& GetDeviceController() { return deviceController_; }
 	FAT::Flash& GetFAT() { return fat_; }
