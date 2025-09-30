@@ -73,6 +73,7 @@ public:
 	int Connect(const char* ssid, const uint8_t* bssid, const char* password, uint32_t auth, uint32_t msecTimeout);
 	WiFi& Configure(const ip4_addr_t& addr, const ip4_addr_t& netmask, const ip4_addr_t& gateway);
 	void Disconnect();
+	bool IsConnected() const { return ::cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA) == CYW43_LINK_UP; }
 public:
 	void PrintStatus(Printable& tout) const;
 	static bool StringToAuth(const char* str, uint32_t* pAuth);

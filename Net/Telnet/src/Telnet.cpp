@@ -21,7 +21,7 @@ Server::~Server()
 
 bool Server::Start()
 {
-	return tcpServer_.Start();
+	return WiFi::Instance.IsConnected() && tcpServer_.Start();
 }
 
 void Server::Stop()

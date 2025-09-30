@@ -113,6 +113,9 @@ public:
 	void SetEventHandler(EventHandler& handler) { pEventHandler_ = &handler; }
 	EventHandler& GetEventHandler() { return *pEventHandler_; }
 public:
+	void SetPort(uint16_t port) { tcpServer_.SetPort(port); }
+	uint16_t GetPort() const { return tcpServer_.GetPort(); }
+public:
 	bool Start();
 	void Stop();
 	bool IsRunning() const;

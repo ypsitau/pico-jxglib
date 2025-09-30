@@ -47,6 +47,7 @@ private:
 public:
 	Server(uint16_t port);
 public:
+	void SetPort(uint16_t port) { port_ = port; }
 	uint16_t GetPort() const { return port_; }
 public:
 	bool Start();
