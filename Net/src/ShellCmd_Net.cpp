@@ -11,6 +11,7 @@ ShellCmd(net, "controls Network")
 	Net::WiFi& wifi = Net::WiFi::Instance;
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
+		Arg::OptBool("quiet",		'q',	"do not print status and error messages"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
@@ -30,13 +31,14 @@ ShellCmd(net, "controls Network")
 		tout.Printf("                       modify IP configuration\n");
 		return Result::Success;
 	}
+	Printable& terrOpt = arg.GetBool("quiet")? PrintableDumb::Instance : terr;
 	if (argc < 2) {
 		wifi.PrintStatus(tout);
 		return Result::Success;
 	}
 	Shell::Arg::EachSubcmd each(argv[1], argv[argc]);
 	if (!each.Initialize()) {
-		terr.Printf("%s\n", each.GetErrorMsg());
+		terrOpt.Printf("%s\n", each.GetErrorMsg());
 		return Result::Error;
 	}
 	bool printConnectInfoFlag = false;
@@ -58,20 +60,20 @@ ShellCmd(net, "controls Network")
 					password = value;
 				} else if (Arg::GetAssigned(subcmd, "auth", &value)) {
 					if (!Net::WiFi::StringToAuth(value, &auth)) {
-						terr.Printf("Invalid auth: %s\n", value);
+						terrOpt.Printf("Invalid auth: %s\n", value);
 						return Result::Error;
 					}
 				} else {
-					terr.Printf("Unknown option: %s\n", subcmd);
+					terrOpt.Printf("Unknown option: %s\n", subcmd);
 					return Result::Error;
 				}
 			}
 			if (!ssid) {
-				terr.Printf("SSID is required for access_point mode\n");
+				terrOpt.Printf("SSID is required for access_point mode\n");
 				return Result::Error;
 			}
 			if (!password) {
-				terr.Printf("Password is required for access_point mode\n");
+				terrOpt.Printf("Password is required for access_point mode\n");
 				return Result::Error;
 			}
 			if (!wifi.InitAsAccessPoint(ssid, password, auth)) {
@@ -98,36 +100,36 @@ ShellCmd(net, "controls Network")
 				} else if (Arg::GetAssigned(subcmd, "timeout", &value)) {
 					int num = ::strtol(value, nullptr, 10);
 					if (num <= 0) {
-						terr.Printf("Invalid timeout: %s\n", value);
+						terrOpt.Printf("Invalid timeout: %s\n", value);
 						return Result::Error;
 					}
 					msecTimeout = static_cast<uint32_t>(num) * 1000;
 				} else if (Arg::GetAssigned(subcmd, "auth", &value)) {
 					if (!Net::WiFi::StringToAuth(value, &auth)) {
-						terr.Printf("Invalid auth: %s\n", value);
+						terrOpt.Printf("Invalid auth: %s\n", value);
 						return Result::Error;
 					}
 				} else {
-					terr.Printf("Unknown option: %s\n", subcmd);
+					terrOpt.Printf("Unknown option: %s\n", subcmd);
 					return Result::Error;
 				}
 			}
 			if (ssid[0] == '\0') {
-				terr.Printf("SSID is required for connect\n");
+				terrOpt.Printf("SSID is required for connect\n");
 				return Result::Error;
 			}
 			if (password[0] == '\0') {
-				terr.Printf("Password is required for access_point mode\n");
+				terrOpt.Printf("Password is required for access_point mode\n");
 				return Result::Error;
 			}
 			int errorCode = wifi.Connect(ssid, bssid, password, auth, msecTimeout);
 			if (errorCode == PICO_ERROR_NONE) {
 				printConnectInfoFlag = true;
 			} else if (errorCode == PICO_ERROR_BADAUTH) {
-				terr.Printf("Authentication failure for '%s'\n", ssid);
+				terrOpt.Printf("Authentication failure for '%s'\n", ssid);
 				return Result::Error;
 			} else {
-				terr.Printf("Failed to connect to '%s'\n", ssid);
+				terrOpt.Printf("Failed to connect to '%s'\n", ssid);
 				return Result::Error;
 			}
 		} else if (::strcasecmp(subcmd, "wifi-disconnect") == 0) {
@@ -141,36 +143,36 @@ ShellCmd(net, "controls Network")
 				const char* subcmd = pSubcmdChild->GetProc();
 				if (Arg::GetAssigned(subcmd, "addr", &value)) {
 					if (!::ip4addr_aton(value, &addr)) {
-						terr.Printf("Invalid IP address: %s\n", value);
+						terrOpt.Printf("Invalid IP address: %s\n", value);
 						return Result::Error;
 					}
 				} else if (Arg::GetAssigned(subcmd, "netmask", &value)) {
 					if (!::ip4addr_aton(value, &netmask)) {
-						terr.Printf("Invalid netmask: %s\n", value);
+						terrOpt.Printf("Invalid netmask: %s\n", value);
 						return Result::Error;
 					}
 				} else if (Arg::GetAssigned(subcmd, "gateway", &value)) {
 					if (!::ip4addr_aton(value, &gateway)) {
-						terr.Printf("Invalid gateway: %s\n", value);
+						terrOpt.Printf("Invalid gateway: %s\n", value);
 						return Result::Error;
 					}
 				} else {
-					terr.Printf("Unknown option: %s\n", subcmd);
+					terrOpt.Printf("Unknown option: %s\n", subcmd);
 					return Result::Error;
 				}
 			}
 			if (ip4_addr_isany_val(addr) ||	ip4_addr_isany_val(netmask) || ip4_addr_isany_val(gateway)) {
-				terr.Printf("addr, netmask and gateway are required for configuration\n");
+				terrOpt.Printf("addr, netmask and gateway are required for configuration\n");
 				return Result::Error;
 			}
 			wifi.Configure(addr, netmask, gateway);
 			printConnectInfoFlag = true;
 		} else {
-			terr.Printf("Unknown command: %s\n", subcmd);
+			terrOpt.Printf("Unknown command: %s\n", subcmd);
 			return Result::Error;
 		}
 	}
-	if (printConnectInfoFlag) wifi.PrintStatus(terr);
+	if (printConnectInfoFlag) wifi.PrintStatus(terrOpt);
 	return Result::Success;
 }
 
