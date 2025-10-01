@@ -58,8 +58,8 @@ public:
 	static void Tick() { Tick_(); ClearSignal(); }
 	static bool TickSub() { Tick_(); return IsSignalled(); }
 	static bool Sleep(uint32_t msecTick);
-	static uint32_t GetCurrentTime() { return ::to_ms_since_boot(::get_absolute_time()); }
-	static uint32_t GetCurrentTimeSaved() { return msecCurSaved_; }
+	static uint32_t GetCurrentTime() { return msecCurSaved_; }
+	static uint32_t GetCurrentTime_() { return ::to_ms_since_boot(::get_absolute_time()); }
 public:
 	Priority GetPriority() const { return priority_; }
 	const char* GetPriorityName() const { return GetPriorityName(GetPriority()); }

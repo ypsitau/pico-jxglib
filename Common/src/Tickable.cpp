@@ -57,7 +57,7 @@ bool Tickable::IsExpired(uint32_t msecCur)
 
 void Tickable::ResetTick(uint32_t msecTick)
 {
-	msecStart_ = GetCurrentTime();
+	msecStart_ = GetCurrentTime_();
 	msecTick_ = msecTick;
 }
 
@@ -81,7 +81,7 @@ uint32_t Tickable::Tick_()
 	bool expiredFlag = false;
 	tickCalledDepth_++;
 	tickCalledDepthMax_ = ChooseMax(tickCalledDepthMax_, tickCalledDepth_);
-	msecCurSaved_ = GetCurrentTime();
+	msecCurSaved_ = GetCurrentTime_();
 	if (firstFlag_) {
 		for (Tickable* pTickable = pTickableTop_; pTickable; pTickable = pTickable->GetNext()) {
 			pTickable->InitTick(msecCurSaved_);
@@ -107,7 +107,7 @@ uint32_t Tickable::Tick_()
 
 bool Tickable::Sleep(uint32_t msecTick)
 {
-	uint32_t msecStart = GetCurrentTime();
+	uint32_t msecStart = GetCurrentTime_();
 	while (Tick_() - msecStart < msecTick) if (IsSignalled()) return true;
 	return false;
 }

@@ -44,7 +44,7 @@ void Flipper<Initialize, PutOutput>::Put(bool value)
 template<void (*Initialize)(), void (*PutOutput)(bool)>
 void Flipper<Initialize, PutOutput>::StartFlip(const uint32_t msecPeriodTbl[], int nPeriod)
 {
-	msecStart_ = Tickable::GetCurrentTimeSaved();
+	msecStart_ = Tickable::GetCurrentTime();
 	nPeriod_ = nPeriod;
 	iPeriod_ = 0;
 	msecPeriodTbl_.reset(new uint32_t[nPeriod_]);
@@ -58,7 +58,7 @@ void Flipper<Initialize, PutOutput>::OnTick()
 	if (!msecPeriodTbl_ || nPeriod_ == 0) return;
 	uint32_t msecPeriod = msecPeriodTbl_[iPeriod_];
 	if (msecPeriod == static_cast<uint32_t>(-1)) return;
-	uint32_t msecCur = Tickable::GetCurrentTimeSaved();
+	uint32_t msecCur = Tickable::GetCurrentTime();
 	if (msecCur - msecStart_ < msecPeriod) return;
 	iPeriod_ = (iPeriod_ + 1) % nPeriod_;
 	value_ = !value_;
