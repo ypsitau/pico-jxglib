@@ -4,7 +4,9 @@ target_include_directories(jxglib_LABOPlatform INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/include)
 
 target_link_libraries(jxglib_LABOPlatform INTERFACE
-    jxglib_Shell jxglib_Serial jxglib_FAT_Flash jxglib_RTC_DS323x
+    jxglib_Shell jxglib_Serial
+	jxglib_FAT_Flash jxglib_FAT_SDCard
+	jxglib_RTC_DS323x
 	jxglib_USBDevice_MSCDrive jxglib_USBDevice_CDCSerial
 	jxglib_TelePlot jxglib_LogicAnalyzer)
 
@@ -18,7 +20,7 @@ target_sources(jxglib_LABOPlatform INTERFACE
 
 function(jxglib_configure_LABOPlatform TARGET)
 	jxglib_configure_USBDevice(${TARGET} CFG_TUD_CDC 2 CFG_TUD_MSC 1)
-	jxglib_configure_FAT(${TARGET} FF_VOLUMES 1)
+	jxglib_configure_FAT(${TARGET} FF_VOLUMES 2)
 	if(PICO_BOARD MATCHES ".*_w$")
 		jxglib_configure_Net(${TARGET})
 	endif()
@@ -37,6 +39,7 @@ target_link_libraries(jxglib_LABOPlatform_FullCmd INTERFACE
 	jxglib_ShellCmd_LogicAnalyzer
 	jxglib_ShellCmd_PWM
 	jxglib_ShellCmd_Resets
+	jxglib_ShellCmd_SDCard
 	jxglib_ShellCmd_SPI
 	jxglib_ShellCmd_UART
 )	

@@ -17,6 +17,7 @@ target_include_directories(jxglib_ShellCmd_SDCard INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/include)
 
 target_link_libraries(jxglib_ShellCmd_SDCard INTERFACE
+	jxglib_FAT_SDCard
 	jxglib_SDCard
 	jxglib_ShellCmd_Basic)
 

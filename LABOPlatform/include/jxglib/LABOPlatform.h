@@ -12,6 +12,7 @@
 #include "jxglib/USBDevice/MSCDrive.h"
 #include "jxglib/USBDevice/CDCSerial.h"
 #include "jxglib/FAT/Flash.h"
+#include "jxglib/FAT/SDCard.h"
 #include "jxglib/LogicAnalyzer.h"
 
 namespace jxglib {

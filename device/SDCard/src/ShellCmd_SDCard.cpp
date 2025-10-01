@@ -1,10 +1,86 @@
 #include "jxglib/SDCard.h"
 #include "jxglib/Shell.h"
+#include "jxglib/FAT/SDCard.h"
 
-jxglib::SDCard& ShellCmd_SDCard_GetSDCard();
+//jxglib::SDCard& ShellCmd_SDCard_GetSDCard();
 
 namespace jxglib::ShellCmd_SDCard {
 
+FAT::SDCard* pFAT = nullptr;
+
+ShellCmd(sdcard, "SD card commands")
+{
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		'h',	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
+	if (arg.GetBool("help")) {
+		terr.Printf("Usage: %s [OPTION]...\n", GetName());
+		arg.PrintHelp(terr);
+		terr.Printf("Sub Commands:\n");
+		terr.Printf("  connect {drive:DRIVE spi:SPI cs:CS baudrate:BAUDRATE}\n");
+		terr.Printf("               Connect to an SD card\n");
+		return Result::Error;
+	}
+	Shell::Arg::EachSubcmd each(argv[1], argv[argc]);
+	if (!each.Initialize()) {
+		terr.Printf("%s\n", each.GetErrorMsg());
+		return Result::Error;
+	}
+	const char* value;
+	while (const Arg::Subcmd* pSubcmd = each.NextSubcmd()) {
+		const char* subcmd = pSubcmd->GetProc();
+		if (::strcasecmp(subcmd, "connect") == 0) {
+			if (pFAT) {
+				terr.Printf("SD card already connected.\n");
+				return Result::Error;
+			}
+			const char* driveName = "M";
+			uint idxSPI = static_cast<uint>(-1);
+			uint pinCS = GPIO::InvalidPin;
+			uint baudrate = 10'000'000;
+			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
+				const char* subcmd = pSubcmdChild->GetProc();
+				if (Arg::GetAssigned(subcmd, "drive", &value)) {
+					driveName = value;
+				} else if (Arg::GetAssigned(subcmd, "spi", &value)) {
+					int num = ::strtol(value, nullptr, 0);
+					if (num < 0 || num >= 2) {
+						terr.Printf("invalid SPI number: %s\n", value);
+						return Result::Error;
+					}
+					idxSPI = static_cast<uint>(num);
+				} else if (Arg::GetAssigned(subcmd, "cs", &value)) {
+					int num = ::strtol(value, nullptr, 0);
+					if (num < 0 || num >= GPIO::NumPins) {
+						terr.Printf("invalid GPIO number: %s\n", value);
+						return Result::Error;
+					}
+					pinCS = static_cast<uint>(num);
+				} else if (Arg::GetAssigned(subcmd, "baudrate", &value)) {
+					int num = ::strtol(value, nullptr, 0);
+					if (num < 0) {
+						terr.Printf("invalid baudrate: %s\n", value);
+						return Result::Error;
+					}
+					baudrate = static_cast<uint>(num);
+				} else {
+					terr.Printf("unknown sub command: %s\n", subcmd);
+					return Result::Error;
+				}
+			}
+			if (idxSPI == static_cast<uint>(-1) || pinCS == GPIO::InvalidPin) {
+				terr.Printf("spi and cs must be specified\n");
+				return Result::Error;
+			}
+			pFAT = new FAT::SDCard(driveName, (idxSPI == 0)? spi0 : spi1, baudrate, {GPIO::Instance(pinCS)});
+		}
+	}
+	return Result::Success;
+}
+
+#if 0
 ShellCmd_Named(sd_init, "sd-init", "Initialize SD card")
 {
 	SDCard& sdCard = ShellCmd_SDCard_GetSDCard();
@@ -70,5 +146,6 @@ ShellCmd_Named(sd_write, "sd-write", "Write SD card sector")
 	sdCard.WriteBlock(lba, buff, 1);
 	return Result::Success;
 }
+#endif
 
 }
