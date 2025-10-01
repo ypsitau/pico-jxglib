@@ -6,7 +6,7 @@
 
 namespace jxglib::ShellCmd_SDCard {
 
-FAT::SDCard* pFAT = nullptr;
+std::unique_ptr<FAT::SDCard> pFAT;
 
 ShellCmd(sdcard, "SD card commands")
 {
@@ -31,12 +31,12 @@ ShellCmd(sdcard, "SD card commands")
 	const char* value;
 	while (const Arg::Subcmd* pSubcmd = each.NextSubcmd()) {
 		const char* subcmd = pSubcmd->GetProc();
-		if (::strcasecmp(subcmd, "connect") == 0) {
+		if (::strcasecmp(subcmd, "prop") == 0) {
 			if (pFAT) {
 				terr.Printf("SD card already connected.\n");
 				return Result::Error;
 			}
-			const char* driveName = "M";
+			const char* driveName = "SDCard";
 			uint idxSPI = static_cast<uint>(-1);
 			uint pinCS = GPIO::InvalidPin;
 			uint baudrate = 10'000'000;
@@ -74,7 +74,7 @@ ShellCmd(sdcard, "SD card commands")
 				terr.Printf("spi and cs must be specified\n");
 				return Result::Error;
 			}
-			pFAT = new FAT::SDCard(driveName, (idxSPI == 0)? spi0 : spi1, baudrate, {GPIO::Instance(pinCS)});
+			pFAT.reset(new FAT::SDCard(driveName, (idxSPI == 0)? spi0 : spi1, baudrate, {GPIO::Instance(pinCS)}));
 		}
 	}
 	return Result::Success;

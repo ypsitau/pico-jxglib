@@ -17,7 +17,8 @@ target_include_directories(jxglib_ShellCmd_RTC INTERFACE
 
 target_link_libraries(jxglib_ShellCmd_RTC INTERFACE
 	jxglib_ShellCmd_Basic
-	jxglib_RTC)
+	jxglib_RTC
+	jxglib_RTC_DS323x)
 
 target_sources(jxglib_ShellCmd_RTC INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/ShellCmd_RTC.cpp)
