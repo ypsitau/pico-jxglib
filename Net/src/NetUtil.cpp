@@ -31,11 +31,13 @@ bool DNS::GetHostByName(const char* hostname, ip_addr_t* addr, uint32_t msecTime
 
 void DNS::GetHostByNameAsync(const char* hostname)
 {
-	completeFlag_ = false;
-	::dns_gethostbyname(hostname, &addr_, callback_found, this);
+	Net::lwip_begin();
+	int err = ::dns_gethostbyname(hostname, &addr_, callback_found, this);
+	Net::lwip_end();
+	completeFlag_ = (err == ERR_OK);
 }
 
-void DNS::callback_found(const char*hostname, const ip_addr_t* addr, void* arg)
+void DNS::callback_found(const char* hostname, const ip_addr_t* addr, void* arg)
 {
 	DNS* pDNS = reinterpret_cast<DNS*>(arg);
 	if (addr) {
