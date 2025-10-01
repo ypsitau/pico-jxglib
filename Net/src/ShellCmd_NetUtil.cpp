@@ -16,6 +16,7 @@ ShellCmd(nslookup, "performs DNS lookup")
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (arg.GetBool("help") || argc < 2) {
 		terr.Printf("Usage: %s URL\n", GetName());
+		arg.PrintHelp(terr);
 		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
 	ip_addr_t addr;
@@ -39,6 +40,7 @@ ShellCmd(ntp, "requests time from NTP server")
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (arg.GetBool("help")) {
 		terr.Printf("Usage: %s\n", GetName());
+		arg.PrintHelp(terr);
 		return Result::Success;
 	}
 	DateTime dt;
