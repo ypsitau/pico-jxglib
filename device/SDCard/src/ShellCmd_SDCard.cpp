@@ -36,14 +36,15 @@ ShellCmd(sdcard, "SD card commands")
 				terr.Printf("SD card already set up.\n");
 				return Result::Error;
 			}
-			const char* driveName = "SDCard";
+			char driveName[32] = "SDCard";
 			uint idxSPI = static_cast<uint>(-1);
 			uint pinCS = GPIO::InvalidPin;
 			uint baudrate = 10'000'000;
 			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
 				const char* subcmd = pSubcmdChild->GetProc();
 				if (Arg::GetAssigned(subcmd, "drive", &value)) {
-					driveName = value;
+					::snprintf(driveName, sizeof(driveName), "%s", value);
+					Tokenizer::RemoveSurroundingQuotes(driveName);
 				} else if (Arg::GetAssigned(subcmd, "spi", &value)) {
 					int num = ::strtol(value, nullptr, 0);
 					if (num < 0 || num >= 2) {
