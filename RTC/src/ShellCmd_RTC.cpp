@@ -5,40 +5,6 @@
 #include "jxglib/RTC/DS323x.h"
 namespace jxglib::ShellCmd_RTC {
 
-std::unique_ptr<RTC::Base> pInstance;
-
-ShellCmd_Named(rtc_device, "rtc-device", "set up RTC device")
-{
-	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",	'h',	"prints this help"),
-	};
-	Arg arg(optTbl, count_of(optTbl));
-	if (!arg.Parse(terr, argc, argv)) return Result::Error;
-	if (arg.GetBool("help")) {
-		terr.Printf("Usage: %s [OPTION]...\n", GetName());
-		arg.PrintHelp(terr);
-		return Result::Error;
-	}
-	Shell::Arg::EachSubcmd each(argv[1], argv[argc]);
-	if (!each.Initialize()) {
-		terr.Printf("%s\n", each.GetErrorMsg());
-		return Result::Error;
-	}
-	const char* value;
-	while (const Arg::Subcmd* pSubcmd = each.NextSubcmd()) {
-		const char* subcmd = pSubcmd->GetProc();
-		if (::strcmp(subcmd, "dummy") == 0) {
-			pInstance.reset(new RTC::Dummy);
-		} else if (::strcmp(subcmd, "ds323x") == 0) {
-			pInstance.reset(new RTC::DS323x(i2c0));
-		} else {
-			terr.Printf("Unknown subcommand: %s\n", subcmd);
-			return Result::Error;
-		}
-	}
-	return Result::Success;
-}
-
 ShellCmd(rtc, "set or get RTC time")
 {
 	static const Arg::Opt optTbl[] = {

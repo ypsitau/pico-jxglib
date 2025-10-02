@@ -40,6 +40,7 @@ target_link_libraries(jxglib_LABOPlatform_FullCmd INTERFACE
 	jxglib_ShellCmd_PWM
 	jxglib_ShellCmd_Resets
 	jxglib_ShellCmd_RTC
+	jxglib_ShellCmd_RTC_DS323x
 	jxglib_ShellCmd_SDCard
 	jxglib_ShellCmd_SPI
 	jxglib_ShellCmd_UART
