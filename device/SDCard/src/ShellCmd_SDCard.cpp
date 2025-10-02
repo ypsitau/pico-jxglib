@@ -19,8 +19,8 @@ ShellCmd(sdcard, "SD card commands")
 		terr.Printf("Usage: %s [OPTION]...\n", GetName());
 		arg.PrintHelp(terr);
 		terr.Printf("Sub Commands:\n");
-		terr.Printf("  connect {drive:DRIVE spi:SPI cs:CS baudrate:BAUDRATE}\n");
-		terr.Printf("               Connect to an SD card\n");
+		terr.Printf("  setup {drive:DRIVE spi:SPI cs:CS baudrate:BAUDRATE}\n");
+		terr.Printf("            Set up an SD card\n");
 		return Result::Error;
 	}
 	Shell::Arg::EachSubcmd each(argv[1], argv[argc]);
@@ -31,9 +31,9 @@ ShellCmd(sdcard, "SD card commands")
 	const char* value;
 	while (const Arg::Subcmd* pSubcmd = each.NextSubcmd()) {
 		const char* subcmd = pSubcmd->GetProc();
-		if (::strcasecmp(subcmd, "prop") == 0) {
+		if (::strcasecmp(subcmd, "setup") == 0) {
 			if (pFAT) {
-				terr.Printf("SD card already connected.\n");
+				terr.Printf("SD card already set up.\n");
 				return Result::Error;
 			}
 			const char* driveName = "SDCard";

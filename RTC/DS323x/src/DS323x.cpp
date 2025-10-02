@@ -19,13 +19,11 @@ bool DS323x::DoGet(DateTime* pDt)
 	uint8_t reg = 0x00;
 	if (::i2c_write_blocking_until(i2c_, addr_, &reg, sizeof(reg), true,
 				::make_timeout_time_ms(msecTimeout_)) != sizeof(reg)) {
-		i2c_ = nullptr; // invalidate i2c_ on error
 		return false;
 	}
 	uint8_t buf[7];
 	if (::i2c_read_blocking_until(i2c_, addr_, buf, sizeof(buf), false,
 				::make_timeout_time_ms(msecTimeout_)) != sizeof(buf)) {
-		i2c_ = nullptr; // invalidate i2c_ on error
 		return false;
 	}
 	pDt->msec = 0; // DS323x does not support milliseconds
@@ -53,7 +51,6 @@ bool DS323x::DoSet(const DateTime &dt)
 	buf[7] = Dec2BCD(dt.year - 2000);
 	if (::i2c_write_blocking_until(i2c_, addr_, buf, sizeof(buf), false,
 				::make_timeout_time_ms(msecTimeout_)) != sizeof(buf)) {
-		i2c_ = nullptr; // invalidate i2c_ on error
 		return false;
 	}
 	return true;
