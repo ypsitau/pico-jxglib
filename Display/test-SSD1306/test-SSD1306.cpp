@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "jxglib/SSD1306.h"
+#include "jxglib/Display/SSD1306.h"
 #include "jxglib/DrawableTest.h"
 
 using namespace jxglib;

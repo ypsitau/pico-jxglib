@@ -49,7 +49,7 @@ target_link_libraries(test-RefreshRate
 	pico_stdlib
 	jxglib_Canvas
 	jxglib_Display_ST7789
-	jxglib_SSD1306)
+	jxglib_Display_SSD1306)
 
 # Add the standard include files to the build
 target_include_directories(test-RefreshRate PRIVATE

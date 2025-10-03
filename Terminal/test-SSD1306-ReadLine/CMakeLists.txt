@@ -48,7 +48,7 @@ pico_enable_stdio_usb(test-SSD1306-ReadLine 0)
 target_link_libraries(test-SSD1306-ReadLine
 	pico_stdlib
 	jxglib_USBHost
-	jxglib_SSD1306
+	jxglib_Display_SSD1306
 	jxglib_Terminal)
 
 # Add the standard include files to the build
