@@ -1,8 +1,8 @@
 //==============================================================================
 // jxglib/TouchScreen/TSC2046.h
 //==============================================================================
-#ifndef PICO_JXGLIB_TSC2046_H
-#define PICO_JXGLIB_TSC2046_H
+#ifndef PICO_JXGLIB_TOUCHSCREEN_TSC2046_H
+#define PICO_JXGLIB_TOUCHSCREEN_TSC2046_H
 #include "pico/stdlib.h"
 #include "pico/time.h"
 #include "hardware/spi.h"

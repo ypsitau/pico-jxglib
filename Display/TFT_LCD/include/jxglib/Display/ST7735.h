@@ -1,8 +1,8 @@
 //==============================================================================
 // jxglib/Display/ST7735.h
 //==============================================================================
-#ifndef PICO_JXGLIB_ST7735_H
-#define PICO_JXGLIB_ST7735_H
+#ifndef PICO_JXGLIB_DISPLAY_ST7735_H
+#define PICO_JXGLIB_DISPLAY_ST7735_H
 #include "jxglib/Display/TFT_LCD.h"
 
 namespace jxglib {

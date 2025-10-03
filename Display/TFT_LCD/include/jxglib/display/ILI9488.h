@@ -1,8 +1,8 @@
 //==============================================================================
 // jxglib/Display/ILI9488.h
 //==============================================================================
-#ifndef PICO_JXGLIB_ILI9488_H
-#define PICO_JXGLIB_ILI9488_H
+#ifndef PICO_JXGLIB_DISPLAY_ILI9488_H
+#define PICO_JXGLIB_DISPLAY_ILI9488_H
 #include "jxglib/Display/TFT_LCD.h"
 #include "jxglib/TouchScreen/TSC2046.h"
 

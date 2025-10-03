@@ -3,8 +3,8 @@
 // 128x64 Dot Matrix OLED/PLED Segment/Common Driver with Controller
 // Specification: https://cdn-shop.adafruit.com/datasheets/SSD1306.pdf
 //==============================================================================
-#ifndef PICO_JXGLIB_SSD1306_H
-#define PICO_JXGLIB_SSD1306_H
+#ifndef PICO_JXGLIB_DISPLAY_SSD1306_H
+#define PICO_JXGLIB_DISPLAY_SSD1306_H
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
