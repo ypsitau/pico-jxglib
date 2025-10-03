@@ -17,9 +17,13 @@ int Readable::ReadChar()
 int Readable::ReadLine(char* buff, int bytesBuff, bool elimEOLFlag)
 {
 	int bytesRead = 0;
+	buff[0] = '\0';
 	while (bytesRead < bytesBuff - 1) {
 		int ch = ReadChar();
-		if (ch < 0) break; // End of stream
+		if (ch < 0) { // End of stream or error
+			if (bytesRead == 0) return -1; // No data read
+			break;
+		}
 		if (ch == '\n') {
 			if (!elimEOLFlag) buff[bytesRead++] = static_cast<char>(ch);
 			break; // End of line

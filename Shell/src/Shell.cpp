@@ -65,7 +65,7 @@ bool Shell::RunCmd(Readable& tin, Printable& tout, Printable& terr, char* line, 
 	Printable* pterr = &terr;
 	const char* errorMsg;
 	for ( ; ::isspace(*line); line++) ;
-	if (*line == '#') return true; // comment line
+	if (*line == '\0' || *line == '#') return true; // comment line
 	if (!ExpandEnvVariables(line, bytesLine, &errorMsg)) {
 		pterr->Println(errorMsg);
 		return false;
@@ -142,7 +142,7 @@ bool Shell::RunSingleCmd(Readable& tin, Printable& tout, Printable& terr, int ar
 bool Shell::RunScript(Readable& tin, Printable& tout, Printable& terr, Readable& script)
 {
 	char line[Terminal::EditBuffSize];
-	while (script.ReadLine(line, sizeof(line)) > 0) {
+	while (script.ReadLine(line, sizeof(line)) >= 0) {
 		if (!RunCmd(tin, tout, terr, line, sizeof(line))) return false;
 	}
 	return true;
