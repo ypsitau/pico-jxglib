@@ -1,17 +1,17 @@
 //==============================================================================
-// jxglib/ILI9488.h
+// jxglib/Display/ILI9341.h
 //==============================================================================
-#ifndef PICO_JXGLIB_ILI9488_H
-#define PICO_JXGLIB_ILI9488_H
-#include "jxglib/TFT_LCD.h"
+#ifndef PICO_JXGLIB_ILI9341_H
+#define PICO_JXGLIB_ILI9341_H
+#include "jxglib/Display/TFT_LCD.h"
 #include "jxglib/TSC2046.h"
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
-// ILI9488
+// ILI9341
 //------------------------------------------------------------------------------
-class ILI9488 : public TFT_LCD {
+class ILI9341 : public TFT_LCD {
 public:
 	class TouchScreen : public TSC2046 {
 	public:
@@ -20,8 +20,8 @@ public:
 		TouchScreen& Initialize(Drawable& drawable) {
 			Drawable::Dir dir = drawable.GetDirection();
 			TSC2046::Initialize(dir.IsVert());
-			adjusterX_.Set(0.18, -26, 345);
-			adjusterY_.Set(0.27, -41, 520);
+			adjusterX_.Set(0.14, -20, 260);
+			adjusterY_.Set(0.18, -30, 350);
 			if (dir.IsVert()) Swap(&adjusterX_, &adjusterY_);
 			adjusterX_.SetValueMax(drawable.GetWidth() - 1).SetNeg(dir.IsRightToLeft());
 			adjusterY_.SetValueMax(drawable.GetHeight() - 1).SetNeg(dir.IsTopToBottom());
@@ -29,18 +29,18 @@ public:
 		}
 	};
 public:
-	ILI9488(spi_inst_t* spi, int width, int height, const PinAssign& pinAssign) :
-			TFT_LCD(spi, Format::RGB, 320, 480, width, height, pinAssign) {}
+	ILI9341(spi_inst_t* spi, int width, int height, const PinAssign& pinAssign) :
+			TFT_LCD(spi, Format::RGB565, 240, 320, width, height, pinAssign) {}
 	inline TFT_LCD& Initialize(Dir displayDir = Dir::Normal);
 public:
-	using TypeA = ILI9488;
+	using TypeA = ILI9341;
 };
 
-inline TFT_LCD& ILI9488::Initialize(Dir displayDir)
+inline TFT_LCD& ILI9341::Initialize(Dir displayDir)
 {
 	static const ConfigData configData = {
-		rgbInterfaceFormat:		RGBInterfaceFormat::BPP18,
-		mcuInterfaceFormat:		MCUInterfaceFormat::BPP18,
+		rgbInterfaceFormat:		RGBInterfaceFormat::BPP16,
+		mcuInterfaceFormat:		MCUInterfaceFormat::BPP16,
 		lineAddressOrder:		LineAddressOrder::TopToBottom,
 		rgbBgrOrder:			RGBBGROrder::BGR,
 		displayDataLatchOrder:	DisplayDataLatchOrder::LeftToRight,

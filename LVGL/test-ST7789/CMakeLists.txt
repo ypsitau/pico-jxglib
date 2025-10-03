@@ -63,7 +63,7 @@ target_link_libraries(test-ST7789
     pico_stdlib
     lvgl_examples
     jxglib_USBHost
-    jxglib_ST7789
+    jxglib_Display_ST7789
     jxglib_LVGL)
 
 # Add the standard include files to the build

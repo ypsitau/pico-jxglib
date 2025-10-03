@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "jxglib/ST7735.h"
-#include "jxglib/ST7789.h"
-#include "jxglib/ILI9341.h"
+#include "jxglib/Display/ST7735.h"
+#include "jxglib/Display/ST7789.h"
+#include "jxglib/Display/ILI9341.h"
 #include "jxglib/Canvas.h"
 #include "jxglib/DrawableTest.h"
 

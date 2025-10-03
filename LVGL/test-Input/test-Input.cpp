@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <examples/lv_examples.h>
 #include "pico/stdlib.h"
-#include "jxglib/ST7789.h"
-#include "jxglib/ILI9341.h"
+#include "jxglib/Display/ST7789.h"
+#include "jxglib/Display/ILI9341.h"
 #include "jxglib/LVGL.h"
 #include "jxglib/UART.h"
 #include "jxglib/VT100.h"

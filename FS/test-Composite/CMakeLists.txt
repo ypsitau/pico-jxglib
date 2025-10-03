@@ -48,7 +48,7 @@ pico_enable_stdio_usb(test-Composite 0)
 target_link_libraries(test-Composite
     pico_stdlib
     jxglib_Serial
-    jxglib_ST7789
+    jxglib_Display_ST7789
     jxglib_USBHost
     jxglib_FAT_Flash
     jxglib_FAT_RAMDisk

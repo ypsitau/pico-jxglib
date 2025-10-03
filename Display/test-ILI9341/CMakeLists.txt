@@ -62,7 +62,7 @@ pico_enable_stdio_usb(test-ILI9341 0)
 target_link_libraries(test-ILI9341
 	pico_stdlib
 	jxglib_DrawableTest
-	jxglib_ILI9341)
+	jxglib_Display_ILI9341)
 
 # Add the standard include files to the build
 target_include_directories(test-ILI9341 PRIVATE

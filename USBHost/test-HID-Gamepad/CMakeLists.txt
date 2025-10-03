@@ -47,8 +47,8 @@ pico_enable_stdio_usb(test-HID-Gamepad 0)
 # Add the standard library to the build
 target_link_libraries(test-HID-Gamepad
     pico_stdlib
-    jxglib_ILI9341
-    jxglib_ST7789
+    jxglib_Display_ILI9341
+    jxglib_Display_ST7789
     jxglib_Terminal
     jxglib_USBHost)
 

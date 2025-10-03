@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "jxglib/ILI9341.h"
+#include "jxglib/Display/ILI9341.h"
 #include "jxglib/DrawableTest.h"
 
 using namespace jxglib;

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/USBHost/HID.h"
-#include "jxglib/ST7789.h"
+#include "jxglib/Display/ST7789.h"
 #include "jxglib/Font/shinonome16.h"
 
 using namespace jxglib;

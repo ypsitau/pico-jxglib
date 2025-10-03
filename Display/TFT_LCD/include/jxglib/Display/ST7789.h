@@ -1,9 +1,9 @@
 //==============================================================================
-// jxglib/ST7789.h
+// jxglib/Display/ST7789.h
 //==============================================================================
 #ifndef PICO_JXGLIB_ST7789_H
 #define PICO_JXGLIB_ST7789_H
-#include "jxglib/TFT_LCD.h"
+#include "jxglib/Display/TFT_LCD.h"
 
 namespace jxglib {
 

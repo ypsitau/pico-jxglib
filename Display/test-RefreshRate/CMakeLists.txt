@@ -48,7 +48,7 @@ pico_enable_stdio_usb(test-RefreshRate 1)
 target_link_libraries(test-RefreshRate
 	pico_stdlib
 	jxglib_Canvas
-	jxglib_ST7789
+	jxglib_Display_ST7789
 	jxglib_SSD1306)
 
 # Add the standard include files to the build

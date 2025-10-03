@@ -75,7 +75,7 @@ pico_enable_stdio_usb(Calib-ILI9488 0)
 # Add the standard library to the build
 target_link_libraries(Calib-ILI9488
 	pico_stdlib
-	jxglib_ILI9488)
+	jxglib_Display_ILI9488)
 
 # Add the standard include files to the build
 target_include_directories(Calib-ILI9488 PRIVATE

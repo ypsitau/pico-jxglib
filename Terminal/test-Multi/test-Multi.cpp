@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "jxglib/ST7789.h"
+#include "jxglib/Display/ST7789.h"
 #include "jxglib/Font/shinonome12.h"
 #include "jxglib/Font/shinonome16.h"
 #include "jxglib/Font/sisd24x32.h"

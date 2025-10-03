@@ -9,6 +9,19 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // Display
 //------------------------------------------------------------------------------
+Display* Display::pHead_ = nullptr;
+
+Display::Display(uint32_t capabilities, const Format& format, int width, int height) :
+			Drawable(capabilities, format, width, height), pNext_{nullptr}
+{
+	if (pHead_) {
+		Display* p = pHead_;
+		for ( ; p->pNext_; p = p->pNext_);
+		p->pNext_ = this;
+	} else {
+		pHead_ = this;
+	}
+}
 
 //------------------------------------------------------------------------------
 // Display::Terminal

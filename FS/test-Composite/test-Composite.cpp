@@ -4,7 +4,7 @@
 #include "pico/binary_info.h"
 #include "jxglib/Serial.h"
 #include "jxglib/Shell.h"
-#include "jxglib/ST7789.h"
+#include "jxglib/Display/ST7789.h"
 #include "jxglib/USBHost/HID.h"
 #include "jxglib/LFS/Flash.h"
 #include "jxglib/FAT/Flash.h"

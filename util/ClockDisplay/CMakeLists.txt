@@ -57,5 +57,5 @@ target_include_directories(ClockDisplay PRIVATE
 pico_add_extra_outputs(ClockDisplay)
 
 target_link_libraries(ClockDisplay
-    jxglib_RTC_DS323x jxglib_ST7789)
+    jxglib_RTC_DS323x jxglib_Display_ST7789)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)

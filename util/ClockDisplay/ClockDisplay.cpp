@@ -2,7 +2,7 @@
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
 #include "jxglib/RTC/DS323x.h"
-#include "jxglib/ST7789.h"
+#include "jxglib/Display/ST7789.h"
 #include "jxglib/Font/shinonome18.h"
 
 using namespace jxglib;

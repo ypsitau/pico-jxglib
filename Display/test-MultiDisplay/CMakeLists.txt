@@ -49,9 +49,9 @@ pico_enable_stdio_usb(test-MultiDisplay 0)
 # Add the standard library to the build
 target_link_libraries(test-MultiDisplay
 	pico_stdlib
-	jxglib_ST7735
-	jxglib_ST7789
-	jxglib_ILI9341
+	jxglib_Display_ST7735
+	jxglib_Display_ST7789
+	jxglib_Display_ILI9341
 	jxglib_DrawableTest)
 
 # Add the standard include files to the build

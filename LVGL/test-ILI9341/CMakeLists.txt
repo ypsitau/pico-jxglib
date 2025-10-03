@@ -76,7 +76,7 @@ pico_enable_stdio_usb(test-ILI9341 0)
 target_link_libraries(test-ILI9341
     pico_stdlib
     lvgl_examples
-    jxglib_ILI9341
+    jxglib_Display_ILI9341
     jxglib_LVGL)
 
 # Add the standard include files to the build

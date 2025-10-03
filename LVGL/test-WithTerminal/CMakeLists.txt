@@ -64,7 +64,7 @@ target_link_libraries(test-WithTerminal
 	lvgl_examples
     jxglib_Terminal
     jxglib_LVGL
-    jxglib_ILI9341)
+    jxglib_Display_ILI9341)
 
 # Add the standard include files to the build
 target_include_directories(test-WithTerminal PRIVATE

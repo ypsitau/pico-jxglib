@@ -63,7 +63,7 @@ target_link_libraries(test-SplitDisplay
     pico_stdlib
 	lvgl_examples
     jxglib_LVGL
-    jxglib_ILI9341)
+    jxglib_Display_ILI9341)
 
 # Add the standard include files to the build
 target_include_directories(test-SplitDisplay PRIVATE

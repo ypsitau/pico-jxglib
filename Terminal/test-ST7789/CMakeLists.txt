@@ -47,7 +47,7 @@ pico_enable_stdio_usb(test-ST7789 0)
 # Add the standard library to the build
 target_link_libraries(test-ST7789
 	pico_stdlib
-	jxglib_ST7789
+	jxglib_Display_ST7789
 	jxglib_Terminal)
 
 # Add the standard include files to the build

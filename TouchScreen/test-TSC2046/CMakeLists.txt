@@ -49,7 +49,7 @@ pico_enable_stdio_usb(test-TSC2046 0)
 # Add the standard library to the build
 target_link_libraries(test-TSC2046
     pico_stdlib
-    jxglib_TSC2046)
+    jxglib_TouchScreen_TSC2046)
 
 # Add the standard include files to the build
 target_include_directories(test-TSC2046 PRIVATE

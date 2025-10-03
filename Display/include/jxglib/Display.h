@@ -160,9 +160,16 @@ public:
 		virtual jxglib::Terminal& Edit_MoveHistoryNext() override;
 		virtual jxglib::Terminal& Edit_Completion() override;
 	};
+private:
+	static Display* pHead_;
+private:
+	Display* pNext_;
 public:
-	Display(uint32_t capabilities, const Format& format, int width, int height) :
-			Drawable(capabilities, format, width, height) {}
+	Display(uint32_t capabilities, const Format& format, int width, int height);
+public:
+	static Display* GetHead() { return pHead_; }
+	Display* GetNext() { return pNext_; }
+	const Display* GetNext() const { return pNext_; }
 };
 
 }

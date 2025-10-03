@@ -48,7 +48,7 @@ pico_enable_stdio_usb(test-ST7735 0)
 # Add the standard library to the build
 target_link_libraries(test-ST7735
 	pico_stdlib
-	jxglib_ST7735
+	jxglib_Display_ST7735
 	jxglib_DrawableTest)
 
 # Add the standard include files to the build

@@ -2,7 +2,7 @@
 #include <examples/lv_examples.h>
 #include "pico/stdlib.h"
 #include "jxglib/Terminal.h"
-#include "jxglib/ILI9341.h"
+#include "jxglib/Display/ILI9341.h"
 #include "jxglib/LVGL.h"
 #include "jxglib/Font/shinonome12-japanese-level2.h"
 #include "jxglib/sample/Text_Botchan.h"

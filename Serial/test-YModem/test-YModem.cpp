@@ -8,7 +8,7 @@
 #include "jxglib/LFS/Flash.h"
 #include "jxglib/RTC/DS323x.h"
 #include "jxglib/FS.h"
-#include "jxglib/ST7789.h"
+#include "jxglib/Display/ST7789.h"
 //#include "jxglib/USBHost/HID.h"
 #include "jxglib/Font/shinonome16.h"
 

@@ -2,7 +2,7 @@
 #include "pico/stdlib.h"
 #include "jxglib/Canvas.h"
 #include "jxglib/SSD1306.h"
-#include "jxglib/ST7789.h"
+#include "jxglib/Display/ST7789.h"
 #include "jxglib/Font/shinonome12-japanese-level2.h"
 #include "jxglib/sample/Text_Botchan.h"
 
