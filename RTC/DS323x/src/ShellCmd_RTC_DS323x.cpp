@@ -18,7 +18,7 @@ ShellCmd_Named(rtc_ds323x, "rtc-ds323x", "set up RTC DS323x device")
 		terr.Printf("Usage: %s [OPTION]...\n", GetName());
 		arg.PrintHelp(terr);
 		terr.Printf("Subcommands:\n");
-		terr.Printf("  i2c:N        I2C number (0 or 1)\n");
+		terr.Printf("  setup {i2c:N}     Set up a DS323x device\n");
 		return Result::Error;
 	}
 	Shell::Arg::EachSubcmd each(argv[1], argv[argc]);
@@ -27,26 +27,34 @@ ShellCmd_Named(rtc_ds323x, "rtc-ds323x", "set up RTC DS323x device")
 		return Result::Error;
 	}
 	const char* value;
-	uint idxI2C = static_cast<uint>(-1);
 	while (const Arg::Subcmd* pSubcmd = each.NextSubcmd()) {
 		const char* subcmd = pSubcmd->GetProc();
-		if (Arg::GetAssigned(subcmd, "i2c", &value)) {
-			int num = ::strtol(value, nullptr, 10);
-			if (num < 0 || num > 1) {
-				terr.Printf("Invalid I2C number: %s\n", value);
+		if (Arg::GetAssigned(subcmd, "setup", &value)) {
+			i2c_inst_t* i2c = nullptr;
+			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
+				const char* subcmd = pSubcmdChild->GetProc();
+				if (Arg::GetAssigned(subcmd, "i2c", &value)) {
+					int num = ::strtol(value, nullptr, 10);
+					if (num < 0 || num > 1) {
+						terr.Printf("Invalid I2C number: %s\n", value);
+						return Result::Error;
+					}
+					i2c = ::i2c_get_instance(num);
+				} else {
+					terr.Printf("Unknown subcommand: %s\n", subcmd);
+					return Result::Error;
+				}
+			}
+			if (!i2c) {
+				terr.Printf("I2C number is not specified. Use 'i2c:N' subcommand.\n");
 				return Result::Error;
 			}
-			idxI2C = static_cast<uint>(num);
+			pInstance.reset(new RTC::DS323x(i2c));
 		} else {
 			terr.Printf("Unknown subcommand: %s\n", subcmd);
 			return Result::Error;
 		}
 	}
-	if (idxI2C == static_cast<uint>(-1)) {
-		terr.Printf("I2C number is not specified. Use 'i2c:N' subcommand.\n");
-		return Result::Error;
-	}
-	pInstance.reset(new RTC::DS323x(::i2c_get_instance(idxI2C)));
 	return Result::Success;
 }
 

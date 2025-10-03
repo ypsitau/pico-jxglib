@@ -19,6 +19,10 @@ public:
 	inline TFT_LCD& Initialize(Dir displayDir = Dir::Normal);
 public:
 	using TypeA = ST7789;
+public:
+	// Virtual functions of Display
+	virtual const char* GetName() const override { return "ST7789"; }
+	virtual const char* GetVariantName() const override { return "TypeA"; }
 };
 
 inline TFT_LCD& ST7789::Initialize(Dir displayDir)

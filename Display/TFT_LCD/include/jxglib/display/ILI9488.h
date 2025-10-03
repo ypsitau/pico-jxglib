@@ -34,6 +34,9 @@ public:
 	inline TFT_LCD& Initialize(Dir displayDir = Dir::Normal);
 public:
 	using TypeA = ILI9488;
+public:	// Virtual functions of Display
+	virtual const char* GetName() const override { return "ILI9488"; }
+	virtual const char* GetVariantName() const override { return "TypeA"; }
 };
 
 inline TFT_LCD& ILI9488::Initialize(Dir displayDir)

@@ -166,10 +166,14 @@ private:
 	Display* pNext_;
 public:
 	Display(uint32_t capabilities, const Format& format, int width, int height);
+	virtual ~Display();
 public:
 	static Display* GetHead() { return pHead_; }
 	Display* GetNext() { return pNext_; }
 	const Display* GetNext() const { return pNext_; }
+public:
+	virtual const char* GetName() const { return "no-name"; }
+	virtual const char* GetVariantName() const { return ""; }
 };
 
 }

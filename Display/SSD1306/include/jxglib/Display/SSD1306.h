@@ -247,6 +247,10 @@ public:
 	}
 public:
 	SSD1306& Initialize() { GetDispatcher().Initialize(); return *this; }
+public:
+	// Virtual functions of Display
+	virtual const char* GetName() const override { return "SSD1306"; }
+	virtual const char* GetVariantName() const override { return ""; }
 };
 
 }

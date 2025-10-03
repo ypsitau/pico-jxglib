@@ -2,8 +2,6 @@
 #include "jxglib/Shell.h"
 #include "jxglib/FAT/SDCard.h"
 
-//jxglib::SDCard& ShellCmd_SDCard_GetSDCard();
-
 namespace jxglib::ShellCmd_SDCard {
 
 std::unique_ptr<FAT::SDCard> pFAT;
@@ -19,8 +17,9 @@ ShellCmd(sdcard, "SD card commands")
 		terr.Printf("Usage: %s [OPTION]...\n", GetName());
 		arg.PrintHelp(terr);
 		terr.Printf("Sub Commands:\n");
-		terr.Printf("  setup {drive:DRIVE spi:SPI cs:CS baudrate:BAUDRATE}\n");
-		terr.Printf("            Set up an SD card\n");
+		terr.Printf(" setup {spi:SPI cs:CS [drive:DRIVE] [baudrate:BAUDRATE]}\n");
+		terr.Printf("           Set up an SD card\n");
+		terr.Printf(" init      Initialize the SD card\n");
 		return Result::Error;
 	}
 	Shell::Arg::EachSubcmd each(argv[1], argv[argc]);
@@ -37,21 +36,18 @@ ShellCmd(sdcard, "SD card commands")
 				return Result::Error;
 			}
 			char driveName[32] = "SDCard";
-			uint idxSPI = static_cast<uint>(-1);
+			spi_inst_t* spi = nullptr;
 			uint pinCS = GPIO::InvalidPin;
 			uint baudrate = 10'000'000;
 			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
 				const char* subcmd = pSubcmdChild->GetProc();
-				if (Arg::GetAssigned(subcmd, "drive", &value)) {
-					::snprintf(driveName, sizeof(driveName), "%s", value);
-					Tokenizer::RemoveSurroundingQuotes(driveName);
-				} else if (Arg::GetAssigned(subcmd, "spi", &value)) {
+				if (Arg::GetAssigned(subcmd, "spi", &value)) {
 					int num = ::strtol(value, nullptr, 0);
 					if (num < 0 || num >= 2) {
 						terr.Printf("invalid SPI number: %s\n", value);
 						return Result::Error;
 					}
-					idxSPI = static_cast<uint>(num);
+					spi = (num == 0)? spi0 : spi1;
 				} else if (Arg::GetAssigned(subcmd, "cs", &value)) {
 					int num = ::strtol(value, nullptr, 0);
 					if (num < 0 || num >= GPIO::NumPins) {
@@ -59,6 +55,9 @@ ShellCmd(sdcard, "SD card commands")
 						return Result::Error;
 					}
 					pinCS = static_cast<uint>(num);
+				} else if (Arg::GetAssigned(subcmd, "drive", &value)) {
+					::snprintf(driveName, sizeof(driveName), "%s", value);
+					Tokenizer::RemoveSurroundingQuotes(driveName);
 				} else if (Arg::GetAssigned(subcmd, "baudrate", &value)) {
 					int num = ::strtol(value, nullptr, 0);
 					if (num < 0) {
@@ -71,29 +70,28 @@ ShellCmd(sdcard, "SD card commands")
 					return Result::Error;
 				}
 			}
-			if (idxSPI == static_cast<uint>(-1) || pinCS == GPIO::InvalidPin) {
+			if (!spi || pinCS == GPIO::InvalidPin) {
 				terr.Printf("spi and cs must be specified\n");
 				return Result::Error;
 			}
-			pFAT.reset(new FAT::SDCard(driveName, (idxSPI == 0)? spi0 : spi1, baudrate, {GPIO::Instance(pinCS)}));
+			pFAT.reset(new FAT::SDCard(driveName, spi, baudrate, {GPIO::Instance(pinCS)}));
+		} else if (::strcasecmp(subcmd, "init") == 0) {
+			if (!pFAT) {
+				terr.Printf("SD card not set up. Execute 'setup' subcommand first.\n");
+				return Result::Error;
+			}
+			SDCard& sdCard = pFAT->GetSDCard();
+			if (sdCard.Initialize(true)) {
+				terr.Printf("SD card initialized successfully.\n");
+			} else {
+				terr.Printf("Failed to initialize SD card.\n");
+			}
 		}
 	}
 	return Result::Success;
 }
 
 #if 0
-ShellCmd_Named(sd_init, "sd-init", "Initialize SD card")
-{
-	SDCard& sdCard = ShellCmd_SDCard_GetSDCard();
-	if (sdCard.Initialize(true)) {
-		terr.Printf("SD card initialized successfully.\n");
-	} else {
-		terr.Printf("Failed to initialize SD card.\n");
-	}
-	return Result::Success;
-	
-}
-
 ShellCmd_Named(sd_dump, "sd-dump", "prints SD card data at the specified sector")
 {
 	SDCard& sdCard = ShellCmd_SDCard_GetSDCard();

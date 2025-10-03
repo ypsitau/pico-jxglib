@@ -15,11 +15,26 @@ Display::Display(uint32_t capabilities, const Format& format, int width, int hei
 			Drawable(capabilities, format, width, height), pNext_{nullptr}
 {
 	if (pHead_) {
-		Display* p = pHead_;
-		for ( ; p->pNext_; p = p->pNext_);
-		p->pNext_ = this;
+		Display* pDisplay = pHead_;
+		for ( ; pDisplay->pNext_; pDisplay = pDisplay->pNext_);
+		pDisplay->pNext_ = this;
 	} else {
 		pHead_ = this;
+	}
+}
+
+Display::~Display()
+{
+	if (pHead_ == this) {
+		pHead_ = pNext_;
+	} else {
+		Display* pDisplay = pHead_;
+		for ( ; pDisplay; pDisplay = pDisplay->pNext_) {
+			if (pDisplay->pNext_ == this) {
+				pDisplay->pNext_ = pNext_;
+				break;
+			}
+		}
 	}
 }
 
