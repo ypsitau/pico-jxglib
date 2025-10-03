@@ -36,3 +36,16 @@ add_library(jxglib_Display_ILI9488 INTERFACE)
 target_link_libraries(jxglib_Display_ILI9488 INTERFACE
 	jxglib_Dislay_TFT_LCD
 	jxglib_TouchScreen_TSC2046)
+
+#------------------------------------------------------------------------------
+add_library(jxglib_ShellCmd_Display_ST7789 INTERFACE)
+
+target_include_directories(jxglib_ShellCmd_Display_ST7789 INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/include)
+
+target_link_libraries(jxglib_ShellCmd_Display_ST7789 INTERFACE
+	jxglib_Display_ST7789
+	jxglib_ShellCmd_Basic)
+
+target_sources(jxglib_ShellCmd_Display_ST7789 INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/src/ShellCmd_Display_ST7789.cpp)
