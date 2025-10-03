@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "jxglib/TSC2046.h"
+#include "jxglib/TouchScreen/TSC2046.h"
 
 using namespace jxglib;
 

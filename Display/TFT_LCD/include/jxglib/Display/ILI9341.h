@@ -4,7 +4,7 @@
 #ifndef PICO_JXGLIB_ILI9341_H
 #define PICO_JXGLIB_ILI9341_H
 #include "jxglib/Display/TFT_LCD.h"
-#include "jxglib/TSC2046.h"
+#include "jxglib/TouchScreen/TSC2046.h"
 
 namespace jxglib {
 

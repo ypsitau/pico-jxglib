@@ -7,6 +7,7 @@
 using namespace jxglib;
 
 int main()
+
 {
 	::stdio_init_all();
 	::spi_init(spi0, 2 * 1000 * 1000);
