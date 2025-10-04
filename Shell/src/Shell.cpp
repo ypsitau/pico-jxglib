@@ -33,9 +33,9 @@ bool Shell::Startup()
 		if (enableStartupScriptFlag_) {
 			std::unique_ptr<FS::File> pFileScript(FS::OpenFile(FileNameStartup, "r"));
 			if (pFileScript) {
-				Terminal::ReadableKeyboard tin(GetTerminal());
-				Printable& tout = GetTerminal();
-				Printable& terr = GetTerminal();
+				Readable& tin = ReadableDumb::Instance;
+				Printable& tout = PrintableDumb::Instance;
+				Printable& terr = PrintableDumb::Instance;
 				RunScript(tin, tout, terr, *pFileScript);
 			}
 		}
@@ -45,7 +45,6 @@ bool Shell::Startup()
 				int bytesRead = pFilePassword->Read(hashedPassword_, sizeof(hashedPassword_));
 				if (bytesRead >= Hash::SHA256::HexSize) {
 					hashedPassword_[Hash::SHA256::HexSize] = '\0';
-					//stat_ = Stat::PromptPassword;
 				} else {
 					::strcpy(hashedPassword_, "");
 				}
