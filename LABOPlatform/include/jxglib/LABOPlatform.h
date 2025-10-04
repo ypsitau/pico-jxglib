@@ -38,7 +38,7 @@ private:
 public:
 	static LABOPlatform Instance;
 public:
-	LABOPlatform(int bytesFlash = PICO_FLASH_SIZE_BYTES - 0x0010'0000);
+	LABOPlatform(int bytesFlash = PICO_FLASH_SIZE_BYTES - 0x0018'0000);
 public:
 	void Initialize();
 	LABOPlatform& AttachStdio(bool attachStdioFlag = true);
