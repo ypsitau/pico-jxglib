@@ -6,7 +6,7 @@
 #include "jxglib/Display/TFT_LCD.h"
 #include "jxglib/TouchScreen/TSC2046.h"
 
-namespace jxglib {
+namespace jxglib::Display {
 
 //------------------------------------------------------------------------------
 // ILI9488

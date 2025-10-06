@@ -14,12 +14,12 @@
 #include "jxglib/Font.h"
 #include "jxglib/Display.h"
 
-namespace jxglib {
+namespace jxglib::Display {
 
 //------------------------------------------------------------------------------
 // SSD1306
 //------------------------------------------------------------------------------
-class SSD1306 : public Display {
+class SSD1306 : public Base {
 public:
 	class Logic_Set {
 	public:
@@ -241,7 +241,7 @@ private:
 	DispatcherEx dispatcherEx_;
 public:
 	SSD1306(i2c_inst_t* i2c, uint8_t addr = DefaultAddr, bool highResoFlag = true) :
-			Display(Capability::Device | Capability::ScrollHorz | Capability::ScrollVert,
+			Base(Capability::Device | Capability::ScrollHorz | Capability::ScrollVert,
 					Format::Bitmap, 128, highResoFlag? 64 : 32), dispatcherEx_(*this, i2c, addr) {
 		SetDispatcher(dispatcherEx_);
 	}

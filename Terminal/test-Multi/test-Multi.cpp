@@ -16,7 +16,7 @@ int main()
 	::spi_init(spi1, 125'000'000);
 	GPIO14.set_function_SPI1_SCK();
 	GPIO15.set_function_SPI1_TX();
-	ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
+	Display::ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
 	display.Initialize(Display::Dir::Rotate0);
 	terminal1.AttachDisplay(display, {0, 0, 240, 160}).SetColorBg(Color(0, 0, 128))
 			.SetFont(Font::shinonome16).SetSpacingRatio(1., 1.2).ClearScreen();

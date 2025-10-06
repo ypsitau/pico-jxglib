@@ -13,12 +13,12 @@
 #include "jxglib/Image.h"
 #include "jxglib/DMA.h"
 
-namespace jxglib {
+namespace jxglib::Display {
 
 //------------------------------------------------------------------------------
 // TFT_LCD
 //------------------------------------------------------------------------------
-class TFT_LCD : public Display {
+class TFT_LCD : public Base {
 public:
 	struct PinAssign {
 		const GPIO& RST;
@@ -392,7 +392,7 @@ public:
 	} saved_;
 public:
 	TFT_LCD(spi_inst_t* spi, const Format& format, int widthTypical, int heightTypical, int width, int height, const PinAssign& pinAssign) :
-			Display(Capability::Device | Capability::DrawImage | Capability::DrawImageFast, format, width, height),
+			Base(Capability::Device | Capability::DrawImage | Capability::DrawImageFast, format, width, height),
 			raw(spi, pinAssign.RST, pinAssign.DC, pinAssign.CS, pinAssign.BL), dispatcherRGB565_(*this), dispatcherRGB666_(*this),
 			widthTypical_{widthTypical}, heightTypical_{heightTypical},
 			widthPhysical_{width}, heightPhysical_{height}, xAdjust_{0}, yAdjust_{0} {
@@ -403,7 +403,7 @@ public:
 		}
 	}
 	TFT_LCD(spi_inst_t* spi, const Format& format, int widthTypical, int heightTypical, int width, int height, const PinAssignNoCS& pinAssign) :
-			Display(Capability::Device | Capability::DrawImage, format, width, height),
+			Base(Capability::Device | Capability::DrawImage, format, width, height),
 			raw(spi, pinAssign.RST, pinAssign.DC, pinAssign.BL), dispatcherRGB565_(*this), dispatcherRGB666_(*this),
 			widthTypical_{widthTypical}, heightTypical_{heightTypical},
 			widthPhysical_{width}, heightPhysical_{height}, xAdjust_{0}, yAdjust_{0} {

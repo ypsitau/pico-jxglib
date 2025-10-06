@@ -19,7 +19,7 @@ int main()
 	GPIO15.set_function_SPI1_TX();
 	do {
 		int nTrial = 100;
-		SSD1306 display(i2c0);
+		Display::SSD1306 display(i2c0);
 		display.Initialize();
 		display.SetFont(Font::shinonome12).SetSpacingRatio(1., 1.2);
 		display.DrawStringWrap(0, 0, Text_Botchan).Refresh();
@@ -30,7 +30,7 @@ int main()
 	} while (0);
 	do {
 		int nTrial = 100;
-		ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
+		Display::ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
 		display.Initialize(Display::Dir::Rotate0);
 		Canvas canvas;
 		canvas.AttachDrawable(display);

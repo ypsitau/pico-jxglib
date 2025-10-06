@@ -5,7 +5,7 @@
 #define PICO_JXGLIB_DISPLAY_ST7789_H
 #include "jxglib/Display/TFT_LCD.h"
 
-namespace jxglib {
+namespace jxglib::Display {
 
 //------------------------------------------------------------------------------
 // ST7789

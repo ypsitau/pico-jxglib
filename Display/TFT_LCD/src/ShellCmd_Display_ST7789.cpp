@@ -5,7 +5,7 @@ namespace jxglib::ShellCmd_ST7789 {
 
 std::unique_ptr<ST7789> pDisplay;
 
-ShellCmd_Named(display_st7789, "display-st7789", "ST7789 display commands")
+ShellCmd_Named(display_st7789, "display-st7789", "Display::ST7789 display commands")
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
@@ -17,7 +17,7 @@ ShellCmd_Named(display_st7789, "display-st7789", "ST7789 display commands")
 		arg.PrintHelp(terr);
 		terr.Printf("Sub Commands:\n");
 		terr.Printf(" setup {spi:SPI width:WIDTH height:HEIGHT rst:RST dc:DC cs:CS bl:BL}\n");
-		terr.Printf("           Set up an ST7789 display\n");
+		terr.Printf("           Set up an Display::ST7789 display\n");
 		return Result::Error;
 	}
 	Shell::Arg::EachSubcmd each(argv[1], argv[argc]);
@@ -30,7 +30,7 @@ ShellCmd_Named(display_st7789, "display-st7789", "ST7789 display commands")
 		const char* subcmd = pSubcmd->GetProc();
 		if (::strcasecmp(subcmd, "setup") == 0) {
 			if (pDisplay) {
-				terr.Printf("ST7789 display already set up.\n");
+				terr.Printf("Display::ST7789 display already set up.\n");
 				return Result::Error;
 			}
 			spi_inst_t* spi = nullptr;

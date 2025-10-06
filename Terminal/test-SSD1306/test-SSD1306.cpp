@@ -18,7 +18,7 @@ int main()
 	GPIO19.init().pull_up();
 	GPIO20.init().pull_up();
 	GPIO21.init().pull_up();
-	SSD1306 display(i2c0, 0x3c);
+	Display::SSD1306 display(i2c0, 0x3c);
 	display.Initialize();
 	terminal.Initialize().AttachDisplay(display).SetFont(Font::naga10).SetSpacingRatio(1., 1.).ClearScreen();
 	terminal.Suppress();
@@ -31,7 +31,7 @@ int main()
 	for (;;) {
 		if (!GPIO18.get()) terminal.RollUp();
 		if (!GPIO19.get()) terminal.RollDown();
-		if (!GPIO20.get()) terminal.Dump.Addr(false).Cols(8)(reinterpret_cast<const void*>(0x10000000), 32);
+		if (!GPIO20.get()) terminal.Dump.Addr(false).BytesPerRow(8)(reinterpret_cast<const void*>(0x10000000), 32);
 		if (!GPIO21.get()) terminal.CreateReader().WriteTo(stdout);
 		::sleep_ms(100);
 	}

@@ -16,7 +16,7 @@ int main()
 	::i2c_init(i2c0, 400 * 1000);
 	GPIO16.set_function_I2C0_SDA().pull_up();
 	GPIO17.set_function_I2C0_SCL().pull_up();
-	SSD1306 display(i2c0, 0x3c);
+	Display::SSD1306 display(i2c0, 0x3c);
 	Display::Terminal terminal;
 	terminal.Initialize().AttachDisplay(display.Initialize())
 		.AttachKeyboard(keyboard.SetCapsLockAsCtrl()).SetFont(Font::shinonome12);

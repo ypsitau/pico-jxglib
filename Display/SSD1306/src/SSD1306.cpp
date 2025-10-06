@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include "jxglib/Display/SSD1306.h"
 
-namespace jxglib {
+namespace jxglib::Display {
 
 //------------------------------------------------------------------------------
 // SSD1306

@@ -4,34 +4,34 @@
 #include <cctype>
 #include "jxglib/Display.h"
 
-namespace jxglib {
+namespace jxglib::Display {
 
 //------------------------------------------------------------------------------
-// Display
+// Base
 //------------------------------------------------------------------------------
-Display* Display::pHead_ = nullptr;
+Base* Base::pHead_ = nullptr;
 
-Display::Display(uint32_t capabilities, const Format& format, int width, int height) :
+Base::Base(uint32_t capabilities, const Format& format, int width, int height) :
 			Drawable(capabilities, format, width, height), pNext_{nullptr}
 {
 	if (pHead_) {
-		Display* pDisplay = pHead_;
-		for ( ; pDisplay->pNext_; pDisplay = pDisplay->pNext_);
-		pDisplay->pNext_ = this;
+		Base* pBase = pHead_;
+		for ( ; pBase->pNext_; pBase = pBase->pNext_);
+		pBase->pNext_ = this;
 	} else {
 		pHead_ = this;
 	}
 }
 
-Display::~Display()
+Base::~Base()
 {
 	if (pHead_ == this) {
 		pHead_ = pNext_;
 	} else {
-		Display* pDisplay = pHead_;
-		for ( ; pDisplay; pDisplay = pDisplay->pNext_) {
-			if (pDisplay->pNext_ == this) {
-				pDisplay->pNext_ = pNext_;
+		Base* pBase = pHead_;
+		for ( ; pBase; pBase = pBase->pNext_) {
+			if (pBase->pNext_ == this) {
+				pBase->pNext_ = pNext_;
 				break;
 			}
 		}
@@ -41,7 +41,7 @@ Display::~Display()
 //------------------------------------------------------------------------------
 // Display::Terminal
 //------------------------------------------------------------------------------
-Display::Terminal::Terminal(int bytesLineBuff, int bytesHistoryBuff) :
+Terminal::Terminal(int bytesLineBuff, int bytesHistoryBuff) :
 	jxglib::Terminal(bytesHistoryBuff, KeyboardDumb::Instance), pDrawable_{nullptr}, nLinesWhole_{0}, lineBuff_(bytesLineBuff),
 	pEventHandler_{nullptr}, pLineStop_RollBack_{nullptr},
 	suppressFlag_{false}, showCursorFlag_{false}, appearCursorFlag_{false}, wdCursor_{2},
@@ -50,14 +50,14 @@ Display::Terminal::Terminal(int bytesLineBuff, int bytesHistoryBuff) :
 {
 }
 
-Display::Terminal& Display::Terminal::AttachKeyboard(Keyboard& keyboard)
+Terminal& Terminal::AttachKeyboard(Keyboard& keyboard)
 {
 	jxglib::Terminal::AttachKeyboard(keyboard);
 	tickable_Keyboard_.SetTick(50);
 	return *this;
 }
 
-Display::Terminal& Display::Terminal::AttachDrawable(Drawable& drawable, const Rect& rect, Dir dir)
+Terminal& Terminal::AttachDrawable(Drawable& drawable, const Rect& rect, Dir dir)
 {
 	Initialize();
 	if (!GetLineBuff().Initialize()) {
@@ -70,19 +70,19 @@ Display::Terminal& Display::Terminal::AttachDrawable(Drawable& drawable, const R
 	return *this;
 }
 
-int Display::Terminal::CalcApproxNColsOnDisplay() const
+int Terminal::CalcApproxNColsOnDisplay() const
 {
 	const FontEntry& fontEntry = GetFont().GetFontEntry('M');
 	return rectDst_.width / fontEntry.xAdvance;
 }
 
-int Display::Terminal::CalcNLinesOnDisplay() const
+int Terminal::CalcNLinesOnDisplay() const
 {
 	int yAdvance = context_.CalcAdvanceY();
 	return rectDst_.height / yAdvance;
 }
 
-Display::Terminal& Display::Terminal::BeginRollBack()
+Terminal& Terminal::BeginRollBack()
 {
 	int nLines = CalcNLinesOnDisplay();
 	const char* pLineTop = GetLineBuff().GetLineLast();
@@ -93,14 +93,14 @@ Display::Terminal& Display::Terminal::BeginRollBack()
 	return *this;
 }
 
-Display::Terminal& Display::Terminal::EndRollBack()
+Terminal& Terminal::EndRollBack()
 {
 	DrawLatestTextLines(true);
 	GetLineBuff().RemoveLineMark();	// end roll-back
 	return *this;
 }
 
-Display::Terminal& Display::Terminal::RollUp(int nLines)
+Terminal& Terminal::RollUp(int nLines)
 {
 	if (!GetLineEditor().IsEmpty()) {
 		GetLineEditor().Clear();
@@ -115,7 +115,7 @@ Display::Terminal& Display::Terminal::RollUp(int nLines)
 	return *this;
 }
 
-Display::Terminal& Display::Terminal::RollDown(int nLines)
+Terminal& Terminal::RollDown(int nLines)
 {
 	if (!GetLineEditor().IsEmpty()) {
 		GetLineEditor().Clear();
@@ -133,20 +133,20 @@ Display::Terminal& Display::Terminal::RollDown(int nLines)
 	return *this;
 }
 
-Display::Terminal& Display::Terminal::Suppress(bool suppressFlag)
+Terminal& Terminal::Suppress(bool suppressFlag)
 {
 	suppressFlag_ = suppressFlag;
 	if (!suppressFlag_) DrawLatestTextLines(true);
 	return *this;
 }
 
-Display::Terminal& Display::Terminal::ShowCursor(bool showCursorFlag)
+Terminal& Terminal::ShowCursor(bool showCursorFlag)
 {
 	showCursorFlag_ = showCursorFlag;
 	return *this;
 }
 
-void Display::Terminal::AppendChar(char ch, bool drawFlag)
+void Terminal::AppendChar(char ch, bool drawFlag)
 {
 	Point& pt = ptCurrent_;
 	uint32_t codeUTF32;
@@ -189,12 +189,12 @@ void Display::Terminal::AppendChar(char ch, bool drawFlag)
 	}
 }
 
-void Display::Terminal::AppendString(const char* str, bool drawFlag)
+void Terminal::AppendString(const char* str, bool drawFlag)
 {
 	for (const char* p = str; *p; p++) AppendChar(*p, drawFlag);
 }
 
-void Display::Terminal::DrawEditorArea()
+void Terminal::DrawEditorArea()
 {
 	int yAdvance = context_.CalcAdvanceY();
 	Point ptEnd = CalcDrawPos(ptCurrent_, GetLineEditor().GetIByteEnd(), wdCursor_);
@@ -232,7 +232,7 @@ void Display::Terminal::DrawEditorArea()
 	GetDrawable().Refresh();
 }
 
-Point Display::Terminal::CalcDrawPos(const Point& ptBase, int iByte, int wdAdvance)
+Point Terminal::CalcDrawPos(const Point& ptBase, int iByte, int wdAdvance)
 {
 	Point pt = ptBase;
 	int yAdvance = context_.CalcAdvanceY();
@@ -259,7 +259,7 @@ Point Display::Terminal::CalcDrawPos(const Point& ptBase, int iByte, int wdAdvan
 	return pt;
 }
 
-void Display::Terminal::DrawCursor(int iByteCursor)
+void Terminal::DrawCursor(int iByteCursor)
 {
 	int yAdvance = context_.CalcAdvanceY();
 	Point pt = CalcDrawPos(ptCurrent_, iByteCursor, wdCursor_);
@@ -269,7 +269,7 @@ void Display::Terminal::DrawCursor(int iByteCursor)
 	}
 }
 
-void Display::Terminal::EraseCursor(int iByteCursor)
+void Terminal::EraseCursor(int iByteCursor)
 {
 	const char* p = GetLineEditor().GetPointer(iByteCursor);
 	uint32_t codeUTF32 = UTF8::ToUTF32(p);
@@ -292,7 +292,7 @@ void Display::Terminal::EraseCursor(int iByteCursor)
 	}
 }
 
-void Display::Terminal::BlinkCursor()
+void Terminal::BlinkCursor()
 {
 	if (showCursorFlag_ && !IsRollingBack()) {
 		appearCursorFlag_ = !appearCursorFlag_;
@@ -301,7 +301,7 @@ void Display::Terminal::BlinkCursor()
 	}
 }
 
-void Display::Terminal::DrawLatestTextLines(bool refreshFlag)
+void Terminal::DrawLatestTextLines(bool refreshFlag)
 {
 	int yAdvance = context_.CalcAdvanceY();
 	int nLines = (ptCurrent_.y - rectDst_.y) / yAdvance + 1;
@@ -313,7 +313,7 @@ void Display::Terminal::DrawLatestTextLines(bool refreshFlag)
 	GetDrawable().Refresh();
 }
 
-void Display::Terminal::DrawTextLines(int iLine, const char* pLineTop, int nLines)
+void Terminal::DrawTextLines(int iLine, const char* pLineTop, int nLines)
 {
 	if (!pLineTop) return;
 	for (int i = 0; i < nLines; i++, iLine++) {
@@ -322,7 +322,7 @@ void Display::Terminal::DrawTextLines(int iLine, const char* pLineTop, int nLine
 	}
 }
 
-void Display::Terminal::DrawTextLine(int iLine, const char* pLineTop)
+void Terminal::DrawTextLine(int iLine, const char* pLineTop)
 {
 	const FontSet& fontSet = GetFont();
 	int yAdvance = context_.CalcAdvanceY();
@@ -347,7 +347,7 @@ void Display::Terminal::DrawTextLine(int iLine, const char* pLineTop)
 	}
 }
 
-void Display::Terminal::ScrollUp(int nLinesToScroll, bool refreshFlag)
+void Terminal::ScrollUp(int nLinesToScroll, bool refreshFlag)
 {
 	int yAdvance = context_.CalcAdvanceY();
 	int nLines = CalcNLinesOnDisplay();
@@ -361,7 +361,7 @@ void Display::Terminal::ScrollUp(int nLinesToScroll, bool refreshFlag)
 }
 
 // Virtual functions of Printable
-Printable& Display::Terminal::ClearScreen()
+Printable& Terminal::ClearScreen()
 {
 	GetDrawable().DrawRectFill(rectDst_, GetColorBg()).Refresh();
 	GetLineBuff().Clear();
@@ -369,13 +369,13 @@ Printable& Display::Terminal::ClearScreen()
 	return *this;
 }
 
-bool Display::Terminal::Flush()
+bool Terminal::Flush()
 {
 	GetDrawable().Refresh();
 	return true;
 }
 
-Printable& Display::Terminal::Locate(int col, int row)
+Printable& Terminal::Locate(int col, int row)
 {
 	const FontEntry& fontEntry = GetFont().GetFontEntry('M');
 	ptCurrent_ = Point(
@@ -384,7 +384,7 @@ Printable& Display::Terminal::Locate(int col, int row)
 	return *this;
 }
 
-Printable& Display::Terminal::GetSize(int* pnCols, int* pnRows)
+Printable& Terminal::GetSize(int* pnCols, int* pnRows)
 {
 	const FontEntry& fontEntry = GetFont().GetFontEntry('M');
 	*pnCols = GetDrawable().GetWidth() / fontEntry.width;
@@ -392,21 +392,21 @@ Printable& Display::Terminal::GetSize(int* pnCols, int* pnRows)
 	return *this;
 }
 
-Printable& Display::Terminal::PutCharRaw(char ch)
+Printable& Terminal::PutCharRaw(char ch)
 {
 	AppendChar(ch, !suppressFlag_);
 	return *this;
 };
 
 // virtual functions of jxglib::Terminal
-Terminal& Display::Terminal::Edit_Begin()
+jxglib::Terminal& Terminal::Edit_Begin()
 {
 	ShowCursor();
 	GetLineEditor().Begin();
 	return *this;
 }
 
-Terminal& Display::Terminal::Edit_Finish(char chEnd)
+jxglib::Terminal& Terminal::Edit_Finish(char chEnd)
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	GetLineEditor().EndHistory();
@@ -420,7 +420,7 @@ Terminal& Display::Terminal::Edit_Finish(char chEnd)
 	return *this;
 }
 
-Terminal& Display::Terminal::Edit_InsertChar(int ch)
+jxglib::Terminal& Terminal::Edit_InsertChar(int ch)
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (IsRollingBack()) EndRollBack();
@@ -439,7 +439,7 @@ Terminal& Display::Terminal::Edit_InsertChar(int ch)
 	return *this;
 }
 
-Terminal& Display::Terminal::Edit_DeleteChar()
+jxglib::Terminal& Terminal::Edit_DeleteChar()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
@@ -452,7 +452,7 @@ Terminal& Display::Terminal::Edit_DeleteChar()
 	return *this;
 }
 
-Terminal& Display::Terminal::Edit_Back()
+jxglib::Terminal& Terminal::Edit_Back()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
@@ -465,7 +465,7 @@ Terminal& Display::Terminal::Edit_Back()
 	return *this;
 }
 
-Terminal& Display::Terminal::Edit_MoveForward()
+jxglib::Terminal& Terminal::Edit_MoveForward()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
@@ -477,7 +477,7 @@ Terminal& Display::Terminal::Edit_MoveForward()
 	return *this;
 }
 
-Terminal& Display::Terminal::Edit_MoveBackward()
+jxglib::Terminal& Terminal::Edit_MoveBackward()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
@@ -489,7 +489,7 @@ Terminal& Display::Terminal::Edit_MoveBackward()
 	return *this;
 }
 
-Terminal& Display::Terminal::Edit_MoveHome()
+jxglib::Terminal& Terminal::Edit_MoveHome()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
@@ -501,7 +501,7 @@ Terminal& Display::Terminal::Edit_MoveHome()
 	return *this;
 }
 
-Terminal& Display::Terminal::Edit_MoveEnd()
+jxglib::Terminal& Terminal::Edit_MoveEnd()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
@@ -513,7 +513,7 @@ Terminal& Display::Terminal::Edit_MoveEnd()
 	return *this;
 }
 
-Terminal& Display::Terminal::Edit_Clear()
+jxglib::Terminal& Terminal::Edit_Clear()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
@@ -526,7 +526,7 @@ Terminal& Display::Terminal::Edit_Clear()
 	return *this;
 }
 
-Terminal& Display::Terminal::Edit_DeleteToHome()
+jxglib::Terminal& Terminal::Edit_DeleteToHome()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
@@ -539,7 +539,7 @@ Terminal& Display::Terminal::Edit_DeleteToHome()
 	return *this;
 }
 
-Terminal& Display::Terminal::Edit_DeleteToEnd()
+jxglib::Terminal& Terminal::Edit_DeleteToEnd()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
@@ -552,7 +552,7 @@ Terminal& Display::Terminal::Edit_DeleteToEnd()
 	return *this;
 }
 
-Terminal& Display::Terminal::Edit_MoveHistoryPrev()
+jxglib::Terminal& Terminal::Edit_MoveHistoryPrev()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
@@ -565,7 +565,7 @@ Terminal& Display::Terminal::Edit_MoveHistoryPrev()
 	return *this;
 }
 
-Terminal& Display::Terminal::Edit_MoveHistoryNext()
+jxglib::Terminal& Terminal::Edit_MoveHistoryNext()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	int iByteCursorPrev = GetLineEditor().GetIByteCursor();
@@ -578,7 +578,7 @@ Terminal& Display::Terminal::Edit_MoveHistoryNext()
 	return *this;
 }
 
-Terminal& Display::Terminal::Edit_Completion()
+jxglib::Terminal& Terminal::Edit_Completion()
 {
 	if (!GetLineEditor().IsEditing()) return *this;
 	if (!pCompletionProvider_) return *this;
@@ -598,7 +598,7 @@ Terminal& Display::Terminal::Edit_Completion()
 //------------------------------------------------------------------------------
 // Display::Terminal::Tickable_Keyboard
 //------------------------------------------------------------------------------
-void Display::Terminal::Tickable_Keyboard::OnTick()
+void Terminal::Tickable_Keyboard::OnTick()
 {
 	KeyData keyData;
 	if (terminal_.GetKeyDataNB(&keyData)) {
