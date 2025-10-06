@@ -74,6 +74,7 @@ target_sources(jxglib_ShellCmd_LED INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/ShellCmd_LED.cpp)
 
 #------------------------------------------------------------------------------
+add_subdirectory(MQTT)
 add_subdirectory(TCP)
 add_subdirectory(UDP)
 add_subdirectory(Telnet)
