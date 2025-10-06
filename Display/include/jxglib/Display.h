@@ -38,6 +38,18 @@ public:
 };
 
 //------------------------------------------------------------------------------
+// Dummy
+//------------------------------------------------------------------------------
+class Dummy : public Base {
+public:
+	Dummy() : Base(0, Format::None, 0, 0) {}
+public:
+	static Dummy Instance;
+public:
+	virtual const char* GetName() const override { return "Dummy"; }
+};
+
+//------------------------------------------------------------------------------
 // Terminal
 //------------------------------------------------------------------------------
 class Terminal : public jxglib::Terminal {
@@ -183,6 +195,11 @@ public:
 	virtual jxglib::Terminal& Edit_MoveHistoryNext() override;
 	virtual jxglib::Terminal& Edit_Completion() override;
 };
+
+//------------------------------------------------------------------------------
+// functions
+//------------------------------------------------------------------------------
+Base& GetInstance(int iDisplay);
 
 }
 

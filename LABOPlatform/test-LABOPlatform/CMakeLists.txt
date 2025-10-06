@@ -15,15 +15,15 @@ if(WIN32)
 else()
     set(USERHOME $ENV{HOME})
 endif()
-set(sdkVersion 2.1.1)
+set(sdkVersion 2.2.0)
 set(toolchainVersion 14_2_Rel1)
-set(picotoolVersion 2.1.1)
+set(picotoolVersion 2.2.0)
 set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
 if (EXISTS ${picoVscode})
     include(${picoVscode})
 endif()
 # ====================================================================================
-set(PICO_BOARD pico_w CACHE STRING "Board type")
+set(PICO_BOARD pico2 CACHE STRING "Board type")
 
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
@@ -47,6 +47,7 @@ pico_enable_stdio_usb(test-LABOPlatform 0)
 # Add the standard library to the build
 target_link_libraries(test-LABOPlatform
         pico_stdlib
+        jxglib_DrawableTest
         jxglib_Display_ST7789
         jxglib_ShellCmd_Display_ST7789)
 

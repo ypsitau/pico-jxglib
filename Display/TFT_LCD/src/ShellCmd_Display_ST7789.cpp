@@ -1,11 +1,12 @@
 #include "jxglib/Shell.h"
 #include "jxglib/Display/ST7789.h"
+#include "jxglib/DrawableTest.h"
 
 namespace jxglib::ShellCmd_ST7789 {
 
-std::unique_ptr<ST7789> pDisplay;
+std::unique_ptr<Display::ST7789> pDisplay;
 
-ShellCmd_Named(display_st7789, "display-st7789", "Display::ST7789 display commands")
+ShellCmd_Named(display_st7789, "display-st7789", "ST7789 display commands")
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
@@ -34,8 +35,8 @@ ShellCmd_Named(display_st7789, "display-st7789", "Display::ST7789 display comman
 				return Result::Error;
 			}
 			spi_inst_t* spi = nullptr;
-			int width = 0;
-			int height = 0;
+			int width = 240;
+			int height = 320;
 			uint pinRST = GPIO::InvalidPin;
 			uint pinDC = GPIO::InvalidPin;
 			uint pinCS = GPIO::InvalidPin;
@@ -99,70 +100,29 @@ ShellCmd_Named(display_st7789, "display-st7789", "Display::ST7789 display comman
 			if (!spi || pinRST == GPIO::InvalidPin || pinDC == GPIO::InvalidPin ||
 					pinCS == GPIO::InvalidPin || pinBL == GPIO::InvalidPin ||
 					width <= 0 || height <= 0) {
-				terr.Printf("spi, width, height, rst, dc, cs, and bl must be specified\n");
+				terr.Printf("spi, rst, dc, cs, and bl must be specified\n");
 				return Result::Error;
 			}
-			pDisplay.reset(new ST7789(spi, width, height,
+			pDisplay.reset(new Display::ST7789(spi, width, height,
 				{GPIO::Instance(pinRST), GPIO::Instance(pinDC), GPIO::Instance(pinCS), GPIO::Instance(pinBL)}));
-		}
-	}
-	return Result::Success;
-}
-
-#if 0
-ShellCmd_Named(sd_dump, "sd-dump", "prints SD card data at the specified sector")
-{
-	SDCard& sdCard = ShellCmd_SDCard_GetSDCard();
-	if (!sdCard.IsInitialized()) {
-		terr.Printf("SD card not initialized. Execute sd-init first.\n");
-		return Result::Error;
-	}
-	uint32_t lba = 0;
-	if (argc >= 2) {
-		char* p = nullptr;
-		uint32_t num = ::strtoul(argv[1], &p, 0);
-		if (*p != '\0') {
-			terr.Printf("invalid number\n");
+		} else if (::strcasecmp(subcmd, "init") == 0) {
+			if (!pDisplay) {
+				terr.Printf("Display::ST7789 display not set up.\n");
+				return Result::Error;
+			}
+			pDisplay->Initialize();
+		} else if (::strcasecmp(subcmd, "test") == 0) {
+			if (!pDisplay) {
+				terr.Printf("Display::ST7789 display not set up.\n");
+				return Result::Error;
+			}
+			DrawableTest::DrawString(*pDisplay);
+		} else {
+			terr.Printf("unknown sub command: %s\n", subcmd);
 			return Result::Error;
 		}
-		lba = num;
 	}
-	uint8_t buff[512];
-	sdCard.ReadBlock(lba, buff, 1);
-	tout.Printf("Sector %d (0x%x)\n", lba, lba);
-	Printable::DumpT(tout).DigitsAddr(4)(buff, sizeof(buff));
 	return Result::Success;
 }
-
-ShellCmd_Named(sd_mbr, "sd-mbr", "Read SD card MBR")
-{
-	SDCard& sdCard = ShellCmd_SDCard_GetSDCard();
-	if (!sdCard.IsInitialized()) {
-		terr.Printf("SD card not initialized. Execute sd-init first.\n");
-		return Result::Error;
-	}
-	uint8_t buff[512];
-	sdCard.ReadBlock(0, buff, 1);
-	SDCard::PrintMBR(tout, buff);
-	return Result::Success;
-}
-
-ShellCmd_Named(sd_write, "sd-write", "Write SD card sector")
-{
-	SDCard& sdCard = ShellCmd_SDCard_GetSDCard();
-	if (!sdCard.IsInitialized()) {
-		terr.Printf("SD card not initialized. Execute sd-init first.\n");
-		return Result::Error;
-	}
-	int lba = 0;
-	if (argc > 1) {
-		lba = ::atoi(argv[1]);
-	}
-	uint8_t buff[512];
-	for (int i = 0; i < sizeof(buff); i++) buff[i] = static_cast<uint8_t>(i);
-	sdCard.WriteBlock(lba, buff, 1);
-	return Result::Success;
-}
-#endif
 
 }

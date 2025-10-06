@@ -39,6 +39,11 @@ Base::~Base()
 }
 
 //------------------------------------------------------------------------------
+// Dummy
+//------------------------------------------------------------------------------
+Dummy Dummy::Instance;
+
+//------------------------------------------------------------------------------
 // Display::Terminal
 //------------------------------------------------------------------------------
 Terminal::Terminal(int bytesLineBuff, int bytesHistoryBuff) :
@@ -612,6 +617,18 @@ void Terminal::Tickable_Keyboard::OnTick()
 		}
 		if (terminal_.IsEditable()) terminal_.ProcessKeyData(keyData);
 	}
+}
+
+//------------------------------------------------------------------------------
+// functions
+//------------------------------------------------------------------------------
+Base& GetInstance(int iDisplay)
+{
+	Base* pBase = Base::GetHead();
+	for (int i = 0; pBase; pBase = pBase->GetNext(), i++) {
+		if (i == iDisplay) return *pBase;
+	}
+	return Dummy::Instance;
 }
 
 }

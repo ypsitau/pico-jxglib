@@ -132,6 +132,7 @@ public:
 	void SetCapacity(const Format format, int width, int height) {
 		pFormat_ = &format, width_ = width, height_ = height;
 	}
+	bool IsValid() const { return pFormat_ && !pFormat_->IsNone() && width_ > 0 && height_ > 0; }
 	virtual Dir GetDirection() const { return Dir::Normal; }
 	void SetDispatcher(Dispatcher& dispatcher) { pDispatcher_ = &dispatcher; }
 	Dispatcher& GetDispatcher() { return *pDispatcher_; }

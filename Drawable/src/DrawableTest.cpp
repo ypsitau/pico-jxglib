@@ -7,15 +7,15 @@
 #include "jxglib/sample/cat-240x240.h"
 #include "jxglib/sample/cat-240x320.h"
 #include "jxglib/sample/cat-320x480.h"
-#include "jxglib/Font/misaki_gothic-japanese-level1.h"
-#include "jxglib/Font/naga10-japanese-level1.h"
-#include "jxglib/Font/shinonome12-japanese-level1.h"
-#include "jxglib/Font/shinonome14-japanese-level1.h"
+//#include "jxglib/Font/misaki_gothic-japanese-level1.h"
+//#include "jxglib/Font/naga10-japanese-level1.h"
+//#include "jxglib/Font/shinonome12-japanese-level1.h"
+//#include "jxglib/Font/shinonome14-japanese-level1.h"
 #include "jxglib/Font/shinonome16-japanese-level1.h"
-#include "jxglib/Font/shinonome18.h"
-#include "jxglib/Font/sisd8x16.h"
-#include "jxglib/Font/sisd24x32.h"
-#include "jxglib/Font/unifont-japanese-level1.h"
+//#include "jxglib/Font/shinonome18.h"
+//#include "jxglib/Font/sisd8x16.h"
+//#include "jxglib/Font/sisd24x32.h"
+//#include "jxglib/Font/unifont-japanese-level1.h"
 #include "jxglib/sample/Text_Botchan.h"
 
 namespace jxglib::DrawableTest {
@@ -25,8 +25,9 @@ template<typename T> T LimitNum(T num, T numMin, T numMax) { return (num < numMi
 void DrawFonts(Drawable* drawableTbl[], int nDrawables)
 {
 	const FontSet* fontSetTbl[] = {
-		&Font::misaki_gothic, &Font::naga10,
-		&Font::shinonome12, &Font::shinonome14, &Font::shinonome16, &Font::unifont,
+		&Font::shinonome16,
+		//&Font::misaki_gothic, &Font::naga10,
+		//&Font::shinonome12, &Font::shinonome14, &Font::shinonome16, &Font::unifont,
 		//&Font::shinonome18, &Font::sisd8x16, &Font::sisd24x32,
 	};
 	static const char* strTbl[] = {
@@ -67,7 +68,8 @@ void DrawString(Drawable* drawableTbl[], int nDrawables)
 		"[U], [I] .. change font scale\n"
 		"[N], [M] .. change line height\n";
 		"[<], [>] .. change character width\n";
-	const FontSet* fontSetTbl[] = { &Font::shinonome12, &Font::shinonome14, &Font::shinonome16 };
+	const FontSet* fontSetTbl[] = { &Font::shinonome16 };
+	//const FontSet* fontSetTbl[] = { &Font::shinonome12, &Font::shinonome14, &Font::shinonome16 };
 	int iFont = 2;
 	int fontScale = 1;
 	float charWidthRatio = 1.0, lineHeightRatio = 1.2;
