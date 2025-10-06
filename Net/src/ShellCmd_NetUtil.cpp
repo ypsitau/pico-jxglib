@@ -33,18 +33,19 @@ Net::NTP ntp;
 ShellCmd(ntp, "requests time from NTP server")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",	'h',	"prints this help"),
-		Arg::OptBool("rtc",		'r',	"set RTC if available"),
+		Arg::OptBool("help",		'h',	"prints this help"),
+		Arg::OptBool("rtc",			'r',	"set RTC if available"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (arg.GetBool("help")) {
-		terr.Printf("Usage: %s\n", GetName());
+		terr.Printf("Usage: %s [OPTION]... [SERVER]\n", GetName());
 		arg.PrintHelp(terr);
 		return Result::Success;
 	}
 	DateTime dt;
-	if (!ntp.GetTime(dt)) {
+	const char* urlServer = (argc < 2)? "pool.ntp.org" : argv[1];
+	if (!ntp.GetTime(dt, urlServer)) {
 		terr.Printf("NTP request failed: %s\n", ntp.GetErrorMsg());
 		return Result::Error;
 	}

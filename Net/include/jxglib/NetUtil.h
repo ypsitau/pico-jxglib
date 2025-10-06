@@ -39,12 +39,11 @@ private:
 	bool completeFlag_;
 	uint64_t unixtime_;
 	const char* errorMsg_;
-	ip_addr_t addr_;
 public:
 	NTP();
 public:
-	bool GetTime(DateTime& dt, uint32_t msecTimeout = 3000);
-	bool GetTimeAsync();
+	bool GetTime(DateTime& dt, const char* urlServer = nullptr, uint32_t msecTimeout = 3000);
+	bool GetTimeAsync(const char* urlServer);
 	bool IsComplete() const { return completeFlag_; }
 	const char* GetErrorMsg() const { return errorMsg_; }
 public:
