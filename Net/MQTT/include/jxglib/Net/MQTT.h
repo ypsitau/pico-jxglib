@@ -1,19 +1,19 @@
 //==============================================================================
-// jxglib/MQTT.h
+// jxglib/Net/MQTT.h
 //==============================================================================
-#ifndef PICO_JXGLIB_MQTT_H
-#define PICO_JXGLIB_MQTT_H
+#ifndef PICO_JXGLIB_NET_MQTT_H
+#define PICO_JXGLIB_NET_MQTT_H
 #include "pico/stdlib.h"
-#include "jxglib/Common.h"
+#include "jxglib/Net.h"
 
-namespace jxglib {
+namespace jxglib::Net {
 
 //------------------------------------------------------------------------------
 // MQTT
 //------------------------------------------------------------------------------
 class MQTT {
 public:
-	MQTT() {}
+	MQTT();
 };
 
 }
