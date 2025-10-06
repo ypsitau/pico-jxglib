@@ -36,7 +36,7 @@ public:
 	using TypeA = ILI9341;
 public:	// Virtual functions of Display
 	virtual const char* GetName() const override { return "ILI9341"; }
-	virtual const char* GetVariantName() const override { return "TypeA";
+	virtual const char* GetVariantName() const override { return "TypeA"; }
 };
 
 inline TFT_LCD& ILI9341::Initialize(Dir displayDir)
