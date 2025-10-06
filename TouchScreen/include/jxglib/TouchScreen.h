@@ -6,14 +6,14 @@
 #include "pico/stdlib.h"
 #include "jxglib/Common.h"
 
-namespace jxglib {
+namespace jxglib::TouchScreen {
 
 //------------------------------------------------------------------------------
-// TouchScreen
+// TouchScreen::Base
 //------------------------------------------------------------------------------
-class TouchScreen {
+class Base {
 public:
-	TouchScreen() {}
+	Base() {}
 public:
 	bool ReadPoint(Point* pPt) { return ReadXY(&pPt->x, &pPt->y); }
 public:

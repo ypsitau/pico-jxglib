@@ -10,12 +10,12 @@
 #include "jxglib/TouchScreen.h"
 #include "jxglib/Drawable.h"
 
-namespace jxglib {
+namespace jxglib::TouchScreen {
 
 //------------------------------------------------------------------------------
-// TSC2046
+// TouchScreen::TSC2046
 //------------------------------------------------------------------------------
-class TSC2046 : public TouchScreen {
+class TSC2046 : public Base {
 public:
 	struct PinAssign {
 		const GPIO& CS;

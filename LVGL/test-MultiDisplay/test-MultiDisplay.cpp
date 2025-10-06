@@ -11,7 +11,7 @@ int main()
 {
 	::stdio_init_all();
 	::spi_init(spi0, 2 * 1000 * 1000);		// for touch screens
-	::spi_init(spi1, 125'000'000);	// for displays
+	::spi_init(spi1, 125'000'000);			// for displays
 	GPIO2.set_function_SPI0_SCK();
 	GPIO3.set_function_SPI0_TX();
 	GPIO4.set_function_SPI0_RX();
@@ -31,8 +31,8 @@ int main()
 	LVGL::Adapter lvglAdapter1;
 	lvglAdapter1.EnableDoubleBuff(false).SetPartialNum(20)
 					.AttachDisplay(display1).AttachTouchScreen(touchScreen1);
-	::lv_example_anim_2();
-	//::lv_example_textarea_2();
+	//::lv_example_anim_2();
+	::lv_example_textarea_2();
 	//-----------------------------------------
 	// Attach display2 to LVGL
 	LVGL::Adapter lvglAdapter2;

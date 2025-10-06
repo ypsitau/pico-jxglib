@@ -28,11 +28,11 @@ public:
 	class InputTouchScreen : public Input {
 	private:
 		Adapter& adapter_;
-		TouchScreen* pTouchScreen_;
+		TouchScreen::Base* pTouchScreen_;
 	public:
 		InputTouchScreen(Adapter& adapter) : adapter_{adapter} {}
 	public:
-		void SetTouchScreen(TouchScreen& touchScreen) { pTouchScreen_ = &touchScreen; }
+		void SetTouchScreen(TouchScreen::Base& touchScreen) { pTouchScreen_ = &touchScreen; }
 	public:
 		virtual void Handle(lv_indev_t* indev_drv, lv_indev_data_t* data) override;
 	};
@@ -104,7 +104,7 @@ public:
 	Adapter& AttachCanvas(Drawable& canvas, const Rect& rect = Rect::Empty) { return AttachDrawable(canvas, rect); }
 	Adapter& AttachDisplay(Drawable& display, const Rect& rect = Rect::Empty) { return AttachDrawable(display, rect); }
 	Adapter& AttachMouse(Mouse& mouse, lv_indev_t** p_indev = nullptr);
-	Adapter& AttachTouchScreen(TouchScreen& touchScreen, lv_indev_t** p_indev = nullptr);
+	Adapter& AttachTouchScreen(TouchScreen::Base& touchScreen, lv_indev_t** p_indev = nullptr);
 	Adapter& AttachKeyboard(Keyboard& keyboard, lv_indev_t** p_indev = nullptr, bool setGroupFlag = true);
 private:
 	static void FlushCB(lv_display_t* disp, const lv_area_t* area, unsigned char* buf);

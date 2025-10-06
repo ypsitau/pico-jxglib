@@ -13,13 +13,13 @@ namespace jxglib::Display {
 //------------------------------------------------------------------------------
 class ILI9341 : public TFT_LCD {
 public:
-	class TouchScreen : public TSC2046 {
+	class TouchScreen : public jxglib::TouchScreen::TSC2046 {
 	public:
-		TouchScreen(spi_inst_t* spi, const PinAssign& pinAssign) : TSC2046(spi, pinAssign) {}
+		TouchScreen(spi_inst_t* spi, const PinAssign& pinAssign) : jxglib::TouchScreen::TSC2046(spi, pinAssign) {}
 	public:
 		TouchScreen& Initialize(Drawable& drawable) {
 			Drawable::Dir dir = drawable.GetDirection();
-			TSC2046::Initialize(dir.IsVert());
+			jxglib::TouchScreen::TSC2046::Initialize(dir.IsVert());
 			adjusterX_.Set(0.14, -20, 260);
 			adjusterY_.Set(0.18, -30, 350);
 			if (dir.IsVert()) Swap(&adjusterX_, &adjusterY_);

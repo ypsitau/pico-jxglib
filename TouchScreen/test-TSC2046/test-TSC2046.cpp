@@ -11,14 +11,13 @@ int main()
 	GPIO2.set_function_SPI0_SCK();
 	GPIO3.set_function_SPI0_TX();
 	GPIO4.set_function_SPI0_RX();
-	TSC2046 touchScreen(spi0, {CS: GPIO8, IRQ: GPIO9});
+	TouchScreen::TSC2046 touchScreen(spi0, {CS: GPIO8, IRQ: GPIO9});
 	touchScreen.Initialize();
 	::printf("Touch Screen Test\n");
 	for (;;) {
-		if (Tickable::Tick(100)) {
-			int x, y, z1, z2;
-			bool touched = touchScreen.ReadXYRaw(&x, &y, &z1, &z2);
-			if (touched) ::printf("x:%-4x y:%-4x z1:%-2x z2:%-2x\n", x, y, z1, z2);
-		}
+		Tickable::Sleep(100);
+		int x, y, z1, z2;
+		bool touched = touchScreen.ReadXYRaw(&x, &y, &z1, &z2);
+		if (touched) ::printf("x:%-4x y:%-4x z1:%-2x z2:%-2x\n", x, y, z1, z2);
 	}
 }

@@ -134,7 +134,7 @@ lv_indev_t* Adapter::RegisterInput(lv_indev_type_t indev_type, lv_indev_read_cb_
 	return indev;
 }
 
-Adapter& Adapter::AttachTouchScreen(TouchScreen& touchScreen, lv_indev_t** p_indev)
+Adapter& Adapter::AttachTouchScreen(TouchScreen::Base& touchScreen, lv_indev_t** p_indev)
 {
 	inputTouchScreen_.SetTouchScreen(touchScreen);
 	lv_indev_t* indev = SetInput_Pointer(inputTouchScreen_);

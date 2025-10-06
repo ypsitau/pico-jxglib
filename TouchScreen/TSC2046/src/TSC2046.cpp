@@ -3,10 +3,10 @@
 //==============================================================================
 #include "jxglib/TouchScreen/TSC2046.h"
 
-namespace jxglib {
+namespace jxglib::TouchScreen {
 
 //------------------------------------------------------------------------------
-// TSC2046
+// TouchScreen::TSC2046
 //------------------------------------------------------------------------------
 TSC2046::TSC2046(spi_inst_t* spi, const PinAssign& pinAssign) :
 		spi_{spi}, pinAssign_{pinAssign}, hvFlippedFlag_{false}, xPrev_{0}, yPrev_{0} {}
