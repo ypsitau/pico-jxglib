@@ -16,7 +16,7 @@ public:
 			TFT_LCD(spi, Format::RGB565, 240, 320, width, height, pinAssign) {}
 	ST7789(spi_inst_t* spi, int width, int height, const PinAssignNoCS& pinAssign) :
 			TFT_LCD(spi, Format::RGB565, 240, 320, width, height, pinAssign) {}
-	inline TFT_LCD& Initialize(Dir displayDir = Dir::Normal);
+	virtual TFT_LCD& Initialize(Dir displayDir = Dir::Normal) override;
 public:
 	using TypeA = ST7789;
 public:

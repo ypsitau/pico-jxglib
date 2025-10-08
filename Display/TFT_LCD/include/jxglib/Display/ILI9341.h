@@ -31,7 +31,7 @@ public:
 public:
 	ILI9341(spi_inst_t* spi, int width, int height, const PinAssign& pinAssign) :
 			TFT_LCD(spi, Format::RGB565, 240, 320, width, height, pinAssign) {}
-	inline TFT_LCD& Initialize(Dir displayDir = Dir::Normal);
+	virtual TFT_LCD& Initialize(Dir displayDir = Dir::Normal) override;
 public:
 	using TypeA = ILI9341;
 public:	// Virtual functions of Display

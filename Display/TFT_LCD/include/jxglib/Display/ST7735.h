@@ -16,7 +16,7 @@ public:
 			TFT_LCD(spi, Format::RGB565, 128, 160, width, height, pinAssign) {}
 	ST7735(spi_inst_t* spi, int width, int height, const PinAssignNoCS& pinAssign) :
 			TFT_LCD(spi, Format::RGB565, 128, 160, width, height, pinAssign) {}
-	inline TFT_LCD& Initialize(Dir displayDir = Dir::Normal);
+	virtual TFT_LCD& Initialize(Dir displayDir = Dir::Normal) override;
 public:
 	using TypeA = ST7735;
 	class TypeB : public TFT_LCD {
@@ -25,7 +25,7 @@ public:
 				TFT_LCD(spi, Format::RGB565, 128, 160, width, height, pinAssign) {}
 		TypeB(spi_inst_t* spi, int width, int height, const PinAssignNoCS& pinAssign) :
 				TFT_LCD(spi, Format::RGB565, 128, 160, width, height, pinAssign) {}
-		inline TFT_LCD& Initialize(Dir displayDir = Dir::Normal);
+		virtual TFT_LCD& Initialize(Dir displayDir = Dir::Normal) override;
 	public:
 		// Virtual functions of Display
 		virtual const char* GetVariantName() const override { return "TypeB"; }

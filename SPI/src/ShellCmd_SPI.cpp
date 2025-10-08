@@ -1,8 +1,8 @@
 //==============================================================================
 // ShellCmd_SPI.cpp
 //==============================================================================
+#include "hardware/clocks.h"
 #include "jxglib/SPI.h"
-#include "jxglib/Common.h"
 #include "jxglib/Serial.h"
 #include "jxglib/Shell.h"
 
@@ -143,7 +143,7 @@ ShellCmd_Named(spi_, "spi", "controls SPI bus communication")
 	if (arg.GetString("freq", &value)) {
 		char* endptr;
 		long num = ::strtol(value, &endptr, 0);
-		if (*endptr != '\0' || num <= 0 || num > 100'000'000) {
+		if (*endptr != '\0' || num <= 0 || num > ::clock_get_hz(clk_sys) / 2) {
 			terr.Printf("Invalid frequency: %s\n", value);
 			return Result::Error;
 		}

@@ -392,10 +392,13 @@ public:
 	} saved_;
 public:
 	TFT_LCD(spi_inst_t* spi, const Format& format, int widthTypical, int heightTypical, int width, int height, const PinAssign& pinAssign) :
-			Base(Capability::Device | Capability::DrawImage | Capability::DrawImageFast, format, width, height),
+			Base(Capability::Device | Capability::DrawImage | Capability::DrawImageFast, format,
+				(width <= 0)? widthTypical : width, (height <= 0)? heightTypical : height),
 			raw(spi, pinAssign.RST, pinAssign.DC, pinAssign.CS, pinAssign.BL), dispatcherRGB565_(*this), dispatcherRGB666_(*this),
 			widthTypical_{widthTypical}, heightTypical_{heightTypical},
-			widthPhysical_{width}, heightPhysical_{height}, xAdjust_{0}, yAdjust_{0} {
+			widthPhysical_{(width <= 0)? widthTypical : width},
+			heightPhysical_{(height <= 0)? heightTypical : height},
+			xAdjust_{0}, yAdjust_{0} {
 		if (format.IsRGB()) {
 			SetDispatcher(dispatcherRGB666_);
 		} else {
@@ -403,10 +406,13 @@ public:
 		}
 	}
 	TFT_LCD(spi_inst_t* spi, const Format& format, int widthTypical, int heightTypical, int width, int height, const PinAssignNoCS& pinAssign) :
-			Base(Capability::Device | Capability::DrawImage, format, width, height),
+			Base(Capability::Device | Capability::DrawImage, format,
+				(width <= 0)? widthTypical : width, (height <= 0)? heightTypical : height),
 			raw(spi, pinAssign.RST, pinAssign.DC, pinAssign.BL), dispatcherRGB565_(*this), dispatcherRGB666_(*this),
 			widthTypical_{widthTypical}, heightTypical_{heightTypical},
-			widthPhysical_{width}, heightPhysical_{height}, xAdjust_{0}, yAdjust_{0} {
+			widthPhysical_{(width <= 0)? widthTypical : width},
+			heightPhysical_{(height <= 0)? heightTypical : height},
+			xAdjust_{0}, yAdjust_{0} {
 		if (format.IsRGB()) {
 			SetDispatcher(dispatcherRGB666_);
 		} else {
@@ -415,6 +421,7 @@ public:
 	}
 public:
 	TFT_LCD& Initialize(Dir displayDir, const ConfigData& configData);
+	virtual TFT_LCD& Initialize(Dir displayDir = Dir::Normal) = 0;
 	const Saved& GetSaved() const { return saved_; }
 	virtual Dir GetDirection() const override { return saved_.displayDir; }
 	bool UsesCS() { return raw.UsesCS(); }
