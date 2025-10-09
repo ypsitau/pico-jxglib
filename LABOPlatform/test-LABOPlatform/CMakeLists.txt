@@ -47,7 +47,6 @@ pico_enable_stdio_usb(test-LABOPlatform 0)
 # Add the standard library to the build
 target_link_libraries(test-LABOPlatform
         pico_stdlib
-        jxglib_DrawableTest
         jxglib_ShellCmd_Display_TFT_LCD)
 
 # Add the standard include files to the build

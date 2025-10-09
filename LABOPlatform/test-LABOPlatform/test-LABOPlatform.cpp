@@ -1,7 +1,5 @@
 #include "pico/stdlib.h"
 #include "jxglib/LABOPlatform.h"
-#include "jxglib/Display/ST7789.h"
-#include "jxglib/DrawableTest.h"
 
 using namespace jxglib;
 

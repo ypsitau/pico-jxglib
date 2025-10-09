@@ -48,7 +48,7 @@ target_link_libraries(jxglib_ShellCmd_Display_TFT_LCD INTERFACE
 	jxglib_Display_ST7789
 	jxglib_Display_ILI9341
 	jxglib_Display_ILI9488
-	jxglib_ShellCmd_Basic)
+	jxglib_ShellCmd_Display)
 
 target_sources(jxglib_ShellCmd_Display_TFT_LCD INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/ShellCmd_Display_TFT_LCD.cpp)

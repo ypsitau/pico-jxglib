@@ -13,12 +13,31 @@ namespace jxglib {
 // SPI
 //------------------------------------------------------------------------------
 class SPI {
+public:
+	struct Config {
+		uint SCK;
+		uint MOSI;
+		uint MISO;
+		uint CS;
+		uint freq;
+		spi_cpol_t cpol;
+		spi_cpha_t cpha;
+		spi_order_t order;
+		uint8_t byteDummy;
+	};
 private:
 	spi_inst_t* spi_;
 public:
+	Config config;
+public:
+	static SPI None;
+public:
 	SPI(spi_inst_t* spi);
+	SPI(const SPI&) = delete;
 public:
 	operator spi_inst_t*() { return spi_; }
+public:
+	bool IsValid() const { return !!spi_; }
 public:
 	uint init(uint baudrate = 1000000) { return ::spi_init(spi_, baudrate); }
 	void deinit() { ::spi_deinit(spi_); }

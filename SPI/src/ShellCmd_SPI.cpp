@@ -8,20 +8,6 @@
 
 namespace jxglib::ShellCmd_SPI {
 
-struct Config {
-	uint SCK = -1;
-	uint MOSI = -1;
-	uint MISO = -1;
-	uint CS = -1;
-	uint freq = 1'000'000;
-	spi_cpol_t cpol = SPI_CPOL_0;
-	spi_cpha_t cpha = SPI_CPHA_0;
-	spi_order_t order = SPI_MSB_FIRST;
-	uint8_t byteDummy = 0x00;
-};
-
-static Config configTbl[2];  // SPI0 and SPI1 configurations
-
 static bool WriteData(Printable& tout, Printable& terr, SPI& spi, const char* value);
 static bool ReadData(Printable& tout, Printable& terr, SPI& spi, const char* value, uint8_t byteDummy);
 static bool TransferData(Printable& tout, Printable& terr, SPI& spi, const char* value);
@@ -124,7 +110,7 @@ ShellCmd_Named(spi_, "spi", "controls SPI bus communication")
 		}
 		nArgsSkip = 1;
 	}
-	Config& config = configTbl[iBus];
+	SPI::Config& config = SPI::get_instance(iBus).config;
 	argc -= nArgsSkip;
 	argv += nArgsSkip;
 	if (arg.GetBool("help-pin")) {
@@ -492,7 +478,7 @@ void PrintConfig(Printable& tout, int iBus, const char* formatGPIO)
 			tout.Printf("------");
 		}
 	};
-	const Config& config = configTbl[iBus];
+	const SPI::Config& config = SPI::get_instance(iBus).config;
 	int mode = (config.cpol << 1) | config.cpha;
 	tout.Printf("SPI%d:", iBus);
 	printPin("SCK", config.SCK);
