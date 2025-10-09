@@ -8,8 +8,6 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // Drawable
 //------------------------------------------------------------------------------
-const Drawable::DispatcherNone dispacherNone;
-
 Size Drawable::CalcStringSize(const char* str) const
 {
 	if (!context_.pFontSet) return Size::Zero;
@@ -235,5 +233,10 @@ Drawable& Drawable::DrawCross(int x, int y, int width, int height, int wdLine, i
 	DrawRectFill(x - width / 2, y - htLine / 2, width, htLine);
 	return *this;
 }
+
+//------------------------------------------------------------------------------
+// Drawable::DispatcherNone
+//------------------------------------------------------------------------------
+Drawable::DispatcherNone Drawable::DispatcherNone::Instance;
 
 }

@@ -51,6 +51,19 @@ void TFT_LCD::CalcPosAdjust(Dir displayDir, int* pxAdjust, int* pyAdjust) const
 	}
 }
 
+const char* TFT_LCD::GetRemarks(char* buff, int lenMax) const
+{
+	::snprintf(buff, lenMax, "spi%d RST:%d DC:%d CS:%d BL:%d CPOL:%d CPHA:%d",
+		::spi_get_index(raw.GetSPI()),
+		raw.GetGPIO_RST().pin,
+		raw.GetGPIO_DC().pin,
+		raw.GetGPIO_CS().pin,
+		raw.GetGPIO_BL().pin,
+		raw.GetCPOL(),
+		raw.GetCPHA());
+	return buff;
+}
+
 //------------------------------------------------------------------------------
 // TFT_LCD::DispatcherRGB565
 //------------------------------------------------------------------------------

@@ -51,6 +51,8 @@ public:
 	public:
 		DispatcherNone() {}
 	public:
+		static DispatcherNone Instance;
+	public:
 		virtual bool Initialize() override { return true; };
 		virtual void Refresh() override {}
 		virtual void Fill(const Color& color) override {}
@@ -124,10 +126,10 @@ private:
 public:
 	Drawable(uint32_t capabilities) :
 			capabilities_{capabilities}, pFormat_{&Format::None},
-			width_{0}, height_{0}, pDispatcher_{new DispatcherNone()} {}
+			width_{0}, height_{0}, pDispatcher_{&DispatcherNone::Instance} {}
 	Drawable(uint32_t capabilities, const Format& format, int width, int height) :
 			capabilities_{capabilities}, pFormat_{&format},
-			width_{width}, height_{height}, pDispatcher_{new DispatcherNone()} {}
+			width_{width}, height_{height}, pDispatcher_{&DispatcherNone::Instance} {}
 public:
 	void SetCapacity(const Format format, int width, int height) {
 		pFormat_ = &format, width_ = width, height_ = height;

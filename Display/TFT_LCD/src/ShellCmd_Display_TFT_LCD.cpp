@@ -150,8 +150,8 @@ ShellCmd_Named(display_tftlcd, "display-tftlcd", "TFT LCD display commands")
 					return Result::Error;
 				}
 			}
-			if (iSPI < 0 || pinRST == GPIO::InvalidPin || pinDC == GPIO::InvalidPin || pinCS == GPIO::InvalidPin) {
-				terr.Printf("spi, rst, dc, cs, and bl must be specified\n");
+			if (iSPI < 0 || pinRST == GPIO::InvalidPin || pinDC == GPIO::InvalidPin) {
+				terr.Printf("spi, rst, and dc must be specified\n");
 				return Result::Error;
 			}
 			SPI& spi = SPI::get_instance(iSPI);
@@ -175,12 +175,6 @@ ShellCmd_Named(display_tftlcd, "display-tftlcd", "TFT LCD display commands")
 				return Result::Error;
 			}
 			pDisplay->Initialize(dir);
-		} else if (::strcasecmp(subcmd, "test") == 0) {
-			if (!pDisplay) {
-				terr.Printf("display not set up.\n");
-				return Result::Error;
-			}
-			DrawableTest::DrawString(*pDisplay);
 		} else {
 			terr.Printf("unknown sub command: %s\n", subcmd);
 			return Result::Error;

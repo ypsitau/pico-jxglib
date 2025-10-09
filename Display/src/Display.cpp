@@ -14,7 +14,9 @@ Base* Base::pHead_ = nullptr;
 Base::Base(uint32_t capabilities, const Format& format, int width, int height) :
 			Drawable(capabilities, format, width, height), pNext_{nullptr}
 {
-	if (pHead_) {
+	if (format.IsNone()) {
+		// nothing to do
+	} else if (pHead_) {
 		Base* pBase = pHead_;
 		for ( ; pBase->pNext_; pBase = pBase->pNext_);
 		pBase->pNext_ = this;

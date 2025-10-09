@@ -137,12 +137,20 @@ public:
 	public:
 		Raw(spi_inst_t* spi, const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_CS, const GPIO& gpio_BL) :
 				spi_(spi), gpio_RST_(gpio_RST), gpio_DC_(gpio_DC), gpio_BL_(gpio_BL), gpio_CS_(gpio_CS),
-				cpol_(SPI_CPOL_0), cpha_(SPI_CPHA_0) {}
+				cpol_(gpio_CS.IsValid()? SPI_CPOL_0 : SPI_CPOL_1),
+				cpha_(gpio_CS.IsValid()? SPI_CPHA_0 : SPI_CPHA_1) {}
 		Raw(spi_inst_t* spi, const GPIO& gpio_RST, const GPIO& gpio_DC, const GPIO& gpio_BL) :
 				spi_(spi), gpio_RST_(gpio_RST), gpio_DC_(gpio_DC), gpio_CS_(GPIO::None), gpio_BL_(gpio_BL),
 				cpol_(SPI_CPOL_1), cpha_(SPI_CPHA_1) {}
 	public:
-		spi_inst_t* GetSPI() { return spi_; }
+		spi_inst_t* GetSPI() const { return spi_; }
+		const GPIO& GetGPIO_RST() const { return gpio_RST_; }
+		const GPIO& GetGPIO_DC() const { return gpio_DC_; }
+		const GPIO& GetGPIO_CS() const { return gpio_CS_; }
+		const GPIO& GetGPIO_BL() const { return gpio_BL_; }
+		spi_cpol_t GetCPOL() const { return cpol_; }
+		spi_cpha_t GetCPHA() const { return cpha_; }
+	public:
 		bool UsesCS() const { return gpio_CS_.IsValid(); }
 		void InitGPIO();
 		void SetGPIO_BL(bool value) { if (gpio_BL_.IsValid()) gpio_BL_.put(value); }
@@ -431,6 +439,9 @@ public:
 	int GetXAdjust() const { return xAdjust_; }
 	int GetYAdjust() const { return yAdjust_; }
 	void CalcPosAdjust(Dir displayDir, int* pxAdjust, int* pyAdjust) const;
+public:
+	// virtual functions of Display::Base
+	virtual const char* GetRemarks(char* buff, int lenMax) const override;
 };
 
 }

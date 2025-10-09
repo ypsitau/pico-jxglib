@@ -35,6 +35,7 @@ public:
 public:
 	virtual const char* GetName() const { return "no-name"; }
 	virtual const char* GetVariantName() const { return ""; }
+	virtual const char* GetRemarks(char* buff, int lenMax) const { buff[0] = '\0'; return buff;}
 };
 
 //------------------------------------------------------------------------------

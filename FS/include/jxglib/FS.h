@@ -298,7 +298,7 @@ public:
 	virtual FileInfo* GetFileInfo(const char* pathNameN) = 0;
 	virtual uint64_t GetBytesTotal() = 0;
 	virtual uint64_t GetBytesUsed() = 0;
-	virtual const char* GetRemarks(char* buff, int lenMax) const { return buff;}
+	virtual const char* GetRemarks(char* buff, int lenMax) const { buff[0] = '\0'; return buff;}
 	virtual bool GetFlashInfo(uint32_t* pAddr, uint32_t* pBytes) { return false; }
 };
 
