@@ -18,7 +18,7 @@ ShellCmd_Named(rtc_ds323x, "rtc-ds323x", "set up RTC DS323x device")
 		terr.Printf("Usage: %s [OPTION]...\n", GetName());
 		arg.PrintHelp(terr);
 		terr.Printf("Subcommands:\n");
-		terr.Printf("  setup {i2c:N}     Set up a DS323x device\n");
+		terr.Printf("  setup  Set up a DS323x device with the given parameters: {i2c:BUS}\n");
 		return Result::Error;
 	}
 	Shell::Arg::EachSubcmd each(argv[1], argv[argc]);

@@ -17,9 +17,9 @@ ShellCmd(sdcard, "SD card commands")
 		terr.Printf("Usage: %s [OPTION]...\n", GetName());
 		arg.PrintHelp(terr);
 		terr.Printf("Sub Commands:\n");
-		terr.Printf(" setup {spi:SPI cs:CS [drive:DRIVE] [baudrate:BAUDRATE]}\n");
-		terr.Printf("           Set up an SD card\n");
-		terr.Printf(" init      Initialize the SD card\n");
+		terr.Printf(" setup  Setup an SD card with the given parameters:\n");
+		terr.Printf("          {spi:SPI cs:CS [drive:DRIVE] [baudrate:BAUDRATE]}\n");
+		terr.Printf(" init   Initialize the SD card\n");
 		return Result::Error;
 	}
 	Shell::Arg::EachSubcmd each(argv[1], argv[argc]);

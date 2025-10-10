@@ -163,7 +163,7 @@ void PrintDisplays(Printable& terr)
 		bool remarksFlag = (remarks[0] != '\0');
 		terr.Printf("display %d: %s%s%s%s %dx%d%s%s\n",
 			iDisplay, pDisplay->GetName(),
-			variantFlag? "[" : "", variantName, variantFlag? "]" : "",
+			variantFlag? " [" : "", variantName, variantFlag? "]" : "",
 			pDisplay->GetWidth(), pDisplay->GetHeight(),
 			remarksFlag? " " : "", remarks);
 	}

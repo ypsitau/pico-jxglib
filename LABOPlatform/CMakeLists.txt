@@ -39,13 +39,20 @@ target_link_libraries(jxglib_LABOPlatform_FullCmd INTERFACE
 	jxglib_ShellCmd_LogicAnalyzer
 	jxglib_ShellCmd_PWM
 	jxglib_ShellCmd_Resets
-	jxglib_ShellCmd_RTC
-	jxglib_ShellCmd_RTC_DS323x
-	jxglib_ShellCmd_SDCard
 	jxglib_ShellCmd_SPI
 	jxglib_ShellCmd_UART
 )	
 
+# Peripheral specific commands
+target_link_libraries(jxglib_LABOPlatform_FullCmd INTERFACE
+	jxglib_ShellCmd_Display_SSD1306
+	jxglib_ShellCmd_Display_TFT_LCD
+	jxglib_ShellCmd_RTC
+	jxglib_ShellCmd_RTC_DS323x
+	jxglib_ShellCmd_SDCard
+)
+
+# Network commands for WiFi enabled boards
 if(PICO_BOARD MATCHES ".*_w$")
 	target_link_libraries(jxglib_LABOPlatform_FullCmd INTERFACE
 		jxglib_ShellCmd_Net
