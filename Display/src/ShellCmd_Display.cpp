@@ -4,7 +4,6 @@
 
 namespace jxglib::ShellCmd_Display {
 
-#if 0
 void PrintDisplays(Printable& terr);
 
 ShellCmd(display, "display commands")
@@ -75,7 +74,5 @@ void PrintDisplays(Printable& terr)
 			pDisplay->GetWidth(), pDisplay->GetHeight(), remarks[0]? " " : "", remarks);
 	}
 }
-
-#endif
 
 }

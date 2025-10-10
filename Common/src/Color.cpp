@@ -43,27 +43,27 @@ bool Color::Parse(const char* str)
 {
 	struct NameMap {
 		const char* name;
-		Color color;
+		const Color& color;
 	};
 	static const NameMap nameMapTbl[] = {
-		{"zero",		Color::zero},
-		{"black",		Color::black},
-		{"silver",		Color::silver},
-		{"gray",		Color::gray},
-		{"white",		Color::white},
-		{"maroon",		Color::maroon},
-		{"red",			Color::red},
-		{"purple",		Color::purple},
-		{"fuchsia",		Color::fuchsia},
-		{"green",		Color::green},
-		{"lime",		Color::lime},
-		{"olive",		Color::olive},
-		{"yellow",		Color::yellow},
-		{"navy",		Color::navy},
-		{"blue",		Color::blue},
-		{"teal",		Color::teal},
-		{"aqua",		Color::aqua},
-		{nullptr, Color::zero}
+		{"zero",		Color::zero		},
+		{"black",		Color::black	},
+		{"silver",		Color::silver	},
+		{"gray",		Color::gray		},
+		{"white",		Color::white	},
+		{"maroon",		Color::maroon	},
+		{"red",			Color::red		},
+		{"purple",		Color::purple	},
+		{"fuchsia",		Color::fuchsia	},
+		{"green",		Color::green	},
+		{"lime",		Color::lime		},
+		{"olive",		Color::olive	},
+		{"yellow",		Color::yellow	},
+		{"navy",		Color::navy		},
+		{"blue",		Color::blue		},
+		{"teal",		Color::teal		},
+		{"aqua",		Color::aqua		},
+		{nullptr,		Color::zero		},
 	};
 	if (!str) return false;
 	if (str[0] == '#') {
