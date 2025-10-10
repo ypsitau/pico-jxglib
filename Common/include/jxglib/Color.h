@@ -57,6 +57,9 @@ public:
 	uint8_t GetB() const { return b; }
 	bool IsBlack() const { return r == 0 && g == 0 && b == 0; }
 	bool IsWhite() const { return r == 255 && g == 255 && b == 255; }
+	uint8_t CalcGray() const;
+public:
+	bool Parse(const char* str);
 };
 
 //------------------------------------------------------------------------------
@@ -92,6 +95,8 @@ public:
 	ColorA& operator=(const ColorA& colorA) { r = colorA.r; g = colorA.g; b = colorA.b; a = colorA.a; return *this; }
 public:
 	uint8_t GetA() const { return a; }
+public:
+	bool Parse(const char* str, uint8_t a = 255);
 };
 
 //------------------------------------------------------------------------------
@@ -114,6 +119,8 @@ public:
 	uint8_t GetB() const { return value; }
 	bool IsBlack() const { return value == 0x00; }
 	bool IsWhite() const { return value == 0xff; }
+public:
+	bool Parse(const char* str);
 };
 
 //------------------------------------------------------------------------------
@@ -166,6 +173,8 @@ public:
 	}
 	bool IsBlack() const { return value == 0x0000; }
 	bool IsWhite() const { return value == 0xffff; }
+public:
+	bool Parse(const char* str);
 };
 
 //------------------------------------------------------------------------------
@@ -218,6 +227,8 @@ public:
 	}
 	bool IsBlack() const { return value == 0x0000; }
 	bool IsWhite() const { return value == 0xffff; }
+public:
+	bool Parse(const char* str);
 };
 
 //------------------------------------------------------------------------------
@@ -270,6 +281,8 @@ public:
 	}
 	bool IsBlack() const { return value == 0x0000; }
 	bool IsWhite() const { return value == 0xffff; }
+public:
+	bool Parse(const char* str);
 };
 
 //------------------------------------------------------------------------------
@@ -322,6 +335,8 @@ public:
 	}
 	bool IsBlack() const { return value == 0x0000; }
 	bool IsWhite() const { return value == 0xffff; }
+public:
+	bool Parse(const char* str);
 };
 
 //------------------------------------------------------------------------------
@@ -363,6 +378,8 @@ public:
 	uint8_t GetB() const { return (value >> 0) & 0x01; }
 	bool IsBlack() const { return value == 0x00; }
 	bool IsWhite() const { return value == 0x07; }
+public:
+	bool Parse(const char* str);
 };
 
 //------------------------------------------------------------------------------
@@ -404,6 +421,8 @@ public:
 	uint8_t GetB() const { return (value >> 2) & 0x01; }
 	bool IsBlack() const { return value == 0x00; }
 	bool IsWhite() const { return value == 0x07; }
+public:
+	bool Parse(const char* str);
 };
 
 inline Color::Color(const ColorGray& colorGray) :
