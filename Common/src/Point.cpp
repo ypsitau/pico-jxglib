@@ -1,6 +1,8 @@
 //==============================================================================
 // Point.cpp
 //==============================================================================
+#include <ctype.h>
+#include <stdlib.h>
 #include "jxglib/Point.h"
 
 namespace jxglib {
@@ -10,15 +12,68 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 const Point Point::Zero { 0, 0 };
 
+bool Point::Parse(const char* str)
+{
+	if (!str || *str == '\0') return false;
+	char* endPtr;
+	int xTmp = static_cast<int>(::strtol(str, &endPtr, 0));
+	if (endPtr == str || xTmp < 0) return false;
+	while (::isspace(*endPtr)) ++endPtr;
+	if (*endPtr != ',') return false;
+	++endPtr;
+	while (::isspace(*endPtr)) ++endPtr;
+	int yTmp = static_cast<int>(::strtol(endPtr, &endPtr, 0));
+	if (endPtr == str || yTmp < 0) return false;
+	if (*endPtr != '\0') return false;
+	x = xTmp;
+	y = yTmp;
+	return true;
+}
+
 //------------------------------------------------------------------------------
 // PointFloat
 //------------------------------------------------------------------------------
 const PointFloat PointFloat::Zero { 0, 0 };
+
+bool PointFloat::Parse(const char* str)
+{
+	if (!str || *str == '\0') return false;
+	char* endPtr;
+	float xTmp = static_cast<float>(::strtof(str, &endPtr));
+	if (endPtr == str || xTmp < 0) return false;
+	while (::isspace(*endPtr)) ++endPtr;
+	if (*endPtr != ',') return false;
+	++endPtr;
+	while (::isspace(*endPtr)) ++endPtr;
+	float yTmp = static_cast<float>(::strtof(endPtr, &endPtr));
+	if (endPtr == str || yTmp < 0) return false;
+	if (*endPtr != '\0') return false;
+	x = xTmp;
+	y = yTmp;
+	return true;
+}
 
 //------------------------------------------------------------------------------
 // PointDouble
 //------------------------------------------------------------------------------
 const PointDouble PointDouble::Zero { 0, 0 };
 
+bool PointDouble::Parse(const char* str)
+{
+	if (!str || *str == '\0') return false;
+	char* endPtr;
+	double xTmp = ::strtod(str, &endPtr);
+	if (endPtr == str || xTmp < 0) return false;
+	while (::isspace(*endPtr)) ++endPtr;
+	if (*endPtr != ',') return false;
+	++endPtr;
+	while (::isspace(*endPtr)) ++endPtr;
+	double yTmp = ::strtod(endPtr, &endPtr);
+	if (endPtr == str || yTmp < 0) return false;
+	if (*endPtr != '\0') return false;
+	x = xTmp;
+	y = yTmp;
+	return true;
+}
 
 }
