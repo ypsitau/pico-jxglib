@@ -22,9 +22,8 @@ ShellCmd_Named(display_tftlcd, "display-tftlcd", "TFT LCD display commands")
 			terr.Printf("Available Displays: st7735, st7735-b st7789, ili9341, ili9488\n");
 		}
 		terr.Printf("Sub Commands:\n");
-		terr.Printf(" setup     Set up parameters for a display.\n");
-		terr.Printf("           Parameters: {spi:PIN rst:PIN dc:PIN cs:PIN [bl:PIN] [size:WxH]}\n");
-		terr.Printf(" init      Initialize the display\n");
+		terr.Printf(" setup  Set up TFT LCD display with the given parameters:\n");
+		terr.Printf("          {spi:PIN rst:PIN dc:PIN cs:PIN [bl:PIN] [size:WxH]}\n");
 		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
 	int iArgStart = 1;

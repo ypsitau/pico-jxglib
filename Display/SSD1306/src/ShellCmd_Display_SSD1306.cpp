@@ -19,8 +19,7 @@ ShellCmd_Named(display_ssd1306, "display-ssd1306", "SSD1306 display commands")
 			terr.Printf("Available Displays: st7735, st7735-b st7789, ili9341, ili9488\n");
 		}
 		terr.Printf("Sub Commands:\n");
-		terr.Printf(" setup  Set up TFT LCD display wih the given parameters: {i2c:BUS [addr:ADDR]}\n");
-		terr.Printf(" init   Initialize the display\n");
+		terr.Printf(" setup  Set up SSD1306 display with the given parameters: {i2c:BUS [addr:ADDR]}\n");
 		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
 	Shell::Arg::EachSubcmd each(argv[1], argv[argc]);

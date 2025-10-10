@@ -154,8 +154,12 @@ ShellCmd(display, "display commands")
 
 void PrintDisplays(Printable& terr)
 {
-	int iDisplay = 0;
-	for (Display::Base* pDisplay = Display::Base::GetHead(); pDisplay; iDisplay++, pDisplay = pDisplay->GetNext()) {
+	Display::Base* pDisplay = Display::Base::GetHead();
+	if (!pDisplay) {
+		terr.Printf("no displays\n");
+		return;
+	}
+	for (int iDisplay = 0; pDisplay; iDisplay++, pDisplay = pDisplay->GetNext()) {
 		const char* variantName = pDisplay->GetVariantName();
 		bool variantFlag = (variantName[0] != '\0');
 		char remarks[128];
