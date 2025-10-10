@@ -45,16 +45,64 @@ ShellCmd(display, "display commands")
 	while (const Arg::Subcmd* pSubcmd = each.NextSubcmd()) {
 		const char* subcmd = pSubcmd->GetProc();
 		if (Arg::GetAssigned(subcmd, "fill", &value)) {
-			if (!value) {
-				terr.Printf("missing color value\n");
-				return Result::Error;
-			}
 			Color color;
-			if (!color.Parse(value)) {
-				terr.Printf("invalid color: %s\n", value);
-				return Result::Error;
+			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
+				const char* subcmd = pSubcmdChild->GetProc();
+				if (Arg::GetAssigned(subcmd, "color", &value)) {
+					if (!value) {
+						terr.Printf("missing color value\n");
+						return Result::Error;
+					}
+					if (!color.Parse(value)) {
+						terr.Printf("invalid color: %s\n", value);
+						return Result::Error;
+					}
+				} else {
+					terr.Printf("unknown sub command: %s\n", subcmd);
+					return Result::Error;
+				}
 			}
 			display.Fill(color);
+			display.Refresh();
+		} else if (Arg::GetAssigned(subcmd, "rect-fill", &value)) {
+			Point pos;
+			Size size;
+			Color color;
+			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
+				const char* subcmd = pSubcmdChild->GetProc();
+				if (Arg::GetAssigned(subcmd, "pos", &value)) {
+					if (!value) {
+						terr.Printf("missing pos value\n");
+						return Result::Error;
+					}
+					if (!pos.Parse(value)) {
+						terr.Printf("invalid pos: %s\n", value);
+						return Result::Error;
+					}
+				} else if (Arg::GetAssigned(subcmd, "size", &value)) {
+					if (!value) {
+						terr.Printf("missing size value\n");
+						return Result::Error;
+					}
+					if (!size.Parse(value) || size.width <= 0 || size.height <= 0) {
+						terr.Printf("invalid size: %s\n", value);
+						return Result::Error;
+					}
+				} else if (Arg::GetAssigned(subcmd, "color", &value)) {
+					if (!value) {
+						terr.Printf("missing color value\n");
+						return Result::Error;
+					}
+					if (!color.Parse(value)) {
+						terr.Printf("invalid color: %s\n", value);
+						return Result::Error;
+					}
+				} else {
+					terr.Printf("unknown sub command: %s\n", subcmd);
+					return Result::Error;
+				}
+			}
+			display.DrawRectFill(Rect(pos, size), color);
 			display.Refresh();
 		} else {
 			terr.Printf("unknown sub command: %s\n", subcmd);
