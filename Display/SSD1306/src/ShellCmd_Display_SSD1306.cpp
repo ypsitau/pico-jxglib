@@ -39,17 +39,32 @@ ShellCmd_Named(display_ssd1306, "display-ssd1306", "SSD1306 display commands")
 				return Result::Error;
 			}
 			int iI2C = -1;
-			Size size;
+			uint8_t addr = Display::SSD1306::DefaultAddr;
 			Display::Dir dir = Display::Dir::Normal;
 			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
 				const char* subcmd = pSubcmdChild->GetProc();
 				if (Arg::GetAssigned(subcmd, "i2c", &value)) {
+					if (!value) {
+						terr.Printf("i2c not specified\n");
+						return Result::Error;
+					}
 					int num = ::strtol(value, nullptr, 0);
 					if (num < 0 || num >= 2) {
 						terr.Printf("invalid I2C number: %s\n", value);
 						return Result::Error;
 					}
 					iI2C = num;
+				} else if (Arg::GetAssigned(subcmd, "addr", &value)) {
+					if (!value) {
+						terr.Printf("addr not specified\n");
+						return Result::Error;
+					}
+					int num = ::strtol(value, nullptr, 0);
+					if (num < 0x03 || num > 0x77) {
+						terr.Printf("invalid I2C address: %s\n", value);
+						return Result::Error;
+					}
+					addr = static_cast<uint8_t>(num);
 				} else if (Arg::GetAssigned(subcmd, "dir", &value)) {
 					if (!value) {
 						terr.Printf("dir not specified\n");
@@ -81,7 +96,7 @@ ShellCmd_Named(display_ssd1306, "display-ssd1306", "SSD1306 display commands")
 				return Result::Error;
 			}
 			I2C& i2c = I2C::get_instance(iI2C);
-			pDisplay = new Display::SSD1306(i2c, size.width, size.height);
+			pDisplay = new Display::SSD1306(i2c, addr);
 			pDisplay->Initialize();
 		} else {
 			terr.Printf("unknown sub command: %s\n", subcmd);

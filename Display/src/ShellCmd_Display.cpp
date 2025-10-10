@@ -156,10 +156,16 @@ void PrintDisplays(Printable& terr)
 {
 	int iDisplay = 0;
 	for (Display::Base* pDisplay = Display::Base::GetHead(); pDisplay; iDisplay++, pDisplay = pDisplay->GetNext()) {
+		const char* variantName = pDisplay->GetVariantName();
+		bool variantFlag = (variantName[0] != '\0');
 		char remarks[128];
 		pDisplay->GetRemarks(remarks, sizeof(remarks));
-		terr.Printf("display%d: %s %s %dx%d%s%s\n", iDisplay, pDisplay->GetName(), pDisplay->GetVariantName(),
-			pDisplay->GetWidth(), pDisplay->GetHeight(), remarks[0]? " " : "", remarks);
+		bool remarksFlag = (remarks[0] != '\0');
+		terr.Printf("display %d: %s%s%s%s %dx%d%s%s\n",
+			iDisplay, pDisplay->GetName(),
+			variantFlag? "[" : "", variantName, variantFlag? "]" : "",
+			pDisplay->GetWidth(), pDisplay->GetHeight(),
+			remarksFlag? " " : "", remarks);
 	}
 }
 

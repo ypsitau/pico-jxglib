@@ -10,6 +10,16 @@ namespace jxglib::Display {
 //------------------------------------------------------------------------------
 // SSD1306
 //------------------------------------------------------------------------------
+const char* SSD1306::GetRemarks(char* buff, int lenMax) const
+{
+	::snprintf(buff, lenMax, "i2c%d addr:0x%02x",
+		::i2c_get_index(dispatcherEx_.GetI2C()), dispatcherEx_.GetAddr());
+	return buff;
+}
+
+//------------------------------------------------------------------------------
+// SSD1306::DispatcherEx
+//------------------------------------------------------------------------------
 bool SSD1306::DispatcherEx::Initialize()
 {
 	WaitMSecSinceBoot(100);

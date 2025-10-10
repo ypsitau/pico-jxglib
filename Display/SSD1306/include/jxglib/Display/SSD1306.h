@@ -36,6 +36,7 @@ public:
 	public:
 		Raw(i2c_inst_t* i2c, uint8_t addr) : i2c_(i2c), addr_(addr) {}
 	public:
+		i2c_inst_t* GetI2C() const { return i2c_; }
 		uint8_t GetAddr() const { return addr_; }
 	public:
 		void SendCtrl(uint8_t ctrl) const {
@@ -200,6 +201,7 @@ public:
 			::free(buffWhole_);
 		}
 	public:
+		i2c_inst_t* GetI2C() const { return raw.GetI2C(); }
 		uint8_t GetAddr() const { return raw.GetAddr(); }
 		int GetHeightPerPage() const { return heightPerPage_; }
 		int GetNumPages() const { return numPages_; }
@@ -248,9 +250,10 @@ public:
 public:
 	SSD1306& Initialize() { GetDispatcher().Initialize(); return *this; }
 public:
-	// Virtual functions of Display
+	// Virtual functions of Display::Base
 	virtual const char* GetName() const override { return "SSD1306"; }
 	virtual const char* GetVariantName() const override { return ""; }
+	virtual const char* GetRemarks(char* buff, int lenMax) const override;
 };
 
 }
