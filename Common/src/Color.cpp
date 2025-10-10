@@ -41,6 +41,30 @@ uint8_t Color::CalcGray() const
 
 bool Color::Parse(const char* str)
 {
+	struct NameMap {
+		const char* name;
+		Color color;
+	};
+	static const NameMap nameMapTbl[] = {
+		{"zero",		Color::zero},
+		{"black",		Color::black},
+		{"silver",		Color::silver},
+		{"gray",		Color::gray},
+		{"white",		Color::white},
+		{"maroon",		Color::maroon},
+		{"red",			Color::red},
+		{"purple",		Color::purple},
+		{"fuchsia",		Color::fuchsia},
+		{"green",		Color::green},
+		{"lime",		Color::lime},
+		{"olive",		Color::olive},
+		{"yellow",		Color::yellow},
+		{"navy",		Color::navy},
+		{"blue",		Color::blue},
+		{"teal",		Color::teal},
+		{"aqua",		Color::aqua},
+		{nullptr, Color::zero}
+	};
 	if (!str) return false;
 	if (str[0] == '#') {
 		// #RRGGBB
@@ -53,30 +77,6 @@ bool Color::Parse(const char* str)
 		b = static_cast<uint8_t>(val & 0xff);
 		return true;
 	} else {
-		struct NameMap {
-			const char* name;
-			Color color;
-		};
-		static const NameMap nameMapTbl[] = {
-			{"zero",		Color::zero},
-			{"black",		Color::black},
-			{"silver",		Color::silver},
-			{"gray",		Color::gray},
-			{"white",		Color::white},
-			{"maroon",		Color::maroon},
-			{"red",			Color::red},
-			{"purple",		Color::purple},
-			{"fuchsia",		Color::fuchsia},
-			{"green",		Color::green},
-			{"lime",		Color::lime},
-			{"olive",		Color::olive},
-			{"yellow",		Color::yellow},
-			{"navy",		Color::navy},
-			{"blue",		Color::blue},
-			{"teal",		Color::teal},
-			{"aqua",		Color::aqua},
-			{nullptr, Color::zero}
-		};
 		for (const NameMap* p = nameMapTbl; p->name; p++) {
 			if (::strcasecmp(str, p->name) == 0) {
 				*this = p->color;
