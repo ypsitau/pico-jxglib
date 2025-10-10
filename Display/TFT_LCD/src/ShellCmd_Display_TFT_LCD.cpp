@@ -4,7 +4,6 @@
 #include "jxglib/Display/ST7789.h"
 #include "jxglib/Display/ILI9341.h"
 #include "jxglib/Display/ILI9488.h"
-#include "jxglib/DrawableTest.h"
 
 namespace jxglib::ShellCmd_Display_TFT_LCD {
 

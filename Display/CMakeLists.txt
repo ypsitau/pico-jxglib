@@ -19,7 +19,6 @@ target_include_directories(jxglib_ShellCmd_Display INTERFACE
 
 target_link_libraries(jxglib_ShellCmd_Display INTERFACE
 	jxglib_Display
-	jxglib_DrawableTest
 	jxglib_ShellCmd_Basic)
 
 target_sources(jxglib_ShellCmd_Display INTERFACE
