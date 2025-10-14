@@ -16,7 +16,7 @@ ${end}
 ${if (fontSet.fontEntryTbl_Extra.len > 0)}
 // Extra Font: ${fontSet.fontEntryTbl_Extra.len} characters, ${fontSet.fontEntryTbl_Extra:*CalcBytes().Sum()} bytes (font data) + ${fontSet.fontEntryTbl_Extra.len * 4} bytes (pointer table)
 ${end}
-// Total Memory: ${fontSet.fontEntryTbl_Basic:*CalcBytes().Sum() + (fontSet.fontEntryTbl_Extra:*CalcBytes().Sum() || 0)
+// Total Memory: ${38 + fontSet.fontEntryTbl_Basic:*CalcBytes().Sum() + (fontSet.fontEntryTbl_Extra:*CalcBytes().Sum() || 0)}
 //==============================================================================
 #ifndef PICO_JXGLIB_FONT_${fontSet.fontName.Upper()}_H
 #define PICO_JXGLIB_FONT_${fontSet.fontName.Upper()}_H
@@ -186,7 +186,7 @@ FontEntry = struct {
 	height as Number
 	xAdvance as Number
 	bitmap[] as Number = []
-	CalcBytes() = 8 + this.bitmap.len
+	CalcBytes() = 6 + this.bitmap.len
 	AddData(data as Number, bytesPerData as Number):map:void = {
 		dataSplit = []
 		repeat (bytesPerData) { dataSplit.Add(data & 0xff), data >>= 8 }
