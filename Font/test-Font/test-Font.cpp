@@ -4,7 +4,7 @@
 //#include "jxglib/Font/naga10-japanese-level2.h"
 //#include "jxglib/Font/shinonome12-japanese-level2.h"
 #include "jxglib/Font/shinonome14-japanese-level2.h"
-//#include "jxglib/Font/shinonome16-japanese-level2.h"
+#include "jxglib/Font/shinonome16-japanese-level2.h"
 //#include "jxglib/Font/shinonome18.h"
 //#include "jxglib/Font/sisd24x32.h"
 //#include "jxglib/Font/sisd8x16.h"
@@ -46,11 +46,15 @@ void CheckFontSet(const FontSet& fontSet)
 int main()
 {
 	::stdio_init_all();
+	FontEntry fontEntry;
+	::printf("Offset of FontEntry.data: %d\n", fontEntry.data - reinterpret_cast<uint8_t*>(&fontEntry));
+	FontSet fontSet;
+	::printf("Offset of FontSet.data: %d\n", fontSet.data - reinterpret_cast<char*>(&fontSet));
 	//CheckFontSet(Font::misaki_gothic);
 	//CheckFontSet(Font::naga10);
 	//CheckFontSet(Font::shinonome12);
 	CheckFontSet(Font::shinonome14);
-	//CheckFontSet(Font::shinonome16);
+	CheckFontSet(Font::shinonome16);
 	//CheckFontSet(Font::shinonome18);
 	//CheckFontSet(Font::sisd24x32);
 	//CheckFontSet(Font::sisd8x16);

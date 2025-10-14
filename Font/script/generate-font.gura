@@ -16,8 +16,7 @@ ${end}
 ${if (fontSet.fontEntryTbl_Extra.len > 0)}
 // Extra Font: ${fontSet.fontEntryTbl_Extra.len} characters, ${fontSet.fontEntryTbl_Extra:*CalcBytes().Sum()} bytes (font data) + ${fontSet.fontEntryTbl_Extra.len * 4} bytes (pointer table)
 ${end}
-// Total Memory: ${fontSet.fontEntryTbl_Basic:*CalcBytes().Sum() + (fontSet.fontEntryTbl_Extra:*CalcBytes().Sum() || 0) + \
-		(fontSet.fontEntryTbl_Basic.len + fontSet.fontEntryTbl_Extra.len) * 4} bytes + alpha
+// Total Memory: ${fontSet.fontEntryTbl_Basic:*CalcBytes().Sum() + (fontSet.fontEntryTbl_Extra:*CalcBytes().Sum() || 0)
 //==============================================================================
 #ifndef PICO_JXGLIB_FONT_${fontSet.fontName.Upper()}_H
 #define PICO_JXGLIB_FONT_${fontSet.fontName.Upper()}_H

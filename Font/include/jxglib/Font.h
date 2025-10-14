@@ -12,7 +12,7 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // FontEntry
 //------------------------------------------------------------------------------
-struct FontEntry {
+struct __attribute__((packed)) FontEntry {
 	uint16_t code;
 	uint8_t width;
 	uint8_t height;
@@ -25,7 +25,7 @@ struct FontEntry {
 //------------------------------------------------------------------------------
 // FontSet
 //------------------------------------------------------------------------------
-struct FontSet {
+struct __attribute__((packed)) FontSet {
 public:
 	enum class Format : uint8_t { None, Bitmap, Gray };
 public:
@@ -38,9 +38,6 @@ public:
 	uint16_t bytesPerFont;
 	uint16_t nFontEntries_Extra;
 	char data[];
-	//const FontEntry* pFontEntry_Invalid;
-	//const FontEntry* pFontEntryTbl_Basic[nFontEntries_Basic];
-	//const FontEntry* pFontEntryTbl_Extra[];
 public:
 	bool IsNone() const { return format == Format::None; }
 	bool IsBitmap() const { return format == Format::Bitmap; }
