@@ -12,11 +12,11 @@ tmplFontFile = tR'''
 ${fontSet.description.Split('\n') {|line|}}
 // ${line}
 ${end}
-// Basic Font: ${fontSet.fontEntryTbl_Basic.len} characters, ${fontSet.fontEntryTbl_Basic:*CalcBytes().Sum()} bytes (font data) + ${fontSet.fontEntryTbl_Basic.len * 4} bytes (pointer table)
+// Basic Font: ${fontSet.fontEntryTbl_Basic.len} characters (${fontSet.fontEntryTbl_Basic:*CalcBytes().Sum()} bytes)
 ${if (fontSet.fontEntryTbl_Extra.len > 0)}
-// Extra Font: ${fontSet.fontEntryTbl_Extra.len} characters, ${fontSet.fontEntryTbl_Extra:*CalcBytes().Sum()} bytes (font data) + ${fontSet.fontEntryTbl_Extra.len * 4} bytes (pointer table)
+// Extra Font: ${fontSet.fontEntryTbl_Extra.len} characters (${fontSet.fontEntryTbl_Extra:*CalcBytes().Sum()} bytes)
 ${end}
-// Total Memory: ${38 + fontSet.fontEntryTbl_Basic:*CalcBytes().Sum() + (fontSet.fontEntryTbl_Extra:*CalcBytes().Sum() || 0)}
+// Total Memory: ${38 + fontSet.fontEntryTbl_Basic:*CalcBytes().Sum() + (fontSet.fontEntryTbl_Extra:*CalcBytes().Sum() || 0)} bytes
 //==============================================================================
 #ifndef PICO_JXGLIB_FONT_${fontSet.fontName.Upper()}_H
 #define PICO_JXGLIB_FONT_${fontSet.fontName.Upper()}_H
