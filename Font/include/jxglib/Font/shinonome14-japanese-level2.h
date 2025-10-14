@@ -9,6 +9,7 @@
 #define PICO_JXGLIB_FONT_SHINONOME14_H
 #include "jxglib/Font.h"
 
+
 namespace jxglib { namespace Font {
 namespace shinonome14_FE {
 

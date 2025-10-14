@@ -27,17 +27,15 @@ namespace jxglib { namespace Font {
 namespace ${fontSet.fontName}_FE {
 
 const FontEntry Invalid = { 0x${Format('%04x', fontSet.fontEntry_Invalid.code)}, ${fontSet.fontEntry_Invalid.width}, ${fontSet.fontEntry_Invalid.height}, ${fontSet.fontEntry_Invalid.xAdvance}, {
-${cond(!fontSet.fontEntry_Invalid.bitmap.IsEmpty(), cond(readableFlag,
-	Format('0b%08b,', fontSet.fontEntry_Invalid.bitmap).Fold(Int((fontSet.fontEntry_Invalid.width + 7) / 8)),
-	Format('0x%02x,', fontSet.fontEntry_Invalid.bitmap).Fold(nColsPerLine)):*Join() + '\n')}
+${if (!fontSet.fontEntry_Invalid.bitmap.IsEmpty())}
+${Format('0x%02x,', fontSet.fontEntry_Invalid.bitmap).Fold(nColsPerLine):*Join() + '\n'}
+${end}
 } };
 ${(fontSet.fontEntryTbl_Basic |+| fontSet.fontEntryTbl_Extra).Each {|fontEntry|}}
 // ${cond(fontEntry.code < 0x7f, Format("'%c'", fontEntry.code), Format('0x%04x', fontEntry.code))}
 const FontEntry F${Format('%04x', fontEntry.code)} = { 0x${Format('%04x', fontEntry.code)}, ${fontEntry.width}, ${fontEntry.height}, ${fontEntry.xAdvance}, {
 ${if (!fontEntry.bitmap.IsEmpty())}
-${cond(readableFlag,
-	Format('0b%08b,', fontEntry.bitmap).Fold(Int((fontEntry.width + 7) / 8)),
-	Format('0x%02x,', fontEntry.bitmap).Fold(nColsPerLine)):*Join() + '\n'}
+${Format('0x%02x,', fontEntry.bitmap).Fold(nColsPerLine):*Join() + '\n'}
 ${end}
 } };
 ${end}
@@ -161,7 +159,6 @@ main() = {
 		sys.Exit(1)
 	}
 	dirNameOut = opt['outdir'] || '.'
-	readableFlag = opt['readable']
 	fontNames.Each {|fontName|
 		fontGenerator = fontGeneratorDict.Get(fontName)
 		if (!fontGenerator) {
