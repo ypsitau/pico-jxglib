@@ -17,9 +17,9 @@ struct FontEntry {
 	uint8_t width;
 	uint8_t height;
 	uint8_t xAdvance;
+	uint8_t padding;
 	uint8_t data[];
-public:
-	static const FontEntry Invalid8x8;
+	static const int BytesHeader = 6;
 };
 
 //------------------------------------------------------------------------------
@@ -27,24 +27,34 @@ public:
 //------------------------------------------------------------------------------
 struct FontSet {
 public:
-	enum class Format { None, Bitmap, Gray };
+	enum class Format : uint8_t { None, Bitmap, Gray };
 public:
 	static const int nFontEntries_Basic = 0x5f;
 	static const FontSet None;
 public:
-	const char* name;
+	char name[32];
 	Format format;
 	uint8_t yAdvance;
-	const FontEntry* pFontEntry_Invalid;
-	const FontEntry* pFontEntryTbl_Basic[nFontEntries_Basic];
-	int nFontEntries_Extra;
-	const FontEntry* pFontEntryTbl_Extra[];
+	uint16_t bytesPerFont;
+	uint16_t nFontEntries_Extra;
+	char data[];
+	//const FontEntry* pFontEntry_Invalid;
+	//const FontEntry* pFontEntryTbl_Basic[nFontEntries_Basic];
+	//const FontEntry* pFontEntryTbl_Extra[];
 public:
 	bool IsNone() const { return format == Format::None; }
 	bool IsBitmap() const { return format == Format::Bitmap; }
 	bool IsGray() const { return format == Format::Gray; }
 	bool HasExtraFont() const { return nFontEntries_Extra > 0; }
 	const FontEntry& GetFontEntry(uint32_t code) const;
+public:
+	const FontEntry& GetFontEntry_Invalid() const { return *reinterpret_cast<const FontEntry*>(data); }
+	const FontEntry& GetFontEntry_Basic(int idx) const {
+		return *reinterpret_cast<const FontEntry*>(data + (FontEntry::BytesHeader + bytesPerFont) * (1 + idx));
+	}
+	const FontEntry& GetFontEntry_Extra(int idx) const {
+		return *reinterpret_cast<const FontEntry*>(data + (FontEntry::BytesHeader + bytesPerFont) * (1 + nFontEntries_Basic + idx));
+	}
 };
 
 }

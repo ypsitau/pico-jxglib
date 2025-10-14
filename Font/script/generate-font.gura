@@ -23,36 +23,24 @@ ${end}
 #define PICO_JXGLIB_FONT_${fontSet.fontName.Upper()}_H
 #include "jxglib/Font.h"
 
-namespace jxglib { namespace Font {
-namespace ${fontSet.fontName}_FE {
+namespace jxglib::Font {
 
-const FontEntry Invalid = { 0x${Format('%04x', fontSet.fontEntry_Invalid.code)}, ${fontSet.fontEntry_Invalid.width}, ${fontSet.fontEntry_Invalid.height}, ${fontSet.fontEntry_Invalid.xAdvance}, {
+const FontSet ${fontSet.fontName} = {"${fontSet.fontName.Replace('"', '\"')}", FontSet::Format::Bitmap, ${fontSet.yAdvance}, ${fontSet.bytesPerFont}, ${fontSet.fontEntryTbl_Extra.len}, {
+// Invalid
+${Format('0x%02x,0x%02x', fontSet.fontEntry_Invalid.code & 0xff, (fontSet.fontEntry_Invalid.code >> 8) & 0xff)}, ${fontSet.fontEntry_Invalid.width}, ${fontSet.fontEntry_Invalid.height}, ${fontSet.fontEntry_Invalid.xAdvance}, 0,
 ${if (!fontSet.fontEntry_Invalid.bitmap.IsEmpty())}
 ${Format('0x%02x,', fontSet.fontEntry_Invalid.bitmap).Fold(nColsPerLine):*Join() + '\n'}
 ${end}
-} };
 ${(fontSet.fontEntryTbl_Basic |+| fontSet.fontEntryTbl_Extra).Each {|fontEntry|}}
 // ${cond(fontEntry.code < 0x7f, Format("'%c'", fontEntry.code), Format('0x%04x', fontEntry.code))}
-const FontEntry F${Format('%04x', fontEntry.code)} = { 0x${Format('%04x', fontEntry.code)}, ${fontEntry.width}, ${fontEntry.height}, ${fontEntry.xAdvance}, {
+${Format('0x%02x,0x%02x', fontEntry.code & 0xff, (fontEntry.code >> 8) & 0xff)}, ${fontEntry.width}, ${fontEntry.height}, ${fontEntry.xAdvance}, 0,
 ${if (!fontEntry.bitmap.IsEmpty())}
 ${Format('0x%02x,', fontEntry.bitmap).Fold(nColsPerLine):*Join() + '\n'}
 ${end}
-} };
 ${end}
+} };
 
 }
-
-const FontSet ${fontSet.fontName} = { "${fontSet.fontName.Replace('"', '\"')}", FontSet::Format::Bitmap, ${fontSet.yAdvance}, &${fontSet.fontName}_FE::Invalid, {
-	${Range(0x20, 0x7f) {|code|}}
-	&${fontSet.fontName}_FE::F${Format('%04x', code)},
-	${end}
-}, ${fontSet.fontEntryTbl_Extra.len}, {
-	${fontSet.fontEntryTbl_Extra:*code.Each {|code|}}
-	&${fontSet.fontName}_FE::F${Format('%04x', code)},
-	${end}
-} };
-
-} }
 
 #endif
 '''
@@ -205,7 +193,10 @@ FontEntry = struct {
 		repeat (bytesPerData) { dataSplit.Add(data & 0xff), data >>= 8 }
 		this.bitmap.Append(dataSplit.Reverse())
 	}
-	CreateInvalid(code as Number, width as Number, height as Number, xAdvance as Number):static = {
+	AlignData(bytesAlign as Number):map:void = {
+		this.bitmap = this.bitmap.Align(bytesAlign, 0):list
+	}
+	CreateInvalid(code as Number, width as Number, height as Number, xAdvance as Number, bytesAlign? as Number):static = {
 		bytesPerData = Int((width + 7) / 8)
 		bitsPerData = bytesPerData * 8
 		dataTop = dataBottom = ((1 << (width - 1)) - 1) << (bitsPerData - width + 1)
@@ -215,6 +206,7 @@ FontEntry = struct {
 		repeat (height - 3) { fontEntry.AddData(dataMid, bytesPerData) }
 		fontEntry.AddData(dataBottom, bytesPerData)
 		fontEntry.AddData(0, bytesPerData)
+		bytesAlign && fontEntry.AlignData(bytesAlign)
 		fontEntry
 	}
 }
@@ -226,6 +218,7 @@ FontSet = struct {
 	fontName as String
 	description as String
 	yAdvance as Number
+	bytesPerFont as Number
 	fontEntry_Invalid as FontEntry
 	fontEntryTbl_Basic[] as FontEntry
 	fontEntryTbl_Extra[] as FontEntry
@@ -242,16 +235,18 @@ FontGenerator_FromBDF = struct {
 	GenerateFontSet(codeUTF32Tbl_Extra[] as Number) = {
 		bdfBasic = this.CreateStream(this.bdfSourceBasic)
 		bdfExtra = this.CreateStream(this.bdfSourceExtra)
-		fontEntryTbl_Basic = this.CreateFontEntryTbl(bdfBasic, [32..126])
-		fontEntryTbl_Extra = this.CreateFontEntryTbl(bdfExtra, codeUTF32Tbl_Extra)
+		bytesPerFont = Int((Max(this.CalcBytesPerFontMax(bdfBasic), this.CalcBytesPerFontMax(bdfExtra)) + 1) / 2) * 2
+		fontEntryTbl_Basic = this.CreateFontEntryTbl(bdfBasic, [32..126], bytesPerFont)
+		fontEntryTbl_Extra = this.CreateFontEntryTbl(bdfExtra, codeUTF32Tbl_Extra, bytesPerFont)
 		description = bdfBasic.XLogicalFontDescription
 		if (bdfExtra) { description += '\n' + bdfExtra.XLogicalFontDescription }
 		FontSet(
 			fontName = this.fontName
 			description = description
 			yAdvance = bdfBasic.FONTBOUNDINGBOX.h
+			bytesPerFont = bytesPerFont
 			fontEntry_Invalid = FontEntry.CreateInvalid(0x0000,
-				bdfBasic.FONTBOUNDINGBOX.w, bdfBasic.FONTBOUNDINGBOX.h, bdfBasic.FONTBOUNDINGBOX.w)
+				bdfBasic.FONTBOUNDINGBOX.w, bdfBasic.FONTBOUNDINGBOX.h, bdfBasic.FONTBOUNDINGBOX.w, bytesPerFont)
 			fontEntryTbl_Basic = fontEntryTbl_Basic
 			fontEntryTbl_Extra = fontEntryTbl_Extra
 		)
@@ -265,7 +260,13 @@ FontGenerator_FromBDF = struct {
 			nil
 		}
 	}
-	CreateFontEntryTbl(bdf:nil as font.bdf.Context, codeUTF32Tbl[] as Number) = {
+	CalcBytesPerFontMax(bdf:nil as font.bdf.Context):map = {
+		!bdf && return(0)
+		height = bdf.FONTBOUNDINGBOX.h
+		bytesPerDataMax = Int((bdf.charEntryTbl:*BBX:*w.Max() + 7) / 8)
+		bytesPerDataMax * height
+	}
+	CreateFontEntryTbl(bdf:nil as font.bdf.Context, codeUTF32Tbl[] as Number, bytesPerFont as Number) = {
 		!bdf && return([])
 		fontEntryTbl = []
 		bdf.charEntryTbl.Each {|charEntry|
@@ -286,6 +287,7 @@ FontGenerator_FromBDF = struct {
 			repeat (nZerosPre) { fontEntry.AddData(0, bytesPerData) }
 			fontEntry.AddData(charEntry.BITMAP.Each() >> nBitsShift, bytesPerData)
 			repeat (nZerosPost) { fontEntry.AddData(0, bytesPerData) }
+			fontEntry.AlignData(bytesPerFont)
 			fontEntryTbl.Add(fontEntry)
 		}
 		fontEntryTbl = fontEntryTbl.Sort(keys = fontEntryTbl::code)
@@ -342,7 +344,8 @@ FontGenerator_Segment = struct {
 			fontName = this.fontName
 			description = this.description
 			yAdvance = this.height
-			fontEntry_Invalid = FontEntry.CreateInvalid(0x0000, this.width, this.height, this.width)
+			bytesPerFont = Int((this.width + 7) / 8) * this.height
+			fontEntry_Invalid = FontEntry.CreateInvalid(0x0000, this.width, this.height, this.width, nil)
 			fontEntryTbl_Basic = fontEntryTbl_Basic
 			fontEntryTbl_Extra = []
 		)
