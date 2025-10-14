@@ -32,7 +32,7 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-Font test-Font.cpp )
+add_executable(test-Font test-Font.cpp)
 
 pico_set_program_name(test-Font "test-Font")
 pico_set_program_version(test-Font "0.1")
