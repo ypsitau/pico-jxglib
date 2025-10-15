@@ -16,7 +16,7 @@ ${end}
 ${if (fontSet.fontEntryTbl_Extra.len > 0)}
 // Extra Font: ${fontSet.fontEntryTbl_Extra.len} characters (${fontSet.fontEntryTbl_Extra:*CalcBytes().Sum()} bytes)
 ${end}
-// Total Memory: ${38 + fontSet.fontEntryTbl_Basic:*CalcBytes().Sum() + (fontSet.fontEntryTbl_Extra:*CalcBytes().Sum() || 0)} bytes
+// Total Memory: ${38 + fontSet.fontEntry_Invalid.CalcBytes() + fontSet.fontEntryTbl_Basic:*CalcBytes().Sum() + (fontSet.fontEntryTbl_Extra:*CalcBytes().Sum() || 0)} bytes
 //==============================================================================
 #ifndef PICO_JXGLIB_FONT_${fontSet.fontName.Upper()}_H
 #define PICO_JXGLIB_FONT_${fontSet.fontName.Upper()}_H
@@ -27,9 +27,7 @@ namespace jxglib::Font {
 const FontSet ${fontSet.fontName} = {"${fontSet.fontName.Replace('"', '\"')}", FontSet::Format::Bitmap, ${fontSet.yAdvance}, ${fontSet.bytesPerFont}, ${fontSet.fontEntryTbl_Extra.len}, {
 // Invalid
 ${Format('0x%02x,0x%02x', fontSet.fontEntry_Invalid.code & 0xff, (fontSet.fontEntry_Invalid.code >> 8) & 0xff)}, ${fontSet.fontEntry_Invalid.width}, ${fontSet.fontEntry_Invalid.height}, ${fontSet.fontEntry_Invalid.xAdvance}, 0,
-${if (!fontSet.fontEntry_Invalid.bitmap.IsEmpty())}
 ${Format('0x%02x,', fontSet.fontEntry_Invalid.bitmap).Fold(nColsPerLine):*Join() + '\n'}
-${end}
 ${(fontSet.fontEntryTbl_Basic |+| fontSet.fontEntryTbl_Extra).Each {|fontEntry|}}
 // ${cond(fontEntry.code < 0x7f, Format("'%c'", fontEntry.code), Format('0x%04x', fontEntry.code))}
 ${Format('0x%02x,0x%02x', fontEntry.code & 0xff, (fontEntry.code >> 8) & 0xff)}, ${fontEntry.width}, ${fontEntry.height}, ${fontEntry.xAdvance}, 0,
@@ -43,6 +41,31 @@ ${end}
 
 #endif
 '''
+
+GenerateBinaryFile(fontSet as FontSet, out:w as Stream) = {
+	buff = B''
+	// Format of FontSet structure
+	//   char name[32];
+	//   Format format;
+	//   uint8_t yAdvance;
+	//   uint16_t bytesPerFont;
+	//   uint16_t nFontEntries_Extra;
+	buff.p.Pack('32sBBHH', fontSet.fontName, 1, fontSet.yAdvance, fontSet.bytesPerFont, fontSet.fontEntryTbl_Extra.len)
+	out.Write(buff)
+	(fontSet.fontEntry_Invalid |+| fontSet.fontEntryTbl_Basic |+| fontSet.fontEntryTbl_Extra).Each {|fontEntry|
+		buff = B''
+		p = buff.p
+		// Format of FontEntry structure
+		//   uint16_t code;
+		//   uint8_t width;
+		//   uint8_t height;
+		//   uint8_t xAdvance;
+		//   uint8_t padding;
+		p.Pack('HBBBB', fontEntry.code, fontEntry.width, fontEntry.height, fontEntry.xAdvance, 0)
+		fontEntry.bitmap.Each {|byte| p.uint8:fwd = byte}
+		out.Write(buff)
+	}
+}
 
 tmplHelp = tR'''
 usage: gurax generate-font.gura [options] <font_name>[,<font_name>...] [<text_file> ..]
@@ -156,6 +179,9 @@ main() = {
 		fontSet = fontGenerator.GenerateFontSet(codeUTF32Tbl_Extra)
 		fileNameOut = path.Join(dirNameOut, fontName + fileNameOutTail + '.h')
 		tmplFontFile.Render(fileNameOut)
+		sys.cerr.Printf('Generated: %s\n', fileNameOut)
+		fileNameOut = path.Join(dirNameOut, fontName + fileNameOutTail + '.bin')
+		GenerateBinaryFile(fontSet, fileNameOut)
 		sys.cerr.Printf('Generated: %s\n', fileNameOut)
 	}
 }
