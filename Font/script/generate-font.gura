@@ -42,7 +42,7 @@ ${end}
 #endif
 '''
 
-GenerateBinaryFile(fontSet as FontSet, out:w as Stream) = {
+GenerateBinaryFile(out:w as Stream, fontSet as FontSet) = {
 	buff = B''
 	// Format of FontSet structure
 	//   char name[32];
@@ -64,6 +64,48 @@ GenerateBinaryFile(fontSet as FontSet, out:w as Stream) = {
 		p.Pack('HBBBB', fontEntry.code, fontEntry.width, fontEntry.height, fontEntry.xAdvance, 0)
 		fontEntry.bitmap.Each {|byte| p.uint8:fwd = byte}
 		out.Write(buff)
+	}
+}
+
+GenerateUF2File(out:w as Stream, src as Stream) = {
+	// pico-sdk/src/common/boot_uf2_headers/include/boot/uf2.h
+	//   uint32_t magic_start0;					0x0A324655
+	//   uint32_t magic_start1;					0x9E5D5157
+	//   uint32_t flags;						0x00002000 (UF2_FLAG_FAMILY_ID_PRESENT)
+	//   uint32_t target_addr;					0x10000000 - 
+	//   uint32_t payload_size;					256
+	//   uint32_t block_no;						0 - 
+	//   uint32_t num_blocks;					
+	//   uint32_t file_size; // or family_id;	0xe48bff58 (DATA_FAMILY_ID)
+	//   uint8_t  data[476];
+	//   uint32_t magic_end;					0x0AB16F30
+	bytesSector = 4096
+	buff = src.Read()
+	bytesOut = Int(((buff.bytes + 8) + (bytesSector - 1)) / bytesSector) * bytesSector
+	p = buff.p + buff.bytes
+	p.Pack('*x4sL', bytesOut - buff.bytes - 8, 'labo', bytesOut)
+	magic_start0	= 0x0A324655
+	magic_start1	= 0x9E5D5157
+	flags			= 0x00002000			// UF2_FLAG_FAMILY_ID_PRESENT
+	target_addr		= 0x10100000
+	payload_size	= 256
+	block_no		= 0 
+	num_blocks		= bytesOut / payload_size					
+	family_id		= 0xe48bff58			// DATA_FAMILY_ID
+	magic_end		= 0x0AB16F30
+	p = buff.p
+	while (p.offset < buff.bytes) {
+		buffHeader = B''
+		buffHeader.p.Pack('LLLLLLLL',
+			magic_start0, magic_start1, flags, target_addr, payload_size, block_no, num_blocks, family_id)
+		out.Write(buffHeader)
+		out.Write(p, payload_size)
+		buffFooter = B''
+		buffFooter.p.Pack('*xL', 476 - payload_size, magic_end)
+		out.Write(buffFooter)
+		p += payload_size
+		target_addr += payload_size
+		block_no += 1
 	}
 }
 
@@ -177,12 +219,15 @@ main() = {
 			sys.Exit(1)
 		}
 		fontSet = fontGenerator.GenerateFontSet(codeUTF32Tbl_Extra)
-		fileNameOut = path.Join(dirNameOut, fontName + fileNameOutTail + '.h')
-		tmplFontFile.Render(fileNameOut)
-		sys.cerr.Printf('Generated: %s\n', fileNameOut)
-		fileNameOut = path.Join(dirNameOut, fontName + fileNameOutTail + '.bin')
-		GenerateBinaryFile(fontSet, fileNameOut)
-		sys.cerr.Printf('Generated: %s\n', fileNameOut)
+		fileNameHeader = path.Join(dirNameOut, fontName + fileNameOutTail + '.h')
+		fileNameBin = path.Join(dirNameOut, fontName + fileNameOutTail + '.bin')
+		fileNameUF2 = path.Join(dirNameOut, fontName + fileNameOutTail + '.uf2')
+		tmplFontFile.Render(fileNameHeader)
+		sys.cerr.Printf('Generated: %s\n', fileNameHeader)
+		GenerateBinaryFile(fileNameBin, fontSet)
+		sys.cerr.Printf('Generated: %s\n', fileNameBin)
+		GenerateUF2File(fileNameUF2, fileNameBin)
+		sys.cerr.Printf('Generated: %s\n', fileNameUF2)
 	}
 }
 
