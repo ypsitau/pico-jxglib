@@ -79,22 +79,28 @@ GenerateUF2File(out:w as Stream, src as Stream) = {
 	//   uint32_t file_size; // or family_id;	0xe48bff58 (DATA_FAMILY_ID)
 	//   uint8_t  data[476];
 	//   uint32_t magic_end;					0x0AB16F30
+	bytesProgramMax = 0x10180000
 	bytesSector = 4096
-	buff = src.Read()
-	bytesOut = Int(((buff.bytes + 8) + (bytesSector - 1)) / bytesSector) * bytesSector
-	p = buff.p + buff.bytes
-	p.Pack('*x4sL', bytesOut - buff.bytes - 8, 'labo', bytesOut)
+	buffSrc = src.Read()
+	bytesHeader = 8
+	bytesFooter = 8 + 4
+	bytesDst = Int(((buffSrc.bytes + bytesHeader + bytesFooter) + (bytesSector - 1)) / bytesSector) * bytesSector
+	buffDst = Binary()
+	p = buffDst.p
+	p.Pack('8s', 'LABOFONT')
+	p.Append(buffSrc)
+	p.Pack('*x8sL', bytesDst - buffSrc.bytes - (bytesHeader + bytesFooter), 'LABOFONT', bytesDst)
 	magic_start0	= 0x0A324655
 	magic_start1	= 0x9E5D5157
 	flags			= 0x00002000			// UF2_FLAG_FAMILY_ID_PRESENT
-	target_addr		= 0x10100000
+	target_addr		= bytesProgramMax - bytesDst
 	payload_size	= 256
 	block_no		= 0 
-	num_blocks		= bytesOut / payload_size					
+	num_blocks		= bytesDst / payload_size					
 	family_id		= 0xe48bff58			// DATA_FAMILY_ID
 	magic_end		= 0x0AB16F30
-	p = buff.p
-	while (p.offset < buff.bytes) {
+	p = buffDst.p
+	while (p.offset < buffDst.bytes) {
 		buffHeader = B''
 		buffHeader.p.Pack('LLLLLLLL',
 			magic_start0, magic_start1, flags, target_addr, payload_size, block_no, num_blocks, family_id)

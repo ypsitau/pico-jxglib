@@ -32,6 +32,7 @@ add_library(jxglib_LABOPlatform_FullCmd INTERFACE)
 target_link_libraries(jxglib_LABOPlatform_FullCmd INTERFACE
 	jxglib_LABOPlatform
 	jxglib_ShellCmd_ADC
+    jxglib_ShellCmd_Font
     jxglib_ShellCmd_FS
 	jxglib_ShellCmd_GPIO
 	jxglib_ShellCmd_I2C

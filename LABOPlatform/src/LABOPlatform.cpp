@@ -138,7 +138,7 @@ Type 'help' in the shell to see available commands.
 
 LABOPlatform LABOPlatform::Instance;
 
-LABOPlatform::LABOPlatform(int bytesFlash) :
+LABOPlatform::LABOPlatform(int bytesDrive) :
 	deviceController_({
 		bcdUSB:				0x0200,
 		bDeviceClass:		TUSB_CLASS_MISC,
@@ -149,7 +149,7 @@ LABOPlatform::LABOPlatform(int bytesFlash) :
 		idProduct:			0x1ab0,
 		bcdDevice:			0x0100,
 	}, 0x0409, "jxglib", "pico-jxgLABO", "000000000000"),
-	fat_("*L:", bytesFlash),
+	fat_("*L:", bytesDrive),
 	mscDrive_(deviceController_, 0x01, 0x81),
 	streamCDC_Terminal_(deviceController_, "StreamSerial", 0x82, 0x03, 0x83),
 	streamCDC_Application_(deviceController_, "StreamApplication", 0x84, 0x05, 0x85),
@@ -224,6 +224,17 @@ void LABOPlatform::SetSigrokInterface(Stream& stream)
 void LABOPlatform::RestoreSigrokInterface()
 {
 	sigrokAdapter_.SetStream(streamCDC_Application_);
+}
+
+const FontSet& LABOPlatform::GetFontSet() const
+{
+	const char* footer = reinterpret_cast<const char*>(XIP_BASE + bytesProgramMax - (8 + 4));
+	if (::memcmp(footer, "LABOFONT", 8) != 0) return FontSet::None;
+	uint32_t bytes = *reinterpret_cast<const uint32_t*>(footer + 8);
+	if (bytes > bytesProgramMax) return FontSet::None;
+	const char* header = reinterpret_cast<const char*>(XIP_BASE + bytesProgramMax - bytes);
+	if (::memcmp(header, "LABOFONT", 8) != 0) return FontSet::None;
+	return *reinterpret_cast<const FontSet*>(header + 8);
 }
 
 void LABOPlatform::func_out_chars(const char* buf, int len)
