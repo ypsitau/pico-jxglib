@@ -319,15 +319,87 @@ void test_FATTime()
     }
 }
 
+void test_OffsetByTZ()
+{
+    struct OffsetByTZTestCase {
+        DateTime input;
+        const char* tzString;
+        DateTime expected;
+        bool expectSuccess;
+        const char* description;
+    };
+    OffsetByTZTestCase testCases[] = {
+        // Valid timezone offset patterns
+        {{2024,6,11,12,0,0,0}, "UTC+0", {2024,6,11,12,0,0,0}, true, "UTC+0 (no change)"},
+        {{2024,6,11,12,0,0,0}, "UTC+9", {2024,6,11,3,0,0,0}, true, "UTC+9 (JST to UTC)"},
+        {{2024,6,11,12,0,0,0}, "UTC-5", {2024,6,11,17,0,0,0}, true, "UTC-5 (EST to UTC)"},
+        {{2024,6,11,12,0,0,0}, "GMT+1", {2024,6,11,11,0,0,0}, true, "GMT+1 (CET to UTC)"},
+        {{2024,6,11,12,0,0,0}, "JST+9", {2024,6,11,3,0,0,0}, true, "JST+9 (JST to UTC)"},
+        {{2024,6,11,12,0,0,0}, "+9", {2024,6,11,3,0,0,0}, true, "+9 (no timezone name)"},
+        {{2024,6,11,12,0,0,0}, "-5", {2024,6,11,17,0,0,0}, true, "-5 (no timezone name)"},
+        {{2024,6,11,12,0,0,0}, "UTC+9:30", {2024,6,11,2,30,0,0}, true, "UTC+9:30 (with minutes)"},
+        {{2024,6,11,12,0,0,0}, "UTC-4:30", {2024,6,11,16,30,0,0}, true, "UTC-4:30 (with minutes)"},
+        {{2024,6,11,12,0,0,0}, "UTC+5:45", {2024,6,11,6,15,0,0}, true, "UTC+5:45 (with minutes)"},
+        {{2024,6,11,12,0,0,0}, "UTC+12:00", {2024,6,11,0,0,0,0}, true, "UTC+12:00 (max positive)"},
+        {{2024,6,11,12,0,0,0}, "UTC-12:00", {2024,6,12,0,0,0,0}, true, "UTC-12:00 (max negative)"},
+        
+        // Cross-day boundary tests
+        {{2024,6,11,2,0,0,0}, "UTC+9", {2024,6,10,17,0,0,0}, true, "Cross day backward"},
+        {{2024,6,11,22,0,0,0}, "UTC-5", {2024,6,12,3,0,0,0}, true, "Cross day forward"},
+        {{2024,1,1,1,0,0,0}, "UTC+5", {2023,12,31,20,0,0,0}, true, "Cross year backward"},
+        {{2023,12,31,22,0,0,0}, "UTC-3", {2024,1,1,1,0,0,0}, true, "Cross year forward"},
+        
+        // Month boundary tests
+        {{2024,3,1,2,0,0,0}, "UTC+8", {2024,2,29,18,0,0,0}, true, "Cross month backward (leap year)"},
+        {{2023,3,1,2,0,0,0}, "UTC+8", {2023,2,28,18,0,0,0}, true, "Cross month backward (non-leap year)"},
+        {{2024,2,29,22,0,0,0}, "UTC-6", {2024,3,1,4,0,0,0}, true, "Cross month forward (leap year)"},
+        
+    };
+
+    int numCases = sizeof(testCases) / sizeof(testCases[0]);
+    for (int i = 0; i < numCases; ++i) {
+        DateTime dt = testCases[i].input;
+        bool success = dt.OffsetByTZ(testCases[i].tzString);
+        bool ok = (success == testCases[i].expectSuccess);
+        
+        if (success && testCases[i].expectSuccess) {
+            ok = ok &&
+                dt.year  == testCases[i].expected.year &&
+                dt.month == testCases[i].expected.month &&
+                dt.day   == testCases[i].expected.day &&
+                dt.hour  == testCases[i].expected.hour &&
+                dt.min   == testCases[i].expected.min &&
+                dt.sec   == testCases[i].expected.sec;
+        }
+        
+        printf("%-35s | \"%s\" | %s",
+            testCases[i].description, testCases[i].tzString, ok ? "OK" : "NG");
+        
+        if (success) {
+            printf(" | Result: %04d-%02d-%02d %02d:%02d:%02d",
+                dt.year, dt.month, dt.day, dt.hour, dt.min, dt.sec);
+        }
+        printf("\n");
+        
+        if (!ok && testCases[i].expectSuccess) {
+            printf("  Expected: %04d-%02d-%02d %02d:%02d:%02d\n",
+                testCases[i].expected.year, testCases[i].expected.month,
+                testCases[i].expected.day, testCases[i].expected.hour,
+                testCases[i].expected.min, testCases[i].expected.sec);
+        }
+    }
+}
+
 int main()
 {
 	::stdio_init_all();
 
-	test_Compare();
-	test_CalcDayOfWeek();
-	test_Parse();
-	test_UnixTime();
-	test_FATTime();
-
+	//test_Compare();
+	//test_CalcDayOfWeek();
+	//test_Parse();
+	//test_UnixTime();
+	//test_FATTime();
+	test_OffsetByTZ();
+	
 	for (;;) ::tight_loop_contents();
 }

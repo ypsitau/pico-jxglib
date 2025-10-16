@@ -35,6 +35,8 @@ public:
 	bool ParseDate(const char* str, const char** endPtr = nullptr);
 	bool ParseTime(const char* str);
 public:
+	bool OffsetByTZ(const char* str);
+public:
 	bool IsAM() const { return hour < 12; }
 	bool IsPM() const { return hour >= 12; }
 	int8_t GetHour12() const { return (hour == 0)? 12 : (hour > 12)? hour - 12 : hour; }

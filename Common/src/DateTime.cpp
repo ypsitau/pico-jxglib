@@ -146,6 +146,72 @@ bool DateTime::ParseTime(const char* str)
 	return true;
 }
 
+bool DateTime::OffsetByTZ(const char* str)
+{
+	// tzn[+|-]hh[:mm[:ss]]
+	if (str == nullptr || *str == '\0') return false;
+	int sign = 1;
+	const char* p = str;
+	for ( ; ::isalpha(*p); ++p) ;	// Skip alphabetic characters (e.g., "UTC", "GMT", "JST", etc.)s
+	if (*p == '+') {
+		sign = 1;
+		++p;
+	} else if (*p == '-') {
+		sign = -1;
+		++p;
+	}
+	int8_t offsetHour = 0, offsetMin = 0, offsetSec = 0;
+	// hour
+	do {
+		int digits = 0;
+		for ( ; ::isdigit(*p); ++digits, ++p) offsetHour = offsetHour * 10 + (*p - '0');
+		if (!(digits == 1 || digits == 2)) return false;
+	} while (0);
+	if (*p == ':') {
+		// minute
+		++p;
+		do {
+			int digits = 0;
+			for ( ; ::isdigit(*p); ++digits, ++p) offsetMin = offsetMin * 10 + (*p - '0');
+			if (digits != 2) return false;
+		} while (0);
+		if (*p == ':') {
+			// second
+			++p;
+			int digits = 0;
+			for ( ; ::isdigit(*p); ++digits, ++p) offsetSec = offsetSec * 10 + (*p - '0');
+			if (digits != 2) return false;
+		}
+	} while (0);
+	int offsetSecTotal = sign * (offsetHour * 3600 + offsetMin * 60 + offsetSec);
+	int secTotal = hour * 60 * 60 + min * 60 + sec - offsetSecTotal;
+	if (secTotal < 0) {
+		secTotal += 24 * 60 * 60; // Add one day
+		if (--day < 1) { // Previous month
+			if (--month < 1) { // Previous year
+				--year;
+				month = 12;
+			}
+			day = (month == 2 && IsLeapYear(year)) ? 29 : daysInMonth[month - 1];
+		}
+	} else if (secTotal >= 24 * 60 * 60) {
+		secTotal -= 24 * 60 * 60; // Subtract one day
+		if (++day > ((month == 2 && IsLeapYear(year))? 29 : daysInMonth[month - 1])) { // Next month
+			day = 1;
+			if (++month > 12) { // Next year
+				month = 1;
+				++year;
+			}
+		}
+	}
+	hour = static_cast<int8_t>(secTotal / (60 * 60));
+	secTotal = secTotal % (60 * 60);
+	min = static_cast<int8_t>(secTotal / 60);
+	secTotal = secTotal % 60;
+	sec = static_cast<int8_t>(secTotal);
+	return true;
+}
+
 bool DateTime::HasDateFormat(const char* str)
 {
 	DateTime dt;
