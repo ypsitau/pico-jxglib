@@ -9,8 +9,6 @@ int main(void)
 	LABOPlatform::Instance.AttachStdio().Initialize();
 	::adc_init();
 	::adc_set_temp_sensor_enabled(true);
-	const FontSet& fontSet = LABOPlatform::Instance.GetFontSet();
-	::printf("%s", fontSet.name);
 #if 0	
 	::spi_init(spi1, 125'000'000);
 	GPIO14.set_function_SPI1_SCK();

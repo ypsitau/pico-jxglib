@@ -11,6 +11,11 @@
 
 using namespace jxglib;
 
+const FontSet& ShellCmd_Font_GetFontSet()
+{
+	return LABOPlatform::Instance.GetFontSet();
+}
+
 //------------------------------------------------------------------------------
 // C functions
 //------------------------------------------------------------------------------
