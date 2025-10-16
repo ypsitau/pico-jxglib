@@ -362,9 +362,12 @@ public:
 	bool RunSingleCmd(Readable& tin, Printable& tout, Printable& terr, int argc, char* argv[]);
 	bool RunScript(Readable& tin, Printable& tout, Printable& terr, Readable& script);
 	Terminal& GetTerminal() { return *pTerminal_; }
-	Dict& GetDict() { return dict_; }
 	bool HasPassword() const { return hashedPassword_[0] != '\0'; }
 	bool ExpandEnvVariables(char* line, int bytesLine, const char** errorMsg);
+public:
+	Dict& GetDict() { return dict_; }
+	void SetEnv(const char* name, const char* value) { dict_.SetValue(name, value); }
+	const char* GetEnv(const char* name) const { return dict_.Lookup(name); }
 public:
 	static void UpdateHashedPassword(const char* hashedPassword) { Instance.UpdateHashedPassword_(hashedPassword); }
 	static void Logout() { Instance.Logout_(); }

@@ -35,6 +35,16 @@ Dict::Entry* Dict::SetValue(const char* key, const char* value)
 	}
 }
 
+Dict::Entry* Dict::SetValue(const char* key, int len, const char* value)
+{
+	if (pDictEntry_) {
+		return pDictEntry_->SetValue(key, len, value);
+	} else {
+		pDictEntry_.reset(new Entry(key, len, value));
+		return pDictEntry_.get();
+	}
+}
+
 //------------------------------------------------------------------------------
 // Dict::Entry
 //------------------------------------------------------------------------------
@@ -122,6 +132,18 @@ Dict::Entry* Dict::Entry::SetValue(const char* key, const char* value)
 		pDictEntry->SetValue(value);
 	} else {
 		pDictEntry = new Dict::Entry(key, value);
+		Add(pDictEntry);
+	}
+	return pDictEntry;
+}
+
+Dict::Entry* Dict::Entry::SetValue(const char* key, int len, const char* value)
+{
+	Dict::Entry* pDictEntry = Find(key, len);
+	if (pDictEntry) {
+		pDictEntry->SetValue(value);
+	} else {
+		pDictEntry = new Dict::Entry(key, len, value);
 		Add(pDictEntry);
 	}
 	return pDictEntry;

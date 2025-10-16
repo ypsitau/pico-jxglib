@@ -198,7 +198,7 @@ ShellCmd_Named(dot, ".", "executes the given script file")
 	for (int iArg = 1; iArg < argc; ++iArg) {
 		char key[32];
 		::snprintf(key, sizeof(key), "%d", iArg - 1);
-		Shell::Instance.GetDict().SetValue(key, argv[iArg]);
+		Shell::Instance.SetEnv(key, argv[iArg]);
 	}
 	Shell::Instance.RunScript(tin, tout, terr, *pFile);
 	return Result::Success;
@@ -354,7 +354,7 @@ ShellCmd(set, "set environment variable")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (arg.GetBool("help")) {
-		terr.Printf("Usage: %s [OPTION]... [KEY [VALUE]]\n", GetName());
+		terr.Printf("Usage: %s [OPTION]... [KEY[=VALUE]]\n", GetName());
 		arg.PrintHelp(terr);
 		return Result::Error;
 	}
@@ -363,16 +363,22 @@ ShellCmd(set, "set environment variable")
 		for (const Dict::Entry* pEntry = dict.GetFirst(); pEntry; pEntry = pEntry->GetNext()) {
 			tout.Printf("%s=%s\n", pEntry->GetKey(), pEntry->GetValue());
 		}
-	} else if (argc < 3) {
-		const char* value = dict.Lookup(argv[1]);
-		if (value) {
-			tout.Printf("%s\n", value);
-		} else {
-			terr.Printf("no such variable: %s\n", argv[1]);
-			return Result::Error;
-		}
 	} else {
-		dict.SetValue(argv[1], argv[2]);
+		char* str = argv[1];
+		char* pEqual = ::strchr(str, '=');
+		if (pEqual) {
+			char* value = pEqual + 1;
+			Tokenizer::RemoveSurroundingQuotes(value);
+			dict.SetValue(str, pEqual - str, value);
+		} else {
+			const char* value = dict.Lookup(str);
+			if (value) {
+				tout.Printf("%s\n", value);
+			} else {
+				terr.Printf("no such variable: %s\n", str);
+				return Result::Error;
+			}
+		}
 	}
 	return Result::Success;
 }

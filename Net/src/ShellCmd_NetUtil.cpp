@@ -33,7 +33,8 @@ Net::NTP ntp;
 ShellCmd(ntp, "requests time from NTP server")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		'h',	"prints this help"),
+		Arg::OptBool("help",		'h',	"print this help"),
+		Arg::OptBool("utc",			'u',	"print UTC time"),
 		Arg::OptBool("rtc",			'r',	"set RTC if available"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
@@ -49,8 +50,19 @@ ShellCmd(ntp, "requests time from NTP server")
 		terr.Printf("NTP request failed: %s\n", ntp.GetErrorMsg());
 		return Result::Error;
 	}
-	tout.Printf("NTP time: %04d-%02d-%02d %02d:%02d:%02d\n",
-				dt.year, dt.month, dt.day, dt.hour, dt.min, dt.sec);
+	bool utcFlag = true;
+	if (!arg.GetBool("utc")) {
+		const char* strTZ = Shell::Instance.GetEnv("TZ");
+		if (strTZ) {
+			if (!dt.OffsetByTZ(strTZ)) {
+				terr.Printf("timezone error: %s\n", strTZ);
+				return Result::Error;
+			}
+			utcFlag = false;
+		}
+	}
+	tout.Printf("%04d-%02d-%02d %02d:%02d:%02d%s\n",
+				dt.year, dt.month, dt.day, dt.hour, dt.min, dt.sec, utcFlag? "Z" : "");
 	if (arg.GetBool("rtc")) {
 		RTC::Set(dt);
 		terr.Printf("RTC updated\n");

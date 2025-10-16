@@ -37,6 +37,7 @@ public:
 		const char* Lookup(const char* key, int len) const;
 		void SetValue(const char* value);
 		Entry* SetValue(const char* key, const char* value);
+		Entry* SetValue(const char* key, int len, const char* value);
 	public:
 		bool HasValue() const { return !!value_; }
 		const char* GetKey() const { return key_? key_.get() : ""; }
@@ -61,6 +62,7 @@ public:
 	const char* Lookup(const char* key) const { return pDictEntry_? pDictEntry_->Lookup(key) : nullptr; }
 	const char* Lookup(const char* key, int len) const { return pDictEntry_? pDictEntry_->Lookup(key, len) : nullptr; }
 	Entry* SetValue(const char* key, const char* value);
+	Entry* SetValue(const char* key, int len, const char* value);
 };
 
 }
