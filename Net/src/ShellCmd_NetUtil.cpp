@@ -53,7 +53,7 @@ ShellCmd(ntp, "requests time from NTP server")
 	bool utcFlag = true;
 	if (!arg.GetBool("utc")) {
 		const char* strTZ = Shell::Instance.GetEnv("TZ");
-		if (strTZ) {
+		if (strTZ && *strTZ != '\0') {
 			if (!dt.OffsetByTZ(strTZ)) {
 				terr.Printf("timezone error: %s\n", strTZ);
 				return Result::Error;
