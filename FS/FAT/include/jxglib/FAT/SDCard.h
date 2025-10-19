@@ -15,7 +15,7 @@ class SDCard : public Drive {
 private:
 	jxglib::SDCard sdCard_;
 public:
-	SDCard(const char* driveName, spi_inst_t* spi, uint baudrate, const jxglib::SDCard::PinAssign& pinAssign);
+	SDCard(const char* driveName, spi_inst_t* spi, uint freq, const jxglib::SDCard::PinAssign& pinAssign);
 public:
 	jxglib::SDCard& GetSDCard() { return sdCard_; }
 public:

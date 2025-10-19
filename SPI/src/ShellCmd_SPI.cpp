@@ -56,7 +56,7 @@ ShellCmd_Named(spi_, "spi", "controls SPI bus communication")
 		Arg::OptBool("verbose",		'v',	"verbose output for debugging"),
 		Arg::OptString("pin",		'p',	"sets GPIO pins for SPI (function auto-detected)", "SCK,MOSI[,MISO]"),
 		Arg::OptString("pin-cs",	'c',	"sets CS pin (any GPIO)", "CS_PIN"),
-		Arg::OptString("freq",		'f',	"sets SPI frequency (default: 1000000)", "FREQ"),
+		Arg::OptString("baudrate",	'B',	"sets SPI baudrate (default: 1000000)", "BPS"),
 		Arg::OptString("mode",		'm',	"sets SPI mode (0-3, default: 0)", "MODE"),
 		Arg::OptString("cpol",		0x0,	"sets clock polarity (0 or 1, default: 0)", "CPOL"),
 		Arg::OptString("cpha",		0x0,	"sets clock phase (0 or 1, default: 0)", "CPHA"),
@@ -126,14 +126,14 @@ ShellCmd_Named(spi_, "spi", "controls SPI bus communication")
 		return Result::Success;
 	}
 	const char* value = nullptr;
-	if (arg.GetString("freq", &value)) {
+	if (arg.GetString("baudrate", &value)) {
 		char* endptr;
 		long num = ::strtol(value, &endptr, 0);
 		if (*endptr != '\0' || num <= 0 || num > ::clock_get_hz(clk_sys) / 2) {
-			terr.Printf("Invalid frequency: %s\n", value);
+			terr.Printf("Invalid baudrate: %s\n", value);
 			return Result::Error;
 		}
-		config.freq = static_cast<uint>(num);
+		config.baudrate = static_cast<uint>(num);
 	}
 	if (arg.GetString("mode", &value)) {
 		int mode = ::strtol(value, nullptr, 0);
@@ -274,7 +274,7 @@ ShellCmd_Named(spi_, "spi", "controls SPI bus communication")
 	SPI& spi = (iBus == 0) ? SPI0 : SPI1;
 	
 	// Initialize SPI
-	spi.init(config.freq);
+	spi.init(config.baudrate);
 	spi.set_format(8, config.cpol, config.cpha, config.order);
 	
 	// Configure GPIO pins
@@ -485,8 +485,8 @@ void PrintConfig(Printable& tout, int iBus, const char* formatGPIO)
 	printPin("MOSI", config.MOSI);
 	printPin("MISO", config.MISO);
 	printPin("CS", config.CS);
-	tout.Printf(" freq:%dHz mode:%d (cpol:%d cpha:%d) order:%s dummy:0x%02x\n",
-		config.freq, mode, config.cpol, config.cpha, (config.order == SPI_MSB_FIRST)? "MSB" : "LSB", config.byteDummy);
+	tout.Printf(" baudrate:%dbps mode:%d (cpol:%d cpha:%d) order:%s dummy:0x%02x\n",
+		config.baudrate, mode, config.cpol, config.cpha, (config.order == SPI_MSB_FIRST)? "MSB" : "LSB", config.byteDummy);
 }
 
 ShellCmdAlias_Named(spi0_, "spi0", spi_)

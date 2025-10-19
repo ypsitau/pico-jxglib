@@ -9,8 +9,6 @@ using namespace jxglib;
 
 FAT::SDCard fat("SD", spi0, 10'000'000, {CS: GPIO5});
 
-SDCard& ShellCmd_SDCard_GetSDCard() { return fat.GetSDCard(); }	// callback for ShellCmd_SDCard
-
 int main()
 {
 	bi_decl(bi_1pin_with_name(GPIO2, "SD Card SCK"));

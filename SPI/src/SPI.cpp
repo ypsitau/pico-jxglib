@@ -18,7 +18,7 @@ SPI::SPI(spi_inst_t* spi) : spi_{spi}, config {
 		MOSI:       GPIO::InvalidPin,
 		MISO:       GPIO::InvalidPin,
 		CS:         GPIO::InvalidPin,
-		freq:       1'000'000,
+		baudrate:   1'000'000,
 		cpol:       SPI_CPOL_0,
 		cpha:       SPI_CPHA_0,
 		order:      SPI_MSB_FIRST,

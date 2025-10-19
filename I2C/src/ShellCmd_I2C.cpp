@@ -11,7 +11,7 @@ namespace jxglib::ShellCmd_I2C {
 struct Config {
 	uint SDA = -1;
 	uint SCL = -1;
-	uint freq = 100'000;
+	uint baudrate = 100'000;
 	uint32_t msecTimeout = 300;
 	bool pullupFlag = true;  // Enable pull-up resistors by default
 };
@@ -66,10 +66,10 @@ ShellCmd_Named(i2c_, "i2c", "controls I2C bus communication")
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
 		Arg::OptBool("help-pin",	0x0,	"prints help for pin assignment"),
-		Arg::OptBool("dumb",		0x0,	"no I2C operations, just remember the pins and frequency"),
+		Arg::OptBool("dumb",		0x0,	"no I2C operations, just remember the pins and baudrate"),
 		Arg::OptBool("verbose",		'v',	"verbose output for debugging"),
 		Arg::OptString("pin",		'p',	"sets GPIO pins for I2C", "SDA,SCL"),
-		Arg::OptString("freq",		'f',	"sets I2C frequency (default: 100000)", "FREQ"),
+		Arg::OptString("baudrate",	'B',	"sets I2C baudrate (default: 100000)", "BPS"),
 		Arg::OptString("pullup",	0x0,	"enables/disables internal pull-up resistors (default: enabled)", "on|off"),
 		Arg::OptString("timeout",	't',	"sets timeout for I2C operations (default: 300)", "MSEC"),
 	};
@@ -140,7 +140,7 @@ ShellCmd_Named(i2c_, "i2c", "controls I2C bus communication")
 		return Result::Success;
 	}
 	const char* value = nullptr;
-	if (arg.GetString("freq", &value)) {
+	if (arg.GetString("baudrate", &value)) {
 		if (!value) {
 			terr.Printf("Frequency value is required\n");
 			return Result::Error;
@@ -148,10 +148,10 @@ ShellCmd_Named(i2c_, "i2c", "controls I2C bus communication")
 		char* endptr;
 		long num = ::strtol(value, &endptr, 0);
 		if (*endptr != '\0' || num <= 0 || num > 1'000'000) {
-			terr.Printf("Invalid frequency: %s\n", value);
+			terr.Printf("Invalid baudrate: %s\n", value);
 			return Result::Error;
 		}
-		config.freq = static_cast<uint>(num);
+		config.baudrate = static_cast<uint>(num);
 	}
 	if (arg.GetString("timeout", &value)) {
 		if (!value) {
@@ -240,7 +240,7 @@ ShellCmd_Named(i2c_, "i2c", "controls I2C bus communication")
 	}
 	
 	I2C& i2c = (iBus == 0)? I2C0 : I2C1;
-	i2c.init(config.freq);
+	i2c.init(config.baudrate);
 	::gpio_set_function(config.SDA, GPIO_FUNC_I2C);
 	::gpio_set_function(config.SCL, GPIO_FUNC_I2C);
 	if (config.pullupFlag) {
@@ -419,7 +419,7 @@ void PrintConfig(Printable& tout, int iBus, const char* formatGPIO)
 	tout.Printf("I2C%d:", iBus);
 	printPin("SDA", config.SDA);
 	printPin("SCL", config.SCL);
-	tout.Printf(" freq:%dHz pullup:%s timeout:%dmsec\n", config.freq, config.pullupFlag ? "on" : "off", config.msecTimeout);
+	tout.Printf(" baudrate:%dbps pullup:%s timeout:%dmsec\n", config.baudrate, config.pullupFlag ? "on" : "off", config.msecTimeout);
 }
 
 ShellCmdAlias_Named(i2c0_, "i2c0", i2c_)

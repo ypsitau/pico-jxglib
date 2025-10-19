@@ -19,7 +19,7 @@ public:
 		uint MOSI;
 		uint MISO;
 		uint CS;
-		uint freq;
+		uint baudrate;
 		spi_cpol_t cpol;
 		spi_cpha_t cpha;
 		spi_order_t order;
