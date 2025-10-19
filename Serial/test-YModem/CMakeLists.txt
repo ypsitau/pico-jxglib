@@ -55,7 +55,7 @@ target_include_directories(test-YModem PRIVATE
 
 pico_add_extra_outputs(test-YModem)
 
-target_link_libraries(test-YModem jxglib_UART jxglib_RTC_DS323x jxglib_LFS_Flash jxglib_Serial jxglib_ShellCmd_FS jxglib_Display_ST7789)
-#target_link_libraries(test-YModem jxglib_UART jxglib_RTC_DS323x jxglib_LFS_Flash jxglib_Serial jxglib_ShellCmd_FS jxglib_Display_ST7789 jxglib_USBHost)
+target_link_libraries(test-YModem jxglib_UART jxglib_RTC_DS3231 jxglib_LFS_Flash jxglib_Serial jxglib_ShellCmd_FS jxglib_Display_ST7789)
+#target_link_libraries(test-YModem jxglib_UART jxglib_RTC_DS3231 jxglib_LFS_Flash jxglib_Serial jxglib_ShellCmd_FS jxglib_Display_ST7789 jxglib_USBHost)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 #jxglib_configure_USBHost(test-YModem CFG_TUH_HID 3)

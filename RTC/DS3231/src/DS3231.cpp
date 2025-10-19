@@ -1,19 +1,19 @@
 //==============================================================================
-// DS323x.cpp
+// DS3231.cpp
 //==============================================================================
-#include "jxglib/RTC/DS323x.h"
+#include "jxglib/RTC/DS3231.h"
 
 namespace jxglib::RTC {
 
 //------------------------------------------------------------------------------
-// DS323x
+// DS3231
 //------------------------------------------------------------------------------
-DS323x::DS323x(i2c_inst_t* i2c, uint32_t msecTimeout, uint8_t addr) :
-		Base("DS323x"), i2c_(i2c), msecTimeout_{msecTimeout}, addr_(addr)
+DS3231::DS3231(i2c_inst_t* i2c, uint32_t msecTimeout, uint8_t addr) :
+		Base("DS3231"), i2c_(i2c), msecTimeout_{msecTimeout}, addr_(addr)
 {
 }
 
-bool DS323x::DoGet(DateTime* pDt)
+bool DS3231::DoGet(DateTime* pDt)
 {
 	if (!i2c_) return false;
 	uint8_t reg = 0x00;
@@ -26,7 +26,7 @@ bool DS323x::DoGet(DateTime* pDt)
 				::make_timeout_time_ms(msecTimeout_)) != sizeof(buf)) {
 		return false;
 	}
-	pDt->msec = 0; // DS323x does not support milliseconds
+	pDt->msec = 0; // DS3231 does not support milliseconds
 	pDt->sec	= BCD2Dec(buf[0]);
 	pDt->min	= BCD2Dec(buf[1]);
 	pDt->hour	= BCD2Dec(buf[2]);
@@ -37,7 +37,7 @@ bool DS323x::DoGet(DateTime* pDt)
 	return true;
 }
 
-bool DS323x::DoSet(const DateTime &dt)
+bool DS3231::DoSet(const DateTime &dt)
 {
 	if (!i2c_) return false;
 	uint8_t buf[8];

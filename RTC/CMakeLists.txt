@@ -23,5 +23,5 @@ target_sources(jxglib_ShellCmd_RTC INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/ShellCmd_RTC.cpp)
 
 #------------------------------------------------------------------------------
-add_subdirectory(DS323x)
+add_subdirectory(DS3231)
 add_subdirectory(Pico)

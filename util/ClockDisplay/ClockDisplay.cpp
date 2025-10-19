@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
-#include "jxglib/RTC/DS323x.h"
+#include "jxglib/RTC/DS3231.h"
 #include "jxglib/Display/ST7789.h"
 #include "jxglib/Font/shinonome18.h"
 
@@ -18,7 +18,7 @@ int main()
 	::i2c_init(i2c0, 400'000);
 	GPIO16.set_function_I2C0_SDA().pull_up();
 	GPIO17.set_function_I2C0_SCL().pull_up();
-	RTC::DS323x rtc(i2c0);
+	RTC::DS3231 rtc(i2c0);
 	DateTime dtPrev;
 	for (;;) {
 		DateTime dt;

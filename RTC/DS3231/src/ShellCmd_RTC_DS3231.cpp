@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include "jxglib/RTC.h"
 #include "jxglib/Shell.h"
-#include "jxglib/RTC/DS323x.h"
+#include "jxglib/RTC/DS3231.h"
 
-namespace jxglib::ShellCmd_RTC_DS323x {
+namespace jxglib::ShellCmd_RTC_DS3231 {
 
-std::unique_ptr<RTC::DS323x> pInstance;
+std::unique_ptr<RTC::DS3231> pInstance;
 
-ShellCmd_Named(rtc_ds323x, "rtc-ds323x", "set up RTC DS323x device")
+ShellCmd_Named(rtc_ds3231, "rtc-ds3231", "set up RTC DS3231 device")
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",	'h',	"prints this help"),
@@ -18,7 +18,7 @@ ShellCmd_Named(rtc_ds323x, "rtc-ds323x", "set up RTC DS323x device")
 		terr.Printf("Usage: %s [OPTION]...\n", GetName());
 		arg.PrintHelp(terr);
 		terr.Printf("Subcommands:\n");
-		terr.Printf("  setup  Set up a DS323x device with the given parameters: {i2c:BUS}\n");
+		terr.Printf("  setup  Set up a DS3231 device with the given parameters: {i2c:BUS}\n");
 		return Result::Error;
 	}
 	Shell::Arg::EachSubcmd each(argv[1], argv[argc]);
@@ -49,7 +49,7 @@ ShellCmd_Named(rtc_ds323x, "rtc-ds323x", "set up RTC DS323x device")
 				terr.Printf("I2C number is not specified. Use 'i2c:N' subcommand.\n");
 				return Result::Error;
 			}
-			pInstance.reset(new RTC::DS323x(i2c));
+			pInstance.reset(new RTC::DS3231(i2c));
 		} else {
 			terr.Printf("Unknown subcommand: %s\n", subcmd);
 			return Result::Error;

@@ -2,7 +2,7 @@
 #include "pico/stdlib.h"
 #include "jxglib/RTC.h"
 #include "jxglib/Shell.h"
-#include "jxglib/RTC/DS323x.h"
+
 namespace jxglib::ShellCmd_RTC {
 
 ShellCmd(rtc, "set or get RTC time")

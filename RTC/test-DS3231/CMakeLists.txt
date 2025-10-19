@@ -28,35 +28,35 @@ set(PICO_BOARD pico2_w CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-DS323x C CXX ASM)
+project(test-DS3231 C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-DS323x test-DS323x.cpp )
+add_executable(test-DS3231 test-DS3231.cpp )
 
-pico_set_program_name(test-DS323x "test-DS323x")
-pico_set_program_version(test-DS323x "0.1")
+pico_set_program_name(test-DS3231 "test-DS3231")
+pico_set_program_version(test-DS3231 "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-DS323x 1)
-pico_enable_stdio_usb(test-DS323x 0)
+pico_enable_stdio_uart(test-DS3231 1)
+pico_enable_stdio_usb(test-DS3231 0)
 
 # Add the standard library to the build
-target_link_libraries(test-DS323x
+target_link_libraries(test-DS3231
         pico_stdlib)
 
 # Add the standard include files to the build
-target_include_directories(test-DS323x PRIVATE
+target_include_directories(test-DS3231 PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
 # Add any user requested libraries
-pico_add_extra_outputs(test-DS323x)
+pico_add_extra_outputs(test-DS3231)
 
-target_link_libraries(test-DS323x
-    jxglib_Serial jxglib_RTC_DS323x
+target_link_libraries(test-DS3231
+    jxglib_Serial jxglib_RTC_DS3231
     jxglib_ShellCmd_I2C jxglib_ShellCmd_RTC)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)

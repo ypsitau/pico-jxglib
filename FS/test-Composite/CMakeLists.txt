@@ -56,7 +56,7 @@ target_link_libraries(test-Composite
     jxglib_FAT_USBMSC
     jxglib_LFS_Flash
     jxglib_RTC_Pico
-    jxglib_RTC_DS323x
+    jxglib_RTC_DS3231
     jxglib_ShellCmd_FS)
 
 # Add the standard include files to the build

@@ -12,7 +12,7 @@
 #include "jxglib/FAT/SDCard.h"
 #include "jxglib/FAT/USBMSC.h"
 #include "jxglib/RTC/Pico.h"
-#include "jxglib/RTC/DS323x.h"
+#include "jxglib/RTC/DS3231.h"
 #include "jxglib/Font/shinonome16-japanese-level2.h"
 
 using namespace jxglib;
@@ -38,7 +38,7 @@ int main()
 	GPIO16.set_function_I2C0_SDA();
 	GPIO17.set_function_I2C0_SCL();
 	::i2c_init(i2c0, 1000'000);
-	RTC::DS323x rtc(i2c0);
+	RTC::DS3231 rtc(i2c0);
 	//RTC::Pico rtc;
 	LFS::Flash		driveA("A:", 0x1010'0000, 0x0004'0000); 		// Flash address and size 256kB
 	LFS::Flash		driveB("B:", 0x1014'0000, 0x0004'0000); 		// Flash address and size 256kB

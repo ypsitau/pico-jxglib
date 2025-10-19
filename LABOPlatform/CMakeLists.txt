@@ -6,7 +6,7 @@ target_include_directories(jxglib_LABOPlatform INTERFACE
 target_link_libraries(jxglib_LABOPlatform INTERFACE
     jxglib_Shell jxglib_Serial
 	jxglib_FAT_Flash jxglib_FAT_SDCard
-	jxglib_RTC_DS323x
+	jxglib_RTC_DS3231
 	jxglib_USBDevice_MSCDrive jxglib_USBDevice_CDCSerial
 	jxglib_TelePlot jxglib_LogicAnalyzer)
 
@@ -49,7 +49,7 @@ target_link_libraries(jxglib_LABOPlatform_FullCmd INTERFACE
 	jxglib_ShellCmd_Display_SSD1306
 	jxglib_ShellCmd_Display_TFT_LCD
 	jxglib_ShellCmd_RTC
-	jxglib_ShellCmd_RTC_DS323x
+	jxglib_ShellCmd_RTC_DS3231
 	jxglib_ShellCmd_SDCard
 )
 
