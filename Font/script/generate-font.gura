@@ -42,7 +42,8 @@ ${end}
 #endif
 '''
 
-GenerateBinaryFile(out:w as Stream, fontSet as FontSet) = {
+GenerateBinaryFile(fileNameBin as String, fontSet as FontSet) = {
+	out = Open(fileNameBin, 'w')
 	buff = B''
 	// Format of FontSet structure
 	//   char name[32];
@@ -65,9 +66,12 @@ GenerateBinaryFile(out:w as Stream, fontSet as FontSet) = {
 		fontEntry.bitmap.Each {|byte| p.uint8:fwd = byte}
 		out.Write(buff)
 	}
+	sys.cerr.Printf('Generated: %s\n', fileNameBin)
 }
 
-GenerateUF2File(out:w as Stream, src as Stream) = {
+GenerateUF2File(fileNameUF2 as String, fileNameBin as String) = {
+	src = Open(fileNameBin)
+	out = Open(fileNameUF2, 'w')
 	// pico-sdk/src/common/boot_uf2_headers/include/boot/uf2.h
 	//   uint32_t magic_start0;					0x0A324655
 	//   uint32_t magic_start1;					0x9E5D5157
@@ -80,11 +84,11 @@ GenerateUF2File(out:w as Stream, src as Stream) = {
 	//   uint8_t  data[476];
 	//   uint32_t magic_end;					0x0AB16F30
 	bytesProgramMax = 0x10180000
-	bytesSector = 4096
+	bytesFlashPage = 256
 	buffSrc = src.Read()
 	bytesHeader = 8
 	bytesFooter = 8 + 4
-	bytesDst = Int(((buffSrc.bytes + bytesHeader + bytesFooter) + (bytesSector - 1)) / bytesSector) * bytesSector
+	bytesDst = Int(((buffSrc.bytes + bytesHeader + bytesFooter) + (bytesFlashPage - 1)) / bytesFlashPage) * bytesFlashPage
 	buffDst = Binary()
 	p = buffDst.p
 	p.Pack('8s', 'LABOFONT')
@@ -93,7 +97,8 @@ GenerateUF2File(out:w as Stream, src as Stream) = {
 	magic_start0	= 0x0A324655
 	magic_start1	= 0x9E5D5157
 	flags			= 0x00002000			// UF2_FLAG_FAMILY_ID_PRESENT
-	target_addr		= bytesProgramMax - bytesDst
+	addrStart		= bytesProgramMax - bytesDst
+	target_addr		= addrStart
 	payload_size	= 256
 	block_no		= 0 
 	num_blocks		= bytesDst / payload_size					
@@ -113,6 +118,7 @@ GenerateUF2File(out:w as Stream, src as Stream) = {
 		target_addr += payload_size
 		block_no += 1
 	}
+	sys.cerr.Printf('Generated: %s (0x%08x-0x%08x)\n', fileNameUF2, addrStart, addrStart + bytesDst)
 }
 
 tmplHelp = tR'''
@@ -231,9 +237,7 @@ main() = {
 		tmplFontFile.Render(fileNameHeader)
 		sys.cerr.Printf('Generated: %s\n', fileNameHeader)
 		GenerateBinaryFile(fileNameBin, fontSet)
-		sys.cerr.Printf('Generated: %s\n', fileNameBin)
 		GenerateUF2File(fileNameUF2, fileNameBin)
-		sys.cerr.Printf('Generated: %s\n', fileNameUF2)
 	}
 }
 
