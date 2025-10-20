@@ -16,7 +16,9 @@ target_include_directories(jxglib_ShellCmd_Font INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/include)
 
 target_link_libraries(jxglib_ShellCmd_Font INTERFACE
+	boot_uf2_headers
 	jxglib_Font
+	jxglib_USBDevice_MSCDrive
 	jxglib_ShellCmd_Basic)
 
 target_sources(jxglib_ShellCmd_Font INTERFACE

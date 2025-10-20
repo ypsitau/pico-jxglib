@@ -1,6 +1,7 @@
 //==============================================================================
 // Font
 //==============================================================================
+#include <memory.h>
 #include "jxglib/Font.h"
 
 namespace jxglib {
@@ -13,6 +14,7 @@ namespace jxglib {
 // FontSet
 //------------------------------------------------------------------------------
 const FontSet FontSet::None = { "none", FontSet::Format::None, 8, 0, 0, {} };
+uint32_t FontSet::bytesProgramMax = PICO_FLASH_SIZE_BYTES;
 
 const FontEntry& FontSet::GetFontEntry(uint32_t code) const
 {
@@ -40,6 +42,28 @@ const FontEntry& FontSet::GetFontEntry(uint32_t code) const
 		}
 	}
 	return GetFontEntry_Invalid();
+}
+
+uint32_t FontSet::GetInstanceAddrTop(int iFont)
+{
+	uint32_t addrTop = XIP_BASE + bytesProgramMax;
+	for (int i = 0; ; ++i) {
+		const char* footer = reinterpret_cast<const char*>(addrTop - (8 + 4));
+		if (::memcmp(footer, "LABOFONT", 8) != 0) return 0;
+		uint32_t bytes = *reinterpret_cast<const uint32_t*>(footer + 8);
+		if (bytes > bytesProgramMax) return 0;
+		addrTop -= bytes;
+		const char* header = reinterpret_cast<const char*>(addrTop);
+		if (::memcmp(header, "LABOFONT", 8) != 0) return 0;
+		if (i == iFont) break;
+	}
+	return addrTop;
+}
+
+const FontSet& FontSet::GetInstance(int iFont)
+{
+	uint32_t addrTop = GetInstanceAddrTop(iFont);
+	return (addrTop == 0)? FontSet::None : *reinterpret_cast<const FontSet*>(addrTop + 8);
 }
 
 }

@@ -35,6 +35,10 @@ public:
 		virtual void OnTick() override;
 		virtual const char* GetTickableName() const override { return "USBDevice::MSCDrive::SyncAgent"; }
 	};
+	class HookHandler {
+	public:
+		virtual int32_t On_msc_write10(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize) = 0;
+	};
 public:
 	static const int BlockSize = 512;
 private:
@@ -43,6 +47,7 @@ private:
 	uint32_t bytesXIP_;
 	SyncAgent syncAgent_;
 	bool unitReadyFlag_;
+	HookHandler* pHookHandler_;
 public:
 	MSCDrive(USBDevice::Controller& deviceController, uint8_t endpBulkOut, uint8_t endpBulkIn);
 public:
@@ -50,6 +55,9 @@ public:
 	FS::Drive& GetDriveAttached() { return *pDriveAttached_; }
 public:
 	void NotifyContentChanged() { unitReadyFlag_ = false; }
+public:
+	void SetHookHandler(HookHandler& hookHandler) { pHookHandler_ = &hookHandler; }
+	void ClearHookHandler() { pHookHandler_ = nullptr; }
 public:
 	// virual functions of USBDevice::MSC
 	virtual void On_msc_inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]) override;

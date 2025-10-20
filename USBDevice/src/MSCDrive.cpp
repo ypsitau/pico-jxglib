@@ -7,7 +7,7 @@ namespace jxglib::USBDevice {
 
 MSCDrive::MSCDrive(USBDevice::Controller& deviceController, uint8_t endpBulkOut, uint8_t endpBulkIn) :
 	USBDevice::MSC(deviceController, "Flash Interface", endpBulkOut, endpBulkIn),
-	pDriveAttached_{nullptr}, offsetXIP_{0}, bytesXIP_{0}, syncAgent_(*this, 0), unitReadyFlag_{true}
+	pDriveAttached_{nullptr}, offsetXIP_{0}, bytesXIP_{0}, syncAgent_(*this, 0), unitReadyFlag_{true}, pHookHandler_{nullptr}
 {}
 
 void MSCDrive::Initialize(FS::Drive& drive, int msecTimeoutSync)
@@ -80,6 +80,7 @@ bool MSCDrive::On_msc_is_writable(uint8_t lun)
 int32_t MSCDrive::On_msc_write10(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize)
 {
 	//::printf("On_msc_write10(lba=%d)\n", lba);
+	if (pHookHandler_) return pHookHandler_->On_msc_write10(lun, lba, offset, buffer, bufsize);
 	if (lba >= bytesXIP_ / BlockSize) return -1;
 	Flash::Write(offsetXIP_ + lba * BlockSize, buffer, bufsize);
 	syncAgent_.StartDevice();

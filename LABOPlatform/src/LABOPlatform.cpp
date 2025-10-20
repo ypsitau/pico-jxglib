@@ -11,11 +11,6 @@
 
 using namespace jxglib;
 
-const FontSet& ShellCmd_Font_GetFontSet()
-{
-	return LABOPlatform::Instance.GetFontSet();
-}
-
 //------------------------------------------------------------------------------
 // C functions
 //------------------------------------------------------------------------------
@@ -135,6 +130,14 @@ LogicAnalyzer& ShellCmd_LogicAnalyzer_GetLogicAnalyzer()
 }
 
 //------------------------------------------------------------------------------
+// Callback function for the Font
+//------------------------------------------------------------------------------
+USBDevice::MSCDrive& ShellCmd_Font_GetMSCDrive()
+{
+	return LABOPlatform::Instance.GetMSCDrive();
+}
+
+//------------------------------------------------------------------------------
 // LABOPlatform
 //------------------------------------------------------------------------------
 const char* LABOPlatform::textREADME_ = R"(Welcome to pico-jxgLABO!
@@ -176,6 +179,7 @@ LABOPlatform::LABOPlatform(int bytesDrive) :
 
 void LABOPlatform::Initialize()
 {
+	FontSet::bytesProgramMax = bytesProgramMax;
 	deviceController_.Initialize();
 	mscDrive_.Initialize(fat_);
 	streamCDC_Terminal_.Initialize();
@@ -229,17 +233,6 @@ void LABOPlatform::SetSigrokInterface(Stream& stream)
 void LABOPlatform::RestoreSigrokInterface()
 {
 	sigrokAdapter_.SetStream(streamCDC_Application_);
-}
-
-const FontSet& LABOPlatform::GetFontSet() const
-{
-	const char* footer = reinterpret_cast<const char*>(XIP_BASE + bytesProgramMax - (8 + 4));
-	if (::memcmp(footer, "LABOFONT", 8) != 0) return FontSet::None;
-	uint32_t bytes = *reinterpret_cast<const uint32_t*>(footer + 8);
-	if (bytes > bytesProgramMax) return FontSet::None;
-	const char* header = reinterpret_cast<const char*>(XIP_BASE + bytesProgramMax - bytes);
-	if (::memcmp(header, "LABOFONT", 8) != 0) return FontSet::None;
-	return *reinterpret_cast<const FontSet*>(header + 8);
 }
 
 void LABOPlatform::func_out_chars(const char* buf, int len)

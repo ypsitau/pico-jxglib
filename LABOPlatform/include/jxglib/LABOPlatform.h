@@ -55,7 +55,6 @@ public:
 	Serial::Terminal& GetTerminal() { return terminal_; }
 	TelePlot& GetTelePlot() { return telePlot_; }
 	LogicAnalyzer& GetLogicAnalyzer() { return logicAnalyzer_; }
-	const FontSet& GetFontSet() const;
 private:
 	static void func_out_chars(const char* buf, int len);
 	static void func_out_flush(void);

@@ -31,6 +31,7 @@ public:
 public:
 	static const int nFontEntries_Basic = 0x5f;
 	static const FontSet None;
+	static uint32_t bytesProgramMax;
 public:
 	char name[32];
 	Format format;
@@ -44,6 +45,9 @@ public:
 	bool IsGray() const { return format == Format::Gray; }
 	bool HasExtraFont() const { return nFontEntries_Extra > 0; }
 	const FontEntry& GetFontEntry(uint32_t code) const;
+public:
+	static uint32_t GetInstanceAddrTop(int iFont);
+	static const FontSet& GetInstance(int iFont);
 public:
 	const FontEntry& GetFontEntry_Invalid() const { return *reinterpret_cast<const FontEntry*>(data); }
 	const FontEntry& GetFontEntry_Basic(int idx) const {

@@ -2,7 +2,7 @@
 // -Misc-Fixed-Medium-R-Normal--10-90-75-75-C-50-iso8859-1
 // -Misc-Fixed-Medium-R-Normal--10-90-75-75-C-100-jisx0208.1983-0
 // Basic Font: 95 characters (2470 bytes)
-// Total Memory: 2508 bytes
+// Total Memory: 2534 bytes
 //==============================================================================
 #ifndef PICO_JXGLIB_FONT_NAGA10_H
 #define PICO_JXGLIB_FONT_NAGA10_H
