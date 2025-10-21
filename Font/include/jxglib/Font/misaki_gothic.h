@@ -2,7 +2,7 @@
 // -Kadoma-MisakiGothic-Regular-R-Normal--8-80-75-75-C-79-ISO10646-1
 // -Kadoma-MisakiGothic-Regular-R-Normal--8-80-75-75-C-79-ISO10646-1
 // Basic Font: 95 characters (1330 bytes)
-// Total Memory: 1368 bytes
+// Total Memory: 1382 bytes
 //==============================================================================
 #ifndef PICO_JXGLIB_FONT_MISAKI_GOTHIC_H
 #define PICO_JXGLIB_FONT_MISAKI_GOTHIC_H

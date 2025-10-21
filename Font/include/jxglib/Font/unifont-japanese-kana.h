@@ -3,7 +3,7 @@
 // -gnu-Unifont-Medium-R-Normal-Sans-16-160-75-75-c-80-iso10646-1
 // Basic Font: 95 characters (3610 bytes)
 // Extra Font: 524 characters (19912 bytes)
-// Total Memory: 23560 bytes
+// Total Memory: 23598 bytes
 //==============================================================================
 #ifndef PICO_JXGLIB_FONT_UNIFONT_H
 #define PICO_JXGLIB_FONT_UNIFONT_H
