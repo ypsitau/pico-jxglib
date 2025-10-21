@@ -14,7 +14,7 @@ namespace jxglib {
 // FontSet
 //------------------------------------------------------------------------------
 const FontSet FontSet::None = { "none", FontSet::Format::None, 8, 0, 0, {} };
-uint32_t FontSet::bytesProgramMax = PICO_FLASH_SIZE_BYTES;
+uint32_t FontSet::flashAddrBtm = XIP_BASE + PICO_FLASH_SIZE_BYTES;
 
 const FontEntry& FontSet::GetFontEntry(uint32_t code) const
 {
@@ -44,26 +44,59 @@ const FontEntry& FontSet::GetFontEntry(uint32_t code) const
 	return GetFontEntry_Invalid();
 }
 
-uint32_t FontSet::GetInstanceAddrTop(int iFont)
+bool FontSet::GetRange(uint32_t* pFlashAddr, uint32_t* pFlashBytes)
 {
-	uint32_t addrTop = XIP_BASE + bytesProgramMax;
-	for (int i = 0; ; ++i) {
-		const char* footer = reinterpret_cast<const char*>(addrTop - (8 + 4));
-		if (::memcmp(footer, "LABOFONT", 8) != 0) return 0;
-		uint32_t bytes = *reinterpret_cast<const uint32_t*>(footer + 8);
-		if (bytes > bytesProgramMax) return 0;
-		addrTop -= bytes;
-		const char* header = reinterpret_cast<const char*>(addrTop);
-		if (::memcmp(header, "LABOFONT", 8) != 0) return 0;
-		if (i == iFont) break;
+	uint32_t flashAddr = 0, flashBytes = 0;
+	for (int iFont = 0; ; ++iFont) {
+		if (!GetInstanceRange(iFont, &flashAddr, &flashBytes)) break;
 	}
-	return addrTop;
+	if (flashAddr == 0) return false;
+	*pFlashAddr = flashAddr;
+	*pFlashBytes = flashAddrBtm - flashAddr;
+	return true;
 }
 
-const FontSet& FontSet::GetInstance(int iFont)
+bool FontSet::GetInstanceRange(int iFont, uint32_t* pFlashAddr, uint32_t* pFlashBytes)
 {
-	uint32_t addrTop = GetInstanceAddrTop(iFont);
-	return (addrTop == 0)? FontSet::None : *reinterpret_cast<const FontSet*>(addrTop + 8);
+	uint32_t flashAddr = flashAddrBtm;
+	uint32_t flashBytes = 0;
+	for (int iFontIter = 0; ; ++iFontIter) {
+		const char* footer = reinterpret_cast<const char*>(flashAddr - (4 + 8));
+		if (::memcmp(footer + 4, "LABOFONT", 8) != 0) return false;
+		flashBytes = *reinterpret_cast<const uint32_t*>(footer);
+		if (flashBytes > PICO_FLASH_SIZE_BYTES || flashAddr - flashBytes < XIP_BASE) return false;
+		flashAddr -= flashBytes;
+		const char* header = reinterpret_cast<const char*>(flashAddr);
+		if (::memcmp(header, "LABOFONT", 8) != 0) return false;
+		if (iFontIter == iFont) break;
+	}
+	*pFlashAddr = flashAddr;
+	*pFlashBytes = flashBytes;
+	return true;
+}
+
+const FontSet& FontSet::GetInstance(int iFont, uint32_t* pFlashAddr, uint32_t* pFlashBytes)
+{
+	uint32_t flashAddr, flashBytes;
+	if (!GetInstanceRange(iFont, &flashAddr, &flashBytes)) return FontSet::None;
+	if (pFlashAddr) *pFlashAddr = flashAddr;
+	if (pFlashBytes) *pFlashBytes = flashBytes;
+	return *reinterpret_cast<const FontSet*>(flashAddr + 8);
+}
+
+const FontSet& FontSet::GetInstance(const char* name, uint32_t* pFlashAddr, uint32_t* pFlashBytes)
+{
+	for (int iFont = 0; ; ++iFont) {
+		uint32_t flashAddr, flashBytes;
+		const FontSet& fontSet = GetInstance(iFont, &flashAddr, &flashBytes);
+		if (fontSet.IsNone()) break;
+		if (::strcasecmp(fontSet.name, name) == 0) {
+			if (pFlashAddr) *pFlashAddr = flashAddr;
+			if (pFlashBytes) *pFlashBytes = flashBytes;
+			return fontSet;
+		}
+	}
+	return FontSet::None;
 }
 
 }

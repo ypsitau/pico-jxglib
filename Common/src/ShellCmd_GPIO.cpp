@@ -31,16 +31,16 @@ ShellCmd(gpio, "controls GPIO pins")
 		}
 		arg.PrintHelp(tout);
 		tout.Printf("Sub Commands:\n");
-		tout.Printf("  sleep:MSEC           sleep for specified milliseconds\n");
-		tout.Printf("  repeat[:N] {CMD...}  repeat the commands N times (default: infinite)\n");
-		tout.Printf("  put:VALUE            drive the pin (0, 1, lo, hi)\n");;
-		tout.Printf("  toggle               toggle pin value\n");
-		tout.Printf("  func:FUNCTION        set pin function (%s)\n", GPIOInfo::GetHelp_AvailableFunc());
-		tout.Printf("  dir:DIR              set pin direction (in, out)\n");
-		tout.Printf("  pull:DIR             set pull direction (up, down, both, none)\n");
-		tout.Printf("  drive:STRENGTH       set pin drive strength (%s)\n", strAvailableDrive);
-		tout.Printf("  slew:SLEW            set slew rate (%s)\n", strAvailableSlew);
-		tout.Printf("  hyst:STATE           set hysteresis state (on, off)\n");
+		tout.Printf(" sleep:MSEC           sleep for specified milliseconds\n");
+		tout.Printf(" repeat[:N] {CMD...}  repeat the commands N times (default: infinite)\n");
+		tout.Printf(" put:VALUE            drive the pin (0, 1, lo, hi)\n");;
+		tout.Printf(" toggle               toggle pin value\n");
+		tout.Printf(" func:FUNCTION        set pin function (%s)\n", GPIOInfo::GetHelp_AvailableFunc());
+		tout.Printf(" dir:DIR              set pin direction (in, out)\n");
+		tout.Printf(" pull:DIR             set pull direction (up, down, both, none)\n");
+		tout.Printf(" drive:STRENGTH       set pin drive strength (%s)\n", strAvailableDrive);
+		tout.Printf(" slew:SLEW            set slew rate (%s)\n", strAvailableSlew);
+		tout.Printf(" hyst:STATE           set hysteresis state (on, off)\n");
 		return Result::Success;
 	}
 	bool quietFlag = arg.GetBool("quiet");

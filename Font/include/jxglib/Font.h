@@ -31,7 +31,7 @@ public:
 public:
 	static const int nFontEntries_Basic = 0x5f;
 	static const FontSet None;
-	static uint32_t bytesProgramMax;
+	static uint32_t flashAddrBtm;
 public:
 	char name[32];
 	Format format;
@@ -46,8 +46,10 @@ public:
 	bool HasExtraFont() const { return nFontEntries_Extra > 0; }
 	const FontEntry& GetFontEntry(uint32_t code) const;
 public:
-	static uint32_t GetInstanceAddrTop(int iFont);
-	static const FontSet& GetInstance(int iFont);
+	static bool GetRange(uint32_t* pFlashAddr, uint32_t* pFlashBytes);
+	static bool GetInstanceRange(int iFont, uint32_t* pFlashAddr, uint32_t* pFlashBytes);
+	static const FontSet& GetInstance(int iFont, uint32_t* pFlashAddr = nullptr, uint32_t* pFlashBytes = nullptr);
+	static const FontSet& GetInstance(const char* name, uint32_t* pFlashAddr = nullptr, uint32_t* pFlashBytes = nullptr);
 public:
 	const FontEntry& GetFontEntry_Invalid() const { return *reinterpret_cast<const FontEntry*>(data); }
 	const FontEntry& GetFontEntry_Basic(int idx) const {

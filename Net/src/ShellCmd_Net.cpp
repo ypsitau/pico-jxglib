@@ -19,16 +19,16 @@ ShellCmd(net, "controls Network")
 		tout.Printf("Usage: %s [OPTION]... [CMD]...\n", GetName());
 		arg.PrintHelp(tout);
 		tout.Printf("Sub Commands:\n");
-		tout.Printf("  repeat[:N] {CMD...}  repeat the commands N times (default: infinite)\n");
-		tout.Printf("  sleep:MSEC           sleep for specified milliseconds\n");
-		tout.Printf("  wifi-scan            scan for WiFi networks\n");
-		tout.Printf("  wifi-ap              initialise as a WiFi access point with the given parameters:\n");
-		tout.Printf("                         {ssid:SSID password:PASSWORD [auth:AUTH]}\n");
-		tout.Printf("  wifi-connect         connect to a WiFi access point with the given parameters:\n");
-		tout.Printf("                         {ssid:SSID password:PASSWORD [timeout:SEC] [auth:AUTH]}\n");
-		tout.Printf("  wifi-disconnect      disconnect from the current WiFi access point\n");
-		tout.Printf("  config               modify IP configuration with the given parameters:\n");
-		tout.Printf("                         {[addr:ADDR] [netmask:NETMASK] [gateway:GATEWAY]}\n");
+		tout.Printf(" repeat[:N] {CMD...}  repeat the commands N times (default: infinite)\n");
+		tout.Printf(" sleep:MSEC           sleep for specified milliseconds\n");
+		tout.Printf(" wifi-scan            scan for WiFi networks\n");
+		tout.Printf(" wifi-ap              initialise as a WiFi access point with the given parameters:\n");
+		tout.Printf("                        {ssid:SSID password:PASSWORD [auth:AUTH]}\n");
+		tout.Printf(" wifi-connect         connect to a WiFi access point with the given parameters:\n");
+		tout.Printf("                        {ssid:SSID password:PASSWORD [timeout:SEC] [auth:AUTH]}\n");
+		tout.Printf(" wifi-disconnect      disconnect from the current WiFi access point\n");
+		tout.Printf(" config               modify IP configuration with the given parameters:\n");
+		tout.Printf("                        {[addr:ADDR] [netmask:NETMASK] [gateway:GATEWAY]}\n");
 		return Result::Success;
 	}
 	Printable& terrOpt = arg.GetBool("quiet")? PrintableDumb::Instance : terr;

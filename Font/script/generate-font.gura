@@ -87,13 +87,13 @@ GenerateUF2File(fileNameUF2 as String, fileNameBin as String) = {
 	bytesFlashPage = 256
 	buffSrc = src.Read()
 	bytesHeader = 8
-	bytesFooter = 8 + 4
+	bytesFooter = 4 + 8
 	bytesDst = Int(((buffSrc.bytes + bytesHeader + bytesFooter) + (bytesFlashPage - 1)) / bytesFlashPage) * bytesFlashPage
 	buffDst = Binary()
 	p = buffDst.p
 	p.Pack('8s', 'LABOFONT')
 	p.Append(buffSrc)
-	p.Pack('*x8sL', bytesDst - buffSrc.bytes - (bytesHeader + bytesFooter), 'LABOFONT', bytesDst)
+	p.Pack('*xL8s', bytesDst - buffSrc.bytes - (bytesHeader + bytesFooter), bytesDst, 'LABOFONT')
 	magic_start0	= 0x0A324655
 	magic_start1	= 0x9E5D5157
 	flags			= 0x00002000			// UF2_FLAG_FAMILY_ID_PRESENT

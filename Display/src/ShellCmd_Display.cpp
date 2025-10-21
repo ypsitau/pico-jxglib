@@ -144,6 +144,45 @@ ShellCmd(display, "display commands")
 			}
 			display.DrawRect(Rect(pos, size), color);
 			display.Refresh();
+		} else if (Arg::GetAssigned(subcmd, "font", &value)) {
+			if (!value) {
+				terr.Printf("missing font name\n");
+				return Result::Error;
+			}
+			const FontSet& fontSet = FontSet::GetInstance(value);
+			if (fontSet.IsNone()) {
+				terr.Printf("font not found: %s\n", value);
+				return Result::Error;
+			}
+			display.SetFont(fontSet);
+		} else if (Arg::GetAssigned(subcmd, "string", &value)) {
+			Point pos;
+			char str[128] = "";
+			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
+				const char* subcmd = pSubcmdChild->GetProc();
+				if (Arg::GetAssigned(subcmd, "pos", &value)) {
+					if (!value) {
+						terr.Printf("missing pos value\n");
+						return Result::Error;
+					}
+					if (!pos.Parse(value)) {
+						terr.Printf("invalid pos: %s\n", value);
+						return Result::Error;
+					}
+				} else if (Arg::GetAssigned(subcmd, "str", &value)) {
+					if (!value) {
+						terr.Printf("missing str value\n");
+						return Result::Error;
+					}
+					::snprintf(str, sizeof(str), "%s", value);
+					Tokenizer::RemoveSurroundingQuotes(str);
+				} else {
+					terr.Printf("unknown sub command: %s\n", subcmd);
+					return Result::Error;
+				}
+			}
+			display.DrawStringWrap(pos, str);
+			display.Refresh();
 		} else {
 			terr.Printf("unknown sub command: %s\n", subcmd);
 			return Result::Error;

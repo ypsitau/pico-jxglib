@@ -89,12 +89,12 @@ ShellCmd_Named(uart_, "uart", "controls UART communication")
 			tout.Printf("Usage: %s [OPTION]... [COMMAND]...\n", GetName());
 		}
 		arg.PrintHelp(tout);
-		tout.Printf("Commands:\n");
-		tout.Printf("  repeat[:N] {CMD...}  repeat the commands N times (default: infinite)\n");
-		tout.Printf("  sleep:MSEC           sleep for specified milliseconds\n");
-		tout.Printf("  write:DATA           write DATA to UART\n");
-		tout.Printf("  read[:N]             read N bytes from UART (default: until timeout)\n");
-		tout.Printf("  flush                flush UART buffers\n");
+		tout.Printf("Sub Commands:\n");
+		tout.Printf(" repeat[:N] {CMD...}  repeat the commands N times (default: infinite)\n");
+		tout.Printf(" sleep:MSEC           sleep for specified milliseconds\n");
+		tout.Printf(" write:DATA           write DATA to UART\n");
+		tout.Printf(" read[:N]             read N bytes from UART (default: until timeout)\n");
+		tout.Printf(" flush                flush UART buffers\n");
 		return Result::Success;
 	}
 	int nArgsSkip = 0;

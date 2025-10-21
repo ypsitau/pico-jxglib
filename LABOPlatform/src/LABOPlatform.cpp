@@ -179,7 +179,7 @@ LABOPlatform::LABOPlatform(int bytesDrive) :
 
 void LABOPlatform::Initialize()
 {
-	FontSet::bytesProgramMax = bytesProgramMax;
+	FontSet::flashAddrBtm = XIP_BASE + bytesProgramMax;
 	deviceController_.Initialize();
 	mscDrive_.Initialize(fat_);
 	streamCDC_Terminal_.Initialize();

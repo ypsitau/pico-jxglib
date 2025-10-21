@@ -40,17 +40,17 @@ ShellCmd(pwm, "controls PWM pins")
 		}
 		arg.PrintHelp(tout);
 		tout.Printf("Sub Commands:\n");
-		tout.Printf("  func:FUNCTION      set pin function (%s)\n", GPIOInfo::GetHelp_AvailableFunc());
-		tout.Printf("  enable             start PWM output\n");
-		tout.Printf("  disable            stop PWM output\n");
-		tout.Printf("  freq:FREQUENCY     set PWM frequency in Hz\n");
-		tout.Printf("  duty:RATIO         set PWM duty ratio (0.0-1.0)\n");
-		tout.Printf("  clkdiv:DIVIDER     set PWM clock divider (1.0-255.9)\n");
-		tout.Printf("  wrap:VALUE         set PWM wrap value (0-65535)\n");
-		tout.Printf("  level:VALUE        set PWM level (0-65535)\n");
-		tout.Printf("  phase-correct:BOOL enable/disable phase-correct (0, 1)\n");
-		tout.Printf("  invert:BOOL        enable/disable inverted output (0, 1)\n");
-		tout.Printf("  counter:VALUE      set PWM counter value (0-65535)\n");
+		tout.Printf(" func:FUNCTION      set pin function (%s)\n", GPIOInfo::GetHelp_AvailableFunc());
+		tout.Printf(" enable             start PWM output\n");
+		tout.Printf(" disable            stop PWM output\n");
+		tout.Printf(" freq:FREQUENCY     set PWM frequency in Hz\n");
+		tout.Printf(" duty:RATIO         set PWM duty ratio (0.0-1.0)\n");
+		tout.Printf(" clkdiv:DIVIDER     set PWM clock divider (1.0-255.9)\n");
+		tout.Printf(" wrap:VALUE         set PWM wrap value (0-65535)\n");
+		tout.Printf(" level:VALUE        set PWM level (0-65535)\n");
+		tout.Printf(" phase-correct:BOOL enable/disable phase-correct (0, 1)\n");
+		tout.Printf(" invert:BOOL        enable/disable inverted output (0, 1)\n");
+		tout.Printf(" counter:VALUE      set PWM counter value (0-65535)\n");
 		return Result::Success;
 	}
 	int pinTbl[GPIO::NumPins];

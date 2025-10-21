@@ -25,11 +25,11 @@ ShellCmd(led, "control LED")
 		tout.Printf("Usage: %s [OPTION]... CMDS...\n", GetName());
 		arg.PrintHelp(tout);
 		tout.Printf("Sub Commands:\n");
-		tout.Printf("  on          turn on LED\n");
-		tout.Printf("  off         turn off LED\n");
-		tout.Printf("  flip:MS...  start blinking LED with specified durations (in msec)\n");
-		tout.Printf("              e.g. flip:500,500 (500 msec ON, 500 msec OFF)\n");
-		tout.Printf("              specifies * to end the blinking (eg. flip:100,500,100,*)\n");
+		tout.Printf(" on          turn on LED\n");
+		tout.Printf(" off         turn off LED\n");
+		tout.Printf(" flip:MS...  start blinking LED with specified durations (in msec)\n");
+		tout.Printf("             e.g. flip:500,500 (500 msec ON, 500 msec OFF)\n");
+		tout.Printf("             specifies * to end the blinking (eg. flip:100,500,100,*)\n");
 		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
 	for (int iArg = 1; iArg < argc; iArg++) {
