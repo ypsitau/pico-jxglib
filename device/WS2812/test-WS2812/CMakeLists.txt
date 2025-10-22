@@ -28,30 +28,33 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test_WS2812 C CXX ASM)
+project(test-WS2812 C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test_WS2812 test_WS2812.cpp )
+add_executable(test-WS2812 test-WS2812.cpp )
 
-pico_set_program_name(test_WS2812 "test_WS2812")
-pico_set_program_version(test_WS2812 "0.1")
+pico_set_program_name(test-WS2812 "test-WS2812")
+pico_set_program_version(test-WS2812 "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test_WS2812 0)
-pico_enable_stdio_usb(test_WS2812 1)
+pico_enable_stdio_uart(test-WS2812 0)
+pico_enable_stdio_usb(test-WS2812 0)
 
 # Add the standard library to the build
-target_link_libraries(test_WS2812
+target_link_libraries(test-WS2812
         pico_stdlib)
 
 # Add the standard include files to the build
-target_include_directories(test_WS2812 PRIVATE
+target_include_directories(test-WS2812 PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test_WS2812)
+pico_add_extra_outputs(test-WS2812)
 
+target_link_libraries(test-WS2812 jxglib_LABOPlatform_FullCmd jxglib_WS2812)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../../.. pico-jxglib)
+jxglib_configure_LABOPlatform(test-WS2812)
