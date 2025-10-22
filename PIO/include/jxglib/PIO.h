@@ -393,33 +393,33 @@ public:
 public:
 	const StateMachine& gpio_init(uint pin) const { pio.gpio_init(pin); return *this; }
 public:
-	const StateMachine& set_in_pins(uint in_base) const { ::pio_sm_set_in_pins(pio, sm, in_base); return *this; }
-	template<typename... Pins>
-	const StateMachine& set_in_pin(uint pin1, Pins... pins) const {
-		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
-		return set_in_pins(pin1);
-	}
+	//const StateMachine& set_in_pins(uint in_base) const { ::pio_sm_set_in_pins(pio, sm, in_base); return *this; }
+	//template<typename... Pins>
+	//const StateMachine& set_in_pin(uint pin1, Pins... pins) const {
+	//	if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
+	//	return set_in_pins(pin1);
+	//}
 public:
-	const StateMachine& set_out_pins(uint out_base, uint out_count) const { ::pio_sm_set_out_pins(pio, sm, out_base, out_count); return *this; }
-	template<typename... Pins>
-	const StateMachine& set_out_pin(uint pin1, Pins... pins) const {
-		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
-		return set_out_pins(pin1, 1 + sizeof...(pins));
-	}
+	//const StateMachine& set_out_pins(uint out_base, uint out_count) const { ::pio_sm_set_out_pins(pio, sm, out_base, out_count); return *this; }
+	//template<typename... Pins>
+	//const StateMachine& set_out_pin(uint pin1, Pins... pins) const {
+	//	if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
+	//	return set_out_pins(pin1, 1 + sizeof...(pins));
+	//}
 public:
-	const StateMachine& set_set_pins(uint set_base, uint set_count) const { ::pio_sm_set_set_pins(pio, sm, set_base, set_count); return *this; }
-	template<typename... Pins>
-	const StateMachine& set_set_pin(uint pin1, Pins... pins) const {
-		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
-		return set_set_pins(pin1, 1 + sizeof...(pins));
-	}
+	//const StateMachine& set_set_pins(uint set_base, uint set_count) const { ::pio_sm_set_set_pins(pio, sm, set_base, set_count); return *this; }
+	//template<typename... Pins>
+	//const StateMachine& set_set_pin(uint pin1, Pins... pins) const {
+	//	if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
+	//	return set_set_pins(pin1, 1 + sizeof...(pins));
+	//}
 public:
-	const StateMachine& set_sideset_pins(uint sideset_base) const { ::pio_sm_set_sideset_pins(pio, sm, sideset_base); return *this; }
-	template<typename... Pins>
-	const StateMachine& set_sideset_pin(uint pin1, Pins... pins) const {
-		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
-		return set_sideset_pins(pin1);
-	}
+	//const StateMachine& set_sideset_pins(uint sideset_base) const { ::pio_sm_set_sideset_pins(pio, sm, sideset_base); return *this; }
+	//template<typename... Pins>
+	//const StateMachine& set_sideset_pin(uint pin1, Pins... pins) const {
+	//	if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
+	//	return set_sideset_pins(pin1);
+	//}
 public:
 	const StateMachine& set_jmp_pin(uint pin) const { ::pio_sm_set_jmp_pin(pio, sm, pin); return *this; }
 public:
