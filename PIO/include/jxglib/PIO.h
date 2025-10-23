@@ -360,31 +360,30 @@ public:
 private:
 	void setup_resource_(pio_hw_t* pio, uint sm, uint offset);
 public:
-	StateMachine& set_out_pins(uint base, uint count);
-	template<typename... Pins> StateMachine& set_out_pin(uint pin1, Pins... pins) {
+	StateMachine& reserve_out_pins(uint base, uint count);
+	template<typename... Pins> StateMachine& reserve_out_pin(uint pin1, Pins... pins) {
 		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
-		return set_out_pins(pin1, 1 + sizeof...(pins));
+		return reserve_out_pins(pin1, 1 + sizeof...(pins));
 	}
-	StateMachine& set_set_pins(uint base, uint count);
-	template<typename... Pins> StateMachine& set_set_pin(uint pin1, Pins... pins) {
+	StateMachine& reserve_set_pins(uint base, uint count);
+	template<typename... Pins> StateMachine& reserve_set_pin(uint pin1, Pins... pins) {
 		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
-		return set_set_pins(pin1, 1 + sizeof...(pins));
+		return reserve_set_pins(pin1, 1 + sizeof...(pins));
 	}
-	StateMachine& set_in_pins(uint base, uint count);
-	template<typename... Pins> StateMachine& set_in_pin(uint pin1, Pins... pins) {
+	StateMachine& reserve_in_pins(uint base, uint count);
+	template<typename... Pins> StateMachine& reserve_in_pin(uint pin1, Pins... pins) {
 		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
-		return set_in_pins(pin1, 1 + sizeof...(pins));
+		return reserve_in_pins(pin1, 1 + sizeof...(pins));
 	}
-	StateMachine& set_listen_pins(uint base, uint count); // count is not used, just for compatibility with set_in_pins()
-	template<typename... Pins> StateMachine& set_listen_pin(uint pin1, Pins... pins) {
+	StateMachine& reserve_listen_pins(uint base, uint count); // count is not used, just for compatibility with reserve_in_pins()
+	template<typename... Pins> StateMachine& reserve_listen_pin(uint pin1, Pins... pins) {
 		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
-		set_listen_pins(pin1, -1);
-		return *this;
+		return reserve_listen_pins(pin1, -1);
 	}
-	StateMachine& set_sideset_pins(uint base, uint count);
-	template<typename... Pins> StateMachine& set_sideset_pin(uint pin1, Pins... pins) {
+	StateMachine& reserve_sideset_pins(uint base, uint count);
+	template<typename... Pins> StateMachine& reserve_sideset_pin(uint pin1, Pins... pins) {
 		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
-		return set_sideset_pins(pin1, 1 + sizeof...(pins));
+		return reserve_sideset_pins(pin1, 1 + sizeof...(pins));
 	}
 public:
 	const StateMachine& claim() const { ::pio_sm_claim(pio, sm); return *this; }
