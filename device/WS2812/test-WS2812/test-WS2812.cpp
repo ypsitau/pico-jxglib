@@ -39,20 +39,13 @@ bool WS2812::Initialize()
 	.wrap()
 	.end();
 	sm_.set_program(program_);
-
-    pio_gpio_init(sm_.pio, pin_);
-    pio_sm_set_consecutive_pindirs(sm_.pio, sm_, pin_, 1, true);
-
 	sm_.reserve_sideset_pins(pin_, 1);
-	//sm_.config.set_sideset_pins(pin_);
 	sm_.config.set_out_shift_left(true, 24);	// shift left, autopull enabled, pull threshold 24
 	sm_.config.set_fifo_join_tx();
 	sm_.config.set_clkdiv(static_cast<float>(::clock_get_hz(clk_sys)) / (freq_ * (T1 + T2 + T3)));
-    pio_sm_config& c = *sm_.config;
-    pio_sm_init(sm_.pio, sm_, sm_.offset, &c);
-	//sm_.init();
+	sm_.init();
+	pio_sm_set_consecutive_pindirs(sm_.pio, sm_, pin_, 1, true);
 	sm_.set_enabled();
-
 	return true;
 }
 
