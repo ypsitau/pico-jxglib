@@ -39,27 +39,32 @@ bool WS2812::Initialize()
 	.wrap()
 	.end();
 	sm_.set_program(program_);
-	//sm_.set_sideset_pins(pin_, 1);
-	//sm_.config.set_out_shift_left(true, 24);	// shift left, autopull enabled, pull threshold 24
-	//sm_.config.set_fifo_join_tx();
-	//sm_.config.set_clkdiv(static_cast<float>(::clock_get_hz(clk_sys)) / (freq_ * (T1 + T2 + T3)));
-	//sm_.init();
-	//sm_.set_enabled();
 
-    //bool success = pio_claim_free_sm_and_add_program_for_gpio_range(program_, &pio, &sm, &offset, pin_, 1, true);
     pio_gpio_init(sm_.pio, pin_);
     pio_sm_set_consecutive_pindirs(sm_.pio, sm_, pin_, 1, true);
 
+//	sm_.set_sideset_pins(pin_, 1);
+	sm_.config.set_sideset_pins(pin_);
+	sm_.config.set_out_shift_left(true, 24);	// shift left, autopull enabled, pull threshold 24
+	sm_.config.set_fifo_join_tx();
+	sm_.config.set_clkdiv(static_cast<float>(::clock_get_hz(clk_sys)) / (freq_ * (T1 + T2 + T3)));
+//	sm_.init();
+//	sm_.set_enabled();
+
+    //bool success = pio_claim_free_sm_and_add_program_for_gpio_range(program_, &pio, &sm, &offset, pin_, 1, true);
+//    pio_gpio_init(sm_.pio, pin_);
+//    pio_sm_set_consecutive_pindirs(sm_.pio, sm_, pin_, 1, true);
+
     //pio_sm_config c = ws2812_program_get_default_config(offset);
     pio_sm_config& c = *sm_.config;
-    sm_config_set_sideset_pins(&c, pin_);
-    sm_config_set_out_shift(&c, false, true, 24);
-    sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_TX);
-
-    int cycles_per_bit = T1 + T2 + T3;
-    float div = clock_get_hz(clk_sys) / (freq_ * cycles_per_bit);
-    sm_config_set_clkdiv(&c, div);
-
+//    sm_config_set_sideset_pins(&c, pin_);
+//    sm_config_set_out_shift(&c, false, true, 24);
+//    sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_TX);
+//
+//    int cycles_per_bit = T1 + T2 + T3;
+//    float div = clock_get_hz(clk_sys) / (freq_ * cycles_per_bit);
+//    sm_config_set_clkdiv(&c, div);
+//
     pio_sm_init(sm_.pio, sm_, sm_.offset, &c);
     pio_sm_set_enabled(sm_.pio, sm_, true);
 
