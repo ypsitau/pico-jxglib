@@ -41,7 +41,7 @@ pico_set_program_name(test-WS2812 "test-WS2812")
 pico_set_program_version(test-WS2812 "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-WS2812 0)
+pico_enable_stdio_uart(test-WS2812 1)
 pico_enable_stdio_usb(test-WS2812 0)
 
 # Add the standard library to the build
