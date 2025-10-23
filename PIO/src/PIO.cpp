@@ -181,7 +181,7 @@ StateMachine& StateMachine::reserve_sideset_pins(uint base, uint count)
 {
 	uint32_t pinMask = MakePinMask(base, count);
 	pin_mask_ |= pinMask;
-	pin_dirs_ &= ~pinMask;
+	pin_dirs_ |= pinMask;
 	config.set_sideset_pins(base);
 	return *this;
 }
