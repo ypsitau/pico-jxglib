@@ -56,5 +56,5 @@ target_include_directories(test-MCP4726 PRIVATE
 pico_add_extra_outputs(test-MCP4726)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../../.. pico-jxglib)
-target_link_libraries(test-MCP4726 jxglib_LABOPlatform_FullCmd)
+target_link_libraries(test-MCP4726 jxglib_LABOPlatform_FullCmd jxglib_Device_MCP4726)
 jxglib_configure_LABOPlatform(test-MCP4726)
