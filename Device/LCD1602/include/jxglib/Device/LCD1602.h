@@ -1,14 +1,14 @@
 //==============================================================================
-// jxglib/LCD1602.h
+// jxglib/Device/LCD1602.h
 //==============================================================================
-#ifndef PICO_JXGLIB_LCD1602_H
-#define PICO_JXGLIB_LCD1602_H
+#ifndef PICO_JXGLIB_DEVICE_LCD1602_H
+#define PICO_JXGLIB_DEVICE_LCD1602_H
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
 #include "jxglib/Common.h"
 #include "jxglib/Printable.h"
 
-namespace jxglib {
+namespace jxglib::Device {
 
 //------------------------------------------------------------------------------
 // LCD1602

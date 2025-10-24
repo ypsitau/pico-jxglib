@@ -2,12 +2,12 @@
 // LCD1602.cpp
 //==============================================================================
 #include <memory.h>
-#include "jxglib/LCD1602.h"
+#include "jxglib/Device/LCD1602.h"
 
-namespace jxglib {
+namespace jxglib::Device {
 
 //------------------------------------------------------------------------------
-// LCD1602
+// Device::LCD1602
 //------------------------------------------------------------------------------
 void LCD1602::Initialize()
 {
@@ -81,6 +81,7 @@ Printable& LCD1602::Print(const char* str)
 Printable& LCD1602::PutCharRaw(char ch)
 {
 	raw.WriteData(static_cast<uint8_t>(ch));
+	return *this;
 }
 
 }

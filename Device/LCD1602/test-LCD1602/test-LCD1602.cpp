@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "jxglib/LCD1602.h"
+#include "jxglib/Device/LCD1602.h"
 
 using namespace jxglib;
 
-void test_PrintAllChars(LCD1602& lcd)
+void test_PrintAllChars(Device::LCD1602& lcd)
 {
 	const char* strTbl[] = {
 		" !\"#$%&'()*+,-./"
@@ -29,7 +29,7 @@ void test_PrintAllChars(LCD1602& lcd)
 	}
 }
 
-void test_Scroll(LCD1602& lcd)
+void test_Scroll(Device::LCD1602& lcd)
 {
 	lcd.ClearScreen();
 	for (int i = 0; i < 100; i++) {
@@ -38,7 +38,7 @@ void test_Scroll(LCD1602& lcd)
 	}
 }
 
-void test_Indicator(LCD1602& lcd)
+void test_Indicator(Device::LCD1602& lcd)
 {
 	lcd.ClearScreen();
 	for (int i = 0; i <= 16; i++) {
@@ -53,7 +53,7 @@ int main()
 	::i2c_init(i2c0, 400000);
 	GPIO4.set_function_I2C0_SDA().pull_up();
 	GPIO5.set_function_I2C0_SCL().pull_up();
-	LCD1602 lcd(i2c0);
+	Device::LCD1602 lcd(i2c0);
 	lcd.Initialize();
 	//lcd.raw.FunctionSet(0, 0, 1);
 	//test_PrintAllChars(lcd);
