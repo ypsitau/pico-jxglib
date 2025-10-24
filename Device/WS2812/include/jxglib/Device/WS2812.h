@@ -1,15 +1,15 @@
 //==============================================================================
-// jxglib/WS2812.h
+// jxglib/Device/WS2812.h
 //==============================================================================
-#ifndef PICO_JXGLIB_WS2812_H
-#define PICO_JXGLIB_WS2812_H
+#ifndef PICO_JXGLIB_DEVICE_WS2812_H
+#define PICO_JXGLIB_DEVICE_WS2812_H
 #include "pico/stdlib.h"
 #include "jxglib/PIO.h"
 
-namespace jxglib {
+namespace jxglib::Device {
 
 //------------------------------------------------------------------------------
-// WS2812
+// Device::WS2812
 //------------------------------------------------------------------------------
 class WS2812 {
 private:

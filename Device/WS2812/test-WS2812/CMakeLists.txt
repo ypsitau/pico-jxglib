@@ -55,6 +55,6 @@ target_include_directories(test-WS2812 PRIVATE
 
 pico_add_extra_outputs(test-WS2812)
 
-target_link_libraries(test-WS2812 jxglib_LABOPlatform_FullCmd jxglib_ShellCmd_WS2812)
+target_link_libraries(test-WS2812 jxglib_LABOPlatform_FullCmd jxglib_ShellCmd_Device_WS2812)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../../.. pico-jxglib)
 jxglib_configure_LABOPlatform(test-WS2812)

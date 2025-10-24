@@ -1,11 +1,11 @@
 #include <stdlib.h>
 #include "pico/stdlib.h"
 #include "jxglib/Shell.h"
-#include "jxglib/WS2812.h"
+#include "jxglib/Device/WS2812.h"
 
-namespace jxglib::ShellCmd_WS2812 {
+namespace jxglib::ShellCmd_Device_WS2812 {
 
-WS2812 ws2812;
+Device::WS2812 ws2812;
 uint pin = static_cast<uint>(-1);
 bool initializedFlag = false;
 

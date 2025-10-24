@@ -4,6 +4,7 @@ project(jxglib C CXX ASM)
 
 add_subdirectory(Canvas)
 add_subdirectory(Common)
+add_subdirectory(Device)
 add_subdirectory(Display)
 add_subdirectory(DMA)
 add_subdirectory(Drawable)
@@ -33,8 +34,6 @@ add_subdirectory(TouchScreen)
 add_subdirectory(UART)
 add_subdirectory(USBDevice)
 add_subdirectory(USBHost)
-
-add_subdirectory(device)
 
 set(JXGLIB_DIR ${CMAKE_CURRENT_LIST_DIR} PARENT_SCOPE)
 
