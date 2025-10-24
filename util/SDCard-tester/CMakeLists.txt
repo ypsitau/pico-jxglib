@@ -50,7 +50,7 @@ target_link_libraries(SDCard-tester
 	jxglib_Serial
 	jxglib_FAT_SDCard
 	jxglib_ShellCmd_FS
-	jxglib_ShellCmd_SDCard)
+	jxglib_ShellCmd_Device_SDCard)
 
 # Add the standard include files to the build
 target_include_directories(SDCard-tester PRIVATE

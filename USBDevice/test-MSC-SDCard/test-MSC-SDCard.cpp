@@ -4,7 +4,7 @@
 #include "pico/stdlib.h"
 #include "jxglib/GPIO.h"
 #include "jxglib/USBDevice/MSC.h"
-#include "jxglib/SDCard.h"
+#include "jxglib/Device/SDCard.h"
 
 using namespace jxglib;
 
@@ -15,11 +15,11 @@ class MSC_SDCard : public USBDevice::MSC {
 public:
 	static const int BlockSize = 512;
 private:
-	SDCard& sdCard_;
+	Device::SDCard& sdCardDev_;
 	bool ejected_;
 public:
-	MSC_SDCard(USBDevice::Controller& deviceController, SDCard& sdCard) :
-		USBDevice::MSC(deviceController, "SDCard Interface", 0x01, 0x81), sdCard_{sdCard}, ejected_{false} {}
+	MSC_SDCard(USBDevice::Controller& deviceController, Device::SDCard& sdCardDev) :
+		USBDevice::MSC(deviceController, "SDCard Interface", 0x01, 0x81), sdCardDev_{sdCardDev}, ejected_{false} {}
 public:
 	virtual void On_msc_inquiry(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]) override;
 	virtual bool On_msc_test_unit_ready(uint8_t lun) override;
@@ -57,7 +57,7 @@ bool MSC_SDCard::On_msc_test_unit_ready(uint8_t lun)
 void MSC_SDCard::On_msc_capacity(uint8_t lun, uint32_t* block_count, uint16_t* block_size)
 {
 	::printf("On_msc_capacity\n");
-	*block_count = sdCard_.GetSectorCount();
+	*block_count = sdCardDev_.GetSectorCount();
 	*block_size  = BlockSize;
 }
 
@@ -78,8 +78,8 @@ bool MSC_SDCard::On_msc_start_stop(uint8_t lun, uint8_t power_condition, bool st
 int32_t MSC_SDCard::On_msc_read10(uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize)
 {
 	//::printf("On_msc_read10(lba=%d, bufsize=%d)\n", lba, bufsize);
-	if (lba >= sdCard_.GetSectorCount()) return -1;
-	sdCard_.ReadBlock(lba, buffer, bufsize / BlockSize);
+	if (lba >= sdCardDev_.GetSectorCount()) return -1;
+	sdCardDev_.ReadBlock(lba, buffer, bufsize / BlockSize);
 	return bufsize;
 }
 
@@ -92,7 +92,7 @@ bool MSC_SDCard::On_msc_is_writable(uint8_t lun)
 int32_t MSC_SDCard::On_msc_write10(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize)
 {
 	::printf("On_msc_write10(lba=%d)\n", lba);
-	if (lba >= sdCard_.GetSectorCount()) return -1;
+	if (lba >= sdCardDev_.GetSectorCount()) return -1;
 	return bufsize;
 }
 
@@ -128,10 +128,10 @@ int main(void)
 	GPIO2.set_function_SPI0_SCK();
 	GPIO3.set_function_SPI0_TX();
 	GPIO4.set_function_SPI0_RX();
-	SDCard sdCard(spi0, 10 * 1000 * 1000, {CS: GPIO5});	// 10MHz
-	MSC_SDCard msc(deviceController, sdCard);
+	Device::SDCard sdCardDev(spi0, 10 * 1000 * 1000, {CS: GPIO5});	// 10MHz
+	MSC_SDCard msc(deviceController, sdCardDev);
 	deviceController.Initialize();
-	sdCard.Initialize(true);
+	sdCardDev.Initialize(true);
 	msc.Initialize();
 	for (;;) Tickable::Tick();
 }

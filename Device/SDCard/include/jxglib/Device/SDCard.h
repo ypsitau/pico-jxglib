@@ -1,15 +1,15 @@
 //==============================================================================
-// jxglib/SDCard.h
+// jxglib/Device/SDCard.h
 // original: https://github.com/micropython/micropython-lib
 //==============================================================================
-#ifndef PICO_JXGLIB_SDCARD_H
-#define PICO_JXGLIB_SDCARD_H
+#ifndef PICO_JXGLIB_DEVICE_SDCARD_H
+#define PICO_JXGLIB_DEVICE_SDCARD_H
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
 #include "jxglib/Common.h"
 #include "jxglib/PackedNumber.h"
 
-namespace jxglib {
+namespace jxglib::Device {
 
 //------------------------------------------------------------------------------
 // SDCard

@@ -3,11 +3,11 @@
 // original: https://github.com/micropython/micropython-lib
 //==============================================================================
 #include <memory.h>
-#include "jxglib/SDCard.h"
+#include "jxglib/Device/SDCard.h"
 
 #define PRINTF(args...) if (debugFlag) ::printf(args)
 
-namespace jxglib {
+namespace jxglib::Device {
 
 //------------------------------------------------------------------------------
 // SDCard

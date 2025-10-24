@@ -4,7 +4,7 @@
 #ifndef PICO_JXGLIB_FAT_SDCARD_H
 #define PICO_JXGLIB_FAT_SDCARD_H
 #include "jxglib/FAT.h"
-#include "jxglib/SDCard.h"
+#include "jxglib/Device/SDCard.h"
 
 namespace jxglib::FAT {
 
@@ -13,11 +13,11 @@ namespace jxglib::FAT {
 //-----------------------------------------------------------------------------
 class SDCard : public Drive {
 private:
-	jxglib::SDCard sdCard_;
+	Device::SDCard sdCardDev_;
 public:
-	SDCard(const char* driveName, spi_inst_t* spi, uint freq, const jxglib::SDCard::PinAssign& pinAssign);
+	SDCard(const char* driveName, spi_inst_t* spi, uint freq, const Device::SDCard::PinAssign& pinAssign);
 public:
-	jxglib::SDCard& GetSDCard() { return sdCard_; }
+	Device::SDCard& GetSDCardDev() { return sdCardDev_; }
 public:
 	// virtual functions of FS::Drive
 	const char* GetRemarks(char* buff, int lenMax) const;

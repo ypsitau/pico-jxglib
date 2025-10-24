@@ -1,8 +1,8 @@
-#include "jxglib/SDCard.h"
+#include "jxglib/Device/SDCard.h"
 #include "jxglib/Shell.h"
 #include "jxglib/FAT/SDCard.h"
 
-namespace jxglib::ShellCmd_SDCard {
+namespace jxglib::ShellCmd_Device_SDCard {
 
 std::unique_ptr<FAT::SDCard> pFAT;
 
@@ -80,8 +80,8 @@ ShellCmd(sdcard, "SD card commands")
 				terr.Printf("SD card not set up. Execute 'setup' subcommand first.\n");
 				return Result::Error;
 			}
-			SDCard& sdCard = pFAT->GetSDCard();
-			if (sdCard.Initialize(true)) {
+			Device::SDCard& sdCardDev = pFAT->GetSDCardDev();
+			if (sdCardDev.Initialize(true)) {
 				terr.Printf("SD card initialized successfully.\n");
 			} else {
 				terr.Printf("Failed to initialize SD card.\n");
@@ -94,8 +94,8 @@ ShellCmd(sdcard, "SD card commands")
 #if 0
 ShellCmd_Named(sd_dump, "sd-dump", "prints SD card data at the specified sector")
 {
-	SDCard& sdCard = ShellCmd_SDCard_GetSDCard();
-	if (!sdCard.IsInitialized()) {
+	Device::SDCard& sdCardDev = ShellCmd_Device_SDCard_GetSDCard();
+	if (!sdCardDev.IsInitialized()) {
 		terr.Printf("SD card not initialized. Execute sd-init first.\n");
 		return Result::Error;
 	}
@@ -110,7 +110,7 @@ ShellCmd_Named(sd_dump, "sd-dump", "prints SD card data at the specified sector"
 		lba = num;
 	}
 	uint8_t buff[512];
-	sdCard.ReadBlock(lba, buff, 1);
+	sdCardDev.ReadBlock(lba, buff, 1);
 	tout.Printf("Sector %d (0x%x)\n", lba, lba);
 	Printable::DumpT(tout).DigitsAddr(4)(buff, sizeof(buff));
 	return Result::Success;
@@ -118,21 +118,21 @@ ShellCmd_Named(sd_dump, "sd-dump", "prints SD card data at the specified sector"
 
 ShellCmd_Named(sd_mbr, "sd-mbr", "Read SD card MBR")
 {
-	SDCard& sdCard = ShellCmd_SDCard_GetSDCard();
-	if (!sdCard.IsInitialized()) {
+	Device::SDCard& sdCardDev = ShellCmd_Device_SDCard_GetSDCard();
+	if (!sdCardDev.IsInitialized()) {
 		terr.Printf("SD card not initialized. Execute sd-init first.\n");
 		return Result::Error;
 	}
 	uint8_t buff[512];
-	sdCard.ReadBlock(0, buff, 1);
+	sdCardDev.ReadBlock(0, buff, 1);
 	SDCard::PrintMBR(tout, buff);
 	return Result::Success;
 }
 
 ShellCmd_Named(sd_write, "sd-write", "Write SD card sector")
 {
-	SDCard& sdCard = ShellCmd_SDCard_GetSDCard();
-	if (!sdCard.IsInitialized()) {
+	Device::SDCard& sdCardDev = ShellCmd_Device_SDCard_GetSDCard();
+	if (!sdCardDev.IsInitialized()) {
 		terr.Printf("SD card not initialized. Execute sd-init first.\n");
 		return Result::Error;
 	}
@@ -142,7 +142,7 @@ ShellCmd_Named(sd_write, "sd-write", "Write SD card sector")
 	}
 	uint8_t buff[512];
 	for (int i = 0; i < sizeof(buff); i++) buff[i] = static_cast<uint8_t>(i);
-	sdCard.WriteBlock(lba, buff, 1);
+	sdCardDev.WriteBlock(lba, buff, 1);
 	return Result::Success;
 }
 #endif

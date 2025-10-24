@@ -50,7 +50,7 @@ target_link_libraries(jxglib_LABOPlatform_FullCmd INTERFACE
 	jxglib_ShellCmd_Display_TFT_LCD
 	jxglib_ShellCmd_RTC
 	jxglib_ShellCmd_RTC_DS3231
-	jxglib_ShellCmd_SDCard
+	jxglib_ShellCmd_Device_SDCard
 )
 
 # Network commands for WiFi enabled boards

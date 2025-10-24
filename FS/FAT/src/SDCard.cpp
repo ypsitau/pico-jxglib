@@ -8,39 +8,39 @@ namespace jxglib::FAT {
 //-----------------------------------------------------------------------------
 // FAT::SDCard
 //-----------------------------------------------------------------------------
-SDCard::SDCard(const char* driveName, spi_inst_t* spi, uint baudrate, const jxglib::SDCard::PinAssign& pinAssign) :
-		Drive(driveName), sdCard_(spi, baudrate, pinAssign)
+SDCard::SDCard(const char* driveName, spi_inst_t* spi, uint baudrate, const jxglib::Device::SDCard::PinAssign& pinAssign) :
+		Drive(driveName), sdCardDev_(spi, baudrate, pinAssign)
 {
 }	
 
 const char* SDCard::GetRemarks(char* buff, int lenMax) const
 {
-	::snprintf(buff, lenMax, "FAT::SDCard on SPI%d @%dHz CS:GPIO%d", ::spi_get_index(sdCard_.GetSPI()), sdCard_.GetBaudrate(), sdCard_.GetCS().pin);
+	::snprintf(buff, lenMax, "FAT::SDCard on SPI%d @%dHz CS:GPIO%d", ::spi_get_index(sdCardDev_.GetSPI()), sdCardDev_.GetBaudrate(), sdCardDev_.GetCS().pin);
 	return buff;
 }
 
 DSTATUS SDCard::status()
 {
 	//::printf("status\n");
-	return sdCard_.IsCardPresent()? 0x00 : STA_NODISK;	// STA_NOINIT, STA_NODISK, STA_PROTECT
+	return sdCardDev_.IsCardPresent()? 0x00 : STA_NODISK;	// STA_NOINIT, STA_NODISK, STA_PROTECT
 }
 
 DSTATUS SDCard::initialize()
 {
 	//::printf("initialize\n");
-	return sdCard_.Initialize()? 0x00 : STA_NOINIT;	// STA_NOINIT, STA_NODISK, STA_PROTECT
+	return sdCardDev_.Initialize()? 0x00 : STA_NOINIT;	// STA_NOINIT, STA_NODISK, STA_PROTECT
 }
 
 DRESULT SDCard::read(BYTE* buff, LBA_t sector, UINT count)
 {
 	//::printf("read(sector=%d, count=%d)\n", sector, count);
-	return sdCard_.ReadBlock(sector, buff, count)? RES_OK : RES_ERROR;
+	return sdCardDev_.ReadBlock(sector, buff, count)? RES_OK : RES_ERROR;
 }
 
 DRESULT SDCard::write(const BYTE* buff, LBA_t sector, UINT count)
 {
 	//::printf("write(sector=%d, count=%d)\n", sector, count);
-	return sdCard_.WriteBlock(sector, buff, count)? RES_OK : RES_ERROR;
+	return sdCardDev_.WriteBlock(sector, buff, count)? RES_OK : RES_ERROR;
 }
 
 DRESULT SDCard::ioctl_CTRL_SYNC()
@@ -52,7 +52,7 @@ DRESULT SDCard::ioctl_CTRL_SYNC()
 DRESULT SDCard::ioctl_GET_SECTOR_COUNT(LBA_t* pSectorCount)
 {
 	//::printf("ioctl(GET_SECTOR_COUNT)\n");
-	*pSectorCount = sdCard_.GetSectorCount();
+	*pSectorCount = sdCardDev_.GetSectorCount();
 	return RES_OK;
 }
 

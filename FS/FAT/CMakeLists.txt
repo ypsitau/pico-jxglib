@@ -19,7 +19,7 @@ target_sources(jxglib_FAT_SDCard INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/SDCard.cpp)
 
 target_link_libraries(jxglib_FAT_SDCard INTERFACE
-    jxglib_SDCard
+    jxglib_Device_SDCard
 	jxglib_FAT)
 
 #------------------------------------------------------------------------------
