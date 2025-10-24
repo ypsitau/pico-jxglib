@@ -13,6 +13,7 @@ void WS2812::Initialize(const GPIO& gpio, uint32_t freq)
 	const int T1 = 3;
 	const int T2 = 3;
 	const int T3 = 4;
+	//--------------------------------------------------------------------------
 	program_
 	.pio_version(0)
 	.program("ws2812")
@@ -26,6 +27,7 @@ void WS2812::Initialize(const GPIO& gpio, uint32_t freq)
 		.nop()					.side(0) [T2 - 1] // Or drive low, for a short pulse
 	.wrap()
 	.end();
+	//--------------------------------------------------------------------------
 	sm_.set_program(program_);
 	sm_.reserve_sideset_pins(gpio, 1);
 	sm_.config.set_out_shift_left(true, 24);	// shift left, autopull enabled, pull threshold 24

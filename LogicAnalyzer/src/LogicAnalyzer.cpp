@@ -148,10 +148,12 @@ bool LogicAnalyzer::Enable()
 		nBitsPinToReport = nBitsPinToSample;
 	}
 	uint relAddrEntryTbl[4];
+	//--------------------------------------------------------------------------
 	program_SamplerInit_
 	.program("sampler_init")
 		.mov("osr", "~null")						// osr = 0xffffffff
 	.end();
+	//--------------------------------------------------------------------------
 	program_SamplerMain_
 	.program("sampler_main")
 	.pub(&relAddrEntryTbl[3])
@@ -184,6 +186,7 @@ bool LogicAnalyzer::Enable()
 		.mov("y", "x") [1]							// y = x
 	.wrap()
 	.end();
+	//--------------------------------------------------------------------------
 	uint iPIO = iPIORequested_;
 	if (iPIO == static_cast<uint>(-1)) {
 		iPIO = PIO::Num - 1;

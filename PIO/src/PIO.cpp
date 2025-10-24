@@ -13,7 +13,9 @@ PIO::Block PIO1(pio1);
 PIO::Block PIO2(pio2);
 #endif
 
-namespace PIO {
+}
+
+namespace jxglib::PIO {
 
 //------------------------------------------------------------------------------
 // PIO::Config
@@ -75,7 +77,6 @@ StateMachine& StateMachine::share_program(StateMachine& smToShareProgram)
 	pSmToShareProgram_ = &smToShareProgram;
 	setup_resource_(smToShareProgram.pio, ::pio_claim_unused_sm(smToShareProgram.pio, true), smToShareProgram.offset);
 	return *this;
-	//return share_program(smToShareProgram, smToShareProgram.pio, ::pio_claim_unused_sm(smToShareProgram.pio, true));
 }
 
 StateMachine& StateMachine::share_program(StateMachine& smToShareProgram, pio_hw_t* pio)
@@ -605,8 +606,6 @@ pio_src_dest Program::StrToSrcDest(uint16_t inst, const char* str) const
 	if (::strcasecmp(str, "osr") == 0)		return pio_osr;
 	::panic("addr%02x: invalid source/destination '%s'\n", relAddrCur_, str);
 	return pio_pins;
-}
-
 }
 
 }
