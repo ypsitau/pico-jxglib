@@ -35,8 +35,15 @@ public:
 	uint32_t GetFlashAddrTop() const { return flashAddrTop_; }
 	bool IsComplete() const { return completeFlag_; }
 public:
+	virtual void On_msc_capacity(uint8_t lun, uint32_t* block_count, uint16_t* block_size) override;
 	virtual int32_t On_msc_write10(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize) override;
 };
+
+void UF2Installer::On_msc_capacity(uint8_t lun, uint32_t* block_count, uint16_t* block_size)
+{
+	*block_count = (flashAddrBtm_ - XIP_BASE) / USBDevice::MSCDrive::BlockSize;
+	*block_size  = USBDevice::MSCDrive::BlockSize;
+}
 
 int32_t UF2Installer::On_msc_write10(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize)
 {
@@ -53,13 +60,12 @@ int32_t UF2Installer::On_msc_write10(uint8_t lun, uint32_t lba, uint32_t offset,
 		if (flashAddrTarget_ > 0) {
 			uint32_t offsetXIP = flashAddrTarget_ - XIP_BASE;
 			Flash::Write(offsetXIP, block.data, block.payload_size);
-			//terr_.Printf("%3d/%3d %08x %dbytes\r", block.block_no + 1, block.num_blocks,
-			//			flashAddrTarget_, block.payload_size);
+			terr_.Printf("%3d/%3d 0x%08x\r", block.block_no + 1, block.num_blocks, flashAddrTarget_);
 			flashAddrTarget_ += block.payload_size;
 		}
 		if (block.block_no + 1 == block.num_blocks) {
 			// last block
-			//terr_.Printf("%3d/%3d complete            \n", block.block_no + 1, block.num_blocks);
+			terr_.Printf("                  \r");
 			completeFlag_ = true;
 			break;
 		}

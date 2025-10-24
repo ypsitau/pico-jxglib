@@ -44,6 +44,10 @@ bool MSCDrive::On_msc_test_unit_ready(uint8_t lun)
 void MSCDrive::On_msc_capacity(uint8_t lun, uint32_t* block_count, uint16_t* block_size)
 {
 	//::printf("On_msc_capacity\n");
+	if (pHookHandler_) {
+		pHookHandler_->On_msc_capacity(lun, block_count, block_size);
+		return;
+	}
 	*block_count = bytesXIP_ / BlockSize;
 	*block_size  = BlockSize;
 }

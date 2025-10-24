@@ -83,7 +83,7 @@ GenerateUF2File(fileNameUF2 as String, fileNameBin as String) = {
 	//   uint32_t file_size; // or family_id;	0xe48bff58 (DATA_FAMILY_ID)
 	//   uint8_t  data[476];
 	//   uint32_t magic_end;					0x0AB16F30
-	bytesProgramMax = 0x10180000
+	addrFlashBtm = 0x10180000
 	bytesFlashPage = 256
 	buffSrc = src.Read()
 	bytesHeader = 8
@@ -97,8 +97,8 @@ GenerateUF2File(fileNameUF2 as String, fileNameBin as String) = {
 	magic_start0	= 0x0A324655
 	magic_start1	= 0x9E5D5157
 	flags			= 0x00002000			// UF2_FLAG_FAMILY_ID_PRESENT
-	addrStart		= bytesProgramMax - bytesDst
-	target_addr		= addrStart
+	addrFlashStart	= addrFlashBtm - bytesDst
+	target_addr		= addrFlashStart
 	payload_size	= 256
 	block_no		= 0 
 	num_blocks		= bytesDst / payload_size					
@@ -118,7 +118,7 @@ GenerateUF2File(fileNameUF2 as String, fileNameBin as String) = {
 		target_addr += payload_size
 		block_no += 1
 	}
-	sys.cerr.Printf('Generated: %s (0x%08x-0x%08x)\n', fileNameUF2, addrStart, addrStart + bytesDst)
+	sys.cerr.Printf('Generated: %s (0x%08x-0x%08x)\n', fileNameUF2, addrFlashStart, addrFlashStart + bytesDst)
 }
 
 tmplHelp = tR'''
