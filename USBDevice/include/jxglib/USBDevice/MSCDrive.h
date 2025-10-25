@@ -38,6 +38,7 @@ public:
 	class HookHandler {
 	public:
 		virtual void On_msc_capacity(uint8_t lun, uint32_t* block_count, uint16_t* block_size) = 0;
+		virtual int32_t On_msc_read10(uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize) = 0;
 		virtual int32_t On_msc_write10(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize) = 0;
 	};
 public:

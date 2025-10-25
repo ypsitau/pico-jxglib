@@ -68,9 +68,9 @@ bool MSCDrive::On_msc_start_stop(uint8_t lun, uint8_t power_condition, bool star
 
 int32_t MSCDrive::On_msc_read10(uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize)
 {
+	if (pHookHandler_) return pHookHandler_->On_msc_read10(lun, lba, offset, buffer, bufsize);
 	//::printf("On_msc_read10(lba=%d, bufsize=%d)\n", lba, bufsize);
 	if (lba >= bytesXIP_ / BlockSize) return -1;
-	//sdCard_.ReadBlock(lba, buffer, bufsize / BlockSize);
 	Flash::Read(offsetXIP_ + lba * BlockSize, buffer, bufsize);
 	return bufsize;
 }
