@@ -23,7 +23,7 @@ void PrintInstalledFonts(Printable& tout, Printable& terr);
 #define README_CONTENTS \
 "This is tinyusb's MassStorage Class demo.\r\n"
 
-static const int BlockCount = 0x8000;
+static const int BlockCount = 0x100;
 static const int BlockSize = 512;
 
 uint8_t blocks_[4][BlockSize] =
@@ -37,13 +37,13 @@ uint8_t blocks_[4][BlockSize] =
 		lsb_hword(1),				// 0x0e reserved sectors
 		1,							// 0x10 number of FATs
 		lsb_hword(512),				// 0x11 max root dir entries
-		lsb_hword(0),				// 0x13 total sectors (if zero, later field is used)
+		lsb_hword(BlockCount),		// 0x13 total sectors (if zero, later field is used)
 		0xF8,						// 0x15 media descriptor (fixed disk)
 		lsb_hword(1),				// 0x16 sectors per FAT
 		lsb_hword(1),				// 0x18 sectors per track
 		lsb_hword(1),				// 0x1a number of heads
 		lsb_word(0),				// 0x1c hidden sectors
-		lsb_word(BlockCount),		// 0x20 total sectors (if 0x13 is zero)
+		lsb_word(0),				// 0x20 total sectors (if 0x13 is zero)
 		0x80,						// 0x24 drive number
 		0x00,						// 0x25 reserved1
 		0x29,						// 0x26 extended boot signature
