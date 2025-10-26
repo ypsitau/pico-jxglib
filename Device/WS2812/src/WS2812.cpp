@@ -8,7 +8,7 @@ namespace jxglib::Device {
 //------------------------------------------------------------------------------
 // Device::WS2812
 //------------------------------------------------------------------------------
-void WS2812::Initialize(const GPIO& gpio, uint32_t freq)
+void WS2812::Run(const GPIO& gpio, uint32_t freq)
 {
 	const int T1 = 3;
 	const int T2 = 3;
@@ -28,16 +28,16 @@ void WS2812::Initialize(const GPIO& gpio, uint32_t freq)
 	.wrap()
 	.end();
 	//--------------------------------------------------------------------------
-	sm_.set_program(program_);
-	sm_.reserve_sideset_pins(gpio, 1);
-	sm_.config.set_out_shift_left(true, 24);	// shift left, autopull enabled, pull threshold 24
-	sm_.config.set_fifo_join_tx();
-	sm_.config.set_clkdiv(static_cast<float>(::clock_get_hz(clk_sys)) / (freq * (T1 + T2 + T3)));
-	sm_.init();
-	sm_.set_enabled();
+	sm_.set_program(program_)
+		.reserve_sideset_pins(gpio, 1)
+		.config_set_out_shift_left(true, 24)	// shift left, autopull enabled, pull threshold 24
+		.config_set_fifo_join_tx()
+		.config_set_clkdiv(static_cast<float>(::clock_get_hz(clk_sys)) / (freq * (T1 + T2 + T3)))
+		.init()
+		.set_enabled();
 }
 
-const WS2812& WS2812::Put(uint8_t r, uint8_t g, uint8_t b) const
+WS2812& WS2812::Put(uint8_t r, uint8_t g, uint8_t b)
 {
 	uint32_t data =
 		(static_cast<uint32_t>(b) << 0) |
@@ -47,6 +47,5 @@ const WS2812& WS2812::Put(uint8_t r, uint8_t g, uint8_t b) const
 	sm_.put(data << 8);
 	return *this;
 }
-
 
 }

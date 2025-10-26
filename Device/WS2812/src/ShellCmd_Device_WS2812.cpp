@@ -47,7 +47,7 @@ ShellCmd(ws2812, "controls WS2812")
 					terr.Printf("specify GPIO pin number by -p option\n");
 					return Result::Error;
 				}
-				ws2812.Initialize(GPIO::Instance(pin));
+				ws2812.Run(GPIO::Instance(pin));
 				initializedFlag = true;
 			}
 			Color c;

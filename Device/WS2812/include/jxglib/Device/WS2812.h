@@ -18,9 +18,9 @@ private:
 public:
 	WS2812() {}
 public:
-	void Initialize(const GPIO& gpio, uint32_t freq = 800000);
-	const WS2812& Put(uint8_t r, uint8_t g, uint8_t b) const;
-	const WS2812& Put(const Color& c) const { return Put(c.r, c.g, c.b); }
+	void Run(const GPIO& gpio, uint32_t freq = 800000);
+	WS2812& Put(uint8_t r, uint8_t g, uint8_t b);
+	WS2812& Put(const Color& c) { return Put(c.r, c.g, c.b); }
 
 };
 
