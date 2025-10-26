@@ -179,7 +179,7 @@ public:
 	operator const pio_program_t&() const { return program_; }
 	//operator const pio_program_t*() const { return &program_; }	// conflicts with [] operator
 public:
-	const Program& exec(const StateMachine& sm) const;
+	const Program& exec(StateMachine& sm) const;
 public:
 	// Directives
 	Program& program(const char* name)	{ Reset(); directive_ = Directive::program; name_ = name; return *this; }
@@ -386,111 +386,154 @@ public:
 		return reserve_sideset_pins(pin1, 1 + sizeof...(pins));
 	}
 public:
-	const StateMachine& claim() const { ::pio_sm_claim(pio, sm); return *this; }
-	const StateMachine& unclaim() const { ::pio_sm_unclaim(pio, sm); return *this; }
-	bool is_claimed() const { return ::pio_sm_is_claimed(pio, sm); }
+	StateMachine& claim() { ::pio_sm_claim(pio, sm); return *this; }
+	StateMachine& unclaim() { ::pio_sm_unclaim(pio, sm); return *this; }
+	bool is_claimed() { return ::pio_sm_is_claimed(pio, sm); }
 public:
-	const StateMachine& gpio_init(uint pin) const { pio.gpio_init(pin); return *this; }
+	StateMachine& gpio_init(uint pin) { pio.gpio_init(pin); return *this; }
 public:
-	const StateMachine& set_in_pins(uint in_base) const { ::pio_sm_set_in_pins(pio, sm, in_base); return *this; }
+	StateMachine& set_in_pins(uint in_base) { ::pio_sm_set_in_pins(pio, sm, in_base); return *this; }
 	template<typename... Pins>
-	const StateMachine& set_in_pin(uint pin1, Pins... pins) const {
+	StateMachine& set_in_pin(uint pin1, Pins... pins) {
 		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
 		return set_in_pins(pin1);
 	}
 public:
-	const StateMachine& set_out_pins(uint out_base, uint out_count) const { ::pio_sm_set_out_pins(pio, sm, out_base, out_count); return *this; }
+	StateMachine& set_out_pins(uint out_base, uint out_count) { ::pio_sm_set_out_pins(pio, sm, out_base, out_count); return *this; }
 	template<typename... Pins>
-	const StateMachine& set_out_pin(uint pin1, Pins... pins) const {
+	StateMachine& set_out_pin(uint pin1, Pins... pins) {
 		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
 		return set_out_pins(pin1, 1 + sizeof...(pins));
 	}
 public:
-	const StateMachine& set_set_pins(uint set_base, uint set_count) const { ::pio_sm_set_set_pins(pio, sm, set_base, set_count); return *this; }
+	StateMachine& set_set_pins(uint set_base, uint set_count) { ::pio_sm_set_set_pins(pio, sm, set_base, set_count); return *this; }
 	template<typename... Pins>
-	const StateMachine& set_set_pin(uint pin1, Pins... pins) const {
+	StateMachine& set_set_pin(uint pin1, Pins... pins) {
 		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
 		return set_set_pins(pin1, 1 + sizeof...(pins));
 	}
 public:
-	const StateMachine& set_sideset_pins(uint sideset_base) const { ::pio_sm_set_sideset_pins(pio, sm, sideset_base); return *this; }
+	StateMachine& set_sideset_pins(uint sideset_base) { ::pio_sm_set_sideset_pins(pio, sm, sideset_base); return *this; }
 	template<typename... Pins>
-	const StateMachine& set_sideset_pin(uint pin1, Pins... pins) const {
+	StateMachine& set_sideset_pin(uint pin1, Pins... pins) {
 		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
 		return set_sideset_pins(pin1);
 	}
 public:
-	const StateMachine& set_jmp_pin(uint pin) const { ::pio_sm_set_jmp_pin(pio, sm, pin); return *this; }
+	StateMachine& set_jmp_pin(uint pin) { ::pio_sm_set_jmp_pin(pio, sm, pin); return *this; }
 public:
-	const StateMachine& set_clkdiv_int_frac(uint16_t div_int, uint8_t div_frac) const { ::pio_sm_set_clkdiv_int_frac(pio, sm, div_int, div_frac); return *this; }
-	const StateMachine& set_clkdiv(float div) const { ::pio_sm_set_clkdiv(pio, sm, div); return *this; }
-	const StateMachine& set_wrap(uint wrap_target, uint wrap) const { ::pio_sm_set_wrap(pio, sm, wrap_target, wrap); return *this; }
+	StateMachine& set_clkdiv_int_frac(uint16_t div_int, uint8_t div_frac) { ::pio_sm_set_clkdiv_int_frac(pio, sm, div_int, div_frac); return *this; }
+	StateMachine& set_clkdiv(float div) { ::pio_sm_set_clkdiv(pio, sm, div); return *this; }
+	StateMachine& set_wrap(uint wrap_target, uint wrap) { ::pio_sm_set_wrap(pio, sm, wrap_target, wrap); return *this; }
 public:
-	const StateMachine& init(uint initial_pc, const pio_sm_config* config) const;
-	const StateMachine& init_with_entry(uint relAddrEntry) const { return init(offset + relAddrEntry, config); }
-	const StateMachine& init() const { return init_with_entry(GetProgram().GetRelAddrEntry()); }
-	const StateMachine& init_pins() const;
-	int set_config(const pio_sm_config *config) const { return ::pio_sm_set_config(pio, sm, config); }
-	const StateMachine& set_enabled(bool enabled = true) const { ::pio_sm_set_enabled(pio, sm, enabled); return *this; }
-	const StateMachine& restart() const { ::pio_sm_restart(pio, sm); return *this; }
-	const StateMachine& clkdiv_restart() const { ::pio_sm_clkdiv_restart(pio, sm); return *this; }
-	const StateMachine& exec(uint instr) const { ::pio_sm_exec(pio, sm, instr); return *this; }
-	const StateMachine& exec(const Program& program) const;
-	bool is_exec_stalled() const { return ::pio_sm_is_exec_stalled(pio, sm); }
-	const StateMachine& exec_wait_blocking(uint instr) const { ::pio_sm_exec_wait_blocking(pio, sm, instr); return *this; }
+	StateMachine& init(uint initial_pc, const pio_sm_config* config);
+	StateMachine& init_with_entry(uint relAddrEntry) { return init(offset + relAddrEntry, config); }
+	StateMachine& init() { return init_with_entry(GetProgram().GetRelAddrEntry()); }
+	StateMachine& init_pins();
+	int set_config(const pio_sm_config *config) { return ::pio_sm_set_config(pio, sm, config); }
+	StateMachine& set_enabled(bool enabled = true) { ::pio_sm_set_enabled(pio, sm, enabled); return *this; }
+	StateMachine& restart() { ::pio_sm_restart(pio, sm); return *this; }
+	StateMachine& clkdiv_restart() { ::pio_sm_clkdiv_restart(pio, sm); return *this; }
+	StateMachine& exec(uint instr) { ::pio_sm_exec(pio, sm, instr); return *this; }
+	StateMachine& exec(const Program& program);
+	bool is_exec_stalled() { return ::pio_sm_is_exec_stalled(pio, sm); }
+	StateMachine& exec_wait_blocking(uint instr) { ::pio_sm_exec_wait_blocking(pio, sm, instr); return *this; }
 public:
-	const StateMachine& set_consecutive_pindirs(uint pins_base, uint pin_count, bool is_out) const { ::pio_sm_set_consecutive_pindirs(pio, sm, pins_base, pin_count, is_out); return *this; }
-	const StateMachine& set_consecutive_pindirs_out(uint pins_base, uint pin_count) const { ::pio_sm_set_consecutive_pindirs(pio, sm, pins_base, pin_count, true); return *this; }
-	const StateMachine& set_consecutive_pindirs_in(uint pins_base, uint pin_count) const { ::pio_sm_set_consecutive_pindirs(pio, sm, pins_base, pin_count, false); return *this; }
+	StateMachine& set_consecutive_pindirs(uint pins_base, uint pin_count, bool is_out) { ::pio_sm_set_consecutive_pindirs(pio, sm, pins_base, pin_count, is_out); return *this; }
+	StateMachine& set_consecutive_pindirs_out(uint pins_base, uint pin_count) { ::pio_sm_set_consecutive_pindirs(pio, sm, pins_base, pin_count, true); return *this; }
+	StateMachine& set_consecutive_pindirs_in(uint pins_base, uint pin_count) { ::pio_sm_set_consecutive_pindirs(pio, sm, pins_base, pin_count, false); return *this; }
 public:
-	const StateMachine& set_pindirs_with_mask(uint32_t pin_dirs, uint32_t pin_mask) const { ::pio_sm_set_pindirs_with_mask(pio, sm, pin_dirs, pin_mask); return *this; }
-	template<typename... Pins> const StateMachine& set_pindir_out(uint pin1, Pins... pins) const {
+	StateMachine& set_pindirs_with_mask(uint32_t pin_dirs, uint32_t pin_mask) { ::pio_sm_set_pindirs_with_mask(pio, sm, pin_dirs, pin_mask); return *this; }
+	template<typename... Pins> StateMachine& set_pindir_out(uint pin1, Pins... pins) {
 		uint32_t pin_mask = (1u << pin1);
 		((pin_mask |= (1u << pins)), ...);
 		set_pindirs_with_mask(pin_mask, pin_mask);  // Set directions to output (1)
 		return *this;
 	}
-	template<typename... Pins> const StateMachine& set_pindir_in(uint pin1, Pins... pins) const {
+	template<typename... Pins> StateMachine& set_pindir_in(uint pin1, Pins... pins) {
 		uint32_t pin_mask = (1u << pin1);
 		((pin_mask |= (1u << pins)), ...);
 		set_pindirs_with_mask(0, pin_mask);  // Set directions to input (0)
 		return *this;
 	}
-	const StateMachine& set_pindir_out_mask(uint32_t pin_mask) const { set_pindirs_with_mask(pin_mask, pin_mask); return *this; }
-	const StateMachine& set_pindir_in_mask(uint32_t pin_mask) const { set_pindirs_with_mask(0, pin_mask); return *this; }
+	StateMachine& set_pindir_out_mask(uint32_t pin_mask) { set_pindirs_with_mask(pin_mask, pin_mask); return *this; }
+	StateMachine& set_pindir_in_mask(uint32_t pin_mask) { set_pindirs_with_mask(0, pin_mask); return *this; }
 public:
-	const StateMachine& set_pins(uint32_t pin_values) const { ::pio_sm_set_pins(pio, sm, pin_values); return *this; }
-	const StateMachine& set_pins_with_mask(uint32_t pin_values, uint32_t pin_mask) const { ::pio_sm_set_pins_with_mask(pio, sm, pin_values, pin_mask); return *this; }
-	template<typename... Pins> int set_pin(bool value, uint pin1, Pins... pins) const {
+	StateMachine& set_pins(uint32_t pin_values) { ::pio_sm_set_pins(pio, sm, pin_values); return *this; }
+	StateMachine& set_pins_with_mask(uint32_t pin_values, uint32_t pin_mask) { ::pio_sm_set_pins_with_mask(pio, sm, pin_values, pin_mask); return *this; }
+	template<typename... Pins> int set_pin(bool value, uint pin1, Pins... pins) {
 		uint32_t pin_mask = (1u << pin1);
 		((pin_mask |= (1u << pins)), ...);
 		set_pins_with_mask(value? pin_mask : 0, pin_mask);
 		return 0;
 	}
 public:
-	uint get_dreq(bool is_tx) const { return ::pio_get_dreq(pio, sm, is_tx); }
-	uint get_dreq_tx() const { return ::pio_get_dreq(pio, sm, true); }
-	uint get_dreq_rx() const { return ::pio_get_dreq(pio, sm, false); }
-	const volatile uint32_t* get_txf() const { return reinterpret_cast<const volatile uint32_t*>(&pio.pio->txf[sm]); }
-	const volatile uint32_t* get_rxf() const { return reinterpret_cast<const volatile uint32_t*>(&pio.pio->rxf[sm]); }
+	uint get_dreq(bool is_tx) { return ::pio_get_dreq(pio, sm, is_tx); }
+	uint get_dreq_tx() { return ::pio_get_dreq(pio, sm, true); }
+	uint get_dreq_rx() { return ::pio_get_dreq(pio, sm, false); }
+	const volatile uint32_t* get_txf() { return reinterpret_cast<const volatile uint32_t*>(&pio.pio->txf[sm]); }
+	const volatile uint32_t* get_rxf() { return reinterpret_cast<const volatile uint32_t*>(&pio.pio->rxf[sm]); }
 public:
-	uint8_t get_pc() const { return  ::pio_sm_get_pc(pio, sm); }
+	uint8_t get_pc() { return  ::pio_sm_get_pc(pio, sm); }
 public:
-	bool is_rx_fifo_full() const { return ::pio_sm_is_rx_fifo_full(pio, sm); }
-	bool is_tx_fifo_full() const { return ::pio_sm_is_tx_fifo_full(pio, sm); }
-	bool is_rx_fifo_empty() const { return ::pio_sm_is_rx_fifo_empty(pio, sm); }
-	bool is_tx_fifo_empty() const { return ::pio_sm_is_tx_fifo_empty(pio, sm); }
-	uint get_rx_fifo_level() const { return ::pio_sm_get_rx_fifo_level(pio, sm); }
-	uint get_tx_fifo_level() const { return ::pio_sm_get_tx_fifo_level(pio, sm); }
+	bool is_rx_fifo_full() { return ::pio_sm_is_rx_fifo_full(pio, sm); }
+	bool is_tx_fifo_full() { return ::pio_sm_is_tx_fifo_full(pio, sm); }
+	bool is_rx_fifo_empty() { return ::pio_sm_is_rx_fifo_empty(pio, sm); }
+	bool is_tx_fifo_empty() { return ::pio_sm_is_tx_fifo_empty(pio, sm); }
+	uint get_rx_fifo_level() { return ::pio_sm_get_rx_fifo_level(pio, sm); }
+	uint get_tx_fifo_level() { return ::pio_sm_get_tx_fifo_level(pio, sm); }
 	pio_interrupt_source_t get_rx_fifo_not_empty_interrupt_source() { return ::pio_get_rx_fifo_not_empty_interrupt_source(sm); }
 	pio_interrupt_source_t get_tx_fifo_not_full_interrupt_source() { return ::pio_get_tx_fifo_not_full_interrupt_source(sm); }
-	const StateMachine& drain_tx_fifo() const { ::pio_sm_drain_tx_fifo(pio, sm); return *this; }
-	const StateMachine& clear_fifos() const { ::pio_sm_clear_fifos(pio, sm); return *this; }
+	StateMachine& drain_tx_fifo() { ::pio_sm_drain_tx_fifo(pio, sm); return *this; }
+	StateMachine& clear_fifos() { ::pio_sm_clear_fifos(pio, sm); return *this; }
 public:
-	const StateMachine& put(uint32_t data) const { ::pio_sm_put(pio, sm, data); return *this; }
-	uint32_t get() const { return ::pio_sm_get(pio, sm); }
-	const StateMachine& put_blocking(uint32_t data) const { ::pio_sm_put_blocking(pio, sm, data); return *this; }
-	uint32_t get_blocking() const { return ::pio_sm_get_blocking(pio, sm); }
+	StateMachine& put(uint32_t data) { ::pio_sm_put(pio, sm, data); return *this; }
+	uint32_t get() { return ::pio_sm_get(pio, sm); }
+	StateMachine& put_blocking(uint32_t data) { ::pio_sm_put_blocking(pio, sm, data); return *this; }
+	uint32_t get_blocking() { return ::pio_sm_get_blocking(pio, sm); }
+public:
+	StateMachine& config_set_out_pin_base(uint out_base) { config.set_out_pin_base(out_base); return *this; }
+	StateMachine& config_set_out_pin_count(uint out_count) { config.set_out_pin_count(out_count); return *this; }
+	StateMachine& config_set_out_pins(uint out_base, uint out_count) { config.set_out_pins(out_base, out_count); return *this; }
+public:
+	StateMachine& config_set_set_pin_base(uint set_base) { config.set_set_pin_base(set_base); return *this; }
+	StateMachine& config_set_set_pin_count(uint set_count) { config.set_set_pin_count(set_count); return *this; }
+	StateMachine& config_set_set_pins(uint set_base, uint set_count) { config.set_set_pins(set_base, set_count); return *this; }
+public:
+	StateMachine& config_set_in_pin_base(uint in_base) { config.set_in_pin_base(in_base); return *this; }
+	StateMachine& config_set_in_pins(uint in_base) { config.set_in_pins(in_base); return *this; }
+public:
+	StateMachine& config_set_sideset_pin_base(uint sideset_base) { config.set_sideset_pin_base(sideset_base); return *this; }
+	StateMachine& config_set_sideset_pins(uint sideset_base) { config.set_sideset_pins(sideset_base); return *this; }
+public:
+	StateMachine& config_set_jmp_pin(uint pin) { config.set_jmp_pin(pin); return *this; }
+public:
+	StateMachine& config_set_clkdiv_int_frac(uint16_t div_int, uint8_t div_frac) { config.set_clkdiv_int_frac(div_int, div_frac); return *this; }
+	StateMachine& config_set_clkdiv(float div) { config.set_clkdiv(div); return *this; }
+public:
+	StateMachine& config_set_sideset(uint bit_count, bool optional, bool pindirs) { config.set_sideset(bit_count, optional, pindirs); return *this; }
+	StateMachine& config_set_wrap(uint wrap_target, uint wrap) { config.set_wrap(wrap_target, wrap); return *this; }
+public:
+	StateMachine& config_set_in_shift(bool shift_right, bool autopush = false, uint push_threshold = 32) { config.set_in_shift(shift_right, autopush, push_threshold); return *this; }
+	StateMachine& config_set_in_shift_left(bool autopush = false, uint push_threshold = 32) { return config_set_in_shift(false, autopush, push_threshold); }
+	StateMachine& config_set_in_shift_right(bool autopush = false, uint push_threshold = 32) { return config_set_in_shift(true, autopush, push_threshold); }
+public:
+	StateMachine& config_set_out_shift(bool shift_right, bool autopull = false, uint pull_threshold = 32) { config.set_out_shift(shift_right, autopull, pull_threshold); return *this; }
+	StateMachine& config_set_out_shift_left(bool autopull = false, uint pull_threshold = 32) { return config_set_out_shift(false, autopull, pull_threshold); }
+	StateMachine& config_set_out_shift_right(bool autopull = false, uint pull_threshold = 32) { return config_set_out_shift(true, autopull, pull_threshold); }
+public:
+	StateMachine& config_set_fifo_join(enum pio_fifo_join join) { config.set_fifo_join(join); return *this; }
+	StateMachine& config_set_fifo_join_none() { return config_set_fifo_join(PIO_FIFO_JOIN_NONE); }
+	StateMachine& config_set_fifo_join_tx() { return config_set_fifo_join(PIO_FIFO_JOIN_TX); }
+	StateMachine& config_set_fifo_join_rx() { return config_set_fifo_join(PIO_FIFO_JOIN_RX); }
+#if PICO_PIO_VERSION > 0
+	StateMachine& config_set_fifo_join_txput() { return config_set_fifo_join(PIO_FIFO_JOIN_TXPUT); }
+	StateMachine& config_set_fifo_join_txget() { return config_set_fifo_join(PIO_FIFO_JOIN_TXGET); }
+	StateMachine& config_set_fifo_join_putget() { return config_set_fifo_join(PIO_FIFO_JOIN_PUTGET); }
+#endif
+public:
+	StateMachine& config_set_out_special(bool sticky, bool has_enable_pin, uint enable_pin_index) { config.set_out_special(sticky, has_enable_pin, enable_pin_index); return *this; }
+	StateMachine& config_set_mov_status(enum pio_mov_status_type status_sel, uint status_n) { config.set_mov_status(status_sel, status_n); return *this; }
 };
 
 #if PICO_PIO_VERSION > 0
