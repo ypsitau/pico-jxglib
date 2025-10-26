@@ -130,14 +130,14 @@ void StateMachine::setup_resource_(pio_hw_t* pio, uint sm, uint offset)
 	init();
 }
 
-const StateMachine& StateMachine::init(uint initial_pc, const pio_sm_config* config) const
+StateMachine& StateMachine::init(uint initial_pc, const pio_sm_config* config)
 {
 	init_pins();
 	if (::pio_sm_init(pio, sm, initial_pc, config) < 0) ::panic("failed to initialize PIO's state machine");
 	return *this;
 }
 
-const StateMachine& StateMachine::init_pins() const
+StateMachine& StateMachine::init_pins()
 {
 	uint32_t pinBits = pin_mask_;
 	for (uint pin = 0; pinBits; pinBits >>= 1, ++pin) if (pinBits & 1) ::pio_gpio_init(pio, pin);
@@ -187,7 +187,7 @@ StateMachine& StateMachine::reserve_sideset_pins(uint base, uint count)
 	return *this;
 }
 
-const StateMachine& StateMachine::exec(const Program& program) const
+StateMachine& StateMachine::exec(const Program& program)
 {
 	program.exec(*this);
 	return *this;
@@ -544,7 +544,7 @@ Program& Program::noblock()
 	return *this;
 }
 
-const Program& Program::exec(const StateMachine& sm) const
+const Program& Program::exec(StateMachine& sm) const
 {
 	for (uint relAddr = 0; relAddr < relAddrCur_; ++relAddr) {
 		sm.exec(instTbl_[relAddr]);
