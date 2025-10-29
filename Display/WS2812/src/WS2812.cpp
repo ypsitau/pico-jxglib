@@ -14,8 +14,9 @@ WS2812::WS2812(int width, int height) :
 	SetDispatcher(dispatcherEx_);
 }
 
-WS2812& WS2812::Initialize()
+WS2812& WS2812::Initialize(const GPIO& gpio)
 {
+	device_.Run(gpio);
 	canvas_.Allocate(GetFormat(), GetWidth(), GetHeight());
 	return *this;
 }
@@ -25,11 +26,19 @@ WS2812& WS2812::Initialize()
 //------------------------------------------------------------------------------
 bool WS2812::DispatcherEx::Initialize()
 {
+	timeStamp_ = Tickable::GetCurrentTime();
 	return true;
 }
 
 void WS2812::DispatcherEx::Refresh()
 {
+	Image& image = GetCanvas().GetImageOwn();
+	Device::WS2812& device = ws2812_.GetDevice();
+	using Reader = Image::Reader<Image::Getter_T<Color, Color> >;
+	Image::Reader reader(Reader::HorzFromNW(image, 0, 0, image.GetWidth(), image.GetHeight()));
+	while (Tickable::GetCurrentTime() - timeStamp_ < 1) Tickable::TickSub();	// interval of 280us or more
+	while (!reader.HasDone()) device.Put(reader.ReadForward());
+	timeStamp_ = Tickable::GetCurrentTime();
 }
 
 void WS2812::DispatcherEx::Fill(const Color& color)

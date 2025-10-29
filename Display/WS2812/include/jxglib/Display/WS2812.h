@@ -4,6 +4,7 @@
 #ifndef PICO_JXGLIB_DISPLAY_WS2812_H
 #define PICO_JXGLIB_DISPLAY_WS2812_H
 #include "pico/stdlib.h"
+#include "jxglib/Device/WS2812.h"
 #include "jxglib/Canvas.h"
 #include "jxglib/Display.h"
 
@@ -16,6 +17,7 @@ class WS2812 : public Base {
 public:
 	class DispatcherEx : public Dispatcher {
 	private:
+		uint32_t timeStamp_;
 		WS2812& ws2812_;
 	public:
 		DispatcherEx(WS2812& ws2812) : ws2812_{ws2812} {}
@@ -35,14 +37,16 @@ public:
 		Canvas& GetCanvas() { return ws2812_.canvas_; }
 	};
 private:
+	Device::WS2812 device_;
 	Canvas canvas_;
 	DispatcherEx dispatcherEx_;
 public:
 	WS2812(int width, int height);
 public:
-	WS2812& Initialize();
+	WS2812& Initialize(const GPIO& gpio);
 public:
 	Canvas& GetCanvas() { return canvas_; }
+	Device::WS2812& GetDevice() { return device_; }
 };
 
 }

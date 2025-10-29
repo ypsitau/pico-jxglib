@@ -4,6 +4,7 @@ target_include_directories(jxglib_Display_WS2812 INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/include)
 
 target_link_libraries(jxglib_Display_WS2812 INTERFACE
+	jxglib_Device_WS2812
 	jxglib_Canvas
 	jxglib_Display)
 
