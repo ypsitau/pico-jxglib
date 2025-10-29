@@ -7,24 +7,25 @@ namespace jxglib::Device {
 
 //------------------------------------------------------------------------------
 // Device::WS2812
+// Minimum reset time: 280us
 //------------------------------------------------------------------------------
-void WS2812::Run(const GPIO& gpio, uint32_t freq)
+void WS2812::Run(const GPIO& gpio)
 {
-	const int T1 = 3;
-	const int T2 = 3;
-	const int T3 = 4;
+	const int nClocksWhole	= 10;	// 1250ns
+	const int nClocksLong	= 5;	// 625ns (must be between 580ns and 1000ns)
+	const int nClocksShort	= 3;	// 375ns (must be between 220ns and 380ns)
 	//--------------------------------------------------------------------------
 	program_
 	.pio_version(0)
 	.program("ws2812")
 	.side_set(1)
 	.L("bitloop")
-		.out("x", 1)			.side(0) [T3 - 1] // Side-set still takes place when instruction stalls
-		.jmp("!x", "do_zero")	.side(1) [T1 - 1] // Branch on the bit we shifted out. Positive pulse
+		.out("x", 1)			.side(0) [nClocksWhole - nClocksLong - 1]	// Side-set still takes place when instruction stalls
+		.jmp("!x", "do_zero")	.side(1) [nClocksShort - 1]				 	// Branch on the bit we shifted out. Positive pulse
 	.L("do_one")
-		.jmp("bitloop")			.side(1) [T2 - 1] // Continue driving high, for a long pulse
+		.jmp("bitloop")			.side(1) [nClocksLong - nClocksShort - 1]	// Continue driving high, for a long pulse
 	.L("do_zero")
-		.nop()					.side(0) [T2 - 1] // Or drive low, for a short pulse
+		.nop()					.side(0) [nClocksLong - nClocksShort - 1]	// Or drive low, for a short pulse
 	.wrap()
 	.end();
 	//--------------------------------------------------------------------------
@@ -32,7 +33,7 @@ void WS2812::Run(const GPIO& gpio, uint32_t freq)
 		.reserve_sideset_pins(gpio, 1)
 		.config_set_out_shift_left(true, 24)	// shift left, autopull enabled, pull threshold 24
 		.config_set_fifo_join_tx()
-		.config_set_clkdiv(static_cast<float>(::clock_get_hz(clk_sys)) / (freq * (T1 + T2 + T3)))
+		.config_set_clkdiv(static_cast<float>(::clock_get_hz(clk_sys)) / (Freq * nClocksWhole))
 		.init()
 		.set_enabled();
 }

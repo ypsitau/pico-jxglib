@@ -55,7 +55,7 @@ ShellCmd(ws2812, "controls WS2812")
 				terr.Printf("invalid color: %s\n", value);
 				return Result::Error;
 			}
-			ws2812.Put(c);
+			for (int i = 0; i < 256; i++) ws2812.Put(c);
 		} else if (Shell::Arg::GetAssigned(subcmd, "sleep", &value)) {
 			if (!value) {
 				terr.Printf("specify a sleep duration in milliseconds\n");
