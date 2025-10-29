@@ -190,6 +190,17 @@ void Canvas::Dispatcher_T<T_Color>::ScrollVert(DirVert dirVert, int htScroll, co
 //------------------------------------------------------------------------------
 // Canvas
 //------------------------------------------------------------------------------
+Canvas& Canvas::Allocate(const Format& formatOut, int width, int height)
+{
+	SetCapacity(formatOut, width, height);
+	if (!imageOwn_.Allocate(formatOut, width, height)) {
+		::panic("Canvas::AttachDrawable() can't allocate memory");
+		return *this;
+	}
+	imageOwn_.FillZero();
+	return *this;
+}
+
 Canvas& Canvas::AttachDrawable(Drawable& drawableOut, const Rect& rect, Dir dir)
 {
 	const Format& formatOut = drawableOut.GetFormat();

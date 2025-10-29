@@ -53,10 +53,12 @@ private:
 public:
 	Canvas() : Drawable(Capability::DrawImage | Capability::DrawImageFast | Capability::ScrollHorz | Capability::ScrollVert), pDrawableOut_{nullptr} {}
 public:
+	Canvas& Allocate(const Format& formatOut, int width, int heigh);
+	Canvas& AttachDrawable(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
+public:
 	Drawable* GetDrawableOut() { return pDrawableOut_; }
 	Image& GetImageOwn() { return imageOwn_; }
 	const Output& GetOutput() const { return output_; }
-	Canvas& AttachDrawable(Drawable& drawable, const Rect& rect = Rect::Empty, Dir dir = Dir::Normal);
 };
 
 }
