@@ -198,6 +198,26 @@ Canvas& Canvas::Allocate(const Format& formatOut, int width, int height)
 		return *this;
 	}
 	imageOwn_.FillZero();
+	if (formatOut.IsBitmap()) {
+		::panic("bitmap format is not supported");
+		return *this;
+	} else if (formatOut.IsGray()) {
+		::panic("gray format is not supported");
+		//pDispatcherEx_.reset(new Dispatcher_T<ColorGray>(*this));
+		return *this;
+	} else if (formatOut.IsRGB()) {
+		pDispatcherEx_.reset(new Dispatcher_T<Color>(*this));
+	} else if (formatOut.IsRGBA()) {
+		::panic("RGBA format is not supported");
+		//pDispatcherEx_.reset(new Dispatcher_T<ColorA>(*this));
+		return *this;
+	} else if (formatOut.IsRGB565()) {
+		pDispatcherEx_.reset(new Dispatcher_T<ColorRGB565>(*this));
+	} else {
+		::panic("unknown format");
+		return *this;
+	}
+	SetDispatcher(*pDispatcherEx_);
 	return *this;
 }
 
@@ -220,9 +240,11 @@ Canvas& Canvas::AttachDrawable(Drawable& drawableOut, const Rect& rect, Dir dir)
 		}
 		output_.rect = rect;
 	}
-	SetCapacity(formatOut, wdImage, htImage);
-	output_.dir = dir;
 	pDrawableOut_ = &drawableOut;
+	output_.dir = dir;
+	Allocate(formatOut, wdImage, htImage);
+#if 0
+	SetCapacity(formatOut, wdImage, htImage);
 	if (!imageOwn_.Allocate(formatOut, wdImage, htImage)) {
 		::panic("Canvas::AttachDrawable() can't allocate memory");
 		return *this;
@@ -248,6 +270,7 @@ Canvas& Canvas::AttachDrawable(Drawable& drawableOut, const Rect& rect, Dir dir)
 		return *this;
 	}
 	SetDispatcher(*pDispatcherEx_);
+#endif
 	return *this;
 }
 

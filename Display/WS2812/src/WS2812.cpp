@@ -37,7 +37,12 @@ void WS2812::DispatcherEx::Refresh()
 	using Reader = Image::Reader<Image::Getter_T<Color, Color> >;
 	Image::Reader reader(Reader::HorzFromNW(image, 0, 0, image.GetWidth(), image.GetHeight()));
 	while (Tickable::GetCurrentTime() - timeStamp_ < 1) Tickable::TickSub();	// interval of 280us or more
-	while (!reader.HasDone()) device.Put(reader.ReadForward());
+	//while (!reader.HasDone()) device.Put(reader.ReadForward());
+	//while (!reader.HasDone()) device.Put(Color::white);
+	while (!reader.HasDone()) {
+		Color c = reader.ReadForward();
+		::printf("%d,%d,%d\n", c.r, c.g, c.b);
+	}
 	timeStamp_ = Tickable::GetCurrentTime();
 }
 

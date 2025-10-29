@@ -5,14 +5,22 @@
 
 using namespace jxglib;
 
+Display::WS2812 display(16, 16);
+
+ShellCmd(refresh, "Refresh WS2812 display")
+{
+	display.Fill(Color::red);
+	display.Refresh();
+	return Result::Success;
+}
+
 int main()
 {
 	::stdio_init_all();
 	jxglib_labo_init(false);
-	Display::WS2812 display(16, 16);
 	display.Initialize(GPIO15);
-	display.Fill(Color::red);
-	display.Refresh();
+	//display.GetDevice().Put(Color::red);
+	//display.Refresh();
 	while (true) {
 		jxglib_tick();
 	}
