@@ -46,10 +46,7 @@ pico_enable_stdio_usb(test-jpeg 0)
 
 # Add the standard library to the build
 target_link_libraries(test-jpeg
-        pico_stdlib
-        stb
-        jxglib_FS
-        jxglib_Image)
+        pico_stdlib)
 
 # Add the standard include files to the build
 target_include_directories(test-jpeg PRIVATE
@@ -58,6 +55,6 @@ target_include_directories(test-jpeg PRIVATE
 
 pico_add_extra_outputs(test-jpeg)
 
-target_link_libraries(test-jpeg jxglib_LABOPlatform_FullCmd)
+target_link_libraries(test-jpeg jxglib_LABOPlatform_FullCmd jxglib_ImageFile)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 jxglib_configure_LABOPlatform(test-jpeg)

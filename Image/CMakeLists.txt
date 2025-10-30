@@ -8,3 +8,17 @@ target_link_libraries(jxglib_Image INTERFACE
 
 target_sources(jxglib_Image INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/Image.cpp)
+
+#------------------------------------------------------------------------------
+add_library(jxglib_ImageFile INTERFACE)
+
+target_include_directories(jxglib_ImageFile INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/include)
+
+target_link_libraries(jxglib_ImageFile INTERFACE
+	stb
+	jxglib_FS
+	jxglib_Image)
+
+target_sources(jxglib_ImageFile INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/src/ImageFile.cpp)
