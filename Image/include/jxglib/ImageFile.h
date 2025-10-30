@@ -3,8 +3,10 @@
 //==============================================================================
 #ifndef PICO_JXGLIB_IMAGEFILE_H
 #define PICO_JXGLIB_IMAGEFILE_H
+#include "jxglib/Image.h"
+#include "jxglib/FS.h"
 
-namespace jxglib {
+namespace jxglib::ImageFile {
 }
 
 #endif
