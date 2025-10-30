@@ -7,6 +7,8 @@ using namespace jxglib;
 
 Display::WS2812 display(16, 16);
 
+Device::WS2812& ShellCmd_Device_WS2812_GetWS2812() { return display.GetDevice(); }
+
 ShellCmd(refresh, "Refresh WS2812 display")
 {
 	//display.Fill(Color::red);
