@@ -127,29 +127,25 @@ public:
 		int advancePerCol_, advancePerRow_;
 		int iCol_, iRow_;
 	public:
-		Sequencer(void* p, int nCols, int nRows, int advancePerCol, int advancePerRow) :
-			p_{reinterpret_cast<uint8_t*>(p)}, pRow_{p_}, nCols_{nCols}, nRows_{nRows},
-			advancePerCol_{advancePerCol}, advancePerRow_{advancePerRow}, iCol_{0}, iRow_{0} {}
-		Sequencer(const Sequencer& sequencer) :
-			p_{sequencer.p_}, pRow_{sequencer.pRow_}, nCols_{sequencer.nCols_}, nRows_{sequencer.nRows_},
-			advancePerCol_{sequencer.advancePerCol_}, advancePerRow_{sequencer.advancePerRow_}, iCol_{sequencer.iCol_}, iRow_{sequencer.iRow_} {}
-
-		void MoveForward() {
-			iCol_++;
-			p_ += advancePerCol_;
-			if (iCol_ >= nCols_) {
-				iCol_ = 0, iRow_++;
-				pRow_ += advancePerRow_, p_ = pRow_;
-			}
-		}
-		void MoveForward(int nColsForward) {
-			iCol_ += nColsForward;
-			p_ += advancePerCol_ * nColsForward;
-			if (iCol_ >= nCols_) {
-				iCol_ = 0, iRow_++;
-				pRow_ += advancePerRow_, p_ = pRow_;
-			}
-		}
+		Sequencer(void* p, int nCols, int nRows, int advancePerCol, int advancePerRow);
+		Sequencer(const Sequencer& sequencer);
+	public:
+		void MoveForward();
+		void MoveForward(int nColsForward);
+		bool HasDone() const { return iRow_ >= nRows_; }
+	};
+	class SequencerZigzag {
+	protected:
+		uint8_t* p_;
+		int nCols_, nRows_;
+		int advancePerCol_, advancePerRow_;
+		int iCol_, iRow_;
+	public:
+		SequencerZigzag(void* p, int nCols, int nRows, int advancePerCol, int advancePerRow);
+		SequencerZigzag(const SequencerZigzag& sequencer);
+	public:
+		void MoveForward();
+		void MoveForward(int nColsForward);
 		bool HasDone() const { return iRow_ >= nRows_; }
 	};
 	template<typename T_Getter> class Reader : public Sequencer {
@@ -210,6 +206,64 @@ public:
 			return rtn;
 		}
 	};
+	template<typename T_Getter> class ReaderZigzag : public SequencerZigzag {
+	public:
+		static ReaderZigzag HorzFromNW(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+			return ReaderZigzag(image.GetPointerNW(colOffset, rowOffset),
+					nCols, nRows, image.GetBytesPerPixel(), image.GetBytesPerLine());
+		}
+		static ReaderZigzag HorzFromNE(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+			return ReaderZigzag(image.GetPointerNE(colOffset, rowOffset),
+					nCols, nRows, -image.GetBytesPerPixel(), image.GetBytesPerLine());
+		}
+		static ReaderZigzag HorzFromSW(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+			return ReaderZigzag(image.GetPointerSW(colOffset, rowOffset),
+					nCols, nRows, image.GetBytesPerPixel(), -image.GetBytesPerLine());
+		}
+		static ReaderZigzag HorzFromSE(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+			return ReaderZigzag(image.GetPointerSE(colOffset, rowOffset),
+					nCols, nRows, -image.GetBytesPerPixel(), -image.GetBytesPerLine());
+		}
+		static ReaderZigzag VertFromNW(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+			return ReaderZigzag(image.GetPointerNW(colOffset, rowOffset),
+					nCols, nRows, image.GetBytesPerLine(), image.GetBytesPerPixel());
+		}
+		static ReaderZigzag VertFromNE(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+			return ReaderZigzag(image.GetPointerNE(colOffset, rowOffset),
+					nCols, nRows, image.GetBytesPerLine(), -image.GetBytesPerPixel());
+		}
+		static ReaderZigzag VertFromSW(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+			return ReaderZigzag(image.GetPointerSW(colOffset, rowOffset),
+					nCols, nRows, -image.GetBytesPerLine(), image.GetBytesPerPixel());
+		}
+		static ReaderZigzag VertFromSE(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+			return ReaderZigzag(image.GetPointerSE(colOffset, rowOffset),
+					nCols, nRows, -image.GetBytesPerLine(), -image.GetBytesPerPixel());
+		}
+		static ReaderZigzag Normal(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+			return HorzFromNW(image, colOffset, rowOffset, nCols, nRows);
+		}
+		static ReaderZigzag Create(const Image& image, int colOffset, int rowOffset, int nCols, int nRows, SequencerDir dir) {
+			if (dir.IsHorzFromNW()) return HorzFromNW(image, colOffset, rowOffset, nCols, nRows); else
+			if (dir.IsHorzFromNE()) return HorzFromNE(image, colOffset, rowOffset, nCols, nRows); else
+			if (dir.IsHorzFromSW()) return HorzFromSW(image, colOffset, rowOffset, nCols, nRows); else
+			if (dir.IsHorzFromSE()) return HorzFromSE(image, colOffset, rowOffset, nCols, nRows); else
+			if (dir.IsVertFromNW()) return VertFromNW(image, colOffset, rowOffset, nCols, nRows); else
+			if (dir.IsVertFromNE()) return VertFromNE(image, colOffset, rowOffset, nCols, nRows); else
+			if (dir.IsVertFromSW()) return VertFromSW(image, colOffset, rowOffset, nCols, nRows); else
+			if (dir.IsVertFromSE()) return VertFromSE(image, colOffset, rowOffset, nCols, nRows); else
+			return ReaderZigzag(nullptr, 0, 0, 0, 0);
+		}
+	public:
+		ReaderZigzag(const void* p, int nCols, int nRows, int advancePerCol, int advancePerRow) :
+				SequencerZigzag(const_cast<void*>(p), nCols, nRows, advancePerCol, advancePerRow) {}
+		ReaderZigzag(const ReaderZigzag& reader) : SequencerZigzag(reader) {}
+		typename T_Getter::T_ColorVar ReadForward() {
+			auto rtn  = T_Getter().Get(p_);
+			MoveForward();
+			return rtn;
+		}
+	};
 	template<typename T_Setter> class Writer : public Sequencer {
 	public:
 		static Writer HorzFromNW(Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
@@ -262,6 +316,64 @@ public:
 		Writer(void* p, int nCols, int nRows, int advancePerCol, int advancePerRow) :
 				Sequencer(p, nCols, nRows, advancePerCol, advancePerRow) {}
 		Writer(const Writer& writer) : Sequencer(writer) {}
+	public:
+		void WriteForward(const typename T_Setter::T_ColorVar& data) {
+			T_Setter().Set(p_, data);
+			MoveForward();
+		}
+	};
+	template<typename T_Setter> class WriterZigzag : public SequencerZigzag {
+	public:
+		static WriterZigzag HorzFromNW(Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+			return WriterZigzag(image.GetPointerNW(colOffset, rowOffset),
+					nCols, nRows, image.GetBytesPerPixel(), image.GetBytesPerLine());
+		}
+		static WriterZigzag HorzFromNE(Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+			return WriterZigzag(image.GetPointerNE(colOffset, rowOffset),
+					nCols, nRows, -image.GetBytesPerPixel(), image.GetBytesPerLine());
+		}
+		static WriterZigzag HorzFromSW(Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+			return WriterZigzag(image.GetPointerSW(colOffset, rowOffset),
+					nCols, nRows, image.GetBytesPerPixel(), -image.GetBytesPerLine());
+		}
+		static WriterZigzag HorzFromSE(Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+			return WriterZigzag(image.GetPointerSE(colOffset, rowOffset),
+					nCols, nRows, -image.GetBytesPerPixel(), -image.GetBytesPerLine());
+		}
+		static WriterZigzag VertFromNW(Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+			return WriterZigzag(image.GetPointerNW(colOffset, rowOffset),
+					nCols, nRows, image.GetBytesPerLine(), image.GetBytesPerPixel());
+		}
+		static WriterZigzag VertFromNE(Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+			return WriterZigzag(image.GetPointerNE(colOffset, rowOffset),
+					nCols, nRows, image.GetBytesPerLine(), -image.GetBytesPerPixel());
+		}
+		static WriterZigzag VertFromSW(Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+			return WriterZigzag(image.GetPointerSW(colOffset, rowOffset),
+					nCols, nRows, -image.GetBytesPerLine(), image.GetBytesPerPixel());
+		}
+		static WriterZigzag VertFromSE(Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+			return WriterZigzag(image.GetPointerSE(colOffset, rowOffset),
+					nCols, nRows, -image.GetBytesPerLine(), -image.GetBytesPerPixel());
+		}
+		static WriterZigzag Normal(const Image& image, int colOffset, int rowOffset, int nCols, int nRows) {
+			return HorzFromNW(image, colOffset, rowOffset, nCols, nRows);
+		}
+		static WriterZigzag Create(Image& image, int colOffset, int rowOffset, int nCols, int nRows, SequencerDir dir) {
+			if (dir.IsHorzFromNW()) return HorzFromNW(image, colOffset, rowOffset, nCols, nRows); else
+			if (dir.IsHorzFromNE()) return HorzFromNE(image, colOffset, rowOffset, nCols, nRows); else
+			if (dir.IsHorzFromSW()) return HorzFromSW(image, colOffset, rowOffset, nCols, nRows); else
+			if (dir.IsHorzFromSE()) return HorzFromSE(image, colOffset, rowOffset, nCols, nRows); else
+			if (dir.IsVertFromNW()) return VertFromNW(image, colOffset, rowOffset, nCols, nRows); else
+			if (dir.IsVertFromNE()) return VertFromNE(image, colOffset, rowOffset, nCols, nRows); else
+			if (dir.IsVertFromSW()) return VertFromSW(image, colOffset, rowOffset, nCols, nRows); else
+			if (dir.IsVertFromSE()) return VertFromSE(image, colOffset, rowOffset, nCols, nRows); else
+			return WriterZigzag(nullptr, 0, 0, 0, 0);
+		}
+	public:
+		WriterZigzag(void* p, int nCols, int nRows, int advancePerCol, int advancePerRow) :
+				SequencerZigzag(p, nCols, nRows, advancePerCol, advancePerRow) {}
+		WriterZigzag(const WriterZigzag& writer) : SequencerZigzag(writer) {}
 	public:
 		void WriteForward(const typename T_Setter::T_ColorVar& data) {
 			T_Setter().Set(p_, data);

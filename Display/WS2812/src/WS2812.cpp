@@ -34,8 +34,8 @@ void WS2812::DispatcherEx::Refresh()
 {
 	Image& image = GetCanvas().GetImageOwn();
 	Device::WS2812& device = ws2812_.GetDevice();
-	using Reader = Image::Reader<Image::Getter_T<Color, Color> >;
-	Image::Reader reader(Reader::HorzFromNW(image, 0, 0, image.GetWidth(), image.GetHeight()));
+	using ReaderZigzag = Image::ReaderZigzag<Image::Getter_T<Color, Color> >;
+	Image::ReaderZigzag reader(ReaderZigzag::VertFromNW(image, 0, 0, image.GetWidth(), image.GetHeight()));
 	while (Tickable::GetCurrentTime() - timeStamp_ < 1) Tickable::TickSub();	// interval of 280us or more
 	while (!reader.HasDone()) device.Put(reader.ReadForward());
 	timeStamp_ = Tickable::GetCurrentTime();

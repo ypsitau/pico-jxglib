@@ -13,7 +13,7 @@ ShellCmd(refresh, "Refresh WS2812 display")
 {
 	//display.Fill(Color::red);
 	display.SetFont(FontSet::GetInstance(0));
-	display.DrawString(0, 0, "A");
+	display.DrawString(0, 0, "AB");
 	display.Refresh();
 	return Result::Success;
 }

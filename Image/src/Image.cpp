@@ -56,6 +56,74 @@ void Image::WriteToStream(void* context, const void* data, int size)
 }
 
 //------------------------------------------------------------------------------
+// Image::Sequencer
+//------------------------------------------------------------------------------
+Image::Sequencer::Sequencer(void* p, int nCols, int nRows, int advancePerCol, int advancePerRow) :
+	p_{reinterpret_cast<uint8_t*>(p)}, pRow_{p_}, nCols_{nCols}, nRows_{nRows},
+	advancePerCol_{advancePerCol}, advancePerRow_{advancePerRow}, iCol_{0}, iRow_{0} {}
+
+Image::Sequencer::Sequencer(const Sequencer& sequencer) :
+	p_{sequencer.p_}, pRow_{sequencer.pRow_}, nCols_{sequencer.nCols_}, nRows_{sequencer.nRows_},
+	advancePerCol_{sequencer.advancePerCol_}, advancePerRow_{sequencer.advancePerRow_}, iCol_{sequencer.iCol_}, iRow_{sequencer.iRow_} {}
+
+void Image::Sequencer::MoveForward()
+{
+	iCol_++;
+	if (iCol_ < nCols_) {
+		p_ += advancePerCol_;
+	} else {
+		iCol_ = 0, iRow_++;
+		pRow_ += advancePerRow_, p_ = pRow_;
+	}
+}
+
+void Image::Sequencer::MoveForward(int nColsForward)
+{
+	iCol_ += nColsForward;
+	if (iCol_ < nCols_) {
+		p_ += advancePerCol_ * nColsForward;
+	} else {
+		iCol_ = 0, iRow_++;
+		pRow_ += advancePerRow_, p_ = pRow_;
+	}
+}
+
+//------------------------------------------------------------------------------
+// Image::SequencerZigzag
+//------------------------------------------------------------------------------
+Image::SequencerZigzag::SequencerZigzag(void* p, int nCols, int nRows, int advancePerCol, int advancePerRow) :
+	p_{reinterpret_cast<uint8_t*>(p)}, nCols_{nCols}, nRows_{nRows},
+	advancePerCol_{advancePerCol}, advancePerRow_{advancePerRow}, iCol_{0}, iRow_{0} {}
+
+Image::SequencerZigzag::SequencerZigzag(const SequencerZigzag& sequencer) :
+	p_{sequencer.p_}, nCols_{sequencer.nCols_}, nRows_{sequencer.nRows_},
+	advancePerCol_{sequencer.advancePerCol_}, advancePerRow_{sequencer.advancePerRow_}, iCol_{sequencer.iCol_}, iRow_{sequencer.iRow_} {}
+
+void Image::SequencerZigzag::MoveForward()
+{
+	iCol_++;
+	if (iCol_ < nCols_) {
+		p_ += advancePerCol_;
+	} else {
+		iCol_ = 0, iRow_++;
+		p_ += advancePerRow_;
+		advancePerCol_ = -advancePerCol_;  // Reverse direction
+	}
+}
+
+void Image::SequencerZigzag::MoveForward(int nColsForward)
+{
+	iCol_ += nColsForward;
+	if (iCol_ < nCols_) {
+		p_ += advancePerCol_ * nColsForward;
+	} else {
+		iCol_ = 0, iRow_++;
+		p_ += advancePerRow_;
+		advancePerCol_ = -advancePerCol_;  // Reverse direction
+	}
+}
+
+//------------------------------------------------------------------------------
 // Image::SequencerDir
 //------------------------------------------------------------------------------
 Image::SequencerDir Image::SequencerDir::Transform(const SequencerDir& dirTrans) const
