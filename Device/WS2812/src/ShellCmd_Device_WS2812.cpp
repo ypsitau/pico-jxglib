@@ -3,11 +3,11 @@
 #include "jxglib/Shell.h"
 #include "jxglib/Device/WS2812.h"
 
+jxglib::Device::WS2812& ShellCmd_Device_WS2812_GetWS2812();
+
 namespace jxglib::ShellCmd_Device_WS2812 {
 
-Device::WS2812 ws2812;
 uint pin = static_cast<uint>(-1);
-bool initializedFlag = false;
 
 ShellCmd(ws2812, "controls WS2812")
 {
@@ -42,13 +42,13 @@ ShellCmd(ws2812, "controls WS2812")
 	}
 	while (const char* subcmd = each.Next()) {
 		if (Shell::Arg::GetAssigned(subcmd, "put", &value)) {
-			if (!initializedFlag) {
+			Device::WS2812& ws2812 = ShellCmd_Device_WS2812_GetWS2812();
+			if (!ws2812.IsRunning()) {
 				if (pin == static_cast<uint>(-1)) {
 					terr.Printf("specify GPIO pin number by -p option\n");
 					return Result::Error;
 				}
 				ws2812.Run(GPIO::Instance(pin));
-				initializedFlag = true;
 			}
 			Color c;
 			if (!c.Parse(value)) {
