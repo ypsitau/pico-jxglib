@@ -23,7 +23,7 @@ ShellCmd_Named(show_image, "show-image", "show image file")
 		printf("Failed to read image file: %s\n", fileName);
 		return Result::Error;
 	}
-	Display::GetInstance(0).DrawImage(0, 0, image);
+	Display::GetInstance(0).DrawImage(0, 0, image, Rect(0, 0, 16, 16));
 	return Result::Success;
 }
 

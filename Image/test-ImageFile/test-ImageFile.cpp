@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "jxglib/ImageFile.h"
 #include "jxglib/LABOPlatform.h"
 
 using namespace jxglib;
