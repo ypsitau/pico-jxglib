@@ -20,9 +20,9 @@ ShellCmd_Named(display_ws2812, "display-ws2812", "initialize WS2812 display")
 		terr.Printf("          {gpio:PIN [size:WxH]}\n");
 		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
-	//Display::WS2812* pDisplay = nullptr;
-	//pDisplay = new Display::WS2812(16, 16); // default size
-	//pDisplay->Initialize(GPIO::Instance(9));
+	Display::WS2812* pDisplay = nullptr;
+	pDisplay = new Display::WS2812(16, 16); // default size
+	pDisplay->Initialize(GPIO::Instance(9));
 	return Result::Success;
 }
 
