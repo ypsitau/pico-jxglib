@@ -7,6 +7,7 @@
 #include "stb_image_write.h"
 #include "jxglib/FS.h"
 #include "jxglib/LABOPlatform.h"
+#include "jxglib/Display.h"
 
 using namespace jxglib;
 
@@ -69,6 +70,7 @@ ShellCmd_Named(show_image, "show-image", "show image file")
 	printf("Image loaded: %s (width=%d, height=%d, channels=%d)\n", fileName, x, y, channels);
 	Image image;
 	image.SetMemory((channels == 1)? Image::Format::Gray : (channels == 3)? Image::Format::RGB : Image::Format::RGBA, x, y, new MemoryStbi(data));
+	Display::GetInstance(0).DrawImage(0, 0, image);
 	return Result::Success;
 }
 
