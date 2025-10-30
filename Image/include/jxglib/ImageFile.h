@@ -7,6 +7,9 @@
 #include "jxglib/FS.h"
 
 namespace jxglib::ImageFile {
+
+bool Read(Image& image, FS::File& file);
+
 }
 
 #endif

@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "jxglib/Image.h"
-#include "jxglib/FS.h"
+#include "jxglib/ImageFile.h"
 #include "jxglib/LABOPlatform.h"
 #include "jxglib/Display.h"
 
@@ -20,6 +19,10 @@ ShellCmd_Named(show_image, "show-image", "show image file")
 		return Result::Error;
 	}
 	Image image(Image::Format::RGB);
+	if (!ImageFile::Read(image, *pFile)) {
+		printf("Failed to read image file: %s\n", fileName);
+		return Result::Error;
+	}
 	Display::GetInstance(0).DrawImage(0, 0, image);
 	return Result::Success;
 }
@@ -28,11 +31,5 @@ int main()
 {
 	::stdio_init_all();
 	::jxglib_labo_init(false);
-	//Stream* pStream;
-	//int x, y, channels;
-	//::stbi_load_from_callbacks(nullptr, pStream, &x, &y, &channels, 0);
-	//::stbi_write_bmp_to_func(write_to_stream, pStream, 0, 0, 0, nullptr);
-	//::stbi_write_png_to_func(write_to_stream, pStream, 0, 0, 0, nullptr, 0);
-	//::stbi_write_jpg_to_func(write_to_stream, pStream, 0, 0, 0, nullptr, 90);
 	while (true) ::jxglib_tick();
 }
