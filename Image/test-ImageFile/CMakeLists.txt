@@ -55,6 +55,6 @@ target_include_directories(test-ImageFile PRIVATE
 
 pico_add_extra_outputs(test-ImageFile)
 
-target_link_libraries(test-ImageFile jxglib_LABOPlatform_FullCmd jxglib_ImageFile)
+target_link_libraries(test-ImageFile jxglib_LABOPlatform_FullCmd jxglib_ShellCmd_ImageFile)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 jxglib_configure_LABOPlatform(test-ImageFile)
