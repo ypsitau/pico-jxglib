@@ -30,9 +30,11 @@ void Image::SetMemory(const Format& format, int width, int height, Memory* pMemo
 bool Image::Allocate(const Format& format, int width, int height)
 {
 	pMemory_.reset();
+	pFormat_ = &format;
+	width_ = width, height_ = height;
 	void* data = ::malloc(GetBytesBuff());
 	if (data) {
-		SetMemory(format, width, height, new MemoryHeap(data));
+		pMemory_.reset(new MemoryHeap(data));
 		return true;
 	} else {
 		Free();

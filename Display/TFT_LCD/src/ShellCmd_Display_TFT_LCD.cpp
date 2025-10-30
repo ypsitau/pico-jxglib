@@ -7,7 +7,7 @@
 
 namespace jxglib::ShellCmd_Display_TFT_LCD {
 
-ShellCmd_Named(display_tftlcd, "display-tftlcd", "TFT LCD display commands")
+ShellCmd_Named(display_tftlcd, "display-tftlcd", "initialize TFT LCD display")
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),

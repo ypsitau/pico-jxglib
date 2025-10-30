@@ -22,7 +22,7 @@ int main()
 {
 	::stdio_init_all();
 	jxglib_labo_init(false);
-	display.Initialize(GPIO15);
+	display.Initialize(GPIO9);
 	while (true) {
 		jxglib_tick();
 	}
