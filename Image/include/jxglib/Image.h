@@ -5,48 +5,11 @@
 #define PICO_JXGLIB_IMAGE_H
 #include <stdio.h>
 #include <stdlib.h>
-#include <malloc.h>
 #include <memory.h>
 #include "pico/stdlib.h"
-#include "jxglib/Common.h"
+#include "jxglib/Memory.h"
 
 namespace jxglib {
-
-//------------------------------------------------------------------------------
-// Memory
-//------------------------------------------------------------------------------
-class Memory {
-protected:
-	void* data_;
-public:
-	Memory(void* data) : data_{data} {}
-	virtual ~Memory() { Free(); }
-public:
-	template<typename T> T* GetPointer() { return reinterpret_cast<T*>(data_); }
-	virtual bool IsWritable() const { return !!data_; }
-	virtual void Free() {}
-};
-
-//------------------------------------------------------------------------------
-// MemoryConst
-//------------------------------------------------------------------------------
-class MemoryConst : public Memory {
-public:
-	MemoryConst(const void* data) : Memory(const_cast<void*>(data)) {}
-public:
-	virtual bool IsWritable() const override { return false; }
-	virtual void Free() override { /* do nothing */ }
-};
-
-//------------------------------------------------------------------------------
-// MemoryHeap
-//------------------------------------------------------------------------------
-class MemoryHeap : public Memory {
-public:
-	MemoryHeap(void* data) : Memory(data) {}
-public:
-	virtual void Free() override { ::free(data_); data_ = nullptr; }
-};
 
 //------------------------------------------------------------------------------
 // Image

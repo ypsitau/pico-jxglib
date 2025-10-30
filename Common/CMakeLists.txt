@@ -19,6 +19,7 @@ target_sources(jxglib_Common INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/KeyCode.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/KeyData.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/KeyLayout.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/Memory.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Point.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Printable.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Readable.cpp
