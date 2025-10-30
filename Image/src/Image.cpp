@@ -18,31 +18,38 @@ const Image::Format Image::Format::RGB565BE {2};
 
 Image::~Image()
 {
-	if (allocatedFlag_) ::free(data_);
 }
-bool Image::Allocate(const Format& format, int width, int height)
+
+void Image::SetMemory(const Format& format, int width, int height, Memory* pMemory)
 {
-	if (allocatedFlag_) ::free(data_);
-	allocatedFlag_ = true;
 	pFormat_ = &format;
 	width_ = width, height_ = height;
-	data_ = reinterpret_cast<uint8_t*>(::malloc(GetBytesBuff()));
-	return !!data_;
+	pMemory_.reset(pMemory);
+}
+
+bool Image::Allocate(const Format& format, int width, int height)
+{
+	pMemory_.reset();
+	void* data = ::malloc(GetBytesBuff());
+	if (data) {
+		SetMemory(format, width, height, new MemoryHeap(data));
+		return true;
+	} else {
+		Free();
+		return false;
+	}
 }
 
 void Image::Free()
 {
-	if (!allocatedFlag_) return;
-	allocatedFlag_ = false;
 	pFormat_ = &Format::None;
 	width_ = height_ = 0;
-	::free(data_);
-	data_ = nullptr;
+	pMemory_.reset();
 }
 
 void Image::FillZero()
 {
-	::memset(data_, 0x00, GetBytesBuff());
+	if (IsWritable()) ::memset(GetPointer(), 0x00, GetBytesBuff());
 }
 
 void Image::ReadFromStream(void* context, const void* data, int size)

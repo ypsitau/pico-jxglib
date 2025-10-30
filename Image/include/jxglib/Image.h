@@ -5,11 +5,48 @@
 #define PICO_JXGLIB_IMAGE_H
 #include <stdio.h>
 #include <stdlib.h>
+#include <malloc.h>
 #include <memory.h>
 #include "pico/stdlib.h"
 #include "jxglib/Common.h"
 
 namespace jxglib {
+
+//------------------------------------------------------------------------------
+// Memory
+//------------------------------------------------------------------------------
+class Memory {
+protected:
+	void* data_;
+public:
+	Memory(void* data) : data_{data} {}
+	virtual ~Memory() { Free(); }
+public:
+	template<typename T> T* GetPointer() { return reinterpret_cast<T*>(data_); }
+	virtual bool IsWritable() const { return !!data_; }
+	virtual void Free() {}
+};
+
+//------------------------------------------------------------------------------
+// MemoryConst
+//------------------------------------------------------------------------------
+class MemoryConst : public Memory {
+public:
+	MemoryConst(const void* data) : Memory(const_cast<void*>(data)) {}
+public:
+	virtual bool IsWritable() const override { return false; }
+	virtual void Free() override { /* do nothing */ }
+};
+
+//------------------------------------------------------------------------------
+// MemoryHeap
+//------------------------------------------------------------------------------
+class MemoryHeap : public Memory {
+public:
+	MemoryHeap(void* data) : Memory(data) {}
+public:
+	virtual void Free() override { ::free(data_); data_ = nullptr; }
+};
 
 //------------------------------------------------------------------------------
 // Image
@@ -381,17 +418,18 @@ public:
 		}
 	};
 private:
-	bool allocatedFlag_;
 	const Format* pFormat_;
 	int width_;
 	int height_;
-	uint8_t* data_;
+	std::unique_ptr<Memory> pMemory_;
 public:
-	Image() : allocatedFlag_{false}, pFormat_{&Format::None}, width_{0}, height_{0}, data_{nullptr} {}
+	Image() : pFormat_{&Format::None}, width_{0}, height_{0} {}
 	Image(const Format& format, int width, int height, const void* data = nullptr) :
-			allocatedFlag_{false}, pFormat_{&format}, width_{width}, height_{height},
-			data_{reinterpret_cast<uint8_t*>(const_cast<void*>(data))} {}
+			pFormat_{&format}, width_{width}, height_{height},
+			pMemory_{new MemoryConst(data)} {}
 	~Image();
+public:
+	void SetMemory(const Format& format, int width, int height, Memory* pMemory);
 	bool Allocate(const Format& format, int width, int height);
 	void Free();
 	void FillZero();
@@ -401,14 +439,10 @@ public:
 	int GetBytesPerPixel() const { return pFormat_->bytesPerPixel; }
 	int GetBytesPerLine() const { return GetWidth() * GetBytesPerPixel(); }
 	int GetBytesBuff() const { return GetBytesPerLine() * GetHeight(); }
-	uint8_t* GetPointer() { return data_; }
-	const uint8_t* GetPointer() const { return data_; }
-	uint8_t* GetPointer(int x, int y) {
-		return data_ + GetBytesPerPixel() * x + GetBytesPerLine() * y;
-	}
-	const uint8_t* GetPointer(int x, int y) const {
-		return data_ + GetBytesPerPixel() * x + GetBytesPerLine() * y;
-	}
+	uint8_t* GetPointer() { return pMemory_? pMemory_->GetPointer<uint8_t>() : nullptr; }
+	const uint8_t* GetPointer() const { return pMemory_? pMemory_->GetPointer<uint8_t>() : nullptr; }
+	uint8_t* GetPointer(int x, int y) { return GetPointer() + GetBytesPerPixel() * x + GetBytesPerLine() * y; }
+	const uint8_t* GetPointer(int x, int y) const { return GetPointer() + GetBytesPerPixel() * x + GetBytesPerLine() * y; }
 	uint8_t* GetPointerNW(int xOffset, int yOffset) { return GetPointer(xOffset, yOffset); }
 	uint8_t* GetPointerNE(int xOffset, int yOffset) { return GetPointer(GetWidth() - 1 - xOffset, yOffset); }
 	uint8_t* GetPointerSW(int xOffset, int yOffset) { return GetPointer(xOffset, GetHeight() - 1 - yOffset); }
@@ -417,7 +451,7 @@ public:
 	const uint8_t* GetPointerNE(int xOffset, int yOffset) const { return GetPointer(GetWidth() - 1 - xOffset, yOffset); }
 	const uint8_t* GetPointerSW(int xOffset, int yOffset) const { return GetPointer(xOffset, GetHeight() - 1 - yOffset); }
 	const uint8_t* GetPointerSE(int xOffset, int yOffset) const { return GetPointer(GetWidth() - 1 - xOffset, GetHeight() - 1 - yOffset); }
-	bool IsWritable() const { return allocatedFlag_; }
+	bool IsWritable() const { return pMemory_? pMemory_->IsWritable() : false; }
 public:
 	static void ReadFromStream(void* context, const void* data, int size);
 	static void WriteToStream(void* context, const void* data, int size);

@@ -281,21 +281,21 @@ void File::Close()
 	::f_close(&fil_);
 }
 
-bool File::Seek(int position, SeekStart seekStart)
+bool File::Seek(int position, FS::SeekStart seekStart)
 {
 	FSIZE_t actualPosition;
 	switch (seekStart) {
-		case SeekStart::Begin:
-			actualPosition = position;
-			break;
-		case SeekStart::Current:
-			actualPosition = f_tell(&fil_) + position;
-			break;
-		case SeekStart::End:
-			actualPosition = f_size(&fil_) + position;
-			break;
-		default:
-			return false;
+	case FS::SeekStart::Begin:
+		actualPosition = position;
+		break;
+	case FS::SeekStart::Current:
+		actualPosition = f_tell(&fil_) + position;
+		break;
+	case FS::SeekStart::End:
+		actualPosition = f_size(&fil_) + position;
+		break;
+	default:
+		return false;
 	}
 	return ::f_lseek(&fil_, actualPosition) == FR_OK;
 }

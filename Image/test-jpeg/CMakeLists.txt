@@ -58,4 +58,6 @@ target_include_directories(test-jpeg PRIVATE
 
 pico_add_extra_outputs(test-jpeg)
 
+target_link_libraries(test-jpeg jxglib_LABOPlatform_FullCmd)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+jxglib_configure_LABOPlatform(test-jpeg)
