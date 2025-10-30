@@ -100,11 +100,11 @@ off_t _lseek(int fd, off_t pos, int whence)
 	int idx = fd - 3;
 	if (idx < 0 || idx >= count_of(pFileTbl) || !pFileTbl[idx]) return -1;
 	FS::File* pFile = pFileTbl[idx];
-	FS::File::SeekStart seekStart;
+	FS::SeekStart seekStart;
 	switch (whence) {
-	case SEEK_SET: seekStart = FS::File::SeekStart::Begin; break;
-	case SEEK_CUR: seekStart = FS::File::SeekStart::Current; break;
-	case SEEK_END: seekStart = FS::File::SeekStart::End; break;
+	case SEEK_SET: seekStart = FS::SeekStart::Begin; break;
+	case SEEK_CUR: seekStart = FS::SeekStart::Current; break;
+	case SEEK_END: seekStart = FS::SeekStart::End; break;
 	default: return -1; // Invalid whence
 	}
 	return pFile->Seek(pos, seekStart);

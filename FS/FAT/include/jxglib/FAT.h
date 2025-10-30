@@ -35,6 +35,7 @@ public:
 	virtual bool Flush() override;
 	virtual bool Truncate(int bytes) override;
 	virtual bool Sync() override;
+	virtual bool IsEOF() override;
 };
 
 //------------------------------------------------------------------------------

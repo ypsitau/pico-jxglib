@@ -35,6 +35,8 @@ add_subdirectory(UART)
 add_subdirectory(USBDevice)
 add_subdirectory(USBHost)
 
+add_subdirectory(guest)
+
 set(JXGLIB_DIR ${CMAKE_CURRENT_LIST_DIR} PARENT_SCOPE)
 
 function(jxglib_set_if_undefined VAR VALUE)

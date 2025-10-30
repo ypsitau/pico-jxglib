@@ -15,9 +15,9 @@ if(WIN32)
 else()
     set(USERHOME $ENV{HOME})
 endif()
-set(sdkVersion 2.1.1)
+set(sdkVersion 2.2.0)
 set(toolchainVersion 14_2_Rel1)
-set(picotoolVersion 2.1.1)
+set(picotoolVersion 2.2.0)
 set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
 if (EXISTS ${picoVscode})
     include(${picoVscode})
@@ -47,12 +47,13 @@ pico_enable_stdio_usb(test-jpeg 0)
 # Add the standard library to the build
 target_link_libraries(test-jpeg
         pico_stdlib
+        stb
+        jxglib_FS
         jxglib_Image)
 
 # Add the standard include files to the build
 target_include_directories(test-jpeg PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
-        ${CMAKE_CURRENT_LIST_DIR}/../../guest/stb
 )
 
 pico_add_extra_outputs(test-jpeg)

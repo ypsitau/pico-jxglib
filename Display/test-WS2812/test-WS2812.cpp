@@ -23,8 +23,6 @@ int main()
 	::stdio_init_all();
 	jxglib_labo_init(false);
 	display.Initialize(GPIO15);
-	//display.GetDevice().Put(Color::red);
-	//display.Refresh();
 	while (true) {
 		jxglib_tick();
 	}

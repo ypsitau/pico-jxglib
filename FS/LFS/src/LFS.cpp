@@ -269,6 +269,11 @@ bool File::Sync()
 	return ::lfs_file_sync(&lfs_, &file_) == LFS_ERR_OK;
 }
 
+bool File::IsEOF()
+{
+	return ::lfs_file_tell(&lfs_, &file_) >= ::lfs_file_size(&lfs_, &file_);
+}
+
 //------------------------------------------------------------------------------
 // LFS::Dir
 //------------------------------------------------------------------------------

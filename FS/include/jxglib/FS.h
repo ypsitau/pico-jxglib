@@ -20,15 +20,18 @@ constexpr int MaxDriveName = 16;
 constexpr int MaxPath = 256;
 
 //------------------------------------------------------------------------------
+// FS::SeekStart
+//------------------------------------------------------------------------------
+enum class SeekStart {
+	Begin,	// Seek from the beginning of the file
+	Current, // Seek from the current position in the file
+	End,	// Seek from the end of the file
+};
+
+//------------------------------------------------------------------------------
 // FS::File
 //------------------------------------------------------------------------------
 class File : public Stream {
-public:
-	enum class SeekStart {
-		Begin,	// Seek from the beginning of the file
-		Current, // Seek from the current position in the file
-		End,	// Seek from the end of the file
-	};
 protected:
 	const Drive& drive_;
 public:
@@ -46,6 +49,7 @@ public:
 	virtual int Size() = 0;
 	virtual bool Truncate(int bytes) = 0;
 	virtual bool Sync() = 0;
+	virtual bool IsEOF() = 0;
 };
 
 //------------------------------------------------------------------------------
