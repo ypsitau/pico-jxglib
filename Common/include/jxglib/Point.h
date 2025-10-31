@@ -7,6 +7,8 @@
 
 namespace jxglib {
 
+class Size;
+
 //------------------------------------------------------------------------------
 // Point
 //------------------------------------------------------------------------------
@@ -19,6 +21,21 @@ public:
 	constexpr Point(int x, int y) : x{x}, y{y} {}
 public:
 	bool Parse(const char* str);
+public:
+	bool operator==(const Point& pt) const { return x == pt.x && y == pt.y; }
+	bool operator!=(const Point& pt) const { return !(*this == pt); }
+public:
+	Point& operator+=(const Point& pt) { x += pt.x; y += pt.y; return *this; }
+	Point& operator+=(const Size& sz);
+	Point& operator-=(const Point& pt) { x -= pt.x; y -= pt.y; return *this; }
+	Point& operator-=(const Size& sz);
+public:
+	Point operator+(const Point& pt) const { return Point(x + pt.x, y + pt.y); }
+	Point operator+(const Size& sz) const;
+	Point operator-(const Point& pt) const { return Point(x - pt.x, y - pt.y); }
+	Point operator-(const Size& sz) const;
+	Point operator*(float scale) const { return Point(static_cast<int>(x * scale), static_cast<int>(y * scale)); }
+	Point operator/(float scale) const { return Point(static_cast<int>(x / scale), static_cast<int>(y / scale)); }
 };
 
 //------------------------------------------------------------------------------

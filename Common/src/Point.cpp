@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include "jxglib/Point.h"
+#include "jxglib/Size.h"
 
 namespace jxglib {
 
@@ -29,6 +30,11 @@ bool Point::Parse(const char* str)
 	y = yTmp;
 	return true;
 }
+
+Point& Point::operator+=(const Size& sz) { x += sz.width; y += sz.height; return *this; }
+Point& Point::operator-=(const Size& sz) { x -= sz.width; y -= sz.height; return *this; }
+Point Point::operator+(const Size& sz) const { return Point(x + sz.width, y + sz.height); }
+Point Point::operator-(const Size& sz) const { return Point(x - sz.width, y - sz.height); }
 
 //------------------------------------------------------------------------------
 // PointFloat

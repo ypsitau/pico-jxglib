@@ -50,7 +50,7 @@ bool Read(Image& image, FS::File& file)
 	int x, y, channels;
 	const Image::Format& format = image.GetFormat();
 	unsigned char* data = ::stbi_load_from_callbacks(&callbacks, &file, &x, &y, &channels,
-						format.IsGray() ? 1 : format.IsRGB() ? 3 : format.IsRGBA() ? 4 : 0);
+						format.IsGray()? 1 : format.IsRGB()? 3 : format.IsRGBA()? 4 : 0);
 	if (!data) return false;
 	image.SetMemory((channels == 1)? Image::Format::Gray : (channels == 3)? Image::Format::RGB : Image::Format::RGBA, x, y, new MemoryStbi(data));
 	return true;
