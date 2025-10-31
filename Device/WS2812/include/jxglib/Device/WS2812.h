@@ -20,7 +20,7 @@ public:
 public:
 	WS2812() {}
 public:
-	void Run(const GPIO& gpio);
+	void Run(const GPIO& din);
 	bool IsRunning() const { return sm_.IsValid(); }
 public:
 	WS2812& Put(uint8_t r, uint8_t g, uint8_t b);

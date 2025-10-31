@@ -9,7 +9,7 @@ namespace jxglib::Device {
 // Device::WS2812
 // Minimum reset time: 280us
 //------------------------------------------------------------------------------
-void WS2812::Run(const GPIO& gpio)
+void WS2812::Run(const GPIO& din)
 {
 	const int nClocksWhole	= 10;	// 1250ns
 	const int nClocksLong	= 5;	// 625ns (must be between 580ns and 1000ns)
@@ -30,7 +30,7 @@ void WS2812::Run(const GPIO& gpio)
 	.end();
 	//--------------------------------------------------------------------------
 	sm_.set_program(program_)
-		.reserve_sideset_pins(gpio, 1)
+		.reserve_sideset_pins(din, 1)
 		.config_set_out_shift_left(true, 24)	// shift left, autopull enabled, pull threshold 24
 		.config_set_fifo_join_tx()
 		.config_set_clkdiv(static_cast<float>(::clock_get_hz(clk_sys)) / (Freq * nClocksWhole))
