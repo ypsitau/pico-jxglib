@@ -18,12 +18,20 @@ ShellCmd_Named(display_ws2812, "display-ws2812", "initialize WS2812 display")
 		terr.Printf("Usage: %s [OPTION]... CMDS...\n", GetName());
 		arg.PrintHelp(terr);
 		terr.Printf("Sub Commands:\n");
-		terr.Printf(" setup  Set up WS2812 display with the given parameters:\n");
-		terr.Printf("          {gpio:PIN [size:WxH]}\n");
+		terr.Printf(" setup             Set up WS2812 display with the given parameters: {din:PIN LAYOUT}\n");
+		terr.Printf("                   LAYOUT is one of:\n");
+		terr.Printf("                    straight:WIDTH\n");
+		terr.Printf("                    straight-{nw,ne,sw,se}-{horz,vert}:WIDTH,HEIGHT\n");
+		terr.Printf("                    zigzag-{nw,ne,sw,se}-{horz,vert}:WIDTH,HEIGHT\n");
+		terr.Printf(" brightness:RATIO  set brightness (RATIO: 0.0 - 1.0)\n");
 		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
 	const char* value = nullptr;
 	Shell::Arg::EachSubcmd each(argv[1], argv[argc]);
+	if (!each.Initialize()) {
+		terr.Printf("%s\n", each.GetErrorMsg());
+		return Result::Error;
+	}
 	while (const Arg::Subcmd* pSubcmd = each.NextSubcmd()) {
 		const char* subcmd = pSubcmd->GetProc();
 		if (::strcasecmp(subcmd, "setup") == 0) {
@@ -103,6 +111,18 @@ ShellCmd_Named(display_ws2812, "display-ws2812", "initialize WS2812 display")
 			}
 			pDisplay = new Display::WS2812(size.width, size.height, seqDir, zigzagFlag);
 			pDisplay->Initialize(GPIO::Instance(pinDIN));
+		} else if (Shell::Arg::GetAssigned(subcmd, "brightness", &value)) {
+			if (!pDisplay) {
+				terr.Printf("WS2812 display is not set up yet.\n");
+				return Result::Error;
+			}
+			char* endptr = nullptr;
+			float num = ::strtof(value, &endptr);
+			if (endptr == value || num < 0.0f || num > 1.0f) {
+				terr.Printf("invalid brightness ratio: %s\n", value);
+				return Result::Error;
+			}
+			pDisplay->GetDevice().SetBrightness(num);
 		} else {
 			terr.Printf("unknown sub command: %s\n", subcmd);
 			return Result::Error;

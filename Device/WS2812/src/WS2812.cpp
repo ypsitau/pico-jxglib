@@ -41,9 +41,9 @@ void WS2812::Run(const GPIO& din)
 WS2812& WS2812::Put(uint8_t r, uint8_t g, uint8_t b)
 {
 	uint32_t data =
-		(static_cast<uint32_t>(b) << 0) |
-		(static_cast<uint32_t>(r) << 8) |
-		(static_cast<uint32_t>(g) << 16);
+		((static_cast<uint32_t>(b) * brightness_ / 256) << 0) |
+		((static_cast<uint32_t>(r) * brightness_ / 256) << 8) |
+		((static_cast<uint32_t>(g) * brightness_ / 256) << 16);
 	while (sm_.is_tx_fifo_full()) Tickable::TickSub();
 	sm_.put(data << 8);
 	return *this;

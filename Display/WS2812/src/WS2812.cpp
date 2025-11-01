@@ -10,16 +10,31 @@ namespace jxglib::Display {
 //------------------------------------------------------------------------------
 WS2812::WS2812(int width, int height, uint8_t seqDir, bool zigzagFlag) :
 	Base(Capability::Device | Capability::ScrollHorz | Capability::ScrollVert, Format::RGB, 16, 16), dispatcherEx_(*this),
-	seqDir_(seqDir), zigzagFlag_(zigzagFlag)
+	pinDIN_{GPIO::InvalidPin}, seqDir_(seqDir), zigzagFlag_(zigzagFlag)
 {
 	SetDispatcher(dispatcherEx_);
 }
 
-WS2812& WS2812::Initialize(const GPIO& gpio)
+WS2812& WS2812::Initialize(const GPIO& gpioDIN)
 {
-	device_.Run(gpio);
+	pinDIN_ = gpioDIN.pin;
+	device_.Run(gpioDIN);
 	canvas_.Allocate(GetFormat(), GetWidth(), GetHeight());
 	return *this;
+}
+
+const char* WS2812::GetRemarks(char* buff, int lenMax) const
+{
+	::snprintf(buff, lenMax, "DIN:%d Layout:%s-%s", pinDIN_, zigzagFlag_? "zigzag" : "straight",
+		(seqDir_ == Image::SequencerDir::HorzFromNW)? "nw-horz" :
+		(seqDir_ == Image::SequencerDir::HorzFromNE)? "ne-horz" :
+		(seqDir_ == Image::SequencerDir::HorzFromSW)? "sw-horz" :
+		(seqDir_ == Image::SequencerDir::HorzFromSE)? "se-horz" :
+		(seqDir_ == Image::SequencerDir::VertFromNW)? "nw-vert" :
+		(seqDir_ == Image::SequencerDir::VertFromNE)? "ne-vert" :
+		(seqDir_ == Image::SequencerDir::VertFromSW)? "sw-vert" :
+		(seqDir_ == Image::SequencerDir::VertFromSE)? "se-vert" : "unknown");
+	return buff;
 }
 
 //------------------------------------------------------------------------------

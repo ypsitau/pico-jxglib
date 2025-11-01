@@ -6,7 +6,33 @@ namespace jxglib::ShellCmd_Display {
 
 void PrintDisplays(Printable& terr);
 
-ShellCmd(display, "display commands")
+int iDisplay = 0;
+
+struct {
+	Point pos {0, 0};
+	Size size {0, 0};
+	Color color;
+} rectFill;
+
+struct {
+	Point pos {0, 0};
+	Size size {0, 0};
+	Color color;
+} rect;
+
+struct {
+	Point pos {0, 0};
+	char str[128] = "";
+} text;
+
+struct {
+	Point pos {0, 0};
+	Size size {0, 0};
+	Point offset {0, 0};
+	Image image;
+} blit;
+
+ShellCmd_Named(ls_display, "ls-display", "lists all displays")
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
@@ -14,34 +40,47 @@ ShellCmd(display, "display commands")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (arg.GetBool("help")) {
-		terr.Printf("Usage: %s [OPTION]... DISPLAY CMDS...\n", GetName());
+		terr.Printf("Usage: %s [OPTION]...\n", GetName());
 		arg.PrintHelp(terr);
 		return Result::Success;
 	}
-	if (argc < 2) {
-		PrintDisplays(terr);
-		return Result::Success;
-	}
-	int iDisplay = 0;
-	do {
+	PrintDisplays(terr);
+	return Result::Success;
+}
+
+ShellCmd(dr, "draw commands on displays")
+{
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		'h',	"prints this help"),
+		Arg::OptString("display",	'd',	"specifies display number (default: 0)"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
+	const char* value = nullptr;
+	if (arg.GetString("display", &value)) {
 		char* endptr;
-		iDisplay = ::strtol(argv[1], &endptr, 10);
-		if (*endptr != '\0' || iDisplay < 0) {
+		int num = ::strtol(value, &endptr, 10);
+		if (*endptr != '\0' || num < 0) {
 			terr.Printf("invalid display number: %s\n", argv[1]);
 			return Result::Error;
 		}
-	} while (0);
+		iDisplay = num;
+	}
+	if (arg.GetBool("help")) {
+		terr.Printf("Usage: %s [OPTION]... CMDS...\n", GetName());
+		arg.PrintHelp(terr);
+		return Result::Success;
+	}
 	Display::Base& display = Display::GetInstance(iDisplay);
 	if (!display.IsValid()) {
-		terr.Printf("invalid display number: %d\n", iDisplay);
+		terr.Printf("display #%d is not available\n", iDisplay);
 		return Result::Error;
 	}
-	Shell::Arg::EachSubcmd each(argv[2], argv[argc]);
+	Shell::Arg::EachSubcmd each(argv[1], argv[argc]);
 	if (!each.Initialize()) {
 		terr.Printf("%s\n", each.GetErrorMsg());
 		return Result::Error;
 	}
-	const char* value;
 	while (const Arg::Subcmd* pSubcmd = each.NextSubcmd()) {
 		const char* subcmd = pSubcmd->GetProc();
 		if (Arg::GetAssigned(subcmd, "fill", &value)) {
@@ -65,9 +104,6 @@ ShellCmd(display, "display commands")
 			display.Fill(color);
 			display.Refresh();
 		} else if (Arg::GetAssigned(subcmd, "rect-fill", &value)) {
-			Point pos;
-			Size size;
-			Color color;
 			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
 				const char* subcmd = pSubcmdChild->GetProc();
 				if (Arg::GetAssigned(subcmd, "pos", &value)) {
@@ -75,7 +111,7 @@ ShellCmd(display, "display commands")
 						terr.Printf("missing pos value\n");
 						return Result::Error;
 					}
-					if (!pos.Parse(value)) {
+					if (!rectFill.pos.Parse(value)) {
 						terr.Printf("invalid pos: %s\n", value);
 						return Result::Error;
 					}
@@ -84,7 +120,7 @@ ShellCmd(display, "display commands")
 						terr.Printf("missing size value\n");
 						return Result::Error;
 					}
-					if (!size.Parse(value) || size.width <= 0 || size.height <= 0) {
+					if (!rectFill.size.Parse(value) || rectFill.size.width <= 0 || rectFill.size.height <= 0) {
 						terr.Printf("invalid size: %s\n", value);
 						return Result::Error;
 					}
@@ -93,7 +129,7 @@ ShellCmd(display, "display commands")
 						terr.Printf("missing color value\n");
 						return Result::Error;
 					}
-					if (!color.Parse(value)) {
+					if (!rectFill.color.Parse(value)) {
 						terr.Printf("invalid color: %s\n", value);
 						return Result::Error;
 					}
@@ -102,12 +138,9 @@ ShellCmd(display, "display commands")
 					return Result::Error;
 				}
 			}
-			display.DrawRectFill(Rect(pos, size), color);
+			display.DrawRectFill(Rect(rectFill.pos, rectFill.size), rectFill.color);
 			display.Refresh();
 		} else if (Arg::GetAssigned(subcmd, "rect", &value)) {
-			Point pos;
-			Size size;
-			Color color;
 			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
 				const char* subcmd = pSubcmdChild->GetProc();
 				if (Arg::GetAssigned(subcmd, "pos", &value)) {
@@ -115,7 +148,7 @@ ShellCmd(display, "display commands")
 						terr.Printf("missing pos value\n");
 						return Result::Error;
 					}
-					if (!pos.Parse(value)) {
+					if (!rect.pos.Parse(value)) {
 						terr.Printf("invalid pos: %s\n", value);
 						return Result::Error;
 					}
@@ -124,7 +157,7 @@ ShellCmd(display, "display commands")
 						terr.Printf("missing size value\n");
 						return Result::Error;
 					}
-					if (!size.Parse(value) || size.width <= 0 || size.height <= 0) {
+					if (!rect.size.Parse(value) || rect.size.width <= 0 || rect.size.height <= 0) {
 						terr.Printf("invalid size: %s\n", value);
 						return Result::Error;
 					}
@@ -133,7 +166,7 @@ ShellCmd(display, "display commands")
 						terr.Printf("missing color value\n");
 						return Result::Error;
 					}
-					if (!color.Parse(value)) {
+					if (!rect.color.Parse(value)) {
 						terr.Printf("invalid color: %s\n", value);
 						return Result::Error;
 					}
@@ -142,7 +175,7 @@ ShellCmd(display, "display commands")
 					return Result::Error;
 				}
 			}
-			display.DrawRect(Rect(pos, size), color);
+			display.DrawRect(Rect(rect.pos, rect.size), rect.color);
 			display.Refresh();
 		} else if (Arg::GetAssigned(subcmd, "font", &value)) {
 			if (!value) {
@@ -155,9 +188,7 @@ ShellCmd(display, "display commands")
 				return Result::Error;
 			}
 			display.SetFont(fontSet);
-		} else if (Arg::GetAssigned(subcmd, "string", &value)) {
-			Point pos;
-			char str[128] = "";
+		} else if (Arg::GetAssigned(subcmd, "text", &value)) {
 			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
 				const char* subcmd = pSubcmdChild->GetProc();
 				if (Arg::GetAssigned(subcmd, "pos", &value)) {
@@ -165,7 +196,7 @@ ShellCmd(display, "display commands")
 						terr.Printf("missing pos value\n");
 						return Result::Error;
 					}
-					if (!pos.Parse(value)) {
+					if (!text.pos.Parse(value)) {
 						terr.Printf("invalid pos: %s\n", value);
 						return Result::Error;
 					}
@@ -174,15 +205,36 @@ ShellCmd(display, "display commands")
 						terr.Printf("missing str value\n");
 						return Result::Error;
 					}
-					::snprintf(str, sizeof(str), "%s", value);
-					Tokenizer::RemoveSurroundingQuotes(str);
+					::snprintf(text.str, sizeof(text.str), "%s", value);
+					Tokenizer::RemoveSurroundingQuotes(text.str);
 				} else {
 					terr.Printf("unknown sub command: %s\n", subcmd);
 					return Result::Error;
 				}
 			}
-			display.DrawStringWrap(pos, str);
+			display.DrawStringWrap(text.pos, text.str);
 			display.Refresh();
+#if 0
+		} else if (Arg::GetAssigned(subcmd, "blit", &value)) {
+			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
+				const char* subcmd = pSubcmdChild->GetProc();
+				if (Arg::GetAssigned(subcmd, "pos", &value)) {
+					if (!value) {
+						terr.Printf("missing pos value\n");
+						return Result::Error;
+					}
+					if (!blit.pos.Parse(value)) {
+						terr.Printf("invalid pos: %s\n", value);
+						return Result::Error;
+					}
+				} else {
+					terr.Printf("unknown sub command: %s\n", subcmd);
+					return Result::Error;
+				}
+			}
+			display.DrawStringWrap(text.pos, text.str);
+			display.Refresh();
+#endif
 		} else {
 			terr.Printf("unknown sub command: %s\n", subcmd);
 			return Result::Error;
