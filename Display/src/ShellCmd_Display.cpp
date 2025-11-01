@@ -309,6 +309,7 @@ ShellCmd(dr, "draw commands on displays")
 			terr.Printf("unknown sub command: %s\n", subcmd);
 			return Result::Error;
 		}
+		if (Tickable::TickSub()) break;
 	}
 	return Result::Success;
 }
