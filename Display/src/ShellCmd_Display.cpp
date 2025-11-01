@@ -289,7 +289,7 @@ ShellCmd(dr, "draw commands on displays")
 					return Result::Error;
 				}
 			}
-			Size sizeImageAdj = image.size.IsZero()? Size(image.image.GetWidth() - image.pos.x, image.image.GetHeight() - image.pos.y) : image.size;
+			Size sizeImageAdj = image.size.IsZero()? Size(image.image.GetWidth() - image.offset.x, image.image.GetHeight() - image.offset.y) : image.size;
 			if (sizeImageAdj.width > 0 && sizeImageAdj.height > 0) {
 				Display::GetInstance(iDisplay).DrawImage(image.pos.x, image.pos.y, image.image, Rect(image.offset, sizeImageAdj)).Refresh();
 			}
