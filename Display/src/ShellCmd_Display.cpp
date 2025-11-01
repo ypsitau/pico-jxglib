@@ -1,6 +1,7 @@
 #include "jxglib/SPI.h"
 #include "jxglib/Shell.h"
 #include "jxglib/Display.h"
+#include "jxglib/ImageFile.h"
 
 namespace jxglib::ShellCmd_Display {
 
@@ -30,7 +31,7 @@ struct {
 	Size size {0, 0};
 	Point offset {0, 0};
 	Image image;
-} blit;
+} image;
 
 ShellCmd_Named(ls_display, "ls-display", "lists all displays")
 {
@@ -214,8 +215,24 @@ ShellCmd(dr, "draw commands on displays")
 			}
 			display.DrawStringWrap(text.pos, text.str);
 			display.Refresh();
-#if 0
-		} else if (Arg::GetAssigned(subcmd, "blit", &value)) {
+		} else if (Arg::GetAssigned(subcmd, "image-file", &value)) {
+			if (!value) {
+				terr.Printf("file name is not specified\n");
+				return Result::Error;
+			}
+			char fileName[FS::MaxPath];
+			::snprintf(fileName, sizeof(fileName), "%s", value);
+			Tokenizer::RemoveSurroundingQuotes(fileName);
+			std::unique_ptr<FS::File> pFile(FS::OpenFile(fileName, "r"));
+			if (!pFile) {
+				terr.Printf("Failed to open file: %s\n", fileName);
+				return Result::Error;
+			}
+			if (!ImageFile::Read(image.image, *pFile)) {
+				terr.Printf("Failed to read image file: %s\n", fileName);
+				return Result::Error;
+			}
+		} else if (Arg::GetAssigned(subcmd, "image", &value)) {
 			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
 				const char* subcmd = pSubcmdChild->GetProc();
 				if (Arg::GetAssigned(subcmd, "pos", &value)) {
@@ -223,18 +240,71 @@ ShellCmd(dr, "draw commands on displays")
 						terr.Printf("missing pos value\n");
 						return Result::Error;
 					}
-					if (!blit.pos.Parse(value)) {
+					if (!image.pos.Parse(value)) {
 						terr.Printf("invalid pos: %s\n", value);
 						return Result::Error;
 					}
+				} else if (Arg::GetAssigned(subcmd, "pos-trans", &value)) {
+					if (!value) {
+						terr.Printf("missing pos-trans value\n");
+						return Result::Error;
+					}
+					Point posTrans;
+					if (!posTrans.Parse(value)) {
+						terr.Printf("invalid pos-trans: %s\n", value);
+						return Result::Error;
+					}
+					image.pos += posTrans;
+				} else if (Arg::GetAssigned(subcmd, "size", &value)) {
+					if (!value) {
+						terr.Printf("missing size value\n");
+						return Result::Error;
+					}
+					if (!image.size.Parse(value) || image.size.width <= 0 || image.size.height <= 0) {
+						terr.Printf("invalid size: %s\n", value);
+						return Result::Error;
+					}
+				} else if (Arg::GetAssigned(subcmd, "offset", &value)) {
+					if (!value) {
+						terr.Printf("missing pos value\n");
+						return Result::Error;
+					}
+					if (!image.offset.Parse(value)) {
+						terr.Printf("invalid offset: %s\n", value);
+						return Result::Error;
+					}
+				} else if (Arg::GetAssigned(subcmd, "offset-trans", &value)) {
+					if (!value) {
+						terr.Printf("missing offset-trans value\n");
+						return Result::Error;
+					}
+					Point offsetTrans;
+					if (!offsetTrans.Parse(value)) {
+						terr.Printf("invalid offset-trans: %s\n", value);
+						return Result::Error;
+					}
+					image.offset += offsetTrans;
 				} else {
 					terr.Printf("unknown sub command: %s\n", subcmd);
 					return Result::Error;
 				}
 			}
-			display.DrawStringWrap(text.pos, text.str);
+			Size sizeImageAdj = image.size.IsZero()? Size(image.image.GetWidth() - image.pos.x, image.image.GetHeight() - image.pos.y) : image.size;
+			if (sizeImageAdj.width > 0 && sizeImageAdj.height > 0) {
+				Display::GetInstance(iDisplay).DrawImage(image.pos.x, image.pos.y, image.image, Rect(image.offset, sizeImageAdj)).Refresh();
+			}
 			display.Refresh();
-#endif
+		} else if (Shell::Arg::GetAssigned(subcmd, "sleep", &value)) {
+			if (!value) {
+				terr.Printf("specify a sleep duration in milliseconds\n");
+				return false;
+			}
+			int msec = ::strtol(value, nullptr, 0);
+			if (msec <= 0) {
+				terr.Printf("Invalid sleep duration: %s\n", value);
+				return false;
+			}
+			Tickable::Sleep(msec);
 		} else {
 			terr.Printf("unknown sub command: %s\n", subcmd);
 			return Result::Error;
