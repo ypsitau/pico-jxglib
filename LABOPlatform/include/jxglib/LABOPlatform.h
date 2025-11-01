@@ -14,6 +14,7 @@
 #include "jxglib/FAT/Flash.h"
 #include "jxglib/FAT/SDCard.h"
 #include "jxglib/LogicAnalyzer.h"
+#include "jxglib/Device/WS2812.h"
 #include "jxglib/Font.h"
 
 namespace jxglib {
@@ -33,6 +34,7 @@ private:
 	bool attachStdioFlag_;
 	LogicAnalyzer logicAnalyzer_;
 	LogicAnalyzer::SigrokAdapter sigrokAdapter_;
+	Device::WS2812 ws2812Device_;
 	stdio_driver_t stdio_driver_;
 private:
 	static const char* textREADME_;
@@ -55,6 +57,7 @@ public:
 	Serial::Terminal& GetTerminal() { return terminal_; }
 	TelePlot& GetTelePlot() { return telePlot_; }
 	LogicAnalyzer& GetLogicAnalyzer() { return logicAnalyzer_; }
+	Device::WS2812& GetWS2812Device() { return ws2812Device_; }
 private:
 	static void func_out_chars(const char* buf, int len);
 	static void func_out_flush(void);

@@ -138,6 +138,14 @@ USBDevice::MSCDrive& ShellCmd_Font_GetMSCDrive()
 }
 
 //------------------------------------------------------------------------------
+// Callback function for the Device_WS2812
+//------------------------------------------------------------------------------
+Device::WS2812& ShellCmd_Device_WS2812_GetWS2812()
+{
+	return LABOPlatform::Instance.GetWS2812Device();
+}
+
+//------------------------------------------------------------------------------
 // LABOPlatform
 //------------------------------------------------------------------------------
 const char* LABOPlatform::textREADME_ = R"(Welcome to pico-jxgLABO!

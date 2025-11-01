@@ -48,12 +48,14 @@ target_link_libraries(jxglib_LABOPlatform_FullCmd INTERFACE
 target_link_libraries(jxglib_LABOPlatform_FullCmd INTERFACE
 	jxglib_ShellCmd_Display_SSD1306
 	jxglib_ShellCmd_Display_TFT_LCD
+	jxglib_ShellCmd_Display_WS2812
 	jxglib_ShellCmd_RTC
 	jxglib_ShellCmd_RTC_DS3231
 	jxglib_ShellCmd_Device_SDCard
+	jxglib_ShellCmd_Device_WS2812
 )
 
-# Network commands for WiFi enabled boards
+# Network commands for Wi-Fi enabled boards
 if(PICO_BOARD MATCHES ".*_w$")
 	target_link_libraries(jxglib_LABOPlatform_FullCmd INTERFACE
 		jxglib_ShellCmd_Net

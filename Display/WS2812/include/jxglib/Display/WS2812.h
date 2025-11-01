@@ -40,13 +40,17 @@ private:
 	Device::WS2812 device_;
 	Canvas canvas_;
 	DispatcherEx dispatcherEx_;
+	uint8_t seqDir_;
+	bool zigzagFlag_;
 public:
-	WS2812(int width, int height);
+	WS2812(int width, int height, uint8_t seqDir, bool zigzagFlag);
 public:
 	WS2812& Initialize(const GPIO& gpio);
 public:
 	Canvas& GetCanvas() { return canvas_; }
 	Device::WS2812& GetDevice() { return device_; }
+	uint8_t GetSeqDir() const { return seqDir_; }
+	bool GetZigzagFlag() const { return zigzagFlag_; }
 };
 
 }

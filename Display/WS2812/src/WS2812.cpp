@@ -8,8 +8,9 @@ namespace jxglib::Display {
 //------------------------------------------------------------------------------
 // WS2812
 //------------------------------------------------------------------------------
-WS2812::WS2812(int width, int height) :
-	Base(Capability::Device | Capability::ScrollHorz | Capability::ScrollVert, Format::RGB, 16, 16), dispatcherEx_(*this)
+WS2812::WS2812(int width, int height, uint8_t seqDir, bool zigzagFlag) :
+	Base(Capability::Device | Capability::ScrollHorz | Capability::ScrollVert, Format::RGB, 16, 16), dispatcherEx_(*this),
+	seqDir_(seqDir), zigzagFlag_(zigzagFlag)
 {
 	SetDispatcher(dispatcherEx_);
 }
@@ -32,12 +33,19 @@ bool WS2812::DispatcherEx::Initialize()
 
 void WS2812::DispatcherEx::Refresh()
 {
+	while (Tickable::GetCurrentTime() - timeStamp_ < 1) Tickable::TickSub();	// interval of 280us or more
 	Image& image = GetCanvas().GetImageOwn();
 	Device::WS2812& device = ws2812_.GetDevice();
-	using ReaderZigzag = Image::ReaderZigzag<Image::Getter_T<Color, Color> >;
-	Image::ReaderZigzag reader(ReaderZigzag::VertFromNW(image, 0, 0, image.GetWidth(), image.GetHeight()));
-	while (Tickable::GetCurrentTime() - timeStamp_ < 1) Tickable::TickSub();	// interval of 280us or more
-	while (!reader.HasDone()) device.Put(reader.ReadForward());
+	uint8_t seqDir = ws2812_.GetSeqDir();
+	if (ws2812_.GetZigzagFlag()) {
+		using Reader = Image::ReaderZigzag<Image::Getter_T<Color, Color> >;
+		Reader reader(Reader::Create(image, 0, 0, image.GetWidth(), image.GetHeight(), seqDir));
+		while (!reader.HasDone()) device.Put(reader.ReadForward());
+	} else {
+		using Reader = Image::Reader<Image::Getter_T<Color, Color> >;
+		Reader reader(Reader::Create(image, 0, 0, image.GetWidth(), image.GetHeight(), seqDir));
+		while (!reader.HasDone()) device.Put(reader.ReadForward());
+	}
 	timeStamp_ = Tickable::GetCurrentTime();
 }
 
