@@ -9,8 +9,8 @@ namespace jxglib::Display {
 // WS2812
 //------------------------------------------------------------------------------
 WS2812::WS2812(int width, int height, uint8_t seqDir, bool zigzagFlag) :
-	Base(Capability::Device | Capability::ScrollHorz | Capability::ScrollVert, Format::RGB, 16, 16), dispatcherEx_(*this),
-	pinDIN_{GPIO::InvalidPin}, seqDir_(seqDir), zigzagFlag_(zigzagFlag)
+	Base(Capability::Device | Capability::ScrollHorz | Capability::ScrollVert, Format::RGB, width, height),
+	dispatcherEx_(*this), pinDIN_{GPIO::InvalidPin}, seqDir_(seqDir), zigzagFlag_(zigzagFlag)
 {
 	SetDispatcher(dispatcherEx_);
 }

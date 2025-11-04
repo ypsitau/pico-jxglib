@@ -59,6 +59,7 @@ ShellCmd_Named(display_ws2812, "display-ws2812", "initialize WS2812 display")
 						terr.Printf("invalid size: %s\n", value);
 						return Result::Error;
 					}
+					seqDir = Image::SequencerDir::HorzFromNW;
 					size = Size(num, 1);
 				} else if (Arg::GetAssigned(subcmd, "straight-nw-horz", &value)) {
 					seqDir = Image::SequencerDir::HorzFromNW; valueSize = value;
