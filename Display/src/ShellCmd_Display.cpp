@@ -31,6 +31,8 @@ struct {
 	Size size {0, 0};
 	Point offset {0, 0};
 	Image image;
+	int nRepeatX = 1;
+	int nRepeatY = 1;
 } image;
 
 ShellCmd_Named(ls_display, "ls-display", "lists all displays")
@@ -280,6 +282,28 @@ ShellCmd(dr, "draw commands on displays")
 						return Result::Error;
 					}
 					image.offset += offsetTrans;
+				} else if (Arg::GetAssigned(subcmd, "repeat-x", &value)) {
+					if (value) {
+						int num = ::strtol(value, nullptr, 0);
+						if (num <= 0) {
+							terr.Printf("invalid repeat-x value: %s\n", value);
+							return Result::Error;
+						}
+						image.nRepeatX = num;
+					} else {
+						image.nRepeatX = -1;
+					}
+				} else if (Arg::GetAssigned(subcmd, "repeat-y", &value)) {
+					if (value) {
+						int num = ::strtol(value, nullptr, 0);
+						if (num <= 0) {
+							terr.Printf("invalid repeat-y value: %s\n", value);
+							return Result::Error;
+						}
+						image.nRepeatY = num;
+					} else {
+						image.nRepeatY = -1;
+					}
 				} else {
 					terr.Printf("unknown sub command: %s\n", subcmd);
 					return Result::Error;
@@ -287,7 +311,15 @@ ShellCmd(dr, "draw commands on displays")
 			}
 			Size sizeImageAdj = image.size.IsZero()? Size(image.image.GetWidth() - image.offset.x, image.image.GetHeight() - image.offset.y) : image.size;
 			if (sizeImageAdj.width > 0 && sizeImageAdj.height > 0) {
-				display.DrawImage(image.pos.x, image.pos.y, image.image, Rect(image.offset, sizeImageAdj));
+				int y = image.pos.y;
+				for (int iRepeatY = 0; iRepeatY < image.nRepeatY || image.nRepeatY < 0; iRepeatY++, y += sizeImageAdj.height) {
+					if (y >= display.GetHeight()) break;
+					int x = image.pos.x;
+					for (int iRepeatX = 0; iRepeatX < image.nRepeatX || image.nRepeatX < 0; iRepeatX++, x += sizeImageAdj.width) {
+						if (x >= display.GetWidth()) break;
+						display.DrawImage(x, y, image.image, Rect(image.offset, sizeImageAdj));
+					}
+				}
 			}
 		} else if (Shell::Arg::GetAssigned(subcmd, "sleep", &value)) {
 			if (!value) {
