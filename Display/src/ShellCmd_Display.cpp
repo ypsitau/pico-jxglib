@@ -103,7 +103,6 @@ ShellCmd(dr, "draw commands on displays")
 				}
 			}
 			display.Fill(color);
-			//display.Refresh();
 		} else if (Arg::GetAssigned(subcmd, "rect-fill", &value)) {
 			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
 				const char* subcmd = pSubcmdChild->GetProc();
@@ -140,7 +139,6 @@ ShellCmd(dr, "draw commands on displays")
 				}
 			}
 			display.DrawRectFill(Rect(rectFill.pos, rectFill.size), rectFill.color);
-			//display.Refresh();
 		} else if (Arg::GetAssigned(subcmd, "rect", &value)) {
 			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
 				const char* subcmd = pSubcmdChild->GetProc();
@@ -177,7 +175,6 @@ ShellCmd(dr, "draw commands on displays")
 				}
 			}
 			display.DrawRect(Rect(rect.pos, rect.size), rect.color);
-			//display.Refresh();
 		} else if (Arg::GetAssigned(subcmd, "font", &value)) {
 			if (!value) {
 				terr.Printf("missing font name\n");
@@ -214,7 +211,6 @@ ShellCmd(dr, "draw commands on displays")
 				}
 			}
 			display.DrawStringWrap(text.pos, text.str);
-			//display.Refresh();
 		} else if (Arg::GetAssigned(subcmd, "image-file", &value)) {
 			if (!value) {
 				terr.Printf("file name is not specified\n");
@@ -293,7 +289,6 @@ ShellCmd(dr, "draw commands on displays")
 			if (sizeImageAdj.width > 0 && sizeImageAdj.height > 0) {
 				display.DrawImage(image.pos.x, image.pos.y, image.image, Rect(image.offset, sizeImageAdj));
 			}
-			//display.Refresh();
 		} else if (Shell::Arg::GetAssigned(subcmd, "sleep", &value)) {
 			if (!value) {
 				terr.Printf("specify a sleep duration in milliseconds\n");
