@@ -51,7 +51,7 @@ ShellCmd_Named(ls_display, "ls-display", "lists all displays")
 	return Result::Success;
 }
 
-ShellCmd(dr, "draw commands on displays")
+ShellCmd(draw, "draw commands on displays")
 {
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
@@ -213,7 +213,7 @@ ShellCmd(dr, "draw commands on displays")
 				}
 			}
 			display.DrawStringWrap(text.pos, text.str);
-		} else if (Arg::GetAssigned(subcmd, "image-file", &value)) {
+		} else if (Arg::GetAssigned(subcmd, "image-load", &value)) {
 			if (!value) {
 				terr.Printf("file name is not specified\n");
 				return Result::Error;
@@ -242,14 +242,14 @@ ShellCmd(dr, "draw commands on displays")
 						terr.Printf("invalid pos: %s\n", value);
 						return Result::Error;
 					}
-				} else if (Arg::GetAssigned(subcmd, "pos-trans", &value)) {
+				} else if (Arg::GetAssigned(subcmd, "pos-shift", &value)) {
 					if (!value) {
-						terr.Printf("missing pos-trans value\n");
+						terr.Printf("missing pos-shift value\n");
 						return Result::Error;
 					}
 					Point posTrans;
 					if (!posTrans.Parse(value)) {
-						terr.Printf("invalid pos-trans: %s\n", value);
+						terr.Printf("invalid pos-shift: %s\n", value);
 						return Result::Error;
 					}
 					image.pos += posTrans;
@@ -271,14 +271,14 @@ ShellCmd(dr, "draw commands on displays")
 						terr.Printf("invalid offset: %s\n", value);
 						return Result::Error;
 					}
-				} else if (Arg::GetAssigned(subcmd, "offset-trans", &value)) {
+				} else if (Arg::GetAssigned(subcmd, "offset-shift", &value)) {
 					if (!value) {
-						terr.Printf("missing offset-trans value\n");
+						terr.Printf("missing offset-shift value\n");
 						return Result::Error;
 					}
 					Point offsetTrans;
 					if (!offsetTrans.Parse(value)) {
-						terr.Printf("invalid offset-trans: %s\n", value);
+						terr.Printf("invalid offset-shift: %s\n", value);
 						return Result::Error;
 					}
 					image.offset += offsetTrans;
