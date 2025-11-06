@@ -282,6 +282,22 @@ ShellCmd(draw, "draw commands on displays")
 						return Result::Error;
 					}
 					image.offset += offsetTrans;
+					if (image.size.width <= 0) {
+						// nothing to do
+					} else if (image.offset.x < 0) {
+						image.offset.x = image.image.GetWidth() - image.size.width;
+						if (image.offset.x < 0) image.offset.x = 0;
+					} else if (image.offset.x + image.size.width > image.image.GetWidth()) {
+						image.offset.x = 0;
+					}
+					if (image.size.height <= 0) {
+						// nothing to do
+					} else if (image.offset.y < 0) {
+						image.offset.y = image.image.GetHeight() - image.size.height;
+						if (image.offset.y < 0) image.offset.y = 0;
+					} else if (image.offset.y + image.size.height > image.image.GetHeight()) {
+						image.offset.y = 0;
+					}
 				} else if (Arg::GetAssigned(subcmd, "repeat-x", &value)) {
 					if (value) {
 						int num = ::strtol(value, nullptr, 0);
