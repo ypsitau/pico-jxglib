@@ -11,9 +11,10 @@ namespace jxglib::Device {
 //------------------------------------------------------------------------------
 void WS2812::Run(const GPIO& din)
 {
+	// low voltage must be between 580ns and 1000ns
 	const int nClocksWhole	= 10;	// 1250ns
-	const int nClocksLong	= 5;	// 625ns (must be between 580ns and 1000ns)
-	const int nClocksShort	= 3;	// 375ns (must be between 220ns and 380ns)
+	const int nClocksLong	= 5;	// 625ns (must be between 580ns and 1000ns) + 625ns low
+	const int nClocksShort	= 2;	// 250ns (must be between 220ns and 380ns) + 1000ns low
 	//--------------------------------------------------------------------------
 	program_
 	.pio_version(0)

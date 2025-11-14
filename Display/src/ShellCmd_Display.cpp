@@ -230,6 +230,8 @@ ShellCmd(draw, "draw commands on displays")
 				terr.Printf("Failed to read image file: %s\n", fileName);
 				return Result::Error;
 			}
+			image.size = Size(0, 0);
+			image.offset = Point(0, 0);
 		} else if (Arg::GetAssigned(subcmd, "image", &value)) {
 			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
 				const char* subcmd = pSubcmdChild->GetProc();
