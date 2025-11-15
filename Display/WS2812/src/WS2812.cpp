@@ -52,7 +52,7 @@ bool WS2812::DispatcherEx::Initialize()
 
 void WS2812::DispatcherEx::Refresh()
 {
-	while (Tickable::GetCurrentTime() - timeStamp_ < 1) Tickable::TickSub();	// interval of 280us or more
+	while (Tickable::GetCurrentTime() - timeStamp_ < 2) Tickable::TickSub();	// interval of 280us or more
 	Image& image = GetCanvas().GetImageOwn();
 	Device::WS2812& device = ws2812_.GetDevice();
 	uint8_t seqDir = ws2812_.GetSeqDir();
