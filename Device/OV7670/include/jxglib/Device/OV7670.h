@@ -6,7 +6,7 @@
 #include "pico/stdlib.h"
 #include "jxglib/Common.h"
 
-namespace jxglib {
+namespace jxglib::Device {
 
 //------------------------------------------------------------------------------
 // OV7670
