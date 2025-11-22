@@ -24,9 +24,9 @@ void OV7670::Run()
 	.wrap_target()
 		.wait(1, "gpio", pinAssign_.HREF)	// wait for HREF to go high
 	.L("pixel")
-		.wait(1, "gpio", pinAssign_.PLK)		// wait for PLK to go high
+		.wait(1, "gpio", pinAssign_.PLK)	// wait for PLK to go high
 		.in("pins", 8)
-		.wait(0, "gpio", pinAssign_.PLK)		// wait for PLK to go low
+		.wait(0, "gpio", pinAssign_.PLK)	// wait for PLK to go low
 		.jmp("pin", "pixel")				// if HREF is high, continue capturing pixels
 	.wrap()
 	.end();
