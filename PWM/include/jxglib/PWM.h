@@ -63,6 +63,8 @@ public:
 	const PWM& init(Config& c, bool start) const { ::pwm_init(GetSliceNum(), c.GetEntityPtr(), start); return *this; }
 	static Config get_default_config() { return Config(::pwm_get_default_config()); }
 public:
+	const PWM& set_function() const { ::gpio_set_function(GetPin(), GPIO_FUNC_PWM); return *this; }
+public:
 	bool get_phase_correct() const { return get_phase_correct(GetSliceNum()); }
 	const PWM& set_phase_correct(bool phase_correct = true) const { ::pwm_set_phase_correct(GetSliceNum(), phase_correct); return *this; }
 	const PWM& set_clkdiv(float div) const { ::pwm_set_clkdiv(GetSliceNum(), div); return *this; }

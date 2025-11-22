@@ -380,6 +380,11 @@ public:
 		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
 		return reserve_listen_pins(pin1, -1);
 	}
+	template<typename... Pins> StateMachine& reserve_gpio_pin(uint pin1, Pins... pins) {
+		pin_mask_ |= (1u << pin1);
+		((pin_mask_ |= (1u << pins)), ...);
+		return *this;
+	}
 	StateMachine& reserve_sideset_pins(uint base, uint count);
 	template<typename... Pins> StateMachine& reserve_sideset_pin(uint pin1, Pins... pins) {
 		if constexpr (sizeof...(pins) > 0) CheckAdjacent(pin1, pins...);
