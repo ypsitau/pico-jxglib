@@ -8,8 +8,22 @@ namespace jxglib::Device {
 //------------------------------------------------------------------------------
 // OV7670
 //------------------------------------------------------------------------------
-OV7670::OV7670(const PinAssign& pinAssign, uint32_t freq) : pinAssign_{pinAssign}, freq_{freq}
+OV7670::OV7670(i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq) : i2c_{i2c}, pinAssign_{pinAssign}, freq_{freq}
 {
+}
+
+void OV7670::WriteReg(uint8_t reg, uint8_t value)
+{
+	uint8_t buf[2] = { reg, value };
+	::i2c_write_blocking(i2c_, I2CAddr, buf, 2, false);
+}
+
+uint8_t OV7670::ReadReg(uint8_t reg)
+{
+	::i2c_write_blocking(i2c_, I2CAddr, &reg, 1, true);
+	uint8_t value = 0;
+	::i2c_read_blocking(i2c_, I2CAddr, &value, 1, false);
+	return value;
 }
 
 void OV7670::Run()
@@ -35,7 +49,7 @@ void OV7670::Run()
 		.reserve_in_pins(pinAssign_.DIN0, 8)
 		.reserve_gpio_pin(pinAssign_.PLK, pinAssign_.HREF, pinAssign_.VSYNC)
 		.config_set_jmp_pin(pinAssign_.HREF)
-		.config_set_in_shift_right(true, 32)	// shift right, autopush enabled, push threshold 32
+		.config_set_in_shift_left(true, 8)	// shift left, autopush enabled, push threshold 32
 		.config_set_fifo_join_rx()
 		.init();
 	programToReset_
@@ -45,7 +59,7 @@ void OV7670::Run()
 	.end();
 	pChannel_ = DMA::claim_unused_channel();
 	channelConfig_.set_enable(true)
-		.set_transfer_data_size(DMA_SIZE_32)
+		.set_transfer_data_size(DMA_SIZE_8)
 		.set_read_increment(false)
 		.set_write_increment(true)
 		.set_dreq(sm_.get_dreq_rx()) // set DREQ of StateMachine's rx
@@ -62,11 +76,11 @@ OV7670& OV7670::Capture(Image& image)
 {
 	if (!IsRunning()) return *this;
 	sm_.set_enabled(false);
-	sm_.exec(programToReset_);
+	sm_.clear_fifos().exec(programToReset_);
 	pChannel_->set_config(channelConfig_)
 		.set_read_addr(sm_.get_rxf())
 		.set_write_addr(image.GetPointer())
-		.set_trans_count_trig(image.GetBytesBuff() / sizeof(uint32_t));
+		.set_trans_count_trig(image.GetBytesBuff() / sizeof(uint8_t));
 	sm_.set_enabled();
 	while (pChannel_->is_busy()) Tickable::Tick();
 	return *this;
