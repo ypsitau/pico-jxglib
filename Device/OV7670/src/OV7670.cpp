@@ -8,34 +8,34 @@ namespace jxglib::Device {
 //------------------------------------------------------------------------------
 // OV7670
 //------------------------------------------------------------------------------
-OV7670::OV7670()
+OV7670::OV7670(const PinAssign& pinAssign, uint32_t freq) : pinAssign_{pinAssign}, freq_{freq}
 {
 }
 
-void OV7670::Run(const GPIO& din)
+void OV7670::Run()
 {
 	uint relAddrStart = 0;
 	program_
 	.pio_version(0)
 	.program("ov7670")
 	.pub(&relAddrStart)
-		.wait(1, "gpio", 13)				// wait for GPIO13 (VSYNC) to go high
-		.wait(0, "gpio", 13)				// wait for GPIO13 (VSYNC) to go low
+		.wait(1, "gpio", pinAssign_.VSYNC)	// wait for VSYNC to go high
+		.wait(0, "gpio", pinAssign_.VSYNC)	// wait for VSYNC to go low
 	.wrap_target()
-		.wait(1, "gpio", 12)				// wait for GPIO12 (HREF) to go high
+		.wait(1, "gpio", pinAssign_.HREF)	// wait for HREF to go high
 	.L("pixel")
-		.wait(1, "gpio", 11)				// wait for GPIO11 (PLK) to go high
+		.wait(1, "gpio", pinAssign_.PLK)		// wait for PLK to go high
 		.in("pins", 8)
-		.wait(0, "gpio", 11)				// wait for GPIO11 (PLK) to go low
+		.wait(0, "gpio", pinAssign_.PLK)		// wait for PLK to go low
 		.jmp("pin", "pixel")				// if HREF is high, continue capturing pixels
 	.wrap()
 	.end();
 	//--------------------------------------------------------------------------
 	sm_.set_program(program_)
-		.reserve_in_pins(2, 8)				// DIN pins: GPIO2 to GPIO9
-		.reserve_gpio_pin(11, 12, 13)		// PLK, HREF, VSYNC pins
-		.config_set_jmp_pin(12)				// GPIO12 is used for HREF
-		.config_set_in_shift_left(true, 32)	// shift left, autopush enabled, push threshold 32
+		.reserve_in_pins(pinAssign_.DIN0, 8)
+		.reserve_gpio_pin(pinAssign_.PLK, pinAssign_.HREF, pinAssign_.VSYNC)
+		.config_set_jmp_pin(pinAssign_.HREF)
+		.config_set_in_shift_right(true, 32)	// shift right, autopush enabled, push threshold 32
 		.config_set_fifo_join_rx()
 		.init();
 	programToReset_
@@ -55,6 +55,7 @@ void OV7670::Run(const GPIO& din)
 		.set_irq_quiet(false)
 		.set_sniff_enable(false)
 		.set_high_priority(false);
+	PWM(pinAssign_.XLK).set_function().set_freq(freq_).set_chan_duty(.5).set_enabled(true);
 }
 
 OV7670& OV7670::Capture(Image& image)
