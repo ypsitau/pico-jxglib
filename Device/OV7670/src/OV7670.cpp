@@ -29,6 +29,7 @@ uint8_t OV7670::ReadReg(uint8_t reg)
 void OV7670::Run()
 {
 	uint relAddrStart = 0;
+#if 1
 	program_
 	.pio_version(0)
 	.program("ov7670")
@@ -47,11 +48,29 @@ void OV7670::Run()
 		.wait(0, "gpio", pinAssign_.HREF)	// wait for HREF to go low
 	.wrap()
 	.end();
+#else
+	program_
+	.pio_version(0)
+	.program("ov7670")
+	.pub(&relAddrStart)
+		.wait(1, "gpio", pinAssign_.VSYNC)	// wait for VSYNC to go high
+		.wait(0, "gpio", pinAssign_.VSYNC)	// wait for VSYNC to go low
+	.wrap_target()
+		.wait(1, "gpio", pinAssign_.HREF)	// wait for HREF to go high
+	.L("pixel")
+		.wait(0, "gpio", pinAssign_.PLK)	// wait for PLK to go low
+		.wait(1, "gpio", pinAssign_.PLK)	// wait for PLK to go high
+		.in("pins", 8)
+		.jmp("pin", "pixel")				// loop while HREF is high
+	.wrap()
+	.end();
+#endif
 	//--------------------------------------------------------------------------
 	sm_.set_program(program_)
 		.reserve_in_pins(pinAssign_.DIN0, 8)
 		.reserve_gpio_pin(pinAssign_.PLK, pinAssign_.HREF, pinAssign_.VSYNC)
 		.config_set_in_shift_left(true, 32)	// shift left, autopush enabled, push threshold 32
+		.config_set_jmp_pin(pinAssign_.HREF)
 		.init();
 	programToReset_
 	.pio_version(0)
