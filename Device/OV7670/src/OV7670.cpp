@@ -52,7 +52,6 @@ void OV7670::Run()
 		.reserve_in_pins(pinAssign_.DIN0, 8)
 		.reserve_gpio_pin(pinAssign_.PLK, pinAssign_.HREF, pinAssign_.VSYNC)
 		.config_set_in_shift_left(true, 32)	// shift left, autopush enabled, push threshold 32
-		//.config_set_fifo_join_rx()
 		.init();
 	programToReset_
 	.pio_version(0)
