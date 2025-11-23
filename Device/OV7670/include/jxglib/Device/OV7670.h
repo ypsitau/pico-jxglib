@@ -192,7 +192,7 @@ public:
 	void Run();
 	bool IsRunning() const { return sm_.IsValid(); }
 public:
-	void WriteReg(uint8_t reg, uint8_t value);
+	OV7670& WriteReg(uint8_t reg, uint8_t value);
 	uint8_t ReadReg(uint8_t reg);
 public:
 	OV7670& Capture(Image& image);

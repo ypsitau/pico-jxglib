@@ -12,10 +12,11 @@ OV7670::OV7670(i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq) : i2c
 {
 }
 
-void OV7670::WriteReg(uint8_t reg, uint8_t value)
+OV7670& OV7670::WriteReg(uint8_t reg, uint8_t value)
 {
 	uint8_t buf[2] = { reg, value };
 	::i2c_write_blocking(i2c_, I2CAddr, buf, 2, false);
+	return *this;
 }
 
 uint8_t OV7670::ReadReg(uint8_t reg)
