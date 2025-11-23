@@ -23,7 +23,8 @@ ShellCmd_Named(display_tftlcd, "display-tftlcd", "initialize TFT LCD display")
 		}
 		terr.Printf("Sub Commands:\n");
 		terr.Printf(" setup  Set up TFT LCD display with the given parameters:\n");
-		terr.Printf("          {spi:PIN rst:PIN dc:PIN cs:PIN [bl:PIN] [size:WxH]}\n");
+		terr.Printf("          {spi:PIN rst:PIN dc:PIN cs:PIN [bl:PIN] [size:WxH] [dir:DIR]}\n");
+		terr.Printf("        DIR = normal | rotate90 | rotate180 | rotate270 | mirror-horz | mirror-vert\n");
 		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
 	int iArgStart = 1;
