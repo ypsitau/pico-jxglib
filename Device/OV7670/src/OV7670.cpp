@@ -33,15 +33,18 @@ void OV7670::Run()
 	.pio_version(0)
 	.program("ov7670")
 	.pub(&relAddrStart)
+		.pull()
 		.wait(1, "gpio", pinAssign_.VSYNC)	// wait for VSYNC to go high
 		.wait(0, "gpio", pinAssign_.VSYNC)	// wait for VSYNC to go low
 	.wrap_target()
 		.wait(1, "gpio", pinAssign_.HREF)	// wait for HREF to go high
+		.mov("x", "osr")
 	.L("pixel")
+		.wait(0, "gpio", pinAssign_.PLK)	// wait for PLK to go low
 		.wait(1, "gpio", pinAssign_.PLK)	// wait for PLK to go high
 		.in("pins", 8)
-		.wait(0, "gpio", pinAssign_.PLK)	// wait for PLK to go low
-		.jmp("pin", "pixel")				// if HREF is high, continue capturing pixels
+		.jmp("x--", "pixel")				// loop for the number of pixels in the line
+		.wait(0, "gpio", pinAssign_.HREF)	// wait for HREF to go low
 	.wrap()
 	.end();
 	//--------------------------------------------------------------------------
@@ -49,8 +52,8 @@ void OV7670::Run()
 		.reserve_in_pins(pinAssign_.DIN0, 8)
 		.reserve_gpio_pin(pinAssign_.PLK, pinAssign_.HREF, pinAssign_.VSYNC)
 		.config_set_jmp_pin(pinAssign_.HREF)
-		.config_set_in_shift_left(true, 8)	// shift left, autopush enabled, push threshold 32
-		.config_set_fifo_join_rx()
+		.config_set_in_shift_left(true, 32)	// shift left, autopush enabled, push threshold 32
+		//.config_set_fifo_join_rx()
 		.init();
 	programToReset_
 	.pio_version(0)
@@ -59,13 +62,13 @@ void OV7670::Run()
 	.end();
 	pChannel_ = DMA::claim_unused_channel();
 	channelConfig_.set_enable(true)
-		.set_transfer_data_size(DMA_SIZE_8)
+		.set_transfer_data_size(DMA_SIZE_32)
 		.set_read_increment(false)
 		.set_write_increment(true)
 		.set_dreq(sm_.get_dreq_rx()) // set DREQ of StateMachine's rx
 		.set_chain_to(*pChannel_)    // disable by setting chain_to to itself
 		.set_ring_read(0)
-		.set_bswap(false)
+		.set_bswap(true)
 		.set_irq_quiet(false)
 		.set_sniff_enable(false)
 		.set_high_priority(false);
@@ -80,8 +83,9 @@ OV7670& OV7670::Capture(Image& image)
 	pChannel_->set_config(channelConfig_)
 		.set_read_addr(sm_.get_rxf())
 		.set_write_addr(image.GetPointer())
-		.set_trans_count_trig(image.GetBytesBuff() / sizeof(uint8_t));
+		.set_trans_count_trig(image.GetBytesBuff() / sizeof(uint32_t));
 	sm_.set_enabled();
+	sm_.put(image.GetWidth() * 2 - 1);
 	while (pChannel_->is_busy()) Tickable::Tick();
 	return *this;
 }

@@ -36,7 +36,7 @@ private:
 	DMA::Channel* pChannel_;
 	DMA::ChannelConfig channelConfig_;
 public:
-	OV7670(i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq = 25000000);
+	OV7670(i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq = 24000000);
 public:
 	void Run();
 	bool IsRunning() const { return sm_.IsValid(); }
