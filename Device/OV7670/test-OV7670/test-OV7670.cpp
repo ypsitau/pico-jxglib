@@ -25,8 +25,53 @@ int main()
 	ov7670.Initialize();
 	ov7670.WriteReg(Device::OV7670::Reg12_COM7,
 		(0b1 << 7));	// SCCB Register Reset
-	sleep_ms(100);
+	::sleep_ms(100);
 	ov7670
+	.WriteReg(Device::OV7670::Reg3A_TSLB,
+		(0b0 << 5) | 		// Negative image enable
+		(0b0 << 4) |		// UV output value
+		(0b0 << 3) |		// Output sequence
+		(0b0 << 0))			// Auto output window
+	.WriteReg(Device::OV7670::Reg15_COM10,
+		(0b0 << 6) |		// HREF changes to HSYNC
+		(0b0 << 5) |		// PCLK output option
+		(0b0 << 4) |		// PCLK reverse
+		(0b0 << 3) |		// HREF reverse
+		(0b0 << 2) |		// VSYNC option
+		(0b1 << 1) |		// VSYNC negative
+		(0b0 << 0))			// HSYNC negative
+	.WriteReg(Device::OV7670::Reg7A_SLOP,
+		0x20)				// Gamma curve highest segment slope
+	.WriteReg(Device::OV7670::Reg7B_GAM1,
+		0x1C)				// Gamma curve 1st Segment Input End Point 0x04 Output Value
+	.WriteReg(Device::OV7670::Reg7C_GAM2,
+		0x28)				// Gamma curve 2nd Segment Input End Point 0x08 Output Value
+	.WriteReg(Device::OV7670::Reg7D_GAM3,
+		0x3C)				// Gamma curve 3rd Segment Input End Point 0x10 Output Value
+	.WriteReg(Device::OV7670::Reg7E_GAM4,
+		0x55)				// Gamma curve 4th Segment Input End Point 0x20 Output Value
+	.WriteReg(Device::OV7670::Reg7F_GAM5,
+		0x68)				// Gamma curve 5th Segment Input End Point 0x28 Output Value
+	.WriteReg(Device::OV7670::Reg80_GAM6,
+		0x76)				// Gamma curve 6th Segment Input End Point 0x30 Output Value
+	.WriteReg(Device::OV7670::Reg81_GAM7,
+		0x80)				// Gamma curve 7th Segment Input End Point 0x38 Output Value
+	.WriteReg(Device::OV7670::Reg82_GAM8,
+		0x88)				// Gamma curve 8th Segment Input End Point 0x40 Output Value
+	.WriteReg(Device::OV7670::Reg83_GAM9,
+		0x8F)				// Gamma curve 9th Segment Input End Point 0x48 Output Value
+	.WriteReg(Device::OV7670::Reg84_GAM10,
+		0x96)				// Gamma curve 10th Segment Input End Point 0x50 Output Value
+	.WriteReg(Device::OV7670::Reg85_GAM11,
+		0xA3)				// Gamma curve 11th Segment Input End Point 0x60 Output Value
+	.WriteReg(Device::OV7670::Reg86_GAM12,
+		0xAF)				// Gamma curve 12th Segment Input End Point 0x70 Output Value
+	.WriteReg(Device::OV7670::Reg87_GAM13,
+		0xC4)				// Gamma curve 13th Segment Input End Point 0x90 Output Value
+	.WriteReg(Device::OV7670::Reg88_GAM14,
+		0xD7)				// Gamma curve 14th Segment Input End Point 0xB0 Output Value
+	.WriteReg(Device::OV7670::Reg89_GAM15,
+		0xE8)				// Gamma curve 15th Segment Input End Point 0xD0 Output Value
 	.WriteReg(Device::OV7670::Reg12_COM7,
 		(0b0 << 5) |		// Output format - CIF selection
 		(0b1 << 4) |		// Output format - QVGA selection
@@ -56,11 +101,6 @@ int main()
 	.WriteReg(Device::OV7670::Reg04_COM1,
 		(0b0 << 6) |		// CCIR656 format
 		(0b00 << 0))		// AEC[1:0]
-	.WriteReg(Device::OV7670::Reg3A_TSLB,
-		(0b0 << 5) | 		// Negative image enable
-		(0b0 << 4) |		// UV output value
-		(0b0 << 3) |		// Output sequence
-		(0b0 << 0))			// Auto output window
 	.WriteReg(Device::OV7670::Reg14_COM9,
 		(0b001 << 4) |		// Automatic Gain Ceiling
 		(0b0 << 0))			// Freeze AGC/AEC
