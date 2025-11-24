@@ -187,8 +187,7 @@ private:
 public:
 	OV7670(i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq = 24000000);
 public:
-	void Run();
-	bool IsRunning() const { return sm_.IsValid(); }
+	void Initialize();
 public:
 	OV7670& WriteReg(uint8_t reg, uint8_t value);
 	uint8_t ReadReg(uint8_t reg);

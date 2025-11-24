@@ -27,7 +27,7 @@ uint8_t OV7670::ReadReg(uint8_t reg)
 	return value;
 }
 
-void OV7670::Run()
+void OV7670::Initialize()
 {
 	uint relAddrStart = 0;
 #if 1
@@ -95,7 +95,6 @@ void OV7670::Run()
 
 OV7670& OV7670::Capture(Image& image)
 {
-	if (!IsRunning()) return *this;
 	sm_.set_enabled(false);
 	sm_.clear_fifos().exec(programToReset_);
 	pChannel_->set_config(channelConfig_)
