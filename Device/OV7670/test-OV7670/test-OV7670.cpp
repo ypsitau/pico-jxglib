@@ -72,6 +72,52 @@ int main()
 		0xD7)				// Gamma curve 14th Segment Input End Point 0xB0 Output Value
 	.WriteReg(Device::OV7670::Reg89_GAM15,
 		0xE8)				// Gamma curve 15th Segment Input End Point 0xD0 Output Value
+	.WriteReg(Device::OV7670::Reg13_COM8,
+		(0b1 << 7) |		// Enable fast AGC/AEC algorithm
+		(0b1 << 6) |		// AEC - Step size limit
+		(0b1 << 5) |		// Banding filter ON/OFF
+		(0b1 << 2) |		// AGC Enable
+		(0b0 << 1) |		// AWB Enable
+		(0b1 << 0))			// AEC Enable
+	.WriteReg(Device::OV7670::Reg00_GAIN,
+		0x00)				// AGC - Gain control gain setting
+	.WriteReg(Device::OV7670::Reg09_COM2,
+		(0b0 << 4) |		// Soft sleep mode
+		(0b00 << 0))		// Output drive capability
+	.WriteReg(Device::OV7670::Reg0D_COM4,
+		(0b00 << 4))		// Average option (must be same value as COM17[7:6])
+	.WriteReg(Device::OV7670::Reg14_COM9,
+		(0b010 << 4) |		// Automatic Gain Ceiling
+		(0b0 << 0))			// Freeze AGC/AEC
+	.WriteReg(Device::OV7670::RegA5_BD50MAX,
+		0x05)				// 50Hz Banding Step Limit
+	.WriteReg(Device::OV7670::RegAB_BD60MAX,
+		0x07)				// 60Hz Banding Step Limit
+	.WriteReg(Device::OV7670::Reg24_AEW,
+		0x75)				// AGC/AEC - Stable Operating Region (Upper Limit)
+	.WriteReg(Device::OV7670::Reg25_AEB,
+		0x63)				// AGC/AEC - Stable Operating Region (Lower Limit)
+	.WriteReg(Device::OV7670::Reg26_VPT,
+		(0xa << 4) |		// AGC/AEC Fast Mode Operating Region - High nibble of upper limit of fast mode control zone
+		(0x5 << 0))			// AGC/AEC Fast Mode Operating Region - High nibble of lower limit of fast mode control zone
+	.WriteReg(Device::OV7670::Reg9F_HAECC1,
+		0x78)				// Histogram-based AEC/AGC Control 1
+	.WriteReg(Device::OV7670::RegA0_HAECC2,
+		0x68)				// Histogram-based AEC/AGC Control 2
+	.WriteReg(Device::OV7670::RegA6_HAECC3,
+		0xdf)				// Histogram-based AEC/AGC Control 3
+	.WriteReg(Device::OV7670::RegA7_HAECC4,
+		0xdf)				// Histogram-based AEC/AGC Control 4
+	.WriteReg(Device::OV7670::RegA8_HAECC5,
+		0xf0)				// Histogram-based AEC/AGC Control 5
+	.WriteReg(Device::OV7670::RegA9_HAECC6,
+		0x90)				// Histogram-based AEC/AGC Control 6
+	.WriteReg(Device::OV7670::RegAA_HAECC7,
+		0x94)				// Histogram-based AEC/AGC Control 7
+
+
+
+
 	.WriteReg(Device::OV7670::Reg12_COM7,
 		(0b0 << 5) |		// Output format - CIF selection
 		(0b1 << 4) |		// Output format - QVGA selection
@@ -101,9 +147,6 @@ int main()
 	.WriteReg(Device::OV7670::Reg04_COM1,
 		(0b0 << 6) |		// CCIR656 format
 		(0b00 << 0))		// AEC[1:0]
-	.WriteReg(Device::OV7670::Reg14_COM9,
-		(0b001 << 4) |		// Automatic Gain Ceiling
-		(0b0 << 0))			// Freeze AGC/AEC
 	.WriteReg(Device::OV7670::Reg4F_MTX1,
 		0x80)				// Matrix Coefficient 1
 	.WriteReg(Device::OV7670::Reg50_MTX2,
