@@ -188,6 +188,7 @@ public:
 	OV7670(i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq = 24000000);
 public:
 	void Initialize();
+	void SetupParam();
 public:
 	OV7670& WriteReg(uint8_t reg, uint8_t value);
 	uint8_t ReadReg(uint8_t reg);
