@@ -29,7 +29,7 @@ int main()
 	ov7670
 	.WriteReg(Device::OV7670::Reg12_COM7,
 		(0b0 << 5) |		// Output format - CIF selection
-		(0b0 << 4) |		// Output format - QVGA selection
+		(0b1 << 4) |		// Output format - QVGA selection
 		(0b0 << 3) |		// Output format - QCIF selection
 		(0b1 << 2) |		// Output format - RGB selection
 		(0b0 << 1) |		// Color bar
@@ -126,18 +126,18 @@ int main()
 		(0b10 << 0))		// Horizontal downsampling rate
 	.WriteReg(Device::OV7670::Reg73_SCALING_PCLK_DIV,
 		(0b0 << 3) |		// Bypass clock divider for DSP scale control
-		(0b000 << 0))		// Clock divider control for DSP scale control (0 = div by 1 for QVGA)	
+		(0b010 << 0))		// Clock divider control for DSP scale control	
 	.WriteReg(Device::OV7670::RegA2_SCALING_PCLK_DELAY,
 		(0b0000010 << 0));	// Scaling output delay
-#if 0
-	do {
-		uint32_t hStart = 0, hStop = hStart + 160;
-		ov7670.WriteReg(Device::OV7670::Reg17_HSTART, static_cast<uint8_t>(hStart >> 3));
-		ov7670.WriteReg(Device::OV7670::Reg18_HSTOP, static_cast<uint8_t>(hStop >> 3));
-		ov7670.WriteReg(Device::OV7670::Reg32_HREF, (0b10 << 6) | ((hStop & 0b111) << 3) |((hStart & 0b111) << 0));
-	} while (0);
-#endif
-	image.Allocate(Image::Format::RGB565, 320, 240);  // QVGA size
+	uint32_t hStart = 136, hStop = hStart + 640;
+	ov7670
+	.WriteReg(Device::OV7670::Reg17_HSTART,
+		static_cast<uint8_t>(hStart >> 3))
+	.WriteReg(Device::OV7670::Reg18_HSTOP,
+		static_cast<uint8_t>(hStop >> 3))
+	.WriteReg(Device::OV7670::Reg32_HREF,
+		static_cast<uint8_t>((0b10 << 6) | ((hStop & 0b111) << 3) |((hStart & 0b111) << 0)));
+	image.Allocate(Image::Format::RGB565, 160, 120);  // QQVGA size
 	Display::Base& display = Display::GetInstance(0);
 	while (true) {
 		ov7670.Capture(image);
