@@ -114,8 +114,26 @@ int main()
 		0x90)				// Histogram-based AEC/AGC Control 6
 	.WriteReg(Device::OV7670::RegAA_HAECC7,
 		0x94)				// Histogram-based AEC/AGC Control 7
-
-
+	.WriteReg(Device::OV7670::Reg0E_COM5,
+		0x61)				// Reserved
+	.WriteReg(Device::OV7670::Reg0F_COM6,
+		(0b0 << 7) |		// Output of optical black line option
+		(0b1 << 1))			// Reset all timing when format changes
+	.WriteReg(Device::OV7670::Reg1E_MVFP,
+		(0b1 << 5) |		// Mirror
+		(0b0 << 4) |		// VFlip enable
+		(0b1 << 2))			// Black sun enable
+	.WriteReg(Device::OV7670::Reg20_ADCCTR0,
+		(0b0 << 3) |		// ADC range adjustment
+		(0b100 << 0))		// ADC reference adjustment
+	.WriteReg(Device::OV7670::Reg33_CHLF,
+		0x08)				// Array Current Contro (Reserved)
+	.WriteReg(Device::OV7670::Reg37_ADC,
+		0x3f)				// ADC Control (Reserved)
+	.WriteReg(Device::OV7670::Reg38_ACOM,
+		0x01)				// ADC and Analog Common Mode Control (Reserved)
+	.WriteReg(Device::OV7670::Reg39_OFON,
+		0x00)				// ADC Offset Control (Reserved)
 
 
 	.WriteReg(Device::OV7670::Reg12_COM7,
