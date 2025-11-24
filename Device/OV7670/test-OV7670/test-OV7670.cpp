@@ -134,15 +134,86 @@ int main()
 		0x01)				// ADC and Analog Common Mode Control (Reserved)
 	.WriteReg(Device::OV7670::Reg39_OFON,
 		0x00)				// ADC Offset Control (Reserved)
-
-
 	.WriteReg(Device::OV7670::Reg12_COM7,
-		(0b0 << 5) |		// Output format - CIF selection
+		(0b1 << 5) |		// Output format - CIF selection
 		(0b1 << 4) |		// Output format - QVGA selection
-		(0b0 << 3) |		// Output format - QCIF selection
-		(0b1 << 2) |		// Output format - RGB selection
+		(0b1 << 3) |		// Output format - QCIF selection
+		(0b0 << 2) |		// Output format - RGB selection
 		(0b0 << 1) |		// Color bar
-		(0b0 << 0))		// Output format - Raw RGB
+		(0b0 << 0))			// Output format - Raw RGB
+	.WriteReg(Device::OV7670::Reg69_GFIX,
+		(0b01 << 6) |		// Fix gain for Gr Channel
+		(0b01 << 4) |		// Fix gain for Gb Channel
+		(0b11 << 2) |		// Fix gain for R Channel
+		(0b01 << 0))		// Fix gain for B Channel
+	.WriteReg(Device::OV7670::Reg74,
+		(0b1 << 4) |		// DG_Manu
+		(0b01 << 0))		// Digital gain manual control
+	.WriteReg(Device::OV7670::Reg92_DM_LNL,
+		0x00)				// Dummy Line low 8 bits
+	.WriteReg(Device::OV7670::Reg93_DM_LNH,
+		0x00)				// Dummy Line high 8 bits
+	.WriteReg(Device::OV7670::RegB1_ABLC1,
+		(0b1 << 2))			// ABLC enable
+	.WriteReg(Device::OV7670::RegB3_THL_ST,
+		0x82)				// ABLC Target
+	.WriteReg(Device::OV7670::Reg43_AWBC1,
+		0x14)				// Reserved
+	.WriteReg(Device::OV7670::Reg44_AWBC2,
+		0xf0)				// Reserved
+	.WriteReg(Device::OV7670::Reg45_AWBC3,
+		0x34)				// Reserved
+	.WriteReg(Device::OV7670::Reg46_AWBC4,
+		0x58)				// Reserved
+	.WriteReg(Device::OV7670::Reg47_AWBC5,
+		0x28)				// Reserved
+	.WriteReg(Device::OV7670::Reg48_AWBC6,
+		0x3a)				// Reserved
+	.WriteReg(Device::OV7670::Reg62_LCC1,
+		0x00)				// Lens Correction Option 1
+	.WriteReg(Device::OV7670::Reg63_LCC2,
+		0x00)				// Lens Correction Option 2
+	.WriteReg(Device::OV7670::Reg64_LCC3,
+		0x04)				// Lens Correction Option 3
+	.WriteReg(Device::OV7670::Reg65_LCC4,
+		0x20)				// Lens Correction Option 4
+	.WriteReg(Device::OV7670::Reg66_LCC5,
+		(0b1 << 2) |		// Lens Correction control select
+		(0b1 << 0))			// Lens correction enable
+	.WriteReg(Device::OV7670::Reg94_LCC6,
+		0x04)				// Lens Correction Option 6
+	.WriteReg(Device::OV7670::Reg95_LCC7,
+		0x08)				// Lens Correction Option 7
+	.WriteReg(Device::OV7670::Reg6C_AWBCTR3,
+		0x0a)				// AWB Control 3
+	.WriteReg(Device::OV7670::Reg6D_AWBCTR2,
+		0x55)				// AWB Control 2
+	.WriteReg(Device::OV7670::Reg6E_AWBCTR1,
+		0x11)				// AWB Control 1
+	.WriteReg(Device::OV7670::Reg6F_AWBCTR0,
+		0x9f)				// AWB Control 0
+	.WriteReg(Device::OV7670::Reg4F_MTX1,
+		0x80)				// Matrix Coefficient 1
+	.WriteReg(Device::OV7670::Reg50_MTX2,
+		0x80)				// Matrix Coefficient 2
+	.WriteReg(Device::OV7670::Reg51_MTX3,
+		0x00)				// Matrix Coefficient 3
+	.WriteReg(Device::OV7670::Reg52_MTX4,
+		0x22)				// Matrix Coefficient 4
+	.WriteReg(Device::OV7670::Reg53_MTX5,
+		0x5e)				// Matrix Coefficient 5
+	.WriteReg(Device::OV7670::Reg54_MTX6,
+		0x80)				// Matrix Coefficient 6
+	.WriteReg(Device::OV7670::Reg58_MTXS,
+		(0b1 << 7) |		// Auto contrast center enable
+		(0b000001 << 0))	// Matrix coeffieicnt sign
+	.WriteReg(Device::OV7670::Reg55_BRIGHT,
+		0x00)				// Brightness control
+	.WriteReg(Device::OV7670::Reg56_CONTRAS,
+		0x40)				// Contrast control
+	.WriteReg(Device::OV7670::Reg57_CONTRAS_CENTER,
+		0x80)				// Contrast center control
+
 	.WriteReg(Device::OV7670::Reg11_CLKRC,
 		(0b0 << 6) |		// Use external clock directly (no clock pre-scale available)
 		(0b000001 << 0))	// Internal clock prescaler
@@ -165,21 +236,6 @@ int main()
 	.WriteReg(Device::OV7670::Reg04_COM1,
 		(0b0 << 6) |		// CCIR656 format
 		(0b00 << 0))		// AEC[1:0]
-	.WriteReg(Device::OV7670::Reg4F_MTX1,
-		0x80)				// Matrix Coefficient 1
-	.WriteReg(Device::OV7670::Reg50_MTX2,
-		0x80)				// Matrix Coefficient 2
-	.WriteReg(Device::OV7670::Reg51_MTX3,
-		0x00)				// Matrix Coefficient 3
-	.WriteReg(Device::OV7670::Reg52_MTX4,
-		0x22)				// Matrix Coefficient 4
-	.WriteReg(Device::OV7670::Reg53_MTX5,
-		0x5e)				// Matrix Coefficient 5
-	.WriteReg(Device::OV7670::Reg54_MTX6,
-		0x80)				// Matrix Coefficient 6
-	.WriteReg(Device::OV7670::Reg58_MTXS,
-		(0b1 << 7) |		// Auto contrast center enable
-		(0b000001 << 0))	// Matrix coeffieicnt sign
 	.WriteReg(Device::OV7670::Reg41_COM16,
 		(0b0 << 5) |		// Enable edge enhancement threshold auto-adjustment
 		(0b0 << 4) |		// De-noise threshold auto-adjustment
@@ -210,8 +266,6 @@ int main()
 		(0b1 << 4) |		// De-noise threshold auto-adjustment
 		(0b1 << 3) |		// AWB gain enable
 		(0b0 << 1))			// Color matrix coefficient double option
-	.WriteReg(Device::OV7670::Reg56_CONTRAS,
-		0x40)				// Contrast control
 	.WriteReg(Device::OV7670::Reg70_SCALING_XSC,
 		(0b0 << 7) |		// Test pattern[0]
 		(0b0111010 << 0))	// Horizontal scale factor
