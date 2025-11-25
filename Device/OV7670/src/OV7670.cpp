@@ -379,10 +379,33 @@ void OV7670::SetupParam()
 		(0b0 << 7) |		// Auto contrast center enable
 		(0b011110 << 0));	// Matrix coeffieicnt sign
 	WriteReg(Reg41_COM16,
-		(0b0 << 5) |		// Enable edge enhancement threshold auto-adjustment
-		(0b0 << 4) |		// De-noise threshold auto-adjustment
+		(0b0 << 5) |		// Enable edge enhancement threshold auto-adjustment (see Table 5-5)
+		(0b0 << 4) |		// De-noise threshold auto-adjustment (see Table 5-6)
 		(0b0 << 3) |		// AWB gain enable
 		(0b0 << 1));		// Color matrix coefficient double option
+	//-------------------------------------------------------------------------
+	// Table 5-5. Sharpness Control Registers
+	//-------------------------------------------------------------------------
+	WriteReg(Reg3F_EDGE,
+		(0b00000 << 0));	// Edge enhancement factor
+	WriteReg(Reg75,
+		(0b00101 << 0));	// Edge enhancement lower limit
+	WriteReg(Reg76,
+		(0b1 << 7) |		// Black pixel correction enable
+		(0b1 << 6) |		// White pixel correction enable
+		(0b00001 << 0));	// Edge enhancement upper limit
+	//-------------------------------------------------------------------------
+	// Table 5-6. De-Noise Related Registers and Parameters
+	//-------------------------------------------------------------------------
+	WriteReg(Reg4C_DNSTH,
+		0x00);				// De-noise Strength
+	WriteReg(Reg77,
+		0x01);				// De-noise offset
+	//-------------------------------------------------------------------------
+	// Table 5-7. Auto Color Saturation Adjustment Related Registers
+	//-------------------------------------------------------------------------
+	WriteReg(RegC9_SATCTR,
+		0x60);
 
 	//-------------------------------------------------------------------------
 #if 1
@@ -488,26 +511,12 @@ void OV7670::SetupParam()
 	WriteReg(Reg8C_RGB444,
 		(0b0 << 1) |		// RGB444 enable, effective only when COM15[4] is high
 		(0b0 << 0));			// RGB444 word format
-	WriteReg(Reg3F_EDGE,
-		(0b00000 << 0));		// Edge enhancement factor
-	WriteReg(Reg75,
-		(0b00101 << 0));		// Edge enhancement lower limit
-	WriteReg(Reg76,
-		(0b1 << 7) |		// Black pixel correction enable
-		(0b1 << 6) |		// White pixel correction enable
-		(0b00001 << 0));		// Edge enhancement upper limit
-	WriteReg(Reg4C_DNSTH,
-		0x00);				// De-noise Strength
-	WriteReg(Reg77,
-		0x01);				// De-noise offset
 	WriteReg(Reg3D_COM13,
 		(0b1 << 7) |		// Gamma enable
 		(0b1 << 6) |		// UV saturation level - UV auto-adjustment
 		(0b1 << 0));			// UV swap
 	WriteReg(Reg4B_REG4B,
 		(0b1 << 0));			// UV average enable
-	WriteReg(RegC9_SATCTR,
-		0x60);
 	WriteReg(Reg41_COM16,
 		(0b1 << 5) |		// Enable edge enhancement threshold auto-adjustment for YUV output
 		(0b1 << 4) |		// De-noise threshold auto-adjustment
