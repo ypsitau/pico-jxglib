@@ -24,7 +24,8 @@ int main()
 	::i2c_init(i2c0, 100000);
 	ov7670.Initialize();
 	ov7670.SetupParam();
-	image.Allocate(Image::Format::RGB565, 160, 120);  // QQVGA size
+	image.Allocate(Image::Format::RGB565, 320, 240);  // QQVGA size
+	//image.Allocate(Image::Format::RGB565, 160, 120);  // QQVGA size
 	Display::Base& display = Display::GetInstance(0);
 	while (true) {
 		ov7670.Capture(image);
