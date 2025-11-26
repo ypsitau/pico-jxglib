@@ -18,7 +18,7 @@ namespace jxglib::Device {
 class OV7670 {
 public:
 	enum Resolution { VGA, QVGA, QQVGA, CIF, QCIF, QQCIF };
-	struct Param {
+	struct Setting {
 		uint8_t Reg11_CLKRC;
 		uint8_t Reg12_COM7;
 		uint8_t Reg0C_COM3;
@@ -187,15 +187,16 @@ public:
 	static const uint8_t RegC1_AD_CHGR				= 0xc1;
 	static const uint8_t RegC9_SATCTR				= 0xc9;
 public:
-	static const Param param_VGA;
-	static const Param param_QVGA;
-	static const Param param_QQVGA;
-	static const Param param_CIF;
-	static const Param param_QCIF;
-	static const Param param_QQCIF;
+	static const Setting setting_VGA;
+	static const Setting setting_QVGA;
+	static const Setting setting_QQVGA;
+	static const Setting setting_CIF;
+	static const Setting setting_QCIF;
+	static const Setting setting_QQCIF;
 public:
 	static const uint8_t I2CAddr = 0x21;
 private:
+	Resolution resolution_;
 	i2c_inst_t* i2c_;
 	PinAssign pinAssign_;
 	uint32_t freq_;
@@ -206,9 +207,9 @@ private:
 	DMA::ChannelConfig channelConfig_;
 	Image image_;
 public:
-	OV7670(i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq = 24000000);
+	OV7670(Resolution resolution, i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq = 24000000);
 public:
-	bool Initialize(Resolution resolution);
+	bool Initialize();
 	void SetupParam();
 public:
 	OV7670& WriteReg(uint8_t reg, uint8_t value);

@@ -8,10 +8,10 @@ namespace jxglib::Device {
 //------------------------------------------------------------------------------
 // OV7670
 //------------------------------------------------------------------------------
-const OV7670::Param OV7670::param_VGA {
+const OV7670::Setting OV7670::setting_VGA {
 };
 
-const OV7670::Param OV7670::param_QVGA {
+const OV7670::Setting OV7670::setting_QVGA {
 	Reg11_CLKRC:
 		(0b0 << 6) |		// Use external clock directly (no clock pre-scale available)
 		(0b000001 << 0),	// Internal clock prescaler
@@ -53,7 +53,7 @@ const OV7670::Param OV7670::param_QVGA {
 		(0b0000010 << 0),	// Scaling output delay
 };
 
-const OV7670::Param OV7670::param_QQVGA {
+const OV7670::Setting OV7670::setting_QQVGA {
 	Reg11_CLKRC:
 		(0b0 << 6) |		// Use external clock directly (no clock pre-scale available)
 		(0b000001 << 0),	// Internal clock prescaler
@@ -95,16 +95,17 @@ const OV7670::Param OV7670::param_QQVGA {
 		(0b0000010 << 0),	// Scaling output delay
 };
 
-const OV7670::Param OV7670::param_CIF {
+const OV7670::Setting OV7670::setting_CIF {
 };
 
-const OV7670::Param OV7670::param_QCIF {
+const OV7670::Setting OV7670::setting_QCIF {
 };
 
-const OV7670::Param OV7670::param_QQCIF{
+const OV7670::Setting OV7670::setting_QQCIF{
 };
 
-OV7670::OV7670(i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq) : i2c_{i2c}, pinAssign_{pinAssign}, freq_{freq}
+OV7670::OV7670(Resolution resolution, i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq) :
+	resolution_{resolution}, i2c_{i2c}, pinAssign_{pinAssign}, freq_{freq}
 {
 }
 
@@ -123,15 +124,15 @@ uint8_t OV7670::ReadReg(uint8_t reg)
 	return value;
 }
 
-bool OV7670::Initialize(Resolution resolution)
+bool OV7670::Initialize()
 {
 	Size size =
-		(resolution == Resolution::VGA)?	Size{640, 480} :
-		(resolution == Resolution::QVGA)?	Size{320, 240} :
-		(resolution == Resolution::QQVGA)?	Size{160, 120} :
-		(resolution == Resolution::CIF)?	Size{352, 288} :
-		(resolution == Resolution::QCIF)?	Size{176, 144} :
-		(resolution == Resolution::QQCIF)?	Size{88, 72} : Size{320, 240};
+		(resolution_ == Resolution::VGA)?	Size{640, 480} :
+		(resolution_ == Resolution::QVGA)?	Size{320, 240} :
+		(resolution_ == Resolution::QQVGA)?	Size{160, 120} :
+		(resolution_ == Resolution::CIF)?	Size{352, 288} :
+		(resolution_ == Resolution::QCIF)?	Size{176, 144} :
+		(resolution_ == Resolution::QQCIF)?	Size{88, 72} : Size{320, 240};
 	uint relAddrStart = 0;
 	if (!image_.Allocate(Image::Format::RGB565, size.width, size.height)) return false;
 #if 1
@@ -201,6 +202,13 @@ bool OV7670::Initialize(Resolution resolution)
 
 void OV7670::SetupParam()
 {
+	const Setting& setting =
+		(resolution_ == Resolution::VGA)?	setting_VGA :
+		(resolution_ == Resolution::QVGA)?	setting_QVGA :
+		(resolution_ == Resolution::QQVGA)?	setting_QQVGA :
+		(resolution_ == Resolution::CIF)?	setting_CIF :
+		(resolution_ == Resolution::QCIF)?	setting_QCIF :
+		(resolution_ == Resolution::QQCIF)?	setting_QQCIF : setting_QVGA;
 	WriteReg(Reg12_COM7,
 		(0b1 << 7));	// SCCB Register Reset
 	::sleep_ms(100);
@@ -225,18 +233,17 @@ void OV7670::SetupParam()
 	//-------------------------------------------------------------------------
 	// Table 2-2. Resolution Register Settings
 	//-------------------------------------------------------------------------
-	const Param& param = param_QVGA;
-	WriteReg(Reg11_CLKRC,				param.Reg11_CLKRC);
-	WriteReg(Reg12_COM7,				param.Reg12_COM7 |
+	WriteReg(Reg11_CLKRC,				setting.Reg11_CLKRC);
+	WriteReg(Reg12_COM7,				setting.Reg12_COM7 |
 		(0b1 << 2) |		// Output format - RGB selection
 		(0b0 << 0));		// Output format - Raw RGB
-	WriteReg(Reg0C_COM3,				param.Reg0C_COM3);
-	WriteReg(Reg3E_COM14,				param.Reg3E_COM14);
-	WriteReg(Reg70_SCALING_XSC,			param.Reg70_SCALING_XSC);
-	WriteReg(Reg71_SCALING_YSC,			param.Reg71_SCALING_YSC);
-	WriteReg(Reg72_SCALING_DCWCTR,		param.Reg72_SCALING_DCWCTR);
-	WriteReg(Reg73_SCALING_PCLK_DIV,	param.Reg73_SCALING_PCLK_DIV);
-	WriteReg(RegA2_SCALING_PCLK_DELAY,	param.RegA2_SCALING_PCLK_DELAY);
+	WriteReg(Reg0C_COM3,				setting.Reg0C_COM3);
+	WriteReg(Reg3E_COM14,				setting.Reg3E_COM14);
+	WriteReg(Reg70_SCALING_XSC,			setting.Reg70_SCALING_XSC);
+	WriteReg(Reg71_SCALING_YSC,			setting.Reg71_SCALING_YSC);
+	WriteReg(Reg72_SCALING_DCWCTR,		setting.Reg72_SCALING_DCWCTR);
+	WriteReg(Reg73_SCALING_PCLK_DIV,	setting.Reg73_SCALING_PCLK_DIV);
+	WriteReg(RegA2_SCALING_PCLK_DELAY,	setting.RegA2_SCALING_PCLK_DELAY);
 	WriteReg(Reg40_COM15,
 		(0b11 < 6) |		// Data format - output full range enable
 		(0b01 << 4));		// RGB 555/565 option
