@@ -8,6 +8,102 @@ namespace jxglib::Device {
 //------------------------------------------------------------------------------
 // OV7670
 //------------------------------------------------------------------------------
+const OV7670::Param OV7670::param_VGA {
+};
+
+const OV7670::Param OV7670::param_QVGA {
+	Reg11_CLKRC:
+		(0b0 << 6) |		// Use external clock directly (no clock pre-scale available)
+		(0b000001 << 0),	// Internal clock prescaler
+	Reg12_COM7:
+		(0b0 << 5) |		// Output format - CIF selection
+		(0b0 << 4) |		// Output format - QVGA selection
+		(0b0 << 3) |		// Output format - QCIF selection
+		(0b1 << 2) |		// Output format - RGB selection
+		(0b0 << 1) |		// Color bar
+		(0b0 << 0),		// Output format - Raw RGB
+	Reg0C_COM3:
+		(0b0 << 6) |		// Output data MSB and LSB swap
+		(0b0 << 5) |		// Tri-state option for output clock at power-down period
+		(0b0 << 4) |		// Tri-state option for output data at power-down period
+		(0b0 << 3) |		// Scale enable
+		(0b1 << 2),		// DCW enable
+	Reg3E_COM14:
+		(0b1 << 4) |		// DCW and scaling PCLK enable
+		(0b1 << 3) |		// Manual scaling enable for pre-defined resolution modes such as CIF, QCIF, and QVGA
+		(0b001 << 0),		// PCLK divider (only when COM14[4] = 1)
+	Reg70_SCALING_XSC:
+		(0b0 << 7) |		// Test pattern[0]
+		(0b0111010 << 0),	// Horizontal scale factor
+	Reg71_SCALING_YSC:
+		(0b0 << 7) |		// Test pattern[1]
+		(0b0110101 << 0),	// Vertical scale factor
+	Reg72_SCALING_DCWCTR:
+		(0b0 << 7) |		// Vertical average calculation option
+		(0b0 << 6) |		// Vertical down sampling option
+		(0b01 << 4) |		// Vertical downsampling rate
+		(0b0 << 3) |		// Horizontal average calculation option
+		(0b0 << 2) |		// Horizontal down sampling option
+		(0b01 << 0),		// Horizontal downsampling rate
+	Reg73_SCALING_PCLK_DIV:
+		0xf0 |
+		(0b0 << 3) |		// Bypass clock divider for DSP scale control
+		(0b001 << 0),		// Clock divider control for DSP scale control	
+	RegA2_SCALING_PCLK_DELAY:
+		(0b0000010 << 0),	// Scaling output delay
+};
+
+const OV7670::Param OV7670::param_QQVGA {
+	Reg11_CLKRC:
+		(0b0 << 6) |		// Use external clock directly (no clock pre-scale available)
+		(0b000001 << 0),	// Internal clock prescaler
+	Reg12_COM7:
+		(0b0 << 5) |		// Output format - CIF selection
+		(0b0 << 4) |		// Output format - QVGA selection
+		(0b0 << 3) |		// Output format - QCIF selection
+		(0b0 << 2) |		// Output format - RGB selection
+		(0b0 << 1) |		// Color bar
+		(0b0 << 0),			// Output format - Raw RGB
+	Reg0C_COM3:
+		(0b0 << 6) |		// Output data MSB and LSB swap
+		(0b0 << 5) |		// Tri-state option for output clock at power-down period
+		(0b0 << 4) |		// Tri-state option for output data at power-down period
+		(0b0 << 3) |		// Scale enable
+		(0b1 << 2),			// DCW enable
+	Reg3E_COM14:
+		(0b1 << 4) |		// DCW and scaling PCLK enable
+		(0b1 << 3) |		// Manual scaling enable for pre-defined resolution modes such as CIF, QCIF, and QVGA
+		(0b010 << 0),		// PCLK divider (only when COM14[4] = 1)
+	Reg70_SCALING_XSC:
+		(0b0 << 7) |		// Test pattern[0]
+		(0b0111010 << 0),	// Horizontal scale factor
+	Reg71_SCALING_YSC:
+		(0b0 << 7) |		// Test pattern[1]
+		(0b0110101 << 0),	// Vertical scale factor
+	Reg72_SCALING_DCWCTR:
+		(0b0 << 7) |		// Vertical average calculation option
+		(0b0 << 6) |		// Vertical down sampling option
+		(0b10 << 4) |		// Vertical downsampling rate
+		(0b0 << 3) |		// Horizontal average calculation option
+		(0b0 << 2) |		// Horizontal down sampling option
+		(0b10 << 0),		// Horizontal downsampling rate
+	Reg73_SCALING_PCLK_DIV:
+		0xf0 |
+		(0b0 << 3) |		// Bypass clock divider for DSP scale control
+		(0b010 << 0),		// Clock divider control for DSP scale control	
+	RegA2_SCALING_PCLK_DELAY:
+		(0b0000010 << 0),	// Scaling output delay
+};
+
+const OV7670::Param OV7670::param_CIF {
+};
+
+const OV7670::Param OV7670::param_QCIF {
+};
+
+const OV7670::Param OV7670::param_QQCIF{
+};
+
 OV7670::OV7670(i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq) : i2c_{i2c}, pinAssign_{pinAssign}, freq_{freq}
 {
 }
@@ -27,10 +123,17 @@ uint8_t OV7670::ReadReg(uint8_t reg)
 	return value;
 }
 
-bool OV7670::Initialize()
+bool OV7670::Initialize(Resolution resolution)
 {
+	Size size =
+		(resolution == Resolution::VGA)?	Size{640, 480} :
+		(resolution == Resolution::QVGA)?	Size{320, 240} :
+		(resolution == Resolution::QQVGA)?	Size{160, 120} :
+		(resolution == Resolution::CIF)?	Size{352, 288} :
+		(resolution == Resolution::QCIF)?	Size{176, 144} :
+		(resolution == Resolution::QQCIF)?	Size{88, 72} : Size{320, 240};
 	uint relAddrStart = 0;
-	if (!image_.Allocate(Image::Format::RGB565, 320, 240)) return false;
+	if (!image_.Allocate(Image::Format::RGB565, size.width, size.height)) return false;
 #if 1
 	program_
 	.pio_version(0)
@@ -122,93 +225,21 @@ void OV7670::SetupParam()
 	//-------------------------------------------------------------------------
 	// Table 2-2. Resolution Register Settings
 	//-------------------------------------------------------------------------
-#if 1
-	WriteReg(Reg11_CLKRC,
-		(0b0 << 6) |		// Use external clock directly (no clock pre-scale available)
-		(0b000001 << 0));	// Internal clock prescaler
-	WriteReg(Reg12_COM7,
-		(0b0 << 5) |		// Output format - CIF selection
-		(0b0 << 4) |		// Output format - QVGA selection
-		(0b0 << 3) |		// Output format - QCIF selection
+	const Param& param = param_QVGA;
+	WriteReg(Reg11_CLKRC,				param.Reg11_CLKRC);
+	WriteReg(Reg12_COM7,				param.Reg12_COM7 |
 		(0b1 << 2) |		// Output format - RGB selection
-		(0b0 << 1) |		// Color bar
-		(0b0 << 0));			// Output format - Raw RGB
-	WriteReg(Reg0C_COM3,
-		(0b0 << 6) |		// Output data MSB and LSB swap
-		(0b0 << 5) |		// Tri-state option for output clock at power-down period
-		(0b0 << 4) |		// Tri-state option for output data at power-down period
-		(0b0 << 3) |		// Scale enable
-		(0b1 << 2));			// DCW enable
-	WriteReg(Reg3E_COM14,
-		(0b1 << 4) |		// DCW and scaling PCLK enable
-		(0b1 << 3) |		// Manual scaling enable for pre-defined resolution modes such as CIF, QCIF, and QVGA
-		(0b001 << 0));		// PCLK divider (only when COM14[4] = 1)
-	WriteReg(Reg70_SCALING_XSC,
-		(0b0 << 7) |		// Test pattern[0]
-		(0b0111010 << 0));	// Horizontal scale factor
-	WriteReg(Reg71_SCALING_YSC,
-		(0b0 << 7) |		// Test pattern[1]
-		(0b0110101 << 0));	// Vertical scale factor
-	WriteReg(Reg72_SCALING_DCWCTR,
-		(0b0 << 7) |		// Vertical average calculation option
-		(0b0 << 6) |		// Vertical down sampling option
-		(0b01 << 4) |		// Vertical downsampling rate
-		(0b0 << 3) |		// Horizontal average calculation option
-		(0b0 << 2) |		// Horizontal down sampling option
-		(0b01 << 0));		// Horizontal downsampling rate
-	WriteReg(Reg73_SCALING_PCLK_DIV,
-		0xf0 |
-		(0b0 << 3) |		// Bypass clock divider for DSP scale control
-		(0b001 << 0));		// Clock divider control for DSP scale control	
-	WriteReg(RegA2_SCALING_PCLK_DELAY,
-		(0b0000010 << 0));	// Scaling output delay
+		(0b0 << 0));		// Output format - Raw RGB
+	WriteReg(Reg0C_COM3,				param.Reg0C_COM3);
+	WriteReg(Reg3E_COM14,				param.Reg3E_COM14);
+	WriteReg(Reg70_SCALING_XSC,			param.Reg70_SCALING_XSC);
+	WriteReg(Reg71_SCALING_YSC,			param.Reg71_SCALING_YSC);
+	WriteReg(Reg72_SCALING_DCWCTR,		param.Reg72_SCALING_DCWCTR);
+	WriteReg(Reg73_SCALING_PCLK_DIV,	param.Reg73_SCALING_PCLK_DIV);
+	WriteReg(RegA2_SCALING_PCLK_DELAY,	param.RegA2_SCALING_PCLK_DELAY);
 	WriteReg(Reg40_COM15,
 		(0b11 < 6) |		// Data format - output full range enable
 		(0b01 << 4));		// RGB 555/565 option
-#else
-	WriteReg(Reg11_CLKRC,
-		(0b0 << 6) |		// Use external clock directly (no clock pre-scale available)
-		(0b000001 << 0));	// Internal clock prescaler
-	WriteReg(Reg12_COM7,
-		(0b0 << 5) |		// Output format - CIF selection
-		(0b0 << 4) |		// Output format - QVGA selection
-		(0b0 << 3) |		// Output format - QCIF selection
-		(0b1 << 2) |		// Output format - RGB selection
-		(0b0 << 1) |		// Color bar
-		(0b0 << 0));			// Output format - Raw RGB
-	WriteReg(Reg0C_COM3,
-		(0b0 << 6) |		// Output data MSB and LSB swap
-		(0b0 << 5) |		// Tri-state option for output clock at power-down period
-		(0b0 << 4) |		// Tri-state option for output data at power-down period
-		(0b0 << 3) |		// Scale enable
-		(0b1 << 2));			// DCW enable
-	WriteReg(Reg3E_COM14,
-		(0b1 << 4) |		// DCW and scaling PCLK enable
-		(0b1 << 3) |		// Manual scaling enable for pre-defined resolution modes such as CIF, QCIF, and QVGA
-		(0b010 << 0));		// PCLK divider (only when COM14[4] = 1)
-	WriteReg(Reg70_SCALING_XSC,
-		(0b0 << 7) |		// Test pattern[0]
-		(0b0111010 << 0));	// Horizontal scale factor
-	WriteReg(Reg71_SCALING_YSC,
-		(0b0 << 7) |		// Test pattern[1]
-		(0b0110101 << 0));	// Vertical scale factor
-	WriteReg(Reg72_SCALING_DCWCTR,
-		(0b0 << 7) |		// Vertical average calculation option
-		(0b0 << 6) |		// Vertical down sampling option
-		(0b10 << 4) |		// Vertical downsampling rate
-		(0b0 << 3) |		// Horizontal average calculation option
-		(0b0 << 2) |		// Horizontal down sampling option
-		(0b10 << 0));		// Horizontal downsampling rate
-	WriteReg(Reg73_SCALING_PCLK_DIV,
-		0xf0 |
-		(0b0 << 3) |		// Bypass clock divider for DSP scale control
-		(0b010 << 0));		// Clock divider control for DSP scale control	
-	WriteReg(RegA2_SCALING_PCLK_DELAY,
-		(0b0000010 << 0));	// Scaling output delay
-	WriteReg(Reg40_COM15,
-		(0b11 < 6) |		// Data format - output full range enable
-		(0b01 << 4));		// RGB 555/565 option
-#endif
 	uint32_t hStart = 136, hStop = hStart + 640;
 	WriteReg(Reg17_HSTART,
 		static_cast<uint8_t>(hStart >> 3));

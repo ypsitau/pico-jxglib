@@ -17,6 +17,18 @@ namespace jxglib::Device {
 //------------------------------------------------------------------------------
 class OV7670 {
 public:
+	enum Resolution { VGA, QVGA, QQVGA, CIF, QCIF, QQCIF };
+	struct Param {
+		uint8_t Reg11_CLKRC;
+		uint8_t Reg12_COM7;
+		uint8_t Reg0C_COM3;
+		uint8_t Reg3E_COM14;
+		uint8_t Reg70_SCALING_XSC;
+		uint8_t Reg71_SCALING_YSC;
+		uint8_t Reg72_SCALING_DCWCTR;
+		uint8_t Reg73_SCALING_PCLK_DIV;
+		uint8_t RegA2_SCALING_PCLK_DELAY;
+	};
 	struct PinAssign {
 		const GPIO& DIN0;
 		const GPIO& XLK;
@@ -175,6 +187,13 @@ public:
 	static const uint8_t RegC1_AD_CHGR				= 0xc1;
 	static const uint8_t RegC9_SATCTR				= 0xc9;
 public:
+	static const Param param_VGA;
+	static const Param param_QVGA;
+	static const Param param_QQVGA;
+	static const Param param_CIF;
+	static const Param param_QCIF;
+	static const Param param_QQCIF;
+public:
 	static const uint8_t I2CAddr = 0x21;
 private:
 	i2c_inst_t* i2c_;
@@ -189,7 +208,7 @@ private:
 public:
 	OV7670(i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq = 24000000);
 public:
-	bool Initialize();
+	bool Initialize(Resolution resolution);
 	void SetupParam();
 public:
 	OV7670& WriteReg(uint8_t reg, uint8_t value);
