@@ -402,7 +402,13 @@ void OV7670::SetupParam()
 	WriteReg(RegA2_SCALING_PCLK_DELAY,	setting.RegA2_SCALING_PCLK_DELAY);
 	WriteReg(Reg40_COM15,
 		(0b11 < 6) |		// Data format - output full range enable
+							//  0x: Output range: [10] to [F0]
+							//  10: Output range: [01] to [FE]
+							//  11: Output range: [00] to [FF]
 		(0b01 << 4));		// RGB 555/565 option
+							//  0x: Normal RGB output
+							//  01: RGB 565
+							//  11: RGB 555
 	uint32_t hStart = 136, hStop = hStart + 640;
 	WriteReg(Reg17_HSTART,
 		static_cast<uint8_t>(hStart >> 3));
@@ -603,9 +609,7 @@ void OV7670::SetupParam()
 	//-------------------------------------------------------------------------
 	WriteReg(RegC9_SATCTR,
 		0x60);
-
 	//-------------------------------------------------------------------------
-#if 1
 	WriteReg(Reg00_GAIN,
 		0x00);				// AGC - Gain control gain setting
 	WriteReg(Reg09_COM2,
@@ -613,7 +617,7 @@ void OV7670::SetupParam()
 		(0b00 << 0));		// Output drive capability
 	WriteReg(Reg14_COM9,
 		(0b010 << 4) |		// Automatic Gain Ceiling
-		(0b0 << 0));			// Freeze AGC/AEC
+		(0b0 << 0));		// Freeze AGC/AEC
 	WriteReg(RegA5_BD50MAX,
 		0x05);				// 50Hz Banding Step Limit
 	WriteReg(RegAB_BD60MAX,
@@ -661,7 +665,7 @@ void OV7670::SetupParam()
 	WriteReg(Reg93_DM_LNH,
 		0x00);				// Dummy Line high 8 bits
 	WriteReg(RegB1_ABLC1,
-		(0b1 << 2));			// ABLC enable
+		(0b1 << 2));		// ABLC enable
 	WriteReg(RegB3_THL_ST,
 		0x82);				// ABLC Target
 	WriteReg(Reg43_AWBC1,
@@ -686,7 +690,7 @@ void OV7670::SetupParam()
 		0x20);				// Lens Correction Option 4
 	WriteReg(Reg66_LCC5,
 		(0b1 << 2) |		// Lens Correction control select
-		(0b1 << 0));			// Lens correction enable
+		(0b1 << 0));		// Lens correction enable
 	WriteReg(Reg94_LCC6,
 		0x04);				// Lens Correction Option 6
 	WriteReg(Reg95_LCC7,
@@ -707,19 +711,18 @@ void OV7670::SetupParam()
 		0x80);				// Contrast center control
 	WriteReg(Reg8C_RGB444,
 		(0b0 << 1) |		// RGB444 enable, effective only when COM15[4] is high
-		(0b0 << 0));			// RGB444 word format
+		(0b0 << 0));		// RGB444 word format
 	WriteReg(Reg3D_COM13,
-		(0b1 << 7) |		// Gamma enable
+		(0b0 << 7) |		// Gamma enable
 		(0b1 << 6) |		// UV saturation level - UV auto-adjustment
-		(0b1 << 0));			// UV swap
+		(0b0 << 0));		// UV swap
 	WriteReg(Reg4B_REG4B,
-		(0b1 << 0));			// UV average enable
+		(0b1 << 0));		// UV average enable
 	WriteReg(Reg41_COM16,
 		(0b1 << 5) |		// Enable edge enhancement threshold auto-adjustment for YUV output
 		(0b1 << 4) |		// De-noise threshold auto-adjustment
 		(0b1 << 3) |		// AWB gain enable
-		(0b0 << 1));			// Color matrix coefficient double option
-#endif
+		(0b0 << 1));		// Color matrix coefficient double option
 }
 
 Image& OV7670::Capture()
