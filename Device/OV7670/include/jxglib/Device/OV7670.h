@@ -197,6 +197,7 @@ public:
 	static const uint8_t I2CAddr = 0x21;
 private:
 	Resolution resolution_;
+	const Image::Format& format_;
 	i2c_inst_t* i2c_;
 	PinAssign pinAssign_;
 	uint32_t freq_;
@@ -207,7 +208,7 @@ private:
 	DMA::ChannelConfig channelConfig_;
 	Image image_;
 public:
-	OV7670(Resolution resolution, i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq = 24000000);
+	OV7670(Resolution resolution, const Image::Format& format, i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq = 24000000);
 public:
 	bool Initialize();
 	void SetupParam();
