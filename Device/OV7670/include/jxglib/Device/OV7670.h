@@ -185,16 +185,17 @@ private:
 	PIO::Program programToReset_;
 	DMA::Channel* pChannel_;
 	DMA::ChannelConfig channelConfig_;
+	Image image_;
 public:
 	OV7670(i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq = 24000000);
 public:
-	void Initialize();
+	bool Initialize();
 	void SetupParam();
 public:
 	OV7670& WriteReg(uint8_t reg, uint8_t value);
 	uint8_t ReadReg(uint8_t reg);
 public:
-	OV7670& Capture(Image& image);
+	Image& Capture();
 };
 
 }

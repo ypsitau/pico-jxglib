@@ -18,17 +18,13 @@ int main()
 {
 	::stdio_init_all();
 	::jxglib_labo_init(false);
-	Image image;
 	GPIO16.set_function_I2C0_SDA().pull_up();
 	GPIO17.set_function_I2C0_SCL().pull_up();
 	::i2c_init(i2c0, 100000);
 	ov7670.Initialize();
-	ov7670.SetupParam();
-	image.Allocate(Image::Format::RGB565, 320, 240);  // QQVGA size
-	//image.Allocate(Image::Format::RGB565, 160, 120);  // QQVGA size
 	Display::Base& display = Display::GetInstance(0);
 	while (true) {
-		ov7670.Capture(image);
+		Image& image = ov7670.Capture();
 		display.DrawImage(
 			(display.GetWidth() - image.GetWidth()) / 2,
 			(display.GetHeight() - image.GetHeight()) / 2, image);

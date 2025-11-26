@@ -27,9 +27,10 @@ uint8_t OV7670::ReadReg(uint8_t reg)
 	return value;
 }
 
-void OV7670::Initialize()
+bool OV7670::Initialize()
 {
 	uint relAddrStart = 0;
+	if (!image_.Allocate(Image::Format::RGB565, 320, 240)) return false;
 #if 1
 	program_
 	.pio_version(0)
@@ -91,6 +92,8 @@ void OV7670::Initialize()
 		.set_sniff_enable(false)
 		.set_high_priority(false);
 	PWM(pinAssign_.XLK).set_function().set_freq(freq_).set_chan_duty(.5).set_enabled(true);
+	SetupParam();
+	return true;
 }
 
 void OV7670::SetupParam()
@@ -525,18 +528,18 @@ void OV7670::SetupParam()
 #endif
 }
 
-OV7670& OV7670::Capture(Image& image)
+Image& OV7670::Capture()
 {
 	sm_.set_enabled(false);
 	sm_.clear_fifos().exec(programToReset_);
 	pChannel_->set_config(channelConfig_)
 		.set_read_addr(sm_.get_rxf())
-		.set_write_addr(image.GetPointer())
-		.set_trans_count_trig(image.GetBytesBuff() / sizeof(uint32_t));
+		.set_write_addr(image_.GetPointer())
+		.set_trans_count_trig(image_.GetBytesBuff() / sizeof(uint32_t));
 	sm_.set_enabled();
-	sm_.put(image.GetWidth() * 2 - 1);
+	sm_.put(image_.GetWidth() * 2 - 1);
 	while (pChannel_->is_busy()) Tickable::Tick();
-	return *this;
+	return image_;
 }
 
 }
