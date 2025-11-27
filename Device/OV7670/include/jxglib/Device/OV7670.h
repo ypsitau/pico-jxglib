@@ -18,7 +18,7 @@ namespace jxglib::Device {
 class OV7670 {
 public:
 	enum Resolution { VGA, QVGA, QQVGA, CIF, QCIF, QQCIF };
-	struct Setting {
+	struct FrameSetting {
 		uint8_t Reg11_CLKRC;
 		uint8_t Reg12_COM7;
 		uint8_t Reg0C_COM3;
@@ -187,12 +187,12 @@ public:
 	static const uint8_t RegC1_AD_CHGR				= 0xc1;
 	static const uint8_t RegC9_SATCTR				= 0xc9;
 public:
-	static const Setting setting_VGA;
-	static const Setting setting_QVGA;
-	static const Setting setting_QQVGA;
-	static const Setting setting_CIF;
-	static const Setting setting_QCIF;
-	static const Setting setting_QQCIF;
+	static const FrameSetting frameSetting_VGA;
+	static const FrameSetting frameSetting_QVGA;
+	static const FrameSetting frameSetting_QQVGA;
+	static const FrameSetting frameSetting_CIF;
+	static const FrameSetting frameSetting_QCIF;
+	static const FrameSetting frameSetting_QQCIF;
 public:
 	static const uint8_t I2CAddr = 0x21;
 private:
