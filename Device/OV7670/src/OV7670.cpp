@@ -193,6 +193,7 @@ namespace jxglib::Device {
 //------------------------------------------------------------------------------
 // OV7670
 //------------------------------------------------------------------------------
+// Table 2-2. Resolution Register Settings
 const OV7670::ResolutionSetting OV7670::resolutionSetting_VGA {
 	Reg11_CLKRC:
 		(0b0 << 6) |		// Use external clock directly (no clock pre-scale available)
@@ -202,12 +203,8 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_VGA {
 		(0b0 << 4) |		// Output format - QVGA selection
 		(0b0 << 3) |		// Output format - QCIF selection
 		(0b0 << 2) |		// Output format - RGB selection
-		(0b0 << 1) |		// Color bar
 		(0b0 << 0),			// Output format - Raw RGB
 	Reg0C_COM3:
-		(0b0 << 6) |		// Output data MSB and LSB swap
-		(0b0 << 5) |		// Tri-state option for output clock at power-down period
-		(0b0 << 4) |		// Tri-state option for output data at power-down period
 		(0b0 << 3) |		// Scale enable
 		(0b0 << 2),			// DCW enable
 	Reg3E_COM14:
@@ -215,20 +212,13 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_VGA {
 		(0b0 << 3) |		// Manual scaling enable for pre-defined resolution modes such as CIF, QCIF, and QVGA
 		(0b000 << 0),		// PCLK divider (only when COM14[4] = 1)
 	Reg70_SCALING_XSC:
-		(0b0 << 7) |		// Test pattern[0]
 		(0b0111010 << 0),	// Horizontal scale factor
 	Reg71_SCALING_YSC:
-		(0b0 << 7) |		// Test pattern[1]
 		(0b0110101 << 0),	// Vertical scale factor
 	Reg72_SCALING_DCWCTR:
-		(0b0 << 7) |		// Vertical average calculation option
-		(0b0 << 6) |		// Vertical down sampling option
 		(0b01 << 4) |		// Vertical downsampling rate
-		(0b0 << 3) |		// Horizontal average calculation option
-		(0b0 << 2) |		// Horizontal down sampling option
 		(0b01 << 0),		// Horizontal downsampling rate
 	Reg73_SCALING_PCLK_DIV:
-		0xf0 |
 		(0b0 << 3) |		// Bypass clock divider for DSP scale control
 		(0b000 << 0),		// Clock divider control for DSP scale control	
 	RegA2_SCALING_PCLK_DELAY:
@@ -247,9 +237,6 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QVGA {
 		(0b0 << 1) |		// Color bar
 		(0b0 << 0),			// Output format - Raw RGB
 	Reg0C_COM3:
-		(0b0 << 6) |		// Output data MSB and LSB swap
-		(0b0 << 5) |		// Tri-state option for output clock at power-down period
-		(0b0 << 4) |		// Tri-state option for output data at power-down period
 		(0b0 << 3) |		// Scale enable
 		(0b1 << 2),			// DCW enable
 	Reg3E_COM14:
@@ -257,20 +244,13 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QVGA {
 		(0b1 << 3) |		// Manual scaling enable for pre-defined resolution modes such as CIF, QCIF, and QVGA
 		(0b001 << 0),		// PCLK divider (only when COM14[4] = 1)
 	Reg70_SCALING_XSC:
-		(0b0 << 7) |		// Test pattern[0]
 		(0b0111010 << 0),	// Horizontal scale factor
 	Reg71_SCALING_YSC:
-		(0b0 << 7) |		// Test pattern[1]
 		(0b0110101 << 0),	// Vertical scale factor
 	Reg72_SCALING_DCWCTR:
-		(0b0 << 7) |		// Vertical average calculation option
-		(0b0 << 6) |		// Vertical down sampling option
 		(0b01 << 4) |		// Vertical downsampling rate
-		(0b0 << 3) |		// Horizontal average calculation option
-		(0b0 << 2) |		// Horizontal down sampling option
 		(0b01 << 0),		// Horizontal downsampling rate
 	Reg73_SCALING_PCLK_DIV:
-		0xf0 |
 		(0b0 << 3) |		// Bypass clock divider for DSP scale control
 		(0b001 << 0),		// Clock divider control for DSP scale control	
 	RegA2_SCALING_PCLK_DELAY:
@@ -289,9 +269,6 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QQVGA {
 		(0b0 << 1) |		// Color bar
 		(0b0 << 0),			// Output format - Raw RGB
 	Reg0C_COM3:
-		(0b0 << 6) |		// Output data MSB and LSB swap
-		(0b0 << 5) |		// Tri-state option for output clock at power-down period
-		(0b0 << 4) |		// Tri-state option for output data at power-down period
 		(0b0 << 3) |		// Scale enable
 		(0b1 << 2),			// DCW enable
 	Reg3E_COM14:
@@ -299,20 +276,13 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QQVGA {
 		(0b1 << 3) |		// Manual scaling enable for pre-defined resolution modes such as CIF, QCIF, and QVGA
 		(0b010 << 0),		// PCLK divider (only when COM14[4] = 1)
 	Reg70_SCALING_XSC:
-		(0b0 << 7) |		// Test pattern[0]
 		(0b0111010 << 0),	// Horizontal scale factor
 	Reg71_SCALING_YSC:
-		(0b0 << 7) |		// Test pattern[1]
 		(0b0110101 << 0),	// Vertical scale factor
 	Reg72_SCALING_DCWCTR:
-		(0b0 << 7) |		// Vertical average calculation option
-		(0b0 << 6) |		// Vertical down sampling option
 		(0b10 << 4) |		// Vertical downsampling rate
-		(0b0 << 3) |		// Horizontal average calculation option
-		(0b0 << 2) |		// Horizontal down sampling option
 		(0b10 << 0),		// Horizontal downsampling rate
 	Reg73_SCALING_PCLK_DIV:
-		0xf0 |
 		(0b0 << 3) |		// Bypass clock divider for DSP scale control
 		(0b010 << 0),		// Clock divider control for DSP scale control	
 	RegA2_SCALING_PCLK_DELAY:
@@ -331,9 +301,6 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_CIF {
 		(0b0 << 1) |		// Color bar
 		(0b0 << 0),			// Output format - Raw RGB
 	Reg0C_COM3:
-		(0b0 << 6) |		// Output data MSB and LSB swap
-		(0b0 << 5) |		// Tri-state option for output clock at power-down period
-		(0b0 << 4) |		// Tri-state option for output data at power-down period
 		(0b1 << 3) |		// Scale enable
 		(0b0 << 2),			// DCW enable
 	Reg3E_COM14:
@@ -341,20 +308,13 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_CIF {
 		(0b0 << 3) |		// Manual scaling enable for pre-defined resolution modes such as CIF, QCIF, and QVGA
 		(0b001 << 0),		// PCLK divider (only when COM14[4] = 1)
 	Reg70_SCALING_XSC:
-		(0b0 << 7) |		// Test pattern[0]
 		(0b0111010 << 0),	// Horizontal scale factor
 	Reg71_SCALING_YSC:
-		(0b0 << 7) |		// Test pattern[1]
 		(0b0110101 << 0),	// Vertical scale factor
 	Reg72_SCALING_DCWCTR:
-		(0b0 << 7) |		// Vertical average calculation option
-		(0b0 << 6) |		// Vertical down sampling option
 		(0b01 << 4) |		// Vertical downsampling rate
-		(0b0 << 3) |		// Horizontal average calculation option
-		(0b0 << 2) |		// Horizontal down sampling option
 		(0b01 << 0),		// Horizontal downsampling rate
 	Reg73_SCALING_PCLK_DIV:
-		0xf0 |
 		(0b0 << 3) |		// Bypass clock divider for DSP scale control
 		(0b001 << 0),		// Clock divider control for DSP scale control	
 	RegA2_SCALING_PCLK_DELAY:
@@ -373,9 +333,6 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QCIF {
 		(0b0 << 1) |		// Color bar
 		(0b0 << 0),			// Output format - Raw RGB
 	Reg0C_COM3:
-		(0b0 << 6) |		// Output data MSB and LSB swap
-		(0b0 << 5) |		// Tri-state option for output clock at power-down period
-		(0b0 << 4) |		// Tri-state option for output data at power-down period
 		(0b1 << 3) |		// Scale enable
 		(0b1 << 2),			// DCW enable
 	Reg3E_COM14:
@@ -383,20 +340,13 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QCIF {
 		(0b0 << 3) |		// Manual scaling enable for pre-defined resolution modes such as CIF, QCIF, and QVGA
 		(0b001 << 0),		// PCLK divider (only when COM14[4] = 1)
 	Reg70_SCALING_XSC:
-		(0b0 << 7) |		// Test pattern[0]
 		(0b0111010 << 0),	// Horizontal scale factor
 	Reg71_SCALING_YSC:
-		(0b0 << 7) |		// Test pattern[1]
 		(0b0110101 << 0),	// Vertical scale factor
 	Reg72_SCALING_DCWCTR:
-		(0b0 << 7) |		// Vertical average calculation option
-		(0b0 << 6) |		// Vertical down sampling option
 		(0b01 << 4) |		// Vertical downsampling rate
-		(0b0 << 3) |		// Horizontal average calculation option
-		(0b0 << 2) |		// Horizontal down sampling option
 		(0b01 << 0),		// Horizontal downsampling rate
 	Reg73_SCALING_PCLK_DIV:
-		0xf0 |
 		(0b0 << 3) |		// Bypass clock divider for DSP scale control
 		(0b001 << 0),		// Clock divider control for DSP scale control	
 	RegA2_SCALING_PCLK_DELAY:
@@ -415,9 +365,6 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QQCIF{
 		(0b0 << 1) |		// Color bar
 		(0b0 << 0),			// Output format - Raw RGB
 	Reg0C_COM3:
-		(0b0 << 6) |		// Output data MSB and LSB swap
-		(0b0 << 5) |		// Tri-state option for output clock at power-down period
-		(0b0 << 4) |		// Tri-state option for output data at power-down period
 		(0b1 << 3) |		// Scale enable
 		(0b1 << 2),			// DCW enable
 	Reg3E_COM14:
@@ -425,20 +372,13 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QQCIF{
 		(0b0 << 3) |		// Manual scaling enable for pre-defined resolution modes such as CIF, QCIF, and QVGA
 		(0b010 << 0),		// PCLK divider (only when COM14[4] = 1)
 	Reg70_SCALING_XSC:
-		(0b0 << 7) |		// Test pattern[0]
 		(0b0111010 << 0),	// Horizontal scale factor
 	Reg71_SCALING_YSC:
-		(0b0 << 7) |		// Test pattern[1]
 		(0b0110101 << 0),	// Vertical scale factor
 	Reg72_SCALING_DCWCTR:
-		(0b0 << 7) |		// Vertical average calculation option
-		(0b0 << 6) |		// Vertical down sampling option
 		(0b10 << 4) |		// Vertical downsampling rate
-		(0b0 << 3) |		// Horizontal average calculation option
-		(0b0 << 2) |		// Horizontal down sampling option
 		(0b10 << 0),		// Horizontal downsampling rate
 	Reg73_SCALING_PCLK_DIV:
-		0xf0 |
 		(0b0 << 3) |		// Bypass clock divider for DSP scale control
 		(0b010 << 0),		// Clock divider control for DSP scale control	
 	RegA2_SCALING_PCLK_DELAY:
@@ -731,19 +671,43 @@ void OV7670::SetupParam()
 	// Table 2-2. Resolution Register Settings
 	//-------------------------------------------------------------------------
 	WriteReg(Reg11_CLKRC,				resolutionSetting.Reg11_CLKRC);
-	WriteReg(Reg12_COM7,				resolutionSetting.Reg12_COM7 | formatSetting.Reg12_COM7);
+	WriteReg(Reg12_COM7,				resolutionSetting.Reg12_COM7 | formatSetting.Reg12_COM7 |
+		(0b0 << 7) |		// SCCB Register Reset
+							//  0: No change
+							//  1: Resets all registers to default values
+		(0b0 << 1));		// Color bar
+							//  0: Disable
+							//  1: Enable
 	WriteReg(Reg40_COM15,				formatSetting.Reg40_COM15 |
 		(0b11 < 6));		// Data format - output full range enable
 							//  0x: Output range: [10] to [F0]
 							//  10: Output range: [01] to [FE]
 							//  11: Output range: [00] to [FF]
 	WriteReg(Reg8C_RGB444,				formatSetting.Reg8C_RGB444);
-	WriteReg(Reg0C_COM3,				resolutionSetting.Reg0C_COM3);
+	WriteReg(Reg0C_COM3,				resolutionSetting.Reg0C_COM3 |
+		(0b0 << 6) |		// Output data MSB and LSB swap
+		(0b0 << 5) |		// Tri-state option for output clock at power-down period
+		(0b0 << 4));		// Tri-state option for output data at power-down period
 	WriteReg(Reg3E_COM14,				resolutionSetting.Reg3E_COM14);
-	WriteReg(Reg70_SCALING_XSC,			resolutionSetting.Reg70_SCALING_XSC);
-	WriteReg(Reg71_SCALING_YSC,			resolutionSetting.Reg71_SCALING_YSC);
-	WriteReg(Reg72_SCALING_DCWCTR,		resolutionSetting.Reg72_SCALING_DCWCTR);
-	WriteReg(Reg73_SCALING_PCLK_DIV,	resolutionSetting.Reg73_SCALING_PCLK_DIV);
+	WriteReg(Reg70_SCALING_XSC,			resolutionSetting.Reg70_SCALING_XSC |
+		(0b0 << 7));		// Test pattern[0]
+	WriteReg(Reg71_SCALING_YSC,			resolutionSetting.Reg71_SCALING_YSC |
+		(0b0 << 7));		// Test pattern[1]
+	WriteReg(Reg72_SCALING_DCWCTR,		resolutionSetting.Reg72_SCALING_DCWCTR |
+		(0b0 << 7) |		// Vertical average calculation option
+							//  0: Vertical truncation
+							//  1: Vertical rounding
+		(0b0 << 6) |		// Vertical down sampling option
+							//  0: Vertical truncation
+							//  1: Vertical rounding
+		(0b0 << 3) |		// Horizontal average calculation option
+							//  0: Horizontal truncation
+							//  1: Horizontal rounding
+		(0b0 << 2));		// Horizontal down sampling option
+							//  0: Horizontal truncation
+							//  1: Horizontal rounding
+	WriteReg(Reg73_SCALING_PCLK_DIV,	resolutionSetting.Reg73_SCALING_PCLK_DIV |
+		(0b1111 << 4));		// Reserved bits
 	WriteReg(RegA2_SCALING_PCLK_DELAY,	resolutionSetting.RegA2_SCALING_PCLK_DELAY);
 	uint32_t hStart = 136, hStop = hStart + 640;
 	WriteReg(Reg17_HSTART,
@@ -755,24 +719,6 @@ void OV7670::SetupParam()
 
 
 #if 0
-	WriteReg(OV7670_REG_TSLB, OV7670_TSLB_YLAST);    // No auto window
-		//{OV7670_REG_COM10, OV7670_COM10_VS_NEG); // -VSYNC (req by SAMD PCC)
-	WriteReg(OV7670_REG_SLOP, 0x20);
-	WriteReg(OV7670_REG_GAM_BASE, 0x1C);
-	WriteReg(OV7670_REG_GAM_BASE + 1, 0x28);
-	WriteReg(OV7670_REG_GAM_BASE + 2, 0x3C);
-	WriteReg(OV7670_REG_GAM_BASE + 3, 0x55);
-	WriteReg(OV7670_REG_GAM_BASE + 4, 0x68);
-	WriteReg(OV7670_REG_GAM_BASE + 5, 0x76);
-	WriteReg(OV7670_REG_GAM_BASE + 6, 0x80);
-	WriteReg(OV7670_REG_GAM_BASE + 7, 0x88);
-	WriteReg(OV7670_REG_GAM_BASE + 8, 0x8F);
-	WriteReg(OV7670_REG_GAM_BASE + 9, 0x96);
-	WriteReg(OV7670_REG_GAM_BASE + 10, 0xA3);
-	WriteReg(OV7670_REG_GAM_BASE + 11, 0xAF);
-	WriteReg(OV7670_REG_GAM_BASE + 12, 0xC4);
-	WriteReg(OV7670_REG_GAM_BASE + 13, 0xD7);
-	WriteReg(OV7670_REG_GAM_BASE + 14, 0xE8);
 	WriteReg(OV7670_REG_COM8,
 		OV7670_COM8_FASTAEC | OV7670_COM8_AECSTEP | OV7670_COM8_BANDING);
 	WriteReg(OV7670_REG_GAIN, 0x00);
@@ -784,11 +730,6 @@ void OV7670::SetupParam()
 	WriteReg(0x9D, 89); // Banding filter for 50 Hz at 13.888 MHz
 	WriteReg(OV7670_REG_BD50MAX, 0x05);
 	WriteReg(OV7670_REG_BD60MAX, 0x07);
-	WriteReg(OV7670_REG_AEW, 0x75);
-	WriteReg(OV7670_REG_AEB, 0x63);
-	WriteReg(OV7670_REG_VPT, 0xA5);
-	WriteReg(OV7670_REG_HAECC1, 0x78);
-	WriteReg(OV7670_REG_HAECC2, 0x68);
 	WriteReg(0xA1, 0x03);              // Reserved register?
 	WriteReg(OV7670_REG_HAECC3, 0xDF); // Histogram-based AEC/AGC setup
 	WriteReg(OV7670_REG_HAECC4, 0xDF);
@@ -815,6 +756,8 @@ void OV7670::SetupParam()
 	WriteReg(0x4E, 0x20); // Reserved register?
 	WriteReg(OV7670_REG_GFIX, 0x5D);
 	WriteReg(OV7670_REG_REG74, 0x19);
+	WriteReg(OV7670_REG_HAECC1, 0x78);
+	WriteReg(OV7670_REG_HAECC2, 0x68);
 	WriteReg(0x8D, 0x4F); // Reserved register?
 	WriteReg(0x8E, 0x00); // Reserved register?
 	WriteReg(0x8F, 0x00); // Reserved register?
@@ -870,11 +813,23 @@ void OV7670::SetupParam()
 
 
 #if 1
+	WriteReg(OV7670_REG_TSLB, OV7670_TSLB_YLAST);    // No auto window
+		//{OV7670_REG_COM10, OV7670_COM10_VS_NEG); // -VSYNC (req by SAMD PCC)
 	WriteReg(Reg3A_TSLB,
 		(0b0 << 5) | 		// Negative image enable
+							//  0: Normal image
+							//  1: Negative image
 		(0b0 << 4) |		// UV output value
+							//  0: Use normal UV output
+							//  1: Use fixed UV value set
 		(0b0 << 3) |		// Output sequence
+							//  00: Y U Y V
+							//  01: Y V Y U
+							//  10: U Y V Y
+							//  11: V Y U Y
 		(0b0 << 0));		// Auto output window
+							//  0: Sensor DOES NOT autommatically set window
+							//  1: Sensor automatically sets output window
 	//-------------------------------------------------------------------------
 	// Table 3-4. Dummy Pixel and Row
 	//-------------------------------------------------------------------------
@@ -940,6 +895,19 @@ void OV7670::SetupParam()
 		(0x5 << 0));		// AGC/AEC Fast Mode Operating Region - High nibble of lower limit of fast mode control zone
 	WriteReg(Reg0D_COM4,
 		(0b00 << 4));		// Average option (must be same value as COM17[7:6])
+							//  00: Full window
+							//  01: 1/2 window
+							//  10: 1/4 window
+							//  11: 1/4 window
+	WriteReg(Reg42_COM17,
+		(0b00 << 6) |		// AEC window must be the same value as COM4[5:4]
+							//  00: Normal
+							//  01: 1/2
+							//  10: 1/4
+							//  11: 1/4
+		(0b0 << 3));		// DSP color bar enable
+							//  0: Disable
+							//  1: Enable
 	//-------------------------------------------------------------------------
 	// Table 3-8. Histogram-based AEC Related Registers
 	//-------------------------------------------------------------------------
@@ -986,35 +954,35 @@ void OV7670::SetupParam()
 	// Table 5-3. Gamma Related Registers and Parameters
 	//-------------------------------------------------------------------------
 	WriteReg(Reg7B_GAM1,
-		4);				// Gamma curve 1st Segment Input End Point 0x04 Output Value
+		0x1c);				// Gamma curve 1st Segment Input End Point 0x04 Output Value
 	WriteReg(Reg7C_GAM2,
-		8);				// Gamma curve 2nd Segment Input End Point 0x08 Output Value
+		0x28);				// Gamma curve 2nd Segment Input End Point 0x08 Output Value
 	WriteReg(Reg7D_GAM3,
-		16);				// Gamma curve 3rd Segment Input End Point 0x10 Output Value
+		0x3c);				// Gamma curve 3rd Segment Input End Point 0x10 Output Value
 	WriteReg(Reg7E_GAM4,
-		32);				// Gamma curve 4th Segment Input End Point 0x20 Output Value
+		0x55);				// Gamma curve 4th Segment Input End Point 0x20 Output Value
 	WriteReg(Reg7F_GAM5,
-		40);				// Gamma curve 5th Segment Input End Point 0x28 Output Value
+		0x68);				// Gamma curve 5th Segment Input End Point 0x28 Output Value
 	WriteReg(Reg80_GAM6,
-		48);				// Gamma curve 6th Segment Input End Point 0x30 Output Value
+		0x76);				// Gamma curve 6th Segment Input End Point 0x30 Output Value
 	WriteReg(Reg81_GAM7,
-		56);				// Gamma curve 7th Segment Input End Point 0x38 Output Value
+		0x80);				// Gamma curve 7th Segment Input End Point 0x38 Output Value
 	WriteReg(Reg82_GAM8,
-		64);				// Gamma curve 8th Segment Input End Point 0x40 Output Value
+		0x88);				// Gamma curve 8th Segment Input End Point 0x40 Output Value
 	WriteReg(Reg83_GAM9,
-		72);				// Gamma curve 9th Segment Input End Point 0x48 Output Value
+		0x8f);				// Gamma curve 9th Segment Input End Point 0x48 Output Value
 	WriteReg(Reg84_GAM10,
-		80);				// Gamma curve 10th Segment Input End Point 0x50 Output Value
+		0x96);				// Gamma curve 10th Segment Input End Point 0x50 Output Value
 	WriteReg(Reg85_GAM11,
-		96);				// Gamma curve 11th Segment Input End Point 0x60 Output Value
+		0xa3);				// Gamma curve 11th Segment Input End Point 0x60 Output Value
 	WriteReg(Reg86_GAM12,
-		112);				// Gamma curve 12th Segment Input End Point 0x70 Output Value
+		0xaf);				// Gamma curve 12th Segment Input End Point 0x70 Output Value
 	WriteReg(Reg87_GAM13,
-		144);				// Gamma curve 13th Segment Input End Point 0x90 Output Value
+		0xc4);				// Gamma curve 13th Segment Input End Point 0x90 Output Value
 	WriteReg(Reg88_GAM14,
-		176);				// Gamma curve 14th Segment Input End Point 0xB0 Output Value
+		0xd7);				// Gamma curve 14th Segment Input End Point 0xB0 Output Value
 	WriteReg(Reg89_GAM15,
-		208);				// Gamma curve 15th Segment Input End Point 0xD0 Output Value
+		0xe8);				// Gamma curve 15th Segment Input End Point 0xD0 Output Value
 	WriteReg(Reg7A_SLOP,
 		(256 - 208) * 40 / 30);	// Gamma curve highest segment slope
 	//-------------------------------------------------------------------------
