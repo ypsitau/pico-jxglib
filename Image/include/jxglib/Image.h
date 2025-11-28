@@ -26,6 +26,7 @@ public:
 		static const Format RGBA;
 		static const Format RGB565;
 		static const Format RGB565BE;
+		static const Format YUV422;
 	public:
 		bool IsIdentical(const Format& format) const { return this == &format; }
 		bool IsNone() const { return IsIdentical(None); }
@@ -35,6 +36,7 @@ public:
 		bool IsRGBA() const { return IsIdentical(RGBA); }
 		bool IsRGB565() const { return IsIdentical(RGB565); }
 		bool IsRGB565BE() const { return IsIdentical(RGB565BE); }
+		bool IsYUV422() const { return IsIdentical(YUV422); }
 	};
 public:
 	template<typename T_ColorVar, typename T_ColorMem> class Getter_T {

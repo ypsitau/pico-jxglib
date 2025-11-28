@@ -18,7 +18,8 @@ namespace jxglib::Device {
 class OV7670 {
 public:
 	enum Resolution { VGA, QVGA, QQVGA, CIF, QCIF, QQCIF };
-	struct FrameSetting {
+	enum Format { RawBayerRGB, ProcessedBayerRGB, YUV422, GRB422, RGB565, RGB555, RGB444 };
+	struct ResolutionSetting {
 		uint8_t Reg11_CLKRC;
 		uint8_t Reg12_COM7;
 		uint8_t Reg0C_COM3;
@@ -28,6 +29,11 @@ public:
 		uint8_t Reg72_SCALING_DCWCTR;
 		uint8_t Reg73_SCALING_PCLK_DIV;
 		uint8_t RegA2_SCALING_PCLK_DELAY;
+	};
+	struct FormatSetting {
+		uint8_t Reg12_COM7;
+		uint8_t Reg40_COM15;
+		uint8_t Reg8C_RGB444;
 	};
 	struct PinAssign {
 		const GPIO& DIN0;
@@ -187,17 +193,25 @@ public:
 	static const uint8_t RegC1_AD_CHGR				= 0xc1;
 	static const uint8_t RegC9_SATCTR				= 0xc9;
 public:
-	static const FrameSetting frameSetting_VGA;
-	static const FrameSetting frameSetting_QVGA;
-	static const FrameSetting frameSetting_QQVGA;
-	static const FrameSetting frameSetting_CIF;
-	static const FrameSetting frameSetting_QCIF;
-	static const FrameSetting frameSetting_QQCIF;
+	static const ResolutionSetting resolutionSetting_VGA;
+	static const ResolutionSetting resolutionSetting_QVGA;
+	static const ResolutionSetting resolutionSetting_QQVGA;
+	static const ResolutionSetting resolutionSetting_CIF;
+	static const ResolutionSetting resolutionSetting_QCIF;
+	static const ResolutionSetting resolutionSetting_QQCIF;
+public:
+	static const FormatSetting formatSetting_RawBayerRGB;
+	static const FormatSetting formatSetting_ProcessedBayerRGB;
+	static const FormatSetting formatSetting_YUV422;
+	static const FormatSetting formatSetting_GRB422;
+	static const FormatSetting formatSetting_RGB565;
+	static const FormatSetting formatSetting_RGB555;
+	static const FormatSetting formatSetting_RGB444;
 public:
 	static const uint8_t I2CAddr = 0x21;
 private:
 	Resolution resolution_;
-	const Image::Format& format_;
+	Format format_;
 	i2c_inst_t* i2c_;
 	PinAssign pinAssign_;
 	uint32_t freq_;
@@ -208,7 +222,7 @@ private:
 	DMA::ChannelConfig channelConfig_;
 	Image image_;
 public:
-	OV7670(Resolution resolution, const Image::Format& format, i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq = 24000000);
+	OV7670(Resolution resolution, Format format, i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq = 24000000);
 public:
 	bool Initialize();
 	void SetupParam();

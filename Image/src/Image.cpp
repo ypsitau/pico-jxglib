@@ -15,6 +15,7 @@ const Image::Format Image::Format::RGB {3};
 const Image::Format Image::Format::RGBA {4};
 const Image::Format Image::Format::RGB565 {2};
 const Image::Format Image::Format::RGB565BE {2};
+const Image::Format Image::Format::YUV422 {2};
 
 Image::~Image()
 {

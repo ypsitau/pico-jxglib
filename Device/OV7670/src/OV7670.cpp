@@ -193,7 +193,7 @@ namespace jxglib::Device {
 //------------------------------------------------------------------------------
 // OV7670
 //------------------------------------------------------------------------------
-const OV7670::FrameSetting OV7670::frameSetting_VGA {
+const OV7670::ResolutionSetting OV7670::resolutionSetting_VGA {
 	Reg11_CLKRC:
 		(0b0 << 6) |		// Use external clock directly (no clock pre-scale available)
 		(0b000001 << 0),	// Internal clock prescaler
@@ -235,7 +235,7 @@ const OV7670::FrameSetting OV7670::frameSetting_VGA {
 		(0b0000010 << 0),	// Scaling output delay
 };
 
-const OV7670::FrameSetting OV7670::frameSetting_QVGA {
+const OV7670::ResolutionSetting OV7670::resolutionSetting_QVGA {
 	Reg11_CLKRC:
 		(0b0 << 6) |		// Use external clock directly (no clock pre-scale available)
 		(0b000001 << 0),	// Internal clock prescaler
@@ -277,7 +277,7 @@ const OV7670::FrameSetting OV7670::frameSetting_QVGA {
 		(0b0000010 << 0),	// Scaling output delay
 };
 
-const OV7670::FrameSetting OV7670::frameSetting_QQVGA {
+const OV7670::ResolutionSetting OV7670::resolutionSetting_QQVGA {
 	Reg11_CLKRC:
 		(0b0 << 6) |		// Use external clock directly (no clock pre-scale available)
 		(0b000001 << 0),	// Internal clock prescaler
@@ -319,7 +319,7 @@ const OV7670::FrameSetting OV7670::frameSetting_QQVGA {
 		(0b0000010 << 0),	// Scaling output delay
 };
 
-const OV7670::FrameSetting OV7670::frameSetting_CIF {
+const OV7670::ResolutionSetting OV7670::resolutionSetting_CIF {
 	Reg11_CLKRC:
 		(0b0 << 6) |		// Use external clock directly (no clock pre-scale available)
 		(0b000001 << 0),	// Internal clock prescaler
@@ -361,7 +361,7 @@ const OV7670::FrameSetting OV7670::frameSetting_CIF {
 		(0b0000010 << 0),	// Scaling output delay
 };
 
-const OV7670::FrameSetting OV7670::frameSetting_QCIF {
+const OV7670::ResolutionSetting OV7670::resolutionSetting_QCIF {
 	Reg11_CLKRC:
 		(0b0 << 6) |		// Use external clock directly (no clock pre-scale available)
 		(0b000001 << 0),	// Internal clock prescaler
@@ -403,7 +403,7 @@ const OV7670::FrameSetting OV7670::frameSetting_QCIF {
 		(0b1010010 << 0),	// Scaling output delay
 };
 
-const OV7670::FrameSetting OV7670::frameSetting_QQCIF{
+const OV7670::ResolutionSetting OV7670::resolutionSetting_QQCIF{
 	Reg11_CLKRC:
 		(0b0 << 6) |		// Use external clock directly (no clock pre-scale available)
 		(0b000001 << 0),	// Internal clock prescaler
@@ -445,7 +445,134 @@ const OV7670::FrameSetting OV7670::frameSetting_QQCIF{
 		(0b0101010 << 0),	// Scaling output delay
 };
 
-OV7670::OV7670(Resolution resolution, const Image::Format& format, i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq) :
+// Table 2-1. OV7670/OV7171 Output Formats
+const OV7670::FormatSetting OV7670::formatSetting_RawBayerRGB {
+	Reg12_COM7:
+		(0b0 << 2) |		// Output format - RGB selection
+		(0b1 << 0),			// Output format - Raw RGB
+	Reg40_COM15:
+		(0b00 << 4),		// RGB 555/565 option
+							//  0x: Normal RGB output
+							//  01: RGB 565
+							//  11: RGB 555
+	Reg8C_RGB444:
+		(0b0 << 1) |		// RGB444 enable, effective only when COM15[4] is high
+							//  0: Disable
+							//  1: Enable
+		(0b0 << 0),			// RGB444 word format
+							//  0: xR GB
+							//  1: RG Bx
+};
+
+const OV7670::FormatSetting OV7670::formatSetting_ProcessedBayerRGB {
+	Reg12_COM7:
+		(0b1 << 2) |		// Output format - RGB selection
+		(0b1 << 0),			// Output format - Raw RGB
+	Reg40_COM15:
+		(0b00 << 4),		// RGB 555/565 option
+							//  0x: Normal RGB output
+							//  01: RGB 565
+							//  11: RGB 555
+	Reg8C_RGB444:
+		(0b0 << 1) |		// RGB444 enable, effective only when COM15[4] is high
+							//  0: Disable
+							//  1: Enable
+		(0b0 << 0),			// RGB444 word format
+							//  0: xR GB
+							//  1: RG Bx
+};
+
+const OV7670::FormatSetting OV7670::formatSetting_YUV422 {
+	Reg12_COM7:
+		(0b0 << 2) |		// Output format - RGB selection
+		(0b0 << 0),			// Output format - Raw RGB
+	Reg40_COM15:
+		(0b00 << 4),		// RGB 555/565 option
+							//  0x: Normal RGB output
+							//  01: RGB 565
+							//  11: RGB 555
+	Reg8C_RGB444:
+		(0b0 << 1) |		// RGB444 enable, effective only when COM15[4] is high
+							//  0: Disable
+							//  1: Enable
+		(0b0 << 0),			// RGB444 word format
+							//  0: xR GB
+							//  1: RG Bx
+};
+
+const OV7670::FormatSetting OV7670::formatSetting_GRB422 {
+	Reg12_COM7:
+		(0b1 << 2) |		// Output format - RGB selection
+		(0b0 << 0),			// Output format - Raw RGB
+	Reg40_COM15:
+		(0b00 << 4),		// RGB 555/565 option
+							//  0x: Normal RGB output
+							//  01: RGB 565
+							//  11: RGB 555
+	Reg8C_RGB444:
+		(0b0 << 1) |		// RGB444 enable, effective only when COM15[4] is high
+							//  0: Disable
+							//  1: Enable
+		(0b0 << 0),			// RGB444 word format
+							//  0: xR GB
+							//  1: RG Bx
+};
+
+const OV7670::FormatSetting OV7670::formatSetting_RGB565 {
+	Reg12_COM7:
+		(0b1 << 2) |		// Output format - RGB selection
+		(0b0 << 0),			// Output format - Raw RGB
+	Reg40_COM15:
+		(0b01 << 4),		// RGB 555/565 option
+							//  0x: Normal RGB output
+							//  01: RGB 565
+							//  11: RGB 555
+	Reg8C_RGB444:
+		(0b0 << 1) |		// RGB444 enable, effective only when COM15[4] is high
+							//  0: Disable
+							//  1: Enable
+		(0b0 << 0),			// RGB444 word format
+							//  0: xR GB
+							//  1: RG Bx
+};
+
+const OV7670::FormatSetting OV7670::formatSetting_RGB555 {
+	Reg12_COM7:
+		(0b1 << 2) |		// Output format - RGB selection
+		(0b0 << 0),			// Output format - Raw RGB
+	Reg40_COM15:
+		(0b11 << 4),		// RGB 555/565 option
+							//  0x: Normal RGB output
+							//  01: RGB 565
+							//  11: RGB 555
+	Reg8C_RGB444:
+		(0b0 << 1) |		// RGB444 enable, effective only when COM15[4] is high
+							//  0: Disable
+							//  1: Enable
+		(0b0 << 0),			// RGB444 word format
+							//  0: xR GB
+							//  1: RG Bx
+};
+
+const OV7670::FormatSetting OV7670::formatSetting_RGB444 {
+	Reg12_COM7:
+		(0b1 << 2) |		// Output format - RGB selection
+		(0b0 << 0),			// Output format - Raw RGB
+	Reg40_COM15:
+		(0b01 << 4),		// RGB 555/565 option
+							//  0x: Normal RGB output
+							//  01: RGB 565
+							//  11: RGB 555
+	Reg8C_RGB444:
+		(0b1 << 1) |		// RGB444 enable, effective only when COM15[4] is high
+							//  0: Disable
+							//  1: Enable
+		(0b0 << 0),			// RGB444 word format
+							//  0: xR GB
+							//  1: RG Bx
+};
+
+OV7670::OV7670(Resolution resolution, Format format, i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq) :
 	resolution_{resolution}, format_{format}, i2c_{i2c}, pinAssign_{pinAssign}, freq_{freq}
 {
 }
@@ -474,8 +601,28 @@ bool OV7670::Initialize()
 		(resolution_ == Resolution::CIF)?	Size{352, 288} :
 		(resolution_ == Resolution::QCIF)?	Size{176, 144} :
 		(resolution_ == Resolution::QQCIF)?	Size{88, 72} : Size{320, 240};
+	if (format_ == Format::RawBayerRGB) {
+		if (resolution_ != Resolution::VGA) {
+			// Raw Bayer RGB only supports VGA resolution
+			return false;
+		}
+	} else if (format_ == Format::ProcessedBayerRGB) {
+		if (resolution_ != Resolution::VGA && resolution_ != Resolution::QVGA) {
+			// Processed Bayer RGB only supports VGA resolution
+			return false;
+		}
+	}
 	uint relAddrStart = 0;
-	if (!image_.Allocate(format_, size.width, size.height)) return false;
+	if (!image_.Allocate(
+		(format_ == Format::RawBayerRGB)? Image::Format::RGB :
+		(format_ == Format::ProcessedBayerRGB)? Image::Format::RGB :
+		(format_ == Format::YUV422)? Image::Format::YUV422 :
+		//(format_ == Format::GRB422)? Image::Format::GRB422 :
+		(format_ == Format::RGB565)? Image::Format::RGB565 :
+		//(format_ == Format::RGB555)? Image::Format::RGB555 :
+		//(format_ == Format::RGB444)? Image::Format::RGB444 :
+		Image::Format::RGB,
+		size.width, size.height)) return false;
 #if 1
 	program_
 	.pio_version(0)
@@ -543,13 +690,21 @@ bool OV7670::Initialize()
 
 void OV7670::SetupParam()
 {
-	const FrameSetting& frameSetting =
-		(resolution_ == Resolution::VGA)?	frameSetting_VGA :
-		(resolution_ == Resolution::QVGA)?	frameSetting_QVGA :
-		(resolution_ == Resolution::QQVGA)?	frameSetting_QQVGA :
-		(resolution_ == Resolution::CIF)?	frameSetting_CIF :
-		(resolution_ == Resolution::QCIF)?	frameSetting_QCIF :
-		(resolution_ == Resolution::QQCIF)?	frameSetting_QQCIF : frameSetting_VGA;
+	const ResolutionSetting& resolutionSetting =
+		(resolution_ == Resolution::VGA)?	resolutionSetting_VGA :
+		(resolution_ == Resolution::QVGA)?	resolutionSetting_QVGA :
+		(resolution_ == Resolution::QQVGA)?	resolutionSetting_QQVGA :
+		(resolution_ == Resolution::CIF)?	resolutionSetting_CIF :
+		(resolution_ == Resolution::QCIF)?	resolutionSetting_QCIF :
+		(resolution_ == Resolution::QQCIF)?	resolutionSetting_QQCIF : resolutionSetting_VGA;
+	const FormatSetting& formatSetting =
+		(format_ == Format::RawBayerRGB)?		formatSetting_RawBayerRGB :
+		(format_ == Format::ProcessedBayerRGB)?	formatSetting_ProcessedBayerRGB :
+		(format_ == Format::YUV422)?			formatSetting_YUV422 :
+		(format_ == Format::GRB422)?			formatSetting_GRB422 :
+		(format_ == Format::RGB565)?			formatSetting_RGB565 :
+		(format_ == Format::RGB555)?			formatSetting_RGB555 :
+		(format_ == Format::RGB444)?			formatSetting_RGB444 : formatSetting_RGB565;
 	WriteReg(Reg12_COM7,
 		(0b1 << 7));	// SCCB Register Reset
 	::sleep_ms(100);
@@ -572,33 +727,24 @@ void OV7670::SetupParam()
 		(0b0 << 4) |		// Regulator control
 		(0b1010 << 0));		// (Reserved)
 	//-------------------------------------------------------------------------
+	// Table 2-1. OV7670/OV7171 Output Formats
 	// Table 2-2. Resolution Register Settings
 	//-------------------------------------------------------------------------
-	WriteReg(Reg11_CLKRC,				frameSetting.Reg11_CLKRC);
-	WriteReg(Reg12_COM7,				frameSetting.Reg12_COM7 |
-		(0b1 << 2) |		// Output format - RGB selection
-		(0b0 << 0));		// Output format - Raw RGB
-							//  COM7[2] COM7[0]
-							//    0       0     YUV
-							//    1       0     RGB
-							//    0       1     Raw Bayer RGB
-							//    1       1     Processed Bayer RGB
-	WriteReg(Reg0C_COM3,				frameSetting.Reg0C_COM3);
-	WriteReg(Reg3E_COM14,				frameSetting.Reg3E_COM14);
-	WriteReg(Reg70_SCALING_XSC,			frameSetting.Reg70_SCALING_XSC);
-	WriteReg(Reg71_SCALING_YSC,			frameSetting.Reg71_SCALING_YSC);
-	WriteReg(Reg72_SCALING_DCWCTR,		frameSetting.Reg72_SCALING_DCWCTR);
-	WriteReg(Reg73_SCALING_PCLK_DIV,	frameSetting.Reg73_SCALING_PCLK_DIV);
-	WriteReg(RegA2_SCALING_PCLK_DELAY,	frameSetting.RegA2_SCALING_PCLK_DELAY);
-	WriteReg(Reg40_COM15,
-		(0b11 < 6) |		// Data format - output full range enable
+	WriteReg(Reg11_CLKRC,				resolutionSetting.Reg11_CLKRC);
+	WriteReg(Reg12_COM7,				resolutionSetting.Reg12_COM7 | formatSetting.Reg12_COM7);
+	WriteReg(Reg40_COM15,				formatSetting.Reg40_COM15 |
+		(0b11 < 6));		// Data format - output full range enable
 							//  0x: Output range: [10] to [F0]
 							//  10: Output range: [01] to [FE]
 							//  11: Output range: [00] to [FF]
-		(0b01 << 4));		// RGB 555/565 option
-							//  0x: Normal RGB output
-							//  01: RGB 565
-							//  11: RGB 555
+	WriteReg(Reg8C_RGB444,				formatSetting.Reg8C_RGB444);
+	WriteReg(Reg0C_COM3,				resolutionSetting.Reg0C_COM3);
+	WriteReg(Reg3E_COM14,				resolutionSetting.Reg3E_COM14);
+	WriteReg(Reg70_SCALING_XSC,			resolutionSetting.Reg70_SCALING_XSC);
+	WriteReg(Reg71_SCALING_YSC,			resolutionSetting.Reg71_SCALING_YSC);
+	WriteReg(Reg72_SCALING_DCWCTR,		resolutionSetting.Reg72_SCALING_DCWCTR);
+	WriteReg(Reg73_SCALING_PCLK_DIV,	resolutionSetting.Reg73_SCALING_PCLK_DIV);
+	WriteReg(RegA2_SCALING_PCLK_DELAY,	resolutionSetting.RegA2_SCALING_PCLK_DELAY);
 	uint32_t hStart = 136, hStop = hStart + 640;
 	WriteReg(Reg17_HSTART,
 		static_cast<uint8_t>(hStart >> 3));
@@ -608,6 +754,7 @@ void OV7670::SetupParam()
 		static_cast<uint8_t>((0b10 << 6) | ((hStop & 0b111) << 3) |((hStart & 0b111) << 0)));
 
 
+#if 0
 	WriteReg(OV7670_REG_TSLB, OV7670_TSLB_YLAST);    // No auto window
 		//{OV7670_REG_COM10, OV7670_COM10_VS_NEG); // -VSYNC (req by SAMD PCC)
 	WriteReg(OV7670_REG_SLOP, 0x20);
@@ -712,6 +859,7 @@ void OV7670::SetupParam()
 	WriteReg(OV7670_REG_BRIGHT, 0x00);
 	WriteReg(OV7670_REG_CONTRAS, 0x40);
 	WriteReg(OV7670_REG_CONTRAS_CENTER, 0x80); // 0x40?
+#endif
 
 
 
@@ -721,8 +869,7 @@ void OV7670::SetupParam()
 
 
 
-
-#if 0
+#if 1
 	WriteReg(Reg3A_TSLB,
 		(0b0 << 5) | 		// Negative image enable
 		(0b0 << 4) |		// UV output value
@@ -1016,9 +1163,6 @@ void OV7670::SetupParam()
 		0x40);				// Contrast control
 	WriteReg(Reg57_CONTRAS_CENTER,
 		0x80);				// Contrast center control
-	WriteReg(Reg8C_RGB444,
-		(0b0 << 1) |		// RGB444 enable, effective only when COM15[4] is high
-		(0b0 << 0));		// RGB444 word format
 	WriteReg(Reg3D_COM13,
 		(0b0 << 7) |		// Gamma enable
 		(0b1 << 6) |		// UV saturation level - UV auto-adjustment
