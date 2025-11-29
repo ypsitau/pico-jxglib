@@ -111,7 +111,7 @@ public:
 	static const uint8_t Reg46_AWBC4				= 0x46;
 	static const uint8_t Reg47_AWBC5				= 0x47;
 	static const uint8_t Reg48_AWBC6				= 0x48;
-	static const uint8_t Reg4B_REG4B				= 0x4b;
+	static const uint8_t Reg4B						= 0x4b;
 	static const uint8_t Reg4C_DNSTH				= 0x4c;
 	static const uint8_t Reg4D_DM_POS				= 0x4d;
 	static const uint8_t Reg4F_MTX1					= 0x4f;
@@ -124,6 +124,15 @@ public:
 	static const uint8_t Reg56_CONTRAS				= 0x56;
 	static const uint8_t Reg57_CONTRAS_CENTER		= 0x57;
 	static const uint8_t Reg58_MTXS					= 0x58;
+	static const uint8_t Reg59_AWBC7				= 0x59;
+	static const uint8_t Reg5A_AWBC8				= 0x5a;
+	static const uint8_t Reg5B_AWBC9				= 0x5b;
+	static const uint8_t Reg5C_AWBC10				= 0x5c;
+	static const uint8_t Reg5D_AWBC11				= 0x5d;
+	static const uint8_t Reg5E_AWBC12				= 0x5e;
+	static const uint8_t Reg5F_B_LMT				= 0x5f;
+	static const uint8_t Reg60_R_LMT				= 0x60;
+	static const uint8_t Reg61_G_LMT				= 0x61;
 	static const uint8_t Reg62_LCC1					= 0x62;
 	static const uint8_t Reg63_LCC2					= 0x63;
 	static const uint8_t Reg64_LCC3					= 0x64;
@@ -178,7 +187,7 @@ public:
 	static const uint8_t RegA7_HAECC4				= 0xa7;
 	static const uint8_t RegA8_HAECC5				= 0xa8;
 	static const uint8_t RegA9_HAECC6				= 0xa9;
-	static const uint8_t RegAA_NALG					= 0xaa;
+	static const uint8_t RegAA_HAECC7				= 0xaa;
 	static const uint8_t RegAB_BD60MAX				= 0xab;
 	static const uint8_t RegAC_STR_OPT				= 0xac;
 	static const uint8_t RegAD_STR_R				= 0xad;

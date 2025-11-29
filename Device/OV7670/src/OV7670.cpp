@@ -630,6 +630,8 @@ bool OV7670::Initialize()
 
 void OV7670::SetupParam()
 {
+	uint32_t hStart = 136, hStop = hStart + 640;
+	uint32_t vStart = 12, vStop = vStart + 480;
 	const ResolutionSetting& resolutionSetting =
 		(resolution_ == Resolution::VGA)?	resolutionSetting_VGA :
 		(resolution_ == Resolution::QVGA)?	resolutionSetting_QVGA :
@@ -709,36 +711,8 @@ void OV7670::SetupParam()
 	WriteReg(Reg73_SCALING_PCLK_DIV,	resolutionSetting.Reg73_SCALING_PCLK_DIV |
 		(0b1111 << 4));		// Reserved bits
 	WriteReg(RegA2_SCALING_PCLK_DELAY,	resolutionSetting.RegA2_SCALING_PCLK_DELAY);
-	uint32_t hStart = 136, hStop = hStart + 640;
-	WriteReg(Reg17_HSTART,
-		static_cast<uint8_t>(hStart >> 3));
-	WriteReg(Reg18_HSTOP,
-		static_cast<uint8_t>(hStop >> 3));
-	WriteReg(Reg32_HREF,
-		static_cast<uint8_t>((0b10 << 6) | ((hStop & 0b111) << 3) |((hStart & 0b111) << 0)));
-
-
 #if 0
-	WriteReg(OV7670_REG_COM8,
-		OV7670_COM8_FASTAEC | OV7670_COM8_AECSTEP | OV7670_COM8_BANDING);
-	WriteReg(OV7670_REG_GAIN, 0x00);
-	WriteReg(OV7670_REG_COM2, 0x00);
-	WriteReg(OV7670_REG_COM4, 0x00);
-	WriteReg(OV7670_REG_COM9, 0x20); // Max AGC value
-	WriteReg(OV7670_REG_COM11, (1 << 3)); // 50Hz
-		//{0x9D, 99); // Banding filter for 50 Hz at 15.625 MHz
-	WriteReg(0x9D, 89); // Banding filter for 50 Hz at 13.888 MHz
-	WriteReg(OV7670_REG_BD50MAX, 0x05);
-	WriteReg(OV7670_REG_BD60MAX, 0x07);
 	WriteReg(0xA1, 0x03);              // Reserved register?
-	WriteReg(OV7670_REG_HAECC3, 0xDF); // Histogram-based AEC/AGC setup
-	WriteReg(OV7670_REG_HAECC4, 0xDF);
-	WriteReg(OV7670_REG_HAECC5, 0xF0);
-	WriteReg(OV7670_REG_HAECC6, 0x90);
-	WriteReg(OV7670_REG_HAECC7, 0x94);
-	WriteReg(OV7670_REG_COM8, OV7670_COM8_FASTAEC | OV7670_COM8_AECSTEP |
-							OV7670_COM8_BANDING | OV7670_COM8_AGC |
-							OV7670_COM8_AEC | OV7670_COM8_AWB );
 	WriteReg(OV7670_REG_COM5, 0x61);
 	WriteReg(OV7670_REG_COM6, 0x4B);
 	WriteReg(0x16, 0x02);            // Reserved register?
@@ -756,8 +730,6 @@ void OV7670::SetupParam()
 	WriteReg(0x4E, 0x20); // Reserved register?
 	WriteReg(OV7670_REG_GFIX, 0x5D);
 	WriteReg(OV7670_REG_REG74, 0x19);
-	WriteReg(OV7670_REG_HAECC1, 0x78);
-	WriteReg(OV7670_REG_HAECC2, 0x68);
 	WriteReg(0x8D, 0x4F); // Reserved register?
 	WriteReg(0x8E, 0x00); // Reserved register?
 	WriteReg(0x8F, 0x00); // Reserved register?
@@ -857,6 +829,11 @@ void OV7670::SetupParam()
 	//-------------------------------------------------------------------------
 	// Table 3-5. Exposure and Banding Filter
 	//-------------------------------------------------------------------------
+	//WriteReg(OV7670_REG_COM11, (1 << 3)); // 50Hz
+	//	//{0x9D, 99); // Banding filter for 50 Hz at 15.625 MHz
+	//WriteReg(0x9D, 89); // Banding filter for 50 Hz at 13.888 MHz
+	//WriteReg(OV7670_REG_BD50MAX, 0x05);
+	//WriteReg(OV7670_REG_BD60MAX, 0x07);
 	WriteReg(Reg07_AECHH,
 		0x00);				// 
 	WriteReg(Reg10_AECH,
@@ -865,24 +842,34 @@ void OV7670::SetupParam()
 		(0b0 << 6) |		// CCIR656 format
 		(0b00 << 0));		// AEC[1:0]
 	WriteReg(Reg9D_BD50ST,
-		0x00);				// 
+		0x99);				// 
 	WriteReg(Reg9E_BD60ST,
-		0x00);				// 
+		0x7f);				// 
+	WriteReg(RegA5_BD50MAX,
+		0x05);				// 50Hz Banding Step Limit
+	WriteReg(RegAB_BD60MAX,
+		0x07);				// 60Hz Banding Step Limit
 	WriteReg(Reg3B_COM11,
-		0x00);				// 
+		(1 << 3));				// 
 	//-------------------------------------------------------------------------
 	// Table 3-6. Exposure Control Mode
 	//-------------------------------------------------------------------------
 	WriteReg(Reg13_COM8,
 		(0b1 << 7) |		// Enable fast AGC/AEC algorithm
-		(0b0 << 6) |		// AEC - Step size limit
-		(0b0 << 5) |		// Banding filter ON/OFF
+							//  0: Normal speed
+							//  1: Fast speed
+		(0b1 << 6) |		// AEC - Step size limit
+		(0b1 << 5) |		// Banding filter ON/OFF (see Table 3-5)
 		(0b01 << 3) |		// (reserved)
-		(0b1 << 2) |		// AGC Enable
-		(0b0 << 1) |		// AWB Enable
-		(0b1 << 0));		// AEC Enable
-	WriteReg(RegAA_NALG,
-		0x00);				// 
+		(0b1 << 2) |		// AGC Enable (see Table 4-2)
+							//  0: Disable AGC function, gain control function is still active
+							//  1: Enable AGC function
+		(0b1 << 1) |		// AWB Enable (see Table 5-1)
+							//  0: Disable AWB, White Balance is in manual mode
+							//  1: Enable AWB, White Balance is auto mode
+		(0b1 << 0));		// AEC Enable (see Table 3-6)
+							//  0: Disable AEC, Exposure is in manual mode
+							//  1: Enable AEC, Exposure is auto mode
 	//-------------------------------------------------------------------------
 	// Table 3-7. Average-based AEC/AGC Registers
 	//-------------------------------------------------------------------------
@@ -911,9 +898,20 @@ void OV7670::SetupParam()
 	//-------------------------------------------------------------------------
 	// Table 3-8. Histogram-based AEC Related Registers
 	//-------------------------------------------------------------------------
-	//WriteReg(RegA0_LRL,
-	//	0x00);
-
+	WriteReg(Reg9F_HAECC1,
+		0x78);				// Histogram-based AEC/AGC Control 1
+	WriteReg(RegA0_HAECC2,
+		0x68);				// Histogram-based AEC/AGC Control 2
+	WriteReg(RegA6_HAECC3,
+		0xdf);				// Histogram-based AEC/AGC Control 3
+	WriteReg(RegA7_HAECC4,
+		0xdf);				// Histogram-based AEC/AGC Control 4
+	WriteReg(RegA8_HAECC5,
+		0xf0);				// Histogram-based AEC/AGC Control 5
+	WriteReg(RegA9_HAECC6,
+		0x90);				// Histogram-based AEC/AGC Control 6
+	WriteReg(RegAA_HAECC7,
+		0x94);				// Histogram-based AEC/AGC Control 7
 	//-------------------------------------------------------------------------
 	// Table 3-10. Sync Signal Related Registers
 	//-------------------------------------------------------------------------
@@ -925,31 +923,149 @@ void OV7670::SetupParam()
 		(0b0 << 2) |		// VSYNC option
 		(0b1 << 1) |		// VSYNC negative
 		(0b0 << 0));		// HSYNC negative
-
+	WriteReg(Reg1B_PSHFT,
+		0x00);				// Data Format - Pixel Delay Select
+	WriteReg(Reg2A_EXHCH,
+		(0b0000 << 4) |		// 4 MSB for dummy pixel insert in horizontal direction
+		(0b00 << 2) |		// HSYNC falling edge delay 2 MSB
+		(0b00 << 0));		// HSYNC rising edge delay 2 MSB
 	//-------------------------------------------------------------------------
 	// Table 3-11. Flashlight Modes
-	//-------------------------------------------------------------------------
-
-	//-------------------------------------------------------------------------
 	// Table 3-12. Xenon Flash Pulse Width Control
 	//-------------------------------------------------------------------------
-
+	WriteReg(RegAC_STR_OPT,
+		(0b0 << 7) |		// Strobe enable
+		(0b0 << 6) |		// R/G/B gain controlled by STR_R/STR_G/STR_B for LED output frame
+		(0b00 << 4) |		// Xenon mode option
+							//  00: 1 row
+							//  01: 2 rows
+							//  10: 3 rows
+							//  11: 4 rows
+		(0b00 << 0));		// Mode select
+							//  00: Xenon
+							//  01: LED 1
+							//  1x: LED 2
+	WriteReg(RegAD_STR_R,
+		0x00);				// R Gain for LED Output Frame
+	WriteReg(RegAE_STR_G,
+		0x00);				// G Gain for LED Output Frame
+	WriteReg(RegAF_STR_B,
+		0x00);				// B Gain for LED Output Frame
+	//-------------------------------------------------------------------------
+	// Table 4-1. Total Gain to Control Bit Correlation
+	//-------------------------------------------------------------------------
+	WriteReg(Reg00_GAIN,	// AGC - Gain control gain setting
+		0x00);				// AGC[7:0]
+	WriteReg(Reg03_VREF,
+		(0b00 << 6) |		// AGC[9:8]
+		((vStop & 0b11) << 2) |	// VREF end low 2 bits (high 8 bits at VSTOP[7:0])
+		((vStart & 0b11) << 0));// VREF start low 2 bits (high 8 bits at VSTART[7:0])
 	//-------------------------------------------------------------------------
 	// Table 4-2. AGC General Controls
 	//-------------------------------------------------------------------------
-
+	WriteReg(Reg14_COM9,
+		(0b010 << 4) |		// Automatic Gain Ceiling
+							//  000: 2x
+							//  001: 4x
+							//  010: 8x
+							//  011: 16x
+							//  100: 32x
+							//  101: 64x
+							//  110: 128x
+							//  111: Not allowedReserved
+		(0b0 << 0));		// Freeze AGC/AEC
 	//-------------------------------------------------------------------------
 	// Table 4-3. ABLC Control Registers
 	//-------------------------------------------------------------------------
-
+	WriteReg(RegB1_ABLC1,
+		(0b1 << 2));		// ABLC enable
+	WriteReg(RegB3_THL_ST,
+		0x82);				// ABLC Target
+	WriteReg(RegB5_THL_DLT,
+		0x20);				// ABLC Stable Range
+	WriteReg(RegBE_AD_CHB,
+		(0b0 << 6) |		// Sign bit
+		(0 << 0));			// Blue channel black level compensation
+	WriteReg(RegBF_AD_CHR,
+		(0b0 << 6) |		// Sign bit
+		(0 << 0));			// Red channel black level compensation
+	WriteReg(RegC0_AD_CHGB,
+		(0b0 << 6) |		// Sign bit
+		(0 << 0));			// Gb channel black level compensation
+	WriteReg(RegC1_AD_CHGR,
+		(0b0 << 6) |		// Sign bit
+		(0 << 0));			// Gr channel black level compensation
 	//-------------------------------------------------------------------------
 	// Table 5-1. White Balance Control Registers
 	//-------------------------------------------------------------------------
-
+	WriteReg(Reg6C_AWBCTR3,
+		0x0a);				// AWB Control 3
+	WriteReg(Reg6D_AWBCTR2,
+		0x55);				// AWB Control 2
+	WriteReg(Reg6E_AWBCTR1,
+		0x11);				// AWB Control 1
+	WriteReg(Reg6F_AWBCTR0,
+		0x9f);				// AWB Control 0
+	WriteReg(Reg01_BLUE,
+		0x80);				// AWB - Blue channel gain setting
+	WriteReg(Reg02_RED,
+		0x80);				// AWB - Red channel gain setting
+	WriteReg(Reg6A_GGAIN,
+		0x00);				// AWB - Green channel gain setting
+	WriteReg(Reg5F_B_LMT,
+		0x00);				// AWB Blue Gain Range
+	WriteReg(Reg60_R_LMT,
+		0x00);				// AWB Red Gain Range
+	WriteReg(Reg61_G_LMT,
+		0x00);				// AWB Green Gain Range
+	WriteReg(Reg69_GFIX,
+		(0b01 < 6) |		// Fix gain for Gr channel
+							//  00: 1x
+							//  01: 1.25x
+							//  10: 1.5x
+							//  11: 1.75x
+		(0b01 < 6) |		// Fix gain for Gb channel
+							//  00: 1x
+							//  01: 1.25x
+							//  10: 1.5x
+							//  11: 1.75x
+		(0b11 < 6) |		// Fix gain for Red channel
+							//  00: 1x
+							//  01: 1.25x
+							//  10: 1.5x
+							//  11: 1.75x
+		(0b01 < 6));		// Fix gain for Blue channel
+							//  00: 1x
+							//  01: 1.25x
+							//  10: 1.5x
+							//  11: 1.75x
 	//-------------------------------------------------------------------------
 	// Table 5-2. AWB Control Registers
 	//-------------------------------------------------------------------------
-
+	//WriteReg(Reg43_AWBC1,
+	//	0x14);				// Reserved
+	//WriteReg(Reg44_AWBC2,
+	//	0xf0);				// Reserved
+	//WriteReg(Reg45_AWBC3,
+	//	0x34);				// Reserved
+	//WriteReg(Reg46_AWBC4,
+	//	0x58);				// Reserved
+	//WriteReg(Reg47_AWBC5,
+	//	0x28);				// Reserved
+	//WriteReg(Reg48_AWBC6,
+	//	0x3a);				// Reserved
+	//WriteReg(Reg59_AWBC7,
+	//	0x00);
+	//WriteReg(Reg5A_AWBC8,
+	//	0x00);
+	//WriteReg(Reg5B_AWBC9,
+	//	0x00);
+	//WriteReg(Reg5C_AWBC10,
+	//	0x00);
+	//WriteReg(Reg5D_AWBC11,
+	//	0x00);
+	//WriteReg(Reg5E_AWBC12,
+	//	0x00);
 	//-------------------------------------------------------------------------
 	// Table 5-3. Gamma Related Registers and Parameters
 	//-------------------------------------------------------------------------
@@ -1001,11 +1117,17 @@ void OV7670::SetupParam()
 	WriteReg(Reg54_MTX6,
 		0x40);				// Matrix Coefficient 6
 	WriteReg(Reg58_MTXS,
-		(0b0 << 7) |		// Auto contrast center enable
+		(0b0 << 7) |		// Auto contrast center enable (see Table 5-9)
+							//  0: Center luminance leve is set manually using register CONTRAS_CENTER (0x57)
+							//  1: Center luminance leve is adjusted automatically and saved in register CONTRAS_CENTER (0x57)
 		(0b011110 << 0));	// Matrix coeffieicnt sign
 	WriteReg(Reg41_COM16,
 		(0b0 << 5) |		// Enable edge enhancement threshold auto-adjustment (see Table 5-5)
+							//  0: Manual mode, sharpness is set by register EDGE (0x3F)
+							//  1: Automatic mode, sharpness is adjusted automatically and saved in register EDGE (0x3F)
 		(0b0 << 4) |		// De-noise threshold auto-adjustment (see Table 5-6)
+							//  0: Manual mode, de-noise strength is set by register DNSTH (0x4C)
+							//  1: Automatic mode, de-noise strength is adjusted automatically and saved in register DNSTH (0x4C)
 		(0b0 << 3) |		// AWB gain enable
 		(0b0 << 1));		// Color matrix coefficient double option
 	//-------------------------------------------------------------------------
@@ -1017,7 +1139,11 @@ void OV7670::SetupParam()
 		(0b00101 << 0));	// Edge enhancement lower limit
 	WriteReg(Reg76,
 		(0b1 << 7) |		// Black pixel correction enable
+							//  0: Disable
+							//  1: Enable
 		(0b1 << 6) |		// White pixel correction enable
+							//  0: Disable
+							//  1: Enable
 		(0b00001 << 0));	// Edge enhancement upper limit
 	//-------------------------------------------------------------------------
 	// Table 5-6. De-Noise Related Registers and Parameters
@@ -1030,34 +1156,77 @@ void OV7670::SetupParam()
 	// Table 5-7. Auto Color Saturation Adjustment Related Registers
 	//-------------------------------------------------------------------------
 	WriteReg(RegC9_SATCTR,
-		0x60);
+		(0b1100 << 4) |		// UV Saturation control min
+		(0b0000 << 0));		// UV saturation control result
 	//-------------------------------------------------------------------------
-	WriteReg(Reg00_GAIN,
-		0x00);				// AGC - Gain control gain setting
+	// Table 5-8. Lens Shading Correction Registers and Parameters
+	//-------------------------------------------------------------------------
+	WriteReg(Reg62_LCC1,	// X Coordinate of Lens Correction Center Relative to Array Center
+		0x00);				// Lens Correction Option 1
+	WriteReg(Reg63_LCC2,	// Y Coordinate of Lens Correction Center Relative to Array Center
+		0x00);				// Lens Correction Option 2
+	WriteReg(Reg64_LCC3,	// G Channel Compensation Coefficient when LCC5 (0x66) is 1
+		0x04);				// Lens Correction Option 3
+	WriteReg(Reg65_LCC4,	// Radius of the circular section where no compensation is applied
+		0x20);				// Lens Correction Option 4
+	WriteReg(Reg66_LCC5,	// Lens Correction Control
+		(0b1 << 2) |		// Lens Correction control select
+							//  0: Apply same coefficient to R, G, and B channels
+							//  1: Apply different coefficients to R, G, and B channels
+		(0b1 << 0));		// Lens correction enable
+							//  0: Disable lens correction function
+							//  1: Enable lens correction function
+	WriteReg(Reg94_LCC6,
+		0x04);				// B Channel Compensation Coefficient when LCC5 (0x66) is 1
+	WriteReg(Reg95_LCC7,
+		0x08);				// R Channel Compensation Coefficient when LCC5 (0x66) is 1
+	//-------------------------------------------------------------------------
+	// Table 5-9. Brightness and Contrast Related Registers
+	//-------------------------------------------------------------------------
+	WriteReg(Reg55_BRIGHT,
+		0x00);				// Brightness control
+	WriteReg(Reg56_CONTRAS,
+		0x40);				// Contrast control
+	WriteReg(Reg57_CONTRAS_CENTER,
+		0x80);				// Contrast center control
+	//-------------------------------------------------------------------------
+	// Table 6-1. Image Scaling Control Related Registers and Parameters
+	//-------------------------------------------------------------------------
+	WriteReg(Reg74,
+		(0b1 << 4) |		// DG_Manu
+		(0b01 << 0));		// Digital gain manual control
+	//-------------------------------------------------------------------------
+	// Table 6-2. Down Samling Control Related Registers and Parameters
+	//-------------------------------------------------------------------------
+
+
+	//-------------------------------------------------------------------------
+	// Table 6-4. Windowing Control Registers
+	//-------------------------------------------------------------------------
+	WriteReg(Reg17_HSTART,
+		static_cast<uint8_t>(hStart >> 3));
+	WriteReg(Reg18_HSTOP,
+		static_cast<uint8_t>(hStop >> 3));
+	WriteReg(Reg32_HREF,
+		static_cast<uint8_t>((0b10 << 6) | ((hStop & 0b111) << 3) |((hStart & 0b111) << 0)));
+	WriteReg(Reg19_VSTRT,
+		static_cast<uint8_t>(vStart >> 2));
+	WriteReg(Reg1A_VSTOP,
+		static_cast<uint8_t>(vStop >> 2));
+	// (Reg03_VREF is set in Table 4-1)
+	//-------------------------------------------------------------------------
+	// Table 7-1. Output Drive Current
+	//-------------------------------------------------------------------------
 	WriteReg(Reg09_COM2,
 		(0b0 << 4) |		// Soft sleep mode
+							//  0: Disable standby mode
+							//  1: Enable standby mode
 		(0b00 << 0));		// Output drive capability
-	WriteReg(Reg14_COM9,
-		(0b010 << 4) |		// Automatic Gain Ceiling
-		(0b0 << 0));		// Freeze AGC/AEC
-	WriteReg(RegA5_BD50MAX,
-		0x05);				// 50Hz Banding Step Limit
-	WriteReg(RegAB_BD60MAX,
-		0x07);				// 60Hz Banding Step Limit
-	WriteReg(Reg9F_HAECC1,
-		0x78);				// Histogram-based AEC/AGC Control 1
-	WriteReg(RegA0_HAECC2,
-		0x68);				// Histogram-based AEC/AGC Control 2
-	WriteReg(RegA6_HAECC3,
-		0xdf);				// Histogram-based AEC/AGC Control 3
-	WriteReg(RegA7_HAECC4,
-		0xdf);				// Histogram-based AEC/AGC Control 4
-	WriteReg(RegA8_HAECC5,
-		0xf0);				// Histogram-based AEC/AGC Control 5
-	WriteReg(RegA9_HAECC6,
-		0x90);				// Histogram-based AEC/AGC Control 6
-	//WriteReg(RegAA_HAECC7,
-	//	0x94);				// Histogram-based AEC/AGC Control 7
+							//  00: 1x IOL/IOH Enable
+							//  01: 2x IOL/IOH Enable
+							//  10: 3x IOL/IOH Enable
+							//  11: 4x IOL/IOH Enable
+	//-------------------------------------------------------------------------
 	WriteReg(Reg0E_COM5,
 		0x61);				// Reserved
 	WriteReg(Reg0F_COM6,
@@ -1074,74 +1243,16 @@ void OV7670::SetupParam()
 		0x01);				// ADC and Analog Common Mode Control (Reserved)
 	WriteReg(Reg39_OFON,
 		0x00);				// ADC Offset Control (Reserved)
-	WriteReg(Reg69_GFIX,
-		(0b01 << 6) |		// Fix gain for Gr Channel
-		(0b01 << 4) |		// Fix gain for Gb Channel
-		(0b11 << 2) |		// Fix gain for R Channel
-		(0b01 << 0));		// Fix gain for B Channel
-	WriteReg(Reg74,
-		(0b1 << 4) |		// DG_Manu
-		(0b01 << 0));		// Digital gain manual control
 	WriteReg(Reg92_DM_LNL,
 		0x00);				// Dummy Line low 8 bits
 	WriteReg(Reg93_DM_LNH,
 		0x00);				// Dummy Line high 8 bits
-	WriteReg(RegB1_ABLC1,
-		(0b1 << 2));		// ABLC enable
-	WriteReg(RegB3_THL_ST,
-		0x82);				// ABLC Target
-	WriteReg(Reg43_AWBC1,
-		0x14);				// Reserved
-	WriteReg(Reg44_AWBC2,
-		0xf0);				// Reserved
-	WriteReg(Reg45_AWBC3,
-		0x34);				// Reserved
-	WriteReg(Reg46_AWBC4,
-		0x58);				// Reserved
-	WriteReg(Reg47_AWBC5,
-		0x28);				// Reserved
-	WriteReg(Reg48_AWBC6,
-		0x3a);				// Reserved
-	WriteReg(Reg62_LCC1,
-		0x00);				// Lens Correction Option 1
-	WriteReg(Reg63_LCC2,
-		0x00);				// Lens Correction Option 2
-	WriteReg(Reg64_LCC3,
-		0x04);				// Lens Correction Option 3
-	WriteReg(Reg65_LCC4,
-		0x20);				// Lens Correction Option 4
-	WriteReg(Reg66_LCC5,
-		(0b1 << 2) |		// Lens Correction control select
-		(0b1 << 0));		// Lens correction enable
-	WriteReg(Reg94_LCC6,
-		0x04);				// Lens Correction Option 6
-	WriteReg(Reg95_LCC7,
-		0x08);				// Lens Correction Option 7
-	WriteReg(Reg6C_AWBCTR3,
-		0x0a);				// AWB Control 3
-	WriteReg(Reg6D_AWBCTR2,
-		0x55);				// AWB Control 2
-	WriteReg(Reg6E_AWBCTR1,
-		0x11);				// AWB Control 1
-	WriteReg(Reg6F_AWBCTR0,
-		0x9f);				// AWB Control 0
-	WriteReg(Reg55_BRIGHT,
-		0x00);				// Brightness control
-	WriteReg(Reg56_CONTRAS,
-		0x40);				// Contrast control
-	WriteReg(Reg57_CONTRAS_CENTER,
-		0x80);				// Contrast center control
 	WriteReg(Reg3D_COM13,
 		(0b0 << 7) |		// Gamma enable
 		(0b1 << 6) |		// UV saturation level - UV auto-adjustment
 		(0b0 << 0));		// UV swap
-	WriteReg(Reg4B_REG4B,
+	WriteReg(Reg4B,
 		(0b1 << 0));		// UV average enable
-	WriteReg(Reg41_COM16,
-		(0b1 << 5) |		// Enable edge enhancement threshold auto-adjustment for YUV output
-		(0b1 << 4) |		// De-noise threshold auto-adjustment
-		(0b1 << 3) |		// AWB gain enable
-		(0b0 << 1));		// Color matrix coefficient double option
 #endif
 }
 
