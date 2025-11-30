@@ -19,10 +19,11 @@ int main()
 {
 	::stdio_init_all();
 	::jxglib_labo_init(false);
-	GPIO16.set_function_I2C0_SDA().pull_up();
-	GPIO17.set_function_I2C0_SCL().pull_up();
-	::i2c_init(i2c0, 100000);
+	//GPIO16.set_function_I2C0_SDA().pull_up();
+	//GPIO17.set_function_I2C0_SCL().pull_up();
+	//::i2c_init(i2c0, 100000);
 	ov7670.Initialize();
+	ov7670.SetupParam();
 	Display::Base& display = Display::GetInstance(0);
 	while (true) {
 		Image& image = ov7670.Capture();

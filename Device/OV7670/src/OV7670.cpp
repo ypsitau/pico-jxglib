@@ -526,10 +526,16 @@ OV7670& OV7670::WriteReg(uint8_t reg, uint8_t value)
 
 uint8_t OV7670::ReadReg(uint8_t reg)
 {
-	::i2c_write_blocking(i2c_, I2CAddr, &reg, 1, true);
+	::i2c_write_blocking(i2c_, I2CAddr, &reg, 1, false);
 	uint8_t value = 0;
 	::i2c_read_blocking(i2c_, I2CAddr, &value, 1, false);
 	return value;
+}
+
+void OV7670::ReadRegs(uint8_t reg, uint8_t values[], int count)
+{
+	::i2c_write_blocking(i2c_, I2CAddr, &reg, 1, false);
+	::i2c_read_blocking(i2c_, I2CAddr, values, count, false);
 }
 
 bool OV7670::Initialize()
@@ -624,7 +630,7 @@ bool OV7670::Initialize()
 		.set_sniff_enable(false)
 		.set_high_priority(false);
 	PWM(pinAssign_.XLK).set_function().set_freq(freq_).set_chan_duty(.5).set_enabled(true);
-	SetupParam();
+	//SetupParam();
 	return true;
 }
 

@@ -45,6 +45,11 @@ ShellCmd(ov7670, "controls OV7670")
 				//	return Result::Error;
 				//}
 			}
+		} else if (::strcasecmp(subcmd, "dump") == 0) {
+			uint8_t data[0xca];
+			ov7670.ReadRegs(0x00, data, sizeof(data));
+			Printable::DumpT dump(tout);
+			dump(data, sizeof(data));
 		} else {
 			terr.Printf("unknown sub command: %s\n", subcmd);
 			return Result::Error;
