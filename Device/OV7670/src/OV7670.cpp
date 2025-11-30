@@ -850,7 +850,7 @@ void OV7670::SetupParam()
 	WriteReg(RegAB_BD60MAX,
 		0x07);				// 60Hz Banding Step Limit
 	WriteReg(Reg3B_COM11,
-		(1 << 3));				// 
+		(1 << 3));			// 
 	//-------------------------------------------------------------------------
 	// Table 3-6. Exposure Control Mode
 	//-------------------------------------------------------------------------
@@ -864,7 +864,7 @@ void OV7670::SetupParam()
 		(0b1 << 2) |		// AGC Enable (see Table 4-2)
 							//  0: Disable AGC function, gain control function is still active
 							//  1: Enable AGC function
-		(0b1 << 1) |		// AWB Enable (see Table 5-1)
+		(0b0 << 1) |		// AWB Enable (see Table 5-1)
 							//  0: Disable AWB, White Balance is in manual mode
 							//  1: Enable AWB, White Balance is auto mode
 		(0b1 << 0));		// AEC Enable (see Table 3-6)
@@ -999,15 +999,22 @@ void OV7670::SetupParam()
 	// Table 5-1. White Balance Control Registers
 	//-------------------------------------------------------------------------
 	WriteReg(Reg6C_AWBCTR3,
-		0x0a);				// AWB Control 3
+		0x02);				// AWB Control 3 0x0a
 	WriteReg(Reg6D_AWBCTR2,
-		0x55);				// AWB Control 2
+		0x55);				// AWB Control 2 0x55
 	WriteReg(Reg6E_AWBCTR1,
-		0x11);				// AWB Control 1
-	WriteReg(Reg6F_AWBCTR0,
-		0x9f);				// AWB Control 0
+		0xc0);				// AWB Control 1 0x11
+	WriteReg(Reg6F_AWBCTR0,	// 0x9a
+		0x90 |
+		(0b1 << 3) |		// 0: AWB Adjusts R and B gain only
+							// 1: AWB Adjusts R, G, and B gains
+		(0b0 << 2) |		// 0: Maximum color gain is 2x
+							// 1: Maximum color gain is 4x
+		(0b1 << 1) |		// 
+		(0b0 << 0));		// 0: Advanced AWB mode
+							// 1: Normal AWB mode
 	WriteReg(Reg01_BLUE,
-		0x80);				// AWB - Blue channel gain setting
+		0xf0);				// AWB - Blue channel gain setting
 	WriteReg(Reg02_RED,
 		0x80);				// AWB - Red channel gain setting
 	WriteReg(Reg6A_GGAIN,
@@ -1069,6 +1076,7 @@ void OV7670::SetupParam()
 	//-------------------------------------------------------------------------
 	// Table 5-3. Gamma Related Registers and Parameters
 	//-------------------------------------------------------------------------
+#if 0
 	WriteReg(Reg7B_GAM1,
 		0x1c);				// Gamma curve 1st Segment Input End Point 0x04 Output Value
 	WriteReg(Reg7C_GAM2,
@@ -1101,9 +1109,24 @@ void OV7670::SetupParam()
 		0xe8);				// Gamma curve 15th Segment Input End Point 0xD0 Output Value
 	WriteReg(Reg7A_SLOP,
 		(256 - 208) * 40 / 30);	// Gamma curve highest segment slope
+#endif
 	//-------------------------------------------------------------------------
 	// Table 5-4. Color Matrix Related Registers and Parameters
 	//-------------------------------------------------------------------------
+#if 0
+	WriteReg(Reg4F_MTX1,
+		0x80);				// Matrix Coefficient 1
+	WriteReg(Reg50_MTX2,
+		0x80);				// Matrix Coefficient 2
+	WriteReg(Reg51_MTX3,
+		0x00);				// Matrix Coefficient 3
+	WriteReg(Reg52_MTX4,
+		0x22);				// Matrix Coefficient 4
+	WriteReg(Reg53_MTX5,
+		0x5e);				// Matrix Coefficient 5
+	WriteReg(Reg54_MTX6,
+		0x80);				// Matrix Coefficient 6
+#else
 	WriteReg(Reg4F_MTX1,
 		0x40);				// Matrix Coefficient 1
 	WriteReg(Reg50_MTX2,
@@ -1116,6 +1139,7 @@ void OV7670::SetupParam()
 		0x29);				// Matrix Coefficient 5
 	WriteReg(Reg54_MTX6,
 		0x40);				// Matrix Coefficient 6
+#endif
 	WriteReg(Reg58_MTXS,
 		(0b0 << 7) |		// Auto contrast center enable (see Table 5-9)
 							//  0: Center luminance leve is set manually using register CONTRAS_CENTER (0x57)
@@ -1128,7 +1152,9 @@ void OV7670::SetupParam()
 		(0b0 << 4) |		// De-noise threshold auto-adjustment (see Table 5-6)
 							//  0: Manual mode, de-noise strength is set by register DNSTH (0x4C)
 							//  1: Automatic mode, de-noise strength is adjusted automatically and saved in register DNSTH (0x4C)
-		(0b0 << 3) |		// AWB gain enable
+		(0b1 << 3) |		// AWB gain enable (see Table 5-1)
+							//  0: Bypass AWB gain
+							//  1: Enable AWB gain
 		(0b0 << 1));		// Color matrix coefficient double option
 	//-------------------------------------------------------------------------
 	// Table 5-5. Sharpness Control Registers
@@ -1231,7 +1257,7 @@ void OV7670::SetupParam()
 		0x61);				// Reserved
 	WriteReg(Reg0F_COM6,
 		(0b0 << 7) |		// Output of optical black line option
-		(0b1 << 1));			// Reset all timing when format changes
+		(0b1 << 1));		// Reset all timing when format changes
 	WriteReg(Reg20_ADCCTR0,
 		(0b0 << 3) |		// ADC range adjustment
 		(0b100 << 0));		// ADC reference adjustment
@@ -1248,7 +1274,7 @@ void OV7670::SetupParam()
 	WriteReg(Reg93_DM_LNH,
 		0x00);				// Dummy Line high 8 bits
 	WriteReg(Reg3D_COM13,
-		(0b0 << 7) |		// Gamma enable
+		(0b1 << 7) |		// Gamma enable
 		(0b1 << 6) |		// UV saturation level - UV auto-adjustment
 		(0b0 << 0));		// UV swap
 	WriteReg(Reg4B,
