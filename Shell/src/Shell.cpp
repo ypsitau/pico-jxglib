@@ -651,6 +651,18 @@ Dict::Entry* Shell::Arg::CreateDictEntry(const char* str)
 	}
 }
 
+bool Shell::Arg::IsBoolTrue(const char* str)
+{
+	return (::strcmp(str, "1") == 0 || ::strcasecmp(str, "true") == 0 ||
+		::strcasecmp(str, "yes") == 0 || ::strcasecmp(str, "on") == 0);
+}
+
+bool Shell::Arg::IsBoolFalse(const char* str)
+{
+	return (::strcmp(str, "0") == 0 || ::strcasecmp(str, "false") == 0 ||
+		::strcasecmp(str, "no") == 0 || ::strcasecmp(str, "off") == 0);
+}
+
 //-----------------------------------------------------------------------------
 // Shell::Arg::Opt
 //-----------------------------------------------------------------------------

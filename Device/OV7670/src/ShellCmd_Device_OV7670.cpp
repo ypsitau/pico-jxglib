@@ -50,6 +50,24 @@ ShellCmd(ov7670, "controls OV7670")
 			ov7670.ReadRegs(0x00, data, sizeof(data));
 			Printable::DumpT dump(tout);
 			dump(data, sizeof(data));
+		} else if (Arg::GetAssigned(subcmd, "color-bar", &value)) {
+			if (Arg::IsBoolTrue(value)) {
+				ov7670.WriteRegBit(Device::OV7670::Reg12_COM7, 1, 0b1);
+			} else if (Arg::IsBoolFalse(value)) {
+				ov7670.WriteRegBit(Device::OV7670::Reg12_COM7, 1, 0b0);
+			} else {
+				terr.Printf("invalid value for color-bar: %s\n", value);
+				return Result::Error;
+			}
+		} else if (Arg::GetAssigned(subcmd, "dsp-color-bar", &value)) {
+			if (Arg::IsBoolTrue(value)) {
+				ov7670.WriteRegBit(Device::OV7670::Reg42_COM17, 3, 0b1);
+			} else if (Arg::IsBoolFalse(value)) {
+				ov7670.WriteRegBit(Device::OV7670::Reg42_COM17, 3, 0b0);
+			} else {
+				terr.Printf("invalid value for dsp-color-bar: %s\n", value);
+				return Result::Error;
+			}
 		} else {
 			terr.Printf("unknown sub command: %s\n", subcmd);
 			return Result::Error;

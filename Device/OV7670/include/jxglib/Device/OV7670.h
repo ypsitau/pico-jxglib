@@ -234,13 +234,17 @@ public:
 	OV7670(Resolution resolution, Format format, i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq = 24000000);
 public:
 	bool Initialize();
-	void SetupParam();
+	void SetupRegisters();
 public:
 	OV7670& WriteReg(uint8_t reg, uint8_t value);
+	OV7670& WriteReg(uint8_t reg, uint8_t mask, uint8_t value);
+	OV7670& WriteRegBit(uint8_t reg, int iBit, uint8_t value) { return WriteReg(reg, (0b1 << iBit), (value << iBit)); }
 	uint8_t ReadReg(uint8_t reg);
 	void ReadRegs(uint8_t reg, uint8_t values[], int count);
 public:
 	Image& Capture();
+public:
+	OV7670& ResetAllRegisters();
 };
 
 }
