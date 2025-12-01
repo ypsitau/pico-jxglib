@@ -614,7 +614,7 @@ void OV7670::SetupRegisters()
 		(0b1 << 2) |		// AGC Enable (see Table 4-2)
 							//  0: Disable AGC function, gain control function is still active
 							//  1: Enable AGC function
-		(0b0 << 1) |		// AWB Enable (see Table 5-1)
+		(0b1 << 1) |		// AWB Enable (see Table 5-1)
 							//  0: Disable AWB, White Balance is in manual mode
 							//  1: Enable AWB, White Balance is auto mode
 		(0b1 << 0));		// AEC Enable (see Table 3-6)
@@ -767,17 +767,20 @@ void OV7670::SetupRegisters()
 		(0b0 << 0));		// 0: Advanced AWB mode
 							// 1: Normal AWB mode
 	WriteReg(Reg01_BLUE,
-		0xf0);				// AWB - Blue channel gain setting
+		0x80);				// AWB - Blue channel gain setting
 	WriteReg(Reg02_RED,
 		0x80);				// AWB - Red channel gain setting
 	WriteReg(Reg6A_GGAIN,
 		0x00);				// AWB - Green channel gain setting
-	WriteReg(Reg5F_B_LMT,
-		0x00);				// AWB Blue Gain Range
-	WriteReg(Reg60_R_LMT,
-		0x00);				// AWB Red Gain Range
-	WriteReg(Reg61_G_LMT,
-		0x00);				// AWB Green Gain Range
+	WriteReg(Reg5F_B_LMT,	// AWB Blue Gain Range
+		(0xf << 4) |
+		(0x0 << 0));
+	WriteReg(Reg60_R_LMT,	// AWB Red Gain Range
+		(0xf << 4) |
+		(0x0 << 0));
+	WriteReg(Reg61_G_LMT,	// AWB Green Gain Range
+		(0xf << 4) |
+		(0x0 << 0));
 	WriteReg(Reg69_GFIX,
 		(0b01 < 6) |		// Fix gain for Gr channel
 							//  00: 1x
@@ -802,30 +805,30 @@ void OV7670::SetupRegisters()
 	//-------------------------------------------------------------------------
 	// Table 5-2. AWB Control Registers
 	//-------------------------------------------------------------------------
-	//WriteReg(Reg43_AWBC1,
-	//	0x14);				// Reserved
-	//WriteReg(Reg44_AWBC2,
-	//	0xf0);				// Reserved
-	//WriteReg(Reg45_AWBC3,
-	//	0x34);				// Reserved
-	//WriteReg(Reg46_AWBC4,
-	//	0x58);				// Reserved
-	//WriteReg(Reg47_AWBC5,
-	//	0x28);				// Reserved
-	//WriteReg(Reg48_AWBC6,
-	//	0x3a);				// Reserved
-	//WriteReg(Reg59_AWBC7,
-	//	0x00);
-	//WriteReg(Reg5A_AWBC8,
-	//	0x00);
-	//WriteReg(Reg5B_AWBC9,
-	//	0x00);
-	//WriteReg(Reg5C_AWBC10,
-	//	0x00);
-	//WriteReg(Reg5D_AWBC11,
-	//	0x00);
-	//WriteReg(Reg5E_AWBC12,
-	//	0x00);
+	WriteReg(Reg43_AWBC1,
+		0x14);				// Reserved
+	WriteReg(Reg44_AWBC2,
+		0xf0);				// Reserved
+	WriteReg(Reg45_AWBC3,
+		0x45);				// Reserved
+	WriteReg(Reg46_AWBC4,
+		0x61);				// Reserved
+	WriteReg(Reg47_AWBC5,
+		0x51);				// Reserved
+	WriteReg(Reg48_AWBC6,
+		0x79);				// Reserved
+	WriteReg(Reg59_AWBC7,
+		0x00);
+	WriteReg(Reg5A_AWBC8,
+		0x00);
+	WriteReg(Reg5B_AWBC9,
+		0x01);
+	WriteReg(Reg5C_AWBC10,
+		0x00);
+	WriteReg(Reg5D_AWBC11,
+		0x00);
+	WriteReg(Reg5E_AWBC12,
+		0x00);
 	//-------------------------------------------------------------------------
 	// Table 5-3. Gamma Related Registers and Parameters
 	//-------------------------------------------------------------------------

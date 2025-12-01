@@ -20,15 +20,12 @@ int main()
 	::stdio_init_all();
 	::jxglib_labo_init(true);
 	ov7670.Initialize();
-	//ov7670.SetupRegisters();
-
-	ov7670.ResetAllRegisters();
-
-	//ov7670.WriteReg(0x12, (1 << 1));
-
+	ov7670.SetupRegisters();
+	//ov7670.ResetAllRegisters();
 	Display::Base& display = Display::GetInstance(0);
 	while (true) {
 		Image& image = ov7670.Capture();
+#if 0
 		uint8_t* p = image.GetPointer();
 		for (int i = 0; i < image.GetBytesBuff(); i += 4, p += 4) {
 			uint8_t y1 = p[0];
@@ -54,7 +51,7 @@ int main()
 				*reinterpret_cast<uint16_t*>(p + 2) = ColorRGB565(r, g, b);
 			} while (0);
 		}
-
+#endif
 		display.DrawImage(
 			(display.GetWidth() - image.GetWidth()) / 2,
 			(display.GetHeight() - image.GetHeight()) / 2, image);

@@ -68,9 +68,29 @@ ShellCmd(ov7670, "controls OV7670")
 			Printable::DumpT dump(tout);
 			dump(data, sizeof(data));
 		} else if (
-				ModifyRegBit(subcmd, "ccir656", Device::OV7670::Reg04_COM1, 6) ||
-				ModifyRegBit(subcmd, "color-bar", Device::OV7670::Reg12_COM7, 1) ||
-				ModifyRegBit(subcmd, "dsp-color-bar", Device::OV7670::Reg42_COM17, 3)) {
+				ModifyRegBit(subcmd, "ccir656",					Device::OV7670::Reg04_COM1,		6) ||
+				ModifyRegBit(subcmd, "scale",					Device::OV7670::Reg0C_COM3,		3) ||
+				ModifyRegBit(subcmd, "dcw",						Device::OV7670::Reg0C_COM3,		2) ||
+				ModifyRegBit(subcmd, "color-bar",				Device::OV7670::Reg12_COM7,		1) ||
+				ModifyRegBit(subcmd, "agc",						Device::OV7670::Reg13_COM8,		2) ||
+				ModifyRegBit(subcmd, "awb",						Device::OV7670::Reg13_COM8,		1) ||
+				ModifyRegBit(subcmd, "aec",						Device::OV7670::Reg13_COM8,		0) ||
+				ModifyRegBit(subcmd, "mirror",					Device::OV7670::Reg1E_MVFP,		5) ||
+				ModifyRegBit(subcmd, "vflip",					Device::OV7670::Reg1E_MVFP,		4) ||
+				ModifyRegBit(subcmd, "black-sun",				Device::OV7670::Reg1E_MVFP,		2) ||
+				ModifyRegBit(subcmd, "negative-image",			Device::OV7670::Reg3A_TSLB,		5) ||
+				ModifyRegBit(subcmd, "auto-output-window",		Device::OV7670::Reg3A_TSLB,		0) ||
+				ModifyRegBit(subcmd, "night-mode",				Device::OV7670::Reg3B_COM11,	7) ||
+				ModifyRegBit(subcmd, "d56-auto-detection",		Device::OV7670::Reg3B_COM11,	4) ||
+				ModifyRegBit(subcmd, "edge-enhancement-threshold-auto-adjustment",	Device::OV7670::Reg41_COM16,	5) ||
+				ModifyRegBit(subcmd, "denoise-threshold-auto-adjustment",			Device::OV7670::Reg41_COM16,	4) ||
+				ModifyRegBit(subcmd, "dsp-color-bar",			Device::OV7670::Reg42_COM17,	3) ||
+				ModifyRegBit(subcmd, "auto-contrast-center",	Device::OV7670::Reg58_MTXS,		7) ||
+				ModifyRegBit(subcmd, "lens-correction",			Device::OV7670::Reg66_LCC5,		2) ||
+				ModifyRegBit(subcmd, "black-pixel-correction",	Device::OV7670::Reg76,			7) ||
+				ModifyRegBit(subcmd, "white-pixel-correction",	Device::OV7670::Reg76,			6) ||
+				ModifyRegBit(subcmd, "rgb444",					Device::OV7670::Reg8C_RGB444,	1) ||
+				ModifyRegBit(subcmd, "ablc",					Device::OV7670::RegB1_ABLC1,	2)) {
 			if (errorFlag) return Result::Error;
 		} else {
 			terr.Printf("unknown sub command: %s\n", subcmd);
