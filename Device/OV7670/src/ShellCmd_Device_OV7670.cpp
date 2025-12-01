@@ -9,6 +9,24 @@ namespace jxglib::ShellCmd_Device_OV7670 {
 
 ShellCmd(ov7670, "controls OV7670")
 {
+	Device::OV7670& ov7670 = ShellCmd_Device_OV7670_GetOV7670();
+	bool errorFlag = false;
+	auto ModifyRegBit = [&](const char* subcmd, const char* name, int reg, int iBit) -> bool {
+		const char* value = nullptr;
+		if (!Shell::Arg::GetAssigned(subcmd, name, &value)) {
+			return false;
+		} else if (!value) {
+			tout.Printf("%s:%s\n", name, ov7670.ReadRegBit(reg, iBit)? "on" : "off");
+		} else if (Shell::Arg::IsBoolTrue(value)) {
+			ov7670.WriteRegBit(reg, iBit, 0b1);
+		} else if (Shell::Arg::IsBoolFalse(value)) {
+			ov7670.WriteRegBit(reg, iBit, 0b0);
+		} else {
+			terr.Printf("invalid value for %s: %s\n", name, value);
+			errorFlag = true;
+		}
+		return true;
+	};
 	static const Arg::Opt optTbl[] = {
 		Arg::OptBool("help",		'h',	"prints this help"),
 	};
@@ -27,7 +45,6 @@ ShellCmd(ov7670, "controls OV7670")
 		terr.Printf("%s\n", each.GetErrorMsg());
 		return Result::Error;
 	}
-	Device::OV7670& ov7670 = ShellCmd_Device_OV7670_GetOV7670();
 	while (const Arg::Subcmd* pSubcmd = each.NextSubcmd()) {
 		const char* subcmd = pSubcmd->GetProc();
 		if (::strcasecmp(subcmd, "setup") == 0) {
@@ -50,24 +67,11 @@ ShellCmd(ov7670, "controls OV7670")
 			ov7670.ReadRegs(0x00, data, sizeof(data));
 			Printable::DumpT dump(tout);
 			dump(data, sizeof(data));
-		} else if (Arg::GetAssigned(subcmd, "color-bar", &value)) {
-			if (Arg::IsBoolTrue(value)) {
-				ov7670.WriteRegBit(Device::OV7670::Reg12_COM7, 1, 0b1);
-			} else if (Arg::IsBoolFalse(value)) {
-				ov7670.WriteRegBit(Device::OV7670::Reg12_COM7, 1, 0b0);
-			} else {
-				terr.Printf("invalid value for color-bar: %s\n", value);
-				return Result::Error;
-			}
-		} else if (Arg::GetAssigned(subcmd, "dsp-color-bar", &value)) {
-			if (Arg::IsBoolTrue(value)) {
-				ov7670.WriteRegBit(Device::OV7670::Reg42_COM17, 3, 0b1);
-			} else if (Arg::IsBoolFalse(value)) {
-				ov7670.WriteRegBit(Device::OV7670::Reg42_COM17, 3, 0b0);
-			} else {
-				terr.Printf("invalid value for dsp-color-bar: %s\n", value);
-				return Result::Error;
-			}
+		} else if (
+				ModifyRegBit(subcmd, "ccir656", Device::OV7670::Reg04_COM1, 6) ||
+				ModifyRegBit(subcmd, "color-bar", Device::OV7670::Reg12_COM7, 1) ||
+				ModifyRegBit(subcmd, "dsp-color-bar", Device::OV7670::Reg42_COM17, 3)) {
+			if (errorFlag) return Result::Error;
 		} else {
 			terr.Printf("unknown sub command: %s\n", subcmd);
 			return Result::Error;
