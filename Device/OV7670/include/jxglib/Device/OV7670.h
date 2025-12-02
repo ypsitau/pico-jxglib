@@ -193,6 +193,7 @@ public:
 	static const uint8_t RegAD_STR_R				= 0xad;
 	static const uint8_t RegAE_STR_G				= 0xae;
 	static const uint8_t RegAF_STR_B				= 0xaf;
+	static const uint8_t RegB0						= 0xb0;
 	static const uint8_t RegB1_ABLC1				= 0xb1;
 	static const uint8_t RegB3_THL_ST				= 0xb3;
 	static const uint8_t RegB5_THL_DLT				= 0xb5;

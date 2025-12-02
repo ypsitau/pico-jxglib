@@ -873,9 +873,12 @@ void OV7670::SetupRegisters()
 	WriteReg(Reg4B,
 		(0b1 << 0));		// UV average enable
 	//-------------------------------------------------------------------------
+	// Undocumented, but VERY IMPORTANT to capture colors!
+	//-------------------------------------------------------------------------
+	WriteReg(RegB0, 0x84);
+	//-------------------------------------------------------------------------
 	// Table 5-4. Color Matrix Related Registers and Parameters
 	//-------------------------------------------------------------------------
-#if 0
 	WriteReg(Reg4F_MTX1,
 		0x80);				// Matrix Coefficient 1
 	WriteReg(Reg50_MTX2,
@@ -888,20 +891,6 @@ void OV7670::SetupRegisters()
 		0x5e);				// Matrix Coefficient 5
 	WriteReg(Reg54_MTX6,
 		0x80);				// Matrix Coefficient 6
-#else
-	WriteReg(Reg4F_MTX1,
-		0x40);				// Matrix Coefficient 1
-	WriteReg(Reg50_MTX2,
-		0x34);				// Matrix Coefficient 2
-	WriteReg(Reg51_MTX3,
-		0x0c);				// Matrix Coefficient 3
-	WriteReg(Reg52_MTX4,
-		0x17);				// Matrix Coefficient 4
-	WriteReg(Reg53_MTX5,
-		0x29);				// Matrix Coefficient 5
-	WriteReg(Reg54_MTX6,
-		0x40);				// Matrix Coefficient 6
-#endif
 	WriteReg(Reg58_MTXS,
 		(0b0 << 7) |		// Auto contrast center enable (see Table 5-9)
 							//  0: Center luminance leve is set manually using register CONTRAS_CENTER (0x57)
