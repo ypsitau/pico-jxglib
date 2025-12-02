@@ -92,6 +92,31 @@ ShellCmd(ov7670, "controls OV7670")
 				ModifyRegBit(subcmd, "rgb444",					Device::OV7670::Reg8C_RGB444,	1) ||
 				ModifyRegBit(subcmd, "ablc",					Device::OV7670::RegB1_ABLC1,	2)) {
 			if (errorFlag) return Result::Error;
+		} else if (Arg::GetAssigned(subcmd, "brightness", &value)) {
+			if (!value) {
+				int8_t num = static_cast<int8_t>(ov7670.ReadReg(Device::OV7670::Reg55_BRIGHT));
+				tout.Printf("brightness:%s%d\n", (num & (0b1 << 7))? "-" : "", num & 0x7f);
+			} else {
+				int num = ::strtol(value, nullptr, 0);
+				if (num < -127 || num > 127) {
+					terr.Printf("invalid brightness value: %s\n", value);
+					return Result::Error;
+				}
+				ov7670.WriteReg(Device::OV7670::Reg55_BRIGHT,
+					(num < 0)? ((0b1 << 7) | static_cast<uint8_t>(-num)) : static_cast<uint8_t>(num));
+			}
+		} else if (Arg::GetAssigned(subcmd, "contrast", &value)) {
+			if (!value) {
+				uint8_t num = ov7670.ReadReg(Device::OV7670::Reg56_CONTRAS);
+				tout.Printf("contrast:%u\n", num);
+			} else {
+				int num = ::strtol(value, nullptr, 0);
+				if (num < 0 || num > 255) {
+					terr.Printf("invalid contrast value: %s\n", value);
+					return Result::Error;
+				}
+				ov7670.WriteReg(Device::OV7670::Reg56_CONTRAS, static_cast<uint8_t>(num));
+			}
 		} else {
 			terr.Printf("unknown sub command: %s\n", subcmd);
 			return Result::Error;

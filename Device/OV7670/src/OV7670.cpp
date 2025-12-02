@@ -911,7 +911,7 @@ void OV7670::SetupRegisters()
 	// Table 5-5. Sharpness Control Registers
 	//-------------------------------------------------------------------------
 	WriteReg(Reg3F_EDGE,
-		(0b00000 << 0));	// Edge enhancement factor
+		(0 << 0));			// Edge enhancement factor (0-31)
 	WriteReg(Reg75,
 		(0b00101 << 0));	// Edge enhancement lower limit
 	WriteReg(Reg76,
@@ -921,20 +921,20 @@ void OV7670::SetupRegisters()
 		(0b1 << 6) |		// White pixel correction enable
 							//  0: Disable
 							//  1: Enable
-		(0b00001 << 0));	// Edge enhancement upper limit
+		(1 << 0));			// Edge enhancement upper limit (0-31)
 	//-------------------------------------------------------------------------
 	// Table 5-6. De-Noise Related Registers and Parameters
 	//-------------------------------------------------------------------------
 	WriteReg(Reg4C_DNSTH,
-		0x00);				// De-noise Strength
+		0);					// De-noise Strength
 	WriteReg(Reg77,
-		0x01);				// De-noise offset
+		1);					// De-noise offset
 	//-------------------------------------------------------------------------
 	// Table 5-7. Auto Color Saturation Adjustment Related Registers
 	//-------------------------------------------------------------------------
 	WriteReg(RegC9_SATCTR,
-		(0b1100 << 4) |		// UV Saturation control min
-		(0b0000 << 0));		// UV saturation control result
+		(12 << 4) |			// UV Saturation control min (0-15)
+		(0 << 0));			// UV saturation control result (0-15)
 	//-------------------------------------------------------------------------
 	// Table 5-8. Lens Shading Correction Registers and Parameters
 	//-------------------------------------------------------------------------
@@ -961,7 +961,7 @@ void OV7670::SetupRegisters()
 	// Table 5-9. Brightness and Contrast Related Registers
 	//-------------------------------------------------------------------------
 	WriteReg(Reg55_BRIGHT,
-		(0b0 << 0) |		// Sign bit
+		(0b0 << 7) |		// Brightness control sign bit
 							//  0: Positive
 							//  1: Negative
 		(0 << 0));			// Brightness control (0-127)
