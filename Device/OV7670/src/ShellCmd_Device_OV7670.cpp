@@ -179,6 +179,60 @@ ShellCmd(ov7670, "controls OV7670")
 				}
 				ov7670.WriteReg(Device::OV7670::Reg77, static_cast<uint8_t>(num));
 			}
+		} else if (Arg::GetAssigned(subcmd, "awb-blue", &value)) {
+			if (!value) {
+				uint8_t num = ov7670.ReadReg(Device::OV7670::Reg01_BLUE);
+				tout.Printf("awb-blue:%u\n", num);
+			} else {
+				int num = ::strtol(value, nullptr, 0);
+				if (num < 0 || num > 255) {
+					terr.Printf("invalid awb-blue value: %s\n", value);
+					return Result::Error;
+				}
+				ov7670.WriteReg(Device::OV7670::Reg01_BLUE, static_cast<uint8_t>(num));
+			}
+		} else if (Arg::GetAssigned(subcmd, "awb-red", &value)) {
+			if (!value) {
+				uint8_t num = ov7670.ReadReg(Device::OV7670::Reg02_RED);
+				tout.Printf("awb-red:%u\n", num);
+			} else {
+				int num = ::strtol(value, nullptr, 0);
+				if (num < 0 || num > 255) {
+					terr.Printf("invalid awb-red value: %s\n", value);
+					return Result::Error;
+				}
+				ov7670.WriteReg(Device::OV7670::Reg02_RED, static_cast<uint8_t>(num));
+			}
+		} else if (Arg::GetAssigned(subcmd, "awb-green", &value)) {
+			if (!value) {
+				uint8_t num = ov7670.ReadReg(Device::OV7670::Reg6A_GGAIN);
+				tout.Printf("awb-green:%u\n", num);
+			} else {
+				int num = ::strtol(value, nullptr, 0);
+				if (num < 0 || num > 255) {
+					terr.Printf("invalid awb-green value: %s\n", value);
+					return Result::Error;
+				}
+				ov7670.WriteReg(Device::OV7670::Reg6A_GGAIN, static_cast<uint8_t>(num));
+			}
+		} else if (Arg::GetAssigned(subcmd, "exposure", &value)) {
+			if (!value) {
+				uint8_t high = ov7670.ReadReg(Device::OV7670::Reg07_AECHH);
+				uint8_t low = ov7670.ReadReg(Device::OV7670::Reg10_AECH);
+				uint16_t exposure = (static_cast<uint16_t>(high) << 10) | (static_cast<uint16_t>(low) << 2) |
+					(ov7670.ReadReg(Device::OV7670::Reg04_COM1) & 0b11);
+				tout.Printf("exposure:%u\n", exposure);
+			} else {
+				int num = ::strtol(value, nullptr, 0);
+				if (num < 0 || num > 65535) {
+					terr.Printf("invalid exposure value: %s\n", value);
+					return Result::Error;
+				}
+				ov7670.WriteReg(Device::OV7670::Reg07_AECHH, static_cast<uint8_t>((num >> 10) & 0xff));
+				ov7670.WriteReg(Device::OV7670::Reg10_AECH, static_cast<uint8_t>((num >> 2) & 0xff));
+				ov7670.WriteReg(Device::OV7670::Reg04_COM1,
+					(ov7670.ReadReg(Device::OV7670::Reg04_COM1) & 0b11111100) | static_cast<uint8_t>(num & 0b11));
+			}
 		} else {
 			terr.Printf("unknown sub command: %s\n", subcmd);
 			return Result::Error;

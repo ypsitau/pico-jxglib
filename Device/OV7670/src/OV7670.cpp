@@ -585,20 +585,20 @@ void OV7670::SetupRegisters()
 	//WriteReg(OV7670_REG_BD50MAX, 0x05);
 	//WriteReg(OV7670_REG_BD60MAX, 0x07);
 	WriteReg(Reg07_AECHH,
-		0x00);				// 
+		0x00);				// Exposure time [15:10]
 	WriteReg(Reg10_AECH,
-		0x00);				// 
+		0x00);				// Exposure time [9:2]
 	WriteReg(Reg04_COM1,
 		(0b0 << 6) |		// CCIR656 format
-		(0b00 << 0));		// AEC[1:0]
+		(0b00 << 0));		// Exposure time [1:0]
 	WriteReg(Reg9D_BD50ST,
 		0x99);				// 
 	WriteReg(Reg9E_BD60ST,
 		0x7f);				// 
 	WriteReg(RegA5_BD50MAX,
-		0x05);				// 50Hz Banding Step Limit
+		5);					// 50Hz Banding Step Limit (0-255)
 	WriteReg(RegAB_BD60MAX,
-		0x07);				// 60Hz Banding Step Limit
+		7);					// 60Hz Banding Step Limit (0-255)
 	WriteReg(Reg3B_COM11,
 		(1 << 3));			// 
 	//-------------------------------------------------------------------------
@@ -752,12 +752,12 @@ void OV7670::SetupRegisters()
 	// Table 5-1. White Balance Control Registers
 	//-------------------------------------------------------------------------
 	WriteReg(Reg6C_AWBCTR3,
-		0x02);				// AWB Control 3 0x0a
+		0x0a);				// AWB Control 3 (magic number)
 	WriteReg(Reg6D_AWBCTR2,
-		0x55);				// AWB Control 2 0x55
+		0x55);				// AWB Control 2 (magic number)
 	WriteReg(Reg6E_AWBCTR1,
-		0xc0);				// AWB Control 1 0x11
-	WriteReg(Reg6F_AWBCTR0,	// 0x9a
+		0x11);				// AWB Control 1 (magic number)
+	WriteReg(Reg6F_AWBCTR0,
 		0x90 |
 		(0b1 << 3) |		// 0: AWB Adjusts R and B gain only
 							// 1: AWB Adjusts R, G, and B gains
@@ -773,14 +773,14 @@ void OV7670::SetupRegisters()
 	WriteReg(Reg6A_GGAIN,
 		0x00);				// AWB - Green channel gain setting
 	WriteReg(Reg5F_B_LMT,	// AWB Blue Gain Range
-		(0xf << 4) |
-		(0x0 << 0));
+		(15 << 4) |			// Max Blue gain (0-15)
+		(0 << 0));			// Min Blue gain (0-15)
 	WriteReg(Reg60_R_LMT,	// AWB Red Gain Range
-		(0xf << 4) |
-		(0x0 << 0));
+		(15 << 4) |			// Max Red gain (0-15)
+		(0 << 0));			// Min Red gain (0-15)
 	WriteReg(Reg61_G_LMT,	// AWB Green Gain Range
-		(0xf << 4) |
-		(0x0 << 0));
+		(15 << 4) |			// Max Green gain (0-15)
+		(0 << 0));			// Min Green gain (0-15)
 	WriteReg(Reg69_GFIX,
 		(0b01 < 6) |		// Fix gain for Gr channel
 							//  00: 1x
