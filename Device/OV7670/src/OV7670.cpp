@@ -832,7 +832,8 @@ void OV7670::SetupRegisters()
 	//-------------------------------------------------------------------------
 	// Table 5-3. Gamma Related Registers and Parameters
 	//-------------------------------------------------------------------------
-#if 0
+	WriteReg(Reg7A_SLOP,
+		0x20);				// Gamma curve highest segment slope
 	WriteReg(Reg7B_GAM1,
 		0x1c);				// Gamma curve 1st Segment Input End Point 0x04 Output Value
 	WriteReg(Reg7C_GAM2,
@@ -863,9 +864,6 @@ void OV7670::SetupRegisters()
 		0xd7);				// Gamma curve 14th Segment Input End Point 0xB0 Output Value
 	WriteReg(Reg89_GAM15,
 		0xe8);				// Gamma curve 15th Segment Input End Point 0xD0 Output Value
-	WriteReg(Reg7A_SLOP,
-		(256 - 208) * 40 / 30);	// Gamma curve highest segment slope
-#endif
 	WriteReg(Reg3D_COM13,
 		(0b1 << 7) |		// Gamma enable
 		(0b1 << 6) |		// UV saturation level - UV auto-adjustment
@@ -913,7 +911,8 @@ void OV7670::SetupRegisters()
 	WriteReg(Reg3F_EDGE,
 		(0 << 0));			// Edge enhancement factor (0-31)
 	WriteReg(Reg75,
-		(0b00101 << 0));	// Edge enhancement lower limit
+		(15 << 0));			// Edge enhancement higher limit (0-31, effective in automatic mode)
+							// (the description in the register set is wrong)
 	WriteReg(Reg76,
 		(0b1 << 7) |		// Black pixel correction enable
 							//  0: Disable
@@ -921,14 +920,15 @@ void OV7670::SetupRegisters()
 		(0b1 << 6) |		// White pixel correction enable
 							//  0: Disable
 							//  1: Enable
-		(1 << 0));			// Edge enhancement upper limit (0-31)
+		(1 << 0));			// Edge enhancement lower limit (0-31, effective in automatic mode)
+							// (the description in the register set is wrong)
 	//-------------------------------------------------------------------------
 	// Table 5-6. De-Noise Related Registers and Parameters
 	//-------------------------------------------------------------------------
 	WriteReg(Reg4C_DNSTH,
-		0);					// De-noise Strength
+		0);					// De-noise Strength (0-255)
 	WriteReg(Reg77,
-		1);					// De-noise offset
+		16);				// De-noise offset (0-255, effective in automatic mode)
 	//-------------------------------------------------------------------------
 	// Table 5-7. Auto Color Saturation Adjustment Related Registers
 	//-------------------------------------------------------------------------
@@ -1022,10 +1022,6 @@ void OV7670::SetupRegisters()
 		0x01);				// ADC and Analog Common Mode Control (Reserved)
 	WriteReg(Reg39_OFON,
 		0x00);				// ADC Offset Control (Reserved)
-#if 0
-	WriteReg(Reg0E_COM5,
-		0x61);				// Reserved
-#endif
 }
 
 Image& OV7670::Capture()

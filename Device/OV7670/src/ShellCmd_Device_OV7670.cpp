@@ -82,9 +82,10 @@ ShellCmd(ov7670, "controls OV7670")
 				ModifyRegBit(subcmd, "auto-output-window",		Device::OV7670::Reg3A_TSLB,		0) ||
 				ModifyRegBit(subcmd, "night-mode",				Device::OV7670::Reg3B_COM11,	7) ||
 				ModifyRegBit(subcmd, "d56-auto-detection",		Device::OV7670::Reg3B_COM11,	4) ||
-				ModifyRegBit(subcmd, "edge-enhancement-threshold-auto-adjustment",	Device::OV7670::Reg41_COM16,	5) ||
-				ModifyRegBit(subcmd, "denoise-threshold-auto-adjustment",			Device::OV7670::Reg41_COM16,	4) ||
+				ModifyRegBit(subcmd, "auto-sharpness",			Device::OV7670::Reg41_COM16,	5) ||
+				ModifyRegBit(subcmd, "auto-denoise",			Device::OV7670::Reg41_COM16,	4) ||
 				ModifyRegBit(subcmd, "dsp-color-bar",			Device::OV7670::Reg42_COM17,	3) ||
+				ModifyRegBit(subcmd, "uv-average",				Device::OV7670::Reg4B,			0) ||
 				ModifyRegBit(subcmd, "auto-contrast-center",	Device::OV7670::Reg58_MTXS,		7) ||
 				ModifyRegBit(subcmd, "lens-correction",			Device::OV7670::Reg66_LCC5,		2) ||
 				ModifyRegBit(subcmd, "black-pixel-correction",	Device::OV7670::Reg76,			7) ||
@@ -116,6 +117,67 @@ ShellCmd(ov7670, "controls OV7670")
 					return Result::Error;
 				}
 				ov7670.WriteReg(Device::OV7670::Reg56_CONTRAS, static_cast<uint8_t>(num));
+			}
+		} else if (Arg::GetAssigned(subcmd, "sharpness", &value)) {
+			if (!value) {
+				uint8_t num = ov7670.ReadReg(Device::OV7670::Reg3F_EDGE);
+				tout.Printf("sharpness:%u\n", num & 0x1f);
+			} else {
+				int num = ::strtol(value, nullptr, 0);
+				if (num < 0 || num > 31) {
+					terr.Printf("invalid sharpness value: %s\n", value);
+					return Result::Error;
+				}
+				ov7670.WriteReg(Device::OV7670::Reg3F_EDGE, static_cast<uint8_t>(num & 0x1f));
+			}
+		} else if (Arg::GetAssigned(subcmd, "sharpness-max", &value)) {
+			if (!value) {
+				uint8_t num = ov7670.ReadReg(Device::OV7670::Reg75);
+				tout.Printf("sharpness-max:%u\n", num & 0x1f);
+			} else {
+				int num = ::strtol(value, nullptr, 0);
+				if (num < 0 || num > 31) {
+					terr.Printf("invalid sharpness-max value: %s\n", value);
+					return Result::Error;
+				}
+				ov7670.WriteReg(Device::OV7670::Reg75, static_cast<uint8_t>(num & 0x1f));
+			}
+		} else if (Arg::GetAssigned(subcmd, "sharpness-min", &value)) {
+			if (!value) {
+				uint8_t num = ov7670.ReadReg(Device::OV7670::Reg76);
+				tout.Printf("sharpness-min:%u\n", num & 0x1f);
+			} else {
+				int num = ::strtol(value, nullptr, 0);
+				if (num < 0 || num > 31) {
+					terr.Printf("invalid sharpness-min value: %s\n", value);
+					return Result::Error;
+				}
+				ov7670.WriteReg(Device::OV7670::Reg76,
+					(ov7670.ReadReg(Device::OV7670::Reg76) & 0b11100000) | static_cast<uint8_t>(num & 0x1f));
+			}
+		} else if (Arg::GetAssigned(subcmd, "denoise", &value)) {
+			if (!value) {
+				uint8_t num = ov7670.ReadReg(Device::OV7670::Reg4C_DNSTH);
+				tout.Printf("denoise:%u\n", num);
+			} else {
+				int num = ::strtol(value, nullptr, 0);
+				if (num < 0 || num > 255) {
+					terr.Printf("invalid denoise value: %s\n", value);
+					return Result::Error;
+				}
+				ov7670.WriteReg(Device::OV7670::Reg4C_DNSTH, static_cast<uint8_t>(num));
+			}
+		} else if (Arg::GetAssigned(subcmd, "denoise-offset", &value)) {
+			if (!value) {
+				uint8_t num = ov7670.ReadReg(Device::OV7670::Reg77);
+				tout.Printf("denoise-offset:%u\n", num);
+			} else {
+				int num = ::strtol(value, nullptr, 0);
+				if (num < 0 || num > 255) {
+					terr.Printf("invalid denoise-offset value: %s\n", value);
+					return Result::Error;
+				}
+				ov7670.WriteReg(Device::OV7670::Reg77, static_cast<uint8_t>(num));
 			}
 		} else {
 			terr.Printf("unknown sub command: %s\n", subcmd);
