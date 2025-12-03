@@ -188,6 +188,7 @@ ShellCmd(ov7670, "controls OV7670")
 				HREF: GPIO::Instance(pinHREF), VSYNC: GPIO::Instance(pinVSYNC)}, freq);
 			pOV7670->Initialize();
 			pOV7670->SetupRegisters();
+			pOV7670->EnableColorMode(true);
 			continue;
 		}
 		if (!pOV7670) {

@@ -480,7 +480,7 @@ void OV7670::SetupRegisters()
 	// Table 3-1. Scan Direction Control
 	//-------------------------------------------------------------------------
 	WriteReg(Reg1E_MVFP,
-		(0b1 << 5) |		// Mirror
+		(0b0 << 5) |		// Mirror
 		(0b0 << 4) |		// VFlip enable
 		(0b1 << 2));		// Black sun enable
 	//-------------------------------------------------------------------------
@@ -871,10 +871,6 @@ void OV7670::SetupRegisters()
 	WriteReg(Reg4B,
 		(0b1 << 0));		// UV average enable
 	//-------------------------------------------------------------------------
-	// Undocumented, but VERY IMPORTANT to capture colors!
-	//-------------------------------------------------------------------------
-	WriteReg(RegB0, 0x84);
-	//-------------------------------------------------------------------------
 	// Table 5-4. Color Matrix Related Registers and Parameters
 	//-------------------------------------------------------------------------
 	WriteReg(Reg4F_MTX1,
@@ -1031,6 +1027,13 @@ OV7670& OV7670::ResetAllRegisters()
 							//  0: No change
 							//  1: Resets all registers to default values
 	Tickable::Sleep(100);
+	return *this;
+}
+
+OV7670& OV7670::EnableColorMode(bool enableFlag)
+{
+	// Undocumented, but VERY IMPORTANT to capture colors!
+	WriteReg(RegB0, enableFlag? 0x84 : 0x00);
 	return *this;
 }
 

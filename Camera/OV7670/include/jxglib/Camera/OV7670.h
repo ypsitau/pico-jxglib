@@ -245,6 +245,7 @@ public:
 	void ReadRegs(uint8_t reg, uint8_t values[], int count);
 public:
 	OV7670& ResetAllRegisters();
+	OV7670& EnableColorMode(bool enableFlag);
 public:
 	// virtual functions of Base
 	virtual const Image& Capture() override;
