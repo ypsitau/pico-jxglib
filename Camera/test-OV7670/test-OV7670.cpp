@@ -3,14 +3,14 @@
 #include "jxglib/PWM.h"
 #include "jxglib/Display.h"
 #include "jxglib/LABOPlatform.h"
-#include "jxglib/Device/OV7670.h"
+#include "jxglib/Camera/OV7670.h"
 
 using namespace jxglib;
 
-Device::OV7670 ov7670(Device::OV7670::QQVGA, Device::OV7670::Format::RGB565,
+Camera::OV7670 ov7670(Camera::OV7670::QQVGA, Camera::OV7670::Format::RGB565,
 	i2c0, {DIN0: GPIO2, XLK: GPIO10, PLK: GPIO11, HREF: GPIO12, VSYNC: GPIO13}, 24000000);
 
-jxglib::Device::OV7670& ShellCmd_Device_OV7670_GetOV7670()
+jxglib::Camera::OV7670& ShellCmd_Camera_OV7670_GetOV7670()
 {
 	return ov7670;
 }

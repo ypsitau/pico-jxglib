@@ -1,8 +1,8 @@
 //==============================================================================
-// jxglib/Device/OV7670.h
+// jxglib/Camera/OV7670.h
 //==============================================================================
-#ifndef PICO_JXGLIB_DEVICE_OV7670_H
-#define PICO_JXGLIB_DEVICE_OV7670_H
+#ifndef PICO_JXGLIB_CAMERA_OV7670_H
+#define PICO_JXGLIB_CAMERA_OV7670_H
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
 #include "jxglib/PIO.h"
@@ -10,7 +10,7 @@
 #include "jxglib/PWM.h"
 #include "jxglib/Image.h"
 
-namespace jxglib::Device {
+namespace jxglib::Camera {
 
 //------------------------------------------------------------------------------
 // OV7670
