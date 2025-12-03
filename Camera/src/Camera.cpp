@@ -10,9 +10,9 @@ namespace jxglib::Camera {
 //------------------------------------------------------------------------------
 Base* Base::pHead_ = nullptr;
 
-Base::Base() : pNext_{nullptr}
+Base::Base(bool registerFlag) : pNext_{nullptr}
 {
-	if (IsDummy()) {
+	if (!registerFlag) {
 		// nothing to do
 	} else if (pHead_) {
 		Base* pBase = pHead_;
@@ -42,5 +42,17 @@ Base::~Base()
 // Dummy
 //------------------------------------------------------------------------------
 Dummy Dummy::Instance;
+
+//------------------------------------------------------------------------------
+// functions
+//------------------------------------------------------------------------------
+Base& GetInstance(int iCamera)
+{
+	Base* pBase = Base::GetHead();
+	for (int i = 0; pBase; pBase = pBase->GetNext(), i++) {
+		if (i == iCamera) return *pBase;
+	}
+	return Dummy::Instance;
+}
 
 }

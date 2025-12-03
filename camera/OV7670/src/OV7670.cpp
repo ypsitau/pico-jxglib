@@ -1024,7 +1024,17 @@ void OV7670::SetupRegisters()
 		0x00);				// ADC Offset Control (Reserved)
 }
 
-Image& OV7670::Capture()
+OV7670& OV7670::ResetAllRegisters()
+{
+	WriteReg(Reg12_COM7,
+		(0b1 << 7));		// SCCB Register Reset
+							//  0: No change
+							//  1: Resets all registers to default values
+	Tickable::Sleep(100);
+	return *this;
+}
+
+const Image& OV7670::Capture()
 {
 	sm_.set_enabled(false);
 	sm_.clear_fifos().exec(programToReset_);
@@ -1038,14 +1048,10 @@ Image& OV7670::Capture()
 	return image_;
 }
 
-OV7670& OV7670::ResetAllRegisters()
+const char* OV7670::GetRemarks(char* buff, int lenMax) const
 {
-	WriteReg(Reg12_COM7,
-		(0b1 << 7));		// SCCB Register Reset
-							//  0: No change
-							//  1: Resets all registers to default values
-	Tickable::Sleep(100);
-	return *this;
+	buff[0] = '\0';
+	return buff;
 }
 
 }

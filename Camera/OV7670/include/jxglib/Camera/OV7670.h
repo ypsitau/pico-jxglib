@@ -8,14 +8,14 @@
 #include "jxglib/PIO.h"
 #include "jxglib/DMA.h"
 #include "jxglib/PWM.h"
-#include "jxglib/Image.h"
+#include "jxglib/Camera.h"
 
 namespace jxglib::Camera {
 
 //------------------------------------------------------------------------------
 // OV7670
 //------------------------------------------------------------------------------
-class OV7670 {
+class OV7670 : public Base {
 public:
 	enum Resolution { VGA, QVGA, QQVGA, CIF, QCIF, QQCIF };
 	enum Format { RawBayerRGB, ProcessedBayerRGB, YUV422, GRB422, RGB565, RGB555, RGB444 };
@@ -244,9 +244,12 @@ public:
 	bool ReadRegBit(uint8_t reg, int iBit) { return (ReadReg(reg) >> iBit) & 0b1; }
 	void ReadRegs(uint8_t reg, uint8_t values[], int count);
 public:
-	Image& Capture();
-public:
 	OV7670& ResetAllRegisters();
+public:
+	// virtual functions of Base
+	virtual const Image& Capture() override;
+	virtual const char* GetName() const override { return "OV7670"; }
+	virtual const char* GetRemarks(char* buff, int lenMax) const override;
 };
 
 }

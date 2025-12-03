@@ -7,23 +7,14 @@
 
 using namespace jxglib;
 
-Camera::OV7670 ov7670(Camera::OV7670::QQVGA, Camera::OV7670::Format::RGB565,
-	i2c0, {DIN0: GPIO2, XLK: GPIO10, PLK: GPIO11, HREF: GPIO12, VSYNC: GPIO13}, 24000000);
-
-jxglib::Camera::OV7670& ShellCmd_Camera_OV7670_GetOV7670()
-{
-	return ov7670;
-}
-
 int main()
 {
 	::stdio_init_all();
 	::jxglib_labo_init(true);
-	ov7670.Initialize();
-	ov7670.SetupRegisters();
 	Display::Base& display = Display::GetInstance(0);
+	Camera::Base& camera = Camera::GetInstance(0);
 	while (true) {
-		Image& image = ov7670.Capture();
+		const Image& image = camera.Capture();
 		display.DrawImage(
 			(display.GetWidth() - image.GetWidth()) / 2,
 			(display.GetHeight() - image.GetHeight()) / 2, image);

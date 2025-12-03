@@ -388,6 +388,8 @@ private:
 	int height_;
 	std::unique_ptr<Memory> pMemory_;
 public:
+	static const Image None;
+public:
 	Image(const Format& format = Format::None) : pFormat_{&format}, width_{0}, height_{0} {}
 	Image(const Format& format, int width, int height, const void* data = nullptr) :
 			pFormat_{&format}, width_{width}, height_{height},

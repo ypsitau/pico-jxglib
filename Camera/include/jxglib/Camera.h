@@ -4,7 +4,7 @@
 #ifndef PICO_JXGLIB_CAMERA_H
 #define PICO_JXGLIB_CAMERA_H
 #include "pico/stdlib.h"
-#include "jxglib/Common.h"
+#include "jxglib/Image.h"
 
 namespace jxglib::Camera {
 
@@ -17,14 +17,14 @@ private:
 private:
 	Base* pNext_;
 public:
-	Base();
+	Base(bool registerFlag = true);
 	virtual ~Base();
 public:
 	static Base* GetHead() { return pHead_; }
 	Base* GetNext() { return pNext_; }
 	const Base* GetNext() const { return pNext_; }
 public:
-	virtual bool IsDummy() const { return false; }
+	virtual const Image& Capture() = 0;
 	virtual const char* GetName() const { return "no-name"; }
 	virtual const char* GetRemarks(char* buff, int lenMax) const { buff[0] = '\0'; return buff;}
 };
@@ -34,13 +34,18 @@ public:
 //------------------------------------------------------------------------------
 class Dummy : public Base {
 public:
-	Dummy() {}
+	Dummy() : Base(false) {}
 public:
 	static Dummy Instance;
 public:
-	virtual bool IsDummy() const override { return true; }
+	virtual const Image& Capture() override { return Image::None; }
 	virtual const char* GetName() const override { return "Dummy"; }
 };
+
+//------------------------------------------------------------------------------
+// functions
+//------------------------------------------------------------------------------
+Base& GetInstance(int iCamera);
 
 }
 
