@@ -7,7 +7,7 @@
 
 using namespace jxglib;
 
-Device::OV7670 ov7670(Device::OV7670::QVGA, Device::OV7670::Format::RGB565,
+Device::OV7670 ov7670(Device::OV7670::QQVGA, Device::OV7670::Format::RGB565,
 	i2c0, {DIN0: GPIO2, XLK: GPIO10, PLK: GPIO11, HREF: GPIO12, VSYNC: GPIO13}, 24000000);
 
 jxglib::Device::OV7670& ShellCmd_Device_OV7670_GetOV7670()
