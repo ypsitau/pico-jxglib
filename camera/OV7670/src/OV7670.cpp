@@ -1050,7 +1050,23 @@ const Image& OV7670::Capture()
 
 const char* OV7670::GetRemarks(char* buff, int lenMax) const
 {
-	buff[0] = '\0';
+	::snprintf(buff, lenMax, "reso:%s format:%s i2c:%d din0:%d xlk:%d plk:%d href:%d vsync:%d freq:%dHz",
+		(resolution_ == Resolution::VGA)?		"vga" :
+		(resolution_ == Resolution::QVGA)?		"qvga" :
+		(resolution_ == Resolution::QQVGA)?		"qqvga" :
+		(resolution_ == Resolution::CIF)?		"cif" :
+		(resolution_ == Resolution::QCIF)?		"qcif" :
+		(resolution_ == Resolution::QQCIF)?		"qqcif" : "unknown",
+		(format_ == Format::RawBayerRGB)?		"raw-rgb" :
+		(format_ == Format::ProcessedBayerRGB)?	"processed-rgb" :
+		(format_ == Format::YUV422)?			"yuv422" :
+		(format_ == Format::GRB422)?			"grb422" :
+		(format_ == Format::RGB565)?			"rgb565" :
+		(format_ == Format::RGB555)?			"rgb555" :
+		(format_ == Format::RGB444)?			"rgb444" : "unknown",
+		::i2c_get_index(i2c_),
+		pinAssign_.DIN0.pin, pinAssign_.XLK.pin, pinAssign_.PLK.pin, pinAssign_.HREF.pin, pinAssign_.VSYNC.pin,
+		freq_);
 	return buff;
 }
 

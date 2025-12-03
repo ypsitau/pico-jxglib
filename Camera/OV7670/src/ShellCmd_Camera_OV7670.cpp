@@ -60,36 +60,36 @@ ShellCmd(ov7670, "controls OV7670")
 			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
 				const char* subcmd = pSubcmdChild->GetProc();
 				if (Arg::GetAssigned(subcmd, "reso", &value) || Arg::GetAssigned(subcmd, "resolution", &value)) {
-					if (::strcasecmp(value, "VGA") == 0) {
+					if (::strcasecmp(value, "vga") == 0) {
 						resolution = OV7670::VGA;
-					} else if (::strcasecmp(value, "QVGA") == 0) {
+					} else if (::strcasecmp(value, "qvga") == 0) {
 						resolution = OV7670::QVGA;
-					} else if (::strcasecmp(value, "QQVGA") == 0) {
+					} else if (::strcasecmp(value, "qqvga") == 0) {
 						resolution = OV7670::QQVGA;
-					} else if (::strcasecmp(value, "CIF") == 0) {
+					} else if (::strcasecmp(value, "cif") == 0) {
 						resolution = OV7670::CIF;
-					} else if (::strcasecmp(value, "QCIF") == 0) {
+					} else if (::strcasecmp(value, "qcif") == 0) {
 						resolution = OV7670::QCIF;
-					} else if (::strcasecmp(value, "QQCIF") == 0) {
+					} else if (::strcasecmp(value, "qqcif") == 0) {
 						resolution = OV7670::QQCIF;
 					} else {
 						terr.Printf("unknown resolution: %s\n", value);
 						return Result::Error;
 					}
 				} else if (Arg::GetAssigned(subcmd, "format", &value)) {
-					if (::strcasecmp(value, "RawBayerRGB") == 0) {
+					if (::strcasecmp(value, "raw-rgb") == 0) {
 						format = OV7670::RawBayerRGB;
-					} else if (::strcasecmp(value, "ProcessedBayerRGB") == 0) {
+					} else if (::strcasecmp(value, "processed-rgb") == 0) {
 						format = OV7670::ProcessedBayerRGB;
-					} else if (::strcasecmp(value, "YUV422") == 0) {
+					} else if (::strcasecmp(value, "yuv422") == 0) {
 						format = OV7670::YUV422;
-					} else if (::strcasecmp(value, "GRB422") == 0) {
+					} else if (::strcasecmp(value, "grb422") == 0) {
 						format = OV7670::GRB422;
-					} else if (::strcasecmp(value, "RGB565") == 0) {
+					} else if (::strcasecmp(value, "rgb565") == 0) {
 						format = OV7670::RGB565;
-					} else if (::strcasecmp(value, "RGB555") == 0) {
+					} else if (::strcasecmp(value, "rgb555") == 0) {
 						format = OV7670::RGB555;
-					} else if (::strcasecmp(value, "RGB444") == 0) {
+					} else if (::strcasecmp(value, "rgb444") == 0) {
 						format = OV7670::RGB444;
 					} else {
 						terr.Printf("unknown format: %s\n", value);
