@@ -8,7 +8,10 @@
 
 namespace jxglib::ImageFile {
 
+enum class Format { BMP, PNG, JPEG };
+
 bool Read(Image& image, FS::File& file);
+bool Write(Image& image, FS::File& file, Format format);
 
 }
 

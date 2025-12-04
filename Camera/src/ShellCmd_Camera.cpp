@@ -89,6 +89,15 @@ ShellCmd(camera, "controls cameras")
 				return Result::Error;
 			}
 			const Image& image = camera.Capture();
+			std::unique_ptr<FS::File> pFile(FS::OpenFile(value, "w"));
+			if (!pFile) {
+				terr.Printf("failed to open file: %s\n", value);
+				return Result::Error;
+			}
+			if (!ImageFile::Write(const_cast<Image&>(image), *pFile, ImageFile::Format::JPEG)) {
+				terr.Printf("failed to write image to file: %s\n", value);
+				return Result::Error;
+			}
 		} else {
 			terr.Printf("unknown sub command: %s\n", subcmd);
 			return Result::Error;
