@@ -46,6 +46,7 @@ target_link_libraries(jxglib_LABOPlatform_FullCmd INTERFACE
 
 # Peripheral specific commands
 target_link_libraries(jxglib_LABOPlatform_FullCmd INTERFACE
+	jxglib_ShellCmd_Camera_OV7670
 	jxglib_ShellCmd_Display_SSD1306
 	jxglib_ShellCmd_Display_TFT_LCD
 	jxglib_ShellCmd_Display_WS2812
