@@ -498,30 +498,30 @@ void OV7670::SetupRegisters()
 	// Table 2-1. OV7670/OV7171 Output Formats
 	// Table 2-2. Resolution Register Settings
 	//-------------------------------------------------------------------------
-	WriteReg(Reg11_CLKRC,				resolutionSetting.Reg11_CLKRC);
-	WriteReg(Reg12_COM7,				resolutionSetting.Reg12_COM7 | formatSetting.Reg12_COM7 |
+	WriteReg(Reg11_CLKRC,	resolutionSetting.Reg11_CLKRC);
+	WriteReg(Reg12_COM7,	resolutionSetting.Reg12_COM7 | formatSetting.Reg12_COM7 |
 		(0b0 << 7) |		// SCCB Register Reset
 							//  0: No change
 							//  1: Resets all registers to default values
 		(0b0 << 1));		// Color bar
 							//  0: Disable
 							//  1: Enable
-	WriteReg(Reg40_COM15,				formatSetting.Reg40_COM15 |
+	WriteReg(Reg40_COM15,	formatSetting.Reg40_COM15 |
 		(0b11 < 6));		// Data format - output full range enable
 							//  0x: Output range: [10] to [F0]
 							//  10: Output range: [01] to [FE]
 							//  11: Output range: [00] to [FF]
-	WriteReg(Reg8C_RGB444,				formatSetting.Reg8C_RGB444);
-	WriteReg(Reg0C_COM3,				resolutionSetting.Reg0C_COM3 |
+	WriteReg(Reg8C_RGB444,	formatSetting.Reg8C_RGB444);
+	WriteReg(Reg0C_COM3,	resolutionSetting.Reg0C_COM3 |
 		(0b0 << 6) |		// Output data MSB and LSB swap
 		(0b0 << 5) |		// Tri-state PCLK, HREF/HSYNC, VSYNC, and STROBE in power-down mode, active low (see Table 7-2)
 		(0b0 << 4));		// Tri-state data bud D[7:0] in power-down mode, active low (see Table 7-2)
-	WriteReg(Reg3E_COM14,				resolutionSetting.Reg3E_COM14);
-	WriteReg(Reg70_SCALING_XSC,			resolutionSetting.Reg70_SCALING_XSC |
+	WriteReg(Reg3E_COM14,	resolutionSetting.Reg3E_COM14);
+	WriteReg(Reg70_SCALING_XSC, resolutionSetting.Reg70_SCALING_XSC |
 		(0b0 << 7));		// Test pattern[0]
-	WriteReg(Reg71_SCALING_YSC,			resolutionSetting.Reg71_SCALING_YSC |
+	WriteReg(Reg71_SCALING_YSC, resolutionSetting.Reg71_SCALING_YSC |
 		(0b0 << 7));		// Test pattern[1]
-	WriteReg(Reg72_SCALING_DCWCTR,		resolutionSetting.Reg72_SCALING_DCWCTR |
+	WriteReg(Reg72_SCALING_DCWCTR, resolutionSetting.Reg72_SCALING_DCWCTR |
 		(0b0 << 7) |		// Vertical average calculation option (see Table 6-1)
 							//  0: Vertical truncation
 							//  1: Vertical rounding
@@ -561,10 +561,10 @@ void OV7670::SetupRegisters()
 		(0b00 << 0));		// HSYNC rising edge delay 2 MSB
 	WriteReg(Reg2B_EXHCL,
 		0x00);				// 8 LSB for dummy pixel insert in horizontal direction
-	WriteReg(Reg93_DM_LNH,
-		0x00);				// Dummy Line low 8 bits
 	WriteReg(Reg92_DM_LNL,
-		0x00);				// Dummy Line high 2 bits
+		0x00);				// Dummy Line low 8 bits
+	WriteReg(Reg93_DM_LNH,
+		0x00);				// Dummy Line high 8 bits
 	WriteReg(Reg4D_DM_POS,
 		(0b0 << 0));		// Dummy row position
 	WriteReg(Reg3B_COM11,

@@ -405,6 +405,48 @@ ShellCmd(ov7670, "controls OV7670")
 				ov7670.WriteReg(OV7670::Reg04_COM1,
 					(ov7670.ReadReg(OV7670::Reg04_COM1) & 0b11111100) | static_cast<uint8_t>(num & 0b11));
 			}
+		} else if (Arg::GetAssigned(subcmd, "dummy-pixels", &value)) {
+			if (!value) {
+				uint8_t high = (ov7670.ReadReg(OV7670::Reg2A_EXHCH) >> 4) & 0x0f;;
+				uint8_t low = ov7670.ReadReg(OV7670::Reg2B_EXHCL);
+				uint16_t dummyPixels = (static_cast<uint16_t>(high) << 8) | static_cast<uint16_t>(low);
+				tout.Printf("dummy-pixels:%u\n", dummyPixels);
+			} else {
+				int num = ::strtol(value, nullptr, 0);
+				if (num < 0 || num > 4095) {
+					terr.Printf("invalid dummy-pixels value: %s\n", value);
+					return Result::Error;
+				}
+				ov7670.WriteReg(OV7670::Reg2A_EXHCH, static_cast<uint8_t>((num >> 8) & 0xff));
+				ov7670.WriteReg(OV7670::Reg2B_EXHCL, static_cast<uint8_t>(num & 0xff));
+			}
+		} else if (Arg::GetAssigned(subcmd, "dummy-rows", &value)) {
+			if (!value) {
+				uint8_t high = ov7670.ReadReg(OV7670::Reg93_DM_LNH);
+				uint8_t low = ov7670.ReadReg(OV7670::Reg92_DM_LNL);
+				uint16_t dummyRows = (static_cast<uint16_t>(high) << 8) | static_cast<uint16_t>(low);
+				tout.Printf("dummy-rows:%u\n", dummyRows);
+			} else {
+				int num = ::strtol(value, nullptr, 0);
+				if (num < 0 || num > 65535) {
+					terr.Printf("invalid dummy-rows value: %s\n", value);
+					return Result::Error;
+				}
+				ov7670.WriteReg(OV7670::Reg93_DM_LNH, static_cast<uint8_t>((num >> 8) & 0xff));
+				ov7670.WriteReg(OV7670::Reg92_DM_LNL, static_cast<uint8_t>(num & 0xff));
+			}
+		} else if (Arg::GetAssigned(subcmd, "dummy-row-pos", &value)) {
+			if (!value) {
+				uint8_t num = (ov7670.ReadReg(OV7670::Reg4D_DM_POS) >> 7) & 0b1;
+				tout.Printf("dummy-row-pos:%s\n", num? "after" : "before");
+			} else if (::strcasecmp(value, "after") == 0) {
+				ov7670.WriteRegBit(OV7670::Reg4D_DM_POS, 7, 0b1);
+			} else if (::strcasecmp(value, "before") == 0) {
+				ov7670.WriteRegBit(OV7670::Reg4D_DM_POS, 7, 0b0);
+			} else {
+				terr.Printf("invalid dummy-row-pos value: %s\n", value);
+				return Result::Error;
+			}
 		} else {
 			terr.Printf("unknown sub command: %s\n", subcmd);
 			return Result::Error;
