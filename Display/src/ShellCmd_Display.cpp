@@ -5,7 +5,7 @@
 
 namespace jxglib::ShellCmd_Display {
 
-void PrintDisplays(Printable& terr);
+void ListDisplays(Printable& tout);
 
 int iDisplay = 0;
 
@@ -35,36 +35,50 @@ struct {
 	int nRepeatY = 1;
 } image;
 
-ShellCmd_Named(ls_display, "ls-display", "lists all displays")
+ShellCmd(display, "controls displays")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		'h',	"prints this help"),
+		Arg::OptBool("help",	'h',	"prints this help"),
+		//Arg::OptString("index",	'i',	"specifies display index (default: 0)"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
-	if (arg.GetBool("help")) {
-		terr.Printf("Usage: %s [OPTION]...\n", GetName());
+	if (arg.GetBool("help") || argc < 2) {
+		terr.Printf("Usage: %s [OPTION]... COMMAND...\n", GetName());
 		arg.PrintHelp(terr);
-		return Result::Success;
+		terr.Printf("Commands:\n");
+		terr.Printf(" list           lists all displays\n");
+		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
-	PrintDisplays(terr);
-	return Result::Success;
+	Shell::Arg::EachSubcmd each(argv[1], argv[argc]);
+	if (!each.Initialize()) {
+		terr.Printf("%s\n", each.GetErrorMsg());
+		return Result::Error;
+	}
+	while (const Arg::Subcmd* pSubcmd = each.NextSubcmd()) {
+		const char* subcmd = pSubcmd->GetProc();
+		if (::strcasecmp(subcmd, "list") == 0) {
+			ListDisplays(tout);
+			return Result::Success;
+		}
+	}
+	return Result::Error;
 }
 
 ShellCmd(draw, "draw commands on displays")
 {
 	static const Arg::Opt optTbl[] = {
-		Arg::OptBool("help",		'h',	"prints this help"),
-		Arg::OptString("display",	'd',	"specifies display number (default: 0)"),
+		Arg::OptBool("help",	'h',	"prints this help"),
+		Arg::OptString("index",	'i',	"specifies display index (default: 0)"),
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	const char* value = nullptr;
-	if (arg.GetString("display", &value)) {
+	if (arg.GetString("index", &value)) {
 		char* endptr;
 		int num = ::strtol(value, &endptr, 10);
 		if (*endptr != '\0' || num < 0) {
-			terr.Printf("invalid display number: %s\n", argv[1]);
+			terr.Printf("invalid display index: %s\n", argv[1]);
 			return Result::Error;
 		}
 		iDisplay = num;
@@ -360,11 +374,11 @@ ShellCmd(draw, "draw commands on displays")
 	return Result::Success;
 }
 
-void PrintDisplays(Printable& terr)
+void ListDisplays(Printable& tout)
 {
 	Display::Base* pDisplay = Display::Base::GetHead();
 	if (!pDisplay) {
-		terr.Printf("no displays\n");
+		tout.Printf("no displays\n");
 		return;
 	}
 	for (int iDisplay = 0; pDisplay; iDisplay++, pDisplay = pDisplay->GetNext()) {
@@ -373,7 +387,7 @@ void PrintDisplays(Printable& terr)
 		char remarks[128];
 		pDisplay->GetRemarks(remarks, sizeof(remarks));
 		bool remarksFlag = (remarks[0] != '\0');
-		terr.Printf("display %d: %s%s%s%s %dx%d%s%s\n",
+		tout.Printf("display#%d: %s%s%s%s %dx%d%s%s\n",
 			iDisplay, pDisplay->GetName(),
 			variantFlag? " [" : "", variantName, variantFlag? "]" : "",
 			pDisplay->GetWidth(), pDisplay->GetHeight(),

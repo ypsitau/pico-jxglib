@@ -20,6 +20,8 @@ public:
 	Base(bool registerFlag = true);
 	virtual ~Base();
 public:
+	bool IsValid() const;
+public:
 	static Base* GetHead() { return pHead_; }
 	Base* GetNext() { return pNext_; }
 	const Base* GetNext() const { return pNext_; }
