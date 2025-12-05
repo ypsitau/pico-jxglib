@@ -101,7 +101,7 @@ ShellCmd(camera, "controls cameras")
 				if (!enablePreview_) camera.FreeResource();
 				return Result::Error;
 			}
-			if (!ImageFile::Write(const_cast<Image&>(image), *pFile, ImageFile::Format::JPEG)) {
+			if (!ImageFile::Write(const_cast<Image&>(image), *pFile, ImageFile::Format::BMP)) {
 				terr.Printf("failed to write image to file: %s\n", value);
 				if (!enablePreview_) camera.FreeResource();
 				return Result::Error;
