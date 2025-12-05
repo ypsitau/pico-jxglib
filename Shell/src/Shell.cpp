@@ -420,7 +420,7 @@ Tokenizer Shell::CreateTokenizer()
 	return Tokenizer(specialTokens_, count_of(specialTokens_));
 }
 
-void Shell::PrintHistory(Printable& printable)
+void Shell::PrintHistory(Printable& printable, bool withIndexFlag)
 {
 	Terminal& terminal = Instance.GetTerminal();
 	const LineBuff& historyBuff = terminal.GetLineEditor().GetHistoryBuff();
