@@ -32,16 +32,15 @@ ShellCmd(camera, "controls cameras")
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
-	if (arg.GetBool("help") || argc < 2) {
+	const char* value = nullptr;
+	if (arg.GetBool("help")) {
 		terr.Printf("Usage: %s [OPTION]... COMMAND...\n", GetName());
 		arg.PrintHelp(terr);
 		terr.Printf("Commands:\n");
-		terr.Printf(" list                    lists all cameras\n");
 		terr.Printf(" preview-start[:DISPLAY] starts preview on specified display\n");
 		terr.Printf(" preview-stop            stops preview\n");
 		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
-	const char* value = nullptr;
 	if (arg.GetString("index", &value)) {
 		char* endptr;
 		int num = ::strtol(value, &endptr, 10);
@@ -50,6 +49,10 @@ ShellCmd(camera, "controls cameras")
 			return Result::Error;
 		}
 		iCamera = num;
+	}
+	if (argc < 2) {
+		ListCameras(tout);
+		return Result::Success;
 	}
 	Camera::Base& camera = Camera::GetInstance(iCamera);
 	if (!camera.IsValid()) {
@@ -63,10 +66,7 @@ ShellCmd(camera, "controls cameras")
 	}
 	while (const Arg::Subcmd* pSubcmd = each.NextSubcmd()) {
 		const char* subcmd = pSubcmd->GetProc();
-		if (::strcasecmp(subcmd, "list") == 0) {
-			ListCameras(tout);
-			return Result::Success;
-		} else if (Arg::GetAssigned(subcmd, "preview-start", &value)) {
+		if (Arg::GetAssigned(subcmd, "preview-start", &value)) {
 			if (value) {
 				char* endptr;
 				int num = ::strtol(value, &endptr, 10);

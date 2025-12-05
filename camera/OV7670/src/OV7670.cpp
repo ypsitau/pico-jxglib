@@ -1035,7 +1035,7 @@ const Image& OV7670::Capture()
 
 const char* OV7670::GetRemarks(char* buff, int lenMax) const
 {
-	::snprintf(buff, lenMax, "reso:%s format:%s i2c:%d d0:%d xclk:%d pclk:%d href:%d vsync:%d freq:%dHz",
+	::snprintf(buff, lenMax, "reso:%s format:%s i2c%d D0:%d XCLK:%d PCLK:%d HREF:%d VSYNC:%d freq:%dHz",
 		(resolution_ == Resolution::VGA)?		"vga" :
 		(resolution_ == Resolution::QVGA)?		"qvga" :
 		(resolution_ == Resolution::QQVGA)?		"qqvga" :

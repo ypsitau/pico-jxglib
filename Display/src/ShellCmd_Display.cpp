@@ -43,12 +43,16 @@ ShellCmd(display, "controls displays")
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
-	if (arg.GetBool("help") || argc < 2) {
+	if (arg.GetBool("help")) {
 		terr.Printf("Usage: %s [OPTION]... COMMAND...\n", GetName());
 		arg.PrintHelp(terr);
 		terr.Printf("Commands:\n");
 		terr.Printf(" list           lists all displays\n");
-		return arg.GetBool("help")? Result::Success : Result::Error;
+		return Result::Success;
+	}
+	if (argc < 2) {
+		ListDisplays(tout);
+		return Result::Success;
 	}
 	Shell::Arg::EachSubcmd each(argv[1], argv[argc]);
 	if (!each.Initialize()) {
@@ -74,6 +78,20 @@ ShellCmd(draw, "draw commands on displays")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	const char* value = nullptr;
+	if (arg.GetBool("help") || argc < 2) {
+		terr.Printf("Usage: %s [OPTION]... CMDS...\n", GetName());
+		terr.Printf("Commands:\n");
+		terr.Printf(" fill {color:COLOR}                                fills the display with the specified color\n");
+		terr.Printf(" rect-fill {color:COLOR pos:X,Y size:WIDTHxHEIGHT} fills a rectangle with the specified color\n");
+		terr.Printf(" rect {color:COLOR pos:X,Y size:WIDTHxHEIGHT}      draws a rectangle with the specified color\n");
+		terr.Printf(" font:NAME                                         sets the font to be used for text drawing\n");
+		terr.Printf(" text {pos:X,Y str:STRING}                         draws the specified text\n");
+		terr.Printf(" image-load:FILE                                   loads an image from the specified file\n");
+		terr.Printf(" image {pos:X,Y pos-shift:X,Y size:WIDTHxHEIGHT offset:X,Y offset-shift:X,Y repeat-x:N repeat-y:N}\n");
+		terr.Printf("                                                   draws the loaded image\n");
+		arg.PrintHelp(terr);
+		return arg.GetBool("help")? Result::Success : Result::Error;
+	}
 	if (arg.GetString("index", &value)) {
 		char* endptr;
 		int num = ::strtol(value, &endptr, 10);
@@ -82,11 +100,6 @@ ShellCmd(draw, "draw commands on displays")
 			return Result::Error;
 		}
 		iDisplay = num;
-	}
-	if (arg.GetBool("help")) {
-		terr.Printf("Usage: %s [OPTION]... CMDS...\n", GetName());
-		arg.PrintHelp(terr);
-		return Result::Success;
 	}
 	Display::Base& display = Display::GetInstance(iDisplay);
 	if (!display.IsValid()) {
