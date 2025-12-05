@@ -380,6 +380,7 @@ bool OV7670::Initialize()
 			return false;
 		}
 	}
+	bool hrefFlag = false;
 	uint relAddrStart = 0;
 	if (!image_.Allocate(
 		(format_ == Format::RawBayerRGB)? Image::Format::RGB :
@@ -391,42 +392,24 @@ bool OV7670::Initialize()
 		//(format_ == Format::RGB444)? Image::Format::RGB444 :
 		Image::Format::RGB,
 		size.width, size.height)) return false;
-#if 1
 	program_
 	.pio_version(0)
 	.program("ov7670")
 	.pub(&relAddrStart)
 		.pull()
-		.wait(1, "gpio", pinAssign_.VSYNC)	// wait for VSYNC to go high
-		.wait(0, "gpio", pinAssign_.VSYNC)	// wait for VSYNC to go low
+		.wait(1, "gpio", pinAssign_.VSYNC)			// wait for VSYNC to go high
+		.wait(0, "gpio", pinAssign_.VSYNC)			// wait for VSYNC to go low
 	.wrap_target()
-		.wait(0, "gpio", pinAssign_.HREF)	// wait for HREF to go low
-		.wait(1, "gpio", pinAssign_.HREF)	// wait for HREF to go high
+		.wait(0, "gpio", pinAssign_.HREF)			// wait for HREF to go low
+		.wait(1, "gpio", pinAssign_.HREF)			// wait for HREF to go high
 		.mov("x", "osr")
 	.L("loop_pixel")
-		.wait(0, "gpio", pinAssign_.PCLK)	// wait for PCLK to go low
-		.wait(1, "gpio", pinAssign_.PCLK)	// wait for PCLK to go high
-		.in("pins", 8)						// read 8 bits from data pins
-		.jmp("x--", "loop_pixel")			// loop for the number of pixels in the line
+		.wait(0, "gpio", pinAssign_.PCLK)			// wait for PCLK to go low
+		.wait(1, "gpio", pinAssign_.PCLK)			// wait for PCLK to go high
+		.in("pins", 8)								// read 8 bits from data pins
+		.jmp(hrefFlag? "pin" : "x--", "loop_pixel")	// loop while HREF or for the specified number of pixels
 	.wrap()
 	.end();
-#else
-	program_
-	.pio_version(0)
-	.program("ov7670")
-	.pub(&relAddrStart)
-		.wait(1, "gpio", pinAssign_.VSYNC)	// wait for VSYNC to go high
-		.wait(0, "gpio", pinAssign_.VSYNC)	// wait for VSYNC to go low
-	.wrap_target()
-		.wait(1, "gpio", pinAssign_.HREF)	// wait for HREF to go high
-	.L("pixel")
-		.wait(0, "gpio", pinAssign_.PCLK)	// wait for PCLK to go low
-		.wait(1, "gpio", pinAssign_.PCLK)	// wait for PCLK to go high
-		.in("pins", 8)
-		.jmp("pin", "pixel")				// loop while HREF is high
-	.wrap()
-	.end();
-#endif
 	//--------------------------------------------------------------------------
 	sm_.set_program(program_)
 		.reserve_in_pins(pinAssign_.D0, 8)
