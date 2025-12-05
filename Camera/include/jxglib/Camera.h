@@ -26,6 +26,7 @@ public:
 	Base* GetNext() { return pNext_; }
 	const Base* GetNext() const { return pNext_; }
 public:
+	virtual void FreeResource() {}
 	virtual const Image& Capture() = 0;
 	virtual const char* GetName() const { return "no-name"; }
 	virtual const char* GetRemarks(char* buff, int lenMax) const { buff[0] = '\0'; return buff;}

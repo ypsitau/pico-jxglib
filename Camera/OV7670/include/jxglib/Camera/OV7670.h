@@ -253,6 +253,7 @@ public:
 	OV7670& EnableColorMode(bool enableFlag);
 public:
 	// virtual functions of Base
+	virtual void FreeResource() override;
 	virtual const Image& Capture() override;
 	virtual const char* GetName() const override { return "OV7670"; }
 	virtual const char* GetRemarks(char* buff, int lenMax) const override;

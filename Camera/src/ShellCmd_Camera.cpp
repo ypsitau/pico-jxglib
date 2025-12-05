@@ -5,23 +5,23 @@
 
 namespace jxglib::Camera::ShellCmd_Camera {
 
-void ListCameras(Printable& tout);
+bool enablePreview_ = false;
+int iCamera_ = 0;
+int iDisplayPreview_ = 0;
+Size sizePreviewPrev_;
 
-bool enablePreview = false;
-int iCamera = 0;
-int iDisplayPreview = 0;
-Size sizePreviewPrev;
+void ListCameras(Printable& tout);
 
 TickableEntry(CameraPreviewTickable, 33, Tickable::Priority::AboveNormal)
 {
-	if (!enablePreview) return;
+	if (!enablePreview_) return;
 	Camera::Base& camera = Camera::GetInstance(0);
 	if (!camera.IsValid()) return;
-	Display::Base& display = Display::GetInstance(iDisplayPreview);
+	Display::Base& display = Display::GetInstance(iDisplayPreview_);
 	if (!display.IsValid()) return;
 	const Image& image = camera.Capture();
-	if (sizePreviewPrev != image.GetSize()) {
-		sizePreviewPrev = image.GetSize();
+	if (sizePreviewPrev_ != image.GetSize()) {
+		sizePreviewPrev_ = image.GetSize();
 		display.Clear();
 	}
 	display.DrawImage(
@@ -53,15 +53,15 @@ ShellCmd(camera, "controls cameras")
 			terr.Printf("invalid display index: %s\n", argv[1]);
 			return Result::Error;
 		}
-		iCamera = num;
+		iCamera_ = num;
 	}
 	if (argc < 2) {
 		ListCameras(tout);
 		return Result::Success;
 	}
-	Camera::Base& camera = Camera::GetInstance(iCamera);
+	Camera::Base& camera = Camera::GetInstance(iCamera_);
 	if (!camera.IsValid()) {
-		terr.Printf("camera #%d is not available\n", iCamera);
+		terr.Printf("camera #%d is not available\n", iCamera_);
 		return Result::Error;
 	}
 	Shell::Arg::EachSubcmd each(argv[1], argv[argc]);
@@ -83,11 +83,12 @@ ShellCmd(camera, "controls cameras")
 					terr.Printf("display #%d is not available\n", num);
 					return Result::Error;
 				}
-				iDisplayPreview = num;
+				iDisplayPreview_ = num;
 			}
-			enablePreview = true;
+			enablePreview_ = true;
 		} else if (Arg::GetAssigned(subcmd, "preview-stop", &value)) {
-			enablePreview = false;
+			enablePreview_ = false;
+			camera.FreeResource();
 		} else if (Arg::GetAssigned(subcmd, "capture", &value)) {
 			if (!value) {
 				terr.Printf("output file not specified.\n");
@@ -97,12 +98,15 @@ ShellCmd(camera, "controls cameras")
 			std::unique_ptr<FS::File> pFile(FS::OpenFile(value, "w"));
 			if (!pFile) {
 				terr.Printf("failed to open file: %s\n", value);
+				if (!enablePreview_) camera.FreeResource();
 				return Result::Error;
 			}
 			if (!ImageFile::Write(const_cast<Image&>(image), *pFile, ImageFile::Format::JPEG)) {
 				terr.Printf("failed to write image to file: %s\n", value);
+				if (!enablePreview_) camera.FreeResource();
 				return Result::Error;
 			}
+			if (!enablePreview_) camera.FreeResource();
 		} else {
 			terr.Printf("unknown sub command: %s\n", subcmd);
 			return Result::Error;

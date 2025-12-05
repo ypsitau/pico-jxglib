@@ -1022,6 +1022,11 @@ OV7670& OV7670::EnableColorMode(bool enableFlag)
 	return *this;
 }
 
+void OV7670::FreeResource()
+{
+	image_.Free();
+}
+
 const Image& OV7670::Capture()
 {
 	if (!image_.IsValid()) {
