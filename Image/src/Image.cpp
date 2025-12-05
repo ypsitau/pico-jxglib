@@ -26,7 +26,7 @@ Image::~Image()
 void Image::SetMemory(const Format& format, int width, int height, Memory* pMemory)
 {
 	pFormat_ = &format;
-	width_ = width, height_ = height;
+	size_ = Size(width, height);
 	pMemory_.reset(pMemory);
 }
 
@@ -34,7 +34,7 @@ bool Image::Allocate(const Format& format, int width, int height)
 {
 	pMemory_.reset();
 	pFormat_ = &format;
-	width_ = width, height_ = height;
+	size_ = Size(width, height);
 	void* data = ::malloc(GetBytesBuff());
 	if (data) {
 		pMemory_.reset(new MemoryHeap(data));
@@ -48,7 +48,7 @@ bool Image::Allocate(const Format& format, int width, int height)
 void Image::Free()
 {
 	pFormat_ = &Format::None;
-	width_ = height_ = 0;
+	size_ = Size(0, 0);
 	pMemory_.reset();
 }
 

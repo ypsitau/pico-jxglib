@@ -327,8 +327,9 @@ const OV7670::FormatSetting OV7670::formatSetting_RGB444 {
 							//  1: RG Bx
 };
 
-OV7670::OV7670(Resolution resolution, Format format, i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq) :
-	resolution_{resolution}, format_{format}, i2c_{i2c}, pinAssign_{pinAssign}, freq_{freq}
+OV7670::OV7670(i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq) :
+	i2c_{i2c}, pinAssign_{pinAssign}, freq_{freq},
+	resolution_{Resolution::QVGA}, format_{Format::RGB565}, updateResolutionAndFormatFlag_{true}
 {
 }
 
@@ -360,15 +361,23 @@ void OV7670::ReadRegs(uint8_t reg, uint8_t values[], int count)
 	::i2c_read_blocking(i2c_, I2CAddr, values, count, false);
 }
 
+OV7670& OV7670::SetResolution(Resolution resolution)
+{
+	image_.Free();
+	resolution_ = resolution;
+	updateResolutionAndFormatFlag_ = true;
+	return *this;
+}
+
+OV7670& OV7670::SetFormat(Format format)
+{
+	format_ = format;
+	updateResolutionAndFormatFlag_ = true;
+	return *this;
+}
+
 bool OV7670::Initialize()
 {
-	Size size =
-		(resolution_ == Resolution::VGA)?	Size{640, 480} :
-		(resolution_ == Resolution::QVGA)?	Size{320, 240} :
-		(resolution_ == Resolution::QQVGA)?	Size{160, 120} :
-		(resolution_ == Resolution::CIF)?	Size{352, 288} :
-		(resolution_ == Resolution::QCIF)?	Size{176, 144} :
-		(resolution_ == Resolution::QQCIF)?	Size{88, 72} : Size{320, 240};
 	if (format_ == Format::RawBayerRGB) {
 		if (resolution_ != Resolution::VGA) {
 			// Raw Bayer RGB only supports VGA resolution
@@ -382,16 +391,6 @@ bool OV7670::Initialize()
 	}
 	bool hrefFlag = false;
 	uint relAddrStart = 0;
-	if (!image_.Allocate(
-		(format_ == Format::RawBayerRGB)? Image::Format::RGB :
-		(format_ == Format::ProcessedBayerRGB)? Image::Format::RGB :
-		(format_ == Format::YUV422)? Image::Format::YUV422 :
-		//(format_ == Format::GRB422)? Image::Format::GRB422 :
-		(format_ == Format::RGB565)? Image::Format::RGB565 :
-		//(format_ == Format::RGB555)? Image::Format::RGB555 :
-		//(format_ == Format::RGB444)? Image::Format::RGB444 :
-		Image::Format::RGB,
-		size.width, size.height)) return false;
 	program_
 	.pio_version(0)
 	.program("ov7670")
@@ -442,21 +441,6 @@ void OV7670::SetupRegisters()
 {
 	uint32_t hStart = 136, hStop = hStart + 640;
 	uint32_t vStart = 12, vStop = vStart + 480;
-	const ResolutionSetting& resolutionSetting =
-		(resolution_ == Resolution::VGA)?	resolutionSetting_VGA :
-		(resolution_ == Resolution::QVGA)?	resolutionSetting_QVGA :
-		(resolution_ == Resolution::QQVGA)?	resolutionSetting_QQVGA :
-		(resolution_ == Resolution::CIF)?	resolutionSetting_CIF :
-		(resolution_ == Resolution::QCIF)?	resolutionSetting_QCIF :
-		(resolution_ == Resolution::QQCIF)?	resolutionSetting_QQCIF : resolutionSetting_VGA;
-	const FormatSetting& formatSetting =
-		(format_ == Format::RawBayerRGB)?		formatSetting_RawBayerRGB :
-		(format_ == Format::ProcessedBayerRGB)?	formatSetting_ProcessedBayerRGB :
-		(format_ == Format::YUV422)?			formatSetting_YUV422 :
-		(format_ == Format::GRB422)?			formatSetting_GRB422 :
-		(format_ == Format::RGB565)?			formatSetting_RGB565 :
-		(format_ == Format::RGB555)?			formatSetting_RGB555 :
-		(format_ == Format::RGB444)?			formatSetting_RGB444 : formatSetting_RGB565;
 	ResetAllRegisters();
 	//-------------------------------------------------------------------------
 	// Table 3-1. Scan Direction Control
@@ -476,64 +460,6 @@ void OV7670::SetupRegisters()
 							//  11: PLL times the input clock by 8
 		(0b0 << 4) |		// Regulator control
 		(0b1010 << 0));		// (Reserved)
-	//-------------------------------------------------------------------------
-	// Table 2-1. OV7670/OV7171 Output Formats
-	// Table 2-2. Resolution Register Settings
-	//-------------------------------------------------------------------------
-	WriteReg(Reg11_CLKRC,	resolutionSetting.Reg11_CLKRC);
-	WriteReg(Reg12_COM7,	resolutionSetting.Reg12_COM7 | formatSetting.Reg12_COM7 |
-		(0b0 << 7) |		// SCCB Register Reset
-							//  0: No change
-							//  1: Resets all registers to default values
-		(0b0 << 1));		// Color bar
-							//  0: Disable
-							//  1: Enable
-	WriteReg(Reg40_COM15,	formatSetting.Reg40_COM15 |
-		(0b11 < 6));		// Data format - output full range enable
-							//  0x: Output range: [10] to [F0]
-							//  10: Output range: [01] to [FE]
-							//  11: Output range: [00] to [FF]
-	WriteReg(Reg8C_RGB444,	formatSetting.Reg8C_RGB444);
-	WriteReg(Reg0C_COM3,	resolutionSetting.Reg0C_COM3 |
-		(0b0 << 6) |		// Output data MSB and LSB swap
-		(0b0 << 5) |		// Tri-state PCLK, HREF/HSYNC, VSYNC, and STROBE in power-down mode, active low (see Table 7-2)
-		(0b0 << 4));		// Tri-state data bud D[7:0] in power-down mode, active low (see Table 7-2)
-	WriteReg(Reg3E_COM14,	resolutionSetting.Reg3E_COM14);
-	WriteReg(Reg70_SCALING_XSC, resolutionSetting.Reg70_SCALING_XSC |
-		(0b0 << 7));		// Test pattern[0]
-	WriteReg(Reg71_SCALING_YSC, resolutionSetting.Reg71_SCALING_YSC |
-		(0b0 << 7));		// Test pattern[1]
-	WriteReg(Reg72_SCALING_DCWCTR, resolutionSetting.Reg72_SCALING_DCWCTR |
-		(0b0 << 7) |		// Vertical average calculation option (see Table 6-1)
-							//  0: Vertical truncation
-							//  1: Vertical rounding
-		(0b0 << 6) |		// Vertical down sampling option (see Table 6-1)
-							//  0: Vertical truncation
-							//  1: Vertical rounding
-		(0b0 << 3) |		// Horizontal average calculation option (see Table 6-1)
-							//  0: Horizontal truncation
-							//  1: Horizontal rounding
-		(0b0 << 2));		// Horizontal down sampling option (see Table 6-1)
-							//  0: Horizontal truncation
-							//  1: Horizontal rounding
-	WriteReg(Reg73_SCALING_PCLK_DIV,	resolutionSetting.Reg73_SCALING_PCLK_DIV |
-		(0b1111 << 4));		// Reserved bits
-	WriteReg(RegA2_SCALING_PCLK_DELAY,	resolutionSetting.RegA2_SCALING_PCLK_DELAY);
-	WriteReg(Reg3A_TSLB,
-		(0b0 << 5) | 		// Negative image enable
-							//  0: Normal image
-							//  1: Negative image
-		(0b0 << 4) |		// UV output value
-							//  0: Use normal UV output
-							//  1: Use fixed UV value set
-		(0b0 << 3) |		// Output sequence
-							//  00: Y U Y V
-							//  01: Y V Y U
-							//  10: U Y V Y
-							//  11: V Y U Y
-		(0b0 << 0));		// Auto output window
-							//  0: Sensor DOES NOT autommatically set window
-							//  1: Sensor automatically sets output window
 	//-------------------------------------------------------------------------
 	// Table 3-4. Dummy Pixel and Row
 	//-------------------------------------------------------------------------
@@ -1002,6 +928,83 @@ void OV7670::SetupRegisters()
 		0x00);				// ADC Offset Control (Reserved)
 }
 
+void OV7670::SetupRegisters_ResolutionAndFormat()
+{
+	//-------------------------------------------------------------------------
+	// Table 2-1. OV7670/OV7171 Output Formats
+	// Table 2-2. Resolution Register Settings
+	//-------------------------------------------------------------------------
+	const ResolutionSetting& resolutionSetting =
+		(resolution_ == Resolution::VGA)?	resolutionSetting_VGA :
+		(resolution_ == Resolution::QVGA)?	resolutionSetting_QVGA :
+		(resolution_ == Resolution::QQVGA)?	resolutionSetting_QQVGA :
+		(resolution_ == Resolution::CIF)?	resolutionSetting_CIF :
+		(resolution_ == Resolution::QCIF)?	resolutionSetting_QCIF :
+		(resolution_ == Resolution::QQCIF)?	resolutionSetting_QQCIF : resolutionSetting_VGA;
+	const FormatSetting& formatSetting =
+		(format_ == Format::RawBayerRGB)?		formatSetting_RawBayerRGB :
+		(format_ == Format::ProcessedBayerRGB)?	formatSetting_ProcessedBayerRGB :
+		(format_ == Format::YUV422)?			formatSetting_YUV422 :
+		(format_ == Format::GRB422)?			formatSetting_GRB422 :
+		(format_ == Format::RGB565)?			formatSetting_RGB565 :
+		(format_ == Format::RGB555)?			formatSetting_RGB555 :
+		(format_ == Format::RGB444)?			formatSetting_RGB444 : formatSetting_RGB565;
+	WriteReg(Reg11_CLKRC,	resolutionSetting.Reg11_CLKRC);
+	WriteReg(Reg12_COM7,	resolutionSetting.Reg12_COM7 | formatSetting.Reg12_COM7 |
+		(0b0 << 7) |		// SCCB Register Reset
+							//  0: No change
+							//  1: Resets all registers to default values
+		(0b0 << 1));		// Color bar
+							//  0: Disable
+							//  1: Enable
+	WriteReg(Reg40_COM15,	formatSetting.Reg40_COM15 |
+		(0b11 < 6));		// Data format - output full range enable
+							//  0x: Output range: [10] to [F0]
+							//  10: Output range: [01] to [FE]
+							//  11: Output range: [00] to [FF]
+	WriteReg(Reg8C_RGB444,	formatSetting.Reg8C_RGB444);
+	WriteReg(Reg0C_COM3,	resolutionSetting.Reg0C_COM3 |
+		(0b0 << 6) |		// Output data MSB and LSB swap
+		(0b0 << 5) |		// Tri-state PCLK, HREF/HSYNC, VSYNC, and STROBE in power-down mode, active low (see Table 7-2)
+		(0b0 << 4));		// Tri-state data bud D[7:0] in power-down mode, active low (see Table 7-2)
+	WriteReg(Reg3E_COM14,	resolutionSetting.Reg3E_COM14);
+	WriteReg(Reg70_SCALING_XSC, resolutionSetting.Reg70_SCALING_XSC |
+		(0b0 << 7));		// Test pattern[0]
+	WriteReg(Reg71_SCALING_YSC, resolutionSetting.Reg71_SCALING_YSC |
+		(0b0 << 7));		// Test pattern[1]
+	WriteReg(Reg72_SCALING_DCWCTR, resolutionSetting.Reg72_SCALING_DCWCTR |
+		(0b0 << 7) |		// Vertical average calculation option (see Table 6-1)
+							//  0: Vertical truncation
+							//  1: Vertical rounding
+		(0b0 << 6) |		// Vertical down sampling option (see Table 6-1)
+							//  0: Vertical truncation
+							//  1: Vertical rounding
+		(0b0 << 3) |		// Horizontal average calculation option (see Table 6-1)
+							//  0: Horizontal truncation
+							//  1: Horizontal rounding
+		(0b0 << 2));		// Horizontal down sampling option (see Table 6-1)
+							//  0: Horizontal truncation
+							//  1: Horizontal rounding
+	WriteReg(Reg73_SCALING_PCLK_DIV,	resolutionSetting.Reg73_SCALING_PCLK_DIV |
+		(0b1111 << 4));		// Reserved bits
+	WriteReg(RegA2_SCALING_PCLK_DELAY,	resolutionSetting.RegA2_SCALING_PCLK_DELAY);
+	WriteReg(Reg3A_TSLB,
+		(0b0 << 5) | 		// Negative image enable
+							//  0: Normal image
+							//  1: Negative image
+		(0b0 << 4) |		// UV output value
+							//  0: Use normal UV output
+							//  1: Use fixed UV value set
+		(0b0 << 3) |		// Output sequence
+							//  00: Y U Y V
+							//  01: Y V Y U
+							//  10: U Y V Y
+							//  11: V Y U Y
+		(0b0 << 0));		// Auto output window
+							//  0: Sensor DOES NOT autommatically set window
+							//  1: Sensor automatically sets output window
+}
+
 OV7670& OV7670::ResetAllRegisters()
 {
 	WriteReg(Reg12_COM7,
@@ -1021,6 +1024,29 @@ OV7670& OV7670::EnableColorMode(bool enableFlag)
 
 const Image& OV7670::Capture()
 {
+	if (!image_.IsValid()) {
+		Size size =
+			(resolution_ == Resolution::VGA)?	Size{640, 480} :
+			(resolution_ == Resolution::QVGA)?	Size{320, 240} :
+			(resolution_ == Resolution::QQVGA)?	Size{160, 120} :
+			(resolution_ == Resolution::CIF)?	Size{352, 288} :
+			(resolution_ == Resolution::QCIF)?	Size{176, 144} :
+			(resolution_ == Resolution::QQCIF)?	Size{88, 72} : Size{320, 240};
+		if (!image_.Allocate(
+			(format_ == Format::RawBayerRGB)? Image::Format::RGB :
+			(format_ == Format::ProcessedBayerRGB)? Image::Format::RGB :
+			(format_ == Format::YUV422)? Image::Format::YUV422 :
+			//(format_ == Format::GRB422)? Image::Format::GRB422 :
+			(format_ == Format::RGB565)? Image::Format::RGB565 :
+			//(format_ == Format::RGB555)? Image::Format::RGB555 :
+			//(format_ == Format::RGB444)? Image::Format::RGB444 :
+			Image::Format::RGB,
+			size.width, size.height)) return Image::None;
+	}
+	if (updateResolutionAndFormatFlag_) {
+		SetupRegisters_ResolutionAndFormat();
+		updateResolutionAndFormatFlag_ = false;
+	}
 	sm_.set_enabled(false);
 	sm_.clear_fifos().exec(programToReset_);
 	pChannel_->set_config(channelConfig_)

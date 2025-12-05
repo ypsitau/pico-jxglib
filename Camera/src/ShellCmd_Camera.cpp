@@ -10,6 +10,7 @@ void ListCameras(Printable& tout);
 bool enablePreview = false;
 int iCamera = 0;
 int iDisplayPreview = 0;
+Size sizePreviewPrev;
 
 TickableEntry(CameraPreviewTickable, 33, Tickable::Priority::AboveNormal)
 {
@@ -19,6 +20,10 @@ TickableEntry(CameraPreviewTickable, 33, Tickable::Priority::AboveNormal)
 	Display::Base& display = Display::GetInstance(iDisplayPreview);
 	if (!display.IsValid()) return;
 	const Image& image = camera.Capture();
+	if (sizePreviewPrev != image.GetSize()) {
+		sizePreviewPrev = image.GetSize();
+		display.Clear();
+	}
 	display.DrawImage(
 		(display.GetWidth() - image.GetWidth()) / 2,
 		(display.GetHeight() - image.GetHeight()) / 2, image);

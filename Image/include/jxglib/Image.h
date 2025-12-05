@@ -384,25 +384,26 @@ public:
 	};
 private:
 	const Format* pFormat_;
-	int width_;
-	int height_;
+	Size size_;
 	std::unique_ptr<Memory> pMemory_;
 public:
 	static const Image None;
 public:
-	Image(const Format& format = Format::None) : pFormat_{&format}, width_{0}, height_{0} {}
+	Image(const Format& format = Format::None) : pFormat_{&format}, size_{0, 0} {}
 	Image(const Format& format, int width, int height, const void* data = nullptr) :
-			pFormat_{&format}, width_{width}, height_{height},
+			pFormat_{&format}, size_{width, height},
 			pMemory_{new MemoryConst(data)} {}
 	~Image();
 public:
+	bool IsValid() const { return !pFormat_->IsNone(); }
 	void SetMemory(const Format& format, int width, int height, Memory* pMemory);
 	bool Allocate(const Format& format, int width, int height);
 	void Free();
 	void FillZero();
 	const Format& GetFormat() const { return *pFormat_; }
-	int GetWidth() const { return width_; }
-	int GetHeight() const { return height_; }
+	const Size& GetSize() const { return size_; }
+	int GetWidth() const { return size_.width; }
+	int GetHeight() const { return size_.height; }
 	int GetBytesPerPixel() const { return pFormat_->bytesPerPixel; }
 	int GetBytesPerLine() const { return GetWidth() * GetBytesPerPixel(); }
 	int GetBytesBuff() const { return GetBytesPerLine() * GetHeight(); }

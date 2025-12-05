@@ -220,11 +220,12 @@ public:
 public:
 	static const uint8_t I2CAddr = 0x21;
 private:
-	Resolution resolution_;
-	Format format_;
 	i2c_inst_t* i2c_;
 	PinAssign pinAssign_;
 	uint32_t freq_;
+	Resolution resolution_;
+	Format format_;
+	bool updateResolutionAndFormatFlag_;
 	PIO::StateMachine sm_;
 	PIO::Program program_;
 	PIO::Program programToReset_;
@@ -232,10 +233,14 @@ private:
 	DMA::ChannelConfig channelConfig_;
 	Image image_;
 public:
-	OV7670(Resolution resolution, Format format, i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq = 24000000);
+	OV7670(i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq = 24000000);
+public:
+	OV7670& SetResolution(Resolution resolution);
+	OV7670& SetFormat(Format format);
 public:
 	bool Initialize();
 	void SetupRegisters();
+	void SetupRegisters_ResolutionAndFormat();
 public:
 	OV7670& WriteReg(uint8_t reg, uint8_t value);
 	OV7670& WriteReg(uint8_t reg, uint8_t mask, uint8_t value);

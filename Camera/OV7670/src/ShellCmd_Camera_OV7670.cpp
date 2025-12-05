@@ -102,43 +102,7 @@ ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 			uint32_t freq = 24000000;
 			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
 				const char* subcmd = pSubcmdChild->GetProc();
-				if (Arg::GetAssigned(subcmd, "reso", &value) || Arg::GetAssigned(subcmd, "resolution", &value)) {
-					if (::strcasecmp(value, "vga") == 0) {
-						resolution = OV7670::VGA;
-					} else if (::strcasecmp(value, "qvga") == 0) {
-						resolution = OV7670::QVGA;
-					} else if (::strcasecmp(value, "qqvga") == 0) {
-						resolution = OV7670::QQVGA;
-					} else if (::strcasecmp(value, "cif") == 0) {
-						resolution = OV7670::CIF;
-					} else if (::strcasecmp(value, "qcif") == 0) {
-						resolution = OV7670::QCIF;
-					} else if (::strcasecmp(value, "qqcif") == 0) {
-						resolution = OV7670::QQCIF;
-					} else {
-						terr.Printf("unknown resolution: %s\n", value);
-						return Result::Error;
-					}
-				} else if (Arg::GetAssigned(subcmd, "format", &value)) {
-					if (::strcasecmp(value, "raw-rgb") == 0) {
-						format = OV7670::RawBayerRGB;
-					} else if (::strcasecmp(value, "processed-rgb") == 0) {
-						format = OV7670::ProcessedBayerRGB;
-					} else if (::strcasecmp(value, "yuv422") == 0) {
-						format = OV7670::YUV422;
-					} else if (::strcasecmp(value, "grb422") == 0) {
-						format = OV7670::GRB422;
-					} else if (::strcasecmp(value, "rgb565") == 0) {
-						format = OV7670::RGB565;
-					} else if (::strcasecmp(value, "rgb555") == 0) {
-						format = OV7670::RGB555;
-					} else if (::strcasecmp(value, "rgb444") == 0) {
-						format = OV7670::RGB444;
-					} else {
-						terr.Printf("unknown format: %s\n", value);
-						return Result::Error;
-					}
-				} else if (Arg::GetAssigned(subcmd, "i2c", &value)) {
+				if (Arg::GetAssigned(subcmd, "i2c", &value)) {
 					if (::strcasecmp(value, "0") == 0) {
 						iI2C = 0;
 					} else if (::strcasecmp(value, "1") == 0) {
@@ -223,7 +187,7 @@ ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 				return Result::Error;
 			}
 			I2C& i2c = I2C::get_instance(iI2C);
-			pOV7670 = new OV7670(resolution, format, i2c, {
+			pOV7670 = new OV7670(i2c, {
 				D0: GPIO::Instance(pinD0), XCLK: GPIO::Instance(pinXCLK), PCLK: GPIO::Instance(pinPCLK),
 				HREF: GPIO::Instance(pinHREF), VSYNC: GPIO::Instance(pinVSYNC)}, freq);
 			pOV7670->Initialize();
@@ -241,8 +205,47 @@ ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 			ov7670.ReadRegs(0x00, data, sizeof(data));
 			Printable::DumpT dump(tout);
 			dump(data, sizeof(data));
-		} else if (
-				ModifyRegBit(subcmd, "ccir656",					OV7670::Reg04_COM1,		6) ||
+		} else if (Arg::GetAssigned(subcmd, "reso", &value) || Arg::GetAssigned(subcmd, "resolution", &value)) {
+			OV7670::Resolution resolution;
+			if (::strcasecmp(value, "vga") == 0) {
+				resolution = OV7670::VGA;
+			} else if (::strcasecmp(value, "qvga") == 0) {
+				resolution = OV7670::QVGA;
+			} else if (::strcasecmp(value, "qqvga") == 0) {
+				resolution = OV7670::QQVGA;
+			} else if (::strcasecmp(value, "cif") == 0) {
+				resolution = OV7670::CIF;
+			} else if (::strcasecmp(value, "qcif") == 0) {
+				resolution = OV7670::QCIF;
+			} else if (::strcasecmp(value, "qqcif") == 0) {
+				resolution = OV7670::QQCIF;
+			} else {
+				terr.Printf("unknown resolution: %s\n", value);
+				return Result::Error;
+			}
+			ov7670.SetResolution(resolution);
+		} else if (Arg::GetAssigned(subcmd, "format", &value)) {
+			OV7670::Format format;
+			if (::strcasecmp(value, "raw-rgb") == 0) {
+				format = OV7670::RawBayerRGB;
+			} else if (::strcasecmp(value, "processed-rgb") == 0) {
+				format = OV7670::ProcessedBayerRGB;
+			} else if (::strcasecmp(value, "yuv422") == 0) {
+				format = OV7670::YUV422;
+			} else if (::strcasecmp(value, "grb422") == 0) {
+				format = OV7670::GRB422;
+			} else if (::strcasecmp(value, "rgb565") == 0) {
+				format = OV7670::RGB565;
+			} else if (::strcasecmp(value, "rgb555") == 0) {
+				format = OV7670::RGB555;
+			} else if (::strcasecmp(value, "rgb444") == 0) {
+				format = OV7670::RGB444;
+			} else {
+				terr.Printf("unknown format: %s\n", value);
+				return Result::Error;
+			}
+			ov7670.SetFormat(format);
+		} else if (ModifyRegBit(subcmd, "ccir656",				OV7670::Reg04_COM1,		6) ||
 				ModifyRegBit(subcmd, "scale",					OV7670::Reg0C_COM3,		3) ||
 				ModifyRegBit(subcmd, "dcw",						OV7670::Reg0C_COM3,		2) ||
 				ModifyRegBit(subcmd, "color-bar",				OV7670::Reg12_COM7,		1) ||
