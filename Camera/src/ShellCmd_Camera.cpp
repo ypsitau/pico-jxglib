@@ -5,19 +5,19 @@
 
 namespace jxglib::Camera::ShellCmd_Camera {
 
-bool enablePreview_ = false;
+bool enableDispayFlag_ = false;
 int iCamera_ = 0;
-int iDisplayPreview_ = 0;
+int iDisplayToDisplay_ = 0;
 Size sizePreviewPrev_;
 
 void ListCameras(Printable& tout);
 
 TickableEntry(CameraPreviewTickable, 33, Tickable::Priority::AboveNormal)
 {
-	if (!enablePreview_) return;
+	if (!enableDispayFlag_) return;
 	Camera::Base& camera = Camera::GetInstance(0);
 	if (!camera.IsValid()) return;
-	Display::Base& display = Display::GetInstance(iDisplayPreview_);
+	Display::Base& display = Display::GetInstance(iDisplayToDisplay_);
 	if (!display.IsValid()) return;
 	const Image& image = camera.Capture();
 	if (sizePreviewPrev_ != image.GetSize()) {
@@ -42,8 +42,8 @@ ShellCmd(camera, "controls cameras")
 		terr.Printf("Usage: %s [OPTION]... COMMAND...\n", GetName());
 		arg.PrintHelp(terr);
 		terr.Printf("Commands:\n");
-		terr.Printf(" preview-start[:DISPLAY] starts preview on specified display\n");
-		terr.Printf(" preview-stop            stops preview\n");
+		terr.Printf(" display-start[:DISPLAY] starts display on specified display\n");
+		terr.Printf(" display-stop            stops display\n");
 		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
 	if (arg.GetString("index", &value)) {
@@ -71,7 +71,7 @@ ShellCmd(camera, "controls cameras")
 	}
 	while (const Arg::Subcmd* pSubcmd = each.NextSubcmd()) {
 		const char* subcmd = pSubcmd->GetProc();
-		if (Arg::GetAssigned(subcmd, "preview-start", &value)) {
+		if (Arg::GetAssigned(subcmd, "display-start", &value)) {
 			if (value) {
 				char* endptr;
 				int num = ::strtol(value, &endptr, 10);
@@ -83,11 +83,11 @@ ShellCmd(camera, "controls cameras")
 					terr.Printf("display #%d is not available\n", num);
 					return Result::Error;
 				}
-				iDisplayPreview_ = num;
+				iDisplayToDisplay_ = num;
 			}
-			enablePreview_ = true;
-		} else if (Arg::GetAssigned(subcmd, "preview-stop", &value)) {
-			enablePreview_ = false;
+			enableDispayFlag_ = true;
+		} else if (Arg::GetAssigned(subcmd, "display-stop", &value)) {
+			enableDispayFlag_ = false;
 			camera.FreeResource();
 		} else if (Arg::GetAssigned(subcmd, "capture", &value)) {
 			if (!value) {
@@ -98,15 +98,15 @@ ShellCmd(camera, "controls cameras")
 			std::unique_ptr<FS::File> pFile(FS::OpenFile(value, "w"));
 			if (!pFile) {
 				terr.Printf("failed to open file: %s\n", value);
-				if (!enablePreview_) camera.FreeResource();
+				if (!enableDispayFlag_) camera.FreeResource();
 				return Result::Error;
 			}
 			if (!ImageFile::Write(const_cast<Image&>(image), *pFile, ImageFile::Format::BMP)) {
 				terr.Printf("failed to write image to file: %s\n", value);
-				if (!enablePreview_) camera.FreeResource();
+				if (!enableDispayFlag_) camera.FreeResource();
 				return Result::Error;
 			}
-			if (!enablePreview_) camera.FreeResource();
+			if (!enableDispayFlag_) camera.FreeResource();
 		} else {
 			terr.Printf("unknown sub command: %s\n", subcmd);
 			return Result::Error;
