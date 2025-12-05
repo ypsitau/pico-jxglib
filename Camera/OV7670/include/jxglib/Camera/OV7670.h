@@ -36,9 +36,9 @@ public:
 		uint8_t Reg8C_RGB444;
 	};
 	struct PinAssign {
-		const GPIO& DIN0;
-		const GPIO& XLK;
-		const GPIO& PLK;
+		const GPIO& D0;
+		const GPIO& XCLK;
+		const GPIO& PCLK;
 		const GPIO& HREF;
 		const GPIO& VSYNC;
 	};

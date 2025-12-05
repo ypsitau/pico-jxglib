@@ -400,14 +400,14 @@ bool OV7670::Initialize()
 		.wait(1, "gpio", pinAssign_.VSYNC)	// wait for VSYNC to go high
 		.wait(0, "gpio", pinAssign_.VSYNC)	// wait for VSYNC to go low
 	.wrap_target()
+		.wait(0, "gpio", pinAssign_.HREF)	// wait for HREF to go low
 		.wait(1, "gpio", pinAssign_.HREF)	// wait for HREF to go high
 		.mov("x", "osr")
-	.L("pixel")
-		.wait(0, "gpio", pinAssign_.PLK)	// wait for PLK to go low
-		.wait(1, "gpio", pinAssign_.PLK)	// wait for PLK to go high
-		.in("pins", 8)
-		.jmp("x--", "pixel")				// loop for the number of pixels in the line
-		.wait(0, "gpio", pinAssign_.HREF)	// wait for HREF to go low
+	.L("loop_pixel")
+		.wait(0, "gpio", pinAssign_.PCLK)	// wait for PCLK to go low
+		.wait(1, "gpio", pinAssign_.PCLK)	// wait for PCLK to go high
+		.in("pins", 8)						// read 8 bits from data pins
+		.jmp("x--", "loop_pixel")			// loop for the number of pixels in the line
 	.wrap()
 	.end();
 #else
@@ -420,8 +420,8 @@ bool OV7670::Initialize()
 	.wrap_target()
 		.wait(1, "gpio", pinAssign_.HREF)	// wait for HREF to go high
 	.L("pixel")
-		.wait(0, "gpio", pinAssign_.PLK)	// wait for PLK to go low
-		.wait(1, "gpio", pinAssign_.PLK)	// wait for PLK to go high
+		.wait(0, "gpio", pinAssign_.PCLK)	// wait for PCLK to go low
+		.wait(1, "gpio", pinAssign_.PCLK)	// wait for PCLK to go high
 		.in("pins", 8)
 		.jmp("pin", "pixel")				// loop while HREF is high
 	.wrap()
@@ -429,8 +429,8 @@ bool OV7670::Initialize()
 #endif
 	//--------------------------------------------------------------------------
 	sm_.set_program(program_)
-		.reserve_in_pins(pinAssign_.DIN0, 8)
-		.reserve_gpio_pin(pinAssign_.PLK, pinAssign_.HREF, pinAssign_.VSYNC)
+		.reserve_in_pins(pinAssign_.D0, 8)
+		.reserve_gpio_pin(pinAssign_.PCLK, pinAssign_.HREF, pinAssign_.VSYNC)
 		.config_set_in_shift_left(true, 32)	// shift left, autopush enabled, push threshold 32
 		.config_set_jmp_pin(pinAssign_.HREF)
 		.init();
@@ -451,8 +451,7 @@ bool OV7670::Initialize()
 		.set_irq_quiet(false)
 		.set_sniff_enable(false)
 		.set_high_priority(false);
-	PWM(pinAssign_.XLK).set_function().set_freq(freq_).set_chan_duty(.5).set_enabled(true);
-	//SetupRegisters();
+	PWM(pinAssign_.XCLK).set_function().set_freq(freq_).set_chan_duty(.5).set_enabled(true);
 	return true;
 }
 
@@ -1053,7 +1052,7 @@ const Image& OV7670::Capture()
 
 const char* OV7670::GetRemarks(char* buff, int lenMax) const
 {
-	::snprintf(buff, lenMax, "reso:%s format:%s i2c:%d din0:%d xlk:%d plk:%d href:%d vsync:%d freq:%dHz",
+	::snprintf(buff, lenMax, "reso:%s format:%s i2c:%d d0:%d xclk:%d pclk:%d href:%d vsync:%d freq:%dHz",
 		(resolution_ == Resolution::VGA)?		"vga" :
 		(resolution_ == Resolution::QVGA)?		"qvga" :
 		(resolution_ == Resolution::QQVGA)?		"qqvga" :
@@ -1068,7 +1067,7 @@ const char* OV7670::GetRemarks(char* buff, int lenMax) const
 		(format_ == Format::RGB555)?			"rgb555" :
 		(format_ == Format::RGB444)?			"rgb444" : "unknown",
 		::i2c_get_index(i2c_),
-		pinAssign_.DIN0.pin, pinAssign_.XLK.pin, pinAssign_.PLK.pin, pinAssign_.HREF.pin, pinAssign_.VSYNC.pin,
+		pinAssign_.D0.pin, pinAssign_.XCLK.pin, pinAssign_.PCLK.pin, pinAssign_.HREF.pin, pinAssign_.VSYNC.pin,
 		freq_);
 	return buff;
 }

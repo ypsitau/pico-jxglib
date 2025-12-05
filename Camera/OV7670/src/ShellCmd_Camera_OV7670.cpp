@@ -2,12 +2,13 @@
 #include "pico/stdlib.h"
 #include "jxglib/Shell.h"
 #include "jxglib/Camera/OV7670.h"
+#include "jxglib/I2C.h"
 
 namespace jxglib::Camera::ShellCmd_Camera_OV7670 {
 
 OV7670* pOV7670 = nullptr;
 
-ShellCmd(ov7670, "controls OV7670")
+ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 {
 	bool errorFlag = false;
 	auto ModifyRegBit = [&](const char* subcmd, const char* name, int reg, int iBit) -> bool {
@@ -37,9 +38,9 @@ ShellCmd(ov7670, "controls OV7670")
 		terr.Printf("Usage: %s [OPTION]... [PIN [COMMAND]...]\n", GetName());
 		arg.PrintHelp(terr);
 		terr.Printf("Sub Commands:\n");
-		terr.Printf(" setup                              setup a OV7670 device with the given parameters:\n");
-		terr.Printf("                                    {reso:RESO format:FORMAT i2c:I2C_BUS din0:PIN data0:PIN");
-		terr.Printf("                                     xlk:PIN xclk:PIN plk:PIN pclk:PIN href:PIN vsync:PIN freq:FREQ}\n");
+		terr.Printf(" setup                              setup a OV7670 camera module with the given parameters:\n");
+		terr.Printf("                                    {reso:RESO format:FORMAT i2c:I2C_BUS\n");
+		terr.Printf("                                     d0:PIN xclk:PIN pclk:PIN href:PIN vsync:PIN freq:FREQ}\n");
 		terr.Printf(" dump                               dumps all OV7670 registers\n");
 		terr.Printf(" ccir656:[on|off]                   enables/disables CCIR656 mode\n");
 		terr.Printf(" scale:[on|off]                     enables/disables scaling\n");
@@ -86,12 +87,16 @@ ShellCmd(ov7670, "controls OV7670")
 	while (const Arg::Subcmd* pSubcmd = each.NextSubcmd()) {
 		const char* subcmd = pSubcmd->GetProc();
 		if (::strcasecmp(subcmd, "setup") == 0) {
+			if (pOV7670) {
+				terr.Printf("OV7670 camera module is already setup.\n");
+				return Result::Error;
+			}
 			OV7670::Resolution resolution = OV7670::QVGA;
 			OV7670::Format format = OV7670::RGB565;
-			i2c_inst_t* i2c = nullptr;
-			uint pinDIN0 = GPIO::InvalidPin;
-			uint pinXLK = GPIO::InvalidPin;
-			uint pinPLK = GPIO::InvalidPin;
+			int iI2C = -1;
+			uint pinD0 = GPIO::InvalidPin;
+			uint pinXCLK = GPIO::InvalidPin;
+			uint pinPCLK = GPIO::InvalidPin;
 			uint pinHREF = GPIO::InvalidPin;
 			uint pinVSYNC = GPIO::InvalidPin;
 			uint32_t freq = 24000000;
@@ -135,17 +140,16 @@ ShellCmd(ov7670, "controls OV7670")
 					}
 				} else if (Arg::GetAssigned(subcmd, "i2c", &value)) {
 					if (::strcasecmp(value, "0") == 0) {
-						i2c = i2c0;
+						iI2C = 0;
 					} else if (::strcasecmp(value, "1") == 0) {
-						i2c = i2c1;
+						iI2C = 1;
 					} else {
 						terr.Printf("unknown i2c bus: %s\n", value);
 						return Result::Error;
 					}
-				} else if (Arg::GetAssigned(subcmd, "din0", &value) ||
-							Arg::GetAssigned(subcmd, "data0", &value)) {
+				} else if (Arg::GetAssigned(subcmd, "d0", &value)) {
 					if (!value) {
-						terr.Printf("din0 pin not specified.\n");
+						terr.Printf("d0 pin not specified.\n");
 						return Result::Error;
 					}
 					int num = ::strtol(value, nullptr, 0);
@@ -153,9 +157,8 @@ ShellCmd(ov7670, "controls OV7670")
 						terr.Printf("invalid GPIO number: %s\n", value);
 						return Result::Error;
 					}
-					pinDIN0 = static_cast<uint>(num);
-				} else if (Arg::GetAssigned(subcmd, "xlk", &value) ||
-							Arg::GetAssigned(subcmd, "xclk", &value)) {
+					pinD0 = static_cast<uint>(num);
+				} else if (Arg::GetAssigned(subcmd, "xclk", &value)) {
 					if (!value) {
 						terr.Printf("xlk pin not specified.\n");
 						return Result::Error;
@@ -165,9 +168,8 @@ ShellCmd(ov7670, "controls OV7670")
 						terr.Printf("invalid GPIO number: %s\n", value);
 						return Result::Error;
 					}
-					pinXLK = static_cast<uint>(num);
-				} else if (Arg::GetAssigned(subcmd, "plk", &value) ||
-							Arg::GetAssigned(subcmd, "pclk", &value)) {
+					pinXCLK = static_cast<uint>(num);
+				} else if (Arg::GetAssigned(subcmd, "pclk", &value)) {
 					if (!value) {
 						terr.Printf("plk pin not specified.\n");
 						return Result::Error;
@@ -177,7 +179,7 @@ ShellCmd(ov7670, "controls OV7670")
 						terr.Printf("invalid GPIO number: %s\n", value);
 						return Result::Error;
 					}
-					pinPLK = static_cast<uint>(num);
+					pinPCLK = static_cast<uint>(num);
 				} else if (Arg::GetAssigned(subcmd, "href", &value)) {
 					if (!value) {
 						terr.Printf("href pin not specified.\n");
@@ -211,18 +213,18 @@ ShellCmd(ov7670, "controls OV7670")
 					return Result::Error;
 				}
 			}
-			if (!i2c) {
+			if (iI2C < 0) {
 				terr.Printf("i2c bus is not specified.\n");
 				return Result::Error;
 			}
-			if (pinDIN0 == GPIO::InvalidPin || pinXLK == GPIO::InvalidPin || pinPLK == GPIO::InvalidPin ||
+			if (pinD0 == GPIO::InvalidPin || pinXCLK == GPIO::InvalidPin || pinPCLK == GPIO::InvalidPin ||
 				pinHREF == GPIO::InvalidPin || pinVSYNC == GPIO::InvalidPin) {
-				terr.Printf("all of din0, xlk, plk, href, and vsync pins must be specified.\n");
+				terr.Printf("all of d0, xclk, pclk, href, and vsync pins must be specified.\n");
 				return Result::Error;
 			}
-			if (pOV7670) delete pOV7670;
-			pOV7670 = new OV7670(resolution, format, i2c0, {
-				DIN0: GPIO::Instance(pinDIN0), XLK: GPIO::Instance(pinXLK), PLK: GPIO::Instance(pinPLK),
+			I2C& i2c = I2C::get_instance(iI2C);
+			pOV7670 = new OV7670(resolution, format, i2c, {
+				D0: GPIO::Instance(pinD0), XCLK: GPIO::Instance(pinXCLK), PCLK: GPIO::Instance(pinPCLK),
 				HREF: GPIO::Instance(pinHREF), VSYNC: GPIO::Instance(pinVSYNC)}, freq);
 			pOV7670->Initialize();
 			pOV7670->SetupRegisters();
@@ -230,7 +232,7 @@ ShellCmd(ov7670, "controls OV7670")
 			continue;
 		}
 		if (!pOV7670) {
-			terr.Printf("OV7670 device is not initialized. Run 'ov7670 setup' first.\n");
+			terr.Printf("OV7670 camera module is not initialized. Run 'ov7670 setup' first.\n");
 			return Result::Error;
 		}
 		OV7670& ov7670 = *pOV7670;
@@ -417,7 +419,8 @@ ShellCmd(ov7670, "controls OV7670")
 					terr.Printf("invalid dummy-pixels value: %s\n", value);
 					return Result::Error;
 				}
-				ov7670.WriteReg(OV7670::Reg2A_EXHCH, static_cast<uint8_t>((num >> 8) & 0xff));
+				ov7670.WriteReg(OV7670::Reg2A_EXHCH,
+					(ov7670.ReadReg(OV7670::Reg2A_EXHCH) & 0x0f) | static_cast<uint8_t>((num >> 4) & 0xf0));
 				ov7670.WriteReg(OV7670::Reg2B_EXHCL, static_cast<uint8_t>(num & 0xff));
 			}
 		} else if (Arg::GetAssigned(subcmd, "dummy-rows", &value)) {
