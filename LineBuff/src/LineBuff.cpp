@@ -103,7 +103,7 @@ bool LineBuff::NextLine(const char** pp, int nLines) const
 
 LineBuff::Reader LineBuff::CreateReader() const
 {
-	return Reader(pLineFirst_, GetBuffBegin(), GetBuffEnd(), pBuffLast_);
+	return Reader(GetLineFirst(), GetBuffBegin(), GetBuffEnd(), GetBuffLast());
 }
 
 void LineBuff::PrintInfo(Printable& printable) const

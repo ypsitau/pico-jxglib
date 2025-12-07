@@ -420,12 +420,40 @@ Tokenizer Shell::CreateTokenizer()
 	return Tokenizer(specialTokens_, count_of(specialTokens_));
 }
 
-void Shell::PrintHistory(Printable& printable, bool withIndexFlag)
+void Shell::PrintHistory(Printable& printable, const uint16_t iLineTbl[], int nLines, bool withIndexFlag)
 {
 	Terminal& terminal = Instance.GetTerminal();
 	const LineBuff& historyBuff = terminal.GetLineEditor().GetHistoryBuff();
-	LineBuff::Reader reader(historyBuff.CreateReader());
-	reader.PrintTo(printable);
+	WrappedCharFeeder charFeeder = historyBuff.CreateCharFeeder(historyBuff.GetLineFirst());
+	uint16_t iLine = 1;
+	bool printFlag = false;
+	bool linetopFlag = true;
+	const char* pBuffCur;
+	for ( ; (pBuffCur = charFeeder.GetPointer()) != historyBuff.GetLineLast(); charFeeder.Forward()) {
+		char ch = *pBuffCur;
+		if (linetopFlag) {
+			if (iLineTbl && nLines > 0) {
+				printFlag = false;
+				for (int i = 0; i < nLines; i++) {
+					if (iLineTbl[i] == iLine) {
+						printFlag = true;
+						break;
+					}
+				}
+			} else {
+				printFlag = true;
+			}
+			if (printFlag && withIndexFlag) printable.Printf("%d: ", iLine);
+			linetopFlag = false;
+		}
+		if (ch == '\0') {
+			if (printFlag) printable.PutChar('\n');
+			iLine++;
+			linetopFlag = true;
+		} else {
+			if (printFlag) printable.PutChar(ch);
+		}
+	}
 }
 
 void Shell::PrintHelp(Printable& printable, bool simpleFlag)

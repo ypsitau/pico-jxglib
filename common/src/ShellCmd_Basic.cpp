@@ -320,7 +320,14 @@ ShellCmd(history, "prints the command history")
 		arg.PrintHelp(terr);
 		return Result::Error;
 	}
-	Shell::PrintHistory(tout);
+	uint16_t iLineTbl[256];
+	Arg::EachNum eachNum(argv[1], argv[argc]);
+	int nLines = 0;
+	if ((nLines = eachNum.GetAll<uint16_t>(iLineTbl, count_of(iLineTbl))) < 0) {
+		terr.Printf("%s\n", eachNum.GetErrorMsg());
+		return Result::Error;
+	}
+	Shell::PrintHistory(tout, iLineTbl, nLines, nLines == 0);
 	return Result::Success;
 }
 

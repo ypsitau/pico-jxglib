@@ -402,7 +402,7 @@ public:
 	virtual void OnTick() override;
 public:
 	static Tokenizer CreateTokenizer();
-	static void PrintHistory(Printable& printable, bool withIndexFlag = false);
+	static void PrintHistory(Printable& printable, const uint16_t iLineTbl[], int nLines, bool withIndexFlag = false);
 	static void PrintHelp(Printable& printable, bool simpleFlag = false);
 	static const char* HashPassword(Hash::SHA256& sha256, const char* password);
 };

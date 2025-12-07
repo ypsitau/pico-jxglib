@@ -42,11 +42,13 @@ public:
 	void Clear();
 public:
 	char* GetBuffBegin() { return buffBegin_; }
+	char* GetBuffLast() { return pBuffLast_; }
 	char* GetBuffEnd() { return buffBegin_ + bytesBuff_; }
 	char* GetWrite() { return pBuffLast_; }
 	char* GetLineFirst() { return pLineFirst_; }
 	char* GetLineLast() { return pLineLast_; }
 	const char* GetBuffBegin() const { return buffBegin_; }
+	const char* GetBuffLast() const { return pBuffLast_; }
 	const char* GetBuffEnd() const { return buffBegin_ + bytesBuff_; }
 	const char* GetWrite() const { return pBuffLast_; }
 	const char* GetLineFirst() const { return pLineFirst_; }
@@ -65,7 +67,7 @@ public:
 	bool NextLine(const char** pp) const { return NextLine(const_cast<char**>(pp)); }
 	bool NextLine(const char** pp, int nLines) const;
 	LineBuff& PlaceChar(char ch) { *pBuffLast_ = ch; return *this; }
-	WrappedCharFeeder CreateCharFeeder(const char* pBuffCur) { return WrappedCharFeeder(pBuffCur, GetBuffBegin(), GetBuffEnd()); }
+	WrappedCharFeeder CreateCharFeeder(const char* pBuffCur) const { return WrappedCharFeeder(pBuffCur, GetBuffBegin(), GetBuffEnd()); }
 	Reader CreateReader() const;
 public:
 	void PrintInfo(Printable& printable) const;
