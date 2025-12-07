@@ -1027,7 +1027,7 @@ void OV7670::FreeResource()
 	image_.Free();
 }
 
-const Image& OV7670::Capture()
+void OV7670::DoCapture()
 {
 	if (!image_.IsValid()) {
 		Size size =
@@ -1046,7 +1046,7 @@ const Image& OV7670::Capture()
 			//(format_ == Format::RGB555)? Image::Format::RGB555 :
 			//(format_ == Format::RGB444)? Image::Format::RGB444 :
 			Image::Format::RGB,
-			size.width, size.height)) return Image::None;
+			size.width, size.height)) return;
 	}
 	if (updateResolutionAndFormatFlag_) {
 		SetupRegisters_ResolutionAndFormat();
@@ -1061,7 +1061,6 @@ const Image& OV7670::Capture()
 	sm_.set_enabled();
 	sm_.put(image_.GetWidth() * 2 - 1);
 	while (pChannel_->is_busy()) Tickable::Tick();
-	return image_;
 }
 
 const char* OV7670::GetRemarks(char* buff, int lenMax) const

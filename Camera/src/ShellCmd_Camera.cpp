@@ -12,7 +12,7 @@ Size sizePreviewPrev_;
 
 void ListCameras(Printable& tout);
 
-TickableEntry(CameraPreviewTickable, 33, Tickable::Priority::AboveNormal)
+TickableEntry(CameraDisplayTickable, 0, Tickable::Priority::AboveNormal)
 {
 	if (!enableDispayFlag_) return;
 	Camera::Base& camera = Camera::GetInstance(0);
@@ -42,6 +42,7 @@ ShellCmd(camera, "controls cameras")
 		terr.Printf("Usage: %s [OPTION]... COMMAND...\n", GetName());
 		arg.PrintHelp(terr);
 		terr.Printf("Commands:\n");
+		terr.Printf(" fps                     prints frames per second\n");
 		terr.Printf(" display-start[:DISPLAY] starts display on specified display\n");
 		terr.Printf(" display-stop            stops display\n");
 		return arg.GetBool("help")? Result::Success : Result::Error;
@@ -71,7 +72,9 @@ ShellCmd(camera, "controls cameras")
 	}
 	while (const Arg::Subcmd* pSubcmd = each.NextSubcmd()) {
 		const char* subcmd = pSubcmd->GetProc();
-		if (Arg::GetAssigned(subcmd, "display-start", &value)) {
+		if (::strcasecmp(subcmd, "fps") == 0) {
+			tout.Printf("%d fps\n", camera.GetFPS());
+		} else if (Arg::GetAssigned(subcmd, "display-start", &value)) {
 			if (value) {
 				char* endptr;
 				int num = ::strtol(value, &endptr, 10);

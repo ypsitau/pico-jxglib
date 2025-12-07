@@ -316,7 +316,7 @@ ShellCmd(history, "prints the command history")
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
 	if (arg.GetBool("help")) {
-		terr.Printf("Usage: %s [OPTION]...\n", GetName());
+		terr.Printf("Usage: %s [OPTION]... [NUM]...\n", GetName());
 		arg.PrintHelp(terr);
 		return Result::Error;
 	}

@@ -254,7 +254,8 @@ public:
 public:
 	// virtual functions of Base
 	virtual void FreeResource() override;
-	virtual const Image& Capture() override;
+	virtual const Image& GetImage() const override { return image_; }
+	virtual void DoCapture() override;
 	virtual const char* GetName() const override { return "OV7670"; }
 	virtual const char* GetRemarks(char* buff, int lenMax) const override;
 };

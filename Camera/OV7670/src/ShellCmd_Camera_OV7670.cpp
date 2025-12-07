@@ -39,8 +39,9 @@ ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 		arg.PrintHelp(terr);
 		terr.Printf("Sub Commands:\n");
 		terr.Printf(" setup                              setup a OV7670 camera module with the given parameters:\n");
-		terr.Printf("                                    {reso:RESO format:FORMAT i2c:I2C_BUS\n");
-		terr.Printf("                                     d0:PIN xclk:PIN pclk:PIN href:PIN vsync:PIN freq:FREQ}\n");
+		terr.Printf("                                     {i2c:BUS d0:PIN xclk:PIN pclk:PIN href:PIN vsync:PIN freq:FREQ}\n");
+		terr.Printf(" reso:RESO                          gets/sets resolution: vga, qvga, qqvga, cif, qcif, qqcif\n");
+		terr.Printf(" format:FORMAT                      gets/sets format: rgb565, yuv422\n");
 		terr.Printf(" dump                               dumps all OV7670 registers\n");
 		terr.Printf(" ccir656:[on|off]                   enables/disables CCIR656 mode\n");
 		terr.Printf(" scale:[on|off]                     enables/disables scaling\n");

@@ -10,7 +10,7 @@ namespace jxglib::Camera {
 //------------------------------------------------------------------------------
 Base* Base::pHead_ = nullptr;
 
-Base::Base(bool registerFlag) : pNext_{nullptr}
+Base::Base(bool registerFlag) : pNext_{nullptr}, capturedFlag_{false}, usecPerFrame_{0}, timeLastCapture_{0}
 {
 	if (!registerFlag) {
 		// nothing to do
@@ -41,6 +41,16 @@ Base::~Base()
 bool Base::IsValid() const
 {
 	return this != &Dummy::Instance;
+}
+
+const Image& Base::Capture()
+{
+	usecPerFrame_ = capturedFlag_? ::absolute_time_diff_us(timeLastCapture_, ::get_absolute_time()) : 0;
+	capturedFlag_ = false;
+	DoCapture();
+	capturedFlag_ = true;
+	timeLastCapture_ = ::get_absolute_time();
+	return GetImage();
 }
 
 //------------------------------------------------------------------------------
