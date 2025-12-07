@@ -469,11 +469,11 @@ bool OV7670::Initialize()
 	return true;
 }
 
-void OV7670::SetupRegisters()
+void OV7670::SetupReg()
 {
 	uint32_t hStart = 136, hStop = hStart + 640;
 	uint32_t vStart = 12, vStop = vStart + 480;
-	ResetAllRegisters();
+	ResetAllReg();
 	//-------------------------------------------------------------------------
 	// Table 3-1. Scan Direction Control
 	//-------------------------------------------------------------------------
@@ -958,9 +958,10 @@ void OV7670::SetupRegisters()
 		0x01);				// ADC and Analog Common Mode Control (Reserved)
 	WriteReg(Reg39_OFON,
 		0x00);				// ADC Offset Control (Reserved)
+	updateResolutionAndFormatFlag_ = true;
 }
 
-void OV7670::SetupRegisters_ResolutionAndFormat()
+void OV7670::SetupReg_ResolutionAndFormat()
 {
 	//-------------------------------------------------------------------------
 	// Table 2-1. OV7670/OV7171 Output Formats
@@ -1038,7 +1039,7 @@ void OV7670::SetupRegisters_ResolutionAndFormat()
 							//  1: Sensor automatically sets output window
 }
 
-OV7670& OV7670::ResetAllRegisters()
+OV7670& OV7670::ResetAllReg()
 {
 	WriteReg(Reg12_COM7,
 		(0b1 << 7));		// SCCB Register Reset
@@ -1079,11 +1080,10 @@ void OV7670::DoCapture()
 			(format_ == Format::RGB565)? Image::Format::RGB565 :
 			//(format_ == Format::RGB555)? Image::Format::RGB555 :
 			//(format_ == Format::RGB444)? Image::Format::RGB444 :
-			Image::Format::RGB,
-			size.width, size.height)) return;
+			Image::Format::RGB, size.width, size.height)) return;
 	}
 	if (updateResolutionAndFormatFlag_) {
-		SetupRegisters_ResolutionAndFormat();
+		SetupReg_ResolutionAndFormat();
 		updateResolutionAndFormatFlag_ = false;
 	}
 	sm_.set_enabled(false);

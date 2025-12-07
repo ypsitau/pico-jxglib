@@ -192,7 +192,7 @@ ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 				D0: GPIO::Instance(pinD0), XCLK: GPIO::Instance(pinXCLK), PCLK: GPIO::Instance(pinPCLK),
 				HREF: GPIO::Instance(pinHREF), VSYNC: GPIO::Instance(pinVSYNC)}, freq);
 			pOV7670->Initialize();
-			pOV7670->SetupRegisters();
+			pOV7670->SetupReg();
 			pOV7670->EnableColorMode(true);
 			continue;
 		}
@@ -206,6 +206,9 @@ ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 			ov7670.ReadRegs(0x00, data, sizeof(data));
 			Printable::DumpT dump(tout);
 			dump(data, sizeof(data));
+		} else if (::strcasecmp(subcmd, "init-reg") == 0) {
+			ov7670.SetupReg();
+			ov7670.EnableColorMode(true);
 		} else if (Arg::GetAssigned(subcmd, "reso", &value) || Arg::GetAssigned(subcmd, "resolution", &value)) {
 			OV7670::Resolution resolution =
 				(::strcasecmp(value, "vga")		== 0)? OV7670::Resolution::VGA :

@@ -240,8 +240,8 @@ public:
 	OV7670& SetFormat(Format format);
 public:
 	bool Initialize();
-	void SetupRegisters();
-	void SetupRegisters_ResolutionAndFormat();
+	void SetupReg();
+	void SetupReg_ResolutionAndFormat();
 public:
 	OV7670& WriteReg(uint8_t reg, uint8_t value);
 	OV7670& WriteReg(uint8_t reg, uint8_t mask, uint8_t value);
@@ -250,7 +250,7 @@ public:
 	bool ReadRegBit(uint8_t reg, int iBit) { return (ReadReg(reg) >> iBit) & 0b1; }
 	void ReadRegs(uint8_t reg, uint8_t values[], int count);
 public:
-	OV7670& ResetAllRegisters();
+	OV7670& ResetAllReg();
 	OV7670& EnableColorMode(bool enableFlag);
 public:
 	// virtual functions of Base
