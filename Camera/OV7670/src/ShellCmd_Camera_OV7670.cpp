@@ -269,6 +269,27 @@ ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 				ModifyRegBit(subcmd, "rgb444",					OV7670::Reg8C_RGB444,	1) ||
 				ModifyRegBit(subcmd, "ablc",					OV7670::RegB1_ABLC1,	2)) {
 			if (errorFlag) return Result::Error;
+		} else if (Arg::GetAssigned(subcmd, "test-pattern", &value)) {
+			if (!value) {
+				OV7670::TestPattern testPattern = ov7670.GetTestPattern();
+				tout.Printf("test-pattern:%s\n",
+					(testPattern == OV7670::TestPattern::Off)?			"off" :
+					(testPattern == OV7670::TestPattern::Shifting1s)?	"shifting1s" :
+					(testPattern == OV7670::TestPattern::EightBars)?	"eight-bars" :
+					(testPattern == OV7670::TestPattern::FadeToGray)?	"fade-to-gray" : "unknown");
+			} else {
+				OV7670::TestPattern testPattern =
+					(::strcasecmp(value, "off")			== 0)? OV7670::TestPattern::Off :
+					(::strcasecmp(value, "shifting1s")	== 0)? OV7670::TestPattern::Shifting1s :
+					(::strcasecmp(value, "eight-bars")	== 0)? OV7670::TestPattern::EightBars :
+					(::strcasecmp(value, "fade-to-gray")== 0)? OV7670::TestPattern::FadeToGray :
+					OV7670::TestPattern::None;
+				if (testPattern == OV7670::TestPattern::None) {
+					terr.Printf("unknown test-pattern: %s\n", value);
+					return Result::Error;
+				}
+				ov7670.SetTestPattern(testPattern);
+			}
 		} else if (Arg::GetAssigned(subcmd, "brightness", &value)) {
 			if (!value) {
 				int8_t num = static_cast<int8_t>(ov7670.ReadReg(OV7670::Reg55_BRIGHT));

@@ -408,6 +408,28 @@ OV7670& OV7670::SetFormat(Format format)
 	return *this;
 }
 
+OV7670& OV7670::SetTestPattern(TestPattern testPattern)
+{
+	uint8_t value =
+		(testPattern == TestPattern::Off) ? 0b00 :
+		(testPattern == TestPattern::Shifting1s) ? 0b01 :
+		(testPattern == TestPattern::EightBars) ? 0b10 :
+		(testPattern == TestPattern::FadeToGray) ? 0b11 : 0b00;
+	WriteRegBit(Reg71_SCALING_YSC, 7, value & 0b10);
+	WriteRegBit(Reg70_SCALING_XSC, 7, value & 0b01);
+	return *this;
+}
+
+OV7670::TestPattern OV7670::GetTestPattern()
+{
+	uint8_t value = (ReadRegBit(Reg71_SCALING_YSC, 7)? 0b10 : 0b00) | (ReadRegBit(Reg70_SCALING_XSC, 7)? 0b01 : 0b00);
+	return
+		(value == 0b00) ? TestPattern::Off :
+		(value == 0b01) ? TestPattern::Shifting1s :
+		(value == 0b10) ? TestPattern::EightBars :
+		(value == 0b11) ? TestPattern::FadeToGray : TestPattern::Off;
+}
+
 bool OV7670::Initialize()
 {
 	if (format_ == Format::RawBayerRGB) {

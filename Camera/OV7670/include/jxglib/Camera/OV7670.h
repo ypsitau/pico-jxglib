@@ -19,6 +19,7 @@ class OV7670 : public Base {
 public:
 	enum class Resolution { None, VGA, QVGA, QQVGA, QQQVGA, CIF, QCIF, QQCIF };
 	enum class Format { None, RawBayerRGB, ProcessedBayerRGB, YUV422, GRB422, RGB565, RGB555, RGB444 };
+	enum class TestPattern { None, Off, Shifting1s, EightBars, FadeToGray };
 	struct ResolutionSetting {
 		uint8_t Reg11_CLKRC;
 		uint8_t Reg12_COM7;
@@ -238,6 +239,8 @@ public:
 public:
 	OV7670& SetResolution(Resolution resolution);
 	OV7670& SetFormat(Format format);
+	OV7670& SetTestPattern(TestPattern testPattern);
+	TestPattern GetTestPattern();
 public:
 	bool Initialize();
 	void SetupReg();
