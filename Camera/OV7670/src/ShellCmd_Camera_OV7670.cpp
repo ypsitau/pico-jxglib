@@ -40,7 +40,7 @@ ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 		terr.Printf("Sub Commands:\n");
 		terr.Printf(" setup                              setup a OV7670 camera module with the given parameters:\n");
 		terr.Printf("                                     {i2c:BUS d0:PIN xclk:PIN pclk:PIN href:PIN vsync:PIN freq:FREQ}\n");
-		terr.Printf(" reso:RESO                          gets/sets resolution: vga, qvga, qqvga, cif, qcif, qqcif\n");
+		terr.Printf(" reso:RESO                          gets/sets resolution: vga, qvga, qqvga, qqqvga, cif, qcif, qqcif\n");
 		terr.Printf(" format:FORMAT                      gets/sets format: rgb565, yuv422\n");
 		terr.Printf(" dump                               dumps all OV7670 registers\n");
 		terr.Printf(" ccir656:[on|off]                   enables/disables CCIR656 mode\n");
@@ -92,8 +92,8 @@ ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 				terr.Printf("OV7670 camera module is already setup.\n");
 				return Result::Error;
 			}
-			OV7670::Resolution resolution = OV7670::QVGA;
-			OV7670::Format format = OV7670::RGB565;
+			OV7670::Resolution resolution = OV7670::Resolution::QVGA;
+			OV7670::Format format = OV7670::Format::RGB565;
 			int iI2C = -1;
 			uint pinD0 = GPIO::InvalidPin;
 			uint pinXCLK = GPIO::InvalidPin;
@@ -207,20 +207,15 @@ ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 			Printable::DumpT dump(tout);
 			dump(data, sizeof(data));
 		} else if (Arg::GetAssigned(subcmd, "reso", &value) || Arg::GetAssigned(subcmd, "resolution", &value)) {
-			OV7670::Resolution resolution;
-			if (::strcasecmp(value, "vga") == 0) {
-				resolution = OV7670::VGA;
-			} else if (::strcasecmp(value, "qvga") == 0) {
-				resolution = OV7670::QVGA;
-			} else if (::strcasecmp(value, "qqvga") == 0) {
-				resolution = OV7670::QQVGA;
-			} else if (::strcasecmp(value, "cif") == 0) {
-				resolution = OV7670::CIF;
-			} else if (::strcasecmp(value, "qcif") == 0) {
-				resolution = OV7670::QCIF;
-			} else if (::strcasecmp(value, "qqcif") == 0) {
-				resolution = OV7670::QQCIF;
-			} else {
+			OV7670::Resolution resolution =
+				(::strcasecmp(value, "vga")		== 0)? OV7670::Resolution::VGA :
+				(::strcasecmp(value, "qvga")	== 0)? OV7670::Resolution::QVGA :
+				(::strcasecmp(value, "qqvga")	== 0)? OV7670::Resolution::QQVGA :
+				(::strcasecmp(value, "qqqvga")	== 0)? OV7670::Resolution::QQQVGA :
+				(::strcasecmp(value, "cif")		== 0)? OV7670::Resolution::CIF :
+				(::strcasecmp(value, "qcif")	== 0)? OV7670::Resolution::QCIF :
+				(::strcasecmp(value, "qqcif")	== 0)? OV7670::Resolution::QQCIF : OV7670::Resolution::None;
+			if (resolution == OV7670::Resolution::None) {
 				terr.Printf("unknown resolution: %s\n", value);
 				return Result::Error;
 			}
@@ -228,19 +223,19 @@ ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 		} else if (Arg::GetAssigned(subcmd, "format", &value)) {
 			OV7670::Format format;
 			if (::strcasecmp(value, "raw-rgb") == 0) {
-				format = OV7670::RawBayerRGB;
+				format = OV7670::Format::RawBayerRGB;
 			} else if (::strcasecmp(value, "processed-rgb") == 0) {
-				format = OV7670::ProcessedBayerRGB;
+				format = OV7670::Format::ProcessedBayerRGB;
 			} else if (::strcasecmp(value, "yuv422") == 0) {
-				format = OV7670::YUV422;
+				format = OV7670::Format::YUV422;
 			} else if (::strcasecmp(value, "grb422") == 0) {
-				format = OV7670::GRB422;
+				format = OV7670::Format::GRB422;
 			} else if (::strcasecmp(value, "rgb565") == 0) {
-				format = OV7670::RGB565;
+				format = OV7670::Format::RGB565;
 			} else if (::strcasecmp(value, "rgb555") == 0) {
-				format = OV7670::RGB555;
+				format = OV7670::Format::RGB555;
 			} else if (::strcasecmp(value, "rgb444") == 0) {
-				format = OV7670::RGB444;
+				format = OV7670::Format::RGB444;
 			} else {
 				terr.Printf("unknown format: %s\n", value);
 				return Result::Error;

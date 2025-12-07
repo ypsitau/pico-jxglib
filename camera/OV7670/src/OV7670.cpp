@@ -37,7 +37,7 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_VGA {
 		(0b0 << 3) |		// Bypass clock divider for DSP scale control
 		(0b000 << 0),		// Clock divider control for DSP scale control	
 	RegA2_SCALING_PCLK_DELAY:
-		(0b0000010 << 0),	// Scaling output delay
+		(2 << 0),			// Scaling output delay
 };
 
 const OV7670::ResolutionSetting OV7670::resolutionSetting_QVGA {
@@ -69,7 +69,39 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QVGA {
 		(0b0 << 3) |		// Bypass clock divider for DSP scale control
 		(0b001 << 0),		// Clock divider control for DSP scale control	
 	RegA2_SCALING_PCLK_DELAY:
-		(0b0000010 << 0),	// Scaling output delay
+		(2 << 0),			// Scaling output delay
+};
+
+const OV7670::ResolutionSetting OV7670::resolutionSetting_QQQVGA {
+	Reg11_CLKRC:
+		(0b0 << 6) |		// Use external clock directly (no clock pre-scale available)
+		(0b000001 << 0),	// Internal clock prescaler
+	Reg12_COM7:
+		(0b0 << 5) |		// Output format - CIF selection
+		(0b0 << 4) |		// Output format - QVGA selection
+		(0b0 << 3) |		// Output format - QCIF selection
+		(0b0 << 2) |		// Output format - RGB selection
+		(0b0 << 1) |		// Color bar
+		(0b0 << 0),			// Output format - Raw RGB
+	Reg0C_COM3:
+		(0b1 << 3) |		// Scale enable
+		(0b1 << 2),			// DCW enable
+	Reg3E_COM14:
+		(0b1 << 4) |		// DCW and scaling PCLK enable
+		(0b0 << 3) |		// Manual scaling enable for pre-defined resolution modes such as CIF, QCIF, and QVGA
+		(0b010 << 0),		// PCLK divider (only when COM14[4] = 1)
+	Reg70_SCALING_XSC:
+		(0b0111010 << 0),	// Horizontal scale factor
+	Reg71_SCALING_YSC:
+		(0b0110101 << 0),	// Vertical scale factor
+	Reg72_SCALING_DCWCTR:
+		(0b10 << 4) |		// Vertical downsampling rate
+		(0b10 << 0),		// Horizontal downsampling rate
+	Reg73_SCALING_PCLK_DIV:
+		(0b0 << 3) |		// Bypass clock divider for DSP scale control
+		(0b010 << 0),		// Clock divider control for DSP scale control	
+	RegA2_SCALING_PCLK_DELAY:
+		(2 << 0),			// Scaling output delay
 };
 
 const OV7670::ResolutionSetting OV7670::resolutionSetting_QQVGA {
@@ -101,7 +133,7 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QQVGA {
 		(0b0 << 3) |		// Bypass clock divider for DSP scale control
 		(0b010 << 0),		// Clock divider control for DSP scale control	
 	RegA2_SCALING_PCLK_DELAY:
-		(0b0000010 << 0),	// Scaling output delay
+		(2 << 0),			// Scaling output delay
 };
 
 const OV7670::ResolutionSetting OV7670::resolutionSetting_CIF {
@@ -133,7 +165,7 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_CIF {
 		(0b0 << 3) |		// Bypass clock divider for DSP scale control
 		(0b001 << 0),		// Clock divider control for DSP scale control	
 	RegA2_SCALING_PCLK_DELAY:
-		(0b0000010 << 0),	// Scaling output delay
+		(2 << 0),			// Scaling output delay
 };
 
 const OV7670::ResolutionSetting OV7670::resolutionSetting_QCIF {
@@ -165,7 +197,7 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QCIF {
 		(0b0 << 3) |		// Bypass clock divider for DSP scale control
 		(0b001 << 0),		// Clock divider control for DSP scale control	
 	RegA2_SCALING_PCLK_DELAY:
-		(0b1010010 << 0),	// Scaling output delay
+		(82 << 0),			// Scaling output delay
 };
 
 const OV7670::ResolutionSetting OV7670::resolutionSetting_QQCIF{
@@ -187,7 +219,7 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QQCIF{
 		(0b0 << 3) |		// Manual scaling enable for pre-defined resolution modes such as CIF, QCIF, and QVGA
 		(0b010 << 0),		// PCLK divider (only when COM14[4] = 1)
 	Reg70_SCALING_XSC:
-		(0b0111010 << 0),	// Horizontal scale factor
+		(53 << 0),			// Horizontal scale factor
 	Reg71_SCALING_YSC:
 		(0b0110101 << 0),	// Vertical scale factor
 	Reg72_SCALING_DCWCTR:
@@ -197,7 +229,7 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QQCIF{
 		(0b0 << 3) |		// Bypass clock divider for DSP scale control
 		(0b010 << 0),		// Clock divider control for DSP scale control	
 	RegA2_SCALING_PCLK_DELAY:
-		(0b0101010 << 0),	// Scaling output delay
+		(42 << 0),			// Scaling output delay
 };
 
 // Table 2-1. OV7670/OV7171 Output Formats
@@ -935,12 +967,13 @@ void OV7670::SetupRegisters_ResolutionAndFormat()
 	// Table 2-2. Resolution Register Settings
 	//-------------------------------------------------------------------------
 	const ResolutionSetting& resolutionSetting =
-		(resolution_ == Resolution::VGA)?	resolutionSetting_VGA :
-		(resolution_ == Resolution::QVGA)?	resolutionSetting_QVGA :
-		(resolution_ == Resolution::QQVGA)?	resolutionSetting_QQVGA :
-		(resolution_ == Resolution::CIF)?	resolutionSetting_CIF :
-		(resolution_ == Resolution::QCIF)?	resolutionSetting_QCIF :
-		(resolution_ == Resolution::QQCIF)?	resolutionSetting_QQCIF : resolutionSetting_VGA;
+		(resolution_ == Resolution::VGA)?		resolutionSetting_VGA :
+		(resolution_ == Resolution::QVGA)?		resolutionSetting_QVGA :
+		(resolution_ == Resolution::QQVGA)?		resolutionSetting_QQVGA :
+		(resolution_ == Resolution::QQQVGA)?	resolutionSetting_QQQVGA :
+		(resolution_ == Resolution::CIF)?		resolutionSetting_CIF :
+		(resolution_ == Resolution::QCIF)?		resolutionSetting_QCIF :
+		(resolution_ == Resolution::QQCIF)?		resolutionSetting_QQCIF : resolutionSetting_VGA;
 	const FormatSetting& formatSetting =
 		(format_ == Format::RawBayerRGB)?		formatSetting_RawBayerRGB :
 		(format_ == Format::ProcessedBayerRGB)?	formatSetting_ProcessedBayerRGB :
@@ -1031,12 +1064,13 @@ void OV7670::DoCapture()
 {
 	if (!image_.IsValid()) {
 		Size size =
-			(resolution_ == Resolution::VGA)?	Size{640, 480} :
-			(resolution_ == Resolution::QVGA)?	Size{320, 240} :
-			(resolution_ == Resolution::QQVGA)?	Size{160, 120} :
-			(resolution_ == Resolution::CIF)?	Size{352, 288} :
-			(resolution_ == Resolution::QCIF)?	Size{176, 144} :
-			(resolution_ == Resolution::QQCIF)?	Size{88, 72} : Size{320, 240};
+			(resolution_ == Resolution::VGA)?		Size{640, 480} :
+			(resolution_ == Resolution::QVGA)?		Size{320, 240} :
+			(resolution_ == Resolution::QQVGA)?		Size{160, 120} :
+			(resolution_ == Resolution::QQQVGA)?	Size{80, 60} :
+			(resolution_ == Resolution::CIF)?		Size{352, 288} :
+			(resolution_ == Resolution::QCIF)?		Size{176, 144} :
+			(resolution_ == Resolution::QQCIF)?		Size{88, 72} : Size{320, 240};
 		if (!image_.Allocate(
 			(format_ == Format::RawBayerRGB)? Image::Format::RGB :
 			(format_ == Format::ProcessedBayerRGB)? Image::Format::RGB :
@@ -1069,6 +1103,7 @@ const char* OV7670::GetRemarks(char* buff, int lenMax) const
 		(resolution_ == Resolution::VGA)?		"vga" :
 		(resolution_ == Resolution::QVGA)?		"qvga" :
 		(resolution_ == Resolution::QQVGA)?		"qqvga" :
+		(resolution_ == Resolution::QQQVGA)?	"qqqvga" :
 		(resolution_ == Resolution::CIF)?		"cif" :
 		(resolution_ == Resolution::QCIF)?		"qcif" :
 		(resolution_ == Resolution::QQCIF)?		"qqcif" : "unknown",

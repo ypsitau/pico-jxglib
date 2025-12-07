@@ -30,6 +30,7 @@ public:
 class MemoryConst : public Memory {
 public:
 	MemoryConst(const void* data) : Memory(const_cast<void*>(data)) {}
+	~MemoryConst() { /* do nothing */ }
 public:
 	virtual bool IsWritable() const override { return false; }
 	virtual void Free() override { /* do nothing */ }
@@ -41,6 +42,7 @@ public:
 class MemoryHeap : public Memory {
 public:
 	MemoryHeap(void* data) : Memory(data) {}
+	~MemoryHeap() { Free(); }
 public:
 	virtual void Free() override { ::free(data_); data_ = nullptr; }
 };

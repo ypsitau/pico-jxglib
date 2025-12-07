@@ -62,44 +62,41 @@ bool Write(Image& image, FS::File& file, Format format)
 	int height = image.GetHeight();
 	if (image.GetFormat().IsRGB565()) {
 		if (format == Format::BMP) {
-			const int headerSize = 14 + 40; // BITMAPFILEHEADER + BITMAPINFOHEADER
-			const int rowSize = ((width * 2 + 3) / 4) * 4;
-			const int imageSize = rowSize * height;
-			const int fileSize = headerSize + imageSize;
-			uint8_t header[headerSize];
-			memset(header, 0, headerSize);
-			// BITMAPFILEHEADER
-			header[0] = 'B'; header[1] = 'M';
-			*reinterpret_cast<uint32_t*>(&header[2]) = fileSize;
-			*reinterpret_cast<uint32_t*>(&header[10]) = headerSize;
-			// BITMAPINFOHEADER
-			*reinterpret_cast<uint32_t*>(&header[14]) = 40;
-			*reinterpret_cast<int32_t*>(&header[18]) = width;
-			*reinterpret_cast<int32_t*>(&header[22]) = height;
-			*reinterpret_cast<uint16_t*>(&header[26]) = 1; // plane count 
-			*reinterpret_cast<uint16_t*>(&header[28]) = 16; // bits per pixel
-			*reinterpret_cast<uint32_t*>(&header[30]) = 3; // BI_BITFIELDS
-			*reinterpret_cast<uint32_t*>(&header[34]) = imageSize;
-			file.Write(header, headerSize);
-			uint32_t masks[3] = {0xF800, 0x07E0, 0x001F}; // R, G, B
-			//uint32_t masks[3] = {0x001F, 0x07E0, 0xF800}; // B, G, R
-			file.Write(masks, sizeof(masks));
+			const int bytesHeader = BitmapFileHeader::bytes + BitmapV3InfoHeader::bytes;
+			const int bytesRow = ((width * 2 + 3) / 4) * 4;
+			const int bytesPadding = bytesRow - (width * 2);
+			const int bytesImage = bytesRow * height;
+			const int bytesFile = bytesHeader + bytesImage;
+			const uint8_t padding[3] = {0, 0, 0};
+			BitmapFileHeader bfh;
+			BitmapV3InfoHeader bih;
+			Pack_uint16(bfh.bfType, 0x4d42); // 'BM'
+			Pack_uint32(bfh.bfSize, bytesFile);
+			Pack_uint16(bfh.bfReserved1, 0);
+			Pack_uint16(bfh.bfReserved2, 0);
+			Pack_uint32(bfh.bfOffBits, bytesHeader);
+			Pack_uint32(bih.biSize, BitmapV3InfoHeader::bytes);
+			Pack_int32(bih.biWidth, width);
+			Pack_int32(bih.biHeight, height);
+			Pack_uint16(bih.biPlanes, 1);
+			Pack_uint16(bih.biBitCount, 16);
+			Pack_uint32(bih.biCompression, 3); // BI_BITFIELDS
+			Pack_uint32(bih.biSizeImage, bytesImage);
+			Pack_int32(bih.biXPelsPerMeter, 2835);
+			Pack_int32(bih.biYPelsPerMeter, 2835);
+			Pack_uint32(bih.biClrUsed, 0);
+			Pack_uint32(bih.biClrImportant, 0);
+			Pack_uint32(bih.biRedMask,	0b1111100000000000);
+			Pack_uint32(bih.biGreenMask,0b0000011111100000);
+			Pack_uint32(bih.biBlueMask,	0b0000000000011111);
+			Pack_uint32(bih.biAlphaMask, 0x0000);
+			file.Write(&bfh, BitmapFileHeader::bytes);
+			file.Write(&bih, BitmapV3InfoHeader::bytes);
 			const uint16_t* src = reinterpret_cast<const uint16_t*>(image.GetPointer());
-			uint8_t* rowBuffer = new uint8_t[rowSize];
 			for (int y = height - 1; y >= 0; y--) {
-				memcpy(rowBuffer, &src[y * width], width * 2);
-				if (rowSize > width * 2) {
-					memset(&rowBuffer[width * 2], 0, rowSize - width * 2);
-				}
-				for (int x = 0; x < width; x++) {
-					uint8_t byte1 = rowBuffer[x * 2 + 1];
-					uint8_t byte2 = rowBuffer[x * 2 + 0];
-					rowBuffer[x * 2 + 0] = byte1;
-					rowBuffer[x * 2 + 1] = byte2;
-				}
-				file.Write(rowBuffer, rowSize);
+				file.Write(&src[y * width], width * 2);
+				if (bytesPadding > 0) file.Write(padding, bytesPadding);
 			}
-			delete[] rowBuffer;
 			return true;
 		} else {
 			return false;

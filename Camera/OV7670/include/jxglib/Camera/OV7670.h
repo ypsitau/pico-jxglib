@@ -17,8 +17,8 @@ namespace jxglib::Camera {
 //------------------------------------------------------------------------------
 class OV7670 : public Base {
 public:
-	enum Resolution { VGA, QVGA, QQVGA, CIF, QCIF, QQCIF };
-	enum Format { RawBayerRGB, ProcessedBayerRGB, YUV422, GRB422, RGB565, RGB555, RGB444 };
+	enum class Resolution { None, VGA, QVGA, QQVGA, QQQVGA, CIF, QCIF, QQCIF };
+	enum class Format { None, RawBayerRGB, ProcessedBayerRGB, YUV422, GRB422, RGB565, RGB555, RGB444 };
 	struct ResolutionSetting {
 		uint8_t Reg11_CLKRC;
 		uint8_t Reg12_COM7;
@@ -206,6 +206,7 @@ public:
 	static const ResolutionSetting resolutionSetting_VGA;
 	static const ResolutionSetting resolutionSetting_QVGA;
 	static const ResolutionSetting resolutionSetting_QQVGA;
+	static const ResolutionSetting resolutionSetting_QQQVGA;
 	static const ResolutionSetting resolutionSetting_CIF;
 	static const ResolutionSetting resolutionSetting_QCIF;
 	static const ResolutionSetting resolutionSetting_QQCIF;
