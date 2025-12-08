@@ -69,6 +69,7 @@ extern "C" {
 #define CFG_TUD_CDC               ${_CFG_TUD_CDC}
 #define CFG_TUD_HID               ${_CFG_TUD_HID}
 #define CFG_TUD_MSC               ${_CFG_TUD_MSC}
+#define CFG_TUD_VIDEO             ${_CFG_TUD_VIDEO}
 #define CFG_TUD_MIDI              ${_CFG_TUD_MIDI}
 #define CFG_TUD_VENDOR            ${_CFG_TUD_VENDOR}
 
@@ -82,6 +83,11 @@ extern "C" {
 
 // MSC
 #define CFG_TUD_MSC_EP_BUFSIZE   ${_CFG_TUD_MSC_EP_BUFSIZE}
+
+// VIDEO
+#define CFG_TUD_VIDEO_STREAMING             ${_CFG_TUD_VIDEO_STREAMING}
+#define CFG_TUD_VIDEO_STREAMING_EP_BUFSIZE  ${_CFG_TUD_VIDEO_STREAMING_EP_BUFSIZE}
+#define CFG_TUD_VIDEO_STREAMING_BULK        ${_CFG_TUD_VIDEO_STREAMING_BULK}
 
 #ifdef __cplusplus
 }

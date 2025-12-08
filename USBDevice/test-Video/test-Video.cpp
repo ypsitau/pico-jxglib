@@ -29,7 +29,11 @@
 
 //#include "bsp/board_api.h"
 #include "tusb.h"
-#include "usb_descriptors.h"
+//#include "usb_descriptors.h"
+
+#define FRAME_WIDTH   128
+#define FRAME_HEIGHT  96
+#define FRAME_RATE    10
 
 void board_init()
 {
@@ -292,77 +296,3 @@ void led_blinking_task(void* param) {
     led_state = 1 - led_state; // toggle
   }
 }
-
-//--------------------------------------------------------------------+
-// FreeRTOS
-//--------------------------------------------------------------------+
-#if CFG_TUSB_OS == OPT_OS_FREERTOS
-
-#define BLINKY_STACK_SIZE   configMINIMAL_STACK_SIZE
-#define VIDEO_STACK_SIZE    (configMINIMAL_STACK_SIZE*4)
-
-#if TUSB_MCU_VENDOR_ESPRESSIF
-  #define USBD_STACK_SIZE     4096
-  int main(void);
-  void app_main(void) {
-    main();
-  }
-#else
-  // Increase stack size when debug log is enabled
-  #define USBD_STACK_SIZE    (3*configMINIMAL_STACK_SIZE/2) * (CFG_TUSB_DEBUG ? 2 : 1)
-#endif
-
-// static task
-#if configSUPPORT_STATIC_ALLOCATION
-StackType_t blinky_stack[BLINKY_STACK_SIZE];
-StaticTask_t blinky_taskdef;
-
-StackType_t  usb_device_stack[USBD_STACK_SIZE];
-StaticTask_t usb_device_taskdef;
-
-StackType_t  video_stack[VIDEO_STACK_SIZE];
-StaticTask_t video_taskdef;
-#endif
-
-// USB Device Driver task
-// This top level thread process all usb events and invoke callbacks
-void usb_device_task(void *param) {
-  (void) param;
-
-  // init device stack on configured roothub port
-  // This should be called after scheduler/kernel is started.
-  // Otherwise, it could cause kernel issue since USB IRQ handler does use RTOS queue API.
-  tusb_rhport_init_t dev_init = {
-    .role = TUSB_ROLE_DEVICE,
-    .speed = TUSB_SPEED_AUTO
-  };
-  tusb_init(BOARD_TUD_RHPORT, &dev_init);
-
-  if (board_init_after_tusb) {
-    board_init_after_tusb();
-  }
-
-  // RTOS forever loop
-  while (1) {
-    // put this thread to waiting state until there is new events
-    tud_task();
-  }
-}
-
-void freertos_init_task(void) {
-  #if configSUPPORT_STATIC_ALLOCATION
-  xTaskCreateStatic(led_blinking_task, "blinky", BLINKY_STACK_SIZE, NULL, 1, blinky_stack, &blinky_taskdef);
-  xTaskCreateStatic(usb_device_task, "usbd", USBD_STACK_SIZE, NULL, configMAX_PRIORITIES-1, usb_device_stack, &usb_device_taskdef);
-  xTaskCreateStatic(video_task, "cdc", VIDEO_STACK_SIZE, NULL, configMAX_PRIORITIES - 2, video_stack, &video_taskdef);
-  #else
-  xTaskCreate(led_blinking_task, "blinky", BLINKY_STACK_SIZE, NULL, 1, NULL);
-  xTaskCreate(usb_device_task, "usbd", USBD_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, NULL);
-  xTaskCreate(video_task, "video", VIDEO_STACK_SZIE, NULL, configMAX_PRIORITIES - 2, NULL);
-  #endif
-
-  // skip starting scheduler (and return) for ESP32-S2 or ESP32-S3
-  #if !TUSB_MCU_VENDOR_ESPRESSIF
-  vTaskStartScheduler();
-  #endif
-}
-#endif
