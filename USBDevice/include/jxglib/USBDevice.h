@@ -7,6 +7,8 @@
 #include "jxglib/Common.h"
 #include "tusb.h"
 
+#define TUD_VIDEO_DESC_LEN 1024
+
 namespace jxglib::USBDevice {
 
 class Controller;
@@ -106,7 +108,7 @@ private:
 		TUD_MSC_DESC_LEN *			CFG_TUD_MSC +
 		TUD_HID_DESC_LEN *			CFG_TUD_HID +
 	//	TUD_AUDIO_DESC_LEN *		CFG_TUD_AUDIO +
-	//	TUD_VIDEO_DESC_LEN *		CFG_TUD_VIDEO +
+		TUD_VIDEO_DESC_LEN *		CFG_TUD_VIDEO +
 		TUD_MIDI_DESC_LEN *			CFG_TUD_MIDI +
 		TUD_VENDOR_DESC_LEN *		CFG_TUD_VENDOR
 	//	TUD_USBTMC_DESC_LEN *		CFG_TUD_USBTMC +

@@ -1,99 +1,8 @@
-/*
- * The MIT License (MIT)
- *
- * Copyright (c) 2019 Ha Thach (tinyusb.org)
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- */
-
-//#include "bsp/board_api.h"
 #include "tusb.h"
-//#include "usb_descriptors.h"
 
-#define TUD_VIDEO_CAPTURE_DESC_UNCOMPR_LEN (\
-    TUD_VIDEO_DESC_IAD_LEN\
-    /* control */\
-    + TUD_VIDEO_DESC_STD_VC_LEN\
-    + (TUD_VIDEO_DESC_CS_VC_LEN + 1/*bInCollection*/)\
-    + TUD_VIDEO_DESC_CAMERA_TERM_LEN\
-    + TUD_VIDEO_DESC_OUTPUT_TERM_LEN\
-    /* Interface 1, Alternate 0 */\
-    + TUD_VIDEO_DESC_STD_VS_LEN\
-    + (TUD_VIDEO_DESC_CS_VS_IN_LEN + 1/*bNumFormats x bControlSize*/)\
-    + TUD_VIDEO_DESC_CS_VS_FMT_UNCOMPR_LEN\
-    + TUD_VIDEO_DESC_CS_VS_FRM_UNCOMPR_CONT_LEN\
-    + TUD_VIDEO_DESC_CS_VS_COLOR_MATCHING_LEN\
-    /* Interface 1, Alternate 1 */\
-    + TUD_VIDEO_DESC_STD_VS_LEN\
-    + 7/* Endpoint */\
-  )
-
-#define TUD_VIDEO_CAPTURE_DESC_MJPEG_LEN (\
-    TUD_VIDEO_DESC_IAD_LEN\
-    /* control */\
-    + TUD_VIDEO_DESC_STD_VC_LEN\
-    + (TUD_VIDEO_DESC_CS_VC_LEN + 1/*bInCollection*/)\
-    + TUD_VIDEO_DESC_CAMERA_TERM_LEN\
-    + TUD_VIDEO_DESC_OUTPUT_TERM_LEN\
-    /* Interface 1, Alternate 0 */\
-    + TUD_VIDEO_DESC_STD_VS_LEN\
-    + (TUD_VIDEO_DESC_CS_VS_IN_LEN + 1/*bNumFormats x bControlSize*/)\
-    + TUD_VIDEO_DESC_CS_VS_FMT_MJPEG_LEN\
-    + TUD_VIDEO_DESC_CS_VS_FRM_MJPEG_CONT_LEN\
-    + TUD_VIDEO_DESC_CS_VS_COLOR_MATCHING_LEN\
-    /* Interface 1, Alternate 1 */\
-    + TUD_VIDEO_DESC_STD_VS_LEN\
-    + 7/* Endpoint */\
-  )
-
-#define TUD_VIDEO_CAPTURE_DESC_UNCOMPR_BULK_LEN (\
-    TUD_VIDEO_DESC_IAD_LEN\
-    /* control */\
-    + TUD_VIDEO_DESC_STD_VC_LEN\
-    + (TUD_VIDEO_DESC_CS_VC_LEN + 1/*bInCollection*/)\
-    + TUD_VIDEO_DESC_CAMERA_TERM_LEN\
-    + TUD_VIDEO_DESC_OUTPUT_TERM_LEN\
-    /* Interface 1, Alternate 0 */\
-    + TUD_VIDEO_DESC_STD_VS_LEN\
-    + (TUD_VIDEO_DESC_CS_VS_IN_LEN + 1/*bNumFormats x bControlSize*/)\
-    + TUD_VIDEO_DESC_CS_VS_FMT_UNCOMPR_LEN\
-    + TUD_VIDEO_DESC_CS_VS_FRM_UNCOMPR_CONT_LEN\
-    + TUD_VIDEO_DESC_CS_VS_COLOR_MATCHING_LEN\
-    + 7/* Endpoint */\
-  )
-
-#define TUD_VIDEO_CAPTURE_DESC_MJPEG_BULK_LEN (\
-    TUD_VIDEO_DESC_IAD_LEN\
-    /* control */\
-    + TUD_VIDEO_DESC_STD_VC_LEN\
-    + (TUD_VIDEO_DESC_CS_VC_LEN + 1/*bInCollection*/)\
-    + TUD_VIDEO_DESC_CAMERA_TERM_LEN\
-    + TUD_VIDEO_DESC_OUTPUT_TERM_LEN\
-    /* Interface 1, Alternate 0 */\
-    + TUD_VIDEO_DESC_STD_VS_LEN\
-    + (TUD_VIDEO_DESC_CS_VS_IN_LEN + 1/*bNumFormats x bControlSize*/)\
-    + TUD_VIDEO_DESC_CS_VS_FMT_MJPEG_LEN\
-    + TUD_VIDEO_DESC_CS_VS_FRM_MJPEG_CONT_LEN\
-    + TUD_VIDEO_DESC_CS_VS_COLOR_MATCHING_LEN\
-    + 7/* Endpoint */\
-  )
+#define FRAME_WIDTH   128
+#define FRAME_HEIGHT  96
+#define FRAME_RATE    10
 
 /* Windows support YUY2 and NV12
  * https://docs.microsoft.com/en-us/windows-hardware/drivers/stream/usb-video-class-driver-overview */
@@ -169,7 +78,6 @@
     /* EP */ \
     TUD_VIDEO_DESC_EP_ISO(_epin, _epsize, 1)
 
-
 #define TUD_VIDEO_CAPTURE_DESCRIPTOR_UNCOMPR_BULK(_stridx, _epin, _width, _height, _fps, _epsize) \
   TUD_VIDEO_DESC_IAD(ITF_NUM_VIDEO_CONTROL, /* 2 Interfaces */ 0x02, _stridx), \
   /* Video control 0 */ \
@@ -227,10 +135,6 @@
         TUD_VIDEO_DESC_CS_VS_COLOR_MATCHING(VIDEO_COLOR_PRIMARIES_BT709, VIDEO_COLOR_XFER_CH_BT709, VIDEO_COLOR_COEF_SMPTE170M), \
         /* EP */ \
         TUD_VIDEO_DESC_EP_BULK(_epin, _epsize, 1)
-
-#define FRAME_WIDTH   128
-#define FRAME_HEIGHT  96
-#define FRAME_RATE    10
 
 /* A combination of interfaces must have a unique product id, since PC will save device driver after the first plug.
  * Same VID/PID with different interface e.g MSC (first), then CDC (later) will possibly cause system error on PC.
@@ -570,64 +474,12 @@ const uvc_cfg_desc_t desc_fs_configuration = {
     }
 };
 
-#if TUD_OPT_HIGH_SPEED
-uvc_cfg_desc_t desc_hs_configuration;
-
-static uint8_t * get_hs_configuration_desc(void) {
-  static bool init = false;
-
-  if (!init) {
-    desc_hs_configuration = desc_fs_configuration;
-    // change endpoint bulk size to 512 if bulk streaming
-    if (CFG_TUD_VIDEO_STREAMING_BULK) {
-      desc_hs_configuration.video_streaming.ep.wMaxPacketSize = 512;
-    }
-  }
-  init = true;
-
-  return (uint8_t *) &desc_hs_configuration;
+const uint8_t* GetConfigDesc(int* pBytes)
+{
+  *pBytes = sizeof(desc_fs_configuration);
+  return (const uint8_t*)&desc_fs_configuration;
 }
 
-// device qualifier is mostly similar to device descriptor since we don't change configuration based on speed
-tusb_desc_device_qualifier_t const desc_device_qualifier = {
-    .bLength            = sizeof(tusb_desc_device_t),
-    .bDescriptorType    = TUSB_DESC_DEVICE,
-    .bcdUSB             = USB_BCD,
-
-    .bDeviceClass       = TUSB_CLASS_MISC,
-    .bDeviceSubClass    = MISC_SUBCLASS_COMMON,
-    .bDeviceProtocol    = MISC_PROTOCOL_IAD,
-
-    .bMaxPacketSize0    = CFG_TUD_ENDPOINT0_SIZE,
-    .bNumConfigurations = 0x01,
-    .bReserved          = 0x00
-};
-
-// Invoked when received GET DEVICE QUALIFIER DESCRIPTOR request
-// Application return pointer to descriptor, whose contents must exist long enough for transfer to complete.
-// device_qualifier descriptor describes information about a high-speed capable device that would
-// change if the device were operating at the other speed. If not highspeed capable stall this request.
-uint8_t const* tud_descriptor_device_qualifier_cb(void) {
-  return (uint8_t const*) &desc_device_qualifier;
-}
-
-// Invoked when received GET OTHER SEED CONFIGURATION DESCRIPTOR request
-// Application return pointer to descriptor, whose contents must exist long enough for transfer to complete
-// Configuration descriptor in the other speed e.g if high speed then this is for full speed and vice versa
-uint8_t const* tud_descriptor_other_speed_configuration_cb(uint8_t index) {
-  (void) index; // for multiple configurations
-  // if link speed is high return fullspeed config, and vice versa
-  if (tud_speed_get() == TUSB_SPEED_HIGH) {
-    return (uint8_t const*) &desc_fs_configuration;
-  } else {
-    return get_hs_configuration_desc();
-  }
-}
-#endif // highspeed
-
-// Invoked when received GET CONFIGURATION DESCRIPTOR
-// Application return pointer to descriptor
-// Descriptor contents must exist long enough for transfer to complete
 uint8_t const* tud_descriptor_configuration_cb(uint8_t index) {
   (void) index; // for multiple configurations
 
@@ -642,6 +494,7 @@ uint8_t const* tud_descriptor_configuration_cb(uint8_t index) {
   }
 }
 
+#if 1
 //--------------------------------------------------------------------+
 // String Descriptors
 //--------------------------------------------------------------------+
@@ -691,3 +544,4 @@ uint16_t const* tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
 
   return _desc_str;
 }
+#endif

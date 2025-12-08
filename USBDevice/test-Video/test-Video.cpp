@@ -26,10 +26,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
-//#include "bsp/board_api.h"
 #include "tusb.h"
-//#include "usb_descriptors.h"
+//#include "jxglib/USBDevice.h"
+
+//using namespace jxglib;
 
 #define FRAME_WIDTH   128
 #define FRAME_HEIGHT  96
@@ -69,12 +69,28 @@ void video_task(void* param);
 void freertos_init_task(void);
 #endif
 
+extern "C" const uint8_t* GetConfigDesc(int* pBytes);
 
 //--------------------------------------------------------------------+
 // Main
 //--------------------------------------------------------------------+
-int main(void) {
-  board_init();
+int main(void)
+{
+#if 0
+	USBDevice::Controller deviceController({
+		bcdUSB:				0x0200,
+		bDeviceClass:		TUSB_CLASS_MISC,
+		bDeviceSubClass:	MISC_SUBCLASS_COMMON,
+		bDeviceProtocol:	MISC_PROTOCOL_IAD,
+		bMaxPacketSize0:	CFG_TUD_ENDPOINT0_SIZE,
+		idVendor:			0xcafe,
+		idProduct:			USBDevice::GenerateSpecificProductId(0x4000),
+		bcdDevice:			0x0100,
+	}, 0x0409, "Video Test", "Video Test Product", "0123456");
+  int bytes;
+  deviceController.RegisterConfigDesc(GetConfigDesc(&bytes), bytes);
+  deviceController.Initialize();
+#endif
 
   // If using FreeRTOS: create blinky, tinyusb device, video task
 #if CFG_TUSB_OS == OPT_OS_FREERTOS
@@ -93,7 +109,6 @@ int main(void) {
 
   while (1) {
     tud_task(); // tinyusb device task
-    led_blinking_task(NULL);
     video_task(NULL);
   }
 #endif
@@ -103,6 +118,7 @@ int main(void) {
 // Device callbacks
 //--------------------------------------------------------------------+
 
+#if 0
 // Invoked when device is mounted
 void tud_mount_cb(void) {
   blink_interval_ms = BLINK_MOUNTED;
@@ -125,6 +141,7 @@ void tud_suspend_cb(bool remote_wakeup_en) {
 void tud_resume_cb(void) {
   blink_interval_ms = tud_mounted() ? BLINK_MOUNTED : BLINK_NOT_MOUNTED;
 }
+#endif
 
 //--------------------------------------------------------------------+
 // USB Video
@@ -274,25 +291,4 @@ int tud_video_commit_cb(uint_fast8_t ctl_idx, uint_fast8_t stm_idx,
   /* convert unit to ms from 100 ns */
   interval_ms = parameters->dwFrameInterval / 10000;
   return VIDEO_ERROR_NONE;
-}
-
-//--------------------------------------------------------------------+
-// Blinking Task
-//--------------------------------------------------------------------+
-void led_blinking_task(void* param) {
-  (void) param;
-  static uint32_t start_ms = 0;
-  static bool led_state = false;
-
-  while (1) {
-    #if CFG_TUSB_OS == OPT_OS_FREERTOS
-    vTaskDelay(blink_interval_ms / portTICK_PERIOD_MS);
-    #else
-    if (board_millis() - start_ms < blink_interval_ms) return; // not enough time
-    #endif
-
-    start_ms += blink_interval_ms;
-    //board_led_write(led_state);
-    led_state = 1 - led_state; // toggle
-  }
 }
