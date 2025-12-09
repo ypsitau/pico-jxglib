@@ -35,13 +35,7 @@ enum {
 };
 
 #define EPNUM_VIDEO_IN    0x81
-
-#if defined(CFG_EXAMPLE_VIDEO_READONLY) && !defined(CFG_EXAMPLE_VIDEO_DISABLE_MJPEG)
-	#define USE_MJPEG 1
-#else
-	#define USE_MJPEG 0
-#endif
-
+#define USE_MJPEG 0
 #define USE_ISO_STREAMING (!CFG_TUD_VIDEO_STREAMING_BULK)
 
 typedef struct TU_ATTR_PACKED {

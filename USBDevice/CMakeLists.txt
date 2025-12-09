@@ -12,7 +12,8 @@ target_sources(jxglib_USBDevice INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/USBDevice.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/HID.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/CDC.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/MSC.cpp)
+	${CMAKE_CURRENT_LIST_DIR}/src/MSC.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/Video.cpp)
 
 function(jxglib_configure_USBDevice TARGET)
 	set(VARS
