@@ -22,7 +22,6 @@ void video_send_frame(void);
 //--------------------------------------------------------------------+
 int main(void)
 {
-#if 1
 	USBDevice::Controller deviceController({
 		bcdUSB:				0x0200,
 		bDeviceClass:		TUSB_CLASS_MISC,
@@ -39,13 +38,6 @@ int main(void)
 		video_send_frame();
 		Tickable::Tick();
 	}
-#else
-	tud_init(BOARD_TUD_RHPORT);
-	while (1) {
-		tud_task(); // tinyusb device task
-		video_send_frame();
-	}
-#endif
 }
 
 //--------------------------------------------------------------------+
