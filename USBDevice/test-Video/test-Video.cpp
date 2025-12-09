@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "tusb.h"
-#include "jxglib/USBDevice.h"
+#include "jxglib/USBDevice/Video.h"
 
 using namespace jxglib;
 
@@ -19,7 +19,7 @@ void led_blinking_task(void* param);
 void usb_device_task(void *param);
 void video_send_frame(void);
 
-extern "C" const uint8_t* GetConfigDesc(int* pBytes);
+const uint8_t* GetConfigDesc(int* pBytes);
 
 //--------------------------------------------------------------------+
 // Main
