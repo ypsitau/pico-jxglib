@@ -39,7 +39,8 @@ int main(void)
 	}, 0x0409, "Video Test", "Video Test Product", "0123456");
 	int bytes;
 	const uint8_t* desc = GetConfigDesc(&bytes);
-	//deviceController.RegisterConfigDesc(desc, bytes);
+	deviceController.RegisterConfigDesc(desc, bytes);
+	deviceController.AssignInterfaceNum(2); // reserve 2 interfaces for video
 	deviceController.Initialize();
 	for (;;) {
 		video_send_frame();
