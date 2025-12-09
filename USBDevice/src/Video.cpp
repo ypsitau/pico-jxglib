@@ -3,22 +3,8 @@
 //==============================================================================
 #include "jxglib/USBDevice/Video.h"
 
-//#define FRAME_WIDTH   128
-//#define FRAME_HEIGHT  96
-//#define FRAME_RATE    10
-
 /* Windows support YUY2 and NV12
  * https://docs.microsoft.com/en-us/windows-hardware/drivers/stream/usb-video-class-driver-overview */
-
-// String Descriptor Index
-enum {
-	STRID_LANGID = 0,
-	STRID_MANUFACTURER,
-	STRID_PRODUCT,
-	STRID_SERIAL,
-	STRID_UVC_CONTROL = 0,
-	STRID_UVC_STREAMING = 0,
-};
 
 //--------------------------------------------------------------------+
 // Configuration Descriptor
@@ -31,7 +17,6 @@ enum {
 #define UVC_ENTITY_CAP_INPUT_TERMINAL  0x01
 #define UVC_ENTITY_CAP_OUTPUT_TERMINAL 0x02
 
-#define EPNUM_VIDEO_IN    0x81
 #define USE_MJPEG 0
 #define USE_ISO_STREAMING (!CFG_TUD_VIDEO_STREAMING_BULK)
 
@@ -76,7 +61,7 @@ typedef struct TU_ATTR_PACKED {
 //-----------------------------------------------------------------------------
 namespace jxglib::USBDevice {
 
-Video::Video(Controller& deviceController, int width, int height, int frameRate) : Interface(deviceController, 2)
+Video::Video(Controller& deviceController, const char* strControl, const char* strStreaming, uint8_t endp, int width, int height, int frameRate) : Interface(deviceController, 2)
 {
 	uint8_t interfaceNum_VIDEO_CONTROL = interfaceNum_;
 	uint8_t interfaceNum_VIDEO_STREAMING = interfaceNum_ + 1;
@@ -103,7 +88,7 @@ Video::Video(Controller& deviceController, int width, int height, int frameRate)
 				.bInterfaceClass = TUSB_CLASS_VIDEO,
 				.bInterfaceSubClass = VIDEO_SUBCLASS_CONTROL,
 				.bInterfaceProtocol = VIDEO_ITF_PROTOCOL_15,
-				.iInterface = STRID_UVC_CONTROL
+				.iInterface = deviceController.RegisterStringDesc(strControl)
 			},
 			.header = {
 				.bLength = sizeof(tusb_desc_video_control_header_1itf_t),
@@ -154,7 +139,7 @@ Video::Video(Controller& deviceController, int width, int height, int frameRate)
 				.bInterfaceClass = TUSB_CLASS_VIDEO,
 				.bInterfaceSubClass = VIDEO_SUBCLASS_STREAMING,
 				.bInterfaceProtocol = VIDEO_ITF_PROTOCOL_15,
-				.iInterface = STRID_UVC_STREAMING
+				.iInterface = deviceController.RegisterStringDesc(strStreaming)
 			},
 			.header = {
 				.bLength = sizeof(tusb_desc_video_streaming_input_header_1byte_t),
@@ -164,7 +149,7 @@ Video::Video(Controller& deviceController, int width, int height, int frameRate)
 				.bNumFormats = 1,
 				.wTotalLength = sizeof(uvc_streaming_desc_t) - sizeof(tusb_desc_interface_t)
 					- sizeof(tusb_desc_endpoint_t) - (USE_ISO_STREAMING ? sizeof(tusb_desc_interface_t) : 0) , // CS VS descriptors only
-				.bEndpointAddress = EPNUM_VIDEO_IN,
+				.bEndpointAddress = endp,
 				.bmInfo = 0,
 				.bTerminalLink = UVC_ENTITY_CAP_OUTPUT_TERMINAL,
 				.bStillCaptureMethod = 0,
@@ -241,14 +226,14 @@ Video::Video(Controller& deviceController, int width, int height, int frameRate)
 				.bInterfaceClass = TUSB_CLASS_VIDEO,
 				.bInterfaceSubClass = VIDEO_SUBCLASS_STREAMING,
 				.bInterfaceProtocol = VIDEO_ITF_PROTOCOL_15,
-				.iInterface = STRID_UVC_STREAMING
+				.iInterface = deviceController.RegisterStringDesc(strStreaming)
 			},
 #endif
 			.ep = {
 				.bLength = sizeof(tusb_desc_endpoint_t),
 				.bDescriptorType = TUSB_DESC_ENDPOINT,
 
-				.bEndpointAddress = EPNUM_VIDEO_IN,
+				.bEndpointAddress = endp,
 				.bmAttributes = {
 					.xfer = CFG_TUD_VIDEO_STREAMING_BULK ? TUSB_XFER_BULK : TUSB_XFER_ISOCHRONOUS,
 					.sync = CFG_TUD_VIDEO_STREAMING_BULK ? 0 : 1 // asynchronous

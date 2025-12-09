@@ -33,7 +33,7 @@ int main(void)
 		idProduct:			USBDevice::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
 	}, 0x0409, "Video Test", "Video Test Product", "0123456");
-	USBDevice::Video video(deviceController, FRAME_WIDTH, FRAME_HEIGHT, FRAME_RATE);
+	USBDevice::Video video(deviceController, "UVC Control", "UVC Streaming", 0x81, FRAME_WIDTH, FRAME_HEIGHT, FRAME_RATE);
 	deviceController.Initialize();
 	for (;;) {
 		video_send_frame();
