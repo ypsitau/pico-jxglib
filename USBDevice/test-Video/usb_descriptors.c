@@ -7,135 +7,6 @@
 /* Windows support YUY2 and NV12
  * https://docs.microsoft.com/en-us/windows-hardware/drivers/stream/usb-video-class-driver-overview */
 
-#define TUD_VIDEO_DESC_CS_VS_FMT_YUY2(_fmtidx, _numfmtdesc, _frmidx, _asrx, _asry, _interlace, _cp) \
-	TUD_VIDEO_DESC_CS_VS_FMT_UNCOMPR(_fmtidx, _numfmtdesc, TUD_VIDEO_GUID_YUY2, 16, _frmidx, _asrx, _asry, _interlace, _cp)
-#define TUD_VIDEO_DESC_CS_VS_FMT_NV12(_fmtidx, _numfmtdesc, _frmidx, _asrx, _asry, _interlace, _cp) \
-	TUD_VIDEO_DESC_CS_VS_FMT_UNCOMPR(_fmtidx, _numfmtdesc, TUD_VIDEO_GUID_NV12, 12, _frmidx, _asrx, _asry, _interlace, _cp)
-#define TUD_VIDEO_DESC_CS_VS_FMT_M420(_fmtidx, _numfmtdesc, _frmidx, _asrx, _asry, _interlace, _cp) \
-	TUD_VIDEO_DESC_CS_VS_FMT_UNCOMPR(_fmtidx, _numfmtdesc, TUD_VIDEO_GUID_M420, 12, _frmidx, _asrx, _asry, _interlace, _cp)
-#define TUD_VIDEO_DESC_CS_VS_FMT_I420(_fmtidx, _numfmtdesc, _frmidx, _asrx, _asry, _interlace, _cp) \
-	TUD_VIDEO_DESC_CS_VS_FMT_UNCOMPR(_fmtidx, _numfmtdesc, TUD_VIDEO_GUID_I420, 12, _frmidx, _asrx, _asry, _interlace, _cp)
-
-#define TUD_VIDEO_CAPTURE_DESCRIPTOR_UNCOMPR(_stridx, _epin, _width, _height, _fps, _epsize) \
-	TUD_VIDEO_DESC_IAD(ITF_NUM_VIDEO_CONTROL, /* 2 Interfaces */ 0x02, _stridx), \
-	/* Video control 0 */ \
-	TUD_VIDEO_DESC_STD_VC(ITF_NUM_VIDEO_CONTROL, 0, _stridx),                                  \
-		/* Header: UVC 1.5, length of followed descs, clock (deprecated), streaming interfaces */ \
-		TUD_VIDEO_DESC_CS_VC(0x0150, TUD_VIDEO_DESC_CAMERA_TERM_LEN + TUD_VIDEO_DESC_OUTPUT_TERM_LEN, UVC_CLOCK_FREQUENCY, ITF_NUM_VIDEO_STREAMING), \
-			/* Camera Terminal: ID, bAssocTerminal, iTerminal, focal min, max, length, bmControl */ \
-			TUD_VIDEO_DESC_CAMERA_TERM(UVC_ENTITY_CAP_INPUT_TERMINAL, 0, 0, 0, 0, 0, 0), \
-			TUD_VIDEO_DESC_OUTPUT_TERM(UVC_ENTITY_CAP_OUTPUT_TERMINAL, VIDEO_TT_STREAMING, 0, 1, 0), \
-	/* Video stream alt. 0 */ \
-	TUD_VIDEO_DESC_STD_VS(ITF_NUM_VIDEO_STREAMING, 0, 0, _stridx), \
-		/* Video stream header for without still image capture */ \
-		TUD_VIDEO_DESC_CS_VS_INPUT( /*bNumFormats*/1, \
-				/*wTotalLength - bLength */ TUD_VIDEO_DESC_CS_VS_FMT_UNCOMPR_LEN + TUD_VIDEO_DESC_CS_VS_FRM_UNCOMPR_CONT_LEN + TUD_VIDEO_DESC_CS_VS_COLOR_MATCHING_LEN,\
-				_epin, /*bmInfo*/0, /*bTerminalLink*/UVC_ENTITY_CAP_OUTPUT_TERMINAL, \
-				/*bStillCaptureMethod*/0, /*bTriggerSupport*/0, /*bTriggerUsage*/0, \
-				/*bmaControls(1)*/0), \
-			/* Video stream format */ \
-			TUD_VIDEO_DESC_CS_VS_FMT_YUY2(/*bFormatIndex*/1, /*bNumFrameDescriptors*/1, \
-				/*bDefaultFrameIndex*/1, 0, 0, 0, /*bCopyProtect*/0), \
-				/* Video stream frame format */ \
-				TUD_VIDEO_DESC_CS_VS_FRM_UNCOMPR_CONT(/*bFrameIndex */1, 0, _width, _height, \
-						_width * _height * 16, _width * _height * 16 * _fps, \
-						_width * _height * 16 / 8, \
-						(10000000/_fps), (10000000/_fps), (10000000/_fps)*_fps, (10000000/_fps)), \
-				TUD_VIDEO_DESC_CS_VS_COLOR_MATCHING(VIDEO_COLOR_PRIMARIES_BT709, VIDEO_COLOR_XFER_CH_BT709, VIDEO_COLOR_COEF_SMPTE170M), \
-	/* VS alt 1 */\
-	TUD_VIDEO_DESC_STD_VS(ITF_NUM_VIDEO_STREAMING, 1, 1, _stridx), \
-		/* EP */ \
-		TUD_VIDEO_DESC_EP_ISO(_epin, _epsize, 1)
-
-#define TUD_VIDEO_CAPTURE_DESCRIPTOR_MJPEG(_stridx, _epin, _width, _height, _fps, _epsize) \
-	TUD_VIDEO_DESC_IAD(ITF_NUM_VIDEO_CONTROL, /* 2 Interfaces */ 0x02, _stridx), \
-	/* Video control 0 */ \
-	TUD_VIDEO_DESC_STD_VC(ITF_NUM_VIDEO_CONTROL, 0, _stridx),                                \
-		/* Header: UVC 1.5, length of followed descs, clock (deprecated), streaming interfaces */ \
-		TUD_VIDEO_DESC_CS_VC(0x0150, TUD_VIDEO_DESC_CAMERA_TERM_LEN + TUD_VIDEO_DESC_OUTPUT_TERM_LEN, UVC_CLOCK_FREQUENCY, ITF_NUM_VIDEO_STREAMING), \
-			/* Camera Terminal: ID, bAssocTerminal, iTerminal, focal min, max, length, bmControl */ \
-			TUD_VIDEO_DESC_CAMERA_TERM(UVC_ENTITY_CAP_INPUT_TERMINAL, 0, 0, 0, 0, 0, 0), \
-			TUD_VIDEO_DESC_OUTPUT_TERM(UVC_ENTITY_CAP_OUTPUT_TERMINAL, VIDEO_TT_STREAMING, 0, 1, 0), \
-	/* Video stream alt. 0 */ \
-	TUD_VIDEO_DESC_STD_VS(ITF_NUM_VIDEO_STREAMING, 0, 0, _stridx), \
-		/* Video stream header for without still image capture */ \
-		TUD_VIDEO_DESC_CS_VS_INPUT( /*bNumFormats*/1, \
-				/*wTotalLength - bLength */ TUD_VIDEO_DESC_CS_VS_FMT_MJPEG_LEN + TUD_VIDEO_DESC_CS_VS_FRM_MJPEG_CONT_LEN + TUD_VIDEO_DESC_CS_VS_COLOR_MATCHING_LEN,\
-				_epin, /*bmInfo*/0, /*bTerminalLink*/UVC_ENTITY_CAP_OUTPUT_TERMINAL, \
-				/*bStillCaptureMethod*/0, /*bTriggerSupport*/0, /*bTriggerUsage*/0, \
-				/*bmaControls(1)*/0), \
-			/* Video stream format */ \
-			TUD_VIDEO_DESC_CS_VS_FMT_MJPEG(/*bFormatIndex*/1, /*bNumFrameDescriptors*/1, \
-				/*bmFlags*/0, /*bDefaultFrameIndex*/1, 0, 0, 0, /*bCopyProtect*/0), \
-				/* Video stream frame format */ \
-				TUD_VIDEO_DESC_CS_VS_FRM_MJPEG_CONT(/*bFrameIndex */1, 0, _width, _height, \
-						_width * _height * 16, _width * _height * 16 * _fps, \
-						_width * _height * 16 / 8, \
-						(10000000/_fps), (10000000/_fps), (10000000/_fps)*_fps, (10000000/_fps)), \
-				TUD_VIDEO_DESC_CS_VS_COLOR_MATCHING(VIDEO_COLOR_PRIMARIES_BT709, VIDEO_COLOR_XFER_CH_BT709, VIDEO_COLOR_COEF_SMPTE170M), \
-	/* VS alt 1 */\
-	TUD_VIDEO_DESC_STD_VS(ITF_NUM_VIDEO_STREAMING, 1, 1, _stridx), \
-		/* EP */ \
-		TUD_VIDEO_DESC_EP_ISO(_epin, _epsize, 1)
-
-#define TUD_VIDEO_CAPTURE_DESCRIPTOR_UNCOMPR_BULK(_stridx, _epin, _width, _height, _fps, _epsize) \
-	TUD_VIDEO_DESC_IAD(ITF_NUM_VIDEO_CONTROL, /* 2 Interfaces */ 0x02, _stridx), \
-	/* Video control 0 */ \
-	TUD_VIDEO_DESC_STD_VC(ITF_NUM_VIDEO_CONTROL, 0, _stridx), \
-		/* Header: UVC 1.5, length of followed descs, clock (deprecated), streaming interfaces */ \
-		TUD_VIDEO_DESC_CS_VC(0x0150, TUD_VIDEO_DESC_CAMERA_TERM_LEN + TUD_VIDEO_DESC_OUTPUT_TERM_LEN, UVC_CLOCK_FREQUENCY, ITF_NUM_VIDEO_STREAMING), \
-			/* Camera Terminal: ID, bAssocTerminal, iTerminal, focal min, max, length, bmControl */ \
-			TUD_VIDEO_DESC_CAMERA_TERM(UVC_ENTITY_CAP_INPUT_TERMINAL, 0, 0, 0, 0, 0, 0), \
-			TUD_VIDEO_DESC_OUTPUT_TERM(UVC_ENTITY_CAP_OUTPUT_TERMINAL, VIDEO_TT_STREAMING, 0, 1, 0), \
-	/* Video stream alt. 0 */ \
-	TUD_VIDEO_DESC_STD_VS(ITF_NUM_VIDEO_STREAMING, 0, 1, _stridx), \
-		/* Video stream header for without still image capture */ \
-		TUD_VIDEO_DESC_CS_VS_INPUT( /*bNumFormats*/1, \
-				/*wTotalLength - bLength */\
-				TUD_VIDEO_DESC_CS_VS_FMT_UNCOMPR_LEN + TUD_VIDEO_DESC_CS_VS_FRM_UNCOMPR_CONT_LEN + TUD_VIDEO_DESC_CS_VS_COLOR_MATCHING_LEN,\
-				_epin, /*bmInfo*/0, /*bTerminalLink*/UVC_ENTITY_CAP_OUTPUT_TERMINAL, \
-				/*bStillCaptureMethod*/0, /*bTriggerSupport*/0, /*bTriggerUsage*/0, \
-				/*bmaControls(1)*/0), \
-			/* Video stream format */ \
-			TUD_VIDEO_DESC_CS_VS_FMT_YUY2(/*bFormatIndex*/1, /*bNumFrameDescriptors*/1, \
-				/*bDefaultFrameIndex*/1, 0, 0, 0, /*bCopyProtect*/0), \
-				/* Video stream frame format */ \
-				TUD_VIDEO_DESC_CS_VS_FRM_UNCOMPR_CONT(/*bFrameIndex */1, 0, _width, _height, \
-						_width * _height * 16, _width * _height * 16 * _fps, \
-						_width * _height * 16 / 8, \
-						(10000000/_fps), (10000000/_fps), (10000000/_fps)*_fps, (10000000/_fps)), \
-				TUD_VIDEO_DESC_CS_VS_COLOR_MATCHING(VIDEO_COLOR_PRIMARIES_BT709, VIDEO_COLOR_XFER_CH_BT709, VIDEO_COLOR_COEF_SMPTE170M), \
-				TUD_VIDEO_DESC_EP_BULK(_epin, _epsize, 1)
-
-#define TUD_VIDEO_CAPTURE_DESCRIPTOR_MJPEG_BULK(_stridx, _epin, _width, _height, _fps, _epsize) \
-	TUD_VIDEO_DESC_IAD(ITF_NUM_VIDEO_CONTROL, /* 2 Interfaces */ 0x02, _stridx), \
-	/* Video control 0 */ \
-	TUD_VIDEO_DESC_STD_VC(ITF_NUM_VIDEO_CONTROL, 0, _stridx),                                     \
-		/* Header: UVC 1.5, length of followed descs, clock (deprecated), streaming interfaces */ \
-		TUD_VIDEO_DESC_CS_VC(0x0150, TUD_VIDEO_DESC_CAMERA_TERM_LEN + TUD_VIDEO_DESC_OUTPUT_TERM_LEN, UVC_CLOCK_FREQUENCY, ITF_NUM_VIDEO_STREAMING), \
-			/* Camera Terminal: ID, bAssocTerminal, iTerminal, focal min, max, length, bmControl */ \
-			TUD_VIDEO_DESC_CAMERA_TERM(UVC_ENTITY_CAP_INPUT_TERMINAL, 0, 0, 0, 0, 0, 0), \
-			TUD_VIDEO_DESC_OUTPUT_TERM(UVC_ENTITY_CAP_OUTPUT_TERMINAL, VIDEO_TT_STREAMING, 0, UVC_ENTITY_CAP_INPUT_TERMINAL, 0), \
-	/* Video stream alt. 0 */ \
-	TUD_VIDEO_DESC_STD_VS(ITF_NUM_VIDEO_STREAMING, 0, 1, _stridx), \
-		/* Video stream header for without still image capture */ \
-		TUD_VIDEO_DESC_CS_VS_INPUT( /*bNumFormats*/1, \
-				/*wTotalLength - bLength */ TUD_VIDEO_DESC_CS_VS_FMT_MJPEG_LEN + TUD_VIDEO_DESC_CS_VS_FRM_MJPEG_CONT_LEN + TUD_VIDEO_DESC_CS_VS_COLOR_MATCHING_LEN,\
-				_epin, /*bmInfo*/0, /*bTerminalLink*/UVC_ENTITY_CAP_OUTPUT_TERMINAL, \
-				/*bStillCaptureMethod*/0, /*bTriggerSupport*/0, /*bTriggerUsage*/0, \
-				/*bmaControls(1)*/0), \
-			/* Video stream format */ \
-			TUD_VIDEO_DESC_CS_VS_FMT_MJPEG(/*bFormatIndex*/1, /*bNumFrameDescriptors*/1, \
-				/*bmFlags*/0, /*bDefaultFrameIndex*/1, 0, 0, 0, /*bCopyProtect*/0), \
-				/* Video stream frame format */ \
-				TUD_VIDEO_DESC_CS_VS_FRM_MJPEG_CONT(/*bFrameIndex */1, 0, _width, _height, \
-						_width * _height * 16, _width * _height * 16 * _fps, \
-						_width * _height * 16 / 8, \
-						(10000000/_fps), (10000000/_fps), (10000000/_fps)*_fps, (10000000/_fps)), \
-				TUD_VIDEO_DESC_CS_VS_COLOR_MATCHING(VIDEO_COLOR_PRIMARIES_BT709, VIDEO_COLOR_XFER_CH_BT709, VIDEO_COLOR_COEF_SMPTE170M), \
-				/* EP */ \
-				TUD_VIDEO_DESC_EP_BULK(_epin, _epsize, 1)
-
 /* A combination of interfaces must have a unique product id, since PC will save device driver after the first plug.
  * Same VID/PID with different interface e.g MSC (first), then CDC (later) will possibly cause system error on PC.
  *
@@ -161,44 +32,40 @@ enum {
 
 // array of pointer to string descriptors
 char const* string_desc_arr[] = {
-		(const char[]) {0x09, 0x04}, // 0: is supported language is English (0x0409)
-		"TinyUSB",                     // 1: Manufacturer
-		"TinyUSB Device",              // 2: Product
-		NULL,                          // 3: Serials will use unique ID if possible
-		"UVC Control",                 // 4: UVC Interface
-		"UVC Streaming",               // 5: UVC Interface
+	(const char[]) {0x09, 0x04}, // 0: is supported language is English (0x0409)
+	"TinyUSB",                     // 1: Manufacturer
+	"TinyUSB Device",              // 2: Product
+	NULL,                          // 3: Serials will use unique ID if possible
+	"UVC Control",                 // 4: UVC Interface
+	"UVC Streaming",               // 5: UVC Interface
 };
 
 //--------------------------------------------------------------------+
 // Device Descriptors
 //--------------------------------------------------------------------+
 tusb_desc_device_t const desc_device = {
-		.bLength            = sizeof(tusb_desc_device_t),
-		.bDescriptorType    = TUSB_DESC_DEVICE,
-		.bcdUSB             = USB_BCD,
-
-		// Use Interface Association Descriptor (IAD) for Video
-		// As required by USB Specs IAD's subclass must be common class (2) and protocol must be IAD (1)
-		.bDeviceClass       = TUSB_CLASS_MISC,
-		.bDeviceSubClass    = MISC_SUBCLASS_COMMON,
-		.bDeviceProtocol    = MISC_PROTOCOL_IAD,
-
-		.bMaxPacketSize0    = CFG_TUD_ENDPOINT0_SIZE,
-
-		.idVendor           = USB_VID,
-		.idProduct          = USB_PID,
-		.bcdDevice          = 0x0100,
-
-		.iManufacturer      = STRID_MANUFACTURER,
-		.iProduct           = STRID_PRODUCT,
-		.iSerialNumber      = STRID_SERIAL,
-
-		.bNumConfigurations = 0x01
+	.bLength            = sizeof(tusb_desc_device_t),
+	.bDescriptorType    = TUSB_DESC_DEVICE,
+	.bcdUSB             = USB_BCD,
+	// Use Interface Association Descriptor (IAD) for Video
+	// As required by USB Specs IAD's subclass must be common class (2) and protocol must be IAD (1)
+	.bDeviceClass       = TUSB_CLASS_MISC,
+	.bDeviceSubClass    = MISC_SUBCLASS_COMMON,
+	.bDeviceProtocol    = MISC_PROTOCOL_IAD,
+	.bMaxPacketSize0    = CFG_TUD_ENDPOINT0_SIZE,
+	.idVendor           = USB_VID,
+	.idProduct          = USB_PID,
+	.bcdDevice          = 0x0100,
+	.iManufacturer      = STRID_MANUFACTURER,
+	.iProduct           = STRID_PRODUCT,
+	.iSerialNumber      = STRID_SERIAL,
+	.bNumConfigurations = 0x01
 };
 
 // Invoked when received GET DEVICE DESCRIPTOR
 // Application return pointer to descriptor
-uint8_t const* tud_descriptor_device_cb(void) {
+uint8_t const* tud_descriptor_device_cb(void)
+{
 	return (uint8_t const*) &desc_device;
 }
 
@@ -219,19 +86,7 @@ enum {
 	ITF_NUM_TOTAL
 };
 
-// Select appropriate endpoint number
-#if TU_CHECK_MCU(OPT_MCU_LPC175X_6X, OPT_MCU_LPC177X_8X, OPT_MCU_LPC40XX)
-	// LPC 17xx and 40xx endpoint type (bulk/interrupt/iso) are fixed by its number
-	// 0 control, 1 In, 2 Bulk, 3 Iso, 4 In, 5 Bulk etc ...
-	#define EPNUM_VIDEO_IN    (CFG_TUD_VIDEO_STREAMING_BULK ? 0x82 : 0x83)
-#elif TU_CHECK_MCU(OPT_MCU_NRF5X)
-	// nRF5x ISO can only be endpoint 8
-	#define EPNUM_VIDEO_IN    (CFG_TUD_VIDEO_STREAMING_BULK ? 0x81 : 0x88)
-#elif TU_CHECK_MCU(OPT_MCU_MAX32650, OPT_MCU_MAX32666, OPT_MCU_MAX32690, OPT_MCU_MAX78002)
-	#define EPNUM_VIDEO_IN    0x81
-#else
-	#define EPNUM_VIDEO_IN    0x81
-#endif
+#define EPNUM_VIDEO_IN    0x81
 
 #if defined(CFG_EXAMPLE_VIDEO_READONLY) && !defined(CFG_EXAMPLE_VIDEO_DISABLE_MJPEG)
 	#define USE_MJPEG 1
@@ -254,7 +109,6 @@ typedef struct TU_ATTR_PACKED {
 typedef struct TU_ATTR_PACKED {
 	tusb_desc_interface_t itf;
 	tusb_desc_video_streaming_input_header_1byte_t header;
-
 #if USE_MJPEG
 	tusb_desc_video_format_mjpeg_t format;
 	tusb_desc_video_frame_mjpeg_continuous_t frame;
@@ -262,14 +116,11 @@ typedef struct TU_ATTR_PACKED {
 	tusb_desc_video_format_uncompressed_t format;
 	tusb_desc_video_frame_uncompressed_continuous_t frame;
 #endif
-
 	tusb_desc_video_streaming_color_matching_t color;
-
 #if USE_ISO_STREAMING
 	// For ISO streaming, USB spec requires to alternate interface
 	tusb_desc_interface_t itf_alt;
 #endif
-
 	tusb_desc_endpoint_t ep;
 } uvc_streaming_desc_t;
 
@@ -355,7 +206,6 @@ const uvc_cfg_desc_t desc_fs_configuration = {
 			.iTerminal = 0
 		}
 	},
-
 	.video_streaming = {
 		.itf = {
 			.bLength = sizeof(tusb_desc_interface_t),
@@ -443,7 +293,6 @@ const uvc_cfg_desc_t desc_fs_configuration = {
 			.bTransferCharacteristics = VIDEO_COLOR_XFER_CH_BT709,
 			.bMatrixCoefficients = VIDEO_COLOR_COEF_SMPTE170M
 		},
-
 #if USE_ISO_STREAMING
 		.itf_alt = {
 			.bLength = sizeof(tusb_desc_interface_t),
@@ -458,7 +307,6 @@ const uvc_cfg_desc_t desc_fs_configuration = {
 			.iInterface = STRID_UVC_STREAMING
 		},
 #endif
-
 		.ep = {
 			.bLength = sizeof(tusb_desc_endpoint_t),
 			.bDescriptorType = TUSB_DESC_ENDPOINT,
@@ -480,18 +328,9 @@ const uint8_t* GetConfigDesc(int* pBytes)
 	return (const uint8_t*)&desc_fs_configuration;
 }
 
-uint8_t const* tud_descriptor_configuration_cb(uint8_t index) {
-	(void) index; // for multiple configurations
-
-#if TUD_OPT_HIGH_SPEED
-	// Although we are highspeed, host may be fullspeed.
-	if (tud_speed_get() == TUSB_SPEED_HIGH) {
-		return get_hs_configuration_desc();
-	} else
-#endif
-	{
-		return (uint8_t const*) &desc_fs_configuration;
-	}
+uint8_t const* tud_descriptor_configuration_cb(uint8_t index)
+{
+	return (uint8_t const*) &desc_fs_configuration;
 }
 
 #if 1
