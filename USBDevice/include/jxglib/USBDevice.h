@@ -14,16 +14,16 @@ namespace jxglib::USBDevice {
 class Controller;
 
 class Interface {
-	protected:
-		Controller& deviceController_;
-		uint8_t interfaceNum_;
-		uint8_t iInstance_;
-	public:
-		Interface(Controller& deviceController, int nInterfacesToOccupy);
-	public:
-		void RegisterConfigDesc(const void* configDesc, int bytes);
-	public:
-		void Initialize() {}
+protected:
+	Controller& deviceController_;
+	uint8_t interfaceNum_;
+	uint8_t iInstance_;
+public:
+	Interface(Controller& deviceController, int nInterfacesToOccupy);
+public:
+	void RegisterConfigDesc(const void* configDesc, int bytes);
+public:
+	void Initialize() {}
 };
 
 #if CFG_TUD_HID == 0
