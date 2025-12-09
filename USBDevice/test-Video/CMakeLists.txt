@@ -48,7 +48,7 @@ pico_enable_stdio_usb(test-Video 0)
 target_link_libraries(test-Video
     pico_stdlib
     tinyusb_device
-	#jxglib_USBDevice
+	jxglib_USBDevice
 )
 
 # Add the standard include files to the build

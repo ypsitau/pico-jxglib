@@ -164,10 +164,10 @@ extern "C" const uint8_t* tud_descriptor_device_cb()
 }
 
 // Invoked when received GET CONFIGURATION DESCRIPTOR
-extern "C" const uint8_t* tud_descriptor_configuration_cb(uint8_t idxConfig)
-{
-	return jxglib::USBDevice::Controller::Instance->On_GET_CONFIGURATION_DESCRIPTOR(idxConfig);
-}
+//extern "C" const uint8_t* tud_descriptor_configuration_cb(uint8_t idxConfig)
+//{
+//	return jxglib::USBDevice::Controller::Instance->On_GET_CONFIGURATION_DESCRIPTOR(idxConfig);
+//}
 
 // Invoked when received GET STRING DESCRIPTOR request
 extern "C" const uint16_t* tud_descriptor_string_cb(uint8_t idxString, uint16_t langid)

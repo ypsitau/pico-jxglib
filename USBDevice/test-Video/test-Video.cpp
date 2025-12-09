@@ -2,9 +2,9 @@
 #include <stdio.h>
 #include <string.h>
 #include "tusb.h"
-//#include "jxglib/USBDevice.h"
+#include "jxglib/USBDevice.h"
 
-//using namespace jxglib;
+using namespace jxglib;
 
 #define FRAME_WIDTH   128
 #define FRAME_HEIGHT  96
@@ -26,7 +26,7 @@ extern "C" const uint8_t* GetConfigDesc(int* pBytes);
 //--------------------------------------------------------------------+
 int main(void)
 {
-#if 0
+#if 1
 	USBDevice::Controller deviceController({
 		bcdUSB:				0x0200,
 		bDeviceClass:		TUSB_CLASS_MISC,
@@ -39,7 +39,7 @@ int main(void)
 	}, 0x0409, "Video Test", "Video Test Product", "0123456");
 	int bytes;
 	const uint8_t* desc = GetConfigDesc(&bytes);
-	deviceController.RegisterConfigDesc(desc, bytes);
+	//deviceController.RegisterConfigDesc(desc, bytes);
 	deviceController.Initialize();
 	for (;;) {
 		video_send_frame();

@@ -26,8 +26,8 @@ enum {
 	STRID_MANUFACTURER,
 	STRID_PRODUCT,
 	STRID_SERIAL,
-	STRID_UVC_CONTROL,
-	STRID_UVC_STREAMING,
+	STRID_UVC_CONTROL = 0,
+	STRID_UVC_STREAMING = 0,
 };
 
 // array of pointer to string descriptors
@@ -64,7 +64,7 @@ tusb_desc_device_t const desc_device = {
 
 // Invoked when received GET DEVICE DESCRIPTOR
 // Application return pointer to descriptor
-uint8_t const* tud_descriptor_device_cb(void)
+uint8_t const* tud_descriptor_device_cb__(void)
 {
 	return (uint8_t const*) &desc_device;
 }
@@ -154,7 +154,6 @@ const uvc_cfg_desc_t desc_fs_configuration = {
 		.bFunctionProtocol = VIDEO_ITF_PROTOCOL_UNDEFINED,
 		.iFunction = 0
 	},
-
 	.video_control = {
 		.itf = {
 			.bLength = sizeof(tusb_desc_interface_t),
@@ -333,7 +332,7 @@ uint8_t const* tud_descriptor_configuration_cb(uint8_t index)
 	return (uint8_t const*) &desc_fs_configuration;
 }
 
-#if 1
+#if 0
 //--------------------------------------------------------------------+
 // String Descriptors
 //--------------------------------------------------------------------+
