@@ -75,7 +75,7 @@ typedef struct TU_ATTR_PACKED {
 	uvc_streaming_desc_t video_streaming;
 } uvc_cfg_desc_t;
 
-const uvc_cfg_desc_t desc_fs_configuration = {
+const uvc_cfg_desc_t configDesc = {
 	.iad = {
 		.bLength = sizeof(tusb_desc_interface_assoc_t),
 		.bDescriptorType = TUSB_DESC_INTERFACE_ASSOCIATION,
@@ -254,12 +254,6 @@ const uvc_cfg_desc_t desc_fs_configuration = {
 	}
 };
 
-const uint8_t* GetConfigDesc(int* pBytes)
-{
-	*pBytes = sizeof(desc_fs_configuration);
-	return (const uint8_t*)&desc_fs_configuration;
-}
-
 #if CFG_TUD_VIDEO > 0
 
 //-----------------------------------------------------------------------------
@@ -267,15 +261,13 @@ const uint8_t* GetConfigDesc(int* pBytes)
 //-----------------------------------------------------------------------------
 namespace jxglib::USBDevice {
 
-Video::Video(Controller& deviceController) :
-				Interface(deviceController, 2)
+Video::Video(Controller& deviceController) : Interface(deviceController, 2)
 {
 	//uint8_t configDesc[] = {
 	//	// Interface number, string index, EP notification address and size, EP data address (out, in) and size.
 	//	TUD_CDC_DESCRIPTOR(interfaceNum_, deviceController.RegisterStringDesc(str), endpNotif, bytesNotif, endpBulkOut, endpBulkIn, bytesBulk),
 	//};
-	//iInstance_ = deviceController.AddInterface_CDC(this);
-	//RegisterConfigDesc(configDesc, sizeof(configDesc));
+	RegisterConfigDesc(&configDesc, sizeof(configDesc));
 }
 
 }

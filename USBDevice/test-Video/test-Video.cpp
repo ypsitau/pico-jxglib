@@ -15,11 +15,7 @@ int board_millis()
 	return to_ms_since_boot(get_absolute_time());
 }
 
-void led_blinking_task(void* param);
-void usb_device_task(void *param);
 void video_send_frame(void);
-
-const uint8_t* GetConfigDesc(int* pBytes);
 
 //--------------------------------------------------------------------+
 // Main
@@ -37,10 +33,7 @@ int main(void)
 		idProduct:			USBDevice::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
 	}, 0x0409, "Video Test", "Video Test Product", "0123456");
-	int bytes;
-	const uint8_t* desc = GetConfigDesc(&bytes);
-	deviceController.RegisterConfigDesc(desc, bytes);
-	deviceController.AssignInterfaceNum(2); // reserve 2 interfaces for video
+	USBDevice::Video video(deviceController);
 	deviceController.Initialize();
 	for (;;) {
 		video_send_frame();
