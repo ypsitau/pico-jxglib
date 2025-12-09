@@ -3,9 +3,9 @@
 //==============================================================================
 #include "jxglib/USBDevice/Video.h"
 
-#define FRAME_WIDTH   128
-#define FRAME_HEIGHT  96
-#define FRAME_RATE    10
+//#define FRAME_WIDTH   128
+//#define FRAME_HEIGHT  96
+//#define FRAME_RATE    10
 
 /* Windows support YUY2 and NV12
  * https://docs.microsoft.com/en-us/windows-hardware/drivers/stream/usb-video-class-driver-overview */
@@ -76,7 +76,7 @@ typedef struct TU_ATTR_PACKED {
 //-----------------------------------------------------------------------------
 namespace jxglib::USBDevice {
 
-Video::Video(Controller& deviceController) : Interface(deviceController, 2)
+Video::Video(Controller& deviceController, int width, int height, int frameRate) : Interface(deviceController, 2)
 {
 	uint8_t interfaceNum_VIDEO_CONTROL = interfaceNum_;
 	uint8_t interfaceNum_VIDEO_STREAMING = interfaceNum_ + 1;
@@ -208,17 +208,17 @@ Video::Video(Controller& deviceController) : Interface(deviceController, 2)
 #endif
 				.bFrameIndex = 1, // 1-based index
 				.bmCapabilities = 0,
-				.wWidth = FRAME_WIDTH,
-				.wHeight = FRAME_HEIGHT,
-				.dwMinBitRate = FRAME_WIDTH * FRAME_HEIGHT * 16 * 1,
-				.dwMaxBitRate = FRAME_WIDTH * FRAME_HEIGHT * 16 * FRAME_RATE,
-				.dwMaxVideoFrameBufferSize = FRAME_WIDTH * FRAME_HEIGHT * 16 / 8,
-				.dwDefaultFrameInterval = 10000000 / FRAME_RATE,
+				.wWidth = static_cast<uint16_t>(width),
+				.wHeight = static_cast<uint16_t>(height),
+				.dwMinBitRate = static_cast<uint32_t>(width * height * 16 * 1),
+				.dwMaxBitRate = static_cast<uint32_t>(width * height * 16 * frameRate),
+				.dwMaxVideoFrameBufferSize = static_cast<uint32_t>(width * height * 16 / 8),
+				.dwDefaultFrameInterval = static_cast<uint32_t>(10000000 / frameRate),
 				.bFrameIntervalType = 0, // continuous
 				.dwFrameInterval = {
-					10000000 / FRAME_RATE, // min
-					10000000, // max
-					10000000 / FRAME_RATE // step
+					static_cast<uint32_t>(10000000 / frameRate), // min
+					static_cast<uint32_t>(10000000), // max
+					static_cast<uint32_t>(10000000 / frameRate) // step
 				}
 			},
 			.color = {

@@ -11,7 +11,7 @@ namespace jxglib::USBDevice {
 
 class Video : public Interface {
 public:
-	Video(Controller& deviceController);
+	Video(Controller& deviceController, int width, int height, int frameRate);
 };
 
 }
