@@ -3,6 +3,7 @@
 // Windows support YUY2 and NV12
 // https://docs.microsoft.com/en-us/windows-hardware/drivers/stream/usb-video-class-driver-overview
 //==============================================================================
+#include <stdlib.h>
 #include "jxglib/USBDevice/Video.h"
 
 #if CFG_TUD_VIDEO > 0
@@ -187,6 +188,65 @@ Video::Video(Controller& deviceController, const char* strControl, const char* s
 	};
 	iInstance_ = deviceController.AddInterface_Video(this);
 	RegisterConfigDesc(&configDesc, sizeof(configDesc));
+}
+
+//-----------------------------------------------------------------------------
+// USBDevice::Video_ColorBar
+//-----------------------------------------------------------------------------
+Video_ColorBar::~Video_ColorBar()
+{
+	::free(frameBuffer_);
+}
+
+void Video_ColorBar::Initialize()
+{
+	frameBuffer_ = reinterpret_cast<uint8_t*>(::malloc(width_ * height_ * 16 / 8));
+}
+
+void Video_ColorBar::OnTick()
+{
+	static const uint8_t bar_color[8][4] = {
+		//  Y,   U,   Y,   V
+		{ 235, 128, 235, 128}, // 100% White
+		{ 219,  16, 219, 138}, // Yellow
+		{ 188, 154, 188,  16}, // Cyan
+		{ 173,  42, 173,  26}, // Green
+		{  78, 214,  78, 230}, // Magenta
+		{  63, 102,  63, 240}, // Red
+		{  32, 240,  32, 118}, // Blue
+		{  16, 128,  16, 128}, // Black
+	};
+	if (!::tud_video_n_streaming(ctl_idx, stm_idx) || xferBusyFlag_) return;
+	uint8_t* end = &frameBuffer_[width_ * 2];
+	unsigned idx = (width_ / 2 - 1) - (startPos_ % (width_ / 2));
+	uint8_t* p = &frameBuffer_[idx * 4];
+	for (unsigned i = 0; i < 8; ++i) {
+		for (int j = 0; j < width_ / (2 * 8); ++j) {
+			memcpy(p, &bar_color[i], 4);
+			p += 4;
+			if (end <= p) {
+				p = frameBuffer_;
+			}
+		}
+	}
+	p = &frameBuffer_[width_ * 2];
+	for (unsigned i = 1; i < height_; ++i) {
+		memcpy(p, frameBuffer_, width_ * 2);
+		p += width_ * 2;
+	}
+	startPos_++;
+	xferBusyFlag_ = true;
+	::tud_video_n_frame_xfer(ctl_idx, stm_idx, frameBuffer_, width_ * height_ * 16 / 8);
+}
+
+void Video_ColorBar::On_frame_xfer_complete(uint_fast8_t ctl_idx, uint_fast8_t stm_idx)
+{
+	xferBusyFlag_ = false;
+}
+
+int Video_ColorBar::On_commit(uint_fast8_t ctl_idx, uint_fast8_t stm_idx, const video_probe_and_commit_control_t* parameters)
+{
+	return VIDEO_ERROR_NONE;
 }
 
 }

@@ -9,6 +9,9 @@
 
 namespace jxglib::USBDevice {
 
+//------------------------------------------------------------------------------
+// Video
+//------------------------------------------------------------------------------
 class Video : public Interface, public Tickable {
 public:
 	struct TU_ATTR_PACKED uvc_control_desc_t {
@@ -49,6 +52,32 @@ public:
 public:
 	// virtual function of Tickable
 	virtual void OnTick() override {}
+};
+
+//------------------------------------------------------------------------------
+// Video_ColorBar
+//------------------------------------------------------------------------------
+class Video_ColorBar : public Video {
+private:
+	int startPos_;
+	volatile bool xferBusyFlag_;
+	uint8_t* frameBuffer_;
+public:
+	static const uint8_t ctl_idx = 0;
+	static const uint8_t stm_idx = 0;
+public:
+	Video_ColorBar(Controller& deviceController, const char* strControl, const char* strStreaming,
+									uint8_t endp, int width, int height, int frameRate) :
+		Video(deviceController, strControl, strStreaming, endp, width, height, frameRate),
+		startPos_{0}, xferBusyFlag_{false}, frameBuffer_{nullptr} {}
+	~Video_ColorBar();
+public:
+	void Initialize();
+public:
+	virtual void On_frame_xfer_complete(uint_fast8_t ctl_idx, uint_fast8_t stm_idx) override;
+	virtual int On_commit(uint_fast8_t ctl_idx, uint_fast8_t stm_idx, const video_probe_and_commit_control_t* parameters) override;
+public:
+	virtual void OnTick() override;
 };
 
 }
