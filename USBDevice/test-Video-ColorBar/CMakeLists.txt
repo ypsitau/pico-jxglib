@@ -28,36 +28,36 @@ set(PICO_BOARD pico2 CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-Video C CXX ASM)
+project(test-Video-ColorBar C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-Video test-Video.cpp usb_descriptors.c)
+add_executable(test-Video-ColorBar test-Video-ColorBar.cpp)
 
-pico_set_program_name(test-Video "test-Video")
-pico_set_program_version(test-Video "0.1")
+pico_set_program_name(test-Video-ColorBar "test-Video-ColorBar")
+pico_set_program_version(test-Video-ColorBar "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-Video 1)
-pico_enable_stdio_usb(test-Video 0)
+pico_enable_stdio_uart(test-Video-ColorBar 1)
+pico_enable_stdio_usb(test-Video-ColorBar 0)
 
 # Add the standard library to the build
-target_link_libraries(test-Video
+target_link_libraries(test-Video-ColorBar
     pico_stdlib
     tinyusb_device
 	jxglib_USBDevice
 )
 
 # Add the standard include files to the build
-target_include_directories(test-Video PRIVATE
+target_include_directories(test-Video-ColorBar PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-Video)
+pico_add_extra_outputs(test-Video-ColorBar)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 
-jxglib_configure_USBDevice(test-Video CFG_TUD_VIDEO 1)
+jxglib_configure_USBDevice(test-Video-ColorBar CFG_TUD_VIDEO 1)
