@@ -4,25 +4,23 @@
 #include "tusb.h"
 #include "jxglib/USBDevice/Video.h"
 
-#define FRAME_WIDTH   128
-#define FRAME_HEIGHT  96
-#define FRAME_RATE    10
-
 using namespace jxglib;
 
-uint8_t frame_buffer[FRAME_WIDTH * FRAME_HEIGHT * 16 / 8];
-
-class VideoTest : public USBDevice::Video {
+class Video_ColorBar : public USBDevice::Video {
 private:
 	int startPos_;
 	volatile bool xferBusyFlag_;
+	uint8_t* frameBuffer_;
 public:
 	static const uint8_t ctl_idx = 0;
 	static const uint8_t stm_idx = 0;
 public:
-	VideoTest(USBDevice::Controller& deviceController) :
-		USBDevice::Video(deviceController, "UVC Control", "UVC Streaming", 0x81, FRAME_WIDTH, FRAME_HEIGHT, FRAME_RATE),
-		startPos_{0}, xferBusyFlag_{false} {}
+	Video_ColorBar(USBDevice::Controller& deviceController, uint8_t endp, int width, int height, int frameRate) :
+		USBDevice::Video(deviceController, "UVC Control", "UVC Streaming", endp, width, height, frameRate),
+		startPos_{0}, xferBusyFlag_{false}, frameBuffer_{nullptr} {}
+	~Video_ColorBar() { ::free(frameBuffer_); }
+public:
+	void Initialize();
 public:
 	virtual void On_frame_xfer_complete(uint_fast8_t ctl_idx, uint_fast8_t stm_idx) override;
 	virtual int On_commit(uint_fast8_t ctl_idx, uint_fast8_t stm_idx, const video_probe_and_commit_control_t* parameters) override;
@@ -30,38 +28,12 @@ public:
 	virtual void OnTick() override;
 };
 
-#if 0
-void VideoTest::video_send_frame(void)
+void Video_ColorBar::Initialize()
 {
-	uint8_t ctl_idx = 0;
-	uint8_t stm_idx = 0;
-	static unsigned start_ms = 0;
-	static unsigned already_sent = 0;
-
-	if (!::tud_video_n_streaming(ctl_idx, stm_idx)) {
-		already_sent = 0;
-		startPos_ = 0;
-		return;
-	}
-	if (!already_sent) {
-		already_sent = 1;
-		xferBusyFlag_ = true;
-		start_ms = board_millis();
-		fill_color_bar(frame_buffer, startPos_);
-		::tud_video_n_frame_xfer(ctl_idx, stm_idx, frame_buffer, FRAME_WIDTH * FRAME_HEIGHT * 16 / 8);
-	}
-	unsigned cur = board_millis();
-	if (cur - start_ms < interval_ms) return; // not enough time
-	if (xferBusyFlag_) return;
-	start_ms += interval_ms;
-	xferBusyFlag_ = 1;
-
-	fill_color_bar(frame_buffer, startPos_);
-	::tud_video_n_frame_xfer(ctl_idx, stm_idx, frame_buffer, FRAME_WIDTH * FRAME_HEIGHT * 16 / 8);
+	frameBuffer_ = reinterpret_cast<uint8_t*>(::malloc(width_ * height_ * 16 / 8));
 }
-#endif
 
-void VideoTest::OnTick()
+void Video_ColorBar::OnTick()
 {
 	static const uint8_t bar_color[8][4] = {
 		/*  Y,   U,   Y,   V */
@@ -75,34 +47,34 @@ void VideoTest::OnTick()
 		{  16, 128,  16, 128}, /* Black */
 	};
 	if (!::tud_video_n_streaming(ctl_idx, stm_idx) || xferBusyFlag_) return;
-	uint8_t* end = &frame_buffer[FRAME_WIDTH * 2];
-	unsigned idx = (FRAME_WIDTH / 2 - 1) - (startPos_ % (FRAME_WIDTH / 2));
-	uint8_t* p = &frame_buffer[idx * 4];
+	uint8_t* end = &frameBuffer_[width_ * 2];
+	unsigned idx = (width_ / 2 - 1) - (startPos_ % (width_ / 2));
+	uint8_t* p = &frameBuffer_[idx * 4];
 	for (unsigned i = 0; i < 8; ++i) {
-		for (int j = 0; j < FRAME_WIDTH / (2 * 8); ++j) {
+		for (int j = 0; j < width_ / (2 * 8); ++j) {
 			memcpy(p, &bar_color[i], 4);
 			p += 4;
 			if (end <= p) {
-				p = frame_buffer;
+				p = frameBuffer_;
 			}
 		}
 	}
-	p = &frame_buffer[FRAME_WIDTH * 2];
-	for (unsigned i = 1; i < FRAME_HEIGHT; ++i) {
-		memcpy(p, frame_buffer, FRAME_WIDTH * 2);
-		p += FRAME_WIDTH * 2;
+	p = &frameBuffer_[width_ * 2];
+	for (unsigned i = 1; i < height_; ++i) {
+		memcpy(p, frameBuffer_, width_ * 2);
+		p += width_ * 2;
 	}
 	startPos_++;
 	xferBusyFlag_ = true;
-	::tud_video_n_frame_xfer(ctl_idx, stm_idx, frame_buffer, FRAME_WIDTH * FRAME_HEIGHT * 16 / 8);
+	::tud_video_n_frame_xfer(ctl_idx, stm_idx, frameBuffer_, width_ * height_ * 16 / 8);
 }
 
-void VideoTest::On_frame_xfer_complete(uint_fast8_t ctl_idx, uint_fast8_t stm_idx)
+void Video_ColorBar::On_frame_xfer_complete(uint_fast8_t ctl_idx, uint_fast8_t stm_idx)
 {
 	xferBusyFlag_ = false;
 }
 
-int VideoTest::On_commit(uint_fast8_t ctl_idx, uint_fast8_t stm_idx, const video_probe_and_commit_control_t* parameters)
+int Video_ColorBar::On_commit(uint_fast8_t ctl_idx, uint_fast8_t stm_idx, const video_probe_and_commit_control_t* parameters)
 {
 	return VIDEO_ERROR_NONE;
 }
@@ -122,7 +94,8 @@ int main(void)
 		idProduct:			USBDevice::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
 	}, 0x0409, "Video Test", "Video Test Product", "0123456");
-	VideoTest video(deviceController);
+	Video_ColorBar video(deviceController, 0x81, 80, 60, 10);
 	deviceController.Initialize();
+	video.Initialize();
 	for (;;) Tickable::Tick();
 }

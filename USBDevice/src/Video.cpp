@@ -14,7 +14,7 @@ namespace jxglib::USBDevice {
 
 Video::Video(Controller& deviceController, const char* strControl, const char* strStreaming,
 											uint8_t endp, int width, int height, int frameRate) :
-	Interface(deviceController, 2), Tickable(1000 / frameRate),
+	Interface(deviceController, 2), Tickable(0),
 	width_{width}, height_{height}, frameRate_{frameRate}
 {
 	uint32_t clockFrequency = 27000000; // Time stamp base clock. It is a deprecated parameter.

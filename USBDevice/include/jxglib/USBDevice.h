@@ -20,6 +20,7 @@ protected:
 	uint8_t iInstance_;
 public:
 	Interface(Controller& deviceController, int nInterfacesToOccupy);
+	virtual ~Interface() {}
 public:
 	void RegisterConfigDesc(const void* configDesc, int bytes);
 public:
