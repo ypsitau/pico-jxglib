@@ -11,6 +11,7 @@
 #include "jxglib/TelePlot.h"
 #include "jxglib/USBDevice/MSCDrive.h"
 #include "jxglib/USBDevice/CDCSerial.h"
+#include "jxglib/USBDevice/Video.h"
 #include "jxglib/FAT/Flash.h"
 #include "jxglib/FAT/SDCard.h"
 #include "jxglib/LogicAnalyzer.h"
@@ -29,6 +30,7 @@ private:
 	USBDevice::MSCDrive mscDrive_;
 	USBDevice::CDCSerial streamCDC_Terminal_;
 	USBDevice::CDCSerial streamCDC_Application_;
+	//USBDevice::VideoColorBar video_;
 	TelePlot telePlot_;
 	Serial::Terminal terminal_;
 	bool attachStdioFlag_;

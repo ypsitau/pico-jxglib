@@ -191,30 +191,30 @@ Video::Video(Controller& deviceController, const char* strControl, const char* s
 }
 
 //-----------------------------------------------------------------------------
-// USBDevice::Video_ColorBar
+// USBDevice::VideoColorBar
 //-----------------------------------------------------------------------------
-Video_ColorBar::~Video_ColorBar()
+VideoColorBar::~VideoColorBar()
 {
 	::free(frameBuffer_);
 }
 
-void Video_ColorBar::Initialize()
+void VideoColorBar::Initialize()
 {
 	frameBuffer_ = reinterpret_cast<uint8_t*>(::malloc(width_ * height_ * 16 / 8));
 }
 
-void Video_ColorBar::OnTick()
+void VideoColorBar::OnTick()
 {
 	static const uint8_t bar_color[8][4] = {
 		//  Y,   U,   Y,   V
-		{ 235, 128, 235, 128}, // 100% White
-		{ 219,  16, 219, 138}, // Yellow
-		{ 188, 154, 188,  16}, // Cyan
-		{ 173,  42, 173,  26}, // Green
-		{  78, 214,  78, 230}, // Magenta
-		{  63, 102,  63, 240}, // Red
-		{  32, 240,  32, 118}, // Blue
-		{  16, 128,  16, 128}, // Black
+		{ 235, 128, 235, 128 }, // 100% White
+		{ 219,  16, 219, 138 }, // Yellow
+		{ 188, 154, 188,  16 }, // Cyan
+		{ 173,  42, 173,  26 }, // Green
+		{  78, 214,  78, 230 }, // Magenta
+		{  63, 102,  63, 240 }, // Red
+		{  32, 240,  32, 118 }, // Blue
+		{  16, 128,  16, 128 }, // Black
 	};
 	if (!::tud_video_n_streaming(ctl_idx, stm_idx) || xferBusyFlag_) return;
 	uint8_t* end = &frameBuffer_[width_ * 2];
@@ -239,12 +239,12 @@ void Video_ColorBar::OnTick()
 	::tud_video_n_frame_xfer(ctl_idx, stm_idx, frameBuffer_, width_ * height_ * 16 / 8);
 }
 
-void Video_ColorBar::On_frame_xfer_complete(uint_fast8_t ctl_idx, uint_fast8_t stm_idx)
+void VideoColorBar::On_frame_xfer_complete(uint_fast8_t ctl_idx, uint_fast8_t stm_idx)
 {
 	xferBusyFlag_ = false;
 }
 
-int Video_ColorBar::On_commit(uint_fast8_t ctl_idx, uint_fast8_t stm_idx, const video_probe_and_commit_control_t* parameters)
+int VideoColorBar::On_commit(uint_fast8_t ctl_idx, uint_fast8_t stm_idx, const video_probe_and_commit_control_t* parameters)
 {
 	return VIDEO_ERROR_NONE;
 }
