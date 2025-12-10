@@ -16,7 +16,7 @@ Controller::Controller(const tusb_desc_device_t& deviceDesc, uint16_t langid,
 		uint8_t attr, uint16_t power_ma) : Tickable(0),
 	deviceDesc_{deviceDesc}, langid_{langid}, attr_{attr}, power_ma_{power_ma}, interfaceNumCur_{0},
 	offsetConfigDesc_{TUD_CONFIG_DESC_LEN}, iStringDescCur_{1},
-	nInstances_CDC_{0}, nInstances_MSC_{0}, nInstances_HID_{0}
+	nInstances_CDC_{0}, nInstances_MSC_{0}, nInstances_HID_{0}, nInstances_Video_{0}
 {
 	for (int iInstance = 0; iInstance < nInstancesMax; iInstance++) {
 		interfaceTbl_[iInstance] = nullptr;
@@ -70,6 +70,16 @@ uint8_t Controller::AddInterface_HID(HID* pHID)
 		::panic("CFG_TUD_HID in tusb_config.h must be set to at least %d.", iInstance + 1);
 	}
 	specific_.pHIDTbl[iInstance] = pHID;
+	return iInstance;
+}
+
+uint8_t Controller::AddInterface_Video(Video* pVideo)
+{
+	uint8_t iInstance = nInstances_Video_++;
+	if (iInstance >= CFG_TUD_VIDEO) {
+		::panic("CFG_TUD_VIDEO in tusb_config.h must be set to at least %d.", iInstance + 1);
+	}
+	specific_.pVideoTbl[iInstance] = pVideo;
 	return iInstance;
 }
 

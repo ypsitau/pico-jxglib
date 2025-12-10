@@ -88,17 +88,18 @@ private:
 	uint8_t nInstances_CDC_;
 	uint8_t nInstances_MSC_;
 	uint8_t nInstances_HID_;
+	uint8_t nInstances_Video_;
 	union {
 		Interface* interfaceTbl_[nInstancesMax];
 		struct {
 			CDC* pCDCTbl[CFG_TUD_CDC];
 			MSC* pMSCTbl[CFG_TUD_MSC];
 			HID* pHIDTbl[CFG_TUD_HID];
-			MIDI* pMIDI[CFG_TUD_MIDI];
-			Audio* pAudio[CFG_TUD_AUDIO];
-			Video* pVideo[CFG_TUD_VIDEO];
-			Vendor* pVendor[CFG_TUD_VENDOR];
-			BTH* pBTH[CFG_TUD_BTH];
+			Video* pVideoTbl[CFG_TUD_VIDEO];
+			MIDI* pMIDITbl[CFG_TUD_MIDI];
+			Audio* pAudioTbl[CFG_TUD_AUDIO];
+			Vendor* pVendorTbl[CFG_TUD_VENDOR];
+			BTH* pBTHTbl[CFG_TUD_BTH];
 		} specific_;
 	};
 	int offsetConfigDesc_;
@@ -107,8 +108,8 @@ private:
 		TUD_CDC_DESC_LEN *			CFG_TUD_CDC +
 		TUD_MSC_DESC_LEN *			CFG_TUD_MSC +
 		TUD_HID_DESC_LEN *			CFG_TUD_HID +
-	//	TUD_AUDIO_DESC_LEN *		CFG_TUD_AUDIO +
 		TUD_VIDEO_DESC_LEN *		CFG_TUD_VIDEO +
+	//	TUD_AUDIO_DESC_LEN *		CFG_TUD_AUDIO +
 		TUD_MIDI_DESC_LEN *			CFG_TUD_MIDI +
 		TUD_VENDOR_DESC_LEN *		CFG_TUD_VENDOR
 	//	TUD_USBTMC_DESC_LEN *		CFG_TUD_USBTMC +
@@ -139,9 +140,11 @@ public:
 	uint8_t AddInterface_CDC(CDC* pCDC);
 	uint8_t AddInterface_MSC(MSC* pMSC);
 	uint8_t AddInterface_HID(HID* pHID);
+	uint8_t AddInterface_Video(Video* pVideo);
 	static CDC* GetInterface_CDC(uint8_t iInstance = 0) { return Instance->specific_.pCDCTbl[iInstance]; }
 	static MSC* GetInterface_MSC(uint8_t iInstance = 0) { return Instance->specific_.pMSCTbl[iInstance]; }
 	static HID* GetInterface_HID(uint8_t iInstance = 0) { return Instance->specific_.pHIDTbl[iInstance]; }
+	static Video* GetInterface_Video(uint8_t iInstance = 0) { return Instance->specific_.pVideoTbl[iInstance]; }
 public:
 	// virtual functions of Tickable
 	virtual const char* GetTickableName() const override { return "USBDevice::Controller"; }
