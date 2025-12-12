@@ -258,6 +258,9 @@ public:
 	OV7670& ResetAllReg();
 	OV7670& EnableColorMode(bool enableFlag);
 public:
+	OV7670& SetMirror(bool enableFlag) { return WriteRegBit(Reg1E_MVFP, 5, enableFlag); }
+	OV7670& SetVFlip(bool enableFlag) { return WriteRegBit(Reg1E_MVFP, 4, enableFlag); }
+public:
 	// virtual functions of Base
 	virtual void FreeResource() override;
 	virtual const Image& GetImage() const override { return image_; }
