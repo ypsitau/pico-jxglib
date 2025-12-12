@@ -69,7 +69,7 @@ public:
 public:
 	void Initialize();
 	bool CanTransferFrame() const;
-	void TransferFrame(uint8_t* frameBuffer);
+	void TransferFrame(const void* frameBuffer);
 public:
 	virtual void On_frame_xfer_complete(uint_fast8_t ctl_idx, uint_fast8_t stm_idx) override;
 	virtual int On_commit(uint_fast8_t ctl_idx, uint_fast8_t stm_idx, const video_probe_and_commit_control_t* parameters) override;

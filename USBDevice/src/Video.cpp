@@ -205,10 +205,10 @@ bool VideoSimple::CanTransferFrame() const
 	return ::tud_video_n_streaming(ctl_idx, stm_idx) && !xferBusyFlag_;
 }
 
-void VideoSimple::TransferFrame(uint8_t* frameBuffer)
+void VideoSimple::TransferFrame(const void* frameBuffer)
 {
 	xferBusyFlag_ = true;
-	::tud_video_n_frame_xfer(ctl_idx, stm_idx, frameBuffer, width_ * height_ * 16 / 8);
+	::tud_video_n_frame_xfer(ctl_idx, stm_idx, const_cast<void*>(frameBuffer), width_ * height_ * 16 / 8);
 }
 
 void VideoSimple::On_frame_xfer_complete(uint_fast8_t ctl_idx, uint_fast8_t stm_idx)

@@ -4,6 +4,10 @@ target_include_directories(jxglib_Camera_OV7670 INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/include)
 
 target_link_libraries(jxglib_Camera_OV7670 INTERFACE
+	jxglib_I2C
+	jxglib_PIO
+	jxglib_DMA
+	jxglib_PWM
 	jxglib_Camera)
 
 target_sources(jxglib_Camera_OV7670 INTERFACE
