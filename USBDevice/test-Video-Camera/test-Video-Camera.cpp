@@ -31,8 +31,8 @@ int main(void)
 	ov7670.SetupReg();
 	ov7670.EnableColorMode(true);
 	ov7670.SetResolution(Camera::OV7670::Resolution::QQVGA).SetFormat(Camera::OV7670::Format::YUV422);
-	int width = 160, height = 120, frameRate = 10;
-	USBDevice::VideoSimple video(deviceController, "UVC Control", "UVC Streaming", 0x81, width, height, frameRate);
+	int frameRate = 10;
+	USBDevice::VideoSimple video(deviceController, "UVC Control", "UVC Streaming", 0x81, ov7670.GetSize(), frameRate);
 	deviceController.Initialize();
 	video.Initialize();
 	for (;;) {

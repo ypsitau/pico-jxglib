@@ -14,8 +14,8 @@
 namespace jxglib::USBDevice {
 
 Video::Video(Controller& deviceController, const char* strControl, const char* strStreaming,
-											uint8_t endp, int width, int height, int frameRate) :
-	Interface(deviceController, 2), width_{width}, height_{height}, frameRate_{frameRate}
+											uint8_t endp, const Size& size, int frameRate) :
+	Interface(deviceController, 2), size_{size}, frameRate_{frameRate}
 {
 	uint32_t clockFrequency = 27000000; // Time stamp base clock. It is a deprecated parameter.
 	uint8_t UVC_ENTITY_CAP_INPUT_TERMINAL = 0x01;
@@ -135,11 +135,11 @@ Video::Video(Controller& deviceController, const char* strControl, const char* s
 				bDescriptorSubType: VIDEO_CS_ITF_VS_FRAME_UNCOMPRESSED,
 				bFrameIndex: 1, // 1-based index
 				bmCapabilities: 0,
-				wWidth: static_cast<uint16_t>(width),
-				wHeight: static_cast<uint16_t>(height),
-				dwMinBitRate: static_cast<uint32_t>(width * height * 16 * 1),
-				dwMaxBitRate: static_cast<uint32_t>(width * height * 16 * frameRate),
-				dwMaxVideoFrameBufferSize: static_cast<uint32_t>(width * height * 16 / 8),
+				wWidth: static_cast<uint16_t>(size_.width),
+				wHeight: static_cast<uint16_t>(size_.height),
+				dwMinBitRate: static_cast<uint32_t>(size_.width * size_.height * 16 * 1),
+				dwMaxBitRate: static_cast<uint32_t>(size_.width * size_.height * 16 * frameRate),
+				dwMaxVideoFrameBufferSize: static_cast<uint32_t>(size_.width * size_.height * 16 / 8),
 				dwDefaultFrameInterval: static_cast<uint32_t>(10000000 / frameRate),
 				bFrameIntervalType: 0, // continuous
 				dwFrameInterval: {
@@ -208,7 +208,7 @@ bool VideoSimple::CanTransferFrame() const
 void VideoSimple::TransferFrame(const void* frameBuffer)
 {
 	xferBusyFlag_ = true;
-	::tud_video_n_frame_xfer(ctl_idx, stm_idx, const_cast<void*>(frameBuffer), width_ * height_ * 16 / 8);
+	::tud_video_n_frame_xfer(ctl_idx, stm_idx, const_cast<void*>(frameBuffer), size_.width * size_.height * 16 / 8);
 }
 
 void VideoSimple::On_frame_xfer_complete(uint_fast8_t ctl_idx, uint_fast8_t stm_idx)

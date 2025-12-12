@@ -233,6 +233,7 @@ private:
 	PIO::Program programToReset_;
 	DMA::Channel* pChannel_;
 	DMA::ChannelConfig channelConfig_;
+	Size size_;
 	Image image_;
 public:
 	OV7670(i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq = 24000000);
@@ -253,6 +254,7 @@ public:
 	bool ReadRegBit(uint8_t reg, int iBit) { return (ReadReg(reg) >> iBit) & 0b1; }
 	void ReadRegs(uint8_t reg, uint8_t values[], int count);
 public:
+	const Size& GetSize() const { return size_; }
 	OV7670& ResetAllReg();
 	OV7670& EnableColorMode(bool enableFlag);
 public:

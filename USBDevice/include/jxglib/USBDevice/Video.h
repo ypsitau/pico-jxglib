@@ -38,12 +38,11 @@ public:
 		uvc_streaming_desc_t video_streaming;
 	};
 protected:
-	int width_;
-	int height_;
+	Size size_;
 	int frameRate_;
 public:
 	Video(Controller& deviceController, const char* strControl, const char* strStreaming,
-								uint8_t endp, int width, int height, int frameRate);
+								uint8_t endp, const Size& size, int frameRate);
 public:
 	virtual void On_frame_xfer_complete(uint_fast8_t ctl_idx, uint_fast8_t stm_idx) {}
 	virtual int On_commit(uint_fast8_t ctl_idx, uint_fast8_t stm_idx, const video_probe_and_commit_control_t* parameters) {
@@ -62,8 +61,8 @@ public:
 	static const uint8_t stm_idx = 0;
 public:
 	VideoSimple(Controller& deviceController, const char* strControl, const char* strStreaming,
-							uint8_t endp, int width, int height, int frameRate) :
-		Video(deviceController, strControl, strStreaming, endp, width, height, frameRate),
+							uint8_t endp, const Size& size, int frameRate) :
+		Video(deviceController, strControl, strStreaming, endp, size, frameRate),
 		xferBusyFlag_{false} {}
 	~VideoSimple();
 public:

@@ -397,6 +397,14 @@ OV7670& OV7670::SetResolution(Resolution resolution)
 {
 	image_.Free();
 	resolution_ = resolution;
+	size_ =
+		(resolution_ == Resolution::VGA)?		Size{640, 480} :
+		(resolution_ == Resolution::QVGA)?		Size{320, 240} :
+		(resolution_ == Resolution::QQVGA)?		Size{160, 120} :
+		(resolution_ == Resolution::QQQVGA)?	Size{80, 60} :
+		(resolution_ == Resolution::CIF)?		Size{352, 288} :
+		(resolution_ == Resolution::QCIF)?		Size{176, 144} :
+		(resolution_ == Resolution::QQCIF)?		Size{88, 72} : Size{320, 240};
 	updateResolutionAndFormatFlag_ = true;
 	return *this;
 }
@@ -1086,14 +1094,6 @@ void OV7670::FreeResource()
 void OV7670::DoCapture()
 {
 	if (!image_.IsValid()) {
-		Size size =
-			(resolution_ == Resolution::VGA)?		Size{640, 480} :
-			(resolution_ == Resolution::QVGA)?		Size{320, 240} :
-			(resolution_ == Resolution::QQVGA)?		Size{160, 120} :
-			(resolution_ == Resolution::QQQVGA)?	Size{80, 60} :
-			(resolution_ == Resolution::CIF)?		Size{352, 288} :
-			(resolution_ == Resolution::QCIF)?		Size{176, 144} :
-			(resolution_ == Resolution::QQCIF)?		Size{88, 72} : Size{320, 240};
 		if (!image_.Allocate(
 			(format_ == Format::RawBayerRGB)? Image::Format::RGB :
 			(format_ == Format::ProcessedBayerRGB)? Image::Format::RGB :
@@ -1102,7 +1102,7 @@ void OV7670::DoCapture()
 			(format_ == Format::RGB565)? Image::Format::RGB565 :
 			//(format_ == Format::RGB555)? Image::Format::RGB555 :
 			//(format_ == Format::RGB444)? Image::Format::RGB444 :
-			Image::Format::RGB, size.width, size.height)) return;
+			Image::Format::RGB, size_.width, size_.height)) return;
 	}
 	if (updateResolutionAndFormatFlag_) {
 		SetupReg_ResolutionAndFormat();
