@@ -21,7 +21,9 @@ int main(void)
 		idProduct:			USBDevice::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
 	}, 0x0409, "Video Test", "Video Test Product", "0123456");
-	USBDevice::Video_ColorBar video(deviceController, "UVC Control", "UVC Streaming", 0x81, 80, 60, 10);
+	int width = 80, height = 60, frameRate = 10;
+	uint8_t* frameBuffer = reinterpret_cast<uint8_t*>(::malloc(width * height * 16 / 8));
+	USBDevice::VideoAttachable video(deviceController, "UVC Control", "UVC Streaming", 0x81, width, height, frameRate, frameBuffer);
 	deviceController.Initialize();
 	video.Initialize();
 	for (;;) Tickable::Tick();

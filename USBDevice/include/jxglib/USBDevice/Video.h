@@ -55,9 +55,9 @@ public:
 };
 
 //------------------------------------------------------------------------------
-// VideoColorBar
+// VideoAttachable
 //------------------------------------------------------------------------------
-class VideoColorBar : public Video {
+class VideoAttachable : public Video {
 private:
 	int startPos_;
 	volatile bool xferBusyFlag_;
@@ -66,11 +66,11 @@ public:
 	static const uint8_t ctl_idx = 0;
 	static const uint8_t stm_idx = 0;
 public:
-	VideoColorBar(Controller& deviceController, const char* strControl, const char* strStreaming,
-									uint8_t endp, int width, int height, int frameRate) :
+	VideoAttachable(Controller& deviceController, const char* strControl, const char* strStreaming,
+							uint8_t endp, int width, int height, int frameRate, uint8_t* frameBuffer) :
 		Video(deviceController, strControl, strStreaming, endp, width, height, frameRate),
-		startPos_{0}, xferBusyFlag_{false}, frameBuffer_{nullptr} {}
-	~VideoColorBar();
+		startPos_{0}, xferBusyFlag_{false}, frameBuffer_{frameBuffer} {}
+	~VideoAttachable();
 public:
 	void Initialize();
 public:

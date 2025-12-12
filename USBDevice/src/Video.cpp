@@ -191,19 +191,18 @@ Video::Video(Controller& deviceController, const char* strControl, const char* s
 }
 
 //-----------------------------------------------------------------------------
-// USBDevice::VideoColorBar
+// USBDevice::VideoAttachable
 //-----------------------------------------------------------------------------
-VideoColorBar::~VideoColorBar()
+VideoAttachable::~VideoAttachable()
 {
-	::free(frameBuffer_);
+	//::free(frameBuffer_);
 }
 
-void VideoColorBar::Initialize()
+void VideoAttachable::Initialize()
 {
-	frameBuffer_ = reinterpret_cast<uint8_t*>(::malloc(width_ * height_ * 16 / 8));
 }
 
-void VideoColorBar::OnTick()
+void VideoAttachable::OnTick()
 {
 	static const uint8_t bar_color[8][4] = {
 		//  Y,   U,   Y,   V
@@ -216,7 +215,7 @@ void VideoColorBar::OnTick()
 		{  32, 240,  32, 118 }, // Blue
 		{  16, 128,  16, 128 }, // Black
 	};
-	if (!::tud_video_n_streaming(ctl_idx, stm_idx) || xferBusyFlag_) return;
+	if (!frameBuffer_ || !::tud_video_n_streaming(ctl_idx, stm_idx) || xferBusyFlag_) return;
 	uint8_t* end = &frameBuffer_[width_ * 2];
 	unsigned idx = (width_ / 2 - 1) - (startPos_ % (width_ / 2));
 	uint8_t* p = &frameBuffer_[idx * 4];
@@ -239,12 +238,12 @@ void VideoColorBar::OnTick()
 	::tud_video_n_frame_xfer(ctl_idx, stm_idx, frameBuffer_, width_ * height_ * 16 / 8);
 }
 
-void VideoColorBar::On_frame_xfer_complete(uint_fast8_t ctl_idx, uint_fast8_t stm_idx)
+void VideoAttachable::On_frame_xfer_complete(uint_fast8_t ctl_idx, uint_fast8_t stm_idx)
 {
 	xferBusyFlag_ = false;
 }
 
-int VideoColorBar::On_commit(uint_fast8_t ctl_idx, uint_fast8_t stm_idx, const video_probe_and_commit_control_t* parameters)
+int VideoAttachable::On_commit(uint_fast8_t ctl_idx, uint_fast8_t stm_idx, const video_probe_and_commit_control_t* parameters)
 {
 	return VIDEO_ERROR_NONE;
 }
