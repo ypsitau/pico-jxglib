@@ -1051,7 +1051,7 @@ void OV7670::SetupReg_ResolutionAndFormat()
 		(0b0 << 4) |		// UV output value
 							//  0: Use normal UV output
 							//  1: Use fixed UV value set
-		(0b0 << 3) |		// Output sequence
+		(0b11 << 3) |		// Output sequence
 							//  00: Y U Y V
 							//  01: Y V Y U
 							//  10: U Y V Y
