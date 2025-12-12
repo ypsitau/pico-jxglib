@@ -398,6 +398,7 @@ public:
 	bool IsValid() const { return !pFormat_->IsNone(); }
 	void SetMemory(const Format& format, int width, int height, Memory* pMemory);
 	bool Allocate(const Format& format, int width, int height);
+	bool Allocate(const Format& format, const Size& size) { return Allocate(format, size.width, size.height); }
 	void Free();
 	void FillZero();
 	const Format& GetFormat() const { return *pFormat_; }

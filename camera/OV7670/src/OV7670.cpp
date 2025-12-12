@@ -488,10 +488,10 @@ bool OV7670::Initialize()
 		.set_transfer_data_size(DMA_SIZE_32)
 		.set_read_increment(false)
 		.set_write_increment(true)
-		.set_dreq(sm_.get_dreq_rx()) // set DREQ of StateMachine's rx
-		.set_chain_to(*pChannel_)    // disable by setting chain_to to itself
+		.set_dreq(sm_.get_dreq_rx())		// set DREQ of StateMachine's rx
+		.set_chain_to(*pChannel_)			// disable by setting chain_to to itself
 		.set_ring_read(0)
-		.set_bswap(true)
+		.set_bswap(true)					// byte swap: b0 b1 b2 b3 -> b3 b2 b1 b0
 		.set_irq_quiet(false)
 		.set_sniff_enable(false)
 		.set_high_priority(false);
@@ -837,7 +837,9 @@ void OV7670::SetupReg()
 	WriteReg(Reg3D_COM13,
 		(0b1 << 7) |		// Gamma enable
 		(0b1 << 6) |		// UV saturation level - UV auto-adjustment
-		(0b0 << 0));		// UV swap
+		(0b1 << 0));		// UV swap
+							//  0: Y U Y V
+							//  1: Y V Y U
 	WriteReg(Reg4B,
 		(0b1 << 0));		// UV average enable
 	//-------------------------------------------------------------------------
@@ -1058,15 +1060,17 @@ void OV7670::SetupReg_ResolutionAndFormat()
 							//  1: Negative image
 		(0b0 << 4) |		// UV output value
 							//  0: Use normal UV output
-							//  1: Use fixed UV value set
-		(0b11 << 3) |		// Output sequence
-							//  00: Y U Y V
-							//  01: Y V Y U
-							//  10: U Y V Y
-							//  11: V Y U Y
+							//  1: Use fixed UV value set (enable Reg67_MANU and Reg68_MANV)
+		(0b1 << 3) |		// Output sequence
+							//  0: Y first
+							//  1: UV first
 		(0b0 << 0));		// Auto output window
 							//  0: Sensor DOES NOT autommatically set window
 							//  1: Sensor automatically sets output window
+	WriteReg(Reg67_MANU,
+		0x80);				// Manual U value when Reg3A_TSLB[4] = 1
+	WriteReg(Reg68_MANV,
+		0x80);				// Manual V value when Reg3A_TSLB[4] = 1
 }
 
 OV7670& OV7670::ResetAllReg()
@@ -1095,14 +1099,14 @@ void OV7670::DoCapture()
 {
 	if (!image_.IsValid()) {
 		if (!image_.Allocate(
-			(format_ == Format::RawBayerRGB)? Image::Format::RGB :
-			(format_ == Format::ProcessedBayerRGB)? Image::Format::RGB :
-			(format_ == Format::YUV422)? Image::Format::YUV422 :
-			//(format_ == Format::GRB422)? Image::Format::GRB422 :
-			(format_ == Format::RGB565)? Image::Format::RGB565 :
-			//(format_ == Format::RGB555)? Image::Format::RGB555 :
-			//(format_ == Format::RGB444)? Image::Format::RGB444 :
-			Image::Format::RGB, size_.width, size_.height)) return;
+			(format_ == Format::RawBayerRGB)?		Image::Format::RGB :
+			(format_ == Format::ProcessedBayerRGB)?	Image::Format::RGB :
+			(format_ == Format::YUV422)?			Image::Format::YUV422 :
+			//(format_ == Format::GRB422)?			Image::Format::GRB422 :
+			(format_ == Format::RGB565)?			Image::Format::RGB565 :
+			//(format_ == Format::RGB555)?			Image::Format::RGB555 :
+			//(format_ == Format::RGB444)?			Image::Format::RGB444 :
+			Image::Format::RGB, size_)) return;
 	}
 	if (updateResolutionAndFormatFlag_) {
 		SetupReg_ResolutionAndFormat();
