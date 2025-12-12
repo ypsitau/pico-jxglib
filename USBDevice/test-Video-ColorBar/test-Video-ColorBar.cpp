@@ -23,7 +23,7 @@ int main(void)
 	}, 0x0409, "Video Test", "Video Test Product", "0123456");
 	int width = 80, height = 60, frameRate = 10;
 	uint8_t* frameBuffer = reinterpret_cast<uint8_t*>(::malloc(width * height * 16 / 8));
-	USBDevice::VideoSimple video(deviceController, "UVC Control", "UVC Streaming", 0x81, width, height, frameRate);
+	USBDevice::VideoSimple video(deviceController, "UVC Control", "UVC Streaming", 0x81, {width, height}, frameRate);
 	deviceController.Initialize();
 	video.Initialize();
 	int startPos = 0;
