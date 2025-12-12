@@ -19,7 +19,7 @@ target_sources(jxglib_LABOPlatform INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/LABOPlatform.cpp)
 
 function(jxglib_configure_LABOPlatform TARGET)
-	jxglib_configure_USBDevice(${TARGET} CFG_TUD_CDC 2 CFG_TUD_MSC 1 CFG_TUD_VIDEO 0)
+	jxglib_configure_USBDevice(${TARGET} CFG_TUD_CDC 2 CFG_TUD_MSC 1 CFG_TUD_VIDEO 1)
 	jxglib_configure_FAT(${TARGET} FF_VOLUMES 2)
 	if(PICO_BOARD MATCHES ".*_w$")
 		jxglib_configure_Net(${TARGET})

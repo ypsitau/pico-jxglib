@@ -169,7 +169,6 @@ LABOPlatform::LABOPlatform(int bytesDrive) :
 	mscDrive_(deviceController_, 0x01, 0x81),
 	streamCDC_Terminal_(deviceController_, "StreamSerial", 0x82, 0x03, 0x83),
 	streamCDC_Application_(deviceController_, "StreamApplication", 0x84, 0x05, 0x85),
-	//video_(deviceController_, "UVC Controller", "UVC Stream", 0x86, 160, 120, 10),
 	telePlot_(streamCDC_Application_),
 	attachStdioFlag_{false},
 	sigrokAdapter_(logicAnalyzer_, streamCDC_Terminal_, streamCDC_Application_),
@@ -189,11 +188,9 @@ LABOPlatform::LABOPlatform(int bytesDrive) :
 void LABOPlatform::Initialize()
 {
 	FontSet::flashAddrBtm = XIP_BASE + bytesProgramMax;
+	Shell::Instance.Startup();
+	pVideo_.reset(new USBDevice::VideoSimple(deviceController_, "LABO Video", "LABO Video Stream", 0x86, {160, 120}, 10));
 	deviceController_.Initialize();
-	mscDrive_.Initialize(fat_);
-	streamCDC_Terminal_.Initialize();
-	streamCDC_Application_.Initialize();
-	//video_.Initialize();
 	if (!attachStdioFlag_) {
 		terminal_.AttachKeyboard(streamCDC_Terminal_.GetKeyboard()).AttachPrintable(streamCDC_Terminal_);
 		::stdio_set_driver_enabled(&stdio_driver_, true);
@@ -204,7 +201,10 @@ void LABOPlatform::Initialize()
 		std::unique_ptr<FS::File> pFile(fat_.OpenFile("/README.txt", "w"));
 		if (pFile) pFile->Print(textREADME_);
 	}
-	Shell::Instance.Startup();
+	pVideo_->Initialize();
+	mscDrive_.Initialize(fat_);
+	streamCDC_Terminal_.Initialize();
+	streamCDC_Application_.Initialize();
 }
 
 LABOPlatform& LABOPlatform::AttachStdio(bool attachStdioFlag)

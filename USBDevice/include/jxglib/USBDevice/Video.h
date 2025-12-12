@@ -44,6 +44,10 @@ public:
 	Video(Controller& deviceController, const char* strControl, const char* strStreaming,
 								uint8_t endp, const Size& size, int frameRate);
 public:
+	const Size& GetSize() const { return size_; }
+	int GetWidth() const { return size_.width; }
+	int GetHeight() const { return size_.height; }
+public:
 	virtual void On_frame_xfer_complete(uint_fast8_t ctl_idx, uint_fast8_t stm_idx) {}
 	virtual int On_commit(uint_fast8_t ctl_idx, uint_fast8_t stm_idx, const video_probe_and_commit_control_t* parameters) {
 		return VIDEO_ERROR_NONE;
@@ -62,8 +66,7 @@ public:
 public:
 	VideoSimple(Controller& deviceController, const char* strControl, const char* strStreaming,
 							uint8_t endp, const Size& size, int frameRate) :
-		Video(deviceController, strControl, strStreaming, endp, size, frameRate),
-		xferBusyFlag_{false} {}
+		Video(deviceController, strControl, strStreaming, endp, size, frameRate), xferBusyFlag_{false} {}
 	~VideoSimple();
 public:
 	void Initialize();

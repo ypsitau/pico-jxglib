@@ -30,7 +30,7 @@ private:
 	USBDevice::MSCDrive mscDrive_;
 	USBDevice::CDCSerial streamCDC_Terminal_;
 	USBDevice::CDCSerial streamCDC_Application_;
-	//USBDevice::VideoColorBar video_;
+	std::unique_ptr<USBDevice::VideoSimple> pVideo_;
 	TelePlot telePlot_;
 	Serial::Terminal terminal_;
 	bool attachStdioFlag_;
@@ -56,6 +56,7 @@ public:
 	USBDevice::Controller& GetDeviceController() { return deviceController_; }
 	FAT::Flash& GetFAT() { return fat_; }
 	USBDevice::MSCDrive& GetMSCDrive() { return mscDrive_; }
+	USBDevice::VideoSimple& GetVideo() { return *pVideo_; }
 	Serial::Terminal& GetTerminal() { return terminal_; }
 	TelePlot& GetTelePlot() { return telePlot_; }
 	LogicAnalyzer& GetLogicAnalyzer() { return logicAnalyzer_; }
