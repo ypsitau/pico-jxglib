@@ -15,8 +15,7 @@ namespace jxglib::USBDevice {
 
 Video::Video(Controller& deviceController, const char* strControl, const char* strStreaming,
 											uint8_t endp, int width, int height, int frameRate) :
-	Interface(deviceController, 2), Tickable(0),
-	width_{width}, height_{height}, frameRate_{frameRate}
+	Interface(deviceController, 2), width_{width}, height_{height}, frameRate_{frameRate}
 {
 	uint32_t clockFrequency = 27000000; // Time stamp base clock. It is a deprecated parameter.
 	uint8_t UVC_ENTITY_CAP_INPUT_TERMINAL = 0x01;
@@ -191,59 +190,33 @@ Video::Video(Controller& deviceController, const char* strControl, const char* s
 }
 
 //-----------------------------------------------------------------------------
-// USBDevice::VideoAttachable
+// USBDevice::VideoSimple
 //-----------------------------------------------------------------------------
-VideoAttachable::~VideoAttachable()
-{
-	//::free(frameBuffer_);
-}
-
-void VideoAttachable::Initialize()
+VideoSimple::~VideoSimple()
 {
 }
 
-void VideoAttachable::OnTick()
+void VideoSimple::Initialize()
 {
-	static const uint8_t bar_color[8][4] = {
-		//  Y,   U,   Y,   V
-		{ 235, 128, 235, 128 }, // 100% White
-		{ 219,  16, 219, 138 }, // Yellow
-		{ 188, 154, 188,  16 }, // Cyan
-		{ 173,  42, 173,  26 }, // Green
-		{  78, 214,  78, 230 }, // Magenta
-		{  63, 102,  63, 240 }, // Red
-		{  32, 240,  32, 118 }, // Blue
-		{  16, 128,  16, 128 }, // Black
-	};
-	if (!frameBuffer_ || !::tud_video_n_streaming(ctl_idx, stm_idx) || xferBusyFlag_) return;
-	uint8_t* end = &frameBuffer_[width_ * 2];
-	unsigned idx = (width_ / 2 - 1) - (startPos_ % (width_ / 2));
-	uint8_t* p = &frameBuffer_[idx * 4];
-	for (unsigned i = 0; i < 8; ++i) {
-		for (int j = 0; j < width_ / (2 * 8); ++j) {
-			memcpy(p, &bar_color[i], 4);
-			p += 4;
-			if (end <= p) {
-				p = frameBuffer_;
-			}
-		}
-	}
-	p = &frameBuffer_[width_ * 2];
-	for (unsigned i = 1; i < height_; ++i) {
-		memcpy(p, frameBuffer_, width_ * 2);
-		p += width_ * 2;
-	}
-	startPos_++;
+}
+
+bool VideoSimple::CanTransferFrame() const
+{
+	return ::tud_video_n_streaming(ctl_idx, stm_idx) && !xferBusyFlag_;
+}
+
+void VideoSimple::TransferFrame(uint8_t* frameBuffer)
+{
 	xferBusyFlag_ = true;
-	::tud_video_n_frame_xfer(ctl_idx, stm_idx, frameBuffer_, width_ * height_ * 16 / 8);
+	::tud_video_n_frame_xfer(ctl_idx, stm_idx, frameBuffer, width_ * height_ * 16 / 8);
 }
 
-void VideoAttachable::On_frame_xfer_complete(uint_fast8_t ctl_idx, uint_fast8_t stm_idx)
+void VideoSimple::On_frame_xfer_complete(uint_fast8_t ctl_idx, uint_fast8_t stm_idx)
 {
 	xferBusyFlag_ = false;
 }
 
-int VideoAttachable::On_commit(uint_fast8_t ctl_idx, uint_fast8_t stm_idx, const video_probe_and_commit_control_t* parameters)
+int VideoSimple::On_commit(uint_fast8_t ctl_idx, uint_fast8_t stm_idx, const video_probe_and_commit_control_t* parameters)
 {
 	return VIDEO_ERROR_NONE;
 }
