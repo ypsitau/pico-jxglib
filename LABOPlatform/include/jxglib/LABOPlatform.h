@@ -11,7 +11,7 @@
 #include "jxglib/TelePlot.h"
 #include "jxglib/USBDevice/MSCDrive.h"
 #include "jxglib/USBDevice/CDCSerial.h"
-#include "jxglib/USBDevice/Video.h"
+#include "jxglib/USBDevice/VideoTransmitter.h"
 #include "jxglib/FAT/Flash.h"
 #include "jxglib/FAT/SDCard.h"
 #include "jxglib/LogicAnalyzer.h"

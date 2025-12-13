@@ -7,7 +7,7 @@ target_link_libraries(jxglib_LABOPlatform INTERFACE
     jxglib_Shell jxglib_Serial
 	jxglib_FAT_Flash jxglib_FAT_SDCard
 	jxglib_RTC_DS3231
-	jxglib_USBDevice_MSCDrive jxglib_USBDevice_CDCSerial
+	jxglib_USBDevice_MSCDrive jxglib_USBDevice_CDCSerial jxglib_USBDevice_VideoTransmitter
 	jxglib_TelePlot jxglib_LogicAnalyzer)
 
 if(PICO_BOARD MATCHES ".*_w$")

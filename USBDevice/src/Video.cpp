@@ -8,11 +8,11 @@
 
 #if CFG_TUD_VIDEO > 0
 
+namespace jxglib::USBDevice {
+
 //-----------------------------------------------------------------------------
 // USBDevice::Video
 //-----------------------------------------------------------------------------
-namespace jxglib::USBDevice {
-
 Video::Video(Controller& deviceController, const char* strControl, const char* strStreaming,
 											uint8_t endp, const Size& size, int frameRate) :
 	Interface(deviceController, 2), size_{size}, frameRate_{frameRate}
@@ -187,38 +187,6 @@ Video::Video(Controller& deviceController, const char* strControl, const char* s
 	};
 	iInstance_ = deviceController.AddInterface_Video(this);
 	RegisterConfigDesc(&configDesc, sizeof(configDesc));
-}
-
-//-----------------------------------------------------------------------------
-// USBDevice::VideoTransmitter
-//-----------------------------------------------------------------------------
-VideoTransmitter::~VideoTransmitter()
-{
-}
-
-void VideoTransmitter::Initialize()
-{
-}
-
-bool VideoTransmitter::CanTransmitFrame() const
-{
-	return ::tud_video_n_streaming(ctl_idx, stm_idx) && !xferBusyFlag_;
-}
-
-void VideoTransmitter::TransmitFrame(const void* frameBuffer)
-{
-	xferBusyFlag_ = true;
-	::tud_video_n_frame_xfer(ctl_idx, stm_idx, const_cast<void*>(frameBuffer), size_.width * size_.height * 16 / 8);
-}
-
-void VideoTransmitter::On_frame_xfer_complete(uint_fast8_t ctl_idx, uint_fast8_t stm_idx)
-{
-	xferBusyFlag_ = false;
-}
-
-int VideoTransmitter::On_commit(uint_fast8_t ctl_idx, uint_fast8_t stm_idx, const video_probe_and_commit_control_t* parameters)
-{
-	return VIDEO_ERROR_NONE;
 }
 
 }

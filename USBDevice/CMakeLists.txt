@@ -77,3 +77,13 @@ target_link_libraries(jxglib_USBDevice_MSCDrive INTERFACE
 
 target_sources(jxglib_USBDevice_MSCDrive INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/MSCDrive.cpp)
+
+#------------------------------------------------------------------------------
+add_library(jxglib_USBDevice_VideoTransmitter INTERFACE)
+
+target_link_libraries(jxglib_USBDevice_VideoTransmitter INTERFACE
+	jxglib_Flash
+	jxglib_USBDevice)
+
+target_sources(jxglib_USBDevice_VideoTransmitter INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/src/VideoTransmitter.cpp)
