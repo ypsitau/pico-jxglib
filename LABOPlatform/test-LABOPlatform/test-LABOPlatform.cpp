@@ -10,12 +10,12 @@ int main(void)
 	//LABOPlatform::Instance.Initialize();
 	::adc_init();
 	::adc_set_temp_sensor_enabled(true);
-	//USBDevice::VideoSimple& video = LABOPlatform::Instance.GetVideo();
-	//int width = video.GetWidth(), height = video.GetHeight();
-	//uint8_t* frameBuffer = reinterpret_cast<uint8_t*>(::malloc(width * height * 16 / 8));
-	//int startPos = 0;
+	USBDevice::VideoSimple& video = LABOPlatform::Instance.GetVideo();
+	int width = video.GetWidth(), height = video.GetHeight();
+	uint8_t* frameBuffer = reinterpret_cast<uint8_t*>(::malloc(width * height * 16 / 8));
+	int startPos = 0;
 	for (;;) {
-#if 0
+#if 1
 		if (video.CanTransferFrame()) {
 			static const uint8_t bar_color[8][4] = {
 				//  Y,   U,   Y,   V
