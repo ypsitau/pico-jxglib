@@ -190,33 +190,33 @@ Video::Video(Controller& deviceController, const char* strControl, const char* s
 }
 
 //-----------------------------------------------------------------------------
-// USBDevice::VideoSimple
+// USBDevice::VideoTransmitter
 //-----------------------------------------------------------------------------
-VideoSimple::~VideoSimple()
+VideoTransmitter::~VideoTransmitter()
 {
 }
 
-void VideoSimple::Initialize()
+void VideoTransmitter::Initialize()
 {
 }
 
-bool VideoSimple::CanTransferFrame() const
+bool VideoTransmitter::CanTransmitFrame() const
 {
 	return ::tud_video_n_streaming(ctl_idx, stm_idx) && !xferBusyFlag_;
 }
 
-void VideoSimple::TransferFrame(const void* frameBuffer)
+void VideoTransmitter::TransmitFrame(const void* frameBuffer)
 {
 	xferBusyFlag_ = true;
 	::tud_video_n_frame_xfer(ctl_idx, stm_idx, const_cast<void*>(frameBuffer), size_.width * size_.height * 16 / 8);
 }
 
-void VideoSimple::On_frame_xfer_complete(uint_fast8_t ctl_idx, uint_fast8_t stm_idx)
+void VideoTransmitter::On_frame_xfer_complete(uint_fast8_t ctl_idx, uint_fast8_t stm_idx)
 {
 	xferBusyFlag_ = false;
 }
 
-int VideoSimple::On_commit(uint_fast8_t ctl_idx, uint_fast8_t stm_idx, const video_probe_and_commit_control_t* parameters)
+int VideoTransmitter::On_commit(uint_fast8_t ctl_idx, uint_fast8_t stm_idx, const video_probe_and_commit_control_t* parameters)
 {
 	return VIDEO_ERROR_NONE;
 }

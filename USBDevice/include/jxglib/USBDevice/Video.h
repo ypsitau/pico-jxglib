@@ -55,23 +55,23 @@ public:
 };
 
 //------------------------------------------------------------------------------
-// VideoSimple
+// VideoTransmitter
 //------------------------------------------------------------------------------
-class VideoSimple : public Video {
+class VideoTransmitter : public Video {
 private:
 	volatile bool xferBusyFlag_;
 public:
 	static const uint8_t ctl_idx = 0;
 	static const uint8_t stm_idx = 0;
 public:
-	VideoSimple(Controller& deviceController, const char* strControl, const char* strStreaming,
+	VideoTransmitter(Controller& deviceController, const char* strControl, const char* strStreaming,
 							uint8_t endp, const Size& size, int frameRate) :
 		Video(deviceController, strControl, strStreaming, endp, size, frameRate), xferBusyFlag_{false} {}
-	~VideoSimple();
+	~VideoTransmitter();
 public:
 	void Initialize();
-	bool CanTransferFrame() const;
-	void TransferFrame(const void* frameBuffer);
+	bool CanTransmitFrame() const;
+	void TransmitFrame(const void* frameBuffer);
 public:
 	virtual void On_frame_xfer_complete(uint_fast8_t ctl_idx, uint_fast8_t stm_idx) override;
 	virtual int On_commit(uint_fast8_t ctl_idx, uint_fast8_t stm_idx, const video_probe_and_commit_control_t* parameters) override;

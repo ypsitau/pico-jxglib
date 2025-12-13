@@ -35,6 +35,7 @@ add_subdirectory(TouchScreen)
 add_subdirectory(UART)
 add_subdirectory(USBDevice)
 add_subdirectory(USBHost)
+add_subdirectory(VideoTransmitter)
 
 add_subdirectory(guest)
 

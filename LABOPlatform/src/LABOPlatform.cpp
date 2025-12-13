@@ -194,9 +194,10 @@ void LABOPlatform::Initialize()
 		if (pFile) pFile->Print(textREADME_);
 	}
 	Shell::Instance.Startup();
-	pVideo_.reset(new USBDevice::VideoSimple(deviceController_, "LABO Video", "LABO Video Stream", 0x86, {160, 120}, 10));
+	pVideoTransmitter_.reset(new USBDevice::VideoTransmitter(
+		deviceController_, "LABO VideoTransmitter", "LABO VideoTransmitter Stream", 0x86, {160, 120}, 10));
 	deviceController_.Initialize();
-	pVideo_->Initialize();
+	pVideoTransmitter_->Initialize();
 	mscDrive_.Initialize(fat_);
 	streamCDC_Terminal_.Initialize();
 	streamCDC_Application_.Initialize();
