@@ -360,9 +360,9 @@ const OV7670::FormatSetting OV7670::formatSetting_RGB444 {
 };
 
 OV7670::OV7670(i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq) :
-	i2c_{i2c}, pinAssign_{pinAssign}, freq_{freq},
-	resolution_{Resolution::QVGA}, format_{Format::RGB565}, updateResolutionAndFormatFlag_{true}
+	i2c_{i2c}, pinAssign_{pinAssign}, freq_{freq}, format_{Format::RGB565}, updateResolutionAndFormatFlag_{true}
 {
+	SetResolution(Resolution::QVGA);
 }
 
 OV7670& OV7670::WriteReg(uint8_t reg, uint8_t value)
