@@ -249,6 +249,18 @@ const OV7670::FormatSetting OV7670::formatSetting_RawBayerRGB {
 		(0b0 << 0),			// RGB444 word format
 							//  0: xR GB
 							//  1: RG Bx
+	Reg3A_TSLB:
+		(0b0 << 3),			// Output sequence
+							//  0: Y first
+							//  1: UV first
+	Reg3D_COM13:
+		(0b0 << 0),			// UV swap
+							// when TSLB[3] = 0
+							//  0: Y U Y V
+							//  1: Y V Y U
+							// when TSLB[3] = 1
+							//  0: U Y V Y
+							//  1: V Y U Y
 };
 
 const OV7670::FormatSetting OV7670::formatSetting_ProcessedBayerRGB {
@@ -267,6 +279,18 @@ const OV7670::FormatSetting OV7670::formatSetting_ProcessedBayerRGB {
 		(0b0 << 0),			// RGB444 word format
 							//  0: xR GB
 							//  1: RG Bx
+	Reg3A_TSLB:
+		(0b0 << 3),			// Output sequence
+							//  0: Y first
+							//  1: UV first
+	Reg3D_COM13:
+		(0b0 << 0),			// UV swap
+							// when TSLB[3] = 0
+							//  0: Y U Y V
+							//  1: Y V Y U
+							// when TSLB[3] = 1
+							//  0: U Y V Y
+							//  1: V Y U Y
 };
 
 const OV7670::FormatSetting OV7670::formatSetting_YUV422 {
@@ -285,6 +309,18 @@ const OV7670::FormatSetting OV7670::formatSetting_YUV422 {
 		(0b0 << 0),			// RGB444 word format
 							//  0: xR GB
 							//  1: RG Bx
+	Reg3A_TSLB:
+		(0b1 << 3),			// Output sequence
+							//  0: Y first
+							//  1: UV first
+	Reg3D_COM13:
+		(0b1 << 0),			// UV swap
+							// when TSLB[3] = 0
+							//  0: Y U Y V
+							//  1: Y V Y U
+							// when TSLB[3] = 1
+							//  0: U Y V Y
+							//  1: V Y U Y
 };
 
 const OV7670::FormatSetting OV7670::formatSetting_GRB422 {
@@ -303,6 +339,18 @@ const OV7670::FormatSetting OV7670::formatSetting_GRB422 {
 		(0b0 << 0),			// RGB444 word format
 							//  0: xR GB
 							//  1: RG Bx
+	Reg3A_TSLB:
+		(0b0 << 3),			// Output sequence
+							//  0: Y first
+							//  1: UV first
+	Reg3D_COM13:
+		(0b0 << 0),			// UV swap
+							// when TSLB[3] = 0
+							//  0: Y U Y V
+							//  1: Y V Y U
+							// when TSLB[3] = 1
+							//  0: U Y V Y
+							//  1: V Y U Y
 };
 
 const OV7670::FormatSetting OV7670::formatSetting_RGB565 {
@@ -321,6 +369,18 @@ const OV7670::FormatSetting OV7670::formatSetting_RGB565 {
 		(0b0 << 0),			// RGB444 word format
 							//  0: xR GB
 							//  1: RG Bx
+	Reg3A_TSLB:
+		(0b0 << 3),			// Output sequence
+							//  0: Y first
+							//  1: UV first
+	Reg3D_COM13:
+		(0b0 << 0),			// UV swap
+							// when TSLB[3] = 0
+							//  0: Y U Y V
+							//  1: Y V Y U
+							// when TSLB[3] = 1
+							//  0: U Y V Y
+							//  1: V Y U Y
 };
 
 const OV7670::FormatSetting OV7670::formatSetting_RGB555 {
@@ -339,6 +399,18 @@ const OV7670::FormatSetting OV7670::formatSetting_RGB555 {
 		(0b0 << 0),			// RGB444 word format
 							//  0: xR GB
 							//  1: RG Bx
+	Reg3A_TSLB:
+		(0b0 << 3),			// Output sequence
+							//  0: Y first
+							//  1: UV first
+	Reg3D_COM13:
+		(0b0 << 0),			// UV swap
+							// when TSLB[3] = 0
+							//  0: Y U Y V
+							//  1: Y V Y U
+							// when TSLB[3] = 1
+							//  0: U Y V Y
+							//  1: V Y U Y
 };
 
 const OV7670::FormatSetting OV7670::formatSetting_RGB444 {
@@ -357,6 +429,18 @@ const OV7670::FormatSetting OV7670::formatSetting_RGB444 {
 		(0b0 << 0),			// RGB444 word format
 							//  0: xR GB
 							//  1: RG Bx
+	Reg3A_TSLB:
+		(0b0 << 3),			// Output sequence
+							//  0: Y first
+							//  1: UV first
+	Reg3D_COM13:
+		(0b0 << 0),			// UV swap
+							// when TSLB[3] = 0
+							//  0: Y U Y V
+							//  1: Y V Y U
+							// when TSLB[3] = 1
+							//  0: U Y V Y
+							//  1: V Y U Y
 };
 
 OV7670::OV7670(i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq) :
@@ -834,12 +918,6 @@ void OV7670::SetupReg()
 		0xd7);				// Gamma curve 14th Segment Input End Point 0xB0 Output Value
 	WriteReg(Reg89_GAM15,
 		0xe8);				// Gamma curve 15th Segment Input End Point 0xD0 Output Value
-	WriteReg(Reg3D_COM13,
-		(0b1 << 7) |		// Gamma enable
-		(0b1 << 6) |		// UV saturation level - UV auto-adjustment
-		(0b1 << 0));		// UV swap
-							//  0: Y U Y V
-							//  1: Y V Y U
 	WriteReg(Reg4B,
 		(0b1 << 0));		// UV average enable
 	//-------------------------------------------------------------------------
@@ -1054,19 +1132,19 @@ void OV7670::SetupReg_ResolutionAndFormat()
 	WriteReg(Reg73_SCALING_PCLK_DIV,	resolutionSetting.Reg73_SCALING_PCLK_DIV |
 		(0b1111 << 4));		// Reserved bits
 	WriteReg(RegA2_SCALING_PCLK_DELAY,	resolutionSetting.RegA2_SCALING_PCLK_DELAY);
-	WriteReg(Reg3A_TSLB,
+	WriteReg(Reg3A_TSLB, formatSetting.Reg3A_TSLB |
 		(0b0 << 5) | 		// Negative image enable
 							//  0: Normal image
 							//  1: Negative image
 		(0b0 << 4) |		// UV output value
 							//  0: Use normal UV output
 							//  1: Use fixed UV value set (enable Reg67_MANU and Reg68_MANV)
-		(0b1 << 3) |		// Output sequence
-							//  0: Y first
-							//  1: UV first
 		(0b0 << 0));		// Auto output window
 							//  0: Sensor DOES NOT autommatically set window
 							//  1: Sensor automatically sets output window
+	WriteReg(Reg3D_COM13, formatSetting.Reg3D_COM13 |
+		(0b1 << 7) |		// Gamma enable
+		(0b1 << 6));		// UV saturation level - UV auto-adjustment
 	WriteReg(Reg67_MANU,
 		0x80);				// Manual U value when Reg3A_TSLB[4] = 1
 	WriteReg(Reg68_MANV,

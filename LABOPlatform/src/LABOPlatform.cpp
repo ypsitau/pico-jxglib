@@ -188,9 +188,10 @@ LABOPlatform::LABOPlatform(int bytesDrive) :
 void LABOPlatform::Initialize()
 {
 	FontSet::flashAddrBtm = XIP_BASE + bytesProgramMax;
-	//pVideo_.reset(new USBDevice::VideoSimple(deviceController_, "LABO Video", "LABO Video Stream", 0x86, {160, 120}, 10));
+	Shell::Instance.Startup();
+	pVideo_.reset(new USBDevice::VideoSimple(deviceController_, "LABO Video", "LABO Video Stream", 0x86, {160, 120}, 10));
 	deviceController_.Initialize();
-	//pVideo_->Initialize();
+	pVideo_->Initialize();
 	mscDrive_.Initialize(fat_);
 	streamCDC_Terminal_.Initialize();
 	streamCDC_Application_.Initialize();
@@ -204,7 +205,6 @@ void LABOPlatform::Initialize()
 		std::unique_ptr<FS::File> pFile(fat_.OpenFile("/README.txt", "w"));
 		if (pFile) pFile->Print(textREADME_);
 	}
-	Shell::Instance.Startup();
 }
 
 LABOPlatform& LABOPlatform::AttachStdio(bool attachStdioFlag)

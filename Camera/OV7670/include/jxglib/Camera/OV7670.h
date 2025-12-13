@@ -35,6 +35,8 @@ public:
 		uint8_t Reg12_COM7;
 		uint8_t Reg40_COM15;
 		uint8_t Reg8C_RGB444;
+		uint8_t Reg3A_TSLB;
+		uint8_t Reg3D_COM13;
 	};
 	struct PinAssign {
 		const GPIO& D0;
