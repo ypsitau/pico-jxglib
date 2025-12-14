@@ -28,4 +28,5 @@ target_sources(jxglib_ShellCmd_Display INTERFACE
 #------------------------------------------------------------------------------
 add_subdirectory(SSD1306)
 add_subdirectory(TFT_LCD)
+add_subdirectory(VideoTransmitter)
 add_subdirectory(WS2812)
