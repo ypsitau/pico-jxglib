@@ -111,9 +111,33 @@ ShellCmd(camera, "controls cameras")
 				}
 				iDisplay_ = num;
 			}
+			camera.SetResolution(Camera::Resolution::QVGA);
+			camera.SetFormat(Camera::Format::RGB565);
 			tickableMode_ = TickableMode::Display;
 		} else if (Arg::GetAssigned(subcmd, "display-stop", &value)) {
 			if (tickableMode_ == TickableMode::Display) {
+				tickableMode_ = TickableMode::None;
+				camera.FreeResource();
+			}
+		} else if (Arg::GetAssigned(subcmd, "video-transmit-start", &value)) {
+			if (value) {
+				char* endptr;
+				int num = ::strtol(value, &endptr, 10);
+				if (*endptr != '\0' || num < 0) {
+					terr.Printf("invalid video-transmit index: %s\n", value);
+					return Result::Error;
+				}
+				if (!Display::GetInstance(num).IsValid()) {
+					terr.Printf("video-transmit #%d is not available\n", num);
+					return Result::Error;
+				}
+				iVideoTransmitter_ = num;
+			}
+			camera.SetResolution(Camera::Resolution::QQVGA);
+			camera.SetFormat(Camera::Format::YUV422);
+			tickableMode_ = TickableMode::VideoTransmitter;
+		} else if (Arg::GetAssigned(subcmd, "video-transmit-stop", &value)) {
+			if (tickableMode_ == TickableMode::VideoTransmitter) {
 				tickableMode_ = TickableMode::None;
 				camera.FreeResource();
 			}
@@ -122,7 +146,13 @@ ShellCmd(camera, "controls cameras")
 				terr.Printf("output file not specified.\n");
 				return Result::Error;
 			}
+			Camera::Resolution resolution = camera.GetResolution();
+			Camera::Format format = camera.GetFormat();
+			camera.SetResolution(Camera::Resolution::QVGA);
+			camera.SetFormat(Camera::Format::RGB565);
 			const Image& image = camera.Capture();
+			camera.SetResolution(resolution);
+			camera.SetFormat(format);
 			std::unique_ptr<FS::File> pFile(FS::OpenFile(value, "w"));
 			if (!pFile) {
 				terr.Printf("failed to open file: %s\n", value);

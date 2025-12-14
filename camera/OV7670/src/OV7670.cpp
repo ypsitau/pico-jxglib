@@ -444,9 +444,11 @@ const OV7670::FormatSetting OV7670::formatSetting_RGB444 {
 };
 
 OV7670::OV7670(i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq) :
-	i2c_{i2c}, pinAssign_{pinAssign}, freq_{freq}, format_{Format::RGB565}, updateResolutionAndFormatFlag_{true}
+	i2c_{i2c}, pinAssign_{pinAssign}, freq_{freq}, updateResolutionAndFormatFlag_{true}
 {
-	SetResolution(Resolution::QVGA);
+	format_ = Format::RGB565;
+	resolution_ = Resolution::QVGA;
+	UpdateSize();
 }
 
 OV7670& OV7670::WriteReg(uint8_t reg, uint8_t value)
@@ -477,27 +479,17 @@ void OV7670::ReadRegs(uint8_t reg, uint8_t values[], int count)
 	::i2c_read_blocking(i2c_, I2CAddr, values, count, false);
 }
 
-OV7670& OV7670::SetResolution(Resolution resolution)
+void OV7670::SetResolution(Resolution resolution)
 {
 	image_.Free();
-	resolution_ = resolution;
-	size_ =
-		(resolution_ == Resolution::VGA)?		Size{640, 480} :
-		(resolution_ == Resolution::QVGA)?		Size{320, 240} :
-		(resolution_ == Resolution::QQVGA)?		Size{160, 120} :
-		(resolution_ == Resolution::QQQVGA)?	Size{80, 60} :
-		(resolution_ == Resolution::CIF)?		Size{352, 288} :
-		(resolution_ == Resolution::QCIF)?		Size{176, 144} :
-		(resolution_ == Resolution::QQCIF)?		Size{88, 72} : Size{320, 240};
+	Base::SetResolution(resolution);
 	updateResolutionAndFormatFlag_ = true;
-	return *this;
 }
 
-OV7670& OV7670::SetFormat(Format format)
+void OV7670::SetFormat(Format format)
 {
-	format_ = format;
+	Base::SetFormat(format);
 	updateResolutionAndFormatFlag_ = true;
-	return *this;
 }
 
 OV7670& OV7670::SetTestPattern(TestPattern testPattern)

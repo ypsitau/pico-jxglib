@@ -92,8 +92,8 @@ ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 				terr.Printf("OV7670 camera module is already setup.\n");
 				return Result::Error;
 			}
-			OV7670::Resolution resolution = OV7670::Resolution::QVGA;
-			OV7670::Format format = OV7670::Format::RGB565;
+			Camera::Resolution resolution = Camera::Resolution::QVGA;
+			Camera::Format format = Camera::Format::RGB565;
 			int iI2C = -1;
 			uint pinD0 = GPIO::InvalidPin;
 			uint pinXCLK = GPIO::InvalidPin;
@@ -210,35 +210,35 @@ ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 			ov7670.SetupReg();
 			ov7670.EnableColorMode(true);
 		} else if (Arg::GetAssigned(subcmd, "reso", &value) || Arg::GetAssigned(subcmd, "resolution", &value)) {
-			OV7670::Resolution resolution =
-				(::strcasecmp(value, "vga")		== 0)? OV7670::Resolution::VGA :
-				(::strcasecmp(value, "qvga")	== 0)? OV7670::Resolution::QVGA :
-				(::strcasecmp(value, "qqvga")	== 0)? OV7670::Resolution::QQVGA :
-				(::strcasecmp(value, "qqqvga")	== 0)? OV7670::Resolution::QQQVGA :
-				(::strcasecmp(value, "cif")		== 0)? OV7670::Resolution::CIF :
-				(::strcasecmp(value, "qcif")	== 0)? OV7670::Resolution::QCIF :
-				(::strcasecmp(value, "qqcif")	== 0)? OV7670::Resolution::QQCIF : OV7670::Resolution::None;
-			if (resolution == OV7670::Resolution::None) {
+			Camera::Resolution resolution =
+				(::strcasecmp(value, "vga")		== 0)? Camera::Resolution::VGA :
+				(::strcasecmp(value, "qvga")	== 0)? Camera::Resolution::QVGA :
+				(::strcasecmp(value, "qqvga")	== 0)? Camera::Resolution::QQVGA :
+				(::strcasecmp(value, "qqqvga")	== 0)? Camera::Resolution::QQQVGA :
+				(::strcasecmp(value, "cif")		== 0)? Camera::Resolution::CIF :
+				(::strcasecmp(value, "qcif")	== 0)? Camera::Resolution::QCIF :
+				(::strcasecmp(value, "qqcif")	== 0)? Camera::Resolution::QQCIF : Camera::Resolution::None;
+			if (resolution == Camera::Resolution::None) {
 				terr.Printf("unknown resolution: %s\n", value);
 				return Result::Error;
 			}
 			ov7670.SetResolution(resolution);
 		} else if (Arg::GetAssigned(subcmd, "format", &value)) {
-			OV7670::Format format;
+			Camera::Format format;
 			if (::strcasecmp(value, "raw-rgb") == 0) {
-				format = OV7670::Format::RawBayerRGB;
+				format = Camera::Format::RawBayerRGB;
 			} else if (::strcasecmp(value, "processed-rgb") == 0) {
-				format = OV7670::Format::ProcessedBayerRGB;
+				format = Camera::Format::ProcessedBayerRGB;
 			} else if (::strcasecmp(value, "yuv422") == 0) {
-				format = OV7670::Format::YUV422;
+				format = Camera::Format::YUV422;
 			} else if (::strcasecmp(value, "grb422") == 0) {
-				format = OV7670::Format::GRB422;
+				format = Camera::Format::GRB422;
 			} else if (::strcasecmp(value, "rgb565") == 0) {
-				format = OV7670::Format::RGB565;
+				format = Camera::Format::RGB565;
 			} else if (::strcasecmp(value, "rgb555") == 0) {
-				format = OV7670::Format::RGB555;
+				format = Camera::Format::RGB555;
 			} else if (::strcasecmp(value, "rgb444") == 0) {
-				format = OV7670::Format::RGB444;
+				format = Camera::Format::RGB444;
 			} else {
 				terr.Printf("unknown format: %s\n", value);
 				return Result::Error;

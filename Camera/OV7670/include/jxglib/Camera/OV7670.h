@@ -17,8 +17,6 @@ namespace jxglib::Camera {
 //------------------------------------------------------------------------------
 class OV7670 : public Base {
 public:
-	enum class Resolution { None, VGA, QVGA, QQVGA, QQQVGA, CIF, QCIF, QQCIF };
-	enum class Format { None, RawBayerRGB, ProcessedBayerRGB, YUV422, GRB422, RGB565, RGB555, RGB444 };
 	enum class TestPattern { None, Off, Shifting1s, EightBars, FadeToGray };
 	struct ResolutionSetting {
 		uint8_t Reg11_CLKRC;
@@ -228,20 +226,16 @@ private:
 	PinAssign pinAssign_;
 	uint32_t freq_;
 	Resolution resolution_;
-	Format format_;
 	bool updateResolutionAndFormatFlag_;
 	PIO::StateMachine sm_;
 	PIO::Program program_;
 	PIO::Program programToReset_;
 	DMA::Channel* pChannel_;
 	DMA::ChannelConfig channelConfig_;
-	Size size_;
 	Image image_;
 public:
 	OV7670(i2c_inst_t* i2c, const PinAssign& pinAssign, uint32_t freq = 24000000);
 public:
-	OV7670& SetResolution(Resolution resolution);
-	OV7670& SetFormat(Format format);
 	OV7670& SetTestPattern(TestPattern testPattern);
 	TestPattern GetTestPattern();
 public:
@@ -256,7 +250,6 @@ public:
 	bool ReadRegBit(uint8_t reg, int iBit) { return (ReadReg(reg) >> iBit) & 0b1; }
 	void ReadRegs(uint8_t reg, uint8_t values[], int count);
 public:
-	const Size& GetSize() const { return size_; }
 	OV7670& ResetAllReg();
 	OV7670& EnableColorMode(bool enableFlag);
 public:
@@ -264,6 +257,8 @@ public:
 	OV7670& SetVFlip(bool enableFlag) { return WriteRegBit(Reg1E_MVFP, 4, enableFlag); }
 public:
 	// virtual functions of Base
+	virtual void SetResolution(Resolution resolution) override;
+	virtual void SetFormat(Format format) override;
 	virtual void FreeResource() override;
 	virtual const Image& GetImage() const override { return image_; }
 	virtual void DoCapture() override;

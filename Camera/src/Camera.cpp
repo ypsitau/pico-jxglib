@@ -10,7 +10,8 @@ namespace jxglib::Camera {
 //------------------------------------------------------------------------------
 Base* Base::pHead_ = nullptr;
 
-Base::Base(bool registerFlag) : pNext_{nullptr}, capturedFlag_{false}, usecPerFrame_{0}, timeLastCapture_{0}
+Base::Base(bool registerFlag) : pNext_{nullptr}, format_{Format::None},
+		capturedFlag_{false}, usecPerFrame_{0}, timeLastCapture_{0}
 {
 	if (!registerFlag) {
 		// nothing to do
@@ -41,6 +42,24 @@ Base::~Base()
 bool Base::IsValid() const
 {
 	return this != &Dummy::Instance;
+}
+
+void Base::UpdateSize()
+{
+	size_ =
+		(resolution_ == Resolution::VGA)?		Size{640, 480} :
+		(resolution_ == Resolution::QVGA)?		Size{320, 240} :
+		(resolution_ == Resolution::QQVGA)?		Size{160, 120} :
+		(resolution_ == Resolution::QQQVGA)?	Size{80, 60} :
+		(resolution_ == Resolution::CIF)?		Size{352, 288} :
+		(resolution_ == Resolution::QCIF)?		Size{176, 144} :
+		(resolution_ == Resolution::QQCIF)?		Size{88, 72} : Size{320, 240};
+}
+
+void Base::SetResolution(Resolution resolution)
+{
+	resolution_ = resolution;
+	UpdateSize();
 }
 
 const Image& Base::Capture()

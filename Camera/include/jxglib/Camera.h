@@ -8,8 +8,11 @@
 
 namespace jxglib::Camera {
 
+enum class Resolution { None, VGA, QVGA, QQVGA, QQQVGA, CIF, QCIF, QQCIF };
+enum class Format { None, RawBayerRGB, ProcessedBayerRGB, YUV422, GRB422, RGB565, RGB555, RGB444 };
+
 //------------------------------------------------------------------------------
-// Camera
+// Camera::Base
 //------------------------------------------------------------------------------
 class Base {
 private:
@@ -19,6 +22,10 @@ private:
 	bool capturedFlag_;
 	int64_t usecPerFrame_;
 	absolute_time_t timeLastCapture_;
+protected:
+	Size size_;
+	Resolution resolution_;
+	Format format_;
 public:
 	Base(bool registerFlag = true);
 	virtual ~Base();
@@ -31,6 +38,13 @@ public:
 	const Image& Capture();
 	int GetFPS() const { return (usecPerFrame_ > 0)? static_cast<int>(1000000 / usecPerFrame_) : 0; }
 public:
+	const Size& GetSize() const { return size_; }
+	void UpdateSize();
+	Resolution GetResolution() const { return resolution_; }
+	Format GetFormat() const { return format_; }
+public:
+	virtual void SetResolution(Resolution resolution);
+	virtual void SetFormat(Format format) { format_ = format; }
 	virtual void FreeResource() {}
 	virtual void DoCapture() = 0;
 	virtual const Image& GetImage() const = 0;
@@ -39,7 +53,7 @@ public:
 };
 
 //------------------------------------------------------------------------------
-// Dummy
+// Camera::Dummy
 //------------------------------------------------------------------------------
 class Dummy : public Base {
 public:
