@@ -43,8 +43,8 @@ public:
 	Resolution GetResolution() const { return resolution_; }
 	Format GetFormat() const { return format_; }
 public:
-	virtual void SetResolution(Resolution resolution);
-	virtual void SetFormat(Format format) { format_ = format; }
+	virtual Base& SetResolution(Resolution resolution);
+	virtual Base& SetFormat(Format format) { format_ = format; return *this; }
 	virtual void FreeResource() {}
 	virtual void DoCapture() = 0;
 	virtual const Image& GetImage() const = 0;

@@ -6,11 +6,7 @@
 
 namespace jxglib::Camera::ShellCmd_Camera {
 
-enum class TickableMode {
-	None,
-	Display,
-	VideoTransmitter,
-};
+enum class TickableMode { None, Display, VideoTransmitter };
 
 TickableMode tickableMode_ = TickableMode::None;
 int iCamera_ = 0;
@@ -43,8 +39,10 @@ TickableEntry(CameraDisplayTickable, 0, Tickable::Priority::AboveNormal)
 		if (!camera.IsValid()) return;
 		VideoTransmitter& videoTransmitter = VideoTransmitter::GetInstance(iVideoTransmitter_);
 		if (!videoTransmitter.IsValid()) return;
-		const Image& image = camera.Capture();
-		videoTransmitter.Transmit(image.GetPointer());
+		if (videoTransmitter.CanTransmit()) {
+			const Image& image = camera.Capture();
+			videoTransmitter.Transmit(image.GetPointer());
+		}
 		break;
 	}		
 	default:

@@ -225,7 +225,6 @@ private:
 	i2c_inst_t* i2c_;
 	PinAssign pinAssign_;
 	uint32_t freq_;
-	Resolution resolution_;
 	bool updateResolutionAndFormatFlag_;
 	PIO::StateMachine sm_;
 	PIO::Program program_;
@@ -257,8 +256,8 @@ public:
 	OV7670& SetVFlip(bool enableFlag) { return WriteRegBit(Reg1E_MVFP, 4, enableFlag); }
 public:
 	// virtual functions of Base
-	virtual void SetResolution(Resolution resolution) override;
-	virtual void SetFormat(Format format) override;
+	virtual Base& SetResolution(Resolution resolution) override;
+	virtual Base& SetFormat(Format format) override;
 	virtual void FreeResource() override;
 	virtual const Image& GetImage() const override { return image_; }
 	virtual void DoCapture() override;

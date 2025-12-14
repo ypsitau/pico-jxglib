@@ -56,10 +56,11 @@ void Base::UpdateSize()
 		(resolution_ == Resolution::QQCIF)?		Size{88, 72} : Size{320, 240};
 }
 
-void Base::SetResolution(Resolution resolution)
+Base& Base::SetResolution(Resolution resolution)
 {
 	resolution_ = resolution;
 	UpdateSize();
+	return *this;
 }
 
 const Image& Base::Capture()

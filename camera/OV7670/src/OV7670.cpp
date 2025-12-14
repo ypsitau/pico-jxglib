@@ -479,17 +479,19 @@ void OV7670::ReadRegs(uint8_t reg, uint8_t values[], int count)
 	::i2c_read_blocking(i2c_, I2CAddr, values, count, false);
 }
 
-void OV7670::SetResolution(Resolution resolution)
+Base& OV7670::SetResolution(Resolution resolution)
 {
 	image_.Free();
 	Base::SetResolution(resolution);
 	updateResolutionAndFormatFlag_ = true;
+	return *this;
 }
 
-void OV7670::SetFormat(Format format)
+Base& OV7670::SetFormat(Format format)
 {
 	Base::SetFormat(format);
 	updateResolutionAndFormatFlag_ = true;
+	return *this;
 }
 
 OV7670& OV7670::SetTestPattern(TestPattern testPattern)

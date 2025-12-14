@@ -31,8 +31,8 @@ int main(void)
 		.SetupReg()
 		.EnableColorMode(true)
 		.SetMirror(true)
-		.SetResolution(Camera::OV7670::Resolution::QQVGA)
-		.SetFormat(Camera::OV7670::Format::YUV422);
+		.SetResolution(Camera::Resolution::QQVGA)
+		.SetFormat(Camera::Format::YUV422);
 	int frameRate = 10;
 	USBDevice::VideoTransmitter videoTransmitter(deviceController,
 		"VideoTransmitter", "VideoTransmitter Streaming", 0x81, ov7670.GetSize(), frameRate);
