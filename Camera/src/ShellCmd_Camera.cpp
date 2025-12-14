@@ -66,13 +66,16 @@ ShellCmd(camera, "controls cameras")
 		terr.Printf(" fps                     prints frames per second\n");
 		terr.Printf(" display-start[:DISPLAY] starts display on specified display\n");
 		terr.Printf(" display-stop            stops display\n");
+		terr.Printf(" video-transmit-start[:TRANSMITTER]\n");
+		terr.Printf("                         starts display on specified video transmitter\n");
+		terr.Printf(" video-transmit-stop     stops video transmitter\n");
 		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
 	if (arg.GetString("index", &value)) {
 		char* endptr;
 		int num = ::strtol(value, &endptr, 10);
 		if (*endptr != '\0' || num < 0) {
-			terr.Printf("invalid display index: %s\n", argv[1]);
+			terr.Printf("invalid camera index: %s\n", argv[1]);
 			return Result::Error;
 		}
 		iCamera_ = num;
