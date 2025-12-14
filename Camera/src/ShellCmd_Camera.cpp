@@ -1,32 +1,55 @@
 #include "jxglib/Shell.h"
 #include "jxglib/Camera.h"
 #include "jxglib/Display.h"
+#include "jxglib/VideoTransmitter.h"
 #include "jxglib/ImageFile.h"
 
 namespace jxglib::Camera::ShellCmd_Camera {
 
-bool enableDispayFlag_ = false;
+enum class TickableMode {
+	None,
+	Display,
+	VideoTransmitter,
+};
+
+TickableMode tickableMode_ = TickableMode::None;
 int iCamera_ = 0;
-int iDisplayToDisplay_ = 0;
-Size sizePreviewPrev_;
+int iDisplay_ = 0;
+int iVideoTransmitter_ = 0;
+Size sizeDisplayPrev_;
 
 void ListCameras(Printable& tout);
 
 TickableEntry(CameraDisplayTickable, 0, Tickable::Priority::AboveNormal)
 {
-	if (!enableDispayFlag_) return;
-	Camera::Base& camera = Camera::GetInstance(0);
-	if (!camera.IsValid()) return;
-	Display::Base& display = Display::GetInstance(iDisplayToDisplay_);
-	if (!display.IsValid()) return;
-	const Image& image = camera.Capture();
-	if (sizePreviewPrev_ != image.GetSize()) {
-		sizePreviewPrev_ = image.GetSize();
-		display.Clear();
+	switch (tickableMode_) {
+	case TickableMode::Display: {
+		Camera::Base& camera = Camera::GetInstance(iCamera_);
+		if (!camera.IsValid()) return;
+		Display::Base& display = Display::GetInstance(iDisplay_);
+		if (!display.IsValid()) return;
+		const Image& image = camera.Capture();
+		if (sizeDisplayPrev_ != image.GetSize()) {
+			sizeDisplayPrev_ = image.GetSize();
+			display.Clear();
+		}
+		display.DrawImage(
+			(display.GetWidth() - image.GetWidth()) / 2,
+			(display.GetHeight() - image.GetHeight()) / 2, image);
+		break;
 	}
-	display.DrawImage(
-		(display.GetWidth() - image.GetWidth()) / 2,
-		(display.GetHeight() - image.GetHeight()) / 2, image);
+	case TickableMode::VideoTransmitter: {
+		Camera::Base& camera = Camera::GetInstance(iCamera_);
+		if (!camera.IsValid()) return;
+		VideoTransmitter& videoTransmitter = VideoTransmitter::GetInstance(iVideoTransmitter_);
+		if (!videoTransmitter.IsValid()) return;
+		const Image& image = camera.Capture();
+		videoTransmitter.Transmit(image.GetPointer());
+		break;
+	}		
+	default:
+		break;
+	}
 }
 
 ShellCmd(camera, "controls cameras")
@@ -86,12 +109,14 @@ ShellCmd(camera, "controls cameras")
 					terr.Printf("display #%d is not available\n", num);
 					return Result::Error;
 				}
-				iDisplayToDisplay_ = num;
+				iDisplay_ = num;
 			}
-			enableDispayFlag_ = true;
+			tickableMode_ = TickableMode::Display;
 		} else if (Arg::GetAssigned(subcmd, "display-stop", &value)) {
-			enableDispayFlag_ = false;
-			camera.FreeResource();
+			if (tickableMode_ == TickableMode::Display) {
+				tickableMode_ = TickableMode::None;
+				camera.FreeResource();
+			}
 		} else if (Arg::GetAssigned(subcmd, "capture", &value)) {
 			if (!value) {
 				terr.Printf("output file not specified.\n");
@@ -101,15 +126,15 @@ ShellCmd(camera, "controls cameras")
 			std::unique_ptr<FS::File> pFile(FS::OpenFile(value, "w"));
 			if (!pFile) {
 				terr.Printf("failed to open file: %s\n", value);
-				if (!enableDispayFlag_) camera.FreeResource();
+				if (tickableMode_ == TickableMode::None) camera.FreeResource();
 				return Result::Error;
 			}
 			if (!ImageFile::Write(const_cast<Image&>(image), *pFile, ImageFile::Format::BMP)) {
 				terr.Printf("failed to write image to file: %s\n", value);
-				if (!enableDispayFlag_) camera.FreeResource();
+				if (tickableMode_ == TickableMode::None) camera.FreeResource();
 				return Result::Error;
 			}
-			if (!enableDispayFlag_) camera.FreeResource();
+			if (tickableMode_ == TickableMode::None) camera.FreeResource();
 		} else {
 			terr.Printf("unknown sub command: %s\n", subcmd);
 			return Result::Error;
