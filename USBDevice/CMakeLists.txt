@@ -82,7 +82,7 @@ target_sources(jxglib_USBDevice_MSCDrive INTERFACE
 add_library(jxglib_USBDevice_VideoTransmitter INTERFACE)
 
 target_link_libraries(jxglib_USBDevice_VideoTransmitter INTERFACE
-	jxglib_Flash
+	jxglib_VideoTransmitter
 	jxglib_USBDevice)
 
 target_sources(jxglib_USBDevice_VideoTransmitter INTERFACE

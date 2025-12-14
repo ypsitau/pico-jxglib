@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "tusb.h"
-#include "jxglib/USBDevice/Video.h"
+#include "jxglib/USBDevice/VideoTransmitter.h"
 #include "jxglib/Camera/OV7670.h"
 
 using namespace jxglib;
@@ -27,18 +27,21 @@ int main(void)
 	::i2c_init(i2c0, 100000);
 	Camera::OV7670 ov7670(i2c0, { D0: GPIO2, XCLK: GPIO10, PCLK: GPIO11, HREF: GPIO12, VSYNC: GPIO13 }, 24000000);
 	ov7670.Initialize();
-	ov7670.SetupReg();
-	ov7670.EnableColorMode(true);
-	ov7670.SetMirror(true);
-	ov7670.SetResolution(Camera::OV7670::Resolution::QQVGA).SetFormat(Camera::OV7670::Format::YUV422);
+	ov7670
+		.SetupReg()
+		.EnableColorMode(true)
+		.SetMirror(true)
+		.SetResolution(Camera::OV7670::Resolution::QQVGA)
+		.SetFormat(Camera::OV7670::Format::YUV422);
 	int frameRate = 10;
-	USBDevice::VideoSimple video(deviceController, "UVC Control", "UVC Streaming", 0x81, ov7670.GetSize(), frameRate);
+	USBDevice::VideoTransmitter videoTransmitter(deviceController,
+		"VideoTransmitter", "VideoTransmitter Streaming", 0x81, ov7670.GetSize(), frameRate);
 	deviceController.Initialize();
-	video.Initialize();
+	videoTransmitter.Initialize();
 	for (;;) {
-		if (video.CanTransferFrame()) {
+		if (videoTransmitter.CanTransmit()) {
 			const Image& image = ov7670.Capture();
-			video.TransferFrame(image.GetPointer());
+			videoTransmitter.Transmit(image.GetPointer());
 		}
 		Tickable::Tick();
 	}

@@ -246,8 +246,8 @@ public:
 	TestPattern GetTestPattern();
 public:
 	bool Initialize();
-	void SetupReg();
-	void SetupReg_ResolutionAndFormat();
+	OV7670& SetupReg();
+	OV7670& SetupReg_ResolutionAndFormat();
 public:
 	OV7670& WriteReg(uint8_t reg, uint8_t value);
 	OV7670& WriteReg(uint8_t reg, uint8_t mask, uint8_t value);

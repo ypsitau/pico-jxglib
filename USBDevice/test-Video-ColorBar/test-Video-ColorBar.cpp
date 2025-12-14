@@ -1,8 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "tusb.h"
-#include "jxglib/USBDevice/Video.h"
+#include "jxglib/USBDevice/VideoTransmitter.h"
 
 using namespace jxglib;
 
@@ -22,13 +21,14 @@ int main(void)
 		bcdDevice:			0x0100,
 	}, 0x0409, "Video Test", "Video Test Product", "0123456");
 	int width = 80, height = 60, frameRate = 10;
-	uint8_t* frameBuffer = reinterpret_cast<uint8_t*>(::malloc(width * height * 16 / 8));
-	USBDevice::VideoSimple video(deviceController, "UVC Control", "UVC Streaming", 0x81, {width, height}, frameRate);
+	uint8_t* buffFrame = reinterpret_cast<uint8_t*>(::malloc(width * height * 16 / 8));
+	USBDevice::VideoTransmitter videoTransmitter(deviceController,
+		"VideoTransmitter", "VideoTransmitter Streaming", 0x81, {width, height}, frameRate);
 	deviceController.Initialize();
-	video.Initialize();
+	videoTransmitter.Initialize();
 	int startPos = 0;
 	for (;;) {
-		if (video.CanTransferFrame()) {
+		if (videoTransmitter.CanTransmit()) {
 			static const uint8_t bar_color[8][4] = {
 				//  Y,   U,   Y,   V
 				{ 235, 128, 235, 128 }, // 100% White
@@ -40,25 +40,25 @@ int main(void)
 				{  32, 240,  32, 118 }, // Blue
 				{  16, 128,  16, 128 }, // Black
 			};
-			uint8_t* end = &frameBuffer[width * 2];
+			uint8_t* end = &buffFrame[width * 2];
 			unsigned idx = (width / 2 - 1) - (startPos % (width / 2));
-			uint8_t* p = &frameBuffer[idx * 4];
+			uint8_t* p = &buffFrame[idx * 4];
 			for (unsigned i = 0; i < 8; ++i) {
 				for (int j = 0; j < width / (2 * 8); ++j) {
 					memcpy(p, &bar_color[i], 4);
 					p += 4;
 					if (end <= p) {
-						p = frameBuffer;
+						p = buffFrame;
 					}
 				}
 			}
-			p = &frameBuffer[width * 2];
+			p = &buffFrame[width * 2];
 			for (unsigned i = 1; i < height; ++i) {
-				memcpy(p, frameBuffer, width * 2);
+				memcpy(p, buffFrame, width * 2);
 				p += width * 2;
 			}
 			startPos++;
-			video.TransferFrame(frameBuffer);
+			videoTransmitter.Transmit(buffFrame);
 		}
 		Tickable::Tick();
 	}

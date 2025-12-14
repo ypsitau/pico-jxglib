@@ -48,7 +48,7 @@ pico_enable_stdio_usb(test-Video-Camera 0)
 target_link_libraries(test-Video-Camera
     pico_stdlib
     tinyusb_device
-	jxglib_USBDevice
+	jxglib_USBDevice_VideoTransmitter
     jxglib_Camera_OV7670
 )
 

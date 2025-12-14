@@ -47,8 +47,7 @@ pico_enable_stdio_usb(test-Video-ColorBar 0)
 # Add the standard library to the build
 target_link_libraries(test-Video-ColorBar
     pico_stdlib
-    tinyusb_device
-	jxglib_USBDevice
+	jxglib_USBDevice_VideoTransmitter
 )
 
 # Add the standard include files to the build

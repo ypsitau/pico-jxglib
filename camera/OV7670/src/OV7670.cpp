@@ -583,7 +583,7 @@ bool OV7670::Initialize()
 	return true;
 }
 
-void OV7670::SetupReg()
+OV7670& OV7670::SetupReg()
 {
 	uint32_t hStart = 136, hStop = hStart + 640;
 	uint32_t vStart = 12, vStop = vStart + 480;
@@ -1069,9 +1069,10 @@ void OV7670::SetupReg()
 	WriteReg(Reg39_OFON,
 		0x00);				// ADC Offset Control (Reserved)
 	updateResolutionAndFormatFlag_ = true;
+	return *this;
 }
 
-void OV7670::SetupReg_ResolutionAndFormat()
+OV7670& OV7670::SetupReg_ResolutionAndFormat()
 {
 	//-------------------------------------------------------------------------
 	// Table 2-1. OV7670/OV7171 Output Formats
@@ -1149,6 +1150,7 @@ void OV7670::SetupReg_ResolutionAndFormat()
 		0x80);				// Manual U value when Reg3A_TSLB[4] = 1
 	WriteReg(Reg68_MANV,
 		0x80);				// Manual V value when Reg3A_TSLB[4] = 1
+	return *this;
 }
 
 OV7670& OV7670::ResetAllReg()
