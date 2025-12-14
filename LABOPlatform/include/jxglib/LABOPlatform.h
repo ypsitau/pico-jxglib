@@ -56,7 +56,6 @@ public:
 	USBDevice::Controller& GetDeviceController() { return deviceController_; }
 	FAT::Flash& GetFAT() { return fat_; }
 	USBDevice::MSCDrive& GetMSCDrive() { return mscDrive_; }
-	USBDevice::VideoTransmitter& GetVideoTransmitter() { return *pVideoTransmitter_; }
 	Serial::Terminal& GetTerminal() { return terminal_; }
 	TelePlot& GetTelePlot() { return telePlot_; }
 	LogicAnalyzer& GetLogicAnalyzer() { return logicAnalyzer_; }
