@@ -10,12 +10,13 @@ int main(void)
 	//LABOPlatform::Instance.Initialize();
 	::adc_init();
 	::adc_set_temp_sensor_enabled(true);
+	for (;;) Tickable::Tick();
+#if 0
 	VideoTransmitter& videoTransmitter = VideoTransmitter::GetInstance(0);
 	const Size& size = videoTransmitter.GetSize();
 	uint8_t* buffFrame = reinterpret_cast<uint8_t*>(::malloc(size.width * size.height * 16 / 8));
 	int startPos = 0;
 	for (;;) {
-#if 1
 		if (videoTransmitter.CanTransmit()) {
 			static const uint8_t bar_color[8][4] = {
 				//  Y,   U,   Y,   V
@@ -48,7 +49,7 @@ int main(void)
 			startPos++;
 			videoTransmitter.Transmit(buffFrame);
 		}
-#endif
 		Tickable::Tick();
 	}
+#endif
 }
