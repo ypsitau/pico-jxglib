@@ -152,20 +152,19 @@ ShellCmd(camera, "controls cameras")
 			camera.SetResolution(Camera::Resolution::QVGA);
 			camera.SetFormat(Camera::Format::RGB565);
 			const Image& image = camera.Capture();
-			camera.SetResolution(resolution);
-			camera.SetFormat(format);
 			std::unique_ptr<FS::File> pFile(FS::OpenFile(value, "w"));
+			int result = Result::Success;
 			if (!pFile) {
 				terr.Printf("failed to open file: %s\n", value);
-				if (tickableMode_ == TickableMode::None) camera.FreeResource();
-				return Result::Error;
-			}
-			if (!ImageFile::Write(const_cast<Image&>(image), *pFile, ImageFile::Format::BMP)) {
+				result = Result::Error;
+			} else if (!ImageFile::Write(const_cast<Image&>(image), *pFile, ImageFile::Format::BMP)) {
 				terr.Printf("failed to write image to file: %s\n", value);
-				if (tickableMode_ == TickableMode::None) camera.FreeResource();
-				return Result::Error;
+				result = Result::Error;
 			}
 			if (tickableMode_ == TickableMode::None) camera.FreeResource();
+			camera.SetResolution(resolution);
+			camera.SetFormat(format);
+			if (result != Result::Success) return result;
 		} else {
 			terr.Printf("unknown sub command: %s\n", subcmd);
 			return Result::Error;
