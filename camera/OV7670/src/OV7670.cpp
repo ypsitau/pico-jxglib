@@ -57,7 +57,7 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_VGA {
 							//  011: Divided by 8
 							//  100: Divided by 16
 	RegA2_SCALING_PCLK_DELAY:
-		(2 << 0),			// Scaling output delay
+		(2 << 0),			// Scaling output delay (0-127)
 };
 
 const OV7670::ResolutionSetting OV7670::resolutionSetting_QVGA {
@@ -109,59 +109,7 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QVGA {
 							//  011: Divided by 8
 							//  100: Divided by 16
 	RegA2_SCALING_PCLK_DELAY:
-		(2 << 0),			// Scaling output delay
-};
-
-const OV7670::ResolutionSetting OV7670::resolutionSetting_QQQVGA {
-	Reg11_CLKRC:
-		(0b0 << 6) |		// Use external clock directly (no clock pre-scale available)
-		(0b000001 << 0),	// Internal clock prescaler
-	Reg12_COM7:
-		(0b0 << 5) |		// Output format - CIF selection
-		(0b0 << 4) |		// Output format - QVGA selection
-		(0b0 << 3) |		// Output format - QCIF selection
-		(0b0 << 2) |		// Output format - RGB selection
-		(0b0 << 1) |		// Color bar
-		(0b0 << 0),			// Output format - Raw RGB
-	Reg0C_COM3:
-		(0b1 << 3) |		// Scale enable
-		(0b1 << 2),			// DCW enable
-	Reg3E_COM14:
-		(0b1 << 4) |		// DCW and scaling PCLK enable
-		(0b0 << 3) |		// Manual scaling enable for pre-defined resolution modes such as CIF, QCIF, and QVGA
-		(0b010 << 0),		// PCLK divider (only when COM14[4] = 1)
-							//  000: Divided by 1
-							//  001: Divided by 2
-							//  010: Divided by 4
-							//  011: Divided by 8
-							//  100: Divided by 16
-	Reg70_SCALING_XSC:
-		(0x3a << 0),		// Horizontal scale factor (0-127)
-	Reg71_SCALING_YSC:
-		(0x35 << 0),		// Vertical scale factor (0-127)
-	Reg72_SCALING_DCWCTR:
-		(0b10 << 4) |		// Vertical downsampling rate
-							//  00: No vertical down samling
-							//  01: Vertical down sample by 2
-							//  10: Vertical down sample by 4
-							//  11: Vertical down sample by 8
-		(0b10 << 0),		// Horizontal downsampling rate
-							//  00: No horizontal down samling
-							//  01: Horizontal down sample by 2
-							//  10: Horizontal down sample by 4
-							//  11: Horizontal down sample by 8
-	Reg73_SCALING_PCLK_DIV:
-		(0b0 << 3) |		// Bypass clock divider for DSP scale control
-							//  0: Enable clock divider
-							//  1: Bypass clock divider
-		(0b010 << 0),		// Clock divider control for DSP scale control	
-							//  000: Divided by 1
-							//  001: Divided by 2
-							//  010: Divided by 4
-							//  011: Divided by 8
-							//  100: Divided by 16
-	RegA2_SCALING_PCLK_DELAY:
-		(2 << 0),			// Scaling output delay
+		(2 << 0),			// Scaling output delay (0-127)
 };
 
 const OV7670::ResolutionSetting OV7670::resolutionSetting_QQVGA {
@@ -213,7 +161,59 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QQVGA {
 							//  011: Divided by 8
 							//  100: Divided by 16
 	RegA2_SCALING_PCLK_DELAY:
-		(2 << 0),			// Scaling output delay
+		(2 << 0),			// Scaling output delay (0-127)
+};
+
+const OV7670::ResolutionSetting OV7670::resolutionSetting_QQQVGA {
+	Reg11_CLKRC:
+		(0b0 << 6) |		// Use external clock directly (no clock pre-scale available)
+		(0b000001 << 0),	// Internal clock prescaler
+	Reg12_COM7:
+		(0b0 << 5) |		// Output format - CIF selection
+		(0b0 << 4) |		// Output format - QVGA selection
+		(0b0 << 3) |		// Output format - QCIF selection
+		(0b0 << 2) |		// Output format - RGB selection
+		(0b0 << 1) |		// Color bar
+		(0b0 << 0),			// Output format - Raw RGB
+	Reg0C_COM3:
+		(0b0 << 3) |		// Scale enable
+		(0b1 << 2),			// DCW enable
+	Reg3E_COM14:
+		(0b1 << 4) |		// DCW and scaling PCLK enable
+		(0b1 << 3) |		// Manual scaling enable for pre-defined resolution modes such as CIF, QCIF, and QVGA
+		(0b011 << 0),		// PCLK divider (only when COM14[4] = 1)
+							//  000: Divided by 1
+							//  001: Divided by 2
+							//  010: Divided by 4
+							//  011: Divided by 8
+							//  100: Divided by 16
+	Reg70_SCALING_XSC:
+		(0x3a << 0),		// Horizontal scale factor (0-127)
+	Reg71_SCALING_YSC:
+		(0x35 << 0),		// Vertical scale factor (0-127)
+	Reg72_SCALING_DCWCTR:
+		(0b11 << 4) |		// Vertical downsampling rate
+							//  00: No vertical down samling
+							//  01: Vertical down sample by 2
+							//  10: Vertical down sample by 4
+							//  11: Vertical down sample by 8
+		(0b11 << 0),		// Horizontal downsampling rate
+							//  00: No horizontal down samling
+							//  01: Horizontal down sample by 2
+							//  10: Horizontal down sample by 4
+							//  11: Horizontal down sample by 8
+	Reg73_SCALING_PCLK_DIV:
+		(0b0 << 3) |		// Bypass clock divider for DSP scale control
+							//  0: Enable clock divider
+							//  1: Bypass clock divider
+		(0b011 << 0),		// Clock divider control for DSP scale control	
+							//  000: Divided by 1
+							//  001: Divided by 2
+							//  010: Divided by 4
+							//  011: Divided by 8
+							//  100: Divided by 16
+	RegA2_SCALING_PCLK_DELAY:
+		(2 << 0),			// Scaling output delay (0-127)
 };
 
 const OV7670::ResolutionSetting OV7670::resolutionSetting_CIF {
@@ -232,7 +232,7 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_CIF {
 		(0b0 << 2),			// DCW enable
 	Reg3E_COM14:
 		(0b1 << 4) |		// DCW and scaling PCLK enable
-		(0b0 << 3) |		// Manual scaling enable for pre-defined resolution modes such as CIF, QCIF, and QVGA
+		(0b1 << 3) |		// Manual scaling enable for pre-defined resolution modes such as CIF, QCIF, and QVGA
 		(0b001 << 0),		// PCLK divider (only when COM14[4] = 1)
 							//  000: Divided by 1
 							//  001: Divided by 2
@@ -265,7 +265,7 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_CIF {
 							//  011: Divided by 8
 							//  100: Divided by 16
 	RegA2_SCALING_PCLK_DELAY:
-		(2 << 0),			// Scaling output delay
+		(2 << 0),			// Scaling output delay (0-127)
 };
 
 const OV7670::ResolutionSetting OV7670::resolutionSetting_QCIF {
@@ -284,7 +284,7 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QCIF {
 		(0b1 << 2),			// DCW enable
 	Reg3E_COM14:
 		(0b1 << 4) |		// DCW and scaling PCLK enable
-		(0b0 << 3) |		// Manual scaling enable for pre-defined resolution modes such as CIF, QCIF, and QVGA
+		(0b1 << 3) |		// Manual scaling enable for pre-defined resolution modes such as CIF, QCIF, and QVGA
 		(0b001 << 0),		// PCLK divider (only when COM14[4] = 1)
 							//  000: Divided by 1
 							//  001: Divided by 2
@@ -317,7 +317,7 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QCIF {
 							//  011: Divided by 8
 							//  100: Divided by 16
 	RegA2_SCALING_PCLK_DELAY:
-		(82 << 0),			// Scaling output delay
+		(82 << 0),			// Scaling output delay (0-127)
 };
 
 const OV7670::ResolutionSetting OV7670::resolutionSetting_QQCIF{
@@ -336,7 +336,7 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QQCIF{
 		(0b1 << 2),			// DCW enable
 	Reg3E_COM14:
 		(0b1 << 4) |		// DCW and scaling PCLK enable
-		(0b0 << 3) |		// Manual scaling enable for pre-defined resolution modes such as CIF, QCIF, and QVGA
+		(0b1 << 3) |		// Manual scaling enable for pre-defined resolution modes such as CIF, QCIF, and QVGA
 		(0b010 << 0),		// PCLK divider (only when COM14[4] = 1)
 							//  000: Divided by 1
 							//  001: Divided by 2
@@ -369,7 +369,7 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QQCIF{
 							//  011: Divided by 8
 							//  100: Divided by 16
 	RegA2_SCALING_PCLK_DELAY:
-		(42 << 0),			// Scaling output delay
+		(42 << 0),			// Scaling output delay (0-127)
 };
 
 // Table 2-1. OV7670/OV7171 Output Formats
