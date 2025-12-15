@@ -344,7 +344,7 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QQCIF{
 							//  011: Divided by 8
 							//  100: Divided by 16
 	Reg70_SCALING_XSC:
-		(53 << 0),			// Horizontal scale factor (0-127)
+		(0x3a << 0),		// Horizontal scale factor (0-127)
 	Reg71_SCALING_YSC:
 		(0x35 << 0),		// Vertical scale factor (0-127)
 	Reg72_SCALING_DCWCTR:
