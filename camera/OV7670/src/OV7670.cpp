@@ -685,6 +685,7 @@ bool OV7670::Initialize()
 	}
 	bool hrefFlag = false;
 	uint relAddrStart = 0;
+#if 0
 	program_
 	.pio_version(0)
 	.program("ov7670")
@@ -701,6 +702,20 @@ bool OV7670::Initialize()
 		.wait(1, "gpio", pinAssign_.PCLK)			// wait for PCLK to go high
 		.in("pins", 8)								// read 8 bits from data pins
 		.jmp(hrefFlag? "pin" : "x--", "loop_pixel")	// loop while HREF or for the specified number of pixels
+	.wrap()
+	.end();
+#endif
+	program_
+	.pio_version(0)
+	.program("ov7670")
+	.pub(&relAddrStart)
+		.wait(1, "gpio", pinAssign_.VSYNC)			// wait for VSYNC to go high
+		.wait(0, "gpio", pinAssign_.VSYNC)			// wait for VSYNC to go low
+	.wrap_target()
+		.wait(1, "gpio", pinAssign_.HREF)			// wait for HREF to go high
+		.wait(1, "gpio", pinAssign_.PCLK)			// wait for PCLK to go high
+		.in("pins", 8)								// read 8 bits from data pins
+		.wait(0, "gpio", pinAssign_.PCLK)			// wait for PCLK to go low
 	.wrap()
 	.end();
 	//--------------------------------------------------------------------------
@@ -1555,7 +1570,7 @@ void OV7670::DoCapture()
 		.set_write_addr(image_.GetPointer())
 		.set_trans_count_trig(image_.GetBytesBuff() / sizeof(uint32_t));
 	sm_.set_enabled();
-	sm_.put(image_.GetWidth() * 2 - 1);
+	//sm_.put(image_.GetWidth() * 2 - 1);
 	while (pChannel_->is_busy()) Tickable::Tick();
 }
 
