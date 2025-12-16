@@ -244,16 +244,41 @@ public:
 public:
 	OV7670& WriteReg(uint8_t reg, uint8_t value);
 	OV7670& WriteReg(uint8_t reg, uint8_t mask, uint8_t value);
-	OV7670& WriteRegBit(uint8_t reg, int iBit, bool value) { return WriteReg(reg, (0b1 << iBit), (value << iBit)); }
+	OV7670& WriteRegBit(uint8_t reg, int iBit, bool value) {
+		return WriteReg(reg, (0b1 << iBit), value << iBit);
+	}
+	OV7670& WriteRegBits(uint8_t reg, int iBit, int nBits, uint8_t value) {
+		return WriteReg(reg, ((0b1 << nBits) - 1) << iBit, value << iBit);
+	}
 	uint8_t ReadReg(uint8_t reg);
 	bool ReadRegBit(uint8_t reg, int iBit) { return (ReadReg(reg) >> iBit) & 0b1; }
+	uint8_t ReadRegBits(uint8_t reg, int iBit, int nBits) {
+		return (ReadReg(reg) >> iBit) & ((0b1 << nBits) - 1);
+	}
 	void ReadRegs(uint8_t reg, uint8_t values[], int count);
 public:
 	OV7670& ResetAllReg();
 	OV7670& EnableColorMode(bool enableFlag);
 public:
-	OV7670& SetMirror(bool enableFlag) { return WriteRegBit(Reg1E_MVFP, 5, enableFlag); }
-	OV7670& SetVFlip(bool enableFlag) { return WriteRegBit(Reg1E_MVFP, 4, enableFlag); }
+	OV7670& SetReg_Mirror(bool value) { return WriteRegBit(Reg1E_MVFP, 5, value); }
+	OV7670& SetReg_VFlip(bool value) { return WriteRegBit(Reg1E_MVFP, 4, value); }
+	OV7670& SetReg_Brightness(int8_t value);		int8_t GetReg_Brightness();
+	OV7670& SetReg_Contrast(uint8_t value);			uint8_t GetReg_Contrast();
+	OV7670& SetReg_Sharpness(uint8_t value);		uint8_t GetReg_Sharpness();
+	OV7670& SetReg_SharpnessMax(uint8_t value);		uint8_t GetReg_SharpnessMax();
+	OV7670& SetReg_SharpnessMin(uint8_t value);		uint8_t GetReg_SharpnessMin();
+	OV7670& SetReg_Denoise(uint8_t value);			uint8_t GetReg_Denoise();
+	OV7670& SetReg_DenoiseOffset(uint8_t value);	uint8_t GetReg_DenoiseOffset();
+	OV7670& SetReg_AwbBlue(uint8_t value);			uint8_t GetReg_AwbBlue();
+	OV7670& SetReg_AwbRed(uint8_t value);			uint8_t GetReg_AwbRed();
+	OV7670& SetReg_AwbGreen(uint8_t value);			uint8_t GetReg_AwbGreen();
+	OV7670& SetReg_Exposure(uint32_t value);		uint32_t GetReg_Exposure();
+	OV7670& SetReg_DummyPixels(uint16_t value);		uint16_t GetReg_DummyPixels();
+	OV7670& SetReg_DummyRows(uint16_t value);		uint16_t GetReg_DummyRows();
+	OV7670& SetReg_HStart(uint16_t value);			uint16_t GetReg_HStart();
+	OV7670& SetReg_HStop(uint16_t value);			uint16_t GetReg_HStop();
+	OV7670& SetReg_VStart(uint16_t value);			uint16_t GetReg_VStart();
+	OV7670& SetReg_VStop(uint16_t value);			uint16_t GetReg_VStop();
 public:
 	// virtual functions of Base
 	virtual Base& SetResolution(Resolution resolution) override;

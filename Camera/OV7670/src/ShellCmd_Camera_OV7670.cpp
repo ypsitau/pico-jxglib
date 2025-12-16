@@ -78,6 +78,10 @@ ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 		terr.Printf(" awb-red:[VALUE]                    gets/sets AWB red gain (0 to 255)\n");
 		terr.Printf(" awb-green:[VALUE]                  gets/sets AWB green gain (0 to 255)\n");
 		terr.Printf(" exposure:[VALUE]                   gets/sets exposure (0 to 65535)\n");
+		terr.Printf(" hstart:[VALUE]                     gets/sets hstart (0 to 65535)\n");
+		terr.Printf(" hstop:[VALUE]                      gets/sets hstop (0 to 65535)\n");
+		terr.Printf(" vstart:[VALUE]                     gets/sets vstart (0 to 65535)\n");
+		terr.Printf(" vstop:[VALUE]                      gets/sets vstop (0 to 65535)\n");
 		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
 	Shell::Arg::EachSubcmd each(argv[1], argv[argc]);
@@ -292,20 +296,19 @@ ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 			}
 		} else if (Arg::GetAssigned(subcmd, "brightness", &value)) {
 			if (!value) {
-				int8_t num = static_cast<int8_t>(ov7670.ReadReg(OV7670::Reg55_BRIGHT));
-				tout.Printf("brightness:%s%d\n", (num & (0b1 << 7))? "-" : "", num & 0x7f);
+				int8_t num = ov7670.GetReg_Brightness();
+				tout.Printf("brightness:%d\n", num);
 			} else {
 				int num = ::strtol(value, nullptr, 0);
 				if (num < -127 || num > 127) {
 					terr.Printf("invalid brightness value: %s\n", value);
 					return Result::Error;
 				}
-				ov7670.WriteReg(OV7670::Reg55_BRIGHT,
-					(num < 0)? ((0b1 << 7) | static_cast<uint8_t>(-num)) : static_cast<uint8_t>(num));
+				ov7670.SetReg_Brightness(num);
 			}
 		} else if (Arg::GetAssigned(subcmd, "contrast", &value)) {
 			if (!value) {
-				uint8_t num = ov7670.ReadReg(OV7670::Reg56_CONTRAS);
+				uint8_t num = ov7670.GetReg_Contrast();
 				tout.Printf("contrast:%u\n", num);
 			} else {
 				int num = ::strtol(value, nullptr, 0);
@@ -313,11 +316,11 @@ ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 					terr.Printf("invalid contrast value: %s\n", value);
 					return Result::Error;
 				}
-				ov7670.WriteReg(OV7670::Reg56_CONTRAS, static_cast<uint8_t>(num));
+				ov7670.SetReg_Contrast(static_cast<uint8_t>(num));
 			}
 		} else if (Arg::GetAssigned(subcmd, "sharpness", &value)) {
 			if (!value) {
-				uint8_t num = ov7670.ReadReg(OV7670::Reg3F_EDGE);
+				uint8_t num = ov7670.GetReg_Sharpness();
 				tout.Printf("sharpness:%u\n", num & 0x1f);
 			} else {
 				int num = ::strtol(value, nullptr, 0);
@@ -325,36 +328,35 @@ ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 					terr.Printf("invalid sharpness value: %s\n", value);
 					return Result::Error;
 				}
-				ov7670.WriteReg(OV7670::Reg3F_EDGE, static_cast<uint8_t>(num & 0x1f));
+				ov7670.SetReg_Sharpness(static_cast<uint8_t>(num & 0x1f));
 			}
 		} else if (Arg::GetAssigned(subcmd, "sharpness-max", &value)) {
 			if (!value) {
-				uint8_t num = ov7670.ReadReg(OV7670::Reg75);
-				tout.Printf("sharpness-max:%u\n", num & 0x1f);
+				uint8_t num = ov7670.GetReg_SharpnessMax();
+				tout.Printf("sharpness-max:%u\n", num);
 			} else {
 				int num = ::strtol(value, nullptr, 0);
 				if (num < 0 || num > 31) {
 					terr.Printf("invalid sharpness-max value: %s\n", value);
 					return Result::Error;
 				}
-				ov7670.WriteReg(OV7670::Reg75, static_cast<uint8_t>(num & 0x1f));
+				ov7670.SetReg_SharpnessMax(static_cast<uint8_t>(num));
 			}
 		} else if (Arg::GetAssigned(subcmd, "sharpness-min", &value)) {
 			if (!value) {
-				uint8_t num = ov7670.ReadReg(OV7670::Reg76);
-				tout.Printf("sharpness-min:%u\n", num & 0x1f);
+				uint8_t num = ov7670.GetReg_SharpnessMin();
+				tout.Printf("sharpness-min:%u\n", num);
 			} else {
 				int num = ::strtol(value, nullptr, 0);
 				if (num < 0 || num > 31) {
 					terr.Printf("invalid sharpness-min value: %s\n", value);
 					return Result::Error;
 				}
-				ov7670.WriteReg(OV7670::Reg76,
-					(ov7670.ReadReg(OV7670::Reg76) & 0b11100000) | static_cast<uint8_t>(num & 0x1f));
+				ov7670.SetReg_SharpnessMin(static_cast<uint8_t>(num));
 			}
 		} else if (Arg::GetAssigned(subcmd, "denoise", &value)) {
 			if (!value) {
-				uint8_t num = ov7670.ReadReg(OV7670::Reg4C_DNSTH);
+				uint8_t num = ov7670.GetReg_Denoise();
 				tout.Printf("denoise:%u\n", num);
 			} else {
 				int num = ::strtol(value, nullptr, 0);
@@ -362,11 +364,11 @@ ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 					terr.Printf("invalid denoise value: %s\n", value);
 					return Result::Error;
 				}
-				ov7670.WriteReg(OV7670::Reg4C_DNSTH, static_cast<uint8_t>(num));
+				ov7670.SetReg_Denoise(static_cast<uint8_t>(num));
 			}
 		} else if (Arg::GetAssigned(subcmd, "denoise-offset", &value)) {
 			if (!value) {
-				uint8_t num = ov7670.ReadReg(OV7670::Reg77);
+				uint8_t num = ov7670.GetReg_DenoiseOffset();
 				tout.Printf("denoise-offset:%u\n", num);
 			} else {
 				int num = ::strtol(value, nullptr, 0);
@@ -374,11 +376,11 @@ ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 					terr.Printf("invalid denoise-offset value: %s\n", value);
 					return Result::Error;
 				}
-				ov7670.WriteReg(OV7670::Reg77, static_cast<uint8_t>(num));
+				ov7670.SetReg_DenoiseOffset(static_cast<uint8_t>(num));
 			}
 		} else if (Arg::GetAssigned(subcmd, "awb-blue", &value)) {
 			if (!value) {
-				uint8_t num = ov7670.ReadReg(OV7670::Reg01_BLUE);
+				uint8_t num = ov7670.GetReg_AwbBlue();
 				tout.Printf("awb-blue:%u\n", num);
 			} else {
 				int num = ::strtol(value, nullptr, 0);
@@ -386,11 +388,11 @@ ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 					terr.Printf("invalid awb-blue value: %s\n", value);
 					return Result::Error;
 				}
-				ov7670.WriteReg(OV7670::Reg01_BLUE, static_cast<uint8_t>(num));
+				ov7670.SetReg_AwbBlue(static_cast<uint8_t>(num));
 			}
 		} else if (Arg::GetAssigned(subcmd, "awb-red", &value)) {
 			if (!value) {
-				uint8_t num = ov7670.ReadReg(OV7670::Reg02_RED);
+				uint8_t num = ov7670.GetReg_AwbRed();
 				tout.Printf("awb-red:%u\n", num);
 			} else {
 				int num = ::strtol(value, nullptr, 0);
@@ -398,11 +400,11 @@ ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 					terr.Printf("invalid awb-red value: %s\n", value);
 					return Result::Error;
 				}
-				ov7670.WriteReg(OV7670::Reg02_RED, static_cast<uint8_t>(num));
+				ov7670.SetReg_AwbRed(static_cast<uint8_t>(num));
 			}
 		} else if (Arg::GetAssigned(subcmd, "awb-green", &value)) {
 			if (!value) {
-				uint8_t num = ov7670.ReadReg(OV7670::Reg6A_GGAIN);
+				uint8_t num = ov7670.GetReg_AwbGreen();
 				tout.Printf("awb-green:%u\n", num);
 			} else {
 				int num = ::strtol(value, nullptr, 0);
@@ -410,56 +412,91 @@ ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 					terr.Printf("invalid awb-green value: %s\n", value);
 					return Result::Error;
 				}
-				ov7670.WriteReg(OV7670::Reg6A_GGAIN, static_cast<uint8_t>(num));
+				ov7670.SetReg_AwbGreen(static_cast<uint8_t>(num));
 			}
 		} else if (Arg::GetAssigned(subcmd, "exposure", &value)) {
 			if (!value) {
-				uint8_t high = ov7670.ReadReg(OV7670::Reg07_AECHH);
-				uint8_t low = ov7670.ReadReg(OV7670::Reg10_AECH);
-				uint16_t exposure = (static_cast<uint16_t>(high) << 10) | (static_cast<uint16_t>(low) << 2) |
-					(ov7670.ReadReg(OV7670::Reg04_COM1) & 0b11);
-				tout.Printf("exposure:%u\n", exposure);
+				uint16_t num = ov7670.GetReg_Exposure();
+				tout.Printf("exposure:%u\n", num);
 			} else {
 				int num = ::strtol(value, nullptr, 0);
 				if (num < 0 || num > 65535) {
 					terr.Printf("invalid exposure value: %s\n", value);
 					return Result::Error;
 				}
-				ov7670.WriteReg(OV7670::Reg07_AECHH, static_cast<uint8_t>((num >> 10) & 0xff));
-				ov7670.WriteReg(OV7670::Reg10_AECH, static_cast<uint8_t>((num >> 2) & 0xff));
-				ov7670.WriteReg(OV7670::Reg04_COM1,
-					(ov7670.ReadReg(OV7670::Reg04_COM1) & 0b11111100) | static_cast<uint8_t>(num & 0b11));
+				ov7670.SetReg_Exposure(static_cast<uint16_t>(num));
 			}
 		} else if (Arg::GetAssigned(subcmd, "dummy-pixels", &value)) {
 			if (!value) {
-				uint8_t high = (ov7670.ReadReg(OV7670::Reg2A_EXHCH) >> 4) & 0x0f;;
-				uint8_t low = ov7670.ReadReg(OV7670::Reg2B_EXHCL);
-				uint16_t dummyPixels = (static_cast<uint16_t>(high) << 8) | static_cast<uint16_t>(low);
-				tout.Printf("dummy-pixels:%u\n", dummyPixels);
+				uint16_t num = ov7670.GetReg_DummyPixels();
+				tout.Printf("dummy-pixels:%u\n", num);
 			} else {
 				int num = ::strtol(value, nullptr, 0);
 				if (num < 0 || num > 4095) {
 					terr.Printf("invalid dummy-pixels value: %s\n", value);
 					return Result::Error;
 				}
-				ov7670.WriteReg(OV7670::Reg2A_EXHCH,
-					(ov7670.ReadReg(OV7670::Reg2A_EXHCH) & 0x0f) | static_cast<uint8_t>((num >> 4) & 0xf0));
-				ov7670.WriteReg(OV7670::Reg2B_EXHCL, static_cast<uint8_t>(num & 0xff));
+				ov7670.SetReg_DummyPixels(static_cast<uint16_t>(num));
 			}
 		} else if (Arg::GetAssigned(subcmd, "dummy-rows", &value)) {
 			if (!value) {
-				uint8_t high = ov7670.ReadReg(OV7670::Reg93_DM_LNH);
-				uint8_t low = ov7670.ReadReg(OV7670::Reg92_DM_LNL);
-				uint16_t dummyRows = (static_cast<uint16_t>(high) << 8) | static_cast<uint16_t>(low);
-				tout.Printf("dummy-rows:%u\n", dummyRows);
+				uint16_t num = ov7670.GetReg_DummyRows();
+				tout.Printf("dummy-rows:%u\n", num);
 			} else {
 				int num = ::strtol(value, nullptr, 0);
 				if (num < 0 || num > 65535) {
 					terr.Printf("invalid dummy-rows value: %s\n", value);
 					return Result::Error;
 				}
-				ov7670.WriteReg(OV7670::Reg93_DM_LNH, static_cast<uint8_t>((num >> 8) & 0xff));
-				ov7670.WriteReg(OV7670::Reg92_DM_LNL, static_cast<uint8_t>(num & 0xff));
+				ov7670.SetReg_DummyRows(static_cast<uint16_t>(num));
+			}
+		} else if (Arg::GetAssigned(subcmd, "hstart", &value)) {
+			if (!value) {
+				uint16_t num = ov7670.GetReg_HStart();
+				tout.Printf("hstart:%u\n", num);
+			} else {
+				int num = ::strtol(value, nullptr, 0);
+				if (num < 0 || num > 65535) {
+					terr.Printf("invalid hstart value: %s\n", value);
+					return Result::Error;
+				}
+				ov7670.SetReg_HStart(static_cast<uint16_t>(num));
+			}
+		} else if (Arg::GetAssigned(subcmd, "hstop", &value)) {
+			if (!value) {
+				uint16_t num = ov7670.GetReg_HStop();
+				tout.Printf("hstop:%u\n", num);
+			} else {
+				int num = ::strtol(value, nullptr, 0);
+				if (num < 0 || num > 65535) {
+					terr.Printf("invalid hstop value: %s\n", value);
+					return Result::Error;
+				}
+				ov7670.SetReg_HStop(static_cast<uint16_t>(num));
+			}
+		} else if (Arg::GetAssigned(subcmd, "vstart", &value)) {
+			if (!value) {
+				uint16_t num = ov7670.GetReg_VStart();
+				tout.Printf("vstart:%u\n", num);
+			} else {
+				int num = ::strtol(value, nullptr, 0);
+				if (num < 0 || num > 65535) {
+					terr.Printf("invalid vstart value: %s\n", value);
+					return Result::Error;
+				}
+				ov7670.SetReg_VStart(static_cast<uint16_t>(num));
+			}
+		} else if (Arg::GetAssigned(subcmd, "vstop", &value)) {
+			if (!value) {
+				uint16_t num = ov7670.GetReg_VStop();
+				tout.Printf("vstop:%u\n", num);
+			} else {
+				int num = ::strtol(value, nullptr, 0);
+				if (num < 0 || num > 65535) {
+					terr.Printf("invalid vstop value: %s\n", value);
+					return Result::Error;
+				}
+				ov7670.SetReg_VStop(static_cast<uint16_t>(num));
 			}
 		} else if (Arg::GetAssigned(subcmd, "dummy-row-pos", &value)) {
 			if (!value) {

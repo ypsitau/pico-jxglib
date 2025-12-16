@@ -1287,6 +1287,227 @@ OV7670& OV7670::SetupReg_ResolutionAndFormat()
 	return *this;
 }
 
+OV7670& OV7670::SetReg_Brightness(int8_t value)
+{
+	WriteReg(OV7670::Reg55_BRIGHT,
+		(value < 0)? ((0b1 << 7) | static_cast<uint8_t>(-value)) : static_cast<uint8_t>(value));
+	return *this;
+}
+
+int8_t OV7670::GetReg_Brightness()
+{
+	uint8_t value = ReadReg(OV7670::Reg55_BRIGHT);
+	return (value & (0b1 << 7))? -static_cast<int8_t>(value & 0b01111111) : static_cast<int8_t>(value & 0b01111111);
+}
+
+OV7670& OV7670::SetReg_Contrast(uint8_t value)
+{
+	WriteReg(OV7670::Reg56_CONTRAS, value);
+	return *this;
+}
+
+uint8_t OV7670::GetReg_Contrast()
+{
+	uint8_t value = ReadReg(OV7670::Reg56_CONTRAS);
+	return value;
+}
+
+OV7670& OV7670::SetReg_Sharpness(uint8_t value)
+{
+	WriteRegBits(OV7670::Reg3F_EDGE, 0, 5, value);
+	return *this;
+}
+
+uint8_t OV7670::GetReg_Sharpness()
+{
+	uint8_t value = ReadRegBits(OV7670::Reg3F_EDGE, 0, 5);
+	return value;
+}
+
+OV7670& OV7670::SetReg_SharpnessMax(uint8_t value)
+{
+	WriteRegBits(OV7670::Reg75, 0, 5, value);
+	return *this;
+}
+
+uint8_t OV7670::GetReg_SharpnessMax()
+{
+	uint8_t value = ReadRegBits(OV7670::Reg75, 0, 5);
+	return value;
+}
+
+OV7670& OV7670::SetReg_SharpnessMin(uint8_t value)
+{
+	WriteRegBits(OV7670::Reg76, 0, 5, value);
+	return *this;
+}
+
+uint8_t OV7670::GetReg_SharpnessMin()
+{
+	uint8_t value = ReadRegBits(OV7670::Reg76, 0, 5);
+	return value;
+}
+
+OV7670& OV7670::SetReg_Denoise(uint8_t value)
+{
+	WriteReg(OV7670::Reg4C_DNSTH, value);
+	return *this;
+}
+
+uint8_t OV7670::GetReg_Denoise()
+{
+	uint8_t value = ReadReg(OV7670::Reg4C_DNSTH);
+	return value;
+}
+
+OV7670& OV7670::SetReg_DenoiseOffset(uint8_t value)
+{
+	WriteReg(OV7670::Reg77, value);
+	return *this;
+}
+
+uint8_t OV7670::GetReg_DenoiseOffset()
+{
+	uint8_t value = ReadReg(OV7670::Reg77);
+	return value;
+}
+
+OV7670& OV7670::SetReg_AwbBlue(uint8_t value)
+{
+	WriteReg(OV7670::Reg01_BLUE, value);
+	return *this;
+}
+
+uint8_t OV7670::GetReg_AwbBlue()
+{
+	uint8_t value = ReadReg(OV7670::Reg01_BLUE);
+	return value;
+}
+
+OV7670& OV7670::SetReg_AwbRed(uint8_t value)
+{
+	WriteReg(OV7670::Reg02_RED, value);
+	return *this;
+}
+
+uint8_t OV7670::GetReg_AwbRed()
+{
+	uint8_t value = ReadReg(OV7670::Reg02_RED);
+	return value;
+}
+
+OV7670& OV7670::SetReg_AwbGreen(uint8_t value)
+{
+	WriteReg(OV7670::Reg6A_GGAIN, value);
+	return *this;
+}
+
+uint8_t OV7670::GetReg_AwbGreen()
+{
+	uint8_t value = ReadReg(OV7670::Reg6A_GGAIN);
+	return value;
+}
+
+OV7670& OV7670::SetReg_Exposure(uint32_t value)
+{
+	WriteReg(OV7670::Reg07_AECHH, static_cast<uint8_t>((value >> 10) & 0xff));
+	WriteReg(OV7670::Reg10_AECH, static_cast<uint8_t>((value >> 2) & 0xff));
+	WriteRegBits(OV7670::Reg04_COM1, 0, 2, static_cast<uint8_t>(value & 0b11));
+	return *this;
+}
+
+uint32_t OV7670::GetReg_Exposure()
+{
+	uint32_t value = ReadReg(OV7670::Reg07_AECHH);
+	value = (value << 8) | ReadReg(OV7670::Reg10_AECH);
+	value = (value << 2) | ReadRegBits(OV7670::Reg04_COM1, 0, 2);
+	return value;
+}
+
+OV7670& OV7670::SetReg_DummyPixels(uint16_t value)
+{
+	WriteRegBits(Reg2A_EXHCH, 4, 4, static_cast<uint8_t>(value >> 8));
+	WriteReg(Reg2B_EXHCL, static_cast<uint8_t>(value & 0xff));
+	return *this;
+}
+
+uint16_t OV7670::GetReg_DummyPixels()
+{
+	uint16_t value = ReadRegBits(Reg2A_EXHCH, 4, 4);
+	value = (value << 8) | ReadReg(Reg2B_EXHCL);
+	return value;
+}
+
+OV7670& OV7670::SetReg_DummyRows(uint16_t value)
+{
+	WriteReg(Reg93_DM_LNH, static_cast<uint8_t>(value >> 8));
+	WriteReg(Reg92_DM_LNL, static_cast<uint8_t>(value & 0xff));
+	return *this;
+}
+
+uint16_t OV7670::GetReg_DummyRows()
+{
+	uint16_t value = ReadReg(Reg93_DM_LNH);
+	value = (value << 8) | ReadReg(Reg92_DM_LNL);
+	return value;
+}
+
+OV7670& OV7670::SetReg_HStart(uint16_t value)
+{
+	WriteReg(Reg17_HSTART, static_cast<uint8_t>(value >> 3));
+	WriteRegBits(Reg32_HREF, 0, 3, static_cast<uint8_t>(value & 0b111));
+	return *this;
+}
+
+uint16_t OV7670::GetReg_HStart()
+{
+	uint16_t value = ReadReg(Reg17_HSTART);
+	value = (value << 3) | (ReadRegBits(Reg32_HREF, 0, 3));
+	return value;
+}
+
+OV7670& OV7670::SetReg_HStop(uint16_t value)
+{
+	WriteReg(Reg18_HSTOP, static_cast<uint8_t>(value >> 3));
+	WriteRegBits(Reg32_HREF, 3, 3, static_cast<uint8_t>(value & 0b111));
+	return *this;
+}
+
+uint16_t OV7670::GetReg_HStop()
+{
+	uint16_t value = ReadReg(Reg18_HSTOP);
+	value = (value << 3) | (ReadRegBits(Reg32_HREF, 3, 3));
+	return value;
+}
+
+OV7670& OV7670::SetReg_VStart(uint16_t value)
+{
+	WriteReg(Reg19_VSTRT, static_cast<uint8_t>(value >> 2));
+	WriteRegBits(Reg03_VREF, 0, 2, static_cast<uint8_t>(value & 0b11));
+	return *this;
+}
+
+uint16_t OV7670::GetReg_VStart()
+{
+	uint16_t value = ReadReg(Reg19_VSTRT);
+	value = (value << 2) | (ReadRegBits(Reg03_VREF, 0, 2));
+	return value;
+}
+
+OV7670& OV7670::SetReg_VStop(uint16_t value)
+{
+	WriteReg(Reg1A_VSTOP, static_cast<uint8_t>(value >> 2));
+	WriteRegBits(Reg03_VREF, 2, 2, static_cast<uint8_t>(value & 0b11));
+	return *this;
+}
+
+uint16_t OV7670::GetReg_VStop()
+{
+	uint16_t value = ReadReg(Reg1A_VSTOP);
+	value = (value << 2) | (ReadRegBits(Reg03_VREF, 2, 2));
+	return value;
+}
+
 OV7670& OV7670::ResetAllReg()
 {
 	WriteReg(Reg12_COM7,
