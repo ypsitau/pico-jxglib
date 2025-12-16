@@ -733,8 +733,6 @@ bool OV7670::Initialize()
 
 OV7670& OV7670::SetupReg()
 {
-	uint32_t hStart = 136, hStop = hStart + 640;
-	uint32_t vStart = 12, vStop = vStart + 480;
 	ResetAllReg();
 	//-------------------------------------------------------------------------
 	// Table 3-1. Scan Direction Control
@@ -909,9 +907,7 @@ OV7670& OV7670::SetupReg()
 	WriteReg(Reg00_GAIN,	// AGC - Gain control gain setting
 		0x00);				// AGC[7:0]
 	WriteReg(Reg03_VREF,
-		(0b00 << 6) |		// AGC[9:8]
-		((vStop & 0b11) << 2) |	// VREF end low 2 bits (high 8 bits at VSTOP[7:0])
-		((vStart & 0b11) << 0));// VREF start low 2 bits (high 8 bits at VSTART[7:0])
+		0b00 << 6);			// AGC[9:8]
 	//-------------------------------------------------------------------------
 	// Table 4-2. AGC General Controls
 	//-------------------------------------------------------------------------
@@ -1176,20 +1172,6 @@ OV7670& OV7670::SetupReg()
 							//  01: 1x
 							//  10: 2x
 							//  11: 4x
-	//-------------------------------------------------------------------------
-	// Table 6-4. Windowing Control Registers
-	//-------------------------------------------------------------------------
-	//WriteReg(Reg17_HSTART,
-	//	static_cast<uint8_t>(hStart >> 3));
-	//WriteReg(Reg18_HSTOP,
-	//	static_cast<uint8_t>(hStop >> 3));
-	//WriteReg(Reg32_HREF,
-	//	static_cast<uint8_t>((0b10 << 6) | ((hStop & 0b111) << 3) |((hStart & 0b111) << 0)));
-	//WriteReg(Reg19_VSTRT,
-	//	static_cast<uint8_t>(vStart >> 2));
-	//WriteReg(Reg1A_VSTOP,
-	//	static_cast<uint8_t>(vStop >> 2));
-	// (Reg03_VREF is set in Table 4-1)
 	//-------------------------------------------------------------------------
 	// Table 7-1. Output Drive Current
 	//-------------------------------------------------------------------------
