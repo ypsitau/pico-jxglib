@@ -58,6 +58,8 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_VGA {
 							//  100: Divided by 16
 	RegA2_SCALING_PCLK_DELAY:
 		(2 << 0),			// Scaling output delay (0-127)
+	hStart: 162,
+	vStart: 2,
 };
 
 const OV7670::ResolutionSetting OV7670::resolutionSetting_QVGA {
@@ -110,6 +112,8 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QVGA {
 							//  100: Divided by 16
 	RegA2_SCALING_PCLK_DELAY:
 		(2 << 0),			// Scaling output delay (0-127)
+	hStart: 174,
+	vStart: 10,
 };
 
 const OV7670::ResolutionSetting OV7670::resolutionSetting_QQVGA {
@@ -162,6 +166,8 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QQVGA {
 							//  100: Divided by 16
 	RegA2_SCALING_PCLK_DELAY:
 		(2 << 0),			// Scaling output delay (0-127)
+	hStart: 186,
+	vStart: 11,
 };
 
 const OV7670::ResolutionSetting OV7670::resolutionSetting_QQQVGA {
@@ -214,6 +220,8 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QQQVGA {
 							//  100: Divided by 16
 	RegA2_SCALING_PCLK_DELAY:
 		(2 << 0),			// Scaling output delay (0-127)
+	hStart: 210,
+	vStart: 12,
 };
 
 const OV7670::ResolutionSetting OV7670::resolutionSetting_CIF {
@@ -266,6 +274,8 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_CIF {
 							//  100: Divided by 16
 	RegA2_SCALING_PCLK_DELAY:
 		(2 << 0),			// Scaling output delay (0-127)
+	hStart: 136,
+	vStart: 12,
 };
 
 const OV7670::ResolutionSetting OV7670::resolutionSetting_QCIF {
@@ -318,6 +328,8 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QCIF {
 							//  100: Divided by 16
 	RegA2_SCALING_PCLK_DELAY:
 		(82 << 0),			// Scaling output delay (0-127)
+	hStart: 136,
+	vStart: 12,
 };
 
 const OV7670::ResolutionSetting OV7670::resolutionSetting_QQCIF{
@@ -370,6 +382,8 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QQCIF{
 							//  100: Divided by 16
 	RegA2_SCALING_PCLK_DELAY:
 		(42 << 0),			// Scaling output delay (0-127)
+	hStart: 136,
+	vStart: 12,
 };
 
 // Table 2-1. OV7670/OV7171 Output Formats
@@ -1165,16 +1179,16 @@ OV7670& OV7670::SetupReg()
 	//-------------------------------------------------------------------------
 	// Table 6-4. Windowing Control Registers
 	//-------------------------------------------------------------------------
-	WriteReg(Reg17_HSTART,
-		static_cast<uint8_t>(hStart >> 3));
-	WriteReg(Reg18_HSTOP,
-		static_cast<uint8_t>(hStop >> 3));
-	WriteReg(Reg32_HREF,
-		static_cast<uint8_t>((0b10 << 6) | ((hStop & 0b111) << 3) |((hStart & 0b111) << 0)));
-	WriteReg(Reg19_VSTRT,
-		static_cast<uint8_t>(vStart >> 2));
-	WriteReg(Reg1A_VSTOP,
-		static_cast<uint8_t>(vStop >> 2));
+	//WriteReg(Reg17_HSTART,
+	//	static_cast<uint8_t>(hStart >> 3));
+	//WriteReg(Reg18_HSTOP,
+	//	static_cast<uint8_t>(hStop >> 3));
+	//WriteReg(Reg32_HREF,
+	//	static_cast<uint8_t>((0b10 << 6) | ((hStop & 0b111) << 3) |((hStart & 0b111) << 0)));
+	//WriteReg(Reg19_VSTRT,
+	//	static_cast<uint8_t>(vStart >> 2));
+	//WriteReg(Reg1A_VSTOP,
+	//	static_cast<uint8_t>(vStop >> 2));
 	// (Reg03_VREF is set in Table 4-1)
 	//-------------------------------------------------------------------------
 	// Table 7-1. Output Drive Current
@@ -1284,6 +1298,10 @@ OV7670& OV7670::SetupReg_ResolutionAndFormat()
 		0x80);				// Manual U value when Reg3A_TSLB[4] = 1
 	WriteReg(Reg68_MANV,
 		0x80);				// Manual V value when Reg3A_TSLB[4] = 1
+	SetReg_HStart(resolutionSetting.hStart);
+	SetReg_HStop(resolutionSetting.hStart + 640);
+	SetReg_VStart(resolutionSetting.vStart);
+	SetReg_VStop(resolutionSetting.vStart + 480);
 	return *this;
 }
 
@@ -1468,6 +1486,7 @@ uint16_t OV7670::GetReg_HStart()
 
 OV7670& OV7670::SetReg_HStop(uint16_t value)
 {
+	value = value % 784;
 	WriteReg(Reg18_HSTOP, static_cast<uint8_t>(value >> 3));
 	WriteRegBits(Reg32_HREF, 3, 3, static_cast<uint8_t>(value & 0b111));
 	return *this;
