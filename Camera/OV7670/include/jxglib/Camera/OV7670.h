@@ -29,7 +29,9 @@ public:
 		uint8_t Reg73_SCALING_PCLK_DIV;
 		uint8_t RegA2_SCALING_PCLK_DELAY;
 		uint16_t hStart;
-		uint16_t vStart;		
+		uint16_t hCount;
+		uint16_t vStart;
+		uint16_t vCount;
 	};
 	struct FormatSetting {
 		uint8_t Reg12_COM7;

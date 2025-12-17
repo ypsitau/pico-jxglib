@@ -58,8 +58,8 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_VGA {
 							//  100: Divided by 16
 	RegA2_SCALING_PCLK_DELAY:
 		(2 << 0),			// Scaling output delay (0-127)
-	hStart: 162,
-	vStart: 2,
+	hStart: 162,	hCount: 640,
+	vStart: 2,		vCount: 480,
 };
 
 const OV7670::ResolutionSetting OV7670::resolutionSetting_QVGA {
@@ -112,8 +112,8 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QVGA {
 							//  100: Divided by 16
 	RegA2_SCALING_PCLK_DELAY:
 		(2 << 0),			// Scaling output delay (0-127)
-	hStart: 174,
-	vStart: 10,
+	hStart: 174,	hCount: 640,
+	vStart: 10,		vCount: 480,
 };
 
 const OV7670::ResolutionSetting OV7670::resolutionSetting_QQVGA {
@@ -166,8 +166,8 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QQVGA {
 							//  100: Divided by 16
 	RegA2_SCALING_PCLK_DELAY:
 		(2 << 0),			// Scaling output delay (0-127)
-	hStart: 186,
-	vStart: 11,
+	hStart: 186,	hCount: 640,
+	vStart: 11,		vCount: 480,
 };
 
 const OV7670::ResolutionSetting OV7670::resolutionSetting_QQQVGA {
@@ -220,8 +220,8 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QQQVGA {
 							//  100: Divided by 16
 	RegA2_SCALING_PCLK_DELAY:
 		(2 << 0),			// Scaling output delay (0-127)
-	hStart: 210,
-	vStart: 12,
+	hStart: 210,	hCount: 640,
+	vStart: 12,		vCount: 480,
 };
 
 const OV7670::ResolutionSetting OV7670::resolutionSetting_CIF {
@@ -274,8 +274,8 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_CIF {
 							//  100: Divided by 16
 	RegA2_SCALING_PCLK_DELAY:
 		(2 << 0),			// Scaling output delay (0-127)
-	hStart: 136,
-	vStart: 12,
+	hStart: 174,	hCount: 704,
+	vStart: 10,		vCount: 576,
 };
 
 const OV7670::ResolutionSetting OV7670::resolutionSetting_QCIF {
@@ -328,8 +328,8 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QCIF {
 							//  100: Divided by 16
 	RegA2_SCALING_PCLK_DELAY:
 		(82 << 0),			// Scaling output delay (0-127)
-	hStart: 136,
-	vStart: 12,
+	hStart: 186,	hCount: 704,
+	vStart: 11,		vCount: 576,
 };
 
 const OV7670::ResolutionSetting OV7670::resolutionSetting_QQCIF{
@@ -382,8 +382,8 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QQCIF{
 							//  100: Divided by 16
 	RegA2_SCALING_PCLK_DELAY:
 		(42 << 0),			// Scaling output delay (0-127)
-	hStart: 136,
-	vStart: 12,
+	hStart: 210,	hCount: 704,
+	vStart: 12,		vCount: 576,
 };
 
 // Table 2-1. OV7670/OV7171 Output Formats
@@ -683,7 +683,6 @@ bool OV7670::Initialize()
 			return false;
 		}
 	}
-	bool hrefFlag = false;
 	uint relAddrStart = 0;
 #if 0
 	program_
@@ -1296,9 +1295,9 @@ OV7670& OV7670::SetupReg_ResolutionAndFormat()
 	WriteReg(Reg68_MANV,
 		0x80);				// Manual V value when Reg3A_TSLB[4] = 1
 	SetReg_HStart(resolutionSetting.hStart);
-	SetReg_HStop(resolutionSetting.hStart + 640);
+	SetReg_HStop(resolutionSetting.hStart + resolutionSetting.hCount);
 	SetReg_VStart(resolutionSetting.vStart);
-	SetReg_VStop(resolutionSetting.vStart + 480);
+	SetReg_VStop(resolutionSetting.vStart + resolutionSetting.vCount);
 	return *this;
 }
 
