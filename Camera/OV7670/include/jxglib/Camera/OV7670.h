@@ -30,6 +30,7 @@ public:
 		uint8_t RegA2_SCALING_PCLK_DELAY;
 		uint16_t hStart;
 		uint16_t hCount;
+		uint8_t hEdgeOffset;
 		uint16_t vStart;
 		uint16_t vCount;
 	};

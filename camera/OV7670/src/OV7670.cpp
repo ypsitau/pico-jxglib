@@ -58,8 +58,8 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_VGA {
 							//  100: Divided by 16
 	RegA2_SCALING_PCLK_DELAY:
 		(2 << 0),			// Scaling output delay (0-127)
-	hStart: 162,	hCount: 640,
-	vStart: 2,		vCount: 480,
+	hStart: 162,	hCount: 640,	hEdgeOffset: 2,
+	vStart: 9,		vCount: 480,
 };
 
 const OV7670::ResolutionSetting OV7670::resolutionSetting_QVGA {
@@ -112,7 +112,7 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QVGA {
 							//  100: Divided by 16
 	RegA2_SCALING_PCLK_DELAY:
 		(2 << 0),			// Scaling output delay (0-127)
-	hStart: 174,	hCount: 640,
+	hStart: 174,	hCount: 640,	hEdgeOffset: 0,
 	vStart: 10,		vCount: 480,
 };
 
@@ -166,7 +166,7 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QQVGA {
 							//  100: Divided by 16
 	RegA2_SCALING_PCLK_DELAY:
 		(2 << 0),			// Scaling output delay (0-127)
-	hStart: 186,	hCount: 640,
+	hStart: 186,	hCount: 640,	hEdgeOffset: 2,
 	vStart: 11,		vCount: 480,
 };
 
@@ -220,7 +220,7 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QQQVGA {
 							//  100: Divided by 16
 	RegA2_SCALING_PCLK_DELAY:
 		(2 << 0),			// Scaling output delay (0-127)
-	hStart: 210,	hCount: 640,
+	hStart: 210,	hCount: 640,	hEdgeOffset: 0,
 	vStart: 12,		vCount: 480,
 };
 
@@ -274,7 +274,7 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_CIF {
 							//  100: Divided by 16
 	RegA2_SCALING_PCLK_DELAY:
 		(2 << 0),			// Scaling output delay (0-127)
-	hStart: 174,	hCount: 704,
+	hStart: 174,	hCount: 704,	hEdgeOffset: 0,
 	vStart: 10,		vCount: 576,
 };
 
@@ -328,7 +328,7 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QCIF {
 							//  100: Divided by 16
 	RegA2_SCALING_PCLK_DELAY:
 		(82 << 0),			// Scaling output delay (0-127)
-	hStart: 186,	hCount: 704,
+	hStart: 186,	hCount: 704,	hEdgeOffset: 0,
 	vStart: 11,		vCount: 576,
 };
 
@@ -382,7 +382,7 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QQCIF{
 							//  100: Divided by 16
 	RegA2_SCALING_PCLK_DELAY:
 		(42 << 0),			// Scaling output delay (0-127)
-	hStart: 210,	hCount: 704,
+	hStart: 210,	hCount: 704,	hEdgeOffset: 0,
 	vStart: 12,		vCount: 576,
 };
 
@@ -690,6 +690,32 @@ bool OV7670::Initialize()
 	.program("ov7670")
 	.pub(&relAddrStart)
 		.pull()
+		.mov("y", "osr")
+		.pull()
+		.wait(1, "gpio", pinAssign_.VSYNC)			// wait for VSYNC to go high
+		.wait(0, "gpio", pinAssign_.VSYNC)			// wait for VSYNC to go low
+	.wrap_target()
+		.wait(0, "gpio", pinAssign_.HREF)			// wait for HREF to go low
+		.wait(1, "gpio", pinAssign_.HREF)			// wait for HREF to go high
+		.mov("x", "osr")
+	.L("skip_pixel")
+		.wait(0, "gpio", pinAssign_.PCLK)			// wait for PCLK to go low
+		.wait(1, "gpio", pinAssign_.PCLK)			// wait for PCLK to go high
+		.jmp("x--", "skip_pixel")					// loop for the specified number of pixels
+		.mov("x", "y")
+	.L("get_pixel")
+		.wait(0, "gpio", pinAssign_.PCLK)			// wait for PCLK to go low
+		.wait(1, "gpio", pinAssign_.PCLK)			// wait for PCLK to go high
+		.in("pins", 8)								// read 8 bits from data pins
+		.jmp("x--", "get_pixel")					// loop for the specified number of pixels
+	.wrap()
+	.end();
+#elif 0
+	program_
+	.pio_version(0)
+	.program("ov7670")
+	.pub(&relAddrStart)
+		.pull()
 		.wait(1, "gpio", pinAssign_.VSYNC)			// wait for VSYNC to go high
 		.wait(0, "gpio", pinAssign_.VSYNC)			// wait for VSYNC to go low
 	.wrap_target()
@@ -700,16 +726,16 @@ bool OV7670::Initialize()
 		.wait(0, "gpio", pinAssign_.PCLK)			// wait for PCLK to go low
 		.wait(1, "gpio", pinAssign_.PCLK)			// wait for PCLK to go high
 		.in("pins", 8)								// read 8 bits from data pins
-		.jmp(hrefFlag? "pin" : "x--", "loop_pixel")	// loop while HREF or for the specified number of pixels
+		.jmp("x--", "loop_pixel")					// loop for the specified number of pixels
 	.wrap()
 	.end();
-#endif
+#else
 	program_
 	.pio_version(0)
 	.program("ov7670")
 	.pub(&relAddrStart)
-		.wait(1, "gpio", pinAssign_.VSYNC)			// wait for VSYNC to go high
 		.wait(0, "gpio", pinAssign_.VSYNC)			// wait for VSYNC to go low
+		.wait(1, "gpio", pinAssign_.VSYNC)			// wait for VSYNC to go high
 	.wrap_target()
 		.wait(1, "gpio", pinAssign_.HREF)			// wait for HREF to go high
 		.wait(1, "gpio", pinAssign_.PCLK)			// wait for PCLK to go high
@@ -717,12 +743,12 @@ bool OV7670::Initialize()
 		.wait(0, "gpio", pinAssign_.PCLK)			// wait for PCLK to go low
 	.wrap()
 	.end();
+#endif
 	//--------------------------------------------------------------------------
 	sm_.set_program(program_)
 		.reserve_in_pins(pinAssign_.D0, 8)
 		.reserve_gpio_pin(pinAssign_.PCLK, pinAssign_.HREF, pinAssign_.VSYNC)
 		.config_set_in_shift_left(true, 32)	// shift left, autopush enabled, push threshold 32
-		.config_set_jmp_pin(pinAssign_.HREF)
 		.init();
 	programToReset_
 	.pio_version(0)
@@ -743,6 +769,34 @@ bool OV7670::Initialize()
 		.set_high_priority(false);
 	PWM(pinAssign_.XCLK).set_function().set_freq(freq_).set_chan_duty(.5).set_enabled(true);
 	return true;
+}
+
+void OV7670::DoCapture()
+{
+	if (!image_.IsValid()) {
+		if (!image_.Allocate(
+			(format_ == Format::RawBayerRGB)?		Image::Format::RGB :
+			(format_ == Format::ProcessedBayerRGB)?	Image::Format::RGB :
+			(format_ == Format::YUV422)?			Image::Format::YUV422 :
+			//(format_ == Format::GRB422)?			Image::Format::GRB422 :
+			(format_ == Format::RGB565)?			Image::Format::RGB565 :
+			//(format_ == Format::RGB555)?			Image::Format::RGB555 :
+			//(format_ == Format::RGB444)?			Image::Format::RGB444 :
+			Image::Format::RGB, size_)) return;
+	}
+	if (updateResolutionAndFormatFlag_) {
+		SetupReg_ResolutionAndFormat();
+		updateResolutionAndFormatFlag_ = false;
+	}
+	sm_.set_enabled(false);
+	pChannel_->set_config(channelConfig_)
+		.set_read_addr(sm_.get_rxf())
+		.set_write_addr(image_.GetPointer())
+		.set_trans_count_trig(image_.GetBytesBuff() / sizeof(uint32_t));
+	sm_.clear_fifos().exec(programToReset_).set_enabled();
+	sm_.put(image_.GetWidth() * 2 - 1);
+	sm_.put(2 * 2 - 1);
+	while (pChannel_->is_busy()) Tickable::Tick();
 }
 
 OV7670& OV7670::SetupReg()
@@ -1294,10 +1348,27 @@ OV7670& OV7670::SetupReg_ResolutionAndFormat()
 		0x80);				// Manual U value when Reg3A_TSLB[4] = 1
 	WriteReg(Reg68_MANV,
 		0x80);				// Manual V value when Reg3A_TSLB[4] = 1
-	SetReg_HStart(resolutionSetting.hStart);
-	SetReg_HStop(resolutionSetting.hStart + resolutionSetting.hCount);
-	SetReg_VStart(resolutionSetting.vStart);
-	SetReg_VStop(resolutionSetting.vStart + resolutionSetting.vCount);
+	//SetReg_HStart(resolutionSetting.hStart);
+	//SetReg_HStop(resolutionSetting.hStart + resolutionSetting.hCount);
+	//SetReg_VStart(resolutionSetting.vStart);
+	//SetReg_VStop(resolutionSetting.vStart + resolutionSetting.vCount);
+	uint16_t hStop = (resolutionSetting.hStart + resolutionSetting.hCount) % 784;
+	uint16_t vStop = resolutionSetting.vStart + resolutionSetting.vCount;
+	WriteReg(Reg17_HSTART,
+		static_cast<uint8_t>(resolutionSetting.hStart >> 3));
+	WriteReg(Reg18_HSTOP,
+		static_cast<uint8_t>(hStop >> 3));
+	WriteReg(Reg32_HREF,
+		(resolutionSetting.hEdgeOffset << 6) |
+		(static_cast<uint8_t>(hStop & 0b111) << 3) |
+		static_cast<uint8_t>(resolutionSetting.hStart & 0b111));
+	WriteReg(Reg19_VSTRT,
+		static_cast<uint8_t>(resolutionSetting.vStart >> 2));
+	WriteReg(Reg1A_VSTOP,
+		static_cast<uint8_t>(vStop >> 2));
+	WriteReg(Reg03_VREF,
+		(static_cast<uint8_t>(vStop & 0b11) << 2) |
+		static_cast<uint8_t>(resolutionSetting.vStart & 0b11));
 	return *this;
 }
 
@@ -1543,34 +1614,6 @@ OV7670& OV7670::EnableColorMode(bool enableFlag)
 void OV7670::FreeResource()
 {
 	image_.Free();
-}
-
-void OV7670::DoCapture()
-{
-	if (!image_.IsValid()) {
-		if (!image_.Allocate(
-			(format_ == Format::RawBayerRGB)?		Image::Format::RGB :
-			(format_ == Format::ProcessedBayerRGB)?	Image::Format::RGB :
-			(format_ == Format::YUV422)?			Image::Format::YUV422 :
-			//(format_ == Format::GRB422)?			Image::Format::GRB422 :
-			(format_ == Format::RGB565)?			Image::Format::RGB565 :
-			//(format_ == Format::RGB555)?			Image::Format::RGB555 :
-			//(format_ == Format::RGB444)?			Image::Format::RGB444 :
-			Image::Format::RGB, size_)) return;
-	}
-	if (updateResolutionAndFormatFlag_) {
-		SetupReg_ResolutionAndFormat();
-		updateResolutionAndFormatFlag_ = false;
-	}
-	sm_.set_enabled(false);
-	sm_.clear_fifos().exec(programToReset_);
-	pChannel_->set_config(channelConfig_)
-		.set_read_addr(sm_.get_rxf())
-		.set_write_addr(image_.GetPointer())
-		.set_trans_count_trig(image_.GetBytesBuff() / sizeof(uint32_t));
-	sm_.set_enabled();
-	//sm_.put(image_.GetWidth() * 2 - 1);
-	while (pChannel_->is_busy()) Tickable::Tick();
 }
 
 const char* OV7670::GetRemarks(char* buff, int lenMax) const
