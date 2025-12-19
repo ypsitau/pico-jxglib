@@ -47,7 +47,7 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_VGA {
 							//  10: Horizontal down sample by 4
 							//  11: Horizontal down sample by 8
 	Reg73_SCALING_PCLK_DIV:
-		(0b0 << 3) |		// Bypass clock divider for DSP scale control
+		(0b1 << 3) |		// Bypass clock divider for DSP scale control
 							//  0: Enable clock divider
 							//  1: Bypass clock divider
 		(0b000 << 0),		// Clock divider control for DSP scale control	
@@ -328,7 +328,7 @@ const OV7670::ResolutionSetting OV7670::resolutionSetting_QCIF {
 							//  100: Divided by 16
 	RegA2_SCALING_PCLK_DELAY:
 		(82 << 0),			// Scaling output delay (0-127)
-	hStart: 186,	hCount: 704,	hEdgeOffset: 0,
+	hStart: 186,	hCount: 704,	hEdgeOffset: 2,
 	vStart: 11,		vCount: 576,
 };
 
@@ -635,6 +635,18 @@ void OV7670::ReadRegs(uint8_t reg, uint8_t values[], int count)
 
 Base& OV7670::SetResolution(Resolution resolution)
 {
+	//if (format_ == Format::RawBayerRGB) {
+	//	if (resolution_ != Resolution::VGA) {
+	//		// Raw Bayer RGB only supports VGA resolution
+	//		return false;
+	//	}
+	//} else if (format_ == Format::ProcessedBayerRGB) {
+	//	if (resolution_ != Resolution::VGA && resolution_ != Resolution::QVGA) {
+	//		// Processed Bayer RGB only supports VGA resolution
+	//		return false;
+	//	}
+	//}
+	if (resolution == resolution_) return *this;
 	image_.Free();
 	Base::SetResolution(resolution);
 	updateResolutionAndFormatFlag_ = true;
@@ -643,6 +655,8 @@ Base& OV7670::SetResolution(Resolution resolution)
 
 Base& OV7670::SetFormat(Format format)
 {
+	if (format == format_) return *this;
+	image_.Free();
 	Base::SetFormat(format);
 	updateResolutionAndFormatFlag_ = true;
 	return *this;
@@ -672,45 +686,8 @@ OV7670::TestPattern OV7670::GetTestPattern()
 
 bool OV7670::Initialize()
 {
-	if (format_ == Format::RawBayerRGB) {
-		if (resolution_ != Resolution::VGA) {
-			// Raw Bayer RGB only supports VGA resolution
-			return false;
-		}
-	} else if (format_ == Format::ProcessedBayerRGB) {
-		if (resolution_ != Resolution::VGA && resolution_ != Resolution::QVGA) {
-			// Processed Bayer RGB only supports VGA resolution
-			return false;
-		}
-	}
 	uint relAddrStart = 0;
 #if 0
-	program_
-	.pio_version(0)
-	.program("ov7670")
-	.pub(&relAddrStart)
-		.pull()
-		.mov("y", "osr")
-		.pull()
-		.wait(1, "gpio", pinAssign_.VSYNC)			// wait for VSYNC to go high
-		.wait(0, "gpio", pinAssign_.VSYNC)			// wait for VSYNC to go low
-	.wrap_target()
-		.wait(0, "gpio", pinAssign_.HREF)			// wait for HREF to go low
-		.wait(1, "gpio", pinAssign_.HREF)			// wait for HREF to go high
-		.mov("x", "osr")
-	.L("skip_pixel")
-		.wait(0, "gpio", pinAssign_.PCLK)			// wait for PCLK to go low
-		.wait(1, "gpio", pinAssign_.PCLK)			// wait for PCLK to go high
-		.jmp("x--", "skip_pixel")					// loop for the specified number of pixels
-		.mov("x", "y")
-	.L("get_pixel")
-		.wait(0, "gpio", pinAssign_.PCLK)			// wait for PCLK to go low
-		.wait(1, "gpio", pinAssign_.PCLK)			// wait for PCLK to go high
-		.in("pins", 8)								// read 8 bits from data pins
-		.jmp("x--", "get_pixel")					// loop for the specified number of pixels
-	.wrap()
-	.end();
-#elif 0
 	program_
 	.pio_version(0)
 	.program("ov7670")
@@ -768,22 +745,26 @@ bool OV7670::Initialize()
 		.set_sniff_enable(false)
 		.set_high_priority(false);
 	PWM(pinAssign_.XCLK).set_function().set_freq(freq_).set_chan_duty(.5).set_enabled(true);
+	if (pinAssign_.PWDN.IsValid()) {
+		pinAssign_.PWDN.set_function_SIO().set_dir_OUT().put(false); // power up
+	}
+	if (pinAssign_.RESET.IsValid()) {
+		pinAssign_.RESET.set_function_SIO().set_dir_OUT().put(true); // release reset
+	}
 	return true;
 }
 
 void OV7670::DoCapture()
 {
-	if (!image_.IsValid()) {
-		if (!image_.Allocate(
-			(format_ == Format::RawBayerRGB)?		Image::Format::RGB :
-			(format_ == Format::ProcessedBayerRGB)?	Image::Format::RGB :
-			(format_ == Format::YUV422)?			Image::Format::YUV422 :
-			//(format_ == Format::GRB422)?			Image::Format::GRB422 :
-			(format_ == Format::RGB565)?			Image::Format::RGB565 :
-			//(format_ == Format::RGB555)?			Image::Format::RGB555 :
-			//(format_ == Format::RGB444)?			Image::Format::RGB444 :
-			Image::Format::RGB, size_)) return;
-	}
+	if (!image_.IsValid() && !image_.Allocate(
+		(format_ == Format::RawBayerRGB)?		Image::Format::RGB :
+		(format_ == Format::ProcessedBayerRGB)?	Image::Format::RGB :
+		(format_ == Format::YUV422)?			Image::Format::YUV422 :
+		//(format_ == Format::GRB422)?			Image::Format::GRB422 :
+		(format_ == Format::RGB565)?			Image::Format::RGB565 :
+		//(format_ == Format::RGB555)?			Image::Format::RGB555 :
+		//(format_ == Format::RGB444)?			Image::Format::RGB444 :
+		Image::Format::RGB, size_)) return;
 	if (updateResolutionAndFormatFlag_) {
 		SetupReg_ResolutionAndFormat();
 		updateResolutionAndFormatFlag_ = false;
@@ -797,6 +778,17 @@ void OV7670::DoCapture()
 	sm_.put(image_.GetWidth() * 2 - 1);
 	sm_.put(2 * 2 - 1);
 	while (pChannel_->is_busy()) Tickable::Tick();
+}
+
+OV7670& OV7670::PulseResetPin()
+{
+	if (pinAssign_.RESET.IsValid()) {
+		pinAssign_.RESET.put(false); // assert reset
+		Tickable::Sleep(10);
+		pinAssign_.RESET.put(true); // release reset
+		Tickable::Sleep(10);
+	}
+	return *this;
 }
 
 OV7670& OV7670::SetupReg()
@@ -1618,7 +1610,10 @@ void OV7670::FreeResource()
 
 const char* OV7670::GetRemarks(char* buff, int lenMax) const
 {
-	::snprintf(buff, lenMax, "reso:%s format:%s i2c%d D0:%d XCLK:%d PCLK:%d HREF:%d VSYNC:%d freq:%dHz",
+	char strPWDN[32], strRESET[32];
+	::snprintf(strPWDN, sizeof(strPWDN), " PWDN:%d", pinAssign_.PWDN.pin);
+	::snprintf(strRESET, sizeof(strRESET), " RESET:%d", pinAssign_.RESET.pin);
+	::snprintf(buff, lenMax, "reso:%s format:%s i2c%d D0:%d XCLK:%d PCLK:%d HREF:%d VSYNC:%d%s%s freq:%dHz",
 		(resolution_ == Resolution::VGA)?		"vga" :
 		(resolution_ == Resolution::QVGA)?		"qvga" :
 		(resolution_ == Resolution::QQVGA)?		"qqvga" :
@@ -1635,6 +1630,7 @@ const char* OV7670::GetRemarks(char* buff, int lenMax) const
 		(format_ == Format::RGB444)?			"rgb444" : "unknown",
 		::i2c_get_index(i2c_),
 		pinAssign_.D0.pin, pinAssign_.XCLK.pin, pinAssign_.PCLK.pin, pinAssign_.HREF.pin, pinAssign_.VSYNC.pin,
+		pinAssign_.PWDN.IsValid()? strPWDN : "", pinAssign_.RESET.IsValid()? strRESET : "",
 		freq_);
 	return buff;
 }

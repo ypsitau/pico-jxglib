@@ -17,7 +17,7 @@ protected:
 	void* data_;
 public:
 	Memory(void* data) : data_{data} {}
-	virtual ~Memory() { Free(); }
+	virtual ~Memory() {}
 public:
 	template<typename T> T* GetPointer() { return reinterpret_cast<T*>(data_); }
 	virtual bool IsWritable() const { return !!data_; }
@@ -42,7 +42,7 @@ public:
 class MemoryHeap : public Memory {
 public:
 	MemoryHeap(void* data) : Memory(data) {}
-	~MemoryHeap() { Free(); }
+	~MemoryHeap() { ::free(data_); }
 public:
 	virtual void Free() override { ::free(data_); data_ = nullptr; }
 };

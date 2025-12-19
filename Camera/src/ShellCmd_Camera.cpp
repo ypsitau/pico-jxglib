@@ -147,8 +147,8 @@ ShellCmd(camera, "controls cameras")
 				terr.Printf("output file not specified.\n");
 				return Result::Error;
 			}
-			Camera::Resolution resolution = camera.GetResolution();
-			Camera::Format format = camera.GetFormat();
+			Camera::Resolution resolutionSaved = camera.GetResolution();
+			Camera::Format formatSaved = camera.GetFormat();
 			camera.SetResolution(Camera::Resolution::QVGA);
 			camera.SetFormat(Camera::Format::RGB565);
 			const Image& image = camera.Capture();
@@ -162,8 +162,8 @@ ShellCmd(camera, "controls cameras")
 				result = Result::Error;
 			}
 			if (tickableMode_ == TickableMode::None) camera.FreeResource();
-			camera.SetResolution(resolution);
-			camera.SetFormat(format);
+			camera.SetResolution(resolutionSaved);
+			camera.SetFormat(formatSaved);
 			if (result != Result::Success) return result;
 		} else {
 			terr.Printf("unknown sub command: %s\n", subcmd);

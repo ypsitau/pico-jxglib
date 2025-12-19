@@ -39,7 +39,7 @@ ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 		arg.PrintHelp(terr);
 		terr.Printf("Sub Commands:\n");
 		terr.Printf(" setup                              setup a OV7670 camera module with the given parameters:\n");
-		terr.Printf("                                     {i2c:BUS d0:PIN xclk:PIN pclk:PIN href:PIN vsync:PIN [freq:FREQ]}\n");
+		terr.Printf("                                     {i2c:BUS d0:PIN xclk:PIN pclk:PIN href:PIN vsync:PIN [pwdn:PIN] [reset:PIN] [freq:FREQ]}\n");
 		terr.Printf(" reso:RESO                          gets/sets resolution: vga, qvga, qqvga, qqqvga\n");
 		terr.Printf(" format:FORMAT                      gets/sets format: rgb565, yuv422\n");
 		terr.Printf(" dump                               dumps all OV7670 registers\n");
@@ -104,6 +104,8 @@ ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 			uint pinPCLK = GPIO::InvalidPin;
 			uint pinHREF = GPIO::InvalidPin;
 			uint pinVSYNC = GPIO::InvalidPin;
+			uint pinPWDN = GPIO::InvalidPin;
+			uint pinRESET = GPIO::InvalidPin;
 			uint32_t freq = 24000000;
 			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
 				const char* subcmd = pSubcmdChild->GetProc();
@@ -171,6 +173,28 @@ ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 						return Result::Error;
 					}
 					pinVSYNC = static_cast<uint>(num);
+				} else if (Arg::GetAssigned(subcmd, "pwdn", &value)) {
+					if (!value) {
+						terr.Printf("pwdn pin not specified.\n");
+						return Result::Error;
+					}
+					int num = ::strtol(value, nullptr, 0);
+					if (num < 0 || num >= GPIO::NumPins) {
+						terr.Printf("invalid GPIO number: %s\n", value);
+						return Result::Error;
+					}
+					pinPWDN = static_cast<uint>(num);
+				} else if (Arg::GetAssigned(subcmd, "reset", &value)) {
+					if (!value) {
+						terr.Printf("reset pin not specified.\n");
+						return Result::Error;
+					}
+					int num = ::strtol(value, nullptr, 0);
+					if (num < 0 || num >= GPIO::NumPins) {
+						terr.Printf("invalid GPIO number: %s\n", value);
+						return Result::Error;
+					}
+					pinRESET = static_cast<uint>(num);
 				} else if (Arg::GetAssigned(subcmd, "freq", &value)) {
 					if (!value) {
 						terr.Printf("freq not specified.\n");
@@ -194,8 +218,10 @@ ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 			I2C& i2c = I2C::get_instance(iI2C);
 			pOV7670 = new OV7670(i2c, {
 				D0: GPIO::Instance(pinD0), XCLK: GPIO::Instance(pinXCLK), PCLK: GPIO::Instance(pinPCLK),
-				HREF: GPIO::Instance(pinHREF), VSYNC: GPIO::Instance(pinVSYNC)}, freq);
+				HREF: GPIO::Instance(pinHREF), VSYNC: GPIO::Instance(pinVSYNC),
+				PWDN: GPIO::Instance(pinPWDN), RESET: GPIO::Instance(pinRESET)}, freq);
 			pOV7670->Initialize();
+			pOV7670->PulseResetPin();
 			pOV7670->SetupReg();
 			pOV7670->EnableColorMode(true);
 			continue;
@@ -210,7 +236,8 @@ ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 			ov7670.ReadRegs(0x00, data, sizeof(data));
 			Printable::DumpT dump(tout);
 			dump(data, sizeof(data));
-		} else if (::strcasecmp(subcmd, "init-reg") == 0) {
+		} else if (::strcasecmp(subcmd, "reset") == 0) {
+			ov7670.PulseResetPin();
 			ov7670.SetupReg();
 			ov7670.EnableColorMode(true);
 		} else if (Arg::GetAssigned(subcmd, "reso", &value) || Arg::GetAssigned(subcmd, "resolution", &value)) {

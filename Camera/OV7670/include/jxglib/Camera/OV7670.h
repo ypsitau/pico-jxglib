@@ -47,6 +47,8 @@ public:
 		const GPIO& PCLK;
 		const GPIO& HREF;
 		const GPIO& VSYNC;
+		const GPIO& PWDN;
+		const GPIO& RESET;
 	};
 	static const uint8_t Reg00_GAIN					= 0x00;
 	static const uint8_t Reg01_BLUE					= 0x01;
@@ -262,6 +264,7 @@ public:
 	}
 	void ReadRegs(uint8_t reg, uint8_t values[], int count);
 public:
+	OV7670& PulseResetPin();
 	OV7670& ResetAllReg();
 	OV7670& EnableColorMode(bool enableFlag);
 public:

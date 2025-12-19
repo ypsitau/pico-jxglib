@@ -49,7 +49,10 @@ void Image::Free()
 {
 	pFormat_ = &Format::None;
 	size_ = Size(0, 0);
-	pMemory_.reset();
+	if (pMemory_) {
+		pMemory_->Free();
+		pMemory_.reset();
+	}
 }
 
 void Image::FillZero()
