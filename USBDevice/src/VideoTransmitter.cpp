@@ -19,6 +19,7 @@ VideoTransmitter::~VideoTransmitter()
 
 void VideoTransmitter::Initialize()
 {
+	transmitBusyFlag_ = false;
 }
 
 bool VideoTransmitter::CanTransmit()

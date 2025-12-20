@@ -137,6 +137,8 @@ ShellCmd(camera, "controls cameras")
 			camera.SetResolution(Camera::Resolution::QQVGA);
 			camera.SetFormat(Camera::Format::YUV422);
 			tickableMode_ = TickableMode::VideoTransmitter;
+			VideoTransmitter& videoTransmitter = VideoTransmitter::GetInstance(iVideoTransmitter_);
+			videoTransmitter.Initialize();
 		} else if (Arg::GetAssigned(subcmd, "video-transmit-stop", &value)) {
 			if (tickableMode_ == TickableMode::VideoTransmitter) {
 				tickableMode_ = TickableMode::None;

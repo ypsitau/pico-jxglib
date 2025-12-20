@@ -30,6 +30,7 @@ public:
 	int GetHeight() const { return GetSize().height; }
 public:
 	virtual const Size& GetSize() const = 0;
+	virtual void Initialize() = 0;
 	virtual bool CanTransmit() = 0;
 	virtual void Transmit(const void* buffFrame) = 0;
 public:
@@ -48,6 +49,7 @@ public:
 	static VideoTransmitterDummy Instance;
 public:
 	virtual const Size& GetSize() const override { return Size::Zero; }
+	virtual void Initialize() override {}
 	virtual bool CanTransmit() override { return false; }
 	virtual void Transmit(const void* buffFrame) override {}
 public:

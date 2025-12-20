@@ -25,9 +25,8 @@ public:
 		Video(deviceController, strControl, strStreaming, endp, size, frameRate), transmitBusyFlag_{false} {}
 	~VideoTransmitter();
 public:
-	void Initialize();
-public:
 	virtual const Size& GetSize() const override { return size_; }
+	virtual void Initialize() override;
 	virtual bool CanTransmit() override;
 	virtual void Transmit(const void* buffFrame) override;
 public:
