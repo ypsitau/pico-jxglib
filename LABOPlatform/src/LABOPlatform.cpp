@@ -164,7 +164,7 @@ LABOPlatform::LABOPlatform(int bytesDrive) :
 		idVendor:			0xcafe,
 		idProduct:			0x1ab0,
 		bcdDevice:			0x0100,
-	}, 0x0409, "jxglib", "pico-jxgLABO", "000000000000"),
+	}, 0x0409, "jxglib", "pico-jxgLABO", "000000000001"),
 	fat_("*L:", bytesDrive),
 	mscDrive_(deviceController_, 0x01, 0x81),
 	streamCDC_Terminal_(deviceController_, "StreamSerial", 0x82, 0x03, 0x83),
@@ -195,7 +195,7 @@ void LABOPlatform::Initialize()
 	}
 	Shell::Instance.Startup();
 	pVideoTransmitter_.reset(new USBDevice::VideoTransmitter(
-		deviceController_, "LABO VideoTransmitter", "LABO VideoTransmitter Stream", 0x86, {160, 120}, 10));
+		deviceController_, "pico-jxgLABO", "pico-jxgLABO Stream", 0x86, {160, 120}, 10));
 	deviceController_.Initialize();
 	pVideoTransmitter_->Initialize();
 	mscDrive_.Initialize(fat_);
