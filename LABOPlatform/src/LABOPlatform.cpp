@@ -12,6 +12,56 @@
 using namespace jxglib;
 
 //------------------------------------------------------------------------------
+// USBDevice::VideoTransmitter
+//------------------------------------------------------------------------------
+struct {
+	Size size = {160, 120};
+	int frameRate = 10;
+	bool enabledFlag = false;
+} videoTransmitterInfo;
+
+ShellCmd_Named(usbdev_video_transmitter, "usbdev-video-transmitter", "controls USB video transmitter")
+{
+	static const Arg::Opt optTbl[] = {
+		Arg::OptBool("help",		'h',	"prints this help"),
+	};
+	Arg arg(optTbl, count_of(optTbl));
+	if (!arg.Parse(terr, argc, argv)) return Result::Error;
+	if (arg.GetBool("help")) {
+		tout.Printf("Usage: %s [OPTION]... SUBCMD...\n", GetName());
+		arg.PrintHelp(tout);
+		tout.Printf("Sub Commands:\n");
+		tout.Printf("  size    specifies video size (default: 160x120)\n");
+		return Result::Success;
+	}
+	const char* value = nullptr;
+	Size size = videoTransmitterInfo.size;
+	int frameRate = videoTransmitterInfo.frameRate;
+	for (int iArg = 1; iArg < argc; ++iArg) {
+		const char* subcmd = argv[iArg];
+		if (Arg::GetAssigned(subcmd, "size", &value)) {
+			if (!size.Parse(value)) {
+				terr.Printf("Invalid size: %s\n", value);
+				return Result::Error;
+			}
+		} else if (Arg::GetAssigned(subcmd, "framerate", &value)) {
+			frameRate = ::strtol(value, nullptr, 10);
+			if (frameRate <= 0) {
+				terr.Printf("Invalid frame rate: %s\n", value);
+				return Result::Error;
+			}
+		} else {
+			terr.Printf("Unknown sub command: %s\n", subcmd);
+			return Result::Error;
+		}
+	}
+	videoTransmitterInfo.size = size;
+	videoTransmitterInfo.frameRate = frameRate;
+	videoTransmitterInfo.enabledFlag = true;
+	return Result::Success;
+}
+
+//------------------------------------------------------------------------------
 // C functions
 //------------------------------------------------------------------------------
 void jxglib_labo_init(bool attachStdioFlag)
@@ -194,13 +244,18 @@ void LABOPlatform::Initialize()
 		if (pFile) pFile->Print(textREADME_);
 	}
 	Shell::Instance.Startup();
-	pVideoTransmitter_.reset(new USBDevice::VideoTransmitter(
-		deviceController_, "pico-jxgLABO", "pico-jxgLABO Stream", 0x86, {160, 120}, 10));
+	uint8_t endp = 0x06;
+	if (videoTransmitterInfo.enabledFlag && endp < 0x10) {
+		pVideoTransmitter_.reset(new USBDevice::VideoTransmitter(
+			deviceController_, "pico-jxgLABO", "pico-jxgLABO Stream", 0x80 | endp,
+			videoTransmitterInfo.size, videoTransmitterInfo.frameRate));
+		endp++;
+	}
 	deviceController_.Initialize();
-	pVideoTransmitter_->Initialize();
 	mscDrive_.Initialize(fat_);
 	streamCDC_Terminal_.Initialize();
 	streamCDC_Application_.Initialize();
+	if (pVideoTransmitter_) pVideoTransmitter_->Initialize();
 	if (!attachStdioFlag_) {
 		terminal_.AttachKeyboard(streamCDC_Terminal_.GetKeyboard()).AttachPrintable(streamCDC_Terminal_);
 		::stdio_set_driver_enabled(&stdio_driver_, true);
