@@ -18,7 +18,7 @@ int main(void)
 		idVendor:			0xcafe,
 		idProduct:			USBDevice::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
-	}, 0x0409, "CDC EchoBack", "CDC EchoBack Product", "0123456");
+	}, 0x0409, "CDC EchoBack", "CDC EchoBack Product", "01234567");
 	USBDevice::CDC cdc(deviceController, "EchoBack Normal", 0x81, 8, 0x02, 0x82, 64);
 	deviceController.Initialize();
 	cdc.Initialize();
