@@ -47,8 +47,8 @@ public:
 		const GPIO& PCLK;
 		const GPIO& HREF;
 		const GPIO& VSYNC;
-		const GPIO& PWDN;
-		const GPIO& RESET;
+		const GPIO& PWDN = GPIO::None;
+		const GPIO& RESET = GPIO::None;
 	};
 	static const uint8_t Reg00_GAIN					= 0x00;
 	static const uint8_t Reg01_BLUE					= 0x01;

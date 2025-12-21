@@ -19,18 +19,21 @@ VideoTransmitter::~VideoTransmitter()
 
 void VideoTransmitter::Initialize()
 {
+	msecTimeoutStart_ = Tickable::GetCurrentTime(); 
 	transmitBusyFlag_ = false;
 }
 
 bool VideoTransmitter::CanTransmit()
 {
-	return ::tud_video_n_streaming(ctl_idx, stm_idx) && !transmitBusyFlag_;
+	return ::tud_video_n_streaming(ctl_idx, stm_idx) &&
+		(!transmitBusyFlag_ || (Tickable::GetCurrentTime() - msecTimeoutStart_ > msecTimeout));
 }
 
 void VideoTransmitter::Transmit(const void* buffFrame)
 {
 	transmitBusyFlag_ = true;
 	::tud_video_n_frame_xfer(ctl_idx, stm_idx, const_cast<void*>(buffFrame), size_.width * size_.height * 16 / 8);
+	msecTimeoutStart_ = Tickable::GetCurrentTime(); 
 }
 
 void VideoTransmitter::On_frame_xfer_complete(uint_fast8_t ctl_idx, uint_fast8_t stm_idx)

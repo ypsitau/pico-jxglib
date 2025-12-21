@@ -19,6 +19,9 @@ private:
 public:
 	static const uint8_t ctl_idx = 0;
 	static const uint8_t stm_idx = 0;
+	static const uint32_t msecTimeout = 1000;
+private:
+	uint32_t msecTimeoutStart_;
 public:
 	VideoTransmitter(Controller& deviceController, const char* strControl, const char* strStreaming,
 							uint8_t endp, const Size& size, int frameRate) :

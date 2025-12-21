@@ -21,21 +21,21 @@ int main(void)
 		idVendor:			0xcafe,
 		idProduct:			USBDevice::GenerateSpecificProductId(0x4000),
 		bcdDevice:			0x0100,
-	}, 0x0409, "Video Test", "Video Test Product", "0123456");
+	}, 0x0409, "Video Test", "Video Test Product", "000100001");
 	GPIO16.set_function_I2C0_SDA().pull_up();
 	GPIO17.set_function_I2C0_SCL().pull_up();
 	::i2c_init(i2c0, 100000);
-	Camera::OV7670 ov7670(i2c0, { D0: GPIO2, XCLK: GPIO10, PCLK: GPIO11, HREF: GPIO12, VSYNC: GPIO13 }, 24000000);
+	Camera::OV7670 ov7670(i2c0, {D0: GPIO2, XCLK: GPIO10, PCLK: GPIO11, HREF: GPIO12, VSYNC: GPIO13}, 24000000);
 	ov7670.Initialize();
 	ov7670
 		.SetupReg()
 		.EnableColorMode(true)
-		.SetMirror(true)
+		.SetReg_Mirror(true)
 		.SetResolution(Camera::Resolution::QQVGA)
 		.SetFormat(Camera::Format::YUV422);
 	int frameRate = 10;
 	USBDevice::VideoTransmitter videoTransmitter(deviceController,
-		"VideoTransmitter", "VideoTransmitter Streaming", 0x81, ov7670.GetSize(), frameRate);
+		"pico-jxgLABO", "pico-jxgLABO Streaming", 0x81, ov7670.GetSize(), frameRate);
 	deviceController.Initialize();
 	videoTransmitter.Initialize();
 	for (;;) {
