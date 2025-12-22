@@ -27,37 +27,60 @@ ShellCmd_Named(usbdev_video_transmitter, "usbdev-video-transmitter", "controls U
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
-	if (arg.GetBool("help")) {
+	if (arg.GetBool("help") || argc < 2) {
 		tout.Printf("Usage: %s [OPTION]... SUBCMD...\n", GetName());
 		arg.PrintHelp(tout);
 		tout.Printf("Sub Commands:\n");
-		tout.Printf("  size    specifies video size (default: 160x120)\n");
-		return Result::Success;
+		tout.Printf("  setup    setup USB video transmitter with the given parameters:\n");
+		tout.Printf("           {[size:SIZE] [framerate:FRAMERATE]}\n");
+		tout.Printf("           SIZE: vga, qvga, qqvga, qqqvga, WIDTHxHEIGHT (default: 160x120)\n");
+		return arg.GetBool("help")? Result::Success : Result::Error;
 	}
 	const char* value = nullptr;
-	Size size = videoTransmitterInfo.size;
-	int frameRate = videoTransmitterInfo.frameRate;
-	for (int iArg = 1; iArg < argc; ++iArg) {
-		const char* subcmd = argv[iArg];
-		if (Arg::GetAssigned(subcmd, "size", &value)) {
-			if (!size.Parse(value)) {
-				terr.Printf("Invalid size: %s\n", value);
-				return Result::Error;
+	Shell::Arg::EachSubcmd each(argv[1], argv[argc]);
+	if (!each.Initialize()) {
+		terr.Printf("%s\n", each.GetErrorMsg());
+		return Result::Error;
+	}
+	while (const Arg::Subcmd* pSubcmd = each.NextSubcmd()) {
+		const char* subcmd = pSubcmd->GetProc();
+		if (Arg::GetAssigned(subcmd, "setup", &value)) {
+			Size size = videoTransmitterInfo.size;
+			int frameRate = videoTransmitterInfo.frameRate;
+			for (const Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
+				const char* subcmd = pSubcmdChild->GetProc();
+				if (Arg::GetAssigned(subcmd, "size", &value)) {
+					if (::strcasecmp(value, "vga") == 0) {
+						size = Camera::Size_VGA;
+					} else if (::strcasecmp(value, "qvga") == 0) {
+						size = Camera::Size_QVGA;
+					} else if (::strcasecmp(value, "qqvga") == 0) {
+						size = Camera::Size_QQVGA;
+					} else if (::strcasecmp(value, "qqqvga") == 0) {
+						size = Camera::Size_QQQVGA;
+					} else if (!size.Parse(value)) {
+						terr.Printf("Invalid size: %s\n", value);
+						return Result::Error;
+					}
+				} else if (Arg::GetAssigned(subcmd, "framerate", &value)) {
+					frameRate = ::strtol(value, nullptr, 10);
+					if (frameRate <= 0) {
+						terr.Printf("Invalid frame rate: %s\n", value);
+						return Result::Error;
+					}
+				} else {
+					terr.Printf("Unknown sub command: %s\n", subcmd);
+					return Result::Error;
+				}
 			}
-		} else if (Arg::GetAssigned(subcmd, "framerate", &value)) {
-			frameRate = ::strtol(value, nullptr, 10);
-			if (frameRate <= 0) {
-				terr.Printf("Invalid frame rate: %s\n", value);
-				return Result::Error;
-			}
+			videoTransmitterInfo.size = size;
+			videoTransmitterInfo.frameRate = frameRate;
+			videoTransmitterInfo.enabledFlag = true;
 		} else {
 			terr.Printf("Unknown sub command: %s\n", subcmd);
 			return Result::Error;
 		}
 	}
-	videoTransmitterInfo.size = size;
-	videoTransmitterInfo.frameRate = frameRate;
-	videoTransmitterInfo.enabledFlag = true;
 	return Result::Success;
 }
 
@@ -214,7 +237,7 @@ LABOPlatform::LABOPlatform(int bytesDrive) :
 		idVendor:			0xcafe,
 		idProduct:			0x1ab0,
 		bcdDevice:			0x0100,
-	}, 0x0409, "jxglib", "pico-jxgLABO", "000000000001"),
+	}, 0x0409, "jxglib", "pico-jxgLABO", "000000000002"),
 	fat_("*L:", bytesDrive),
 	mscDrive_(deviceController_, 0x01, 0x81),
 	streamCDC_Terminal_(deviceController_, "StreamSerial", 0x82, 0x03, 0x83),
@@ -247,7 +270,7 @@ void LABOPlatform::Initialize()
 	uint8_t endp = 0x06;
 	if (videoTransmitterInfo.enabledFlag && endp < 0x10) {
 		pVideoTransmitter_.reset(new USBDevice::VideoTransmitter(
-			deviceController_, "pico-jxgLABO", "pico-jxgLABO Stream", 0x80 | endp,
+			deviceController_, "pico-jxgLABO VideoTransmitter", "pico-jxgLABO VideoTransmitter Stream", 0x80 | endp,
 			videoTransmitterInfo.size, videoTransmitterInfo.frameRate));
 		endp++;
 	}

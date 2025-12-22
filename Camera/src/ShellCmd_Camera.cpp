@@ -134,10 +134,22 @@ ShellCmd(camera, "controls cameras")
 				}
 				iVideoTransmitter_ = num;
 			}
-			camera.SetResolution(Camera::Resolution::QQVGA);
+			VideoTransmitter& videoTransmitter = VideoTransmitter::GetInstance(iVideoTransmitter_);
+			const Size& size = videoTransmitter.GetSize();
+			if (size == Camera::Size_VGA) {
+				camera.SetResolution(Camera::Resolution::VGA);
+			} else if (size == Camera::Size_QVGA) {
+				camera.SetResolution(Camera::Resolution::QVGA);
+			} else if (size == Camera::Size_QQVGA) {
+				camera.SetResolution(Camera::Resolution::QQVGA);
+			} else if (size == Camera::Size_QQQVGA) {
+				camera.SetResolution(Camera::Resolution::QQQVGA);
+			} else {
+				terr.Printf("unsupported video transmitter size: %ux%u\n", size.width, size.height);
+				return Result::Error;
+			}
 			camera.SetFormat(Camera::Format::YUV422);
 			tickableMode_ = TickableMode::VideoTransmitter;
-			VideoTransmitter& videoTransmitter = VideoTransmitter::GetInstance(iVideoTransmitter_);
 			videoTransmitter.Initialize();
 		} else if (Arg::GetAssigned(subcmd, "video-transmit-stop", &value)) {
 			if (tickableMode_ == TickableMode::VideoTransmitter) {

@@ -5,6 +5,14 @@
 
 namespace jxglib::Camera {
 
+const Size Size_VGA(640, 480);
+const Size Size_QVGA(320, 240);
+const Size Size_QQVGA(160, 120);
+const Size Size_QQQVGA(80, 60);
+const Size Size_CIF(352, 288);
+const Size Size_QCIF(176, 144);
+const Size Size_QQCIF(88, 72);
+
 //------------------------------------------------------------------------------
 // Camera::Base
 //------------------------------------------------------------------------------
@@ -47,13 +55,13 @@ bool Base::IsValid() const
 void Base::UpdateSize()
 {
 	size_ =
-		(resolution_ == Resolution::VGA)?		Size{640, 480} :
-		(resolution_ == Resolution::QVGA)?		Size{320, 240} :
-		(resolution_ == Resolution::QQVGA)?		Size{160, 120} :
-		(resolution_ == Resolution::QQQVGA)?	Size{80, 60} :
-		(resolution_ == Resolution::CIF)?		Size{352, 288} :
-		(resolution_ == Resolution::QCIF)?		Size{176, 144} :
-		(resolution_ == Resolution::QQCIF)?		Size{88, 72} : Size{320, 240};
+		(resolution_ == Resolution::VGA)?		Size_VGA :
+		(resolution_ == Resolution::QVGA)?		Size_QVGA :
+		(resolution_ == Resolution::QQVGA)?		Size_QQVGA :
+		(resolution_ == Resolution::QQQVGA)?	Size_QQQVGA :
+		(resolution_ == Resolution::CIF)?		Size_CIF :
+		(resolution_ == Resolution::QCIF)?		Size_QCIF :
+		(resolution_ == Resolution::QQCIF)?		Size_QQCIF : Size_QVGA;
 }
 
 Base& Base::SetResolution(Resolution resolution)

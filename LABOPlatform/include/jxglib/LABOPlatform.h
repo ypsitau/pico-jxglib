@@ -16,6 +16,7 @@
 #include "jxglib/FAT/SDCard.h"
 #include "jxglib/LogicAnalyzer.h"
 #include "jxglib/Device/WS2812.h"
+#include "jxglib/Camera.h"
 #include "jxglib/Font.h"
 
 namespace jxglib {

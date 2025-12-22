@@ -8,6 +8,14 @@
 
 namespace jxglib::Camera {
 
+extern const Size Size_VGA;
+extern const Size Size_QVGA;
+extern const Size Size_QQVGA;
+extern const Size Size_QQQVGA;
+extern const Size Size_CIF;
+extern const Size Size_QCIF;
+extern const Size Size_QQCIF;
+
 enum class Resolution { None, VGA, QVGA, QQVGA, QQQVGA, CIF, QCIF, QQCIF };
 enum class Format { None, RawBayerRGB, ProcessedBayerRGB, YUV422, GRB422, RGB565, RGB555, RGB444 };
 
