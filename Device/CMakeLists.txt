@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 
 project(jxglib C CXX ASM)
 
+add_subdirectory(IrRemote)
 add_subdirectory(LCD1602)
 add_subdirectory(MCP4726)
 add_subdirectory(SDCard)

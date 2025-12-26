@@ -55,3 +55,6 @@ target_include_directories(test-IrRemote PRIVATE
 
 pico_add_extra_outputs(test-IrRemote)
 
+target_link_libraries(test-IrRemote jxglib_LABOPlatform_FullCmd jxglib_IrRemote)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../../.. pico-jxglib)
+jxglib_configure_LABOPlatform(test-IrRemote)
