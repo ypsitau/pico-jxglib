@@ -33,18 +33,18 @@ void IrRemote::Run()
 	.program("nec_receive")
 	.wrap_target()
 	.L("next_burst")
-		.set("X", BURST_LOOP_COUNTER)
+		.set("x", BURST_LOOP_COUNTER)
 		.wait(0, "pin", 0)				// wait for the next burst to start
 	.L("burst_loop")
 		.jmp("pin", "data_bit")			// the burst ended before the counter expired
-		.jmp("X--", "burst_loop")		// wait for the burst to end
+		.jmp("x--", "burst_loop")		// wait for the burst to end
 										// the counter expired - this is a sync burst
-		.mov("ISR", "NULL")				// reset the Input Shift Register
+		.mov("isr", "null")				// reset the Input Shift Register
 		.wait(1, "pin", 0)				// wait for the sync burst to finish
 		.jmp("next_burst")				// wait for the first data bit
 	.L("data_bit")
 		.nop() [BIT_SAMPLE_DELAY - 1]	// wait for 1.5 burst periods before sampling the bit value
-		.in("PINS", 1)					// if the next burst has started then detect a '0' (short gap)
+		.in("pins", 1)					// if the next burst has started then detect a '0' (short gap)
 										// otherwise detect a '1' (long gap)
 										// after 32 bits the ISR will autopush to the receive FIFO
 	.wrap()
@@ -53,7 +53,7 @@ void IrRemote::Run()
 		.reserve_in_pin(GPIO13)
 		.config_set_fifo_join_rx()
 		.config_set_jmp_pin(GPIO13)
-		.config_set_clkdiv(::clock_get_hz(clk_sys) / (10.0 / 562.5e-6))
+		.config_set_clkdiv(::clock_get_hz(clk_sys) * 562.5e-6 / 10)	// sampling at every (562.5 / 10) us
 		.config_set_in_shift_left(true, 8)	// shift right, autopush enabled, push threshold 8
 		.init()
 		.set_enabled();
