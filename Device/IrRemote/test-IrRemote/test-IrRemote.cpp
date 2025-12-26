@@ -71,7 +71,7 @@ void IrRemote::Run()
 		.set_dreq(sm_.get_dreq_rx())		// set DREQ of StateMachine's rx
 		.set_chain_to(*pChannel_)			// disable by setting chain_to to itself
 		.set_ring_read(0)
-		.set_bswap(true)					// byte swap: b0 b1 b2 b3 -> b3 b2 b1 b0
+		.set_bswap(false)					// byte swap: b0 b1 b2 b3 -> b3 b2 b1 b0
 		.set_irq_quiet(false)
 		.set_sniff_enable(false)
 		.set_high_priority(false);
@@ -105,7 +105,7 @@ int main()
 	while (true) {
 		int bytesRead = irRemote.Read(buff, sizeof(buff));
 		if (bytesRead > 0) {
-			Dump(buff, bytesRead);
+			Dump.Addr(false)(buff, bytesRead);
 		}
 		Tickable::Tick();
 	}
