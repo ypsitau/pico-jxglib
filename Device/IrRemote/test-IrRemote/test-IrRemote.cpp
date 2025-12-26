@@ -12,12 +12,12 @@ private:
 	PIO::StateMachine sm_;
 	DMA::Channel* pChannel_;
 	DMA::ChannelConfig channelConfig_;
-	uint8_t buff_[64];
+	uint8_t buff_[256];
 public:
 	IrRemote();
 public:
 	void Run();
-	void DoCapture();
+	int Read(uint8_t* buff, int bytes);
 };
 
 IrRemote::IrRemote() : pChannel_{nullptr}
@@ -75,18 +75,21 @@ void IrRemote::Run()
 		.set_irq_quiet(false)
 		.set_sniff_enable(false)
 		.set_high_priority(false);
+	pChannel_->set_config(channelConfig_)
+		.set_read_addr(sm_.get_rxf())
+		.set_write_addr(buff_)
+		.set_trans_count_trig(sizeof(buff_) / sizeof(uint32_t));
 }
 
-void IrRemote::DoCapture()
+int IrRemote::Read(uint8_t* buff, int bytes)
 {
-	if (!sm_.is_rx_fifo_empty()) {
-		::printf("%08x\n", sm_.get());
-	}
+	const volatile uint8_t* pEnd = reinterpret_cast<const volatile uint8_t*>(pChannel_->get_write_addr());
+	int bytesRead = pEnd - reinterpret_cast<const volatile uint8_t*>(buff_);
+	if (bytesRead == 0) return 0;
+	::memcpy(buff, buff_, ChooseMin(bytes, bytesRead));
+	pChannel_->set_write_addr_trig(buff_);
+	return bytesRead;
 	//sm_.set_enabled(false);
-	//pChannel_->set_config(channelConfig_)
-	//	.set_read_addr(sm_.get_rxf())
-	//	.set_write_addr(buff_)
-	//	.set_trans_count_trig(1);
 	//sm_.clear_fifos().exec(programToReset_).set_enabled();
 	//while (pChannel_->is_busy()) Tickable::Tick();
 	//::printf("Captured Data:%02x %02x %02x %02x\n", buff_[0], buff_[1], buff_[2], buff_[3]);
@@ -98,8 +101,12 @@ int main()
 	LABOPlatform::Instance.AttachStdio().Initialize();
 	IrRemote irRemote;
 	irRemote.Run();
+	uint8_t buff[8];
 	while (true) {
-		irRemote.DoCapture();
+		int bytesRead = irRemote.Read(buff, sizeof(buff));
+		if (bytesRead > 0) {
+			Dump(buff, bytesRead);
+		}
 		Tickable::Tick();
 	}
 }
