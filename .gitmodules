@@ -7,3 +7,6 @@
 [submodule "guest/stb"]
 	path = guest/stb
 	url = https://github.com/nothings/stb.git
+[submodule "guest/pico-tflmicro"]
+	path = guest/pico-tflmicro
+	url = https://github.com/raspberrypi/pico-tflmicro.git

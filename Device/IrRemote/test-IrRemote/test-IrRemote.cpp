@@ -53,8 +53,9 @@ void IrRemote::Run()
 		.reserve_in_pin(GPIO13)
 		.config_set_fifo_join_rx()
 		.config_set_jmp_pin(GPIO13)
-		.config_set_clkdiv(::clock_get_hz(clk_sys) * 562.5e-6 / 10)	// sampling at every (562.5 / 10) us
-		.config_set_in_shift_left(true, 8)	// shift right, autopush enabled, push threshold 8
+		//.config_set_clkdiv(::clock_get_hz(clk_sys) * 562.5e-6 / 10)	// sampling at every (562.5 / 10) us
+		.config_set_clkdiv(::clock_get_hz(clk_sys) * 521e-6 / 10)	// sampling at every (521 / 10) us
+		.config_set_in_shift_right(true, 32)	// shift right, autopush enabled, push threshold 32
 		.init()
 		.set_enabled();
 	GPIO13.pull_up();
@@ -65,13 +66,13 @@ void IrRemote::Run()
 	.end();
 	pChannel_ = DMA::claim_unused_channel();
 	channelConfig_.set_enable(true)
-		.set_transfer_data_size(DMA_SIZE_8)
+		.set_transfer_data_size(DMA_SIZE_32)
 		.set_read_increment(false)
 		.set_write_increment(true)
 		.set_dreq(sm_.get_dreq_rx())		// set DREQ of StateMachine's rx
 		.set_chain_to(*pChannel_)			// disable by setting chain_to to itself
 		.set_ring_read(0)
-		.set_bswap(true)					// byte swap: b0 b1 b2 b3 -> b3 b2 b1 b0
+		//.set_bswap(true)					// byte swap: b0 b1 b2 b3 -> b3 b2 b1 b0
 		.set_irq_quiet(false)
 		.set_sniff_enable(false)
 		.set_high_priority(false);
