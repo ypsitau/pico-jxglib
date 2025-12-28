@@ -23,7 +23,7 @@ if (EXISTS ${picoVscode})
     include(${picoVscode})
 endif()
 # ====================================================================================
-set(PICO_BOARD pico2_w CACHE STRING "Board type")
+set(PICO_BOARD pico_w CACHE STRING "Board type")
 
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
@@ -36,6 +36,15 @@ pico_sdk_init()
 # Add executable. Default name is the project name, version 0.1
 
 add_executable(test-TensorFlow test-TensorFlow.cpp )
+
+#set_target_properties(
+#    test-TensorFlow
+#    PROPERTIES
+#    COMPILE_FLAGS -fno-rtti
+#    COMPILE_FLAGS -fno-exceptions
+#    COMPILE_FLAGS -fno-threadsafe-statics
+#    COMPILE_FLAGS -nostdlib
+#)
 
 pico_set_program_name(test-TensorFlow "test-TensorFlow")
 pico_set_program_version(test-TensorFlow "0.1")
