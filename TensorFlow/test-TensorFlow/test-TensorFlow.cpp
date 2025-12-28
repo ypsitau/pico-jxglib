@@ -11,10 +11,6 @@
 
 using namespace jxglib;
 
-tflite::MicroInterpreter* interpreter = nullptr;
-
-alignas(16) uint8_t tensorArena[1024 * 32];
-
 const uint8_t mnist_digit_1[784] = {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -178,36 +174,68 @@ const uint8_t mnist_digit_8[784] = {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 };
 
+template<size_t arenaSize, unsigned int tOpCount> class TFLiteRunner {
+private:
+	const uint8_t* modelData_;
+	std::unique_ptr<tflite::MicroMutableOpResolver<tOpCount>> resolver_;
+	std::unique_ptr<tflite::MicroInterpreter> interpreter_;
+	alignas(16) uint8_t arena_[arenaSize];
+public:
+	TFLiteRunner(const uint8_t* modelData);
+	~TFLiteRunner() {}
+public:
+	bool Initialize();
+	bool Invoke();
+public:
+	size_t GetArenaUsedBytes() const { return interpreter_->arena_used_bytes(); }
+	TfLiteTensor* GetInput(int index) { return interpreter_->input(index); }
+	TfLiteTensor* GetOutput(int index) { return interpreter_->output(index); }
+};
+
+template<size_t arenaSize, unsigned int tOpCount>
+	TFLiteRunner<arenaSize, tOpCount>::TFLiteRunner(const uint8_t* modelData) : modelData_(modelData)
+{
+}
+
+template<size_t arenaSize, unsigned int tOpCount> bool TFLiteRunner<arenaSize, tOpCount>::Initialize()
+{
+	tflite::InitializeTarget();
+	const tflite::Model* model = tflite::GetModel(modelData_);
+	if (model->version() != TFLITE_SCHEMA_VERSION) return false;
+	resolver_.reset(new tflite::MicroMutableOpResolver<tOpCount>());
+	interpreter_.reset(new tflite::MicroInterpreter(model, *resolver_, arena_, arenaSize));
+	resolver_->AddConv2D();
+	resolver_->AddMaxPool2D();
+	resolver_->AddFullyConnected();
+	resolver_->AddReshape();
+	resolver_->AddSoftmax();
+	if (interpreter_->AllocateTensors() != kTfLiteOk) return false;
+	return true;
+}
+
+template<size_t arenaSize, unsigned int tOpCount> bool TFLiteRunner<arenaSize, tOpCount>::Invoke()
+{
+	return interpreter_->Invoke() == kTfLiteOk;
+}
+
+TFLiteRunner<32768, 8> tfLiteRunner(conv_mnist_quant_tflite);
 
 void sub()
 {
-	tflite::InitializeTarget();
 	//const tflite::Model* model = tflite::GetModel(mnist_model);
-	const tflite::Model* model = tflite::GetModel(conv_mnist_quant_tflite);
-	if (model->version() != TFLITE_SCHEMA_VERSION) {
-		::printf("Model version mismatch!\n");
+	if (!tfLiteRunner.Initialize()) {
+		printf("TFLiteRunner Initialize failed!\n");
 		return;
 	}
-	tflite::MicroMutableOpResolver<16>* resolver = new tflite::MicroMutableOpResolver<16>();
-	interpreter = new tflite::MicroInterpreter(model, *resolver, tensorArena, sizeof(tensorArena));
-	resolver->AddConv2D();
-	resolver->AddMaxPool2D();
-	resolver->AddFullyConnected();
-	resolver->AddReshape();
-	resolver->AddSoftmax();
-	if (interpreter->AllocateTensors() != kTfLiteOk) {
-		printf("AllocateTensors failed!\n");
-		return;
-	}
-	printf("arena %d bytes used\n", interpreter->arena_used_bytes());
-	TfLiteTensor* input = interpreter->input(0);
-	TfLiteTensor* output = interpreter->output(0);
+	printf("arena %d bytes used\n", tfLiteRunner.GetArenaUsedBytes());
+	TfLiteTensor* input = tfLiteRunner.GetInput(0);
+	TfLiteTensor* output = tfLiteRunner.GetOutput(0);
 	printf("input->type: %d\n", input->type);
 	printf("output->type: %d\n", output->type);
 	for(int i = 0; i < 784; i++) {
 		input->data.int8[i] = (int8_t)((int)mnist_digit_4[i] - 128);
 	}
-	if (interpreter->Invoke() != kTfLiteOk) {
+	if (!tfLiteRunner.Invoke()) {
 		printf("Invoke failed!\n");
 		return;
 	}
