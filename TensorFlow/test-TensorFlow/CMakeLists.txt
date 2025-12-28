@@ -28,33 +28,34 @@ set(PICO_BOARD pico2_w CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-LABOPlatform C CXX ASM)
+project(test-TensorFlow C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-LABOPlatform test-LABOPlatform.cpp )
+add_executable(test-TensorFlow test-TensorFlow.cpp )
 
-pico_set_program_name(test-LABOPlatform "test-LABOPlatform")
-pico_set_program_version(test-LABOPlatform "0.1")
+pico_set_program_name(test-TensorFlow "test-TensorFlow")
+pico_set_program_version(test-TensorFlow "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-LABOPlatform 1)
-pico_enable_stdio_usb(test-LABOPlatform 0)
+pico_enable_stdio_uart(test-TensorFlow 1)
+pico_enable_stdio_usb(test-TensorFlow 0)
 
 # Add the standard library to the build
-target_link_libraries(test-LABOPlatform
-        pico_stdlib)
+target_link_libraries(test-TensorFlow
+        pico_stdlib
+        pico-tflmicro)
 
 # Add the standard include files to the build
-target_include_directories(test-LABOPlatform PRIVATE
+target_include_directories(test-TensorFlow PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-LABOPlatform)
+pico_add_extra_outputs(test-TensorFlow)
 
-target_link_libraries(test-LABOPlatform jxglib_LABOPlatform_FullCmd)
+target_link_libraries(test-TensorFlow jxglib_LABOPlatform_FullCmd)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
-jxglib_configure_LABOPlatform(test-LABOPlatform)
+jxglib_configure_LABOPlatform(test-TensorFlow)
