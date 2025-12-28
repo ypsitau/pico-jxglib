@@ -7,3 +7,6 @@
 [submodule "guest/stb"]
 	path = guest/stb
 	url = https://github.com/nothings/stb.git
+[submodule "TensorFlow/pico-tflmicro"]
+	path = TensorFlow/pico-tflmicro
+	url = https://github.com/raspberrypi/pico-tflmicro.git
