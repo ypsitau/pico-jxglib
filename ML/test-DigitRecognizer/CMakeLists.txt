@@ -35,7 +35,7 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-DigitRecognizer test-DigitRecognizer.cpp DigitRecognizer.cpp)
+add_executable(test-DigitRecognizer test-DigitRecognizer.cpp)
 
 pico_set_program_name(test-DigitRecognizer "test-DigitRecognizer")
 pico_set_program_version(test-DigitRecognizer "0.1")
@@ -46,8 +46,7 @@ pico_enable_stdio_usb(test-DigitRecognizer 0)
 
 # Add the standard library to the build
 target_link_libraries(test-DigitRecognizer
-        pico_stdlib
-        pico-tflmicro)
+        pico_stdlib)
 
 # Add the standard include files to the build
 target_include_directories(test-DigitRecognizer PRIVATE
@@ -56,6 +55,6 @@ target_include_directories(test-DigitRecognizer PRIVATE
 
 pico_add_extra_outputs(test-DigitRecognizer)
 
-target_link_libraries(test-DigitRecognizer jxglib_LABOPlatform_FullCmd)
+target_link_libraries(test-DigitRecognizer jxglib_LABOPlatform_FullCmd jxglib_ML_DigitRecognizer)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 jxglib_configure_LABOPlatform(test-DigitRecognizer)

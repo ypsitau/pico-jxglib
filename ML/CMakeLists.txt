@@ -4,11 +4,22 @@ target_include_directories(jxglib_ML INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/include)
 
 target_link_libraries(jxglib_ML INTERFACE
-	jxglib_Common)
+	jxglib_Common
+  pico-tflmicro)
 
 target_sources(jxglib_ML INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/ML.cpp)
+#------------------------------------------------------------------------------
+add_library(jxglib_ML_DigitRecognizer INTERFACE)
 
+target_include_directories(jxglib_ML_DigitRecognizer INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/include)
+
+target_link_libraries(jxglib_ML_DigitRecognizer INTERFACE
+	jxglib_ML)
+
+target_sources(jxglib_ML_DigitRecognizer INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/src/DigitRecognizer.cpp)
 #------------------------------------------------------------------------------
 add_library(pico-tflmicro INTERFACE)
 

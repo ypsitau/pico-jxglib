@@ -1,5 +1,8 @@
-#ifndef DIGIT_RECOGNIZER_H
-#define DIGIT_RECOGNIZER_H
+//=============================================================================
+// DigitRecognizer.h
+//=============================================================================
+#ifndef JXGLIB_ML_DIGIT_RECOGNIZER_H
+#define JXGLIB_ML_DIGIT_RECOGNIZER_H
 #include <stdint.h>
 #include "pico/stdlib.h"
 #include "tensorflow/lite/micro/micro_interpreter.h"

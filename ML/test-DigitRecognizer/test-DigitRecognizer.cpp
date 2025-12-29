@@ -2,7 +2,7 @@
 #include "pico/stdlib.h"
 #include "pico/multicore.h"
 #include "jxglib/LABOPlatform.h"
-#include "DigitRecognizer.h"
+#include "jxglib/ML/DigitRecognizer.h"
 
 using namespace jxglib;
 
@@ -319,7 +319,7 @@ const uint8_t imageData_9[784] = {
 
 DigitRecognizer digitRecognizer;
 
-ShellCmd(testtf, "test TensorFlow Lite Micro")
+ShellCmd_Named(test_digit_recognizer, "test-digit-recognizer", "test TensorFlow Lite Micro")
 {
 	const uint8_t* imageDataTbl[] = {
 		imageData_0,
@@ -349,7 +349,6 @@ ShellCmd(testtf, "test TensorFlow Lite Micro")
 int main(void)
 {
 	::stdio_init_all();
-    ::multicore_lockout_victim_init();
 	if (!digitRecognizer.Initialize()) {
 		::printf("DigitRecognizer Initialize failed!\n");
 		return 1;

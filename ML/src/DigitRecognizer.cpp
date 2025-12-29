@@ -1,4 +1,7 @@
-#include "DigitRecognizer.h"
+//=============================================================================
+// DigitRecognizer.cpp
+//=============================================================================
+#include "jxglib/ML/DigitRecognizer.h"
 
 DigitRecognizer::DigitRecognizer()
 {
