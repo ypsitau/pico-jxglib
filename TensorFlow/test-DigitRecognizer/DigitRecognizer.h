@@ -16,12 +16,14 @@ private:
 	std::unique_ptr<tflite::MicroMutableOpResolver<tOpCount>> resolver_;
 	std::unique_ptr<tflite::MicroInterpreter> interpreter_;
 	alignas(16) uint8_t arena_[ArenaSize];
+private:
+    static const uint8_t modelData_[];
 public:
 	DigitRecognizer();
 	~DigitRecognizer() {}
 public:
 	bool Initialize();
-	bool Invoke();
+	int Recognize(const uint8_t* imageData, float* pConfidence = nullptr);
 public:
 	size_t GetArenaUsedBytes() const { return interpreter_->arena_used_bytes(); }
 	TfLiteTensor* GetInput(int index) { return interpreter_->input(index); }
