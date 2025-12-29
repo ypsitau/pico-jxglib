@@ -337,11 +337,11 @@ ShellCmd_Named(test_digit_recognizer, "test-digit-recognizer", "test TensorFlow 
 		const uint8_t* imageData = imageDataTbl[j];
         float confidence;
 		int result = digitRecognizer.Recognize(imageData, &confidence);
-		if (result < 0) {
-			printf("Invoke failed!\n");
-			return Result::Error;
-		}
-		printf("Digit %d : %d %.2f\n", j, result, confidence);
+        if (result < 0) {
+            printf("Recognize failed!\n");
+            return Result::Error;
+        }
+		printf("Digit %d:%d %.2f\n", j, result, confidence);
 	}
 	return Result::Success;
 }
