@@ -11,6 +11,8 @@
 #include "tensorflow/lite/micro/system_setup.h"
 #include "tensorflow/lite/schema/schema_generated.h"
 
+namespace jxglib::ML {
+
 class DigitRecognizer {
 public:
     static constexpr size_t ArenaSize = 1024 * 10;
@@ -32,5 +34,7 @@ public:
 	TfLiteTensor* GetInput(int index) { return interpreter_->input(index); }
 	TfLiteTensor* GetOutput(int index) { return interpreter_->output(index); }
 };
+
+}
 
 #endif
