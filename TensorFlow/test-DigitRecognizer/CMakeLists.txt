@@ -28,43 +28,34 @@ set(PICO_BOARD pico_w CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-TensorFlow C CXX ASM)
+project(test-DigitRecognizer C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-TensorFlow test-TensorFlow.cpp )
+add_executable(test-DigitRecognizer test-DigitRecognizer.cpp DigitRecognizer.cpp)
 
-#set_target_properties(
-#    test-TensorFlow
-#    PROPERTIES
-#    COMPILE_FLAGS -fno-rtti
-#    COMPILE_FLAGS -fno-exceptions
-#    COMPILE_FLAGS -fno-threadsafe-statics
-#    COMPILE_FLAGS -nostdlib
-#)
-
-pico_set_program_name(test-TensorFlow "test-TensorFlow")
-pico_set_program_version(test-TensorFlow "0.1")
+pico_set_program_name(test-DigitRecognizer "test-DigitRecognizer")
+pico_set_program_version(test-DigitRecognizer "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-TensorFlow 1)
-pico_enable_stdio_usb(test-TensorFlow 0)
+pico_enable_stdio_uart(test-DigitRecognizer 1)
+pico_enable_stdio_usb(test-DigitRecognizer 0)
 
 # Add the standard library to the build
-target_link_libraries(test-TensorFlow
+target_link_libraries(test-DigitRecognizer
         pico_stdlib
         pico-tflmicro)
 
 # Add the standard include files to the build
-target_include_directories(test-TensorFlow PRIVATE
+target_include_directories(test-DigitRecognizer PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-TensorFlow)
+pico_add_extra_outputs(test-DigitRecognizer)
 
-target_link_libraries(test-TensorFlow jxglib_LABOPlatform_FullCmd)
+target_link_libraries(test-DigitRecognizer jxglib_LABOPlatform_FullCmd)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
-jxglib_configure_LABOPlatform(test-TensorFlow)
+jxglib_configure_LABOPlatform(test-DigitRecognizer)
