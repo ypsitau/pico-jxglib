@@ -8,6 +8,24 @@ using namespace jxglib;
 
 ML::DigitRecognizer digitRecognizer;
 
+uint8_t imageData[28 * 28];
+uint8_t imageDataBlurred[28 * 28];
+
+void PrintImageData(const uint8_t* imageData)
+{
+	static const char patTbl[] = { ' ', '.', ':', '+', '#' };
+	int iCol = 0;
+	for (int i = 0; i < 28 * 28; i++) {
+		::printf("%c", patTbl[imageData[i] * 5 / 256]);
+		iCol++;
+		if (iCol >= 28) {
+			::printf("\n");
+			iCol = 0;
+		}
+	}
+	::printf("\n");
+}
+
 int main()
 {
 	::stdio_init_all();
@@ -41,7 +59,6 @@ int main()
 	uint32_t msecLastTouch = Tickable::GetCurrentTime();
 	display.DrawRectFill(rcCanvas, bgCanvas);
 	bool isTouched = false;
-	uint8_t imageData[28 * 28];
 	::memset(imageData, 0, sizeof(imageData));
 	for (;;) {
 		Tickable::Sleep(5);
@@ -52,35 +69,27 @@ int main()
 			int x = (pt.x - (rcCanvas.x)) * 28 / rcCanvas.width;
 			int y = (pt.y - (rcCanvas.y)) * 28 / rcCanvas.height;
 			imageData[y * 28 + x] = 255;
-			if (y + 1 < 28) {
-				uint8_t* p = &imageData[(y + 1) * 28 + x];
-				if (*p < 128) *p = 128;
-			}
-			if (y - 1 >= 0) {
-				uint8_t* p = &imageData[(y - 1) * 28 + x];
-				if (*p < 128) *p = 128;
-			}
-			if (x + 1 < 28) {
-				uint8_t* p = &imageData[y * 28 + (x + 1)];
-				if (*p < 128) *p = 128;
-			}
-			if (x - 1 >= 0) {
-				uint8_t* p = &imageData[y * 28 + (x - 1)];
-				if (*p < 128) *p = 128;
-			}
+			if (y + 1 < 28) imageData[(y + 1) * 28 + x] = 255;
+			if (y - 1 >= 0) imageData[(y - 1) * 28 + x] = 255;
+			if (x + 1 < 28) imageData[y * 28 + (x + 1)] = 255;
+			if (x - 1 >= 0) imageData[y * 28 + (x - 1)] = 255;
 			isTouched = true;
 		} else if (isTouched && Tickable::GetCurrentTime() - msecLastTouch > msecFlush) {
-			int iCol = 0;
-			for (int i = 0; i < 28 * 28; i++) {
-				::printf("%s", (imageData[i] < 128)? " " : imageData[i] < 255 ? "." : "#");
-				iCol++;
-				if (iCol >= 28) {
-					::printf("\n");
-					iCol = 0;
+			::memset(imageDataBlurred, 0, sizeof(imageDataBlurred));
+			for (int y = 1; y < 27; y++) {
+				for (int x = 1; x < 27; x++) {
+					int sum = 0;
+					for (int dy = -1; dy <= 1; dy++) {
+						for (int dx = -1; dx <= 1; dx++) {
+							sum += imageData[(y + dy) * 28 + (x + dx)];
+						}
+					}
+					imageDataBlurred[y * 28 + x] = sum / 9;
 				}
 			}
+			PrintImageData(imageDataBlurred);
 			float confidence = 0.0f;
-			int result = digitRecognizer.Recognize(imageData, &confidence);
+			int result = digitRecognizer.Recognize(imageDataBlurred, &confidence);
 			if (result >= 0) terminal.Printf("recognized: %d (%.2f)\n", result, confidence);
 			isTouched = false;
 			display.DrawRectFill(rcCanvas, bgCanvas);
