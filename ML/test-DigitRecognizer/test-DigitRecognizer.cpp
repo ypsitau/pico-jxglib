@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include "pico/stdlib.h"
 #include "pico/multicore.h"
-//#include "jxglib/LABOPlatform.h"
+#include "jxglib/LABOPlatform.h"
 #include "jxglib/ML/DigitRecognizer.h"
 
 using namespace jxglib;
@@ -320,8 +320,7 @@ const uint8_t imageData_9[784] = {
 
 ML::DigitRecognizer digitRecognizer;
 
-//ShellCmd_Named(test_digit_recognizer, "test-digit-recognizer", "test TensorFlow Lite Micro")
-void Test_DigitRecognizer()
+ShellCmd_Named(test_digit_recognizer, "test-digit-recognizer", "test TensorFlow Lite Micro")
 {
 	const uint8_t* imageDataTbl[] = {
 		imageData_0,
@@ -341,25 +340,21 @@ void Test_DigitRecognizer()
 		int result = digitRecognizer.Recognize(imageData, &confidence);
 		if (result < 0) {
 			printf("Recognize failed!\n");
-			return;
-			//return Result::Error;
+			return Result::Error;
 		}
 		printf("Digit %d:%d %.2f\n", j, result, confidence);
 	}
-	//return Result::Success;
+	return Result::Success;
 }
 
 int main(void)
 {
 	::stdio_init_all();
-	//MicroPrintf("DigitRecognizer Test\n");
 	if (!digitRecognizer.Initialize()) {
 		::printf("DigitRecognizer Initialize failed!\n");
 		return 1;
 	}
-	//LABOPlatform::Instance.AttachStdio().Initialize();
-	//LABOPlatform::Instance.Initialize();
-	//for (;;) Tickable::Tick();
-	Test_DigitRecognizer();
-	for (;;) ;
+	LABOPlatform::Instance.AttachStdio().Initialize();
+	LABOPlatform::Instance.Initialize();
+	for (;;) Tickable::Tick();
 }

@@ -3,35 +3,46 @@
 //=============================================================================
 #include "jxglib/ML/DigitRecognizer.h"
 
+#if 0
+__asm__(
+	".section .rodata\n"
+	".global model_data\n"
+	".balign 16\n"
+	"model_data:\n"
+	".incbin \"model.tflite\"\n"
+	"model_data_end:\n"
+	".global model_data_size\n"
+	".balign 4\n"
+	"model_data_size:\n"
+	".int model_data_end - model_data\n"
+	".section .text\n"
+);
+#endif
+
 namespace jxglib::ML {
 
-DigitRecognizer::DigitRecognizer()
+DigitRecognizer::DigitRecognizer() : TFLiteRunner(modelData)
 {
 }
 
-bool DigitRecognizer::Initialize()
+void DigitRecognizer::AddOpResolver(OpResolver& opResolver)
 {
-	tflite::InitializeTarget();
-	const tflite::Model* model = tflite::GetModel(modelData_);
-	if (model->version() != TFLITE_SCHEMA_VERSION) return false;
-	resolver_.reset(new tflite::MicroMutableOpResolver<tOpCount>());
-	interpreter_.reset(new tflite::MicroInterpreter(model, *resolver_, arena_, ArenaSize));
-	resolver_->AddConv2D();
-	resolver_->AddMaxPool2D();
-	resolver_->AddFullyConnected();
-	resolver_->AddReshape();
-	resolver_->AddSoftmax();
-	return interpreter_->AllocateTensors() == kTfLiteOk;
+	opResolver.AddConv2D();
+	opResolver.AddMaxPool2D();
+	opResolver.AddFullyConnected();
+	opResolver.AddReshape();
+	opResolver.AddSoftmax();
 }
 
 int DigitRecognizer::Recognize(const uint8_t* imageData, float* pConfidence)
 {
-	TfLiteTensor* input = interpreter_->input(0);
-	TfLiteTensor* output = interpreter_->output(0);
+	Interpreter& interpreter = GetInterpreter();
+	TfLiteTensor* input = interpreter.input(0);
+	TfLiteTensor* output = interpreter.output(0);
 	for(int i = 0; i < 784; i++) {
 		input->data.int8[i] = static_cast<int8_t>(static_cast<int>(imageData[i]) - 128);
 	}
-	if (interpreter_->Invoke() != kTfLiteOk) return -1;
+	if (interpreter.Invoke() != kTfLiteOk) return -1;
 	int8_t maxValue = output->data.int8[0];
 	int maxIndex = 0;
 	for (int i = 1; i < 10; i++) {
@@ -44,7 +55,7 @@ int DigitRecognizer::Recognize(const uint8_t* imageData, float* pConfidence)
 	return maxIndex;
 }
 
-const uint8_t DigitRecognizer::modelData_[] = {
+const uint8_t DigitRecognizer::modelData[] = {
 	0x1c, 0x00, 0x00, 0x00, 0x54, 0x46, 0x4c, 0x33, 0x00, 0x00, 0x12, 0x00,
 	0x1c, 0x00, 0x18, 0x00, 0x14, 0x00, 0x10, 0x00, 0x0c, 0x00, 0x08, 0x00,
 	0x00, 0x00, 0x04, 0x00, 0x12, 0x00, 0x00, 0x00, 0x18, 0x00, 0x00, 0x00,
