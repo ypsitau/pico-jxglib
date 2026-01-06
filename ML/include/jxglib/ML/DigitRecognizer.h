@@ -8,8 +8,6 @@
 namespace jxglib::ML {
 
 class DigitRecognizer : public TFLiteRunner<1024 * 10, 8> {
-private:
-	static const uint8_t modelData[];
 public:
 	DigitRecognizer();
 	~DigitRecognizer() {}
