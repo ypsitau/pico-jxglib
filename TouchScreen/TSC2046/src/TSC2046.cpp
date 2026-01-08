@@ -8,9 +8,8 @@ namespace jxglib::TouchScreen {
 //------------------------------------------------------------------------------
 // TouchScreen::TSC2046
 //------------------------------------------------------------------------------
-TSC2046::TSC2046(spi_inst_t* spi, const PinAssign& pinAssign) :
-		spi_{spi}, pinAssign_{pinAssign}, hvFlippedFlag_{false}, xPrev_{0}, yPrev_{0} {}
-
+TSC2046::TSC2046(spi_inst_t* spi, const PinAssign& pinAssign, int z1Threshold) :
+		spi_{spi}, pinAssign_{pinAssign}, z1Threshold_{z1Threshold}, hvFlippedFlag_{false}, xPrev_{0}, yPrev_{0} {}
 void TSC2046::Initialize(bool hvFlippedFlag)
 {
 	hvFlippedFlag_ = hvFlippedFlag;
@@ -97,32 +96,43 @@ bool TSC2046::ReadXYRaw(int* px, int* py, int* pz1, int* pz2)
 	pinAssign_.CS.put(1);
 	if (pz1) *pz1 = z1;
 	if (pz2) *pz2 = z2;
-	return z1 > z1Threshold;
+	return z1 > z1Threshold_;
 }
 
 bool TSC2046::ReadXY(int* px, int* py)
 {
-	const int nTrials = 10;
-	int xSum = 0, ySum = 0;
-	int nSamplesPos = 0;
-	for (int iTrial = 0; iTrial < nTrials; iTrial++) {
+	const int nSamplesMax = 5;
+	int xTbl[nSamplesMax], yTbl[nSamplesMax];
+	int nSamples = 0;
+	for (int i = 0; i < nSamplesMax; i++) {
 		int x, y, z1;
 		ReadXYRaw(&x, &y, &z1);
-		//::sleep_ms(1);
-		if (z1 >= z1Threshold) {
-			xSum += x, ySum += y;
-			nSamplesPos++;
+		Tickable::Sleep(1);
+		if (z1 >= z1Threshold_) {
+			xTbl[nSamples] = x, yTbl[nSamples] = y;
+			nSamples++;
 		}
 	}
-	if (nSamplesPos == 0) {
+	if (nSamples < nSamplesMax / 2) {
 		*px = xPrev_, *py = yPrev_;
 		return false;
 	}
+	for (int i = 0; i < nSamples - 1; i++) {
+		for (int j = i + 1; j < nSamples; j++) {
+			if (xTbl[i] > xTbl[j]) {
+				int tmp = xTbl[i]; xTbl[i] = xTbl[j]; xTbl[j] = tmp;
+			}
+			if (yTbl[i] > yTbl[j]) {
+				int tmp = yTbl[i]; yTbl[i] = yTbl[j]; yTbl[j] = tmp;
+			}
+		}
+	}
+	int xCenter = xTbl[nSamples / 2], yCenter = yTbl[nSamples / 2];
 	int x = 0, y = 0;
 	if (hvFlippedFlag_) {
-		x = ySum / nSamplesPos, y = xSum / nSamplesPos;
+		x = yCenter, y = xCenter;
 	} else {
-		x = xSum / nSamplesPos, y = ySum / nSamplesPos;
+		x = xCenter, y = yCenter;
 	}
 	xPrev_ = *px = adjusterX_.Adjust(x);
 	yPrev_ = *py = adjusterY_.Adjust(y);
@@ -135,7 +145,7 @@ bool TSC2046::IsTouched()
 	SPISetFormat();
 	int z1 = ReadADC8Bit(0b011);
 	pinAssign_.CS.put(1);
-	return z1 > z1Threshold;
+	return z1 > z1Threshold_;
 }
 
 void TSC2046::SendCmd(uint8_t cmd)

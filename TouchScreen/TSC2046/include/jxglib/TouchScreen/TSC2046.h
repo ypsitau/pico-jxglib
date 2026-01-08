@@ -51,16 +51,15 @@ public:
 		}
 	};
 protected:
+	int z1Threshold_;
 	spi_inst_t* spi_;
 	PinAssign pinAssign_;
 	Adjuster adjusterX_;
 	Adjuster adjusterY_;
 	bool hvFlippedFlag_;
 	int xPrev_, yPrev_;
-private:
-	static const int z1Threshold = 3;
 public:
-	TSC2046(spi_inst_t* spi, const PinAssign& pinAssign);
+	TSC2046(spi_inst_t* spi, const PinAssign& pinAssign, int z1Threshold = 2);
 public:
 	void Initialize(bool hvFlippedFlag = false);
 	virtual bool ReadXY(int* px, int* py) override;
