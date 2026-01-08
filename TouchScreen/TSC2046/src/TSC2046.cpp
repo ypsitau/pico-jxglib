@@ -101,7 +101,7 @@ bool TSC2046::ReadXYRaw(int* px, int* py, int* pz1, int* pz2)
 
 bool TSC2046::ReadXY(int* px, int* py)
 {
-	const int nSamplesMax = 5;
+	const int nSamplesMax = 10;
 	int xTbl[nSamplesMax], yTbl[nSamplesMax];
 	int nSamples = 0;
 	for (int i = 0; i < nSamplesMax; i++) {
