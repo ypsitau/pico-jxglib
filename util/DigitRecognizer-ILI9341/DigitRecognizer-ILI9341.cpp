@@ -75,21 +75,21 @@ int main()
 			if (x - 1 >= 0) imageData[y * 28 + (x - 1)] = 255;
 			isTouched = true;
 		} else if (isTouched && Tickable::GetCurrentTime() - msecLastTouch > msecFlush) {
-			::memset(imageDataBlurred, 0, sizeof(imageDataBlurred));
-			for (int y = 1; y < 27; y++) {
-				for (int x = 1; x < 27; x++) {
-					int sum = 0;
-					for (int dy = -1; dy <= 1; dy++) {
-						for (int dx = -1; dx <= 1; dx++) {
-							sum += imageData[(y + dy) * 28 + (x + dx)];
-						}
-					}
-					imageDataBlurred[y * 28 + x] = sum / 9;
-				}
-			}
-			PrintImageData(imageDataBlurred);
+			//::memset(imageDataBlurred, 0, sizeof(imageDataBlurred));
+			//for (int y = 1; y < 27; y++) {
+			//	for (int x = 1; x < 27; x++) {
+			//		int sum = 0;
+			//		for (int dy = -1; dy <= 1; dy++) {
+			//			for (int dx = -1; dx <= 1; dx++) {
+			//				sum += imageData[(y + dy) * 28 + (x + dx)];
+			//			}
+			//		}
+			//		imageDataBlurred[y * 28 + x] = sum / 9;
+			//	}
+			//}
+			PrintImageData(imageData);
 			float confidence = 0.0f;
-			int result = digitRecognizer.Recognize(imageDataBlurred, &confidence);
+			int result = digitRecognizer.Recognize(imageData, &confidence);
 			if (result >= 0) terminal.Printf("recognized: %d (%.2f)\n", result, confidence);
 			isTouched = false;
 			display.DrawRectFill(rcCanvas, bgCanvas);

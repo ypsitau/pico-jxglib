@@ -3,7 +3,6 @@
 //==============================================================================
 #include "jxglib/UART.h"
 #include "jxglib/Common.h"
-#include "jxglib/Serial.h"
 #include "jxglib/Shell.h"
 #include <cctype>
 

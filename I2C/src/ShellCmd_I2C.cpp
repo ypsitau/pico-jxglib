@@ -3,7 +3,6 @@
 //==============================================================================
 #include "jxglib/I2C.h"
 #include "jxglib/Common.h"
-#include "jxglib/Serial.h"
 #include "jxglib/Shell.h"
 
 namespace jxglib::ShellCmd_I2C {

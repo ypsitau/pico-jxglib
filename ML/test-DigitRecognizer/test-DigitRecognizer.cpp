@@ -320,6 +320,7 @@ const uint8_t imageData_9[784] = {
 
 ML::DigitRecognizer digitRecognizer;
 
+#if 1
 ShellCmd_Named(test_digit_recognizer, "test-digit-recognizer", "test TensorFlow Lite Micro")
 {
 	const uint8_t* imageDataTbl[] = {
@@ -346,6 +347,7 @@ ShellCmd_Named(test_digit_recognizer, "test-digit-recognizer", "test TensorFlow 
 	}
 	return Result::Success;
 }
+#endif
 
 int main(void)
 {
@@ -357,4 +359,5 @@ int main(void)
 	LABOPlatform::Instance.AttachStdio().Initialize();
 	LABOPlatform::Instance.Initialize();
 	for (;;) Tickable::Tick();
+	//for (;;) ;
 }

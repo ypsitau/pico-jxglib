@@ -4,7 +4,7 @@ target_include_directories(jxglib_LABOPlatform INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/include)
 
 target_link_libraries(jxglib_LABOPlatform INTERFACE
-    jxglib_Shell jxglib_Serial
+	jxglib_Shell jxglib_Serial
 	jxglib_FAT_Flash jxglib_FAT_SDCard
 	jxglib_RTC_DS3231
 	jxglib_USBDevice_MSCDrive jxglib_USBDevice_CDCSerial jxglib_USBDevice_VideoTransmitter
@@ -32,8 +32,8 @@ add_library(jxglib_LABOPlatform_FullCmd INTERFACE)
 target_link_libraries(jxglib_LABOPlatform_FullCmd INTERFACE
 	jxglib_LABOPlatform
 	jxglib_ShellCmd_ADC
-    jxglib_ShellCmd_Font
-    jxglib_ShellCmd_FS
+	jxglib_ShellCmd_Font
+	jxglib_ShellCmd_FS
 	jxglib_ShellCmd_GPIO
 	jxglib_ShellCmd_I2C
 	jxglib_ShellCmd_LED

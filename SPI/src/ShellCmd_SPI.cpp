@@ -3,7 +3,6 @@
 //==============================================================================
 #include "hardware/clocks.h"
 #include "jxglib/SPI.h"
-#include "jxglib/Serial.h"
 #include "jxglib/Shell.h"
 
 namespace jxglib::ShellCmd_SPI {

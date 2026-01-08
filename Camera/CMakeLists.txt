@@ -16,6 +16,7 @@ target_include_directories(jxglib_ShellCmd_Camera INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/include)
 
 target_link_libraries(jxglib_ShellCmd_Camera INTERFACE
+	jxglib_VideoTransmitter
 	jxglib_Camera
 	jxglib_ImageFile
 	jxglib_ShellCmd_Basic)
