@@ -22,13 +22,12 @@ void DigitRecognizer::AddOpResolver(OpResolver& opResolver)
 
 int DigitRecognizer::Recognize(const uint8_t* imageData, float* pConfidence)
 {
-	Interpreter& interpreter = GetInterpreter();
-	TfLiteTensor* input = interpreter.input(0);
-	TfLiteTensor* output = interpreter.output(0);
+	TfLiteTensor* input = GetInput(0);
+	TfLiteTensor* output = GetOutput(0);
 	for(int i = 0; i < 784; i++) {
 		input->data.int8[i] = static_cast<int8_t>(static_cast<int>(imageData[i]) - 128);
 	}
-	if (interpreter.Invoke() != kTfLiteOk) return -1;
+	if (!Invoke()) return -1;
 	int8_t maxValue = output->data.int8[0];
 	int maxIndex = 0;
 	for (int i = 1; i < 10; i++) {

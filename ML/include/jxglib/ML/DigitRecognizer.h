@@ -7,7 +7,7 @@
 
 namespace jxglib::ML {
 
-class DigitRecognizer : public TFLiteRunner<1024 * 16, 8> {
+class DigitRecognizer : public TFLiteRunner<9000, 8> {
 public:
 	DigitRecognizer();
 	~DigitRecognizer() {}

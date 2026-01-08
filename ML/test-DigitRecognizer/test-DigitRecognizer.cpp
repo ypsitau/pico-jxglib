@@ -356,8 +356,8 @@ int main(void)
 		::printf("DigitRecognizer Initialize failed!\n");
 		return 1;
 	}
+	::printf("%d/%d bytes used\n", digitRecognizer.GetArenaUsedBytes(), digitRecognizer.ArenaBytes);
 	LABOPlatform::Instance.AttachStdio().Initialize();
 	LABOPlatform::Instance.Initialize();
 	for (;;) Tickable::Tick();
-	//for (;;) ;
 }
