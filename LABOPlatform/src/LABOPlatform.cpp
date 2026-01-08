@@ -161,6 +161,11 @@ int _read(int fd, char* buffer, int length)
 int _write(int fd, char* buffer, int length)
 {
 	//::printf("_write(%d, %p, %d)\n", fd, buffer, length);
+	if (fd == STDOUT_FILENO || fd == STDERR_FILENO) {
+		Printable& printable = LABOPlatform::Instance.GetPrintable();
+		for (const char* p = buffer; length > 0; --length, ++p) printable.PutChar(*p);
+		return length;
+	}
 	int idx = fd - 3;
 	if (idx < 0 || idx >= count_of(pFileTbl) || !pFileTbl[idx]) return -1;
 	FS::File* pFile = pFileTbl[idx];

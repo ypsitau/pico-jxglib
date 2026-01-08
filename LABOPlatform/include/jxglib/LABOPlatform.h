@@ -58,6 +58,7 @@ public:
 	FAT::Flash& GetFAT() { return fat_; }
 	USBDevice::MSCDrive& GetMSCDrive() { return mscDrive_; }
 	Serial::Terminal& GetTerminal() { return terminal_; }
+	Printable& GetPrintable() { return terminal_.GetPrintable(); }
 	TelePlot& GetTelePlot() { return telePlot_; }
 	LogicAnalyzer& GetLogicAnalyzer() { return logicAnalyzer_; }
 	Device::WS2812& GetWS2812Device() { return ws2812Device_; }
