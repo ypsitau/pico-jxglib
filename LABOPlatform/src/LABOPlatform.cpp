@@ -163,7 +163,8 @@ int _write(int fd, char* buffer, int length)
 	//::printf("_write(%d, %p, %d)\n", fd, buffer, length);
 	if (fd == STDOUT_FILENO || fd == STDERR_FILENO) {
 		Printable& printable = LABOPlatform::Instance.GetPrintable();
-		for (const char* p = buffer; length > 0; --length, ++p) printable.PutChar(*p);
+		int i = 0;
+		for (const char* p = buffer; i < length; ++i, ++p) printable.PutChar(*p);
 		return length;
 	}
 	int idx = fd - 3;
