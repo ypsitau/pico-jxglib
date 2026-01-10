@@ -47,7 +47,7 @@ pico_enable_stdio_usb(DigitRecognizer-ILI9341 0)
 # Add the standard library to the build
 target_link_libraries(DigitRecognizer-ILI9341
 	pico_stdlib
-	jxglib_LABOPlatform_FullCmd
+	#jxglib_LABOPlatform_FullCmd
 	jxglib_Display_ILI9341
 	jxglib_ML_DigitRecognizer)
 
@@ -59,4 +59,4 @@ target_include_directories(DigitRecognizer-ILI9341 PRIVATE
 pico_add_extra_outputs(DigitRecognizer-ILI9341)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
-jxglib_configure_LABOPlatform(DigitRecognizer-ILI9341)
+#jxglib_configure_LABOPlatform(DigitRecognizer-ILI9341)

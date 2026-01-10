@@ -7,6 +7,52 @@
 
 using namespace jxglib;
 
+class DigitRecognizer : public ML::TFLiteRunner<9000, 8> {
+public:
+	DigitRecognizer();
+	~DigitRecognizer() {}
+public:
+	int Recognize(const uint8_t* imageData, float* pConfidence = nullptr);
+public:
+	// virtual function of TFLiteRunner
+	virtual void AddOpResolver(OpResolver& opResolver) override;
+};
+
+EmbedTFLiteModel("jxglib/ML/DigitRecognizer.tflite", modelData, modelDataSize);
+
+DigitRecognizer::DigitRecognizer() : TFLiteRunner(modelData)
+{
+}
+
+void DigitRecognizer::AddOpResolver(OpResolver& opResolver)
+{
+	opResolver.AddConv2D();
+	opResolver.AddMaxPool2D();
+	opResolver.AddReshape();
+	opResolver.AddFullyConnected();
+	opResolver.AddSoftmax();
+}
+
+int DigitRecognizer::Recognize(const uint8_t* imageData, float* pConfidence)
+{
+	TfLiteTensor* input = GetInput(0);
+	TfLiteTensor* output = GetOutput(0);
+	for(int i = 0; i < input->dims->data[0]; i++) {
+		input->data.int8[i] = static_cast<int8_t>(static_cast<int>(imageData[i]) - 128);
+	}
+	if (!Invoke()) return -1;
+	int8_t maxValue = output->data.int8[0];
+	int maxIndex = 0;
+	for (int i = 1; i < output->dims->data[0]; i++) {
+		if (output->data.int8[i] > maxValue) {
+			maxValue = output->data.int8[i];
+			maxIndex = i;
+		}
+	}
+	if (pConfidence) *pConfidence = static_cast<float>(maxValue + 128) / 255.0f;
+	return maxIndex;
+}
+
 #if 1
 const uint8_t imageData_0[784] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 

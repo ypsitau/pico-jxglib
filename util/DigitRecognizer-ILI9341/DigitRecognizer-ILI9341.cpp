@@ -3,7 +3,7 @@
 #include "jxglib/Display/ILI9341.h"
 #include "jxglib/Font/shinonome14.h"
 #include "jxglib/ML/DigitRecognizer.h"
-#include "jxglib/LABOPlatform.h"
+//#include "jxglib/LABOPlatform.h"
 
 using namespace jxglib;
 
@@ -19,7 +19,7 @@ void PrintImageData(const uint8_t* imageData);
 int main()
 {
 	::stdio_init_all();
-	LABOPlatform::Instance.Initialize();
+	//LABOPlatform::Instance.Initialize();
 	//LABOPlatform::Instance.AttachStdio().Initialize();
 	digitRecognizer.Initialize();
 	::spi_init(spi0, 2 * 1000 * 1000);

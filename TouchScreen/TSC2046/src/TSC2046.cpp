@@ -127,7 +127,9 @@ bool TSC2046::ReadXY(int* px, int* py)
 			}
 		}
 	}
-	int xCenter = xTbl[nSamples / 2], yCenter = yTbl[nSamples / 2];
+	int iSampleCenter = nSamples / 2;
+	int xCenter = (xTbl[iSampleCenter] + xTbl[iSampleCenter - 1] + xTbl[iSampleCenter + 1]) / 3;
+	int yCenter = (yTbl[iSampleCenter] + yTbl[iSampleCenter - 1] + yTbl[iSampleCenter + 1]) / 3;
 	int x = 0, y = 0;
 	if (hvFlippedFlag_) {
 		x = yCenter, y = xCenter;
