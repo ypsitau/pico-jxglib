@@ -3,55 +3,9 @@
 #include "pico/stdlib.h"
 #include "pico/multicore.h"
 #include "jxglib/LABOPlatform.h"
-#include "jxglib/ML/DigitRecognizer.h"
+#include "jxglib/ML/TfLiteRunner.h"
 
 using namespace jxglib;
-
-class DigitRecognizer : public ML::TFLiteRunner<9000, 8> {
-public:
-	DigitRecognizer();
-	~DigitRecognizer() {}
-public:
-	int Recognize(const uint8_t* imageData, float* pConfidence = nullptr);
-public:
-	// virtual function of TFLiteRunner
-	virtual void AddOpResolver(OpResolver& opResolver) override;
-};
-
-EmbedTFLiteModel("jxglib/ML/DigitRecognizer.tflite", modelData, modelDataSize);
-
-DigitRecognizer::DigitRecognizer() : TFLiteRunner(modelData)
-{
-}
-
-void DigitRecognizer::AddOpResolver(OpResolver& opResolver)
-{
-	opResolver.AddConv2D();
-	opResolver.AddMaxPool2D();
-	opResolver.AddReshape();
-	opResolver.AddFullyConnected();
-	opResolver.AddSoftmax();
-}
-
-int DigitRecognizer::Recognize(const uint8_t* imageData, float* pConfidence)
-{
-	TfLiteTensor* input = GetInput(0);
-	TfLiteTensor* output = GetOutput(0);
-	for(int i = 0; i < input->dims->data[0]; i++) {
-		input->data.int8[i] = static_cast<int8_t>(static_cast<int>(imageData[i]) - 128);
-	}
-	if (!Invoke()) return -1;
-	int8_t maxValue = output->data.int8[0];
-	int maxIndex = 0;
-	for (int i = 1; i < output->dims->data[0]; i++) {
-		if (output->data.int8[i] > maxValue) {
-			maxValue = output->data.int8[i];
-			maxIndex = i;
-		}
-	}
-	if (pConfidence) *pConfidence = static_cast<float>(maxValue + 128) / 255.0f;
-	return maxIndex;
-}
 
 #if 1
 const uint8_t imageData_0[784] = {
@@ -364,7 +318,8 @@ const uint8_t imageData_9[784] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 #endif
 
-ML::DigitRecognizer digitRecognizer;
+EmbedTfLiteModel("jxglib/ML/DigitRecognizer.tflite", modelData, modelDataSize);
+ML::TfLiteModelRunner<9000, 8> modelRunner(modelData);
 
 #if 1
 ShellCmd_Named(test_digit_recognizer, "test-digit-recognizer", "test TensorFlow Lite Micro")
@@ -384,7 +339,7 @@ ShellCmd_Named(test_digit_recognizer, "test-digit-recognizer", "test TensorFlow 
 	for (int j = 0; j < count_of(imageDataTbl); j++) {
 		const uint8_t* imageData = imageDataTbl[j];
 		float confidence;
-		int result = digitRecognizer.Recognize(imageData, &confidence);
+		int result = modelRunner.Recognize_GrayImage(imageData, &confidence);
 		if (result < 0) {
 			printf("Recognize failed!\n");
 			return Result::Error;
@@ -398,11 +353,15 @@ ShellCmd_Named(test_digit_recognizer, "test-digit-recognizer", "test TensorFlow 
 int main(void)
 {
 	::stdio_init_all();
-	if (!digitRecognizer.Initialize()) {
-		::printf("DigitRecognizer Initialize failed!\n");
-		return 1;
-	}
-	::printf("%d/%d bytes used\n", digitRecognizer.GetArenaUsedBytes(), digitRecognizer.ArenaBytes);
+	modelRunner.Initialize();
+	auto& opResolver = modelRunner.GetOpResolver();
+	opResolver.AddConv2D();
+	opResolver.AddMaxPool2D();
+	opResolver.AddReshape();
+	opResolver.AddFullyConnected();
+	opResolver.AddSoftmax();
+	if (!modelRunner.Allocate()) return 1;
+	::printf("%d/%d bytes used\n", modelRunner.GetArenaUsedBytes(), modelRunner.ArenaBytes);
 	LABOPlatform::Instance.AttachStdio().Initialize();
 	LABOPlatform::Instance.Initialize();
 	for (;;) Tickable::Tick();

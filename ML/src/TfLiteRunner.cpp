@@ -1,7 +1,7 @@
 //=============================================================================
-// TFLiteRunner.cpp
+// TfLiteRunner.cpp
 //=============================================================================
-#include "jxglib/ML/TFLiteRunner.h"
+#include "jxglib/ML/TfLiteRunner.h"
 
 namespace jxglib::ML {
 
