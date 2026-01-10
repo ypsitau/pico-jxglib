@@ -3,7 +3,7 @@
 #include "pico/stdlib.h"
 #include "pico/multicore.h"
 #include "jxglib/LABOPlatform.h"
-#include "jxglib/ML/TfLiteRunner.h"
+#include "jxglib/ML/TfLiteModelRunner.h"
 
 using namespace jxglib;
 

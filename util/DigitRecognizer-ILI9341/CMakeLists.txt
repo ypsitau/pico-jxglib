@@ -49,7 +49,7 @@ target_link_libraries(DigitRecognizer-ILI9341
 	pico_stdlib
 	#jxglib_LABOPlatform_FullCmd
 	jxglib_Display_ILI9341
-	jxglib_ML_DigitRecognizer)
+	jxglib_ML)
 
 # Add the standard include files to the build
 target_include_directories(DigitRecognizer-ILI9341 PRIVATE

@@ -2,17 +2,18 @@
 #include "pico/stdlib.h"
 #include "jxglib/Display/ILI9341.h"
 #include "jxglib/Font/shinonome14.h"
-#include "jxglib/ML/DigitRecognizer.h"
+#include "jxglib/ML/TfLiteModelRunner.h"
 //#include "jxglib/LABOPlatform.h"
 
 using namespace jxglib;
 
 const int wdImage = 28, htImage = 28;
 
-ML::DigitRecognizer digitRecognizer;
+//EmbedTfLiteModel("jxglib/ML/Recognizer-MNIST.tflite", modelData, modelDataSize);
+EmbedTfLiteModel("jxglib/ML/Recognizer-EMNIST.tflite", modelData, modelDataSize);
+ML::TfLiteModelRunner<9000, 8> modelRunner(modelData);
 
 uint8_t imageData[wdImage * htImage];
-uint8_t imageDataBlurred[wdImage * htImage];
 
 void PrintImageData(const uint8_t* imageData);
 
@@ -21,7 +22,14 @@ int main()
 	::stdio_init_all();
 	//LABOPlatform::Instance.Initialize();
 	//LABOPlatform::Instance.AttachStdio().Initialize();
-	digitRecognizer.Initialize();
+	modelRunner.Initialize();
+	auto& opResolver = modelRunner.GetOpResolver();
+	opResolver.AddConv2D();
+	opResolver.AddMaxPool2D();
+	opResolver.AddReshape();
+	opResolver.AddFullyConnected();
+	opResolver.AddSoftmax();
+	if (!modelRunner.Allocate()) return 1;
 	::spi_init(spi0, 2 * 1000 * 1000);
 	::spi_init(spi1, 125'000'000);
 	GPIO2.set_function_SPI0_SCK();
@@ -57,8 +65,10 @@ int main()
 		if (touchScreen.ReadPoint(&pt) && rcCanvas.Contains(pt)) {
 			display.DrawRectFill(pt.x - szPixel.width / 2, pt.y - szPixel.height / 2, szPixel.width, szPixel.height);
 			msecLastTouch = Tickable::GetCurrentTime();
-			int x = (pt.x - (rcCanvas.x)) * wdImage / rcCanvas.width;
-			int y = (pt.y - (rcCanvas.y)) * htImage / rcCanvas.height;
+			//int x = (pt.x - (rcCanvas.x)) * wdImage / rcCanvas.width;
+			//int y = (pt.y - (rcCanvas.y)) * htImage / rcCanvas.height;
+			int y = (pt.x - (rcCanvas.x)) * wdImage / rcCanvas.width;
+			int x = (pt.y - (rcCanvas.y)) * htImage / rcCanvas.height;
 			imageData[y * wdImage + x] = 255;
 			if (y + 1 < htImage) imageData[(y + 1) * wdImage + x] = 255;
 			if (y - 1 >= 0) imageData[(y - 1) * wdImage + x] = 255;
@@ -68,8 +78,15 @@ int main()
 		} else if (isTouched && Tickable::GetCurrentTime() - msecLastTouch > msecFlush) {
 			PrintImageData(imageData);
 			float confidence = 0.0f;
-			int result = digitRecognizer.Recognize(imageData, &confidence);
-			if (result >= 0) terminal.Printf("recognized: %d (%.2f)\n", result, confidence);
+			int result = modelRunner.Recognize_GrayImage(imageData, &confidence);
+			if (result < 0) {
+				// nothing to do
+			} else if (confidence < 0.5f) {
+				terminal.Printf("unrecognized (%.2f)\n", confidence);
+			} else {
+				//terminal.Printf("recognized: %d (%.2f)\n", result, confidence);
+				terminal.Printf("recognized: %c (%.2f)\n", 'A' + result, confidence);
+			}
 			isTouched = false;
 			display.DrawRectFill(rcCanvas, bgCanvas);
 			::memset(imageData, 0, sizeof(imageData));

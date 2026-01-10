@@ -55,7 +55,7 @@ target_include_directories(test-DigitRecognizer PRIVATE
 
 pico_add_extra_outputs(test-DigitRecognizer)
 
-target_link_libraries(test-DigitRecognizer jxglib_ML_DigitRecognizer)
+target_link_libraries(test-DigitRecognizer jxglib_ML)
 target_link_libraries(test-DigitRecognizer jxglib_LABOPlatform_FullCmd)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
 jxglib_configure_LABOPlatform(test-DigitRecognizer)

@@ -9,18 +9,7 @@ target_link_libraries(jxglib_ML INTERFACE
 
 target_sources(jxglib_ML INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/ML.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/TFLiteRunner.cpp)
-#------------------------------------------------------------------------------
-add_library(jxglib_ML_DigitRecognizer STATIC)
-
-target_link_libraries(jxglib_ML_DigitRecognizer PUBLIC
-	jxglib_ML)
-
-target_sources(jxglib_ML_DigitRecognizer PRIVATE
-	${CMAKE_CURRENT_LIST_DIR}/src/DigitRecognizer.cpp)
-
-set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/src/DigitRecognizer.cpp PROPERTIES
-  OBJECT_DEPENDS ${CMAKE_CURRENT_LIST_DIR}/include/jxglib/ML/DigitRecognizer.tflite)
+	${CMAKE_CURRENT_LIST_DIR}/src/TFLiteModelRunner.cpp)
 #------------------------------------------------------------------------------
 add_library(pico-tflmicro INTERFACE)
 

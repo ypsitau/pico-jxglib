@@ -1,8 +1,8 @@
 //=============================================================================
 // TfLiteModelRunner.h
 //=============================================================================
-#ifndef JXGLIB_ML_TFLITERUNNER_H
-#define JXGLIB_ML_TFLITERUNNER_H
+#ifndef JXGLIB_ML_TFLITEMODELRUNNER_H
+#define JXGLIB_ML_TFLITEMODELRUNNER_H
 #include <stdint.h>
 #include "pico/stdlib.h"
 #include "tensorflow/lite/micro/micro_interpreter.h"
