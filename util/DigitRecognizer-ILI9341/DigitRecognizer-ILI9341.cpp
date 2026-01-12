@@ -9,9 +9,10 @@ using namespace jxglib;
 
 const int wdImage = 28, htImage = 28;
 
-//EmbedTfLiteModel("jxglib/ML/Recognizer-MNIST.tflite", modelData, modelDataSize);
-EmbedTfLiteModel("jxglib/ML/Recognizer-EMNIST.tflite", modelData, modelDataSize);
-ML::TfLiteModelRunner<9000, 8> modelRunner(modelData);
+EmbedTfLiteModel("jxglib/ML/Recognizer-MNIST.tflite", modelData, modelDataSize);
+//EmbedTfLiteModel("jxglib/ML/Recognizer-EMNIST.tflite", modelData, modelDataSize);
+//ML::TfLiteModelRunner<9000, 8> modelRunner(modelData);
+ML::TfLiteModelRunner<16000, 8> modelRunner(modelData);
 
 uint8_t imageData[wdImage * htImage];
 
@@ -65,10 +66,10 @@ int main()
 		if (touchScreen.ReadPoint(&pt) && rcCanvas.Contains(pt)) {
 			display.DrawRectFill(pt.x - szPixel.width / 2, pt.y - szPixel.height / 2, szPixel.width, szPixel.height);
 			msecLastTouch = Tickable::GetCurrentTime();
-			//int x = (pt.x - (rcCanvas.x)) * wdImage / rcCanvas.width;
-			//int y = (pt.y - (rcCanvas.y)) * htImage / rcCanvas.height;
-			int y = (pt.x - (rcCanvas.x)) * wdImage / rcCanvas.width;
-			int x = (pt.y - (rcCanvas.y)) * htImage / rcCanvas.height;
+			int x = (pt.x - (rcCanvas.x)) * wdImage / rcCanvas.width;
+			int y = (pt.y - (rcCanvas.y)) * htImage / rcCanvas.height;
+			//int y = (pt.x - (rcCanvas.x)) * wdImage / rcCanvas.width;
+			//int x = (pt.y - (rcCanvas.y)) * htImage / rcCanvas.height;
 			imageData[y * wdImage + x] = 255;
 			if (y + 1 < htImage) imageData[(y + 1) * wdImage + x] = 255;
 			if (y - 1 >= 0) imageData[(y - 1) * wdImage + x] = 255;
@@ -81,11 +82,11 @@ int main()
 			int result = modelRunner.Recognize_GrayImage(imageData, &confidence);
 			if (result < 0) {
 				// nothing to do
-			} else if (confidence < 0.5f) {
+			} else if (confidence < 0.3f) {
 				terminal.Printf("unrecognized (%.2f)\n", confidence);
 			} else {
-				//terminal.Printf("recognized: %d (%.2f)\n", result, confidence);
-				terminal.Printf("recognized: %c (%.2f)\n", 'A' + result, confidence);
+				terminal.Printf("recognized: %c (%.2f)\n", '0' + result, confidence);
+				//terminal.Printf("recognized: %c (%.2f)\n", 'A' + result, confidence);
 			}
 			isTouched = false;
 			display.DrawRectFill(rcCanvas, bgCanvas);
