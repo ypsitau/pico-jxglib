@@ -16,7 +16,7 @@ else()
     set(USERHOME $ENV{HOME})
 endif()
 set(sdkVersion 2.2.0)
-set(toolchainVersion 14_2_Rel1)
+set(toolchainVersion 13_3_Rel1)
 set(picotoolVersion 2.2.0)
 set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
 if (EXISTS ${picoVscode})
@@ -28,34 +28,35 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(test-DigitRecognizer C CXX ASM)
+project(Recognizer-ILI9341 C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(test-DigitRecognizer test-DigitRecognizer.cpp)
+add_executable(Recognizer-ILI9341 Recognizer-ILI9341.cpp )
 
-pico_set_program_name(test-DigitRecognizer "test-DigitRecognizer")
-pico_set_program_version(test-DigitRecognizer "0.1")
+pico_set_program_name(Recognizer-ILI9341 "Recognizer-ILI9341")
+pico_set_program_version(Recognizer-ILI9341 "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(test-DigitRecognizer 1)
-pico_enable_stdio_usb(test-DigitRecognizer 0)
+pico_enable_stdio_uart(Recognizer-ILI9341 1)
+pico_enable_stdio_usb(Recognizer-ILI9341 0)
 
 # Add the standard library to the build
-target_link_libraries(test-DigitRecognizer
-        pico_stdlib)
+target_link_libraries(Recognizer-ILI9341
+	pico_stdlib
+	#jxglib_LABOPlatform_FullCmd
+	jxglib_Display_ILI9341
+	jxglib_ML)
 
 # Add the standard include files to the build
-target_include_directories(test-DigitRecognizer PRIVATE
-        ${CMAKE_CURRENT_LIST_DIR}
+target_include_directories(Recognizer-ILI9341 PRIVATE
+	${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(test-DigitRecognizer)
+pico_add_extra_outputs(Recognizer-ILI9341)
 
-target_link_libraries(test-DigitRecognizer jxglib_ML)
-target_link_libraries(test-DigitRecognizer jxglib_LABOPlatform_FullCmd)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
-jxglib_configure_LABOPlatform(test-DigitRecognizer)
+#jxglib_configure_LABOPlatform(Recognizer-ILI9341)

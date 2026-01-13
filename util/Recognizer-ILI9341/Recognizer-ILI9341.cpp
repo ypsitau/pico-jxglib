@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include "jxglib/Image.h"
 #include "jxglib/Display/ILI9341.h"
 #include "jxglib/Font/shinonome14.h"
 #include "jxglib/ML/TfLiteModelRunner.h"
@@ -7,30 +8,30 @@
 
 using namespace jxglib;
 
-const int wdImage = 28, htImage = 28;
-
-EmbedTfLiteModel("jxglib/ML/Recognizer-MNIST.tflite", modelData, modelDataSize);
-//EmbedTfLiteModel("jxglib/ML/Recognizer-EMNIST.tflite", modelData, modelDataSize);
-//ML::TfLiteModelRunner<9000, 8> modelRunner(modelData);
+//EmbedTfLiteModel("jxglib/ML/Model/Recognizer-MNIST.tflite", modelData, modelDataSize);
+EmbedTfLiteModel("jxglib/ML/Model/Recognizer-EMNIST.tflite", modelData, modelDataSize);
 ML::TfLiteModelRunner<16000, 8> modelRunner(modelData);
-
-uint8_t imageData[wdImage * htImage];
-
-void PrintImageData(const uint8_t* imageData);
 
 int main()
 {
+	Image imageGray;
+	imageGray.Allocate(Image::Format::Gray, 28, 28);
 	::stdio_init_all();
 	//LABOPlatform::Instance.Initialize();
 	//LABOPlatform::Instance.AttachStdio().Initialize();
-	modelRunner.Initialize();
-	auto& opResolver = modelRunner.GetOpResolver();
-	opResolver.AddConv2D();
-	opResolver.AddMaxPool2D();
-	opResolver.AddReshape();
-	opResolver.AddFullyConnected();
-	opResolver.AddSoftmax();
-	if (!modelRunner.Allocate()) return 1;
+	do {
+		auto& opResolver = modelRunner.Initialize();
+		opResolver.AddConv2D();
+		opResolver.AddMaxPool2D();
+		opResolver.AddReshape();
+		opResolver.AddFullyConnected();
+		opResolver.AddSoftmax();
+	} while (0);
+	if (modelRunner.ActivateInterpreter() != kTfLiteOk) return 1;
+	//do {
+	//	auto& input = modelRunner.GetInput(0);
+	//	imageGray.SetPointer(Image::Format::Gray, input.dims->data[2], input.dims->data[1], input.data.uint8);
+	//} while (0);
 	::spi_init(spi0, 2 * 1000 * 1000);
 	::spi_init(spi1, 125'000'000);
 	GPIO2.set_function_SPI0_SCK();
@@ -60,53 +61,36 @@ int main()
 	uint32_t msecLastTouch = Tickable::GetCurrentTime();
 	display.DrawRectFill(rcCanvas, bgCanvas);
 	bool isTouched = false;
-	::memset(imageData, 0, sizeof(imageData));
+	imageGray.FillZero();
 	for (;;) {
 		Point pt;
 		if (touchScreen.ReadPoint(&pt) && rcCanvas.Contains(pt)) {
 			display.DrawRectFill(pt.x - szPixel.width / 2, pt.y - szPixel.height / 2, szPixel.width, szPixel.height);
 			msecLastTouch = Tickable::GetCurrentTime();
-			int x = (pt.x - (rcCanvas.x)) * wdImage / rcCanvas.width;
-			int y = (pt.y - (rcCanvas.y)) * htImage / rcCanvas.height;
-			//int y = (pt.x - (rcCanvas.x)) * wdImage / rcCanvas.width;
-			//int x = (pt.y - (rcCanvas.y)) * htImage / rcCanvas.height;
-			imageData[y * wdImage + x] = 255;
-			if (y + 1 < htImage) imageData[(y + 1) * wdImage + x] = 255;
-			if (y - 1 >= 0) imageData[(y - 1) * wdImage + x] = 255;
-			if (x + 1 < wdImage) imageData[y * wdImage + (x + 1)] = 255;
-			if (x - 1 >= 0) imageData[y * wdImage + (x - 1)] = 255;
+			int x = (pt.x - (rcCanvas.x)) * imageGray.GetWidth() / rcCanvas.width;
+			int y = (pt.y - (rcCanvas.y)) * imageGray.GetHeight() / rcCanvas.height;
+			imageGray.Put(x, y, 255);
+			if (y + 1 < imageGray.GetHeight()) imageGray.Put(x, y + 1, 255);
+			if (y - 1 >= 0) imageGray.Put(x, y - 1, 255);
+			if (x + 1 < imageGray.GetWidth()) imageGray.Put(x + 1, y, 255);
+			if (x - 1 >= 0) imageGray.Put(x - 1, y, 255);
 			isTouched = true;
 		} else if (isTouched && Tickable::GetCurrentTime() - msecLastTouch > msecFlush) {
-			PrintImageData(imageData);
+			imageGray.PrintAscii();
 			float confidence = 0.0f;
-			int result = modelRunner.Recognize_GrayImage(imageData, &confidence);
+			int result = modelRunner.Recognize_GrayImage(imageGray.GetPointer(), &confidence);
 			if (result < 0) {
 				// nothing to do
 			} else if (confidence < 0.3f) {
 				terminal.Printf("unrecognized (%.2f)\n", confidence);
 			} else {
-				terminal.Printf("recognized: %c (%.2f)\n", '0' + result, confidence);
-				//terminal.Printf("recognized: %c (%.2f)\n", 'A' + result, confidence);
+				//terminal.Printf("recognized: %c (%.2f)\n", '0' + result, confidence);
+				terminal.Printf("recognized: %c (%.2f)\n", 'A' + result, confidence);
 			}
 			isTouched = false;
 			display.DrawRectFill(rcCanvas, bgCanvas);
-			::memset(imageData, 0, sizeof(imageData));
+			imageGray.FillZero();
 		}
 		Tickable::Tick();
 	}
-}
-
-void PrintImageData(const uint8_t* imageData)
-{
-	static const char patTbl[] = { ' ', '.', ':', '+', '#' };
-	int iCol = 0;
-	for (int i = 0; i < wdImage * htImage; i++) {
-		::printf("%c", patTbl[imageData[i] * 5 / 256]);
-		iCol++;
-		if (iCol >= wdImage) {
-			::printf("\n");
-			iCol = 0;
-		}
-	}
-	::printf("\n");
 }

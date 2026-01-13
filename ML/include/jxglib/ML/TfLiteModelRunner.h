@@ -38,12 +38,12 @@ namespace jxglib::ML {
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
-size_t CountElements(const TfLiteTensor* tensor);
+size_t CountElements(const TfLiteTensor& tensor);
 
-template<typename T> static size_t ArgMax(const TfLiteTensor* tensor, T* pValueMax = nullptr) { return 0; }
+template<typename T> static size_t ArgMax(const TfLiteTensor& tensor, T* pValueMax = nullptr) { return 0; }
 
-template<> size_t ArgMax<int8_t>(const TfLiteTensor* tensor, int8_t* pValueMax) {
-    return ArgMax<int8_t>(tensor->data.int8, CountElements(tensor), pValueMax);
+template<> size_t ArgMax<int8_t>(const TfLiteTensor& tensor, int8_t* pValueMax) {
+    return ArgMax<int8_t>(tensor.data.int8, CountElements(tensor), pValueMax);
 }
 
 //-----------------------------------------------------------------------------
@@ -65,32 +65,33 @@ public:
 	TfLiteModelRunner(const uint8_t* modelData) : modelData_{modelData} {};
 	~TfLiteModelRunner() {}
 public:
-	void Initialize() {
+	OpResolver& Initialize() {
 		tflite::InitializeTarget();
 		opResolver_.reset(new OpResolver());
+		return *opResolver_;
 	}
-	bool Allocate() {
+	TfLiteStatus ActivateInterpreter() {
 		const tflite::Model* model = tflite::GetModel(modelData_);
-		if (model->version() != TFLITE_SCHEMA_VERSION) return false;
+		if (model->version() != TFLITE_SCHEMA_VERSION) return kTfLiteError;
 		interpreter_.reset(new Interpreter(model, *opResolver_, arena_, ArenaBytes));
-		return interpreter_->AllocateTensors() == kTfLiteOk;
+		return interpreter_->AllocateTensors();
 	}
 public:
 	size_t GetArenaUsedBytes() const { return interpreter_->arena_used_bytes(); }
 	OpResolver& GetOpResolver() { return *opResolver_; }
 	Interpreter& GetInterpreter() { return *interpreter_; }
-	TfLiteTensor* GetInput(size_t index) { return interpreter_->input(index); }
-	TfLiteTensor* GetOutput(size_t index) { return interpreter_->output(index); }
-	bool Invoke() { return interpreter_->Invoke() == kTfLiteOk; }
+	TfLiteTensor& GetInput(size_t index) { return *interpreter_->input(index); }
+	TfLiteTensor& GetOutput(size_t index) { return *interpreter_->output(index); }
+	TfLiteStatus Invoke() { return interpreter_->Invoke(); }
 public:
 	int Recognize_GrayImage(const uint8_t* imageData, float* pConfidence = nullptr) {
-		TfLiteTensor* input = GetInput(0);
-		TfLiteTensor* output = GetOutput(0);
+		TfLiteTensor& input = GetInput(0);
+		TfLiteTensor& output = GetOutput(0);
 		int nElements = CountElements(input);
 		for (int i = 0; i < nElements; i++) {
-			input->data.int8[i] = static_cast<int8_t>(static_cast<int>(imageData[i]) - 128);
+			input.data.int8[i] = static_cast<int8_t>(static_cast<int>(imageData[i]) - 128);
 		}
-		if (!Invoke()) return -1;
+		if (Invoke() != kTfLiteOk) return -1;
 		int8_t valueMax;
 		size_t indexMax = ArgMax<int8_t>(output, &valueMax);
 		if (pConfidence) *pConfidence = static_cast<float>(valueMax + 128) / 255.0f;

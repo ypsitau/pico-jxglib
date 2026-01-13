@@ -397,6 +397,15 @@ public:
 public:
 	bool IsValid() const { return !pFormat_->IsNone(); }
 	void SetMemory(const Format& format, int width, int height, Memory* pMemory);
+	void SetMemory(const Format& format, const Size& size, Memory* pMemory) {
+		SetMemory(format, size.width, size.height, pMemory);
+	}
+	void SetPointer(const Format& format, int width, int height, void* data) {
+		SetMemory(format, width, height, new Memory(data));
+	}
+	void SetPointer(const Format& format, const Size& size, void* data) {
+		SetPointer(format, size.width, size.height, data);
+	}
 	bool Allocate(const Format& format, int width, int height);
 	bool Allocate(const Format& format, const Size& size) { return Allocate(format, size.width, size.height); }
 	void Free();
@@ -422,8 +431,64 @@ public:
 	const uint8_t* GetPointerSE(int xOffset, int yOffset) const { return GetPointer(GetWidth() - 1 - xOffset, GetHeight() - 1 - yOffset); }
 	bool IsWritable() const { return pMemory_? pMemory_->IsWritable() : false; }
 public:
+	Image& Put(int x, int y, uint8_t value) {
+		auto p = GetPointer(x, y); p[0] = value; return *this;
+	}
+	Image& Put(int x, int y, uint8_t value1, uint8_t value2) {
+		auto p = GetPointer(x, y); p[0] = value1; p[1] = value2; return *this;
+	}
+	Image& Put(int x, int y, uint8_t value1, uint8_t value2, uint8_t value3) {
+		auto p = GetPointer(x, y); p[0] = value1; p[1] = value2; p[2] = value3; return *this;
+	}
+	Image& Put(int x, int y, uint8_t value1, uint8_t value2, uint8_t value3, uint8_t value4) {
+		auto p = GetPointer(x, y); p[0] = value1; p[1] = value2; p[2] = value3; p[3] = value4; return *this;
+	}
+	Image& Put_uint16(int x, int y, uint16_t value) {
+		auto p = GetPointer(x, y); *reinterpret_cast<uint16_t*>(p) = value; return *this;
+	}
+public:
+	Image& Get(int x, int y, uint8_t* pValue) {
+		auto p = GetPointer(x, y); *pValue = p[0]; return *this;
+	}
+	Image& Get(int x, int y, uint8_t* pValue1, uint8_t* pValue2) {
+		auto p = GetPointer(x, y); *pValue1 = p[0]; *pValue2 = p[1]; return *this;
+	}
+	Image& Get(int x, int y, uint8_t* pValue1, uint8_t* pValue2, uint8_t* pValue3) {
+		auto p = GetPointer(x, y); *pValue1 = p[0]; *pValue2 = p[1]; *pValue3 = p[2]; return *this;
+	}
+	Image& Get(int x, int y, uint8_t* pValue1, uint8_t* pValue2, uint8_t* pValue3, uint8_t* pValue4) {
+		auto p = GetPointer(x, y); *pValue1 = p[0]; *pValue2 = p[1]; *pValue3 = p[2]; *pValue4 = p[3]; return *this;
+	}
+	Image& Get(int x, int y, uint16_t* pValue) {
+		auto p = GetPointer(x, y); *pValue = *reinterpret_cast<uint16_t*>(p); return *this;
+	}
+	Image& Get_uint16(int x, int y, uint16_t* pValue) {
+		auto p = GetPointer(x, y); *pValue = *reinterpret_cast<uint16_t*>(p); return *this;
+	}
+public:
+	const Image& Get(int x, int y, uint8_t* pValue) const {
+		auto p = GetPointer(x, y); *pValue = p[0]; return *this;
+	}
+	const Image& Get(int x, int y, uint8_t* pValue1, uint8_t* pValue2) const {
+		auto p = GetPointer(x, y); *pValue1 = p[0]; *pValue2 = p[1]; return *this;
+	}
+	const Image& Get(int x, int y, uint8_t* pValue1, uint8_t* pValue2, uint8_t* pValue3) const {
+		auto p = GetPointer(x, y); *pValue1 = p[0]; *pValue2 = p[1]; *pValue3 = p[2]; return *this;
+	}
+	const Image& Get(int x, int y, uint8_t* pValue1, uint8_t* pValue2, uint8_t* pValue3, uint8_t* pValue4) const {
+		auto p = GetPointer(x, y); *pValue1 = p[0]; *pValue2 = p[1]; *pValue3 = p[2]; *pValue4 = p[3]; return *this;
+	}
+	const Image& Get(int x, int y, uint16_t* pValue) const {
+		auto p = GetPointer(x, y); *pValue = *reinterpret_cast<const uint16_t*>(p); return *this;
+	}
+	const Image& Get_uint16(int x, int y, uint16_t* pValue) const {
+		auto p = GetPointer(x, y); *pValue = *reinterpret_cast<const uint16_t*>(p); return *this;
+	}
+public:
 	static void ReadFromStream(void* context, const void* data, int size);
 	static void WriteToStream(void* context, const void* data, int size);
+public:
+	const Image& PrintAscii(Printable& tout = Stdio::Instance) const;
 };
 
 template<> class Image::Getter_T<Color, Color> {

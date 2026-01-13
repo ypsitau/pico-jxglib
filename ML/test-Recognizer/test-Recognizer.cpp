@@ -318,8 +318,8 @@ const uint8_t imageData_9[784] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 #endif
 
-EmbedTfLiteModel("jxglib/ML/DigitRecognizer.tflite", modelData, modelDataSize);
-ML::TfLiteModelRunner<9000, 8> modelRunner(modelData);
+EmbedTfLiteModel("jxglib/ML/Model/Recognizer-MNIST.tflite", modelData, modelDataSize);
+ML::TfLiteModelRunner<16000, 8> modelRunner(modelData);
 
 #if 1
 ShellCmd_Named(test_digit_recognizer, "test-digit-recognizer", "test TensorFlow Lite Micro")

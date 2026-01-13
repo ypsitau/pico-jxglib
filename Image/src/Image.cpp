@@ -70,6 +70,23 @@ void Image::WriteToStream(void* context, const void* data, int size)
 	pStream->Write(data, size);
 }
 
+const Image& Image::PrintAscii(Printable& tout) const
+{
+	static const char patTbl[] = { ' ', '.', ':', '+', '#' };
+	int iCol = 0;
+	const uint8_t* data = GetPointer();
+	for (int i = 0; i < GetWidth() * GetHeight(); i++) {
+		tout.PutChar(patTbl[data[i] * 5 / 256]);
+		iCol++;
+		if (iCol >= GetWidth()) {
+			tout.PutChar('\n');
+			iCol = 0;
+		}
+	}
+	tout.PutChar('\n');
+	return *this;
+}
+
 //------------------------------------------------------------------------------
 // Image::Sequencer
 //------------------------------------------------------------------------------
