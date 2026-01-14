@@ -47,55 +47,47 @@ template<> size_t ArgMax<int8_t>(const TfLiteTensor& tensor, int8_t* pValueMax) 
 }
 
 //-----------------------------------------------------------------------------
-// TfLiteModelRunner
+// TfLiteModelRunnerBase
 //-----------------------------------------------------------------------------
-template<size_t ArenaBytes_, size_t tOpCount_> class TfLiteModelRunner {
-public:
-	using OpResolver = tflite::MicroMutableOpResolver<tOpCount_>;
-	using Interpreter = tflite::MicroInterpreter;
-public:
-	static constexpr size_t ArenaBytes = ArenaBytes_;
-	static constexpr size_t tOpCount = tOpCount_;
+class TfLiteModelRunnerBase {
 protected:
 	const uint8_t* modelData_;
-	std::unique_ptr<OpResolver> opResolver_;
-	std::unique_ptr<Interpreter> interpreter_;
-	alignas(16) uint8_t arena_[ArenaBytes];
+	uint8_t* arena_;
+	size_t bytesArena_;
+	std::unique_ptr<tflite::MicroOpResolver> opResolver_;
+	std::unique_ptr<tflite::MicroInterpreter> interpreter_;
 public:
-	TfLiteModelRunner(const uint8_t* modelData) : modelData_{modelData} {};
-	~TfLiteModelRunner() {}
+	TfLiteModelRunnerBase(const uint8_t* modelData, uint8_t* arena, size_t bytesArena);
+	~TfLiteModelRunnerBase() {}
 public:
-	OpResolver& Initialize() {
-		tflite::InitializeTarget();
-		opResolver_.reset(new OpResolver());
-		return *opResolver_;
-	}
-	TfLiteStatus ActivateInterpreter() {
-		const tflite::Model* model = tflite::GetModel(modelData_);
-		if (model->version() != TFLITE_SCHEMA_VERSION) return kTfLiteError;
-		interpreter_.reset(new Interpreter(model, *opResolver_, arena_, ArenaBytes));
-		return interpreter_->AllocateTensors();
-	}
+	TfLiteStatus Initialize();
 public:
+	void PrintInfo(Printable& tout = Stdio::Instance) const;
 	size_t GetArenaUsedBytes() const { return interpreter_->arena_used_bytes(); }
-	OpResolver& GetOpResolver() { return *opResolver_; }
-	Interpreter& GetInterpreter() { return *interpreter_; }
+public:
+	tflite::MicroInterpreter& GetInterpreter() { return *interpreter_; }
 	TfLiteTensor& GetInput(size_t index) { return *interpreter_->input(index); }
 	TfLiteTensor& GetOutput(size_t index) { return *interpreter_->output(index); }
 	TfLiteStatus Invoke() { return interpreter_->Invoke(); }
 public:
-	int Recognize_GrayImage(const uint8_t* imageData, float* pConfidence = nullptr) {
-		TfLiteTensor& input = GetInput(0);
-		TfLiteTensor& output = GetOutput(0);
-		int nElements = CountElements(input);
-		for (int i = 0; i < nElements; i++) {
-			input.data.int8[i] = static_cast<int8_t>(static_cast<int>(imageData[i]) - 128);
-		}
-		if (Invoke() != kTfLiteOk) return -1;
-		int8_t valueMax;
-		size_t indexMax = ArgMax<int8_t>(output, &valueMax);
-		if (pConfidence) *pConfidence = static_cast<float>(valueMax + 128) / 255.0f;
-		return indexMax;
+	int Recognize_GrayImage(const uint8_t* imageData, float* pConfidence = nullptr);
+};
+
+//-----------------------------------------------------------------------------
+// TfLiteModelRunner
+//-----------------------------------------------------------------------------
+template<size_t ArenaBytes, size_t tOpCount> class TfLiteModelRunner : public TfLiteModelRunnerBase {
+private:
+	using OpResolver = tflite::MicroMutableOpResolver<tOpCount>;
+private:
+	alignas(16) uint8_t arena_[ArenaBytes];
+public:
+	TfLiteModelRunner(const uint8_t* modelData) : TfLiteModelRunnerBase(modelData, arena_, ArenaBytes) {}
+public:
+	OpResolver& PrepareOpResolver() {
+		OpResolver* opResolver = new OpResolver();
+		opResolver_.reset(opResolver);
+		return *opResolver;
 	}
 };
 

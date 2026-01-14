@@ -4,34 +4,49 @@
 #include "jxglib/Display/ILI9341.h"
 #include "jxglib/Font/shinonome14.h"
 #include "jxglib/ML/TfLiteModelRunner.h"
-//#include "jxglib/LABOPlatform.h"
+#include "jxglib/LABOPlatform.h"
 
 using namespace jxglib;
 
-//EmbedTfLiteModel("jxglib/ML/Model/Recognizer-MNIST.tflite", modelData, modelDataSize);
+#if 0
+EmbedTfLiteModel("jxglib/ML/Model/Recognizer-MNIST.tflite", modelData, modelDataSize);
+const char* strPrompt = "Draw a character (0-9) in the box";
+const char* labelTbl[] = {
+	"0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+};
+#else
 EmbedTfLiteModel("jxglib/ML/Model/Recognizer-EMNIST.tflite", modelData, modelDataSize);
-ML::TfLiteModelRunner<16000, 8> modelRunner(modelData);
+const char* strPrompt = "Draw a character (A-Z) in the box";
+const char* labelTbl[] = {
+	"A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
+	"K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
+	"U", "V", "W", "X", "Y", "Z"
+};
+#endif
+
+static ML::TfLiteModelRunner<16000, 8> modelRunner(modelData);
 
 int main()
 {
-	Image imageGray;
-	imageGray.Allocate(Image::Format::Gray, 28, 28);
 	::stdio_init_all();
 	//LABOPlatform::Instance.Initialize();
-	//LABOPlatform::Instance.AttachStdio().Initialize();
+	LABOPlatform::Instance.AttachStdio().Initialize();
 	do {
-		auto& opResolver = modelRunner.Initialize();
+		auto& opResolver = modelRunner.PrepareOpResolver();
 		opResolver.AddConv2D();
 		opResolver.AddMaxPool2D();
 		opResolver.AddReshape();
 		opResolver.AddFullyConnected();
 		opResolver.AddSoftmax();
 	} while (0);
-	if (modelRunner.ActivateInterpreter() != kTfLiteOk) return 1;
-	//do {
-	//	auto& input = modelRunner.GetInput(0);
-	//	imageGray.SetPointer(Image::Format::Gray, input.dims->data[2], input.dims->data[1], input.data.uint8);
-	//} while (0);
+	if (modelRunner.Initialize() != kTfLiteOk) return 1;
+	modelRunner.PrintInfo();
+	Image imageGray;
+	do {
+		auto input = modelRunner.GetInput(0);
+		assert(input.type == kTfLiteInt8 && input.dims->size == 4);
+		imageGray.Allocate(Image::Format::Gray, input.dims->data[2], input.dims->data[1]);
+	} while (0);
 	::spi_init(spi0, 2 * 1000 * 1000);
 	::spi_init(spi1, 125'000'000);
 	GPIO2.set_function_SPI0_SCK();
@@ -54,8 +69,8 @@ int main()
 		.ClearScreen();
 	touchScreen.Initialize(display);
 	//touchScreen.Calibrate(display, true);
-	touchScreen.PrintCalibration();
-	terminal.Println("Touch the screen to draw.");
+	//touchScreen.PrintCalibration();
+	terminal.Println(strPrompt);
 	Size szPixel(10, 10);
 	const uint32_t msecFlush = 1000;
 	uint32_t msecLastTouch = Tickable::GetCurrentTime();
@@ -84,8 +99,7 @@ int main()
 			} else if (confidence < 0.3f) {
 				terminal.Printf("unrecognized (%.2f)\n", confidence);
 			} else {
-				//terminal.Printf("recognized: %c (%.2f)\n", '0' + result, confidence);
-				terminal.Printf("recognized: %c (%.2f)\n", 'A' + result, confidence);
+				terminal.Printf("recognized: %s (%.2f)\n", labelTbl[result], confidence);
 			}
 			isTouched = false;
 			display.DrawRectFill(rcCanvas, bgCanvas);

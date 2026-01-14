@@ -29,18 +29,18 @@ bool TSC2046::Calibrate(Drawable& drawable, bool drawResultFlag)
 	Point adcTbl[2];
 	for (int i = 0; i < count_of(ptMarkerTbl); i++) {
 		drawable.Clear().DrawCross(ptMarkerTbl[i].x, ptMarkerTbl[i].y, sizeCross, sizeCross, wdCross, wdCross).Refresh();
-		while (IsTouched()) ::sleep_ms(msecDelay);
+		while (IsTouched()) Tickable::Sleep(msecDelay);
 		Point ptSampleTbl[nSamples];
 		for (int iSample = 0; iSample < nSamples; iSample++) {
 			Point& ptSample = ptSampleTbl[iSample];
 			int x, y;
-			while (!ReadXYRaw(&x, &y)) ::sleep_ms(msecDelay);
+			while (!ReadXYRaw(&x, &y)) Tickable::Sleep(msecDelay);
 			if (hvFlippedFlag_) {
 				ptSample.x = y, ptSample.y = x;
 			} else {
 				ptSample.x = x, ptSample.y = y;
 			}
-			::sleep_ms(msecDelay);
+			Tickable::Sleep(msecDelay);
 		}
 		int xSum = 0, ySum = 0;
 		for (int iSample = 0; iSample < nSamples; iSample++) {
