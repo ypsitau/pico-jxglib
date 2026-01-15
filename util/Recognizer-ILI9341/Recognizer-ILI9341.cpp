@@ -8,14 +8,14 @@
 
 using namespace jxglib;
 
-#if 1
+#if 0
 EmbedTfLiteModel("jxglib/ML/Model/Recognizer-EMNIST-mnist.tflite", modelData, modelDataSize);
 static ML::TfLiteModelRunner<16000, 8> modelRunner(modelData);
 const char* strPrompt = "Draw one of 0-9";
 const char* labelTbl[] = {
 	"0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
 };
-#elif 0
+#elif 1
 EmbedTfLiteModel("jxglib/ML/Model/Recognizer-EMNIST-letters.tflite", modelData, modelDataSize);
 static ML::TfLiteModelRunner<16000, 8> modelRunner(modelData);
 const char* strPrompt = "Draw one of A-Z";
@@ -24,7 +24,7 @@ const char* labelTbl[] = {
 	"K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
 	"U", "V", "W", "X", "Y", "Z",
 };
-#elif 1
+#else
 EmbedTfLiteModel("jxglib/ML/Model/Recognizer-EMNIST-bymerge.tflite", modelData, modelDataSize);
 static ML::TfLiteModelRunner<16500, 8> modelRunner(modelData);
 const char* strPrompt = "Draw one of 0-9, A-Z, and a-z";
