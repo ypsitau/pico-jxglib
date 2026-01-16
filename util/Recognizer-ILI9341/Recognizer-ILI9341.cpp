@@ -9,14 +9,14 @@
 using namespace jxglib;
 
 #if 0
-EmbedTfLiteModel("jxglib/ML/Model/Recognizer-EMNIST-mnist.tflite", modelData, modelDataSize);
+EmbedTfLiteModel("jxglib/ML/Model/Recognizer-EMNIST-mnist-binary.tflite", modelData, modelDataSize);
 static ML::TfLiteModelRunner<16000, 8> modelRunner(modelData);
 const char* strPrompt = "Draw one of 0-9";
 const char* labelTbl[] = {
 	"0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
 };
-#elif 1
-EmbedTfLiteModel("jxglib/ML/Model/Recognizer-EMNIST-letters.tflite", modelData, modelDataSize);
+#elif 0
+EmbedTfLiteModel("jxglib/ML/Model/Recognizer-EMNIST-letters-binary.tflite", modelData, modelDataSize);
 static ML::TfLiteModelRunner<16000, 8> modelRunner(modelData);
 const char* strPrompt = "Draw one of A-Z";
 const char* labelTbl[] = {
@@ -25,7 +25,7 @@ const char* labelTbl[] = {
 	"U", "V", "W", "X", "Y", "Z",
 };
 #else
-EmbedTfLiteModel("jxglib/ML/Model/Recognizer-EMNIST-bymerge.tflite", modelData, modelDataSize);
+EmbedTfLiteModel("jxglib/ML/Model/Recognizer-EMNIST-bymerge-binary.tflite", modelData, modelDataSize);
 static ML::TfLiteModelRunner<16500, 8> modelRunner(modelData);
 const char* strPrompt = "Draw one of 0-9, A-Z, and a-z";
 const char* labelTbl[] = {
@@ -40,8 +40,8 @@ const char* labelTbl[] = {
 int main()
 {
 	::stdio_init_all();
-	//LABOPlatform::Instance.Initialize();
-	LABOPlatform::Instance.AttachStdio().Initialize();
+	LABOPlatform::Instance.Initialize();
+	//LABOPlatform::Instance.AttachStdio().Initialize();
 	do {
 		auto& opResolver = modelRunner.PrepareOpResolver();
 		opResolver.AddConv2D();
