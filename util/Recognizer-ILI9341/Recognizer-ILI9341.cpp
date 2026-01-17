@@ -60,8 +60,9 @@ int main()
 	Display::Terminal terminal;
 	display.Initialize(Display::Dir::Rotate0);
 	display.SetFont(Font::shinonome14);
-	Rect rcCanvas(0, 0, 240, 240);
-	Color bgCanvas(0, 192, 0);
+	Rect rcDrawArea(0, 0, 240, 240);
+	Color bgDrawArea(0, 192, 0);
+	Size szPixelDrawArea(static_cast<int>(rcDrawArea.width * 0.08f), static_cast<int>(rcDrawArea.height * 0.08f));
 	terminal.Initialize()
 		.AttachDisplay(display, {0, 240, 240, 80})
 		.SetFont(Font::shinonome14)
@@ -73,13 +74,11 @@ int main()
 	//touchScreen.PrintCalibration();
 	int iConfig = (GPIO0.get()? 0 : 1) + (GPIO1.get()? 0 : 2);
 	terminal.Println(configTbl[iConfig].strPrompt);
-	Size szPixel(10, 10);
 	const uint32_t msecFlush = 1000;
 	uint32_t msecLastTouch = Tickable::GetCurrentTime();
-	display.DrawRectFill(rcCanvas, bgCanvas);
+	display.DrawRectFill(rcDrawArea, bgDrawArea);
 	bool isTouched = false;
-	//Canvas canvas;
-	Image image;
+	Canvas canvas;
 	do {
 		auto& opResolver = modelRunner.PrepareOpResolver();
 		opResolver.AddConv2D();
@@ -91,27 +90,26 @@ int main()
 		//modelRunner.PrintInfo();
 		auto& input = modelRunner.GetInput(0);
 		assert(input.type == kTfLiteInt8 && input.dims->size == 4);
-		//canvas.Allocate(Image::Format::Gray, input.dims->data[2], input.dims->data[1]);
-		image.Allocate(Image::Format::Gray, input.dims->data[2], input.dims->data[1]);
+		canvas.Allocate(Image::Format::Gray, input.dims->data[2], input.dims->data[1]);
 	} while (0);
+	Size szPixelCanvas(static_cast<int>(canvas.GetWidth() * 0.1f), static_cast<int>(canvas.GetHeight() * 0.1f));
 	for (;;) {
 		Point pt;
-		if (touchScreen.ReadPoint(&pt) && rcCanvas.Contains(pt)) {
-			display.DrawRectFill(pt.x - szPixel.width / 2, pt.y - szPixel.height / 2, szPixel.width, szPixel.height);
-			msecLastTouch = Tickable::GetCurrentTime();
-			int x = (pt.x - (rcCanvas.x)) * image.GetWidth() / rcCanvas.width;
-			int y = (pt.y - (rcCanvas.y)) * image.GetHeight() / rcCanvas.height;
-			//canvas.DrawRectFill(x - 1, y - 1, 3, 3, Color::white);
-			image.Put(x, y, 255);
-			if (y + 1 < image.GetHeight()) image.Put(x, y + 1, 255);
-			if (y - 1 >= 0) image.Put(x, y - 1, 255);
-			if (x + 1 < image.GetWidth()) image.Put(x + 1, y, 255);
-			if (x - 1 >= 0) image.Put(x - 1, y, 255);
+		if (touchScreen.ReadPoint(&pt) && rcDrawArea.Contains(pt)) {
+			display.DrawRectFill(
+				pt.x - szPixelDrawArea.width / 2, pt.y - szPixelDrawArea.height / 2,
+				szPixelDrawArea.width, szPixelDrawArea.height);
+			int x = (pt.x - (rcDrawArea.x)) * canvas.GetWidth() / rcDrawArea.width;
+			int y = (pt.y - (rcDrawArea.y)) * canvas.GetHeight() / rcDrawArea.height;
+			canvas.DrawRectFill(
+				x - szPixelCanvas.width / 2, y - szPixelCanvas.height / 2,
+				szPixelCanvas.width, szPixelCanvas.height, Color::white);
 			isTouched = true;
+			msecLastTouch = Tickable::GetCurrentTime();
 		} else if (isTouched && Tickable::GetCurrentTime() - msecLastTouch > msecFlush) {
-			//image.PrintAscii();
+			canvas.GetImageOwn().PrintAscii();
 			float confidence = 0.0f;
-			int result = modelRunner.Recognize_GrayImage(image.GetPointer(), &confidence);
+			int result = modelRunner.Recognize_GrayImage(canvas.GetImageOwn().GetPointer(), &confidence);
 			if (result < 0) {
 				// nothing to do
 			} else if (confidence < 0.3f) {
@@ -120,8 +118,8 @@ int main()
 				terminal.Printf("recognized: %s (%.2f)\n", configTbl[iConfig].labelTbl[result], confidence);
 			}
 			isTouched = false;
-			display.DrawRectFill(rcCanvas, bgCanvas);
-			image.FillZero();
+			display.DrawRectFill(rcDrawArea, bgDrawArea);
+			canvas.Fill(Color::black);
 		}
 		Tickable::Tick();
 	}

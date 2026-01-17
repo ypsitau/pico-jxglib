@@ -202,15 +202,11 @@ Canvas& Canvas::Allocate(const Format& formatOut, int width, int height)
 		::panic("bitmap format is not supported");
 		return *this;
 	} else if (formatOut.IsGray()) {
-		::panic("gray format is not supported");
 		pDispatcherEx_.reset(new Dispatcher_T<ColorGray>(*this));
-		return *this;
 	} else if (formatOut.IsRGB()) {
 		pDispatcherEx_.reset(new Dispatcher_T<Color>(*this));
 	} else if (formatOut.IsRGBA()) {
-		::panic("RGBA format is not supported");
-		//pDispatcherEx_.reset(new Dispatcher_T<ColorA>(*this));
-		return *this;
+		pDispatcherEx_.reset(new Dispatcher_T<ColorA>(*this));
 	} else if (formatOut.IsRGB565()) {
 		pDispatcherEx_.reset(new Dispatcher_T<ColorRGB565>(*this));
 	} else {
