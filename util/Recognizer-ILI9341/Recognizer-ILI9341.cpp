@@ -109,7 +109,7 @@ int main()
 		} else if (isTouched && Tickable::GetCurrentTime() - msecLastTouch > msecFlush) {
 			canvas.GetImageOwn().PrintAscii();
 			float confidence = 0.0f;
-			int result = modelRunner.Recognize_GrayImage(canvas.GetImageOwn().GetPointer(), &confidence);
+			int result = modelRunner.SetInputData(canvas.GetImageOwn()).Recognize(&confidence);
 			if (result < 0) {
 				// nothing to do
 			} else if (confidence < 0.3f) {

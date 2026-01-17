@@ -81,17 +81,22 @@ void TfLiteModelRunnerBase::PrintInfo(Printable& tout) const
 	}
 }
 
-int TfLiteModelRunnerBase::Recognize_GrayImage(const uint8_t* imageData, float* pConfidence)
+TfLiteModelRunnerBase& TfLiteModelRunnerBase::SetInputData(const Image& image)
 {
 	TfLiteTensor& input = GetInput(0);
-	TfLiteTensor& output = GetOutput(0);
-	int nElements = CountElements(input);
-	for (int i = 0; i < nElements; i++) {
-		input.data.int8[i] = static_cast<int8_t>(static_cast<int>(imageData[i]) - 128);
+	using Reader = Image::Reader<Image::Getter_T<ColorGray, ColorGray> >;
+	Reader reader = Reader::Normal(image, 0, 0, image.GetWidth(), image.GetHeight());
+	for (int i = 0; !reader.HasDone(); ++i) {
+		input.data.int8[i] = static_cast<int8_t>(static_cast<int>(reader.ReadForward()) - 128);
 	}
+	return *this;
+}
+
+int TfLiteModelRunnerBase::Recognize(float* pConfidence)
+{
 	if (Invoke() != kTfLiteOk) return -1;
 	int8_t valueMax;
-	size_t indexMax = ArgMax<int8_t>(output, &valueMax);
+	size_t indexMax = ArgMax<int8_t>(GetOutput(0), &valueMax);
 	if (pConfidence) *pConfidence = static_cast<float>(valueMax + 128) / 255.0f;
 	return indexMax;
 }

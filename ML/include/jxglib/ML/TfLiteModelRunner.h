@@ -12,6 +12,7 @@
 #include "tensorflow/lite/schema/schema_generated.h"
 #include "tensorflow/lite/micro/tflite_bridge/micro_error_reporter.h"
 #include "jxglib/ML.h"
+#include "jxglib/Image.h"
 
 //-----------------------------------------------------------------------------
 // EmbedTfLiteModel
@@ -63,13 +64,14 @@ public:
 public:
 	void PrintInfo(Printable& tout = Stdio::Instance) const;
 	size_t GetArenaUsedBytes() const { return interpreter_->arena_used_bytes(); }
+	TfLiteStatus Invoke() { return interpreter_->Invoke(); }
 public:
 	tflite::MicroInterpreter& GetInterpreter() { return *interpreter_; }
 	TfLiteTensor& GetInput(size_t index) { return *interpreter_->input(index); }
 	TfLiteTensor& GetOutput(size_t index) { return *interpreter_->output(index); }
-	TfLiteStatus Invoke() { return interpreter_->Invoke(); }
 public:
-	int Recognize_GrayImage(const uint8_t* imageData, float* pConfidence = nullptr);
+	TfLiteModelRunnerBase& SetInputData(const Image& image);
+	int Recognize(float* pConfidence = nullptr);
 };
 
 //-----------------------------------------------------------------------------
