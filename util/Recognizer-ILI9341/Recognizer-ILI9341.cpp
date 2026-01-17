@@ -13,35 +13,37 @@ EmbedTfLiteModel("jxglib/ML/Model/Recognizer-EMNIST-mnist-binary.tflite", modelD
 EmbedTfLiteModel("jxglib/ML/Model/Recognizer-EMNIST-letters-binary.tflite", modelData_letters, modelDataSize_letters);
 EmbedTfLiteModel("jxglib/ML/Model/Recognizer-EMNIST-bymerge-binary.tflite", modelData_bymerge, modelDataSize_bymerge);
 
+struct Config {
+	const void* modelData;
+	const char* strPrompt;
+	const char* labelTbl[80];
+};
+
+static const Config configTbl[] = {
+	{ modelData_bymerge, "Draw one of 0-9, A-Z, and a-z", {
+		"0 (number)", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+		"A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
+		"K", "L", "M", "N", "O (alphabet)", "P", "Q", "R", "S", "T",
+		"U", "V", "W", "X", "Y", "Z",
+		"a", "b", "d", "e", "f", "g", "h", "n", "q", "r", "t",
+	}, },
+	{ modelData_mnist, "Draw one of 0-9", {
+		"0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+	}, },
+	{ modelData_letters, "Draw one of A-Z", {
+		"A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
+		"K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
+		"U", "V", "W", "X", "Y", "Z",
+	}, },
+	{ modelData_mnist, "Draw one of 0-9", {
+		"0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+	}, },
+};
+
 static ML::TfLiteModelRunner<16500, 8> modelRunner;
 
 int main()
 {
-	struct Config {
-		const uint8_t* modelData;
-		const char* strPrompt;
-		const char* labelTbl[80];
-	};
-	static const Config configTbl[] = {
-		{ modelData_bymerge, "Draw one of 0-9, A-Z, and a-z", {
-			"0 (number)", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-			"A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
-			"K", "L", "M", "N", "O (alphabet)", "P", "Q", "R", "S", "T",
-			"U", "V", "W", "X", "Y", "Z",
-			"a", "b", "d", "e", "f", "g", "h", "n", "q", "r", "t",
-		}, },
-		{ modelData_mnist, "Draw one of 0-9", {
-			"0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-		}, },
-		{ modelData_letters, "Draw one of A-Z", {
-			"A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
-			"K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
-			"U", "V", "W", "X", "Y", "Z",
-		}, },
-		{ modelData_mnist, "Draw one of 0-9", {
-			"0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-		}, },
-	};
 	::stdio_init_all();
 	LABOPlatform::Instance.Initialize();
 	::spi_init(spi0, 2 * 1000 * 1000);
