@@ -44,14 +44,6 @@ int main()
 	};
 	::stdio_init_all();
 	LABOPlatform::Instance.Initialize();
-	do {
-		auto& opResolver = modelRunner.PrepareOpResolver();
-		opResolver.AddConv2D();
-		opResolver.AddMaxPool2D();
-		opResolver.AddReshape();
-		opResolver.AddFullyConnected();
-		opResolver.AddSoftmax();
-	} while (0);
 	::spi_init(spi0, 2 * 1000 * 1000);
 	::spi_init(spi1, 125'000'000);
 	GPIO0.set_function_SIO().set_dir_IN().pull_up();
@@ -86,10 +78,16 @@ int main()
 	bool isTouched = false;
 	//Canvas canvas;
 	Image image;
-	if (modelRunner.Initialize(configTbl[iConfig].modelData) != kTfLiteOk) return 1;
-	modelRunner.PrintInfo();
 	do {
-		auto input = modelRunner.GetInput(0);
+		auto& opResolver = modelRunner.PrepareOpResolver();
+		opResolver.AddConv2D();
+		opResolver.AddMaxPool2D();
+		opResolver.AddReshape();
+		opResolver.AddFullyConnected();
+		opResolver.AddSoftmax();
+		if (modelRunner.Initialize(configTbl[iConfig].modelData) != kTfLiteOk) return 1;
+		//modelRunner.PrintInfo();
+		auto& input = modelRunner.GetInput(0);
 		assert(input.type == kTfLiteInt8 && input.dims->size == 4);
 		//canvas.Allocate(Image::Format::Gray, input.dims->data[2], input.dims->data[1]);
 		image.Allocate(Image::Format::Gray, input.dims->data[2], input.dims->data[1]);
