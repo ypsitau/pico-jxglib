@@ -107,7 +107,7 @@ int main()
 			isTouched = true;
 			msecLastTouch = Tickable::GetCurrentTime();
 		} else if (isTouched && Tickable::GetCurrentTime() - msecLastTouch > msecFlush) {
-			canvas.GetImageOwn().PrintAscii();
+			//canvas.GetImageOwn().PrintAscii();
 			float confidence = 0.0f;
 			int result = modelRunner.SetInputData(canvas.GetImageOwn()).Recognize(&confidence);
 			if (result < 0) {
