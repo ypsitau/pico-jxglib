@@ -51,16 +51,15 @@ template<> size_t ArgMax<int8_t>(const TfLiteTensor& tensor, int8_t* pValueMax) 
 //-----------------------------------------------------------------------------
 class TfLiteModelRunnerBase {
 protected:
-	const uint8_t* modelData_;
 	uint8_t* arena_;
 	size_t bytesArena_;
 	std::unique_ptr<tflite::MicroOpResolver> opResolver_;
 	std::unique_ptr<tflite::MicroInterpreter> interpreter_;
 public:
-	TfLiteModelRunnerBase(const uint8_t* modelData, uint8_t* arena, size_t bytesArena);
+	TfLiteModelRunnerBase(uint8_t* arena, size_t bytesArena);
 	~TfLiteModelRunnerBase() {}
 public:
-	TfLiteStatus Initialize();
+	TfLiteStatus Initialize(const void* modelData);
 public:
 	void PrintInfo(Printable& tout = Stdio::Instance) const;
 	size_t GetArenaUsedBytes() const { return interpreter_->arena_used_bytes(); }
@@ -82,7 +81,7 @@ private:
 private:
 	alignas(16) uint8_t arena_[ArenaBytes];
 public:
-	TfLiteModelRunner(const uint8_t* modelData) : TfLiteModelRunnerBase(modelData, arena_, ArenaBytes) {}
+	TfLiteModelRunner() : TfLiteModelRunnerBase(arena_, ArenaBytes) {}
 public:
 	OpResolver& PrepareOpResolver() {
 		OpResolver* opResolver = new OpResolver();

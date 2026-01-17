@@ -55,13 +55,13 @@ size_t CountElements(const TfLiteTensor& tensor)
 //-----------------------------------------------------------------------------
 // TfLiteModelRunnerBase
 //-----------------------------------------------------------------------------
-TfLiteModelRunnerBase::TfLiteModelRunnerBase(const uint8_t* modelData, uint8_t* arena, size_t bytesArena) :
-		modelData_{modelData}, arena_{arena}, bytesArena_{bytesArena}
+TfLiteModelRunnerBase::TfLiteModelRunnerBase(uint8_t* arena, size_t bytesArena) :
+		arena_{arena}, bytesArena_{bytesArena}
 {}
 
-TfLiteStatus TfLiteModelRunnerBase::Initialize()
+TfLiteStatus TfLiteModelRunnerBase::Initialize(const void* modelData)
 {
-	const tflite::Model* model = tflite::GetModel(modelData_);
+	const tflite::Model* model = tflite::GetModel(modelData);
 	if (model->version() != TFLITE_SCHEMA_VERSION) return kTfLiteError;
 	interpreter_.reset(new tflite::MicroInterpreter(model, *opResolver_, arena_, bytesArena_));
 	return interpreter_->AllocateTensors();
