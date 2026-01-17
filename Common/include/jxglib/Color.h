@@ -57,7 +57,8 @@ public:
 	uint8_t GetB() const { return b; }
 	bool IsBlack() const { return r == 0 && g == 0 && b == 0; }
 	bool IsWhite() const { return r == 255 && g == 255 && b == 255; }
-	uint8_t CalcGray() const;
+	uint8_t CalcGray() const { return CalcGray(r, g, b); }
+	static uint8_t CalcGray(uint8_t r, uint8_t g, uint8_t b);
 public:
 	bool Parse(const char* str);
 };
@@ -105,11 +106,29 @@ public:
 struct ColorGray {
 	uint8_t value;
 public:
+	static const ColorGray zero;
+	static const ColorGray black;
+	static const ColorGray silver;
+	static const ColorGray gray;
+	static const ColorGray white;
+	static const ColorGray maroon;
+	static const ColorGray red;
+	static const ColorGray purple;
+	static const ColorGray fuchsia;
+	static const ColorGray green;
+	static const ColorGray lime;
+	static const ColorGray olive;
+	static const ColorGray yellow;
+	static const ColorGray navy;
+	static const ColorGray blue;
+	static const ColorGray teal;
+	static const ColorGray aqua;
+public:
 	ColorGray() : value{0} {}
 	ColorGray(const ColorGray& colorGray) : value{colorGray.value} {}
 	explicit ColorGray(uint8_t value) : value{value} {}
-	//constexpr ColorGray(uint8_t r, uint8_t g, uint8_t b) {}
-	//ColorGray(const Color& color) : ColorGray(color.r, color.g, color.b) {}
+	ColorGray(uint8_t r, uint8_t g, uint8_t b) : value(Color::CalcGray(r, g, b)) {}
+	ColorGray(const Color& color) : value{color.CalcGray()} {}
 public:
 	ColorGray& operator=(const ColorGray& colorGray) { value = colorGray.value; return *this; }
 public:
@@ -171,6 +190,7 @@ public:
 		uint8_t elem = static_cast<uint8_t>((value << 3) & 0xf8);
 		return elem? (elem | 0x07) : elem;
 	}
+	uint8_t CalcGray() const { return Color::CalcGray(GetR(), GetG(), GetB()); }
 	bool IsBlack() const { return value == 0x0000; }
 	bool IsWhite() const { return value == 0xffff; }
 public:

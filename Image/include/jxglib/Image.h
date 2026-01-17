@@ -491,6 +491,7 @@ public:
 	const Image& PrintAscii(Printable& tout = Stdio::Instance) const;
 };
 
+//-----------------------------------------------------------------------------
 template<> class Image::Getter_T<Color, Color> {
 public:
 	using T_ColorVar = Color;
@@ -519,6 +520,7 @@ public:
 	Color Get(const uint8_t* p) { return Color(ColorRGB565(*reinterpret_cast<const uint16_t*>(p))); }
 };
 
+//-----------------------------------------------------------------------------
 template<> class Image::Getter_T<ColorA, Color> {
 public:
 	using T_ColorVar = ColorA;
@@ -547,6 +549,7 @@ public:
 	ColorA Get(const uint8_t* p) { return ColorA(ColorRGB565(*reinterpret_cast<const uint16_t*>(p))); }
 };
 
+//-----------------------------------------------------------------------------
 template<> class Image::Getter_T<ColorRGB565, Color> {
 public:
 	using T_ColorVar = ColorRGB565;
@@ -575,6 +578,36 @@ public:
 	ColorRGB565 Get(const uint8_t* p) { return ColorRGB565(p[0], p[0], p[0]); }
 };
 
+//-----------------------------------------------------------------------------
+template<> class Image::Getter_T<ColorGray, Color> {
+public:
+	using T_ColorVar = ColorGray;
+public:
+	ColorGray Get(const uint8_t* p) { return ColorGray(Color::CalcGray(p[0], p[1], p[2])); }
+};
+
+template<> class Image::Getter_T<ColorGray, ColorA> {
+public:
+	using T_ColorVar = ColorGray;
+public:
+	ColorGray Get(const uint8_t* p) { return ColorGray(Color::CalcGray(p[0], p[1], p[2])); }
+};
+
+template<> class Image::Getter_T<ColorGray, ColorRGB565> {
+public:
+	using T_ColorVar = ColorGray;
+public:
+	ColorGray Get(const uint8_t* p) { return ColorGray(ColorRGB565(*reinterpret_cast<const uint16_t*>(p)).CalcGray()); }
+};
+
+template<> class Image::Getter_T<ColorGray, ColorGray> {
+public:
+	using T_ColorVar = ColorGray;
+public:
+	ColorGray Get(const uint8_t* p) { return ColorGray(*p); }
+};
+
+//-----------------------------------------------------------------------------
 template<> class Image::Setter_T<Color, Color> {
 public:
 	using T_ColorVar = Color;
@@ -612,6 +645,7 @@ public:
 	}
 };
 
+//-----------------------------------------------------------------------------
 template<> class Image::Setter_T<ColorRGB565, Color> {
 public:
 	using T_ColorVar = Color;
@@ -645,6 +679,43 @@ public:
 public:
 	void Set(uint8_t* p, const ColorGray& colorGray) {
 		*reinterpret_cast<uint16_t*>(p) = ColorRGB565(colorGray.value, colorGray.value, colorGray.value).value;
+	}
+};
+
+//-----------------------------------------------------------------------------
+template<> class Image::Setter_T<ColorGray, Color> {
+public:
+	using T_ColorVar = Color;
+public:
+	void Set(uint8_t* p, const Color& color) {
+		*p = color.CalcGray();
+	}
+};
+
+template<> class Image::Setter_T<ColorGray, ColorA> {
+public:
+	using T_ColorVar = ColorA;
+public:
+	void Set(uint8_t* p, const ColorA& colorA) {
+		*p = colorA.CalcGray();
+	}
+};
+
+template<> class Image::Setter_T<ColorGray, ColorRGB565> {
+public:
+	using T_ColorVar = ColorRGB565;
+public:
+	void Set(uint8_t* p, const ColorRGB565& colorRGB565) {
+		*p = colorRGB565.CalcGray();
+	}
+};
+
+template<> class Image::Setter_T<ColorGray, ColorGray> {
+public:
+	using T_ColorVar = ColorGray;
+public:
+	void Set(uint8_t* p, const ColorGray& colorGray) {
+		*p = colorGray.value;
 	}
 };
 

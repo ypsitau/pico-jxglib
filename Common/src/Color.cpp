@@ -29,7 +29,7 @@ const Color Color::blue			{   0,   0, 255 };
 const Color Color::teal			{   0, 128, 128 };
 const Color Color::aqua			{   0, 255, 255 };
 
-uint8_t Color::CalcGray() const
+uint8_t Color::CalcGray(uint8_t r, uint8_t g, uint8_t b)
 {
 	// Gray = 0.299*R + 0.587*G + 0.114*B
 	return static_cast<uint8_t>((
@@ -298,5 +298,26 @@ bool ColorBGR111::Parse(const char* str)
 	*this = ColorBGR111(color);
 	return true;
 }
+
+//------------------------------------------------------------------------------
+// ColorGray
+//------------------------------------------------------------------------------
+const ColorGray ColorGray::zero			{   0,   0,   0 };
+const ColorGray ColorGray::black		{   0,   0,   0 };
+const ColorGray ColorGray::silver		{ 192, 192, 192 };
+const ColorGray ColorGray::gray			{ 128, 128, 128 };
+const ColorGray ColorGray::white		{ 255, 255, 255 };
+const ColorGray ColorGray::maroon		{ 128,   0,   0 };
+const ColorGray ColorGray::red			{ 255,   0,   0 };
+const ColorGray ColorGray::purple		{ 128,   0, 128 };
+const ColorGray ColorGray::fuchsia		{ 255,   0, 255 };
+const ColorGray ColorGray::green		{   0, 128,   0 };
+const ColorGray ColorGray::lime			{   0, 255,   0 };
+const ColorGray ColorGray::olive		{ 128, 128,   0 };
+const ColorGray ColorGray::yellow		{ 255, 255,   0 };
+const ColorGray ColorGray::navy			{   0,   0, 128 };
+const ColorGray ColorGray::blue			{   0,   0, 255 };
+const ColorGray ColorGray::teal			{   0, 128, 128 };
+const ColorGray ColorGray::aqua			{   0, 255, 255 };
 
 }

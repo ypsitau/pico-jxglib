@@ -203,7 +203,7 @@ Canvas& Canvas::Allocate(const Format& formatOut, int width, int height)
 		return *this;
 	} else if (formatOut.IsGray()) {
 		::panic("gray format is not supported");
-		//pDispatcherEx_.reset(new Dispatcher_T<ColorGray>(*this));
+		pDispatcherEx_.reset(new Dispatcher_T<ColorGray>(*this));
 		return *this;
 	} else if (formatOut.IsRGB()) {
 		pDispatcherEx_.reset(new Dispatcher_T<Color>(*this));
