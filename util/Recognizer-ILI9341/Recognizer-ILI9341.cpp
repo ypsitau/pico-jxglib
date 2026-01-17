@@ -109,7 +109,7 @@ int main()
 			if (x - 1 >= 0) image.Put(x - 1, y, 255);
 			isTouched = true;
 		} else if (isTouched && Tickable::GetCurrentTime() - msecLastTouch > msecFlush) {
-			image.PrintAscii();
+			//image.PrintAscii();
 			float confidence = 0.0f;
 			int result = modelRunner.Recognize_GrayImage(image.GetPointer(), &confidence);
 			if (result < 0) {
