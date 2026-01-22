@@ -101,13 +101,14 @@ bool TSC2046::ReadXYRaw(int* px, int* py, int* pz1, int* pz2)
 
 bool TSC2046::ReadXY(int* px, int* py)
 {
-	const int nSamplesMax = 10;
+	const int nSamplesMax = 8;
+	const int msecInterSample = 2;
 	int xTbl[nSamplesMax], yTbl[nSamplesMax];
 	int nSamples = 0;
 	for (int i = 0; i < nSamplesMax; i++) {
 		int x, y, z1;
 		ReadXYRaw(&x, &y, &z1);
-		Tickable::Sleep(1);
+		Tickable::Sleep(msecInterSample);
 		if (z1 >= z1Threshold_) {
 			xTbl[nSamples] = x, yTbl[nSamples] = y;
 			nSamples++;

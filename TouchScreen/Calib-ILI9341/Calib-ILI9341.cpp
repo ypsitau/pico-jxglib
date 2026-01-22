@@ -26,7 +26,7 @@ int main()
 	const uint32_t msecFlush = 1000;
 	uint32_t msecLastTouch = Tickable::GetCurrentTime();
 	for (;;) {
-		Tickable::Sleep(5);
+		//Tickable::Sleep(10);
 		Point pt;
 		if (touchScreen.ReadPoint(&pt)) {
 			display.DrawRectFill(pt.x - szPixel.width / 2, pt.y - szPixel.height / 2, szPixel.width, szPixel.height);
