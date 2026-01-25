@@ -9,6 +9,7 @@
 
 using namespace jxglib;
 
+EmbedTfLiteModel("jxglib/ML/Model/Recognizer-EMNIST-balanced-binary.tflite", modelData_balanced, modelDataSize_balanced);
 EmbedTfLiteModel("jxglib/ML/Model/Recognizer-EMNIST-mnist-binary.tflite", modelData_mnist, modelDataSize_mnist);
 EmbedTfLiteModel("jxglib/ML/Model/Recognizer-EMNIST-letters-binary.tflite", modelData_letters, modelDataSize_letters);
 EmbedTfLiteModel("jxglib/ML/Model/Recognizer-EMNIST-bymerge-binary.tflite", modelData_bymerge, modelDataSize_bymerge);
@@ -20,7 +21,7 @@ struct Config {
 };
 
 static const Config configTbl[] = {
-	{ modelData_bymerge, "Draw one of 0-9, A-Z, and a-z", {
+	{ modelData_balanced, "Draw one of 0-9, A-Z, and a-z", {
 		"0 (number)", "1", "2", "3", "4", "5", "6", "7", "8", "9",
 		"A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
 		"K", "L", "M", "N", "O (alphabet)", "P", "Q", "R", "S", "T",
@@ -35,8 +36,12 @@ static const Config configTbl[] = {
 		"K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
 		"U", "V", "W", "X", "Y", "Z",
 	}, },
-	{ modelData_mnist, "Draw one of 0-9", {
-		"0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+	{ modelData_bymerge, "Draw one of 0-9, A-Z, and a-z", {
+		"0 (number)", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+		"A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
+		"K", "L", "M", "N", "O (alphabet)", "P", "Q", "R", "S", "T",
+		"U", "V", "W", "X", "Y", "Z",
+		"a", "b", "d", "e", "f", "g", "h", "n", "q", "r", "t",
 	}, },
 };
 
@@ -121,6 +126,6 @@ int main()
 			display.DrawRectFill(rcDrawArea, bgDrawArea);
 			canvas.Fill(Color::black);
 		}
-		Tickable::Tick();
+		Tickable::Sleep(5);
 	}
 }
