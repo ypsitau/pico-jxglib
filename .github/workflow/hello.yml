@@ -1,0 +1,24 @@
+name: Hello GitHub Actions
+
+# push されたときに実行する設定
+on: [push]
+
+jobs:
+  say-hello:
+    # Ubuntu の最新版を召喚
+    runs-on: ubuntu-latest
+
+    steps:
+      # リポジトリのコードを Ubuntu 内にコピー
+      - uses: actions/checkout@v4
+
+      # 実際にコマンドを実行するステップ
+      - name: Run a one-line script
+        run: echo "Hello, Saito! Your Ubuntu runner is alive."
+
+      - name: Check environment
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "OS Information:"
+          lsb_release -a
+  
