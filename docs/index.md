@@ -2,6 +2,8 @@
 
 A collection of libraries and tools for Raspberry Pi Pico, including a powerful shell and various utilities like built-in logic analyzer to enhance your development experience.
 
+![Pico and Pico2](images/pico-and-pico2.jpg)
+
 ## Motivation
 
 Why firmware platforms have no interactive shell? When you want to modify the behavior of the firmware, you have to edit the source code, compile it, and flash it to the device. This process can be time-consuming and inefficient, especially for small changes or debugging purposes. An interactive shell allows developers to interact with the firmware in real-time, making it easier to test and modify behavior without the need for recompilation.
@@ -33,7 +35,7 @@ int main(void)
 
 Just adding these four lines makes your firmware interactive through USB's serial connection, providing a bash-like interface to execute commands.
 
-## Ready-to-use UF2 Binary
+## Ready-to-Use UF2 Binary
 
 If you want to try it out without setting up the development environment, you can download the ready-to-use UF2 binary called `pico-jxgLABO.uf2`.
 
