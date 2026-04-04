@@ -33,6 +33,10 @@ int main(void)
 
 Just adding these four lines makes your firmware interactive through USB's serial connection, providing a bash-like interface to execute commands.
 
+## Ready-to-use UF2 Binary
+
+If you want to try it out without setting up the development environment, you can download the ready-to-use UF2 binary called `pico-jxgLABO.uf2`.
+
 ## Built-in Logic Analyzer
 
 While the library also comes with a rich set of built-in commands for various purposes, the most exciting feature is the built-in logic analyzer, which allows you to capture, visualize, and analyze digital signals directly from your Pico. No need to prepare and connect a logic analyzer. The Pico that runs your firmware works as a logic analyzer! This can be incredibly useful for debugging and analyzing the behavior of your circuits and peripherals.
