@@ -1,6 +1,6 @@
 # pico-jxglib
 
-A collection of libraries and tools for Raspberry Pi Pico, including a powerful shell and various utilities like **built-in logic analyzer** to enhance your development experience.
+A collection of libraries and tools for Raspberry Pi Pico, including a powerful shell and various utilities like built-in logic analyzer to enhance your development experience.
 
 ## Motivation
 
@@ -30,3 +30,4 @@ int main(void)
 Just adding these four lines makes your firmware interactive through USB's serial connection, providing a bash-like interface to execute commands.
 
 It also comes with a rich set of built-in commands for various purposes, such as GPIO control, I2C, SPI, UART communications, and more. Among them, the most exciting feature is the built-in logic analyzer, which allows you to capture, visualize, and analyze digital signals directly from your Pico. No need to prepare and connect a logic analyzer. The Pico that runs your firmware works as a logic analyzer! This can be incredibly useful for debugging and analyzing the behavior of your circuits and peripherals.
+

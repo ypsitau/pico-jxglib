@@ -1,0 +1,16 @@
+site_name: pico-jxglib
+site_description: A collection of libraries and tools for Raspberry Pi Pico, including a powerful shell and various utilities to enhance your development experience.
+copyright: "2025-2026, ypsitau"
+theme:
+  name: material
+  language: ja
+  palette:
+    primary: indigo
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
