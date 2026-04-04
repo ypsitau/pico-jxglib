@@ -12,17 +12,17 @@ pico-jxglib aims to provide a simple but powerful interactive shell with just fo
 
 ```cpp
 #include "pico/stdlib.h"
-#include "jxglib/LABOPlatform.h"            // Added 1
+#include "jxglib/LABOPlatform.h"            // added #1
 
-using namespace jxglib;                     // Added 2
+using namespace jxglib;                     // added #2
 
 int main(void)
 {
 	::stdio_init_all();
-	LABOPlatform::Instance.Initialize();    // Added 3
+	LABOPlatform::Instance.Initialize();    // added #3
 	for (;;) {
         // Your code here
-        Tickable::Tick();                   // Added 4
+        Tickable::Tick();                   // added #4
     }
 }
 ```
