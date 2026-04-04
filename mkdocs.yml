@@ -14,11 +14,15 @@ nav:
       - How to Use: library/how_to_use.md
 theme:
   name: material
+  icon:
+    logo: material/chip
   language: en
   palette:
     primary: indigo
   features:
     - navigation.tabs
+    - navigation.tabs.sticky
+    - content.code.copy
 markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
