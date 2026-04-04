@@ -37,9 +37,9 @@ Just adding these four lines makes your firmware interactive through USB's seria
 
 ## Ready-to-Use UF2 Binary
 
-If you want to try it out without setting up the development environment, you can download the ready-to-use UF2 binary called `pico-jxgLABO.uf2`.
+If you want to try it out without setting up the development environment, you can download the ready-to-use UF2 binary files.
 
-|Target Board|UF2 File|
+|Target Board|UF2 Binary File|
 |---|---|
 |Raspberry Pi Pico|[pico-jxgLABO.uf2](https://github.com/ypsitau/pico-jxgLABO/releases/latest/download/pico-jxgLABO.uf2)|
 |Raspberry Pi Pico W|[pico-w-jxgLABO.uf2](https://github.com/ypsitau/pico-jxgLABO/releases/latest/download/pico-w-jxgLABO.uf2)|
