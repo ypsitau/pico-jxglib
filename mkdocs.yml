@@ -3,7 +3,7 @@ site_description: A collection of libraries and tools for Raspberry Pi Pico, inc
 copyright: "2025-2026, ypsitau"
 theme:
   name: material
-  language: ja
+  language: en
   palette:
     primary: indigo
 markdown_extensions:
