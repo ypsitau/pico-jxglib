@@ -14,30 +14,46 @@ pico-jxglib aims to provide a simple but powerful interactive shell with just fo
 
 ## Actual Code
 
-Let's see what the program looks like:
+pico-jxglib is implemented in C++, but it also provides C APIs for those who prefer C. The following code snippets show how to use the library in both C++ and C.
 
-```cpp hl_lines="2 4 9 12" linenums="1"
-#include "pico/stdlib.h"
-#include "jxglib/LABOPlatform.h"
-
-using namespace jxglib;
-
-int main(void)
-{
-	::stdio_init_all();
-	LABOPlatform::Instance.Initialize();
-	for (;;) {
-        // Your code here
-        Tickable::Tick();
+=== "C++"
+    ```cpp hl_lines="2 4 9 12" linenums="1"
+    #include "pico/stdlib.h"
+    #include "jxglib/LABOPlatform.h"
+    
+    using namespace jxglib;
+    
+    int main(void)
+    {
+    	::stdio_init_all();
+    	LABOPlatform::Instance.Initialize();
+    	for (;;) {
+            // Your code here
+            Tickable::Tick();
+        }
     }
-}
-```
+    ```
+=== "C"
+    ```c hl_lines="2 7 10" linenums="1"
+    #include "pico/stdlib.h"
+    #include "jxglib/LABOPlatform.h"
+    
+    int main(void)
+    {
+        stdio_init_all();
+        jxglib_labo_init(true);
+        for (;;) {
+            /* Your code here */
+            jxglib_tick();
+        }
+    }
+    ```
 
-Just adding these four lines makes your firmware interactive through USB's serial connection, providing a bash-like interface to execute commands.
+Just adding the highlighted lines makes your firmware interactive through USB's serial connection, providing a bash-like interface to execute many powerful built-in commands for various purposes. Of course, you can also add your own custom commands to the shell. It's that simple!
 
-## Ready-to-Use UF2 Binary
+## Ready-to-Flash UF2 Binary
 
-If you want to try it out without setting up the development environment, you can download the ready-to-use UF2 binary files.
+If you want to try it out without setting up the development environment, you can download the ready-to-flash UF2 binary files.
 
 |Target Board|UF2 Binary File|
 |---|---|
@@ -46,6 +62,13 @@ If you want to try it out without setting up the development environment, you ca
 |Raspberry Pi Pico2|[pico2-jxgLABO.uf2](https://github.com/ypsitau/pico-jxgLABO/releases/latest/download/pico2-jxgLABO.uf2)|
 |Raspberry Pi Pico2 W|[pico2-w-jxgLABO.uf2](https://github.com/ypsitau/pico-jxgLABO/releases/latest/download/pico2-w-jxgLABO.uf2)|
 
+These UF2 files are pre-compiled with the latest version of pico-jxglib and can be flashed to your Pico board using the standard UF2 flashing method. Just put your Pico into bootloader mode, copy the UF2 file to the mounted drive, and you're good to go! You can then connect to the Pico's serial console to access the interactive shell and start exploring its features.
+
 ## Built-in Logic Analyzer
 
 While the library also comes with a rich set of built-in commands for various purposes, the most exciting feature is the built-in logic analyzer, which allows you to capture, visualize, and analyze digital signals directly from your Pico. No need to prepare and connect a logic analyzer. The Pico that runs your firmware works as a logic analyzer! This can be incredibly useful for debugging and analyzing the behavior of your circuits and peripherals.
+
+The waveform data captured by the logic analyzer can be visualized on the shell. You can also use PulseView, a powerful waveform viewer, to analyze the captured data in more detail.
+
+<!-- Below is a demo of the logic analyzer working on the shell, capturing the I2C signals that issue READ command for scanning devices. -->
+
