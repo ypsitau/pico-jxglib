@@ -1,11 +1,24 @@
 site_name: pico-jxglib
 site_description: A collection of libraries and tools for Raspberry Pi Pico, including a powerful shell and various utilities to enhance your development experience.
 copyright: "2025-2026, ypsitau"
+nav:
+  - Home: index.md
+  - Command:
+      - Shell: command/shell.md
+      - Logic Analyzer: command/logic_analyzer.md
+      - GPIO: command/gpio.md
+      - I2C: command/i2c.md
+      - SPI: command/spi.md
+      - UART: command/uart.md
+  - Library:
+      - How to Use: library/how_to_use.md
 theme:
   name: material
   language: en
   palette:
     primary: indigo
+  features:
+    - navigation.tabs
 markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
