@@ -14,19 +14,19 @@ pico-jxglib aims to provide a simple but powerful interactive shell with just fo
 
 Let's see what the program looks like:
 
-```cpp
+```cpp hl_lines="2 4 9 12" linenums="1"
 #include "pico/stdlib.h"
-#include "jxglib/LABOPlatform.h"            // added #1
+#include "jxglib/LABOPlatform.h"
 
-using namespace jxglib;                     // added #2
+using namespace jxglib;
 
 int main(void)
 {
 	::stdio_init_all();
-	LABOPlatform::Instance.Initialize();    // added #3
+	LABOPlatform::Instance.Initialize();
 	for (;;) {
         // Your code here
-        Tickable::Tick();                   // added #4
+        Tickable::Tick();
     }
 }
 ```
@@ -36,6 +36,13 @@ Just adding these four lines makes your firmware interactive through USB's seria
 ## Ready-to-use UF2 Binary
 
 If you want to try it out without setting up the development environment, you can download the ready-to-use UF2 binary called `pico-jxgLABO.uf2`.
+
+|Target Board|UF2 File|
+|---|---|
+|Raspberry Pi Pico|[pico-jxgLABO.uf2](https://github.com/ypsitau/pico-jxgLABO/releases/latest/download/pico-jxgLABO.uf2)|
+|Raspberry Pi Pico W|[pico-w-jxgLABO.uf2](https://github.com/ypsitau/pico-jxgLABO/releases/latest/download/pico-w-jxgLABO.uf2)|
+|Raspberry Pi Pico2|[pico2-jxgLABO.uf2](https://github.com/ypsitau/pico-jxgLABO/releases/latest/download/pico2-jxgLABO.uf2)|
+|Raspberry Pi Pico2 W|[pico2-w-jxgLABO.uf2](https://github.com/ypsitau/pico-jxgLABO/releases/latest/download/pico2-w-jxgLABO.uf2)|
 
 ## Built-in Logic Analyzer
 
