@@ -70,7 +70,7 @@ While the library also comes with a rich set of built-in commands for various pu
 
 The waveform data captured by the logic analyzer can be visualized on the shell. You can also use [PulseView](https://sigrok.org/wiki/PulseView), a powerful waveform viewer, to analyze the captured data in more detail.
 
-Below is a demo of the logic analyzer working on the shell, capturing the I2C signals that issue READ requests for scanning devices.
+Below is a demo of the logic analyzer working on the shell, capturing the I2C signals that issue READ requests for scanning devices. Please note that all the commands executed in the prompt `L:/>` are processed by the Pico firmware without the involvement of the host computer.
 
 <div class="video-container">
   <iframe 
@@ -117,6 +117,7 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 - **Real-Time Clock (RTC)**: The library also provides support for a real-time clock, allowing you to keep track of time and date in your firmware. You can use the shell to set and read the RTC, which can be useful for applications that require timekeeping or scheduling.
 - **TFLite Micro Support**: The library also provides support for TensorFlow Lite Micro, allowing you to run machine learning models directly on your Pico. A C macro that includes tflite files allow you to easily integrate TFLite Micro models into your firmware.
 - **LVGL Support**: The library also provides support for LVGL, a powerful graphics library for embedded systems.
+- **PIO Assembler**: You can write PIO assembly code directly in the C++ code and use it in your firmware, allowing you to take advantage of the powerful PIO capabilities of the Pico without needing to write separate assembly files.
 - **GPIO Control**: You can control the GPIO pins of the Pico directly from the shell, allowing you to easily toggle pins and read their states.
 - **PWM Control**: The library also provides support for PWM (Pulse Width Modulation), allowing you to control the brightness of LEDs, the speed of motors, and other devices that can be controlled with PWM signals directly from the shell.
 - **I2C and SPI Communication**: The library provides built-in commands for I2C and SPI communication, making it easy to interact with a wide range of sensors and peripherals without needing to write complex code.
