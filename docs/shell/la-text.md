@@ -10,7 +10,8 @@ flowchart
        subgraph la[la command]
               direction LR
               data-sampling([Data Sampling]) --> memory[Buffer Memory]
-              memory --> waveform([Waveform Display])
+              memory --> pulseview([PulseView Display])
+              memory --> textmode([Text Mode Display])
               memory --> analysis([Protocol Analysis])
        end
 ```
