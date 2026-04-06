@@ -82,25 +82,6 @@ Below is a demo of the logic analyzer working on the shell, capturing the I2C si
   </iframe>
 </div>
 
-<style>
-/* Style to make the page responsive at 16:9 aspect ratio */
-.video-container {
-  position: relative;
-  padding-bottom: 56.25%;
-  height: 0;
-  overflow: hidden;
-  margin-bottom: 1em;
-}
-.video-container iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 8px;
-}
-</style>
-
 ## Other Features
 
 In addition to the interactive shell and built-in logic analyzer, pico-jxglib also provides a variety of other features, including:

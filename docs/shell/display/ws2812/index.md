@@ -1,3 +1,5 @@
+# Display - WS2812
+
 今回は、フルカラーシリアル LED WS2812 を使ってイルミネーションストリップや電光掲示板を作ります。pico-jxgLABO を使うとコマンド操作だけで WS2812 を制御できるので、**プログラムを書く必要はありません**。簡単なコマンドを使って LED を点灯させたり、アニメーションを表示したりできます。
 
 もうすぐクリスマス🎄自分だけのオリジナルイルミネーションストリップを作るのも楽しいですよ！
@@ -236,7 +238,7 @@ display 0: WS2812 16x16 DIN:2 Layout:zigzag-nw-vert
 
 実行するコマンドを以下にまとめます。
 
-```text:イルミネーションバー: 流れる赤いドット
+```text
 L:/>display-ws2812 setup {din:2 straight:60} brightness:.1
 L:/>draw image-load:red-dot.png
 L:/>draw image {size:8,1 repeat-x}
@@ -276,7 +278,7 @@ L:/>draw repeat { image {offset-shift:1,0} sleep:100 }
 
   このファイルを Pico ボードの内部ストレージ `L:` ドライブに保存して、以下のコマンドを実行します。
 
-  ```text:イルミネーションバー: 色を変えながら流れるドット
+  ```text
   L:/>display-ws2812 setup {din:2 straight:60} brightness:.1
   L:/>draw image-load:hue-256-vert.png
   L:/>draw image {size:8,1 repeat-x}
@@ -306,7 +308,7 @@ L:/>draw repeat { image {offset-shift:1,0} sleep:100 }
 
   このファイルを Pico ボードの内部ストレージ `L:` ドライブに保存して、以下のコマンドを実行します。
 
-   ```text:電光掲示板: 文字が流れるディスプレイ
+   ```text
    L:/>display-ws2812 setup {din:2 zigzag-nw-vert:16,16} brightness:.1
    L:/>draw image-load:alphabet-white-16.png
    L:/>draw image {size:16,16}
@@ -326,7 +328,7 @@ L:/>draw repeat { image {offset-shift:1,0} sleep:100 }
 
   このファイルを Pico ボードの内部ストレージ `L:` ドライブに保存して、以下のコマンドを実行します。
 
-   ```text:電光掲示板: アニメーション表示
+   ```text
    L:/>display-ws2812 setup {din:2 zigzag-nw-vert:16,16} brightness:.1
    L:/>draw image-load:rect-inflate-16.png
    L:/>draw image {size:16,16}
@@ -345,7 +347,7 @@ L:/>draw repeat { image {offset-shift:1,0} sleep:100 }
 
 以下は、赤いドットが流れるイルミネーションバーを表示するための `.startup` ファイルの例です。
 
-```text:.startup
+```text
 display-ws2812 setup {din:2 straight:60} brightness:.1
 draw image-load:red-dot.png
 draw image {size:8,1 repeat-x}

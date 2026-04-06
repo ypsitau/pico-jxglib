@@ -14,7 +14,35 @@ Running `gpio` with no arguments displays the current status of all GPIOs.
 ```text
 L:/>gpio
 GPIO0  lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
-...existing code...
+GPIO1  lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO2  lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO3  lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO4  lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO5  lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO6  lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO7  lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO8  lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO9  lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO10 lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO11 lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO12 lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO13 lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO14 lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO15 lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO16 lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO17 lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO18 lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO19 lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO20 lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO21 lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO22 lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO23*lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO24*lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO25*lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO26 lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO27 lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO28 lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO29*lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
 ```
 
 The Pico has 30 GPIOs, numbered 0 to 29. The fields in the status display mean:
@@ -86,7 +114,17 @@ You can observe GPIO signals with a logic analyzer:
 L:/>la enable -p 25
 L:/>gpio 25 -B func:sio dir:out repeat:20 {toggle sleep:100}
 L:/>la print
-...existing code...
+ Time [usec] P25 
+             │  
+             :  
+        0.00 └─┐
+               :
+    99208.00 ┌─┘
+             :  
+   199199.52 └─┐
+               :
+   299194.56 ┌─┘
+             :  
 ```
 
 Start capture with `la enable`, operate the GPIO, then display the captured data with `la print`.
@@ -136,17 +174,17 @@ L:/>gpio 1 func:uart dir:in repeat {get sleep:300}
 
 The familiar pinout diagram for Pico GPIO function settings:
 
-![pico-pinout.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-08-03-labo-gpio/pico-pinout.png =300x)
+![pico-pinout.png](images/pico-pinout.png =300x)
 
 See the datasheets for more details:
 
 **Pico** - [RP2040 Datasheet](https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf) 2.19.2 Function select
 
-![pico-function.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-08-03-labo-gpio/pico-function.png)
+![pico-function.png](images/pico-function.png)
 
 **Pico 2** - [RP2350 Datasheet](https://datasheets.raspberrypi.com/rp2350/rp2350-datasheet.pdf) 9.4. Function select
 
-![pico2-function.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-08-03-labo-gpio/pico2-function.png)
+![pico2-function.png](images/pico2-function.png)
 
 Each function is assigned a number from F0 to F31, with F31 being the null function (no assignment).
 
@@ -159,7 +197,36 @@ For example, to set all available GPIOs to PWM function:
 
 ```text
 L:/>gpio 0- func:pwm
-...existing code...
+GPIO0  lo  func:PWM0 A     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO1  lo  func:PWM0 B     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO2  lo  func:PWM1 A     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO3  lo  func:PWM1 B     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO4  lo  func:PWM2 A     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO5  lo  func:PWM2 B     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO6  lo  func:PWM3 A     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO7  lo  func:PWM3 B     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO8  lo  func:PWM4 A     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO9  lo  func:PWM4 B     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO10 lo  func:PWM5 A     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO11 lo  func:PWM5 B     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO12 lo  func:PWM6 A     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO13 lo  func:PWM6 B     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO14 lo  func:PWM7 A     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO15 lo  func:PWM7 B     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO16 lo  func:PWM0 A     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO17 lo  func:PWM0 B     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO18 lo  func:PWM1 A     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO19 lo  func:PWM1 B     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO20 lo  func:PWM2 A     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO21 lo  func:PWM2 B     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO22 lo  func:PWM3 A     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO23*lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO24*lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO25*lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO26 lo  func:PWM5 A     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO27 lo  func:PWM5 B     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO28 lo  func:PWM6 A     dir:in  pull:down drive:4mA slew:slow hyst:on
+GPIO29*lo  func:------     dir:in  pull:down drive:4mA slew:slow hyst:on
 ```
 
 Reviewing all available assignments occasionally may help you find more convenient settings.
@@ -238,7 +305,7 @@ Hysteresis helps filter slow or noisy signals. The default is `on`, but you can 
 
 Experiment circuit:
 
-![circuit-cr.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-08-03-labo-gpio/circuit-cr.png)
+![circuit-cr.png](images/circuit-cr.png)
 
 The time constant is $CR=1000 \cdot 100 \cdot 10^{-6}$ = 100ms. Generate a 1000ms high pulse on GPIO0 and observe with GPIO2 and GPIO3.
 
@@ -256,7 +323,17 @@ L:/>la print --reso:300000
 Result:
 
 ```text
-...existing code...
+ Time [usec] P0      P2  P3  
+             │       │   │  
+        0.00 └─┐     │   │  
+   134383.46   │     └─┐ │  
+   134556.04   │       │ └─┐
+               │       │   │
+               │       │   │
+   999803.38 ┌─┘       │   │
+  1279721.92 │         │ ┌─┘
+  1282086.20 │       ┌─┘ │  
+ Time [usec] P0      P2  P3  
 ```
 
 Next, disable hysteresis on GPIO3:
@@ -273,7 +350,17 @@ L:/>la print --reso:300000
 Result:
 
 ```text
-...existing code...
+ Time [usec] P0      P2  P3  
+             │       │   │  
+        0.00 └─┐     │   │  
+   124398.68   │     │   └─┐
+   133327.28   │     └─┐   │
+               │       │   │
+               │       │   │
+  1000026.48 ┌─┘       │   │
+  1224540.98 │         │ ┌─┘
+  1275310.10 │       ┌─┘ │  
+ Time [usec] P0      P2  P3  
 ```
 
 ## Relation to C/C++ API

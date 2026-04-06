@@ -1,50 +1,50 @@
-今回は、pico-jxgLABO を使って Pico ボードを Wi-Fi ネットワークに接続します。
+This article explains how to connect a Pico board to a Wi-Fi network using pico-jxgLABO.
 
-組込みマイコンのネットワーク接続というと、そのためのプログラムを書いて実行するという例がほとんどです。特に、Wi-Fi 接続に必要な SSID やパスワードの値をソースコードに直接書き込まなければいけないことが多く、プログラムの配布やメンテナンスが困難です。pico-jxgLABO 環境では、ネットワークに接続するためのシェルコマンドを提供し、ユーザがコマンド操作を通してネットワークに接続できるようにしています。
+Traditionally, connecting a microcontroller to a network requires writing and running a program, often hardcoding the SSID and password for Wi-Fi, which makes distribution and maintenance difficult. In the pico-jxgLABO environment, shell commands are provided for network connection, allowing users to connect to networks interactively via commands.
 
-この記事で扱うネットワーク操作は以下の通りです。
+This article covers the following network operations:
 
-- ネットワーク接続
-  1. Wi-Fi スキャンで利用可能なアクセスポイントを調べる
-  2. 指定の SSID とパスワードで Wi-Fi に接続する
-  3. 固定 IP アドレスを設定する
-- Pico ボード上でネットワークコマンド (ping, nslookup, ntp) を試してみる
-- Pico ボード上で Telnet サーバを動かして遠隔コマンド操作をする
+- Network connection
+  1. Scan for available Wi-Fi access points
+  2. Connect to Wi-Fi with a specified SSID and password
+  3. Set a static IP address
+- Try network commands (ping, nslookup, ntp) on the Pico board
+- Run a Telnet server on the Pico board for remote command operation
 
-## Raspberry Pi Pico と Wi-Fi 機能
+## Raspberry Pi Pico and Wi-Fi Functionality
 
-### Pico W と Pico 2 W
+### Pico W and Pico 2 W
 
-ネットワーク機能を持つ Pico ボードとして、CYW43439 という Wi-Fi チップ (以下 CYW43 チップ) を搭載した Pico W と Pico 2 W があります。
+Pico W and Pico 2 W are Pico boards equipped with a CYW43439 Wi-Fi chip (CYW43 chip).
 
-![picow-and-pico2w](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-10-06-labo-wifi/picow-and-pico2w.jpg)
-*Pico W と Pico 2 W*
+![picow-and-pico2w](images/picow-and-pico2w.jpg)
+*Pico W and Pico 2 W*
 
-Pico W は 1,200 円、Pico 2 W は 1,400 円程度で購入できます。Wi-Fi 機能がない Pico ボードに比べて CYW43 チップの分だけ 400 円ほど高くなります。
+Pico W costs about 1,200 yen, Pico 2 W about 1,400 yen—roughly 400 yen more than the non-Wi-Fi models due to the CYW43 chip.
 
-Pico W/Pico 2 W ボードは、特殊用途向けに予約されている GPIO 23, 24, 25, 29 を使って CYW43 チップを制御します。Pico や Pico 2 が内蔵 LED の制御に使っている GPIO 25 が CYW43 チップの制御に使われてしまうので、内蔵 LED は CYW43 チップの GPIO に接続されています。つまり Pico W/Pico 2 W の LED を制御するには CYW43 チップと通信しなければならず、これはかなり厄介な仕事です。Pico SDK は CYW43 チップの GPIO にアクセスするための API として `cyw43_arch_gpio_get()` と `cyw43_arch_gpio_put()` を用意しているので、これらを使うのが得策です。
+Pico W/Pico 2 W use reserved GPIOs 23, 24, 25, and 29 to control the CYW43 chip. GPIO25, used for the built-in LED on Pico/Pico 2, is now used for CYW43 control, so the built-in LED is connected to the CYW43 chip’s GPIO. To control the LED on Pico W/Pico 2 W, you must communicate with the CYW43 chip, which is tricky. The Pico SDK provides `cyw43_arch_gpio_get()` and `cyw43_arch_gpio_put()` APIs for this purpose.
 
-ところで、この限られた GPIO ピンで CYW43 チップを制御するのはずいぶん苦労したみたいです。[こちらの記事](https://zenn.dev/nonnoise/articles/0d5b97cb517e31)で詳しく解説されているので、興味のある方は読んでみてください。
+Controlling the CYW43 chip with limited GPIOs is challenging. For more details, see [this article](https://zenn.dev/nonnoise/articles/0d5b97cb517e31).
 
-限られた資源といえば、CYW43 チップの制御のために PIO (Programmable I/O) も使われています。Pico W は PIO を 2 ブロック、PICO 2 W  は 3 ブロック持っていますが、そのうちの 1 ブロックが CYW43 制御に使われるので、PIO を使うシステムを設計する場合は注意が必要です[^pio-usage]。
+PIO (Programmable I/O) is also used for CYW43 control. Pico W has 2 PIO blocks, Pico 2 W has 3, but one block is used for CYW43, so be careful when designing systems that use PIO[^pio-usage].
 
-[^pio-usage]: pico-jxgLABO もロジックアナライザ機能のために PIO を使います。
+[^pio-usage]: pico-jxgLABO also uses PIO for logic analyzer functionality.
 
-### Pico のネットワーク機能の用途
+### Use Cases for Pico’s Network Functionality
 
-Pico W や Pico 2 W の Wi-Fi 機能は、IoT (Internet of Things) 機器のネットワーク接続に使う例が多いです。例えば、センサーで取得したデータをクラウドに送信したり、クラウドからの指示で機器を制御したりする用途です。HTTP プロトコルを使えば Web ブラウザで操作ができますし、MQTT プロトコルを使えば軽量なメッセージングが可能です。
+Pico W and Pico 2 W’s Wi-Fi is often used for IoT (Internet of Things) applications, such as sending sensor data to the cloud or controlling devices from the cloud. HTTP allows web browser operation, and MQTT enables lightweight messaging.
 
-今回の記事では、Pico ボードで Telnet サーバを動かして pico-jxgLABO のシェルコマンドを遠隔で実行できるようにします。Tera Term などのターミナルソフトを使えば、Pico ボードを USB ケーブルで接続しなくてもコマンドを実行できるようになります。
+In this article, we’ll run a Telnet server on the Pico board so you can execute pico-jxgLABO shell commands remotely. With terminal software like Tera Term, you can operate the Pico board without a USB cable.
 
-以下の写真では、複数の Pico W や Pico 2 W を Wi-Fi ネットワークに接続し、固定 IP アドレスをそれぞれ設定しています。
+In the photo below, multiple Pico W and Pico 2 W boards are connected to a Wi-Fi network, each with a fixed IP address.
 
-![wifi_experiment](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-10-06-labo-wifi/wifi-experiment.jpg)
+![wifi_experiment](images/wifi-experiment.jpg)
 
-物理的なケーブル接続をしなくてもそれぞれのボードの操作ができるので、より自由な運用が可能になりますね!
+You can operate each board without physical cable connections, allowing more flexible operation!
 
-## Wi-Fi ネットワークに接続する
+## Connecting to a Wi-Fi Network
 
-USB シリアルで Pico ボード上の pico-jxgLABO シェルに接続し、シェルコマンド `net` のサブコマンドでネットワーク操作を行います。まずは `wifi-scan` サブコマンドで利用可能なアクセスポイントを調べてみましょう。
+Connect to the pico-jxgLABO shell on the Pico board via USB serial, and use the `net` shell command for network operations. First, use the `wifi-scan` subcommand to find available access points:
 
 ```text
 L:/>net wifi-scan
@@ -54,40 +54,39 @@ ssid:LivingRoomAP                     rssi: -76 channel:  4 mac:xx:xx:xx:xx:xx:x
 ssid:HUMIN-4512                       rssi: -76 channel:  4 mac:xx:xx:xx:xx:xx:xx security:7
 ```
 
-`wifi-connect` サブコマンドで SSID とパスワードを指定して Wi-Fi ルータに接続します。
+Connect to a Wi-Fi router with the `wifi-connect` subcommand, specifying SSID and password:
 
 ```text
 L:/>net wifi-connect {ssid:'MyHome-WiFi' password:'PASSWORD'}
 Connected ssid:'MyHome-WiFi' auth:wpa2 addr:192.168.0.20 netmask:255.255.255.0 gateway:192.168.0.1
 ```
 
-この例では DHCP によって IP アドレスが `192.168.0.20`、ネットマスクが `255.255.255.0`、ゲートウェイが `192.168.0.1` に設定されました。
+In this example, DHCP assigns IP address `192.168.0.20`, netmask `255.255.255.0`, and gateway `192.168.0.1`.
 
 :::message
-Wi-Fi ルータによっては Pico ボードと相性が悪くて接続できない場合があります。ホスト PC が Windows であればモバイルホットスポット機能を使ってこれをアクセスポイントにすることができるので、こういった機能も試してみてください。セキュリティの面でいうと、ホスト PC をアクセスポイントにするこの方法は Wi-Fi ルータを使うよりも安全でおすすめです。
+Some Wi-Fi routers may not work well with the Pico board. If your host PC is Windows, you can use the mobile hotspot feature as an access point. This is also safer than using a Wi-Fi router, so give it a try.
 :::
 
-
-固定 IP アドレスを設定するには `config` サブコマンドを使います。以下の例では IP アドレスを `192.168.0.101` に設定しています。
+To set a static IP address, use the `config` subcommand. The example below sets the IP to `192.168.0.101`:
 
 ```text
 L:/>net config {addr:192.168.0.101}
 Connected ssid:'MyHome-WiFi' auth:wpa2 addr:192.168.0.101 netmask:255.255.255.0 gateway:192.168.0.1
 ```
 
-`config` サブコマンドはネットマスクとゲートウェイも指定できますが、これらは Wi-Fi のアクセスポイントに接続した際に DHCP で与えられた値でないと通信できないので、通常は IP アドレスだけ指定することになると思います。
+You can also specify netmask and gateway, but these must match the values assigned by DHCP when connecting to the access point, so usually you only specify the IP address.
 
-`wifi-connect` サブコマンドと `config` サブコマンドは組み合わせて使うこともできます。
+You can combine `wifi-connect` and `config`:
 
 ```text
 L:/>net wifi-connect {ssid:'MyHome-WiFi' password:'PASSWORD'} config {addr:192.168.0.101}
 ```
 
-## ネットワークを使ってみる
+## Trying Out Network Commands
 
-### ネットワークコマンドの実行
+### Running Network Commands
 
-まずは基本の `ping` コマンド。ゲートウェイに ping を送ってみます。
+First, the basic `ping` command. Try pinging the gateway:
 
 ```text
 L:/>ping 192.168.0.1
@@ -96,91 +95,91 @@ Reply from 192.168.0.1: time=1ms
 Reply from 192.168.0.1: time=2ms
 ```
 
-`nslookup` コマンドで DNS サーバに問い合わせます。
+Use `nslookup` to query a DNS server:
 
 ```text
 L:/>nslookup raspberrypi.com
 104.21.88.234
 ```
 
-`ntp` コマンドで NTP サーバに接続して現在時刻を取得します。
+Use `ntp` to connect to an NTP server and get the current time:
 
 ```text
 L:/>ntp
 2025-10-06 12:34:56Z
 ```
 
-デフォルトで表示されるのは UTC 時刻です。シェル変数 `TZ` にタイムゾーン情報を設定すると、ローカル時刻で表示されるようになります。例えば、日本標準時 (JST) に設定するには以下のようにします。
+By default, UTC time is shown. Set the shell variable `TZ` to display local time. For example, to set Japan Standard Time (JST):
 
 ```text
 L:/>set TZ=JST-9
 ```
 
-`ntp` コマンドを再度実行すると、JST で現在時刻が表示されます。
+Run `ntp` again to see the time in JST:
 
 ```text
 L:/>ntp
 2025-10-06 21:34:56
 ```
 
-### Pico ボード上で Telnet サーバを動かし、リモートでコマンドを実行する
+### Running a Telnet Server on the Pico Board for Remote Commands
 
-`telnet-server` コマンドで Pico ボード上に Telnet サーバを起動します。
+Start a Telnet server on the Pico board with the `telnet-server` command:
 
 ```text
 L:/>telnet-server start
 Telnet server started on port 23
 ```
 
-Tera Term を使って Pico ボードに接続してみましょう。Tera Term のメニューバーから `ファイル(F)` - `新しい接続(N)...` を実行して以下の「Tera Term: 新しい接続」ダイアログを表示します。
+Try connecting to the Pico board with Tera Term. From the menu, select `File` - `New Connection...` to open the connection dialog:
 
-![teraterm-connect](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-10-06-labo-wifi/teraterm-connect.png)
+![teraterm-connect](images/teraterm-connect.png)
 
-`TCP/IP` を選択して `ホスト(T)` に Pico ボードの IP アドレスを入力、サービスに `Telnet` を選択して `OK` ボタンをクリックすると、新しい Tera Term のウィンドウが開き、ボードに接続します。パスワードを聞いてきますが、まだ設定していないのでそのまま Enter キーを押すとログインできます。
+Select `TCP/IP`, enter the Pico board’s IP address as the host, select `Telnet` as the service, and click OK. A new Tera Term window will open and connect to the board. You’ll be prompted for a password; just press Enter if you haven’t set one yet.
 
 ```text
 password:
 L:/>
 ```
 
-これで pico-jxgLABO のコマンドがすべて遠隔で実行できるようになりました。[ロジックアナライザ機能](https://zenn.dev/ypsit/articles/2025-09-08-labo-la)もリモートで実行できるんですよ! ほかに何ができるのか知りたい方は、以下の記事を参照してください。
+Now you can run all pico-jxgLABO commands remotely! You can even use [logic analyzer features](https://zenn.dev/ypsit/articles/2025-09-08-labo-la) remotely. For more, see the article below:
 
-▶️ [Pico ボードは実験室! pico-jxgLABO を導入してロジックアナライザ機能を試してみる](https://zenn.dev/ypsit/articles/2025-08-01-labo-intro)
+▶️ [Pico Board as a Lab! Try Logic Analyzer Features with pico-jxgLABO](https://zenn.dev/ypsit/articles/2025-08-01-labo-intro)
 
-ちなみに、Telnet で接続すると USB シリアルからのコマンド入力は使えなくなります。Telnet を切断すると USB シリアル通信が再び使えるようになります。
+Note: When connected via Telnet, USB serial command input is disabled. Disconnecting Telnet restores USB serial communication.
 
-Pico ボードの制御ができることを確かめるために、見た目でわかりやすい LED 操作をしてみましょう。`led` コマンドで Pico ボードの内蔵 LED を制御することができます。ボードの動作状況を知らせるのにも重宝するので、ちょっと使い方を詳しく説明しますね。
+To confirm you can control the Pico board, try operating the built-in LED with the `led` command. This is also useful for indicating board status. Here’s how to use it:
 
-下は LED を点灯・消灯する例です。
+To turn the LED on and off:
 
 ```text
 L:/>led on
 L:/>led off
 ```
 
-`flip` サブコマンドを使うと、指定した間隔で LED の点灯・消灯を反転させることができます。以下は 100msec ごとに点滅させる例です。この点滅処理はバックグラウンドで動作するので、他のコマンドを実行しながら LED の点滅を続けることができます。
+Use the `flip` subcommand to toggle the LED at specified intervals. The following example blinks the LED every 100ms. This runs in the background, so you can run other commands while the LED blinks:
 
 ```text
 L:/>led on flip:100
 ```
 
-以下の例は、50msec 点灯、500msec 消灯、50msec 点灯、500msec 消灯、50msec 点灯、2000msec 消灯を繰り返す点滅パターンです。
+The following example blinks the LED for 50ms, off for 500ms, three times, then off for 2000ms, and repeats:
 
 ```text
 L:/>led on flip:50,500,50,500,50,2000
 ```
 
-反転操作の繰り返しを止めるには、`flip` サブコマンドの数値列の最後に `*` を指定します。以下は 3 回点滅した後に消灯する例です。
+To stop flipping after a certain number of times, add `*` at the end. The following blinks three times, then turns off:
 
 ```text
 L:/>led on flip:50,500,50,500,50,*
 ```
 
-### パスワードの設定
+### Setting a Password
 
-ネットワーク上にむき出しの状態で Telnet サーバを起動するのはセキュリティ上好ましくないので、パスワードを設定しておきましょう。もっとも、Telnet は平文で通信するので、ネットワークを傍受されてしまえば意味はないのですが、少なくともパスワードを知らない人が簡単にログインできないようにすることは重要です。
+It’s not secure to run a Telnet server on the network without a password, so set one. (Note: Telnet transmits in plain text, so it’s not fully secure, but at least prevents unauthorized logins.)
 
-パスワードを設定するには、`password` コマンドを実行します。
+Set a password with the `password` command:
 
 ```text
 L:/>password
@@ -189,13 +188,13 @@ Reenter password:
 password changed
 ```
 
-パスワードを設定すると、`L:` ドライブのルートディレクトリに `.password` ファイルが作成され、ハッシュ化されたパスワードが保存されます。
+This creates a `.password` file in the root of the `L:` drive, storing a hashed password.
 
-パスワード入力は Telnet 接続したときのみ要求されます。USB シリアル接続時にはパスワード入力は必要ありません。
+Password entry is only required for Telnet connections, not USB serial.
 
-### 自動起動の設定
+### Setting Up Auto-Start
 
-`L:` ドライブのルートディレクトリに `.startup` という名前のファイルを作成すると、Pico ボードの電源を入れたときに自動的に実行されるコマンドを設定できます。以下に Wi-Fi 接続と Telnet サーバの起動を自動化する `.startup` ファイルの例を示します。
+Create a file named `.startup` in the root of the `L:` drive to run commands automatically when the Pico board powers on. Here’s an example to automate Wi-Fi connection and Telnet server startup:
 
 ```text:.startup
 net wifi-connect {ssid:'SSID' password:'PASSWORD'} config {addr:XXX.XXX.XXX.XXX}
@@ -203,6 +202,6 @@ telnet-server start
 led on flip:50,500,50,500,50,2000
 ```
 
-pico-jxgLABO が動作している Pico ボードに USB ケーブルを接続すると `L:` ドライブの内容を USB ドライブとして PC からアクセスできるようになっています。Windows 環境ですと `D:` ドライブになることが多いです。上記のファイルを編集して `SSID`, `PASSWORD`, `XXX.XXX.XXX.XXX` の内容を変更し、このドライブにコピーしてください。
+When you connect the Pico board running pico-jxgLABO via USB, the `L:` drive appears as a USB drive on your PC (often as `D:` on Windows). Edit the file above, change `SSID`, `PASSWORD`, and `XXX.XXX.XXX.XXX` as needed, and copy it to the drive.
 
-再起動して、スクリプト内のすべてのコマンドがエラーなしで実行されると、`led` コマンドで内蔵 LED を点滅させて正常に起動したことを知らせます。設定した IP アドレスに応じて LED の点滅パターンを変えておくと、ボードごとの IP アドレスが一目でわかるので便利です (例えば、192.168.0.101 なら一回、192.168.0.102 なら二回点滅する、など)。
+After rebooting, if all commands in the script run without error, the `led` command will blink the built-in LED to indicate successful startup. You can set different blink patterns for each board’s IP address for easy identification (e.g., one blink for 192.168.0.101, two for 192.168.0.102, etc.).

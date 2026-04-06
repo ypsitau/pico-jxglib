@@ -1,16 +1,17 @@
-今回の記事では、pico-jxgLABO の `pwm` コマンドを使って Pico の PWM 機能の実験をする方法を紹介します。
 
-PWM (Pulse Width Modulation) は、モーターの速度制御や LED の明るさ調整など、様々な用途で使われる技術です。Pico ボードは、GPIO ピンを使って PWM 信号を生成することができますが、その設定はちょっとわかりづらいところがあります。まあ動けばいいかな、とただサンプルプログラムをコピーしてきて動かしている人も多いのではないでしょうか。
+This article explains how to experiment with the Pico's PWM functionality using the `pwm` command in pico-jxgLABO.
 
-pico-jxgLABO を使えば、実際にパラメータを操作してロジックアナライザで波形を観測しながら、PWM の設定や動作を理解することができます。
+PWM (Pulse Width Modulation) is a technique used for various purposes such as motor speed control and LED brightness adjustment. The Pico board can generate PWM signals on its GPIO pins, but the settings can be a bit confusing. Many people just copy and run sample programs without fully understanding them.
 
-## `pwm` コマンドを使った PWM の制御
+With pico-jxgLABO, you can interactively change parameters and observe waveforms with a logic analyzer to better understand PWM settings and operation.
 
-`pwm` コマンドを使って PWM の実験をしていきます。ここでは Pico 2 を使いますが、Pico でも同様に実験できます。
+## Controlling PWM with the `pwm` Command
 
-### 現在の PWM 状態の表示
+Let's experiment with PWM using the `pwm` command. Here, Pico 2 is used, but you can do the same with the original Pico.
 
-引数なしで `pwm` を実行すると、すべての GPIO の PWM 設定状態が表示されます。
+### Displaying Current PWM Status
+
+Running `pwm` with no arguments displays the PWM configuration for all GPIOs.
 
 ```text
 L:/>pwm
@@ -46,7 +47,7 @@ GPIO28 func:------
 GPIO29*func:------
 ```
 
-まだ PWM の設定は行われていないので、すべての GPIO の `func` が `------` となっています。GPIO ピン番号を指定してサブコマンド `func:pwm` を実行すると、ファンクションを PWM に設定できます。以下の例では、すべての GPIO ピンを PWM に設定しています。
+Initially, all GPIOs show `func:------`, meaning PWM is not configured. You can set the function to PWM by specifying GPIO pin numbers and using the `func:pwm` subcommand. For example, to set all GPIOs to PWM:
 
 ```text
 L:/>pwm 0- func:pwm
@@ -82,44 +83,41 @@ GPIO28 func:PWM6 A     disabled freq:2288Hz (clkdiv:1.0 wrap:0xffff) duty:0.000 
 GPIO29*func:------
 ```
 
-GPIO23, GPIO24, GPIO25, GPIO29 は特殊用途に使われるため、`pwm` では操作ができないようになっています。ただし、Pico や Pico 2 の GPIO25 は内蔵 LED に接続されており、手軽に使えて便利なのでオプション `-B` (または `--builtin-led`) を指定することで操作できるようになっています。
+GPIO23, GPIO24, GPIO25, and GPIO29 are reserved for special purposes and cannot be controlled by `pwm`. However, GPIO25 (user LED) can be controlled with the `-B` or `--builtin-led` option for convenience.
 
-Pico の GPIO はすべて PWM に対応しています。Pico の PWM の機能単位はスライスと呼ばれ、PWM0 から PWM7 までの 8 個のスライスがあります。各スライスは A と B の 2 つのチャネルを持ち、合計で 16 個のチャネルが存在します。
+All Pico GPIOs support PWM. PWM is organized into 8 slices (PWM0 to PWM7), each with two channels (A and B), for a total of 16 channels. Each slice can be enabled/disabled and have its frequency and counter settings, but channels A and B in the same slice share these settings (only the duty cycle is set individually).
 
-
-スライスごとに PWM の有効/無効状態、周波数やカウンタの設定ができますが、A と B のチャネルは同じスライスの設定を共有します。つまり、A と B のチャネルは同じ周波数で動作し、カウンタも同期して動きます。同じスライス内では、デューティ比だけがチャネル A と B で個別に設定できます。
-
-それでは、PWM の実験をしていきましょう。以下のコマンドを実行して、ファンクションを初期状態に戻しておいてください。
+To reset all functions to default:
 
 ```text
 L:/>pwm 0- func:-
 ```
 
-### GPIO ピン番号の指定方法
+### Specifying GPIO Pin Numbers
 
-`pwm` コマンドの最初の引数には、GPIO ピン番号を指定します。単一の GPIO ピン番号を指定することもできますし、範囲を指定することもできます。例を以下に示します。
+The first argument to the `pwm` command specifies the GPIO pin(s). You can specify a single pin or a range. Examples:
 
-|コマンド　      |説明                                 |
-|---------------|-------------------------------------|
-|`pwm 0`       |GPIO0 の PWM の状態を表示します               |
-|`pwm 2,3,8,9` |GPIO2,3,8,9 の PWM の状態を表示します         |
-|`pwm 2-15`    |GPIO2 から GPIO15 までの PWM の状態を表示します|
-|`pwm 8-`      |GPIO8 から GPIO29 までの PWM の状態を表示します|
+|Command         |Description                                 |
+|---------------|--------------------------------------------|
+|`pwm 0`        |Show PWM status for GPIO0                   |
+|`pwm 2,3,8,9`  |Show PWM status for GPIO2, 3, 8, 9          |
+|`pwm 2-15`     |Show PWM status for GPIO2 to GPIO15         |
+|`pwm 8-`       |Show PWM status for GPIO8 to GPIO29         |
 
-単一のピン操作のためのコマンド `pwm0` から `pwm29` も用意されています。例えば `pwm2` は `pwm 2` と同じ意味になります。
+There are also shortcut commands like `pwm0` to `pwm29` (e.g., `pwm2` is the same as `pwm 2`).
 
-### LED の明るさを PWM で調整する
+### Adjusting LED Brightness with PWM
 
-まずは、LED の明るさを PWM で調整してみましょう。Pico や Pico 2 の GPIO25 に接続された LED を制御します。Pico W, Pico 2 W の場合は適当な GPIO ピンに LED を接続してください。
+Let's control the brightness of the LED connected to GPIO25 on Pico or Pico 2. For Pico W or Pico 2 W, connect an LED to a suitable GPIO pin.
 
-以下のコマンドを実行して、GPIO25 の PWM を有効にし、周波数を 100Hz、デューティ比を 0.5 (50%) に設定します。オプション `-B` は、GPIO25 の操作を許可するためのものです。
+Enable PWM on GPIO25, set the frequency to 100Hz, and the duty cycle to 0.5 (50%). The `-B` option allows control of GPIO25.
 
 ```text
 L:/>pwm25 -B func:pwm freq:100 duty:0.5 enable
 GPIO25 func:PWM4 B     enabled  freq:100Hz (clkdiv:23.0 wrap:0xfec0) duty:0.500 (level:0x7f60) counter:0x0bd5
 ```
 
-デューティ比に 0 から 1 の間の値を設定すると LED の明るさが変化します。指定されていないオプションは、前回の設定が引き継がれます。
+Change the duty cycle between 0 and 1 to adjust brightness:
 
 ```text
 L:/>pwm25 -B duty:0
@@ -130,51 +128,39 @@ L:/>pwm25 -B duty:0.8
 L:/>pwm25 -B duty:1
 ```
 
-### PWM 波形の観測
+### Observing PWM Waveforms
 
-デューティ比は、PWM 信号の high と low の比率を表します。ロジックアナライザを使って波形を観測することで、デューティ比がどのように PWM 信号に反映されるかを確認できます。
+The duty cycle is the ratio of high to low in the PWM signal. Use a logic analyzer to observe how the duty cycle affects the waveform.
 
-以下の手順でコマンドを実行してください。
-
-1. ロジックアナライザを起動して　GPIO2, GPIO3, GPIO4, GPIO5 の 4 本のピンの測定を開始します。
+1. Start the logic analyzer and begin measuring GPIO2, GPIO3, GPIO4, and GPIO5:
 
    ```text
    L:/>la -p 2-5 enable
    ```
-
-2. 周波数が 100Hz、デューティ比がそれぞれ 0.2, 0.4, 0.6, 0.8 の PWM 信号を出力します。
+2. Output PWM signals at 100Hz with duty cycles of 0.2, 0.4, 0.6, and 0.8:
 
    ```text
    L:/>pwm 2-5 func:pwm disable freq:100 counter:0
    L:/>pwm2 duty:.2; pwm3 duty:.4; pwm4 duty:.6; pwm5 duty:.8
    L:/>pwm 2-5 enable
    ```
-
-3. 測定した波形を表示します。
+3. Display the measured waveforms:
 
    ```text
    L:/>la print
    ```
 
-測定結果を以下に示します。シリアルターミナルの画面をキャプチャして横向きに回転しています。
+The bottom waveform is duty 0.2, then 0.4, 0.6, and 0.8 above. As the duty increases, the high time increases and the pulse width widens. The period is about 10,000μs, so the frequency is 100Hz.
 
-![pwm-test-1.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-08-06-labo-pwm/pwm-test-1.png)
+### Setting PWM Frequency
 
-下から、デューティ比 0.2, 0.4, 0.6, 0.8 の PWM 信号が観測できています。デューティ比が大きくなるほど、high の時間が長くなり、波形の幅が広がっていることがわかります。一つの周期は波形の繰り返しパターンの間隔、例えば 0.00usec から 9999.92usec の間ですから、PWM 周期 $T_{\text{PWM}}$ はちょっと数値を丸めて 10000usecです。PWM 周波数 $f_{\text{PWM}}$ は PWM 周期 $T_{\text{PWM}}$ の逆数なので、$f_{\text{PWM}} = \frac{1}{T_{\text{PWM}}} = \frac{1}{10000 \times 10^{-6}}$ = 100Hz となります。
+The `freq` subcommand changes the PWM frequency by setting the clock divider (`clkdiv`) and counter wrap value (`wrap`).
 
-### PWM 周波数の設定方法
+PWM uses a 16-bit counter (0 to 65535). The counter increments at a rate determined by the system clock divided by `clkdiv`, and resets to 0 when it reaches `wrap`.
 
-`pwm` コマンドでは PWM の周波数を変更するために `freq` サブコマンドが使えますが、この内部では PWM のクロック分周比 (`clkdiv` 値) とカウンタのラップアップ値 (`wrap` 値) の設定が行われています。これらの設定値について以下説明します。
+#### Effect of clkdiv
 
-PWM は内部に 16bit のカウンタを持っており、0 (0x0000) から 65535 (0xFFFF) までの値をとります。カウンタは CPU のクロック信号を `clkdiv` 値で分周した周期で一つずつ増加し、設定された `wrap` 値に達すると 0 に戻ります。 `wrap` 値はカウンタがとりうる最大値になるので、Pico のマニュアルでは `TOP` とも呼称されています。
-
-`clkdiv` 値と `wrap` 値がどのように PWM の周波数に影響するかを理解するため、以下の実験を行います。
-
-- - -
-
-`clkdiv` 値は CPU クロックの分周比を 1.0 から 255.9 [^clkdiv] までの範囲で設定します。例えば、`clkdiv` を 1.0 にすると PWM スライスは CPU クロックと同じ周波数 (1/1.0) で動作し、2.0 にすると CPU クロックの半分 (1/2.0) の周波数で動作します。以下、 `wrap` 値を最小の 1 に設定して、`clkdiv` 値を変えてみます。
-
-[^clkdiv]: 正確には 255 + 1/2 + 1/4 + 1/8 + 1/16 = 255.9375
+Set `wrap` to 1 and change `clkdiv`:
 
 ```text
 L:/>pwm0 func:pwm clkdiv:1.0 wrap:1
@@ -185,13 +171,11 @@ L:/>pwm0 func:pwm clkdiv:3.0 wrap:1
 GPIO0  func:PWM0 A     disabled freq:25000000Hz (clkdiv:3.0 wrap:0x0001) duty:0.000 (level:0x0000) counter:0x0000
 ```
 
-Pico 2 は CPU クロックが 150MHz で、分周比が 1.0 の場合はそのクロックが直接 PWM の周波数になります。 `wrap` 値を 1 に設定しましたから、カウンタ値は 0 から始まって 1 になると 0 に戻る、つまり 2 回のカウントで 1 周期となります。PWM に与えられたクロックの 1/2、つまり 75MHz の信号を出力します。
+On Pico 2, the system clock is 150MHz. With `clkdiv` 1.0 and `wrap` 1, the output is 75MHz. Increasing `clkdiv` reduces the frequency proportionally.
 
-以下、`clkdiv` 値を 2.0、3.0 と変えていくと、周波数が 1/2, 1/3, ... と変化していくことがわかります。`clkdiv` 値に対して PWM 信号の周波数は $\frac{1}{\text{clkdiv}}$ の関係になります。
+#### Effect of wrap
 
-- - -
-
-`wrap` 値はカウンタの最高値を 1 から 65535 までの範囲で設定します。以下、`clkdiv` 値を 1.0 に固定して `wrap` 値を変えていきます。
+Set `clkdiv` to 1.0 and change `wrap`:
 
 ```text
 L:/>pwm0 func:pwm clkdiv:1.0 wrap:1
@@ -202,102 +186,66 @@ L:/>pwm0 func:pwm clkdiv:1.0 wrap:3
 GPIO0  func:PWM0 A     disabled freq:37500000Hz (clkdiv:1.0 wrap:0x0003) duty:0.000 (level:0x0000) counter:0x0000
 ```
 
-分周比が 1 ですから、PWM スライスには 150MHz のクロックが供給されています。 `wrap` 値を 1 に設定すると、カウンタは 0 から 1 までの 2 回のカウントで 1 周期となり、周波数は 75MHz になります。
-
- `wrap` 値を 2 に設定すると、カウンタは 0, 1, 2 の後に 0 に戻り、1 周期が 3 回のカウントで構成されるため、周波数は 1/3 の 50MHz になります。
-
- `wrap` 値を 3 に設定すると、カウンタは 0, 1, 2, 3 の後に 0 に戻り、1 周期が 4 回のカウントで構成されるため、周波数は 1/4 の 37.5MHz になります。
-
-つまり、 `wrap` 値に対して PWM 信号の周波数は $\frac{1}{\text{wrap} + 1}$ の関係になります。
-
-- - -
-
-以上、`clkdiv` 値と `wrap` 値を組み合わせると、PWM 信号の周波数 $f_{\text{PWM}}$ は CPU クロック $f_{\text{sys}}$ に対して以下の式で計算されます。
+With `clkdiv` 1.0, increasing `wrap` decreases the frequency. The frequency is calculated as:
 
 $$f_{\text{PWM}} = \frac{f_{\text{sys}}}{\text{clkdiv} \cdot (\text{wrap} + 1)}$$
 
-### 最高周波数と最低周波数
+### Maximum and Minimum Frequency
 
-`clkdiv` 値を 1.0、`wrap` 値を 1 に設定すると、PWM の最高周波数が得られます。Pico 2 の場合、これは $\frac{150\text{MHz}}{1 \cdot (1 + 1)}$ = 75MHz になります。ただし、デューティ比は 0% (`level` = 0), 50% (`level` = 1), 100% (`level` = 2) の 3 種類しか設定できません。
+Set `clkdiv` to 1.0 and `wrap` to 1 for the highest frequency (75MHz on Pico 2). Set `clkdiv` to 255.9 and `wrap` to 65535 for the lowest frequency (about 8.9Hz on Pico 2).
 
-`clkdiv` 値を 255.9、`wrap` 値を 65535 に設定すると、PWM の最低周波数が得られます。Pico 2 の場合、これは $\frac{150\text{MHz}}{255.9 \cdot (65535 + 1)}$ = 約 8.9Hz になります。1Hz (つまり 1 秒に 1 回ずつ繰り返す) くらいまで下げることができれば LED の点滅も PWM で実現できたのですが、ちょっと残念。
+### Setting PWM Duty Cycle
 
-### PWM デューティ比の設定方法
+The duty cycle is set by the `level` value. The PWM slice sets the output high when the counter is 0, and low when it reaches `level`. If `level` is 0, the output is always low; if `level` is `wrap` + 1, the output is always high.
 
-PWM のデューティ比は、`level` 値を設定することで制御します。
-
-PWM スライスは、カウンタが 0 になったときに出力を high にします。そこからカウンタ値を増やしていき、`level` 値になったときに出力を low にします。さらにカウンタ値を増やして `wrap` 値になると 0 に戻ります。
-
-`level` がとる値は 0 から `wrap` + 1 までの範囲です。`level` が `wrap` + 1 の場合は、カウンタがその値に達することはないので、出力は常に high になります (デューティ比 100%)。
-
-ここで一つ疑問が生まれます。`level` を 0 に設定するとどうなるのでしょうか? カウンタが 0 になったとき、PWM スライスは出力を high にしますが、それは同時に `level` に達したことでもあるので low にもしなければいけません。
-
-出力が high になってその直後に low になる、インパルスのような波形が出力される? 実際、そのような出力をしてしまうチップもあり、この現象をグリッチと呼びます。でもこのような信号は制御対象のデバイスの誤動作を引き起こす可能性があって好ましくありません。
-
-Pico ではこのあたりをきちんと考慮していて、`level` を 0 に設定すると、出力が常に low になるようにしています (デューティ比 0%)。グリッチが生じる心配はありません。
-
-`level` 値に対するデューティ比は以下の式で計算されます。
+The duty cycle is:
 
 $$\text{duty} = \frac{\text{level}}{\text{wrap} + 1}$$
 
-`level` がとる値は 0 から `wrap` + 1 までですから、`wrap` 値が大きいほど `level` で設定できるデューティ比の分解能が高くなります。
+Larger `wrap` values allow finer duty cycle resolution.
 
 ### Phase Correct PWM
 
-通常の PWM はカウンタが　0 から `wrap` 値に達するまでカウントアップしていきますが、Phase Correct PWM ではカウンタが 0 から `wrap` 値に達した後、再び 0 に戻るのではなく、`wrap` 値から 0 に向かってカウントダウンします。これにより、PWM 信号の上昇と下降が対称になり、デューティ比を変化したときでも位相がそろった波形が得られます。
+Normal PWM counts up from 0 to `wrap`. Phase Correct PWM counts up to `wrap`, then down to 0, making the waveform symmetric. Enable with `phase-correct:true`.
 
-`pwm` コマンドでサブコマンド `phase-correct:true` を実行すると、Phase Correct PWM が有効になります。
-
-以下の手順で、波形を観測しながら Phase Correct PWM の動作を確認してみましょう。
-
-1. ロジックアナライザを起動して　GPIO2, GPIO3, GPIO4, GPIO5 の 4 本のピンの測定を開始します。
+1. Start the logic analyzer and measure GPIO2-5:
 
    ```text
    L:/>la -p 2-5 enable
    ```
-
-2. 周波数が 100Hz、デューティ比がそれぞれ 0.2, 0.4, 0.6, 0.8 の PWM 信号を出力します。Phase Correct PWM を有効にするために、サブコマンド `phase-correct:true` を指定します。Phase Correct の設定は周波数に影響するので、`freq` サブコマンドよりも前に指定します。
+2. Output PWM signals at 100Hz with duty cycles 0.2, 0.4, 0.6, 0.8, and enable Phase Correct:
 
    ```text
    L:/>pwm 2-5 func:pwm disable phase-correct:true freq:100 counter:0
    L:/>pwm2 duty:.2; pwm3 duty:.4; pwm4 duty:.6; pwm5 duty:.8
    L:/>pwm 2-5 enable
    ```
-
-3. 測定した波形を表示します。
+3. Display the measured waveforms:
 
    ```text
    L:/>la print
    ```
 
-測定結果を以下に示します。位相の基準点に対して左右対称でパルス幅が変化していることがわかります。
-
-![pwm-test-2.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-08-06-labo-pwm/pwm-test-2.png)
-
-Phase Correct PWM はカウントアップとカウントダウンを行うため、PWM 信号の周波数は通常の PWM の 1/2 になります。Phase Correct を有効にした $f_{\text{PWM}}$ は CPU クロック $f_{\text{sys}}$ に対して以下の式で計算されます。
+The waveform is symmetric about the phase reference. The frequency is halved compared to normal PWM:
 
 $$f_{\text{PWM}} = \frac{f_{\text{sys}}}{2 \cdot \text{clkdiv} \cdot (\text{wrap} + 1)}$$
 
-## C/C++ API との関連
+## Relation to C/C++ API
 
-`pwm` のサブコマンドに相当する Pico SDK の API は以下の通りです。
+The corresponding Pico SDK APIs for each `pwm` subcommand:
 
-| サブコマンド     | Pico SDK API |
-|-----------------|-------|
-| `func`          | `gpio_set_function(uint gpio, gpio_function_t fn)
-## 追記
-
-この記事は Zenn と Qiita にクロスポストしています。
-`|
-| `enable`        | `pwm_set_enabled(uint slice_num, bool enabled)`|
-| `disable`       | `pwm_set_enabled(uint slice_num, bool enabled)`|
-| `freq`          | (なし。`clkdiv` と `wrap` から計算) |
-| `clkdiv`        | `pwm_set_clkdiv(uint slice_num, float divider)` |
-| `wrap`          | `pwm_set_wrap(uint slice_num, uint16_t wrap)` |
-| `duty`          | (なし。`level` と `wrap` から計算) |
-| `level`         | `pwm_set_chan_level(uint slice_num, uint chan, uint16_t level)` |
-| `counter`       | `pwm_set_counter(uint slice_num, uint16_t c)` |
-| `phase-correct` | `pwm_set_phase_correct(uint slice_num, bool phase_correct)` |
+| Subcommand     | Pico SDK API |
+|----------------|---------------------------------------------|
+| `func`         | `gpio_set_function(uint gpio, gpio_function_t fn)` |
+| `enable`       | `pwm_set_enabled(uint slice_num, bool enabled)` |
+| `disable`      | `pwm_set_enabled(uint slice_num, bool enabled)` |
+| `freq`         | (none; calculated from `clkdiv` and `wrap`) |
+| `clkdiv`       | `pwm_set_clkdiv(uint slice_num, float divider)` |
+| `wrap`         | `pwm_set_wrap(uint slice_num, uint16_t wrap)` |
+| `duty`         | (none; calculated from `level` and `wrap`) |
+| `level`        | `pwm_set_chan_level(uint slice_num, uint chan, uint16_t level)` |
+| `counter`      | `pwm_set_counter(uint slice_num, uint16_t c)` |
+| `phase-correct`| `pwm_set_phase_correct(uint slice_num, bool phase_correct)` |
 
 `pwm` のサブコマンドに相当する [pico-jxglib](https://zenn.dev/ypsitau/articles/2025-01-24-jxglib-intro) の API は以下の通りです。
 

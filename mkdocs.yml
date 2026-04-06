@@ -6,6 +6,8 @@ nav:
   - Shell:
       - Overview: shell/index.md
       - File Operations: shell/file-operations/index.md
+      - SD Card: shell/sdcard/index.md
+      - RTC: shell/rtc/index.md
       - Wi-Fi: shell/wifi/index.md
       - Logic Analyzer:
           - Text Mode: shell/la/text/index.md
@@ -13,6 +15,8 @@ nav:
       - GPIO: shell/gpio/index.md
       - PWM: shell/pwm/index.md
       - I2C: shell/i2c/index.md
+      - Display:
+          - WS2812: shell/display/ws2812/index.md
       - Camera:
           - OV7670: shell/camera/ov7670/index.md
       - SPI: shell/spi/index.md
@@ -65,3 +69,5 @@ extra_javascript:
   - javascripts/mathjax.js
   - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
   
+extra_css:
+  - stylesheets/extra.css
