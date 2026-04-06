@@ -158,7 +158,7 @@ L:/>la print
 
 The following is a screenshot of the terminal software rotated 90 degrees.
 
-![waveform-i2c-org](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-08-labo-la/waveform-i2c-org.png)
+![waveform-i2c-org](images/waveform-i2c-org.png)
 
 The display resolution (time interval per line) is 1000usec (1msec) by default. In the example above, the edge interval is about 5usec, so you need to set a shorter interval for correct display. Use the `--reso` option to set the display resolution to 4usec and display the waveform.
 
@@ -166,7 +166,7 @@ The display resolution (time interval per line) is 1000usec (1msec) by default. 
 L:/>la print --reso:4
 ```
 
-![waveform-i2c](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-08-labo-la/waveform-i2c.png)
+![waveform-i2c](images/waveform-i2c.png)
 
 By default, `la print` displays the first 80 events in buffer memory. Use the `--part` option to specify the range of events to display.
 
@@ -208,7 +208,7 @@ Waveform display uses Unicode multibyte characters, but these may not display co
 L:/>la print --style:ascii2 --reso:4
 ```
 
-![waveform-i2c-ascii](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-08-labo-la/waveform-i2c-ascii.png)
+![waveform-i2c-ascii](images/waveform-i2c-ascii.png)
 
 The `--style` option allows you to specify the character set and waveform size. The default is `unicode2`.
 
@@ -234,7 +234,7 @@ L:/>i2c1 -p 2,3 scan
 L:/>la dec:i2c {sda:2 scl:3} print --reso:4
 ```
 
-![waveform-i2c-dec](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-08-labo-la/waveform-i2c-dec.png)
+![waveform-i2c-dec](images/waveform-i2c-dec.png)
 
 #### SPI Protocol Analysis
 
@@ -255,7 +255,7 @@ L:/>spi0 -p 2,3 write:0-255
 L:/>la dec:spi {mode:0 sck:2 mosi:3} print --reso:0.4
 ```
 
-![waveform-spi-dec](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-08-labo-la/waveform-spi-dec.png)
+![waveform-spi-dec](images/waveform-spi-dec.png)
 
 #### UART Protocol Analysis
 
@@ -276,4 +276,4 @@ L:/>uart1 -p 4 write:0-255
 L:/>la dec:uart {tx:4} print --reso:4
 ```
 
-![waveform-uart-dec](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-08-labo-la/waveform-uart-dec.png)
+![waveform-uart-dec](images/waveform-uart-dec.png)
