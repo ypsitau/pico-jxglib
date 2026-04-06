@@ -4,6 +4,18 @@
 
 もうすぐクリスマス🎄自分だけのオリジナルイルミネーションストリップを作るのも楽しいですよ！
 
+## デモ動画
+
+<div class="video-container">
+  <iframe 
+    src="https://www.youtube.com/embed/_Ihu_z_rbcE?rel=0&modestbranding=1" 
+    title="pico-jxgLABO WS2812 Demo"
+    frameborder="0" 
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+    allowfullscreen>
+  </iframe>
+</div>
+
 ## フルカラーシリアル LED WS2812 について
 
 フルカラーシリアル LED WS2812 は、RGB 各色の LED と制御回路が一体化された LED です。1 個の LED チップで 24 ビット (8 ビット x 3 色) のカラー表現が可能で、非常に鮮やかな発色が特徴です。 また、シリアル通信で制御できるため、複数の LED を直列に接続しても、制御信号線は 1 本で済みます。これにより、多数の LED を使ったディスプレイやイルミネーションの構築が容易になります。
