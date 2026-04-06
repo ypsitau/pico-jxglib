@@ -5,14 +5,14 @@ nav:
   - Home: index.md
   - Shell:
       - Shell: shell/index.md
-      - File Operations: shell/file-operations.md
+      - File Operations: shell/file-operations/index.md
       - Logic Analyzer:
-          - Text Mode: shell/la-text.md
-          - PulseView: shell/la-pulseview.md
-      - GPIO: shell/gpio.md
-      - I2C: shell/i2c.md
-      - SPI: shell/spi.md
-      - UART: shell/uart.md
+          - Text Mode: shell/la-text/index.md
+          - PulseView: shell/la-pulseview/index.md
+      - GPIO: shell/gpio/index.md
+      - I2C: shell/i2c/index.md
+      - SPI: shell/spi/index.md
+      - UART: shell/uart/index.md
   - Library:
       - Library: library/index.md
 theme:
