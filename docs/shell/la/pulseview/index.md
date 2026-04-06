@@ -20,7 +20,7 @@ Follow these steps to connect pico-jxgLABO and PulseView:
 
 2. Start Tera Term for serial communication. From the menu bar, select `[Setup (S)]` - `[Serial Port (E)...]`.
 
-   ![teraterm-setting.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-08-01-labo-intro/teraterm-setting.png)
+   ![teraterm-setting.png](images/teraterm-setting.png)
 
    pico-jxgLABO provides two USB serial ports. On Windows, the Device Instance IDs are as follows:
 
@@ -38,27 +38,27 @@ Follow these steps to connect pico-jxgLABO and PulseView:
 
 4. Start PulseView. One of the following main screens will appear:
 
-   ![pulseview-main](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-01-labo-pulseview/pulseview-main.png)
+   ![pulseview-main](images/pulseview-main.png)
 
-   ![pulseview-main-demo](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-01-labo-pulseview/pulseview-main-demo.png)
+   ![pulseview-main-demo](images/pulseview-main-demo.png)
 
    Click the area labeled `<No Device>` or `Demo device` to open the "Connect to Device" dialog.
 
 5. In `Step 1: Choose the driver`, select `RaspberryPI PICO (raspberrypi-pico)` from the dropdown list.
 
-   ![pulseview-connect-1](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-01-labo-pulseview/pulseview-connect-1.png)
+   ![pulseview-connect-1](images/pulseview-connect-1.png)
 
 6. In `Step 2: Choose the interface`, select `Serial Port` and specify the application serial port noted in step 2. Leave the baud rate blank.
 
-   ![pulseview-connect-2](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-01-labo-pulseview/pulseview-connect-2.png)
+   ![pulseview-connect-2](images/pulseview-connect-2.png)
 
 7. In `Step 3: Scan for devices`, click the `Scan for devices using driver above` button. In the list for `Step 4: Select the device`, confirm that `RaspberryPi PICO with 3 channels` appears and click `OK`.
 
-   ![pulseview-connect-3](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-01-labo-pulseview/pulseview-connect-3.png)
+   ![pulseview-connect-3](images/pulseview-connect-3.png)
 
 8. The main screen will look like this:
 
-   ![pulseview-main-connected](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-01-labo-pulseview/pulseview-main-connected.png)
+   ![pulseview-main-connected](images/pulseview-main-connected.png)
 
 
 The signals for each GPIO specified with the `-p` option of the `la` command will be displayed as `D2`, `D3`, `D4`, etc.
@@ -68,11 +68,11 @@ By default, the number of samples is set to `1k samples` and the sampling rate t
 - Number of samples: Set to the maximum `1 G samples`
 - Sampling rate: Set appropriately for the frequency of the signal to be observed. Here, set it to `15 MHz`.
 
-![pulseview-main-modified](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-01-labo-pulseview/pulseview-main-modified.png)
+![pulseview-main-modified](images/pulseview-main-modified.png)
 
 Now you can operate pico-jxgLABO on the Pico board from PulseView. Click the `Run` button at the top left to start capturing signals (the label changes to `Stop`).
 
-![pulseview-main-running](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-01-labo-pulseview/pulseview-main-running.png)
+![pulseview-main-running](images/pulseview-main-running.png)
 
 Click the `Stop` button to stop capturing and display the observed waveform. If no signal is being generated, nothing will be displayed yet.
 
@@ -94,7 +94,7 @@ This command assigns GPIO2 and GPIO3 to I2C1 SDA and SCL, and sends Read request
 
 Click the `Stop` button in PulseView to stop capturing. The captured waveforms will be displayed as shown below. `D2` is GPIO2 (I2C1 SDA), and `D3` is GPIO3 (I2C1 SCL).
 
-![pulseview-main-i2c](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-01-labo-pulseview/pulseview-main-i2c.png)
+![pulseview-main-i2c](images/pulseview-main-i2c.png)
 
 Basic mouse operations:
 
@@ -103,30 +103,30 @@ Basic mouse operations:
 
 The image below shows a zoomed-in view of the beginning of the signal waveform.
 
-![pulseview-main-i2c-zoom](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-01-labo-pulseview/pulseview-main-i2c-zoom.png)
+![pulseview-main-i2c-zoom](images/pulseview-main-i2c-zoom.png)
 
 Click the button indicated by the arrow below:
 
-![pulseview-decoder-button](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-01-labo-pulseview/pulseview-decoder-button.png)
+![pulseview-decoder-button](images/pulseview-decoder-button.png)
 
 to display the `Decoder Selector` pane, where you can select protocol decoders. Enter `i2c` in the search box and double-click `I2C` in the list to add the I2C decoder to the waveform.
 
-![pulseview-decoder-selector](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-01-labo-pulseview/pulseview-decoder-selector.png)
+![pulseview-decoder-selector](images/pulseview-decoder-selector.png)
 
 Click the button indicated by the arrow below:
 
-![pulseview-decoder-button](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-01-labo-pulseview/pulseview-decoder-selector-close.png)
+![pulseview-decoder-button](images/pulseview-decoder-selector-close.png)
 
 to hide the `Decoder Selector` pane.
 
 
 Left-click the `I2C` label in the signal name to open a dialog for setting protocol decoder parameters. Set `SCL` to `D3` and `SDA` to `D2`.
 
-![pulseview-main-i2c-prop](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-01-labo-pulseview/pulseview-main-i2c-prop.png)
+![pulseview-main-i2c-prop](images/pulseview-main-i2c-prop.png)
 
 Close the dialog to see the decoded I2C results.
 
-![pulseview-main-i2c-dec](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-01-labo-pulseview/pulseview-main-i2c-dec.png)
+![pulseview-main-i2c-dec](images/pulseview-main-i2c-dec.png)
 
 You can see that Read requests are sent to I2C addresses 0x00 to 0x7f. Since no I2C device is connected, NACK responses are returned.
 
@@ -143,19 +143,19 @@ This command assigns GPIO2 and GPIO3 to SPI0 MOSI and SCK, and sends data from 0
 
 Click the `Stop` button in PulseView to stop capturing. The captured waveforms will be displayed as shown below. `D2` is GPIO2 (SPI0 SCK), and `D3` is GPIO3 (SPI0 MOSI).
 
-![pulseview-main-spi](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-01-labo-pulseview/pulseview-main-spi.png)
+![pulseview-main-spi](images/pulseview-main-spi.png)
 
 The image below shows a zoomed-in view of the beginning of the signal waveform.
 
-![pulseview-main-spi-zoom](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-01-labo-pulseview/pulseview-main-spi-zoom.png)
+![pulseview-main-spi-zoom](images/pulseview-main-spi-zoom.png)
 
 Display the `Decoder Selector` pane, enter `spi` in the search box, and double-click `SPI` in the list to add the SPI decoder to the waveform. Left-click the `SPI` label in the signal name to open the protocol decoder parameter dialog, and set `CLK` to `D2` and `MOSI` to `D3`.
 
-![pulseview-main-spi-prop](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-01-labo-pulseview/pulseview-main-spi-prop.png)
+![pulseview-main-spi-prop](images/pulseview-main-spi-prop.png)
 
 Close the dialog to see the decoded SPI results.
 
-![pulseview-main-spi-dec](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-01-labo-pulseview/pulseview-main-spi-dec.png)
+![pulseview-main-spi-dec](images/pulseview-main-spi-dec.png)
 
 You can see that data from 0 to 255 is sent on SPI MOSI.
 
@@ -172,20 +172,20 @@ This command assigns GPIO4 to UART1 TX and sends data from 0 to 255, followed by
 
 Click the `Stop` button in PulseView to stop capturing. The captured waveform will be displayed as shown below. `D4` is GPIO4 (UART1 TX).
 
-![pulseview-main-uart](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-01-labo-pulseview/pulseview-main-uart.png)
+![pulseview-main-uart](images/pulseview-main-uart.png)
 
 The image below shows a zoomed-in view of the beginning of the signal waveform.
 
-![pulseview-main-uart-zoom](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-01-labo-pulseview/pulseview-main-uart-zoom.png)
+![pulseview-main-uart-zoom](images/pulseview-main-uart-zoom.png)
 
 Display the `Decoder Selector` pane, enter `uart` in the search box, and double-click `UART` in the list to add the UART decoder to the waveform. Left-click the `UART` label in the signal name to open the protocol decoder parameter dialog, and set `TX` to `D4`.
 
-![pulseview-main-uart-prop](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-01-labo-pulseview/pulseview-main-uart-prop.png)
+![pulseview-main-uart-prop](images/pulseview-main-uart-prop.png)
 
 
 Close the dialog to see the decoded UART results.
 
-![pulseview-main-uart-dec](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-01-labo-pulseview/pulseview-main-uart-dec.png)
+![pulseview-main-uart-dec](images/pulseview-main-uart-dec.png)
 
 You can see that data from 0 to 255 and 0 is sent on UART TX.
 
@@ -204,19 +204,19 @@ These commands set GPIO2, GPIO3, and GPIO4 to PWM function, set the frequency to
 
 Click the `Stop` button in PulseView to stop capturing. The captured waveforms will be displayed as shown below.
 
-![pulseview-main-pwm](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-01-labo-pulseview/pulseview-main-pwm.png)
+![pulseview-main-pwm](images/pulseview-main-pwm.png)
 
 The image below shows a zoomed-in view of the beginning of the signal waveform.
 
-![pulseview-main-pwm-zoom](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-01-labo-pulseview/pulseview-main-pwm-zoom.png)
+![pulseview-main-pwm-zoom](images/pulseview-main-pwm-zoom.png)
 
 Display the `Decoder Selector` pane, enter `pwm` in the search box, and double-click `PWM` in the list to add PWM decoders to the waveform (add three in total). Left-click the `PWM` label in the signal name to open the protocol decoder parameter dialog, and set the `Data` field to `D2`, `D3`, and `D4` for each decoder.
 
-![pulseview-main-pwm-prop](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-01-labo-pulseview/pulseview-main-pwm-prop.png)
+![pulseview-main-pwm-prop](images/pulseview-main-pwm-prop.png)
 
 Close the dialog to see the decoded PWM results.
 
-![pulseview-main-pwm-dec](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-09-01-labo-pulseview/pulseview-main-pwm-dec.png)
+![pulseview-main-pwm-dec](images/pulseview-main-pwm-dec.png)
 
 You can see PWM signals with duty cycles of 20%, 50%, and 80% at a frequency of 1.0kHz.
 

@@ -4,17 +4,18 @@ copyright: "2025-2026, ypsitau"
 nav:
   - Home: index.md
   - Shell:
-      - Shell: shell/index.md
+      - Overview: shell/index.md
       - File Operations: shell/file-operations/index.md
       - Logic Analyzer:
-          - Text Mode: shell/la-text/index.md
-          - PulseView: shell/la-pulseview/index.md
+          - Text Mode: shell/la/text/index.md
+          - PulseView: shell/la/pulseview/index.md
       - GPIO: shell/gpio/index.md
       - I2C: shell/i2c/index.md
       - SPI: shell/spi/index.md
       - UART: shell/uart/index.md
+      - Wi-Fi: shell/wifi/index.md
   - Library:
-      - Library: library/index.md
+      - Overview: library/index.md
 theme:
   name: material
   icon:
