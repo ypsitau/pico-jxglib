@@ -2,7 +2,7 @@
 
 A collection of libraries and tools for Raspberry Pi Pico, including a powerful shell and various utilities like built-in logic analyzer to enhance your development experience.
 
-![Pico and Pico2](images/pico-and-pico2.jpg)
+![Pico Models](images/pico-pico2-picow-pico2w.jpg)
 
 ## Motivation
 
@@ -107,7 +107,7 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
 - **Network Communication**: If you're using a Pico W or Pico2 W, you can also take advantage of the built-in Wi-Fi capabilities to connect to the internet and perform network communication directly from your firmware. You can remotely access the shell over the network using Telnet, allowing you to interact with your Pico from anywhere without needing a physical connection.
 - **Display Support**: The library provides support for various displays such as OLED and TFT displays. You can use the shell to configure the display and draw images on the screen. WS2812 RGB LEDs can also be used as a display, allowing you to create colorful lighting effects and visualizations directly from your firmware and the shell.
-- **File System on Flash Memory**: You can use the flash memory of the Pico as a file system to store and manage files. This allows you to read and write files directly from your firmware, making it easier to manage data and configurations. File operating commands, such as `dir`, `cat`, `rm`, `mv`, and `cp`, are built into the shell, allowing you to manage files directly from the command line interface. 
+- **File System on Flash Memory**: You can use the flash memory of the Pico as a file system to store and manage files. This allows you to read and write files directly from your firmware, making it easier to manage data and configurations. File operating commands, such as `ls`, `cp`, `mv`, `rm`, `mkdir`, and `cat`, are built into the shell, allowing you to manage files directly from the command line interface. 
 - **USB Mass Storage Device**: The file system above is also accessible as a USB mass storage device when the Pico is connected to a computer. This means you can easily transfer files between your computer and the Pico without needing additional software or tools.
 - **USB Keyboard and Mouse Support**: You can also connect a USB keyboard and mouse to your Pico, allowing you to interact with the shell and control the display directly from the connected peripherals.
 - **SD Card Support**: You can also use an SD card with your Pico. The library provides support for SD cards, allowing you to read and write files on the SD card from your firmware.

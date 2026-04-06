@@ -3,15 +3,18 @@ site_description: A collection of libraries and tools for Raspberry Pi Pico, inc
 copyright: "2025-2026, ypsitau"
 nav:
   - Home: index.md
-  - Command:
-      - Shell: command/shell.md
-      - Logic Analyzer: command/logic_analyzer.md
-      - GPIO: command/gpio.md
-      - I2C: command/i2c.md
-      - SPI: command/spi.md
-      - UART: command/uart.md
+  - Shell:
+      - Shell: shell/index.md
+      - File Operations: shell/file-operations.md
+      - Logic Analyzer:
+          - Text Mode: shell/la-text.md
+          - PulseView: shell/la-pulseview.md
+      - GPIO: shell/gpio.md
+      - I2C: shell/i2c.md
+      - SPI: shell/spi.md
+      - UART: shell/uart.md
   - Library:
-      - How to Use: library/how_to_use.md
+      - Library: library/index.md
 theme:
   name: material
   icon:
@@ -22,6 +25,7 @@ theme:
   features:
     - navigation.tabs
     - navigation.tabs.sticky
+    - navigation.expand
     - content.code.copy
 markdown_extensions:
   - pymdownx.highlight:
@@ -30,10 +34,8 @@ markdown_extensions:
       pygments_lang_class: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
-  - pymdownx.superfences
   - admonition
   - pymdownx.details
-  - pymdownx.superfences
   - pymdownx.tabbed:
       alternate_style: true
   - pymdownx.highlight:
@@ -49,6 +51,11 @@ markdown_extensions:
       generic: true
   - attr_list
   - md_in_html
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
 
 extra_javascript:
   - javascripts/mathjax.js
