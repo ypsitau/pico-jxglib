@@ -1,0 +1,353 @@
+今回は、フルカラーシリアル LED WS2812 を使ってイルミネーションストリップや電光掲示板を作ります。pico-jxgLABO を使うとコマンド操作だけで WS2812 を制御できるので、**プログラムを書く必要はありません**。簡単なコマンドを使って LED を点灯させたり、アニメーションを表示したりできます。
+
+もうすぐクリスマス🎄自分だけのオリジナルイルミネーションストリップを作るのも楽しいですよ！
+
+## フルカラーシリアル LED WS2812 について
+
+フルカラーシリアル LED WS2812 は、RGB 各色の LED と制御回路が一体化された LED です。1 個の LED チップで 24 ビット (8 ビット x 3 色) のカラー表現が可能で、非常に鮮やかな発色が特徴です。 また、シリアル通信で制御できるため、複数の LED を直列に接続しても、制御信号線は 1 本で済みます。これにより、多数の LED を使ったディスプレイやイルミネーションの構築が容易になります。
+
+サードパーティが提供する Raspberry Pi Pico 互換のボードには WS2812 が搭載されているものがあります。例えば、Speed Studio XIAO RP2040 や Waveshare RP2040-Zero などです。
+
+![speedstudio-xiao-rp2040-and-waveshare-rp2040-zero](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/speedstudio-xiao-rp2040-and-waveshare-rp2040-zero.jpg)
+*Speed Studio XIAO RP2040 (左) と Waveshare RP2040-Zero (右)*
+
+WS2812 を一列に並べた LED ストリップも市販されています。以下は 60 個の WS2812 が連なった LED ストリップの例です。
+
+![ws2812-strip](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/ws2812-strip.jpg)
+
+また、マトリクス状に配置された WS2812 モジュールもあり、これを使うと小型のディスプレイを簡単に作成できます。以下は 16x16 のマトリクスモジュールです。
+
+![ws2812-matrix](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/ws2812-matrix.jpg)
+形状は様々ですが、制御方法はすべて同じです。VCC と GND に 5V の電源を接続し、DIN (Data In) ピンに制御信号を接続します。パルス幅変調によって 1 と 0 の信号を送信し、RGB 24 ビットのデータを連続して送ることで LED の色を設定します。
+
+![ws2812-pinout](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/ws2812-pinout.jpg)
+
+複数の LED を接続する場合は、LED の DOUT (Data Out) ピンを次の LED の DIN ピンに接続します。WS2812 は、自分の RGB データが格納されると、以降の DIN の入力信号を DOUT に伝達し、次の LED に転送する仕組みになっています。
+
+## フルカラーシリアル LED の接続
+
+WS2812 の VCC と GND を 5V 電源に接続し、DIN ピンを Pico ボードの GPIO ピンに接続します。
+
+LED の数が少ない場合 (数十個程度まで) であれば、Pico ボードの 5V 出力 (VSYS) を WS2812 の電源に使うことができます。以下に GPIO2 に DIN ピンを接続する例を示します。
+
+![ws2812-circuit](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/ws2812-circuit.png)
+
+WS2812 は、最も明るい白色で点灯させると一個あたり 12mA 程度の電流を消費します。60 個の LED ストリップなら 720mA、16 x 16 のマトリクスモジュールですと 256 個の LED があるので最大で約 3A 程度の電流が必要になります。Pico ボードの VSYS の出力電流は 300mA 以下にすることが推奨されるので、これらをドライブするのに十分ではありません。
+
+多くの LED を接続する場合は、以下の例のように外部の 5V 電源を用意してください。Pico ボードの GND と外部電源の GND は共通にする必要があります。
+
+![ws2812-circuit-extpower](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/ws2812-circuit-extpower.png)
+
+## コマンドの使い方
+
+pico-jxgLABO では、WS2812 を直接制御するための `ws2812` コマンドと、ディスプレイとして扱えるようにする `display-ws2812` コマンドが用意されています。以下に、基本的なコマンドを紹介します。
+
+### フルカラーシリアル LED を直接制御する
+
+`ws2812` コマンドで WS2812 を直接制御することができます。
+
+まず、`setup` サブコマンドで WS2812 の接続情報を設定します。`din` パラメータでデータ入力ピンを指定します。
+
+```text
+L:/>ws2812 setup {din:PIN}
+```
+
+WS2812 の輝度はかなり明るいので、`brightness` サブコマンドで輝度を調整することができます。輝度は 0.0 (消灯) から 1.0 (最大輝度) の範囲で指定します。以下は輝度を 0.1 (最大輝度の 10%) に設定する例です。
+
+```text
+L:/>ws2812 brightness:.1
+```
+
+以下に、ハードウェアごとの設定例を示します。
+
+- Speed Studio XIAO RP2040 ボードの場合、内蔵 WS2812 の DIN ピンは GPIO12 に接続されています。また、VCC が GPIO11 に接続されているので、このピンのファンクションをデジタル出力に設定して 1 を出力します。
+
+  ```text
+  L:/>ws2812 setup {din:12}
+  L:/>gpio11 func:sio dir:out put:1
+  ```
+
+- Waveshare RP2040-Zero ボードの場合、内蔵 WS2812 の DIN ピンは GPIO16 に接続されているので、以下のように設定します。
+
+  ```text
+  L:/>ws2812 setup {din:16}
+  ```
+
+- 外部接続の LED ストリップやマトリクスモジュールを使う場合も設定方法は同じです。例えば、GPIO2 にこれらのデバイスを接続する場合は以下のようにします。
+
+  ```text
+  L:/>ws2812 setup {din:2}
+  ```
+
+以下、GPIO2 に LED ストリップを接続した回路を使用して操作方法を説明します。
+
+`put` サブコマンドで LED の色を指定します。例えば、赤色に点灯させるには以下のようにします。
+
+```text
+L:/>ws2812 put:red
+```
+
+![ws2812-red](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/ws2812-red.jpg)
+
+16 進カラーコードで指定することもできます。
+
+```text
+L:/>ws2812 put:#ff0000
+```
+
+`put` サブコマンドを複数回実行すると、直列に接続された複数の LED の色を設定できます。
+
+```text
+L:/>ws2812 put:red put:green put:blue
+```
+
+![ws2812-rgb](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/ws2812-rgb.jpg)
+
+Pico ボードに近い方の LED から順に色が設定されます。
+
+### フルカラーシリアル LED をディスプレイとして扱う
+
+#### `display-ws2812` コマンドの使い方
+
+`display-ws2812` コマンドを使うと、WS2812 をディスプレイとして扱うことができます。LED ストリップに流れるような点灯パターンを表示したり、二次元マトリクス状に配置された WS2812 モジュールに画像や文字、アニメーションなどを表示できます。
+
+`display-ws2812` の `setup` サブコマンドで WS2812 の接続情報とディスプレイの形状を設定します。以下に、60 個の WS2812 が連なった LED ストリップを GPIO2 に接続する例を示します。
+
+```text
+L:/>display-ws2812 setup {din:2 straight:60}
+```
+
+`din` サブコマンドでデータ入力ピン DIN に接続した GPIO ピンを指定します。`straight:n` は、直線状に n 個の LED が並んでいることを示します。
+
+`ls-display` コマンドで、設定されたディスプレイ情報を確認できます。
+
+```text
+L:/>ls-display
+display 0: WS2812 60x1 DIN:2 Layout:straight
+```
+
+60 x 1 ピクセルのディスプレイとして認識されていることが分かります。
+
+WS2812 の輝度はかなり明るいので、`brightness` サブコマンドで輝度を調整することができます。輝度は 0.0 (消灯) から 1.0 (最大輝度) の範囲で指定します。以下は輝度を 0.1 (最大輝度の 10%) に設定する例です。
+
+```text
+L:/>display-ws2812 brightness:.1
+```
+
+二次元マトリクス状に配置された WS2812 モジュールを使う場合は、`straight` の代わりに `LAYOUT-START-DIR:WIDTH,HEIGHT` の形式で、各フィールドを以下のように指定します。
+
+- `LAYOUT` には以下のような配線の形状に応じて `straight` または `zigzag` を指定します
+  ![ws2812-matrix-layout](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/ws2812-matrix-layout.png)
+- `START` には Pico ボードから見て一番最初の LED の位置を `nw` (north-west: 左上), `ne` (north-east: 右上), `sw` (south-west: 左下), `se` (south-east: 右下) のいずれかで指定します
+  ![ws2812-matrix-start](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/ws2812-matrix-start.png)
+- `DIR` は一列分の配置方向で、`vert` (垂直方向) または `horz` (水平方向) のいずれかを指定します。
+  ![ws2812-matrix-dir](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/ws2812-matrix-dir.png)
+- `WIDTH` と `HEIGHT` にはそれぞれマトリクスの幅と高さを指定します。
+
+例えば、ジグザグに配線されて左上から始まり、縦方向に接続された 16x16 のマトリクスモジュールなら `zigzag-nw-vert:16,16` のように指定します。
+
+```text
+L:/>display-ws2812 setup {din:2 zigzag-nw-vert:16,16}
+L:/>ls-display
+display 0: WS2812 16x16 DIN:2 Layout:zigzag-nw-vert
+```
+
+#### `draw` コマンドについて
+
+ディスプレイに画像を表示するには `draw` コマンドを使います。`draw` コマンドは描画機能をいくつか持っていますが、ここでは画像ファイルを読み込んで表示する方法を紹介します。
+
+以下に `draw` コマンドの動作イメージを示します。
+
+![draw-command-image](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/draw-command-image.png)
+
+`draw` コマンドの内部にはイメージバッファがあり、`image-load` サブコマンドで画像ファイルを読み込むと、このバッファに画像データが格納されます。`image` サブコマンドでイメージバッファの内容をディスプレイに表示します。
+
+`image` サブコマンドは `offset` と `size` サブコマンドでイメージバッファ内の表示範囲を指定します。
+
+![draw-command-image-params](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/draw-command-image-params.png)
+
+画像描画に関する `draw` サブコマンドには他に以下のものがあります。
+
+- `offset-shift`: 表示範囲の位置を指定量だけずらすことができます
+- `repeat-x`, `repeat-y`: 表示範囲をディスプレイの幅および高さいっぱいに繰り返し表示します。
+
+#### 赤いドットが流れるイルミネーションを表示する
+
+実際に画像を表示してみましょう。ここでは、60 個の WS2812 が連なった LED ストリップを使い、赤いドットが流れるアニメーションを表示します。
+
+1. ディスプレイのセットアップを行います。LED の DIN 端子を GPIO2 に接続します。
+
+   ```text
+   L:/>display-ws2812 setup {din:2 straight:60}
+   ```
+
+2. 画像ファイル [red-dot.png](https://raw.githubusercontent.com/ypsitau/zenn/main/resource/2025-11-11-labo-led/red-dot.png) をダウンロードします。拡大すると以下のようなピクセルイメージになっています。
+
+   ![red-dot-image](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/red-dot-image.png)
+   *`red-dot.png` のイメージ*
+
+   このファイルを Pico ボードの内部ストレージ `L:` ドライブに保存します。USB ケーブルで Pico ボードをホスト PC に接続していると、Pico ボード内部の `L:` ドライブは USB メモリとしてホスト PC に認識されるので、そのドライブにコピーします。
+
+3. `draw` コマンドの `image-load` サブコマンドで画像ファイルをイメージバッファに読み込みます。
+
+   ```text
+   L:/>draw image-load:red-dot.png
+   ```
+
+4. `image` サブコマンドを実行すると、イメージバッファの内容をディスプレイに表示します。このとき、`size` サブコマンドでイメージ内の表示領域が 8 x 1 になるように指定します。
+
+   ```text
+   L:/>draw image {size:8,1}
+   ```
+
+   赤い LED が一つだけ点灯します。
+
+5. `repeat-x` サブコマンドを使うと、イメージをディスプレイの幅いっぱいに繰り返して表示します。8 個ごとに赤い LED が点灯することを確認してみましょう。
+
+   ```text
+   L:/>draw image {size:8,1 repeat-x}
+   ```
+
+6. `offset-shift` サブコマンドを使うと、イメージ内の表示領域の位置を指定量だけずらすことができます。以下は、表示領域を右に 1 ピクセルずらす例です。
+
+   ```text
+   L:/>draw image {offset-shift:1,0}
+   ```
+
+   この操作によって、表示内容が以下のように変化し、ドットが動いているように見えます。
+
+   ![red-dot-shifted](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/red-dot-shifted.png)
+
+   何度か実行して、赤い LED が移動している様子を確認してみてください。`offset-shift` は、表示領域が右端まで到達すると左端に戻る動作をします。
+ 
+7. `repeat` サブコマンドは、ブレース `{}` 内のサブコマンドを繰り返し実行します。`Ctrl-C` キーを押すと繰り返しを停止できます。
+
+   ```text
+   L:/>draw repeat { image {offset-shift:1,0} }
+   ```
+   
+   表示速度が速すぎてすべての LED が点灯しているように見えますね。`sleep` サブコマンドで指定したミリ秒だけ処理を一時停止できるので、これを使って表示速度を調整しましょう。以下は 100ms で表示位置をずらす例です。
+
+   ```text
+   L:/>draw repeat { image {offset-shift:1,0} sleep:100 }
+   ```
+
+   イルミネーションストリップの完成です!
+
+実行するコマンドを以下にまとめます。
+
+```text:イルミネーションバー: 流れる赤いドット
+L:/>display-ws2812 setup {din:2 straight:60} brightness:.1
+L:/>draw image-load:red-dot.png
+L:/>draw image {size:8,1 repeat-x}
+L:/>draw repeat { image {offset-shift:1,0} sleep:100 }
+```
+
+#### 様々なパターンのイルミネーションを表示する
+
+イメージファイルの内容や表示範囲の移動量を変えると、様々なパターンのイルミネーションを表示できます。
+
+- **色相グラデーション**
+
+  [hue-32-horz.png](https://raw.githubusercontent.com/ypsitau/zenn/main/resource/2025-11-11-labo-led/hue-32-horz.png) は、32 色の色相グラデーションパターンが水平方向に 2 列並んだ画像です。
+
+  ![hue-32-horz-image](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/hue-32-horz-image.png)
+   *`hue-32-horz.png` のイメージ*
+
+  このファイルを Pico ボードの内部ストレージ `L:` ドライブに保存して、以下のコマンドを実行します。
+
+  ```text:イルミネーションバー: 色相グラデーション
+  L:/>display-ws2812 setup {din:2 straight:60} brightness:.1
+  L:/>draw image-load:hue-32-horz.png
+  L:/>draw image {size:32,1 repeat-x}
+  L:/>draw repeat { image {offset-shift:1,0} sleep:100 }
+  ```
+
+  `offset-shift:1,0` を実行すると、以下のように表示範囲が右にずれて、色相が流れるように見えます。
+
+  ![hue-32-horz-shifted](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/hue-32-horz-shifted.png)
+
+- **色を変えながら流れるドット**
+
+  [hue-256-vert.png](https://raw.githubusercontent.com/ypsitau/zenn/main/resource/2025-11-11-labo-led/hue-256-vert.png) は、256 色の色相グラデーションが垂直方向に並んだ画像です。
+
+  ![hue-256-vert-image](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/hue-256-vert-image.png)
+   *`hue-256-vert.png` のイメージ*
+
+  このファイルを Pico ボードの内部ストレージ `L:` ドライブに保存して、以下のコマンドを実行します。
+
+  ```text:イルミネーションバー: 色を変えながら流れるドット
+  L:/>display-ws2812 setup {din:2 straight:60} brightness:.1
+  L:/>draw image-load:hue-256-vert.png
+  L:/>draw image {size:8,1 repeat-x}
+  L:/>draw repeat { image {offset-shift:1,1} sleep:100 }
+  ```
+
+   `offset-shift:1,1` を実行すると、以下のように表示範囲が右下にずれていくので、同時に色相も変化しながらドットが流れるように見えます。
+
+  ![hue-256-vert-shifted](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/hue-256-vert-shifted.png)
+
+  `offset-shift` で縦方向の移動量を変えて `offset-shift:1,2` のように実行すると、色相の変化速度を速くできます。
+
+#### WS2812 マトリクスモジュールに画像を表示する
+
+マトリクス状に配置された WS2812 モジュールを使うと、小型のディスプレイを簡単に作成できます。以下に 16x16 のマトリクスモジュールを Pico ボードに接続した例を示します。
+
+![ws2812-matrix-connect](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/ws2812-matrix-connect.jpg)
+
+マトリクスモジュールの DIN ピンを GPIO2 に接続しています。
+
+- **文字が流れるディスプレイ**
+
+  [alphabet-white-16.png](https://raw.githubusercontent.com/ypsitau/zenn/main/resource/2025-11-11-labo-led/alphabet-white-16.png) は、縦 16 ドットで横にアルファベット大文字 A から Z までが白色で並んだ画像ファイルです。
+
+   ![alphabet-white-16-image](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/alphabet-white-16-image.png)
+   *`alphabet-white-16.png` のイメージ*
+
+  このファイルを Pico ボードの内部ストレージ `L:` ドライブに保存して、以下のコマンドを実行します。
+
+   ```text:電光掲示板: 文字が流れるディスプレイ
+   L:/>display-ws2812 setup {din:2 zigzag-nw-vert:16,16} brightness:.1
+   L:/>draw image-load:alphabet-white-16.png
+   L:/>draw image {size:16,16}
+   L:/>draw repeat { image {offset-shift:1,0} sleep:100 }
+   ```
+
+  `offset-shift:1,0' を実行すると、以下のように表示範囲が右にずれて、文字が流れるように見えます。
+
+   ![alphabet-white-16-shifted](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/alphabet-white-16-shifted.png)
+
+- **アニメーション表示**
+
+  [rect-inflate-16.png](https://raw.githubusercontent.com/ypsitau/zenn/main/resource/2025-11-11-labo-led/rect-inflate-16.png) は、16x16 ドットの中で四角形が徐々に大きくなるイメージを横に並べた画像ファイルです。
+
+   ![rect-inflate-16-image](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/rect-inflate-16-image.png)
+   *`rect-inflate-16.png` のイメージ*
+
+  このファイルを Pico ボードの内部ストレージ `L:` ドライブに保存して、以下のコマンドを実行します。
+
+   ```text:電光掲示板: アニメーション表示
+   L:/>display-ws2812 setup {din:2 zigzag-nw-vert:16,16} brightness:.1
+   L:/>draw image-load:rect-inflate-16.png
+   L:/>draw image {size:16,16}
+   L:/>draw repeat { image {offset-shift:16,0} sleep:100 }
+   ```
+
+   `offset-shift:16,0` を実行すると、以下のように表示範囲が 1 コマ分 (16 ドット) ずつ右にずれて、アニメーション効果が得られます。
+
+   ![rect-inflate-16-shifted](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/rect-inflate-16-shifted.png)
+
+   コマンド操作はまったく同じで、画像ファイルの中身を変えるだけで様々なアニメーションを表示できます。
+
+## 電源投入で自動的に画像を表示する
+
+電源投入時に自動的に画像を表示するには、Pico ボードの内部ストレージ `L:` ドライブに `.startup` という名前のスクリプトファイルを作成し、実行したいコマンドを記述します。
+
+以下は、赤いドットが流れるイルミネーションバーを表示するための `.startup` ファイルの例です。
+
+```text:.startup
+display-ws2812 setup {din:2 straight:60} brightness:.1
+draw image-load:red-dot.png
+draw image {size:8,1 repeat-x}
+draw repeat { image {offset-shift:1,0} sleep:100 }
+```

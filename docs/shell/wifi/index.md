@@ -1,0 +1,208 @@
+今回は、pico-jxgLABO を使って Pico ボードを Wi-Fi ネットワークに接続します。
+
+組込みマイコンのネットワーク接続というと、そのためのプログラムを書いて実行するという例がほとんどです。特に、Wi-Fi 接続に必要な SSID やパスワードの値をソースコードに直接書き込まなければいけないことが多く、プログラムの配布やメンテナンスが困難です。pico-jxgLABO 環境では、ネットワークに接続するためのシェルコマンドを提供し、ユーザがコマンド操作を通してネットワークに接続できるようにしています。
+
+この記事で扱うネットワーク操作は以下の通りです。
+
+- ネットワーク接続
+  1. Wi-Fi スキャンで利用可能なアクセスポイントを調べる
+  2. 指定の SSID とパスワードで Wi-Fi に接続する
+  3. 固定 IP アドレスを設定する
+- Pico ボード上でネットワークコマンド (ping, nslookup, ntp) を試してみる
+- Pico ボード上で Telnet サーバを動かして遠隔コマンド操作をする
+
+## Raspberry Pi Pico と Wi-Fi 機能
+
+### Pico W と Pico 2 W
+
+ネットワーク機能を持つ Pico ボードとして、CYW43439 という Wi-Fi チップ (以下 CYW43 チップ) を搭載した Pico W と Pico 2 W があります。
+
+![picow-and-pico2w](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-10-06-labo-wifi/picow-and-pico2w.jpg)
+*Pico W と Pico 2 W*
+
+Pico W は 1,200 円、Pico 2 W は 1,400 円程度で購入できます。Wi-Fi 機能がない Pico ボードに比べて CYW43 チップの分だけ 400 円ほど高くなります。
+
+Pico W/Pico 2 W ボードは、特殊用途向けに予約されている GPIO 23, 24, 25, 29 を使って CYW43 チップを制御します。Pico や Pico 2 が内蔵 LED の制御に使っている GPIO 25 が CYW43 チップの制御に使われてしまうので、内蔵 LED は CYW43 チップの GPIO に接続されています。つまり Pico W/Pico 2 W の LED を制御するには CYW43 チップと通信しなければならず、これはかなり厄介な仕事です。Pico SDK は CYW43 チップの GPIO にアクセスするための API として `cyw43_arch_gpio_get()` と `cyw43_arch_gpio_put()` を用意しているので、これらを使うのが得策です。
+
+ところで、この限られた GPIO ピンで CYW43 チップを制御するのはずいぶん苦労したみたいです。[こちらの記事](https://zenn.dev/nonnoise/articles/0d5b97cb517e31)で詳しく解説されているので、興味のある方は読んでみてください。
+
+限られた資源といえば、CYW43 チップの制御のために PIO (Programmable I/O) も使われています。Pico W は PIO を 2 ブロック、PICO 2 W  は 3 ブロック持っていますが、そのうちの 1 ブロックが CYW43 制御に使われるので、PIO を使うシステムを設計する場合は注意が必要です[^pio-usage]。
+
+[^pio-usage]: pico-jxgLABO もロジックアナライザ機能のために PIO を使います。
+
+### Pico のネットワーク機能の用途
+
+Pico W や Pico 2 W の Wi-Fi 機能は、IoT (Internet of Things) 機器のネットワーク接続に使う例が多いです。例えば、センサーで取得したデータをクラウドに送信したり、クラウドからの指示で機器を制御したりする用途です。HTTP プロトコルを使えば Web ブラウザで操作ができますし、MQTT プロトコルを使えば軽量なメッセージングが可能です。
+
+今回の記事では、Pico ボードで Telnet サーバを動かして pico-jxgLABO のシェルコマンドを遠隔で実行できるようにします。Tera Term などのターミナルソフトを使えば、Pico ボードを USB ケーブルで接続しなくてもコマンドを実行できるようになります。
+
+以下の写真では、複数の Pico W や Pico 2 W を Wi-Fi ネットワークに接続し、固定 IP アドレスをそれぞれ設定しています。
+
+![wifi_experiment](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-10-06-labo-wifi/wifi-experiment.jpg)
+
+物理的なケーブル接続をしなくてもそれぞれのボードの操作ができるので、より自由な運用が可能になりますね!
+
+## Wi-Fi ネットワークに接続する
+
+USB シリアルで Pico ボード上の pico-jxgLABO シェルに接続し、シェルコマンド `net` のサブコマンドでネットワーク操作を行います。まずは `wifi-scan` サブコマンドで利用可能なアクセスポイントを調べてみましょう。
+
+```text
+L:/>net wifi-scan
+ssid:MyHome-WiFi                      rssi: -68 channel:  8 mac:xx:xx:xx:xx:xx:xx security:5
+ssid:A12345678                        rssi: -75 channel: 11 mac:xx:xx:xx:xx:xx:xx security:7
+ssid:LivingRoomAP                     rssi: -76 channel:  4 mac:xx:xx:xx:xx:xx:xx security:7
+ssid:HUMIN-4512                       rssi: -76 channel:  4 mac:xx:xx:xx:xx:xx:xx security:7
+```
+
+`wifi-connect` サブコマンドで SSID とパスワードを指定して Wi-Fi ルータに接続します。
+
+```text
+L:/>net wifi-connect {ssid:'MyHome-WiFi' password:'PASSWORD'}
+Connected ssid:'MyHome-WiFi' auth:wpa2 addr:192.168.0.20 netmask:255.255.255.0 gateway:192.168.0.1
+```
+
+この例では DHCP によって IP アドレスが `192.168.0.20`、ネットマスクが `255.255.255.0`、ゲートウェイが `192.168.0.1` に設定されました。
+
+:::message
+Wi-Fi ルータによっては Pico ボードと相性が悪くて接続できない場合があります。ホスト PC が Windows であればモバイルホットスポット機能を使ってこれをアクセスポイントにすることができるので、こういった機能も試してみてください。セキュリティの面でいうと、ホスト PC をアクセスポイントにするこの方法は Wi-Fi ルータを使うよりも安全でおすすめです。
+:::
+
+
+固定 IP アドレスを設定するには `config` サブコマンドを使います。以下の例では IP アドレスを `192.168.0.101` に設定しています。
+
+```text
+L:/>net config {addr:192.168.0.101}
+Connected ssid:'MyHome-WiFi' auth:wpa2 addr:192.168.0.101 netmask:255.255.255.0 gateway:192.168.0.1
+```
+
+`config` サブコマンドはネットマスクとゲートウェイも指定できますが、これらは Wi-Fi のアクセスポイントに接続した際に DHCP で与えられた値でないと通信できないので、通常は IP アドレスだけ指定することになると思います。
+
+`wifi-connect` サブコマンドと `config` サブコマンドは組み合わせて使うこともできます。
+
+```text
+L:/>net wifi-connect {ssid:'MyHome-WiFi' password:'PASSWORD'} config {addr:192.168.0.101}
+```
+
+## ネットワークを使ってみる
+
+### ネットワークコマンドの実行
+
+まずは基本の `ping` コマンド。ゲートウェイに ping を送ってみます。
+
+```text
+L:/>ping 192.168.0.1
+Reply from 192.168.0.1: time=2ms
+Reply from 192.168.0.1: time=1ms
+Reply from 192.168.0.1: time=2ms
+```
+
+`nslookup` コマンドで DNS サーバに問い合わせます。
+
+```text
+L:/>nslookup raspberrypi.com
+104.21.88.234
+```
+
+`ntp` コマンドで NTP サーバに接続して現在時刻を取得します。
+
+```text
+L:/>ntp
+2025-10-06 12:34:56Z
+```
+
+デフォルトで表示されるのは UTC 時刻です。シェル変数 `TZ` にタイムゾーン情報を設定すると、ローカル時刻で表示されるようになります。例えば、日本標準時 (JST) に設定するには以下のようにします。
+
+```text
+L:/>set TZ=JST-9
+```
+
+`ntp` コマンドを再度実行すると、JST で現在時刻が表示されます。
+
+```text
+L:/>ntp
+2025-10-06 21:34:56
+```
+
+### Pico ボード上で Telnet サーバを動かし、リモートでコマンドを実行する
+
+`telnet-server` コマンドで Pico ボード上に Telnet サーバを起動します。
+
+```text
+L:/>telnet-server start
+Telnet server started on port 23
+```
+
+Tera Term を使って Pico ボードに接続してみましょう。Tera Term のメニューバーから `ファイル(F)` - `新しい接続(N)...` を実行して以下の「Tera Term: 新しい接続」ダイアログを表示します。
+
+![teraterm-connect](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-10-06-labo-wifi/teraterm-connect.png)
+
+`TCP/IP` を選択して `ホスト(T)` に Pico ボードの IP アドレスを入力、サービスに `Telnet` を選択して `OK` ボタンをクリックすると、新しい Tera Term のウィンドウが開き、ボードに接続します。パスワードを聞いてきますが、まだ設定していないのでそのまま Enter キーを押すとログインできます。
+
+```text
+password:
+L:/>
+```
+
+これで pico-jxgLABO のコマンドがすべて遠隔で実行できるようになりました。[ロジックアナライザ機能](https://zenn.dev/ypsit/articles/2025-09-08-labo-la)もリモートで実行できるんですよ! ほかに何ができるのか知りたい方は、以下の記事を参照してください。
+
+▶️ [Pico ボードは実験室! pico-jxgLABO を導入してロジックアナライザ機能を試してみる](https://zenn.dev/ypsit/articles/2025-08-01-labo-intro)
+
+ちなみに、Telnet で接続すると USB シリアルからのコマンド入力は使えなくなります。Telnet を切断すると USB シリアル通信が再び使えるようになります。
+
+Pico ボードの制御ができることを確かめるために、見た目でわかりやすい LED 操作をしてみましょう。`led` コマンドで Pico ボードの内蔵 LED を制御することができます。ボードの動作状況を知らせるのにも重宝するので、ちょっと使い方を詳しく説明しますね。
+
+下は LED を点灯・消灯する例です。
+
+```text
+L:/>led on
+L:/>led off
+```
+
+`flip` サブコマンドを使うと、指定した間隔で LED の点灯・消灯を反転させることができます。以下は 100msec ごとに点滅させる例です。この点滅処理はバックグラウンドで動作するので、他のコマンドを実行しながら LED の点滅を続けることができます。
+
+```text
+L:/>led on flip:100
+```
+
+以下の例は、50msec 点灯、500msec 消灯、50msec 点灯、500msec 消灯、50msec 点灯、2000msec 消灯を繰り返す点滅パターンです。
+
+```text
+L:/>led on flip:50,500,50,500,50,2000
+```
+
+反転操作の繰り返しを止めるには、`flip` サブコマンドの数値列の最後に `*` を指定します。以下は 3 回点滅した後に消灯する例です。
+
+```text
+L:/>led on flip:50,500,50,500,50,*
+```
+
+### パスワードの設定
+
+ネットワーク上にむき出しの状態で Telnet サーバを起動するのはセキュリティ上好ましくないので、パスワードを設定しておきましょう。もっとも、Telnet は平文で通信するので、ネットワークを傍受されてしまえば意味はないのですが、少なくともパスワードを知らない人が簡単にログインできないようにすることは重要です。
+
+パスワードを設定するには、`password` コマンドを実行します。
+
+```text
+L:/>password
+New password:
+Reenter password:
+password changed
+```
+
+パスワードを設定すると、`L:` ドライブのルートディレクトリに `.password` ファイルが作成され、ハッシュ化されたパスワードが保存されます。
+
+パスワード入力は Telnet 接続したときのみ要求されます。USB シリアル接続時にはパスワード入力は必要ありません。
+
+### 自動起動の設定
+
+`L:` ドライブのルートディレクトリに `.startup` という名前のファイルを作成すると、Pico ボードの電源を入れたときに自動的に実行されるコマンドを設定できます。以下に Wi-Fi 接続と Telnet サーバの起動を自動化する `.startup` ファイルの例を示します。
+
+```text:.startup
+net wifi-connect {ssid:'SSID' password:'PASSWORD'} config {addr:XXX.XXX.XXX.XXX}
+telnet-server start
+led on flip:50,500,50,500,50,2000
+```
+
+pico-jxgLABO が動作している Pico ボードに USB ケーブルを接続すると `L:` ドライブの内容を USB ドライブとして PC からアクセスできるようになっています。Windows 環境ですと `D:` ドライブになることが多いです。上記のファイルを編集して `SSID`, `PASSWORD`, `XXX.XXX.XXX.XXX` の内容を変更し、このドライブにコピーしてください。
+
+再起動して、スクリプト内のすべてのコマンドがエラーなしで実行されると、`led` コマンドで内蔵 LED を点滅させて正常に起動したことを知らせます。設定した IP アドレスに応じて LED の点滅パターンを変えておくと、ボードごとの IP アドレスが一目でわかるので便利です (例えば、192.168.0.101 なら一回、192.168.0.102 なら二回点滅する、など)。

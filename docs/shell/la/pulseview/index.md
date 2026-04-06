@@ -1,5 +1,11 @@
 # Logic Analyzer - PulseView
 
+By combining pico-jxgLABO and PulseView, you can observe the internal signals of the Pico board with a logic analyzer without any probe connections.
+
+Of course, you can also use the Pico board exclusively as a logic analyzer to observe external signals, or observe both internal and external signals simultaneously. The method for using it as a dedicated logic analyzer is explained [at the end of this article](#dedicated-la).
+
+This article explains how to install and set up pico-jxgLABO and PulseView, and how to actually observe waveforms on the Pico board. The instructions assume a Windows host PC, but similar steps should work on Linux as well.
+
 ## Installing PulseView and Connecting to pico-jxgLABO
 
 ### Installation
@@ -274,8 +280,7 @@ pico-jxgLABO uses units called samplers to sample signals, and up to 4 can opera
 
 Increasing the number of samplers increases the sampling rate but decreases the number of events that can be sampled.
 
-
-## Using the Pico Board as a Dedicated Logic Analyzer
+## Using the Pico Board as a Dedicated Logic Analyzer {: #dedicated-la}
 
 You can use the Pico board as a dedicated logic analyzer to observe external signals. For example, running the following `la` command allows you to use a total of 24 GPIO pins (GPIO2 to GPIO22 and GPIO26 to GPIO28) as measurement pins for the logic analyzer:
 

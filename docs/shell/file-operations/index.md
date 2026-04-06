@@ -1,5 +1,9 @@
 # File Opeations
 
+This article explains how to perform file operations in the pico-jxgLABO shell. The file system of the Pico board is based on the FAT12 file system, and the available commands are similar to those in MS-DOS or Windows Command Prompt.
+
+## Actual Operations
+
 `ls-drive` or `dir-drive` lists the available drives.
 
 ```console

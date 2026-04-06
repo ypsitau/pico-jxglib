@@ -6,14 +6,17 @@ nav:
   - Shell:
       - Overview: shell/index.md
       - File Operations: shell/file-operations/index.md
+      - Wi-Fi: shell/wifi/index.md
       - Logic Analyzer:
           - Text Mode: shell/la/text/index.md
           - PulseView: shell/la/pulseview/index.md
       - GPIO: shell/gpio/index.md
+      - PWM: shell/pwm/index.md
       - I2C: shell/i2c/index.md
+      - Camera:
+          - OV7670: shell/camera/ov7670/index.md
       - SPI: shell/spi/index.md
       - UART: shell/uart/index.md
-      - Wi-Fi: shell/wifi/index.md
   - Library:
       - Overview: library/index.md
 theme:
