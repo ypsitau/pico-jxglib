@@ -1,29 +1,32 @@
-ワンボードマイコン RaspberryPi Pico と、その開発環境 Pico SDK が素晴らしすぎます。毎日これらと戯れてとても楽しいのですが、Pico SDK はほかのライブラリやプラットフォームに比べて情報が少なく、使い方を知るのに苦労します。
 
-## Pico SDK のすすめ
+# Raspberry Pi Pico and Pico SDK
 
-RaspberryPi という名前で誤解しがちなのですが、Linux を搭載した RaspberryPi と Raspberry Pi Pico (以下 Pico) はまったくの別物です。両方とも Raspberry Pi Ltd. が提供しているボードですが、Pico は OS を持たない、ハードウェアの制御に特化したボードです[^about-os]。
+The single-board microcontroller Raspberry Pi Pico and its development environment, Pico SDK, are truly amazing. I enjoy working with them every day, but compared to other libraries and platforms, there is less information available for Pico SDK, making it a bit challenging to learn how to use it.
 
-2026 年現在、Pico には RP2040 を搭載した初代と、2024 年夏にリリースされた RP2350 搭載の Pico2 があります。
+## Why Use Pico SDK?
 
-[^about-os]: リアルタイム OS でタスク管理をすることはありますが、Windows や Linux のような高度なリソース管理を備えた OS を動かす例はかなり特殊です。
+Despite the name, Raspberry Pi Pico is completely different from the Linux-based Raspberry Pi. Both are provided by Raspberry Pi Ltd., but Pico is a board specialized for hardware control without an OS[^about-os].
+
+As of 2026, there are two main Pico boards: the original with RP2040 and the Pico2 released in summer 2024 with RP2350.
+
+[^about-os]: While you can run a real-time OS for task management, running a full OS like Windows or Linux is quite rare.
 
 ![pico-and-pico2.jpg](images/pico-and-pico2.jpg)
-*初代 Pico と Pico2*
+*Original Pico and Pico2*
 
-これらのボード、RaspberryPi ほどの機能はありませんが、性能はあなどれません。初代の Pico は 125MHz の 32bit ARM コア (しかもデュアル)、264KByte の SRAM, 2MByte のフラッシュメモリ。Pico2 にいたっては CPU 150MHz (デュアル), 520KByte の SRAM, 4MByte のフラッシュメモリ、ハードウエア浮動小数点演算と、MS-DOS 時代のパソコン以上の性能です。これが 800 円程度で買えるのですから興奮してしまいますよね。今、手元に 10 枚ほどありますが、これらが作業机に転がっているとそれだけで創作意欲が高まります。
+These boards may not have the features of a full Raspberry Pi, but their performance is impressive. The original Pico has a 125MHz 32-bit dual-core ARM, 264KByte SRAM, and 2MByte flash. Pico2 has a 150MHz dual-core CPU, 520KByte SRAM, 4MByte flash, and hardware floating-point, outperforming many old PCs. And you can buy one for about $5! Having a handful of these on your desk is truly inspiring.
 
 ![workspace.jpg](images/workspace.jpg)
 
-ところで、Pico のソフト開発には何を使いましょうか?
+So, what should you use for Pico software development?
 
-巷では MicroPython が一番人気があるようです。インタープリタ言語ですからコンパイルの手間もいりませんし、ユーザが多いので情報も豊富です。でも、インタープリタ言語の宿命として実行パフォーマンスが犠牲になってしまい、Pico が本来持っている性能を十分に発揮できません。インタープリタ自身の動作のために SRAM などの資源が消費されてしまうのも気になるところです。
+MicroPython is the most popular. As an interpreted language, it requires no compilation and has a large user base, so information is plentiful. However, as with all interpreters, execution performance is sacrificed, and you can't fully utilize Pico's capabilities. The interpreter also consumes SRAM and other resources.
 
-次によく見かけるのは Arduino 環境を使ったプログラミングでしょうか。Arduino IDE をインストールすれば一通りの開発ができますし、ライブラリ管理機能を使って多くのライブラリを利用することができます。しかし Arduino のコンセプトは、様々な CPU やボードを共通した API でプログラミングできることを優先していて、CPU が持っている独自の機能を使いづらい傾向があります[^arduino-and-picosdk]。実行パフォーマンスも良いとは言えません。
+Arduino is another common choice. Installing the Arduino IDE gives you a full development environment and access to many libraries. However, Arduino prioritizes a unified API across many CPUs and boards, making it harder to use unique CPU features[^arduino-and-picosdk]. Performance is also not optimal.
 
-[^arduino-and-picosdk]: Arduino が Pico に対応するため、Pico SDK を内部で使用しているようです。なので、Arduino 環境でもユーザが Pico SDK の機能を直接使うこともできます。
+[^arduino-and-picosdk]: Arduino uses Pico SDK internally for Pico support, so you can use Pico SDK features directly in Arduino as well.
 
-**Pico SDK** は Pico/Pico2 専用の C 言語ライブラリです。CPU の設計元である RaspberryPi Ltd. が作っているだけあって、CPU が持つ機能をフルに使えるよう設計されています。また、パフォーマンスを最大限に引き出せる工夫が随所に施されていて、プロフェッショナルな仕事をしているなあと感心させられます。例えば以下のコードは:
+**Pico SDK** is a C library dedicated to Pico/Pico2. Developed by Raspberry Pi Ltd., it is designed to fully utilize the CPU's features. Many optimizations are included to maximize performance, and the code is impressively professional. For example, the following code:
 
 ```c
 int dma_channel = 3;
@@ -35,13 +38,13 @@ channel_config_set_transfer_data_size(&config, DMA_SIZE_8);
 dma_set_config(dma_channel, &config, false);
 ```
 
-インライン展開されて以下のコードになります。
+is inlined to:
 
 ```c
 *(volatile uint32_t *)(DMA_BASE + DMA_CH3_AL1_CTRL_OFFSET) = 0x00089831;
 ```
 
-GPIO を最高速で On/Off させる以下のコードは:
+To toggle a GPIO at maximum speed:
 
 ```c
 #include "pico/stdlib.h"
@@ -57,7 +60,7 @@ int main()
 }
 ```
 
-ループ部分のインストラクションを以下のように生成して:
+The loop generates instructions like:
 
 ```
 loop:   str r2, [r3, #20]
@@ -65,168 +68,153 @@ loop:   str r2, [r3, #20]
         b loop
 ```
 
-実際に Pico ボード (動作クロック 125MHz) で実行すると 31.25MHz (125MHz / (1 + 1 + 2 clock)) の信号を観測することができます。
+On a 125MHz Pico, you can observe a 31.25MHz signal (125MHz / (1 + 1 + 2 clocks)).
 
-ただ、実際に使うための情報が少ないです。詳細な情報を提供するドキュメントはありますし、全体的にかなり親切に書かれてはいます。ですが、肝心な箇所の説明が不十分だったり、雑な記述になっていたりして、ある程度の知識があることを前提にしているような雰囲気があります。
+However, there is not much information on how to actually use it. The documentation is detailed and generally friendly, but sometimes lacks crucial explanations or assumes a certain level of knowledge.
 
-この記事は、そんな高いパフォーマンスを実現する Pico SDK の導入方法を、具体的なユースケースを念頭に置きながら紹介します。
+This article introduces how to set up Pico SDK with practical use cases in mind.
 
-## 手元に置きたいドキュメント
+## Must-Have Documents
 
-RaspberryPi Ltd. が提供している以下のドキュメントは何度も読み返すことになると思います。
+The following documents from Raspberry Pi Ltd. are worth reading repeatedly:
 
-- [Getting started with Raspberry Pi Pico-series](https://datasheets.raspberrypi.com/pico/getting-started-with-pico.pdf)
-開発環境のセットアップの仕方や、デバグボードの配線の仕方などが説明されています。
-- [Raspberry Pi Pico-series C/C++ SDK](https://datasheets.raspberrypi.com/pico/raspberry-pi-pico-c-sdk.pdf)
-Pico SDK で提供される関数などのドキュメントです。
-- [RP2040 Datasheet](https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf), [RP2350 Datasheet](https://datasheets.raspberrypi.com/rp2350/rp2350-datasheet.pdf)
-SDK の関数が実際にどのような処理をしているか、ハードウェアの詳細なふるまいを知りたいときに参照します。PIO (Programmable I/O) の使い方は上記の SDK のドキュメントとこのデータシートの両方に重複して掲載されていますが、こちらの方が詳細に書かれています。
+- [Getting started with Raspberry Pi Pico-series](https://datasheets.raspberrypi.com/pico/getting-started-with-pico.pdf): How to set up the development environment and debug board wiring.
+- [Raspberry Pi Pico-series C/C++ SDK](https://datasheets.raspberrypi.com/pico/raspberry-pi-pico-c-sdk.pdf): Documentation for functions provided by Pico SDK.
+- [RP2040 Datasheet](https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf), [RP2350 Datasheet](https://datasheets.raspberrypi.com/rp2350/rp2350-datasheet.pdf): For details on hardware behavior and SDK function implementation. PIO usage is covered in both the SDK docs and these datasheets, but the datasheets are more detailed.
 
-## 開発環境
+## Development Environment
 
 ### Visual Studio Code
 
-組込み系の開発環境というと、ターゲットボード用のコンパイラや、ライブラリ・ヘッダファイルのインストールと適切なパス設定、デバグツールの導入など、必要な作業がいろいろあって、経験のある人ほど躊躇してしまいそうです。Pico SDK の導入も少し前まではそのとおりだったのですが、Microsoft の Visual Studio Code (以下 VSCode) 用の Raspberry Pi Pico 拡張機能がリリースされたことで驚くほど簡単になりました。
+Embedded development usually involves installing compilers, libraries, header files, setting paths, and debugging tools, which can be daunting. Until recently, this was true for Pico SDK as well, but the release of the Raspberry Pi Pico extension for Microsoft Visual Studio Code (VSCode) has made it surprisingly easy.
 
-まずは VSCode を https://code.visualstudio.com/download からダウンロードし、インストールしておいてください。
+First, download and install VSCode from https://code.visualstudio.com/download.
 
-VSCode を使ったことのない人のために、いくつか知っておくべきことをここに記述しておきます。
+For those new to VSCode, here are some basics:
 
-基本的に VSCode はコマンドプロンプト、PowerShell または bash などのシェルで、プロジェクトが格納されたディレクトリ、あるいはこれからプロジェクトを作ろうとしている空っぽのディレクトリに移って以下のように起動します。
+You typically launch VSCode from a shell (Command Prompt, PowerShell, or bash) in the directory where your project is stored (or an empty directory for a new project):
 
 ```
 code .
 ```
 
-するとこのディレクトリの下に `.vscode` というディレクトリが作成され、VSCode のワークスペースになります。ワークスペースには、コンパイルやデバグに必要な設定情報などが格納されます。また、ファイルのオープン状態もここに記録されるので、作業を再開したときにエディタが前と同じ状態になってくれてとても便利です。
+This creates a `.vscode` directory, making it a VSCode workspace. The workspace stores build/debug settings and open file states, so you can resume work exactly as you left it.
 
-VSCode の機能はほとんどすべて「コマンドパレット」と呼ばれるプロンプトからコマンドを入力することで実行できます。`F1` または `Ctrl`+`Shift`+`P` を押すとタイトルバーに以下のようなコマンドパレットが表示されます。
+Most VSCode features are accessed via the "Command Palette". Press `F1` or `Ctrl+Shift+P` to open it:
 
 ![vscode-palette.png](images/vscode-palette.png)
 
-このテキストボックスはコマンドパレット以外にファイル切り替えやカーソル移動などにも使われます。先頭に `>` が入力されているとコマンドパレットとして機能します。
+This textbox is also used for file switching and cursor movement. If it starts with `>`, it functions as the command palette.
 
-以下の説明では VSCode の操作の説明をするのに、主にこのコマンドパレットのコマンド名を使っていきます。キーボードショートカットや GUI は利用可能なコマンド処理をすべてカバーしていませんし、「ウィンドウの一番上のボタンをクリックしてダイアログを出して...」などと書くよりも簡潔な説明ができます。
+In this guide, VSCode operations are described mainly by command palette command names. Keyboard shortcuts and GUI do not cover all commands, and using command names is more concise than describing GUI navigation.
 
-コマンド名がうろ覚えでも、コマンド名の一部を入力するとそれに合致したコマンドの一覧を表示してくれるので容易に目的のコマンドを探すことができます。コマンド名は、例えば Pico 関連のコマンドでしたら　`Raspberry Pi Pico:`、CMake 関連のコマンドなら `CMake:` で始まるので、`Pico:` だとか `CMake:` などと入力することで利用可能なコマンドがわかります。
+Even if you don't remember the exact command name, typing part of it will show a list of matching commands. For Pico-related commands, type `Raspberry Pi Pico:`, for CMake, type `CMake:`, etc.
 
-### Raspberry Pi Pico 拡張のインストール
+### Installing the Raspberry Pi Pico Extension
 
-VSCode のコマンドパレットから `>Extensions: Install Extensions` を実行すると利用可能な拡張機能が表示されます。検索ボックスに `Pico` などと入力すると一覧の中に `Raspberry Pi Pico` が出てくるので、それをインストールしてください。
+From the VSCode command palette, run `>Extensions: Install Extensions`. Search for `Pico` and install `Raspberry Pi Pico` from the list.
 
 ![pico-extension.png](images/pico-extension.png)
 
-この時点では、Pico SDK のツール群やライブラリファイルなどはまだインストールされません。後述する Pico SDK プロジェクトの作成時に実際のインストール作業が行われます。
+At this point, the Pico SDK tools and libraries are not yet installed. They will be installed when you create a Pico SDK project (see below).
 
-ほかにも `CMake`, `C/C++`, `C/C++ Extension Pack` 拡張機能なども必要だったり便利だったりするのでインストールしておきます。特に意識しなくても、プログラムのコードファイルやツールの設定ファイルを作成したり開いたりすると VSCode がそれに関連した拡張機能のインストールを自動的に勧めてくるので、必要に応じてインストールしていきます。
+Other useful extensions include `CMake`, `C/C++`, and `C/C++ Extension Pack`. VSCode will often suggest installing relevant extensions when you open or create code/config files, so install as needed.
 
-ところで、Pico SDK インストールに必要な操作はこれで完了です。簡単！
+That's all you need to install Pico SDK. Easy!
 
-## プロジェクトの作成と編集
+## Creating and Editing Projects
 
-### プロジェクトの作成
+### Creating a Project
 
-Pico SDK のプロジェクトを作成するには、VSCode のコマンドパレットから `>Raspberry Pi Pico: New Pico Project` を実行します。使用言語を聞かれるので `C/C++` を選択すると以下の画面が表示されます。
+To create a Pico SDK project, run `>Raspberry Pi Pico: New Pico Project` from the VSCode command palette. When prompted for a language, select `C/C++`. The following screen will appear:
 
 ![new-project.png](images/new-project.png)
 
-設定内容は以下の通りです。最低限入力の必要がある項目は **太字** で書かれています。設定内容のほとんどはプロジェクト作成後に変更可能です。
+Settings are as follows (required fields are in **bold**; most can be changed later):
 
 - Basic Settings
-  - **Name**: プロジェクトの名前を入力します
-  - **Board type**: ボード種別を選択します
-  - Architecture (Pico2): Pico2 は ARM 以外に Risc-V アーキテクチャの CPU が組み込まれています。チェックしないでおきます
-  - **Location**: プロジェクトディレクトリを作る一つ上のディレクトリを選択します
-  - Select Pico SDK version: 使用する Pico SDK のバージョンです。デフォルトのままにしておきます
-- Features
-  使用するライブラリを選択します。チェックしないでおきます
+  - **Name**: Enter the project name
+  - **Board type**: Select the board type
+  - Architecture (Pico2): Pico2 supports Risc-V as well as ARM. Leave unchecked unless needed
+  - **Location**: Select the parent directory for the project
+  - Select Pico SDK version: Leave as default
+- Features: Select libraries to use (leave unchecked)
 - Stdio support
-  - Console over UART: デフォルト UART ピン (GPIO0, GPIO1) を使って stdio の関数たち (`printf()` や `getchar()`) のデータを送受信します。チェックしないでおきます
-  - Console over USB (disbles other USB use): USB を使って stdio の関数たちのデータを送受信します。チェックしないでおきます
+  - Console over UART: Use default UART pins (GPIO0, GPIO1) for stdio (`printf()`, `getchar()`). Leave unchecked
+  - Console over USB (disables other USB use): Use USB for stdio. Leave unchecked
 - Code generation options
-  - Run the program from RAM rather than flash: 通常、プログラムはフラッシュメモリに書かれ、実行時に必要に応じて SRAM にコピーされます。このチェックをつけると、起動時にすべてのプログラムを SRAM にコピーして実行します。チェックしないでおきます
-  - Use project name as entry point file name: ひな形のソースファイルの名前をプロジェクト名と同じにします。チェックを外すと `main.c` または `main.cpp` になります。チェックしたままにします
-  - **Generate C++ code**: ひな形のソースファイルを C++ で出力します (拡張子が `.cpp` になります)。今回は C でプログラムを書くのでチェックしないでおきます。**pico-jxglib** を使う場合は C++ を使うのでチェックします
-  - Enable C++ RTTI (Uses more memory): C++ の RTTI (Run-Time Type Information) 機能を有効にします。チェックしないでおきます
-  - Enable C++ exception (Uses more memory): C++ の例外処理を有効にします。チェックしないでおきます
+  - Run the program from RAM rather than flash: Normally, programs are written to flash and copied to SRAM as needed. If checked, the entire program is copied to SRAM at startup. Leave unchecked
+  - Use project name as entry point file name: If unchecked, the main source file is `main.c` or `main.cpp`. Leave checked
+  - **Generate C++ code**: Output the template source file in C++ (`.cpp`). Leave unchecked for C; check for C++ (e.g., when using pico-jxglib)
+  - Enable C++ RTTI (Uses more memory): Enable C++ RTTI. Leave unchecked
+  - Enable C++ exception (Uses more memory): Enable C++ exceptions. Leave unchecked
 - Debugger
-  - DebugProbe (CMSIS-DAP) [Default]: Debug Probe を使ってデバグをします。チェックしたままにします
-  - SWD (Pi host, on Pi5Pi 5 it requires Linux Kernel >= 6.6.47): Raspberry Pi を使ってデバグをします。チェックしないでおきます
+  - DebugProbe (CMSIS-DAP) [Default]: Use Debug Probe for debugging. Leave checked
+  - SWD (Pi host, on Pi5Pi 5 it requires Linux Kernel >= 6.6.47): Use Raspberry Pi for debugging. Leave unchecked
 
-`[Create]` ボタンをクリックすると、プロジェクトを作成します。
+Click `[Create]` to create the project.
 
-Raspberry Pi Pico 拡張機能をインストールして初めてプロジェクトを作成したとき、VSCode ウィンドウの右下に `Downloading and installing toolchain` というメッセージボックスがでてきて、しばらくそのままの状態が続きます (メッセージボックスが消えている場合は `>Notifications: Show Notifications` を実行)。実はこの時点で Pico SDK を構成するファイル群をダウンロード・インストールしているのですが、サイズが巨大 (1.4 GByte) なので 20 分ほど待たされます。インストールして最初の一回だけなので、辛抱強く待ちましょう。進捗状況が `Downloading and installing toolchain` メッセージの下の細いバーで表示されます。
+When you create your first project after installing the Pico extension, a `Downloading and installing toolchain` message appears in the lower right of VSCode. This means the Pico SDK files are being downloaded and installed. The download is large (1.4 GByte) and may take about 20 minutes, but this only happens once. Progress is shown by a thin bar below the message.
 
-プロジェクトが作成されると、そこのディレクトリをワークスペースにした別の VSCode が起動します。ビルドができるか早速試してしまいましょう。VSCode でビルドをするには、コマンドパレットから `>CMake: Build` を実行するか `F7` キーを押します。プロジェクト作成後、最初のビルドのときは `Select a kit for hoge` というコンボボックスがでてくるので、`Pico Using compilers: ...` を選択します。
+When the project is created, a new VSCode window opens with the project directory as the workspace. To build, run `>CMake: Build` from the command palette or press `F7`. On the first build, select `Pico Using compilers: ...` when prompted.
 
-エラーがなければ、ワークスペースディレクトリ直下の `build` というディレクトリに実行ファイルや MAP ファイル、逆アセンブルファイルなどが生成されます。
+If there are no errors, executables, MAP files, and disassembly files are generated in the `build` directory.
 
-### Pico SDK の格納ディレクトリ
+### Pico SDK Directory
 
-Pico SDK の格納ディレクトリは、Windows なら `C:\Users\username\.pico-sdk`、Linux ならホームディレクトリ直下の `$HOME/.pico-sdk` になります。
+The Pico SDK is stored in `C:\Users\username\.pico-sdk` on Windows or `$HOME/.pico-sdk` on Linux.
 
-多くの場合、ビルドやデバグツールは VSCode から起動するので実行ファイルのパスを意識することはあまりないと思いますが、`picotool` へのパス　`C:\Users\username\.pico-sdk\picotool\x.x.x\picotool` (`x.x.x` はバージョン番号。2025 年 1 月現在 `2.1.0`) は通しておくと便利かもしれません。
+You usually don't need to worry about the path, but it may be convenient to add `C:\Users\username\.pico-sdk\picotool\x.x.x\picotool` (where `x.x.x` is the version, e.g., `2.1.0`) to your PATH.
 
 ### GitHub
 
-Pico SDK は GitHub (https://github.com/raspberrypi) を通してコードファイルの配布をしています。Git ツールを https://git-scm.com/downloads からダウンロード・インストールしてください。
+Pico SDK is distributed via GitHub (https://github.com/raspberrypi). Download and install Git from https://git-scm.com/downloads.
 
-~~早速ですが、Git を使って Pico SDK に追加のライブラリのインストール (正確には「Git レポジトリのクローン」) をします。これらのライブラリは USB や Wi-Fi の機能を使う場合に必要です。~~
+GitHub contains many useful resources for understanding Pico SDK. Clone the following repositories to your working directory:
 
-1. ~~コマンドプロンプトまたはシェルで Pico SDK のライブラリ格納ディレクトリに移動します。Windows なら `C:\Users\username\.pico-sdk\sdk\x.x.x`、Linux なら `$HOME/.pico-sdk/sdk/x.x.x` です (`x.x.x` はバージョン番号。2025 年 1 月現在 `2.1.0`)~~
-1. ~~以下のコマンドを実行します~~
-   ```
-   git submodule update --init
-   ```
-(Pico SDK 2.1.1 で必要なくなりました 2025.02.24)
-
-GitHub には Pico SDK を理解するための有用な情報が豊富に格納されています。以下のレポジトリを自分の作業ディレクトリにクローンしておくと便利です。
-
-- `pico-examples` は Pico SDK を使ったサンプルプログラムを格納しています。API の具体的な使い方はこれを見ることでわかります
+- `pico-examples`: Sample programs using Pico SDK. See these for API usage examples:
    ```
    git clone https://github.com/raspberrypi/pico-examples
    ```
-- `pico-sdk` は Pico SDK のソースコードです。API の処理内容を調査したいときに参照します。インストールした `.pico-sdk` の下にも同じものがあるのですが、ちょっとアクセスがしづらいので参照用に作業用ディレクトリにも置いておくと便利です
+- `pico-sdk`: The Pico SDK source code. Refer to this to investigate API implementation. The same code is in your `.pico-sdk` directory, but it's convenient to have a separate copy for reference:
    ```
    git clone https://github.com/raspberrypi/pico-sdk
    ```
 
-### プロジェクトのファイル構成
+### Project File Structure
 
-プロジェクト名を `hoge` にして Pico SDK のプロジェクトを作成すると、以下のディレクトリやファイルが作成されます。
+If you create a Pico SDK project named `hoge`, the following files and directories are created:
 
-- `.vscode` ... VSCode のワークスペース情報が格納されます
-- `build` ... ビルドした結果はこのディレクトリに出力されます
-- `.gitignore` ... Git のバージョン管理から除外したいファイルやディレクトリをこのファイル内に記述します[^gitignore]
-- `pico_sdk_import.cmake` ... Pico SDK の設定ファイルで、CMakeLists.txt から `include` されます
-- `CMakeLists.txt` ... ビルド情報を記述した CMake 設定ファイルです
-- `hoge.c` ... メインのソースファイルです
- 
-[^gitignore]: デフォルトで `build` が書かれていますが、個人的には `.vscode` も追加したいところ
+- `.vscode` ... VSCode workspace information
+- `build` ... Build output directory
+- `.gitignore` ... Files/directories to exclude from Git version control[^gitignore]
+- `pico_sdk_import.cmake` ... Pico SDK config file, included from CMakeLists.txt
+- `CMakeLists.txt` ... CMake build configuration
+- `hoge.c` ... Main source file
 
-`pico_sdk_import.cmake` は、このディレクトリが Pico SDK プロジェクトであることを VSCode に教える役目もあります。このファイルの内容を編集することはありません。
+[^gitignore]: By default, `build` is listed. You may want to add `.vscode` as well.
 
-`.vscode` と `build` は自動生成されるので、削除しても大丈夫です[^dir-delete]。VSCode でこれらが存在しないディレクトリをワークスペースとして開くと、`Do you want to import this projects as Raspberry Pi Pico project?` というメッセージボックスがでてくるので `Yes` をクリックすると以下の画面が表示されます。
+`pico_sdk_import.cmake` tells VSCode this is a Pico SDK project. You don't need to edit this file.
+
+`.vscode` and `build` are auto-generated and can be deleted[^dir-delete]. If you open a directory without these as a workspace, VSCode will prompt `Do you want to import this project as Raspberry Pi Pico project?`. Click `Yes` and the following screen appears:
 
 ![import-project.png](images/import-project.png)
 
-`[Import]` ボタンをクリックすると `.vscode` と `build` が生成されて、このディレクトリを Pico SDK プロジェクトとして使えるようになります。
+Click `[Import]` to generate `.vscode` and `build`, making the directory usable as a Pico SDK project.
 
-[^dir-delete]: トラブル解決のため、あえて削除することもあります。
+[^dir-delete]: Sometimes you may delete them for troubleshooting.
 
-### プログラムコードの作成
+### Writing Program Code
 
-ひな形として生成されたプログラムコードは以下のようになっていると思います。
+The template program code looks like this:
 
 ```c title="hoge.c"
 #include <stdio.h>
 #include "pico/stdlib.h"
 
-
 int main()
 {
     stdio_init_all();
-
     while (true) {
         printf("Hello, world!\n");
         sleep_ms(1000);
@@ -234,13 +222,11 @@ int main()
 }
 ```
 
-Pico ボードを買ってきて初めてプログラムを動かそうとしたとき、このコードを見てちょっととまどいました。`printf()` 関数が呼ばれていますが、これはどこに文字を出力しているのでしょうか?
+If you're running your first program on a new Pico board, you may wonder where `printf()` outputs text. The answer depends on `CMakeLists.txt` settings: either UART communication using GPIO0 (TX) and GPIO1 (RX), or serial communication via the USB port as a Communication Device Class.
 
-答えは、`CMakeLists.txt` の設定内容によりますが、GPIO0 と GPIO1 をそれぞれ UART TX、UART RX とした UART 通信、もしくはボードに実装された USB 端子を Communication Device Class として機能させたシリアル通信です。
+For UART, you need a USB-serial converter or level shifter to connect to a PC (or use a debug probe as described later). USB serial only requires a USB cable, but the setup may be unclear at first (it's actually easy). You also need a serial terminal, and may wonder about baud rate and other settings. There are many uncertainties for a first program.
 
-GPIO を使った UART 通信の場合ですと USB-シリアル変換器やレベルシフタがないと PC と接続ができません (後述するデバグプローブを使うとこのポートに接続できます)。USB 端子を使ったシリアル通信は USB ケーブルさえあれば PC と接続できますが、そもそもどう設定すればそれができるのか、使い始めた当初はよく分かりません (実際はとても簡単)。シリアルターミナルも準備しなければいけませんし、そもそもボーレートなどの通信設定はどうなっている...? なんにせよ、動くかどうかもわからない初めてのプログラムなのに、設定や用意をしなければいけない不確実な要素が多いのです。
-
-初めてのプログラムは王道の「L チカ」に限ります。この Hello, World! はひとまず[おあずけ](#hello-world-%E3%82%92%E5%AE%9F%E8%A1%8C%E3%81%99%E3%82%8B) にして、ソースファイルを以下のミニマムなコードに置き換えてしまいます。
+For your first program, it's best to start with the classic "blinky". Let's set aside Hello, World! for now and replace the source file with this minimal code:
 
 ```c title="hoge.c"
 #include "pico/stdlib.h"
@@ -258,83 +244,77 @@ int main()
 }
 ```
 
-Pico ボードの一番端にある GPIO15 に LED と抵抗 (100 Ω 程度) を接続します。手元の環境で実験してみると、Pico の GPIO は GND に短絡しても 最大 30mA 程度に電流が抑制される[^max-current] ようなので、最悪の場合、抵抗がなくても CPU や LED が破損することはなさそうです。
+Connect an LED and a resistor (about 100Ω) to GPIO15 at the edge of the Pico board. In my tests, even if you short GPIO to GND, the current is limited to about 30mA[^max-current], so you probably won't damage the CPU or LED even without a resistor.
 
-[^max-current]: `gpio_set_drive_strength()` 関数を使うと最大出力電流値を変えられます。最大に設定すると 60mA 程度出力されるようです。
+[^max-current]: You can change the max output current with `gpio_set_drive_strength()`. Setting it to max allows about 60mA output.
 
-### プログラムのビルド
+### Building the Program
 
-コマンドパレットから `>CMake: Build` を実行するか `F7` キーを押すとビルドを開始します。プロジェクト作成後、最初のビルドのときは `Select a kit for hoge` というコンボボックスがでてくるので、`Pico Using compilers: ...` を選択します。ビルドが完了すると `build` ディレクトリに実行ファイルとして UF2 ファイル `hoge.uf2` や ELF ファイル `hoge.elf` が出力されます。UF2 ファイルと ELF ファイルは、それぞれターゲットボードへの書き込み方が異なります。
+Run `>CMake: Build` from the command palette or press `F7` to build. On the first build, select `Pico Using compilers: ...` when prompted. The build outputs a UF2 file (`hoge.uf2`) and an ELF file (`hoge.elf`) in the `build` directory. These are written to the target board in different ways.
 
+#### Writing UF2 Files
 
-#### UF2 ファイルの書き込み
+With a USB cable, you can write to the target Pico board. Hold down the `BOOTSEL` button while connecting the board to the PC via USB. The Pico boots in BOOTSEL mode and appears as a storage device (often `D:` on Windows, but this may vary). Check with Explorer, etc.
 
-ターゲットの Pico ボードと USB ケーブルがあれば書き込みができる方法です。Pico ボード上にある `BOOTSEL` ボタンを**押し続けながら**ボードを USB 経由で PC に接続すると、Pico は BOOTSEL モードで立ち上がり、PC からはストレージとして認識されるようになります。Windows ですと `D:` ドライブに割り当てられることが多いようですが、環境によって異なると思います。Explorer などで確認してください。
+Copy the UF2 file to this storage to write it to the board's flash and start the program automatically.
 
-UF2 ファイルをこのストレージにコピーするとボード上の Flash メモリにその内容が書き込まれ、自動的にプログラムを開始します。
+To avoid frequent USB cable plugging (which can damage the connector), use a reset button. The Pico board has a `RUN` pin (pin 30); grounding it resets the CPU. If you add a tact switch here, you can enter BOOTSEL mode by holding `BOOTSEL` and pressing the switch connected to `RUN`.
 
-BOOTSEL モードで立ち上げるための方法ですが、PC に USB ケーブルを挿すことをきっかけにしてしまうと USB ケーブルを頻繁に着脱することになり、コネクタへのダメージが心配です。BOOTSEL モードへの移行は CPU をリセットしたときの `BOOTSEL` ボタンの状態を見ているので、リセットボタンさえあればケーブルの着脱という面倒がなくなります。PICO ボードには 30 番ピンに `RUN` という端子があり、これを GND に落とすとリセットがかかるようになっています。ここにタクトスイッチなどを配置しておけば、`BOOTSEL` ボタンを**押し続けながら** `RUN` に接続したタクトスイッチを押すことで BOOTSEL モードに移行できます。
+#### Writing ELF Files
 
-#### ELF ファイルの書き込み
+To write ELF files, you need a debug probe for Pico. You can buy one for about $15, or use another Pico board as a debug probe. Here's how:
 
-ELF ファイルをターゲットボードに書き込むには、Pico 用のデバグプローブが必要です。2,000 円ほどで購入できますが、ターゲットボードのほかにもう一枚 Pico ボードがあれば、それをデバグプローブにすることができます。以下にその方法を記述します。
-
-1. https://github.com/raspberrypi/debugprobe/releases から `debugprobe_on_pico.uf2` (デバグプローブにするボードが Pico の場合) または `debugprobe_on_pico2.uf2` (同じく Pico2 の場合) をダウンロードしてください。この UF2 ファイルを、前述した方法で Pico に書き込みます
-1. デバグプローブにした Pico (左側) と、ターゲットボード Pico (右側) を以下のように接続します。デバグプローブの Pico の USB 端子は PC に接続します。
+1. Download `debugprobe_on_pico.uf2` (for Pico) or `debugprobe_on_pico2.uf2` (for Pico2) from https://github.com/raspberrypi/debugprobe/releases and write it to the Pico as described above.
+1. Connect the debug probe Pico (left) and the target Pico (right) as shown below. Connect the debug probe's USB to the PC.
    ![debugprobe.png](images/debugprobe.png)
-   プログラム書き込みやデバグに最低限必要なのは、電源ラインおよび DEBUG ポートの水色と紫色の配線です。DEBUG ポートの真ん中の GND は接続しなくても OK です。黄色と橙色の接続は `printf()` などの stdio 関数の入出力に使う UART 用です
-1. VSCode で Pico SDK プロジェクトを開きます。コマンドパレットから `>Debug: Start Debugging` を実行するか `F5` キーを押すと、プログラムをビルドした後デバグプローブに接続し、生成した ELF ファイルをターゲット Pico の Flash メモリに書き込んでデバッガを起動します。`main()` 関数の先頭でブレークがかかった状態になっているので、ここでまた `F5` を押すとプログラムが走り始めます
-1. デバグ中はステータスバーが橙色になります。デバグを中断するには `>Debug: Stop` を実行するか `Shift` + `F5` を押してください
+   The minimum required connections are power and the blue/purple DEBUG port wires. The middle GND on the DEBUG port is optional. The yellow/orange wires are for UART stdio (`printf()`, etc.).
+1. Open the Pico SDK project in VSCode. Run `>Debug: Start Debugging` or press `F5` to build, connect to the debug probe, write the ELF file to the target Pico's flash, and start the debugger. The program will break at `main()`. Press `F5` again to run.
+1. The status bar turns orange during debugging. To stop, run `>Debug: Stop` or press `Shift+F5`.
 
-ELF ファイルの内容は Flash メモリに書き込まれるので、デバグプローブを切り離して Pico ボード単独で動かすこともできます。
+The ELF file is written to flash, so you can disconnect the debug probe and run the Pico standalone.
 
-デバグプローブ接続時にエラーが出る場合は、まず配線に間違いがないかよく確認してください。とくに、ターゲットボードに電源が供給されているか注意してください。
+If you get errors when connecting the debug probe, check your wiring, especially power to the target board.
 
-ほかの要因として、選択しているボード種別が違っている可能性があります。後述する方法で切り替えてください。
+Another possible cause is selecting the wrong board type. Switch as described below.
 
-Pivo2 ボードの場合、CPU アーキテクチャを ARM と Risc-V で切り替えたときは注意が必要です。ボードに書き込まれているプログラムのアーキテクチャと、デバグプローブで接続しようとしているアーキテクチャが異なると接続に失敗するからです。**CPU アーキテクチャを切り替えたときは、現在のアーキテクチャ用にビルドした UF2 ファイル (内容はなんでも可) を前述した方法でボードに書き込み、走らせておく必要があります**。
+For Pico2, be careful when switching between ARM and Risc-V architectures. If the program on the board and the debug probe's architecture don't match, connection fails. **After switching architectures, write a UF2 file built for the current architecture to the board and run it.**
 
-### 設定の切り替え方
+### Changing Settings
 
-デフォルトの状態では、実行ファイルは Debug モードでビルドされます。また使用する SDK のバージョンやボード種別、使用言語は Pico SDK プロジェクト作成時に指定したものになります。これらの設定をプロジェクトを作成した後に随時切り替えるための方法を以下に示します。
+By default, executables are built in Debug mode. The SDK version, board type, and language are set when you create the project, but you can change them later as follows:
 
-- **Debug と Release の切り替え**
-  コマンドパレットから `>CMake: Select Variant` を実行すると Debug や Release、その他のビルドオプションを選択できます。ここで選択したあと `>CMake: Configure` を実行してください。これを忘れると変更がビルドツールに反映されません
-- **Pico SDK バージョンの切り替え**
-  コマンドパレットから `>Raspberry Pi Pico: Switch Pico SDK` を実行します。Pico SDK は、新しいバージョンがでるとそれのインストールを勧めてくるので、知らず知らずのうちに複数のバージョンが混在することになります。プロジェクトを作成したときのバージョンと実際に使っているバージョンが異なるとコンパイル時にエラーになりますので、このコマンドで適切なバージョンを選択します
-- **ボード種別の切り替え**
-  コマンドパレットから `>Raspberry Pi Pico: Switch Board` を実行します。Pico と Pico2 の両方を持っていると結構頻繁に切り替えることになると思います
-- **CPU アーキテクチャの切り替え**
-　Pico2 は CPU アーキテクチャに Risc-V を使うことができます。コマンドパレットから `>Raspberry Pi Pico: Switch Board` を実行して、Pico2 や Pico2_w を選択すると、`Use Risc-V?` と聞いてくるので、`Yes` を選択すると Risc-V アーキテクチャ用のバイナリを生成するようになります
-- **使用言語の切り替え**
-  C と C++ はソースファイル名の拡張子を `*.c` か `*.cpp` にすることで切り替えられます。ソースファイル名を変更して、`CMakeLists.txt` 中の対応する部分を書き換えてください
+- **Switch between Debug and Release**: Run `>CMake: Select Variant` to choose Debug, Release, or other build options. After selecting, run `>CMake: Configure` to apply changes.
+- **Switch Pico SDK version**: Run `>Raspberry Pi Pico: Switch Pico SDK`. Multiple versions may be installed. If the version used differs from the one at project creation, compilation errors may occur. Select the correct version here.
+- **Switch board type**: Run `>Raspberry Pi Pico: Switch Board`. Switch frequently if you have both Pico and Pico2.
+- **Switch CPU architecture**: Pico2 supports Risc-V. Run `>Raspberry Pi Pico: Switch Board`, select Pico2 or Pico2_w, and choose `Yes` when asked `Use Risc-V?` to build Risc-V binaries.
+- **Switch language**: Use `.c` or `.cpp` file extensions for C or C++. Rename the source file and update `CMakeLists.txt` accordingly.
 
-Pico SDK バージョンとボード種別切り替えは VSCode のステータスバーをクリックすることで操作することもできます。
+You can also switch Pico SDK version and board type by clicking the VSCode status bar.
 
 ![vscode-bottom-right.png](images/vscode-bottom-right.png)
 
-### Stdio について
+### About Stdio
 
-Pico の Stdio の入出力に接続できるポートは以下の二つです。
+Pico's stdio can be connected to two ports:
 
-- GPIO0 と GPIO1 をそれぞれ UART TX、UART RX とした UART 通信。ホスト PC に接続する場合は、UART 信号を USB に変換するアダプタが必要になります。前述した Pico デバグプローブはこの機能を備えています。変換機能だけを持つアダプタも多く出回っていますが、**信号レベルが 3.3V に対応**しているものを選ぶよう注意してください
-- USB 端子を Communication Device Class として機能させたシリアル通信。USB ケーブルでホスト PC に接続すると、シリアルデバイスとして認識されます。ただし、当然ながら USB 端子をほかの目的に使うことはできなくなります
+- UART using GPIO0 (TX) and GPIO1 (RX). To connect to a PC, use a USB-serial adapter. The debug probe described above supports this. If using a simple adapter, make sure it supports **3.3V signal levels**.
+- USB port as a Communication Device Class. Connect to a PC via USB cable and it appears as a serial device. Note: you can't use the USB port for other purposes at the same time.
 
-Pico SDK プロジェクトを作成するときに **Stdio support** の以下のチェックボックスをつけると Stdio がそれぞれのポートに接続されます。
+When creating a Pico SDK project, check the following under **Stdio support** to connect stdio to each port:
 
 - `Console over UART`
 - `Console over USB (disables other USB use)`
 
-`CMakeLists.txt` を編集して Stdio の設定を変えることもできます。以下の行で、Stdio を接続したいポートの数値を `1` にします。
+You can also edit `CMakeLists.txt` to change stdio settings. Set the value to `1` for the desired port:
 
 ```cmake title="CMakeLists.txt"
 pico_enable_stdio_uart(hoge 0)
 pico_enable_stdio_usb(hoge 0)
 ```
 
-PC でのシリアルコンソールの通信設定は「スピード 115200bps、データ長 8bit、パリティなし、ストップビット 1bit」です。
+Serial console settings on the PC are: 115200bps, 8 data bits, no parity, 1 stop bit.
 
-ちなみにどちらのポートも接続した場合は、`printf()` や `putchar()` などの出力関数を実行すると UART と USB のどちらのポートにも文字が出力されます。また、`getchar()` などの入力関数は両方のポートから入力を受け付けます。このことは以下のプログラムを Pico ボードで動かして GPIO の UART ポートと USB 端子経由のポートのそれぞれにシリアルコンソールを接続すると実際に確かめられます。
+If both ports are connected, output functions like `printf()` and `putchar()` send data to both UART and USB. Input functions like `getchar()` accept input from both. You can verify this by running the following program on Pico and connecting serial consoles to both the UART and USB ports:
 
 ```c title="serial-test.c"
 #include <stdio.h>
@@ -349,8 +329,8 @@ int main()
 }
 ```
 
-実際の開発ではどちらか一方のポートを使うことになるのですが、どちらを使うかはプログラムの書き込みに UF2 ファイルを使うか ELF ファイルを使うかで分かれると思います。
+In practice, you'll use one port or the other, depending on whether you write programs using UF2 or ELF files.
 
-UF2 ファイルを使った場合は USB 端子経由でプログラムを書き込みますから、USB ケーブルが常に PC に接続されていると思います。USB のポートを Stdio に接続しておくと便利です。
+If you use UF2 files, you write programs via the USB port, so it's convenient to connect stdio to USB.
 
-ELF ファイルを使った場合はデバグプローブでプログラムを書き込みますが、デバグプローブに GPIO の UART を中継する機能 (前述した配線図の黄色と橙色の接続) がついているので、GPIO の UART ポートを Stdio に接続すると便利です。
+If you use ELF files, you write programs via the debug probe, which can relay UART via GPIO (yellow/orange wires in the diagram above), so it's convenient to connect stdio to UART.
