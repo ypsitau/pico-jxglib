@@ -152,7 +152,7 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     The shell can also use an OLED or TFT display as an output device and a USB keyboard as an input device, allowing you to use the shell without needing a computer connection. This can be useful for standalone applications where you want to interact with the firmware directly from the device itself.
 
--   :octicons-command-palette-16:{ .lg .middle } **Camera Support**
+-   :material-camera:{ .lg .middle } **Camera Support**
 
     ---
 
@@ -210,10 +210,9 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     The library provides built-in commands for I2C and SPI communication, making it easy to interact with a wide range of sensors and peripherals without needing to write complex code.
 
--   :material-network-outline:{ .lg .middle } **And much more!**
-
-    ---
-
-    The library is continuously being developed and new features are added regularly. Be sure to check the documentation and release notes for the latest updates and features.
-
 </div>
+
+**And much more!**
+
+The library is continuously being developed and new features are added regularly. Be sure to check the documentation and release notes for the latest updates and features.
+

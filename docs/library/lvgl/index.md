@@ -60,7 +60,7 @@ jxglib_configure_LVGL(lvgltest LV_FONT_MONTSERRAT_14)
 
 ソースファイルを以下のように編集します。
 
-```cpp:lvgltest.cpp
+```cpp title="lvgltest.cpp"
 #include <stdio.h>
 #include <examples/lv_examples.h>
 #include "pico/stdlib.h"
@@ -193,7 +193,7 @@ jxglib_configure_LVGL(lvgltest LV_FONT_MONTSERRAT_14)
 
 ソースファイルを以下のように編集します。
 
-```cpp:lvgltest.cpp
+```cpp title="lvgltest.cpp"
 #include <stdio.h>
 #include <examples/lv_examples.h>
 #include "pico/stdlib.h"
@@ -261,7 +261,7 @@ jxglib_configure_LVGL(lvgltest LV_FONT_MONTSERRAT_14)
 
 ソースファイルを以下のように編集します。
 
-```cpp:lvgltest.cpp
+```cpp title="lvgltest.cpp"
 #include <stdio.h>
 #include <examples/lv_examples.h>
 #include "pico/stdlib.h"

@@ -39,6 +39,7 @@ nav:
             - Flash Memory: library/filesystem/flash/index.md
             - Media: library/filesystem/media/index.md
     - Development Environment:
+        - Overview: development/index.md
         - Pico SDK: development/pico-sdk/index.md
         - CMake: development/cmake/index.md
 
