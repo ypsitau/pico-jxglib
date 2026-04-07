@@ -1,39 +1,38 @@
-今回は Pico の USB ホスト機能を使って、USB キーボードとマウスを接続します。Pico ボードに主要な入力デバイスがつながると、独立したマイコンになって楽しいですよー。この記事では、GUI ツールキット [LVGL](https://zenn.dev/ypsitau/articles/2025-02-04-lvgl) にキーボード・マウス入力機能をつける方法まで説明していきます。
+This page explains how to use the Pico board's USB host functionality to connect USB keyboards and mice. When you can connect major input devices to the Pico, it becomes a truly standalone microcontroller—very fun! This article also covers how to add keyboard and mouse input to the LVGL GUI toolkit.
 
-## Pico の USB ホスト機能について
+## About Pico's USB Host Functionality
 
-Pico で工作をしているとボタン入力などが必要になることがよくあります。そのたびにタクトスイッチをブレッドボードに配置したりするのですが、操作感はよくないですし、作業中に接続不良になったりしてストレスがたまります。なによりも、貴重な GPIO を大量に消費してしまって非常にもったいないです。
+When working with the Pico, you often need button input. You could place tact switches on a breadboard, but the feel isn't great, and connection issues can cause stress during development. More importantly, it consumes a lot of precious GPIO pins, which is wasteful.
 
-そんな時活用したいのが Pico の USB インターフェースです。コネクタ形状から察せられるように、多くの場合は Pico を USB デバイスにして PC などのホストに接続するのですが、Pico 自身を USB ホストとして機能させることもできます。つまり、ドライバソフトウェアを書けば、広く流通している PC 用の USB 周辺機器を Pico に接続できるということです。
+This is where the Pico's USB host interface comes in handy. As you might guess from the connector shape, the Pico is usually used as a USB device connected to a PC, but it can also function as a USB host. This means you can connect widely available PC USB peripherals to the Pico by writing the appropriate driver software.
 
-数ある USB 周辺機器の中でも、USB キーボードやマウスは特に種類が豊富で価格もお手頃ですね。ワイヤレスタイプのものでも、キーボードとマウスのセットが 2,000 円程度で入手できました。
+Among the many USB peripherals, keyboards and mice are especially affordable and come in many varieties. Even wireless types with both keyboard and mouse can be purchased for around 2,000 yen.
 
 ![USB-Keyboard-Mouse.jpg](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-04-02-usbhost-keyboard-mouse/USB-Keyboard-Mouse.jpg)
 
-これでタクトスイッチよりもはるかに操作性が向上しますし、ワイヤレスなら遠隔操作も可能になって工作の幅が広がりそうです。
+This greatly improves usability compared to tact switches, and with wireless types, you can even operate the Pico remotely, expanding your project possibilities.
 
-ところで、Pico の USB 端子は microB タイプなので、ホストとして使うにはこれを A タイプに変換する OTG アダプタが必要になります。400 円程度で入手できます。
+Note that the Pico uses a microB USB connector, so to use it as a host, you'll need an OTG adapter to convert to A type. These are available for about 400 yen.
 
 ![USB-MicroB-A-Adapter-Zoom.jpg](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-04-02-usbhost-keyboard-mouse/USB-MicroB-A-Adapter-Zoom.jpg)
 
-USB の操作には、Pico SDK とともに導入されている tinyusb ライブラリを使います。tinyusb のディレクトリ中 `tinyusb/examples/host/cdc_msc_hid` に USB ホスト機能のサンプルがありましたので、これを参考にして USB キーボードやマウスをより簡便に操作できる API を **pico-jxglib** に実装しました。
+For USB operations, **pico-jxglib** uses the tinyusb library, which is included with the Pico SDK. The tinyusb directory contains a sample for USB host functionality at `tinyusb/examples/host/cdc_msc_hid`, which was used as a reference to implement a more convenient API for keyboards and mice in **pico-jxglib**.
 
-## 実際のプロジェクト
+## Example Project
 
-USB キーボードとマウスを実際に動かしてみます。Stdio を使えば詳細な情報が得られますが、USB 経由での Stdio が使えないので、LED を使って Pico 本体のみで動作確認ができるようにします。
+Let's actually use a USB keyboard and mouse. Stdio can be used for detailed information, but since Stdio over USB can't be used in this setup, you can use LEDs on the Pico itself to confirm operation.
 
-### プロジェクトの作成
+### Creating a Project
 
-VSCode のコマンドパレットから `>Raspberry Pi Pico: New Pico Project` を実行し、以下の内容でプロジェクトを作成します。Pico SDK プロジェクト作成の詳細や、ビルド、ボードへの書き込み方法については[「Pico SDK ことはじめ」](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%AE%E4%BD%9C%E6%88%90%E3%81%A8%E7%B7%A8%E9%9B%86) を参照ください。
+From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings. For details on creating a Pico SDK project, building, and writing to the board, see ["Getting Started with Pico SDK"](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%AE%E4%BD%9C%E6%88%90%E3%81%A8%E7%B7%A8%E9%9B%86).
 
-- **Name** ... プロジェクト名を入力します。今回は例として `usbhosttest` を入力します
-- **Board type** ... ボード種別を選択します
-- **Location** ... プロジェクトディレクトリを作る一つ上のディレクトリを選択します
-- **Stdio support** .. Stdio に接続するポート (UART または USB) を選択しますが、USB はこのプログラムで使うので選択できません。UART のみ選択するか、どちらも未チェックのままにしておきます
-- **Code generation options** ... **`Generate C++ code` にチェックをつけます**
+- **Name** ... Enter the project name. In this example, enter `usbhosttest`.
+- **Board type** ... Select the board type.
+- **Location** ... Select the parent directory where the project directory will be created.
+- **Stdio support** ... Select the port (UART or USB) to connect Stdio, but since USB is used for this program, you can't select it. Either select UART or leave both unchecked.
+- **Code generation options** ... **Check `Generate C++ code`**
 
-
-プロジェクトディレクトリと `pico-jxglib` のディレクトリ配置が以下のようになっていると想定します。
+Assume the project directory and `pico-jxglib` are arranged as follows:
 
 ```text
 ├── pico-jxglib/
@@ -43,31 +42,31 @@ VSCode のコマンドパレットから `>Raspberry Pi Pico: New Pico Project` 
     └── ...
 ```
 
-以下、このプロジェクトをもとに `CMakeLists.txt` やソースファイルを編集してプログラムを作成していきます。
+From here, edit `CMakeLists.txt` and the source file based on this project to create your program.
 
-### ブレッドボード配線
+### Breadboard Wiring
 
-ブレッドボードの配線イメージを以下に示します。
+Here is the breadboard wiring image:
 
 ![circuit-usbhost.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-04-02-usbhost-keyboard-mouse/circuit-usbhost.png)
 
-Pico を USB デバイス として動かす場合は USB 端子から Pico に電源を供給できますが、今回は Pico 自体がホストになるので VBUS (40 番ピン) に 5V の電源を外部から供給します。VSYS (39 番ピン) に電源をつなぐと、逆流防止のダイオードのため USB バスに電源が供給されないので注意してください。
+When running the Pico as a USB device, you can power it from the USB connector, but when using it as a host, you need to supply 5V to VBUS (pin 40) from an external source. If you connect power to VSYS (pin 39), the diode for reverse current protection will prevent power from reaching USB VBUS, so be careful.
 
-### USB キーボードの操作
+### Operating the USB Keyboard
 
-**pico-jxglib** で USB のホスト機能を使うには `USBHost`クラスを使います。
+To use the USB host functionality in **pico-jxglib**, use the `USBHost` class.
 
-`USBHost::Keyboard` インスタンスを生成し、以下の API でキーボード情報を取得します。
+Create a `USBHost::Keyboard` instance and use the following APIs to get keyboard information:
 
-- `Keyboard::IsPressed()` 指定されたキーが押されているかチェックします
-- `Keyboard::ScanKeyCode()` 押されているキーのキーコードを返します
-- `Keyboard::ScanKeyData()` 押されているキーの `KeyData` (キーコードとキャラクタコードを扱うデータ) を返します
-- `Keyboard::GetKeyCode()` キーが押されている間、リピート処理をし、押されているキーのキーコードを返します。キーが押されていない場合ブロックします
-- `Keyboard::GetKeyCodeNB()` キーが押されている間、リピート処理をし、押されているキーのキーコードを返します。キーが押されていない場合、即座に `false` を返します
-- `Keyboard::GetKeyData()` キーが押されている間、リピート処理をし、押されているキーの `KeyData` を返します。キーが押されていない場合ブロックします
-- `Keyboard::GetKeyDataNB()` キーが押されている間、リピート処理をし、押されているキーの `KeyData` を返します。キーが押されていない場合、即座に `false` を返します
+- `Keyboard::IsPressed()` — Checks if a specified key is pressed
+- `Keyboard::ScanKeyCode()` — Returns the keycode of the pressed key
+- `Keyboard::ScanKeyData()` — Returns the `KeyData` (keycode and character code) of the pressed key
+- `Keyboard::GetKeyCode()` — While a key is pressed, repeats and returns the keycode; blocks if no key is pressed
+- `Keyboard::GetKeyCodeNB()` — While a key is pressed, repeats and returns the keycode; returns `false` immediately if no key is pressed
+- `Keyboard::GetKeyData()` — While a key is pressed, repeats and returns the `KeyData`; blocks if no key is pressed
+- `Keyboard::GetKeyDataNB()` — While a key is pressed, repeats and returns the `KeyData`; returns `false` immediately if no key is pressed
 
-`CMakeLists.txt` に以下の行を追加します。
+Add the following lines to `CMakeLists.txt`:
 
 ```cmake title="CMakeLists.txt"
 target_link_libraries(usbhosttest jxglib_USBHost)
@@ -75,9 +74,9 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 jxglib_configure_USBHost(usbhosttest CFG_TUH_HID 3)
 ```
 
-`jxglib_configure_USBHost()` 関数は tinyusb のビルドに必要なヘッダファイル `tusb_config.h` の生成をします。引数 `CFG_TUH_HID` に、接続する HID インターフェースの最大数を指定します。
+The `jxglib_configure_USBHost()` function generates the `tusb_config.h` header file needed for building tinyusb. The argument `CFG_TUH_HID` specifies the maximum number of HID interfaces to connect.
 
-以下に `Keyboard::IsPresssed()` を使った例を示します。押したキーに対応する LED が光ります。
+Below is an example using `Keyboard::IsPressed()`. The LED lights up when the specified key is pressed.
 
 ```cpp:usbhosttest.cpp
 #include "pico/stdlib.h"
@@ -103,9 +102,9 @@ int main()
 }
 ```
 
-メインループ中の `Tickable::Sleep()` は、遅延時間を msec で指定します。この関数の中で tinyusb や **pico-jxglib** のタスク処理が行われます。
+The `Tickable::Sleep()` function is specified in milliseconds. This function runs the tinyusb and **pico-jxglib** tasks.
 
-以下に `Keyboard::GetKeyCodeNB()` を使った例を示します。押したキーに対応する LED がリピート処理の結果を受けて点滅します。
+Below is an example using `Keyboard::GetKeyCodeNB()`. The LED blinks in response to the repeated key presses.
 
 ```cpp:usbhosttest.cpp
 #include "pico/stdlib.h"
@@ -134,18 +133,18 @@ int main()
 
 ```
 
-### USB マウスの操作
+### Operating the USB Mouse
 
-USB マウスの機能も USBHost クラスで実装されています。
+The USB mouse functionality is also implemented in the `USBHost` class.
 
-`USBHost::Mouse` インスタンスを生成し、`Mouse::CaptureStatus()` 関数でマウスの状態を表す `Mouse::Status` インスタンスを取得します。得られる情報は以下の通りです。
+Create a `USBHost::Mouse` instance and use the `Mouse::CaptureStatus()` function to get the mouse status. The information you get is as follows:
 
-- マウスの現在位置
-- 移動量
-- ホイール操作量
-- Pan 操作量
+- Current position
+- Movement amount
+- Wheel operation amount
+- Pan operation amount
 
-`CMakeLists.txt` に以下の行を追加します。前の USB キーボードのものと同じです。
+Add the following lines to `CMakeLists.txt`:
 
 ```cmake title="CMakeLists.txt"
 target_link_libraries(usbhosttest jxglib_USBHost)
@@ -153,7 +152,7 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 jxglib_configure_USBHost(usbhosttest CFG_TUH_HID 3)
 ```
 
-マウスのデータを読みこむ例を以下に示します。マウスを左右に動かしたり、左クリック・右クリックをすると LED が点灯します。
+The mouse data example shows that the LED lights up when you move the mouse left or right, or when you click the left or right mouse button.
 
 ```cpp:usbhosttest.cpp
 #include "pico/stdlib.h"
@@ -180,19 +179,19 @@ int main()
 }
 ```
 
-## LVGL と USB キーボード・マウス
+## LVGL and USB Keyboard/Mouse
 
-LVGL は組込み機器で GUI を実装するためのライブラリです。詳しくは以下の記事を参照してください。
+LVGL is a library for implementing GUIs on embedded devices. For details, see the following article.
 
 https://zenn.dev/ypsitau/articles/2025-02-04-lvgl
 
-LVGL のユーザインターフェースにはタッチスクリーンを使うことが多いのですが、ここでは USB キーボードとマウスをつなげてみます。TFT LCD には ST7789 を使用します。他のデバイスを接続する場合は[「pico-jxblib と TFT LCD の話」](https://zenn.dev/ypsitau/articles/2025-01-27-tft-lcd) を参照してください。
+LVGL's user interface often uses touch screens, but here we're connecting a USB keyboard and mouse. We'll use the ST7789 TFT LCD. For other devices, see ["pico-jxblib and TFT LCD"](https://zenn.dev/ypsitau/articles/2025-01-27-tft-lcd).
 
-ブレッドボードの配線イメージを以下に示します。
+The breadboard wiring image is as follows:
 
 ![circuit-usbhost-st7789.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-04-02-usbhost-keyboard-mouse/circuit-usbhost-st7789.png)
 
-`CMakeLists.txt` の最後に以下の行を追加してください。
+Add the following lines to `CMakeLists.txt`:
 
 ```cmake title="CMakeLists.txt"
 target_link_libraries(usbhosttest jxglib_USBHost jxglib_Display_ST7789 jxglib_LVGL lvgl_examples)
@@ -201,7 +200,7 @@ jxglib_configure_USBHost(usbhosttest CFG_TUH_HID 3)
 jxglib_configure_LVGL(usbhosttest LV_FONT_MONTSERRAT_14)
 ```
 
-ソースコードを以下のように編集します。
+The source code is as follows:
 
 ```cpp:usbhosttest.cpp
 #include <lvgl/examples/lv_examples.h>
@@ -235,4 +234,4 @@ int main()
 
 ![lvgl-usbhid.jpg](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-04-02-usbhost-keyboard-mouse/lvgl-usbhid.jpg)
 
-`LVGL::Adapter` インスタンスに対して `AttachKeyboard()` や `AttachMouse()` を実行することで、USB キーボード・マウスを LVGL に接続します。`Tickable::Tick()` は tinyusb や LVGL、**pico-jxglib** のタスク処理を実行します。
+The `LVGL::Adapter` instance is used to connect the USB keyboard and mouse to LVGL. The `Tickable::Tick()` function runs the tinyusb, LVGL, and **pico-jxglib** tasks.
