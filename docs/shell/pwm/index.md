@@ -1,3 +1,4 @@
+# PWM Control
 
 This article explains how to experiment with the Pico's PWM functionality using the `pwm` command in pico-jxgLABO.
 

@@ -1,10 +1,8 @@
 # Display - WS2812
 
-今回は、フルカラーシリアル LED WS2812 を使ってイルミネーションストリップや電光掲示板を作ります。pico-jxgLABO を使うとコマンド操作だけで WS2812 を制御できるので、**プログラムを書く必要はありません**。簡単なコマンドを使って LED を点灯させたり、アニメーションを表示したりできます。
+In this guide, we will use the full-color serial LED WS2812 to create illumination strips and LED displays. With pico-jxgLABO, you can control WS2812 LEDs using simple commands—**no programming required**. You can turn on LEDs or display animations just by entering commands.
 
-もうすぐクリスマス🎄自分だけのオリジナルイルミネーションストリップを作るのも楽しいですよ！
-
-## デモ動画
+## Demo Video
 
 <div class="video-container">
   <iframe 
@@ -16,86 +14,88 @@
   </iframe>
 </div>
 
-## フルカラーシリアル LED WS2812 について
+## About the Full-Color Serial LED WS2812
 
-フルカラーシリアル LED WS2812 は、RGB 各色の LED と制御回路が一体化された LED です。1 個の LED チップで 24 ビット (8 ビット x 3 色) のカラー表現が可能で、非常に鮮やかな発色が特徴です。 また、シリアル通信で制御できるため、複数の LED を直列に接続しても、制御信号線は 1 本で済みます。これにより、多数の LED を使ったディスプレイやイルミネーションの構築が容易になります。
+The WS2812 is a full-color serial LED that integrates RGB LEDs and a control circuit into a single package. Each LED chip supports 24-bit color (8 bits per channel), producing vivid colors. Since it is controlled via serial communication, you can connect multiple LEDs in series and control them all with a single data line. This makes it easy to build displays and illuminations with many LEDs.
 
-サードパーティが提供する Raspberry Pi Pico 互換のボードには WS2812 が搭載されているものがあります。例えば、Speed Studio XIAO RP2040 や Waveshare RP2040-Zero などです。
+Some third-party Raspberry Pi Pico compatible boards come with built-in WS2812 LEDs, such as the Speed Studio XIAO RP2040 and Waveshare RP2040-Zero.
 
 ![speedstudio-xiao-rp2040-and-waveshare-rp2040-zero](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/speedstudio-xiao-rp2040-and-waveshare-rp2040-zero.jpg)
-*Speed Studio XIAO RP2040 (左) と Waveshare RP2040-Zero (右)*
+*Speed Studio XIAO RP2040 (left) and Waveshare RP2040-Zero (right)*
 
-WS2812 を一列に並べた LED ストリップも市販されています。以下は 60 個の WS2812 が連なった LED ストリップの例です。
+LED strips with WS2812 LEDs arranged in a line are also commercially available. Below is an example of a strip with 60 WS2812 LEDs.
 
 ![ws2812-strip](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/ws2812-strip.jpg)
 
-また、マトリクス状に配置された WS2812 モジュールもあり、これを使うと小型のディスプレイを簡単に作成できます。以下は 16x16 のマトリクスモジュールです。
+There are also WS2812 modules arranged in a matrix, which allow you to easily create small displays. Below is a 16x16 matrix module.
 
 ![ws2812-matrix](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/ws2812-matrix.jpg)
-形状は様々ですが、制御方法はすべて同じです。VCC と GND に 5V の電源を接続し、DIN (Data In) ピンに制御信号を接続します。パルス幅変調によって 1 と 0 の信号を送信し、RGB 24 ビットのデータを連続して送ることで LED の色を設定します。
+The shape may vary, but the control method is always the same. Connect 5V power to VCC and GND, and connect the control signal to the DIN (Data In) pin. By sending signals using pulse width modulation, you transmit 1s and 0s, and by sending 24-bit RGB data in sequence, you set the color of each LED.
 
 ![ws2812-pinout](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/ws2812-pinout.jpg)
 
-複数の LED を接続する場合は、LED の DOUT (Data Out) ピンを次の LED の DIN ピンに接続します。WS2812 は、自分の RGB データが格納されると、以降の DIN の入力信号を DOUT に伝達し、次の LED に転送する仕組みになっています。
+To connect multiple LEDs, connect the DOUT (Data Out) pin of one LED to the DIN pin of the next. Once a WS2812 stores its own RGB data, it passes the remaining data to the next LED via DOUT.
 
-## フルカラーシリアル LED の接続
+## Connecting the Full-Color Serial LED
 
-WS2812 の VCC と GND を 5V 電源に接続し、DIN ピンを Pico ボードの GPIO ピンに接続します。
 
-LED の数が少ない場合 (数十個程度まで) であれば、Pico ボードの 5V 出力 (VSYS) を WS2812 の電源に使うことができます。以下に GPIO2 に DIN ピンを接続する例を示します。
+Connect the VCC and GND of the WS2812 to a 5V power supply, and connect the DIN pin to a GPIO pin on the Pico board.
+
+If you have only a small number of LEDs (up to a few dozen), you can use the Pico board's 5V output (VSYS) to power the WS2812. Below is an example where the DIN pin is connected to GPIO2.
 
 ![ws2812-circuit](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/ws2812-circuit.png)
 
-WS2812 は、最も明るい白色で点灯させると一個あたり 12mA 程度の電流を消費します。60 個の LED ストリップなら 720mA、16 x 16 のマトリクスモジュールですと 256 個の LED があるので最大で約 3A 程度の電流が必要になります。Pico ボードの VSYS の出力電流は 300mA 以下にすることが推奨されるので、これらをドライブするのに十分ではありません。
+When lit at full white, each WS2812 consumes about 12mA. A strip with 60 LEDs will require about 720mA, and a 16x16 matrix module (256 LEDs) will require up to about 3A. The recommended maximum output current for the Pico board's VSYS is 300mA, which is not enough to drive many LEDs.
 
-多くの LED を接続する場合は、以下の例のように外部の 5V 電源を用意してください。Pico ボードの GND と外部電源の GND は共通にする必要があります。
+If you need to connect many LEDs, use an external 5V power supply as shown below. The GND of the Pico board and the external power supply must be connected together.
 
 ![ws2812-circuit-extpower](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/ws2812-circuit-extpower.png)
 
-## コマンドの使い方
+## How to Use the Commands
 
-pico-jxgLABO では、WS2812 を直接制御するための `ws2812` コマンドと、ディスプレイとして扱えるようにする `display-ws2812` コマンドが用意されています。以下に、基本的なコマンドを紹介します。
+pico-jxgLABO provides the `ws2812` command for direct control of WS2812 LEDs, and the `display-ws2812` command to use them as a display. Here are the basic commands.
 
-### フルカラーシリアル LED を直接制御する
+### Direct Control of WS2812 LEDs
 
-`ws2812` コマンドで WS2812 を直接制御することができます。
+You can control WS2812 LEDs directly with the `ws2812` command.
 
-まず、`setup` サブコマンドで WS2812 の接続情報を設定します。`din` パラメータでデータ入力ピンを指定します。
+First, use the `setup` subcommand to set the connection information for the WS2812. Specify the data input pin with the `din` parameter.
 
 ```text
 L:/>ws2812 setup {din:PIN}
 ```
 
-WS2812 の輝度はかなり明るいので、`brightness` サブコマンドで輝度を調整することができます。輝度は 0.0 (消灯) から 1.0 (最大輝度) の範囲で指定します。以下は輝度を 0.1 (最大輝度の 10%) に設定する例です。
+WS2812 LEDs are very bright, so you can adjust the brightness with the `brightness` subcommand. The brightness can be set from 0.0 (off) to 1.0 (maximum). The following sets the brightness to 0.1 (10% of maximum).
 
 ```text
 L:/>ws2812 brightness:.1
 ```
 
-以下に、ハードウェアごとの設定例を示します。
+Here are some hardware-specific examples:
 
-- Speed Studio XIAO RP2040 ボードの場合、内蔵 WS2812 の DIN ピンは GPIO12 に接続されています。また、VCC が GPIO11 に接続されているので、このピンのファンクションをデジタル出力に設定して 1 を出力します。
+- For the Speed Studio XIAO RP2040 board, the built-in WS2812 DIN pin is connected to GPIO12. The VCC is connected to GPIO11, so set this pin as a digital output and output 1.
 
   ```text
   L:/>ws2812 setup {din:12}
   L:/>gpio11 func:sio dir:out put:1
   ```
 
-- Waveshare RP2040-Zero ボードの場合、内蔵 WS2812 の DIN ピンは GPIO16 に接続されているので、以下のように設定します。
+
+- For the Waveshare RP2040-Zero board, the built-in WS2812 DIN pin is connected to GPIO16. Set it as follows:
 
   ```text
   L:/>ws2812 setup {din:16}
   ```
 
-- 外部接続の LED ストリップやマトリクスモジュールを使う場合も設定方法は同じです。例えば、GPIO2 にこれらのデバイスを接続する場合は以下のようにします。
+- For external LED strips or matrix modules, the setup is the same. For example, if you connect these devices to GPIO2:
 
   ```text
   L:/>ws2812 setup {din:2}
   ```
 
-以下、GPIO2 に LED ストリップを接続した回路を使用して操作方法を説明します。
+Below, we explain how to operate using a circuit with an LED strip connected to GPIO2.
 
-`put` サブコマンドで LED の色を指定します。例えば、赤色に点灯させるには以下のようにします。
+Use the `put` subcommand to set the color of the LED. For example, to light up red:
 
 ```text
 L:/>ws2812 put:red
@@ -103,13 +103,13 @@ L:/>ws2812 put:red
 
 ![ws2812-red](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/ws2812-red.jpg)
 
-16 進カラーコードで指定することもできます。
+You can also specify the color using a hexadecimal color code:
 
 ```text
 L:/>ws2812 put:#ff0000
 ```
 
-`put` サブコマンドを複数回実行すると、直列に接続された複数の LED の色を設定できます。
+If you run the `put` subcommand multiple times, you can set the colors of multiple LEDs connected in series:
 
 ```text
 L:/>ws2812 put:red put:green put:blue
@@ -117,48 +117,49 @@ L:/>ws2812 put:red put:green put:blue
 
 ![ws2812-rgb](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/ws2812-rgb.jpg)
 
-Pico ボードに近い方の LED から順に色が設定されます。
+The colors are set in order from the LED closest to the Pico board.
 
-### フルカラーシリアル LED をディスプレイとして扱う
+### Using WS2812 LEDs as a Display
 
-#### `display-ws2812` コマンドの使い方
 
-`display-ws2812` コマンドを使うと、WS2812 をディスプレイとして扱うことができます。LED ストリップに流れるような点灯パターンを表示したり、二次元マトリクス状に配置された WS2812 モジュールに画像や文字、アニメーションなどを表示できます。
+#### How to Use the `display-ws2812` Command
 
-`display-ws2812` の `setup` サブコマンドで WS2812 の接続情報とディスプレイの形状を設定します。以下に、60 個の WS2812 が連なった LED ストリップを GPIO2 に接続する例を示します。
+The `display-ws2812` command allows you to use WS2812 LEDs as a display. You can display flowing patterns on an LED strip, or show images, text, and animations on a 2D matrix module.
+
+Use the `setup` subcommand of `display-ws2812` to set the connection information and display shape. Below is an example for a strip of 60 WS2812 LEDs connected to GPIO2:
 
 ```text
 L:/>display-ws2812 setup {din:2 straight:60}
 ```
 
-`din` サブコマンドでデータ入力ピン DIN に接続した GPIO ピンを指定します。`straight:n` は、直線状に n 個の LED が並んでいることを示します。
+The `din` subcommand specifies the GPIO pin connected to the DIN pin. `straight:n` means n LEDs are arranged in a straight line.
 
-`ls-display` コマンドで、設定されたディスプレイ情報を確認できます。
+You can check the display information with the `ls-display` command:
 
 ```text
 L:/>ls-display
 display 0: WS2812 60x1 DIN:2 Layout:straight
 ```
 
-60 x 1 ピクセルのディスプレイとして認識されていることが分かります。
+You can see that it is recognized as a 60 x 1 pixel display.
 
-WS2812 の輝度はかなり明るいので、`brightness` サブコマンドで輝度を調整することができます。輝度は 0.0 (消灯) から 1.0 (最大輝度) の範囲で指定します。以下は輝度を 0.1 (最大輝度の 10%) に設定する例です。
+WS2812 LEDs are very bright, so you can adjust the brightness with the `brightness` subcommand. The brightness can be set from 0.0 (off) to 1.0 (maximum). The following sets the brightness to 0.1 (10% of maximum).
 
 ```text
 L:/>display-ws2812 brightness:.1
 ```
 
-二次元マトリクス状に配置された WS2812 モジュールを使う場合は、`straight` の代わりに `LAYOUT-START-DIR:WIDTH,HEIGHT` の形式で、各フィールドを以下のように指定します。
+If you use a 2D matrix module, specify the layout as `LAYOUT-START-DIR:WIDTH,HEIGHT` instead of `straight`. Each field is specified as follows:
 
-- `LAYOUT` には以下のような配線の形状に応じて `straight` または `zigzag` を指定します
+- `LAYOUT`: Specify `straight` or `zigzag` depending on the wiring layout.  
   ![ws2812-matrix-layout](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/ws2812-matrix-layout.png)
-- `START` には Pico ボードから見て一番最初の LED の位置を `nw` (north-west: 左上), `ne` (north-east: 右上), `sw` (south-west: 左下), `se` (south-east: 右下) のいずれかで指定します
+- `START`: Specify the position of the first LED as seen from the Pico board: `nw` (north-west: top left), `ne` (north-east: top right), `sw` (south-west: bottom left), or `se` (south-east: bottom right).  
   ![ws2812-matrix-start](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/ws2812-matrix-start.png)
-- `DIR` は一列分の配置方向で、`vert` (垂直方向) または `horz` (水平方向) のいずれかを指定します。
+- `DIR`: Specify the direction of each row as `vert` (vertical) or `horz` (horizontal).  
   ![ws2812-matrix-dir](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-11-11-labo-led/ws2812-matrix-dir.png)
-- `WIDTH` と `HEIGHT` にはそれぞれマトリクスの幅と高さを指定します。
+- `WIDTH` and `HEIGHT`: Specify the width and height of the matrix.
 
-例えば、ジグザグに配線されて左上から始まり、縦方向に接続された 16x16 のマトリクスモジュールなら `zigzag-nw-vert:16,16` のように指定します。
+For example, for a 16x16 matrix module wired in a zigzag pattern, starting from the top left and connected vertically, specify `zigzag-nw-vert:16,16`.
 
 ```text
 L:/>display-ws2812 setup {din:2 zigzag-nw-vert:16,16}
@@ -270,7 +271,7 @@ L:/>draw repeat { image {offset-shift:1,0} sleep:100 }
 
   このファイルを Pico ボードの内部ストレージ `L:` ドライブに保存して、以下のコマンドを実行します。
 
-  ```text:イルミネーションバー: 色相グラデーション
+  ```text title="イルミネーションバー: 色相グラデーション"
   L:/>display-ws2812 setup {din:2 straight:60} brightness:.1
   L:/>draw image-load:hue-32-horz.png
   L:/>draw image {size:32,1 repeat-x}
@@ -290,7 +291,7 @@ L:/>draw repeat { image {offset-shift:1,0} sleep:100 }
 
   このファイルを Pico ボードの内部ストレージ `L:` ドライブに保存して、以下のコマンドを実行します。
 
-  ```text
+  ```text title="イルミネーションバー: 色を変えながら流れるドット"
   L:/>display-ws2812 setup {din:2 straight:60} brightness:.1
   L:/>draw image-load:hue-256-vert.png
   L:/>draw image {size:8,1 repeat-x}
@@ -320,7 +321,7 @@ L:/>draw repeat { image {offset-shift:1,0} sleep:100 }
 
   このファイルを Pico ボードの内部ストレージ `L:` ドライブに保存して、以下のコマンドを実行します。
 
-   ```text
+   ```text title="文字が流れるディスプレイ"
    L:/>display-ws2812 setup {din:2 zigzag-nw-vert:16,16} brightness:.1
    L:/>draw image-load:alphabet-white-16.png
    L:/>draw image {size:16,16}
@@ -340,7 +341,7 @@ L:/>draw repeat { image {offset-shift:1,0} sleep:100 }
 
   このファイルを Pico ボードの内部ストレージ `L:` ドライブに保存して、以下のコマンドを実行します。
 
-   ```text
+   ```text title="アニメーション表示"
    L:/>display-ws2812 setup {din:2 zigzag-nw-vert:16,16} brightness:.1
    L:/>draw image-load:rect-inflate-16.png
    L:/>draw image {size:16,16}
@@ -359,7 +360,7 @@ L:/>draw repeat { image {offset-shift:1,0} sleep:100 }
 
 以下は、赤いドットが流れるイルミネーションバーを表示するための `.startup` ファイルの例です。
 
-```text
+```text title=".startup"
 display-ws2812 setup {din:2 straight:60} brightness:.1
 draw image-load:red-dot.png
 draw image {size:8,1 repeat-x}

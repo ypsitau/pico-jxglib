@@ -66,9 +66,13 @@ These UF2 files are pre-compiled with the latest version of pico-jxglib and can 
 
 ## Built-in Logic Analyzer
 
-While the library also comes with a rich set of built-in commands for various purposes, the most exciting feature is the built-in logic analyzer, which allows you to capture, visualize, and analyze digital signals directly from your Pico. No need to prepare and connect a logic analyzer. The Pico that runs your firmware works as a logic analyzer! This can be incredibly useful for debugging and analyzing the behavior of your circuits and peripherals.
+While the library also comes with a rich set of built-in commands for various purposes, the most exciting feature is the built-in logic analyzer. No need to prepare and connect a logic analyzer. The Pico board that runs your firmware works as a logic analyzer!
 
-The waveform data captured by the logic analyzer can be visualized on the shell. You can also use [PulseView](https://sigrok.org/wiki/PulseView), a powerful waveform viewer, to analyze the captured data in more detail.
+The wave form can be visualized by two methods:
+
+- Print it as text in the shell. This is a simple and quick way to visualize the data without needing any additional tools. [:octicons-arrow-right-24: Learn More](shell/la/text/index.md)
+
+- Visualize it using [PulseView](https://sigrok.org/wiki/PulseView), a powerful waveform viewer. This allows you to see the captured data in a more detailed and interactive way, making it easier to analyze complex signals and timing relationships. [:octicons-arrow-right-24: Learn More](shell/la/pulseview/index.md)
 
 Below is a demo of the logic analyzer working on the shell, capturing the I2C signals that issue READ requests for scanning devices. Please note that all the commands executed in the prompt `L:/>` are processed by the Pico firmware without the involvement of the host computer.
 
@@ -86,20 +90,126 @@ Below is a demo of the logic analyzer working on the shell, capturing the I2C si
 
 In addition to the interactive shell and built-in logic analyzer, pico-jxglib also provides a variety of other features, including:
 
-- **Network Communication**: If you're using a Pico W or Pico2 W, you can also take advantage of the built-in Wi-Fi capabilities to connect to the internet and perform network communication directly from your firmware. You can remotely access the shell over the network using Telnet, allowing you to interact with your Pico from anywhere without needing a physical connection.
-- **Display Support**: The library provides support for various displays such as OLED and TFT displays. You can use the shell to configure the display and draw images on the screen. WS2812 RGB LEDs can also be used as a display, allowing you to create colorful lighting effects and visualizations directly from your firmware and the shell.
-- **File System on Flash Memory**: You can use the flash memory of the Pico as a file system to store and manage files. This allows you to read and write files directly from your firmware, making it easier to manage data and configurations. File operating commands, such as `ls`, `cp`, `mv`, `rm`, `mkdir`, and `cat`, are built into the shell, allowing you to manage files directly from the command line interface. 
-- **USB Mass Storage Device**: The file system above is also accessible as a USB mass storage device when the Pico is connected to a computer. This means you can easily transfer files between your computer and the Pico without needing additional software or tools.
-- **USB Keyboard and Mouse Support**: You can also connect a USB keyboard and mouse to your Pico, allowing you to interact with the shell and control the display directly from the connected peripherals.
-- **SD Card Support**: You can also use an SD card with your Pico. The library provides support for SD cards, allowing you to read and write files on the SD card from your firmware.
-- **External USB Storage Device Support**: In addition to the built-in flash memory and SD card support, pico-jxglib also allows you to connect external USB storage devices to your Pico. This means you can use a USB flash drive or an external hard drive to store and manage files directly from your firmware.
-- **Standalone Shell**: The shell can also use an OLED or TFT display as an output device and a USB keyboard as an input device, allowing you to use the shell without needing a computer connection. This can be useful for standalone applications where you want to interact with the firmware directly from the device itself.
-- **Camera Support**: The library provides support for the OV7670 camera module, allowing you to capture images and video directly from your Pico. You can use the shell to configure the camera settings and capture images, which can then be saved to the file system or displayed on a connected display.
-- **Real-Time Clock (RTC)**: The library also provides support for a real-time clock, allowing you to keep track of time and date in your firmware. You can use the shell to set and read the RTC, which can be useful for applications that require timekeeping or scheduling.
-- **TFLite Micro Support**: The library also provides support for TensorFlow Lite Micro, allowing you to run machine learning models directly on your Pico. A C macro that includes tflite files allow you to easily integrate TFLite Micro models into your firmware.
-- **LVGL Support**: The library also provides support for LVGL, a powerful graphics library for embedded systems.
-- **PIO Assembler**: You can write PIO assembly code directly in the C++ code and use it in your firmware, allowing you to take advantage of the powerful PIO capabilities of the Pico without needing to write separate assembly files.
-- **GPIO Control**: You can control the GPIO pins of the Pico directly from the shell, allowing you to easily toggle pins and read their states.
-- **PWM Control**: The library also provides support for PWM (Pulse Width Modulation), allowing you to control the brightness of LEDs, the speed of motors, and other devices that can be controlled with PWM signals directly from the shell.
-- **I2C and SPI Communication**: The library provides built-in commands for I2C and SPI communication, making it easy to interact with a wide range of sensors and peripherals without needing to write complex code.
-- **And much more!** The library is continuously being developed and new features are added regularly. Be sure to check the documentation and release notes for the latest updates and features.
+
+
+<div class="grid cards" markdown>
+
+-   :material-ip-network:{ .lg .middle } **Wi-Fi Conection**
+
+    ---
+
+    If you're using a Pico W or Pico2 W, you can also take advantage of the built-in Wi-Fi capabilities to connect to the internet and perform network communication directly from your firmware. You can remotely access the shell over the network using Telnet, allowing you to interact with your Pico from anywhere without needing a physical connection.
+
+    [:octicons-arrow-right-24: Learn More](shell/wifi/index.md)
+
+-   :fontawesome-solid-display:{ .lg .middle } **Display Support**
+
+    ---
+
+    The library provides support for various displays such as OLED and TFT displays. You can use the shell to configure the display and draw images on the screen. WS2812 RGB LEDs can also be used as a display, allowing you to create colorful lighting effects and visualizations directly from your firmware and the shell.
+
+-   :material-folder-multiple-image:{ .lg .middle } **File Operations**
+
+    ---
+
+    You can use the flash memory of the Pico as a file system to store and manage files. This allows you to read and write files directly from your firmware, making it easier to manage data and configurations. File operating commands, such as `ls`, `cp`, `mv`, `rm`, `mkdir`, and `cat`, are built into the shell, allowing you to manage files directly from the command line interface. 
+
+    [:octicons-arrow-right-24: Learn More](shell/file-operations/index.md)
+
+-   :material-usb-flash-drive:{ .lg .middle } **Pico as USB Mass Storage Device**
+
+    ---
+
+    The file system above is also accessible as a USB mass storage device when the Pico is connected to a computer. This means you can easily transfer files between your computer and the Pico without needing additional software or tools.
+
+    [:octicons-arrow-right-24: Learn More](shell/file-operations/index.md)
+
+-   :fontawesome-solid-keyboard:{ .lg .middle } **USB Keyboard and Mouse Support**
+
+    ---
+
+    You can also connect a USB keyboard and mouse to your Pico, allowing you to interact with the shell and control the display directly from the connected peripherals.
+
+-   :fontawesome-solid-sd-card:{ .lg .middle } **SD Card Support**
+
+    ---
+
+    You can also use an SD card with your Pico. The library provides support for SD cards, allowing you to read and write files on the SD card from your firmware.
+
+    [:octicons-arrow-right-24: Learn More](shell/sdcard/index.md)
+
+-   :material-usb-flash-drive:{ .lg .middle } **External USB Storage Device Support**
+
+    ---
+
+    In addition to the built-in flash memory and SD card support, pico-jxglib also allows you to connect external USB storage devices to your Pico. This means you can use a USB flash drive or an external hard drive to store and manage files directly from your firmware.
+
+-   :octicons-command-palette-16:{ .lg .middle } **Standalone Shell**
+
+    ---
+
+    The shell can also use an OLED or TFT display as an output device and a USB keyboard as an input device, allowing you to use the shell without needing a computer connection. This can be useful for standalone applications where you want to interact with the firmware directly from the device itself.
+
+-   :octicons-command-palette-16:{ .lg .middle } **Camera Support**
+
+    ---
+
+    The library provides support for the OV7670 camera module, allowing you to capture images and video directly from your Pico. You can use the shell to configure the camera settings and capture images, which can then be saved to the file system or displayed on a connected display.
+
+    [:octicons-arrow-right-24: Learn More](shell/camera/ov7670/index.md)
+
+-   :material-clock:{ .lg .middle } **Real-Time Clock (RTC)**
+
+    ---
+
+    The library also provides support for a real-time clock, allowing you to keep track of time and date in your firmware. You can use the shell to set and read the RTC, which can be useful for applications that require timekeeping or scheduling.
+
+    [:octicons-arrow-right-24: Learn More](shell/rtc/index.md)
+
+-   :material-brain:{ .lg .middle } **TFLite Micro Support**
+
+    ---
+
+    The library also provides support for TensorFlow Lite Micro, allowing you to run machine learning models directly on your Pico. A C macro that includes tflite files allow you to easily integrate TFLite Micro models into your firmware.
+
+-   :simple-lvgl:{ .lg .middle } **LVGL Support**
+
+    ---
+
+    The library also provides support for LVGL, a powerful graphics library for embedded systems.
+
+-   :material-transit-connection-variant:{ .lg .middle } **PIO Assembler**
+
+    ---
+
+    You can write PIO assembly code directly in the C++ code and use it in your firmware, allowing you to take advantage of the powerful PIO capabilities of the Pico without needing to write separate assembly files.
+
+-   :material-connection:{ .lg .middle } **GPIO Control**
+
+    ---
+
+    You can control the GPIO pins of the Pico directly from the shell, allowing you to easily toggle pins and read their states.
+
+    [:octicons-arrow-right-24: Learn More](shell/gpio/index.md)
+
+-   :fontawesome-solid-wave-square:{ .lg .middle } **PWM Control**
+
+    ---
+
+    The library also provides support for PWM (Pulse Width Modulation), allowing you to control the brightness of LEDs, the speed of motors, and other devices that can be controlled with PWM signals directly from the shell.
+
+    [:octicons-arrow-right-24: Learn More](shell/pwm/index.md)
+
+-   :material-network-outline:{ .lg .middle } **I2C and SPI Communication**
+
+    ---
+
+    The library provides built-in commands for I2C and SPI communication, making it easy to interact with a wide range of sensors and peripherals without needing to write complex code.
+
+-   :material-network-outline:{ .lg .middle } **And much more!**
+
+    ---
+
+    The library is continuously being developed and new features are added regularly. Be sure to check the documentation and release notes for the latest updates and features.
+
+</div>

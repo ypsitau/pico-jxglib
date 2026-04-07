@@ -1,3 +1,4 @@
+# GPIO Control
 
 This article introduces how to control GPIO using the `gpio` command in pico-jxgLABO.
 
@@ -174,7 +175,7 @@ L:/>gpio 1 func:uart dir:in repeat {get sleep:300}
 
 The familiar pinout diagram for Pico GPIO function settings:
 
-![pico-pinout.png](images/pico-pinout.png =300x)
+![pico-pinout.png](images/pico-pinout.png)
 
 See the datasheets for more details:
 

@@ -1,8 +1,8 @@
 # File Opeations
 
-This article explains how to perform file operations in the pico-jxgLABO shell. The file system of the Pico board is based on the FAT12 file system, and the available commands are similar to those in MS-DOS or Windows Command Prompt.
+The latter part of the flash memory of the Pico board is used as a file system, allowing you to read and write files directly from your firmware. There are built-in file operating commands in the shell, such as `ls`, `cp`, `mv`, `rm`, `mkdir`, and `cat`. The file system is also accessible as a USB mass storage device when the Pico is connected to a computer, making it easy to transfer files between your computer and the Pico without needing additional software or tools.
 
-## Actual Operations
+## Shell Commands
 
 `ls-drive` or `dir-drive` lists the available drives.
 
@@ -242,24 +242,24 @@ d---- 2000-01-01 00:00:00        dir4/
 a--- 2000-01-01 00:00:00     77 README.txt
 ```
 
-<!--
 Use `mv` to rename or move files and directories.
 
 ```text
-L:/>mv dir1/file1-1.txt .
+L:/>mv dir1/file1-1.txt dir2
 L:/>ls dir1
 d---- 2000-01-01 00:00:00        dir1-1/
 d---- 2000-01-01 00:00:00        dir1-2/
 -a--- 2000-01-01 00:00:00      0 file1-2.txt
 -a--- 2000-01-01 00:00:00      0 file1-3.txt
-L:/>ls
-d---- 2000-01-01 00:00:00        dir1/
-d---- 2000-01-01 00:00:00        dir2/
-d---- 2000-01-01 00:00:00        dir3/
-d---- 2000-01-01 00:00:00        dir4/
+L:/>ls dir2
+d---- 2000-01-01 00:00:00        dir2-1/
+d---- 2000-01-01 00:00:00        dir2-2/
 -a--- 2000-01-01 00:00:00      0 file1-1.txt
+-a--- 2000-01-01 00:00:00    232 file2-1.txt
+-a--- 2000-01-01 00:00:00    464 file2-2.txt
+-a--- 2000-01-01 00:00:00     38 file2-3.txt
+-a--- 2000-01-01 00:00:00     39 file2-4.txt
 ```
--->
 
 Use `rm` to delete files or directories. You can specify multiple files and use wildcards. The `rm -r` option deletes entire directories.
 
@@ -280,3 +280,6 @@ d---- 2000-01-01 00:00:00        dir3/
 d---- 2000-01-01 00:00:00        dir4/
 -a--- 2000-01-01 00:00:00     77 README.txt
 ```
+
+## Pico as USB Mass Storage Device
+

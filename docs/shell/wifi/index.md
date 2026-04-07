@@ -1,3 +1,5 @@
+# Wi-Fi Connection
+
 This article explains how to connect a Pico board to a Wi-Fi network using pico-jxgLABO.
 
 Traditionally, connecting a microcontroller to a network requires writing and running a program, often hardcoding the SSID and password for Wi-Fi, which makes distribution and maintenance difficult. In the pico-jxgLABO environment, shell commands are provided for network connection, allowing users to connect to networks interactively via commands.

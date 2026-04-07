@@ -1,50 +1,53 @@
-今回は、pico-jxgLABO を使って Pico ボードに RTC (Real Time Clock) モジュールを接続します。
+# RTC (Real Time Clock)
 
-RTC モジュールを接続すると、現在時刻を正確に取得することが可能になり、ファイルを作成・更新したときのタイムスタンプを記録できます。RTC モジュールは I2C インターフェースに接続して使います。
+In this guide, we will connect an RTC (Real Time Clock) module to the Pico board using pico-jxgLABO.
 
-## RTC モジュール DS3231 について
+By connecting an RTC module, you can accurately obtain the current time and record timestamps when creating or updating files. The RTC module is used via the I2C interface.
 
-RTC モジュールは、リアルタイムの日時を保持するためのハードウェアです。初代 Pico (RP2040) にはチップ内に RTC が内蔵されていて、外付けハードウェアなしに日時情報を得られると期待されていましたが、残念ながら電源を切ると日時情報が失われてしまうのであまり実用的ではありません。何にせよ、後継の Pico2 (RP2350) ではこのモジュールが取り除かれてしまったので、実使用の候補にはならないでしょう。
+## About the DS3231 RTC Module
 
-RTC を使う実用的な方法は、Pico ボードにバックアップ電池を装備した RTC モジュールを接続することです。これで Pico ボードの電源状態にかかわらず日時情報を保持できるようになります。
+An RTC module is hardware that keeps track of real-time date and time. The original Pico (RP2040) has a built-in RTC, but it loses the date and time when power is lost, so it is not very practical. In any case, the successor Pico2 (RP2350) removed this module, so it is not a candidate for practical use.
 
-電子工作でよく使われている RTC モジュールというと、I2C で接続ができる DS3231 がよく挙げられます。DS1307 という廉価版もありますが、一日に数秒もずれるらしいので、わずかな価格差で高精度な DS3231 を使うのが良いでしょう。
+The practical way to use RTC is to connect an RTC module with a backup battery to the Pico board. This allows the date and time to be retained regardless of the Pico board's power state.
 
-僕が Amazon で購入した DS3231 モジュールは、以下のようなものです。
+The DS3231 is a commonly used RTC module for electronics projects, as it can be connected via I2C. There is also a cheaper DS1307, but it can drift by several seconds per day, so the DS3231 is recommended for its higher accuracy.
+
+The DS3231 module I purchased from Amazon looks like this:
 
 ![rtc-ds3231](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-22-rtc/rtc-ds3231.jpg)
 
-バックアップ電池が初めから装備されていますし、コンパクトな形状をしているのが良い感じです。基板に印刷されている信号名が分かりづらいのですが、以下のように対応しています。
+It comes with a backup battery pre-installed and has a compact shape. The signal names printed on the board can be confusing, but they correspond as follows:
 
-|基板上の印字|信号名|
+|Board Label|Signal Name|
 |------|-----|
 |`+`   |VCC  |
 |`D`   |SDA  |
 |`C`   |SCL  |
 |`-`   |GND  |
 
-## デバイスの接続と動作確認
+## Device Connection and Operation Check
 
-RTC モジュール DS3231 は I2C インターフェースに接続します。Pico ボードの I2C0 または I2C1 を使うことができ、ピンレイアウトもコマンドで自由に設定できます。ここでは I2C0 を使い、以下のように接続します。
+The DS3231 RTC module is connected via the I2C interface. You can use either I2C0 or I2C1 on the Pico board, and the pin layout can be freely set with commands. Here, we use I2C0 and connect as follows:
 
-|DS3231       |Pico ピン番号|GPIO  |ファンクション|
-|-------------|-------------|------|------------|
-|VCC          |36           |      |3V3        |
-|GND          |8            |      |GND         |
-|SDA          |11           |GPIO8 |I2C0 SDA    |
-|SCL          |12           |GPIO9 |I2C0 SCL    |
+|DS3231       |Pico Pin No.|GPIO  |Function   |
+|-------------|------------|------|-----------|
+|VCC          |36          |      |3V3        |
+|GND          |8           |      |GND        |
+|SDA          |11          |GPIO8 |I2C0 SDA   |
+|SCL          |12          |GPIO9 |I2C0 SCL   |
 
-配線図を以下に示します。GND は Pico ボード上で複数出ているので、どこに接続しても構いません。
+The wiring diagram is shown below. There are multiple GND pins on the Pico board, so you can connect to any of them.
+
 
 ![circuit-rtc](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-10-22-labo-sdcard-rtc/circuit-rtc.png)
 
-以下のコマンドを実行して、I2C0 の GPIO 割り当てを GPIO8 (I2C0 SDA), GPIO9 (I2C0 SCL) に設定します。適切なファンクション割り当てが自動的に行われるので、記述の順序は気にしなくて大丈夫です。
+Run the following command to set the GPIO assignment for I2C0 to GPIO8 (I2C0 SDA) and GPIO9 (I2C0 SCL). The appropriate function assignment is done automatically, so the order does not matter.
 
 ```text
 L:/>i2c0 -p 8,9
 ```
 
-I2C バスに接続されているデバイスをスキャンして、RTC モジュールが正しく接続されていることを確認します。DS3231 は I2C アドレス `0x68` を持っています。
+Scan the devices connected to the I2C bus to confirm that the RTC module is connected correctly. The DS3231 uses I2C address `0x68`.
 
 ```text
 L:/>i2c0 scan
@@ -60,29 +63,30 @@ Bus Scan on I2C0
 70 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 ```
 
-以下のコマンドを実行して、DS3231 RTC モジュールのセットアップを行います。
+Run the following command to set up the DS3231 RTC module:
 
 ```text
 L:/>rtc-ds3231 setup {i2c:0}
 ```
 
-これで RTC モジュール DS3231 のセットアップは完了です。
+This completes the setup of the DS3231 RTC module.
 
-`rtc` コマンドを実行して、RTC モジュールから現在時刻を取得します。
+Run the `rtc` command to get the current time from the RTC module:
 
 ```text
 L:/>rtc
 2000-01-01 00:00:00.000
 ```
 
-引数に日時を指定して `rtc` コマンドを実行すると、RTC モジュールに日時を設定できます。
+You can set the date and time on the RTC module by specifying the date and time as an argument to the `rtc` command:
+
 
 ```text
 L:/>rtc 2025-10-18 16:20:52
 2025-10-18 16:20:52.000
 ```
 
-[Pico ボードが Wi-Fi に接続されている](https://zenn.dev/ypsitau/articles/2025-10-06-labo-wifi)場合は、`ntp` コマンドに `-r` オプションを付けて実行することで、NTP サーバから正確な時刻を取得して RTC モジュールに設定することができます。
+If your Pico board is connected to Wi-Fi ([see here](https://zenn.dev/ypsitau/articles/2025-10-06-labo-wifi)), you can use the `ntp` command with the `-r` option to get the correct time from an NTP server and set it on the RTC module:
 
 ```text
 L:/>ntp -r
@@ -92,7 +96,7 @@ L:/>rtc
 2025-10-18 16:27:33.000
 ```
 
-ファイルを作成して、タイムスタンプが正しく記録されることを確認してみましょう。
+Let's create a file and check that the timestamp is recorded correctly:
 
 ```text
 L:/>touch testfile.txt

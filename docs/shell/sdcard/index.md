@@ -1,66 +1,69 @@
-今回は、pico-jxgLABO を使って Pico ボードに SD カードを接続します。
+# SD Card Support
 
-pico-jxgLABO では、Pico ボードのフラッシュメモリの一部を `L:` ドライブとしてマウントし、ファイルの読み書きができるようにしています。このドライブの容量は、Pico2 ボードの場合で約 2.5 MByte、Pico ボードですと 0.5 MByte (500 KByte) 程度です。テキストデータの保存程度ならば実用的に使えますが、画像データや音声データなどの大容量データを扱うには不十分です。
+In this guide, we connect an SD card to the Pico board using pico-jxgLABO.
 
-SD カードを接続すれば、GByte 単位の大容量ストレージが利用できるようになり、Pico ボードの活用範囲が大きく広がります。SD カードは安価で入手しやすく、Pico ボードの SPI インターフェースに接続して使うことができます。
+pico-jxgLABO mounts part of the Pico board's flash memory as the `L:` drive, allowing you to read and write files. The capacity of this drive is about 2.5 MBytes on the Pico2 board and about 0.5 MBytes (500 KBytes) on the Pico board. This is practical for saving text data, but insufficient for large data such as images or audio.
 
-## SD カードリーダモジュール
+By connecting an SD card, you can use large-capacity storage in the GByte range, greatly expanding the Pico board's capabilities. SD cards are inexpensive and easy to obtain, and can be used by connecting to the Pico board's SPI interface.
 
-SD カードリーダモジュールは、基本的に SD カードスロットといくつかの抵抗や電圧レギュレータが載っているだけのシンプルなものですが、供給電圧や信号のレベル、プルアップ抵抗の有無などがモジュールによって異なるので注意が必要です。
+## SD Card Reader Modules
 
-以下に、手元にあった SD カードリーダモジュール (主に Amazon で入手) の外観を示し、供給電圧やプルアップ抵抗の有無、信号レベルについてまとめました。
+SD card reader modules are basically just an SD card slot with some resistors and a voltage regulator, but the supply voltage, signal level, and presence of pull-up resistors vary by module, so be careful.
 
-|外観|注釈|
+Below are some SD card reader modules I had on hand (mainly from Amazon), with notes on supply voltage, pull-up resistors, and signal levels.
+
+|Appearance|Notes|
 |----|----|
-|![sdcard-adapter](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/sdcard-adapter.jpg)|標準 SD カードのモジュールです。供給電圧は **5V** と **3.3V** の両方の端子が用意されていて、5V の場合は電圧レギュレータで 3.3V に降圧して SD カードに供給されます。すべての信号線に 10kΩ のプルアップ抵抗がついているので、外部のプルアップ抵抗は**必要ありません**。信号レベルは **3.3V** です。|
-|![ILI9341-back](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/ILI9341-back.jpg)|TFT LCD ILI9341 についている標準 SD カードのスロットです。電源は TFT LCD 用のコネクタから **3.3V** を供給します。外部のプルアップ抵抗が**必要です**[^pullup]。信号レベルは **3.3V** です。|
-|![u-sdcard-adapter-1](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/u-sdcard-adapter-1.jpg)|microSD カードのモジュールです。供給電圧は **5V** で、電圧レギュレータで 3.3V に降圧して SD カードに供給されます。外部のプルアップ抵抗は**必要ありません**。信号線にはバッファ (74HC125) が入っており、**3.3V**、**5V** の両方の信号レベルに接続できます。|
-|![u-sdcard-adapter-2](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/u-sdcard-adapter-2.jpg)|microSD カードのモジュールです。供給電圧は **3.3V** です。すべての信号線に 10kΩ のプルアップ抵抗がついているので、外部のプルアップ抵抗は**必要ありません**。信号レベルは **3.3V** です。|
+|![sdcard-adapter](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/sdcard-adapter.jpg)|Standard SD card module. Both **5V** and **3.3V** supply pins are available. If using 5V, a voltage regulator steps down to 3.3V for the SD card. All signal lines have 10kΩ pull-up resistors, so **no external pull-ups are needed**. Signal level is **3.3V**.|
+|![ILI9341-back](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/ILI9341-back.jpg)|Standard SD card slot on the TFT LCD ILI9341. Power is supplied from the TFT LCD connector at **3.3V**. **External pull-up resistors are required**[^pullup]. Signal level is **3.3V**.|
+|![u-sdcard-adapter-1](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/u-sdcard-adapter-1.jpg)|microSD card module. Supply voltage is **5V**, stepped down to 3.3V by a voltage regulator. **No external pull-ups are needed**. Signal lines have a buffer (74HC125), so it can connect to both **3.3V** and **5V** signal levels.|
+|![u-sdcard-adapter-2](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/u-sdcard-adapter-2.jpg)|microSD card module. Supply voltage is **3.3V**. All signal lines have 10kΩ pull-up resistors, so **no external pull-ups are needed**. Signal level is **3.3V**.|
 
-供給電圧の見分け方ですが、SD カードリーダモジュールの基板上に以下に示すような電圧レギュレータが載っている場合は 5V 供給、載っていない場合は 3.3V 供給と考えてよいでしょう。
+To distinguish the supply voltage, if the SD card reader module has a voltage regulator like the one shown below, use 5V supply; if not, use 3.3V supply.
 
 ![sdcard-adapter-voltage](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-10-22-labo-sdcard-rtc/sdcard-adapter-voltage.jpg)
 
-[^pullup]: 手元の SD カードで試したところ、プルアップ抵抗がなくても動作しましたが、SD カードの種類によってはプルアップ抵抗が必要な場合があります。動作しない場合は、プルアップ抵抗の有無を確認してください。
+[^pullup]: In my tests, the SD card worked without pull-up resistors, but some SD cards may require them. If it doesn't work, check for pull-up resistors.
 
-## デバイスの接続と動作確認
+## Device Connection and Operation Check
 
-SD カードリーダモジュールは SPI インターフェースに接続します。Pico ボードの SPI0 または SPI1 を使うことができ、ピンレイアウトもコマンドで自由に設定できます。ここでは SPI0 を使い、以下のように接続します。
+The SD card reader module is connected via the SPI interface. You can use either SPI0 or SPI1 on the Pico board, and the pin layout can be freely set with commands. Here, we use SPI0 and connect as follows:
 
-|SD カードリーダモジュール|Pico ピン番号 |GPIO |ファンクション|
-|-----------------------|-------------|-----|-------------|
-|VCC                    |39 or 36     |     |VSYS or 3V3 |
-|GND                    |3            |     |GND          |
-|SCK                    |4            |GPIO2|SPI0 SCK     |
-|MOSI                   |5            |GPIO3|SPI0 TX (MOSI)|
-|MISO                   |6            |GPIO4|SPI0 RX (MISO)|
-|CS                     |7            |GPIO5|SIO          |
+|SD Card Reader Module|Pico Pin No.|GPIO |Function      |
+|---------------------|------------|-----|--------------|
+|VCC                  |39 or 36    |     |VSYS or 3V3   |
+|GND                  |3           |     |GND           |
+|SCK                  |4           |GPIO2|SPI0 SCK      |
+|MOSI                 |5           |GPIO3|SPI0 TX (MOSI)|
+|MISO                 |6           |GPIO4|SPI0 RX (MISO)|
+|CS                   |7           |GPIO5|SIO           |
+
 
 :::message alert
-SD Card カードリーダモジュールの VCC の接続先は供給電圧によって異なりますので、注意してください。
-- 供給電圧 5V の場合は Pico ボードの VSYS (ピン番号 39) に接続します。3V3 に接続するとモジュール基板の電圧レギュレータの電圧降下によって適切な電圧が供給されず、動作しません
-- 供給電圧 3.3V の場合は Pico ボードの 3V3 (ピン番号 36) に接続します。VSYS に接続すると**SD カードが壊れる可能性があります**
+Be careful where you connect the VCC of the SD card reader module, depending on the supply voltage:
+- For 5V supply, connect to VSYS (pin 39) on the Pico board. If you connect to 3V3, the voltage drop across the module's regulator will prevent proper operation.
+- For 3.3V supply, connect to 3V3 (pin 36) on the Pico board. If you connect to VSYS, **the SD card may be damaged**.
 :::
 
-配線図を以下に示します。GND は Pico ボード上で複数出ているので、どこに接続しても構いません。
+The wiring diagram is shown below. There are multiple GND pins on the Pico board, so you can connect to any of them.
 
 ![circuit-sdcard](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-10-22-labo-sdcard-rtc/circuit-sdcard.png)
 
-以下のコマンドを実行して、SPI0 の GPIO 割り当てを GPIO2 (SPI0 SCK), GPIO3 (SPI0 TX), GPIO4 (SPI0 RX) に設定します。適切なファンクション割り当てが自動的に行われるので、記述の順序は気にしなくて大丈夫です。
+Run the following command to set the GPIO assignment for SPI0 to GPIO2 (SPI0 SCK), GPIO3 (SPI0 TX), and GPIO4 (SPI0 RX). The appropriate function assignment is done automatically, so the order does not matter.
 
 ```text
 L:/>spi0 -p 2,3,4
 ```
 
-以下のコマンドを実行して、SD カードを接続する SPI インターフェースを SPI0、CS ピンを GPIO5 に設定します。またドライブ名として `M` を指定します。
+Run the following command to set the SPI interface for the SD card to SPI0, the CS pin to GPIO5, and the drive name to `M`:
 
 ```text
 L:/>sdcard setup {spi:0 cs:5 drive:'M'}
 ```
 
-これで SD カードのセットアップは完了です。
+This completes the SD card setup.
 
-`ls-drive` コマンドで利用可能なドライブの一覧を表示してみましょう。
+Use the `ls-drive` command to display the list of available drives:
 
 ```text
 L:/>ls-drive
@@ -69,7 +72,7 @@ L:/>ls-drive
  M:     unmounted            0
 ```
 
-まだスロットに SD カードが挿入されていないので unmounted になっています。SD カードを入れてから、再度 `ls-drive` コマンドを実行してみましょう。ここでは FAT フォーマットされた 32 GByte の SD カードを挿入しました。
+Since there is no SD card inserted yet, it shows as unmounted. Insert an SD card and run `ls-drive` again. Here, a 32 GByte SD card formatted as FAT was inserted:
 
 ```text
 L:/>ls-drive
@@ -78,9 +81,10 @@ L:/>ls-drive
  M:     FAT32   30945574912
 ```
 
-いろいろなファイル操作を試してみてください。[こちら](https://zenn.dev/ypsitau/articles/2025-06-09-fs-shell#%E3%82%B7%E3%82%A7%E3%83%AB%E3%81%AB%E3%82%88%E3%82%8B%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E6%93%8D%E4%BD%9C) に pico-jxgLABO[^pico-jxglib] が提供するファイル操作コマンドの使い方をまとめてあります。
 
-[^pico-jxglib]: pico-jxgLABO の機能は、ライブラリ [pico-jxglib](https://zenn.dev/ypsitau/articles/2025-01-24-jxglib-intro) に基づいています。
+Try various file operations. See [here](https://zenn.dev/ypsitau/articles/2025-06-09-fs-shell#%E3%82%B7%E3%82%A7%E3%83%AB%E3%81%AB%E3%82%88%E3%82%8B%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E6%93%8D%E4%BD%9C) for a summary of file operation commands provided by pico-jxgLABO[^pico-jxglib].
+
+[^pico-jxglib]: pico-jxgLABO features are based on the [pico-jxglib](https://zenn.dev/ypsitau/articles/2025-01-24-jxglib-intro) library.
 
 ```text
 L:/>M:
