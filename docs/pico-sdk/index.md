@@ -266,7 +266,9 @@ To write ELF files, you need a debug probe for Pico. You can buy one for about $
 
 1. Download `debugprobe_on_pico.uf2` (for Pico) or `debugprobe_on_pico2.uf2` (for Pico2) from https://github.com/raspberrypi/debugprobe/releases and write it to the Pico as described above.
 1. Connect the debug probe Pico (left) and the target Pico (right) as shown below. Connect the debug probe's USB to the PC.
+
    ![debugprobe.png](images/debugprobe.png)
+
    The minimum required connections are power and the blue/purple DEBUG port wires. The middle GND on the DEBUG port is optional. The yellow/orange wires are for UART stdio (`printf()`, etc.).
 1. Open the Pico SDK project in VSCode. Run `>Debug: Start Debugging` or press `F5` to build, connect to the debug probe, write the ELF file to the target Pico's flash, and start the debugger. The program will break at `main()`. Press `F5` again to run.
 1. The status bar turns orange during debugging. To stop, run `>Debug: Stop` or press `Shift+F5`.
