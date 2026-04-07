@@ -1,42 +1,42 @@
-今回は、Pico ボードに RTC モジュールを接続して、ファイルシステムにタイムスタンプを記録する方法を紹介します。シェルによるファイルシステムの操作については以下の記事を参照してください。
+This page explains how to connect an RTC module to the Pico board and record timestamps in the file system. For file system operations using the shell, see the following article:
 
-▶️ [pico-jxglib のシェルでファイルシステムを操作する話 (自動補完とヒストリ機能で入力楽々)](https://zenn.dev/ypsitau/articles/2025-06-09-fs-shell)
+▶️ [Operating the File System with Shell Commands in pico-jxglib (Easy Input with Autocomplete and History)](https://zenn.dev/ypsitau/articles/2025-06-09-fs-shell)
 
-## RTC モジュールについて
+## About RTC Modules
 
-RTC（Real-Time Clock）は、リアルタイムの日時を保持するためのハードウェアです。初代 Pico (RP2040) にはチップ内に RTC が内蔵されていて、「お、これで外付けハードウェアなしに日時情報を得られるぞ」とちょっと色めきだつのですが、残念ながら電源を切ると日時情報が失われてしまうので、あまり実用的ではありません。何にせよ、後継の Pico2 (RP2350) ではこのモジュールが取り除かれてしまったので、実使用の候補にはならないでしょう。
+An RTC (Real-Time Clock) is a hardware device for keeping real-time date and time. The first-generation Pico (RP2040) has an RTC built into the chip, which at first seems convenient for keeping time without external hardware, but unfortunately, the time is lost when power is removed, so it's not very practical. In the successor Pico2 (RP2350), this module was removed, so it's not a candidate for real use.
 
-RTC を使う実用的な方法は、Pico ボードにバックアップ電池を装備した RTC モジュールを接続することです。これで Pico ボードの電源状態にかかわらず日時情報を保持できるようになります。
+A practical way to use an RTC is to connect an RTC module with a backup battery to the Pico board. This allows you to keep the time regardless of the Pico board's power state.
 
-電子工作でよく使われている RTC モジュールというと、I2C で接続ができる DS3231 がよく挙げられます。DS1307 という廉価版もありますが、一日に数秒もずれるらしいので、わずかな価格差で高精度な DS3231 を使うのが良いでしょう。
+A commonly used RTC module in electronics is the DS3231, which connects via I2C. There is also a cheaper DS1307, but it can drift by several seconds per day, so the more accurate DS3231 is recommended.
 
-僕が Amazon で購入した DS3231 モジュールは、以下のようなものです。
+The DS3231 module I purchased from Amazon looks like this:
 
 ![rtc-ds3231](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-22-rtc/rtc-ds3231.jpg)
 
-バックアップ電池が初めから装備されていますし、コンパクトな形状をしているのが良い感じです。基板に印刷されている信号名が分かりづらいのですが、`+` = `VCC`、`D` = `SDA`、`C` = `SCL`、`-` = `GND` となっています。
+It comes with a backup battery pre-installed and has a compact form factor. The signal names printed on the board may be hard to read, but `+` = `VCC`, `D` = `SDA`, `C` = `SCL`, and `-` = `GND`.
 
-今回の記事では、この DS3231 モジュールを Pico ボードに接続し[^ds1307]、RTC を使った以下の機能を実現します。
+In this article, we connect this DS3231 module to the Pico board[^ds1307] and implement the following features using the RTC:
 
-[^ds1307]: DS1307 も I2C アドレスやデータフォーマットなどが DS3231 と共通しているので、同じように扱うことができると思います。
+[^ds1307]: The DS1307 also shares I2C address and data format with the DS3231, so it should work similarly.
 
-- ファイルシステムにタイムスタンプを記録する
-- シェルのプロンプトに日時を表示する
-- 時計アプリを作成する
+- Record timestamps in the file system
+- Display the date and time in the shell prompt
+- Create a clock application
 
-### 実際のプロジェクト
+### Example Project
 
-### プロジェクトの作成
+### Creating a Project
 
-VSCode のコマンドパレットから `>Raspberry Pi Pico: New Pico Project` を実行し、以下の内容でプロジェクトを作成します。Pico SDK プロジェクト作成の詳細や、ビルド、ボードへの書き込み方法については[「Pico SDK ことはじめ」](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%AE%E4%BD%9C%E6%88%90%E3%81%A8%E7%B7%A8%E9%9B%86) を参照ください。
+From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings. For details on creating a Pico SDK project, building, and writing to the board, see ["Getting Started with Pico SDK"](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%AE%E4%BD%9C%E6%88%90%E3%81%A8%E7%B7%A8%E9%9B%86).
 
-- **Name** ... プロジェクト名を入力します。今回は例として `rtctest` を入力します
-- **Board type** ... ボード種別を選択します
-- **Location** ... プロジェクトディレクトリを作る一つ上のディレクトリを選択します
-- **Stdio support** .. ターミナルソフトに接続するポート (UART または USB) を選択します
-- **Code generation options** ... **`Generate C++ code` にチェックをつけます**
+- **Name** ... Enter the project name. In this example, enter `rtctest`.
+- **Board type** ... Select the board type.
+- **Location** ... Select the parent directory where the project directory will be created.
+- **Stdio support** ... Select the port (UART or USB) to connect to the terminal software.
+- **Code generation options** ... **Check `Generate C++ code`**
 
-プロジェクトディレクトリと `pico-jxglib` のディレクトリ配置が以下のようになっていると想定します。
+Assume the project directory and `pico-jxglib` are arranged as follows:
 
 ```text
 ├── pico-jxglib/
@@ -46,17 +46,17 @@ VSCode のコマンドパレットから `>Raspberry Pi Pico: New Pico Project` 
     └── ...
 ```
 
-以下、このプロジェクトをもとに `CMakeLists.txt` やソースファイルを編集してプログラムを作成していきます。
+From here, edit `CMakeLists.txt` and the source file based on this project to create your program.
 
-### ファイルシステムにタイムスタンプを記録する
+### Recording Timestamps in the File System
 
-RTC から日時情報を取得して、ファイルシステムにタイムスタンプを記録できるようにします。
+Get the date and time from the RTC and record timestamps in the file system.
 
-ブレッドボードの配線イメージは以下の通りです。
+The breadboard wiring image is as follows:
 
 ![circuit-rtc](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-22-rtc/circuit-rtc.png)
 
-`CMakeLists.txt` の最後に以下の行を追加します。
+Add the following lines to the end of `CMakeLists.txt`:
 
 ```cmake title="CMakeLists.txt"
 target_link_libraries(rtctest jxglib_RTC_DS3231 jxglib_LFS_Flash jxglib_FAT_Flash jxglib_Serial jxglib_ShellCmd_FS)
@@ -64,7 +64,7 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 jxglib_configure_FAT(rtctest FF_VOLUMES 1)
 ```
 
-ソースファイルを以下のように編集します。
+Edit the source file as follows:
 
 ```cpp:rtctest.cpp
 #include <stdio.h>
@@ -98,201 +98,3 @@ int main()
     }
 }
 ```
-
-このソースファイルは[「pico-jxglib のシェルでファイルシステムを操作する話 (自動補完とヒストリ機能で入力楽々)」](https://zenn.dev/ypsitau/articles/2025-06-09-rtctest#%E3%82%B7%E3%82%A7%E3%83%AB%E3%81%A8%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%B7%E3%82%B9%E3%83%86%E3%83%A0%E6%93%8D%E4%BD%9C%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89%E3%81%AE%E7%B5%84%E8%BE%BC%E3%81%BF)で紹介したものをベースにしており、Pico ボードのフラッシュメモリ上に LittleFS と FAT ファイルシステムのドライブを作成します。I2C の初期化と、`RTC::DS3231` インスタンスの生成を追加すると、ファイルシステムにタイムスタンプを記録できるようになります。
-
-上のプログラムを実行すると、シェルが起動します。シェルの操作は UART または USB で接続したホスト PC のターミナルソフトから行います。
-
-RTC の日時を設定するには `rtc` コマンドを日付や時刻を引数にして実行します。
-
-```text
-C:?>rtc 2025-06-22 12:34:56
-2025-06-22 12:34:56.000
-```
-
-RTC の現在日時を確認するには `rtc` コマンドを引数なしで実行します。
-
-```text
-C:?>rtc
-2025-06-22 12:35:32.000
-```
-
-タイムスタンプが記録できることを確認するために、ファイルを作成してみます。最初の状態だとドライブはまだフォーマットされていないので。以下のコマンドを実行してフォーマットしてください。
-
-```text
-C:?>format a: b: c: d:
-drive a: formatted in LittleFS
-drive b: formatted in LittleFS
-drive c: formatted in LittleFS
-drive d: formatted in FAT12
-C:/>ls-drive
- Drive  Format           Total
- A:     LittleFS         256K
- B:     LittleFS         256K
-*C:     LittleFS         256K
- D:     FAT12            256K
-```
-
-`C:` ドライブは LittleFS でフォーマットされています。このドライブ上に `cat` でファイルを作成します。
-
-```text
-C:/>cat > test.txt
-This is a test file.
-^C
-```
-
-`ls` コマンドを実行してみると:
-
-```text
-C:/>ls
--a--- 2025-06-22 12:36:39     21 test.txt
-```
-
-タイムスタンプが記録されていることが分かります。LittleFS はタイムスタンプを持たないファイルシステムですが、**pico-jxglib** ではファイルのアトリビュート領域に 64 ビット UNIX 時刻の形式で日時情報を記録しています。
-
-`touch` コマンドを使うと、ファイルのタイムスタンプを更新できます。
-
-```text
-C:/>touch test.txt
-C:/>ls
--a--- 2025-06-22 12:37:38     21 test.txt
-```
-
-### シェルのプロンプトに日時を表示する
-
-シェルのプロンプトに日時を表示することができます。ブレッドボードの配線とプログラムは前のセクションと同じものを使用します。
-
-シェルのプロンプトを変更するには `prompt` コマンドを使用します。`%Y` や　`%M` などのフォーマット文字列を指定することで、日時を表示することができます。
-
-```text
-C:/>prompt "%Y-%M-%D %h:%m:%s>"
-2025-06-22 12:45:07>
-2025-06-22 12:45:08>
-2025-06-22 12:45:13>
-2025-06-22 12:45:14>
-```
-
-`prompt` で指定できるフォーマット文字列は以下の通りです。
-
-| フォーマット文字   | 意味             | 例                |
-|:-----------------|:-----------------|:------------------|
-| `%d`             | カレントドライブ  | `C:`                |
-| `%w`             | カレントディレクトリ| `/work/images`     |
-| `%Y`             | 年（4桁）        | `2025`              |
-| `%y`             | 年（下2桁）      | `25`                |
-| `%M`             | 月（2桁）        | `06`                |
-| `%D`             | 日（2桁）        | `22`                |
-| `%h`             | 時（2桁, 24h）   | `12`                |
-| `%H`             | 時（2桁, 12h）   | `12`                |
-| `%m`             | 分（2桁）        | `45`                |
-| `%s`             | 秒（2桁）        | `07`                |
-| `%a`             | AM/PM            | `AM`, `PM`            |
-
-### 時計アプリを作成する
-
-RTC モジュールから日時情報を取得して、TFT LCD ST7789 に表示する時計アプリを作成します。
-
-ブレッドボードの配線イメージは以下の通りです。
-
-![circuit-rtc-st7789](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-22-rtc/circuit-rtc-st7789.png)
-
-`CMakeLists.txt` の最後に以下の行を追加します。
-
-```cmake title="CMakeLists.txt"
-target_link_libraries(rtctest jxglib_Display_ST7789 jxglib_RTC_DS3231)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
-```
-
-ソースファイルを以下のように編集します。
-
-```cpp:rtctest.cpp
-#include <stdio.h>
-#include "pico/stdlib.h"
-#include "jxglib/RTC/DS3231.h"
-#include "jxglib/Display/ST7789.h"
-#include "jxglib/Font/shinonome18.h"
-
-using namespace jxglib;
-
-int main()
-{
-    stdio_init_all();
-    ::spi_init(spi1, 125'000'000);
-    GPIO14.set_function_SPI1_SCK();
-    GPIO15.set_function_SPI1_TX();
-    Display::ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
-    display.Initialize(Display::Dir::Rotate90);
-    ::i2c_init(i2c0, 400'000);
-    GPIO16.set_function_I2C0_SDA().pull_up();
-    GPIO17.set_function_I2C0_SCL().pull_up();
-    RTC::DS3231 rtc(i2c0);
-    DateTime dtPrev;
-    for (;;) {
-        DateTime dt;
-        RTC::Get(&dt);
-        if (dt != dtPrev) {
-            int ySeparator = display.GetHeight() * 2 / 5;
-            dtPrev = dt;
-            char str[32];
-            display.SetFont(Font::shinonome18).SetFontScale(2, 2).SetColor(Color(192, 192, 192));
-            ::snprintf(str, sizeof(str), "%04d-%02d-%02d", dt.year, dt.month, dt.day);
-            Size size = display.CalcStringSize(str);
-            display.DrawString((display.GetWidth() - size.width) / 2, ySeparator - 8 - size.height, str);
-            display.SetFont(Font::shinonome18).SetFontScale(4, 4).SetColor(Color(192, 192, 255));
-            ::snprintf(str, sizeof(str), "%02d:%02d:%02d", dt.hour, dt.min, dt.sec);
-            size = display.CalcStringSize(str);
-            display.DrawString((display.GetWidth() - size.width) / 2, ySeparator + 8, str);
-            display.Refresh();
-        }
-        Tickable::Tick();
-    }
-}
-```
-
-![clock-app](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-22-rtc/clock-app.jpg)
-
-### おまけ: Pico の RTC を利用する
-
-`RTC::Pico` インスタンスを生成することで、Pico ボードの内蔵 RTC を利用することもできます。初代 Pico (RP2040) 専用です。Pico2 (RP2350) では、コンパイルに必要なインクルードファイル `hardware/rtc.h` がないためエラーになります。
-
-`CMakeLists.txt` の最後に以下の行を追加します。
-
-```cmake title="CMakeLists.txt"
-target_link_libraries(rtctest jxglib_RTC_Pico jxglib_LFS_Flash jxglib_FAT_Flash jxglib_Serial jxglib_ShellCmd_FS)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
-jxglib_configure_FAT(rtctest FF_VOLUMES 1)
-```
-
-ソースファイルを以下のように編集します。
-
-```cpp:rtctest.cpp
-#include <stdio.h>
-#include "pico/stdlib.h"
-#include "jxglib/Serial.h"
-#include "jxglib/Shell.h"
-#include "jxglib/LFS/Flash.h"
-#include "jxglib/FAT/Flash.h"
-#include "jxglib/RTC/Pico.h"
-
-using namespace jxglib;
-
-int main()
-{
-    ::stdio_init_all();
-    LFS::Flash driveA("A:",  0x1010'0000, 0x0004'0000); // Flash address and size 256kB
-    LFS::Flash driveB("B:",  0x1014'0000, 0x0004'0000); // Flash address and size 256kB
-    LFS::Flash driveC("*C:", 0x1018'0000, 0x0004'0000); // Flash address and size 256kB
-    FAT::Flash driveD("D:",  0x101c'0000, 0x0004'0000); // Flash address and size 256kB
-    Serial::Terminal terminal;
-    Shell::AttachTerminal(terminal.Initialize());
-    RTC::Pico rtc;
-    for (;;) {
-        // :
-        // any other jobs
-        // :
-        Tickable::Tick();
-    }
-}
-```
-
-`rtc` コマンドなどで日時を確認した時点で RTC が動き始めます。

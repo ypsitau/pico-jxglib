@@ -1,36 +1,36 @@
-今回は、**pico-jxglib** を使って、LVGL による高度な GUI を TFT LCD 上に実装します。タッチスクリーン付きの TFT LCD が、汎用の入力デバイスになりますよー。
+This page explains how to use **pico-jxglib** to implement advanced GUIs on TFT LCDs using LVGL. A TFT LCD with a touchscreen can become a versatile input device.
 
-## LVGL について
+## About LVGL
 
-[LVGL](https://docs.lvgl.io/) は、限られたリソースしか持たない組み込み機器で高度な GUI を実現できるライブラリです。最小の環境で 16MHz の CPU、64KB の Flash メモリと 16KB の RAM があれば動作します。125MHz の CPU、2MB の Flash メモリと 264KB の SRAM を搭載した Pico ならば、かなりの余裕を持って動かすことができますね！
+[LVGL](https://docs.lvgl.io/) is a library that enables advanced GUIs on embedded devices with limited resources. It can run on as little as a 16MHz CPU, 64KB of flash, and 16KB of RAM. On a Pico with a 125MHz CPU, 2MB of flash, and 264KB of SRAM, you have plenty of headroom!
 
-少ない消費リソースにもかかわらず、表現能力は非常に高いです。以下のスナップショットは LVGL が提供しているサンプルプログラムのひとつです。
+Despite its low resource requirements, LVGL offers very high expressive power. The following snapshot is from one of LVGL's sample programs:
 
-![lvgl-bezier-anim.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-02-04-lvgl/lvgl-bezier-anim.png) (LVGL のページから転載)
+![lvgl-bezier-anim.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-02-04-lvgl/lvgl-bezier-anim.png) (from the LVGL documentation)
 
-スライドバーを操作するとそれぞれの値を制御点としたベジエ曲線をリアルタイムでグラフ中に描画します。さらに右側の再生ボタンをクリックすると、曲線に応じた速度で上部の赤い四角が左から右に移動します。実際の動作イメージを[ここ](https://docs.lvgl.io/master/examples.html#cubic-bezier-animation)で確認できます。これとまったく同じ GUI が手元のワンボードマイコンで実現できるのですから驚きです。
+When you operate the sliders, a Bezier curve is drawn in real time on the graph, with the values as control points. Clicking the play button on the right animates the red square along the curve at a speed corresponding to the curve. You can see an actual animation [here](https://docs.lvgl.io/master/examples.html#cubic-bezier-animation). It's amazing that you can implement exactly the same GUI on your own microcontroller!
 
-さらに感心するのは、単に実用目的の一点張りではなく、視覚表現に遊び心があふれていることです。例えば、ボタンをクリックしたときにはぶわっと広がるような表現効果をつけることができます。コンシューマむけの UI にももってこいですね。
+What's even more impressive is that LVGL is not just for practical use, but also has a playful visual style. For example, when you click a button, you can add effects like a soft expansion. It's perfect for consumer-oriented UIs.
 
-いろいろなプラットフォームへのポーティングも [Connecting LVGL to Your Hardware](https://docs.lvgl.io/master/intro/add-lvgl-to-your-project/connecting_lvgl.html#initializing-lvgl) に沿って少ない工数で行うことができます。**pico-jxglib** もこの恩恵にあずからせてもらいました。
+Porting to various platforms is also easy, following [Connecting LVGL to Your Hardware](https://docs.lvgl.io/master/intro/add-lvgl-to-your-project/connecting_lvgl.html#initializing-lvgl). **pico-jxglib** benefits from this flexibility.
 
-## 実際のプロジェクト
+## Example Project
 
-タッチスクリーンを搭載した ILI9341 を接続し、LVGL を使ったプログラムを実行します。なお、タッチスクリーンを持たないデバイスでも Stdio でキーボード操作をシミュレートする方法を後述します。また、USB キーボードとマウスで操作ができる方法を以下の記事で説明しています。
+Connect an ILI9341 with a touchscreen and run a program using LVGL. For devices without a touchscreen, you can simulate keyboard operations via Stdio. For using USB keyboards and mice with LVGL, see the following article:
 
 https://zenn.dev/ypsitau/articles/2025-04-02-usbhost-keyboard-mouse#lvgl-%E3%81%A8-usb-%E3%82%AD%E3%83%BC%E3%83%9C%E3%83%BC%E3%83%89%E3%83%BB%E3%83%9E%E3%82%A6%E3%82%B9
 
-### プロジェクトの作成
+### Creating a Project
 
-VSCode のコマンドパレットから `>Raspberry Pi Pico: New Pico Project` を実行し、以下の内容でプロジェクトを作成します。Pico SDK プロジェクト作成の詳細や、ビルド、ボードへの書き込み方法については[「Pico SDK ことはじめ」](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%AE%E4%BD%9C%E6%88%90%E3%81%A8%E7%B7%A8%E9%9B%86) を参照ください。
+From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings. For details on creating a Pico SDK project, building, and writing to the board, see ["Getting Started with Pico SDK"](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%AE%E4%BD%9C%E6%88%90%E3%81%A8%E7%B7%A8%E9%9B%86).
 
-- **Name** ... プロジェクト名を入力します。今回は例として `lvgltest` を入力します
-- **Board type** ... ボード種別を選択します
-- **Location** ... プロジェクトディレクトリを作る一つ上のディレクトリを選択します
-- **Stdio support** .. Stdio に接続するポート (UART または USB) を選択します
-- **Code generation options** ... **`Generate C++ code` にチェックをつけます**
+- **Name** ... Enter the project name. In this example, enter `lvgltest`.
+- **Board type** ... Select the board type.
+- **Location** ... Select the parent directory where the project directory will be created.
+- **Stdio support** ... Select the port (UART or USB) to connect Stdio.
+- **Code generation options** ... **Check `Generate C++ code`**
 
-このプロジェクトディレクトリと `pico-jxglib` のディレクトリ配置が以下のようになっていると想定します。
+Assume the project directory and `pico-jxglib` are arranged as follows:
 
 ```text
 ├── pico-jxglib/
@@ -40,15 +40,15 @@ VSCode のコマンドパレットから `>Raspberry Pi Pico: New Pico Project` 
     └── ...
 ```
 
-以下、このプロジェクトをもとに `CMakeLists.txt` とソースファイルを編集してプログラムを作成していきます。
+From here, edit `CMakeLists.txt` and the source file based on this project to create your program.
 
-### サンプルプログラムのビルドと実行
+### Building and Running the Sample Program
 
-ブレッドボードの配線イメージは以下の通りです。
+The breadboard wiring image is as follows:
 
 ![circuit-ili9341-touch.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-02-04-lvgl/circuit-ili9341-touch.png)
 
-`CMakeLists.txt` の最後に以下の行を追加してください。
+Add the following lines to the end of `CMakeLists.txt`:
 
 ```cmake title="CMakeLists.txt"
 target_link_libraries(lvgltest jxglib_Display_ILI9341 jxglib_LVGL lvgl_examples)
@@ -56,9 +56,9 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 jxglib_configure_LVGL(lvgltest LV_FONT_MONTSERRAT_14)
 ```
 
-`jxglib_configure_LVGL()` 関数は LVGL のビルドに必要なヘッダファイル `lv_conf.h` を生成します。引数には使用するフォントに対応するマクロ変数名を並べて記述します。初めに指定したフォントがデフォルトフォントになります。
+The `jxglib_configure_LVGL()` function generates the `lv_conf.h` header file needed for building LVGL. List the macro variable names for the fonts you want to use as arguments. The first font specified becomes the default font.
 
-ソースファイルを以下のように編集します。
+Edit the source file as follows:
 
 ```cpp title="lvgltest.cpp"
 #include <stdio.h>
@@ -97,16 +97,16 @@ int main()
 
 ![lvgltest.jpg](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-02-04-lvgl/lvgltest.jpg)
 
-### プログラム解説
+### Program Explanation
 
-上記のプログラムの処理内容について説明します。
+The program's processing content is explained as follows:
 
 ```cpp
 ::spi_init(spi0, 2 * 1000 * 1000);
 ::spi_init(spi1, 125 * 1000 * 1000);
 ```
 
-タッチスクリーン用に SPI0 を 2MHz、TFT LCD 用に SPI1 を 125MHz で初期化します。
+Initialize SPI0 at 2MHz for the touchscreen and SPI1 at 125MHz for the TFT LCD.
 
 ```cpp
 GPIO2.set_function_SPI0_SCK();
@@ -116,7 +116,7 @@ GPIO14.set_function_SPI1_SCK();
 GPIO15.set_function_SPI1_TX();
 ```
 
-GPIO を SPI0、SPI1 の信号線に割り当てます。
+Assign GPIOs to the SPI0 and SPI1 signal lines.
 
 ```cpp
 Display::ILI9341 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
@@ -126,26 +126,26 @@ touchScreen.Initialize(display);
 //touchScreen.Calibrate(display);
 ```
 
-ILI9341 の TFT LCD 部とタッチスクリーン部に SPI と GPIO を割り当て、初期化します。タッチスクリーンの画面座標へのマッピングは、手元のデバイスでキャリブレーションを行ったプリセット値を実装していますが、デバイスごとのばらつきがどれだけあるのかはまだ分かっていません。あまりずれるようでしたら、`Calibrate()` 関数の呼び出しを有効にしてキャリブレーションを行ってください。
+Assign SPI and GPIO to the TFT LCD and touchscreen parts, initializing them. The touchscreen's screen coordinates are mapped to preset values from the device's calibration, but the device-specific variations are still unknown. If the screen is too far off, call the `Calibrate()` function to calibrate.
 
 ```cpp
 LVGL::Initialize();
 ```
 
-LVGL の初期化を行います。
+Initialize LVGL.
 
 ```cpp
 LVGL::Adapter lvglAdapter;
 lvglAdapter.EnableDoubleBuff().AttachDisplay(display).AttachTouchScreen(touchScreen);
 ```
 
-`LVGL::Adapter` を使って TFT LCD やタッチスクリーンを LVGL に接続します。`EnableDoubleBuff()` を実行すると、描画バッファが二重になり、DMA を使うことで描画速度が向上します。ただし、消費メモリは 2 倍になります。
+Use `LVGL::Adapter` to connect the TFT LCD and touchscreen to LVGL. `EnableDoubleBuff()` enables double buffering, which increases drawing speed using DMA. However, it consumes 2 times the memory.
 
 ```cpp
 ::lv_example_anim_3();
 ```
 
-LVGL が提供しているサンプルプログラムの関数を呼び出しています。内部では、ウィジェットの生成とコールバック関数の登録が行われます。
+Call LVGL's sample program functions. Internally, widget creation and callback registration occur.
 
 ```cpp
 for (;;) {
@@ -154,15 +154,15 @@ for (;;) {
 }
 ```
 
-メインループです。`::lv_timer_handler()` で LVGL の処理が行われます。
+The main loop. `::lv_timer_handler()` performs LVGL processing.
 
-### 種々のサンプルプログラム
+### Various Sample Programs
 
-ディレクトリ `pico-jxglib/LVGL/lvgl/examples` 下には 100 を超える LVGL のサンプルプログラムがあります。これらを Pico ボードで容易に実行できる Pico SDK プロジェクトを用意しました。
+The directory `pico-jxglib/LVGL/lvgl/examples` contains over 100 LVGL sample programs. We have prepared Pico SDK projects to run these easily.
 
-上記と同じく、TFT LCD に ILI9341 を使います。ブレッドボードの配線イメージも同じです。GPIO の UART ポート (TX: GPIO0、RX: GPIO1) に USB-シリアル変換器をつなげるか、または USB 端子経由で PC に接続し、シリアルターミナルアプリを起動してください (通信速度は 115200bps)。
+The same ILI9341 is used. The breadboard wiring image is the same. Connect a USB-serial converter to the UART port (TX: GPIO0, RX: GPIO1) or connect via USB to the PC and start a serial terminal app (communication speed 115200bps).
 
-ディレクトリ `pico-jxglib/LVGL/test-examples` 内で VSCode を開いてプロジェクトのビルドおよびボードへのプログラム書き込みを行います。プログラムを実行するとシリアルターミナルに以下のような画面が出るので、実行するサンプルの番号を入力します。
+In the directory `pico-jxglib/LVGL/test-examples`, open VSCode and build the project. Run the program and you'll see a screen like this:
 
 ```text
 --------
@@ -175,15 +175,15 @@ for (;;) {
 Enter Number:
 ```
 
-### 複数 LCD への表示
+### Displaying on Multiple LCDs
 
-`LVGL::Adapter` インスタンスを複数生成してそれぞれに TFT LCD やタッチスクリーンを接続することで、複数 LCD に LVGL の GUI を表示できます。
+Create multiple `LVGL::Adapter` instances and connect each to a TFT LCD or touchscreen to display LVGL GUIs on multiple screens.
 
-今回の例では ILI9341 と ILI9488 を接続します。ブレッドボードの配線イメージは以下の通りです。
+In this example, we connect ILI9341 and ILI9488. The breadboard wiring image is as follows:
 
 ![circuit-ili9341-ili9488-touch.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-02-04-lvgl/circuit-ili9341-ili9488-touch.png)
 
-`CMakeLists.txt` の最後に以下の行を追加してください。
+Add the following lines to the end of `CMakeLists.txt`:
 
 ```cmake title="CMakeLists.txt"
 target_link_libraries(lvgltest jxglib_Display_ILI9341 jxglib_Display_ILI9488 jxglib_LVGL lvgl_examples)
@@ -191,7 +191,7 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 jxglib_configure_LVGL(lvgltest LV_FONT_MONTSERRAT_14)
 ```
 
-ソースファイルを以下のように編集します。
+Edit the source file as follows:
 
 ```cpp title="lvgltest.cpp"
 #include <stdio.h>
@@ -239,19 +239,17 @@ int main()
 
 ![lvgltest-multi.jpg](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-02-04-lvgl/lvgltest-multi.jpg)
 
-LVGL::Adapter インスタンスに対して `SetDefault()` 関数を実行すると、それ以降の LVGL の関数呼び出しはそのアダプタに接続した LCD への操作になります。
+LVGL::Adapter instances have `SetDefault()` functions. After calling `SetDefault()`, all LVGL function calls are directed to that adapter. `SetPartialNum()` specifies how many times LVGL divides the screen. The more the number, the more divisions, and the smaller the buffer size. Usually, 10 divisions are set, but in this example, we have two LCDs and an additional ILI9488 with a large screen and 3 bytes per pixel, exceeding the Pico's RAM capacity. We increase the number of divisions to save memory.
 
-`SetPartialNum()` 関数は、LVGL が画面全体を何分割して描画するかを指定します。数字が大きいほど分割数が多くなるので、描画バッファのサイズは小さくてすみます。通常の設定では 10 分割されますが、今回の例では LCD を二つ接続している上、追加した ILI9488 の画面サイズは大きく、またピクセルあたり 3byte 必要になるので、Pico の RAM 容量を超えてしまうのです。そのため、分割数を多くしてメモリを節約しています。
+### Stdio Input
 
-### Stdio による操作
+LVGL operations are typically touchscreens, but keyboard input is also possible. Here, we explain how to simulate keyboard input from Stdio.
 
-LVGL の操作は基本的にはタッチスクリーンになるのですが、キーボードによる操作も可能です。ここでは、Stdio からの入力でキーボード入力をシミュレートする方法について説明します。
-
-TFT LCD には ST7789 を使います。ブレッドボードの配線イメージは以下の通りです。
+The TFT LCD uses ST7789. The breadboard wiring image is as follows:
 
 ![circuit-st7789-uart.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-02-04-lvgl/circuit-st7789-uart.png)
 
-`CMakeLists.txt` の最後に以下の行を追加してください。
+Add the following lines to the end of `CMakeLists.txt`:
 
 ```cmake title="CMakeLists.txt"
 target_link_libraries(lvgltest jxglib_Display_ST7789 jxglib_LVGL lvgl_examples)
@@ -259,7 +257,7 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 jxglib_configure_LVGL(lvgltest LV_FONT_MONTSERRAT_14)
 ```
 
-ソースファイルを以下のように編集します。
+Edit the source file as follows:
 
 ```cpp title="lvgltest.cpp"
 #include <stdio.h>
@@ -290,4 +288,4 @@ int main()
 }
 ```
 
-`PgUp` と `PgDn` でフォーカスを移動します。`Enter` でフォーカスのついたウィジェットを「クリック」します。
+`PgUp` and `PgDn` move the focus. `Enter` clicks the focused widget.
