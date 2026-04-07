@@ -28,9 +28,9 @@ nav:
             - OLED: library/display/oled/index.md
             - WS2812: library/display/ws2812/index.md
         - USB Host:
-            - Keyboard: library/usb-host/keyboard/index.md
-            - Mouse: library/usb-host/mouse/index.md
-            - Game Pad: library/usb-host/gamepad/index.md
+            - Keyboard: library/usbhost/keyboard/index.md
+            - Mouse: library/usbhost/mouse/index.md
+            - Game Pad: library/usbhost/gamepad/index.md
         - Shell:
             - Terminal: library/shell/terminal/index.md
             - Command Line Editor: library/shell/cmdline-editor/index.md
@@ -78,8 +78,8 @@ markdown_extensions:
     - pymdownx.superfences:
         custom_fences:
         - name: mermaid
-            class: mermaid
-            format: !!python/name:pymdownx.superfences.fence_code_format
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
 
 extra_javascript:
     - javascripts/mathjax.js
