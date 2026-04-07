@@ -28,15 +28,16 @@ nav:
             - OLED: library/display/oled/index.md
             - WS2812: library/display/ws2812/index.md
         - USB Host:
-            - Keyboard: library/usbhost/keyboard/index.md
-            - Mouse: library/usbhost/mouse/index.md
+            - Keyboard & Mouse: library/usbhost/keyboard-mouse/index.md
             - Game Pad: library/usbhost/gamepad/index.md
         - Shell:
             - Terminal: library/shell/terminal/index.md
             - Command Line Editor: library/shell/cmdline-editor/index.md
             - Shell: library/shell/shell/index.md
         - LVGL: library/lvgl/index.md
-        - File System: library/filesystem/index.md
+        - File System:
+            - Flash Memory: library/filesystem/flash/index.md
+            - Media: library/filesystem/media/index.md
     - Pico SDK: pico-sdk/index.md
 
 theme:

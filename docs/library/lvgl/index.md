@@ -1,0 +1,293 @@
+今回は、**pico-jxglib** を使って、LVGL による高度な GUI を TFT LCD 上に実装します。タッチスクリーン付きの TFT LCD が、汎用の入力デバイスになりますよー。
+
+## LVGL について
+
+[LVGL](https://docs.lvgl.io/) は、限られたリソースしか持たない組み込み機器で高度な GUI を実現できるライブラリです。最小の環境で 16MHz の CPU、64KB の Flash メモリと 16KB の RAM があれば動作します。125MHz の CPU、2MB の Flash メモリと 264KB の SRAM を搭載した Pico ならば、かなりの余裕を持って動かすことができますね！
+
+少ない消費リソースにもかかわらず、表現能力は非常に高いです。以下のスナップショットは LVGL が提供しているサンプルプログラムのひとつです。
+
+![lvgl-bezier-anim.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-02-04-lvgl/lvgl-bezier-anim.png) (LVGL のページから転載)
+
+スライドバーを操作するとそれぞれの値を制御点としたベジエ曲線をリアルタイムでグラフ中に描画します。さらに右側の再生ボタンをクリックすると、曲線に応じた速度で上部の赤い四角が左から右に移動します。実際の動作イメージを[ここ](https://docs.lvgl.io/master/examples.html#cubic-bezier-animation)で確認できます。これとまったく同じ GUI が手元のワンボードマイコンで実現できるのですから驚きです。
+
+さらに感心するのは、単に実用目的の一点張りではなく、視覚表現に遊び心があふれていることです。例えば、ボタンをクリックしたときにはぶわっと広がるような表現効果をつけることができます。コンシューマむけの UI にももってこいですね。
+
+いろいろなプラットフォームへのポーティングも [Connecting LVGL to Your Hardware](https://docs.lvgl.io/master/intro/add-lvgl-to-your-project/connecting_lvgl.html#initializing-lvgl) に沿って少ない工数で行うことができます。**pico-jxglib** もこの恩恵にあずからせてもらいました。
+
+## 実際のプロジェクト
+
+タッチスクリーンを搭載した ILI9341 を接続し、LVGL を使ったプログラムを実行します。なお、タッチスクリーンを持たないデバイスでも Stdio でキーボード操作をシミュレートする方法を後述します。また、USB キーボードとマウスで操作ができる方法を以下の記事で説明しています。
+
+https://zenn.dev/ypsitau/articles/2025-04-02-usbhost-keyboard-mouse#lvgl-%E3%81%A8-usb-%E3%82%AD%E3%83%BC%E3%83%9C%E3%83%BC%E3%83%89%E3%83%BB%E3%83%9E%E3%82%A6%E3%82%B9
+
+### プロジェクトの作成
+
+VSCode のコマンドパレットから `>Raspberry Pi Pico: New Pico Project` を実行し、以下の内容でプロジェクトを作成します。Pico SDK プロジェクト作成の詳細や、ビルド、ボードへの書き込み方法については[「Pico SDK ことはじめ」](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%AE%E4%BD%9C%E6%88%90%E3%81%A8%E7%B7%A8%E9%9B%86) を参照ください。
+
+- **Name** ... プロジェクト名を入力します。今回は例として `lvgltest` を入力します
+- **Board type** ... ボード種別を選択します
+- **Location** ... プロジェクトディレクトリを作る一つ上のディレクトリを選択します
+- **Stdio support** .. Stdio に接続するポート (UART または USB) を選択します
+- **Code generation options** ... **`Generate C++ code` にチェックをつけます**
+
+このプロジェクトディレクトリと `pico-jxglib` のディレクトリ配置が以下のようになっていると想定します。
+
+```text
+├── pico-jxglib/
+└── lvgltest/
+    ├── CMakeLists.txt
+    ├── lvgltest.cpp
+    └── ...
+```
+
+以下、このプロジェクトをもとに `CMakeLists.txt` とソースファイルを編集してプログラムを作成していきます。
+
+### サンプルプログラムのビルドと実行
+
+ブレッドボードの配線イメージは以下の通りです。
+
+![circuit-ili9341-touch.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-02-04-lvgl/circuit-ili9341-touch.png)
+
+`CMakeLists.txt` の最後に以下の行を追加してください。
+
+```cmake title="CMakeLists.txt"
+target_link_libraries(lvgltest jxglib_Display_ILI9341 jxglib_LVGL lvgl_examples)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+jxglib_configure_LVGL(lvgltest LV_FONT_MONTSERRAT_14)
+```
+
+`jxglib_configure_LVGL()` 関数は LVGL のビルドに必要なヘッダファイル `lv_conf.h` を生成します。引数には使用するフォントに対応するマクロ変数名を並べて記述します。初めに指定したフォントがデフォルトフォントになります。
+
+ソースファイルを以下のように編集します。
+
+```cpp:lvgltest.cpp
+#include <stdio.h>
+#include <examples/lv_examples.h>
+#include "pico/stdlib.h"
+#include "jxglib/Display/ILI9341.h"
+#include "jxglib/LVGL.h"
+
+using namespace jxglib;
+
+int main()
+{
+    ::stdio_init_all();
+    ::spi_init(spi0, 2 * 1000 * 1000);
+    ::spi_init(spi1, 125 * 1000 * 1000);
+    GPIO2.set_function_SPI0_SCK();
+    GPIO3.set_function_SPI0_TX();
+    GPIO4.set_function_SPI0_RX();
+    GPIO14.set_function_SPI1_SCK();
+    GPIO15.set_function_SPI1_TX();
+    Display::ILI9341 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
+    Display::ILI9341::TouchScreen touchScreen(spi0, {CS: GPIO8, IRQ: GPIO9});
+    display.Initialize(Display::Dir::Rotate90);
+    touchScreen.Initialize(display);
+    //touchScreen.Calibrate(display);
+    LVGL::Initialize();
+    LVGL::Adapter lvglAdapter;
+    lvglAdapter.EnableDoubleBuff().AttachDisplay(display).AttachTouchScreen(touchScreen);
+    ::lv_example_anim_3();
+    for (;;) {
+        ::sleep_ms(5);
+        ::lv_timer_handler();
+    }
+}
+```
+
+![lvgltest.jpg](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-02-04-lvgl/lvgltest.jpg)
+
+### プログラム解説
+
+上記のプログラムの処理内容について説明します。
+
+```cpp
+::spi_init(spi0, 2 * 1000 * 1000);
+::spi_init(spi1, 125 * 1000 * 1000);
+```
+
+タッチスクリーン用に SPI0 を 2MHz、TFT LCD 用に SPI1 を 125MHz で初期化します。
+
+```cpp
+GPIO2.set_function_SPI0_SCK();
+GPIO3.set_function_SPI0_TX();
+GPIO4.set_function_SPI0_RX();
+GPIO14.set_function_SPI1_SCK();
+GPIO15.set_function_SPI1_TX();
+```
+
+GPIO を SPI0、SPI1 の信号線に割り当てます。
+
+```cpp
+Display::ILI9341 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
+Display::ILI9341::TouchScreen touchScreen(spi0, {CS: GPIO6, IRQ: GPIO7});
+display.Initialize(Display::Dir::Rotate90);
+touchScreen.Initialize(display);
+//touchScreen.Calibrate(display);
+```
+
+ILI9341 の TFT LCD 部とタッチスクリーン部に SPI と GPIO を割り当て、初期化します。タッチスクリーンの画面座標へのマッピングは、手元のデバイスでキャリブレーションを行ったプリセット値を実装していますが、デバイスごとのばらつきがどれだけあるのかはまだ分かっていません。あまりずれるようでしたら、`Calibrate()` 関数の呼び出しを有効にしてキャリブレーションを行ってください。
+
+```cpp
+LVGL::Initialize();
+```
+
+LVGL の初期化を行います。
+
+```cpp
+LVGL::Adapter lvglAdapter;
+lvglAdapter.EnableDoubleBuff().AttachDisplay(display).AttachTouchScreen(touchScreen);
+```
+
+`LVGL::Adapter` を使って TFT LCD やタッチスクリーンを LVGL に接続します。`EnableDoubleBuff()` を実行すると、描画バッファが二重になり、DMA を使うことで描画速度が向上します。ただし、消費メモリは 2 倍になります。
+
+```cpp
+::lv_example_anim_3();
+```
+
+LVGL が提供しているサンプルプログラムの関数を呼び出しています。内部では、ウィジェットの生成とコールバック関数の登録が行われます。
+
+```cpp
+for (;;) {
+    ::sleep_ms(5);
+    ::lv_timer_handler();
+}
+```
+
+メインループです。`::lv_timer_handler()` で LVGL の処理が行われます。
+
+### 種々のサンプルプログラム
+
+ディレクトリ `pico-jxglib/LVGL/lvgl/examples` 下には 100 を超える LVGL のサンプルプログラムがあります。これらを Pico ボードで容易に実行できる Pico SDK プロジェクトを用意しました。
+
+上記と同じく、TFT LCD に ILI9341 を使います。ブレッドボードの配線イメージも同じです。GPIO の UART ポート (TX: GPIO0、RX: GPIO1) に USB-シリアル変換器をつなげるか、または USB 端子経由で PC に接続し、シリアルターミナルアプリを起動してください (通信速度は 115200bps)。
+
+ディレクトリ `pico-jxglib/LVGL/test-examples` 内で VSCode を開いてプロジェクトのビルドおよびボードへのプログラム書き込みを行います。プログラムを実行するとシリアルターミナルに以下のような画面が出るので、実行するサンプルの番号を入力します。
+
+```text
+--------
+  1:anim_1                         52:style_5                       103:keyboard_2
+  2:anim_2                         53:style_6                       104:label_1
+  3:anim_3                         54:style_7                       105:label_2
+ ...
+ 50:style_3                       101:imagebutton_1                 152:tileview_1
+ 51:style_4                       102:keyboard_1                    153:win_1
+Enter Number:
+```
+
+### 複数 LCD への表示
+
+`LVGL::Adapter` インスタンスを複数生成してそれぞれに TFT LCD やタッチスクリーンを接続することで、複数 LCD に LVGL の GUI を表示できます。
+
+今回の例では ILI9341 と ILI9488 を接続します。ブレッドボードの配線イメージは以下の通りです。
+
+![circuit-ili9341-ili9488-touch.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-02-04-lvgl/circuit-ili9341-ili9488-touch.png)
+
+`CMakeLists.txt` の最後に以下の行を追加してください。
+
+```cmake title="CMakeLists.txt"
+target_link_libraries(lvgltest jxglib_Display_ILI9341 jxglib_Display_ILI9488 jxglib_LVGL lvgl_examples)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+jxglib_configure_LVGL(lvgltest LV_FONT_MONTSERRAT_14)
+```
+
+ソースファイルを以下のように編集します。
+
+```cpp:lvgltest.cpp
+#include <stdio.h>
+#include <examples/lv_examples.h>
+#include "pico/stdlib.h"
+#include "jxglib/Display/ILI9341.h"
+#include "jxglib/Display/ILI9488.h"
+#include "jxglib/LVGL.h"
+
+using namespace jxglib;
+
+int main()
+{
+    ::stdio_init_all();
+    ::spi_init(spi0, 2 * 1000 * 1000);
+    ::spi_init(spi1, 125 * 1000 * 1000);
+    GPIO2.set_function_SPI0_SCK();
+    GPIO3.set_function_SPI0_TX();
+    GPIO4.set_function_SPI0_RX();
+    GPIO14.set_function_SPI1_SCK();
+    GPIO15.set_function_SPI1_TX();
+    Display::ILI9341 display1(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
+    Display::ILI9488 display2(spi1, 320, 480, {RST: GPIO18, DC: GPIO19, CS: GPIO20, BL: GPIO21});
+    Display::ILI9341::TouchScreen touchScreen1(spi0, {CS: GPIO8, IRQ: GPIO9});
+    Display::ILI9488::TouchScreen touchScreen2(spi0, {CS: GPIO16, IRQ: GPIO17});
+    display1.Initialize(Display::Dir::Rotate90);
+    display2.Initialize(Display::Dir::Rotate90);
+    touchScreen1.Initialize(display1);
+    touchScreen2.Initialize(display2);
+    LVGL::Initialize();
+    LVGL::Adapter lvglAdapter1;
+    lvglAdapter1.AttachDisplay(display1).AttachTouchScreen(touchScreen1);
+    LVGL::Adapter lvglAdapter2;
+    lvglAdapter2.SetPartialNum(20).AttachDisplay(display2).AttachTouchScreen(touchScreen2);
+    lvglAdapter1.SetDefault();
+    ::lv_example_anim_3();
+    lvglAdapter2.SetDefault();
+    ::lv_example_keyboard_1();
+    for (;;) {
+        ::sleep_ms(5);
+        ::lv_timer_handler();
+    }
+}
+```
+
+![lvgltest-multi.jpg](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-02-04-lvgl/lvgltest-multi.jpg)
+
+LVGL::Adapter インスタンスに対して `SetDefault()` 関数を実行すると、それ以降の LVGL の関数呼び出しはそのアダプタに接続した LCD への操作になります。
+
+`SetPartialNum()` 関数は、LVGL が画面全体を何分割して描画するかを指定します。数字が大きいほど分割数が多くなるので、描画バッファのサイズは小さくてすみます。通常の設定では 10 分割されますが、今回の例では LCD を二つ接続している上、追加した ILI9488 の画面サイズは大きく、またピクセルあたり 3byte 必要になるので、Pico の RAM 容量を超えてしまうのです。そのため、分割数を多くしてメモリを節約しています。
+
+### Stdio による操作
+
+LVGL の操作は基本的にはタッチスクリーンになるのですが、キーボードによる操作も可能です。ここでは、Stdio からの入力でキーボード入力をシミュレートする方法について説明します。
+
+TFT LCD には ST7789 を使います。ブレッドボードの配線イメージは以下の通りです。
+
+![circuit-st7789-uart.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-02-04-lvgl/circuit-st7789-uart.png)
+
+`CMakeLists.txt` の最後に以下の行を追加してください。
+
+```cmake title="CMakeLists.txt"
+target_link_libraries(lvgltest jxglib_Display_ST7789 jxglib_LVGL lvgl_examples)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+jxglib_configure_LVGL(lvgltest LV_FONT_MONTSERRAT_14)
+```
+
+ソースファイルを以下のように編集します。
+
+```cpp:lvgltest.cpp
+#include <stdio.h>
+#include <examples/lv_examples.h>
+#include "pico/stdlib.h"
+#include "jxglib/Stdio.h"
+#include "jxglib/Display/ST7789.h"
+#include "jxglib/LVGL.h"
+
+using namespace jxglib;
+
+int main()
+{
+    ::stdio_init_all();
+    ::spi_init(spi1, 125 * 1000 * 1000);
+    GPIO14.set_function_SPI1_SCK();
+    GPIO15.set_function_SPI1_TX();
+    Display::ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
+    display.Initialize(Display::Dir::Rotate90);
+    LVGL::Initialize();
+    LVGL::Adapter lvglAdapter;
+    lvglAdapter.EnableDoubleBuff().AttachDisplay(display).AttachKeyboard(Stdio::GetKeyboard());
+    ::lv_example_keyboard_1();
+    for (;;) {
+        ::sleep_ms(5);
+        ::lv_timer_handler();
+    }
+}
+```
+
+`PgUp` と `PgDn` でフォーカスを移動します。`Enter` でフォーカスのついたウィジェットを「クリック」します。

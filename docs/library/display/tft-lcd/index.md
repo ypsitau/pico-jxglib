@@ -54,7 +54,7 @@ Assume the project directory and `pico-jxglib` are arranged as follows:
 
 Add the following lines to the end of `CMakeLists.txt`:
 
-```cmake:CMakeLists.txt
+```cmake title="CMakeLists.txt"
 target_link_libraries(lcdtest jxglib_Display_ST7789 jxglib_DrawableTest)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 ```

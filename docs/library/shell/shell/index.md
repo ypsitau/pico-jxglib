@@ -1,0 +1,331 @@
+今回は、以前に上げた記事[「pico-jxglib とコマンドライン編集機能の話」](https://zenn.dev/ypsitau/articles/2025-04-06-cmdline-editor)で紹介した Terminal のコマンド入力機能を使って、Pico ボードにシェル機能を実装します。
+
+## シェル機能について
+
+組込みボードの開発では、プログラムコード編集・ボード書き込み・実行というサイクルを続けるので、プログラムの挙動を変えたい場合はコードを直接変更するのが一番てっとり早い方法です。でも、変更するパラメータなどが多くなったり、結果を見て少しずつ挙動を変更したい場合などは、この手順が煩わしくなってきます。そういった場合、ボード自身がコマンドを受け付けられるようなシェルが走っていると、試行錯誤や実験がスムースになります。特に、FatFS や LittleFS などを使ってファイルシステムを扱うようなアプリを作ると、ディレクトリの内容を確認したりするのにシェルは重宝しそうです。
+
+**pico-jxglib** のシェル機能は以下の特徴を持ちます。
+
+- **多様な入出力デバイスに対応**  
+  UART/USB のシリアルターミナル、TFT LCD や OLED ディスプレイ、USB キーボードなど、さまざまな入出力手段と連携できる柔軟な UI 構成が可能です
+
+- **既存プロジェクトに簡単に組み込める**  
+  バックグラウンドで動作します。コマンド待ち受け時はほとんど負荷がかからないので、既存コードと干渉しない形で統合が可能です
+
+- **コマンド作成や組込みが容易**
+  コマンドを容易に作成することができます。また、コマンドを実装したソースやライブラリをリンクするだけでシェルから実行できるようになるので、組込みや取り外しが楽に行えます
+
+## 実際のプロジェクト
+
+### プロジェクトの作成
+
+VSCode のコマンドパレットから `>Raspberry Pi Pico: New Pico Project` を実行し、以下の内容でプロジェクトを作成します。Pico SDK プロジェクト作成の詳細や、ビルド、ボードへの書き込み方法については[「Pico SDK ことはじめ」](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%AE%E4%BD%9C%E6%88%90%E3%81%A8%E7%B7%A8%E9%9B%86) を参照ください。
+
+- **Name** ... プロジェクト名を入力します。今回は例として `shell-test` を入力します
+- **Board type** ... ボード種別を選択します
+- **Location** ... プロジェクトディレクトリを作る一つ上のディレクトリを選択します
+- **Stdio support** .. ターミナルにシリアルコンソールを使う場合、Stdio に接続するポート (UART または USB) を選択します。ターミナルに USB キーボードを使う場合は USB のチェックを外してください。
+- **Code generation options** ... **`Generate C++ code` にチェックをつけます**
+
+プロジェクトディレクトリと `pico-jxglib` のディレクトリ配置が以下のようになっていると想定します。
+
+```text
+├── pico-jxglib/
+└── shell-test/
+    ├── CMakeLists.txt
+    ├── shell-test.cpp
+    └── ...
+```
+
+
+以下、このプロジェクトをもとに `CMakeLists.txt` やソースファイルを編集してプログラムを作成していきます。
+
+### シェルの組込み
+
+プログラム中にシェルを組み込むには、以下のコードを記述します。
+
+1. シェルで使用する `Terminal` インスタンス (`Serial::Terminal` または `Display::Terminal`) を生成して初期化
+1. 関数 `Shell::AttachTerminal()` で `Terminal` インスタンスをシェルに接続
+1. メインループ中で `Tickable::Tick()` または `Tickable::Sleep()` を実行
+
+`Terminal` インスタンスの生成方法は、ターミナルに何を使うかによって異なります。以下に具体例を紹介します。
+
+#### ターミナルにシリアルコンソールを使う
+
+Stdio が UART または USB で PC につながっている環境で使用できます。記述するコード量が少ないので、手軽にシェルを組み込むことができます。
+
+`CMakeLists.txt` の最後に以下の行を追加します。
+
+```cmake
+target_link_libraries(shell-test jxglib_Serial jxglib_Shell jxglib_ShellCmd_Basic)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+```
+
+ソースファイルを以下のように編集します。
+
+```cpp title="shell-test.cpp"
+#include <stdio.h>
+#include "pico/stdlib.h"
+#include "jxglib/Serial.h"
+#include "jxglib/Shell.h"
+
+using namespace jxglib;
+
+int main()
+{
+    ::stdio_init_all();
+    //-------------------------------------------------------------------------
+    Serial::Terminal terminal;
+    Shell::AttachTerminal(terminal.Initialize());
+    terminal.Println("Shell on Serial Terminal");
+    //-------------------------------------------------------------------------
+    for (;;) {
+        // any jobs
+        Tickable::Tick();
+    }
+}
+```
+
+#### ターミナルに TFT LCD ST7789 と USB キーボードを使う
+
+Pico ボードに TFT LCD ST7789 と USB キーボードを接続した環境で使用できます。TFT LCD の初期化や SPI の設定が必要な分、記述するコード量が多くなりますが、Pico ボード単体で動作することができます。
+
+ブレッドボードの配線イメージは以下の通りです。
+
+![circuit-usbhost-st7789.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-05-08-shell/circuit-usbhost-st7789.png)
+
+`CMakeLists.txt` の最後に以下の行を追加します。また、Stdio の USB 接続が無効になっていること (`pico_enable_stdio_usb(shell-test 0)`) を確認してください。
+
+```cmake
+target_link_libraries(shell-test jxglib_USBHost jxglib_Display_ST7789 jxglib_Shell jxglib_ShellCmd_Basic)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+jxglib_configure_USBHost(shell-test CFG_TUH_HID 3)
+```
+
+ソースファイルを以下のように編集します。
+
+```cpp title="shell-test.cpp"
+#include <stdio.h>
+#include "pico/stdlib.h"
+#include "jxglib/Display/ST7789.h"
+#include "jxglib/USBHost/HID.h"
+#include "jxglib/Shell.h"
+#include "jxglib/Font/shinonome16.h"
+
+using namespace jxglib;
+
+int main()
+{
+    ::stdio_init_all();
+    //-------------------------------------------------------------------------
+    Display::Terminal terminal;
+    USBHost::Initialize();
+    USBHost::Keyboard keyboard;
+    ::spi_init(spi1, 125 * 1000 * 1000);
+    GPIO14.set_function_SPI1_SCK();
+    GPIO15.set_function_SPI1_TX();
+    Display::ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
+    terminal.Initialize().AttachDisplay(display.Initialize(Display::Dir::Rotate90))
+        .AttachKeyboard(keyboard.SetCapsLockAsCtrl()).SetFont(Font::shinonome16);
+    Shell::AttachTerminal(terminal);
+    terminal.Println("Shell on ST7789 TFT LCD");
+    //-------------------------------------------------------------------------
+    for (;;) {
+        // any jobs
+        Tickable::Tick();
+    }
+}
+```
+
+#### ターミナルに OLED SSD1306 と USB キーボードを使う
+
+Pico ボードに OLED SSD1306 と USB キーボードを接続した環境で使用できます。OLED の初期化や I2C の設定が必要な分、記述するコード量が多くなりますが、Pico ボード単体で動作することができます。
+
+ブレッドボードの配線イメージは以下の通りです。
+
+![circuit-usbhost-ssd1306.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-05-08-shell/circuit-usbhost-ssd1306.png)
+
+`CMakeLists.txt` の最後に以下の行を追加します。また、Stdio の USB 接続が無効になっていること (`pico_enable_stdio_usb(shell-test 0)`) を確認してください
+
+```cmake
+target_link_libraries(shell-test jxglib_USBHost jxglib_Display_SSD1306 jxglib_Shell jxglib_ShellCmd_Basic)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+jxglib_configure_USBHost(shell-test CFG_TUH_HID 3)
+```
+
+ソースファイルを以下のように編集します。
+
+```cpp title="shell-test.cpp"
+#include <stdio.h>
+#include "pico/stdlib.h"
+#include "jxglib/Display/SSD1306.h"
+#include "jxglib/USBHost/HID.h"
+#include "jxglib/Shell.h"
+#include "jxglib/Font/shinonome12.h"
+
+using namespace jxglib;
+
+int main()
+{
+    ::stdio_init_all();
+    //-------------------------------------------------------------------------
+    Display::Terminal terminal;
+    USBHost::Initialize();
+    USBHost::Keyboard keyboard;
+    ::i2c_init(i2c0, 400 * 1000);
+    GPIO4.set_function_I2C0_SDA().pull_up();
+    GPIO5.set_function_I2C0_SCL().pull_up();
+    Display::SSD1306 display(i2c0, 0x3c);
+    terminal.Initialize().AttachDisplay(display.Initialize())
+        .AttachKeyboard(keyboard.SetCapsLockAsCtrl()).SetFont(Font::shinonome12);
+    Shell::AttachTerminal(terminal);
+    terminal.Println("Shell on SSD1306");
+    //-------------------------------------------------------------------------
+    for (;;) {
+        // any jobs
+        Tickable::Tick();
+    }
+}
+```
+
+### シェルコマンドの実行
+
+ライブラリ `jxglib_ShellCmd_Basic` をリンクすると、基本的なシェルコマンドが使えるようになります。
+
+#### `help` コマンド
+
+利用可能なコマンドの一覧を表示します。
+
+```text
+>help
+about-me        prints information about this own program
+about-platform  prints information about the platform
+d               prints memory content at the specified address
+help            prints help strings for available commands
+prompt          changes the command line prompt
+ticks           prints names and attributes of running Tickable instances
+```
+
+#### `about-me` コマンド
+
+現在実行しているプログラムの情報 (`bi_decl()` マクロでバイナリに埋め込んだビルド情報・ピンレイアウト情報や、メモリマップ) を表示します。picotool の出力フォーマットに似せています。
+
+```text
+>about-me
+Program Information
+ name:              shell-test
+ version:           0.1
+ feature:           UART stdin / stdout
+ binary start:      0x10000000
+ binary end:        0x1000e960
+
+Fixed Pin Information
+ 0:                 UART0 TX
+ 1:                 UART0 RX
+
+Build Information
+ sdk version:       2.1.1
+ pico_board:        pico
+ boot2_name:        boot2_w25q080
+ build date:        May 13 2025
+ build attributes:  Debug
+
+Memory Map
+ flash binary:      0x10000000-0x1000e960   59744
+ ram vector table:  0x20000000-0x200000c0     192
+ data:              0x200000c0-0x20000968    2216
+ bss:               0x20000968-0x20001aa4    4412
+ heap:              0x20001aa4-0x20040000  255324
+ stack:             0x20040000-0x20042000    8192
+```
+
+#### `about-platform` コマンド
+
+Pico ボードのプラットフォーム情報を表示します。
+
+```text
+>about-platform
+RP2350 (ARM) 150 MHz
+Flash  0x10000000-0x10400000 4194304
+SRAM   0x20000000-0x20082000  532480
+```
+
+#### `d` コマンド
+
+メモリやファイルのダンプイメージを出力します。引数なしで実行するとアドレス 0x00000000 からのメモリ内容を表示します。
+
+```text
+>d
+00000000  00 1F 04 20 EB 00 00 00 35 00 00 00 31 00 00 00
+00000010  4D 75 01 03 7A 00 C4 00 1D 00 00 00 00 23 02 88
+00000020  9A 42 03 D0 43 88 04 30 91 42 F7 D1 18 1C 70 47
+00000030  30 BF FD E7 F4 46 00 F0 05 F8 A7 48 00 21 01 60
+```
+
+続けて引数なしで実行すると前回の続きのメモリ内容を表示します。
+
+```text
+>d
+00000040  41 60 E7 46 A5 48 00 21 C9 43 01 60 41 60 70 47
+00000050  CA 9B 0D 5B F9 1D 00 00 28 43 29 20 32 30 32 30
+00000060  20 52 61 73 70 62 65 72 72 79 20 50 69 20 54 72
+00000070  61 64 69 6E 67 20 4C 74 64 00 50 33 09 03 52 33
+```
+
+第一引数は先頭アドレス、第二引数は表示バイト数です。16 進数を指定するときは先頭に `0x` をつけます。
+
+```text
+>d 0x10000000
+10000000  00 B5 32 4B 21 20 58 60 98 68 02 21 88 43 98 60
+10000010  D8 60 18 61 58 61 2E 4B 00 21 99 60 02 21 59 61
+10000020  01 21 F0 22 99 50 2B 49 19 60 01 21 99 60 35 20
+10000030  00 F0 44 F8 02 22 90 42 14 D0 06 21 19 66 00 F0
+```
+
+```text
+>d 0x10000000 128
+10000000  00 B5 32 4B 21 20 58 60 98 68 02 21 88 43 98 60
+10000010  D8 60 18 61 58 61 2E 4B 00 21 99 60 02 21 59 61
+10000020  01 21 F0 22 99 50 2B 49 19 60 01 21 99 60 35 20
+10000030  00 F0 44 F8 02 22 90 42 14 D0 06 21 19 66 00 F0
+10000040  34 F8 19 6E 01 21 19 66 00 20 18 66 1A 66 00 F0
+10000050  2C F8 19 6E 19 6E 19 6E 05 20 00 F0 2F F8 01 21
+10000060  08 42 F9 D1 00 21 99 60 1B 49 19 60 00 21 59 60
+10000070  1A 49 1B 48 01 60 01 21 99 60 EB 21 19 66 A0 21
+```
+
+引数に数値以外の文字列を指定すると、ファイル名として解釈され、ファイルの内容をダンプします。この機能はファイルシステムがマウントされているときに有効になります。
+
+### シェルコマンドの作成
+
+シェルコマンドを作成するには `ShellCmd` マクロを使います。マクロのフォーマットは以下の通りです。
+
+```cpp
+ShellCmd(name, "comment")
+{
+    // any code
+    return Result::Success;
+}
+```
+
+コマンドプログラムには以下の変数が渡されます。
+
+- `Printable& tout` ... `Printable` インスタンス。処理結果の表示を行います
+- `int argc` ... 引数の数
+- `char** argv` ... 引数文字列。`argv[0]` はコマンド自身の名前が格納されます
+
+戻り値は、エラーがない場合 `0`、エラーが発生した場合は `1` を返してください。
+
+コマンドを登録する手順などは**必要ありません**。`ShellCmd` マクロでコマンドを作成すると、自動的にシェルに登録されます。この仕組みにより、コマンドを実装したソースファイルをメインのプログラムにリンクするだけでコマンドの追加ができるようになります。
+
+以下は、渡された引数の内容を表示するサンプルプログラムです。このコードを上記の `shell-test.cpp` 中に追加するか、独立したソースファイルに記述して `add_executable()` などにそのソースファイルを追加すると、コマンドとして利用できるようになります。
+
+```cpp
+ShellCmd(argtest, "tests command line arguments")
+{
+    for (int i = 0; i < argc; i++) {
+        tout.Printf("argv[%d] \"%s\"\n", i, argv[i]);
+    }
+    return Result::Success;
+}
+```

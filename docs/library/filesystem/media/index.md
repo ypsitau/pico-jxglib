@@ -1,0 +1,223 @@
+今回は、Pico ボードに SD カードや USB ストレージを接続してファイルシステムとして使えるようにします。フラッシュメモリをファイルシステムにする方法については以下の記事を参照してください。
+
+[pico-jxglib で Pico ボードにファイルシステムを実装してフラッシュメモリをフル活用する話](https://zenn.dev/ypsitau/articles/2025-05-31-fs-flash)
+
+## SD カードについて
+
+SD カードはスマートフォンでも使われているおなじみのストレージで、コンビニエンスストアでも手に入るほど身近な存在です。それだけに、組込みデバイスに接続するのも簡単だろうと思いがちですが、実は意外と厄介です。ここでは、SD カードの接続方法や、ソフトウェアの留意点について解説します。
+
+### SD カードの接続方法
+
+SD カードの接続方法や制御方法については以下のサイトに詳しい情報があります。
+
+▶️ [MC/SDC の使い方](https://elm-chan.org/docs/mmc/mmc.html)
+
+SD カードを接続する際には、以下の事柄に留意してください。
+
+- SD カードに供給する電源は **3.3V** です
+- SD カードの信号レベルは **3.3V** です。Pico ボードと同じなので直結できます
+- クロック以外の信号線には 10kΩ 程度の抵抗でプルアップする (信号線と VCC を抵抗でつなぐ) 必要があります
+
+SD カードのインターフェース回路はカード内部に組み込まれているので、SD カードのピンを直接 Pico ボードに接続して使用することもできます。しかし、リムーバブルメディアとしての使い勝手を考えると、カードスロットを備えた SD カードリーダモジュールを使うことになるでしょう。ここで問題になるのは、モジュールの種類と接続方法です。SD カードリーダモジュールは、基本的に SD カードスロットといくつかの抵抗やボルテージレギュレータが載っているだけのシンプルなものですが、供給電圧や信号のレベル、プルアップ抵抗の有無などが異なるので注意が必要です。
+
+以下に、手元にあった SD カードリーダモジュール (主に Amazon で入手) の電源電圧やプルアップ抵抗の有無、信号レベルについてまとめました。
+
+|外観|注釈|
+|----|----|
+|![sdcard-adapter](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/sdcard-adapter.jpg)|標準 SD カードのモジュールです。電源電圧は **5V** と **3.3V** の両方の端子が用意されていて、5V の場合はボルテージレギュレータで 3.3V に降圧して SD カードに供給されます。すべての信号線に 10kΩ のプルアップ抵抗がついているので、外部のプルアップ抵抗は**必要ありません**。信号レベルは **3.3V** なので、5V 系の場合はレベルシフトが必要です|
+|![ILI9341-back](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/ILI9341-back.jpg)|TFT LCD ILI9341 についている SD カードのスロットです。電源は TFT LCD 用のコネクタから **3.3V** を供給します。外部のプルアップ抵抗が**必要です**[^pullup]。信号レベルは **3.3V** なので、5V 系の場合はレベルシフトが必要です|
+|![u-sdcard-adapter-1](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/u-sdcard-adapter-1.jpg)|microSD カードのモジュールです。電源電圧は **5V** で、ボルテージレギュレータで 3.3V に降圧して SD カードに供給されます。外部のプルアップ抵抗は**必要ありません**。信号線にはバッファ (74HC125) が入っており、**3.3V**、**5V** の両方の信号レベルに接続できます|
+|![u-sdcard-adapter-2](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/u-sdcard-adapter-2.jpg)|microSD カードのモジュールです。電源電圧は **3.3V** です。すべての信号線に 10kΩ のプルアップ抵抗がついているので、外部のプルアップ抵抗は**必要ありません**。信号レベルは **3.3V** なので、5V 系の場合はレベルシフトが必要です|
+
+[^pullup]: 手元の SD カードで試したところ、プルアップ抵抗がなくても動作しましたが、SD カードの種類によってはプルアップ抵抗が必要な場合があります。動作しない場合は、プルアップ抵抗の有無を確認してください。
+
+### SD カードドライバについて
+
+SD カードには SPI モードと SDIO モードの二つのモードがあります。SPI モードは、SD カードを SPI インターフェースで接続するためのモードで、SDIO モードは SD カードのネイティブなインターフェースで接続するためのモードです。SDIO の方が高速で SD カードの機能をフルに活用できますが、Pico ボードで動かしている例はとても少ないです。**pico-jxglib** では実装例の豊富な SPI モードをサポートしています。
+
+SD カードはカード自体にインターフェース回路を内蔵していますが、このことは SD カードごとに微妙に異なるインターフェース仕様が存在していることを意味します。そのため、ドライバを作成しても、いろいろな SD カードで動作実績をつまないと実用的なものにはなりません。そこで **pico-jxglib** では、多くのユーザが使っているであろう [MicroPython の SD カードドライバ](https://github.com/micropython/micropython-lib/blob/master/micropython/drivers/storage/sdcard/sdcard.py)を C++ で書き換えて、それをベースにライブラリに組み込ました。これである程度の実用性が確保されているはずですが...。なにはともあれ、MicroPython さんには感謝です。
+
+## USB ストレージについて
+
+Pico ボードでは USB ホスト機能を使って USB ストレージを接続することができます。**pico-jxglib** は tinyusb ライブラリで用意されている Mass Storage Class を使ってファイルシステムに USB ストレージのハンドラを実装しています。
+
+なお、Pico ボードの USB ホスト機能を使うには、コネクタを microB タイプから A タイプに変換する OTG ケーブルが必要です。
+
+![USB-MicroB-A-Adapter](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/usb-memory.jpg)
+
+## 実際のプロジェクト
+
+### 開発環境のセットアップ
+
+Visual Studio Code や Git ツール、Pico SDK のセットアップが済んでいない方は[「Pico SDK ことはじめ」](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E9%96%8B%E7%99%BA%E7%92%B0%E5%A2%83) をご覧ください。
+
+GitHub から **pico-jxglib** をクローンします。
+
+```bash
+git clone https://github.com/ypsitau/pico-jxglib.git
+cd pico-jxglib
+git submodule update --init
+```
+
+:::message
+**pico-jxglib** はほぼ毎日更新されています。すでにクローンしている場合は、`pico-jxglib` ディレクトリで以下のコマンドを実行して最新のものにしてください。
+
+```bash
+git pull
+```
+
+:::
+
+### プロジェクトの作成
+
+VSCode のコマンドパレットから `>Raspberry Pi Pico: New Pico Project` を実行し、以下の内容でプロジェクトを作成します。Pico SDK プロジェクト作成の詳細や、ビルド、ボードへの書き込み方法については[「Pico SDK ことはじめ」](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%AE%E4%BD%9C%E6%88%90%E3%81%A8%E7%B7%A8%E9%9B%86) を参照ください。
+
+- **Name** ... プロジェクト名を入力します。今回は例として `fs-media` を入力します
+- **Board type** ... ボード種別を選択します
+- **Location** ... プロジェクトディレクトリを作る一つ上のディレクトリを選択します
+- **Stdio support** .. Stdio に接続するポート (UART または USB) を選択します。USB ストレージを使う場合は競合を防ぐため USB のチェックを外してください
+- **Code generation options** ... **`Generate C++ code` にチェックをつけます**
+
+プロジェクトディレクトリと `pico-jxglib` のディレクトリ配置が以下のようになっていると想定します。
+
+```text
+├── pico-jxglib/
+└── fs-media/
+    ├── CMakeLists.txt
+    ├── fs-media.cpp
+    └── ...
+```
+
+以下、このプロジェクトをもとに `CMakeLists.txt` やソースファイルを編集してプログラムを作成していきます。
+
+### SD カードのファイルシステムを操作
+
+SD カードの接続を監視し、接続を検知するとルートディレクトリのファイル一覧を表示するプログラムを作成します。
+
+ブレッドボードの配線イメージは以下の通りです。使用する SD カードリーダモジュールによって供給電圧を 3.3V か 5V に接続してください。また、必要があれば信号線にプルアップ抵抗 (10kΩ) を接続してください。
+
+![circuit-sdcard](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/circuit-sdcard.png)
+
+`CMakeLists.txt` の最後に以下の行を追加します。
+
+```cmake
+target_link_libraries(fs-media jxglib_FAT_SDCard)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+jxglib_configure_FAT(fs-media FF_VOLUMES 1)
+```
+
+ソースファイルを以下のように編集します。
+
+```cpp title="fs-media.cpp"
+#include "pico/stdlib.h"
+#include "jxglib/FAT/SDCard.h"
+
+using namespace jxglib;
+
+int main()
+{
+    ::stdio_init_all();
+    GPIO2.set_function_SPI0_SCK();
+    GPIO3.set_function_SPI0_TX();
+    GPIO4.set_function_SPI0_RX();
+    FAT::SDCard drive("Drive:", spi0, 10'000'000, {CS: GPIO5});
+    bool connectedFlag = false;
+    for (;;) {
+        if (connectedFlag) {
+            if (!drive.CheckMounted()) {
+                ::printf("SD Card disconnected.\n");
+                connectedFlag = false;
+            }
+        } else if (drive.Mount()) {
+            ::printf("SD Card connected.\n");
+            connectedFlag = true;
+            FS::Dir* pDir = FS::OpenDir("Drive:/");
+            if (pDir) {
+                FS::FileInfo* pFileInfo;
+                while (pFileInfo = pDir->Read()) {
+                    ::printf("%-16s%d\n", pFileInfo->GetName(), pFileInfo->GetSize());
+                    delete pFileInfo;
+                }
+                pDir->Close();
+                delete pDir;
+            }
+        }
+        Tickable::Tick();
+    }
+}
+```
+
+`FAT::SDCard` インスタンスを生成すると、SD カードを FAT ファイルシステムとして扱えるようになります。コンストラクタの詳細は以下の通りです:
+
+- `FAT::SDCard(const char* driveName, spi_inst_t* spi, uint baudrate, const jxglib::SDCard::PinAssign& pinAssign)`
+  `drivename`: パス名に使用するドライブ名で、アルファベットや数字を含む任意の文字列を指定できます
+  `spi`: SPI インターフェースのポインタで、`spi0` または `spi1` を指定します
+  `baudrate`: SPI のクロック周波数を指定します
+  `pinAssign`: CS (Chip Select) に使う GPIO ピンを指定します
+
+ファイルシステム API の詳細については[「pico-jxglib で Pico ボードにファイルシステムを実装してフラッシュメモリをフル活用する話」](https://zenn.dev/ypsitau/articles/2025-05-31-fs-flash#%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%B7%E3%82%B9%E3%83%86%E3%83%A0-api)を参照してください。
+
+
+### USB ストレージのファイルシステムを操作
+
+USB ストレージの接続を監視し、接続を検知するとルートディレクトリのファイル一覧を表示するプログラムを作成します。
+
+ブレッドボードの配線イメージは以下の通りです。Pico ボードの USB ポートに microB タイプから A タイプに変換する OTG ケーブルを使って USB ストレージを接続します。Pico ボードの電源が 40 番ピン (VBUS) に供給されていることに注意してください。
+
+![circuit-sdcard](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/circuit-usb.png)
+
+`CMakeLists.txt` の最後に以下の行を追加します。また、Stdio の USB 接続が無効 (`pico_enable_stdio_usb(fs-media 0)`) になっていることを確認してください。
+
+```cmake
+target_link_libraries(fs-media jxglib_FAT_USBMSC)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+jxglib_configure_FAT(fs-media FF_VOLUMES 1)
+jxglib_configure_USBHost(fs-media CFG_TUH_MSC 1)
+```
+
+ソースファイルを以下のように編集します。
+
+```cpp title="fs-media.cpp"
+#include "pico/stdlib.h"
+#include "jxglib/FAT/USBMSC.h"
+
+using namespace jxglib;
+
+int main()
+{
+    ::stdio_init_all();
+    USBHost::Initialize();
+    FAT::USBMSC drive("Drive:");
+    bool connectedFlag = false;
+    for (;;) {
+        if (connectedFlag) {
+            if (!drive.CheckMounted()) {
+                ::printf("USB storage disconnected.\n");
+                connectedFlag = false;
+            }
+        } else if (drive.Mount()) {
+            ::printf("USB storage connected.\n");
+            connectedFlag = true;
+            FS::Dir* pDir = FS::OpenDir("Drive:/");
+            if (pDir) {
+                FS::FileInfo* pFileInfo;
+                while (pFileInfo = pDir->Read()) {
+                    ::printf("%-16s%d\n", pFileInfo->GetName(), pFileInfo->GetSize());
+                    delete pFileInfo;
+                }
+                pDir->Close();
+                delete pDir;
+            }
+        }
+        Tickable::Tick();
+    }
+}
+```
+
+`FAT::USBMSC` インスタンスを生成すると、USB ストレージ を FAT ファイルシステムとして扱えるようになります。コンストラクタの詳細は以下の通りです:
+
+- `FAT::USBMSC(const char* driveName, uint8_t orderHint = UINT8_MAX)`
+  `drivename`: パス名に使用するドライブ名で、アルファベットや数字を含む任意の文字列を指定できます
+  `orderHint`: インスタンスの順序を指定します。複数の USB ストレージを接続する場合に、順序を指定することで、同じ順序でファイルシステムを扱うことができます
+
+ファイルシステム API の詳細については[「pico-jxglib で Pico ボードにファイルシステムを実装してフラッシュメモリをフル活用する話」](https://zenn.dev/ypsitau/articles/2025-05-31-fs-flash#%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%B7%E3%82%B9%E3%83%86%E3%83%A0-api)を参照してください。
