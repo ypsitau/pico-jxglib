@@ -51,7 +51,7 @@ pico-jxglib is implemented in C++, but it also provides C APIs for those who pre
 
 Just adding the highlighted lines makes your firmware interactive through USB's serial connection, providing a bash-like interface to execute many powerful built-in commands for various purposes. Of course, you can also add your own custom commands to the shell. It's that simple!
 
-## Ready-to-Flash UF2 Binary
+## pico-jxgLABO - Ready-to-Flash UF2 Binary
 
 If you want to try it out without setting up the development environment, you can download the ready-to-flash UF2 binary files.
 
