@@ -78,7 +78,7 @@ The `jxglib_configure_USBHost()` function generates the `tusb_config.h` header f
 
 Below is an example using `Keyboard::IsPressed()`. The LED lights up when the specified key is pressed.
 
-```cpp:usbhosttest.cpp
+```cpp title="usbhosttest.cpp"
 #include "pico/stdlib.h"
 #include "jxglib/USBHost/HID.h"
 
@@ -106,7 +106,7 @@ The `Tickable::Sleep()` function is specified in milliseconds. This function run
 
 Below is an example using `Keyboard::GetKeyCodeNB()`. The LED blinks in response to the repeated key presses.
 
-```cpp:usbhosttest.cpp
+```cpp title="usbhosttest.cpp"
 #include "pico/stdlib.h"
 #include "jxglib/USBHost/HID.h"
 
@@ -154,7 +154,7 @@ jxglib_configure_USBHost(usbhosttest CFG_TUH_HID 3)
 
 The mouse data example shows that the LED lights up when you move the mouse left or right, or when you click the left or right mouse button.
 
-```cpp:usbhosttest.cpp
+```cpp title="usbhosttest.cpp"
 #include "pico/stdlib.h"
 #include "jxglib/USBHost/HID.h"
 
@@ -202,7 +202,7 @@ jxglib_configure_LVGL(usbhosttest LV_FONT_MONTSERRAT_14)
 
 The source code is as follows:
 
-```cpp:usbhosttest.cpp
+```cpp title="usbhosttest.cpp"
 #include <lvgl/examples/lv_examples.h>
 #include "pico/stdlib.h"
 #include "jxglib/USBHost/HID.h"
