@@ -1,5 +1,4 @@
-
-# Raspberry Pi Pico and Pico SDK
+# Getting Started with Pico SDK
 
 The single-board microcontroller Raspberry Pi Pico and its development environment, Pico SDK, are truly amazing. I enjoy working with them every day, but compared to other libraries and platforms, there is less information available for Pico SDK, making it a bit challenging to learn how to use it.
 

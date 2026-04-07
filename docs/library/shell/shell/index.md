@@ -1,33 +1,36 @@
-今回は、以前に上げた記事[「pico-jxglib とコマンドライン編集機能の話」](https://zenn.dev/ypsitau/articles/2025-04-06-cmdline-editor)で紹介した Terminal のコマンド入力機能を使って、Pico ボードにシェル機能を実装します。
 
-## シェル機能について
+In this article, we will implement a shell function on the Pico board using the Terminal command input feature introduced in the previous article, ["pico-jxglib and Command Line Editing Features"](https://zenn.dev/ypsitau/articles/2025-04-06-cmdline-editor).
 
-組込みボードの開発では、プログラムコード編集・ボード書き込み・実行というサイクルを続けるので、プログラムの挙動を変えたい場合はコードを直接変更するのが一番てっとり早い方法です。でも、変更するパラメータなどが多くなったり、結果を見て少しずつ挙動を変更したい場合などは、この手順が煩わしくなってきます。そういった場合、ボード自身がコマンドを受け付けられるようなシェルが走っていると、試行錯誤や実験がスムースになります。特に、FatFS や LittleFS などを使ってファイルシステムを扱うようなアプリを作ると、ディレクトリの内容を確認したりするのにシェルは重宝しそうです。
 
-**pico-jxglib** のシェル機能は以下の特徴を持ちます。
+## About the Shell Function
 
-- **多様な入出力デバイスに対応**  
-  UART/USB のシリアルターミナル、TFT LCD や OLED ディスプレイ、USB キーボードなど、さまざまな入出力手段と連携できる柔軟な UI 構成が可能です
+In embedded board development, you often repeat the cycle of editing program code, writing to the board, and running it. The quickest way to change program behavior is to modify the code directly. However, if you have many parameters to change or want to tweak behavior step by step while observing results, this process can become cumbersome. In such cases, having a shell running on the board that can accept commands makes experimentation and testing much smoother. Especially when creating apps that use file systems like FatFS or LittleFS, a shell is very useful for checking directory contents and more.
 
-- **既存プロジェクトに簡単に組み込める**  
-  バックグラウンドで動作します。コマンド待ち受け時はほとんど負荷がかからないので、既存コードと干渉しない形で統合が可能です
+The **pico-jxglib** shell function has the following features:
 
-- **コマンド作成や組込みが容易**
-  コマンドを容易に作成することができます。また、コマンドを実装したソースやライブラリをリンクするだけでシェルから実行できるようになるので、組込みや取り外しが楽に行えます
+- **Supports various input/output devices**  
+    Flexible UI configuration is possible, working with UART/USB serial terminals, TFT LCD or OLED displays, USB keyboards, and more.
 
-## 実際のプロジェクト
+- **Easily integrated into existing projects**  
+    Runs in the background. When waiting for commands, it consumes almost no resources, so it can be integrated without interfering with existing code.
 
-### プロジェクトの作成
+- **Easy to create and embed commands**
+    You can easily create commands. By simply linking the source or library that implements the command, it becomes available from the shell, making embedding and removal easy.
 
-VSCode のコマンドパレットから `>Raspberry Pi Pico: New Pico Project` を実行し、以下の内容でプロジェクトを作成します。Pico SDK プロジェクト作成の詳細や、ビルド、ボードへの書き込み方法については[「Pico SDK ことはじめ」](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%AE%E4%BD%9C%E6%88%90%E3%81%A8%E7%B7%A8%E9%9B%86) を参照ください。
 
-- **Name** ... プロジェクト名を入力します。今回は例として `shell-test` を入力します
-- **Board type** ... ボード種別を選択します
-- **Location** ... プロジェクトディレクトリを作る一つ上のディレクトリを選択します
-- **Stdio support** .. ターミナルにシリアルコンソールを使う場合、Stdio に接続するポート (UART または USB) を選択します。ターミナルに USB キーボードを使う場合は USB のチェックを外してください。
-- **Code generation options** ... **`Generate C++ code` にチェックをつけます**
+## Example Project
 
-プロジェクトディレクトリと `pico-jxglib` のディレクトリ配置が以下のようになっていると想定します。
+### Creating the Project
+
+From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings. For details on creating a Pico SDK project, building, and writing to the board, see ["Getting Started with Pico SDK"](../../../development/pico-sdk).
+
+- **Name** ... Enter the project name. In this example, enter `shell-test`.
+- **Board type** ... Select the board type.
+- **Location** ... Select the parent directory where the project directory will be created.
+- **Stdio support** ... If using a serial console for the terminal, select the port (UART or USB) to connect Stdio. If using a USB keyboard for the terminal, uncheck USB.
+- **Code generation options** ... **Check `Generate C++ code`**
+
+Assume the project directory and `pico-jxglib` are arranged as follows:
 
 ```text
 ├── pico-jxglib/
@@ -38,30 +41,34 @@ VSCode のコマンドパレットから `>Raspberry Pi Pico: New Pico Project` 
 ```
 
 
-以下、このプロジェクトをもとに `CMakeLists.txt` やソースファイルを編集してプログラムを作成していきます。
+From here, edit `CMakeLists.txt` and the source file based on this project to create your program.
 
-### シェルの組込み
 
-プログラム中にシェルを組み込むには、以下のコードを記述します。
+### Embedding the Shell
 
-1. シェルで使用する `Terminal` インスタンス (`Serial::Terminal` または `Display::Terminal`) を生成して初期化
-1. 関数 `Shell::AttachTerminal()` で `Terminal` インスタンスをシェルに接続
-1. メインループ中で `Tickable::Tick()` または `Tickable::Sleep()` を実行
+To embed the shell in your program, write the following code:
 
-`Terminal` インスタンスの生成方法は、ターミナルに何を使うかによって異なります。以下に具体例を紹介します。
+1. Create and initialize a `Terminal` instance (`Serial::Terminal` or `Display::Terminal`) to use with the shell
+1. Connect the `Terminal` instance to the shell with the `Shell::AttachTerminal()` function
+1. In the main loop, call `Tickable::Tick()` or `Tickable::Sleep()`
 
-#### ターミナルにシリアルコンソールを使う
+How you create the `Terminal` instance depends on what you use for the terminal. Here are some examples:
 
-Stdio が UART または USB で PC につながっている環境で使用できます。記述するコード量が少ないので、手軽にシェルを組み込むことができます。
 
-`CMakeLists.txt` の最後に以下の行を追加します。
+#### Using a Serial Console as the Terminal
+
+This can be used in environments where Stdio is connected to a PC via UART or USB. Since the amount of code to write is small, you can easily embed the shell.
+
+Add the following line to the end of `CMakeLists.txt`:
+
 
 ```cmake
 target_link_libraries(shell-test jxglib_Serial jxglib_Shell jxglib_ShellCmd_Basic)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 ```
 
-ソースファイルを以下のように編集します。
+Edit the source file as follows:
+
 
 ```cpp title="shell-test.cpp"
 #include <stdio.h>
@@ -86,15 +93,17 @@ int main()
 }
 ```
 
-#### ターミナルに TFT LCD ST7789 と USB キーボードを使う
 
-Pico ボードに TFT LCD ST7789 と USB キーボードを接続した環境で使用できます。TFT LCD の初期化や SPI の設定が必要な分、記述するコード量が多くなりますが、Pico ボード単体で動作することができます。
+#### Using TFT LCD ST7789 and USB Keyboard as the Terminal
 
-ブレッドボードの配線イメージは以下の通りです。
+This can be used in environments where a TFT LCD ST7789 and USB keyboard are connected to the Pico board. Since you need to initialize the TFT LCD and set up SPI, there is more code to write, but it can run standalone on the Pico board.
+
+The breadboard wiring image is as follows:
 
 ![circuit-usbhost-st7789.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-05-08-shell/circuit-usbhost-st7789.png)
 
-`CMakeLists.txt` の最後に以下の行を追加します。また、Stdio の USB 接続が無効になっていること (`pico_enable_stdio_usb(shell-test 0)`) を確認してください。
+Add the following line to the end of `CMakeLists.txt`. Also, make sure USB connection for Stdio is disabled (`pico_enable_stdio_usb(shell-test 0)`).
+
 
 ```cmake
 target_link_libraries(shell-test jxglib_USBHost jxglib_Display_ST7789 jxglib_Shell jxglib_ShellCmd_Basic)
@@ -102,7 +111,7 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 jxglib_configure_USBHost(shell-test CFG_TUH_HID 3)
 ```
 
-ソースファイルを以下のように編集します。
+Edit the source file as follows:
 
 ```cpp title="shell-test.cpp"
 #include <stdio.h>
@@ -137,15 +146,16 @@ int main()
 }
 ```
 
-#### ターミナルに OLED SSD1306 と USB キーボードを使う
 
-Pico ボードに OLED SSD1306 と USB キーボードを接続した環境で使用できます。OLED の初期化や I2C の設定が必要な分、記述するコード量が多くなりますが、Pico ボード単体で動作することができます。
+#### Using OLED SSD1306 and USB Keyboard as the Terminal
 
-ブレッドボードの配線イメージは以下の通りです。
+This can be used in environments where an OLED SSD1306 and USB keyboard are connected to the Pico board. Since you need to initialize the OLED and set up I2C, there is more code to write, but it can run standalone on the Pico board.
+
+The breadboard wiring image is as follows:
 
 ![circuit-usbhost-ssd1306.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-05-08-shell/circuit-usbhost-ssd1306.png)
 
-`CMakeLists.txt` の最後に以下の行を追加します。また、Stdio の USB 接続が無効になっていること (`pico_enable_stdio_usb(shell-test 0)`) を確認してください
+Add the following line to the end of `CMakeLists.txt`. Also, make sure USB connection for Stdio is disabled (`pico_enable_stdio_usb(shell-test 0)`).
 
 ```cmake
 target_link_libraries(shell-test jxglib_USBHost jxglib_Display_SSD1306 jxglib_Shell jxglib_ShellCmd_Basic)
@@ -162,53 +172,30 @@ jxglib_configure_USBHost(shell-test CFG_TUH_HID 3)
 #include "jxglib/USBHost/HID.h"
 #include "jxglib/Shell.h"
 #include "jxglib/Font/shinonome12.h"
-
-using namespace jxglib;
-
-int main()
-{
-    ::stdio_init_all();
-    //-------------------------------------------------------------------------
-    Display::Terminal terminal;
-    USBHost::Initialize();
-    USBHost::Keyboard keyboard;
-    ::i2c_init(i2c0, 400 * 1000);
-    GPIO4.set_function_I2C0_SDA().pull_up();
     GPIO5.set_function_I2C0_SCL().pull_up();
-    Display::SSD1306 display(i2c0, 0x3c);
-    terminal.Initialize().AttachDisplay(display.Initialize())
         .AttachKeyboard(keyboard.SetCapsLockAsCtrl()).SetFont(Font::shinonome12);
-    Shell::AttachTerminal(terminal);
-    terminal.Println("Shell on SSD1306");
-    //-------------------------------------------------------------------------
-    for (;;) {
-        // any jobs
-        Tickable::Tick();
-    }
-}
-```
 
-### シェルコマンドの実行
+### Running Shell Commands
 
-ライブラリ `jxglib_ShellCmd_Basic` をリンクすると、基本的なシェルコマンドが使えるようになります。
+By linking the `jxglib_ShellCmd_Basic` library, you can use basic shell commands.
 
-#### `help` コマンド
+#### `help` command
 
-利用可能なコマンドの一覧を表示します。
+Displays a list of available commands.
 
 ```text
 >help
 about-me        prints information about this own program
 about-platform  prints information about the platform
-d               prints memory content at the specified address
+
 help            prints help strings for available commands
 prompt          changes the command line prompt
-ticks           prints names and attributes of running Tickable instances
+第一引数は先頭アドレス、第二引数は表示バイト数です。16 進数を指定するときは先頭に `0x` をつけます。
 ```
 
-#### `about-me` コマンド
+#### `about-me` command
 
-現在実行しているプログラムの情報 (`bi_decl()` マクロでバイナリに埋め込んだビルド情報・ピンレイアウト情報や、メモリマップ) を表示します。picotool の出力フォーマットに似せています。
+Displays information about the currently running program (build info, pin layout info embedded with the `bi_decl()` macro, and memory map). The output format is similar to picotool.
 
 ```text
 >about-me
@@ -239,9 +226,9 @@ Memory Map
  stack:             0x20040000-0x20042000    8192
 ```
 
-#### `about-platform` コマンド
+#### `about-platform` command
 
-Pico ボードのプラットフォーム情報を表示します。
+Displays platform information for the Pico board.
 
 ```text
 >about-platform
@@ -250,9 +237,9 @@ Flash  0x10000000-0x10400000 4194304
 SRAM   0x20000000-0x20082000  532480
 ```
 
-#### `d` コマンド
+#### `d` command
 
-メモリやファイルのダンプイメージを出力します。引数なしで実行するとアドレス 0x00000000 からのメモリ内容を表示します。
+Outputs a dump image of memory or files. If run with no arguments, it displays memory contents from address 0x00000000.
 
 ```text
 >d
@@ -262,7 +249,7 @@ SRAM   0x20000000-0x20082000  532480
 00000030  30 BF FD E7 F4 46 00 F0 05 F8 A7 48 00 21 01 60
 ```
 
-続けて引数なしで実行すると前回の続きのメモリ内容を表示します。
+If you run it again with no arguments, it displays the next block of memory.
 
 ```text
 >d
@@ -272,7 +259,31 @@ SRAM   0x20000000-0x20082000  532480
 00000070  61 64 69 6E 67 20 4C 74 64 00 50 33 09 03 52 33
 ```
 
-第一引数は先頭アドレス、第二引数は表示バイト数です。16 進数を指定するときは先頭に `0x` をつけます。
+The first argument is the start address, and the second argument is the number of bytes to display. To specify a hexadecimal value, prefix it with `0x`.
+
+```text
+>d 0x10000000
+10000000  00 B5 32 4B 21 20 58 60 98 68 02 21 88 43 98 60
+10000010  D8 60 18 61 58 61 2E 4B 00 21 99 60 02 21 59 61
+10000020  01 21 F0 22 99 50 2B 49 19 60 01 21 99 60 35 20
+10000030  00 F0 44 F8 02 22 90 42 14 D0 06 21 19 66 00 F0
+```
+
+```text
+>d 0x10000000 128
+10000000  00 B5 32 4B 21 20 58 60 98 68 02 21 88 43 98 60
+10000010  D8 60 18 61 58 61 2E 4B 00 21 99 60 02 21 59 61
+10000020  01 21 F0 22 99 50 2B 49 19 60 01 21 99 60 35 20
+10000030  00 F0 44 F8 02 22 90 42 14 D0 06 21 19 66 00 F0
+10000040  34 F8 19 6E 01 21 19 66 00 20 18 66 1A 66 00 F0
+10000050  2C F8 19 6E 19 6E 19 6E 05 20 00 F0 2F F8 01 21
+10000060  08 42 F9 D1 00 21 99 60 1B 49 19 60 00 21 59 60
+10000070  1A 49 1B 48 01 60 01 21 99 60 EB 21 19 66 A0 21
+```
+
+If you specify a string other than a number as an argument, it is interpreted as a file name and the file contents are dumped. This feature is enabled when a file system is mounted.
+
+### Creating Shell Commands
 
 ```text
 >d 0x10000000
@@ -298,7 +309,8 @@ SRAM   0x20000000-0x20082000  532480
 
 ### シェルコマンドの作成
 
-シェルコマンドを作成するには `ShellCmd` マクロを使います。マクロのフォーマットは以下の通りです。
+
+To create a shell command, use the `ShellCmd` macro. The macro format is as follows:
 
 ```cpp
 ShellCmd(name, "comment")
@@ -308,17 +320,17 @@ ShellCmd(name, "comment")
 }
 ```
 
-コマンドプログラムには以下の変数が渡されます。
+The following variables are passed to the command program:
 
-- `Printable& tout` ... `Printable` インスタンス。処理結果の表示を行います
-- `int argc` ... 引数の数
-- `char** argv` ... 引数文字列。`argv[0]` はコマンド自身の名前が格納されます
+- `Printable& tout` ... `Printable` instance. Used to display results
+- `int argc` ... Number of arguments
+- `char** argv` ... Argument strings. `argv[0]` contains the command name itself
 
-戻り値は、エラーがない場合 `0`、エラーが発生した場合は `1` を返してください。
+Return `0` if there is no error, or `1` if an error occurs.
 
-コマンドを登録する手順などは**必要ありません**。`ShellCmd` マクロでコマンドを作成すると、自動的にシェルに登録されます。この仕組みにより、コマンドを実装したソースファイルをメインのプログラムにリンクするだけでコマンドの追加ができるようになります。
+You do **not** need to register commands. When you create a command with the `ShellCmd` macro, it is automatically registered with the shell. With this mechanism, you can add commands simply by linking the source file that implements the command to the main program.
 
-以下は、渡された引数の内容を表示するサンプルプログラムです。このコードを上記の `shell-test.cpp` 中に追加するか、独立したソースファイルに記述して `add_executable()` などにそのソースファイルを追加すると、コマンドとして利用できるようになります。
+Below is a sample program that displays the contents of the arguments passed. If you add this code to `shell-test.cpp` above, or write it in a separate source file and add that file to `add_executable()`, you can use it as a command.
 
 ```cpp
 ShellCmd(argtest, "tests command line arguments")

@@ -1,96 +1,102 @@
-[「pico-jxglib で Pico ボードに USB キーボード・マウスを接続する話」](https://zenn.dev/ypsitau/articles/2025-04-02-usbhost-keyboard-mouse) で、Pico ボードに USB キーボードをつなげました。今回はそれを使って Linux の bash シェルなどで使われている readline に似たコマンドライン編集機能を Pico ボードで実現する話です。
 
-USB キーボードのほかに、タクトスイッチやキーボードマトリクスも入力デバイスとして使えますし、PC とのシリアル通信上でもコマンドライン編集が可能になります。
+In the article ["Connecting USB Keyboard and Mouse to Pico Board with pico-jxglib"](https://zenn.dev/ypsitau/articles/2025-04-02-usbhost-keyboard-mouse), we connected a USB keyboard to the Pico board. This time, we'll use that to implement a command line editing feature on the Pico board, similar to readline used in Linux bash shells.
 
-キーボードでの編集入力ができると、Pico ボードがいよいよ独立したマイコンになった気がしますね。「マイコンのモニタプログラム」と聞いて思わずときめいてしまう人には、ぜひ試してもらいたいです。
+In addition to USB keyboards, you can also use tact switches and keyboard matrices as input devices, and command line editing is possible over serial communication with a PC.
 
-## コマンドライン編集機能について
+Once you can edit input with a keyboard, the Pico board really feels like a standalone microcontroller. If the phrase "microcomputer monitor program" makes your heart skip a beat, you should definitely give this a try!
 
-**pico-jxglib** のコマンドライン編集機能は以下のキー操作を受け付けます。
 
-| Ctrl キー  |単独キー|機能                                      |
-|:----------:|:------:|:---------------------------------------|
-|`Ctrl` + `P`|`Up`    |一つ前のヒストリを表示します               |
-|`Ctrl` + `N`|`Down`  |一つ後のヒストリを表示します               |
-|`Ctrl` + `B`|`Left`  |カーソルを一文字左に移動します             |
-|`Ctrl` + `F`|`Right` |カーソルを一文字右に移動します             |
-|`Ctrl` + `A`|`Home`  |カーソルを行の先頭に移動します             |
-|`Ctrl` + `E`|`End`   |カーソルを行の最後に移動します             |
-|`Ctrl` + `D`|`Delete`|カーソル位置の文字を消去します             |
-|`Ctrl` + `H`|`Back`  |カーソル位置の一つ前の文字を消去します      |
-|`Ctrl` + `J`|`Return`|入力内容を確定します                      |
-|`Ctrl` + `K`|        |カーソル位置から末尾までを消去します        |
-|`Ctrl` + `U`|        |カーソル位置の一つ前から行頭までを消去します |
+## About the Command Line Editing Feature
 
-Pico ボードに接続したディスプレイを使う場合はさらに以下のキー操作を受け付けます。
+The command line editing feature of **pico-jxglib** supports the following key operations:
 
-| Ctrl キー  |単独キー   |機能                                                                    |
-|:----------:|:--------:|:----------------------------------------------------------------------|
-|            |`PageUp`  |ロールバック画面を一行上に移動します。`Shift` を押すとページ単位で移動します |
-|            |`PageDown`|ロールバック画面を一行下に移動します。`Shift` を押すとページ単位で移動します |
+| Ctrl Key      | Single Key | Function                                              |
+|:-------------:|:----------:|:-----------------------------------------------------|
+|`Ctrl` + `P`   |`Up`        | Show previous history entry                           |
+|`Ctrl` + `N`   |`Down`      | Show next history entry                              |
+|`Ctrl` + `B`   |`Left`      | Move cursor one character left                       |
+|`Ctrl` + `F`   |`Right`     | Move cursor one character right                      |
+|`Ctrl` + `A`   |`Home`      | Move cursor to the beginning of the line             |
+|`Ctrl` + `E`   |`End`       | Move cursor to the end of the line                   |
+|`Ctrl` + `D`   |`Delete`    | Delete the character at the cursor                   |
+|`Ctrl` + `H`   |`Back`      | Delete the character before the cursor               |
+|`Ctrl` + `J`   |`Return`    | Confirm the input                                    |
+|`Ctrl` + `K`   |            | Delete from cursor to end of line                    |
+|`Ctrl` + `U`   |            | Delete from before cursor to beginning of line       |
 
-## 二つの Terminal
+When using a display connected to the Pico board, the following key operations are also supported:
 
-コマンドライン編集機能は、以下の二つの Terminal で利用できます。
+| Ctrl Key      | Single Key   | Function                                                                 |
+|:-------------:|:------------:|:-------------------------------------------------------------------------|
+|               |`PageUp`      | Scroll rollback screen up by one line. Hold `Shift` for page scroll      |
+|               |`PageDown`    | Scroll rollback screen down by one line. Hold `Shift` for page scroll    |
 
-- `Display::Terminal` ... Pico ボードに接続したディスプレイを使ってコマンドライン入力をします。Pico 単独でコマンド編集ができます
-- `Serial::Terminal` .. シリアル通信を使ってコマンドライン入力をします。Pico に接続したホスト PC のターミナルソフト上でコマンド編集をします
 
-`Display::Terminal` は `ST7789` などのディスプレイデバイスを出力先に指定し、入力機器として `USBHost::Keyboard` (USB キーボード)、`Stdio::Keyboard` (Stdio を経由したホストからのキーボード入力)、`GPIO::Keyboard` (GPIO に接続されたスイッチ入力)、`GPIO::KeyboardMatrix` (GPIO にマトリクス接続されたスイッチ入力) を設定します。
+## Two Types of Terminal
 
-```mermaid
-graph TD
-  subgraph Keyboard
-    K1(USBHost::Keyboard)
-    K2(Stdio::Keyboard)
-    K3(GPIO::Keyboard)
-    K4(GPIO::KeyboardMatrix)
-  end
-  subgraph Display
-    D1(ST7789)
-    D2(ST7735)
-    D3(ILI9341)
-    D4(ILI9488)
-    D5(SSD1306)
-  end
-  Keyboard--"AttachKeyboard()"-->T(Display::Terminal)--"AttachDisplay()"-->Display
-```
+The command line editing feature can be used with the following two types of Terminal:
 
-`Serial::Terminal` は Stdio を出力先に指定します[^serial-output]。入力機器として `USBHost::Keyboard`、`Stdio::Keyboard`、`GPIO::Keyboard`、`GPIO::KeyboardMatrix` を設定します。
+- `Display::Terminal` ... Use a display connected to the Pico board for command line input. You can edit commands standalone on the Pico.
+- `Serial::Terminal` ... Use serial communication for command line input. You edit commands on a terminal software running on a host PC connected to the Pico.
 
-[^serial-output]: 将来ソケットインターフェースが追加される予定です
+For `Display::Terminal`, specify a display device such as `ST7789` as the output, and set the input device as one of `USBHost::Keyboard` (USB keyboard), `Stdio::Keyboard` (keyboard input from host via Stdio), `GPIO::Keyboard` (switch input connected to GPIO), or `GPIO::KeyboardMatrix` (matrix switch input connected to GPIO).
 
 ```mermaid
 graph TD
-  subgraph Keyboard
-    K1(USBHost::Keyboard)
-    K2(Stdio::Keyboard)
-    K3(GPIO::Keyboard)
-    K4(GPIO::KeyboardMatrix)
-  end
-  subgraph Printable
-    P1(Stdio)
-  end
-  Keyboard--"AttachKeyboard()"-->T(Serial::Terminal)--"AttachPrintable()"-->Printable
+    subgraph Keyboard
+        K1(USBHost::Keyboard)
+        K2(Stdio::Keyboard)
+        K3(GPIO::Keyboard)
+        K4(GPIO::KeyboardMatrix)
+    end
+    subgraph Display
+        D1(ST7789)
+        D2(ST7735)
+        D3(ILI9341)
+        D4(ILI9488)
+        D5(SSD1306)
+    end
+    Keyboard--"AttachKeyboard()"-->T(Display::Terminal)--"AttachDisplay()"-->Display
 ```
 
-## 実際のプロジェクト
+For `Serial::Terminal`, specify Stdio as the output[^serial-output]. Set the input device as one of `USBHost::Keyboard`, `Stdio::Keyboard`, `GPIO::Keyboard`, or `GPIO::KeyboardMatrix`.
 
-### Display::Terminal を使う
 
-Pico ボードにキーボードとディスプレイをつなげて、Pico ボード単体でコマンド入力ができます。いろいろな組み合わせが可能なので、いくつか具体例を紹介します。
+[^serial-output]: A socket interface is planned to be added in the future.
 
-#### Display::Terminal 用プロジェクトの作成
 
-VSCode のコマンドパレットから `>Raspberry Pi Pico: New Pico Project` を実行し、以下の内容でプロジェクトを作成します。Pico SDK プロジェクト作成の詳細や、ビルド、ボードへの書き込み方法については[「Pico SDK ことはじめ」](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%AE%E4%BD%9C%E6%88%90%E3%81%A8%E7%B7%A8%E9%9B%86) を参照ください。
+```mermaid
+graph TD
+    subgraph Keyboard
+        K1(USBHost::Keyboard)
+        K2(Stdio::Keyboard)
+        K3(GPIO::Keyboard)
+        K4(GPIO::KeyboardMatrix)
+    end
+    subgraph Printable
+        P1(Stdio)
+    end
+    Keyboard--"AttachKeyboard()"-->T(Serial::Terminal)--"AttachPrintable()"-->Printable
+```
 
-- **Name** ... プロジェクト名を入力します。今回は例として `cmdedit-display-test` を入力します
-- **Board type** ... ボード種別を選択します
-- **Location** ... プロジェクトディレクトリを作る一つ上のディレクトリを選択します
-- **Stdio support** .. Stdio に接続するポート (UART または USB) を選択しますが、USB はこのプログラムで使うので選択できません。UART のみ選択するか、どちらも未チェックのままにしておきます
-- **Code generation options** ... **`Generate C++ code` にチェックをつけます**
 
-プロジェクトディレクトリと `pico-jxglib` のディレクトリ配置が以下のようになっていると想定します。
+## Example Project
+
+### Using Display::Terminal
+
+Connect a keyboard and display to the Pico board to enable standalone command input. Many combinations are possible, so here are some examples.
+
+#### Creating a Project for Display::Terminal
+
+From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings. For details on creating a Pico SDK project, building, and writing to the board, see ["Getting Started with Pico SDK"](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%AE%E4%BD%9C%E6%88%90%E3%81%A8%E7%B7%A8%E9%9B%86).
+
+- **Name** ... Enter the project name. In this example, enter `cmdedit-display-test`.
+- **Board type** ... Select the board type.
+- **Location** ... Select the parent directory where the project directory will be created.
+- **Stdio support** ... Select the port (UART or USB) to connect Stdio, but USB cannot be selected for this program. Select only UART or leave both unchecked.
+- **Code generation options** ... **Check `Generate C++ code`**
+
+Assume the project directory and `pico-jxglib` are arranged as follows:
 
 ```text
 ├── pico-jxglib/
@@ -100,17 +106,18 @@ VSCode のコマンドパレットから `>Raspberry Pi Pico: New Pico Project` 
     └── ...
 ```
 
-以下、このプロジェクトをもとに `CMakeLists.txt` やソースファイルを編集してプログラムを作成していきます。
+From here, edit `CMakeLists.txt` and the source file based on this project to create your program.
 
-#### USB キーボード + TFT LCD (ST7789)
 
-USB キーボードは USB 端子に microB-TypeA 変換アダプタを使って接続します (詳細は[こちら](https://zenn.dev/ypsitau/articles/2025-04-02-usbhost-keyboard-mouse))。TFT LCD は ST7789 を使用しますが、他のディスプレイデバイスを接続する場合は[「pico-jxblib と TFT LCD の話」](https://zenn.dev/ypsitau/articles/2025-01-27-tft-lcd) を参照してください。
+#### USB Keyboard + TFT LCD (ST7789)
 
-ブレッドボードの配線イメージを以下に示します。5V の電源をPico ボードの VBUS (40 番ピン) につなげていることに注意してください。
+Connect the USB keyboard using a microB-TypeA adapter to the USB port (see [here](https://zenn.dev/ypsitau/articles/2025-04-02-usbhost-keyboard-mouse) for details). The TFT LCD used is ST7789, but for other display devices, see ["pico-jxglib and TFT LCD"](https://zenn.dev/ypsitau/articles/2025-01-27-tft-lcd).
+
+The breadboard wiring image is shown below. Note that the 5V power is connected to the Pico board's VBUS (pin 40).
 
 ![circuit-usbhost-st7789.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-04-06-cmdline-editor/circuit-usbhost-st7789.png)
 
-`CMakeLists.txt` の最後に以下の行を追加してください。
+Add the following lines to the end of `CMakeLists.txt`:
 
 ```cmake title="CMakeLists.txt"
 target_link_libraries(cmdedit-display-test jxglib_USBHost jxglib_Display_ST7789)
@@ -118,7 +125,8 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 jxglib_configure_USBHost(cmdedit-display-test CFG_TUH_HID 3)
 ```
 
-ソースファイルを以下のように編集します。
+
+Edit the source file as follows:
 
 ```cpp title="cmdedit-display-test.cpp"
 #include <stdio.h>
@@ -144,27 +152,28 @@ int main()
     terminal.SetFont(Font::shinonome16).AttachDisplay(display).AttachKeyboard(keyboard);
     terminal.Println("ReadLine Test Program");
     for (;;) {
-        char* str = terminal.ReadLine(">");
+        char* str = terminal.ReadLine("> ");
         terminal.Printf("%s\n", str);
     }
 }
 ```
 
-`terminal.ReadLine()` は入力された文字列へのポインタを返します。
+`terminal.ReadLine()` returns a pointer to the entered string.
 
 ![cmdedit-display-test.jpg](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-04-06-cmdline-editor/cmdedit-display-test.jpg)
 
-写真では分かりませんが、カーソルもしっかり点滅しています。
+You can't see it in the photo, but the cursor is blinking properly.
 
-#### USB キーボード + OLED (SSD1306)
 
-USB キーボードは USB 端子に microB-TypeA 変換アダプタを使って接続します。OLED は SSD1306 を使用します。
+#### USB Keyboard + OLED (SSD1306)
 
-ブレッドボードの配線イメージを以下に示します。5V の電源をPico ボードの VBUS (40 番ピン) につなげていることに注意してください。
+Connect the USB keyboard using a microB-TypeA adapter to the USB port. The OLED used is SSD1306.
+
+The breadboard wiring image is shown below. Note that the 5V power is connected to the Pico board's VBUS (pin 40).
 
 ![circuit-usbhost-ssd1306.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-04-06-cmdline-editor/circuit-usbhost-ssd1306.png)
 
-`CMakeLists.txt` の最後に以下の行を追加してください。
+Add the following lines to the end of `CMakeLists.txt`:
 
 ```cmake title="CMakeLists.txt"
 target_link_libraries(cmdedit-display-test jxglib_USBHost jxglib_Display_SSD1306)
@@ -172,7 +181,7 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 jxglib_configure_USBHost(cmdedit-display-test CFG_TUH_HID 3)
 ```
 
-ソースファイルを以下のように編集します。
+Edit the source file as follows:
 
 ```cpp title="cmdedit-display-test.cpp"
 #include <stdio.h>
@@ -205,24 +214,25 @@ int main()
 }
 ```
 
-#### GPIO キーボードマトリクス + TFT LCD (ST7789)
 
-GPIO に接続したキーボードマトリクス接続します。ここでは Amazon などで容易に入手できる 4x4 マトリクスタイプのものを使用します。
+#### GPIO Keyboard Matrix + TFT LCD (ST7789)
+
+Connect a keyboard matrix to the GPIO. Here, we use a 4x4 matrix type that can be easily obtained from Amazon, etc.
 
 ![keyboard-matrix-4x4.jpg](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-04-06-cmdline-editor/keyboard-matrix-4x4.jpg)
 
-ブレッドボードの配線イメージを以下に示します。
+The breadboard wiring image is shown below.
 
 ![circuit-usbhost-ssd1306.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-04-06-cmdline-editor/circuit-keymatrix-st7789.png)
 
-`CMakeLists.txt` の最後に以下の行を追加してください。
+Add the following lines to the end of `CMakeLists.txt`:
 
 ```cmake title="CMakeLists.txt"
 target_link_libraries(cmdedit-display-test jxglib_Display_ST7789)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 ```
 
-ソースファイルを以下のように編集します。
+Edit the source file as follows:
 
 ```cpp title="cmdedit-display-test.cpp"
 #include <stdio.h>
@@ -266,28 +276,30 @@ int main()
 }
 ```
 
-キーボードマトリクスには、回り込み防止用のダイオードが入ったものとないものがあります。回り込み防止用のダイオードが入っている場合、ダイオードの極性によって以下にようにコードを変更してください。
 
-- **極性が col → row の場合** `keyColTbl` 中の GPIO の設定を `pull_up()` にして、`keyboard.Initialize()` の最後の引数に `GPIO::LogicNeg` を設定してください。
-- **極性が row → col の場合** `keyColTbl` 中の GPIO の設定を `pull_down()` にして、`keyboard.Initialize()` の最後の引数に `GPIO::LogicPos` を設定してください。
+Some keyboard matrices have diodes for preventing ghosting, and some do not. If your matrix has diodes, change the code as follows depending on the diode polarity:
 
-ダイオードが入っていない場合はどちらでもかまいません。
+- **If polarity is col → row**: Set the GPIOs in `keyColTbl` to `pull_up()`, and set the last argument of `keyboard.Initialize()` to `GPIO::LogicNeg`.
+- **If polarity is row → col**: Set the GPIOs in `keyColTbl` to `pull_down()`, and set the last argument of `keyboard.Initialize()` to `GPIO::LogicPos`.
 
-### Serial::Terminal を使う
+If there are no diodes, either way is fine.
 
-シリアル回線で Pico ボードを PC に接続します。
 
-#### Serial::Terminal 用プロジェクトの作成
+### Using Serial::Terminal
 
-VSCode のコマンドパレットから `>Raspberry Pi Pico: New Pico Project` を実行し、以下の内容でプロジェクトを作成します。Pico SDK プロジェクト作成の詳細や、ビルド、ボードへの書き込み方法については[「Pico SDK ことはじめ」](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%AE%E4%BD%9C%E6%88%90%E3%81%A8%E7%B7%A8%E9%9B%86) を参照ください。
+Connect the Pico board to a PC via a serial line.
 
-- **Name** ... プロジェクト名を入力します。今回は例として `cmdedit-serial-test` を入力します
-- **Board type** ... ボード種別を選択します
-- **Location** ... プロジェクトディレクトリを作る一つ上のディレクトリを選択します
-- **Stdio support** .. Stdio に接続するポート (UART または USB) を選択します
-- **Code generation options** ... **`Generate C++ code` にチェックをつけます**
+#### Creating a Project for Serial::Terminal
 
-プロジェクトディレクトリと `pico-jxglib` のディレクトリ配置が以下のようになっていると想定します。
+From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings. For details on creating a Pico SDK project, building, and writing to the board, see ["Getting Started with Pico SDK"](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%AE%E4%BD%9C%E6%88%90%E3%81%A8%E7%B7%A8%E9%9B%86).
+
+- **Name** ... Enter the project name. In this example, enter `cmdedit-serial-test`.
+- **Board type** ... Select the board type.
+- **Location** ... Select the parent directory where the project directory will be created.
+- **Stdio support** ... Select the port (UART or USB) to connect Stdio.
+- **Code generation options** ... **Check `Generate C++ code`**
+
+Assume the project directory and `pico-jxglib` are arranged as follows:
 
 ```text
 ├── pico-jxglib/
@@ -297,18 +309,19 @@ VSCode のコマンドパレットから `>Raspberry Pi Pico: New Pico Project` 
     └── ...
 ```
 
-#### Stdio 経由でホスト PC と接続
+#### Connecting to the Host PC via Stdio
 
-Pico ボードを UART または USB 経由でホスト PC と接続します (詳細は[こちら](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#stdio-%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6))。
 
-`CMakeLists.txt` の最後に以下の行を追加してください。
+Connect the Pico board to the host PC via UART or USB (see [here](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#stdio-%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6) for details).
+
+Add the following lines to the end of `CMakeLists.txt`:
 
 ```cmake title="CMakeLists.txt"
 target_link_libraries(cmdedit-serial-test jxglib_Serial)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 ```
 
-ソースファイルを以下のように編集します。
+Edit the source file as follows:
 
 ```cpp title="cmdedit-serial-test.cpp"
 #include <stdio.h>
@@ -326,10 +339,10 @@ int main()
     terminal.AttachPrintable(Stdio::Instance).AttachKeyboard(Stdio::GetKeyboard());
     terminal.Println("ReadLine Test Program");
     for (;;) {
-        char* str = terminal.ReadLine(">");
+        char* str = terminal.ReadLine("> ");
         terminal.Printf("%s\n", str);
     }
 }
 ```
 
-ホスト PC のターミナルソフトで、コマンドラインの編集入力ができます。
+You can edit the command line input from the host PC's terminal software.

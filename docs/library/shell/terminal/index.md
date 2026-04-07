@@ -1,40 +1,40 @@
-今回は、TFT LCD に Terminal の機能を持たせるお話です。スクロール機能を使うことで狭い画面でも多くの情報を表示できますし、出力内容を後から読み出すことができるのでデータロガーとしても役に立ちますよー。
+This time, let's talk about adding Terminal functionality to a TFT LCD. With scrolling, you can display a lot of information even on a small screen, and since you can read back the output later, it can also be useful as a data logger.
 
-## Terminal 機能について
+## About the Terminal Function
 
-ディスプレイというとグラフィック描画や GUI など見栄えのする部分に目がいきがちですが、実用途では様々なテキスト情報を表示する場面がかなり多いのではないかと思います。その目的のためには「画面中の座標を指定してテキストを表示する」という機能ではごく限られた量の情報しか出力することができません。座標指定の必要もなく、文字列を送っていけば自動的に描画位置を更新していき、画面があふれたときにはスクロールをしてくれるという、いわゆる Terminal の機能がとても便利なのです。
+When it comes to displays, people tend to focus on graphics and GUIs, but in real applications, there are many situations where you want to display various text information. If you only have "display text at a specified coordinate on the screen," you can only output a limited amount of information. Terminal functionality, where you just send strings and the drawing position is updated automatically, and the screen scrolls when it overflows, is very convenient.
 
-**pico-jxglib** の Terminal は、ごく自然に期待されるであろう以下の機能を持ちます。
+**pico-jxglib**'s Terminal provides the following natural and expected features:
 
-1. 描画位置を更新しながら文字や文字列を描画する機能
-1. 画面の右端に達したら自動で改行する機能
-1. 画面の最下端に達したらスクロールする機能
-1. ラウンドラインバッファに出力内容を記録しロールバックできる機能
-1. ラウンドラインバッファの内容を読み出す機能
+1. Draw characters and strings while updating the drawing position
+1. Automatically wrap to the next line when reaching the right edge
+1. Scroll when reaching the bottom of the screen
+1. Record output in a round line buffer and allow rollback
+1. Read back the contents of the round line buffer
 
-特に、最後に挙げたラウンドラインバッファの読み出し機能は、これから **pico-jxglib** に実装していく予定のストレージ機能や他デバイスとの通信機能と組み合わせることでデータロガーとして有効に働くと期待されます。
+Especially, the last feature—reading back the round line buffer—can be combined with storage and communication features (to be implemented in **pico-jxglib**) to make an effective data logger.
 
-ところで、Terminal を使った実際のプロジェクトの前に、ワンボードマイコンの周辺機器で TFT LCD と並んでポピュラーな表示機器である OLED デバイスについて説明します。
+Before we get to actual projects using Terminal, let's explain OLED devices, which are popular display devices for single-board microcontrollers alongside TFT LCDs.
 
-## OLED デバイス
+## OLED Devices
 
-組込み用途でよくみかける OLED (有機 EL ディスプレイ) は、SSD1306 という I2C インターフェースで制御するデバイスになります[^ssd1306]。画面サイズ 0.96 インチ、ピクセル数は 128x64、色は白単色のみですが、自発光しているのでとてもくっきり見えます。一個 500 円程度と安価なのも魅力的です。
+OLED (organic EL display) devices often seen in embedded applications are controlled via I2C using the SSD1306 chip[^ssd1306]. The screen size is 0.96 inches, 128x64 pixels, white monochrome only, but since it's self-emissive, it's very clear. They're also attractive for their low price—about 500 yen each.
 
-[^ssd1306]: 制御用のインターフェースとして SPI を搭載していたり、ピクセル数が異なるデバイスもありますが、ここで挙げたデバイスが最も入手しやすいようです。
+[^ssd1306]: Some devices have SPI as a control interface or different pixel counts, but the device described here is the most readily available.
 
 ![SSD1306.jpg](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-02-19-terminal/SSD1306.jpg)
 
-インターフェースが I2C なので、信号線がたった 2 本で済むというのもうれしいですね。SPI に比べると通信速度は遅いのですが、そもそも SSD1306 のピクセルあたりのデータ量は RGB565 フォーマットの TFT LCD に比べて 1/16 で、画面全体のデータ量も 128 * 64 / 8 = 1024 bytes です。I2C の動作クロックを 400kHz にしたとき、画面全体のリフレッシュに必要な時間は実測で 26 msec 程度でしたから ([プログラム](https://github.com/ypsitau/pico-jxglib/blob/main/Display/test-RefreshRate/test-RefreshRate.cpp))、多くの用途で十分な速度ではないかと思います。
+Since the interface is I2C, you only need two signal lines. Communication speed is slower than SPI, but the data per pixel for SSD1306 is 1/16 that of RGB565 TFT LCD, and the total screen data is 128 * 64 / 8 = 1024 bytes. With I2C at 400kHz, refreshing the whole screen takes about 26 ms ([program](https://github.com/ypsitau/pico-jxglib/blob/main/Display/test-RefreshRate/test-RefreshRate.cpp)), which is fast enough for most uses.
 
-単色でピクセル数も少ないので複雑なグラフィック描画には向きませんが、テキスト出力には最適です。今回の Terminal の表示先には TFT LCD に加えてこの OLED も対象にしていきます。
+Because it's monochrome and has few pixels, it's not suitable for complex graphics, but it's perfect for text output. For this Terminal, we'll support both TFT LCD and this OLED as output devices.
 
-## 実際のプロジェクト
+## Example Project
 
-### 開発環境のセットアップ
+### Setting Up the Development Environment
 
-Visual Studio Code や Git ツール、Pico SDK のセットアップが済んでいない方は[「Pico SDK ことはじめ」](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E9%96%8B%E7%99%BA%E7%92%B0%E5%A2%83) をご覧ください。
+If you haven't set up Visual Studio Code, Git tools, or the Pico SDK, see ["Getting Started with Pico SDK"](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E9%96%8B%E7%99%BA%E7%92%B0%E5%A2%83).
 
-**pico-jxglib** は GitHub からレポジトリをクローンすることで入手できます。
+You can get **pico-jxglib** by cloning the repository from GitHub:
 
 ```bash
 git clone https://github.com/ypsitau/pico-jxglib.git
@@ -43,25 +43,24 @@ git submodule update --init
 ```
 
 :::message
-**pico-jxglib** はほぼ毎日更新されています。すでにクローンしている場合は、`pico-jxglib` ディレクトリで以下のコマンドを実行して最新のものにしてください。
+**pico-jxglib** is updated almost daily. If you've already cloned it, run the following command in the `pico-jxglib` directory to get the latest version:
 
 ```bash
 git pull
 ```
-
 :::
 
-### プロジェクトの作成
+### Creating a Project
 
-VSCode のコマンドパレットから `>Raspberry Pi Pico: New Pico Project` を実行し、以下の内容でプロジェクトを作成します。Pico SDK プロジェクト作成の詳細や、ビルド、ボードへの書き込み方法については[「Pico SDK ことはじめ」](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%AE%E4%BD%9C%E6%88%90%E3%81%A8%E7%B7%A8%E9%9B%86) を参照ください。
+From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings. For details on creating a Pico SDK project, building, and writing to the board, see ["Getting Started with Pico SDK"](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%AE%E4%BD%9C%E6%88%90%E3%81%A8%E7%B7%A8%E9%9B%86).
 
-- **Name** ... プロジェクト名を入力します。今回は例として `termtest` を入力します
-- **Board type** ... ボード種別を選択します
-- **Location** ... プロジェクトディレクトリを作る一つ上のディレクトリを選択します
-- **Stdio support** .. Stdio に接続するポート (UART または USB) を選択します
-- **Code generation options** ... **`Generate C++ code` にチェックをつけます**
+- **Name** ... Enter the project name. In this example, enter `termtest`.
+- **Board type** ... Select the board type.
+- **Location** ... Select the parent directory where the project directory will be created.
+- **Stdio support** ... Select the port (UART or USB) to connect Stdio.
+- **Code generation options** ... **Check `Generate C++ code`**
 
-このプロジェクトディレクトリと `pico-jxglib` のディレクトリ配置が以下のようになっていると想定します。
+Assume the project directory and `pico-jxglib` are arranged as follows:
 
 ```text
 ├── pico-jxglib/
@@ -71,77 +70,33 @@ VSCode のコマンドパレットから `>Raspberry Pi Pico: New Pico Project` 
     └── ...
 ```
 
-以下、このプロジェクトをもとに `CMakeLists.txt` とソースファイルを編集してプログラムを作成していきます。
+From here, edit `CMakeLists.txt` and the source file based on this project to create your program.
 
-### TFT LCD ST7789 上で Terminal
+### Terminal on TFT LCD ST7789
 
-TFT LCD ST7789 を使って Terminal 機能を実装してみます。他のデバイスを接続する場合は[「pico-jxblib と TFT LCD の話」](https://zenn.dev/ypsitau/articles/2025-01-27-tft-lcd) を参照してください。
+Let's implement Terminal functionality using the TFT LCD ST7789. For other devices, see ["pico-jxglib and TFT LCD"](https://zenn.dev/ypsitau/articles/2025-01-27-tft-lcd).
 
-ブレッドボードの配線イメージは以下の通りです。ロールバックなどの操作用にタクトスイッチを配置しています。
+The breadboard wiring image is as follows. Tact switches are placed for operations like rollback.
 
 ![circuit-st7789-Terminal.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-02-19-terminal/circuit-st7789-Terminal.png)
 
-`CMakeLists.txt` の最後に以下の行を追加してください。
+Add the following lines to the end of `CMakeLists.txt`:
 
 ```cmake title="CMakeLists.txt"
 target_link_libraries(termtest jxglib_Display_ST7789)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 ```
 
-ソースファイルを以下のように編集します。
+Edit the source file as follows:
 
-```cpp:termtest.cpp
-#include <stdio.h>
-#include "pico/stdlib.h"
-#include "jxglib/Display/ST7789.h"
-#include "jxglib/Font/shinonome16-japanese-level2.h"
-#include "jxglib/sample/Text_Botchan.h"
-
-using namespace jxglib;
-
-Display::Terminal terminal;
-
-int main()
-{
-    ::stdio_init_all();
-    ::spi_init(spi1, 125 * 1000 * 1000);
-    GPIO14.set_function_SPI1_SCK();
-    GPIO15.set_function_SPI1_TX();
-    GPIO18.init().pull_up();
-    GPIO19.init().pull_up();
-    GPIO20.init().pull_up();
-    GPIO21.init().pull_up();
-    Display::ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
-    display.Initialize(Display::Dir::Rotate90);
-    terminal.AttachDisplay(display);
-    terminal.SetFont(Font::shinonome16).SetSpacingRatio(1., 1.2).ClearScreen();
-    terminal.Suppress();
-    terminal.Print(Text_Botchan);
-    terminal.Suppress(false);
-    for (int i = 1; i < 7; i++) {
-        for (int j = 1; j < 13; j++) terminal.Printf("%3d", i * j);
-        terminal.Println();
-    }
-    for (;;) {
-        if (!GPIO18.get()) terminal.RollUp();
-        if (!GPIO19.get()) terminal.RollDown();
-        if (!GPIO20.get()) terminal.Dump.BytesPerRow(8).Ascii()(reinterpret_cast<const void*>(0x10000000), 64);
-        if (!GPIO21.get()) terminal.CreateReader().WriteTo(stdout);
-        ::sleep_ms(100);
-    }
-}
-```
-
-![termtest-ST7789.jpg](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-02-19-terminal/termtest-ST7789.jpg)
-
-プログラムの前半では SPI や TFT LCD の初期化を行っています。
+The first part of the program initializes SPI and the TFT LCD.
 
 ```cpp
 terminal.AttachDisplay(display);
 terminal.SetFont(Font::shinonome16).SetSpacingRatio(1., 1.2).ClearScreen();
 ```
 
-`Terminal` インスタンスに対して `AttachOutut()` 関数で TFT LCD や OLED などのディスプレイデバイスにアタッチします。`SetFont()` で表示するフォント、`SetSpacingRatio()` で文字間隔および行間隔の設定をします。これで Terminal に文字を出力する準備が整います。
+Attach the display device (TFT LCD, OLED, etc.) to the `Terminal` instance with `AttachDisplay()`. Use `SetFont()` to set the font, and `SetSpacingRatio()` to set character and line spacing. Now you're ready to output text to the Terminal.
 
 ```cpp
 terminal.Suppress();
@@ -153,85 +108,41 @@ for (int i = 1; i < 7; i++) {
 }
 ```
 
-`Terminal` インスタンスに対して `Print()`、`Println()`、`Printf()` 関数を実行して文字列を出力します。`Suppress()` 関数は、一時的に実際の描画処理を抑制します。`Suppress(false)` で通常の描画処理に戻ります。
+Use `Print()`, `Println()`, and `Printf()` to output strings to the `Terminal` instance. The `Suppress()` function temporarily suppresses actual drawing. `Suppress(false)` returns to normal drawing.
 
 ```cpp
 if (!GPIO18.get()) terminal.RollUp();
 if (!GPIO19.get()) terminal.RollDown();
 ```
 
-`RollUp()`、`RollDown()` 関数を実行することでロールアップ・ロールダウンができます。
+Call `RollUp()` and `RollDown()` to scroll up and down.
 
 ```cpp
 if (!GPIO20.get()) terminal.Dump.BytesPerRow(8).Ascii()(reinterpret_cast<const void*>(0x10000000), 64);
 ```
 
-`Dump()` 関数はメモリ内容をダンプ出力します。
+The `Dump()` function outputs a memory dump.
 
 ```cpp
 if (!GPIO21.get()) terminal.CreateReader().WriteTo(stdout);
 ```
 
-`CreateReader()` 関数はラインバッファの内容を読み出す `Stream` インスタンスを生成します。ここでは、その `Stream` に対して `WriteTo()` を実行してデータを stdout に出力しています。
+The `CreateReader()` function creates a `Stream` instance to read the contents of the line buffer. Here, `WriteTo()` is called on that `Stream` to output data to stdout.
 
-### OLED SSD1306 上で Terminal
+### Terminal on OLED SSD1306
 
-ブレッドボードの配線イメージは以下の通りです。
+The breadboard wiring image is as follows:
 
 ![circuit-ssd1306-Terminal.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-02-19-terminal/circuit-ssd1306-Terminal.png)
 
-`CMakeLists.txt` の最後に以下の行を追加してください。
+Add the following lines to the end of `CMakeLists.txt`:
 
 ```cmake title="CMakeLists.txt"
 target_link_libraries(termtest jxglib_Display_SSD1306)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 ```
 
-ソースファイルを以下のように編集します。
-
-```cpp:termtest.cpp
-#include <stdio.h>
-#include "pico/stdlib.h"
-#include "jxglib/Display/SSD1306.h"
-#include "jxglib/Font/naga10-japanese-level2.h"
-#include "jxglib/sample/Text_Botchan.h"
-
-using namespace jxglib;
-
-Display::Terminal terminal;
-
-int main()
-{
-    ::stdio_init_all();
-    ::i2c_init(i2c0, 400 * 1000);
-    GPIO4.set_function_I2C0_SDA().pull_up();
-    GPIO5.set_function_I2C0_SCL().pull_up();
-    GPIO18.init().pull_up();
-    GPIO19.init().pull_up();
-    GPIO20.init().pull_up();
-    GPIO21.init().pull_up();
-    Display::SSD1306 display(i2c0, 0x3c);
-    display.Initialize();
-    terminal.AttachDisplay(display);
-    terminal.SetFont(Font::naga10).SetSpacingRatio(1., 1.).ClearScreen();
-    terminal.Suppress();
-    terminal.Print(Text_Botchan);
-    terminal.Suppress(false);
-    for (int i = 1; i < 3; i++) {
-        for (int j = 1; j < 8; j++) terminal.Printf("%3d", i * j);
-        terminal.Println();
-    }
-    for (;;) {
-        if (!GPIO18.get()) terminal.RollUp();
-        if (!GPIO19.get()) terminal.RollDown();
-        if (!GPIO20.get()) terminal.Dump.Addr(false).BytesPerRow(8)(reinterpret_cast<const void*>(0x10000000), 32);
-        if (!GPIO21.get()) terminal.CreateReader().WriteTo(stdout);
-        ::sleep_ms(100);
-    }
-}
-```
-
-![termtest-SSD1306.jpg](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-02-19-terminal/termtest-SSD1306.jpg)
+Edit the source file as follows:
 
 ```cpp
 ::i2c_init(i2c0, 400 * 1000);
@@ -239,25 +150,24 @@ GPIO4.set_function_I2C0_SDA().pull_up();
 GPIO5.set_function_I2C0_SCL().pull_up();
 ```
 
-I2C の初期化と、GPIO へのピン割り当てを行います。
+This initializes I2C and assigns pins to GPIO.
 
 ```cpp
 Display::SSD1306 display(i2c0, 0x3c);
 display.Initialize();
 ```
 
-OLED の初期化をします。I2C のアドレスは `0x3c` または `0x3d` を指定します。
+This initializes the OLED. Specify `0x3c` or `0x3d` for the I2C address.
 
-### TFT LCD ILI9341 上で Terminal (+ LVGL)
+### Terminal on TFT LCD ILI9341 (+ LVGL)
 
-Terminal にディスプレイをアタッチする際に描画範囲を指定することで、複数の Terminal を表示したりディスプレイを他の用途と共用することができます。ここでは[前回の記事](https://zenn.dev/ypsitau/articles/2025-02-04-lvgl)でとりあげた LVGL を Terminal とともに組み込んでみます。
+By specifying the drawing area when attaching a display to the Terminal, you can display multiple Terminals or share the display with other uses. Here, we'll combine LVGL (introduced in [the previous article](https://zenn.dev/ypsitau/articles/2025-02-04-lvgl)) with the Terminal.
 
-ブレッドボードの配線イメージは以下の通りです。ILI9341 はタッチスクリーンを持っているので、LVGL を使ったディスプレイ上のボタンでタクトスイッチの役目をさせます。
+The breadboard wiring image is as follows. The ILI9341 has a touchscreen, so LVGL buttons on the display act as tact switches.
 
 ![circuit-ili9341-touch.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-02-19-terminal/circuit-ili9341-touch.png)
 
-
-`CMakeLists.txt` の最後に以下の行を追加してください。
+Add the following lines to the end of `CMakeLists.txt`:
 
 ```cmake title="CMakeLists.txt"
 target_link_libraries(termtest jxglib_Display_ILI9341 jxglib_LVGL)
@@ -265,100 +175,26 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 jxglib_configure_LVGL(termtest LV_FONT_MONTSERRAT_14)
 ```
 
-ソースファイルを以下のように編集します。
+Edit the source file as follows:
 
-```cpp:termtest.cpp
-#include <stdio.h>
-#include <examples/lv_examples.h>
-#include "pico/stdlib.h"
-#include "jxglib/Display/ILI9341.h"
-#include "jxglib/LVGL.h"
-#include "jxglib/Font/shinonome12-japanese-level2.h"
-#include "jxglib/sample/Text_Botchan.h"
-
-using namespace jxglib;
-
-Display::Terminal terminal;
-
-void OnValueChanged_btnm(lv_event_t* e);
-
-int main()
-{
-    ::stdio_init_all();
-    ::spi_init(spi0, 2 * 1000 * 1000);		// for touch screens
-    ::spi_init(spi1, 125 * 1000 * 1000);	// for displays
-    GPIO2.set_function_SPI0_SCK();
-    GPIO3.set_function_SPI0_TX();
-    GPIO4.set_function_SPI0_RX();
-    GPIO14.set_function_SPI1_SCK();
-    GPIO15.set_function_SPI1_TX();
-    Display::ILI9341 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
-    Display::ILI9341::TouchScreen touchScreen(spi0, {CS: GPIO8, IRQ: GPIO9});
-    display.Initialize(Display::Dir::Rotate0);
-    touchScreen.Initialize(display);
-    //-----------------------------------------
-    terminal.AttachDisplay(display, {0, 0, 240, 220});
-    terminal.SetFont(Font::shinonome12).SetSpacingRatio(1., 1.2);
-    terminal.Suppress().Print(Text_Botchan);
-    terminal.Suppress(false);
-    //-----------------------------------------
-    LVGL::Initialize();
-    LVGL::Adapter lvglAdapter;
-    lvglAdapter.AttachDisplay(display, {0, 220, 240, 100});
-    lvglAdapter.AttachTouchScreen(touchScreen);
-    do {
-        static const char* labelTbl[] = {
-            "Roll Up", "Dump", "\n",
-            "Roll Down", "Print Buffer", "",
-        };
-        lv_obj_t* btnm = ::lv_buttonmatrix_create(lv_screen_active());
-        ::lv_obj_set_size(btnm, 230, 90);
-        ::lv_obj_align(btnm, LV_ALIGN_BOTTOM_MID, 0, -5);
-        ::lv_obj_add_event_cb(btnm, OnValueChanged_btnm, LV_EVENT_VALUE_CHANGED, nullptr);
-        ::lv_obj_remove_flag(btnm, LV_OBJ_FLAG_CLICK_FOCUSABLE);
-        ::lv_buttonmatrix_set_map(btnm, labelTbl);
-    } while (0);
-    for (;;) {
-        ::sleep_ms(5);
-        ::lv_timer_handler();
-    }
-}
-
-void OnValueChanged_btnm(lv_event_t* e)
-{
-    enum class Id {
-        RollUp, Dump,
-        RollDown, PrintBuffer,
-    };
-    lv_obj_t* btnm = reinterpret_cast<lv_obj_t*>(::lv_event_get_target(e));
-    Id id = static_cast<Id>(::lv_buttonmatrix_get_selected_button(btnm));
-    if (id == Id::RollUp) terminal.RollUp();
-    if (id == Id::RollDown) terminal.RollDown();
-    if (id == Id::Dump) terminal.Dump.BytesPerRow(8).Ascii()(reinterpret_cast<const void*>(0x10000000), 64);
-    if (id == Id::PrintBuffer) terminal.CreateReader().WriteTo(stdout);
-}
-```
-
-![termtest-ILI9341.jpg](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-02-19-terminal/termtest-ILI9341.jpg)
-
-`Terminal` のディスプレイへのアタッチ指定と:
+The display area for the `Terminal` is specified as:
 
 ```cpp
 terminal.AttachDisplay(display, {0, 0, 240, 220});
 ```
 
-`LVGLAdapter` のディスプレイへのアタッチ指定で:
+And for the `LVGLAdapter`:
 
 ```cpp
 lvglAdapter.AttachDisplay(display, {0, 220, 240, 100});
 ```
 
-それぞれの描画範囲を指定しています。
+Each specifies its own drawing area.
 
-### 複数の Terminal 生成
+### Creating Multiple Terminals
 
-`Terminal` を複数生成することもできます ([プログラム](https://github.com/ypsitau/pico-jxglib/blob/main/Terminal/test-Multi/test-Multi.cpp))。
+You can also create multiple `Terminal` instances ([program](https://github.com/ypsitau/pico-jxglib/blob/main/Terminal/test-Multi/test-Multi.cpp)).
 
 ![termtest-Multi.jpg](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-02-19-terminal/termtest-Multi.jpg)
 
-それぞれ独立してスクロールなどの操作を行えるので、様々な情報を一つの画面で表示するのに便利です。
+Each can scroll and operate independently, making it convenient for displaying various information on a single screen.

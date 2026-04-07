@@ -21,7 +21,7 @@ nav:
         - I2C: shell/i2c/index.md
         - SPI: shell/spi/index.md
         - UART: shell/uart/index.md
-    - Library:
+    - Library APIs:
         - Overview: library/index.md
         - Display:
             - TFT LCD: library/display/tft-lcd/index.md
@@ -38,7 +38,9 @@ nav:
         - File System:
             - Flash Memory: library/filesystem/flash/index.md
             - Media: library/filesystem/media/index.md
-    - Pico SDK: pico-sdk/index.md
+    - Development Environment:
+        - Pico SDK: development/pico-sdk/index.md
+        - CMake: development/cmake/index.md
 
 theme:
     name: material

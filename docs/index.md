@@ -130,6 +130,8 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     You can also connect a USB keyboard and mouse to your Pico, allowing you to interact with the shell and control the display directly from the connected peripherals.
 
+    [:octicons-arrow-right-24: Learn More](library/usbhost/keyboard-mouse/index.md)
+
 -   :fontawesome-solid-sd-card:{ .lg .middle } **SD Card Support**
 
     ---
@@ -177,6 +179,8 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
     ---
 
     The library also provides support for LVGL, a powerful graphics library for embedded systems.
+
+    [:octicons-arrow-right-24: Learn More](library/lvgl/index.md)
 
 -   :material-transit-connection-variant:{ .lg .middle } **PIO Assembler**
 
