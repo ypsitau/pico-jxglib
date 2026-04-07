@@ -1,57 +1,57 @@
-今回は、Pico ボードに SD カードや USB ストレージを接続してファイルシステムとして使えるようにします。フラッシュメモリをファイルシステムにする方法については以下の記事を参照してください。
+This page explains how to use SD cards and USB storage as file systems on the Pico board. For details on how to use flash memory as a file system, see the following article:
 
-[pico-jxglib で Pico ボードにファイルシステムを実装してフラッシュメモリをフル活用する話](https://zenn.dev/ypsitau/articles/2025-05-31-fs-flash)
+[Implementing a File System on the Pico Board with pico-jxglib and Using Flash Memory Fully](https://zenn.dev/ypsitau/articles/2025-05-31-fs-flash)
 
-## SD カードについて
+## About SD Cards
 
-SD カードはスマートフォンでも使われているおなじみのストレージで、コンビニエンスストアでも手に入るほど身近な存在です。それだけに、組込みデバイスに接続するのも簡単だろうと思いがちですが、実は意外と厄介です。ここでは、SD カードの接続方法や、ソフトウェアの留意点について解説します。
+SD cards are familiar storage devices used in smartphones and are easily available at convenience stores. While it may seem simple to connect them to embedded devices, it can actually be tricky. This section explains how to connect SD cards and important points about the software.
 
-### SD カードの接続方法
+### How to Connect SD Cards
 
-SD カードの接続方法や制御方法については以下のサイトに詳しい情報があります。
+For details on how to connect and control SD cards, see the following site:
 
-▶️ [MC/SDC の使い方](https://elm-chan.org/docs/mmc/mmc.html)
+▶️ [How to Use MC/SDC](https://elm-chan.org/docs/mmc/mmc.html)
 
-SD カードを接続する際には、以下の事柄に留意してください。
+When connecting an SD card, keep the following in mind:
 
-- SD カードに供給する電源は **3.3V** です
-- SD カードの信号レベルは **3.3V** です。Pico ボードと同じなので直結できます
-- クロック以外の信号線には 10kΩ 程度の抵抗でプルアップする (信号線と VCC を抵抗でつなぐ) 必要があります
+- The power supply for the SD card should be **3.3V**.
+- The signal level for the SD card is **3.3V**. Since this matches the Pico board, you can connect directly.
+- For all signal lines except clock, you need to pull up with a 10kΩ resistor (connect the signal line to VCC through a resistor).
 
-SD カードのインターフェース回路はカード内部に組み込まれているので、SD カードのピンを直接 Pico ボードに接続して使用することもできます。しかし、リムーバブルメディアとしての使い勝手を考えると、カードスロットを備えた SD カードリーダモジュールを使うことになるでしょう。ここで問題になるのは、モジュールの種類と接続方法です。SD カードリーダモジュールは、基本的に SD カードスロットといくつかの抵抗やボルテージレギュレータが載っているだけのシンプルなものですが、供給電圧や信号のレベル、プルアップ抵抗の有無などが異なるので注意が必要です。
+The interface circuit for SD cards is built into the card itself, so you can connect the SD card pins directly to the Pico board. However, for removable media, you will likely use an SD card reader module with a card slot. The type of module and connection method, as well as the presence or absence of pull-up resistors and voltage regulators, varies, so be careful.
 
-以下に、手元にあった SD カードリーダモジュール (主に Amazon で入手) の電源電圧やプルアップ抵抗の有無、信号レベルについてまとめました。
+Below is a summary of the power supply voltage, pull-up resistors, and signal levels for SD card reader modules (mainly purchased from Amazon):
 
-|外観|注釈|
+|Appearance|Notes|
 |----|----|
-|![sdcard-adapter](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/sdcard-adapter.jpg)|標準 SD カードのモジュールです。電源電圧は **5V** と **3.3V** の両方の端子が用意されていて、5V の場合はボルテージレギュレータで 3.3V に降圧して SD カードに供給されます。すべての信号線に 10kΩ のプルアップ抵抗がついているので、外部のプルアップ抵抗は**必要ありません**。信号レベルは **3.3V** なので、5V 系の場合はレベルシフトが必要です|
-|![ILI9341-back](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/ILI9341-back.jpg)|TFT LCD ILI9341 についている SD カードのスロットです。電源は TFT LCD 用のコネクタから **3.3V** を供給します。外部のプルアップ抵抗が**必要です**[^pullup]。信号レベルは **3.3V** なので、5V 系の場合はレベルシフトが必要です|
-|![u-sdcard-adapter-1](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/u-sdcard-adapter-1.jpg)|microSD カードのモジュールです。電源電圧は **5V** で、ボルテージレギュレータで 3.3V に降圧して SD カードに供給されます。外部のプルアップ抵抗は**必要ありません**。信号線にはバッファ (74HC125) が入っており、**3.3V**、**5V** の両方の信号レベルに接続できます|
-|![u-sdcard-adapter-2](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/u-sdcard-adapter-2.jpg)|microSD カードのモジュールです。電源電圧は **3.3V** です。すべての信号線に 10kΩ のプルアップ抵抗がついているので、外部のプルアップ抵抗は**必要ありません**。信号レベルは **3.3V** なので、5V 系の場合はレベルシフトが必要です|
+|![sdcard-adapter](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/sdcard-adapter.jpg)|Standard SD card module. Both **5V** and **3.3V** power pins are available. If using 5V, a voltage regulator drops it to 3.3V for the SD card. All signal lines have 10kΩ pull-up resistors, so no external pull-ups are needed. Signal level is **3.3V**; for 5V systems, a level shifter is required.|
+|![ILI9341-back](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/ILI9341-back.jpg)|SD card slot on TFT LCD ILI9341. Power is supplied from the TFT LCD connector at **3.3V**. External pull-up resistors are **required**[^pullup]. Signal level is **3.3V**; for 5V systems, a level shifter is required.|
+|![u-sdcard-adapter-1](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/u-sdcard-adapter-1.jpg)|microSD card module. Power supply is **5V**; a voltage regulator drops it to 3.3V for the SD card. No external pull-ups are needed. A buffer (74HC125) is included for the signal lines, allowing connection to both **3.3V** and **5V** systems.|
+|![u-sdcard-adapter-2](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/u-sdcard-adapter-2.jpg)|microSD card module. Power supply is **3.3V**. All signal lines have 10kΩ pull-up resistors, so no external pull-ups are needed. Signal level is **3.3V**; for 5V systems, a level shifter is required.|
 
-[^pullup]: 手元の SD カードで試したところ、プルアップ抵抗がなくても動作しましたが、SD カードの種類によってはプルアップ抵抗が必要な場合があります。動作しない場合は、プルアップ抵抗の有無を確認してください。
+[^pullup]: In my tests, some SD cards worked without pull-up resistors, but depending on the card type, pull-ups may be required. If it doesn't work, check for the presence of pull-up resistors.
 
-### SD カードドライバについて
+### About SD Card Drivers
 
-SD カードには SPI モードと SDIO モードの二つのモードがあります。SPI モードは、SD カードを SPI インターフェースで接続するためのモードで、SDIO モードは SD カードのネイティブなインターフェースで接続するためのモードです。SDIO の方が高速で SD カードの機能をフルに活用できますが、Pico ボードで動かしている例はとても少ないです。**pico-jxglib** では実装例の豊富な SPI モードをサポートしています。
+SD cards have two modes: SPI mode and SDIO mode. SPI mode connects the SD card via an SPI interface, while SDIO mode uses the card's native interface. SDIO is faster and can fully utilize the SD card's capabilities, but there are very few examples of it working on the Pico board. **pico-jxglib** supports the well-documented SPI mode.
 
-SD カードはカード自体にインターフェース回路を内蔵していますが、このことは SD カードごとに微妙に異なるインターフェース仕様が存在していることを意味します。そのため、ドライバを作成しても、いろいろな SD カードで動作実績をつまないと実用的なものにはなりません。そこで **pico-jxglib** では、多くのユーザが使っているであろう [MicroPython の SD カードドライバ](https://github.com/micropython/micropython-lib/blob/master/micropython/drivers/storage/sdcard/sdcard.py)を C++ で書き換えて、それをベースにライブラリに組み込ました。これである程度の実用性が確保されているはずですが...。なにはともあれ、MicroPython さんには感謝です。
+Although SD cards have built-in interface circuits, the details can vary slightly between cards. Therefore, even if you create a driver, you need to test it with various SD cards to ensure practical usability. In **pico-jxglib**, the SD card driver is based on the [MicroPython SD card driver](https://github.com/micropython/micropython-lib/blob/master/micropython/drivers/storage/sdcard/sdcard.py), rewritten in C++. Thanks to MicroPython for their work.
 
-## USB ストレージについて
+## About USB Storage
 
-Pico ボードでは USB ホスト機能を使って USB ストレージを接続することができます。**pico-jxglib** は tinyusb ライブラリで用意されている Mass Storage Class を使ってファイルシステムに USB ストレージのハンドラを実装しています。
+The Pico board can use its USB host function to connect USB storage. **pico-jxglib** implements a USB storage handler using the Mass Storage Class provided by the tinyusb library.
 
-なお、Pico ボードの USB ホスト機能を使うには、コネクタを microB タイプから A タイプに変換する OTG ケーブルが必要です。
+To use the Pico board's USB host function, you need an OTG cable to convert from microB type to A type.
 
 ![USB-MicroB-A-Adapter](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/usb-memory.jpg)
 
-## 実際のプロジェクト
+## Example Project
 
-### 開発環境のセットアップ
+### Setting Up the Development Environment
 
-Visual Studio Code や Git ツール、Pico SDK のセットアップが済んでいない方は[「Pico SDK ことはじめ」](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E9%96%8B%E7%99%BA%E7%92%B0%E5%A2%83) をご覧ください。
+If you haven't set up Visual Studio Code, Git tools, or the Pico SDK, see ["Getting Started with Pico SDK"](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E9%96%8B%E7%99%BA%E7%92%B0%E5%A2%83).
 
-GitHub から **pico-jxglib** をクローンします。
+Clone **pico-jxglib** from GitHub:
 
 ```bash
 git clone https://github.com/ypsitau/pico-jxglib.git
@@ -60,25 +60,24 @@ git submodule update --init
 ```
 
 :::message
-**pico-jxglib** はほぼ毎日更新されています。すでにクローンしている場合は、`pico-jxglib` ディレクトリで以下のコマンドを実行して最新のものにしてください。
+**pico-jxglib** is updated almost daily. If you've already cloned it, run the following command in the `pico-jxglib` directory to get the latest version:
 
 ```bash
 git pull
 ```
-
 :::
 
-### プロジェクトの作成
+### Creating a Project
 
-VSCode のコマンドパレットから `>Raspberry Pi Pico: New Pico Project` を実行し、以下の内容でプロジェクトを作成します。Pico SDK プロジェクト作成の詳細や、ビルド、ボードへの書き込み方法については[「Pico SDK ことはじめ」](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%AE%E4%BD%9C%E6%88%90%E3%81%A8%E7%B7%A8%E9%9B%86) を参照ください。
+From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings. For details on creating a Pico SDK project, building, and writing to the board, see ["Getting Started with Pico SDK"](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%AE%E4%BD%9C%E6%88%90%E3%81%A8%E7%B7%A8%E9%9B%86).
 
-- **Name** ... プロジェクト名を入力します。今回は例として `fs-media` を入力します
-- **Board type** ... ボード種別を選択します
-- **Location** ... プロジェクトディレクトリを作る一つ上のディレクトリを選択します
-- **Stdio support** .. Stdio に接続するポート (UART または USB) を選択します。USB ストレージを使う場合は競合を防ぐため USB のチェックを外してください
-- **Code generation options** ... **`Generate C++ code` にチェックをつけます**
+- **Name** ... Enter the project name. In this example, enter `fs-media`.
+- **Board type** ... Select the board type.
+- **Location** ... Select the parent directory where the project directory will be created.
+- **Stdio support** ... Select the port (UART or USB) to connect Stdio. If using USB storage, be sure to disconnect the USB check to avoid conflicts.
+- **Code generation options** ... **Check `Generate C++ code`**
 
-プロジェクトディレクトリと `pico-jxglib` のディレクトリ配置が以下のようになっていると想定します。
+The project directory and `pico-jxglib` directory configuration is assumed to be as follows:
 
 ```text
 ├── pico-jxglib/
@@ -88,17 +87,17 @@ VSCode のコマンドパレットから `>Raspberry Pi Pico: New Pico Project` 
     └── ...
 ```
 
-以下、このプロジェクトをもとに `CMakeLists.txt` やソースファイルを編集してプログラムを作成していきます。
+Below, we will edit the `CMakeLists.txt` and source files to create the program.
 
-### SD カードのファイルシステムを操作
+### SD Card File System
 
-SD カードの接続を監視し、接続を検知するとルートディレクトリのファイル一覧を表示するプログラムを作成します。
+Create a program that monitors the connection of the SD card and displays the directory listing when the connection is detected.
 
-ブレッドボードの配線イメージは以下の通りです。使用する SD カードリーダモジュールによって供給電圧を 3.3V か 5V に接続してください。また、必要があれば信号線にプルアップ抵抗 (10kΩ) を接続してください。
+The breadboard wiring image is as follows. Use the SD card reader module and connect the power supply to 3.3V or 5V. If necessary, connect a 10kΩ pull-up resistor to the signal lines.
 
 ![circuit-sdcard](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/circuit-sdcard.png)
 
-`CMakeLists.txt` の最後に以下の行を追加します。
+Add the following line to the end of `CMakeLists.txt`:
 
 ```cmake
 target_link_libraries(fs-media jxglib_FAT_SDCard)
@@ -106,7 +105,7 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 jxglib_configure_FAT(fs-media FF_VOLUMES 1)
 ```
 
-ソースファイルを以下のように編集します。
+Edit the source file as follows:
 
 ```cpp title="fs-media.cpp"
 #include "pico/stdlib.h"
@@ -147,26 +146,25 @@ int main()
 }
 ```
 
-`FAT::SDCard` インスタンスを生成すると、SD カードを FAT ファイルシステムとして扱えるようになります。コンストラクタの詳細は以下の通りです:
+`FAT::SDCard` instance generates a FAT file system. The constructor details are as follows:
 
 - `FAT::SDCard(const char* driveName, spi_inst_t* spi, uint baudrate, const jxglib::SDCard::PinAssign& pinAssign)`
-  `drivename`: パス名に使用するドライブ名で、アルファベットや数字を含む任意の文字列を指定できます
-  `spi`: SPI インターフェースのポインタで、`spi0` または `spi1` を指定します
-  `baudrate`: SPI のクロック周波数を指定します
-  `pinAssign`: CS (Chip Select) に使う GPIO ピンを指定します
+  `drivename`: Path name to use for the drive. You can specify any string.
+  `spi`: SPI interface pointer. Specify `spi0` or `spi1`.
+  `baudrate`: SPI clock frequency.
+  `pinAssign`: GPIO pin to use for CS (Chip Select).
 
-ファイルシステム API の詳細については[「pico-jxglib で Pico ボードにファイルシステムを実装してフラッシュメモリをフル活用する話」](https://zenn.dev/ypsitau/articles/2025-05-31-fs-flash#%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%B7%E3%82%B9%E3%83%86%E3%83%A0-api)を参照してください。
+File system API details are in ["Implementing a File System on the Pico Board with pico-jxglib and Using Flash Memory Fully"](https://zenn.dev/ypsitau/articles/2025-05-31-fs-flash#%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%B7%E3%82%B9%E3%83%86%E3%83%A0-api).
 
+### USB Storage File System
 
-### USB ストレージのファイルシステムを操作
+Create a program that monitors the connection of the USB storage and displays the directory listing when the connection is detected.
 
-USB ストレージの接続を監視し、接続を検知するとルートディレクトリのファイル一覧を表示するプログラムを作成します。
-
-ブレッドボードの配線イメージは以下の通りです。Pico ボードの USB ポートに microB タイプから A タイプに変換する OTG ケーブルを使って USB ストレージを接続します。Pico ボードの電源が 40 番ピン (VBUS) に供給されていることに注意してください。
+The breadboard wiring image is as follows. Use an OTG cable to convert from microB type to A type. The Pico board's power supply is 40 pin (VBUS).
 
 ![circuit-sdcard](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/circuit-usb.png)
 
-`CMakeLists.txt` の最後に以下の行を追加します。また、Stdio の USB 接続が無効 (`pico_enable_stdio_usb(fs-media 0)`) になっていることを確認してください。
+Add the following lines to the end of `CMakeLists.txt`. Also, confirm that Stdio USB connection is disabled (`pico_enable_stdio_usb(fs-media 0)`):
 
 ```cmake
 target_link_libraries(fs-media jxglib_FAT_USBMSC)
@@ -175,7 +173,7 @@ jxglib_configure_FAT(fs-media FF_VOLUMES 1)
 jxglib_configure_USBHost(fs-media CFG_TUH_MSC 1)
 ```
 
-ソースファイルを以下のように編集します。
+Edit the source file as follows:
 
 ```cpp title="fs-media.cpp"
 #include "pico/stdlib.h"
@@ -214,10 +212,10 @@ int main()
 }
 ```
 
-`FAT::USBMSC` インスタンスを生成すると、USB ストレージ を FAT ファイルシステムとして扱えるようになります。コンストラクタの詳細は以下の通りです:
+`FAT::USBMSC` instance generates a FAT file system. The constructor details are as follows:
 
 - `FAT::USBMSC(const char* driveName, uint8_t orderHint = UINT8_MAX)`
-  `drivename`: パス名に使用するドライブ名で、アルファベットや数字を含む任意の文字列を指定できます
-  `orderHint`: インスタンスの順序を指定します。複数の USB ストレージを接続する場合に、順序を指定することで、同じ順序でファイルシステムを扱うことができます
+  `drivename`: Path name to use for the drive. You can specify any string.
+  `orderHint`: Instance order. If you have multiple USB storage devices, specify the order to handle them in the same sequence.
 
-ファイルシステム API の詳細については[「pico-jxglib で Pico ボードにファイルシステムを実装してフラッシュメモリをフル活用する話」](https://zenn.dev/ypsitau/articles/2025-05-31-fs-flash#%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%B7%E3%82%B9%E3%83%86%E3%83%A0-api)を参照してください。
+File system API details are in ["Implementing a File System on the Pico Board with pico-jxglib and Using Flash Memory Fully"](https://zenn.dev/ypsitau/articles/2025-05-31-fs-flash#%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%B7%E3%82%B9%E3%83%86%E3%83%A0-api).

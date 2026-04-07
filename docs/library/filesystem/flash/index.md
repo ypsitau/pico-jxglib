@@ -1,31 +1,31 @@
-今回は、Pico ボードのフラッシュメモリ上に LittleFS や FAT のファイルシステムを構築し、ファイルの読み書きやその他の操作を行う方法について解説します。
+This page explains how to build a LittleFS or FAT file system on the Pico board's flash memory, and how to read, write, and otherwise operate files.
 
-## **pico-jxglib** のファイルシステムについて
+## About the **pico-jxglib** File System
 
-組込み用途では、フラッシュメモリをファイルシステムとして扱うことがよくあります。そのためのライブラリとして [littlefs](https://github.com/littlefs-project/littlefs) や [FatFs](https://elm-chan.org/fsw/ff/) があり、比較的容易にファイルシステムを組み込めるのですが、ストレージデバイスを扱うハンドラを最初から作るのは少々面倒です。**pico-jxglib** では、これらのライブラリをラップして、Pico SDK のプログラムから簡単にファイルシステムを扱えるようにしています。
+In embedded applications, it is common to use flash memory as a file system. Libraries like [littlefs](https://github.com/littlefs-project/littlefs) and [FatFs](https://elm-chan.org/fsw/ff/) make it relatively easy to implement a file system, but writing your own storage device handler from scratch can be a bit of a hassle. **pico-jxglib** wraps these libraries so you can easily handle file systems from Pico SDK programs.
 
-**pico-jxglib** のファイルシステムは、以下の特徴を持っています。
+The **pico-jxglib** file system has the following features:
 
-- **共通化されたインターフェース**
-  フォーマットとして LittleFS と FAT をサポートし、共通のインターフェースで扱えるようにしています。これにより、プログラムはファイルシステムの種類に依存せずにファイル操作が可能です
-- **各種ストレージデバイスのサポート**
-  Pico ボードのフラッシュメモリをはじめ、リムーバブルメディアとして SD カードや USB ストレージに対応しています
-- **シェルコマンドのサポート** 
-  ファイルシステムを操作するためのシェルコマンドを提供しています。これにより、Pico ボード上で対話的にファイルシステムを操作できます
+- **Unified Interface**
+  Supports both LittleFS and FAT as backends, allowing you to operate on files with a common interface regardless of the file system type.
+- **Support for Various Storage Devices**
+  Supports not only the Pico board's flash memory, but also removable media such as SD cards and USB storage.
+- **Shell Command Support**
+  Provides shell commands for file system operations, so you can interactively operate the file system on the Pico board.
 
-SD カードや USB ストレージへの対応やシェルコマンドの使い方、RTC によるタイムスタンプの実装については以下の記事を参照してください。
+For details on using SD cards, USB storage, shell commands, and implementing timestamps with RTC, see the following articles:
 
-▶️ [pico-jxglib で Pico ボードに SD カードや USB ストレージを接続する話](https://zenn.dev/ypsitau/articles/2025-06-06-fs-media)
-▶️ [pico-jxglib のシェルでファイルシステムを操作する話 (自動補完とヒストリ機能で入力楽々)](https://zenn.dev/ypsitau/articles/2025-06-09-fs-shell)
-▶️ [pico-jxglib で Pico ボードに RTC を接続してファイルシステムにタイムスタンプを記録する話](https://zenn.dev/ypsitau/articles/2025-06-22-rtc)
+▶️ [Connecting SD Cards and USB Storage to the Pico Board with pico-jxglib](https://zenn.dev/ypsitau/articles/2025-06-06-fs-media)
+▶️ [Operating the File System with Shell Commands in pico-jxglib (Easy Input with Autocomplete and History)](https://zenn.dev/ypsitau/articles/2025-06-09-fs-shell)
+▶️ [Connecting RTC to the Pico Board and Recording Timestamps in the File System with pico-jxglib](https://zenn.dev/ypsitau/articles/2025-06-22-rtc)
 
-## 実際のプロジェクト
+## Example Project
 
-### 開発環境のセットアップ
+### Setting Up the Development Environment
 
-Visual Studio Code や Git ツール、Pico SDK のセットアップが済んでいない方は[「Pico SDK ことはじめ」](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E9%96%8B%E7%99%BA%E7%92%B0%E5%A2%83) をご覧ください。
+If you haven't set up Visual Studio Code, Git tools, or the Pico SDK, see ["Getting Started with Pico SDK"](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E9%96%8B%E7%99%BA%E7%92%B0%E5%A2%83).
 
-GitHub から **pico-jxglib** をクローンします。
+Clone **pico-jxglib** from GitHub:
 
 ```bash
 git clone https://github.com/ypsitau/pico-jxglib.git
@@ -34,25 +34,24 @@ git submodule update --init
 ```
 
 :::message
-**pico-jxglib** はほぼ毎日更新されています。すでにクローンしている場合は、`pico-jxglib` ディレクトリで以下のコマンドを実行して最新のものにしてください。
+**pico-jxglib** is updated almost daily. If you've already cloned it, run the following command in the `pico-jxglib` directory to get the latest version:
 
 ```bash
 git pull
 ```
-
 :::
 
-### プロジェクトの作成
+### Creating a Project
 
-VSCode のコマンドパレットから `>Raspberry Pi Pico: New Pico Project` を実行し、以下の内容でプロジェクトを作成します。Pico SDK プロジェクト作成の詳細や、ビルド、ボードへの書き込み方法については[「Pico SDK ことはじめ」](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%AE%E4%BD%9C%E6%88%90%E3%81%A8%E7%B7%A8%E9%9B%86) を参照ください。
+From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings. For details on creating a Pico SDK project, building, and writing to the board, see ["Getting Started with Pico SDK"](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%AE%E4%BD%9C%E6%88%90%E3%81%A8%E7%B7%A8%E9%9B%86).
 
-- **Name** ... プロジェクト名を入力します。今回は例として `fs-flash` を入力します
-- **Board type** ... ボード種別を選択します
-- **Location** ... プロジェクトディレクトリを作る一つ上のディレクトリを選択します
-- **Stdio support** .. Stdio に接続するポート (UART または USB) を選択します
-- **Code generation options** ... **`Generate C++ code` にチェックをつけます**
+- **Name** ... Enter the project name. In this example, enter `fs-flash`.
+- **Board type** ... Select the board type.
+- **Location** ... Select the parent directory where the project directory will be created.
+- **Stdio support** ... Select the port (UART or USB) to connect Stdio.
+- **Code generation options** ... **Check `Generate C++ code`**
 
-プロジェクトディレクトリと `pico-jxglib` のディレクトリ配置が以下のようになっていると想定します。
+Assume the project directory and `pico-jxglib` are arranged as follows:
 
 ```text
 ├── pico-jxglib/
@@ -62,22 +61,21 @@ VSCode のコマンドパレットから `>Raspberry Pi Pico: New Pico Project` 
     └── ...
 ```
 
-以下、このプロジェクトをもとに `CMakeLists.txt` やソースファイルを編集してプログラムを作成していきます。
+From here, edit `CMakeLists.txt` and the source file based on this project to create your program.
 
-### Pico ボードのフラッシュメモリについて
+### About Pico Board Flash Memory
 
-Pico ボードのフラッシュメモリは以下のようなアドレス範囲を持っています。
+The Pico board's flash memory has the following address ranges:
 
 - Pico: 0x1000'0000 - 0x1020'0000 (2MB)
 - Pico2: 0x1000'0000 - 0x1040'0000 (4MB)
 
-プログラムは先頭の 0x1000'0000 から書き込まれるので、残りのフラッシュメモリをファイルシステムとして利用できます。プログラムが占有する範囲を確認するには以下の方法があります。
+The program is written from the head (0x1000'0000), so the remaining flash memory can be used as a file system. To check the range occupied by the program, use one of the following methods:
 
-- **マップファイルを参照する**
-  プロジェクト中の `build` ディレクトリ中に `something.elf.map` のような名前のファイルが生成されるので、この中から `.flash_end` を検索します。このシンボルの値がプログラムが占有するフラッシュメモリの終端アドレスになります。
-
-- **picotool を使う**
-  Pico SDK に含まれる picotool[^picotool] を使って、ビルドした ELF ファイルの情報を表示します。ホスト PC のコマンドプロンプトから以下のコマンドを実行すると:
+- **Check the map file**
+  In the `build` directory of your project, a file like `something.elf.map` is generated. Search for `.flash_end` in this file. The value of this symbol is the end address of the flash memory occupied by the program.
+- **Use picotool**
+  Use `picotool` included in the Pico SDK to display information about the built ELF file. On your host PC, run the following command from the command prompt:
 
   [^picotool]: Windows の場合、`C:\Users\username\.pico-sdk\picotool\x.x.x\picotool` にパスを通す必要があります。
 
@@ -85,7 +83,7 @@ Pico ボードのフラッシュメモリは以下のようなアドレス範囲
   picotool info build/something.elf
   ```
 
-  以下のような出力が得られます。
+  You'll get output like:
 
   ```text
   File .\build\something.elf:
@@ -98,33 +96,33 @@ Pico ボードのフラッシュメモリは以下のようなアドレス範囲
    binary end:    0x100049d4
   ```
 
-  `binary end` の値がプログラムが占有するフラッシュメモリの終端アドレスになります。
+  `binary end` is the end address of the flash memory occupied by the program.
 
-- **pico-jxglib のシェルを使う**
-  Pico ボードで [pico-jxglib のシェル](https://zenn.dev/ypsitau/articles/2025-05-08-shell)が動いていれば、シェルコマンド `about-me` を使って実行中のプログラムの情報を確認できます。Pico ボードのシェルに接続して以下のコマンドを実行します。
+- **Use pico-jxglib's shell**
+  If the [pico-jxglib shell](https://zenn.dev/ypsitau/articles/2025-05-08-shell) is running on the Pico board, you can use the `about-me` command to get information about the running program. Connect to the Pico board's shell and run the following command:
 
   ```text
   > about-me
   ```
 
-  picotool と同じような情報を表示するので、`binary end` の値を確認します。
+  This will display information similar to `picotool`, so you can check the `binary end` value.
 
-プログラムのフラッシュメモリ占有サイズの目安ですが、メモリを多く消費しそうな 16 ドットの日本語フォント (第一・第二水準を含む) をリンクしたプログラムで 500kB 程度でした。以降のサンプルでは、前半の 1MB をプログラム用に確保し、それ以降 (アドレス 0x1010'0000 以降) の領域をファイルシステムに使います。
+The program's flash memory occupation is roughly 500kB for a 16-dot Japanese font (including first and second level). In subsequent examples, we'll reserve the first 1MB for the program and use the remaining (from address 0x1010'0000 onwards) for the file system.
 
-### ドライブの作成方法
+### Drive Creation Methods
 
-### LittleFS ドライブの作成
+### LittleFS Drive Creation
 
-[LittleFs](https://github.com/littlefs-project/littlefs) は、組込み用途に特化した軽量なファイルシステムで、フラッシュメモリのような書き換え回数に制限のあるストレージデバイスに適しています。**pico-jxglib** では、LittleFS をフラッシュメモリ上に実装するためのクラス `LFS::Flash` を提供しています。
+[LittleFs](https://github.com/littlefs-project/littlefs) is a lightweight file system designed for embedded applications, suitable for flash memory with limited write cycles. **pico-jxglib** provides a class `LFS::Flash` to implement LittleFS on the Pico board's flash memory.
 
-LittleFS ファイルシステムを組み込むには `CMakeLists.txt` の最後に以下の行を追加します。
+To include LittleFS in your project, add the following lines to the end of `CMakeLists.txt`:
 
 ```cmake
 target_link_libraries(fs-flash jxglib_LFS_Flash)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 ```
 
-ソースファイルを以下のように編集します。
+Edit the source file as follows:
 
 ```cpp title="fs-flash.cpp"
 #include <stdio.h>
@@ -141,21 +139,21 @@ int main()
 }
 ```
 
-`LFS::Flash` インスタンスを生成すると、Pico ボード上のフラッシュメモリを LittleFS ファイルシステムとして扱えるようになります。コンストラクタの詳細は以下の通りです:
+`LFS::Flash` instances are generated on the Pico board's flash memory, allowing you to treat it as a LittleFS file system. The constructor details are as follows:
 
 - `LFS::Flash(const char* driveName, uint32_t bytesXIP)`
-  `drivename`: パス名に使用するドライブ名で、アルファベットや数字を含む任意の文字列を指定できます
-  `bytesXIP`: 利用可能なフラッシュメモリの最後から LittleFS ファイルシステムに確保するバイト数を指定します
+  `drivename`: A string name for the drive, can contain any characters
+  `bytesXIP`: The number of bytes to reserve from the end of the flash memory for the LittleFS file system
 
 :::message
-`LFS::Flash` インスタンスを生成しただけではファイルシステムは作成されません。`FS::Format()` を実行してフォーマットする必要があります。
+`LFS::Flash` instances are generated, but the file system is not created. You must run `FS::Format()` to format the drive.
 :::
 
-#### FAT ドライブの作成
+#### FAT Drive Creation
 
-FAT ファイルシステムは、広く使われている汎用的なファイルシステムで、SD カードや USB ストレージなどのデバイスでよく利用されます。**pico-jxglib** では、[FatFs ライブラリ](https://elm-chan.org/fsw/ff/)をラップして、Pico ボードのフラッシュメモリ上に FAT ファイルシステムを実装するためのクラス `FAT::Flash` を提供しています。
+FAT is a widely used generic file system, common on SD cards and USB storage. **pico-jxglib** provides a class `FAT::Flash` to implement FAT on the Pico board's flash memory.
 
-FAT ファイルシステムを組み込むには `CMakeLists.txt` の最後に以下の行を追加します。
+To include FAT in your project, add the following lines to the end of `CMakeLists.txt`:
 
 ```cmake
 target_link_libraries(fs-flash jxglib_FAT_Flash)
@@ -163,9 +161,9 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 jxglib_configure_FAT(fs-flash FF_VOLUMES 1)
 ```
 
-FatFs ライブラリのコンフィグレーションファイル `ffconf.h` を生成するため、`jxglib_configure_FAT()` を実行する必要があります。`FF_VOLUMES` は FAT ファイルシステムのボリューム数 (**pico-jxglib** の設定ではドライブ数と同じ) を指定します。ここでは 1 を指定して、FAT ドライブを 1 個分確保します。
+FatFs library configuration file `ffconf.h` is generated by running `jxglib_configure_FAT()`. `FF_VOLUMES` is the number of FAT file systems (**pico-jxglib** settings are the same as the number of drives). Here, we specify 1 to ensure one FAT drive.
 
-ソースファイルを以下のように編集します。
+Edit the source file as follows:
 
 ```cpp title="fs-flash.cpp"
 #include <stdio.h>
@@ -182,19 +180,19 @@ int main()
 }
 ```
 
-`FAT::Flash` インスタンスを生成すると、Pico ボード上のフラッシュメモリを FAT ファイルシステムとして扱えるようになります。コンストラクタの詳細は以下の通りです:
+`FAT::Flash` instances are generated on the Pico board's flash memory, allowing you to treat it as a FAT file system. The constructor details are as follows:
 
 - `FAT::Flash(const char* driveName, uint32_t bytesXIP)`
-  `drivename`: パス名に使用するドライブ名で、アルファベットや数字を含む任意の文字列を指定できます
-  `bytesXIP`: 利用可能なフラッシュメモリの最後から FAT ファイルシステムに確保するバイト数を指定します
+  `drivename`: A string name for the drive, can contain any characters
+  `bytesXIP`: The number of bytes to reserve from the end of the flash memory for the FAT file system
 
 :::message
-`FAT::Flash` インスタンスを生成しただけではファイルシステムは作成されません。`FS::Format()` を実行してフォーマットする必要があります。
+`FAT::Flash` instances are generated, but the file system is not created. You must run `FS::Format()` to format the drive.
 :::
 
-#### 複数ドライブの作成
+#### Multiple Drive Creation
 
-複数のドライブを実装することも可能です。例えば、フラッシュメモリ上に 2 つの LittleFS ドライブと 2 つの FAT ドライブを実装する場合、`CMakeLists.txt` に以下の行を追加します。
+You can also implement multiple drives. For example, to have 2 LittleFS drives and 2 FAT drives on the Pico board, add the following lines to `CMakeLists.txt`:
 
 ```cmake
 target_link_libraries(fs-flash jxglib_LFS_Flash jxglib_FAT_Flash)
@@ -202,9 +200,9 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 jxglib_configure_FAT(fs-flash FF_VOLUMES 2)
 ```
 
-`jxglib_configure_FAT()` の引数 `FF_VOLUMES` に 2 を指定して、FAT ドライブを 2 個分確保します。
+`jxglib_configure_FAT()`'s argument `FF_VOLUMES` is 2, ensuring 2 FAT drives.
 
-ソースファイルを以下のように編集します。
+Edit the source file as follows:
 
 ```cpp title="fs-flash.cpp"
 #include <stdio.h>
@@ -225,28 +223,28 @@ int main()
 }
 ```
 
-異なるアドレス範囲を指定することで Pico ボードのフラッシュメモリ上に 4 つのファイルシステムドライブを作成しています。コンストラクタの詳細は以下の通りです。
+Different address ranges are specified to create 4 file systems on the Pico board's flash memory. The constructor details are as follows:
 
 - `LFS::Flash(const char* driveName, uint32_t addrXIP, uint32_t bytesXIP)`
   `FAT::Flash(const char* driveName, uint32_t addrXIP, uint32_t bytesXIP)`
-  `driveName`: パス名に使用するドライブ名で、アルファベットや数字を含む任意の文字列を指定できます
-  `addrXIP`: ドライブに割り当てるフラッシュメモリの開始アドレスを指定します
-  `bytesXIP`: ドライブに割り当てるフラッシュメモリのサイズを指定します
+  `driveName`: A string name for the drive, can contain any characters
+  `addrXIP`: The starting address of the flash memory for the drive
+  `bytesXIP`: The size of the flash memory for the drive
 
-### ファイルシステム API
+### File System API
 
-#### ファイルの書き込み
+#### File Writing
 
-LFS ファイルシステムにファイルを書き込むサンプルコードを示します。
+An example of writing a file to a LittleFS file system:
 
-`CMakeLists.txt` の最後に以下の行を追加します。
+`CMakeLists.txt`'s end should include:
 
 ```cmake
 target_link_libraries(fs-flash jxglib_LFS_Flash)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 ```
 
-ソースファイルを以下のように編集します。
+Edit the source file as follows:
 
 ```cpp title="fs-flash.cpp"
 #include <stdio.h>
@@ -272,32 +270,32 @@ int main()
 ```
 
 - `LFS::Flash drive("Drive", 0x0004'0000);  // 256kB`
-  LFS ファイルシステムドライブを作成します。ここでは、256kB のサイズで `Drive` という名前のドライブを作成しています
+  Creates a LittleFS file system drive named `Drive` with 256kB size
 - `if (!FS::Mount("Drive:") && !FS::Format(Stdio::Instance, "Drive:")) return 1;`
-  `FS::Mount()` を使ってドライブがマウントできるか確認します。マウントできない場合はファイルシステムが存在しないと判断して `FS::Format()` を使ってドライブをフォーマットします
+  Checks if the drive is mounted. If not, formats the drive
 - `File* pFile = FS::OpenFile("Drive:/test.txt", "w");`
-  `FS::OpenFile()` を使ってファイルを開きます。モードは `w` で、書き込み専用です
+  Opens a file for writing
 - `pFile->Printf("Line %d\n", i + 1);`
-  `File` クラスの `Printf()` メソッドを使って、ファイルに文字列を書き込みます
+  Writes a line to the file
 - `pFile->Close();`
-  ファイルを閉じます。ファイルを閉じると、書き込みが確定します。デストラクタで `Close()` が呼ばれるので、ここで呼ぶ必要はありませんが、コードの可読性のために明示的に呼び出しています
+  Closes the file
 - `delete pFile;`
-  ファイルポインタを解放します
+  Deletes the file pointer
 
-生成するインスタンスのクラスを `LFS::Flash` から `FAT::Flash` に置き換えることで、FAT ファイルシステムに対しても同様の操作が可能です。
+The same operations are possible with FAT file systems.
 
-#### ファイルの読み込み
+#### File Reading
 
-LFS ファイルシステムからファイルを読み込むサンプルコードを示します。
+An example of reading a file from a LittleFS file system:
 
-`CMakeLists.txt` の最後に以下の行を追加します。
+`CMakeLists.txt`'s end should include:
 
 ```cmake
 target_link_libraries(fs-flash jxglib_LFS_Flash)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 ```
 
-ソースファイルを以下のように編集します。
+Edit the source file as follows:
 
 ```cpp title="fs-flash.cpp"
 #include <stdio.h>
@@ -323,22 +321,22 @@ int main()
 ```
 
 - `File* pFile = FS::OpenFile("Drive:/test.txt", "r");`
-  `FS::OpenFile()` を使ってファイルを開きます。モードは `r` で、読み込み専用です
+  Opens a file for reading
 - `pFile->ReadLine(line, sizeof(line))`
-  `File` クラスの `ReadLine()` メソッドを使って、ファイルから一行ずつ読み込みます
+  Reads a line from the file
 
-#### ディレクトリ情報の取得
+#### Directory Information
 
-LFS ファイルシステムのディレクトリ情報を取得するサンプルコードを示します。
+An example of getting directory information from a LittleFS file system:
 
-`CMakeLists.txt` の最後に以下の行を追加します。
+`CMakeLists.txt`'s end should include:
 
 ```cmake
 target_link_libraries(fs-flash jxglib_LFS_Flash)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 ```
 
-ソースファイルを以下のように編集します。
+Edit the source file as follows:
 
 ```cpp title="fs-flash.cpp"
 #include <stdio.h>
@@ -365,31 +363,31 @@ int main()
 ```
 
 - `FS::Dir* pDir = FS::OpenDir("Drive:/");`
-  `FS::OpenDir()` を使ってディレクトリを開きます
+  Opens a directory
 - `pFileInfo = pDir->Read()`
-  `Dir` クラスの `Read()` メソッドでファイル情報を格納した FS::FileInfo インスタンスを取得します
+  Reads file information into an FS::FileInfo instance
 - `pDir->Close();`
-  ディレクトリを閉じます。デストラクタで `Close()` が呼ばれるので、ここで呼ぶ必要はありませんが、コードの可読性のために明示的に呼び出しています
+  Closes the directory
 
-### ファイルやディレクトリの操作
+### File and Directory Operations
 
-**pico-jxglib** では、ファイルやディレクトリの操作を行うための関数を提供しています。以下に代表的な関数を示します。
+**pico-jxglib** provides functions for file and directory operations. Here are some examples:
 
 - `bool FS::CopyFile(const char* fileNameSrc, const char* fileNameDst);`
-  ファイルをコピーします 
+  Copies a file
 - `bool FS::Move(const char* fileNameOld, const char* fileNameNew);`
-  ファイルやディレクトリをリネームまたは移動します (ディレクトリの移動はサポートされていません)
+  Renames or moves a file or directory (directory moving is not supported)
 - `bool FS::RemoveFile(const char* fileName);`
-  ファイルを削除します
+  Deletes a file
 - `bool FS::RemoveDir(const char* dirName);`
-  ディレクトリを削除します
+  Deletes a directory
 - `bool FS::CreateDir(const char* dirName);`
-  ディレクトリを作成します
+  Creates a directory
 - `bool FS::ChangeCurDir(const char* dirName);`
-  カレントディレクトリを変更します
+  Changes the current directory
 - `bool FS::Format(const char* driveName);`
-  ファイルシステムをフォーマットします
+  Formats the file system
 - `bool FS::Mount(const char* driveName);`
-  ファイルシステムをマウントします
+  Mounts the file system
 - `bool FS::Unmount(const char* driveName);`
-  ファイルシステムをアンマウントします
+  Unmounts the file system
