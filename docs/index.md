@@ -100,7 +100,7 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     [:octicons-arrow-right-24: Learn More](shell/wifi/index.md)
 
--   :material-ip-network:{ .lg .middle } **Remote Shell Access**
+-   :octicons-command-palette-16:{ .lg .middle } **Remote Shell**
 
     ---
 
