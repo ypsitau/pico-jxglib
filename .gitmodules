@@ -1,12 +1,12 @@
 [submodule "LVGL/lvgl"]
-	path = LVGL/lvgl
+	path = src/LVGL/lvgl
 	url = https://github.com/lvgl/lvgl
 [submodule "FS/LFS/littlefs"]
-	path = FS/LFS/littlefs
+	path = src/FS/LFS/littlefs
 	url = https://github.com/littlefs-project/littlefs
 [submodule "guest/stb"]
-	path = guest/stb
+	path = src/guest/stb
 	url = https://github.com/nothings/stb.git
 [submodule "ML/pico-tflmicro"]
-	path = ML/pico-tflmicro
+	path = src/ML/pico-tflmicro
 	url = https://github.com/raspberrypi/pico-tflmicro.git
