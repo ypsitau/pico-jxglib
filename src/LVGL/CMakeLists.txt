@@ -54,7 +54,7 @@ function(jxglib_configure_LVGL target)
 		endif()
 		set("_${fontName}" 1)
 	endforeach()
-	configure_file(${JXGLIB_DIR}/LVGL/lv_conf.h.in ${CMAKE_CURRENT_BINARY_DIR}/lv_conf.h)
+	configure_file(${JXGLIB_DIR}/src/LVGL/lv_conf.h.in ${CMAKE_CURRENT_BINARY_DIR}/lv_conf.h)
 	target_compile_definitions(jxglib_LVGL INTERFACE
 		LV_CONF_PATH="${CMAKE_CURRENT_BINARY_DIR}/lv_conf.h")
 	target_compile_definitions(lvgl PRIVATE

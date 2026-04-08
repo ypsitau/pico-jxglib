@@ -54,7 +54,7 @@ function(jxglib_configure_USBDevice TARGET)
 	jxglib_set_if_undefined(_CFG_TUD_VIDEO_STREAMING			1)
 	jxglib_set_if_undefined(_CFG_TUD_VIDEO_STREAMING_EP_BUFSIZE	256)
 	jxglib_set_if_undefined(_CFG_TUD_VIDEO_STREAMING_BULK		0)
-	configure_file(${JXGLIB_DIR}/USBDevice/tusb_config.h.in ${CMAKE_CURRENT_BINARY_DIR}/tusb_config.h)
+	configure_file(${JXGLIB_DIR}/src/USBDevice/tusb_config.h.in ${CMAKE_CURRENT_BINARY_DIR}/tusb_config.h)
 		target_include_directories(${TARGET} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 endfunction()
 
