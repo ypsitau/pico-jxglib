@@ -30,29 +30,9 @@ Because it's monochrome and has few pixels, it's not suitable for complex graphi
 
 ## Example Project
 
-### Setting Up the Development Environment
-
-If you haven't set up Visual Studio Code, Git tools, or the Pico SDK, see ["Getting Started with Pico SDK"](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E9%96%8B%E7%99%BA%E7%92%B0%E5%A2%83).
-
-You can get **pico-jxglib** by cloning the repository from GitHub:
-
-```bash
-git clone https://github.com/ypsitau/pico-jxglib.git
-cd pico-jxglib
-git submodule update --init
-```
-
-:::message
-**pico-jxglib** is updated almost daily. If you've already cloned it, run the following command in the `pico-jxglib` directory to get the latest version:
-
-```bash
-git pull
-```
-:::
-
 ### Creating a Project
 
-From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings. For details on creating a Pico SDK project, building, and writing to the board, see ["Getting Started with Pico SDK"](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%AE%E4%BD%9C%E6%88%90%E3%81%A8%E7%B7%A8%E9%9B%86).
+From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings. For details on creating a Pico SDK project, building, and writing to the board, see ["Getting Started with Pico SDK"](../../../development/pico-sdk/index.md).
 
 - **Name** ... Enter the project name. In this example, enter `termtest`.
 - **Board type** ... Select the board type.

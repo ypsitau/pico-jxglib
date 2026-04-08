@@ -1,4 +1,3 @@
-
 In the article ["Connecting USB Keyboard and Mouse to Pico Board with pico-jxglib"](https://zenn.dev/ypsitau/articles/2025-04-02-usbhost-keyboard-mouse), we connected a USB keyboard to the Pico board. This time, we'll use that to implement a command line editing feature on the Pico board, similar to readline used in Linux bash shells.
 
 In addition to USB keyboards, you can also use tact switches and keyboard matrices as input devices, and command line editing is possible over serial communication with a PC.
@@ -115,7 +114,7 @@ Connect the USB keyboard using a microB-TypeA adapter to the USB port (see [here
 
 The breadboard wiring image is shown below. Note that the 5V power is connected to the Pico board's VBUS (pin 40).
 
-![circuit-usbhost-st7789.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-04-06-cmdline-editor/circuit-usbhost-st7789.png)
+![circuit-usbhost-st7789.png](images/circuit-usbhost-st7789.png)
 
 Add the following lines to the end of `CMakeLists.txt`:
 
@@ -160,7 +159,7 @@ int main()
 
 `terminal.ReadLine()` returns a pointer to the entered string.
 
-![cmdedit-display-test.jpg](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-04-06-cmdline-editor/cmdedit-display-test.jpg)
+![cmdedit-display-test.jpg](images/cmdedit-display-test.jpg)
 
 You can't see it in the photo, but the cursor is blinking properly.
 
@@ -171,7 +170,7 @@ Connect the USB keyboard using a microB-TypeA adapter to the USB port. The OLED 
 
 The breadboard wiring image is shown below. Note that the 5V power is connected to the Pico board's VBUS (pin 40).
 
-![circuit-usbhost-ssd1306.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-04-06-cmdline-editor/circuit-usbhost-ssd1306.png)
+![circuit-usbhost-ssd1306.png](images/circuit-usbhost-ssd1306.png)
 
 Add the following lines to the end of `CMakeLists.txt`:
 
@@ -219,11 +218,11 @@ int main()
 
 Connect a keyboard matrix to the GPIO. Here, we use a 4x4 matrix type that can be easily obtained from Amazon, etc.
 
-![keyboard-matrix-4x4.jpg](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-04-06-cmdline-editor/keyboard-matrix-4x4.jpg)
+![keyboard-matrix-4x4.jpg](images/keyboard-matrix-4x4.jpg)
 
 The breadboard wiring image is shown below.
 
-![circuit-usbhost-ssd1306.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-04-06-cmdline-editor/circuit-keymatrix-st7789.png)
+![circuit-usbhost-ssd1306.png](images/circuit-keymatrix-st7789.png)
 
 Add the following lines to the end of `CMakeLists.txt`:
 
@@ -291,7 +290,7 @@ Connect the Pico board to a PC via a serial line.
 
 #### Creating a Project for Serial::Terminal
 
-From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings. For details on creating a Pico SDK project, building, and writing to the board, see ["Getting Started with Pico SDK"](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%AE%E4%BD%9C%E6%88%90%E3%81%A8%E7%B7%A8%E9%9B%86).
+From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings. For details on creating a Pico SDK project, building, and writing to the board, see ["Getting Started with Pico SDK"](../../../development/pico-sdk/index.md).
 
 - **Name** ... Enter the project name. In this example, enter `cmdedit-serial-test`.
 - **Board type** ... Select the board type.

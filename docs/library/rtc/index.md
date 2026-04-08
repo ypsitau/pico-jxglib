@@ -66,7 +66,7 @@ jxglib_configure_FAT(rtctest FF_VOLUMES 1)
 
 Edit the source file as follows:
 
-```cpp:rtctest.cpp
+```cpp title="rtctest.cpp"
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/Serial.h"
