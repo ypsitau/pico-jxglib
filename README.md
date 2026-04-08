@@ -2,7 +2,7 @@
 
 A collection of libraries and tools for Raspberry Pi Pico, including a powerful shell and various utilities like built-in logic analyzer to enhance your development experience.
 
-![Pico Models](images/pico-pico2-picow-pico2w.jpg)
+![Pico Models](docs/images/pico-pico2-picow-pico2w.jpg)
 
 Detailed documentation: https://ypsitau.github.io/pico-jxglib/
 
