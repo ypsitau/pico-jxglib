@@ -41,6 +41,9 @@ nav:
         - File System:
             - Flash Memory: library/filesystem/flash/index.md
             - Media: library/filesystem/media/index.md
+    - Applications:
+        - Overview: applications/index.md
+        - Character Recognizer: applications/character-recognizer/index.md
     - Development Environment:
         - Overview: development/index.md
         - Getting Started with Pico SDK: development/pico-sdk/index.md
