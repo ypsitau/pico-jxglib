@@ -36,27 +36,6 @@ To support various data types, the format specification is somewhat complex. Whe
 
 However, I couldn't resist the urge to implement a parser that can extract all information from the Report Descriptor. This should allow support for various gamepads, and since it would be a waste not to use it for other purposes, I plan to write a separate article detailing it.
 
-## Setting Up the Development Environment
-
-If you haven't set up Visual Studio Code, Git tools, or the Pico SDK yet, please refer to ["Getting Started with the Pico SDK"](../../../development/pico-sdk/index.md)
-
-Clone **pico-jxglib** from GitHub:
-
-```bash
-git clone https://github.com/ypsitau/pico-jxglib.git
-cd pico-jxglib
-git submodule update --init
-```
-
-:::message
-**pico-jxglib** is updated almost daily. If you have already cloned it, run the following command in the `pico-jxglib` directory to get the latest version:
-
-```bash
-git pull
-```
-
-:::
-
 ## Creating the Monitor Program
 
 Let's create a monitor program that displays the gamepad's button and joystick information on a TFT LCD.

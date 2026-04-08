@@ -7,20 +7,20 @@ When it comes to peripherals connected to a CPU, display-related devices are per
 
 By the way, I mainly use Akizuki Denshi and Amazon to procure electronic components. I searched for "TFT LCD" on these shops and purchased the following devices:
 
-- **ST7789**
-  The device on the left is 1.8 inches with 240x320 pixels, and the one on the right is 1.3 inches with 240x240 pixels. Both can be purchased for around 1,000 yen.
+!!! abstract "ST7789"
+    The device on the left is 1.8 inches with 240x320 pixels, and the one on the right is 1.3 inches with 240x240 pixels. Both can be purchased for around 1,000 yen.
 
-  ![ST7789.jpg](images/ST7789.jpg)
+    ![ST7789.jpg](images/ST7789.jpg)
 
-- **ST7735**
-  The device on the left is 0.96 inches with 80x160 pixels, and the one on the right is 1.8 inches with 128x160 pixels. Both can be purchased for less than 1,000 yen.
+!!! abstract "ST7735"
+    The device on the left is 0.96 inches with 80x160 pixels, and the one on the right is 1.8 inches with 128x160 pixels. Both can be purchased for less than 1,000 yen.
 
-  ![ST7735.jpg](images/ST7735.jpg)
+    ![ST7735.jpg](images/ST7735.jpg)
 
-- **ILI9341/ILI9488**
-  These are devices with touch screens. The left one is ILI9341, 2.8 inches with 240x320 pixels, and the right one is ILI9488, 3.5 inches with 320x480 pixels. The prices are about 1,500 yen and 2,500 yen, respectively.
+!!! abstract "ILI9341/ILI9488"
+    These are devices with touch screens. The left one is ILI9341, 2.8 inches with 240x320 pixels, and the right one is ILI9488, 3.5 inches with 320x480 pixels. The prices are about 1,500 yen and 2,500 yen, respectively.
 
-  ![ILI9341_ILI9488.jpg](images/ILI9341_ILI9488.jpg)
+    ![ILI9341_ILI9488.jpg](images/ILI9341_ILI9488.jpg)
 
 The devices listed above have slight differences in initialization procedures, VRAM drawing direction, and pixel format, but their commands are almost the same. In this article, we will use **pico-jxglib** to draw image data and text on these devices.
 
@@ -34,7 +34,7 @@ The breadboard wiring image is as follows:
 
 ![circuit-st7789.png](images/circuit-st7789.png)
 
-From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings. For details on creating a Pico SDK project, building, and writing to the board, see ["Getting Started with Pico SDK"](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%AE%E4%BD%9C%E6%88%90%E3%81%A8%E7%B7%A8%E9%9B%86).
+From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings. For details on creating a Pico SDK project, building, and writing to the board, see ["Getting Started with Pico SDK"](../../../development/pico-sdk/index.md).
 
 - **Name** ... Enter the project name. In this example, enter `lcdtest`.
 - **Board type** ... Select the board type.
@@ -102,73 +102,66 @@ Uncomment the functions starting with `DrawableTest::` and [build, write, and ru
 
 If you want to connect devices other than the ST7789, modify the project as shown above as follows:
 
-- **ST7789 (240x240 pixels)**
-  Refer to the ST7789 wiring diagram above for breadboard wiring. This device does not have a CS (Chip Select) pin. Change the corresponding line in the source file as follows:
+!!! abstract "ST7789 (240x240 pixels)"
+    Refer to the ST7789 wiring diagram above for breadboard wiring. This device does not have a CS (Chip Select) pin. Change the corresponding line in the source file as follows:
 
-  ```diff cpp:lcdtest.cpp
-  - Display::ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
-  + Display::ST7789 display(spi1, 240, 240, {RST: GPIO10, DC: GPIO11, BL: GPIO13});
-  ```
+    ```cpp title="lcdtest.cpp"
+    Display::ST7789 display(spi1, 240, 240, {RST: GPIO10, DC: GPIO11, BL: GPIO13});
+    ```
 
-- **ST7735 (80x160 pixels)**
-  Refer to the ST7789 wiring diagram above for breadboard wiring. Change the corresponding parts of `CMakeLists.txt` and the source file as follows:
+!!! abstract "ST7735 (80x160 pixels)"
+    Refer to the ST7789 wiring diagram above for breadboard wiring. Change the corresponding parts of `CMakeLists.txt` and the source file as follows:
 
-  ```diff cmake:CMakeLists.txt
-  - target_link_libraries(lcdtest jxglib_Display_ST7789 jxglib_DrawableTest)
-  + target_link_libraries(lcdtest jxglib_Display_ST7735 jxglib_DrawableTest)
-  ```
+    ```cmake title="CMakeLists.txt"
+    target_link_libraries(lcdtest jxglib_Display_ST7735 jxglib_DrawableTest)
+    ```
 
-  ```diff cpp:lcdtest.cpp
+    ```cpp title="lcdtest.cpp"
+    #include "jxglib/Display/ST7735.h"
 
-- **ST7735 (128x160 pixels)**
-  Refer to the ST7789 wiring diagram above for breadboard wiring. Change the corresponding parts of `CMakeLists.txt` and the source file as follows:
+    Display::ST7735 display(spi1, 80, 160, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
+    ```
 
-  ```diff cmake:CMakeLists.txt
-  - target_link_libraries(lcdtest jxglib_Display_ST7789 jxglib_DrawableTest)
-  + target_link_libraries(lcdtest jxglib_Display_ST7735 jxglib_DrawableTest)
-  ```
+!!! abstract "ST7735 (128x160 pixels)"
+    Refer to the ST7789 wiring diagram above for breadboard wiring. Change the corresponding parts of `CMakeLists.txt` and the source file as follows:
 
-  ```diff cpp:lcdtest.cpp
-  - #include "jxglib/Display/ST7789.h"
-  + #include "jxglib/Display/ST7735.h"
+    ```cmake title="CMakeLists.txt"
+    target_link_libraries(lcdtest jxglib_Display_ST7735 jxglib_DrawableTest)
+    ```
 
-  - Display::ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
-  + Display::ST7735::TypeB display(spi1, 128, 160, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
-  ```
+    ```cpp title="lcdtest.cpp"
+    #include "jxglib/Display/ST7735.h"
 
-- **ILI9341**
-  The breadboard wiring image is as follows:
-  ![circuit-ili9341.png](images/circuit-ili9341.png)
-  Change the corresponding parts of `CMakeLists.txt` and the source file as follows:
+    Display::ST7735::TypeB display(spi1, 128, 160, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
+    ```
 
-  ```diff cmake:CMakeLists.txt
-  - target_link_libraries(lcdtest jxglib_Display_ST7789 jxglib_DrawableTest)
-  + target_link_libraries(lcdtest jxglib_Display_ILI9341 jxglib_DrawableTest)
-  ```
+!!! abstract "ILI9341"
+    The breadboard wiring image is as follows:
+    ![circuit-ili9341.png](images/circuit-ili9341.png)
+    Change the corresponding parts of `CMakeLists.txt` and the source file as follows:
 
-  ```diff cpp:lcdtest.cpp
-  - #include "jxglib/Display/ST7789.h"
-  + #include "jxglib/Display/ILI9341.h"
+    ```cmake title="CMakeLists.txt"
+    target_link_libraries(lcdtest jxglib_Display_ILI9341 jxglib_DrawableTest)
+    ```
 
-  - Display::ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
-  + Display::ILI9341 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
-  ```
+    ```cpp title="lcdtest.cpp"
+    #include "jxglib/Display/ILI9341.h"
 
-- **ILI9488**
-  Refer to the ILI9341 wiring diagram above for breadboard wiring. Change the corresponding parts of `CMakeLists.txt` and the source file as follows:
+    Display::ILI9341 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
+    ```
 
-  ```diff cmake:CMakeLists.txt
-  - target_link_libraries(lcdtest jxglib_Display_ST7789 jxglib_DrawableTest)
-  + target_link_libraries(lcdtest jxglib_Display_ILI9488 jxglib_DrawableTest)
-  ```
+!!! abstract "ILI9488"
+    Refer to the ILI9341 wiring diagram above for breadboard wiring. Change the corresponding parts of `CMakeLists.txt` and the source file as follows:
 
-  ```diff cpp:lcdtest.cpp
-  - #include "jxglib/Display/ST7789.h"
-  + #include "jxglib/Display/ILI9488.h"
+    ```cmake title="CMakeLists.txt"
+    target_link_libraries(lcdtest jxglib_Display_ILI9488 jxglib_DrawableTest)
+    ```
 
-  - Display::ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
-  + Display::ILI9488 display(spi1, 320, 480, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
-  ```
+    ```cpp title="lcdtest.cpp"
+    #include "jxglib/Display/ILI9488.h"
+
+    Display::ILI9488 display(spi1, 320, 480, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
+    ```
 
 ## Program Explanation
 
