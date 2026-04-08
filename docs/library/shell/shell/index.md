@@ -1,7 +1,6 @@
 
 In this article, we will implement a shell function on the Pico board using the Terminal command input feature introduced in the previous article, ["pico-jxglib and Command Line Editing Features"](https://zenn.dev/ypsitau/articles/2025-04-06-cmdline-editor).
 
-
 ## About the Shell Function
 
 In embedded board development, you often repeat the cycle of editing program code, writing to the board, and running it. The quickest way to change program behavior is to modify the code directly. However, if you have many parameters to change or want to tweak behavior step by step while observing results, this process can become cumbersome. In such cases, having a shell running on the board that can accept commands makes experimentation and testing much smoother. Especially when creating apps that use file systems like FatFS or LittleFS, a shell is very useful for checking directory contents and more.
@@ -17,12 +16,11 @@ The **pico-jxglib** shell function has the following features:
 - **Easy to create and embed commands**
     You can easily create commands. By simply linking the source or library that implements the command, it becomes available from the shell, making embedding and removal easy.
 
-
 ## Example Project
 
 ### Creating the Project
 
-From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings. For details on creating a Pico SDK project, building, and writing to the board, see ["Getting Started with Pico SDK"](../../../development/pico-sdk).
+From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings. For details on creating a Pico SDK project, building, and writing to the board, see ["Getting Started with Pico SDK"](../../../development/pico-sdk/index.md).
 
 - **Name** ... Enter the project name. In this example, enter `shell-test`.
 - **Board type** ... Select the board type.
@@ -40,7 +38,6 @@ Assume the project directory and `pico-jxglib` are arranged as follows:
     └── ...
 ```
 
-
 From here, edit `CMakeLists.txt` and the source file based on this project to create your program.
 
 
@@ -54,13 +51,11 @@ To embed the shell in your program, write the following code:
 
 How you create the `Terminal` instance depends on what you use for the terminal. Here are some examples:
 
-
 #### Using a Serial Console as the Terminal
 
 This can be used in environments where Stdio is connected to a PC via UART or USB. Since the amount of code to write is small, you can easily embed the shell.
 
 Add the following line to the end of `CMakeLists.txt`:
-
 
 ```cmake
 target_link_libraries(shell-test jxglib_Serial jxglib_Shell jxglib_ShellCmd_Basic)
@@ -68,7 +63,6 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 ```
 
 Edit the source file as follows:
-
 
 ```cpp title="shell-test.cpp"
 #include <stdio.h>
@@ -92,7 +86,6 @@ int main()
     }
 }
 ```
-
 
 #### Using TFT LCD ST7789 and USB Keyboard as the Terminal
 
@@ -146,7 +139,6 @@ int main()
 }
 ```
 
-
 #### Using OLED SSD1306 and USB Keyboard as the Terminal
 
 This can be used in environments where an OLED SSD1306 and USB keyboard are connected to the Pico board. Since you need to initialize the OLED and set up I2C, there is more code to write, but it can run standalone on the Pico board.
@@ -163,7 +155,7 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 jxglib_configure_USBHost(shell-test CFG_TUH_HID 3)
 ```
 
-ソースファイルを以下のように編集します。
+Edit the source file as follows.
 
 ```cpp title="shell-test.cpp"
 #include <stdio.h>
@@ -190,7 +182,7 @@ about-platform  prints information about the platform
 
 help            prints help strings for available commands
 prompt          changes the command line prompt
-第一引数は先頭アドレス、第二引数は表示バイト数です。16 進数を指定するときは先頭に `0x` をつけます。
+The first argument is the start address, and the second argument is the number of bytes to display. To specify a hexadecimal value, prefix it with `0x`.
 ```
 
 #### `about-me` command
@@ -261,6 +253,8 @@ If you run it again with no arguments, it displays the next block of memory.
 
 The first argument is the start address, and the second argument is the number of bytes to display. To specify a hexadecimal value, prefix it with `0x`.
 
+### Creating Shell Commands
+
 ```text
 >d 0x10000000
 10000000  00 B5 32 4B 21 20 58 60 98 68 02 21 88 43 98 60
@@ -284,31 +278,6 @@ The first argument is the start address, and the second argument is the number o
 If you specify a string other than a number as an argument, it is interpreted as a file name and the file contents are dumped. This feature is enabled when a file system is mounted.
 
 ### Creating Shell Commands
-
-```text
->d 0x10000000
-10000000  00 B5 32 4B 21 20 58 60 98 68 02 21 88 43 98 60
-10000010  D8 60 18 61 58 61 2E 4B 00 21 99 60 02 21 59 61
-10000020  01 21 F0 22 99 50 2B 49 19 60 01 21 99 60 35 20
-10000030  00 F0 44 F8 02 22 90 42 14 D0 06 21 19 66 00 F0
-```
-
-```text
->d 0x10000000 128
-10000000  00 B5 32 4B 21 20 58 60 98 68 02 21 88 43 98 60
-10000010  D8 60 18 61 58 61 2E 4B 00 21 99 60 02 21 59 61
-10000020  01 21 F0 22 99 50 2B 49 19 60 01 21 99 60 35 20
-10000030  00 F0 44 F8 02 22 90 42 14 D0 06 21 19 66 00 F0
-10000040  34 F8 19 6E 01 21 19 66 00 20 18 66 1A 66 00 F0
-10000050  2C F8 19 6E 19 6E 19 6E 05 20 00 F0 2F F8 01 21
-10000060  08 42 F9 D1 00 21 99 60 1B 49 19 60 00 21 59 60
-10000070  1A 49 1B 48 01 60 01 21 99 60 EB 21 19 66 A0 21
-```
-
-引数に数値以外の文字列を指定すると、ファイル名として解釈され、ファイルの内容をダンプします。この機能はファイルシステムがマウントされているときに有効になります。
-
-### シェルコマンドの作成
-
 
 To create a shell command, use the `ShellCmd` macro. The macro format is as follows:
 

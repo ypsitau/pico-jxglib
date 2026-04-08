@@ -38,7 +38,7 @@ However, I couldn't resist the urge to implement a parser that can extract all i
 
 ## Setting Up the Development Environment
 
-If you haven't set up Visual Studio Code, Git tools, or the Pico SDK yet, please refer to ["Getting Started with the Pico SDK"](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E9%96%8B%E7%99%BA%E7%92%B0%E5%A2%83).
+If you haven't set up Visual Studio Code, Git tools, or the Pico SDK yet, please refer to ["Getting Started with the Pico SDK"](../../../development/pico-sdk/index.md)
 
 Clone **pico-jxglib** from GitHub:
 
@@ -73,7 +73,7 @@ Below is a breadboard wiring diagram using the ST7789 TFT LCD.
 
 ### Creating the Project
 
-From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings. For details on creating a Pico SDK project, building, and writing to the board, see ["Getting Started with the Pico SDK"](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%AE%E4%BD%9C%E6%88%90%E3%81%A8%E7%B7%A8%E9%9B%86).
+From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings. For details on creating a Pico SDK project, building, and writing to the board, see ["Getting Started with the Pico SDK"](../../../development/pico-sdk/index.md).
 
 - **Name** ... Enter the project name. For example, enter `usbhost-gamepad-monitor`.
 - **Board type** ... Select the board type.
@@ -102,7 +102,7 @@ jxglib_configure_USBHost(usbhost-gamepad-monitor CFG_TUH_HID 3)
 
 Edit the source file `usbhost-gamepad-monitor.cpp` as follows.
 
-```cpp:usbhost-gamepad-monitor.cpp
+```cpp title="usbhost-gamepad-monitor.cpp"
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/Display/ILI9341.h"
@@ -171,7 +171,7 @@ The button and joystick assignments for the gamepad are as follows. As mentioned
 - A, B, X, Y buttons ... Fire
 - Other buttons ... Start
 
-For wiring, please refer to the [diagram above](#%E9%85%8D%E7%B7%9A%E3%82%A4%E3%83%A1%E3%83%BC%E3%82%B8).
+For wiring, please refer to the [diagram above].
 
 ### How to Build
 

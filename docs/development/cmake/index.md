@@ -196,4 +196,4 @@ int main()
 
 [^namespace]: All **pico-jxglib** functions, classes, and global variables are defined in the `jxglib` namespace to avoid conflicts with other libraries. For example, `GPIO15` in this code is actually `jxglib::GPIO15`, but using `using namespace` lets you omit the prefix.
 
-For how to build and write to the board, see ["Getting Started with Pico SDK"](../pico-sdk).
+For how to build and write to the board, see ["Getting Started with Pico SDK"](../pico-sdk/index.md).

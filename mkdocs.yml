@@ -26,6 +26,7 @@ nav:
         - UART: shell/uart/index.md
     - Library APIs:
         - Overview: library/index.md
+        - RTC (Real Time Clock): library/rtc/index.md
         - Display:
             - TFT LCD: library/display/tft-lcd/index.md
             - OLED: library/display/oled/index.md

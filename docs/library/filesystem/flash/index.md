@@ -15,15 +15,17 @@ The **pico-jxglib** file system has the following features:
 
 For details on using SD cards, USB storage, shell commands, and implementing timestamps with RTC, see the following articles:
 
-▶️ [Connecting SD Cards and USB Storage to the Pico Board with pico-jxglib](https://zenn.dev/ypsitau/articles/2025-06-06-fs-media)
-▶️ [Operating the File System with Shell Commands in pico-jxglib (Easy Input with Autocomplete and History)](https://zenn.dev/ypsitau/articles/2025-06-09-fs-shell)
-▶️ [Connecting RTC to the Pico Board and Recording Timestamps in the File System with pico-jxglib](https://zenn.dev/ypsitau/articles/2025-06-22-rtc)
+▶️ [SD Cards and USB Storage](../media/index.md)
+
+▶️ [Shell Commands](../../shell/shell/index.md)
+
+▶️ [RTC (Real Time Clock)](../../rtc/index.md)
 
 ## Example Project
 
 ### Setting Up the Development Environment
 
-If you haven't set up Visual Studio Code, Git tools, or the Pico SDK, see ["Getting Started with Pico SDK"](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E9%96%8B%E7%99%BA%E7%92%B0%E5%A2%83).
+If you haven't set up Visual Studio Code, Git tools, or the Pico SDK, see ["Getting Started with Pico SDK"](../../../development/pico-sdk/index.md).
 
 Clone **pico-jxglib** from GitHub:
 
@@ -43,7 +45,7 @@ git pull
 
 ### Creating a Project
 
-From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings. For details on creating a Pico SDK project, building, and writing to the board, see ["Getting Started with Pico SDK"](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%AE%E4%BD%9C%E6%88%90%E3%81%A8%E7%B7%A8%E9%9B%86).
+From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings. For details on creating a Pico SDK project, building, and writing to the board, see ["Getting Started with Pico SDK"](../../../development/pico-sdk/index.md). 
 
 - **Name** ... Enter the project name. In this example, enter `fs-flash`.
 - **Board type** ... Select the board type.
@@ -99,7 +101,7 @@ The program is written from the head (0x1000'0000), so the remaining flash memor
   `binary end` is the end address of the flash memory occupied by the program.
 
 - **Use pico-jxglib's shell**
-  If the [pico-jxglib shell](https://zenn.dev/ypsitau/articles/2025-05-08-shell) is running on the Pico board, you can use the `about-me` command to get information about the running program. Connect to the Pico board's shell and run the following command:
+  If the pico-jxglib shell is running on the Pico board, you can use the `about-me` command to get information about the running program. Connect to the Pico board's shell and run the following command:
 
   ```text
   > about-me
