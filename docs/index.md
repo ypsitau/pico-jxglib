@@ -92,11 +92,11 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
 <div class="grid cards" markdown>
 
--   :material-ip-network:{ .lg .middle } **Wi-Fi Conection**
+-   :material-ip-network:{ .lg .middle } **Wi-Fi Configuration by Shell**
 
     ---
 
-    If you're using a Pico W or Pico2 W, you can also take advantage of the built-in Wi-Fi capabilities to connect to the internet and perform network communication directly from your firmware.
+    If you're using a Pico W or Pico2 W, you can configure the network settings, like SSID and password, easily from the shell. No program needed!
 
     [:octicons-arrow-right-24: Learn More](shell/wifi/index.md)
 
