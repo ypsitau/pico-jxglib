@@ -106,7 +106,7 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     You can remotely access the shell over the Wi-Fi network using Telnet protocol, allowing you to interact with your Pico from anywhere without needing a physical connection.
 
-    [:octicons-arrow-right-24: Learn More](shell/wifi/index.md)
+    [:octicons-arrow-right-24: Learn More](shell/wifi/index.md#telnet-server)
 
 -   :fontawesome-solid-display:{ .lg .middle } **Display Support**
 

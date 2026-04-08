@@ -124,7 +124,7 @@ L:/>ntp
 2025-10-06 21:34:56
 ```
 
-### Running a Telnet Server on the Pico Board for Remote Commands
+### Running a Telnet Server on the Pico Board for Remote Commands {#telnet-server}
 
 Start a Telnet server on the Pico board with the `telnet-server` command:
 
