@@ -96,7 +96,15 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     ---
 
-    If you're using a Pico W or Pico2 W, you can also take advantage of the built-in Wi-Fi capabilities to connect to the internet and perform network communication directly from your firmware. You can remotely access the shell over the network using Telnet, allowing you to interact with your Pico from anywhere without needing a physical connection.
+    If you're using a Pico W or Pico2 W, you can also take advantage of the built-in Wi-Fi capabilities to connect to the internet and perform network communication directly from your firmware.
+
+    [:octicons-arrow-right-24: Learn More](shell/wifi/index.md)
+
+-   :material-ip-network:{ .lg .middle } **Remote Shell Access**
+
+    ---
+
+    You can remotely access the shell over the Wi-Fi network using Telnet protocol, allowing you to interact with your Pico from anywhere without needing a physical connection.
 
     [:octicons-arrow-right-24: Learn More](shell/wifi/index.md)
 
@@ -118,7 +126,7 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     ---
 
-    The file system above is also accessible as a USB mass storage device when the Pico is connected to a computer. This means you can easily transfer files between your computer and the Pico without needing additional software or tools.
+    The file system is also accessible as a USB mass storage device when the Pico is connected to a computer. This means you can easily transfer files between your computer and the Pico without needing additional software or tools.
 
     [:octicons-arrow-right-24: Learn More](shell/file-operations/index.md)
 
