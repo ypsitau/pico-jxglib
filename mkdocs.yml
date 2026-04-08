@@ -1,6 +1,9 @@
 site_name: pico-jxglib
 site_description: A collection of libraries and tools for Raspberry Pi Pico, including a powerful shell and various utilities to enhance your development experience.
 copyright: "2025-2026, ypsitau"
+repo_url: https://github.com/ypsitau/pico-jxglib
+repo_name: ypsitau/pico-jxglib
+
 nav:
     - Home: index.md
     - Shell Commands:
@@ -40,13 +43,14 @@ nav:
             - Media: library/filesystem/media/index.md
     - Development Environment:
         - Overview: development/index.md
-        - Pico SDK: development/pico-sdk/index.md
-        - CMake: development/cmake/index.md
+        - Getting Started with Pico SDK: development/pico-sdk/index.md
+        - Quick Guide to CMake: development/cmake/index.md
 
 theme:
     name: material
     icon:
         logo: material/chip
+        repo: fontawesome/brands/github
     language: en
     palette:
         primary: indigo
@@ -55,6 +59,7 @@ theme:
         - navigation.tabs.sticky
         - navigation.expand
         - content.code.copy
+
 markdown_extensions:
     - pymdownx.highlight:
         anchor_linenums: true
@@ -80,6 +85,7 @@ markdown_extensions:
     - footnotes
     - attr_list
     - md_in_html
+    - def_list
     - pymdownx.superfences:
         custom_fences:
         - name: mermaid

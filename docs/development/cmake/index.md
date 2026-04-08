@@ -1,4 +1,6 @@
-# About CMake
+# Quick Guide to CMake
+
+## CMake Basics
 
 To use **pico-jxglib** in a Pico SDK project, you need to edit the CMake configuration file `CMakeLists.txt`. You only need to add a few lines, so you can integrate it without knowing all the details, but understanding what CMake actually does will help you feel more comfortable. This page explains the basics of CMake[^cmake-note].
 
@@ -20,13 +22,13 @@ target_include_directories(hoge PRIVATE
 
 Here's what each part does:
 
-- `add_executable()` declares the creation of an executable. The first argument is the target name, followed by the source files. If there are multiple source files, separate them with spaces or newlines. The target name is used as the base name for the executable (e.g., `hoge.elf` or `hoge.uf2`), and is also used as the first argument for commands starting with `target_`. To declare a library, use `add_library()` instead.
+- `add_executable()` declares the creation of an executable. The first argument is the target name, followed by the source files. If there are multiple source files, separate them with spaces or newlines. The target name is used as the base name for the executable (e.g., `hoge.elf` or `hoge.uf2`), and is also used as the first argument for commands starting with `target_` like `target_link_libraries` and `target_include_directories`.
 - `target_link_libraries()` specifies libraries to link with this target.
-- `target_include_directories()` specifies include paths for compiling the source files. `PRIVATE` means the include path is only valid within this `CMakeLists.txt`. You can also use `PUBLIC` or `INTERFACE` here.
+- `target_include_directories()` specifies include paths for compiling the source files. `PRIVATE` means the include path is only valid within this `CMakeLists.txt`.　Other keywords include `PUBLIC` (valid for this and all parent `CMakeLists.txt`) and `INTERFACE` (not valid for this `CMakeLists.txt`, but valid for all parent `CMakeLists.txt`).
 
 The variable `CMAKE_CURRENT_LIST_DIR` contains the directory where this `CMakeLists.txt` is located.
 
-Commands starting with `target_` can be combined in a single call like this:
+Commands can be written in a single call like this:
 
 ```cmake
 target_link_libraries(hoge
@@ -45,9 +47,9 @@ target_link_libraries(hoge
 ```
 
 ---
-Up to this point, you might think of CMake as "just a slightly different way to write a Makefile." However, the behavior of `target_link_libraries()` needs some explanation.
+Up to this point, you might think of CMake as "just a slightly different way to write a classic Makefile." However, the behavior of `target_link_libraries()` needs some explanation.
 
-If you look at the `target_link_libraries()` line in `CMakeLists.txt`, you might wonder where files like `pico_stdlib.lib`, `pico_stdlib.a`, or `pico_stdlib.so` are located. You might search in the `.pico_sdk` directory or your project's `build` directory, but you won't find such files. The `pico_stdlib` specified here is not a file name, but the name of a target declared with `add_library()` in the Pico SDK's `CMakeLists.txt`[^lib-not-found].
+If you look at the `CMakeLists.txt` file above, you might wonder where files like `pico_stdlib.lib`, `pico_stdlib.a`, or `pico_stdlib.so` are located. You might search in the `.pico_sdk` directory or your project's `build` directory, but you won't find such files. The `pico_stdlib` specified here is not a file name, but the name of a target declared with `add_library()` in the Pico SDK's `CMakeLists.txt`[^lib-not-found].
 
 [^lib-not-found]: If the specified target name is not found, CMake will search for an actual library file like `*.lib` or `*.a` in the library search path.
 
@@ -88,55 +90,59 @@ Another important point is that include paths are automatically passed to the ca
 
 **pico-jxglib** follows the Pico SDK and declares its libraries as `INTERFACE`.
 
-# How to Add pico-jxglib
+## How to Add pico-jxglib
 
 You can get the latest **pico-jxglib** from GitHub as follows:
 
 ```bash
-git clone https://github.com/ypsitau/pico-jxglib.git
-cd pico-jxglib
-git submodule update --init
+$ git clone https://github.com/ypsitau/pico-jxglib.git
+$ cd pico-jxglib
+$ git submodule update --init --recursive
 ```
 
 You add this directory to your project with the `add_subdirectory()` command. The way you specify the path depends on where you put the directory.
 
-- If you put the `pico-jxglib` directory inside your project directory:
+!!! abstract "pico-jxglib inside the project directory"
+    If you put the `pico-jxglib` directory inside your project directory:
+    
+    ```text hl_lines="2"
+    └── your-project/
+        ├── pico-jxglib/
+        ├── CMakeLists.txt
+        ├── your-project.cpp
+        └── ...
+    ```
+    
+    Add this command to your `CMakeLists.txt`:
+    
+    ```cmake title="CMakeLists.txt"
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/pico-jxglib)
+    ```
 
-  ```text
-  └── your-project/
-      ├── pico-jxglib/
-      ├── CMakeLists.txt
-      ├── your-project.cpp
-      └── ...
-  ```
+    This style is useful when you want to include `pico-jxglib` in your project. It especially works well with Git's submodule feature, allowing you to manage `pico-jxglib` as part of your project repository.
 
-  Add this command to your `CMakeLists.txt`:
+!!! abstract "pico-jxglib outside the project directory"
+    If you put the `pico-jxglib` directory above your project's `CMakeLists.txt`
 
-  ```cmake title="CMakeLists.txt"
-  add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/pico-jxglib)
-  ```
+    ```text hl_lines="1"
+    ├── pico-jxglib/
+    └── your-project/
+        ├── CMakeLists.txt
+        ├── your-project.cpp
+        └── ...
+    ```
+    
+    Add this command to your `CMakeLists.txt`:
+    
+    ```cmake title="CMakeLists.txt"
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+    ```
+    
+    Second argument `pico-jxglib` is required in `add_subdirectory()` when the added directory contains a references to a parent directory. The string you specify here in the second argument is used as the output directory name for generated files. As long as it doesn't conflict with other directories in `build`, you can use any name.
 
-- If you put the `pico-jxglib` directory above your project's `CMakeLists.txt`:
+    This style is useful when you want to share `pico-jxglib` across multiple projects.
 
-  ```text
-  ├── pico-jxglib/
-  └── your-project/
-      ├── CMakeLists.txt
-      ├── your-project.cpp
-      └── ...
-  ```
-
-  Add this command to your `CMakeLists.txt`:
-
-  ```cmake title="CMakeLists.txt"
-  add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
-  ```
-
-  Note the second argument `pico-jxglib` in `add_subdirectory()`[^second-arg]. This is required if the added directory contains `..`.
-
-[^second-arg]: The string you specify here is used as the output directory name for generated files. As long as it doesn't conflict with other directories in `build`, you can use any name.
-
-# Example Project
+## Example Project
 
 Let's make a simple blink program using **pico-jxglib**.
 
@@ -164,7 +170,7 @@ target_link_libraries(blink jxglib_Common)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 ```
 
-`jxglib_Common` is the library added here. The order of `target_link_libraries()` and `add_subdirectory()` doesn't matter. You can also add to an existing `target_link_libraries()` command.
+The order of `target_link_libraries()` and `add_subdirectory()` doesn't matter.
 
 Edit the source file as follows:
 

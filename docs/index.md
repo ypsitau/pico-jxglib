@@ -90,8 +90,6 @@ Below is a demo of the logic analyzer working on the shell, capturing the I2C si
 
 In addition to the interactive shell and built-in logic analyzer, pico-jxglib also provides a variety of other features, including:
 
-
-
 <div class="grid cards" markdown>
 
 -   :material-ip-network:{ .lg .middle } **Wi-Fi Conection**
@@ -216,3 +214,6 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
 The library is continuously being developed and new features are added regularly. Be sure to check the documentation and release notes for the latest updates and features.
 
+## License
+
+pico-jxglib is licensed under the MIT License.
