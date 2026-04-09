@@ -1,46 +1,11 @@
 # Wi-Fi Connection
 
-This article explains how to connect a Pico board to a Wi-Fi network using pico-jxgLABO.
-
-Traditionally, connecting a microcontroller to a network requires writing and running a program, often hardcoding the SSID and password for Wi-Fi, which makes distribution and maintenance difficult. In the pico-jxgLABO environment, shell commands are provided for network connection, allowing users to connect to networks interactively via commands.
-
 This article covers the following network operations:
 
-- Network connection
-  1. Scan for available Wi-Fi access points
-  2. Connect to Wi-Fi with a specified SSID and password
-  3. Set a static IP address
-
-## Raspberry Pi Pico and Wi-Fi Functionality
-
-### Pico W and Pico 2 W
-
-Pico W and Pico 2 W are Pico boards equipped with a CYW43439 Wi-Fi chip (CYW43 chip).
-
-![picow-and-pico2w](images/picow-and-pico2w.jpg)
-*Pico W and Pico 2 W*
-
-Pico W costs about 1,200 yen, Pico 2 W about 1,400 yen—roughly 400 yen more than the non-Wi-Fi models due to the CYW43 chip.
-
-Pico W/Pico 2 W use reserved GPIOs 23, 24, 25, and 29 to control the CYW43 chip. GPIO25, used for the built-in LED on Pico/Pico 2, is now used for CYW43 control, so the built-in LED is connected to the CYW43 chip’s GPIO. To control the LED on Pico W/Pico 2 W, you must communicate with the CYW43 chip, which is tricky. The Pico SDK provides `cyw43_arch_gpio_get()` and `cyw43_arch_gpio_put()` APIs for this purpose.
-
-Controlling the CYW43 chip with limited GPIOs is challenging. For more details, see [this article](https://zenn.dev/nonnoise/articles/0d5b97cb517e31).
-
-PIO (Programmable I/O) is also used for CYW43 control. Pico W has 2 PIO blocks, Pico 2 W has 3, but one block is used for CYW43, so be careful when designing systems that use PIO[^pio-usage].
-
-[^pio-usage]: pico-jxgLABO also uses PIO for logic analyzer functionality.
-
-### Use Cases for Pico’s Network Functionality
-
-Pico W and Pico 2 W’s Wi-Fi is often used for IoT (Internet of Things) applications, such as sending sensor data to the cloud or controlling devices from the cloud. HTTP allows web browser operation, and MQTT enables lightweight messaging.
-
-In this article, we’ll run a Telnet server on the Pico board so you can execute pico-jxgLABO shell commands remotely. With terminal software like Tera Term, you can operate the Pico board without a USB cable.
-
-In the photo below, multiple Pico W and Pico 2 W boards are connected to a Wi-Fi network, each with a fixed IP address.
-
-![wifi_experiment](images/wifi-experiment.jpg)
-
-You can operate each board without physical cable connections, allowing more flexible operation!
+1. Scan for available Wi-Fi access points
+2. Connect to Wi-Fi with a specified SSID and password
+3. Set a static IP address
+4. Setting up auto-start for Wi-Fi connection
 
 ## Connecting to a Wi-Fi Network
 
@@ -82,3 +47,16 @@ You can combine `wifi-connect` and `config`:
 L:/>net wifi-connect {ssid:'MyHome-WiFi' password:'PASSWORD'} config {addr:192.168.0.101}
 ```
 
+## Setting Up Auto-Start
+
+Create a file named `.startup` in the root of the `L:` drive to run commands automatically when the Pico board powers on. Here’s an example to automate Wi-Fi connection and Telnet server startup:
+
+```text title=".startup"
+net wifi-connect {ssid:'SSID' password:'PASSWORD'} config {addr:XXX.XXX.XXX.XXX}
+telnet-server start
+led on flip:50,500,50,500,50,2000
+```
+
+When you connect the Pico board running pico-jxgLABO via USB, the `L:` drive appears as a USB drive on your PC (often as `D:` on Windows). Edit the file above, change `SSID`, `PASSWORD`, and `XXX.XXX.XXX.XXX` as needed, and copy it to the drive.
+
+After rebooting, if all commands in the script run without error, the `led` command will blink the built-in LED to indicate successful startup. You can set different blink patterns for each board’s IP address for easy identification (e.g., one blink for 192.168.0.101, two for 192.168.0.102, etc.).
