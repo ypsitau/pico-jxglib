@@ -70,9 +70,9 @@ While the library also comes with a rich set of built-in commands for various pu
 
 The wave form can be visualized by two methods:
 
-- Print it as text in the shell. This is a simple and quick way to visualize the data without needing any additional tools. [:octicons-arrow-right-24: Learn More](shell/la/text/index.md)
+- Print it as text in the shell. This is a simple and quick way to visualize the data without needing any additional tools. [:octicons-arrow-right-24: Learn More](shell/logic-analyzer/text/index.md)
 
-- Visualize it using [PulseView](https://sigrok.org/wiki/PulseView), a powerful waveform viewer. This allows you to see the captured data in a more detailed and interactive way, making it easier to analyze complex signals and timing relationships. [:octicons-arrow-right-24: Learn More](shell/la/pulseview/index.md)
+- Visualize it using [PulseView](https://sigrok.org/wiki/PulseView), a powerful waveform viewer. This allows you to see the captured data in a more detailed and interactive way, making it easier to analyze complex signals and timing relationships. [:octicons-arrow-right-24: Learn More](shell/logic-analyzer/pulseview/index.md)
 
 Below is a demo of the logic analyzer working on the shell, capturing the I2C signals that issue READ requests for scanning devices. Please note that all the commands executed in the prompt `L:/>` are processed by the Pico firmware without the involvement of the host computer.
 
@@ -98,7 +98,7 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     If you're using a Pico W or Pico2 W, you can configure the network settings, like SSID and password, easily from the shell. No program needed!
 
-    [:octicons-arrow-right-24: Learn More](shell/wifi/index.md)
+    [:octicons-arrow-right-24: Learn More](shell/network/wifi/index.md)
 
 -   :octicons-command-palette-16:{ .lg .middle } **Remote Shell**
 
@@ -106,7 +106,7 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     You can remotely access the shell over the Wi-Fi network using Telnet protocol, allowing you to interact with your Pico from anywhere without needing a physical connection.
 
-    [:octicons-arrow-right-24: Learn More](shell/wifi/index.md#telnet-server)
+    [:octicons-arrow-right-24: Learn More](shell/network/telnet-server/index.md)
 
 -   :fontawesome-solid-display:{ .lg .middle } **Display Support**
 
@@ -120,7 +120,7 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     You can use the flash memory of the Pico as a file system to store and manage files. This allows you to read and write files directly from your firmware, making it easier to manage data and configurations. File operating commands, such as `ls`, `cp`, `mv`, `rm`, `mkdir`, and `cat`, are built into the shell, allowing you to manage files directly from the command line interface. 
 
-    [:octicons-arrow-right-24: Learn More](shell/file-operations/index.md)
+    [:octicons-arrow-right-24: Learn More](shell/filesystem/file-operating-commands/index.md)
 
 -   :material-usb-flash-drive:{ .lg .middle } **Pico as USB Mass Storage Device**
 
@@ -128,7 +128,7 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     The file system is also accessible as a USB mass storage device when the Pico is connected to a computer. This means you can easily transfer files between your computer and the Pico without needing additional software or tools.
 
-    [:octicons-arrow-right-24: Learn More](shell/file-operations/index.md)
+    [:octicons-arrow-right-24: Learn More](shell/filesystem/file-operating-commands/index.md)
 
 -   :fontawesome-solid-keyboard:{ .lg .middle } **USB Keyboard and Mouse Support**
 
@@ -144,7 +144,7 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     You can also use an SD card with your Pico. The library provides support for SD cards, allowing you to read and write files on the SD card from your firmware.
 
-    [:octicons-arrow-right-24: Learn More](shell/sdcard/index.md)
+    [:octicons-arrow-right-24: Learn More](shell/filesystem/sdcard/index.md)
 
 -   :material-usb-flash-drive:{ .lg .middle } **External USB Storage Device Support**
 
@@ -172,7 +172,7 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     The library also provides support for a real-time clock, allowing you to keep track of time and date in your firmware. You can use the shell to set and read the RTC, which can be useful for applications that require timekeeping or scheduling.
 
-    [:octicons-arrow-right-24: Learn More](shell/rtc/index.md)
+    [:octicons-arrow-right-24: Learn More](shell/device/rtc/index.md)
 
 -   :material-brain:{ .lg .middle } **TFLite Micro Support**
 
@@ -200,7 +200,7 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     You can control the GPIO pins of the Pico directly from the shell, allowing you to easily toggle pins and read their states.
 
-    [:octicons-arrow-right-24: Learn More](shell/gpio/index.md)
+    [:octicons-arrow-right-24: Learn More](shell/peripheral/gpio/index.md)
 
 -   :fontawesome-solid-wave-square:{ .lg .middle } **PWM Control**
 
@@ -208,7 +208,7 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     The library also provides support for PWM (Pulse Width Modulation), allowing you to control the brightness of LEDs, the speed of motors, and other devices that can be controlled with PWM signals directly from the shell.
 
-    [:octicons-arrow-right-24: Learn More](shell/pwm/index.md)
+    [:octicons-arrow-right-24: Learn More](shell/peripheral/pwm/index.md)
 
 -   :material-network-outline:{ .lg .middle } **I2C and SPI Communication**
 
