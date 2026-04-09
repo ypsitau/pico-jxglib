@@ -1,12 +1,8 @@
-This page explains how to use SD cards and USB storage as file systems on the Pico board. For details on how to use flash memory as a file system, see the following article:
-
-[Implementing a File System on the Pico Board with pico-jxglib and Using Flash Memory Fully](https://zenn.dev/ypsitau/articles/2025-05-31-fs-flash)
-
-## About SD Cards
+# SD Card
 
 SD cards are familiar storage devices used in smartphones and are easily available at convenience stores. While it may seem simple to connect them to embedded devices, it can actually be tricky. This section explains how to connect SD cards and important points about the software.
 
-### How to Connect SD Cards
+## How to Connect SD Cards
 
 For details on how to connect and control SD cards, see the following site:
 
@@ -37,36 +33,7 @@ SD cards have two modes: SPI mode and SDIO mode. SPI mode connects the SD card v
 
 Although SD cards have built-in interface circuits, the details can vary slightly between cards. Therefore, even if you create a driver, you need to test it with various SD cards to ensure practical usability. In **pico-jxglib**, the SD card driver is based on the [MicroPython SD card driver](https://github.com/micropython/micropython-lib/blob/master/micropython/drivers/storage/sdcard/sdcard.py), rewritten in C++. Thanks to MicroPython for their work.
 
-## About USB Storage
-
-The Pico board can use its USB host function to connect USB storage. **pico-jxglib** implements a USB storage handler using the Mass Storage Class provided by the tinyusb library.
-
-To use the Pico board's USB host function, you need an OTG cable to convert from microB type to A type.
-
-![USB-MicroB-A-Adapter](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/usb-memory.jpg)
-
-## Example Project
-
-### Setting Up the Development Environment
-
-If you haven't set up Visual Studio Code, Git tools, or the Pico SDK, see ["Getting Started with Pico SDK"](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E9%96%8B%E7%99%BA%E7%92%B0%E5%A2%83).
-
-Clone **pico-jxglib** from GitHub:
-
-```bash
-git clone https://github.com/ypsitau/pico-jxglib.git
-cd pico-jxglib
-git submodule update --init
-```
-
-!!! note
-    **pico-jxglib** is updated almost daily. If you've already cloned it, run the following command in the `pico-jxglib` directory to get the latest version:
-
-    ```bash
-    git pull
-    ```
-
-### Creating a Project
+## Creating a Project
 
 From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings. For details on creating a Pico SDK project, building, and writing to the board, see ["Getting Started with Pico SDK"](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%AE%E4%BD%9C%E6%88%90%E3%81%A8%E7%B7%A8%E9%9B%86).
 
@@ -88,7 +55,7 @@ The project directory and `pico-jxglib` directory configuration is assumed to be
 
 Below, we will edit the `CMakeLists.txt` and source files to create the program.
 
-### SD Card File System
+## Program
 
 Create a program that monitors the connection of the SD card and displays the directory listing when the connection is detected.
 
@@ -152,69 +119,5 @@ int main()
   `spi`: SPI interface pointer. Specify `spi0` or `spi1`.
   `baudrate`: SPI clock frequency.
   `pinAssign`: GPIO pin to use for CS (Chip Select).
-
-File system API details are in ["Implementing a File System on the Pico Board with pico-jxglib and Using Flash Memory Fully"](https://zenn.dev/ypsitau/articles/2025-05-31-fs-flash#%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%B7%E3%82%B9%E3%83%86%E3%83%A0-api).
-
-### USB Storage File System
-
-Create a program that monitors the connection of the USB storage and displays the directory listing when the connection is detected.
-
-The breadboard wiring image is as follows. Use an OTG cable to convert from microB type to A type. The Pico board's power supply is 40 pin (VBUS).
-
-![circuit-sdcard](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/circuit-usb.png)
-
-Add the following lines to the end of `CMakeLists.txt`. Also, confirm that Stdio USB connection is disabled (`pico_enable_stdio_usb(fs-media 0)`):
-
-```cmake
-target_link_libraries(fs-media jxglib_FAT_USBMSC)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
-jxglib_configure_FAT(fs-media FF_VOLUMES 1)
-jxglib_configure_USBHost(fs-media CFG_TUH_MSC 1)
-```
-
-Edit the source file as follows:
-
-```cpp title="fs-media.cpp"
-#include "pico/stdlib.h"
-#include "jxglib/FAT/USBMSC.h"
-
-using namespace jxglib;
-
-int main()
-{
-    ::stdio_init_all();
-    USBHost::Initialize();
-    FAT::USBMSC drive("Drive:");
-    bool connectedFlag = false;
-    for (;;) {
-        if (connectedFlag) {
-            if (!drive.CheckMounted()) {
-                ::printf("USB storage disconnected.\n");
-                connectedFlag = false;
-            }
-        } else if (drive.Mount()) {
-            ::printf("USB storage connected.\n");
-            connectedFlag = true;
-            FS::Dir* pDir = FS::OpenDir("Drive:/");
-            if (pDir) {
-                FS::FileInfo* pFileInfo;
-                while (pFileInfo = pDir->Read()) {
-                    ::printf("%-16s%d\n", pFileInfo->GetName(), pFileInfo->GetSize());
-                    delete pFileInfo;
-                }
-                pDir->Close();
-                delete pDir;
-            }
-        }
-        Tickable::Tick();
-    }
-}
-```
-
-`FAT::USBMSC` instance generates a FAT file system. The constructor details are as follows:
-
-- `FAT::USBMSC(const char* driveName, uint8_t orderHint = UINT8_MAX)`
-  `drivename`: Path name to use for the drive. You can specify any string.
-  `orderHint`: Instance order. If you have multiple USB storage devices, specify the order to handle them in the same sequence.
 
 File system API details are in ["Implementing a File System on the Pico Board with pico-jxglib and Using Flash Memory Fully"](https://zenn.dev/ypsitau/articles/2025-05-31-fs-flash#%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%B7%E3%82%B9%E3%83%86%E3%83%A0-api).
