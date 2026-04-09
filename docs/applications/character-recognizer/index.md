@@ -8,8 +8,15 @@ GitHub repository: https://github.com/ypsitau/pico-Recognizer-ILI9341.git
 
 ## Demo Video
 
-https://youtu.be/Vg-L-No7t5Q
-<!-- <iframe width="560" height="315" src="https://www.youtube.com/embed/Vg-L-No7t5Q" frameborder="0" allowfullscreen></iframe> -->
+<div class="video-container">
+  <iframe 
+    src="https://www.youtube.com/embed/Vg-L-No7t5Q?rel=0&modestbranding=1" 
+    title="pico-jxgLABO Logic Analyzer Demo"
+    frameborder="0" 
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+    allowfullscreen>
+  </iframe>
+</div>
 
 ## Requirements
 
