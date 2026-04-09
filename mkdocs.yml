@@ -37,8 +37,10 @@ nav:
     - Library APIs:
         - Overview: library/index.md
         - File System:
+            - Overview: library/filesystem/index.md
             - Flash Memory: library/filesystem/flash/index.md
-            - Media: library/filesystem/media/index.md
+            - SD Card: library/filesystem/sdcard/index.md
+            - USB Storage: library/filesystem/usb-storage/index.md
         - RTC (Real Time Clock): library/rtc/index.md
         - Display:
             - TFT LCD: library/display/tft-lcd/index.md

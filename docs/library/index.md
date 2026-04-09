@@ -10,6 +10,13 @@ $ cd pico-jxglib
 $ git submodule update --init --recursive
 ```
 
+!!! note
+    pico-jxglib is updated almost daily. If you've already cloned it, run the following command in the `pico-jxglib` directory to get the latest version:
+
+    ```bash
+    git pull
+    ```
+
 You add this directory to your project with the `add_subdirectory()` command in `CMakeLists.txt`. There are two ways of arranging the directories of your project and pico-jxglib: 
 
 <div class="grid" markdown>

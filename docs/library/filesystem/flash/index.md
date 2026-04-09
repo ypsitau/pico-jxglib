@@ -1,26 +1,5 @@
 This page explains how to build a LittleFS or FAT file system on the Pico board's flash memory, and how to read, write, and otherwise operate files.
 
-## About the **pico-jxglib** File System
-
-In embedded applications, it is common to use flash memory as a file system. Libraries like [littlefs](https://github.com/littlefs-project/littlefs) and [FatFs](https://elm-chan.org/fsw/ff/) make it relatively easy to implement a file system, but writing your own storage device handler from scratch can be a bit of a hassle. **pico-jxglib** wraps these libraries so you can easily handle file systems from Pico SDK programs.
-
-The **pico-jxglib** file system has the following features:
-
-- **Unified Interface**
-  Supports both LittleFS and FAT as backends, allowing you to operate on files with a common interface regardless of the file system type.
-- **Support for Various Storage Devices**
-  Supports not only the Pico board's flash memory, but also removable media such as SD cards and USB storage.
-- **Shell Command Support**
-  Provides shell commands for file system operations, so you can interactively operate the file system on the Pico board.
-
-For details on using SD cards, USB storage, shell commands, and implementing timestamps with RTC, see the following articles:
-
-▶️ [SD Cards and USB Storage](../media/index.md)
-
-▶️ [Shell Commands](../../shell/shell/index.md)
-
-▶️ [RTC (Real Time Clock)](../../rtc/index.md)
-
 ## Example Project
 
 ### Setting Up the Development Environment
@@ -35,12 +14,6 @@ cd pico-jxglib
 git submodule update --init
 ```
 
-!!! note
-    **pico-jxglib** is updated almost daily. If you've already cloned it, run the following command in the `pico-jxglib` directory to get the latest version:
-
-    ```bash
-    git pull
-    ```
 
 ### Creating a Project
 
@@ -78,7 +51,7 @@ The program is written from the head (0x1000'0000), so the remaining flash memor
 - **Use picotool**
   Use `picotool` included in the Pico SDK to display information about the built ELF file. On your host PC, run the following command from the command prompt:
 
-  [^picotool]: Windows の場合、`C:\Users\username\.pico-sdk\picotool\x.x.x\picotool` にパスを通す必要があります。
+  [^picotool]: For Windows, you need to add `C:\Users\username\.pico-sdk\picotool\x.x.x\picotool` to your PATH.
 
   ```bash
   picotool info build/something.elf
