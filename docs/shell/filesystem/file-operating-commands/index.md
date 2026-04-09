@@ -1,5 +1,7 @@
 # File Operating Commands
 
+## Quick View
+
 `ls-drive` or `dir-drive` lists the available drives.
 
 ```console
@@ -275,4 +277,85 @@ L:/>ls
 d---- 2000-01-01 00:00:00        dir3/
 d---- 2000-01-01 00:00:00        dir4/
 -a--- 2000-01-01 00:00:00     77 README.txt
+```
+
+## Reference
+
+### cp
+
+Alias: `copy`
+
+```text
+cp [options] source... destination
+```
+
+Copy files. You can copy multiple files and use wildcards.
+
+options:
+
+- `-r`: Copy directories recursively.
+- `-v`: Print what is being done.
+- `-f`: Overwrite existing files without prompting.
+
+### mv
+
+Alias: `move`
+```text
+mv [options] source... destination
+```
+
+### rm
+
+```text
+rm [options] file...
+```
+
+### mkdir
+
+Alias: `md`
+
+```text
+mkdir [options] directory...
+```
+
+### ls
+
+Alias: `dir`
+
+```text
+ls [options] [directory]
+```
+
+### ls-drive
+
+Alias: `dir-drive`
+
+```text
+ls-drive [options] [drive]
+```
+
+### cat
+
+```text
+cat [options] file...
+```
+
+### dump
+
+Alias: `d`
+
+```text
+dump [options] [address]
+```
+
+### tree
+
+```text
+tree [options] [directory]
+```
+
+### touch
+
+```text
+touch [options] file...
 ```

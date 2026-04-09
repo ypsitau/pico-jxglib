@@ -39,11 +39,10 @@ The SD card reader module is connected via the SPI interface. You can use either
 |CS                   |7           |GPIO5|SIO           |
 
 
-:::message alert
-Be careful where you connect the VCC of the SD card reader module, depending on the supply voltage:
-- For 5V supply, connect to VSYS (pin 39) on the Pico board. If you connect to 3V3, the voltage drop across the module's regulator will prevent proper operation.
-- For 3.3V supply, connect to 3V3 (pin 36) on the Pico board. If you connect to VSYS, **the SD card may be damaged**.
-:::
+!!! warning
+    Be careful where you connect the VCC of the SD card reader module, depending on the supply voltage:
+    - For 5V supply, connect to VSYS (pin 39) on the Pico board. If you connect to 3V3, the voltage drop across the module's regulator will prevent proper operation.
+    - For 3.3V supply, connect to 3V3 (pin 36) on the Pico board. If you connect to VSYS, **the SD card may be damaged**.
 
 The wiring diagram is shown below. There are multiple GND pins on the Pico board, so you can connect to any of them.
 

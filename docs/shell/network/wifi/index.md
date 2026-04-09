@@ -1,12 +1,5 @@
 # Wi-Fi Connection
 
-This article covers the following network operations:
-
-1. Scan for available Wi-Fi access points
-2. Connect to Wi-Fi with a specified SSID and password
-3. Set a static IP address
-4. Setting up auto-start for Wi-Fi connection
-
 ## Connecting to a Wi-Fi Network
 
 Connect to the pico-jxgLABO shell on the Pico board via USB serial, and use the `net` shell command for network operations. First, use the `wifi-scan` subcommand to find available access points:
@@ -28,9 +21,8 @@ Connected ssid:'MyHome-WiFi' auth:wpa2 addr:192.168.0.20 netmask:255.255.255.0 g
 
 In this example, DHCP assigns IP address `192.168.0.20`, netmask `255.255.255.0`, and gateway `192.168.0.1`.
 
-:::message
-Some Wi-Fi routers may not work well with the Pico board. If your host PC is Windows, you can use the mobile hotspot feature as an access point. This is also safer than using a Wi-Fi router, so give it a try.
-:::
+!!! note
+    Some Wi-Fi routers may not work well with the Pico board. If your host PC is Windows, you can use the mobile hotspot feature as an access point. This is also safer than using a Wi-Fi router, so give it a try.
 
 To set a static IP address, use the `config` subcommand. The example below sets the IP to `192.168.0.101`:
 
@@ -41,7 +33,7 @@ Connected ssid:'MyHome-WiFi' auth:wpa2 addr:192.168.0.101 netmask:255.255.255.0 
 
 You can also specify netmask and gateway, but these must match the values assigned by DHCP when connecting to the access point, so usually you only specify the IP address.
 
-You can combine `wifi-connect` and `config`:
+You can execute `wifi-connect` and `config` in a single command:
 
 ```text
 L:/>net wifi-connect {ssid:'MyHome-WiFi' password:'PASSWORD'} config {addr:192.168.0.101}

@@ -59,13 +59,12 @@ cd pico-jxglib
 git submodule update --init
 ```
 
-:::message
-**pico-jxglib** is updated almost daily. If you've already cloned it, run the following command in the `pico-jxglib` directory to get the latest version:
+!!! note
+    **pico-jxglib** is updated almost daily. If you've already cloned it, run the following command in the `pico-jxglib` directory to get the latest version:
 
-```bash
-git pull
-```
-:::
+    ```bash
+    git pull
+    ```
 
 ### Creating a Project
 

@@ -35,13 +35,12 @@ cd pico-jxglib
 git submodule update --init
 ```
 
-:::message
-**pico-jxglib** is updated almost daily. If you've already cloned it, run the following command in the `pico-jxglib` directory to get the latest version:
+!!! note
+    **pico-jxglib** is updated almost daily. If you've already cloned it, run the following command in the `pico-jxglib` directory to get the latest version:
 
-```bash
-git pull
-```
-:::
+    ```bash
+    git pull
+    ```
 
 ### Creating a Project
 
@@ -147,9 +146,8 @@ int main()
   `drivename`: A string name for the drive, can contain any characters
   `bytesXIP`: The number of bytes to reserve from the end of the flash memory for the LittleFS file system
 
-:::message
-`LFS::Flash` instances are generated, but the file system is not created. You must run `FS::Format()` to format the drive.
-:::
+!!! note
+    `LFS::Flash` instances are generated, but the file system is not created. You must run `FS::Format()` to format the drive.
 
 #### FAT Drive Creation
 
@@ -188,9 +186,8 @@ int main()
   `drivename`: A string name for the drive, can contain any characters
   `bytesXIP`: The number of bytes to reserve from the end of the flash memory for the FAT file system
 
-:::message
-`FAT::Flash` instances are generated, but the file system is not created. You must run `FS::Format()` to format the drive.
-:::
+!!! note
+    `FAT::Flash` instances are generated, but the file system is not created. You must run `FS::Format()` to format the drive.
 
 #### Multiple Drive Creation
 
