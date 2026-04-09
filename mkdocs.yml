@@ -8,22 +8,25 @@ nav:
     - Home: index.md
     - Shell Commands:
         - Overview: shell/index.md
-        - File Operations: shell/file-operations/index.md
-        - SD Card: shell/sdcard/index.md
+        - Filesystem:
+            - Overview: shell/filesystem/index.md
+            - File Operating Commands: shell/filesystem/file-operating-commands/index.md
+            - SD Card: shell/filesystem/sdcard/index.md
         - RTC (Real Time Clock): shell/rtc/index.md
         - Wi-Fi: shell/wifi/index.md
         - Logic Analyzer:
             - Text Mode: shell/la/text/index.md
             - PulseView: shell/la/pulseview/index.md
-        - GPIO: shell/gpio/index.md
-        - PWM: shell/pwm/index.md
         - Display:
             - WS2812: shell/display/ws2812/index.md
         - Camera:
             - OV7670: shell/camera/ov7670/index.md
-        - I2C: shell/i2c/index.md
-        - SPI: shell/spi/index.md
-        - UART: shell/uart/index.md
+        - Peripherals:
+            - GPIO: shell/peripherals/gpio/index.md
+            - PWM: shell/peripherals/pwm/index.md
+            - I2C: shell/peripherals/i2c/index.md
+            - SPI: shell/peripherals/spi/index.md
+            - UART: shell/peripherals/uart/index.md
     - Library APIs:
         - Overview: library/index.md
         - RTC (Real Time Clock): library/rtc/index.md
