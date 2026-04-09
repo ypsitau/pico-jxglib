@@ -6,19 +6,20 @@ repo_name: ypsitau/pico-jxglib
 
 nav:
     - Home: index.md
-    - Shell Commands:
+    - Shell Operations:
         - Overview: shell/index.md
+        - Getting Started: shell/getting-started/index.md
         - Filesystem:
             - Overview: shell/filesystem/index.md
             - File Operating Commands: shell/filesystem/file-operating-commands/index.md
             - SD Card: shell/filesystem/sdcard/index.md
         - RTC (Real Time Clock): shell/rtc/index.md
+        - Display:
+            - WS2812: shell/display/ws2812/index.md
         - Wi-Fi: shell/wifi/index.md
         - Logic Analyzer:
             - Text Mode: shell/la/text/index.md
             - PulseView: shell/la/pulseview/index.md
-        - Display:
-            - WS2812: shell/display/ws2812/index.md
         - Camera:
             - OV7670: shell/camera/ov7670/index.md
         - Peripherals:
@@ -29,6 +30,9 @@ nav:
             - UART: shell/peripherals/uart/index.md
     - Library APIs:
         - Overview: library/index.md
+        - File System:
+            - Flash Memory: library/filesystem/flash/index.md
+            - Media: library/filesystem/media/index.md
         - RTC (Real Time Clock): library/rtc/index.md
         - Display:
             - TFT LCD: library/display/tft-lcd/index.md
@@ -42,9 +46,6 @@ nav:
             - Command Line Editor: library/shell/cmdline-editor/index.md
             - Shell: library/shell/shell/index.md
         - LVGL: library/lvgl/index.md
-        - File System:
-            - Flash Memory: library/filesystem/flash/index.md
-            - Media: library/filesystem/media/index.md
     - Applications:
         - Overview: applications/index.md
         - Character Recognizer: applications/character-recognizer/index.md
