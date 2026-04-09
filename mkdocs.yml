@@ -23,7 +23,9 @@ nav:
             - Built-in LED: shell/device/builtin-led/index.md
             - RTC (Real Time Clock): shell/device/rtc/index.md
         - Network:
-            - Wi-Fi: shell/network/wifi/index.md
+            - Wi-Fi Connection: shell/network/wifi/index.md
+            - Network Utilities: shell/network/network-utilities/index.md
+            - Telnet Server: shell/network/telnet-server/index.md
         - Logic Analyzer:
             - Text Mode: shell/logic-analyzer/text/index.md
             - PulseView: shell/logic-analyzer/pulseview/index.md
