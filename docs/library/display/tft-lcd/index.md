@@ -26,13 +26,7 @@ The devices listed above have slight differences in initialization procedures, V
 
 ## Drawing on TFT LCD
 
-### Connecting the ST7789
-
-Let's connect the **ST7789 (240x320 pixels)** device and perform drawing operations.
-
-The breadboard wiring image is as follows:
-
-![circuit-st7789.png](images/circuit-st7789.png)
+Let's connect a TFT LCD and perform drawing operations.
 
 From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings. For details on creating a Pico SDK project, building, and writing to the board, see ["Getting Started with Pico SDK"](../../../development/pico-sdk/index.md).
 
@@ -52,36 +46,218 @@ Assume the project directory and `pico-jxglib` are arranged as follows:
     └── ...
 ```
 
-Add the following lines to the end of `CMakeLists.txt`:
+=== "ST77789 (240x320)"
+    The breadboard wiring image is as follows:
 
-```cmake title="CMakeLists.txt"
-target_link_libraries(lcdtest jxglib_Display_ST7789 jxglib_DrawableTest)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
-```
+    ![circuit-st7789.png](images/circuit-st7789.png)
 
-Edit the source file as follows:
+    Add the following lines to the end of `CMakeLists.txt`:
 
-```cpp title="lcdtest.cpp"
-#include <stdio.h>
-#include "pico/stdlib.h"
-#include "jxglib/Display/ST7789.h"
-#include "jxglib/DrawableTest.h"
+    ```cmake title="CMakeLists.txt"
+    target_link_libraries(lcdtest jxglib_Display_ST7789 jxglib_DrawableTest)
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+    ```
 
-using namespace jxglib;
+    Edit the source file as follows:
 
-int main()
-{
-    ::stdio_init_all();
-    ::spi_init(spi1, 125 * 1000 * 1000);
-    GPIO14.set_function_SPI1_SCK();
-    GPIO15.set_function_SPI1_TX();
-    Display::ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
-    display.Initialize(Display::Dir::Rotate0);
-    DrawableTest::RotateImage(display);
-    //DrawableTest::DrawString(display);
-    //DrawableTest::DrawFonts(display);
-}
-```
+    ```cpp title="lcdtest.cpp"
+    #include <stdio.h>
+    #include "pico/stdlib.h"
+    #include "jxglib/Display/ST7789.h"
+    #include "jxglib/DrawableTest.h"
+
+    using namespace jxglib;
+
+    int main()
+    {
+        ::stdio_init_all();
+        ::spi_init(spi1, 125 * 1000 * 1000);
+        GPIO14.set_function_SPI1_SCK();
+        GPIO15.set_function_SPI1_TX();
+        Display::ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
+        display.Initialize(Display::Dir::Rotate0);
+        DrawableTest::RotateImage(display);
+        //DrawableTest::DrawString(display);
+        //DrawableTest::DrawFonts(display);
+    }
+    ```
+=== "ST77789 (240x240)"
+    The breadboard wiring image is as follows:
+
+    ![circuit-st7789.png](images/circuit-st7789.png)
+
+    Add the following lines to the end of `CMakeLists.txt`:
+
+    ```cmake title="CMakeLists.txt"
+    target_link_libraries(lcdtest jxglib_Display_ST7789 jxglib_DrawableTest)
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+    ```
+
+    Edit the source file as follows:
+
+    ```cpp title="lcdtest.cpp"
+    #include <stdio.h>
+    #include "pico/stdlib.h"
+    #include "jxglib/Display/ST7789.h"
+    #include "jxglib/DrawableTest.h"
+
+    using namespace jxglib;
+
+    int main()
+    {
+        ::stdio_init_all();
+        ::spi_init(spi1, 125 * 1000 * 1000);
+        GPIO14.set_function_SPI1_SCK();
+        GPIO15.set_function_SPI1_TX();
+        Display::ST7789 display(spi1, 240, 240, {RST: GPIO10, DC: GPIO11, BL: GPIO13});
+        display.Initialize(Display::Dir::Rotate0);
+        DrawableTest::RotateImage(display);
+        //DrawableTest::DrawString(display);
+        //DrawableTest::DrawFonts(display);
+    }
+    ```
+=== "ST7735 (80x160)"
+    The breadboard wiring image is as follows:
+
+    ![circuit-st7789.png](images/circuit-st7789.png)
+
+    Add the following lines to the end of `CMakeLists.txt`:
+
+    ```cmake title="CMakeLists.txt"
+    target_link_libraries(lcdtest jxglib_Display_ST7735 jxglib_DrawableTest)
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+    ```
+
+    Edit the source file as follows:
+
+    ```cpp title="lcdtest.cpp"
+    #include <stdio.h>
+    #include "pico/stdlib.h"
+    #include "jxglib/Display/ST7735.h"
+    #include "jxglib/DrawableTest.h"
+
+    using namespace jxglib;
+
+    int main()
+    {
+        ::stdio_init_all();
+        ::spi_init(spi1, 125 * 1000 * 1000);
+        GPIO14.set_function_SPI1_SCK();
+        GPIO15.set_function_SPI1_TX();
+        Display::ST7735 display(spi1, 80, 160, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
+        display.Initialize(Display::Dir::Rotate0);
+        DrawableTest::RotateImage(display);
+        //DrawableTest::DrawString(display);
+        //DrawableTest::DrawFonts(display);
+    }
+    ```
+=== "ST7735 (128x160)"
+    The breadboard wiring image is as follows:
+
+    ![circuit-st7789.png](images/circuit-st7789.png)
+
+    Add the following lines to the end of `CMakeLists.txt`:
+
+    ```cmake title="CMakeLists.txt"
+    target_link_libraries(lcdtest jxglib_Display_ST7735 jxglib_DrawableTest)
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+    ```
+
+    Edit the source file as follows:
+
+    ```cpp title="lcdtest.cpp"
+    #include <stdio.h>
+    #include "pico/stdlib.h"
+    #include "jxglib/Display/ST7735.h"
+    #include "jxglib/DrawableTest.h"
+
+    using namespace jxglib;
+
+    int main()
+    {
+        ::stdio_init_all();
+        ::spi_init(spi1, 125 * 1000 * 1000);
+        GPIO14.set_function_SPI1_SCK();
+        GPIO15.set_function_SPI1_TX();
+        Display::ST7735::TypeB display(spi1, 128, 160, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
+        display.Initialize(Display::Dir::Rotate0);
+        DrawableTest::RotateImage(display);
+        //DrawableTest::DrawString(display);
+        //DrawableTest::DrawFonts(display);
+    }
+    ```
+
+=== "ILI9341"
+    The breadboard wiring image is as follows:
+
+    ![circuit-ili9341.png](images/circuit-ili9341.png)
+
+    Add the following lines to the end of `CMakeLists.txt`:
+
+    ```cmake title="CMakeLists.txt"
+    target_link_libraries(lcdtest jxglib_Display_ILI9341 jxglib_DrawableTest)
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+    ```
+
+    Edit the source file as follows:
+
+    ```cpp title="lcdtest.cpp"
+    #include <stdio.h>
+    #include "pico/stdlib.h"
+    #include "jxglib/Display/ILI9341.h"
+    #include "jxglib/DrawableTest.h"
+
+    using namespace jxglib;
+
+    int main()
+    {
+        ::stdio_init_all();
+        ::spi_init(spi1, 125 * 1000 * 1000);
+        GPIO14.set_function_SPI1_SCK();
+        GPIO15.set_function_SPI1_TX();
+        Display::ILI9341 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
+        display.Initialize(Display::Dir::Rotate0);
+        DrawableTest::RotateImage(display);
+        //DrawableTest::DrawString(display);
+        //DrawableTest::DrawFonts(display);
+    }
+    ```
+
+=== "ILI9488"
+    The breadboard wiring image is as follows:
+
+    ![circuit-ili9341.png](images/circuit-ili9341.png)
+
+    Add the following lines to the end of `CMakeLists.txt`:
+
+    ```cmake title="CMakeLists.txt"
+    target_link_libraries(lcdtest jxglib_Display_ILI9488 jxglib_DrawableTest)
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+    ```
+
+    Edit the source file as follows:
+
+    ```cpp title="lcdtest.cpp"
+    #include <stdio.h>
+    #include "pico/stdlib.h"
+    #include "jxglib/Display/ILI9488.h"
+    #include "jxglib/DrawableTest.h"
+
+    using namespace jxglib;
+
+    int main()
+    {
+        ::stdio_init_all();
+        ::spi_init(spi1, 125 * 1000 * 1000);
+        GPIO14.set_function_SPI1_SCK();
+        GPIO15.set_function_SPI1_TX();
+        Display::ILI9488 display(spi1, 320, 480, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
+        display.Initialize(Display::Dir::Rotate0);
+        DrawableTest::RotateImage(display);
+        //DrawableTest::DrawString(display);
+        //DrawableTest::DrawFonts(display);
+    }
+    ```
 
 Uncomment the functions starting with `DrawableTest::` and [build, write, and run the program](https://zenn.dev/ypsitau/articles/2025-01-17-picosdk#%E3%83%97%E3%83%AD%E3%82%B0%E3%83%A9%E3%83%A0%E3%81%AE%E3%83%93%E3%83%AB%E3%83%89). The following will be displayed:
 
@@ -98,70 +274,6 @@ Uncomment the functions starting with `DrawableTest::` and [build, write, and ru
   ![lcdtest-DrawFonts.jpg](images/lcdtest-DrawFonts.jpg)
 
 
-### Connecting Other Devices
-
-If you want to connect devices other than the ST7789, modify the project as shown above as follows:
-
-!!! abstract "ST7789 (240x240 pixels)"
-    Refer to the ST7789 wiring diagram above for breadboard wiring. This device does not have a CS (Chip Select) pin. Change the corresponding line in the source file as follows:
-
-    ```cpp title="lcdtest.cpp"
-    Display::ST7789 display(spi1, 240, 240, {RST: GPIO10, DC: GPIO11, BL: GPIO13});
-    ```
-
-!!! abstract "ST7735 (80x160 pixels)"
-    Refer to the ST7789 wiring diagram above for breadboard wiring. Change the corresponding parts of `CMakeLists.txt` and the source file as follows:
-
-    ```cmake title="CMakeLists.txt"
-    target_link_libraries(lcdtest jxglib_Display_ST7735 jxglib_DrawableTest)
-    ```
-
-    ```cpp title="lcdtest.cpp"
-    #include "jxglib/Display/ST7735.h"
-
-    Display::ST7735 display(spi1, 80, 160, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
-    ```
-
-!!! abstract "ST7735 (128x160 pixels)"
-    Refer to the ST7789 wiring diagram above for breadboard wiring. Change the corresponding parts of `CMakeLists.txt` and the source file as follows:
-
-    ```cmake title="CMakeLists.txt"
-    target_link_libraries(lcdtest jxglib_Display_ST7735 jxglib_DrawableTest)
-    ```
-
-    ```cpp title="lcdtest.cpp"
-    #include "jxglib/Display/ST7735.h"
-
-    Display::ST7735::TypeB display(spi1, 128, 160, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
-    ```
-
-!!! abstract "ILI9341"
-    The breadboard wiring image is as follows:
-    ![circuit-ili9341.png](images/circuit-ili9341.png)
-    Change the corresponding parts of `CMakeLists.txt` and the source file as follows:
-
-    ```cmake title="CMakeLists.txt"
-    target_link_libraries(lcdtest jxglib_Display_ILI9341 jxglib_DrawableTest)
-    ```
-
-    ```cpp title="lcdtest.cpp"
-    #include "jxglib/Display/ILI9341.h"
-
-    Display::ILI9341 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
-    ```
-
-!!! abstract "ILI9488"
-    Refer to the ILI9341 wiring diagram above for breadboard wiring. Change the corresponding parts of `CMakeLists.txt` and the source file as follows:
-
-    ```cmake title="CMakeLists.txt"
-    target_link_libraries(lcdtest jxglib_Display_ILI9488 jxglib_DrawableTest)
-    ```
-
-    ```cpp title="lcdtest.cpp"
-    #include "jxglib/Display/ILI9488.h"
-
-    Display::ILI9488 display(spi1, 320, 480, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
-    ```
 
 ## Program Explanation
 
