@@ -9,10 +9,16 @@ L:/>led on
 L:/>led off
 ```
 
-Use the `flip` subcommand to toggle the LED at specified intervals. The following example blinks the LED every 100ms. This runs in the background, so you can run other commands while the LED blinks:
+Use the `flip` subcommand to toggle the LED at specified intervals. The following example blinks the LED every 100ms:
 
 ```text
 L:/>led on flip:100
+```
+
+The `flip` subcommand blinks the LED eternally in the background, so you can run other commands while the LED blinks. To stop the blinking, use the `led off` command:
+
+```text
+L:/>led off
 ```
 
 The following example blinks the LED for 50ms, off for 500ms, three times, then off for 2000ms, and repeats:
