@@ -43,7 +43,7 @@ So you can choose either of the following styles to add pico-jxglib to your proj
    
 :    Add this command to your `CMakeLists.txt`:
     
-    ```cmake title="CMakeLists.txt"
+    ```cmake title="CMakeLists.txt" linenums="1"
     target_link_libraries(your-project jxglib_AAAAAA jxglib_BBBBBB jxglib_CCCCCC)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/pico-jxglib)
     ```
@@ -54,7 +54,7 @@ So you can choose either of the following styles to add pico-jxglib to your proj
     
 :    Add this command to your `CMakeLists.txt`:
     
-    ```cmake title="CMakeLists.txt"
+    ```cmake title="CMakeLists.txt" linenums="1"
     target_link_libraries(your-project jxglib_AAAAAA jxglib_BBBBBB jxglib_CCCCCC)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
     ```
@@ -93,14 +93,14 @@ There are two example projects that demonstrate how to add pico-jxglib to your p
 
     Add the following lines to the end of `CMakeLists.txt`:
 
-    ```cmake title="CMakeLists.txt"
+    ```cmake title="CMakeLists.txt" linenums="1"
     target_link_libraries(your-project jxglib_Common)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
     ```
 
     Edit the source file as follows:
 
-    ```cpp title="your-project.cpp"
+    ```cpp title="your-project.cpp" linenums="1"
     #include "pico/stdlib.h"
     #include "jxglib/Common.h"
     
@@ -141,7 +141,7 @@ There are two example projects that demonstrate how to add pico-jxglib to your p
 
     Add the following lines to the end of `CMakeLists.txt`:
 
-    ```cmake title="CMakeLists.txt"
+    ```cmake title="CMakeLists.txt" linenums="1"
     target_link_libraries(your-project jxglib_LABOPlatform_FullCmd)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
     jxglib_configure_LABOPlatform(your-project)
@@ -149,7 +149,7 @@ There are two example projects that demonstrate how to add pico-jxglib to your p
 
     Edit the source file as follows:
 
-    ```cpp title="your-project.cpp"
+    ```cpp title="your-project.cpp" linenums="1"
     #include "pico/stdlib.h"
     #include "jxglib/LABOPlatform.h"
 
