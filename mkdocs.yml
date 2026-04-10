@@ -36,6 +36,11 @@ nav:
             - OV7670: shell/camera/ov7670/index.md
     - Library APIs:
         - Overview: library/index.md
+        - Shell:
+            - Overview: library/shell/index.md
+            - Terminal: library/shell/terminal/index.md
+            - Command Line Editor: library/shell/cmdline-editor/index.md
+            - Shell: library/shell/shell/index.md
         - File System:
             - Overview: library/filesystem/index.md
             - Internal Flash Memory: library/filesystem/flash/index.md
@@ -49,10 +54,6 @@ nav:
         - USB Host:
             - Keyboard & Mouse: library/usbhost/keyboard-mouse/index.md
             - Game Pad: library/usbhost/gamepad/index.md
-        - Shell:
-            - Terminal: library/shell/terminal/index.md
-            - Command Line Editor: library/shell/cmdline-editor/index.md
-            - Shell: library/shell/shell/index.md
         - LVGL: library/lvgl/index.md
     - Applications:
         - Overview: applications/index.md
