@@ -17,7 +17,7 @@ First, you need to create a new Pico project. From the VSCode command palette, r
 
 The created project directory will look like this:
 
-```text hl_lines="2" title="Inside Style"
+```text
 └── your-project/
     ├── CMakeLists.txt
     ├── your-project.cpp
@@ -39,7 +39,7 @@ $ git submodule update --init --recursive
     git pull
     ```
 
-But, wait. Where should you put the `pico-jxglib` directory? There are two ways of arranging the directories of your project and pico-jxglib: 
+But, wait. Where should we put the `pico-jxglib` directory? There are two ways of arranging the directories of your project and pico-jxglib: 
 
 <div class="grid" markdown>
 ```text hl_lines="2" title="Inside Style"
