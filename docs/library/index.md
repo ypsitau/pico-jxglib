@@ -92,6 +92,8 @@ There are two example projects that demonstrate how to add pico-jxglib to your p
 - ***Blinky Project*** ... The simplest project that blinks an LED connected to GPIO15.
 - ***LABOPlatform Project*** ... A more complicated project that has the same functionality as pico-jxgLABO, including the interactive shell and built-in logic analyzer.
 
+Modify the `CMakeLists.txt` and `your-project.cpp` files as described in the section above.
+
 === "Blinky Project"
 
     Let's create the simplest project that blinks an LED connected to GPIO15.
