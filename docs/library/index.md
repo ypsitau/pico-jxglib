@@ -1,5 +1,9 @@
 # Library APIs
 
+## Development Environment
+
+The library APIs of pico-jxglib are developed with Pico SDK. Please see [Getting Started with Pico SDK](../development/pico-sdk/) for setting up the development environment.
+
 ## How to Add pico-jxglib to Your Project
 
 You can get the latest pico-jxglib from GitHub as follows:
