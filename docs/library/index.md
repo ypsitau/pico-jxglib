@@ -8,6 +8,22 @@ Does it look complicated? Don't worry! Installing Pico SDK is much easier than y
 
 ## How to Add pico-jxglib to Your Project
 
+First, you need to create a new Pico project. From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings:
+
+- **Name** ... Enter the project name. Here, we use `your-project`.
+- **Board type** ... Select your board type.
+- **Location** ... Select the parent directory where the project directory will be created.
+- **Code generation options** ... **Check `Generate C++ code`**
+
+The created project directory will look like this:
+
+```text hl_lines="2" title="Inside Style"
+└── your-project/
+    ├── CMakeLists.txt
+    ├── your-project.cpp
+    └── ...
+```
+
 You can get the latest pico-jxglib from GitHub as follows:
 
 ```bash
@@ -23,7 +39,7 @@ $ git submodule update --init --recursive
     git pull
     ```
 
-You add this directory to your project with the `add_subdirectory()` command in `CMakeLists.txt`. There are two ways of arranging the directories of your project and pico-jxglib: 
+But, wait. Where should you put the `pico-jxglib` directory? There are two ways of arranging the directories of your project and pico-jxglib: 
 
 <div class="grid" markdown>
 ```text hl_lines="2" title="Inside Style"
@@ -80,23 +96,6 @@ There are two example projects that demonstrate how to add pico-jxglib to your p
 
     Let's create the simplest project that blinks an LED connected to GPIO15.
 
-    From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings:
-
-    - **Name** ... Enter the project name. For this example, use `your-project`.
-    - **Board type** ... Select your board type.
-    - **Location** ... Select the parent directory where the project directory will be created.
-    - **Code generation options** ... **Check `Generate C++ code`**
-
-    Assume your project directory and pico-jxglib are arranged in ***Outside Style*** as follows:
-
-    ```text hl_lines="1"
-    ├── pico-jxglib/
-    └── your-project/
-        ├── CMakeLists.txt
-        ├── your-project.cpp
-        └── ...
-    ```
-
     Add the following lines to the end of `CMakeLists.txt`:
 
     ```cmake title="CMakeLists.txt" linenums="1"
@@ -127,23 +126,6 @@ There are two example projects that demonstrate how to add pico-jxglib to your p
 === "LABOPlatform Project"
 
     Let's create a more complicated project that has the same functionality as pico-jxgLABO, including the interactive shell and built-in logic analyzer.
-
-    From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings:
-
-    - **Name** ... Enter the project name. For this example, use `your-project`.
-    - **Board type** ... Select your board type.
-    - **Location** ... Select the parent directory where the project directory will be created.
-    - **Code generation options** ... **Check `Generate C++ code`**
-
-    Assume your project directory and pico-jxglib are arranged in ***Outside Style*** as follows:
-
-    ```text hl_lines="1"
-    ├── pico-jxglib/
-    └── your-project/
-        ├── CMakeLists.txt
-        ├── your-project.cpp
-        └── ...
-    ```
 
     Add the following lines to the end of `CMakeLists.txt`:
 
