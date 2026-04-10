@@ -21,18 +21,18 @@ You add this directory to your project with the `add_subdirectory()` command in 
 
 <div class="grid" markdown>
 ```text hl_lines="2" title="Inside Style"
-└── my-project/
+└── your-project/
     ├── pico-jxglib/
     ├── CMakeLists.txt
-    ├── my-project.cpp
+    ├── your-project.cpp
     └── ...
 ```
 
 ```text hl_lines="1" title="Outside Style"
 ├── pico-jxglib/
-└── my-project/
+└── your-project/
     ├── CMakeLists.txt
-    ├── my-project.cpp
+    ├── your-project.cpp
     └── ...
 ```
 </div>
@@ -44,7 +44,7 @@ So you can choose either of the following styles to add pico-jxglib to your proj
 :    Add this command to your `CMakeLists.txt`:
     
     ```cmake title="CMakeLists.txt"
-    target_link_libraries(my-project jxglib_AAAAAA jxglib_BBBBBB jxglib_CCCCCC)
+    target_link_libraries(your-project jxglib_AAAAAA jxglib_BBBBBB jxglib_CCCCCC)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/pico-jxglib)
     ```
 
@@ -55,7 +55,7 @@ So you can choose either of the following styles to add pico-jxglib to your proj
 :    Add this command to your `CMakeLists.txt`:
     
     ```cmake title="CMakeLists.txt"
-    target_link_libraries(my-project jxglib_AAAAAA jxglib_BBBBBB jxglib_CCCCCC)
+    target_link_libraries(your-project jxglib_AAAAAA jxglib_BBBBBB jxglib_CCCCCC)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
     ```
     
@@ -76,7 +76,7 @@ There are two example projects that demonstrate how to add pico-jxglib to your p
 
     From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings:
 
-    - **Name** ... Enter the project name. For this example, use `my-project`.
+    - **Name** ... Enter the project name. For this example, use `your-project`.
     - **Board type** ... Select your board type.
     - **Location** ... Select the parent directory where the project directory will be created.
     - **Code generation options** ... **Check `Generate C++ code`**
@@ -85,22 +85,22 @@ There are two example projects that demonstrate how to add pico-jxglib to your p
 
     ```text hl_lines="1"
     ├── pico-jxglib/
-    └── my-project/
+    └── your-project/
         ├── CMakeLists.txt
-        ├── my-project.cpp
+        ├── your-project.cpp
         └── ...
     ```
 
     Add the following lines to the end of `CMakeLists.txt`:
 
     ```cmake title="CMakeLists.txt"
-    target_link_libraries(my-project jxglib_Common)
+    target_link_libraries(your-project jxglib_Common)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
     ```
 
     Edit the source file as follows:
 
-    ```cpp title="my-project.cpp"
+    ```cpp title="your-project.cpp"
     #include "pico/stdlib.h"
     #include "jxglib/Common.h"
     
@@ -124,7 +124,7 @@ There are two example projects that demonstrate how to add pico-jxglib to your p
 
     From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings:
 
-    - **Name** ... Enter the project name. For this example, use `my-project`.
+    - **Name** ... Enter the project name. For this example, use `your-project`.
     - **Board type** ... Select your board type.
     - **Location** ... Select the parent directory where the project directory will be created.
     - **Code generation options** ... **Check `Generate C++ code`**
@@ -133,23 +133,23 @@ There are two example projects that demonstrate how to add pico-jxglib to your p
 
     ```text hl_lines="1"
     ├── pico-jxglib/
-    └── my-project/
+    └── your-project/
         ├── CMakeLists.txt
-        ├── my-project.cpp
+        ├── your-project.cpp
         └── ...
     ```
 
     Add the following lines to the end of `CMakeLists.txt`:
 
     ```cmake title="CMakeLists.txt"
-    target_link_libraries(my-project jxglib_LABOPlatform_FullCmd)
+    target_link_libraries(your-project jxglib_LABOPlatform_FullCmd)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
-    jxglib_configure_LABOPlatform(my-project)
+    jxglib_configure_LABOPlatform(your-project)
     ```
 
     Edit the source file as follows:
 
-    ```cpp title="my-project.cpp"
+    ```cpp title="your-project.cpp"
     #include "pico/stdlib.h"
     #include "jxglib/LABOPlatform.h"
 
