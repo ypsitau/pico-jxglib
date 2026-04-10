@@ -1,4 +1,4 @@
-# USB Storage
+# File System on USB Storage
 
 The Pico board can use its USB host function to connect USB storage. **pico-jxglib** implements a USB storage handler using the Mass Storage Class provided by the tinyusb library.
 

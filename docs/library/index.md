@@ -21,18 +21,18 @@ You add this directory to your project with the `add_subdirectory()` command in 
 
 <div class="grid" markdown>
 ```text hl_lines="2" title="Inside Style"
-└── your-project/
+└── my-project/
     ├── pico-jxglib/
     ├── CMakeLists.txt
-    ├── your-project.cpp
+    ├── my-project.cpp
     └── ...
 ```
 
 ```text hl_lines="1" title="Outside Style"
 ├── pico-jxglib/
-└── your-project/
+└── my-project/
     ├── CMakeLists.txt
-    ├── your-project.cpp
+    ├── my-project.cpp
     └── ...
 ```
 </div>
@@ -44,6 +44,7 @@ So you can choose either of the following styles to add pico-jxglib to your proj
 :    Add this command to your `CMakeLists.txt`:
     
     ```cmake title="CMakeLists.txt"
+    target_link_libraries(my-project jxglib_AAAAAA jxglib_BBBBBB jxglib_CCCCCC)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/pico-jxglib)
     ```
 
@@ -54,7 +55,7 @@ So you can choose either of the following styles to add pico-jxglib to your proj
 :    Add this command to your `CMakeLists.txt`:
     
     ```cmake title="CMakeLists.txt"
-
+    target_link_libraries(my-project jxglib_AAAAAA jxglib_BBBBBB jxglib_CCCCCC)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
     ```
     
@@ -62,58 +63,105 @@ So you can choose either of the following styles to add pico-jxglib to your proj
 
     This style is useful when you want to share pico-jxglib across multiple projects.
 
-## Example Project
+## Example Projects
 
-Let's make a simple blink program using pico-jxglib.
+There are two example projects that demonstrate how to add pico-jxglib to your project and use its APIs:
 
-From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings:
+- ***Blinky Project*** ... The simplest project that blinks an LED connected to GPIO15.
+- ***LABOPlatform Project*** ... A more complicated project that has the same functionality as pico-jxgLABO, including the interactive shell and built-in logic analyzer.
 
-- **Name** ... Enter the project name. For this example, use `blink`.
-- **Board type** ... Select your board type.
-- **Location** ... Select the parent directory where the project directory will be created.
-- **Code generation options** ... **Check `Generate C++ code`**
+=== "Blinky Project"
 
-Assume your project directory and pico-jxglib are arranged in ***Outside Style*** as follows:
+    Let's create the simplest project that blinks an LED connected to GPIO15.
 
-```text hl_lines="1"
-├── pico-jxglib/
-└── blink/
-    ├── CMakeLists.txt
-    ├── blink.cpp
-    └── ...
-```
+    From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings:
 
-Add the following lines to the end of `CMakeLists.txt`:
+    - **Name** ... Enter the project name. For this example, use `my-project`.
+    - **Board type** ... Select your board type.
+    - **Location** ... Select the parent directory where the project directory will be created.
+    - **Code generation options** ... **Check `Generate C++ code`**
 
-```cmake title="CMakeLists.txt"
-target_link_libraries(blink jxglib_Common)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
-```
+    Assume your project directory and pico-jxglib are arranged in ***Outside Style*** as follows:
 
-The order of `target_link_libraries()` and `add_subdirectory()` doesn't matter.
+    ```text hl_lines="1"
+    ├── pico-jxglib/
+    └── my-project/
+        ├── CMakeLists.txt
+        ├── my-project.cpp
+        └── ...
+    ```
 
-Edit the source file as follows:
+    Add the following lines to the end of `CMakeLists.txt`:
 
-```cpp title="blink.cpp"
-#include "pico/stdlib.h"
-#include "jxglib/Common.h"
+    ```cmake title="CMakeLists.txt"
+    target_link_libraries(my-project jxglib_Common)
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+    ```
 
-using namespace jxglib;
+    Edit the source file as follows:
 
-int main()
-{
-    GPIO15.init().set_dir_OUT();
-    while (true) {
-        GPIO15.put(true);
-        ::sleep_ms(500);
-        GPIO15.put(false);
-        ::sleep_ms(500);
+    ```cpp title="my-project.cpp"
+    #include "pico/stdlib.h"
+    #include "jxglib/Common.h"
+    
+    using namespace jxglib;
+    
+    int main()
+    {
+        GPIO15.init().set_dir_OUT();
+        while (true) {
+            GPIO15.put(true);
+            ::sleep_ms(500);
+            GPIO15.put(false);
+            ::sleep_ms(500);
+        }
     }
-}
-```
+    ```
 
-`using namespace jxglib;` is a "magic spell" to use pico-jxglib functions and classes in your code[^namespace].
+=== "LABOPlatform Project"
 
-[^namespace]: All pico-jxglib functions, classes, and global variables are defined in the `jxglib` namespace to avoid conflicts with other libraries. For example, `GPIO15` in this code is actually `jxglib::GPIO15`, but using `using namespace` lets you omit the prefix.
+    Let's create a more complicated project that has the same functionality as pico-jxgLABO, including the interactive shell and built-in logic analyzer.
 
-For how to build and write to the board, see ["Getting Started with Pico SDK"](../development/pico-sdk/index.md).
+    From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings:
+
+    - **Name** ... Enter the project name. For this example, use `my-project`.
+    - **Board type** ... Select your board type.
+    - **Location** ... Select the parent directory where the project directory will be created.
+    - **Code generation options** ... **Check `Generate C++ code`**
+
+    Assume your project directory and pico-jxglib are arranged in ***Outside Style*** as follows:
+
+    ```text hl_lines="1"
+    ├── pico-jxglib/
+    └── my-project/
+        ├── CMakeLists.txt
+        ├── my-project.cpp
+        └── ...
+    ```
+
+    Add the following lines to the end of `CMakeLists.txt`:
+
+    ```cmake title="CMakeLists.txt"
+    target_link_libraries(my-project jxglib_LABOPlatform_FullCmd)
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+    jxglib_configure_LABOPlatform(my-project)
+    ```
+
+    Edit the source file as follows:
+
+    ```cpp title="my-project.cpp"
+    #include "pico/stdlib.h"
+    #include "jxglib/LABOPlatform.h"
+
+    using namespace jxglib;
+
+    int main(void)
+    {
+        ::stdio_init_all();
+        LABOPlatform::Instance.Initialize();
+        for (;;) {
+            // Your code here
+            Tickable::Tick();
+        }
+    }
+    ```

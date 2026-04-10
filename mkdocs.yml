@@ -38,7 +38,7 @@ nav:
         - Overview: library/index.md
         - File System:
             - Overview: library/filesystem/index.md
-            - Flash Memory: library/filesystem/flash/index.md
+            - Internal Flash Memory: library/filesystem/flash/index.md
             - SD Card: library/filesystem/sdcard/index.md
             - USB Storage: library/filesystem/usb-storage/index.md
         - RTC (Real Time Clock): library/rtc/index.md

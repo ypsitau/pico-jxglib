@@ -1,4 +1,4 @@
-# SD Card
+# File System on SD Card
 
 SD cards are familiar storage devices used in smartphones and are easily available at convenience stores. While it may seem simple to connect them to embedded devices, it can actually be tricky. This section explains how to connect SD cards and important points about the software.
 
