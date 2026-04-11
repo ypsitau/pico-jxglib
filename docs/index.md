@@ -222,7 +222,7 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     ---
 
-    No more bothering about USB descriptors for your custom USB device! You can easily make your Pico act as a USB device, such as serial device, mass storage device, video, keyboard, or mouse. Combining these functions is also easy!
+    No more bothering about USB descriptors of the TinyUSB! You can easily make your Pico act as a USB device, such as serial device, mass storage device, video, keyboard, or mouse. Combining these functions is also easy!
 
 -   :fontawesome-brands-usb:{ .lg .middle } **USB Host Support**
 
