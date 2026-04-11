@@ -81,16 +81,16 @@ But, wait. Where should we put the `pico-jxglib` directory? There are two ways o
 
 A directory from a Git repository can safely be moved to another location even after cloning.
 
-## Example Projects
+## Example Programs
 
-There are two example projects that demonstrate how to add pico-jxglib to your project and use its APIs:
+Using the project created above, let's create actual programs that use pico-jxglib. There are two examples:
 
-- ***Blinky Project*** ... The simplest project that blinks an LED connected to GPIO15.
-- ***LABOPlatform Project*** ... A more complicated project that has the same functionality as pico-jxgLABO, including the interactive shell and built-in logic analyzer.
+- ***Blinky Program*** ... The simplest program that blinks an LED connected to a GPIO.
+- ***LABOPlatform Program*** ... A more complicated program that has the same functionality as pico-jxgLABO, including the interactive shell and built-in logic analyzer.
 
-Modify the `CMakeLists.txt` and `your-project.cpp` files as described below to create each project. It is assumed that `pico-jxglib` is placed in the same directory as `your-project` (outside style).
+Modify the `CMakeLists.txt` and `your-project.cpp` files as described below. It is assumed that `pico-jxglib` is placed in the same directory as `your-project` (outside style).
 
-=== "Blinky Project"
+=== "Blinky Program"
 
     Add the following lines to the end of `CMakeLists.txt`:
 
@@ -104,7 +104,7 @@ Modify the `CMakeLists.txt` and `your-project.cpp` files as described below to c
     --8<-- "sample/your-project-blinky/your-project.cpp"
     ```
 
-=== "LABOPlatform Project"
+=== "LABOPlatform Program"
 
     Add the following lines to the end of `CMakeLists.txt`:
 
