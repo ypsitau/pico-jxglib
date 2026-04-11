@@ -6,7 +6,7 @@ using namespace jxglib;
 int main()
 {
     GPIO15.init().set_dir_OUT();
-    while (true) {
+    for (;;) {
         GPIO15.put(true);
         ::sleep_ms(500);
         GPIO15.put(false);
