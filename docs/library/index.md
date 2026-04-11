@@ -63,10 +63,9 @@ So you can choose either of the following styles to add pico-jxglib to your proj
 
 ***Inside Style***
 
-Add this command to your `CMakeLists.txt`:
+Add the following command to your `CMakeLists.txt`:
 
-```cmake title="CMakeLists.txt" linenums="1"
-target_link_libraries(your-project jxglib_AAAAAA jxglib_BBBBBB jxglib_CCCCCC)
+```cmake
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/pico-jxglib)
 ```
 
@@ -74,10 +73,9 @@ This style is useful when you want to include pico-jxglib in your project. It sp
 
 **Outside Style**
 
-Add this command to your `CMakeLists.txt`:
+Add the following command to your `CMakeLists.txt`:
 
-```cmake title="CMakeLists.txt" linenums="1"
-target_link_libraries(your-project jxglib_AAAAAA jxglib_BBBBBB jxglib_CCCCCC)
+```cmake
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 ```
 
@@ -92,66 +90,32 @@ There are two example projects that demonstrate how to add pico-jxglib to your p
 - ***Blinky Project*** ... The simplest project that blinks an LED connected to GPIO15.
 - ***LABOPlatform Project*** ... A more complicated project that has the same functionality as pico-jxgLABO, including the interactive shell and built-in logic analyzer.
 
-Modify the `CMakeLists.txt` and `your-project.cpp` files as described in the section above.
+Modify the `CMakeLists.txt` and `your-project.cpp` files as described below to create each project.
 
 === "Blinky Project"
 
-    Let's create the simplest project that blinks an LED connected to GPIO15.
-
     Add the following lines to the end of `CMakeLists.txt`:
 
-    ```cmake title="CMakeLists.txt" linenums="1"
-    target_link_libraries(your-project jxglib_Common)
-    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+    ```cmake title="CMakeLists.txt"
+    --8<-- "sample/your-project-blinky/CMakeLists.txt:58:"
     ```
 
     Edit the source file as follows:
 
-    ```cpp title="your-project.cpp" linenums="1"
-    #include "pico/stdlib.h"
-    #include "jxglib/Common.h"
-    
-    using namespace jxglib;
-    
-    int main()
-    {
-        GPIO15.init().set_dir_OUT();
-        while (true) {
-            GPIO15.put(true);
-            ::sleep_ms(500);
-            GPIO15.put(false);
-            ::sleep_ms(500);
-        }
-    }
+    ```cpp title="your-project.cpp"
+    --8<-- "sample/your-project-blinky/your-project.cpp"
     ```
 
 === "LABOPlatform Project"
 
-    Let's create a more complicated project that has the same functionality as pico-jxgLABO, including the interactive shell and built-in logic analyzer.
-
     Add the following lines to the end of `CMakeLists.txt`:
 
-    ```cmake title="CMakeLists.txt" linenums="1"
-    target_link_libraries(your-project jxglib_LABOPlatform_FullCmd)
-    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
-    jxglib_configure_LABOPlatform(your-project)
+    ```cmake title="CMakeLists.txt"
+    --8<-- "sample/your-project-LABOPlatform/CMakeLists.txt:58:"
     ```
 
     Edit the source file as follows:
 
-    ```cpp title="your-project.cpp" linenums="1"
-    #include "pico/stdlib.h"
-    #include "jxglib/LABOPlatform.h"
-
-    using namespace jxglib;
-
-    int main(void)
-    {
-        ::stdio_init_all();
-        LABOPlatform::Instance.Initialize();
-        for (;;) {
-            // Your code here
-            Tickable::Tick();
-        }
-    }
+    ```cpp title="your-project.cpp"
+    --8<-- "sample/your-project-LABOPlatform/your-project.cpp"
     ```
