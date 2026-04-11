@@ -66,6 +66,6 @@ function(jxglib_configure_USBHost target)
 	jxglib_set_if_undefined(_CFG_TUH_CDC_LINE_CONTROL_ON_ENUM	0x03)
 	jxglib_set_if_undefined(_CFG_TUH_CDC_LINE_CODING_ON_ENUM
 		"{ 115200, CDC_LINE_CODING_STOP_BITS_1, CDC_LINE_CODING_PARITY_NONE, 8 }")
-	configure_file(${JXGLIB_DIR}/src/USBHost/tusb_config.h.in ${CMAKE_CURRENT_BINARY_DIR}/tusb_config.h)
+	configure_file(${CMAKE_CURRENT_FUNCTION_LIST_DIR}/tusb_config.h.in ${CMAKE_CURRENT_BINARY_DIR}/tusb_config.h)
 	target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 endfunction()

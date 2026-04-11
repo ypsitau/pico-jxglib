@@ -40,8 +40,6 @@ add_subdirectory(VideoTransmitter)
 
 add_subdirectory(guest)
 
-set(JXGLIB_DIR ${CMAKE_CURRENT_LIST_DIR}/.. PARENT_SCOPE)
-
 function(jxglib_set_if_undefined VAR VALUE)
 	if(NOT DEFINED ${VAR})
 		set(${VAR} "${VALUE}" PARENT_SCOPE)
