@@ -2,7 +2,7 @@
 
 ## Development Environment
 
-The library APIs of pico-jxglib are developed with Pico SDK. Please see [Getting Started with Pico SDK](../development/pico-sdk/) for setting up the development environment. It also gives you a quick introduction to Visual Studio Code (VSCode), which is used throughout the documentation here.
+The library APIs of pico-jxglib are developed with Pico SDK. Please see [Getting Started with Pico SDK](../development/pico-sdk/index.md) for setting up the development environment. It also gives you a quick introduction to Visual Studio Code (VSCode), which is used throughout the documentation here.
 
 Does it look complicated? Don't worry! Installing Pico SDK is much easier than you think. Just follow the instructions in the link above, and you'll be ready to use pico-jxglib in no time!
 

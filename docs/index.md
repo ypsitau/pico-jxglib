@@ -49,7 +49,7 @@ pico-jxglib is implemented in C++, but it also provides C APIs for those who pre
     }
     ```
 
-Just adding the highlighted lines makes your firmware interactive through USB's serial connection, providing a bash-like interface to execute many powerful built-in commands for various purposes. [:octicons-arrow-right-24: Learn More](library/#__tabbed_1_2)
+Just adding the highlighted lines makes your firmware interactive through USB's serial connection, providing a bash-like interface to execute many powerful built-in commands for various purposes. [:octicons-arrow-right-24: Learn More](library/index.md#__tabbed_1_2)
 
 Of course, you can also add your own custom commands to the shell. It's that simple! 
 
