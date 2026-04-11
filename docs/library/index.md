@@ -8,7 +8,7 @@ Does it look complicated? Don't worry! Installing Pico SDK is much easier than y
 
 ## How to Add pico-jxglib to Your Project
 
-First, you need to create a new Pico project. From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings:
+First, you need to create a new Pico project if you don't have one. From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings:
 
 - **Name** ... Enter the project name. Here, we use `your-project`.
 - **Board type** ... Select your board type.
@@ -62,28 +62,28 @@ But, wait. Where should we put the `pico-jxglib` directory? There are two ways o
 So you can choose either of the following styles to add pico-jxglib to your project:
 
 ***Inside Style***
-   
-:    Add this command to your `CMakeLists.txt`:
-    
-    ```cmake title="CMakeLists.txt" linenums="1"
-    target_link_libraries(your-project jxglib_AAAAAA jxglib_BBBBBB jxglib_CCCCCC)
-    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/pico-jxglib)
-    ```
 
-    This style is useful when you want to include pico-jxglib in your project. It specifically works well with Git's submodule feature, allowing you to manage pico-jxglib as part of your project repository.
+Add this command to your `CMakeLists.txt`:
 
-***Outside Style***
-    
-:    Add this command to your `CMakeLists.txt`:
-    
-    ```cmake title="CMakeLists.txt" linenums="1"
-    target_link_libraries(your-project jxglib_AAAAAA jxglib_BBBBBB jxglib_CCCCCC)
-    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
-    ```
-    
-    Second argument `pico-jxglib` is required in `add_subdirectory()` because the added directory contains a reference to a parent directory. The string in the second argument is used as the output directory name for generated files. As long as it doesn't conflict with other directories in `build`, you can use any name.
+```cmake title="CMakeLists.txt" linenums="1"
+target_link_libraries(your-project jxglib_AAAAAA jxglib_BBBBBB jxglib_CCCCCC)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/pico-jxglib)
+```
 
-    This style is useful when you want to share pico-jxglib across multiple projects.
+This style is useful when you want to include pico-jxglib in your project. It specifically works well with Git's submodule feature, allowing you to manage pico-jxglib as part of your project repository.
+
+**Outside Style**
+
+Add this command to your `CMakeLists.txt`:
+
+```cmake title="CMakeLists.txt" linenums="1"
+target_link_libraries(your-project jxglib_AAAAAA jxglib_BBBBBB jxglib_CCCCCC)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+```
+
+Second argument `pico-jxglib` is required in `add_subdirectory()` because the added directory contains a reference to a parent directory. The string in the second argument is used as the output directory name for generated files. As long as it doesn't conflict with other directories in `build`, you can use any name.
+
+This style is useful when you want to share pico-jxglib across multiple projects.
 
 ## Example Projects
 

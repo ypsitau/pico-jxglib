@@ -53,7 +53,7 @@ Just adding the highlighted lines makes your firmware interactive through USB's 
 
 Of course, you can also add your own custom commands to the shell. It's that simple! 
 
-## pico-jxgLABO - Ready-to-Flash UF2 Binary
+## pico-jxgLABO: Ready-to-Flash UF2 Binary
 
 If you want to try it out without setting up the development environment, you can download the ready-to-flash UF2 binary files.
 

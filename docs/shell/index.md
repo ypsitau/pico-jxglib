@@ -14,6 +14,8 @@ columns 1
     B("UART")
     C("Wi-Fi (Telnet)")
     D("USB HID Keyboard")
+    E("GPIO Buttons")
+    F("GPIO Key Matrix")
   end
 ```
 
@@ -107,4 +109,92 @@ Options:
  -f --force     overwrites existing files without prompting
 ```
 
-Explore the available commands and their options to see what you can do with the shell!
+## `about-me` command
+
+Displays information about the currently running program (build info, pin layout info embedded with the `bi_decl()` macro, and memory map). The output format is similar to picotool.
+
+```text
+>about-me
+Program Information
+ name:              shell-test
+ version:           0.1
+ feature:           UART stdin / stdout
+ binary start:      0x10000000
+ binary end:        0x1000e960
+
+Fixed Pin Information
+ 0:                 UART0 TX
+ 1:                 UART0 RX
+
+Build Information
+ sdk version:       2.1.1
+ pico_board:        pico
+ boot2_name:        boot2_w25q080
+ build date:        May 13 2025
+ build attributes:  Debug
+
+Memory Map
+ flash binary:      0x10000000-0x1000e960   59744
+ ram vector table:  0x20000000-0x200000c0     192
+ data:              0x200000c0-0x20000968    2216
+ bss:               0x20000968-0x20001aa4    4412
+ heap:              0x20001aa4-0x20040000  255324
+ stack:             0x20040000-0x20042000    8192
+```
+
+## `about-platform` command
+
+Displays platform information for the Pico board.
+
+```text
+>about-platform
+RP2350 (ARM) 150 MHz
+Flash  0x10000000-0x10400000 4194304
+SRAM   0x20000000-0x20082000  532480
+```
+
+## `d` command
+
+Outputs a dump image of memory or files. If run with no arguments, it displays memory contents from address 0x00000000.
+
+```text
+>d
+00000000  00 1F 04 20 EB 00 00 00 35 00 00 00 31 00 00 00
+00000010  4D 75 01 03 7A 00 C4 00 1D 00 00 00 00 23 02 88
+00000020  9A 42 03 D0 43 88 04 30 91 42 F7 D1 18 1C 70 47
+00000030  30 BF FD E7 F4 46 00 F0 05 F8 A7 48 00 21 01 60
+```
+
+If you run it again with no arguments, it displays the next block of memory.
+
+```text
+>d
+00000040  41 60 E7 46 A5 48 00 21 C9 43 01 60 41 60 70 47
+00000050  CA 9B 0D 5B F9 1D 00 00 28 43 29 20 32 30 32 30
+00000060  20 52 61 73 70 62 65 72 72 79 20 50 69 20 54 72
+00000070  61 64 69 6E 67 20 4C 74 64 00 50 33 09 03 52 33
+```
+
+The first argument is the start address, and the second argument is the number of bytes to display. To specify a hexadecimal value, prefix it with `0x`.
+
+```text
+>d 0x10000000
+10000000  00 B5 32 4B 21 20 58 60 98 68 02 21 88 43 98 60
+10000010  D8 60 18 61 58 61 2E 4B 00 21 99 60 02 21 59 61
+10000020  01 21 F0 22 99 50 2B 49 19 60 01 21 99 60 35 20
+10000030  00 F0 44 F8 02 22 90 42 14 D0 06 21 19 66 00 F0
+```
+
+```text
+>d 0x10000000 128
+10000000  00 B5 32 4B 21 20 58 60 98 68 02 21 88 43 98 60
+10000010  D8 60 18 61 58 61 2E 4B 00 21 99 60 02 21 59 61
+10000020  01 21 F0 22 99 50 2B 49 19 60 01 21 99 60 35 20
+10000030  00 F0 44 F8 02 22 90 42 14 D0 06 21 19 66 00 F0
+10000040  34 F8 19 6E 01 21 19 66 00 20 18 66 1A 66 00 F0
+10000050  2C F8 19 6E 19 6E 19 6E 05 20 00 F0 2F F8 01 21
+10000060  08 42 F9 D1 00 21 99 60 1B 49 19 60 00 21 59 60
+10000070  1A 49 1B 48 01 60 01 21 99 60 EB 21 19 66 A0 21
+```
+
+If you specify a string other than a number as an argument, it is interpreted as a file name and the file contents are dumped. This feature is enabled when a file system is mounted.
