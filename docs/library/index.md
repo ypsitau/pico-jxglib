@@ -24,7 +24,7 @@ The created project directory will look like this:
     └── ...
 ```
 
-You can get the latest pico-jxglib from GitHub as follows:
+Then, clone the pico-jxglib repository from GitHub as follows:
 
 ```bash
 $ git clone https://github.com/ypsitau/pico-jxglib.git
@@ -40,8 +40,6 @@ $ git submodule update --init --recursive
     ```
 
 But, wait. Where should we put the `pico-jxglib` directory? There are two ways of arranging the directories of your project and pico-jxglib: 
-
-So you can choose either of the following styles to add pico-jxglib to your project:
 
 !!! abstract "Inside Style"
     `pico-jxglib` is placed inside `your-project` directory like this:
@@ -80,6 +78,8 @@ So you can choose either of the following styles to add pico-jxglib to your proj
     Second argument `pico-jxglib` is required in `add_subdirectory()` because the added directory contains a reference to a parent directory. The string in the second argument is used as the output directory name for generated files. As long as it doesn't conflict with other directories in `build`, you can use any name.
 
     This style is useful when you want to share pico-jxglib across multiple projects.
+
+A directory from a Git repository can safely be moved to another location even after cloning.
 
 ## Example Projects
 
