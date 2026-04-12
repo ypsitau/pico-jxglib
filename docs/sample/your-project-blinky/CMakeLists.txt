@@ -55,5 +55,7 @@ target_include_directories(your-project PRIVATE
 
 pico_add_extra_outputs(your-project)
 
+# mkdocs-start
 target_link_libraries(your-project jxglib_Common)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+# mkdocs-end

@@ -63,6 +63,9 @@ nav:
         - Getting Started with Pico SDK: development/pico-sdk/index.md
         - Quick Guide to CMake: development/cmake/index.md
 
+plugins:
+    - include-markdown
+
 theme:
     name: material
     icon:
