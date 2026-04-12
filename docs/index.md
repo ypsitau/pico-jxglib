@@ -218,6 +218,18 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     The library provides built-in commands for I2C and SPI communication, making it easy to interact with a wide range of sensors and peripherals without needing to write complex code.
 
+-   :material-usb-port:{ .lg .middle } **USB Device Support**
+
+    ---
+
+    No more bothering about USB descriptors of the TinyUSB! You can easily make your Pico act as a USB device, such as serial device, mass storage device, video, keyboard, or mouse. Combining these functions is also easy!
+
+-   :fontawesome-brands-usb:{ .lg .middle } **USB Host Support**
+
+    ---
+
+    The library provides wrapper APIs for the TinyUSB host stack, allowing you to easily connect and interact with USB devices such as keyboards, mice, and storage devices directly from your Pico firmware.
+
 </div>
 
 **And much more!**

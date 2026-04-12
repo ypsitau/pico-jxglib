@@ -30,7 +30,7 @@ The created project directory will look like this:
     └── ...
 ```
 
-You can get the latest pico-jxglib from GitHub as follows:
+Then, clone the pico-jxglib repository from GitHub as follows:
 
 ```bash
 $ git clone https://github.com/ypsitau/pico-jxglib.git
@@ -46,8 +46,6 @@ $ git submodule update --init --recursive
     ```
 
 But, wait. Where should we put the `pico-jxglib` directory? There are two ways of arranging the directories of your project and pico-jxglib: 
-
-So you can choose either of the following styles to add pico-jxglib to your project:
 
 !!! abstract "Inside Style"
     `pico-jxglib` is placed inside `your-project` directory like this:
@@ -87,16 +85,18 @@ So you can choose either of the following styles to add pico-jxglib to your proj
 
     This style is useful when you want to share pico-jxglib across multiple projects.
 
-## Example Projects
+A directory from a Git repository can safely be moved to another location even after cloning.
 
-There are two example projects that demonstrate how to add pico-jxglib to your project and use its APIs:
+## Example Programs
 
-- ***Blinky Project*** ... The simplest project that blinks an LED connected to GPIO15.
-- ***LABOPlatform Project*** ... A more complicated project that has the same functionality as pico-jxgLABO, including the interactive shell and built-in logic analyzer.
+Using the project created above, let's create actual programs that use pico-jxglib. There are two examples:
 
-Modify the `CMakeLists.txt` and `your-project.cpp` files as described below to create each project. It is assumed that `pico-jxglib` is placed in the same directory as `your-project` (outside style).
+- ***Blinky Program*** ... The simplest program that blinks an LED connected to a GPIO.
+- ***LABOPlatform Program*** ... A more complicated program that has the same functionality as pico-jxgLABO, including the interactive shell and built-in logic analyzer.
 
-=== "Blinky Project"
+Modify the `CMakeLists.txt` and `your-project.cpp` files as described below. It is assumed that `pico-jxglib` is placed in the same directory as `your-project` (outside style).
+
+=== "Blinky Program"
 
     Add the following lines to the end of `CMakeLists.txt`:
 
@@ -110,7 +110,7 @@ Modify the `CMakeLists.txt` and `your-project.cpp` files as described below to c
     --8<-- "sample/your-project-blinky/your-project.cpp"
     ```
 
-=== "LABOPlatform Project"
+=== "LABOPlatform Program"
 
     Add the following lines to the end of `CMakeLists.txt`:
 
