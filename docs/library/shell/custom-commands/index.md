@@ -71,3 +71,18 @@ argv[0] "argtest"
 argv[1] "hello"
 argv[2] "world"
 ```
+
+## Utility APIs
+
+```cpp
+static const Shell::Cmd::Arg::Opt optTbl[] = {
+    Shell::Cmd::Arg::OptBool("help",    'h', "prints this help"),
+    Shell::Cmd::Arg::OptBool("flag",    'f', "a boolean flag"),
+    Shell::Cmd::Arg::OptInt("num",      'n', "specifies a number", "n"),
+    Shell::Cmd::Arg::OptFloat("float",  0x0, "specifies a floating point number", "n"),
+    Shell::Cmd::Arg::OptString("name",  0x0, "specifies a name", "str"),
+    Shell::Cmd::Arg::OptString("path",  p', "specifies a path", "str"),
+};
+Shell::Cmd::Arg arg(optTbl, count_of(optTbl));
+
+```
