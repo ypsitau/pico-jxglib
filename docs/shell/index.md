@@ -41,24 +41,7 @@ The most common use case of the shell is to use it with a USB serial. In this pa
 
 After flashing the pico-jxgLABO, connect the Pico board to your computer using a USB cable. Then, to establish a serial communication, you can use a terminal emulator program such as Tera Term (Windows), minicom (Linux), or screen (macOS).
 
-Here, we will use Tera Term as an example. From the menu bar, select `[Setup]` - `[Serial port...]` to open the dialog below:
-
-![teraterm-setting.png](images/teraterm-setting.png)
-
-pico-jxgLABO provides two USB serial ports. On Windows, each is displayed with the following Device Instance IDs:
-
-- `USB\VID_CAFE&PID_1AB0&MI01` ... for terminal use
-- `USB\VID_CAFE&PID_1AB0&MI03` ... for applications such as logic analyzers and plotters
-
-Select the serial port for terminal use.
-
-When you press the `Enter` key in the terminal, the following prompt will appear:
-
-```console
-L:/>
-```
-
-The prompt consists of the drive letter `L:` and the current directory path. The pico-jxgLABO firmware mounts the flash memory of the Pico board as a FAT file system, and the drive letter `L:` represents this flash memory.
+{% include-markdown "include/setup-teraterm-for-laboplatform.md" %}
 
 ## Key Operations
 
