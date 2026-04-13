@@ -2,26 +2,19 @@
 
 ## Development Environment
 
-You will use the library APIs of pico-jxglib along with the Pico SDK.
+The library APIs of pico-jxglib work along with the Pico SDK. Below is a quick introduction to set up the Pico SDK:
 
-!!! note "Quick set up of Pico SDK"
-    1. Install Visual Studio Code (VSCode) from [here](https://visualstudio.microsoft.com/). It's free and available for Windows, macOS, and Linux.
-    2. Launch VSCode and press `Ctrl` + `Shift` + `P` to open the command palette, then type `Extensions: Install Extensions` and select it.
-    3. Search `Raspberry Pi Pico` in the extensions marketplace and install it.
-       ![pico-extension](images/pico-extension.png)
+{% include-markdown "include/quick-setup-picosdk.md" %}
 
 For more detailed information, please see [Getting Started with Pico SDK](../development/pico-sdk/index.md). It also gives you a quick introduction to VSCode, which is used throughout the documentation here.
 
 ## How to Use pico-jxglib in Your Project
 
-First, you need to create a new Pico project if you don't have one. From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings:
+If you don't have a Pico SDK project yet, create a new one as described below:
 
-- **Name** ... Enter the project name. Here, we use `your-project`.
-- **Board type** ... Select your board type.
-- **Location** ... Select the parent directory where the project directory will be created.
-- **Code generation options** ... **Check `Generate C++ code`**
+{% include-markdown "include/new-project.md" %}
 
-The created project directory will look like this:
+When you create a new project with the name `your-project`, the project directory will look like this:
 
 ```text
 └── your-project/
@@ -32,18 +25,7 @@ The created project directory will look like this:
 
 Then, clone the pico-jxglib repository from GitHub as follows:
 
-```bash
-$ git clone https://github.com/ypsitau/pico-jxglib.git
-$ cd pico-jxglib
-$ git submodule update --init --recursive
-```
-
-!!! note
-    pico-jxglib is updated almost daily. If you've already cloned it, run the following command in the `pico-jxglib` directory to get the latest version:
-
-    ```bash
-    git pull
-    ```
+{% include-markdown "include/clone-repository.md" %}
 
 But, wait. Where should we put the `pico-jxglib` directory? There are two ways of arranging the directories of your project and pico-jxglib: 
 
