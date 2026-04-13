@@ -11,14 +11,6 @@ void test_Parse()
 		const char* argv[8];
 	};
 	Printable& tout = Stdio::Instance;
-	static const Shell::Cmd::Arg::Opt optTbl[] = {
-		Shell::Cmd::Arg::OptBool("help",	'h', "prints this help"),
-		Shell::Cmd::Arg::OptBool("flag",	'f', "a boolean flag"),
-		Shell::Cmd::Arg::OptInt("num",		'n', "specifies a number", "n"),
-		Shell::Cmd::Arg::OptFloat("float",	0x0, "specifies a floating point number", "n"),
-		Shell::Cmd::Arg::OptString("name",	0x0, "specifies a name", "str"),
-		Shell::Cmd::Arg::OptString("path",	'p', "specifies a path", "str"),
-	};
 	const ParseTestCase cases[] = {
 		{ "no options", 3, { "prog", "arg1", "arg2" } },
 		{ "help long", 4, { "prog", "--help", "arg1", "arg2" } },
