@@ -125,3 +125,5 @@ extra_javascript:
 
 extra_css:
     - stylesheets/extra.css
+
+exclude_docs: include/*
