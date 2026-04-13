@@ -2,11 +2,10 @@
 
 ## Development Environment
 
-The library APIs of pico-jxglib work along with the Pico SDK. Below is a quick introduction to set up the Pico SDK:
+The library APIs of pico-jxglib work along with the Pico SDK. Below is a quick introduction to set up the development environment:
 
 {% include-markdown "include/quick-setup-picosdk.md" %}
 
-For more detailed information, please see [Getting Started with Pico SDK](../development/pico-sdk/index.md). It also gives you a quick introduction to VSCode, which is used throughout the documentation here.
 
 ## How to Use pico-jxglib in Your Project
 
