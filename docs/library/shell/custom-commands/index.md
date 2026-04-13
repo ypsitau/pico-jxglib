@@ -59,3 +59,15 @@ Press `F7` to build the project. Connect your Pico to the computer while holding
 
 ## Run the Program
 
+Connect the Pico to your computer using a USB cable and open a terminal emulator program to connect it. 
+
+{% include-markdown "include/setup-teraterm-for-laboplatform.md" %}
+
+Check if the `argtest` command works:
+
+```text
+L:/>argtest hello world
+argv[0] "argtest"
+argv[1] "hello"
+argv[2] "world"
+```
