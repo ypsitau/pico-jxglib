@@ -92,7 +92,7 @@ int ShellCmd_dump::Run(Readable& tin, Printable& tout, Printable& terr, int argc
 		Arg::OptBool("no-ascii",	0x0,	"prints no ASCII characters"),
 		Arg::OptBool("no-dump",		0x0,	"skips actual dump, just modifies parameters"),
 		Arg::OptInt("row-bytes",	'c',	"specifies number of bytes per row", "n"),
-		Arg::OptBool("hex8",		0x0,	"prints data in 16-bit hex format"),
+		Arg::OptBool("hex8",		0x0,	"prints data in 8-bit hex format"),
 		Arg::OptBool("hex16",		0x0,	"prints data in 16-bit hex format"),
 		Arg::OptBool("hex32",		0x0,	"prints data in 32-bit hex format"),
 		Arg::OptBool("hex16be",		0x0,	"prints data in 16-bit big-endian hex format"),

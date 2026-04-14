@@ -8,6 +8,7 @@ nav:
     - Home: index.md
     - Shell Commands:
         - Overview: shell/index.md
+        - Basic Commands: shell/basic/index.md
         - File System:
             - Overview: shell/filesystem/index.md
             - File Operating Commands: shell/filesystem/file-operating-commands/index.md

@@ -12,7 +12,7 @@
 
     When you press the `Enter` key in the terminal, the following prompt will appear:
 
-    ```console
+    ```text
     L:/>
     ```
 
