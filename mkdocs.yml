@@ -42,18 +42,20 @@ nav:
             - Shell with Serial Interface: library/shell/shell-with-serial/index.md
             - Shell with Display (TFT LCD): library/shell/shell-with-tftlcd/index.md
             - Shell with Display (OLED): library/shell/shell-with-oled/index.md
-            - Command Line Editor: library/shell/cmdline-editor/index.md
         - File System:
             - Overview: library/filesystem/index.md
             - Internal Flash Memory: library/filesystem/flash/index.md
             - SD Card: library/filesystem/sdcard/index.md
             - USB Storage: library/filesystem/usb-storage/index.md
-        - RTC (Real Time Clock): library/rtc/index.md
+        - Device:
+            - RTC (Real Time Clock): library/device/rtc/index.md
         - Display:
             - Overview: library/display/index.md
             - TFT LCD: library/display/tft-lcd/index.md
             - OLED: library/display/oled/index.md
             - WS2812: library/display/ws2812/index.md
+        - Keyboard:
+            - Overview: library/keyboard/index.md
         - USB Host:
             - Overview: library/usbhost/index.md
             - Keyboard & Mouse: library/usbhost/keyboard-mouse/index.md
