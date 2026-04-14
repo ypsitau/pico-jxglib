@@ -23,7 +23,7 @@ Return `Result::Success` if there is no error, or `Result::Error` if an error oc
 
 You do **not** need to register commands. When you create a command with the `ShellCmd` macro, it is automatically registered with the shell. With this mechanism, you can add commands simply by linking the source file that implements the command to the main program.
 
-## Build Sample Program
+## Sample Program
 
 Here, we will create a sample program that implements a custom command named `argtest`. It displays the contents of the arguments passed to it.
 
@@ -56,8 +56,6 @@ Edit `customcmd-argtest.cpp` as follows:
 ```
 
 Press `F7` to build the project. Connect your Pico to the computer while holding the BOOTSEL button, and it will appear as a mass storage device, to which you can copy the generated `build/customcmd-argtest.uf2` to flash it.
-
-## Run the Program
 
 Connect the Pico to your computer using a USB cable and open a terminal emulator program to connect it. 
 
