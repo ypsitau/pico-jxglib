@@ -36,6 +36,7 @@ nav:
             - OV7670: shell/camera/ov7670/index.md
     - Library APIs:
         - Overview: library/index.md
+        - LABOPlatform: library/labo-platform/index.md
         - Shell:
             - Overview: library/shell/index.md
             - Custom Commands: library/shell/custom-commands/index.md
