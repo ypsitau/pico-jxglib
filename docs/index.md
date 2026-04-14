@@ -12,9 +12,9 @@ Yes, I know there are some interactive shells for microcontrollers, but most of 
 
 pico-jxglib aims to provide a simple but powerful interactive shell with just four lines of additional code.
 
-## Sample Codes
+## Sample Programs
 
-pico-jxglib is implemented in C++, but it also provides C APIs for those who prefer C. The following code snippets show how to use the library in both C++ and C.
+pico-jxglib is implemented in C++, but it also provides C APIs for those who prefer C. The following sample programs show how to use the library in both C++ and C.
 
 === "C++"
     ```cpp hl_lines="2 4 9 12" linenums="1"
