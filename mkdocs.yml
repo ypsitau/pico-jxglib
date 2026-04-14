@@ -39,8 +39,9 @@ nav:
         - Shell:
             - Overview: library/shell/index.md
             - Custom Commands: library/shell/custom-commands/index.md
-            - Shell with Serial Interface: library/shell/shell/index.md
-            - Shell with Display Device: library/shell/terminal/index.md
+            - Shell with Serial Interface: library/shell/shell-with-serial/index.md
+            - Shell with Display (TFT LCD): library/shell/shell-with-tftlcd/index.md
+            - Shell with Display (OLED): library/shell/shell-with-oled/index.md
             - Command Line Editor: library/shell/cmdline-editor/index.md
         - File System:
             - Overview: library/filesystem/index.md

@@ -279,83 +279,107 @@ d---- 2000-01-01 00:00:00        dir4/
 -a--- 2000-01-01 00:00:00     77 README.txt
 ```
 
-## Reference
+## Command Reference
 
 ### cp
 
 Alias: `copy`
 
-```text
-cp [options] source... destination
+```text title="Help of the Command"
+L:/>cp --help
+Usage: cp [OPTION]... SOURCE... DEST
+Options:
+ -h --help      prints this help
+ -r --recursive copies directories recursively
+ -v --verbose   prints what is being done
+ -f --force     overwrites existing files without prompting
+``
+
+## mv
+
+```text title="Help of the Command"
+L:/>mv --help
+Usage: mv [OPTION]... SOURCE... DEST
+Options:
+ -h --help    prints this help
+ -v --verbose prints what is being done
+ -f --force   overwrites existing files without prompting
 ```
 
-Copy files. You can copy multiple files and use wildcards.
+## rm
 
-options:
-
-- `-r`: Copy directories recursively.
-- `-v`: Print what is being done.
-- `-f`: Overwrite existing files without prompting.
-
-### mv
-
-Alias: `move`
-```text
-mv [options] source... destination
+```text title="Help of the Command"
+L:/>rm --help
+Usage: rm [OPTION]... FILE...
+Options:
+ -h --help      prints this help
+ -r --recursive removes directories recursively
+ -v --verbose   prints what is being done
+ -f --force     removes files without prompting
 ```
 
-### rm
+## mkdir
 
-```text
-rm [options] file...
+```text title="Help of the Command"
+L:/>mkdir --help
+Usage: mkdir [OPTION]... DIRECTORY...
+Options:
+ -h --help prints this help
 ```
 
-### mkdir
+## ls
 
-Alias: `md`
-
-```text
-mkdir [options] directory...
+```text title="Help of the Command"
+L:/>ls --help
+Usage: ls [OPTION]... [DIRECTORY]...
+Options:
+ -h --help      prints this help
+ -a --all       lists all files, including hidden ones
+ -m --mixed     lists files and directories in mixed order
+    --sort=WORD sorts by WORD instead of name. WORD: name, size, time
+ -r --reverse   reverses the order of listing
+ -e --elimslash eliminates trailing slashes from directory names
 ```
 
-### ls
+## ls
 
-Alias: `dir`
-
-```text
-ls [options] [directory]
+```text title="Help of the Command"
+L:/>ls-drive --help
+Usage: ls-drive [OPTION]... [DRIVE]
+Options:
+ -h --help    prints this help
+ -r --remarks prints remarks for each drive
 ```
 
-### ls-drive
+## cat
 
-Alias: `dir-drive`
+```text title="Help of the Command"
+L:/>cat --help
+Usage: cat [OPTION]... [FILE]...
+Options:
+ -h --help prints this help
 
-```text
-ls-drive [options] [drive]
+Reads the contents of files and prints them to standard output.
+When no filenames are given, the command reads from standard input.
 ```
 
-### cat
+## tree
 
-```text
-cat [options] file...
+```text title="Help of the Command"
+L:/>tree --help
+Usage: tree [OPTION]... [DIRECTORY]
+Options:
+ -h --help      prints this help
+ -d --dironly   lists directories only
+ -e --elimslash eliminates trailing slashes from directory names
 ```
 
-### dump
+## touch
 
-Alias: `d`
-
-```text
-dump [options] [address]
-```
-
-### tree
-
-```text
-tree [options] [directory]
-```
-
-### touch
-
-```text
-touch [options] file...
+```text title="Help of the Command"
+L:/>touch --help
+Usage: touch [OPTION]... FILE...
+Options:
+ -h --help            prints this help
+ -t --timestamp=STAMP specifies the timestamp to set (format: YYYY-MM-DD HH:MM:SS)
 ```
