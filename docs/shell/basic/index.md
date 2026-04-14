@@ -315,3 +315,78 @@ d
 ```
 
 Using this feature and redirection, you can easily create a script file from the command history.
+
+## prompt
+
+Changes the shell prompt. By default, the prompt displays the drive letter and the current directory path.
+
+```text title="Help of the Command"
+L:/>prompt --help
+Usage: prompt [OPTION]... [PROMPT]
+Options:
+ -h --help prints this help
+Variables:
+  %d - current drive
+  %w - current directory
+  %p - platform name
+  %Y - year (4 digits)
+  %y - year (2 digits)
+  %M - month (1-12)
+  %D - day (1-31)
+  %h - hour (0-23)
+  %H - hour (1-12)
+  %m - minute (0-59)
+  %s - second (0-59)
+  %A - AM/PM
+```
+
+Running the command without any arguments will print the current prompt.
+
+```text title="Example"
+L:/>prompt
+%d%w>
+```
+
+When specified with an argument, it changes the prompt to the given string. You can use variables in the prompt string, which will be replaced with their corresponding values when displayed.
+
+```text title="Example"
+L:/>prompt "%Y-%M-%D>"
+2000-01-01>
+```
+
+## sleep
+
+Sleeps for the specified number of milliseconds.
+
+```text title="Help of the Command"
+L:/>sleep --help
+Usage: sleep [OPTION]... [MS]
+Options:
+ -h --help prints this help
+```
+
+## ticks
+
+Prints a list of active ticks. A tick is a function that is called periodically by the firmware's scheduler. This command is useful for debugging and performance analysis.
+
+```text title="Help of the Command"
+L:/>ticks --help
+Usage: ticks [OPTION]...
+Options:
+ -h --help prints this help
+```
+
+Prints a list of active ticks, showing their names, priorities, and periodic execution times.
+
+```text title="Example"
+L:/>ticks
+Tick Called Depth Max: 2
+CameraDisplayTickable          AboveNormal 0msec
+Shell                          Normal 0msec
+LogicAnalyzer::SigrokAdapter   Normal 0msec
+Serial::Terminal               Normal 0msec
+USBDevice::Controller          Normal 0msec
+Flipper                        Lowest 0msec
+Shell::BreakDetector           Lowest 100msec
+USBDevice::MSCDrive::SyncAgent Lowest 100msec
+```
