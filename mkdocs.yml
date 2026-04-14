@@ -50,12 +50,16 @@ nav:
             - USB Storage: library/filesystem/usb-storage/index.md
         - RTC (Real Time Clock): library/rtc/index.md
         - Display:
+            - Overview: library/display/index.md
             - TFT LCD: library/display/tft-lcd/index.md
             - OLED: library/display/oled/index.md
             - WS2812: library/display/ws2812/index.md
         - USB Host:
+            - Overview: library/usbhost/index.md
             - Keyboard & Mouse: library/usbhost/keyboard-mouse/index.md
             - Game Pad: library/usbhost/gamepad/index.md
+        - USB Client:
+            - Overview: library/usbclient/index.md
         - LVGL: library/lvgl/index.md
     - Applications:
         - Overview: applications/index.md
