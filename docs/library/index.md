@@ -68,9 +68,9 @@ But, wait. Where should we put the `pico-jxglib` directory? There are two ways o
 
 A directory from a Git repository can safely be moved to another location even after cloning.
 
-## Example Programs
+## Sample Programs
 
-Using the project created above, let's create actual programs that use pico-jxglib. There are two examples:
+Using the project created above, let's create actual programs that use pico-jxglib. There are two sample programs:
 
 - ***Blinky Program*** ... The simplest program that blinks an LED connected to a GPIO.
 - ***LABOPlatform Program*** ... A more complicated program that has the same functionality as pico-jxgLABO, including the interactive shell and built-in logic analyzer.
