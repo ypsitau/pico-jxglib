@@ -16,7 +16,7 @@ Options:
 
 Running `help` without any options will display a list of commands along with their brief descriptions.
 
-```text title="Example"
+```text
 L:/>help
 .               executes the given script file
 about-me        prints information about this own program
@@ -41,7 +41,7 @@ Options:
 
 Running `about-me` without any options will display the information.
 
-```text title="Example"
+```text
 L:/>about-me
 Program Information
  name:              shell-test
@@ -83,7 +83,7 @@ Options:
 
 Running `about-platform` without any options will display the information.
 
-```text title="Example"
+```text
 L:/>about-platform
 RP2350 (ARM) 150 MHz
 Flash  0x10000000-0x10400000 4194304
@@ -118,7 +118,7 @@ Options:
 
 If you specify a file name as an argument, it dumps the contents of the file in hexadecimal format.
 
-```text title="Example"
+```text
 L:/>d README.txt
 00  57 65 6C 63 6F 6D 65 20 74 6F 20 70 69 63 6F 2D
 10  6A 78 67 4C 41 42 4F 21 0A 54 79 70 65 20 27 68
@@ -128,7 +128,7 @@ L:/>d README.txt
 ```
 The option `--ascii` prints the ASCII characters on the right side of the dump image.
 
-```text title="Example"
+```text
 L:/>d README.txt --ascii
 00  57 65 6C 63 6F 6D 65 20 74 6F 20 70 69 63 6F 2D  Welcome to pico-
 10  6A 78 67 4C 41 42 4F 21 0A 54 79 70 65 20 27 68  jxgLABO!.Type 'h
@@ -139,7 +139,7 @@ L:/>d README.txt --ascii
 
 If run with no arguments, it displays memory contents from address 0x00000000.
 
-```text title="Example"
+```text
 L:/>d
 00000000  00 1F 04 20 EB 00 00 00 35 00 00 00 31 00 00 00
 00000010  4D 75 01 03 7A 00 C4 00 1D 00 00 00 00 23 02 88
@@ -149,7 +149,7 @@ L:/>d
 
 If you run it again with no arguments, it displays the next block of memory.
 
-```text title="Example"
+```text
 L:/>d
 00000040  41 60 E7 46 A5 48 00 21 C9 43 01 60 41 60 70 47
 00000050  CA 9B 0D 5B F9 1D 00 00 28 43 29 20 32 30 32 30
@@ -159,7 +159,7 @@ L:/>d
 
 The first argument is the start address, and the second argument is the number of bytes to display. To specify a hexadecimal value, prefix it with `0x`.
 
-```text title="Example"
+```text
 L:/>d 0x10000000
 10000000  00 B5 32 4B 21 20 58 60 98 68 02 21 88 43 98 60
 10000010  D8 60 18 61 58 61 2E 4B 00 21 99 60 02 21 59 61
@@ -167,7 +167,7 @@ L:/>d 0x10000000
 10000030  00 F0 44 F8 02 22 90 42 14 D0 06 21 19 66 00 F0
 ```
 
-```text title="Example"
+```text
 L:/>d 0x10000000 128
 10000000  00 B5 32 4B 21 20 58 60 98 68 02 21 88 43 98 60
 10000010  D8 60 18 61 58 61 2E 4B 00 21 99 60 02 21 59 61
@@ -192,7 +192,7 @@ Options:
 
 Below is an example of using `set` to set variables and then prints their values using `echo`.
 
-```text title="Example"
+```text
 L:/>set ip_addr=192.168.0.1
 L:/>set port=8000
 L:/>echo "$ip_addr:$port"
@@ -211,7 +211,7 @@ Options:
  -n --no-eol does not print end-of-line
 ```
 
-```text title="Example"
+```text
 L:/>echo "Hello, World!"
 Hello, World!
 ```
@@ -229,28 +229,28 @@ Options:
 
 When you specify numbers as arguments, it prints the corresponding binary data.
 
-```text title="Example"
+```text
 L:/>echo-bin 0x21,0x22,0x23,0x24,0x0a
 !"#$
 ```
 
 You can also specify ranges of numbers.
 
-```text title="Example"
+```text
 L:/>echo-bin 0x40-0x7e,0x0a
 @ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
 ```
 
 You can specify a string by enclosing it in single quotes. Escape sequences like `\n` for newline and `\t` for tab are supported.
 
-```text title="Example"
+```text
 L:/>echo-bin 'Hello, World!\n'
 Hello, World!
 ```
 
 It works well with redirection, allowing you to easily create binary files.
 
-```text title="Example"
+```text
 L:/>echo-bin 0-63 > test.bin
 L:/>d test.bin
 00  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F
@@ -261,7 +261,7 @@ L:/>d test.bin
 
 Operator `*` can be used to repeat the previous value.
 
-```text title="Example"
+```text
 L:/>echo-bin 0xff*16 > ff-fill.bin
 L:/>d ff-fill.bin
 0  FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
@@ -269,7 +269,7 @@ L:/>d ff-fill.bin
 
 You can read other files by presenting the file name with `@` prefix.
 
-```text title="Example"
+```text
 L:/>echo-bin 0xff @test.bin 0xff > test2.bin
 L:/>d test2.bin
 00  FF 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E
@@ -292,7 +292,7 @@ Options:
 
 Running `history` without any options will display the list of previously entered commands.
 
-```text title="Example"
+```text
 L:/>history
 1: d --help
 2: dir
@@ -307,7 +307,7 @@ L:/>history
 
 When you specify numbers as arguments, it displays the commands at those positions in the history list.
 
-```text title="Example"
+```text
 L:/>history 1 3 5
 d --help
 d README.txt
@@ -342,14 +342,14 @@ Variables:
 
 Running the command without any arguments will print the current prompt.
 
-```text title="Example"
+```text
 L:/>prompt
 %d%w>
 ```
 
 When specified with an argument, it changes the prompt to the given string. You can use variables in the prompt string, which will be replaced with their corresponding values when displayed.
 
-```text title="Example"
+```text
 L:/>prompt "%Y-%M-%D>"
 2000-01-01>
 ```
@@ -378,7 +378,7 @@ Options:
 
 Prints a list of active ticks, showing their names, priorities, and periodic execution times.
 
-```text title="Example"
+```text
 L:/>ticks
 Tick Called Depth Max: 2
 CameraDisplayTickable          AboveNormal 0msec

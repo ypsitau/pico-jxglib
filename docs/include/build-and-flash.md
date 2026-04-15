@@ -1,0 +1,1 @@
+After building the project by pressing `F7`, you can find the generated UF2 file in the `build` directory. Connect your Pico to the computer using a USB cable while holding the BOOTSEL button, and it will appear as a mass storage device, to which you can copy the generated UF2 file to flash it.

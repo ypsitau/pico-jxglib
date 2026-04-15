@@ -66,8 +66,6 @@ But, wait. Where should we put the `pico-jxglib` directory? There are two ways o
 
     This style is useful when you want to share pico-jxglib across multiple projects.
 
-A directory from a Git repository can safely be moved to another location even after cloning.
-
 ## Sample Programs
 
 Using the project created above, let's create actual programs that use pico-jxglib. There are two sample programs:

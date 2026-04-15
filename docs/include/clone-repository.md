@@ -1,4 +1,5 @@
 ??? note "Clone the Repository"
+    Change the current directory to the parent directory where you want to clone the `pico-jxglib` repository and run the following commands:
 
     ```bash
     $ git clone https://github.com/ypsitau/pico-jxglib.git
@@ -12,3 +13,5 @@
         ```bash
         git pull
         ```
+
+    A directory from a Git repository can safely be moved to another location even after cloning.
