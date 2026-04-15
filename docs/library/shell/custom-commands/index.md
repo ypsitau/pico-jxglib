@@ -36,7 +36,7 @@ Edit `customcmd-argtest.cpp` as follows:
 
 Open a terminal emulator program to connect it.
 
-{% include-markdown "include/setup-teraterm-for-laboplatform.md" %}
+{% include-markdown "include/setup-terminal-for-laboplatform.md" %}
 
 Check if the `argtest` command works:
 

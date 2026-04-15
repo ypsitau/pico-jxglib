@@ -6,9 +6,9 @@ While the shell can work with a variety of devices like USB serial, UART, Wi-Fi 
 
 ## Setting Up the Terminal
 
-After flashing the pico-jxgLABO, connect the Pico board to your computer using a USB cable. Then, to establish a serial communication, you can use a terminal emulator program such as Tera Term (Windows), minicom (Linux), or screen (macOS).
+After flashing the pico-jxgLABO, connect the Pico board to your computer using a USB cable. Then, to establish a serial communication, you can use a terminal emulator program such as Tera Term on Windows.
 
-{% include-markdown "include/setup-teraterm-for-laboplatform.md" %}
+{% include-markdown "include/setup-terminal-for-laboplatform.md" %}
 
 ## Key Operations
 
