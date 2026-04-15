@@ -2,40 +2,7 @@
 
 The shell of pico-jxglib is a powerful interactive command-line interface that allows you to interact with your firmware in real-time. It provides a bash-like experience, enabling you to execute various built-in commands for debugging, file management, and more. With the shell, you can easily test and modify the behavior of your firmware without the need for recompilation, making your development process more efficient and enjoyable.
 
-The shell can work with a variety of devices.
-
-For input devices, it supports:
-
-```mermaid
-block
-columns 1
-  block:Input
-    A("USB Serial")
-    B("UART")
-    C("Wi-Fi (Telnet)")
-    D("USB HID Keyboard")
-    E("GPIO Buttons")
-    F("GPIO Key Matrix")
-  end
-```
-
-For output devices, it supports:
-
-```mermaid
-block
-columns 1
-  block:Output
-    E("USB Serial")
-    F("UART")
-    G("Wi-Fi (Telnet)")
-    H("OLED Display")
-    I("TFT LCD Display")
-  end
-```
-
-You can choose any combination of these devices to create your own unique shell experience.
-
-The most common use case of the shell is to use it with a USB serial. In this page, we will use pico-jxgLABO, a firmware platform that uses USB serial for the shell, as an example to demonstrate how to use the shell and its commands.
+While the shell can work with a variety of devices like USB serial, UART, Wi-Fi (Telnet), OLED display, and more, the most common use case is to use it with a USB serial. In this page, we will use pico-jxgLABO, a firmware platform that uses USB serial for the shell, as an example to demonstrate how to use the shell and its commands.
 
 ## Setting Up the Terminal
 
