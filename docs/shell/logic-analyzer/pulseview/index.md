@@ -1,10 +1,38 @@
 # Logic Analyzer - PulseView
 
+pico-jxglib includes a **built-in logic analyzer for Raspberry Pi Pico (RP2040/RP2350)** implemented with **PIO + DMA**. It uses an **event-capture (transition-based)** approach that records only signal transitions rather than every sample at a fixed rate, dramatically reducing RAM usage compared to traditional fixed-rate capture. The analyzer supports up to **50 MHz** sampling and up to **29 channels** (GPIO-limited), and integrates with **PulseView (sigrok)** via the **"RaspberryPi PICO (raspberrypi-pico)"** driver over **USB CDC** — no baudrate setting required.
+
 By combining pico-jxgLABO and PulseView, you can observe the internal signals of the Pico board with a logic analyzer without any probe connections.
 
 Of course, you can also use the Pico board exclusively as a logic analyzer to observe external signals, or observe both internal and external signals simultaneously. The method for using it as a dedicated logic analyzer is explained [at the end of this article](#dedicated-la).
 
 This article explains how to install and set up pico-jxgLABO and PulseView, and how to actually observe waveforms on the Pico board. The instructions assume a Windows host PC, but similar steps should work on Linux as well.
+
+## Key Specs
+
+| Item | Value |
+|---|---|
+| Driver (PulseView) | RaspberryPi PICO (`raspberrypi-pico`) |
+| Transport | USB CDC (no baudrate setting needed) |
+| Max sampling rate | 50.0 MHz (Pico2) / 41.7 MHz (Pico) |
+| Channels | Up to 29 (GPIO-limited) |
+| Capture mode | Event-capture (transition-based) |
+| Backend | PIO + DMA |
+
+## TL;DR — Quick Start
+
+1. Flash pico-jxgLABO to your Pico and connect it to your PC via USB.
+2. Open a terminal (e.g. Tera Term), connect to the **terminal port**, and run:
+   ```text
+   la -p 2,3,4
+   ```
+3. Open **PulseView**:
+   - Click `<No Device>` → **Step 1:** select driver **`RaspberryPi PICO (raspberrypi-pico)`**
+   - **Step 2:** Interface = `Serial Port`, choose the **application port**, leave baud rate blank
+   - **Step 3:** click `Scan for devices`
+   - **Step 4:** select the found device → `OK`
+4. Set the sample count (start with **1 M samples** and increase as needed) and the sampling rate.
+5. Click **Run** to start capturing. Click **Stop** to finish and view the waveform.
 
 ## Installing PulseView and Connecting to pico-jxgLABO
 
@@ -71,7 +99,7 @@ The signals for each GPIO specified with the `-p` option of the `la` command wil
 
 By default, the number of samples is set to `1k samples` and the sampling rate to `5 kHz`. Change these as follows:
 
-- Number of samples: Set to the maximum `1 G samples`
+- Number of samples: `1 G samples` is the maximum and works well for long captures. If you are just getting started or want faster feedback, begin with a smaller value such as `1 M samples` or `10 M samples` and increase it once you are comfortable with the setup.
 - Sampling rate: Set appropriately for the frequency of the signal to be observed. Here, set it to `15 MHz`.
 
 ![pulseview-main-modified](images/pulseview-main-modified.png)
