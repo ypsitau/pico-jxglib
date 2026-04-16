@@ -28,35 +28,35 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(shell-with-oled C CXX ASM)
+project(shell-with-oled-usbkey C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(shell-with-oled shell-with-oled.cpp )
+add_executable(shell-with-oled-usbkey shell-with-oled-usbkey.cpp )
 
-pico_set_program_name(shell-with-oled "shell-with-oled")
-pico_set_program_version(shell-with-oled "0.1")
+pico_set_program_name(shell-with-oled-usbkey "shell-with-oled-usbkey")
+pico_set_program_version(shell-with-oled-usbkey "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(shell-with-oled 0)
-pico_enable_stdio_usb(shell-with-oled 0)
+pico_enable_stdio_uart(shell-with-oled-usbkey 0)
+pico_enable_stdio_usb(shell-with-oled-usbkey 0)
 
 # Add the standard library to the build
-target_link_libraries(shell-with-oled
+target_link_libraries(shell-with-oled-usbkey
         pico_stdlib)
 
 # Add the standard include files to the build
-target_include_directories(shell-with-oled PRIVATE
+target_include_directories(shell-with-oled-usbkey PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(shell-with-oled)
+pico_add_extra_outputs(shell-with-oled-usbkey)
 
 # mkdocs-start
-target_link_libraries(shell-with-oled jxglib_Display_SSD1306 jxglib_USBHost jxglib_ShellCmd_Basic)
+target_link_libraries(shell-with-oled-usbkey jxglib_Display_SSD1306 jxglib_USBHost jxglib_ShellCmd_Basic)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
-jxglib_configure_USBHost(shell-with-oled CFG_TUH_HID 3)
+jxglib_configure_USBHost(shell-with-oled-usbkey CFG_TUH_HID 3)
 # mkdocs-end

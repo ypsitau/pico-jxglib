@@ -11,7 +11,7 @@ The breadboard wiring image is as follows:
 
 Here, we will create a sample program that implements a custom command named `argtest`. It displays the contents of the arguments passed to it.
 
-Create a new Pico SDK project named `shell-with-tftlcd`.
+Create a new Pico SDK project named `shell-with-tftlcd-usbkey`.
 
 {% include-markdown "include/new-project.md" %}
 
@@ -19,9 +19,9 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
 
 ```text
 ├── pico-jxglib/
-└── shell-with-tftlcd/
+└── shell-with-tftlcd-usbkey/
     ├── CMakeLists.txt
-    ├── shell-with-tftlcd.cpp
+    ├── shell-with-tftlcd-usbkey.cpp
     └── ...
 ```
 
@@ -30,13 +30,13 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
 Add the following lines to the end of `CMakeLists.txt`:
 
 ```cmake title="CMakeLists.txt"
-{% include "sample/shell-with-tftlcd/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
+{% include "sample/shell-with-tftlcd-usbkey/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
 ```
 
-Edit `shell-with-tftlcd.cpp` as follows:
+Edit `shell-with-tftlcd-usbkey.cpp` as follows:
 
-```cpp title="shell-with-tftlcd.cpp"
-{% include "sample/shell-with-tftlcd/shell-with-tftlcd.cpp" %}
+```cpp title="shell-with-tftlcd-usbkey.cpp"
+{% include "sample/shell-with-tftlcd-usbkey/shell-with-tftlcd-usbkey.cpp" %}
 ```
 
 {% include-markdown "include/build-and-flash.md" %}

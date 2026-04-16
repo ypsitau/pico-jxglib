@@ -28,35 +28,35 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(shell-with-tftlcd C CXX ASM)
+project(shell-with-tftlcd-usbkey C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(shell-with-tftlcd shell-with-tftlcd.cpp )
+add_executable(shell-with-tftlcd-usbkey shell-with-tftlcd-usbkey.cpp )
 
-pico_set_program_name(shell-with-tftlcd "shell-with-tftlcd")
-pico_set_program_version(shell-with-tftlcd "0.1")
+pico_set_program_name(shell-with-tftlcd-usbkey "shell-with-tftlcd-usbkey")
+pico_set_program_version(shell-with-tftlcd-usbkey "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(shell-with-tftlcd 0)
-pico_enable_stdio_usb(shell-with-tftlcd 0)
+pico_enable_stdio_uart(shell-with-tftlcd-usbkey 0)
+pico_enable_stdio_usb(shell-with-tftlcd-usbkey 0)
 
 # Add the standard library to the build
-target_link_libraries(shell-with-tftlcd
+target_link_libraries(shell-with-tftlcd-usbkey
         pico_stdlib)
 
 # Add the standard include files to the build
-target_include_directories(shell-with-tftlcd PRIVATE
+target_include_directories(shell-with-tftlcd-usbkey PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(shell-with-tftlcd)
+pico_add_extra_outputs(shell-with-tftlcd-usbkey)
 
 # mkdocs-start
-target_link_libraries(shell-with-tftlcd jxglib_Display_ST7789 jxglib_USBHost jxglib_ShellCmd_Basic)
+target_link_libraries(shell-with-tftlcd-usbkey jxglib_Display_ST7789 jxglib_USBHost jxglib_ShellCmd_Basic)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
-jxglib_configure_USBHost(shell-with-tftlcd CFG_TUH_HID 3)
+jxglib_configure_USBHost(shell-with-tftlcd-usbkey CFG_TUH_HID 3)
 # mkdocs-end

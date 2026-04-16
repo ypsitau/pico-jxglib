@@ -11,7 +11,7 @@ The breadboard wiring image is as follows:
 
 Here, we will create a sample program that implements a custom command named `argtest`. It displays the contents of the arguments passed to it.
 
-Create a new Pico SDK project named `shell-with-oled`.
+Create a new Pico SDK project named `shell-with-oled-usbkey`.
 
 {% include-markdown "include/new-project.md" %}
 
@@ -19,9 +19,9 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
 
 ```text
 ├── pico-jxglib/
-└── shell-with-oled/
+└── shell-with-oled-usbkey/
     ├── CMakeLists.txt
-    ├── shell-with-oled.cpp
+    ├── shell-with-oled-usbkey.cpp
     └── ...
 ```
 
@@ -30,13 +30,13 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
 Add the following lines to the end of `CMakeLists.txt`:
 
 ```cmake title="CMakeLists.txt"
-{% include "sample/shell-with-oled/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
+{% include "sample/shell-with-oled-usbkey/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
 ```
 
-Edit `shell-with-oled.cpp` as follows:
+Edit `shell-with-oled-usbkey.cpp` as follows:
 
-```cpp title="shell-with-oled.cpp"
-{% include "sample/shell-with-oled/shell-with-oled.cpp" %}
+```cpp title="shell-with-oled-usbkey.cpp"
+{% include "sample/shell-with-oled-usbkey/shell-with-oled-usbkey.cpp" %}
 ```
 
 {% include-markdown "include/build-and-flash.md" %}

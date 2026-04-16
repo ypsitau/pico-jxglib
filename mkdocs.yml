@@ -39,9 +39,9 @@ nav:
         - LABOPlatform: library/labo-platform/index.md
         - Shell:
             - Overview: library/shell/index.md
-            - Shell with Serial (stdio): library/shell/shell-with-serial/index.md
-            - Shell with Display (TFT LCD): library/shell/shell-with-tftlcd/index.md
-            - Shell with Display (OLED): library/shell/shell-with-oled/index.md
+            - Shell (stdio): library/shell/shell-with-serial/index.md
+            - Shell (TFT LCD + USB Kbd): library/shell/shell-with-tftlcd-usbkey/index.md
+            - Shell (OLED + USB Kbd): library/shell/shell-with-oled-usbkey/index.md
             - Custom Commands: library/shell/custom-commands/index.md
         - File System:
             - Overview: library/filesystem/index.md
@@ -57,6 +57,8 @@ nav:
             - WS2812: library/display/ws2812/index.md
         - Keyboard:
             - Overview: library/keyboard/index.md
+            - USB Keyboard: library/keyboard/usb-keyboard/index.md
+            - Keyboard Matrix: library/keyboard/keyboard-matrix/index.md
         - USB Host:
             - Overview: library/usbhost/index.md
             - Keyboard & Mouse: library/usbhost/keyboard-mouse/index.md
