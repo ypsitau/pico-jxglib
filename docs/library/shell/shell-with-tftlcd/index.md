@@ -1,87 +1,42 @@
 
-## Example Project
+## Sample Program
 
-### Creating the Project
-
-From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings. For details on creating a Pico SDK project, building, and writing to the board, see ["Getting Started with Pico SDK"](../../../development/pico-sdk/index.md).
-
-- **Name** ... Enter the project name. In this example, enter `shell-test`.
-- **Board type** ... Select the board type.
-- **Location** ... Select the parent directory where the project directory will be created.
-- **Stdio support** ... If using a serial console for the terminal, select the port (UART or USB) to connect Stdio. If using a USB keyboard for the terminal, uncheck USB.
-- **Code generation options** ... **Check `Generate C++ code`**
-
-Assume the project directory and `pico-jxglib` are arranged as follows:
-
-```text
-├── pico-jxglib/
-└── shell-test/
-    ├── CMakeLists.txt
-    ├── shell-test.cpp
-    └── ...
-```
-
-From here, edit `CMakeLists.txt` and the source file based on this project to create your program.
-
-### Embedding the Shell
-
-To embed the shell in your program, write the following code:
-
-1. Create and initialize a `Terminal` instance (`Serial::Terminal` or `Display::Terminal`) to use with the shell
-1. Connect the `Terminal` instance to the shell with the `Shell::AttachTerminal()` function
-1. In the main loop, call `Tickable::Tick()` or `Tickable::Sleep()`
-
-How you create the `Terminal` instance depends on what you use for the terminal. Here are some examples:
-
-#### Using TFT LCD ST7789 and USB Keyboard as the Terminal
-
-This can be used in environments where a TFT LCD ST7789 and USB keyboard are connected to the Pico board. Since you need to initialize the TFT LCD and set up SPI, there is more code to write, but it can run standalone on the Pico board.
+### Wiring
 
 The breadboard wiring image is as follows:
 
-![circuit-usbhost-st7789.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-05-08-shell/circuit-usbhost-st7789.png)
+![circuit-usbhost-st7789.png](images/circuit-usbhost-st7789.png)
 
-Add the following line to the end of `CMakeLists.txt`. Also, make sure USB connection for Stdio is disabled (`pico_enable_stdio_usb(shell-test 0)`).
+### Building and Flashing the Program
 
+Here, we will create a sample program that implements a custom command named `argtest`. It displays the contents of the arguments passed to it.
 
-```cmake
-target_link_libraries(shell-test jxglib_USBHost jxglib_Display_ST7789 jxglib_Shell jxglib_ShellCmd_Basic)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
-jxglib_configure_USBHost(shell-test CFG_TUH_HID 3)
+Create a new Pico SDK project named `shell-with-tftlcd`.
+
+{% include-markdown "include/new-project.md" %}
+
+Clone the pico-jxglib repository from GitHub so the direcory structure looks like this:
+
+```text
+├── pico-jxglib/
+└── shell-with-tftlcd/
+    ├── CMakeLists.txt
+    ├── shell-with-tftlcd.cpp
+    └── ...
 ```
 
-Edit the source file as follows:
+{% include-markdown "include/clone-repository.md" %}
 
-```cpp title="shell-test.cpp"
-#include <stdio.h>
-#include "pico/stdlib.h"
-#include "jxglib/Display/ST7789.h"
-#include "jxglib/USBHost/HID.h"
-#include "jxglib/Shell.h"
-#include "jxglib/Font/shinonome16.h"
+Add the following lines to the end of `CMakeLists.txt`:
 
-using namespace jxglib;
-
-int main()
-{
-    ::stdio_init_all();
-    //-------------------------------------------------------------------------
-    Display::Terminal terminal;
-    USBHost::Initialize();
-    USBHost::Keyboard keyboard;
-    ::spi_init(spi1, 125 * 1000 * 1000);
-    GPIO14.set_function_SPI1_SCK();
-    GPIO15.set_function_SPI1_TX();
-    Display::ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
-    terminal.Initialize()
-        .AttachDisplay(display.Initialize(Display::Dir::Rotate90))
-        .AttachKeyboard(keyboard.SetCapsLockAsCtrl()).SetFont(Font::shinonome16);
-    Shell::AttachTerminal(terminal);
-    terminal.Println("Shell on ST7789 TFT LCD");
-    //-------------------------------------------------------------------------
-    for (;;) {
-        // any jobs
-        Tickable::Tick();
-    }
-}
+```cmake title="CMakeLists.txt"
+{% include "sample/shell-with-tftlcd/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
 ```
+
+Edit `shell-with-tftlcd.cpp` as follows:
+
+```cpp title="shell-with-tftlcd.cpp"
+{% include "sample/shell-with-tftlcd/shell-with-tftlcd.cpp" %}
+```
+
+{% include-markdown "include/build-and-flash.md" %}

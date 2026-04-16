@@ -39,10 +39,10 @@ nav:
         - LABOPlatform: library/labo-platform/index.md
         - Shell:
             - Overview: library/shell/index.md
-            - Custom Commands: library/shell/custom-commands/index.md
-            - Shell with Serial Interface: library/shell/shell-with-serial/index.md
+            - Shell with Serial (stdio): library/shell/shell-with-serial/index.md
             - Shell with Display (TFT LCD): library/shell/shell-with-tftlcd/index.md
             - Shell with Display (OLED): library/shell/shell-with-oled/index.md
+            - Custom Commands: library/shell/custom-commands/index.md
         - File System:
             - Overview: library/filesystem/index.md
             - Internal Flash Memory: library/filesystem/flash/index.md

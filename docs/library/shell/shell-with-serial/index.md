@@ -1,70 +1,86 @@
+# Shell with Serial (stdio)
 
-## Example Project
 
-### Creating the Project
 
-From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings. For details on creating a Pico SDK project, building, and writing to the board, see ["Getting Started with Pico SDK"](../../../development/pico-sdk/index.md).
+## Sample Program
 
-- **Name** ... Enter the project name. In this example, enter `shell-test`.
-- **Board type** ... Select the board type.
-- **Location** ... Select the parent directory where the project directory will be created.
-- **Stdio support** ... If using a serial console for the terminal, select the port (UART or USB) to connect Stdio. If using a USB keyboard for the terminal, uncheck USB.
-- **Code generation options** ... **Check `Generate C++ code`**
+### Building and Flashing the Program
 
-Assume the project directory and `pico-jxglib` are arranged as follows:
+Here, we will create a sample program that implements a custom command named `argtest`. It displays the contents of the arguments passed to it.
+
+Create a new Pico SDK project named `shell-with-stdio`.
+
+{% include-markdown "include/new-project.md" %}
+
+Clone the pico-jxglib repository from GitHub so the direcory structure looks like this:
 
 ```text
 ├── pico-jxglib/
-└── shell-test/
+└── shell-with-stdio/
     ├── CMakeLists.txt
-    ├── shell-test.cpp
+    ├── shell-with-stdio.cpp
     └── ...
 ```
 
-From here, edit `CMakeLists.txt` and the source file based on this project to create your program.
+{% include-markdown "include/clone-repository.md" %}
 
-### Embedding the Shell
+Add the following lines to the end of `CMakeLists.txt`:
 
-To embed the shell in your program, write the following code:
-
-1. Create and initialize a `Terminal` instance (`Serial::Terminal` or `Display::Terminal`) to use with the shell
-1. Connect the `Terminal` instance to the shell with the `Shell::AttachTerminal()` function
-1. In the main loop, call `Tickable::Tick()` or `Tickable::Sleep()`
-
-How you create the `Terminal` instance depends on what you use for the terminal. Here are some examples:
-
-#### Using a Serial Console as the Terminal
-
-This can be used in environments where Stdio is connected to a PC via UART or USB. Since the amount of code to write is small, you can easily embed the shell.
-
-Add the following line to the end of `CMakeLists.txt`:
-
-```cmake
-target_link_libraries(shell-test jxglib_Serial jxglib_Shell jxglib_ShellCmd_Basic)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+```cmake title="CMakeLists.txt"
+{% include "sample/shell-with-stdio/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
 ```
 
-Edit the source file as follows:
+Enable UART or USB stdio as described below.
 
-```cpp title="shell-test.cpp"
-#include <stdio.h>
-#include "pico/stdlib.h"
-#include "jxglib/Serial.h"
-#include "jxglib/Shell.h"
+{% include-markdown "include/enable-stdio.md" %}
 
-using namespace jxglib;
+Edit `shell-with-stdio.cpp` as follows:
 
-int main()
-{
-    ::stdio_init_all();
-    //-------------------------------------------------------------------------
-    Serial::Terminal terminal;
-    Shell::AttachTerminal(terminal.Initialize());
-    terminal.Println("Shell on Serial Terminal");
-    //-------------------------------------------------------------------------
-    for (;;) {
-        // any jobs
-        Tickable::Tick();
-    }
-}
+```cpp title="shell-with-stdio.cpp"
+{% include "sample/shell-with-stdio/shell-with-stdio.cpp" %}
+```
+
+{% include-markdown "include/build-and-flash.md" %}
+
+## Running the Program
+
+Open a terminal emulator to connect it.
+
+{% include-markdown "include/setup-terminal-for-stdio.md" %}
+
+A prompt will appear in the terminal like this:
+
+```text
+>
+```
+
+This firmware is linked with a library `jxglib_ShellCmd_Basic` which provides basic shell commands. Print available commands with the `help` command:
+
+```text
+>help
+.               executes the given script file
+about-me        prints information about this own program
+about-platform  prints information about the platform
+d               prints memory content at the specified address
+dump            prints memory content at the specified address
+echo            prints the given text
+echo-bin        generates binary data from the given arguments
+help            prints help strings for available commands
+history         prints the command history
+logout          logs out the current user
+password        changes the password file
+prompt          changes the command line prompt
+set             set environment variable
+sleep           sleeps for the specified time in milliseconds
+ticks           prints names and attributes of running Tickable instances
+```
+
+Dump the memory content at the address `0x10000000` with the `d` command:
+
+```text
+>d 0x10000000
+10000000  00 B5 32 4B 21 20 58 60 98 68 02 21 88 43 98 60
+10000010  D8 60 18 61 58 61 2E 4B 00 21 99 60 02 21 59 61
+10000020  01 21 F0 22 99 50 2B 49 19 60 01 21 99 60 35 20
+10000030  00 F0 44 F8 02 22 90 42 14 D0 06 21 19 66 00 F0
 ```

@@ -1,5 +1,6 @@
 #include "pico/stdlib.h"
-#include "jxglib/LABOPlatform.h"
+#include "jxglib/Serial.h"
+#include "jxglib/Shell.h"
 
 using namespace jxglib;
 
@@ -14,7 +15,9 @@ ShellCmd(argtest, "tests command line arguments")
 int main(void)
 {
     ::stdio_init_all();
-    LABOPlatform::Instance.Initialize();
+	Serial::Terminal terminal;
+	terminal.Initialize();
+	Shell::AttachTerminal(terminal);
     for (;;) {
         Tickable::Tick();
     }

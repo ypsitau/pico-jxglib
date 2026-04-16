@@ -8,7 +8,7 @@
          - **Name** ... Enter the project name.
          - **Board type** ... Select your board type.
          - **Location** ... Select the parent directory where the project directory will be created.
-         - **Stdio support** ... Check `Console over UART` and/or `Console over USB` for stdio. DON'T check `Console over USB` when you use LABOPlatform or other USB features because they conflict with each other.
+         - **Stdio support** ... Leave them unchecked when you use LABOPlatform or other USB features because they conflict with each other. You can enable them by editing the `CMakeLists.txt` file later if you need them.
          - **Code generation options** ... **Check `Generate C++ code`**.
 
     ![new-project](images/new-project.png)
