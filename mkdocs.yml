@@ -6,7 +6,7 @@ repo_name: ypsitau/pico-jxglib
 
 nav:
     - Home: index.md
-    - Shell Commands:
+    - Shell:
         - Overview: shell/index.md
         - Basic Commands: shell/basic/index.md
         - File System:

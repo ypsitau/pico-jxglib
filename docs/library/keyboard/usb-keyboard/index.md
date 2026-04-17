@@ -1,11 +1,5 @@
 #### USB Keyboard + TFT LCD (ST7789)
 
-Connect the USB keyboard using a microB-TypeA adapter to the USB port (see [here](https://zenn.dev/ypsitau/articles/2025-04-02-usbhost-keyboard-mouse) for details). The TFT LCD used is ST7789, but for other display devices, see ["pico-jxglib and TFT LCD"](https://zenn.dev/ypsitau/articles/2025-01-27-tft-lcd).
-
-The breadboard wiring image is shown below. Note that the 5V power is connected to the Pico board's VBUS (pin 40).
-
-![circuit-usbhost-st7789.png](images/circuit-usbhost-st7789.png)
-
 Add the following lines to the end of `CMakeLists.txt`:
 
 ```cmake title="CMakeLists.txt"
