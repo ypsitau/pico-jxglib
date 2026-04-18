@@ -64,7 +64,9 @@ If you want to try it out without setting up the development environment, you ca
 |Raspberry Pi Pico2|[pico2-jxgLABO.uf2](https://github.com/ypsitau/pico-jxgLABO/releases/latest/download/pico2-jxgLABO.uf2)|
 |Raspberry Pi Pico2 W|[pico2-w-jxgLABO.uf2](https://github.com/ypsitau/pico-jxgLABO/releases/latest/download/pico2-w-jxgLABO.uf2)|
 
-These UF2 files are pre-compiled with the latest version of pico-jxglib and can be flashed to your Pico board using the standard UF2 flashing method. Just put your Pico into bootloader mode, copy the UF2 file to the mounted drive, and you're good to go! You can then connect to the Pico's serial console to access the interactive shell and start exploring its features.
+These UF2 files are pre-compiled with the latest version of pico-jxglib and can be flashed to your Pico board using the standard UF2 flashing method.
+
+{% include-markdown "include/flash-uf2.md" %}
 
 ## Built-in Logic Analyzer
 

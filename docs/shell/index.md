@@ -7,6 +7,8 @@ The shell of pico-jxglib is a powerful interactive command-line interface that a
 
 The shell is available in any firmware that links a jxglib's library `jxglib_Shell`. While it can work with with a variety of devices like USB serial, USB keyboard, UART, Wi-Fi (Telnet), TFT LCD display, and more, the most common use case is to use it with a USB serial interface. In this page, we will use pico-jxgLABO, a firmware platform that uses USB serial for the shell, as an example to demonstrate how to use the shell and its commands.
 
+Refer to [this page](../library/shell/index.md) for detailed information on how to implement a shell in the firmware.
+
 ## Setting Up the Terminal
 
 After flashing the pico-jxgLABO, connect the Pico board to your computer using a USB cable. Then, to establish a serial communication, you can use a terminal  program such as Tera Term on Windows.
