@@ -26,6 +26,7 @@ classDiagram
   class GPIO_Keyboard["GPIO::Keyboard"]:::Class_Input
   class GPIO_KeyboardMatrix["GPIO::KeyboardMatrix"]:::Class_Input
   class Stdio:::Class_Both
+  class UART:::Class_Both
   class USBDevice_CDCSerial["USBDevice::CDCSerial"]:::Class_Both
   class Telnet_Stream["Telnet::Stream"]:::Class_Both
   class Display_Base["Display::Base"]
@@ -51,6 +52,7 @@ classDiagram
   Printable <|-- Stream
   Readable <|-- Stream
   Stream <|-- Stdio
+  Stream <|-- UART
   Stream <|-- USBDevice_CDCSerial
   Stream <|-- Telnet_Stream
   Display_Base <|-- Display_ST7789

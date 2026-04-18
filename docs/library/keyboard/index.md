@@ -13,6 +13,7 @@ classDiagram
   class GPIO_KeyboardMatrix["GPIO::KeyboardMatrix"]
   class VT100_Keyboard["VT100::Keyboard"]
   class Stdio
+  class UART
   class USBDevice_CDCSerial["USBDevice::CDCSerial"]
   class Telnet_Stream["Telnet::Stream"]
   Keyboard <|-- USBHost_Keyboard
@@ -22,6 +23,7 @@ classDiagram
   VT100_Keyboard o-- Readable
   Readable <|-- Stream
   Stream <|-- Stdio
+  Stream <|-- UART
   Stream <|-- USBDevice_CDCSerial
   Stream <|-- Telnet_Stream
 ```
