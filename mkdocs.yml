@@ -48,6 +48,12 @@ nav:
             - Internal Flash Memory: library/filesystem/flash/index.md
             - SD Card: library/filesystem/sdcard/index.md
             - USB Storage: library/filesystem/usb-storage/index.md
+        - Peripheral:
+            - GPIO: library/peripheral/gpio/index.md
+            - PWM: library/peripheral/pwm/index.md
+            - I2C: library/peripheral/i2c/index.md
+            - SPI: library/peripheral/spi/index.md
+            - UART: library/peripheral/uart/index.md
         - Device:
             - RTC (Real Time Clock): library/device/rtc/index.md
         - Display:
@@ -65,7 +71,9 @@ nav:
             - Game Pad: library/usbhost/gamepad/index.md
         - USB Client:
             - Overview: library/usbclient/index.md
-        - LVGL: library/lvgl/index.md
+        - Toolkits:
+            - LVGL: library/toolkit/lvgl/index.md
+            - Tiny ML: library/toolkit/tiny-ml/index.md
     - Applications:
         - Overview: applications/index.md
         - Character Recognizer: applications/character-recognizer/index.md
