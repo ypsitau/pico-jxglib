@@ -1,6 +1,4 @@
-This page explains how to use **pico-jxglib** to implement advanced GUIs on TFT LCDs using LVGL. A TFT LCD with a touchscreen can become a versatile input device.
-
-## About LVGL
+# LVGL
 
 [LVGL](https://docs.lvgl.io/) is a library that enables advanced GUIs on embedded devices with limited resources. It can run on as little as a 16MHz CPU, 64KB of flash, and 16KB of RAM. On a Pico with a 125MHz CPU, 2MB of flash, and 264KB of SRAM, you have plenty of headroom!
 

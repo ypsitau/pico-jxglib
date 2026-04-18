@@ -72,8 +72,10 @@ nav:
         - USB Client:
             - Overview: library/usbclient/index.md
         - Toolkits:
-            - LVGL: library/toolkit/lvgl/index.md
-            - Tiny ML: library/toolkit/tiny-ml/index.md
+            - LVGL:
+                - Overview: library/toolkit/lvgl/index.md
+            - Tiny ML:
+                - Overview: library/toolkit/tiny-ml/index.md
     - Applications:
         - Overview: applications/index.md
         - Character Recognizer: applications/character-recognizer/index.md
