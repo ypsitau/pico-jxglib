@@ -11,7 +11,7 @@
         pico-jxglib is updated almost daily. If you've already cloned it, run the following command in the `pico-jxglib` directory to get the latest version:
 
         ```bash
-        git pull
+        $ git pull
         ```
 
     A directory from a Git repository can safely be moved to another location even after cloning.
