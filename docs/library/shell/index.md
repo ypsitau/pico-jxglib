@@ -6,6 +6,10 @@
 
 The shell can work with a variety of devices. Below is a class diagram showing the relationship between the shell, terminal, input devices (keyboards), and output devices (displays and printables).
 
+<span style="padding: 5px 20px; border-width: 2px; border-style: solid; border-color: #88f; background-color: #ffc; font-size: 80%;">Input</span>
+<span style="padding: 5px 20px; border-width: 2px; border-style: solid; border-color: #88f; background-color: #f8c; font-size: 80%;">Output</span>
+<span style="padding: 5px 20px; border-width: 2px; border-style: solid; border-color: #88f; background-color: #fc9; font-size: 80%;">Input/Output</span>
+
 ```mermaid
 classDiagram
   class Shell {
@@ -28,11 +32,12 @@ classDiagram
   class Stdio:::Class_Both
   class USBDevice_CDCSerial["USBDevice::CDCSerial"]:::Class_Both
   class Telnet_Stream["Telnet::Stream"]:::Class_Both
-  class ST7789:::Class_Output
-  class ST7735:::Class_Output
-  class ILI9341:::Class_Output
-  class ILI9488:::Class_Output
-  class SSD1306:::Class_Output
+  class Display_Base["Display::Base"]
+  class Display_ST7789["Display::ST7789"]:::Class_Output
+  class Display_ST7735["Display::ST7735"]:::Class_Output
+  class Display_ILI9341["Display::ILI9341"]:::Class_Output
+  class Display_ILI9488["Display::ILI9488"]:::Class_Output
+  class Display_SSD1306["Display::SSD1306"]:::Class_Output
   classDef Class_Input fill:#ffc
   classDef Class_Output fill:#f8c
   classDef Class_Both fill:#fc9
@@ -45,18 +50,18 @@ classDiagram
   Keyboard <|-- GPIO_Keyboard
   Keyboard <|-- GPIO_KeyboardMatrix
   Serial_Terminal o-- Printable
-  Display_Terminal o-- Display
+  Display_Terminal o-- Display_Base
   VT100_Keyboard o-- Readable
   Printable <|-- Stream
   Readable <|-- Stream
   Stream <|-- Stdio
   Stream <|-- USBDevice_CDCSerial
   Stream <|-- Telnet_Stream
-  Display <|-- ST7789
-  Display <|-- ST7735
-  Display <|-- ILI9341
-  Display <|-- ILI9488
-  Display <|-- SSD1306
+  Display_Base <|-- Display_ST7789
+  Display_Base <|-- Display_ST7735
+  Display_Base <|-- Display_ILI9341
+  Display_Base <|-- Display_ILI9488
+  Display_Base <|-- Display_SSD1306
 ```
 
 A `Shell` can attach a `Terminal` by `Shell::AttachTerminal()`.

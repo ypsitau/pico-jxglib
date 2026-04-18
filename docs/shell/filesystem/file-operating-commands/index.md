@@ -346,6 +346,8 @@ Options:
 
 ### ls-drive
 
+Alias: `dir-drive`
+
 ```text title="Help of the Command"
 Usage: ls-drive [OPTION]... [DRIVE]
 Options:

@@ -412,4 +412,4 @@ Sub Commands:
  drive:STRENGTH       set pin drive strength (2mA, 4mA, 8mA, 12mA)
  slew:SLEW            set slew rate (slow, fast)
  hyst:STATE           set hysteresis state (on, off)
- ```
+```

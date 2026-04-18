@@ -1,11 +1,11 @@
 
 # Display - TFT LCD
 
-## About TFT LCD
-
 When it comes to peripherals connected to a CPU, display-related devices are perhaps the most fun to play with. From a practical standpoint, the amount of information you can convey to users through text and graphics is outstanding. Among the many types of displays, TFT LCDs that can be connected to single-board microcontrollers via SPI interface are especially attractive due to their compact size and affordable price.
 
-By the way, I mainly use Akizuki Denshi and Amazon to procure electronic components. I searched for "TFT LCD" on these shops and purchased the following devices:
+## About TFT LCD
+
+The library supports various TFT LCDs, including ST7789, ST7735, ILI9341, and ILI9488. These are commonly used in electronics projects and can be easily procured from online shops.
 
 !!! abstract "ST7789"
     The device on the left is 1.8 inches with 240x320 pixels, and the one on the right is 1.3 inches with 240x240 pixels. Both can be purchased for around 1,000 yen.

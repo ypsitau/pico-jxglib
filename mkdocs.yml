@@ -30,8 +30,13 @@ nav:
             - Network Utilities: shell/network/network-utilities/index.md
             - Telnet Server: shell/network/telnet-server/index.md
         - Logic Analyzer:
-            - Text Mode: shell/logic-analyzer/text/index.md
-            - PulseView: shell/logic-analyzer/pulseview/index.md
+            - Overview: shell/logic-analyzer/index.md
+            - Data Sampling: shell/logic-analyzer/text/data-sampling.md
+            - Text Mode:
+                - Waveform on Console: shell/logic-analyzer/text/waveform.md
+                - Protocol Analysis on Console: shell/logic-analyzer/text/protocol-analysis.md
+            - PulseView:
+                - Setup Pulseview: shell/logic-analyzer/pulseview/setup-pulseview.md
         - Display:
             - WS2812: shell/display/ws2812/index.md
         - Camera:
@@ -61,13 +66,17 @@ nav:
             - RTC (Real Time Clock): library/device/rtc/index.md
         - Display:
             - Overview: library/display/index.md
-            - TFT LCD: library/display/tft-lcd/index.md
-            - OLED: library/display/oled/index.md
-            - WS2812: library/display/ws2812/index.md
+            - TFT LCD:
+                - Overview: library/display/tft-lcd/index.md
+            - OLED:
+                - Overview: library/display/oled/index.md
+            - WS2812:
+                - Overview: library/display/ws2812/index.md
         - Keyboard:
             - Overview: library/keyboard/index.md
             - USB Keyboard: library/keyboard/usb-keyboard/index.md
-            - Keyboard Matrix: library/keyboard/keyboard-matrix/index.md
+            - GPIO Keyboard: library/keyboard/gpio-keyboard/index.md
+            - GPIO Keyboard Matrix: library/keyboard/gpio-keyboard-matrix/index.md
         - USB Host:
             - Overview: library/usbhost/index.md
             - Keyboard & Mouse: library/usbhost/keyboard-mouse/index.md
