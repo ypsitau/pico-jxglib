@@ -1,9 +1,6 @@
-# RTC (Real Time Clock)
+In this page, we will connect an RTC (Real Time Clock) module to the Pico board by using shell commands.
 
-In this page, we will connect an RTC (Real Time Clock) module to the Pico board.
-
-By connecting an RTC module, you can accurately obtain the current time and record timestamps when creating or updating files. The RTC module is used via the I2C interface.
-
+<!-- mkdocs-start:skip-abstract -->
 <!-- mkdocs-start:about-rtc -->
 ## About RTC Module
 
@@ -31,7 +28,7 @@ It comes with a backup battery pre-installed and has a compact shape. The signal
 There is also a cheaper RTC module named DS1307, but it can drift by several seconds per day, so the more accurate DS3231 is recommended. The DS1307 also shares the same I2C address and data format as the DS3231, so it should work similarly when connected to the Pico board.
 <!-- mkdocs-end:about-rtc -->
 
-## Device Connection and Operation Check
+## Device Connection
 
 The DS3231 RTC module is connected via the I2C interface. You can use either I2C0 or I2C1 on the Pico board, and the pin layout can be freely set with commands. Here, we use I2C0 and connect as follows:
 
@@ -76,6 +73,8 @@ L:/>rtc-ds3231 setup {i2c:0}
 
 This completes the setup of the DS3231 RTC module.
 
+## Operation Check
+
 Run the `rtc` command to get the current time from the RTC module:
 
 ```text
@@ -85,13 +84,14 @@ L:/>rtc
 
 You can set the date and time on the RTC module by specifying the date and time as an argument to the `rtc` command:
 
-
 ```text
 L:/>rtc 2025-10-18 16:20:52
 2025-10-18 16:20:52.000
 ```
 
-If your Pico board is connected to Wi-Fi ([see here](https://zenn.dev/ypsitau/articles/2025-10-06-labo-wifi)), you can use the `ntp` command with the `-r` option to get the correct time from an NTP server and set it on the RTC module:
+## Time Synchronization with NTP Server
+
+If your Pico board is connected to Wi-Fi ([see here](../../network/index.md)), you can use the `ntp` command with the `-r` option to get the correct time from an NTP server and set it on the RTC module:
 
 ```text
 L:/>ntp -r
@@ -100,6 +100,8 @@ RTC updated
 L:/>rtc
 2025-10-18 16:27:33.000
 ```
+
+## File Operations
 
 Let's create a file and check that the timestamp is recorded correctly:
 

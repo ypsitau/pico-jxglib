@@ -12,6 +12,7 @@ nav:
         - File System:
             - Overview: shell/filesystem/index.md
             - File Operating Commands: shell/filesystem/file-operating-commands/index.md
+            - RTC (Real Time Clock) Support: shell/filesystem/rtc/index.md
             - SD Card Support: shell/filesystem/sdcard/index.md
         - Peripheral:
             - GPIO: shell/peripheral/gpio/index.md
@@ -22,6 +23,7 @@ nav:
         - Device:
             - Built-in LED: shell/device/builtin-led/index.md
             - RTC (Real Time Clock): shell/device/rtc/index.md
+            - SD Card: shell/device/sdcard/index.md
         - Network:
             - Overview: shell/network/index.md
             - Wi-Fi Connection: shell/network/wifi/index.md
