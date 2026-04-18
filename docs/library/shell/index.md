@@ -74,7 +74,7 @@ A `Printable` is a class that can be printed to. It has a variety of printing me
 
 A `Display` is a class that can be drawn on. It has methods for drawing images and bitmaps to a display device, such as `DrawImage()` and `DrawBitmap()`. It includes classes like `ST7789`, `ST7735`, `ILI9341`, `ILI9488`, and `SSD1306`.
 
-**Conclusion**: The shell works with a variety of input and output devices by creating `Keyboard`, `Printable`, and `Display::Base` objects and attaching them to the terminal attached to the shell.
+**Conclusion**: The shell works with a variety of input and output devices by creating `Keyboard`, `Printable`, and `Display::Base` objects and attaching them to a `Terminal` attached to the `Shell`.
 
 ## Shell Commands
 
