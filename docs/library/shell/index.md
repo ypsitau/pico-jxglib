@@ -6,10 +6,6 @@
 
 The shell can work with a variety of devices. Below is a class diagram showing the relationship between the shell, terminal, input devices (keyboards), and output devices (displays and printables).
 
-<span style="padding: 5px 20px; border-width: 2px; border-style: solid; border-color: #88f; background-color: #ffc; font-size: 80%;">Input</span>
-<span style="padding: 5px 20px; border-width: 2px; border-style: solid; border-color: #88f; background-color: #f8c; font-size: 80%;">Output</span>
-<span style="padding: 5px 20px; border-width: 2px; border-style: solid; border-color: #88f; background-color: #fc9; font-size: 80%;">Input/Output</span>
-
 ```mermaid
 classDiagram
   class Shell {
@@ -22,7 +18,7 @@ classDiagram
     +AttachPrintable(Printable& printable)
   }
   class Display_Terminal["Display::Terminal"] {
-    +AttachDisplay(Display& display)
+    +AttachDisplay(Display::Base& display)
   }
   class Keyboard
   class VT100_Keyboard["VT100::Keyboard"]
@@ -64,6 +60,10 @@ classDiagram
   Display_Base <|-- Display_SSD1306
 ```
 
+<span style="padding: 5px 20px; border-width: 2px; border-style: solid; border-color: #88f; background-color: #ffc; font-size: 80%;">Input</span>
+<span style="padding: 5px 20px; border-width: 2px; border-style: solid; border-color: #88f; background-color: #f8c; font-size: 80%;">Output</span>
+<span style="padding: 5px 20px; border-width: 2px; border-style: solid; border-color: #88f; background-color: #fc9; font-size: 80%;">Input/Output</span>
+
 A `Shell` can attach a `Terminal` by `Shell::AttachTerminal()`.
 
 A `Terminal` can attach a `Keyboard` as its input device. There are various types of `Keyboard`, such as `USBHost::Keyboard`, `GPIO::Keyboard`, and `GPIO::KeyboardMatrix`. Additionally, you can also use the `Stdio`, `USBDevice::CDCSerial`, or `Telnet::Stream` as a keyboard input for the shell.
@@ -74,7 +74,7 @@ A `Printable` is a class that can be printed to. It has a variety of printing me
 
 A `Display` is a class that can be drawn on. It has methods for drawing images and bitmaps to a display device, such as `DrawImage()` and `DrawBitmap()`. It includes classes like `ST7789`, `ST7735`, `ILI9341`, `ILI9488`, and `SSD1306`.
 
-Therefore, the shell works with a variety of input and output devices by creating `Keyboard`, `Printable`, and `Display` objects and attaching them to the terminal attached to the shell.
+**Conclusion**: The shell works with a variety of input and output devices by creating `Keyboard`, `Printable`, and `Display::Base` objects and attaching them to the terminal attached to the shell.
 
 ## Shell Commands
 
