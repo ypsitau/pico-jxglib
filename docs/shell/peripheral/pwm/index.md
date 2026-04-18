@@ -262,3 +262,28 @@ The corresponding Pico SDK APIs for each `pwm` subcommand:
 | `level`         | `PWM::set_chan_level(uint16_t level)` |
 | `counter`       | `PWM::set_counter(uint16_t c)` |
 | `phase-correct` | `PWM::set_phase_correct(bool phase_correct)` |
+
+## Command Reference
+
+### pwm
+
+```text title="Help of the Command"
+Usage: pwm [OPTION]... [PIN [COMMAND]...]
+Options:
+ -h --help        prints this help
+ -n --only-pwm    only show PWM-capable pins
+ -Q --quiet       do not print any status information
+ -B --builtin-led use the built-in LED (GPIO 25)
+Sub Commands:
+ func:FUNCTION      set pin function (spi, uart, i2c, pwm, sio, pio0, pio1, clock, usb, xip, null)
+ enable             start PWM output
+ disable            stop PWM output
+ freq:FREQUENCY     set PWM frequency in Hz
+ duty:RATIO         set PWM duty ratio (0.0-1.0)
+ clkdiv:DIVIDER     set PWM clock divider (1.0-255.9)
+ wrap:VALUE         set PWM wrap value (0-65535)
+ level:VALUE        set PWM level (0-65535)
+ phase-correct:BOOL enable/disable phase-correct (0, 1)
+ invert:BOOL        enable/disable inverted output (0, 1)
+ counter:VALUE      set PWM counter value (0-65535)
+```

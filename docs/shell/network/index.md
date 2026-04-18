@@ -1,6 +1,6 @@
 # Network
 
-This article explains how to connect a Pico board to a Wi-Fi network using pico-jxgLABO.
+This page explains how to connect a Pico board to a Wi-Fi network using pico-jxgLABO.
 
 Traditionally, connecting a microcontroller to a network requires writing and running a program, often hardcoding the SSID and password for Wi-Fi, which makes distribution and maintenance difficult. In the pico-jxgLABO environment, shell commands are provided for network connection, allowing users to connect to networks interactively via commands.
 
@@ -14,8 +14,6 @@ Pico W and Pico 2 W are Pico boards equipped with a CYW43439 Wi-Fi chip (CYW43 c
 *Pico W and Pico 2 W*
 
 Pico W costs about 1,200 yen, Pico 2 W about 1,400 yen—roughly 400 yen more than the non-Wi-Fi models due to the CYW43 chip.
-
-Pico W/Pico 2 W use reserved GPIOs 23, 24, 25, and 29 to control the CYW43 chip. GPIO25, used for the built-in LED on Pico/Pico 2, is now used for CYW43 control, so the built-in LED is connected to the CYW43 chip’s GPIO. To control the LED on Pico W/Pico 2 W, you must communicate with the CYW43 chip, which is tricky. The Pico SDK provides `cyw43_arch_gpio_get()` and `cyw43_arch_gpio_put()` APIs for this purpose.
 
 Controlling the CYW43 chip with limited GPIOs is challenging. For more details, see [this article](https://zenn.dev/nonnoise/articles/0d5b97cb517e31).
 

@@ -110,3 +110,26 @@ L:/>touch testfile.txt
 L:/>dir
 -a--- 2025-10-18 16:28:02      0 testfile.txt
 ```
+
+## Command Reference
+
+### rtc
+
+```text title="Help of the Command"
+Usage: rtc [OPTION]... [DATE] [TIME]
+Options:
+ -h --help    prints this help
+ -v --verbose verbose output
+
+Set or get the RTC time. If no argument is given, it prints the current time.
+```
+
+### rtc-ds3231
+
+```text title="Help of the Command"
+Usage: rtc-ds3231 [OPTION]...
+Options:
+ -h --help prints this help
+Subcommands:
+  setup  Set up a DS3231 device with the given parameters: {i2c:BUS}
+```

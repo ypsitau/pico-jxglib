@@ -83,3 +83,17 @@ L:/>M:
 M:/>dir
 ...
 ```
+
+## Command Reference
+
+### sdcard
+
+```text title="Help of the Command"
+Usage: sdcard [OPTION]...
+Options:
+ -h --help prints this help
+Sub Commands:
+ setup  Setup an SD card with the given parameters:
+          {spi:SPI cs:CS [drive:DRIVE] [baudrate:BAUDRATE]}
+ init   Initialize the SD card
+```

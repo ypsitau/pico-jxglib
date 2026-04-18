@@ -286,7 +286,6 @@ d---- 2000-01-01 00:00:00        dir4/
 Alias: `copy`
 
 ```text title="Help of the Command"
-L:/>cp --help
 Usage: cp [OPTION]... SOURCE... DEST
 Options:
  -h --help      prints this help
@@ -300,7 +299,6 @@ Options:
 Alias: `ren`
 
 ```text title="Help of the Command"
-L:/>mv --help
 Usage: mv [OPTION]... SOURCE... DEST
 Options:
  -h --help    prints this help
@@ -313,7 +311,6 @@ Options:
 Alias: `del`
 
 ```text title="Help of the Command"
-L:/>rm --help
 Usage: rm [OPTION]... FILE...
 Options:
  -h --help      prints this help
@@ -327,7 +324,6 @@ Options:
 Alias: `md`
 
 ```text title="Help of the Command"
-L:/>mkdir --help
 Usage: mkdir [OPTION]... DIRECTORY...
 Options:
  -h --help prints this help
@@ -338,7 +334,6 @@ Options:
 Alias: `dir`
 
 ```text title="Help of the Command"
-L:/>ls --help
 Usage: ls [OPTION]... [DIRECTORY]...
 Options:
  -h --help      prints this help
@@ -352,7 +347,6 @@ Options:
 ### ls-drive
 
 ```text title="Help of the Command"
-L:/>ls-drive --help
 Usage: ls-drive [OPTION]... [DRIVE]
 Options:
  -h --help    prints this help
@@ -362,7 +356,6 @@ Options:
 ### cat
 
 ```text title="Help of the Command"
-L:/>cat --help
 Usage: cat [OPTION]... [FILE]...
 Options:
  -h --help prints this help
@@ -374,7 +367,6 @@ When no filenames are given, the command reads from standard input.
 ### tree
 
 ```text title="Help of the Command"
-L:/>tree --help
 Usage: tree [OPTION]... [DIRECTORY]
 Options:
  -h --help      prints this help
@@ -385,7 +377,6 @@ Options:
 ### touch
 
 ```text title="Help of the Command"
-L:/>touch --help
 Usage: touch [OPTION]... FILE...
 Options:
  -h --help            prints this help

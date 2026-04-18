@@ -1,6 +1,8 @@
 # Built-in LED
 
-The built-in LED on the Pico board can be controlled with the `led` command. This is a simple way to confirm that you can control the board, and it’s also useful for indicating the board’s status. Here’s how to use it:
+The built-in LED on the Pico board can be controlled with the `led` command. This is a simple way to confirm that you can control the board, and it’s also useful for indicating the board’s status. This page explains how to use it.
+
+## LED Control
 
 To turn the LED on and off:
 
@@ -31,4 +33,20 @@ To stop flipping after a certain number of times, add `*` at the end. The follow
 
 ```text
 L:/>led on flip:50,500,50,500,50,*
+```
+
+## Command Reference
+
+### led
+
+```text title="Help of the Command"
+Usage: led [OPTION]... CMDS...
+Options:
+ -h --help prints this help
+Sub Commands:
+ on          turn on LED
+ off         turn off LED
+ flip:MS...  start blinking LED with specified durations (in msec)
+             e.g. flip:500,500 (500 msec ON, 500 msec OFF)
+             specifies * to end the blinking (eg. flip:100,500,100,*)
 ```

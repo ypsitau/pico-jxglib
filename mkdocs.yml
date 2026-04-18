@@ -57,6 +57,7 @@ nav:
             - SPI: library/peripheral/spi/index.md
             - UART: library/peripheral/uart/index.md
         - Device:
+            - Built-in LED: library/device/builtin-led/index.md
             - RTC (Real Time Clock): library/device/rtc/index.md
         - Display:
             - Overview: library/display/index.md
