@@ -1,4 +1,4 @@
-??? note "Flash UF2 File to Pico Board"
+??? note "Flash UF2 Binary File to Pico Board"
     Connect a Pico board to a host PC using a USB cable while holding BOOTSEL button, and you will see a drive like follows:
 
     <div class="grid cards" markdown>

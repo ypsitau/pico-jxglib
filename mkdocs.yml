@@ -12,7 +12,7 @@ nav:
         - File System:
             - Overview: shell/filesystem/index.md
             - File Operating Commands: shell/filesystem/file-operating-commands/index.md
-            - SD Card: shell/filesystem/sdcard/index.md
+            - SD Card Support: shell/filesystem/sdcard/index.md
         - Peripheral:
             - GPIO: shell/peripheral/gpio/index.md
             - PWM: shell/peripheral/pwm/index.md

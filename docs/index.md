@@ -57,12 +57,14 @@ Of course, you can also add your own custom commands to the shell. It's that sim
 
 If you want to try it out without setting up the development environment, you can download the ready-to-flash UF2 binary files.
 
+<!-- mkdocs-start:uf2-list -->
 |Target Board|UF2 Binary File|
 |---|---|
 |Raspberry Pi Pico|[pico-jxgLABO.uf2](https://github.com/ypsitau/pico-jxgLABO/releases/latest/download/pico-jxgLABO.uf2)|
 |Raspberry Pi Pico W|[pico-w-jxgLABO.uf2](https://github.com/ypsitau/pico-jxgLABO/releases/latest/download/pico-w-jxgLABO.uf2)|
 |Raspberry Pi Pico2|[pico2-jxgLABO.uf2](https://github.com/ypsitau/pico-jxgLABO/releases/latest/download/pico2-jxgLABO.uf2)|
 |Raspberry Pi Pico2 W|[pico2-w-jxgLABO.uf2](https://github.com/ypsitau/pico-jxgLABO/releases/latest/download/pico2-w-jxgLABO.uf2)|
+<!-- mkdocs-end:uf2-list -->
 
 These UF2 files are pre-compiled with the latest version of pico-jxglib and can be flashed to your Pico board using the standard UF2 flashing method.
 

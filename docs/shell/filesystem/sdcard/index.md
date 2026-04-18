@@ -1,10 +1,6 @@
 # SD Card Support
 
-In this guide, we connect an SD card to the Pico board using pico-jxgLABO.
-
-pico-jxgLABO mounts part of the Pico board's flash memory as the `L:` drive, allowing you to read and write files. The capacity of this drive is about 2.5 MBytes on the Pico2 board and about 0.5 MBytes (500 KBytes) on the Pico board. This is practical for saving text data, but insufficient for large data such as images or audio.
-
-By connecting an SD card, you can use large-capacity storage in the GByte range, greatly expanding the Pico board's capabilities. SD cards are inexpensive and easy to obtain, and can be used by connecting to the Pico board's SPI interface.
+In this page, we connect an SD card to the Pico board by using shell commands.
 
 ## SD Card Reader Modules
 
@@ -14,14 +10,14 @@ Below are some SD card reader modules I had on hand (mainly from Amazon), with n
 
 |Appearance|Notes|
 |----|----|
-|![sdcard-adapter](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/sdcard-adapter.jpg)|Standard SD card module. Both **5V** and **3.3V** supply pins are available. If using 5V, a voltage regulator steps down to 3.3V for the SD card. All signal lines have 10kΩ pull-up resistors, so **no external pull-ups are needed**. Signal level is **3.3V**.|
-|![ILI9341-back](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/ILI9341-back.jpg)|Standard SD card slot on the TFT LCD ILI9341. Power is supplied from the TFT LCD connector at **3.3V**. **External pull-up resistors are required**[^pullup]. Signal level is **3.3V**.|
-|![u-sdcard-adapter-1](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/u-sdcard-adapter-1.jpg)|microSD card module. Supply voltage is **5V**, stepped down to 3.3V by a voltage regulator. **No external pull-ups are needed**. Signal lines have a buffer (74HC125), so it can connect to both **3.3V** and **5V** signal levels.|
-|![u-sdcard-adapter-2](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-06-06-fs-media/u-sdcard-adapter-2.jpg)|microSD card module. Supply voltage is **3.3V**. All signal lines have 10kΩ pull-up resistors, so **no external pull-ups are needed**. Signal level is **3.3V**.|
+|![sdcard-adapter](images/sdcard-adapter.jpg)|Standard SD card module. Both **5V** and **3.3V** supply pins are available. If using 5V, a voltage regulator steps down to 3.3V for the SD card. All signal lines have 10kΩ pull-up resistors, so **no external pull-ups are needed**. Signal level is **3.3V**.|
+|![ILI9341-back](images/ILI9341-back.jpg)|Standard SD card slot on the TFT LCD ILI9341. Power is supplied from the TFT LCD connector at **3.3V**. **External pull-up resistors are required**[^pullup]. Signal level is **3.3V**.|
+|![u-sdcard-adapter-1](images/u-sdcard-adapter-1.jpg)|microSD card module. Supply voltage is **5V**, stepped down to 3.3V by a voltage regulator. **No external pull-ups are needed**. Signal lines have a buffer (74HC125), so it can connect to both **3.3V** and **5V** signal levels.|
+|![u-sdcard-adapter-2](images/u-sdcard-adapter-2.jpg)|microSD card module. Supply voltage is **3.3V**. All signal lines have 10kΩ pull-up resistors, so **no external pull-ups are needed**. Signal level is **3.3V**.|
 
 To distinguish the supply voltage, if the SD card reader module has a voltage regulator like the one shown below, use 5V supply; if not, use 3.3V supply.
 
-![sdcard-adapter-voltage](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-10-22-labo-sdcard-rtc/sdcard-adapter-voltage.jpg)
+![sdcard-adapter-voltage](images/sdcard-adapter-voltage.jpg)
 
 [^pullup]: In my tests, the SD card worked without pull-up resistors, but some SD cards may require them. If it doesn't work, check for pull-up resistors.
 
@@ -81,9 +77,7 @@ L:/>ls-drive
 ```
 
 
-Try various file operations. See [here](https://zenn.dev/ypsitau/articles/2025-06-09-fs-shell#%E3%82%B7%E3%82%A7%E3%83%AB%E3%81%AB%E3%82%88%E3%82%8B%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E6%93%8D%E4%BD%9C) for a summary of file operation commands provided by pico-jxgLABO[^pico-jxglib].
-
-[^pico-jxglib]: pico-jxgLABO features are based on the [pico-jxglib](https://zenn.dev/ypsitau/articles/2025-01-24-jxglib-intro) library.
+Try various file operations. See [here](../file-operating-commands/index.md) for a summary of file operation commands provided by the shell.
 
 ```text
 L:/>M:

@@ -295,7 +295,9 @@ Options:
  -f --force     overwrites existing files without prompting
 ``
 
-## mv
+### mv
+
+Alias: `ren`
 
 ```text title="Help of the Command"
 L:/>mv --help
@@ -306,7 +308,9 @@ Options:
  -f --force   overwrites existing files without prompting
 ```
 
-## rm
+### rm
+
+Alias: `del`
 
 ```text title="Help of the Command"
 L:/>rm --help
@@ -318,7 +322,9 @@ Options:
  -f --force     removes files without prompting
 ```
 
-## mkdir
+### mkdir
+
+Alias: `md`
 
 ```text title="Help of the Command"
 L:/>mkdir --help
@@ -327,7 +333,9 @@ Options:
  -h --help prints this help
 ```
 
-## ls
+### ls
+
+Alias: `dir`
 
 ```text title="Help of the Command"
 L:/>ls --help
@@ -341,7 +349,7 @@ Options:
  -e --elimslash eliminates trailing slashes from directory names
 ```
 
-## ls
+### ls-drive
 
 ```text title="Help of the Command"
 L:/>ls-drive --help
@@ -351,7 +359,7 @@ Options:
  -r --remarks prints remarks for each drive
 ```
 
-## cat
+### cat
 
 ```text title="Help of the Command"
 L:/>cat --help
@@ -363,7 +371,7 @@ Reads the contents of files and prints them to standard output.
 When no filenames are given, the command reads from standard input.
 ```
 
-## tree
+### tree
 
 ```text title="Help of the Command"
 L:/>tree --help
@@ -374,7 +382,7 @@ Options:
  -e --elimslash eliminates trailing slashes from directory names
 ```
 
-## touch
+### touch
 
 ```text title="Help of the Command"
 L:/>touch --help
