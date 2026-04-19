@@ -68,16 +68,17 @@ nav:
         - Terminal:
             - Overview: library/terminal/index.md
             - Connectability:
-                - TFT LCD: library/terminal/terminal-with-tftlcd/index.md
-                - OLED: library/terminal/terminal-with-oled/index.md
-            - Working with LVGL: library/terminal/terminal-and-lvgl/index.md
+                - TFT LCD: library/terminal/terminal-with-tftlcd.md
+                - OLED: library/terminal/terminal-with-oled.md
+            - Working with LVGL: library/terminal/terminal-and-lvgl.md
+            - Multiple Terminals: library/terminal/terminal-multiple.md
         - Display:
             - Overview: library/display/index.md
             - TFT LCD:
                 - Overview: library/display/tft-lcd/index.md
                 - Sample Program:
                     - Drawing: library/display/tft-lcd/sample-drawing.md
-                    - Connecting Multiple LCDs: library/display/tft-lcd/sample-multi.md
+                    - Multiple LCDs: library/display/tft-lcd/sample-multi.md
             - OLED:
                 - Overview: library/display/oled/index.md
             - WS2812:
