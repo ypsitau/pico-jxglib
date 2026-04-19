@@ -1,13 +1,12 @@
+# Shell with OLED and USB Keyboard
 
-## Sample Program
-
-### Wiring
+## Wiring
 
 The breadboard wiring image is as follows:
 
 ![circuit-usbhost-ssd1306.png](images/circuit-usbhost-ssd1306.png)
 
-### Building and Flashing the Program
+## Building and Flashing the Program
 
 Here, we will create a sample program that implements a custom command named `argtest`. It displays the contents of the arguments passed to it.
 

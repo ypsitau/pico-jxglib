@@ -46,9 +46,10 @@ nav:
         - LABOPlatform: library/labo-platform/index.md
         - Shell:
             - Overview: library/shell/index.md
-            - Shell (stdio): library/shell/shell-with-serial/index.md
-            - Shell (TFT LCD + USB Kbd): library/shell/shell-with-tftlcd-usbkey/index.md
-            - Shell (OLED + USB Kbd): library/shell/shell-with-oled-usbkey/index.md
+            - Connectability:
+                - Stdio: library/shell/shell-with-serial/index.md
+                - TFT LCD + USB Keyboard: library/shell/shell-with-tftlcd-usbkey/index.md
+                - OLED + USB Keyboard: library/shell/shell-with-oled-usbkey/index.md
             - Custom Commands: library/shell/custom-commands/index.md
         - File System:
             - Overview: library/filesystem/index.md

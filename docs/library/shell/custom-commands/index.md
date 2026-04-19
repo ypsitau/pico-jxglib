@@ -1,8 +1,6 @@
 # Custom Commands
 
-## Sample Program
-
-### Building and Flashing the Program
+## Building and Flashing the Program
 
 Here, we will create a sample program that implements a custom command named `argtest`. It displays the contents of the arguments passed to it.
 
@@ -40,7 +38,7 @@ Edit `customcmd-argtest.cpp` as follows:
 
 {% include-markdown "include/build-and-flash.md" %}
 
-### Running the Program
+## Running the Program
 
 Open a terminal emulator to connect it.
 
@@ -77,9 +75,9 @@ sleep           sleeps for the specified time in milliseconds
 ticks           prints names and attributes of running Tickable instances
 ```
 
-### Program Explanation
+## Program Explanation
 
-#### `ShellCmd` Macro
+### `ShellCmd` Macro
 
 To create a shell command, use the `ShellCmd` macro. The macro format is as follows:
 
@@ -102,7 +100,7 @@ Return `Result::Success` if there is no error, or `Result::Error` if an error oc
 
 You do **not** need to register commands. When you create a command with the `ShellCmd` macro, it is automatically registered with the shell. With this mechanism, you can add commands simply by linking the source file that implements the command to the main program.
 
-#### Utility APIs
+### Utility APIs
 
 `Shell::Cmd::Arg` class provides utility APIs for parsing command line arguments. You can define the expected arguments and their options in a table, and then use the `Shell::Cmd::Arg` class to parse the command line arguments based on that table. This makes it easier to handle various types of arguments, such as boolean flags, integers, floating-point numbers, and strings.
 
