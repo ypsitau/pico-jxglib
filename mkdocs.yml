@@ -113,6 +113,9 @@ theme:
         - navigation.tabs
         - navigation.tabs.sticky
         #- navigation.expand
+        - navigation.path
+        - navigation.top
+        - navigation.footer
         - content.code.copy
 
 markdown_extensions:

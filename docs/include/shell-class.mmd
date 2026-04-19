@@ -1,0 +1,80 @@
+%% mkdocs-start:shell
+class Shell {
+  +AttachTerminal(Terminal& terminal)
+}
+Shell o-- Terminal
+
+%% mkdocs-start:terminal
+class Terminal {
+  +AttachKeyboard(Keyboard& keyboard)
+}
+class Display_Terminal["Display::Terminal"] {
+  +AttachDisplay(Display& display)
+}
+class Serial_Terminal["Serial::Terminal"] {
+  +AttachPrintable(Printable& printable)
+}
+Terminal <|-- Display_Terminal
+Terminal <|-- Serial_Terminal
+Terminal o-- Keyboard
+Display_Terminal o-- Drawable
+Serial_Terminal o-- Printable
+Printable <|-- Stream
+
+%% mkdocs-start:display
+class Drawable
+class Display_Base["Display::Base"]
+class Display_ST7789["Display::ST7789"]:::Class_Output
+class Display_ST7735["Display::ST7735"]:::Class_Output
+class Display_ILI9341["Display::ILI9341"]:::Class_Output
+class Display_ILI9488["Display::ILI9488"]:::Class_Output
+class Display_SSD1306["Display::SSD1306"]:::Class_Output
+Drawable <|-- Display_Base
+Display_Base <|-- Display_ST7789
+Display_Base <|-- Display_ST7735
+Display_Base <|-- Display_ILI9341
+Display_Base <|-- Display_ILI9488
+Display_Base <|-- Display_SSD1306
+%% mkdocs-end:display
+
+%% mkdocs-start:keyboard
+class GPIO_Keyboard["GPIO::Keyboard"]:::Class_Input
+class GPIO_KeyboardMatrix["GPIO::KeyboardMatrix"]:::Class_Input
+class Stdio:::Class_Both
+class USBDevice_CDCSerial["USBDevice::CDCSerial"]:::Class_Both
+class Telnet_Stream["Telnet::Stream"]:::Class_Both
+class Keyboard
+class USBHost_Keyboard["USBHost::Keyboard"]:::Class_Input
+class VT100_Keyboard["VT100::Keyboard"]
+Keyboard <|-- USBHost_Keyboard
+Keyboard <|-- GPIO_Keyboard
+Keyboard <|-- GPIO_KeyboardMatrix
+Keyboard <|-- VT100_Keyboard
+VT100_Keyboard o-- Readable
+Readable <|-- Stream
+Stream <|-- Stdio
+Stream <|-- USBDevice_CDCSerial
+Stream <|-- Telnet_Stream
+%% mkdocs-end:keyboard
+
+%% mkdocs-end:terminal
+
+%% mkdocs-end:shell
+
+%% mkdocs-detail-start:shell
+%% mkdocs-detail-end:shell
+
+%% mkdocs-detail-start:terminal
+%% mkdocs-detail-end:terminal
+
+%% mkdocs-detail-start:display
+%% mkdocs-detail-end:display
+
+%% mkdocs-detail-start:keyboard
+class Keyboard {
+  GetKeyCode()
+  GetKeyData()
+  GetKeyCodeNB()
+  GetKeyDataNB()
+}
+%% mkdocs-detail-end:keyboard
