@@ -12,56 +12,11 @@ The shell can work with a variety of devices. Below is a class diagram showing t
 
 ```mermaid
 classDiagram
-  class Shell {
-    +AttachTerminal(Terminal& terminal)
-  }
-  class Terminal {
-    +AttachKeyboard(Keyboard& keyboard)
-  }
-  class Serial_Terminal["Serial::Terminal"] {
-    +AttachPrintable(Printable& printable)
-  }
-  class Display_Terminal["Display::Terminal"] {
-    +AttachDisplay(Display& display)
-  }
-  class Keyboard
-  class VT100_Keyboard["VT100::Keyboard"]
-  class USBHost_Keyboard["USBHost::Keyboard"]:::Class_Input
-  class GPIO_Keyboard["GPIO::Keyboard"]:::Class_Input
-  class GPIO_KeyboardMatrix["GPIO::KeyboardMatrix"]:::Class_Input
-  class Stdio:::Class_Both
-  class USBDevice_CDCSerial["USBDevice::CDCSerial"]:::Class_Both
-  class Telnet_Stream["Telnet::Stream"]:::Class_Both
-  class Display_Base["Display::Base"]
-  class Display_ST7789["Display::ST7789"]:::Class_Output
-  class Display_ST7735["Display::ST7735"]:::Class_Output
-  class Display_ILI9341["Display::ILI9341"]:::Class_Output
-  class Display_ILI9488["Display::ILI9488"]:::Class_Output
-  class Display_SSD1306["Display::SSD1306"]:::Class_Output
+  {% include "include/shell-class.mmd" start="%% mkdocs-start:shell" end="%% mkdocs-end:shell" %}
+  {% include "include/shell-class.mmd" start="%% mkdocs-start:shell-detail" end="%% mkdocs-end:shell-detail" %}
   classDef Class_Input fill:#ffc
   classDef Class_Output fill:#f8c
   classDef Class_Both fill:#fc9
-  Shell o-- Terminal
-  Terminal <|-- Serial_Terminal
-  Terminal <|-- Display_Terminal
-  Terminal o-- Keyboard
-  Keyboard <|-- VT100_Keyboard
-  Keyboard <|-- USBHost_Keyboard
-  Keyboard <|-- GPIO_Keyboard
-  Keyboard <|-- GPIO_KeyboardMatrix
-  Serial_Terminal o-- Printable
-  Display_Terminal o-- Display_Base
-  VT100_Keyboard o-- Readable
-  Printable <|-- Stream
-  Readable <|-- Stream
-  Stream <|-- Stdio
-  Stream <|-- USBDevice_CDCSerial
-  Stream <|-- Telnet_Stream
-  Display_Base <|-- Display_ST7789
-  Display_Base <|-- Display_ST7735
-  Display_Base <|-- Display_ILI9341
-  Display_Base <|-- Display_ILI9488
-  Display_Base <|-- Display_SSD1306
 ```
 
 A `Shell` can attach a `Terminal` by `Shell::AttachTerminal()`.

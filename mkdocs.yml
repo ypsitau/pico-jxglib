@@ -64,6 +64,8 @@ nav:
         - Device:
             - Built-in LED: library/device/builtin-led/index.md
             - RTC (Real Time Clock): library/device/rtc/index.md
+        - Terminal:
+            - Overview: library/terminal/index.md
         - Display:
             - Overview: library/display/index.md
             - TFT LCD:

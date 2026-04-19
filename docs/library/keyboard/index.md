@@ -2,24 +2,8 @@
 
 ```mermaid
 classDiagram
-  class Keyboard {
-    GetKeyCode()
-    GetKeyData()
-    GetKeyCodeNB()
-    GetKeyDataNB()
-  }
-  class USBHost_Keyboard["USBHost::Keyboard"] {
-  }
-  class GPIO_Keyboard["GPIO::Keyboard"] {
-  }
-  class GPIO_KeyboardMatrix["GPIO::KeyboardMatrix"] {
-  }
-  class VT100_Keyboard["VT100::Keyboard"] {
-  }
-  Keyboard <|-- USBHost_Keyboard
-  Keyboard <|-- GPIO_Keyboard
-  Keyboard <|-- GPIO_KeyboardMatrix
-  Keyboard <|-- VT100_Keyboard
+  {% include "include/shell-class.mmd" start="%% mkdocs-start:keyboard" end="%% mkdocs-end:keyboard" %}
+  {% include "include/shell-class.mmd" start="%% mkdocs-detail-start:keyboard" end="%% mkdocs-detail-end:keyboard" %}
 ```
 
 ## Virtual Keycode
