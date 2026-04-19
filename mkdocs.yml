@@ -70,6 +70,9 @@ nav:
             - Overview: library/display/index.md
             - TFT LCD:
                 - Overview: library/display/tft-lcd/index.md
+                - Sample Program:
+                    - Drawing: library/display/tft-lcd/sample-drawing.md
+                    - Connecting Multiple LCDs: library/display/tft-lcd/sample-multi.md
             - OLED:
                 - Overview: library/display/oled/index.md
             - WS2812:
