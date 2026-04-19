@@ -2,23 +2,23 @@
 
 Let's connect a TFT LCD and perform drawing operations.
 
-From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings. For details on creating a Pico SDK project, building, and writing to the board, see ["Getting Started with Pico SDK"](../../../development/pico-sdk/index.md).
+Here, we will create a sample program that implements a custom command named `argtest`. It displays the contents of the arguments passed to it.
 
-- **Name** ... Enter the project name. In this example, enter `lcdtest`.
-- **Board type** ... Select the board type.
-- **Location** ... Select the parent directory where the project directory will be created.
-- **Stdio support** ... Select the port (UART or USB) to connect Stdio.
-- **Code generation options** ... **Check `Generate C++ code`**
+Create a new Pico SDK project named `tftlcd-test`.
 
-Assume the project directory and `pico-jxglib` are arranged as follows:
+{% include-markdown "include/new-project.md" %}
+
+Clone the pico-jxglib repository from GitHub so the direcory structure looks like this:
 
 ```text
 ├── pico-jxglib/
-└── lcdtest/
+└── tftlcd-test/
     ├── CMakeLists.txt
-    ├── lcdtest.cpp
+    ├── tftlcd-test.cpp
     └── ...
 ```
+
+{% include-markdown "include/clone-repository.md" %}
 
 === "ST77789 (240x320)"
     The breadboard wiring image is as follows:
@@ -28,13 +28,13 @@ Assume the project directory and `pico-jxglib` are arranged as follows:
     Add the following lines to the end of `CMakeLists.txt`:
 
     ```cmake title="CMakeLists.txt"
-    target_link_libraries(lcdtest jxglib_Display_ST7789 jxglib_DrawableTest)
+    target_link_libraries(tftlcd-test jxglib_Display_ST7789 jxglib_DrawableTest)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
     ```
 
     Edit the source file as follows:
 
-    ```cpp title="lcdtest.cpp"
+    ```cpp title="tftlcd-test.cpp"
     #include <stdio.h>
     #include "pico/stdlib.h"
     #include "jxglib/Display/ST7789.h"
@@ -63,13 +63,13 @@ Assume the project directory and `pico-jxglib` are arranged as follows:
     Add the following lines to the end of `CMakeLists.txt`:
 
     ```cmake title="CMakeLists.txt"
-    target_link_libraries(lcdtest jxglib_Display_ST7789 jxglib_DrawableTest)
+    target_link_libraries(tftlcd-test jxglib_Display_ST7789 jxglib_DrawableTest)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
     ```
 
     Edit the source file as follows:
 
-    ```cpp title="lcdtest.cpp"
+    ```cpp title="tftlcd-test.cpp"
     #include <stdio.h>
     #include "pico/stdlib.h"
     #include "jxglib/Display/ST7789.h"
@@ -98,13 +98,13 @@ Assume the project directory and `pico-jxglib` are arranged as follows:
     Add the following lines to the end of `CMakeLists.txt`:
 
     ```cmake title="CMakeLists.txt"
-    target_link_libraries(lcdtest jxglib_Display_ST7735 jxglib_DrawableTest)
+    target_link_libraries(tftlcd-test jxglib_Display_ST7735 jxglib_DrawableTest)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
     ```
 
     Edit the source file as follows:
 
-    ```cpp title="lcdtest.cpp"
+    ```cpp title="tftlcd-test.cpp"
     #include <stdio.h>
     #include "pico/stdlib.h"
     #include "jxglib/Display/ST7735.h"
@@ -133,13 +133,13 @@ Assume the project directory and `pico-jxglib` are arranged as follows:
     Add the following lines to the end of `CMakeLists.txt`:
 
     ```cmake title="CMakeLists.txt"
-    target_link_libraries(lcdtest jxglib_Display_ST7735 jxglib_DrawableTest)
+    target_link_libraries(tftlcd-test jxglib_Display_ST7735 jxglib_DrawableTest)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
     ```
 
     Edit the source file as follows:
 
-    ```cpp title="lcdtest.cpp"
+    ```cpp title="tftlcd-test.cpp"
     #include <stdio.h>
     #include "pico/stdlib.h"
     #include "jxglib/Display/ST7735.h"
@@ -169,13 +169,13 @@ Assume the project directory and `pico-jxglib` are arranged as follows:
     Add the following lines to the end of `CMakeLists.txt`:
 
     ```cmake title="CMakeLists.txt"
-    target_link_libraries(lcdtest jxglib_Display_ILI9341 jxglib_DrawableTest)
+    target_link_libraries(tftlcd-test jxglib_Display_ILI9341 jxglib_DrawableTest)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
     ```
 
     Edit the source file as follows:
 
-    ```cpp title="lcdtest.cpp"
+    ```cpp title="tftlcd-test.cpp"
     #include <stdio.h>
     #include "pico/stdlib.h"
     #include "jxglib/Display/ILI9341.h"
@@ -205,13 +205,13 @@ Assume the project directory and `pico-jxglib` are arranged as follows:
     Add the following lines to the end of `CMakeLists.txt`:
 
     ```cmake title="CMakeLists.txt"
-    target_link_libraries(lcdtest jxglib_Display_ILI9488 jxglib_DrawableTest)
+    target_link_libraries(tftlcd-test jxglib_Display_ILI9488 jxglib_DrawableTest)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
     ```
 
     Edit the source file as follows:
 
-    ```cpp title="lcdtest.cpp"
+    ```cpp title="tftlcd-test.cpp"
     #include <stdio.h>
     #include "pico/stdlib.h"
     #include "jxglib/Display/ILI9488.h"
@@ -237,24 +237,24 @@ Uncomment the functions starting with `DrawableTest::` and [build, write, and ru
 
 - `DrawableTest::RotateImage()` is a test function that rotates and displays image data on the LCD. If you enter any key from a serial terminal connected via UART, the image will be rotated by 90 degrees and redrawn.
 
-  ![lcdtest-RotateImage.jpg](images/lcdtest-RotateImage.jpg)
+  ![tftlcd-test-RotateImage.jpg](images/tftlcd-test-RotateImage.jpg)
 
 - `DrawablTest::DrawString()` is a test function that displays Japanese text across the entire LCD screen. By operating from a serial terminal connected via UART, you can change the font type, font scaling, and line spacing.
 
-  ![lcdtest-DrawString.jpg](images/lcdtest-DrawString.jpg)
+  ![tftlcd-test-DrawString.jpg](images/tftlcd-test-DrawString.jpg)
 
 - `DrawablTest::DrawFonts()` is a test function that displays strings in different fonts on the LCD.
 
-  ![lcdtest-DrawFonts.jpg](images/lcdtest-DrawFonts.jpg)
+  ![tftlcd-test-DrawFonts.jpg](images/tftlcd-test-DrawFonts.jpg)
 
 
 
 ## Program Explanation
 
-In the [previous sample](https://zenn.dev/ypsitau/articles/2025-01-27-tft-lcd#tft-lcd-%E3%81%AE%E6%8F%8F%E7%94%BB), we used test functions for demonstration, but this time let's use the raw API to see how each operation works. Rewrite the source file `lcdtest.cpp` as follows:
+In the [previous sample](https://zenn.dev/ypsitau/articles/2025-01-27-tft-lcd#tft-lcd-%E3%81%AE%E6%8F%8F%E7%94%BB), we used test functions for demonstration, but this time let's use the raw API to see how each operation works. Rewrite the source file `tftlcd-test.cpp` as follows:
 
 
-```cpp title="lcdtest.cpp"
+```cpp title="tftlcd-test.cpp"
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/Display/ST7789.h"
@@ -287,7 +287,7 @@ int main()
 }
 ```
 
-![lcdtest-apis.jpg](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-01-31-tft-lcd-cont/lcdtest-apis.jpg)
+![tftlcd-test-apis.jpg](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-01-31-tft-lcd-cont/tftlcd-test-apis.jpg)
 
 The first half of the source file initializes the device.
 
