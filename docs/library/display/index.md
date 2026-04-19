@@ -1,3 +1,5 @@
+# Display
+
 ```mermaid
 classDiagram
   {% include "include/shell-class.mmd" start="%% mkdocs-start:display" end="%% mkdocs-end:display" %}

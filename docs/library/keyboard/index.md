@@ -1,4 +1,4 @@
-## Keyboard Classes
+# Keyboard
 
 ```mermaid
 classDiagram

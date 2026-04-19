@@ -1,3 +1,5 @@
+# Terminal
+
 ```mermaid
 classDiagram
   {% include "include/shell-class.mmd" start="%% mkdocs-start:terminal" end="%% mkdocs-end:terminal" %}

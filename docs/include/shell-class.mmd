@@ -9,7 +9,7 @@ class Terminal {
   +AttachKeyboard(Keyboard& keyboard)
 }
 class Display_Terminal["Display::Terminal"] {
-  +AttachDisplay(Display& display)
+	+AttachDisplay(Drawable& display, const Rect& rect, Dir dir)
 }
 class Serial_Terminal["Serial::Terminal"] {
   +AttachPrintable(Printable& printable)
