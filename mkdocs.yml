@@ -67,6 +67,10 @@ nav:
             - RTC (Real Time Clock): library/device/rtc/index.md
         - Terminal:
             - Overview: library/terminal/index.md
+            - Connectability:
+                - TFT LCD: library/terminal/terminal-with-tftlcd/index.md
+                - OLED: library/terminal/terminal-with-oled/index.md
+            - Working with LVGL: library/terminal/terminal-and-lvgl/index.md
         - Display:
             - Overview: library/display/index.md
             - TFT LCD:
