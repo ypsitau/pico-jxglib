@@ -56,6 +56,6 @@ target_include_directories(shell-with-stdio PRIVATE
 pico_add_extra_outputs(shell-with-stdio)
 
 # mkdocs-start
-target_link_libraries(shell-with-stdio jxglib_Serial jxglib_Shell jxglib_ShellCmd_Basic)
+target_link_libraries(shell-with-stdio jxglib_Shell jxglib_ShellCmd_Basic jxglib_Serial)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 # mkdocs-end
