@@ -15,9 +15,21 @@
 
 ??? note "Open Existing Pico SDK Project"
 
-    1. Open the project folder in VSCode using one of the following methods:
-        - In a command prompt, change the current directory to the project folder and run `code .`.
-        - In a Explorer, choose the project folder, push `Alt+D` to focus the address bar, and execute `code .`.
-        
-          ![vscode-from-explorer](images/vscode-from-explorer.png)
+    Open the project folder in VSCode using one of the following methods:
+
+    - In a command prompt, change the current directory to the project folder and execute `code .`.
+    - In a Explorer, choose the project folder, push `Alt+D` to focus the address bar, and execute `code .`.
+
+        ![vscode-from-explorer](images/vscode-from-explorer.png){ width=50% }
     
+    If the folder is already prepared as a Pico SDK project, just proceed with editing and building the project.
+
+    If not, you will see the following message in the bottom right corner of VSCode.
+
+      ![do-you-want-to-import](images/do-you-want-to-import.png){ width=50% }
+
+    Click `Yes` and you will see the following window.
+
+      ![import-project](images/import-project.png){ width=50% }
+
+    Click `Import` and the project will be prepared as a Pico SDK project.
