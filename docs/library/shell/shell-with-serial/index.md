@@ -1,5 +1,7 @@
 # Shell with Stdio
 
+Pico SDK provides a `stdio` library that allows you to use USB serial or UART as a standard input/output for your program. By attaching the shell to the `stdio`, you can easily connect it to your host computer.
+
 ## Building and Flashing the Program
 
 Create a new Pico SDK project named `shell-with-stdio`.

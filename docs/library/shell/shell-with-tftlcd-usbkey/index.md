@@ -1,10 +1,14 @@
 # Shell with TFT LCD and USB Keyboard
 
+The shell can work with a TFT LCD display as an output device and a USB keyboard as an input device. This allows you to use the shell without connecting the Pico board to a computer, making it more portable and versatile.
+
 ## Wiring
 
 The breadboard wiring image is as follows:
 
 ![circuit-usbhost-st7789.png](images/circuit-usbhost-st7789.png)
+
+This circuit requires an external power supply to power the board and the USB keyboard. Make sure to connect the VCC to pin 40 (VBUS) that is directly connected to the USB power, not to pin 39 (VSYS).
 
 ## Building and Flashing the Program
 

@@ -12,3 +12,12 @@
          - **Code generation options** ... Check `Generate C++ code`.
 
     ![new-project](images/new-project.png)
+
+??? note "Open Existing Pico SDK Project"
+
+    1. Open the project folder in VSCode using one of the following methods:
+        - In a command prompt, change the current directory to the project folder and run `code .`.
+        - In a Explorer, choose the project folder, push `Alt+D` to focus the address bar, and execute `code .`.
+        
+          ![vscode-from-explorer](images/vscode-from-explorer.png)
+    
