@@ -9,7 +9,7 @@ The shell can work with a variety of devices. Below is a class diagram showing t
 ```mermaid
 classDiagram
   {% include "include/shell-class.mmd" start="%% mkdocs-start:shell" end="%% mkdocs-end:shell" %}
-  {% include "include/shell-class.mmd" start="%% mkdocs-start:shell-detail" end="%% mkdocs-end:shell-detail" %}
+  {% include "include/shell-class.mmd" start="%% mkdocs-detail-start:shell" end="%% mkdocs-detail-end:shell" %}
   classDef Class_Input fill:#ffc
   classDef Class_Output fill:#f8c
   classDef Class_Both fill:#fc9
@@ -53,7 +53,7 @@ Libraries that implement shell commands have names starting with `jxglib_ShellCm
 |`jxglib_ShellCmd_I2C`|`i2c` command that controls I2C interface|
 |`jxglib_ShellCmd_LogicAnalyzer`|`la` command that controls the built-in logic analyzer|
 |`jxglib_ShellCmd_Net`|`net` command that configures network settings|
-|`jxglib_ShellCmd_NetUtil`|Net utility commands such as `ping` and `dns`|
+|`jxglib_ShellCmd_NetUtil`|Net utility commands such as `ping` and `nslookup`|
 |`jxglib_ShellCmd_LED`|`led` command that controls the built-in LED|
 |`jxglib_ShellCmd_Net_Telnet`|`telnet-server` command that starts and stops the Telnet server|
 |`jxglib_ShellCmd_PWM`|`pwm` command that controls PWM|
