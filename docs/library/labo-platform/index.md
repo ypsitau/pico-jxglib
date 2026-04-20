@@ -6,7 +6,7 @@ If you want to quickly incorporate pico-jxglib's functionalities into your proje
 
 Create a new Pico SDK project named `your-project`.
 
-{% include-markdown "include/new-project.md" %}
+{% include-markdown "include/create-open-project.md" %}
 
 Clone the pico-jxglib repository from GitHub so the direcory structure looks like this:
 

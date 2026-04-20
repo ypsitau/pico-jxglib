@@ -11,7 +11,7 @@ The library APIs of pico-jxglib work along with the Pico SDK. Below is a quick i
 
 If you don't have a Pico SDK project yet, create a new one as described below:
 
-{% include-markdown "include/new-project.md" %}
+{% include-markdown "include/create-open-project.md" %}
 
 When you create a new project with the name `your-project`, the project directory will look like this:
 

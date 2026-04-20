@@ -6,7 +6,7 @@ Here, we will create a sample program that implements a custom command named `ar
 
 Create a new Pico SDK project named `tftlcd-test`.
 
-{% include-markdown "include/new-project.md" %}
+{% include-markdown "include/create-open-project.md" %}
 
 Clone the pico-jxglib repository from GitHub so the direcory structure looks like this:
 

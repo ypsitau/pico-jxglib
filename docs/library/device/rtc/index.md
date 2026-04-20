@@ -14,7 +14,7 @@ The breadboard wiring image is as follows:
 
 Create a new Pico SDK project named `rtctest`. **Check** `Console over UART` and/or `Console over USB` in `Stdio support`.
 
-{% include-markdown "include/new-project.md" %}
+{% include-markdown "include/create-open-project.md" %}
 
 Clone the pico-jxglib repository from GitHub so the direcory structure looks like this:
 

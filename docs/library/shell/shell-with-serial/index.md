@@ -6,7 +6,7 @@ Pico SDK provides a `stdio` library that allows you to use USB serial or UART as
 
 Create a new Pico SDK project named `shell-with-stdio`.
 
-{% include-markdown "include/new-project.md" %}
+{% include-markdown "include/create-open-project.md" %}
 
 Clone the pico-jxglib repository from GitHub so the direcory structure looks like this:
 
