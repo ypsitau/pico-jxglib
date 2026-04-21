@@ -76,7 +76,7 @@ L:/>ls-drive
  M:     FAT32   30945574912
 ```
 
-Try various file operations. See [here](../file-operating-commands/index.md) for a summary of file operation commands provided by the shell.
+Try various file operations. See [here](../../filesystem/file-operating-commands/index.md) for a summary of file operation commands provided by the shell.
 
 ```text
 L:/>M:

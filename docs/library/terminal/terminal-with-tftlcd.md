@@ -2,7 +2,7 @@
 
 ### Creating a Project
 
-From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings. For details on creating a Pico SDK project, building, and writing to the board, see ["Getting Started with Pico SDK"](../../../development/pico-sdk/index.md).
+From the VSCode command palette, run `>Raspberry Pi Pico: New Pico Project` and create a project with the following settings. For details on creating a Pico SDK project, building, and writing to the board, see ["Getting Started with Pico SDK"](../../development/pico-sdk/index.md).
 
 - **Name** ... Enter the project name. In this example, enter `termtest`.
 - **Board type** ... Select the board type.
