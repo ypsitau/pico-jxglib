@@ -42,4 +42,6 @@ Edit `shell-with-oled-usbkey.cpp` as follows:
 {% include "sample/shell-with-oled-usbkey/shell-with-oled-usbkey.cpp" %}
 ```
 
+Build and flash the program to the board.
+
 {% include-markdown "include/build-and-flash.md" %}

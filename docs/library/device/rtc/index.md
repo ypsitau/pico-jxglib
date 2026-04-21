@@ -40,6 +40,8 @@ Edit `rtctest.cpp` as follows:
 {% include "sample/rtctest/rtctest.cpp" %}
 ```
 
+Build and flash the program to the board.
+
 {% include-markdown "include/build-and-flash.md" %}
 
 ### Running the Program

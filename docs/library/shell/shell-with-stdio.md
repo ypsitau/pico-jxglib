@@ -36,6 +36,8 @@ Edit `shell-with-stdio.cpp` as follows:
 {% include "sample/shell-with-stdio/shell-with-stdio.cpp" %}
 ```
 
+Build and flash the program to the board.
+
 {% include-markdown "include/build-and-flash.md" %}
 
 ## Running the Program

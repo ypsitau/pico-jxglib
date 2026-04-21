@@ -36,6 +36,8 @@ Edit `customcmd-argtest.cpp` as follows:
 {% include "sample/customcmd-argtest/customcmd-argtest.cpp" %}
 ```
 
+Build and flash the program to the board.
+
 {% include-markdown "include/build-and-flash.md" %}
 
 ## Running the Program

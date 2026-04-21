@@ -35,6 +35,8 @@ Edit `your-project.cpp` as follows:
 {% include "sample/your-project-LABOPlatform/your-project.cpp" %}
 ```
 
+Build and flash the program to the board.
+
 {% include-markdown "include/build-and-flash.md" %}
 
 ## Program Explanation

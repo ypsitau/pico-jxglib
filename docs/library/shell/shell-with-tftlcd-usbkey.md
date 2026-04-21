@@ -42,4 +42,6 @@ Edit `shell-with-tftlcd-usbkey.cpp` as follows:
 {% include "sample/shell-with-tftlcd-usbkey/shell-with-tftlcd-usbkey.cpp" %}
 ```
 
+Build and flash the program to the board.
+
 {% include-markdown "include/build-and-flash.md" %}
