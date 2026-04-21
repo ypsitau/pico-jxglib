@@ -9,7 +9,7 @@ using namespace jxglib;
 int main()
 {
     ::stdio_init_all();
-    // Prepare the terminal and shell
+    // Prepare the Shell with Stdio
     Serial::Terminal terminal;
     Shell::AttachTerminal(terminal.Initialize());
     // Declare the flash drive with a name and size (must be a multiple of 4096)

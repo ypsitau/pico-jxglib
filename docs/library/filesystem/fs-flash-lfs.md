@@ -46,15 +46,39 @@ Open a terminal emulator to connect it.
 
 {% include-markdown "include/setup-terminal-for-laboplatform.md" %}
 
-The prompt below should appear:
+A prompt will appear like this:
 
 ```text
 LFS:?>
 ```
 
+`LFS` is the driver name specified by the `LFS::Flash` instance in the program. The current directory is now `?`, indicating the drive is not formatted.
 
+`ls-drive` shows the drive information:
 
+```text
+LFS:?>ls-drive -r
+ Drive  Format           Total Remarks
+ LFS:   unmounted            0 LFS::Flash 0x101c0000-0x10200000 256kB
+```
 
+Executing `format` command with the drive name formats the drive:
+
+```text
+LFS:?>format lfs:
+drive lfs: formatted in LittleFS
+LFS:/>
+```
+
+The prompt changes to `/`, indicating the drive is now formatted and ready to use. You can create files and directories as usual:
+
+```text
+LFS:/>touch file1 file2 file3
+LFS:/>dir
+-a--- 2000-01-01 00:00:00      0 file1
+-a--- 2000-01-01 00:00:00      0 file2
+-a--- 2000-01-01 00:00:00      0 file3
+```
 
 ## Program Explanation
 
