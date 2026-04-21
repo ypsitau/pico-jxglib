@@ -1,14 +1,16 @@
 # File System
 
-In embedded applications, it is common to use flash memory as a file system. Libraries like [littlefs](https://github.com/littlefs-project/littlefs) and [FatFs](https://elm-chan.org/fsw/ff/) make it relatively easy to implement a file system, but writing your own storage device handler from scratch can be a bit of a hassle. **pico-jxglib** wraps these libraries so you can easily handle file systems from Pico SDK programs.
+pico-jxglib provides a file system interface that abstracts away the complexities of different storage devices and file system types. This allows you to easily manage files and directories on various storage media without worrying about the underlying implementation details.
 
-The **pico-jxglib** file system has the following features:
+Supported storage devices are:
 
-- **Unified Interface**
-  Supports both LittleFS and FAT as backends, allowing you to operate on files with a common interface regardless of the file system type.
-- **Support for Various Storage Devices**
-  Supports not only the Pico board's flash memory, but also removable media such as SD cards and USB storage.
-- **Shell Command Support**
-  Provides shell commands for file system operations, so you can interactively operate the file system on the Pico board.
+- **Internal Flash Memory**: The built-in flash memory of the Pico board can be used as a file system, allowing you to store data persistently without needing external storage.[:octicons-arrow-right-24: Learn More](fs-flash.md)
+- **SD Cards**: You can use SD cards as removable storage, which is ideal for applications that require large amounts of data storage or the ability to easily transfer files between devices.[:octicons-arrow-right-24: Learn More](sdcard.md)
+- **USB Storage**: USB flash drives can also be used as storage devices, providing a convenient way to access files on the Pico board from a computer.[:octicons-arrow-right-24: Learn More](usb-storage.md)
 
-For details on using SD cards, USB storage, shell commands, and implementing timestamps with RTC, see the following articles:
+Supported file system types are:
+
+- **LittleFS**: A lightweight file system designed for embedded systems, offering wear leveling and power-loss resilience.
+- **FAT**: A widely used file system that is compatible with many devices and operating systems, making it a good choice for SD cards and USB storage.
+
+There are also shell commands available for file system operations, allowing you to interact with the file system directly from the command line. This makes it easy to manage files and directories without needing to write additional code. [:octicons-arrow-right-24: Learn More](../../shell/filesystem/file-operating-commands/index.md)
