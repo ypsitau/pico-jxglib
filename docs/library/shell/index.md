@@ -71,4 +71,4 @@ Libraries that implement shell commands have names starting with `jxglib_ShellCm
 |`jxglib_ShellCmd_USBHost_MSC`||
 -->
 
-You can also easily create shell commands by using `ShellCmd` macro. For more details, please refer to the [Custom Commands](custom-commands/index.md) documentation.
+You can also easily create shell commands by using `ShellCmd` macro. For more details, please refer to the [Custom Commands](custom-commands.md) documentation.

@@ -47,10 +47,10 @@ nav:
         - Shell:
             - Overview: library/shell/index.md
             - Connectability:
-                - Stdio: library/shell/shell-with-serial/index.md
-                - TFT LCD + USB Keyboard: library/shell/shell-with-tftlcd-usbkey/index.md
-                - OLED + USB Keyboard: library/shell/shell-with-oled-usbkey/index.md
-            - Custom Commands: library/shell/custom-commands/index.md
+                - Stdio: library/shell/shell-with-stdio.md
+                - TFT LCD + USB Keyboard: library/shell/shell-with-tftlcd-usbkey.md
+                - OLED + USB Keyboard: library/shell/shell-with-oled-usbkey.md
+            - Custom Commands: library/shell/custom-commands.md
         - File System:
             - Overview: library/filesystem/index.md
             - Internal Flash Memory: library/filesystem/flash/index.md
