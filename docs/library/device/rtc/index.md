@@ -2,15 +2,13 @@ This page explains how to connect an RTC module to the Pico board.
 
 {% include "shell/device/rtc/index.md" start="<!-- mkdocs-start:about-rtc -->" end="<!-- mkdocs-end:about-rtc -->" %}
 
-## Sample Project
-
-### Wiring
+## Wiring
 
 The breadboard wiring image is as follows:
 
 ![circuit-rtc](images/circuit-rtc.png)
 
-### Building and Flashing the Program
+## Building and Flashing the Program
 
 Create a new Pico SDK project named `rtctest`. **Check** `Console over UART` and/or `Console over USB` in `Stdio support`.
 
@@ -44,7 +42,7 @@ Build and flash the program to the board.
 
 {% include-markdown "include/build-and-flash.md" %}
 
-### Running the Program
+## Running the Program
 
 The program prints the current date and time every second. The output looks like this:
 

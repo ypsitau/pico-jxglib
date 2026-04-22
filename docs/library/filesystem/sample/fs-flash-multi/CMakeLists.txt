@@ -57,8 +57,8 @@ pico_add_extra_outputs(fs-flash-multi)
 
 # mkdocs-start
 target_link_libraries(fs-flash-multi
-    jxglib_Shell jxglib_ShellCmd_FS jxglib_Serial
-    jxglib_LFS_Flash jxglib_FAT_Flash)
+    jxglib_Shell jxglib_Serial jxglib_ShellCmd_Basic
+    jxglib_LFS_Flash jxglib_FAT_Flash jxglib_ShellCmd_FS)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 jxglib_configure_FAT(fs-flash-multi FF_VOLUMES 2)
 # mkdocs-end

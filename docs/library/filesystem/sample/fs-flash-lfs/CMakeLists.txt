@@ -57,7 +57,7 @@ pico_add_extra_outputs(fs-flash-lfs)
 
 # mkdocs-start
 target_link_libraries(fs-flash-lfs
-    jxglib_Shell jxglib_Serial jxglib_ShellCmd_FS
-    jxglib_LFS_Flash)
+    jxglib_Shell jxglib_Serial jxglib_ShellCmd_Basic
+    jxglib_LFS_Flash jxglib_ShellCmd_FS)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 # mkdocs-end

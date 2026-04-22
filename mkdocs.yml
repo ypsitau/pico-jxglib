@@ -60,6 +60,7 @@ nav:
                 - Multiple Drives: library/filesystem/fs-flash-multi.md
             - SD Card: library/filesystem/sdcard.md
             - USB Storage: library/filesystem/usb-storage.md
+            - Timestamp Support: library/filesystem/fs-timestamp.md
             - API Reference: library/filesystem/api-reference.md
         - Peripheral:
             - GPIO: library/peripheral/gpio/index.md
