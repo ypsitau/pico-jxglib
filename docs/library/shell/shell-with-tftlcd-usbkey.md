@@ -33,13 +33,13 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
 Add the following lines to the end of `CMakeLists.txt`:
 
 ```cmake title="CMakeLists.txt"
-{% include "sample/shell-with-tftlcd-usbkey/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
+{% include "./sample/shell-with-tftlcd-usbkey/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
 ```
 
 Edit `shell-with-tftlcd-usbkey.cpp` as follows:
 
 ```cpp title="shell-with-tftlcd-usbkey.cpp"
-{% include "sample/shell-with-tftlcd-usbkey/shell-with-tftlcd-usbkey.cpp" %}
+{% include "./sample/shell-with-tftlcd-usbkey/shell-with-tftlcd-usbkey.cpp" %}
 ```
 
 Build and flash the program to the board.

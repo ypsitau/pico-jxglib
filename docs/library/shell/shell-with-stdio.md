@@ -23,7 +23,7 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
 Add the following lines to the end of `CMakeLists.txt`:
 
 ```cmake title="CMakeLists.txt"
-{% include "sample/shell-with-stdio/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
+{% include "./sample/shell-with-stdio/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
 ```
 
 Enable UART or USB stdio as described below.
@@ -33,7 +33,7 @@ Enable UART or USB stdio as described below.
 Edit `shell-with-stdio.cpp` as follows:
 
 ```cpp title="shell-with-stdio.cpp"
-{% include "sample/shell-with-stdio/shell-with-stdio.cpp" %}
+{% include "./sample/shell-with-stdio/shell-with-stdio.cpp" %}
 ```
 
 Build and flash the program to the board.

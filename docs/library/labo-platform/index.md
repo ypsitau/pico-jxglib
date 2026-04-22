@@ -23,7 +23,7 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
 Add the following lines to the end of `CMakeLists.txt`:
 
 ```cmake title="CMakeLists.txt"
-{% include "sample/your-project-LABOPlatform/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
+{% include "./sample/your-project-LABOPlatform/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
 ```
 
 - `jxglib_LaboPlatform_FullCmd` links all the libraries of useful shell commands.
@@ -32,7 +32,7 @@ Add the following lines to the end of `CMakeLists.txt`:
 Edit `your-project.cpp` as follows:
 
 ```cpp title="your-project.cpp"
-{% include "sample/your-project-LABOPlatform/your-project.cpp" %}
+{% include "./sample/your-project-LABOPlatform/your-project.cpp" %}
 ```
 
 Build and flash the program to the board.

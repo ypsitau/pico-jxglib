@@ -56,8 +56,8 @@ nav:
             - Internal Flash Memory:
                 - About Flash Memory: library/filesystem/fs-flash.md
                 - LittleFS: library/filesystem/fs-flash-lfs.md
-                - FAT: library/filesystem/fs-flash-fatfs.md
-                - Multiple Drives: library/filesystem/fs-flash-multi.md                
+                - FAT: library/filesystem/fs-flash-fat.md
+                - Multiple Drives: library/filesystem/fs-flash-multi.md
             - SD Card: library/filesystem/sdcard.md
             - USB Storage: library/filesystem/usb-storage.md
             - API Reference: library/filesystem/api-reference.md

@@ -23,7 +23,7 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
 Add the following lines to the end of `CMakeLists.txt`:
 
 ```cmake title="CMakeLists.txt"
-{% include "sample/fs-flash-lfs/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
+{% include "./sample/fs-flash-lfs/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
 ```
 
 Enable UART or USB stdio as described below.
@@ -33,7 +33,7 @@ Enable UART or USB stdio as described below.
 Edit `fs-flash-lfs.cpp` as follows:
 
 ```cpp title="fs-flash-lfs.cpp"
-{% include "sample/fs-flash-lfs/fs-flash-lfs.cpp" %}
+{% include "./sample/fs-flash-lfs/fs-flash-lfs.cpp" %}
 ```
 
 Build and flash the program to the board.

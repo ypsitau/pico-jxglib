@@ -80,13 +80,13 @@ Modify the `CMakeLists.txt` and `your-project.cpp` files as described below. It 
     Add the following lines to the end of `CMakeLists.txt`:
 
     ```cmake title="CMakeLists.txt"
-    {% include "sample/your-project-blinky/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
+    {% include "./labo-platform/sample/your-project-blinky/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
     ```
 
     Edit `your-project.cpp` as follows:
 
     ```cpp title="your-project.cpp"
-    {% include "sample/your-project-blinky/your-project.cpp" %}
+    {% include "./labo-platform/sample/your-project-blinky/your-project.cpp" %}
     ```
 
 === "LABOPlatform Program"
@@ -94,13 +94,13 @@ Modify the `CMakeLists.txt` and `your-project.cpp` files as described below. It 
     Add the following lines to the end of `CMakeLists.txt`:
 
     ```cmake title="CMakeLists.txt"
-    {% include "sample/your-project-LABOPlatform/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
+    {% include "./labo-platform/sample/your-project-LABOPlatform/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
     ```
 
     Edit `your-project.cpp` as follows:
 
     ```cpp title="your-project.cpp"
-    {% include "sample/your-project-LABOPlatform/your-project.cpp" %}
+    {% include "./labo-platform/sample/your-project-LABOPlatform/your-project.cpp" %}
     ```
 
 ## Libraries
