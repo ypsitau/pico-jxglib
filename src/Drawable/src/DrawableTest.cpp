@@ -54,7 +54,7 @@ void DrawFonts(Drawable* drawableTbl[], int nDrawables)
 			}
 			drawable.Refresh();
 		}
-		::sleep_ms(2000);
+		if (Tickable::Sleep(2000)) break;
 		iStr++;
 		if (iStr >= count_of(strTbl)) iStr = 0;
 	}
@@ -63,6 +63,7 @@ void DrawFonts(Drawable* drawableTbl[], int nDrawables)
 void DrawString(Drawable* drawableTbl[], int nDrawables)
 {
 	const char* msg =
+		"[Q]      .. quit\n"
 		"[J], [K] .. change font\n"
 		"[U], [I] .. change font scale\n"
 		"[N], [M] .. change line height\n";
@@ -85,6 +86,7 @@ void DrawString(Drawable* drawableTbl[], int nDrawables)
 		}
 		::printf(msg);
 		switch (::getchar()) {
+		case 'q': return;
 		case 'j': iFont = LimitNum(iFont - 1, 0, static_cast<int>(count_of(fontSetTbl)) - 1); break;
 		case 'k': iFont = LimitNum(iFont + 1, 0, static_cast<int>(count_of(fontSetTbl)) - 1); break;
 		case 'u': fontScale = LimitNum(fontScale - 1, 1, 3); break;
@@ -112,7 +114,6 @@ void RotateImage(Drawable* drawableTbl[], int nDrawables)
 	for (int iTestCase = 0; ; iTestCase++) {
 		if (iTestCase >= count_of(testCaseTbl)) iTestCase = 0;
 		TestCase& testCase = testCaseTbl[iTestCase];
-		::printf("%-20s Press Any Key\n", testCase.name);
 		for (int iDrawable = 0; iDrawable < nDrawables; iDrawable++) {
 			Drawable& drawable = *drawableTbl[iDrawable];
 			const Image& image =
@@ -123,7 +124,8 @@ void RotateImage(Drawable* drawableTbl[], int nDrawables)
 			drawable.Clear().DrawImage(0, 0, image, Rect::Empty, testCase.dir).Refresh();
 			//drawable.Clear().DrawImage(40, 20, image, {80, 100, 500, 500}, testCase.dir).Refresh();
 		}
-		::getchar();
+		//::getchar();
+		if (Tickable::Sleep(2000)) break;
 	}
 }
 
