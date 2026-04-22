@@ -28,36 +28,37 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(fs-flash-lfs C CXX ASM)
+project(fs-flash-multi C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(fs-flash-lfs fs-flash-lfs.cpp )
+add_executable(fs-flash-multi fs-flash-multi.cpp )
 
-pico_set_program_name(fs-flash-lfs "fs-flash-lfs")
-pico_set_program_version(fs-flash-lfs "0.1")
+pico_set_program_name(fs-flash-multi "fs-flash-multi")
+pico_set_program_version(fs-flash-multi "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(fs-flash-lfs 1)
-pico_enable_stdio_usb(fs-flash-lfs 0)
+pico_enable_stdio_uart(fs-flash-multi 1)
+pico_enable_stdio_usb(fs-flash-multi 0)
 
 # Add the standard library to the build
-target_link_libraries(fs-flash-lfs
+target_link_libraries(fs-flash-multi
         pico_stdlib)
 
 # Add the standard include files to the build
-target_include_directories(fs-flash-lfs PRIVATE
+target_include_directories(fs-flash-multi PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(fs-flash-lfs)
+pico_add_extra_outputs(fs-flash-multi)
 
 # mkdocs-start
-target_link_libraries(fs-flash-lfs
-    jxglib_Shell jxglib_Serial jxglib_ShellCmd_FS
-    jxglib_LFS_Flash)
+target_link_libraries(fs-flash-multi
+    jxglib_Shell jxglib_ShellCmd_FS jxglib_Serial
+    jxglib_LFS_Flash jxglib_FAT_Flash)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+jxglib_configure_FAT(fs-flash-multi FF_VOLUMES 2)
 # mkdocs-end

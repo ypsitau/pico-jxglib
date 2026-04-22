@@ -56,7 +56,9 @@ target_include_directories(shell-with-oled-usbkey PRIVATE
 pico_add_extra_outputs(shell-with-oled-usbkey)
 
 # mkdocs-start
-target_link_libraries(shell-with-oled-usbkey jxglib_Display_SSD1306 jxglib_USBHost jxglib_ShellCmd_Basic)
+target_link_libraries(shell-with-oled-usbkey
+    jxglib_Shell jxglib_Display_SSD1306 jxglib_ShellCmd_Basic
+    jxglib_USBHost)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 jxglib_configure_USBHost(shell-with-oled-usbkey CFG_TUH_HID 3)
 # mkdocs-end

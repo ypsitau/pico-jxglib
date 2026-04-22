@@ -56,7 +56,9 @@ target_include_directories(fs-flash-fat PRIVATE
 pico_add_extra_outputs(fs-flash-fat)
 
 # mkdocs-start
-target_link_libraries(fs-flash-fat jxglib_Shell jxglib_ShellCmd_FS jxglib_Serial jxglib_FAT_Flash)
+target_link_libraries(fs-flash-fat
+    jxglib_Shell jxglib_Serial jxglib_ShellCmd_FS
+    jxglib_FAT_Flash)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 jxglib_configure_FAT(fs-flash-fat FF_VOLUMES 1)
 # mkdocs-end

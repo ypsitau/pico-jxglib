@@ -2,8 +2,6 @@
 
 ## Build and Flash the Program
 
-Here, we will create a sample program that implements a custom command named `argtest`. It displays the contents of the arguments passed to it.
-
 Create a new Pico SDK project named `fs-flash-fat`.
 
 {% include-markdown "include/create-open-project.md" %}
@@ -42,9 +40,7 @@ Build and flash the program to the board.
 
 ## Running the Program
 
-## Running the Program
-
-Open a terminal emulator to connect it.
+Open a terminal emulator to connect the board.
 
 {% include-markdown "include/setup-terminal-for-laboplatform.md" %}
 

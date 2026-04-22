@@ -56,7 +56,9 @@ target_include_directories(shell-with-tftlcd-usbkey PRIVATE
 pico_add_extra_outputs(shell-with-tftlcd-usbkey)
 
 # mkdocs-start
-target_link_libraries(shell-with-tftlcd-usbkey jxglib_Display_ST7789 jxglib_USBHost jxglib_ShellCmd_Basic)
+target_link_libraries(shell-with-tftlcd-usbkey
+    jxglib_Shell jxglib_Display_ST7789 jxglib_ShellCmd_Basic
+    jxglib_USBHost)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 jxglib_configure_USBHost(shell-with-tftlcd-usbkey CFG_TUH_HID 3)
 # mkdocs-end

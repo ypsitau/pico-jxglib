@@ -56,6 +56,7 @@ target_include_directories(customcmd-argtest PRIVATE
 pico_add_extra_outputs(customcmd-argtest)
 
 # mkdocs-start
-target_link_libraries(customcmd-argtest jxglib_Serial jxglib_ShellCmd_Basic)
+target_link_libraries(customcmd-argtest
+    jxglib_Shell jxglib_Serial jxglib_ShellCmd_Basic)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 # mkdocs-end
