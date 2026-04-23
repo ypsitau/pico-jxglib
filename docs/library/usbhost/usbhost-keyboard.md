@@ -8,7 +8,7 @@ When running the Pico as a USB device, you can power it from the USB connector, 
 
 ## Building and Flashing the Program
 
-Create a new Pico SDK project named `usb-keyboard`.
+Create a new Pico SDK project named `usbhost-keyboard`.
 
 {% include-markdown "include/create-open-project.md" %}
 
@@ -16,9 +16,9 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
 
 ```text
 ├── pico-jxglib/
-└── usb-keyboard/
+└── usbhost-keyboard/
     ├── CMakeLists.txt
-    ├── usb-keyboard.cpp
+    ├── usbhost-keyboard.cpp
     └── ...
 ```
 
@@ -27,17 +27,17 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
 Add the following lines to the end of `CMakeLists.txt`:
 
 ```cmake title="CMakeLists.txt"
-{% include "./sample/usb-keyboard/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
+{% include "./sample/usbhost-keyboard/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
 ```
 
 Enable UART or USB stdio as described below.
 
 {% include-markdown "include/enable-stdio.md" %}
 
-Edit `usb-keyboard.cpp` as follows:
+Edit `usbhost-keyboard.cpp` as follows:
 
-```cpp title="usb-keyboard.cpp"
-{% include "./sample/usb-keyboard/usb-keyboard.cpp" %}
+```cpp title="usbhost-keyboard.cpp"
+{% include "./sample/usbhost-keyboard/usbhost-keyboard.cpp" %}
 ```
 
 Build and flash the program to the board.

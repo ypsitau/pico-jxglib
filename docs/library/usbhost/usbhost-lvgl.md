@@ -6,7 +6,7 @@ The breadboard wiring image is as follows:
 
 ## Building and Flashing the Program
 
-Create a new Pico SDK project named `usb-lvgl`.
+Create a new Pico SDK project named `usbhost-lvgl`.
 
 {% include-markdown "include/create-open-project.md" %}
 
@@ -14,9 +14,9 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
 
 ```text
 ├── pico-jxglib/
-└── usb-lvgl/
+└── usbhost-lvgl/
     ├── CMakeLists.txt
-    ├── usb-lvgl.cpp
+    ├── usbhost-lvgl.cpp
     └── ...
 ```
 
@@ -25,17 +25,17 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
 Add the following lines to the end of `CMakeLists.txt`:
 
 ```cmake title="CMakeLists.txt"
-{% include "./sample/usb-lvgl/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
+{% include "./sample/usbhost-lvgl/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
 ```
 
 Enable UART or USB stdio as described below.
 
 {% include-markdown "include/enable-stdio.md" %}
 
-Edit `usb-lvgl.cpp` as follows:
+Edit `usbhost-lvgl.cpp` as follows:
 
-```cpp title="usb-lvgl.cpp"
-{% include "./sample/usb-lvgl/usb-lvgl.cpp" %}
+```cpp title="usbhost-lvgl.cpp"
+{% include "./sample/usbhost-lvgl/usbhost-lvgl.cpp" %}
 ```
 
 Build and flash the program to the board.

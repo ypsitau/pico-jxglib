@@ -8,7 +8,7 @@ When running the Pico as a USB device, you can power it from the USB connector, 
 
 ## Building and Flashing the Program
 
-Create a new Pico SDK project named `usb-mouse`.
+Create a new Pico SDK project named `usbhost-mouse`.
 
 {% include-markdown "include/create-open-project.md" %}
 
@@ -16,9 +16,9 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
 
 ```text
 ├── pico-jxglib/
-└── usb-mouse/
+└── usbhost-mouse/
     ├── CMakeLists.txt
-    ├── usb-mouse.cpp
+    ├── usbhost-mouse.cpp
     └── ...
 ```
 
@@ -27,17 +27,17 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
 Add the following lines to the end of `CMakeLists.txt`:
 
 ```cmake title="CMakeLists.txt"
-{% include "./sample/usb-mouse/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
+{% include "./sample/usbhost-mouse/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
 ```
 
 Enable UART or USB stdio as described below.
 
 {% include-markdown "include/enable-stdio.md" %}
 
-Edit `usb-mouse.cpp` as follows:
+Edit `usbhost-mouse.cpp` as follows:
 
-```cpp title="usb-mouse.cpp"
-{% include "./sample/usb-mouse/usb-mouse.cpp" %}
+```cpp title="usbhost-mouse.cpp"
+{% include "./sample/usbhost-mouse/usbhost-mouse.cpp" %}
 ```
 
 Build and flash the program to the board.

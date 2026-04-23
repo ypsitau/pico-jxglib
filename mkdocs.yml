@@ -68,6 +68,8 @@ nav:
             - I2C: library/peripheral/i2c/index.md
             - SPI: library/peripheral/spi/index.md
             - UART: library/peripheral/uart/index.md
+            - PIO:
+                - Overview: library/peripheral/pio/index.md
         - Device:
             - Built-in LED: library/device/builtin-led/index.md
             - RTC (Real Time Clock): library/device/rtc/index.md
@@ -97,14 +99,14 @@ nav:
         - USB Host:
             - Overview: library/usbhost/index.md
             - Keyboard and Mouse:
-                - Keyboard: library/usbhost/usb-keyboard.md
-                - Mouse: library/usbhost/usb-mouse.md
-                - LVGL with HID: library/usbhost/usb-lvgl.md
+                - Keyboard: library/usbhost/usbhost-keyboard.md
+                - Mouse: library/usbhost/usbhost-mouse.md
+                - LVGL with HID: library/usbhost/usbhost-lvgl.md
             - Game Pad:
-                - Overview: library/usbhost/usb-gamepad-overview.md
-                - Sample Program: library/usbhost/usb-gamepad-sample.md
-                - Games: library/usbhost/usb-gamepad-games.md
-            - Mass Storage: library/usbhost/usb-msc.md
+                - Overview: library/usbhost/usbhost-gamepad-overview.md
+                - Sample Program: library/usbhost/usbhost-gamepad-sample.md
+                - Games: library/usbhost/usbhost-gamepad-games.md
+            - Mass Storage: library/usbhost/usbhost-msc.md
         - USB Client:
             - Overview: library/usbclient/index.md
         - Toolkits:
