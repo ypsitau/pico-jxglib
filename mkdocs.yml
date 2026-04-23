@@ -96,10 +96,14 @@ nav:
             - GPIO Keyboard Matrix: library/keyboard/gpio-keyboard-matrix.md
         - USB Host:
             - Overview: library/usbhost/index.md
-            - Keyboard: library/usbhost/usb-keyboard.md
-            - Mouse: library/usbhost/usb-mouse.md
-            - LVGL with USB HID: library/usbhost/usb-lvgl.md
-            - Game Pad: library/usbhost/usb-gamepad.md
+            - Keyboard and Mouse:
+                - Keyboard: library/usbhost/usb-keyboard.md
+                - Mouse: library/usbhost/usb-mouse.md
+                - LVGL with HID: library/usbhost/usb-lvgl.md
+            - Game Pad:
+                - Overview: library/usbhost/usb-gamepad-overview.md
+                - Sample Program: library/usbhost/usb-gamepad-sample.md
+                - Games: library/usbhost/usb-gamepad-games.md
             - Mass Storage: library/usbhost/usb-msc.md
         - USB Client:
             - Overview: library/usbclient/index.md
