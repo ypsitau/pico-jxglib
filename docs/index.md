@@ -142,7 +142,7 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     You can also connect a USB keyboard and mouse to your Pico, allowing you to interact with the shell and control the display directly from the connected peripherals.
 
-    [:octicons-arrow-right-24: Learn More](library/usbhost/keyboard-mouse/index.md)
+    [:octicons-arrow-right-24: Learn More](library/usbhost/index.md)
 
 -   :fontawesome-solid-sd-card:{ .lg .middle } **SD Card Support**
 
@@ -158,11 +158,15 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     In addition to the built-in flash memory and SD card support, pico-jxglib also allows you to connect external USB storage devices to your Pico. This means you can use a USB flash drive or an external hard drive to store and manage files directly from your firmware.
 
+    [:octicons-arrow-right-24: Learn More](library/usbhost/index.md)
+
 -   :octicons-command-palette-16:{ .lg .middle } **Standalone Shell**
 
     ---
 
     The shell can also use an OLED or TFT display as an output device and a USB keyboard as an input device, allowing you to use the shell without needing a computer connection. This can be useful for standalone applications where you want to interact with the firmware directly from the device itself.
+
+    [:octicons-arrow-right-24: Learn More](library/shell/index.md)
 
 -   :material-camera:{ .lg .middle } **Camera Support**
 

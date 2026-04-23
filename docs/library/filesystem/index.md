@@ -10,7 +10,7 @@ Supported storage devices are:
 
 Supported file system types are:
 
-- **LittleFS**: A lightweight file system designed for embedded systems, offering wear leveling and power-loss resilience.
-- **FAT**: A widely used file system that is compatible with many devices and operating systems, making it a good choice for SD cards and USB storage.
+- **LittleFS**: A lightweight file system designed for embedded systems, offering wear leveling and power-loss resilience. [:octicons-arrow-right-24: Learn More](fs-flash-lfs.md)
+- **FAT**: A widely used file system that is compatible with many devices and operating systems, making it a good choice for SD cards and USB storage. [:octicons-arrow-right-24: Learn More](fs-flash-fat.md)
 
 There are also shell commands available for file system operations, allowing you to interact with the file system directly from the command line. This makes it easy to manage files and directories without needing to write additional code. [:octicons-arrow-right-24: Learn More](../../shell/filesystem/file-operating-commands/index.md)
