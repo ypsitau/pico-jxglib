@@ -96,8 +96,9 @@ nav:
             - GPIO Keyboard Matrix: library/keyboard/gpio-keyboard-matrix.md
         - USB Host:
             - Overview: library/usbhost/index.md
-            - Keyboard & Mouse: library/usbhost/keyboard-mouse/index.md
-            - Game Pad: library/usbhost/gamepad/index.md
+            - Keyboard: library/usbhost/usb-keyboard.md
+            - Mouse: library/usbhost/usb-mouse.md
+            - Game Pad: library/usbhost/usb-gamepad.md
         - USB Client:
             - Overview: library/usbclient/index.md
         - Toolkits:
