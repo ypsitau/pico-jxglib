@@ -59,27 +59,6 @@ The `jxglib_configure_USBHost()` function generates the `tusb_config.h` header f
 Below is an example using `Keyboard::IsPressed()`. The LED lights up when the specified key is pressed.
 
 ```cpp title="usbhosttest.cpp"
-#include "pico/stdlib.h"
-#include "jxglib/USBHost/HID.h"
-
-using namespace jxglib;
-
-int main()
-{
-    GPIO18.init().set_dir_OUT();
-    GPIO19.init().set_dir_OUT();
-    GPIO20.init().set_dir_OUT();
-    GPIO21.init().set_dir_OUT();
-    USBHost::Initialize();
-    USBHost::Keyboard keyboard;
-    for (;;) {
-        GPIO18.put(keyboard.IsPressed(VK_V));
-        GPIO19.put(keyboard.IsPressed(VK_C));
-        GPIO20.put(keyboard.IsPressed(VK_X));
-        GPIO21.put(keyboard.IsPressed(VK_Z));
-        Tickable::Sleep(50);
-    }
-}
 ```
 
 The `Tickable::Sleep()` function is specified in milliseconds. This function runs the tinyusb and **pico-jxglib** tasks.

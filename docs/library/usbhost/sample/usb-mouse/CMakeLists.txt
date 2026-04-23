@@ -28,39 +28,36 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(usb-lvgl C CXX ASM)
+project(usb-mouse C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(usb-lvgl usb-lvgl.cpp )
+add_executable(usb-mouse usb-mouse.cpp )
 
-pico_set_program_name(usb-lvgl "usb-lvgl")
-pico_set_program_version(usb-lvgl "0.1")
+pico_set_program_name(usb-mouse "usb-mouse")
+pico_set_program_version(usb-mouse "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(usb-lvgl 1)
-pico_enable_stdio_usb(usb-lvgl 0)
+pico_enable_stdio_uart(usb-mouse 1)
+pico_enable_stdio_usb(usb-mouse 0)
 
 # Add the standard library to the build
-target_link_libraries(usb-lvgl
+target_link_libraries(usb-mouse
         pico_stdlib)
 
 # Add the standard include files to the build
-target_include_directories(usb-lvgl PRIVATE
+target_include_directories(usb-mouse PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(usb-lvgl)
+pico_add_extra_outputs(usb-mouse)
 
 # mkdocs-start
-target_link_libraries(usb-lvgl
-    jxglib_USBHost
-    jxglib_Display_ST7789
-    jxglib_LVGL lvgl_examples)
+target_link_libraries(usb-mouse
+    jxglib_USBHost)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
-jxglib_configure_USBHost(usb-lvgl CFG_TUH_HID 3)
-jxglib_configure_LVGL(usb-lvgl LV_FONT_MONTSERRAT_14)
+jxglib_configure_USBHost(usb-mouse CFG_TUH_HID 3)
 # mkdocs-end
