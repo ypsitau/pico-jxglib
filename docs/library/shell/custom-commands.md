@@ -1,8 +1,8 @@
-# Custom Commands
+# User-Defined Shell Commands
 
 ## Building and Flashing the Program
 
-Here, we will create a sample program that implements a custom command named `argtest`. It displays the contents of the arguments passed to it.
+Here, we will create a sample program that implements a user-defined command named `argtest`. It displays the contents of the arguments passed to it.
 
 Create a new Pico SDK project named `customcmd-argtest`.
 

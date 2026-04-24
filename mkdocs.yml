@@ -47,10 +47,13 @@ nav:
         - Shell:
             - Overview: library/shell/index.md
             - Connectability:
+                - Input and Output Devices: library/shell/input-and-output.md
                 - Stdio: library/shell/shell-with-stdio.md
                 - TFT LCD + USB Keyboard: library/shell/shell-with-tftlcd-usbkey.md
                 - OLED + USB Keyboard: library/shell/shell-with-oled-usbkey.md
-            - Custom Commands: library/shell/custom-commands.md
+            - Shell Commands:
+                - Standard: library/shell/shell-commands.md
+                - User Defined: library/shell/custom-commands.md
         - File System:
             - Overview: library/filesystem/index.md
             - Internal Flash Memory:
@@ -107,8 +110,12 @@ nav:
                 - Sample Program: library/usbhost/usbhost-gamepad-sample.md
                 - Games: library/usbhost/usbhost-gamepad-games.md
             - Mass Storage: library/usbhost/usbhost-msc.md
-        - USB Client:
-            - Overview: library/usbclient/index.md
+        - USB Device:
+            - Overview: library/usbdev/index.md
+            - Mass Storage: library/usbdev/usbdev-msc.md
+            - CDC (Communication Device Class): library/usbdev/usbdev-cdc.md
+            - Keyboard: library/usbdev/usbdev-keyboard.md
+            - Mouse: library/usbdev/usbdev-mouse.md
         - Toolkits:
             - LVGL:
                 - Overview: library/toolkit/lvgl/index.md

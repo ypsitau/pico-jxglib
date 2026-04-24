@@ -166,7 +166,7 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     The shell can also use an OLED or TFT display as an output device and a USB keyboard as an input device, allowing you to use the shell without needing a computer connection. This can be useful for standalone applications where you want to interact with the firmware directly from the device itself.
 
-    [:octicons-arrow-right-24: Learn More](library/shell/index.md)
+    [:octicons-arrow-right-24: Learn More](library/shell/input-and-output.md)
 
 -   :material-camera:{ .lg .middle } **Camera Support**
 
