@@ -24,7 +24,7 @@
     
     If the folder is already prepared as a Pico SDK project, just proceed with editing and building the project.
 
-    If not, you will see the following message in the bottom right corner of VSCode.
+    If not, you will see the following message at the bottom right corner of VSCode.
 
       ![do-you-want-to-import](images/do-you-want-to-import.png){ width=50% }
 
@@ -34,4 +34,4 @@
 
     Click `Import` and the project will be prepared as a Pico SDK project.
 
-    When the `Do you want to import this project` message disappears before you click `Yes`, you can reveal it by clicking the icon ![notify-icon](images/notify-icon.png) at the bottom right corner of VSCode.
+    When the `Do you want to import this project as Raspberry Pi Pico project?` message disappears before you click `Yes`, you can reveal it by clicking the icon ![notify-icon](images/notify-icon.png) at the bottom right corner of VSCode.
