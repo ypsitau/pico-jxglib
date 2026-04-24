@@ -33,3 +33,5 @@
       ![import-project](images/import-project.png){ width=50% }
 
     Click `Import` and the project will be prepared as a Pico SDK project.
+
+    When the `Do you want to import this project` message disappears before you click `Yes`, you can reveal it by clicking the icon ![notify-icon](images/notify-icon.png) at the bottom right corner of VSCode.
