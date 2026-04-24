@@ -57,6 +57,10 @@ pico_add_extra_outputs(usbdev-msc)
 
 # mkdocs-start
 target_link_libraries(usbdev-msc
-    jxglib_Shell jxglib_Serial jxglib_ShellCmd_Basic)
+    jxglib_Shell jxglib_Serial jxglib_ShellCmd_FS
+    jxglib_FAT_Flash
+    jxglib_USBDevice jxglib_USBDevice_MSCDrive)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+jxglib_configure_USBDevice(usbdev-msc CFG_TUD_MSC 1)
+jxglib_configure_FAT(usbdev-msc FS_VOLUME 1)
 # mkdocs-end
