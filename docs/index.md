@@ -1,6 +1,6 @@
-# pico-jxglib
+# pico-jxglib - A "Pseudo" Operating System for Raspberry Pi Pico
 
-A collection of libraries and tools for Raspberry Pi Pico, including a powerful shell and various utilities like built-in logic analyzer to enhance your development experience.
+Unleash the full potential of your Raspberry Pi Pico with a powerful interactive shell, flexible file system, network capabilities, USB device and host capabilities, device drivers, and various utilities, including a built-in logic analyzer!
 
 ![Pico Models](images/pico-pico2-picow-pico2w.jpg)
 
@@ -120,6 +120,8 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     The library provides support for various displays such as OLED and TFT displays. You can use the shell to configure the display and draw images on the screen. WS2812 RGB LEDs can also be used as a display, allowing you to create colorful lighting effects and visualizations directly from your firmware and the shell.
 
+    [:octicons-arrow-right-24: Learn More](library/display/index.md)
+
 -   :material-folder-multiple-image:{ .lg .middle } **File Operations**
 
     ---
@@ -232,11 +234,15 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     No more bothering about USB descriptors of the TinyUSB! You can easily make your Pico act as a USB device, such as serial device, mass storage device, video, keyboard, or mouse. Combining these functions is also easy!
 
+    [:octicons-arrow-right-24: Learn More](library/usbdev/index.md)
+
 -   :fontawesome-brands-usb:{ .lg .middle } **USB Host Support**
 
     ---
 
     The library provides wrapper APIs for the TinyUSB host stack, allowing you to easily connect and interact with USB devices such as keyboards, mice, and storage devices directly from your Pico firmware.
+
+    [:octicons-arrow-right-24: Learn More](library/usbhost/index.md)
 
 </div>
 
