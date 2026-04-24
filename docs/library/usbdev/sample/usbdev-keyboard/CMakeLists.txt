@@ -57,6 +57,7 @@ pico_add_extra_outputs(usbdev-keyboard)
 
 # mkdocs-start
 target_link_libraries(usbdev-keyboard
-    jxglib_Shell jxglib_Serial jxglib_ShellCmd_Basic)
+    jxglib_USBDevice)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+jxglib_configure_USBDevice(usbdev-keyboard CFG_TUD_HID 1)
 # mkdocs-end
