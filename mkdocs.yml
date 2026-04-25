@@ -119,6 +119,11 @@ nav:
         - Toolkits:
             - LVGL:
                 - Overview: library/toolkit/lvgl/index.md
+                - Sample Program:
+                    - Simple Program: library/toolkit/lvgl/lvgl-simple.md
+                    - Sample Launcher: library/toolkit/lvgl/lvgl-sample-launcher.md
+                    - Multiple Displays: library/toolkit/lvgl/lvgl-multi-display.md
+                    - Stdio Input: library/toolkit/lvgl/lvgl-stdio.md
             - Tiny ML:
                 - Overview: library/toolkit/tiny-ml/index.md
     - Applications:

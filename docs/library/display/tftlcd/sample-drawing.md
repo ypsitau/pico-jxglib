@@ -345,7 +345,3 @@ display.DrawRectFill(180, 260, 55, 60, Color::aqua);
 ```
 
 Draws filled rectangles with specified coordinates, size, and color.
-
----
-
-These are almost all the drawing functions provided by **pico-jxglib**. You might wonder about drawing circles or lines, but the requirements for graphic drawing are very high, and even if you struggle to make them yourself, they often end up being incomplete and not practical. Therefore, the policy is to leave such advanced drawing to specialized libraries. For example, if you need a Windows-like GUI with buttons or list boxes, there is an excellent library called [LVGL](https://lvgl.io/). **pico-jxglib** provides adapters to bridge to such libraries.
