@@ -57,6 +57,8 @@ pico_add_extra_outputs(lvgl-stdio)
 
 # mkdocs-start
 target_link_libraries(lvgl-stdio
-    jxglib_Shell jxglib_Serial jxglib_ShellCmd_Basic)
+    jxglib_LVGL lvgl_examples
+    jxglib_Display_ST7789)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+jxglib_configure_LVGL(lvgl-stdio LV_FONT_MONTSERRAT_14)
 # mkdocs-end

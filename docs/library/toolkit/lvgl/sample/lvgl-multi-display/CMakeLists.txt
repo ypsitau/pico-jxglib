@@ -57,6 +57,8 @@ pico_add_extra_outputs(lvgl-multi-display)
 
 # mkdocs-start
 target_link_libraries(lvgl-multi-display
-    jxglib_Shell jxglib_Serial jxglib_ShellCmd_Basic)
+    jxglib_LVGL lvgl_examples
+    jxglib_Display_ILI9341 jxglib_Display_ILI9488)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+jxglib_configure_LVGL(lvgl-multi-display LV_FONT_MONTSERRAT_14)
 # mkdocs-end

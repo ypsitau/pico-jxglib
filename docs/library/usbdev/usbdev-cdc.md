@@ -1,6 +1,6 @@
 # Communcication Device Class (CDC)
 
-
+The easiest way to provide a serial interface over USB is to use the stdio support provided by the Pico SDK. Just by calling `pico_enable_stdio_usb()` in your `CMakeLists.txt`, your firmware will appear as a serial port on the host computer, and you can send and receive data through functions like `printf()` and `getchar()`. However, when using USB stdio, you can not provide multiple serial ports or use USB port for other purposes such as mass storage or HID. You can use the USB Device library provided by pico-jxglib to overcome these limitations.
 
 ## Single Serial Port
 
