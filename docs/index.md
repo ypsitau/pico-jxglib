@@ -2,7 +2,7 @@
 
 Unleash the full potential of your Raspberry Pi Pico with pico-jxglib! It is a "pseudo" operating system that offers multitask capabilities without complicated context management. Just keep your bare-metal programming style as you do!
 
-It comes with a powerful interactive shell, flexible file system, network capabilities, USB device and host capabilities, device drivers, and various utilities, including a built-in logic analyzer with a sampling rate of up to 50MHz.
+It comes with a powerful interactive shell, flexible file system, network capabilities, USB device and host capabilities, device drivers, and various utilities, including a built-in logic analyzer with sampling rates of up to 50MHz.
 
 ![Pico Models](images/pico-pico2-picow-pico2w.jpg)
 
