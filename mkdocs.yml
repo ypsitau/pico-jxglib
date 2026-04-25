@@ -112,8 +112,8 @@ nav:
             - Mass Storage: library/usbhost/usbhost-msc.md
         - USB Device:
             - Overview: library/usbdev/index.md
-            - Mass Storage: library/usbdev/usbdev-msc.md
-            - CDC (Communication Device Class): library/usbdev/usbdev-cdc.md
+            - Mass Storage Class: library/usbdev/usbdev-msc.md
+            - Communication Device Class: library/usbdev/usbdev-cdc.md
             - Keyboard: library/usbdev/usbdev-keyboard.md
             - Mouse: library/usbdev/usbdev-mouse.md
         - Toolkits:
