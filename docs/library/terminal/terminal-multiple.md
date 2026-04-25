@@ -4,7 +4,6 @@ You can also create multiple `Terminal` instances ([program](https://github.com/
 
 ## Wiring
 
-![termtest-Multi.jpg](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-02-19-terminal/termtest-Multi.jpg)
 
 ## Building and Flashing the Program
 
@@ -41,5 +40,7 @@ Build and flash the program to the board.
 {% include-markdown "include/build-and-flash.md" %}
 
 ## Running the Program
+
+![termtest-Multi.jpg](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-02-19-terminal/termtest-Multi.jpg)
 
 Each can scroll and operate independently, making it convenient for displaying various information on a single screen.
