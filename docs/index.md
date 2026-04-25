@@ -1,6 +1,6 @@
 # pico-jxglib - A "Pseudo" Operating System for Raspberry Pi Pico
 
-Unleash the full potential of your Raspberry Pi Pico with a powerful interactive shell, flexible file system, network capabilities, USB device and host capabilities, device drivers, and various utilities, including a built-in logic analyzer!
+Unleash the full potential of your Raspberry Pi Pico with pico-jxglib! It is a "pseudo" operating system that offers multitask capabilities without task switching. It comes with a powerful interactive shell, flexible file system, network capabilities, USB device and host capabilities, device drivers, and various utilities, including a built-in logic analyzer.
 
 ![Pico Models](images/pico-pico2-picow-pico2w.jpg)
 
