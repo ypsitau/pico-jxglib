@@ -11,7 +11,7 @@ int main(void)
     // Prepare the shell
     Serial::Terminal terminal;
     Shell::AttachTerminal(terminal.Initialize());
-    // Prepare the USB Device Descriptor
+    // Prepare the USB Device Descriptor and ID strings
     USBDevice::Controller deviceController({
             bcdUSB:				0x0200,
             bDeviceClass:		0x00,		// Use Interface Class (Composite Device)
@@ -23,7 +23,7 @@ int main(void)
             bcdDevice:			0x0100,
         },
         0x0409,					// Language: English (United States)
-        "RPi Flash",			// Manufacturer
+        "pico-jxglib sample",	// Manufacturer
         "RPi Flash Device",		// Product
         "3141592653"			// Serial Number (must be unique for each device)
     );
