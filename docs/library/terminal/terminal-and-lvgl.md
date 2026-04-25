@@ -6,6 +6,42 @@ The breadboard wiring image is as follows. The ILI9341 has a touchscreen, so LVG
 
 ![circuit-ili9341-touch.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-02-19-terminal/circuit-ili9341-touch.png)
 
+## Building and Flashing the Program
+
+Create a new Pico SDK project named `terminal-and-lvgl`.
+
+{% include-markdown "include/create-open-project.md" %}
+
+Clone the pico-jxglib repository from GitHub so the direcory structure looks like this:
+
+```text
+├── pico-jxglib/
+└── terminal-and-lvgl/
+    ├── CMakeLists.txt
+    ├── terminal-and-lvgl.cpp
+    └── ...
+```
+
+{% include-markdown "include/clone-repository.md" %}
+
+Add the following lines to the end of `CMakeLists.txt`:
+
+```cmake title="CMakeLists.txt" linenums="1"
+{% include "./sample/terminal-and-lvgl/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
+```
+
+Edit `terminal-and-lvgl.cpp` as follows:
+
+```cpp title="terminal-and-lvgl.cpp" linenums="1"
+{% include "./sample/terminal-and-lvgl/terminal-and-lvgl.cpp" %}
+```
+
+Build and flash the program to the board.
+
+{% include-markdown "include/build-and-flash.md" %}
+
+
+
 Add the following lines to the end of `CMakeLists.txt`:
 
 ```cmake title="CMakeLists.txt"

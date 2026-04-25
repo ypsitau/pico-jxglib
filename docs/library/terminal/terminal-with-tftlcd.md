@@ -1,4 +1,39 @@
-## Example Project
+# Terminal with TFT-LCD
+
+## Building and Flashing the Program
+
+Create a new Pico SDK project named `terminal-with-tftlcd`.
+
+{% include-markdown "include/create-open-project.md" %}
+
+Clone the pico-jxglib repository from GitHub so the direcory structure looks like this:
+
+```text
+├── pico-jxglib/
+└── terminal-with-tftlcd/
+    ├── CMakeLists.txt
+    ├── terminal-with-tftlcd.cpp
+    └── ...
+```
+
+{% include-markdown "include/clone-repository.md" %}
+
+Add the following lines to the end of `CMakeLists.txt`:
+
+```cmake title="CMakeLists.txt" linenums="1"
+{% include "./sample/terminal-with-tftlcd/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
+```
+
+Edit `terminal-with-tftlcd.cpp` as follows:
+
+```cpp title="terminal-with-tftlcd.cpp" linenums="1"
+{% include "./sample/terminal-with-tftlcd/terminal-with-tftlcd.cpp" %}
+```
+
+Build and flash the program to the board.
+
+{% include-markdown "include/build-and-flash.md" %}
+
 
 ### Creating a Project
 
