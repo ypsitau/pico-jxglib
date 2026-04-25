@@ -1,6 +1,8 @@
 # pico-jxglib - A "Pseudo" Operating System for Raspberry Pi Pico
 
-Unleash the full potential of your Raspberry Pi Pico with pico-jxglib! It is a "pseudo" operating system that offers multitask capabilities without task switching. It comes with a powerful interactive shell, flexible file system, network capabilities, USB device and host capabilities, device drivers, and various utilities, including a built-in logic analyzer.
+Unleash the full potential of your Raspberry Pi Pico with pico-jxglib! It is a "pseudo" operating system that offers multitask capabilities without complicated context management. Just keep your bare-metal programming style as you do!
+
+It comes with a powerful interactive shell, flexible file system, network capabilities, USB device and host capabilities, device drivers, and various utilities, including a built-in logic analyzer.
 
 ![Pico Models](images/pico-pico2-picow-pico2w.jpg)
 
@@ -10,7 +12,7 @@ Why firmware platforms have no interactive shell? When you want to modify the be
 
 Yes, I know there are some interactive shells for microcontrollers, but most of them come with OS like FreeRTOS, and they are not designed for bare-metal firmware. I love bare-metal programming, and I want my programs to run as fast as possible without the overhead of an OS.
 
-pico-jxglib aims to provide a simple but powerful interactive shell with just four lines of additional code.
+pico-jxglib aims to provide a simple but powerful interactive shell with just a few lines of additional code.
 
 ## Sample Programs
 
@@ -92,7 +94,7 @@ Below is a demo of the logic analyzer working on the shell, capturing the I2C si
   </iframe>
 </div>
 
-## Other Features
+## Other Key Features
 
 In addition to the interactive shell and built-in logic analyzer, pico-jxglib also provides a variety of other features, including:
 
