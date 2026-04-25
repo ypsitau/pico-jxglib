@@ -2,7 +2,7 @@
 
 Unleash the full potential of your Raspberry Pi Pico with pico-jxglib! It is a "pseudo" operating system that offers multitask capabilities without complicated context management. Just keep your bare-metal programming style as you do!
 
-It comes with a powerful interactive shell, flexible file system, network capabilities, USB device and host capabilities, device drivers, and various utilities, including a built-in logic analyzer.
+It comes with a powerful interactive shell, flexible file system, network capabilities, USB device and host capabilities, device drivers, and various utilities, including a built-in logic analyzer with a sampling rate of up to 50MHz.
 
 ![Pico Models](images/pico-pico2-picow-pico2w.jpg)
 
@@ -74,7 +74,7 @@ These UF2 files are pre-compiled with the latest version of pico-jxglib and can 
 
 ## Built-in Logic Analyzer
 
-While pico-jxglib comes with a rich set of built-in commands for various purposes, the most exciting feature is the built-in logic analyzer with a sampling rate up to 50MHz. No need to prepare and connect a logic analyzer. The Pico board that runs your firmware works as a logic analyzer!
+While pico-jxglib comes with a rich set of built-in commands for various purposes, the most exciting feature is the built-in logic analyzer. No need to prepare and connect a logic analyzer. The Pico board that runs your firmware works as a logic analyzer!
 
 The wave form can be visualized by two methods:
 
