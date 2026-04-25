@@ -53,7 +53,7 @@ pico-jxglib is implemented in C++, but it also provides C APIs for those who pre
 
 Just adding the highlighted lines makes your firmware interactive through USB's serial connection, providing a bash-like interface to execute many powerful built-in commands for various purposes. [:octicons-arrow-right-24: Learn More](library/index.md#__tabbed_1_2)
 
-Of course, you can also add your own custom commands to the shell. It's that simple! 
+Of course, you can also add your own custom commands to the shell. It's that simple! [:octicons-arrow-right-24: Learn More](library/shell/custom-commands.md)
 
 ## pico-jxgLABO: Ready-to-Flash UF2 Binary
 
@@ -74,7 +74,7 @@ These UF2 files are pre-compiled with the latest version of pico-jxglib and can 
 
 ## Built-in Logic Analyzer
 
-While the library also comes with a rich set of built-in commands for various purposes, the most exciting feature is the built-in logic analyzer. No need to prepare and connect a logic analyzer. The Pico board that runs your firmware works as a logic analyzer!
+While pico-jxglib comes with a rich set of built-in commands for various purposes, the most exciting feature is the built-in logic analyzer with a sampling rate up to 50MHz. No need to prepare and connect a logic analyzer. The Pico board that runs your firmware works as a logic analyzer!
 
 The wave form can be visualized by two methods:
 
