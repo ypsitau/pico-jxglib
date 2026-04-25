@@ -66,6 +66,7 @@ nav:
             - Timestamp Support: library/filesystem/fs-timestamp.md
             - API Reference: library/filesystem/api-reference.md
         - Peripheral:
+            - Overview: library/peripheral/index.md
             - GPIO: library/peripheral/gpio/index.md
             - PWM: library/peripheral/pwm/index.md
             - I2C: library/peripheral/i2c/index.md
