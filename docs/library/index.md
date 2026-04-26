@@ -79,13 +79,13 @@ Modify the `CMakeLists.txt` and `your-project.cpp` files as described below. It 
 
     Add the following lines to the end of `CMakeLists.txt`:
 
-    ```cmake title="CMakeLists.txt"
+    ```cmake title="CMakeLists.txt" linenums="1"
     {% include "./labo-platform/sample/your-project-blinky/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
     ```
 
     Edit `your-project.cpp` as follows:
 
-    ```cpp title="your-project.cpp"
+    ```cpp title="your-project.cpp" linenums="1"
     {% include "./labo-platform/sample/your-project-blinky/your-project.cpp" %}
     ```
 
@@ -93,13 +93,13 @@ Modify the `CMakeLists.txt` and `your-project.cpp` files as described below. It 
 
     Add the following lines to the end of `CMakeLists.txt`:
 
-    ```cmake title="CMakeLists.txt"
+    ```cmake title="CMakeLists.txt" linenums="1"
     {% include "./labo-platform/sample/your-project-LABOPlatform/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
     ```
 
     Edit `your-project.cpp` as follows:
 
-    ```cpp title="your-project.cpp"
+    ```cpp title="your-project.cpp" linenums="1"
     {% include "./labo-platform/sample/your-project-LABOPlatform/your-project.cpp" %}
     ```
 

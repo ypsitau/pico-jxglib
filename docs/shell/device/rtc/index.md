@@ -115,7 +115,7 @@ L:/>dir
 
 ### rtc
 
-```text title="Help of the Command"
+```text title="Help of the Command" linenums="1"
 Usage: rtc [OPTION]... [DATE] [TIME]
 Options:
  -h --help    prints this help
@@ -126,7 +126,7 @@ Set or get the RTC time. If no argument is given, it prints the current time.
 
 ### rtc-ds3231
 
-```text title="Help of the Command"
+```text title="Help of the Command" linenums="1"
 Usage: rtc-ds3231 [OPTION]...
 Options:
  -h --help prints this help

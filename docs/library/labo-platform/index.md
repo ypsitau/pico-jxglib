@@ -22,7 +22,7 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
 
 Add the following lines to the end of `CMakeLists.txt`:
 
-```cmake title="CMakeLists.txt"
+```cmake title="CMakeLists.txt" linenums="1"
 {% include "./sample/your-project-LABOPlatform/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
 ```
 
@@ -31,7 +31,7 @@ Add the following lines to the end of `CMakeLists.txt`:
 
 Edit `your-project.cpp` as follows:
 
-```cpp title="your-project.cpp"
+```cpp title="your-project.cpp" linenums="1"
 {% include "./sample/your-project-LABOPlatform/your-project.cpp" %}
 ```
 

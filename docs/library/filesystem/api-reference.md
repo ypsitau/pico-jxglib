@@ -13,7 +13,7 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 
 Edit the source file as follows:
 
-```cpp title="fs-flash.cpp"
+```cpp title="fs-flash.cpp" linenums="1"
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/LFS/Flash.h"
@@ -64,7 +64,7 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 
 Edit the source file as follows:
 
-```cpp title="fs-flash.cpp"
+```cpp title="fs-flash.cpp" linenums="1"
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/LFS/Flash.h"
@@ -105,7 +105,7 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 
 Edit the source file as follows:
 
-```cpp title="fs-flash.cpp"
+```cpp title="fs-flash.cpp" linenums="1"
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/LFS/Flash.h"

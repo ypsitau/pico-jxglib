@@ -1,7 +1,7 @@
 ??? note "Enable UART and/or USB stdio"
     Find the following lines in `CMakeLists.txt`:
     
-    ```cmake title="CMakeLists.txt"
+    ```cmake title="CMakeLists.txt" linenums="1"
     pico_enable_stdio_uart(your-project 0)
     pico_enable_stdio_usb(your-project 0)
     ```

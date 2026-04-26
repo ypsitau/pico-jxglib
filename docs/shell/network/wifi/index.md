@@ -43,7 +43,7 @@ L:/>net wifi-connect {ssid:'MyHome-WiFi' password:'PASSWORD'} config {addr:192.1
 
 Create a file named `.startup` in the root of the `L:` drive to run commands automatically when the Pico board powers on. Here’s an example to automate Wi-Fi connection and Telnet server startup:
 
-```text title=".startup"
+```text title=".startup" linenums="1"
 net wifi-connect {ssid:'SSID' password:'PASSWORD'} config {addr:XXX.XXX.XXX.XXX}
 telnet-server start
 led on flip:50,500,50,500,50,2000

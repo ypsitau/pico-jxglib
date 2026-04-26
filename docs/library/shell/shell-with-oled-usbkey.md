@@ -32,13 +32,13 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
 
 Add the following lines to the end of `CMakeLists.txt`:
 
-```cmake title="CMakeLists.txt"
+```cmake title="CMakeLists.txt" linenums="1"
 {% include "./sample/shell-with-oled-usbkey/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
 ```
 
 Edit `shell-with-oled-usbkey.cpp` as follows:
 
-```cpp title="shell-with-oled-usbkey.cpp"
+```cpp title="shell-with-oled-usbkey.cpp" linenums="1"
 {% include "./sample/shell-with-oled-usbkey/shell-with-oled-usbkey.cpp" %}
 ```
 

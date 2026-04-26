@@ -271,7 +271,7 @@ L:/>draw repeat { image {offset-shift:1,0} sleep:100 }
 
   このファイルを Pico ボードの内部ストレージ `L:` ドライブに保存して、以下のコマンドを実行します。
 
-  ```text title="イルミネーションバー: 色相グラデーション"
+  ```text title="イルミネーションバー: 色相グラデーション" linenums="1"
   L:/>display-ws2812 setup {din:2 straight:60} brightness:.1
   L:/>draw image-load:hue-32-horz.png
   L:/>draw image {size:32,1 repeat-x}
@@ -291,7 +291,7 @@ L:/>draw repeat { image {offset-shift:1,0} sleep:100 }
 
   このファイルを Pico ボードの内部ストレージ `L:` ドライブに保存して、以下のコマンドを実行します。
 
-  ```text title="イルミネーションバー: 色を変えながら流れるドット"
+  ```text title="イルミネーションバー: 色を変えながら流れるドット" linenums="1"
   L:/>display-ws2812 setup {din:2 straight:60} brightness:.1
   L:/>draw image-load:hue-256-vert.png
   L:/>draw image {size:8,1 repeat-x}
@@ -321,7 +321,7 @@ L:/>draw repeat { image {offset-shift:1,0} sleep:100 }
 
   このファイルを Pico ボードの内部ストレージ `L:` ドライブに保存して、以下のコマンドを実行します。
 
-   ```text title="文字が流れるディスプレイ"
+   ```text title="文字が流れるディスプレイ" linenums="1"
    L:/>display-ws2812 setup {din:2 zigzag-nw-vert:16,16} brightness:.1
    L:/>draw image-load:alphabet-white-16.png
    L:/>draw image {size:16,16}
@@ -341,7 +341,7 @@ L:/>draw repeat { image {offset-shift:1,0} sleep:100 }
 
   このファイルを Pico ボードの内部ストレージ `L:` ドライブに保存して、以下のコマンドを実行します。
 
-   ```text title="アニメーション表示"
+   ```text title="アニメーション表示" linenums="1"
    L:/>display-ws2812 setup {din:2 zigzag-nw-vert:16,16} brightness:.1
    L:/>draw image-load:rect-inflate-16.png
    L:/>draw image {size:16,16}
@@ -360,7 +360,7 @@ L:/>draw repeat { image {offset-shift:1,0} sleep:100 }
 
 以下は、赤いドットが流れるイルミネーションバーを表示するための `.startup` ファイルの例です。
 
-```text title=".startup"
+```text title=".startup" linenums="1"
 display-ws2812 setup {din:2 straight:60} brightness:.1
 draw image-load:red-dot.png
 draw image {size:8,1 repeat-x}

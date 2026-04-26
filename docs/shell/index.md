@@ -31,7 +31,7 @@ The shell provides bash-like key operations to make it easier to enter commands.
 
 Each command is equipped with a help option `--help` (or `-h`) that displays the command's detailed usage information.
 
-```text title="Example of help option"
+```text title="Example of help option" linenums="1"
 L:/>cp --help
 Usage: cp [OPTION]... SOURCE... DEST
 Options:

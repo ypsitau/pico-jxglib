@@ -2,7 +2,7 @@
 
 ### i2c
 
-```text title="Help of the Command"
+```text title="Help of the Command" linenums="1"
 Usage: i2c BUS [OPTION]... scan
        i2c BUS [OPTION]... ADDR [COMMAND]...
   BUS: I2C bus number (0 or 1)

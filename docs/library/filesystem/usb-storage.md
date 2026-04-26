@@ -47,7 +47,7 @@ jxglib_configure_USBHost(fs-media CFG_TUH_MSC 1)
 
 Edit the source file as follows:
 
-```cpp title="fs-media.cpp"
+```cpp title="fs-media.cpp" linenums="1"
 #include "pico/stdlib.h"
 #include "jxglib/FAT/USBMSC.h"
 

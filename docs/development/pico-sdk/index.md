@@ -207,7 +207,7 @@ Click `[Import]` to generate `.vscode` and `build`, making the directory usable 
 
 The template program code looks like this:
 
-```c title="hoge.c"
+```c title="hoge.c" linenums="1"
 #include <stdio.h>
 #include "pico/stdlib.h"
 
@@ -227,7 +227,7 @@ For UART, you need a USB-serial converter or level shifter to connect to a PC (o
 
 For your first program, it's best to start with the classic "blinky". Let's set aside Hello, World! for now and replace the source file with this minimal code:
 
-```c title="hoge.c"
+```c title="hoge.c" linenums="1"
 #include "pico/stdlib.h"
 
 int main()
@@ -308,7 +308,7 @@ When creating a Pico SDK project, check the following under **Stdio support** to
 
 You can also edit `CMakeLists.txt` to change stdio settings. Set the value to `1` for the desired port:
 
-```cmake title="CMakeLists.txt"
+```cmake title="CMakeLists.txt" linenums="1"
 pico_enable_stdio_uart(hoge 0)
 pico_enable_stdio_usb(hoge 0)
 ```
@@ -317,7 +317,7 @@ Serial console settings on the PC are: 115200bps, 8 data bits, no parity, 1 stop
 
 If both ports are connected, output functions like `printf()` and `putchar()` send data to both UART and USB. Input functions like `getchar()` accept input from both. You can verify this by running the following program on Pico and connecting serial consoles to both the UART and USB ports:
 
-```c title="serial-test.c"
+```c title="serial-test.c" linenums="1"
 #include <stdio.h>
 #include "pico/stdlib.h"
 

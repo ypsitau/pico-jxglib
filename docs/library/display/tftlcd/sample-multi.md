@@ -9,7 +9,7 @@ Here, let's try connecting two ST7789s. The breadboard wiring image is as follow
 
 Rewrite the source file `lcdtest.cpp` as follows:
 
-```cpp title="lcdtest.cpp"
+```cpp title="lcdtest.cpp" linenums="1"
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/Display/ST7789.h"

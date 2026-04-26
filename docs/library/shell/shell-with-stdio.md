@@ -22,7 +22,7 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
 
 Add the following lines to the end of `CMakeLists.txt`:
 
-```cmake title="CMakeLists.txt"
+```cmake title="CMakeLists.txt" linenums="1"
 {% include "./sample/shell-with-stdio/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
 ```
 
@@ -32,7 +32,7 @@ Enable UART or USB stdio as described below.
 
 Edit `shell-with-stdio.cpp` as follows:
 
-```cpp title="shell-with-stdio.cpp"
+```cpp title="shell-with-stdio.cpp" linenums="1"
 {% include "./sample/shell-with-stdio/shell-with-stdio.cpp" %}
 ```
 
@@ -51,3 +51,18 @@ A prompt will appear in the terminal like this:
 ```text
 >
 ```
+
+## About the Program
+
+```cpp linenums="11"
+    Serial::Terminal terminal;
+    terminal.Initialize();
+```
+
+Creates a `Serial::Terminal` object and initializes it. `Serial::Terminal` is a `Terminal` class that can be attached to a serial interface. By default, it uses `stdio` as the serial interface.
+
+```cpp linenums="13"
+    Shell::AttachTerminal(terminal);
+```
+
+Attaches the terminal to the shell. After this, you can use the shell through the terminal.

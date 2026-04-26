@@ -2,7 +2,7 @@
 
 Add the following lines to the end of `CMakeLists.txt`:
 
-```cmake title="CMakeLists.txt"
+```cmake title="CMakeLists.txt" linenums="1"
 target_link_libraries(cmdedit-display-test jxglib_USBHost jxglib_Display_ST7789)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 jxglib_configure_USBHost(cmdedit-display-test CFG_TUH_HID 3)
@@ -11,7 +11,7 @@ jxglib_configure_USBHost(cmdedit-display-test CFG_TUH_HID 3)
 
 Edit the source file as follows:
 
-```cpp title="cmdedit-display-test.cpp"
+```cpp title="cmdedit-display-test.cpp" linenums="1"
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/USBHost/HID.h"

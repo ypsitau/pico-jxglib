@@ -88,7 +88,7 @@ M:/>dir
 
 ### sdcard
 
-```text title="Help of the Command"
+```text title="Help of the Command" linenums="1"
 Usage: sdcard [OPTION]...
 Options:
  -h --help prints this help

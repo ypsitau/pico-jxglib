@@ -22,7 +22,7 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
 
 Add the following lines to the end of `CMakeLists.txt`:
 
-```cmake title="CMakeLists.txt"
+```cmake title="CMakeLists.txt" linenums="1"
 {% include "./sample/customcmd-argtest/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
 ```
 
@@ -32,7 +32,7 @@ Enable UART or USB stdio as described below.
 
 Edit `customcmd-argtest.cpp` as follows:
 
-```cpp title="customcmd-argtest.cpp"
+```cpp title="customcmd-argtest.cpp" linenums="1"
 {% include "./sample/customcmd-argtest/customcmd-argtest.cpp" %}
 ```
 

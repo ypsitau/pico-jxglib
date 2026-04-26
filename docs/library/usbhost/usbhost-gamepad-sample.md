@@ -34,7 +34,7 @@ Assume the project directory and `pico-jxglib` directory are arranged as follows
 
 Add the following lines to the end of `CMakeLists.txt`:
 
-```cmake title="CMakeLists.txt"
+```cmake title="CMakeLists.txt" linenums="1"
 target_link_libraries(usbhost-gamepad-monitor jxglib_USBHost jxglib_Display_ILI9341 jxglib_Display_ST7789)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 jxglib_configure_USBHost(usbhost-gamepad-monitor CFG_TUH_HID 3)
@@ -43,7 +43,7 @@ jxglib_configure_USBHost(usbhost-gamepad-monitor CFG_TUH_HID 3)
 
 Edit the source file `usbhost-gamepad-monitor.cpp` as follows.
 
-```cpp title="usbhost-gamepad-monitor.cpp"
+```cpp title="usbhost-gamepad-monitor.cpp" linenums="1"
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/Display/ILI9341.h"

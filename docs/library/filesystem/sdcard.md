@@ -73,7 +73,7 @@ jxglib_configure_FAT(fs-media FF_VOLUMES 1)
 
 Edit the source file as follows:
 
-```cpp title="fs-media.cpp"
+```cpp title="fs-media.cpp" linenums="1"
 #include "pico/stdlib.h"
 #include "jxglib/FAT/SDCard.h"
 

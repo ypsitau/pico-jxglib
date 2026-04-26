@@ -28,13 +28,13 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
 
 Add the following lines to the end of `CMakeLists.txt`:
 
-```cmake title="CMakeLists.txt"
+```cmake title="CMakeLists.txt" linenums="1"
 {% include "./sample/rtctest/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
 ```
 
 Edit `rtctest.cpp` as follows:
 
-```cpp title="rtctest.cpp"
+```cpp title="rtctest.cpp" linenums="1"
 {% include "./sample/rtctest/rtctest.cpp" %}
 ```
 

@@ -6,7 +6,7 @@ This page introduces the basic commands of the shell.
 
 Displays a list of available commands.
 
-```text title="Help of the Command"
+```text title="Help of the Command" linenums="1"
 L:/>help --help
 Usage: help [OPTION]...
 Options:
@@ -32,7 +32,7 @@ adc1            controls ADC (Analog-to-Digital Converter)
 
 Displays information about the currently running program (build info, pin layout info embedded with the `bi_decl()` macro, and memory map). The output format is similar to picotool.
 
-```text title="Help of the Command"
+```text title="Help of the Command" linenums="1"
 L:/>about-me --help
 Usage: about-me [OPTION]...
 Options:
@@ -74,7 +74,7 @@ Memory Map
 
 Displays platform information for the Pico board.
 
-```text title="Help of the Command"
+```text title="Help of the Command" linenums="1"
 L:/>about-platform --help
 Usage: about-platform [OPTION]...
 Options:
@@ -96,7 +96,7 @@ Alias: `d`
 
 Outputs a dump image of files or memory. The dump of file only works when a file system is mounted.
 
-```text title="Help of the Command"
+```text title="Help of the Command" linenums="1"
 L:/>d --help
 Usage: d [OPTION]... [ADDR [BYTES]]
        d [OPTION]... FILE
@@ -183,7 +183,7 @@ L:/>d 0x10000000 128
 
 Sets the value of a variable. The variables set with this command are stored in memory and can be used in other commands by prefixing them with a dollar sign `$`.
 
-```text title="Help of the Command"
+```text title="Help of the Command" linenums="1"
 L:/>set --help
 Usage: set [OPTION]... [KEY[=VALUE]]
 Options:
@@ -203,7 +203,7 @@ L:/>echo "$ip_addr:$port"
 
 Prints the given arguments to the terminal.
 
-```text title="Help of the Command"
+```text title="Help of the Command" linenums="1"
 L:/>echo --help
 Usage: echo [OPTION]... [TEXT]...
 Options:
@@ -220,7 +220,7 @@ Hello, World!
 
 Prints the given arguments as binary data. The arguments can be a string or a hexadecimal value (prefixed with `0x`).
 
-```text title="Help of the Command"
+```text title="Help of the Command" linenums="1"
 Usage: echo-bin [OPTION]... [NUMBER]...
 Options:
  -h --help prints this help
@@ -283,7 +283,7 @@ L:/>d test2.bin
 
 Displays the command history.
 
-```text title="Help of the Command"
+```text title="Help of the Command" linenums="1"
 L:/>history --help
 Usage: history [OPTION]... [NUM]...
 Options:
@@ -320,7 +320,7 @@ Using this feature and redirection, you can easily create a script file from the
 
 Changes the shell prompt. By default, the prompt displays the drive letter and the current directory path.
 
-```text title="Help of the Command"
+```text title="Help of the Command" linenums="1"
 L:/>prompt --help
 Usage: prompt [OPTION]... [PROMPT]
 Options:
@@ -358,7 +358,7 @@ L:/>prompt "%Y-%M-%D>"
 
 Sleeps for the specified number of milliseconds.
 
-```text title="Help of the Command"
+```text title="Help of the Command" linenums="1"
 L:/>sleep --help
 Usage: sleep [OPTION]... [MS]
 Options:
@@ -369,7 +369,7 @@ Options:
 
 Prints a list of active ticks. A tick is a function that is called periodically by the firmware's scheduler. This command is useful for debugging and performance analysis.
 
-```text title="Help of the Command"
+```text title="Help of the Command" linenums="1"
 L:/>ticks --help
 Usage: ticks [OPTION]...
 Options:

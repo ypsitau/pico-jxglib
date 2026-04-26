@@ -11,7 +11,7 @@ The program is written from the head (0x1000'0000), so the remaining flash memor
 
     In the `build` directory of your project, a file like `your-project.elf.map` is generated. It should contains a symbol named `.flash_end` like the following:
 
-    ```text title="your-project.elf.map"
+    ```text title="your-project.elf.map" linenums="1"
     .flash_end      0x10005770       0x14
     ```
 

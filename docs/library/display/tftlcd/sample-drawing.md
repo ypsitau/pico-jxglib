@@ -27,13 +27,13 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
 
     Add the following lines to the end of `CMakeLists.txt`:
 
-    ```cmake title="CMakeLists.txt"
+    ```cmake title="CMakeLists.txt" linenums="1"
     {% include "./sample/tftlcd-test-st7789/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
     ```
 
     Edit the source file as follows:
 
-    ```cpp title="tftlcd-test.cpp"
+    ```cpp title="tftlcd-test.cpp" linenums="1"
     {% include "./sample/tftlcd-test-st7789/tftlcd-test.cpp" %}
     ```
 === "ST77789 (240x240)"
@@ -43,14 +43,14 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
 
     Add the following lines to the end of `CMakeLists.txt`:
 
-    ```cmake title="CMakeLists.txt"
+    ```cmake title="CMakeLists.txt" linenums="1"
     target_link_libraries(tftlcd-test jxglib_Display_ST7789 jxglib_DrawableTest)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
     ```
 
     Edit the source file as follows:
 
-    ```cpp title="tftlcd-test.cpp"
+    ```cpp title="tftlcd-test.cpp" linenums="1"
     #include <stdio.h>
     #include "pico/stdlib.h"
     #include "jxglib/Display/ST7789.h"
@@ -78,14 +78,14 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
 
     Add the following lines to the end of `CMakeLists.txt`:
 
-    ```cmake title="CMakeLists.txt"
+    ```cmake title="CMakeLists.txt" linenums="1"
     target_link_libraries(tftlcd-test jxglib_Display_ST7735 jxglib_DrawableTest)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
     ```
 
     Edit the source file as follows:
 
-    ```cpp title="tftlcd-test.cpp"
+    ```cpp title="tftlcd-test.cpp" linenums="1"
     #include <stdio.h>
     #include "pico/stdlib.h"
     #include "jxglib/Display/ST7735.h"
@@ -113,14 +113,14 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
 
     Add the following lines to the end of `CMakeLists.txt`:
 
-    ```cmake title="CMakeLists.txt"
+    ```cmake title="CMakeLists.txt" linenums="1"
     target_link_libraries(tftlcd-test jxglib_Display_ST7735 jxglib_DrawableTest)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
     ```
 
     Edit the source file as follows:
 
-    ```cpp title="tftlcd-test.cpp"
+    ```cpp title="tftlcd-test.cpp" linenums="1"
     #include <stdio.h>
     #include "pico/stdlib.h"
     #include "jxglib/Display/ST7735.h"
@@ -149,14 +149,14 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
 
     Add the following lines to the end of `CMakeLists.txt`:
 
-    ```cmake title="CMakeLists.txt"
+    ```cmake title="CMakeLists.txt" linenums="1"
     target_link_libraries(tftlcd-test jxglib_Display_ILI9341 jxglib_DrawableTest)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
     ```
 
     Edit the source file as follows:
 
-    ```cpp title="tftlcd-test.cpp"
+    ```cpp title="tftlcd-test.cpp" linenums="1"
     #include <stdio.h>
     #include "pico/stdlib.h"
     #include "jxglib/Display/ILI9341.h"
@@ -185,14 +185,14 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
 
     Add the following lines to the end of `CMakeLists.txt`:
 
-    ```cmake title="CMakeLists.txt"
+    ```cmake title="CMakeLists.txt" linenums="1"
     target_link_libraries(tftlcd-test jxglib_Display_ILI9488 jxglib_DrawableTest)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
     ```
 
     Edit the source file as follows:
 
-    ```cpp title="tftlcd-test.cpp"
+    ```cpp title="tftlcd-test.cpp" linenums="1"
     #include <stdio.h>
     #include "pico/stdlib.h"
     #include "jxglib/Display/ILI9488.h"
@@ -235,7 +235,7 @@ Uncomment the functions starting with `DrawableTest::` and [build, write, and ru
 In the [previous sample](https://zenn.dev/ypsitau/articles/2025-01-27-tft-lcd#tft-lcd-%E3%81%AE%E6%8F%8F%E7%94%BB), we used test functions for demonstration, but this time let's use the raw API to see how each operation works. Rewrite the source file `tftlcd-test.cpp` as follows:
 
 
-```cpp title="tftlcd-test.cpp"
+```cpp title="tftlcd-test.cpp" linenums="1"
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "jxglib/Display/ST7789.h"

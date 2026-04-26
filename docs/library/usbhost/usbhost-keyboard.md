@@ -26,7 +26,7 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
 
 Add the following lines to the end of `CMakeLists.txt`:
 
-```cmake title="CMakeLists.txt"
+```cmake title="CMakeLists.txt" linenums="1"
 {% include "./sample/usbhost-keyboard/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
 ```
 
@@ -36,7 +36,7 @@ Enable UART or USB stdio as described below.
 
 Edit `usbhost-keyboard.cpp` as follows:
 
-```cpp title="usbhost-keyboard.cpp"
+```cpp title="usbhost-keyboard.cpp" linenums="1"
 {% include "./sample/usbhost-keyboard/usbhost-keyboard.cpp" %}
 ```
 

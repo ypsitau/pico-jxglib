@@ -39,7 +39,7 @@ L:/>led on flip:50,500,50,500,50,*
 
 ### led
 
-```text title="Help of the Command"
+```text title="Help of the Command" linenums="1"
 Usage: led [OPTION]... CMDS...
 Options:
  -h --help prints this help
