@@ -182,14 +182,14 @@ GitHub contains many useful resources for understanding Pico SDK. Clone the foll
 
 ### Project File Structure
 
-If you create a Pico SDK project named `hoge`, the following files and directories are created:
+If you create a Pico SDK project named `your-project`, the following files and directories are created:
 
 - `.vscode` ... VSCode workspace information
 - `build` ... Build output directory
 - `.gitignore` ... Files/directories to exclude from Git version control[^gitignore]
 - `pico_sdk_import.cmake` ... Pico SDK config file, included from CMakeLists.txt
 - `CMakeLists.txt` ... CMake build configuration
-- `hoge.c` ... Main source file
+- `your-project.c` ... Main source file
 
 [^gitignore]: By default, `build` is listed. You may want to add `.vscode` as well.
 
@@ -207,7 +207,7 @@ Click `[Import]` to generate `.vscode` and `build`, making the directory usable 
 
 The template program code looks like this:
 
-```c title="hoge.c" linenums="1"
+```c title="your-project.c" linenums="1"
 #include <stdio.h>
 #include "pico/stdlib.h"
 
@@ -227,7 +227,7 @@ For UART, you need a USB-serial converter or level shifter to connect to a PC (o
 
 For your first program, it's best to start with the classic "blinky". Let's set aside Hello, World! for now and replace the source file with this minimal code:
 
-```c title="hoge.c" linenums="1"
+```c title="your-project.c" linenums="1"
 #include "pico/stdlib.h"
 
 int main()
@@ -249,7 +249,7 @@ Connect an LED and a resistor (about 100Ω) to GPIO15 at the edge of the Pico bo
 
 ### Building the Program
 
-Run `>CMake: Build` from the command palette or press `F7` to build. On the first build, select `Pico Using compilers: ...` when prompted. The build outputs a UF2 file (`hoge.uf2`) and an ELF file (`hoge.elf`) in the `build` directory. These are written to the target board in different ways.
+Run `>CMake: Build` from the command palette or press `F7` to build. On the first build, select `Pico Using compilers: ...` when prompted. The build outputs a UF2 file (`your-project.uf2`) and an ELF file (`your-project.elf`) in the `build` directory. These are written to the target board in different ways.
 
 #### Writing UF2 Files
 
@@ -309,8 +309,8 @@ When creating a Pico SDK project, check the following under **Stdio support** to
 You can also edit `CMakeLists.txt` to change stdio settings. Set the value to `1` for the desired port:
 
 ```cmake title="CMakeLists.txt" linenums="1"
-pico_enable_stdio_uart(hoge 0)
-pico_enable_stdio_usb(hoge 0)
+pico_enable_stdio_uart(your-project 0)
+pico_enable_stdio_usb(your-project 0)
 ```
 
 Serial console settings on the PC are: 115200bps, 8 data bits, no parity, 1 stop bit.

@@ -10,7 +10,9 @@ The following code is the minimal code to run the shell:
 {% include "./sample/shell-with-stdio/shell-with-stdio.cpp" %}
 ```
 
-It runs the shell with `stdio` as the serial interface. Even though there is no code to register any commands, you can still use various commands such as file system commands, logic analyzer commands, and so on. Where do they come from?
+It runs the shell with stdio as the serial interface. If you enable USB stdio, you can access the shell through USB serial interface.
+
+Even though there is no code to register any commands, you can still use various commands such as file system commands, logic analyzer commands, and so on. Where do they come from?
 
 Hard coded in the shell itself? No. The shell is designed to be flexible and extensible, and the commands are implemented as extensions. You can add commands by linking libraries in `CMakeLists.txt` that implement the commands.
 

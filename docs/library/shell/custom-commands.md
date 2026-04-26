@@ -1,8 +1,8 @@
-# User-Defined Shell Commands
+# Custom Shell Commands
+
+Here, we will create a sample program that implements a custom shell command.
 
 ## Building and Flashing the Program
-
-Here, we will create a sample program that implements a user-defined command named `argtest`. It displays the contents of the arguments passed to it.
 
 Create a new Pico SDK project named `customcmd-argtest`.
 
@@ -79,16 +79,16 @@ ticks           prints names and attributes of running Tickable instances
 
 ## Program Explanation
 
-### `ShellCmd` Macro
-
-To create a shell command, use the `ShellCmd` macro. The macro format is as follows:
+A function that implements a shell command is defined using the `ShellCmd` macro, which has the following syntax:
 
 ```cpp
-ShellCmd(name, "comment")
-{
-    // any code
-    return Result::Success;
-}
+ShellCmd(name, "help")
+```
+
+`name` is the name of the command, and `help` is the help string that describes the command.
+
+```cpp
+ShellCmd_Named(name, "name-alias", "help")
 ```
 
 The following variables are passed to the command program:
@@ -100,7 +100,7 @@ The following variables are passed to the command program:
 
 Return `Result::Success` if there is no error, or `Result::Error` if an error occurs.
 
-You do **not** need to register commands. When you create a command with the `ShellCmd` macro, it is automatically registered with the shell. With this mechanism, you can add commands simply by linking the source file that implements the command to the main program.
+You do not need to register commands. When you create a command with the `ShellCmd` macro, it is automatically registered with the shell. With this mechanism, you can add commands simply by linking the source file that implements the command to the main program.
 
 ### Utility APIs
 

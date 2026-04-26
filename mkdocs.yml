@@ -51,9 +51,8 @@ nav:
                 - Stdio: library/shell/shell-with-stdio.md
                 - TFT LCD + USB Keyboard: library/shell/shell-with-tftlcd-usbkey.md
                 - OLED + USB Keyboard: library/shell/shell-with-oled-usbkey.md
-            - Shell Commands:
-                - Standard: library/shell/shell-commands.md
-                - User Defined: library/shell/custom-commands.md
+            - Standard Shell Commands: library/shell/shell-commands.md
+            - Custom Shell Commands: library/shell/custom-commands.md
         - File System:
             - Overview: library/filesystem/index.md
             - Internal Flash Memory:
