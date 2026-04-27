@@ -50,14 +50,14 @@ Build and flash the program to the board.
 
 The program's processing content is explained as follows:
 
-```cpp
+```cpp linenums="12"
 ::spi_init(spi0, 2 * 1000 * 1000);
 ::spi_init(spi1, 125 * 1000 * 1000);
 ```
 
 Initialize SPI0 at 2MHz for the touchscreen and SPI1 at 125MHz for the TFT LCD.
 
-```cpp
+```cpp linenums="14"
 GPIO2.set_function_SPI0_SCK();
 GPIO3.set_function_SPI0_TX();
 GPIO4.set_function_SPI0_RX();
@@ -67,7 +67,7 @@ GPIO15.set_function_SPI1_TX();
 
 Assign GPIOs to the SPI0 and SPI1 signal lines.
 
-```cpp
+```cpp linenums="19"
 Display::ILI9341 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
 Display::ILI9341::TouchScreen touchScreen(spi0, {CS: GPIO6, IRQ: GPIO7});
 display.Initialize(Display::Dir::Rotate90);
@@ -77,20 +77,15 @@ touchScreen.Initialize(display);
 
 Assign SPI and GPIO to the TFT LCD and touchscreen parts, initializing them. The touchscreen's screen coordinates are mapped to preset values from the device's calibration, but the device-specific variations are still unknown. If the screen is too far off, call the `Calibrate()` function to calibrate.
 
-```cpp
+```cpp linenums="24"
 LVGL::Initialize();
-```
-
-Initialize LVGL.
-
-```cpp
 LVGL::Adapter lvglAdapter;
 lvglAdapter.EnableDoubleBuff().AttachDisplay(display).AttachTouchScreen(touchScreen);
 ```
 
-Use `LVGL::Adapter` to connect the TFT LCD and touchscreen to LVGL. `EnableDoubleBuff()` enables double buffering, which increases drawing speed using DMA. However, it consumes 2 times the memory.
+Initialize LVGL. Use `LVGL::Adapter` to connect the TFT LCD and touchscreen to LVGL. `EnableDoubleBuff()` enables double buffering, which increases drawing speed using DMA. However, it consumes 2 times the memory.
 
-```cpp
+```cpp linenums="27"
 ::lv_example_anim_3();
 ```
 

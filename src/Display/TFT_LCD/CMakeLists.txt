@@ -4,7 +4,7 @@ target_include_directories(jxglib_Dislay_TFT_LCD INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/include)
 
 target_link_libraries(jxglib_Dislay_TFT_LCD INTERFACE
-	hardware_spi
+	jxglib_SPI
 	jxglib_DMA
 	jxglib_Display)
 

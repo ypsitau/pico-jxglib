@@ -94,7 +94,9 @@ nav:
             - TFT LCD:
                 - Overview: library/display/tftlcd/index.md
                 - Sample Program:
-                    - Drawing: library/display/tftlcd/sample-drawing.md
+                    - Create Display in Program: library/display/tftlcd/create-in-program.md
+                    - Create Display in Shell: library/display/tftlcd/create-in-shell.md
+                    - Drawing APIs: library/display/tftlcd/sample-apis.md
                     - Multiple LCDs: library/display/tftlcd/sample-multi.md
             - OLED:
                 - Overview: library/display/oled/index.md
