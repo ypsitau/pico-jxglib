@@ -46,13 +46,31 @@ Open a terminal emulator to connect it.
 
 {% include-markdown "include/setup-terminal-for-laboplatform.md" %}
 
-Check if the `argtest` command works:
+Execute the `argtest` command with no arguments:
 
 ```text
->argtest hello world
+>argtest
 argv[0] "argtest"
-argv[1] "hello"
-argv[2] "world"
+```
+
+Execute the `argtest` command with some arguments:
+
+```text
+>argtest arg1 arg2 arg3
+argv[0] "argtest"
+argv[1] "arg1"
+argv[2] "arg2"
+argv[3] "arg3"
+```
+
+Execute the `argtest` command with arguments that contain spaces:
+
+```text
+>argtest "A quick brown" "fox jumps over" "the lazy dog"
+argv[0] "argtest"
+argv[1] "A quick brown"
+argv[2] "fox jumps over"
+argv[3] "the lazy dog"
 ```
 
 The custom command also appears in the help list:
@@ -78,8 +96,6 @@ ticks           prints names and attributes of running Tickable instances
 ```
 
 ## Program Explanation
-
-### Command Definition
 
 A shell command is defined using the `ShellCmd` macro, which has the following syntax:
 

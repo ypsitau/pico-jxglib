@@ -41,8 +41,8 @@ pico_set_program_name(customcmd-definition "customcmd-definition")
 pico_set_program_version(customcmd-definition "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(customcmd-definition 0)
-pico_enable_stdio_usb(customcmd-definition 1)
+pico_enable_stdio_uart(customcmd-definition 1)
+pico_enable_stdio_usb(customcmd-definition 0)
 
 # Add the standard library to the build
 target_link_libraries(customcmd-definition
