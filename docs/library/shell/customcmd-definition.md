@@ -46,14 +46,14 @@ Open a terminal emulator to connect it.
 
 {% include-markdown "include/setup-terminal-for-laboplatform.md" %}
 
-Execute the `customcmd` command with no arguments:
+Run the command with no arguments:
 
 ```text
 >customcmd
 argv[0] "customcmd"
 ```
 
-Execute the `customcmd` command with some arguments:
+Run the command with some arguments:
 
 ```text
 >customcmd arg1 arg2 arg3
@@ -63,7 +63,7 @@ argv[2] "arg2"
 argv[3] "arg3"
 ```
 
-Execute the `customcmd` command with arguments that contain spaces:
+Run the command with arguments that contain spaces:
 
 ```text
 >customcmd "A quick brown" "fox jumps over" "the lazy dog"
