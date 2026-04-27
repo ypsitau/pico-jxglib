@@ -4,7 +4,7 @@
 
 using namespace jxglib;
 
-ShellCmd(argtest, "tests command line arguments")
+ShellCmd(customcmd, "tests command line arguments")
 {
     for (int i = 0; i < argc; i++) {
         tout.Printf("argv[%d] \"%s\"\n", i, argv[i]);

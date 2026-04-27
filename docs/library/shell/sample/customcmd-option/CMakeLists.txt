@@ -28,35 +28,35 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(customcmd-definition C CXX ASM)
+project(customcmd-option C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(customcmd-definition customcmd-definition.cpp )
+add_executable(customcmd-option customcmd-option.cpp )
 
-pico_set_program_name(customcmd-definition "customcmd-definition")
-pico_set_program_version(customcmd-definition "0.1")
+pico_set_program_name(customcmd-option "customcmd-option")
+pico_set_program_version(customcmd-option "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(customcmd-definition 0)
-pico_enable_stdio_usb(customcmd-definition 1)
+pico_enable_stdio_uart(customcmd-option 1)
+pico_enable_stdio_usb(customcmd-option 0)
 
 # Add the standard library to the build
-target_link_libraries(customcmd-definition
+target_link_libraries(customcmd-option
         pico_stdlib)
 
 # Add the standard include files to the build
-target_include_directories(customcmd-definition PRIVATE
+target_include_directories(customcmd-option PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(customcmd-definition)
+pico_add_extra_outputs(customcmd-option)
 
 # mkdocs-start
-target_link_libraries(customcmd-definition
+target_link_libraries(customcmd-option
     jxglib_Shell jxglib_Serial jxglib_ShellCmd_Basic)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 # mkdocs-end

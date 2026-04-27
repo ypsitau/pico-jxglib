@@ -46,28 +46,28 @@ Open a terminal emulator to connect it.
 
 {% include-markdown "include/setup-terminal-for-laboplatform.md" %}
 
-Execute the `argtest` command with no arguments:
+Execute the `customcmd` command with no arguments:
 
 ```text
->argtest
-argv[0] "argtest"
+>customcmd
+argv[0] "customcmd"
 ```
 
-Execute the `argtest` command with some arguments:
+Execute the `customcmd` command with some arguments:
 
 ```text
->argtest arg1 arg2 arg3
-argv[0] "argtest"
+>customcmd arg1 arg2 arg3
+argv[0] "customcmd"
 argv[1] "arg1"
 argv[2] "arg2"
 argv[3] "arg3"
 ```
 
-Execute the `argtest` command with arguments that contain spaces:
+Execute the `customcmd` command with arguments that contain spaces:
 
 ```text
->argtest "A quick brown" "fox jumps over" "the lazy dog"
-argv[0] "argtest"
+>customcmd "A quick brown" "fox jumps over" "the lazy dog"
+argv[0] "customcmd"
 argv[1] "A quick brown"
 argv[2] "fox jumps over"
 argv[3] "the lazy dog"
@@ -80,7 +80,7 @@ The custom command also appears in the help list:
 .               executes the given script file
 about-me        prints information about this own program
 about-platform  prints information about the platform
-argtest         tests command line arguments
+customcmd         tests command line arguments
 d               prints memory content at the specified address
 dump            prints memory content at the specified address
 echo            prints the given text

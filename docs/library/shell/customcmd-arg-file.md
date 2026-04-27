@@ -4,7 +4,7 @@ Here, we will create a sample program that implements a custom shell command.
 
 ## Building and Flashing the Program
 
-Create a new Pico SDK project named `customcmd-definition`.
+Create a new Pico SDK project named `customcmd-arg-file`.
 
 {% include-markdown "include/create-open-project.md" %}
 
@@ -12,9 +12,9 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
 
 ```text
 ├── pico-jxglib/
-└── customcmd-definition/
+└── customcmd-arg-file/
     ├── CMakeLists.txt
-    ├── customcmd-definition.cpp
+    ├── customcmd-arg-file.cpp
     └── ...
 ```
 
@@ -23,17 +23,17 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
 Add the following lines to the end of `CMakeLists.txt`:
 
 ```cmake title="CMakeLists.txt" linenums="1"
-{% include "./sample/customcmd-definition/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
+{% include "./sample/customcmd-arg-file/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
 ```
 
 Enable UART or USB stdio as described below.
 
 {% include-markdown "include/enable-stdio.md" %}
 
-Edit `customcmd-definition.cpp` as follows:
+Edit `customcmd-arg-file.cpp` as follows:
 
-```cpp title="customcmd-definition.cpp" linenums="1"
-{% include "./sample/customcmd-definition/customcmd-definition.cpp" %}
+```cpp title="customcmd-arg-file.cpp" linenums="1"
+{% include "./sample/customcmd-arg-file/customcmd-arg-file.cpp" %}
 ```
 
 Build and flash the program to the board.
