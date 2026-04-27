@@ -51,8 +51,14 @@ nav:
                 - Stdio: library/shell/shell-with-stdio.md
                 - TFT LCD + USB Keyboard: library/shell/shell-with-tftlcd-usbkey.md
                 - OLED + USB Keyboard: library/shell/shell-with-oled-usbkey.md
-            - Standard Shell Commands: library/shell/shell-commands.md
-            - Custom Shell Commands: library/shell/custom-commands.md
+            - Provided Shell Commands: library/shell/shell-commands.md
+            - Creating Shell Commands:
+                - Overview: library/shell/customcmd.md
+                - Command Definition: library/shell/customcmd-definition.md
+                - Option Parsing: library/shell/customcmd-option.md
+                - Argument Parsing - Files: library/shell/customcmd-arg-file.md
+                - Argument Parsing - Numbers: library/shell/customcmd-arg-num.md
+                - Argument Parsing - Sub Commands: library/shell/customcmd-arg-subcmd.md
         - File System:
             - Overview: library/filesystem/index.md
             - Internal Flash Memory:

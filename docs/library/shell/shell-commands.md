@@ -1,4 +1,4 @@
-# Standard Shell Commands
+# Provided Shell Commands
 
 Libraries that implement shell commands have names starting with `jxglib_ShellCmd_`. By simply linking those libraries, the implemented commands become available from the shell. There is no need for explicit registration, making embedding and removal easy. Below is a list of libraries that implement shell commands and the commands they provide.
 
@@ -38,4 +38,4 @@ Libraries that implement shell commands have names starting with `jxglib_ShellCm
 |`jxglib_ShellCmd_USBHost_MSC`||
 -->
 
-You can also easily create shell commands by using `ShellCmd` macro. For more details, please refer to the [Custom Commands](custom-commands.md) documentation.
+You can also easily create shell commands by using `ShellCmd` macro. For more details, please refer to the [Custom Commands](customcmd.md) documentation.

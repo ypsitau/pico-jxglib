@@ -32,4 +32,4 @@ target_link_libraries(shell-with-stdio PRIVATE
     jxglib_ShellCmd_NetUtil)
 ```
 
-In these libraries, commands are implemeted by `ShellCmd` macro, which automatically registers the commands when the library is linked. This design allows for easy embedding and removal of commands without the need for explicit registration. [:octicons-arrow-right-24: Learn More](custom-commands.md)
+In these libraries, commands are implemeted by `ShellCmd` macro, which automatically registers the commands when the library is linked. This design allows for easy embedding and removal of commands without the need for explicit registration. [:octicons-arrow-right-24: Learn More](customcmd.md)
