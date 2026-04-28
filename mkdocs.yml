@@ -40,7 +40,13 @@ nav:
         - Display:
             - WS2812: shell/display/ws2812/index.md
         - Camera:
-            - OV7670: shell/camera/ov7670/index.md
+            - OV7670:
+                - Overview: shell/camera/ov7670/index.md
+                - Connecting the OV7670 Camera Module: shell/camera/ov7670/ov7670-connecting.md
+                - About the OV7670 Camera Module: shell/camera/ov7670/ov7670-camera-module.md
+                - Video Streaming to Host PC: shell/camera/ov7670/ov7670-video-streaming.md
+                - Real-Time Display on TFT Display: shell/camera/ov7670/ov7670-display.md
+                - Setting Various Parameters: shell/camera/ov7670/ov7670-params.md
     - Library APIs:
         - Overview: library/index.md
         - LABOPlatform: library/labo-platform/index.md
