@@ -103,6 +103,6 @@ L:/>la -p 2-22,26-28 --target:external
 
 If you create a file named `autoexec.sh` with the following content in the root directory of the `L:` drive, the Pico board will automatically configure the logic analyzer GPIO pins when powered on. This eliminates the need to operate commands from the terminal software.
 
-```text:autoexec.sh
+```text title=".startup"
 la -p 2-22,26-28 --target:external
 ```

@@ -33,20 +33,35 @@ nav:
             - Overview: shell/logic-analyzer/index.md
             - Pin Configuration: shell/logic-analyzer/pin-config.md
             - View on Console:
-                - Data Sampling: shell/logic-analyzer/text/data-sampling.md
-                - View Signals: shell/logic-analyzer/text/waveform.md
-                - Protocol Analysis: shell/logic-analyzer/text/protocol-analysis.md
+                - Overview: shell/logic-analyzer/console/index.md
+                - Data Sampling: shell/logic-analyzer/console/data-sampling.md
+                - View Signals: shell/logic-analyzer/console/waveform.md
+                - View I2C Signals: shell/logic-analyzer/console/console-view-i2c.md
+                - View SPI Signals: shell/logic-analyzer/console/console-view-spi.md
+                - View UART Signals: shell/logic-analyzer/console/console-view-uart.md
             - View on PulseView:
                 - Overview: shell/logic-analyzer/pulseview/index.md
                 - Install Pulseview: shell/logic-analyzer/pulseview/pulseview-install.md
-                - Setup: shell/logic-analyzer/pulseview/pulseview-setup.md
+                - Connect to Pico Board: shell/logic-analyzer/pulseview/pulseview-setup.md
                 - Data Sampling: shell/logic-analyzer/pulseview/pulseview-sampling.md
                 - View I2C Signals: shell/logic-analyzer/pulseview/pulseview-view-i2c.md
                 - View SPI Signals: shell/logic-analyzer/pulseview/pulseview-view-spi.md
                 - View UART Signals: shell/logic-analyzer/pulseview/pulseview-view-uart.md
                 - View PWM Signals: shell/logic-analyzer/pulseview/pulseview-view-pwm.md
         - Display:
-            - WS2812: shell/display/ws2812/index.md
+            - WS2812:
+                - Overview: shell/display/ws2812/index.md
+                - About WS2812 LEDs: shell/display/ws2812/ws2812-about.md
+                - Wiring: shell/display/ws2812/ws2812-wiring.md
+                - Direct Control: shell/display/ws2812/ws2812-direct.md
+                - Display: shell/display/ws2812/ws2812-display.md
+                - About draw Command: shell/display/ws2812/ws2812-draw.md
+                - Sample:
+                    - Flowing Dot: shell/display/ws2812/ws2812-sample-dot.md
+                    - Flowing Colored Dot: shell/display/ws2812/ws2812-sample-color-dot.md
+                    - Illumination: shell/display/ws2812/ws2812-sample-illumination.md
+                    - Scrolling Text: shell/display/ws2812/ws2812-sample-scroll.md
+                    - Animations: shell/display/ws2812/ws2812-sample-animation.md 
         - Camera:
             - OV7670:
                 - Overview: shell/camera/ov7670/index.md

@@ -1,4 +1,4 @@
-# Installing PulseView and Connecting to pico-jxgLABO
+# Installing PulseView
 
 PulseView is a tool for visualizing logic analyzer signals. It supports decoding various protocols such as I2C and SPI, making it easy to analyze signals captured with pico-jxgLABO.
 

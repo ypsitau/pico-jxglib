@@ -1,4 +1,4 @@
-# Setup PulseView
+# Connect to Pico Board
 
 Follow these steps to connect pico-jxgLABO and PulseView:
 
