@@ -1,6 +1,6 @@
 # Video Streaming to Host PC
 
-# Connecting the OV7670 Camera Module
+## Wiring
 
 The OV7670 camera module connects to the Pico board using the I2C interface and several GPIO pins. Refer to the wiring example below:
 
@@ -18,6 +18,7 @@ The signal lines carry high-frequency currents, with XCLK reaching up to 24 MHz.
 
 ![ov7670-wiring-photo.jpg](images/ov7670-wiring-photo.jpg)
 
+## Testing the Connection
 
 Run the following commands to set up the I2C interface and camera module:
 
@@ -48,9 +49,11 @@ B0  84 04 00 82 00 20 00 66 00 06 00 00 00 00 00 00
 C0  00 00 00 00 00 00 00 00 06 CE
 ```
 
+```text
 i2c0 -p 16,17 --baudrate:100000
+```
 
-
+## Video Streaming to Host PC
 
 Start the camera app on a host PC (Windows) connected to the Pico board via USB, and display video streaming from the OV7670 camera module.
 

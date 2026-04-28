@@ -1,14 +1,18 @@
-### Real-Time Display on TFT Display
+# Real-Time Display on TFT Display
 
 Display the camera image in real time on an ST7789 TFT display module.
 
-1. Connect the OV7670 camera module and ST7789 TFT display module to the Pico board as shown below:
+## Wiring
+
+Connect the OV7670 camera module and ST7789 TFT display module to the Pico board as shown below:
 
   ![ov7670-st7789-wiring.png](images/ov7670-st7789-wiring.png)
 
   ![ov7670-st7789-wiring-photo.jpg](images/ov7670-st7789-wiring-photo.jpg)
 
-2. Run the following commands to set up the OV7670 camera module and ST7789 TFT display module:
+## Setting Up the Camera and Display Modules
+
+1. Run the following commands to set up the OV7670 camera module and ST7789 TFT display module:
 
   ```text
   L:>i2c0 -p 16,17 --baudrate:100000
@@ -17,13 +21,13 @@ Display the camera image in real time on an ST7789 TFT display module.
   L:>display-st7789 setup {spi:1 rst:18 dc:19 cs:20 bl:21 dir:rotate90}
   ```
 
-3. Test the TFT display by running the following command. If the entire screen turns red, the display is working:
+2. Test the TFT display by running the following command. If the entire screen turns red, the display is working:
 
   ```text
   L:>draw fill {color:red}
   ```
 
-4. Run the `display-start` subcommand of the `camera` command to display the OV7670 camera image on the TFT display in real time:
+3. Run the `display-start` subcommand of the `camera` command to display the OV7670 camera image on the TFT display in real time:
 
   ```text
   L:>camera display-start

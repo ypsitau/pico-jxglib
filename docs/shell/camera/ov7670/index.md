@@ -8,9 +8,9 @@ With pico-jxgLABO, you can set up the OV7670 camera module using commands, makin
 
 This article demonstrates the following experiments using this camera module:
 
-**Experiment 1:** Start a camera app on a host PC (Windows) connected to the Pico board via USB, and stream video from the OV7670 camera module. This experiment only requires the OV7670 camera module, Pico board, and host PC.
+**Experiment 1:** Start a camera app on a host PC (Windows) connected to the Pico board via USB, and stream video from the OV7670 camera module. This experiment only requires the OV7670 camera module, Pico board, and host PC. [:octicons-arrow-right-24: Learn More](ov7670-video-streaming.md)
 
-**Experiment 2:** Add a TFT LCD display module (ST7789) and display the camera image in real time on the display.
+**Experiment 2:** Add a TFT LCD display module (ST7789) and display the camera image in real time on the display. [:octicons-arrow-right-24: Learn More](ov7670-display.md)
 
 The host PC for development and testing is assumed to be Windows.
 
@@ -25,10 +25,3 @@ The host PC for development and testing is assumed to be Windows.
     allowfullscreen>
   </iframe>
 </div>
-
-
-
-
-
-
-

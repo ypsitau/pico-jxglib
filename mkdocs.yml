@@ -42,7 +42,6 @@ nav:
         - Camera:
             - OV7670:
                 - Overview: shell/camera/ov7670/index.md
-                - Connecting the OV7670 Camera Module: shell/camera/ov7670/ov7670-connecting.md
                 - About the OV7670 Camera Module: shell/camera/ov7670/ov7670-camera-module.md
                 - Video Streaming to Host PC: shell/camera/ov7670/ov7670-video-streaming.md
                 - Real-Time Display on TFT Display: shell/camera/ov7670/ov7670-display.md
