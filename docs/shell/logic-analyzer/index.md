@@ -17,3 +17,6 @@ flowchart
 ```
 
 Once data sampling is performed, the buffer memory contents are retained until the next sampling operation, so you can display or analyze the waveform as many times as you like.
+
+
+The logic analyzer in pico-jxgLABO performs sampling in transitional mode. In transitional mode, data is sampled only when the signal changes, making efficient use of buffer memory. The same sampling rate can be used for both fast (high-frequency) and slow (low-frequency) signals.

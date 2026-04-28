@@ -1,12 +1,6 @@
 # Logic Analyzer - Text Mode
 
-#### Integration with PulseView
-
-When you press the `Start` button in PulseView, it performs the equivalent of the `la enable` command on the Pico board. You must set the GPIO pins and other sampling options with the `la` command beforehand.
-
-When sampling starts, pico-jxgLABO polls the buffer memory status and sends sampling data to PulseView when available. Pressing the `Stop` button stops sending this data. Even after data transfer is complete, the buffer memory contents remain, so you can display waveform data or perform protocol analysis with the `print` subcommand of the `la` command.
-
-### Waveform Display
+## Waveform Display
 
 You can display the sampled waveform data in text format using the `print` subcommand of the `la` command. Here, we capture I2C interface signals as an example.
 

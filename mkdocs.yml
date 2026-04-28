@@ -31,12 +31,19 @@ nav:
             - Telnet Server: shell/network/telnet-server/index.md
         - Logic Analyzer:
             - Overview: shell/logic-analyzer/index.md
-            - Data Sampling: shell/logic-analyzer/text/data-sampling.md
+            - Pin Configuration: shell/logic-analyzer/text/la-config.md
             - Text Mode:
-                - Waveform on Console: shell/logic-analyzer/text/waveform.md
-                - Protocol Analysis on Console: shell/logic-analyzer/text/protocol-analysis.md
+                - Data Sampling: shell/logic-analyzer/text/data-sampling.md
+                - Observe Signals: shell/logic-analyzer/text/waveform.md
+                - Protocol Analysis: shell/logic-analyzer/text/protocol-analysis.md
             - PulseView:
-                - Setup Pulseview: shell/logic-analyzer/pulseview/setup-pulseview.md
+                - Overview: shell/logic-analyzer/pulseview/index.md
+                - Install Pulseview: shell/logic-analyzer/pulseview/pulseview-install.md
+                - Setup: shell/logic-analyzer/pulseview/pulseview-setup.md
+                - Observe I2C Signals: shell/logic-analyzer/pulseview/pulseview-observe-i2c.md
+                - Observe SPI Signals: shell/logic-analyzer/pulseview/pulseview-observe-spi.md
+                - Observe UART Signals: shell/logic-analyzer/pulseview/pulseview-observe-uart.md
+                - Observe PWM Signals: shell/logic-analyzer/pulseview/pulseview-observe-pwm.md
         - Display:
             - WS2812: shell/display/ws2812/index.md
         - Camera:

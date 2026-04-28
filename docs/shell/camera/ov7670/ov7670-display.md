@@ -13,25 +13,20 @@ Connect the OV7670 camera module and ST7789 TFT display module to the Pico board
 ## Setting Up the Camera and Display Modules
 
 1. Run the following commands to set up the OV7670 camera module and ST7789 TFT display module:
-
-  ```text
-  L:>i2c0 -p 16,17 --baudrate:100000
-  L:>camera-ov7670 setup {i2c:0 d0:2 xclk:10 pclk:11 href:12 vsync:13}
-  L:>spi1 -p 14,15 --baudrate:50000000
-  L:>display-st7789 setup {spi:1 rst:18 dc:19 cs:20 bl:21 dir:rotate90}
-  ```
-
+    ```text
+    L:>i2c0 -p 16,17 --baudrate:100000
+    L:>camera-ov7670 setup {i2c:0 d0:2 xclk:10 pclk:11 href:12 vsync:13}
+    L:>spi1 -p 14,15 --baudrate:50000000
+    L:>display-st7789 setup {spi:1 rst:18 dc:19 cs:20 bl:21 dir:rotate90}
+    ```
 2. Test the TFT display by running the following command. If the entire screen turns red, the display is working:
-
-  ```text
-  L:>draw fill {color:red}
-  ```
-
+    ```text
+    L:>draw fill {color:red}
+    ```
 3. Run the `display-start` subcommand of the `camera` command to display the OV7670 camera image on the TFT display in real time:
-
-  ```text
-  L:>camera display-start
-  ```
+    ```text
+    L:>camera display-start
+    ```
 
 Run the `camera fps` command to check the current frame rate:
 
