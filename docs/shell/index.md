@@ -5,7 +5,7 @@
 The shell of pico-jxglib is a powerful interactive command-line interface that allows you to interact with your firmware in real-time. It provides a bash-like experience, enabling you to execute various built-in commands for debugging, file management, and more. With the shell, you can easily test and modify the behavior of your firmware without the need for recompilation, making your development process more efficient and enjoyable.
 <!-- mkdocs-end:abstract -->
 
-## Flashing pico-jxgLABO
+## Setting Up pico-jxgLABO
 
 The shell is implemented in the `jxglib_Shell` library. Linking this library or other libraries that depend on it, such as `jxglib_LABOPlatform`, will make the shell available in your firmware.
 
@@ -21,13 +21,13 @@ Below is a list of pico-jxgLABO UF2 files:
 
 {% include-markdown "include/uf2-list.md" %}
 
+These UF2 files are pre-compiled with the latest version of pico-jxglib and can be flashed to your Pico board using the standard UF2 flashing method.
+
 {% include-markdown "include/flash-uf2.md" %}
 
 Go to [this page](../library/shell/index.md) if you are interested in the details of how to build your own firmware with the shell.
 
-## Setting Up the Terminal
-
-After flashing the pico-jxgLABO, connect the Pico board to your computer using a USB cable. Then, to establish a serial communication, you can use a terminal program such as Tera Term on Windows.
+After flashing the pico-jxgLABO, establish a serial communication with a terminal program such as Tera Term on Windows.
 
 {% include-markdown "include/setup-terminal-for-laboplatform.md" %}
 
@@ -41,7 +41,7 @@ The shell provides bash-like key operations to make it easier to enter commands.
 
 Each command is equipped with a help option `--help` (or `-h`) that displays the command's detailed usage information.
 
-```text title="Example of help option" linenums="1"
+```text
 L:/>cp --help
 Usage: cp [OPTION]... SOURCE... DEST
 Options:

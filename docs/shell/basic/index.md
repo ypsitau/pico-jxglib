@@ -218,7 +218,7 @@ Hello, World!
 
 ## echo-bin
 
-Prints the given arguments as binary data. The arguments can be a string or a hexadecimal value (prefixed with `0x`).
+Creates binary data from the given arguments and prints it to the terminal. This command is useful for creating binary files using redirection.
 
 ```text title="Help of the Command" linenums="1"
 Usage: echo-bin [OPTION]... [NUMBER]...

@@ -1,4 +1,6 @@
 ??? note "Setup Tera Term for LABOPlatform"
+    Tera Term is available [here](https://teratermproject.github.io/index-en.html).
+
     From the menu bar, select `[File]` - `[New Connection...]` to open the dialog below:
 
     ![teraterm-new-connection](images/teraterm-new-connection.png)
