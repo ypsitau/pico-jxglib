@@ -395,7 +395,7 @@ The corresponding [pico-jxglib](https://zenn.dev/ypsitau/articles/2025-01-24-jxg
 
 ### gpio
 
-```text title="Help of the Command" linenums="1"
+```text title="Help of the Command"
 Usage: gpio [OPTION]... [PIN [COMMAND]...]
 Options:
  -h --help        prints this help

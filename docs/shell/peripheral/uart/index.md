@@ -2,7 +2,7 @@
 
 ### uart
 
-```text title="Help of the Command" linenums="1"
+```text title="Help of the Command"
 Usage: uart BUS [OPTION]... [COMMAND]...
   BUS: UART number (0 or 1)
 Options:

@@ -2,7 +2,7 @@
 
 ### spi
 
-```text title="Help of the Command" linenums="1"
+```text title="Help of the Command"
 Usage: spi BUS [OPTION]... [COMMAND]...
   BUS: SPI bus number (0 or 1)
 Options:

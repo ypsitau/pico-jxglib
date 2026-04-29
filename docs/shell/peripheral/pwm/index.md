@@ -267,7 +267,7 @@ The corresponding Pico SDK APIs for each `pwm` subcommand:
 
 ### pwm
 
-```text title="Help of the Command" linenums="1"
+```text title="Help of the Command"
 Usage: pwm [OPTION]... [PIN [COMMAND]...]
 Options:
  -h --help        prints this help
