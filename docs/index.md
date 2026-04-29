@@ -59,14 +59,7 @@ Of course, you can also add your own custom commands to the shell. It's that sim
 
 If you want to try it out without setting up the development environment, you can download the ready-to-flash UF2 binary files.
 
-<!-- mkdocs-start:uf2-list -->
-|Target Board|UF2 Binary File|
-|---|---|
-|Raspberry Pi Pico|[pico-jxgLABO.uf2](https://github.com/ypsitau/pico-jxgLABO/releases/latest/download/pico-jxgLABO.uf2)|
-|Raspberry Pi Pico W|[pico-w-jxgLABO.uf2](https://github.com/ypsitau/pico-jxgLABO/releases/latest/download/pico-w-jxgLABO.uf2)|
-|Raspberry Pi Pico2|[pico2-jxgLABO.uf2](https://github.com/ypsitau/pico-jxgLABO/releases/latest/download/pico2-jxgLABO.uf2)|
-|Raspberry Pi Pico2 W|[pico2-w-jxgLABO.uf2](https://github.com/ypsitau/pico-jxgLABO/releases/latest/download/pico2-w-jxgLABO.uf2)|
-<!-- mkdocs-end:uf2-list -->
+{% include-markdown "include/uf2-list.md" %}
 
 These UF2 files are pre-compiled with the latest version of pico-jxglib and can be flashed to your Pico board using the standard UF2 flashing method.
 
@@ -74,13 +67,13 @@ These UF2 files are pre-compiled with the latest version of pico-jxglib and can 
 
 ## Built-in Logic Analyzer
 
-While pico-jxglib comes with a rich set of built-in commands for various purposes, the most exciting feature is the built-in logic analyzer. No need to prepare and connect a logic analyzer. The Pico board that runs your firmware works as a logic analyzer!
+While pico-jxglib comes with a rich set of built-in commands for various purposes, the most exciting feature is the built-in logic analyzer. No need to prepare and connect a logic analyzer. The Pico board that runs your firmware works as a logic analyzer! [:octicons-arrow-right-24: Learn More](shell/logic-analyzer/index.md)
 
 The wave form can be visualized by two methods:
 
-- Print it as text in the shell. This is a simple and quick way to visualize the data without needing any additional tools. [:octicons-arrow-right-24: Learn More](shell/logic-analyzer/text/data-sampling.md)
+- Print it as text in the shell. This is a simple and quick way to visualize the data without needing any additional tools.
 
-- Visualize it using [PulseView](https://sigrok.org/wiki/PulseView), a powerful waveform viewer. This allows you to see the captured data in a more detailed and interactive way, making it easier to analyze complex signals and timing relationships. [:octicons-arrow-right-24: Learn More](shell/logic-analyzer/pulseview/setup-pulseview.md)
+- Visualize it using [PulseView](https://sigrok.org/wiki/PulseView), a powerful waveform viewer. This allows you to see the captured data in a more detailed and interactive way, making it easier to analyze complex signals and timing relationships.
 
 Below is a demo of the logic analyzer working on the shell, capturing the I2C signals that issue READ requests for scanning devices. Please note that all the commands executed in the prompt `L:/>` are processed by the Pico firmware without the involvement of the host computer.
 

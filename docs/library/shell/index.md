@@ -20,6 +20,7 @@ For example, the file system commands are implemented in the `jxglib_ShellCmd_FS
 
 ```cpp title="CMakeLists.txt" linenums="1"
 target_link_libraries(shell-with-stdio PRIVATE
+    jxglib_Shell
     jxglib_ShellCmd_FS)
 ```
 
@@ -27,6 +28,7 @@ pico-jxglib provides many libraries that implement various commands as listed [h
 
 ```cpp title="CMakeLists.txt" linenums="1"
 target_link_libraries(shell-with-stdio PRIVATE
+    jxglib_Shell
     jxglib_ShellCmd_FS
     jxglib_ShellCmd_LogicAnalyzer
     jxglib_ShellCmd_NetUtil)

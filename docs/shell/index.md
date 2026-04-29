@@ -7,9 +7,19 @@ The shell of pico-jxglib is a powerful interactive command-line interface that a
 
 ## Flashing pico-jxgLABO
 
-The shell is available in any firmware that links a jxglib's library `jxglib_Shell`. While it can work with with a variety of devices like USB serial, USB keyboard, UART, Wi-Fi (Telnet), TFT LCD display, and more, the most common use case is to use it with a USB serial interface. Here, we will use pico-jxgLABO, a ready-to-flash UF2 Binary that uses USB serial for the shell, as an example to demonstrate how to use the shell and its commands.
+The shell is implemented in the `jxglib_Shell` library. Linking this library or other libraries that depend on it, such as `jxglib_LABOPlatform`, will make the shell available in your firmware.
 
-{% include-markdown "index.md" start="<!-- mkdocs-start:uf2-list -->" end="<!-- mkdocs-end:uf2-list -->" %}
+<div class="grid" markdown>
+
+Here, we will use pico-jxgLABO, a ready-to-flash UF2 Binary that links `jxglib_LABOPlatform`, as an example to demonstrate how to use the shell and its commands. It uses the USB serial interface for the shell, so you can easily try it with a single USB cable.
+
+![shell-operation](images/shell-operation.png){:width="300px"}
+
+</div>
+
+Below is a list of pico-jxgLABO UF2 files:
+
+{% include-markdown "include/uf2-list.md" %}
 
 {% include-markdown "include/flash-uf2.md" %}
 
