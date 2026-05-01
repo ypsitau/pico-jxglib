@@ -1,15 +1,25 @@
-# Pin Configuration
+# Sampling Configuration
+
+Either when using the console or PulseView, the first step is to specify the GPIO pins to measure and the sampling target (internal or external signals). This page explains how to configure these settings with the `la` command.
+
+## Executing the `la` Command
+
+Executing the `la` command without options displays the current configuration of the logic analyzer. Example:
+
+```text
+L:/>la
+disabled ---- 12.5MHz (samplers:1) pins:none events:0/0 (heap-ratio:0.7)
+```
+
+Configurations such as sampling rate and GPIO pins are retained in the command itself.
 
 ## Specifying GPIO Pins
-
-`la` is the logic analyzer command for pico-jxgLABO. By changing the options for the `la` command, you can specify which GPIO pins to measure, the measurement target (internal/external signals), sampling rate, and more.
-
-Here are the main options that affect integration with PulseView.
 
 Specify the GPIO pins to measure with the `-p` (or `--pins`) option of the `la` command.
 
 ```text
 L:/>la -p 2,3,4
+disabled ---- 12.5MHz (samplers:1) pins:2-4 events:0/0 (heap-ratio:0.7)
 ```
 
 GPIO pins are specified as comma-separated pin numbers. You can also specify ranges using hyphens. Examples:
@@ -60,8 +70,6 @@ The `--target` option sets the measurement target for all GPIO pins, but you can
 |`la --target:external --internal:2,3,4`               |GPIO2, 3, 4 as internal, others as external  |
 |`la --target:internal --external:2,3,4`               |GPIO2, 3, 4 as external, others as internal  |
 
-
-
 ## Specifying the Sampling Rate
 
 pico-jxgLABO uses the PIO state machine for sampling. Here, the state machine used for sampling is called a sampler.
@@ -92,17 +100,3 @@ Pico2 has three blocks: PIO0, PIO1, and PIO2; Pico has two: PIO0 and PIO1. By de
 ## Specifying Buffer Memory Size
 
 The `--heap-ratio:N` option (`N` is a value between 0 and 1) specifies the proportion of the heap area to use as buffer memory. The default is `0.7`, using 70% of the heap as buffer memory. If you get a memory allocation error when running `la enable`, reduce this value.
-
-## .startup
-
-You can use the Pico board as a dedicated logic analyzer to observe external signals. For example, running the following `la` command allows you to use a total of 24 GPIO pins (GPIO2 to GPIO22 and GPIO26 to GPIO28) as measurement pins for the logic analyzer:
-
-```text
-L:/>la -p 2-22,26-28 --target:external
-```
-
-If you create a file named `autoexec.sh` with the following content in the root directory of the `L:` drive, the Pico board will automatically configure the logic analyzer GPIO pins when powered on. This eliminates the need to operate commands from the terminal software.
-
-```text title=".startup"
-la -p 2-22,26-28 --target:external
-```

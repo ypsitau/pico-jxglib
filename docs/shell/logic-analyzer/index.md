@@ -1,8 +1,14 @@
-This page introduces the features of the pico-jxgLABO logic analyzer command `la`. The `la` command is a console-based tool that can operate independently to display waveforms and analyze communication protocols such as I2C, SPI, and UART.
+# Logic Analyzer
+
+Have you ever wanted to analyze digital signals or communication protocols? Logic analyzers are essential tools for debugging and understanding digital circuits, but connecting probes to a target device can be cumbersome.
+
+The pico-jxglib provides a built-in logic analyzer that requires no additional hardware. The Pico board that runs your firmware works as a logic analyzer, allowing you to monitor and analyze digital signals without any wirings or probes.
+
+The built-in logic analyzer supports transitional sampling. While normal sampling captures signal data at fixed intervals, transitional sampling captures data only when the signal changes. This means that you can use the same sampling rate for both fast (high-frequency) and slow (low-frequency) signals and reduce the amount of memory used for sampling.
 
 ## Features of the `la` Command
 
-The `la` command has two main features: data sampling and waveform display/analysis. Data sampling captures signal data into buffer memory, and waveform display or protocol analysis is performed by referencing this buffer memory.
+The `la` command is the main interface for the logic analyzer. It provides various options for data sampling, waveform display, and protocol analysis. You can use it to capture signal data into buffer memory and then display or analyze the waveform on the console or with PulseView.
 
 ```mermaid
 flowchart
@@ -12,11 +18,8 @@ flowchart
         data-sampling([Data Sampling]) --> memory[Buffer Memory]
         memory --> textmode([Waveform on Console])
         memory --> analysis([Protocol Analysis on Console])
-        memory --> pulseview([PulseView Display])
     end
+    memory --> pulseview([PulseView Display])
 ```
 
 Once data sampling is performed, the buffer memory contents are retained until the next sampling operation, so you can display or analyze the waveform as many times as you like.
-
-
-The logic analyzer in pico-jxgLABO performs sampling in transitional mode. In transitional mode, data is sampled only when the signal changes, making efficient use of buffer memory. The same sampling rate can be used for both fast (high-frequency) and slow (low-frequency) signals.

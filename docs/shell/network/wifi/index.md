@@ -38,17 +38,3 @@ You can execute `wifi-connect` and `config` in a single command:
 ```text
 L:/>net wifi-connect {ssid:'MyHome-WiFi' password:'PASSWORD'} config {addr:192.168.0.101}
 ```
-
-## Setting Up Auto-Start
-
-Create a file named `.startup` in the root of the `L:` drive to run commands automatically when the Pico board powers on. Here’s an example to automate Wi-Fi connection and Telnet server startup:
-
-```text title=".startup" linenums="1"
-net wifi-connect {ssid:'SSID' password:'PASSWORD'} config {addr:XXX.XXX.XXX.XXX}
-telnet-server start
-led on flip:50,500,50,500,50,2000
-```
-
-When you connect the Pico board running pico-jxgLABO via USB, the `L:` drive appears as a USB drive on your PC (often as `D:` on Windows). Edit the file above, change `SSID`, `PASSWORD`, and `XXX.XXX.XXX.XXX` as needed, and copy it to the drive.
-
-After rebooting, if all commands in the script run without error, the `led` command will blink the built-in LED to indicate successful startup. You can set different blink patterns for each board’s IP address for easy identification (e.g., one blink for 192.168.0.101, two for 192.168.0.102, etc.).

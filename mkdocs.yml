@@ -26,15 +26,17 @@ nav:
             - SD Card: shell/device/sdcard/index.md
         - Network:
             - Overview: shell/network/index.md
+            - Startup File: shell/network/startup.md
             - Wi-Fi Connection: shell/network/wifi/index.md
             - Network Utilities: shell/network/network-utilities/index.md
             - Telnet Server: shell/network/telnet-server/index.md
         - Logic Analyzer:
             - Overview: shell/logic-analyzer/index.md
-            - Pin Configuration: shell/logic-analyzer/pin-config.md
+            - Sampling Configuration: shell/logic-analyzer/pin-config.md
+            - Startup File: shell/logic-analyzer/startup.md
             - View on Console:
                 - Overview: shell/logic-analyzer/console/index.md
-                - Data Sampling: shell/logic-analyzer/console/data-sampling.md
+                - Start Sampling: shell/logic-analyzer/console/data-sampling.md
                 - View Signals: shell/logic-analyzer/console/waveform.md
                 - View I2C Signals: shell/logic-analyzer/console/console-view-i2c.md
                 - View SPI Signals: shell/logic-analyzer/console/console-view-spi.md
@@ -43,7 +45,7 @@ nav:
                 - Overview: shell/logic-analyzer/pulseview/index.md
                 - Install Pulseview: shell/logic-analyzer/pulseview/pulseview-install.md
                 - Connect to Pico Board: shell/logic-analyzer/pulseview/pulseview-setup.md
-                - Data Sampling: shell/logic-analyzer/pulseview/pulseview-sampling.md
+                - Start Sampling: shell/logic-analyzer/pulseview/pulseview-sampling.md
                 - View I2C Signals: shell/logic-analyzer/pulseview/pulseview-view-i2c.md
                 - View SPI Signals: shell/logic-analyzer/pulseview/pulseview-view-spi.md
                 - View UART Signals: shell/logic-analyzer/pulseview/pulseview-view-uart.md
