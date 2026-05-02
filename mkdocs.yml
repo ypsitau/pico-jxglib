@@ -147,7 +147,7 @@ nav:
                 - Overview: library/usbhost/usbhost-gamepad-overview.md
                 - Sample Program: library/usbhost/usbhost-gamepad-sample.md
                 - Games: library/usbhost/usbhost-gamepad-games.md
-            - Mass Storage: library/usbhost/usbhost-msc.md
+            #- Mass Storage: library/usbhost/usbhost-msc.md
         - USB Device:
             - Overview: library/usbdev/index.md
             - Mass Storage Class: library/usbdev/usbdev-msc.md
