@@ -55,6 +55,8 @@ target_include_directories(gpio-keyboard PRIVATE
 
 pico_add_extra_outputs(gpio-keyboard)
 
+# mkdocs-start
 target_link_libraries(gpio-keyboard
     jxglib_Common)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+# mkdocs-end
