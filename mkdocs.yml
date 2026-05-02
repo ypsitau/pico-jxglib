@@ -73,7 +73,7 @@ nav:
                 - Setting Various Parameters: shell/camera/ov7670/ov7670-params.md
     - Library APIs:
         - Overview: library/index.md
-        - LABOPlatform: library/labo-platform/index.md
+        - jxglib_LABOPlatform: library/labo-platform/index.md
         - Shell:
             - Overview: library/shell/index.md
             - Connectability:

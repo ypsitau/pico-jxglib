@@ -20,7 +20,6 @@ For example, the file system commands are implemented in the `jxglib_ShellCmd_FS
 
 ```cpp title="CMakeLists.txt" linenums="1"
 target_link_libraries(shell-with-stdio PRIVATE
-    jxglib_Shell
     jxglib_ShellCmd_FS)
 ```
 
@@ -28,10 +27,15 @@ pico-jxglib provides many libraries that implement various commands as listed [h
 
 ```cpp title="CMakeLists.txt" linenums="1"
 target_link_libraries(shell-with-stdio PRIVATE
-    jxglib_Shell
     jxglib_ShellCmd_FS
     jxglib_ShellCmd_LogicAnalyzer
     jxglib_ShellCmd_NetUtil)
 ```
 
 In these libraries, commands are implemeted by `ShellCmd` macro, which automatically registers the commands when the library is linked. This design allows for easy embedding and removal of commands without the need for explicit registration. [:octicons-arrow-right-24: Learn More](customcmd.md)
+
+## Related Libraries
+
+|Library Name | Description|
+|--- | ---|
+|jxglib_Shell | Shell support |

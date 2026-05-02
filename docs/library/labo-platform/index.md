@@ -49,9 +49,16 @@ In default, the shell is attached to a USB serial interface, so you can use the 
 
 {% include-markdown "include/enable-stdio.md" %}
 
-## Linked Libraries
+## Related Libraries
 
-The library `jxglib_LaboPlatform` links the following libraries:
+Following libraries are linked to use LABO-Platform features:
+
+|Library Name | Description|
+|--- | ---|
+|jxglib_LABOPlatform | LABOPlatform support |
+|jxglib_LABOPlatform_FullCmd | LABOPlatform full command support |
+
+These libraries link the following libraries:
 
 |Library Name | Description|
 |--- | ---|
