@@ -1,6 +1,6 @@
 # pico-jxglib - A "Pseudo" OS for Raspberry Pi Pico
 
-What is pico-jxglib?
+## What is It?
 
 - It is not an OS but still provides multitasking capabilities, keeping programs simple.
 - It requires no configuration files. Just add 4 lines to your source code, and it's yours!
