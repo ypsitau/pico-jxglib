@@ -9,6 +9,26 @@ nav:
     - Shell:
         - Overview: shell/index.md
         - Basic Commands: shell/basic/index.md
+        - Logic Analyzer:
+            - Overview: shell/logic-analyzer/index.md
+            - Sampling Configuration: shell/logic-analyzer/pin-config.md
+            - Startup File: shell/logic-analyzer/startup.md
+            - View on Console:
+                - Overview: shell/logic-analyzer/console/index.md
+                - Start Sampling: shell/logic-analyzer/console/data-sampling.md
+                - View Signals: shell/logic-analyzer/console/waveform.md
+                - View I2C Signals: shell/logic-analyzer/console/console-view-i2c.md
+                - View SPI Signals: shell/logic-analyzer/console/console-view-spi.md
+                - View UART Signals: shell/logic-analyzer/console/console-view-uart.md
+            - View on PulseView:
+                - Overview: shell/logic-analyzer/pulseview/index.md
+                - Install Pulseview: shell/logic-analyzer/pulseview/pulseview-install.md
+                - Connect to Pico Board: shell/logic-analyzer/pulseview/pulseview-setup.md
+                - Start Sampling: shell/logic-analyzer/pulseview/pulseview-sampling.md
+                - View I2C Signals: shell/logic-analyzer/pulseview/pulseview-view-i2c.md
+                - View SPI Signals: shell/logic-analyzer/pulseview/pulseview-view-spi.md
+                - View UART Signals: shell/logic-analyzer/pulseview/pulseview-view-uart.md
+                - View PWM Signals: shell/logic-analyzer/pulseview/pulseview-view-pwm.md
         - File System:
             - Overview: shell/filesystem/index.md
             - File Operating Commands: shell/filesystem/file-operating-commands/index.md
@@ -30,26 +50,6 @@ nav:
             - Wi-Fi Connection: shell/network/wifi/index.md
             - Network Utilities: shell/network/network-utilities/index.md
             - Telnet Server: shell/network/telnet-server/index.md
-        - Logic Analyzer:
-            - Overview: shell/logic-analyzer/index.md
-            - Sampling Configuration: shell/logic-analyzer/pin-config.md
-            - Startup File: shell/logic-analyzer/startup.md
-            - View on Console:
-                - Overview: shell/logic-analyzer/console/index.md
-                - Start Sampling: shell/logic-analyzer/console/data-sampling.md
-                - View Signals: shell/logic-analyzer/console/waveform.md
-                - View I2C Signals: shell/logic-analyzer/console/console-view-i2c.md
-                - View SPI Signals: shell/logic-analyzer/console/console-view-spi.md
-                - View UART Signals: shell/logic-analyzer/console/console-view-uart.md
-            - View on PulseView:
-                - Overview: shell/logic-analyzer/pulseview/index.md
-                - Install Pulseview: shell/logic-analyzer/pulseview/pulseview-install.md
-                - Connect to Pico Board: shell/logic-analyzer/pulseview/pulseview-setup.md
-                - Start Sampling: shell/logic-analyzer/pulseview/pulseview-sampling.md
-                - View I2C Signals: shell/logic-analyzer/pulseview/pulseview-view-i2c.md
-                - View SPI Signals: shell/logic-analyzer/pulseview/pulseview-view-spi.md
-                - View UART Signals: shell/logic-analyzer/pulseview/pulseview-view-uart.md
-                - View PWM Signals: shell/logic-analyzer/pulseview/pulseview-view-pwm.md
         - Display:
             - WS2812:
                 - Overview: shell/display/ws2812/index.md
