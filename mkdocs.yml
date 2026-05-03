@@ -134,9 +134,10 @@ nav:
                 - Overview: library/display/ws2812/index.md
         - Keyboard:
             - Overview: library/keyboard/index.md
-            - USB Keyboard: library/keyboard/usb-keyboard.md
             - GPIO Keyboard: library/keyboard/gpio-keyboard.md
             - GPIO Keyboard Matrix: library/keyboard/gpio-keyboard-matrix.md
+            - USB Keyboard: library/keyboard/usb-keyboard.md
+            - VT100 Keyboard: library/keyboard/vt100-keyboard.md
         - USB Host:
             - Overview: library/usbhost/index.md
             - Keyboard and Mouse:
