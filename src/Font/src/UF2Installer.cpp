@@ -9,10 +9,12 @@
 #define README_CONTENTS \
 "This is tinyusb's MassStorage Class demo.\r\n"
 
+namespace jxglib {
+
 static const int BlockCount = 0x100;
 static const int BlockSize = 512;
 
-uint8_t blocks_[4][BlockSize] =
+static uint8_t blocks_[4][BlockSize] =
 {
 	//------------- Block0: Boot Sector -------------//
 	{
@@ -87,8 +89,6 @@ uint8_t blocks_[4][BlockSize] =
 	//------------- Block3: Readme Content -------------//
 	README_CONTENTS
 };
-
-namespace jxglib {
 
 void UF2Installer::On_msc_capacity(uint8_t lun, uint32_t* block_count, uint16_t* block_size)
 {
