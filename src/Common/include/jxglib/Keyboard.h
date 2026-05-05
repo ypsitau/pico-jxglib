@@ -41,7 +41,7 @@ private:
 	Keyboard* pNext_;
 	const KeyLayout* pKeyLayout_;
 public:
-	Keyboard();
+	Keyboard(bool registerFlag = true);
 	~Keyboard();
 public:
 	static Keyboard* GetHead() { return pHead_; }
@@ -114,6 +114,8 @@ public:
 class KeyboardDumb : public Keyboard {
 public:
 	static KeyboardDumb Instance;
+public:
+	KeyboardDumb() : Keyboard(false) {}
 public:
 	virtual const char* GetName() const override { return "KeyboardDumb"; }
 	virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1, bool includeModifiers = false) override { return 0; }

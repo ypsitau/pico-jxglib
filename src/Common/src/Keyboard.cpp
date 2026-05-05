@@ -11,9 +11,11 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 Keyboard* Keyboard::pHead_ = nullptr;
 
-Keyboard::Keyboard() : pNext_{nullptr}, pKeyLayout_{&KeyLayout_106::Instance}
+Keyboard::Keyboard(bool registerFlag) : pNext_{nullptr}, pKeyLayout_{&KeyLayout_106::Instance}
 {
-	if (pHead_) {
+	if (!registerFlag) {
+		// nothing to do
+	} else if (pHead_) {
 		Keyboard* pKeyboard = pHead_;
 		for ( ; pKeyboard->pNext_; pKeyboard = pKeyboard->pNext_);
 		pKeyboard->pNext_ = this;
