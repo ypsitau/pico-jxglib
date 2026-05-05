@@ -63,5 +63,5 @@ target_compile_definitions(Recognizer-ILI9341 PUBLIC
 
 pico_add_extra_outputs(Recognizer-ILI9341)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 jxglib_configure_LABOPlatform(Recognizer-ILI9341)

@@ -60,5 +60,5 @@ pico_add_extra_outputs(test-LogicAnalyzer)
 target_compile_definitions(test-LogicAnalyzer PRIVATE
     PICO_MALLOC_PANIC=0
 )
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 jxglib_configure_LABOPlatform(test-LogicAnalyzer)

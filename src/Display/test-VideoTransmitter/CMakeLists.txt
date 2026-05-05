@@ -56,5 +56,5 @@ target_include_directories(test-VideoTransmitter PRIVATE
 pico_add_extra_outputs(test-VideoTransmitter)
 
 target_link_libraries(test-VideoTransmitter jxglib_LABOPlatform_FullCmd jxglib_Display_VideoTransmitter)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 jxglib_configure_LABOPlatform(test-VideoTransmitter)

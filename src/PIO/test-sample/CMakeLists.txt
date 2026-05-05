@@ -56,5 +56,5 @@ target_include_directories(test-sample PRIVATE
 pico_add_extra_outputs(test-sample)
 
 target_link_libraries(test-sample jxglib_LABOPlatform_FullCmd jxglib_PIO)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 jxglib_configure_LABOPlatform(test-sample)

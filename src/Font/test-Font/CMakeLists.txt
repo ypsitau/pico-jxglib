@@ -53,4 +53,4 @@ target_include_directories(test-Font PRIVATE
 
 pico_add_extra_outputs(test-Font)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)

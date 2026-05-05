@@ -59,4 +59,4 @@ target_include_directories(test-Program-Insts PRIVATE
 
 pico_add_extra_outputs(test-Program-Insts)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)

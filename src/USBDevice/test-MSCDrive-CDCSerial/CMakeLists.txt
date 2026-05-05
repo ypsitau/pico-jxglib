@@ -55,7 +55,7 @@ target_include_directories(test-MSCDrive-CDCSerial PRIVATE
 
 pico_add_extra_outputs(test-MSCDrive-CDCSerial)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 
 target_link_libraries(test-MSCDrive-CDCSerial
 	jxglib_Serial jxglib_FAT_Flash jxglib_USBDevice_MSCDrive jxglib_USBDevice_CDCSerial

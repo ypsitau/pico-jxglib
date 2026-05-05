@@ -57,5 +57,5 @@ pico_add_extra_outputs(test-Recognizer)
 
 target_link_libraries(test-Recognizer jxglib_ML)
 target_link_libraries(test-Recognizer jxglib_LABOPlatform_FullCmd)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 jxglib_configure_LABOPlatform(test-Recognizer)

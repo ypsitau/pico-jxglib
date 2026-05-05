@@ -59,4 +59,4 @@ pico_add_extra_outputs(test-DS3231)
 target_link_libraries(test-DS3231
     jxglib_Serial jxglib_RTC_DS3231
     jxglib_ShellCmd_I2C jxglib_ShellCmd_RTC)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)

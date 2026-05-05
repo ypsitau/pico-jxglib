@@ -55,4 +55,4 @@ target_include_directories(test-DateTime PRIVATE
 
 pico_add_extra_outputs(test-DateTime)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)

@@ -59,7 +59,7 @@ target_include_directories(USBMSC-tester PRIVATE
 
 pico_add_extra_outputs(USBMSC-tester)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 
 jxglib_configure_FAT(USBMSC-tester FF_VOLUMES 1)
 jxglib_configure_USBHost(USBMSC-tester CFG_TUH_MSC 1)

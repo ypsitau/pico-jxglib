@@ -56,4 +56,4 @@ target_include_directories(test-FIFOBuff PRIVATE
 pico_add_extra_outputs(test-FIFOBuff)
 
 target_link_libraries(test-FIFOBuff jxglib_Common)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)

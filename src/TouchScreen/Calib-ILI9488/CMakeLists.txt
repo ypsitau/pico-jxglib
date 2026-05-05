@@ -84,4 +84,4 @@ target_include_directories(Calib-ILI9488 PRIVATE
 
 pico_add_extra_outputs(Calib-ILI9488)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)

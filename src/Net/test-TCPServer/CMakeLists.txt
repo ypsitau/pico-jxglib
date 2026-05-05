@@ -58,6 +58,6 @@ target_include_directories(test-TCPServer PRIVATE
 pico_add_extra_outputs(test-TCPServer)
 
 target_link_libraries(test-TCPServer jxglib_LABOPlatform_FullCmd)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 jxglib_configure_Net(test-TCPServer)
 jxglib_configure_LABOPlatform(test-TCPServer)

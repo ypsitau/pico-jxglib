@@ -56,4 +56,4 @@ target_include_directories(test-VT100-Decoder PRIVATE
 
 pico_add_extra_outputs(test-VT100-Decoder)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)

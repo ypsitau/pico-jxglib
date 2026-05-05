@@ -56,5 +56,5 @@ target_include_directories(test-Hash PRIVATE
 pico_add_extra_outputs(test-Hash)
 
 target_link_libraries(test-Hash jxglib_LABOPlatform_FullCmd jxglib_Hash)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 jxglib_configure_LABOPlatform(test-Hash)

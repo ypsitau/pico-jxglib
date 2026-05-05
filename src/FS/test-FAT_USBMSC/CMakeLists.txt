@@ -59,7 +59,7 @@ target_include_directories(test-FAT_USBMSC PRIVATE
 
 pico_add_extra_outputs(test-FAT_USBMSC)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 
 jxglib_configure_FAT(test-FAT_USBMSC FF_VOLUMES 1)
 

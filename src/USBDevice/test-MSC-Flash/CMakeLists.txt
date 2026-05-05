@@ -59,7 +59,7 @@ target_include_directories(test-MSC-Flash PRIVATE
 
 pico_add_extra_outputs(test-MSC-Flash)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 
 jxglib_configure_USBDevice(test-MSC-Flash CFG_TUD_MSC 1)
 jxglib_configure_FAT(test-MSC-Flash FS_VOLUME 1)

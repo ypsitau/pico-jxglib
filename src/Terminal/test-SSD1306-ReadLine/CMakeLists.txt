@@ -58,6 +58,6 @@ target_include_directories(test-SSD1306-ReadLine PRIVATE
 
 pico_add_extra_outputs(test-SSD1306-ReadLine)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 
 jxglib_configure_USBHost(test-SSD1306-ReadLine CFG_TUH_HID 3)

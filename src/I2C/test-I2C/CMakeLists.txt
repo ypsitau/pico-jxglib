@@ -57,4 +57,4 @@ target_include_directories(test-I2C PRIVATE
 pico_add_extra_outputs(test-I2C)
 
 target_link_libraries(test-I2C jxglib_Serial jxglib_ShellCmd_I2C)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)

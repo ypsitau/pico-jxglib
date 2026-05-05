@@ -59,6 +59,6 @@ target_include_directories(SDCard-tester PRIVATE
 
 pico_add_extra_outputs(SDCard-tester)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 
 jxglib_configure_FAT(SDCard-tester FF_VOLUMES 1)

@@ -59,4 +59,4 @@ target_include_directories(test-LFS_Flash PRIVATE
 
 pico_add_extra_outputs(test-LFS_Flash)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)

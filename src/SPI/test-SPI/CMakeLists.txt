@@ -56,4 +56,4 @@ target_include_directories(test-SPI PRIVATE
 pico_add_extra_outputs(test-SPI)
 
 target_link_libraries(test-SPI jxglib_SPI)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../.. pico-jxglib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
