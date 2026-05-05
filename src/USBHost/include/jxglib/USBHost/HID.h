@@ -411,6 +411,7 @@ public:
 	virtual void OnReport() override;
 public:
 	// virtual function of jxglib::Keyboard
+	virtual const char* GetName() const override { return "USBHost::Keyboard"; }
 	virtual jxglib::Keyboard& SetCapsLockAsCtrl(bool capsLockAsCtrlFlag = true) override;
 	virtual uint8_t GetModifier() override { return reportCaptured_.modifier; }
 	virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1, bool includeModifiers = false) override;

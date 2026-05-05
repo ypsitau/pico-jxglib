@@ -47,8 +47,6 @@ project(test-GPIO-Keyboard C CXX ASM)
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
-
 # Add executable. Default name is the project name, version 0.1
 
 add_executable(test-GPIO-Keyboard test-GPIO-Keyboard.cpp )
@@ -62,9 +60,7 @@ pico_enable_stdio_usb(test-GPIO-Keyboard 0)
 
 # Add the standard library to the build
 target_link_libraries(test-GPIO-Keyboard
-	pico_stdlib
-	jxglib_Common
-	jxglib_KeyboardTest)
+	pico_stdlib)
 
 # Add the standard include files to the build
 target_include_directories(test-GPIO-Keyboard PRIVATE
@@ -73,3 +69,6 @@ target_include_directories(test-GPIO-Keyboard PRIVATE
 
 pico_add_extra_outputs(test-GPIO-Keyboard)
 
+target_link_libraries(test-GPIO-Keyboard
+	jxglib_Shell jxglib_Serial)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)

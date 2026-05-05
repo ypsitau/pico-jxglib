@@ -9,8 +9,33 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // Keyboard
 //------------------------------------------------------------------------------
-Keyboard::Keyboard() : pKeyLayout_{&KeyLayout_106::Instance}
-{}
+Keyboard* Keyboard::pHead_ = nullptr;
+
+Keyboard::Keyboard() : pNext_{nullptr}, pKeyLayout_{&KeyLayout_106::Instance}
+{
+	if (pHead_) {
+		Keyboard* pKeyboard = pHead_;
+		for ( ; pKeyboard->pNext_; pKeyboard = pKeyboard->pNext_);
+		pKeyboard->pNext_ = this;
+	} else {
+		pHead_ = this;
+	}
+}
+
+Keyboard::~Keyboard()
+{
+	if (pHead_ == this) {
+		pHead_ = pNext_;
+	} else {
+		Keyboard* pKeyboard = pHead_;
+		for ( ; pKeyboard; pKeyboard = pKeyboard->pNext_) {
+			if (pKeyboard->pNext_ == this) {
+				pKeyboard->pNext_ = pNext_;
+				break;
+			}
+		}
+	}
+}
 
 char Keyboard::GetChar()
 {

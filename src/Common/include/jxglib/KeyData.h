@@ -33,6 +33,8 @@ public:
 	bool IsShiftDown() const;
 	bool IsAltDown() const;
 	bool IsWindowsDown() const;
+public:
+	const char* Textize(char* str, int len) const;
 };
 
 }

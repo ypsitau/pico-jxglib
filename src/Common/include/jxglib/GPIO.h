@@ -66,6 +66,7 @@ public:
 		void Initialize(Key* keyTbl, int nKeys);
 	public:
 		// virtual function of KeyboardRepeatable
+		virtual const char* GetName() const override { return "GPIO::Keyboard"; }
 		virtual bool IsPressed(uint8_t keyCode, bool includeModifiers = true) override;
 		virtual uint8_t GetModifier() override { return modifier_; }
 		virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1, bool includeModifiers = false) override;
@@ -92,6 +93,7 @@ public:
 		void Initialize(const KeySet* keySetTbl, const KeyRow* keyRowTbl, int nKeyRows, const KeyCol* keyColTbl, int nKeyCols, uint32_t flags);
 	public:
 		// virtual function of KeyboardRepeatable
+		virtual const char* GetName() const override { return "GPIO::KeyboardMatrix"; }
 		virtual uint8_t GetModifier() override;
 		virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1, bool includeModifiers = false) override;
 	public:

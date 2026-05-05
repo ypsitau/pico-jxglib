@@ -36,9 +36,17 @@ public:
 		uint8_t GetModifier() const { return modifier_; }
 	};
 private:
+	static Keyboard* pHead_;
+private:
+	Keyboard* pNext_;
 	const KeyLayout* pKeyLayout_;
 public:
 	Keyboard();
+	~Keyboard();
+public:
+	static Keyboard* GetHead() { return pHead_; }
+	Keyboard* GetNext() { return pNext_; }
+	const Keyboard* GetNext() const { return pNext_; }
 public:
 	Keyboard& SetKeyLayout(const KeyLayout& keyLayout) { pKeyLayout_ = &keyLayout; return *this; }
 	const KeyLayout& GetKeyLayout() const { return *pKeyLayout_; }
@@ -46,6 +54,7 @@ public:
 	bool GetKeyData(KeyData* pKeyData);
 	char GetChar();
 public:
+	virtual const char* GetName() const = 0;
 	virtual Keyboard& SetCapsLockAsCtrl(bool capsLockAsCtrlFlag = true) { return *this; }
 	virtual Keyboard& SetRepeatTime(uint32_t msecDelay, uint32_t msecRate) { return *this; }
 	virtual uint8_t GetModifier() { return 0; }
@@ -106,6 +115,7 @@ class KeyboardDumb : public Keyboard {
 public:
 	static KeyboardDumb Instance;
 public:
+	virtual const char* GetName() const override { return "KeyboardDumb"; }
 	virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1, bool includeModifiers = false) override { return 0; }
 	virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) override { return 0; }
 	virtual bool GetKeyCodeNB(uint8_t* pKeyCode, uint8_t* pModifier = nullptr) override { return false; }
