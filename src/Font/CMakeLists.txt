@@ -22,4 +22,5 @@ target_link_libraries(jxglib_ShellCmd_Font INTERFACE
 	jxglib_ShellCmd_Basic)
 
 target_sources(jxglib_ShellCmd_Font INTERFACE
-	${CMAKE_CURRENT_LIST_DIR}/src/ShellCmd_Font.cpp)
+	${CMAKE_CURRENT_LIST_DIR}/src/ShellCmd_Font.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/UF2Installer.cpp)
