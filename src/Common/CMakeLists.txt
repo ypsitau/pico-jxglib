@@ -108,3 +108,15 @@ target_link_libraries(jxglib_ShellCmd_ADC INTERFACE
 
 target_sources(jxglib_ShellCmd_ADC INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/ShellCmd_ADC.cpp)
+
+#------------------------------------------------------------------------------
+add_library(jxglib_ShellCmd_Keyboard INTERFACE)
+
+target_include_directories(jxglib_ShellCmd_Keyboard INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/include)
+
+target_link_libraries(jxglib_ShellCmd_Keyboard INTERFACE
+	jxglib_ShellCmd_Basic)
+
+target_sources(jxglib_ShellCmd_Keyboard INTERFACE
+	${CMAKE_CURRENT_LIST_DIR}/src/ShellCmd_Keyboard.cpp)
