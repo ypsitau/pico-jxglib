@@ -37,15 +37,17 @@ These UF2 files are pre-compiled with the latest version of pico-jxglib and can 
 
 ## Built-in Logic Analyzer
 
-While the library also comes with a rich set of built-in commands for various purposes, the most exciting feature is the built-in logic analyzer. No need to prepare and connect a logic analyzer. The Pico board that runs your firmware works as a logic analyzer!
+While the library also comes with a rich set of built-in commands for various purposes, the most exciting feature is the built-in logic analyzer. No need to prepare and connect a logic analyzer. The Pico board that runs your firmware works as a logic analyzer! [Learn More](https://ypsitau.github.io/pico-jxglib/shell/logic-analyzer/)
 
 The wave form can be visualized by two methods:
 
-- Print it as text in the shell. This is a simple and quick way to visualize the data without needing any additional tools. [Learn More](shell/la/text/index.md)
+- Print it as text in the shell. This is a simple and quick way to visualize the data without needing any additional tools.
 
-- Visualize it using [PulseView](https://sigrok.org/wiki/PulseView), a powerful waveform viewer. This allows you to see the captured data in a more detailed and interactive way, making it easier to analyze complex signals and timing relationships. [Learn More](shell/la/pulseview/index.md)
+- Visualize it using [PulseView](https://sigrok.org/wiki/PulseView), a powerful waveform viewer. This allows you to see the captured data in a more detailed and interactive way, making it easier to analyze complex signals and timing relationships.
 
 Below is a demo of the logic analyzer working on the shell, capturing the I2C signals that issue READ requests for scanning devices. Please note that all the commands executed in the prompt `L:/>` are processed by the Pico firmware without the involvement of the host computer.
+
+Below is a video demo of the logic analyzer in action, capturing I2C signals during a device scan. The commands executed in the `L:/>` prompt are processed directly by the Pico firmware, without any involvement from the host computer.
 
 [![Watch the video](https://img.youtube.com/vi/jMSZNx5nsew/hqdefault.jpg)](https://www.youtube.com/watch?v=jMSZNx5nsew)
 
