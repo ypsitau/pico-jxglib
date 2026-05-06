@@ -2,13 +2,13 @@
 
 ## What is It?
 
-- It is not an OS but still provides multitasking capabilities, keeping programs simple.
-- It requires no configuration files. Just add 4 lines to your source code, and it's yours!
-- It has a bash-like shell accessible through USB, UART, Wi-Fi, displays and keyboard.
-- It has a built-in logic analyzer with transitional mode, storing signals into RAM efficiently.
-- It provides a rich set of commands, such as file operations and peripheral controls.
-- It can use the board's flash memory as a file system, which is accessible through USB.
-- It supports various devices, such as SD cards, displays, a keyboard and a camera.
+- Is not an OS but still provides multitasking capabilities, keeping programs simple.
+- Requires no configuration files. Just add 4 lines to your source code, and it's yours!
+- Has a bash-like shell accessible through USB, UART, Wi-Fi, displays and keyboard.
+- Has a built-in logic analyzer with transitional mode, storing signals into RAM efficiently.
+- Provides a rich set of commands, such as file operations and peripheral controls.
+- Can use the board's flash memory as a file system, which is accessible through USB.
+- Supports various devices, such as SD cards, displays, a keyboard and a camera.
 
 Detailed documentation: https://ypsitau.github.io/pico-jxglib/
 
