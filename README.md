@@ -8,7 +8,7 @@
 - Has a built-in logic analyzer with transitional mode, storing signals into RAM efficiently.
 - Provides a rich set of commands, such as file operations and peripheral controls.
 - Can use the board's flash memory as a file system, accessible from a host PC via USB.
-- Supports various devices, such as SD card, display, keyboard and camera.
+- Supports various devices, such as SD card, RTC, display, keyboard and camera.
 
 Detailed documentation: https://ypsitau.github.io/pico-jxglib/
 
