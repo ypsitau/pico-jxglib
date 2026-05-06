@@ -7,8 +7,8 @@
 - Has a bash-like shell accessible through USB, UART, Wi-Fi, displays and keyboard.
 - Has a built-in logic analyzer with transitional mode, storing signals into RAM efficiently.
 - Provides a rich set of commands, such as file operations and peripheral controls.
-- Can use the board's flash memory as a file system, which is accessible through USB.
-- Supports various devices, such as SD cards, displays, a keyboard and a camera.
+- Can use the board's flash memory as a file system, accessible from a host computer via USB.
+- Supports various devices, such as SD card, display, keyboard and camera.
 
 Detailed documentation: https://ypsitau.github.io/pico-jxglib/
 
