@@ -47,8 +47,6 @@ The wave form can be visualized by two methods:
 
 Below is a demo of the logic analyzer working on the shell, capturing the I2C signals that issue READ requests for scanning devices. Please note that all the commands executed in the prompt `L:/>` are processed by the Pico firmware without the involvement of the host computer.
 
-Below is a video demo of the logic analyzer in action, capturing I2C signals during a device scan. The commands executed in the `L:/>` prompt are processed directly by the Pico firmware, without any involvement from the host computer.
-
 [![Watch the video](https://img.youtube.com/vi/jMSZNx5nsew/hqdefault.jpg)](https://www.youtube.com/watch?v=jMSZNx5nsew)
 
 ## License
