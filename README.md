@@ -1,4 +1,4 @@
-# pico-jxglib - A "Pseudo" OS for Raspberry Pi Pico
+# pico-jxglib: A "Pseudo" OS for Raspberry Pi Pico
 
 ## What is It?
 
@@ -22,7 +22,7 @@ Yes, I know there are some interactive shells for microcontrollers, but most of 
 
 pico-jxglib aims to provide a simple but powerful interactive shell with just a few lines of additional code.
 
-## pico-jxgLABO - Ready-to-Flash UF2 Binary
+## pico-jxgLABO: Ready-to-Flash UF2 Binary
 
 If you want to try it out without setting up the development environment, you can download the ready-to-flash UF2 binary files.
 

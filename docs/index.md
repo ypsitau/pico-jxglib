@@ -1,4 +1,4 @@
-# pico-jxglib - A "Pseudo" OS for Raspberry Pi Pico
+# pico-jxglib: A "Pseudo" OS for Raspberry Pi Pico
 
 ## What is It?
 
