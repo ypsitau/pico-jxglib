@@ -38,8 +38,8 @@ nav:
             - GPIO:
                 - Overview: shell/peripheral/gpio/index.md
                 - Current Status: shell/peripheral/gpio/gpio-status.md
-                - Digital In/Out: shell/peripheral/gpio/gpio-in-out.md
                 - Function Selection: shell/peripheral/gpio/gpio-function.md
+                - Digital In/Out: shell/peripheral/gpio/gpio-in-out.md
                 - Pull-up/down: shell/peripheral/gpio/gpio-pull-up-down.md
                 - Drive Strength: shell/peripheral/gpio/gpio-drive-strength.md
                 - Slew Rate: shell/peripheral/gpio/gpio-slew-rate.md

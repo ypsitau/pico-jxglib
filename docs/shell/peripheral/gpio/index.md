@@ -34,4 +34,4 @@ The first argument to the `gpio` command specifies the GPIO pin number(s). You c
 |`gpio 2-15`    |Show status of GPIO2 to GPIO15              |
 |`gpio 8-`      |Show status of GPIO8 to GPIO29              |
 
-There are also shortcut commands like `gpio0` to `gpio29` (e.g., `gpio2` is the same as `gpio 2`).
+There are also shortcut commands like `gpio0` to `gpio29`. For example, `gpio2` is the same as `gpio 2`.
