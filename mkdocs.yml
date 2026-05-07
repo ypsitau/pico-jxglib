@@ -35,7 +35,16 @@ nav:
             - RTC (Real Time Clock) Support: shell/filesystem/rtc/index.md
             - SD Card Support: shell/filesystem/sdcard/index.md
         - Peripheral:
-            - GPIO: shell/peripheral/gpio/index.md
+            - GPIO:
+                - Overview: shell/peripheral/gpio/index.md
+                - Current Status: shell/peripheral/gpio/gpio-status.md
+                - Digital In/Out: shell/peripheral/gpio/gpio-in-out.md
+                - Function Selection: shell/peripheral/gpio/gpio-function.md
+                - Pull-up/down: shell/peripheral/gpio/gpio-pull-up-down.md
+                - Drive Strength: shell/peripheral/gpio/gpio-drive-strength.md
+                - Slew Rate: shell/peripheral/gpio/gpio-slew-rate.md
+                - Hysteresis: shell/peripheral/gpio/gpio-hysteresis.md
+                - C/C++ APIs: shell/peripheral/gpio/gpio-api.md
             - PWM: shell/peripheral/pwm/index.md
             - I2C: shell/peripheral/i2c/index.md
             - SPI: shell/peripheral/spi/index.md
