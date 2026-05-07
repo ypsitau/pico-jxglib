@@ -8,6 +8,8 @@ nav:
     - Home: index.md
     - Shell:
         - Overview: shell/index.md
+        - Setting Up pico-jxgLABO: shell/setup-labo.md
+        - Basic Operations: shell/basic-operations.md
         - Basic Commands: shell/basic/index.md
         - Logic Analyzer:
             - Overview: shell/logic-analyzer/index.md
