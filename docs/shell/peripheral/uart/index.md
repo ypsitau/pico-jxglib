@@ -1,6 +1,6 @@
-## Command Reference
+# UART
 
-### uart
+## uart Command
 
 ```text title="Help of the Command"
 Usage: uart BUS [OPTION]... [COMMAND]...

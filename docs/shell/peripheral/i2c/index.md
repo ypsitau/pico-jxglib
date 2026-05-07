@@ -1,6 +1,6 @@
-## Command Reference
+# I2C
 
-### i2c
+## i2c Command
 
 ```text title="Help of the Command"
 Usage: i2c BUS [OPTION]... scan

@@ -1,6 +1,6 @@
-## Command Reference
+# SPI
 
-### spi
+## spi Command
 
 ```text title="Help of the Command"
 Usage: spi BUS [OPTION]... [COMMAND]...

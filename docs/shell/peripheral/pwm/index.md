@@ -40,14 +40,4 @@ The first argument to the `pwm` command specifies the GPIO pin(s). You can speci
 |`pwm 2-15`     |Show PWM status for GPIO2 to GPIO15         |
 |`pwm 8-`       |Show PWM status for GPIO8 to GPIO29         |
 
-There are also shortcut commands like `pwm0` to `pwm29` (e.g., `pwm2` is the same as `pwm 2`).
-
-
-
-
-
-
-
-
-
-
+There are also shortcut commands like `pwm0` to `pwm29`. For example, `pwm2` is the same as `pwm 2`.
