@@ -1,5 +1,21 @@
 # Digital Input and Output
 
+## Digital Input
+
+Set a GPIO to input mode and read digital signals. For example, to set GPIO1 to input and read its level (try connecting it to GND with a jumper wire):
+
+```text
+L:/>gpio 1 func:sio dir:in pull:up repeat {get sleep:300}
+```
+
+The `dir` subcommand sets input mode. The `pull` subcommand enables the pull-up resistor to fix the signal high when unconnected. `get` reads the GPIO signal level.
+
+On the Pico, you can read the digital signal level from the CPU even if the function is not SIO. For example, you can monitor UART RX on GPIO1:
+
+```text
+L:/>gpio 1 func:uart dir:in repeat {get sleep:300}
+```
+
 ## Digital Output
 
 Set a GPIO to output mode and output a digital signal. For example, to turn on the built-in LED (GPIO25) with a high signal:
@@ -67,19 +83,3 @@ GPIO1  hi~ func:SIO        dir:in  pull:down drive:4mA slew:slow hyst:on
 ```
 
 **Conclusion:** To output digital signals from the CPU, set the function to SIO and the direction to output. Otherwise, the output value does not affect the pin state, so there are no side effects.
-
-## Digital Input
-
-Set a GPIO to input mode and read digital signals. For example, to set GPIO1 to input and read its level (try connecting it to GND with a jumper wire):
-
-```text
-L:/>gpio 1 func:sio dir:in pull:up repeat {get sleep:300}
-```
-
-The `dir` subcommand sets input mode. The `pull` subcommand enables the pull-up resistor to fix the signal high when unconnected. `get` reads the GPIO signal level.
-
-On the Pico, you can read the digital signal level from the CPU even if the function is not SIO. For example, you can monitor UART RX on GPIO1:
-
-```text
-L:/>gpio 1 func:uart dir:in repeat {get sleep:300}
-```

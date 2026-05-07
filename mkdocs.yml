@@ -45,7 +45,15 @@ nav:
                 - Slew Rate: shell/peripheral/gpio/gpio-slew-rate.md
                 - Hysteresis: shell/peripheral/gpio/gpio-hysteresis.md
                 - C/C++ APIs: shell/peripheral/gpio/gpio-api.md
-            - PWM: shell/peripheral/pwm/index.md
+            - PWM:
+                - Overview: shell/peripheral/pwm/index.md
+                - Current Status: shell/peripheral/pwm/pwm-status.md
+                - Brightness Control: shell/peripheral/pwm/pwm-brightness.md
+                - Observing PWM Signals: shell/peripheral/pwm/pwm-observing.md
+                - Frequency Control: shell/peripheral/pwm/pwm-frequency.md
+                - Duty Cycle Control: shell/peripheral/pwm/pwm-duty.md
+                - Phase Correction: shell/peripheral/pwm/pwm-phase-correct.md
+                - C/C++ APIs: shell/peripheral/pwm/pwm-api.md
             - I2C: shell/peripheral/i2c/index.md
             - SPI: shell/peripheral/spi/index.md
             - UART: shell/peripheral/uart/index.md
