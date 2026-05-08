@@ -1,6 +1,6 @@
-# LaboPlatform Library
+# LABOPlatform Library
 
-If you want to quickly incorporate pico-jxglib's functionalities into your project, you can use the `jxglib_LaboPlatform` library. This library combines multiple libraries of pico-jxglib, providing functionalities useful for the development of Pico projects. pico-jxgLABO is a ready-to-flash UF2 Binary that uses the `jxglib_LaboPlatform` library, making it a great way to quickly see the functionalities of the library in action. See [here](../../shell/index.md) for how to flash and use pico-jxgLABO.
+If you want to quickly incorporate pico-jxglib's functionalities into your project, you can use the `jxglib_LABOPlatform` library. This library combines multiple libraries of pico-jxglib, providing functionalities useful for the development of Pico projects. pico-jxgLABO is a ready-to-flash UF2 Binary that uses the `jxglib_LABOPlatform` library, making it a great way to quickly see the functionalities of the library in action. See [here](../../shell/index.md) for how to flash and use pico-jxgLABO.
 
 ## Building and Flashing the Program
 
@@ -26,8 +26,8 @@ Add the following lines to the end of `CMakeLists.txt`:
 {% include "./sample/your-project-LABOPlatform/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
 ```
 
-- `jxglib_LaboPlatform_FullCmd` links all the libraries of useful shell commands.
-- `jxglib_configure_LABOPlatform()` is required to configure libraries used by `jxglib_LaboPlatform`, such as TinyUSB and FatFS.
+- `jxglib_LABOPlatform_FullCmd` links all the libraries of useful shell commands.
+- `jxglib_configure_LABOPlatform()` is required to configure libraries used by `jxglib_LABOPlatform`, such as TinyUSB and FatFS.
 
 Edit `your-project.cpp` as follows:
 
