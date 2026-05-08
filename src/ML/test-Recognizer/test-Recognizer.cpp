@@ -7,6 +7,7 @@
 
 using namespace jxglib;
 
+#if 0
 #if 1
 const uint8_t imageData_0[784] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
@@ -349,19 +350,20 @@ ShellCmd_Named(test_digit_recognizer, "test-digit-recognizer", "test TensorFlow 
 	return Result::Success;
 }
 #endif
+#endif
 
 int main(void)
 {
 	::stdio_init_all();
-	modelRunner.Initialize();
-	auto& opResolver = modelRunner.GetOpResolver();
-	opResolver.AddConv2D();
-	opResolver.AddMaxPool2D();
-	opResolver.AddReshape();
-	opResolver.AddFullyConnected();
-	opResolver.AddSoftmax();
-	if (!modelRunner.Allocate()) return 1;
-	::printf("%d/%d bytes used\n", modelRunner.GetArenaUsedBytes(), modelRunner.ArenaBytes);
+	//modelRunner.Initialize();
+	//auto& opResolver = modelRunner.GetOpResolver();
+	//opResolver.AddConv2D();
+	//opResolver.AddMaxPool2D();
+	//opResolver.AddReshape();
+	//opResolver.AddFullyConnected();
+	//opResolver.AddSoftmax();
+	//if (!modelRunner.Allocate()) return 1;
+	//::printf("%d/%d bytes used\n", modelRunner.GetArenaUsedBytes(), modelRunner.ArenaBytes);
 	LABOPlatform::Instance.AttachStdio().Initialize();
 	LABOPlatform::Instance.Initialize();
 	for (;;) Tickable::Tick();

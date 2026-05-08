@@ -23,7 +23,7 @@ if (EXISTS ${picoVscode})
     include(${picoVscode})
 endif()
 # ====================================================================================
-set(PICO_BOARD pico CACHE STRING "Board type")
+set(PICO_BOARD pico2 CACHE STRING "Board type")
 
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
@@ -54,6 +54,9 @@ target_include_directories(test-Recognizer PRIVATE
 )
 
 pico_add_extra_outputs(test-Recognizer)
+
+# assume core 1 never accesses flash
+target_compile_definitions(test-Recognizer PUBLIC PICO_FLASH_ASSUME_CORE1_SAFE=1)
 
 target_link_libraries(test-Recognizer jxglib_ML)
 target_link_libraries(test-Recognizer jxglib_LABOPlatform_FullCmd)
