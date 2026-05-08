@@ -5,10 +5,22 @@
 
 using namespace jxglib;
 
-TickableEntry(task, 1000)
+TickableEntry(task1, 1000)
 {
     static int count = 0;
-    printf("Tick: %d\n", count++);
+    printf("task1: %d\n", count++);
+}
+
+TickableEntry(task2, 2000)
+{
+    static int count = 0;
+    printf("task2: %d\n", count++);
+}
+
+TickableEntry(task3, 3000)
+{
+    static int count = 0;
+    printf("task3: %d\n", count++);
 }
 
 int main()
