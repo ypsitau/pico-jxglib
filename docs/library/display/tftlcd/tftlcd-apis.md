@@ -30,6 +30,8 @@ Edit the source file as follows:
 {% include "./sample/tftlcd-apis/tftlcd-apis.cpp" %}
 ```
 
+## Running the Program
+
 ![tftlcd-apis.jpg](images/tftlcd-apis.jpg)
 
 ## Program Explanation
