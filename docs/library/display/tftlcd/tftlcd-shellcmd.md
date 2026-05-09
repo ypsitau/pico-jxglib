@@ -37,3 +37,36 @@ Edit the source file as follows:
 ```cpp title="tftlcd-shellcmd.cpp" linenums="1"
 {% include "./sample/tftlcd-shellcmd/tftlcd-shellcmd.cpp" %}
 ```
+
+## Running the Program
+
+```text
+L:>spi1 -p 14,15 --baudrate:50000000
+L:>display-st7789 setup {spi:1 rst:10 dc:11 cs:12 bl:13 dir:rotate90}
+```
+
+```text
+L:>display
+```
+
+```text
+L:>spi1 -p 14,15 --baudrate:50000000
+L:>display-st7735 setup {spi:1 rst:10 dc:11 cs:12 bl:13 dir:rotate90}
+```
+
+```text
+L:>spi1 -p 14,15 --baudrate:50000000
+L:>display-ili9341 setup {spi:1 rst:10 dc:11 cs:12 bl:13 dir:rotate90}
+```
+
+```text
+L:>spi1 -p 14,15 --baudrate:50000000
+L:>display-ili9488 setup {spi:1 rst:10 dc:11 cs:12 bl:13 dir:rotate90}
+```
+
+`.startup`
+
+```text title=".startup"
+spi1 -p 14,15 --baudrate:50000000
+display-st7789 setup {spi:1 rst:10 dc:11 cs:12 bl:13 dir:rotate90}
+```

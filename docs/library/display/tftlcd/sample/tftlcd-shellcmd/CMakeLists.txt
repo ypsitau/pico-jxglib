@@ -23,7 +23,7 @@ if (EXISTS ${picoVscode})
     include(${picoVscode})
 endif()
 # ====================================================================================
-set(PICO_BOARD pico CACHE STRING "Board type")
+set(PICO_BOARD pico2 CACHE STRING "Board type")
 
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
@@ -58,6 +58,7 @@ pico_add_extra_outputs(tftlcd-shellcmd)
 # mkdocs-start
 target_link_libraries(tftlcd-shellcmd
     jxglib_Shell jxglib_Serial jxglib_ShellCmd_Basic
+    jxglib_ShellCmd_SPI
     jxglib_ShellCmd_Display_TFT_LCD jxglib_DrawableTest)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 # mkdocs-end
