@@ -5,7 +5,7 @@ If the LCD device has a CS (Chip Select) pin, you can connect multiple devices i
 Here, let's try connecting two ST7789s. The breadboard wiring image is as follows:
 
 
-![circuit-st7789-multi.png](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-01-31-tft-lcd-cont/circuit-st7789-multi.png)
+![circuit-st7789-multi.png](images/circuit-st7789-multi.png)
 
 Rewrite the source file `lcdtest.cpp` as follows:
 
@@ -35,7 +35,7 @@ int main()
 }
 ```
 
-![lcdtest-multi.jpg](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-01-31-tft-lcd-cont/lcdtest-multi.jpg)
+![tftlcd-multi.jpg](images/tftlcd-multi.jpg)
 
 As long as you have enough GPIOs, you can connect as many LCDs as you want to the same SPI interface... or so you'd like to think, but if you connect too many, the signal waveform seems to deteriorate. I confirmed that you can connect up to four LCDs to the same SPI[^multi-connect], but if one of them is an ILI9341, it does not display.
 

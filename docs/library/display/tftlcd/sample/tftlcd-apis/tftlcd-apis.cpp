@@ -8,21 +8,6 @@
 
 using namespace jxglib;
 
-void TestAPIs(Display::Base& display)
-{
-    display.DrawImage(20, 20, image_cat_240x320, {20, 20, 200, 200});
-    display.SetFont(Font::shinonome16);
-    const char* str = "I am a cat";
-    Size sizeStr = display.CalcStringSize(str);
-    int x = (display.GetWidth() - sizeStr.width) / 2, y = 230;
-    display.DrawString(x, y, str);
-    display.DrawRect(x - 8, y - 4, sizeStr.width + 8 * 2, sizeStr.height + 4 * 2, Color::white);
-    display.DrawRectFill(0, 260, 55, 60, Color::red);
-    display.DrawRectFill(60, 260, 55, 60, Color::green);
-    display.DrawRectFill(120, 260, 55, 60, Color::blue);
-    display.DrawRectFill(180, 260, 55, 60, Color::aqua);
-}
-
 int main()
 {
     ::stdio_init_all();
@@ -35,7 +20,17 @@ int main()
     GPIO15.set_function_SPI1_TX();
     Display::ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
     display.Initialize(Display::Dir::Rotate0);
-    TestAPIs(display);
+    display.DrawImage(20, 20, image_cat_240x320, {20, 20, 200, 200});
+    display.SetFont(Font::shinonome16);
+    const char* str = "I am a cat";
+    Size sizeStr = display.CalcStringSize(str);
+    int x = (display.GetWidth() - sizeStr.width) / 2, y = 230;
+    display.DrawString(x, y, str);
+    display.DrawRect(x - 8, y - 4, sizeStr.width + 8 * 2, sizeStr.height + 4 * 2, Color::white);
+    display.DrawRectFill(0, 260, 55, 60, Color::red);
+    display.DrawRectFill(60, 260, 55, 60, Color::green);
+    display.DrawRectFill(120, 260, 55, 60, Color::blue);
+    display.DrawRectFill(180, 260, 55, 60, Color::aqua);
     for (;;) {
         Tickable::Tick();
     }

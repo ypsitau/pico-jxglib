@@ -28,35 +28,35 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(tftlcd-test C CXX ASM)
+project(tftlcd-hardcoded C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(tftlcd-test tftlcd-test.cpp )
+add_executable(tftlcd-hardcoded tftlcd-hardcoded.cpp )
 
-pico_set_program_name(tftlcd-test "tftlcd-test")
-pico_set_program_version(tftlcd-test "0.1")
+pico_set_program_name(tftlcd-hardcoded "tftlcd-hardcoded")
+pico_set_program_version(tftlcd-hardcoded "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(tftlcd-test 1)
-pico_enable_stdio_usb(tftlcd-test 0)
+pico_enable_stdio_uart(tftlcd-hardcoded 1)
+pico_enable_stdio_usb(tftlcd-hardcoded 0)
 
 # Add the standard library to the build
-target_link_libraries(tftlcd-test
+target_link_libraries(tftlcd-hardcoded
         pico_stdlib)
 
 # Add the standard include files to the build
-target_include_directories(tftlcd-test PRIVATE
+target_include_directories(tftlcd-hardcoded PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(tftlcd-test)
+pico_add_extra_outputs(tftlcd-hardcoded)
 
 # mkdocs-start
-target_link_libraries(tftlcd-test
+target_link_libraries(tftlcd-hardcoded
     jxglib_Shell jxglib_Serial jxglib_ShellCmd_Basic
     jxglib_Display_ST7789 jxglib_DrawableTest)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)

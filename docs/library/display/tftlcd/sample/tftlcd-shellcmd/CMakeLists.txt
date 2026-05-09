@@ -28,35 +28,36 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(tickable-none C CXX ASM)
+project(tftlcd-shellcmd C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(tickable-none tickable-none.cpp )
+add_executable(tftlcd-shellcmd tftlcd-shellcmd.cpp )
 
-pico_set_program_name(tickable-none "tickable-none")
-pico_set_program_version(tickable-none "0.1")
+pico_set_program_name(tftlcd-shellcmd "tftlcd-shellcmd")
+pico_set_program_version(tftlcd-shellcmd "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(tickable-none 1)
-pico_enable_stdio_usb(tickable-none 0)
+pico_enable_stdio_uart(tftlcd-shellcmd 1)
+pico_enable_stdio_usb(tftlcd-shellcmd 0)
 
 # Add the standard library to the build
-target_link_libraries(tickable-none
+target_link_libraries(tftlcd-shellcmd
         pico_stdlib)
 
 # Add the standard include files to the build
-target_include_directories(tickable-none PRIVATE
+target_include_directories(tftlcd-shellcmd PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(tickable-none)
+pico_add_extra_outputs(tftlcd-shellcmd)
 
 # mkdocs-start
-target_link_libraries(tickable-none
-    jxglib_Shell jxglib_Serial jxglib_ShellCmd_Basic)
+target_link_libraries(tftlcd-shellcmd
+    jxglib_Shell jxglib_Serial jxglib_ShellCmd_Basic
+    jxglib_ShellCmd_Display_TFT_LCD jxglib_DrawableTest)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 # mkdocs-end

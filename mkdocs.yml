@@ -6,6 +6,7 @@ repo_name: ypsitau/pico-jxglib
 
 nav:
     - Home: index.md
+    #--------------------------------------------------------------------------
     - Shell:
         - Overview: shell/index.md
         - Setting Up pico-jxgLABO: shell/setup-labo.md
@@ -90,12 +91,17 @@ nav:
                 - Video Streaming to Host PC: shell/camera/ov7670/ov7670-video-streaming.md
                 - Real-Time Display on TFT Display: shell/camera/ov7670/ov7670-display.md
                 - Setting Various Parameters: shell/camera/ov7670/ov7670-params.md
+    #--------------------------------------------------------------------------
     - Library APIs:
         - Overview: library/index.md
         - LABOPlatform: library/labo-platform/index.md
         - Core:
             - Overview: library/core/index.md
-            - Multitasking: library/core/multitasking/index.md
+            - Multitasking:
+                - Overview: library/core/multitasking/index.md
+                - Tickable: library/core/multitasking/tickable-tick.md
+                - Running a Single Task: library/core/multitasking/tickable-single.md
+                - Running Multiple Tasks: library/core/multitasking/tickable-multi.md
         - Shell:
             - Overview: library/shell/index.md
             - Connectability:
@@ -146,10 +152,10 @@ nav:
             - TFT LCD:
                 - Overview: library/display/tftlcd/index.md
                 - Sample Program:
-                    - Create Display in Program: library/display/tftlcd/create-in-program.md
-                    - Create Display in Shell: library/display/tftlcd/create-in-shell.md
-                    - Drawing APIs: library/display/tftlcd/sample-apis.md
-                    - Multiple LCDs: library/display/tftlcd/sample-multi.md
+                    - Hardcoded: library/display/tftlcd/tftlcd-hardcoded.md
+                    - Shell Command: library/display/tftlcd/tftlcd-shellcmd.md
+                    - Drawing APIs: library/display/tftlcd/tftlcd-apis.md
+                    - Multiple LCDs: library/display/tftlcd/tftlcd-multi.md
             - OLED:
                 - Overview: library/display/oled/index.md
             - WS2812:
@@ -187,9 +193,11 @@ nav:
                     - Stdio Input: library/toolkit/lvgl/lvgl-stdio.md
             - Tiny ML:
                 - Overview: library/toolkit/tiny-ml/index.md
+    #--------------------------------------------------------------------------
     - Applications:
         - Overview: applications/index.md
         - Character Recognizer: applications/character-recognizer/index.md
+    #--------------------------------------------------------------------------
     - Development Environment:
         - Overview: development/index.md
         - Getting Started with Pico SDK: development/pico-sdk/index.md

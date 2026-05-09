@@ -1,62 +1,61 @@
 # Drawing APIs
 
-```cpp title="tftlcd-test.cpp" linenums="1"
-#include <stdio.h>
-#include "pico/stdlib.h"
-#include "jxglib/Display/ST7789.h"
-#include "jxglib/sample/cat-240x320.h"
-#include "jxglib/Font/shinonome16-japanese-level1.h"
+## Building and Flashing the Program
 
-using namespace jxglib;
+Create a new Pico SDK project named `tftlcd-apis`.
 
-int main()
-{
-  // Initialize devices
-  ::stdio_init_all();
-  ::spi_init(spi1, 125 * 1000 * 1000);
-  GPIO14.set_function_SPI1_SCK();
-  GPIO15.set_function_SPI1_TX();
-  Display::ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
-  display.Initialize(Display::Dir::Rotate0);
-  // Display items
-  display.DrawImage(20, 20, image_cat_240x320, {20, 20, 200, 200});
-  display.SetFont(Font::shinonome16);
-  const char* str = "I am a cat";
-  Size sizeStr = display.CalcStringSize(str);
-  int x = (display.GetWidth() - sizeStr.width) / 2, y = 230;
-  display.DrawString(x, y, str);
-  display.DrawRect(x - 8, y - 4, sizeStr.width + 8 * 2, sizeStr.height + 4 * 2, Color::white);
-  display.DrawRectFill(0, 260, 55, 60, Color::red);
-  display.DrawRectFill(60, 260, 55, 60, Color::green);
-  display.DrawRectFill(120, 260, 55, 60, Color::blue);
-  display.DrawRectFill(180, 260, 55, 60, Color::aqua);
-}
+{% include-markdown "include/create-open-project.md" %}
+
+Clone the pico-jxglib repository from GitHub so the direcory structure looks like this:
+
+```text
+├── pico-jxglib/
+└── tftlcd-apis/
+    ├── CMakeLists.txt
+    ├── tftlcd-apis.cpp
+    └── ...
 ```
 
-![tftlcd-test-apis.jpg](https://raw.githubusercontent.com/ypsitau/zenn/main/images/2025-01-31-tft-lcd-cont/tftlcd-test-apis.jpg)
+{% include-markdown "include/clone-repository.md" %}
+
+Add the following lines to the end of `CMakeLists.txt`:
+
+```cmake title="CMakeLists.txt" linenums="1"
+{% include "./sample/tftlcd-apis/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
+```
+
+Edit the source file as follows:
+
+```cpp title="tftlcd-apis.cpp" linenums="1"
+{% include "./sample/tftlcd-apis/tftlcd-apis.cpp" %}
+```
+
+![tftlcd-apis.jpg](images/tftlcd-apis.jpg)
+
+## Program Explanation
 
 The first half of the source file initializes the device.
 
-```cpp
+```cpp linenums="18"
 ::spi_init(spi1, 125 * 1000 * 1000);
 ```
 
 This is a Pico SDK function. It initializes SPI1 with a clock of 125MHz.
 
-```cpp
+```cpp linenums="19"
 GPIO14.set_function_SPI1_SCK();
 GPIO15.set_function_SPI1_TX();
 ```
 
 Sets GPIO14 and GPIO15 to SPI1 SCK and TX (MOSI), respectively.
 
-```cpp
+```cpp linenums="21"
 Display::ST7789 display(spi1, 240, 320, {RST: GPIO10, DC: GPIO11, CS: GPIO12, BL: GPIO13});
 ```
 
 Creates an instance to operate the ST7789. Specify the SPI to connect, display size, and GPIOs to connect (RST: Reset, DC: Data/Command, CS: Chip Select, BL: Backlight).
 
-```cpp
+```cpp linenums="22"
 display.Initialize(Display::Dir::Rotate0);
 ```
 
@@ -72,37 +71,37 @@ Initializes the LCD and makes it ready for drawing. The argument specifies the L
 
 After this, you can perform drawing operations on the `display` instance.
 
-```cpp
+```cpp linenums="23"
 display.DrawImage(20, 20, image_cat_240x320, {20, 20, 200, 200});
 ```
 
 Draws an image at the specified coordinates. The fourth argument specifies the clipping region within the image.
 
-```cpp
+```cpp linenums="24"
 display.SetFont(Font::shinonome16);
 ```
 
 Specifies the font data `Font::shinonome16` defined in the include file `jxglib/Font/shinonome16-japanese-level1.h`.
 
-```cpp
+```cpp linenums="26"
 Size sizeStr = display.CalcStringSize(str);
 ```
 
 Calculates the size when drawing the string with the specified font.
 
-```cpp
+```cpp linenums="28"
 display.DrawString(x, y, str);
 ```
 
 Draws the string at the specified coordinates.
 
-```cpp
+```cpp linenums="29"
 display.DrawRect(x - 8, y - 4, sizeStr.width + 8 * 2, sizeStr.height + 4 * 2, Color::white);
 ```
 
 Draws a rectangle with specified coordinates, size, and color.
 
-```cpp
+```cpp linenums="30"
 display.DrawRectFill(0, 260, 55, 60, Color::red);
 display.DrawRectFill(60, 260, 55, 60, Color::green);
 display.DrawRectFill(120, 260, 55, 60, Color::blue);
