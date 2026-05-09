@@ -30,13 +30,13 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
     Add the following lines to the end of `CMakeLists.txt`:
 
     ```cmake title="CMakeLists.txt" linenums="1"
-    {% include "./sample/tftlcd-hardcoded-st7789/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
+    {% include "./sample/tftlcd-hardcoded-ili9341/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
     ```
 
     Edit the source file as follows:
 
     ```cpp title="tftlcd-hardcoded.cpp" linenums="1"
-    {% include "./sample/tftlcd-hardcoded-st7789/tftlcd-hardcoded.cpp" %}
+    {% include "./sample/tftlcd-hardcoded-ili9341/tftlcd-hardcoded.cpp" %}
     ```
 === "ST77789 (240x240)"
     The breadboard wiring image is as follows:
@@ -46,14 +46,13 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
     Add the following lines to the end of `CMakeLists.txt`:
 
     ```cmake title="CMakeLists.txt" linenums="1"
-    target_link_libraries(tftlcd-hardcoded jxglib_Display_ST7789 jxglib_DrawableTest)
-    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+    {% include "./sample/tftlcd-hardcoded-st7789-240x240/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
     ```
 
     Edit the source file as follows:
 
     ```cpp title="tftlcd-hardcoded.cpp" linenums="1"
-    {% include "./sample/tftlcd-hardcoded-st7789/tftlcd-hardcoded.cpp" %}
+    {% include "./sample/tftlcd-hardcoded-st7789-240x240/tftlcd-hardcoded.cpp" %}
     ```
 === "ST7735 (80x160)"
     The breadboard wiring image is as follows:
@@ -63,14 +62,13 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
     Add the following lines to the end of `CMakeLists.txt`:
 
     ```cmake title="CMakeLists.txt" linenums="1"
-    target_link_libraries(tftlcd-hardcoded jxglib_Display_ST7735 jxglib_DrawableTest)
-    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+    {% include "./sample/tftlcd-hardcoded-st7735-80x160/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
     ```
 
     Edit the source file as follows:
 
     ```cpp title="tftlcd-hardcoded.cpp" linenums="1"
-    {% include "./sample/tftlcd-hardcoded-st7789/tftlcd-hardcoded.cpp" %}
+    {% include "./sample/tftlcd-hardcoded-st7735-80x160/tftlcd-hardcoded.cpp" %}
     ```
 === "ST7735 (128x160)"
     The breadboard wiring image is as follows:
@@ -80,14 +78,13 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
     Add the following lines to the end of `CMakeLists.txt`:
 
     ```cmake title="CMakeLists.txt" linenums="1"
-    target_link_libraries(tftlcd-hardcoded jxglib_Display_ST7735 jxglib_DrawableTest)
-    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+    {% include "./sample/tftlcd-hardcoded-st7735-128x160/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
     ```
 
     Edit the source file as follows:
 
     ```cpp title="tftlcd-hardcoded.cpp" linenums="1"
-    {% include "./sample/tftlcd-hardcoded-st7789/tftlcd-hardcoded.cpp" %}
+    {% include "./sample/tftlcd-hardcoded-st7735-128x160/tftlcd-hardcoded.cpp" %}
     ```
 
 === "ILI9341"
@@ -98,14 +95,13 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
     Add the following lines to the end of `CMakeLists.txt`:
 
     ```cmake title="CMakeLists.txt" linenums="1"
-    target_link_libraries(tftlcd-hardcoded jxglib_Display_ILI9341 jxglib_DrawableTest)
-    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+    {% include "./sample/tftlcd-hardcoded-ili9341/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
     ```
 
     Edit the source file as follows:
 
     ```cpp title="tftlcd-hardcoded.cpp" linenums="1"
-    {% include "./sample/tftlcd-hardcoded-st7789/tftlcd-hardcoded.cpp" %}
+    {% include "./sample/tftlcd-hardcoded-ili9341/tftlcd-hardcoded.cpp" %}
     ```
 
 === "ILI9488"
@@ -116,14 +112,13 @@ Clone the pico-jxglib repository from GitHub so the direcory structure looks lik
     Add the following lines to the end of `CMakeLists.txt`:
 
     ```cmake title="CMakeLists.txt" linenums="1"
-    target_link_libraries(tftlcd-hardcoded jxglib_Display_ILI9488 jxglib_DrawableTest)
-    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
+    {% include "./sample/tftlcd-hardcoded-ili9488/CMakeLists.txt" start="# mkdocs-start" end="# mkdocs-end" %}
     ```
 
     Edit the source file as follows:
 
     ```cpp title="tftlcd-hardcoded.cpp" linenums="1"
-    {% include "./sample/tftlcd-hardcoded-st7789/tftlcd-hardcoded.cpp" %}
+    {% include "./sample/tftlcd-hardcoded-ili9488/tftlcd-hardcoded.cpp" %}
     ```
 
 ## Running the Program
