@@ -92,8 +92,9 @@ nav:
                 - Real-Time Display on TFT Display: shell/camera/ov7670/ov7670-display.md
                 - Setting Various Parameters: shell/camera/ov7670/ov7670-params.md
     #--------------------------------------------------------------------------
-    - Library APIs:
+    - Programming:
         - Overview: library/index.md
+        - Sample Programs: library/labo-platform/sample-programs.md
         - LABOPlatform: library/labo-platform/index.md
         - Core:
             - Overview: library/core/index.md
