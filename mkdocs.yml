@@ -101,7 +101,8 @@ nav:
             - Basic Types: library/core/basic-types/index.md
             - Multitasking:
                 - Overview: library/core/multitasking/index.md
-                - Tickable: library/core/multitasking/tickable-tick.md
+                - Tickable and Main Loop: library/core/multitasking/tickable-mainloop.md
+                - List of Tickables: library/core/multitasking/tickable-list.md
                 - Running a Single Task: library/core/multitasking/tickable-single.md
                 - Running Multiple Tasks: library/core/multitasking/tickable-multi.md
         - Shell:
