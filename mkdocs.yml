@@ -98,6 +98,7 @@ nav:
         - LABOPlatform: library/labo-platform/index.md
         - Core:
             - Overview: library/core/index.md
+            - Basic Types: library/core/basic-types/index.md
             - Multitasking:
                 - Overview: library/core/multitasking/index.md
                 - Tickable: library/core/multitasking/tickable-tick.md
