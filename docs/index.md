@@ -207,6 +207,9 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     You can write PIO assembly code directly in the C++ code and use it in your firmware, allowing you to take advantage of the powerful PIO capabilities of the Pico without needing to write separate assembly files.
 
+    [:octicons-arrow-right-24: Learn More](library/peripheral/pio/index.md)
+
+
 -   :material-connection:{ .lg .middle } **GPIO Control**
 
     ---
