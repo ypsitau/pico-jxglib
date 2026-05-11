@@ -140,6 +140,8 @@ nav:
             - UART: library/peripheral/uart/index.md
             - PIO:
                 - Overview: library/peripheral/pio/index.md
+                - Directives: library/peripheral/pio/pio-directives.md
+                - Instructions: library/peripheral/pio/pio-instructions.md
         - Device:
             - Built-in LED: library/device/builtin-led/index.md
             - RTC (Real Time Clock): library/device/rtc/index.md

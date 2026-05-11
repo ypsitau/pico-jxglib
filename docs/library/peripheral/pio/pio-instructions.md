@@ -1,7 +1,4 @@
-# PIO
-
-
-## Instructions
+# Instructions
 
 All instructions can be used with the following modifiers:
 
