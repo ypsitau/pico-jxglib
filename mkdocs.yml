@@ -141,6 +141,7 @@ nav:
             - PIO:
                 - Overview: library/peripheral/pio/index.md
                 - How to Program PIO: library/peripheral/pio/pio-how-to.md
+                - C++ vs pioasm: library/peripheral/pio/pio-cpp-vs-asm.md
                 - Directives: library/peripheral/pio/pio-directives.md
                 - Instructions: library/peripheral/pio/pio-instructions.md
         - Device:
