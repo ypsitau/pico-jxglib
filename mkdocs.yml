@@ -140,6 +140,7 @@ nav:
             - UART: library/peripheral/uart/index.md
             - PIO:
                 - Overview: library/peripheral/pio/index.md
+                - How to Program PIO: library/peripheral/pio/pio-how-to.md
                 - Directives: library/peripheral/pio/pio-directives.md
                 - Instructions: library/peripheral/pio/pio-instructions.md
         - Device:

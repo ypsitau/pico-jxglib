@@ -1,0 +1,449 @@
+;------------------------------------------------------------------------------
+.program addition
+	pull
+	mov x, ~osr
+	pull
+	mov y, osr
+	jmp test        ; this loop is equivalent to the following C code:
+incr:               ; while (y--)
+	jmp x-- test    ;     x--;
+test:               ; This has the effect of subtracting y from x, eventually.
+	jmp y-- incr
+	mov isr, ~x
+	push
+
+;------------------------------------------------------------------------------
+.program apa102_mini
+.side_set 1
+    out pins, 1   side 0   ; Stall here when no data (still asserts clock low)
+    nop           side 1
+
+;------------------------------------------------------------------------------
+.program blink
+    pull block
+    out y, 32
+.wrap_target
+    mov x, y
+    set pins, 1   ; Turn LED on
+lp1:
+    jmp x-- lp1   ; Delay for (x + 1) cycles, x is a 32 bit number
+    mov x, y
+    set pins, 0   ; Turn LED off
+lp2:
+    jmp x-- lp2   ; Delay for the same number of cycles again
+.wrap             ; Blink forever!
+
+;------------------------------------------------------------------------------
+.program clocked_input
+    wait 0 pin 1
+    wait 1 pin 1
+    in pins, 1
+
+;------------------------------------------------------------------------------
+.program differential_manchester_tx
+.side_set 1 opt
+public start:
+initial_high:
+    out x, 1                     ; Start of bit period: always assert transition
+    jmp !x high_0     side 1 [6] ; Test the data bit we just shifted out of OSR
+high_1:
+    nop
+    jmp initial_high  side 0 [6] ; For `1` bits, also transition in the middle
+high_0:
+    jmp initial_low          [7] ; Otherwise, the line is stable in the middle
+
+initial_low:
+    out x, 1                     ; Always shift 1 bit from OSR to X so we can
+    jmp !x low_0      side 0 [6] ; branch on it. Autopull refills OSR for us.
+low_1:
+    nop
+    jmp initial_low   side 1 [6] ; If there are two transitions, return to
+low_0:
+    jmp initial_high         [7] ; the initial line state is flipped!
+
+;------------------------------------------------------------------------------
+.program hub75_row
+.side_set 2
+.wrap_target
+    out pins, 5 [7]    side 0x2 ; Deassert OEn, output row select
+    out x, 27   [7]    side 0x3 ; Pulse LATCH, get OEn pulse width
+pulse_loop:
+    jmp x-- pulse_loop side 0x0 ; Assert OEn for x+1 cycles
+.wrap
+
+;------------------------------------------------------------------------------
+.program hub75_data_rgb888
+.side_set 1
+public entry_point:
+.wrap_target
+public shift0:
+    pull             side 0 ; gets patched to `out null, n` if n nonzero (otherwise the PULL is required for fencing)
+    in osr, 1        side 0 ; shuffle shuffle shuffle
+    out null, 8      side 0
+    in osr, 1        side 0
+    out null, 8      side 0
+    in osr, 1        side 0
+    out null, 32     side 0 ; Discard remainder of OSR contents
+public shift1:
+    pull             side 0 ; gets patched to out null, n if n is nonzero (otherwise PULL required)
+    in osr, 1        side 1 ; Note this posedge clocks in the data from the previous iteration
+    out null, 8      side 1
+    in osr, 1        side 1
+    out null, 8      side 1
+    in osr, 1        side 1
+    out null, 32     side 1
+    in null, 26      side 1 ; Note we are just doing this little manoeuvre here to get GPIOs in the order
+    mov pins, ::isr  side 1 ; R0, G0, B0, R1, G1, B1. Can go 1 cycle faster if reversed
+.wrap
+
+;------------------------------------------------------------------------------
+.program i2c
+.side_set 1 opt pindirs
+do_nack:
+    jmp y-- entry_point        ; Continue if NAK was expected
+    irq wait 0 rel             ; Otherwise stop, ask for help
+
+do_byte:
+    set x, 7                   ; Loop 8 times
+bitloop:
+    out pindirs, 1         [7] ; Serialise write data (all-ones if reading)
+    nop             side 1 [2] ; SCL rising edge
+    wait 1 pin, 1          [4] ; Allow clock to be stretched
+    in pins, 1             [7] ; Sample read data in middle of SCL pulse
+    jmp x-- bitloop side 0 [7] ; SCL falling edge
+
+    ; Handle ACK pulse
+    out pindirs, 1         [7] ; On reads, we provide the ACK.
+    nop             side 1 [7] ; SCL rising edge
+    wait 1 pin, 1          [7] ; Allow clock to be stretched
+    jmp pin do_nack side 0 [2] ; Test SDA for ACK/NAK, fall through if ACK
+
+public entry_point:
+.wrap_target
+    out x, 6                   ; Unpack Instr count
+    out y, 1                   ; Unpack the NAK ignore bit
+    jmp !x do_byte             ; Instr == 0, this is a data record.
+    out null, 32               ; Instr > 0, remainder of this OSR is invalid
+do_exec:
+    out exec, 16               ; Execute one instruction per FIFO word
+    jmp x-- do_exec            ; Repeat n + 1 times
+.wrap
+
+;------------------------------------------------------------------------------
+.program manchester_tx
+.side_set 1 opt
+.wrap_target
+do_1:
+    nop         side 0 [5] ; Low for 6 cycles (5 delay, +1 for nop)
+    jmp get_bit side 1 [3] ; High for 4 cycles. 'get_bit' takes another 2 cycles
+do_0:
+    nop         side 1 [5] ; Output high for 6 cycles
+    nop         side 0 [3] ; Output low for 4 cycles
+public start:
+get_bit:
+    out x, 1               ; Always shift out one bit from OSR to X, so we can
+    jmp !x do_0            ; branch on it. Autopull refills the OSR when empty.
+.wrap
+
+;------------------------------------------------------------------------------
+.program nec_carrier_burst
+.define NUM_CYCLES 21               ; how many carrier cycles to generate
+.define BURST_IRQ 7                 ; which IRQ should trigger a carrier burst
+.define public TICKS_PER_LOOP 4     ; the number of instructions in the loop (for timing)
+
+.wrap_target
+    set X, (NUM_CYCLES - 1)         ; initialise the loop counter
+    wait 1 irq BURST_IRQ            ; wait for the IRQ then clear it
+cycle_loop:
+    set pins, 1                     ; set the pin high (1 cycle)
+    set pins, 0 [1]                 ; set the pin low (2 cycles)
+    jmp X--, cycle_loop             ; (1 more cycle)
+.wrap
+
+;------------------------------------------------------------------------------
+.program nec_carrier_control
+.define BURST_IRQ 7                     ; the IRQ used to trigger a carrier burst
+.define NUM_INITIAL_BURSTS 16           ; how many bursts to transmit for a 'sync burst'
+
+.wrap_target
+    pull                                ; fetch a data word from the transmit FIFO into the
+                                        ; output shift register, blocking if the FIFO is empty
+
+    set X, (NUM_INITIAL_BURSTS - 1)     ; send a sync burst (9ms)
+long_burst:
+    irq BURST_IRQ
+    jmp X-- long_burst
+
+    nop [15]                            ; send a 4.5ms space
+    irq BURST_IRQ [1]                   ; send a 562.5us burst to begin the first data bit
+
+data_bit:
+    out X, 1                            ; shift the least-significant bit from the OSR
+    jmp !X burst                        ; send a short delay for a '0' bit
+    nop [3]                             ; send an additional delay for a '1' bit
+burst:
+    irq BURST_IRQ                       ; send a 562.5us burst to end the data bit
+
+jmp !OSRE data_bit                      ; continue sending bits until the OSR is empty
+
+.wrap                                   ; fetch another data word from the FIFO
+
+;------------------------------------------------------------------------------
+.program nec_receive
+.define BURST_LOOP_COUNTER 30                   ; the detection threshold for a 'frame sync' burst
+.define BIT_SAMPLE_DELAY 15                     ; how long to wait after the end of the burst before sampling
+
+.wrap_target
+
+next_burst:
+    set X, BURST_LOOP_COUNTER
+    wait 0 pin 0                                ; wait for the next burst to start
+
+burst_loop:
+    jmp pin data_bit                            ; the burst ended before the counter expired
+    jmp X-- burst_loop                          ; wait for the burst to end
+
+                                                ; the counter expired - this is a sync burst
+    mov ISR, NULL                               ; reset the Input Shift Register
+    wait 1 pin 0                                ; wait for the sync burst to finish
+    jmp next_burst                              ; wait for the first data bit
+
+data_bit:
+    nop [ BIT_SAMPLE_DELAY - 1 ]                ; wait for 1.5 burst periods before sampling the bit value
+    in PINS, 1                                  ; if the next burst has started then detect a '0' (short gap)
+                                                ; otherwise detect a '1' (long gap)
+                                                ; after 32 bits the ISR will autopush to the receive FIFO
+.wrap
+
+;------------------------------------------------------------------------------
+.program onewire
+.side_set 1 pindirs
+
+PUBLIC reset_bus:
+        set x, 28       side 1  [15]    ; pull bus low                          16
+loop_a: jmp x-- loop_a  side 1  [15]    ;                                  29 x 16
+        set x, 8        side 0  [6]     ; release bus                            7
+loop_b: jmp x-- loop_b  side 0  [6]     ;                                    9 x 7
+
+        mov isr, pins   side 0          ; read all pins to ISR (avoids autopush) 1
+        push            side 0          ; push result manually                   1
+        set x, 24       side 0  [7]     ;                                        8
+loop_c: jmp x-- loop_c  side 0  [15]    ;                                  25 x 16
+
+.wrap_target
+PUBLIC fetch_bit:
+        out x, 1        side 0          ; shift next bit from OSR (autopull)     1
+        jmp !x  send_0  side 1  [5]     ; pull bus low, branch if sending '0'    6
+
+send_1: ; send a '1' bit
+        set x, 2        side 0  [8]     ; release bus, wait for slave response   9
+        in pins, 1      side 0  [4]     ; read bus, shift bit to ISR (autopush)  5
+loop_e: jmp x-- loop_e  side 0  [15]    ;                                   3 x 16
+        jmp fetch_bit   side 0          ;                                        1
+
+send_0: ; send a '0' bit
+        set x, 2        side 1  [5]     ; continue pulling bus low               6
+loop_d: jmp x-- loop_d  side 1  [15]    ;                                   3 x 16
+        in null, 1      side 0  [8]     ; release bus, shift 0 to ISR (autopush) 9
+.wrap
+
+;------------------------------------------------------------------------------
+.program pwm
+.side_set 1 opt
+    pull noblock    side 0 ; Pull from FIFO to OSR if available, else copy X to OSR.
+    mov x, osr             ; Copy most-recently-pulled value back to scratch X
+    mov y, isr             ; ISR contains PWM period. Y used as counter.
+countloop:
+    jmp x!=y noset         ; Set pin high if X == Y, keep the two paths length matched
+    jmp skip        side 1
+noset:
+    nop                    ; Single dummy cycle to keep the two paths the same length
+skip:
+    jmp y-- countloop      ; Loop until Y hits 0, then pull a fresh PWM value from FIFO
+
+;------------------------------------------------------------------------------
+.program quadrature_encoder
+.origin 0
+; 00 state
+    JMP update    ; read 00
+    JMP decrement ; read 01
+    JMP increment ; read 10
+    JMP update    ; read 11
+
+; 01 state
+    JMP increment ; read 00
+    JMP update    ; read 01
+    JMP update    ; read 10
+    JMP decrement ; read 11
+
+; 10 state
+    JMP decrement ; read 00
+    JMP update    ; read 01
+    JMP update    ; read 10
+    JMP increment ; read 11
+
+; 11 state
+    JMP update    ; read 00
+    JMP increment ; read 01
+decrement:
+    JMP Y--, update ; read 10
+
+.wrap_target
+update:
+    MOV ISR, Y      ; read 11
+    PUSH noblock
+
+sample_pins:
+    OUT ISR, 2
+    IN PINS, 2
+
+    MOV OSR, ISR
+    MOV PC, ISR
+
+increment:
+    MOV Y, ~Y
+    JMP Y--, increment_cont
+increment_cont:
+    MOV Y, ~Y
+.wrap    ; the .wrap here avoids one jump instruction and saves a cycle too
+
+;------------------------------------------------------------------------------
+.program quadrature_encoder_substep
+.origin 0
+	IN X, 32
+	IN Y, 32
+
+update_state:
+	OUT ISR, 2
+	IN PINS, 2
+	MOV OSR, ~ISR
+	MOV PC, OSR
+
+decrement:
+	JMP Y--, decrement_cont
+decrement_cont:
+	SET X, 1
+	MOV X, ::X
+check_fifo:
+.wrap_target
+	JMP X--, check_fifo_cont
+check_fifo_cont:
+	MOV PC, ~STATUS
+
+increment:
+	MOV Y, ~Y
+	JMP Y--, increment_cont
+increment_cont:
+	MOV Y, ~Y
+	SET X, 0
+	.wrap
+
+invalid:
+	JMP update_state
+
+	JMP invalid
+	JMP increment		[0]
+	JMP decrement		[1]
+	JMP check_fifo		[4]
+
+	JMP decrement		[1]
+	JMP invalid
+	JMP check_fifo		[4]
+	JMP increment		[0]
+
+	JMP increment		[0]
+	JMP check_fifo		[4]
+	JMP invalid
+	JMP decrement		[1]
+
+	JMP check_fifo		[4]
+	JMP decrement		[1]
+	JMP increment		[0]
+	JMP update_state	[1]
+
+;------------------------------------------------------------------------------
+.program spi_cpha0
+.side_set 1
+    out pins, 1 side 0 [1] ; Stall here on empty (sideset proceeds even if
+    in pins, 1  side 1 [1] ; instruction stalls, so we stall with SCK low)
+
+;------------------------------------------------------------------------------
+.program spi_cpha1
+.side_set 1
+    out x, 1    side 0     ; Stall here on empty (keep SCK deasserted)
+    mov pins, x side 1 [1] ; Output data, assert SCK (mov pins uses OUT mapping)
+    in pins, 1  side 0     ; Input data, deassert SCK
+
+;------------------------------------------------------------------------------
+.program squarewave
+    set pindirs, 1   ; Set pin to output
+again:
+    set pins, 1 [1]  ; Drive pin high and then delay for one cycle
+    set pins, 0      ; Drive pin low
+    jmp again        ; Set PC to label `again`
+
+;------------------------------------------------------------------------------
+.program squarewave_fast
+    set pindirs, 1   ; Set pin to output
+.wrap_target
+	set pins, 1      ; Drive pin high
+	set pins, 0      ; Drive pin low
+.wrap
+
+;------------------------------------------------------------------------------
+.program squarewave_wrap
+    set pindirs, 1   ; Set pin to output
+.wrap_target
+	set pins, 1 [1]  ; Drive pin high and then delay for one cycle
+	set pins, 0 [1]  ; Drive pin low and then delay for one cycle
+.wrap
+
+;------------------------------------------------------------------------------
+.program st7789_lcd
+.side_set 1
+.wrap_target
+    out pins, 1   side 0 ; stall here if no data (clock low)
+    nop           side 1
+.wrap
+
+;------------------------------------------------------------------------------
+.program uart_rx
+start:
+    wait 0 pin 0        ; Stall until start bit is asserted
+    set x, 7    [10]    ; Preload bit counter, then delay until halfway through
+bitloop:                ; the first data bit (12 cycles incl wait, set).
+    in pins, 1          ; Shift data bit into ISR
+    jmp x-- bitloop [6] ; Loop 8 times, each loop iteration is 8 cycles
+    jmp pin good_stop   ; Check stop bit (should be high)
+
+    irq 4 rel           ; Either a framing error or a break. Set a sticky flag,
+    wait 1 pin 0        ; and wait for line to return to idle state.
+    jmp start           ; Don't push data if we didn't see good framing.
+
+good_stop:              ; No delay before returning to start; a little slack is
+    push                ; important in case the TX clock is slightly too fast.
+
+;------------------------------------------------------------------------------
+.program uart_tx
+.side_set 1 opt
+    pull       side 1 [7]  ; Assert stop bit, or stall with line in idle state
+    set x, 7   side 0 [7]  ; Preload bit counter, assert start bit for 8 clocks
+bitloop:                   ; This loop will run 8 times (8n1 UART)
+    out pins, 1            ; Shift 1 bit from OSR to the first OUT pin
+    jmp x-- bitloop   [6]  ; Each loop iteration is 8 cycles.
+
+;------------------------------------------------------------------------------
+.program ws2812
+.side_set 1
+.define public T1 3
+.define public T2 3
+.define public T3 4
+.wrap_target
+bitloop:
+    out x, 1       side 0 [T3 - 1] ; Side-set still takes place when instruction stalls
+    jmp !x do_zero side 1 [T1 - 1] ; Branch on the bit we shifted out. Positive pulse
+do_one:
+    jmp  bitloop   side 1 [T2 - 1] ; Continue driving high, for a long pulse
+do_zero:
+    nop            side 0 [T2 - 1] ; Or drive low, for a short pulse
+.wrap
