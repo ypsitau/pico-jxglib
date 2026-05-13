@@ -2,4 +2,4 @@ The file system supports RTC (Real Time Clock) modules to record the last modifi
 
 In this page, we will connect an RTC module to the Pico board by using shell commands.
 
-{% include-markdown "../../device/rtc/index.md" start="<!-- mkdocs-start:skip-abstract -->" %}
+{% include-markdown "../../device/rtc/index.md" start="<!-- mkdocs-start:[skip-abstract] -->" %}

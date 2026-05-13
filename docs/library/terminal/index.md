@@ -16,7 +16,7 @@ Before we get to actual projects using Terminal, let's explain OLED devices, whi
 
 ```mermaid
 classDiagram
-  {% include "include/shell-class.mmd" start="%% mkdocs-start:terminal" end="%% mkdocs-end:terminal" %}
+  {% include "include/shell-class.mmd" start="%% mkdocs-start:[terminal]" end="%% mkdocs-end:[terminal]" %}
   {% include "include/shell-class.mmd" start="%% mkdocs-detail-start:terminal" end="%% mkdocs-detail-end:terminal" %}
   classDef Class_Input fill:#ffc
   classDef Class_Output fill:#f8c

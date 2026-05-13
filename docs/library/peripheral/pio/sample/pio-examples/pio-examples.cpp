@@ -16,7 +16,7 @@ int main()
     do {
         PIO::Program program;
         program
-// mkdocs-start:addition
+// mkdocs-start:[addition]
 .program("addition")
     .pull()                 // Pull first operand
     .mov("x", "~osr")       // Store complement of first operand in x
@@ -30,25 +30,25 @@ int main()
     .mov("isr", "~x")       // Store result (complement of x) in ISR
     .push()                 // Push result to FIFO
 .end();
-// mkdocs-end:addition
+// mkdocs-end:[addition]
         CheckProgram(program, addition_program);
     } while (0);
     do {
         PIO::Program program;
         program
-// mkdocs-start:apa102_mini
+// mkdocs-start:[apa102_mini]
 .program("apa102_mini")
 .side_set(1)
     .out("pins", 1) .side(0)    // Stall here when no data (still asserts clock low)
     .nop()          .side(1)
 .end();
-// mkdocs-end:apa102_mini
+// mkdocs-end:[apa102_mini]
         CheckProgram(program, apa102_mini_program);
     } while (0);
     do {
         PIO::Program program;
         program
-// mkdocs-start:blink
+// mkdocs-start:[blink]
 .program("blink")
     .pull().block()
     .out("y", 32)
@@ -63,25 +63,25 @@ int main()
     .jmp("x--", "lp2")      // Delay for the same number of cycles again
 .wrap()                     // Blink forever!
 .end();
-// mkdocs-end:blink
+// mkdocs-end:[blink]
         CheckProgram(program, blink_program);
     } while (0); 
     do {
         PIO::Program program;
         program
-// mkdocs-start:clocked_input
+// mkdocs-start:[clocked_input]
 .program("clocked_input")
     .wait(0, "pin", 1)
     .wait(1, "pin", 1)
     .in("pins", 1)
 .end();
-// mkdocs-end:clocked_input
+// mkdocs-end:[clocked_input]
         CheckProgram(program, clocked_input_program);
     } while (0);
     do {
         PIO::Program program;
         program
-// mkdocs-start:differential_manchester_tx
+// mkdocs-start:[differential_manchester_tx]
 .program("differential_manchester_tx")
 .side_set(1).opt()
 .L("start")
@@ -103,14 +103,14 @@ int main()
 .L("low_0")
     .jmp("initial_high")             [7]    // the initial line state is flipped!
 .end();
-// mkdocs-end:differential_manchester_tx
+// mkdocs-end:[differential_manchester_tx]
         CheckProgram(program, differential_manchester_tx_program);
     } while (0);
     do {
         uint entry_point = 0;
         PIO::Program program;
         program
-// mkdocs-start:i2c
+// mkdocs-start:[i2c]
 .program("i2c")
 .side_set(1).opt().pindirs()
 .L("do_nack")
@@ -143,13 +143,13 @@ int main()
     .jmp("x--", "do_exec")                  // Repeat n + 1 times
 .wrap()
 .end();
-// mkdocs-end:i2c
+// mkdocs-end:[i2c]
         CheckProgram(program, i2c_program);
     } while (0);
     do {
         PIO::Program program;
         program
-// mkdocs-start:hub75_data_rgb888
+// mkdocs-start:[hub75_data_rgb888]
 .program("hub75_data_rgb888")
 .side_set(1)
 .L("entry_point")                   // public entry_point:
@@ -174,13 +174,13 @@ int main()
     .mov("pins", "::isr").side(1)   // R0, G0, B0, R1, G1, B1. Can go 1 cycle faster if reversed
 .wrap()
 .end();
-// mkdocs-end:hub75_data_rgb888
+// mkdocs-end:[hub75_data_rgb888]
         CheckProgram(program, hub75_data_rgb888_program);
     } while (0);
     do {
         PIO::Program program;
         program
-// mkdocs-start:hub75_row
+// mkdocs-start:[hub75_row]
 .program("hub75_row")
 .side_set(2)
 .wrap_target()
@@ -190,13 +190,13 @@ int main()
     .jmp("x--", "pulse_loop").side(0x0) // Assert OEn for x+1 cycles
 .wrap()
 .end();
-// mkdocs-end:hub75_row
+// mkdocs-end:[hub75_row]
         CheckProgram(program, hub75_row_program);
     } while (0);
     do {
         PIO::Program program;
         program
-// mkdocs-start:manchester_tx
+// mkdocs-start:[manchester_tx]
 .program("manchester_tx")
 .side_set(1).opt()
 .wrap_target()
@@ -212,7 +212,7 @@ int main()
     .jmp("!x", "do_0")               // branch on it. Autopull refills the OSR when empty.
 .wrap()
 .end();
-// mkdocs-end:manchester_tx
+// mkdocs-end:[manchester_tx]
         CheckProgram(program, manchester_tx_program);
     } while (0);
     do {
@@ -221,7 +221,7 @@ int main()
         const uint TICKS_PER_LOOP = 4;  // the number of instructions in the loop (for timing)
         PIO::Program program;
         program
-// mkdocs-start:nec_carrier_burst
+// mkdocs-start:[nec_carrier_burst]
 .program("nec_carrier_burst")
 
 
@@ -236,7 +236,7 @@ int main()
     .jmp("x--", "cycle_loop")       // (1 more cycle)
 .wrap()
 .end();
-// mkdocs-end:nec_carrier_burst
+// mkdocs-end:[nec_carrier_burst]
         CheckProgram(program, nec_carrier_burst_program);
     } while (0);
     do {
@@ -244,7 +244,7 @@ int main()
         const uint NUM_INITIAL_BURSTS = 16; // how many bursts to transmit for a 'sync burst'
         PIO::Program program;
         program
-// mkdocs-start:nec_carrier_control
+// mkdocs-start:[nec_carrier_control]
 .program("nec_carrier_control")
 .wrap_target()
     .pull()                             // fetch a data word from the transmit FIFO into the
@@ -269,7 +269,7 @@ int main()
 
 .wrap()                                 // fetch another data word from the FIFO
 .end();
-// mkdocs-end:nec_carrier_control
+// mkdocs-end:[nec_carrier_control]
         CheckProgram(program, nec_carrier_control_program);
     } while (0);
     do {
@@ -277,7 +277,7 @@ int main()
         const uint BIT_SAMPLE_DELAY = 15;        // how long to wait after the end of the burst before sampling
         PIO::Program program;
         program
-// mkdocs-start:nec_receive
+// mkdocs-start:[nec_receive]
 .program("nec_receive")
 
 
@@ -304,14 +304,14 @@ int main()
                                          // after 32 bits the ISR will autopush to the receive FIFO
 .wrap()
 .end();
-// mkdocs-end:nec_receive
+// mkdocs-end:[nec_receive]
         CheckProgram(program, nec_receive_program);
     } while (0);
     do {
         uint reset_bus = 0, fetch_bit = 0;
         PIO::Program program;
         program
-// mkdocs-start:onewire
+// mkdocs-start:[onewire]
 .program("onewire")
 .side_set(1).pindirs()
 
@@ -348,13 +348,13 @@ int main()
     .in("null", 1)          .side(0) [8]    // release bus, shift 0 to ISR (autopush) 9
 .wrap()
 .end();
-// mkdocs-end:onewire
+// mkdocs-end:[onewire]
         CheckProgram(program, onewire_program);
     } while (0);
     do {
         PIO::Program program;
         program
-// mkdocs-start:pwm
+// mkdocs-start:[pwm]
 .program("pwm")
 .side_set(1).opt()
     .pull().noblock()   .side(0)    // Pull from FIFO to OSR if available, else copy X to OSR.
@@ -368,7 +368,7 @@ int main()
 .L("skip")
     .jmp("y--", "countloop")        // Loop until Y hits 0, then pull a fresh PWM value from FIFO
 .end();
-// mkdocs-end:pwm
+// mkdocs-end:[pwm]
         CheckProgram(program, pwm_program);
     } while (0);
     do {
@@ -426,7 +426,7 @@ int main()
     do {
         PIO::Program program;
         program
-// mkdocs-start:quadrature_encoder_substep
+// mkdocs-start:[quadrature_encoder_substep]
 .program("quadrature_encoder_substep")
 .origin(0)
     .in("x", 32)
@@ -473,38 +473,38 @@ int main()
     .jmp("increment")      [0]
     .jmp("update_state")   [1]
 .end();
-// mkdocs-end:quadrature_encoder_substep
+// mkdocs-end:[quadrature_encoder_substep]
         CheckProgram(program, quadrature_encoder_substep_program);
     } while (0);
     do {
         PIO::Program program;
         program
-// mkdocs-start:spi_cpha0
+// mkdocs-start:[spi_cpha0]
 .program("spi_cpha0")
 .side_set(1)
     .out("pins", 1)        .side(0)    [1] // Stall here on empty (sideset proceeds even if
     .in("pins", 1)        .side(1)    [1] // instruction stalls, so we stall with SCK low)
 .end();
-// mkdocs-end:spi_cpha0
+// mkdocs-end:[spi_cpha0]
         CheckProgram(program, spi_cpha0_program);
     } while (0);
     do {
         PIO::Program program;
         program
-// mkdocs-start:spi_cpha1
+// mkdocs-start:[spi_cpha1]
 .program("spi_cpha1")
 .side_set(1)
     .out("x", 1)        .side(0)        // Stall here on empty (keep SCK deasserted)
     .mov("pins", "x")   .side(1) [1]    // Output data, assert SCK (mov pins uses OUT mapping)
     .in("pins", 1)      .side(0)        // Input data, deassert SCK
 .end();
-// mkdocs-end:spi_cpha1
+// mkdocs-end:[spi_cpha1]
         CheckProgram(program, spi_cpha1_program);
     } while (0);
     do {
         PIO::Program program;
         program
-// mkdocs-start:squarewave
+// mkdocs-start:[squarewave]
 .program("squarewave")
     .set("pindirs", 1)      // Set pin to output
 .L("again")
@@ -512,13 +512,13 @@ int main()
     .set("pins", 0)         // Drive pin low
     .jmp("again")           // Set PC to label `again`
 .end();
-// mkdocs-end:squarewave
+// mkdocs-end:[squarewave]
         CheckProgram(program, squarewave_program);
     } while (0);
     do {
         PIO::Program program;
         program
-// mkdocs-start:squarewave_fast
+// mkdocs-start:[squarewave_fast]
 .program("squarewave_fast")
     .set("pindirs", 1)      // Set pin to output
 .wrap_target()
@@ -526,13 +526,13 @@ int main()
     .set("pins", 0)         // Drive pin low
 .wrap()
 .end();
-// mkdocs-end:squarewave_fast
+// mkdocs-end:[squarewave_fast]
         CheckProgram(program, squarewave_fast_program);
     } while (0);
     do {
         PIO::Program program;
         program
-// mkdocs-start:squarewave_wrap
+// mkdocs-start:[squarewave_wrap]
 .program("squarewave_wrap")
     .set("pindirs", 1)      // Set pin to output
 .wrap_target()
@@ -540,13 +540,13 @@ int main()
     .set("pins", 0) [1]     // Drive pin low and then delay for one cycle
 .wrap()
 .end();
-// mkdocs-end:squarewave_wrap
+// mkdocs-end:[squarewave_wrap]
         CheckProgram(program, squarewave_wrap_program);
     } while (0);
     do {
         PIO::Program program;
         program
-// mkdocs-start:st7789_lcd
+// mkdocs-start:[st7789_lcd]
 .program("st7789_lcd")
 .side_set(1)
 .wrap_target()
@@ -554,13 +554,13 @@ int main()
     .nop()          .side(1)
 .wrap()
 .end();
-// mkdocs-end:st7789_lcd
+// mkdocs-end:[st7789_lcd]
         CheckProgram(program, st7789_lcd_program);
     } while (0);
     do {
         PIO::Program program;
         program
-// mkdocs-start:uart_rx
+// mkdocs-start:[uart_rx]
 .program("uart_rx")
 .L("start")
     .wait(0, "pin", 0)          // Stall until start bit is asserted
@@ -576,13 +576,13 @@ int main()
 .L("good_stop")                 // No delay before returning to start; a little slack is
     .push()                     // important in case the TX clock is slightly too fast
 .end();
-// mkdocs-end:uart_rx
+// mkdocs-end:[uart_rx]
         CheckProgram(program, uart_rx_program);
     } while (0);
     do {
         PIO::Program program;
         program
-// mkdocs-start:uart_tx
+// mkdocs-start:[uart_tx]
 .program("uart_tx")
 .side_set(1).opt()
     .pull()         .side(1) [7]    // Assert stop bit, or stall with line in idle state
@@ -591,7 +591,7 @@ int main()
     .out("pins", 1)                 // Shift 1 bit from OSR to the first OUT pin
     .jmp("x--", "bitloop")   [6]    // Each loop iteration is 8 cycles.
 .end();
-// mkdocs-end:uart_tx
+// mkdocs-end:[uart_tx]
         CheckProgram(program, uart_tx_program);
     } while (0);
     do {
@@ -600,7 +600,7 @@ int main()
         const uint T3 = 4;
         PIO::Program program;
         program
-// mkdocs-start:ws2812
+// mkdocs-start:[ws2812]
 .program("ws2812")
 .side_set(1)
 
@@ -616,7 +616,7 @@ int main()
     .nop()                  .side(0) [T2 - 1]   // Or drive low, for a short pulse
 .wrap()
 .end();
-// mkdocs-end:ws2812
+// mkdocs-end:[ws2812]
         CheckProgram(program, ws2812_program);
     } while (0);
     ::printf("done\n");

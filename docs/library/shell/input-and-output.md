@@ -4,7 +4,7 @@ The shell can work with a variety of devices. Below is a class diagram showing t
 
 ```mermaid
 classDiagram
-  {% include "include/shell-class.mmd" start="%% mkdocs-start:shell" end="%% mkdocs-end:shell" %}
+  {% include "include/shell-class.mmd" start="%% mkdocs-start:[shell]" end="%% mkdocs-end:[shell]" %}
   {% include "include/shell-class.mmd" start="%% mkdocs-detail-start:shell" end="%% mkdocs-detail-end:shell" %}
   classDef Class_Input fill:#ffc
   classDef Class_Output fill:#f8c

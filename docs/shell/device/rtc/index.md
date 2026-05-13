@@ -1,7 +1,7 @@
 In this page, we will connect an RTC (Real Time Clock) module to the Pico board by using shell commands.
 
-<!-- mkdocs-start:skip-abstract -->
-<!-- mkdocs-start:about-rtc -->
+<!-- mkdocs-start:[skip-abstract] -->
+<!-- mkdocs-start:[about-rtc] -->
 ## About RTC Module
 
 An RTC module is hardware that keeps track of real-time date and time.
@@ -26,7 +26,7 @@ It comes with a backup battery pre-installed and has a compact shape. The signal
 |`-`   |GND  |
 
 There is also a cheaper RTC module named DS1307, but it can drift by several seconds per day, so the more accurate DS3231 is recommended. The DS1307 also shares the same I2C address and data format as the DS3231, so it should work similarly when connected to the Pico board.
-<!-- mkdocs-end:about-rtc -->
+<!-- mkdocs-end:[about-rtc] -->
 
 ## Device Connection
 

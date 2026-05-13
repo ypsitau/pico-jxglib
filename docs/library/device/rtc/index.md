@@ -1,6 +1,6 @@
 This page explains how to connect an RTC module to the Pico board.
 
-{% include "shell/device/rtc/index.md" start="<!-- mkdocs-start:about-rtc -->" end="<!-- mkdocs-end:about-rtc -->" %}
+{% include "shell/device/rtc/index.md" start="<!-- mkdocs-start:[about-rtc] -->" end="<!-- mkdocs-end:[about-rtc] -->" %}
 
 ## Wiring
 

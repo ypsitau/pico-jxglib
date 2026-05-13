@@ -1,6 +1,6 @@
 # Shell
 
-{% include-markdown "shell/index.md" start="<!-- mkdocs-start:abstract -->" end="<!-- mkdocs-end:abstract -->" %}
+{% include-markdown "shell/index.md" start="<!-- mkdocs-start:[abstract] -->" end="<!-- mkdocs-end:[abstract] -->" %}
 
 ## How Shell Works
 

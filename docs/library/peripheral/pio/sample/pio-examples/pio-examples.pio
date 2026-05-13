@@ -1,5 +1,5 @@
 ;------------------------------------------------------------------------------
-// mkdocs-start:addition
+// mkdocs-start:[addition]
 .program addition
     pull                ; Pull first operand
     mov x, ~osr         ; Store complement of first operand in x
@@ -13,19 +13,19 @@ test:                   ; This has the effect of subtracting y from x, eventuall
     mov isr, ~x         ; Store result (complement of x) in ISR
     push                ; Push result to FIFO
 ;
-// mkdocs-end:addition
+// mkdocs-end:[addition]
 
 ;------------------------------------------------------------------------------
-// mkdocs-start:apa102_mini
+// mkdocs-start:[apa102_mini]
 .program apa102_mini
 .side_set 1
     out pins, 1   side 0   ; Stall here when no data (still asserts clock low)
     nop           side 1
 ;
-// mkdocs-end:apa102_mini
+// mkdocs-end:[apa102_mini]
 
 ;------------------------------------------------------------------------------
-// mkdocs-start:blink
+// mkdocs-start:[blink]
 .program blink
     pull block          
     out y, 32           
@@ -40,19 +40,19 @@ lp2:
     jmp x-- lp2         ; Delay for the same number of cycles again
 .wrap                   ; Blink forever!
 ;
-// mkdocs-end:blink
+// mkdocs-end:[blink]
 
 ;------------------------------------------------------------------------------
-// mkdocs-start:clocked_input
+// mkdocs-start:[clocked_input]
 .program clocked_input
     wait 0 pin 1
     wait 1 pin 1
     in pins, 1
 ;
-// mkdocs-end:clocked_input
+// mkdocs-end:[clocked_input]
 
 ;------------------------------------------------------------------------------
-// mkdocs-start:differential_manchester_tx
+// mkdocs-start:[differential_manchester_tx]
 .program differential_manchester_tx
 .side_set 1 opt
 public start:
@@ -74,10 +74,10 @@ low_1:
 low_0:
     jmp initial_high         [7] ; the initial line state is flipped!
 ;
-// mkdocs-end:differential_manchester_tx
+// mkdocs-end:[differential_manchester_tx]
 
 ;------------------------------------------------------------------------------
-// mkdocs-start:hub75_row
+// mkdocs-start:[hub75_row]
 .program hub75_row
 .side_set 2
 .wrap_target
@@ -87,10 +87,10 @@ pulse_loop:
     jmp x-- pulse_loop side 0x0 ; Assert OEn for x+1 cycles
 .wrap
 ;
-// mkdocs-end:hub75_row
+// mkdocs-end:[hub75_row]
 
 ;------------------------------------------------------------------------------
-// mkdocs-start:hub75_data_rgb888
+// mkdocs-start:[hub75_data_rgb888]
 .program hub75_data_rgb888
 .side_set 1
 public entry_point:
@@ -115,10 +115,10 @@ public shift1:
     mov pins, ::isr  side 1 ; R0, G0, B0, R1, G1, B1. Can go 1 cycle faster if reversed
 .wrap
 ;
-// mkdocs-end:hub75_data_rgb888
+// mkdocs-end:[hub75_data_rgb888]
 
 ;------------------------------------------------------------------------------
-// mkdocs-start:i2c
+// mkdocs-start:[i2c]
 .program i2c
 .side_set 1 opt pindirs
 do_nack:
@@ -151,10 +151,10 @@ do_exec:
     jmp x-- do_exec            ; Repeat n + 1 times
 .wrap
 ;
-// mkdocs-end:i2c
+// mkdocs-end:[i2c]
 
 ;------------------------------------------------------------------------------
-// mkdocs-start:manchester_tx
+// mkdocs-start:[manchester_tx]
 .program manchester_tx
 .side_set 1 opt
 .wrap_target
@@ -170,10 +170,10 @@ get_bit:
     jmp !x do_0            ; branch on it. Autopull refills the OSR when empty.
 .wrap
 ;
-// mkdocs-end:manchester_tx
+// mkdocs-end:[manchester_tx]
 
 ;------------------------------------------------------------------------------
-// mkdocs-start:nec_carrier_burst
+// mkdocs-start:[nec_carrier_burst]
 .program nec_carrier_burst
 .define NUM_CYCLES 21               ; how many carrier cycles to generate
 .define BURST_IRQ 7                 ; which IRQ should trigger a carrier burst
@@ -188,10 +188,10 @@ cycle_loop:
     jmp X--, cycle_loop             ; (1 more cycle)
 .wrap
 ;
-// mkdocs-end:nec_carrier_burst
+// mkdocs-end:[nec_carrier_burst]
 
 ;------------------------------------------------------------------------------
-// mkdocs-start:nec_carrier_control
+// mkdocs-start:[nec_carrier_control]
 .program nec_carrier_control
 .define BURST_IRQ 7                     ; the IRQ used to trigger a carrier burst
 .define NUM_INITIAL_BURSTS 16           ; how many bursts to transmit for a 'sync burst'
@@ -219,10 +219,10 @@ burst:
 
 .wrap                                   ; fetch another data word from the FIFO
 ;
-// mkdocs-end:nec_carrier_control
+// mkdocs-end:[nec_carrier_control]
 
 ;------------------------------------------------------------------------------
-// mkdocs-start:nec_receive
+// mkdocs-start:[nec_receive]
 .program nec_receive
 .define BURST_LOOP_COUNTER 30                   ; the detection threshold for a 'frame sync' burst
 .define BIT_SAMPLE_DELAY 15                     ; how long to wait after the end of the burst before sampling
@@ -249,10 +249,10 @@ data_bit:
                                                 ; after 32 bits the ISR will autopush to the receive FIFO
 .wrap
 ;
-// mkdocs-end:nec_receive
+// mkdocs-end:[nec_receive]
 
 ;------------------------------------------------------------------------------
-// mkdocs-start:onewire
+// mkdocs-start:[onewire]
 .program onewire
 .side_set 1 pindirs
 
@@ -284,10 +284,10 @@ loop_d: jmp x-- loop_d  side 1  [15]    ;                                   3 x 
         in null, 1      side 0  [8]     ; release bus, shift 0 to ISR (autopush) 9
 .wrap
 ;
-// mkdocs-end:onewire
+// mkdocs-end:[onewire]
 
 ;------------------------------------------------------------------------------
-// mkdocs-start:pwm
+// mkdocs-start:[pwm]
 .program pwm
 .side_set 1 opt
     pull noblock    side 0 ; Pull from FIFO to OSR if available, else copy X to OSR.
@@ -301,7 +301,7 @@ noset:
 skip:
     jmp y-- countloop      ; Loop until Y hits 0, then pull a fresh PWM value from FIFO
 ;
-// mkdocs-end:pwm
+// mkdocs-end:[pwm]
 
 ;------------------------------------------------------------------------------
 // mkdocs-start:[quadrature_encoder]
@@ -353,7 +353,7 @@ increment_cont:
 // mkdocs-end:[quadrature_encoder]
 
 ;------------------------------------------------------------------------------
-// mkdocs-start:quadrature_encoder_substep
+// mkdocs-start:[quadrature_encoder_substep]
 .program quadrature_encoder_substep
 .origin 0
     IN X, 32
@@ -407,29 +407,29 @@ invalid:
     JMP increment		[0]
     JMP update_state	[1]
 ;
-// mkdocs-end:quadrature_encoder_substep
+// mkdocs-end:[quadrature_encoder_substep]
 
 ;------------------------------------------------------------------------------
-// mkdocs-start:spi_cpha0
+// mkdocs-start:[spi_cpha0]
 .program spi_cpha0
 .side_set 1
     out pins, 1 side 0 [1] ; Stall here on empty (sideset proceeds even if
     in pins, 1  side 1 [1] ; instruction stalls, so we stall with SCK low)
 ;
-// mkdocs-end:spi_cpha0
+// mkdocs-end:[spi_cpha0]
 
 ;------------------------------------------------------------------------------
-// mkdocs-start:spi_cpha1
+// mkdocs-start:[spi_cpha1]
 .program spi_cpha1
 .side_set 1
     out x, 1    side 0     ; Stall here on empty (keep SCK deasserted)
     mov pins, x side 1 [1] ; Output data, assert SCK (mov pins uses OUT mapping)
     in pins, 1  side 0     ; Input data, deassert SCK
 ;
-// mkdocs-end:spi_cpha1
+// mkdocs-end:[spi_cpha1]
 
 ;------------------------------------------------------------------------------
-// mkdocs-start:squarewave
+// mkdocs-start:[squarewave]
 .program squarewave
     set pindirs, 1   ; Set pin to output
 again:
@@ -437,10 +437,10 @@ again:
     set pins, 0      ; Drive pin low
     jmp again        ; Set PC to label `again`
 ;
-// mkdocs-end:squarewave
+// mkdocs-end:[squarewave]
 
 ;------------------------------------------------------------------------------
-// mkdocs-start:squarewave_fast
+// mkdocs-start:[squarewave_fast]
 .program squarewave_fast
     set pindirs, 1   ; Set pin to output
 .wrap_target
@@ -448,10 +448,10 @@ again:
     set pins, 0      ; Drive pin low
 .wrap
 ;
-// mkdocs-end:squarewave_fast
+// mkdocs-end:[squarewave_fast]
 
 ;------------------------------------------------------------------------------
-// mkdocs-start:squarewave_wrap
+// mkdocs-start:[squarewave_wrap]
 .program squarewave_wrap
     set pindirs, 1   ; Set pin to output
 .wrap_target
@@ -459,10 +459,10 @@ again:
     set pins, 0 [1]  ; Drive pin low and then delay for one cycle
 .wrap
 ;
-// mkdocs-end:squarewave_wrap
+// mkdocs-end:[squarewave_wrap]
 
 ;------------------------------------------------------------------------------
-// mkdocs-start:st7789_lcd
+// mkdocs-start:[st7789_lcd]
 .program st7789_lcd
 .side_set 1
 .wrap_target
@@ -470,10 +470,10 @@ again:
     nop           side 1
 .wrap
 ;
-// mkdocs-end:st7789_lcd
+// mkdocs-end:[st7789_lcd]
 
 ;------------------------------------------------------------------------------
-// mkdocs-start:uart_rx
+// mkdocs-start:[uart_rx]
 .program uart_rx
 start:
     wait 0 pin 0        ; Stall until start bit is asserted
@@ -490,10 +490,10 @@ bitloop:                ; the first data bit (12 cycles incl wait, set).
 good_stop:              ; No delay before returning to start; a little slack is
     push                ; important in case the TX clock is slightly too fast.
 ;
-// mkdocs-end:uart_rx
+// mkdocs-end:[uart_rx]
 
 ;------------------------------------------------------------------------------
-// mkdocs-start:uart_tx
+// mkdocs-start:[uart_tx]
 .program uart_tx
 .side_set 1 opt
     pull       side 1 [7]  ; Assert stop bit, or stall with line in idle state
@@ -502,10 +502,10 @@ bitloop:                   ; This loop will run 8 times (8n1 UART)
     out pins, 1            ; Shift 1 bit from OSR to the first OUT pin
     jmp x-- bitloop   [6]  ; Each loop iteration is 8 cycles.
 ;
-// mkdocs-end:uart_tx
+// mkdocs-end:[uart_tx]
 
 ;------------------------------------------------------------------------------
-// mkdocs-start:ws2812
+// mkdocs-start:[ws2812]
 .program ws2812
 .side_set 1
 .define public T1 3
@@ -521,4 +521,4 @@ do_zero:
     nop            side 0 [T2 - 1] ; Or drive low, for a short pulse
 .wrap
 ;
-// mkdocs-end:ws2812
+// mkdocs-end:[ws2812]

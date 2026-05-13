@@ -2,7 +2,7 @@
 
 pico-jxglib is a set of C/C++ libraries that works along with the Pico SDK.
 
-Below is a quick introduction to set up the development environment:
+Below is a quick introduction to set up the Pico SDK:
 
 {% include-markdown "include/quick-setup-picosdk.md" %}
 
