@@ -1,14 +1,26 @@
 # Instructions
 
+Instructions are the basic building blocks of a PIO program. Each instruction corresponds to a single machine code that can be executed by the PIO state machine.
+
 All instructions can be used with the following modifiers:
 
-```cpp
-.side(bits)
-```
+!!! abstract ".side"
 
-```cpp
-.delay(cycles)
-```
+    ```cpp
+    .side(bits)
+    ```
+
+    Sets the value of side-set pins that start from the GPIO base pin specified by `StateMachine::set_sideset_pins()` or `StateMachine::config_set_sideset_pins()`. This modifier is only valid when the `.side_set()` directive is used. If the `.side_set()` directive comes with the `.pindirs()` modifier, the value specified by this modifier sets the direction of the pin, not the value on the pin.
+
+!!! abstract ".delay"
+
+    ```cpp
+    .delay(cycles)
+    ```
+
+    An instruction is executed in a single cycle. When the `.delay()` modifier is used, the specified `cycles` are added to the execution time of the instruction.
+
+Belos is a list of instructions available in the method-chain PIO assembler.
 
 !!! abstract ".jmp"
 
@@ -154,17 +166,9 @@ All instructions can be used with the following modifiers:
 
     `.push()` instruction can be used with the following modifiers:
 
-    ```cpp
-    .iffull()
-    ```
-
-    ```cpp
-    .block()
-    ```
-
-    ```cpp
-    .noblock()
-    ```
+    - `.iffull()`: Pushes the ISR value to the RX FIFO only when ISR's shift amount reaches the specified value.
+    - `.block()`: Blocks the execution until the RX FIFO is ready to accept data.
+    - `.noblock()`: Does not block the execution, even if the RX FIFO is not ready.
 
 !!! abstract ".pull"
 
@@ -174,23 +178,45 @@ All instructions can be used with the following modifiers:
 
     `.pull()` instruction can be used with the following modifiers:
 
-    ```cpp
-    .ifempty()
-    ```
-
-    ```cpp
-    .block()
-    ```
-
-    ```cpp
-    .noblock()
-    ```
+    - `.ifempty()`: Pulls data from the TX FIFO to the OSR only when the OSR's shift amount is zero.
+    - `.block()`: Blocks the execution until there is data in the TX FIFO.
+    - `.noblock()`: Does not block the execution, and sets the OSR with the value of the X when there is no data in the TX FIFO.
 
 !!! abstract ".mov"
 
     ```cpp
-    .mov("dest", "src")
+    .mov("x", "src")
     ```
+
+    ```cpp
+    .mov("y", "src")
+    ```
+
+    ```cpp
+    .mov("exec", "src")
+    ```
+
+    ```cpp
+    .mov("pc", "src")
+    ```
+
+    ```cpp
+    .mov("isr", "src")
+    ```
+
+    ```cpp
+    .mov("osr", "src")
+    ```
+
+    Move data from `src` to the destination. The `src` can be `pins`, `x`, `y`, `null`, `status`, `isr`, or `osr`.
+
+    The `src` target can be applied with the following operators:
+
+    - `!src`: Bitwise complement of the value of `src` is moved to `dst`.
+    - `~src`: Same as `!src`.
+    - `::src`: Bit revese of the value of `src` is moved to `dst`. For example, if the value of `src` is `0b00010011'00000000'10101010'00111100`, the value moved to `dst` will be `0b00111100'01010101'00000000'11001000`.
+
+    If the PIO version is 2.0 or above, the following variants of the `.mov` instruction are also available for moving data between the shift registers and the FIFOs.
 
     ```cpp
     .mov("osr", "rxfifo[]", index)
@@ -215,7 +241,6 @@ All instructions can be used with the following modifiers:
     ```cpp
     .mov("rxfifo[y]", "isr")
     ```
-
 
 !!! abstract ".irq"
 
@@ -252,3 +277,5 @@ All instructions can be used with the following modifiers:
     ```cpp
     .set("pindirs", value)
     ```
+
+    Write the specified value to the destination. The size of value is 5 bits, so the valid range of value is from 0 to 31.

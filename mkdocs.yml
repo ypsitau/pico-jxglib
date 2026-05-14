@@ -93,113 +93,113 @@ nav:
                 - Setting Various Parameters: shell/camera/ov7670/ov7670-params.md
     #--------------------------------------------------------------------------
     - Programming:
-        - How to Use pico-jxglib: library/index.md
-        - List of Libraries: library/lib-list.md
-        - LABOPlatform: library/labo-platform/index.md
+        - How to Use pico-jxglib: programming/index.md
+        - List of Libraries: programming/lib-list.md
+        - LABOPlatform: programming/labo-platform/index.md
         - Core:
-            - Overview: library/core/index.md
-            - Basic Types: library/core/basic-types/index.md
+            - Overview: programming/core/index.md
+            - Basic Types: programming/core/basic-types/index.md
             - Multitasking:
-                - Overview: library/core/multitasking/index.md
-                - Tickable and Main Loop: library/core/multitasking/tickable-mainloop.md
-                - List of Tickables: library/core/multitasking/tickable-list.md
-                - Running a Single Task: library/core/multitasking/tickable-single.md
-                - Running Multiple Tasks: library/core/multitasking/tickable-multi.md
+                - Overview: programming/core/multitasking/index.md
+                - Tickable and Main Loop: programming/core/multitasking/tickable-mainloop.md
+                - List of Tickables: programming/core/multitasking/tickable-list.md
+                - Running a Single Task: programming/core/multitasking/tickable-single.md
+                - Running Multiple Tasks: programming/core/multitasking/tickable-multi.md
         - Shell:
-            - Overview: library/shell/index.md
+            - Overview: programming/shell/index.md
             - Connectability:
-                - Input and Output Devices: library/shell/input-and-output.md
-                - Stdio: library/shell/shell-with-stdio.md
-                - TFT LCD + USB Keyboard: library/shell/shell-with-tftlcd-usbkey.md
-                - OLED + USB Keyboard: library/shell/shell-with-oled-usbkey.md
-            - Provided Shell Commands: library/shell/shell-commands.md
+                - Input and Output Devices: programming/shell/input-and-output.md
+                - Stdio: programming/shell/shell-with-stdio.md
+                - TFT LCD + USB Keyboard: programming/shell/shell-with-tftlcd-usbkey.md
+                - OLED + USB Keyboard: programming/shell/shell-with-oled-usbkey.md
+            - Provided Shell Commands: programming/shell/shell-commands.md
             - Creating Shell Commands:
-                - Overview: library/shell/customcmd.md
-                - Command Definition: library/shell/customcmd-definition.md
-                - Option Parsing: library/shell/customcmd-option.md
-                - Argument Parsing - Files: library/shell/customcmd-arg-file.md
-                - Argument Parsing - Numbers: library/shell/customcmd-arg-num.md
-                - Argument Parsing - Sub Commands: library/shell/customcmd-arg-subcmd.md
+                - Overview: programming/shell/customcmd.md
+                - Command Definition: programming/shell/customcmd-definition.md
+                - Option Parsing: programming/shell/customcmd-option.md
+                - Argument Parsing - Files: programming/shell/customcmd-arg-file.md
+                - Argument Parsing - Numbers: programming/shell/customcmd-arg-num.md
+                - Argument Parsing - Sub Commands: programming/shell/customcmd-arg-subcmd.md
         - File System:
-            - Overview: library/filesystem/index.md
+            - Overview: programming/filesystem/index.md
             - Internal Flash Memory:
-                - About Flash Memory: library/filesystem/fs-flash.md
-                - LittleFS: library/filesystem/fs-flash-lfs.md
-                - FAT: library/filesystem/fs-flash-fat.md
-                - Multiple Drives: library/filesystem/fs-flash-multi.md
-            - SD Card: library/filesystem/sdcard.md
-            - USB Storage: library/filesystem/usb-storage.md
-            - Timestamp Support: library/filesystem/fs-timestamp.md
-            - API Reference: library/filesystem/api-reference.md
+                - About Flash Memory: programming/filesystem/fs-flash.md
+                - LittleFS: programming/filesystem/fs-flash-lfs.md
+                - FAT: programming/filesystem/fs-flash-fat.md
+                - Multiple Drives: programming/filesystem/fs-flash-multi.md
+            - SD Card: programming/filesystem/sdcard.md
+            - USB Storage: programming/filesystem/usb-storage.md
+            - Timestamp Support: programming/filesystem/fs-timestamp.md
+            - API Reference: programming/filesystem/api-reference.md
         - Peripheral:
-            - Overview: library/peripheral/index.md
-            - GPIO: library/peripheral/gpio/index.md
-            - PWM: library/peripheral/pwm/index.md
-            - I2C: library/peripheral/i2c/index.md
-            - SPI: library/peripheral/spi/index.md
-            - UART: library/peripheral/uart/index.md
+            - Overview: programming/peripheral/index.md
+            - GPIO: programming/peripheral/gpio/index.md
+            - PWM: programming/peripheral/pwm/index.md
+            - I2C: programming/peripheral/i2c/index.md
+            - SPI: programming/peripheral/spi/index.md
+            - UART: programming/peripheral/uart/index.md
             - PIO:
-                - Overview: library/peripheral/pio/index.md
-                - How to Program PIO: library/peripheral/pio/pio-how-to.md
-                - C++ vs pioasm: library/peripheral/pio/pio-cpp-vs-asm.md
-                - Directives: library/peripheral/pio/pio-directives.md
-                - Instructions: library/peripheral/pio/pio-instructions.md
+                - Overview: programming/peripheral/pio/index.md
+                - How to Program PIO: programming/peripheral/pio/pio-how-to.md
+                - C++ vs pioasm: programming/peripheral/pio/pio-cpp-vs-asm.md
+                - Directives: programming/peripheral/pio/pio-directives.md
+                - Instructions: programming/peripheral/pio/pio-instructions.md
         - Device:
-            - Built-in LED: library/device/builtin-led/index.md
-            - RTC (Real Time Clock): library/device/rtc/index.md
+            - Built-in LED: programming/device/builtin-led/index.md
+            - RTC (Real Time Clock): programming/device/rtc/index.md
         - Terminal:
-            - Overview: library/terminal/index.md
+            - Overview: programming/terminal/index.md
             - Connectability:
-                - TFT LCD: library/terminal/terminal-with-tftlcd.md
-                - OLED: library/terminal/terminal-with-oled.md
-            - Working with LVGL: library/terminal/terminal-and-lvgl.md
-            - Multiple Terminals: library/terminal/terminal-multiple.md
+                - TFT LCD: programming/terminal/terminal-with-tftlcd.md
+                - OLED: programming/terminal/terminal-with-oled.md
+            - Working with LVGL: programming/terminal/terminal-and-lvgl.md
+            - Multiple Terminals: programming/terminal/terminal-multiple.md
         - Display:
-            - Overview: library/display/index.md
+            - Overview: programming/display/index.md
             - TFT LCD:
-                - Overview: library/display/tftlcd/index.md
+                - Overview: programming/display/tftlcd/index.md
                 - Sample Program:
-                    - Hardcoded: library/display/tftlcd/tftlcd-hardcoded.md
-                    - Shell Command: library/display/tftlcd/tftlcd-shellcmd.md
-                    - Drawing APIs: library/display/tftlcd/tftlcd-apis.md
-                    - Multiple LCDs: library/display/tftlcd/tftlcd-multi.md
+                    - Hardcoded: programming/display/tftlcd/tftlcd-hardcoded.md
+                    - Shell Command: programming/display/tftlcd/tftlcd-shellcmd.md
+                    - Drawing APIs: programming/display/tftlcd/tftlcd-apis.md
+                    - Multiple LCDs: programming/display/tftlcd/tftlcd-multi.md
             - OLED:
-                - Overview: library/display/oled/index.md
+                - Overview: programming/display/oled/index.md
             - WS2812:
-                - Overview: library/display/ws2812/index.md
+                - Overview: programming/display/ws2812/index.md
         - Keyboard:
-            - Overview: library/keyboard/index.md
-            - GPIO Keyboard: library/keyboard/gpio-keyboard.md
-            - GPIO Keyboard Matrix: library/keyboard/gpio-keyboard-matrix.md
-            - USB Keyboard: library/keyboard/usb-keyboard.md
-            - VT100 Keyboard: library/keyboard/vt100-keyboard.md
+            - Overview: programming/keyboard/index.md
+            - GPIO Keyboard: programming/keyboard/gpio-keyboard.md
+            - GPIO Keyboard Matrix: programming/keyboard/gpio-keyboard-matrix.md
+            - USB Keyboard: programming/keyboard/usb-keyboard.md
+            - VT100 Keyboard: programming/keyboard/vt100-keyboard.md
         - USB Host:
-            - Overview: library/usbhost/index.md
+            - Overview: programming/usbhost/index.md
             - Keyboard and Mouse:
-                - Keyboard: library/usbhost/usbhost-keyboard.md
-                - Mouse: library/usbhost/usbhost-mouse.md
-                - LVGL with HID: library/usbhost/usbhost-lvgl.md
+                - Keyboard: programming/usbhost/usbhost-keyboard.md
+                - Mouse: programming/usbhost/usbhost-mouse.md
+                - LVGL with HID: programming/usbhost/usbhost-lvgl.md
             - Game Pad:
-                - Overview: library/usbhost/usbhost-gamepad-overview.md
-                - Sample Program: library/usbhost/usbhost-gamepad-sample.md
-                - Games: library/usbhost/usbhost-gamepad-games.md
-            #- Mass Storage: library/usbhost/usbhost-msc.md
+                - Overview: programming/usbhost/usbhost-gamepad-overview.md
+                - Sample Program: programming/usbhost/usbhost-gamepad-sample.md
+                - Games: programming/usbhost/usbhost-gamepad-games.md
+            #- Mass Storage: programming/usbhost/usbhost-msc.md
         - USB Device:
-            - Overview: library/usbdev/index.md
-            - Mass Storage Class: library/usbdev/usbdev-msc.md
-            - Communication Device Class: library/usbdev/usbdev-cdc.md
-            - Keyboard: library/usbdev/usbdev-keyboard.md
-            - Mouse: library/usbdev/usbdev-mouse.md
+            - Overview: programming/usbdev/index.md
+            - Mass Storage Class: programming/usbdev/usbdev-msc.md
+            - Communication Device Class: programming/usbdev/usbdev-cdc.md
+            - Keyboard: programming/usbdev/usbdev-keyboard.md
+            - Mouse: programming/usbdev/usbdev-mouse.md
         - Toolkits:
             - LVGL:
-                - Overview: library/toolkit/lvgl/index.md
+                - Overview: programming/toolkit/lvgl/index.md
                 - Sample Program:
-                    - Simple Program: library/toolkit/lvgl/lvgl-simple.md
-                    - Sample Launcher: library/toolkit/lvgl/lvgl-sample-launcher.md
-                    - Multiple Displays: library/toolkit/lvgl/lvgl-multi-display.md
-                    - Stdio Input: library/toolkit/lvgl/lvgl-stdio.md
+                    - Simple Program: programming/toolkit/lvgl/lvgl-simple.md
+                    - Sample Launcher: programming/toolkit/lvgl/lvgl-sample-launcher.md
+                    - Multiple Displays: programming/toolkit/lvgl/lvgl-multi-display.md
+                    - Stdio Input: programming/toolkit/lvgl/lvgl-stdio.md
             - Tiny ML:
-                - Overview: library/toolkit/tiny-ml/index.md
+                - Overview: programming/toolkit/tiny-ml/index.md
     #--------------------------------------------------------------------------
     - Applications:
         - Overview: applications/index.md

@@ -18,7 +18,7 @@ These UF2 files are pre-compiled with the latest version of pico-jxglib and can 
 
 {% include-markdown "include/flash-uf2.md" %}
 
-Go to [this page](../library/shell/index.md) if you are interested in the details of how to build your own firmware with the shell.
+Go to [this page](../programming/shell/index.md) if you are interested in the details of how to build your own firmware with the shell.
 
 After flashing the pico-jxgLABO, establish a serial communication with a terminal program such as Tera Term on Windows.
 

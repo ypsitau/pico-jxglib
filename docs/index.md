@@ -57,9 +57,9 @@ pico-jxglib is implemented in C++, but it also provides C APIs for those who pre
     }
     ```
 
-Just adding the highlighted lines makes your firmware interactive through USB's serial connection, providing a bash-like interface to execute many powerful built-in commands for various purposes. [:octicons-arrow-right-24: Learn More](library/index.md#__tabbed_1_2)
+Just adding the highlighted lines makes your firmware interactive through USB's serial connection, providing a bash-like interface to execute many powerful built-in commands for various purposes. [:octicons-arrow-right-24: Learn More](programming/index.md#__tabbed_1_2)
 
-Of course, you can also add your own custom commands to the shell. It's that simple! [:octicons-arrow-right-24: Learn More](library/shell/customcmd.md)
+Of course, you can also add your own custom commands to the shell. It's that simple! [:octicons-arrow-right-24: Learn More](programming/shell/customcmd.md)
 
 ## pico-jxgLABO: Ready-to-Flash UF2 Binary
 
@@ -121,7 +121,7 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     The library provides support for various displays such as OLED and TFT displays. You can use the shell to configure the display and draw images on the screen. WS2812 RGB LEDs can also be used as a display, allowing you to create colorful lighting effects and visualizations directly from your firmware and the shell.
 
-    [:octicons-arrow-right-24: Learn More](library/display/index.md)
+    [:octicons-arrow-right-24: Learn More](programming/display/index.md)
 
 -   :material-folder-multiple-image:{ .lg .middle } **File Operations**
 
@@ -145,7 +145,7 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     You can also connect a USB keyboard and mouse to your Pico, allowing you to interact with the shell and control the display directly from the connected peripherals.
 
-    [:octicons-arrow-right-24: Learn More](library/usbhost/index.md)
+    [:octicons-arrow-right-24: Learn More](programming/usbhost/index.md)
 
 -   :fontawesome-solid-sd-card:{ .lg .middle } **SD Card Support**
 
@@ -161,7 +161,7 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     In addition to the built-in flash memory and SD card support, pico-jxglib also allows you to connect external USB storage devices to your Pico. This means you can use a USB flash drive or an external hard drive to store and manage files directly from your firmware.
 
-    [:octicons-arrow-right-24: Learn More](library/usbhost/index.md)
+    [:octicons-arrow-right-24: Learn More](programming/usbhost/index.md)
 
 -   :octicons-command-palette-16:{ .lg .middle } **Standalone Shell**
 
@@ -169,7 +169,7 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     The shell can also use an OLED or TFT display as an output device and a USB keyboard as an input device, allowing you to use the shell without needing a computer connection. This can be useful for standalone applications where you want to interact with the firmware directly from the device itself.
 
-    [:octicons-arrow-right-24: Learn More](library/shell/input-and-output.md)
+    [:octicons-arrow-right-24: Learn More](programming/shell/input-and-output.md)
 
 -   :material-camera:{ .lg .middle } **Camera Support**
 
@@ -199,7 +199,7 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     The library also provides support for LVGL, a powerful graphics library for embedded systems.
 
-    [:octicons-arrow-right-24: Learn More](library/toolkit/lvgl/index.md)
+    [:octicons-arrow-right-24: Learn More](programming/toolkit/lvgl/index.md)
 
 -   :material-transit-connection-variant:{ .lg .middle } **PIO Assembler**
 
@@ -207,7 +207,7 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     You can write PIO assembly code directly in the C++ code and use it in your firmware, allowing you to take advantage of the powerful PIO capabilities of the Pico without needing to write separate assembly files.
 
-    [:octicons-arrow-right-24: Learn More](library/peripheral/pio/index.md)
+    [:octicons-arrow-right-24: Learn More](programming/peripheral/pio/index.md)
 
 
 -   :material-connection:{ .lg .middle } **GPIO Control**
@@ -238,7 +238,7 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     No more bothering about USB descriptors of the TinyUSB! You can easily make your Pico act as a USB device, such as serial device, mass storage device, video, keyboard, or mouse. Combining these functions is also easy!
 
-    [:octicons-arrow-right-24: Learn More](library/usbdev/index.md)
+    [:octicons-arrow-right-24: Learn More](programming/usbdev/index.md)
 
 -   :fontawesome-brands-usb:{ .lg .middle } **USB Host Support**
 
@@ -246,7 +246,7 @@ In addition to the interactive shell and built-in logic analyzer, pico-jxglib al
 
     The library provides wrapper APIs for the TinyUSB host stack, allowing you to easily connect and interact with USB devices such as keyboards, mice, and storage devices directly from your Pico firmware.
 
-    [:octicons-arrow-right-24: Learn More](library/usbhost/index.md)
+    [:octicons-arrow-right-24: Learn More](programming/usbhost/index.md)
 
 </div>
 

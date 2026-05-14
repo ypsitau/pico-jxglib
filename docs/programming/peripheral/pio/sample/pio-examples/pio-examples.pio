@@ -224,29 +224,29 @@ burst:
 ;------------------------------------------------------------------------------
 // mkdocs-start:[nec_receive]
 .program nec_receive
-.define BURST_LOOP_COUNTER 30                   ; the detection threshold for a 'frame sync' burst
-.define BIT_SAMPLE_DELAY 15                     ; how long to wait after the end of the burst before sampling
+.define BURST_LOOP_COUNTER 30           ; the detection threshold for a 'frame sync' burst
+.define BIT_SAMPLE_DELAY 15             ; how long to wait after the end of the burst before sampling
 
 .wrap_target
 
 next_burst:
     set X, BURST_LOOP_COUNTER
-    wait 0 pin 0                                ; wait for the next burst to start
+    wait 0 pin 0                        ; wait for the next burst to start
 
 burst_loop:
-    jmp pin data_bit                            ; the burst ended before the counter expired
-    jmp X-- burst_loop                          ; wait for the burst to end
+    jmp pin data_bit                    ; the burst ended before the counter expired
+    jmp X-- burst_loop                  ; wait for the burst to end
 
-                                                ; the counter expired - this is a sync burst
-    mov ISR, NULL                               ; reset the Input Shift Register
-    wait 1 pin 0                                ; wait for the sync burst to finish
-    jmp next_burst                              ; wait for the first data bit
+                                        ; the counter expired - this is a sync burst
+    mov ISR, NULL                       ; reset the Input Shift Register
+    wait 1 pin 0                        ; wait for the sync burst to finish
+    jmp next_burst                      ; wait for the first data bit
 
 data_bit:
-    nop [ BIT_SAMPLE_DELAY - 1 ]                ; wait for 1.5 burst periods before sampling the bit value
-    in PINS, 1                                  ; if the next burst has started then detect a '0' (short gap)
-                                                ; otherwise detect a '1' (long gap)
-                                                ; after 32 bits the ISR will autopush to the receive FIFO
+    nop [ BIT_SAMPLE_DELAY - 1 ]        ; wait for 1.5 burst periods before sampling the bit value
+    in PINS, 1                          ; if the next burst has started then detect a '0' (short gap)
+                                        ; otherwise detect a '1' (long gap)
+                                        ; after 32 bits the ISR will autopush to the receive FIFO
 .wrap
 ;
 // mkdocs-end:[nec_receive]
@@ -258,14 +258,17 @@ data_bit:
 
 PUBLIC reset_bus:
         set x, 28       side 1  [15]    ; pull bus low                          16
-loop_a: jmp x-- loop_a  side 1  [15]    ;                                  29 x 16
+loop_a:
+        jmp x-- loop_a  side 1  [15]    ;                                  29 x 16
         set x, 8        side 0  [6]     ; release bus                            7
-loop_b: jmp x-- loop_b  side 0  [6]     ;                                    9 x 7
+loop_b:
+        jmp x-- loop_b  side 0  [6]     ;                                    9 x 7
 
         mov isr, pins   side 0          ; read all pins to ISR (avoids autopush) 1
         push            side 0          ; push result manually                   1
         set x, 24       side 0  [7]     ;                                        8
-loop_c: jmp x-- loop_c  side 0  [15]    ;                                  25 x 16
+loop_c:
+        jmp x-- loop_c  side 0  [15]    ;                                  25 x 16
 
 .wrap_target
 PUBLIC fetch_bit:
@@ -275,12 +278,14 @@ PUBLIC fetch_bit:
 send_1: ; send a '1' bit
         set x, 2        side 0  [8]     ; release bus, wait for slave response   9
         in pins, 1      side 0  [4]     ; read bus, shift bit to ISR (autopush)  5
-loop_e: jmp x-- loop_e  side 0  [15]    ;                                   3 x 16
+loop_e:
+        jmp x-- loop_e  side 0  [15]    ;                                   3 x 16
         jmp fetch_bit   side 0          ;                                        1
 
 send_0: ; send a '0' bit
         set x, 2        side 1  [5]     ; continue pulling bus low               6
-loop_d: jmp x-- loop_d  side 1  [15]    ;                                   3 x 16
+loop_d:
+        jmp x-- loop_d  side 1  [15]    ;                                   3 x 16
         in null, 1      side 0  [8]     ; release bus, shift 0 to ISR (autopush) 9
 .wrap
 ;

@@ -86,22 +86,22 @@ int main()
 .side_set(1).opt()
 .L("start")
 .L("initial_high")
-    .out("x", 1)                            // Start of bit period: always assert transition
-    .jmp("!x", "high_0")    .side(1) [6]    // Test the data bit we just shifted out of OSR
+    .out("x", 1)                        // Start of bit period: always assert transition
+    .jmp("!x", "high_0").side(1) [6]    // Test the data bit we just shifted out of OSR
 .L("high_1")
     .nop()
-    .jmp("initial_high")    .side(0) [6]    // For `1` bits, also transition in the middle
+    .jmp("initial_high").side(0) [6]    // For `1` bits, also transition in the middle
 .L("high_0")
-    .jmp("initial_low")              [7]    // Otherwise, the line is stable in the middle
+    .jmp("initial_low")          [7]    // Otherwise, the line is stable in the middle
 
 .L("initial_low")
-    .out("x", 1)                            // Always shift 1 bit from OSR to X so we can
-    .jmp("!x", "low_0")     .side(0) [6]    // branch on it. Autopull refills OSR for us.
+    .out("x", 1)                        // Always shift 1 bit from OSR to X so we can
+    .jmp("!x", "low_0") .side(0) [6]    // branch on it. Autopull refills OSR for us.
 .L("low_1")
     .nop()
-    .jmp("initial_low")     .side(1) [6]    // If there are two transitions, return to
+    .jmp("initial_low") .side(1) [6]    // If there are two transitions, return to
 .L("low_0")
-    .jmp("initial_high")             [7]    // the initial line state is flipped!
+    .jmp("initial_high")         [7]    // the initial line state is flipped!
 .end();
 // mkdocs-end:[differential_manchester_tx]
         CheckProgram(program, differential_manchester_tx_program);
@@ -114,33 +114,33 @@ int main()
 .program("i2c")
 .side_set(1).opt().pindirs()
 .L("do_nack")
-    .jmp("y--", "entry_point")              // Continue if NAK was expected
-    .irq("wait", 0).rel()                   // Otherwise stop, ask for help
+    .jmp("y--", "entry_point")          // Continue if NAK was expected
+    .irq("wait", 0).rel()               // Otherwise stop, ask for help
 
 .L("do_byte")
-    .set("x", 7)                            // Loop 8 times
+    .set("x", 7)                        // Loop 8 times
 .L("bitloop")
-    .out("pindirs", 1)                 [7]  // Serialise write data (all-ones if reading)
-    .nop()                    .side(1) [2]  // SCL rising edge
-    .wait(1, "pin", 1)                 [4]  // Allow clock to be stretched
-    .in("pins", 1)                     [7]  // Sample read data in middle of SCL pulse
-    .jmp("x--", "bitloop")    .side(0) [7]  // SCL falling edge
+    .out("pindirs", 1)             [7]  // Serialise write data (all-ones if reading)
+    .nop()                .side(1) [2]  // SCL rising edge
+    .wait(1, "pin", 1)             [4]  // Allow clock to be stretched
+    .in("pins", 1)                 [7]  // Sample read data in middle of SCL pulse
+    .jmp("x--", "bitloop").side(0) [7]  // SCL falling edge
 
     // Handle ACK pulse
-    .out("pindirs", 1)                 [7]  // On reads, we provide the ACK.
-    .nop()                    .side(1) [7]  // SCL rising edge
-    .wait(1, "pin", 1)                 [7]  // Allow clock to be stretched
-    .jmp("pin", "do_nack")    .side(0) [2]  // Test SDA for ACK/NAK, fall through if ACK
+    .out("pindirs", 1)             [7]  // On reads, we provide the ACK.
+    .nop()                .side(1) [7]  // SCL rising edge
+    .wait(1, "pin", 1)             [7]  // Allow clock to be stretched
+    .jmp("pin", "do_nack").side(0) [2]  // Test SDA for ACK/NAK, fall through if ACK
 
-.L("entry_point").pub(&entry_point)         // public entry_point:
+.L("entry_point").pub(&entry_point)     // public entry_point:
 .wrap_target()
-    .out("x", 6)                            // Unpack Instr count
-    .out("y", 1)                            // Unpack the NAK ignore bit
-    .jmp("!x", "do_byte")                   // Instr == 0, this is a data record.
-    .out("null", 32)                        // Instr > 0, remainder of this OSR is invalid
+    .out("x", 6)                        // Unpack Instr count
+    .out("y", 1)                        // Unpack the NAK ignore bit
+    .jmp("!x", "do_byte")               // Instr == 0, this is a data record.
+    .out("null", 32)                    // Instr > 0, remainder of this OSR is invalid
 .L("do_exec")
-    .out("exec", 16)                        // Execute one instruction per FIFO word
-    .jmp("x--", "do_exec")                  // Repeat n + 1 times
+    .out("exec", 16)                    // Execute one instruction per FIFO word
+    .jmp("x--", "do_exec")              // Repeat n + 1 times
 .wrap()
 .end();
 // mkdocs-end:[i2c]
@@ -152,26 +152,26 @@ int main()
 // mkdocs-start:[hub75_data_rgb888]
 .program("hub75_data_rgb888")
 .side_set(1)
-.L("entry_point")                   // public entry_point:
+.L("entry_point")               // public entry_point:
 .wrap_target()
-.L("shift0")                        // public shift0:
-    .pull()             .side(0)    // gets patched to `out null, n` if n nonzero (otherwise the PULL is required for fencing)
-    .in("osr", 1)       .side(0)    // shuffle shuffle shuffle
-    .out("null", 8)     .side(0)
-    .in("osr", 1)       .side(0)
-    .out("null", 8)     .side(0)
-    .in("osr", 1)       .side(0)
-    .out("null", 32)    .side(0)    // Discard remainder of OSR contents
+.L("shift0")                    // public shift0:
+    .pull()         .side(0)    // gets patched to `out null, n` if n nonzero (otherwise the PULL is required for fencing)
+    .in("osr", 1)   .side(0)    // shuffle shuffle shuffle
+    .out("null", 8) .side(0)
+    .in("osr", 1)   .side(0)
+    .out("null", 8) .side(0)
+    .in("osr", 1)   .side(0)
+    .out("null", 32).side(0)    // Discard remainder of OSR contents
 .L("shift1")                        // public shift1:
-    .pull()             .side(0)    // gets patched to out null, n if n is nonzero (otherwise PULL required)
-    .in("osr", 1)       .side(1)    // Note this posedge clocks in the data from the previous iteration
-    .out("null", 8)     .side(1)
-    .in("osr", 1)       .side(1)
-    .out("null", 8)     .side(1)
-    .in("osr", 1)       .side(1)
-    .out("null", 32)    .side(1)
-    .in("null", 26)     .side(1)    // Note we are just doing this little manoeuvre here to get GPIOs in the order
-    .mov("pins", "::isr").side(1)   // R0, G0, B0, R1, G1, B1. Can go 1 cycle faster if reversed
+    .pull()         .side(0)    // gets patched to out null, n if n is nonzero (otherwise PULL required)
+    .in("osr", 1)   .side(1)    // Note this posedge clocks in the data from the previous iteration
+    .out("null", 8) .side(1)
+    .in("osr", 1)   .side(1)
+    .out("null", 8) .side(1)
+    .in("osr", 1)   .side(1)
+    .out("null", 32).side(1)
+    .in("null", 26) .side(1)    // Note we are just doing this little manoeuvre here to get GPIOs in the order
+    .mov("pins", "::isr").side(1) // R0, G0, B0, R1, G1, B1. Can go 1 cycle faster if reversed
 .wrap()
 .end();
 // mkdocs-end:[hub75_data_rgb888]
@@ -201,15 +201,15 @@ int main()
 .side_set(1).opt()
 .wrap_target()
 .L("do_1")
-    .nop()              .side(0) [5] // Low for 6 cycles (5 delay, +1 for nop)
-    .jmp("get_bit")     .side(1) [3] // High for 4 cycles. 'get_bit' takes another 2 cycles
+    .nop()          .side(0) [5] // Low for 6 cycles (5 delay, +1 for nop)
+    .jmp("get_bit") .side(1) [3] // High for 4 cycles. 'get_bit' takes another 2 cycles
 .L("do_0")
-    .nop()              .side(1) [5] // Output high for 6 cycles
-    .nop()              .side(0) [3] // Output low for 4 cycles
+    .nop()          .side(1) [5] // Output high for 6 cycles
+    .nop()          .side(0) [3] // Output low for 4 cycles
 .L("start").entry()
 .L("get_bit")
-    .out("x", 1)                     // Always shift out one bit from OSR to X, so we can
-    .jmp("!x", "do_0")               // branch on it. Autopull refills the OSR when empty.
+    .out("x", 1)                 // Always shift out one bit from OSR to X, so we can
+    .jmp("!x", "do_0")           // branch on it. Autopull refills the OSR when empty.
 .wrap()
 .end();
 // mkdocs-end:[manchester_tx]
@@ -246,6 +246,9 @@ int main()
         program
 // mkdocs-start:[nec_carrier_control]
 .program("nec_carrier_control")
+
+
+
 .wrap_target()
     .pull()                             // fetch a data word from the transmit FIFO into the
                                         // output shift register, blocking if the FIFO is empty
@@ -273,8 +276,8 @@ int main()
         CheckProgram(program, nec_carrier_control_program);
     } while (0);
     do {
-        const uint BURST_LOOP_COUNTER = 30;    // the detection threshold for a 'frame sync' burst
-        const uint BIT_SAMPLE_DELAY = 15;        // how long to wait after the end of the burst before sampling
+        const uint BURST_LOOP_COUNTER = 30; // the detection threshold for a 'frame sync' burst
+        const uint BIT_SAMPLE_DELAY = 15;   // how long to wait after the end of the burst before sampling
         PIO::Program program;
         program
 // mkdocs-start:[nec_receive]
@@ -286,22 +289,22 @@ int main()
 
 .L("next_burst")
     .set("x", BURST_LOOP_COUNTER)
-    .wait(0, "pin", 0)                  // wait for the next burst to start
+    .wait(0, "pin", 0)              // wait for the next burst to start
 
 .L("burst_loop")
-    .jmp("pin", "data_bit")             // the burst ended before the counter expired
-    .jmp("x--", "burst_loop")           // wait for the burst to end
+    .jmp("pin", "data_bit")         // the burst ended before the counter expired
+    .jmp("x--", "burst_loop")       // wait for the burst to end
 
-                                        // the counter expired - this is a sync burst
-    .mov("isr", "null")                 // reset the Input Shift Register
-    .wait(1, "pin", 0)                  // wait for the sync burst to finish
-    .jmp("next_burst")                  // wait for the first data bit
+                                    // the counter expired - this is a sync burst
+    .mov("isr", "null")             // reset the Input Shift Register
+    .wait(1, "pin", 0)              // wait for the sync burst to finish
+    .jmp("next_burst")              // wait for the first data bit
 
 .L("data_bit")
-    .nop() [BIT_SAMPLE_DELAY - 1]        // wait for 1.5 burst periods before sampling the bit value
-    .in("pins", 1)                       // if the next burst has started then detect a '0' (short gap)
-                                         // otherwise detect a '1' (long gap)
-                                         // after 32 bits the ISR will autopush to the receive FIFO
+    .nop() [BIT_SAMPLE_DELAY - 1]   // wait for 1.5 burst periods before sampling the bit value
+    .in("pins", 1)                  // if the next burst has started then detect a '0' (short gap)
+                                    // otherwise detect a '1' (long gap)
+                                    // after 32 bits the ISR will autopush to the receive FIFO
 .wrap()
 .end();
 // mkdocs-end:[nec_receive]
@@ -334,14 +337,14 @@ int main()
     .out("x", 1)            .side(0)        // shift next bit from OSR (autopull)     1
     .jmp("!x", "send_0")    .side(1) [5]    // pull bus low, branch if sending '0'    6
 
-.L("send_1")                                // send a '1' bit
+.L("send_1") // send a '1' bit
     .set("x", 2)            .side(0) [8]    // release bus, wait for slave response   9
     .in("pins", 1)          .side(0) [4]    // read bus, shift bit to ISR (autopush)  5
 .L("loop_e")
     .jmp("x--", "loop_e")   .side(0) [15]   //                                   3 x 16
     .jmp("fetch_bit")       .side(0)        //                                        1
 
-.L("send_0")                                // send a '0' bit
+.L("send_0") // send a '0' bit
     .set("x", 2)            .side(1) [5]    // continue pulling bus low               6
 .L("loop_d")
     .jmp("x--", "loop_d")   .side(1) [15]   //                                   3 x 16
@@ -357,16 +360,16 @@ int main()
 // mkdocs-start:[pwm]
 .program("pwm")
 .side_set(1).opt()
-    .pull().noblock()   .side(0)    // Pull from FIFO to OSR if available, else copy X to OSR.
-    .mov("x", "osr")                // Copy most-recently-pulled value back to scratch X
-    .mov("y", "isr")                // ISR contains PWM period. Y used as counter.
+    .pull().noblock()   .side(0)// Pull from FIFO to OSR if available, else copy X to OSR.
+    .mov("x", "osr")            // Copy most-recently-pulled value back to scratch X
+    .mov("y", "isr")            // ISR contains PWM period. Y used as counter.
 .L("countloop")
-    .jmp("x!=y", "noset")           // Set pin high if X == Y, keep the two paths length matched
+    .jmp("x!=y", "noset")       // Set pin high if X == Y, keep the two paths length matched
     .jmp("skip")        .side(1)
 .L("noset")
-    .nop()                          // Single dummy cycle to keep the two paths the same length
+    .nop()                      // Single dummy cycle to keep the two paths the same length
 .L("skip")
-    .jmp("y--", "countloop")        // Loop until Y hits 0, then pull a fresh PWM value from FIFO
+    .jmp("y--", "countloop")    // Loop until Y hits 0, then pull a fresh PWM value from FIFO
 .end();
 // mkdocs-end:[pwm]
         CheckProgram(program, pwm_program);
@@ -378,32 +381,32 @@ int main()
 .program("quadrature_encoder")
 .origin(0)
 // 00 state
-    .jmp("update")          // read 00
-    .jmp("decrement")       // read 01
-    .jmp("increment")       // read 10
-    .jmp("update")          // read 11
+    .jmp("update")      // read 00
+    .jmp("decrement")   // read 01
+    .jmp("increment")   // read 10
+    .jmp("update")      // read 11
 
 // 01 state
-    .jmp("increment")       // read 00
-    .jmp("update")          // read 01
-    .jmp("update")          // read 10
-    .jmp("decrement")       // read 11
+    .jmp("increment")   // read 00
+    .jmp("update")      // read 01
+    .jmp("update")      // read 10
+    .jmp("decrement")   // read 11
 
 // 10 state
-    .jmp("decrement")       // read 00
-    .jmp("update")          // read 01
-    .jmp("update")          // read 10
-    .jmp("increment")       // read 11
+    .jmp("decrement")   // read 00
+    .jmp("update")      // read 01
+    .jmp("update")      // read 10
+    .jmp("increment")   // read 11
 
 // 11 state
-    .jmp("update")          // read 00
+    .jmp("update")      // read 00
     .jmp("increment")   // read 01
 .L("decrement")
-    .jmp("y--", "update")   // read 10
+    .jmp("y--", "update") // read 10
 
 .wrap_target()
 .L("update")
-    .mov("isr", "y")        // read 11
+    .mov("isr", "y")    // read 11
     .push().noblock()
 
 .L("sample_pins")
@@ -418,7 +421,7 @@ int main()
     .jmp("y--", "increment_cont")
 .L("increment_cont")
     .mov("y", "~y")
-.wrap()                     // the .wrap here avoids one jump instruction and saves a cycle too
+.wrap()                 // the .wrap here avoids one jump instruction and saves a cycle too
 .end();
 // mkdocs-end:[quadrature_encoder]
         CheckProgram(program, quadrature_encoder_program);
@@ -431,11 +434,13 @@ int main()
 .origin(0)
     .in("x", 32)
     .in("y", 32)
+
 .L("update_state")
     .out("isr", 2)
     .in("pins", 2)
     .mov("osr", "~isr")
     .mov("pc", "osr")
+
 .L("decrement")
     .jmp("y--", "decrement_cont")
 .L("decrement_cont")
@@ -446,28 +451,33 @@ int main()
     .jmp("x--", "check_fifo_cont")
 .L("check_fifo_cont")
     .mov("pc", "~status")
+
 .L("increment")
     .mov("y", "~y")
     .jmp("y--", "increment_cont")
 .L("increment_cont")
     .mov("y", "~y")
     .set("x", 0)
-.wrap()
+    .wrap()
+
 .L("invalid")
     .jmp("update_state")
-// Jump table follows
+
     .jmp("invalid")
     .jmp("increment")      [0]
     .jmp("decrement")      [1]
     .jmp("check_fifo")     [4]
+
     .jmp("decrement")      [1]
     .jmp("invalid")
     .jmp("check_fifo")     [4]
     .jmp("increment")      [0]
+
     .jmp("increment")      [0]
     .jmp("check_fifo")     [4]
     .jmp("invalid")
     .jmp("decrement")      [1]
+
     .jmp("check_fifo")     [4]
     .jmp("decrement")      [1]
     .jmp("increment")      [0]
@@ -482,8 +492,8 @@ int main()
 // mkdocs-start:[spi_cpha0]
 .program("spi_cpha0")
 .side_set(1)
-    .out("pins", 1)        .side(0)    [1] // Stall here on empty (sideset proceeds even if
-    .in("pins", 1)        .side(1)    [1] // instruction stalls, so we stall with SCK low)
+    .out("pins", 1) .side(0) [1] // Stall here on empty (sideset proceeds even if
+    .in("pins", 1)  .side(1) [1] // instruction stalls, so we stall with SCK low)
 .end();
 // mkdocs-end:[spi_cpha0]
         CheckProgram(program, spi_cpha0_program);
@@ -494,9 +504,9 @@ int main()
 // mkdocs-start:[spi_cpha1]
 .program("spi_cpha1")
 .side_set(1)
-    .out("x", 1)        .side(0)        // Stall here on empty (keep SCK deasserted)
-    .mov("pins", "x")   .side(1) [1]    // Output data, assert SCK (mov pins uses OUT mapping)
-    .in("pins", 1)      .side(0)        // Input data, deassert SCK
+    .out("x", 1)     .side(0)    // Stall here on empty (keep SCK deasserted)
+    .mov("pins", "x").side(1) [1]// Output data, assert SCK (mov pins uses OUT mapping)
+    .in("pins", 1)   .side(0)    // Input data, deassert SCK
 .end();
 // mkdocs-end:[spi_cpha1]
         CheckProgram(program, spi_cpha1_program);
@@ -506,11 +516,11 @@ int main()
         program
 // mkdocs-start:[squarewave]
 .program("squarewave")
-    .set("pindirs", 1)      // Set pin to output
+    .set("pindirs", 1)  // Set pin to output
 .L("again")
-    .set("pins", 1) [1]     // Drive pin high and then delay for one cycle
-    .set("pins", 0)         // Drive pin low
-    .jmp("again")           // Set PC to label `again`
+    .set("pins", 1) [1] // Drive pin high and then delay for one cycle
+    .set("pins", 0)     // Drive pin low
+    .jmp("again")       // Set PC to label `again`
 .end();
 // mkdocs-end:[squarewave]
         CheckProgram(program, squarewave_program);
@@ -520,10 +530,10 @@ int main()
         program
 // mkdocs-start:[squarewave_fast]
 .program("squarewave_fast")
-    .set("pindirs", 1)      // Set pin to output
+    .set("pindirs", 1)  // Set pin to output
 .wrap_target()
-    .set("pins", 1)         // Drive pin high
-    .set("pins", 0)         // Drive pin low
+    .set("pins", 1)     // Drive pin high
+    .set("pins", 0)     // Drive pin low
 .wrap()
 .end();
 // mkdocs-end:[squarewave_fast]
@@ -534,10 +544,10 @@ int main()
         program
 // mkdocs-start:[squarewave_wrap]
 .program("squarewave_wrap")
-    .set("pindirs", 1)      // Set pin to output
+    .set("pindirs", 1)  // Set pin to output
 .wrap_target()
-    .set("pins", 1) [1]     // Drive pin high and then delay for one cycle
-    .set("pins", 0) [1]     // Drive pin low and then delay for one cycle
+    .set("pins", 1) [1] // Drive pin high and then delay for one cycle
+    .set("pins", 0) [1] // Drive pin low and then delay for one cycle
 .wrap()
 .end();
 // mkdocs-end:[squarewave_wrap]
@@ -550,7 +560,7 @@ int main()
 .program("st7789_lcd")
 .side_set(1)
 .wrap_target()
-    .out("pins", 1) .side(0)    // stall here if no data (clock low)
+    .out("pins", 1) .side(0)// stall here if no data (clock low)
     .nop()          .side(1)
 .wrap()
 .end();
@@ -585,11 +595,11 @@ int main()
 // mkdocs-start:[uart_tx]
 .program("uart_tx")
 .side_set(1).opt()
-    .pull()         .side(1) [7]    // Assert stop bit, or stall with line in idle state
-    .set("x", 7)    .side(0) [7]    // Preload bit counter, assert start bit for 8 clocks
-.L("bitloop")                       // This loop will run 8 times (8n1 UART)
-    .out("pins", 1)                 // Shift 1 bit from OSR to the first OUT pin
-    .jmp("x--", "bitloop")   [6]    // Each loop iteration is 8 cycles.
+    .pull()         .side(1) [7] // Assert stop bit, or stall with line in idle state
+    .set("x", 7)    .side(0) [7] // Preload bit counter, assert start bit for 8 clocks
+.L("bitloop")                    // This loop will run 8 times (8n1 UART)
+    .out("pins", 1)              // Shift 1 bit from OSR to the first OUT pin
+    .jmp("x--", "bitloop")   [6] // Each loop iteration is 8 cycles.
 .end();
 // mkdocs-end:[uart_tx]
         CheckProgram(program, uart_tx_program);
