@@ -71,7 +71,7 @@ Belos is a list of instructions available in the method-chain PIO assembler.
     .jmp("!osre", addr or "label")
     ```
 
-    Jump to the specified address or label if the output shift register (OSR) is not empty.
+    Jump to the specified address or label if the output shift register (`osr`) is not empty.
 
 !!! abstract ".wait"
 
@@ -104,25 +104,38 @@ Belos is a list of instructions available in the method-chain PIO assembler.
     .in("pins", count)
     ```
 
+    The `count` bits from the GPIO pins specified by `StateMachine::set_in_pins()` or `StateMachine::config_set_in_pins()` are shifted into the `isr`.
+
     ```cpp
     .in("x", count)
     ```
+
+    The least significant `count` bits of the `x` register are shifted into the `isr`.
 
     ```cpp
     .in("y", count)
     ```
 
+    The least significant `count` bits of the `y` register are shifted into the `isr`.
+
     ```cpp
     .in("null", count)
     ```
+
+    The `count` bits of zeros are shifted into the `isr`.
 
     ```cpp
     .in("isr", count)
     ```
 
+    The least significant `count` bits of the `isr` are shifted into the `isr`.
+
     ```cpp
     .in("osr", count)
     ```
+
+    The least significant `count` bits of the `osr` are shifted into the `isr`.
+
 
 !!! abstract ".out"
 
@@ -130,33 +143,49 @@ Belos is a list of instructions available in the method-chain PIO assembler.
     .out("pins", count)
     ```
 
+    The `count` bits from the `osr` are shifted out to the GPIO pins specified by `StateMachine::set_out_pins()` or `StateMachine::config_set_out_pins()`.
+
     ```cpp
     .out("x", count)
     ```
+
+    The `count` bits from the `osr` are shifted into the least significant bits of the `x` register. The most significant bits of the `x` register are filled with zeros.
 
     ```cpp
     .out("y", count)
     ```
 
+    The `count` bits from the `osr` are shifted into the least significant bits of the `y` register. The most significant bits of the `y` register are filled with zeros.
+
     ```cpp
     .out("null", count)
     ```
+
+    The value of the `osr` is shifted by `count` bits.
 
     ```cpp
     .out("pindirs", count)
     ```
 
+    The `count` bits from the `osr` are shifted out to the pin direction control of the GPIO pins specified by `StateMachine::set_out_pins()` or `StateMachine::config_set_out_pins()`.
+
     ```cpp
     .out("pc", count)
     ```
+
+    The `count` bits from the `osr` are shifted into the least significant bits of the PC register. The most significant bits of the PC register are filled with zeros.
 
     ```cpp
     .out("isr", count)
     ```
 
+    The `count` bits from the `osr` are shifted into the least significant bits of the `isr`. The most significant bits of the `isr` are filled with zeros.
+
     ```cpp
     .out("osr", count)
     ```
+
+    The `count` bits from the `osr` are shifted into the least significant bits of the `osr`. The most significant bits of the `osr` are filled with zeros.
 
 !!! abstract ".push"
 
@@ -166,7 +195,7 @@ Belos is a list of instructions available in the method-chain PIO assembler.
 
     `.push()` instruction can be used with the following modifiers:
 
-    - `.iffull()`: Pushes the ISR value to the RX FIFO only when ISR's shift amount reaches the specified value.
+    - `.iffull()`: Pushes the `isr` value to the RX FIFO only when `isr`'s shift amount reaches the specified value.
     - `.block()`: Blocks the execution until the RX FIFO is ready to accept data.
     - `.noblock()`: Does not block the execution, even if the RX FIFO is not ready.
 
@@ -178,9 +207,9 @@ Belos is a list of instructions available in the method-chain PIO assembler.
 
     `.pull()` instruction can be used with the following modifiers:
 
-    - `.ifempty()`: Pulls data from the TX FIFO to the OSR only when the OSR's shift amount is zero.
+    - `.ifempty()`: Pulls data from the TX FIFO to the `osr` only when the `osr`'s shift amount is zero.
     - `.block()`: Blocks the execution until there is data in the TX FIFO.
-    - `.noblock()`: Does not block the execution, and sets the OSR with the value of the X when there is no data in the TX FIFO.
+    - `.noblock()`: Does not block the execution, and sets the `osr` with the value of the X when there is no data in the TX FIFO.
 
 !!! abstract ".mov"
 
@@ -188,13 +217,18 @@ Belos is a list of instructions available in the method-chain PIO assembler.
     .mov("x", "src")
     ```
 
+    Move data from `src` to the `x` register.
+
     ```cpp
     .mov("y", "src")
     ```
 
+    Move data from `src` to the `y` register.
+
     ```cpp
     .mov("exec", "src")
     ```
+   
 
     ```cpp
     .mov("pc", "src")
@@ -208,9 +242,7 @@ Belos is a list of instructions available in the method-chain PIO assembler.
     .mov("osr", "src")
     ```
 
-    Move data from `src` to the destination. The `src` can be `pins`, `x`, `y`, `null`, `status`, `isr`, or `osr`.
-
-    The `src` target can be applied with the following operators:
+    The `src` can be `pins`, `x`, `y`, `null`, `status`, `isr`, or `osr`. It can also be applied with the following operators:
 
     - `!src`: Bitwise complement of the value of `src` is moved to `dst`.
     - `~src`: Same as `!src`.
