@@ -4,7 +4,7 @@ target_include_directories(jxglib_TouchScreen_TSC2046 INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/include)
 
 target_link_libraries(jxglib_TouchScreen_TSC2046 INTERFACE
-	hardware_spi
+	jxglib_SPI
 	jxglib_TouchScreen
 	jxglib_Drawable)
 

@@ -93,7 +93,7 @@ nav:
                 - Setting Various Parameters: shell/camera/ov7670/ov7670-params.md
     #--------------------------------------------------------------------------
     - Programming:
-        - How to Use pico-jxglib: programming/index.md
+        - Programming with pico-jxglib: programming/index.md
         - List of Libraries: programming/lib-list.md
         - LABOPlatform: programming/labo-platform/index.md
         - Core:
@@ -147,6 +147,8 @@ nav:
         - Device:
             - Built-in LED: programming/device/builtin-led/index.md
             - RTC (Real Time Clock): programming/device/rtc/index.md
+            - SD Card: programming/device/sdcard/index.md
+            - Touch Screen: programming/device/touchscreen/index.md
         - Terminal:
             - Overview: programming/terminal/index.md
             - Connectability:

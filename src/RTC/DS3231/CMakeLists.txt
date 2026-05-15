@@ -4,7 +4,7 @@ target_include_directories(jxglib_RTC_DS3231 INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/include)
 
 target_link_libraries(jxglib_RTC_DS3231 INTERFACE
-	hardware_i2c
+	jxglib_I2C
 	jxglib_RTC)
 
 target_sources(jxglib_RTC_DS3231 INTERFACE

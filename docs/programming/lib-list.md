@@ -2,6 +2,70 @@
 
 pico-jxglib's libraries are prefixed with `jxglib_`. Here is the list of libraries in pico-jxglib:
 
+<!--
+```mermaid
+graph TD
+    BinaryInfo --> GPIOInfo
+    Drawable --> Font
+    Drawable --> Image
+    Canvas --> Drawable
+    Display --> Drawable
+    Camera --> Image
+    Display_TFT_LCD --> Display
+    Display_TFT_LCD --> SPI
+    Display_TFT_LCD --> DMA
+    Display_ST7735 --> Display_TFT_LCD
+    Display_ST7789 --> Display_TFT_LCD
+    Display_ILI9341 --> Display_TFT_LCD
+    Display_ILI9341 --> TouchScreen_TSC2046
+    Display_ILI9488 --> Display_TFT_LCD
+    Display_ILI9488 --> TouchScreen_TSC2046
+    Display_SSD1306 --> Display
+    Display_SSD1306 --> I2C
+    Display_WS2812 --> Display
+    Display_WS2812 --> Canvas
+    Display_WS2812 --> Device_WS2812
+    FS --> RTC
+    FAT --> FS
+    FAT_SDCard --> FAT
+    FAT_SDCard --> Device_SDCard
+    FAT_USBMSC --> FAT
+    FAT_USBMSC --> USBHost
+    FAT_Flash --> FAT
+    FAT_Flash --> Flash
+    FAT_RAMDisk --> FAT
+    LFS --> FS
+    LFS_Flash --> LFS
+    LFS_Flash --> Flash
+    LogicAnalyzer --> DMA
+    LogicAnalyzer --> PIO
+    LogicAnalyzer --> JSON
+    LVGL --> Mouse
+    LVGL --> TouchScreen
+    ML --> Image
+    Net_TCP --> Net
+    Net_Telnet --> Net_TCP
+    Net_UDP --> Net
+    NetUtil --> Net_TCP
+    NetUtil --> Net_UDP
+    RTC_DS3231 --> RTC
+    RTC_DS3231 --> I2C
+    RTC_Pico --> RTC
+    Serial --> Terminal
+    TEK4010 --> UART
+    TelePlot --> UART
+    Shell --> Hash
+    Shell --> FS
+    Shell --> Terminal
+    Terminal --> LineBuff
+    TouchScreen_TSC2046 --> SPI
+    TouchScreen_TSC2046 --> TouchScreen
+    TouchScreen_TSC2046 --> Drawable
+    USBDevice --> FS
+    USBHost --> Mouse
+```
+-->
+
 |Library Name | Description|
 |--- | ---|
 |jxglib_Common | Common utilities and definitions |

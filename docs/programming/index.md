@@ -1,4 +1,4 @@
-# How to Use pico-jxglib
+# Programming with pico-jxglib
 
 pico-jxglib is a set of C/C++ libraries that works along with the Pico SDK.
 
