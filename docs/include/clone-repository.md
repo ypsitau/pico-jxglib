@@ -1,4 +1,4 @@
-??? note "Clone the Repository"
+??? inserted-more "Clone the Repository"
     Change the current directory to the parent directory where you want to clone the `pico-jxglib` repository and run the following commands:
 
     ```bash

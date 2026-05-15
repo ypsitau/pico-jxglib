@@ -1,4 +1,4 @@
-??? note "Enable UART and/or USB stdio"
+??? inserted-more "Enable UART and/or USB stdio"
     Find the following lines in `CMakeLists.txt`:
     
     ```cmake title="CMakeLists.txt" linenums="1"

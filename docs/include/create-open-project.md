@@ -1,4 +1,4 @@
-??? note "Create Pico SDK Project"
+??? inserted-more "Create Pico SDK Project"
 
     1. In VSCode, run `>Raspberry Pi Pico: New Pico Project` in the command palette.
     2. In the dialog below, select `C/C++`.
@@ -13,7 +13,7 @@
 
     ![new-project](images/new-project.png)
 
-??? note "Open Existing Pico SDK Project"
+??? inserted-more "Open Existing Pico SDK Project"
 
     Open the project folder in VSCode using one of the following methods:
 

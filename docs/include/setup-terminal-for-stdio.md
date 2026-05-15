@@ -1,4 +1,4 @@
-??? note "Setup Tera Term for stdio"
+??? inserted-more "Setup Tera Term for stdio"
     Tera Term is available [here](https://teratermproject.github.io/index-en.html).
 
     From the menu bar, select `[File]` - `[New Connection...]` to open the dialog below:
