@@ -16,12 +16,12 @@ The method chain starts with the `.program()` function, which specifies the name
 The PIO program coded with the Method Chaining Assembler has the similar appearance with the one coded in pioasm. See the differences between them in the following codes:
 
 === "Method Chaining Assembler"
-    ```cpp linenums="13"
+    ```cpp linenums="1"
     {% include "./sample/pio-examples/pio-examples.cpp" start="// mkdocs-start:[blink]" end="// mkdocs-end:[blink]" %}
     ```
 
 === "pioasm"
-    ```asm linenums="13"
+    ```asm linenums="1"
     {% include "./sample/pio-examples/pio-examples.pio" start="// mkdocs-start:[blink]" end="// mkdocs-end:[blink]" %}
     ```
 
