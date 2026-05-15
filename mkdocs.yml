@@ -133,15 +133,18 @@ nav:
             - API Reference: programming/filesystem/api-reference.md
         - Peripheral:
             - Overview: programming/peripheral/index.md
-            - GPIO: programming/peripheral/gpio/index.md
+            - GPIO:
+                - Overview: programming/peripheral/gpio/index.md
+                - Setting Functions: programming/peripheral/gpio/gpio-set-function.md
             - PWM: programming/peripheral/pwm/index.md
             - I2C: programming/peripheral/i2c/index.md
             - SPI: programming/peripheral/spi/index.md
             - UART: programming/peripheral/uart/index.md
+            - DMA: programming/peripheral/dma/index.md
             - PIO:
                 - Overview: programming/peripheral/pio/index.md
-                - How to Program PIO: programming/peripheral/pio/pio-how-to.md
-                - C++ vs pioasm: programming/peripheral/pio/pio-cpp-vs-asm.md
+                - Programming PIO: programming/peripheral/pio/pio-programming.md
+                - Method Chaining Assembler: programming/peripheral/pio/pio-cpp-vs-asm.md
                 - Directives: programming/peripheral/pio/pio-directives.md
                 - Instructions: programming/peripheral/pio/pio-instructions.md
         - Device:

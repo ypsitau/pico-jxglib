@@ -8,10 +8,9 @@ int main()
 {
     ::stdio_init_all();
     PIO::Program program;
-    //-------------------------------------------------------------------------
     program
     .program("blink")
-        .pull().block()
+        .pull()
         .out("y", 32)
     .wrap_target()
         .mov("x", "y")
@@ -24,13 +23,12 @@ int main()
         .jmp("x--", "lp2")      // Delay for the same number of cycles again
     .wrap()                     // Blink forever!
     .end();
-    //-------------------------------------------------------------------------
     PIO::StateMachine sm;
-    sm.set_program(program)
-        .reserve_set_pin(GPIO14)
-        .init()
-        .put((::clock_get_hz(clk_sys) / (1 * 2)) - 3);
+    sm.set_program(program);
+    sm.reserve_set_pin(GPIO15);
+    sm.init();
     sm.set_enabled();
-    //-------------------------------------------------------------------------
+    float freq = 2.;
+    sm.put(static_cast<uint>((static_cast<float>(::clock_get_hz(clk_sys)) / (freq * 2))) - 3);
     for (;;) Tickable::Tick();
 }

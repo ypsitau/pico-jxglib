@@ -50,7 +50,7 @@ int main()
         program
 // mkdocs-start:[blink]
 .program("blink")
-    .pull().block()
+    .pull()
     .out("y", 32)
 .wrap_target()
     .mov("x", "y")
