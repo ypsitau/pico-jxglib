@@ -17,6 +17,22 @@ Add the following line to your source file.
 #include "jxglib/FAT/Flash.h"
 ```
 
+## API
+
+!!! abstract ""
+
+    ```cpp
+    FAT::Flash(const char* driveName, uint32_t addrXIP, uint32_t bytesXIP)
+    ```
+
+    - `driveName`: A string name for the drive, can contain any characters
+    - `addrXIP`: The starting address of the flash memory region for the FAT file system
+    - `bytesXIP`: The number of bytes to reserve from the end of the flash memory for the FAT file system
+
+    The constructor of `FAT::Flash` declares that the specified region of the flash memory is reserved for the FAT file system.
+
+    Note that the constructor is just a declaration of the drive and does not modify the flash memory. The file system is created only when `format` command is executed on the shell or `FS::Format()` is called in the program for the declared drive.
+
 ## Sample Program
 
 In this sample program, we create a `FAT::Flash` instance on the flash memory. The instance is assigned a unique drive name and a specific region of the flash memory as follows:
@@ -104,19 +120,3 @@ FAT:/>dir
 -a--- 2000-01-01 00:00:00      0 file2
 -a--- 2000-01-01 00:00:00      0 file3
 ```
-
-### Program Explanation
-
-The constructor of `FAT::Flash` declares that the specified region of the flash memory is reserved for the FAT file system.
-
-!!! abstract ""
-
-    ```cpp
-    FAT::Flash(const char* driveName, uint32_t addrXIP, uint32_t bytesXIP)
-    ```
-
-    - `driveName`: A string name for the drive, can contain any characters
-    - `addrXIP`: The starting address of the flash memory region for the FAT file system
-    - `bytesXIP`: The number of bytes to reserve from the end of the flash memory for the FAT file system
-
-Note that the constructor is just a declaration of the drive and does not modify the flash memory. The file system is created only when `format` command is executed on the shell or `FS::Format()` is called in the program for the declared drive.
