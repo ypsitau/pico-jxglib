@@ -56,7 +56,6 @@ target_include_directories(pio-blink PRIVATE
 pico_add_extra_outputs(pio-blink)
 
 # mkdocs-start
-target_link_libraries(pio-blink
-    jxglib_PIO)
+target_link_libraries(pio-blink jxglib_PIO)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 # mkdocs-end

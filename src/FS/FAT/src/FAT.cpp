@@ -64,7 +64,7 @@ bool Drive::CheckMounted()
 
 const char* Drive::GetFileSystemName()
 {
-	if (!Mount()) return "unmounted";
+	if (!Mount()) return "none";
 	return
 		(fatFs_.fs_type == FS_FAT12)? "FAT12" :
 		(fatFs_.fs_type == FS_FAT16)? "FAT16" :

@@ -61,7 +61,7 @@ bool Drive::CheckMounted()
 
 const char* Drive::GetFileSystemName()
 {
-	return Mount()? "LittleFS" : "unmounted";
+	return Mount()? "LFS" : "none";
 }
 
 FS::File* Drive::OpenFile(const char* fileNameN, const char* mode)

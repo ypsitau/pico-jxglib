@@ -1,6 +1,19 @@
 # Multiple Flash File Systems
 
-## Build and Flash the Program
+You can create multiple file system instances on the flash memory of the Pico board. This allows you to use different file system types or separate storage areas for different purposes.
+
+## Sample Program
+
+In this sample program, we create two `LFS::Flash` instances and two `FAT::Flash` instances on the flash memory. Each instance is assigned a unique drive name and a specific region of the flash memory as follows:
+
+| Drive Name | File System Type | Flash Memory Region           | Size   |
+|------------|-----------------|-------------------------------|--------|
+| J:         | LFS      | 0x10100000-0x10140000        | 256kB  |
+| K:        | LFS      | 0x10140000-0x10180000        | 256kB  |
+| L:         | FAT      | 0x10180000-0x101c0000        | 256kB  |
+| M:         | FAT      | 0x101c0000-0x10200000        | 256kB  |
+
+### Build and Flash the Program
 
 Create a new Pico SDK project named `fs-flash-multi`.
 
@@ -38,7 +51,7 @@ Build and flash the program to the board.
 
 {% include-markdown "include/build-and-flash.md" %}
 
-## Running the Program
+### Running the Program
 
 Open a terminal emulator to connect the board.
 
@@ -58,11 +71,11 @@ This drive is chosen as the current because it is specified as a primary drive w
 
 ```text
 K:?>ls-drive -r
- Drive  Format           Total Remarks
- J:     unmounted            0 LFS::Flash 0x10100000-0x10140000 256kB
-*K:     unmounted            0 LFS::Flash 0x10140000-0x10180000 256kB
- L:     unmounted            0 FAT::Flash 0x10180000-0x101c0000 256kB
- M:     unmounted            0 FAT::Flash 0x101c0000-0x10200000 256kB
+ Drive  Format        Total Remarks
+ J:     none              0 LFS::Flash 0x10100000-0x10140000 256kB
+*K:     none              0 LFS::Flash 0x10140000-0x10180000 256kB
+ L:     none              0 FAT::Flash 0x10180000-0x101c0000 256kB
+ M:     none              0 FAT::Flash 0x101c0000-0x10200000 256kB
 ```
 
 Executing `format` command with the drive name formats the drive. 

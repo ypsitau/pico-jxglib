@@ -1,6 +1,28 @@
 # Flash File System Using LittleFS
 
-## Build and Flash the Program
+## Link and Include
+
+Add the following line to your `CMakeLists.txt`.
+
+```cmake title="CMakeLists.txt"
+target_link_libraries(your-project jxglib_LFS_Flash)
+```
+
+Add the following line to your source file.
+
+```cpp title="Your Source File"
+#include "jxglib/LFS/Flash.h"
+```
+
+## Sample Program
+
+In this sample program, we create a `LFS::Flash` instance on the flash memory. The instance is assigned a unique drive name and a specific region of the flash memory as follows:
+
+| Drive Name | File System Type | Flash Memory Region           | Size   |
+|------------|-----------------|-------------------------------|--------|
+| LFS:         | LFS      | 0x1010'0000-0x1020'0000        | 1MB  |
+
+### Build and Flash the Program
 
 Create a new Pico SDK project named `fs-flash-lfs`.
 
@@ -56,8 +78,8 @@ LFS:?>
 
 ```text
 LFS:?>ls-drive -r
- Drive  Format           Total Remarks
- LFS:   unmounted            0 LFS::Flash 0x101c0000-0x10200000 256kB
+ Drive  Format        Total Remarks
+ LFS:   none              0 LFS::Flash 0x10100000-0x10200000 1024kB
 ```
 
 Executing `format` command with the drive name formats the drive:
@@ -65,10 +87,12 @@ Executing `format` command with the drive name formats the drive:
 ```text
 LFS:?>format lfs:
 drive lfs: formatted in LittleFS
-LFS:/>
+LFS:/>ls-drive -r
+ Drive  Format          Total Remarks
+ LFS:   LFS         1048576 LFS::Flash 0x10100000-0x10200000 1024kB
 ```
 
-The prompt changes to `/`, indicating the drive is now formatted and ready to use. You can create files and directories as usual:
+The prompt changes to `LFS:/>`, indicating the drive is now formatted and ready to use. You can create files and directories as usual:
 
 ```text
 LFS:/>touch file1 file2 file3
@@ -78,13 +102,13 @@ LFS:/>dir
 -a--- 2000-01-01 00:00:00      0 file3
 ```
 
-## Program Explanation
+### Program Explanation
 
-`LFS::Flash` instances are generated on the Pico board's flash memory, allowing you to treat it as a LittleFS file system. The constructor details are as follows:
+The constructor of `LFS::Flash` declares that the specified region of the flash memory is reserved for the LittleFS file system.
 
-- `LFS::Flash(const char* driveName, uint32_t bytesXIP)`
-  `drivename`: A string name for the drive, can contain any characters
-  `bytesXIP`: The number of bytes to reserve from the end of the flash memory for the LittleFS file system
+- `LFS::Flash(const char* driveName, uint32_t addrXIP, uint32_t bytesXIP)`
+  - `drivename`: A string name for the drive, can contain any characters
+  - `addrXIP`: The starting address of the flash memory region for the LittleFS file system
+  - `bytesXIP`: The number of bytes to reserve from the end of the flash memory for the LittleFS file system
 
-!!! note
-    `LFS::Flash` instances are generated, but the file system is not created. You must run `FS::Format()` to format the drive.
+Note that the constructor is just a declaration of the drive and does not modify the flash memory. The file system is created only when `format` command is executed on the shell or `FS::Format()` is called in the program.

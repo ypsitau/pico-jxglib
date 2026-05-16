@@ -62,9 +62,9 @@ Use the `ls-drive` command to display the list of available drives:
 
 ```text
 L:/>ls-drive
- Drive  Format           Total
-*L:     FAT12          2621440
- M:     unmounted            0
+ Drive  Format        Total
+*L:     FAT12       2621440
+ M:     none              0
 ```
 
 Since there is no SD card inserted yet, it shows as unmounted. Insert an SD card and run `ls-drive` again. Here, a 32 GByte SD card formatted as FAT was inserted:
