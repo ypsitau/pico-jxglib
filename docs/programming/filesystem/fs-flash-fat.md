@@ -83,7 +83,7 @@ FAT:?>
 FAT:?>ls-drive -r
  Drive  Format        Total Remarks
  FAT:   none              0 FAT::Flash 0x10100000-0x10200000 1024kB
- ```
+```
 
 Executing `format` command with the drive name formats the drive:
 
@@ -109,9 +109,14 @@ FAT:/>dir
 
 The constructor of `FAT::Flash` declares that the specified region of the flash memory is reserved for the FAT file system.
 
-- `FAT::Flash(const char* driveName, uint32_t addrXIP, uint32_t bytesXIP)`
-  - `drivename`: A string name for the drive, can contain any characters
-  - `addrXIP`: The starting address of the flash memory region for the FAT file system
-  - `bytesXIP`: The number of bytes to reserve from the end of the flash memory for the FAT file system
+!!! abstract ""
 
-Note that the constructor is just a declaration of the drive and does not modify the flash memory. The file system is created only when `format` command is executed on the shell or `FS::Format()` is called in the program.
+    ```cpp
+    FAT::Flash(const char* driveName, uint32_t addrXIP, uint32_t bytesXIP)
+    ```
+
+    - `driveName`: A string name for the drive, can contain any characters
+    - `addrXIP`: The starting address of the flash memory region for the FAT file system
+    - `bytesXIP`: The number of bytes to reserve from the end of the flash memory for the FAT file system
+
+Note that the constructor is just a declaration of the drive and does not modify the flash memory. The file system is created only when `format` command is executed on the shell or `FS::Format()` is called in the program for the declared drive.
