@@ -98,8 +98,3 @@ K:/>dir
 -a--- 2000-01-01 00:00:00      0 file2
 -a--- 2000-01-01 00:00:00      0 file3
 ```
-- `LFS::Flash(const char* driveName, uint32_t addrXIP, uint32_t bytesXIP)`
-  `FAT::Flash(const char* driveName, uint32_t addrXIP, uint32_t bytesXIP)`
-  `driveName`: A string name for the drive, can contain any characters
-  `addrXIP`: The starting address of the flash memory for the drive
-  `bytesXIP`: The size of the flash memory for the drive

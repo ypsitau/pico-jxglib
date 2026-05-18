@@ -1,5 +1,7 @@
 # Flash File System Using FAT
 
+In this page, we will learn how to use the FAT file system on the flash memory with `FAT::Flash` class.
+
 ## Link and Include
 
 Add the following lines to your `CMakeLists.txt`.
@@ -17,7 +19,9 @@ Add the following line to your source file.
 #include "jxglib/FAT/Flash.h"
 ```
 
-## API
+## Declaring a File System
+
+Creating a `FAT::Flash` instance declares that the specified region of the flash memory is reserved for the FAT file system.
 
 !!! abstract ""
 
@@ -29,9 +33,18 @@ Add the following line to your source file.
     - `addrXIP`: The starting address of the flash memory region for the FAT file system
     - `bytesXIP`: The number of bytes to reserve from the end of the flash memory for the FAT file system
 
-    The constructor of `FAT::Flash` declares that the specified region of the flash memory is reserved for the FAT file system.
+The construction below allocates a region from the end of the flash memory.
 
-    Note that the constructor is just a declaration of the drive and does not modify the flash memory. The file system is created only when `format` command is executed on the shell or `FS::Format()` is called in the program for the declared drive.
+!!! abstract ""
+
+    ```cpp
+    FAT::Flash(const char* driveName, uint32_t bytesXIP)
+    ```
+
+    - `driveName`: A string name for the drive, can contain any characters
+    - `bytesXIP`: The number of bytes to reserve from the end of the flash memory for the FAT file system
+
+Note that the constructor is just a declaration of the drive and does not modify the flash memory. The file system is created only when `format` command is executed on the shell or `FS::Format()` is called in the program for the declared drive.
 
 ## Sample Program
 

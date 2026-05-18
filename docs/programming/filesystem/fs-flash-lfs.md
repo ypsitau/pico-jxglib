@@ -1,5 +1,7 @@
 # Flash File System Using LittleFS
 
+In this page, we will learn how to use the LittleFS file system on the flash memory with `LFS::Flash` class.
+
 ## Link and Include
 
 Add the following line to your `CMakeLists.txt`.
@@ -14,7 +16,9 @@ Add the following line to your source file.
 #include "jxglib/LFS/Flash.h"
 ```
 
-## API
+## Declaring a File System
+
+Creating a `LFS::Flash` instance declares that the specified region of the flash memory is reserved for the LittleFS file system.
 
 !!! abstract ""
 
@@ -26,9 +30,18 @@ Add the following line to your source file.
     - `addrXIP`: The starting address of the flash memory region for the LittleFS file system
     - `bytesXIP`: The number of bytes to reserve from the end of the flash memory for the LittleFS file system
 
-    The constructor of `LFS::Flash` declares that the specified region of the flash memory is reserved for the LittleFS file system.
+The construction below allocates a region from the end of the flash memory.
 
-    Note that the constructor is just a declaration of the drive and does not modify the flash memory. The file system is created only when `format` command is executed on the shell or `FS::Format()` is called in the program for the declared drive.
+!!! abstract ""
+
+    ```cpp
+    LFS::Flash(const char* driveName, uint32_t bytesXIP)
+    ```
+
+    - `driveName`: A string name for the drive, can contain any characters
+    - `bytesXIP`: The number of bytes to reserve from the end of the flash memory for the LittleFS file system
+
+Note that the constructor is just a declaration of the drive and does not modify the flash memory. The file system is created only when `format` command is executed on the shell or `FS::Format()` is called in the program for the declared drive.
 
 ## Sample Program
 
