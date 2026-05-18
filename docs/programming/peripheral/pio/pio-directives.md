@@ -10,21 +10,23 @@ Below is a list of directives available in the method-chain PIO assember.
     .program("name")
     ```
 
+    Defines a PIO program with the given name.
+
 !!! abstract ".end"
 
     ```cpp
     .end()
     ```
 
-    ```cpp
-    .end(&relAddr)
-    ```
+    Marks the end of the PIO program. This directive does finalization work such as resolving labels and calculating the size of the program.
 
 !!! abstract ".L"
 
     ```cpp
     .L("label")
     ```
+
+    Defines a local label that can be used for JMP instructions.
 
 !!! abstract ".pub"
 
@@ -33,11 +35,15 @@ Below is a list of directives available in the method-chain PIO assember.
     .pub(&relAddr)
     ```
 
+    Retrives the relative address of the current instruction and stores it in `relAddr`. This can be used to implement position-independent code.
+
 !!! abstract ".entry"
 
     ```cpp
     .entry()
     ```
+
+    Marks the current relative address as the entry point of the program.
 
 !!! abstract ".origin"
 
@@ -51,6 +57,8 @@ Below is a list of directives available in the method-chain PIO assember.
     .pio_version(version)
     ```
 
+    Specifies the PIO version to target. This infomration is used to check if the instructions used in the program are compatible with the specified PIO version.
+
 !!! abstract ".side_set"
 
     ```cpp
@@ -59,7 +67,7 @@ Below is a list of directives available in the method-chain PIO assember.
 
     `.side_set()` directive can be used with the following modifiers:
 
-    - `.opt()`: Makes `.side()` modifier optional. If not specified, all the instruction must have the `.side()` modifier. 
+    - `.opt()`: Makes `.side()` modifier optional. If not specified, all the instruction must have the `.side()` modifier.
     - `.pindirs()`: The value specified by `.side()` modifier sets the direction of the pin, not the value on the pin.
 
 !!! abstract ".wrap_target"
@@ -68,9 +76,7 @@ Below is a list of directives available in the method-chain PIO assember.
     .wrap_target()
     ```
 
-    ```cpp
-    .wrap_target(&relAddr)
-    ```
+    Marks the beginning of a wrap block. A wrap block is a section of code that will be repeated indefinitely. The end of the wrap block is marked by the `.wrap()` directive.
 
 !!! abstract ".wrap"
 
@@ -78,6 +84,4 @@ Below is a list of directives available in the method-chain PIO assember.
     .wrap()
     ```
 
-    ```cpp
-    .wrap(&relAddr)
-    ```
+    Marks the end of a wrap block. The code between `.wrap_target()` and `.wrap()` will be repeated indefinitely.
