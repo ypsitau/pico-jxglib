@@ -140,7 +140,7 @@ nav:
             #- I2C: programming/peripheral/i2c/index.md
             #- SPI: programming/peripheral/spi/index.md
             #- UART: programming/peripheral/uart/index.md
-            #- DMA: programming/peripheral/dma/index.md
+            - DMA: programming/peripheral/dma/index.md
             - PIO:
                 - Overview: programming/peripheral/pio/index.md
                 - Programming PIO: programming/peripheral/pio/pio-programming.md
