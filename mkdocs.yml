@@ -129,7 +129,7 @@ nav:
                 - Multiple Drives: programming/filesystem/fs-flash-multi.md
             - SD Card: programming/filesystem/sdcard.md
             - USB Storage: programming/filesystem/usb-storage.md
-            - Timestamp Support: programming/filesystem/fs-timestamp.md
+            - RTC (Real Time Clock) Support: programming/filesystem/fs-timestamp.md
             - API Reference: programming/filesystem/api-reference.md
         - Peripheral:
             - Overview: programming/peripheral/index.md
@@ -145,6 +145,7 @@ nav:
                 - Overview: programming/peripheral/pio/index.md
                 - Programming PIO: programming/peripheral/pio/pio-programming.md
                 - Method Chaining Assembler: programming/peripheral/pio/pio-cpp-vs-asm.md
+                - State Machine Configuration: programming/peripheral/pio/pio-sm-config.md
                 - Directives: programming/peripheral/pio/pio-directives.md
                 - Instructions: programming/peripheral/pio/pio-instructions.md
         - Device:

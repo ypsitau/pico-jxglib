@@ -161,7 +161,7 @@ public:
 		PrintPart part;
 		const WaveStyle* pWaveStyle;
 	public:
-		PrintInfo() : nPins{0}, nEventsToPrint{80}, part{PrintPart::Head}, pWaveStyle{&waveStyle_unicode2} {}
+		PrintInfo() : nPins{0}, nEventsToPrint{80}, part{PrintPart::Head}, pWaveStyle{&waveStyle_ascii3} {}
 		int CountValidPins() const;
 	};
 	class SamplingInfo {
