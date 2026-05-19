@@ -149,7 +149,10 @@ nav:
                 - Directives: programming/peripheral/pio/pio-directives.md
                 - Instructions: programming/peripheral/pio/pio-instructions.md
         - Device:
-            - Built-in LED: programming/device/builtin-led/index.md
+            - Built-in LED:
+                - Overview: programming/device/builtin-led/index.md
+                - Single-color LED: programming/device/builtin-led/led-single-color.md
+                - Multi-Color LED: programming/device/builtin-led/led-multi-color.md
             - RTC (Real Time Clock): programming/device/rtc/index.md
             - SD Card: programming/device/sdcard/index.md
             - Touch Screen: programming/device/touchscreen/index.md
