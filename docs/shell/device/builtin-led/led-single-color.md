@@ -1,5 +1,7 @@
 # Single-color LED
 
+## Control the LED
+
 To turn the LED on and off:
 
 ```text
