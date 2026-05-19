@@ -33,8 +33,6 @@ Use the `put` subcommand to set the color of the LED. For example, to light up r
 L:/>ws2812 put:red
 ```
 
-![ws2812-red](images/ws2812-red.jpg)
-
 You can also specify the color using a hexadecimal color code:
 
 ```text
