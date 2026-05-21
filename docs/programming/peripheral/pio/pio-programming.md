@@ -75,7 +75,7 @@ sm.set_program(program);
 Creates a state machine and sets the PIO program to it.
 
 ```cpp linenums="28"
-sm.reserve_set_pin(GPIO15);
+sm.config_pin_set(GPIO15);
 ```
 
 Reserves GPIO pin 15 as a set pin. This is required because the PIO program uses the `set` instruction to set the value of GPIO pins, and the state machine needs to know which pins are used for this purpose.

@@ -723,8 +723,8 @@ bool OV7670::Initialize()
 #endif
 	//--------------------------------------------------------------------------
 	sm_.set_program(program_)
-		.reserve_in_pins(pinAssign_.D0, 8)
-		.reserve_gpio_pin(pinAssign_.PCLK, pinAssign_.HREF, pinAssign_.VSYNC)
+		.config_pinseq_in(pinAssign_.D0, 8)
+		.config_pin_gpio(pinAssign_.PCLK, pinAssign_.HREF, pinAssign_.VSYNC)
 		.config_set_in_shift_left(true, 32)	// shift left, autopush enabled, push threshold 32
 		.init();
 	programToReset_

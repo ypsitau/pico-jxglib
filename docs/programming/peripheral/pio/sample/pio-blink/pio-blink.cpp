@@ -25,7 +25,7 @@ int main()
     .end();
     PIO::StateMachine sm;
     sm.set_program(program);
-    sm.reserve_set_pin(GPIO15);
+    sm.config_pin_set(GPIO15);
     sm.init();
     sm.set_enabled();
     float freq = 2.;
