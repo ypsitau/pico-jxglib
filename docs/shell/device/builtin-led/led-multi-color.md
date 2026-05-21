@@ -33,8 +33,6 @@ Use the `put` subcommand to set the color of the LED. For example, to light up r
 L:/>ws2812 put:red
 ```
 
-![ws2812-red](images/ws2812-red.jpg)
-
 You can also specify the color using a hexadecimal color code:
 
 ```text
@@ -58,7 +56,7 @@ L:/>ws2812 repeat {put:blue sleep:500 put:black sleep:500}
 ### ws2812
 
 ```text title="Help of the Command"
-sage: ws2812 [OPTION]... [PIN [COMMAND]...]
+Usage: ws2812 [OPTION]... [PIN [COMMAND]...]
 Options:
  -h --help       prints this help
  -b --brightness set brightness (0.0 - 1.0)
