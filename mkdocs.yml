@@ -80,13 +80,13 @@ nav:
             - Network Utilities: shell/network/network-utilities/index.md
             - Telnet Server: shell/network/telnet-server/index.md
         - Display:
+            - About draw Command: shell/display/draw-command.md
             - WS2812:
                 - Overview: shell/display/ws2812/index.md
                 - About WS2812 LEDs: shell/display/ws2812/ws2812-about.md
                 - Wiring: shell/display/ws2812/ws2812-wiring.md
                 - Direct Control: shell/display/ws2812/ws2812-direct.md
                 - Display: shell/display/ws2812/ws2812-display.md
-                - About draw Command: shell/display/ws2812/ws2812-draw.md
                 - Sample:
                     - Flowing Dot: shell/display/ws2812/ws2812-sample-dot.md
                     - Flowing Colored Dot: shell/display/ws2812/ws2812-sample-color-dot.md
