@@ -42,7 +42,7 @@ void Sample02_set::Run()
 	.wrap()
 	.end();
 	sm_.set_program(program_)
-		.reserve_set_pin(GPIO15)
+		.config_pin_set(GPIO15)
 		.config_set_clkdiv(65536)	// Pico: 125MHz / 65536 = 1907 Hz, Pico2: 150MHz / 65536 = 2288 Hz
 		.init()
 		.set_enabled();
@@ -68,7 +68,7 @@ void Sample03_sideset::Run()
 	.wrap()
 	.end();
 	sm_.set_program(program_)
-		.reserve_sideset_pin(GPIO15)
+		.config_pin_sideset(GPIO15)
 		.config_set_clkdiv(65536)	// Pico: 125MHz / 65536 = 1907 Hz, Pico2: 150MHz / 65536 = 2288 Hz
 		.init()
 		.set_enabled();
@@ -95,7 +95,7 @@ void Sample04_mov::Run()
 	.wrap()
 	.end();
 	sm_.set_program(program_)
-		.reserve_out_pin(GPIO15)	// mov uses out pins
+		.config_pin_out(GPIO15)	// mov uses out pins
 		.config_set_clkdiv(65536)	// Pico: 125MHz / 65536 = 1907 Hz, Pico2: 150MHz / 65536 = 2288 Hz
 		.init()
 		.set_enabled();
@@ -125,7 +125,7 @@ void Sample05_out::Run()
 	.wrap()
 	.end();
 	sm_.set_program(program_)
-		.reserve_out_pin(GPIO15)
+		.config_pin_out(GPIO15)
 		.config_set_clkdiv(65536)	// Pico: 125MHz / 65536 = 1907 Hz, Pico2: 150MHz / 65536 = 2288 Hz
 		.init()
 		.set_enabled()
@@ -159,7 +159,7 @@ void Sample50_blink::Run()
 	.wrap()
 	.end();
 	sm_.set_program(program_)
-		.reserve_set_pin(GPIO15)
+		.config_pin_set(GPIO15)
 		.init()
 		.set_enabled();
 	int freq = 2; // Hz

@@ -145,7 +145,7 @@ StateMachine& StateMachine::init_pins()
 	return *this;
 }
 
-StateMachine& StateMachine::reserve_out_pins(uint base, uint count)
+StateMachine& StateMachine::config_pinseq_out(uint base, uint count)
 {
 	uint32_t pinMask = MakePinMask(base, count);
 	pin_mask_ |= pinMask;
@@ -154,7 +154,7 @@ StateMachine& StateMachine::reserve_out_pins(uint base, uint count)
 	return *this;
 }
 
-StateMachine& StateMachine::reserve_set_pins(uint base, uint count)
+StateMachine& StateMachine::config_pinseq_set(uint base, uint count)
 {
 	uint32_t pinMask = MakePinMask(base, count);
 	pin_mask_ |= pinMask;
@@ -163,7 +163,7 @@ StateMachine& StateMachine::reserve_set_pins(uint base, uint count)
 	return *this;
 }
 
-StateMachine& StateMachine::reserve_in_pins(uint base, uint count)
+StateMachine& StateMachine::config_pinseq_in(uint base, uint count)
 {
 	uint32_t pinMask = MakePinMask(base, count);
 	pin_mask_ |= pinMask;
@@ -172,13 +172,13 @@ StateMachine& StateMachine::reserve_in_pins(uint base, uint count)
 	return *this;
 }
 
-StateMachine& StateMachine::reserve_listen_pins(uint base, uint count)
+StateMachine& StateMachine::config_pinseq_listen(uint base, uint count)
 {
 	config.set_in_pins(base);
 	return *this;
 }
 
-StateMachine& StateMachine::reserve_sideset_pins(uint base, uint count)
+StateMachine& StateMachine::config_pinseq_sideset(uint base, uint count)
 {
 	uint32_t pinMask = MakePinMask(base, count);
 	pin_mask_ |= pinMask;

@@ -50,7 +50,7 @@ void IrRemote::Run()
 	.wrap()
 	.end();
 	sm_.set_program(program_)
-		.reserve_in_pin(GPIO13)
+		.config_pin_in(GPIO13)
 		.config_set_fifo_join_rx()
 		.config_set_jmp_pin(GPIO13)
 		//.config_set_clkdiv(::clock_get_hz(clk_sys) * 562.5e-6 / 10)	// sampling at every (562.5 / 10) us

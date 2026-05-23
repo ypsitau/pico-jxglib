@@ -542,7 +542,7 @@ LogicAnalyzer::Sampler::~Sampler()
 void LogicAnalyzer::Sampler::SetProgram(const PIO::Program& program, pio_hw_t* pio, uint sm, uint relAddrEntry, uint pinMin, int nBitsPinBitmap)
 {
 	sm_.set_program(program, pio, sm)
-		.reserve_listen_pins(pinMin, nBitsPinBitmap)
+		.config_pinseq_listen(pinMin, nBitsPinBitmap)
 		.config_set_in_shift_left(true, 32)		// shift left, autopush enabled, push threshold 32
 		.init_with_entry(relAddrEntry);
 }
@@ -550,7 +550,7 @@ void LogicAnalyzer::Sampler::SetProgram(const PIO::Program& program, pio_hw_t* p
 void LogicAnalyzer::Sampler::ShareProgram(Sampler& sampler, pio_hw_t* pio, uint sm, uint relAddrEntry, uint pinMin, int nBitsPinBitmap)
 {
 	sm_.share_program(sampler.GetSM(), pio, sm)
-		.reserve_listen_pins(pinMin, nBitsPinBitmap)
+		.config_pinseq_listen(pinMin, nBitsPinBitmap)
 		.config_set_in_shift_left(true, 32)		// shift left, autopush enabled, push threshold 32
 		.init_with_entry(relAddrEntry);
 }
