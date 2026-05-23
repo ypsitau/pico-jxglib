@@ -69,7 +69,10 @@ nav:
                 - Overview: shell/device/rtc/index.md
                 - Device Connection: shell/device/rtc/rtc-connection.md
                 - Command Operation: shell/device/rtc/rtc-operation.md
-            - SD Card: shell/device/sdcard/index.md
+            - SD Card:
+                - Overview: shell/device/sdcard/index.md
+                - Device Connection: shell/device/sdcard/sdcard-connection.md
+                - Command Operation: shell/device/sdcard/sdcard-operation.md
         - Network:
             - Overview: shell/network/index.md
             - Startup File: shell/network/startup.md
