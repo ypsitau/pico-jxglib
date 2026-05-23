@@ -53,9 +53,7 @@ nav:
                 - Current Status: shell/peripheral/pwm/pwm-status.md
                 - Controlling LED Brightness: shell/peripheral/pwm/pwm-brightness.md
                 - Observing PWM Signals: shell/peripheral/pwm/pwm-observing.md
-                - Frequency Control: shell/peripheral/pwm/pwm-frequency.md
-                - Duty Cycle Control: shell/peripheral/pwm/pwm-duty.md
-                - Phase Correction: shell/peripheral/pwm/pwm-phase-correct.md
+                - Parameters: shell/peripheral/pwm/pwm-params.md
                 - C/C++ APIs: shell/peripheral/pwm/pwm-api.md
             - I2C:
                 - Overview: shell/peripheral/i2c/index.md
