@@ -1,6 +1,8 @@
 # Network Utilities
 
-## ping
+## Command Reference
+
+### ping
 
 ```text title="Help of the Command"
 Usage: ping URL
@@ -15,7 +17,7 @@ Reply from 192.168.0.1: time=1ms
 Reply from 192.168.0.1: time=2ms
 ```
 
-## nslookup
+### nslookup
 
 ```text title="Help of the Command"
 Usage: nslookup URL
@@ -30,7 +32,7 @@ L:/>nslookup raspberrypi.com
 104.21.88.234
 ```
 
-## ntp
+### ntp
 
 ```text title="Help of the Command"
 Usage: ntp [OPTION]... [SERVER]

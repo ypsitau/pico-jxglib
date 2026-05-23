@@ -1,6 +1,8 @@
 # About the `draw` Command
 
-To display an image on the display, use the `draw` command. The `draw` command has several drawing features, but here we introduce how to load and display an image file.
+To display an image on the display, use the `draw` command. The `draw` command has several drawing features,
+
+## Draw Image
 
 Below is an illustration of how the `draw` command works.
 
@@ -16,3 +18,23 @@ Other `draw` subcommands related to image drawing include:
 
 - `offset-shift`: Shifts the display area by a specified amount
 - `repeat-x`, `repeat-y`: Repeats the display area to fill the width and/or height of the display
+
+## Command Reference
+
+### draw
+
+```text title="Help of the Command"
+Usage: draw [OPTION]... CMDS...
+Commands:
+ fill {color:COLOR}                                fills the display with the specified color
+ rect-fill {color:COLOR pos:X,Y size:WIDTHxHEIGHT} fills a rectangle with the specified color
+ rect {color:COLOR pos:X,Y size:WIDTHxHEIGHT}      draws a rectangle with the specified color
+ font:NAME                                         sets the font to be used for text drawing
+ text {pos:X,Y str:STRING}                         draws the specified text
+ image-load:FILE                                   loads an image from the specified file
+ image {pos:X,Y pos-shift:X,Y size:WIDTHxHEIGHT offset:X,Y offset-shift:X,Y repeat-x:N repeat-y:N}
+                                                   draws the loaded image
+Options:
+ -h --help   prints this help
+ -i --index= specifies display index (default: 0)
+```
