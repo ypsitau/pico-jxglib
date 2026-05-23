@@ -57,9 +57,12 @@ nav:
                 - Duty Cycle Control: shell/peripheral/pwm/pwm-duty.md
                 - Phase Correction: shell/peripheral/pwm/pwm-phase-correct.md
                 - C/C++ APIs: shell/peripheral/pwm/pwm-api.md
-            - I2C: shell/peripheral/i2c/index.md
-            - SPI: shell/peripheral/spi/index.md
-            - UART: shell/peripheral/uart/index.md
+            - I2C:
+                - Overview: shell/peripheral/i2c/index.md
+            - SPI:
+                - Overview: shell/peripheral/spi/index.md
+            - UART:
+                - Overview: shell/peripheral/uart/index.md
         - Device:
             - Built-in LED:
                 - Overview: shell/device/builtin-led/index.md
