@@ -1,12 +1,12 @@
-# Multi-Color LED
+# Multi-Color LED (WS2812)
 
-XIAO RP2040 and Waveshare RP2040-Zero boards have a built-in multi-color LED that can display various colors by controlling the RGB values. You can use the `ws2812` command to control it.
+XIAO RP2040 and Waveshare RP2040-Zero boards have a built-in multi-color LED (WS2812) that can display various colors by controlling the RGB values. You can use the `ws2812` command to control it.
 
 ![Multi-Color LED](images/speedstudio-waveshare-led.jpg)
 
 ## Setup
 
-Although the boards are equipped with the same WS2812 LED, the connection information differs, so you need to set it up according to your board.
+Although these boards are equipped with the same WS2812 LED, the connection information differs, so you need to set it up according to your board.
 
 ### XIAO RP2040
 

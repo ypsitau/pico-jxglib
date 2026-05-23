@@ -64,8 +64,11 @@ nav:
             - Built-in LED:
                 - Overview: shell/device/builtin-led/index.md
                 - Single-color LED: shell/device/builtin-led/led-single-color.md
-                - Multi-Color LED: shell/device/builtin-led/led-multi-color.md
-            - RTC (Real Time Clock): shell/device/rtc/index.md
+                - Multi-Color LED (WS2812): shell/device/builtin-led/led-multi-color.md
+            - RTC (Real Time Clock):
+                - Overview: shell/device/rtc/index.md
+                - Device Connection: shell/device/rtc/rtc-connection.md
+                - Command Operation: shell/device/rtc/rtc-operation.md
             - SD Card: shell/device/sdcard/index.md
         - Network:
             - Overview: shell/network/index.md
