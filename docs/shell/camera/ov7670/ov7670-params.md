@@ -1,4 +1,4 @@
-# Setting Various Parameters
+# Parameters
 
 The `camera-ov7670` command allows you to set various parameters using subcommands.
 

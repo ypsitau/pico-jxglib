@@ -1,4 +1,4 @@
-# Real-Time Display on TFT Display
+# Display on TFT Display
 
 Display the camera image in real time on an ST7789 TFT display module.
 
