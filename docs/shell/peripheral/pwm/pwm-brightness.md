@@ -1,4 +1,4 @@
-# Controlling LED Brightness with PWM
+# Controlling LED Brightness
 
 Let's control the brightness of the built-in LED connected on Pico or Pico 2 without Wi-Fi. For Pico W or Pico 2 W, the built-in LED is not directly connected to GPIO, so you cannot control its brightness with PWM.
 
