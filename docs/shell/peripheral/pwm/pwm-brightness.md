@@ -1,6 +1,6 @@
 # Controlling LED Brightness with PWM
 
-Let's control the brightness of the built-in LED connected to GPIO25 on Pico or Pico 2 without Wi-Fi. For Pico W or Pico 2 W, the built-in LED is not directly connected to GPIO, so you cannot control its brightness with PWM.
+Let's control the brightness of the built-in LED connected on Pico or Pico 2 without Wi-Fi. For Pico W or Pico 2 W, the built-in LED is not directly connected to GPIO, so you cannot control its brightness with PWM.
 
 Enable PWM on GPIO25, set the frequency to 500Hz, and the duty cycle to 0.5 (50%). The `-B` option allows control of GPIO25.
 

@@ -51,7 +51,7 @@ nav:
             - PWM:
                 - Overview: shell/peripheral/pwm/index.md
                 - Current Status: shell/peripheral/pwm/pwm-status.md
-                - Brightness Control: shell/peripheral/pwm/pwm-brightness.md
+                - Controlling LED Brightness: shell/peripheral/pwm/pwm-brightness.md
                 - Observing PWM Signals: shell/peripheral/pwm/pwm-observing.md
                 - Frequency Control: shell/peripheral/pwm/pwm-frequency.md
                 - Duty Cycle Control: shell/peripheral/pwm/pwm-duty.md
