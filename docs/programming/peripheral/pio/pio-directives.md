@@ -2,6 +2,22 @@
 
 Directives are used to control the assembly process of a PIO program. They do not correspond to any machine code, but they can affect the generated machine code in various ways, such as defining labels, setting the origin of the program, or specifying the PIO version.
 
+## Function Notation
+
+In the Method-Chain PIO Assembler, directives are represented as member functions of the `Program` class. In C++'s formal syntax, they should be described as follows:
+
+```cpp
+Program& Program::program(const char* name);
+```
+
+For more pragmatic notations, this page uses the following syntax to represent the directives:
+
+```cpp
+.program("name")
+```
+
+## List of Directives
+
 Below is a list of directives available in the method-chain PIO assember.
 
 !!! abstract ".program"

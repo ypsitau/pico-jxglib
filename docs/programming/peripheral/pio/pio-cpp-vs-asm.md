@@ -1,8 +1,8 @@
-# Method Chaining Assembler
+# Method-Chain Assembler
 
-`PIO::Program` is a class that represents a PIO program. You can create an instance of `PIO::Program` and add instructions to it using instance functions that have similar names to pioasm's instructions and directives, such as `.mov()` and `.wrap_target()`. Now, let's call this feature **Method Chaining Assembler**.
+`PIO::Program` is a class that represents a PIO program. You can create an instance of `PIO::Program` and add instructions to it using instance functions that have similar names to pioasm's instructions and directives, such as `.mov()` and `.wrap_target()`. Now, let's call this feature **Method-Chain Assembler**.
 
-Below is a skeleton code of a PIO program coded with the Method Chaining Assembler:
+Below is a skeleton code of a PIO program coded with the Method-Chain Assembler:
 
 ```cpp
 PIO::Program program;
@@ -13,9 +13,9 @@ program
 
 The method chain starts with the `.program()` function, which specifies the name of the program. You can add instructions and directives in the middle of the chain, and end it with the `.end()` function.
 
-The PIO program coded with the Method Chaining Assembler has the similar appearance with the one coded in pioasm. See the differences between them in the following codes:
+The PIO program coded with the Method-Chain Assembler has the similar appearance with the one coded in pioasm. See the differences between them in the following codes:
 
-=== "Method Chaining Assembler"
+=== "Method-Chain Assembler"
     ```cpp linenums="1"
     {% include "./sample/pio-examples/pio-examples.cpp" start="// mkdocs-start:[blink]" end="// mkdocs-end:[blink]" %}
     ```
@@ -31,11 +31,11 @@ Pico SDK provides a collection of PIO examples in its official repository. You c
 
 [https://github.com/raspberrypi/pico-examples/tree/master/pio](https://github.com/raspberrypi/pico-examples/tree/master/pio)
 
-This section shows the same PIO programs as those examples, but coded in C++ using pico-jxglib's Method Chaining Assembler. You can compare the C++ code with the original pioasm code to see how they correspond to each other.
+This section shows the same PIO programs as those examples, but coded in C++ using pico-jxglib's Method-Chain Assembler. You can compare the C++ code with the original pioasm code to see how they correspond to each other.
 
 ### Example: addition
 
-=== "Method Chaining Assembler"
+=== "Method-Chain Assembler"
     ```cpp linenums="1"
     {% include "./sample/pio-examples/pio-examples.cpp" start="// mkdocs-start:[addition]" end="// mkdocs-end:[addition]" %}
     ```
@@ -47,7 +47,7 @@ This section shows the same PIO programs as those examples, but coded in C++ usi
 
 ### Example: apa102_mini
 
-=== "Method Chaining Assembler"
+=== "Method-Chain Assembler"
     ```cpp linenums="1"
     {% include "./sample/pio-examples/pio-examples.cpp" start="// mkdocs-start:[apa102_mini]" end="// mkdocs-end:[apa102_mini]" %}
     ```
@@ -59,7 +59,7 @@ This section shows the same PIO programs as those examples, but coded in C++ usi
 
 ### Example: blink
 
-=== "Method Chaining Assembler"
+=== "Method-Chain Assembler"
     ```cpp linenums="1"
     {% include "./sample/pio-examples/pio-examples.cpp" start="// mkdocs-start:[blink]" end="// mkdocs-end:[blink]" %}
     ```
@@ -71,7 +71,7 @@ This section shows the same PIO programs as those examples, but coded in C++ usi
 
 ### Example: clocked_input
 
-=== "Method Chaining Assembler"
+=== "Method-Chain Assembler"
     ```cpp linenums="1"
     {% include "./sample/pio-examples/pio-examples.cpp" start="// mkdocs-start:[clocked_input]" end="// mkdocs-end:[clocked_input]" %}
     ```
@@ -83,7 +83,7 @@ This section shows the same PIO programs as those examples, but coded in C++ usi
 
 ### Example: differential_manchester_tx
 
-=== "Method Chaining Assembler"
+=== "Method-Chain Assembler"
     ```cpp linenums="1"
     {% include "./sample/pio-examples/pio-examples.cpp" start="// mkdocs-start:[differential_manchester_tx]" end="// mkdocs-end:[differential_manchester_tx]" %}
     ```
@@ -95,7 +95,7 @@ This section shows the same PIO programs as those examples, but coded in C++ usi
 
 ### Example: i2c
 
-=== "Method Chaining Assembler"
+=== "Method-Chain Assembler"
     ```cpp linenums="1"
     {% include "./sample/pio-examples/pio-examples.cpp" start="// mkdocs-start:[i2c]" end="// mkdocs-end:[i2c]" %}
     ```
@@ -107,7 +107,7 @@ This section shows the same PIO programs as those examples, but coded in C++ usi
 
 ### Example: hub75_data_rgb888
 
-=== "Method Chaining Assembler"
+=== "Method-Chain Assembler"
     ```cpp linenums="1"
     {% include "./sample/pio-examples/pio-examples.cpp" start="// mkdocs-start:[hub75_data_rgb888]" end="// mkdocs-end:[hub75_data_rgb888]" %}
     ```
@@ -119,7 +119,7 @@ This section shows the same PIO programs as those examples, but coded in C++ usi
 
 ### Example: hub75_row
 
-=== "Method Chaining Assembler"
+=== "Method-Chain Assembler"
     ```cpp linenums="1"
     {% include "./sample/pio-examples/pio-examples.cpp" start="// mkdocs-start:[hub75_row]" end="// mkdocs-end:[hub75_row]" %}
     ```
@@ -131,7 +131,7 @@ This section shows the same PIO programs as those examples, but coded in C++ usi
 
 ### Example: manchester_tx
 
-=== "Method Chaining Assembler"
+=== "Method-Chain Assembler"
     ```cpp linenums="1"
     {% include "./sample/pio-examples/pio-examples.cpp" start="// mkdocs-start:[manchester_tx]" end="// mkdocs-end:[manchester_tx]" %}
     ```
@@ -143,7 +143,7 @@ This section shows the same PIO programs as those examples, but coded in C++ usi
 
 ### Example: nec_carrier_burst
 
-=== "Method Chaining Assembler"
+=== "Method-Chain Assembler"
     ```cpp linenums="1"
     {% include "./sample/pio-examples/pio-examples.cpp" start="// mkdocs-start:[nec_carrier_burst]" end="// mkdocs-end:[nec_carrier_burst]" %}
     ```
@@ -155,7 +155,7 @@ This section shows the same PIO programs as those examples, but coded in C++ usi
 
 ### Example: nec_carrier_control
 
-=== "Method Chaining Assembler"
+=== "Method-Chain Assembler"
     ```cpp linenums="1"
     {% include "./sample/pio-examples/pio-examples.cpp" start="// mkdocs-start:[nec_carrier_control]" end="// mkdocs-end:[nec_carrier_control]" %}
     ```
@@ -167,7 +167,7 @@ This section shows the same PIO programs as those examples, but coded in C++ usi
 
 ### Example: nec_receive
 
-=== "Method Chaining Assembler"
+=== "Method-Chain Assembler"
     ```cpp linenums="1"
     {% include "./sample/pio-examples/pio-examples.cpp" start="// mkdocs-start:[nec_receive]" end="// mkdocs-end:[nec_receive]" %}
     ```
@@ -179,7 +179,7 @@ This section shows the same PIO programs as those examples, but coded in C++ usi
 
 ### Example: onewire
 
-=== "Method Chaining Assembler"
+=== "Method-Chain Assembler"
     ```cpp linenums="1"
     {% include "./sample/pio-examples/pio-examples.cpp" start="// mkdocs-start:[onewire]" end="// mkdocs-end:[onewire]" %}
     ```
@@ -191,7 +191,7 @@ This section shows the same PIO programs as those examples, but coded in C++ usi
 
 ### Example: pwm
 
-=== "Method Chaining Assembler"
+=== "Method-Chain Assembler"
     ```cpp linenums="1"
     {% include "./sample/pio-examples/pio-examples.cpp" start="// mkdocs-start:[pwm]" end="// mkdocs-end:[pwm]" %}
     ```
@@ -203,7 +203,7 @@ This section shows the same PIO programs as those examples, but coded in C++ usi
 
 ### Example: quadrature_encoder
 
-=== "Method Chaining Assembler"
+=== "Method-Chain Assembler"
     ```cpp linenums="1"
     {% include "./sample/pio-examples/pio-examples.cpp" start="// mkdocs-start:[quadrature_encoder]" end="// mkdocs-end:[quadrature_encoder]" %}
     ```
@@ -215,7 +215,7 @@ This section shows the same PIO programs as those examples, but coded in C++ usi
 
 ### Example: quadrature_encoder_substep
 
-=== "Method Chaining Assembler"
+=== "Method-Chain Assembler"
     ```cpp linenums="1"
     {% include "./sample/pio-examples/pio-examples.cpp" start="// mkdocs-start:[quadrature_encoder_substep]" end="// mkdocs-end:[quadrature_encoder_substep]" %}
     ```
@@ -227,7 +227,7 @@ This section shows the same PIO programs as those examples, but coded in C++ usi
 
 ### Example: spi_cpha0
 
-=== "Method Chaining Assembler"
+=== "Method-Chain Assembler"
     ```cpp linenums="1"
     {% include "./sample/pio-examples/pio-examples.cpp" start="// mkdocs-start:[spi_cpha0]" end="// mkdocs-end:[spi_cpha0]" %}
     ```
@@ -239,7 +239,7 @@ This section shows the same PIO programs as those examples, but coded in C++ usi
 
 ### Example: spi_cpha1
 
-=== "Method Chaining Assembler"
+=== "Method-Chain Assembler"
     ```cpp linenums="1"
     {% include "./sample/pio-examples/pio-examples.cpp" start="// mkdocs-start:[spi_cpha1]" end="// mkdocs-end:[spi_cpha1]" %}
     ```
@@ -251,7 +251,7 @@ This section shows the same PIO programs as those examples, but coded in C++ usi
 
 ### Example: squarewave
 
-=== "Method Chaining Assembler"
+=== "Method-Chain Assembler"
     ```cpp linenums="1"
     {% include "./sample/pio-examples/pio-examples.cpp" start="// mkdocs-start:[squarewave]" end="// mkdocs-end:[squarewave]" %}
     ```
@@ -263,7 +263,7 @@ This section shows the same PIO programs as those examples, but coded in C++ usi
 
 ### Example: squarewave_fast
 
-=== "Method Chaining Assembler"
+=== "Method-Chain Assembler"
     ```cpp linenums="1"
     {% include "./sample/pio-examples/pio-examples.cpp" start="// mkdocs-start:[squarewave_fast]" end="// mkdocs-end:[squarewave_fast]" %}
     ```
@@ -275,7 +275,7 @@ This section shows the same PIO programs as those examples, but coded in C++ usi
 
 ### Example: squarewave_wrap
 
-=== "Method Chaining Assembler"
+=== "Method-Chain Assembler"
     ```cpp linenums="1"
     {% include "./sample/pio-examples/pio-examples.cpp" start="// mkdocs-start:[squarewave_wrap]" end="// mkdocs-end:[squarewave_wrap]" %}
     ```
@@ -287,7 +287,7 @@ This section shows the same PIO programs as those examples, but coded in C++ usi
 
 ### Example: st7789_lcd
 
-=== "Method Chaining Assembler"
+=== "Method-Chain Assembler"
     ```cpp linenums="1"
     {% include "./sample/pio-examples/pio-examples.cpp" start="// mkdocs-start:[st7789_lcd]" end="// mkdocs-end:[st7789_lcd]" %}
     ```
@@ -299,7 +299,7 @@ This section shows the same PIO programs as those examples, but coded in C++ usi
 
 ### Example: uart_rx
 
-=== "Method Chaining Assembler"
+=== "Method-Chain Assembler"
     ```cpp linenums="1"
     {% include "./sample/pio-examples/pio-examples.cpp" start="// mkdocs-start:[uart_rx]" end="// mkdocs-end:[uart_rx]" %}
     ```
@@ -311,7 +311,7 @@ This section shows the same PIO programs as those examples, but coded in C++ usi
 
 ### Example: uart_tx
 
-=== "Method Chaining Assembler"
+=== "Method-Chain Assembler"
     ```cpp linenums="1"
     {% include "./sample/pio-examples/pio-examples.cpp" start="// mkdocs-start:[uart_tx]" end="// mkdocs-end:[uart_tx]" %}
     ```
@@ -323,7 +323,7 @@ This section shows the same PIO programs as those examples, but coded in C++ usi
 
 ### Example: ws2812
 
-=== "Method Chaining Assembler"
+=== "Method-Chain Assembler"
     ```cpp linenums="1"
     {% include "./sample/pio-examples/pio-examples.cpp" start="// mkdocs-start:[ws2812]" end="// mkdocs-end:[ws2812]" %}
     ```
