@@ -1,4 +1,4 @@
-# Video Streaming to Host PC
+# Video Streaming
 
 ## Wiring
 

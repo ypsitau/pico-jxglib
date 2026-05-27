@@ -51,22 +51,29 @@ nav:
             - PWM:
                 - Overview: shell/peripheral/pwm/index.md
                 - Current Status: shell/peripheral/pwm/pwm-status.md
-                - Brightness Control: shell/peripheral/pwm/pwm-brightness.md
+                - Controlling LED Brightness: shell/peripheral/pwm/pwm-brightness.md
                 - Observing PWM Signals: shell/peripheral/pwm/pwm-observing.md
-                - Frequency Control: shell/peripheral/pwm/pwm-frequency.md
-                - Duty Cycle Control: shell/peripheral/pwm/pwm-duty.md
-                - Phase Correction: shell/peripheral/pwm/pwm-phase-correct.md
+                - Parameters: shell/peripheral/pwm/pwm-params.md
                 - C/C++ APIs: shell/peripheral/pwm/pwm-api.md
-            - I2C: shell/peripheral/i2c/index.md
-            - SPI: shell/peripheral/spi/index.md
-            - UART: shell/peripheral/uart/index.md
+            - I2C:
+                - Overview: shell/peripheral/i2c/index.md
+            - SPI:
+                - Overview: shell/peripheral/spi/index.md
+            - UART:
+                - Overview: shell/peripheral/uart/index.md
         - Device:
             - Built-in LED:
                 - Overview: shell/device/builtin-led/index.md
                 - Single-color LED: shell/device/builtin-led/led-single-color.md
-                - Multi-Color LED: shell/device/builtin-led/led-multi-color.md
-            - RTC (Real Time Clock): shell/device/rtc/index.md
-            - SD Card: shell/device/sdcard/index.md
+                - Multi-Color LED (WS2812): shell/device/builtin-led/led-multi-color.md
+            - RTC (Real Time Clock):
+                - Overview: shell/device/rtc/index.md
+                - Device Connection: shell/device/rtc/rtc-connection.md
+                - Command Operation: shell/device/rtc/rtc-operation.md
+            - SD Card:
+                - Overview: shell/device/sdcard/index.md
+                - Device Connection: shell/device/sdcard/sdcard-connection.md
+                - Command Operation: shell/device/sdcard/sdcard-operation.md
         - Network:
             - Overview: shell/network/index.md
             - Startup File: shell/network/startup.md
@@ -74,13 +81,13 @@ nav:
             - Network Utilities: shell/network/network-utilities/index.md
             - Telnet Server: shell/network/telnet-server/index.md
         - Display:
+            - About draw Command: shell/display/draw-command.md
             - WS2812:
                 - Overview: shell/display/ws2812/index.md
                 - About WS2812 LEDs: shell/display/ws2812/ws2812-about.md
                 - Wiring: shell/display/ws2812/ws2812-wiring.md
                 - Direct Control: shell/display/ws2812/ws2812-direct.md
                 - Display: shell/display/ws2812/ws2812-display.md
-                - About draw Command: shell/display/ws2812/ws2812-draw.md
                 - Sample:
                     - Flowing Dot: shell/display/ws2812/ws2812-sample-dot.md
                     - Flowing Colored Dot: shell/display/ws2812/ws2812-sample-color-dot.md
@@ -90,10 +97,10 @@ nav:
         - Camera:
             - OV7670:
                 - Overview: shell/camera/ov7670/index.md
-                - About the OV7670 Camera Module: shell/camera/ov7670/ov7670-camera-module.md
-                - Video Streaming to Host PC: shell/camera/ov7670/ov7670-video-streaming.md
-                - Real-Time Display on TFT Display: shell/camera/ov7670/ov7670-display.md
-                - Setting Various Parameters: shell/camera/ov7670/ov7670-params.md
+                - About OV7670: shell/camera/ov7670/ov7670-camera-module.md
+                - Video Streaming: shell/camera/ov7670/ov7670-video-streaming.md
+                - Display on TFT Display: shell/camera/ov7670/ov7670-display.md
+                - Parameters: shell/camera/ov7670/ov7670-params.md
     #--------------------------------------------------------------------------
     - Programming:
         - Programming with pico-jxglib: programming/index.md

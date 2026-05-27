@@ -1,5 +1,7 @@
 # Single-color LED
 
+The official Raspberry Pi Pico board has a built-in single-color LED that can only be turned on or off. You can control the LED with the `led` command in pico-jxglib's shell.
+
 ## Control the LED
 
 To turn the LED on and off:
