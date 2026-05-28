@@ -155,6 +155,7 @@ nav:
                 - Overview: programming/peripheral/pio/index.md
                 - Programming PIO: programming/peripheral/pio/pio-programming.md
                 - Method Chaining Assembler: programming/peripheral/pio/pio-cpp-vs-asm.md
+                - Set Program to State Machine: programming/peripheral/pio/pio-set-program.md
                 - State Machine Configuration: programming/peripheral/pio/pio-sm-config.md
                 - Directives: programming/peripheral/pio/pio-directives.md
                 - Instructions: programming/peripheral/pio/pio-instructions.md
