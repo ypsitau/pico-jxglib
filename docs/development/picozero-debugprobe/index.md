@@ -1,5 +1,7 @@
 # Debug Probe with RP2040-Zero
 
+Github repository: https://github.com/ypsitau/picozero-debugprobe
+
 Forked from the original [Raspberry Pi Debug Probe](https://github.com/raspberrypi/debugprobe) and modified to run on the RP2040-Zero board, which is a compact and cost-effective development board based on the RP2040 microcontroller.
 
 Modifications are:
