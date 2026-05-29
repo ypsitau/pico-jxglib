@@ -52,7 +52,7 @@ White filament is recommended for printing the case, as it can better show the R
 
 Assemble the case with M3x5 screws.
 
-![case-cad](images/case-cad.png) ![case](images/case.png))
+![case-cad](images/case-cad.png) ![case](images/case.png)
 
 ## Building
 
