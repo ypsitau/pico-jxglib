@@ -161,9 +161,9 @@ If there are no errors, executables, MAP files, and disassembly files are genera
 
 ### Pico SDK Directory
 
-The Pico SDK is stored in `C:\Users\username\.pico-sdk` on Windows or `$HOME/.pico-sdk` on Linux.
+The Pico SDK is stored in `C:\Users\your-name\.pico-sdk` on Windows or `$HOME/.pico-sdk` on Linux.
 
-You usually don't need to worry about the path, but it may be convenient to add `C:\Users\username\.pico-sdk\picotool\x.x.x\picotool` (where `x.x.x` is the version, e.g., `2.1.0`) to your PATH.
+You usually don't need to worry about the path, but it may be convenient to add `C:\Users\your-name\.pico-sdk\picotool\x.x.x\picotool` (where `x.x.x` is the version, e.g., `2.1.0`) to your PATH.
 
 ### GitHub
 
