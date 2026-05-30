@@ -1,8 +1,38 @@
-# About the `draw` Command
+# About draw Command
 
 To display an image on the display, use the `draw` command. The `draw` command has several drawing features,
 
-## Draw Image
+## Device Connection
+
+
+
+## Sub Commands
+
+### Draw Shapes
+
+```text
+L:>draw fill {color:white}
+```
+
+```text
+L:>draw rect {color:white pos:10,10 size:50x30}
+```
+
+```text
+L:>draw rect-fill {color:white pos:10,10 size:50x30}
+```
+
+### Draw Text
+
+```text
+L:>draw font:font1
+```
+
+```text
+L:>draw text {pos:10,10 str:"Hello, World!"}
+```
+
+### Draw Image
 
 Below is an illustration of how the `draw` command works.
 

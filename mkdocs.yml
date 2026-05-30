@@ -35,8 +35,14 @@ nav:
         - File System:
             - Overview: shell/filesystem/index.md
             - File Operating Commands: shell/filesystem/file-operating-commands/index.md
-            - RTC (Real Time Clock) Support: shell/filesystem/rtc/index.md
-            - SD Card Support: shell/filesystem/sdcard/index.md
+            - RTC (Real Time Clock) Support:
+                - Overview: shell/filesystem/rtc/index.md
+                - Device Connection: shell/filesystem/rtc/rtc-connection.md
+                - Command Operation: shell/filesystem/rtc/rtc-operation.md
+            - SD Card Support:
+                - Overview: shell/filesystem/sdcard/index.md
+                - Device Connection: shell/filesystem/sdcard/sdcard-connection.md
+                - Command Operation: shell/filesystem/sdcard/sdcard-operation.md
         - Peripheral:
             - GPIO:
                 - Overview: shell/peripheral/gpio/index.md

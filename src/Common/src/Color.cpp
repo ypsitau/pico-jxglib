@@ -67,15 +67,26 @@ bool Color::Parse(const char* str)
 	};
 	if (!str) return false;
 	if (str[0] == '#') {
-		// #RRGGBB
-		if (::strlen(str) != 7) return false;
-		char* endptr;
-		long val = ::strtol(str + 1, &endptr, 16);
-		if (*endptr != '\0' || val < 0 || val > 0xffffff) return false;
-		r = static_cast<uint8_t>((val >> 16) & 0xff);
-		g = static_cast<uint8_t>((val >> 8) & 0xff);
-		b = static_cast<uint8_t>(val & 0xff);
-		return true;
+		int len = ::strlen(str);
+		if (len == 4) {
+			// #RGB
+			char* endptr;
+			long val = ::strtol(str + 1, &endptr, 16);
+			if (*endptr != '\0' || val < 0 || val > 0xfff) return false;
+			r = static_cast<uint8_t>(((val >> 8) & 0xf) * 17);
+			g = static_cast<uint8_t>(((val >> 4) & 0xf) * 17);
+			b = static_cast<uint8_t>((val & 0xf) * 17);
+			return true;
+		} else if (len == 7) {
+			// #RRGGBB
+			char* endptr;
+			long val = ::strtol(str + 1, &endptr, 16);
+			if (*endptr != '\0' || val < 0 || val > 0xffffff) return false;
+			r = static_cast<uint8_t>((val >> 16) & 0xff);
+			g = static_cast<uint8_t>((val >> 8) & 0xff);
+			b = static_cast<uint8_t>(val & 0xff);
+			return true;
+		}
 	} else {
 		for (const NameMap* p = nameMapTbl; p->name; p++) {
 			if (::strcasecmp(str, p->name) == 0) {
