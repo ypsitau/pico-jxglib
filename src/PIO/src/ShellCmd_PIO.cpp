@@ -22,6 +22,16 @@ ShellCmd(pio, "controls PIO pins")
 		tout.Printf("Sub Commands:\n");
 		return Result::Success;
 	}
+	for (int iPIO = 0; iPIO < 2; iPIO++) {
+		pio_hw_t* pio = ::pio_get_instance(iPIO);
+		for (int sm = 0; sm < 4; sm++) {
+			tout.Printf("PIO%d SM%d: enabled=%d, pc=0x%02X, clkdiv=%.3f\n", iPIO, sm,
+				iPIO,
+				pio_sm_get_enabled(pio, sm),
+				::pio_sm_get_pc(pio, sm),
+				pio_sm_get_clkdiv(pio, sm));
+		}
+	}	
 	return Result::Success;
 }
 

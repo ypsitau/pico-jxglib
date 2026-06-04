@@ -20,6 +20,31 @@
 
 namespace jxglib {
 
+inline bool pio_sm_get_enabled(pio_hw_t* pio, uint sm) {
+	check_pio_param(pio);
+	check_sm_param(sm);
+	return (pio->ctrl >> sm) & 1u;
+}
+
+inline void pio_sm_get_clkdiv_int_frac8(pio_hw_t* pio, uint sm, uint32_t* p_div_int, uint8_t* p_div_frac8) {
+	check_pio_param(pio);
+	check_sm_param(sm);
+	static_assert(REG_FIELD_WIDTH(PIO_SM0_CLKDIV_INT) == 16, "");
+	static_assert(REG_FIELD_WIDTH(PIO_SM0_CLKDIV_FRAC) == 8, "");
+	uint32_t clkdiv = pio->sm[sm].clkdiv;
+	*p_div_int = (clkdiv >> PIO_SM0_CLKDIV_INT_LSB) & ((1u << REG_FIELD_WIDTH(PIO_SM0_CLKDIV_INT)) - 1);
+	*p_div_frac8 = (clkdiv >> PIO_SM0_CLKDIV_FRAC_LSB) & ((1u << REG_FIELD_WIDTH(PIO_SM0_CLKDIV_FRAC)) - 1);
+}
+
+inline float pio_sm_get_clkdiv(pio_hw_t* pio, uint sm) {
+	check_pio_param(pio);
+	check_sm_param(sm);
+	uint32_t div_int;
+	uint8_t div_frac8;
+	pio_sm_get_clkdiv_int_frac8(pio, sm, &div_int, &div_frac8);
+	return div_int + div_frac8 / 256.0f;
+}
+
 namespace PIO {
 
 class Program;
@@ -479,7 +504,10 @@ public:
 	const volatile uint32_t* get_txf() { return reinterpret_cast<const volatile uint32_t*>(&pio.pio->txf[sm]); }
 	const volatile uint32_t* get_rxf() { return reinterpret_cast<const volatile uint32_t*>(&pio.pio->rxf[sm]); }
 public:
+	bool get_enabled() { return pio_sm_get_enabled(pio, sm); }
 	uint8_t get_pc() { return  ::pio_sm_get_pc(pio, sm); }
+	void get_clkdiv_int_frac8(uint32_t* p_div_int, uint8_t* p_div_frac) { pio_sm_get_clkdiv_int_frac8(pio, sm, p_div_int, p_div_frac); }
+	float get_clkdiv() { return pio_sm_get_clkdiv(pio, sm); }
 public:
 	bool is_rx_fifo_full() { return ::pio_sm_is_rx_fifo_full(pio, sm); }
 	bool is_tx_fifo_full() { return ::pio_sm_is_tx_fifo_full(pio, sm); }
