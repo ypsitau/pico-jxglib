@@ -241,9 +241,9 @@ LABOPlatform::LABOPlatform(int bytesDrive) :
 		bDeviceProtocol:	MISC_PROTOCOL_IAD,
 		bMaxPacketSize0:	CFG_TUD_ENDPOINT0_SIZE,
 		idVendor:			0xcafe,
-		idProduct:		0x1ab0,
+		idProduct:			0x1ab0,
 		//idVendor:			0x2e8a, // Raspberry Pi
-		//idProduct:			0x0009, // Raspberry Pi Pico SDK CDC
+		//idProduct:		0x0009, // Raspberry Pi Pico SDK CDC
 		bcdDevice:			0x0100,
 	}, 0x0409, "jxglib", "pico-jxgLABO", "000000000002"),
 	//}, 0x0409, "Raspberry Pi", "Pico", "000000000002"),
