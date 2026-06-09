@@ -12,7 +12,7 @@ namespace jxglib::USBDevice {
 CDCSerial::CDCSerial(USBDevice::Controller& deviceController, const char* name, uint8_t endpNotif, uint8_t endpBulkOut, uint8_t endpBulkIn) :
 	USBDevice::CDC(deviceController, name, endpNotif, 8, endpBulkOut, endpBulkIn, 64), chPrev_{'\0'}, addCrFlag_{true}, keyboard_{*this} {}
 
-#if 0
+#if 1
 void CDCSerial::On_cdc_line_coding(const cdc_line_coding_t* p_line_coding)
 {
 	// Check for the magic baud rate to trigger USB boot reset.
