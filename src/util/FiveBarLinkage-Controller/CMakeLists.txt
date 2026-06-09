@@ -15,9 +15,9 @@ if(WIN32)
 else()
     set(USERHOME $ENV{HOME})
 endif()
-set(sdkVersion 2.1.0)
-set(toolchainVersion 13_3_Rel1)
-set(picotoolVersion 2.1.0)
+set(sdkVersion 2.2.0)
+set(toolchainVersion 14_2_Rel1)
+set(picotoolVersion 2.2.0)
 set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
 if (EXISTS ${picoVscode})
     include(${picoVscode})
@@ -28,33 +28,33 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(FiveBarLinkage C CXX ASM)
+project(FiveBarLinkage-Controller C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(FiveBarLinkage FiveBarLinkage.cpp)
+add_executable(FiveBarLinkage-Controller FiveBarLinkage-Controller.cpp )
 
-pico_set_program_name(FiveBarLinkage "FiveBarLinkage")
-pico_set_program_version(FiveBarLinkage "0.1")
+pico_set_program_name(FiveBarLinkage-Controller "FiveBarLinkage-Controller")
+pico_set_program_version(FiveBarLinkage-Controller "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(FiveBarLinkage 1)
-pico_enable_stdio_usb(FiveBarLinkage 0)
+pico_enable_stdio_uart(FiveBarLinkage-Controller 1)
+pico_enable_stdio_usb(FiveBarLinkage-Controller 0)
 
 # Add the standard library to the build
-target_link_libraries(FiveBarLinkage
-	pico_stdlib)
+target_link_libraries(FiveBarLinkage-Controller
+        pico_stdlib)
 
 # Add the standard include files to the build
-target_include_directories(FiveBarLinkage PRIVATE
-	${CMAKE_CURRENT_LIST_DIR}
+target_include_directories(FiveBarLinkage-Controller PRIVATE
+        ${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(FiveBarLinkage)
+pico_add_extra_outputs(FiveBarLinkage-Controller)
 
+target_link_libraries(FiveBarLinkage-Controller jxglib_LABOPlatform_FullCmd)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
-target_link_libraries(FiveBarLinkage jxglib_LABOPlatform)
-jxglib_configure_LABOPlatform(FiveBarLinkage)
+jxglib_configure_LABOPlatform(FiveBarLinkage-Controller)

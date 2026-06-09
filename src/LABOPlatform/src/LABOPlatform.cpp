@@ -235,15 +235,18 @@ LABOPlatform LABOPlatform::Instance;
 
 LABOPlatform::LABOPlatform(int bytesDrive) :
 	deviceController_({
-		bcdUSB:				0x0200,
+		bcdUSB:				0x0210,
 		bDeviceClass:		TUSB_CLASS_MISC,
 		bDeviceSubClass:	MISC_SUBCLASS_COMMON,
 		bDeviceProtocol:	MISC_PROTOCOL_IAD,
 		bMaxPacketSize0:	CFG_TUD_ENDPOINT0_SIZE,
 		idVendor:			0xcafe,
-		idProduct:			0x1ab0,
+		idProduct:		0x1ab0,
+		//idVendor:			0x2e8a, // Raspberry Pi
+		//idProduct:			0x0009, // Raspberry Pi Pico SDK CDC
 		bcdDevice:			0x0100,
 	}, 0x0409, "jxglib", "pico-jxgLABO", "000000000002"),
+	//}, 0x0409, "Raspberry Pi", "Pico", "000000000002"),
 	fat_("*L:", bytesDrive),
 	mscDrive_(deviceController_, 0x01, 0x81),
 	streamCDC_Terminal_(deviceController_, "StreamSerial", 0x82, 0x03, 0x83),

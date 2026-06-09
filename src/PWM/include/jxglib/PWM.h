@@ -84,7 +84,7 @@ public:
 	const PWM& set_counter(uint16_t c) const { ::pwm_set_counter(GetSliceNum(), c); return *this; }
 	const PWM& advance_count() const { ::pwm_advance_count(GetSliceNum()); return *this; }
 	const PWM& retard_count() const { ::pwm_retard_count(GetSliceNum()); return *this; }
-	const PWM& set_enabled(bool enabled) const { ::pwm_set_enabled(GetSliceNum(), enabled); return *this; }
+	const PWM& set_enabled(bool enabled = true) const { ::pwm_set_enabled(GetSliceNum(), enabled); return *this; }
 	bool is_enabled() const { return is_enabled(GetSliceNum()); }
 	static void set_mask_enabled(uint32_t mask) { ::pwm_set_mask_enabled(mask); }
 	static void enable(const PWM& pwm) {
@@ -130,6 +130,37 @@ public:
 	static void set_chan_output_polarity(uint slice_num, uint chan, bool inv);
 	static bool is_enabled(uint slice_num);
 };
+
+extern const PWM PWM0;
+extern const PWM PWM1;
+extern const PWM PWM2;
+extern const PWM PWM3;
+extern const PWM PWM4;
+extern const PWM PWM5;
+extern const PWM PWM6;
+extern const PWM PWM7;
+extern const PWM PWM8;
+extern const PWM PWM9;
+extern const PWM PWM10;
+extern const PWM PWM11;
+extern const PWM PWM12;
+extern const PWM PWM13;
+extern const PWM PWM14;
+extern const PWM PWM15;
+extern const PWM PWM16;
+extern const PWM PWM17;
+extern const PWM PWM18;
+extern const PWM PWM19;
+extern const PWM PWM20;
+extern const PWM PWM21;
+extern const PWM PWM22;
+extern const PWM PWM23;
+extern const PWM PWM24;
+extern const PWM PWM25;
+extern const PWM PWM26;
+extern const PWM PWM27;
+extern const PWM PWM28;
+extern const PWM PWM29;
 
 }
 

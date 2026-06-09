@@ -24,6 +24,9 @@ public:
 	CDCSerial& AddCr(bool addCrFlag) { addCrFlag_ = addCrFlag; return* this; }
     Keyboard& GetKeyboard() { return keyboard_; }
 public:
+	// virtual functions of USBDevice::CDC
+	virtual void On_cdc_line_coding(const cdc_line_coding_t* p_line_coding) override;
+public:
 	// virtual functions of Stream
 	virtual int Read(void* buff, int bytesBuff) override;
 	virtual int Write(const void* buff, int bytesBuff) override;

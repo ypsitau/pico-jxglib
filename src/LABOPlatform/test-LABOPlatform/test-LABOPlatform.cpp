@@ -6,7 +6,7 @@ using namespace jxglib;
 int main(void)
 {
 	::stdio_init_all();
-	LABOPlatform::Instance.AttachStdio().Initialize();
-	//LABOPlatform::Instance.Initialize();
+	//LABOPlatform::Instance.AttachStdio().Initialize();
+	LABOPlatform::Instance.Initialize();
 	for (;;) Tickable::Tick();
 }

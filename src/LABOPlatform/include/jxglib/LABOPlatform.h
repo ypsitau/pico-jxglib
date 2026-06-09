@@ -6,6 +6,7 @@
 #include "pico/stdlib.h"
 #include "pico/stdio/driver.h"
 #if defined (__cplusplus)
+#include "jxglib/PWM.h"
 #include "jxglib/Shell.h"
 #include "jxglib/Serial.h"
 #include "jxglib/TelePlot.h"

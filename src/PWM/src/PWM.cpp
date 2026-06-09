@@ -6,6 +6,37 @@
 
 namespace jxglib {
 
+const PWM PWM0(0);
+const PWM PWM1(1);
+const PWM PWM2(2);
+const PWM PWM3(3);
+const PWM PWM4(4);
+const PWM PWM5(5);
+const PWM PWM6(6);
+const PWM PWM7(7);
+const PWM PWM8(8);
+const PWM PWM9(9);
+const PWM PWM10(10);
+const PWM PWM11(11);
+const PWM PWM12(12);
+const PWM PWM13(13);
+const PWM PWM14(14);
+const PWM PWM15(15);
+const PWM PWM16(16);
+const PWM PWM17(17);
+const PWM PWM18(18);
+const PWM PWM19(19);
+const PWM PWM20(20);
+const PWM PWM21(21);
+const PWM PWM22(22);
+const PWM PWM23(23);
+const PWM PWM24(24);
+const PWM PWM25(25);
+const PWM PWM26(26);
+const PWM PWM27(27);
+const PWM PWM28(28);
+const PWM PWM29(29);
+
 //------------------------------------------------------------------------------
 // PWM
 //------------------------------------------------------------------------------
