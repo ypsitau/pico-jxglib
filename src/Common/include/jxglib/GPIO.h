@@ -224,7 +224,7 @@ public:
 	static inline void adc_set_round_robin(const GPIO_ADC& gpio1, const GPIO_ADC& gpio2, const GPIO_ADC& gpio3, bool tempSensor = false);
 	static inline void adc_set_round_robin(const GPIO_ADC& gpio1, const GPIO_ADC& gpio2, const GPIO_ADC& gpio3, const GPIO_ADC& gpio4, bool tempSensor = false);
 public:
-	static const GPIO& Instance(uint pin);
+	static inline constexpr const GPIO& N(uint pin);
 public:
 	static void InitializeLED() { ::gpio_init(25); ::gpio_set_dir(25, GPIO_OUT); }
 	static void PutLED(bool value) { ::gpio_put(25, value); }
@@ -660,6 +660,10 @@ extern const GPIO26_T GPIO26;
 extern const GPIO27_T GPIO27;
 extern const GPIO28_T GPIO28;
 extern const GPIO29_T GPIO29;
+
+extern const GPIO* GPIO_Tbl[];
+
+inline constexpr const GPIO& GPIO::N(uint pin) { return *GPIO_Tbl[pin]; }
 
 }
 

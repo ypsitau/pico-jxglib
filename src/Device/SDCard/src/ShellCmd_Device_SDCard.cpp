@@ -74,7 +74,7 @@ ShellCmd(sdcard, "SD card commands")
 				terr.Printf("spi and cs must be specified\n");
 				return Result::Error;
 			}
-			pFAT.reset(new FAT::SDCard(driveName, spi, baudrate, {GPIO::Instance(pinCS)}));
+			pFAT.reset(new FAT::SDCard(driveName, spi, baudrate, {GPIO::N(pinCS)}));
 		} else if (::strcasecmp(subcmd, "init") == 0) {
 			if (!pFAT) {
 				terr.Printf("SD card not set up. Execute 'setup' subcommand first.\n");

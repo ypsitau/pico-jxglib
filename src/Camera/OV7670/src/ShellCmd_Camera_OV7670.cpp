@@ -217,9 +217,9 @@ ShellCmd_Named(camera_ov7670, "camera-ov7670", "controls OV7670 camera module")
 			}
 			I2C& i2c = I2C::get_instance(iI2C);
 			pOV7670 = new OV7670(i2c, {
-				D0: GPIO::Instance(pinD0), XCLK: GPIO::Instance(pinXCLK), PCLK: GPIO::Instance(pinPCLK),
-				HREF: GPIO::Instance(pinHREF), VSYNC: GPIO::Instance(pinVSYNC),
-				PWDN: GPIO::Instance(pinPWDN), RESET: GPIO::Instance(pinRESET)}, freq);
+				D0: GPIO::N(pinD0), XCLK: GPIO::N(pinXCLK), PCLK: GPIO::N(pinPCLK),
+				HREF: GPIO::N(pinHREF), VSYNC: GPIO::N(pinVSYNC),
+				PWDN: GPIO::N(pinPWDN), RESET: GPIO::N(pinRESET)}, freq);
 			pOV7670->Initialize();
 			pOV7670->PulseResetPin();
 			pOV7670->SetupReg();

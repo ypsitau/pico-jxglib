@@ -37,6 +37,13 @@ const PWM PWM27(27);
 const PWM PWM28(28);
 const PWM PWM29(29);
 
+const PWM* PWM_Tbl[] = {
+	&PWM0, &PWM1, &PWM2, &PWM3, &PWM4, &PWM5, &PWM6, &PWM7,
+	&PWM8, &PWM9, &PWM10, &PWM11, &PWM12, &PWM13, &PWM14, &PWM15,
+	&PWM16, &PWM17, &PWM18, &PWM19, &PWM20, &PWM21, &PWM22, &PWM23,
+	&PWM24, &PWM25, &PWM26, &PWM27, &PWM28, &PWM29
+};
+
 //------------------------------------------------------------------------------
 // PWM
 //------------------------------------------------------------------------------

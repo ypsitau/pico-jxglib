@@ -158,7 +158,7 @@ ShellCmd_Named(display_tftlcd, "display-tftlcd", "initialize TFT LCD display")
 				terr.Printf("spi%d is not properly configured\n", iSPI);
 				return Result::Error;
 			}
-			Display::TFT_LCD::PinAssign pinAssign = {GPIO::Instance(pinRST), GPIO::Instance(pinDC), GPIO::Instance(pinCS), GPIO::Instance(pinBL)};
+			Display::TFT_LCD::PinAssign pinAssign = {GPIO::N(pinRST), GPIO::N(pinDC), GPIO::N(pinCS), GPIO::N(pinBL)};
 			if (::strcasecmp(displayName, "st7735") == 0) {
 				pDisplay = new Display::ST7735(spi, size.width, size.height, pinAssign);
 			} else if (::strcasecmp(displayName, "st7735-b") == 0) {

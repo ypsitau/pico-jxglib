@@ -111,7 +111,7 @@ ShellCmd_Named(display_ws2812, "display-ws2812", "initialize WS2812 display")
 				return Result::Error;
 			}
 			pDisplay = new Display::WS2812(size.width, size.height, seqDir, zigzagFlag);
-			pDisplay->Initialize(GPIO::Instance(pinDIN));
+			pDisplay->Initialize(GPIO::N(pinDIN));
 		} else if (Shell::Arg::GetAssigned(subcmd, "brightness", &value)) {
 			if (!pDisplay) {
 				terr.Printf("WS2812 display is not set up yet.\n");

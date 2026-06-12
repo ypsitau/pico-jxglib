@@ -67,7 +67,7 @@ ShellCmd(ws2812, "controls WS2812")
 					terr.Printf("specify DIN pin number by setup subcommand\n");
 					return Result::Error;
 				}
-				ws2812.Run(GPIO::Instance(pinDIN));
+				ws2812.Run(GPIO::N(pinDIN));
 			}
 			Color c;
 			if (!c.Parse(value)) {

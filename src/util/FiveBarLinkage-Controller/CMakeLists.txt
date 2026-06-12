@@ -55,6 +55,6 @@ target_include_directories(FiveBarLinkage-Controller PRIVATE
 
 pico_add_extra_outputs(FiveBarLinkage-Controller)
 
-target_link_libraries(FiveBarLinkage-Controller jxglib_LABOPlatform_FullCmd)
+target_link_libraries(FiveBarLinkage-Controller jxglib_LABOPlatform_FullCmd jxglib_ShellCmd_Device_Servo)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
 jxglib_configure_LABOPlatform(FiveBarLinkage-Controller)

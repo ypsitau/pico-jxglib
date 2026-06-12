@@ -129,6 +129,8 @@ public:
 	static bool get_chan_output_polarity(uint slice_num, uint chan);
 	static void set_chan_output_polarity(uint slice_num, uint chan, bool inv);
 	static bool is_enabled(uint slice_num);
+public:
+	static inline constexpr const PWM& N(uint pin);
 };
 
 extern const PWM PWM0;
@@ -161,6 +163,10 @@ extern const PWM PWM26;
 extern const PWM PWM27;
 extern const PWM PWM28;
 extern const PWM PWM29;
+
+extern const PWM* PWM_Tbl[];
+
+inline constexpr const PWM& PWM::N(uint pin) { return *PWM_Tbl[pin]; }
 
 }
 
