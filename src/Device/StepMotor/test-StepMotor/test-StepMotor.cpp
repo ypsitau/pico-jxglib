@@ -1,8 +1,6 @@
 #include <stdio.h>
-#include <pico/stdlib.h>
-#include <hardware/pio.h>
-#include <hardware/clocks.h>
-#include <jxglib/StepMotor.h>
+#include "pico/stdlib.h"
+#include "jxglib/StepMotor.h"
 
 using namespace jxglib;
 
@@ -50,5 +48,4 @@ int main()
 			::printf("current position: %d, %d\n", stepMotorL.GetPosCur(), stepMotorR.GetPosCur());
 		}
 	}
-	return 0;
 }
