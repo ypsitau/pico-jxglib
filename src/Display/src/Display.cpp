@@ -9,41 +9,12 @@ namespace jxglib::Display {
 //------------------------------------------------------------------------------
 // Base
 //------------------------------------------------------------------------------
-Base* Base::pHead_ = nullptr;
+Base Base::None(0, Format::None, 0, 0);
 
 Base::Base(uint32_t capabilities, const Format& format, int width, int height) :
-			Drawable(capabilities, format, width, height), pNext_{nullptr}
+	IntrusiveListNode<Base>(!format.IsNone()), Drawable(capabilities, format, width, height)//, pNext_{nullptr}
 {
-	if (format.IsNone()) {
-		// nothing to do
-	} else if (pHead_) {
-		Base* pBase = pHead_;
-		for ( ; pBase->pNext_; pBase = pBase->pNext_);
-		pBase->pNext_ = this;
-	} else {
-		pHead_ = this;
-	}
 }
-
-Base::~Base()
-{
-	if (pHead_ == this) {
-		pHead_ = pNext_;
-	} else {
-		Base* pBase = pHead_;
-		for ( ; pBase; pBase = pBase->pNext_) {
-			if (pBase->pNext_ == this) {
-				pBase->pNext_ = pNext_;
-				break;
-			}
-		}
-	}
-}
-
-//------------------------------------------------------------------------------
-// Dummy
-//------------------------------------------------------------------------------
-Dummy Dummy::Instance;
 
 //------------------------------------------------------------------------------
 // Display::Terminal
@@ -624,13 +595,13 @@ void Terminal::Tickable_Keyboard::OnTick()
 //------------------------------------------------------------------------------
 // functions
 //------------------------------------------------------------------------------
-Base& GetInstance(int iDisplay)
+Base& N(int iDisplay)
 {
-	Base* pBase = Base::GetHead();
-	for (int i = 0; pBase; pBase = pBase->GetNext(), i++) {
+	Base* pBase = Base::GetListNodeHead();
+	for (int i = 0; pBase; pBase = pBase->GetListNodeNext(), i++) {
 		if (i == iDisplay) return *pBase;
 	}
-	return Dummy::Instance;
+	return Base::None;
 }
 
 }

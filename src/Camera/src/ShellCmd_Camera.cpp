@@ -22,7 +22,7 @@ TickableEntry(CameraDisplayTickable, 0, Tickable::Priority::AboveNormal)
 	case TickableMode::Display: {
 		Camera::Base& camera = Camera::GetInstance(iCamera_);
 		if (!camera.IsValid()) return;
-		Display::Base& display = Display::GetInstance(iDisplay_);
+		Display::Base& display = Display::N(iDisplay_);
 		if (!display.IsValid()) return;
 		const Image& image = camera.Capture();
 		if (sizeDisplayPrev_ != image.GetSize()) {
@@ -106,7 +106,7 @@ ShellCmd(camera, "controls cameras")
 					terr.Printf("invalid display index: %s\n", value);
 					return Result::Error;
 				}
-				if (!Display::GetInstance(num).IsValid()) {
+				if (!Display::N(num).IsValid()) {
 					terr.Printf("display #%d is not available\n", num);
 					return Result::Error;
 				}
@@ -128,7 +128,7 @@ ShellCmd(camera, "controls cameras")
 					terr.Printf("invalid video-transmit index: %s\n", value);
 					return Result::Error;
 				}
-				if (!Display::GetInstance(num).IsValid()) {
+				if (!Display::N(num).IsValid()) {
 					terr.Printf("video-transmit #%d is not available\n", num);
 					return Result::Error;
 				}

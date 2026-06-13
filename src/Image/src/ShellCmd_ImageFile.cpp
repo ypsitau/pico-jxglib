@@ -39,7 +39,7 @@ ShellCmd_Named(show_image, "show-image", "show image file")
 	if (arg.GetString("display", &value)) {
 		char* endptr;
 		int num = ::strtol(value, &endptr, 10);
-		if (*endptr != '\0' || num < 0 || !Display::GetInstance(num).IsValid()) {
+		if (*endptr != '\0' || num < 0 || !Display::N(num).IsValid()) {
 			terr.Printf("Invalid display number: %s\n", value);
 			return Result::Error;
 		}
@@ -108,7 +108,7 @@ ShellCmd_Named(show_image, "show-image", "show image file")
 		} else if (::strcasecmp(subcmd, "show") == 0) {
 			Size sizeImageAdj = sizeImage.IsZero()? Size(image.GetWidth() - posImage.x, image.GetHeight() - posImage.y) : sizeImage;
 			if (sizeImageAdj.width > 0 && sizeImageAdj.height > 0) {
-				Display::GetInstance(iDisplay).DrawImage(posDisp.x, posDisp.y, image, Rect(posImage, sizeImageAdj)).Refresh();
+				Display::N(iDisplay).DrawImage(posDisp.x, posDisp.y, image, Rect(posImage, sizeImageAdj)).Refresh();
 			}
 		} else if (Shell::Arg::GetAssigned(subcmd, "sleep", &value)) {
 			if (!value) {

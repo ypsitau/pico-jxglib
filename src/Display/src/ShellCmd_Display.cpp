@@ -101,7 +101,7 @@ ShellCmd(draw, "draw commands on displays")
 		}
 		iDisplay = num;
 	}
-	Display::Base& display = Display::GetInstance(iDisplay);
+	Display::Base& display = Display::N(iDisplay);
 	if (!display.IsValid()) {
 		terr.Printf("display #%d is not available\n", iDisplay);
 		return Result::Error;
@@ -389,12 +389,12 @@ ShellCmd(draw, "draw commands on displays")
 
 void ListDisplays(Printable& tout)
 {
-	Display::Base* pDisplay = Display::Base::GetHead();
+	Display::Base* pDisplay = Display::Base::GetListNodeHead();
 	if (!pDisplay) {
 		tout.Printf("no displays\n");
 		return;
 	}
-	for (int iDisplay = 0; pDisplay; iDisplay++, pDisplay = pDisplay->GetNext()) {
+	for (int iDisplay = 0; pDisplay; iDisplay++, pDisplay = pDisplay->GetListNodeNext()) {
 		const char* variantName = pDisplay->GetVariantName();
 		bool variantFlag = (variantName[0] != '\0');
 		char remarks[128];

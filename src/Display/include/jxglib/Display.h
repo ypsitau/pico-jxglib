@@ -4,6 +4,7 @@
 #ifndef PICO_JXGLIB_DISPLAY_H
 #define PICO_JXGLIB_DISPLAY_H
 #include "pico/stdlib.h"
+#include "jxglib/IntrusiveListNode.h"
 #include "jxglib/Drawable.h"
 #include "jxglib/Terminal.h"
 #include "jxglib/Font.h"
@@ -20,34 +21,15 @@ using Capability = Drawable::Capability;
 //------------------------------------------------------------------------------
 // Base
 //------------------------------------------------------------------------------
-class Base : public Drawable {
-private:
-	static Base* pHead_;
-private:
-	Base* pNext_;
+class Base : public IntrusiveListNode<Base>, public Drawable {
+public:
+	static Base None;
 public:
 	Base(uint32_t capabilities, const Format& format, int width, int height);
-	virtual ~Base();
-public:
-	static Base* GetHead() { return pHead_; }
-	Base* GetNext() { return pNext_; }
-	const Base* GetNext() const { return pNext_; }
 public:
 	virtual const char* GetName() const { return "no-name"; }
 	virtual const char* GetVariantName() const { return ""; }
 	virtual const char* GetRemarks(char* buff, int lenMax) const { buff[0] = '\0'; return buff;}
-};
-
-//------------------------------------------------------------------------------
-// Dummy
-//------------------------------------------------------------------------------
-class Dummy : public Base {
-public:
-	Dummy() : Base(0, Format::None, 0, 0) {}
-public:
-	static Dummy Instance;
-public:
-	virtual const char* GetName() const override { return "Dummy"; }
 };
 
 //------------------------------------------------------------------------------
@@ -200,7 +182,7 @@ public:
 //------------------------------------------------------------------------------
 // functions
 //------------------------------------------------------------------------------
-Base& GetInstance(int iDisplay);
+Base& N(int iDisplay);
 
 }
 
