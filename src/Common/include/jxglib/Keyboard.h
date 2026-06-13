@@ -6,13 +6,14 @@
 #include "pico/stdlib.h"
 #include "jxglib/KeyLayout.h"
 #include "jxglib/Tickable.h"
+#include "jxglib/IntrusiveListNode.h"
 
 namespace jxglib {
 
 //------------------------------------------------------------------------------
 // Keyboard
 //------------------------------------------------------------------------------
-class Keyboard {
+class Keyboard : public IntrusiveListNode<Keyboard> {
 public:
 	struct Mod {
 		static const uint8_t CtrlL		= (1 << 0);
@@ -36,17 +37,9 @@ public:
 		uint8_t GetModifier() const { return modifier_; }
 	};
 private:
-	static Keyboard* pHead_;
-private:
-	Keyboard* pNext_;
 	const KeyLayout* pKeyLayout_;
 public:
 	Keyboard(bool registerFlag = true);
-	~Keyboard();
-public:
-	static Keyboard* GetHead() { return pHead_; }
-	Keyboard* GetNext() { return pNext_; }
-	const Keyboard* GetNext() const { return pNext_; }
 public:
 	Keyboard& SetKeyLayout(const KeyLayout& keyLayout) { pKeyLayout_ = &keyLayout; return *this; }
 	const KeyLayout& GetKeyLayout() const { return *pKeyLayout_; }
@@ -68,6 +61,8 @@ public:
 	static bool IsShiftDown(uint8_t modifier)	{ return !!(modifier & (Mod::ShiftL | Mod::ShiftR)); }
 	static bool IsAltDown(uint8_t modifier)		{ return !!(modifier & (Mod::AltL | Mod::AltR)); }
 	static bool IsWindowsDown(uint8_t modifier)	{ return !!(modifier & (Mod::WindowsL | Mod::WindowsR)); }
+public:
+	static Keyboard& N(int index);
 };
 
 //------------------------------------------------------------------------------

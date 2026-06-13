@@ -11,7 +11,7 @@ ShellCmd(keyboard, "lists available keyboards")
 	};
 	Arg arg(optTbl, count_of(optTbl));
 	if (!arg.Parse(terr, argc, argv)) return Result::Error;
-	for (const Keyboard* pKeyboard = Keyboard::GetHead(); pKeyboard; pKeyboard = pKeyboard->GetNext()) {
+	for (const Keyboard* pKeyboard = Keyboard::GetListNodeHead(); pKeyboard; pKeyboard = pKeyboard->GetListNodeNext()) {
 		tout.Printf("%s\n", pKeyboard->GetName());
 	}
 #if 0

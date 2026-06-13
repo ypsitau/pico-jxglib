@@ -9,34 +9,8 @@ namespace jxglib {
 //------------------------------------------------------------------------------
 // Keyboard
 //------------------------------------------------------------------------------
-Keyboard* Keyboard::pHead_ = nullptr;
-
-Keyboard::Keyboard(bool registerFlag) : pNext_{nullptr}, pKeyLayout_{&KeyLayout_106::Instance}
+Keyboard::Keyboard(bool registerFlag) : IntrusiveListNode<Keyboard>(registerFlag), pKeyLayout_{&KeyLayout_106::Instance}
 {
-	if (!registerFlag) {
-		// nothing to do
-	} else if (pHead_) {
-		Keyboard* pKeyboard = pHead_;
-		for ( ; pKeyboard->pNext_; pKeyboard = pKeyboard->pNext_);
-		pKeyboard->pNext_ = this;
-	} else {
-		pHead_ = this;
-	}
-}
-
-Keyboard::~Keyboard()
-{
-	if (pHead_ == this) {
-		pHead_ = pNext_;
-	} else {
-		Keyboard* pKeyboard = pHead_;
-		for ( ; pKeyboard; pKeyboard = pKeyboard->pNext_) {
-			if (pKeyboard->pNext_ == this) {
-				pKeyboard->pNext_ = pNext_;
-				break;
-			}
-		}
-	}
 }
 
 char Keyboard::GetChar()
@@ -74,6 +48,15 @@ bool Keyboard::IsPressed(uint8_t keyCode, bool includeModifiers)
 	int nKeys = SenseKeyCode(keyCodeTbl, count_of(keyCodeTbl), includeModifiers);
 	for (int i = 0; i < nKeys; i++) if (keyCodeTbl[i] == keyCode) return true;
 	return false;
+}
+
+Keyboard& Keyboard::N(int index)
+{
+	int i = 0;
+	for (Keyboard* pKeyboard = GetListNodeHead(); pKeyboard; pKeyboard = pKeyboard->GetListNodeNext()) {
+		if (i++ == index) return *pKeyboard;
+	}
+	return KeyboardDumb::Instance;
 }
 
 //------------------------------------------------------------------------------
