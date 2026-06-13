@@ -16,35 +16,9 @@ const Size Size_QQCIF(88, 72);
 //------------------------------------------------------------------------------
 // Camera::Base
 //------------------------------------------------------------------------------
-Base* Base::pHead_ = nullptr;
-
-Base::Base(bool registerFlag) : pNext_{nullptr}, format_{Format::None},
+Base::Base(bool registerFlag) : IntrusiveListNode<Base>(registerFlag), format_{Format::None},
 		capturedFlag_{false}, usecPerFrame_{0}, timeLastCapture_{0}
 {
-	if (!registerFlag) {
-		// nothing to do
-	} else if (pHead_) {
-		Base* pBase = pHead_;
-		for ( ; pBase->pNext_; pBase = pBase->pNext_);
-		pBase->pNext_ = this;
-	} else {
-		pHead_ = this;
-	}
-}
-
-Base::~Base()
-{
-	if (pHead_ == this) {
-		pHead_ = pNext_;
-	} else {
-		Base* pBase = pHead_;
-		for ( ; pBase; pBase = pBase->pNext_) {
-			if (pBase->pNext_ == this) {
-				pBase->pNext_ = pNext_;
-				break;
-			}
-		}
-	}
 }
 
 bool Base::IsValid() const
@@ -89,10 +63,10 @@ Dummy Dummy::Instance;
 //------------------------------------------------------------------------------
 // functions
 //------------------------------------------------------------------------------
-Base& GetInstance(int iCamera)
+Base& N(int iCamera)
 {
-	Base* pBase = Base::GetHead();
-	for (int i = 0; pBase; pBase = pBase->GetNext(), i++) {
+	Base* pBase = Base::GetListNodeHead();
+	for (int i = 0; pBase; pBase = pBase->GetListNodeNext(), i++) {
 		if (i == iCamera) return *pBase;
 	}
 	return Dummy::Instance;

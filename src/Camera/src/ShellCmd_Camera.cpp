@@ -20,7 +20,7 @@ TickableEntry(CameraDisplayTickable, 0, Tickable::Priority::AboveNormal)
 {
 	switch (tickableMode_) {
 	case TickableMode::Display: {
-		Camera::Base& camera = Camera::GetInstance(iCamera_);
+		Camera::Base& camera = Camera::N(iCamera_);
 		if (!camera.IsValid()) return;
 		Display::Base& display = Display::N(iDisplay_);
 		if (!display.IsValid()) return;
@@ -35,7 +35,7 @@ TickableEntry(CameraDisplayTickable, 0, Tickable::Priority::AboveNormal)
 		break;
 	}
 	case TickableMode::VideoTransmitter: {
-		Camera::Base& camera = Camera::GetInstance(iCamera_);
+		Camera::Base& camera = Camera::N(iCamera_);
 		if (!camera.IsValid()) return;
 		VideoTransmitter& videoTransmitter = VideoTransmitter::GetInstance(iVideoTransmitter_);
 		if (!videoTransmitter.IsValid()) return;
@@ -84,7 +84,7 @@ ShellCmd(camera, "controls cameras")
 		ListCameras(tout);
 		return Result::Success;
 	}
-	Camera::Base& camera = Camera::GetInstance(iCamera_);
+	Camera::Base& camera = Camera::N(iCamera_);
 	if (!camera.IsValid()) {
 		terr.Printf("camera #%d is not available\n", iCamera_);
 		return Result::Error;
@@ -189,12 +189,12 @@ ShellCmd(camera, "controls cameras")
 
 void ListCameras(Printable& tout)
 {
-	Base* pCamera = Base::GetHead();
+	Base* pCamera = Base::GetListNodeHead();
 	if (!pCamera) {
 		tout.Printf("no cameras\n");
 		return;
 	}
-	for (int iCamera = 0; pCamera; iCamera++, pCamera = pCamera->GetNext()) {
+	for (int iCamera = 0; pCamera; iCamera++, pCamera = pCamera->GetListNodeNext()) {
 		char remarks[128];
 		pCamera->GetRemarks(remarks, sizeof(remarks));
 		bool remarksFlag = (remarks[0] != '\0');

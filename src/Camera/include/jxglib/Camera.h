@@ -5,6 +5,7 @@
 #define PICO_JXGLIB_CAMERA_H
 #include "pico/stdlib.h"
 #include "jxglib/Image.h"
+#include "jxglib/IntrusiveListNode.h"
 
 namespace jxglib::Camera {
 
@@ -22,11 +23,8 @@ enum class Format { None, RawBayerRGB, ProcessedBayerRGB, YUV422, GRB422, RGB565
 //------------------------------------------------------------------------------
 // Camera::Base
 //------------------------------------------------------------------------------
-class Base {
+class Base : public IntrusiveListNode<Base> {
 private:
-	static Base* pHead_;
-private:
-	Base* pNext_;
 	bool capturedFlag_;
 	int64_t usecPerFrame_;
 	absolute_time_t timeLastCapture_;
@@ -36,13 +34,9 @@ protected:
 	Format format_;
 public:
 	Base(bool registerFlag = true);
-	virtual ~Base();
 public:
 	bool IsValid() const;
 public:
-	static Base* GetHead() { return pHead_; }
-	Base* GetNext() { return pNext_; }
-	const Base* GetNext() const { return pNext_; }
 	const Image& Capture();
 	int GetFPS() const { return (usecPerFrame_ > 0)? static_cast<int>(1000000 / usecPerFrame_) : 0; }
 public:
@@ -77,7 +71,7 @@ public:
 //------------------------------------------------------------------------------
 // functions
 //------------------------------------------------------------------------------
-Base& GetInstance(int iCamera);
+Base& N(int iCamera);
 
 }
 
