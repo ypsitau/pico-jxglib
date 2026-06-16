@@ -70,6 +70,7 @@ target_include_directories(test-GPIO-Keyboard PRIVATE
 pico_add_extra_outputs(test-GPIO-Keyboard)
 
 target_link_libraries(test-GPIO-Keyboard
-	jxglib_Shell jxglib_Serial
+	jxglib_Shell
+	jxglib_Serial
 	jxglib_ShellCmd_Keyboard)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../pico-jxglib pico-jxglib)
