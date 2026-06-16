@@ -116,7 +116,8 @@ target_include_directories(jxglib_ShellCmd_Keyboard INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/include)
 
 target_link_libraries(jxglib_ShellCmd_Keyboard INTERFACE
-	jxglib_ShellCmd_Basic)
+	jxglib_ShellCmd_Basic
+	jxglib_KeyboardTest)
 
 target_sources(jxglib_ShellCmd_Keyboard INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/ShellCmd_Keyboard.cpp)

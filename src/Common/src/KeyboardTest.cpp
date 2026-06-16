@@ -25,7 +25,7 @@ void GetKeyCodeNB(Printable& printable, Keyboard& keyboard)
 		if (keyboard.GetKeyCodeNB(&keyCode)) {
 			printable.Printf("VK_%s\n", GetKeyCodeName(keyCode));
 		}
-		Tickable::Tick();
+		if (Tickable::TickSub()) break;
 	}
 }
 
@@ -38,7 +38,7 @@ void GetKeyDataNB(Printable& printable, Keyboard& keyboard)
 		if (keyboard.GetKeyDataNB(&keyData)) {
 			printable.Printf("%s\n", TextizeKeyData(str, sizeof(str), keyData));
 		}
-		Tickable::Tick();
+		if (Tickable::TickSub()) break;
 	}
 }
 
@@ -54,7 +54,7 @@ void SenseKeyCode(Printable& printable, Keyboard& keyboard)
 			}
 			printable.Printf("\n");
 		}
-		Tickable::Sleep(10);
+		if (Tickable::Sleep(10)) break;
 	}
 }
 
@@ -72,7 +72,7 @@ void SenseKeyData(Printable& printable, Keyboard& keyboard)
 			}
 			printable.Printf("\n");
 		}
-		Tickable::Sleep(10);
+		if (Tickable::Sleep(10)) break;
 	}
 }
 	
