@@ -24,6 +24,7 @@ struct {
 struct {
 	Point pos {0, 0};
 	char str[128] = "";
+	Color color;
 } text;
 
 struct {
@@ -206,8 +207,9 @@ ShellCmd(draw, "draw commands on displays")
 			display.DrawRect(Rect(rect.pos, rect.size), rect.color);
 		} else if (Arg::GetAssigned(subcmd, "font", &value)) {
 			if (!value) {
-				terr.Printf("missing font name\n");
-				return Result::Error;
+				const FontSet& fontSet = display.GetFont();
+				terr.Printf("%s\n", fontSet.IsNone()? "(none)" : fontSet.name);
+				return Result::Success;
 			}
 			const FontSet& fontSet = FontSet::GetInstance(value);
 			if (fontSet.IsNone()) {
@@ -234,11 +236,21 @@ ShellCmd(draw, "draw commands on displays")
 					}
 					::snprintf(text.str, sizeof(text.str), "%s", value);
 					Tokenizer::RemoveSurroundingQuotes(text.str);
+				} else if (Arg::GetAssigned(subcmd, "color", &value)) {
+					if (!value) {
+						terr.Printf("missing color value\n");
+						return Result::Error;
+					}
+					if (!text.color.Parse(value)) {
+						terr.Printf("invalid color: %s\n", value);
+						return Result::Error;
+					}
 				} else {
 					terr.Printf("unknown sub command: %s\n", subcmd);
 					return Result::Error;
 				}
 			}
+			display.SetColor(text.color);
 			display.DrawStringWrap(text.pos, text.str);
 		} else if (Arg::GetAssigned(subcmd, "image-load", &value)) {
 			if (!value) {
