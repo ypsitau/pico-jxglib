@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "jxglib/KeyboardTest.h"
-#include "jxglib/Stdio.h"
+#include "jxglib/Shell.h"
+#include "jxglib/Serial.h"
 
 using namespace jxglib;
 
@@ -20,9 +20,10 @@ int main()
 	const GPIO::KeyCol keyColTbl[] = { GPIO20.pull_up(), GPIO21.pull_up(), GPIO26.pull_up(), GPIO27.pull_up() };
 	//const GPIO::KeyCol keyColTbl[] = { GPIO20.pull_down(), GPIO21.pull_down(), GPIO26.pull_down(), GPIO27.pull_down() };
 	keyboard.Initialize(keySetTbl, keyRowTbl, count_of(keyRowTbl), keyColTbl, count_of(keyColTbl), GPIO::LogicNeg);
-	KeyboardTest::GetKeyCodeNB(Stdio::Instance, keyboard);
-	//KeyboardTest::GetKeyDataNB(Stdio::Instance, keyboard);
-	//KeyboardTest::SenseKeyCode(Stdio::Instance, keyboard);
-	//KeyboardTest::SenseKeyData(Stdio::Instance, keyboard);
-	//KeyboardTest::IsPressed(Stdio::Instance, keyboard);
+	Serial::Terminal terminal;
+	terminal.Initialize();
+	Shell::AttachTerminal(terminal);
+	for (;;) {
+		Tickable::Tick();
+	}
 }
