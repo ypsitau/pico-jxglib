@@ -51,14 +51,9 @@ const GPIO* GPIO_Tbl[] = {
 //------------------------------------------------------------------------------
 // GPIO::Key
 //------------------------------------------------------------------------------
-GPIO::Key::Key(const GPIO& gpio, uint32_t flags, const Keyboard::KeySet& keySet) :
-	gpio_{gpio}, flags_{flags}, keySet_{keySet}, pressedFlag_{false}
+void GPIO::Key::Initialize() const
 {
-}
-
-void GPIO::Key::Initialize()
-{
-	gpio_.set_dir_IN().put(0).set_function_SIO();
+	gpio_.set_dir_IN().put(0).set_function_SIO().set_pulls((flags_ & PullUp)? true : false, (flags_ & PullDown)? true : false);
 }
 
 //------------------------------------------------------------------------------
@@ -78,21 +73,21 @@ GPIO::KeyCol::KeyCol(const GPIO& gpio) : gpio_{gpio}
 //------------------------------------------------------------------------------
 // GPIO::Keyboard
 //------------------------------------------------------------------------------
-GPIO::Keyboard::Keyboard(int msecTick) : Tickable(msecTick, Tickable::Priority::Lowest), keyTbl_{nullptr}, nKeys_{0}, modifier_{0}
+GPIO::Keyboard::Keyboard(int msecTick) : Tickable(msecTick, Tickable::Priority::Lowest), keyTbl_{nullptr}, nKeys_{0}, modifier_{0}, pressedBitmap_{0x00000000}
 {
 }
 
-void GPIO::Keyboard::Initialize(Key* keyTbl, int nKeys)
+void GPIO::Keyboard::Initialize(const Key* keyTbl, int nKeys)
 {
-	keyTbl_ = keyTbl, nKeys_ = nKeys;
-	for (int i = 0; i < nKeys_; i++) keyTbl_[i].Initialize();
+	keyTbl_ = keyTbl, nKeys_ = nKeys, pressedBitmap_ = 0x00000000;
+	for (int iKey = 0; iKey < nKeys_; iKey++) keyTbl_[iKey].Initialize();
 }
 
 bool GPIO::Keyboard::IsPressed(uint8_t keyCode, bool includeModifiers)
 {
-	for (int i = 0; i < nKeys_; i++) {
-		Key& key = keyTbl_[i];
-		if (key.IsPressed() && keyCode == key.GetKeyCode()) return true;
+	for (int iKey = 0; iKey < nKeys_; iKey++) {
+		const Key& key = keyTbl_[iKey];
+		if (CheckPressedBitmap(iKey) && keyCode == key.GetKeyCode()) return true;
 	}
 	return false;
 }
@@ -100,10 +95,10 @@ bool GPIO::Keyboard::IsPressed(uint8_t keyCode, bool includeModifiers)
 int GPIO::Keyboard::SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax, bool includeModifiers)
 {
 	int nKeys = 0;
-	for (int i = 0; i < nKeys_; i++) {
-		Key& key = keyTbl_[i];
+	for (int iKey = 0; iKey < nKeys_; iKey++) {
+		const Key& key = keyTbl_[iKey];
 		uint8_t keyCode = key.GetKeyCode();
-		if (key.IsPressed() && keyCode) keyCodeTbl[nKeys++] = keyCode;
+		if (CheckPressedBitmap(iKey) && keyCode) keyCodeTbl[nKeys++] = keyCode;
 	}
 	return nKeys;
 }
@@ -112,18 +107,19 @@ void GPIO::Keyboard::OnTick()
 {
 	bool anyPressedFlag = false;
 	modifier_ = 0;
-	for (int i = 0; i < nKeys_; i++) {
-		Key& key = keyTbl_[i];
-		key.Update();
-		if (key.IsPressed()) {
+	for (int iKey = 0; iKey < nKeys_; iKey++) {
+		const Key& key = keyTbl_[iKey];
+		pressedBitmap_ &= ~(1 << iKey);
+		if (key.GetPressed()) pressedBitmap_ |= (1 << iKey);
+		if (CheckPressedBitmap(iKey)) {
 			anyPressedFlag = true;
 			modifier_ |= key.GetModifier();
 		}
 	}
-	for (int i = 0; i < nKeys_; i++) {
-		Key& key = keyTbl_[i];
+	for (int iKey = 0; iKey < nKeys_; iKey++) {
+		const Key& key = keyTbl_[iKey];
 		uint8_t keyCode = key.GetKeyCode();
-		if (key.IsPressed() && keyCode) {
+		if (CheckPressedBitmap(iKey) && keyCode) {
 			if (GetRepeater().SignalFirst(keyCode, modifier_)) break;
 		}
 	}

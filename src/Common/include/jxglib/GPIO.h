@@ -22,22 +22,22 @@ public:
 	static const int NumPins = 30;
 	static const uint32_t LogicPos	= (0 << 0);
 	static const uint32_t LogicNeg	= (1 << 0);
+	static const uint32_t PullUp	= (1 << 1);
+	static const uint32_t PullDown	= (1 << 2);
 public:
 	class Key {
 	private:
 		const GPIO& gpio_;
 		uint32_t flags_;
 		jxglib::Keyboard::KeySet keySet_;
-		bool pressedFlag_;
 	public:
-		Key(const GPIO& gpio, uint32_t flags, const jxglib::Keyboard::KeySet& keySet);
+		constexpr Key(const GPIO& gpio, uint32_t flags, const jxglib::Keyboard::KeySet& keySet) :
+			gpio_{gpio}, flags_{flags}, keySet_{keySet} {}
 	public:
-		void Initialize();
+		void Initialize() const;
 		uint8_t GetKeyCode() const { return keySet_.GetKeyCode(); }
 		uint8_t GetModifier() const { return keySet_.GetModifier(); }
-		bool IsPressed() const { return pressedFlag_; }
-	public:
-		virtual void Update() { pressedFlag_ = (flags_ & LogicNeg) ^ gpio_.get(); }
+		bool GetPressed() const { return (flags_ & LogicNeg) ^ gpio_.get(); }
 	};
 	class KeyRow {
 	private:
@@ -57,13 +57,16 @@ public:
 	};
 	class Keyboard : public KeyboardRepeatable, public Tickable {
 	private:
-		Key* keyTbl_;
+		const Key* keyTbl_;
 		int nKeys_;
 		uint8_t modifier_;
+		uint32_t pressedBitmap_;
 	public:
 		Keyboard(int msecTick = 20);
 	public:
-		void Initialize(Key* keyTbl, int nKeys);
+		void Initialize(const Key* keyTbl, int nKeys);
+	public:
+		uint32_t CheckPressedBitmap(int iKey) const { return pressedBitmap_ & (1 << iKey); }
 	public:
 		// virtual function of KeyboardRepeatable
 		virtual const char* GetName() const override { return "GPIO::Keyboard"; }

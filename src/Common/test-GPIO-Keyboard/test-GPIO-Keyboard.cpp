@@ -19,13 +19,13 @@ GPIO::Keyboard keyboard;
 int main()
 {
 	::stdio_init_all();
-	GPIO::Key keyTbl[] = {
-		{ GPIO10.pull_up(), GPIO::LogicNeg, VK_LEFT		},
-		{ GPIO11.pull_up(), GPIO::LogicNeg, VK_UP		},
-		{ GPIO12.pull_up(), GPIO::LogicNeg, VK_DOWN		},
-		{ GPIO13.pull_up(), GPIO::LogicNeg, VK_RIGHT	},
-		{ GPIO14.pull_up(), GPIO::LogicNeg, {VK_Z, Keyboard::Mod::ShiftL} },
-		{ GPIO15.pull_up(), GPIO::LogicNeg, VK_X		},
+	static const GPIO::Key keyTbl[] = {
+		{ GPIO10, GPIO::LogicNeg | GPIO::PullUp, VK_LEFT		},
+		{ GPIO11, GPIO::LogicNeg | GPIO::PullUp, VK_UP			},
+		{ GPIO12, GPIO::LogicNeg | GPIO::PullUp, VK_DOWN		},
+		{ GPIO13, GPIO::LogicNeg | GPIO::PullUp, VK_RIGHT		},
+		{ GPIO14, GPIO::LogicNeg | GPIO::PullUp, {VK_Z, Keyboard::Mod::ShiftL} },
+		{ GPIO15, GPIO::LogicNeg | GPIO::PullUp, VK_X			},
 	};
 	keyboard.Initialize(keyTbl, count_of(keyTbl));
 	Serial::Terminal terminal;
