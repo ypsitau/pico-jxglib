@@ -43,7 +43,7 @@ public:
 	private:
 		const GPIO& gpio_;
 	public:
-		KeyRow(const GPIO& gpio);
+		constexpr KeyRow(const GPIO& gpio) : gpio_{gpio} {}
 	public:
 		const GPIO& GetGPIO() const { return gpio_; }
 	};
@@ -51,7 +51,7 @@ public:
 	private:
 		const GPIO& gpio_;
 	public:
-		KeyCol(const GPIO& gpio);
+		constexpr KeyCol(const GPIO& gpio) : gpio_{gpio} {}
 	public:
 		const GPIO& GetGPIO() const { return gpio_; }
 	};

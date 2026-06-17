@@ -59,16 +59,10 @@ void GPIO::Key::Initialize() const
 //------------------------------------------------------------------------------
 // GPIO::KeyRow
 //------------------------------------------------------------------------------
-GPIO::KeyRow::KeyRow(const GPIO& gpio) : gpio_{gpio}
-{
-}
 
 //------------------------------------------------------------------------------
 // GPIO::KeyCol
 //------------------------------------------------------------------------------
-GPIO::KeyCol::KeyCol(const GPIO& gpio) : gpio_{gpio}
-{
-}
 
 //------------------------------------------------------------------------------
 // GPIO::Keyboard
@@ -149,8 +143,10 @@ void GPIO::KeyboardMatrix::Initialize(const KeySet* keySetTbl,
 	for (int iKeyRow = 0; iKeyRow < nKeyRows_; iKeyRow++) {
 		keyRowTbl_[iKeyRow].GetGPIO().set_dir_OUT().put(valueInactive_).set_function_SIO();
 	}
+	bool pullUpFlag = (flags & PullUp) != 0;
+	bool pullDownFlag = (flags & PullDown) != 0;
 	for (int iKeyCol = 0; iKeyCol < nKeyCols_; iKeyCol++) {
-		keyColTbl_[iKeyCol].GetGPIO().set_dir_IN().put(0).set_function_SIO();
+		keyColTbl_[iKeyCol].GetGPIO().set_dir_IN().put(0).set_function_SIO().set_pulls(pullUpFlag, pullDownFlag);
 	}
 	::memset(iKeySetScannedTbl_, 0xff, sizeof(iKeySetScannedTbl_));
 	::memset(iKeySetCapturedTbl_, 0xff, sizeof(iKeySetCapturedTbl_));
