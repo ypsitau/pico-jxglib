@@ -19,15 +19,17 @@ GPIO::Keyboard keyboard;
 int main()
 {
 	::stdio_init_all();
-	static const GPIO::Key keyTbl[] = {
-		{ GPIO10, GPIO::LogicNeg | GPIO::PullUp, VK_LEFT		},
-		{ GPIO11, GPIO::LogicNeg | GPIO::PullUp, VK_UP			},
-		{ GPIO12, GPIO::LogicNeg | GPIO::PullUp, VK_DOWN		},
-		{ GPIO13, GPIO::LogicNeg | GPIO::PullUp, VK_RIGHT		},
-		{ GPIO14, GPIO::LogicNeg | GPIO::PullUp, {VK_Z, Keyboard::Mod::ShiftL} },
-		{ GPIO15, GPIO::LogicNeg | GPIO::PullUp, VK_X			},
-	};
-	keyboard.Initialize(keyTbl, count_of(keyTbl));
+	do {
+		static const GPIO::Key keyTbl[] = {
+			{ GPIO10, GPIO::LogicNeg | GPIO::PullUp, VK_LEFT		},
+			{ GPIO11, GPIO::LogicNeg | GPIO::PullUp, VK_UP			},
+			{ GPIO12, GPIO::LogicNeg | GPIO::PullUp, VK_DOWN		},
+			{ GPIO13, GPIO::LogicNeg | GPIO::PullUp, VK_RIGHT		},
+			{ GPIO14, GPIO::LogicNeg | GPIO::PullUp, {VK_Z, Keyboard::Mod::ShiftL} },
+			{ GPIO15, GPIO::LogicNeg | GPIO::PullUp, VK_X			},
+		};
+		keyboard.Initialize(keyTbl, count_of(keyTbl));
+	} while (0);
 	Serial::Terminal terminal;
 	terminal.Initialize();
 	Shell::AttachTerminal(terminal);
