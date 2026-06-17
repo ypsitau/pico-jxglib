@@ -17,12 +17,11 @@ ShellCmd(keyboard, "lists available keyboards")
 		tout.Printf("Usage: %s [OPTION]... [INDEX [SUB COMMAND]...]\n", GetName());
 		arg.PrintHelp(tout);
 		tout.Printf("Sub Commands:\n");
-		tout.Printf(" sleep:MSEC           sleep for specified milliseconds\n");
-		tout.Printf(" repeat[:N] {CMD...}  repeat the commands N times (default: infinite)\n");
-		tout.Printf(" test-GetKeyData      test Keyboard::GetKeyDataNB()\n");
-		tout.Printf(" test-GetKeyCode      test Keyboard::GetKeyCodeNB()\n");
-		tout.Printf(" test-SenseKeyData    test Keyboard::SenseKeyData()\n");
-		tout.Printf(" test-SenseKeyCode    test Keyboard::SenseKeyCode()\n");
+		tout.Printf(" repeat-time {delay:DELAY rate:RATE}  set the repeat time parameters in milliseconds\n");
+		tout.Printf(" test-GetKeyData                      test Keyboard::GetKeyDataNB()\n");
+		tout.Printf(" test-GetKeyCode                      test Keyboard::GetKeyCodeNB()\n");
+		tout.Printf(" test-SenseKeyData                    test Keyboard::SenseKeyData()\n");
+		tout.Printf(" test-SenseKeyCode                    test Keyboard::SenseKeyCode()\n");
 		return Result::Success;
 	}
 	if (argc < 2) {
@@ -53,9 +52,43 @@ bool ProcessKeyboard(Printable& terr, Printable& tout, Keyboard& keyboard, int a
 		terr.Printf("%s\n", each.GetErrorMsg());
 		return false;
 	}
-	while (const char* subcmd = each.Next()) {
+	while (const Shell::Arg::Subcmd* pSubcmd = each.NextSubcmd()) {
+		const char* subcmd = pSubcmd->GetProc();
 		const char* value = nullptr;
-		if (Shell::Arg::GetAssigned(subcmd, "test-GetKeyData", &value)) {
+		if (Shell::Arg::GetAssigned(subcmd, "repeat-time", &value)) {
+			uint32_t msecDelay, msecRate;
+			if (!keyboard.GetRepeatTime(&msecDelay, &msecRate)) {
+				terr.Printf("failed to get repeat time\n");
+				return false;
+			}
+			bool modifyFlag = false;
+			for (const Shell::Arg::Subcmd* pSubcmdChild = pSubcmd->GetChild(); pSubcmdChild; pSubcmdChild = pSubcmdChild->GetNext()) {
+				const char* subcmd = pSubcmdChild->GetProc();
+				if (Shell::Arg::GetAssigned(subcmd, "delay", &value)) {
+					if (!value) {
+						terr.Printf("missing delay value\n");
+						return false;
+					}
+					msecDelay = static_cast<uint32_t>(std::strtoul(value, nullptr, 10));
+					modifyFlag = true;
+				} else if (Shell::Arg::GetAssigned(subcmd, "rate", &value)) {
+					if (!value) {
+						terr.Printf("missing rate value\n");
+						return false;
+					}
+					msecRate = static_cast<uint32_t>(std::strtoul(value, nullptr, 10));
+					modifyFlag = true;
+				} else {
+					terr.Printf("unknown sub command: %s\n", subcmd);
+					return false;
+				}
+			}
+			if (modifyFlag) {
+				keyboard.SetRepeatTime(msecDelay, msecRate);
+			} else {
+				tout.Printf("delay:%u rate:%u\n", msecDelay, msecRate);
+			}
+		} else if (Shell::Arg::GetAssigned(subcmd, "test-GetKeyData", &value)) {
 			KeyboardTest::GetKeyDataNB(terr, keyboard);
 		} else if (Shell::Arg::GetAssigned(subcmd, "test-GetKeyCode", &value)) {
 			KeyboardTest::GetKeyCodeNB(terr, keyboard);

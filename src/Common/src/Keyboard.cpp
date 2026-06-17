@@ -72,6 +72,12 @@ Keyboard& KeyboardRepeatable::SetRepeatTime(uint32_t msecDelay, uint32_t msecRat
 	return *this;
 }
 
+bool KeyboardRepeatable::GetRepeatTime(uint32_t* pMsecDelay, uint32_t* pMsecRate)
+{
+	repeater_.GetRepeatTime(pMsecDelay, pMsecRate);
+	return true;
+}
+
 int KeyboardRepeatable::SenseKeyData(KeyData keyDataTbl[], int nKeysMax)
 {
 	uint8_t keyCodeTbl[6];

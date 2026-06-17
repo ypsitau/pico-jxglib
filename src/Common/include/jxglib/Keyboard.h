@@ -51,6 +51,7 @@ public:
 	virtual bool IsDumb() const { return false; }
 	virtual Keyboard& SetCapsLockAsCtrl(bool capsLockAsCtrlFlag = true) { return *this; }
 	virtual Keyboard& SetRepeatTime(uint32_t msecDelay, uint32_t msecRate) { return *this; }
+	virtual bool GetRepeatTime(uint32_t* pMsecDelay, uint32_t* pMsecRate) { *pMsecDelay = 0; *pMsecRate = 0; return false; }
 	virtual uint8_t GetModifier() { return 0; }
 	virtual bool IsPressed(uint8_t keyCode, bool includeModifiers = true);
 	virtual int SenseKeyCode(uint8_t keyCodeTbl[], int nKeysMax = 1, bool includeModifiers = false) = 0;
@@ -82,6 +83,7 @@ public:
 	public:
 		Repeater(Keyboard& keyboard);
 		void SetRepeatTime(uint32_t msecDelay, uint32_t msecRate) { msecDelay_ = msecDelay, msecRate_ = msecRate; }
+		void GetRepeatTime(uint32_t* pMsecDelay, uint32_t* pMsecRate) { *pMsecDelay = msecDelay_, *pMsecRate = msecRate_; }
 		void Invalidate() { modifier_ = 0, keyCode_ = 0, readyFlag_ = false; }
 		bool SignalFirst(uint8_t keyCode, uint8_t modifier);
 		bool GetKey(uint8_t* pKeyCode, uint8_t* pModifier);
@@ -99,6 +101,7 @@ public:
 public:
 	// virtual function of Keyboard
 	virtual Keyboard& SetRepeatTime(uint32_t msecDelay, uint32_t msecRate) override;
+	virtual bool GetRepeatTime(uint32_t* pMsecDelay, uint32_t* pMsecRate) override;
 	virtual int SenseKeyData(KeyData keyDataTbl[], int nKeysMax = 1) override;
 	virtual bool GetKeyCodeNB(uint8_t* pKeyCode, uint8_t* pModifier = nullptr) override;
 	virtual bool GetKeyDataNB(KeyData* pKeyData) override;
